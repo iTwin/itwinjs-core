@@ -11,16 +11,15 @@ import * as fs from "fs-extra";
 import { dirname, extname, join } from "path";
 import { AccessToken, DbResult, OpenMode } from "@itwin/core-bentley";
 import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
+import { IModelDb } from "../IModelDb";
 import { IModelJsFs } from "../IModelJsFs";
 import { SQLiteDb } from "../SQLiteDb";
 import { SqliteStatement } from "../SqliteStatement";
 import { ITwinSettings, Settings, SettingsPriority } from "./Settings";
-import { IModelDb } from "../IModelDb";
 
 export type WorkspaceContainerName = string;
 export type WorkspaceContainerId = string;
 export type WorkspaceResourceName = string;
-export type WorkspaceResourceType = "string" | "blob" | "file";
 
 /** either a WorkspaceContainerName or a WorkspaceContainerId. */
 export type WorkspaceContainerProps = WorkspaceContainerName | { id: WorkspaceContainerId };
@@ -28,12 +27,6 @@ export type WorkspaceContainerProps = WorkspaceContainerName | { id: WorkspaceCo
 export interface WorkspaceResourceProps {
   container: WorkspaceContainerProps;
   rscName: WorkspaceResourceName;
-  type?: WorkspaceResourceType; // defaults to "string"
-}
-
-export interface WorkspaceContainerAlias {
-  name: WorkspaceContainerName;
-  id: WorkspaceContainerId;
 }
 
 /**
@@ -59,10 +52,10 @@ export interface WorkspaceContainer {
    * @returns the full path to a file on the local filesystem.
    * @note The file is copied from the container into the local filesystem so it may be accessed directly. This happens only
    * as necessary, if the local file doesn't exist, or if it is out-of-date because it was updated in the container.
-   * For this reason, you should not save the local file name, and instead call this method every time you open it, so its
+   * For this reason, you should not save the local file name, and instead call this method every time you access it, so its
    * content is always holds the correct version.
    * @note The filename will be a hash value, not the resource name.
-   * @note Workspace resource files are set readonly after they are copied from the container.
+   * @note Workspace resource files are set readonly as they are copied from the container.
    * To edit them, you must first copy them to another location.
    */
   getFile(rscName: WorkspaceResourceName): LocalFileName | undefined;
@@ -70,10 +63,6 @@ export interface WorkspaceContainer {
 
 export interface WorkspaceContainerOpts {
   forIModel?: IModelDb;
-  accessToken?: AccessToken;
-  openMode?: OpenMode;
-  workspaceRoot?: LocalDirName;
-  filesDir?: LocalDirName;
 }
 
 export interface Workspace {
@@ -86,6 +75,80 @@ export interface Workspace {
   loadSettingsDictionary(settingRsc: WorkspaceResourceProps, priority: SettingsPriority): void;
   dropContainer(container: WorkspaceContainer): void;
   close(): void;
+}
+
+/** @internal */
+export class ITwinWorkspace implements Workspace {
+  private _containers = new Map<WorkspaceContainerId, WorkspaceFile>();
+  public readonly filesDir: LocalDirName;
+  public readonly rootDir: LocalDirName;
+  public readonly settings: Settings;
+
+  public constructor(rootDir: LocalDirName, filesDir?: LocalDirName) {
+    this.settings = new ITwinSettings();
+    this.rootDir = rootDir;
+    this.filesDir = filesDir ?? join(rootDir, "Files");
+  }
+
+  public async obtainContainer(props: WorkspaceContainerProps, opts?: WorkspaceContainerOpts): Promise<WorkspaceContainer> {
+    // NEEDS_WORK - download or attach
+    return this.getContainer(props, opts);
+  }
+
+  public getContainer(props: WorkspaceContainerProps, opts?: WorkspaceContainerOpts): WorkspaceContainer {
+    const id = this.resolveContainerId(props);
+    if (undefined === id)
+      throw new Error(`can't resolve container name [${props}]`);
+    let container = this._containers.get(id);
+    if (container)
+      return container;
+
+    container = new WorkspaceFile(id, this, opts);
+    container.open();
+    this._containers.set(id, container);
+    if (opts?.forIModel)
+      opts.forIModel.onBeforeClose.addOnce(() => this.dropContainer(container!));
+    return container;
+  }
+
+  public loadSettingsDictionary(settingRsc: WorkspaceResourceProps, priority: SettingsPriority) {
+    const container = this.getContainer(settingRsc.container);
+    const setting = container.getString(settingRsc.rscName);
+    if (undefined === setting)
+      throw new Error(`could not load setting resource ${settingRsc.rscName}`);
+
+    this.settings.addJson(`${container.containerId}/${settingRsc.rscName}`, priority, setting);
+  }
+
+  public close() {
+    for (const [_id, container] of this._containers)
+      container.close();
+    this._containers.clear();
+  }
+
+  public dropContainer(toDrop: WorkspaceContainer) {
+    const id = toDrop.containerId;
+    const container = this._containers.get(id);
+    if (container !== toDrop)
+      throw new Error(`container ${id} not open`);
+    container.close();
+    this._containers.delete(id);
+  }
+
+  public resolveContainerId(props: WorkspaceContainerProps): WorkspaceContainerId | undefined {
+    if (typeof props === "object")
+      return props.id;
+    return this.settings.resolveSetting("workspace/container/alias", (val) => {
+      if (Array.isArray(val)) {
+        for (const entry of val) {
+          if (typeof entry === "object" && entry.name === props && typeof entry.id === "string")
+            return entry.id;
+        }
+      }
+      return undefined; // keep going through all settings dictionaries
+    }, props);
+
+  }
 }
 
 /** @internal */
@@ -290,75 +353,3 @@ export class EditableWorkspaceFile extends WorkspaceFile {
 
 }
 
-/** @internal */
-export class ITwinWorkspace implements Workspace {
-  private _workspaces = new Map<WorkspaceContainerId, WorkspaceFile>();
-  public readonly filesDir: LocalDirName;
-  public readonly rootDir: LocalDirName;
-  public readonly settings: Settings;
-  public constructor(rootDir: LocalDirName, filesDir?: LocalDirName) {
-    this.settings = new ITwinSettings();
-    this.rootDir = rootDir;
-    this.filesDir = filesDir ?? join(rootDir, "Files");
-  }
-
-  public async obtainContainer(props: WorkspaceContainerProps, opts?: WorkspaceContainerOpts): Promise<WorkspaceContainer> {
-    // NEEDS_WORK - download or attach
-    return this.getContainer(props, opts);
-  }
-
-  public getContainer(props: WorkspaceContainerProps, opts?: WorkspaceContainerOpts): WorkspaceContainer {
-    const id = this.resolveContainerId(props);
-    if (undefined === id)
-      throw new Error(`can't resolve container name [${props}]`);
-    let container = this._workspaces.get(id);
-    if (container)
-      return container;
-
-    container = new WorkspaceFile(id, this, opts);
-    container.open();
-    this._workspaces.set(id, container);
-    if (opts?.forIModel)
-      opts.forIModel.onBeforeClose.addOnce(() => this.dropContainer(container!));
-    return container;
-  }
-
-  public loadSettingsDictionary(settingRsc: WorkspaceResourceProps, priority: SettingsPriority) {
-    const container = this.getContainer(settingRsc.container);
-    const setting = container.getString(settingRsc.rscName);
-    if (undefined === setting)
-      throw new Error(`could not load setting resource ${settingRsc.rscName}`);
-
-    this.settings.addJson(`${container.containerId}/${settingRsc.rscName}`, priority, setting);
-  }
-
-  public close() {
-    for (const [_id, container] of this._workspaces)
-      container.close();
-    this._workspaces.clear();
-  }
-
-  public dropContainer(toDrop: WorkspaceContainer) {
-    const id = toDrop.containerId;
-    const container = this._workspaces.get(id);
-    if (container !== toDrop)
-      throw new Error(`container ${id} not open`);
-    container.close();
-    this._workspaces.delete(id);
-  }
-
-  public resolveContainerId(props: WorkspaceContainerProps): WorkspaceContainerId | undefined {
-    if (typeof props === "object")
-      return props.id;
-    return this.settings.resolveSetting("workspace/container/alias", (val) => {
-      if (Array.isArray(val)) {
-        for (const entry of val) {
-          if (typeof entry === "object" && entry.name === props && typeof entry.id === "string")
-            return entry.id;
-        }
-      }
-      return undefined; // keep going through all settings dictionaries
-    }, props);
-
-  }
-}
