@@ -20,7 +20,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/full-stack-tests/rpc-interface"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/full-stack-tests/rpc-interface"
   },
   "keywords": [
     "Bentley",

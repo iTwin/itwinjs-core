@@ -12,7 +12,7 @@
   "main": "dist/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/tools/eslint-plugin"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/tools/eslint-plugin"
   },
   "bin": {
     "no-internal-report": "dist/bin/no-internal-report.js"
