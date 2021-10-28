@@ -3558,9 +3558,7 @@ export interface GetPixelDataWorldPointArgs {
     out?: Point3d;
     pixels: Pixel.Buffer;
     preserveModelDisplayTransforms?: boolean;
-    // (undocumented)
     x: number;
-    // (undocumented)
     y: number;
 }
 
@@ -12348,9 +12346,7 @@ export abstract class Viewport implements IDisposable {
     getFrustum(sys?: CoordSystem, adjustedBox?: boolean, box?: Frustum): Frustum;
     // @internal (undocumented)
     getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined;
-    // @beta
     getPixelDataNpcPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined;
-    // @beta
     getPixelDataWorldPoint(args: GetPixelDataWorldPointArgs): Point3d | undefined;
     getPixelSizeAtPoint(point?: Point3d): number;
     // @internal (undocumented)
