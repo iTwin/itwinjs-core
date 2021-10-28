@@ -2123,7 +2123,7 @@ class ViewLookAndMove extends ViewNavigate {
         if (pixel.distanceFraction < 0)
           continue; // No geometry at location...
 
-        const hitPointWorld = vp.getPixelDataWorldPoint(pixels, testPoint.x, testPoint.y);
+        const hitPointWorld = vp.getPixelDataWorldPoint({pixels, x: testPoint.x, y: testPoint.y, preserveModelDisplayTransforms: true});
         if (undefined === hitPointWorld)
           continue;
 

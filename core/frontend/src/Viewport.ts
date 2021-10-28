@@ -181,6 +181,25 @@ export type OnFlashedIdChangedEventArgs = {
   readonly current: undefined;
 };
 
+/** Arguments to [[Viewport.getPixelDataWorldPoint]].
+ * @public
+ */
+export interface GetPixelDataWorldPointArgs {
+  /** The buffer containing the pixel data. @see [[Viewport.readPixels]]. */
+  pixels: Pixel.Buffer;
+  /* The x coordinate of the pixel of interest, in view coordinates. */
+  x: number;
+  /* The y coordinate of the pixel of interest, in view coordinates. */
+  y: number;
+  /** If true, then the world point of a pixel associated with a model will preserve any transforms applied to the model at display time,
+   * such as those supplied by a [[ModelDisplayTransformProvider]] or [PlanProjectionSettings.elevation]($common).
+   * Otherwise, the world point will be multiplied by the inverse of any such transforms to correlate it with the model's true coordinate space.
+   */
+  preserveModelDisplayTransforms?: boolean;
+  /** If supplied, this point will be modified to store the returned point, instead of allocating a new point. */
+  out?: Point3d;
+}
+
 /** A Viewport renders the contents of one or more [GeometricModel]($backend)s onto an `HTMLCanvasElement`.
  *
  * It holds a [[ViewState]] object that defines its viewing parameters; the ViewState in turn defines the [[DisplayStyleState]],
@@ -2446,7 +2465,8 @@ export abstract class Viewport implements IDisposable {
   /** Get the point at the specified x and y location in the pixel buffer in world coordinates
    * @beta
    */
-  public getPixelDataWorldPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d, preserveModelDisplayTransforms = false): Point3d | undefined {
+  public getPixelDataWorldPoint(args: GetPixelDataWorldPointArgs): Point3d | undefined {
+    const { pixels, x, y, out, preserveModelDisplayTransforms } = args;
     const npc = this.getPixelDataNpcPoint(pixels, x, y, out);
     if (undefined !== npc) {
       this.npcToWorld(npc, npc);

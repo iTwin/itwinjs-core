@@ -232,8 +232,14 @@ export class ElementPicker {
         if (undefined === pixel || undefined === pixel.elementId)
           continue;
 
-        const hitPointWorld = vp.getPixelDataWorldPoint(pixels, elmPoint.x, elmPoint.y, undefined, options.preserveModelDisplayTransforms);
-        if (undefined === hitPointWorld)
+        const hitPointWorld = vp.getPixelDataWorldPoint({
+          pixels,
+          x: elmPoint.x,
+          y: elmPoint.y,
+          preserveModelDisplayTransforms: options.preserveModelDisplayTransforms,
+        });
+
+        if (!hitPointWorld)
           continue;
 
         const modelId = undefined !== pixel.featureTable ? pixel.featureTable.modelId : undefined;
