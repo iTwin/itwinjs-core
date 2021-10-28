@@ -1081,10 +1081,10 @@ export interface JSONSchemaSnippet {
     label?: string;
 }
 
-// @public
+// @public (undocumented)
 export type JSONSchemaType = string | number | boolean | object | JSONSchemaType[];
 
-// @public
+// @public (undocumented)
 export type JSONSchemaTypeName = "string" | "number" | "integer" | "boolean" | "null" | "array" | "object";
 
 // @public

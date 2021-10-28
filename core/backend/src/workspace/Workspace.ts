@@ -9,7 +9,7 @@
 import { createHash } from "crypto";
 import * as fs from "fs-extra";
 import { dirname, extname, join } from "path";
-import { AccessToken, DbResult, OpenMode } from "@itwin/core-bentley";
+import { AccessToken, BeEvent, DbResult, OpenMode } from "@itwin/core-bentley";
 import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
 import { IModelDb } from "../IModelDb";
 import { IModelJsFs } from "../IModelJsFs";
@@ -52,7 +52,7 @@ export type WorkspaceContainerName = string;
 export type WorkspaceContainerId = string;
 
 /**
- * The name is used for loading WorkspaceResources from a [[WorkspaceContainer]].
+ * The name for identifying WorkspaceResources in a [[WorkspaceContainer]].
  * * `WorkspaceResourceName`s may not:
  *  - be blank or start or end with a space
  *  - be longer than 1024 characters
@@ -95,7 +95,8 @@ export interface WorkspaceContainer {
   readonly iModelOwner?: IModelDb;
   /** the directory for extracting file resources. */
   readonly containerFilesDir: LocalDirName;
-
+  /** event raised when the container is closed. */
+  readonly onContainerClosed: BeEvent<() => void>;
   /** Get a string resource from this container, if present. */
   getString(rscName: WorkspaceResourceName): string | undefined;
 
@@ -103,6 +104,10 @@ export interface WorkspaceContainer {
   getBlob(rscName: WorkspaceResourceName): Uint8Array | undefined;
 
   /** Extract a local copy of a file resource from this container, if present.
+   * @param rscName The name of the file resource in the WorkspaceContainer
+   * @param targetFileName optional name for extracted file. Some applications require files in specific locations or filenames. If
+   * you know the full path to use for the extracted file, you can supply it. Generally, it is best to *not* supply the filename and
+   * keep the extracted files in the [[containerFilesDir]].
    * @returns the full path to a file on the local filesystem.
    * @note The file is copied from the container into the local filesystem so it may be accessed directly. This happens only
    * as necessary, if the local file doesn't exist, or if it is out-of-date because it was updated in the container.
@@ -112,7 +117,7 @@ export interface WorkspaceContainer {
    * @note Workspace resource files are set readonly as they are copied from the container.
    * To edit them, you must first copy them to another location.
    */
-  getFile(rscName: WorkspaceResourceName): LocalFileName | undefined;
+  getFile(rscName: WorkspaceResourceName, targetFileName?: LocalFileName): LocalFileName | undefined;
 }
 
 /** Options supplied when opening a WorkspaceContainer. */
@@ -251,6 +256,7 @@ export class WorkspaceFile implements WorkspaceContainer {
   public readonly containerId: WorkspaceContainerId;
   public readonly localDbName: LocalDirName;
   public readonly iModelOwner?: IModelDb;
+  public readonly onContainerClosed = new BeEvent<() => void>();
 
   public get containerFilesDir() { return join(this.workspace.filesDir, this.containerId); }
   public get isOpen() { return this.db.isOpen; }
@@ -301,8 +307,10 @@ export class WorkspaceFile implements WorkspaceContainer {
   }
 
   public close(): void {
-    if (this.isOpen)
+    if (this.isOpen) {
+      this.onContainerClosed.raiseEvent();
       this.db.closeDb();
+    }
   }
 
   public getString(rscName: WorkspaceResourceName): string | undefined {
@@ -319,12 +327,14 @@ export class WorkspaceFile implements WorkspaceContainer {
     });
   }
 
-  public getFile(rscName: WorkspaceResourceName): LocalFileName | undefined {
+  public getFile(rscName: WorkspaceResourceName, targetFileName?: LocalFileName): LocalFileName | undefined {
     const file = this.queryFileResource(rscName);
     if (!file)
       return undefined;
 
-    const { localFileName, info } = file;
+    const info = file.info;
+    const localFileName = targetFileName ?? file.localFileName;
+
     // check whether the file is already up to date.
     const stat = fs.existsSync(localFileName) && fs.statSync(localFileName);
     if (stat && Math.trunc(stat.mtimeMs) === info.date && stat.size === info.size)

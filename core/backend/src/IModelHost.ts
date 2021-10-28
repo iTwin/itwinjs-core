@@ -199,10 +199,10 @@ export class IModelHost {
   public static get applicationVersion() { return this.session.applicationVersion; }
   public static set applicationVersion(version: string) { this.session.applicationVersion = version; }
 
-  /** Root directory holding all the files that iTwin.js caches */
+  /** Root directory holding files that iTwin.js caches */
   public static get cacheDir(): LocalDirName { return this._cacheDir; }
 
-  /** get the Workspaces */
+  /** The Workspace for this IModelHost */
   public static get workspace(): Workspace { return this._workspace; }
 
   /** The optional [[FileNameResolver]] that resolves keys and partial file names for snapshot iModels. */

@@ -5,10 +5,13 @@
 
 // adapted from https://github.com/microsoft/vscode Copyright (c) 2015 - present Microsoft Corporation
 
+/** @public */
 export type JSONSchemaTypeName = "string" | "number" | "integer" | "boolean" | "null" | "array" | "object";
 
+/** @public */
 export type JSONSchemaType = string | number | boolean | object | JSONSchemaType[];
 
+/** @public */
 export interface JSONSchema {
   id?: string;
   $id?: string;
@@ -72,10 +75,12 @@ export interface JSONSchema {
   allowTrailingCommas?: boolean;
 }
 
+/** @public */
 export interface JSONSchemaMap {
   [name: string]: JSONSchema;
 }
 
+/** @public */
 export interface JSONSchemaSnippet {
   label?: string;
   description?: string;

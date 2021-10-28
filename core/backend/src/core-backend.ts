@@ -50,6 +50,9 @@ export * from "./AliCloudStorageService";
 export * from "./DevTools";
 export * from "./LocalhostIpcHost";
 export * from "./ElementGraphics";
+export * from "./workspace/Settings";
+export * from "./workspace/SettingsSpecRegistry";
+export * from "./workspace/Workspace";
 export * from "./IModelDb"; // must be last
 
 /** @docs-package-description
