@@ -5107,6 +5107,7 @@ export class LocateOptions {
     // (undocumented)
     init(): void;
     maxHits: number;
+    preserveModelDisplayTransforms: boolean;
     // (undocumented)
     setFrom(other: LocateOptions): void;
 }
@@ -12339,7 +12340,7 @@ export abstract class Viewport implements IDisposable {
     // @beta
     getPixelDataNpcPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined;
     // @beta
-    getPixelDataWorldPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined;
+    getPixelDataWorldPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d, preserveModelDisplayTransforms?: boolean): Point3d | undefined;
     getPixelSizeAtPoint(point?: Point3d): number;
     // @internal (undocumented)
     getSubCategories(categoryId: Id64String): Id64Set | undefined;

@@ -2446,17 +2446,19 @@ export abstract class Viewport implements IDisposable {
   /** Get the point at the specified x and y location in the pixel buffer in world coordinates
    * @beta
    */
-  public getPixelDataWorldPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined {
+  public getPixelDataWorldPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d, preserveModelDisplayTransforms = false): Point3d | undefined {
     const npc = this.getPixelDataNpcPoint(pixels, x, y, out);
     if (undefined !== npc) {
       this.npcToWorld(npc, npc);
 
       // If this is a plan projection model, invert the elevation applied to its display transform.
       // Likewise, if it is a hit on a model with a display transform, reverse the display transform.
-      const modelId = pixels.getPixel(x, y).featureTable?.modelId;
-      if (undefined !== modelId) {
-        npc.z -= this.view.getModelElevation(modelId);
-        this.view.transformPointByModelDisplayTransform(modelId, npc, true);
+      if (!preserveModelDisplayTransforms) {
+        const modelId = pixels.getPixel(x, y).featureTable?.modelId;
+        if (undefined !== modelId) {
+          npc.z -= this.view.getModelElevation(modelId);
+          this.view.transformPointByModelDisplayTransform(modelId, npc, true);
+        }
       }
     }
 
@@ -2920,6 +2922,7 @@ export class ScreenViewport extends Viewport {
     locateOpts.allowNonLocatable = (undefined === options || !options.excludeNonLocatable);
     locateOpts.allowDecorations = (undefined === options || !options.excludeDecorations);
     locateOpts.allowExternalIModels = (undefined === options || !options.excludeExternalIModels);
+    locateOpts.preserveModelDisplayTransforms = true;
 
     if (0 !== this.picker.doPick(this, pickPoint, radius, locateOpts)) {
       const hitDetail = this.picker.getHit(0)!;
