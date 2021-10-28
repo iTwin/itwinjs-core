@@ -2436,8 +2436,8 @@ export abstract class Viewport implements IDisposable {
     return this.target.readImageToCanvas();
   }
 
-  /** Get the point at the specified x and y location in the pixel buffer in npc coordinates
-   * @beta
+  /** Get the point at the specified x and y location in the pixel buffer in npc coordinates.
+   * @see [[getPixelDataWorldPoint]] to obtain the point in [[CoordSystem.World]].
    */
   public getPixelDataNpcPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined {
     const z = pixels.getPixel(x, y).distanceFraction;
@@ -2462,8 +2462,8 @@ export abstract class Viewport implements IDisposable {
     return result;
   }
 
-  /** Get the point at the specified x and y location in the pixel buffer in world coordinates
-   * @beta
+  /** Get the point at the specified x and y location in the pixel buffer in world coordinates.
+   * @see [[getPixelDataNpcPoint]] to obtain the point in [[CoordSystem.Npc]].
    */
   public getPixelDataWorldPoint(args: GetPixelDataWorldPointArgs): Point3d | undefined {
     const { pixels, x, y, out, preserveModelDisplayTransforms } = args;
