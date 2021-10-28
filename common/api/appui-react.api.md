@@ -6859,7 +6859,7 @@ export function useStatusBarEntry(): DockedStatusBarEntryContextArg;
 export function useSyncDefinitions(frontstageDef: FrontstageDef): void;
 
 // @internal (undocumented)
-export function useToolSettingsNode(): string | number | boolean | {} | React.ReactElement<any, string | React.JSXElementConstructor<any>> | React.ReactNodeArray | React.ReactPortal | null | undefined;
+export function useToolSettingsNode(): string | number | boolean | {} | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined;
 
 // @public
 export const useUiItemsProviderBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem[];
