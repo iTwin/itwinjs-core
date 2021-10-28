@@ -10,7 +10,7 @@ import { ClipUtilities } from "../../clipping/ClipUtils";
 import { ClipVector } from "../../clipping/ClipVector";
 import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets } from "../../clipping/UnionOfConvexClipPlaneSets";
-import { GeometryQuery, Point3dArray, Sample } from "../../core-geometry";
+import { PolylineOps } from "../../geometry3d/PolylineOps";
 import { Angle } from "../../geometry3d/Angle";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
@@ -22,6 +22,10 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
 import { exerciseClipPrimitive } from "./ClipVector.test";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { Sample } from "../../serialization/GeometrySamples";
+import { Point3dArray } from "../../geometry3d/PointHelpers";
+import { PolygonOps } from "../../geometry3d/PolygonOps";
 
 /* eslint-disable no-console */
 
@@ -312,6 +316,7 @@ describe("ClipPrimitive", () => {
   let polygonA: Point3d[];
   let clipPointsB: Point3d[];
   let polygonB: Point3d[];
+  let polygonC: Point3d[];
 
   before(() => {
     clipPointsA = [
@@ -342,6 +347,13 @@ describe("ClipPrimitive", () => {
       Point3d.create(100, 100, 0),
       Point3d.create(50, 75, 0),
       Point3d.create(0, 100, 0),
+    ];
+    polygonC = [
+      Point3d.create(5,5, 0),
+      Point3d.create(70, 25, 0),
+      Point3d.create(100, 75, 0),
+      Point3d.create(80, 100, 0),
+      Point3d.create(0, 20, 0),
     ];
   });
 
@@ -620,6 +632,41 @@ describe("ClipPrimitive", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  it("NonConvexClipShapeClipPolygon", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0.0;
+    const delta = 200.0;
+    const y0 = 0;
+    const polygons = [polygonA, polygonB, polygonC];
+    const b = -5;
+    const da = 10;
+    const db = 110;
+    const clipShapeOut = ClipShape.createShape(clipPointsA, undefined, undefined, undefined, true)!;
+    const clipShapeIn = ClipShape.createShape(clipPointsA, undefined, undefined, undefined, false)!;
+
+    for (const a of [-5, 20, 75, 98]) {
+      polygons.push(Sample.createRectangleXY(b, a, db, da));
+      polygons.push(Sample.createRectangleXY(a, b, da, db));
+    }
+    for (const polygon of polygons) {
+      const areaTotal = PolygonOps.areaXY(polygon);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipPointsA, x0, y0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, polygon, x0, y0);
+      const clippedPolygonsIn = ClipUtilities.clipPolygonToClipShape(polygon, clipShapeIn);
+      const clippedPolygonsOut = ClipUtilities.clipPolygonToClipShape(polygon, clipShapeOut);
+      PolylineOps.addClosurePoint(clippedPolygonsIn);
+      PolylineOps.addClosurePoint(clippedPolygonsOut);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, clippedPolygonsIn, x0, y0 + delta);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, clippedPolygonsOut, x0, y0 + 2 * delta);
+      const areaIn = PolygonOps.sumAreaXY(clippedPolygonsIn);
+      const areaOut = PolygonOps.sumAreaXY(clippedPolygonsOut);
+      ck.testCoordinate(areaTotal, areaIn + areaOut, "inside and outside clip areas");
+      x0 += delta;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ClipPrimitive", "NonConvexClipShapeClipPolygon");
+    expect(ck.getNumErrors()).equals(0);
+  });
   it("jsonFragment", () => {
     const ck = new Checker();
     const json = [{

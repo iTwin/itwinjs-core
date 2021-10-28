@@ -6,7 +6,7 @@ This package contains the iTwin.js RPC Interface integration tests and configura
 
 ## Prerequisites
 
-Refer to the iTwin.js [prerequisites](https://github.com/imodeljs/imodeljs#prerequisites)
+Refer to the iTwin.js [prerequisites](https://github.com/iTwin/itwinjs-core#prerequisites)
 
 ## Running the tests
 

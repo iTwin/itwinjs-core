@@ -81,7 +81,7 @@ export class LensDistortionEffect extends AddEffectTool {
       name: "height",
       type: UniformType.Float,
       bind: (uniform, context) => {
-        assert(context.viewport.view.isCameraEnabled());
+        assert(context.viewport.view.is3d() && context.viewport.view.isCameraOn);
         const fov = context.viewport.view.camera.lens.radians;
         const height = Math.tan(fov / 2) / context.viewport.viewRect.aspect;
         uniform.setUniform1f(height);

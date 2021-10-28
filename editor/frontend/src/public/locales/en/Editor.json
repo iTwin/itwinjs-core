@@ -98,9 +98,29 @@
         "CornerRadius": "Corner Radius"
       }
     },
+    "UniteSolids": {
+      "keyin": "editor unite solids",
+      "flyover": "Unite selected solids"
+    },
+    "SubtractSolids": {
+      "keyin": "editor subtract solids",
+      "flyover": "Subtract selected solids"
+    },
+    "IntersectSolids": {
+      "keyin": "editor intersect solids",
+      "flyover": "Intersect selected solids"
+    },
+    "SewSheets": {
+      "keyin": "editor sew sheets",
+      "flyover": "Sew selected sheets"
+    },
     "OffsetFaces": {
       "keyin": "editor offset faces",
       "flyover": "Offset faces of surfaces and solids"
+    },
+    "HollowFaces": {
+      "keyin": "editor hollow faces",
+      "flyover": "Hollow solids by offsetting faces"
     },
     "UndoAll": {
       "keyin": "editor undo all",

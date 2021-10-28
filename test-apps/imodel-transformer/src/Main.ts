@@ -104,7 +104,7 @@ void (async () => {
     IModelHubUtils.setHubEnvironment(args.hub);
 
     const iModelHost = new IModelHostConfiguration();
-    iModelHost.hubAccess = IModelHubBackend;
+    iModelHost.hubAccess = new IModelHubBackend();
 
     await IModelHost.startup(iModelHost);
     Logger.initializeToConsole();

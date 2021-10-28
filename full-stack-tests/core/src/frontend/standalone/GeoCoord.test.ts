@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { GeoCoordinatesResponseProps, GeoCoordStatus, IModelCoordinatesResponseProps } from "@itwin/core-common";
 import { GeoConverter, IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { Point3d, XYZProps } from "@itwin/core-geometry";
+import { Geometry, Point3d, XYZProps } from "@itwin/core-geometry";
 import { TestUtility } from "../TestUtility";
 
 // spell-checker: disable
@@ -14,7 +14,7 @@ describe("GeoCoord", () => {
   let iModel: IModelConnection;
   const geoPointList: XYZProps[] = [];
   let wgs84Converter: GeoConverter;
-  let nad27Converter: GeoConverter;
+  let tokyoConverter: GeoConverter;
   let sameDatumConverter: GeoConverter;
   let wgs84Response: IModelCoordinatesResponseProps;
   let wgs84GeoCoordsResponse: GeoCoordinatesResponseProps;
@@ -29,7 +29,7 @@ describe("GeoCoord", () => {
       }
     }
     wgs84Converter = iModel.geoServices.getConverter("WGS84")!;
-    nad27Converter = iModel.geoServices.getConverter("NAD27")!;
+    tokyoConverter = iModel.geoServices.getConverter("Tokyo-Grid")!;
     sameDatumConverter = iModel.geoServices.getConverter()!;
   });
 
@@ -54,20 +54,20 @@ describe("GeoCoord", () => {
       expect(GeoCoordStatus.Success === result.s);
     }
 
-    const nad27Response = await nad27Converter.getIModelCoordinatesFromGeoCoordinates(testPoints);
+    const tokyoResponse = await tokyoConverter.getIModelCoordinatesFromGeoCoordinates(testPoints);
 
     // shouldn't have any from the cache.
-    expect(nad27Response.fromCache === 0).to.be.true;
+    expect(tokyoResponse.fromCache === 0).to.be.true;
 
-    for (const result of nad27Response.iModelCoords) {
+    for (const result of tokyoResponse.iModelCoords) {
       expect(GeoCoordStatus.Success === result.s).to.be.true;
     }
 
     // we expect the iModelCoord results from treating the geoCoords as WGS84 lat/longs to be different from what we get treating them as NAD27 lat/longs.
     for (let iPoint: number = 0; iPoint < wgs84Response.iModelCoords.length; ++iPoint) {
       const wgs84Point = Point3d.fromJSON(wgs84Response.iModelCoords[iPoint].p);
-      const nad27Point = Point3d.fromJSON(nad27Response.iModelCoords[iPoint].p);
-      expect(wgs84Point.isAlmostEqual(nad27Point)).to.be.false;
+      const tokyoPoint = Point3d.fromJSON(tokyoResponse.iModelCoords[iPoint].p);
+      expect(wgs84Point.isAlmostEqual(tokyoPoint)).to.be.false;
     }
 
     const sameDatumResponse = await sameDatumConverter.getIModelCoordinatesFromGeoCoordinates(testPoints);
@@ -161,5 +161,39 @@ describe("GeoCoord", () => {
 
     const mixedResponse = await wgs84Converter.getGeoCoordinatesFromIModelCoordinates(testPoints);
     expect(mixedResponse.fromCache === 10).to.be.true;
+  });
+
+  it("should get proper result from Geographic CRS conversion", async () => {
+
+    const japanConverter = iModel.geoServices.getConverter({
+      horizontalCRS: {
+        id:"JGD2K.CS-I-MOCK",
+        description : "Mock GCS",
+        source : "Test",
+        deprecated : false,
+        datumId : "JGD2000",
+        unit: "Meter",
+        projection : {
+          method: "TransverseMercator",
+          centralMeridian: 129.5,
+          latitudeOfOrigin: 33.0,
+          scaleFactor: 0.9999,
+          falseEasting: 0.0,
+          falseNorthing: 0.0},
+      },
+      verticalCRS : {
+        id : "GEOID"}});
+
+    const testPoint: XYZProps[] = [];
+    testPoint.push({x: 170370.71800000000000, y: 11572.40500000000000, z: 0.0});
+
+    expect(japanConverter !== undefined).to.be.true;
+    const response = await japanConverter!.getGeoCoordinatesFromIModelCoordinates(testPoint);
+
+    const expectedPt = Point3d.fromJSON({x: 282707.7064282134, y: -3640811.0118976748, z: -73.01288342685298});
+    const outPt = Point3d.fromJSON(response.geoCoords[0].p);
+
+    expect(Geometry.isSamePoint3dXY(expectedPt, outPt)).to.be.true;
+    expect(response.geoCoords[0].s === 0);
   });
 });

@@ -5,6 +5,10 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable no-console */
+const debugLeaks = process.env.DEBUG_LEAKS;
+if (debugLeaks)
+  require("wtfnode");
+
 import * as path from "path";
 
 const fs = require("fs-extra");
@@ -60,6 +64,25 @@ class BentleyMochaReporter extends Spec {
           + "\nIt seems likely that tests were skipped by it.only, it.skip, or grep filters, so I'm going to fail now.");
         failBuild();
       }
+    }
+
+    // Detect hangs caused by tests that leave timers/other handles open - not possible in electron frontends.
+    if (!("electron" in process.versions)) {
+      // NB: By calling unref() on this timer, we stop it from keeping the process alive, so it will only fire if _something else_ is still keeping
+      // the process alive after 5 seconds.  This also has the benefit of preventing the timer from showing up in wtfnode's dump of open handles.
+      setTimeout(() => {
+        logBuildError(`Handle leak detected. Node was still running 5 seconds after tests completed.`);
+        if (debugLeaks) {
+          const wtf = require("wtfnode");
+          wtf.setLogger("info", console.error);
+          wtf.dump();
+        } else {
+          console.error("Try running with the DEBUG_LEAKS env var set to see open handles.");
+        }
+
+        // Not sure why, but process.exit(1) wasn't working here...
+        process.kill(process.pid);
+      }, 5000).unref();
     }
 
     if (!this.stats.pending)

@@ -31,10 +31,6 @@
       "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
-      "name": "@bentley/itwin-registry-client",
-      "allowedCategories": [ "common", "integration-testing", "internal" ]
-    },
-    {
       "name": "@bentley/product-settings-client",
       "allowedCategories": [ "frontend", "internal" ]
     },
@@ -232,7 +228,7 @@
     },
     {
       "name": "@itwin/projects-client",
-      "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
+      "allowedCategories": [ "common", "integration-testing", "internal" ]
     },
     {
       "name": "@itwin/service-authorization",
@@ -937,6 +933,10 @@
     {
       "name": "ws",
       "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "wtfnode",
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "xml-js",

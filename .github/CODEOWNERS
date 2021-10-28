@@ -9,13 +9,14 @@
 # @global-owner1 and @global-owner2 will be requested for
 # review when someone opens a pull request.
 
-* @imodeljs/admins
+* @iTwin/itwinjs-core-admins
 
-.github/workflows @calebmshafer @wgoehrig @ColinKerr
+.github/workflows  @calebmshafer @wgoehrig @ColinKerr
+.github/CODEOWNERS @iTwin/itwinjs-core-admins
 
-.gitattributes  @calebmshafer @wgoehrig
-.gitignore      @calebmshafer @wgoehrig
-rush.json       @calebmshafer @pmconne @wgoehrig
+.gitattributes  @iTwin/itwinjs-core-admins
+.gitignore      @iTwin/itwinjs-core-admins
+rush.json       @iTwin/itwinjs-core-admins
 
 /clients                        @calebmshafer @ramanujam-raman
 /clients/imodelhub              @amikoliunas @Animagne
@@ -28,146 +29,140 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 #   1. /common/api/summary/{packageName}.exports.csv
 #   1. /common/changes/@itwin/{packageName}/*.json
 
-/common/**/analytical-backend.*                   @calebmshafer @diegoalexdiaz
-/common/**/analytical-backend/                    @calebmshafer @diegoalexdiaz
-/common/**/backend-webpack-tools/                 @calebmshafer @wgoehrig
-/common/**/core-bentley.*                       @imodeljs/admins
-/common/**/core-bentley/                        @imodeljs/admins
-/common/**/build-tools/                           @calebmshafer @wgoehrig
-/common/**/certa/                                 @calebmshafer @wgoehrig
+/common/**/analytical-backend.*               @calebmshafer @diegoalexdiaz
+/common/**/analytical-backend/                @calebmshafer @diegoalexdiaz
+/common/**/backend-webpack-tools/             @calebmshafer @wgoehrig
+/common/**/core-bentley.*                     @iTwin/itwinjs-core-admins
+/common/**/core-bentley/                      @iTwin/itwinjs-core-admins
+/common/**/build-tools/                       @calebmshafer @wgoehrig
+/common/**/certa/                             @calebmshafer @wgoehrig
 
 # Covers most client libraries, all others with more specific reviewers should be after these two lines
-/common/**/*-client.*                             @calebmshafer @ramanujam-raman
-/common/**/*-client/                              @calebmshafer @ramanujam-raman
-/common/**/imodelhub-client.*                     @amikoliunas @Animagne
-/common/**/imodelhub-client/                      @amikoliunas @Animagne
+/common/**/*-client.*                         @calebmshafer @ramanujam-raman
+/common/**/*-client/                          @calebmshafer @ramanujam-raman
+/common/**/imodelhub-client.*                 @amikoliunas @Animagne
+/common/**/imodelhub-client/                  @amikoliunas @Animagne
 
-/common/**/*-extension/                           @bsteinbk @calebmshafer
+/common/**/*-extension/                       @bsteinbk @calebmshafer
 
-/common/**/ecschema-locaters.*                    @calebmshafer @ColinKerr @wgoehrig
-/common/**/ecschema-locaters/                     @calebmshafer @ColinKerr @wgoehrig
-/common/**/ecschema-metadata.*                    @calebmshafer @ColinKerr @wgoehrig
-/common/**/ecschema-metadata/                     @calebmshafer @ColinKerr @wgoehrig
-/common/**/ecschema-editing.*                     @calebmshafer @ColinKerr @wgoehrig
-/common/**/ecschema-editing/                      @calebmshafer @ColinKerr @wgoehrig
-/common/**/ecschema-rpcinterface-tests/           @calebmshafer @ColinKerr @wgoehrig
-/common/**/ecschema2ts.*                          @calebmshafer @ColinKerr @wgoehrig
-/common/**/ecschema2ts/                           @calebmshafer @ColinKerr @wgoehrig
-/common/**/core-electron.*                        @wgoehrig @ramanujam-raman
-/common/**/core-electron/                         @wgoehrig @ramanujam-raman
-/common/**/eslint-plugin/                         @calebmshafer @paulius-valiunas
-/common/**/express-server.*                       @calebmshafer @wgoehrig
-/common/**/express-server/                        @calebmshafer @wgoehrig
-/common/**/frontend-devtools.*                    @imodeljs/display @Ellord207
-/common/**/frontend-devtools/                     @imodeljs/display @Ellord207
-/common/**/core-geometry.*                        @bbastings @EarlinLutz @mgooding @RBBentley @dassaf4
-/common/**/core-geometry/                         @bbastings @EarlinLutz @mgooding @RBBentley @dassaf4
-/common/**/hypermodeling-frontend.*               @imodeljs/display @bbastings
-/common/**/hypermodeling-frontend/                @imodeljs/display @bbastings
-/common/**/core-backend.*                     @imodeljs/admins
-/common/**/core-backend/                      @imodeljs/admins
+/common/**/ecschema-*.*                       @calebmshafer @ColinKerr @wgoehrig
+/common/**/ecschema-*/                        @calebmshafer @ColinKerr @wgoehrig
+/common/**/ecschema2ts.*                      @calebmshafer @ColinKerr @wgoehrig
+/common/**/ecschema2ts/                       @calebmshafer @ColinKerr @wgoehrig
+/common/**/core-electron.*                    @wgoehrig @ramanujam-raman
+/common/**/core-electron/                     @wgoehrig @ramanujam-raman
+/common/**/eslint-plugin/                     @calebmshafer @paulius-valiunas
+/common/**/express-server.*                   @calebmshafer @wgoehrig
+/common/**/express-server/                    @calebmshafer @wgoehrig
+/common/**/frontend-devtools.*                @iTwin/itwinjs-core-display @Ellord207
+/common/**/frontend-devtools/                 @iTwin/itwinjs-core-display @Ellord207
+/common/**/core-geometry.*                    @bbastings @EarlinLutz @mgooding @RBBentley @dassaf4
+/common/**/core-geometry/                     @bbastings @EarlinLutz @mgooding @RBBentley @dassaf4
+/common/**/hypermodeling-frontend.*           @iTwin/itwinjs-core-display @bbastings
+/common/**/hypermodeling-frontend/            @iTwin/itwinjs-core-display @bbastings
+/common/**/core-backend.*                     @iTwin/itwinjs-core-admins
+/common/**/core-backend/                      @iTwin/itwinjs-core-admins
 /common/**/core-transformer.*                 @MichaelBelousov @ColinKerr
 /common/**/core-transformer/                  @MichaelBelousov @ColinKerr
-/common/**/core-common.*                      @imodeljs/admins @imodeljs/display
-/common/**/core-common/                       @imodeljs/admins @imodeljs/display
-/common/**/editor-*.*                    @bbastings @kabentley @pmconne
-/common/**/editor-*/                     @bbastings @kabentley @pmconne
-/common/**/core-frontend.*                    @kabentley @bbastings @imodeljs/display
-/common/**/core-frontend/                     @kabentley @bbastings @imodeljs/display
+/common/**/core-common.*                      @iTwin/itwinjs-core-admins @iTwin/itwinjs-core-display
+/common/**/core-common/                       @iTwin/itwinjs-core-admins @iTwin/itwinjs-core-display
+/common/**/editor-*.*                         @bbastings @kabentley @pmconne
+/common/**/editor-*/                          @bbastings @kabentley @pmconne
+/common/**/core-frontend.*                    @kabentley @bbastings @iTwin/itwinjs-core-display
+/common/**/core-frontend/                     @kabentley @bbastings @iTwin/itwinjs-core-display
 /common/**/core-i18n.*                        @calebmshafer @wgoehrig
 /common/**/core-i18n/                         @calebmshafer @wgoehrig
 /common/**/core-markup.*                      @kabentley @pmconne @bbastings
 /common/**/core-markup/                       @kabentley @pmconne @bbastings
 /common/**/core-quantity.*                    @bsteinbk @calebmshafer
 /common/**/core-quantity/                     @bsteinbk @calebmshafer
-/common/**/linear-referencing-backend.*           @calebmshafer @diegoalexdiaz
-/common/**/linear-referencing-backend/            @calebmshafer @diegoalexdiaz
-/common/**/linear-referencing-common.*            @calebmshafer @diegoalexdiaz
-/common/**/linear-referencing-common/             @calebmshafer @diegoalexdiaz
-/common/**/map-layers/                            @bsteinbk @mdastous-bentley
-/common/**/oidc-signin-tool/                      @calebmshafer @wgoehrig
-/common/**/core-orbitgt.*                         @imodeljs/display
-/common/**/core-orbitgt/                          @imodeljs/display
-/common/**/perf-tools.*                           @calebmshafer @wgoehrig
-/common/**/perf-tools/                            @calebmshafer @wgoehrig
-/common/**/physical-material-backend.*            @bbastings @jchick-bentley
-/common/**/physical-material-backend/             @bbastings @jchick-bentley
-/common/**/presentation-*.*                       @imodeljs/presentation
-/common/**/presentation-*/                        @imodeljs/presentation
-/common/**/rpcinterface-full-stack-tests/         @calebmshafer @wgoehrig
-/common/**/appui-*.*                              @imodeljs/ui
-/common/**/appui-*/                               @imodeljs/ui
-/common/**/*-react.*                              @imodeljs/ui
-/common/**/*-react/                               @imodeljs/ui
-/common/**/webgl-compatibility.*                  @imodeljs/display @Ellord207
-/common/**/webgl-compatibility/                   @imodeljs/display @Ellord207
-/common/**/core-webpack-tools/                    @calebmshafer @wgoehrig @aruniverse
+/common/**/linear-referencing-backend.*       @calebmshafer @diegoalexdiaz
+/common/**/linear-referencing-backend/        @calebmshafer @diegoalexdiaz
+/common/**/linear-referencing-common.*        @calebmshafer @diegoalexdiaz
+/common/**/linear-referencing-common/         @calebmshafer @diegoalexdiaz
+/common/**/map-layers/                        @bsteinbk @mdastous-bentley
+/common/**/oidc-signin-tool/                  @calebmshafer @wgoehrig
+/common/**/core-orbitgt.*                     @iTwin/itwinjs-core-display
+/common/**/core-orbitgt/                      @iTwin/itwinjs-core-display
+/common/**/perf-tools.*                       @calebmshafer @wgoehrig
+/common/**/perf-tools/                        @calebmshafer @wgoehrig
+/common/**/physical-material-backend.*        @bbastings @jchick-bentley
+/common/**/physical-material-backend/         @bbastings @jchick-bentley
+/common/**/presentation-*.*                   @iTwin/itwinjs-core-presentation
+/common/**/presentation-*/                    @iTwin/itwinjs-core-presentation
+/common/**/rpcinterface-full-stack-tests/     @calebmshafer @wgoehrig
+/common/**/appui-*.*                          @iTwin/itwinjs-core-ui
+/common/**/appui-*/                           @iTwin/itwinjs-core-ui
+/common/**/*-react.*                          @iTwin/itwinjs-core-ui
+/common/**/*-react/                           @iTwin/itwinjs-core-ui
+/common/**/webgl-compatibility.*              @iTwin/itwinjs-core-display @Ellord207
+/common/**/webgl-compatibility/               @iTwin/itwinjs-core-display @Ellord207
+/common/**/core-webpack-tools/                @calebmshafer @wgoehrig @aruniverse
 
 /common/config/azure-pipelines  @calebmshafer @wgoehrig @ColinKerr
 
-/core/backend                   @imodeljs/admins
-/core/transformer               @MichaelBelousov @ColinKerr
-/core/bentley                   @imodeljs/admins
-/core/common                    @imodeljs/admins @imodeljs/display
+/core/backend                   @iTwin/itwinjs-core-admins
+/core/bentley                   @iTwin/itwinjs-core-admins
+/core/common                    @iTwin/itwinjs-core-admins @iTwin/itwinjs-core-display
 /core/common/src/rpc/IModelTileRpcInterface.ts    @pmconne
-/core/ecschema-locaters         @calebmshafer @ColinKerr @wgoehrig
-/core/ecschema-metadata         @calebmshafer @ColinKerr @wgoehrig
-/core/ecschema-editing          @calebmshafer @ColinKerr @wgoehrig
+/core/ecschema-*                @calebmshafer @ColinKerr @wgoehrig
 /core/electron                  @wgoehrig @ramanujam-raman
 /core/express-server            @calebmshafer @wgoehrig @ramanujam-raman
-/core/frontend                  @kabentley @bbastings @imodeljs/display
-/core/frontend/src/oidc         @calebmshafer @ramanujam-raman
+/core/frontend                  @kabentley @bbastings @iTwin/itwinjs-core-display
 /core/frontend/src/extension    @calebmshafer @wgoehrig
-/core/frontend-devtools         @imodeljs/display @Ellord207
+/core/frontend-devtools         @iTwin/itwinjs-core-display @Ellord207
 /core/geometry                  @bbastings @EarlinLutz @mgooding @RBBentley @dassaf4
-/core/hypermodeling             @bbastings @imodeljs/display
+/core/hypermodeling             @bbastings @iTwin/itwinjs-core-display
 /core/i18n                      @wgoehrig @calebmshafer
 /core/markup                    @kabentley @pmconne @bbastings
-/core/orbitgt                   @imodeljs/display
+/core/mobile                    @iTwin/itwinjs-core-admins
+/core/orbitgt                   @iTwin/itwinjs-core-display
 /core/quantity                  @bsteinbk @calebmshafer
-/core/webgl-compatibility       @imodeljs/display @Ellord207
+/core/transformer               @MichaelBelousov @ColinKerr
+/core/webgl-compatibility       @iTwin/itwinjs-core-display @Ellord207
 
-/docs/getting-started @calebmshafer @williamkbentley
-/docs/config @calebmshafer @williamkbentley
-/docs/presentation @imodeljs/presentation
+/docs   @iTwin/itwinjs-core
+/docs/getting-started @iTwin/itwinjs-core-admins @williamkbentley
+/docs/config          @iTwin/itwinjs-core-admins @williamkbentley
+/docs/presentation    @iTwin/itwinjs-core-presentation
 
 # These domains should be split up a bit more
-/domains                      @imodeljs/admins
+/domains                      @iTwin/itwinjs-core-admins
 /domains/analytical           @calebmshafer @diegoalexdiaz
 /domains/linear-referencing   @calebmshafer @diegoalexdiaz
 /domains/physical-material    @bbastings @jchick-bentley
 
 /editor                               @bbastings @kabentley @pmconne
 
-/example-code                         @calebmshafer @swwilson-bsi
+/example-code                         @iTwin/itwinjs-core-admins
 
 /extensions                           @bsteinbk @calebmshafer
 /extensions/map-layers                @bsteinbk @mdastous-bentley
 
-/full-stack-tests/core                @imodeljs/admins
+/full-stack-tests/core                @iTwin/itwinjs-core-admins
 /full-stack-tests/ecschema-rpc-interface @calebmshafer @ColinKerr @wgoehrig
-/full-stack-tests/imodelhub-client    @amikoliunas @Animagne
-/full-stack-tests/presentation  @imodeljs/presentation
+/full-stack-tests/imodelhub-client    @iTwin/itwinjs-core-admins
+/full-stack-tests/presentation  @iTwin/itwinjs-core-presentation
 /full-stack-tests/rpc           @calebmshafer @wgoehrig @swbsi
 /full-stack-tests/rpc-interface @calebmshafer @wgoehrig
 
-/presentation                   @imodeljs/presentation
+/presentation                   @iTwin/itwinjs-core-presentation
 /presentation/common/src/presentation-common/PresentationRpcInterface.ts @grigasp
 
-/test-apps/display-performance-test-app     @imodeljs/display @hnn0003
-/test-apps/display-test-app                 @bbastings @kabentley @imodeljs/display
+/test-apps/display-performance-test-app     @iTwin/itwinjs-core-display @hnn0003
+/test-apps/display-test-app                 @bbastings @kabentley @iTwin/itwinjs-core-display
 /test-apps/export-gltf                      @mgooding @MichaelBelousov
 /test-apps/export-obj                       @mgooding @MichaelBelousov
 /test-apps/imjs-importer                    @EarlinLutz @dassaf4
 /test-apps/imodel-from-geojson              @mgooding @pmconne
-/test-apps/imodel-from-orbitgt              @imodeljs/display
-/test-apps/imodel-from-reality-model        @imodeljs/display
+/test-apps/imodel-from-orbitgt              @iTwin/itwinjs-core-display
+/test-apps/imodel-from-reality-model        @iTwin/itwinjs-core-display
 /test-apps/imodel-transformer               @MichaelBelousov @ColinKerr
-/test-apps/ninezone-test-app                @imodeljs/ui
-/test-apps/presentation-test-app            @imodeljs/presentation
+/test-apps/ninezone-test-app                @iTwin/itwinjs-core-ui
+/test-apps/presentation-test-app            @iTwin/itwinjs-core-presentation
 /test-apps/synchro-schedule-importer        @RBBentley @pmconne
-/test-apps/ui-test-app                      @imodeljs/ui
-/test-apps/ui-test-extension                @imodeljs/ui
+/test-apps/ui-test-app                      @iTwin/itwinjs-core-ui
+/test-apps/ui-test-extension                @iTwin/itwinjs-core-ui
 
 /tools/backend-webpack @calebmshafer @wgoehrig
 /tools/build @calebmshafer @wgoehrig
@@ -179,7 +174,16 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /tools/internal @calebmshafer @wgoehrig
 /tools/perf-tools @calebmshafer @wgoehrig
 
-/ui @imodeljs/ui
-/ui/components/src/components-react/properties   @imodeljs/ui @imodeljs/presentation
-/ui/components/src/components-react/propertygrid @imodeljs/ui @imodeljs/presentation
-/ui/components/src/components-react/tree         @imodeljs/ui @imodeljs/presentation
+/ui @iTwin/itwinjs-core-ui
+/ui/components/src/components-react/properties   @iTwin/itwinjs-core-ui @iTwin/itwinjs-core-presentation
+/ui/components/src/components-react/propertygrid @iTwin/itwinjs-core-ui @iTwin/itwinjs-core-presentation
+/ui/components/src/components-react/tree         @iTwin/itwinjs-core-ui @iTwin/itwinjs-core-presentation
+
+# These are at the end to override all previous reviews
+
+## Updates to the package.json should avoid requesting review by everyone
+## If the version updates or
+/**/package.json    @iTwin/itwinjs-core
+/**/CHANGELOG.json  @iTwin/itwinjs-core
+/**/CHANGELOG.md    @iTwin/itwinjs-core
+/**/LICENSE.md      @iTwin/itwinjs-core-admins
