@@ -144,11 +144,11 @@ export interface WorkspaceOpts {
 
 /**
  * Settings and resources that customize an application for the current session.
- * See [Workspaces](%docs/learning/Workspaces)
+ * See [Workspaces]($docs/learning/backend/Workspace)
  * @beta
  */
 export interface Workspace {
-  /** The local directory for the WorkspaceContainer files with the name `${this.containerId}.itwin-workspace-container`. */
+  /** The local directory for the WorkspaceContainer files with the name `${containerId}.itwin-workspace-container`. */
   readonly containerDir: LocalDirName;
   /** the local directory where this Workspace will store temporary files extracted for file-resources. */
   readonly filesDir: LocalDirName;
@@ -157,7 +157,7 @@ export interface Workspace {
   /**
    * Resolve a WorkspaceContainerProps to a WorkspaceContainerId. If props is an object with an `id` member, that value is returned unchanged.
    * If it is a string, then the highest priority [[WorkspaceSetting.ContainerAlias]] setting with an entry for the WorkspaceContainerName
-   * is used. If no WorkspaceSetting.ContainerAlias entry for the WorkspaceContainerName can be found, the name returned as the id.
+   * is used. If no WorkspaceSetting.ContainerAlias entry for the WorkspaceContainerName can be found, the name is returned as the id.
    */
   resolveContainerId(props: WorkspaceContainerProps): WorkspaceContainerId;
   /**
@@ -349,7 +349,7 @@ export class WorkspaceFile implements WorkspaceContainer {
     this.db.nativeDb.extractEmbeddedFile({ name: rscName, localFileName });
     const date = new Date(info.date);
     fs.utimesSync(localFileName, date, date); // set the last-modified date of the file to match date in container
-    fs.chmodSync(localFileName, 4); // set file readonly
+    fs.chmodSync(localFileName, "0444"); // set file readonly
     return localFileName;
   }
 }

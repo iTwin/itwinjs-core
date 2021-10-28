@@ -2,6 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Json
+ */
 
 // adapted from https://github.com/microsoft/vscode Copyright (c) 2015 - present Microsoft Corporation
 
