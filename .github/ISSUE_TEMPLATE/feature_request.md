@@ -13,7 +13,7 @@ When suggesting an idea, give examples of the intended use case. Features that b
 
 The best way to get your ideas into iTwin.js is to help us! We love contributions and are always happy to be provide feedback and advice. Check out the contributor guide to get started:
 
-https://github.com/imodeljs/imodeljs/blob/master/CONTRIBUTING.md
+https://github.com/iTwin/itwinjs-core/blob/master/CONTRIBUTING.md
 -->
 
 **Is your feature request related to a problem? Please describe.**

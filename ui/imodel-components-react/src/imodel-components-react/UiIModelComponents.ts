@@ -9,9 +9,9 @@
 import { enablePatches } from "immer";
 import { Logger } from "@itwin/core-bentley";
 import { IModelApp } from "@itwin/core-frontend";
-import { Localization } from "@itwin/core-common";
-import { getClassName, UiError } from "@itwin/appui-abstract";
+import { getClassName } from "@itwin/appui-abstract";
 import { UiComponents } from "@itwin/components-react";
+import { EmptyLocalization } from "@itwin/core-common";
 
 /**
  * Manages the localization service for the imodel-components-react package.
@@ -19,45 +19,40 @@ import { UiComponents } from "@itwin/components-react";
  */
 export class UiIModelComponents {
   private static _initialized = false;
-  private static _localization?: Localization;
 
   /**
-   * Registers the localization service namespace for UiIModelComponents. Also initializes UiCore.
-   * @param localization The internationalization service created by the application. Defaults to IModelApp.localization.
+   * initialize UiIModelComponents.
    */
-  public static async initialize(localization?: Localization): Promise<void> {
+  public static async initialize(): Promise<void> {
     if (UiIModelComponents._initialized) {
       Logger.logInfo(UiIModelComponents.loggerCategory(UiIModelComponents), `UiIModelComponents.initialize already called`);
       return;
     }
 
     enablePatches();
-    UiIModelComponents._localization = localization || IModelApp.localization;
-    await UiIModelComponents._localization.registerNamespace(UiIModelComponents.localizationNamespace);
+    await IModelApp.localization?.registerNamespace(UiIModelComponents.localizationNamespace);
 
-    await UiComponents.initialize(UiIModelComponents._localization);
+    if (!IModelApp.localization) {
+      // it should only get here in unit test where IModelApp is not setup
+      const localization = new EmptyLocalization();
+      await localization.initialize();
+      await UiComponents.initialize(localization);
+    } else {
+      await UiComponents.initialize(IModelApp.localization);
+    }
+
     UiIModelComponents._initialized = true;
   }
 
   /** Unregisters the UiIModelComponents localization namespace */
   public static terminate() {
-    if (UiIModelComponents._localization)
-      UiIModelComponents._localization.unregisterNamespace(UiIModelComponents.localizationNamespace);
-    UiIModelComponents._localization = undefined;
-
+    IModelApp.localization?.unregisterNamespace(UiIModelComponents.localizationNamespace);
     UiComponents.terminate();
     UiIModelComponents._initialized = false;
   }
 
   /** Determines if UiIModelComponents has been initialized */
   public static get initialized(): boolean { return UiIModelComponents._initialized; }
-
-  /** The internationalization service created by the application. */
-  public static get localization(): Localization {
-    if (!UiIModelComponents._localization)
-      throw new UiError(UiIModelComponents.loggerCategory(this), "localization: UiIModelComponents.initialize has not been called. Unable to return Localization object.");
-    return UiIModelComponents._localization;
-  }
 
   /** The internationalization service namespace. */
   public static get localizationNamespace(): string {
@@ -73,11 +68,11 @@ export class UiIModelComponents {
    * @internal
    */
   public static translate(key: string | string[]): string {
-    if (!UiIModelComponents.initialized) {
-      Logger.logError(UiIModelComponents.loggerCategory(this), `translate: UiIModelComponents.initialize has not been called. Returning blank string.`);
+    if (!UiIModelComponents.initialized || /* istanbul ignore next */ !IModelApp.localization) {
+      Logger.logError(UiIModelComponents.loggerCategory(this), `translate: IModelApp.localization has not been setup. Returning blank string.`);
       return "";
     }
-    return UiIModelComponents.localization.getLocalizedStringWithNamespace(UiIModelComponents.localizationNamespace, key);
+    return IModelApp.localization.getLocalizedStringWithNamespace(UiIModelComponents.localizationNamespace, key);
   }
 
   /** @internal */

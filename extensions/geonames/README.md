@@ -32,4 +32,4 @@ This extension is an example of a extension that can be added to iTwin.js host a
 
 ## Contributing
 
-[Contributing to iTwin.js](https://github.com/imodeljs/imodeljs/blob/master/CONTRIBUTING.md)
+[Contributing to iTwin.js](https://github.com/iTwin/itwinjs-core/blob/master/CONTRIBUTING.md)

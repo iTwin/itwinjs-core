@@ -4,15 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 import "./ModelsTab.scss";
 import * as React from "react";
-import { DelayLoadedTreeNodeItem, TreeNodeItem } from "@itwin/components-react";
 import { Id64String } from "@itwin/core-bentley";
 import { ModelProps, ModelQueryParams, QueryRowFormat } from "@itwin/core-common";
 import { IModelApp, IModelConnection, SpatialModelState } from "@itwin/core-frontend";
-import { CheckBoxState, CheckListBox, CheckListBoxItem, LoadingSpinner } from "@itwin/core-react";
-import { Button, Checkbox } from "@itwin/itwinui-react";
 import { RegisteredRuleset } from "@itwin/presentation-common";
 import { PresentationTreeDataProvider } from "@itwin/presentation-components";
 import { Presentation } from "@itwin/presentation-frontend";
+import { DelayLoadedTreeNodeItem, TreeNodeItem } from "@itwin/components-react";
+import { CheckBoxState, CheckListBox, CheckListBoxItem, LoadingSpinner } from "@itwin/core-react";
+import { Button, Checkbox } from "@itwin/itwinui-react";
 
 interface ModelInfo {
   name: string;
