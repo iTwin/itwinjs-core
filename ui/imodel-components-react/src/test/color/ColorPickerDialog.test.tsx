@@ -24,8 +24,8 @@ describe("ColorPickerDialog", () => {
 
   describe("renders", () => {
     it("should render", () => {
-      const wrapper = render(<ColorPickerDialog dialogTitle="-texting-title-" color={ColorDef.blue} onOkResult={(_selectedColor: ColorDef) => { }} onCancelResult={() => { }} />);
-      expect(wrapper.findByText("-texting-title-")).not.to.be.null;
+      const wrapper = render(<ColorPickerDialog dialogTitle="-testing-title-" color={ColorDef.blue} onOkResult={(_selectedColor: ColorDef) => { }} onCancelResult={() => { }} />);
+      expect(wrapper.findByText("-testing-title-")).not.to.be.null;
     });
 
     it("should render with presets", () => {
@@ -38,14 +38,14 @@ describe("ColorPickerDialog", () => {
           ColorDef.create(ColorByName.blue),
           ColorDef.create(ColorByName.olive),
         ];
-      const wrapper = render(<ColorPickerDialog dialogTitle="-texting-title-" color={ColorDef.blue} colorPresets={defaultColors} onOkResult={(_selectedColor: ColorDef) => { }} onCancelResult={() => { }} />);
-      expect(wrapper.container.querySelectorAll("button.components-color-swatch.components-colorpicker-panel-swatch").length).to.eq(6);
+      const wrapper = render(<ColorPickerDialog dialogTitle="-testing-title-" color={ColorDef.blue} colorPresets={defaultColors} onOkResult={(_selectedColor: ColorDef) => { }} onCancelResult={() => { }} />);
+      expect(wrapper.container.querySelectorAll(".iui-color-swatch").length).to.eq(6);
     });
 
     it("should trigger onCancelResult", () => {
       const spyOnCancel = sinon.spy();
 
-      const wrapper = render(<ColorPickerDialog dialogTitle="-texting-title-" color={ColorDef.blue} onOkResult={(_selectedColor: ColorDef) => { }} onCancelResult={spyOnCancel} />);
+      const wrapper = render(<ColorPickerDialog dialogTitle="-testing-title-" color={ColorDef.blue} onOkResult={(_selectedColor: ColorDef) => { }} onCancelResult={spyOnCancel} />);
       const cancelButton = wrapper.container.querySelector("button.core-dialog-button.dialog-button-cancel") as HTMLElement;
       expect(cancelButton).not.to.be.null;
       fireEvent.click(cancelButton);
@@ -60,7 +60,7 @@ describe("ColorPickerDialog", () => {
         spyOnOK();
       }
 
-      const wrapper = render(<ColorPickerDialog dialogTitle="-texting-title-" color={ColorDef.blue} onOkResult={handleOK} onCancelResult={() => { }} />);
+      const wrapper = render(<ColorPickerDialog dialogTitle="-testing-title-" colorInputType="hsl" color={ColorDef.blue} onOkResult={handleOK} onCancelResult={() => { }} />);
       const okButton = wrapper.container.querySelector("button.core-dialog-button.dialog-button-ok.iui-cta") as HTMLElement;
       expect(okButton).not.to.be.null;
       fireEvent.click(okButton);
@@ -86,9 +86,9 @@ describe("ColorPickerDialog", () => {
         spyOnOK();
       }
 
-      const wrapper = render(<ColorPickerDialog dialogTitle="-texting-title-" color={ColorDef.blue} colorPresets={defaultColors} onOkResult={handleOK} onCancelResult={() => { }} />);
-      const panel = wrapper.getByTestId("components-colorpicker-panel");
-      const colorButton = panel.querySelector("button.components-color-swatch.components-colorpicker-panel-swatch") as HTMLElement;
+      const wrapper = render(<ColorPickerDialog dialogTitle="-testing-title-" color={ColorDef.blue} colorPresets={defaultColors} onOkResult={handleOK} onCancelResult={() => { }} />);
+      const panel = wrapper.container.querySelector(".iui-color-palette-wrapper") as HTMLElement;
+      const colorButton = panel.querySelector(".iui-color-swatch") as HTMLElement;
       fireEvent.click(colorButton);
 
       const okButton = wrapper.container.querySelector("button.core-dialog-button.dialog-button-ok.iui-cta") as HTMLElement;

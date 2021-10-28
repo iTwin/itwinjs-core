@@ -13,10 +13,11 @@ import classnames from "classnames";
 import { ColorByName, ColorDef } from "@itwin/core-common";
 import { RelativePosition } from "@itwin/appui-abstract";
 import { CommonProps, Popup, useRefs, WebFontIcon } from "@itwin/core-react";
-import { ColorPickerPanel } from "./ColorPickerPanel";
-
+// import { ColorPickerPanel } from "./ColorPickerPanel";
+import { ColorBuilder, ColorInputPanel, ColorPalette, ColorPicker, ColorValue } from "@itwin/itwinui-react";
 import "./ColorPickerPopup.scss";
 import { getCSSColorFromDef } from "./getCSSColorFromDef";
+import { UiIModelComponents } from "../UiIModelComponents";
 
 /** Properties for the [[ColorPickerPopup]] React component
  * @public
@@ -24,7 +25,8 @@ import { getCSSColorFromDef } from "./getCSSColorFromDef";
 export interface ColorPickerPopupProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
   /** Current color */
   initialColor: ColorDef;
-  /** Preset colors. Pass undefined to show default preset colors. Pass empty array to show no presets. */
+  /** Preset colors. Pass undefined to show default preset colors. Pass empty array to show no presets.
+   *  Displayed in rows of 9 items */
   colorDefs?: ColorDef[];
   /** Function to call when the color value is changed */
   onColorChange?: ((newColor: ColorDef) => void) | undefined;
@@ -44,8 +46,8 @@ export interface ColorPickerPopupProps extends React.ButtonHTMLAttributes<HTMLBu
   captureClicks?: boolean;
   /** If true, don't show close button at top */
   hideCloseButton?: boolean;
-  /** If set show either HSL or RGB input values */
-  colorInputType?: "HSL" | "RGB";
+  /** If set show input values */
+  colorInputType?: "hsl" | "rgb" | "hex";
 }
 
 // Defined using following pattern (const ColorPickerPopup at bottom) to ensure useful API documentation is extracted
@@ -67,22 +69,24 @@ const ForwardRefColorPickerPopup = React.forwardRef<HTMLButtonElement, ColorPick
 
     const defaultColors = React.useRef(
       [
-        ColorDef.create(ColorByName.red),
-        ColorDef.create(ColorByName.orange),
-        ColorDef.create(ColorByName.yellow),
-        ColorDef.create(ColorByName.green),
-        ColorDef.create(ColorByName.blue),
-        ColorDef.create(ColorByName.indigo),
-        ColorDef.create(ColorByName.violet),
-        ColorDef.create(ColorByName.black),
-        ColorDef.create(ColorByName.white),
-        ColorDef.create(ColorByName.cyan),
-        ColorDef.create(ColorByName.fuchsia),
-        ColorDef.create(ColorByName.tan),
-        ColorDef.create(ColorByName.gray),
-        ColorDef.create(ColorByName.brown),
-        ColorDef.create(ColorByName.purple),
-        ColorDef.create(ColorByName.olive),
+        ColorValue.fromTbgr(ColorByName.red),
+        ColorValue.fromTbgr(ColorByName.orange),
+        ColorValue.fromTbgr(ColorByName.yellow),
+        ColorValue.fromTbgr(ColorByName.green),
+        ColorValue.fromTbgr(ColorByName.blue),
+        ColorValue.fromTbgr(ColorByName.mediumBlue),
+        ColorValue.fromTbgr(ColorByName.indigo),
+        ColorValue.fromTbgr(ColorByName.violet),
+        ColorValue.fromTbgr(ColorByName.black),
+        ColorValue.fromTbgr(ColorByName.white),
+        ColorValue.fromTbgr(ColorByName.cyan),
+        ColorValue.fromTbgr(ColorByName.fuchsia),
+        ColorValue.fromTbgr(ColorByName.tan),
+        ColorValue.fromTbgr(ColorByName.gray),
+        ColorValue.fromTbgr(ColorByName.brown),
+        ColorValue.fromTbgr(ColorByName.purple),
+        ColorValue.fromTbgr(ColorByName.olive),
+        ColorValue.fromTbgr(ColorByName.darkGreen),
       ]);
 
     // istanbul ignore next
@@ -95,7 +99,8 @@ const ForwardRefColorPickerPopup = React.forwardRef<HTMLButtonElement, ColorPick
       setShowPopup(!showPopup);
     }, [showPopup]);
 
-    const handleColorChanged = React.useCallback((newColor: ColorDef) => {
+    const handleColorChanged = React.useCallback((newColorValue: ColorValue) => {
+      const newColor = ColorDef.fromTbgr(newColorValue.toTbgr());
       // istanbul ignore else
       if (!newColor.equals(colorDef)) {
         setColorDef(newColor);
@@ -120,12 +125,24 @@ const ForwardRefColorPickerPopup = React.forwardRef<HTMLButtonElement, ColorPick
         event.stopPropagation();
     };
 
-    const colorOptions = props.colorDefs && props.colorDefs.length ? props.colorDefs : defaultColors.current;
+    const colorOptions = React.useMemo(() => {
+      if (props.colorDefs && props.colorDefs.length) {
+        return props.colorDefs.map((def) => ColorValue.fromTbgr(def.tbgr));
+      }
+      if (props.colorDefs && 0 === props.colorDefs.length)
+        return undefined;
+      return defaultColors.current;
+    }, [props.colorDefs]);
     const popupPosition = undefined !== props.popupPosition ? props.popupPosition : RelativePosition.BottomLeft;
+
+    const [closeLabel] = React.useState(() => UiIModelComponents.translate("color.close"));
+    const [togglePopupLabel] = React.useState(() => UiIModelComponents.translate("color.toggleColorPopup"));
+
     return (
       /* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */
       <div onClick={clickHandler}>
-        <button data-testid="components-colorpicker-popup-button" onClick={togglePopup} className={buttonClassNames} style={buttonStyle} disabled={props.disabled} ref={refs} >
+        <button data-testid="components-colorpicker-popup-button" onClick={togglePopup} className={buttonClassNames} style={buttonStyle}
+          disabled={props.disabled} ref={refs} title={togglePopupLabel} >
           <div className="components-colorpicker-button-container">
             <div className="components-colorpicker-button-color-swatch" style={swatchStyle} />
             {props.showCaret && <WebFontIcon className="components-caret" iconName={showPopup ? "icon-caret-up" : "icon-caret-down"} iconSize="x-small" />}
@@ -141,12 +158,18 @@ const ForwardRefColorPickerPopup = React.forwardRef<HTMLButtonElement, ColorPick
         >
           <div className="components-colorpicker-popup-panel-padding">
             {!props.hideCloseButton &&
-              <button
+              <button title={closeLabel}
                 className={"core-focus-trap-ignore-initial core-dialog-close icon icon-close"}
                 data-testid="core-dialog-close"
                 onClick={togglePopup}
               />}
-            <ColorPickerPanel colorInputType={props.colorInputType} activeColor={colorDef} colorPresets={colorOptions} onColorChange={handleColorChanged} />
+            <ColorPicker selectedColor={ColorValue.fromTbgr(colorDef.tbgr)} onChangeComplete={handleColorChanged} >
+              <ColorBuilder />
+              {props.colorInputType &&
+                <ColorInputPanel defaultColorFormat={props.colorInputType} />}
+              {colorOptions &&
+                <ColorPalette colors={colorOptions} />}
+            </ColorPicker>
           </div>
         </Popup>
       </div>
