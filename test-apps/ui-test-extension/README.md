@@ -38,4 +38,4 @@ in the main design frontstage. See <http://itwinjs.org> for comprehensive docume
 
 ## Contributing
 
-[Contributing to iTwin.js](https://github.com/imodeljs/imodeljs/blob/master/CONTRIBUTING.md)
+[Contributing to iTwin.js](https://github.com/iTwin/itwinjs-core/blob/master/CONTRIBUTING.md)

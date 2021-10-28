@@ -78,7 +78,6 @@ enzyme.configure({
 });
 chaiJestSnapshot.addSerializer(require("enzyme-to-json/serializer"));
 
-
 // setup chai
 chai.should();
 chai.use(chaiAsPromised);
