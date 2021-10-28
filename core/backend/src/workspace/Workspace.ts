@@ -120,7 +120,10 @@ export interface WorkspaceContainer {
   getFile(rscName: WorkspaceResourceName, targetFileName?: LocalFileName): LocalFileName | undefined;
 }
 
-/** Options supplied when opening a WorkspaceContainer. */
+/**
+ * Options supplied when opening a WorkspaceContainer.
+ * @beta
+ */
 export interface WorkspaceContainerOpts {
   /** If present, the container will be closed and removed when the iModel is closed. */
   forIModel?: IModelDb;
@@ -337,8 +340,15 @@ export class WorkspaceFile implements WorkspaceContainer {
 
     // check whether the file is already up to date.
     const stat = fs.existsSync(localFileName) && fs.statSync(localFileName);
-    if (stat && Math.trunc(stat.mtimeMs) === Math.trunc(info.date) && stat.size === info.size)
-      return localFileName; // yes, we're done
+    if (stat) {
+      if (Math.trunc(stat.mtimeMs) === Math.trunc(info.date) && stat.size === info.size)
+        return localFileName; // yes, we're done
+
+      // eslint-disable-next-line no-console
+      console.log(`localFile: ${localFileName} needs update`);
+      // eslint-disable-next-line no-console
+      console.log(`  statTime: ${stat.mtimeMs}, infoTime: ${info.date}, statSize=${stat.size}, infoSize=${info.size}`);
+    }
 
     // extractEmbeddedFile fails if the file exists or if the directory does not exist
     if (stat)

@@ -202,7 +202,9 @@ export class IModelHost {
   /** Root directory holding files that iTwin.js caches */
   public static get cacheDir(): LocalDirName { return this._cacheDir; }
 
-  /** The Workspace for this IModelHost */
+  /** The Workspace for this `IModelHost`
+   * @beta
+   */
   public static get workspace(): Workspace { return this._workspace; }
 
   /** The optional [[FileNameResolver]] that resolves keys and partial file names for snapshot iModels. */

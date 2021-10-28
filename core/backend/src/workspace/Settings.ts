@@ -197,7 +197,10 @@ class SettingsDictionary {
   }
 }
 
-/* @internal */
+/**
+ * Internal implementation of Settings interface.
+ * @internal
+ */
 export class ITwinSettings implements Settings {
   private _dictionaries: SettingsDictionary[] = [];
   public readonly onSettingsChanged = new BeEvent<() => void>();

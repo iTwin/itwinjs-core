@@ -1,21 +1,21 @@
 # Workspaces in iTwin.js
 
-When an iTwin.js backend starts, [IModelHost.startup]($core-backend) creates an instance of a [Workspace]($core-backend), in [IModelHost.workspace]($core-backend).
+When an iTwin.js backend starts, [IModelHost.startup]($backend) creates an instance of a [Workspace]($backend), in [IModelHost.workspace]($backend).
 
-`IModelHost.workspace` customizes the session according to the "wishes" of the:
+`IModelHost.workspace` customizes the session according to the choices of the:
  1. host application(s)
  2. organization of the user
  3. current iTwin
  4. current iModel
  5. current "activity" being performed
 
-In the list above, later entries tend to change more frequently and, in the case of conflicting wishes, later entries override earlier ones.
+In the list above, later entries tend to change more frequently and, in the case of conflicting choices, later entries override earlier ones.
 
 `IModelHost.workspace` expresses the current state of the session in two forms:
   1. [Settings](#settings)
   2. [WorkspaceContainers](#workspacecontainers)
 
-`Settings` are *named parameters* that an application defines and whose values are supplied at runtime. `WorkspaceContainers` hold "resources" (i.e. data) that the application uses. `Settings` and `WorkspaceContainers` are often related in application logic, e.g.:
+`Settings` are *named parameters* that an application defines and whose values are supplied at runtime. `WorkspaceContainers` hold *named resources* (i.e. data) that the application uses. `Settings` and `WorkspaceContainers` are often related in application logic, e.g.:
 
  - a Setting may contain the "formula" to find a resource
  - a `WorkspaceContainer` may hold a resource that defines a group of Settings
@@ -24,9 +24,12 @@ This means that there must be some way to initialize the process. That should be
 
 ## Settings
 
-Settings are parameters, defined by
+Settings are named parameters, defined by applications but supplied at runtime, so that their values may vary according to circumstances across and even within sessions.
 
 ### SettingSpecs
+
+Applications can define groups of related "settings specifications" in the form of [SettingsGroupSpec]($backend)s, registered at runtime with the [SettingsSpecRegistry]($backend) class. In this way users or administrators can know of the existence, type, purpose, constraints, and default values of the application's Settings. The Settings Editor (future) can be used to supply values for Settings using the metadata in its [SettingSpec]($backend).
+
 
 ### SettingNames
 
@@ -40,9 +43,10 @@ For example:
   "vibration-map/filters/scope"
   "vibration-map/filters/prefabricated"
 ```
+
 ### SettingTypes
 
-A SettingSpec defines the *type* of a Setting as one of:
+A [SettingSpec]($backend) defines the *type* of a Setting as one of:
 
   - string
   - number
@@ -52,6 +56,9 @@ A SettingSpec defines the *type* of a Setting as one of:
   - object
 
 The Settings Editor will enforce that the values supplied for a Setting is the correct type.
+
+### SettingPriorities
+
 
 ## WorkspaceContainers
 
