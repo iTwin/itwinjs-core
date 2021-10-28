@@ -156,16 +156,9 @@ export abstract class ViewingToolHandle {
   public onKeyTransition(_wentDown: boolean, _keyEvent: KeyboardEvent): boolean { return false; }
   public onModifierKeyTransition(_wentDown: boolean, _modifier: BeModifierKeys, _event: KeyboardEvent): boolean { return false; }
   public needDepthPoint(_ev: BeButtonEvent, _isPreview: boolean): boolean { return false; }
-  public adjustDepthPoint(isValid: boolean, vp: Viewport, plane: Plane3dByOriginAndUnitNormal, source: DepthPointSource): boolean {
+  public adjustDepthPoint(isValid: boolean, _vp: Viewport, _plane: Plane3dByOriginAndUnitNormal, source: DepthPointSource): boolean {
     switch (source) {
       case DepthPointSource.Geometry:
-        // If we had hit something we might need to undo the model display transform of the hit.
-        if (isValid && vp instanceof ScreenViewport) {
-          const hitDetail = vp.picker.getHit(0);
-          if (undefined !== hitDetail && undefined !== hitDetail.modelId)
-            vp.view.transformPointByModelDisplayTransform(hitDetail.modelId, plane.getOriginRef(), false);
-        }
-        return isValid;
       case DepthPointSource.Model:
       case DepthPointSource.BackgroundMap:
       case DepthPointSource.GroundPlane:
@@ -1246,10 +1239,16 @@ class ViewRotate extends HandleWithInertia {
       plane.getNormalRef().setFrom(vp.view.getZVector());
       return true;
     }
-
-    if (super.adjustDepthPoint(isValid, vp, plane, source))
+    if (super.adjustDepthPoint(isValid, vp, plane, source)) {
+      if (DepthPointSource.Geometry === source && vp instanceof ScreenViewport) {
+        // If we had hit something we might need to undo the model display transform of the hit.
+        const hitDetail = vp.picker.getHit(0);
+        if (undefined !== hitDetail && undefined !== hitDetail.modelId) {
+          vp.view.transformPointByModelDisplayTransform(hitDetail.modelId, plane.getOriginRef(), false);
+        }
+      }
       return true;
-
+    }
     plane.getOriginRef().setFrom(this.viewTool.targetCenterWorld);
     return false;
   }
