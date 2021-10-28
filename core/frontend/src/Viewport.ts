@@ -187,9 +187,9 @@ export type OnFlashedIdChangedEventArgs = {
 export interface GetPixelDataWorldPointArgs {
   /** The buffer containing the pixel data. @see [[Viewport.readPixels]]. */
   pixels: Pixel.Buffer;
-  /* The x coordinate of the pixel of interest, in view coordinates. */
+  /** The x coordinate of the pixel of interest, in view coordinates. */
   x: number;
-  /* The y coordinate of the pixel of interest, in view coordinates. */
+  /** The y coordinate of the pixel of interest, in view coordinates. */
   y: number;
   /** If true, then the world point of a pixel associated with a model will preserve any transforms applied to the model at display time,
    * such as those supplied by a [[ModelDisplayTransformProvider]] or [PlanProjectionSettings.elevation]($common).
