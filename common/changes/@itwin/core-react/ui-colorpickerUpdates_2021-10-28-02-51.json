@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-react",
+      "comment": "Update to latest itwinui packages",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-react"
+}
