@@ -15,7 +15,7 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { SettingDictionary, SettingsPriority } from "../../workspace/Settings";
 
-describe.only("WorkspaceFile", () => {
+describe("WorkspaceFile", () => {
 
   const workspace = new ITwinWorkspace({ containerDir: join(KnownTestLocations.outputDir, "TestWorkspaces") });
 
