@@ -341,7 +341,7 @@ export class WorkspaceFile implements WorkspaceContainer {
     // check whether the file is already up to date.
     const stat = fs.existsSync(localFileName) && fs.statSync(localFileName);
     if (stat) {
-      if (Math.trunc(stat.mtimeMs) === Math.trunc(info.date) && stat.size === info.size)
+      if (Math.round(stat.mtimeMs) === info.date && stat.size === info.size)
         return localFileName; // yes, we're done
 
       // eslint-disable-next-line no-console
@@ -391,7 +391,7 @@ export class EditableWorkspaceFile extends WorkspaceFile {
   }
 
   private getFileModifiedTime(localFileName: LocalFileName): number {
-    return fs.statSync(localFileName).mtimeMs;
+    return Math.round(fs.statSync(localFileName).mtimeMs);
   }
 
   private performWriteSql(rscName: WorkspaceResourceName, sql: string, bind?: (stmt: SqliteStatement) => void) {
