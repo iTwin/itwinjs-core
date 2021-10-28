@@ -6,7 +6,6 @@
  * @module RpcInterface
  */
 
-import { URL } from "url";
 import { BentleyStatus } from "@itwin/core-bentley";
 import { IModelRpcProps } from "../../IModel";
 import { IModelError } from "../../IModelError";
@@ -100,7 +99,7 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
       }
 
       iTwinId = encodeURIComponent(token.iTwinId || "");
-      iModelId = encodeURIComponent(token.iModelId!);
+      iModelId = encodeURIComponent(token.iModelId || "");
 
       routeChangesetId = token.changeset?.id || "0";
       appMode = AppMode.MilestoneReview;
