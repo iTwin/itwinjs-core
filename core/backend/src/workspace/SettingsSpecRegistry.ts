@@ -25,7 +25,7 @@ export interface SettingSpec extends Readonly<JSONSchema> {
 }
 
 /**
- * The properties of a group of [[SettingsSpec]]s for an application. Groups can be added and removed from the registry
+ * The properties of a group of [[SettingSpec]]s for an application. Groups can be added and removed from the registry
  * and are identified by their (required) `groupName` member
  * @beta
  */
@@ -39,14 +39,14 @@ export interface SettingsGroupSpec {
 }
 
 /**
- * The registry of available [[SettingsSpec]]s.
+ * The registry of available [[SettingsGroupSpec]]s.
  * The registry is used for editing Settings files and for finding default values for settings.
  * @beta
  */
 export class SettingsSpecRegistry {
   private constructor() { } // singleton
   private static readonly _allGroups = new Map<string, SettingsGroupSpec>();
-  /** a map of all registered [[SettingsSpecs]] */
+  /** a map of all registered [[SettingSpec]]s */
   public static readonly allSpecs = new Map<string, SettingSpec>();
   /** event that signals that the values in [[allSpecs]] have changed in some way. */
   public static readonly onSpecsChanged = new BeEvent<() => void>();
@@ -62,7 +62,7 @@ export class SettingsSpecRegistry {
   }
 
   /**
-   * Add one or more [[SettingGroupSpec]]s to the registry. `SettingsGroupSpec`s must include a `groupName` member that is used
+   * Add one or more [[SettingsGroupSpec]]s to the registry. `SettingsGroupSpec`s must include a `groupName` member that is used
    * to identify the group. If a group with the same name is already registered, the old values are first removed and then the new group is added.
    * @returns an array of problems found adding properties of the supplied group(s).
    */
@@ -76,12 +76,12 @@ export class SettingsSpecRegistry {
     return problems;
   }
 
-  /** Add a [[SettingGroupSpec]] from stringified json5. */
+  /** Add a [[SettingsGroupSpec]] from stringified json5. */
   public static addJson(settingSpecJson: string): string[] {
     return this.addGroup(parse(settingSpecJson));
   }
 
-  /** Add a [[SettingGroupSpec]] from a json5 file. */
+  /** Add a [[SettingsGroupSpec]] from a json5 file. */
   public static addFile(fileName: string): string[] {
     return this.addJson(fs.readFileSync(fileName, "utf-8"));
   }

@@ -17,7 +17,9 @@ import { LocalFileName } from "@itwin/core-common";
  */
 export type SettingType = JSONSchemaType;
 
-/** The name of a Setting. SettingNames must be valid JavaScript property names.
+/**
+ * The name of a Setting. SettingNames must be valid JavaScript property names, defined in a [[SettingSpec]].
+ * @see [SettingName]($docs/learning/backend/Workspace#settingnames)
  * @beta
  */
 export type SettingName = string;

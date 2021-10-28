@@ -167,7 +167,7 @@ export interface Workspace {
    */
   getContainer(props: WorkspaceContainerProps, opts?: WorkspaceContainerOpts): Promise<WorkspaceContainer>;
   /** Load a WorkspaceResource of type string, parse it, and add it to the current Settings for this Workspace.
-   * @note settingsRsc must specify a resource holding a stringified JSON representation of a [[SettingsDictionary]]
+   * @note settingsRsc must specify a resource holding a stringified JSON representation of a [[SettingDictionary]]
    * @returns a Promise that is resolved when the settings resource has been loaded.
    */
   loadSettingsDictionary(settingRsc: WorkspaceResourceProps, priority: SettingsPriority): Promise<void>;
@@ -337,7 +337,7 @@ export class WorkspaceFile implements WorkspaceContainer {
 
     // check whether the file is already up to date.
     const stat = fs.existsSync(localFileName) && fs.statSync(localFileName);
-    if (stat && Math.trunc(stat.mtimeMs) === info.date && stat.size === info.size)
+    if (stat && Math.trunc(stat.mtimeMs) === Math.trunc(info.date) && stat.size === info.size)
       return localFileName; // yes, we're done
 
     // extractEmbeddedFile fails if the file exists or if the directory does not exist
@@ -458,7 +458,7 @@ export class EditableWorkspaceFile extends WorkspaceFile {
    * @param rscName The name of the file resource.
    * @param localFileName The name of a local file to be read.
    * @param fileExt The extension (do not include the leading ".") to be appended to the generated fileName
-   * when this file is extracted from the WorkspaceContainer. By default the characters after the last "." in [[localFileName]]
+   * when this file is extracted from the WorkspaceContainer. By default the characters after the last "." in `localFileName`
    * are used. Pass this argument to override that.
    */
   public addFile(rscName: WorkspaceResourceName, localFileName: LocalFileName, fileExt?: string): void {
