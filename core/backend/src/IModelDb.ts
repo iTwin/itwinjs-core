@@ -112,6 +112,7 @@ export abstract class IModelDb extends IModel {
 
   /** Event called after a changeset is applied to this IModelDb. */
   public readonly onChangesetApplied = new BeEvent<() => void>();
+  static dictionaryId: string;
   /** @internal */
   public notifyChangesetApplied() {
     this._changeSetId = this.nativeDb.getReversedChangeSetId() ?? this.nativeDb.getParentChangeSetId();
