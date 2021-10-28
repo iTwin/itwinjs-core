@@ -7,12 +7,11 @@
  * @module RealityData
  */
 
-import { URL } from "url";
-import { Angle } from "@itwin/core-geometry";
-import { IModelConnection, SpatialModelState } from "@itwin/core-frontend";
-import { CartographicRange, ContextRealityModelProps, OrbitGtBlobProps } from "@itwin/core-common";
-import { AccessToken, Guid, GuidString } from "@itwin/core-bentley";
 import { getJson, request, RequestOptions, RequestQueryOptions } from "@bentley/itwin-client";
+import { AccessToken, Guid, GuidString } from "@itwin/core-bentley";
+import { CartographicRange, ContextRealityModelProps, OrbitGtBlobProps } from "@itwin/core-common";
+import { IModelConnection, SpatialModelState } from "@itwin/core-frontend";
+import { Angle } from "@itwin/core-geometry";
 import { ECJsonTypeMap, WsgInstance } from "./wsg/ECJsonTypeMap";
 import { WsgClient } from "./wsg/WsgClient";
 
@@ -163,7 +162,6 @@ export class RealityData extends WsgInstance {
   // Cache parameters for reality data access. Contains the blob url, the timestamp to refresh (every 50 minutes) the url and the root document path.
   private _blobUrl: any;
   private _blobTimeStamp?: Date;
-  private _blobRooDocumentPath: undefined | string; // Path relative to blob root of root document. It is slash terminated if not empty
 
   // Link to client to fetch the blob url
   public client: undefined | RealityDataAccessClient;
@@ -174,22 +172,19 @@ export class RealityData extends WsgInstance {
 
   /**
    * Gets string url to fetch blob data from. Access is read-only.
-   * @param name name or path of tile
-   * @param nameRelativeToRootDocumentPath (optional default is false) Indicates if the given name is relative to the root document path.
+   * @param blobPath name or path of tile
    * @returns string url for blob data
    */
-  public async getBlobStringUrl(accessToken: AccessToken, name: string, nameRelativeToRootDocumentPath: boolean = false): Promise<string> {
-    const url = await this.getBlobUrl(accessToken);
+  public async getBlobUrl(accessToken: AccessToken, blobPath: string): Promise<URL> {
+    const url = await this.getContainerUrl(accessToken);
+    if (blobPath === undefined)
+      return url;
 
-    let host: string = "";
-    if (nameRelativeToRootDocumentPath && this._blobRooDocumentPath && this._blobRooDocumentPath !== "")
-      host = `${url.origin + url.pathname}/${this._blobRooDocumentPath}`; // _blobRootDocumentPath is always '/' terminated if not empty
-    else
-      host = `${url.origin + url.pathname}/`;
+    const host = `${url.origin + url.pathname}/`;
 
     const query = url.search;
 
-    return `${host}${name}${query}`;
+    return new URL(`${host}${blobPath}${query}`);
   }
 
   /**
@@ -197,7 +192,7 @@ export class RealityData extends WsgInstance {
    * @param writeAccess Optional boolean indicating if write access is requested. Default is false for read-only access.
    * @returns app URL object for blob url
    */
-  public async getBlobUrl(accessToken: AccessToken, writeAccess: boolean = false): Promise<URL> {
+  public async getContainerUrl(accessToken: AccessToken, writeAccess: boolean = false): Promise<URL> {
     // Normally the client is set when the reality data is extracted for the client but it could be undefined
     // if the reality data instance is created manually.
     if (!this.client)
@@ -215,16 +210,8 @@ export class RealityData extends WsgInstance {
       if (fileAccess.length !== 1)
         throw new Error(`Could not obtain blob file access key for reality data: ${this.id}`);
       const urlString = fileAccess[0].url!;
-      this._blobUrl = (typeof window !== "undefined") ? new window.URL(urlString) : new URL(urlString);
+      this._blobUrl = new URL(urlString);
       this._blobTimeStamp = new Date(Date.now());
-      if (!this._blobRooDocumentPath && this.rootDocument) {
-        const urlParts = this.rootDocument.split("/");
-        urlParts.pop();
-        if (urlParts.length === 0)
-          this._blobRooDocumentPath = "";
-        else
-          this._blobRooDocumentPath = `${urlParts.join("/")}/`;
-      }
     }
 
     return this._blobUrl;
@@ -236,10 +223,10 @@ export class RealityData extends WsgInstance {
    * @param nameRelativeToRootDocumentPath (optional default is false) Indicates if the given name is relative to the root document path.
    * @returns app data json object
    */
-  public async getTileJson(accessToken: AccessToken, name: string, nameRelativeToRootDocumentPath: boolean = false): Promise<any> {
-    const stringUrl = await this.getBlobStringUrl(accessToken, name, nameRelativeToRootDocumentPath);
+  public async getTileJson(accessToken: AccessToken, name: string): Promise<any> {
+    const url = await this.getBlobUrl(accessToken, name);
 
-    const data = await getJson(stringUrl);
+    const data = await getJson(url.toString());
     return data;
   }
 
@@ -249,14 +236,14 @@ export class RealityData extends WsgInstance {
    * @param nameRelativeToRootDocumentPath (optional default is false) Indicates if the given name is relative to the root document path.
    * @returns array buffer of tile content
    */
-  public async getTileContent(accessToken: AccessToken, name: string, nameRelativeToRootDocumentPath: boolean = false): Promise<any> {
-    const stringUrl = await this.getBlobStringUrl(accessToken, name, nameRelativeToRootDocumentPath);
+  public async getTileContent(accessToken: AccessToken, name: string): Promise<any> {
+    const url = await this.getBlobUrl(accessToken, name);
 
     const options: RequestOptions = {
       method: "GET",
       responseType: "arraybuffer",
     };
-    const data = await request(stringUrl, options);
+    const data = await request(url.toString(), options);
     return data.body;
   }
 
@@ -269,7 +256,7 @@ export class RealityData extends WsgInstance {
       throw new Error(`Root document not defined for reality data: ${this.id}`);
 
     const root = this.rootDocument;
-    const rootJson = await this.getTileJson(accessToken, root, false);
+    const rootJson = await this.getTileJson(accessToken, root);
     return rootJson;
   }
 
@@ -533,11 +520,11 @@ export class RealityDataAccessClient extends WsgClient {
         let opcConfig: OrbitGtBlobProps | undefined;
 
         if (currentRealityData.type && (currentRealityData.type.toUpperCase() === "OPC") && currentRealityData.rootDocument !== undefined) {
-          const rootDocUrl: string = await currentRealityData.getBlobStringUrl(accessToken, currentRealityData.rootDocument);
+          const rootDocUrl = await currentRealityData.getBlobUrl(accessToken, currentRealityData.rootDocument);
           opcConfig = {
             rdsUrl: "",
             containerName: "",
-            blobFileName: rootDocUrl,
+            blobFileName: rootDocUrl.toString(),
             accountName: "",
             sasToken: "",
           };

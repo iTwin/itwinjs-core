@@ -27,13 +27,21 @@ Typically in the index.tsx file of an IModelApp that uses `App UI` user interfac
 The component [UiSettingsProvider]($appui-react) can be added into the component tree to provide the storage object via React context. See hook [useUiSettingsStorageContext]($appui-react). Below is an example of how to wrap the [ConfigurableUiContent]($appui-react) element so that the context is available to all App UI components.
 
 ```tsx
-<FrameworkVersion version="2">
-  <UiSettingsProvider settingsStorage={uiSettingsStorage}>
-    <ConfigurableUiContent
-      appBackstage={<AppBackstageComposer />}
-    />
-  </UiSettingsProvider>
-</FrameworkVersion>
+<Provider store={MyIModelApp.store} >
+  <ThemeManager>
+    <SafeAreaContext.Provider value={SafeAreaInsets.All}>
+      <ToolbarDragInteractionContext.Provider value={false}>
+        <FrameworkVersion>
+          <UiSettingsProvider settingsStorage={uiSettingsStorage}>
+            <ConfigurableUiContent
+              appBackstage={<AppBackstageComposer />}
+            />
+          </UiSettingsProvider>
+        </FrameworkVersion>
+      </ToolbarDragInteractionContext.Provider>
+    </SafeAreaContext.Provider>
+  <ThemeManager>
+</Provider>
 ```
 
 ## UserSettingsProvider

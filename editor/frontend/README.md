@@ -58,7 +58,7 @@ The following key-ins are available for this package.
 
 Running the `editor project location show` command, with a spatial view active, enables the display of the project extents and geolocation controls.
 
-![decoration example](https://raw.githubusercontent.com/imodeljs/imodeljs/master/editor/frontend/docs/images/pl_decoration.png "Example of decoration for a geolocated imodel")
+![decoration example](https://raw.githubusercontent.com/iTwin/itwinjs-core/master/editor/frontend/docs/images/pl_decoration.png "Example of decoration for a geolocated imodel")
 
 1. A clip volume representing the current project extents.
     * The current size is shown in locate tooltip using the active distance formatting.
@@ -84,11 +84,11 @@ While there isn't hard limit imposed on the size of the project extents, when an
 
 For the project extents height, the recommended maximum is 2 km.
 
-![max z extents](https://raw.githubusercontent.com/imodeljs/imodeljs/master/editor/frontend/docs/images/pl_extent_z.png "Example of z extents larger than recommended")
+![max z extents](https://raw.githubusercontent.com/iTwin/itwinjs-core/master/editor/frontend/docs/images/pl_extent_z.png "Example of z extents larger than recommended")
 
 For the project extents length and width, the recommended maximum when a GCS is defined is 350 km, and 20 km for imodels that aren't map projections (only ECEF transform defined). In addition to the warning symbols near the arrow controls, a red transparent fill is also displayed to help indicate the xy extents may be too large.
 
-![max xy extents](https://raw.githubusercontent.com/imodeljs/imodeljs/master/editor/frontend/docs/images/pl_extent_xy.png "Example of z extents larger than recommended")
+![max xy extents](https://raw.githubusercontent.com/iTwin/itwinjs-core/master/editor/frontend/docs/images/pl_extent_xy.png "Example of z extents larger than recommended")
 
 #### Adding or Updating Geolocation
 
@@ -96,17 +96,17 @@ If an imodel is not currently geolocated, or is incorrectly geolocated without a
 
 If the imodel is already geolocated, the tool settings is populated with the current values for the snapped coordinate. If you don't know the north direction angle, not to worry, this can be defined interactively with another control once the model has an ECEF origin defined.
 
-![define geolocation](https://raw.githubusercontent.com/imodeljs/imodeljs/master/editor/frontend/docs/images/pl_geolocate.png "Example of defining ECEF origin")
+![define geolocation](https://raw.githubusercontent.com/iTwin/itwinjs-core/master/editor/frontend/docs/images/pl_geolocate.png "Example of defining ECEF origin")
 
 ##### Interactively Defining North Direction
 
 The north direction can set interactively by 2 points, click on the north direction control (#3) to run the  `editor project geolocation north` command.
 
-![define north](https://raw.githubusercontent.com/imodeljs/imodeljs/master/editor/frontend/docs/images/pl_north_1.png "Example of defining north direction by 2 points")
+![define north](https://raw.githubusercontent.com/iTwin/itwinjs-core/master/editor/frontend/docs/images/pl_north_1.png "Example of defining north direction by 2 points")
 
 After zooming out far enough, only the north direction control will be displayed in the view. This may be helpful for seeing where the project is located on the globe or visually confirming the proper north direction.
 
-![north decoration](https://raw.githubusercontent.com/imodeljs/imodeljs/master/editor/frontend/docs/images/pl_north_2.png "Example of north decoration when zoomed out")
+![north decoration](https://raw.githubusercontent.com/iTwin/itwinjs-core/master/editor/frontend/docs/images/pl_north_2.png "Example of north decoration when zoomed out")
 
 > The north direction control is only displayed *after* an imodel has been geolocated.
 
@@ -116,17 +116,17 @@ If the geolocation is *almost* correct, the latitude, longitude, and altitude ca
 
 For example, running the `editor project geolocation move` command can be used to correct an incorrect altitude for the building below that is half buried in the terrain.
 
-![incorrect altitude](https://raw.githubusercontent.com/imodeljs/imodeljs/master/editor/frontend/docs/images/pl_move_1.png "Example of incorrect altitude")
+![incorrect altitude](https://raw.githubusercontent.com/iTwin/itwinjs-core/master/editor/frontend/docs/images/pl_move_1.png "Example of incorrect altitude")
 
 First identify a point on the building to move from, it can be helpful turning off map locate for this point if it's below the terrain. For the second point, with map locate re-enabled and the active snap mode set to nearest, identify a point on the terrain to complete the adjustment.
 
 > AccuDraw can be very helpful when adjusting altitude. Use the T/F/S shortcuts to orient the AccuDraw compass, use Enter (smartlock) to lock an axis to snap the 2nd point. For this example F and Enter were used to lock the up direction before changing to nearest snap for the 2nd point.
 
-![adjusting altitude](https://raw.githubusercontent.com/imodeljs/imodeljs/master/editor/frontend/docs/images/pl_move_2.png "Example of interactively adjusting altitude")
+![adjusting altitude](https://raw.githubusercontent.com/iTwin/itwinjs-core/master/editor/frontend/docs/images/pl_move_2.png "Example of interactively adjusting altitude")
 
 Now we can see the building correctly adjusted for the terrain.
 
-![corrected altitude](https://raw.githubusercontent.com/imodeljs/imodeljs/master/editor/frontend/docs/images/pl_move_3.png "Example of corrected altitude")
+![corrected altitude](https://raw.githubusercontent.com/iTwin/itwinjs-core/master/editor/frontend/docs/images/pl_move_3.png "Example of corrected altitude")
 
 #### Saving And Abandoning Changes
 

@@ -69,7 +69,12 @@ double ZHigh; // The high Z coordinate of the bounding box
 ### iModel_placement
 
 An object that contains an origin and rotation angles, plus a bounding box.
-You can obtain an element's placement by selecting the placement column of the ElementGeom table.
+You can obtain an element's placement by selecting the placement properties of Geometric Elements.
+|Class|Properties|
+|-----|----------|
+|[GeometricElement2d](../bis/domains/biscore.ecschema/#geometricelement2d)| Origin, BBoxLow, BBoxHigh, Rotation|
+|[GeometricElement3d](../bis/domains/biscore.ecschema/#geometricelement3d)| Origin, BBoxLow, BBOxHigh, Yaw, Pitch, Roll|
+
 @see [iModel_placement_origin](#imodel_placement_origin), [iModel_placement_angles](#imodel_placement_angles), [iModel_placement_eabb](#imodel_placement_eabb), [iModel_placement_aabb](#imodel_placement_aabb)
 
 ```C++

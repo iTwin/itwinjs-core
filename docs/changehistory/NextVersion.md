@@ -108,6 +108,10 @@ The following code applies a display style similar to those illustrated above to
       intensity: 0.8,
       invert: true,
     },
+    // Disable directional lighting.
+    solar: {
+      intensity: 0,
+    },
   });
 ```
 
@@ -1111,6 +1115,26 @@ A new @itwin/imodel-components-react package has been added and contains items r
 The @itwin ui and @itwin/presentation-components packages are now dependent on React version 17. **Applications using the ui packages must update to React 17.** Details about React version 17 can be found in the [React Blog](https://reactjs.org/blog/2020/10/20/react-v17.html).
 
 React 16 is not an officially supported version of iTwin.js app or Extension development using the iTwin.js AppUi.
+
+The component [FrameworkVersion]($appui-react) has been updated so it no longer takes a version prop. It now uses the value of `frameworkState.configurableUiState.frameworkVersion` from the redux store as the version. This value may be set using `UiFramework.setUiVersion` method and will be initialized to "2". Existing iModelApps using the 1.0 version of the user interface were not required to include the `<FrameworkVersion>` component in its component tree. It is now required that every iModelApp include the `<FrameworkVersion>` component and that the redux store entry mentioned above is specified to either "1" or "2". Below is a typical component tree for an iModeApp.
+
+```tsx
+<Provider store={MyIModelApp.store} >
+  <ThemeManager>
+    <SafeAreaContext.Provider value={SafeAreaInsets.All}>
+      <ToolbarDragInteractionContext.Provider value={false}>
+        <FrameworkVersion>
+          <UiSettingsProvider settingsStorage={uiSettingsStorage}>
+            <ConfigurableUiContent
+              appBackstage={<AppBackstageComposer />}
+            />
+          </UiSettingsProvider>
+        </FrameworkVersion>
+      </ToolbarDragInteractionContext.Provider>
+    </SafeAreaContext.Provider>
+  <ThemeManager>
+</Provider>
+```
 
 ### New options for defining Frontstages
 

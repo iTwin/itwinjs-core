@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Update to default to using UI2.0/AppUI.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}
