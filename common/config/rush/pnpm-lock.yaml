@@ -408,6 +408,7 @@ importers:
       chai: ^4.1.2
       eslint: ^7.11.0
       flatbuffers: ~1.12.0
+      is-buffer: ^2.0.5
       js-base64: ^3.6.1
       mocha: ^8.3.2
       nyc: ^15.1.0
@@ -417,6 +418,7 @@ importers:
     dependencies:
       '@ungap/url-search-params': 0.1.4
       flatbuffers: 1.12.0
+      is-buffer: 2.0.5
       js-base64: 3.7.2
       semver: 5.7.1
     devDependencies:
@@ -14206,6 +14208,11 @@ packages:
 
   /is-buffer/1.1.6:
     resolution: {integrity: sha512-NcdALwpXkTm5Zvvbk7owOUSvVvBKDgKP5/ewfXEznmQFfs4ZRmanOeKBTjRVjka3QFoN6XJ+9F3USqfHqTaU5w==}
+
+  /is-buffer/2.0.5:
+    resolution: {integrity: sha512-i2R6zNFDwgEHJyQUtJEk0XFi1i0dPFn/oqjK3/vPCcDeJvW5NQ83V8QbicfF1SupOaB0h8ntgBC2YiE7dfyctQ==}
+    engines: {node: '>=4'}
+    dev: false
 
   /is-callable/1.2.4:
     resolution: {integrity: sha512-nsuwtxZfMX67Oryl9LCQ+upnC0Z0BgpwntpS89m1H/TLF0zNfzfLMV/9Wa/6MZsj0acpEjAO0KF1xT6ZdLl95w==}

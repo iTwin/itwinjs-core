@@ -84,7 +84,7 @@ export abstract class Client {
       throw new Error("The client is missing a default url.");
     }
 
-    const prefix = process.env.IMJS_URL_PREFIX;
+    const prefix = process && process.env ? process.env.IMJS_URL_PREFIX: "";
     if (prefix) {
       const baseUrl = new URL(this.baseUrl);
       baseUrl.hostname = prefix + baseUrl.hostname;

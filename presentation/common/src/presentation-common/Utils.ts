@@ -86,6 +86,7 @@ export const getInstancesCount = (keys: Readonly<KeySet>): number => {
 export const DEFAULT_KEYS_BATCH_SIZE = 5000;
 
 /** @internal */
+declare const __dirname: string; // eslint-disable-line @typescript-eslint/naming-convention
 export const PRESENTATION_COMMON_ROOT = __dirname;
 
 /** @internal */

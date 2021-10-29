@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module iModelHubClient
  */
-import { AccessToken } from "@itwin/core-bentley";
+import { AccessToken, ProcessDetector } from "@itwin/core-bentley";
 import { FileHandler, RequestGlobalOptions, RequestOptions, RequestQueryOptions } from "@bentley/itwin-client";
 import { ChunkedQueryContext } from "../wsg/ChunkedQueryContext";
 import { WsgInstance } from "../wsg/ECJsonTypeMap";
@@ -87,8 +87,10 @@ export class IModelBaseHandler extends WsgClient {
     if (RequestGlobalOptions.httpsProxy) {
       this._agent = RequestGlobalOptions.createHttpsProxy(agentOptions);
     } else {
+      if (!ProcessDetector.isBrowserProcess) {
       // eslint-disable-next-line @typescript-eslint/no-var-requires
-      this._agent = require("https").Agent(agentOptions);
+        this._agent = require("https").Agent(agentOptions);
+      }
     }
   }
 

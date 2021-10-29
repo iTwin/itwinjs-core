@@ -9,7 +9,7 @@
 import { Readable } from "stream";
 import { BentleyStatus, IModelError } from "../../IModelError";
 import { RpcProtocol } from "./RpcProtocol";
-
+import IsBuffer from "is-buffer";
 // cspell:ignore unmarshal
 
 let marshalingTarget: RpcSerializedValue;
@@ -115,7 +115,7 @@ class WireFormat {
   }
 
   private static marshalBinary(value: any): any {
-    if (value instanceof Uint8Array || Buffer.isBuffer(value)) {
+    if (value instanceof Uint8Array || IsBuffer(value)) {
       const marker: MarshalingBinaryMarker = { isBinary: true, index: -1, size: value.byteLength, chunks: 1 };
 
       if (chunkThreshold && value.byteLength > chunkThreshold) {
