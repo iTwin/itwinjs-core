@@ -1823,7 +1823,7 @@ describe("iModel", () => {
       const outPt1 = Point3d.fromJSON(response1.geoCoords[0].p);
 
       expect(Geometry.isSamePoint3dXY(expectedPt1, outPt1)).to.be.true;
-      expect(Math.abs(expectedPt1.z - outPt1.z) < 0.0001).to.be.true;
+      expect(Math.abs(expectedPt1.z - outPt1.z)).most(0.0001);
       expect(response1.geoCoords[0].s === outputCoord.s);
 
       const testPoint2: XYZProps[] = [];
