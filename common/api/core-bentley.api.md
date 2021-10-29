@@ -975,6 +975,7 @@ export type LogFunction = (category: string, message: string, metaData: LoggingM
 export class Logger {
     static configureLevels(cfg: LoggerLevelsConfig): void;
     static getLevel(category: string): LogLevel | undefined;
+    static getMetaData(metaData?: LoggingMetaData): object;
     static initialize(logError?: LogFunction, logWarning?: LogFunction, logInfo?: LogFunction, logTrace?: LogFunction): void;
     static initializeToConsole(): void;
     static isEnabled(category: string, level: LogLevel): boolean;
