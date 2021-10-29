@@ -272,9 +272,9 @@ class RealityModelTileTreeParams implements RealityTileTreeParams {
   public get yAxisUp() { return this.loader.tree.yAxisUp; }
   public get priority() { return this.loader.priority; }
 
-  public constructor(url: string, iModel: IModelConnection, modelId: Id64String, loader: RealityModelTileLoader, public readonly gcsConverterAvailable: boolean, public readonly rootToEcef: Transform | undefined) {
+  public constructor(tileTreeId: string, iModel: IModelConnection, modelId: Id64String, loader: RealityModelTileLoader, public readonly gcsConverterAvailable: boolean, public readonly rootToEcef: Transform | undefined) {
     this.loader = loader;
-    this.id = url;
+    this.id = tileTreeId;
     this.modelId = modelId;
     this.iModel = iModel;
     this.rootTile = new RealityModelTileProps(loader.tree.tilesetJson, undefined, "", undefined, undefined === loader.tree.tilesetJson.refine ? undefined : loader.tree.tilesetJson.refine === "ADD");
@@ -625,13 +625,14 @@ export namespace RealityModelTileTree {
     const rdSource = await RealityDataSource.fromKey(rdSourceKey, iModel.iTwinId);
     // If we can get a valid connection from sourceKey, returns the tile tree
     if (rdSource) {
-      const url = await rdSource.getServiceUrl(iModel.iTwinId);
-      if (url === undefined)
+      // Serialize the reality data source key into a string to uniquely identify this tile tree
+      const tileTreeId = RealityDataSource.keyToString(rdSource.key);
+      if (tileTreeId === undefined)
         return undefined;
       const props = await getTileTreeProps(rdSource, tilesetToDb, iModel);
       const loader = new RealityModelTileLoader(props, new BatchedTileIdMap(iModel));
       const gcsConverterAvailable = await getGcsConverterAvailable(iModel);
-      const params = new RealityModelTileTreeParams(url, iModel, modelId, loader, gcsConverterAvailable, props.tilesetToEcef);
+      const params = new RealityModelTileTreeParams(tileTreeId, iModel, modelId, loader, gcsConverterAvailable, props.tilesetToEcef);
       return new RealityModelTileTree(params);
     }
     return undefined;
