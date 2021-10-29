@@ -1,6 +1,6 @@
 {
   "$id": "app1 schema",
-  "$schema": "./../../assets/Settings.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema",
   "title": "app1 settings",
   "description": "the settings for test application 1",
   "type": "object",
@@ -19,6 +19,14 @@
       ],
       "default": "ctrlCmd",
       "description": "multiSelectModifier"
+    },
+    "myApp/categories": {
+      "type": "array",
+      "description": "possible categories",
+      "items": {
+        "type": "string",
+        "description": "category names"
+      }
     },
     "app1/list/openMode": {
       "type": "string",
@@ -42,8 +50,8 @@
       "description": "tree indent setting"
     },
     "app1/tree/blah": {
-      "type": "string",
-      "default": "blah default",
+      "type": "boolean",
+      "default": "true",
       "description": "the setting for blah"
     },
     "workspace/container/alias": {

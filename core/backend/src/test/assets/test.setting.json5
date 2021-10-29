@@ -24,6 +24,10 @@
         "xml",
         "yml"
     ],
+    "myApp/categories": [
+        "cat 2",
+        "junk"
+    ],
     "editor/renderWhitespace": "selection",
     "editor/lineHeight": 11,
     "workspace/container/alias": [

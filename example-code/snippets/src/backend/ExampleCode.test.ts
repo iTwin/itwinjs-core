@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import { AccessToken, Id64, Id64String } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
-import { BisCoreSchema, BriefcaseDb, ClassRegistry, Element, ElementAspect, PhysicalModel, StandaloneDb } from "@itwin/core-backend";
+import { BisCoreSchema, BriefcaseDb, ClassRegistry, Element, ElementAspect, IModelHost, PhysicalModel, SettingDictionary, SettingsPriority, StandaloneDb } from "@itwin/core-backend";
 import { CodeScopeSpec, CodeSpec, IModel } from "@itwin/core-common";
 import { IModelTestUtils } from "./IModelTestUtils";
 
@@ -89,6 +89,76 @@ describe("Example Code", () => {
     assert.deepEqual(codeSpec2Id, codeSpec2.id);
     assert.notDeepEqual(codeSpec2Id, codeSpecId);
     // __PUBLISH_EXTRACT_END__
+
+  });
+
+  it("Settings", () => {
+    // __PUBLISH_EXTRACT_START__ Settings.addDictionaryDefine
+    interface TemplateRsc {
+      container: string;
+      template: {
+        name: string;
+        loadByDefault?: boolean;
+      };
+    }
+
+    const templates: TemplateRsc[] = [
+      {
+        container: "default-app1",
+        template: {
+          name: "vertical 1",
+          loadByDefault: false,
+        },
+      },
+      {
+        container: "default-app1",
+        template: {
+          name: "horizontal 4",
+        },
+      },
+    ];
+
+    const defaultsDict: SettingDictionary = {
+      "core/default-tool": "select",
+      "samples/start/leftPane": true,
+      "myApp/tree/label": "distribution of work",
+      "myApp/tree/indent": 4,
+      "myApp/categories": ["category1", "lowest", "upper"],
+      "myApp/list/clickMode": "doubleClick",
+      "myApp/templateResources": templates,
+    };
+    // __PUBLISH_EXTRACT_END__
+
+    // __PUBLISH_EXTRACT_START__ Settings.addDictionary
+    const settings = IModelHost.workspace.settings;
+    settings.addDictionary("initial values", SettingsPriority.defaults, defaultsDict);
+    let defaultTool = settings.getString("core/default-tool"); // returns "select"
+    const leftPane = settings.getBoolean("samples/start/leftPane"); // returns true
+    const categories = settings.getArray<string>("myApp/categories"); // returns ["category1", "lowest", "upper"]
+    const t1 = settings.getArray<TemplateRsc>("myApp/templateResources"); // returns copy of `templates`
+    // __PUBLISH_EXTRACT_END__
+
+    expect(defaultTool).eq(defaultsDict["core/default-tool"]);
+    expect(leftPane).eq(defaultsDict["samples/start/leftPane"]);
+    expect(categories).deep.equal(defaultsDict["myApp/categories"]);
+    expect(t1).deep.equal(templates);
+
+    // __PUBLISH_EXTRACT_START__ Settings.addITwinDictionary
+    const iTwin555: SettingDictionary = {
+      "core/default-tool": "measure",
+      "app5/markerName": "arrows",
+      "app5/markerIcon": "arrows.ico",
+    };
+    settings.addDictionary("for iTwin 555", SettingsPriority.iTwin, iTwin555);
+    defaultTool = settings.getString("core/default-tool"); // returns "measure"
+    // __PUBLISH_EXTRACT_END__
+    expect(defaultTool).eq(iTwin555["core/default-tool"]);
+
+    // __PUBLISH_EXTRACT_START__ Settings.dropITwinDictionary
+    settings.dropDictionary("for iTwin 555");
+    defaultTool = settings.getString("core/default-tool"); // returns "select" again
+    // __PUBLISH_EXTRACT_END__
+    expect(defaultTool).eq(defaultsDict["core/default-tool"]);
 
   });
 

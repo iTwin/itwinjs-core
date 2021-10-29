@@ -18,10 +18,8 @@ import { SqliteStatement } from "../SqliteStatement";
 import { ITwinSettings, Settings, SettingsPriority } from "./Settings";
 import { NativeLibrary } from "@bentley/imodeljs-native";
 
-/** The names of Settings used by Workspaces
- * @beta
- */
-export enum WorkspaceSetting {
+/** The names of Settings used by Workspaces */
+const enum WorkspaceSetting { // eslint-disable-line no-restricted-syntax
   ContainerAlias = "workspace/container/alias",
 }
 
@@ -340,15 +338,8 @@ export class WorkspaceFile implements WorkspaceContainer {
 
     // check whether the file is already up to date.
     const stat = fs.existsSync(localFileName) && fs.statSync(localFileName);
-    if (stat) {
-      if (Math.round(stat.mtimeMs) === info.date && stat.size === info.size)
-        return localFileName; // yes, we're done
-
-      // eslint-disable-next-line no-console
-      console.log(`localFile: ${localFileName} needs update`);
-      // eslint-disable-next-line no-console
-      console.log(`  statTime: ${stat.mtimeMs}, infoTime: ${info.date}, statSize=${stat.size}, infoSize=${info.size}`);
-    }
+    if (stat && Math.round(stat.mtimeMs) === info.date && stat.size === info.size)
+      return localFileName; // yes, we're done
 
     // extractEmbeddedFile fails if the file exists or if the directory does not exist
     if (stat)
