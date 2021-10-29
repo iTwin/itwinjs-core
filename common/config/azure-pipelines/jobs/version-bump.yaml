@@ -129,7 +129,7 @@ jobs:
       - bash: 'git tag -a release/$(getVersion.version) -m "v$(getVersion.version)"'
         displayName: Create git tag
 
-    - bash: 'git push --follow-tags https://$(GITHUBTOKEN)@github.com/imodeljs/imodeljs HEAD:$(Build.SourceBranch)'
+    - bash: 'git push --follow-tags https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core HEAD:$(Build.SourceBranch)'
       displayName: Push version bump
 
   - ${{ if eq(parameters.BumpType, 'releaseCandidate') }}:
@@ -164,7 +164,7 @@ jobs:
       - bash: git checkout -b $(releaseBranchName)
         displayName: Create and publish branch
 
-      - bash: git push --set-upstream https://$(GITHUBTOKEN)@github.com/imodeljs/imodeljs $(releaseBranchName) -q
+      - bash: git push --set-upstream https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core $(releaseBranchName) -q
         displayName: Publish the release branch
 
   - ${{ if eq(parameters.BumpType, 'releaseCandidate') }}:
@@ -237,5 +237,5 @@ jobs:
           git status
         displayName: Get version and committing
 
-      - bash: git push https://$(GITHUBTOKEN)@github.com/imodeljs/imodeljs $(Build.SourceBranchName) -q
+      - bash: git push https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core $(Build.SourceBranchName) -q
         displayName: 'Push version bump'
