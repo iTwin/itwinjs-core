@@ -1242,16 +1242,9 @@ class ViewRotate extends HandleWithInertia {
       plane.getNormalRef().setFrom(vp.view.getZVector());
       return true;
     }
-    if (super.adjustDepthPoint(isValid, vp, plane, source)) {
-      if (DepthPointSource.Geometry === source && vp instanceof ScreenViewport) {
-        // If we had hit something we might need to undo the model display transform of the hit.
-        const hitDetail = vp.picker.getHit(0);
-        if (undefined !== hitDetail && undefined !== hitDetail.modelId) {
-          vp.view.transformPointByModelDisplayTransform(hitDetail.modelId, plane.getOriginRef(), false);
-        }
-      }
+    if (super.adjustDepthPoint(isValid, vp, plane, source))
       return true;
-    }
+
     plane.getOriginRef().setFrom(this.viewTool.targetCenterWorld);
     return false;
   }
@@ -2135,7 +2128,7 @@ class ViewLookAndMove extends ViewNavigate {
         if (pixel.distanceFraction < 0)
           continue; // No geometry at location...
 
-        const hitPointWorld = vp.getPixelDataWorldPoint(pixels, testPoint.x, testPoint.y);
+        const hitPointWorld = vp.getPixelDataWorldPoint({pixels, x: testPoint.x, y: testPoint.y, preserveModelDisplayTransforms: true});
         if (undefined === hitPointWorld)
           continue;
 
