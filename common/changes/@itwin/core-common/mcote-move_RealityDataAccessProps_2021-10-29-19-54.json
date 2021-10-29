@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-common",
-      "comment": "moved RealityDataAccessProps from core-frontend to core-common",
+      "comment": "Moved RealityDataAccessProps from core-frontend to core-common",
       "type": "none"
     }
   ],
