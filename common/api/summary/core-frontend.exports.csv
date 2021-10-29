@@ -192,6 +192,7 @@ internal;getFrustumPlaneIntersectionDepthRange(frustum: Frustum, plane: Plane3dB
 internal;getGcsConverterAvailable(iModel: IModelConnection): Promise
 public;getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined
 public;getImageSourceMimeType(format: ImageSourceFormat): string
+public;GetPixelDataWorldPointArgs
 beta;getQuantityTypeKey(type: QuantityTypeArg): QuantityTypeKey
 public;GlobalAlignmentOptions
 public;GlobalLocation
