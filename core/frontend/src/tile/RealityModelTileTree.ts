@@ -12,7 +12,8 @@ import {
   assert, BentleyStatus, compareNumbers, compareStringsOrUndefined, CompressedId64Set, Id64String,
 } from "@itwin/core-bentley";
 import {
-  Cartographic, GeoCoordStatus, IModelError, PlanarClipMaskPriority, PlanarClipMaskSettings,
+  Cartographic, DefaultSupportedTypes, GeoCoordStatus, IModelError, PlanarClipMaskPriority, PlanarClipMaskSettings,
+  RealityData,
   RealityDataProvider,
   RealityDataSourceKey,
   SpatialClassifiers, ViewFlagOverrides,
@@ -24,7 +25,6 @@ import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { PlanarClipMaskState } from "../PlanarClipMaskState";
-import { DefaultSupportedTypes, RealityData } from "../RealityDataAccessProps";
 import { RealityDataConnection } from "../RealityDataConnection";
 import { RealityDataSource } from "../RealityDataSource";
 import { RenderMemory } from "../render/RenderMemory";

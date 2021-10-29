@@ -4,9 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { GuidString } from "@itwin/core-bentley";
-import { RealityDataSourceKey, RealityDataSourceProps } from "@itwin/core-common";
+import { RealityData, RealityDataSourceKey, RealityDataSourceProps } from "@itwin/core-common";
 import { IModelApp } from "./IModelApp";
-import { RealityData } from "./RealityDataAccessProps";
 import { RealityDataSource, realityDataSourceKeyToString } from "./RealityDataSource";
 
 /**

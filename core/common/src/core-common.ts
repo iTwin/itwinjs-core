@@ -84,6 +84,7 @@ export * from "./PlanarClipMask";
 export * from "./ModelGeometryChanges";
 export * from "./PlanProjectionSettings";
 export * from "./QPoint";
+export * from "./RealityDataAccessProps";
 export * from "./Render";
 export * from "./RenderMaterial";
 export * from "./RenderSchedule";
