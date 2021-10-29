@@ -93,6 +93,7 @@ Especially when combined with ambient occlusion, this effect can produce non-rea
 ![Fresnel effect applied to a plant model](./assets/fresnel-plant.jpg)
 
 The following code applies a display style similar to those illustrated above to a [Viewport]($frontend):
+
 ```
   // Enable ambient occlusion.
   viewport.viewFlags = viewport.viewFlags.with("ambientOcclusion", true);
@@ -1279,6 +1280,10 @@ Developers should use equivalent components in @itwin/itwinui-react instead.
 | Deprecated in @itwin/components-react | Use from @itwin/itwinui-react instead |
 | ---------------------------------------- | ------------------------------------- |
 | Breadcrumb                               | Breadcrumbs                           |
+
+| Deprecated in @itwin/imodel-components-react | Use from @itwin/itwinui-react instead |
+| -------------------------------------------- | ------------------------------------- |
+| ColorPickerPanel                           | ColorPicker                           |
 
 #### Slider
 

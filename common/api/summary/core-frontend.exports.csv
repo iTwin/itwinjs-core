@@ -77,6 +77,7 @@ public;CanvasDecorationList = CanvasDecoration[]
 public;canvasToImageBuffer(canvas: HTMLCanvasElement, format?: ImageBufferFormat): ImageBuffer | undefined
 public;canvasToResizedCanvasWithBars(canvasIn: HTMLCanvasElement, targetSize: Point2d, barSize?: Point2d, barStyle?: string): HTMLCanvasElement
 public;CategorySelectorState 
+internal;CesiumIonAssetProvider
 internal;ChangeFlag
 public;ChangeFlags
 public;ChangeViewedModel2dOptions
@@ -89,6 +90,7 @@ public;ComputeChordToleranceArgs
 internal;ContextMode
 public;ContextRealityModelState 
 public;ContextRotationId
+internal;ContextShareProvider
 public;CoordinateLockOverrides
 public;CoordSource
 public;CoordSystem
@@ -425,12 +427,10 @@ beta;QueryVisibleFeaturesOptions = QueryScreenFeaturesOptions | QueryTileFeature
 internal;rangeToCartographicArea(view3d: ViewState3d, range: Range3d): GlobalLocationArea | undefined
 public;readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean, options?: BatchOptions | false): Promise
 internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined
-internal;RealityDataConnection
-internal;RealityDataConnection
 alpha;RealityDataSource
-alpha;realityDataSourceKeyToString(rdSourceKey: RealityDataSourceKey): string
+alpha;RealityDataSource
+internal;fromKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise
 internal;RealityModelSource = ViewState | DisplayStyleState
-internal;RealityModelTileClient
 internal;RealityModelTileTree 
 internal;RealityModelTileTree
 internal;RealityModelTileUtils

@@ -34,7 +34,7 @@ export class ContextRealityModelState extends ContextRealityModel {
     this.iModel = iModel;
     this._appearanceOverrides = props.appearanceOverrides ? FeatureAppearance.fromJSON(props.appearanceOverrides) : undefined;
     if (undefined === props.orbitGtBlob) {
-      this.rdSourceKey = props.rdSourceKey ? props.rdSourceKey : RealityDataSource.createRealityDataSourceKeyFromUrl(props.tilesetUrl);
+      this.rdSourceKey = props.rdSourceKey ? props.rdSourceKey : RealityDataSource.createKeyFromUrl(props.tilesetUrl);
     } else {
       this.rdSourceKey = props.rdSourceKey ? props.rdSourceKey : RealityDataSource.createKeyFromOrbitGtBlobProps(props.orbitGtBlob);
     }

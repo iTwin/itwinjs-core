@@ -51,15 +51,11 @@ describe("<ColorPickerPopup/>", () => {
     fireEvent.click(pickerButton);
     expect(renderedComponent.container.querySelector(".icon-caret-up")).not.to.be.null;
 
-    const popupDiv = renderedComponent.getByTestId("components-colorpicker-panel");
-    expect(popupDiv).not.to.be.undefined;
-
-    if (popupDiv) {
-      const colorSwatch = popupDiv.querySelector("button.components-colorpicker-panel-swatch") as HTMLElement;
-      expect(colorSwatch).not.to.be.null;
-      fireEvent.click(colorSwatch);
-      expect(spyOnColorPick).to.be.calledOnce;
-    }
+    const panel = renderedComponent.getByTestId("core-popup");
+    const colorSwatch = panel.querySelector(".iui-color-swatch") as HTMLElement;
+    expect(colorSwatch).not.to.be.null;
+    fireEvent.click(colorSwatch);
+    expect(spyOnColorPick).to.be.calledOnce;
   });
 
   it("button press should open popup and allow color selection of specified preset", async () => {
@@ -76,15 +72,11 @@ describe("<ColorPickerPopup/>", () => {
     expect(pickerButton.tagName).to.be.equal("BUTTON");
     fireEvent.click(pickerButton);
 
-    const popupDiv = renderedComponent.getByTestId("components-colorpicker-panel");
-    expect(popupDiv).not.to.be.undefined;
-
-    if (popupDiv) {
-      const colorSwatch = popupDiv.querySelector("button.components-colorpicker-panel-swatch") as HTMLElement;
-      expect(colorSwatch).not.to.be.null;
-      fireEvent.click(colorSwatch);
-      expect(spyOnColorPick).to.be.calledOnce;
-    }
+    const panel = renderedComponent.getByTestId("core-popup");
+    const colorSwatch = panel.querySelector(".iui-color-swatch") as HTMLElement;
+    expect(colorSwatch).not.to.be.null;
+    fireEvent.click(colorSwatch);
+    expect(spyOnColorPick).to.be.calledOnce;
   });
 
   it("readonly - button press should not open popup", async () => {
@@ -113,14 +105,10 @@ describe("<ColorPickerPopup/>", () => {
     expect(pickerButton.tagName).to.be.equal("BUTTON");
     fireEvent.click(pickerButton);
 
-    const popupDiv = renderedComponent.getByTestId("components-colorpicker-panel");
-    expect(popupDiv).not.to.be.undefined;
-
-    if (popupDiv) {
-      const colorSwatch = popupDiv.querySelector("button.components-colorpicker-panel-swatch") as HTMLElement;
-      expect(colorSwatch).not.to.be.null;
-      fireEvent.click(colorSwatch);
-    }
+    const panel = renderedComponent.getByTestId("core-popup");
+    const colorSwatch = panel.querySelector(".iui-color-swatch") as HTMLElement;
+    expect(colorSwatch).not.to.be.null;
+    fireEvent.click(colorSwatch);
 
     fireEvent.click(pickerButton); /* close popup */
     expect(spyOnColorPopupClosed).to.be.calledOnce;
@@ -137,14 +125,10 @@ describe("<ColorPickerPopup/>", () => {
     fireEvent.click(pickerButton);
     expect(spyOnClick).not.to.be.called;
 
-    const popupDiv = renderedComponent.getByTestId("components-colorpicker-panel");
-    expect(popupDiv).not.to.be.undefined;
-
-    if (popupDiv) {
-      const colorSwatch = popupDiv.querySelector("button.components-colorpicker-panel-swatch") as HTMLElement;
-      expect(colorSwatch).not.to.be.null;
-      fireEvent.click(colorSwatch);
-    }
+    const panel = renderedComponent.getByTestId("core-popup");
+    const colorSwatch = panel.querySelector(".iui-color-swatch") as HTMLElement;
+    expect(colorSwatch).not.to.be.null;
+    fireEvent.click(colorSwatch);
     expect(spyOnClick).not.to.be.called;
   });
 
@@ -159,14 +143,10 @@ describe("<ColorPickerPopup/>", () => {
     fireEvent.click(pickerButton);
     expect(spyOnClick).to.be.called;
 
-    const popupDiv = renderedComponent.getByTestId("components-colorpicker-panel");
-    expect(popupDiv).not.to.be.undefined;
-
-    if (popupDiv) {
-      const colorSwatch = popupDiv.querySelector("button.components-colorpicker-panel-swatch") as HTMLElement;
-      expect(colorSwatch).not.to.be.null;
-      fireEvent.click(colorSwatch);
-    }
+    const popupDiv = renderedComponent.getByTestId("core-popup");
+    const colorSwatch = popupDiv.querySelector(".iui-color-swatch") as HTMLElement;
+    expect(colorSwatch).not.to.be.null;
+    fireEvent.click(colorSwatch);
     expect(spyOnClick).to.be.calledTwice;
   });
 
@@ -175,6 +155,7 @@ describe("<ColorPickerPopup/>", () => {
     const renderedComponent = render(<div>
       <ColorPickerPopup initialColor={colorDef} popupPosition={RelativePosition.BottomRight} colorDefs={[ColorDef.green, ColorDef.black, ColorDef.red]} />
     </div>);
+
     let colorSwatch = renderedComponent.container.querySelector("div.components-colorpicker-button-color-swatch") as HTMLElement;
     expect(colorSwatch.style.backgroundColor).to.eql("rgb(0, 0, 255)");
     // ensure update prop is handled
@@ -195,7 +176,7 @@ describe("<ColorPickerPopup/>", () => {
     const pickerButton = renderedComponent.getByTestId("components-colorpicker-popup-button");
     fireEvent.click(pickerButton);
 
-    const popupDiv = renderedComponent.getByTestId("components-colorpicker-panel");
+    const popupDiv = renderedComponent.getByTestId("core-popup");
     expect(popupDiv).not.to.be.undefined;
 
     const closeButton = renderedComponent.getByTestId("core-dialog-close");
@@ -216,7 +197,7 @@ describe("<ColorPickerPopup/>", () => {
     const pickerButton = renderedComponent.getByTestId("components-colorpicker-popup-button");
     fireEvent.click(pickerButton);
 
-    const popupDiv = renderedComponent.getByTestId("components-colorpicker-panel");
+    const popupDiv = renderedComponent.getByTestId("core-popup");
     expect(popupDiv).not.to.be.undefined;
 
     expect(popupDiv.querySelector("button.core-dialog-close")).to.be.null;
@@ -228,33 +209,17 @@ describe("<ColorPickerPopup/>", () => {
 
     /* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */
     const renderedComponent = render(<div>
-      <ColorPickerPopup initialColor={colorDef} popupPosition={RelativePosition.BottomRight} colorInputType="RGB"
+      <ColorPickerPopup initialColor={colorDef} popupPosition={RelativePosition.BottomRight} colorInputType="rgb"
         colorDefs={[ColorDef.green, ColorDef.black, ColorDef.red]} captureClicks={true} onClick={spyOnClick} onColorChange={spyOnChange} />
     </div>);
     const pickerButton = renderedComponent.getByTestId("components-colorpicker-popup-button");
     fireEvent.click(pickerButton);
 
-    const popupDiv = renderedComponent.getByTestId("components-colorpicker-panel");
-    expect(popupDiv).not.to.be.undefined;
-
-    const redInput = renderedComponent.getByTestId("components-colorpicker-input-value-red");
-    fireEvent.change(redInput, { target: { value: "100" } });
-    expect((redInput as HTMLInputElement).value).to.eq("100");
-    fireEvent.keyDown(redInput, { key: SpecialKey.Enter });
-    spyOnChange.calledOnce.should.be.true;
-
-    spyOnChange.resetHistory();
-    const greenInput = renderedComponent.getByTestId("components-colorpicker-input-value-green");
-    fireEvent.change(greenInput, { target: { value: "100" } });
-    expect((greenInput as HTMLInputElement).value).to.eq("100");
-    fireEvent.keyDown(greenInput, { key: SpecialKey.Enter });
-    spyOnChange.calledOnce.should.be.true;
-
-    spyOnChange.resetHistory();
-    const blueInput = renderedComponent.getByTestId("components-colorpicker-input-value-blue");
-    fireEvent.change(blueInput, { target: { value: "100" } });
-    expect((blueInput as HTMLInputElement).value).to.eq("100");
-    fireEvent.keyDown(blueInput, { key: SpecialKey.Enter });
+    const popupDiv = renderedComponent.getByTestId("core-popup");
+    const inputs = popupDiv.querySelectorAll(".iui-input.iui-small");
+    fireEvent.change(inputs[0], { target: { value: "100" } });
+    expect((inputs[0] as HTMLInputElement).value).to.eq("100");
+    fireEvent.keyDown(inputs[0], { key: SpecialKey.Enter });
     spyOnChange.calledOnce.should.be.true;
   });
 
@@ -264,34 +229,34 @@ describe("<ColorPickerPopup/>", () => {
 
     /* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */
     const renderedComponent = render(<div>
-      <ColorPickerPopup initialColor={colorDef} popupPosition={RelativePosition.BottomRight} colorInputType="HSL"
+      <ColorPickerPopup initialColor={colorDef} popupPosition={RelativePosition.BottomRight} colorInputType="hsl"
         colorDefs={[ColorDef.green, ColorDef.black, ColorDef.red]} captureClicks={true} onClick={spyOnClick} onColorChange={spyOnChange} />
     </div>);
     const pickerButton = renderedComponent.getByTestId("components-colorpicker-popup-button");
     fireEvent.click(pickerButton);
 
-    const popupDiv = renderedComponent.getByTestId("components-colorpicker-panel");
-    expect(popupDiv).not.to.be.undefined;
-
-    const hueInput = renderedComponent.getByTestId("components-colorpicker-input-value-hue");
-    fireEvent.change(hueInput, { target: { value: "100" } });
-    expect((hueInput as HTMLInputElement).value).to.eq("100");
-    fireEvent.keyDown(hueInput, { key: SpecialKey.Enter });
+    // const popupDiv = renderedComponent.container.querySelector(".iui-color-selection-wrapper") as HTMLElement;
+    // expect(popupDiv).not.to.be.null;
+    const popupDiv = renderedComponent.getByTestId("core-popup");
+    const inputs = popupDiv.querySelectorAll(".iui-input.iui-small");
+    fireEvent.change(inputs[0], { target: { value: "100" } });
+    expect((inputs[0] as HTMLInputElement).value).to.eq("100");
+    fireEvent.keyDown(inputs[0], { key: SpecialKey.Enter });
     spyOnChange.calledOnce.should.be.true;
+  });
 
-    spyOnChange.resetHistory();
-    const saturationInput = renderedComponent.getByTestId("components-colorpicker-input-value-saturation");
-    fireEvent.change(saturationInput, { target: { value: "50" } });
-    expect((saturationInput as HTMLInputElement).value).to.eq("50");
-    fireEvent.keyDown(saturationInput, { key: SpecialKey.Enter });
-    spyOnChange.calledOnce.should.be.true;
+  it("should not show swatches", async () => {
 
-    spyOnChange.resetHistory();
-    const lightnessInput = renderedComponent.getByTestId("components-colorpicker-input-value-lightness");
-    fireEvent.change(lightnessInput, { target: { value: "40" } });
-    expect((lightnessInput as HTMLInputElement).value).to.eq("40");
-    fireEvent.keyDown(lightnessInput, { key: SpecialKey.Enter });
-    spyOnChange.calledOnce.should.be.true;
+    /* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */
+    const renderedComponent = render(<div>
+      <ColorPickerPopup initialColor={colorDef} popupPosition={RelativePosition.BottomRight}
+        colorDefs={[]} captureClicks={true} />
+    </div>);
+    const pickerButton = renderedComponent.getByTestId("components-colorpicker-popup-button");
+    fireEvent.click(pickerButton);
+
+    const popupDiv = renderedComponent.getByTestId("core-popup");
+    expect(popupDiv.querySelectorAll(".iui-color-swatch").length).to.be.eql(0);
   });
 
 });
