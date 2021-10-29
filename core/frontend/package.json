@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-frontend",
-  "version": "3.0.0-extension.0",
+  "version": "3.0.0-extension.1",
   "description": "iTwin.js frontend components",
   "main": "lib/cjs/core-frontend.js",
   "module": "lib/esm/core-frontend.js",

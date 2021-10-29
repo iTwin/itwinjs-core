@@ -6422,12 +6422,12 @@ packages:
     requiresBuild: true
     dev: false
 
-  /@bentley/itwin-client/3.0.0-extension.0_4f10766db970a28728754f19b7eab0b0:
+  /@bentley/itwin-client/3.0.0-extension.1_4f10766db970a28728754f19b7eab0b0:
     resolution: {integrity: sha512-+1tKRya+SJYn+8qd6qD2Nriv39qYc088ZAP8paC8pQ9x2eKX9LXZSh4SnJTfCtXRYunDLJYIdor1f4tVEKf46A==}
     peerDependencies:
-      '@itwin/core-bentley': ^3.0.0-extension.0
+      '@itwin/core-bentley': ^3.0.0-extension.1
     dependencies:
-      '@itwin/core-bentley': 3.0.0-extension.0
+      '@itwin/core-bentley': 3.0.0-extension.1
       deep-assign: 2.0.0
       js-base64: 3.7.2
       lodash: 4.17.21
@@ -6861,14 +6861,14 @@ packages:
   /@itwin/browser-authorization/0.2.0:
     resolution: {integrity: sha512-mds+oVFelKQ/u2jWzLUxHQUHLu5PwnzGA98PE2Nwlti3LVEMq1R9BGPyXobFAA6sXmgdHJ0VkaZLTBjvaicgZw==}
     dependencies:
-      '@bentley/itwin-client': 3.0.0-extension.0_4f10766db970a28728754f19b7eab0b0
-      '@itwin/core-bentley': 3.0.0-extension.0
+      '@bentley/itwin-client': 3.0.0-extension.1_4f10766db970a28728754f19b7eab0b0
+      '@itwin/core-bentley': 3.0.0-extension.1
       oidc-client: 1.11.5
     transitivePeerDependencies:
       - supports-color
     dev: false
 
-  /@itwin/core-bentley/3.0.0-extension.0:
+  /@itwin/core-bentley/3.0.0-extension.1:
     resolution: {integrity: sha512-/23tka69MtMJj1FUDtelddM+ztoEp23nKTI1Dprx/QBW+MVBdLd1T0EPKvZCEaaRT56V3UBPaGC+vIJSoDFivQ==}
 
   /@itwin/itwinui-css/0.27.3:
@@ -6953,16 +6953,16 @@ packages:
   /@itwin/projects-client/0.2.0:
     resolution: {integrity: sha512-KgculN59Iu3YqgGLB9HjATyy+Nl6PJXDc8oHQfhZGB8ZUcA17SQ6QznVDbG1NGoHMPH3RaLMPhQgO0NZNh3A5Q==}
     dependencies:
-      '@bentley/itwin-client': 3.0.0-extension.0_4f10766db970a28728754f19b7eab0b0
-      '@itwin/core-bentley': 3.0.0-extension.0
+      '@bentley/itwin-client': 3.0.0-extension.1_4f10766db970a28728754f19b7eab0b0
+      '@itwin/core-bentley': 3.0.0-extension.1
     transitivePeerDependencies:
       - supports-color
 
   /@itwin/service-authorization/0.2.0:
     resolution: {integrity: sha512-4YGRLZAcMbwDJoQhx19Uqfztmp87X4BnWQf/8lE9Y9ZhjywdIy86gQ0jWqzN/Pgv08RsCZI3tTqmV19heaQ2hQ==}
     dependencies:
-      '@bentley/itwin-client': 3.0.0-extension.0_4f10766db970a28728754f19b7eab0b0
-      '@itwin/core-bentley': 3.0.0-extension.0
+      '@bentley/itwin-client': 3.0.0-extension.1_4f10766db970a28728754f19b7eab0b0
+      '@itwin/core-bentley': 3.0.0-extension.1
       openid-client: 4.9.1
     transitivePeerDependencies:
       - supports-color
