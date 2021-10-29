@@ -174,7 +174,9 @@ describe("MapManagerSettings", () => {
   it("Transparency slider", () => {
     viewportMock.verify((x) => x.changeBackgroundMapProps(moq.It.isAny()), moq.Times.never());
     const component = mountComponent();
-    component.find(".iui-slider-thumb").simulate("keydown", { key: SpecialKey.ArrowRight });
+
+    const sliders = component.find(".iui-slider-thumb");
+    sliders.at(0).simulate("keydown", { key: SpecialKey.ArrowRight });
     viewportMock.verify((x) => x.changeBackgroundMapProps({ transparency: 0.01 }), moq.Times.once());
     component.unmount();
   });
@@ -183,10 +185,10 @@ describe("MapManagerSettings", () => {
     viewportMock.verify((x) => x.changeBackgroundMapProps(moq.It.isAny()), moq.Times.never());
     const component = mountComponent();
 
-    const sliders = component.find(".core-slider-handle");
+    let sliders = component.find(".iui-slider-thumb");
 
     // Make sure the slider is disabled by default
-    expect(sliders.at(1).find(".core-disabled").exists()).to.be.true;
+    expect(sliders.at(1).props()["aria-disabled"]).to.be.true;
 
     // Turn on the mask toggle
     const toggles = component.find(Toggle);
@@ -195,7 +197,8 @@ describe("MapManagerSettings", () => {
     component.update();
 
     // Make sure the slider is now enabled
-    expect(sliders.at(1).find(".core-disabled").exists()).to.be.true;
+    sliders = component.find(".iui-slider-thumb");
+    expect(sliders.at(1).props()["aria-disabled"]).to.be.false;
 
     sliders.at(0).simulate("keydown", { key: SpecialKey.ArrowUp });
 

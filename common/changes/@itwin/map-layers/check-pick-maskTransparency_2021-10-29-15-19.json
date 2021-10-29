@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/map-layers",
+      "comment": "Added Mask transparency slider.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/map-layers"
+}

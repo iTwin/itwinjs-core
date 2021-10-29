@@ -192,8 +192,8 @@ export function MapManagerSettings() {
   const [exaggerationLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Settings.Exaggeration"));
   const [locatableLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Settings.Locatable"));
   const [maskingLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Settings.Mask"));
-  const [overrideMaskTransparencyLabel] =  React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.OverrideMaskTransparency"));
-  const [maskTransparencyLabel] =  React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.MaskTransparency"));
+  const [overrideMaskTransparencyLabel] =  React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Settings.OverrideMaskTransparency"));
+  const [maskTransparencyLabel] =  React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Settings.MaskTransparency"));
 
   return (
     <>
