@@ -1984,6 +1984,20 @@ export interface DecorationGeometryProps {
     readonly id: Id64String;
 }
 
+// @beta
+export enum DefaultSupportedTypes {
+    // (undocumented)
+    Cesium3dTiles = "Cesium3DTiles",
+    // (undocumented)
+    OMR = "OMR",
+    // (undocumented)
+    OPC = "OPC",
+    // (undocumented)
+    RealityMesh3dTiles = "RealityMesh3DTiles",
+    // (undocumented)
+    Terrain3dTiles = "Terrain3DTiles"
+}
+
 // @internal (undocumented)
 export const defaultTileOptions: TileOptions;
 
@@ -6562,6 +6576,26 @@ export interface ReadableFormData extends Readable {
 
 // @internal
 export function readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription;
+
+// @beta
+export interface RealityData {
+    // (undocumented)
+    getBlobUrl(accessToken: AccessToken, blobPath: string): Promise<URL>;
+    // (undocumented)
+    id?: string;
+    // (undocumented)
+    rootDocument?: string;
+    // (undocumented)
+    type?: string;
+}
+
+// @beta
+export interface RealityDataAccess {
+    // (undocumented)
+    getRealityData: (accessToken: AccessToken, iTwinId: string | undefined, realityDataId: string) => Promise<RealityData>;
+    // (undocumented)
+    getRealityDataUrl: (iTwinId: string | undefined, realityDataId: string) => Promise<string>;
+}
 
 // @alpha
 export enum RealityDataFormat {
