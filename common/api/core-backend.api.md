@@ -4457,12 +4457,6 @@ export interface WorkspaceResourceProps {
     rscName: WorkspaceResourceName;
 }
 
-// @beta
-export enum WorkspaceSetting {
-    // (undocumented)
-    ContainerAlias = "workspace/container/alias"
-}
-
 
 // (No @packageDocumentation comment for this package)
 
