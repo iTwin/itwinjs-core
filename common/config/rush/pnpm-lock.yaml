@@ -1689,7 +1689,6 @@ importers:
       '@types/react-select': 3.0.26
       '@types/sinon': ^9.0.0
       '@types/sinon-chai': ^3.2.0
-      '@types/testing-library__react-hooks': ^4.0.0
       '@wojtekmaj/enzyme-adapter-react-17': ^0.6.3
       chai: ^4.1.2
       chai-as-promised: ^7
@@ -1748,7 +1747,6 @@ importers:
       '@types/react-select': 3.0.26
       '@types/sinon': 9.0.11
       '@types/sinon-chai': 3.2.5
-      '@types/testing-library__react-hooks': 4.0.0_react@17.0.2
       '@wojtekmaj/enzyme-adapter-react-17': 0.6.5_enzyme@3.11.0+react@17.0.2
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
@@ -2112,7 +2110,6 @@ importers:
       '@types/rimraf': ^2.0.2
       '@types/sinon': ^9.0.0
       '@types/sinon-chai': ^3.2.0
-      '@types/testing-library__react-hooks': ^4.0.0
       cache-require-paths: ^0.3.0
       chai: ^4.1.2
       chai-as-promised: ^7
@@ -2191,7 +2188,6 @@ importers:
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@types/react': 17.0.31
       '@types/react-dom': 17.0.10
-      '@types/testing-library__react-hooks': 4.0.0_fc2bb8a5b006d3f25c5f84ea777e678d
       cache-require-paths: 0.3.0
       cross-env: 5.2.1
       dotenv: 10.0.0
@@ -2532,7 +2528,6 @@ importers:
       '@types/react-dom': ^17.0.0
       '@types/sinon': ^9.0.0
       '@types/sinon-chai': ^3.2.0
-      '@types/testing-library__react-hooks': ^4.0.0
       '@wojtekmaj/enzyme-adapter-react-17': ^0.6.3
       chai: ^4.1.2
       chai-as-promised: ^7
@@ -2592,7 +2587,6 @@ importers:
       '@types/react-dom': 17.0.10
       '@types/sinon': 9.0.11
       '@types/sinon-chai': 3.2.5
-      '@types/testing-library__react-hooks': 4.0.0_fc2bb8a5b006d3f25c5f84ea777e678d
       '@wojtekmaj/enzyme-adapter-react-17': 0.6.5_fae758709a8810ba97b4c03852dde4d0
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
@@ -3965,7 +3959,6 @@ importers:
       '@types/react': 17.0.31
       '@types/react-dom': ^17.0.0
       '@types/sinon': ^9.0.0
-      '@types/testing-library__react-hooks': ^4.0.0
       '@types/uuid': ^7.0.2
       '@wojtekmaj/enzyme-adapter-react-17': ^0.6.3
       chai: ^4.1.2
@@ -4015,7 +4008,6 @@ importers:
       '@types/react': 17.0.31
       '@types/react-dom': 17.0.10
       '@types/sinon': 9.0.11
-      '@types/testing-library__react-hooks': 4.0.0_react-dom@17.0.2+react@17.0.2
       '@types/uuid': 7.0.5
       '@wojtekmaj/enzyme-adapter-react-17': 0.6.5_fae758709a8810ba97b4c03852dde4d0
       chai: 4.3.4
@@ -4085,7 +4077,6 @@ importers:
       '@types/rimraf': ^2.0.2
       '@types/sinon': ^9.0.0
       '@types/sinon-chai': ^3.2.0
-      '@types/testing-library__react-hooks': ^4.0.0
       '@wojtekmaj/enzyme-adapter-react-17': ^0.6.3
       chai: ^4.1.2
       chai-as-promised: ^7
@@ -4175,7 +4166,6 @@ importers:
       '@types/rimraf': 2.0.5
       '@types/sinon': 9.0.11
       '@types/sinon-chai': 3.2.5
-      '@types/testing-library__react-hooks': 4.0.0_fc2bb8a5b006d3f25c5f84ea777e678d
       '@wojtekmaj/enzyme-adapter-react-17': 0.6.5_fae758709a8810ba97b4c03852dde4d0
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
@@ -4242,7 +4232,6 @@ importers:
       '@types/shortid': ~0.0.29
       '@types/sinon': ^9.0.0
       '@types/sinon-chai': ^3.2.0
-      '@types/testing-library__react-hooks': ^4.0.0
       '@wojtekmaj/enzyme-adapter-react-17': ^0.6.3
       callable-instance2: 1.0.0
       chai: ^4.1.2
@@ -4343,7 +4332,6 @@ importers:
       '@types/react-window': 1.8.5
       '@types/sinon': 9.0.11
       '@types/sinon-chai': 3.2.5
-      '@types/testing-library__react-hooks': 4.0.0_react-dom@17.0.2+react@17.0.2
       '@wojtekmaj/enzyme-adapter-react-17': 0.6.5_fae758709a8810ba97b4c03852dde4d0
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
@@ -4403,7 +4391,6 @@ importers:
       '@types/react-select': 3.0.26
       '@types/sinon': ^9.0.0
       '@types/sinon-chai': ^3.2.0
-      '@types/testing-library__react-hooks': ^4.0.0
       '@wojtekmaj/enzyme-adapter-react-17': ^0.6.3
       chai: ^4.1.2
       chai-as-promised: ^7
@@ -4472,7 +4459,6 @@ importers:
       '@types/react-select': 3.0.26
       '@types/sinon': 9.0.11
       '@types/sinon-chai': 3.2.5
-      '@types/testing-library__react-hooks': 4.0.0_fc2bb8a5b006d3f25c5f84ea777e678d
       '@wojtekmaj/enzyme-adapter-react-17': 0.6.5_fae758709a8810ba97b4c03852dde4d0
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
@@ -8163,39 +8149,6 @@ packages:
 
   /@types/tapable/1.0.8:
     resolution: {integrity: sha512-ipixuVrh2OdNmauvtT51o3d8z12p6LtFW9in7U79der/kwejjdNchQC5UMn5u/KxNoM7VHHOs/l8KS8uHxhODQ==}
-    dev: true
-
-  /@types/testing-library__react-hooks/4.0.0_fc2bb8a5b006d3f25c5f84ea777e678d:
-    resolution: {integrity: sha512-UzZUXthQtVjDruR2YA+hqg9ux5AfmZ8Kaw+QDungax+T7wb/5NC4x7YOpIqRx7oY3KksGQ69bzNE/xwzb5NslQ==}
-    deprecated: This is a stub types definition. @testing-library/react-hooks provides its own type definitions, so you do not need this installed.
-    dependencies:
-      '@testing-library/react-hooks': 7.0.2_fc2bb8a5b006d3f25c5f84ea777e678d
-    transitivePeerDependencies:
-      - react
-      - react-dom
-      - react-test-renderer
-    dev: true
-
-  /@types/testing-library__react-hooks/4.0.0_react-dom@17.0.2+react@17.0.2:
-    resolution: {integrity: sha512-UzZUXthQtVjDruR2YA+hqg9ux5AfmZ8Kaw+QDungax+T7wb/5NC4x7YOpIqRx7oY3KksGQ69bzNE/xwzb5NslQ==}
-    deprecated: This is a stub types definition. @testing-library/react-hooks provides its own type definitions, so you do not need this installed.
-    dependencies:
-      '@testing-library/react-hooks': 7.0.2_react-dom@17.0.2+react@17.0.2
-    transitivePeerDependencies:
-      - react
-      - react-dom
-      - react-test-renderer
-    dev: true
-
-  /@types/testing-library__react-hooks/4.0.0_react@17.0.2:
-    resolution: {integrity: sha512-UzZUXthQtVjDruR2YA+hqg9ux5AfmZ8Kaw+QDungax+T7wb/5NC4x7YOpIqRx7oY3KksGQ69bzNE/xwzb5NslQ==}
-    deprecated: This is a stub types definition. @testing-library/react-hooks provides its own type definitions, so you do not need this installed.
-    dependencies:
-      '@testing-library/react-hooks': 7.0.2_react@17.0.2
-    transitivePeerDependencies:
-      - react
-      - react-dom
-      - react-test-renderer
     dev: true
 
   /@types/tough-cookie/4.0.1:
@@ -19082,7 +19035,7 @@ packages:
   /regenerator-transform/0.14.5:
     resolution: {integrity: sha512-eOf6vka5IO151Jfsw2NO9WpGX58W6wWmefK3I1zEGr0lOD0u8rwPaNqQL1aRxUaxLeKO3ArNh3VYg1KbaD+FFw==}
     dependencies:
-      '@babel/runtime': 7.15.4
+      '@babel/runtime': 7.12.1
     dev: true
 
   /regex-cache/0.4.4:
