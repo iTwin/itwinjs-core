@@ -204,12 +204,12 @@ export type {
   ViewState,
   ViewState2d,
   ViewState3d,
-} from // ViewTool @REAL
-"@itwin/core-frontend";
+  // ViewTool @REAL
+} from "@itwin/core-frontend";
 
 // Classes
 export type {
-  AccuDrawHintBuilder,
+  // AccuDrawHintBuilder, @REAL
   AccuSnap,
   ActivityMessageDetails,
   AuxCoordSystem2dState,
@@ -240,7 +240,7 @@ export type {
   ElementLocateManager,
   ElementPicker,
   ElementState,
-  EmphasizeElements,
+  // EmphasizeElements, @REAL
   EntityState,
   Environment,
   EventController,
@@ -254,7 +254,7 @@ export type {
   GeometricModel3dState,
   GlobeAnimator,
   GraphicalEditingScope,
-  GraphicBranch,
+  // GraphicBranch, @REAL
   HiliteSet,
   HitDetail,
   HitList,
@@ -342,20 +342,20 @@ export type {
   // ViewGlobeSatelliteTool, @TOOL-IMPL
   ViewingSpace,
   ViewManager,
-} from // ViewRect, @REAL
-// ViewRedoTool, @TOOL-IMPL
-// ViewToggleCameraTool, @TOOL-IMPL
-// ViewUndoTool, @TOOL-IMPL
-// WalkViewTool, @TOOL-IMPL
-// WindowAreaTool, @TOOL-IMPL
-// ZoomViewTool @TOOL-IMPL
-"@itwin/core-frontend";
+  // ViewRect, @REAL
+  // ViewRedoTool, @TOOL-IMPL
+  // ViewToggleCameraTool, @TOOL-IMPL
+  // ViewUndoTool, @TOOL-IMPL
+  // WalkViewTool, @TOOL-IMPL
+  // WindowAreaTool, @TOOL-IMPL
+  // ZoomViewTool @TOOL-IMPL
+} from "@itwin/core-frontend";
 
 // namespaces (minus conflicts)
 export type {
-  EditManipulator,
-  FeatureSymbology,
+  // EditManipulator, @REAL
+  // FeatureSymbology, @REAL
   Frustum2d,
   PerModelCategoryVisibility,
-} from // Pixel @REAL
-"@itwin/core-frontend";
+  // Pixel @REAL
+} from "@itwin/core-frontend";
