@@ -7,8 +7,9 @@ import { shallow } from "enzyme";
 import * as React from "react";
 import * as moq from "typemoq";
 import { IModelConnection } from "@itwin/core-frontend";
-import { ViewSelector } from "../../appui-react";
+import { FrameworkVersion, UiFramework, ViewSelector } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
+import { Provider } from "react-redux";
 
 // cSpell:ignore Spatials
 
@@ -18,22 +19,35 @@ describe("ViewSelector", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
+    UiFramework.setUiVersion("1");
+    await TestUtils.flushAsyncOperations();
   });
 
-  after(() => {
+  after(async () => {
+  // restore to default "2" setting
+    UiFramework.setUiVersion("2");
+    await TestUtils.flushAsyncOperations();
     TestUtils.terminateUiFramework();
   });
 
   it("should render correctly", () => {
     const wrapper = shallow(
-      <ViewSelector imodel={imodelMock.object} />,
+      <Provider store={TestUtils.store}>
+        <FrameworkVersion>
+          <ViewSelector imodel={imodelMock.object} />
+        </FrameworkVersion>
+      </Provider>
     );
     wrapper.should.matchSnapshot();
   });
 
   it("should set Show settings by ViewSelector.updateShowSettings", () => {
     const wrapper = mount(
-      <ViewSelector imodel={imodelMock.object} listenForShowUpdates={true} />,
+      <Provider store={TestUtils.store}>
+        <FrameworkVersion>
+          <ViewSelector imodel={imodelMock.object} listenForShowUpdates={true} />
+        </FrameworkVersion>
+      </Provider>
     );
     const vs = wrapper.find(ViewSelector);
     expect(vs).to.not.be.undefined;
@@ -53,7 +67,11 @@ describe("ViewSelector", () => {
 
   it("should trigger componentDidUpdate processing", async () => {
     const wrapper = mount(
-      <ViewSelector imodel={imodelMock.object} />,
+      <Provider store={TestUtils.store}>
+        <FrameworkVersion>
+          <ViewSelector imodel={imodelMock.object} />
+        </FrameworkVersion>
+      </Provider>
     );
     wrapper.setProps({ imodel: imodelMock2.object });
     await TestUtils.flushAsyncOperations();
