@@ -75,7 +75,6 @@
     "@itwin/eslint-plugin": "workspace:*",
     "@types/react": "17.0.31",
     "@types/react-dom": "^17.0.0",
-    "@types/testing-library__react-hooks": "^4.0.0",
     "cache-require-paths": "^0.3.0",
     "cross-env": "^5.1.4",
     "dotenv": "^10.0.0",

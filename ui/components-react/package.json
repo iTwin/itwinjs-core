@@ -73,7 +73,6 @@
     "@types/react": "17.0.31",
     "@types/react-data-grid": "4.0.2",
     "@types/react-dom": "^17.0.0",
-    "@types/testing-library__react-hooks": "^4.0.0",
     "@types/react-highlight-words": "^0.16.1",
     "@types/react-select": "3.0.26",
     "@types/react-virtualized": "^9.21.11",
