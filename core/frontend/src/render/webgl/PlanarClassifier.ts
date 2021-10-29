@@ -361,6 +361,8 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     params[1] = this.outsideDisplay;
     params[2] = this._contentMode;
     params[3] = (this._planarClipMask?.settings.transparency === undefined) ? -1 : this._planarClipMask.settings.transparency;
+    if (this._planarClipMask?.settings.invert)
+      params[2] = - params[2];
   }
 
   public get hiliteTexture(): Texture | undefined { return undefined !== this._classifierBuffers ? this._classifierBuffers.textures.hilite : undefined; }

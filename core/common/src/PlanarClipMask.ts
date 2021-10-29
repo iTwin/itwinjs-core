@@ -59,6 +59,8 @@ export interface PlanarClipMaskProps {
   priority?: number;
   /** @see [[PlanarClipMaskSettings.transparency]]. */
   transparency?: number;
+  /** @see PlanarClipMaskSettings.invert */
+  invert?: boolean;
 }
 
 /** Describes how to mask the geometry of one [GeometricModel]($backend) for display. The mask is produced by projecting geometry from any number of other models -
@@ -88,6 +90,8 @@ export class PlanarClipMaskSettings {
    If no transparency is defined then the transparencies of the mask elements are used.
    */
   public readonly transparency?: number;
+  /** A value of true indicates that the mask should be inverted and only content within the mask should be displayed */
+  public readonly invert?: boolean;
   private readonly _modelIds?: CompressedId64Set;
   private readonly _subCategoryOrElementIds?: CompressedId64Set;
 
@@ -101,24 +105,26 @@ export class PlanarClipMaskSettings {
     if (!json || undefined === json.mode)
       return this.defaults;
 
-    return new PlanarClipMaskSettings(json.mode, json.transparency, json.modelIds, json.subCategoryOrElementIds, json.priority);
+    return new PlanarClipMaskSettings(json.mode, json.transparency, json.modelIds, json.subCategoryOrElementIds, json.priority, json.invert);
   }
 
   /** Create settings for [[PlanarClipMaskMode.Models]]. */
-  public static createForModels(modelIds: Iterable<Id64String> | undefined, transparency?: number): PlanarClipMaskSettings {
+  public static createForModels(modelIds: Iterable<Id64String> | undefined, transparency?: number, invert?: boolean): PlanarClipMaskSettings {
     return this.fromJSON({
       mode: PlanarClipMaskMode.Models,
       transparency,
       modelIds: modelIds ? CompressedId64Set.sortAndCompress(modelIds) : undefined,
+      invert,
     });
   }
 
   /** Create settings that filter by element or subcategory. */
   public static createForElementsOrSubCategories(mode: PlanarClipMaskMode.IncludeElements | PlanarClipMaskMode.ExcludeElements | PlanarClipMaskMode.IncludeSubCategories,
-    elementOrSubCategoryIds: Iterable<Id64String>, modelIds?: Iterable<Id64String>, transparency?: number): PlanarClipMaskSettings {
+    elementOrSubCategoryIds: Iterable<Id64String>, modelIds?: Iterable<Id64String>, transparency?: number, invert?: boolean): PlanarClipMaskSettings {
     return this.fromJSON({
       mode,
       transparency,
+      invert,
       modelIds: modelIds ? CompressedId64Set.sortAndCompress(modelIds) : undefined,
       subCategoryOrElementIds: CompressedId64Set.sortAndCompress(elementOrSubCategoryIds),
     });
@@ -127,8 +133,8 @@ export class PlanarClipMaskSettings {
   /** Create settings that mask by priority.
    * @see [[PlanarClipMaskPriority]] for default priority values based on model type.
    */
-  public static createByPriority(priority: number, transparency?: number) {
-    return new PlanarClipMaskSettings(PlanarClipMaskMode.Priority, transparency, undefined, undefined, priority);
+  public static createByPriority(priority: number, transparency?: number, invert?: boolean) {
+    return new PlanarClipMaskSettings(PlanarClipMaskMode.Priority, transparency, undefined, undefined, priority, invert);
   }
 
   /** Create JSON object representing this [[PlanarClipMaskSettings]] */
@@ -146,6 +152,9 @@ export class PlanarClipMaskSettings {
     if (undefined !== this.transparency)
       props.transparency = this.transparency;
 
+    if (undefined !== this.invert && this.invert)
+      props.invert = this.invert;
+
     return props;
   }
 
@@ -158,6 +167,7 @@ export class PlanarClipMaskSettings {
     return this.mode === other.mode &&
       this.priority === other.priority &&
       this.transparency === other.transparency &&
+      this.invert === other.invert &&
       this._modelIds === other._modelIds &&
       this._subCategoryOrElementIds === other._subCategoryOrElementIds;
   }
@@ -176,11 +186,12 @@ export class PlanarClipMaskSettings {
     });
   }
 
-  private constructor(mode: PlanarClipMaskMode, transparency?: number, modelIds?: CompressedId64Set, subCategoryOrElementIds?: CompressedId64Set, priority?: number) {
+  private constructor(mode: PlanarClipMaskMode, transparency?: number, modelIds?: CompressedId64Set, subCategoryOrElementIds?: CompressedId64Set, priority?: number, invert?: boolean) {
     this.mode = mode;
     this._modelIds = modelIds;
     this._subCategoryOrElementIds = subCategoryOrElementIds;
     this.priority = priority;
+    this.invert = invert;
     this.transparency = undefined !== transparency ? Math.max(0, Math.min(1, transparency)) : undefined;
 
     if (modelIds)
