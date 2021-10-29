@@ -51,7 +51,7 @@
     },
     "app1/tree/blah": {
       "type": "boolean",
-      "default": "true",
+      "default": true,
       "description": "the setting for blah"
     },
     "workspace/container/alias": {

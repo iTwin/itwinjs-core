@@ -196,5 +196,30 @@ Of course `SettingDictionary`s wouldn't be very useful if you could only define 
 
 ## WorkspaceContainers
 
-[WorkspaceContainer]($backend)s are
+[WorkspaceContainer]($backend)s are named containers of a group of [workspace resources](#workspace-resources).  There is no limit on the number of `WorkspaceContainers` accessed during a session, nor is there a limit on the number of resources held in a `WorkspaceContainer`. However, keep in mind:
+
+ - Access rights are per-WorkspaceContainer. That is, if a user has permission to access a `WorkspaceContainer`, they will have access to all resources within it.
+ - For offline access, WorkspaceContainers are saved as files on local computers, and must be initially downloaded and whenever they are updated. Multi-gigabyte downloads can be time consuming.
+ - WorkspaceContainers are versioned as a whole. There is no versioning of individual resources within a WorkspaceContainer.
+
+Generally, it is expected that a single `WorkspaceContainer` will hold a related set of resources for a single "scope" (e.g. organization, discipline, iTwin, iModel, etc.) for an appropriate set of users.
+
+### WorkspaceContainerName and WorkspaceContainerId
+
+#### The `workspace/container/alias` Setting
+
+### WorkspaceContainer Versioning
+
+
+## Workspace Resources
+
+A `WorkspaceContainer` holds a set of resources, each with a [WorkspaceResourceName]($backend) and a resource type. Possible resource types are: `string`, `blob`, or `file`.
+
+
+### WorkspaceResourceNames
+
+> Note: WorkspaceResourceNames must be unique for each resource type. But, it is possible to have a string, a blob, and a file resource in the same `WorkspaceContainer` with the same `WorkspaceResourceName`.
+
+### SettingDictionary Resources
+
 

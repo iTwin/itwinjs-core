@@ -22,7 +22,7 @@ describe("SettingsRegistry", () => {
 
     expect(SettingsSpecRegistry.allSpecs.get("app1/list/openMode")!.type).equals("string");
     expect(SettingsSpecRegistry.allSpecs.get("app1/list/openMode")!.default).equals("singleClick");
-    expect(SettingsSpecRegistry.allSpecs.get("app1/tree/blah")!.default).equals("blah default");
+    expect(SettingsSpecRegistry.allSpecs.get("app1/tree/blah")!.default).equals(true);
   });
 
 });
