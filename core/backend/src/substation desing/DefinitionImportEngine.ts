@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { Id64String, IModelStatus } from "@bentley/bentleyjs-core";
 import {
   DefinitionContainer, GeometricElement3d, IModelDb, IModelTransformer, Model, PhysicalElementFulfillsFunction, Relationship, SpatialCategory,
 } from "../imodeljs-backend";

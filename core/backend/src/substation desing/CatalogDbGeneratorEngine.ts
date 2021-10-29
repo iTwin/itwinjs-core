@@ -5,10 +5,10 @@
 import { Id64String } from "@bentley/bentleyjs-core";
 import { Arc3d, Box, Cone, LineString3d, Point2d, Point3d, PointString3d, Vector3d } from "@bentley/geometry-core";
 import {
-  DefinitionContainer, DefinitionGroup, ElementOwnsChildElements, IModelDb, PhysicalElementFulfillsFunction, SnapshotDb,
+  DefinitionContainer, DefinitionGroup,ElementOwnsChildElements,IModelDb, PhysicalElementFulfillsFunction, SnapshotDb,
 } from "../imodeljs-backend";
 import { Code, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps, IModel, PhysicalElementProps } from "@bentley/imodeljs-common";
-import { ElectricalPhysicalEquipment, ElectricalEquipmentDefinition, ElectricalFunctionalEquipment, ElectricalPhysicalRecipe, ElectricalPhysicalType, PhysicalContainer, FunctionalContainer } from "./Element";
+import { ElectricalEquipmentDefinition, ElectricalFunctionalEquipment, ElectricalPhysicalEquipment, ElectricalPhysicalRecipe, ElectricalPhysicalType, FunctionalContainer, PhysicalContainer } from "./Element";
 import {
   SpatialCategoryName, StandardDefinitionManager, SubstationClassNames, SubstationFullClassNames,
 } from "./StandardDefinitionManager";
@@ -301,7 +301,7 @@ export class CatalogDbGeneratorEngine {
       classFullName: SubstationFullClassNames.ElectricalAnchorPoint3d,
       model: circuitBreakerPhysicalTemplateId,
       category: props.genericEquipmentCategoryId,
-      //parent: new ElementOwnsChildElements(circuitBreakerId),
+      parent: new ElementOwnsChildElements(circuitBreakerId),
       code: Code.createEmpty(),
       userLabel: "Input",
       placement: { origin: Point3d.create(0.25, 0.5, 1), angles: { yaw: 0, pitch: 0, roll: 0 } },

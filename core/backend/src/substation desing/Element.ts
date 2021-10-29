@@ -2,16 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { DbResult, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
+import {  Id64String } from "@bentley/bentleyjs-core";
 import {
-  DefinitionContainer,
-  DefinitionElement, DrawingCategory, ECSqlStatement, FunctionalComponentElement, FunctionalModel, IModelDb, PhysicalElement, PhysicalElementFulfillsFunction, PhysicalElementIsOfType, PhysicalModel, PhysicalType,
-  SpatialCategory,
+  DefinitionElement,  FunctionalComponentElement, FunctionalModel, IModelDb, PhysicalElement, PhysicalElementIsOfType, PhysicalModel, PhysicalType,
   TemplateRecipe3d,
 } from "../imodeljs-backend";
 import {
-  Code, CodeScopeProps, CodeScopeSpec, CodeSpec, DefinitionElementProps, ElementAspectProps, ElementProps, FunctionalElementProps, GeometricModel3dProps, IModel, IModelError, ModelProps,
-  PhysicalElementProps, PhysicalTypeProps, RelatedElement, RelatedElementProps, SubCategoryAppearance,
+  Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementAspectProps, ElementProps, FunctionalElementProps, GeometricModel3dProps, ModelProps,
+  PhysicalElementProps, PhysicalTypeProps, RelatedElement, RelatedElementProps,
 } from "@bentley/imodeljs-common";
 
 /** Enum containing the full class names from the Substation schema.

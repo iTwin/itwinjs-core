@@ -5,33 +5,30 @@
 
 import { assert } from "chai";
 import { join } from "path";
-import * as semver from "semver";
-import * as path from "path";
-import { ClientRequestContext, DbOpcode, DbResult, Guid, GuidString, Id64, Id64Array, Id64String, IModelStatus, Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, DbOpcode, DbResult, Guid, GuidString, Id64, Id64Array, Id64String, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Point3d, Range2d, Range3d, StandardViewIndex, YawPitchRollAngles } from "@bentley/geometry-core";
 import { ChangesType } from "@bentley/imodelhub-client";
-import { Code, ColorByName, ColorDef, IModel, IModelVersion, PhysicalElementProps, Placement3d, RenderMode, SubCategoryAppearance, ViewFlagProps, ViewFlags } from "@bentley/imodeljs-common";
+import {  ColorByName, ColorDef, IModel, IModelVersion, Placement3d, RenderMode, SubCategoryAppearance, ViewFlagProps, ViewFlags } from "@bentley/imodeljs-common";
 import {
-  BackendLoggerCategory, BisCoreSchema, BriefcaseDb, CategorySelector, ConcurrencyControl, DefinitionModel, DisplayStyle2d, DisplayStyle3d, DisplayStyleCreationOptions, DocumentListModel, Drawing, DrawingCategory, DrawingViewDefinition, ECSqlStatement, Element, ElementRefersToElements, ExternalSourceAspect,
+  BackendLoggerCategory, BisCoreSchema, BriefcaseDb, CategorySelector, ConcurrencyControl, DefinitionModel, DisplayStyle2d, DisplayStyle3d, DisplayStyleCreationOptions, DocumentListModel, Drawing, DrawingCategory, DrawingViewDefinition, ECSqlStatement, ExternalSourceAspect,
   FunctionalModel,
   FunctionalSchema,
   IModelDb,  IModelHost, IModelJsFs, IModelJsNative, IModelTransformer, InformationPartitionElement, ModelSelector, NativeLoggerCategory, PhysicalElement, PhysicalModel,
-  PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory, SpatialViewDefinition,
+  SnapshotDb, SpatialCategory, SpatialViewDefinition,
 } from "../../imodeljs-backend";
 import { HubMock } from "../HubMock";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
-import { CountingIModelImporter, IModelToTextFileExporter, IModelTransformerUtils, TestIModelTransformer } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { HubUtility } from "./HubUtility";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { StandardDefinitionManager } from "../../substation desing/StandardDefinitionManager";
 import { lockElements } from "../../substation desing/EntityLocks";
 import { EquipmentPlacementProps, EquipmentPlacementService } from "../../substation desing/EquipmentPlacementService";
-import { DefinitionContainerName, TestDefinitionDataCodes } from "../../substation desing/TestDataConstants";
-import { DefinitionImportEngine } from "../../substation desing/DefinitionImportEngine";
+import {  TestDefinitionDataCodes } from "../../substation desing/TestDataConstants";
 import { SubstationSchema } from "./Schema";
 
-const  catalogDbPath = "C:\\Users\\Pratik.Thube\\source\\repos\\imodeljs\\core\\backend\\src\\substation desing\\catlog\\Substation Test Catalog.bim";
+const catalogDbPath = join(KnownTestLocations.assetsDir ,"substation", "Substation Test Catalog.bim");
+// const  catalogDbPath = "C:\\Users\\Pratik.Thube\\source\\repos\\imodeljs\\core\\backend\\src\\substation desing\\catlog\\Substation Test Catalog.bim";
 /**
  * Creates a 3d view with some defaults. To be improved if we want to expose this.
  */
@@ -103,7 +100,8 @@ async function provisionOnlineIModel(context: AuthorizedClientRequestContext, iM
     context.enter();
   }
   // Import Temp Electrical, Functional schemas.
-  const electricalSchemaPath = "\\\\?\\C:\\Users\\Pratik.Thube\\source\\repos\\imodeljs\\core\\backend\\src\\test\\Substation.ecschema.xml";
+  const electricalSchemaPath = join(KnownTestLocations.assetsDir ,"substation", "Substation.ecschema.xml");
+  // const electricalSchemaPath = "\\\\?\\C:\\Users\\Pratik.Thube\\source\\repos\\imodeljs\\core\\backend\\src\\test\\Substation.ecschema.xml";
   const schemas: string[] = [BisCoreSchema.schemaFilePath, FunctionalSchema.schemaFilePath, electricalSchemaPath];
   await iModel.importSchemas(ClientRequestContext.current, schemas);
 
@@ -115,7 +113,7 @@ async function provisionOnlineIModel(context: AuthorizedClientRequestContext, iM
   const documentListModelId: Id64String = DocumentListModel.insert(iModel, IModel.rootSubjectId, "Substation Documents");
   const definitionModelId: Id64String = DefinitionModel.insert(iModel, IModel.rootSubjectId, "Substation Definitions");
   const drawingModelId: Id64String = Drawing.insert(iModel, documentListModelId, "Substation Drawings");
-  const functionalModelId: Id64String = FunctionalModel.insert(iModel, IModel.rootSubjectId, "Substation Functional");
+  FunctionalModel.insert(iModel, IModel.rootSubjectId, "Substation Functional");
 
   // Create a couple of default categories (later these follow the schema)
   const appearance: SubCategoryAppearance = new SubCategoryAppearance({
@@ -129,7 +127,7 @@ async function provisionOnlineIModel(context: AuthorizedClientRequestContext, iM
 
   const defaultView3dId: Id64String = await insert3dView(context, iModel, [spatialLocationModelId], definitionModelId, [defaultSpatialCategoryId]);
   context.enter();
-  const defaultView2dId: Id64String = await insert2dView(context, iModel, drawingModelId, definitionModelId, [defaultDrawingCategoryId]);
+  await insert2dView(context, iModel, drawingModelId, definitionModelId, [defaultDrawingCategoryId]);
   context.enter();
 
   iModel.views.setDefaultViewId(defaultView3dId);
@@ -181,7 +179,6 @@ describe.only("IModelTransformerHubSubstationSpecific (#integration)", () => {
     if (IModelJsFs.existsSync(masterSeedFileName))
       IModelJsFs.removeSync(masterSeedFileName); // make sure file from last run does not exist
 
-    const state0 = [1, 2];
     const masterSeedDb = SnapshotDb.createEmpty(masterSeedFileName, { rootSubject: { name: "Master" } });
     // populateMaster(masterSeedDb, state0);
     assert.isTrue(IModelJsFs.existsSync(masterSeedFileName));
@@ -329,6 +326,7 @@ describe.only("IModelTransformerHubSubstationSpecific (#integration)", () => {
     return briefcaseDb.pushChanges(requestContext, description, changesType);
   }
 
+  /*
   async function  importACMEBreakerDefination(requestContext:  AuthorizedClientRequestContext, targetDB: IModelDb) {
     requestContext.enter();
     const sourceDb = SnapshotDb.openFile(catalogDbPath);
@@ -337,7 +335,7 @@ describe.only("IModelTransformerHubSubstationSpecific (#integration)", () => {
     const defImporter = new DefinitionImportEngine(srcStandardDefinitionManager, targetStandardDefinitionManager);
     const breakerDefId = srcStandardDefinitionManager.tryGetEquipmentDefinitionId(DefinitionContainerName.SampleEquipmentCatalog, TestDefinitionDataCodes.ACMEBreaker);
     await defImporter.importEquipmentDefinition(requestContext, breakerDefId!);
-  }
+  }*/
 
   function getEquipmentPlacementProps(srcIModelDbPath: string, targetIModelDb: IModelDb, equipmentDefId: string, placement: Placement3d, codeValue: string): EquipmentPlacementProps {
     const physicalModelId = targetIModelDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(targetIModelDb, IModel.rootSubjectId, "Substation Physical"))!;// IModelDb.rootSubjectId
@@ -357,11 +355,11 @@ describe.only("IModelTransformerHubSubstationSpecific (#integration)", () => {
     return props;
   }
 
-  async function placeACMEBreaker(requestContext: AuthorizedClientRequestContext, iModelDb: IModelDb, codeValue: string) {
-    requestContext.enter();
+  async function placeACMEBreaker(reqContext: AuthorizedClientRequestContext, iModelDb: IModelDb, codeValue: string) {
+    reqContext.enter();
     if (iModelDb.isBriefcaseDb()) {
       iModelDb.concurrencyControl.startBulkMode();
-      requestContext.enter();
+      reqContext.enter();
     }
     const srcDb = SnapshotDb.openFile(catalogDbPath);
     const definitionId = EquipmentPlacementService.getEquipmentDefinitionIdByName(TestDefinitionDataCodes.ACMEBreaker, srcDb);
@@ -369,12 +367,12 @@ describe.only("IModelTransformerHubSubstationSpecific (#integration)", () => {
 
     const placementProps = getEquipmentPlacementProps(catalogDbPath, iModelDb, definitionId, placement, codeValue);
 
-    const placedBreakerEquipmentId = await EquipmentPlacementService.placeEquipment(requestContext, iModelDb, placementProps);
+    const placedBreakerEquipmentId = await EquipmentPlacementService.placeEquipment(reqContext, iModelDb, placementProps);
     assert.isTrue(Id64.isValidId64(placedBreakerEquipmentId));
 
     if (iModelDb.isBriefcaseDb()) {
-      await iModelDb.concurrencyControl.endBulkMode(requestContext);
-      requestContext.enter();
+      await iModelDb.concurrencyControl.endBulkMode(reqContext);
+      reqContext.enter();
     }
     const physicalElement = iModelDb.elements.getElement<PhysicalElement>(placedBreakerEquipmentId, PhysicalElement);
     assert.isTrue(Id64.isValidId64(physicalElement.id));
