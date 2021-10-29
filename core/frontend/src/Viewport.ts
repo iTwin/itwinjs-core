@@ -181,6 +181,25 @@ export type OnFlashedIdChangedEventArgs = {
   readonly current: undefined;
 };
 
+/** Arguments to [[Viewport.getPixelDataWorldPoint]].
+ * @public
+ */
+export interface GetPixelDataWorldPointArgs {
+  /** The buffer containing the pixel data. @see [[Viewport.readPixels]]. */
+  pixels: Pixel.Buffer;
+  /** The x coordinate of the pixel of interest, in view coordinates. */
+  x: number;
+  /** The y coordinate of the pixel of interest, in view coordinates. */
+  y: number;
+  /** If true, then the world point of a pixel associated with a model will preserve any transforms applied to the model at display time,
+   * such as those supplied by a [[ModelDisplayTransformProvider]] or [PlanProjectionSettings.elevation]($common).
+   * Otherwise, the world point will be multiplied by the inverse of any such transforms to correlate it with the model's true coordinate space.
+   */
+  preserveModelDisplayTransforms?: boolean;
+  /** If supplied, this point will be modified to store the returned point, instead of allocating a new point. */
+  out?: Point3d;
+}
+
 /** A Viewport renders the contents of one or more [GeometricModel]($backend)s onto an `HTMLCanvasElement`.
  *
  * It holds a [[ViewState]] object that defines its viewing parameters; the ViewState in turn defines the [[DisplayStyleState]],
@@ -2417,8 +2436,8 @@ export abstract class Viewport implements IDisposable {
     return this.target.readImageToCanvas();
   }
 
-  /** Get the point at the specified x and y location in the pixel buffer in npc coordinates
-   * @beta
+  /** Get the point at the specified x and y location in the pixel buffer in npc coordinates.
+   * @see [[getPixelDataWorldPoint]] to obtain the point in [[CoordSystem.World]].
    */
   public getPixelDataNpcPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined {
     const z = pixels.getPixel(x, y).distanceFraction;
@@ -2443,20 +2462,23 @@ export abstract class Viewport implements IDisposable {
     return result;
   }
 
-  /** Get the point at the specified x and y location in the pixel buffer in world coordinates
-   * @beta
+  /** Get the point at the specified x and y location in the pixel buffer in world coordinates.
+   * @see [[getPixelDataNpcPoint]] to obtain the point in [[CoordSystem.Npc]].
    */
-  public getPixelDataWorldPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined {
+  public getPixelDataWorldPoint(args: GetPixelDataWorldPointArgs): Point3d | undefined {
+    const { pixels, x, y, out, preserveModelDisplayTransforms } = args;
     const npc = this.getPixelDataNpcPoint(pixels, x, y, out);
     if (undefined !== npc) {
       this.npcToWorld(npc, npc);
 
       // If this is a plan projection model, invert the elevation applied to its display transform.
       // Likewise, if it is a hit on a model with a display transform, reverse the display transform.
-      const modelId = pixels.getPixel(x, y).featureTable?.modelId;
-      if (undefined !== modelId) {
-        npc.z -= this.view.getModelElevation(modelId);
-        this.view.transformPointByModelDisplayTransform(modelId, npc, true);
+      if (!preserveModelDisplayTransforms) {
+        const modelId = pixels.getPixel(x, y).featureTable?.modelId;
+        if (undefined !== modelId) {
+          npc.z -= this.view.getModelElevation(modelId);
+          this.view.transformPointByModelDisplayTransform(modelId, npc, true);
+        }
       }
     }
 
@@ -2920,6 +2942,7 @@ export class ScreenViewport extends Viewport {
     locateOpts.allowNonLocatable = (undefined === options || !options.excludeNonLocatable);
     locateOpts.allowDecorations = (undefined === options || !options.excludeDecorations);
     locateOpts.allowExternalIModels = (undefined === options || !options.excludeExternalIModels);
+    locateOpts.preserveModelDisplayTransforms = true;
 
     if (0 !== this.picker.doPick(this, pickPoint, radius, locateOpts)) {
       const hitDetail = this.picker.getHit(0)!;
