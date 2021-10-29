@@ -7280,10 +7280,10 @@ export class RpcInvocation {
     static runActivity: RpcActivityRun;
     // (undocumented)
     static sanitizeForLog(activity?: RpcActivity): {
-        activityId: string;
-        sessionId: string;
-        applicationId: string;
-        applicationVersion: string;
+        ActivityId: string;
+        SessionId: string;
+        ApplicationId: string;
+        ApplicationVersion: string;
         rpcMethod: string | undefined;
     } | undefined;
     get status(): RpcRequestStatus;
