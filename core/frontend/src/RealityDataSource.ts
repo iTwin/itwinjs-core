@@ -5,10 +5,9 @@
 
 import { getJson, request, RequestOptions } from "@bentley/itwin-client";
 import { AccessToken, BentleyStatus, GuidString, Logger } from "@itwin/core-bentley";
-import { IModelError, OrbitGtBlobProps, RealityDataFormat, RealityDataProvider, RealityDataSourceKey, RealityDataSourceProps } from "@itwin/core-common";
+import { IModelError, OrbitGtBlobProps, RealityData, RealityDataFormat, RealityDataProvider, RealityDataSourceKey, RealityDataSourceProps } from "@itwin/core-common";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { IModelApp } from "./IModelApp";
-import { RealityData } from "./RealityDataAccessProps";
 import { CesiumIonAssetProvider, ContextShareProvider, getCesiumAccessTokenAndEndpointUrl } from "./tile/internal";
 
 /**
