@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-react",
-  "version": "3.0.0-dev.101",
+  "version": "3.0.0-dev.103",
   "description": "iModel.js UI core components",
   "main": "lib/cjs/core-react.js",
   "module": "lib/esm/core-react.js",
@@ -40,9 +40,9 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.101",
-    "@itwin/core-i18n": "workspace:^3.0.0-dev.101",
-    "@itwin/appui-abstract": "workspace:^3.0.0-dev.101",
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.103",
+    "@itwin/core-i18n": "workspace:^3.0.0-dev.103",
+    "@itwin/appui-abstract": "workspace:^3.0.0-dev.103",
     "react": "^17.0.0",
     "react-dom": "^17.0.0"
   },
@@ -110,8 +110,8 @@
   ],
   "dependencies": {
     "@bentley/icons-generic-webfont": "^1.0.15",
-    "@itwin/itwinui-css": "^0.27.0",
-    "@itwin/itwinui-react": "^1.16.2",
+    "@itwin/itwinui-css": "^0.37.0",
+    "@itwin/itwinui-react": "^1.23.0",
     "classnames": "^2.3.1",
     "dompurify": "^2.0.12",
     "lodash": "^4.17.10",
