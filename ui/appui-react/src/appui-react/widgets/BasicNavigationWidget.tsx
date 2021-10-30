@@ -14,6 +14,7 @@ import { ToolbarComposer } from "../toolbar/ToolbarComposer";
 import { ToolbarHelper } from "../toolbar/ToolbarHelper";
 import { useUiVisibility } from "./BasicToolWidget";
 import { NavigationWidgetComposer } from "./NavigationWidgetComposer";
+import { useActiveFrontstageDef } from "../frontstage/Frontstage";
 
 /** Properties that can be used to append items to the default set of toolbar items of [[DefaultNavigationWidget]].
  * @public
@@ -76,8 +77,10 @@ export function BasicNavigationWidget(props: BasicNavigationWidgetProps) {
     !uiIsVisible && "nz-hidden",
   );
 
+  const frontstageDef = useActiveFrontstageDef();
+
   return (
-    <NavigationWidgetComposer className={className}
+    <NavigationWidgetComposer key={frontstageDef?.id ?? "none"} className={className}
       horizontalToolbar={<ToolbarComposer items={horizontalItems} usage={ToolbarUsage.ViewNavigation} orientation={ToolbarOrientation.Horizontal} />}
       verticalToolbar={<ToolbarComposer items={verticalItems} usage={ToolbarUsage.ViewNavigation} orientation={ToolbarOrientation.Vertical} />}
     />

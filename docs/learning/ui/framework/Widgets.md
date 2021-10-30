@@ -153,8 +153,10 @@ function SampleNavigationWidget () {
     CoreTools.toggleCameraViewCommand,
     ]);
 
+  const frontstageDef = useActiveFrontstageDef();
+
   return (
-    <NavigationWidgetComposer
+    <NavigationWidgetComposer key={frontstageDef?.id ?? "none"}
       horizontalToolbar={<ToolbarComposer items={horizontalItems} usage={ToolbarUsage.ViewNavigation} orientation={ToolbarOrientation.Horizontal} />}
       verticalToolbar={<ToolbarComposer items={verticalItems} usage={ToolbarUsage.ViewNavigation} orientation={ToolbarOrientation.Vertical} />}
     />

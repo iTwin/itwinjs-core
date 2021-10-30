@@ -12,6 +12,7 @@ import { ToolbarOrientation, ToolbarUsage } from "@itwin/appui-abstract";
 import { ToolbarComposer } from "../toolbar/ToolbarComposer";
 import { ToolWidgetComposer } from "./ToolWidgetComposer";
 import { useUiVisibility } from "./BasicToolWidget";
+import { useActiveFrontstageDef } from "../frontstage/Frontstage";
 
 /**
  * Props for [[ContentToolWidgetComposer]].
@@ -43,9 +44,10 @@ export function ContentToolWidgetComposer(props: ContentToolWidgetComposerProps)
   const className = classnames(
     !uiIsVisible && "nz-hidden",
   );
+  const frontstageDef = useActiveFrontstageDef();
 
   return (
-    <ToolWidgetComposer className={className}
+    <ToolWidgetComposer key={frontstageDef?.id ?? "none"} className={className}
       cornerItem={cornerButton}
       horizontalToolbar={<ToolbarComposer items={[]} usage={ToolbarUsage.ContentManipulation} orientation={ToolbarOrientation.Horizontal} />}
       verticalToolbar={<ToolbarComposer items={[]} usage={ToolbarUsage.ContentManipulation} orientation={ToolbarOrientation.Vertical} />}

@@ -12,6 +12,7 @@ import { ToolbarOrientation, ToolbarUsage } from "@itwin/appui-abstract";
 import { ToolbarComposer } from "../toolbar/ToolbarComposer";
 import { useUiVisibility } from "./BasicToolWidget";
 import { NavigationWidgetComposer } from "./NavigationWidgetComposer";
+import { useActiveFrontstageDef } from "../frontstage/Frontstage";
 
 /**
  * Props for [[ViewToolWidgetComposer]].
@@ -37,13 +38,14 @@ export interface ViewToolWidgetComposerProps {
  * @public
  */
 export function ViewToolWidgetComposer(props: ViewToolWidgetComposerProps) {
+  const frontstageDef = useActiveFrontstageDef();
   const uiIsVisible = useUiVisibility();
   const className = classnames(
     !uiIsVisible && "nz-hidden",
   );
 
   return (
-    <NavigationWidgetComposer className={className} hideNavigationAid={props.hideNavigationAid}
+    <NavigationWidgetComposer key={frontstageDef?.id ?? "none"} className={className} hideNavigationAid={props.hideNavigationAid}
       horizontalToolbar={<ToolbarComposer items={[]} usage={ToolbarUsage.ViewNavigation} orientation={ToolbarOrientation.Horizontal} />}
       verticalToolbar={<ToolbarComposer items={[]} usage={ToolbarUsage.ViewNavigation} orientation={ToolbarOrientation.Vertical} />}
     />
