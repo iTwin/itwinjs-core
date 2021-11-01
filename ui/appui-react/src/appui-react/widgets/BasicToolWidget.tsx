@@ -15,7 +15,6 @@ import { ToolbarComposer } from "../toolbar/ToolbarComposer";
 import { ToolbarHelper } from "../toolbar/ToolbarHelper";
 import { UiFramework, UiVisibilityEventArgs } from "../UiFramework";
 import { BackstageAppButton, ToolWidgetComposer } from "./ToolWidgetComposer";
-import { useActiveFrontstageDef } from "../frontstage/Frontstage";
 
 /** Properties that can be used to append items to the default set of toolbar items of [[ReviewToolWidget]].
  * @public
@@ -105,10 +104,8 @@ export function BasicToolWidget(props: BasicToolWidgetProps) {
   const className = classnames(
     !uiIsVisible && "nz-hidden",
   );
-  const frontstageDef = useActiveFrontstageDef();
-
   return (
-    <ToolWidgetComposer key={frontstageDef?.id ?? "none"} className={className}
+    <ToolWidgetComposer className={className}
       cornerItem={<BackstageAppButton icon={props.icon} />}
       horizontalToolbar={<ToolbarComposer items={horizontalItems} usage={ToolbarUsage.ContentManipulation} orientation={ToolbarOrientation.Horizontal} />}
       verticalToolbar={<ToolbarComposer items={verticalItems} usage={ToolbarUsage.ContentManipulation} orientation={ToolbarOrientation.Vertical} />}
