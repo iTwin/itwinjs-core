@@ -595,6 +595,10 @@
       "allowedCategories": [ "backend", "common", "integration-testing", "internal", "tools" ]
     },
     {
+      "name": "is-buffer",
+      "allowedCategories": [ "common" ]
+    },
+    {
       "name": "istanbul-instrumenter-loader",
       "allowedCategories": [ "internal" ]
     },

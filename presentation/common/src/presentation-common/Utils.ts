@@ -6,6 +6,7 @@
  * @module Core
  */
 
+import { ProcessDetector } from "@itwin/core-bentley";
 import * as path from "path";
 import { NodeKey } from "./hierarchy/Key";
 import { KeySet } from "./KeySet";
@@ -85,6 +86,12 @@ export const getInstancesCount = (keys: Readonly<KeySet>): number => {
  */
 export const DEFAULT_KEYS_BATCH_SIZE = 5000;
 
+/**
+ * if this code is running in the browser, add a __dirName mock
+ */
+if (ProcessDetector.isBrowserProcess && !window.__dirname) {
+  window.__dirname = "";
+}
 /** @internal */
 export const PRESENTATION_COMMON_ROOT = __dirname;
 
