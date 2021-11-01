@@ -1,6 +1,6 @@
 {
   "name": "@itwin/components-react",
-  "version": "3.0.0-dev.99",
+  "version": "3.0.0-dev.105",
   "description": "iModel.js UI complex components",
   "main": "lib/cjs/components-react.js",
   "module": "lib/esm/components-react.js",
@@ -9,7 +9,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/ui/components-react"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/ui/components-react"
   },
   "scripts": {
     "build": "npm run -s copy:locale && npm run -s build:cjs",
@@ -38,10 +38,10 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.99",
-    "@itwin/core-i18n": "workspace:^3.0.0-dev.99",
-    "@itwin/appui-abstract": "workspace:^3.0.0-dev.99",
-    "@itwin/core-react": "workspace:^3.0.0-dev.99",
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.105",
+    "@itwin/core-i18n": "workspace:^3.0.0-dev.105",
+    "@itwin/appui-abstract": "workspace:^3.0.0-dev.105",
+    "@itwin/core-react": "workspace:^3.0.0-dev.105",
     "react": "^17.0.0",
     "react-dom": "^17.0.0"
   },
@@ -116,13 +116,13 @@
   ],
   "dependencies": {
     "@bentley/icons-generic-webfont": "^1.0.15",
-    "@itwin/itwinui-css": "^0.27.0",
-    "@itwin/itwinui-react": "^1.16.2",
+    "@itwin/itwinui-css": "^0.37.0",
+    "@itwin/itwinui-react": "^1.23.0",
     "@types/shortid": "~0.0.29",
     "callable-instance2": "1.0.0",
     "classnames": "^2.3.1",
     "eventemitter2": "^5.0.1",
-    "immer": "9.0.2",
+    "immer": "9.0.6",
     "immutable": "^3.8.2",
     "inspire-tree": "^5.0.1",
     "linkify-it": "~2.2.0",
