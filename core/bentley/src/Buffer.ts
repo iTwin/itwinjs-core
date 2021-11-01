@@ -13,6 +13,5 @@
  * @public
  */
 export function isBuffer(obj: any): boolean {
-  return obj != null && obj.constructor != null &&
-    typeof obj.constructor.isBuffer === "function" && obj.constructor.isBuffer(obj);
+  return typeof obj?.constructor?.isBuffer === "function" && obj?.constructor?.isBuffer(obj);
 }
