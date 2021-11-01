@@ -51,17 +51,17 @@ export class TwoWayViewportSync {
     target.applyViewState(source.view.clone(target.iModel));
   }
 
-  /** Establish the connection between two Viewports. When this method is called, `view2` is initialized with the state of `view1` via [[connectViewports]].
-   * Thereafter, any change to the frustum of either view will be reflected in the frustum of the other view via [[syncViewports]].
+  /** Establish the connection between two Viewports. When this method is called, `viewport2` is initialized with the state of `viewport1` via [[connectViewports]].
+   * Thereafter, any change to the frustum of either viewport will be reflected in the frustum of the other viewport via [[syncViewports]].
    */
-  public connect(source: Viewport, target: Viewport) {
+  public connect(viewport1: Viewport, viewport2: Viewport) {
     this.disconnect();
 
-    this.connectViewports(source, target);
+    this.connectViewports(viewport1, viewport2);
 
     // listen to the onViewChanged events from both views
-    this._disconnect.push(source.onViewChanged.addListener(() => this.syncView(source, target)));
-    this._disconnect.push(target.onViewChanged.addListener(() => this.syncView(target, source)));
+    this._disconnect.push(viewport1.onViewChanged.addListener(() => this.syncView(viewport1, viewport2)));
+    this._disconnect.push(viewport2.onViewChanged.addListener(() => this.syncView(viewport2, viewport1)));
   }
 
   /** Remove the connection between the two views. */
