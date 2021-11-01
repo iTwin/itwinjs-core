@@ -116,7 +116,8 @@ export class DisplayStyleField extends React.Component<StatusFieldProps, Display
       >
         <Select options={this.state.styleEntries} value={displayStyleId} onChange={this._handleDisplayStyleSelected}
           title={this._tooltip} aria-label={this._label}
-          className="uifw-statusFields-displayStyle-selector" />
+          className="uifw-statusFields-displayStyle-selector"
+          size="small" />
       </FooterIndicator >
     );
   }

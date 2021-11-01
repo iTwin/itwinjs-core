@@ -75,6 +75,7 @@ export class IModelSelector extends React.Component<Props, State> {
           value={this.props.activeIModelPath}
           placeholder={IModelApp.localization.getLocalizedString("Sample:controls.notifications.select-imodel")}
           onChange={this.onImodelSelected}
+          size="small"
         />
         {error}
       </div>
