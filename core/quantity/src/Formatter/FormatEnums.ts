@@ -42,8 +42,8 @@ export function* getItemNamesFromFormatString(formatString: string): Iterable<st
 }
 /** @beta */
 export enum FormatTraits {
-  /** Show trailing zeroes to requested precision */
-  TrailZeroes = 0x1,
+  /** Show trailing zeroes to requested precision. The leading + opts TypeScript out of inferring a union enum */
+  TrailZeroes = +0x1,
   /** Indicates that the fractional part of the number is required when the fraction is zero */
   KeepSingleZero = 0x2,
   /** Zero magnitude returns blank display value */
