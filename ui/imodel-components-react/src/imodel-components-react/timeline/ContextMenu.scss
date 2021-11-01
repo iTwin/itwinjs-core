@@ -1,0 +1,81 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/z-index";
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+
+// cspell:ignore contextmenu
+
+.contextmenu-wip {
+  cursor: default;
+  box-sizing: border-box;
+  @include uicore-z-index(context-menu-z);
+  background: $buic-background-1;
+  border-radius: 3px;
+  max-width: 250px;
+
+  >ul {
+    margin: 0;
+    padding: 6px 0;
+    list-style: none;
+
+    >.separator {
+      padding: .5em 0;
+      position: relative;
+
+      &:before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 32px;
+        right: 4px;
+        width: auto;
+        height: 1px;
+        background: #dce0e3;
+        transform: translateY(-50%);
+      }
+    }
+  }
+}
+
+.contextmenu-item-wip {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: .5em 0;
+  color: $buic-foreground-body;
+  font-size: 14px;
+  position: relative;
+  user-select: none;
+
+  >.user-icon,
+  >.icon-checkmark {
+    position: absolute;
+    left: 10px;
+  }
+
+  // text
+  >span:last-child {
+    padding-left: 32px;
+    padding-right: 1em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  &:hover:not(.disabled) {
+    background: $buic-row-hover;
+    color: $buic-foreground-activehover;
+    cursor: pointer;
+  }
+
+  &.disabled {
+    color: $buic-foreground-disabled;
+    cursor: default;
+  }
+
+  >.icon-checkmark {
+    color: $buic-foreground-primary;
+  }
+}

@@ -1,0 +1,30 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "../variables";
+
+.nz-footer-toolAssistance-instruction {
+  display: grid;
+  align-items: center;
+  grid-gap: 6px;
+  grid-auto-flow: column;
+  grid-template-columns: 48px 1fr;
+  line-height: 16px;
+  font-size: $text-font-size;
+  position: relative;
+
+  > .nz-image {
+    margin: auto;
+
+    > .nz-footer-toolAssistance-newDot {
+      position: absolute;
+      top: 12px;
+      left: -2px;
+    }
+  }
+
+  > .nz-text-new {
+    font-weight: bold;
+  }
+}

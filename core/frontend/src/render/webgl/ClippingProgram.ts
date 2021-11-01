@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { dispose } from "@bentley/bentleyjs-core";
+import { dispose } from "@itwin/core-bentley";
 import { ProgramBuilder } from "./ShaderBuilder";
 import { CompileStatus, ShaderProgram } from "./ShaderProgram";
 import { System } from "./System";
@@ -51,6 +51,7 @@ class WebGL1ClippingProgram extends ClippingProgram {
       return undefined;
 
     if (!this._program || this._maxClippingPlanes < numPlanes) {
+      this._program?.endUse();
       this.dispose();
       this._builder.frag.addDefine("MAX_CLIPPING_PLANES", numPlanes.toString());
       this._program = this._builder.buildProgram(System.instance.context);

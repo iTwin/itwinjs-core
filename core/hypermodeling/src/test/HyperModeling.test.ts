@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { SectionType } from "@bentley/imodeljs-common";
-import { IModelApp, ParseAndRunResult } from "@bentley/imodeljs-frontend";
+import { SectionType } from "@itwin/core-common";
+import { IModelApp, ParseAndRunResult } from "@itwin/core-frontend";
 import { HyperModeling } from "../HyperModeling";
 import { HyperModelingConfig, SectionGraphicsConfig, SectionMarkerConfig } from "../HyperModelingConfig";
 import { SectionMarkerHandler } from "../SectionMarkerHandler";
@@ -16,7 +16,9 @@ describe("Package initialization", () => {
   });
 
   after(async () => {
+    expect(HyperModeling.resources).to.not.be.undefined;
     await IModelApp.shutdown();
+    expect(HyperModeling.resources).to.be.undefined;
   });
 
   it("throws if not initialized", () => {
@@ -26,7 +28,7 @@ describe("Package initialization", () => {
 
   it("loads marker images", async () => {
     await HyperModeling.initialize();
-    for (const type of [ SectionType.Section, SectionType.Plan, SectionType.Elevation, SectionType.Detail ])
+    for (const type of [SectionType.Section, SectionType.Plan, SectionType.Elevation, SectionType.Detail])
       expect(HyperModeling.getMarkerData(type).image).not.to.be.undefined;
   });
 
@@ -44,7 +46,9 @@ describe("Package configuration", () => {
   });
 
   after(async () => {
+    expect(HyperModeling.resources).to.not.be.undefined;
     await IModelApp.shutdown();
+    expect(HyperModeling.resources).to.be.undefined;
   });
 
   function expectMarkerConfig(actual: SectionMarkerConfig, expected: SectionMarkerConfig): void {
@@ -64,8 +68,8 @@ describe("Package configuration", () => {
   }
 
   function expectConfig(config: HyperModelingConfig | undefined): void {
-    expectMarkerConfig(HyperModeling.markerConfig, config?.markers ?? { });
-    expectGraphicsConfig(HyperModeling.graphicsConfig, config?.graphics ?? { });
+    expectMarkerConfig(HyperModeling.markerConfig, config?.markers ?? {});
+    expectGraphicsConfig(HyperModeling.graphicsConfig, config?.graphics ?? {});
 
     if (undefined !== config?.markerHandler)
       expect(HyperModeling.markerHandler).to.equal(config.markerHandler);
@@ -80,7 +84,7 @@ describe("Package configuration", () => {
     };
 
     test({ markerHandler: new SectionMarkerHandler() });
-    test({ markers: { ignoreModelSelector: true, ignoreCategorySelector: undefined, hiddenSectionTypes: [ SectionType.Elevation, SectionType.Plan ] } });
+    test({ markers: { ignoreModelSelector: true, ignoreCategorySelector: undefined, hiddenSectionTypes: [SectionType.Elevation, SectionType.Plan] } });
     test({ graphics: { ignoreClip: true, debugClipVolumes: false, hideSectionGraphics: undefined, hideSheetAnnotations: true } });
   });
 
@@ -88,12 +92,12 @@ describe("Package configuration", () => {
     const test = (config: HyperModelingConfig, expected: HyperModelingConfig) => {
       HyperModeling.updateConfiguration({ ...config });
       expectConfig(expected);
-      HyperModeling.updateConfiguration({ });
+      HyperModeling.updateConfiguration({});
       expectConfig(expected);
     };
 
     HyperModeling.replaceConfiguration(undefined);
-    test({ }, { });
+    test({}, {});
 
     const handler = new SectionMarkerHandler();
     test(
@@ -101,8 +105,8 @@ describe("Package configuration", () => {
       { markerHandler: handler });
 
     test(
-      { markers: { ignoreModelSelector: true, hiddenSectionTypes: [ SectionType.Elevation ] } },
-      { markerHandler: handler, markers: { ignoreModelSelector: true, hiddenSectionTypes: [ SectionType.Elevation ] } });
+      { markers: { ignoreModelSelector: true, hiddenSectionTypes: [SectionType.Elevation] } },
+      { markerHandler: handler, markers: { ignoreModelSelector: true, hiddenSectionTypes: [SectionType.Elevation] } });
 
     test(
       { markers: { ignoreModelSelector: false, ignoreCategorySelector: true, hiddenSectionTypes: [] } },
@@ -113,7 +117,7 @@ describe("Package configuration", () => {
       { markerHandler: handler, markers: { ignoreModelSelector: false, ignoreCategorySelector: true, hiddenSectionTypes: [] }, graphics: { ignoreClip: true, debugClipVolumes: false } });
 
     test(
-      { markerHandler: undefined, markers: { }, graphics: undefined },
+      { markerHandler: undefined, markers: {}, graphics: undefined },
       { markerHandler: handler, markers: { ignoreModelSelector: false, ignoreCategorySelector: true, hiddenSectionTypes: [] }, graphics: { ignoreClip: true, debugClipVolumes: false } });
 
     // Reset for subsequent tests...
@@ -123,36 +127,36 @@ describe("Package configuration", () => {
   it("updates marker configuration via key-in", async () => {
     await HyperModeling.initialize();
 
-    const test = (keyin: string, config: SectionMarkerConfig) => {
-      expect(IModelApp.tools.parseAndRun(keyin)).to.equal(ParseAndRunResult.Success);
+    const test = async (keyin: string, config: SectionMarkerConfig) => {
+      expect(await IModelApp.tools.parseAndRun(keyin)).to.equal(ParseAndRunResult.Success);
       expectMarkerConfig(HyperModeling.markerConfig, config);
     };
 
-    test("hypermodeling marker default config model=0", { ignoreModelSelector: true });
-    test("hypermodeling marker default config cat=0", { ignoreModelSelector: true, ignoreCategorySelector: true });
-    test("hypermodeling marker default config m=1 c=1", { ignoreModelSelector: false, ignoreCategorySelector: false });
-    test("hypermodeling marker default config", { });
-    test("hypermodeling marker default config hidden=pe", { hiddenSectionTypes: [ SectionType.Plan, SectionType.Elevation ] });
-    test("hypermodeling marker default config h=@#$abcsxyz123", { hiddenSectionTypes: [ SectionType.Section ] });
-    test("hypermodeling marker default config", { });
+    await test("hypermodeling marker default config model=0", { ignoreModelSelector: true });
+    await test("hypermodeling marker default config cat=0", { ignoreModelSelector: true, ignoreCategorySelector: true });
+    await test("hypermodeling marker default config m=1 c=1", { ignoreModelSelector: false, ignoreCategorySelector: false });
+    await test("hypermodeling marker default config", {});
+    await test("hypermodeling marker default config hidden=pe", { hiddenSectionTypes: [SectionType.Plan, SectionType.Elevation] });
+    await test("hypermodeling marker default config h=@#$abcsxyz123", { hiddenSectionTypes: [SectionType.Section] });
+    await test("hypermodeling marker default config", {});
 
     // Reset for subsequent tests...
     HyperModeling.replaceConfiguration(undefined);
   });
 
   it("updates graphics configuration via key-in", async () => {
-    const test = (keyin: string, config: SectionGraphicsConfig) => {
-      expect(IModelApp.tools.parseAndRun(keyin)).to.equal(ParseAndRunResult.Success);
+    const test = async (keyin: string, config: SectionGraphicsConfig) => {
+      expect(await IModelApp.tools.parseAndRun(keyin)).to.equal(ParseAndRunResult.Success);
       expectGraphicsConfig(HyperModeling.graphicsConfig, config);
     };
 
-    test("hypermodeling graphics config drawing=0", { hideSectionGraphics: true });
-    test("hypermodeling graphics config sh=0", { hideSheetAnnotations: true, hideSectionGraphics: true });
-    test("hypermodeling graphics config d=1 s=1", { });
-    test("hypermodeling graphics config clip=0", { ignoreClip: true });
-    test("hypermodeling graphics config boundaries=1", { ignoreClip: true, debugClipVolumes: true });
-    test("hypermodeling graphics config c=1 b=0", { });
-    test("hypermodeling graphics config", { });
+    await test("hypermodeling graphics config drawing=0", { hideSectionGraphics: true });
+    await test("hypermodeling graphics config sh=0", { hideSheetAnnotations: true, hideSectionGraphics: true });
+    await test("hypermodeling graphics config d=1 s=1", {});
+    await test("hypermodeling graphics config clip=0", { ignoreClip: true });
+    await test("hypermodeling graphics config boundaries=1", { ignoreClip: true, debugClipVolumes: true });
+    await test("hypermodeling graphics config c=1 b=0", {});
+    await test("hypermodeling graphics config", {});
 
     // Reset for subsequent tests...
     HyperModeling.replaceConfiguration(undefined);

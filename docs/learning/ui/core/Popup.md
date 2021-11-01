@@ -1,10 +1,10 @@
 # Popup
 
-The [Popup]($ui-core) React component displays a popup relative to an optional target element.
+The [Popup]($core-react) React component displays a popup relative to an optional target element.
 
 ## Properties
 
-Various Popup properties, as defined in [PopupProps]($ui-core), control the position and look of the popup.
+Various Popup properties, as defined in [PopupProps]($core-react), control the position and look of the popup.
 
 The `isOpen` prop indicates whether the popup is shown or not.
 
@@ -71,4 +71,4 @@ Several props control whether the popup closes for certain events (all default t
 
 ## API Reference
 
-- [Popup]($ui-core:Popup)
+- [Popup]($core-react:Popup)

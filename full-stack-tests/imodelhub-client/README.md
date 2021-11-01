@@ -6,11 +6,11 @@ This package contains unit and integration tests for the iModelHub client (`@ben
 
 ## Prerequisites
 
-Refer to the iTwin.js [prerequisites](https://github.com/imodeljs/imodeljs#prerequisites)
+Refer to the iTwin.js [prerequisites](https://github.com/iTwin/itwinjs-core#prerequisites)
 
 ## Running the tests
 
-Start by running the [build instructions from this repository](https://github.com/imodeljs/imodeljs#build-instructions)
+Start by running the [build instructions from this repository](https://github.com/iTwin/itwinjs-core#build-instructions)
 
 There are multiple sets of tests:
 
@@ -24,5 +24,5 @@ Since this package contains the test for other packages, the test coverage outpu
 
 The tests contained in this package are configured to generate incremental coverage from other packages. For example, if `npm run cover` has already been run for `@bentley/imodelhub-client` then `npm run cover` is run for this package, this package output will contain both the combined coverage results.
 
-This package generates test coverage for `@bentley/backend-itwin-client` ([/core/backend-itwin-client](/core/backend-itwin-client)) and `@bentley/imodelhub-client` ([/clients/imodelhub](/clients/imodelhub)).
+This package generates test coverage for `@bentley/imodelhub-client` ([/clients/imodelhub](/clients/imodelhub)).
 The coverage output can be found at `lib/test/coverage/full-stack-tests` from the root of the covered package.

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/reality-data-client",
+      "comment": "Replaced ContextRegistry with generalized ITwinAccess interface",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/reality-data-client",
+  "email": "54333460+SpencerWBarnes@users.noreply.github.com"
+}

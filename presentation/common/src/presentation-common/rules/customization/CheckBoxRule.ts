@@ -14,7 +14,7 @@ import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
  * Is also allows binding check box state with boolean properties by setting [[propertyName]] parameter.
  * If [[propertyName]] is not set, then [[defaultValue]] is used for default check box state.
  *
- * @see [More details]($docs/learning/presentation/Customization/CheckBoxRule.md)
+ * @see [More details]($docs/presentation/Customization/CheckBoxRule.md)
  * @public
  */
 export interface CheckBoxRule extends RuleBase, ConditionContainer {
@@ -23,8 +23,8 @@ export interface CheckBoxRule extends RuleBase, ConditionContainer {
 
   /**
    * Defines a condition for the rule, which needs to be met in order to execute it. Condition
-   * is an [ECExpression]($docs/learning/presentation/ECExpressions.md), which can use
-   * a [limited set of symbols]($docs/learning/presentation/customization/ECExpressions.md#rule-condition).
+   * is an [ECExpression]($docs/presentation/Advanced/ECExpressions.md), which can use
+   * a [limited set of symbols]($docs/presentation/customization/ECExpressions.md#rule-condition).
    */
   condition?: string;
 

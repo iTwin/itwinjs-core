@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/geonames-extension",
+      "comment": "removed unneeded reference to svg-sprite-loader",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/geonames-extension"
+}

@@ -10,7 +10,7 @@ import { FormatProps } from "../../Deserialization/JsonProps";
 import { ECObjectsError } from "../../Exception";
 import { Format } from "../../Metadata/Format";
 import { MutableSchema, Schema } from "../../Metadata/Schema";
-import { DecimalPrecision, FormatTraits, FormatType, QuantityError, ShowSignOption } from "@bentley/imodeljs-quantity";
+import { DecimalPrecision, FormatTraits, FormatType, QuantityError, ShowSignOption } from "@itwin/core-quantity";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import { TestSchemaLocater } from "../TestUtils/FormatTestHelper";
 import { createEmptyXmlDocument, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
@@ -38,6 +38,21 @@ function createSchemaJson(koq: any) {
 describe("Format", () => {
   let schema: Schema;
   let testFormat: Format;
+
+  it("should get fullName", async () => {
+    const schemaJson = createSchemaJsonWithItems({
+      TestFormat: {
+        schemaItemType: "Format",
+        type: "Decimal",
+      },
+    });
+
+    const ecSchema = await Schema.fromJson(schemaJson, new SchemaContext());
+    assert.isDefined(ecSchema);
+    const format = await ecSchema.getItem<Format>("TestFormat");
+    assert.isDefined(format);
+    expect(format!.fullName).eq("TestSchema.TestFormat");
+  });
 
   describe("type checking json", () => {
     let jsonParser: JsonParser; // This is an easy way to test the logic directly in the parser without having to go through deserialization every time.

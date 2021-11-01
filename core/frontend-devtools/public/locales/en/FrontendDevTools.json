@@ -24,8 +24,14 @@
     "EmphasizeSelectedElements": {
       "keyin": "fdt emphasize selection"
     },
+    "EmphasizeVisibleElements": {
+      "keyin": "fdt emphasize visible"
+    },
     "IsolateSelectedElements": {
       "keyin": "fdt isolate selection"
+    },
+    "ClearEmphasizedElements": {
+      "keyin": "fdt clear emphasized"
     },
     "ClearIsolatedElements": {
       "keyin": "fdt clear isolate"
@@ -101,6 +107,9 @@
     },
     "ChangeEmphasisSettings": {
       "keyin": "fdt emphasis settings"
+    },
+    "ChangeFlashSettings": {
+      "keyin": "fdt flash settings"
     },
     "ChangeUnits": {
       "keyin": "fdt metric"
@@ -432,6 +441,9 @@
       "Prompts": {
         "IdentifyMaskSubCategory": "Identify mask subCategory"
       }
+    },
+    "WoWIgnoreBackground": {
+      "keyin": "fdt wow ignore background"
     }
   }
 }

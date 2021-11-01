@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as chai from "chai";
-import { FontMap, GeometryContainmentRequestProps } from "@bentley/imodeljs-common";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { FontMap, GeometryContainmentRequestProps } from "@itwin/core-common";
+import { IModelConnection } from "@itwin/core-frontend";
 import { TestContext } from "./setup/TestContext";
 
 const expect = chai.expect;
@@ -28,21 +28,10 @@ describe("IModel Views", () => {
     expect(fontMap).to.exist.and.be.not.empty;
   });
 
-  it("should execute test", async () => {
-    // IModelReadRpcInterface is configured, expect success
-    const viewProps = await iModel.views.queryProps({ from: "BisCore:ViewDefinition" });
-    expect(viewProps).to.exist.and.be.not.empty;
-    const viewState = await iModel.views.load(viewProps[0].id!);
-    expect(viewState).to.exist.and.be.not.empty;
-
-    // IModelUnitTestGateway is intentionally not configured, expect failure
-    // expect(iModel.executeTest("rotateCameraLocal", {})).to.be.rejectedWith(IModelError);
-  });
-
   it("should successfully get geometry containment", async () => {
     const requestProps: GeometryContainmentRequestProps = {
       candidates: [],
-      clip: {},
+      clip: [],
     };
 
     const result = await iModel.getGeometryContainment(requestProps);

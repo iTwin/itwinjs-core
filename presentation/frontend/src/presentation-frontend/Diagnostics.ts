@@ -8,7 +8,7 @@
 
 import {
   DiagnosticsHandler, DiagnosticsLogEntry, DiagnosticsLoggerSeverity, DiagnosticsLogMessage, DiagnosticsScopeLogs,
-} from "@bentley/presentation-common";
+} from "@itwin/presentation-common";
 
 /**
  * @alpha

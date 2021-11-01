@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "When a UnionOfConvexClipPlaneSets clips a polyface, aggressively stitch shards.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry",
+  "email": "69321059+EarlinLutz@users.noreply.github.com"
+}

@@ -1,0 +1,29 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<LabeledToggle /> renders correctly 1`] = `
+<label
+  className="core-inputs-labeled-toggle"
+>
+  <ForwardRef />
+  <div
+    className="uicore-label"
+  >
+    toggle test
+  </div>
+</label>
+`;
+
+exports[`<LabeledToggle /> renders disabled correctly 1`] = `
+<label
+  className="core-inputs-labeled-toggle uicore-disabled"
+>
+  <ForwardRef
+    disabled={true}
+  />
+  <div
+    className="uicore-label"
+  >
+    toggle test
+  </div>
+</label>
+`;

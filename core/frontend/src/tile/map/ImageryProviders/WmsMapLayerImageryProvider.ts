@@ -5,9 +5,9 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { IModelStatus } from "@bentley/bentleyjs-core";
-import { Point2d } from "@bentley/geometry-core";
-import { Cartographic, MapLayerSettings, ServerError } from "@bentley/imodeljs-common";
+import { IModelStatus } from "@itwin/core-bentley";
+import { Point2d } from "@itwin/core-geometry";
+import { Cartographic, MapLayerSettings, ServerError } from "@itwin/core-common";
 
 import {
   ImageryMapTileTree, MapCartoRectangle, MapLayerImageryProvider, MapLayerImageryProviderStatus, QuadId, WmsCapabilities,
@@ -32,7 +32,7 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
     this._baseUrl = WmsUtilities.getBaseUrl(this._settings.url);
   }
 
-  public async initialize(): Promise<void> {
+  public override async initialize(): Promise<void> {
     try {
       this._capabilities = await WmsCapabilities.create(this._baseUrl);
       if (undefined !== this._capabilities) {
@@ -61,7 +61,7 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
         if (!this.cartoRange)
           this.cartoRange = this._allLayersRange;
       }
-    } catch (error) {
+    } catch (error: any) {
       // Don't throw error if unauthorized status:
       // We want the tile tree to be created, so that end-user can get feedback on which layer is missing credentials.
       // When credentials will be provided, a new provider will be created, and initialization should be fine.
@@ -113,7 +113,7 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
     return `${this._baseUrl}?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&FORMAT=image%2Fpng&TRANSPARENT=${this.transparentBackgroundString}&LAYERS=${layerString}&WIDTH=${this.tileSize}&HEIGHT=${this.tileSize}&CRS=EPSG%3A3857&STYLES=&BBOX=${bboxString}`;
   }
 
-  public async getToolTip(strings: string[], quadId: QuadId, carto: Cartographic, tree: ImageryMapTileTree): Promise<void> {
+  public override async getToolTip(strings: string[], quadId: QuadId, carto: Cartographic, tree: ImageryMapTileTree): Promise<void> {
     await super.getToolTip(strings, quadId, carto, tree);
     const infoFormats = this._capabilities?.featureInfoFormats;
     if (!doToolTips || undefined === infoFormats)

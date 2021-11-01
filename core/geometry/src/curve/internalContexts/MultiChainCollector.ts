@@ -351,7 +351,7 @@ export class OffsetHelpers {
    * * Return object with named chains, insideOffsets, outsideOffsets
    * * BEWARE that if the input is not a loop the classification of outputs is suspect.
    * @param fragments fragments to be chained
-   * @param offsetDistance offset distance.
+   * @param gapTolerance distance to be treated as "effectively zero" when joining head-to-tail.
    */
   public static collectChains(fragments: GeometryQuery[], gapTolerance: number, planarTolerance: number = Geometry.smallMetricDistance): ChainTypes {
     const collector = new MultiChainCollector(gapTolerance, planarTolerance);

@@ -11,6 +11,7 @@ import { DefaultPropertyCategoryOverride } from "./content/DefaultPropertyCatego
 import { ContentModifier } from "./content/modifiers/ContentModifier";
 import { CustomizationRule } from "./customization/CustomizationRule";
 import { NavigationRule } from "./hierarchy/NavigationRule";
+import { RequiredSchemaSpecification } from "./SchemasSpecification";
 
 /**
  * Base interface for all [[Rule]] implementations. Not meant
@@ -34,6 +35,12 @@ export interface RuleBase {
    * rule with a higher priority.
    */
   onlyIfNotHandled?: boolean;
+
+  /**
+   * Schema requirements for this rule. The rule is not used if the requirements are not met.
+   * @beta
+   */
+  requiredSchemas?: RequiredSchemaSpecification[];
 }
 
 /**
@@ -51,7 +58,7 @@ export declare type Rule = CustomizationRule | NavigationRule | ContentRule | Co
 export interface ConditionContainer {
   /**
    * Defines a condition for the rule, which needs to be met in order to execute it. Condition
-   * is an [ECExpression]($docs/learning/presentation/ECExpressions.md), which can use
+   * is an [ECExpression]($docs/presentation/Advanced/ECExpressions.md), which can use
    * a limited set of symbols (depends on specific `ConditionContainer`).
    */
   condition?: string;

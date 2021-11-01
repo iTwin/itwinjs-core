@@ -4,13 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { Id64 } from "@bentley/bentleyjs-core";
-import { ModelProps } from "@bentley/imodeljs-common";
-import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
-import { ContentSpecificationTypes, InstanceKey, KeySet, Ruleset, RuleTypes } from "@bentley/presentation-common";
-import { PresentationTableDataProvider } from "@bentley/presentation-components";
-import { Presentation } from "@bentley/presentation-frontend";
-import { SortDirection } from "@bentley/ui-core";
+import { Id64 } from "@itwin/core-bentley";
+import { ModelProps } from "@itwin/core-common";
+import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import {
+  ContentSpecificationTypes, InstanceKey, KeySet, RelationshipDirection, RelationshipMeaning, Ruleset, RuleTypes,
+} from "@itwin/presentation-common";
+import { PresentationTableDataProvider } from "@itwin/presentation-components";
+import { Presentation } from "@itwin/presentation-frontend";
+import { PropertyRecord, PropertyValueFormat, StructValue } from "@itwin/appui-abstract";
+import { SortDirection } from "@itwin/core-react";
 import { initialize, terminate } from "../../IntegrationTests";
 
 const RULESET: Ruleset = {
@@ -72,6 +75,12 @@ describe("TableDataProvider", async () => {
       expect(columns).to.matchSnapshot();
     });
 
+    it("returns extracted columns from instances which have SameInstance relationshipMeaning", async () => {
+      provider.keys = new KeySet([{ className: "Generic:PhysicalObject", id: "0x74" }]);
+      const columns = await provider.getColumns();
+      expect(columns.length).to.eq(32);
+    });
+
   });
 
   describe("getRowsCount", () => {
@@ -97,6 +106,103 @@ describe("TableDataProvider", async () => {
       provider.keys = new KeySet([instances.physicalModel]);
       const row = await provider.getRow(0);
       expect(row).to.matchSnapshot();
+    });
+
+    it("returns row with extracted cells from instances which have SameInstance relationshipMeaning", async () => {
+      provider.keys = new KeySet([{ className: "Generic:PhysicalObject", id: "0x74" }]);
+      const row = await provider.getRow(0);
+      expect(row.cells.length).to.eq(32);
+    });
+
+    function isStructWithMembers(record: PropertyRecord): boolean {
+      return Object.keys((record.value as StructValue).members).length > 0;
+    }
+
+    it("returns row with merged cells from instances which have SameInstance relationshipMeaning and more than one value in it", async () => {
+      provider = new PresentationTableDataProvider({
+        imodel,
+        ruleset: {
+          id: "test",
+          rules: [{
+            ruleType: RuleTypes.Content,
+            specifications: [{
+              specType: ContentSpecificationTypes.SelectedNodeInstances,
+            }],
+          }, {
+            ruleType: RuleTypes.ContentModifier,
+            class: {
+              schemaName: "BisCore",
+              className: "Model",
+            },
+            relatedProperties: [
+              {
+                propertiesSource: {
+                  relationship: {
+                    schemaName: "BisCore",
+                    className: "ModelContainsElements",
+                  },
+                  direction: RelationshipDirection.Forward,
+                },
+                handleTargetClassPolymorphically: true,
+                relationshipMeaning: RelationshipMeaning.SameInstance,
+                properties: [
+                  "UserLabel",
+                  "CodeValue",
+                ],
+              },
+            ],
+          }],
+        },
+        pageSize: 10,
+      });
+      provider.keys = new KeySet([instances.physicalModel]);
+
+      const row = await provider.getRow(0);
+      expect(row.cells.length).to.eq(5);
+      expect(row.cells).to.containSubset([{
+        key: "pc_bis_Model_ModeledElement",
+        mergedCellsCount: undefined,
+      }, {
+        key: "pc_bis_Element_UserLabel",
+        mergedCellsCount: 2,
+        alignment: "center",
+        record: {
+          property: { displayLabel: "Physical Object" },
+          value: {
+            valueFormat: PropertyValueFormat.Array,
+            itemsTypeName: "Physical Object",
+            items: (value: PropertyRecord[]) => value.length === 2 && value.every(isStructWithMembers),
+          },
+        },
+      }, {
+        key: "pc_bis_Element_CodeValue",
+        mergedCellsCount: undefined,
+        record: {
+          value: {
+            value: undefined,
+          },
+        },
+      }, {
+        key: "pc_bis_Element_UserLabel_2",
+        mergedCellsCount: 2,
+        alignment: "center",
+        record: {
+          property: { displayLabel: "TestClass" },
+          value: {
+            valueFormat: PropertyValueFormat.Array,
+            itemsTypeName: "TestClass",
+            items: (value: PropertyRecord[]) => value.length === 60 && value.every(isStructWithMembers),
+          },
+        },
+      }, {
+        key: "pc_bis_Element_CodeValue_2",
+        mergedCellsCount: undefined,
+        record: {
+          value: {
+            value: undefined,
+          },
+        },
+      }]);
     });
 
     it("returns undefined when requesting row with invalid index", async () => {

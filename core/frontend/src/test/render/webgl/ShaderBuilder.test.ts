@@ -5,16 +5,14 @@
 
 import { assert, expect } from "chai";
 import { IModelApp } from "../../../IModelApp";
+import { CompileStatus, ShaderProgram } from "../../../render/webgl/ShaderProgram";
 import {
   FragmentShaderComponent, ProgramBuilder, ShaderVariable, ShaderVariables, VariablePrecision, VariableScope, VariableType, VertexShaderComponent,
 } from "../../../render/webgl/ShaderBuilder";
-import { CompileStatus, ShaderProgram } from "../../../render/webgl/ShaderProgram";
 import { System } from "../../../render/webgl/System";
 
 describe("Variable declaration tests", () => {
-  before(async () => {
-    await IModelApp.startup();
-  });
+  before(async () => IModelApp.startup());
   after(async () => IModelApp.shutdown());
 
   it("should convert ShaderVariable to glsl declaration", () => {
@@ -86,9 +84,7 @@ describe("ShaderVariables tests", () => {
 });
 
 describe("Test shader compilation", () => {
-  before(async () => {
-    await IModelApp.startup();
-  });
+  before(async () => IModelApp.startup());
   after(async () => IModelApp.shutdown());
 
   it.skip("should build and compile a simple shader program", () => {

@@ -6,8 +6,8 @@
  * @module Core
  */
 
-import { DiagnosticsHandler, DiagnosticsLoggerSeverity, DiagnosticsOptions, DiagnosticsOptionsWithHandler } from "@bentley/presentation-common";
-import { createCombinedDiagnosticsHandler } from "@bentley/presentation-frontend";
+import { DiagnosticsHandler, DiagnosticsLoggerSeverity, DiagnosticsOptions, DiagnosticsOptionsWithHandler } from "@itwin/presentation-common";
+import { createCombinedDiagnosticsHandler } from "@itwin/presentation-frontend";
 
 /**
  * Settings for capturing diagnostics data.

@@ -4,13 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelApp } from "../../../IModelApp";
-import { BufferHandle } from "../../../render/webgl/AttributeBuffers";
 import { GL } from "../../../render/webgl/GL";
+import { BufferHandle } from "../../../render/webgl/AttributeBuffers";
 
 describe("BufferHandle", () => {
-  before(async () => {
-    await IModelApp.startup();
-  });
+  before(async () => IModelApp.startup());
   after(async () => IModelApp.shutdown());
 
   it("disposes", () => {

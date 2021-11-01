@@ -6,9 +6,9 @@
  * @module LocatingElements
  */
 
-import { BeDuration } from "@bentley/bentleyjs-core";
-import { CurveCurve, CurvePrimitive, GeometryQuery, IModelJson as GeomJson, Point2d, Point3d, Transform, Vector3d, XAndY } from "@bentley/geometry-core";
-import { SnapRequestProps } from "@bentley/imodeljs-common";
+import { BeDuration } from "@itwin/core-bentley";
+import { CurveCurve, CurvePrimitive, GeometryQuery, IModelJson as GeomJson, Point2d, Point3d, Transform, Vector3d, XAndY } from "@itwin/core-geometry";
+import { SnapRequestProps } from "@itwin/core-common";
 import { ElementLocateManager, HitListHolder, LocateAction, LocateFilterStatus, LocateResponse, SnapStatus } from "./ElementLocateManager";
 import { HitDetail, HitDetailType, HitGeomType, HitList, HitPriority, HitSource, IntersectDetail, SnapDetail, SnapHeat, SnapMode } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
@@ -57,7 +57,10 @@ export class TouchCursor implements CanvasDecoration {
 
     this.position.setFrom(viewLocation);
     this._offsetPosition.setFrom(offsetLocation);
-    this.viewport = vp;
+    if (vp !== this.viewport) {
+      this.viewport.invalidateDecorations();
+      this.viewport = vp;
+    }
     vp.invalidateDecorations();
     return true;
   }
@@ -294,10 +297,10 @@ export class AccuSnap implements Decorator {
     const sameElem = (undefined !== newHit && newHit.isSameHit(this.currHit));
     const sameHit = (sameElem && !newSnap);
     const sameSnap = (sameElem && undefined !== newSnap && undefined !== currSnap);
-    const samePt = (sameHit || (sameSnap && newSnap!.snapPoint.isAlmostEqual(currSnap!.snapPoint)));
-    const sameHot = (sameHit || (sameSnap && (this.isHot === newSnap!.isHot)));
+    const samePt = (sameHit || (sameSnap && newSnap.snapPoint.isAlmostEqual(currSnap.snapPoint)));
+    const sameHot = (sameHit || (sameSnap && (this.isHot === newSnap.isHot)));
     const sameBaseSnapMode = (!newSnap || !currSnap || newSnap.snapMode === currSnap.snapMode);
-    const sameType = (sameHot && (!currSnap || (currSnap.getHitType() === newHit!.getHitType())));
+    const sameType = (sameHot && (!currSnap || (currSnap.getHitType() === newHit.getHitType())));
 
     // see if it is the same point on the same element, the hot flags are the same multiple snaps, and the snap modes are the same
     if (samePt && sameType && sameBaseSnapMode) {
@@ -414,7 +417,7 @@ export class AccuSnap implements Decorator {
     if (!this.errorKey)
       return;
 
-    this.explanation = IModelApp.i18n.translate(this.errorKey);
+    this.explanation = IModelApp.localization.getLocalizedString(this.errorKey);
     if (!this.explanation)
       return;
 
@@ -510,9 +513,9 @@ export class AccuSnap implements Decorator {
 
   private unFlashViews() {
     this.needFlash.clear();
-    this.areFlashed.forEach((vp) => {
-      vp.setFlashed(undefined, 0.0);
-    });
+    for (const vp of this.areFlashed)
+      vp.flashedId = undefined;
+
     this.areFlashed.clear();
   }
 
@@ -639,7 +642,7 @@ export class AccuSnap implements Decorator {
       if (appearance.dontSnap) {
         if (out) {
           out.snapStatus = SnapStatus.NotSnappable;
-          out.explanation = IModelApp.i18n.translate(ElementLocateManager.getFailureMessageKey("NotSnappableSubCategory"));
+          out.explanation = IModelApp.localization.getLocalizedString(ElementLocateManager.getFailureMessageKey("NotSnappableSubCategory"));
         }
         return undefined;
       }
@@ -658,13 +661,14 @@ export class AccuSnap implements Decorator {
       geometryClass: thisHit.geometryClass,
     };
 
-    if (!thisHit.isElementHit) {
-      const thisGeom = IModelApp.viewManager.getDecorationGeometry(thisHit);
-      if (undefined === thisGeom) {
-        if (out) out.snapStatus = SnapStatus.NoSnapPossible;
-        return undefined;
-      }
+    const thisGeom = (thisHit.isElementHit ? IModelApp.viewManager.overrideElementGeometry(thisHit) : IModelApp.viewManager.getDecorationGeometry(thisHit));
+
+    if (undefined !== thisGeom) {
       requestProps.decorationGeometry = [{ id: thisHit.sourceId, geometryStream: thisGeom }];
+    } else if (!thisHit.isElementHit) {
+      if (out)
+        out.snapStatus = SnapStatus.NoSnapPossible;
+      return undefined;
     }
 
     if (snapModes.includes(SnapMode.Intersection)) {
@@ -673,14 +677,15 @@ export class AccuSnap implements Decorator {
           if (thisHit.sourceId === hit.sourceId || thisHit.iModel !== hit.iModel)
             continue;
 
-          if (!hit.isElementHit) {
-            const geom = IModelApp.viewManager.getDecorationGeometry(hit);
-            if (undefined === geom)
-              continue;
+          const geom = (hit.isElementHit ? IModelApp.viewManager.overrideElementGeometry(hit) : IModelApp.viewManager.getDecorationGeometry(hit));
+
+          if (undefined !== geom) {
             if (undefined === requestProps.decorationGeometry)
               requestProps.decorationGeometry = [{ id: thisHit.sourceId, geometryStream: geom }];
             else
               requestProps.decorationGeometry.push({ id: thisHit.sourceId, geometryStream: geom });
+          } else if (!hit.isElementHit) {
+            continue;
           }
 
           if (undefined === requestProps.intersectCandidates)
@@ -978,8 +983,8 @@ export class AccuSnap implements Decorator {
     const tool = IModelApp.toolAdmin.activeTool;
     if (undefined === tool)
       return true;
-    tool.onSuspend();
-    tool.onUnsuspend();
+    await tool.onSuspend();
+    await tool.onUnsuspend();
     return true;
   }
 

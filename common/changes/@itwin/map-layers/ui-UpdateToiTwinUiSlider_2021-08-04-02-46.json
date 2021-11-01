@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/map-layers",
+      "comment": "Replaced ui-core Slider with one from iTwinUi-react.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/map-layers",
+  "email": "65047615+bsteinbk@users.noreply.github.com"
+}

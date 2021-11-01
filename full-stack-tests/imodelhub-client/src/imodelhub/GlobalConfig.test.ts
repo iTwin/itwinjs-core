@@ -2,25 +2,33 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { TestUsers } from "@bentley/oidc-signin-tool";
+import { AccessToken } from "@itwin/core-bentley";
+import { RequestGlobalOptions } from "@bentley/itwin-client";
+import { TestUsers } from "@itwin/oidc-signin-tool";
 import { TestConfig } from "../TestConfig";
 import * as utils from "./TestUtils";
 
+before(() => {
+  if (TestConfig.enableIModelBank && !TestConfig.enableMocks) {
+    RequestGlobalOptions.timeout = {
+      deadline: 60000,
+      response: 60000,
+    };
+  }
+});
+
 before(async () => {
-  const requestContext = await getRequestContext();
-  const contextId = await utils.getProjectId(requestContext);
-  await utils.createIModel(requestContext, utils.sharedimodelName, contextId);
+  const accessToken = await getAccessToken();
+  const iTwinId = await utils.getITwinId(accessToken);
+  await utils.createIModel(accessToken, utils.sharedimodelName, iTwinId);
 });
 
 after(async () => {
-  const requestContext = await getRequestContext();
-  const contextId = await utils.getProjectId(requestContext);
-  await utils.deleteIModelByName(requestContext, contextId, utils.sharedimodelName);
+  const accessToken = await getAccessToken();
+  const iTwinId = await utils.getITwinId(accessToken);
+  await utils.deleteIModelByName(accessToken, iTwinId, utils.sharedimodelName);
 });
 
-async function getRequestContext(): Promise<AuthorizedClientRequestContext> {
-  const accessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
-  const requestContext = new AuthorizedClientRequestContext(accessToken);
-  return requestContext;
+async function getAccessToken(): Promise<AccessToken> {
+  return TestConfig.enableMocks ? "" : utils.login(TestUsers.super);
 }

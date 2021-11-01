@@ -6,11 +6,10 @@
  * @module Geometry
  */
 
-import { IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { IModelStatus } from "@itwin/core-bentley";
 import {
   Angle, Constant, Matrix3d, Point2d, Point3d, Range2d, Range3d, Range3dProps, Transform, Vector3d, YawPitchRollAngles,
-} from "@bentley/geometry-core";
-import { CommonLoggerCategory } from "../CommonLoggerCategory";
+} from "@itwin/core-geometry";
 import { Placement2dProps, Placement3dProps } from "../ElementProps";
 import { Frustum } from "../Frustum";
 import { IModelError } from "../IModelError";
@@ -101,7 +100,7 @@ export class Placement3d implements Placement3dProps {
     const transform = other.multiplyTransformTransform(this.transform);
     const angles = YawPitchRollAngles.createFromMatrix3d(transform.matrix);
     if (undefined === angles)
-      throw new IModelError(IModelStatus.BadRequest, "Invalid Transform", Logger.logError, CommonLoggerCategory.Geometry);
+      throw new IModelError(IModelStatus.BadRequest, "Invalid Transform");
 
     this.angles = angles;
     this.origin.setFrom(transform.origin);
@@ -164,7 +163,7 @@ export class Placement2d implements Placement2dProps {
     const transform = other.multiplyTransformTransform(this.transform);
     const angles = YawPitchRollAngles.createFromMatrix3d(transform.matrix);
     if ((undefined === angles) || !angles.pitch.isAlmostZero || !angles.roll.isAlmostZero)
-      throw new IModelError(IModelStatus.BadRequest, "Invalid Transform", Logger.logError, CommonLoggerCategory.Geometry);
+      throw new IModelError(IModelStatus.BadRequest, "Invalid Transform");
 
     this.angle = angles.yaw;
     this.origin.setFrom(transform.origin);

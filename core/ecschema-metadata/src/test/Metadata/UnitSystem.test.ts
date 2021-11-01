@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { assert, expect } from "chai";
 import { SchemaContext } from "../../Context";
 import { SchemaItemType, schemaItemTypeToString } from "../../ECObjects";
 import { Schema } from "../../Metadata/Schema";
@@ -19,6 +19,27 @@ describe("UnitSystem tests", () => {
       expect(testUnitSystem.schemaItemType).to.equal(SchemaItemType.UnitSystem);
       expect(schemaItemTypeToString(testUnitSystem.schemaItemType)).to.equal("UnitSystem");
     });
+  });
+
+  it("should get fullName", async () => {
+    const schemaJson = {
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      name: "TestSchema",
+      version: "1.2.3",
+      items: {
+        testUnitSystem: {
+          schemaItemType: "UnitSystem",
+          name: "IMPERIAL",
+          label: "Imperial",
+        },
+      },
+    };
+
+    const schema = await Schema.fromJson(schemaJson, new SchemaContext());
+    assert.isDefined(schema);
+    const unitSystem = await schema.getItem<UnitSystem>("testUnitSystem");
+    assert.isDefined(unitSystem);
+    expect(unitSystem!.fullName).eq("TestSchema.testUnitSystem");
   });
 
   describe("Async fromJson", () => {

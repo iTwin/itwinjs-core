@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as Mocha from "mocha";
-import { readdirSync } from "fs";
-import { join } from "path";
 import { IModelBankClient } from "@bentley/imodelhub-client";
+import { readdirSync } from "fs";
+import Mocha from "mocha";
+import { join } from "path";
 import { setIModelBankClient } from "./imodelhub/IModelBankCloudEnv";
 
 export function runTests(

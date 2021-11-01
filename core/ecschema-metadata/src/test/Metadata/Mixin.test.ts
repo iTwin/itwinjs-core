@@ -50,6 +50,30 @@ describe("Mixin", () => {
     });
   }
 
+  it("should get fullName", async () => {
+    const schemaJson = createSchemaJsonWithItems({
+      TestMixin: {
+        schemaItemType: "Mixin",
+        baseClass: "TestSchema.BaseMixin",
+        appliesTo: "TestSchema.TestEntity",
+      },
+      BaseMixin: {
+        schemaItemType: "Mixin",
+        appliesTo: "TestSchema.TestEntity",
+      },
+      TestEntity: {
+        schemaItemType: "EntityClass",
+      },
+    });
+
+    const schema = await Schema.fromJson(schemaJson, new SchemaContext());
+    assert.isDefined(schema);
+    const baseMixin = await schema.getItem<Mixin>("BaseMixin");
+    const mixin = await schema.getItem<Mixin>("TestMixin");
+    expect(baseMixin!.fullName).eq("TestSchema.BaseMixin");
+    expect(mixin!.fullName).eq("TestSchema.TestMixin");
+  });
+
   describe("deserialization", () => {
     it("should succeed with fully defined", async () => {
       const testSchema = createSchemaJsonWithItems({

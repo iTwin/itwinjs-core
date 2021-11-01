@@ -4,12 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { ModelProps } from "@bentley/imodeljs-common";
-import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
-import { KeySet, RuleTypes } from "@bentley/presentation-common";
-import { PresentationPropertyDataProvider } from "@bentley/presentation-components";
-import { DEFAULT_PROPERTY_GRID_RULESET } from "@bentley/presentation-components/lib/presentation-components/propertygrid/DataProvider";
-import { PropertyCategory } from "@bentley/ui-components";
+import { using } from "@itwin/core-bentley";
+import { ModelProps } from "@itwin/core-common";
+import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { KeySet, RuleTypes } from "@itwin/presentation-common";
+import { DEFAULT_PROPERTY_GRID_RULESET, PresentationPropertyDataProvider } from "@itwin/presentation-components";
+import { Presentation } from "@itwin/presentation-frontend";
+import { PropertyCategory } from "@itwin/components-react";
 import { initialize, terminate } from "../../IntegrationTests";
 
 describe("PropertyDataProvider", async () => {
@@ -152,4 +153,27 @@ describe("PropertyDataProvider", async () => {
   runTests("with flat property categories", () => provider.isNestedPropertyCategoryGroupingEnabled = false);
   runTests("with nested property categories", () => provider.isNestedPropertyCategoryGroupingEnabled = true);
 
+  it("gets property data after re-initializing Presentation", async () => {
+    const checkDataProvider = async () => {
+      await using(new PresentationPropertyDataProvider({ imodel }), async (p) => {
+        p.keys = new KeySet([physicalModelProps]);
+        const properties = await p.getData();
+        expect(properties.categories).to.not.be.empty;
+      });
+    };
+
+    // first request something to make sure we get data back
+    await checkDataProvider();
+
+    // re-initialize
+    Presentation.terminate();
+    await Presentation.initialize({
+      presentation: {
+        activeLocale: "en-pseudo",
+      },
+    });
+
+    // repeat request
+    await checkDataProvider();
+  });
 });

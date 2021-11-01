@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { IndexedPolyface, Transform } from "@bentley/geometry-core";
+import { IndexedPolyface, Transform } from "@itwin/core-geometry";
 import { DisplayParams } from "./DisplayParams";
 
 /** @internal */

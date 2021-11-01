@@ -4,10 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { ColorDef } from "@bentley/imodeljs-common";
-import {
-  IModelApp, Pixel, SnapshotConnection, VaryingType,
-} from "@bentley/imodeljs-frontend";
+import { ColorDef } from "@itwin/core-common";
+import { IModelApp, Pixel, SnapshotConnection, VaryingType } from "@itwin/core-frontend";
+import { TestUtility } from "../TestUtility";
 import { Color, TestViewport, testViewports } from "../TestViewport";
 
 describe("Screen-space effects", () => {
@@ -15,7 +14,7 @@ describe("Screen-space effects", () => {
   let disabledEffectName: string | undefined;
 
   before(async () => {
-    await IModelApp.startup();
+    await TestUtility.startFrontend();
     registerEffects();
     imodel = await SnapshotConnection.openFile("mirukuru.ibim");
   });
@@ -24,7 +23,7 @@ describe("Screen-space effects", () => {
     if (imodel)
       await imodel.close();
 
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   afterEach(() => {
@@ -94,9 +93,7 @@ describe("Screen-space effects", () => {
   async function test(bgColor: ColorDef, func: (vp: TestViewport) => Promise<void>) {
     await testViewports("0x24", imodel, 50, 50, async (vp) => {
       // Turn off lighting so we get pure colors and edges so we get only surfaces.
-      const vf = vp.viewFlags.clone();
-      vf.lighting = vf.visibleEdges = false;
-      vp.viewFlags = vf;
+      vp.viewFlags = vp.viewFlags.with("visibleEdges", false).with("lighting", false);
 
       vp.displayStyle.backgroundColor = bgColor;
 

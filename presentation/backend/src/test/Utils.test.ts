@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { DbResult } from "@bentley/bentleyjs-core";
-import { ECSqlStatement, ECSqlValue, IModelDb } from "@bentley/imodeljs-backend";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { getElementKey } from "../presentation-backend/Utils";
+import * as moq from "typemoq";
+import { DbResult } from "@itwin/core-bentley";
+import { ECSqlStatement, ECSqlValue, IModelDb } from "@itwin/core-backend";
+import { createRandomId } from "@itwin/presentation-common/lib/cjs/test";
+import { getElementKey, normalizeVersion } from "../presentation-backend/Utils";
 
 describe("getElementKey", () => {
 
@@ -48,6 +48,20 @@ describe("getElementKey", () => {
     const result = getElementKey(imodel.object, id);
     stmt.verifyAll();
     expect(result).to.be.undefined;
+  });
+
+});
+
+describe("getNormalizedVersion", () => {
+
+  it("returns normalized version", () => {
+    expect(normalizeVersion(undefined)).to.eq("0.0.0");
+    expect(normalizeVersion("1.2.3")).to.eq("1.2.3");
+    expect(normalizeVersion("01.002.0003")).to.eq("1.2.3");
+  });
+
+  it("returns `0.0.0` on invalid version string", () => {
+    expect(normalizeVersion("invalid")).to.eq("0.0.0");
   });
 
 });

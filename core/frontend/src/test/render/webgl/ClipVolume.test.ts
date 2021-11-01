@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ClipPrimitive, ClipShape, ClipVector, Point3d, Transform, UnionOfConvexClipPlaneSets } from "@bentley/geometry-core";
-import { IModelApp } from "../../../IModelApp";
+import { ClipPrimitive, ClipShape, ClipVector, Point3d, Transform, UnionOfConvexClipPlaneSets } from "@itwin/core-geometry";
 import { ClipVolume } from "../../../render/webgl/ClipVolume";
+import { IModelApp } from "../../../IModelApp";
 
 describe("ClipVolume", async () => {
   before(async () => {

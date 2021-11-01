@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-mobile",
+      "comment": "rename to @itwin/core-mobile",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-mobile"
+}

@@ -1,0 +1,75 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Backstage <Backstage /> renders correctly - !isVisible 1`] = `
+<Backstage
+  header={null}
+  isOpen={false}
+  onClose={[Function]}
+  safeAreaInsets={0}
+  showOverlay={true}
+/>
+`;
+
+exports[`Backstage <Backstage /> renders correctly - isVisible 1`] = `
+<Backstage
+  header={null}
+  isOpen={true}
+  onClose={[Function]}
+  safeAreaInsets={0}
+  showOverlay={true}
+/>
+`;
+
+exports[`Backstage <Backstage /> renders correctly with UserInfo 1`] = `
+<Backstage
+  header={null}
+  isOpen={false}
+  onClose={[Function]}
+  safeAreaInsets={0}
+  showOverlay={true}
+/>
+`;
+
+exports[`Backstage <Backstage /> renders correctly with header 1`] = `
+<Backstage
+  header={
+    <div>
+       Hello World! 
+    </div>
+  }
+  isOpen={false}
+  onClose={[Function]}
+  safeAreaInsets={0}
+  showOverlay={true}
+/>
+`;
+
+exports[`Backstage <Backstage /> with child items 1`] = `
+<Backstage
+  header={null}
+  isOpen={true}
+  onClose={[Function]}
+  safeAreaInsets={0}
+  showOverlay={true}
+>
+  <CommandLaunchBackstageItem
+    commandId="my-command-id"
+    execute={[Function]}
+    iconSpec="icon-placeholder"
+    labelKey="UiFramework:tests.label"
+  />
+  <SeparatorBackstageItem />
+  <FrontstageLaunchBackstageItem
+    frontstageId="Test1"
+    iconSpec="icon-placeholder"
+    labelKey="UiFramework:tests.label"
+  />
+  <SeparatorBackstageItem />
+  <TaskLaunchBackstageItem
+    iconSpec="icon-placeholder"
+    labelKey="UiFramework:tests.label"
+    taskId="Task1"
+    workflowId="ExampleWorkflow"
+  />
+</Backstage>
+`;

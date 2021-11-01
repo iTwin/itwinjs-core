@@ -8,11 +8,11 @@
 
 import {
   assert, BeTimePoint, ByteStream, compareStrings, DbOpcode, Id64, Id64Array, Id64String, partitionArray, SortedArray,
-} from "@bentley/bentleyjs-core";
-import { Range3d, Transform } from "@bentley/geometry-core";
+} from "@itwin/core-bentley";
+import { Range3d, Transform } from "@itwin/core-geometry";
 import {
-  BatchType, ElementGeometryChange, FeatureAppearance, FeatureAppearanceProvider, FeatureAppearanceSource, GeometryClass, TileFormat,
-} from "@bentley/imodeljs-common";
+  BatchType, ElementGeometryChange, ElementGraphicsRequestProps, FeatureAppearance, FeatureAppearanceProvider, FeatureAppearanceSource, GeometryClass, TileFormat,
+} from "@itwin/core-common";
 import { RenderSystem } from "../render/RenderSystem";
 import { Viewport } from "../Viewport";
 import { IModelApp } from "../IModelApp";
@@ -328,7 +328,7 @@ class GraphicsTile extends Tile {
     this.tolerance = 10 ** toleranceLog10;
   }
 
-  public computeLoadPriority(_viewports: Iterable<Viewport>): number {
+  public override computeLoadPriority(_viewports: Iterable<Viewport>): number {
     // We want the element's graphics to be updated as soon as possible
     return 0;
   }
@@ -353,7 +353,7 @@ class GraphicsTile extends Tile {
     assert(this.tree instanceof IModelTileTree);
     const idProvider = this.tree.contentIdProvider;
 
-    const props = {
+    const props: ElementGraphicsRequestProps = {
       id: requestId.value.toString(16),
       elementId: this.parent.contentId,
       toleranceLog10: this.toleranceLog10,
@@ -362,6 +362,7 @@ class GraphicsTile extends Tile {
       contentFlags: idProvider.contentFlags,
       omitEdges: !this.tree.hasEdges,
       clipToProjectExtents: true,
+      sectionCut: this.tree.stringifiedSectionClip,
     };
 
     return IModelApp.tileAdmin.requestElementGraphics(this.tree.iModel, props);
@@ -389,7 +390,7 @@ class GraphicsTile extends Tile {
     if (reader) {
       try {
         content = await reader.read();
-      } catch (_) {
+      } catch {
         //
       }
     }

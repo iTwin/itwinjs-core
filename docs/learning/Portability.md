@@ -14,7 +14,7 @@ The key technology that makes an app portable is JavaScript. JavaScript engines 
 
 Web UI technology, including HTML and CSS, makes it possible to write a cross-platform user interface that looks and behaves the same everywhere, in every configuration. Web UI technology is supported by Web browsers and Web view renderers on many platforms. Web UI technology also simplifies the task of reconfiguring or even swapping out an app's GUI.
 
-[Electron](./Glossary.md#Electron) combines a Web view client and a nodejs-based server into a single desktop product, without requiring any modification of the code or the UI. Electron runs on many desktop platforms.
+[Electron](./Glossary.md#Electron) combines a Web view client and a Node.js-based server into a single desktop product, without requiring any modification of the code or the UI. Electron runs on many desktop platforms.
 
 ## Frontend Portability
 
@@ -50,7 +50,7 @@ A backend can use platform-specific globals and modules, but only in guarded cod
 For example, a backend can use node builtins in guarded code, like this:
 
 ```ts
-  import { Platform } from "@bentley/imodeljs-backend";
+  import { Platform } from "@itwin/core-backend";
 
   if (Platform.isNodeJs()) {
     // access nodejs-specific modules and/or globals

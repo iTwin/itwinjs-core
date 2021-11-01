@@ -33,6 +33,23 @@ describe("Constant", () => {
     });
   }
 
+  it("should get fullName", async () => {
+    const fullyDefinedConstant = createSchemaJson({
+      label: "Test Constant",
+      description: "testing a constant",
+      phenomenon: "TestSchema.TestPhenomenon",
+      definition: "PI",
+      numerator: 5.5,
+      denominator: 5.1,
+    });
+
+    const ecSchema = await Schema.fromJson(fullyDefinedConstant, new SchemaContext());
+    assert.isDefined(ecSchema);
+    const testConst = await ecSchema.getItem<Constant>("TestConstant");
+    assert.isDefined(testConst);
+    expect(testConst!.fullName).eq("TestSchema.TestConstant");
+  });
+
   describe("deserialization", () => {
     // Fully defined constant
     const fullyDefinedConstant = createSchemaJson({

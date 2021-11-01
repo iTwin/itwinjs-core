@@ -1,10 +1,10 @@
-# @bentley/frontend-devtools
+# @itwin/frontend-devtools
 
 Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md for license terms and full copyright notice.
 
 ## Description
 
-The __@bentley/frontend-devtools__ package contains various tools and widgets designed to help track information and diagnose issues related to the iTwin.js front-end display system. It is intended chiefly for use by developers.
+The __@itwin/frontend-devtools__ package contains various tools and widgets designed to help track information and diagnose issues related to the iTwin.js front-end display system. It is intended chiefly for use by developers.
 
 Because this is a developer-only package, its functionality is not expected to ever be promoted from "beta" to "public".
 
@@ -78,6 +78,7 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
 * `fdt toggle reality logging` - Toggle the logging of reality tile loading and selection diagnostics to the console.
 * `fdt toggle reality bounds` - Toggle the display of bounding boxes for reality tiles.
 * `fdt set building display` Toggle the display of the worldwide OpenStreetMap worldwide buildingslayer by attaching or displaying as a reality model in the current viewport.  The OSM buildings are aggregated and supplied from Cesium Ion <https://cesium.com/content/cesium-osm-buildings/>. The first argument is required on|off - the second optional argument is a value for transparency between 0 and 1.
+* `fdt wow ignore background` Toggle whether the background color needs to be white for white-on-white reversal to apply.
 
 ### Screen-space effect key-ins
 
@@ -256,6 +257,10 @@ These keysins control the planar masking of reality models.
   * "color": Override color to white.
   * "emphasis": Apply silhouette for emphasis.
   * "both": Apply both color and silhouette.
+* `fdt emphasize visible` - Determines the set of elements considered currently visible in the selected viewport and emphasizes them, de-emphasizing everything else. It takes one required argument and one optional argument:
+  * "tiles" or "screen": The criterion by which elements are considered visible. "tiles" means the element is present in at least one tile selected for display in the view and is not hidden based on category, subcategory, symbology overrides, etc. "screen" means the element lit up at least one pixel; this does not include pixels behind other transparent pixels.
+  * "nonlocatable=0|1" where `1` indicates non-locatable geometry should be considered. By default it is ignored.
+* `fdt clear emphasized` - Undo the effects of `fdt emphasize selection` or `fdt emphasize visible`.
 * `fdt isolate selection` - Causes all elements except those currently in the selection set to stop drawing.
 * `fdt clear isolate` - Reverse the effects of `fdt isolate selection`.
 * `fdt toggle wiremesh` - Toggles "pseudo-wiremesh" display. This causes surfaces to be rendered using `GL_LINES` instead of `GL_TRIANGLES`. Useful for visualizing the triangles of a mesh - but not suitable for "real" wiremesh display.
@@ -273,6 +278,10 @@ These keysins control the planar masking of reality models.
   * "v", "h": The visible or hidden ratio in [0..1].
   * "s": The silhouette as an integer in [0..2] (see Hilite.Silhouette enum).
 * `fdt emphasis settings` - Modifies the hilite settings used for emphasized elements in the selected viewport. If no arguments are specified, it does nothing. See `fdt hilite settings` for supported arguments.
+* `fdt flash settings` - Modifies the FlashSettings used in the selected viewport. If no arguments are supplied, it does nothing. If "default" is supplied as the only argument, it resets to the default settings. Otherwise, it accepts any combination of the following arguments in the form "name=value", where `name` is case-insensitive and only the first character matters:
+  * "intensity" as a number in [0..1] to change FlashSettings.maxIntensity.
+  * "mode" as either "brighten" or "hilite" (case-insensitive, only first character matters) to change FlashMode.
+  * "duration" as the number of seconds for FlashSettings.duration.
 * `fdt gpu mem limit` - Changes the value of `TileAdmin.gpuMemoryLimit` controlling how much GPU memory can be allocated to tile graphics before graphics of least-recently-drawn tiles begin to be discarded. Accepts one integer greater than or equal to zero representing the amount of memory in bytes; or one of "default", "relaxed", "aggressive", or "none". Any other input is treated as "none".
 * `fdt tilesize default` - Changes the default tile size modifier used by viewports that don't explicitly override it. Accepts a floating point number greater than zero.
 * `fdt tilesize viewport` - Overrides the tile size modifier for the selected viewport (if a floating point number is supplied) or clears the override (if the string "reset" is supplied). The modifier must be greater than zero.
@@ -306,11 +315,6 @@ These keysins control the planar masking of reality models.
 * `fdt sourceId from elemId` and `fdt elemId from sourceId` - Converts between the Id of an element in the iModel and the corresponding object in the source document from which it originated. Outputs the result to IModelApp.notifications.
   * * `id=`: the source aspect Id or element Id.
   * * `copy=`: (optional) 1 to copy the resultant Id to the system clipboard.
-* `fdt add extensionService <context>` - Adds a context id to be used with Extension Service. It's added to the front of loaders list, so the most recently added context will get used first. `<context>` can be one of the following:
-  * `id <id>`, where `<id>` is a Connected Context GUID.
-  * `project <projectName>`.
-  * `asset <assetName>`.
-  * `public` - loads Bentley-published public extensions.
 
 * `fdt aasamples <nSamples>` - Sets the number of antialias samples for the current viewport where nSamples is the number of samples to use; if 1 or less then antialiasing is turned off, if > 1 then antialiasing is turned on and it will attempt to use that many samples (restricted by the given hardware constraints)
 The following arguments can also be supplied:

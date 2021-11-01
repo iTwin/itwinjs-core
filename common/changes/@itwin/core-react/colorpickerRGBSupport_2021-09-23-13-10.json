@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-react",
+      "comment": "Update NumberInput to select on focus and to capture Enter key",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-react"
+}

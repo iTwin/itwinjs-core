@@ -1,29 +1,29 @@
 # Table
 
-The [Table]($ui-components:Table) category in the `@bentley/ui-components` package includes
+The [Table]($components-react:Table) category in the `@itwin/components-react` package includes
 classes and components for working with a Table control.
 
 ## Components
 
 The following React components comprise the Table control.
 
-- [Table]($ui-components) - renders data rows and columns in a grid along with a header
-- [TableCell]($ui-components) - renders a table cell
-- [TableCellContent]($ui-components) - renders table cell content
+- [Table]($components-react) - renders data rows and columns in a grid along with a header
+- [TableCell]($components-react) - renders a table cell
+- [TableCellContent]($components-react) - renders table cell content
 
-There are a number of value renderer components for different types that can be found in the [Properties]($ui-components:Properties) category.
-Those components are managed by the [PropertyValueRendererManager]($ui-components).
+There are a number of value renderer components for different types that can be found in the [Properties]($components-react:Properties) category.
+Those components are managed by the [PropertyValueRendererManager]($components-react).
 
 **Note**: The Table component uses various components from the [react-data-grid](https://www.npmjs.com/package/react-data-grid) package internally.
 
 ## Data Provider
 
-The Table data provider is defined by the [TableDataProvider]($ui-components) interface and
+The Table data provider is defined by the [TableDataProvider]($components-react) interface and
 provides information about the columns and rows to the Table component.
 
-The `getColumns` method retrieves an array of [ColumnDescription]($ui-components).
+The `getColumns` method retrieves an array of [ColumnDescription]($components-react).
 The `getRowsCount` method retrieves the number of rows and
-the `getRow` method retrieves a specific [RowItem]($ui-components) by index.
+the `getRow` method retrieves a specific [RowItem]($components-react) by index.
 
 The `onColumnsChanged` event should be emitted when column data changes.
 The `onRowsChanged` event should be emitted when row data changes.
@@ -35,36 +35,36 @@ For filtering support, the `applyFilterDescriptors` applies a filter descriptor 
 
 ### Column Description
 
-Column definitions are defined by the [ColumnDescription]($ui-components) interface.
+Column definitions are defined by the [ColumnDescription]($components-react) interface.
 
 The `key` member is a unique key for the column.
 The `label` member is a column header label.
 
-The `propertyDescription` member is a [PropertyDescription]($ui-abstract) for all cells in the column.
+The `propertyDescription` member is a [PropertyDescription]($appui-abstract) for all cells in the column.
 
 The `editable` member indicates whether the cells in the column are editable.
 The `resizable` member indicates whether the column is resizable.
 The `sortable` member indicates whether the column is sortable.
 
 The `filterable` member indicates whether the column is filterable.
-The `filterRenderer` member specifies the [FilterRenderer]($ui-components) for the column.
+The `filterRenderer` member specifies the [FilterRenderer]($components-react) for the column.
 
 ### Row Item
 
-Row information is defined by the [RowItem]($ui-components) interface.
+Row information is defined by the [RowItem]($components-react) interface.
 
 The `key` member is a unique key for the row.
-The `cells` member is an array of [CellItem]($ui-components) in the row.
+The `cells` member is an array of [CellItem]($components-react) in the row.
 
 The `isDisabled` member indicates whether the cells in the row are disabled.
-The `colorOverrides` member specifies color overrides via the [ItemColorOverrides]($ui-components) interface.
+The `colorOverrides` member specifies color overrides via the [ItemColorOverrides]($components-react) interface.
 
 ### Cell Item
 
-Cell information is defined by the [CellItem]($ui-components) interface.
+Cell information is defined by the [CellItem]($components-react) interface.
 
 The `key` member is the key for the column containing the cell.
-The `record` member is the [PropertyRecord]($ui-abstract) for the cell.
+The `record` member is the [PropertyRecord]($appui-abstract) for the cell.
 
 The `isDisabled` member indicates whether the cell is disabled.
 The `alignment` member specifies the horizontal alignment of the contents of the cell and
@@ -72,7 +72,7 @@ the `style` member specifies style properties for the contents of the cell.
 
 ### Data Provider Implementations
 
-The [SimpleTableDataProvider]($ui-components) class is an implementation of
+The [SimpleTableDataProvider]($components-react) class is an implementation of
 TableDataProvider that uses an array.
 The [PresentationTableDataProvider]($presentation-components) class is a
 Presentation Rules-driven implementation.
@@ -80,15 +80,15 @@ Developers may develop their own implementation of TableDataProvider.
 
 ## Properties
 
-The Table component properties are defined in the [TableProps]($ui-components) interface.
+The Table component properties are defined in the [TableProps]($components-react) interface.
 
 The `dataProvider` prop, which is the only mandatory prop, specifies the Table data provider.
 
 The `pageAmount` prop specifies the amount of rows per page. The default is 100.
 The `onRowsLoaded` prop specifies a callback function called when rows are loaded.
 
-For selection support, the `selectionMode` prop specifies the desired [SelectionMode]($ui-components)
-and the `tableSelectionTarget` prop specifies the desired [TableSelectionTarget]($ui-components).
+For selection support, the `selectionMode` prop specifies the desired [SelectionMode]($components-react)
+and the `tableSelectionTarget` prop specifies the desired [TableSelectionTarget]($components-react).
 There are a number of selection related callback functions:
 
 - isRowSelected - Callback for determining if row is selected
@@ -109,15 +109,15 @@ The `hideHeader` prop hides the Table header.
 
 ### Simple Table Component
 
-This React component utilizes the [Table]($ui-components) component and
+This React component utilizes the [Table]($components-react) component and
 [tableWithUnifiedSelection]($presentation-components) HOC to
 create a HOC table component that supports unified selection.
 
 ```tsx
 import * as React from "react";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Table } from "@bentley/ui-components";
-import { PresentationTableDataProvider, tableWithUnifiedSelection } from "@bentley/presentation-components";
+import { IModelConnection } from "@itwin/core-frontend";
+import { Table } from "@itwin/components-react";
+import { PresentationTableDataProvider, tableWithUnifiedSelection } from "@itwin/presentation-components";
 
 // create a HOC table component that supports unified selection
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -151,6 +151,6 @@ const rulesetId = "Default";
 
 ## API Reference
 
-- [Table in @bentley/ui-components]($ui-components:Table)
-- [Properties in @bentley/ui-components]($ui-components:Properties)
-- [Properties in @bentley/ui-abstract]($ui-abstract:Properties)
+- [Table in @itwin/components-react]($components-react:Table)
+- [Properties in @itwin/components-react]($components-react:Properties)
+- [Properties in @itwin/appui-abstract]($appui-abstract:Properties)

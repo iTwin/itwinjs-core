@@ -6,19 +6,19 @@
  * @module Rendering
  */
 
-import { assert, Id64String } from "@bentley/bentleyjs-core";
+import { assert, Id64String } from "@itwin/core-bentley";
 import {
   Matrix3d, Point2d,
   Point3d, Range1d, Transform, XAndY,
-} from "@bentley/geometry-core";
-import { Frustum, FrustumPlanes, SpatialClassificationProps, ViewFlags } from "@bentley/imodeljs-common";
+} from "@itwin/core-geometry";
+import { Frustum, FrustumPlanes, SpatialClassifier, ViewFlags } from "@itwin/core-common";
 import { CachedDecoration, DecorationsCache } from "./DecorationsCache";
 import { IModelApp } from "./IModelApp";
 import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { CanvasDecoration } from "./render/CanvasDecoration";
 import { Decorations } from "./render/Decorations";
 import { GraphicBranch, GraphicBranchOptions } from "./render/GraphicBranch";
-import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
+import { GraphicBuilder, GraphicType, ViewportGraphicBuilderOptions } from "./render/GraphicBuilder";
 import { GraphicList, RenderGraphic } from "./render/RenderGraphic";
 import { RenderPlanarClassifier } from "./render/RenderPlanarClassifier";
 import { RenderTextureDrape } from "./render/RenderSystem";
@@ -42,7 +42,7 @@ export class RenderContext {
 
   constructor(vp: Viewport, frustum?: Frustum) {
     this._viewport = vp;
-    this.viewFlags = vp.viewFlags.clone(); // viewFlags can diverge from viewport after attachment
+    this.viewFlags = vp.viewFlags;
     this.frustum = frustum ? frustum : vp.getFrustum();
     this.frustumPlanes = new FrustumPlanes(this.frustum);
   }
@@ -61,8 +61,8 @@ export class RenderContext {
   public get target(): RenderTarget { return this.viewport.target; }
 
   /** @internal */
-  protected _createGraphicBuilder(type: GraphicType, transform?: Transform, id?: Id64String): GraphicBuilder {
-    return this.target.createGraphicBuilder(type, this.viewport, transform, id);
+  protected _createGraphicBuilder(options: Omit<ViewportGraphicBuilderOptions, "viewport">): GraphicBuilder {
+    return this.target.createGraphicBuilder({ ...options, viewport: this.viewport });
   }
 
   /** Create a builder for creating a [[GraphicType.Scene]] [[RenderGraphic]] for rendering within this context's [[Viewport]].
@@ -70,10 +70,10 @@ export class RenderContext {
    * @returns A builder for creating a [[GraphicType.Scene]] [[RenderGraphic]] for rendering within this context's [[Viewport]].
    */
   public createSceneGraphicBuilder(transform?: Transform): GraphicBuilder {
-    return this._createGraphicBuilder(GraphicType.Scene, transform);
+    return this._createGraphicBuilder({ type: GraphicType.Scene, placement: transform });
   }
 
-  /** @internal */
+  /** Create a graphic from a [[GraphicBranch]]. */
   public createGraphicBranch(branch: GraphicBranch, location: Transform, opts?: GraphicBranchOptions): RenderGraphic {
     return this.target.renderSystem.createGraphicBranch(branch, location, opts);
   }
@@ -113,6 +113,14 @@ export class DynamicsContext extends RenderContext {
   public changeDynamics(): void {
     this.viewport.changeDynamics(this._dynamics);
   }
+
+  /** Create a builder for producing a [[RenderGraphic]] appropriate for rendering within this context's [[Viewport]].
+   * @param options Options describing how to create the builder.
+   * @returns A builder that produces a [[RenderGraphic]].
+   */
+  public createGraphic(options: Omit<ViewportGraphicBuilderOptions, "viewport">): GraphicBuilder {
+    return this._createGraphicBuilder(options);
+  }
 }
 
 /** Provides context for a [[ViewportDecorator]] to add [[Decorations]] to be rendered within a [[Viewport]].
@@ -123,13 +131,8 @@ export class DecorateContext extends RenderContext {
   private readonly _cache: DecorationsCache;
   private _curCacheableDecorator?: ViewportDecorator;
 
-  /** The [[ScreenViewport]] in which this context's [[Decorations]] will be drawn.
-   * @deprecated use [[DecorateContext.viewport]].
-   */
-  public get screenViewport(): ScreenViewport { return this.viewport; }
-
   /** The [[ScreenViewport]] in which this context's [[Decorations]] will be drawn. */
-  public get viewport(): ScreenViewport {
+  public override get viewport(): ScreenViewport {
     return super.viewport as ScreenViewport;
   }
 
@@ -146,9 +149,18 @@ export class DecorateContext extends RenderContext {
    * @param id If the decoration is to be pickable, a unique identifier to associate with the resultant [[RenderGraphic]].
    * @returns A builder for creating a [[RenderGraphic]] of the specified type appropriate for rendering within this context's [[Viewport]].
    * @see [[IModelConnection.transientIds]] for obtaining an ID for a pickable decoration.
+   * @see [[createGraphic]] for more options.
    */
   public createGraphicBuilder(type: GraphicType, transform?: Transform, id?: Id64String): GraphicBuilder {
-    return this._createGraphicBuilder(type, transform, id);
+    return this.createGraphic({ type, placement: transform, pickable: undefined !== id ? { id } : undefined });
+  }
+
+  /** Create a builder for producing a [[RenderGraphic]] appropriate for rendering within this context's [[Viewport]].
+   * @param options Options describing how to create the builder.
+   * @returns A builder that produces a [[RenderGraphic]].
+   */
+  public createGraphic(options: Omit<ViewportGraphicBuilderOptions, "viewport">): GraphicBuilder {
+    return this._createGraphicBuilder(options);
   }
 
   /** @internal */
@@ -269,11 +281,8 @@ export class DecorateContext extends RenderContext {
     // an element decoration being added might already be on the decorationDiv, just marked for removal
     if (decoration[ELEMENT_MARKED_FOR_REMOVAL]) {
       decoration[ELEMENT_MARKED_FOR_REMOVAL] = false;
-    // SEE: decorationDiv doc comment
-    // eslint-disable-next-line deprecation/deprecation
-    } else if (decoration.parentElement !== this.screenViewport.decorationDiv) {
-    // eslint-disable-next-line deprecation/deprecation
-      this.screenViewport.decorationDiv.appendChild(decoration);
+    } else if (decoration.parentElement !== this.viewport.decorationDiv) {
+      this.viewport.decorationDiv.appendChild(decoration);
     }
   }
 
@@ -285,7 +294,7 @@ export class DecorateContext extends RenderContext {
       return;
 
     const color = vp.getContrastToBackgroundColor();
-    const planarGrid = this.viewport.target.renderSystem.createPlanarGrid(vp.getFrustum(),  { origin: gridOrigin, rMatrix, spacing, gridsPerRef, color } );
+    const planarGrid = this.viewport.target.renderSystem.createPlanarGrid(vp.getFrustum(), { origin: gridOrigin, rMatrix, spacing, gridsPerRef, color });
     if (planarGrid) {
       this.addDecoration(GraphicType.WorldDecoration, planarGrid);
     }
@@ -342,7 +351,7 @@ export class SceneContext extends RenderContext {
   /** @internal */
   public get graphicType() { return this._graphicType; }
 
-  /** @internal */
+  /** Add the specified graphic to the scene. */
   public outputGraphic(graphic: RenderGraphic): void {
     switch (this._graphicType) {
       case TileGraphicType.BackgroundMap:
@@ -406,8 +415,8 @@ export class SceneContext extends RenderContext {
       return drape;
 
     drape = this.viewport.target.getTextureDrape(id);
-    if (undefined === drape)
-      drape = this.viewport.target.renderSystem.createBackgroundMapDrape(drapedTreeRef, this.viewport.displayStyle.backgroundDrapeMap);
+    if (undefined === drape && this.viewport.backgroundDrapeMap)
+      drape = this.viewport.target.renderSystem.createBackgroundMapDrape(drapedTreeRef, this.viewport.backgroundDrapeMap);
 
     if (undefined !== drape)
       this.textureDrapes.set(id, drape);
@@ -442,7 +451,7 @@ export class SceneContext extends RenderContext {
   public get textureDrapes() { return this.scene.textureDrapes; }
 
   /** @internal */
-  public setVolumeClassifier(classifier: SpatialClassificationProps.Classifier, modelId: Id64String): void {
+  public setVolumeClassifier(classifier: SpatialClassifier, modelId: Id64String): void {
     this.scene.volumeClassifier = { classifier, modelId };
   }
 }

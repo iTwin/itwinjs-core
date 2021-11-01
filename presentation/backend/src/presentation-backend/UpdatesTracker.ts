@@ -6,9 +6,9 @@
  * @module Core
  */
 
-import { IDisposable, Logger } from "@bentley/bentleyjs-core";
-import { IModelDb, IpcHost } from "@bentley/imodeljs-backend";
-import { PresentationIpcEvents, UpdateInfoJSON } from "@bentley/presentation-common";
+import { IDisposable, Logger } from "@itwin/core-bentley";
+import { IModelDb, IpcHost } from "@itwin/core-backend";
+import { PresentationIpcEvents, UpdateInfoJSON } from "@itwin/presentation-common";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { NativePlatformDefinition } from "./NativePlatform";
 

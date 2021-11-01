@@ -6,10 +6,11 @@
  * @module WebGL
  */
 
-import { assert, dispose } from "@bentley/bentleyjs-core";
-import { Angle, Point2d, Point3d, Range3d, Vector2d, Vector3d } from "@bentley/geometry-core";
-import { Npc, QParams2d, QParams3d, QPoint2dList, QPoint3dList, RenderMode, RenderTexture } from "@bentley/imodeljs-common";
+import { assert, dispose } from "@itwin/core-bentley";
+import { Angle, Point2d, Point3d, Range3d, Vector2d, Vector3d } from "@itwin/core-geometry";
+import { Npc, QParams2d, QParams3d, QPoint2dList, QPoint3dList, RenderMode, RenderTexture } from "@itwin/core-common";
 import { SkyBox } from "../../DisplayStyleState";
+import { FlashMode } from "../../FlashSettings";
 import { TesselatedPolyline } from "../primitives/VertexTable";
 import { RenderMemory } from "../RenderMemory";
 import { AttributeMap } from "./AttributeMap";
@@ -24,7 +25,7 @@ import { InstancedGeometry } from "./InstancedGeometry";
 import { MaterialInfo } from "./Material";
 import { EdgeGeometry, MeshGeometry, SilhouetteEdgeGeometry, SurfaceGeometry } from "./Mesh";
 import { PointCloudGeometry } from "./PointCloud";
-import { CompositeFlags, FlashMode, RenderOrder, RenderPass } from "./RenderFlags";
+import { CompositeFlags, RenderOrder, RenderPass } from "./RenderFlags";
 import { System } from "./System";
 import { Target } from "./Target";
 import { computeCompositeTechniqueId, TechniqueId } from "./TechniqueId";
@@ -142,13 +143,13 @@ export abstract class CachedGeometry implements WebGLDisposable, RenderMemory.Co
     // By default only surfaces rendered with lighting get brightened. Overridden for reality meshes since they have lighting baked-in.
     // NB: If the reality model is classified, the classifiers are drawn without lighting, therefore we mix the hilite color.
     if (this.hasBakedLighting)
-      return FlashMode.MixHiliteColor;
+      return FlashMode.Hilite;
 
     const vf = params.target.currentViewFlags;
     if (!this.isLitSurface || RenderMode.SmoothShade !== vf.renderMode)
-      return FlashMode.MixHiliteColor;
+      return FlashMode.Hilite;
 
-    return vf.lighting ? FlashMode.Brighten : FlashMode.MixHiliteColor;
+    return vf.lighting ? params.target.plan.flashSettings.litMode : FlashMode.Hilite;
   }
 
   public wantMixMonochromeColor(_target: Target): boolean { return false; }
@@ -183,8 +184,8 @@ export abstract class LUTGeometry extends CachedGeometry {
 
   // The texture containing the vertex data.
   public abstract get lut(): VertexLUT;
-  public get asLUT() { return this; }
-  public get viewIndependentOrigin() { return this._viewIndependentOrigin; }
+  public override get asLUT() { return this; }
+  public override get viewIndependentOrigin() { return this._viewIndependentOrigin; }
 
   protected abstract _draw(_numInstances: number, _instanceBuffersContainer?: BuffersContainer): void;
   public draw(): void { this._draw(0); }
@@ -195,7 +196,7 @@ export abstract class LUTGeometry extends CachedGeometry {
 
   public get qOrigin(): Float32Array { return this.lut.qOrigin; }
   public get qScale(): Float32Array { return this.lut.qScale; }
-  public get hasAnimation() { return this.lut.hasAnimation; }
+  public override get hasAnimation() { return this.lut.hasAnimation; }
 
   protected constructor(viewIndependentOrigin?: Point3d) {
     super();
@@ -714,9 +715,9 @@ export class SkySphereViewportQuadGeometry extends ViewportQuadGeometry {
     return new SkySphereViewportQuadGeometry(params, skybox, technique);
   }
 
-  public get isDisposed(): boolean { return super.isDisposed && this._worldPosBuff.isDisposed; }
+  public override get isDisposed(): boolean { return super.isDisposed && this._worldPosBuff.isDisposed; }
 
-  public dispose() {
+  public override dispose() {
     super.dispose();
     dispose(this._worldPosBuff);
   }

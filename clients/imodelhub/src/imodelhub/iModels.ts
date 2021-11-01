@@ -6,9 +6,10 @@
  * @module iModelHubClient
  */
 
-import * as deepAssign from "deep-assign";
-import { GuidString, IModelHubStatus, Logger } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, ECJsonTypeMap, FileHandler, ProgressCallback, WsgInstance } from "@bentley/itwin-client";
+import deepAssign from "deep-assign";
+import { AccessToken, BentleyError, GuidString, IModelHubStatus, Logger } from "@itwin/core-bentley";
+import { FileHandler, ProgressCallback } from "@bentley/itwin-client";
+import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck, IModelHubClientError, IModelHubError } from "./Errors";
@@ -17,11 +18,11 @@ import { addSelectFileAccessKey, InstanceIdQuery } from "./HubQuery";
 const loggerCategory: string = IModelHubClientLoggerCategory.IModelHub;
 
 /**
- * HubIModel represents an iModel on iModelHub. Getting a valid HubIModel instance from iModelHub is required for majority of iModelHub method calls, as wsgId of this object needs to be passed as iModelId argument to those methods.
- *
- * For iModel representation in iModel.js, see [IModel]($common). For the file that is used for that iModel, see [BriefcaseDb]($backend).
- * @public
- */
+  * HubIModel represents an iModel on iModelHub. Getting a valid HubIModel instance from iModelHub is required for majority of iModelHub method calls, as wsgId of this object needs to be passed as iModelId argument to those methods.
+  *
+  * For iModel representation in iModel.js, see [IModel]($common). For the file that is used for that iModel, see [BriefcaseDb]($backend).
+  * @internal
+  */
 @ECJsonTypeMap.classToJson("wsg", "ContextScope.iModel", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class HubIModel extends WsgInstance {
   /** Id of the iModel. */
@@ -32,7 +33,7 @@ export class HubIModel extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Description")
   public description?: string;
 
-  /** Name of the iModel. iModels must have unique names per context ([[Project]] or [[Asset]]). */
+  /** Name of the iModel. iModels must have unique names per iTwin. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Name")
   public name?: string;
 
@@ -49,8 +50,8 @@ export class HubIModel extends WsgInstance {
   public initialized?: boolean;
 
   /** Set when creating iModel from empty seed file
-   * @internal
-   */
+    * @internal
+    */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.iModelTemplate")
   public iModelTemplate?: string;
 
@@ -72,8 +73,8 @@ export class HubIModel extends WsgInstance {
 }
 
 /** Initialization state of seed file. Can be queried with [[IModelHandler.getInitializationState]]. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
- * @public
- */
+  * @public
+  */
 export enum InitializationState {
   /** Initialization was successful. */
   Successful = 0,
@@ -87,13 +88,13 @@ export enum InitializationState {
   OutdatedFile = 4,
   /** Initialization failed due to file having [[Code]] values that are too long. */
   CodeTooLong = 5,
-  /** Initialization failed due to file being a [[Briefcase]]. Only standalone and master files are supported for iModel creation, see [BriefcaseId]($backend). */
+  /** Initialization failed due to file being a [[Briefcase]]. Only standalone and master files are supported for iModel creation, see [BriefcaseId]($common). */
   SeedFileIsBriefcase = 6,
 }
 
 /** iModel type
- * @public
- */
+  * @public
+  */
 export enum IModelType {
   /** iModel has no type. */
   Undefined = 0, // eslint-disable-line id-blacklist
@@ -102,8 +103,8 @@ export enum IModelType {
 }
 
 /** SeedFile
- * @internal
- */
+  * @internal
+  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.SeedFile", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class SeedFile extends WsgInstance {
   /** Id of the iModel. */
@@ -153,18 +154,18 @@ export class SeedFile extends WsgInstance {
 /** Query object for getting SeedFiles. You can use this to modify the query. See [[SeedFileHandler.get]]. */
 class SeedFileQuery extends InstanceIdQuery {
   /**
-   * Query will additionally select SeedFile file download URL.
-   * @returns This query.
-   */
+    * Query will additionally select SeedFile file download URL.
+    * @returns This query.
+    */
   public selectDownloadUrl() {
     addSelectFileAccessKey(this._query);
     return this;
   }
 
   /**
-   * Change the order to latest changesets first in the query.
-   * @returns This query.
-   */
+    * Change the order to latest changesets first in the query.
+    * @returns This query.
+    */
   public latest() {
     this._query.$orderby = "Index+desc";
     return this;
@@ -177,48 +178,45 @@ class SeedFileHandler {
   private _fileHandler?: FileHandler;
 
   /** Constructor for SeedFileHandler. Should use @see IModelHandler instead of directly constructing this.
-   * @param handler Handler for WSG requests.
-   * @param fileHandler Handler for file system.
-   */
+    * @param handler Handler for WSG requests.
+    * @param fileHandler Handler for file system.
+    */
   constructor(handler: IModelBaseHandler, fileHandler?: FileHandler) {
     this._handler = handler;
     this._fileHandler = fileHandler;
   }
 
   /** Get relative url for SeedFile requests.
-   * @param iModelId Id of the iModel. See [[HubIModel]].
-   * @param fileId Id of the Seed File.
-   */
+    * @param iModelId Id of the iModel. See [[HubIModel]].
+    * @param fileId Id of the Seed File.
+    */
   private getRelativeUrl(iModelId: GuidString, fileId?: GuidString) {
     return `/Repositories/iModel--${iModelId}/iModelScope/SeedFile/${fileId || ""}`;
   }
 
   /** Get the seed files given the id of the iModel.
-   * @param requestContext The client request context.
-   * @param iModelId Id of the iModel. See [[HubIModel]].
-   * @param query Optional query object to filter the queried SeedFiles or select different data from them.
-   * @returns Resolves to the seed file.
-   */
-  public async get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query: SeedFileQuery = new SeedFileQuery()): Promise<SeedFile[]> {
-    requestContext.enter();
+    * @param accessToken A valid access token string.
+    * @param iModelId Id of the iModel. See [[HubIModel]].
+    * @param query Optional query object to filter the queried SeedFiles or select different data from them.
+    * @returns Resolves to the seed file.
+    */
+  public async get(accessToken: AccessToken, iModelId: GuidString, query: SeedFileQuery = new SeedFileQuery()): Promise<SeedFile[]> {
     Logger.logInfo(loggerCategory, "Started querying seed files", () => ({ iModelId }));
 
-    const seedFiles = await this._handler.getInstances<SeedFile>(requestContext, SeedFile, this.getRelativeUrl(iModelId, query.getId()), query.getQueryOptions());
-    requestContext.enter();
+    const seedFiles = await this._handler.getInstances<SeedFile>(accessToken, SeedFile, this.getRelativeUrl(iModelId, query.getId()), query.getQueryOptions());
 
     Logger.logInfo(loggerCategory, "Finished querying seed files", () => ({ iModelId, count: seedFiles.length }));
     return seedFiles;
   }
 
   /** Upload the seed file. Use [[confirmUploadSeedFile]] to confirm the completion of the upload.
-   * @param requestContext The client request context.
-   * @param iModelId Id of the iModel. See [[HubIModel]].
-   * @param seedFile Information of the SeedFile to be uploaded.
-   * @param seedPath Path of the SeedFile to be uploaded.
-   * @param progressCallback Callback for tracking progress.
-   */
-  public async uploadSeedFile(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, seedPath: string, seedFileDescription?: string, progressCallback?: ProgressCallback): Promise<SeedFile> {
-    requestContext.enter();
+    * @param accessToken A valid access token string.
+    * @param iModelId Id of the iModel. See [[HubIModel]].
+    * @param seedFile Information of the SeedFile to be uploaded.
+    * @param seedPath Path of the SeedFile to be uploaded.
+    * @param progressCallback Callback for tracking progress.
+    */
+  public async uploadSeedFile(accessToken: AccessToken, iModelId: GuidString, seedPath: string, seedFileDescription?: string, progressCallback?: ProgressCallback): Promise<SeedFile> {
     Logger.logInfo(loggerCategory, "Started uploading seed file", () => ({ iModelId, seedPath }));
 
     const seedFile = new SeedFile();
@@ -227,16 +225,13 @@ class SeedFileHandler {
     if (seedFileDescription)
       seedFile.fileDescription = seedFileDescription;
 
-    const createdSeedFile: SeedFile = await this._handler.postInstance<SeedFile>(requestContext, SeedFile, this.getRelativeUrl(iModelId), seedFile);
-    requestContext.enter();
-    await this._fileHandler!.uploadFile(requestContext, createdSeedFile.uploadUrl!, seedPath, progressCallback);
-    requestContext.enter();
+    const createdSeedFile: SeedFile = await this._handler.postInstance<SeedFile>(accessToken, SeedFile, this.getRelativeUrl(iModelId), seedFile);
+    await this._fileHandler!.uploadFile(accessToken, createdSeedFile.uploadUrl!, seedPath, progressCallback);
     createdSeedFile.uploadUrl = undefined;
     createdSeedFile.downloadUrl = undefined;
     createdSeedFile.isUploaded = true;
 
-    const confirmSeedFile: SeedFile = await this._handler.postInstance<SeedFile>(requestContext, SeedFile, this.getRelativeUrl(iModelId, createdSeedFile.id), createdSeedFile);
-    requestContext.enter();
+    const confirmSeedFile: SeedFile = await this._handler.postInstance<SeedFile>(accessToken, SeedFile, this.getRelativeUrl(iModelId, createdSeedFile.id), createdSeedFile);
     Logger.logTrace(loggerCategory, "Finished uploading seed file", () => confirmSeedFile);
 
     return confirmSeedFile;
@@ -244,16 +239,16 @@ class SeedFileHandler {
 }
 
 /**
- * Query object for getting [[HubIModel]] instances. You can use this to modify the [[IModelsHandler.get]] results.
- * @public
- */
+  * Query object for getting [[HubIModel]] instances. You can use this to modify the [[IModelsHandler.get]] results.
+  * @internal
+  */
 export class IModelQuery extends InstanceIdQuery {
   /**
-   * Query iModel by its name.
-   * @param name Name of the iModel.
-   * @returns This query.
-   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if name is undefined or empty.
-   */
+    * Query iModel by its name.
+    * @param name Name of the iModel.
+    * @returns This query.
+    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if name is undefined or empty.
+    */
   public byName(name: string) {
     ArgumentCheck.defined("name", name);
     this.addFilter(`Name+eq+'${encodeURIComponent(name)}'`);
@@ -261,11 +256,11 @@ export class IModelQuery extends InstanceIdQuery {
   }
 
   /**
-   * Query iModel by its type.
-   * @param iModelType Type of the iModel.
-   * @returns This query.
-   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if iModelType is undefined.
-   */
+    * Query iModel by its type.
+    * @param iModelType Type of the iModel.
+    * @returns This query.
+    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if iModelType is undefined.
+    */
   public byiModelType(iModelType: IModelType) {
     ArgumentCheck.defined("iModelType", iModelType);
     this.addFilter(`Type+eq+${iModelType}`);
@@ -273,12 +268,12 @@ export class IModelQuery extends InstanceIdQuery {
   }
 
   /**
-   * Query iModel by its template.
-   * @param type Type of the iModel.
-   * @returns This query.
-   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if iModelTemplate is undefined or empty.
-   * @internal
-   */
+    * Query iModel by its template.
+    * @param type Type of the iModel.
+    * @returns This query.
+    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if iModelTemplate is undefined or empty.
+    * @internal
+    */
   public byiModelTemplate(iModelTemplate: string) {
     ArgumentCheck.defined("iModelTemplate", iModelTemplate, true);
     this.addFilter(`iModelTemplate+eq+'${encodeURIComponent(iModelTemplate)}'`);
@@ -287,9 +282,9 @@ export class IModelQuery extends InstanceIdQuery {
 }
 
 /**
- * Create an iModel by cloning another.
- * @internal
- */
+  * Create an iModel by cloning another.
+  * @internal
+  */
 export interface CloneIModelTemplate {
   /** Source iModel's Id. */
   imodelId: string;
@@ -298,16 +293,16 @@ export interface CloneIModelTemplate {
 }
 
 /**
- * Create an iModel from an empty file.
- * @internal
- */
+  * Create an iModel from an empty file.
+  * @internal
+  */
 export type EmptyIModelTemplate = "Empty";
 const iModelTemplateEmpty: EmptyIModelTemplate = "Empty";
 
 /**
- * Options used when creating an [[HubIModel]] with [[IModelHandler.create]] or [[IModelsHandler.create]].
- * @public
- */
+  * Options used when creating an [[HubIModel]] with [[IModelHandler.create]] or [[IModelsHandler.create]].
+  * @public
+  */
 export interface IModelCreateOptions {
   /** iModel seed file path. If not defined, iModel will be created from template. */
   path?: string;
@@ -316,14 +311,14 @@ export interface IModelCreateOptions {
   /** Callback for tracking progress. */
   progressCallback?: ProgressCallback;
   /**
-   * Time to wait for iModel initialization. When it times out the initialization will continue, but the promise will be rejected.
-   * Default is 2 minutes.
-   */
+    * Time to wait for iModel initialization. When it times out the initialization will continue, but the promise will be rejected.
+    * Default is 2 minutes.
+    */
   timeOutInMilliseconds?: number;
   /**
-   * Template used to create the seed file. Works only when path is not provided. Creates iModel from empty file by default.
-   * @internal
-   */
+    * Template used to create the seed file. Works only when path is not provided. Creates iModel from empty file by default.
+    * @internal
+    */
   template?: CloneIModelTemplate | EmptyIModelTemplate;
 
   /** Type of iModel. */
@@ -334,9 +329,9 @@ export interface IModelCreateOptions {
 }
 
 /**
- * Provider for default IModelCreateOptions, used by IModelHandler and IModelsHandler to set defaults.
- * @internal
- */
+  * Provider for default IModelCreateOptions, used by IModelHandler and IModelsHandler to set defaults.
+  * @internal
+  */
 export class DefaultIModelCreateOptionsProvider {
   protected _defaultOptions: IModelCreateOptions;
   /**  Creates an instance of DefaultRequestOptionsProvider and sets up the default options. */
@@ -347,9 +342,9 @@ export class DefaultIModelCreateOptionsProvider {
   }
 
   /**
-   * Augments options with the provider's default values. The options passed in override any defaults where necessary.
-   * @param options Options that should be augmented.
-   */
+    * Augments options with the provider's default values. The options passed in override any defaults where necessary.
+    * @param options Options that should be augmented.
+    */
   public async assignOptions(options: IModelCreateOptions): Promise<void> {
     const clonedOptions: IModelCreateOptions = { ...options };
     deepAssign(options, this._defaultOptions);
@@ -359,9 +354,9 @@ export class DefaultIModelCreateOptionsProvider {
   }
 
   /**
-   * Formats iModel template value as a string.
-   * @param options Options that have the template value.
-   */
+    * Formats iModel template value as a string.
+    * @param options Options that have the template value.
+    */
   public templateToString(options: IModelCreateOptions): string | undefined {
     if (!options.template || options.template === iModelTemplateEmpty)
       return options.template;
@@ -370,10 +365,10 @@ export class DefaultIModelCreateOptionsProvider {
 }
 
 /**
- * Handler for managing [[HubIModel]] instances. Use [[IModelHubClient.IModels]] to get an instance of this handler.
- * @note Use [[IModelHubClient.IModel]] for the preferred single iModel per context workflow.
- * @public
- */
+  * Handler for managing [[HubIModel]] instances. Use [[IModelHubClient.IModels]] to get an instance of this handler.
+  * @note Use [[IModelHubClient.IModel]] for the preferred single iModel-per-iTwin workflow.
+  * @internal
+  */
 export class IModelsHandler {
   private _handler: IModelBaseHandler;
   private _fileHandler?: FileHandler;
@@ -384,11 +379,11 @@ export class IModelsHandler {
   private static readonly _imodelExtentLongitudeLimit: number = 180;
 
   /** Constructor for IModelsHandler. Should use @see IModelClient instead of directly constructing this.
-   * @param handler Handler for WSG requests.
-   * @param fileHandler Handler for file system.
-   * @note Use [[IModelHubClient.IModel]] for the preferred single iModel per context workflow.
-   * @internal
-   */
+    * @param handler Handler for WSG requests.
+    * @param fileHandler Handler for file system.
+    * @note Use [[IModelHubClient.IModel]] for the preferred single iModel-per-iTwin workflow.
+    * @internal
+    */
   constructor(handler: IModelBaseHandler, fileHandler?: FileHandler) {
     this._handler = handler;
     this._fileHandler = fileHandler;
@@ -396,47 +391,42 @@ export class IModelsHandler {
   }
 
   /** Get relative url for iModel requests.
-   * @param contextId Id of the context.
-   * @param iModelId Id of the iModel. See [[HubIModel]].
-   */
-  private getRelativeUrl(contextId: string, iModelId?: GuidString) {
-    return `/Repositories/Context--${this._handler.formatContextIdForUrl(contextId)}/ContextScope/iModel/${iModelId || ""}`;
+    * @param iTwinId Id of the iModel's parent iTwin.
+    * @param iModelId Id of the iModel. See [[HubIModel]].
+    */
+  private getRelativeUrl(iTwinId: string, iModelId?: GuidString) {
+    return `/Repositories/Context--${this._handler.formatITwinIdForUrl(iTwinId)}/ContextScope/iModel/${iModelId || ""}`;
   }
 
-  /** Get iModels that belong to the specified context.
-   * @param requestContext The client request context.
-   * @param contextId Id for the iModel's context. For iModelHub it should be the id of the iTwin context ([[Project]] or [[Asset]]).
-   * @param query Optional query object to filter the queried iModels or select different data from them.
-   * @returns [[HubIModel]] instances that match the query.
-   * @throws [WsgError]($itwin-client) with [WSStatus.InstanceNotFound]($bentley) if [[InstanceIdQuery.byId]] is used and an HubIModel with the specified id could not be found.
-   * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
-   */
-  public async get(requestContext: AuthorizedClientRequestContext, contextId: string, query: IModelQuery = new IModelQuery()): Promise<HubIModel[]> {
-    requestContext.enter();
-    Logger.logInfo(loggerCategory, `Started querying iModels in context`, () => ({ contextId }));
-    ArgumentCheck.defined("requestContext", requestContext);
-    ArgumentCheck.defined("contextId", contextId); // contextId is a GUID for iModelHub and a JSON representation of an IModelBankAccessContext for iModelBank.
+  /** Get iModels that belong to the specified iTwin.
+    * @param accessToken A valid access token string.
+    * @param iTwinId Id for the iModel's parent iTwin. For iModelHub it should be the id of the iTwin.
+    * @param query Optional query object to filter the queried iModels or select different data from them.
+    * @returns [[HubIModel]] instances that match the query.
+    * @throws [WsgError]($itwin-client) with [WSStatus.InstanceNotFound]($bentley) if [[InstanceIdQuery.byId]] is used and an HubIModel with the specified id could not be found.
+    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
+    */
+  public async get(accessToken: AccessToken, iTwinId: string, query: IModelQuery = new IModelQuery()): Promise<HubIModel[]> {
+    Logger.logInfo(loggerCategory, `Started querying iModels in context`, () => ({ iTwinId }));
+    ArgumentCheck.defined("iTwinId", iTwinId); // iTwinId is a GUID for iModelHub and a JSON representation of an IModelBankAccessContext for iModelBank.
 
-    const imodels = await this._handler.getInstances<HubIModel>(requestContext, HubIModel, this.getRelativeUrl(contextId, query.getId()), query.getQueryOptions());
-    requestContext.enter();
-    Logger.logInfo(loggerCategory, `Finished querying iModels in context`, () => ({ contextId, count: imodels.length }));
+    const imodels = await this._handler.getInstances<HubIModel>(accessToken, HubIModel, this.getRelativeUrl(iTwinId, query.getId()), query.getQueryOptions());
+    Logger.logInfo(loggerCategory, `Finished querying iModels in context`, () => ({ iTwinId, count: imodels.length }));
 
     return imodels;
   }
 
-  /** Delete an iModel with specified id from a context. This method is not supported in iModelBank.
-   * @param requestContext The client request context.
-   * @param contextId Id for the iModel's context. For iModelHub it should be the id of the iTwin context ([[Project]] or [[Asset]]).
-   * @param iModelId Id of the iModel to be deleted. See [[HubIModel]].
-   * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel with specified id does not exist.
-   * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have DeleteiModel permission.
-   * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
-   */
-  public async delete(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: GuidString): Promise<void> {
-    requestContext.enter();
-    Logger.logInfo(loggerCategory, "Started deleting iModel", () => ({ iModelId, contextId }));
-    ArgumentCheck.defined("requestContext", requestContext);
-    ArgumentCheck.validGuid("contextId", contextId);
+  /** Delete an iModel with specified id from its parent iTwin. This method is not supported in iModelBank.
+    * @param accessToken A valid access token string.
+    * @param iTwinId Id for the iModel's parent iTwin. For iModelHub it should be the id of the iTwin.
+    * @param iModelId Id of the iModel to be deleted. See [[HubIModel]].
+    * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel with specified id does not exist.
+    * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have DeleteiModel permission.
+    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
+    */
+  public async delete(accessToken: AccessToken, iTwinId: string, iModelId: GuidString): Promise<void> {
+    Logger.logInfo(loggerCategory, "Started deleting iModel", () => ({ iModelId, iTwinId }));
+    ArgumentCheck.validGuid("iTwinId", iTwinId);
     ArgumentCheck.validGuid("iModelId", iModelId);
 
     if (this._handler.getCustomRequestOptions().isSet) {
@@ -444,25 +434,22 @@ export class IModelsHandler {
       const imodel = new HubIModel();
       imodel.id = iModelId;
       imodel.changeState = "deleted";
-      await this._handler.deleteInstance(requestContext, this.getRelativeUrl(contextId, iModelId), imodel);
+      await this._handler.deleteInstance(accessToken, this.getRelativeUrl(iTwinId, iModelId), imodel);
     } else {
-      await this._handler.delete(requestContext, this.getRelativeUrl(contextId, iModelId));
+      await this._handler.delete(accessToken, this.getRelativeUrl(iTwinId, iModelId));
     }
-    requestContext.enter();
-    Logger.logInfo(loggerCategory, "Finished deleting iModel", () => ({ iModelId, contextId }));
+    Logger.logInfo(loggerCategory, "Finished deleting iModel", () => ({ iModelId, iTwinId }));
   }
 
   /** Create an iModel instance
-   * @param requestContext The client request context.
-   * @param contextId Id of the iTwin context.
-   * @param iModelName Name of the iModel on the Hub.
-   * @param description Description of the iModel on the Hub.
-   * @param iModelTemplate iModel template.
-   * @param iModelType iModel type.
-   */
-  private async createIModelInstance(requestContext: AuthorizedClientRequestContext, contextId: string, iModelName: string, description?: string, iModelTemplate?: string, iModelType?: IModelType, extent?: number[]): Promise<HubIModel> {
-    requestContext.enter();
-    Logger.logInfo(loggerCategory, `Creating iModel with name ${iModelName}`, () => ({ contextId }));
+    * @param iTwinId Id of the iModel's parent iTwin.
+    * @param iModelName Name of the iModel on the Hub.
+    * @param description Description of the iModel on the Hub.
+    * @param iModelTemplate iModel template.
+    * @param iModelType iModel type.
+    */
+  private async createIModelInstance(accessToken: AccessToken, iTwinId: string, iModelName: string, description?: string, iModelTemplate?: string, iModelType?: IModelType, extent?: number[]): Promise<HubIModel> {
+    Logger.logInfo(loggerCategory, `Creating iModel with name ${iModelName}`, () => ({ iTwinId }));
 
     let imodel: HubIModel;
     const iModel = new HubIModel();
@@ -477,34 +464,31 @@ export class IModelsHandler {
       iModel.iModelType = iModelType;
 
     try {
-      imodel = await this._handler.postInstance<HubIModel>(requestContext, HubIModel, this.getRelativeUrl(contextId), iModel);
-      requestContext.enter();
-      Logger.logTrace(loggerCategory, `Created iModel instance with name ${iModelName}`, () => ({ contextId }));
+      imodel = await this._handler.postInstance<HubIModel>(accessToken, HubIModel, this.getRelativeUrl(iTwinId), iModel);
+      Logger.logTrace(loggerCategory, `Created iModel instance with name ${iModelName}`, () => ({ iTwinId }));
     } catch (err) {
-      requestContext.enter();
       if (!(err instanceof IModelHubError) || IModelHubStatus.iModelAlreadyExists !== err.errorNumber) {
-        Logger.logWarning(loggerCategory, `Can not create iModel: ${err.message}`, () => ({ contextId }));
+        Logger.logWarning(loggerCategory, `Can not create iModel: ${BentleyError.getErrorMessage(err)}`, () => ({ iTwinId }));
 
         throw err;
       }
 
       const initialized: boolean = err.data.iModelInitialized;
       if (initialized) {
-        Logger.logWarning(loggerCategory, `Error creating iModel: iModel with name ${iModelName} already exists and is initialized`, () => ({ contextId }));
+        Logger.logWarning(loggerCategory, `Error creating iModel: iModel with name ${iModelName} already exists and is initialized`, () => ({ iTwinId }));
 
         throw err;
       }
 
-      Logger.logInfo(loggerCategory, `Querying iModel by name ${iModelName}`, () => ({ contextId }));
+      Logger.logInfo(loggerCategory, `Querying iModel by name ${iModelName}`, () => ({ iTwinId }));
 
-      const imodels = await this.get(requestContext, contextId, new IModelQuery().byName(iModelName));
-      requestContext.enter();
-      Logger.logTrace(loggerCategory, `Queried iModel by name ${iModelName}`, () => ({ contextId }));
+      const imodels = await this.get(accessToken, iTwinId, new IModelQuery().byName(iModelName));
+      Logger.logTrace(loggerCategory, `Queried iModel by name ${iModelName}`, () => ({ iTwinId }));
 
       if (imodels.length > 0) {
         imodel = imodels[0];
       } else {
-        Logger.logTrace(loggerCategory, `iModel by name: iModel ${iModelName} not found`, () => ({ contextId }));
+        Logger.logTrace(loggerCategory, `iModel by name: iModel ${iModelName} not found`, () => ({ iTwinId }));
 
         throw new Error(`iModel by name: iModel ${iModelName} not found`);
       }
@@ -514,16 +498,15 @@ export class IModelsHandler {
   }
 
   /** Get the [[InitializationState]] for the specified iModel. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
-   * @param requestContext The client request context.
-   * @param iModelId Id of the iModel. See [[HubIModel]].
-   * @returns State of the seed file initialization.
-   * @throws [[IModelHubError]] with [IModelHubStatus.FileDoesNotExist]($bentley) if the seed file was not found.
-   * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
-   * @internal
-   */
-  public async getInitializationState(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<InitializationState> {
-    const seedFiles: SeedFile[] = await this._seedFileHandler.get(requestContext, iModelId, new SeedFileQuery().latest());
-    requestContext.enter();
+    * @param accessToken A valid access token string.
+    * @param iModelId Id of the iModel. See [[HubIModel]].
+    * @returns State of the seed file initialization.
+    * @throws [[IModelHubError]] with [IModelHubStatus.FileDoesNotExist]($bentley) if the seed file was not found.
+    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
+    * @internal
+    */
+  public async getInitializationState(accessToken: AccessToken, iModelId: GuidString): Promise<InitializationState> {
+    const seedFiles: SeedFile[] = await this._seedFileHandler.get(accessToken, iModelId, new SeedFileQuery().latest());
     if (seedFiles.length < 1)
       throw new IModelHubError(IModelHubStatus.FileDoesNotExist);
 
@@ -531,10 +514,10 @@ export class IModelsHandler {
   }
 
   /**
-   * Augment update options with defaults returned by the DefaultIModelCreateOptionsProvider. The options passed in by clients override any defaults where necessary.
-   * @param options Options the caller wants to augment with the defaults.
-   * @returns Promise resolves after the defaults are setup.
-   */
+    * Augment update options with defaults returned by the DefaultIModelCreateOptionsProvider. The options passed in by clients override any defaults where necessary.
+    * @param options Options the caller wants to augment with the defaults.
+    * @returns Promise resolves after the defaults are setup.
+    */
   private async setupOptionDefaults(options: IModelCreateOptions): Promise<void> {
     if (!IModelsHandler._defaultCreateOptionsProvider)
       IModelsHandler._defaultCreateOptionsProvider = new DefaultIModelCreateOptionsProvider();
@@ -542,21 +525,18 @@ export class IModelsHandler {
   }
 
   /** Wait until the iModel is initialized.
-   * @param requestContext The client request context.
-   * @param contextId Id for the iModel's context. For iModelHub it should be the id of the iTwin context ([[Project]] or [[Asset]]).
-   * @param imodel iModel instance that will be returned if initialization is successful.
-   * @param timeOutInMilliseconds Maximum time to wait for the initialization.
-   */
-  private async waitForInitialization(requestContext: AuthorizedClientRequestContext, contextId: string, imodel: HubIModel, timeOutInMilliseconds: number): Promise<HubIModel> {
-    requestContext.enter();
+    * @param iTwinId Id for the iModel's parent iTwin. For iModelHub it should be the id of the iTwin.
+    * @param imodel iModel instance that will be returned if initialization is successful.
+    * @param timeOutInMilliseconds Maximum time to wait for the initialization.
+    */
+  private async waitForInitialization(accessToken: AccessToken, iTwinId: string, imodel: HubIModel, timeOutInMilliseconds: number): Promise<HubIModel> {
     const errorMessage = "iModel initialization failed";
     const retryDelay = timeOutInMilliseconds / 10;
     for (let retries = 10; retries > 0; --retries) {
       try {
-        const initState = await this.getInitializationState(requestContext, imodel.id!);
-        requestContext.enter();
+        const initState = await this.getInitializationState(accessToken, imodel.id!);
         if (initState === InitializationState.Successful) {
-          Logger.logTrace(loggerCategory, "Created iModel", () => ({ contextId, iModelId: imodel.id }));
+          Logger.logTrace(loggerCategory, "Created iModel", () => ({ iTwinId, iModelId: imodel.id }));
           imodel.initialized = true;
           return imodel;
         }
@@ -568,9 +548,7 @@ export class IModelsHandler {
         }
 
         await new Promise((resolve) => setTimeout(resolve, retryDelay));
-        requestContext.enter();
       } catch (err) {
-        requestContext.enter();
         Logger.logWarning(loggerCategory, errorMessage);
         throw err;
       }
@@ -581,10 +559,10 @@ export class IModelsHandler {
   }
 
   /**
-   * Verifies iModel extent
-   * @param extent iModel extent
-   * @throws [[IModelHubError]] with [IModelHubStatus.UndefinedArgumentError] if extent is invalid.
-   */
+    * Verifies iModel extent
+    * @param extent iModel extent
+    * @throws [[IModelHubError]] with [IModelHubStatus.UndefinedArgumentError] if extent is invalid.
+    */
   private validateExtent(extent: number[]): void {
     if (extent.length === 0)
       return;
@@ -599,31 +577,29 @@ export class IModelsHandler {
   }
 
   /**
-   * Validates iModel extent coordinate
-   * @param coordinate iModel extent coordinate
-   * @param limit Coordinate limit value (latitude/longitude max value)
-   * @throws [[IModelHubError]] with [IModelHubStatus.UndefinedArgumentError] if coordinate is invalid.
-   */
+    * Validates iModel extent coordinate
+    * @param coordinate iModel extent coordinate
+    * @param limit Coordinate limit value (latitude/longitude max value)
+    * @throws [[IModelHubError]] with [IModelHubStatus.UndefinedArgumentError] if coordinate is invalid.
+    */
   private validateExtentCoordinate(coordinate: number, limit: number): void {
     if (coordinate < -limit || coordinate > limit)
       throw IModelHubClientError.invalidArgument("extent");
   }
 
   /** Create an iModel from given seed file. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
-   * This method does not work on browsers. If iModel creation fails before finishing file upload, partially created iModel is deleted. This method is not supported in iModelBank.
-   * @param requestContext The client request context.
-   * @param contextId Id for the iModel's context. For iModelHub it should be the id of the iTwin context ([[Project]] or [[Asset]]).
-   * @param name Name of the iModel on the Hub.
-   * @param createOptions Optional arguments for iModel creation.
-   * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have CreateiModel permission.
-   * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
-   * @internal
-   */
-  public async create(requestContext: AuthorizedClientRequestContext, contextId: string, name: string, createOptions?: IModelCreateOptions): Promise<HubIModel> {
-    requestContext.enter();
-    Logger.logInfo(loggerCategory, "Creating iModel", () => ({ contextId }));
-    ArgumentCheck.defined("requestContext", requestContext);
-    ArgumentCheck.validGuid("contextId", contextId);
+    * This method does not work on browsers. If iModel creation fails before finishing file upload, partially created iModel is deleted. This method is not supported in iModelBank.
+    * @param accessToken A valid access token string.
+    * @param iTwinId Id for the iModel's parent iTwin. For iModelHub it should be the id of the iTwin.
+    * @param name Name of the iModel on the Hub.
+    * @param createOptions Optional arguments for iModel creation.
+    * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have CreateiModel permission.
+    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
+    * @internal
+    */
+  public async create(accessToken: AccessToken, iTwinId: string, name: string, createOptions?: IModelCreateOptions): Promise<HubIModel> {
+    Logger.logInfo(loggerCategory, "Creating iModel", () => ({ iTwinId }));
+    ArgumentCheck.validGuid("iTwinId", iTwinId);
     ArgumentCheck.defined("name", name);
 
     createOptions = createOptions || {};
@@ -646,8 +622,7 @@ export class IModelsHandler {
     }
 
     const template = IModelsHandler._defaultCreateOptionsProvider.templateToString(createOptions);
-    const imodel = await this.createIModelInstance(requestContext, contextId, name, createOptions.description, template, createOptions.iModelType, createOptions.extent);
-    requestContext.enter();
+    const imodel = await this.createIModelInstance(accessToken, iTwinId, name, createOptions.description, template, createOptions.iModelType, createOptions.extent);
 
     if (createOptions.template === iModelTemplateEmpty) {
       return imodel;
@@ -655,51 +630,46 @@ export class IModelsHandler {
 
     if (!createOptions.template) {
       try {
-        await this._seedFileHandler.uploadSeedFile(requestContext, imodel.id!, createOptions.path!, createOptions.description, createOptions.progressCallback);
+        await this._seedFileHandler.uploadSeedFile(accessToken, imodel.id!, createOptions.path!, createOptions.description, createOptions.progressCallback);
       } catch (err) {
-        await this.delete(requestContext, contextId, imodel.id!);
+        await this.delete(accessToken, iTwinId, imodel.id!);
         throw err;
       }
-      requestContext.enter();
     }
 
-    return this.waitForInitialization(requestContext, contextId, imodel, createOptions.timeOutInMilliseconds!);
+    return this.waitForInitialization(accessToken, iTwinId, imodel, createOptions.timeOutInMilliseconds!);
   }
 
   /** Update iModel's name and/or description
-   * @param requestContext The client request context.
-   * @param contextId Id for the iModel's context. For iModelHub it should be the id of the iTwin context ([[Project]] or [[Asset]]).
-   * @param imodel iModel to update. See [[HubIModel]].
-   * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have CreateiModel permission.
-   * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.
-   * @throws [[IModelHubError]] with [IModelHubStatus.iModelIsNotInitialized]$(bentley) if iModel is not initialized.
-   * @throws [[IModelHubError]] with [IModelHubStatus.iModelAlreadyExists]$(bentley) if iModel with specified name already exists.
-   * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
-   */
-  public async update(requestContext: AuthorizedClientRequestContext, contextId: string, imodel: HubIModel): Promise<HubIModel> {
-    requestContext.enter();
-    Logger.logInfo(loggerCategory, "Updating iModel", () => ({ contextId, iModelId: imodel.id }));
-    ArgumentCheck.defined("requestContext", requestContext);
-    ArgumentCheck.validGuid("contextId", contextId);
+    * @param accessToken A valid access token string.
+    * @param iTwinId Id for the iModel's parent iTwin. For iModelHub it should be the id of the iTwin.
+    * @param imodel iModel to update. See [[HubIModel]].
+    * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have CreateiModel permission.
+    * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.
+    * @throws [[IModelHubError]] with [IModelHubStatus.iModelIsNotInitialized]$(bentley) if iModel is not initialized.
+    * @throws [[IModelHubError]] with [IModelHubStatus.iModelAlreadyExists]$(bentley) if iModel with specified name already exists.
+    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
+    */
+  public async update(accessToken: AccessToken, iTwinId: string, imodel: HubIModel): Promise<HubIModel> {
+    Logger.logInfo(loggerCategory, "Updating iModel", () => ({ iTwinId, iModelId: imodel.id }));
+    ArgumentCheck.validGuid("iTwinId", iTwinId);
 
-    const updatedIModel = await this._handler.postInstance<HubIModel>(requestContext, HubIModel, this.getRelativeUrl(contextId, imodel.id), imodel);
+    const updatedIModel = await this._handler.postInstance<HubIModel>(accessToken, HubIModel, this.getRelativeUrl(iTwinId, imodel.id), imodel);
 
-    Logger.logTrace(loggerCategory, "Updated iModel", () => ({ contextId, iModelId: imodel.id }));
+    Logger.logTrace(loggerCategory, "Updated iModel", () => ({ iTwinId, iModelId: imodel.id }));
     return updatedIModel;
   }
 
   /** Method to download the seed file for iModel. This will download the original seed file, that was uploaded when creating iModel. To download a file that was updated with ChangeSets on iModelHub, see [[BriefcaseHandler.download]].
-   * @param requestContext The client request context.
-   * @param iModelId Id of the iModel. See [[HubIModel]].
-   * @param path Path to download the seed file to, including file name.
-   * @param progressCallback Callback for tracking progress.
-   * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
-   * @internal
-   */
-  public async download(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, path: string, progressCallback?: ProgressCallback): Promise<void> {
-    requestContext.enter();
+    * @param accessToken A valid access token string.
+    * @param iModelId Id of the iModel. See [[HubIModel]].
+    * @param path Path to download the seed file to, including file name.
+    * @param progressCallback Callback for tracking progress.
+    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
+    * @internal
+    */
+  public async download(accessToken: AccessToken, iModelId: GuidString, path: string, progressCallback?: ProgressCallback): Promise<void> {
     Logger.logInfo(loggerCategory, "Started downloading seed file", () => ({ iModelId }));
-    ArgumentCheck.defined("requestContext", requestContext);
     ArgumentCheck.validGuid("iModelId", iModelId);
     ArgumentCheck.defined("path", path);
 
@@ -709,50 +679,47 @@ export class IModelsHandler {
     if (!this._fileHandler)
       throw IModelHubClientError.fileHandler();
 
-    const seedFiles: SeedFile[] = await this._seedFileHandler.get(requestContext, iModelId, new SeedFileQuery().selectDownloadUrl().latest());
-    requestContext.enter();
+    const seedFiles: SeedFile[] = await this._seedFileHandler.get(accessToken, iModelId, new SeedFileQuery().selectDownloadUrl().latest());
 
     if (!seedFiles || !seedFiles[0] || !seedFiles[0].downloadUrl)
       throw IModelHubError.fromId(IModelHubStatus.FileDoesNotExist, "Failed to get seed file.");
 
-    await this._fileHandler.downloadFile(requestContext, seedFiles[0].downloadUrl, path, parseInt(seedFiles[0].fileSize!, 10), progressCallback);
-    requestContext.enter();
+    await this._fileHandler.downloadFile(accessToken, seedFiles[0].downloadUrl, path, parseInt(seedFiles[0].fileSize!, 10), progressCallback);
     Logger.logInfo(loggerCategory, "Finished downloading seed file", () => ({ iModelId }));
   }
 }
 
 /**
- * Handler for managing [[HubIModel]] instance. Use [[IModelHubClient.IModel]] to get an instance of this handler.
- * @note Use [[IModelHubClient.IModels]] if multiple iModels per context are supported.
- * @beta
- */
+  * Handler for managing [[HubIModel]] instance. Use [[IModelHubClient.IModel]] to get an instance of this handler.
+  * @note Use [[IModelHubClient.IModels]] if multiple iModels-per-iTwin are supported.
+  * @internal
+  */
 export class IModelHandler {
   private _handler: IModelsHandler;
 
   /**
-   * Constructor for IModelHandler. Should use @see IModelClient instead of directly constructing this.
-   * @param handler Handler for managing [[HubIModel]] instances.
-   * @note Use [[IModelHubClient.IModels]] if multiple iModels per context are supported.
-   * @internal
-   */
+    * Constructor for IModelHandler. Should use @see IModelClient instead of directly constructing this.
+    * @param handler Handler for managing [[HubIModel]] instances.
+    * @note Use [[IModelHubClient.IModels]] if multiple iModels-per-iTwin are supported.
+    * @internal
+    */
   constructor(handler: IModelsHandler) {
     this._handler = handler;
   }
 
   /**
-   * Get iModel that belong to the specified context.
-   * @param requestContext The client request context.
-   * @param contextId Id for the iModel's context. For iModelHub it should be the id of the iTwin context ([[Project]] or [[Asset]]).
-   * @returns [[HubIModel]] instances that match the query.
-   * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.
-   * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
-   */
-  public async get(requestContext: AuthorizedClientRequestContext, contextId: string): Promise<HubIModel> {
-    requestContext.enter();
+    * Get iModel that belong to the specified iTwin.
+    * @param accessToken A valid access token string.
+    * @param iTwinId Id for the iModel's parent iTwin. For iModelHub it should be the id of the iTwin.
+    * @returns [[HubIModel]] instances that match the query.
+    * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.
+    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
+    */
+  public async get(accessToken: AccessToken, iTwinId: string): Promise<HubIModel> {
 
-    Logger.logInfo(loggerCategory, "Querying iModel", () => ({ contextId }));
+    Logger.logInfo(loggerCategory, "Querying iModel", () => ({ iTwinId }));
     const query = new IModelQuery().orderBy("CreatedDate+asc").top(1);
-    const imodels = await this._handler.get(requestContext, contextId, query);
+    const imodels = await this._handler.get(accessToken, iTwinId, query);
 
     if (imodels.length < 1)
       throw new IModelHubError(IModelHubStatus.iModelDoesNotExist);
@@ -761,52 +728,50 @@ export class IModelHandler {
   }
 
   /**
-   * Delete an iModel from a context. This method is not supported in iModelBank.
-   * @param requestContext The client request context.
-   * @param contextId Id for the iModel's context. For iModelHub it should be the id of the iTwin context ([[Project]] or [[Asset]]).
-   * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.
-   * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have DeleteiModel permission.
-   * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
-   */
-  public async delete(requestContext: AuthorizedClientRequestContext, contextId: string): Promise<void> {
-    const imodel = await this.get(requestContext, contextId);
-    await this._handler.delete(requestContext, contextId, imodel.id!);
+    * Delete an iModel from its parent iTwin. This method is not supported in iModelBank.
+    * @param accessToken A valid access token string.
+    * @param iTwinId Id for the iModel's parent iTwin. For iModelHub it should be the id of the iTwin.
+    * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.
+    * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have DeleteiModel permission.
+    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
+    */
+  public async delete(accessToken: AccessToken, iTwinId: string): Promise<void> {
+    const imodel = await this.get(accessToken, iTwinId);
+    await this._handler.delete(accessToken, iTwinId, imodel.id!);
   }
 
   /**
-   * Get the [[InitializationState]] for the specified iModel. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
-   * @param requestContext The client request context.
-   * @param contextId Id for the iModel's context. For iModelHub it should be the id of the iTwin context ([[Project]] or [[Asset]]).
-   * @returns State of the seed file initialization.
-   * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.
-   * @throws [[IModelHubError]] with [IModelHubStatus.FileDoesNotExist]($bentley) if the seed file was not found.
-   * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
-   * @internal
-   */
-  public async getInitializationState(requestContext: AuthorizedClientRequestContext, contextId: string): Promise<InitializationState> {
-    const imodel = await this.get(requestContext, contextId);
-    return this._handler.getInitializationState(requestContext, imodel.id!);
+    * Get the [[InitializationState]] for the specified iModel. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
+    * @param accessToken A valid access token string.
+    * @param iTwinId Id for the iModel's parent iTwin. For iModelHub it should be the id of the iTwin.
+    * @returns State of the seed file initialization.
+    * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.
+    * @throws [[IModelHubError]] with [IModelHubStatus.FileDoesNotExist]($bentley) if the seed file was not found.
+    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
+    * @internal
+    */
+  public async getInitializationState(accessToken: AccessToken, iTwinId: string): Promise<InitializationState> {
+    const imodel = await this.get(accessToken, iTwinId);
+    return this._handler.getInitializationState(accessToken, imodel.id!);
   }
 
   /**
-   * Create an iModel from given seed file. In most cases [BriefcaseManager.create]($backend) should be used instead. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
-   *
-   * This method does not work on browsers. If iModel creation fails before finishing file upload, partially created iModel is deleted. This method is not supported in iModelBank.
-   * @param requestContext The client request context.
-   * @param contextId Id for the iModel's context. For iModelHub it should be the id of the iTwin context ([[Project]] or [[Asset]]).
-   * @param name Name of the iModel on the Hub.
-   * @param createOptions Optional arguments for iModel creation.
-   * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have CreateiModel permission.
-   * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
-   * @internal
-   */
-  public async create(requestContext: AuthorizedClientRequestContext, contextId: string, name: string, createOptions?: IModelCreateOptions): Promise<HubIModel> {
-    requestContext.enter();
+    * Create an iModel from given seed file. In most cases [BriefcaseManager.create]($backend) should be used instead. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
+    *
+    * This method does not work on browsers. If iModel creation fails before finishing file upload, partially created iModel is deleted. This method is not supported in iModelBank.
+    * @param accessToken A valid access token string.
+    * @param iTwinId Id for the iModel's parent iTwin. For iModelHub it should be the id of the iTwin.
+    * @param name Name of the iModel on the Hub.
+    * @param createOptions Optional arguments for iModel creation.
+    * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have CreateiModel permission.
+    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
+    * @internal
+    */
+  public async create(accessToken: AccessToken, iTwinId: string, name: string, createOptions?: IModelCreateOptions): Promise<HubIModel> {
 
     let imodelExists = true;
     try {
-      await this.get(requestContext, contextId);
-      requestContext.enter();
+      await this.get(accessToken, iTwinId);
     } catch (err) {
       if (err instanceof IModelHubError && err.errorNumber === IModelHubStatus.iModelDoesNotExist)
         imodelExists = false;
@@ -817,36 +782,36 @@ export class IModelHandler {
     if (imodelExists)
       throw new IModelHubError(IModelHubStatus.iModelAlreadyExists);
 
-    return this._handler.create(requestContext, contextId, name, createOptions);
+    return this._handler.create(accessToken, iTwinId, name, createOptions);
   }
 
   /**
-   * Update iModel's name and/or description
-   * @param requestContext The client request context.
-   * @param contextId Id for the iModel's context. For iModelHub it should be the id of the iTwin context ([[Project]] or [[Asset]]).
-   * @param imodel iModel to update. See [[HubIModel]].
-   * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have CreateiModel permission.
-   * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.
-   * @throws [[IModelHubError]] with [IModelHubStatus.iModelIsNotInitialized]$(bentley) if iModel is not initialized.
-   * @throws [[IModelHubError]] with [IModelHubStatus.iModelAlreadyExists]$(bentley) if iModel with specified name already exists.
-   * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
-   */
-  public async update(requestContext: AuthorizedClientRequestContext, contextId: string, imodel: HubIModel): Promise<HubIModel> {
-    return this._handler.update(requestContext, contextId, imodel);
+    * Update iModel's name and/or description
+    * @param accessToken A valid access token string.
+    * @param iTwinId Id for the iModel's parent iTwin. For iModelHub it should be the id of the iTwin.
+    * @param imodel iModel to update. See [[HubIModel]].
+    * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have CreateiModel permission.
+    * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.
+    * @throws [[IModelHubError]] with [IModelHubStatus.iModelIsNotInitialized]$(bentley) if iModel is not initialized.
+    * @throws [[IModelHubError]] with [IModelHubStatus.iModelAlreadyExists]$(bentley) if iModel with specified name already exists.
+    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
+    */
+  public async update(accessToken: AccessToken, iTwinId: string, imodel: HubIModel): Promise<HubIModel> {
+    return this._handler.update(accessToken, iTwinId, imodel);
   }
 
   /**
-   * Method to download the seed file for iModel. This will download the original seed file, that was uploaded when creating iModel. To download a file that was updated with ChangeSets on iModelHub, see [[BriefcaseHandler.download]].
-   * @param requestContext The client request context.
-   * @param contextId Id for the iModel's context. For iModelHub it should be the id of the iTwin context ([[Project]] or [[Asset]]).
-   * @param path Path where seed file should be downloaded, including filename.
-   * @param progressCallback Callback for tracking progress.
-   * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.
-   * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
-   * @internal
-   */
-  public async download(requestContext: AuthorizedClientRequestContext, contextId: string, path: string, progressCallback?: ProgressCallback): Promise<void> {
-    const imodel = await this.get(requestContext, contextId);
-    await this._handler.download(requestContext, imodel.id!, path, progressCallback);
+    * Method to download the seed file for iModel. This will download the original seed file, that was uploaded when creating iModel. To download a file that was updated with ChangeSets on iModelHub, see [[BriefcaseHandler.download]].
+    * @param accessToken A valid access token string.
+    * @param iTwinId Id for the iModel's parent iTwin. For iModelHub it should be the id of the iTwin.
+    * @param path Path where seed file should be downloaded, including filename.
+    * @param progressCallback Callback for tracking progress.
+    * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.
+    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
+    * @internal
+    */
+  public async download(accessToken: AccessToken, iTwinId: string, path: string, progressCallback?: ProgressCallback): Promise<void> {
+    const imodel = await this.get(accessToken, iTwinId);
+    await this._handler.download(accessToken, imodel.id!, path, progressCallback);
   }
 }

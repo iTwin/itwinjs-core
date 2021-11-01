@@ -2,27 +2,34 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@bentley/ui-core/lib/ui-core/button/blue";
-@import "~@bentley/ui-core/lib/ui-core/scrollbar";
-@import "~@bentley/ui-core/lib/ui-core/style/colors";
+@import "~@itwin/core-react/lib/cjs/core-react/scrollbar";
+@import "~@itwin/core-react/lib/cjs/core-react/style/colors";
+@import "~@itwin/itwinui-css/scss/style/typography";
 
- $view-card-width: 215px;
- $view-card-height: 150px;
+$view-card-width: 215px;
+$view-card-height: 150px;
 
 /* The Modal (background) */
 .modal-background {
   display: flex;
   align-items: center;
   justify-content: center;
-  position: fixed; /* Stay in place */
-  z-index: 10; /* Sit on top */
+  position: fixed;
+  /* Stay in place */
+  z-index: 10;
+  /* Sit on top */
   left: 0;
   top: 0;
-  width: 100%; /* Full width */
-  height: 100%; /* Full height */
-  overflow: auto; /* Enable scroll if needed */
-  background-color: rgb(0,0,0); /* Fallback color */
-  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+  width: 100%;
+  /* Full width */
+  height: 100%;
+  /* Full height */
+  overflow: auto;
+  /* Enable scroll if needed */
+  background-color: rgb(0, 0, 0);
+  /* Fallback color */
+  background-color: rgba(0, 0, 0, 0.4);
+  /* Black w/ opacity */
 }
 
 .views {
@@ -57,7 +64,7 @@
 }
 
 .views-empty {
-  flex:  1;
+  flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -116,8 +123,7 @@
     }
   }
 */
-  > button {
-    @include uicore-buttons-blue;
+  >button {
     margin-left: auto;
     padding-left: 3em;
     padding-right: 5em;
@@ -143,19 +149,29 @@
 }
 
 @-webkit-keyframes animatezoom {
-  from {-webkit-transform: scale(0)}
-  to {-webkit-transform: scale(1)}
+  from {
+    -webkit-transform: scale(0)
+  }
+
+  to {
+    -webkit-transform: scale(1)
+  }
 }
 
 @keyframes animatezoom {
-  from {transform: scale(0)}
-  to {transform: scale(1)}
+  from {
+    transform: scale(0)
+  }
+
+  to {
+    transform: scale(1)
+  }
 }
 
 $view-card-width: 190px;
- $view-card-height: 150px;
+$view-card-height: 150px;
 
- .view-card {
+.view-card {
   width: $view-card-width;
   height: $view-card-height;
   color: #444;
@@ -171,8 +187,8 @@ $view-card-width: 190px;
   //box-shadow: 0 4px 8px 0 rgba(0,0,0,0.25);
   //-webkit-box-shadow: 0 4px 8px 0 rgba(0,0,0,0.25);
 
-  &:hover, &:focus{
-  }
+  &:hover,
+  &:focus {}
 }
 
 .view-card.isActive {
@@ -200,7 +216,7 @@ $view-card-width: 190px;
   flex: initial;
   padding: .5em;
   background: $uicore-white;
-  font-size: $uicore-font-size-small;
+  font-size: $iui-font-size-small;
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;

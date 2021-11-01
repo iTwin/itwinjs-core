@@ -6,7 +6,7 @@
  * @module Utilities
  */
 
-import { IModelApp } from "@bentley/imodeljs-frontend";
+import { IModelApp } from "@itwin/core-frontend";
 import { EdgeDetectionEffect, EmbossEffect, GaussianBlurEffect, SharpenEffect, SharpnessEffect, UnsharpenEffect } from "./effects/Convolution";
 import { ClearEffectsTool } from "./effects/EffectTools";
 import { ExplosionEffect } from "./effects/Explosion";
@@ -15,25 +15,22 @@ import { LensDistortionConfig, LensDistortionEffect } from "./effects/LensDistor
 import { SaturationConfig, SaturationEffect } from "./effects/Saturation";
 import { SnowEffect } from "./effects/Snow";
 import { VignetteConfig, VignetteEffect } from "./effects/Vignette";
-import {
-  ChangeEmphasisSettingsTool, ChangeHiliteSettingsTool, DefaultTileSizeModifierTool, FadeOutTool, FreezeSceneTool, MaskBackgroundMapByElementTool,
-  MaskBackgroundMapByExcludedElementTool, MaskBackgroundMapByModelTool, MaskBackgroundMapBySubCategoryTool, MaskRealityModelByElementTool,
-  MaskRealityModelByExcludedElementTool, MaskRealityModelByModelTool, MaskRealityModelBySubCategoryTool, SetAspectRatioSkewTool,
-  SetHigherPriorityRealityModelMasking, SetMapHigherPriorityMasking, ShowTileVolumesTool, Toggle3dManipulationsTool, ToggleDrawingGraphicsTool,
-  ToggleSectionDrawingSpatialViewTool, ToggleViewAttachmentBoundariesTool, ToggleViewAttachmentClipShapesTool, ToggleViewAttachmentsTool,
-  UnmaskMapTool, UnmaskRealityModelTool, ViewportAddRealityModel, ViewportTileSizeModifierTool,
-} from "./frontend-devtools";
+import { MaskBackgroundMapByElementTool, MaskBackgroundMapByExcludedElementTool, MaskBackgroundMapByModelTool, MaskBackgroundMapBySubCategoryTool, MaskRealityModelByElementTool, MaskRealityModelByExcludedElementTool, MaskRealityModelByModelTool, MaskRealityModelBySubCategoryTool, SetHigherPriorityRealityModelMasking, SetMapHigherPriorityMasking, UnmaskMapTool, UnmaskRealityModelTool } from "./tools/PlanarMaskTools";
+import { ChangeCameraTool, ChangeEmphasisSettingsTool, ChangeFlashSettingsTool, ChangeHiliteSettingsTool, DefaultTileSizeModifierTool, FadeOutTool, FreezeSceneTool, SetAspectRatioSkewTool, ShowTileVolumesTool, Toggle3dManipulationsTool, ToggleDrawingGraphicsTool, ToggleSectionDrawingSpatialViewTool, ToggleViewAttachmentBoundariesTool, ToggleViewAttachmentClipShapesTool, ToggleViewAttachmentsTool, ViewportAddRealityModel, ViewportTileSizeModifierTool } from "./tools/ViewportTools";
 import { AnimationIntervalTool } from "./tools/AnimationIntervalTool";
 import { ChangeUnitsTool } from "./tools/ChangeUnitsTool";
 import { ClipColorTool, TestClipStyleTool, ToggleSectionCutTool } from "./tools/ClipTools";
-import { ApplyRenderingStyleTool, ChangeViewFlagsTool, OverrideSubCategoryTool, SaveRenderingStyleTool, ToggleSkyboxTool } from "./tools/DisplayStyleTools";
-import { ClearIsolatedElementsTool, EmphasizeSelectedElementsTool, IsolateSelectedElementsTool } from "./tools/EmphasizeElementsTool";
-import { ExtensionServiceTool } from "./tools/ExtensionServiceTool";
+import {
+  ApplyRenderingStyleTool, ChangeViewFlagsTool, OverrideSubCategoryTool, SaveRenderingStyleTool, ToggleSkyboxTool, WoWIgnoreBackgroundTool,
+} from "./tools/DisplayStyleTools";
+import {
+  ClearEmphasizedElementsTool, ClearIsolatedElementsTool, EmphasizeSelectedElementsTool, EmphasizeVisibleElementsTool, IsolateSelectedElementsTool,
+} from "./tools/EmphasizeElementsTool";
 import { ToggleFrustumSnapshotTool, ToggleSelectedViewFrustumTool, ToggleShadowFrustumTool } from "./tools/FrustumDecoration";
 import { InspectElementTool } from "./tools/InspectElementTool";
 import {
   AttachArcGISMapLayerByUrlTool, AttachMapLayerTool, AttachMapOverlayTool, AttachTileURLMapLayerByUrlTool, AttachWmsMapLayerByUrlTool,
-  AttachWmtsMapLayerByUrlTool, DetachMapLayersTool, MapBaseColorTool, MapBaseTransparencyTool, MapBaseVisibilityTool, MapLayerSubLayerVisiblityTool,
+  AttachWmtsMapLayerByUrlTool, DetachMapLayersTool, MapBaseColorTool, MapBaseTransparencyTool, MapBaseVisibilityTool, MapLayerSubLayerVisibilityTool,
   MapLayerTransparencyTool, MapLayerVisibilityTool, MapLayerZoomTool, ReorderMapLayers, SetMapBaseTool, ToggleTerrainTool,
 } from "./tools/MapLayerTool";
 import { MeasureTileLoadTimeTool } from "./tools/MeasureTileLoadTime";
@@ -61,7 +58,6 @@ import { ElementIdFromSourceAspectIdTool, SourceAspectIdFromElementIdTool } from
 import { ToggleTileRequestDecorationTool } from "./tools/TileRequestDecoration";
 import { ToggleTileTreeBoundsDecorationTool } from "./tools/TileTreeBoundsDecoration";
 import { ToggleToolTipsTool } from "./tools/ToolTipProvider";
-import { ChangeCameraTool } from "./tools/ViewportTools";
 
 /** Entry-point for the package. Before using the package you *must* call [[FrontendDevTools.initialize]].
  * @beta
@@ -83,7 +79,8 @@ export class FrontendDevTools {
 
     this._initialized = true;
 
-    const i18n = IModelApp.i18n.registerNamespace("FrontendDevTools");
+    const namespace = "FrontendDevTools";
+    const namespacePromise = IModelApp.localization.registerNamespace(namespace);
     const tools = [
       AttachMapLayerTool,
       AttachMapOverlayTool,
@@ -97,11 +94,13 @@ export class FrontendDevTools {
       ApplyViewTool,
       ChangeCameraTool,
       ChangeEmphasisSettingsTool,
+      ChangeFlashSettingsTool,
       ChangeHiliteSettingsTool,
       ChangePlanProjectionSettingsTool,
       ChangeUnitsTool,
       ChangeViewFlagsTool,
       ClearEffectsTool,
+      ClearEmphasizedElementsTool,
       ClearIsolatedElementsTool,
       ClipColorTool,
       CompileShadersTool,
@@ -112,8 +111,8 @@ export class FrontendDevTools {
       EmbossEffect,
       ElementIdFromSourceAspectIdTool,
       EmphasizeSelectedElementsTool,
+      EmphasizeVisibleElementsTool,
       ExplosionEffect,
-      ExtensionServiceTool,
       FadeOutTool,
       FlipImageConfig,
       FlipImageEffect,
@@ -126,7 +125,7 @@ export class FrontendDevTools {
       LoseWebGLContextTool,
       MapLayerTransparencyTool,
       MapLayerVisibilityTool,
-      MapLayerSubLayerVisiblityTool,
+      MapLayerSubLayerVisibilityTool,
       MapLayerZoomTool,
       MapBaseColorTool,
       MapBaseTransparencyTool,
@@ -213,11 +212,12 @@ export class FrontendDevTools {
       MaskBackgroundMapByElementTool,
       MaskBackgroundMapByExcludedElementTool,
       UnmaskMapTool,
+      WoWIgnoreBackgroundTool,
     ];
 
     for (const tool of tools)
-      tool.register(i18n);
+      tool.register(namespace);
 
-    return i18n.readFinished;
+    return namespacePromise;
   }
 }

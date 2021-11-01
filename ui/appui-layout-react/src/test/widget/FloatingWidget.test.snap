@@ -1,0 +1,256 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`FloatingWidget should render 1`] = `
+<div
+  class="nz-widget-widget nz-widget-floatingWidget"
+  data-widget-id="w1"
+  style="transform: translate(0px, 0px); max-height: 60%; max-width: 60%;"
+>
+  <div
+    class="nz-widget-tabBar nz-separator"
+  >
+    <div
+      class="nz-handle"
+    />
+    <div
+      class="nz-widget-tabs"
+      role="tablist"
+    >
+      <div
+        class="nz-widget-tabTarget nz-hidden"
+      />
+      <div
+        class="nz-widget-tab nz-active nz-first nz-last"
+        data-item-id="t1"
+        data-item-type="widget-tab"
+        role="tab"
+        title=""
+      >
+        <span />
+      </div>
+      <div
+        class="nz-widget-tabTarget nz-hidden"
+      />
+      <div
+        class="nz-widget-overflow nz-hidden"
+      >
+        <div
+          class="nz-button"
+          role="button"
+          tabindex="-1"
+        >
+          <div
+            class="nz-icon"
+          />
+        </div>
+      </div>
+    </div>
+    <div
+      class="nz-widget-tabBarButtons"
+    >
+      <button
+        class="nz-widget-sendBack nz-left"
+      >
+        <i />
+      </button>
+    </div>
+  </div>
+  <div
+    class="nz-widget-content-container"
+  />
+  <div
+    class="nz-widget-floatingWidget_handle nz-left"
+  />
+  <div
+    class="nz-widget-floatingWidget_handle nz-top"
+  />
+  <div
+    class="nz-widget-floatingWidget_handle nz-right"
+  />
+  <div
+    class="nz-widget-floatingWidget_handle nz-bottom"
+  />
+  <div
+    class="nz-widget-floatingWidget_handle nz-topLeft"
+  />
+  <div
+    class="nz-widget-floatingWidget_handle nz-topRight"
+  />
+  <div
+    class="nz-widget-floatingWidget_handle nz-bottomLeft"
+  />
+  <div
+    class="nz-widget-floatingWidget_handle nz-bottomRight"
+  />
+</div>
+`;
+
+exports[`FloatingWidget should render dragged 1`] = `
+<div
+  class="nz-widget-widget nz-widget-floatingWidget nz-dragged nz-minimized"
+  data-widget-id="w1"
+  style="transform: translate(0px, 0px); max-height: 60%; max-width: 60%;"
+>
+  <div
+    class="nz-widget-tabBar"
+  >
+    <div
+      class="nz-handle"
+    />
+    <div
+      class="nz-widget-tabs"
+      role="tablist"
+    >
+      <div
+        class="nz-widget-tabTarget nz-hidden nz-widgetPanels-cursorOverlay_cursor nz-grabbing"
+      />
+      <div
+        class="nz-widget-tab nz-active nz-minimized nz-first nz-last"
+        data-item-id="t1"
+        data-item-type="widget-tab"
+        role="tab"
+        title=""
+      >
+        <span />
+      </div>
+      <div
+        class="nz-widget-tabTarget nz-hidden nz-widgetPanels-cursorOverlay_cursor nz-grabbing"
+      />
+      <div
+        class="nz-widget-overflow nz-hidden"
+      >
+        <div
+          class="nz-button"
+          role="button"
+          tabindex="-1"
+        >
+          <div
+            class="nz-icon"
+          />
+        </div>
+      </div>
+    </div>
+    <div
+      class="nz-widget-tabBarButtons"
+    >
+      <button
+        class="nz-widget-sendBack nz-left"
+      >
+        <i />
+      </button>
+    </div>
+  </div>
+  <div
+    class="nz-widget-content-container nz-minimized"
+  />
+  <div
+    class="nz-widget-floatingWidget_handle nz-left"
+  />
+  <div
+    class="nz-widget-floatingWidget_handle nz-top"
+  />
+  <div
+    class="nz-widget-floatingWidget_handle nz-right"
+  />
+  <div
+    class="nz-widget-floatingWidget_handle nz-bottom"
+  />
+  <div
+    class="nz-widget-floatingWidget_handle nz-topLeft"
+  />
+  <div
+    class="nz-widget-floatingWidget_handle nz-topRight"
+  />
+  <div
+    class="nz-widget-floatingWidget_handle nz-bottomLeft"
+  />
+  <div
+    class="nz-widget-floatingWidget_handle nz-bottomRight"
+  />
+</div>
+`;
+
+exports[`FloatingWidget should render minimized 1`] = `
+<div
+  class="nz-widget-widget nz-widget-floatingWidget nz-minimized"
+  data-widget-id="w1"
+  style="transform: translate(0px, 0px); max-height: 60%; max-width: 60%;"
+>
+  <div
+    class="nz-widget-tabBar"
+  >
+    <div
+      class="nz-handle"
+    />
+    <div
+      class="nz-widget-tabs"
+      role="tablist"
+    >
+      <div
+        class="nz-widget-tabTarget nz-hidden"
+      />
+      <div
+        class="nz-widget-tab nz-active nz-minimized nz-first nz-last"
+        data-item-id="t1"
+        data-item-type="widget-tab"
+        role="tab"
+        title=""
+      >
+        <span />
+      </div>
+      <div
+        class="nz-widget-tabTarget nz-hidden"
+      />
+      <div
+        class="nz-widget-overflow nz-hidden"
+      >
+        <div
+          class="nz-button"
+          role="button"
+          tabindex="-1"
+        >
+          <div
+            class="nz-icon"
+          />
+        </div>
+      </div>
+    </div>
+    <div
+      class="nz-widget-tabBarButtons"
+    >
+      <button
+        class="nz-widget-sendBack nz-left"
+      >
+        <i />
+      </button>
+    </div>
+  </div>
+  <div
+    class="nz-widget-content-container nz-minimized"
+  />
+  <div
+    class="nz-widget-floatingWidget_handle nz-left"
+  />
+  <div
+    class="nz-widget-floatingWidget_handle nz-top"
+  />
+  <div
+    class="nz-widget-floatingWidget_handle nz-right"
+  />
+  <div
+    class="nz-widget-floatingWidget_handle nz-bottom"
+  />
+  <div
+    class="nz-widget-floatingWidget_handle nz-topLeft"
+  />
+  <div
+    class="nz-widget-floatingWidget_handle nz-topRight"
+  />
+  <div
+    class="nz-widget-floatingWidget_handle nz-bottomLeft"
+  />
+  <div
+    class="nz-widget-floatingWidget_handle nz-bottomRight"
+  />
+</div>
+`;

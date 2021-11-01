@@ -6,7 +6,9 @@
  * @module QuantityFormatting
  */
 
-import { BadUnit, BasicUnit, UnitConversion, UnitExtraData, UnitProps, UnitsProvider } from "@bentley/imodeljs-quantity";
+import {
+  BadUnit, BasicUnit, UnitConversion, UnitExtraData, UnitProps, UnitsProvider,
+} from "@itwin/core-quantity";
 
 // cSpell:ignore ussurvey USCUSTOM
 

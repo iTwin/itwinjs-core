@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "Add clonePartialCurve for spirals. Proper length computation for partial spirals.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}

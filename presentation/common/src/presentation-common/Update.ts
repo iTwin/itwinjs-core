@@ -210,7 +210,8 @@ export namespace PartialHierarchyModification { // eslint-disable-line @typescri
       case "Delete":
         return {
           type: "Delete",
-          target: NodeKey.toJSON(obj.target),
+          parent: obj.parent === undefined ? undefined : NodeKey.toJSON(obj.parent),
+          position: obj.position,
         };
     }
   }
@@ -236,7 +237,8 @@ export namespace PartialHierarchyModification { // eslint-disable-line @typescri
       case "Delete":
         return {
           type: "Delete",
-          target: NodeKey.fromJSON(json.target),
+          parent: json.parent === undefined ? undefined : NodeKey.fromJSON(json.parent),
+          position: json.position,
         };
     }
   }
@@ -273,8 +275,10 @@ export interface NodeInsertionInfoJSON {
  */
 export interface NodeDeletionInfo {
   type: "Delete";
-  /** Key of the deleted node */
-  target: NodeKey;
+  /** Parent of the deleted node */
+  parent?: NodeKey;
+  /** Position of the deleted node among its siblings in the initial, not updated tree */
+  position: number;
 }
 
 /**
@@ -283,7 +287,10 @@ export interface NodeDeletionInfo {
  */
 export interface NodeDeletionInfoJSON {
   type: "Delete";
-  target: NodeKeyJSON;
+  /** Parent of the deleted node */
+  parent?: NodeKeyJSON;
+  /** Position of the deleted node among its siblings in the initial, not updated tree */
+  position: number;
 }
 
 /**

@@ -1,6 +1,6 @@
-# The ui-core package
+# The core-react package
 
-The `@bentley/ui-core` package contains general purpose React components, such as Button, ContextMenu, Dialog, MessageBox, SearchBox, RadialMenu and SplitButton.
+The `@itwin/core-react` package contains general purpose React components, such as Button, ContextMenu, Dialog, MessageBox, SearchBox, RadialMenu and SplitButton.
 It also contains various input components, such as Input, Radio, Checkbox, NumberInput, Select, Slider and Toggle, and components for styled text.
 
 ## Topics

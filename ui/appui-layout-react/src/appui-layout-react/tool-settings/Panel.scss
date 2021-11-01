@@ -1,0 +1,11 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/z-index";
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+
+.nz-toolSettings-panel {
+  background: $buic-background-1;
+  padding: 0.5em;
+}

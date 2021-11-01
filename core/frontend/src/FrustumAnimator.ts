@@ -6,8 +6,8 @@
  * @module Views
  */
 
-import { Angle, Geometry, Matrix3d, Point3d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
-import { Tweens } from "@bentley/imodeljs-common";
+import { Angle, Geometry, Matrix3d, Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
+import { Tweens } from "@itwin/core-common";
 import { Animator, ViewAnimationOptions } from "./ViewAnimation";
 import { ScreenViewport } from "./Viewport";
 import { ViewPose, ViewPose3d } from "./ViewPose";
@@ -104,17 +104,17 @@ export class FrustumAnimator implements Animator {
         const fraction = extentBias ? timing.position : timing.fraction; // if we're zooming, fraction comes from position interpolation
         const rot = Matrix3d.createRotationAroundVector(axis.axis, Angle.createDegrees(fraction * axis.angle.degrees))!.multiplyMatrixMatrix(begin.rotation);
         if (begin.cameraOn) {
-          const extents = begin.extents.interpolate(fraction, end.extents);
+          const newExtents = begin.extents.interpolate(fraction, end.extents);
           if (undefined !== eyeBias) {
-            const eye = begin3.camera.eye.interpolate(fraction, end3.camera.eye);
-            eye.plusScaled(eyeBias, timing.height, eye);
-            const target = eye.plusScaled(rot.getRow(2), -1.0 * (Geometry.interpolate(begin3.camera.focusDist, fraction, end3.camera.focusDist)));
-            view3.lookAt(eye, target, rot.getRow(1), extents);
+            const eyePoint = begin3.camera.eye.interpolate(fraction, end3.camera.eye);
+            eyePoint.plusScaled(eyeBias, timing.height, eyePoint);
+            const targetPoint = eyePoint.plusScaled(rot.getRow(2), -1.0 * (Geometry.interpolate(begin3.camera.focusDist, fraction, end3.camera.focusDist)));
+            view3.lookAt({ eyePoint, targetPoint, upVector: rot.getRow(1), newExtents });
           } else {
             const data = interpolateSwingingEye(
               begin3.rotation, begin3.camera.eye, begin3.camera.focusDist,
               end3.rotation, end3.camera.eye, end3.camera.focusDist, fraction, rot);
-            view3.lookAt(data.eye, data.target, rot.getRow(1), extents);
+            view3.lookAt({ eyePoint: data.eye, targetPoint: data.target, upVector: rot.getRow(1), newExtents });
           }
         } else {
           const extents = begin.extents.interpolate(timing.fraction, end.extents);
@@ -131,7 +131,10 @@ export class FrustumAnimator implements Animator {
 
   /** @internal */
   public animate() {
-    return !this._tweens.update();
+    const didFinish = !this._tweens.update();
+    if (didFinish && this.options.animationFinishedCallback)
+      this.options.animationFinishedCallback(true);
+    return didFinish;
   }
 
   /** @internal */
@@ -139,5 +142,7 @@ export class FrustumAnimator implements Animator {
     // We were interrupted. Either go to: the final frame (normally) or, add a small fraction of the total duration (30ms for a .5 second duration) to
     // the current time for cancelOnAbort. That makes aborted animations show some progress, as happens when the mouse wheel rolls quickly.
     this._tweens.update(this.options.cancelOnAbort ? Date.now() + (this._duration * .06) : Infinity);
+    if (this.options.animationFinishedCallback)
+      this.options.animationFinishedCallback(false);
   }
 }

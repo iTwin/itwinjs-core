@@ -7,9 +7,11 @@
  * @module WebGL
  */
 
-import { dispose } from "@bentley/bentleyjs-core";
-import { Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Vector3d } from "@bentley/geometry-core";
-import { ColorDef, Frustum, FrustumPlanes, RenderMode, RenderTexture, SpatialClassificationProps, ViewFlags } from "@bentley/imodeljs-common";
+import { dispose } from "@itwin/core-bentley";
+import { Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Vector3d } from "@itwin/core-geometry";
+import {
+  ColorDef, Frustum, FrustumPlanes, RenderMode, RenderTexture, SpatialClassifier, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay,
+} from "@itwin/core-common";
 import { PlanarClipMaskState } from "../../PlanarClipMaskState";
 import { GraphicsCollectorDrawArgs, SpatialClassifierTileTreeReference, TileTreeReference } from "../../tile/internal";
 import { SceneContext } from "../../ViewContext";
@@ -38,7 +40,14 @@ import { Texture, TextureHandle } from "./Texture";
 
 export enum PlanarClassifierContent { None = 0, MaskOnly = 1, ClassifierOnly = 2, ClassifierAndMask = 3 }
 
-function createTexture(handle: TextureHandle) { return new Texture(new RenderTexture.Params(undefined, RenderTexture.Type.TileSection, true), handle); }
+function createTexture(handle: TextureHandle): Texture {
+  return new Texture({
+    handle,
+    ownership: "external",
+    type: RenderTexture.Type.TileSection,
+  });
+}
+
 function createTextureHandle(width: number, height: number, heightMult = 1.0) { return TextureHandle.createForAttachment(width, height * heightMult, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte); }
 
 class ClassifierTextures implements WebGLDisposable {
@@ -133,13 +142,13 @@ class ClassifierMRTFrameBuffers extends ClassifierFrameBuffers {
     this._clearGeom = geom;
   }
 
-  public get isDisposed(): boolean {
+  public override get isDisposed(): boolean {
     return super.isDisposed
       && this._fbo.isDisposed
       && this._clearGeom.isDisposed;
   }
 
-  public dispose(): void {
+  public override dispose(): void {
     dispose(this._fbo);
     dispose(this._clearGeom);
     super.dispose();
@@ -172,13 +181,13 @@ class ClassifierMPFrameBuffers extends ClassifierFrameBuffers {
     this._feature = feature;
   }
 
-  public get isDisposed(): boolean {
+  public override get isDisposed(): boolean {
     return super.isDisposed
       && this._color.isDisposed
       && this._feature.isDisposed;
   }
 
-  public dispose(): void {
+  public override dispose(): void {
     dispose(this._color);
     dispose(this._feature);
     super.dispose();
@@ -231,7 +240,7 @@ abstract class SingleTextureFrameBuffer implements WebGLDisposable {
     if (!hTexture)
       return undefined;
 
-    const texture = new Texture(new RenderTexture.Params(undefined, RenderTexture.Type.TileSection, true), hTexture);
+    const texture = new Texture({ type: RenderTexture.Type.TileSection, ownership: "external", handle: hTexture });
     if (!texture)
       return undefined;
 
@@ -296,7 +305,6 @@ class ClassifierAndMaskCombinationBuffer extends CombineTexturesFrameBuffer {
 }
 
 const scratchPrevRenderState = new RenderState();
-const scratchViewFlags = new ViewFlags();
 
 /** @internal */
 export class PlanarClassifier extends RenderPlanarClassifier implements RenderMemory.Consumer, WebGLDisposable {
@@ -315,7 +323,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   private _anyHilited = false;
   private _anyOpaque = false;
   private _anyTranslucent = false;
-  private _classifier?: SpatialClassificationProps.Classifier;
+  private _classifier?: SpatialClassifier;
   private readonly _plane = Plane3dByOriginAndUnitNormal.create(new Point3d(0, 0, 0), new Vector3d(0, 0, 1))!;    // TBD -- Support other planes - default to X-Y for now.
   private readonly _renderState = new RenderState();
   private readonly _renderCommands: RenderCommands;
@@ -337,7 +345,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   private _isClassifyingPointCloud?: boolean; // we will detect this the first time we draw
   private readonly _bgColor = ColorDef.from(0, 0, 0, 255);
 
-  private constructor(classifier: SpatialClassificationProps.Classifier | undefined, target: Target) {
+  private constructor(classifier: SpatialClassifier | undefined, target: Target) {
     super();
     this._classifier = classifier;
 
@@ -357,20 +365,20 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
 
   public get hiliteTexture(): Texture | undefined { return undefined !== this._classifierBuffers ? this._classifierBuffers.textures.hilite : undefined; }
   public get projectionMatrix(): Matrix4d { return this._projectionMatrix; }
-  // public get properties(): SpatialClassificationProps.Classifier { return this._classifier; }
+  // public get properties(): SpatialClassifier { return this._classifier; }
   public get baseBatchId(): number { return this._baseBatchId; }
   public get anyHilited(): boolean { return this._anyHilited; }
   public get anyOpaque(): boolean { return this._anyOpaque; }
   public get anyTranslucent(): boolean { return this._anyTranslucent; }
-  public get insideDisplay(): SpatialClassificationProps.Display { return this._classifier ? this._classifier.flags.inside : SpatialClassificationProps.Display.Off; }
-  public get outsideDisplay(): SpatialClassificationProps.Display { return this._classifier ? this._classifier.flags.outside : SpatialClassificationProps.Display.On; }
+  public get insideDisplay(): SpatialClassifierInsideDisplay { return this._classifier ? this._classifier.flags.inside : SpatialClassifierInsideDisplay.Off; }
+  public get outsideDisplay(): SpatialClassifierOutsideDisplay { return this._classifier ? this._classifier.flags.outside : SpatialClassifierOutsideDisplay.On; }
   public get isClassifyingPointCloud(): boolean { return true === this._isClassifyingPointCloud; }
 
   public addGraphic(graphic: RenderGraphic) {
     this._graphics!.push(graphic);
   }
 
-  public static create(properties: SpatialClassificationProps.Classifier | undefined, target: Target): PlanarClassifier {
+  public static create(properties: SpatialClassifier | undefined, target: Target): PlanarClassifier {
     return new PlanarClassifier(properties, target);
   }
 
@@ -555,13 +563,18 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     const prevState = system.currentRenderState.clone(scratchPrevRenderState);
     system.context.viewport(0, 0, this._width, this._height);
 
-    const vf = target.currentViewFlags.clone(scratchViewFlags);
-    vf.renderMode = RenderMode.SmoothShade;
-    vf.transparency = !this.isClassifyingPointCloud; // point clouds don't support transparency.
-    vf.noGeometryMap = true;
-    vf.textures = vf.lighting = vf.shadows = false;
-    vf.monochrome = vf.materials = vf.ambientOcclusion = false;
-    vf.visibleEdges = vf.hiddenEdges = false;
+    const vf = target.currentViewFlags.copy({
+      renderMode: RenderMode.SmoothShade,
+      transparency: !this.isClassifyingPointCloud, // point clouds don't support transparency.
+      textures: false,
+      lighting: false,
+      shadows: false,
+      monochrome: false,
+      materials: false,
+      ambientOcclusion: false,
+      visibleEdges: false,
+      hiddenEdges: false,
+    });
 
     system.applyRenderState(this._renderState);
     const prevPlan = target.plan;
@@ -579,7 +592,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     const getDrawCommands = (graphics: RenderGraphic[]) => {
       this._batchState.reset();
       renderCommands.reset(target, this._branchStack, this._batchState);
-      renderCommands.addGraphics(graphics);
+      renderCommands.collectGraphicsForPlanarProjection(graphics);
 
       // Draw the classifiers into our attachments.
       // When using Display.ElementColor, the color and transparency come from the classifier geometry. Therefore we may need to draw the classified geometry
@@ -610,7 +623,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     if (this._maskGraphics.length > 0 && this._maskBuffer) {
       if (this._planarClipMaskOverrides)
         target.overrideFeatureSymbology(this._planarClipMaskOverrides);
-      if (this._planarClipMask && this._planarClipMask.settings.transparency !== undefined &&  this._planarClipMask.settings.transparency > 0.0)
+      if (this._planarClipMask && this._planarClipMask.settings.transparency !== undefined && this._planarClipMask.settings.transparency > 0.0)
         this._anyTranslucent = true;
 
       this._maskBuffer.draw(getDrawCommands(this._maskGraphics), target);

@@ -2,7 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Geometry
+ */
 // cspell:ignore Helmert
+
+import { Geometry } from "@itwin/core-geometry";
 
 /** An affine transformation with an additional Z Offset.
  *  The equations are:
@@ -10,7 +15,7 @@
  *  X = a * x - b * y + translationX
  *  Y = b * x + a * y + translationY
  *  Z = z + translationZ
- *  @alpha
+ *  @public
  */
 export interface Helmert2DWithZOffsetProps {
   /** The X post translation */
@@ -33,7 +38,7 @@ export interface Helmert2DWithZOffsetProps {
  *  Z = z + translationZ
  *
  *  Note that the class only implements the definition and not the operation.
- *  @alpha
+ *  @public
  */
 export class Helmert2DWithZOffset implements Helmert2DWithZOffsetProps {
   /** The X post translation */
@@ -57,28 +62,31 @@ export class Helmert2DWithZOffset implements Helmert2DWithZOffsetProps {
     }
   }
 
-  /** @internal */
+  /** Creates an Helmert Transform from JSON representation.
+   * @public */
   public static fromJSON(data: Helmert2DWithZOffsetProps): Helmert2DWithZOffset {
     return new Helmert2DWithZOffset(data);
   }
 
-  /** @internal */
+  /** Creates a JSON from the Helmert Transform definition
+   * @public */
   public toJSON(): Helmert2DWithZOffsetProps {
     return { translationX: this.translationX, translationY: this.translationY, translationZ: this.translationZ, rotDeg: this.rotDeg, scale: this.scale };
   }
 
-  /** @internal */
+  /** Compares two Helmert2DWithZOffset objects applying a minuscule tolerance.
+   *  @public */
   public equals(other: Helmert2DWithZOffset): boolean {
-    return (this.translationX === other.translationX &&
-      this.translationY === other.translationY &&
-      this.translationZ === other.translationZ &&
-      this.rotDeg === other.rotDeg &&
-      this.scale === other.scale);
+    return (Math.abs(this.translationX - other.translationX) < Geometry.smallMetricDistance &&
+      Math.abs(this.translationY - other.translationY) < Geometry.smallMetricDistance &&
+      Math.abs(this.translationZ - other.translationZ) < Geometry.smallMetricDistance &&
+      Math.abs(this.rotDeg - other.rotDeg) < Geometry.smallAngleDegrees &&
+      Math.abs(this.scale - other.scale) < Geometry.smallFraction);
   }
 }
 
 /** Additional Transform definition
- * @alpha
+ * @public
  */
 export interface AdditionalTransformProps {
   /** The properties of a 2D Helmert transform with Z offset if one is defined. */
@@ -87,9 +95,9 @@ export interface AdditionalTransformProps {
 
 /** Additional Transform implementation.
  *  An additional transform is a transformation that can apply to either the horizontal or vertical coordinates of a
- *  geographic CRS. The transformation is applied after the latitude/longitude have been reprojected thus the process
+ *  geographic CRS. The transformation is applied after the latitude/longitude have been projected thus the process
  *  is applied to the result Cartesian coordinates of the projection process.
- *  @alpha
+ *  @public
 */
 export class AdditionalTransform implements AdditionalTransformProps {
 
@@ -101,17 +109,20 @@ export class AdditionalTransform implements AdditionalTransformProps {
       this.helmert2DWithZOffset = data.helmert2DWithZOffset ? Helmert2DWithZOffset.fromJSON(data.helmert2DWithZOffset) : undefined;
   }
 
-  /** @internal */
+  /** Creates an Additional Transform from JSON representation.
+   * @public */
   public static fromJSON(data: AdditionalTransformProps): AdditionalTransform {
     return new AdditionalTransform(data);
   }
 
-  /** @internal */
+  /** Creates a JSON from the Additional Transform definition
+   * @public */
   public toJSON(): AdditionalTransformProps {
     return { helmert2DWithZOffset: this.helmert2DWithZOffset };
   }
 
-  /** @internal */
+  /** Compares two additional transforms applying a minuscule tolerance to comparing numbers.
+   *  @public */
   public equals(other: AdditionalTransform): boolean {
     if ((this.helmert2DWithZOffset === undefined) !== (other.helmert2DWithZOffset === undefined))
       return false;

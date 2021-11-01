@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { LowAndHighXY, XAndY } from "@bentley/geometry-core";
+import { LowAndHighXY, XAndY } from "@itwin/core-geometry";
 
 /** A rectangle in integer view coordinates with (0,0) corresponding to the top-left corner of the view.
  *

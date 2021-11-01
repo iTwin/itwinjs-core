@@ -6,6 +6,8 @@
  * @module Entities
  */
 
+import { Base64 } from "js-base64";
+
 /** Represents an array of bytes encoded in base-64 with a prefix indicating the encoding, as required when converting EC properties of `binary` type to and from JSON.
  * @see [[TextureProps.data]] and [[BRepEntity.DataProps.data]] for examples of properties of this type.
  * @public
@@ -44,9 +46,7 @@ export namespace Base64EncodedString { // eslint-disable-line @typescript-eslint
     return hasPrefix(base64) ? base64.substr(prefix.length) : base64;
   }
 
-  /** A function suitable for use with JSON.parse to revive a Base64EncodedString into a Uint8Array.
-   * @beta
-   */
+  /** A function suitable for use with `JSON.parse` to revive a Base64EncodedString into a Uint8Array. */
   export const reviver = (_name: string, value: any): any => {
     if (typeof value === "string" && hasPrefix(value))
       value = toUint8Array(value);
@@ -54,9 +54,7 @@ export namespace Base64EncodedString { // eslint-disable-line @typescript-eslint
     return value;
   };
 
-  /** A function suitable for use with JSON.stringify to serialize a Uint8Array as a Base64EncodedString.
-   * @beta
-   */
+  /** A function suitable for use with `JSON.stringify` to serialize a Uint8Array as a Base64EncodedString. */
   export const replacer = (_name: string, value: any): any => {
     if (value && value.constructor === Uint8Array)
       value = fromUint8Array(value);

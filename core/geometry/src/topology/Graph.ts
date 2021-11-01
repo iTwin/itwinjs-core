@@ -35,8 +35,8 @@ import { MaskManager } from "./MaskManager";
 export enum HalfEdgeMask {
   /**  Mask commonly set consistently around exterior faces.
    * * A boundary edge with interior to one side, exterior to the other will have EXTERIOR only on the outside.
-   * * An an edge inserted "within a purely exterior face" can have EXTERIOR on both MediaStreamAudioDestinationNode[Symbol]
-   * * An interior edges (such as added during triangulation) will have no EXTERIOR bits.
+   * * An an edge inserted "within a purely exterior face" can have EXTERIOR on both sides.
+   * * An interior edge (such as added during triangulation) will have no EXTERIOR bits.
    */
   EXTERIOR = 0x00000001,
   /** Mask commonly set (on both sides) of original geometry edges that are transition from outside from to inside.
@@ -378,7 +378,8 @@ export class HalfEdge {
     } while (node !== this);
     return count;
   }
-/** Return true of other is in the vertex loop around this. */
+
+  /** Return true if other is in the vertex loop around this. */
   public findAroundVertex(other: HalfEdge): boolean {
     let node: HalfEdge = this;
     do {
@@ -389,16 +390,37 @@ export class HalfEdge {
     return false;
   }
 
-/** Return true of other is in the face loop around this. */
-public findAroundFace(other: HalfEdge): boolean {
-  let node: HalfEdge = this;
-  do {
-    if (node === other)
-      return true;
-    node = node.faceSuccessor;
-  } while (node !== this);
-  return false;
-}
+  /** Return true if other is in the face loop around this. */
+  public findAroundFace(other: HalfEdge): boolean {
+    let node: HalfEdge = this;
+    do {
+      if (node === other)
+        return true;
+      node = node.faceSuccessor;
+    } while (node !== this);
+    return false;
+  }
+
+  /**
+   * @return whether the mask is set (or unset) on all nodes of the face loop
+   */
+  public isMaskedAroundFace(mask: HalfEdgeMask, value: boolean = true): boolean {
+    let node: HalfEdge = this;
+    if (value) {
+      do {
+        if (!node.isMaskSet(mask))
+          return false;
+        node = node.faceSuccessor;
+      } while (node !== this);
+    } else {
+      do {
+        if (node.isMaskSet(mask))
+          return false;
+        node = node.faceSuccessor;
+      } while (node !== this);
+    }
+    return true;
+  }
 
   /**
    * Apply a edgeTag and mask to all edges around a face.
@@ -678,6 +700,57 @@ public findAroundFace(other: HalfEdge): boolean {
       nodeB.x - nodeA.x, nodeB.y - nodeA.y,
       nodeC.x - nodeB.x, nodeC.y - nodeB.y);
   }
+
+  /**
+   * @return whether the sector represented by the 2D vectors from nodeA to nodeB and nodeB to nodeC is convex.
+   */
+  public static isSectorConvex(nodeA: HalfEdge, nodeB: HalfEdge, nodeC: HalfEdge): boolean {
+    const cross = HalfEdge.crossProductXYAlongChain(nodeA, nodeB, nodeC);
+    if (cross > 0.0)
+      return true;
+    if (cross < 0.0)
+      return false;
+    return HalfEdge.dotProductNodeToNodeVectorsXY(nodeA, nodeB, nodeB, nodeC) > 0.0;
+  }
+
+  /**
+   * @return whether the sector of the face is convex.
+   */
+  // eslint-disable-next-line @itwin/prefer-get
+  public isSectorConvex(): boolean {
+    return HalfEdge.isSectorConvex(this.facePredecessor, this, this.faceSuccessor);
+  }
+
+  /**
+   * @return whether the face is convex.
+   */
+   // eslint-disable-next-line @itwin/prefer-get
+  public isFaceConvex(): boolean {
+    let node: HalfEdge = this;
+    do {
+      if (!node.isSectorConvex())
+        return false;
+      node = node.faceSuccessor;
+    } while (node !== this);
+    return true;
+  }
+
+  /**
+   * Isolate the edge from the graph by yanking each end from its vertex loop.
+   */
+  public isolateEdge() {
+    const mate = this.edgeMate;
+    this.yankFromVertexLoop();
+    mate.yankFromVertexLoop();
+  }
+
+  /**
+   * @return whether this edge is isolated from the rest of the graph.
+   */
+  public get isIsolatedEdge() {
+    return this === this.vertexSuccessor && this.edgeMate === this.edgeMate.vertexSuccessor;
+  }
+
   /** Return true if `this` is lexically below `other`, comparing y first then x. */
   public belowYX(other: HalfEdge): boolean {
     // Check y's
@@ -1270,8 +1343,8 @@ export class HalfEdgeGraph {
   }
   /**
    * disconnect and delete all nodes that satisfy a filter condition.
-   * @param deleteThisNode returns true to delete the node given.
-   * @returns the number of nodes deleted.
+   * @param deleteThisNode returns true to delete the corresponding edge. Should act symmetrically on the edgeMate.
+   * @returns the number of nodes deleted (twice the number of deleted edges).
    */
   public yankAndDeleteEdges(deleteThisNode: NodeFunction): number {
     const numTotal = this.allHalfEdges.length;
@@ -1280,10 +1353,25 @@ export class HalfEdgeGraph {
       const candidate = this.allHalfEdges[i];
       if (!deleteThisNode(candidate)) {
         this.allHalfEdges[numAccepted++] = candidate;
-      } else {
-        const mate = candidate.edgeMate;
-        candidate.yankFromVertexLoop();
-        mate.yankFromVertexLoop();
+      } else
+        candidate.isolateEdge();
+    }
+    const numDeleted = numTotal - numAccepted;
+    this.allHalfEdges.length = numAccepted;
+    return numDeleted;
+  }
+
+  /**
+   * Delete all isolated edges.
+   * @return the number of nodes deleted (twice the number of deleted edges).
+   */
+  public deleteIsolatedEdges(): number {
+    const numTotal = this.allHalfEdges.length;
+    let numAccepted = 0;
+    for (let i = 0; i < numTotal; i++) {
+      const candidate = this.allHalfEdges[i];
+      if (!candidate.isIsolatedEdge) {
+        this.allHalfEdges[numAccepted++] = candidate;
       }
     }
     const numDeleted = numTotal - numAccepted;

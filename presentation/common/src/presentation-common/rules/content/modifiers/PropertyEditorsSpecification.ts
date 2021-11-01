@@ -7,19 +7,9 @@
  */
 
 /**
- * Sub-specification to specify custom property editor
- * @public
- * @deprecated Use [[PropertySpecification]] instead. Will be removed in iModel.js 3.0
- */
-export interface DEPRECATED_PropertyEditorsSpecification extends PropertyEditorSpecification { // eslint-disable-line @typescript-eslint/naming-convention
-  /** Name of the property which custom editor should be used for */
-  propertyName: string;
-}
-
-/**
  * Specification for custom property editor
  *
- * @see [More details]($docs/learning/presentation/Content/PropertyEditorSpecification.md)
+ * @see [More details]($docs/presentation/Content/PropertyEditorSpecification.md)
  * @public
  */
 export interface PropertyEditorSpecification {

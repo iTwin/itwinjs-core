@@ -6,8 +6,8 @@
  * @module Rendering
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
-import { SpatialClassificationProps } from "@bentley/imodeljs-common";
+import { Id64String } from "@itwin/core-bentley";
+import { SpatialClassifier } from "@itwin/core-common";
 import { RenderGraphic } from "./RenderGraphic";
 import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
 import { RenderTextureDrape } from "./RenderSystem";
@@ -16,7 +16,7 @@ import { RenderTextureDrape } from "./RenderSystem";
  * @internal
  */
 export interface SceneVolumeClassifier {
-  classifier: SpatialClassificationProps.Classifier;
+  classifier: SpatialClassifier;
   modelId: Id64String;
 }
 

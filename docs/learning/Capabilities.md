@@ -182,14 +182,7 @@ Assistants for Tools to find existing geometry and for creating new geometry:
 - ✔️️ [Tentative Point](./frontend/primitivetools.md#snapping) performs finds element in response to a *tentative button* press
 - ✔️️ [AccuDraw](./frontend/primitivetools.md#accudraw) defines a work plane to aide entering coordinates
 
-## Extensions
-
-Load new functionality to a running instance of an application in a web browser.
-
-- 👷 Load registered [Extension](./frontend/Extensions.md)
-- 🎫 Register and upload your own Extensions
-
-## Bridging data into iModels
+## Synchronizing data into iModels
 
 Create iModels from data from external BIM/CAD/GIS/etc. applications.
 
@@ -351,7 +344,7 @@ Desktop and Mobile device Web browsers.
 
 ## Further Resources
 
-- [GitHub](https://github.com/imodeljs/imodeljs): the imodeljs repository along with samples.
+- [GitHub](https://github.com/iTwin/itwinjs-core): the imodeljs repository along with samples.
 - [Documentation](https://www.itwinjs.org/learning/):
   - Learning articles: explaining the iTwin.js library structure and architecture.
   - BIS docs: for understanding BIS schemas and the ECSql data query language.
@@ -361,5 +354,5 @@ Desktop and Mobile device Web browsers.
 - Sample Apps: can be used as a starting point for your app.
   - [simple-viewer-app](https://github.com/imodeljs/imodeljs-samples/tree/master/interactive-app/simple-viewer-app): An example of an interactive application which can display graphical data, browse iModel catalog and view element properties.
   - [imodel-query-agent](https://github.com/imodeljs/imodel-query-agent): An example of an agent application which can listen to changes made to an iModel in iModelHub and construct a 'Change Summary' of useful information.
-- [Sample Data](https://www.itwinjs.org/getting-started/registration-dashboard/?tab=1): to use with the above samples and jump start iTwin.js development.
-- [iModel Console](https://imdevsrvcdeveusfsa01.blob.core.windows.net/prod-imodel-console/index.html): handy tool for running ECSql queries against an iModel. Can be used for writing queries for the application or for better understanding the project data.
+- [Sample Data](https://developer.bentley.com/my-imodels/): to use with the above samples and jump start iTwin.js development.
+- [iModel Console](https://imodelconsole.bentley.com): handy tool for running ECSql queries against an iModel. Can be used for writing queries for the application or for better understanding the project data.

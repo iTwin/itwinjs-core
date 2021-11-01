@@ -5,9 +5,9 @@
 
 import * as fs from "fs";
 import * as path from "path";
-import { DbResult, Guid, OpenMode } from "@bentley/bentleyjs-core";
-import { IModelHost } from "@bentley/imodeljs-backend";
-import { BriefcaseIdValue, IModelError } from "@bentley/imodeljs-common";
+import { Guid, OpenMode } from "@itwin/core-bentley";
+import { IModelHost } from "@itwin/core-backend";
+import { BriefcaseIdValue } from "@itwin/core-common";
 
 let prefix = "";
 
@@ -26,9 +26,9 @@ function log(msg: string) {
 
 /**
  * This utility will change an existing iModel file to be a standalone iModel. It does so by
- * clearing the ProjectGuid, and resetting the briefcaseId to 0.
+ * clearing the iTwinId, and resetting the briefcaseId to 0.
  *
- * This should only be done for testing, with the project owner's permission.
+ * This should only be done for testing, with the iTwin owner's permission.
  *
  * To run:
 ```
@@ -47,17 +47,14 @@ function setToStandalone(iModelName: string) {
 
   try {
     const nativeDb = new IModelHost.platform.DgnDb();
-    const status = nativeDb.openIModel(iModelName, OpenMode.ReadWrite);
-    if (DbResult.BE_SQLITE_OK !== status)
-      throw new IModelError(status, `Could not open iModel [${iModelName}]`);
-
-    nativeDb.saveProjectGuid(Guid.empty); // empty projectId means "standalone"
-    nativeDb.saveChanges(); // save change to ProjectId
+    nativeDb.openIModel(iModelName, OpenMode.ReadWrite);
+    nativeDb.setITwinId(Guid.empty); // empty iTwinId means "standalone"
+    nativeDb.saveChanges(); // save change to iTwinId
     nativeDb.deleteAllTxns(); // necessary before resetting briefcaseId
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned); // standalone iModels should always have BriefcaseId unassigned
     nativeDb.saveChanges(); // save change to briefcaseId
     nativeDb.closeIModel();
-  } catch (err) {
+  } catch (err: any) {
     log(err.message);
   }
 
@@ -73,7 +70,7 @@ async function processDirectory(dir: string) {
     let isDirectory;
     try {
       isDirectory = fs.statSync(fullPath).isDirectory();
-    } catch (err) {
+    } catch (err: any) {
       log(err);
       continue;
     }

@@ -6,7 +6,7 @@
  * @module DisplayStyles
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String } from "@itwin/core-bentley";
 import { ColorDefProps } from "./ColorDef";
 
 /** Enumerates the supported types of [SkyBox]($frontend) images.

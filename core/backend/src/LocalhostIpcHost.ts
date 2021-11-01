@@ -7,38 +7,56 @@
  */
 
 import * as ws from "ws";
-import { IpcWebSocket, IpcWebSocketBackend, IpcWebSocketMessage, IpcWebSocketTransport } from "@bentley/imodeljs-common";
+import { IpcWebSocket, IpcWebSocketBackend, IpcWebSocketMessage, IpcWebSocketTransport } from "@itwin/core-common";
 import { IpcHost } from "./IpcHost";
 import { IModelHostConfiguration } from "./IModelHost";
 
-class LocalTransport extends IpcWebSocketTransport {
-  private _server: ws.Server;
-  private _connection: ws | undefined;
+/** @internal */
+export interface LocalhostIpcHostOpts {
+  socketPort?: number;
+  noServer?: boolean;
+}
 
-  public constructor(port: number) {
+class LocalTransport extends IpcWebSocketTransport {
+  private _server: ws.Server | undefined;
+  private _connections: Set<ws> = new Set();
+
+  public constructor(opts: LocalhostIpcHostOpts) {
     super();
 
-    this._server = new ws.Server({ port });
-
-    this._server.on("connection", (connection) => {
-      this._connection = connection;
-
-      this._connection.on("message", (data) => {
-        for (const listener of IpcWebSocket.receivers)
-          listener({} as Event, JSON.parse(data as string));
-      });
-    });
+    if (!opts.noServer) {
+      this._server = new ws.Server({ port: opts.socketPort ?? 3002 });
+      this._server.on("connection", (connection) => LocalhostIpcHost.connect(connection));
+    }
   }
 
   public send(message: IpcWebSocketMessage): void {
-    this._connection!.send(JSON.stringify(message));
+    this._connections.forEach((connection) => connection.send(JSON.stringify(message)));
+  }
+
+  public connect(connection: ws) {
+    this._connections.add(connection);
+
+    connection.on("message", (data) => {
+      for (const listener of IpcWebSocket.receivers) {
+        listener({} as Event, JSON.parse(data as string));
+      }
+    });
+
+    connection.on("close", () => {
+      this._connections.delete(connection);
+    });
   }
 }
 
 /** @internal */
 export class LocalhostIpcHost {
-  public static async startup(opts?: { localhostIpcHost?: { socketPort?: number }, iModelHost?: IModelHostConfiguration }) {
-    IpcWebSocket.transport = new LocalTransport(opts?.localhostIpcHost?.socketPort ?? 3002);
+  public static connect(connection: ws) {
+    (IpcWebSocket.transport as LocalTransport).connect(connection);
+  }
+
+  public static async startup(opts?: { localhostIpcHost?: LocalhostIpcHostOpts, iModelHost?: IModelHostConfiguration }) {
+    IpcWebSocket.transport = new LocalTransport(opts?.localhostIpcHost ?? {});
     const socket = new IpcWebSocketBackend();
     await IpcHost.startup({ ipcHost: { socket }, iModelHost: opts?.iModelHost });
   }

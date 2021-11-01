@@ -1,0 +1,12 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "./list.scss";
+@import "~@itwin/core-react/lib/cjs/core-react/style/itwinui-overrides";
+
+.uicore-expandable-blocks-list {
+  @include uicore-expandable-blocks-list;
+
+  @include small-itwinui-expandable-block;
+}

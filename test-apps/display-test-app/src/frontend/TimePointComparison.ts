@@ -5,11 +5,11 @@
 
 import {
   ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Point3d, Transform, Vector3d,
-} from "@bentley/geometry-core";
+} from "@itwin/core-geometry";
 import {
   AccuDrawHintBuilder,
   FeatureSymbology, GraphicBranch, IModelApp, RenderClipVolume, SceneContext, ScreenViewport, TileTreeReference, Tool,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 
 /** Prototype for SYNCHRO feature. Split the viewport down the middle. Left-hand side remains frozen at current time point. Right-hand side updates when time point changes. */
 class TimePointComparison {
@@ -34,7 +34,7 @@ class TimePointComparison {
     vp.displayStyle.settings.timePoint = this._timePoint;
 
     const context = vp.createSceneContext();
-    vp.view.createScene(context);
+    vp.createScene(context);
 
     const gfx = context.graphics;
     if (0 < gfx.length) {
@@ -63,7 +63,7 @@ class TimePointComparison {
     });
 
     if (!provider) {
-      const timePoint = vp.timePoint ?? vp.view.displayStyle.scheduleScript?.computeDuration().low;
+      const timePoint = vp.timePoint ?? vp.view.displayStyle.scheduleScript?.duration.low;
       if (undefined === timePoint)
         return;
 
@@ -77,13 +77,13 @@ class TimePointComparison {
 
       const createClip = (vec: Vector3d, pt: Point3d) => {
         const plane = ClipPlane.createNormalAndPoint(vec, pt)!;
-        const planes = ConvexClipPlaneSet.createPlanes([ plane ]);
-        return ClipVector.createCapture([ ClipPrimitive.createCapture(planes) ]);
+        const planes = ConvexClipPlaneSet.createPlanes([plane]);
+        return ClipVector.createCapture([ClipPrimitive.createCapture(planes)]);
       };
 
       vp.addTiledGraphicsProvider(new TimePointComparison(createClip(normal, point), timePoint));
       vp.view.setViewClip(createClip(normal.negate(), point));
-      vp.viewFlags.clipVolume = true;
+      vp.viewFlags = vp.viewFlags.with("clipVolume", true);
     } else {
       vp.dropTiledGraphicsProvider(provider);
       vp.view.setViewClip(undefined);
@@ -94,9 +94,9 @@ class TimePointComparison {
 }
 
 export class TimePointComparisonTool extends Tool {
-  public static toolId = "ToggleTimePointComparison";
+  public static override toolId = "ToggleTimePointComparison";
 
-  public run(): boolean {
+  public override async run(): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (vp)
       TimePointComparison.toggle(vp);

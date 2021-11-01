@@ -46,9 +46,7 @@ export class GraphicParams {
   public lineColor = ColorDef.black;
   /** The color of surfaces. */
   public fillColor = ColorDef.black;
-  /** Material applied to surfaces.
-   * @beta
-   */
+  /** Material applied to surfaces. */
   public material?: RenderMaterial;
   /** Gradient fill applied to surfaces. */
   public gradient?: Gradient.Symb;

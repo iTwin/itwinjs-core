@@ -19,6 +19,7 @@ alpha;ButtonHandler = (button: HTMLInputElement) => void
 alpha;ButtonProps
 beta;ChangeCameraTool 
 beta;ChangeEmphasisSettingsTool 
+beta;ChangeFlashSettingsTool 
 beta;ChangeHiliteSettingsTool 
 beta;class ChangeHiliteTool 
 beta;class ChangePlanProjectionSettingsTool 
@@ -28,6 +29,7 @@ alpha;CheckBox
 alpha;CheckBoxHandler = (checkbox: HTMLInputElement) => void
 alpha;CheckBoxProps
 beta;ClearEffectsTool 
+beta;ClearEmphasizedElementsTool 
 beta;ClearIsolatedElementsTool 
 beta;ClearModelAppearanceOverrides 
 beta;ClearRealityModelAppearanceOverrides 
@@ -71,8 +73,8 @@ beta;ElementIdFromSourceAspectIdTool
 beta;EmbossEffect 
 beta;class EmphasizeElementsTool 
 beta;EmphasizeSelectedElementsTool 
+beta;EmphasizeVisibleElementsTool 
 beta;ExplosionEffect 
-beta;ExtensionServiceTool 
 beta;FadeOutTool 
 beta;FlipImageConfig 
 beta;FlipImageEffect 
@@ -96,7 +98,7 @@ beta;LoseWebGLContextTool
 beta;MapBaseColorTool 
 beta;MapBaseTransparencyTool 
 beta;MapBaseVisibilityTool 
-beta;MapLayerSubLayerVisiblityTool 
+beta;MapLayerSubLayerVisibilityTool 
 beta;MapLayerTransparencyTool 
 beta;MapLayerVisibilityTool 
 beta;MapLayerZoomTool 
@@ -203,6 +205,7 @@ beta;ToggleSkyboxTool
 beta;ToggleTerrainTool 
 beta;ToggleTileRequestDecorationTool 
 beta;ToggleTileTreeBoundsDecorationTool 
+beta;ToggleToolTipsTool 
 beta;ToggleViewAttachmentBoundariesTool 
 beta;ToggleViewAttachmentClipShapesTool 
 beta;ToggleViewAttachmentsTool 
@@ -216,3 +219,6 @@ beta;UnsharpenEffect
 beta;ViewportAddRealityModel 
 beta;ViewportTileSizeModifierTool 
 beta;class ViewportToggleTool 
+beta;VignetteConfig 
+beta;VignetteEffect 
+beta;WoWIgnoreBackgroundTool 

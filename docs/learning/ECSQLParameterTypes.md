@@ -8,13 +8,13 @@ Boolean       | boolean
 Blob          | Uint8Array
 DateTime      | ISO 8601 date time string
 Double        | number
-GUID          | [GuidString]($bentleyjs-core)
-Id            | [Id64String]($bentleyjs-core)
+GUID          | [GuidString]($core-bentley)
+Id            | [Id64String]($core-bentley)
 Integer       | number. Use a decimal string, if the value is greater than the JavaScript limitation for big integers.
 Navigation Value | [NavigationBindingValue]($common)
-Point2d       | [XAndY]($geometry-core)
-Point3d       | [XAndY]($geometry-core)
-Range3d       | [LowAndHighXYZ]($geometry-core)
+Point2d       | [XAndY]($core-geometry)
+Point3d       | [XAndY]($core-geometry)
+Range3d       | [LowAndHighXYZ]($core-geometry)
 string        | string
 Struct        | JavaScript object matching the members of the struct. The member values can be primitives, arrays, or objects of the above types
 Array         | JavaScript array of primitives or objects of the above types

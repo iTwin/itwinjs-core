@@ -6,11 +6,11 @@
  * @module Tiles
  */
 
-import { assert, BeTimePoint, ByteStream } from "@bentley/bentleyjs-core";
-import { Range3d } from "@bentley/geometry-core";
+import { assert, BentleyError, BeTimePoint, ByteStream } from "@itwin/core-bentley";
+import { Range3d } from "@itwin/core-geometry";
 import {
   ColorDef, computeChildTileProps, computeChildTileRanges, computeTileChordTolerance, ElementAlignedBox3d, LinePixels, TileFormat, TileProps,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { GraphicBuilder } from "../render/GraphicBuilder";
 import { RenderSystem } from "../render/RenderSystem";
@@ -61,10 +61,10 @@ export interface IModelTileContent extends TileContent {
 export class IModelTile extends Tile {
   private _sizeMultiplier?: number;
   private _emptySubRangeMask?: number;
-  /** True if an attempt to look up this tile's content in the cloud storage tile cache failed.
-   * See CloudStorageCacheChannel.onNoContent and IModelTile.channel
+  /** If an initial attempt to obtain this tile's content (e.g., from cloud storage cache) failed,
+   * the next channel to try.
    */
-  public cacheMiss = false;
+  public requestChannel?: TileRequestChannel;
 
   public constructor(params: IModelTileParams, tree: IModelTileTree) {
     super(params, tree);
@@ -84,14 +84,12 @@ export class IModelTile extends Tile {
 
   public get sizeMultiplier(): number | undefined { return this._sizeMultiplier; }
   public get hasSizeMultiplier() { return undefined !== this.sizeMultiplier; }
-  public get maximumSize(): number {
+  public override get maximumSize(): number {
     return super.maximumSize * (this.sizeMultiplier ?? 1.0);
   }
 
   public get channel(): TileRequestChannel {
-    const channels = IModelApp.tileAdmin.channels;
-    const cloud = !this.cacheMiss ? channels.cloudStorageCache : undefined;
-    return cloud ?? channels.iModelTileRpc;
+    return IModelApp.tileAdmin.channels.getIModelTileChannel(this);
   }
 
   public async requestContent(): Promise<TileRequest.Response> {
@@ -116,11 +114,11 @@ export class IModelTile extends Tile {
 
     const tree = this.iModelTree;
     const mult = this.hasSizeMultiplier ? this.sizeMultiplier : undefined;
-    const reader = ImdlReader.create(streamBuffer, tree.iModel, tree.modelId, tree.is3d, system, tree.batchType, tree.hasEdges, isCanceled, mult,  { tileId: this.contentId });
+    const reader = ImdlReader.create(streamBuffer, tree.iModel, tree.modelId, tree.is3d, system, tree.batchType, tree.hasEdges, isCanceled, mult, { tileId: this.contentId });
     if (undefined !== reader) {
       try {
         content = await reader.read();
-      } catch (_) {
+      } catch {
         //
       }
     }
@@ -128,7 +126,7 @@ export class IModelTile extends Tile {
     return content;
   }
 
-  public setContent(content: IModelTileContent): void {
+  public override setContent(content: IModelTileContent): void {
     super.setContent(content);
 
     this._emptySubRangeMask = content.emptySubRangeMask;
@@ -162,15 +160,15 @@ export class IModelTile extends Tile {
 
       resolve(children);
     } catch (err) {
-      reject(err);
+      reject(err instanceof Error ? err : new Error(BentleyError.getErrorMessage(err)));
     }
   }
 
-  protected get rangeGraphicColor(): ColorDef {
+  protected override get rangeGraphicColor(): ColorDef {
     return this.hasSizeMultiplier ? ColorDef.red : super.rangeGraphicColor;
   }
 
-  protected addRangeGraphic(builder: GraphicBuilder, type: TileBoundingBoxes): void {
+  protected override addRangeGraphic(builder: GraphicBuilder, type: TileBoundingBoxes): void {
     if (TileBoundingBoxes.ChildVolumes !== type) {
       super.addRangeGraphic(builder, type);
       return;

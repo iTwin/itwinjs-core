@@ -239,9 +239,9 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       this._polyface.addPoint(transform.multiplyPoint3d(p));
     let faceCounter = 0;
     for (const facet of BoxTopology.cornerIndexCCW) {
-      if (!faceSelector || (faceCounter < faceSelector.length && faceSelector[faceCounter])){
-      for (const pointIndex of facet)
-        this._polyface.addPointIndex(pointIndex0 + pointIndex);
+      if (!faceSelector || (faceCounter < faceSelector.length && faceSelector[faceCounter])) {
+        for (const pointIndex of facet)
+          this._polyface.addPointIndex(pointIndex0 + pointIndex);
         this._polyface.terminateFacet();
       }
       faceCounter++;
@@ -655,8 +655,6 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   /** Announce a single triangle facet's point indexes.
    *
    * * The actual quad may be reversed or triangulated based on builder setup.
-   * *  indexA0 and indexA1 are in the forward order at the "A" end of the quad
-   * *  indexB0 and indexB1 are in the forward order at the "B" end of hte quad.
    */
   private addIndexedTrianglePointIndexes(indexA: number, indexB: number, indexC: number, terminateFacet: boolean = true) {
     if (!this._reversed) {
@@ -1409,19 +1407,19 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   }
 
   /** Double dispatch handler for Cone */
-  public handleCone(g: Cone): any { return this.addCone(g); }
+  public override handleCone(g: Cone): any { return this.addCone(g); }
   /** Double dispatch handler for TorusPipe */
-  public handleTorusPipe(g: TorusPipe): any { return this.addTorusPipe(g); }
+  public override handleTorusPipe(g: TorusPipe): any { return this.addTorusPipe(g); }
   /** Double dispatch handler for Sphere */
-  public handleSphere(g: Sphere): any { return this.addSphere(g); }
+  public override handleSphere(g: Sphere): any { return this.addSphere(g); }
   /** Double dispatch handler for Box */
-  public handleBox(g: Box): any { return this.addBox(g); }
+  public override handleBox(g: Box): any { return this.addBox(g); }
   /** Double dispatch handler for LinearSweep */
-  public handleLinearSweep(g: LinearSweep): any { return this.addLinearSweep(g); }
+  public override handleLinearSweep(g: LinearSweep): any { return this.addLinearSweep(g); }
   /** Double dispatch handler for RotationalSweep */
-  public handleRotationalSweep(g: RotationalSweep): any { return this.addRotationalSweep(g); }
+  public override handleRotationalSweep(g: RotationalSweep): any { return this.addRotationalSweep(g); }
   /** Double dispatch handler for RuledSweep */
-  public handleRuledSweep(g: RuledSweep): any { return this.addRuledSweep(g); }
+  public override handleRuledSweep(g: RuledSweep): any { return this.addRuledSweep(g); }
   /** add facets for a GeometryQuery object.   This is double dispatch through `dispatchToGeometryHandler(this)` */
   public addGeometryQuery(g: GeometryQuery) { g.dispatchToGeometryHandler(this); }
 
@@ -1613,18 +1611,50 @@ export class PolyfaceBuilder extends NullGeometryHandler {
 
       if (v > 0) {
         for (let u = 0; u < numU; u++) {
-          this.addIndexedQuadPointIndexes(
-            xyzIndex0.atUncheckedIndex(u), xyzIndex0.atUncheckedIndex(u + 1),
-            xyzIndex1.atUncheckedIndex(u), xyzIndex1.atUncheckedIndex(u + 1), false);
-          if (needNormals)
-            this.addIndexedQuadNormalIndexes(
-              normalIndex0!.atUncheckedIndex(u), normalIndex0!.atUncheckedIndex(u + 1),
-              normalIndex1!.atUncheckedIndex(u), normalIndex1!.atUncheckedIndex(u + 1));
-          if (needParams)
-            this.addIndexedQuadParamIndexes(
-              paramIndex0!.atUncheckedIndex(u), paramIndex0!.atUncheckedIndex(u + 1),
-              paramIndex1!.atUncheckedIndex(u), paramIndex1!.atUncheckedIndex(u + 1));
-          this._polyface.terminateFacet();
+          if (!this._options.shouldTriangulate) {
+            this.addIndexedQuadPointIndexes(
+              xyzIndex0.atUncheckedIndex(u), xyzIndex0.atUncheckedIndex(u + 1),
+              xyzIndex1.atUncheckedIndex(u), xyzIndex1.atUncheckedIndex(u + 1), false);
+            if (needNormals)
+              this.addIndexedQuadNormalIndexes(
+                normalIndex0!.atUncheckedIndex(u), normalIndex0!.atUncheckedIndex(u + 1),
+                normalIndex1!.atUncheckedIndex(u), normalIndex1!.atUncheckedIndex(u + 1));
+            if (needParams)
+              this.addIndexedQuadParamIndexes(
+                paramIndex0!.atUncheckedIndex(u), paramIndex0!.atUncheckedIndex(u + 1),
+                paramIndex1!.atUncheckedIndex(u), paramIndex1!.atUncheckedIndex(u + 1));
+            this._polyface.terminateFacet();
+
+          } else {
+            this.addIndexedTrianglePointIndexes(
+              xyzIndex0.atUncheckedIndex(u), xyzIndex0.atUncheckedIndex(u + 1),
+              xyzIndex1.atUncheckedIndex(u), false);
+            if (needNormals)
+              this.addIndexedTriangleNormalIndexes(
+                normalIndex0!.atUncheckedIndex(u), normalIndex0!.atUncheckedIndex(u + 1),
+                normalIndex1!.atUncheckedIndex(u));
+            if (needParams)
+              this.addIndexedTriangleParamIndexes(
+                paramIndex0!.atUncheckedIndex(u), paramIndex0!.atUncheckedIndex(u + 1),
+                paramIndex1!.atUncheckedIndex(u));
+            this._polyface.terminateFacet();
+
+            this.addIndexedTrianglePointIndexes(
+              xyzIndex1.atUncheckedIndex(u),
+              xyzIndex0.atUncheckedIndex(u + 1),
+              xyzIndex1.atUncheckedIndex(u + 1), false);
+            if (needNormals)
+              this.addIndexedTriangleNormalIndexes(
+                normalIndex1!.atUncheckedIndex(u),
+                normalIndex0!.atUncheckedIndex(u + 1),
+                normalIndex1!.atUncheckedIndex(u + 1));
+            if (needParams)
+              this.addIndexedTriangleParamIndexes(
+                paramIndex1!.atUncheckedIndex(u),
+                paramIndex0!.atUncheckedIndex(u + 1),
+                paramIndex1!.atUncheckedIndex(u + 1));
+            this._polyface.terminateFacet();
+          }
         }
       }
       indexSwap = xyzIndex1; xyzIndex1 = xyzIndex0; xyzIndex0 = indexSwap;

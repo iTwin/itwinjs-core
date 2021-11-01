@@ -1,20 +1,20 @@
 # ContextMenu
 
-The [ContextMenu]($ui-core) React component displays a context menu populated with [ContextMenuItem]($ui-core) components.
-Items can be nested using the [ContextSubMenu]($ui-core) component.
-The [ContextMenuDivider]($ui-core) component shows a divider line between items.
+The [ContextMenu]($core-react) React component displays a context menu populated with [ContextMenuItem]($core-react) components.
+Items can be nested using the [ContextSubMenu]($core-react) component.
+The [ContextMenuDivider]($core-react) component shows a divider line between items.
 
-The [GlobalContextMenu]($ui-core) React component is used to display a ContextMenu at the cursor.
+The [GlobalContextMenu]($core-react) React component is used to display a ContextMenu at the cursor.
 
-The [PopupContextMenu]($ui-core) React component displays a ContextMenu within a Popup component, allowing the target element to be specified.
+The [PopupContextMenu]($core-react) React component displays a ContextMenu within a Popup component, allowing the target element to be specified.
 
 ## UiAdmin.showContextMenu Example
 
 These lower level components can be used to display a context menu.
 However, there is an easier API to use: IModelApp.uiAdmin.showContextMenu.
 UiAdmin.showContextMenu will show a context menu at a particular location.
-[UiAdmin]($ui-abstract) controls various UI components and is callable from IModelApp.uiAdmin in the imodeljs-frontend package.
-UiAdmin.showContextMenu uses the [ContextMenu]($ui-core:ContextMenu) components to display the context menu.
+[UiAdmin]($appui-abstract) controls various UI components and is callable from IModelApp.uiAdmin in the imodeljs-frontend package.
+UiAdmin.showContextMenu uses the [ContextMenu]($core-react:ContextMenu) components to display the context menu.
 
 ### Menu Items
 
@@ -23,7 +23,7 @@ These objects contain a menu item using the `item` member
 or a submenu item using the `submenu` member.
 
 ```tsx
-import { AbstractMenuItemProps } from "@bentley/ui-abstract";
+import { AbstractMenuItemProps } from "@itwin/appui-abstract";
 
 private _myMenuItems: AbstractMenuItemProps[] = [
   {
@@ -48,7 +48,7 @@ The `IModelApp.uiAdmin.showContextMenu` method will be called in response to an
 event, such as a right-click.
 
 ```tsx
-import { IModelApp } from "@bentley/imodeljs-frontend";
+import { IModelApp } from "@itwin/core-frontend";
 
 public showContextMenu() {
   IModelApp.uiAdmin.showContextMenu(this._myMenuItems, IModelApp.uiAdmin.cursorPosition);
@@ -62,8 +62,8 @@ In the example below, the PopupContextMenu is displayed below the `button` eleme
 
 ```tsx
 import * as React from "react";
-import { ContextMenuItem, ContextSubMenu, PopupContextMenu, useRefState } from "@bentley/ui-core";
-import { RelativePosition } from "@bentley/ui-abstract";
+import { ContextMenuItem, ContextSubMenu, PopupContextMenu, useRefState } from "@itwin/core-react";
+import { RelativePosition } from "@itwin/appui-abstract";
 
 export function SamplePopupContextMenu() {
   const [targetRef, target] = useRefState<HTMLButtonElement>();
@@ -103,4 +103,4 @@ export function SamplePopupContextMenu() {
 
 ## API Reference
 
-- [ContextMenu]($ui-core:ContextMenu)
+- [ContextMenu]($core-react:ContextMenu)

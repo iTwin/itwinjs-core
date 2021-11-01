@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
-import { Dialog, Icon } from "@bentley/ui-core";
-import { Calculator, ModalDialogManager } from "@bentley/ui-framework";
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
+import { Dialog, Icon } from "@itwin/core-react";
+import { Calculator, ModalDialogManager } from "@itwin/appui-react";
 
 export interface CalculatorDialogProps {
   opened: boolean;
@@ -16,7 +16,7 @@ export interface CalculatorDialogState {
 }
 
 export class CalculatorDialog extends React.Component<CalculatorDialogProps, CalculatorDialogState> {
-  public readonly state: Readonly<CalculatorDialogState>;
+  public override readonly state: Readonly<CalculatorDialogState>;
 
   constructor(props: CalculatorDialogProps) {
     super(props);
@@ -25,7 +25,7 @@ export class CalculatorDialog extends React.Component<CalculatorDialogProps, Cal
     };
   }
 
-  public render(): JSX.Element {
+  public override render(): JSX.Element {
     return (
       <Dialog
         title={"Calculator"}
@@ -52,7 +52,7 @@ export class CalculatorDialog extends React.Component<CalculatorDialogProps, Cal
     });
   };
 
-  public componentDidUpdate(oldProps: CalculatorDialogProps) {
+  public override componentDidUpdate(oldProps: CalculatorDialogProps) {
     if (oldProps.opened !== this.props.opened) {
       this.setState((_, props) => ({ opened: props.opened }));
     }

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "'onPostInstall' doing the animation logic on ViewGlobeLocationTool was redundant when done in addition to ViewGlobeLocationTool.parseAndRun. We got away with it before the Tool parseAndRun async change by the convenient luck of the flow of the non-async code. This removes '_doLocationView' from ViewGlobeLocationTool.parseAndRun.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

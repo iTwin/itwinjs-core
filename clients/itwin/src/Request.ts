@@ -9,24 +9,26 @@ import * as deepAssign from "deep-assign";
 import * as https from "https";
 import { IStringifyOptions, stringify } from "qs";
 import * as sarequest from "superagent";
-import { BentleyError, ClientRequestContext, Config, GetMetaDataFunction, HttpStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { BentleyError, GetMetaDataFunction, HttpStatus, Logger, LogLevel } from "@itwin/core-bentley";
 import { ITwinClientLoggerCategory } from "./ITwinClientLoggerCategory";
 
 const loggerCategory: string = ITwinClientLoggerCategory.Request;
 
-/** @beta */
+// CMS TODO: Move this entire wrapper to the frontend for use in the map/tile requests. Replace it with
+// just using fetch directly as it is only ever used browser side.
+
+/** @internal */
 export const requestIdHeaderName = "X-Correlation-Id";
 
-/** @beta */
+/** @internal */
 export interface RequestBasicCredentials { // axios: AxiosBasicCredentials
   user: string; // axios: username
   password: string; // axios: password
-  // sendImmediately deprecated, user -> userName
 }
 
 /** Typical option to query REST API. Note that services may not quite support these fields,
  * and the interface is only provided as a hint.
- * @beta
+ * @internal
  */
 export interface RequestQueryOptions {
   /**
@@ -61,18 +63,17 @@ export interface RequestQueryOptions {
   $pageSize?: number;
 }
 
-/** @beta */
+/** @internal */
 export interface RequestQueryStringifyOptions {
   delimiter?: string;
   encode?: boolean;
-  // sep -> delimiter, eq deprecated, encode -> encode
 }
 
 /** Option to control the time outs
  * Use a short response timeout to detect unresponsive networks quickly, and a long deadline to give time for downloads on slow,
  * but reliable, networks. Note that both of these timers limit how long uploads of attached files are allowed to take. Use long
  * timeouts if you're uploading files.
- * @beta
+ * @internal
  */
 export interface RequestTimeoutOptions {
   /** Sets a deadline (in milliseconds) for the entire request (including all uploads, redirects, server processing time) to complete.
@@ -87,7 +88,7 @@ export interface RequestTimeoutOptions {
   response?: number;
 }
 
-/** @beta */
+/** @internal */
 export interface RequestOptions {
   method: string;
   headers?: any; // {Mas-App-Guid, Mas-UUid, User-Agent}
@@ -111,7 +112,7 @@ export interface RequestOptions {
 }
 
 /** Response object if the request was successful. Note that the status within the range of 200-299 are considered as a success.
- * @beta
+ * @internal
  */
 export interface Response {
   body: any; // Parsed body of response
@@ -120,17 +121,17 @@ export interface Response {
   status: number; // Status code of response
 }
 
-/** @beta */
+/** @internal */
 export interface ProgressInfo {
   percent?: number;
   total?: number;
   loaded: number;
 }
 
-/** @beta */
+/** @internal */
 export type ProgressCallback = (progress: ProgressInfo) => void;
 
-/** @beta */
+/** @internal */
 export class RequestGlobalOptions {
   public static httpsProxy?: https.Agent = undefined;
   /** Creates an agent for any user defined proxy using the supplied additional options. Returns undefined if user hasn't defined a proxy.
@@ -147,14 +148,14 @@ export class RequestGlobalOptions {
 }
 
 /** Error object that's thrown/rejected if the Request fails due to a network error, or if the status is *not* in the range of 200-299 (inclusive)
- * @beta
+ * @internal
  */
 export class ResponseError extends BentleyError {
   protected _data?: any;
   public status?: number;
   public description?: string;
   public constructor(errorNumber: number | HttpStatus, message?: string, getMetaData?: GetMetaDataFunction) {
-    super(errorNumber, message, undefined, undefined, getMetaData);
+    super(errorNumber, message, getMetaData);
   }
 
   /**
@@ -243,7 +244,7 @@ export class ResponseError extends BentleyError {
    * @internal
    */
   public log(): void {
-    Logger.logError(loggerCategory, this.logMessage(), this.getMetaData());
+    Logger.logError(loggerCategory, this.logMessage(), () => this.getMetaData());
   }
 }
 
@@ -259,35 +260,22 @@ const logRequest = (req: sarequest.SuperAgentRequest): sarequest.SuperAgentReque
   return req.on("response", logResponse(req, startTime));
 };
 
-// @todo The purpose of this wrapper is to allow us to easily replace this with another
-// module that will rid us of NodeJs dependency.
-
-/** Wrapper around HTTP request utility
- * @param requestContext The client request context
+/** Wrapper around making HTTP requests with the specific options.
+ *
+ * Usable in both a browser and node based environment.
+ *
  * @param url Server URL to address the request
  * @param options Options to pass to the request
  * @returns Resolves to the response from the server
  * @throws ResponseError if the request fails due to network issues, or if the returned status is *outside* the range of 200-299 (inclusive)
  * @internal
  */
-export async function request(requestContext: ClientRequestContext, url: string, options: RequestOptions): Promise<Response> {
-  requestContext.enter();
-  let proxyUrl = "";
-  if (options.useCorsProxy === true) {
-    proxyUrl = Config.App.get("imjs_dev_cors_proxy_server", "");
-    if (proxyUrl === "")
-      proxyUrl = url;
-    else
-      proxyUrl = `${proxyUrl.replace(/\/$/, "")}/${url}`;
-  } else {
-    proxyUrl = url;
-  }
-
+export async function request(url: string, options: RequestOptions): Promise<Response> {
   if (!RequestGlobalOptions.online) {
     throw new ResponseError(503, "Service unavailable");
   }
 
-  let sareq: sarequest.SuperAgentRequest = sarequest(options.method, proxyUrl);
+  let sareq: sarequest.SuperAgentRequest = sarequest(options.method, url);
   const retries = typeof options.retries === "undefined" ? RequestGlobalOptions.maxRetries : options.retries;
   sareq = sareq.retry(retries, options.retryCallback);
 
@@ -296,9 +284,6 @@ export async function request(requestContext: ClientRequestContext, url: string,
 
   if (options.headers)
     sareq = sareq.set(options.headers);
-
-  if (requestContext.activityId !== "")
-    sareq = sareq.set(requestIdHeaderName, requestContext.activityId);
 
   let queryStr: string = "";
   let fullUrl: string = "";
@@ -418,7 +403,7 @@ export async function request(requestContext: ClientRequestContext, url: string,
 
   // console.log("%s %s %s", url, options.method, queryStr);
 
-  /*
+  /**
   * Note:
   * Javascript's fetch returns status.OK if error is between 200-299 inclusive, and doesn't reject in this case.
   * Fetch only rejects if there's some network issue (permissions issue or similar)
@@ -441,29 +426,15 @@ export async function request(requestContext: ClientRequestContext, url: string,
 }
 
 /**
- * fetch array buffer from HTTP request
- * @param url server URL to address the request
- * @internal
- */
-export async function getArrayBuffer(requestContext: ClientRequestContext, url: string): Promise<any> {
-  const options: RequestOptions = {
-    method: "GET",
-    responseType: "arraybuffer",
-  };
-  const data = await request(requestContext, url, options);
-  return data.body;
-}
-
-/**
  * fetch json from HTTP request
  * @param url server URL to address the request
  * @internal
  */
-export async function getJson(requestContext: ClientRequestContext, url: string): Promise<any> {
+export async function getJson(url: string): Promise<any> {
   const options: RequestOptions = {
     method: "GET",
     responseType: "json",
   };
-  const data = await request(requestContext, url, options);
+  const data = await request(url, options);
   return data.body;
 }

@@ -15,9 +15,9 @@
   },
   "mochaOptions": {
     "timeout": 90000,
-    "reporter": "node_modules/@bentley/build-tools/mocha-reporter",
+    "reporter": "node_modules/@itwin/build-tools/mocha-reporter",
     "reporterOptions": {
-      "mochaFile": "schema-rpcinterface-tests-result/schema-rpcinterface-tests-result.xml"
+      "mochaFile": "ecschema-rpcinterface-tests-result/ecschema-rpcinterface-tests-result.xml"
     }
   }
 }

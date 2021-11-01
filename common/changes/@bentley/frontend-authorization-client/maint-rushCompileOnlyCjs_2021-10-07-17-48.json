@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/frontend-authorization-client",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/frontend-authorization-client"
+}

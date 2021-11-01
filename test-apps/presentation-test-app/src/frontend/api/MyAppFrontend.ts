@@ -2,15 +2,23 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Guid, Id64Arg, Logger, OpenMode } from "@bentley/bentleyjs-core";
-import { ElementProps, IModelError, ViewQueryParams } from "@bentley/imodeljs-common";
-import { AsyncMethodsOf, BriefcaseConnection, IModelConnection, IpcApp, PromiseReturnType, SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { AsyncMethodsOf, Guid, Id64Arg, Logger, OpenMode, PromiseReturnType } from "@itwin/core-bentley";
+import { ElementProps, IModelError, ViewQueryParams } from "@itwin/core-common";
+import { BriefcaseConnection, IModelConnection, IpcApp, SnapshotConnection } from "@itwin/core-frontend";
+import { UnitSystemKey } from "@itwin/core-quantity";
 import { PRESENTATION_TEST_APP_IPC_CHANNEL_NAME, SampleIpcInterface } from "../../common/SampleIpcInterface";
 import SampleRpcInterface from "../../common/SampleRpcInterface";
 
-export class MyAppFrontend {
-  public static iModel: IModelConnection | undefined;
+const LOCAL_STORAGE_KEY_AppSettings = "presentation-test-app/settings";
 
+export interface MyAppSettings {
+  imodelPath?: string;
+  rulesetId?: string;
+  unitSystem?: UnitSystemKey;
+  persistSettings: boolean;
+}
+
+export class MyAppFrontend {
   public static async getSampleImodels(): Promise<string[]> {
     return SampleRpcInterface.getClient().getSampleImodels();
   }
@@ -19,22 +27,41 @@ export class MyAppFrontend {
     return SampleRpcInterface.getClient().getAvailableRulesets();
   }
 
-  public static async openIModel(path: string): Promise<IModelConnection> {
+  public static async openIModel(path: string): Promise<IModelConnection | undefined> {
+    let imodel: IModelConnection | undefined;
     if (IpcApp.isValid) {
       Logger.logInfo("presentation", `Trying to open standalone ${path}`);
-      this.iModel = await tryOpenStandalone(path);
+      imodel = await tryOpenStandalone(path);
     }
 
-    if (!this.iModel) {
+    if (!imodel) {
       Logger.logInfo("presentation", `Opening snapshot: ${path}`);
-      this.iModel = await SnapshotConnection.openFile(path);
-      Logger.logInfo("presentation", `Opened snapshot: ${this.iModel.name}`);
+      imodel = await SnapshotConnection.openFile(path);
+      Logger.logInfo("presentation", `Opened snapshot: ${imodel.name}`);
     }
 
-    return this.iModel;
+    return imodel;
+  }
+
+  public static get settings(): MyAppSettings {
+    let strValue = window.localStorage.getItem(LOCAL_STORAGE_KEY_AppSettings);
+    if (!strValue) {
+      strValue = JSON.stringify({ persist: false });
+      window.localStorage.setItem(LOCAL_STORAGE_KEY_AppSettings, strValue);
+    }
+    return JSON.parse(strValue);
+  }
+
+  public static set settings(value: MyAppSettings) {
+    window.localStorage.setItem(LOCAL_STORAGE_KEY_AppSettings, JSON.stringify(value));
   }
 
   public static getClientId(): string {
+    /*
+    note: generally we'd want to reuse client id between windows and tabs for the same frontend user,
+    but for specific case of presentation-test-app it's more suitable to always generate a new client
+    id - that makes sure we get a new backend instance with each page refresh and helps for debugging.
+
     const key = "presentation-test-app/client-id";
     let value = window.localStorage.getItem(key);
     if (!value) {
@@ -42,6 +69,8 @@ export class MyAppFrontend {
       window.localStorage.setItem(key, value);
     }
     return value;
+    */
+    return Guid.createValue();
   }
 
   public static async getViewDefinitions(imodel: IModelConnection) {
@@ -78,9 +107,9 @@ async function tryOpenStandalone(path: string) {
   try {
     iModel = await BriefcaseConnection.openStandalone(path, OpenMode.ReadWrite);
     Logger.logInfo("presentation", `Opened standalone: ${iModel.name}`);
-  } catch (err) {
+  } catch (err: any) {
     if (err instanceof IModelError) {
-      Logger.logError("presentation", `Failed to open standalone: ${err.message}`, err.getMetaData);
+      Logger.logError("presentation", `Failed to open standalone: ${err.message}`, () => err.getMetaData());
     } else {
       Logger.logError("presentation", `Failed to open standalone.`);
     }

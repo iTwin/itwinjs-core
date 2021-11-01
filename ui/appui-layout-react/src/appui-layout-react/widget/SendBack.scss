@@ -1,0 +1,81 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+
+.nz-widget-sendBack {
+  position: relative;
+  padding: 0 0.5em;
+  border: 0;
+  background: none;
+  cursor: pointer;
+
+  >i {
+    width: 1.2em;
+    height: 1em;
+    border-width: 0.15em;
+    border-style: solid;
+    border-color: $buic-foreground-muted;
+    display: block;
+
+    &:after {
+      content: '';
+      background: $buic-foreground-muted;
+
+      display: block;
+    }
+  }
+
+  &.nz-left {
+    >i {
+      &:after {
+        width: 33%;
+        height: 100%;
+      }
+    }
+  }
+
+  &.nz-right {
+    >i {
+      &:after {
+        width: 33%;
+        height: 100%;
+        float: right;
+      }
+    }
+  }
+
+  &.nz-top {
+    >i {
+      &:after {
+        height: 33%;
+      }
+    }
+  }
+
+  &.nz-bottom {
+    >i {
+      position: relative;
+
+      &:after {
+        height: 33%;
+        width: 100%;
+        position: absolute;
+        bottom: 0;
+      }
+    }
+  }
+
+  @media (hover: hover) {
+    &:hover {
+      border-color: $buic-foreground-activehover;
+
+      >i {
+        &:after {
+          background: $buic-foreground-activehover;
+        }
+      }
+    }
+  }
+}

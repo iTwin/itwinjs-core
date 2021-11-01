@@ -4,16 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 import "./IModelCard.scss";
 import * as React from "react";
-import { Spinner, SpinnerSize } from "@bentley/ui-core";
-import { IModelInfo, UiFramework } from "@bentley/ui-framework";
-
-// import { IModelViewPicker } from "./IModelViewPicker";
+import { IModelHubFrontend } from "@bentley/imodelhub-client";
+import { IModelApp } from "@itwin/core-frontend";
+import { ProgressRadial } from "@itwin/itwinui-react";
+import { BasicIModelInfo } from "../ExternalIModel";
 
 /** Properties for the [[IModelCard]] component */
 export interface IModelCardProps {
   showDescription?: boolean;
-  iModel: IModelInfo;
-  onSelectIModel?: (iModelInfo: IModelInfo) => void;
+  iModel: { iTwinId: string, id: string, name: string, thumbnail?: string, description?: string };
+  onSelectIModel?: (iModelInfo: BasicIModelInfo) => void;
 }
 
 interface IModelCardState {
@@ -36,16 +36,19 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
   };
 
   // called when this component is first loaded
-  public async componentDidMount() {
+  public override async componentDidMount() {
     // we don't get the thumbnail until it's needed.
     if (!this.props.iModel.thumbnail)
       this.startRetrieveThumbnail(this.props.iModel); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   // retrieves the IModels for a Project. Called when first mounted and when a new Project is selected.
-  private async startRetrieveThumbnail(thisIModel: IModelInfo) {
+  private async startRetrieveThumbnail(arg: { iTwinId: string, id: string }) {
     this.setState({ waitingForThumbnail: true });
-    thisIModel.thumbnail = await UiFramework.iModelServices.getThumbnail(thisIModel.projectInfo.wsgId, thisIModel.wsgId);
+    const hubFrontend = new IModelHubFrontend();
+    try {
+      this.props.iModel.thumbnail = await hubFrontend.hubClient.thumbnails.download((await IModelApp.getAccessToken()), arg.id, { iTwinId: arg.iTwinId, size: "Small" });
+    } catch {}
     this.setState({ waitingForThumbnail: false });
   }
 
@@ -70,7 +73,7 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
     if (this.state.waitingForThumbnail) {
       return (
         <div className="preview-loader">
-          <Spinner size={SpinnerSize.Large} />
+          <ProgressRadial size="large" indeterminate />
         </div>
       );
     } else if (this.props.iModel.thumbnail) {
@@ -90,7 +93,7 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
     }
   }
 
-  public render() {
+  public override render() {
     return (
       <div className="imodel-card" >
         <div className="imodel-card-content" >

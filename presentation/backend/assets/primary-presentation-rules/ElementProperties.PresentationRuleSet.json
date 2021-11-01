@@ -1,0 +1,14 @@
+{
+  "$schema": "../../../common/Ruleset.schema.json",
+  "id": "ElementProperties",
+  "rules": [
+    {
+      "ruleType": "Content",
+      "specifications": [
+        {
+          "specType": "SelectedNodeInstances"
+        }
+      ]
+    }
+  ]
+}

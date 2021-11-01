@@ -160,9 +160,9 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
   /** ask if `other` is an instance of `TorusPipe` */
   public isSameGeometryClass(other: any): boolean { return other instanceof TorusPipe; }
   /** test if `this` and `other` have nearly equal geometry */
-  public isAlmostEqual(other: GeometryQuery): boolean {
+  public override isAlmostEqual(other: GeometryQuery): boolean {
     if (other instanceof TorusPipe) {
-      if (this.capped !== other.capped) return false;
+      if ((!this._sweep.isFullCircle) && this.capped !== other.capped) return false;
       if (!this._localToWorld.isAlmostEqual(other._localToWorld)) return false;
       return Geometry.isSameCoordinate(this._radiusA, other._radiusA)
         && Geometry.isSameCoordinate(this._radiusB, other._radiusB)

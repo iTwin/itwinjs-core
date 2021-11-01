@@ -6,7 +6,8 @@
  * @module Quantity
  */
 
-import { assert, BentleyError } from "@bentley/bentleyjs-core";
+import { assert, BentleyError } from "@itwin/core-bentley";
+
 /**
  * Status codes used during Quantity parsing and formatting processing.
  * @beta
@@ -27,7 +28,7 @@ export enum QuantityStatus {
  * @beta
  */
 export class QuantityError extends BentleyError {
-  public constructor(public readonly errorNumber: number, message?: string) {
+  public constructor(public override readonly errorNumber: number, message?: string) {
     super(errorNumber, message);
     assert(errorNumber !== QuantityStatus.Success, message);
   }

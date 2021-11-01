@@ -4,21 +4,21 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Config, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { NoRenderApp } from "@bentley/imodeljs-frontend";
-import { AccessToken } from "@bentley/itwin-client";
+import { AccessToken, Logger, LogLevel } from "@itwin/core-bentley";
+import { NoRenderApp } from "@itwin/core-frontend";
 import {
   getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestFrontendAuthorizationClient, TestUserCredentials,
-} from "@bentley/oidc-signin-tool/lib/frontend";
-import { Settings } from "../../common/Settings";
+} from "@itwin/oidc-signin-tool/lib/cjs/frontend";
+import { getRpcInterfaces, Settings } from "../../common/Settings";
 import { getProcessEnvFromBackend } from "../../common/SideChannels";
 import { IModelSession } from "./IModelSession";
+import { BentleyCloudRpcManager, OpenAPIInfo } from "@itwin/core-common";
 
 export class TestContext {
   public adminUserAccessToken!: AccessToken;
 
   public iModelWithChangesets?: IModelSession;
-  public contextId?: string;
+  public iTwinId?: string;
 
   public settings: Settings;
 
@@ -35,6 +35,13 @@ export class TestContext {
     return this._instance;
   }
 
+  /** Initialize configuration for the rpc interfaces used by the application. */
+  private initializeRpcInterfaces(info: OpenAPIInfo) {
+    // Url without trailing slash
+    const uriPrefix: string = this.settings.Backend.location.replace(/\/$/, "");
+    BentleyCloudRpcManager.initializeClient({ info, uriPrefix }, getRpcInterfaces());
+  }
+
   private async initialize() {
     expect(this.settings.users.length).to.be.gte(1, `Unexpected number of users found in settings - got ${this.settings.users.length}, expected at least 2`);
 
@@ -44,9 +51,6 @@ export class TestContext {
     // Configure iModel.js frontend logging to go to the console
     Logger.initializeToConsole();
     Logger.setLevelDefault(this.settings.logLevel === undefined ? LogLevel.Warning : this.settings.logLevel);
-
-    // Setup environment
-    Config.App.set("imjs_buddi_resolve_url_using_region", this.settings.env);
 
     if (undefined !== this.settings.oidcClientId) {
       this.adminUserAccessToken = await getAccessTokenFromBackend({
@@ -58,6 +62,13 @@ export class TestContext {
         scope: this.settings.oidcScopes,
       } as TestBrowserAuthorizationClientConfiguration);
     }
+
+    const iModelData = this.settings.iModel;
+
+    this.iModelWithChangesets = await IModelSession.create(this.adminUserAccessToken, iModelData);
+    this.iTwinId = this.iModelWithChangesets.iTwinId;
+
+    this.initializeRpcInterfaces({ title: this.settings.Backend.name, version: this.settings.Backend.version });
 
     await NoRenderApp.startup({
       applicationId: this.settings.gprid,

@@ -1,4 +1,4 @@
-# iModel.js CI Build
+# iTwin.js Core CI Build
 #
 # This build is used to validate all fork-based PRs and run on a schedule to provide the build status in the README.
 #
@@ -26,7 +26,7 @@ schedules:
 jobs:
   - template: jobs/ci-core.yaml
     parameters:
-      name: Node_12
-      nodeVersion: 12.17.0
+      name: Node_14
+      nodeVersion: 14.17.4
       pool:
         vmImage: $(OS)

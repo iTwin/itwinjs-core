@@ -58,6 +58,55 @@ describe("RelationshipMultiplicity", () => {
 });
 
 describe("RelationshipClass", () => {
+  it("should get fullName", async () => {
+    const schemaJson = createSchemaJsonWithItems({
+      TestRelationship: {
+        schemaItemType: "RelationshipClass",
+        strength: "Embedding",
+        strengthDirection: "Backward",
+        modifier: "Sealed",
+        source: {
+          polymorphic: true,
+          multiplicity: "(0..*)",
+          roleLabel: "Source RoleLabel",
+          abstractConstraint: "TestSchema.SourceBaseEntity",
+          constraintClasses: [
+            "TestSchema.TestSourceEntity",
+          ],
+        },
+        target: {
+          polymorphic: true,
+          multiplicity: "(0..*)",
+          roleLabel: "Target RoleLabel",
+          abstractConstraint: "TestSchema.TargetBaseEntity",
+          constraintClasses: [
+            "TestSchema.TestTargetEntity",
+          ],
+        },
+      },
+      SourceBaseEntity: {
+        schemaItemType: "EntityClass",
+      },
+      TargetBaseEntity: {
+        schemaItemType: "EntityClass",
+      },
+      TestSourceEntity: {
+        schemaItemType: "EntityClass",
+        baseClass: "TestSchema.SourceBaseEntity",
+      },
+      TestTargetEntity: {
+        schemaItemType: "EntityClass",
+        baseClass: "TestSchema.TargetBaseEntity",
+      },
+    });
+
+    const schema = await Schema.fromJson(schemaJson, new SchemaContext());
+    assert.isDefined(schema);
+    const relClass = await schema.getItem<RelationshipClass>("TestRelationship");
+    assert.isDefined(relClass);
+    expect(relClass!.fullName).eq("TestSchema.TestRelationship");
+  });
+
   describe("deserialization", () => {
 
     function createSchemaJson(relClassJson: any): any {

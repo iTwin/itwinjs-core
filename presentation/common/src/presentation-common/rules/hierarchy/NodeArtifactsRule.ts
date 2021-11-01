@@ -24,7 +24,7 @@ import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
  * @note The rule is costly performance-wise and should only be used in very limited amount of specific cases where
  * hidden child nodes need to be used to used to determine parent node's visibility.
  *
- * @see [More details]($docs/learning/presentation/Hierarchies/NodeArtifactsRule.md)
+ * @see [More details]($docs/presentation/Hierarchies/NodeArtifactsRule.md)
  * @public
  */
 export interface NodeArtifactsRule extends RuleBase, ConditionContainer {
@@ -33,8 +33,8 @@ export interface NodeArtifactsRule extends RuleBase, ConditionContainer {
 
   /**
    * Defines a condition for the rule, which needs to be met in order for it to be used. Condition
-   * is an [ECExpression]($docs/learning/presentation/ECExpressions.md), which can use
-   * a [limited set of symbols]($docs/learning/presentation/Customization/ECExpressions.md#rule-condition).
+   * is an [ECExpression]($docs/presentation/Advanced/ECExpressions.md), which can use
+   * a [limited set of symbols]($docs/presentation/Customization/ECExpressions.md#rule-condition).
    */
   condition?: string;
 
@@ -44,8 +44,8 @@ export interface NodeArtifactsRule extends RuleBase, ConditionContainer {
    * The key part of the pair should be unique within all keys which are used for specific
    * presentation object, even if they are applied using different `NodeArtifacts` definitions.
    *
-   * The value part of the pair is an [ECExpression]($docs/learning/presentation/ECExpressions.md), which can use
-   * a [limited set of symbols]($docs/learning/presentation/Customization/ECExpressions.md#override-value) and whose
+   * The value part of the pair is an [ECExpression]($docs/presentation/Advanced/ECExpressions.md), which can use
+   * a [limited set of symbols]($docs/presentation/Customization/ECExpressions.md#override-value) and whose
    * evaluated result is used as the artifact value.
    */
   items: { [key: string]: string };

@@ -6,8 +6,8 @@
  * @module Tile
  */
 
-import { GuidString } from "@bentley/bentleyjs-core";
-import { Range3dProps, TransformProps } from "@bentley/geometry-core";
+import { GuidString } from "@itwin/core-bentley";
+import { Range3dProps, TransformProps } from "@itwin/core-geometry";
 
 /** Wire format describing an [IModelTile]($frontend)
  * @internal
@@ -58,8 +58,8 @@ export interface IModelTileTreeProps extends TileTreeProps {
 }
 
 /** Metadata describing the version/format of the tiles supplied by the backend.
- * @see [[IModelTileRpcInterface.queryVersionInfo]].
- * @alpha
+ * @see [[TileAdmin.queryVersionInfo]].
+ * @public
  */
 export interface TileVersionInfo {
   /** The exact version of the "iMdl" tile format used by the backend when generating tile content.
@@ -69,4 +69,12 @@ export interface TileVersionInfo {
    * @see [[CurrentImdlVersion]] to obtain the current version used by the frontend or backend.
    */
   formatVersion: number;
+}
+
+/**
+ * @internal
+ */
+export enum TileContentSource {
+  Backend = 0,
+  ExternalCache = 1,
 }

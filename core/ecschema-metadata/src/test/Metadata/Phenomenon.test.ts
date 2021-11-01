@@ -11,6 +11,29 @@ import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
 
 describe("Phenomenon tests", () => {
   let testPhenomenon: Phenomenon;
+
+  it("should get fullName", async () => {
+    const schemaJson = {
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      name: "TestSchema",
+      version: "1.2.3",
+      items: {
+        testPhenomenon: {
+          schemaItemType: "Phenomenon",
+          name: "AREA",
+          label: "Area",
+          definition: "Units.LENGTH(2)",
+        },
+      },
+    };
+
+    const schema = await Schema.fromJson(schemaJson, new SchemaContext());
+    assert.isDefined(schema);
+    const phenomenon = await schema.getItem<Phenomenon>("testPhenomenon");
+    assert.isDefined(phenomenon);
+    expect(phenomenon!.fullName).eq("TestSchema.testPhenomenon");
+  });
+
   describe("Async fromJson", () => {
     beforeEach(() => {
       const schema = new Schema(new SchemaContext(), "ExampleSchema", "es", 1, 0, 0);

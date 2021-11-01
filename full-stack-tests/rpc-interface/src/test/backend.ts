@@ -6,17 +6,31 @@
 // Sets up a local backend to be used for testing within the iModel.js repo.
 
 import * as path from "path";
-import { Config } from "@bentley/bentleyjs-core";
-import { loadEnv } from "@bentley/config-loader";
-import { IModelJsExpressServer } from "@bentley/express-server";
-import { IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
-import { BentleyCloudRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
-import { Presentation as PresentationBackend } from "@bentley/presentation-backend";
+import { IModelHubBackend } from "@bentley/imodelhub-client/lib/cjs/imodelhub-node";
+import { IModelJsExpressServer } from "@itwin/express-server";
+import { IModelHost, IModelHostConfiguration } from "@itwin/core-backend";
+import { BentleyCloudRpcManager, RpcConfiguration } from "@itwin/core-common";
+import { Presentation as PresentationBackend } from "@itwin/presentation-backend";
 import { getRpcInterfaces, Settings } from "../common/Settings";
+import * as fs from "fs";
+
+/** Loads the provided `.env` file into process.env */
+function loadEnv(envFile: string) {
+  if (!fs.existsSync(envFile))
+    return;
+
+  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const envResult = dotenv.config({ path: envFile });
+  if (envResult.error) {
+    throw envResult.error;
+  }
+
+  dotenvExpand(envResult);
+}
 
 loadEnv(path.join(__dirname, "..", "..", ".env"));
 const settings = new Settings(process.env);
-Config.App.set("imjs_buddi_resolve_url_using_region", settings.env);
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 (async () => {
@@ -24,8 +38,7 @@ Config.App.set("imjs_buddi_resolve_url_using_region", settings.env);
 
   // Start the backend
   const hostConfig = new IModelHostConfiguration();
-  hostConfig.concurrentQuery.concurrent = 2;
-  hostConfig.concurrentQuery.pollInterval = 5;
+  hostConfig.hubAccess = new IModelHubBackend();
   await IModelHost.startup(hostConfig);
 
   PresentationBackend.initialize();

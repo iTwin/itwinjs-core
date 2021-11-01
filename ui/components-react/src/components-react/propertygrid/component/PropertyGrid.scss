@@ -1,0 +1,76 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/expandable/list";
+@import "~@itwin/core-react/lib/cjs/core-react/scrollbar";
+@import "~@itwin/core-react/lib/cjs/core-react/style/itwinui-overrides";
+
+.components-property-grid-loader {
+  position: relative;
+  display: block;
+  left: calc(50% - 24px);
+  top: calc(50% - 24px);
+}
+
+.components-property-grid {
+
+  .property-categories {
+    @include uicore-expandable-blocks-list;
+
+    display: grid;
+    grid-row-gap: 6px;
+    padding: 3px;
+  }
+
+  padding-top: 6px;
+  padding-bottom: 6px;
+
+  user-select: none;
+  color: $buic-foreground-body;
+
+  @include small-itwinui-expandable-block;
+}
+
+.components-property-grid-wrapper {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+
+  @include uicore-touch-scrolling;
+  @include uicore-scrollbar();
+}
+
+@mixin components-property-list {
+  width: 100%;
+
+  .components--selected {
+    background-color: $buic-row-selection;
+    outline: 1px solid $buic-foreground-primary;
+  }
+
+  .components--clickable {
+    cursor: pointer;
+
+    &:hover {
+      background: $buic-row-hover;
+    }
+  }
+
+  .components--hoverable:hover {
+    background-color: $buic-row-hover;
+  }
+}
+
+.components-property-list--horizontal {
+  @include components-property-list;
+
+  display: grid;
+  grid-row-gap: 1px; // A gap of 10px is too wasteful
+  overflow: hidden;
+}
+
+.components-property-list--vertical {
+  @include components-property-list;
+  // margin-top: -13px;
+}

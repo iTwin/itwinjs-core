@@ -20,6 +20,6 @@ export enum TxnAction {
   Reverse = 3,
   /** Reinstating a previously reversed changeset, e.g., via [TxnManager.reinstateTxn]($backend) or [BriefcaseTxns.reinstateTxn]($frontend). */
   Reinstate = 4,
-  /** Merging a changeset produced by a different briefcase, e.g., via [BriefcaseDb.pullAndMergeChanges]($backend) or [BriefcaseConnection.pullAndMergeChanges]($frontend). */
+  /** Merging a changeset produced by a different briefcase, e.g., via [BriefcaseDb.pullChanges]($backend). */
   Merge = 5,
 }

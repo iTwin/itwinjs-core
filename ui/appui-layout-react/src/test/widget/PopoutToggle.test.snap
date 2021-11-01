@@ -1,0 +1,22 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PopoutToggle should render 1`] = `
+<button
+  class="nz-widget-popoutToggle"
+>
+  <i
+    class="icon core-svg-icon"
+  >
+    <svg
+      class="core-icons-svgSprite"
+      height="100%"
+      width="100%"
+    >
+      <use
+        xlink:href="undefined"
+        xmlns:xlink="http://www.w3.org/1999/xlink"
+      />
+    </svg>
+  </i>
+</button>
+`;

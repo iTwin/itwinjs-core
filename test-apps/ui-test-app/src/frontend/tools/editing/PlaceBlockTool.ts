@@ -4,18 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 // cSpell:ignore picklist
 
-import { assert } from "@bentley/bentleyjs-core";
-import { AxisOrder, LinearSweep, Matrix3d, Point3d, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { Code, ColorDef, ElementGeometry, GeometryStreamBuilder, LinePixels, PhysicalElementProps } from "@bentley/imodeljs-common";
+import { assert } from "@itwin/core-bentley";
+import { AxisOrder, LinearSweep, Matrix3d, Point3d, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { Code, ColorDef, ElementGeometry, GeometryStreamBuilder, LinePixels, PhysicalElementProps } from "@itwin/core-common";
+import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@itwin/editor-common";
+import { CreateElementTool, EditTools } from "@itwin/editor-frontend";
 import {
   AccuDrawHintBuilder, BeButtonEvent, ContextRotationId, CoreTools, DecorateContext, EventHandled, GraphicType, IModelApp, NotifyMessageDetails, OutputMessagePriority, ToolAssistance,
   ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection, Viewport,
-} from "@bentley/imodeljs-frontend";
-import { PrimitiveToolEx } from "./PrimitiveToolEx";
+} from "@itwin/core-frontend";
 
-export class PlaceBlockTool extends PrimitiveToolEx {
-  public static toolId = "PlaceBlock";
-  public static iconSpec = "icon-cube-faces-bottom";
+export class PlaceBlockTool extends CreateElementTool {
+  public static override toolId = "PlaceBlock";
+  public static override iconSpec = "icon-cube-faces-bottom";
+  protected _startedCmd?: string;
 
   protected readonly _points: Point3d[] = [];
   protected _matrix?: Matrix3d;
@@ -23,16 +25,26 @@ export class PlaceBlockTool extends PrimitiveToolEx {
   public height = 2.75;
   public story = "1";
 
-  protected allowView(vp: Viewport) { return vp.view.isSpatialView() || vp.view.isDrawingView(); }
-  public isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && this.allowView(vp)); }
+  protected async startCommand(): Promise<string> {
+    if (undefined !== this._startedCmd)
+      return this._startedCmd;
+    return EditTools.startCommand<string>(editorBuiltInCmdIds.cmdBasicManipulation, this.iModel.key);
+  }
 
-  public onPostInstall() {
-    super.onPostInstall();
+  public static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]> {
+    return EditTools.callCommand(method, ...args) as ReturnType<BasicManipulationCommandIpc[T]>;
+  }
+
+  protected allowView(vp: Viewport) { return vp.view.isSpatialView() || vp.view.isDrawingView(); }
+  public override isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && this.allowView(vp)); }
+
+  public override async onPostInstall() {
+    await super.onPostInstall();
     this.setupAndPromptForNextAction();
   }
-  public onUnsuspend(): void { this.showPrompt(); }
+  public override async onUnsuspend() { this.showPrompt(); }
 
-  protected translate(prompt: string) { return IModelApp.i18n.translate(`SampleApp:tools.PlaceBlock.${prompt}`); }
+  protected translate(prompt: string) { return IModelApp.localization.getLocalizedString(`SampleApp:tools.PlaceBlock.${prompt}`); }
   protected showPrompt(): void {
     const mainMsg = (0 === this._points.length) ? "prompts.firstPoint" : (1 === this._points.length) ? "prompts.nextPoint" : "prompts.additionalPoint";
     const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, this.translate(mainMsg));
@@ -61,7 +73,7 @@ export class PlaceBlockTool extends PrimitiveToolEx {
     IModelApp.notifications.setToolAssistance(instructions);
   }
 
-  protected setupAndPromptForNextAction(): void {
+  protected override setupAndPromptForNextAction(): void {
     IModelApp.accuSnap.enableSnap(true);
     this.showPrompt();
 
@@ -121,7 +133,7 @@ export class PlaceBlockTool extends PrimitiveToolEx {
     return points;
   }
 
-  public decorate(context: DecorateContext): void {
+  public override decorate(context: DecorateContext): void {
     if (context.viewport !== this.targetView)
       return;
 
@@ -152,10 +164,10 @@ export class PlaceBlockTool extends PrimitiveToolEx {
     context.addDecorationFromBuilder(builderAccHid);
   }
 
-  public decorateSuspended(context: DecorateContext): void { if (this._isComplete) this.decorate(context); }
-  public async onMouseMotion(ev: BeButtonEvent): Promise<void> { if (this._points.length > 0 && undefined !== ev.viewport && !this._isComplete) ev.viewport.invalidateDecorations(); }
+  public override decorateSuspended(context: DecorateContext): void { if (this._isComplete) this.decorate(context); }
+  public override async onMouseMotion(ev: BeButtonEvent): Promise<void> { if (this._points.length > 0 && undefined !== ev.viewport && !this._isComplete) ev.viewport.invalidateDecorations(); }
 
-  private async createElement(): Promise<void> {
+  protected async createElement(): Promise<void> {
     assert(this._matrix !== undefined, "should have defined orientation by now");
     const vp = this.targetView;
     if (undefined === vp || this._points.length < 3)
@@ -185,20 +197,20 @@ export class PlaceBlockTool extends PrimitiveToolEx {
         return;
 
       const elemProps: PhysicalElementProps = { classFullName: "Generic:PhysicalObject", model, category, code: Code.createEmpty(), placement: { origin, angles }, geom: builder.geometryStream };
-      await PrimitiveToolEx.callCommand("insertGeometricElement", elemProps);
+      await PlaceBlockTool.callCommand("insertGeometricElement", elemProps);
       await this.saveChanges();
 
-    } catch (err) {
+    } catch (err: any) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, err.toString()));
     }
   }
 
-  public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
+  public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     if (undefined === this.targetView)
       return EventHandled.No;
 
     if (this._isComplete)
-      this.onReinitialize();
+      await this.onReinitialize();
 
     if (this._points.length > 1 && !ev.isControlKey) {
       const points = this.getShapePoints(ev);
@@ -211,7 +223,7 @@ export class PlaceBlockTool extends PrimitiveToolEx {
 
       await this.createElement();
 
-      this.onReinitialize();
+      await this.onReinitialize();
       return EventHandled.No;
     }
 
@@ -235,12 +247,12 @@ export class PlaceBlockTool extends PrimitiveToolEx {
     return EventHandled.No;
   }
 
-  public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
-    this.onReinitialize();
+  public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
+    await this.onReinitialize();
     return EventHandled.No;
   }
 
-  public onReinitialize(): void {
+  public override async onReinitialize() {
     this._isComplete = false;
     this._points.length = 0;
     this._matrix = undefined;
@@ -248,7 +260,7 @@ export class PlaceBlockTool extends PrimitiveToolEx {
     this.setupAndPromptForNextAction();
   }
 
-  public async onUndoPreviousStep(): Promise<boolean> {
+  public override async onUndoPreviousStep(): Promise<boolean> {
     if (0 === this._points.length || this._isComplete)
       return false;
 
@@ -257,9 +269,9 @@ export class PlaceBlockTool extends PrimitiveToolEx {
     return true;
   }
 
-  public onRestartTool(): void {
+  public async onRestartTool() {
     const tool = new PlaceBlockTool();
-    if (!tool.run())
-      this.exitTool();
+    if (!await tool.run())
+      return this.exitTool();
   }
 }

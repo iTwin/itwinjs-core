@@ -12,5 +12,6 @@ export enum BackendTestCallbacks {
   getEnvironment = "getEnvironment",
   setChunkThreshold = "setChunkThreshold", // Only registered for electron!
   startIpcTest = "startIpcTest",
+  startMockMobileTest = "startMockMobileTest",
   sendIpcMessage = "sendIpcMessage"
 }

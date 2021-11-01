@@ -93,4 +93,33 @@ describe("AustralianRailCorpSpiral", () => {
     }
     expect(ck.getNumErrors()).equals(0);
   });
+  it("Coverage", () => {
+    const ck = new Checker();
+    const r1 = 300;
+    const l1 = 100;
+    const spiral = DirectSpiral3d.createAustralianRail(Transform.createIdentity(), l1, r1)!;
+    const evaluator = spiral.evaluator as AustralianRailCorpXYEvaluator;
+    ck.testExactNumber(l1, evaluator.nominalLength1);
+    ck.testExactNumber(r1, evaluator.nominalRadius1);
+    const spiral1 = DirectSpiral3d.createAustralianRail(Transform.createIdentity(), 2 * r1, l1);
+    const spiral2 = DirectSpiral3d.createAustralianRail(Transform.createIdentity(), r1, 2 * l1);
+    ck.testTrue(spiral.isAlmostEqual(spiral));
+    ck.testFalse(spiral.isAlmostEqual(spiral1));
+    ck.testFalse(spiral.isAlmostEqual(spiral2));
+    // force phi into an error branch for large expr2 ...
+    const phiA0 = AustralianRailCorpXYEvaluator.radiusAndAxisLengthToPhi(1, 100);
+    const phiA1 = AustralianRailCorpXYEvaluator.radiusAndAxisLengthToPhi(1, 110);
+    ck.testExactNumber(phiA0, phiA1, "limit case phi");
+    const phiB0 = AustralianRailCorpXYEvaluator.radiusAndAxisLengthToPhi(-1, 100);
+    const phiB1 = AustralianRailCorpXYEvaluator.radiusAndAxisLengthToPhi(-1, 110);
+    ck.testExactNumber(phiB0, phiB1, "limit case phi");
+
+    // confirm unequal phi for reasonable sizing
+    const phiC0 = AustralianRailCorpXYEvaluator.radiusAndAxisLengthToPhi(200, 10);
+    const phiC1 = AustralianRailCorpXYEvaluator.radiusAndAxisLengthToPhi(200, 12);
+    const phiC2 = AustralianRailCorpXYEvaluator.radiusAndAxisLengthToPhi(200, 14);
+    ck.testTrue((phiC2 - phiC1) * (phiC1 - phiC0) > 0, "normal phi variation is monotone");
+    ck.testFalse(evaluator.isAlmostEqual(undefined));
+    expect(ck.getNumErrors()).equals(0);
+});
 });

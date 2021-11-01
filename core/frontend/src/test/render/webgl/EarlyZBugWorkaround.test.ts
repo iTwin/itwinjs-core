@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Capabilities, WebGLContext } from "@bentley/webgl-compatibility";
-import { IModelApp } from "../../../IModelApp";
+import { Capabilities, WebGLContext } from "@itwin/webgl-compatibility";
 import { RenderSystem } from "../../../render/RenderSystem";
+import { IModelApp } from "../../../IModelApp";
 import { CompileStatus, ShaderProgram } from "../../../render/webgl/ShaderProgram";
 import { System } from "../../../render/webgl/System";
 

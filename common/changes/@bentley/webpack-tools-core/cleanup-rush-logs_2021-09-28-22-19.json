@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/webpack-tools-core",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/webpack-tools-core"
+}

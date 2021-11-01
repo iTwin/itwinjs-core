@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-components",
+      "comment": "Remove `immer` dependency.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-components"
+}

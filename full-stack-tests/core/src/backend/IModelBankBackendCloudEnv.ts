@@ -10,43 +10,42 @@ import * as fsextra from "fs-extra";
 import * as http from "http";
 import * as https from "https";
 import * as path from "path";
-import { UrlFileHandler } from "@bentley/backend-itwin-client";
-import { Config, Logger } from "@bentley/bentleyjs-core";
-import { IModelBankClient, IModelBankFileSystemContextClient, IModelCloudEnvironment } from "@bentley/imodelhub-client";
-import { IModelBankBasicAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankBasicAuthorizationClient";
-import { IModelBankDummyAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankDummyAuthorizationClient";
-import { UserInfo } from "@bentley/itwin-client";
+import { IModelBankClient, IModelBankFileSystemITwinClient, IModelCloudEnvironment } from "@bentley/imodelhub-client";
+import { IModelBankBasicAuthorizationClient } from "@bentley/imodelhub-client/lib/cjs/imodelbank/IModelBankBasicAuthorizationClient";
+import { IModelBankDummyAuthorizationClient } from "@bentley/imodelhub-client/lib/cjs/imodelbank/IModelBankDummyAuthorizationClient";
+import { UrlFileHandler } from "@bentley/imodelhub-client/lib/cjs/itwin-client/file-handlers";
+import { Logger } from "@itwin/core-bentley";
 
 export const assetsPath = `${__dirname}/../../../lib/test/assets/`;
 export const workDir = `${__dirname}/../../../lib/test/output/`;
 
 // To run tests with imodel-bank integration:
 // set NODE_EXTRA_CA_CERTS=D:\dev\imodeljs\full-stack-tests\rpc\local_dev_server.crt
-// set imjs_test_imodel_bank to true to run tests with imodel-bank. Then either:
-// set imjs_test_imodel_bank_url to specify the url to locally deployed orchestrator
+// set IMJS_TEST_IMODEL_BANK to true to run tests with imodel-bank. Then either:
+// set IMJS_TEST_IMODEL_BANK_URL to specify the url to locally deployed orchestrator
 // or set the following so the tests would deploy a local orchestrator themselves:
-// set imjs_test_imodel_bank_run_orchestrator=%SrcRoot%\imodel-bank\local-orchestrator\lib\server.js
-// set imjs_test_imodel_bank_logging_config=<somewhere>logging.config.json
+// set IMJS_TEST_IMODEL_BANK_RUN_ORCHESTRATOR=%SrcRoot%\imodel-bank\local-orchestrator\lib\server.js
+// set IMJS_TEST_IMODEL_BANK_LOGGING_CONFIG=<somewhere>logging.config.json
 
 export function getIModelBankCloudEnv(): IModelCloudEnvironment {
-  if (Config.App.has("imjs_test_imodel_bank_run_orchestrator"))
+  if (process.env.IMJS_TEST_IMODEL_BANK_RUN_ORCHESTRATOR)
     return launchLocalOrchestrator();
 
-  const orchestratorUrl: string = Config.App.get("imjs_test_imodel_bank_url", "");
+  const orchestratorUrl: string = process.env.IMJS_TEST_IMODEL_BANK_URL ?? "";
 
-  const basicAuthentication: boolean = !!JSON.parse(Config.App.get("imjs_test_imodel_bank_basic_authentication"));
-  const getAuthorizationClient = (userInfo: UserInfo | undefined, userCredentials: any) => {
+  const basicAuthentication: boolean = !!JSON.parse(process.env.IMJS_TEST_IMODEL_BANK_BASIC_AUTHENTICATION ?? "");
+  const getAuthorizationClient = (userCredentials: any) => {
     return basicAuthentication
-      ? new IModelBankBasicAuthorizationClient(userInfo, userCredentials)
-      : new IModelBankDummyAuthorizationClient(userInfo, userCredentials);
+      ? new IModelBankBasicAuthorizationClient(userCredentials)
+      : new IModelBankDummyAuthorizationClient(userCredentials);
   };
 
   const bankClient = new IModelBankClient(orchestratorUrl, new UrlFileHandler());
-  const contextMgr = new IModelBankFileSystemContextClient(orchestratorUrl);
+  const iTwinMgr = new IModelBankFileSystemITwinClient(orchestratorUrl);
 
   const cloudEnv = {
     isIModelHub: false,
-    contextMgr,
+    iTwinMgr,
     imodelClient: bankClient,
     getAuthorizationClient,
     shutdown: async () => 0,
@@ -76,10 +75,10 @@ function launchLocalOrchestrator(): IModelCloudEnvironment {
 
   const serverConfigFile = path.join(workDir, "local_orchestrator.config.json");
   fs.writeFileSync(serverConfigFile, JSON.stringify(cfg));
-  const loggingConfigFile = Config.App.get("imjs_test_imodel_bank_logging_config", "");
+  const loggingConfigFile = process.env.IMJS_TEST_IMODEL_BANK_LOGGING_CONFIG ?? "";
   const backendRegistryFile = path.resolve(__dirname, "../assets/local_orchestrator.backend.registry.json");
 
-  const runOrchestratorJs = Config.App.get("imjs_test_imodel_bank_run_orchestrator");
+  const runOrchestratorJs = process.env.IMJS_TEST_IMODEL_BANK_RUN_ORCHESTRATOR ?? "";
 
   const cmdargs = [
     runOrchestratorJs,
@@ -95,7 +94,7 @@ function launchLocalOrchestrator(): IModelCloudEnvironment {
     do {
       try {
         await pingServerOnce(url, attempt * pauseBeforePingMillis);
-      } catch (err) {
+      } catch (err: any) {
         if (err.errno === "ECONNREFUSED") {
           continue;
         } else {
@@ -147,20 +146,20 @@ function launchLocalOrchestrator(): IModelCloudEnvironment {
     });
   }
 
-  const basicAuthentication: boolean = !!JSON.parse(Config.App.get("imjs_test_imodel_bank_basic_authentication"));
-  const getAuthorizationClient = (userInfo: UserInfo | undefined, userCredentials: any) => {
+  const basicAuthentication: boolean = !!JSON.parse(process.env.IMJS_TEST_IMODEL_BANK_BASIC_AUTHENTICATION ?? "");
+  const getAuthorizationClient = (userCredentials: any) => {
     return basicAuthentication
-      ? new IModelBankBasicAuthorizationClient(userInfo, userCredentials)
-      : new IModelBankDummyAuthorizationClient(userInfo, userCredentials);
+      ? new IModelBankBasicAuthorizationClient(userCredentials)
+      : new IModelBankDummyAuthorizationClient(userCredentials);
   };
 
   const orchestratorUrl = `${cfg.baseUrl}:${cfg.port}`;
   const bankClient = new IModelBankClient(orchestratorUrl, new UrlFileHandler());
-  const contextMgr = new IModelBankFileSystemContextClient(orchestratorUrl);
+  const iTwinMgr = new IModelBankFileSystemITwinClient(orchestratorUrl);
 
   const cloudEnv = {
     isIModelHub: false,
-    contextMgr,
+    iTwinMgr,
     imodelClient: bankClient,
     getAuthorizationClient,
     shutdown: doShutdown,

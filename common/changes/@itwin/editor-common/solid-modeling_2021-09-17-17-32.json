@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/editor-common",
+      "comment": "New solid modeling ipc interface  ",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/editor-common"
+}

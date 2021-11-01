@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { RpcInterface, RpcManager } from "@bentley/imodeljs-common";
+import { RpcInterface, RpcManager } from "@itwin/core-common";
 
 /** Display Test App RPC interface. */
 export class DtaRpcInterface extends RpcInterface {

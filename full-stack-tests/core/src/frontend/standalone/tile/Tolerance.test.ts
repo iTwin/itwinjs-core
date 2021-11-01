@@ -4,15 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { ByteStream } from "@bentley/bentleyjs-core";
-import { Range3d, Range3dProps } from "@bentley/geometry-core";
+import { ByteStream } from "@itwin/core-bentley";
 import {
-  BatchType, computeChildTileProps, computeTileChordTolerance, ContentIdProvider, defaultTileOptions, ImdlHeader, IModelTileRpcInterface, iModelTileTreeIdToString,
-  RenderMode, TileMetadata, TileProps, TileTreeMetadata,
-} from "@bentley/imodeljs-common";
+  BatchType, computeChildTileProps, computeTileChordTolerance, ContentIdProvider, defaultTileOptions, ImdlHeader, iModelTileTreeIdToString,
+  TileMetadata, TileProps, TileTreeMetadata,
+} from "@itwin/core-common";
 import {
-  GeometricModelState, IModelApp, IModelConnection, IModelTile, IModelTileTree, SnapshotConnection, Tile, TileTreeLoadStatus, ViewState,
-} from "@bentley/imodeljs-frontend";
+  GeometricModelState, IModelApp, IModelConnection, IModelTile, IModelTileTree, SnapshotConnection, Tile, TileTreeLoadStatus,
+} from "@itwin/core-frontend";
+import { Range3d, Range3dProps } from "@itwin/core-geometry";
+import { TestUtility } from "../../TestUtility";
+import { fakeViewState } from "./TileIO.test";
 
 describe("Tile tolerance", () => {
   let imodel: IModelConnection;
@@ -21,7 +23,7 @@ describe("Tile tolerance", () => {
   const treeId = iModelTileTreeIdToString(modelId, { type: BatchType.Primary, edgesRequired: false }, defaultTileOptions);
 
   before(async () => {
-    await IModelApp.startup({ tileAdmin: { minimumSpatialTolerance } });
+    await TestUtility.startFrontend({ tileAdmin: { minimumSpatialTolerance } });
     imodel = await SnapshotConnection.openFile("CompatibilityTestSeed.bim");
   });
 
@@ -29,7 +31,7 @@ describe("Tile tolerance", () => {
     if (imodel)
       await imodel.close();
 
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   function makeTile(props: TileProps): TileMetadata {
@@ -58,8 +60,16 @@ describe("Tile tolerance", () => {
   }
 
   async function expectTolerance(contentId: string, expectedTolerance: number, epsilon = 0.000001): Promise<void> {
-    const content = await IModelTileRpcInterface.getClient().generateTileContent(imodel.getRpcProps(), treeId, contentId, undefined);
-    const stream = new ByteStream(content.buffer);
+    const tile = {
+      iModelTree: {
+        iModel: imodel,
+        geometryGuid: undefined,
+        contentIdQualifier: undefined,
+        id: treeId,
+      },
+      contentId,
+    } as IModelTile;
+    const stream = new ByteStream((await IModelApp.tileAdmin.generateTileContent(tile)).buffer);
     const header = new ImdlHeader(stream);
     expect(header.isValid).to.be.true;
     expect(header.isReadableVersion).to.be.true;
@@ -118,17 +128,8 @@ describe("Tile tolerance", () => {
     expect(model).not.to.be.undefined;
     expect(model).instanceof(GeometricModelState);
 
-    // Gross.
-    const fakeViewState = {
-      iModel: imodel,
-      viewFlags: {
-        renderMode: RenderMode.SmoothShade,
-        visibleEdges: false,
-      },
-      is3d: () => true,
-    } as ViewState;
-
-    const treeRef = model.createTileTreeReference(fakeViewState);
+    const view = fakeViewState(imodel);
+    const treeRef = model.createTileTreeReference(view);
     const tree = (await treeRef.treeOwner.loadTree())!;
     expect(tree).not.to.be.undefined;
 

@@ -3,13 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import {
-  CategoryDescription, ClassInfo, Descriptor, DescriptorSource, DisplayValuesMap, EditorDescription,
-  Field, InstanceKey, Item, LabelDefinition, NestedContentField, PropertiesField,
-  Property, PropertyValueFormat, RelationshipPath, RendererDescription, SelectClassInfo, StructTypeDescription,
+  CategoryDescription, ClassInfo, Descriptor, DescriptorSource, DisplayValuesMap, EditorDescription, Field, InstanceKey, Item, LabelDefinition,
+  NestedContentField, PropertiesField, Property, PropertyValueFormat, RelationshipPath, RendererDescription, SelectClassInfo, StructTypeDescription,
   TypeDescription, ValuesMap,
 } from "../../presentation-common";
+import { RelationshipMeaning } from "../../presentation-common/rules/content/modifiers/RelatedPropertiesSpecification";
 import { createTestECClassInfo, createTestECInstanceKey, createTestRelationshipPath } from "./EC";
 
+/**
+ * @internal Used for testing only.
+ */
 export const createTestCategoryDescription = (props?: Partial<CategoryDescription>) => ({
   name: "test-category",
   label: "Test Category",
@@ -19,16 +22,18 @@ export const createTestCategoryDescription = (props?: Partial<CategoryDescriptio
   ...props,
 });
 
+/**
+ * @internal Used for testing only.
+ */
 export const createTestSelectClassInfo = (props?: Partial<SelectClassInfo>) => ({
   selectClassInfo: createTestECClassInfo(),
   isSelectPolymorphic: false,
-  pathToPrimaryClass: [],
-  relatedPropertyPaths: [],
-  navigationPropertyClasses: [],
-  relatedInstanceClasses: [],
   ...props,
 });
 
+/**
+ * @internal Used for testing only.
+ */
 export function createTestSimpleContentField(props?: {
   category?: CategoryDescription;
   type?: TypeDescription;
@@ -51,6 +56,9 @@ export function createTestSimpleContentField(props?: {
   );
 }
 
+/**
+ * @internal Used for testing only.
+ */
 export function createTestPropertiesContentField(props: {
   properties: Property[];
   category?: CategoryDescription;
@@ -64,8 +72,8 @@ export function createTestPropertiesContentField(props: {
 }) {
   return new PropertiesField(
     props.category ?? createTestCategoryDescription(),
-    props.name ?? "SimpleField",
-    props.label ?? "Simple Field",
+    props.name ?? "PropertiesField",
+    props.label ?? "Properties Field",
     props.type ?? { valueFormat: PropertyValueFormat.Primitive, typeName: "string" },
     props.isReadonly ?? false,
     props.priority ?? 0,
@@ -75,6 +83,9 @@ export function createTestPropertiesContentField(props: {
   );
 }
 
+/**
+ * @internal Used for testing only.
+ */
 export function createTestNestedContentField(props: {
   nestedFields: Field[];
   category?: CategoryDescription;
@@ -87,6 +98,7 @@ export function createTestNestedContentField(props: {
   autoExpand?: boolean;
   editor?: EditorDescription;
   renderer?: RendererDescription;
+  relationshipMeaning?: RelationshipMeaning;
 }) {
   const nestedContentFieldType: StructTypeDescription = {
     valueFormat: PropertyValueFormat.Struct,
@@ -111,13 +123,19 @@ export function createTestNestedContentField(props: {
     !!props.autoExpand,
     props.renderer,
   );
+  if (props.relationshipMeaning)
+    field.relationshipMeaning = props.relationshipMeaning;
   field.rebuildParentship();
   return field;
 }
 
+/**
+ * @internal Used for testing only.
+ */
 export function createTestContentDescriptor(props: Partial<DescriptorSource> & { fields: Field[] }) {
   return new Descriptor({
-    displayType: "DisplayType",
+    connectionId: "",
+    displayType: "",
     contentFlags: 0,
     selectClasses: [createTestSelectClassInfo()],
     categories: [createTestCategoryDescription()],
@@ -125,6 +143,9 @@ export function createTestContentDescriptor(props: Partial<DescriptorSource> & {
   });
 }
 
+/**
+ * @internal Used for testing only.
+ */
 export function createTestContentItem(props: {
   primaryKeys?: InstanceKey[];
   label?: LabelDefinition | string;

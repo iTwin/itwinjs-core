@@ -9,26 +9,38 @@ import { SchemaItemType } from "../../ECObjects";
 import { PropertyCategory } from "../../Metadata/PropertyCategory";
 import { Schema } from "../../Metadata/Schema";
 import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
+import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
 describe("PropertyCategory", () => {
+  it("should get fullName", async () => {
+    const schemaJson = createSchemaJsonWithItems({
+      TestPropertyCategory: {
+        schemaItemType: "PropertyCategory",
+        type: "string",
+        typeName: "test",
+        priority: 5,
+      },
+    });
+
+    const schema = await Schema.fromJson(schemaJson, new SchemaContext());
+    assert.isDefined(schema);
+    const testPropCategory = await schema.getItem<PropertyCategory>("TestPropertyCategory");
+    assert.isDefined(testPropCategory);
+    expect(testPropCategory!.fullName).eq("TestSchema.TestPropertyCategory");
+  });
+
   describe("deserialization", () => {
     it("fully defined ", async () => {
-      const testSchema = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
-        name: "TestSchema",
-        version: "1.2.3",
-        alias: "TestSchema",
-        items: {
-          TestPropertyCategory: {
-            schemaItemType: "PropertyCategory",
-            type: "string",
-            typeName: "test",
-            priority: 5,
-          },
+      const testSchema = createSchemaJsonWithItems({
+        TestPropertyCategory: {
+          schemaItemType: "PropertyCategory",
+          type: "string",
+          typeName: "test",
+          priority: 5,
         },
-      };
+      });
 
       const ecSchema = await Schema.fromJson(testSchema, new SchemaContext());
       assert.isDefined(ecSchema);
@@ -51,19 +63,14 @@ describe("PropertyCategory", () => {
 
   describe("toJSON", () => {
     it("fully defined", async () => {
-      const testSchema = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
-        name: "TestSchema",
-        version: "1.2.3",
-        items: {
-          TestPropertyCategory: {
-            schemaItemType: "PropertyCategory",
-            type: "string",
-            typeName: "test",
-            priority: 5,
-          },
+      const testSchema = createSchemaJsonWithItems({
+        TestPropertyCategory: {
+          schemaItemType: "PropertyCategory",
+          type: "string",
+          typeName: "test",
+          priority: 5,
         },
-      };
+      });
 
       const ecSchema = await Schema.fromJson(testSchema, new SchemaContext());
       assert.isDefined(ecSchema);
@@ -78,19 +85,14 @@ describe("PropertyCategory", () => {
       expect(propCatSerialization.priority).equal(5);
     });
     it("fully defined, JSON stringy serialization", async () => {
-      const testSchema = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
-        name: "TestSchema",
-        version: "1.2.3",
-        items: {
-          TestPropertyCategory: {
-            schemaItemType: "PropertyCategory",
-            type: "string",
-            typeName: "test",
-            priority: 5,
-          },
+      const testSchema = createSchemaJsonWithItems({
+        TestPropertyCategory: {
+          schemaItemType: "PropertyCategory",
+          type: "string",
+          typeName: "test",
+          priority: 5,
         },
-      };
+      });
 
       const ecSchema = await Schema.fromJson(testSchema, new SchemaContext());
       assert.isDefined(ecSchema);
@@ -109,19 +111,14 @@ describe("PropertyCategory", () => {
 
   describe("toXml", () => {
     const newDom = createEmptyXmlDocument();
-    const schemaJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
-      name: "TestSchema",
-      version: "1.2.3",
-      items: {
-        TestPropertyCategory: {
-          schemaItemType: "PropertyCategory",
-          type: "string",
-          typeName: "test",
-          priority: 5,
-        },
+    const schemaJson = createSchemaJsonWithItems({
+      TestPropertyCategory: {
+        schemaItemType: "PropertyCategory",
+        type: "string",
+        typeName: "test",
+        priority: 5,
       },
-    };
+    });
 
     it("should serialize properly", async () => {
       const ecschema = await Schema.fromJson(schemaJson, new SchemaContext());

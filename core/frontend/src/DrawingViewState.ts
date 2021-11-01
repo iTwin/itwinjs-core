@@ -6,29 +6,27 @@
  * @module Views
  */
 
-import { assert, dispose, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { assert, dispose, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  Constant, Range3d, Transform, TransformProps, Vector3d,
-} from "@bentley/geometry-core";
-import {
-  AxisAlignedBox3d, Frustum, SectionDrawingViewProps, ViewDefinition2dProps, ViewFlagOverrides, ViewStateProps,
-} from "@bentley/imodeljs-common";
-import { ViewRect } from "./ViewRect";
-import { Frustum2d } from "./Frustum2d";
-import { ExtentLimits, ViewState2d, ViewState3d } from "./ViewState";
-import { IModelConnection } from "./IModelConnection";
-import { IModelApp } from "./IModelApp";
+  AxisAlignedBox3d, Frustum, QueryRowFormat, SectionDrawingViewProps, ViewDefinition2dProps, ViewFlagOverrides, ViewStateProps,
+} from "@itwin/core-common";
+import { Constant, Range3d, Transform, TransformProps, Vector3d } from "@itwin/core-geometry";
 import { CategorySelectorState } from "./CategorySelectorState";
-import { DisplayStyle2dState } from "./DisplayStyleState";
 import { CoordSystem } from "./CoordSystem";
-import { OffScreenViewport } from "./Viewport";
-import { SceneContext } from "./ViewContext";
+import { DisplayStyle2dState } from "./DisplayStyleState";
+import { Frustum2d } from "./Frustum2d";
+import { IModelApp } from "./IModelApp";
+import { IModelConnection } from "./IModelConnection";
 import { FeatureSymbology } from "./render/FeatureSymbology";
-import { Scene } from "./render/Scene";
-import { MockRender } from "./render/MockRender";
 import { GraphicBranch, GraphicBranchOptions } from "./render/GraphicBranch";
+import { MockRender } from "./render/MockRender";
 import { RenderGraphic } from "./render/RenderGraphic";
+import { Scene } from "./render/Scene";
 import { DisclosedTileTreeSet, TileGraphicType } from "./tile/internal";
+import { SceneContext } from "./ViewContext";
+import { OffScreenViewport } from "./Viewport";
+import { ViewRect } from "./ViewRect";
+import { ExtentLimits, ViewState2d, ViewState3d } from "./ViewState";
 
 /** Strictly for testing.
  * @internal
@@ -120,11 +118,11 @@ class SectionTarget extends MockRender.OffScreenTarget {
     this._attachment = attachment;
   }
 
-  public changeScene(scene: Scene): void {
+  public override changeScene(scene: Scene): void {
     this._attachment.scene = scene;
   }
 
-  public overrideFeatureSymbology(ovrs: FeatureSymbology.Overrides): void {
+  public override overrideFeatureSymbology(ovrs: FeatureSymbology.Overrides): void {
     this._attachment.symbologyOverrides = ovrs;
   }
 }
@@ -160,7 +158,7 @@ class SectionAttachment {
     this._toDrawing = toDrawing;
     this._fromDrawing = fromDrawing;
 
-    this.viewport = OffScreenViewport.create(view, this._viewRect, true, new SectionTarget(this));
+    this.viewport = OffScreenViewport.createViewport(view, new SectionTarget(this), true);
 
     this.symbologyOverrides = new FeatureSymbology.Overrides(view);
     let clipVolume;
@@ -180,10 +178,7 @@ class SectionAttachment {
       },
     };
 
-    this._viewFlagOverrides = new ViewFlagOverrides(view.viewFlags);
-    this._viewFlagOverrides.setApplyLighting(false);
-    this._viewFlagOverrides.setShowShadows(false);
-
+    this._viewFlagOverrides = { ...view.viewFlags, lighting: false, shadows: false };
     this._drawingExtents = this.viewport.viewingSpace.viewDelta.clone();
     this._toDrawing.multiplyVector(this._drawingExtents, this._drawingExtents);
     this._drawingExtents.z = Math.abs(this._drawingExtents.z);
@@ -272,7 +267,7 @@ class SectionAttachment {
  */
 export class DrawingViewState extends ViewState2d {
   /** @internal */
-  public static get className() { return "DrawingViewDefinition"; }
+  public static override get className() { return "DrawingViewDefinition"; }
 
   /** Exposed strictly for testing and debugging. Indicates that when loading the view, the spatial view should be displayed even
    * if `SectionDrawing.displaySpatialView` is not `true`.
@@ -324,20 +319,20 @@ export class DrawingViewState extends ViewState2d {
   }
 
   /** @internal */
-  public attachToViewport(): void {
+  public override attachToViewport(): void {
     super.attachToViewport();
     assert(undefined === this._attachment);
     this._attachment = this._attachmentInfo.createAttachment();
   }
 
   /** @internal */
-  public detachFromViewport(): void {
+  public override detachFromViewport(): void {
     super.detachFromViewport();
     this._attachment = dispose(this._attachment);
   }
 
-  /** @internal override */
-  public async changeViewedModel(modelId: Id64String): Promise<void> {
+  /** @internal */
+  public override async changeViewedModel(modelId: Id64String): Promise<void> {
     await super.changeViewedModel(modelId);
     const props = await this.querySectionDrawingProps();
     this._attachmentInfo = SectionAttachmentInfo.fromJSON(props);
@@ -358,12 +353,12 @@ export class DrawingViewState extends ViewState2d {
         FROM bis.SectionDrawing
         WHERE ECInstanceId=${this.baseModelId}`;
 
-      for await (const row of this.iModel.query(ecsql)) {
+      for await (const row of this.iModel.query(ecsql, undefined, QueryRowFormat.UseJsPropertyNames)) {
         spatialView = Id64.fromJSON(row.spatialView?.id);
         displaySpatialView = !!row.displaySpatialView;
         try {
           drawingToSpatialTransform = JSON.parse(row.drawingToSpatialTransform);
-        } catch (_) {
+        } catch {
           // We'll use identity transform.
         }
 
@@ -376,15 +371,15 @@ export class DrawingViewState extends ViewState2d {
     return { spatialView, displaySpatialView, drawingToSpatialTransform };
   }
 
-  /** @internal override */
-  public async load(): Promise<void> {
+  /** @internal */
+  public override async load(): Promise<void> {
     assert(!this.isAttachedToViewport);
 
     await super.load();
     await this._attachmentInfo.load(this.iModel);
   }
 
-  public static createFromProps(props: ViewStateProps, iModel: IModelConnection): DrawingViewState {
+  public static override createFromProps(props: ViewStateProps, iModel: IModelConnection): DrawingViewState {
     const cat = new CategorySelectorState(props.categorySelectorProps, iModel);
     const displayStyleState = new DisplayStyle2dState(props.displayStyleProps, iModel);
     const extents = props.modelExtents ? Range3d.fromJSON(props.modelExtents) : new Range3d();
@@ -393,7 +388,7 @@ export class DrawingViewState extends ViewState2d {
     return new this(props.viewDefinitionProps as ViewDefinition2dProps, iModel, cat, displayStyleState, extents, props.sectionDrawing);
   }
 
-  public toProps(): ViewStateProps {
+  public override toProps(): ViewStateProps {
     const props = super.toProps();
     props.modelExtents = this._viewedExtents.toJSON();
     props.sectionDrawing = this._attachmentInfo.toJSON();
@@ -408,11 +403,11 @@ export class DrawingViewState extends ViewState2d {
     return this._modelLimits;
   }
 
-  /** @internal override */
-  public isDrawingView(): this is DrawingViewState { return true; }
+  /** @internal */
+  public override isDrawingView(): this is DrawingViewState { return true; }
 
-  /** @internal override */
-  public getOrigin() {
+  /** @internal */
+  public override getOrigin() {
     const origin = super.getOrigin();
     if (this._attachment)
       origin.z = -this._attachment.zDepth;
@@ -420,8 +415,8 @@ export class DrawingViewState extends ViewState2d {
     return origin;
   }
 
-  /** @internal override */
-  public getExtents() {
+  /** @internal */
+  public override getExtents() {
     const extents = super.getExtents();
     if (this._attachment)
       extents.z = this._attachment.zDepth + Frustum2d.minimumZDistance;
@@ -429,15 +424,15 @@ export class DrawingViewState extends ViewState2d {
     return extents;
   }
 
-  /** @internal override */
-  public discloseTileTrees(trees: DisclosedTileTreeSet): void {
+  /** @internal */
+  public override discloseTileTrees(trees: DisclosedTileTreeSet): void {
     super.discloseTileTrees(trees);
     if (this._attachment)
       trees.disclose(this._attachment.viewport);
   }
 
-  /** @internal override */
-  public createScene(context: SceneContext): void {
+  /** @internal */
+  public override createScene(context: SceneContext): void {
     if (!DrawingViewState.hideDrawingGraphics)
       super.createScene(context);
 
@@ -445,13 +440,13 @@ export class DrawingViewState extends ViewState2d {
       this._attachment.addToScene(context);
   }
 
-  /** @internal override */
-  public get areAllTileTreesLoaded(): boolean {
+  /** @internal */
+  public override get areAllTileTreesLoaded(): boolean {
     return super.areAllTileTreesLoaded && (!this._attachment || this._attachment.view.areAllTileTreesLoaded);
   }
 
-  /** @internal override */
-  public get secondaryViewports() {
-    return this._attachment ? [ this._attachment.viewport ] : super.secondaryViewports;
+  /** @internal */
+  public override get secondaryViewports() {
+    return this._attachment ? [this._attachment.viewport] : super.secondaryViewports;
   }
 }

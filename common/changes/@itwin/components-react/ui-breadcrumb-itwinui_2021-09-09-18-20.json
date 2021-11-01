@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/components-react",
+      "comment": "Updated recommendation for using Breadcrumbs from itwinui-react instead of deprecated Breadcrumb",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/components-react"
+}

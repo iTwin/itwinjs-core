@@ -10,8 +10,33 @@ import { ECObjectsError } from "../../Exception";
 import { Enumeration, MutableEnumeration } from "../../Metadata/Enumeration";
 import { Schema } from "../../Metadata/Schema";
 import { createEmptyXmlDocument, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
+import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 
 describe("Enumeration", () => {
+  it("should get fullName", async () => {
+    const schemaJson = createSchemaJsonWithItems({
+      testEnum: {
+        schemaItemType: "Enumeration",
+        type: "string",
+        description: "Test description",
+        label: "Test Enumeration",
+        isStrict: true,
+        enumerators: [
+          {
+            name: "testEnumerator",
+            value: "test",
+          },
+        ],
+      },
+    });
+
+    const schema = await Schema.fromJson(schemaJson, new SchemaContext());
+    assert.isDefined(schema);
+    const testEnum = await schema.getItem<Enumeration>("testEnum");
+    assert.isDefined(testEnum);
+    expect(testEnum!.fullName).eq("TestSchema.testEnum");
+  });
+
   describe("addEnumerator tests", () => {
     let testEnum: Enumeration;
     let testStringEnum: Enumeration;
@@ -50,26 +75,21 @@ describe("Enumeration", () => {
 
   describe("deserialization", () => {
     it("minimum values", async () => {
-      const testSchema = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
-        name: "TestSchema",
-        version: "1.2.3",
-        items: {
-          testEnum: {
-            schemaItemType: "Enumeration",
-            type: "string",
-            description: "Test description",
-            label: "Test Enumeration",
-            isStrict: true,
-            enumerators: [
-              {
-                name: "testEnumerator",
-                value: "test",
-              },
-            ],
-          },
+      const testSchema = createSchemaJsonWithItems({
+        testEnum: {
+          schemaItemType: "Enumeration",
+          type: "string",
+          description: "Test description",
+          label: "Test Enumeration",
+          isStrict: true,
+          enumerators: [
+            {
+              name: "testEnumerator",
+              value: "test",
+            },
+          ],
         },
-      };
+      });
 
       const ecSchema = await Schema.fromJson(testSchema, new SchemaContext());
       const testEnum = await ecSchema.getItem<Enumeration>("testEnum");
@@ -84,24 +104,19 @@ describe("Enumeration", () => {
     });
 
     it("with enumerators", async () => {
-      const testSchema = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
-        name: "TestSchema",
-        version: "1.2.3",
-        items: {
-          testEnum: {
-            schemaItemType: "Enumeration",
-            type: "int",
-            enumerators: [
-              {
-                name: "ZeroValue",
-                value: 0,
-                label: "None",
-              },
-            ],
-          },
+      const testSchema = createSchemaJsonWithItems({
+        testEnum: {
+          schemaItemType: "Enumeration",
+          type: "int",
+          enumerators: [
+            {
+              name: "ZeroValue",
+              value: 0,
+              label: "None",
+            },
+          ],
         },
-      };
+      });
 
       const ecSchema = await Schema.fromJson(testSchema, new SchemaContext());
       const testEnum = await ecSchema.getItem<Enumeration>("testEnum");

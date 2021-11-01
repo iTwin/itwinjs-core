@@ -6,8 +6,8 @@
  * @module iModels
  */
 
-import { GeoServiceStatus } from "@bentley/bentleyjs-core";
-import { XYZProps } from "@bentley/geometry-core";
+import { GeoServiceStatus } from "@itwin/core-bentley";
+import { XYZProps } from "@itwin/core-geometry";
 
 /** @public */
 export enum GeoCoordStatus {
@@ -43,7 +43,7 @@ export function mapToGeoServiceStatus(s: GeoCoordStatus): GeoServiceStatus {
  * @beta
  */
 export interface IModelCoordinatesRequestProps {
-  sourceDatum: string;
+  source: string;
   geoCoords: XYZProps[];
 }
 
@@ -65,7 +65,7 @@ export interface IModelCoordinatesResponseProps {
  * @beta
  */
 export interface GeoCoordinatesRequestProps {
-  targetDatum: string;
+  target: string;
   iModelCoords: XYZProps[];
 }
 

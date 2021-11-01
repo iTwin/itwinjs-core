@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/oidc-signin-tool",
+      "comment": "rename to @itwin/oidc-signin-tool",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/oidc-signin-tool"
+}

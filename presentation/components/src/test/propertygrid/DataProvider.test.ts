@@ -2,55 +2,48 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
+import "@itwin/presentation-frontend/lib/cjs/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
-import { BeEvent, Guid } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { I18N } from "@bentley/imodeljs-i18n";
+import * as moq from "typemoq";
+import { BeEvent, using } from "@itwin/core-bentley";
+import { IModelConnection } from "@itwin/core-frontend";
+import { ITwinLocalization } from "@itwin/core-i18n";
 import {
-  ArrayTypeDescription, CategoryDescription, Content, ContentFlags, Field, Item, Property, PropertyValueFormat, RegisteredRuleset,
-  StructFieldMemberDescription, StructTypeDescription, TypeDescription, ValuesDictionary,
-} from "@bentley/presentation-common";
+  applyOptionalPrefix, ArrayTypeDescription, CategoryDescription, Content, ContentFlags, Field, Item, Property, PropertyValueFormat,
+  RelationshipMeaning, StructFieldMemberDescription, StructTypeDescription, TypeDescription, ValuesDictionary,
+} from "@itwin/presentation-common";
 import {
-  createTestCategoryDescription, createTestContentDescriptor, createTestContentItem, createTestNestedContentField, createTestPropertiesContentField,
-  createTestSimpleContentField,
-} from "@bentley/presentation-common/lib/test/_helpers/Content";
-import { createTestECClassInfo, createTestECInstanceKey, createTestPropertyInfo } from "@bentley/presentation-common/lib/test/_helpers/EC";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import {
-  FavoritePropertiesManager, FavoritePropertiesScope, Presentation, PresentationManager, RulesetManager,
-} from "@bentley/presentation-frontend";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { PropertyCategory } from "@bentley/ui-components";
+  createRandomId, createTestCategoryDescription, createTestContentDescriptor, createTestContentItem,
+  createTestECClassInfo, createTestECInstanceKey, createTestNestedContentField, createTestPropertiesContentField, createTestPropertyInfo, createTestSimpleContentField,
+} from "@itwin/presentation-common/lib/cjs/test";
+import { FavoritePropertiesManager, FavoritePropertiesScope, Presentation, PresentationManager } from "@itwin/presentation-frontend";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { PropertyCategory } from "@itwin/components-react";
 import { CacheInvalidationProps } from "../../presentation-components/common/ContentDataProvider";
 import { initializeLocalization } from "../../presentation-components/common/Utils";
 import { FAVORITES_CATEGORY_NAME } from "../../presentation-components/favorite-properties/DataProvider";
-import { PresentationPropertyDataProvider } from "../../presentation-components/propertygrid/DataProvider";
+import { DEFAULT_PROPERTY_GRID_RULESET, PresentationPropertyDataProvider } from "../../presentation-components/propertygrid/DataProvider";
 import { mockPresentationManager } from "../_helpers/UiComponents";
-import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { applyOptionalPrefix } from "../../presentation-components/common/ContentBuilder";
 
 /**
  * This is just a helper class to provide public access to
  * protected methods of TableDataProvider
  */
 class Provider extends PresentationPropertyDataProvider {
-  public invalidateCache(props: CacheInvalidationProps) { super.invalidateCache(props); }
-  public shouldConfigureContentDescriptor() { return super.shouldConfigureContentDescriptor(); }
-  public isFieldHidden(field: Field) { return super.isFieldHidden(field); }
-  public getDescriptorOverrides() { return super.getDescriptorOverrides(); }
-  public sortCategories(categories: CategoryDescription[]) { return super.sortCategories(categories); }
-  public isFieldFavorite!: (field: Field) => boolean;
-  public sortFields!: (category: CategoryDescription, fields: Field[]) => void;
+  public override invalidateCache(props: CacheInvalidationProps) { super.invalidateCache(props); }
+  public override async getDescriptorOverrides() { return super.getDescriptorOverrides(); }
+  public override sortCategories(categories: CategoryDescription[]) { return super.sortCategories(categories); }
+  public override sortFields!: (category: CategoryDescription, fields: Field[]) => void;
+  public override isFieldFavorite!: (field: Field) => boolean;
+  public override isFieldHidden(field: Field) { return super.isFieldHidden(field); }
 }
 
 describe("PropertyDataProvider", () => {
 
   let rulesetId: string;
   let provider: Provider;
-  let rulesetsManagerMock: moq.IMock<RulesetManager>;
   let presentationManagerMock: moq.IMock<PresentationManager>;
   let favoritePropertiesManagerMock: moq.IMock<FavoritePropertiesManager>;
   const imodelMock = moq.Mock.ofType<IModelConnection>();
@@ -61,28 +54,36 @@ describe("PropertyDataProvider", () => {
 
   beforeEach(async () => {
     const mocks = mockPresentationManager();
-    rulesetsManagerMock = mocks.rulesetsManager;
     presentationManagerMock = mocks.presentationManager;
     Presentation.setPresentationManager(presentationManagerMock.object);
 
     favoritePropertiesManagerMock = moq.Mock.ofType<FavoritePropertiesManager>();
-    favoritePropertiesManagerMock.setup((x) => x.onFavoritesChanged).returns(() => moq.Mock.ofType<BeEvent<() => void>>().object);
+    favoritePropertiesManagerMock.setup((x) => x.onFavoritesChanged).returns(() => new BeEvent());
 
     Presentation.setPresentationManager(presentationManagerMock.object);
     Presentation.setFavoritePropertiesManager(favoritePropertiesManagerMock.object);
-    Presentation.setI18nManager(new I18N("", {
+    const localize = new ITwinLocalization({
       urlTemplate: `file://${path.resolve("public/locales")}/{{lng}}/{{ns}}.json`,
-    }));
+    });
+    await localize.initialize(["iModelJS"]);
+    Presentation.setLocalization(localize);
     await initializeLocalization();
 
     provider = new Provider({ imodel: imodelMock.object, ruleset: rulesetId });
   });
 
   afterEach(() => {
+    provider.dispose();
     Presentation.terminate();
   });
 
   describe("constructor", () => {
+
+    it("uses default ruleset if not given through props", () => {
+      using(new PresentationPropertyDataProvider({ imodel: imodelMock.object }), (p) => {
+        expect(p.rulesetId).to.eq(DEFAULT_PROPERTY_GRID_RULESET.id);
+      });
+    });
 
     it("sets `includeFieldsWithNoValues` to true", () => {
       expect(provider.includeFieldsWithNoValues).to.be.true;
@@ -128,18 +129,11 @@ describe("PropertyDataProvider", () => {
 
   });
 
-  describe("shouldConfigureContentDescriptor", () => {
-
-    it("return false", () => {
-      expect(provider.shouldConfigureContentDescriptor()).to.be.false;
-    });
-
-  });
-
   describe("getDescriptorOverrides", () => {
 
-    it("should have `ShowLabels` and `MergeResults` flags", () => {
-      const flags = provider.getDescriptorOverrides().contentFlags!;
+    it("should have `ShowLabels` and `MergeResults` flags", async () => {
+      const overrides = await provider.getDescriptorOverrides();
+      const flags = overrides.contentFlags!;
       expect(flags & (ContentFlags.MergeResults | ContentFlags.ShowLabels)).to.not.eq(0);
     });
 
@@ -182,15 +176,14 @@ describe("PropertyDataProvider", () => {
   });
 
   describe("isFieldFavorite", () => {
-
-    let projectId: string;
+    let iTwinId: string;
     let imodelId: string;
 
     before(() => {
-      projectId = "project-id";
+      iTwinId = "itwin-id";
       imodelId = "imodel-id";
       imodelMock.setup((x) => x.iModelId).returns(() => imodelId);
-      imodelMock.setup((x) => x.contextId).returns(() => projectId);
+      imodelMock.setup((x) => x.iTwinId).returns(() => iTwinId);
 
       favoritePropertiesManagerMock.setup((x) => x.has(moq.It.isAny(), imodelMock.object, moq.It.isAny())).returns(() => false);
     });
@@ -242,7 +235,6 @@ describe("PropertyDataProvider", () => {
     const createArrayField = (props?: { name?: string, itemsType?: TypeDescription }) => {
       const property: Property = {
         property: createTestPropertyInfo(),
-        relatedClassPath: [],
       };
       const typeDescription: ArrayTypeDescription = {
         valueFormat: PropertyValueFormat.Array,
@@ -259,7 +251,6 @@ describe("PropertyDataProvider", () => {
     const createStructField = (props?: { name?: string, members?: StructFieldMemberDescription[] }) => {
       const property: Property = {
         property: createTestPropertyInfo(),
-        relatedClassPath: [],
       };
       const typeDescription: StructTypeDescription = {
         valueFormat: PropertyValueFormat.Struct,
@@ -276,24 +267,6 @@ describe("PropertyDataProvider", () => {
         properties: [property],
       });
     };
-
-    it("registers default ruleset once if `rulesetId` not specified when creating the provider", async () => {
-      provider = new Provider({ imodel: imodelMock.object });
-      rulesetsManagerMock.setup(async (x) => x.add(moq.It.isAny())).returns(async (x) => new RegisteredRuleset(x, Guid.createValue(), () => { }));
-
-      // verify ruleset is registered on first call
-      await provider.getData();
-      rulesetsManagerMock.verify(async (x) => x.add(moq.It.isAny()), moq.Times.once());
-
-      // verify ruleset is not registered on subsequent calls on the same provider
-      await provider.getData();
-      rulesetsManagerMock.verify(async (x) => x.add(moq.It.isAny()), moq.Times.once());
-
-      // verify ruleset is not registered on subsequent calls on different providers
-      const provider2 = new Provider({ imodel: imodelMock.object });
-      await provider2.getData();
-      rulesetsManagerMock.verify(async (x) => x.add(moq.It.isAny()), moq.Times.once());
-    });
 
     it("returns empty data object when receives undefined content", async () => {
       (provider as any).getContent = async () => undefined;
@@ -334,6 +307,24 @@ describe("PropertyDataProvider", () => {
 
         beforeEach(() => {
           setup();
+        });
+
+        it("assigns category renderer", async () => {
+          const field = createPrimitiveField({
+            category: createTestCategoryDescription({
+              renderer: { name: "test" },
+            }),
+          });
+          const descriptor = createTestContentDescriptor({ fields: [field] });
+          const values: ValuesDictionary<any> = {
+            [field.name]: "",
+          };
+          const displayValues: ValuesDictionary<any> = {
+            [field.name]: "",
+          };
+          const record = createTestContentItem({ values, displayValues });
+          (provider as any).getContent = async () => new Content(descriptor, [record]);
+          expect(await provider.getData()).to.matchSnapshot();
         });
 
         it("handles records with no values", async () => {
@@ -398,7 +389,7 @@ describe("PropertyDataProvider", () => {
             const field = createTestNestedContentField({
               name: "root-field",
               category,
-              nestedFields: [createTestSimpleContentField()],
+              nestedFields: [createTestSimpleContentField({ category })],
             });
             const descriptor = createTestContentDescriptor({ fields: [field] });
             const values = {
@@ -476,6 +467,168 @@ describe("PropertyDataProvider", () => {
               }, {
                 displayValues: {
                   [nestedField.name]: "display value 2",
+                },
+              }],
+            };
+            const record = createTestContentItem({ values, displayValues });
+            (provider as any).getContent = async () => new Content(descriptor, [record]);
+            expect(await provider.getData()).to.matchSnapshot();
+          });
+
+          it("returns nothing for deeply nested content with no values", async () => {
+            const category = createTestCategoryDescription();
+            const primitiveField1 = createPrimitiveField({ name: "primitive-field-1", category });
+            const primitiveField2 = createPrimitiveField({ name: "primitive-field-2", category });
+            const primitiveField3 = createPrimitiveField({ name: "primitive-field-3", category });
+            const middleField = createTestNestedContentField({ name: "middle-field", category, nestedFields: [primitiveField3], relationshipMeaning: RelationshipMeaning.SameInstance });
+            const rootField = createTestNestedContentField({ name: "root-field", category, nestedFields: [primitiveField2, middleField] });
+            const descriptor = createTestContentDescriptor({ fields: [primitiveField1, rootField] });
+            const values = {
+              [primitiveField1.name]: "p1",
+              [rootField.name]: [{
+                primaryKeys: [createTestECInstanceKey({ id: "0x1" })],
+                values: {
+                  [primitiveField2.name]: "p2",
+                  [middleField.name]: [],
+                },
+                displayValues: {
+                  [primitiveField2.name]: "p2",
+                  [middleField.name]: [],
+                },
+                mergedFieldNames: [],
+              }],
+            };
+            const displayValues = {
+              [primitiveField1.name]: "p1",
+              [rootField.name]: [{
+                displayValues: {
+                  [primitiveField2.name]: "p2",
+                  [middleField.name]: [],
+                },
+              }],
+            };
+            const record = createTestContentItem({ values, displayValues });
+            (provider as any).getContent = async () => new Content(descriptor, [record]);
+            expect(await provider.getData()).to.matchSnapshot();
+          });
+
+          it("returns nested content with destructured deeply nested content", async () => {
+            const category = createTestCategoryDescription();
+            const primitiveField1 = createPrimitiveField({ name: "primitive-field-1", category });
+            const primitiveField2 = createPrimitiveField({ name: "primitive-field-2", category });
+            const primitiveField3 = createPrimitiveField({ name: "primitive-field-3", category });
+            const middleField = createTestNestedContentField({ name: "middle-field", category, nestedFields: [primitiveField3], relationshipMeaning: RelationshipMeaning.SameInstance });
+            const rootField = createTestNestedContentField({ name: "root-field", category, nestedFields: [primitiveField2, middleField] });
+            const descriptor = createTestContentDescriptor({ fields: [primitiveField1, rootField] });
+            const values = {
+              [primitiveField1.name]: "test",
+              [rootField.name]: [{
+                primaryKeys: [createTestECInstanceKey({ id: "0x1" })],
+                values: {
+                  [primitiveField2.name]: "test",
+                  [middleField.name]: [{
+                    primaryKeys: [createTestECInstanceKey({ id: "0x2" })],
+                    values: {
+                      [primitiveField3.name]: "value 1",
+                    },
+                    displayValues: {
+                      [primitiveField3.name]: "display value 1",
+                    },
+                    mergedFieldNames: [],
+                  }],
+                },
+                displayValues: {
+                  [primitiveField2.name]: "test",
+                  [middleField.name]: [{
+                    displayValues: {
+                      [primitiveField3.name]: "display value 1",
+                    },
+                  }],
+                },
+                mergedFieldNames: [],
+              }],
+            };
+            const displayValues = {
+              [primitiveField1.name]: "test",
+              [rootField.name]: [{
+                displayValues: {
+                  [primitiveField2.name]: "test",
+                  [middleField.name]: [{
+                    displayValues: {
+                      [primitiveField3.name]: "display value 1",
+                    },
+                  }],
+                },
+              }],
+            };
+            const record = createTestContentItem({ values, displayValues });
+            (provider as any).getContent = async () => new Content(descriptor, [record]);
+            expect(await provider.getData()).to.matchSnapshot();
+          });
+
+          it("returns nested content with deeply nested content as structs array when there are multiple nested content items", async () => {
+            const category = createTestCategoryDescription();
+            const primitiveField1 = createPrimitiveField({ name: "primitive-field-1", category });
+            const primitiveField2 = createPrimitiveField({ name: "primitive-field-2", category });
+            const primitiveField3 = createPrimitiveField({ name: "primitive-field-3", category });
+            const middleField = createTestNestedContentField({ name: "middle-field", category, nestedFields: [primitiveField3], relationshipMeaning: RelationshipMeaning.SameInstance });
+            const rootField = createTestNestedContentField({ name: "root-field", category, nestedFields: [primitiveField2, middleField] });
+            const descriptor = createTestContentDescriptor({ fields: [primitiveField1, rootField] });
+            const values = {
+              [primitiveField1.name]: "test",
+              [rootField.name]: [{
+                primaryKeys: [createTestECInstanceKey({ id: "0x1" })],
+                values: {
+                  [primitiveField2.name]: "test",
+                  [middleField.name]: [{
+                    primaryKeys: [createTestECInstanceKey({ id: "0x2" })],
+                    values: {
+                      [primitiveField3.name]: "value 1",
+                    },
+                    displayValues: {
+                      [primitiveField3.name]: "display value 1",
+                    },
+                    mergedFieldNames: [],
+                  }, {
+                    primaryKeys: [createTestECInstanceKey({ id: "0x3" })],
+                    values: {
+                      [primitiveField3.name]: "value 2",
+                    },
+                    displayValues: {
+                      [primitiveField3.name]: "display value 2",
+                    },
+                    mergedFieldNames: [],
+                  }],
+                },
+                displayValues: {
+                  [primitiveField2.name]: "test",
+                  [middleField.name]: [{
+                    displayValues: {
+                      [primitiveField3.name]: "display value 1",
+                    },
+                  }, {
+                    displayValues: {
+                      [primitiveField3.name]: "display value 2",
+                    },
+                  }],
+                },
+                mergedFieldNames: [],
+              }],
+            };
+            const displayValues = {
+              [primitiveField1.name]: "test",
+              [rootField.name]: [{
+                displayValues: {
+                  [primitiveField2.name]: "test",
+                  [middleField.name]: [{
+                    displayValues: {
+                      [primitiveField3.name]: "display value 1",
+                    },
+                  }, {
+                    displayValues: {
+                      [primitiveField3.name]: "display value 2",
+                    },
+                  }],
                 },
               }],
             };
@@ -921,8 +1074,8 @@ describe("PropertyDataProvider", () => {
 
           it("doesn't include composite fields when set", async () => {
             const primitiveField = createPrimitiveField({ name: "Primitive" });
-            const arrayField = createArrayField({name: "Array"});
-            const structField = createStructField({name: "Struct"});
+            const arrayField = createArrayField({ name: "Array" });
+            const structField = createStructField({ name: "Struct" });
             const descriptor = createTestContentDescriptor({ fields: [primitiveField, arrayField, structField] });
             const values = {
               Primitive: "some value",
@@ -1340,7 +1493,6 @@ describe("PropertyDataProvider", () => {
           const displayValues: ValuesDictionary<any> = {};
           const record = createTestContentItem({ values, displayValues });
           (provider as any).getContent = async () => new Content(descriptor, [record]);
-
           const data = await provider.getData();
           expect(data.categories.length).to.eq(0);
         });
@@ -1395,7 +1547,7 @@ describe("PropertyDataProvider", () => {
         fields: [
           createTestNestedContentField({
             name: "root-field",
-            nestedFields: [ createTestSimpleContentField({name: "nested-field"}) ],
+            nestedFields: [createTestSimpleContentField({ name: "nested-field" })],
           }),
         ],
       }), [

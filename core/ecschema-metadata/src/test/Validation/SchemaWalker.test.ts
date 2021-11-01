@@ -182,8 +182,9 @@ describe("SchemaWalker tests", () => {
     expect(mockVisitor!.visitCustomAttributeContainer!.calledWithExactly(testEntityBase)).to.be.true;
     expect(mockVisitor!.visitEntityClass!.calledWithExactly(testEntityBase)).to.be.true;
 
-    const aProp = testEntityBase.properties![0];
-    const bProp = testEntityBase.properties![1];
+    const props = [...testEntityBase.properties!];
+    const aProp = props[0];
+    const bProp = props[1];
     expect(mockVisitor!.visitProperty!.calledTwice).to.be.true;
     expect(mockVisitor!.visitProperty!.calledOnceWithExactly(aProp));
     expect(mockVisitor!.visitProperty!.calledOnceWithExactly(bProp));

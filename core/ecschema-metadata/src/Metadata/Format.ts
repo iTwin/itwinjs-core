@@ -11,7 +11,7 @@ import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils"
 import { SchemaItemType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { BaseFormat, DecimalPrecision, FormatTraits, formatTraitsToArray, FormatType, formatTypeToString, FractionalPrecision,
-  ScientificType, scientificTypeToString, ShowSignOption, showSignOptionToString} from "@bentley/imodeljs-quantity";
+  ScientificType, scientificTypeToString, ShowSignOption, showSignOptionToString} from "@itwin/core-quantity";
 import { InvertedUnit } from "./InvertedUnit";
 import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
@@ -20,8 +20,8 @@ import { Unit } from "./Unit";
 /**
  * @beta
  */
-export class Format extends SchemaItem   {
-  public readonly schemaItemType!: SchemaItemType.Format; // eslint-disable-line
+export class Format extends SchemaItem {
+  public override readonly schemaItemType!: SchemaItemType.Format; // eslint-disable-line
   protected _base: BaseFormat;
   protected _units?: Array<[Unit | InvertedUnit, string | undefined]>;
 
@@ -74,19 +74,19 @@ export class Format extends SchemaItem   {
     this._units.push([unit, label]);
   }
 
-  protected setPrecision(precision: number) { this._base.precision = precision; }
+  protected setPrecision(precision: number) { this._base._precision = precision; }
 
   private typecheck(formatProps: FormatProps) {
     this._base.loadFormatProperties(formatProps);
 
     if (undefined !== formatProps.composite) { // TODO: This is duplicated below when the units need to be processed...
       if (undefined !== formatProps.composite.includeZero)
-        this._base.includeZero = formatProps.composite.includeZero;
+        this._base._includeZero = formatProps.composite.includeZero;
 
       if (undefined !== formatProps.composite.spacer) {
         if (formatProps.composite.spacer.length > 1)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.fullName} has a composite with an invalid 'spacer' attribute. It should be an empty or one character string.`);
-        this._base.spacer = formatProps.composite.spacer;
+        this._base._spacer = formatProps.composite.spacer;
       }
 
       // Composite requires 1-4 units
@@ -95,7 +95,7 @@ export class Format extends SchemaItem   {
     }
   }
 
-  public fromJSONSync(formatProps: FormatProps) {
+  public override fromJSONSync(formatProps: FormatProps) {
     super.fromJSONSync(formatProps);
     this.typecheck(formatProps);
     if (undefined === formatProps.composite)
@@ -110,7 +110,7 @@ export class Format extends SchemaItem   {
     }
   }
 
-  public async fromJSON(formatProps: FormatProps) {
+  public override async fromJSON(formatProps: FormatProps) {
     await super.fromJSON(formatProps);
     this.typecheck(formatProps);
     if (undefined === formatProps.composite)
@@ -130,7 +130,7 @@ export class Format extends SchemaItem   {
    * @param standalone Serialization includes only this object (as opposed to the full schema).
    * @param includeSchemaVersion Include the Schema's version information in the serialized object.
    */
-  public toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false): FormatProps {
+  public override toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false): FormatProps {
     const schemaJson = super.toJSON(standalone, includeSchemaVersion) as any;
     schemaJson.type = formatTypeToString(this.type);
     schemaJson.precision = this.precision;
@@ -178,7 +178,7 @@ export class Format extends SchemaItem   {
   }
 
   /** @internal */
-  public async toXml(schemaXml: Document): Promise<Element> {
+  public override async toXml(schemaXml: Document): Promise<Element> {
     const itemElement = await super.toXml(schemaXml);
     itemElement.setAttribute("type", formatTypeToString(this.type).toLowerCase());
     itemElement.setAttribute("precision", this.precision.toString());
@@ -226,49 +226,49 @@ export class Format extends SchemaItem   {
    * @alpha Used in schema editing.
    */
   protected setFormatType(formatType: FormatType) {
-    this._base.type = formatType;
+    this._base._type = formatType;
   }
 
   /**
    * @alpha Used in schema editing.
    */
   protected setRoundFactor(roundFactor: number) {
-    this._base.roundFactor = roundFactor;
+    this._base._roundFactor = roundFactor;
   }
 
   /**
    * @alpha Used in schema editing.
    */
   protected setShowSignOption(signOption: ShowSignOption) {
-    this._base.showSignOption = signOption;
+    this._base._showSignOption = signOption;
   }
 
   /**
    * @alpha Used in schema editing.
    */
   protected setDecimalSeparator(separator: string) {
-    this._base.decimalSeparator = separator;
+    this._base._decimalSeparator = separator;
   }
 
   /**
    * @alpha Used in schema editing.
    */
   protected setThousandSeparator(separator: string) {
-    this._base.thousandSeparator = separator;
+    this._base._thousandSeparator = separator;
   }
 
   /**
    * @alpha Used in schema editing.
    */
   protected setUomSeparator(separator: string) {
-    this._base.uomSeparator = separator;
+    this._base._uomSeparator = separator;
   }
 
   /**
    * @alpha Used in schema editing.
    */
   protected setStationSeparator(separator: string) {
-    this._base.stationSeparator = separator;
+    this._base._stationSeparator = separator;
   }
 }
 
@@ -277,14 +277,14 @@ export class Format extends SchemaItem   {
  * An abstract class used for schema editing.
  */
 export abstract class MutableFormat extends Format {
-  public abstract addUnit(unit: Unit | InvertedUnit, label?: string): void;
-  public abstract setPrecision(precision: number): void;
-  public abstract setFormatType(formatType: FormatType): void;
-  public abstract setRoundFactor(roundFactor: number): void;
-  public abstract setShowSignOption(signOption: ShowSignOption): void;
-  public abstract setDecimalSeparator(separator: string): void;
-  public abstract setThousandSeparator(separator: string): void;
-  public abstract setUomSeparator(separator: string): void;
-  public abstract setStationSeparator(separator: string): void;
-  public abstract setDisplayLabel(displayLabel: string): void;
+  public abstract override addUnit(unit: Unit | InvertedUnit, label?: string): void;
+  public abstract override setPrecision(precision: number): void;
+  public abstract override setFormatType(formatType: FormatType): void;
+  public abstract override setRoundFactor(roundFactor: number): void;
+  public abstract override setShowSignOption(signOption: ShowSignOption): void;
+  public abstract override setDecimalSeparator(separator: string): void;
+  public abstract override setThousandSeparator(separator: string): void;
+  public abstract override setUomSeparator(separator: string): void;
+  public abstract override setStationSeparator(separator: string): void;
+  public abstract override setDisplayLabel(displayLabel: string): void;
 }

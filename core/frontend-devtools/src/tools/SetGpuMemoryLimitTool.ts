@@ -6,18 +6,18 @@
  * @module Tools
  */
 
-import { GpuMemoryLimit, IModelApp, Tool } from "@bentley/imodeljs-frontend";
+import { GpuMemoryLimit, IModelApp, Tool } from "@itwin/core-frontend";
 
 /** Adjust the value of [TileAdmin.gpuMemoryLimit]($frontend). This controls how much GPU memory is allowed to be consumed
  * by tile graphics before the system starts discarding the graphics for the least recently drawn tiles.
  * @beta
  */
 export class SetGpuMemoryLimitTool extends Tool {
-  public static toolId = "SetGpuMemoryLimit";
-  public static get minArgs() { return 1; }
-  public static get maxArgs() { return 1; }
+  public static override toolId = "SetGpuMemoryLimit";
+  public static override get minArgs() { return 1; }
+  public static override get maxArgs() { return 1; }
 
-  public run(limit?: GpuMemoryLimit): boolean {
+  public override async run(limit?: GpuMemoryLimit): Promise<boolean> {
     if (undefined !== limit) {
       IModelApp.tileAdmin.gpuMemoryLimit = limit;
       IModelApp.requestNextAnimation();
@@ -26,7 +26,7 @@ export class SetGpuMemoryLimitTool extends Tool {
     return true;
   }
 
-  public parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const maxBytes = Number.parseInt(args[0], 10);
     const limit = Number.isNaN(maxBytes) ? args[0] as GpuMemoryLimit : maxBytes;
     return this.run(limit);

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { DepthType } from "@bentley/webgl-compatibility";
+import { DepthType } from "@itwin/webgl-compatibility";
 import { IModelApp } from "../../../IModelApp";
 import { GL } from "../../../render/webgl/GL";
 import { RenderState } from "../../../render/webgl/RenderState";
@@ -17,9 +17,7 @@ function withinTolerance(x: number, y: number): boolean {
 }
 
 describe("RenderState", () => {
-  before(async () => {
-    await IModelApp.startup();
-  });
+  before(async () => IModelApp.startup());
   after(async () => IModelApp.shutdown());
 
   it("should compare as expected", () => {

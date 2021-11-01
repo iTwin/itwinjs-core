@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Point2d, Point3d, Range3d } from "@bentley/geometry-core";
-import { ColorDef, MeshPolyline, OctEncodedNormal, QPoint3d } from "@bentley/imodeljs-common";
+import { Point2d, Point3d, Range3d } from "@itwin/core-geometry";
+import { ColorDef, MeshPolyline, OctEncodedNormal, QPoint3d } from "@itwin/core-common";
 import { DisplayParams } from "../../../render/primitives/DisplayParams";
 import { Triangle } from "../../../render/primitives/Primitives";
 import { Mesh } from "../../../render/primitives/mesh/MeshPrimitives";

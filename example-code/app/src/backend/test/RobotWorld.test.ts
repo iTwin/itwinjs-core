@@ -4,21 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { ClientRequestContext, Id64String, OpenMode } from "@bentley/bentleyjs-core";
-import { Angle, Point3d } from "@bentley/geometry-core";
-import { IModelJsFs, PhysicalModel, StandaloneDb } from "@bentley/imodeljs-backend";
-import { IModel } from "@bentley/imodeljs-common";
+import { Id64String, OpenMode } from "@itwin/core-bentley";
+import { Angle, Point3d } from "@itwin/core-geometry";
+import { IModelJsFs, PhysicalModel, StandaloneDb } from "@itwin/core-backend";
+import { IModel } from "@itwin/core-common";
 import { Barrier } from "../BarrierElement";
 import { Robot } from "../RobotElement";
 import { RobotWorldEngine } from "../RobotWorldEngine";
 import { RobotWorld } from "../RobotWorldSchema";
 import { IModelTestUtils } from "./Utils";
 
-const requestContext = new ClientRequestContext();
-
 describe("RobotWorld", () => {
   it("should run robotworld", async () => {
-    await RobotWorldEngine.initialize(requestContext);
+    await RobotWorldEngine.initialize();
 
     const iModelFile = IModelTestUtils.prepareOutputFile("should-run-robotworld.bim");
     const seedFile = IModelTestUtils.resolveAssetFile("empty.bim");
@@ -33,7 +31,7 @@ describe("RobotWorld", () => {
       // expect countRobots to fail
     }
 
-    await RobotWorld.importSchema(requestContext, iModel);
+    await RobotWorld.importSchema(iModel);
     iModel.saveChanges();
 
     assert.equal(RobotWorldEngine.countRobots(iModel), 0, "no Robots should be found in the empty iModel at first");

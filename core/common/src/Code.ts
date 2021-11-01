@@ -6,7 +6,7 @@
  * @module Codes
  */
 
-import { GuidString, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { GuidString, Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
 import { IModel } from "./IModel";
 
 /** The props that hold the identity of the object defining the uniqueness scope for a set of Code values.
@@ -48,8 +48,6 @@ export class Code implements CodeProps {
   public static createEmpty(): Code { const id: Id64String = Id64.fromLocalAndBriefcaseIds(1, 0); return new Code({ spec: id, scope: id }); }
   public static fromJSON(json?: any): Code { return json ? new Code(json) : Code.createEmpty(); }
   public toJSON(): CodeProps { return { spec: this.spec, scope: this.scope, value: this.value }; }
-  /** @deprecated Use the [[value]] property instead. */
-  public getValue(): string { return this.value; }
   public equals(other: Code): boolean { return Code.equalCodes(this, other); }
   /** @internal */
   public static equalCodes(c1: CodeProps, c2: CodeProps): boolean {
@@ -243,11 +241,8 @@ export class CodeSpec {
   public properties: any;
 
   /** Internal-only constructor. Proper use is to supply `properties` only or `scopeType` and `scopeReq` but not `properties`.
-   * > Note: The deprecation has to do with moving the constructor from public to internal
-   * @deprecated Use [[create]] or [[createFromJson]] instead of the internal constructor
-   * @internal
    */
-  public constructor(iModel: IModel, id: Id64String, name: string, scopeType?: CodeScopeSpec.Type, scopeReq?: CodeScopeSpec.ScopeRequirement, properties?: any) {
+  private constructor(iModel: IModel, id: Id64String, name: string, scopeType?: CodeScopeSpec.Type, scopeReq?: CodeScopeSpec.ScopeRequirement, properties?: any) {
     this.iModel = iModel;
     this.id = id;
     this.name = name;
@@ -270,7 +265,7 @@ export class CodeSpec {
    * @see [CodeSpecs.insert]($backend)
    */
   public static create(iModel: IModel, name: string, scopeType: CodeScopeSpec.Type, scopeReq?: CodeScopeSpec.ScopeRequirement): CodeSpec {
-    return new CodeSpec(iModel, Id64.invalid, name, scopeType, scopeReq, undefined); // eslint-disable-line deprecation/deprecation
+    return new CodeSpec(iModel, Id64.invalid, name, scopeType, scopeReq, undefined);
   }
 
   /** Create a new CodeSpec directly from JSON. Used internally by the CodeSpecs.load function.
@@ -282,12 +277,6 @@ export class CodeSpec {
 
   /** Will be true if the id of this CodeSpec is valid. */
   public get isValid(): boolean { return Id64.isValid(this.id); }
-
-  /** The scope type of this CodeSpec.
-   * @deprecated Use scopeType instead.
-   */
-  public get specScopeType(): CodeScopeSpec.Type { return this.scopeType; }
-  public set specScopeType(scopeType: CodeScopeSpec.Type) { this.scopeType = scopeType; }
 
   /** The scope type of this CodeSpec. */
   public get scopeType(): CodeScopeSpec.Type { return this.properties.scopeSpec.type; }

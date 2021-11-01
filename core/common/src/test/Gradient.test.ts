@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Angle } from "@bentley/geometry-core";
+import { Angle } from "@itwin/core-geometry";
 import { Gradient } from "../Gradient";
 
 describe("Gradient.Symb", () => {

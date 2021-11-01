@@ -6,9 +6,8 @@
  * @module Schema
  */
 
-import { IModelStatus, Logger } from "@bentley/bentleyjs-core";
-import { IModelError } from "@bentley/imodeljs-common";
-import { BackendLoggerCategory } from "./BackendLoggerCategory";
+import { IModelStatus } from "@itwin/core-bentley";
+import { IModelError } from "@itwin/core-common";
 import { ClassRegistry } from "./ClassRegistry";
 
 /** Base class for all schema classes - see [working with schemas and elements in TypeScript]($docs/learning/backend/SchemasAndElementsInTypeScript.md).
@@ -27,6 +26,21 @@ export class Schema {
    * @internal
    */
   public static get missingRequiredBehavior(): boolean { return false; }
+
+  /** Get a semver-compatible string from a padded version string.
+   * works on unpadded version strings as well
+   * if there is no write version, it will be added
+   * @example Schema.toSemverString("1.02.03") === "1.2.3"
+   * @example Schema.toSemverString("1.01") === "1.0.1" // write version was added
+   * @beta
+   */
+  public static toSemverString(paddedVersion: string): string {
+    const tuple = paddedVersion.split(".").map(Number);
+    const noWriteVersion = tuple.length === 2;
+    if (noWriteVersion)
+      tuple.splice(1, 0, 0); // insert 0 before the second element
+    return tuple.join(".");
+  }
 
   /** Schemas may not be instantiated. The method is not private only because that precludes subclassing. It throws an
    * error if it is ever called.
@@ -48,7 +62,7 @@ export class Schemas {
   public static registerSchema(schema: typeof Schema) {
     const key = schema.schemaName.toLowerCase();
     if (this.getRegisteredSchema(key))
-      throw new IModelError(IModelStatus.DuplicateName, `Schema "${schema.schemaName}" is already registered`, Logger.logWarning, BackendLoggerCategory.Schemas);
+      throw new IModelError(IModelStatus.DuplicateName, `Schema "${schema.schemaName}" is already registered`);
     this._registeredSchemas.set(key, schema);
   }
 

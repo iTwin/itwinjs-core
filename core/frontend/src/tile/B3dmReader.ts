@@ -6,9 +6,9 @@
  * @module Tiles
  */
 
-import { ByteStream, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
-import { Point3d, Transform, Vector3d } from "@bentley/geometry-core";
-import { B3dmHeader, BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureTable, GltfBufferData, GltfDataType, TileReadStatus } from "@bentley/imodeljs-common";
+import { ByteStream, Id64String, JsonUtils } from "@itwin/core-bentley";
+import { Point3d, Transform, Vector3d } from "@itwin/core-geometry";
+import { B3dmHeader, BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureTable, GltfBufferData, GltfDataType, TileReadStatus } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { RenderSystem } from "../render/RenderSystem";
@@ -141,7 +141,7 @@ export class B3dmReader extends GltfReader {
     return this.readGltfAndCreateGraphics(this._isLeaf, featureTable, this._range, this._transformToRoot, this._pseudoRtcBias);
   }
 
-  protected readBatchTable(mesh: Mesh, json: any) {
+  protected override readBatchTable(mesh: Mesh, json: any) {
     if (mesh.features !== undefined) {
       if (this._batchTableLength > 0 && undefined !== this._batchTableJson && undefined !== json.attributes) {
         const view = this.getBufferView(json.attributes, "_BATCHID");

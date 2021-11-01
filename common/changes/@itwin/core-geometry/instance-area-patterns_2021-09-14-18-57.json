@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "Apply tolerance when determining if ClipShape polygon is closed.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}

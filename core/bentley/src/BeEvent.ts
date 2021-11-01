@@ -6,6 +6,8 @@
  * @module Events
  */
 
+import { UnexpectedErrors } from "./UnexpectedErrors";
+
 /** A function invoked when a BeEvent is raised.
  * @public
  */
@@ -95,7 +97,11 @@ export class BeEvent<T extends Listener> {
       if (!context.listener) {
         dropped = true;
       } else {
-        context.listener.apply(context.scope, args);
+        try {
+          context.listener.apply(context.scope, args);
+        } catch (e) {
+          UnexpectedErrors.handle(e);
+        }
         if (context.once) {
           context.listener = undefined;
           dropped = true;
@@ -127,8 +133,8 @@ export class BeEvent<T extends Listener> {
   public clear(): void { this._listeners.length = 0; }
 }
 
-/** Specialization of BeEvent for Ui events that take a single strongly typed argument.
- * @beta Right name? Right package?
+/** Specialization of BeEvent for events that take a single strongly typed argument, primarily used for UI events.
+ * @public
  */
 export class BeUiEvent<TEventArgs> extends BeEvent<(args: TEventArgs) => void> {
   /** Raises event with single strongly typed argument. */

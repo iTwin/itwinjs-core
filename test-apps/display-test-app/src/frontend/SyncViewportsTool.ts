@@ -3,20 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelApp, Tool, TwoWayViewportSync, Viewport } from "@bentley/imodeljs-frontend";
+import { IModelApp, Tool, TwoWayViewportSync, Viewport } from "@itwin/core-frontend";
 
 /** Connect or disconnect two viewports using TwoWayViewportSync. */
 export class SyncViewportsTool extends Tool {
-  public static toolId = "SyncViewports";
-  public static get minArgs() { return 0; }
-  public static get maxArgs() { return 2; }
+  public static override toolId = "SyncViewports";
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 2; }
 
   private static _vp1?: Viewport;
   private static _vp2?: Viewport;
   private static _removeListeners?: VoidFunction;
   private static _sync = new TwoWayViewportSync();
 
-  public run(vp1?: Viewport, vp2?: Viewport): boolean {
+  public override async run(vp1?: Viewport, vp2?: Viewport): Promise<boolean> {
     const that = SyncViewportsTool;
     if (!vp1 && !vp2) {
       that.disconnect();
@@ -30,7 +30,7 @@ export class SyncViewportsTool extends Tool {
     return true;
   }
 
-  public parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     switch (args.length) {
       case 0:
         return this.run();

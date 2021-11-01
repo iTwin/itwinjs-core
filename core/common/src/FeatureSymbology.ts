@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { Id64, Id64Set, Id64String } from "@bentley/bentleyjs-core";
+import { Id64, Id64String } from "@itwin/core-bentley";
 import { BatchType, Feature } from "./FeatureTable";
 import { ColorDef } from "./ColorDef";
 import { GeometryClass } from "./GeometryParams";
@@ -14,9 +14,11 @@ import { LinePixels } from "./LinePixels";
 import { RgbColor, RgbColorProps } from "./RgbColor";
 import { SubCategoryOverride } from "./SubCategoryOverride";
 
-function copyIdSetToUint32Set(dst: Id64.Uint32Set, src?: Set<string>): void {
+function copyIdSetToUint32Set(dst: Id64.Uint32Set, src: Iterable<string>): void {
   dst.clear();
-  if (undefined !== src) {
+  if (typeof src === "string") {
+    dst.addId(src);
+  } else {
     for (const id of src)
       dst.addId(id);
   }
@@ -130,7 +132,7 @@ export class FeatureAppearance implements FeatureAppearanceProps {
   }
 
   public toJSON(): FeatureAppearanceProps {
-    const props: FeatureAppearanceProps = { };
+    const props: FeatureAppearanceProps = {};
     if (this.rgb)
       props.rgb = this.rgb.toJSON();
 
@@ -246,7 +248,7 @@ export interface FeatureAppearanceSource {
    * @param type The type of batch to which the feature belongs.
    * @param animationNodeId The Id of the corresponding node in the [[RenderSchedule]], or `0` if none.
    * @returns The desired appearance overrides, or `undefined` to indicate the feature should not be displayed.
-   * @see [Id64.isValidUint32Pair]($bentleyjs-core) to determine if the components of an [Id64String]($bentleyjs-core) represent a valid Id.
+   * @see [Id64.isValidUint32Pair]($core-bentley) to determine if the components of an [Id64String]($core-bentley) represent a valid Id.
    */
   getAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined;
 }
@@ -345,7 +347,7 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     if (this._neverDrawn.has(elemIdLo, elemIdHi))
       return true;
     else
-      return 0 !== animationNodeId && this.neverDrawnAnimationNodes.has(animationNodeId);
+      return this.neverDrawnAnimationNodes.has(animationNodeId);
   }
   /** @internal */
   protected isAlwaysDrawn(idLo: number, idHi: number): boolean { return this._alwaysDrawn.has(idLo, idHi); }
@@ -369,7 +371,7 @@ export class FeatureOverrides implements FeatureAppearanceSource {
   /** @internal */
   protected getElementOverrides(idLo: number, idHi: number, animationNodeId: number): FeatureAppearance | undefined {
     const app = this._elementOverrides.get(idLo, idHi);
-    if (app !== undefined || 0 === animationNodeId)
+    if (app !== undefined)
       return app;
 
     return this.animationNodeOverrides.get(animationNodeId);
@@ -386,29 +388,29 @@ export class FeatureOverrides implements FeatureAppearanceSource {
   /** Specify the Id of a animation node that should never be drawn. */
   public setAnimationNodeNeverDrawn(id: number): void { this.neverDrawnAnimationNodes.add(id); }
   /** Specify the Ids of elements that should never be drawn. */
-  public setNeverDrawnSet(ids: Id64Set) { copyIdSetToUint32Set(this._neverDrawn, ids); }
+  public setNeverDrawnSet(ids: Iterable<Id64String>) { copyIdSetToUint32Set(this._neverDrawn, ids); }
   /** Specify the Ids of elements that should always be drawn. */
-  public setAlwaysDrawnSet(ids: Id64Set, exclusive: boolean, ignoreSubCategory = true) {
+  public setAlwaysDrawnSet(ids: Iterable<Id64String>, exclusive: boolean, ignoreSubCategory = true) {
     copyIdSetToUint32Set(this._alwaysDrawn, ids);
     this.isAlwaysDrawnExclusive = exclusive;
     this.alwaysDrawnIgnoresSubCategory = ignoreSubCategory;
   }
 
   /** Returns the feature's appearance overrides, or undefined if the feature is not visible. */
-  public getFeatureAppearance(feature: Feature, modelId: Id64String, type: BatchType = BatchType.Primary): FeatureAppearance | undefined {
+  public getFeatureAppearance(feature: Feature, modelId: Id64String, type: BatchType = BatchType.Primary, animationNodeId = 0): FeatureAppearance | undefined {
     return this.getAppearance(
       Id64.getLowerUint32(feature.elementId), Id64.getUpperUint32(feature.elementId),
       Id64.getLowerUint32(feature.subCategoryId), Id64.getUpperUint32(feature.subCategoryId),
       feature.geometryClass,
       Id64.getLowerUint32(modelId), Id64.getUpperUint32(modelId),
-      type, 0);
+      type, animationNodeId);
   }
 
   private static readonly _weight1Appearance = FeatureAppearance.fromJSON({ weight: 1 });
 
   /** Returns a feature's appearance overrides, or undefined if the feature is not visible.
    * Takes Id64s as pairs of unsigned 32-bit integers for efficiency, because that is how they are stored by the PackedFeatureTable associated with each batch of graphics.
-   * @see [[getFeatureAppearance]] for an equivalent function that accepts [Id64String]($bentleyjs-core)s instead of integer pairs.
+   * @see [[getFeatureAppearance]] for an equivalent function that accepts [Id64String]($core-bentley)s instead of integer pairs.
    */
   public getAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined {
     if (BatchType.VolumeClassifier === type || BatchType.PlanarClassifier === type)
@@ -625,7 +627,7 @@ export interface FeatureAppearanceProvider {
    * @param animationNodeId The Id of the corresponding node in the [[RenderSchedule]], or `0` if none.
    * @returns The desired appearance overrides, or `undefined` to indicate the feature should not be displayed.
    * @see [[FeatureAppearanceSource.getAppearance]] to forward the request to the source.
-   * @see [Id64.isValidUint32Pair]($bentleyjs-core) to determine if the components of an [Id64String]($bentleyjs-core) represent a valid Id.
+   * @see [Id64.isValidUint32Pair]($core-bentley) to determine if the components of an [Id64String]($core-bentley) represent a valid Id.
    */
   getFeatureAppearance(source: FeatureAppearanceSource, elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined;
 }

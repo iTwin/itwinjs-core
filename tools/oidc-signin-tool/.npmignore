@@ -2,4 +2,4 @@
 *
 !lib/**/*.d.ts
 !lib/**/*.js
-test
+lib/**/test/**

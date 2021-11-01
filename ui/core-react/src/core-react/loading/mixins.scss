@@ -1,0 +1,57 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "../style/index";
+
+@mixin uicore-spinner(
+  $size,
+  $borderSize: $size * 0.125,
+  $activeColor: $buic-foreground-primary,
+  $selector: "&::after",
+  $time: 1.5s
+) {
+  // Animation Keyframes
+  @keyframes uicoreSpinner {
+    0% {
+      transform: translate3d(-50%, -50%, 0) rotate(0deg);
+    }
+    100% {
+      transform: translate3d(-50%, -50%, 0) rotate(360deg);
+    }
+  }
+
+  display: inline-block;
+  position: relative;
+
+  width: $size;
+  height: $size;
+
+  // Styles to fade out spinner when loaded
+  &.-loaded {
+    opacity: 0;
+    transition: opacity linear 0.1s;
+  }
+
+  // Spinner
+  #{$selector} {
+    height: $size;
+    width: $size;
+
+    border: solid $borderSize $buic-background-control-stroke;
+    border-bottom-color: #{$activeColor};
+    border-radius: 50%;
+    box-sizing: border-box;
+
+    content: "";
+    opacity: inherit;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+
+    animation: $time 0.1s linear infinite uicoreSpinner;
+    transform: translate3d(-50%, -50%, 0);
+    transform-origin: center;
+    will-change: transform;
+  }
+}

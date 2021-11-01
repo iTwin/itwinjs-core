@@ -1,9 +1,0 @@
---require scripts/copy-test-setup.js
---require source-map-support/register
---require jsdom-global/register
---require ignore-styles
---check-leaks
---no-timeouts
---file lib/setup.js
---reporter node_modules/@bentley/build-tools/mocha-reporter
---reporter-options mochaFile=lib/test/junit_results.xml

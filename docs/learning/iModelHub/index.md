@@ -1,6 +1,6 @@
 # iModelHub - The Backbone for iTwin.js Applications
 
-[iModelHub](http://www.iModelHub.com) is the control center for iModels. It is responsible for coordinating concurrent access to [iModels](./iModels/index.md) as well as changes made to them in a form of [ChangeSets](../Glossary.md#changeset).
+iModelHub is the control center for iModels. It is responsible for coordinating concurrent access to [iModels](./iModels/index.md) as well as changes made to them in a form of [ChangeSets](../Glossary.md#changeset).
 
 ![iModelHub](./iModelHub.png)
 
@@ -23,7 +23,7 @@ When an iTwin.js backend opens an iModel, it first verifies with iModelHub that 
 
 ## Creating a new iModel in iModelHub
 
-When an iModel is first created, it is uploaded to iModelHub, assigned a Guid, associated with an iTwin context (e.g. a [Project]($context-registry-client)), and its timeline is initialized. iModelHub provides tools to configure access to the iModel by users and applications. As new users and agents connect to iModelHub to access the iModel, they are each assigned briefcases with a unique Id.
+When an iModel is first created, it is uploaded to iModelHub, assigned a Guid, associated with an iTwin, and its timeline is initialized. iModelHub provides tools to configure access to the iModel by users and applications. As new users and agents connect to iModelHub to access the iModel, they are each assigned briefcases with a unique Id.
 
 > See [Working with iModels](./iModels/index.md).
 

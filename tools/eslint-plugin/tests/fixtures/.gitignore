@@ -1,0 +1,2 @@
+# don't ignore node_modules since we need them for some fixtures
+!node_modules

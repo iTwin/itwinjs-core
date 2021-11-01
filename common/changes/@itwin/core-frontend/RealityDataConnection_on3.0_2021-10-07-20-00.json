@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Generalize the way to attach a reality data by adding a RealityDataSourceKey to ContextRealityModelProps",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

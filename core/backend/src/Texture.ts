@@ -6,10 +6,10 @@
  * @module Elements
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String } from "@itwin/core-bentley";
 import {
-  Base64EncodedString, BisCodeSpec, Code, CodeScopeProps, CodeSpec, ImageSourceFormat, TextureFlags, TextureProps,
-} from "@bentley/imodeljs-common";
+  Base64EncodedString, BisCodeSpec, Code, CodeScopeProps, CodeSpec, ImageSourceFormat, TextureProps,
+} from "@itwin/core-common";
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
 
@@ -26,12 +26,9 @@ export interface TextureCreateProps extends Omit<TextureProps, "data"> {
  */
 export class Texture extends DefinitionElement {
   /** @internal */
-  public static get className(): string { return "Texture"; }
+  public static override get className(): string { return "Texture"; }
   public format: ImageSourceFormat;
   public data: Uint8Array;
-  public width: number;
-  public height: number;
-  public flags: TextureFlags;
   public description?: string;
 
   /** @internal */
@@ -39,20 +36,14 @@ export class Texture extends DefinitionElement {
     super(props, iModel);
     this.format = props.format;
     this.data = typeof props.data === "string" ? Base64EncodedString.toUint8Array(props.data) : props.data;
-    this.width = props.width;
-    this.height = props.height;
-    this.flags = props.flags;
     this.description = props.description;
   }
 
   /** @internal */
-  public toJSON(): TextureProps {
+  public override toJSON(): TextureProps {
     const val = super.toJSON() as TextureProps;
     val.format = this.format;
     val.data = Base64EncodedString.fromUint8Array(this.data);
-    val.width = this.width;
-    val.height = this.height;
-    val.flags = this.flags;
     val.description = this.description;
     return val;
   }
@@ -67,29 +58,23 @@ export class Texture extends DefinitionElement {
     return 0 === name.length ? Code.createEmpty() : new Code({ spec: codeSpec.id, scope: scopeModelId, value: name });
   }
 
-  /**
-   * Create a Texture with given parameters.
-   * @param iModelDb The iModel
-   * @param definitionModelId The [[DefinitionModel]]
-   * @param name The name/CodeValue of the Texture
-   * @param format Format of the image data
-   * @param data The image data in a string
-   * @param width The width of the texture
-   * @param height The height of the texture
+  /** Create a texture with the given parameters.
+   * @param iModelDb The iModel to contain the texture.
+   * @param definitionModelId The [[DefinitionModel]] to contain the texture.
+   * @param name The name to serve as the texture's [Code]($common) value.
+   * @param format The format of the image data.
+   * @param data The image data in the format specified by `format`.
    * @param description An optional description of the texture
-   * @param flags Optional flags
    * @returns The newly constructed Texture element.
    * @throws [[IModelError]] if unable to create the element.
+   * @see [[insertTexture]] to insert a new texture into the iModel.
    */
-  public static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, width: number, height: number, description: string, flags: TextureFlags): Texture {
+  public static createTexture(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, description?: string): Texture {
     const textureProps: TextureCreateProps = {
       classFullName: this.classFullName,
       code: this.createCode(iModelDb, definitionModelId, name),
       format,
       data,
-      width,
-      height,
-      flags,
       description,
       model: definitionModelId,
       isPrivate: false,
@@ -98,22 +83,19 @@ export class Texture extends DefinitionElement {
     return new Texture(textureProps, iModelDb);
   }
 
-  /**
-   * Insert a new Texture into a model.
-   * @param iModelDb Insert into this iModel
-   * @param definitionModelId Insert the new Texture into this DefinitionModel
-   * @param name The name/CodeValue of the Texture
-   * @param format Format of the image data
-   * @param data The image data in a string
-   * @param width The width of the texture
-   * @param height The height of the texture
+  /** Insert a new texture into a [[DefinitionModel]].
+   * @param iModelDb The iModel to contain the texture.
+   * @param definitionModelId The [[DefinitionModel]] to contain the texture.
+   * @param name The name to serve as the texture's [Code]($common) value.
+   * @param format The format of the image data.
+   * @param data The image data in the format specified by `format`.
    * @param description An optional description of the texture
-   * @param flags Optional flags
-   * @returns The Id of the newly inserted Texture element.
+   * @returns The Id of the newly-inserted texture element.
    * @throws [[IModelError]] if unable to insert the element.
+   * @see [[insertTexture]] to insert a new texture into the iModel.
    */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, width: number, height: number, description: string, flags: TextureFlags): Id64String {
-    const texture = this.create(iModelDb, definitionModelId, name, format, data, width, height, description, flags);
+  public static insertTexture(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: Uint8Array | Base64EncodedString, description?: string): Id64String {
+    const texture = this.createTexture(iModelDb, definitionModelId, name, format, data, description);
     return iModelDb.elements.insertElement(texture);
   }
 }

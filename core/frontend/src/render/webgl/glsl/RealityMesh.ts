@@ -6,8 +6,8 @@
  * @module WebGL
  */
 
-import { assert } from "@bentley/bentleyjs-core";
-import { ColorDef } from "@bentley/imodeljs-common";
+import { assert } from "@itwin/core-bentley";
+import { ColorDef } from "@itwin/core-common";
 import { AttributeMap } from "../AttributeMap";
 import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
@@ -18,7 +18,7 @@ import { Texture } from "../Texture";
 import { addVaryingColor } from "./Color";
 import { addShaderFlags, addUInt32s } from "./Common";
 import { decodeDepthRgb, unquantize2d } from "./Decode";
-import { addFeatureSymbology, FeatureSymbologyOptions } from "./FeatureSymbology";
+import { addFeatureSymbology, addHiliter, FeatureSymbologyOptions } from "./FeatureSymbology";
 import { addAltPickBufferOutputs, addPickBufferOutputs, assignFragColor } from "./Fragment";
 import { addColorPlanarClassifier, addFeaturePlanarClassifier, addHilitePlanarClassifier } from "./PlanarClassification";
 import { addSolarShadowMap } from "./SolarShadowMapping";
@@ -165,14 +165,27 @@ function addColorOverrideMix(frag: FragmentShaderBuilder) {
 
 }
 
-/** @internal */
-export function createClassifierRealityMeshHiliter(): ProgramBuilder {
+function createRealityMeshHiliterBuilder(): ProgramBuilder {
   const builder = new ProgramBuilder(AttributeMap.findAttributeMap(TechniqueId.RealityMesh, false));
-  addHilitePlanarClassifier(builder, false);
   const vert = builder.vert;
   vert.set(VertexShaderComponent.ComputePosition, computePosition);
   addModelViewProjectionMatrix(vert);
   builder.frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
+  return builder;
+
+}
+
+/** @internal */
+export function createClassifierRealityMeshHiliter(): ProgramBuilder {
+  const builder = createRealityMeshHiliterBuilder();
+  addHilitePlanarClassifier(builder, false);
+  return builder;
+}
+
+/** @internal */
+export function createRealityMeshHiliter(): ProgramBuilder {
+  const builder = createRealityMeshHiliterBuilder();
+  addHiliter(builder, false);
   return builder;
 }
 
@@ -210,7 +223,7 @@ export default function createRealityMeshBuilder(flags: TechniqueFlags): Program
   addFeatureSymbology(builder, feat, opts);
   if (feat === FeatureMode.Overrides) {
     addShaderFlags(builder);
-    addVaryingColor(builder, "return vec4(-1.0, -1.0, -1.0, -1.0);" );
+    addVaryingColor(builder, "return vec4(-1.0, -1.0, -1.0, -1.0);");
     applyFragmentFeatureColor = mixFeatureColor;
     addColorOverrideMix(builder.frag);
   }

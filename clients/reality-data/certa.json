@@ -1,8 +1,8 @@
 {
   // Comments are allowed here!
-  "testBundle": "./lib/test/webpack/bundled-tests.js",
-  "instrumentedTestBundle": "./lib/test/webpack/bundled-tests.instrumented.js",
-  "backendInitModule": "./node_modules/@bentley/oidc-signin-tool/lib/certa/certaBackend.js",
+  "testBundle": "./lib/cjs/test/webpack/bundled-tests.js",
+  // "instrumentedTestBundle": "./lib/cjs/test/webpack/bundled-tests.instrumented.js",
+  "backendInitModule": "./node_modules/@itwin/oidc-signin-tool/lib/cjs/certa/certaBackend.js",
   "ports": {
     "debugging": 5858,
     "frontend": 3000,
@@ -10,7 +10,7 @@
   },
   "mochaOptions": {
     "timeout": 50000,
-    "reporter": "node_modules/@bentley/build-tools/mocha-reporter",
+    "reporter": "node_modules/@itwin/build-tools/mocha-reporter",
     "reporterOptions": {
       "mochaFile": "lib/test/junit_results.xml"
     }

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/geonames-extension",
+      "comment": "tool.run and tool.parseAndRun are now async methods",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/geonames-extension"
+}

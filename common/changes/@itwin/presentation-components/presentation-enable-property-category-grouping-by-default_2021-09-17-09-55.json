@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-components",
+      "comment": "Make property category grouping enabled by default.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-components"
+}

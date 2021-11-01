@@ -4,13 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { ScreenViewport } from "../Viewport";
-import { Marker } from "../Marker";
 import { Decorator } from "../ViewManager";
 import { DecorateContext } from "../ViewContext";
 import { IModelApp } from "../IModelApp";
-import { SpatialViewState } from "../SpatialViewState";
-import { BlankConnection } from "../IModelConnection";
-import { Cartographic } from "@bentley/imodeljs-common";
+import { openBlankViewport } from "./openBlankViewport";
+import { Marker } from "../Marker";
 
 describe("ScreenViewport", () => {
   beforeEach(async () => {
@@ -57,29 +55,8 @@ describe("ScreenViewport", () => {
     }
   }
 
-  function createMockViewport() {
-    const parentDiv = document.createElement("div");
-    parentDiv.setAttribute("height", "100px");
-    parentDiv.setAttribute("width", "100px");
-    parentDiv.style.height = parentDiv.style.width = "100px";
-    document.body.appendChild(parentDiv);
-    const vp = ScreenViewport.create(
-      parentDiv,
-      SpatialViewState.createBlank(
-        BlankConnection.create({
-          name: "test",
-          location: Cartographic.fromRadians(0, 0),
-          extents: { low: { x: 0, y: 0, z: 0 }, high: { x: 1, y: 1, z: 1 } },
-        }),
-        { x: 0, y: 0, z: 0 },
-        { x: 1, y: 1, z: 1 }
-      )
-    );
-    return vp;
-  }
-
   it("should not delete markers that are readded by registered decorators", () => {
-    const vp = createMockViewport();
+    const vp = openBlankViewport();
     const decorator = new AddMarkersAlwaysDecorator(vp);
     IModelApp.viewManager.addDecorator(decorator);
     IModelApp.viewManager.addViewport(vp);
@@ -104,7 +81,7 @@ describe("ScreenViewport", () => {
   });
 
   it("should delete markers that aren't readded by registered decorators", () => {
-    const vp = createMockViewport();
+    const vp = openBlankViewport();
     const decorator = new AddMarkersOnceDecorator(vp);
     IModelApp.viewManager.addDecorator(decorator);
     IModelApp.viewManager.addViewport(vp);

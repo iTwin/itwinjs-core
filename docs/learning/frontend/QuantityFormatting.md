@@ -1,10 +1,10 @@
 # QuantityFormatter
 
-The [QuantityFormatter]($frontend) is a class that formats quantity values. This class is used on the front-end to format quantities for interactive tools, such as the different measure tools. The Quantity Formatter is not used to format properties stored in the iModel as that is work is done on the back-end via the Presentation layer. The QuantityFormatter can be set to formatted values in the same [PresentationUnitSystem]($presentation-common) as that being used by the back-end.
+The [QuantityFormatter]($frontend) is a class that formats quantity values. This class is used on the front-end to format quantities for interactive tools, such as the different measure tools. The Quantity Formatter is not used to format properties stored in the iModel as that is work is done on the back-end via the Presentation layer. The QuantityFormatter can be set to format values in the same unit system as that being used by the back-end.
 
 ## QuantityType
 
-There are nine built-in quantity types, see [QuantityType]($frontend). The QuantityFormatter defines default formatting specification for each of these types per `PresentationUnitSystem`. Custom quantity types that implement the [CustomQuantityTypeDefinition]($frontend) interface may also be registered with the QuantityFormatter, see method `registerQuantityType`.
+There are nine built-in quantity types, see [QuantityType]($frontend). The QuantityFormatter defines default formatting specification for each of these types per unit system. Custom quantity types that implement the [CustomQuantityTypeDefinition]($frontend) interface may also be registered with the QuantityFormatter, see method `registerQuantityType`.
 
 ### Overriding Default Formats
 

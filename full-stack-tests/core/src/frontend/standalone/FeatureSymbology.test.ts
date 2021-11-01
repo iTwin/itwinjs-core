@@ -2,18 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64 } from "@bentley/bentleyjs-core";
-import {
-  ColorDef, Feature, FeatureAppearance, FeatureAppearanceProps, GeometryClass, LinePixels, RgbColor, SubCategoryOverride, ViewDefinitionProps, ViewFlags,
-} from "@bentley/imodeljs-common";
-import { FeatureSymbology, IModelApp, IModelConnection, SnapshotConnection, SpatialViewState, ViewState } from "@bentley/imodeljs-frontend";
 import { assert, expect } from "chai";
+import { Id64 } from "@itwin/core-bentley";
+import {
+  ColorDef, Feature, FeatureAppearance, FeatureAppearanceProps, GeometryClass, LinePixels, RgbColor, SubCategoryOverride, ViewDefinitionProps,
+  ViewFlags,
+} from "@itwin/core-common";
+import { FeatureSymbology, IModelConnection, SnapshotConnection, SpatialViewState, ViewState } from "@itwin/core-frontend";
+import { TestUtility } from "../TestUtility";
 
 class Overrides extends FeatureSymbology.Overrides {
   public constructor(view?: ViewState) { super(view); }
 
-  public get neverDrawn() { return this._neverDrawn; }
-  public get alwaysDrawn() { return this._alwaysDrawn; }
+  public override get neverDrawn() { return this._neverDrawn; }
+  public override get alwaysDrawn() { return this._alwaysDrawn; }
   public get modelOverrides() { return this._modelOverrides; }
   public get elementOverrides() { return this._elementOverrides; }
   public get subCategoryOverrides() { return this._subCategoryOverrides; }
@@ -32,7 +34,7 @@ describe("FeatureSymbology.Overrides", () => {
   let viewState: SpatialViewState;
 
   before(async () => {
-    await IModelApp.startup();
+    await TestUtility.startFrontend();
     imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     const viewRows: ViewDefinitionProps[] = await imodel.views.queryProps({ from: SpatialViewState.classFullName });
     assert.exists(viewRows, "Should find some views");
@@ -47,7 +49,7 @@ describe("FeatureSymbology.Overrides", () => {
   after(async () => {
     if (imodel)
       await imodel.close();
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("constructor with ViewState parameter works as expected", () => {
@@ -62,30 +64,23 @@ describe("FeatureSymbology.Overrides", () => {
 
   it("isClassVisible works as expected", () => {
     let overrides = new Overrides();
-    const vf = new ViewFlags();
-    vf.constructions = false;
-    vf.dimensions = false;
-    vf.patterns = false;
-    viewState.displayStyle.viewFlags = vf;
+    viewState.displayStyle.viewFlags = new ViewFlags({ constructions: false, dimensions: false, patterns: false });
 
     assert.isFalse(overrides.isClassVisible(GeometryClass.Construction), "constructions 1");
     assert.isFalse(overrides.isClassVisible(GeometryClass.Dimension), "dimensions 1");
     assert.isFalse(overrides.isClassVisible(GeometryClass.Pattern), "patterns 1");
 
-    vf.constructions = true;
-    viewState.displayStyle.viewFlags = vf;
+    viewState.displayStyle.viewFlags = viewState.displayStyle.viewFlags.with("constructions", true);
     overrides = new Overrides(viewState);
 
     assert.isTrue(overrides.isClassVisible(GeometryClass.Construction), "constructions 2");
 
-    vf.dimensions = true;
-    viewState.displayStyle.viewFlags = vf;
+    viewState.displayStyle.viewFlags = viewState.displayStyle.viewFlags.with("dimensions", true);
     overrides = new Overrides(viewState);
 
     assert.isTrue(overrides.isClassVisible(GeometryClass.Dimension), "dimensions 2");
 
-    vf.patterns = true;
-    viewState.displayStyle.viewFlags = vf;
+    viewState.displayStyle.viewFlags = viewState.displayStyle.viewFlags.with("patterns", true);
     overrides = new Overrides(viewState);
 
     assert.isTrue(overrides.isClassVisible(GeometryClass.Pattern), "patterns 2");
@@ -121,9 +116,7 @@ describe("FeatureSymbology.Overrides", () => {
     overrides.setVisibleSubCategory(subCategoryId);
     assert.isFalse(overrides.isFeatureVisible(feature), "if geometryClass isn't visible, feature isn't visible");
 
-    const vf = new ViewFlags();
-    vf.constructions = true;
-    viewState.displayStyle.viewFlags = vf;
+    viewState.displayStyle.viewFlags = new ViewFlags({ constructions: true });
     overrides = new Overrides(viewState);
     overrides.setVisibleSubCategory(subCategoryId);
     assert.isTrue(overrides.isFeatureVisible(feature), "if geometryClass and subCategory are visible, feature is visible");
@@ -166,9 +159,7 @@ describe("FeatureSymbology.Overrides", () => {
     appearance = overrides.getFeatureAppearance(feature, id);
     assert.isDefined(appearance, "return true if elementId is in always drawn set");
 
-    const vf = new ViewFlags();
-    vf.constructions = true;
-    viewState.displayStyle.viewFlags = vf;
+    viewState.displayStyle.viewFlags = new ViewFlags({ constructions: true });
     overrides = new Overrides(viewState);
     overrides.setVisibleSubCategory(subCategoryId);
     appearance = overrides.getFeatureAppearance(feature, id);
@@ -259,9 +250,7 @@ describe("FeatureSymbology.Overrides", () => {
     assert.isFalse(overrides.isFeatureVisible(feature), "if elementId is in display style's excludedElements, feature isn't visible");
     assert.isTrue(overrides.isFeatureVisible(feature2), "if elementId is in always drawn set and not in the neverDrawn set and not in display style's excludedElements, feature is visible");
 
-    const vf = new ViewFlags();
-    vf.constructions = true;
-    viewState.displayStyle.viewFlags = vf;
+    viewState.displayStyle.viewFlags = new ViewFlags({ constructions: true });
     overrides = new Overrides(viewState);
     overrides.setVisibleSubCategory(subCategoryId);
     assert.isFalse(overrides.isFeatureVisible(feature), "if elementId is in excludedElements and if geometryClass and subCategory are visible, feature isn't visible");
@@ -280,18 +269,18 @@ describe("FeatureSymbology.Overrides", () => {
     const modelOverride2 = FeatureAppearance.fromJSON({ ...modelOverride1, transparency: 200 / 255 });
 
     const displayStyle = viewState.displayStyle;
-    displayStyle.overrideModelAppearance(modelId1, modelOverride1);
-    assert(displayStyle.hasModelAppearanceOverride);
-    assert(displayStyle.getModelAppearanceOverride(modelId1)!.equals(modelOverride1));
+    displayStyle.settings.overrideModelAppearance(modelId1, modelOverride1);
+    assert(displayStyle.settings.hasModelAppearanceOverride);
+    assert(displayStyle.settings.getModelAppearanceOverride(modelId1)!.equals(modelOverride1));
 
-    displayStyle.dropModelAppearanceOverride(modelId1);
-    assert(!displayStyle.hasModelAppearanceOverride);
+    displayStyle.settings.dropModelAppearanceOverride(modelId1);
+    assert(!displayStyle.settings.hasModelAppearanceOverride);
 
-    displayStyle.overrideModelAppearance(modelId1, modelOverride1);
-    displayStyle.overrideModelAppearance(modelId2, modelOverride2);
-    assert(displayStyle.getModelAppearanceOverride(modelId1)!.equals(modelOverride1));
-    assert(displayStyle.getModelAppearanceOverride(modelId2)!.equals(modelOverride2));
-    expect(displayStyle.getModelAppearanceOverride(modelId3)).to.be.undefined;
+    displayStyle.settings.overrideModelAppearance(modelId1, modelOverride1);
+    displayStyle.settings.overrideModelAppearance(modelId2, modelOverride2);
+    assert(displayStyle.settings.getModelAppearanceOverride(modelId1)!.equals(modelOverride1));
+    assert(displayStyle.settings.getModelAppearanceOverride(modelId2)!.equals(modelOverride2));
+    expect(displayStyle.settings.getModelAppearanceOverride(modelId3)).to.be.undefined;
 
     const overrides = new Overrides(viewState);
     overrides.setAlwaysDrawn(elementId);

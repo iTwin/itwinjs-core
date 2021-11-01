@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/oidc-signin-tool",
+      "comment": "Removed config.app usage",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/oidc-signin-tool",
+  "email": "20171969+pbell97@users.noreply.github.com "
+}

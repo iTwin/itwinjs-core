@@ -24,7 +24,7 @@ import { CheckpointV2Handler } from "./imodelhub/CheckpointsV2";
 
 /**
  * Base class that allows access to different iModel related Class handlers. Handlers should be accessed through an instance of this class, rather than constructed directly.
- * @public
+ * @internal
  */
 export abstract class IModelClient {
   protected _handler: IModelBaseHandler;
@@ -61,7 +61,7 @@ export abstract class IModelClient {
 
   /**
    * Get the handler for [[HubIModel]] instances.
-   * @note Use [[IModelHubClient.IModel]] for the preferred single iModel per [[Project]] workflow.
+   * @note Use [[IModelHubClient.IModel]] for the preferred single iModel per [[ITwin]] workflow.
    */
   public get iModels(): IModelsHandler {
     return new IModelsHandler(this._handler, this._fileHandler);
@@ -69,7 +69,6 @@ export abstract class IModelClient {
 
   /**
    * Get the handler for [[HubIModel]].
-   * @beta
    */
   public get iModel(): IModelHandler {
     return new IModelHandler(new IModelsHandler(this._handler, this._fileHandler));
@@ -177,7 +176,7 @@ export abstract class IModelClient {
   /**
    * Adds a method that will be called for every request to modify HttpRequestOptions.
    * @param func Method that will be used to modify HttpRequestOptions.
-   * @beta
+   * @internal
    */
   public use(transformer: HttpRequestOptionsTransformer) {
     this._handler.use(transformer);

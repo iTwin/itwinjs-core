@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { Id64, Id64String } from "@bentley/bentleyjs-core";
+import { Id64, Id64String } from "@itwin/core-bentley";
 import { ColorDef } from "../ColorDef";
 import { RgbColor } from "../RgbColor";
 import { BatchType, Feature } from "../FeatureTable";
@@ -78,10 +78,10 @@ describe("FeatureAppearance", () => {
       // NB: Not testing material because unclear that it's implemented properly...
     }
 
-    test({ }, { });
+    test({}, {});
     test({ color: ColorDef.from(0, 127, 255).toJSON() }, { rgb: { r: 0, g: 127, b: 255 } });
-    test({ invisible: true }, { });
-    test({ invisible: false }, { });
+    test({ invisible: true }, {});
+    test({ invisible: false }, {});
     test({ weight: 12 }, { weight: 12 });
     test({ transp: 0 }, { transparency: 0 });
     test({ transp: 0.5 }, { transparency: 0.5 });
@@ -92,8 +92,8 @@ describe("FeatureAppearance", () => {
 describe("FeatureOverrides", () => {
   class Overrides extends FeatureOverrides {
     public constructor() { super(); }
-    public get neverDrawn() { return this._neverDrawn; }
-    public get alwaysDrawn() { return this._alwaysDrawn; }
+    public override get neverDrawn() { return this._neverDrawn; }
+    public override get alwaysDrawn() { return this._alwaysDrawn; }
     public get modelOverrides() { return this._modelOverrides; }
     public get elementOverrides() { return this._elementOverrides; }
     public get subCategoryOverrides() { return this._subCategoryOverrides; }
@@ -278,6 +278,36 @@ describe("FeatureOverrides", () => {
     expect(ovrs.isSubCategoryVisible(3, 0)).to.be.false;
     expect(ovrs.isSubCategoryVisible(4, 0)).to.be.false;
   });
+
+  it("hides animation nodes", () => {
+    const feature = new Feature("0x123");
+    const modelId = "0x456";
+    const ovrs = new Overrides();
+
+    ovrs.neverDrawnAnimationNodes.add(1);
+    ovrs.neverDrawnAnimationNodes.add(0);
+    expect(ovrs.getFeatureAppearance(feature, modelId, undefined, 1)).to.be.undefined;
+    expect(ovrs.getFeatureAppearance(feature, modelId, undefined, 2)).not.to.be.undefined;
+    expect(ovrs.getFeatureAppearance(feature, modelId, undefined, 0)).to.be.undefined;
+  });
+
+  it("overrides animation nodes", () => {
+    const ovrs = new Overrides();
+
+    const expectAppearance = (nodeId: number, expected: FeatureAppearance) => {
+      const actual = ovrs.getFeatureAppearance(new Feature("0x123"), "0x456", undefined, nodeId)!;
+      expect(actual).not.to.be.undefined;
+      expect(JSON.stringify(actual)).to.equal(JSON.stringify(expected));
+    };
+
+    const green = FeatureAppearance.fromRgb(ColorDef.green);
+    const blue = FeatureAppearance.fromRgb(ColorDef.blue);
+    ovrs.animationNodeOverrides.set(0, green);
+    ovrs.animationNodeOverrides.set(1, blue);
+    expectAppearance(1, blue);
+    expectAppearance(2, FeatureAppearance.defaults);
+    expectAppearance(0, green);
+  });
 });
 
 describe("FeatureAppearanceProvider", () => {
@@ -299,7 +329,7 @@ describe("FeatureAppearanceProvider", () => {
   }
 
   function getAppearance(source: FeatureAppearanceSource, provider: FeatureAppearanceProvider): FeatureAppearance | undefined {
-    return provider.getFeatureAppearance(source, 0, 0, 0, 0, GeometryClass.Primary, 0,  0, BatchType.Primary, 0);
+    return provider.getFeatureAppearance(source, 0, 0, 0, 0, GeometryClass.Primary, 0, 0, BatchType.Primary, 0);
   }
 
   it("Chains providers in expected order", () => {

@@ -5,9 +5,9 @@
 /** @packageDocumentation
  * @module LocatingElements
  */
-import { Id64 } from "@bentley/bentleyjs-core";
-import { Arc3d, CurvePrimitive, LineSegment3d, LineString3d, Path, Point3d, Transform, Vector3d, XYZProps } from "@bentley/geometry-core";
-import { GeometryClass, LinePixels } from "@bentley/imodeljs-common";
+import { Id64 } from "@itwin/core-bentley";
+import { Arc3d, CurvePrimitive, LineSegment3d, LineString3d, Path, Point3d, Transform, Vector3d, XYZProps } from "@itwin/core-geometry";
+import { GeometryClass, LinePixels } from "@itwin/core-common";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { GraphicType } from "./render/GraphicBuilder";
@@ -97,7 +97,7 @@ export enum HitDetailType {
  */
 export class HitDetail {
   private readonly _iModel?: IModelConnection;
-  /** @alpha */
+  /** @internal chiefly for debugging. */
   public readonly tileId?: string;
   /** @alpha */
   public readonly isClassifier: boolean;
@@ -145,7 +145,7 @@ export class HitDetail {
     return this.modelId === this.sourceId;
   }
   // return whether the hit point is from map.
-  public get isMapHit(): boolean { return undefined !== this.viewport.displayStyle.mapLayerFromHit(this); }
+  public get isMapHit(): boolean { return undefined !== this.viewport.mapLayerFromHit(this); }
 
   /** Create a deep copy of this HitDetail */
   public clone(): HitDetail {
@@ -154,29 +154,31 @@ export class HitDetail {
   }
 
   /** Draw this HitDetail as a Decoration. Causes the picked element to *flash* */
-  public draw(_context: DecorateContext) { this.viewport.setFlashed(this.sourceId, 0.25); }
+  public draw(_context: DecorateContext) {
+    this.viewport.flashedId = this.sourceId;
+  }
 
   /** Get the tooltip content for this HitDetail. */
   public async getToolTip(): Promise<HTMLElement | string> {
-    let toolTipPromise = this.isElementHit ? IModelApp.viewManager.getElementToolTip(this) : IModelApp.viewManager.getDecorationToolTip(this);
+    let toolTipPromise = this.isElementHit ? IModelApp.viewManager.overrideElementToolTip(this) : IModelApp.viewManager.getDecorationToolTip(this);
     for (const toolTipProvider of IModelApp.viewManager.toolTipProviders)
       toolTipPromise = toolTipProvider.augmentToolTip(this, toolTipPromise);
     return toolTipPromise;
   }
 
-  /** The IModelConnection from which the hit originated. In some cases this may not be the same as the iModel associated with the Viewport.
+  /** The IModelConnection from which the hit originated. In some cases this may not be the same as the iModel associated with the Viewport -
+   * for example, if a [[TiledGraphicsProvider]] is used to display graphics from a different iModel in the viewport.
    * This HitDetail's element, subcategory, and model Ids are defined in the context of this IModelConnection.
-   * @alpha
    */
   public get iModel(): IModelConnection { return undefined !== this._iModel ? this._iModel : this.viewport.iModel; }
 
-  /** Returns true if this hit originated from an IModelConnection other than the one associated with the viewport.
-   * @alpha
+  /** Returns true if this hit originated from an [[IModelConnection]] other than the one associated with the [[Viewport]].
+   * @see [[iModel]].
    */
   public get isExternalIModelHit(): boolean { return this.iModel !== this.viewport.iModel; }
 }
 
-/** A SnapDetail is generated from the result of [IModelDb.requestSnap]($backend) call. In addition to the HitDetail about the reason the element was *picked*,
+/** A SnapDetail is generated from the result of a snap request. In addition to the HitDetail about the reason the element was *picked*,
  * it holds the *exact* point on the element from the snapping logic, plus additional information that varies with the type of element and snap mode.
  * @public
  */
@@ -210,9 +212,9 @@ export class SnapDetail extends HitDetail {
   }
 
   /** Returns `HitDetailType.Snap` */
-  public getHitType(): HitDetailType { return HitDetailType.Snap; }
+  public override getHitType(): HitDetailType { return HitDetailType.Snap; }
   /** Get the snap point if this SnapDetail is *hot*, the pick point otherwise. */
-  public getPoint(): Point3d { return this.isHot ? this.snapPoint : super.getPoint(); }
+  public override getPoint(): Point3d { return this.isHot ? this.snapPoint : super.getPoint(); }
   /** Return true if the pick point was closer than the snap aperture from the generated snap point. */
   public get isHot(): boolean { return this.heat !== SnapHeat.None; }
   /** Determine whether the [[adjustedPoint]] is different than the [[snapPoint]]. This happens, for example, when points are adjusted for grids, acs plane snap, and AccuDraw. */
@@ -252,7 +254,7 @@ export class SnapDetail extends HitDetail {
   }
 
   /** Make a copy of this SnapDetail. */
-  public clone(): SnapDetail {
+  public override clone(): SnapDetail {
     const val = new SnapDetail(this, this.snapMode, this.heat, this.snapPoint);
     val.sprite = this.sprite;
     val.geomType = this.geomType;
@@ -285,7 +287,7 @@ export class SnapDetail extends HitDetail {
     return this.primitive;
   }
 
-  public draw(context: DecorateContext) {
+  public override draw(context: DecorateContext) {
     if (undefined !== this.primitive) {
       let singleSegment = false;
       switch (this.snapMode) {
@@ -339,7 +341,7 @@ export class IntersectDetail extends SnapDetail {
     this.normal = from.normal; // Preserve normal from primary snap location for AccuDraw smart rotation...
   }
 
-  public draw(context: DecorateContext) {
+  public override draw(context: DecorateContext) {
     if (undefined !== this.primitive && undefined !== this.otherPrimitive) {
       const builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
       const outline = context.viewport.hilite.color.adjustedForContrast(context.viewport.view.backgroundColor, 50);

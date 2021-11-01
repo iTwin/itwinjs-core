@@ -7,9 +7,9 @@
  * @module Tools
  */
 
-import { Vector3d } from "@bentley/geometry-core";
-import { RenderSchedule } from "@bentley/imodeljs-common";
-import { IModelApp, RenderScheduleState, Tool } from "@bentley/imodeljs-frontend";
+import { Vector3d } from "@itwin/core-geometry";
+import { RenderSchedule } from "@itwin/core-common";
+import { IModelApp, RenderScheduleState, Tool } from "@itwin/core-frontend";
 
 enum FadeMode { X, Y, Z, Transparent }
 
@@ -17,20 +17,19 @@ enum FadeMode { X, Y, Z, Transparent }
  * @beta
  */
 export class RealityTransitionTool extends Tool {
-  public static get minArgs() { return 0; }
-  public static get maxArgs() { return 1; }
-  public static toolId = "RealityTransition";
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 1; }
+  public static override toolId = "RealityTransition";
   /** This method runs the tool, applying a transition in X, Y, Z, or transparency.
    * @param fadeMode whether to apply the transition in X, Y, Z, or transparency
    */
-  public run(fadeMode: FadeMode = FadeMode.X): boolean {
+  public override async run(fadeMode: FadeMode = FadeMode.X): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp)
       return true;
 
     const displayStyle = vp.displayStyle;
     const view = vp.view;
-    const script = new RenderScheduleState.Script(displayStyle.id);
     const timeNow = Date.now(), timeEnd = timeNow + 1000.0 * 60.0 * 60.0;
     const range = vp.iModel.projectExtents;
     const directions = [Vector3d.create(1, 0, 0), Vector3d.create(0, 1, 0), Vector3d.create(0, 0, 1)];
@@ -64,27 +63,39 @@ export class RealityTransitionTool extends Tool {
       }
     }
 
+    const scriptProps: RenderSchedule.ScriptProps = [];
     view.forEachModel((model) => {
-      modelInTimeline.modelId = modelOutTimeline.modelId = model.id;
-      script.modelTimelines.push(RenderScheduleState.ModelTimeline.fromJSON(model.jsonProperties.tilesetUrl === undefined ? modelInTimeline : modelOutTimeline));
+      scriptProps.push({
+        ...(model.jsonProperties.tilesetUrl ? modelOutTimeline : modelInTimeline),
+        modelId: model.id,
+      });
     });
 
-    modelOutTimeline.modelId = "";
     displayStyle.forEachRealityModel((model) => {
-      modelOutTimeline.realityModelUrl = model.url;
-      script.modelTimelines.push(RenderScheduleState.ModelTimeline.fromJSON(modelOutTimeline, displayStyle));
-
+      const modelId = model.treeRef?.treeOwner.tileTree?.modelId;
+      if (modelId) {
+        scriptProps.push({
+          ...modelOutTimeline,
+          modelId,
+          realityModelUrl: model.url,
+        });
+      }
     });
 
-    displayStyle.scheduleScript = script;
-    vp.timePoint = script.computeDuration().low;
+    const script = RenderSchedule.Script.fromJSON(scriptProps);
+    if (script) {
+      displayStyle.setScheduleState(new RenderScheduleState(displayStyle.id, script));
+      vp.timePoint = script.duration.low;
+    }
+
     return true;
   }
+
   /** Executes this tool's run method.
    * @param args the first entry of this array contains either "x", "y", "z", or "transparent", indicating the type of transition to apply.
    * @see [[run]]
    */
-  public parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const transitionNames = [
       "x",
       "y",

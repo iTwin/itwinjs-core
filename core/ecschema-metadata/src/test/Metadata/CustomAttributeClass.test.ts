@@ -15,6 +15,23 @@ import { createEmptyXmlDocument, getElementChildrenByTagName } from "../TestUtil
 /* eslint-disable @typescript-eslint/naming-convention */
 
 describe("CustomAttributeClass", () => {
+  it("should get fullName", async () => {
+    const schemaJson = createSchemaJsonWithItems({
+      TestCAClass: {
+        schemaItemType: "CustomAttributeClass",
+        label: "Test CustomAttribute Class",
+        description: "Used for testing",
+        modifier: "Sealed",
+        appliesTo: "AnyClass",
+      },
+    });
+
+    const ecschema = await Schema.fromJson(schemaJson, new SchemaContext());
+    const testCAClass = await ecschema.getItem<CustomAttributeClass>("TestCAClass");
+    expect(testCAClass).to.exist;
+    expect(testCAClass!.fullName).eq("TestSchema.TestCAClass");
+  });
+
   describe("deserialization", () => {
     function createSchemaJson(caClassJson: any): any {
       return createSchemaJsonWithItems({

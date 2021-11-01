@@ -6,16 +6,17 @@
  * @module WebGL
  */
 
-import { assert, dispose, Id64String } from "@bentley/bentleyjs-core";
-import { ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, isPowerOfTwo, nextHighestPowerOfTwo, RenderTexture } from "@bentley/imodeljs-common";
-import { imageBufferToPngDataUrl, imageElementFromImageSource, openImageDataUrlInNewWindow } from "../../ImageUtil";
+import { assert, BeEvent, dispose, Id64String } from "@itwin/core-bentley";
+import { ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, isPowerOfTwo, nextHighestPowerOfTwo, RenderTexture, TextureData } from "@itwin/core-common";
+import { getImageSourceMimeType, imageBufferToPngDataUrl, imageElementFromImageSource, openImageDataUrlInNewWindow } from "../../ImageUtil";
 import { IModelConnection } from "../../IModelConnection";
-import { IModelApp } from "../../imodeljs-frontend";
+import { IModelApp } from "../../IModelApp";
 import { WebGLDisposable } from "./Disposable";
 import { GL } from "./GL";
 import { UniformHandle } from "./UniformHandle";
 import { OvrFlags, TextureUnit } from "./RenderFlags";
 import { System } from "./System";
+import { TextureOwnership } from "../RenderTexture";
 
 type CanvasOrImage = HTMLCanvasElement | HTMLImageElement;
 
@@ -133,17 +134,31 @@ interface TextureImageProperties {
   anisotropicFilter: TextureAnisotropicFilter;
 }
 
+/** @internal */
+export interface TextureParams {
+  type: RenderTexture.Type;
+  ownership?: TextureOwnership;
+  // ###TODO transparency: TextureTransparency;
+  handle: TextureHandle;
+}
+
 /** Wrapper class for a WebGL texture handle and parameters specific to an individual texture.
  * @internal
  */
 export class Texture extends RenderTexture implements WebGLDisposable {
   public readonly texture: TextureHandle;
+  public readonly ownership?: TextureOwnership;
 
   public get bytesUsed(): number { return this.texture.bytesUsed; }
+  public get hasOwner(): boolean { return undefined !== this.ownership; }
+  public get key(): string | undefined {
+    return typeof this.ownership !== "string" && typeof this.ownership?.key === "string" ? this.ownership.key : undefined;
+  }
 
-  public constructor(params: RenderTexture.Params, texture: TextureHandle) {
-    super(params);
-    this.texture = texture;
+  public constructor(params: TextureParams) {
+    super(params.type);
+    this.ownership = params.ownership;
+    this.texture = params.handle;
   }
 
   public get isDisposed(): boolean { return this.texture.isDisposed; }
@@ -236,6 +251,39 @@ class Texture2DCreateParams {
       (tex: TextureHandle, params: Texture2DCreateParams) => loadTexture2DImageData(tex, params, undefined, element), props.useMipMaps, props.interpolate, props.anisotropicFilter);
   }
 
+  public static createForImageBitmap(image: ImageBitmap, hasAlpha: boolean, type: RenderTexture.Type) {
+    const props = this.getImageProperties(hasAlpha, type);
+
+    let targetWidth = image.width;
+    let targetHeight = image.height;
+
+    const caps = System.instance.capabilities;
+    if (RenderTexture.Type.Glyph === type) {
+      targetWidth = nextHighestPowerOfTwo(targetWidth);
+      targetHeight = nextHighestPowerOfTwo(targetHeight);
+    } else if (!caps.supportsNonPowerOf2Textures && (!isPowerOfTwo(targetWidth) || !isPowerOfTwo(targetHeight))) {
+      if (GL.Texture.WrapMode.ClampToEdge === props.wrapMode) {
+        // NPOT are supported but not mipmaps
+        // Probably on poor hardware so I choose to disable mipmaps for lower memory usage over quality. If quality is required we need to resize the image to a pow of 2.
+        // Above comment is not necessarily true - WebGL doesn't support NPOT mipmapping, only supporting base NPOT caps
+        props.useMipMaps = undefined;
+      } else if (GL.Texture.WrapMode.Repeat === props.wrapMode) {
+        targetWidth = nextHighestPowerOfTwo(targetWidth);
+        targetHeight = nextHighestPowerOfTwo(targetHeight);
+      }
+    }
+
+    // Always draw to canvas for ImageBitmap
+    const canvas = document.createElement("canvas");
+    canvas.width = targetWidth;
+    canvas.height = targetHeight;
+    const context = canvas.getContext("2d")!;
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+    return new Texture2DCreateParams(targetWidth, targetHeight, props.format, GL.Texture.DataType.UnsignedByte, props.wrapMode,
+      (tex: TextureHandle, params: Texture2DCreateParams) => loadTexture2DImageData(tex, params, undefined, canvas), props.useMipMaps, props.interpolate, props.anisotropicFilter);
+  }
+
   private static getImageProperties(isTranslucent: boolean, type: RenderTexture.Type): TextureImageProperties {
     const isSky = RenderTexture.Type.SkyBox === type;
     const isTile = RenderTexture.Type.TileSection === type;
@@ -315,6 +363,7 @@ export abstract class TextureHandle implements WebGLDisposable {
     if (!this.isDisposed) {
       System.instance.disposeTexture(this._glTexture!);
       this._glTexture = undefined;
+      this.bytesUsed = 0;
     }
   }
 
@@ -336,6 +385,11 @@ export abstract class TextureHandle implements WebGLDisposable {
   /** Create a 2D texture from an HTMLImageElement. */
   public static createForImage(image: HTMLImageElement, hasAlpha: boolean, type: RenderTexture.Type) {
     return Texture2DHandle.createForImage(image, hasAlpha, type);
+  }
+
+  /** Create a 2D texture from an ImageBitmap. */
+  public static createForImageBitmap(image: ImageBitmap, hasAlpha: boolean, type: RenderTexture.Type) {
+    return Texture2DHandle.createForImageBitmap(image, hasAlpha, type);
   }
 
   /** Create a cube map texture from six HTMLImageElement objects. */
@@ -452,17 +506,17 @@ export class Texture2DHandle extends TextureHandle {
   }
 
   /** Create a texture for use as a color attachment for rendering */
-  public static createForAttachment(width: number, height: number, format: GL.Texture.Format, dataType: GL.Texture.DataType) {
+  public static override createForAttachment(width: number, height: number, format: GL.Texture.Format, dataType: GL.Texture.DataType) {
     return this.create(Texture2DCreateParams.createForAttachment(width, height, format, dataType));
   }
 
   /** Create a texture to hold non-image data */
-  public static createForData(width: number, height: number, data: Texture2DData, wantPreserveData = false, wrapMode = GL.Texture.WrapMode.ClampToEdge, format = GL.Texture.Format.Rgba) {
+  public static override createForData(width: number, height: number, data: Texture2DData, wantPreserveData = false, wrapMode = GL.Texture.WrapMode.ClampToEdge, format = GL.Texture.Format.Rgba) {
     return this.create(Texture2DCreateParams.createForData(width, height, data, wantPreserveData, wrapMode, format));
   }
 
   /** Create a texture from a bitmap */
-  public static createForImageBuffer(image: ImageBuffer, type: RenderTexture.Type) {
+  public static override createForImageBuffer(image: ImageBuffer, type: RenderTexture.Type) {
     if (RenderTexture.Type.TileSection !== type && RenderTexture.Type.ThematicGradient !== type)
       assert(isPowerOfTwo(image.width) && isPowerOfTwo(image.height), "###TODO: Resize image dimensions to powers-of-two if necessary");
 
@@ -470,13 +524,18 @@ export class Texture2DHandle extends TextureHandle {
   }
 
   /** Create a 2D texture from an HTMLImageElement. */
-  public static createForImage(image: HTMLImageElement, hasAlpha: boolean, type: RenderTexture.Type) {
+  public static override createForImage(image: HTMLImageElement, hasAlpha: boolean, type: RenderTexture.Type) {
     return this.create(Texture2DCreateParams.createForImage(image, hasAlpha, type));
+  }
+
+  /** Create a 2D texture from an ImageBitmap. */
+  public static override createForImageBitmap(image: ImageBitmap, hasAlpha: boolean, type: RenderTexture.Type) {
+    return this.create(Texture2DCreateParams.createForImageBitmap(image, hasAlpha, type));
   }
 
   private static _placeHolderTextureData = new Uint8Array([128, 128, 128]);
 
-  public static createForElement(id: Id64String, imodel: IModelConnection, type: RenderTexture.Type, format: ImageSourceFormat) {
+  public static override createForElement(id: Id64String, imodel: IModelConnection, type: RenderTexture.Type, format: ImageSourceFormat) {
     // set a placeholder texture while we wait for the external texture to load
     const handle = this.createForData(1, 1, this._placeHolderTextureData, undefined, undefined, GL.Texture.Format.Rgb);
 
@@ -522,11 +581,20 @@ export interface ExternalTextureRequest {
 }
 
 /** @internal */
+interface TextureConvertRequest {
+  req: ExternalTextureRequest;
+  texData: TextureData;
+}
+
+/** @internal */
 export class ExternalTextureLoader { /* currently exported for tests only */
-  public static readonly instance = new ExternalTextureLoader(10);
+  public static readonly instance = new ExternalTextureLoader(2);
+  public readonly onTexturesLoaded = new BeEvent<() => void>();
   private readonly _maxActiveRequests: number;
   private _activeRequests: Array<ExternalTextureRequest> = [];
   private _pendingRequests: Array<ExternalTextureRequest> = [];
+  private _convertRequests: Array<TextureConvertRequest> = [];
+  private _convertPending = false;
 
   public get numActiveRequests() { return this._activeRequests.length; }
   public get numPendingRequests() { return this._pendingRequests.length; }
@@ -542,6 +610,8 @@ export class ExternalTextureLoader { /* currently exported for tests only */
       const req = this._pendingRequests.shift()!;
       await this._activateRequest(req);
     }
+    if (this._activeRequests.length < 1 && this._pendingRequests.length < 1)
+      this.onTexturesLoaded.raiseEvent();
   }
 
   private async _activateRequest(req: ExternalTextureRequest) {
@@ -552,12 +622,18 @@ export class ExternalTextureLoader { /* currently exported for tests only */
 
     try {
       if (!req.imodel.isClosed) {
-        const texBytes = await req.imodel.getTextureImage({ name: req.name });
-        if (undefined !== texBytes) {
-          const imageSource = new ImageSource(texBytes, req.format);
-          const image = await imageElementFromImageSource(imageSource);
+        const maxTextureSize = System.instance.capabilities.maxTexSizeAllow;
+        const texData = await req.imodel.queryTextureData({ name: req.name, maxTextureSize });
+        if (undefined !== texData) {
+          const cnvReq = { req, texData };
+          this._convertRequests.push(cnvReq);
+          // _convertPending is used to prevent overlapping calls to _convertTexture (from overlapping calls to _activateRequest)
+          // it has been put on the list, so if it doesn't get converted here it will get converted by the loop that is converting the current one
+          do {
+            if (!this._convertPending)
+              await this._convertTexture();
+          } while (!this._convertPending && this._convertRequests.length > 0);
           if (!req.imodel.isClosed) {
-            req.handle.reload(Texture2DCreateParams.createForImage(image, ImageSourceFormat.Png === req.format, req.type));
             IModelApp.tileAdmin.invalidateAllScenes();
             if (undefined !== req.onLoaded)
               req.onLoaded(req);
@@ -567,6 +643,29 @@ export class ExternalTextureLoader { /* currently exported for tests only */
     } catch (_e) { }
 
     return this._nextRequest(req);
+  }
+
+  private async _convertTexture(): Promise<void> {
+    this._convertPending = true;
+    try {
+      const cnvReq = this._convertRequests.shift();
+      if (undefined !== cnvReq) {
+        const imageSource = new ImageSource(cnvReq.texData.bytes, cnvReq.texData.format);
+        if (System.instance.capabilities.supportsCreateImageBitmap) {
+          const blob = new Blob([imageSource.data], { type: getImageSourceMimeType(imageSource.format) });
+          const image = await createImageBitmap(blob, 0, 0, cnvReq.texData.width, cnvReq.texData.height);
+          if (!cnvReq.req.imodel.isClosed) {
+            cnvReq.req.handle.reload(Texture2DCreateParams.createForImageBitmap(image, ImageSourceFormat.Png === cnvReq.req.format, cnvReq.req.type));
+          }
+        } else {
+          const image = await imageElementFromImageSource(imageSource);
+          if (!cnvReq.req.imodel.isClosed) {
+            cnvReq.req.handle.reload(Texture2DCreateParams.createForImage(image, ImageSourceFormat.Png === cnvReq.req.format, cnvReq.req.type));
+          }
+        }
+      }
+    } catch (_e) { }
+    this._convertPending = false;
   }
 
   private _requestExists(reqToCheck: ExternalTextureRequest) {
@@ -638,7 +737,7 @@ export class TextureCubeHandle extends TextureHandle {
   }
 
   /** Create a cube map texture from six HTMLImageElement objects. */
-  public static createForCubeImages(posX: HTMLImageElement, negX: HTMLImageElement, posY: HTMLImageElement, negY: HTMLImageElement, posZ: HTMLImageElement, negZ: HTMLImageElement) {
+  public static override createForCubeImages(posX: HTMLImageElement, negX: HTMLImageElement, posY: HTMLImageElement, negY: HTMLImageElement, posZ: HTMLImageElement, negZ: HTMLImageElement) {
     const params = TextureCubeCreateParams.createForCubeImages(posX, negX, posY, negY, posZ, negZ);
     return params !== undefined ? this.create(params) : undefined;
   }

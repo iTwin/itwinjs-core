@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/editor-frontend",
+      "comment": "fix code for breaking change to .query() method",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/editor-frontend"
+}

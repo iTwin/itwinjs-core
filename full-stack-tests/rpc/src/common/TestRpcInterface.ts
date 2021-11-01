@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String } from "@itwin/core-bentley";
 import {
   IModelReadRpcInterface, IModelRpcProps, RpcInterface, RpcInterfaceDefinition, RpcManager, RpcNotFoundResponse, RpcOperationsProfile,
   RpcPushChannel, RpcRoutingToken, WipRpcInterface,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 
 export const testChannel = RpcPushChannel.create<number>("test");
 
@@ -273,6 +273,19 @@ export abstract class WebRoutingInterface extends RpcInterface {
   }
 
   public async ping504(_sent: number): Promise<boolean> {
+    return this.forward(arguments);
+  }
+}
+
+export abstract class MobileTestInterface extends RpcInterface {
+  public static readonly interfaceName = "MobileTestInterface";
+  public static interfaceVersion = "1.0.0";
+
+  public static getClient(): MobileTestInterface {
+    return RpcManager.getClientForInterface(MobileTestInterface);
+  }
+
+  public async multipart(_a: number, _b: Uint8Array): Promise<number> {
     return this.forward(arguments);
   }
 }

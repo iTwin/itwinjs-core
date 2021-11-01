@@ -110,7 +110,7 @@ describe("TransitionSpiral3d", () => {
     const ck = new Checker();
     const spiralA = IntegratedSpiral3d.createRadiusRadiusBearingBearing(Segment1d.create(0, 1000), AngleSweep.createStartEndDegrees(0, 8), Segment1d.create(0, 1), Transform.createIdentity());
     const spiralB = IntegratedSpiral3d.createRadiusRadiusBearingBearing(Segment1d.create(1000, 0), AngleSweep.createStartEndDegrees(10, 3), Segment1d.create(0, 1), Transform.createIdentity());
-    if (ck.testType<IntegratedSpiral3d>(spiralA) && ck.testType<IntegratedSpiral3d>(spiralB)) {
+    if (ck.testType(spiralA, IntegratedSpiral3d) && ck.testType(spiralB, IntegratedSpiral3d)) {
       ck.testFalse(spiralB.isAlmostEqual(spiralA));
       ck.testFalse(spiralA.isAlmostEqual(undefined));
       spiralB.setFrom(spiralA);
@@ -122,7 +122,7 @@ describe("TransitionSpiral3d", () => {
     ck.testUndefined(spiralD);
     // default to clothoid ...
     const spiralD1 = IntegratedSpiral3d.createFrom4OutOf5("clothoid", 0, 300.0, Angle.createDegrees(0), undefined, 100.0, undefined, Transform.createIdentity())!;
-    ck.testType<TransitionSpiral3d>(spiralD1);
+    ck.testType(spiralD1, TransitionSpiral3d);
 
     const spiralD2 = IntegratedSpiral3d.createFrom4OutOf5("clothoid", 0, undefined, Angle.createDegrees(0), undefined, 100.0, undefined, Transform.createIdentity())!;
     ck.testUndefined(spiralD2);
@@ -466,11 +466,11 @@ describe("TransitionSpiral3d", () => {
     const c = 1.0 / (2.0 * length1 * radius1);
     // spiralA and friends are low order ...
     const spiralA = DirectSpiral3d.createTruncatedClothoid("test", Transform.createIdentity(), 0, 0, undefined, 100, 300, undefined);
-    if (ck.testType<DirectSpiral3d>(spiralA) && spiralA.evaluator instanceof ClothoidSeriesRLEvaluator) {
+    if (ck.testType(spiralA, DirectSpiral3d) && spiralA.evaluator instanceof ClothoidSeriesRLEvaluator) {
       ck.testExactNumber(1, spiralA.evaluator.numXTerms);
       ck.testExactNumber(1, spiralA.evaluator.numYTerms);
       const spiralB = spiralA.cloneTransformed(Transform.createTranslationXYZ(1, 2, 3));
-      if (ck.testType<DirectSpiral3d>(spiralA)) {
+      if (ck.testType(spiralA, DirectSpiral3d)) {
         // We know the (1,1) approximation is just (s, s^3 / 6RL)
         for (const fraction of [0, 0.24, 0.9]) {
           const x = fraction * length1;
@@ -566,7 +566,7 @@ describe("TransitionSpiral3d", () => {
         y0 += 100;
       spiralType0 = spiralType1;
       let y1 = y0;
-      if (ck.testType<TransitionSpiral3d>(spiral)) {
+      if (ck.testType(spiral, TransitionSpiral3d)) {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, spiral.activeStrokes, x0, y1);
         const linestringA = LineString3d.create();
         spiral.emitStrokes(linestringA);
@@ -833,7 +833,7 @@ describe("TransitionSpiral3d", () => {
           let counter = 0;
           const children = alignment.children;
           // console.log(`** End-to-start ${fileName}`);
-          for (let i = 0; i + 1 < children.length; i++){
+          for (let i = 0; i + 1 < children.length; i++) {
             const xyzA = children[i].fractionToPoint(1.0);
             const xyzB = children[i + 1].fractionToPoint(0.0);
             const d = xyzA.distance(xyzB);
@@ -846,10 +846,10 @@ describe("TransitionSpiral3d", () => {
               point0 = curve.startPoint();
               // console.log(`${fileName}  start point xy=${point0.x},${point0.y})`);
             }
-            if (curve instanceof TransitionSpiral3d){
+            if (curve instanceof TransitionSpiral3d) {
               numSpiral++;
               const points = [];
-              for (let fraction = 0.0; fraction <= 1.0; fraction += 1.0 / 16.0){   // stay strictly less to allow debug break at 1.0
+              for (let fraction = 0.0; fraction <= 1.0; fraction += 1.0 / 16.0) {   // stay strictly less to allow debug break at 1.0
                 points.push(curve.fractionToPoint(fraction));
               }
               // throw away for debugging...
@@ -858,9 +858,9 @@ describe("TransitionSpiral3d", () => {
               GeometryCoreTestIO.captureCloneGeometry(allGeometry, points, 0, yShift, 0); // second time to stand out visually
             }
           }
-          if (numSpiral !== 4){
+          if (numSpiral !== 4) {
             console.log(`Expected 4 spirals, got ${numSpiral} in ${outputFileName}  *******************************`);
-            GeometryCoreTestIO.captureCloneGeometry (allGeometry, [point0, point0.plus (Vector3d.create (-1000,0,0))]);
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, [point0, point0.plus(Vector3d.create(-1000, 0, 0))]);
           }
           testGeometryQueryRoundTrip(ck, alignment);
           GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", outputFileName);
@@ -904,6 +904,69 @@ describe("TransitionSpiral3d", () => {
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", "spiralStroking");
   });
+
+  it("test TransitionSpiral3d clonePartialCurve", () => {
+    const ck = new Checker();
+    const nominalL1 = 100;
+    const nominalR1 = 400;
+
+    const simpleCubic = DirectSpiral3d.createJapaneseCubic(Transform.createIdentity(), nominalL1, nominalR1)!;
+    ck.testType(simpleCubic, DirectSpiral3d);
+    const simpleCubicReversed = simpleCubic.clone();
+    simpleCubicReversed.reverseInPlace();
+
+    const integratedSpiral = IntegratedSpiral3d.createRadiusRadiusBearingBearing(Segment1d.create(0, 1000), AngleSweep.createStartEndDegrees(0, 8), Segment1d.create(0, 1), Transform.createIdentity())!;
+    ck.testType(integratedSpiral, IntegratedSpiral3d);
+    const integratedSpiralReversed = integratedSpiral.clone();
+    integratedSpiralReversed.reverseInPlace();
+
+    // Full clone
+    const cloneA = simpleCubic.clonePartialCurve(0.0, 1.0)!;
+    const cloneB = simpleCubic.clonePartialCurve(1.0, 0.0)!;
+    ck.testTrue(cloneA.isAlmostEqual(simpleCubic));
+    ck.testTrue(cloneB.isAlmostEqual(simpleCubicReversed));
+
+    const cloneC = integratedSpiral.clonePartialCurve(0.0, 1.0)!;
+    const cloneD = integratedSpiral.clonePartialCurve(1.0, 0.0)!;
+    ck.testTrue(cloneC.isAlmostEqual(integratedSpiral));
+    ck.testTrue(cloneD.isAlmostEqual(integratedSpiralReversed));
+
+    // For each input spiral, clone partial and validate points/tangents and lengths are the same
+    for (const spiral of [simpleCubic, simpleCubicReversed, integratedSpiral, integratedSpiralReversed]) {
+      // console.log(spiral.spiralType);
+      const partial = spiral.clonePartialCurve(0.2, 0.8)!;
+      ck.testTrue(spiral.spiralType === partial.spiralType);
+      ck.testType(partial, TransitionSpiral3d);
+      ck.testLT(partial.curveLength(), spiral.curveLength());
+
+      if (spiral instanceof IntegratedSpiral3d) {
+        // Length is proportional to total length
+        ck.testTightNumber(partial.curveLength(), 0.6 * spiral.curveLength());
+        ck.testTrue((partial as IntegratedSpiral3d).bearing01.isAlmostEqual(spiral.bearing01));
+        ck.testTrue((partial as IntegratedSpiral3d).radius01.isAlmostEqual(spiral.radius01));
+      } else {
+        ck.testExactNumber((partial as DirectSpiral3d).nominalL1, spiral.nominalL1);
+        ck.testExactNumber((partial as DirectSpiral3d).nominalR1, spiral.nominalR1);
+      }
+
+      for (const fraction of [0.0, 0.2, 0.4, 0.5, 0.7, 1.0]) {
+        const fSpiral = partial.activeFractionInterval.fractionToPoint(fraction);
+        const fPartial = spiral.activeFractionInterval.fractionToPoint(fraction);
+
+        const raySpiral = spiral.fractionToPointAndUnitTangent(fSpiral);
+        const rayPartial = partial.fractionToPointAndUnitTangent(fPartial);
+        ck.testVector3d(raySpiral.getDirectionRef(), rayPartial.getDirectionRef());
+        ck.testPoint3d(raySpiral.getOriginRef(), rayPartial.getOriginRef());
+
+        const lengthSpiral = spiral.curveLengthBetweenFractions(fSpiral, 0.8);
+        const lengthPartial = partial.curveLengthBetweenFractions(fPartial, 1.0);
+        ck.testTightNumber(lengthSpiral, lengthPartial);
+      }
+    }
+
+    expect(ck.getNumErrors()).equals(0);
+  });
+
 });
 function xyString(name: string, x: number, y: number): string {
   return (`  (${name}  ${x} + ${y})`);
