@@ -210,7 +210,7 @@ Every `WorkspaceContainer` has a unique identifier called a [WorkspaceContainerI
 
 #### The `workspace/container/alias` Setting
 
-A `WorkspaceContainerId` is *resolved* from a `WorkspaceContainerName` via the [Workspace.resolveContainerId]($bentley) method. It does so by looking through all current [IModelHost.workspace.settings]($backend) of type:
+A `WorkspaceContainerId` is *resolved* from a `WorkspaceContainerName` via the [Workspace.resolveContainerId]($backend) method. It does so by looking through all current [Workspace.settings]($backend) of type:
 
 ```ts
     "workspace/container/alias": {
@@ -262,7 +262,7 @@ When using a cloud workspace service, the cloud container is created by calling 
 
 ### WorkspaceContainer Editing and Synchronization
 
-To modify the cloud version of `WorkspaceContainer`s, the `CloudContainer` process must be must be running and a writable cloud access token must first be obtained. There may only be one editor at a time per `WorkspaceContainer`. Changes are automatically uploaded when the `WorkspaceContainer` is closed. Then, whenever any user attempts to access it using [WorkspaceContainer.getContainer]($backend), their local copy will automatically be update with the latest changes.
+To modify the cloud version of `WorkspaceContainer`s, the `CloudContainer` process must be must be running and a writable cloud access token must first be obtained. There may only be one editor at a time per `WorkspaceContainer`. Changes are automatically uploaded when the `WorkspaceContainer` is closed. Then, whenever any user attempts to access it using [Workspace.getContainer]($backend), their local copy will automatically be update with the latest changes.
 
 ### WorkspaceContainer Versioning
 
@@ -273,9 +273,9 @@ A `WorkspaceContainer` holds a set of resources, each with a [WorkspaceResourceN
 
 Possible resource types are:
 
- - `string` resources that hold strings loaded with [WorkspaceContainer.getString]($backend).
- - `blob` resources that hold `Uint8Array`s loaded with [WorkspaceContainer.getBlob]($backend).
- - `file` resources that hold arbitrary files that may be extracted to local files with [WorkspaceContainer.getFile]($backend)
+ - `string` resources that hold strings. They may be loaded with [WorkspaceContainer.getString]($backend).
+ - `blob` resources that hold `Uint8Array`s. They may be loaded with [WorkspaceContainer.getBlob]($backend).
+ - `file` resources that hold arbitrary files. They may be extracted to local files with [WorkspaceContainer.getFile]($backend)
 
 > Note: files are zipped as they are stored in `WorkspaceContainer`s.
 
