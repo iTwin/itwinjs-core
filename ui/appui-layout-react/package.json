@@ -1,6 +1,6 @@
 {
   "name": "@itwin/appui-layout-react",
-  "version": "3.0.0-dev.102",
+  "version": "3.0.0-dev.105",
   "description": "iModel.js Nine-zone React UI components",
   "main": "lib/cjs/appui-layout-react.js",
   "module": "lib/esm/appui-layout-react.js",
@@ -37,9 +37,9 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.102",
-    "@itwin/appui-abstract": "workspace:^3.0.0-dev.102",
-    "@itwin/core-react": "workspace:^3.0.0-dev.102",
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.105",
+    "@itwin/appui-abstract": "workspace:^3.0.0-dev.105",
+    "@itwin/core-react": "workspace:^3.0.0-dev.105",
     "react": "^17.0.0",
     "react-dom": "^17.0.0"
   },
@@ -94,8 +94,8 @@
     "NOTE: core-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
-    "@itwin/itwinui-css": "^0.27.0",
-    "@itwin/itwinui-react": "^1.16.2",
+    "@itwin/itwinui-css": "^0.37.0",
+    "@itwin/itwinui-react": "^1.23.0",
     "classnames": "^2.3.1",
     "immer": "9.0.6",
     "uuid": "^7.0.3"
