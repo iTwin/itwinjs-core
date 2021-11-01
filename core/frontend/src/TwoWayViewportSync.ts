@@ -71,7 +71,7 @@ export class TwoWayViewportSync {
   }
 }
 
-/** Forms a bidirectional connection between two [[Viewports]] such that the [Frustum]($common)s of each are synchronized with one another.
+/** Forms a bidirectional connection between two [[Viewport]]s such that the [Frustum]($common)s of each are synchronized with one another.
  * For example, zooming out in one viewport will zoom out by the same distance in the other viewport.
  * No other aspects of the viewports are synchronized - they may have entirely different display styles, category/model selectors, etc.
  * @see [[TwoWayViewportSync]] to synchronize all aspects of the viewports.
