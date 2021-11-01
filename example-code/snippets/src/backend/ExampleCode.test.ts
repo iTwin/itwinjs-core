@@ -92,7 +92,7 @@ describe("Example Code", () => {
 
   });
 
-  it("Settings", () => {
+  it("Settings", async () => {
     // __PUBLISH_EXTRACT_START__ Settings.addDictionaryDefine
     interface TemplateRsc {
       container: string;
@@ -149,16 +149,44 @@ describe("Example Code", () => {
       "app5/markerName": "arrows",
       "app5/markerIcon": "arrows.ico",
     };
-    settings.addDictionary("for iTwin 555", SettingsPriority.iTwin, iTwin555);
-    defaultTool = settings.getString("core/default-tool"); // returns "measure"
+    IModelHost.workspace.settings.addDictionary("for iTwin 555", SettingsPriority.iTwin, iTwin555);
+    defaultTool = IModelHost.workspace.settings.getString("core/default-tool"); // returns "measure"
     // __PUBLISH_EXTRACT_END__
     expect(defaultTool).eq(iTwin555["core/default-tool"]);
 
     // __PUBLISH_EXTRACT_START__ Settings.dropITwinDictionary
-    settings.dropDictionary("for iTwin 555");
+    IModelHost.workspace.settings.dropDictionary("for iTwin 555");
     defaultTool = settings.getString("core/default-tool"); // returns "select" again
     // __PUBLISH_EXTRACT_END__
     expect(defaultTool).eq(defaultsDict["core/default-tool"]);
+
+    // __PUBLISH_EXTRACT_START__ Settings.containerAlias
+    const iTwinDict: SettingDictionary = {
+      "workspace/container/alias": [
+        { name: "default-fonts", id: "fonts-01" },
+        { name: "gcs-data", id: "gcsdata-01" },
+      ],
+    };
+    const iModelDict: SettingDictionary = {
+      "workspace/container/alias": [
+        { name: "default-icons", id: "icons-01" },
+        { name: "default-lang", id: "lang-05" },
+        { name: "default-fonts", id: "fonts-02" }, // a container id that doesn't exist
+        { name: "default-key", id: "key-05" },
+      ],
+    };
+
+    const fontContainerName = "default-fonts";
+    IModelHost.workspace.settings.addDictionary("iTwin", SettingsPriority.iTwin, iTwinDict);
+    IModelHost.workspace.settings.addDictionary("iModel", SettingsPriority.iModel, iModelDict);
+
+    expect(IModelHost.workspace.resolveContainerId(fontContainerName)).equals("fonts-02");
+    expect(IModelHost.workspace.resolveContainerId({ id: "fonts-01" })).equals("fonts-01");
+    await expect(IModelHost.workspace.getContainer(fontContainerName)).to.be.rejectedWith("not found");
+
+    IModelHost.workspace, IModelHost.workspace.settings.dropDictionary("iModel");
+    expect(IModelHost.workspace.resolveContainerId(fontContainerName)).equals("fonts-01");
+    // __PUBLISH_EXTRACT_END__
 
   });
 

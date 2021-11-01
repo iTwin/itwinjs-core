@@ -196,19 +196,76 @@ Of course `SettingDictionary`s wouldn't be very useful if you could only define 
 
 ## WorkspaceContainers
 
-[WorkspaceContainer]($backend)s are named containers of a group of [workspace resources](#workspace-resources).  There is no limit on the number of `WorkspaceContainers` accessed during a session, nor is there a limit on the number of resources held in a `WorkspaceContainer`. However, keep in mind:
+[WorkspaceContainer]($backend)s are named containers of a group of [workspace resources](#workspace-resources). There is no limit on the number of `WorkspaceContainers` accessed during a session, nor is there a limit on the number of resources held within a `WorkspaceContainer`. However, keep in mind:
 
  - Access rights are per-WorkspaceContainer. That is, if a user has permission to access a `WorkspaceContainer`, they will have access to all resources within it.
- - For offline access, WorkspaceContainers are saved as files on local computers, and must be initially downloaded and whenever they are updated. Multi-gigabyte downloads can be time consuming.
+ - For offline access, WorkspaceContainers are saved as files on local computers, and must be initially downloaded and re-downloaded whenever they are updated. Multi-gigabyte downloads can be time consuming.
  - WorkspaceContainers are versioned as a whole. There is no versioning of individual resources within a WorkspaceContainer.
 
 Generally, it is expected that a single `WorkspaceContainer` will hold a related set of resources for a single "scope" (e.g. organization, discipline, iTwin, iModel, etc.) for an appropriate set of users.
 
 ### WorkspaceContainerName and WorkspaceContainerId
 
+Every `WorkspaceContainer` has a unique identifier called a [WorkspaceContainerId]($backend). `WorkspaceContainerId`s can be GUIDs or any other identifier scheme that guarantees uniqueness. Since `WorkspaceContainerId`s can therefore be long and hard to recognize, `WorkspaceContainer`s can also be identified with a shorter, human recognizable `WorkspaceContainerName`. This not only provides an easier to recognize and understand scheme for interacting with `WorkspaceContainer`s, but also provides a level of indirection that can be useful for substituting different `WorkspaceContainer`s for the same `WorkspaceContainerName` at runtime, for example for versioning.
+
 #### The `workspace/container/alias` Setting
 
+A `WorkspaceContainerId` is *resolved* from a `WorkspaceContainerName` via the [Workspace.resolveContainerId]($bentley) method. It does so by looking through all current [IModelHost.workspace.settings]($backend) settings of type:
+
+```ts
+    "workspace/container/alias": {
+      "type": "array",
+      "description": "array of workspace container aliases",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "the id of the workspace container"
+          },
+          "name": {
+            "type": "string",
+            "description": "the name of the workspace container"
+          }
+        }
+      },
+```
+
+with entries whose `name` property matches the `WorkspaceContainerName` value. The highest priority `workspace/container/alias` setting for a `WorkspaceContainerName` becomes its `WorkspaceContainerId`. If no matching `workspace/container/alias` setting is found, the `WorkspaceContainerName` becomes the `WorkspaceContainerId`.
+
+For example:
+
+
+```ts
+[[include:Settings.Settings.containerAlias]]
+```
+
+> Note: more than one `WorkspaceContainerName` may resolve to the same `WorkspaceContainerId`.
+
+### Cloud-backed WorkspaceContainers
+
+`WorkspaceContainer`s are meant to be the distribution system for application resources, so users need to be sure they're always using the correct version of resources - which may or may not be the latest, depending on their workflow. That can be accomplished either by *brute force* (e.g. copying files around), or much better, by using a cloud *workspace service*. The Workspace API is virtually the same either way.
+
+When using a cloud workspace service, every call to [Workspace.getContainer]($backend) first checks whether the local copy of the `WorkspaceContainer` is up-to-date with the cloud version, and synchronizes it if not. When using the "offline" mode, the `WorkspaceContainer` is fully downloaded to a local file in the [Workspace.containerDir]($backend) directory, with the name `${containerId}.itwin-workspace-container`.
+
+When using brute force, `Workspace.containerDir` is a directory on a shared file server, or the `itwin-workspace-container` are copied around some other way.
+
+### Creating and Modifying WorkspaceContainers
+
+`WorkspaceContainers` are always created and modified by administrators (not end users), usually on desktop computers. They are created as local files using [EditableWorkspaceFile.create]($backend), and modified using the other methods on `EditableWorkspaceFile`.
+
+When using a workspace service, the cloud container is created by calling [EditableWorkspaceFile.upload]($backend).
+
+### WorkspaceContainer Synchronization
+
+To modify the cloud version of `WorkspaceContainer`s, the `CloudContainer` process must be must be running and a writable cloud access token must first be obtained. There may only be one editor at a time per `WorkspaceContainer`. Changes are automatically uploaded when the `WorkspaceContainer` is closed. Then, whenever any user attempts to access it using [WorkspaceContainer.getContainer]($backend), their local copy will automatically be update with the latest changes.
+
 ### WorkspaceContainer Versioning
+
 
 
 ## Workspace Resources
@@ -218,8 +275,10 @@ A `WorkspaceContainer` holds a set of resources, each with a [WorkspaceResourceN
 
 ### WorkspaceResourceNames
 
-> Note: WorkspaceResourceNames must be unique for each resource type. But, it is possible to have a string, a blob, and a file resource in the same `WorkspaceContainer` with the same `WorkspaceResourceName`.
+[WorkspaceResourceName]($backend)s identify resources within a `WorkspaceContainer`. There are no restrictions on the format of a `WorkspaceResourceName`, other than they are limited to 1024 characters and may not start or end with a blank character.
+
+> Note: WorkspaceResourceNames must be unique for each resource type. But, it is possible to have a `string`, a `blob`, and a `file` resource in the same `WorkspaceContainer` with the same `WorkspaceResourceName`.
 
 ### SettingDictionary Resources
 
-
+It is often useful to store `SettingDictionary`s in a `WorkspaceContainer`, so they can be distributed, versioned, aliased, and access controlled. This can be easily accomplished by storing the stringified JSON representation of the `settingDictionary` as a `string` resource and using [Workspace.loadSettingsDictionary]($backend) to load it.

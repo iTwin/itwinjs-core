@@ -18,10 +18,14 @@ import { SqliteStatement } from "../SqliteStatement";
 import { ITwinSettings, Settings, SettingsPriority } from "./Settings";
 import { NativeLibrary } from "@bentley/imodeljs-native";
 
-/** The names of Settings used by Workspaces */
-const enum WorkspaceSetting { // eslint-disable-line no-restricted-syntax
+/** The names of Settings used by Workspace
+ * @beta
+ */
+enum WorkspaceSetting {
   ContainerAlias = "workspace/container/alias",
 }
+
+const containerFileExt = "itwin-workspace-container";
 
 /**
  * The name of a workspace container. This is the user-supplied name of a container, used to specify its *purpose* within a workspace.
@@ -289,7 +293,7 @@ export class WorkspaceFile implements WorkspaceContainer {
     WorkspaceFile.validateContainerId(containerId);
     this.workspace = workspace;
     this.containerId = containerId;
-    this.localDbName = join(workspace.containerDir, `${this.containerId}.itwin-workspace-container`);
+    this.localDbName = join(workspace.containerDir, `${this.containerId}.${containerFileExt}`);
     this.iModelOwner = opts?.forIModel;
   }
 
@@ -377,7 +381,7 @@ export class EditableWorkspaceFile extends WorkspaceFile {
   public async upload() {
   }
 
-  public override open(): void {
+  public async lockContainer() {
     this.db.openDb(this.localDbName, OpenMode.ReadWrite);
   }
 
