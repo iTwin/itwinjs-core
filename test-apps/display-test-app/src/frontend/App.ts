@@ -41,7 +41,7 @@ import {
   CloneViewportTool, CloseIModelTool, CloseWindowTool, CreateWindowTool, DockWindowTool, FocusWindowTool, MaximizeWindowTool, OpenIModelTool,
   ReopenIModelTool, ResizeWindowTool, RestoreWindowTool, Surface,
 } from "./Surface";
-import { SyncViewportsTool } from "./SyncViewportsTool";
+import { SyncViewportFrustaTool, SyncViewportsTool } from "./SyncViewportsTool";
 import { TimePointComparisonTool } from "./TimePointComparison";
 import { UiManager } from "./UiManager";
 import { MarkupTool, ModelClipTool, SaveImageTool, ZoomToSelectedElementsTool } from "./Viewer";
@@ -288,6 +288,7 @@ export class DisplayTestApp {
       SignInTool,
       SignOutTool,
       SVTSelectionTool,
+      SyncViewportFrustaTool,
       SyncViewportsTool,
       ToggleAspectRatioSkewDecoratorTool,
       TimePointComparisonTool,

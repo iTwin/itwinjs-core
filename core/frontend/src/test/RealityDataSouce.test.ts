@@ -72,6 +72,15 @@ describe("RealityDataSource", () => {
     expect(rdSourceKey.id).to.be.equal(tilesetUrl);
     expect(rdSourceKey.iTwinId).to.be.undefined;
   });
+  it("should handle creation from url to an OPC local file", () => {
+    // we detect format based on extension-> .opc -> OPC format, otherwise 3dTile
+    const tilesetUrl = "c:\\customserver\\myFile.opc";
+    const rdSourceKey = RealityDataSource.createKeyFromUrl(tilesetUrl);
+    expect(rdSourceKey.provider).to.equal(RealityDataProvider.TilesetUrl);
+    expect(rdSourceKey.format).to.equal(RealityDataFormat.OPC);
+    expect(rdSourceKey.id).to.be.equal(tilesetUrl);
+    expect(rdSourceKey.iTwinId).to.be.undefined;
+  });
   it("should handle invalid url and fallback to simply returns it in id as tileset url", () => {
     const tilesetUrl = "Anything that is not a valid url";
     const rdSourceKey = RealityDataSource.createKeyFromUrl(tilesetUrl);
