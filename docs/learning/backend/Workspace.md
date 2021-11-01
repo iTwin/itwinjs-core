@@ -180,14 +180,14 @@ Values in `SettingDictionary`s with a higher `SettingsPriority` override values 
 
 E.g.:
 ```ts
-[[include:Settings.Settings.addITwinDictionary]]
+[[include:Settings.addITwinDictionary]]
 ```
 
 then
 
 E.g.:
 ```ts
-[[include:Settings.Settings.dropITwinDictionary]]
+[[include:Settings.dropITwinDictionary]]
 ```
 
 Of course `SettingDictionary`s wouldn't be very useful if you could only define them in JavaScript. Their real value comes from storing them externally, in JSON. That can be either stringified JSON (via [JSON.stringify](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify)) stored in a `WorkspaceContainer`, or in a `.json` file.
@@ -241,7 +241,7 @@ For example:
 
 
 ```ts
-[[include:Settings.Settings.containerAlias]]
+[[include:Settings.containerAlias]]
 ```
 
 > Note: more than one `WorkspaceContainerName` may resolve to the same `WorkspaceContainerId`.
