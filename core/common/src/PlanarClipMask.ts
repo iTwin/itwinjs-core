@@ -63,6 +63,78 @@ export interface PlanarClipMaskProps {
   invert?: boolean;
 }
 
+/** Basic arguments supplied to [[PlanarClipMaskSettings.create]].
+ * @public
+ */
+export interface BasicPlanarClipMaskArgs {
+  /** @see [[PlanarClipMaskSettings.transparency]]. */
+  transparency?: number;
+  /** @see [[PlanarClipMaskSettings.invert]]. */
+  invert?: boolean;
+}
+
+/** Arguments supplied to [[PlanarClipMaskSettings.create]] to create a mask of [[PlanarClipMaskMode.Models]].
+ * @public
+ */
+export interface ModelPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
+  /** @see [[PlanarClipMaskSettings.modelIds]]. */
+  modelIds?:Iterable<Id64String>;
+  /** @internal */
+  exclude?: never;
+  /** @internal */
+  elementIds?: never;
+  /** @internal */
+  subCategoryIds?: never;
+  /** @internal */
+  priority?: never;
+}
+
+/** Arguments supplied to [[PlanarClipMaskSettings.create]] to create a mask of [[PlanarClipMaskMode.IncludeElements]] or [[PlanarClipMaskMode.ExcludeElements]].
+ * @public
+ */
+export interface ElementPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
+  /** @see [[PlanarClipMaskSettings.modelIds]]. */
+  modelIds?: Iterable<Id64String>
+  /** The elements used by the mask. @see [[PlanarClipMaskSettings.subCategoryOrElementIds]]. */
+  elementIds: Iterable<Id64String>;
+  /** If true, creates a mask of [[PlanarClipMaskMode.ExcludeElements]]; otherwise, [[PlanarClipMaskMode.IncludeElements]]. */
+  exclude?: boolean;
+  /** @internal */
+  subCategoryIds?: never;
+  /** @internal */
+  priority?: never;
+}
+
+/** Arguments supplied to [[PlanarClipMaskSettings.create]] to create a mask of [[PlanarClipMaskMode.IncludeSubCategories]].
+ * @public
+ */
+export interface SubCategoryPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
+  /** @see [[PlanarClipMaskSettings.modelIds]]. */
+  modelIds?: Iterable<Id64String>
+  /** The subcategories used by the mask. @see [[PlanarClipMaskSettings.subCategoryOrElementIds]]. */
+  subCategoryIds: Iterable<Id64String>;
+  /** @internal */
+  exclude?: never;
+  /** @internal */
+  elementIds?: never;
+  /** @internal */
+  priority?: never;
+}
+
+/** Arguments supplied to [[PlanarClipMaskSettings.create]] to create a mask of [[PlanarClipMaskMode.Priority]].
+ * @public
+ */
+export interface PriorityPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
+  /** @see [[PlanarClipMaskSettings.priority]]. */
+  priority: number;
+  /** @internal */
+  exclude?: never;
+  /** @internal */
+  elementIds?: never;
+  /** @internal */
+  modelIds?: never;
+}
+
 /** Describes how to mask the geometry of one [GeometricModel]($backend) for display. The mask is produced by projecting geometry from any number of other models -
  * optionally filtered by [SubCategory]($backend) or by a set of specific [GeometricElement]($backend)s - onto a plane. Regions of the masked model that intersect the
  * mask are rendered partially or completely transparent. This is useful for, e.g., making subsurface geometry visible below the background map, or clipping out portions
@@ -135,6 +207,18 @@ export class PlanarClipMaskSettings {
    */
   public static createByPriority(priority: number, transparency?: number, invert?: boolean) {
     return new PlanarClipMaskSettings(PlanarClipMaskMode.Priority, transparency, undefined, undefined, priority, invert);
+  }
+
+  public static create(args: ModelPlanarClipMaskArgs | ElementPlanarClipMaskArgs | SubCategoryPlanarClipMaskArgs | PriorityPlanarClipMaskArgs): PlanarClipMaskSettings {
+    const modelIds = args.modelIds ? CompressedId64Set.sortAndCompress(args.modelIds) : undefined;
+    if (undefined !== args.priority)
+      return new PlanarClipMaskSettings(PlanarClipMaskMode.Priority, args.transparency, undefined, undefined, args.priority, args.invert);
+    else if (undefined !== args.subCategoryIds)
+      return new PlanarClipMaskSettings(PlanarClipMaskMode.IncludeSubCategories, args.transparency, modelIds, CompressedId64Set.sortAndCompress(args.subCategoryIds), undefined, args.invert);
+    else if (undefined !== args.elementIds)
+      return new PlanarClipMaskSettings(args.exclude ? PlanarClipMaskMode.ExcludeElements : PlanarClipMaskMode.IncludeElements, args.transparency, modelIds, CompressedId64Set.sortAndCompress(args.elementIds), undefined, args.invert);
+    else
+      return new PlanarClipMaskSettings(PlanarClipMaskMode.Models, args.transparency, modelIds, undefined, undefined, args.invert);
   }
 
   /** Create JSON object representing this [[PlanarClipMaskSettings]] */
