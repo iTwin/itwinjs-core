@@ -163,7 +163,7 @@ export class PlanarClipMaskSettings {
    */
   public readonly transparency?: number;
   /** A value of true indicates that the mask should be inverted and only content within the mask should be displayed, in other words the area inside the mask is displayed rather than outside. */
-  public readonly invert?: boolean;
+  public readonly invert: boolean;
   private readonly _modelIds?: CompressedId64Set;
   private readonly _subCategoryOrElementIds?: CompressedId64Set;
 
@@ -180,35 +180,7 @@ export class PlanarClipMaskSettings {
     return new PlanarClipMaskSettings(json.mode, json.transparency, json.modelIds, json.subCategoryOrElementIds, json.priority, json.invert);
   }
 
-  /** Create settings for [[PlanarClipMaskMode.Models]]. */
-  public static createForModels(modelIds: Iterable<Id64String> | undefined, transparency?: number, invert?: boolean): PlanarClipMaskSettings {
-    return this.fromJSON({
-      mode: PlanarClipMaskMode.Models,
-      transparency,
-      modelIds: modelIds ? CompressedId64Set.sortAndCompress(modelIds) : undefined,
-      invert,
-    });
-  }
-
-  /** Create settings that filter by element or subcategory. */
-  public static createForElementsOrSubCategories(mode: PlanarClipMaskMode.IncludeElements | PlanarClipMaskMode.ExcludeElements | PlanarClipMaskMode.IncludeSubCategories,
-    elementOrSubCategoryIds: Iterable<Id64String>, modelIds?: Iterable<Id64String>, transparency?: number, invert?: boolean): PlanarClipMaskSettings {
-    return this.fromJSON({
-      mode,
-      transparency,
-      invert,
-      modelIds: modelIds ? CompressedId64Set.sortAndCompress(modelIds) : undefined,
-      subCategoryOrElementIds: CompressedId64Set.sortAndCompress(elementOrSubCategoryIds),
-    });
-  }
-
-  /** Create settings that mask by priority.
-   * @see [[PlanarClipMaskPriority]] for default priority values based on model type.
-   */
-  public static createByPriority(priority: number, transparency?: number, invert?: boolean) {
-    return new PlanarClipMaskSettings(PlanarClipMaskMode.Priority, transparency, undefined, undefined, priority, invert);
-  }
-
+  /** Create a new PlanarClipMaskSettings. */
   public static create(args: ModelPlanarClipMaskArgs | ElementPlanarClipMaskArgs | SubCategoryPlanarClipMaskArgs | PriorityPlanarClipMaskArgs): PlanarClipMaskSettings {
     const modelIds = args.modelIds ? CompressedId64Set.sortAndCompress(args.modelIds) : undefined;
     if (undefined !== args.priority)
@@ -236,8 +208,8 @@ export class PlanarClipMaskSettings {
     if (undefined !== this.transparency)
       props.transparency = this.transparency;
 
-    if (undefined !== this.invert && this.invert)
-      props.invert = this.invert;
+    if (this.invert)
+      props.invert = true;
 
     return props;
   }
@@ -275,7 +247,7 @@ export class PlanarClipMaskSettings {
     this._modelIds = modelIds;
     this._subCategoryOrElementIds = subCategoryOrElementIds;
     this.priority = priority;
-    this.invert = invert;
+    this.invert = true === invert;
     this.transparency = undefined !== transparency ? Math.max(0, Math.min(1, transparency)) : undefined;
 
     if (modelIds)

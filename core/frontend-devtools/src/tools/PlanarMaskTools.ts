@@ -174,16 +174,26 @@ export abstract class PlanarMaskBaseTool extends PrimitiveTool {
   }
 
   protected createSubCategoryMask() {
-    return PlanarClipMaskSettings.createForElementsOrSubCategories(PlanarClipMaskMode.IncludeSubCategories, this._acceptedSubCategoryIds, this._acceptedModelIds, this._transparency, this._invert);
+    return PlanarClipMaskSettings.create({
+      subCategoryIds: this._acceptedSubCategoryIds,
+      modelIds: this._acceptedModelIds,
+      transparency: this._transparency,
+      invert: this._invert,
+    });
   }
 
   protected createElementMask(option: "include" | "exclude") {
-    const mode = "include" === option ? PlanarClipMaskMode.IncludeElements : PlanarClipMaskMode.ExcludeElements;
-    return PlanarClipMaskSettings.createForElementsOrSubCategories(mode, this._acceptedElementIds, this._acceptedModelIds, this._transparency, this._invert);
+    return PlanarClipMaskSettings.create({
+      elementIds: this._acceptedElementIds,
+      exclude: "exclude" === option,
+      modelIds: this._acceptedModelIds,
+      transparency: this._transparency,
+      invert: this._invert,
+    });
   }
 
   protected createModelMask() {
-    return PlanarClipMaskSettings.createForModels(this._acceptedModelIds, this._transparency, this._invert);
+    return PlanarClipMaskSettings.create({ modelIds: this._acceptedModelIds, transparency: this._transparency, invert: this._invert });
   }
 
   protected setRealityModelMask(vp: ScreenViewport, mask: PlanarClipMaskSettings): void {
@@ -357,7 +367,7 @@ export class SetHigherPriorityRealityModelMasking extends PlanarMaskBaseTool {
   protected createToolInstance(): PlanarMaskBaseTool { return new SetHigherPriorityRealityModelMasking(); }
   protected applyMask(vp: ScreenViewport): void {
     const basePriority = this._targetMaskModel === vp.displayStyle.getOSMBuildingRealityModel() ? PlanarClipMaskPriority.GlobalRealityModel : PlanarClipMaskPriority.RealityModel;
-    this.setRealityModelMask(vp, PlanarClipMaskSettings.createByPriority(basePriority + this._priority, this._transparency, this._invert)!);
+    this.setRealityModelMask(vp, PlanarClipMaskSettings.create({ priority: basePriority + this._priority, transparency: this._transparency, invert: this._invert }));
   }
 
   public override async parseAndRun(...args: string[]): Promise<boolean> {
@@ -388,7 +398,7 @@ export class UnmaskRealityModelTool extends PlanarMaskBaseTool {
   }
   protected createToolInstance(): PlanarMaskBaseTool { return new UnmaskRealityModelTool(); }
   protected applyMask(vp: ScreenViewport): void {
-    const settings = PlanarClipMaskSettings.createForElementsOrSubCategories(PlanarClipMaskMode.IncludeSubCategories, this._acceptedSubCategoryIds, this._acceptedModelIds);
+    const settings = PlanarClipMaskSettings.create({ subCategoryIds: this._acceptedSubCategoryIds, modelIds: this._acceptedModelIds });
     this.setRealityModelMask(vp, settings);
   }
   public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
