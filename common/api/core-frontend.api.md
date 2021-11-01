@@ -7463,6 +7463,8 @@ export namespace RealityDataSource {
     export function createKeyFromUrl(tilesetUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey;
     // (undocumented)
     export function createOrbitGtBlobPropsFromKey(rdSourceKey: RealityDataSourceKey): OrbitGtBlobProps | undefined;
+    // (undocumented)
+    export function formatfromUrl(tilesetUrl: string): RealityDataFormat;
     // @internal
     export function fromKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined>;
     export function keyToString(rdSourceKey: RealityDataSourceKey): string;
