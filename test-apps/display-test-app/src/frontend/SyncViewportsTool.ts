@@ -79,6 +79,7 @@ export class SyncViewportsTool extends Tool {
   }
 }
 
+/** Connect or disconnect two viewports using TwoWayViewportFrustumSync. */
 export class SyncViewportFrustaTool extends SyncViewportsTool {
   public static override toolId = "SyncFrusta";
 

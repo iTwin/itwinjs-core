@@ -8,10 +8,14 @@
 
 import { Viewport } from "./Viewport";
 
-/** Forms a bidirectional connection between two [[Viewport]]s such that the [Frustum]($common)s of both Viewports are synchronized.
- * For example, panning in one viewport will cause the other viewport to pan by the same distance.
+/** Forms a bidirectional connection between two [[Viewport]]s such that the [[ViewState]]s of each are synchronized with one another.
+ * For example, panning in one viewport will cause the other viewport to pan by the same distance, and changing the [RenderMode]($common) of one viewport
+ * will change it in the other viewport.
+ * By default, all aspects of the views - display style, category and model selectors, frustum, etc - are synchronized, but this can be customized by
+ * subclassing and overriding the [[syncViewports]] and [[connectViewports]] methods.
  * @see [Multiple Viewport Sample](https://www.itwinjs.org/sample-showcase/?group=Viewer+Features&sample=multi-viewport-sample&imodel=Metrostation+Sample)
  * for an interactive demonstration.
+ * @see [[TwoWayViewportFrustumSync]] to synchronize only the frusta of the viewports.
  * @public
  */
 export class TwoWayViewportSync {
@@ -27,17 +31,28 @@ export class TwoWayViewportSync {
     this._isEcho = false;
   }
 
-  protected syncViewports(source: Viewport, target: Viewport): void {
-    target.applyViewState(source.view.clone(target.iModel));
-  }
-
+  /** Invoked from [[connect]] to set up the initial synchronization between the two viewports.
+   * `target` should be modified to match `source`.
+   * The default implementation applies a clone of `source`'s [[ViewState]] to `target`.
+   * @see [[syncViewports]] to customize subsequent synchronization.
+   */
   protected connectViewports(source: Viewport, target: Viewport): void {
     const viewState = source.view.clone(target.iModel);
     target.applyViewState(viewState);
   }
 
-  /** Establish the connection between two Viewports. When this method is called, `view2` is initialized with the state of `view1`.
-   * Thereafter, any change to the frustum of either view will be reflected in the frustum of the other view.
+  /** Invoked each time `source` changes to update `target` to match.
+   * The default implementation applies a clone of `source`'s [[ViewState]] to `target`.
+   * @param source The viewport that changed
+   * @param target The viewport that should be updated to match `source`
+   * @see [[connectViewports]] to set up the initial synchronization between the two viewports.
+   */
+  protected syncViewports(source: Viewport, target: Viewport): void {
+    target.applyViewState(source.view.clone(target.iModel));
+  }
+
+  /** Establish the connection between two Viewports. When this method is called, `view2` is initialized with the state of `view1` via [[connectViewports]].
+   * Thereafter, any change to the frustum of either view will be reflected in the frustum of the other view via [[syncViewports]].
    */
   public connect(source: Viewport, target: Viewport) {
     this.disconnect();
@@ -56,13 +71,21 @@ export class TwoWayViewportSync {
   }
 }
 
+/** Forms a bidirectional connection between two [[Viewports]] such that the [Frustum]($common)s of each are synchronized with one another.
+ * For example, zooming out in one viewport will zoom out by the same distance in the other viewport.
+ * No other aspects of the viewports are synchronized - they may have entirely different display styles, category/model selectors, etc.
+ * @see [[TwoWayViewportSync]] to synchronize all aspects of the viewports.
+ * @public
+ */
 export class TwoWayViewportFrustumSync extends TwoWayViewportSync {
+  /** @internal override */
   protected override syncViewports(source: Viewport, target: Viewport): void {
     const pose = source.view.savePose();
     const view = target.view.applyPose(pose);
     target.applyViewState(view);
   }
 
+  /** @internal override */
   protected override connectViewports(source: Viewport, target: Viewport): void {
     this.syncViewports(source, target);
   }
