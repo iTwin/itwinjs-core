@@ -38,7 +38,6 @@ export { Unit } from "./Metadata/Unit";
 export { UnitSystem } from "./Metadata/UnitSystem";
 export * from "./PropertyTypes";
 export * from "./SchemaKey";
-export * from "./utils/FormatEnums";
 export * from "./UnitConversion/UnitConversion";
 export * from "./UnitConversion/UnitConverter";
 export * from "./UnitProvider/UnitProvider";
