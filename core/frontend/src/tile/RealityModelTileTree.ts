@@ -11,7 +11,6 @@ import {
 } from "@itwin/core-bentley";
 import {
   Cartographic, DefaultSupportedTypes, GeoCoordStatus, PlanarClipMaskPriority, PlanarClipMaskSettings,
-  RealityData,
   RealityDataProvider,
   RealityDataSourceKey,
   SpatialClassifiers, ViewFlagOverrides,
