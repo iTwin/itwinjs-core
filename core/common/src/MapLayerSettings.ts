@@ -9,6 +9,7 @@
 import { assert } from "@itwin/core-bentley";
 import { BackgroundMapProvider, BackgroundMapProviderProps, BackgroundMapType } from "./BackgroundMapProvider";
 import { DeprecatedBackgroundMapProps } from "./BackgroundMapSettings";
+import { SpatialClassifier, SpatialClassifierProps } from "./SpatialClassification";
 
 /** @beta */
 export type SubLayerId = string | number;
@@ -123,6 +124,8 @@ export interface MapLayerProps {
   formatId: string;
   /** Name */
   name: string;
+  /** Needs work... either url/SubLayers or Classifier */
+  classifier?: SpatialClassifierProps;
   /** URL */
   url: string;
   /** Source layers. If undefined all layers are displayed. */
@@ -159,6 +162,7 @@ export class MapLayerSettings {
   public readonly visible: boolean;
   public readonly formatId: string;
   public readonly name: string;
+  public readonly classifier?: SpatialClassifier;
   public readonly url: string;
   public readonly transparency: number;
   public readonly subLayers: MapSubLayerSettings[];
@@ -176,7 +180,7 @@ export class MapLayerSettings {
   /** @internal */
   protected constructor(url: string, name: string, formatId: string, visible = true,
     jsonSubLayers: MapSubLayerProps[] | undefined = undefined, transparency: number = 0,
-    transparentBackground = true, isBase = false, userName?: string, password?: string, accessKey?: MapLayerKey) {
+    transparentBackground = true, isBase = false, userName?: string, password?: string, accessKey?: MapLayerKey, classifier?: SpatialClassifierProps) {
     this.formatId = formatId;
     this.name = name;
     this.visible = visible;
@@ -200,12 +204,14 @@ export class MapLayerSettings {
     this.accessKey = accessKey;
     this.transparency = transparency;
     this.url = url;
+    if (classifier)
+      this.classifier = SpatialClassifier.fromJSON(classifier);
   }
 
   /** Construct from JSON, performing validation and applying default values for undefined fields. */
   public static fromJSON(json: MapLayerProps): MapLayerSettings {
     const transparentBackground = (json.transparentBackground === undefined) ? true : json.transparentBackground;
-    return new this(json.url, json.name, json.formatId, json.visible, json.subLayers, json.transparency, transparentBackground, json.isBase === true, undefined, undefined, json.accessKey);
+    return new this(json.url, json.name, json.formatId, json.visible, json.subLayers, json.transparency, transparentBackground, json.isBase === true, undefined, undefined, json.accessKey, json.classifier);
   }
 
   /** return JSON representation of this MapLayerSettings object */
@@ -230,6 +236,10 @@ export class MapLayerSettings {
       props.isBase = this.isBase;
 
     props.visible = this.visible;
+
+    if (this.classifier)
+      props.classifier = this.classifier.toJSON();
+
     return props;
   }
 

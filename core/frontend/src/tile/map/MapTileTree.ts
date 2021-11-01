@@ -8,12 +8,12 @@
 
 import { assert, compareBooleans, compareNumbers, compareStrings, compareStringsOrUndefined, CompressedId64Set, Id64String } from "@itwin/core-bentley";
 import {
-  Angle, AngleSweep, Constant, Ellipsoid, EllipsoidPatch, Point3d, Range1d, Range3d, Ray3d, Transform, Vector3d, XYZProps,
-} from "@itwin/core-geometry";
-import {
   BackgroundMapSettings, BaseLayerSettings, Cartographic, ColorDef, FeatureAppearance, GeoCoordStatus, GlobeMode, MapLayerSettings, PlanarClipMaskPriority, TerrainHeightOriginMode,
   TerrainProviderName,
 } from "@itwin/core-common";
+import {
+  Angle, AngleSweep, Constant, Ellipsoid, EllipsoidPatch, Point3d, Range1d, Range3d, Ray3d, Transform, Vector3d, XYZProps,
+} from "@itwin/core-geometry";
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
 import { TerrainDisplayOverrides } from "../../DisplayStyleState";
 import { HitDetail } from "../../HitDetail";
@@ -40,6 +40,7 @@ import {
   RealityTileDrawArgs,
   RealityTileTree,
   RealityTileTreeParams,
+  SpatialClassifierTileTreeReference,
   Tile,
   TileDrawArgs,
   TileLoadPriority,
@@ -513,6 +514,9 @@ const mapTreeSupplier = new MapTreeSupplier();
 /** @internal */
 type CheckTerrainDisplayOverride = () => TerrainDisplayOverrides | undefined;
 
+type ImageryOrClassifierTreeRef = ImageryMapLayerTreeReference | SpatialClassifierTileTreeReference;
+type ImageryTreeOrClassifierId = ImageryMapTileTree | Id64String;
+
 /** Specialization of tile tree that represents background map.
  * @internal
  */
@@ -522,7 +526,7 @@ export class MapTileTreeReference extends TileTreeReference {
   private readonly _iModel: IModelConnection;
   private _baseImageryLayerIncluded = false;
   private _baseColor?: ColorDef;
-  private readonly _imageryTrees: ImageryMapLayerTreeReference[] = new Array<ImageryMapLayerTreeReference>();
+  private readonly _imageryTrees = new Array<ImageryOrClassifierTreeRef>();
   private _baseTransparent = false;
   private _symbologyOverrides: FeatureSymbology.Overrides | undefined;
   private _planarClipMask?: PlanarClipMaskState;
@@ -678,8 +682,7 @@ export class MapTileTreeReference extends TileTreeReference {
     // Start displaying at the highest completely opaque layer...
     for (; treeIndex >= 1; treeIndex--) {
       const imageryTreeRef = this._imageryTrees[treeIndex];
-      const layerSettings = imageryTreeRef.layerSettings;
-      if (layerSettings.visible && !imageryTreeRef.layerSettings.allSubLayersInvisible && !layerSettings.transparentBackground && 0 === layerSettings.transparency)
+      if (imageryTreeRef.isOpaque)
         break;    // This layer is completely opaque and will obscure all others so ignore lower ones.
     }
     for (; treeIndex < this._imageryTrees.length; treeIndex++) {

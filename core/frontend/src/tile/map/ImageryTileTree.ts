@@ -302,4 +302,8 @@ export class ImageryMapLayerTreeReference extends MapLayerTileTreeReference {
 
     return tree.imageryLoader.imageryProvider;
   }
+
+  public get isOpaque() {
+    return this._layerSettings.visible && !this._layerSettings.allSubLayersInvisible && !this._layerSettings.transparentBackground && 0 === this._layerSettings.transparency;
+  }
 }

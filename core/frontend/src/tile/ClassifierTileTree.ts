@@ -86,6 +86,7 @@ export abstract class SpatialClassifierTileTreeReference extends TileTreeReferen
   public abstract get classifiers(): SpatialClassifiers;
   public abstract get isPlanar(): boolean;
   public abstract get activeClassifier(): SpatialClassifier | undefined;
+  public get isOpaque() { return false; }   /** When referenced as a map layer reference, BIM models are never opaque. */
 }
 
 /** @internal */
