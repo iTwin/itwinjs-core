@@ -43,7 +43,6 @@ export function ContentToolWidgetComposer(props: ContentToolWidgetComposerProps)
   const className = classnames(
     !uiIsVisible && "nz-hidden",
   );
-
   return (
     <ToolWidgetComposer className={className}
       cornerItem={cornerButton}
