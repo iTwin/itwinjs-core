@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Support to open OPC file from local hosted server (http-server)",
+      "comment": "Support to open OPC file from any server",
       "type": "none"
     }
   ],
