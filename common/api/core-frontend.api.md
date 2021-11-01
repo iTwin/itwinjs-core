@@ -11164,7 +11164,7 @@ export class TwoWayViewportFrustumSync extends TwoWayViewportSync {
 
 // @public
 export class TwoWayViewportSync {
-    connect(source: Viewport, target: Viewport): void;
+    connect(viewport1: Viewport, viewport2: Viewport): void;
     protected connectViewports(source: Viewport, target: Viewport): void;
     disconnect(): void;
     // (undocumented)
