@@ -373,6 +373,7 @@ export namespace OrbitGtTileTree {
   export async function createOrbitGtTileTree(rdSourceKey: RealityDataSourceKey, iModel: IModelConnection, modelId: Id64String): Promise<TileTree | undefined> {
     const rdSource = await RealityDataSource.fromKey(rdSourceKey, iModel.iTwinId);
     const isContextShare = rdSourceKey.provider === RealityDataProvider.ContextShare;
+    const isTilestUrl = rdSourceKey.provider === RealityDataProvider.TilesetUrl;
 
     let blobStringUrl: string;
     if (isContextShare) {
@@ -385,6 +386,8 @@ export namespace OrbitGtTileTree {
       const token = await IModelApp.getAccessToken();
       const blobUrl = await realityData.getBlobUrl(token, docRootName);
       blobStringUrl = blobUrl.toString();
+    } else if (isTilestUrl) {
+      blobStringUrl = rdSourceKey.id;
     } else {
       const orbitGtBlobProps = RealityDataSource.createOrbitGtBlobPropsFromKey(rdSourceKey);
       if (orbitGtBlobProps === undefined)

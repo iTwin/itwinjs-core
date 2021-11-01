@@ -59,8 +59,14 @@ export namespace RealityDataSource {
   export function keyToString(rdSourceKey: RealityDataSourceKey): string {
     return `${rdSourceKey.provider}:${rdSourceKey.format}:${rdSourceKey.id}:${rdSourceKey.iTwinId}`;
   }
+  export function formatfromUrl(tilesetUrl: string): RealityDataFormat {
+    let format = RealityDataFormat.ThreeDTile;
+    if (tilesetUrl.includes(".opc"))
+      format = RealityDataFormat.OPC;
+    return format;
+  }
   export function createKeyFromUrl(tilesetUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey {
-    let format = inputFormat ? inputFormat : RealityDataFormat.ThreeDTile;
+    let format = inputFormat ? inputFormat : formatfromUrl(tilesetUrl);
     if (CesiumIonAssetProvider.isProviderUrl(tilesetUrl)) {
       const provider = inputProvider ? inputProvider : RealityDataProvider.CesiumIonAsset;
       const cesiumIonAssetKey: RealityDataSourceKey = { provider, format, id: tilesetUrl };

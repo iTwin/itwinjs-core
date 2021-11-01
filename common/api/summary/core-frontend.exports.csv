@@ -35,6 +35,7 @@ public;Animator
 internal;ArcGisErrorCode
 internal;ArcGisGenerateTokenOptions
 internal;ArcGISMapLayerImageryProvider 
+internal;ArcGISTileMap
 internal;ArcGisToken
 internal;ArcGisTokenClientType
 internal;ArcGisTokenGenerator

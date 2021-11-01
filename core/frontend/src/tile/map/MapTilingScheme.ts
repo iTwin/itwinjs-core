@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { Angle, Matrix3d, Point2d, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
+import { Angle, Matrix3d, Point2d, Point3d, Range2d, Transform, Vector3d } from "@itwin/core-geometry";
 import { Cartographic } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
 import { MapCartoRectangle } from "../internal";
@@ -32,7 +32,8 @@ export abstract class MapTilingScheme {
   public abstract yFractionToLatitude(yFraction: number): number;
   public abstract latitudeToYFraction(latitude: number): number;
 
-  protected constructor(public readonly numberOfLevelZeroTilesX: number, public readonly numberOfLevelZeroTilesY: number, public rowZeroAtNorthPole: boolean) { }
+  protected constructor(public readonly numberOfLevelZeroTilesX: number, public readonly numberOfLevelZeroTilesY: number, public rowZeroAtNorthPole: boolean, private _rectangle = Range2d.createXYXY(-Angle.piRadians, -Angle.piOver2Radians, Angle.piRadians, Angle.piOver2Radians)) {
+  }
   /**
    * Gets the total number of tiles in the X direction at a specified level-of-detail.
    *
@@ -40,7 +41,7 @@ export abstract class MapTilingScheme {
    * @returns {Number} The number of tiles in the X direction at the given level.
    */
   public getNumberOfXTilesAtLevel(level: number) {
-    return 0 === level ? 1 : this.numberOfLevelZeroTilesX << (level - 1);
+    return level < 0 ? 1 : this.numberOfLevelZeroTilesX << level;
   }
 
   /**
@@ -51,7 +52,17 @@ export abstract class MapTilingScheme {
    * @returns {Number} The number of tiles in the Y direction at the given level.
    */
   public getNumberOfYTilesAtLevel(level: number): number {
-    return (0 === level) ? 1 : this.numberOfLevelZeroTilesY << (level - 1);
+    return  level < 0 ? 1 : this.numberOfLevelZeroTilesY << level;
+  }
+
+  public get rootLevel() {
+    return this.numberOfLevelZeroTilesX > 1 || this.numberOfLevelZeroTilesY > 1 ? -1 : 0;
+  }
+  public getNumberOfXChildrenAtLevel(level: number): number {
+    return level === 0 ? this.numberOfLevelZeroTilesX : 2;
+  }
+  public getNumberOfYChildrenAtLevel(level: number): number {
+    return level === 0 ? this.numberOfLevelZeroTilesY : 2;
   }
   public tileXToFraction(x: number, level: number): number {
     return x / this.getNumberOfXTilesAtLevel(level);
@@ -67,7 +78,7 @@ export abstract class MapTilingScheme {
 
   public yFractionToTileY(yFraction: number, level: number): number {
     const nTiles = this.getNumberOfYTilesAtLevel(level);
-    return Math.min(Math.floor(nTiles * (this.rowZeroAtNorthPole ? (1.0 - yFraction) : yFraction)), nTiles - 1);
+    return Math.min(Math.floor(yFraction * nTiles), nTiles - 1);
   }
 
   public tileXToLongitude(x: number, level: number) {
@@ -108,7 +119,7 @@ export abstract class MapTilingScheme {
   }
 
   public tileXYToRectangle(x: number, y: number, level: number, result?: MapCartoRectangle) {
-    return MapCartoRectangle.create(this.tileXToLongitude(x, level), this.tileYToLatitude(this.rowZeroAtNorthPole ? (y + 1) : y, level), this.tileXToLongitude(x + 1, level), this.tileYToLatitude(this.rowZeroAtNorthPole ? y : (y + 1), level), result);
+    return level < 0 ? MapCartoRectangle.create() : MapCartoRectangle.create(this.tileXToLongitude(x, level), this.tileYToLatitude(this.rowZeroAtNorthPole ? (y + 1) : y, level), this.tileXToLongitude(x + 1, level), this.tileYToLatitude(this.rowZeroAtNorthPole ? y : (y + 1), level), result);
   }
   public tileBordersNorthPole(row: number, level: number) {
     return this.rowZeroAtNorthPole ? this.tileYToFraction(row, level) === 0.0 : this.tileYToFraction(row + 1, level) === 1.0;
@@ -175,20 +186,24 @@ export abstract class MapTilingScheme {
     const mercatorToDb = dbToMercator.inverse();
     return mercatorToDb === undefined ? Transform.createIdentity() : mercatorToDb;
   }
+
+  protected yFractionFlip(fraction: number) {
+    return this.rowZeroAtNorthPole ? (1.0 - fraction) : fraction;
+  }
 }
 
 /** @internal */
 export class GeographicTilingScheme extends MapTilingScheme {
-  public constructor(numberOfLevelZeroTilesX: number = 2, numberOfLevelZeroTilesY: number = 1, rowZeroAtNorthPole: boolean = false) {
+  public constructor(numberOfLevelZeroTilesX: number = 2, numberOfLevelZeroTilesY: number = 1, rowZeroAtNorthPole = false) {
     super(numberOfLevelZeroTilesX, numberOfLevelZeroTilesY, rowZeroAtNorthPole);
   }
 
   public yFractionToLatitude(yFraction: number): number {
-    return Math.PI * (yFraction - .5);
+    return Math.PI * (this.yFractionFlip(yFraction) - .5);
   }
 
   public latitudeToYFraction(latitude: number): number {
-    return .5 + latitude / Math.PI;
+    return this.yFractionFlip(.5 + latitude / Math.PI);
   }
 }
 
@@ -221,7 +236,7 @@ export class WebMercatorProjection {
 /** @internal */
 export class WebMercatorTilingScheme extends MapTilingScheme {
 
-  public constructor(numberOfLevelZeroTilesX: number = 2, numberOfLevelZeroTilesY: number = 2, rowZeroAtNorthPole: boolean = true /* Bing uses 0 north */) {
+  public constructor(numberOfLevelZeroTilesX: number = 1, numberOfLevelZeroTilesY: number = 1, rowZeroAtNorthPole: boolean = true /* Bing uses 0 north */) {
     super(numberOfLevelZeroTilesX, numberOfLevelZeroTilesY, rowZeroAtNorthPole);
   }
 

@@ -1110,6 +1110,8 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     // (undocumented)
     protected get _filterByCartoRange(): boolean;
     // (undocumented)
+    protected _generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void): void;
+    // (undocumented)
     protected getLayerString(prefix?: string): string;
     // (undocumented)
     getLogo(_vp: ScreenViewport): HTMLTableRowElement;
@@ -1126,13 +1128,33 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     // (undocumented)
     serviceJson: any;
     // (undocumented)
-    protected _testChildAvailability(tile: ImageryMapTile, resolveChildren: () => void): void;
-    // (undocumented)
     uintToString(uintArray: any): {
         type: "Buffer";
         data: number[];
     };
 }
+
+// @internal (undocumented)
+export class ArcGISTileMap {
+    constructor(restBaseUrl: string, nbLods?: number);
+    // (undocumented)
+    fallbackTileMapRequestSize: number;
+    // (undocumented)
+    protected fetchAndReadTilemap(queryTiles: QuadId[], reqWidth: number, reqHeight: number): Promise<boolean[]>;
+    // (undocumented)
+    protected fetchTileMapFromServer(level: number, row: number, column: number, width: number, height: number): Promise<any>;
+    // (undocumented)
+    protected getAvailableTilesFromCache(tiles: QuadId[]): {
+        allTilesFound: boolean;
+        available: boolean[];
+    };
+    // (undocumented)
+    getChildrenAvailability(childIds: QuadId[]): Promise<boolean[]>;
+    // (undocumented)
+    protected getChildrenAvailabilityFromServer(childIds: QuadId[]): Promise<boolean[]>;
+    // (undocumented)
+    tileMapRequestSize: number;
+    }
 
 // @internal (undocumented)
 export interface ArcGisToken {
@@ -4245,7 +4267,7 @@ export class ImageryMapTile extends RealityTile {
     // (undocumented)
     get texture(): RenderTexture | undefined;
     // (undocumented)
-    get tilingScheme(): WebMercatorTilingScheme;
+    get tilingScheme(): MapTilingScheme;
 }
 
 // @internal (undocumented)
@@ -4270,7 +4292,7 @@ export class ImageryMapTileTree extends RealityTileTree {
     // (undocumented)
     protected _selectTiles(_args: TileDrawArgs): Tile[];
     // (undocumented)
-    tilingScheme: WebMercatorTilingScheme;
+    get tilingScheme(): MapTilingScheme;
     // (undocumented)
     get viewFlagOverrides(): ViewFlagOverrides;
 }
@@ -5238,6 +5260,10 @@ export abstract class MapLayerImageryProvider {
     // (undocumented)
     protected get _filterByCartoRange(): boolean;
     // (undocumented)
+    generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void): void;
+    // (undocumented)
+    protected _generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void): void;
+    // (undocumented)
     getEPSG3857Extent(row: number, column: number, zoomLevel: number): {
         left: number;
         right: number;
@@ -5255,9 +5281,11 @@ export abstract class MapLayerImageryProvider {
     // (undocumented)
     getLogo(_viewport: ScreenViewport): HTMLTableRowElement | undefined;
     // (undocumented)
+    getPotentialChildIds(tile: ImageryMapTile): QuadId[];
+    // (undocumented)
     protected getRequestAuthorization(): RequestBasicCredentials | undefined;
     // (undocumented)
-    getToolTip(_strings: string[], _quadId: QuadId, _carto: Cartographic, _tree: ImageryMapTileTree): Promise<void>;
+    getToolTip(strings: string[], quadId: QuadId, _carto: Cartographic, tree: ImageryMapTileTree): Promise<void>;
     // (undocumented)
     protected _hasSuccessfullyFetchedTile: boolean;
     // (undocumented)
@@ -5287,17 +5315,17 @@ export abstract class MapLayerImageryProvider {
     // (undocumented)
     status: MapLayerImageryProviderStatus;
     // (undocumented)
-    testChildAvailability(tile: ImageryMapTile, resolveChildren: () => void): void;
-    // (undocumented)
-    protected _testChildAvailability(_tile: ImageryMapTile, resolveChildren: () => void): void;
-    // (undocumented)
     get tileSize(): number;
+    // (undocumented)
+    get tilingScheme(): MapTilingScheme;
     // (undocumented)
     protected toolTipFromJsonUrl(_strings: string[], url: string): Promise<void>;
     // (undocumented)
     protected toolTipFromUrl(strings: string[], url: string): Promise<void>;
     // (undocumented)
     get transparentBackgroundString(): string;
+    // (undocumented)
+    get useGeographicTilingScheme(): boolean;
     // (undocumented)
     get usesCachedTiles(): boolean;
     // (undocumented)
@@ -5776,14 +5804,18 @@ export class MapTileTreeReference extends TileTreeReference {
 
 // @internal (undocumented)
 export abstract class MapTilingScheme {
-    protected constructor(numberOfLevelZeroTilesX: number, numberOfLevelZeroTilesY: number, rowZeroAtNorthPole: boolean);
+    protected constructor(numberOfLevelZeroTilesX: number, numberOfLevelZeroTilesY: number, rowZeroAtNorthPole: boolean, _rectangle?: Range2d);
     // (undocumented)
     cartographicToFraction(latitudeRadians: number, longitudeRadians: number, result: Point2d): Point2d;
     cartographicToTileXY(carto: Cartographic, level: number, result?: Point2d): Point2d;
     // (undocumented)
     computeMercatorFractionToDb(ecefToDb: Transform, bimElevationOffset: number, iModel: IModelConnection, applyTerrain: boolean): Transform;
     fractionToCartographic(xFraction: number, yFraction: number, result: Cartographic, height?: number): Cartographic;
+    // (undocumented)
+    getNumberOfXChildrenAtLevel(level: number): number;
     getNumberOfXTilesAtLevel(level: number): number;
+    // (undocumented)
+    getNumberOfYChildrenAtLevel(level: number): number;
     getNumberOfYTilesAtLevel(level: number): number;
     // (undocumented)
     abstract latitudeToYFraction(latitude: number): number;
@@ -5793,6 +5825,8 @@ export abstract class MapTilingScheme {
     readonly numberOfLevelZeroTilesX: number;
     // (undocumented)
     readonly numberOfLevelZeroTilesY: number;
+    // (undocumented)
+    get rootLevel(): 0 | -1;
     // (undocumented)
     rowZeroAtNorthPole: boolean;
     // (undocumented)
@@ -5814,6 +5848,8 @@ export abstract class MapTilingScheme {
     xFractionToLongitude(xFraction: number): number;
     // (undocumented)
     xFractionToTileX(xFraction: number, level: number): number;
+    // (undocumented)
+    protected yFractionFlip(fraction: number): number;
     // (undocumented)
     abstract yFractionToLatitude(yFraction: number): number;
     // (undocumented)
@@ -7268,6 +7304,8 @@ export class QuadId {
     // (undocumented)
     getLatLongRange(mapTilingScheme: MapTilingScheme): Range2d;
     // (undocumented)
+    static getTileContentId(level: number, column: number, row: number): string;
+    // (undocumented)
     get isValid(): boolean;
     // (undocumented)
     level: number;
@@ -7463,6 +7501,8 @@ export namespace RealityDataSource {
     export function createKeyFromUrl(tilesetUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey;
     // (undocumented)
     export function createOrbitGtBlobPropsFromKey(rdSourceKey: RealityDataSourceKey): OrbitGtBlobProps | undefined;
+    // (undocumented)
+    export function formatfromUrl(tilesetUrl: string): RealityDataFormat;
     // @internal
     export function fromKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined>;
     export function keyToString(rdSourceKey: RealityDataSourceKey): string;
@@ -13295,6 +13335,8 @@ export namespace WmtsCapability {
     export class Contents {
         constructor(_json: any);
         // (undocumented)
+        getEpsg4326CompatibleTileMatrixSet(): WmtsCapability.TileMatrixSet[];
+        // (undocumented)
         getGoogleMapsCompatibleTileMatrixSet(): WmtsCapability.TileMatrixSet[];
         // (undocumented)
         readonly layers: WmtsCapability.Layer[];
@@ -13469,10 +13511,20 @@ export namespace WmtsCapability {
         readonly wellKnownScaleSet: string;
     }
     // (undocumented)
+    export class TileMatrixSetLimits {
+        constructor(_json: any);
+        // (undocumented)
+        limits?: Range2d;
+        // (undocumented)
+        tileMatrix?: string;
+    }
+    // (undocumented)
     export class TileMatrixSetLink {
         constructor(_json: any);
         // (undocumented)
         readonly tileMatrixSet: string;
+        // (undocumented)
+        readonly tileMatrixSetLimits: TileMatrixSetLimits[];
     }
     // (undocumented)
     export abstract class XmlConstants {
@@ -13515,10 +13567,16 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
     // (undocumented)
     constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
     // (undocumented)
+    displayedLayerName: string;
+    // (undocumented)
+    protected _generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void): void;
+    // (undocumented)
     initialize(): Promise<void>;
     // (undocumented)
     get mutualExclusiveSubLayer(): boolean;
-    }
+    // (undocumented)
+    get useGeographicTilingScheme(): boolean;
+}
 
 // @public
 export interface ZoomToOptions {
