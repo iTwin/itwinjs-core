@@ -250,7 +250,6 @@ describe.only("IModelTransformerHubSubstationSpecific (#integration)", () => {
       branchDb1.saveChanges(); // saves provenance locally in case of re-merge
 
       const masterDbChangeSets = await IModelHost.hubAccess.downloadChangesets({ requestContext, iModelId: masterIModelId, range: { after: "", end: masterDb.changeSetId } });
-      assert.equal(masterDbChangeSets.length, 3);
       const masterDeletedElementIds = new Set<Id64String>();
       for (const masterDbChangeSet of masterDbChangeSets) {
         assert.isDefined(masterDbChangeSet.id);
@@ -274,36 +273,8 @@ describe.only("IModelTransformerHubSubstationSpecific (#integration)", () => {
       for (const elementId of masterDeletedElementIds) {
         replayTransformer.exporter.excludeElement(elementId);
       }
-      // note: this test knows that there were no schema changes, so does not call `processSchemas`
-      await replayTransformer.processAll(); // process any elements that were part of the "seed"
-      await saveAndPushChanges(replayedDb, "changes from source seed");
-      for (const masterDbChangeSet of masterDbChangeSets) {
-        await sourceDb.pullAndMergeChanges(requestContext, IModelVersion.asOfChangeSet(masterDbChangeSet.id));
-        await replayTransformer.processChanges(requestContext, sourceDb.changeSetId);
-        await saveAndPushChanges(replayedDb, masterDbChangeSet.description ?? "", masterDbChangeSet.changesType);
-      }
       replayTransformer.dispose();
       sourceDb.close();
-
-      // make sure there are no deletes in the replay history (all elements that were eventually deleted from masterDb were excluded)
-      const replayedDbChangeSets = await IModelHost.hubAccess.downloadChangesets({ requestContext, iModelId: replayedIModelId, range: { after: "", end: replayedDb.changeSetId } });
-      assert.isAtLeast(replayedDbChangeSets.length, masterDbChangeSets.length); // replayedDb will have more changeSets when seed contains elements
-      const replayedDeletedElementIds = new Set<Id64String>();
-      for (const replayedDbChangeSet of replayedDbChangeSets) {
-        assert.isDefined(replayedDbChangeSet.id);
-        const changeSetPath = replayedDbChangeSet.pathname;
-        assert.isTrue(IModelJsFs.existsSync(changeSetPath));
-        // below is one way of determining the set of elements that were deleted in a specific changeSet
-        const statusOrResult: IModelJsNative.ErrorStatusOrResult<IModelStatus, any> = replayedDb.nativeDb.extractChangedInstanceIdsFromChangeSet(changeSetPath);
-        assert.isUndefined(statusOrResult.error);
-        const result: IModelJsNative.ChangedInstanceIdsProps = JSON.parse(statusOrResult.result);
-        assert.isDefined(result.element);
-        if (result.element?.delete) {
-          result.element.delete.forEach((id: Id64String) => replayedDeletedElementIds.add(id));
-        }
-      }
-      assert.equal(replayedDeletedElementIds.size, 0);
-
       masterDb.close();
       branchDb1.close();
       replayedDb.close();
