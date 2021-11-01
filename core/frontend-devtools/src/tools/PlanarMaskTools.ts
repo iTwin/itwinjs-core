@@ -22,19 +22,22 @@ export class SetMapHigherPriorityMasking extends Tool {
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 2; }
 
-  public override async run(transparency?: number): Promise<boolean> {
+  public override async run(transparency: number, invert: boolean): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp)
       return false;
 
-    vp.changeBackgroundMapProps({ planarClipMask: { mode: PlanarClipMaskMode.Priority, priority: PlanarClipMaskPriority.BackgroundMap, transparency } });
+    vp.changeBackgroundMapProps({ planarClipMask: { mode: PlanarClipMaskMode.Priority, priority: PlanarClipMaskPriority.BackgroundMap, transparency, invert } });
     vp.invalidateRenderPlan();
     return true;
   }
 
   public override async parseAndRun(...args: string[]): Promise<boolean> {
     const transparency = parseFloat(args[0]);
-    return this.run((transparency !== undefined && transparency < 1.0) ? transparency : undefined);
+    let invert;
+    if (args.length > 1)
+      invert = parseBoolean(args[1]);
+    return this.run((transparency !== undefined && transparency < 1.0) ? transparency : 0, invert === true);
   }
 }
 
@@ -51,7 +54,7 @@ export class UnmaskMapTool extends Tool {
     if (undefined === vp)
       return false;
 
-    vp.changeBackgroundMapProps({ planarClipMask: { mode: PlanarClipMaskMode.None } });
+    vp.changeBackgroundMapProps({ planarClipMask: { mode: PlanarClipMaskMode.None, transparency: 0, invert: false } });
     vp.invalidateRenderPlan();
     return true;
   }
@@ -64,9 +67,9 @@ export abstract class PlanarMaskBaseTool extends PrimitiveTool {
   protected readonly _acceptedModelIds = new Set<Id64String>();
   protected readonly _acceptedSubCategoryIds = new Set<Id64String>();
   protected readonly _acceptedElementIds = new Set<Id64String>();
-  protected _transparency?: number;
+  protected _transparency: number = 0;
   protected _useSelection: boolean = false;
-  protected _invert?: boolean;
+  protected _invert: boolean = false;
   protected _targetMaskModel?: Id64String | ContextRealityModelState;
 
   public override requireWriteableTarget(): boolean { return false; }
@@ -91,7 +94,7 @@ export abstract class PlanarMaskBaseTool extends PrimitiveTool {
   }
   public override async exitTool() {
     await super.exitTool();
-    this._transparency = undefined;
+    this._transparency = 0;
   }
 
   public async onRestartTool() {
@@ -104,9 +107,9 @@ export abstract class PlanarMaskBaseTool extends PrimitiveTool {
 
   public override async parseAndRun(...args: string[]): Promise<boolean> {
     const transparency = parseFloat(args[0]);
-    this._transparency = (transparency !== undefined && transparency < 1.0) ? transparency : undefined;
+    this._transparency = (transparency !== undefined && transparency < 1.0) ? transparency : 0;
     if (args.length > 1)
-      this._invert = parseBoolean(args[1]);
+      this._invert = parseBoolean(args[1]) === true;
 
     return this.run();
   }
@@ -367,7 +370,7 @@ export class SetHigherPriorityRealityModelMasking extends PlanarMaskBaseTool {
         this._transparency = value;
     }
     if (args.length > 2)
-      this._invert = parseBoolean(args[2]);
+      this._invert = parseBoolean(args[2]) === true;
 
     return this.run();
   }

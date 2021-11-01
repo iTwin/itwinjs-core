@@ -90,7 +90,7 @@ export class PlanarClipMaskSettings {
    If no transparency is defined then the transparencies of the mask elements are used.
    */
   public readonly transparency?: number;
-  /** A value of true indicates that the mask should be inverted and only content within the mask should be displayed */
+  /** A value of true indicates that the mask should be inverted and only content within the mask should be displayed, in other words the area inside the mask is displayed rather than outside. */
   public readonly invert?: boolean;
   private readonly _modelIds?: CompressedId64Set;
   private readonly _subCategoryOrElementIds?: CompressedId64Set;
