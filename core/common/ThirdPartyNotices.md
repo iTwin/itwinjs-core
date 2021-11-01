@@ -4,6 +4,7 @@
 This library potentially incorporates work from the following third-party code:
 
 ## [tween.js](https://github.com/tweenjs/tween.js/)
+## [is-buffer](https://github.com/feross/is-buffer/)
 
 The MIT License
 

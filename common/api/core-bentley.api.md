@@ -944,6 +944,9 @@ export class IndexMap<T> {
 }
 
 // @public
+export function isBuffer(obj: any): boolean;
+
+// @public
 export function isIDisposable(obj: unknown): obj is IDisposable;
 
 // @public
