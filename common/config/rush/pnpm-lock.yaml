@@ -1685,17 +1685,16 @@ importers:
       '@itwin/itwinui-react': ^1.23.0
       '@itwin/presentation-common': workspace:*
       '@testing-library/react': ^12.0.0
-      '@testing-library/react-hooks': ^3.2.1
+      '@testing-library/react-hooks': ^7.0.2
       '@types/chai': ^4.1.4
       '@types/enzyme': 3.9.3
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
-      '@types/react': ^17.0.0
+      '@types/react': 17.0.31
       '@types/react-beautiful-dnd': ^12.1.2
       '@types/react-select': 3.0.26
       '@types/sinon': ^9.0.0
       '@types/sinon-chai': ^3.2.0
-      '@types/testing-library__react-hooks': ^3.1.0
       '@wojtekmaj/enzyme-adapter-react-17': ^0.6.3
       chai: ^4.1.2
       chai-as-promised: ^7
@@ -1713,7 +1712,7 @@ importers:
       react: ^17.0.0
       react-beautiful-dnd: ^13.0.0
       react-resize-detector: ^6.7.6
-      react-select: 3.1.0
+      react-select: 3.2.0
       rimraf: ^3.0.2
       sinon: ^9.0.2
       sinon-chai: ^3.2.0
@@ -1723,7 +1722,7 @@ importers:
       classnames: 2.3.1
       react-beautiful-dnd: 13.1.0_react@17.0.2
       react-resize-detector: 6.7.6_react@17.0.2
-      react-select: 3.1.0_react@17.0.2
+      react-select: 3.2.0_react@17.0.2
     devDependencies:
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/react-scripts': 4.0.3_react@17.0.2+typescript@4.4.4
@@ -1744,17 +1743,16 @@ importers:
       '@itwin/itwinui-react': 1.23.0_react@17.0.2
       '@itwin/presentation-common': link:../../presentation/common
       '@testing-library/react': 12.1.2_react@17.0.2
-      '@testing-library/react-hooks': 3.7.0_react@17.0.2
+      '@testing-library/react-hooks': 7.0.2_react@17.0.2
       '@types/chai': 4.2.22
       '@types/enzyme': 3.9.3
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
-      '@types/react': 17.0.33
+      '@types/react': 17.0.31
       '@types/react-beautiful-dnd': 12.1.5
       '@types/react-select': 3.0.26
       '@types/sinon': 9.0.11
       '@types/sinon-chai': 3.2.5
-      '@types/testing-library__react-hooks': 3.4.1
       '@wojtekmaj/enzyme-adapter-react-17': 0.6.5_enzyme@3.11.0+react@17.0.2
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
@@ -2103,7 +2101,7 @@ importers:
       '@itwin/presentation-components': workspace:*
       '@itwin/presentation-frontend': workspace:*
       '@itwin/presentation-testing': workspace:*
-      '@testing-library/react-hooks': ^3.2.1
+      '@testing-library/react-hooks': ^7.0.2
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
       '@types/chai-jest-snapshot': ^1.3.0
@@ -2113,12 +2111,11 @@ importers:
       '@types/faker': ^4.1.0
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
-      '@types/react': ^17.0.0
+      '@types/react': 17.0.31
       '@types/react-dom': ^17.0.0
       '@types/rimraf': ^2.0.2
       '@types/sinon': ^9.0.0
       '@types/sinon-chai': ^3.2.0
-      '@types/testing-library__react-hooks': ^3.1.0
       cache-require-paths: ^0.3.0
       chai: ^4.1.2
       chai-as-promised: ^7
@@ -2163,7 +2160,7 @@ importers:
       '@itwin/presentation-components': link:../../presentation/components
       '@itwin/presentation-frontend': link:../../presentation/frontend
       '@itwin/presentation-testing': link:../../presentation/testing
-      '@testing-library/react-hooks': 3.7.0_509016fd322278d497c1e58f6164ce1d
+      '@testing-library/react-hooks': 7.0.2_fc2bb8a5b006d3f25c5f84ea777e678d
       '@types/chai': 4.2.22
       '@types/chai-as-promised': 7.1.4
       '@types/chai-jest-snapshot': 1.3.6
@@ -2195,9 +2192,8 @@ importers:
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@types/react': 17.0.33
+      '@types/react': 17.0.31
       '@types/react-dom': 17.0.10
-      '@types/testing-library__react-hooks': 3.4.1
       cache-require-paths: 0.3.0
       cross-env: 5.2.1
       dotenv: 10.0.0
@@ -2526,7 +2522,7 @@ importers:
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-frontend': workspace:*
       '@testing-library/react': ^12.0.0
-      '@testing-library/react-hooks': ^3.2.1
+      '@testing-library/react-hooks': ^7.0.2
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
       '@types/chai-jest-snapshot': ^1.3.0
@@ -2534,11 +2530,10 @@ importers:
       '@types/enzyme': 3.9.3
       '@types/faker': ^4.1.0
       '@types/mocha': ^8.2.2
-      '@types/react': ^17.0.0
+      '@types/react': 17.0.31
       '@types/react-dom': ^17.0.0
       '@types/sinon': ^9.0.0
       '@types/sinon-chai': ^3.2.0
-      '@types/testing-library__react-hooks': ^3.1.0
       '@wojtekmaj/enzyme-adapter-react-17': ^0.6.3
       chai: ^4.1.2
       chai-as-promised: ^7
@@ -2586,7 +2581,7 @@ importers:
       '@itwin/presentation-common': link:../common
       '@itwin/presentation-frontend': link:../frontend
       '@testing-library/react': 12.1.2_react-dom@17.0.2+react@17.0.2
-      '@testing-library/react-hooks': 3.7.0_509016fd322278d497c1e58f6164ce1d
+      '@testing-library/react-hooks': 7.0.2_fc2bb8a5b006d3f25c5f84ea777e678d
       '@types/chai': 4.2.22
       '@types/chai-as-promised': 7.1.4
       '@types/chai-jest-snapshot': 1.3.6
@@ -2594,11 +2589,10 @@ importers:
       '@types/enzyme': 3.9.3
       '@types/faker': 4.1.12
       '@types/mocha': 8.2.3
-      '@types/react': 17.0.33
+      '@types/react': 17.0.31
       '@types/react-dom': 17.0.10
       '@types/sinon': 9.0.11
       '@types/sinon-chai': 3.2.5
-      '@types/testing-library__react-hooks': 3.4.1
       '@wojtekmaj/enzyme-adapter-react-17': 0.6.5_fae758709a8810ba97b4c03852dde4d0
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
@@ -3220,7 +3214,7 @@ importers:
       '@itwin/presentation-components': workspace:*
       '@itwin/presentation-frontend': workspace:*
       '@types/bunyan': ^1.8.4
-      '@types/react': ^17.0.0
+      '@types/react': 17.0.31
       '@types/react-dom': ^17.0.0
       '@types/react-select': 3.0.26
       autoprefixer: ^8.6.5
@@ -3236,7 +3230,7 @@ importers:
       react: ^17.0.0
       react-dom: ^17.0.0
       react-resize-detector: ^6.7.6
-      react-select: 3.1.0
+      react-select: 3.2.0
       rimraf: ^3.0.2
       semver: ^5.5.0
       symlink-dir: ~4.0.3
@@ -3264,14 +3258,14 @@ importers:
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2
       react-resize-detector: 6.7.6_react-dom@17.0.2+react@17.0.2
-      react-select: 3.1.0_react-dom@17.0.2+react@17.0.2
+      react-select: 3.2.0_react-dom@17.0.2+react@17.0.2
       semver: 5.7.1
     devDependencies:
       '@bentley/react-scripts': 4.0.3_react@17.0.2+typescript@4.4.4
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@types/bunyan': 1.8.7
-      '@types/react': 17.0.33
+      '@types/react': 17.0.31
       '@types/react-dom': 17.0.10
       '@types/react-select': 3.0.26
       autoprefixer: 8.6.5
@@ -3290,7 +3284,7 @@ importers:
 
   ../../test-apps/ui-test-app:
     specifiers:
-      '@axe-core/react': ^4.1.1
+      '@axe-core/react': 4.3.1
       '@bentley/icons-generic': ^1.0.15
       '@bentley/icons-generic-webfont': ^1.0.15
       '@bentley/imodelhub-client': workspace:*
@@ -3333,7 +3327,7 @@ importers:
       '@itwin/ui-test-extension': workspace:*
       '@types/lorem-ipsum': ^1.0.2
       '@types/node': 14.14.31
-      '@types/react': ^17.0.0
+      '@types/react': 17.0.31
       '@types/react-dom': ^17.0.0
       '@types/react-redux': ^7.1.18
       '@types/react-select': 3.0.26
@@ -3356,9 +3350,9 @@ importers:
       react-dom: ^17.0.0
       react-redux: ^7.2.2
       react-resize-detector: ^6.7.6
-      react-select: 3.1.0
+      react-select: 3.2.0
       react-table: ^7.1.0
-      redux: ^4.0.3
+      redux: ^4.1.0
       rimraf: ^3.0.2
       semver: ^5.5.0
       typescript: ~4.4.0
@@ -3406,7 +3400,7 @@ importers:
       react-dom: 17.0.2_react@17.0.2
       react-redux: 7.2.6_react-dom@17.0.2+react@17.0.2
       react-resize-detector: 6.7.6_react-dom@17.0.2+react@17.0.2
-      react-select: 3.1.0_react-dom@17.0.2+react@17.0.2
+      react-select: 3.2.0_react-dom@17.0.2+react@17.0.2
       react-table: 7.7.0_react@17.0.2
       redux: 4.1.2
       semver: 5.7.1
@@ -3419,7 +3413,7 @@ importers:
       '@itwin/projects-client': 0.2.0
       '@types/lorem-ipsum': 1.0.2
       '@types/node': 14.14.31
-      '@types/react': 17.0.33
+      '@types/react': 17.0.31
       '@types/react-dom': 17.0.10
       '@types/react-redux': 7.1.20
       '@types/react-select': 3.0.26
@@ -3458,14 +3452,14 @@ importers:
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-components': workspace:*
       '@itwin/presentation-frontend': workspace:*
-      '@types/react': ^17.0.0
+      '@types/react': 17.0.31
       '@types/react-select': 3.0.26
       classnames: ^2.3.1
       cpx: ^1.5.0
       eslint: ^7.11.0
       react: ^17.0.0
       react-dom: ^17.0.0
-      react-select: 3.1.0
+      react-select: 3.2.0
       rimraf: ^3.0.2
       typescript: ~4.4.0
     dependencies:
@@ -3486,12 +3480,12 @@ importers:
       classnames: 2.3.1
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2
-      react-select: 3.1.0_react-dom@17.0.2+react@17.0.2
+      react-select: 3.2.0_react-dom@17.0.2+react@17.0.2
     devDependencies:
       '@bentley/react-scripts': 4.0.3_react@17.0.2+typescript@4.4.4
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@types/react': 17.0.33
+      '@types/react': 17.0.31
       '@types/react-select': 3.0.26
       cpx: 1.5.0
       eslint: 7.32.0
@@ -3961,17 +3955,16 @@ importers:
       '@itwin/itwinui-css': ^0.37.0
       '@itwin/itwinui-react': ^1.23.0
       '@testing-library/react': ^12.0.0
-      '@testing-library/react-hooks': ^3.2.1
+      '@testing-library/react-hooks': ^7.0.2
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
       '@types/chai-jest-snapshot': ^1.3.0
       '@types/chai-spies': ^1.0.0
       '@types/enzyme': 3.9.3
       '@types/mocha': ^8.2.2
-      '@types/react': ^17.0.0
+      '@types/react': 17.0.31
       '@types/react-dom': ^17.0.0
       '@types/sinon': ^9.0.0
-      '@types/testing-library__react-hooks': ^3.1.0
       '@types/uuid': ^7.0.2
       '@wojtekmaj/enzyme-adapter-react-17': ^0.6.3
       chai: ^4.1.2
@@ -4011,17 +4004,16 @@ importers:
       '@itwin/core-react': link:../core-react
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@testing-library/react': 12.1.2_react-dom@17.0.2+react@17.0.2
-      '@testing-library/react-hooks': 3.7.0_react@17.0.2
+      '@testing-library/react-hooks': 7.0.2_react-dom@17.0.2+react@17.0.2
       '@types/chai': 4.2.22
       '@types/chai-as-promised': 7.1.4
       '@types/chai-jest-snapshot': 1.3.6
       '@types/chai-spies': 1.0.3
       '@types/enzyme': 3.9.3
       '@types/mocha': 8.2.3
-      '@types/react': 17.0.33
+      '@types/react': 17.0.31
       '@types/react-dom': 17.0.10
       '@types/sinon': 9.0.11
-      '@types/testing-library__react-hooks': 3.4.1
       '@types/uuid': 7.0.5
       '@wojtekmaj/enzyme-adapter-react-17': 0.6.5_fae758709a8810ba97b4c03852dde4d0
       chai: 4.3.4
@@ -4050,6 +4042,7 @@ importers:
     specifiers:
       '@bentley/icons-generic': ^1.0.15
       '@bentley/icons-generic-webfont': ^1.0.15
+      '@bentley/itwin-client': workspace:*
       '@bentley/product-settings-client': workspace:*
       '@bentley/telemetry-client': workspace:*
       '@itwin/appui-abstract': workspace:*
@@ -4074,7 +4067,7 @@ importers:
       '@itwin/presentation-frontend': workspace:*
       '@itwin/presentation-testing': workspace:*
       '@testing-library/react': ^12.0.0
-      '@testing-library/react-hooks': ^3.2.1
+      '@testing-library/react-hooks': ^7.0.2
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
       '@types/chai-jest-snapshot': ^1.3.0
@@ -4084,13 +4077,12 @@ importers:
       '@types/lodash': ^4.14.0
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
-      '@types/react': ^17.0.0
+      '@types/react': 17.0.31
       '@types/react-dom': ^17.0.0
       '@types/react-redux': ^7.1.18
       '@types/rimraf': ^2.0.2
       '@types/sinon': ^9.0.0
       '@types/sinon-chai': ^3.2.0
-      '@types/testing-library__react-hooks': ^3.1.0
       '@wojtekmaj/enzyme-adapter-react-17': ^0.6.3
       chai: ^4.1.2
       chai-as-promised: ^7
@@ -4118,7 +4110,7 @@ importers:
       react-redux: ^7.2.2
       react-split-pane: 0.1.92
       react-test-renderer: ^17.0.0
-      redux: ^4.0.3
+      redux: ^4.1.0
       rimraf: ^3.0.2
       rxjs: ^6.6.2
       sinon: ^9.0.2
@@ -4144,6 +4136,7 @@ importers:
       react-split-pane: 0.1.92_react-dom@17.0.2+react@17.0.2
       rxjs: 6.6.7
     devDependencies:
+      '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/product-settings-client': link:../../clients/product-settings
       '@itwin/appui-abstract': link:../appui-abstract
       '@itwin/appui-layout-react': link:../appui-layout-react
@@ -4163,7 +4156,7 @@ importers:
       '@itwin/presentation-frontend': link:../../presentation/frontend
       '@itwin/presentation-testing': link:../../presentation/testing
       '@testing-library/react': 12.1.2_react-dom@17.0.2+react@17.0.2
-      '@testing-library/react-hooks': 3.7.0_509016fd322278d497c1e58f6164ce1d
+      '@testing-library/react-hooks': 7.0.2_fc2bb8a5b006d3f25c5f84ea777e678d
       '@types/chai': 4.2.22
       '@types/chai-as-promised': 7.1.4
       '@types/chai-jest-snapshot': 1.3.6
@@ -4173,13 +4166,12 @@ importers:
       '@types/lodash': 4.14.176
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
-      '@types/react': 17.0.33
+      '@types/react': 17.0.31
       '@types/react-dom': 17.0.10
       '@types/react-redux': 7.1.20
       '@types/rimraf': 2.0.5
       '@types/sinon': 9.0.11
       '@types/sinon-chai': 3.2.5
-      '@types/testing-library__react-hooks': 3.4.1
       '@wojtekmaj/enzyme-adapter-react-17': 0.6.5_fae758709a8810ba97b4c03852dde4d0
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
@@ -4224,7 +4216,7 @@ importers:
       '@itwin/itwinui-css': ^0.37.0
       '@itwin/itwinui-react': ^1.23.0
       '@testing-library/react': ^12.0.0
-      '@testing-library/react-hooks': ^3.2.1
+      '@testing-library/react-hooks': ^7.0.2
       '@testing-library/user-event': ^13.2.1
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
@@ -4236,7 +4228,7 @@ importers:
       '@types/linkify-it': ~2.1.0
       '@types/lodash': ^4.14.0
       '@types/mocha': ^8.2.2
-      '@types/react': ^17.0.0
+      '@types/react': 17.0.31
       '@types/react-data-grid': 4.0.2
       '@types/react-dom': ^17.0.0
       '@types/react-highlight-words': ^0.16.1
@@ -4246,7 +4238,6 @@ importers:
       '@types/shortid': ~0.0.29
       '@types/sinon': ^9.0.0
       '@types/sinon-chai': ^3.2.0
-      '@types/testing-library__react-hooks': ^3.1.0
       '@wojtekmaj/enzyme-adapter-react-17': ^0.6.3
       callable-instance2: 1.0.0
       chai: ^4.1.2
@@ -4279,7 +4270,7 @@ importers:
       react-dnd-test-utils: ^11.1.3
       react-dom: ^17.0.0
       react-highlight-words: ^0.17.0
-      react-select: 3.1.0
+      react-select: 3.2.0
       react-select-event: 5.0.0
       react-virtualized: ^9.21.11
       react-window: ^1.8.2
@@ -4311,7 +4302,7 @@ importers:
       react-dnd: 11.1.3_react-dom@17.0.2+react@17.0.2
       react-dnd-html5-backend: 11.1.3
       react-highlight-words: 0.17.0_react@17.0.2
-      react-select: 3.1.0_react-dom@17.0.2+react@17.0.2
+      react-select: 3.2.0_react-dom@17.0.2+react@17.0.2
       react-virtualized: 9.22.3_react-dom@17.0.2+react@17.0.2
       react-window: 1.8.6_react-dom@17.0.2+react@17.0.2
       rxjs: 6.6.7
@@ -4326,7 +4317,7 @@ importers:
       '@itwin/core-react': link:../core-react
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@testing-library/react': 12.1.2_react-dom@17.0.2+react@17.0.2
-      '@testing-library/react-hooks': 3.7.0_react@17.0.2
+      '@testing-library/react-hooks': 7.0.2_react-dom@17.0.2+react@17.0.2
       '@testing-library/user-event': 13.5.0
       '@types/chai': 4.2.22
       '@types/chai-as-promised': 7.1.4
@@ -4338,7 +4329,7 @@ importers:
       '@types/linkify-it': 2.1.0
       '@types/lodash': 4.14.176
       '@types/mocha': 8.2.3
-      '@types/react': 17.0.33
+      '@types/react': 17.0.31
       '@types/react-data-grid': 4.0.2
       '@types/react-dom': 17.0.10
       '@types/react-highlight-words': 0.16.3
@@ -4347,7 +4338,6 @@ importers:
       '@types/react-window': 1.8.5
       '@types/sinon': 9.0.11
       '@types/sinon-chai': 3.2.5
-      '@types/testing-library__react-hooks': 3.4.1
       '@wojtekmaj/enzyme-adapter-react-17': 0.6.5_fae758709a8810ba97b4c03852dde4d0
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
@@ -4390,7 +4380,7 @@ importers:
       '@itwin/itwinui-css': ^0.37.0
       '@itwin/itwinui-react': ^1.23.0
       '@testing-library/react': ^12.0.0
-      '@testing-library/react-hooks': ^3.2.1
+      '@testing-library/react-hooks': ^7.0.2
       '@testing-library/user-event': ^13.2.1
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
@@ -4401,13 +4391,12 @@ importers:
       '@types/lodash': ^4.14.0
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
-      '@types/react': ^17.0.0
+      '@types/react': 17.0.31
       '@types/react-autosuggest': 10.1.2
       '@types/react-dom': ^17.0.0
       '@types/react-select': 3.0.26
       '@types/sinon': ^9.0.0
       '@types/sinon-chai': ^3.2.0
-      '@types/testing-library__react-hooks': ^3.1.0
       '@wojtekmaj/enzyme-adapter-react-17': ^0.6.3
       chai: ^4.1.2
       chai-as-promised: ^7
@@ -4430,7 +4419,7 @@ importers:
       react-autosuggest: ^10.1.0
       react-dom: ^17.0.0
       react-dom-instance: 2.0.0
-      react-select: 3.1.0
+      react-select: 3.2.0
       react-test-renderer: ^17.0.0
       resize-observer-polyfill: 1.5.1
       rimraf: ^3.0.2
@@ -4449,7 +4438,7 @@ importers:
       dompurify: 2.3.3
       lodash: 4.17.21
       react-autosuggest: 10.1.0_react@17.0.2
-      react-select: 3.1.0_react-dom@17.0.2+react@17.0.2
+      react-select: 3.2.0_react-dom@17.0.2+react@17.0.2
       resize-observer-polyfill: 1.5.1
     devDependencies:
       '@itwin/appui-abstract': link:../appui-abstract
@@ -4459,7 +4448,7 @@ importers:
       '@itwin/core-i18n': link:../../core/i18n
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@testing-library/react': 12.1.2_react-dom@17.0.2+react@17.0.2
-      '@testing-library/react-hooks': 3.7.0_509016fd322278d497c1e58f6164ce1d
+      '@testing-library/react-hooks': 7.0.2_fc2bb8a5b006d3f25c5f84ea777e678d
       '@testing-library/user-event': 13.5.0
       '@types/chai': 4.2.22
       '@types/chai-as-promised': 7.1.4
@@ -4470,13 +4459,12 @@ importers:
       '@types/lodash': 4.14.176
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
-      '@types/react': 17.0.33
+      '@types/react': 17.0.31
       '@types/react-autosuggest': 10.1.2
       '@types/react-dom': 17.0.10
       '@types/react-select': 3.0.26
       '@types/sinon': 9.0.11
       '@types/sinon-chai': 3.2.5
-      '@types/testing-library__react-hooks': 3.4.1
       '@wojtekmaj/enzyme-adapter-react-17': 0.6.5_fae758709a8810ba97b4c03852dde4d0
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
@@ -4522,7 +4510,7 @@ importers:
       '@itwin/itwinui-css': ^0.37.0
       '@itwin/itwinui-react': ^1.23.0
       '@testing-library/react': ^12.0.0
-      '@testing-library/react-hooks': ^3.2.1
+      '@testing-library/react-hooks': ^7.0.2
       '@testing-library/user-event': ^13.2.1
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
@@ -4533,7 +4521,7 @@ importers:
       '@types/faker': ^4.1.0
       '@types/lodash': ^4.14.0
       '@types/mocha': ^8.2.2
-      '@types/react': ^17.0.0
+      '@types/react': 17.0.31
       '@types/react-dom': ^17.0.0
       '@types/sinon': ^9.0.0
       '@types/sinon-chai': ^3.2.0
@@ -4594,7 +4582,7 @@ importers:
       '@itwin/core-react': link:../core-react
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@testing-library/react': 12.1.2_react-dom@17.0.2+react@17.0.2
-      '@testing-library/react-hooks': 3.7.0_509016fd322278d497c1e58f6164ce1d
+      '@testing-library/react-hooks': 7.0.2_fc2bb8a5b006d3f25c5f84ea777e678d
       '@testing-library/user-event': 13.5.0
       '@types/chai': 4.2.22
       '@types/chai-as-promised': 7.1.4
@@ -4605,7 +4593,7 @@ importers:
       '@types/faker': 4.1.12
       '@types/lodash': 4.14.176
       '@types/mocha': 8.2.3
-      '@types/react': 17.0.33
+      '@types/react': 17.0.31
       '@types/react-dom': 17.0.10
       '@types/sinon': 9.0.11
       '@types/sinon-chai': 3.2.5
@@ -7474,26 +7462,69 @@ packages:
       pretty-format: 27.3.1
     dev: true
 
-  /@testing-library/react-hooks/3.7.0_509016fd322278d497c1e58f6164ce1d:
-    resolution: {integrity: sha512-TwfbY6BWtWIHitjT05sbllyLIProcysC0dF0q1bbDa7OHLC6A6rJOYJwZ13hzfz3O4RtOuInmprBozJRyyo7/g==}
+  /@testing-library/react-hooks/7.0.2_fc2bb8a5b006d3f25c5f84ea777e678d:
+    resolution: {integrity: sha512-dYxpz8u9m4q1TuzfcUApqi8iFfR6R0FaMbr2hjZJy1uC8z+bO/K4v8Gs9eogGKYQop7QsrBTFkv/BCF7MzD2Cg==}
+    engines: {node: '>=12'}
     peerDependencies:
       react: '>=16.9.0'
+      react-dom: '>=16.9.0'
       react-test-renderer: '>=16.9.0'
+    peerDependenciesMeta:
+      react-dom:
+        optional: true
+      react-test-renderer:
+        optional: true
     dependencies:
       '@babel/runtime': 7.16.0
-      '@types/testing-library__react-hooks': 3.4.1
+      '@types/react': 17.0.31
+      '@types/react-dom': 17.0.10
+      '@types/react-test-renderer': 17.0.1
       react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
+      react-error-boundary: 3.1.4_react@17.0.2
       react-test-renderer: 17.0.2_react@17.0.2
 
-  /@testing-library/react-hooks/3.7.0_react@17.0.2:
-    resolution: {integrity: sha512-TwfbY6BWtWIHitjT05sbllyLIProcysC0dF0q1bbDa7OHLC6A6rJOYJwZ13hzfz3O4RtOuInmprBozJRyyo7/g==}
+  /@testing-library/react-hooks/7.0.2_react-dom@17.0.2+react@17.0.2:
+    resolution: {integrity: sha512-dYxpz8u9m4q1TuzfcUApqi8iFfR6R0FaMbr2hjZJy1uC8z+bO/K4v8Gs9eogGKYQop7QsrBTFkv/BCF7MzD2Cg==}
+    engines: {node: '>=12'}
     peerDependencies:
       react: '>=16.9.0'
+      react-dom: '>=16.9.0'
       react-test-renderer: '>=16.9.0'
+    peerDependenciesMeta:
+      react-dom:
+        optional: true
+      react-test-renderer:
+        optional: true
     dependencies:
       '@babel/runtime': 7.16.0
-      '@types/testing-library__react-hooks': 3.4.1
+      '@types/react': 17.0.31
+      '@types/react-dom': 17.0.10
+      '@types/react-test-renderer': 17.0.1
       react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
+      react-error-boundary: 3.1.4_react@17.0.2
+    dev: true
+
+  /@testing-library/react-hooks/7.0.2_react@17.0.2:
+    resolution: {integrity: sha512-dYxpz8u9m4q1TuzfcUApqi8iFfR6R0FaMbr2hjZJy1uC8z+bO/K4v8Gs9eogGKYQop7QsrBTFkv/BCF7MzD2Cg==}
+    engines: {node: '>=12'}
+    peerDependencies:
+      react: '>=16.9.0'
+      react-dom: '>=16.9.0'
+      react-test-renderer: '>=16.9.0'
+    peerDependenciesMeta:
+      react-dom:
+        optional: true
+      react-test-renderer:
+        optional: true
+    dependencies:
+      '@babel/runtime': 7.16.0
+      '@types/react': 17.0.31
+      '@types/react-dom': 17.0.10
+      '@types/react-test-renderer': 17.0.1
+      react: 17.0.2
+      react-error-boundary: 3.1.4_react@17.0.2
     dev: true
 
   /@testing-library/react/12.1.2_react-dom@17.0.2+react@17.0.2:
@@ -7700,7 +7731,7 @@ packages:
     resolution: {integrity: sha512-jDKoZiiMA3lGO3skSO7dfqEHNvmiTLLV+PHD9EBQVlJANJvpY6qq1zzjRI24ZOtG7F+CS7BVWDXKewRmN8PjHQ==}
     dependencies:
       '@types/cheerio': 0.22.30
-      '@types/react': 17.0.33
+      '@types/react': 17.0.31
     dev: true
 
   /@types/eslint/7.2.14:
@@ -7782,7 +7813,7 @@ packages:
   /@types/hoist-non-react-statics/3.3.1:
     resolution: {integrity: sha512-iMIqiko6ooLrTh1joXodJK5X9xeEALT1kM5G3ZLhD3hszxBdIEd5C75U834D9mLcINgD4OyZf5uQXjkuYydWvA==}
     dependencies:
-      '@types/react': 17.0.33
+      '@types/react': 17.0.31
       hoist-non-react-statics: 3.3.2
 
   /@types/html-minifier-terser/5.1.2:
@@ -7948,45 +7979,44 @@ packages:
   /@types/react-autosuggest/10.1.2:
     resolution: {integrity: sha512-K23lmXhC3Bbd8y/jm5+wYrw/NAeN4U/wlHTgAEBIwLOyQKFCFYA3ONKte9P21L+RGIXRP8UlzHOSRtmIZw5Nqw==}
     dependencies:
-      '@types/react': 17.0.33
+      '@types/react': 17.0.31
     dev: true
 
   /@types/react-beautiful-dnd/12.1.5:
     resolution: {integrity: sha512-UHSjLoRsPBRX81FMRmNwIFT0hSjPW0BayEFCcMhz1f3WsXEiYytR09WAzkBqvytJHzSL25ooCBA2DSjK6m1Qow==}
     dependencies:
-      '@types/react': 17.0.33
+      '@types/react': 17.0.31
     dev: true
 
   /@types/react-data-grid/4.0.2:
     resolution: {integrity: sha512-no7HnLfm5CSLicuLixZjgsfq0myt6+aBxyVCIo9XiJdNLiZUC0uogMa2f4wq+xdTaslYHeyzwsVL6KF0B765Yg==}
     dependencies:
-      '@types/react': 17.0.33
+      '@types/react': 17.0.31
     dev: true
 
   /@types/react-dom/17.0.10:
     resolution: {integrity: sha512-8oz3NAUId2z/zQdFI09IMhQPNgIbiP8Lslhv39DIDamr846/0spjZK0vnrMak0iB8EKb9QFTTIdg2Wj2zH5a3g==}
     dependencies:
-      '@types/react': 17.0.33
-    dev: true
+      '@types/react': 17.0.31
 
   /@types/react-highlight-words/0.16.3:
     resolution: {integrity: sha512-ZarU4+/R593xctDXy/SkyWeS/dg5sG8TxZ2DATd2EdDKHlfqCPnOYzHEo/7XaYpCoSCgk5Sp1sVNhnOzC/ezJg==}
     dependencies:
-      '@types/react': 17.0.33
+      '@types/react': 17.0.31
     dev: true
 
   /@types/react-redux/7.1.20:
     resolution: {integrity: sha512-q42es4c8iIeTgcnB+yJgRTTzftv3eYYvCZOh1Ckn2eX/3o5TdsQYKUWpLoLuGlcY/p+VAhV9IOEZJcWk/vfkXw==}
     dependencies:
       '@types/hoist-non-react-statics': 3.3.1
-      '@types/react': 17.0.33
+      '@types/react': 17.0.31
       hoist-non-react-statics: 3.3.2
       redux: 4.1.2
 
   /@types/react-select/3.0.26:
     resolution: {integrity: sha512-rAaiD0SFkBi3PUwp1DrJV04CobPl2LuZXF+kv6MKw8kaeGo82xTOZzjM8DDi4lrdkqGbInZiE2QO9nIJm3bqgw==}
     dependencies:
-      '@types/react': 17.0.33
+      '@types/react': 17.0.31
       '@types/react-dom': 17.0.10
       '@types/react-transition-group': 4.4.4
     dev: true
@@ -7994,34 +8024,34 @@ packages:
   /@types/react-table/7.7.7:
     resolution: {integrity: sha512-3l2TP4detx9n5Jt44XhdH7Ku6PYwz6kB83P8W+YcBMUkIHtiw2gsCCcq9c4wyCIcdSwcTlWZ9WqH4PF7Yfbprg==}
     dependencies:
-      '@types/react': 17.0.33
+      '@types/react': 17.0.31
 
   /@types/react-test-renderer/17.0.1:
     resolution: {integrity: sha512-3Fi2O6Zzq/f3QR9dRnlnHso9bMl7weKCviFmfF6B4LS1Uat6Hkm15k0ZAQuDz+UBq6B3+g+NM6IT2nr5QgPzCw==}
     dependencies:
-      '@types/react': 17.0.33
+      '@types/react': 17.0.31
 
   /@types/react-transition-group/4.4.4:
     resolution: {integrity: sha512-7gAPz7anVK5xzbeQW9wFBDg7G++aPLAFY0QaSMOou9rJZpbuI58WAuJrgu+qR92l61grlnCUe7AFX8KGahAgug==}
     dependencies:
-      '@types/react': 17.0.33
+      '@types/react': 17.0.31
     dev: true
 
   /@types/react-virtualized/9.21.14:
     resolution: {integrity: sha512-wvZftXXYNpj3ELVm2v8pySnq/uxKD1UsFpRkNoBAbQFTnI4Bz4OcwjUhwvaqUq5dDoT6SCS2+PdCzysxMYfjdg==}
     dependencies:
       '@types/prop-types': 15.7.4
-      '@types/react': 17.0.33
+      '@types/react': 17.0.31
     dev: true
 
   /@types/react-window/1.8.5:
     resolution: {integrity: sha512-V9q3CvhC9Jk9bWBOysPGaWy/Z0lxYcTXLtLipkt2cnRj1JOSFNF7wqGpkScSXMgBwC+fnVRg/7shwgddBG5ICw==}
     dependencies:
-      '@types/react': 17.0.33
+      '@types/react': 17.0.31
     dev: true
 
-  /@types/react/17.0.33:
-    resolution: {integrity: sha512-pLWntxXpDPaU+RTAuSGWGSEL2FRTNyRQOjSWDke/rxRg14ncsZvx8AKWMWZqvc1UOaJIAoObdZhAWvRaHFi5rw==}
+  /@types/react/17.0.31:
+    resolution: {integrity: sha512-MQSR5EL4JZtdWRvqDgz9kXhSDDoy2zMTYyg7UhP+FZ5ttUOocWyxiqFJiI57sUG0BtaEX7WDXYQlkCYkb3X9vQ==}
     dependencies:
       '@types/prop-types': 15.7.4
       '@types/scheduler': 0.16.2
@@ -8137,11 +8167,6 @@ packages:
   /@types/tapable/1.0.8:
     resolution: {integrity: sha512-ipixuVrh2OdNmauvtT51o3d8z12p6LtFW9in7U79der/kwejjdNchQC5UMn5u/KxNoM7VHHOs/l8KS8uHxhODQ==}
     dev: true
-
-  /@types/testing-library__react-hooks/3.4.1:
-    resolution: {integrity: sha512-G4JdzEcq61fUyV6wVW9ebHWEiLK2iQvaBuCHHn9eMSbZzVh4Z4wHnUGIvQOYCCYeu5DnUtFyNYuAAgbSaO/43Q==}
-    dependencies:
-      '@types/react-test-renderer': 17.0.1
 
   /@types/tough-cookie/4.0.1:
     resolution: {integrity: sha512-Y0K95ThC3esLEYD6ZuqNek29lNX2EM1qxV8y2FTLUB0ff5wWrk7az+mLrnNFUnaXcgKye22+sFBRXOgpPILZNg==}
@@ -18531,6 +18556,15 @@ packages:
       react: 17.0.2
       scheduler: 0.20.2
 
+  /react-error-boundary/3.1.4_react@17.0.2:
+    resolution: {integrity: sha512-uM9uPzZJTF6wRQORmSrvOIgt4lJ9MC1sNgEOj2XGsDTRE4kmpWxg7ENK9EWNKJRMAOY9z0MuF4yIfl6gp4sotA==}
+    engines: {node: '>=10', npm: '>=6'}
+    peerDependencies:
+      react: '>=16.13.1'
+    dependencies:
+      '@babel/runtime': 7.16.0
+      react: 17.0.2
+
   /react-error-overlay/6.0.9:
     resolution: {integrity: sha512-nQTTcUu+ATDbrSD1BZHr5kgSD4oF8OFjxun8uAaL8RwPBacGBNPf/yAuVVdx17N8XNzRDMrZ9XcKZHCjPW+9ew==}
     dev: true
@@ -18546,10 +18580,10 @@ packages:
       react: 17.0.2
     dev: false
 
-  /react-input-autosize/2.2.2_react@17.0.2:
-    resolution: {integrity: sha512-jQJgYCA3S0j+cuOwzuCd1OjmBmnZLdqQdiLKRYrsMMzbjUrVDS5RvJUDwJqA7sKuksDuzFtm6hZGKFu7Mjk5aw==}
+  /react-input-autosize/3.0.0_react@17.0.2:
+    resolution: {integrity: sha512-nL9uS7jEs/zu8sqwFE5MAPx6pPkNAriACQ2rGLlqmKr2sPGtN7TXTyDdQt4lbNXVx7Uzadb40x8qotIuru6Rhg==}
     peerDependencies:
-      react: ^0.14.9 || ^15.3.0 || ^16.0.0-rc || ^16.0
+      react: ^16.3.0 || ^17.0.0
     dependencies:
       prop-types: 15.7.2
       react: 17.0.2
@@ -18645,11 +18679,11 @@ packages:
       '@testing-library/dom': 8.10.1
     dev: true
 
-  /react-select/3.1.0_react-dom@17.0.2+react@17.0.2:
-    resolution: {integrity: sha512-wBFVblBH1iuCBprtpyGtd1dGMadsG36W5/t2Aj8OE6WbByDg5jIFyT7X5gT+l0qmT5TqWhxX+VsKJvCEl2uL9g==}
+  /react-select/3.2.0_react-dom@17.0.2+react@17.0.2:
+    resolution: {integrity: sha512-B/q3TnCZXEKItO0fFN/I0tWOX3WJvi/X2wtdffmwSQVRwg5BpValScTO1vdic9AxlUgmeSzib2hAZAwIUQUZGQ==}
     peerDependencies:
-      react: ^16.8.0
-      react-dom: ^16.8.0
+      react: ^16.8.0 || ^17.0.0
+      react-dom: ^16.8.0 || ^17.0.0
     dependencies:
       '@babel/runtime': 7.16.0
       '@emotion/cache': 10.0.29
@@ -18659,15 +18693,15 @@ packages:
       prop-types: 15.7.2
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2
-      react-input-autosize: 2.2.2_react@17.0.2
+      react-input-autosize: 3.0.0_react@17.0.2
       react-transition-group: 4.4.2_react-dom@17.0.2+react@17.0.2
     dev: false
 
-  /react-select/3.1.0_react@17.0.2:
-    resolution: {integrity: sha512-wBFVblBH1iuCBprtpyGtd1dGMadsG36W5/t2Aj8OE6WbByDg5jIFyT7X5gT+l0qmT5TqWhxX+VsKJvCEl2uL9g==}
+  /react-select/3.2.0_react@17.0.2:
+    resolution: {integrity: sha512-B/q3TnCZXEKItO0fFN/I0tWOX3WJvi/X2wtdffmwSQVRwg5BpValScTO1vdic9AxlUgmeSzib2hAZAwIUQUZGQ==}
     peerDependencies:
-      react: ^16.8.0
-      react-dom: ^16.8.0
+      react: ^16.8.0 || ^17.0.0
+      react-dom: ^16.8.0 || ^17.0.0
     dependencies:
       '@babel/runtime': 7.16.0
       '@emotion/cache': 10.0.29
@@ -18676,7 +18710,7 @@ packages:
       memoize-one: 5.2.1
       prop-types: 15.7.2
       react: 17.0.2
-      react-input-autosize: 2.2.2_react@17.0.2
+      react-input-autosize: 3.0.0_react@17.0.2
       react-transition-group: 4.4.2_react@17.0.2
     dev: false
 
