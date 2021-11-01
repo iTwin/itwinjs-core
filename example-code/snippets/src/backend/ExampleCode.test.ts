@@ -130,7 +130,8 @@ describe("Example Code", () => {
     // __PUBLISH_EXTRACT_END__
 
     // __PUBLISH_EXTRACT_START__ Settings.addDictionary
-    const settings = IModelHost.workspace.settings;
+    let workspace = IModelHost.workspace;
+    let settings = workspace.settings;
     settings.addDictionary("initial values", SettingsPriority.defaults, defaultsDict);
     let defaultTool = settings.getString("core/default-tool"); // returns "select"
     const leftPane = settings.getBoolean("samples/start/leftPane"); // returns true
@@ -149,13 +150,17 @@ describe("Example Code", () => {
       "app5/markerName": "arrows",
       "app5/markerIcon": "arrows.ico",
     };
-    IModelHost.workspace.settings.addDictionary("for iTwin 555", SettingsPriority.iTwin, iTwin555);
-    defaultTool = IModelHost.workspace.settings.getString("core/default-tool"); // returns "measure"
+    workspace = IModelHost.workspace;
+    settings = workspace.settings;
+    settings.addDictionary("for iTwin 555", SettingsPriority.iTwin, iTwin555);
+    defaultTool = settings.getString("core/default-tool"); // returns "measure"
     // __PUBLISH_EXTRACT_END__
     expect(defaultTool).eq(iTwin555["core/default-tool"]);
 
     // __PUBLISH_EXTRACT_START__ Settings.dropITwinDictionary
-    IModelHost.workspace.settings.dropDictionary("for iTwin 555");
+    workspace = IModelHost.workspace;
+    settings = workspace.settings;
+    settings.dropDictionary("for iTwin 555");
     defaultTool = settings.getString("core/default-tool"); // returns "select" again
     // __PUBLISH_EXTRACT_END__
     expect(defaultTool).eq(defaultsDict["core/default-tool"]);
@@ -171,23 +176,26 @@ describe("Example Code", () => {
       "workspace/container/alias": [
         { name: "default-icons", id: "icons-01" },
         { name: "default-lang", id: "lang-05" },
-        { name: "default-fonts", id: "fonts-02" }, // a container id that doesn't exist
+        { name: "default-fonts", id: "fonts-02" },
         { name: "default-key", id: "key-05" },
       ],
     };
 
+    workspace = IModelHost.workspace;
+    settings = workspace.settings;
     const fontContainerName = "default-fonts";
-    IModelHost.workspace.settings.addDictionary("iTwin", SettingsPriority.iTwin, iTwinDict);
-    IModelHost.workspace.settings.addDictionary("iModel", SettingsPriority.iModel, iModelDict);
+    settings.addDictionary("iTwin", SettingsPriority.iTwin, iTwinDict);
+    settings.addDictionary("iModel", SettingsPriority.iModel, iModelDict);
 
-    expect(IModelHost.workspace.resolveContainerId(fontContainerName)).equals("fonts-02");
-    expect(IModelHost.workspace.resolveContainerId({ id: "fonts-01" })).equals("fonts-01");
-    await expect(IModelHost.workspace.getContainer(fontContainerName)).to.be.rejectedWith("not found");
+    expect(workspace.resolveContainerId(fontContainerName)).equals("fonts-02"); // iModel has higher priority than iTwin
+    expect(workspace.resolveContainerId({ id: "fonts-01" })).equals("fonts-01"); // can specify id directly
 
-    IModelHost.workspace, IModelHost.workspace.settings.dropDictionary("iModel");
-    expect(IModelHost.workspace.resolveContainerId(fontContainerName)).equals("fonts-01");
+    settings.dropDictionary("iModel"); // drop iModel dict
+    expect(workspace.resolveContainerId(fontContainerName)).equals("fonts-01"); // now resolves to iTwin value
+
+    settings.dropDictionary("iTwin"); // drop iTwin dict
+    expect(workspace.resolveContainerId(fontContainerName)).equals(fontContainerName); // no resolution, resolves to name
     // __PUBLISH_EXTRACT_END__
-
   });
 
   it.skip("ElementAspects", () => { // WIP: code example compiles, but doesn't actually work

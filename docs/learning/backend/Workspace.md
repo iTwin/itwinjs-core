@@ -254,24 +254,30 @@ When using a cloud workspace service, every call to [Workspace.getContainer]($ba
 
 When using brute force, `Workspace.containerDir` is a directory on a shared file server, or the `itwin-workspace-container` are copied around some other way.
 
-### Creating and Modifying WorkspaceContainers
+### Creating WorkspaceContainers
 
 `WorkspaceContainers` are always created and modified by administrators (not end users), usually on desktop computers. They are created as local files using [EditableWorkspaceFile.create]($backend), and modified using the other methods on `EditableWorkspaceFile`.
 
 When using a workspace service, the cloud container is created by calling [EditableWorkspaceFile.upload]($backend).
 
-### WorkspaceContainer Synchronization
+### WorkspaceContainer Editing and Synchronization
 
 To modify the cloud version of `WorkspaceContainer`s, the `CloudContainer` process must be must be running and a writable cloud access token must first be obtained. There may only be one editor at a time per `WorkspaceContainer`. Changes are automatically uploaded when the `WorkspaceContainer` is closed. Then, whenever any user attempts to access it using [WorkspaceContainer.getContainer]($backend), their local copy will automatically be update with the latest changes.
 
 ### WorkspaceContainer Versioning
 
 
-
 ## Workspace Resources
 
-A `WorkspaceContainer` holds a set of resources, each with a [WorkspaceResourceName]($backend) and a resource type. Possible resource types are: `string`, `blob`, or `file`.
+A `WorkspaceContainer` holds a set of resources, each with a [WorkspaceResourceName]($backend) and a resource type.
 
+Possible resource types are:
+
+ - `string` resources that hold strings loaded with [WorkspaceContainer.getString]($backend).
+ - `blob` resources that hold `Uint8Array`s loaded with [WorkspaceContainer.getBlob]($backend).
+ - `file` resources that hold arbitrary files that may be extracted to local files with [WorkspaceContainer.getFile]($backend)
+
+> Note: files are zipped as they are stored in `WorkspaceContainer`s.
 
 ### WorkspaceResourceNames
 
