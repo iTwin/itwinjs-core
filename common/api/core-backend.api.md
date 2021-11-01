@@ -1248,7 +1248,7 @@ export class EditableWorkspaceFile extends WorkspaceFile {
     addString(rscName: WorkspaceResourceName, val: string): void;
     create(): void;
     // (undocumented)
-    open(): void;
+    lockContainer(): Promise<void>;
     removeBlob(rscName: WorkspaceResourceName): void;
     removeFile(rscName: WorkspaceResourceName): void;
     removeString(rscName: WorkspaceResourceName): void;

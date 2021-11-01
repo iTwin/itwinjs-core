@@ -28,13 +28,13 @@ Settings are named parameters, defined by applications but supplied at runtime s
 
 ### SettingSpecs
 
-Applications can define groups of related "settings specifications" in the form of [SettingsGroupSpec]($backend)s, registered at runtime with the [SettingsSpecRegistry]($backend) class. In this way users or administrators can be aware of the list of an application's Settings. Also, each [SettingSpec]($backend) defines the type, purpose, constraints, and default values for a setting. The Settings Editor (future) can be used to provide values for Settings using the [SettingSpec]($backend)s.
+Applications can define groups of related "settings specifications" in the form of [SettingsGroupSpec]($backend)s, registered at runtime with the [SettingsSpecRegistry]($backend) class. In this way users or administrators can be aware of the list of an application's Settings. Also, each [SettingSpec]($backend) defines the type, purpose, constraints, and default values for a setting. The Settings Editor (future) is used to provide values for Settings using the [SettingSpec]($backend)s.
 
 `SettingsGroupSpec` are defined according to the rules of [JSON Schema](https://json-schema.org/).
 
 #### SettingNames
 
-A [SettingName]($backend) is defined by an application in a [[SettingSpec]]. A `SettingName` must be unique across all applications, so it should be formed as a "path", with the parts separated by a "/". The first entry in the path is the "application id", and all Settings for an application should start with the same value. Groups of related settings for an application should have the same path prefix. The settings editor will split the path parts of a `SettingName` (using the "/" delimiter) as "tabs" for editing.
+A [SettingName]($backend) is defined by an application in a [SettingSpec]($backend). A `SettingName` must be unique across all applications, so it should be formed as a "path", with the parts separated by a "/". The first entry in the path is the "application id", and all Settings for an application should start with the same value. Groups of related settings for an application should have the same path prefix. The settings editor will split the path parts of a `SettingName` (using the "/" delimiter) as "tabs" for editing.
 
 For example:
 ```ts
@@ -198,19 +198,19 @@ Of course `SettingDictionary`s wouldn't be very useful if you could only define 
 
 [WorkspaceContainer]($backend)s are named containers of a group of [workspace resources](#workspace-resources). There is no limit on the number of `WorkspaceContainers` accessed during a session, nor is there a limit on the number of resources held within a `WorkspaceContainer`. However, keep in mind:
 
- - Access rights are per-WorkspaceContainer. That is, if a user has permission to access a `WorkspaceContainer`, they will have access to all resources within it.
- - For offline access, WorkspaceContainers are saved as files on local computers, and must be initially downloaded and re-downloaded whenever they are updated. Multi-gigabyte downloads can be time consuming.
+ - Access rights are per-`WorkspaceContainer`. That is, if a user has permission to access a `WorkspaceContainer`, they will have access to all resources within it.
+ - For offline access, `WorkspaceContainer`s are saved as files on local computers, and must be initially downloaded and re-downloaded whenever they are updated. Multi-gigabyte downloads can be time consuming.
  - WorkspaceContainers are versioned as a whole. There is no versioning of individual resources within a WorkspaceContainer.
 
 Generally, it is expected that a single `WorkspaceContainer` will hold a related set of resources for a single "scope" (e.g. organization, discipline, iTwin, iModel, etc.) for an appropriate set of users.
 
 ### WorkspaceContainerName and WorkspaceContainerId
 
-Every `WorkspaceContainer` has a unique identifier called a [WorkspaceContainerId]($backend). `WorkspaceContainerId`s can be GUIDs or any other identifier scheme that guarantees uniqueness. Since `WorkspaceContainerId`s can therefore be long and hard to recognize, `WorkspaceContainer`s can also be identified with a shorter, human recognizable `WorkspaceContainerName`. This not only provides an easier to recognize and understand scheme for interacting with `WorkspaceContainer`s, but also provides a level of indirection that can be useful for substituting different `WorkspaceContainer`s for the same `WorkspaceContainerName` at runtime, for example for versioning.
+Every `WorkspaceContainer` has a unique identifier called a [WorkspaceContainerId]($backend). `WorkspaceContainerId`s may be GUIDs or any other identifier scheme that guarantees uniqueness. Since `WorkspaceContainerId`s can therefore be long and hard to recognize, `WorkspaceContainer`s can also be identified with a shorter, human recognizable `WorkspaceContainerName`. This not only provides an easier to recognize and understand scheme for interacting with `WorkspaceContainer`s, but also provides a level of indirection that can be useful for substituting different `WorkspaceContainer`s for the same `WorkspaceContainerName` at runtime, for example for versioning.
 
 #### The `workspace/container/alias` Setting
 
-A `WorkspaceContainerId` is *resolved* from a `WorkspaceContainerName` via the [Workspace.resolveContainerId]($bentley) method. It does so by looking through all current [IModelHost.workspace.settings]($backend) settings of type:
+A `WorkspaceContainerId` is *resolved* from a `WorkspaceContainerName` via the [Workspace.resolveContainerId]($bentley) method. It does so by looking through all current [IModelHost.workspace.settings]($backend) of type:
 
 ```ts
     "workspace/container/alias": {
@@ -248,17 +248,17 @@ For example:
 
 ### Cloud-backed WorkspaceContainers
 
-`WorkspaceContainer`s are meant to be the distribution system for application resources, so users need to be sure they're always using the correct version of resources - which may or may not be the latest, depending on their workflow. That can be accomplished either by *brute force* (e.g. copying files around), or much better, by using a cloud *workspace service*. The Workspace API is virtually the same either way.
+`WorkspaceContainer`s are meant to be the distribution system for application resources, so users need to be sure they're always using the correct version of resources - which may or may not be the newest version, depending on their workflow. That may be accomplished either by *brute force* (e.g. copying files around), or much better, by using a cloud *workspace service*. The `Workspace` API is virtually the same either way.
 
 When using a cloud workspace service, every call to [Workspace.getContainer]($backend) first checks whether the local copy of the `WorkspaceContainer` is up-to-date with the cloud version, and synchronizes it if not. When using the "offline" mode, the `WorkspaceContainer` is fully downloaded to a local file in the [Workspace.containerDir]($backend) directory, with the name `${containerId}.itwin-workspace-container`.
 
-When using brute force, `Workspace.containerDir` is a directory on a shared file server, or the `itwin-workspace-container` are copied around some other way.
+When using brute force, `Workspace.containerDir` may be a directory on a shared file server, or the `.itwin-workspace-container` files may be copied around some other way.
 
 ### Creating WorkspaceContainers
 
-`WorkspaceContainers` are always created and modified by administrators (not end users), usually on desktop computers. They are created as local files using [EditableWorkspaceFile.create]($backend), and modified using the other methods on `EditableWorkspaceFile`.
+`WorkspaceContainers` are always created and modified by administrators rather than users, usually on desktop computers. They are created as local files using [EditableWorkspaceFile.create]($backend), and modified using the other methods on `EditableWorkspaceFile`.
 
-When using a workspace service, the cloud container is created by calling [EditableWorkspaceFile.upload]($backend).
+When using a cloud workspace service, the cloud container is created by calling [EditableWorkspaceFile.upload]($backend).
 
 ### WorkspaceContainer Editing and Synchronization
 
@@ -287,4 +287,4 @@ Possible resource types are:
 
 ### SettingDictionary Resources
 
-It is often useful to store `SettingDictionary`s in a `WorkspaceContainer`, so they can be distributed, versioned, aliased, and access controlled. This can be easily accomplished by storing the stringified JSON representation of the `settingDictionary` as a `string` resource and using [Workspace.loadSettingsDictionary]($backend) to load it.
+It is often useful to store `SettingDictionary`s in a `WorkspaceContainer`, so they may be distributed, versioned, aliased, and access controlled. This can be easily accomplished by storing the stringified JSON representation of the `SettingDictionary` as a `string` resource and using [Workspace.loadSettingsDictionary]($backend) to load it.
