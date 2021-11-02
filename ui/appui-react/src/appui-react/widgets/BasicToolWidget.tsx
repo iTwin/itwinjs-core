@@ -104,7 +104,6 @@ export function BasicToolWidget(props: BasicToolWidgetProps) {
   const className = classnames(
     !uiIsVisible && "nz-hidden",
   );
-
   return (
     <ToolWidgetComposer className={className}
       cornerItem={<BackstageAppButton icon={props.icon} />}

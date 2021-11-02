@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/map-layers",
+      "comment": "Update to latest itwinui-react",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/map-layers"
+}

@@ -93,6 +93,7 @@ Especially when combined with ambient occlusion, this effect can produce non-rea
 ![Fresnel effect applied to a plant model](./assets/fresnel-plant.jpg)
 
 The following code applies a display style similar to those illustrated above to a [Viewport]($frontend):
+
 ```
   // Enable ambient occlusion.
   viewport.viewFlags = viewport.viewFlags.with("ambientOcclusion", true);
@@ -114,6 +115,14 @@ The following code applies a display style similar to those illustrated above to
     },
   });
 ```
+
+## Viewport synchronization
+
+[TwoWayViewportSync]($frontend) establishes a connection between two [Viewport]($frontend)s such that any change to one viewport is reflected in the other. This includes not only [Frustum]($common) changes, but changes to the display style, category and model selectors, and so on. Synchronizing **everything** is not always desirable; and if the viewports are viewing two different [IModelConnection]($frontend)s it is not even meaningful, as category and model Ids from one iModel will not make sense in the context of the other iModel.
+
+Now, `TwoWayViewportSync` is extensible, allowing subclasses to specify which aspects of the viewports should be synchronized by overriding [TwoWayViewportSync.connectViewports]($frontend) and [TwoWayViewportSync.syncViewports]($frontend). To establish a connection between two viewports using your subclass `MyViewportSync`, use `MyViewportSync.connect(viewport1, viewport2)`.
+
+A new subclass [TwoWayViewportFrustumSync]($frontend) is supplied that synchronizes **only** the frusta of the viewports. The viewports will view the same volume of space, but may display different contents or apply different display styles. To establish this connection, use `TwoWayViewportFrustumSync.connect(viewport1, viewport2)`.
 
 ## BentleyError constructor no longer logs
 
@@ -1279,6 +1288,10 @@ Developers should use equivalent components in @itwin/itwinui-react instead.
 | Deprecated in @itwin/components-react | Use from @itwin/itwinui-react instead |
 | ---------------------------------------- | ------------------------------------- |
 | Breadcrumb                               | Breadcrumbs                           |
+
+| Deprecated in @itwin/imodel-components-react | Use from @itwin/itwinui-react instead |
+| -------------------------------------------- | ------------------------------------- |
+| ColorPickerPanel                           | ColorPicker                           |
 
 #### Slider
 

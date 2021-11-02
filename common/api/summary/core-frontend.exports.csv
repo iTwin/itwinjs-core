@@ -35,6 +35,7 @@ public;Animator
 internal;ArcGisErrorCode
 internal;ArcGisGenerateTokenOptions
 internal;ArcGISMapLayerImageryProvider 
+internal;ArcGISTileMap
 internal;ArcGisToken
 internal;ArcGisTokenClientType
 internal;ArcGisTokenGenerator
@@ -77,6 +78,7 @@ public;CanvasDecorationList = CanvasDecoration[]
 public;canvasToImageBuffer(canvas: HTMLCanvasElement, format?: ImageBufferFormat): ImageBuffer | undefined
 public;canvasToResizedCanvasWithBars(canvasIn: HTMLCanvasElement, targetSize: Point2d, barSize?: Point2d, barStyle?: string): HTMLCanvasElement
 public;CategorySelectorState 
+internal;CesiumIonAssetProvider
 internal;ChangeFlag
 public;ChangeFlags
 public;ChangeViewedModel2dOptions
@@ -89,6 +91,7 @@ public;ComputeChordToleranceArgs
 internal;ContextMode
 public;ContextRealityModelState 
 public;ContextRotationId
+internal;ContextShareProvider
 public;CoordinateLockOverrides
 public;CoordSource
 public;CoordSystem
@@ -192,6 +195,7 @@ internal;getFrustumPlaneIntersectionDepthRange(frustum: Frustum, plane: Plane3dB
 internal;getGcsConverterAvailable(iModel: IModelConnection): Promise
 public;getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined
 public;getImageSourceMimeType(format: ImageSourceFormat): string
+public;GetPixelDataWorldPointArgs
 beta;getQuantityTypeKey(type: QuantityTypeArg): QuantityTypeKey
 public;GlobalAlignmentOptions
 public;GlobalLocation
@@ -424,12 +428,10 @@ beta;QueryVisibleFeaturesOptions = QueryScreenFeaturesOptions | QueryTileFeature
 internal;rangeToCartographicArea(view3d: ViewState3d, range: Range3d): GlobalLocationArea | undefined
 public;readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean, options?: BatchOptions | false): Promise
 internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined
-internal;RealityDataConnection
-internal;RealityDataConnection
 alpha;RealityDataSource
-alpha;realityDataSourceKeyToString(rdSourceKey: RealityDataSourceKey): string
+alpha;RealityDataSource
+internal;fromKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise
 internal;RealityModelSource = ViewState | DisplayStyleState
-internal;RealityModelTileClient
 internal;RealityModelTileTree 
 internal;RealityModelTileTree
 internal;RealityModelTileUtils
@@ -597,6 +599,7 @@ internal;TraversalChildrenDetails
 internal;TraversalDetails
 internal;TraversalSelectionContext
 public;tryImageElementFromUrl(url: string): Promise
+public;TwoWayViewportFrustumSync 
 public;TwoWayViewportSync
 public;Uniform
 public;UniformArrayParams 
