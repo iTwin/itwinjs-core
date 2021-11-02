@@ -13,13 +13,13 @@ import { ColorDefProps } from "./ColorDef";
  * @public
  */
 export enum SkyBoxImageType {
-  None,
+  None = 0,
   /** A single image mapped to the surface of a sphere. @see [SkySphere]($frontend) */
-  Spherical,
-  /** 6 images mapped to the faces of a cube. @see [SkyCube]($frontend) */
-  Cube,
+  Spherical = 1,
   /** @internal not yet supported */
-  Cylindrical,
+  Cylindrical = 2,
+  /** 6 images mapped to the faces of a cube. @see [SkyCube]($frontend) */
+  Cube = 3,
 }
 
 /** JSON representation of a set of images used by a [SkyCube]($frontend). Each property specifies the element ID of a texture associated with one face of the cube.
