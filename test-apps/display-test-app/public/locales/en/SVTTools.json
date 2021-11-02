@@ -135,6 +135,9 @@
     },
     "SyncViewports": {
       "keyin": "dta viewport sync"
+    },
+    "SyncFrusta": {
+      "keyin": "dta frustum sync"
     }
   }
 }

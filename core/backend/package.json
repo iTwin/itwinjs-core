@@ -84,6 +84,7 @@
     "@bentley/telemetry-client": "workspace:*",
     "form-data": "^2.3.2",
     "fs-extra": "^8.1.0",
+    "json5": "^2.2.0",
     "js-base64": "^3.6.1",
     "multiparty": "^4.2.1",
     "semver": "^5.5.0",

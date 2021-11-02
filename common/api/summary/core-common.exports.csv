@@ -39,6 +39,7 @@ beta;BaseLayerSettings
 beta;BaseMapLayerProps 
 beta;BaseMapLayerSettings 
 public;BaseReaderOptions
+public;BasicPlanarClipMaskArgs
 public;BatchType
 internal;class BentleyCloudRpcConfiguration 
 internal;BentleyCloudRpcManager 
@@ -200,6 +201,7 @@ public;ElementGraphicsRequestProps = PersistentGraphicsRequestProps | DynamicGra
 public;ElementIdsAndRangesProps
 public;ElementLoadOptions
 public;ElementLoadProps 
+public;ElementPlanarClipMaskArgs 
 public;ElementProps 
 public;EmphasizeElementsProps
 public;EmptyLocalization 
@@ -417,6 +419,7 @@ public;ModelGeometryChanges
 public;ModelGeometryChangesProps
 public;ModelIdAndGeometryGuid
 public;ModelLoadProps
+public;ModelPlanarClipMaskArgs 
 public;ModelProps 
 public;ModelQueryParams 
 public;ModelSelectorProps 
@@ -488,6 +491,7 @@ public;PositionalVectorTransform
 public;PositionalVectorTransformProps
 internal;PrimaryTileTreeId
 beta;PrimitiveTypeCode
+public;PriorityPlanarClipMaskArgs 
 beta;ProfileOptions
 public;Projection 
 public;ProjectionMethod = "None" | "TransverseMercator" | "SouthOrientedTransverseMercator" | "TransverseMercatorWisconsin" | "TransverseMercatorMinnesota" | "TransverseMercatorAffine" | "MercatorStandardParallel" | "Mercator" | "UniversalTransverseMercator" | "LambertConformalConicTwoParallels" | "LambertConformalConicBelgium" | "LambertConformalConicAffine" | "LambertConformalConicWisconsin" | "LambertConformalConicMinnesota" | "LambertConformalConicMichigan" | "LambertConformalConicOneParallel" | "AlbersEqualArea" | "NewZealandNationalGrid" | "ObliqueMercator1" | "ObliqueMercator2" | "TransverseMercatorOSTN97" | "TransverseMercatorOSTN02" | "TransverseMercatorOSTN15" | "Krovak" | "KrovakModified" | "ObliqueCylindricalSwiss" | "TransverseMercatorDenmarkSystem34" | "TransverseMercatorDenmarkSystem3499" | "TransverseMercatorDenmarkSystem3401" | "Cassini" | "Sinusoidal" | "VanDerGrinten" | "Bonne" | "Mollweide" | "EckertIV" | "EckertVI" | "GoodeHomolosine" | "Robinson" | "PlateCarree" | "MillerCylindrical" | "WinkelTripel" | "AzimuthalEqualArea" | "ObliqueStereographic" | "RectifiedSkewOrthomorphicCentered" | "RectifiedSkewOrthomorphicOrigin" | "ObliqueCylindricalHungary" | "Orthographic" | "AmericanPolyconic" | "LambertEquidistantAzimuthal" | "ObliqueMercatorMinnesota"
@@ -644,6 +648,7 @@ beta;StorageValue = string | number | boolean | undefined | Uint8Array
 public;SubCategoryAppearance
 public;SubCategoryAppearance
 public;SubCategoryOverride
+public;SubCategoryPlanarClipMaskArgs 
 public;SubCategoryProps 
 public;SubjectProps 
 beta;SubLayerId = string | number

@@ -55,6 +55,7 @@ const testArray: DefaultStatusbarItems[] = [
 ];
 
 describe("StandardStatusbarItemsProvider", () => {
+  const testProviderId = "testStatusItemsProvider";
 
   // avoid problems due to no real localization resources by return dummy values for englishKeyin and keyin properties.
   before(async () => {
@@ -69,15 +70,15 @@ describe("StandardStatusbarItemsProvider", () => {
   });
 
   it("should register StandardStatusbarItemsProvider with defaults", () => {
-    StandardStatusbarItemsProvider.register();
+    StandardStatusbarItemsProvider.register(testProviderId);
     expect(UiItemsManager.hasRegisteredProviders).to.be.true;
     expect(UiItemsManager.getStatusBarItems("test", StageUsage.General, undefined).length).to.eq(9);
-    StandardStatusbarItemsProvider.unregister();
+    StandardStatusbarItemsProvider.unregister(testProviderId);
     expect(UiItemsManager.hasRegisteredProviders).to.be.false;
   });
 
   it("should register StandardStatusbarItemsProvider with no separators", () => {
-    StandardStatusbarItemsProvider.register({
+    StandardStatusbarItemsProvider.register(testProviderId, {
       messageCenter: true,
       toolAssistance: true,
       activityCenter: true,
@@ -88,23 +89,23 @@ describe("StandardStatusbarItemsProvider", () => {
     });
     expect(UiItemsManager.hasRegisteredProviders).to.be.true;
     expect(UiItemsManager.getStatusBarItems("test", StageUsage.General, undefined).length).to.eq(7);
-    StandardStatusbarItemsProvider.unregister();
+    StandardStatusbarItemsProvider.unregister(testProviderId);
     expect(UiItemsManager.hasRegisteredProviders).to.be.false;
   });
 
   it("should process all combinations of options", () => {
-    StandardStatusbarItemsProvider.register(undefined, (_stageId: string, _stageUsage: string, _applicationData: any) => {
+    StandardStatusbarItemsProvider.register(testProviderId, undefined, (_stageId: string, _stageUsage: string, _applicationData: any) => {
       return true;
     });
     expect(UiItemsManager.hasRegisteredProviders).to.be.true;
     expect(UiItemsManager.getStatusBarItems("test", StageUsage.General, undefined).length).to.eq(9);
-    StandardStatusbarItemsProvider.unregister();
+    StandardStatusbarItemsProvider.unregister(testProviderId);
 
     testArray.forEach((itemList: DefaultStatusbarItems) => {
-      StandardStatusbarItemsProvider.register(itemList);
+      StandardStatusbarItemsProvider.register(testProviderId, itemList);
       expect(UiItemsManager.hasRegisteredProviders).to.be.true;
       UiItemsManager.getStatusBarItems("test", StageUsage.General);
-      StandardStatusbarItemsProvider.unregister();
+      StandardStatusbarItemsProvider.unregister(testProviderId);
       expect(UiItemsManager.hasRegisteredProviders).to.be.false;
     });
   });

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Update standard UI item providers to require a providerId so more than one instance may be used within an app.  Usually by different packages providing stages.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}
