@@ -6,7 +6,7 @@
  * @module Tiles
  */
 import { compareStrings, compareStringsOrUndefined, Id64, Id64String } from "@itwin/core-bentley";
-import { BatchType, ClassifierTileTreeId, compareIModelTileTreeIds, iModelTileTreeIdToString, SpatialClassifier, SpatialClassifiers } from "@itwin/core-common";
+import { BatchType, ClassifierTileTreeId, compareIModelTileTreeIds, iModelTileTreeIdToString, MapLayerSettings, SpatialClassifier, SpatialClassifiers } from "@itwin/core-common";
 import { DisplayStyleState } from "../DisplayStyleState";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -14,7 +14,7 @@ import { GeometricModelState } from "../ModelState";
 import { SceneContext } from "../ViewContext";
 import { ViewState } from "../ViewState";
 import {
-  DisclosedTileTreeSet, IModelTileTree, iModelTileTreeParamsFromJSON, TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeReference, TileTreeSupplier,
+  DisclosedTileTreeSet, IModelTileTree, iModelTileTreeParamsFromJSON, MapLayerTileTreeReference, TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeReference, TileTreeSupplier,
 } from "./internal";
 
 interface ClassifierTreeId extends ClassifierTileTreeId {
@@ -83,10 +83,31 @@ const classifierTreeSupplier = new ClassifierTreeSupplier();
 
 /** @internal */
 export abstract class SpatialClassifierTileTreeReference extends TileTreeReference {
-  public abstract get classifiers(): SpatialClassifiers;
+  // public abstract get classifiers(): SpatialClassifiers;
   public abstract get isPlanar(): boolean;
   public abstract get activeClassifier(): SpatialClassifier | undefined;
   public get isOpaque() { return false; }   /** When referenced as a map layer reference, BIM models are never opaque. */
+}
+
+/** @internal */
+export class ClassifierMapLayerTileTreeReference extends MapLayerTileTreeReference {
+  private _id: ClassifierTreeId;
+  private _owner: TileTreeOwner;
+  public get isPlanar() { return true; }
+  public get activeClassifier() { return this._classifier; }
+  public constructor(layerSettings: MapLayerSettings, private _classifier: SpatialClassifier, layerIndex: number, iModel: IModelConnection, private _source?: DisplayStyleState) {
+    super(layerSettings, layerIndex, iModel);
+    this._id = createClassifierId(_classifier, this._source);
+    this._owner = classifierTreeSupplier.getOwner(this._id, iModel);
+  }
+  public get treeOwner(): TileTreeOwner {
+    const newId = createClassifierId(this._classifier, this._source);
+    if (0 !== compareIds(this._id, newId)) {
+      this._id = newId;
+      this._owner = classifierTreeSupplier.getOwner(this._id, this.iModel);
+    }
+    return this._owner;
+  }
 }
 
 /** @internal */
@@ -100,7 +121,7 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
 
   public constructor(classifiers: SpatialClassifiers, classifiedTree: TileTreeReference, iModel: IModelConnection, source: ViewState | DisplayStyleState) {
     super();
-    this._id = this.createId(classifiers, source);
+    this._id = createClassifierId(classifiers.active, source);
     this._source = source;
     this._iModel = iModel;
     this._classifiers = classifiers;
@@ -116,7 +137,7 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
   }
 
   public get treeOwner(): TileTreeOwner {
-    const newId = this.createId(this._classifiers, this._source);
+    const newId = createClassifierId(this._classifiers.active, this._source);
     if (0 !== compareIds(this._id, newId)) {
       this._id = newId;
       this._owner = classifierTreeSupplier.getOwner(this._id, this._iModel);
@@ -157,24 +178,29 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
     super.addToScene(context);
   }
 
-  private createId(classifiers: SpatialClassifiers, source: ViewState | DisplayStyleState): ClassifierTreeId {
-    const active = classifiers.active;
-    if (undefined === active)
-      return { modelId: Id64.invalid, type: BatchType.PlanarClassifier, expansion: 0, animationId: undefined };
-
-    const type = active.flags.isVolumeClassifier ? BatchType.VolumeClassifier : BatchType.PlanarClassifier;
-    const script = source.scheduleState;
-    const animationId = (undefined !== script) ? script.getModelAnimationId(active.modelId) : undefined;
-    return {
-      modelId: active.modelId,
-      type,
-      expansion: active.expand,
-      animationId,
-    };
-  }
 }
 
 /** @internal */
 export function createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTreeReference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference {
   return new ClassifierTreeReference(classifiers, classifiedTree, iModel, source);
+}
+
+/** @internal */
+export function createMapLayerClassifierTileTreeReference(layerSettings: MapLayerSettings, classifier: SpatialClassifier, layerIndex: number, iModel: IModelConnection): ClassifierMapLayerTileTreeReference {
+  return new ClassifierMapLayerTileTreeReference(layerSettings, classifier, layerIndex, iModel);
+}
+
+function createClassifierId(classifier: SpatialClassifier | undefined, source: ViewState | DisplayStyleState | undefined): ClassifierTreeId {
+  if (undefined === classifier)
+    return { modelId: Id64.invalid, type: BatchType.PlanarClassifier, expansion: 0, animationId: undefined };
+
+  const type = classifier.flags.isVolumeClassifier ? BatchType.VolumeClassifier : BatchType.PlanarClassifier;
+  const script = source?.scheduleState;
+  const animationId = (undefined !== script) ? script.getModelAnimationId(classifier.modelId) : undefined;
+  return {
+    modelId: classifier.modelId,
+    type,
+    expansion: classifier.expand,
+    animationId,
+  };
 }

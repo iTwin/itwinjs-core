@@ -281,29 +281,21 @@ const imageryTreeSupplier = new ImageryMapLayerTreeSupplier();
  * @internal
  */
 export class ImageryMapLayerTreeReference extends MapLayerTileTreeReference {
-  public iModel: IModelConnection;
-
   public constructor(layerSettings: MapLayerSettings, layerIndex: number, iModel: IModelConnection) {
-    super(layerSettings, layerIndex);
-    this.iModel = iModel;
+    super(layerSettings, layerIndex, iModel);
   }
 
   public override get castsShadows() { return false; }
-  public get layerName() { return this._layerSettings.name; }
 
   /** Return the owner of the TileTree to draw. */
   public get treeOwner(): TileTreeOwner {
     return this.iModel.tiles.getTileTreeOwner({ settings: this._layerSettings }, imageryTreeSupplier);
   }
-  public get imageryProvider(): MapLayerImageryProvider | undefined {
+  public override get imageryProvider(): MapLayerImageryProvider | undefined {
     const tree = this.treeOwner.load();
     if (!tree || !(tree instanceof ImageryMapTileTree))
       return undefined;
 
     return tree.imageryLoader.imageryProvider;
-  }
-
-  public get isOpaque() {
-    return this._layerSettings.visible && !this._layerSettings.allSubLayersInvisible && !this._layerSettings.transparentBackground && 0 === this._layerSettings.transparency;
   }
 }

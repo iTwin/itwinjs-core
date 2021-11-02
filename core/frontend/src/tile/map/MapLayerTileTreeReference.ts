@@ -8,15 +8,22 @@
 
 import { MapLayerSettings } from "@itwin/core-common";
 import { HitDetail } from "../../HitDetail";
-import { MapLayerImageryProvider, TileTreeReference } from "../internal";
+import { IModelApp } from "../../IModelApp";
+import { IModelConnection } from "../../IModelConnection";
+import { createMapLayerClassifierTileTreeReference, MapLayerImageryProvider, TileTreeReference } from "../internal";
 
 /** @internal  */
 export abstract class MapLayerTileTreeReference extends TileTreeReference {
-  constructor(protected _layerSettings: MapLayerSettings, protected _layerIndex: number) {
+  constructor(protected _layerSettings: MapLayerSettings, protected _layerIndex: number, public iModel: IModelConnection) {
     super();
   }
   protected get _transparency() { return this._layerSettings.transparency ? this._layerSettings.transparency : undefined; }
-  protected get _imageryProvider(): MapLayerImageryProvider | undefined { return undefined; } // We don't use MapTileTreeReference TreeSupplier...
+
+  public get isOpaque() {
+    return this._layerSettings.visible && !this._layerSettings.allSubLayersInvisible && !this._layerSettings.transparentBackground && 0 === this._layerSettings.transparency;
+  }
+  public get layerName() { return this._layerSettings.name; }
+  public get imageryProvider(): MapLayerImageryProvider | undefined { return undefined; }
   public set layerSettings(layerSettings: MapLayerSettings) { this._layerSettings = layerSettings; }
   public get layerSettings(): MapLayerSettings { return this._layerSettings; }
   public override async getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined> {
@@ -30,4 +37,11 @@ export abstract class MapLayerTileTreeReference extends TileTreeReference {
     div.innerHTML = strings.join("<br>");
     return div;
   }
+}
+
+export function createMapLayerTreeReference(layerSettings: MapLayerSettings, layerIndex: number, iModel: IModelConnection): MapLayerTileTreeReference | undefined {
+  if (layerSettings.classifier) {
+    return createMapLayerClassifierTileTreeReference(layerSettings, layerSettings.classifier, layerIndex, iModel);
+  } else
+    return layerSettings.classifier ? undefined : IModelApp.mapLayerFormatRegistry.createImageryMapLayerTree(layerSettings, layerIndex, iModel);
 }
