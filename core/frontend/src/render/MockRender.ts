@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { dispose } from "@bentley/bentleyjs-core";
-import { Transform } from "@bentley/geometry-core";
-import { ElementAlignedBox3d, PackedFeatureTable } from "@bentley/imodeljs-common";
+import { dispose } from "@itwin/core-bentley";
+import { Transform } from "@itwin/core-geometry";
+import { ElementAlignedBox3d, PackedFeatureTable } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { ViewRect } from "../ViewRect";

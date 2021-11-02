@@ -3,29 +3,33 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { WidgetState } from "@bentley/ui-abstract";
+import { WidgetState } from "@itwin/appui-abstract";
 import {
-  ActionItemButton, CommandItemDef, CoreTools, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, GroupButton, NavigationWidget,
+  ActionItemButton, CommandItemDef, ContentGroup, CoreTools, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, GroupButton, NavigationWidget,
   NestedFrontstage, ToolButton, ToolWidget, Widget, Zone, ZoneLocation, ZoneState,
-} from "@bentley/ui-framework";
-import { Direction, Toolbar } from "@bentley/ui-ninezone";
+} from "@itwin/appui-react";
+import { Direction, Toolbar } from "@itwin/appui-layout-react";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { SmallStatusBarWidgetControl } from "../statusbars/SmallStatusBar";
 import { HorizontalPropertyGridWidgetControl, VerticalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 import { NestedFrontstage2 } from "./NestedFrontstage2";
+import { AppUi } from "../AppUi";
 
 /* eslint-disable react/jsx-key */
 
 export class NestedFrontstage1 extends FrontstageProvider {
+  public get id(): string {
+    return "NestedFrontstage1";
+  }
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
+    const contentGroup = new ContentGroup(AppUi.TestContentGroup1);
+
     return (
-      <Frontstage id="NestedFrontstage1"
+      <Frontstage id={this.id}
         defaultTool={CoreTools.rotateViewCommand}
-        defaultLayout="TwoHalvesHorizontal"
-        contentGroup="TestContentGroup2"
+        contentGroup={contentGroup}
         isInFooterMode={false}
-        applicationData={{ key: "value" }}
         contentManipulationTools={
           <Zone
             widgets={[
@@ -78,10 +82,10 @@ export class NestedFrontstage1 extends FrontstageProvider {
  */
 class FrontstageToolWidget extends React.Component {
   private static _frontstage2Def: FrontstageDef | undefined;
-  private static get frontstage2Def(): FrontstageDef {
+  private static async getFrontstage2Def() {
     if (!this._frontstage2Def) {
       const frontstageProvider = new NestedFrontstage2();
-      this._frontstage2Def = frontstageProvider.initializeDef();
+      this._frontstage2Def = await FrontstageDef.create(frontstageProvider);
     }
     return this._frontstage2Def;
   }
@@ -92,7 +96,8 @@ class FrontstageToolWidget extends React.Component {
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:buttons.openNestedFrontstage2",
       execute: async () => {
-        await FrontstageManager.openNestedFrontstage(FrontstageToolWidget.frontstage2Def);
+        const frontstage2Def = await FrontstageToolWidget.getFrontstage2Def();
+        await FrontstageManager.openNestedFrontstage(frontstage2Def);
       },
     });
   }

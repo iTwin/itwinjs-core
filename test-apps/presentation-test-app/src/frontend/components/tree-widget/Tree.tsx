@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import "./TreeWidget.css";
 import React from "react";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
 import {
   DiagnosticsProps, useControlledPresentationTreeFiltering, usePresentationTreeNodeLoader, useUnifiedSelectionTreeEventHandler,
-} from "@bentley/presentation-components";
-import { ControlledTree, SelectionMode, useTreeModel } from "@bentley/ui-components";
+} from "@itwin/presentation-components";
+import { ControlledTree, SelectionMode, useTreeModel } from "@itwin/components-react";
 
 const PAGING_SIZE = 10;
 

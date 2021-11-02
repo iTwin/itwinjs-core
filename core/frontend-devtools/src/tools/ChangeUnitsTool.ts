@@ -7,7 +7,7 @@
  * @module Tools
  */
 
-import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
+import { IModelApp, Tool } from "@itwin/core-frontend";
 import { parseToggle } from "./parseToggle";
 
 // CSpell: ignore fmtr

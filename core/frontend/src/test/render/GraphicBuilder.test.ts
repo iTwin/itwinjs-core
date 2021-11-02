@@ -5,8 +5,8 @@
 import { expect } from "chai";
 import {
   Cone, Point3d, PolyfaceBuilder, Range3d, Sphere, StrokeOptions, Transform,
-} from "@bentley/geometry-core";
-import { ColorByName, QParams3d, QPoint3dList, RenderMode } from "@bentley/imodeljs-common";
+} from "@itwin/core-geometry";
+import { ColorByName, QParams3d, QPoint3dList, RenderMode } from "@itwin/core-common";
 import { GraphicBuilder, GraphicType, ViewportGraphicBuilderOptions } from "../../render/GraphicBuilder";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
@@ -248,7 +248,8 @@ describe("GraphicBuilder", () => {
         expect(builder.wantEdges).to.equal(generateEdges ?? true);
         addToGraphic(builder);
 
-        builder.finish();
+        const gf = builder.finish();
+        gf.dispose();
         expect(createMeshInvoked).to.be.true;
       }
 

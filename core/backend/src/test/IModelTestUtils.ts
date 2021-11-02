@@ -5,80 +5,39 @@
 
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
-import * as path from "path";
-import * as fs from "fs";
 import { Base64 } from "js-base64";
-import { BackendITwinClientLoggerCategory } from "@bentley/backend-itwin-client";
+import * as path from "path";
+import { AccessToken, BeEvent, DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import {
-  BeEvent, BentleyLoggerCategory, DbResult, Guid, GuidString, Id64, Id64String, IDisposable, IModelStatus, Logger, LogLevel, OpenMode,
-} from "@bentley/bentleyjs-core";
-import { IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
-import { Box, Cone, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import {
-  AuxCoordSystem2dProps, Base64EncodedString, ChangesetIdWithIndex, Code, CodeProps, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps, ElementProps,
-  ExternalSourceProps, FontType, GeometricElement2dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamProps, ImageSourceFormat,
-  IModel, IModelError, IModelReadRpcInterface, IModelVersion, IModelVersionProps, LocalFileName, PhysicalElementProps, PlanProjectionSettings, RelatedElement, RepositoryLinkProps,
-  RequestNewBriefcaseProps, RpcConfiguration, RpcManager, RpcPendingResponse, SkyBoxImageType, SubCategoryAppearance, SubCategoryOverride, SyncMode,
-} from "@bentley/imodeljs-common";
-import { IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
-import { AccessToken, AccessTokenProps, AuthorizedClientRequestContext, ITwinClientLoggerCategory } from "@bentley/itwin-client";
-import { TestUserCredentials, TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
-import { BackendLoggerCategory as BackendLoggerCategory } from "../BackendLoggerCategory";
+  AuxCoordSystem2dProps, Base64EncodedString, ChangesetIdWithIndex, Code, CodeProps, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps,
+  ElementProps, ExternalSourceProps, FontType, GeometricElement2dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamProps,
+  ImageSourceFormat, IModel, IModelError, IModelReadRpcInterface, IModelVersion, IModelVersionProps, LocalFileName, PhysicalElementProps,
+  PlanProjectionSettings, RelatedElement, RepositoryLinkProps, RequestNewBriefcaseProps, RpcConfiguration, RpcManager, RpcPendingResponse,
+  SkyBoxImageType, SubCategoryAppearance, SubCategoryOverride, SyncMode,
+} from "@itwin/core-common";
+import { Box, Cone, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { RequestNewBriefcaseArg } from "../BriefcaseManager";
 import { CheckpointProps, V1CheckpointManager } from "../CheckpointManager";
 import { ClassRegistry } from "../ClassRegistry";
-import { DefinitionPartition, Drawing, DrawingGraphic, GeometryPart, LinkElement, PhysicalElement, RepositoryLink, Subject } from "../Element";
 import {
-  AuxCoordSystem2d, BriefcaseDb, BriefcaseManager, CategorySelector, DisplayStyle2d, DisplayStyle3d, DrawingCategory,
-  DrawingViewDefinition, ECSqlStatement, Element, ElementAspect, ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementUniqueAspect,
-  ExternalSource, ExternalSourceIsInRepository, FunctionalModel, FunctionalSchema, GroupModel, IModelDb, IModelHost, IModelHostConfiguration,
-  IModelJsFs, InformationPartitionElement, Model, ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition, Platform,
+  AuxCoordSystem2d, BriefcaseDb, BriefcaseManager, CategorySelector, DisplayStyle2d, DisplayStyle3d, DrawingCategory, DrawingViewDefinition,
+  ECSqlStatement, Element, ElementAspect, ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementUniqueAspect,
+  ExternalSource, ExternalSourceIsInRepository, FunctionalModel, FunctionalSchema, GroupModel, IModelDb, IModelHost, IModelJsFs,
+  InformationPartitionElement, Model, ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition, Platform,
   RenderMaterialElement, SnapshotDb, SpatialCategory, SubCategory, SubjectOwnsPartitionElements, Texture, ViewDefinition,
-} from "../imodeljs-backend";
+} from "../core-backend";
+import { DefinitionPartition, Drawing, DrawingGraphic, GeometryPart, LinkElement, PhysicalElement, RepositoryLink, Subject } from "../Element";
 import { DefinitionModel, DocumentListModel, DrawingModel, InformationRecordModel, SpatialLocationModel } from "../Model";
 import { DrawingGraphicRepresentsElement, ElementDrivesElement, Relationship, RelationshipProps } from "../Relationship";
 import { DownloadAndOpenArgs, RpcBriefcaseUtility } from "../rpc-impl/RpcBriefcaseUtility";
 import { Schema, Schemas } from "../Schema";
 import { HubMock } from "./HubMock";
-import { HubUtility } from "./integration/HubUtility";
 import { KnownTestLocations } from "./KnownTestLocations";
-import { RequestNewBriefcaseArg } from "../BriefcaseManager";
 
 const assert = chai.assert;
 chai.use(chaiAsPromised);
 
 /* eslint-disable @typescript-eslint/explicit-member-accessibility */
-
-/** Loads the provided `.env` file into process.env */
-function loadEnv(envFile: string) {
-  if (!fs.existsSync(envFile))
-    return;
-
-  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
-  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
-  const envResult = dotenv.config({ path: envFile });
-  if (envResult.error) {
-    throw envResult.error;
-  }
-
-  dotenvExpand(envResult);
-}
-
-/** Class for simple test timing */
-export class Timer {
-  private _label: string;
-  private _start: Date;
-  constructor(label: string) {
-    this._label = `\t${label}`;
-    this._start = new Date();
-  }
-
-  public end() {
-    const stop = new Date();
-    const elapsed = stop.getTime() - this._start.getTime();
-    // eslint-disable-next-line no-console
-    console.log(`${this._label}: ${elapsed}ms`);
-  }
-}
 
 RpcConfiguration.developmentMode = true;
 
@@ -89,28 +48,6 @@ export interface IModelTestUtilsOpenOptions {
   copyFilename?: string;
   enableTransactions?: boolean;
   openMode?: OpenMode;
-}
-
-/**
- * Disables native code assertions from firing. This can be used by tests that intentionally
- * test failing operations. If those failing operations raise assertions in native code, the test
- * would fail unexpectedly in a debug build. In that case the native code assertions can be disabled with
- * this class.
- */
-export class DisableNativeAssertions implements IDisposable {
-  private _native: IModelJsNative.DisableNativeAssertions | undefined;
-
-  constructor() {
-    this._native = new IModelHost.platform.DisableNativeAssertions();
-  }
-
-  public dispose(): void {
-    if (!this._native)
-      return;
-
-    this._native.dispose();
-    this._native = undefined;
-  }
 }
 
 export class TestBim extends Schema {
@@ -148,69 +85,70 @@ export enum TestUserType {
   SuperManager
 }
 
-export class IModelTestUtils {
-  private static testOrg = {
-    name: "Test Organization",
-    id: Guid.createValue(),
-  };
+/** A wrapper around the BackendHubAccess API through IModelHost.hubAccess.
+ *
+ * All methods in this class should be usable with any BackendHubAccess implementation (i.e. HubMock and IModelHubBackend).
+ */
+export class HubWrappers {
 
-  /** get an AuthorizedClientRequestContext for a [[TestUserType]].
-     * @note if the current test is using [[HubMock]], calling this method multiple times with the same type will return users from the same organization,
-     * but with different credentials. This can be useful for simulating more than one user of the same type on the same project.
-     * However, if a real IModelHub is used, the credentials are supplied externally and will always return the same value (because otherwise they would not be valid.)
-     */
-  public static async getUserContext(user: TestUserType): Promise<AuthorizedClientRequestContext> {
-    if (HubMock.isValid) {
-      const firstName = TestUserType[user];
-      const lastName = "User";
-      const props: AccessTokenProps = {
-        tokenString: "bogus",
-        userInfo: {
-          id: Guid.createValue(),
-          email: {
-            id: `${firstName}.user@test.org`,
-          },
-          profile: {
-            firstName,
-            lastName,
-            name: `${firstName} ${lastName}`,
-          },
-          organization: IModelTestUtils.testOrg,
-        },
-        startsAt: new Date(Date.now()).toJSON(),
-        expiresAt: new Date(Date.now() + 60 * 60 * 100).toJSON(), /* 1 hour from now */
-      };
-      return new AuthorizedClientRequestContext(AccessToken.fromJson(props));
+  public static async getAccessToken(user: TestUserType) {
+    return TestUserType[user];
+  }
+
+  /** Create an iModel with the name provided if it does not already exist. If it does exist, the iModelId is returned. */
+  public static async createIModel(accessToken: AccessToken, iTwinId: GuidString, iModelName: string): Promise<GuidString> {
+    assert.isTrue(HubMock.isValid, "Must use HubMock for tests that modify iModels");
+    let iModelId = await IModelHost.hubAccess.queryIModelByName({ accessToken, iTwinId, iModelName });
+    if (!iModelId)
+      iModelId = await IModelHost.hubAccess.createNewIModel({ accessToken, iTwinId, iModelName, description: `Description for iModel` });
+    return iModelId;
+  }
+
+  /** Deletes and re-creates an iModel with the provided name in the iTwin.
+   * @returns the iModelId of the newly created iModel.
+  */
+  public static async recreateIModel(arg: { accessToken: AccessToken, iTwinId: GuidString, iModelName: string, noLocks?: true }): Promise<GuidString> {
+    assert.isTrue(HubMock.isValid, "Must use HubMock for tests that modify iModels");
+    const deleteIModel = await IModelHost.hubAccess.queryIModelByName(arg);
+    if (undefined !== deleteIModel)
+      await IModelHost.hubAccess.deleteIModel({ accessToken: arg.accessToken, iTwinId: arg.iTwinId, iModelId: deleteIModel });
+
+    // Create a new iModel
+    return IModelHost.hubAccess.createNewIModel({ ...arg, description: `Description for ${arg.iModelName}` });
+  }
+
+  /** Delete an IModel from the hub */
+  public static async deleteIModel(accessToken: AccessToken, iTwinId: string, iModelName: string): Promise<void> {
+    const iModelId = await IModelHost.hubAccess.queryIModelByName({ accessToken, iTwinId, iModelName });
+    if (undefined === iModelId)
+      return;
+
+    await IModelHost.hubAccess.deleteIModel({ accessToken, iTwinId, iModelId });
+  }
+
+  /** Push an iModel to the Hub */
+  public static async pushIModel(accessToken: AccessToken, iTwinId: string, pathname: string, iModelName?: string, overwrite?: boolean): Promise<GuidString> {
+    // Delete any existing iModels with the same name as the required iModel
+    const locIModelName = iModelName || path.basename(pathname, ".bim");
+    const iModelId = await IModelHost.hubAccess.queryIModelByName({ accessToken, iTwinId, iModelName: locIModelName });
+    if (iModelId) {
+      if (!overwrite)
+        return iModelId;
+      await IModelHost.hubAccess.deleteIModel({ accessToken, iTwinId, iModelId });
     }
 
-    let credentials: TestUserCredentials;
-    switch (user) {
-      case TestUserType.Regular:
-        credentials = TestUsers.regular;
-        break;
-      case TestUserType.Manager:
-        credentials = TestUsers.manager;
-        break;
-      case TestUserType.Super:
-        credentials = TestUsers.super;
-        break;
-      case TestUserType.SuperManager:
-        credentials = TestUsers.superManager;
-        break;
-    }
-    return TestUtility.getAuthorizedClientRequestContext(credentials);
+    // Upload a new iModel
+    return IModelHost.hubAccess.createNewIModel({ accessToken, iTwinId, iModelName: locIModelName, revision0: pathname });
   }
 
   /** Helper to open a briefcase db directly with the BriefcaseManager API */
   public static async downloadAndOpenBriefcase(args: RequestNewBriefcaseArg): Promise<BriefcaseDb> {
-    assert.isTrue(HubUtility.allowHubBriefcases || HubMock.isValid, "Must use HubMock for tests that modify iModels");
     const props = await BriefcaseManager.downloadBriefcase(args);
-    return BriefcaseDb.open({ user: args.user, fileName: props.fileName });
+    return BriefcaseDb.open({ fileName: props.fileName });
   }
 
-  /** Opens the specific iModel as a Briefcase through the same workflow the IModelReadRpc.openForRead method will use. Replicates the way a frontend would open the iModel. */
-  public static async openBriefcaseUsingRpc(args: RequestNewBriefcaseProps & { user: AuthorizedClientRequestContext, deleteFirst?: boolean }): Promise<BriefcaseDb> {
-    args.user.enter();
+  /** Opens the specific iModel as a Briefcase through the same workflow the IModelReadRpc.getConnectionProps method will use. Replicates the way a frontend would open the iModel. */
+  public static async openBriefcaseUsingRpc(args: RequestNewBriefcaseProps & { accessToken: AccessToken, deleteFirst?: boolean }): Promise<BriefcaseDb> {
     if (undefined === args.asOf)
       args.asOf = IModelVersion.latest().toJSON();
 
@@ -218,9 +156,9 @@ export class IModelTestUtils {
       tokenProps: {
         iTwinId: args.iTwinId,
         iModelId: args.iModelId,
-        changeset: (await IModelHost.hubAccess.getChangesetFromVersion({ user: args.user, version: IModelVersion.fromJSON(args.asOf), iModelId: args.iModelId })),
+        changeset: (await IModelHost.hubAccess.getChangesetFromVersion({ accessToken: args.accessToken, version: IModelVersion.fromJSON(args.asOf), iModelId: args.iModelId })),
       },
-      user: args.user,
+      activity: { accessToken: args.accessToken, activityId: "", applicationId: "", applicationVersion: "", sessionId: "" },
       syncMode: args.briefcaseId === 0 ? SyncMode.PullOnly : SyncMode.PullAndPush,
       forceDownload: args.deleteFirst,
     };
@@ -237,41 +175,40 @@ export class IModelTestUtils {
   }
 
   /** Downloads and opens a v1 checkpoint */
-  public static async downloadAndOpenCheckpoint(args: { user: AuthorizedClientRequestContext, iTwinId: GuidString, iModelId: GuidString, asOf?: IModelVersionProps }): Promise<SnapshotDb> {
+  public static async downloadAndOpenCheckpoint(args: { accessToken: AccessToken, iTwinId: GuidString, iModelId: GuidString, asOf?: IModelVersionProps }): Promise<SnapshotDb> {
     if (undefined === args.asOf)
       args.asOf = IModelVersion.latest().toJSON();
 
     const checkpoint: CheckpointProps = {
       iTwinId: args.iTwinId,
       iModelId: args.iModelId,
-      user: args.user,
-      changeset: (await IModelHost.hubAccess.getChangesetFromVersion({ user: args.user, version: IModelVersion.fromJSON(args.asOf), iModelId: args.iModelId })),
+      accessToken: args.accessToken,
+      changeset: (await IModelHost.hubAccess.getChangesetFromVersion({ accessToken: args.accessToken, version: IModelVersion.fromJSON(args.asOf), iModelId: args.iModelId })),
     };
 
     return V1CheckpointManager.getCheckpointDb({ checkpoint, localFile: V1CheckpointManager.getFileName(checkpoint) });
   }
 
-  /** Opens the specific Checkpoint iModel, `SyncMode.FixedVersion`, through the same workflow the IModelReadRpc.openForRead method will use. Replicates the way a frontend would open the iModel. */
-  public static async openCheckpointUsingRpc(args: RequestNewBriefcaseProps & { user: AuthorizedClientRequestContext, deleteFirst?: boolean }): Promise<SnapshotDb> {
+  /** Opens the specific Checkpoint iModel, `SyncMode.FixedVersion`, through the same workflow the IModelReadRpc.getConnectionProps method will use. Replicates the way a frontend would open the iModel. */
+  public static async openCheckpointUsingRpc(args: RequestNewBriefcaseProps & { accessToken: AccessToken, deleteFirst?: boolean }): Promise<IModelDb> {
     if (undefined === args.asOf)
       args.asOf = IModelVersion.latest().toJSON();
 
-    const changeset = await IModelHost.hubAccess.getChangesetFromVersion({ user: args.user, version: IModelVersion.fromJSON(args.asOf), iModelId: args.iModelId });
+    const changeset = await IModelHost.hubAccess.getChangesetFromVersion({ accessToken: args.accessToken, version: IModelVersion.fromJSON(args.asOf), iModelId: args.iModelId });
     const openArgs: DownloadAndOpenArgs = {
       tokenProps: {
         iTwinId: args.iTwinId,
         iModelId: args.iModelId,
         changeset,
       },
-      user: args.user,
+      activity: { accessToken: args.accessToken, activityId: "", applicationId: "", applicationVersion: "", sessionId: "" },
       syncMode: SyncMode.FixedVersion,
       forceDownload: args.deleteFirst,
     };
-    args.user.enter();
 
     while (true) {
       try {
-        return (await RpcBriefcaseUtility.open(openArgs)) as SnapshotDb;
+        return (await RpcBriefcaseUtility.open(openArgs));
       } catch (error) {
         if (!(error instanceof RpcPendingResponse))
           throw error;
@@ -279,13 +216,29 @@ export class IModelTestUtils {
     }
   }
 
-  public static async closeAndDeleteBriefcaseDb(requestContext: AuthorizedClientRequestContext, briefcaseDb: IModelDb) {
+  /**
+   * Purges all acquired briefcases for the specified iModel (and user), if the specified threshold of acquired briefcases is exceeded
+   */
+  public static async purgeAcquiredBriefcasesById(accessToken: AccessToken, iModelId: GuidString, onReachThreshold: () => void = () => { }, acquireThreshold: number = 16): Promise<void> {
+    const briefcases = await IModelHost.hubAccess.getMyBriefcaseIds({ accessToken, iModelId });
+    if (briefcases.length > acquireThreshold) {
+      if (undefined !== onReachThreshold)
+        onReachThreshold();
+
+      const promises: Promise<void>[] = [];
+      briefcases.forEach((briefcaseId) => {
+        promises.push(IModelHost.hubAccess.releaseBriefcase({ accessToken, iModelId, briefcaseId }));
+      });
+      await Promise.all(promises);
+    }
+  }
+
+  public static async closeAndDeleteBriefcaseDb(accessToken: AccessToken, briefcaseDb: IModelDb) {
     const fileName = briefcaseDb.pathName;
     const iModelId = briefcaseDb.iModelId;
     briefcaseDb.close();
 
-    await BriefcaseManager.deleteBriefcaseFiles(fileName, requestContext);
-    requestContext.enter();
+    await BriefcaseManager.deleteBriefcaseFiles(fileName, accessToken);
 
     // try to clean up empty briefcase directories, and empty iModel directories.
     if (0 === BriefcaseManager.getCachedBriefcases(iModelId).length) {
@@ -295,6 +248,14 @@ export class IModelTestUtils {
         IModelJsFs.removeSync(imodelPath);
       }
     }
+  }
+}
+
+export class IModelTestUtils {
+
+  /** Generate a name for an iModel that's unique using the baseName provided and appending a new GUID.  */
+  public static generateUniqueName(baseName: string) {
+    return `${baseName} - ${Guid.createValue()}`;
   }
 
   /** Prepare for an output file by:
@@ -487,75 +448,12 @@ export class IModelTestUtils {
     return testImodel.elements.createElement(elementProps);
   }
 
-  /** Handles the startup of IModelHost.
-   * The provided config is used and will override any of the default values used in this method.
-   *
-   * The default includes:
-   * - concurrentQuery.current === 4
-   * - cacheDir === path.join(__dirname, ".cache")
-   */
-  public static async startBackend(config?: IModelHostConfiguration): Promise<void> {
-    loadEnv(path.join(__dirname, "..", "..", ".env"));
-    const cfg = config ? config : new IModelHostConfiguration();
-    cfg.concurrentQuery.concurrent = 4; // for test restrict this to two threads. Making closing connection faster
-    cfg.cacheDir = path.join(__dirname, ".cache");  // Set the cache dir to be under the lib directory.
-    return IModelHost.startup(cfg);
-  }
-
   public static registerTestBimSchema() {
     if (undefined === Schemas.getRegisteredSchema(TestBim.schemaName)) {
       Schemas.registerSchema(TestBim);
       ClassRegistry.register(TestPhysicalObject, TestBim);
       ClassRegistry.register(TestElementDrivesElement, TestBim);
     }
-  }
-
-  public static async shutdownBackend(): Promise<void> {
-    return IModelHost.shutdown();
-  }
-
-  public static setupLogging() {
-    Logger.initializeToConsole();
-    Logger.setLevelDefault(LogLevel.Error);
-
-    if (process.env.IMJS_TEST_LOGGING_CONFIG === undefined) {
-      // eslint-disable-next-line no-console
-      console.log(`You can set the environment variable IMJS_TEST_LOGGING_CONFIG to point to a logging configuration json file.`);
-    }
-    const loggingConfigFile: string = process.env.IMJS_TEST_LOGGING_CONFIG || path.join(__dirname, "logging.config.json");
-
-    if (IModelJsFs.existsSync(loggingConfigFile)) {
-      // eslint-disable-next-line no-console
-      console.log(`Setting up logging levels from ${loggingConfigFile}`);
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      Logger.configureLevels(require(loggingConfigFile));
-    }
-  }
-
-  public static init() {
-    // dummy method to get this script included
-  }
-
-  private static initDebugLogLevels(reset?: boolean) {
-    Logger.setLevelDefault(reset ? LogLevel.Error : LogLevel.Warning);
-    Logger.setLevel(BentleyLoggerCategory.Performance, reset ? LogLevel.Error : LogLevel.Info);
-    Logger.setLevel(BackendLoggerCategory.IModelDb, reset ? LogLevel.Error : LogLevel.Trace);
-    Logger.setLevel(ITwinClientLoggerCategory.Clients, reset ? LogLevel.Error : LogLevel.Trace);
-    Logger.setLevel(IModelHubClientLoggerCategory.IModelHub, reset ? LogLevel.Error : LogLevel.Trace);
-    Logger.setLevel(ITwinClientLoggerCategory.Request, reset ? LogLevel.Error : LogLevel.Trace);
-    Logger.setLevel(NativeLoggerCategory.DgnCore, reset ? LogLevel.Error : LogLevel.Trace);
-    Logger.setLevel(NativeLoggerCategory.BeSQLite, reset ? LogLevel.Error : LogLevel.Trace);
-    Logger.setLevel(BackendITwinClientLoggerCategory.FileHandlers, reset ? LogLevel.Error : LogLevel.Trace);
-  }
-
-  // Setup typical programmatic log level overrides here
-  // Convenience method used to debug specific tests/fixtures
-  public static setupDebugLogLevels() {
-    IModelTestUtils.initDebugLogLevels(false);
-  }
-
-  public static resetDebugLogLevels() {
-    IModelTestUtils.initDebugLogLevels(true);
   }
 
   public static executeQuery(db: IModelDb, ecsql: string, bindings?: any[] | object): any[] {
@@ -1307,12 +1205,3 @@ export class ExtensiveTestScenario {
     }
   }
 }
-
-before(async () => {
-  IModelTestUtils.setupLogging();
-  await IModelTestUtils.startBackend();
-});
-
-after(async () => {
-  await IModelTestUtils.shutdownBackend();
-});

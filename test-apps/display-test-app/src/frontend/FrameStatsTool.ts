@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { FrameStats, IModelApp, Tool } from "@bentley/imodeljs-frontend";
+import { FrameStats, IModelApp, Tool } from "@itwin/core-frontend";
 
 /** Enable or disable (toggle) frame statistics reporting for all viewports. */
 export class FrameStatsTool extends Tool {

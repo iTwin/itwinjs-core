@@ -16,7 +16,7 @@ module.exports = {
     sourceType: "module"
   },
   plugins: [
-    "@bentley",
+    "@itwin",
     "@typescript-eslint",
     "react",
     "react-hooks",

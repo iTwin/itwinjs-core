@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { Guid, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { Guid, Id64, Id64String } from "@itwin/core-bentley";
 import { Field, PropertiesField } from "./content/Fields";
 import { Item } from "./content/Item";
 import { PrimitiveTypeDescription, PropertyValueFormat } from "./content/TypeDescription";
@@ -50,7 +50,7 @@ export class RulesetsFactory {
       specifications: [{
         specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
         classes: createMultiClassSpecification(record.classInfo),
-        arePolymorphic: true,
+        handleInstancesPolymorphically: true,
         relatedInstances: relatedInstanceInfo ? [relatedInstanceInfo.spec] : [],
         instanceFilter: createInstanceFilter(relatedInstanceInfo?.spec, field.type, propertyName, propertyValue.raw),
       }],

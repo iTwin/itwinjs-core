@@ -6,7 +6,7 @@
  * @module Quantity
  */
 
-import { BentleyError } from "@bentley/bentleyjs-core";
+import { BentleyError } from "@itwin/core-bentley";
 
 /**
  * Status codes used during Quantity parsing and formatting processing.

@@ -5,7 +5,7 @@
 const fs = require("fs");
 const path = require("path");
 
-let dir = path.join(process.cwd(), "lib");
+let dir = path.join(process.cwd(), "lib", "cjs");
 if (!fs.existsSync(dir))
   fs.mkdirSync(dir);
 

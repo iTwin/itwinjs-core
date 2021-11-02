@@ -6,9 +6,9 @@ import { expect } from "chai";
 import { Observable } from "rxjs/internal/Observable";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
-import { DelayLoadedTreeNodeItem, MutableTreeModel, TreeModelNodeInput, TreeModelSource } from "@bentley/ui-components";
+import { IModelConnection } from "@itwin/core-frontend";
+import { PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
+import { DelayLoadedTreeNodeItem, MutableTreeModel, TreeModelNodeInput, TreeModelSource } from "@itwin/components-react";
 import { reloadTree } from "../../../presentation-components/tree/controlled/TreeReloader";
 import { IPresentationTreeDataProvider } from "../../../presentation-components/tree/IPresentationTreeDataProvider";
 

@@ -861,27 +861,27 @@ describe("PolygonAreas", () => {
   it("SimpleNonConvex", () => {
     const ck = new Checker();
     const pointA = [
-      Point3d.create(0,0,0),
-      Point3d.create(0,0,2),
-      Point3d.create(0,2,2),
-      Point3d.create(0,2,1),
-      Point3d.create(0,1,1),
-      Point3d.create(0,1,0),
+      Point3d.create(0, 0, 0),
+      Point3d.create(0, 0, 2),
+      Point3d.create(0, 2, 2),
+      Point3d.create(0, 2, 1),
+      Point3d.create(0, 1, 1),
+      Point3d.create(0, 1, 0),
     ];
-    for (let i = 0; i < 5; i++){
-    const centroidA = PolygonOps.centroidAreaNormal(pointA)!;
-    ck.testCoordinate(3.0, (centroidA as any).a, "area of nonconvex polygon");
-    for (const degrees of [17.0, 197.4]){
-      const rotationMatrix = Matrix3d.createRotationAroundVector(Vector3d.create(1, -2, 0.5), Angle.createDegrees(degrees))!;
-      const rotationTransform = Transform.createFixedPointAndMatrix(Point3d.create(0.3, 1.2, 0.4), rotationMatrix);
-      const pointB = rotationTransform.multiplyPoint3dArray(pointA);
-      const centroidB = PolygonOps.centroidAreaNormal(pointB)!;
-      ck.testCoordinate(3.0, (centroidB as any).a, "area of nonconvex polygon");
-      const centroidA1 = centroidA.cloneTransformed(rotationTransform);
-      ck.testPoint3d(centroidA1.origin, centroidB.origin, "centroid transform commutes");
-      ck.testVector3d(centroidA1.direction, centroidB.direction, "centroid transform commutes");
+    for (let i = 0; i < 5; i++) {
+      const centroidA = PolygonOps.centroidAreaNormal(pointA)!;
+      ck.testCoordinate(3.0, (centroidA as any).a, "area of nonconvex polygon");
+      for (const degrees of [17.0, 197.4]) {
+        const rotationMatrix = Matrix3d.createRotationAroundVector(Vector3d.create(1, -2, 0.5), Angle.createDegrees(degrees))!;
+        const rotationTransform = Transform.createFixedPointAndMatrix(Point3d.create(0.3, 1.2, 0.4), rotationMatrix);
+        const pointB = rotationTransform.multiplyPoint3dArray(pointA);
+        const centroidB = PolygonOps.centroidAreaNormal(pointB)!;
+        ck.testCoordinate(3.0, (centroidB as any).a, "area of nonconvex polygon");
+        const centroidA1 = centroidA.cloneTransformed(rotationTransform);
+        ck.testPoint3d(centroidA1.origin, centroidB.origin, "centroid transform commutes");
+        ck.testVector3d(centroidA1.direction, centroidB.direction, "centroid transform commutes");
       }
-    // shift last point to start for next pass . . .
+      // shift last point to start for next pass . . .
       const p = pointA.pop();
       pointA.unshift(p!);
     }
@@ -997,17 +997,14 @@ describe("PolygonAreas", () => {
 
   it("minMaxPoints", () => {
     const ck = new Checker();
-    // const allGeometry: GeometryQuery[] = [];
     const pointA = Sample.createStar(1, 2, 3, 4, 6, 5, true);
     const minMaxPoints = Point3dArray.minMaxPoints(pointA);
     if (ck.testDefined(minMaxPoints) && minMaxPoints) {
-      const rangeA = Point3dArray.createRange(pointA);  // DEPRECATED !!!!
       const range = Range3d.createArray(pointA);
       ck.testCoordinate(minMaxPoints.minXPoint.x, range.low.x);
       ck.testCoordinate(minMaxPoints.minYPoint.y, range.low.y);
       ck.testCoordinate(minMaxPoints.maxXPoint.x, range.high.x);
       ck.testCoordinate(minMaxPoints.maxYPoint.y, range.high.y);
-      ck.testCoordinate(minMaxPoints.maxYPoint.y, rangeA.high.y);
     }
     ck.testUndefined(Point3dArray.minMaxPoints([]));
     expect(ck.getNumErrors()).equals(0);
@@ -1145,11 +1142,11 @@ describe("PolygonAreas", () => {
         const knot0 = baseKnots[0];
         const knot1 = baseKnots[baseKnots.length - 1];
         for (let k = 0; k < target0; k++)
-            ck.testExactNumber (knotsA[k], knot0, "multiplicity at start");
+          ck.testExactNumber(knotsA[k], knot0, "multiplicity at start");
         for (let k = knotsA.length - target1; k < knotsA.length; k++)
-          ck.testExactNumber (knotsA[k], knot1, "multiplicity at end");
+          ck.testExactNumber(knotsA[k], knot1, "multiplicity at end");
         ck.testNumberArray(baseKnots, knotsB, "round trip multiplicity");
-        }
+      }
     }
     expect(ck.getNumErrors()).equals(0);
   });

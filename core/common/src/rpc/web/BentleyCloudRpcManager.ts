@@ -16,7 +16,7 @@ import { OpenAPIInfo } from "./OpenAPI";
 import { RpcRoutingToken } from "../core/RpcRoutingToken";
 
 /** Initialization parameters for BentleyCloudRpcConfiguration.
- * @public
+ * @internal
  */
 export interface BentleyCloudRpcParams {
   /** Identifies the remote server that implements a set of RpcInterfaces. Note that the ID of the remote server is not a URI or hostname. It is a string that matches a key in the orchestrator's app registry. */
@@ -30,7 +30,7 @@ export interface BentleyCloudRpcParams {
 }
 
 /** Operating parameters for Bentley cloud RPC interface deployments.
- * @public
+ * @internal
  */
 export abstract class BentleyCloudRpcConfiguration extends RpcConfiguration {
   /** Access-Control header values for backend servers that serve frontends using BentleyCloudRpcProtocol. */
@@ -45,7 +45,7 @@ export abstract class BentleyCloudRpcConfiguration extends RpcConfiguration {
 }
 
 /** Coordinates usage of RPC interfaces for Bentley cloud deployments.
- * @public
+ * @internal
  */
 export class BentleyCloudRpcManager extends RpcManager {
   /** Initializes BentleyCloudRpcManager for the frontend of an application. */

@@ -1,12 +1,12 @@
 # LineWeight
 
-The [LineWeight]($ui-imodel-components:LineWeight) category in the `@bentley/ui-imodel-components` package includes
+The [LineWeight]($imodel-components-react:LineWeight) category in the `@itwin/imodel-components-react` package includes
 classes and components for working with and picking a Line Weight.
 
 |Component|Description
 |-----|-----
-|[LineWeightSwatch]($ui-imodel-components)|displays a line weight swatch in a button
-|[WeightPickerButton]($ui-imodel-components)|used to pick a line weight from an array of available weights
+|[LineWeightSwatch]($imodel-components-react)|displays a line weight swatch in a button
+|[WeightPickerButton]($imodel-components-react)|used to pick a line weight from an array of available weights
 
 ## WeightPickerButton Sample
 
@@ -37,8 +37,8 @@ private _handleWeightChange = (value: number) => {
 
 ![WeightPickerButton](./images/WeightPickerButton.png "WeightPickerButton Component")
 
-**Note:** The properties for the WeightPickerButton are defined in the [WeightPickerProps]($ui-imodel-components) interface. The optional `weights` prop may be used to provide the available weights.
+**Note:** The properties for the WeightPickerButton are defined in the [WeightPickerProps]($imodel-components-react) interface. The optional `weights` prop may be used to provide the available weights.
 
 ## API Reference
 
-- [LineWeight]($ui-imodel-components:LineWeight)
+- [LineWeight]($imodel-components-react:LineWeight)

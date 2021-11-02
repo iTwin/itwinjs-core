@@ -5,10 +5,10 @@
 import * as React from "react";
 import { Column, TableState } from "react-table";
 import { Table, ToggleSwitch } from "@itwin/itwinui-react";
-import { ConfigurableCreateInfo, ContentControl } from "@bentley/ui-framework";
+import { ConfigurableCreateInfo, ContentControl } from "@itwin/appui-react";
 import { TableExampleData } from "../contentviews/TableExampleData";
 import { TableDataProviderAdapter } from "./TableDataProviderAdapter";
-import { BodyText } from "@bentley/ui-core";
+import { BodyText } from "@itwin/core-react";
 
 export interface ReactTableDemoProps {
   isSortable?: boolean;

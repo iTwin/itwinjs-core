@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
-import { ProcessDetector } from "@bentley/bentleyjs-core";
-import { EditTools } from "@bentley/imodeljs-editor-frontend";
-import { IModelApp, PrimitiveTool, SnapshotConnection, Viewport } from "@bentley/imodeljs-frontend";
+import { ProcessDetector } from "@itwin/core-bentley";
+import { IModelApp, PrimitiveTool, SnapshotConnection, Viewport } from "@itwin/core-frontend";
+import { EditTools } from "@itwin/editor-frontend";
 import { testCmdIds, TestCmdOjb1, TestCmdResult, TestCommandIpc } from "../../common/TestEditCommandIpc";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
+import { TestUtility } from "../TestUtility";
 
 const expect = chai.expect;
 const assert = chai.assert;
@@ -38,16 +38,17 @@ if (ProcessDetector.isElectronAppFrontend) {
   describe("EditTools", () => {
 
     before(async () => {
-      await ElectronApp.startup();
-      const testNamespace = IModelApp.i18n.registerNamespace("TestApp");
-      IModelApp.tools.register(TestEditTool1, testNamespace);
+      await TestUtility.startFrontend();
+      const namespace = "TestApp";
+      await IModelApp.localization.registerNamespace(namespace);
+      IModelApp.tools.register(TestEditTool1, namespace);
       iModel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
 
     });
 
     after(async () => {
       await iModel.close();
-      await ElectronApp.shutdown();
+      await TestUtility.shutdownFrontend();
     });
 
     it("should start edit commands", async () => {

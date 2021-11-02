@@ -192,7 +192,7 @@ export class Sample {
       Range3d.createXYZ(1, 2, 3),
       Range3d.createXYZXYZ(-2, -3, 1, 200, 301, 8)];
   }
-  /** Create 5 points of a (axis aligned) rectangle with corners (x0,y0) and (x1,y1) */
+  /** Create 5 points of a (axis aligned) rectangle with corners (x0,y0) and (x0+ax, y0 + ay) */
   public static createRectangleXY(x0: number, y0: number, ax: number, ay: number, z: number = 0): Point3d[] {
     return [
       Point3d.create(x0, y0, z),
@@ -201,6 +201,11 @@ export class Sample {
       Point3d.create(x0, y0 + ay, z),
       Point3d.create(x0, y0, z),
     ];
+  }
+
+  /** Create 5 points of a (axis aligned) rectangle with corners (cx-ax,cy-ay) and (cx+ax,cy+ay) */
+  public static createCenteredRectangleXY(cx: number, cy: number, ax: number, ay: number, z: number = 0): Point3d[] {
+    return this.createRectangleXY(cx - ax, cy - ay, 2 * ax, 2 * ay, z);
   }
 
   /** Access the last point in the array. push another shifted by dx,dy,dz.
@@ -2425,7 +2430,7 @@ export class Sample {
    * @param addClosure true to add a closure stroke
    * @returns
    */
-  public static createArcStrokes(edgesPerQuadrant: number, center: Point3d, r0: number, theta0: Angle, theta1: Angle, addClosure: boolean = true): Point3d[] {
+  public static createArcStrokes(edgesPerQuadrant: number, center: Point3d, r0: number, theta0: Angle, theta1: Angle, addClosure: boolean = true, z: number = 0): Point3d[] {
     const point0: Point3d[] = [];
     if (edgesPerQuadrant < 1)
       edgesPerQuadrant = 1;
@@ -2434,7 +2439,7 @@ export class Sample {
       edgeCount = 1;
     for (let i = 0; i <= edgeCount; i++) {
       const theta = Angle.createInterpolate(theta0, i / edgeCount, theta1);
-      point0.push(center.plusXYZ(r0 * theta.cos(), r0 * theta.sin(), 0));
+      point0.push(center.plusXYZ(r0 * theta.cos(), r0 * theta.sin(), z));
     }
     if (addClosure)
       point0.push(point0[0].clone());

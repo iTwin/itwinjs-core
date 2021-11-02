@@ -1,8 +1,8 @@
 # start off ignoring everything, and then add back only the files we want
 *
+!*.md
+
 !lib/**/*.d.ts
 !lib/**/*.d.ts.map
 !lib/**/*.js
 !lib/**/*.js.map
-test
-!*.md

@@ -6,8 +6,8 @@
  * @module Rendering
  */
 
-import { Id64 } from "@bentley/bentleyjs-core";
-import { FeatureAppearance, FeatureAppearanceProps, FeatureOverrides } from "@bentley/imodeljs-common";
+import { BeEvent, Id64 } from "@itwin/core-bentley";
+import { FeatureAppearance, FeatureOverrides } from "@itwin/core-common";
 import { Viewport } from "../Viewport";
 import { ViewState } from "../ViewState";
 
@@ -17,11 +17,22 @@ import { ViewState } from "../ViewState";
  * @public
  */
 export namespace FeatureSymbology {
-  /** @deprecated use [FeatureAppearanceProps]($common) */
-  export interface AppearanceProps extends FeatureAppearanceProps { } // eslint-disable-line @typescript-eslint/no-empty-interface
-
-  /** @deprecated use [FeatureAppearance]($common) */
-  export class Appearance extends FeatureAppearance { } // eslint-disable-line @typescript-eslint/no-empty-interface
+  /** An object that serves as the source of a [[FeatureSymbology.Overrides]].
+   * Use this if you are drawing the same tiles into a single Viewport and overriding the FeatureSymbology.Overrides applied to them
+   * by settings [[GraphicBranch.symbologyOverrides]].
+   * Each tile will have a separate set of feature overrides per combination of Source and Viewport. This prevents the display system
+   * from constantly recomputing the feature overrides for a tile.
+   * You must call `onSourceDisposed.raiseEvent()` when the source is no longer being used by the Viewport to allow the feature overrides
+   * and their WebGL resources to be freed - failure to do so will result in memory leaks, which may eventually produce WebGL context loss.
+   * @alpha
+   */
+  export interface Source {
+    /** An event raised when this source becomes disassociated with the viewport, indicating any WebGL resources allocated for it
+     * can be freed.
+     * Failure to invoke this event appropriately will result in memory leaks, which may eventually produce WebGL context loss.
+     */
+    readonly onSourceDisposed: BeEvent<() => void>;
+  }
 
   /** Allows a [[Viewport]] to customize the appearance of individual [Feature]($common)s within it.
    *
@@ -47,6 +58,13 @@ export namespace FeatureSymbology {
    * @see [[Viewport.neverDrawn]]
    */
   export class Overrides extends FeatureOverrides {
+    private _source?: Source;
+
+    /** @alpha */
+    public get source(): Source | undefined {
+      return this._source;
+    }
+
     /** Construct a new Overrides. The result is an empty set of overrides if no view or viewport is supplied.
      * @param view If supplied, the overrides will be initialized based on the current state of the view or viewport.
      */
@@ -58,6 +76,15 @@ export namespace FeatureSymbology {
         else
           this.initFromView(view);
       }
+    }
+
+    /** Create symbology overrides associated with a [[FeatureSymbology.Source]].
+     * @alpha
+     */
+    public static withSource(source: Source, view?: ViewState | Viewport): Overrides {
+      const ovrs = new Overrides(view);
+      ovrs._source = source;
+      return ovrs;
     }
 
     /** Initialize these Overrides based on a specific view.

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Fix an import which would cause consumers of core-common to fail during build",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

@@ -11,7 +11,7 @@ import { ChildNodeSpecificationBase, ChildNodeSpecificationTypes } from "./Child
 /**
  * Creates a custom-defined node.
  *
- * @see [More details]($docs/learning/presentation/Hierarchies/CustomNode.md)
+ * @see [More details]($docs/presentation/Hierarchies/CustomNode.md)
  * @public
  */
 export interface CustomNodeSpecification extends ChildNodeSpecificationBase {
@@ -22,12 +22,12 @@ export interface CustomNodeSpecification extends ChildNodeSpecificationBase {
   type: string;
 
   /**
-   * Label of the node. May be [localized]($docs/learning/presentation/Localization.md).
+   * Label of the node. May be [localized]($docs/presentation/Advanced/Localization.md).
    */
   label: string;
 
   /**
-   * Description of the node. May be [localized]($docs/learning/presentation/Localization.md).
+   * Description of the node. May be [localized]($docs/presentation/Advanced/Localization.md).
    */
   description?: string;
 

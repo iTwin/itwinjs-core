@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-webpack-tools",
+      "comment": "rename to @itwin/core-webpack-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-webpack-tools"
+}

@@ -7,10 +7,10 @@
  */
 
 import * as React from "react";
-import {  IModelApp, Tool } from "@bentley/imodeljs-frontend";
-import { ModalDialogManager } from "@bentley/ui-framework";
+import {  IModelApp, Tool } from "@itwin/core-frontend";
+import { ModalDialogManager } from "@itwin/appui-react";
 import { SampleModalDialog } from "../dialogs/SampleModalDialog";
-import { BadgeType, ConditionalBooleanValue, IconSpecUtilities, ToolbarItemUtilities } from "@bentley/ui-abstract";
+import { BadgeType, ConditionalBooleanValue, IconSpecUtilities, ToolbarItemUtilities } from "@itwin/appui-abstract";
 import { TraceUiItemsProvider } from "../NetworkTraceUIProvider";
 import connectedIcon from "../icons/connected-query.svg?sprite";
 

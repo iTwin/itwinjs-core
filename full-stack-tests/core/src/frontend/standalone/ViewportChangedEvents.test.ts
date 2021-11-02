@@ -3,15 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { BeDuration, Id64, Id64Arg, Id64String } from "@bentley/bentleyjs-core";
-import { ClipVector, Transform } from "@bentley/geometry-core";
+import { BeDuration, Id64, Id64Arg, Id64String } from "@itwin/core-bentley";
+import { ClipVector, Transform } from "@itwin/core-geometry";
 import {
   AmbientOcclusion, AnalysisStyle, ClipStyle, ColorDef, FeatureAppearance, ModelClipGroup, ModelClipGroups, MonochromeMode, PlanProjectionSettings, SubCategoryOverride, ThematicDisplay, ViewFlags,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import {
-  ChangeFlag, FeatureSymbology, MockRender, PerModelCategoryVisibility, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId, Viewport,
-} from "@bentley/imodeljs-frontend";
+  ChangeFlag, FeatureSymbology, PerModelCategoryVisibility, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId, Viewport,
+} from "@itwin/core-frontend";
 import { ViewportChangedHandler, ViewportState } from "../ViewportChangedHandler";
+import { TestUtility } from "../TestUtility";
 
 describe("Viewport changed events", async () => {
   // test.bim:
@@ -43,7 +44,7 @@ describe("Viewport changed events", async () => {
   document.body.appendChild(viewDiv);
 
   before(async () => {
-    await MockRender.App.startup();
+    await TestUtility.startFrontend(undefined, true);
     testBim = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     testImodel = await SnapshotConnection.openFile("testImodel.bim"); // relative path resolved by BackendTestAssetResolver
   });
@@ -55,7 +56,7 @@ describe("Viewport changed events", async () => {
     if (undefined !== testImodel)
       await testImodel.close();
 
-    await MockRender.App.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   afterEach(() => {
@@ -76,7 +77,7 @@ describe("Viewport changed events", async () => {
     // Viewport-changed events are not dispatched immediately - they are accumulated between frames and dispatched from inside Viewport.renderFrame().
     ViewportChangedHandler.test(vp, (mon) => {
       // No event if the set is already empty when we clear it.
-      mon.expect(ChangeFlag.None,undefined, () => vp.clearNeverDrawn());
+      mon.expect(ChangeFlag.None, undefined, () => vp.clearNeverDrawn());
       mon.expect(ChangeFlag.None, undefined, () => vp.clearAlwaysDrawn());
 
       // Assigning the set always raises an event.
@@ -133,7 +134,7 @@ describe("Viewport changed events", async () => {
 
     ViewportChangedHandler.test(vp, (mon) => {
       // No event if equivalent flags
-      let newFlags = vp.viewFlags.copy({ });
+      let newFlags = vp.viewFlags.copy({});
       mon.expect(ChangeFlag.None, undefined, () => vp.viewFlags = newFlags);
 
       // ViewFlags which do not affect symbology overrides
@@ -212,7 +213,7 @@ describe("Viewport changed events", async () => {
       const style = view.getDisplayStyle3d();
       const settings = style.settings;
 
-      let vf = settings.viewFlags.copy({ });
+      let vf = settings.viewFlags.copy({});
       expectNoChange(() => settings.viewFlags = vf);
       vf = vf.with("transparency", !vf.transparency);
       expectChange(() => settings.viewFlags = vf);
@@ -641,7 +642,7 @@ describe("Viewport changed events", async () => {
       const expectChange = (state: ViewportState, func: () => void) => mon.expect(ChangeFlag.None, state, func);
 
       expectChange(ViewportState.RenderPlan, () => view.details.clipVector = ClipVector.createEmpty());
-      expectChange(ViewportState.Scene, () => view.details.modelClipGroups = new ModelClipGroups([ ModelClipGroup.fromJSON({ models: [ "0x123" ] }) ]));
+      expectChange(ViewportState.Scene, () => view.details.modelClipGroups = new ModelClipGroups([ModelClipGroup.fromJSON({ models: ["0x123"] })]));
       expectChange(ViewportState.Scene, () => view.modelDisplayTransformProvider = { getModelDisplayTransform: (_id, _tf) => Transform.createIdentity() });
     });
   });

@@ -6,18 +6,19 @@
  * @module RPC
  */
 
-import { ClientRequestContext, Id64String, Logger } from "@bentley/bentleyjs-core";
-import { IModelDb } from "@bentley/imodeljs-backend";
-import { IModelRpcProps } from "@bentley/imodeljs-common";
+import { IModelDb } from "@itwin/core-backend";
+import { Id64String, Logger } from "@itwin/core-bentley";
+import { IModelRpcProps } from "@itwin/core-common";
 import {
   ContentDescriptorRpcRequestOptions, ContentRpcRequestOptions, ContentSourcesRpcRequestOptions, ContentSourcesRpcResult, DescriptorJSON,
   DiagnosticsOptions, DiagnosticsScopeLogs, DisplayLabelRpcRequestOptions, DisplayLabelsRpcRequestOptions, DisplayValueGroup, DisplayValueGroupJSON,
-  DistinctValuesRpcRequestOptions, ElementProperties, ElementPropertiesRpcRequestOptions, FilterByInstancePathsHierarchyRpcRequestOptions,
-  FilterByTextHierarchyRpcRequestOptions, HierarchyRpcRequestOptions, InstanceKey, ItemJSON, KeySet, KeySetJSON, LabelDefinition, LabelDefinitionJSON,
-  Node, NodeJSON, NodeKey, NodeKeyJSON, NodePathElement, NodePathElementJSON, Paged, PagedResponse, PageOptions, PresentationError,
-  PresentationRpcInterface, PresentationRpcResponse, PresentationStatus, Ruleset, RulesetVariable, RulesetVariableJSON, SelectClassInfo,
-  SelectionScope, SelectionScopeRpcRequestOptions,
-} from "@bentley/presentation-common";
+  DistinctValuesRpcRequestOptions, ElementProperties, ElementPropertiesRpcRequestOptions, ElementPropertiesRpcResult,
+  FilterByInstancePathsHierarchyRpcRequestOptions, FilterByTextHierarchyRpcRequestOptions, HierarchyRpcRequestOptions, InstanceKey, isSingleElementPropertiesRequestOptions, ItemJSON, KeySet,
+  KeySetJSON, LabelDefinition, LabelDefinitionJSON, MultiElementPropertiesRpcRequestOptions, Node, NodeJSON, NodeKey, NodeKeyJSON, NodePathElement,
+  NodePathElementJSON, Paged, PagedResponse, PageOptions, PresentationError, PresentationRpcInterface, PresentationRpcResponse, PresentationStatus,
+  Ruleset, RulesetVariable, RulesetVariableJSON, SelectClassInfo, SelectionScope, SelectionScopeRpcRequestOptions,
+  SingleElementPropertiesRpcRequestOptions,
+} from "@itwin/presentation-common";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { Presentation } from "./Presentation";
 import { PresentationManager } from "./PresentationManager";
@@ -88,7 +89,6 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
 
   private async makeRequest<TRpcOptions extends { rulesetOrId?: Ruleset | string, clientId?: string, diagnostics?: DiagnosticsOptions, rulesetVariables?: RulesetVariableJSON[] }, TResult>(token: IModelRpcProps, requestId: string, requestOptions: TRpcOptions, request: ContentGetter<Promise<TResult>>): PresentationRpcResponse<TResult> {
     Logger.logInfo(PresentationBackendLoggerCategory.Rpc, `Received '${requestId}' request. Params: ${JSON.stringify(requestOptions)}`);
-    const requestContext = ClientRequestContext.current;
     let imodel: IModelDb;
     try {
       imodel = this.getIModel(token);
@@ -99,7 +99,6 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
     const { clientId, diagnostics: diagnosticsOptions, rulesetVariables, ...options } = requestOptions; // eslint-disable-line @typescript-eslint/no-unused-vars
     const managerRequestOptions: any = {
       ...options,
-      requestContext,
       imodel,
     };
 
@@ -241,8 +240,13 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
     return this.successResponse(content.result ? content.result.contentSet : { total: 0, items: [] });
   }
 
-  public override async getElementProperties(token: IModelRpcProps, requestOptions: ElementPropertiesRpcRequestOptions): PresentationRpcResponse<ElementProperties | undefined> {
+  public override async getElementProperties(token: IModelRpcProps, requestOptions: SingleElementPropertiesRpcRequestOptions): PresentationRpcResponse<ElementProperties | undefined>;
+  public override async getElementProperties(token: IModelRpcProps, requestOptions: MultiElementPropertiesRpcRequestOptions): PresentationRpcResponse<PagedResponse<ElementProperties>>;
+  public override async getElementProperties(token: IModelRpcProps, requestOptions: ElementPropertiesRpcRequestOptions): PresentationRpcResponse<ElementPropertiesRpcResult> {
     return this.makeRequest(token, "getElementProperties", { ...requestOptions }, async (options) => {
+      if (!isSingleElementPropertiesRequestOptions(options)) {
+        options = enforceValidPageSize(options);
+      }
       return this.getManager(requestOptions.clientId).getElementProperties(options);
     });
   }

@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { LoremIpsum } from "lorem-ipsum";
-import { Dialog } from "@bentley/ui-core";
-import { DialogButtonType } from "@bentley/ui-abstract";
+import { Dialog } from "@itwin/core-react";
+import { DialogButtonType } from "@itwin/appui-abstract";
 import { Checkbox, Input } from "@itwin/itwinui-react";
 
 export interface TestModalDialogProps {
@@ -71,7 +71,7 @@ export class TestModalDialog extends React.Component<TestModalDialogProps, TestM
         <p>{this._paragraphs[2]}</p>
         <p>{this._paragraphs[3]}</p>
         {/* Input box below is used to test focus trap processing */}
-        <Input onChange={this.handleChange} />
+        <Input onChange={this.handleChange} size="small" />
         <p>
           <Checkbox checked={this.state.movable} label="Movable" onChange={(_) => { this.setState((prevState) => ({ movable: !prevState.movable })); }} />
           <br />

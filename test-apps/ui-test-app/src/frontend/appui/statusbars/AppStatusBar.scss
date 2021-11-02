@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@bentley/ui-core/lib/ui-core/style/breakpoints";
+@import "~@itwin/core-react/lib/cjs/core-react/style/breakpoints";
 
 .toolAssistance-separator {
   @include for-tablet-landscape-down {

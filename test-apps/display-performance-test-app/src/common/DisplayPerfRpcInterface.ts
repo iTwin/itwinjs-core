@@ -5,7 +5,7 @@
 import * as chromeLauncher from "chrome-launcher";
 import * as http from "http";
 import * as https from "https";
-import { RpcInterface, RpcManager, RpcOperation, RpcRequestTokenSupplier_T } from "@bentley/imodeljs-common";
+import { RpcInterface, RpcManager, RpcOperation, RpcRequestTokenSupplier_T } from "@itwin/core-common";
 
 const localDeploymentOnly: RpcRequestTokenSupplier_T = () => ({ iModelId: "none", key: "" });
 
@@ -42,7 +42,7 @@ export default class DisplayPerfRpcInterface extends RpcInterface {
   public async consoleLog(_content: string): Promise<void> { return this.forward(arguments); }
 
   public async finishCsv(_output: string, _outputPath?: string, _outputName?: string, _csvFormat?: string): Promise<void> { return this.forward(arguments); }
-  public async finishTest(): Promise<void> { return this.forward(arguments); }
+  public async terminate(): Promise<void> { return this.forward(arguments); }
 
   public async readExternalSavedViews(_filename: string): Promise<string> { return this.forward(arguments); }
   public async getMatchingFiles(_rootDir: string, _pattern: string): Promise<string> { return this.forward(arguments); }

@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64String } from "@bentley/bentleyjs-core";
-import { ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Point2d, Vector3d } from "@bentley/geometry-core";
-import { ModelClipGroup, ModelClipGroups } from "@bentley/imodeljs-common";
+import { Id64String } from "@itwin/core-bentley";
+import { ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Point2d, Vector3d } from "@itwin/core-geometry";
+import { ModelClipGroup, ModelClipGroups } from "@itwin/core-common";
 import {
   imageBufferToPngDataUrl, IModelApp, IModelConnection, NotifyMessageDetails, openImageDataUrlInNewWindow, OutputMessagePriority, ScreenViewport,
   Tool, Viewport, ViewState,
-} from "@bentley/imodeljs-frontend";
-import { MarkupApp, MarkupData } from "@bentley/imodeljs-markup";
+} from "@itwin/core-frontend";
+import { MarkupApp, MarkupData } from "@itwin/core-markup";
 import { ClassificationsPanel } from "./ClassificationsPanel";
 import { DebugWindow } from "./DebugWindow";
 import { FeatureOverridesPanel } from "./FeatureOverrides";
@@ -463,7 +463,7 @@ export class Viewer extends Window {
     try {
       await this.resetIModel(filename);
       setTitle(this._imodel);
-    } catch (_) {
+    } catch {
       alert("Error - could not open file.");
     }
   }

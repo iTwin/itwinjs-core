@@ -1,4 +1,4 @@
-# iModel.js CI Build
+# iTwin.js Core CI Build
 #
 # This build is used to validate all fork-based PRs and run on a schedule to provide the build status in the README.
 #

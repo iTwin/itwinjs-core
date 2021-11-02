@@ -6,7 +6,7 @@ import {
   Constant, CustomAttribute, CustomAttributeClass, ECClassModifier, EntityClass, Enumeration,
   Format, InvertedUnit, KindOfQuantity, Mixin, Phenomenon, PrimitiveType, PropertyCategory,
   RelationshipClass, Schema, SchemaContext, SchemaItem, StructClass, Unit, UnitSystem,
-} from "@bentley/ecschema-metadata";
+} from "@itwin/ecschema-metadata";
 
 /**
  * Hackish approach that works like a "friend class" so we can access protected members without making them public.

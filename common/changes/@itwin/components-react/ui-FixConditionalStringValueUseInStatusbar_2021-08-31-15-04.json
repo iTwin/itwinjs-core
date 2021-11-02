@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/components-react",
+      "comment": "Make ToolbarPopupContext public so user can call closePanel from their popup panels.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/components-react"
+}

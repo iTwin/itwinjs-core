@@ -6,7 +6,7 @@
  * @module Editing
  */
 
-import { ECObjectsError, ECObjectsStatus, PropertyCategoryProps, SchemaItemKey, SchemaItemType, SchemaKey } from "@bentley/ecschema-metadata";
+import { ECObjectsError, ECObjectsStatus, PropertyCategoryProps, SchemaItemKey, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { MutablePropertyCategory } from "./Mutable/MutablePropertyCategory";
 
@@ -41,7 +41,7 @@ export class PropertyCategories {
   }
 
   public async setPriority(propCategoryKey: SchemaItemKey, priority: number): Promise<void> {
-    const propertyCategory = (await this._schemaEditor.schemaContext.getSchemaItem(propCategoryKey)) as MutablePropertyCategory;
+    const propertyCategory = (await this._schemaEditor.schemaContext.getSchemaItem<MutablePropertyCategory>(propCategoryKey));
 
     if (propertyCategory === undefined) throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Property Category ${propCategoryKey.fullName} not found in schema context.`);
     if (propertyCategory.schemaItemType !== SchemaItemType.PropertyCategory) throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected ${propCategoryKey.fullName} to be of type Property Category.`);

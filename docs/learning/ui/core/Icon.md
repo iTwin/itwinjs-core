@@ -1,18 +1,18 @@
 # Icon
 
-The [Icon]($ui-core:Icon) category in the `@bentley/ui-core` package includes components that render icons when given an icon name or SVG source or path.
+The [Icon]($core-react:Icon) category in the `@itwin/core-react` package includes components that render icons when given an icon name or SVG source or path.
 
-The [Icon]($ui-core) React component displays an icon based on an IconSpec.
-An [IconSpec]($ui-core:Icon) can be a string, ReactNode or
-[ConditionalStringValue]($ui-abstract).
+The [Icon]($core-react) React component displays an icon based on an IconSpec.
+An [IconSpec]($core-react:Icon) can be a string, ReactNode or
+[ConditionalStringValue]($appui-abstract).
 When the IconSpec is a string, the value is either a Webfont name or a formatted string that includes an imported SVG.
 When using an SVG, it must be imported using the webpack loader `svg-sprite-loader`.
 The formatted string begins with "svg:".
 The `IconSpecUtilities.createSvgIconSpec` can be used to format the SVG string. See example usage below.
 
-The [SvgSprite]($ui-core) React component displays an icon using `<svg>` and `<use>` elements to reference an imported SVG file. The SVG file must be imported using the webpack loader `svg-sprite-loader`.
+The [SvgSprite]($core-react) React component displays an icon using `<svg>` and `<use>` elements to reference an imported SVG file. The SVG file must be imported using the webpack loader `svg-sprite-loader`.
 
-The [SvgSprite]($ui-core) React component displays an icon using an `<svg>` element and an array of SVG paths.
+The [SvgSprite]($core-react) React component displays an icon using an `<svg>` element and an array of SVG paths.
 
 ## Examples
 
@@ -29,8 +29,8 @@ We will demonstrate four different ways to display an icon.
 This example shows how to use an SVG from `@bentley/icons-generic`.
 
 ```tsx
-import { IconSpecUtilities } from "@bentley/ui-abstract";
-import { Icon } from "@bentley/ui-core";
+import { IconSpecUtilities } from "@itwin/appui-abstract";
+import { Icon } from "@itwin/core-react";
 
 import placeholderSvg from "@bentley/icons-generic/icons/placeholder.svg?sprite";
 . . .
@@ -56,7 +56,7 @@ const iconSpec = IconSpecUtilities.createSvgIconSpec(rotateSvg);
 Rather then using the Icon component with SVG files, the SvgSprite component can be used.
 
 ```tsx
-import { Icon } from "@bentley/ui-core";
+import { Icon } from "@itwin/core-react";
 import rotateSvg from "../icons/rotate.svg?sprite";
 . . .
 <SvgSprite src={rotateSvg} />
@@ -67,7 +67,7 @@ import rotateSvg from "../icons/rotate.svg?sprite";
 When you have SVG path statements instead of SVG files, the SvgPath component can be used.
 
 ```tsx
-import { SvgPath } from "@bentley/ui-core";
+import { SvgPath } from "@itwin/core-react";
 . . .
       <SvgPath viewBoxWidth={91} viewBoxHeight={91} paths={[
         "M86.734,49.492c-4.305,0.01-17.991,1.527-20.508,1.943c-1.589,0.261-3.454,0.267-4.732,1.335   c-1.173,0.98-0.649,2.788,0.453,3.52c1.182,0.78,17.18,0.641,19.686,0.645c-0.216,0.404-4.764,8.202-7.226,11.423   c-4.994,6.53-12.322,11.926-20.213,14.39c-9.906,3.093-21.47,0.982-30.055-4.716c-4.252-2.82-7.595-6.813-10.364-11.047   c-2.37-3.625-4.53-8.918-8.038-11.526c-0.238-0.18-0.687-0.002-0.732,0.298c-0.548,3.663,1.414,7.707,2.843,10.992   c1.7,3.904,4.146,7.539,6.933,10.755c5.891,6.799,14.97,10.758,23.738,12.057c15.313,2.272,30.362-4.708,39.961-16.643   c2.182-2.715,4.058-5.652,5.88-8.618c-0.04,4.63-0.08,9.262-0.109,13.891c-0.026,4.004,6.195,4.008,6.222,0   c0.054-8.303,0.122-16.604,0.122-24.907C90.594,51.061,87.978,49.49,86.734,49.492z",
@@ -80,39 +80,12 @@ import { SvgPath } from "@bentley/ui-core";
 
 A few entries are required in the package,.json and tsconfig.json to support SVG files.
 
-In package.json, add a dependency on `svg-sprite-loader` to load the SVG files:
+In package.json file make sure svg assets are copied along with other assets.  An example entry is shown below.
 
 ```json
-"dependencies": {
-. . .
-    "svg-sprite-loader": "^3.8.0"
-```
-
-In package.json, add a `sourceResources` entry in the `iModelJS.buildModule` section
-to copy SVG files to the `lib` directory:
-
-```json
-  "iModelJs": {
-    "buildModule": {
-      "type": "application",
-      "sourceResources": [
-. . .
-        {
-          "source": "./src/**/*.svg",
-          "dest": "./lib"
-        },
-```
-
-In tsconfig.json, add a `types` entry for `@bentley/webpack-tools` in the `compilerOptions` section to support SVG files:
-
-```json
-"compilerOptions": {
-. . .
-    "types": [
-      "@bentley/webpack-tools"
-    ]
+    "copy:assets": "cpx \"./src/**/*.{*css,json,svg}\" \"./lib\" && cpx \"./src/public/**/*\" ./lib/public/",
 ```
 
 ## API Reference
 
-- [Icon]($ui-core:Icon)
+- [Icon]($core-react:Icon)

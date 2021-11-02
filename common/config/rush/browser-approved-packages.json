@@ -8,79 +8,7 @@
     },
     {
       "name": "@azure/storage-blob",
-      "allowedCategories": [ "backend" ]
-    },
-    {
-      "name": "@babel/core",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "@bentley/backend-itwin-client",
-      "allowedCategories": [ "backend", "integration-testing", "internal", "tools" ]
-    },
-    {
-      "name": "@bentley/backend-webpack-tools",
-      "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "@bentley/bentleyjs-core",
-      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
-    },
-    {
-      "name": "@bentley/build-tools",
-      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
-    },
-    {
-      "name": "@bentley/certa",
-      "allowedCategories": [ "common", "edit", "frontend", "integration-testing", "internal", "tools" ]
-    },
-    {
-      "name": "@bentley/context-registry-client",
-      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal" ]
-    },
-    {
-      "name": "@bentley/ecschema-locaters",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "@bentley/ecschema-metadata",
-      "allowedCategories": [ "backend", "common", "integration-testing", "tools" ]
-    },
-    {
-      "name": "@bentley/ecschema-rpcinterface-common",
-      "allowedCategories": [ "backend", "integration-testing" ]
-    },
-    {
-      "name": "@bentley/electron-manager",
-      "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "@bentley/eslint-plugin",
-      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
-    },
-    {
-      "name": "@bentley/express-server",
-      "allowedCategories": [ "integration-testing", "internal" ]
-    },
-    {
-      "name": "@bentley/extension-webpack-tools",
-      "allowedCategories": [ "extensions", "frontend", "internal" ]
-    },
-    {
-      "name": "@bentley/frontend-authorization-client",
-      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
-    },
-    {
-      "name": "@bentley/frontend-devtools",
-      "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "@bentley/geometry-core",
-      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
-    },
-    {
-      "name": "@bentley/hypermodeling-frontend",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "@bentley/icons-generic",
@@ -92,99 +20,15 @@
     },
     {
       "name": "@bentley/imodelhub-client",
-      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
-    },
-    {
-      "name": "@bentley/imodeljs-backend",
-      "allowedCategories": [ "backend", "edit", "integration-testing", "internal", "tools" ]
-    },
-    {
-      "name": "@bentley/imodeljs-common",
-      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
-    },
-    {
-      "name": "@bentley/imodeljs-editor-backend",
-      "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "@bentley/imodeljs-editor-common",
-      "allowedCategories": [ "edit", "internal" ]
-    },
-    {
-      "name": "@bentley/imodeljs-editor-frontend",
-      "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "@bentley/imodeljs-frontend",
-      "allowedCategories": [ "backend", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
-    },
-    {
-      "name": "@bentley/imodeljs-i18n",
-      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal" ]
-    },
-    {
-      "name": "@bentley/imodeljs-markup",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
       "name": "@bentley/imodeljs-native",
       "allowedCategories": [ "backend" ]
     },
     {
-      "name": "@bentley/imodeljs-quantity",
-      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal" ]
-    },
-    {
-      "name": "@bentley/imodeljs-transformer",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "@bentley/itwin-client",
       "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
-    },
-    {
-      "name": "@bentley/linear-referencing-common",
-      "allowedCategories": [ "backend" ]
-    },
-    {
-      "name": "@bentley/map-layers",
-      "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "@bentley/mobile-manager",
-      "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "@bentley/oidc-signin-tool",
-      "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
-    },
-    {
-      "name": "@bentley/orbitgt-core",
-      "allowedCategories": [ "frontend", "internal" ]
-    },
-    {
-      "name": "@bentley/perf-tools",
-      "allowedCategories": [ "backend", "internal" ]
-    },
-    {
-      "name": "@bentley/presentation-backend",
-      "allowedCategories": [ "integration-testing", "internal", "tools" ]
-    },
-    {
-      "name": "@bentley/presentation-common",
-      "allowedCategories": [ "backend", "extensions", "frontend", "integration-testing", "internal", "tools" ]
-    },
-    {
-      "name": "@bentley/presentation-components",
-      "allowedCategories": [ "frontend", "internal", "tools" ]
-    },
-    {
-      "name": "@bentley/presentation-frontend",
-      "allowedCategories": [ "frontend", "integration-testing", "internal", "tools" ]
-    },
-    {
-      "name": "@bentley/presentation-testing",
-      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@bentley/product-settings-client",
@@ -192,51 +36,151 @@
     },
     {
       "name": "@bentley/react-scripts",
-      "allowedCategories": [ "extensions", "frontend", "internal" ]
-    },
-    {
-      "name": "@bentley/reality-data-client",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
-      "name": "@bentley/telemetry-client",
-      "allowedCategories": [ "backend", "frontend", "integration-testing" ]
-    },
-    {
-      "name": "@bentley/ui-abstract",
-      "allowedCategories": [ "edit", "extensions", "frontend", "internal", "tools" ]
-    },
-    {
-      "name": "@bentley/ui-components",
-      "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
-    },
-    {
-      "name": "@bentley/ui-core",
-      "allowedCategories": [ "extensions", "frontend", "internal" ]
-    },
-    {
-      "name": "@bentley/ui-framework",
       "allowedCategories": [ "extensions", "internal" ]
     },
     {
-      "name": "@bentley/ui-imodel-components",
-      "allowedCategories": [ "extensions", "frontend", "internal" ]
+      "name": "@bentley/reality-data-client",
+      "allowedCategories": [ "internal" ]
     },
     {
-      "name": "@bentley/ui-ninezone",
-      "allowedCategories": [ "extensions", "frontend", "internal" ]
+      "name": "@bentley/telemetry-client",
+      "allowedCategories": [ "backend", "frontend" ]
     },
     {
       "name": "@bentley/units-schema",
       "allowedCategories": [ "backend", "common" ]
     },
     {
-      "name": "@bentley/webgl-compatibility",
+      "name": "@itwin/appui-abstract",
+      "allowedCategories": [ "edit", "extensions", "frontend", "internal", "tools" ]
+    },
+    {
+      "name": "@itwin/appui-layout-react",
+      "allowedCategories": [ "extensions", "frontend", "internal" ]
+    },
+    {
+      "name": "@itwin/appui-react",
+      "allowedCategories": [ "extensions", "internal" ]
+    },
+    {
+      "name": "@itwin/backend-webpack-tools",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@itwin/browser-authorization",
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
-      "name": "@bentley/webpack-tools-core",
+      "name": "@itwin/build-tools",
+      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+    },
+    {
+      "name": "@itwin/certa",
+      "allowedCategories": [ "common", "edit", "frontend", "integration-testing", "internal", "tools" ]
+    },
+    {
+      "name": "@itwin/components-react",
+      "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
+    },
+    {
+      "name": "@itwin/core-backend",
+      "allowedCategories": [ "backend", "common", "edit", "integration-testing", "internal", "tools" ]
+    },
+    {
+      "name": "@itwin/core-bentley",
+      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+    },
+    {
+      "name": "@itwin/core-common",
+      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+    },
+    {
+      "name": "@itwin/core-electron",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@itwin/core-frontend",
+      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+    },
+    {
+      "name": "@itwin/core-geometry",
+      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+    },
+    {
+      "name": "@itwin/core-i18n",
+      "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
+      "name": "@itwin/core-markup",
+      "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
+      "name": "@itwin/core-mobile",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@itwin/core-orbitgt",
+      "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
+      "name": "@itwin/core-quantity",
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal" ]
+    },
+    {
+      "name": "@itwin/core-react",
+      "allowedCategories": [ "extensions", "frontend", "internal" ]
+    },
+    {
+      "name": "@itwin/core-transformer",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@itwin/core-webpack-tools",
+      "allowedCategories": [ "internal", "tools" ]
+    },
+    {
+      "name": "@itwin/ecschema-locaters",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "@itwin/ecschema-metadata",
+      "allowedCategories": [ "backend", "common", "integration-testing", "internal", "tools" ]
+    },
+    {
+      "name": "@itwin/ecschema-rpcinterface-common",
+      "allowedCategories": [ "backend", "integration-testing" ]
+    },
+    {
+      "name": "@itwin/editor-backend",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@itwin/editor-common",
+      "allowedCategories": [ "edit", "internal" ]
+    },
+    {
+      "name": "@itwin/editor-frontend",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@itwin/eslint-plugin",
+      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+    },
+    {
+      "name": "@itwin/express-server",
+      "allowedCategories": [ "integration-testing", "internal" ]
+    },
+    {
+      "name": "@itwin/frontend-devtools",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@itwin/hypermodeling-frontend",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@itwin/imodel-components-react",
+      "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
       "name": "@itwin/itwinui-css",
@@ -245,6 +189,58 @@
     {
       "name": "@itwin/itwinui-react",
       "allowedCategories": [ "extensions", "frontend", "internal" ]
+    },
+    {
+      "name": "@itwin/linear-referencing-common",
+      "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "@itwin/map-layers",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@itwin/oidc-signin-tool",
+      "allowedCategories": [ "common", "integration-testing", "internal" ]
+    },
+    {
+      "name": "@itwin/perf-tools",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@itwin/presentation-backend",
+      "allowedCategories": [ "integration-testing", "internal", "tools" ]
+    },
+    {
+      "name": "@itwin/presentation-common",
+      "allowedCategories": [ "backend", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+    },
+    {
+      "name": "@itwin/presentation-components",
+      "allowedCategories": [ "frontend", "internal", "tools" ]
+    },
+    {
+      "name": "@itwin/presentation-frontend",
+      "allowedCategories": [ "frontend", "integration-testing", "internal", "tools" ]
+    },
+    {
+      "name": "@itwin/presentation-testing",
+      "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
+      "name": "@itwin/projects-client",
+      "allowedCategories": [ "common", "integration-testing", "internal" ]
+    },
+    {
+      "name": "@itwin/service-authorization",
+      "allowedCategories": [ "integration-testing", "internal" ]
+    },
+    {
+      "name": "@itwin/ui-test-extension",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@itwin/webgl-compatibility",
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@microsoft/api-extractor",
@@ -257,10 +253,6 @@
     {
       "name": "@svgdotjs/svg.js",
       "allowedCategories": [ "frontend" ]
-    },
-    {
-      "name": "@svgr/webpack",
-      "allowedCategories": [ "tools" ]
     },
     {
       "name": "@testing-library/react",
@@ -300,15 +292,11 @@
     },
     {
       "name": "agentkeepalive",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "almost-equal",
       "allowedCategories": [ "backend", "common" ]
-    },
-    {
-      "name": "applicationinsights",
-      "allowedCategories": [ "backend" ]
     },
     {
       "name": "autoprefixer",
@@ -316,19 +304,7 @@
     },
     {
       "name": "azurite",
-      "allowedCategories": [ "backend" ]
-    },
-    {
-      "name": "babel-loader",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "babel-plugin-named-asset-import",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "babel-preset-react-app",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "benchmark",
@@ -337,10 +313,6 @@
     {
       "name": "body-parser",
       "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "browserslist",
-      "allowedCategories": [ "tools" ]
     },
     {
       "name": "cache-require-paths",
@@ -419,16 +391,12 @@
       "allowedCategories": [ "tools" ]
     },
     {
-      "name": "css-loader",
-      "allowedCategories": [ "tools" ]
-    },
-    {
       "name": "debug",
       "allowedCategories": [ "common" ]
     },
     {
       "name": "deep-assign",
-      "allowedCategories": [ "backend", "common", "integration-testing" ]
+      "allowedCategories": [ "common", "integration-testing" ]
     },
     {
       "name": "deep-equal",
@@ -507,16 +475,16 @@
       "allowedCategories": [ "tools" ]
     },
     {
-      "name": "event-stream",
-      "allowedCategories": [ "backend" ]
-    },
-    {
       "name": "eventemitter2",
       "allowedCategories": [ "frontend" ]
     },
     {
       "name": "express",
       "allowedCategories": [ "backend", "internal", "tools" ]
+    },
+    {
+      "name": "express-ws",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "faker",
@@ -552,11 +520,11 @@
     },
     {
       "name": "fs-extra",
-      "allowedCategories": [ "backend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "fs-write-stream-atomic",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "fuse.js",
@@ -568,31 +536,23 @@
     },
     {
       "name": "got",
-      "allowedCategories": [ "backend" ]
-    },
-    {
-      "name": "highlight.js",
-      "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "https-proxy-agent",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "i18next",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "i18next-browser-languagedetector",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "frontend" ]
     },
     {
-      "name": "i18next-node-fs-backend",
-      "allowedCategories": [ "backend", "common" ]
+      "name": "i18next-http-backend",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "i18next-xhr-backend",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "ignore-styles",
@@ -635,16 +595,16 @@
       "allowedCategories": [ "common" ]
     },
     {
+      "name": "json5",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "jsonc-parser",
       "allowedCategories": [ "tools" ]
     },
     {
       "name": "jsonpath",
       "allowedCategories": [ "common" ]
-    },
-    {
-      "name": "jsonwebtoken",
-      "allowedCategories": [ "backend" ]
     },
     {
       "name": "linkify-it",
@@ -675,12 +635,8 @@
       "allowedCategories": [ "frontend" ]
     },
     {
-      "name": "mini-css-extract-plugin",
-      "allowedCategories": [ "tools" ]
-    },
-    {
       "name": "mkdirp",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "mocha",
@@ -696,7 +652,7 @@
     },
     {
       "name": "nock",
-      "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
+      "allowedCategories": [ "common", "integration-testing", "internal" ]
     },
     {
       "name": "nodemon",
@@ -704,11 +660,11 @@
     },
     {
       "name": "npm-run-all",
-      "allowedCategories": [ "backend", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "frontend", "integration-testing", "internal" ]
     },
     {
       "name": "null-loader",
-      "allowedCategories": [ "backend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "integration-testing", "internal", "tools" ]
     },
     {
       "name": "nyc",
@@ -719,40 +675,24 @@
       "allowedCategories": [ "backend" ]
     },
     {
-      "name": "oidc-client",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
       "name": "open",
       "allowedCategories": [ "backend" ]
     },
     {
       "name": "openid-client",
-      "allowedCategories": [ "backend", "integration-testing", "tools" ]
+      "allowedCategories": [ "integration-testing", "tools" ]
     },
     {
       "name": "postcss-flexbugs-fixes",
-      "allowedCategories": [ "internal", "tools" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "postcss-loader",
-      "allowedCategories": [ "internal", "tools" ]
-    },
-    {
-      "name": "postcss-normalize",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "postcss-preset-env",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "postcss-safe-parser",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "proper-lockfile",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "puppeteer",
@@ -765,10 +705,6 @@
     {
       "name": "raf",
       "allowedCategories": [ "frontend" ]
-    },
-    {
-      "name": "raf-schd",
-      "allowedCategories": [ "internal" ]
     },
     {
       "name": "react",
@@ -785,10 +721,6 @@
     {
       "name": "react-data-grid",
       "allowedCategories": [ "frontend" ]
-    },
-    {
-      "name": "react-dev-utils",
-      "allowedCategories": [ "tools" ]
     },
     {
       "name": "react-dnd",
@@ -819,20 +751,12 @@
       "allowedCategories": [ "frontend" ]
     },
     {
-      "name": "react-markdown",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "react-redux",
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "react-resize-detector",
       "allowedCategories": [ "extensions", "internal" ]
-    },
-    {
-      "name": "react-router-dom",
-      "allowedCategories": [ "internal" ]
     },
     {
       "name": "react-select",
@@ -887,10 +811,6 @@
       "allowedCategories": [ "tools" ]
     },
     {
-      "name": "resolve-url-loader",
-      "allowedCategories": [ "tools" ]
-    },
-    {
       "name": "rimraf",
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
@@ -899,24 +819,12 @@
       "allowedCategories": [ "frontend" ]
     },
     {
-      "name": "sass",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "sass-loader",
-      "allowedCategories": [ "tools" ]
-    },
-    {
       "name": "save",
       "allowedCategories": [ "internal" ]
     },
     {
       "name": "semver",
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
-    },
-    {
-      "name": "serve-handler",
-      "allowedCategories": [ "internal" ]
     },
     {
       "name": "shortid",
@@ -932,23 +840,15 @@
     },
     {
       "name": "source-map-loader",
-      "allowedCategories": [ "backend", "common", "edit", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "common", "edit", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "source-map-support",
-      "allowedCategories": [ "backend", "edit", "tools" ]
+      "allowedCategories": [ "backend", "edit", "frontend", "tools" ]
     },
     {
       "name": "spdy",
       "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "stream-buffers",
-      "allowedCategories": [ "backend" ]
-    },
-    {
-      "name": "style-loader",
-      "allowedCategories": [ "tools" ]
     },
     {
       "name": "superagent",
@@ -959,16 +859,8 @@
       "allowedCategories": [ "backend" ]
     },
     {
-      "name": "svg-sprite-loader",
-      "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
-    },
-    {
       "name": "symlink-dir",
       "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "terser-webpack-plugin",
-      "allowedCategories": [ "tools" ]
     },
     {
       "name": "tree-kill",
@@ -979,12 +871,8 @@
       "allowedCategories": [ "frontend" ]
     },
     {
-      "name": "ts-loader",
-      "allowedCategories": [ "tools" ]
-    },
-    {
       "name": "ts-node",
-      "allowedCategories": [ "frontend", "tools" ]
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "tsconfig-paths",
@@ -1004,7 +892,7 @@
     },
     {
       "name": "typemoq",
-      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal", "tools" ]
     },
     {
       "name": "typescript",
@@ -1013,10 +901,6 @@
     {
       "name": "typescript-json-schema",
       "allowedCategories": [ "common" ]
-    },
-    {
-      "name": "url-loader",
-      "allowedCategories": [ "tools" ]
     },
     {
       "name": "username",
@@ -1028,11 +912,11 @@
     },
     {
       "name": "webpack",
-      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "common", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "webpack-cli",
-      "allowedCategories": [ "integration-testing" ]
+      "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
       "name": "webpack-core",
@@ -1055,12 +939,16 @@
       "allowedCategories": [ "backend" ]
     },
     {
+      "name": "wtfnode",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "xml-js",
       "allowedCategories": [ "frontend" ]
     },
     {
       "name": "xmlhttprequest",
-      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal" ]
+      "allowedCategories": [ "common", "frontend" ]
     },
     {
       "name": "xpath",

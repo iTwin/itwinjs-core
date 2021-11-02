@@ -6,14 +6,14 @@
  * @module HyperModeling
  */
 
-import { assert, compareBooleans, compareStrings, Id64 } from "@bentley/bentleyjs-core";
-import { ClipShape, ClipVector, Point3d, Range3d, Transform } from "@bentley/geometry-core";
-import { ColorDef, Placement2d, ViewAttachmentProps, ViewDefinition2dProps, ViewFlagOverrides } from "@bentley/imodeljs-common";
+import { assert, compareBooleans, compareStrings, Id64 } from "@itwin/core-bentley";
+import { ClipShape, ClipVector, Point3d, Range3d, Transform } from "@itwin/core-geometry";
+import { ColorDef, Placement2d, ViewAttachmentProps, ViewDefinition2dProps, ViewFlagOverrides } from "@itwin/core-common";
 import {
   CategorySelectorState, DisclosedTileTreeSet, DisplayStyle2dState, DrawingViewState,
   FeatureSymbology, GeometricModel2dState, GraphicBranch, HitDetail, IModelApp, IModelConnection, RenderClipVolume, RenderSystem, SheetModelState, Tile, TileContent, TiledGraphicsProvider, TileDrawArgs,
   TileLoadPriority, TileRequest, TileRequestChannel, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier, Viewport, ViewState2d,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { SectionDrawingLocationState } from "./SectionDrawingLocationState";
 import { HyperModeling } from "./HyperModeling";
 
@@ -65,7 +65,7 @@ class ProxyTreeSupplier implements TileTreeSupplier {
 
       const ctor = id.isSheet ? SheetProxyTree : DrawingProxyTree;
       return new ctor({ tree, ref: treeRef, view, state: id.state, attachment: id.attachment });
-    } catch (_) {
+    } catch {
       return undefined;
     }
   }

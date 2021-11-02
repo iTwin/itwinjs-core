@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { ColorByName, ColorDef, GraphicParams, LinePixels } from "@bentley/imodeljs-common";
+import { ColorByName, ColorDef, GraphicParams, LinePixels } from "@itwin/core-common";
 import { DisplayParams } from "../../../render/primitives/DisplayParams";
 
 export class FakeDisplayParams extends DisplayParams {

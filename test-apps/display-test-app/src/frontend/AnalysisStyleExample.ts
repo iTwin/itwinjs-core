@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "@bentley/bentleyjs-core";
-import { Angle, AuxChannel, AuxChannelData, AuxChannelDataType, IModelJson, Point3d, Polyface, PolyfaceAuxData, PolyfaceBuilder, StrokeOptions, Transform } from "@bentley/geometry-core";
+import { assert } from "@itwin/core-bentley";
+import { Angle, AuxChannel, AuxChannelData, AuxChannelDataType, IModelJson, Point3d, Polyface, PolyfaceAuxData, PolyfaceBuilder, StrokeOptions, Transform } from "@itwin/core-geometry";
 import {
   AnalysisStyle, AnalysisStyleProps, ColorByName, ColorDef, RenderMode, ThematicGradientColorScheme, ThematicGradientMode, ThematicGradientSettingsProps,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import {
   DecorateContext, GraphicType, IModelApp, RenderGraphicOwner, StandardViewId, Viewport,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { Viewer } from "./Viewer";
 
 type AnalysisMeshType = "Cantilever" | "Flat with waves";
@@ -172,7 +172,7 @@ function createFlatMeshWithWaves(): Polyface {
 async function createMesh(type: AnalysisMeshType, displacementScale = 1): Promise<AnalysisMesh> {
   const polyface = "Flat with waves" === type ? createFlatMeshWithWaves() : await createCantilever();
   const styles = new Map<string, AnalysisStyle | undefined>();
-  const mesh = { type, polyface,styles };
+  const mesh = { type, polyface, styles };
   populateAnalysisStyles(mesh, displacementScale);
   return mesh;
 }

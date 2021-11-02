@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/editor-frontend",
+      "comment": "Improve error messages for \"editor project location save\".",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/editor-frontend",
+  "email": "65233531+bbastings@users.noreply.github.com"
+}

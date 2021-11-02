@@ -1,6 +1,6 @@
 # iModel Transformation and Data Exchange
 
-The `@bentley/imodeljs-transformer` package provides some classes that implement [Extract, Transform, and Load](https://en.wikipedia.org/wiki/Extract,_transform,_load) (ETL) functionality:
+The `@itwin/core-transformer` package provides some classes that implement [Extract, Transform, and Load](https://en.wikipedia.org/wiki/Extract,_transform,_load) (ETL) functionality:
 
 - [IModelExporter]($transformer) and [IModelExportHandler]($transformer) are the base classes that implement the *extract* (or *export*) part of ETL functionality.
 - [IModelTransformer]($transformer) is the base class that implements the *transform* part of ETL functionality.
@@ -19,7 +19,7 @@ While it is possible to export data from an iModel using the standard [IModelDb]
 - Visit the entire iModel using [IModelExporter.exportAll]($transformer)
 - Visit only changed entities using [IModelExporter.exportChanges]($transformer)
 - Visit a subset of the iModel using [IModelExporter.exportModel]($transformer), [IModelExporter.exportModelContents]($transformer), or [IModelExporter.exportElement]($transformer)
-- Easily exclude certain entity types to filter the export content using [IModelExporter.excludeElementCategory]($transformer), [IModelExporter.excludeElementClass]($transformer), or [IModelExporter.excludeElementAspectClass]($transformer)
+- Easily exclude certain entity types to filter the export content using [IModelExporter.excludeElementsInCategory]($transformer), [IModelExporter.excludeElementClass]($transformer), or [IModelExporter.excludeElementAspectClass]($transformer)
 - Integration with [IModelTransformer]($transformer)
 
 Below is an example of using [IModelExporter]($transformer) and [IModelExportHandler]($transformer) to export all [Code]($common) values from an iModel:

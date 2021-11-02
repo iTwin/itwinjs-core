@@ -5,8 +5,8 @@
 /** @packageDocumentation
  * @module Views
  */
-import { BeEvent, BentleyStatus, BeTimePoint, BeUiEvent, Id64Arg } from "@bentley/bentleyjs-core";
-import { GeometryStreamProps } from "@bentley/imodeljs-common";
+import { BeEvent, BentleyStatus, BeTimePoint, BeUiEvent, Id64Arg } from "@itwin/core-bentley";
+import { GeometryStreamProps } from "@itwin/core-common";
 import { HitDetail } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";

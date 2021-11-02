@@ -7,8 +7,7 @@
  */
 
 import { URL } from "url";
-import { BentleyStatus, Logger, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
-import { CommonLoggerCategory } from "../../CommonLoggerCategory";
+import { BentleyStatus } from "@itwin/core-bentley";
 import { IModelRpcProps } from "../../IModel";
 import { IModelError } from "../../IModelError";
 import { RpcConfiguration } from "../core/RpcConfiguration";
@@ -17,19 +16,20 @@ import { SerializedRpcOperation, SerializedRpcRequest } from "../core/RpcProtoco
 import { RpcRequest } from "../core/RpcRequest";
 import { OpenAPIParameter } from "./OpenAPI";
 import { WebAppRpcProtocol } from "./WebAppRpcProtocol";
+import { SerializedRpcActivity } from "../core/RpcInvocation";
 
 enum AppMode {
   MilestoneReview = "1",
 }
 
 /** An http protocol for Bentley cloud RPC interface deployments.
- * @public
+ * @internal
  */
 export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
   public override checkToken = true;
 
   /** The name of various HTTP request headers based on client's request context */
-  public override serializedClientRequestContextHeaderNames: SerializedClientRequestContext = {
+  public override serializedClientRequestContextHeaderNames: SerializedRpcActivity = {
     /** The name of the HTTP request id header. */
     id: "X-Correlation-Id",
 
@@ -44,9 +44,6 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
 
     /** The name of the HTTP authorization header. */
     authorization: "Authorization",
-
-    /** The id of the authorized user */
-    userId: "X-User-Id",
   };
 
   /** The name of the RPC protocol version header. */
@@ -79,18 +76,18 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
     let appMode: string = "";
     let iTwinId: string = "";
     let iModelId: string = "";
-    let routeChangeSetId: string | undefined;
-    /* Note: The changeSetId field is omitted in the route in the case of ReadWrite connections since the connection is generally expected to be at the
-     * latest version and not some specific changeSet. Also, for the first version (before any changeSets), the changeSetId in the route is arbitrarily
-     * set to "0" instead of an empty string, since the latter is more un-intuitive for a route. However, in all other use cases, including the changeSetId
-     * held by the IModelRpcProps itself, the changeSetId of "" (i.e., empty string) signifies the first version - this is more intuitive and retains
+    let routeChangesetId: string | undefined;
+    /* Note: The changesetId field is omitted in the route in the case of ReadWrite connections since the connection is generally expected to be at the
+     * latest version and not some specific changeset. Also, for the first version (before any changesets), the changesetId in the route is arbitrarily
+     * set to "0" instead of an empty string, since the latter is more un-intuitive for a route. However, in all other use cases, including the changesetId
+     * held by the IModelRpcProps itself, the changesetId of "" (i.e., empty string) signifies the first version - this is more intuitive and retains
      * compatibility with the majority of use cases. */
 
     if (request === undefined) {
       appMode = "{modeId}";
       iTwinId = "{iTwinId}";
       iModelId = "{iModelId}";
-      routeChangeSetId = "{changeSetId}";
+      routeChangesetId = "{changeSetId}";
     } else {
       let token = operation.policy.token(request) || RpcOperation.fallbackToken;
 
@@ -98,18 +95,18 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
         if (RpcConfiguration.disableRoutingValidation) {
           token = { key: "" };
         } else {
-          throw new IModelError(BentleyStatus.ERROR, "Invalid iModelToken for RPC operation request", Logger.logError, CommonLoggerCategory.RpcInterfaceFrontend);
+          throw new IModelError(BentleyStatus.ERROR, "Invalid iModelToken for RPC operation request");
         }
       }
 
       iTwinId = encodeURIComponent(token.iTwinId || "");
       iModelId = encodeURIComponent(token.iModelId!);
 
-      routeChangeSetId = token.changeset?.id || "0";
+      routeChangesetId = token.changeset?.id || "0";
       appMode = AppMode.MilestoneReview;
     }
 
-    return `${prefix}/${appTitle}/${appVersion}/mode/${appMode}/context/${iTwinId}/imodel/${iModelId}${!!routeChangeSetId ? `/changeset/${routeChangeSetId}` : ""}/${operationId}`;
+    return `${prefix}/${appTitle}/${appVersion}/mode/${appMode}/context/${iTwinId}/imodel/${iModelId}${!!routeChangesetId ? `/changeset/${routeChangesetId}` : ""}/${operationId}`;
   }
 
   /**

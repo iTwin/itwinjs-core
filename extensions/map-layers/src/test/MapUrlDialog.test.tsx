@@ -3,16 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DisplayStyle3dState, IModelApp, IModelConnection, MapLayerSource, MapLayerSourceStatus, MockRender, NotifyMessageDetails, OutputMessagePriority, ScreenViewport, ViewState3d } from "@bentley/imodeljs-frontend";
+import { EmptyLocalization, MapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
+import { DisplayStyle3dState, IModelApp, IModelConnection, MapLayerSource, MapLayerSourceStatus, MockRender,
+  NotifyMessageDetails, OutputMessagePriority, ScreenViewport, ViewState3d } from "@itwin/core-frontend";
+import { Select } from "@itwin/itwinui-react";
 import { assert, expect } from "chai";
 import * as enzyme from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
+import * as moq from "typemoq";
 import { MapUrlDialog } from "../ui/widget/MapUrlDialog";
 import { TestUtils } from "./TestUtils";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { MapLayerSettings, MapSubLayerProps } from "@bentley/imodeljs-common";
-import { Select } from "@itwin/itwinui-react";
 
 describe("MapUrlDialog", () => {
   const sandbox = sinon.createSandbox();
@@ -38,7 +39,7 @@ describe("MapUrlDialog", () => {
   before(async () => {
     await TestUtils.initialize();
 
-    await MockRender.App.startup({});
+    await MockRender.App.startup({localization: new EmptyLocalization()});
   });
 
   after(async () => {

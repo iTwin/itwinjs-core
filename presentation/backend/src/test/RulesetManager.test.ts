@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import { RegisteredRuleset } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
+import * as moq from "typemoq";
+import { RegisteredRuleset } from "@itwin/presentation-common";
 import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
 import { RulesetManagerImpl } from "../presentation-backend/RulesetManager";
 

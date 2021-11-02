@@ -7,10 +7,11 @@
  * @module Tools
  */
 
-import { ViewStateProps } from "@bentley/imodeljs-common";
+import { BentleyError } from "@itwin/core-bentley";
+import { ViewStateProps } from "@itwin/core-common";
 import {
   EntityState, IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, Tool, ViewState,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseArgs } from "./parseArgs";
 
@@ -79,8 +80,8 @@ export class SaveViewTool extends Tool {
         json = `"${json.replace(/"/g, '""')}"`;
       copyStringToClipboard(json);
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "JSON copied to clipboard"));
-    } catch (err: any) {
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, err.toString()));
+    } catch (err) {
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, BentleyError.getErrorMessage(err) || "An unknown error occurred."));
     }
 
     return true;
@@ -115,8 +116,8 @@ export class ApplyViewTool extends Tool {
 
       const view = await deserializeViewState(json, vp.iModel);
       await this.run(view);
-    } catch (err: any) {
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, err.toString()));
+    } catch (err) {
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, BentleyError.getErrorMessage(err) || "An unknown error occurred."));
     }
 
     return true;

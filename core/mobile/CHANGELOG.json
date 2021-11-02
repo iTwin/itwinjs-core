@@ -1,0 +1,359 @@
+{
+  "name": "@itwin/core-mobile",
+  "entries": [
+    {
+      "version": "2.19.13",
+      "tag": "@itwin/core-mobile_v2.19.13",
+      "date": "Tue, 21 Sep 2021 21:06:40 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.12",
+      "tag": "@itwin/core-mobile_v2.19.12",
+      "date": "Wed, 15 Sep 2021 18:06:46 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "fix timming issue with authInit() called during startup()"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.19.11",
+      "tag": "@itwin/core-mobile_v2.19.11",
+      "date": "Thu, 09 Sep 2021 21:04:58 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.10",
+      "tag": "@itwin/core-mobile_v2.19.10",
+      "date": "Wed, 08 Sep 2021 14:36:01 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.9",
+      "tag": "@itwin/core-mobile_v2.19.9",
+      "date": "Wed, 25 Aug 2021 15:36:01 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.8",
+      "tag": "@itwin/core-mobile_v2.19.8",
+      "date": "Mon, 23 Aug 2021 13:23:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.7",
+      "tag": "@itwin/core-mobile_v2.19.7",
+      "date": "Fri, 20 Aug 2021 17:47:22 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "remove request context from mobile auth client"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.19.6",
+      "tag": "@itwin/core-mobile_v2.19.6",
+      "date": "Tue, 17 Aug 2021 20:34:29 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.5",
+      "tag": "@itwin/core-mobile_v2.19.5",
+      "date": "Fri, 13 Aug 2021 21:48:09 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.4",
+      "tag": "@itwin/core-mobile_v2.19.4",
+      "date": "Thu, 12 Aug 2021 13:09:26 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.3",
+      "tag": "@itwin/core-mobile_v2.19.3",
+      "date": "Wed, 04 Aug 2021 20:29:34 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.2",
+      "tag": "@itwin/core-mobile_v2.19.2",
+      "date": "Tue, 03 Aug 2021 18:26:23 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.1",
+      "tag": "@itwin/core-mobile_v2.19.1",
+      "date": "Thu, 29 Jul 2021 20:01:11 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.0",
+      "tag": "@itwin/core-mobile_v2.19.0",
+      "date": "Mon, 26 Jul 2021 12:21:25 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "remove internal barrel-import usage"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.18.4",
+      "tag": "@itwin/core-mobile_v2.18.4",
+      "date": "Tue, 10 Aug 2021 19:35:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.18.3",
+      "tag": "@itwin/core-mobile_v2.18.3",
+      "date": "Wed, 28 Jul 2021 17:16:30 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.18.2",
+      "tag": "@itwin/core-mobile_v2.18.2",
+      "date": "Mon, 26 Jul 2021 16:18:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.18.1",
+      "tag": "@itwin/core-mobile_v2.18.1",
+      "date": "Fri, 16 Jul 2021 17:45:09 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.18.0",
+      "tag": "@itwin/core-mobile_v2.18.0",
+      "date": "Fri, 09 Jul 2021 18:11:24 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.17.3",
+      "tag": "@itwin/core-mobile_v2.17.3",
+      "date": "Mon, 26 Jul 2021 16:08:36 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.17.2",
+      "tag": "@itwin/core-mobile_v2.17.2",
+      "date": "Thu, 08 Jul 2021 15:23:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.17.1",
+      "tag": "@itwin/core-mobile_v2.17.1",
+      "date": "Fri, 02 Jul 2021 15:38:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.17.0",
+      "tag": "@itwin/core-mobile_v2.17.0",
+      "date": "Mon, 28 Jun 2021 16:20:11 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "set issuerurl correctly before calling authInit()"
+          },
+          {
+            "comment": "set issuerurl correctly before calling authInit()"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.16.10",
+      "tag": "@itwin/core-mobile_v2.16.10",
+      "date": "Thu, 22 Jul 2021 20:23:45 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.9",
+      "tag": "@itwin/core-mobile_v2.16.9",
+      "date": "Tue, 06 Jul 2021 22:08:34 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.8",
+      "tag": "@itwin/core-mobile_v2.16.8",
+      "date": "Fri, 02 Jul 2021 17:40:46 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.7",
+      "tag": "@itwin/core-mobile_v2.16.7",
+      "date": "Mon, 28 Jun 2021 18:13:04 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.6",
+      "tag": "@itwin/core-mobile_v2.16.6",
+      "date": "Mon, 28 Jun 2021 13:12:55 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.5",
+      "tag": "@itwin/core-mobile_v2.16.5",
+      "date": "Fri, 25 Jun 2021 16:03:01 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.4",
+      "tag": "@itwin/core-mobile_v2.16.4",
+      "date": "Wed, 23 Jun 2021 17:09:07 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.3",
+      "tag": "@itwin/core-mobile_v2.16.3",
+      "date": "Wed, 16 Jun 2021 20:29:32 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.2",
+      "tag": "@itwin/core-mobile_v2.16.2",
+      "date": "Thu, 03 Jun 2021 18:08:11 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.1",
+      "tag": "@itwin/core-mobile_v2.16.1",
+      "date": "Thu, 27 May 2021 20:04:22 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.0",
+      "tag": "@itwin/core-mobile_v2.16.0",
+      "date": "Mon, 24 May 2021 15:58:39 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Android fixes"
+          },
+          {
+            "comment": "Mobile fixes"
+          },
+          {
+            "comment": "Fixes to desktop/mobile authorization"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.15.6",
+      "tag": "@itwin/core-mobile_v2.15.6",
+      "date": "Wed, 26 May 2021 15:55:19 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.5",
+      "tag": "@itwin/core-mobile_v2.15.5",
+      "date": "Thu, 20 May 2021 15:06:26 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.4",
+      "tag": "@itwin/core-mobile_v2.15.4",
+      "date": "Tue, 18 May 2021 21:59:07 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.3",
+      "tag": "@itwin/core-mobile_v2.15.3",
+      "date": "Mon, 17 May 2021 13:31:38 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.2",
+      "tag": "@itwin/core-mobile_v2.15.2",
+      "date": "Wed, 12 May 2021 18:08:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.1",
+      "tag": "@itwin/core-mobile_v2.15.1",
+      "date": "Wed, 05 May 2021 13:18:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.0",
+      "tag": "@itwin/core-mobile_v2.15.0",
+      "date": "Fri, 30 Apr 2021 12:36:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "allow authConfig to be supplied from backend"
+          },
+          {
+            "comment": "Fixes to desktop and iOS apps."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.14.4",
+      "tag": "@itwin/core-mobile_v2.14.4",
+      "date": "Thu, 22 Apr 2021 21:07:33 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.3",
+      "tag": "@itwin/core-mobile_v2.14.3",
+      "date": "Thu, 15 Apr 2021 15:13:16 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.2",
+      "tag": "@itwin/core-mobile_v2.14.2",
+      "date": "Thu, 08 Apr 2021 14:30:09 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.1",
+      "tag": "@itwin/core-mobile_v2.14.1",
+      "date": "Mon, 05 Apr 2021 16:28:00 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "allow authConfig to be supplied from backend"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.14.0",
+      "tag": "@itwin/core-mobile_v2.14.0",
+      "date": "Fri, 02 Apr 2021 13:18:42 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "rework Authentication to use IpcHost"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.13.0",
+      "tag": "@itwin/core-mobile_v2.13.0",
+      "date": "Tue, 09 Mar 2021 20:28:13 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Remove unused code."
+          },
+          {
+            "comment": "Updated to use TypeScript 4.1"
+          },
+          {
+            "comment": "begin rename project from iModel.js to iTwin.js"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -6,12 +6,12 @@
  * @module SQLite
  */
 
-import { assert, DbResult, GuidString, Id64String, IDisposable, LRUMap } from "@bentley/bentleyjs-core";
-import { ECJsNames, IModelError } from "@bentley/imodeljs-common";
+import { assert, DbResult, GuidString, Id64String, IDisposable, LRUMap } from "@itwin/core-bentley";
+import { ECJsNames, IModelError } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { IModelHost } from "./IModelHost";
 
-/** Marks a string as either an [Id64String]($bentleyjs-core) or [GuidString]($bentleyjs-core), so
+/** Marks a string as either an [Id64String]($core-bentley) or [GuidString]($core-bentley), so
  * that it can be passed to the [bindValue]($backend.SqliteStatement) or [bindValues]($backend.SqliteStatement)
  * methods of [SqliteStatement]($backend).
  * @internal
@@ -224,12 +224,12 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
   /** Step this statement to the next row.
    *
    *  For **SQL SELECT** statements the method returns
-   *  - [DbResult.BE_SQLITE_ROW]($bentleyjs-core) if the statement now points successfully to the next row.
-   *  - [DbResult.BE_SQLITE_DONE]($bentleyjs-core) if the statement has no more rows.
+   *  - [DbResult.BE_SQLITE_ROW]($core-bentley) if the statement now points successfully to the next row.
+   *  - [DbResult.BE_SQLITE_DONE]($core-bentley) if the statement has no more rows.
    *  - Error status in case of errors.
    *
    *  For **SQL INSERT, UPDATE, DELETE** statements the method returns
-   *  - [DbResult.BE_SQLITE_DONE]($bentleyjs-core) if the statement has been executed successfully.
+   *  - [DbResult.BE_SQLITE_DONE]($core-bentley) if the statement has been executed successfully.
    *  - Error status in case of errors.
    */
   public step(): DbResult { return this._stmt!.step(); }

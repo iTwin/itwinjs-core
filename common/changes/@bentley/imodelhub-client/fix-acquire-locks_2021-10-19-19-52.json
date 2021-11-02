@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodelhub-client",
+      "comment": "Fix incorrect implementation of BackendHubAccess by IModelHubBackend.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodelhub-client"
+}

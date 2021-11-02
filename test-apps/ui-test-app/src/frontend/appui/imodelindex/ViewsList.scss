@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@bentley/ui-ninezone/lib/ui-ninezone/footer/variables";
-@import "~@bentley/ui-ninezone/lib/ui-ninezone/scrollbar";
-@import "~@bentley/ui-core/lib/ui-core/style/colors";
+@import "~@itwin/appui-layout-react/lib/cjs/appui-layout-react/footer/variables";
+@import "~@itwin/appui-layout-react/lib/cjs/appui-layout-react/scrollbar";
+@import "~@itwin/core-react/lib/cjs/core-react/style/colors";
 @import "~@itwin/itwinui-css/scss/style/space";
-@import "~@bentley/ui-core/lib/ui-core/style/themecolors";
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
 
 $outline-size: 2px;
 
@@ -87,12 +87,22 @@ $outline-size: 2px;
   }
 
   @-webkit-keyframes show {
-    0%   {opacity: 0;}
-    100% {opacity: 1;}
+    0% {
+      opacity: 0;
     }
 
+    100% {
+      opacity: 1;
+    }
+  }
+
   @keyframes show {
-    0%   {opacity: 0;}
-    100% {opacity: 1;}
+    0% {
+      opacity: 0;
+    }
+
+    100% {
+      opacity: 1;
+    }
   }
 }

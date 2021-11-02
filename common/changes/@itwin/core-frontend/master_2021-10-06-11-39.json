@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "ViewCreator3d no longer throws if no 3d models are found; instead it uses the project extents as the view extents.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

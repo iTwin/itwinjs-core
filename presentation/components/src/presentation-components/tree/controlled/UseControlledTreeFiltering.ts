@@ -12,7 +12,7 @@ import { Observable } from "rxjs/internal/Observable";
 import {
   AbstractTreeNodeLoaderWithProvider, ActiveMatchInfo, HighlightableTreeProps, ITreeNodeLoaderWithProvider, LoadedNodeHierarchy, PagedTreeNodeLoader,
   TreeModelSource, useDebouncedAsyncValue,
-} from "@bentley/ui-components";
+} from "@itwin/components-react";
 import { FilteredPresentationTreeDataProvider, IFilteredPresentationTreeDataProvider } from "../FilteredDataProvider";
 import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
 

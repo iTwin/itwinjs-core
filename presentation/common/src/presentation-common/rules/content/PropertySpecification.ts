@@ -18,7 +18,7 @@ export interface PropertyOverrides {
   /** Priority of the specified overrides. */
   overridesPriority?: number;
 
-  /** Label override. May be [localized]($docs/learning/presentation/Localization.md). */
+  /** Label override. May be [localized]($docs/presentation/Advanced/Localization.md). */
   labelOverride?: string;
 
   /** Identifier of a category that should be used for the property. */
@@ -45,7 +45,7 @@ export interface PropertyOverrides {
 /**
  * Specification of an ECProperty and its overrides
  *
- * @see [More details]($docs/learning/presentation/Content/PropertySpecification.md)
+ * @see [More details]($docs/presentation/Content/PropertySpecification.md)
  * @public
  */
 export interface PropertySpecification extends PropertyOverrides {

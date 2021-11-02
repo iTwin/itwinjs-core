@@ -6,12 +6,13 @@
  * @module iModels
  */
 
-import { Id64Array, Id64String } from "@bentley/bentleyjs-core";
-import { IndexedPolyface, Polyface, PolyfaceData, PolyfaceVisitor } from "@bentley/geometry-core";
+import { Id64Array, Id64String } from "@itwin/core-bentley";
+import { IndexedPolyface, Polyface, PolyfaceData, PolyfaceVisitor } from "@itwin/core-geometry";
+import { GeometryClass } from "@itwin/core-common";
 
 /** A collection of line segments, suitable for direct use with graphics APIs.
  * The structure of this data matches GL_LINES in OpenGL.
- * See [IModelDb.exportGraphics]($imodeljs-backend)
+ * See [IModelDb.exportGraphics]($core-backend)
  * @public
  */
 export interface ExportGraphicsLines {
@@ -22,28 +23,30 @@ export interface ExportGraphicsLines {
 }
 
 /** Info provided to ExportLinesFunction about linework graphics.
- * See [IModelDb.exportGraphics]($imodeljs-backend)
+ * See [IModelDb.exportGraphics]($core-backend)
  * @public
  */
 export interface ExportLinesInfo {
   /** The element ID for the element the graphics originated from */
   elementId: Id64String;
-  /** ID for the [SubCategory]($imodeljs-backend) for these graphics  */
+  /** ID for the [SubCategory]($core-backend) for these graphics  */
   subCategory: Id64String;
-  /** The color and transparency for these graphics, laid out in TBGR format, see [ColorDef]($imodeljs-common) */
+  /** The color and transparency for these graphics, laid out in TBGR format, see [ColorDef]($core-common) */
   color: number;
+  /** GeometryClass for these graphics */
+  geometryClass: GeometryClass;
   /** The linework for these graphics */
   lines: ExportGraphicsLines;
 }
 
 /** A callback function that receives generated line graphics.
- * See [IModelDb.exportGraphics]($imodeljs-backend)
+ * See [IModelDb.exportGraphics]($core-backend)
  * @public
  */
 export type ExportLinesFunction = (info: ExportLinesInfo) => void;
 
 /** A triangulated mesh with unified indices, suitable for direct use with graphics APIs.
- * See [IModelDb.exportGraphics]($imodeljs-backend)
+ * See [IModelDb.exportGraphics]($core-backend)
  * @public
  */
 export interface ExportGraphicsMesh {
@@ -60,26 +63,28 @@ export interface ExportGraphicsMesh {
 }
 
 /** Info provided to ExportGraphicsFunction about graphics.
- * See [IModelDb.exportGraphics]($imodeljs-backend)
+ * See [IModelDb.exportGraphics]($core-backend)
  * @public
  */
 export interface ExportGraphicsInfo {
   /** The element ID for the element the graphics originated from */
   elementId: Id64String;
-  /** ID for the [SubCategory]($imodeljs-backend) for these graphics  */
+  /** ID for the [SubCategory]($core-backend) for these graphics  */
   subCategory: Id64String;
-  /** The color and transparency for these graphics, laid out in TBGR format, see [ColorDef]($imodeljs-common) */
+  /** The color and transparency for these graphics, laid out in TBGR format, see [ColorDef]($core-common) */
   color: number;
-  /** If defined, ID for the [RenderMaterialElement]($imodeljs-backend) for these graphics */
+  /** GeometryClass for these graphics */
+  geometryClass: GeometryClass;
+  /** If defined, ID for the [RenderMaterialElement]($core-backend) for these graphics */
   materialId?: Id64String;
-  /** If defined, ID for the [Texture]($imodeljs-backend) for these graphics  */
+  /** If defined, ID for the [Texture]($core-backend) for these graphics  */
   textureId?: Id64String;
   /** The mesh for these graphics */
   mesh: ExportGraphicsMesh;
 }
 
-/** Information about the base display properties when a [GeometryPart]($imodeljs-backend) was
- * referenced. This is intended to be used with [IModelDb.exportPartGraphics]($imodeljs-backend).
+/** Information about the base display properties when a [GeometryPart]($core-backend) was
+ * referenced. This is intended to be used with [IModelDb.exportPartGraphics]($core-backend).
  *  * If two ExportPartInstanceInfo have the same ExportPartDisplayInfos, they will result in the
  *    same graphics (with a different transform).
  *  * If two ExportPartInstanceInfo have different ExportPartDisplayInfos, they may result in different
@@ -89,22 +94,23 @@ export interface ExportGraphicsInfo {
 export interface ExportPartDisplayInfo {
   categoryId: Id64String;
   subCategoryId: Id64String;
+  geometryClass: GeometryClass;
   materialId: Id64String;
   elmTransparency: number;
   lineColor: number;
 }
 
-/** Information about references to [GeometryPart]($imodeljs-backend) elements found during
- * a call to [IModelDb.exportGraphics]($imodeljs-backend).
- * See [IModelDb.exportPartGraphics]($imodeljs-backend) for the intended use case.
+/** Information about references to [GeometryPart]($core-backend) elements found during
+ * a call to [IModelDb.exportGraphics]($core-backend).
+ * See [IModelDb.exportPartGraphics]($core-backend) for the intended use case.
  * @public
  */
 export interface ExportPartInstanceInfo {
-  /** ID for the [GeometryPart]($imodeljs-backend) */
+  /** ID for the [GeometryPart]($core-backend) */
   partId: Id64String;
-  /** ID for the element that contained the reference to the [GeometryPart]($imodeljs-backend) */
+  /** ID for the element that contained the reference to the [GeometryPart]($core-backend) */
   partInstanceId: Id64String;
-  /** The base display properties when the [GeometryPart]($imodeljs-backend) was referenced. */
+  /** The base display properties when the [GeometryPart]($core-backend) was referenced. */
   displayProps: ExportPartDisplayInfo;
   /** A row-major storage 4x3 transform for this instance.
    *  See export-gltf under test-apps in the iModel.js monorepo for a working reference.
@@ -113,12 +119,12 @@ export interface ExportPartInstanceInfo {
 }
 
 /** A callback function that receives generated graphics.
- * See [IModelDb.exportGraphics]($imodeljs-backend)
+ * See [IModelDb.exportGraphics]($core-backend)
  * @public
  */
 export type ExportGraphicsFunction = (info: ExportGraphicsInfo) => void;
 
-/** Parameters for [IModelDb.exportGraphics]($imodeljs-backend)
+/** Parameters for [IModelDb.exportGraphics]($core-backend)
  * @public
  */
 export interface ExportGraphicsOptions {
@@ -128,16 +134,16 @@ export interface ExportGraphicsOptions {
   onGraphics: ExportGraphicsFunction;
   /** An optional function to call if line graphics are desired. */
   onLineGraphics?: ExportLinesFunction;
-  /** If supplied, any references to [GeometryPart]($imodeljs-backend) elements found will be
+  /** If supplied, any references to [GeometryPart]($core-backend) elements found will be
    * recorded in this array. In this case, graphics that would result from the GeometryPart
-   * will not be supplied via onGraphics. See [IModelDb.exportPartGraphics]($imodeljs-backend)
+   * will not be supplied via onGraphics. See [IModelDb.exportPartGraphics]($core-backend)
    */
   partInstanceArray?: ExportPartInstanceInfo[];
-  /** Max distance from a face to the original geometry, see [StrokeOptions]($geometry-core) */
+  /** Max distance from a face to the original geometry, see [StrokeOptions]($core-geometry) */
   chordTol?: number;
-  /** Max angle difference in radians for approximated face, see [StrokeOptions]($geometry-core) */
+  /** Max angle difference in radians for approximated face, see [StrokeOptions]($core-geometry) */
   angleTol?: number;
-  /** Max length of any edge in generated faces, see [StrokeOptions]($geometry-core) */
+  /** Max length of any edge in generated faces, see [StrokeOptions]($core-geometry) */
   maxEdgeLength?: number;
   /** The longest dimension of a line style's largest component must be at least this size in order for
    * exportGraphics to evaluate and generate its graphics. If undefined, this defaults to 0.1.
@@ -154,69 +160,73 @@ export interface ExportGraphicsOptions {
    */
   decimationTol?: number;
   /** BRep features with bounding boxes smaller than this size will not generate graphics.
-   * This option can be used to ignore expensive details from [BRepEntity.DataProps]($imodeljs-common)
+   * This option can be used to ignore expensive details from [BRepEntity.DataProps]($core-common)
    * like screws and screw holes.
    */
   minBRepFeatureSize?: number;
 }
 
 /** Info provided to ExportPartFunction about graphics.
- * See [IModelDb.exportPartGraphics]($imodeljs-backend)
+ * See [IModelDb.exportPartGraphics]($core-backend)
  * @public
  */
 export interface ExportPartInfo {
-  /** The color and transparency for these graphics, laid out in TBGR format, see [ColorDef]($imodeljs-common) */
+  /** The color and transparency for these graphics, laid out in TBGR format, see [ColorDef]($core-common) */
   color: number;
-  /** If defined, ID for the [RenderMaterialElement]($imodeljs-backend) for these graphics */
+  /** GeometryClass for these graphics */
+  geometryClass: GeometryClass;
+  /** If defined, ID for the [RenderMaterialElement]($core-backend) for these graphics */
   materialId?: Id64String;
-  /** If defined, ID for the [Texture]($imodeljs-backend) for these graphics  */
+  /** If defined, ID for the [Texture]($core-backend) for these graphics  */
   textureId?: Id64String;
   /** The mesh for these graphics */
   mesh: ExportGraphicsMesh;
 }
 
-/** A callback function that receives generated graphics for a [GeometryPart]($imodeljs-backend).
- * See [IModelDb.exportPartGraphics]($imodeljs-backend)
+/** A callback function that receives generated graphics for a [GeometryPart]($core-backend).
+ * See [IModelDb.exportPartGraphics]($core-backend)
  * @public
  */
 export type ExportPartFunction = (info: ExportPartInfo) => void;
 
 /** Info provided to ExportPartFunction about line graphics.
- * See [IModelDb.exportPartGraphics]($imodeljs-backend)
+ * See [IModelDb.exportPartGraphics]($core-backend)
  * @public
  */
 export interface ExportPartLinesInfo {
-  /** The color and transparency for these graphics, laid out in TBGR format, see [ColorDef]($imodeljs-common) */
+  /** The color and transparency for these graphics, laid out in TBGR format, see [ColorDef]($core-common) */
   color: number;
+  /** GeometryClass for these graphics */
+  geometryClass: GeometryClass;
   /** The linework for these graphics */
   lines: ExportGraphicsLines;
 }
 
-/** A callback function that receives generated line graphics for a [GeometryPart]($imodeljs-backend).
- * See [IModelDb.exportPartGraphics]($imodeljs-backend)
+/** A callback function that receives generated line graphics for a [GeometryPart]($core-backend).
+ * See [IModelDb.exportPartGraphics]($core-backend)
  * @public
  */
 export type ExportPartLinesFunction = (info: ExportPartLinesInfo) => void;
 
-/** Parameters for [IModelDb.exportPartGraphics]($imodeljs-backend)
+/** Parameters for [IModelDb.exportPartGraphics]($core-backend)
  * @public
  */
 export interface ExportPartGraphicsOptions {
-  /** The ID for the source [GeometryPart]($imodeljs-backend) */
+  /** The ID for the source [GeometryPart]($core-backend) */
   elementId: Id64String;
   /** The base display properties to use for generating the graphics. This should come from an
-   * ExportPartInstanceProps generated by [IModelDb.exportGraphics]($imodeljs-backend)
+   * ExportPartInstanceProps generated by [IModelDb.exportGraphics]($core-backend)
    */
   displayProps: ExportPartDisplayInfo;
   /** A function to call for each unique color and texture combination. */
   onPartGraphics: ExportPartFunction;
   /** An optional function to call if line graphics are desired. */
   onPartLineGraphics?: ExportPartLinesFunction;
-  /** Max distance from a face to the original geometry, see [StrokeOptions]($geometry-core) */
+  /** Max distance from a face to the original geometry, see [StrokeOptions]($core-geometry) */
   chordTol?: number;
-  /** Max angle difference in radians for approximated face, see [StrokeOptions]($geometry-core) */
+  /** Max angle difference in radians for approximated face, see [StrokeOptions]($core-geometry) */
   angleTol?: number;
-  /** Max length of any edge in generated faces, see [StrokeOptions]($geometry-core) */
+  /** Max length of any edge in generated faces, see [StrokeOptions]($core-geometry) */
   maxEdgeLength?: number;
   /** The longest dimension of a line style's largest component must be at least this size in order for
    * exportGraphics to evaluate and generate its graphics. If undefined, this defaults to 0.1.
@@ -233,13 +243,13 @@ export interface ExportPartGraphicsOptions {
    */
   decimationTol?: number;
   /** BRep features with bounding boxes smaller than this size will not generate graphics.
-   * This option can be used to ignore expensive details from [BRepEntity.DataProps]($imodeljs-common)
+   * This option can be used to ignore expensive details from [BRepEntity.DataProps]($core-common)
    * like screws and screw holes.
    */
   minBRepFeatureSize?: number;
 }
 
-/** Provides utility functions for working with data generated by [IModelDb.exportGraphics]($imodeljs-backend)
+/** Provides utility functions for working with data generated by [IModelDb.exportGraphics]($core-backend)
  * @public
  */
 export namespace ExportGraphics {
@@ -257,7 +267,7 @@ export namespace ExportGraphics {
 
   /**
    * Convert an ExportGraphicsMesh to an IndexedPolyface usable by the geometry API.
-   * @note The resulting IndexedPolyface may have duplicate points, normals and params. If problematic, call [PolyfaceData.compress]($geometry-core)
+   * @note The resulting IndexedPolyface may have duplicate points, normals and params. If problematic, call [PolyfaceData.compress]($core-geometry)
    * @public
    */
   export function convertToIndexedPolyface(mesh: ExportGraphicsMesh): IndexedPolyface {

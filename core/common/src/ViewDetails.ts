@@ -6,8 +6,8 @@
  * @module Views
  */
 
-import { BeEvent, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
-import { ClipVector, ClipVectorProps, Geometry, XAndY } from "@bentley/geometry-core";
+import { BeEvent, Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
+import { ClipVector, ClipVectorProps, Geometry, XAndY } from "@itwin/core-geometry";
 import { ModelClipGroupProps, ModelClipGroups } from "./ModelClipGroup";
 
 /** Properties of a [[ViewDefinitionProps]] stored as JSON.
@@ -28,7 +28,7 @@ export interface ViewDetailsProps {
   gridSpaceX?: number;
   /** Default: same as gridSpaceX. */
   gridSpaceY?: number;
-  /** Describes the [ClipVector]($geometry-core) applied to the view. */
+  /** Describes the [ClipVector]($core-geometry) applied to the view. */
   clip?: ClipVectorProps;
 }
 
@@ -186,7 +186,7 @@ export class ViewDetails3d extends ViewDetails {
     this._json3d.disable3dManipulations = allow ? undefined : true;
   }
 
-  /** Groups of models associated with [ClipVector]($geometry-core)s by which those models should be clipped.
+  /** Groups of models associated with [ClipVector]($core-geometry)s by which those models should be clipped.
    * If the view and the model both have a clip vector defined, geometry in the model will be clipped by the intersection of the two clip vectors.
    * [[ViewFlags.clipVolume]] has no effect on model clips, only the view clip - model clips are always applied.
    * @note Do **not** modify the returned object directly. Instead, clone it, modify the clone, and pass the clone to the property setter.

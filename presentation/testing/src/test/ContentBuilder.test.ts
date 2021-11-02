@@ -6,14 +6,15 @@ import { expect, use } from "chai";
 import ChaiAsPromised from "chai-as-promised";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { BeEvent, Guid, Id64String } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { BeEvent, Guid, Id64String } from "@itwin/core-bentley";
+import { IModelConnection } from "@itwin/core-frontend";
 import {
   CategoryDescription, Content, DefaultContentDisplayTypes, Descriptor, DisplayValue, Field, Item, KeySet, PrimitiveTypeDescription,
   PropertyValueFormat, RegisteredRuleset, Ruleset, Value, ValuesDictionary,
-} from "@bentley/presentation-common";
-import { Presentation, PresentationManager, RulesetManager } from "@bentley/presentation-frontend";
+} from "@itwin/presentation-common";
+import { Presentation, PresentationManager, RulesetManager } from "@itwin/presentation-frontend";
 import { ContentBuilder, IContentBuilderDataProvider } from "../presentation-testing/ContentBuilder";
+import { QueryRowFormat } from "@itwin/core-common";
 
 use(ChaiAsPromised);
 
@@ -227,7 +228,7 @@ describe("ContentBuilder", () => {
     before(() => {
       imodelMock.reset();
       const f = createQueryFunc(testInstances);
-      imodelMock.setup((imodel) => imodel.query(moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).returns(f);
+      imodelMock.setup((imodel) => imodel.query(moq.It.isAny(), moq.It.isAny(), QueryRowFormat.UseJsPropertyNames, moq.It.isAny())).returns(f);
     });
 
     it("returns all required instances with empty records", async () => {
@@ -269,7 +270,7 @@ describe("ContentBuilder", () => {
 
       it("returns all required instances with empty records", async () => {
         imodelMock.reset();
-        imodelMock.setup((imodel) => imodel.query(moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).returns(createQueryFunc(testInstances));
+        imodelMock.setup((imodel) => imodel.query(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).returns(createQueryFunc(testInstances));
 
         const verificationSpy = sinon.spy();
 
@@ -293,7 +294,7 @@ describe("ContentBuilder", () => {
 
       it("throws when id query throws an unexpected error", async () => {
         imodelMock.reset();
-        imodelMock.setup((imodel) => imodel.query(moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).returns(createThrowingQueryFunc(testInstances));
+        imodelMock.setup((imodel) => imodel.query(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).returns(createThrowingQueryFunc(testInstances));
 
         const verificationSpy = sinon.spy();
 
@@ -311,7 +312,7 @@ describe("ContentBuilder", () => {
 
       before(() => {
         imodelMock.reset();
-        imodelMock.setup((imodel) => imodel.query(moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).returns(createQueryFunc(testInstances));
+        imodelMock.setup((imodel) => imodel.query(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).returns(createQueryFunc(testInstances));
       });
 
       it("returns an empty list", async () => {

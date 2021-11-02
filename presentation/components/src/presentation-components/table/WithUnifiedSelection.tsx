@@ -7,9 +7,9 @@
  */
 
 import * as React from "react";
-import { InstanceKey, KeySet } from "@bentley/presentation-common";
-import { Presentation, SelectionChangeEventArgs, SelectionHandler } from "@bentley/presentation-frontend";
-import { Table as BaseTable, RowItem, TableProps } from "@bentley/ui-components";
+import { InstanceKey, KeySet } from "@itwin/presentation-common";
+import { Presentation, SelectionChangeEventArgs, SelectionHandler } from "@itwin/presentation-frontend";
+import { Table as BaseTable, RowItem, TableProps } from "@itwin/components-react";
 import { IUnifiedSelectionComponent } from "../common/IUnifiedSelectionComponent";
 import { getDisplayName } from "../common/Utils";
 import { IPresentationTableDataProvider } from "./DataProvider";
@@ -39,7 +39,7 @@ export interface TableWithUnifiedSelectionProps {
    *
    * Defaults to `1`.
    *
-   * @see [Selection levels]($docs/learning/presentation/Unified-Selection/Terminology#selection-level).
+   * @see [Selection levels]($docs/presentation/Unified-Selection/index#selection-levels).
    */
   selectionLevel?: number;
 
@@ -55,19 +55,21 @@ export interface TableWithUnifiedSelectionProps {
  *
  * @public
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
+// eslint-disable-next-line deprecation/deprecation
 export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: React.ComponentType<P>): React.ComponentType<P & TableWithUnifiedSelectionProps> {
 
   type CombinedProps = P & TableWithUnifiedSelectionProps;
 
   return class WithUnifiedSelection extends React.Component<CombinedProps> implements IUnifiedSelectionComponent {
 
+    // eslint-disable-next-line deprecation/deprecation
     private _base: React.RefObject<BaseTable>;
     private _boundarySelectionLevel: number;
     private _selectionHandler?: SelectionHandler;
 
     constructor(props: CombinedProps) {
       super(props);
+      // eslint-disable-next-line deprecation/deprecation
       this._base = React.createRef<BaseTable>();
       this._boundarySelectionLevel = getBoundarySelectionLevelFromProps(props);
     }
@@ -80,7 +82,7 @@ export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: 
 
     public get imodel() { return this.props.dataProvider.imodel; }
 
-    // eslint-disable-next-line @typescript-eslint/naming-convention
+    // eslint-disable-next-line deprecation/deprecation
     private get baseProps(): TableProps { return this.props; }
 
     public override componentDidMount() {

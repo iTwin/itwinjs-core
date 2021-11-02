@@ -6,7 +6,7 @@
  * @module ECSQL
  */
 
-import { assert, Id64String } from "@bentley/bentleyjs-core";
+import { assert, Id64String } from "@itwin/core-bentley";
 
 /** Describes the different data types an ECSQL value can be of.
  * See also [ECSQL]($docs/learning/ECSQL).

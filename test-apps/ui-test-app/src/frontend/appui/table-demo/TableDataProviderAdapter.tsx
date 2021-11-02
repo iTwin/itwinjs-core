@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { CellProps, Column } from "react-table";
-import { Primitives, PropertyValueFormat } from "@bentley/ui-abstract";
-import { CellItem, RowItem, TableDataProvider } from "@bentley/ui-components";
+import { Primitives, PropertyValueFormat } from "@itwin/appui-abstract";
+import { CellItem, RowItem, TableDataProvider } from "@itwin/components-react";
 import { ReactTableCell } from "./ReactTableCell";
 
 /**

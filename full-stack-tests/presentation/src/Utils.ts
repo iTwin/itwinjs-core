@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Field } from "@bentley/presentation-common";
+import { Field } from "@itwin/presentation-common";
 
 /**
  * Simplified type for `sinon.SinonSpy`.
@@ -11,29 +11,36 @@ import { Field } from "@bentley/presentation-common";
  */
 export type SinonSpy<T extends (...args: any) => any> = sinon.SinonSpy<Parameters<T>, ReturnType<T>>;
 
-/**
- * Returns field by given label.
- * @internal
- */
-export function findFieldByLabel(fields: Field[], label: string, allFields?: Field[]): Field | undefined {
-  const isTopLevel = (undefined === allFields);
-  if (!allFields)
-    allFields = new Array<Field>();
+/** Returns field by given label. */
+function tryGetFieldByLabelInternal(fields: Field[], label: string, allFields: Field[]): Field | undefined {
   for (const field of fields) {
     if (field.label === label)
       return field;
 
     if (field.isNestedContentField()) {
-      const nestedMatchingField = findFieldByLabel(field.nestedFields, label, allFields);
+      const nestedMatchingField = tryGetFieldByLabelInternal(field.nestedFields, label, allFields);
       if (nestedMatchingField)
         return nestedMatchingField;
     }
 
     allFields.push(field);
   }
-  if (isTopLevel) {
-    // eslint-disable-next-line no-console
-    console.error(`Field '${label}' not found. Available fields: [${allFields.map((f) => `"${f.label}"`).join(", ")}]`);
-  }
   return undefined;
+}
+
+/** Looks up a field by given label. Returns `undefined` if not found. */
+export function tryGetFieldByLabel(fields: Field[], label: string): Field | undefined {
+  return tryGetFieldByLabelInternal(fields, label, []);
+}
+
+/**
+ * Returns field by given label.
+ * @throws An error if the field is not found
+ */
+export function getFieldByLabel(fields: Field[], label: string): Field {
+  const allFields = new Array<Field>();
+  const result = tryGetFieldByLabelInternal(fields, label, allFields);
+  if (!result)
+    throw new Error(`Field '${label}' not found. Available fields: [${allFields.map((f) => `"${f.label}"`).join(", ")}]`);
+  return result;
 }

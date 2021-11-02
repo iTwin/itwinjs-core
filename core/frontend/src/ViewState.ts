@@ -6,17 +6,17 @@
  * @module Views
  */
 
-import { assert, BeEvent, Id64, Id64Arg, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { assert, BeEvent, Id64, Id64Arg, Id64String, JsonUtils } from "@itwin/core-bentley";
 import {
   Angle, AxisOrder, ClipVector, Constant, Geometry, LongitudeLatitudeNumber, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d,
   Plane3dByOriginAndUnitNormal, Point2d, Point3d, PolyfaceBuilder, Range2d, Range3d, Ray3d, StrokeOptions, Transform, Vector2d, Vector3d, XAndY,
   XYAndZ, XYZ, YawPitchRollAngles,
-} from "@bentley/geometry-core";
+} from "@itwin/core-geometry";
 import {
   AnalysisStyle, AxisAlignedBox3d, Camera, Cartographic, ColorDef, FeatureAppearance, Frustum, GlobeMode, GraphicParams, GridOrientationType,
   ModelClipGroups, Npc, RenderMaterial, RenderSchedule, SubCategoryOverride, TextureMapping, ViewDefinition2dProps, ViewDefinition3dProps,
   ViewDefinitionProps, ViewDetails, ViewDetails3d, ViewFlags, ViewStateProps,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { AuxCoordSystem2dState, AuxCoordSystem3dState, AuxCoordSystemState } from "./AuxCoordSys";
 import { CategorySelectorState } from "./CategorySelectorState";
 import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState } from "./DisplayStyleState";
@@ -390,8 +390,6 @@ export abstract class ViewState extends ElementState {
   public abstract is3d(): this is ViewState3d;
   /** Returns true if this ViewState is-a [[ViewState2d]] */
   public is2d(): this is ViewState2d { return !this.is3d(); }
-  /** Returns true if this ViewState is-a [[ViewState3d]] with the camera currently on. */
-  public isCameraEnabled(): this is ViewState3d { return this.is3d() && this.isCameraOn; }
   /** Returns true if this ViewState is-a [[SpatialViewState]] */
   public abstract isSpatialView(): this is SpatialViewState;
   /** Returns true if this ViewState is-a [[DrawingViewState]] */
@@ -553,7 +551,7 @@ export abstract class ViewState extends ElementState {
     let origin: Point3d;
 
     // Compute root vectors along edges of view frustum.
-    if (this.isCameraEnabled()) {
+    if (this.is3d() && this.isCameraOn) {
       const camera = this.camera;
       const eyeToOrigin = Vector3d.createStartEnd(camera.eye, inOrigin); // vector from origin on backplane to eye
       viewRot.multiplyVectorInPlace(eyeToOrigin);                        // align with view coordinates.
@@ -735,7 +733,7 @@ export abstract class ViewState extends ElementState {
 
   /** @internal */
   public outputStatusMessage(status: ViewStatus): ViewStatus {
-    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.i18n.translate(`Viewing.${ViewStatus[status]}`)));
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.localization.getLocalizedString(`Viewing.${ViewStatus[status]}`)));
     return status;
   }
 
@@ -965,7 +963,7 @@ export abstract class ViewState extends ElementState {
 
     const margin = options?.marginPercent;
 
-    if (this.isCameraEnabled()) {
+    if (this.is3d() && this.isCameraOn) {
       // If the camera is on, the only way to guarantee we can see the entire volume is to set delta at the front plane, not focus plane.
       // That generally causes the view to be too large (objects in it are too small), since we can't tell whether the objects are at
       // the front or back of the view. For this reason, don't attempt to add any "margin" to camera views.
@@ -1092,9 +1090,13 @@ export abstract class ViewState extends ElementState {
    * false if the viewed area do does not include more than one percent of the project.
    */
   public getIsViewingProject(): boolean {
+    if (!this.isSpatialView())
+      return false;
+
     const worldToNpc = this.computeWorldToNpc();
     if (!worldToNpc || !worldToNpc.map)
       return false;
+
     const expandedRange = this.iModel.projectExtents.clone();
     expandedRange.expandInPlace(10E3);
     const corners = expandedRange.corners(scratchCorners);
@@ -1311,7 +1313,7 @@ export abstract class ViewState3d extends ViewState {
     this.camera = new Camera(props.camera);
 
     // if the camera is on, make sure the eyepoint is centered.
-    if (this.isCameraEnabled())
+    if (this.is3d() && this.isCameraOn)
       this.centerEyePoint();
 
     this._details = new ViewDetails3d(this.jsonProperties);
@@ -1369,7 +1371,7 @@ export abstract class ViewState3d extends ViewState {
   public get isCameraOn(): boolean { return this._cameraOn; }
 
   private static _minGlobeEyeHeight = Constant.earthRadiusWGS84.equator / 4;  // View as globe if more than a quarter of earth radius from surface.
-  private static _scratchGlobeCarto = Cartographic.fromRadians(0, 0, 0);
+  private static _scratchGlobeCarto = Cartographic.createZero();
 
   public get isGlobalView() {
     if (undefined === this.iModel.ecefLocation)
@@ -1501,9 +1503,9 @@ export abstract class ViewState3d extends ViewState {
       }
     }
 
-    const isCameraEnabled = this.isCameraEnabled();
+    const isCameraEnabled = this.isCameraOn;
     this.lookAt({ eyePoint, targetPoint, upVector, lensAngle: this.camera.getLensAngle() });
-    if (!isCameraEnabled && this.isCameraEnabled)
+    if (!isCameraEnabled && this.isCameraOn)
       this.turnCameraOff();
 
     return eyePoint.distance(origEyePoint);
@@ -2119,7 +2121,7 @@ export abstract class ViewState3d extends ViewState {
     const earthEllipsoid = backgroundMapGeometry.getEarthEllipsoid();
     const viewZ = this.getRotation().rowZ();
     const center = this.getCenter();
-    const eye = this.isCameraEnabled() ? this.camera.getEyePoint() : center.plusScaled(viewZ, Constant.diameterOfEarth);
+    const eye = this.isCameraOn ? this.camera.getEyePoint() : center.plusScaled(viewZ, Constant.diameterOfEarth);
     const eyeRay = Ray3d.create(eye, viewZ);
     const fractions = new Array<number>(), points = new Array<Point3d>();
 
@@ -2145,7 +2147,6 @@ export abstract class ViewState3d extends ViewState {
    * will cause a smooth transition as a view is zoomed out from a specific location to a more global representation.
    * @public
    */
-
   public alignToGlobe(target: Point3d, transition?: boolean): ViewStatus {
     if (!this.iModel.ecefLocation)
       return ViewStatus.NotGeolocated;
@@ -2161,7 +2162,7 @@ export abstract class ViewState3d extends ViewState {
     const earthCenter = this.iModel.ecefLocation?.earthCenter;
     const viewCenter = this.getCenter();
     const viewZ = this.getRotation().rowZ();
-    const eye = this.isCameraEnabled() ? this.camera.eye : viewCenter.plusScaled(viewZ, Constant.diameterOfEarth);
+    const eye = this.isCameraOn ? this.camera.eye : viewCenter.plusScaled(viewZ, Constant.diameterOfEarth);
 
     const centerToEye = earthCenter.unitVectorTo(eye);
     if (!centerToEye)

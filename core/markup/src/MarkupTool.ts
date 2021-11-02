@@ -6,8 +6,8 @@
  * @module MarkupTools
  */
 
-import { XAndY } from "@bentley/geometry-core";
-import { BeButton, BeTouchEvent, CoordinateLockOverrides, EventHandled, IModelApp, PrimitiveTool, Viewport } from "@bentley/imodeljs-frontend";
+import { XAndY } from "@itwin/core-geometry";
+import { BeButton, BeTouchEvent, CoordinateLockOverrides, EventHandled, IModelApp, PrimitiveTool, Viewport } from "@itwin/core-frontend";
 import { G, LinkedHTMLElement, Element as MarkupElement, Text as MarkupText } from "@svgdotjs/svg.js";
 import { Markup, MarkupApp } from "./Markup";
 

@@ -5,7 +5,7 @@
 import {
   DelayedPromiseWithProps, ECClass, ECObjectsError, ECObjectsStatus, EntityClass, Mixin, NavigationProperty,
   parseStrengthDirection, RelationshipClass, StrengthDirection,
-} from "@bentley/ecschema-metadata";
+} from "@itwin/ecschema-metadata";
 
 /**
  * Hackish approach that works like a "friend class" so we can access protected members without making them public.

@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { IModelApp, MessageBoxIconType, MessageBoxType } from "@bentley/imodeljs-frontend";
-import { DialogButtonStyle, DialogButtonType, MessageSeverity } from "@bentley/ui-abstract";
-import { MessageBox } from "@bentley/ui-core";
-import { ModalDialogManager } from "@bentley/ui-framework";
+import { IModelApp, MessageBoxIconType, MessageBoxType } from "@itwin/core-frontend";
+import { DialogButtonStyle, DialogButtonType, MessageSeverity } from "@itwin/appui-abstract";
+import { MessageBox } from "@itwin/core-react";
+import { ModalDialogManager } from "@itwin/appui-react";
 import { Button } from "@itwin/itwinui-react";
 
 export interface TestMessageBoxProps {

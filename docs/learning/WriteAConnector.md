@@ -78,7 +78,7 @@ A complete list of available connectors can be found in [iTwin Services Communit
 
 See [Section on iTwin Synchronization](#ways-to-sync-data-to-an-itwin) for more details on existing connectors.
 
-However, in some instances, where a specific format is not covered, one can start to develop a new Connector using the [iTwin.js SDK](https://github.com/imodeljs/imodeljs)
+However, in some instances, where a specific format is not covered, one can start to develop a new Connector using the [iTwin.js SDK](https://github.com/iTwin/itwinjs-core)
 
 The imodel-bridge package provided as part of the iTwin.js SDK makes it easier to write an iTwin Connector backend that brings custom data into a digital twin. To run this environment with the iTwin.js library that this package depends on requires a JavaScript engine with es2017 support.
 
@@ -256,13 +256,13 @@ A Connector is usually dealing with two levels of provenance
 1. What is the identity and metadata of a file or repository synchronized into an iModel?
 2. What is the identity of the element within that repository?
 
-[RepositoryLink]($imodeljs-backend) is a specialization of a UrlLink which has a "Url" property pointing to an external resource or repository and a RepositoryGuid that identifies the external repository.
+[RepositoryLink]($core-backend) is a specialization of a UrlLink which has a "Url" property pointing to an external resource or repository and a RepositoryGuid that identifies the external repository.
 
-[ExternalSource]($imodeljs-backend) is an information container found in a repository. A few use cases for ExternalSources are listed below:
+[ExternalSource]($core-backend) is an information container found in a repository. A few use cases for ExternalSources are listed below:
 
 1. A MicroStation DGN file, for example, may contain multiple models which in turn contain elements. The repository link would point to the DGN file while the ExternalSource would refer the models within the DGN file,
 2. In many cases, the external file is not a container for multiple smaller models, so there would be a one-to-one correspondence between an ExternalSource and its RepositoryLink,
-3. In the latter case, when there is also no possibility for referencing, layering or otherwise superimposing files and or models, then a common practice is to duplicate elements across one or more files to acheive the effect of reference elements. In this case, one element may refer to multiple ExternalSources and this is done via an [ExternalSourceGroup]($imodeljs-backend)
+3. In the latter case, when there is also no possibility for referencing, layering or otherwise superimposing files and or models, then a common practice is to duplicate elements across one or more files to acheive the effect of reference elements. In this case, one element may refer to multiple ExternalSources and this is done via an [ExternalSourceGroup]($core-backend)
 
 ###### Case 1 : File metadata
 
@@ -394,22 +394,20 @@ You'll need Node.js version ">=12.17.0 <15.0”. Please refer to [Getting Starte
 The node packages you'll need can be installed using
 
 ```Shell
-$npm install  @bentley/backend-itwin-client
-$npm install  @bentley/bentleyjs-core
-$npm install  @bentley/context-registry-client
-$npm install  @bentley/ecschema-metadata
-$npm install  @bentley/geometry-core
+$npm install  @itwin/core-bentley
+$npm install  @itwin/ecschema-metadata
+$npm install  @itwin/core-geometry
 $npm install  @bentley/imodelhub-client
-$npm install  @bentley/imodeljs-backend
-$npm install  @bentley/imodeljs-common
+$npm install  @itwin/core-backend
+$npm install  @itwin/core-common
 $npm install  @bentley/itwin-client
 $npm install  @bentley/rbac-client
 $npm install  @bentley/telemetry-client
 
-$npm install  --save-dev @bentley/build-tools
+$npm install  --save-dev @itwin/build-tools
 $npm install  --save-dev @bentley/config-loader
-$npm install  --save-dev @bentley/eslint-plugin
-$npm install  --save-dev @bentley/oidc-signin-tool
+$npm install  --save-dev @itwin/eslint-plugin
+$npm install  --save-dev @itwin/oidc-signin-tool
 
 $npm install  --save-dev chai
 $npm install  --save-dev cpx
@@ -481,8 +479,8 @@ Use this method to add any models (e.g., physical, definition, or group) require
 
 See also:
 
-- [DefinitionModel.insert]($imodeljs-backend)
-- [PhysicalModel.insert]($imodeljs-backend)
+- [DefinitionModel.insert]($core-backend)
+- [PhysicalModel.insert]($core-backend)
 
 #### OpenSourceData
 
@@ -635,7 +633,7 @@ See this article on [Logging](./common/Logging.md)
 
 ### Error Messages
 
-See [BriefcaseStatus]($bentleyjs-core)
+See [BriefcaseStatus]($core-bentley)
 
 ### Building a test for a Connector
 
@@ -677,7 +675,7 @@ Please see the section on [GeometryStream](./common/geometrystream) to understan
 Typical workflow to create iModel geometry is
 
 1. Identify the suitable ECClass to persist your data. Typically this is a PhysicalElement
-2. Construct a [GeometryStreamBuilder]($imodeljs-common) to help with collecting all the geometric primitives that will be used to create the element.
+2. Construct a [GeometryStreamBuilder]($core-common) to help with collecting all the geometric primitives that will be used to create the element.
 3. Create and map individual geometric primitives from the input data and feed it into the geometrystream. To learn how to create individual primitives that will be fed into the geometrystreambuilder, the [iTwin Geometry sample](/sample-showcase/?group=Geometry+Samples&sample=simple-3d-sample) is a good starting point
 4. Provide geometry and other details to the element creation logic. Please see [GeometricElement3d](./backend/createelements#geometricelement3d)
 
@@ -701,10 +699,10 @@ Job-subject scoping also prevents problems with locks and codes. The codes used 
 
 For more information please see:
 
-- [BriefcaseDb.open]($imodeljs-backend)
-- [IModelDb.saveChanges]($imodeljs-backend)
-- [BriefcaseDb.pullChanges]($imodeljs-backend)
-- [BriefcaseDb.pushChanges]($imodeljs-backend)
+- [BriefcaseDb.open]($core-backend)
+- [IModelDb.saveChanges]($core-backend)
+- [BriefcaseDb.pullChanges]($core-backend)
+- [BriefcaseDb.pushChanges]($core-backend)
 - [Insert a Subject element](./backend/createelements#subject)
 - [Insert a ModelSelector element](./backend/CreateElements.md#ModelSelector)
 - [Insert a CategorySelector element](./backend/CreateElements.md#CategorySelector)

@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
+import { BentleyError, BentleyStatus } from "@itwin/core-bentley";
 import { SchemaContext } from "../Context";
 import { Constant } from "../Metadata/Constant";
 import { Schema } from "../Metadata/Schema";
@@ -30,7 +30,7 @@ export class GraphUtils {
     if (outEdges.length > 0) {
       t = outEdges.reduce<T>(
         (p, edge) => {
-          const {v, w} = edge;
+          const { v, w } = edge;
           const edgeExponent = _graph.edge(v, w).exponent;
           return GraphUtils.dfsReduce(_graph, edge.w, op, p, baseUnitsMap, accumulatedExponent * edgeExponent);
         },

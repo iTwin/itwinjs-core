@@ -5,11 +5,11 @@
 import { expect } from "chai";
 import faker from "faker";
 import fs from "fs";
-import { ClientRequestContext, Id64 } from "@bentley/bentleyjs-core";
-import { SnapshotDb } from "@bentley/imodeljs-backend";
-import { Presentation, RulesetEmbedder } from "@bentley/presentation-backend";
-import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@bentley/presentation-common";
-import { createRandomRuleset } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { Id64 } from "@itwin/core-bentley";
+import { SnapshotDb } from "@itwin/core-backend";
+import { Presentation, RulesetEmbedder } from "@itwin/presentation-backend";
+import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import { createRandomRuleset } from "@itwin/presentation-common/lib/cjs/test";
 import { initialize, terminate } from "../IntegrationTests";
 
 const RULESET_1: Ruleset = {
@@ -105,7 +105,7 @@ describe("RulesEmbedding", () => {
     expect(Id64.isValid(insertId)).true;
 
     // Try getting root node to confirm embedded ruleset is being located
-    const rootNodes = await Presentation.getManager().getNodes({ requestContext: ClientRequestContext.current, imodel, rulesetOrId: RULESET_1.id });
+    const rootNodes = await Presentation.getManager().getNodes({ imodel, rulesetOrId: RULESET_1.id });
     expect(rootNodes.length).to.be.equal(1);
   });
 
@@ -115,14 +115,14 @@ describe("RulesEmbedding", () => {
     expect(Id64.isValid(insertId)).true;
 
     // Try getting root node to confirm embedded ruleset is being located
-    let rootNodes = await Presentation.getManager().getNodes({ requestContext: ClientRequestContext.current, imodel, rulesetOrId: RULESET_1.id });
+    let rootNodes = await Presentation.getManager().getNodes({ imodel, rulesetOrId: RULESET_1.id });
     expect(rootNodes.length).to.be.equal(1);
 
     const rulesetElement = imodel.elements.getElement(insertId);
     rulesetElement.setJsonProperty("id", faker.random.uuid());
     imodel.elements.updateElement(rulesetElement);
 
-    rootNodes = await Presentation.getManager().getNodes({ requestContext: ClientRequestContext.current, imodel, rulesetOrId: RULESET_1.id });
+    rootNodes = await Presentation.getManager().getNodes({ imodel, rulesetOrId: RULESET_1.id });
     expect(rootNodes.length).to.be.equal(1);
   });
 

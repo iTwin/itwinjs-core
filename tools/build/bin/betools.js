@@ -14,63 +14,8 @@ yargs.strict(true)
   .wrap(Math.min(150, yargs.terminalWidth()))
   .version("2.0.0")
   .usage("Bentley Scripts Utility\n\n These scripts consist of several standard npm tasks an app may want to make use of.")
-  .command("test", "Run mocha tests on the current repository",
-    function (yargs) {
-      return yargs.options({
-        "packageRoot": {
-          describe: "The root of the package to locate the Mocha bin.  Default is 'process.cwd()'."
-        },
-        "testDir": {
-          describe: "The location of the test directory containing .js files. Default is './lib/test'."
-        },
-        "mochaOpts": {
-          describe: "Adds the provided options file to mocha using --opts.  See mocha docs for priority order, https://mochajs.org/api/module-lib_cli_options.html#.loadMochaOpts."
-        },
-        "timeout": {
-          describe: "Overrides the default timeout passed to Mocha.  Default is 999999."
-        },
-        "grep": {
-          describe: "Add the grep pattern to Mocha."
-        },
-        "offline": {
-          describe: "If set to 'mock', "
-        },
-        "watch": {
-          describe: "Adds the --watch and --inline-diffs parameters to the Mocha command."
-        },
-        "debug": {
-          describe: "Adds the --inspect=9229 and --debug-brk parameters to the Mocha command."
-        },
-        "defineWindow": {
-          describe: "Adds the `--require jsdom-global/register` to the Mocha command.  Use if a window is needed for compilation."
-        },
-        "invert": {
-          describe: "Adds the --invert option to Mocha, only if '--grep' is provided too."
-        }
-      })
-    },
-    (argv) => { testCommand(argv) })
-  .command("test-tsnode", "Run the ts-node version of the Mocha tests (NOTE: This may fail when running code coverage due to a behavior within Istanbul. If this occurs, you should run the script directly with Node)",
-    function (yargs) {
-      return yargs.options({
-        "packageRoot": {
-          describe: "The root of the package to locate the Mocha bin"
-        },
-        "testDir": {
-          describe: "The location of the test directory"
-        },
-        "watch": {
-          describe: "Adds the --watch and --inline-diffs parameters to the Mocha command"
-        },
-        "debug": {
-          describe: "Adds the --inspect=9229 and --debug-brk parameters to the Mocha command"
-        },
-        "tscPaths": {
-          describe: "Adds the --require tsconfig-paths/register arguments to the Mocha command"
-        }
-      })
-    },
-    (argv) => { testTsNodeCommand(argv) })
+  .command("test", false, {}, () => { testCommand() })
+  .command("test-tsnode", false, {}, () => { testCommand() })
   .command("docs", "Generate TypeDoc documentation by using the provided parameters to pass to TypeDoc.  Supports generating html TypeScript documentation as well as a json representation of the documentation.",
     function (yargs) {
       return yargs.options({
@@ -151,30 +96,8 @@ yargs.strict(true)
   .argv;
 
 function testCommand(options) {
-  const rootOpt = options.packageRoot ? ["--packageRoot", options.packageRoot] : [];
-  const testDirOpt = options.testDir ? ["--testDir", options.testDir] : [];
-  // NOTE: We use `mochaOpts` as the cli arg instead of `opts` because of conflicts on the commander options object
-  const optionsOpt = options.mochaOpts ? ["--opts", options.mochaOpts] : [];
-  const timeoutOpt = options.timeout ? ["--timeout", options.timeout] : [];
-  const grepOpt = options.grep ? ["--grep", `\"${options.grep}\"`] : [];
-  const offlineOpt = options.offline ? ["--offline", options.offline] : [];
-  const watchOpt = options.watch ? ["--watch"] : [];
-  const debugOpt = options.debug ? ["--debug"] : [];
-  const windowOpt = options.defineWindow ? ["--defineWindow"] : [];
-  const invertOpt = options.invert ? ["--invert"] : [];
-
-  exec(["node", path.resolve(__dirname, "../scripts/test.js"),
-    ...rootOpt, ...testDirOpt, ...optionsOpt, ...timeoutOpt, ...grepOpt,
-    ...offlineOpt, ...watchOpt, ...debugOpt, ...windowOpt, ...invertOpt]);
-}
-
-function testTsNodeCommand(options) {
-  const rootOpt = options.packageRoot ? ["--packageRoot", options.packageRoot] : [];
-  const testDirOpt = options.testDir ? ["--testDir", options.testDir] : [];
-  const watchOpt = options.watch ? ["--watch"] : [];
-  const debugOpt = options.debug ? ["--debug"] : [];
-  const tscPathsOpt = options.tscPaths ? ["--tscPaths"] : [];
-  exec(["node", path.resolve(__dirname, "../scripts/test-tsnode.js"), ...rootOpt, ...testDirOpt, ...watchOpt, ...debugOpt, ...tscPathsOpt]);
+  console.error("ERROR: The test and test-tsnode commands have been removed from betools.  Please use mocha directly instead.");
+  process.exit(1);
 }
 
 function docsCommand(options) {
@@ -215,5 +138,11 @@ function pseudolocalizeCommand(options) {
 function exec(cmd) {
   console.log("Running command:");
   console.log(cmd.join(" "));
-  return child_process.execSync(cmd.join(" "), { encoding: "utf8", stdio: 'inherit' });
+  try {
+    return child_process.execSync(cmd.join(" "), { encoding: "utf8", stdio: 'inherit' });
+  } catch (error) {
+    if (error.status)
+      process.exit(error.status);
+    throw error;
+  }
 }

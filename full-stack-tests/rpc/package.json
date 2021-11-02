@@ -1,16 +1,17 @@
 {
   "name": "rpc-full-stack-tests",
   "//private": "NOTE: this is a private package that is never published",
+  "version": "0.0.0",
   "private": true,
   "license": "MIT",
   "scripts": {
-    "compile": "npm run build",
-    "build": "tsc 1>&2 && npm run webpack:frontend",
+    "build": "tsc 1>&2 && npm run -s webpack:frontend",
+    "build:ci": "npm run -s build",
     "clean": "rimraf lib .rush/temp/package-deps*.json coverage",
-    "cover": "npm test",
+    "cover": "npm -s test",
     "docs": "",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": "npm run test:chrome && npm run test:electron",
+    "test": "npm run -s test:chrome && npm run -s test:electron",
     "test:chrome": "certa -r chrome -b ./lib/backend/http.js",
     "test:electron": "certa -r electron -b ./lib/backend/electron.js",
     "test:direct": "certa -r node -b ./lib/backend/direct.js",
@@ -18,28 +19,28 @@
   },
   "repository": {},
   "dependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
-    "@bentley/express-server": "workspace:*",
-    "@bentley/imodeljs-backend": "workspace:*",
-    "@bentley/imodeljs-frontend": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/express-server": "workspace:*",
+    "@itwin/core-backend": "workspace:*",
+    "@itwin/core-frontend": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "@bentley/imodeljs-common": "workspace:*",
-    "@bentley/electron-manager": "workspace:*",
-    "@bentley/mobile-manager": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/core-electron": "workspace:*",
+    "@itwin/core-mobile": "workspace:*",
     "chai": "^4.1.2",
-    "electron": "^11.1.0",
+    "electron": "^14.0.0",
     "express": "^4.16.3",
     "semver": "^5.5.0",
     "spdy": "^4.0.1"
   },
   "devDependencies": {
-    "@bentley/build-tools": "workspace:*",
-    "@bentley/certa": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/certa": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/express": "^4.16.1",
     "@types/mocha": "^8.2.2",
-    "@types/node": "10.14.1",
+    "@types/node": "14.14.31",
     "@types/semver": "^5.5.0",
     "@types/spdy": "^3.4.4",
     "chai": "^4.1.2",
@@ -48,13 +49,14 @@
     "null-loader": "^0.1.1",
     "rimraf": "^3.0.2",
     "source-map-loader": "^1.0.0",
-    "typescript": "~4.3.0",
-    "webpack": "4.42.0"
+    "typescript": "~4.4.0",
+    "webpack": "4.42.0",
+    "webpack-cli": "^3.1.0"
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended"
+    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }

@@ -9,10 +9,10 @@
 
 import memoize from "micro-memoize";
 import * as React from "react";
-import { assert } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Keys, KeySet } from "@bentley/presentation-common";
-import { Presentation } from "@bentley/presentation-frontend";
+import { assert } from "@itwin/core-bentley";
+import { IModelConnection } from "@itwin/core-frontend";
+import { Keys, KeySet } from "@itwin/presentation-common";
+import { Presentation } from "@itwin/presentation-frontend";
 
 /**
  * Interface for accessing and modifying Unified Selection within React components.
@@ -72,7 +72,7 @@ export interface UnifiedSelectionContextProviderProps {
 
 /**
  * Unified Selection context provider. It adapts framework-agnostic
- * [Unified Selection]($docs/learning/presentation/Unified-Selection/index.md) API to be better suited for React
+ * [Unified Selection]($docs/presentation/Unified-Selection/index.md) API to be better suited for React
  * applications. The provided context is accessible via [[useUnifiedSelectionContext]] hook.
  * @beta
  */

@@ -6,9 +6,9 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import { Content } from "../../presentation-common/content/Content";
 import {
-  addFieldHierarchy, createFieldHierarchies, FIELD_NAMES_SEPARATOR, FieldHierarchy, IContentVisitor, ProcessFieldHierarchiesProps, ProcessMergedValueProps,
-  ProcessPrimitiveValueProps, StartArrayProps, StartCategoryProps, StartContentProps, StartFieldProps, StartItemProps, StartStructProps,
-  traverseContent, traverseContentItem, traverseFieldHierarchy,
+  addFieldHierarchy, createFieldHierarchies, FIELD_NAMES_SEPARATOR, FieldHierarchy, IContentVisitor, ProcessFieldHierarchiesProps,
+  ProcessMergedValueProps, ProcessPrimitiveValueProps, StartArrayProps, StartCategoryProps, StartContentProps, StartFieldProps, StartItemProps,
+  StartStructProps, traverseContent, traverseContentItem, traverseFieldHierarchy,
 } from "../../presentation-common/content/ContentTraverser";
 import { PropertyValueFormat } from "../../presentation-common/content/TypeDescription";
 import {
@@ -393,6 +393,27 @@ describe("ContentTraverser", () => {
         mergedField: parentField,
         namePrefix: undefined,
       });
+    });
+
+    it("doesn't process empty nested content item", () => {
+      const startArraySpy = sinon.spy(visitor, "startArray");
+      const processPrimitiveValueSpy = sinon.spy(visitor, "processPrimitiveValue");
+      const category = createTestCategoryDescription();
+      const primitiveField = createTestSimpleContentField({ category });
+      const parentField = createTestNestedContentField({ nestedFields: [primitiveField], category });
+      const descriptor = createTestContentDescriptor({ fields: [parentField], categories: [category] });
+      const item = createTestContentItem({
+        values: {
+          [parentField.name]: [],
+        },
+        displayValues: {
+          [parentField.name]: [],
+        },
+      });
+      traverseContentItem(visitor, descriptor, item);
+
+      expect(startArraySpy).to.not.be.called;
+      expect(processPrimitiveValueSpy).to.not.be.called;
     });
 
     it("processes primitive value nested under nested content item as array value", () => {
@@ -1009,11 +1030,8 @@ describe("ContentTraverser", () => {
       expect(finishArraySpy).to.be.calledThrice;
     });
 
-    it("processes primitive value nested under empty nested content item as an empty array value", () => {
+    it("doesn't process primitive value nested under empty nested content item", () => {
       const startArraySpy = sinon.spy(visitor, "startArray");
-      const finishArraySpy = sinon.spy(visitor, "finishArray");
-      const startStructSpy = sinon.spy(visitor, "startStruct");
-      const finishStructSpy = sinon.spy(visitor, "finishStruct");
       const processPrimitiveValueSpy = sinon.spy(visitor, "processPrimitiveValue");
       const category1 = createTestCategoryDescription();
       const category2 = createTestCategoryDescription();
@@ -1030,27 +1048,13 @@ describe("ContentTraverser", () => {
       });
       traverseContentItem(visitor, descriptor, item);
 
-      expect(startArraySpy).to.be.calledOnce;
-      expect(startArraySpy.firstCall.firstArg).to.containSubset({
-        hierarchy: {
-          field: { name: primitiveField.name },
-        },
-        valueType: {
-          valueFormat: PropertyValueFormat.Array,
-          typeName: `${primitiveField.type.typeName}[]`,
-          memberType: primitiveField.type,
-        },
-        namePrefix: parentField.name,
-      });
-      [startStructSpy, processPrimitiveValueSpy, finishStructSpy].forEach((spy) => expect(spy).to.not.be.called);
-      expect(finishArraySpy).to.be.calledOnce;
+      expect(startArraySpy).to.not.be.called;
+      expect(startArraySpy).to.not.be.called;
+      expect(processPrimitiveValueSpy).to.not.be.called;
     });
 
-    it("processes primitive value deeply nested under empty nested content item as an empty array value", () => {
+    it("doesn't process primitive value deeply nested under empty nested content item", () => {
       const startArraySpy = sinon.spy(visitor, "startArray");
-      const finishArraySpy = sinon.spy(visitor, "finishArray");
-      const startStructSpy = sinon.spy(visitor, "startStruct");
-      const finishStructSpy = sinon.spy(visitor, "finishStruct");
       const processPrimitiveValueSpy = sinon.spy(visitor, "processPrimitiveValue");
       const category1 = createTestCategoryDescription();
       const category2 = createTestCategoryDescription();
@@ -1077,20 +1081,9 @@ describe("ContentTraverser", () => {
       });
       traverseContentItem(visitor, descriptor, item);
 
-      expect(startArraySpy).to.be.calledOnce;
-      expect(startArraySpy.firstCall.firstArg).to.containSubset({
-        hierarchy: {
-          field: { name: primitiveField.name },
-        },
-        valueType: {
-          valueFormat: PropertyValueFormat.Array,
-          typeName: `${primitiveField.type.typeName}[]`,
-          memberType: primitiveField.type,
-        },
-        namePrefix: `${parentField.name}${FIELD_NAMES_SEPARATOR}${middleField.name}`,
-      });
-      [startStructSpy, processPrimitiveValueSpy, finishStructSpy].forEach((spy) => expect(spy).to.not.be.called);
-      expect(finishArraySpy).to.be.calledOnce;
+      expect(startArraySpy).to.not.be.called;
+      expect(startArraySpy).to.not.be.called;
+      expect(processPrimitiveValueSpy).to.not.be.called;
     });
 
   });

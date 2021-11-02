@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { NodeKey } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { createRandomECInstancesNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
+import * as moq from "typemoq";
+import { IModelConnection } from "@itwin/core-frontend";
+import { NodeKey } from "@itwin/presentation-common";
+import { createRandomECInstancesNodeKey } from "@itwin/presentation-common/lib/cjs/test";
 import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler";
 import { NodeIdentifier, StateTracker } from "../presentation-frontend/StateTracker";
 

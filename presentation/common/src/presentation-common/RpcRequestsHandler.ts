@@ -6,8 +6,8 @@
  * @module RPC
  */
 
-import { Guid, Id64String, IDisposable } from "@bentley/bentleyjs-core";
-import { IModelRpcProps, RpcManager } from "@bentley/imodeljs-common";
+import { Guid, Id64String, IDisposable } from "@itwin/core-bentley";
+import { IModelRpcProps, RpcManager } from "@itwin/core-common";
 import { DescriptorJSON, DescriptorOverrides } from "./content/Descriptor";
 import { ItemJSON } from "./content/Item";
 import { DisplayValueGroupJSON } from "./content/Value";
@@ -23,10 +23,11 @@ import { LabelDefinitionJSON } from "./LabelDefinition";
 import {
   ContentDescriptorRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, DisplayLabelRequestOptions, DisplayLabelsRequestOptions,
   DistinctValuesRequestOptions, ElementPropertiesRequestOptions, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions,
-  HierarchyRequestOptions, Paged, RequestOptions, SelectionScopeRequestOptions,
+  HierarchyRequestOptions, MultiElementPropertiesRequestOptions, Paged, RequestOptions, SelectionScopeRequestOptions,
+  SingleElementPropertiesRequestOptions,
 } from "./PresentationManagerOptions";
 import {
-  ContentSourcesRpcResult, PresentationRpcInterface, PresentationRpcRequestOptions, PresentationRpcResponse,
+  ContentSourcesRpcResult, ElementPropertiesRpcResult, PresentationRpcInterface, PresentationRpcRequestOptions, PresentationRpcResponse,
 } from "./PresentationRpcInterface";
 import { RulesetVariableJSON } from "./RulesetVariables";
 import { SelectionScope } from "./selection/SelectionScope";
@@ -71,7 +72,7 @@ export class RpcRequestsHandler implements IDisposable {
 
   private async requestRepeatedly<TResult>(func: () => PresentationRpcResponse<TResult>, diagnosticsHandler?: (logs: DiagnosticsScopeLogs[]) => void, repeatCount: number = 1): Promise<TResult> {
     let diagnostics: DiagnosticsScopeLogs[] | undefined;
-    let error: Error | undefined;
+    let error: unknown | undefined;
     let shouldRepeat = false;
     try {
       const response = await func();
@@ -172,8 +173,10 @@ export class RpcRequestsHandler implements IDisposable {
       this.rpcClient.getPagedDistinctValues.bind(this.rpcClient), options);
   }
 
-  public async getElementProperties(options: ElementPropertiesRequestOptions<IModelRpcProps>): Promise<ElementProperties | undefined> {
-    return this.request<ElementProperties | undefined, ElementPropertiesRequestOptions<IModelRpcProps>>(
+  public async getElementProperties(options: SingleElementPropertiesRequestOptions<IModelRpcProps>): Promise<ElementProperties | undefined>;
+  public async getElementProperties(options: MultiElementPropertiesRequestOptions<IModelRpcProps>): Promise<PagedResponse<ElementProperties>>;
+  public async getElementProperties(options: ElementPropertiesRequestOptions<IModelRpcProps>): Promise<ElementPropertiesRpcResult> {
+    return this.request<ElementPropertiesRpcResult, ElementPropertiesRequestOptions<IModelRpcProps>>(
       this.rpcClient.getElementProperties.bind(this.rpcClient), options);
   }
 

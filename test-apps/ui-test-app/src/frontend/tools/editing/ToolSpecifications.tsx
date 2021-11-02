@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelApp } from "@bentley/imodeljs-frontend";
-import { ToolItemDef } from "@bentley/ui-framework";
+import { IModelApp } from "@itwin/core-frontend";
+import { ToolItemDef } from "@itwin/appui-react";
 import { PlaceBlockTool } from "./PlaceBlockTool";
-import { CreateArcTool, CreateLineStringTool, DeleteElementsTool, MoveElementsTool, RotateElementsTool } from "@bentley/imodeljs-editor-frontend";
+import { CreateArcTool, CreateLineStringTool, DeleteElementsTool, MoveElementsTool, RotateElementsTool } from "@itwin/editor-frontend";
 
 export class EditTools {
   public static get deleteElementTool() {

@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { WebGLDisposable } from "./Disposable";
 import { GL } from "./GL";
 import { System } from "./System";

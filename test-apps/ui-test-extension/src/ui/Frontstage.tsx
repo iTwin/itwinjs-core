@@ -3,20 +3,21 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { IModelApp } from "@bentley/imodeljs-frontend";
-import { CommonToolbarItem, StageUsage, WidgetState } from "@bentley/ui-abstract";
+import { IModelApp } from "@itwin/core-frontend";
+import { CommonToolbarItem, StageUsage, StandardContentLayouts, WidgetState } from "@itwin/appui-abstract";
 import {
-  BasicNavigationWidget, BasicToolWidget, ContentGroup, ContentLayoutDef, CoreTools, Frontstage, FrontstageProps, FrontstageProvider,
+  BasicNavigationWidget, BasicToolWidget, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider,
   IModelViewportControl, StagePanel, StagePanelState, UiFramework, Widget, Zone,
-} from "@bentley/ui-framework";
+} from "@itwin/appui-react";
 import { ExtensionStatusBarWidgetControl } from "./statusbar/StatusBar";
 import { GenericTool } from "./tools/GenericTool";
 
 /* eslint-disable react/jsx-key, deprecation/deprecation */
 
 export class ExtensionFrontstage extends FrontstageProvider {
-  public static get id() {
-    return "ui-test.SampleStage";
+  public static stageId = "ui-test.SampleStage";
+  public get id(): string {
+    return ExtensionFrontstage.stageId;
   }
 
   private get _additionalVerticalToolWidgetItems(): CommonToolbarItem[] {
@@ -35,22 +36,18 @@ export class ExtensionFrontstage extends FrontstageProvider {
   };
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
-    const pluginContentLayoutDef: ContentLayoutDef = new ContentLayoutDef(
-      {
-        id: "ui-test.TwoHalvesHorizontal",
-        descriptionKey: "ContentDef.TwoStacked",
-        priority: 50,
-        horizontalSplit: { id: "TwoHalvesHorizontal.HorizontalSplit", percentage: 0.80, top: 0, bottom: 1 },
-      });
-
     const pluginContentGroup: ContentGroup = new ContentGroup(
       {
+        id: "ui-test:content-group",
+        layout: StandardContentLayouts.twoHorizontalSplit,
         contents: [
           {
+            id: "ui-test:primary",
             classId: IModelViewportControl,
             applicationData: { viewState: this._getViewState, iModelConnection: UiFramework.getIModelConnection },
           },
           {
+            id: "ui-test:primary",
             classId: "SampleExtensionContentControl",
           },
         ],
@@ -58,10 +55,9 @@ export class ExtensionFrontstage extends FrontstageProvider {
     );
 
     return (
-      <Frontstage id={ExtensionFrontstage.id}
+      <Frontstage id={this.id}
         version={1.2}
         defaultTool={CoreTools.selectElementCommand}
-        defaultLayout={pluginContentLayoutDef}
         contentGroup={pluginContentGroup}
         defaultContentId="singleIModelView"
         isInFooterMode={true}

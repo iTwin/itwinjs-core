@@ -5,13 +5,13 @@ These packages adhere to the frontend constraints of running within a web browse
 
 The iTwin.js common libraries are contained in the following npm packages:
 
-- [@bentley/bentleyjs-core](https://www.npmjs.com/package/@bentley/bentleyjs-core)
+- [@itwin/core-bentley](https://www.npmjs.com/package/@itwin/core-bentley)
   - ($bentley)
-- [@bentley/ecschema-metadata](https://www.npmjs.com/package/@bentley/ecschema-metadata)
+- [@itwin/ecschema-metadata](https://www.npmjs.com/package/@itwin/ecschema-metadata)
   - ($ecschema-metadata)
-- [@bentley/geometry-core](https://www.npmjs.com/package/@bentley/geometry-core)
+- [@itwin/core-geometry](https://www.npmjs.com/package/@itwin/core-geometry)
   - ($geometry)
-- [@bentley/imodeljs-common](https://www.npmjs.com/package/@bentley/imodeljs-common)
+- [@itwin/core-common](https://www.npmjs.com/package/@itwin/core-common)
   - ($common)
 
 Topics:

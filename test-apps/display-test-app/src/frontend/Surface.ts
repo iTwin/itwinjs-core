@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { KeyinField, parseArgs } from "@bentley/frontend-devtools";
-import { Range3d } from "@bentley/geometry-core";
-import { Cartographic } from "@bentley/imodeljs-common";
-import { BlankConnection, BlankConnectionProps, IModelApp, Tool } from "@bentley/imodeljs-frontend";
+import { KeyinField, parseArgs } from "@itwin/frontend-devtools";
+import { Range3d } from "@itwin/core-geometry";
+import { Cartographic } from "@itwin/core-common";
+import { BlankConnection, BlankConnectionProps, IModelApp, Tool } from "@itwin/core-frontend";
 import { DisplayTestApp } from "./App";
 import { BrowserFileSelector, selectFileName } from "./FileOpen";
 import { FpsMonitor } from "./FpsMonitor";
@@ -166,7 +166,7 @@ export class Surface {
   // create a new blank connection for testing backgroundMap and reality models.
   private async openBlankConnection(props?: Partial<BlankConnectionProps>): Promise<Viewer> {
     const iModel = BlankConnection.create({
-      location: props?.location ?? Cartographic.fromDegrees(-75.686694, 40.065757, 0), // near Exton pa
+      location: props?.location ?? Cartographic.fromDegrees({longitude: -75.686694, latitude: 40.065757, height: 0}), // near Exton pa
       extents: props?.extents ?? new Range3d(-1000, -1000, -100, 1000, 1000, 100),
       name: props?.name ?? "blank connection test",
     });

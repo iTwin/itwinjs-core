@@ -16,4 +16,4 @@ A more detailed explanation of using the UiItemsProvider interface can be found 
 
 ## Building a new Frontstage
 
-If you find that you need to make more drastic modifications to the delivered Frontstage, you may need to create a new Frontstage. This [Frontstage](./FrontstageUi2.md) sample can be used as a template for your app's Frontstage. From there, the new Frontstage can be added to your App at startup using a FrontstageProvider. Details in [Adding a Frontstage](./AugmentingUI.md#Adding-a-Frontstage).
+If you find that you need to make more drastic modifications to the delivered Frontstage, you may need to create a new Frontstage. This [Frontstage](./framework/Frontstages.md) sample can be used as a template for your app's Frontstage. From there, the new Frontstage can be added to your App at startup using a FrontstageProvider. Details in [Adding a Frontstage](./AugmentingUI.md#Adding-a-Frontstage).

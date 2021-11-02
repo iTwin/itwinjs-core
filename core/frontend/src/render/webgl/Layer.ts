@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { Id64 } from "@bentley/bentleyjs-core";
+import { Id64 } from "@itwin/core-bentley";
 import { RenderMemory } from "../RenderMemory";
 import { Graphic } from "./Graphic";
 import { RenderCommands } from "./RenderCommands";

@@ -9,7 +9,7 @@
 import {
   BeButtonEvent, CoreTools, EventHandled, IModelApp, InputSource, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod,
   ToolAssistanceInstruction, ToolAssistanceSection,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { G, Text as MarkupText } from "@svgdotjs/svg.js";
 import { MarkupApp } from "./Markup";
 import { MarkupTool } from "./MarkupTool";
@@ -63,7 +63,7 @@ export class EditTextTool extends MarkupTool {
   constructor(public text?: MarkupText | G, private _fromPlaceTool = false) { super(); }
 
   protected override showPrompt(): void {
-    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.i18n.translate(`${MarkupTool.toolKey}Text.Edit.Prompts.FirstPoint`));
+    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.localization.getLocalizedString(`${MarkupTool.toolKey}Text.Edit.Prompts.FirstPoint`));
     const mouseInstructions: ToolAssistanceInstruction[] = [];
     const touchInstructions: ToolAssistanceInstruction[] = [];
 

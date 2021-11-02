@@ -3,15 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, DbResult, Id64, Id64Array, Id64Set, Id64String, Logger } from "@bentley/bentleyjs-core";
+import { AccessToken, assert, DbResult, Id64, Id64Array, Id64Set, Id64String, Logger } from "@itwin/core-bentley";
 import {
   Category, CategorySelector, DisplayStyle, DisplayStyle3d, ECSqlStatement, Element, ElementRefersToElements, GeometricModel3d, GeometryPart,
   IModelDb, ModelSelector, PhysicalModel, PhysicalPartition, Relationship, SpatialCategory,
   SpatialViewDefinition, SubCategory, ViewDefinition,
-} from "@bentley/imodeljs-backend";
-import { IModelTransformer, IModelTransformOptions } from "@bentley/imodeljs-transformer";
-import { ElementProps, IModel } from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+} from "@itwin/core-backend";
+import { IModelTransformer, IModelTransformOptions } from "@itwin/core-transformer";
+import { ElementProps, IModel } from "@itwin/core-common";
 
 export const loggerCategory = "imodel-transformer";
 
@@ -48,7 +47,7 @@ export class Transformer extends IModelTransformer {
     transformer.logElapsedTime();
   }
 
-  public static async transformChanges(requestContext: AuthorizedClientRequestContext, sourceDb: IModelDb, targetDb: IModelDb, sourceStartChangesetId: string, options?: TransformerOptions): Promise<void> {
+  public static async transformChanges(requestContext: AccessToken, sourceDb: IModelDb, targetDb: IModelDb, sourceStartChangesetId: string, options?: TransformerOptions): Promise<void> {
     if ("" === sourceDb.changeset.id) {
       assert("" === sourceStartChangesetId);
       return this.transformAll(sourceDb, targetDb, options);

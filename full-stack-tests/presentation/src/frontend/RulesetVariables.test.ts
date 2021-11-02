@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import { Guid, Id64 } from "@bentley/bentleyjs-core";
-import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
-import { ChildNodeSpecificationTypes, ContentSpecificationTypes, KeySet, Ruleset, RuleTypes } from "@bentley/presentation-common";
-import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { Presentation, PresentationManager, RulesetVariablesManager } from "@bentley/presentation-frontend";
+import { Guid, Id64 } from "@itwin/core-bentley";
+import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { ChildNodeSpecificationTypes, ContentSpecificationTypes, KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import { createRandomId } from "@itwin/presentation-common/lib/cjs/test";
+import { Presentation, PresentationManager, RulesetVariablesManager } from "@itwin/presentation-frontend";
 import { initialize, resetBackend, terminate } from "../IntegrationTests";
 
 const RULESET: Ruleset = {

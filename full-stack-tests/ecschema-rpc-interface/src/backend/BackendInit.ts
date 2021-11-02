@@ -2,12 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-// Sets up certa to allow a method on the frontend to get an access token
-import "@bentley/oidc-signin-tool/lib/certa/certaBackend";
-import * as path from "path";
-import { Settings } from "../common/Settings";
-import { exposeBackendCallbacks } from "../common/SideChannels";
 import * as fs from "fs";
+import * as path from "path";
+// Sets up certa to allow a method on the frontend to get an access token
+import "@itwin/oidc-signin-tool/lib/cjs/certa/certaBackend";
+import { exposeBackendCallbacks } from "../common/SideChannels";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
@@ -26,11 +25,5 @@ function loadEnv(envFile: string) {
 
 module.exports = (async () => {
   loadEnv(path.join(__dirname, "..", "..", ".env"));
-
-  // Need to create a new one on the backend to properly setup dotenv
-  const settings = new Settings(process.env);
-
-  process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION = String(settings.env);
-
   exposeBackendCallbacks();
 })();

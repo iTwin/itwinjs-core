@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String } from "@itwin/core-bentley";
 import { CategoryDescription } from "../../presentation-common/content/Category";
 import {
   Descriptor, DescriptorJSON, DescriptorSource, SelectClassInfo, SelectClassInfoJSON, SortDirection,
@@ -334,19 +334,10 @@ describe("SelectClassInfo", () => {
 
   let classesMap!: { [id: string]: CompressedClassInfoJSON };
   let obj!: SelectClassInfo;
-  let json!: SelectClassInfoJSON;
   let compressedJson!: SelectClassInfoJSON<Id64String>;
 
   beforeEach(() => {
     obj = {
-      selectClassInfo: {
-        id: "0x123",
-        name: "name",
-        label: "Label",
-      },
-      isSelectPolymorphic: true,
-    };
-    json = {
       selectClassInfo: {
         id: "0x123",
         name: "name",
@@ -364,66 +355,6 @@ describe("SelectClassInfo", () => {
         label: "Label",
       },
     };
-  });
-
-  describe("fromJSON", () => {
-
-    it("doesn't create unnecessary members", () => {
-      const result = SelectClassInfo.fromJSON(json);
-      expect(result).to.not.haveOwnProperty("pathFromInputToSelectClass");
-      expect(result).to.not.haveOwnProperty("relatedPropertyPaths");
-      expect(result).to.not.haveOwnProperty("navigationPropertyClasses");
-      expect(result).to.not.haveOwnProperty("relatedInstancePaths");
-    });
-
-    it("parses `pathFromInputToSelectClass`", () => {
-      const pathFromInputToSelectClass = createTestRelationshipPath(2);
-      json = {
-        ...json,
-        pathFromInputToSelectClass: pathFromInputToSelectClass.map(RelatedClassInfo.toJSON),
-      };
-      expect(SelectClassInfo.fromJSON(json)).to.deep.eq({
-        ...obj,
-        pathFromInputToSelectClass,
-      });
-    });
-
-    it("parses `relatedPropertyPaths`", () => {
-      const relatedPropertyPaths = [createTestRelationshipPath(2)];
-      json = {
-        ...json,
-        relatedPropertyPaths: relatedPropertyPaths.map((p) => p.map(RelatedClassInfo.toJSON)),
-      };
-      expect(SelectClassInfo.fromJSON(json)).to.deep.eq({
-        ...obj,
-        relatedPropertyPaths,
-      });
-    });
-
-    it("parses `navigationPropertyClasses`", () => {
-      const navigationPropertyClasses = createTestRelationshipPath(2);
-      json = {
-        ...json,
-        navigationPropertyClasses: navigationPropertyClasses.map(RelatedClassInfo.toJSON),
-      };
-      expect(SelectClassInfo.fromJSON(json)).to.deep.eq({
-        ...obj,
-        navigationPropertyClasses,
-      });
-    });
-
-    it("parses `relatedInstancePaths`", () => {
-      const relatedInstancePaths = [createTestRelationshipPath(2)];
-      json = {
-        ...json,
-        relatedInstancePaths: relatedInstancePaths.map((p) => p.map(RelatedClassInfo.toJSON)),
-      };
-      expect(SelectClassInfo.fromJSON(json)).to.deep.eq({
-        ...obj,
-        relatedInstancePaths,
-      });
-    });
-
   });
 
   describe("fromCompressedJSON", () => {

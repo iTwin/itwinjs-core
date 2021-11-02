@@ -12,7 +12,7 @@ import {
   formatTypeToString, InvertedUnit, KindOfQuantity, Mixin, Phenomenon, primitiveTypeToString, PropertyCategory, propertyTypeToString, RelationshipClass,
   RelationshipConstraint, Schema, SchemaItem, schemaItemTypeToString, scientificTypeToString, showSignOptionToString, strengthDirectionToString,
   strengthToString, StructProperty, Unit,
-} from "@bentley/ecschema-metadata";
+} from "@itwin/ecschema-metadata";
 import { ISchemaCompareReporter } from "./SchemaCompareReporter";
 import { SchemaCompareResultDelegate } from "./SchemaCompareResultDelegate";
 import { SchemaCompareVisitor } from "./SchemaCompareVisitor";

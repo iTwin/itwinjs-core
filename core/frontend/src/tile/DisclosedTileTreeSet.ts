@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { OrderedComparator, OrderedSet } from "@bentley/bentleyjs-core";
+import { OrderedComparator, OrderedSet } from "@itwin/core-bentley";
 import { TileTree } from "./internal";
 
 /** Interface adopted by an object that contains references to [[TileTree]]s, to expose those trees.

@@ -8,9 +8,9 @@
 
 // cSpell:ignore configurableui
 
-import { Point3d } from "@bentley/geometry-core";
-import { BeButtonEvent, EventHandled, IModelApp, PrimitiveTool, Viewport } from "@bentley/imodeljs-frontend";
-import { ConfigurableUiManager } from "@bentley/ui-framework";
+import { Point3d } from "@itwin/core-geometry";
+import { BeButtonEvent, EventHandled, IModelApp, PrimitiveTool, Viewport } from "@itwin/core-frontend";
+import { ConfigurableUiManager } from "@itwin/appui-react";
 import { AnalysisAnimationToolSettingsProvider } from "./AnalysisAnimationToolSettings";
 
 /** Tool that shows animation of Analysis information stored as a 'special' property in the display style.

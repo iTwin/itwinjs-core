@@ -5,11 +5,10 @@
 
 import { expect } from "chai";
 import * as moq from "typemoq";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { KeySet } from "@bentley/presentation-common";
-import { isKeySet } from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { createRandomECInstanceKey } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { ISelectionProvider, SelectionChangeEventArgs, SelectionChangeType, SelectionHandler } from "@bentley/presentation-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
+import { KeySet } from "@itwin/presentation-common";
+import { createRandomECInstanceKey, isKeySet } from "@itwin/presentation-common/lib/cjs/test";
+import { ISelectionProvider, SelectionChangeEventArgs, SelectionChangeType, SelectionHandler } from "@itwin/presentation-frontend";
 import { renderHook } from "@testing-library/react-hooks";
 import { IPresentationPropertyDataProvider, usePropertyDataProviderWithUnifiedSelection } from "../../presentation-components";
 

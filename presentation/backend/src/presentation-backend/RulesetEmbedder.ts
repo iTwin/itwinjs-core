@@ -8,14 +8,15 @@
 
 import * as path from "path";
 import { gt as versionGt, gte as versionGte, lt as versionLt } from "semver";
-import { assert, DbResult, Id64String } from "@bentley/bentleyjs-core";
 import {
   DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, Entity, IModelDb, KnownLocations, Model, Subject,
-} from "@bentley/imodeljs-backend";
+} from "@itwin/core-backend";
+import { assert, DbResult, Id64String } from "@itwin/core-bentley";
 import {
-  BisCodeSpec, Code, CodeScopeSpec, CodeSpec, DefinitionElementProps, ElementProps, InformationPartitionElementProps, ModelProps, SubjectProps,
-} from "@bentley/imodeljs-common";
-import { Ruleset } from "@bentley/presentation-common";
+  BisCodeSpec, Code, CodeScopeSpec, CodeSpec, DefinitionElementProps, ElementProps, InformationPartitionElementProps, ModelProps, QueryBinder,
+  QueryRowFormat, SubjectProps,
+} from "@itwin/core-common";
+import { Ruleset } from "@itwin/presentation-common";
 import { PresentationRules } from "./domain/PresentationRulesDomain";
 import * as RulesetElements from "./domain/RulesetElements";
 import { normalizeVersion } from "./Utils";
@@ -128,7 +129,7 @@ export class RulesetEmbedder {
       SELECT ECInstanceId, JsonProperties
       FROM ${RulesetElements.Ruleset.schema.name}.${RulesetElements.Ruleset.className}
       WHERE json_extract(JsonProperties, '$.jsonProperties.id') = :rulesetId`;
-    for await (const row of this._imodel.query(query, { rulesetId: ruleset.id })) {
+    for await (const row of this._imodel.query(query, QueryBinder.from({ rulesetId: ruleset.id }), QueryRowFormat.UseJsPropertyNames)) {
       const existingRulesetElementId: Id64String = row.id;
       const existingRuleset: Ruleset = JSON.parse(row.jsonProperties).jsonProperties;
       rulesetsWithSameId.push({
@@ -314,7 +315,7 @@ export class RulesetEmbedder {
       return;
 
     // import PresentationRules ECSchema
-    await this._imodel.importSchemas( [this._schemaPath]);
+    await this._imodel.importSchemas([this._schemaPath]);
 
     // insert CodeSpec for ruleset elements
     this._imodel.codeSpecs.insert(CodeSpec.create(this._imodel, PresentationRules.CodeSpec.Ruleset, CodeScopeSpec.Type.Model));

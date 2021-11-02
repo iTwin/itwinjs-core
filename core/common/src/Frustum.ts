@@ -8,7 +8,7 @@
 
 import {
   AxisOrder, ClipPlane, ConvexClipPlaneSet, Geometry, GrowableXYZArray, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point3d, Range3d, Transform, Vector3d, XYAndZ,
-} from "@bentley/geometry-core";
+} from "@itwin/core-geometry";
 
 /** The 8 corners of the [Normalized Plane Coordinate]($docs/learning/glossary.md#npc) cube.
  * @public

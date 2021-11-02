@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { LinePixels } from "@bentley/imodeljs-common";
+import { LinePixels } from "@itwin/core-common";
 
 /** Describes one of the pre-defined line patterns. See Render.LinePixels.
  * @internal

@@ -6,7 +6,7 @@
  * @module Editing
  */
 
-import { AnyEnumerator, ECObjectsError, ECObjectsStatus, EnumerationProps, PrimitiveType, SchemaItemKey, SchemaKey } from "@bentley/ecschema-metadata";
+import { AnyEnumerator, ECObjectsError, ECObjectsStatus, Enumeration, EnumerationProps, PrimitiveType, SchemaItemKey, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { MutableEnumeration } from "./Mutable/MutableEnumeration";
 
@@ -21,20 +21,24 @@ export class Enumerations {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
-    const newEnum = (await schema.createEnumeration(name, type)) as MutableEnumeration;
+    const newEnum = (await schema.createEnumeration(name, type));
     if (newEnum === undefined) {
       return { errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(true)}.` };
     }
 
     if (undefined !== isStrict) {
-      newEnum.setIsStrict(isStrict);
+      (newEnum as MutableEnumeration).setIsStrict(isStrict);
     }
+
     if (undefined !== enumerators) {
       for (const enumerator of enumerators) {
         await this.addEnumerator(newEnum.key, enumerator);
       }
     }
-    if (displayLabel) { newEnum.setDisplayLabel(displayLabel); }
+
+    if (displayLabel) {
+      (newEnum as MutableEnumeration).setDisplayLabel(displayLabel);
+    }
 
     return { itemKey: newEnum.key };
   }
@@ -49,7 +53,7 @@ export class Enumerations {
     if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
     if (enumProps.name === undefined) return { errorMessage: `No name was supplied within props.` };
-    const newEnum = (await schema.createEnumeration(enumProps.name)) as MutableEnumeration;
+    const newEnum = (await schema.createEnumeration(enumProps.name));
     if (newEnum === undefined) {
       return { errorMessage: `Failed to create class ${enumProps.name} in schema ${schemaKey.toString(true)}.` };
     }
@@ -59,16 +63,24 @@ export class Enumerations {
   }
 
   public async addEnumerator(enumerationKey: SchemaItemKey, enumerator: AnyEnumerator): Promise<void> {
-    const enumeration = (await this._schemaEditor.schemaContext.getSchemaItem(enumerationKey)) as MutableEnumeration;
+    const enumeration = (await this._schemaEditor.schemaContext.getSchemaItem<Enumeration>(enumerationKey));
 
-    if (enumeration.isInt && typeof (enumerator.value) === "string") {
-      throw new ECObjectsError(ECObjectsStatus.InvalidPrimitiveType, `The Enumeration ${enumeration.name} has type integer, while ${enumerator.name} has type string.`);
+    if (enumeration === undefined) {
+      throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Unable to locate Enumeration class ${enumerationKey.fullName}.`);
     }
 
-    if (!enumeration.isInt && typeof (enumerator.value) === "number") {
-      throw new ECObjectsError(ECObjectsStatus.InvalidPrimitiveType, `The Enumeration ${enumeration.name} has type string, while ${enumerator.name} has type integer.`);
+    if (enumeration.schemaItemType !== SchemaItemType.Enumeration) {
+      throw new ECObjectsError(ECObjectsStatus.InvalidType, `${enumeration.fullName} is not of type Enumerator class.`);
     }
 
-    enumeration.addEnumerator(enumerator);
+    if (enumeration.isInt && typeof (enumerator.value) !== "number") {
+      throw new ECObjectsError(ECObjectsStatus.InvalidPrimitiveType, `The Enumeration ${enumeration.name} has type integer, while ${enumerator.name} has type ${typeof (enumerator.value)}.`);
+    }
+
+    if (enumeration.isString && typeof (enumerator.value) !== "string") {
+      throw new ECObjectsError(ECObjectsStatus.InvalidPrimitiveType, `The Enumeration ${enumeration.name} has type string, while ${enumerator.name} has type ${typeof (enumerator.value)}.`);
+    }
+
+    (enumeration as MutableEnumeration).addEnumerator(enumerator);
   }
 }

@@ -6,8 +6,8 @@
  * @module Views
  */
 
-import { Id64Array, Id64String } from "@bentley/bentleyjs-core";
-import { AngleProps, Range3dProps, TransformProps, XYProps, XYZProps, YawPitchRollProps } from "@bentley/geometry-core";
+import { Id64Array, Id64String } from "@itwin/core-bentley";
+import { AngleProps, Range3dProps, TransformProps, XYProps, XYZProps, YawPitchRollProps } from "@itwin/core-geometry";
 import { CameraProps } from "./Camera";
 import { DisplayStyleProps } from "./DisplayStyleSettings";
 import { DefinitionElementProps, DisplayStyleLoadProps, ElementProps, SheetProps } from "./ElementProps";

@@ -6,7 +6,9 @@
 import { expect } from "chai";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineString3d } from "../../curve/LineString3d";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Point3dArray } from "../../geometry3d/PointHelpers";
+import { PolygonOps } from "../../geometry3d/PolygonOps";
 import { PolylineOps } from "../../geometry3d/PolylineOps";
 import { Range3d } from "../../geometry3d/Range";
 import { Sample } from "../../serialization/GeometrySamples";
@@ -168,5 +170,92 @@ describe("GlobalCompression", () => {
     context.verifyGlobalChordErrorCompression(0, pointsWithColinearThroughStart, 0.001);
     context.close("ColinearThroughStart");
   });
+  // append points at multiple fractional positions along a vector.
+  function appendPointsOnVector(points: Point3d[], vector: Vector3d, fractions: number[]) {
+    if (points.length > 0) {
+      const basePoint = points[points.length - 1];
+      for (const f of fractions) {
+        points.push(basePoint.plusScaled(vector, f));
+      }
+  }
+  }
+  // append points at multiple fractional positions along a vector.
+  function insertPointsOnVector(points: Point3d[], baseIndex: number, vector: Vector3d, fractions: number[]): Point3d[] {
+    const result: Point3d[] = [];
+    for (let i = 0; i < points.length; i++){
+      result.push(points[i].clone());
+      if (i === baseIndex) {
+        appendPointsOnVector(result, vector, fractions);
+      }
+    }
+    return result;
+  }
 
+  it("Danglers", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const originalPoints: Point3d[] = [];
+    originalPoints.push(Point3d.create(0, 0, 0));
+    originalPoints.push(Point3d.create(10, 6, 0));
+    originalPoints.push(Point3d.create(0, 12, 0));
+    originalPoints.push(Point3d.create(-10, 6, 0));
+    const n = originalPoints.length;
+    const vectorX4 = Vector3d.create(4, 0, 0);
+    const vectorY2 = Vector3d.create(0, 2, 0);
+    const vectorQ = Vector3d.create(2, 1, 0);
+    const area0 = PolygonOps.areaXY(originalPoints);
+    const originalLength = Point3dArray.sumEdgeLengths(originalPoints);
+    let x0 = 0;
+    let y0 = 0;
+    const dx = 30;
+    const dy = 20;
+
+    const compressAndTest = (pointsWithDanglers: Point3d[]) => {
+      const e0 = ck.getNumErrors();
+      const y00 = y0;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, pointsWithDanglers, x0, y0 += dy);
+      GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, pointsWithDanglers[0], 0.25, x0, y0);
+      const areaA = PolygonOps.areaXY(pointsWithDanglers); // danglers do not affect area!
+      const compressedPoints = PolylineOps.compressDanglers(pointsWithDanglers, true);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, compressedPoints, x0, y0 += dy);
+      ck.testCoordinate(area0, Math.abs (areaA), "area after removing danglers");
+      ck.testExactNumber(originalPoints.length, compressedPoints.length, "point count after compression");
+      const compressedLength = Point3dArray.sumEdgeLengths(compressedPoints);
+      ck.testCoordinate(originalLength, compressedLength);
+      y0 += dy;
+      if (e0 < ck.getNumErrors()) {
+        const range = Range3d.createArray(pointsWithDanglers);
+        GeometryCoreTestIO.captureRangeEdges(allGeometry, range, x0, y00);
+      }
+    };
+    const originalCount = originalPoints.length;
+    for (const baseIndex of [0, 1, n - 2, n - 1]) {
+      x0 += dx;
+      y0 = 0;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, originalPoints, x0, y0);
+      const pointsA = insertPointsOnVector(originalPoints, baseIndex, vectorX4, [1, 0]);
+      compressAndTest(pointsA);
+      // we know the dangler tip is at baseIndex + 1 !!!
+      const pointsB = insertPointsOnVector(pointsA, baseIndex + 1, vectorY2, [1, 1.5, 1, 0]);
+      compressAndTest(pointsB);
+      const pointsC = insertPointsOnVector(pointsB, baseIndex + 1, vectorY2, [-1, -1.5, -1, 0]);
+      compressAndTest(pointsC);
+      // Another dangler -- this time with an "on edge" return ---
+      for (const shift of [2,3, 5]){
+        const pointsD = insertPointsOnVector(pointsC, (baseIndex + originalCount - shift) % originalCount, vectorQ, [0,1,0.5,-0.25, -1.0, 0]);
+        compressAndTest(pointsD);
+      }
+      const nC = pointsC.length;
+      for (const setback of [1, 2, 3, 4, 5, 6, 8, 12, nC - 1, nC - 2, nC - 3]) {
+        const i0 = n - setback;
+        if (i0 > 0) {
+          const rotatedPoints = [...pointsC.slice(i0, nC), ...pointsC.slice(0, i0)];
+          compressAndTest(rotatedPoints);
+          compressAndTest(rotatedPoints.slice().reverse());
+        }
+      }
+   }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolylineCompression", "Danglers");
+    expect(ck.getNumErrors()).equals(0);
+  });
 });

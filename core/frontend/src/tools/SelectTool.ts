@@ -6,13 +6,13 @@
  * @module SelectionSet
  */
 
-import { Id64, Id64Arg } from "@bentley/bentleyjs-core";
-import { Point2d, Point3d, Range2d } from "@bentley/geometry-core";
-import { ColorDef } from "@bentley/imodeljs-common";
+import { Id64, Id64Arg } from "@itwin/core-bentley";
+import { Point2d, Point3d, Range2d } from "@itwin/core-geometry";
+import { ColorDef } from "@itwin/core-common";
 import {
   ButtonGroupEditorParams, DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription, PropertyEditorParamTypes,
   SuppressLabelEditorParams,
-} from "@bentley/ui-abstract";
+} from "@itwin/appui-abstract";
 import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";

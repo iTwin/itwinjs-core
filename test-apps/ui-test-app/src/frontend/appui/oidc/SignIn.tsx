@@ -6,82 +6,83 @@
  * @module OIDC
  */
 
+import "./SignIn.scss";
+import classnames from "classnames";
 import * as React from "react";
-import { ClientRequestContext, ProcessDetector } from "@bentley/bentleyjs-core";
-import { FrontendAuthorizationClient, isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { IModelApp } from "@bentley/imodeljs-frontend";
-import { SignInBase } from "./SignInBase";
-import { CommonProps } from "@bentley/ui-core";
-import { UiFramework } from "@bentley/ui-framework";
+import { SpecialKey } from "@itwin/appui-abstract";
+import { CommonProps } from "@itwin/core-react";
+import { IModelApp } from "@itwin/core-frontend";
+import { Button } from "@itwin/itwinui-react";
+import { UiFramework } from "@itwin/appui-react";
+import { ProcessDetector } from "@itwin/core-bentley";
+
+// cspell:ignore signingin
 
 /** Properties for the [[SignIn]] component
  * @public
  */
 export interface SignInProps extends CommonProps {
-  /** Handler called after sign-in has completed */
-  onSignedIn?: () => void;
-  /** Handler for the Register link */
+  /** Handler for clicking the Sign-In button */
+  onSignIn: () => void;
+  /** Handler for clicking the Register link */
   onRegister?: () => void;
-  /** Handler for the Offline link */
+  /** Handler for clicking the Offline link */
   onOffline?: () => void;
+}
 
-  /** @internal */
-  onStartSignIn?: () => void;
+/** @internal */
+interface SignInState {
+  isSigningIn: boolean;
+  prompt: string;
+  signInButton: string;
+  profilePrompt: string;
+  registerAnchor: string;
+  offlineButton: string;
 }
 
 /**
- * SignIn React component.
- * `IModelApp.authorizationClient.signIn` is called when the "Sign In" button is pressed,
- * then `props.onSignedIn` is called after sign-in has completed.
+ * SignIn React presentational component
  * @public
  */
-export class SignIn extends React.PureComponent<SignInProps> {
-  /** Oidc Frontend Client object */
-  private _oidcClient: FrontendAuthorizationClient | undefined;
+export class SignIn extends React.PureComponent<SignInProps, SignInState> {
 
   constructor(props: SignInProps) {
     super(props);
+
+    this.state = {
+      isSigningIn: false,
+
+      prompt: IModelApp.localization.getLocalizedString("SampleApp:signIn.prompt"),
+      signInButton: IModelApp.localization.getLocalizedString("SampleApp:signIn.signInButton"),
+      profilePrompt: IModelApp.localization.getLocalizedString("SampleApp:signIn.profilePrompt"),
+      registerAnchor: IModelApp.localization.getLocalizedString("SampleApp:signIn.register"),
+      offlineButton: IModelApp.localization.getLocalizedString("SampleApp:signIn.offlineButton"),
+    };
   }
 
-  public override componentDidMount() {
-    const oidcClient = IModelApp.authorizationClient;
-    // istanbul ignore if
-    if (isFrontendAuthorizationClient(oidcClient))
-      this._oidcClient = oidcClient;
+  private _onSignInClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    this._onSigningIn();
+  };
 
-    // istanbul ignore next
-    const isAuthorized = this._oidcClient && this._oidcClient.isAuthorized;
-    // istanbul ignore if
-    if (isAuthorized)
-      this._oidcClient!.onUserStateChanged.addListener(this._onUserStateChanged);
-  }
+  private _onSigningIn = () => {
+    this.setState({ isSigningIn: true });
+    this.props.onSignIn();
+  };
 
-  // istanbul ignore next
-  private _onUserStateChanged() {
-    // istanbul ignore next
-    if (this._oidcClient && this._oidcClient.isAuthorized && this.props.onSignedIn)
-      this.props.onSignedIn();
-  }
+  private _handleKeyUp = (event: React.KeyboardEvent, onActivate?: () => void) => {
+    const key = event.key;
 
-  public override componentWillUnmount() {
-    // istanbul ignore next
-    if (this._oidcClient)
-      this._oidcClient.onUserStateChanged.removeListener(this._onUserStateChanged);
-  }
-
-  private _onStartSignin = async () => {
-    // istanbul ignore next
-    if (this._oidcClient)
-      this._oidcClient.signIn(new ClientRequestContext()); // eslint-disable-line @typescript-eslint/no-floating-promises
-
-    // istanbul ignore else
-    if (this.props.onStartSignIn)
-      this.props.onStartSignIn();
+    switch (key) {
+      case SpecialKey.Enter:
+      case SpecialKey.Space:
+        onActivate && onActivate();
+        break;
+    }
   };
 
   public override render() {
-
-    /*
+    /**
      * Note: In the case of electron, the signin happens in a disconnected web browser. We therefore show
      * a message to direc the user to the browser. Also, since we cannot capture the errors in the browser,
      * to clear the state of the signin UI, we instead allow signin button to be clicked multiple times.
@@ -89,19 +90,39 @@ export class SignIn extends React.PureComponent<SignInProps> {
      */
     let disableSignInOnClick = true;
     let signingInMessage: string | undefined;
-    // istanbul ignore next
     if (ProcessDetector.isElectronAppFrontend) {
       disableSignInOnClick = false;
       const signingInMessageStringId = `UiFramework:signIn.signingInMessage`;
-      signingInMessage = UiFramework.i18n.translate(signingInMessageStringId);
+      signingInMessage = UiFramework.localization.getLocalizedString(signingInMessageStringId);
     }
 
-    return <SignInBase className={this.props.className} style={this.props.style}
-      onSignIn={this._onStartSignin}
-      onRegister={this.props.onRegister}
-      onOffline={this.props.onOffline}
-      disableSignInOnClick={disableSignInOnClick}
-      signingInMessage={signingInMessage}
-    />;
+    return (
+      <div className={classnames("components-signin", this.props.className)} style={this.props.style}>
+        <div className="components-signin-content">
+          <span className="icon icon-user" />
+          {(this.state.isSigningIn && signingInMessage !== undefined) ?
+            <span className="components-signin-prompt">{signingInMessage}</span> :
+            <span className="components-signin-prompt">{this.state.prompt}</span>
+          }
+          <Button className="components-signin-button" styleType="cta" disabled={this.state.isSigningIn && disableSignInOnClick}
+            onClick={this._onSignInClick} onKeyUp={(e) => this._handleKeyUp(e, this._onSigningIn)}>
+            {this.state.signInButton}
+          </Button>
+          {this.props.onRegister !== undefined &&
+            <span className="components-signin-register">
+              {this.state.profilePrompt}
+              <a onClick={this.props.onRegister} onKeyUp={(e) => this._handleKeyUp(e, this.props.onRegister)} role="link" tabIndex={0}>
+                {this.state.registerAnchor}
+              </a>
+            </span>
+          }
+          {this.props.onOffline !== undefined &&
+            <a className="components-signin-offline" onClick={this.props.onOffline} onKeyUp={(e) => this._handleKeyUp(e, this.props.onOffline)} role="link" tabIndex={0}>
+              {this.state.offlineButton}
+            </a>
+          }
+        </div>
+      </div>
+    );
   }
 }

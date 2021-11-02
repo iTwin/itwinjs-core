@@ -6,7 +6,7 @@
  * @module Geometry
  */
 
-import { Geometry } from "@bentley/geometry-core";
+import { Geometry } from "@itwin/core-geometry";
 
 /** This interface defines the mathematical model of the Earth shape in the form of an ellipsoid.
  *  There are various ways to define an ellipsoid but we have retained the definition based on the polar and equatorial radiuses.

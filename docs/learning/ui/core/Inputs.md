@@ -1,11 +1,11 @@
 # Inputs
 
-The [Inputs]($ui-core:Inputs) category in the `@bentley/ui-core` package includes
+The [Inputs]($core-react:Inputs) category in the `@itwin/core-react` package includes
 components for working with input controls, such as Input, IconInput, NumberInput TextArea.
 
 ## Input
 
-The [Input]($ui-core) React component is a wrapper for the `<input type="text">` HTML element.
+The [Input]($core-react) React component is a wrapper for the `<input type="text">` HTML element.
 It is meant to receive text input from the user. You can display hint text within the field itself. This hint text is replaced by the actual text input by the user.
 
 The hint text is specified using the `placeholder` prop.
@@ -30,7 +30,7 @@ The hint text is specified using the `placeholder` prop.
 
 ## Textarea
 
-The [Textarea]($ui-core) React component is a wrapper for the `<textarea>` HTML element.
+The [Textarea]($core-react) React component is a wrapper for the `<textarea>` HTML element.
 It is an input field that supports multiple rows.
 
 ```tsx
@@ -41,7 +41,7 @@ It is an input field that supports multiple rows.
 
 ## IconInput
 
-The [IconInput]($ui-core) React component is an Input component
+The [IconInput]($core-react) React component is an Input component
 with an icon displayed to the left of the input field.
 
 ```tsx
@@ -52,7 +52,7 @@ with an icon displayed to the left of the input field.
 
 ## NumberInput
 
-The [NumberInput]($ui-core) React component is an input component that accepts numeric input.
+The [NumberInput]($core-react) React component is an input component that accepts numeric input.
 It contains up and down arrows to the right that increment and decrement the value.
 
 ```tsx
@@ -87,4 +87,4 @@ The Input and Textarea components have a labeled version.
 
 ## API Reference
 
-- [Inputs]($ui-core:Inputs)
+- [Inputs]($core-react:Inputs)

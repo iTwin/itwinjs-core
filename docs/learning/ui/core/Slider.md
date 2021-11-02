@@ -1,6 +1,6 @@
 # Slider
 
-The [Slider]($ui-core) React component displays a range slider with thumbs for changing the value.
+The [Slider]($core-react) React component displays a range slider with thumbs for changing the value.
 The Slider component also support multiple values.
 The following items may optionally be shown:
 
@@ -13,7 +13,7 @@ The following items may optionally be shown:
 
 ## Properties
 
-The Slider component has numerous properties, as defined in the [SliderProps]($ui-core) interface.
+The Slider component has numerous properties, as defined in the [SliderProps]($core-react) interface.
 There are 3 required props:
 
 - min - Minimum value
@@ -150,4 +150,4 @@ The `showTickLabels` prop is added in this example.
 
 ## API Reference
 
-- [Slider]($ui-core:Slider)
+- [Slider]($core-react:Slider)

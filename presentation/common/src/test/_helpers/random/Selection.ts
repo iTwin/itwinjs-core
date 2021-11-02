@@ -6,6 +6,9 @@ import * as faker from "faker";
 import { SelectionScope } from "../../../presentation-common";
 import { nullable } from "./Misc";
 
+/**
+ * @internal Used for testing only.
+ */
 export const createRandomSelectionScope = (): SelectionScope => ({
   id: faker.random.uuid(),
   label: faker.random.word(),

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { ColorDef } from "@bentley/imodeljs-common";
+import { ColorDef } from "@itwin/core-common";
 import { ScreenViewport } from "../Viewport";
 import { ViewRect } from "../ViewRect";
 

@@ -7,6 +7,5 @@
   "backofficeServicesConfig": {
     "imodelbank_backoffice_serviceidentity_username": "${IMJS_TEST_REGULAR_USER_NAME}",
     "imodelbank_backoffice_serviceidentity_pwd": "${IMJS_TEST_REGULAR_USER_PASSWORD}",
-    "IMJS_BUDDI_RESOLVE_URL_USING_REGION": "${IMJS_BUDDI_RESOLVE_URL_USING_REGION}"
   }
 }

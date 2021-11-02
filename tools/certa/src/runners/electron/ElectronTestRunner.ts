@@ -31,7 +31,9 @@ export class ElectronTestRunner {
       show: config.debug,
       webPreferences: {
         nodeIntegration: true,
-        enableRemoteModule: true,
+        contextIsolation: false,
+        nativeWindowOpen: true,
+        sandbox: false,
       },
     });
 
@@ -42,6 +44,11 @@ export class ElectronTestRunner {
         process.send({ exitCode });
       app.exit(exitCode);
     };
+
+    ipcMain.on("certa-console", async (e: any, op: "log" | "error" | "dir", ...args: any[]) => {
+      console[op](...args);
+      e.returnValue = undefined; // ipcRenderer.sendSync() will hang without this
+    });
 
     ipcMain.on("certa-done", (_e: any, count: number) => {
       rendererWindow.webContents.once("destroyed", () => {

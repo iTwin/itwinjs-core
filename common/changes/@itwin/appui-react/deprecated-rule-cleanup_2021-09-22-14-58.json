@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Existing ruleset configurations were updated to no longer use deprecated rule versions for iModel.js 3.0.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}

@@ -2,14 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import { expect } from "chai";
-import { Guid, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Box, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { BatchType, Code, ColorDef, defaultTileOptions, GeometryStreamBuilder, IModel, iModelTileTreeIdToString, PhysicalElementProps, PrimaryTileTreeId, RenderSchedule } from "@bentley/imodeljs-common";
+import { Guid, Id64, Id64String } from "@itwin/core-bentley";
+import { Box, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
-  BackendRequestContext, GenericSchema, IModelDb, PhysicalModel, PhysicalObject, PhysicalPartition, RenderTimeline, SnapshotDb, SpatialCategory,
+  BatchType, Code, ColorDef, defaultTileOptions, GeometryStreamBuilder, IModel, iModelTileTreeIdToString, PhysicalElementProps, PrimaryTileTreeId,
+  RenderSchedule,
+} from "@itwin/core-common";
+import {
+  GenericSchema, IModelDb, PhysicalModel, PhysicalObject, PhysicalPartition, RenderTimeline, SnapshotDb, SpatialCategory,
   SubjectOwnsPartitionElements,
-} from "../../imodeljs-backend";
+} from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 let uniqueId = 0;
@@ -32,7 +36,6 @@ function scaleSpatialRange(range: Range3d): Range3d {
 
   return result;
 }
-
 // The tile tree range is equal to the scaled+skewed project extents translated to align with the origin of the model range.
 function almostEqualRange(a: Range3d, b: Range3d): boolean {
   return a.diagonal().isAlmostEqual(b.diagonal());
@@ -62,7 +65,6 @@ function insertPhysicalModel(db: IModelDb): Id64String {
   expect(Id64.isValidId64(modelId)).to.be.true;
   return modelId;
 }
-
 function scaleProjectExtents(db: IModelDb, scale: number): Range3d {
   const range = db.projectExtents.clone();
   range.scaleAboutCenterInPlace(scale);
@@ -139,8 +141,7 @@ describe("tile tree", () => {
   it("should update after changing project extents and purging", async () => {
     // "_x-" holds the flags - 0 = don't use project extents as basis of tile tree range; 1 = use them.
     let treeId = `8_0-${modelId}`;
-    const context = new BackendRequestContext();
-    let tree = await db.tiles.requestTileTreeProps(context, treeId);
+    let tree = await db.tiles.requestTileTreeProps(treeId);
     expect(tree).not.to.be.undefined;
     expect(tree.id).to.equal(treeId);
     expect(tree.contentIdQualifier).to.be.undefined;
@@ -150,7 +151,7 @@ describe("tile tree", () => {
     expect(almostEqualRange(range, skewedDefaultExtents)).to.be.false;
 
     treeId = `8_1-${modelId}`;
-    tree = await db.tiles.requestTileTreeProps(context, treeId);
+    tree = await db.tiles.requestTileTreeProps(treeId);
     range = Range3d.fromJSON(tree.rootTile.range);
     expect(range.isNull).to.be.false;
     expect(almostEqualRange(range, skewedDefaultExtents)).to.be.true;
@@ -164,7 +165,7 @@ describe("tile tree", () => {
     // Change the project extents - nothing should change - we haven't yet purged our model's tile tree.
     let newExtents = scaleProjectExtents(db, 2.0);
 
-    tree = await db.tiles.requestTileTreeProps(context, treeId);
+    tree = await db.tiles.requestTileTreeProps(treeId);
     expect(tree).not.to.be.undefined;
     expect(tree.id).to.equal(treeId);
     expect(tree.contentIdQualifier).to.equal(prevQualifier);
@@ -180,7 +181,7 @@ describe("tile tree", () => {
     // Purge tile trees for a specific (non-existent) model - still nothing should change for our model.
     db.nativeDb.purgeTileTrees(["0x123abc"]);
 
-    tree = await db.tiles.requestTileTreeProps(context, treeId);
+    tree = await db.tiles.requestTileTreeProps(treeId);
     expect(tree).not.to.be.undefined;
     expect(tree.id).to.equal(treeId);
     expect(tree.contentIdQualifier).to.equal(prevQualifier);
@@ -196,7 +197,7 @@ describe("tile tree", () => {
     // Purge tile trees for our model - now we should get updated tile tree props.
     db.nativeDb.purgeTileTrees([modelId]);
 
-    tree = await db.tiles.requestTileTreeProps(context, treeId);
+    tree = await db.tiles.requestTileTreeProps(treeId);
     expect(tree).not.to.be.undefined;
     expect(tree.id).to.equal(treeId);
 
@@ -216,7 +217,7 @@ describe("tile tree", () => {
     newExtents = scaleProjectExtents(db, 0.75);
     db.nativeDb.purgeTileTrees(undefined);
 
-    tree = await db.tiles.requestTileTreeProps(context, treeId);
+    tree = await db.tiles.requestTileTreeProps(treeId);
     expect(tree).not.to.be.undefined;
     expect(tree.id).to.equal(treeId);
 
@@ -241,8 +242,7 @@ describe("tile tree", () => {
     const options = { ...defaultTileOptions };
     options.useProjectExtents = false;
 
-    const context = new BackendRequestContext();
-    const loadTree = async () => db.tiles.requestTileTreeProps(context, iModelTileTreeIdToString(modelId, treeId, options));
+    const loadTree = async () => db.tiles.requestTileTreeProps(iModelTileTreeIdToString(modelId, treeId, options));
 
     let tree = await loadTree();
     expect(tree.contentIdQualifier).to.be.undefined;
@@ -275,8 +275,7 @@ describe("tile tree", () => {
     const options = { ...defaultTileOptions };
     options.useProjectExtents = false;
 
-    const context = new BackendRequestContext();
-    const tree1 = await db.tiles.requestTileTreeProps(context, iModelTileTreeIdToString(modelId, treeId, options));
+    const tree1 = await db.tiles.requestTileTreeProps(iModelTileTreeIdToString(modelId, treeId, options));
     const checksum1 = tree1.contentIdQualifier!;
     expect(checksum1.length).least(1);
 
@@ -285,12 +284,12 @@ describe("tile tree", () => {
     props.script = JSON.stringify(makeScript((timeline) => timeline.addVisibility(4321, 0.25)));
     db.elements.updateElement(props);
 
-    const tree2 = await db.tiles.requestTileTreeProps(context, iModelTileTreeIdToString(modelId, treeId, options));
+    const tree2 = await db.tiles.requestTileTreeProps(iModelTileTreeIdToString(modelId, treeId, options));
     expect(tree2).not.to.equal(tree1);
     expect(tree2).to.deep.equal(tree1);
 
     db.nativeDb.purgeTileTrees(undefined);
-    const tree3 = await db.tiles.requestTileTreeProps(context, iModelTileTreeIdToString(modelId, treeId, options));
+    const tree3 = await db.tiles.requestTileTreeProps(iModelTileTreeIdToString(modelId, treeId, options));
     expect(tree3).not.to.equal(tree2);
     expect(tree3).not.to.equal(tree1);
     expect(tree3.contentIdQualifier).not.to.equal(tree1.contentIdQualifier);

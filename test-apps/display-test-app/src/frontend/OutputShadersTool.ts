@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { DebugShaderFile, IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool } from "@bentley/imodeljs-frontend";
+import { DebugShaderFile, IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool } from "@itwin/core-frontend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 
 // cspell:disable
@@ -333,7 +333,7 @@ export class OutputShadersTool extends Tool {
     if (undefined !== dsf && dsf.length > 0)
       await outputShaders(dsf, usedFlag, typeFlag, langFlag, outputDir);
     else
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "No shaders (did you define SVT_DEBUG_SHADERS?)"));
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "No shaders (did you define IMJS_DEBUG_SHADERS?)"));
 
     return true;
   }

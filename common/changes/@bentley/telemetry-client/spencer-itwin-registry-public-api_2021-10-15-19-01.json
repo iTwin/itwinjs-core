@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/telemetry-client",
+      "comment": "Switching to consume new Projects-Client",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/telemetry-client"
+}

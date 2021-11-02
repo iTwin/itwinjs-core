@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@bentley/ui-core/lib/ui-core/style/themecolors";
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
 @import "~@itwin/itwinui-css/scss/style/typography";
 
 $user-profile-circle-size: 60px;
@@ -19,15 +19,15 @@ $user-profile-circle-size: 60px;
   padding: 30px;
   border-radius: 3px;
   font-size: $iui-font-size;
-  box-shadow: 2px 4px 8px 2px rgba(0,0,0,0.25);
+  box-shadow: 2px 4px 8px 2px rgba(0, 0, 0, 0.25);
 
-  > .profile-info {
+  >.profile-info {
     flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
 
-    > .circle {
+    >.circle {
       font-size: 2em;
       width: $user-profile-circle-size;
       height: $user-profile-circle-size;
@@ -42,7 +42,7 @@ $user-profile-circle-size: 60px;
       border: 2px solid rgba($buic-background-5, 0.1);
     }
 
-    > span:not(.circle) {
+    >span:not(.circle) {
       margin-top: 15px;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -51,34 +51,34 @@ $user-profile-circle-size: 60px;
     }
   }
 
-  > .user-profile-separator {
+  >.user-profile-separator {
     flex: initial;
     width: 1px;
     margin: 10px 30px;
     background: $buic-foreground-disabled;
   }
 
-  > .signout {
+  >.signout {
     flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
 
-    > span:first-of-type {
+    >span:first-of-type {
       font-size: $iui-font-size-title;
       color: $buic-foreground-body;
       margin-top: 10px;
     }
 
-    > span:last-of-type {
+    >span:last-of-type {
       margin-top: 40px;
       overflow: hidden;
       white-space: nowrap;
     }
 
-    > button {
+    >button {
       width: 75%;
       margin: auto 0 0 0;
-     }
+    }
   }
 }

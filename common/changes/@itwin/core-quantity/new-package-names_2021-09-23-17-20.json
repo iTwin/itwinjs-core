@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-quantity",
+      "comment": "use new @itwin package names",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-quantity"
+}

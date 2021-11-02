@@ -5,7 +5,7 @@
 
 import {
   IModelApp, NotifyMessageDetails, OutputMessagePriority, PerformanceMetrics, ScreenViewport, Target, Tool, Viewport,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 
 export interface FpsMonitorProps {
   checkbox: HTMLInputElement;

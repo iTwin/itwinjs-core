@@ -6,8 +6,8 @@
  * @module Views
  */
 
-import { Arc3d, Geometry, Point3d, SmoothTransformBetweenFrusta } from "@bentley/geometry-core";
-import { Cartographic, Easing, Frustum, GlobeMode, Interpolation, Tweens } from "@bentley/imodeljs-common";
+import { Arc3d, Geometry, Point3d, SmoothTransformBetweenFrusta } from "@itwin/core-geometry";
+import { Cartographic, Easing, Frustum, GlobeMode, Interpolation, Tweens } from "@itwin/core-common";
 import {
   areaToEyeHeight, areaToEyeHeightFromGcs, eyeToCartographicOnGlobe, GlobalLocation, metersToRange, ViewGlobalLocationConstants,
 } from "./ViewGlobalLocation";
@@ -142,7 +142,7 @@ export class GlobeAnimator implements Animator {
     // Starting cartographic position is the eye projected onto the globe.
     let startCartographic = eyeToCartographicOnGlobe(viewport);
     if (startCartographic === undefined) {
-      startCartographic = Cartographic.fromDegrees(0, 0, 0);
+      startCartographic = Cartographic.createZero();
     }
     this._startCartographic = startCartographic;
 

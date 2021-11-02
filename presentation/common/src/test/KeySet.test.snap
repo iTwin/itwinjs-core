@@ -66,16 +66,11 @@ Object {
   "instanceKeys": Array [
     Array [
       "Ergonomic Concrete Computer",
-      Array [
-        "0xc5e2000000a425",
-        "0x14990000016cd0",
-      ],
+      "+14990000016CD0+B148FFFFFF3755",
     ],
     Array [
       "Rustic Soft Fish",
-      Array [
-        "0xa46c00000153ae",
-      ],
+      "+A46C00000153AE",
     ],
   ],
   "nodeKeys": Array [

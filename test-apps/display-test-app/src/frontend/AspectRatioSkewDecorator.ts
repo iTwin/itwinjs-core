@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "@bentley/bentleyjs-core";
-import { IModelJson, Path } from "@bentley/geometry-core";
-import { ColorDef, ViewDetails } from "@bentley/imodeljs-common";
-import { DecorateContext, GraphicType, IModelApp, IModelConnection, Tool } from "@bentley/imodeljs-frontend";
-import { parseArgs } from "@bentley/frontend-devtools";
+import { assert } from "@itwin/core-bentley";
+import { IModelJson, Path } from "@itwin/core-geometry";
+import { ColorDef, ViewDetails } from "@itwin/core-common";
+import { DecorateContext, GraphicType, IModelApp, IModelConnection, Tool } from "@itwin/core-frontend";
+import { parseArgs } from "@itwin/frontend-devtools";
 
 class AspectRatioSkewDecorator {
   private static _instance?: AspectRatioSkewDecorator;

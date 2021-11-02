@@ -9,26 +9,18 @@
 import * as os from "os";
 import * as path from "path";
 import * as semver from "semver";
-import { HttpRequestHost } from "@bentley/backend-itwin-client";
-import {
-  assert, BeEvent, ClientRequestContext, Guid, GuidString, IModelStatus, Logger, LogLevel, ProcessDetector, SessionProps,
-} from "@bentley/bentleyjs-core";
-import { IModelClient } from "@bentley/imodelhub-client";
-import { BentleyStatus, IModelError, RpcConfiguration, SerializedRpcRequest } from "@bentley/imodeljs-common";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
-import { AccessToken, AuthorizationClient, AuthorizedClientRequestContext, UserInfo } from "@bentley/itwin-client";
 import { TelemetryManager } from "@bentley/telemetry-client";
+import { AccessToken, assert, BeEvent, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, ProcessDetector } from "@itwin/core-bentley";
+import { AuthorizationClient, BentleyStatus, IModelError, LocalDirName, SessionProps } from "@itwin/core-common";
 import { AliCloudStorageService } from "./AliCloudStorageService";
+import { BackendHubAccess } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { BackendRequestContext } from "./BackendRequestContext";
 import { BisCoreSchema } from "./BisCoreSchema";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { AzureBlobStorage, CloudStorageService, CloudStorageServiceCredentials, CloudStorageTileUploader } from "./CloudStorageBackend";
-import { Config as ConcurrentQueryConfig } from "./ConcurrentQuery";
 import { FunctionalSchema } from "./domains/FunctionalSchema";
 import { GenericSchema } from "./domains/GenericSchema";
-import { BackendHubAccess } from "./BackendHubAccess";
-import { IModelHubBackend } from "./IModelHubBackend";
 import { IModelJsFs } from "./IModelJsFs";
 import { DevToolsRpcImpl } from "./rpc-impl/DevToolsRpcImpl";
 import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
@@ -36,8 +28,9 @@ import { IModelTileRpcImpl } from "./rpc-impl/IModelTileRpcImpl";
 import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
+import { ITwinWorkspace, Workspace, WorkspaceOpts } from "./workspace/Workspace";
 
-const loggerCategory: string = BackendLoggerCategory.IModelHost;
+const loggerCategory = BackendLoggerCategory.IModelHost;
 
 // cspell:ignore nodereport fatalerror apicall alicloud rpcs
 
@@ -74,7 +67,7 @@ export interface CrashReportingConfig {
   uploadToBentley?: boolean;
 }
 
-/** Configuration of imodeljs-backend.
+/** Configuration of core-backend.
  * @public
  */
 export class IModelHostConfiguration {
@@ -93,13 +86,20 @@ export class IModelHostConfiguration {
    *   - etc.
    * @see [[IModelHost.cacheDir]] for the value it's set to after startup
    */
-  public cacheDir?: string;
+  public cacheDir?: LocalDirName;
+
+  /** Options for creating the [[Workspace]]
+   * @beta
+   */
+  public workspace?: WorkspaceOpts;
 
   /** The directory where the app's assets are found. */
-  public appAssetsDir?: string;
+  public appAssetsDir?: LocalDirName;
 
-  /** The kind of iModel server to use. Defaults to iModelHubClient */
-  public imodelClient?: IModelClient;
+  /** The kind of iModel hub server to use.
+   * @beta
+   */
+  public hubAccess?: BackendHubAccess;
 
   /** The credentials to use for the tile cache service. If omitted, a local cache will be used.
    * @beta
@@ -152,23 +152,6 @@ export class IModelHostConfiguration {
    */
   public crashReportingConfig?: CrashReportingConfig;
 
-  public concurrentQuery: ConcurrentQueryConfig = {
-    concurrent: os.cpus().length,
-    autoExpireTimeForCompletedQuery: 2 * 60, // 2 minutes
-    minMonitorInterval: 1, // 1 seconds
-    idleCleanupTime: 30 * 60, // 30 minutes
-    cachedStatementsPerThread: 40,
-    maxQueueSize: (os.cpus().length) * 500,
-    pollInterval: 50,
-    useSharedCache: false,
-    useUncommittedRead: false,
-    resetStatisticsInterval: 60, // minutes
-    logStatisticsInterval: 5, // minutes
-    quota: {
-      maxTimeAllowed: 60, // 1 Minute
-      maxMemoryAllowed: 2 * 1024 * 1024, // 2 MB
-    },
-  };
 }
 
 /** IModelHost initializes ($backend) and captures its configuration. A backend must call [[IModelHost.startup]] before using any backend classes.
@@ -184,6 +167,7 @@ export class IModelHost {
 
   public static backendVersion = "";
   private static _cacheDir = "";
+  private static _workspace: Workspace;
 
   private static _platform?: typeof IModelJsNative;
   /** @internal */
@@ -201,7 +185,7 @@ export class IModelHost {
   public static readonly onBeforeShutdown = new BeEvent<() => void>();
 
   /** @internal */
-  public static readonly session: SessionProps = { applicationId: "2686", applicationVersion: "1.0.0", sessionId: "" };
+  public static readonly session: Mutable<SessionProps> = { applicationId: "2686", applicationVersion: "1.0.0", sessionId: "" };
 
   /** A uniqueId for this session */
   public static get sessionId() { return this.session.sessionId; }
@@ -215,22 +199,32 @@ export class IModelHost {
   public static get applicationVersion() { return this.session.applicationVersion; }
   public static set applicationVersion(version: string) { this.session.applicationVersion = version; }
 
-  /** Root of the directory holding all the files that iModel.js caches */
-  public static get cacheDir(): string { return this._cacheDir; }
+  /** Root directory holding files that iTwin.js caches */
+  public static get cacheDir(): LocalDirName { return this._cacheDir; }
+
+  /** The Workspace for this `IModelHost`
+   * @beta
+   */
+  public static get workspace(): Workspace { return this._workspace; }
 
   /** The optional [[FileNameResolver]] that resolves keys and partial file names for snapshot iModels. */
   public static snapshotFileNameResolver?: FileNameResolver;
 
-  /** Get the active authorization/access token for use with various services
-   * @throws if authorizationClient has not been set up
+  /** Get the current access token for this IModelHost, or a blank string if none is available.
+   * @note for web backends, this will *always* return a blank string because the backend itself has no token (but never needs one either.)
+   * For all IpcHosts, where this backend is servicing a single frontend, this will be the user's token. For ElectronHost, the backend
+   * obtains the token and forwards it to the frontend.
+   * @note accessTokens expire periodically and are automatically refreshed, if possible. Therefore tokens should not be saved, and the value
+   * returned by this method may change over time throughout the course of a session.
    */
-  public static async getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken> {
-    return this.authorizationClient!.getAccessToken(requestContext);
+  public static async getAccessToken(): Promise<AccessToken> {
+    try {
+      return (await this.authorizationClient?.getAccessToken()) ?? "";
+    } catch (e) {
+      return "";
+    }
   }
-  /** @internal */
-  public static async getAuthorizedContext() {
-    return new AuthorizedClientRequestContext(await this.getAccessToken(), undefined, this.applicationId, this.applicationVersion, this.sessionId);
-  }
+
   /** @internal */
   public static flushLog() {
     return this.platform.DgnDb.flushLog();
@@ -253,7 +247,7 @@ export class IModelHost {
   }
 
   private static validateNativePlatformVersion(): void {
-    const requiredVersion = require("../package.json").dependencies["@bentley/imodeljs-native"]; // eslint-disable-line @typescript-eslint/no-var-requires
+    const requiredVersion = require("../../package.json").dependencies["@bentley/imodeljs-native"]; // eslint-disable-line @typescript-eslint/no-var-requires
     const thisVersion = this.platform.version;
     if (semver.satisfies(thisVersion, requiredVersion))
       return;
@@ -262,30 +256,7 @@ export class IModelHost {
       return;
     }
     this._platform = undefined;
-    throw new IModelError(IModelStatus.BadRequest, `imodeljs-native version is (${thisVersion}). imodeljs-backend requires version (${requiredVersion})`);
-  }
-
-  private static setupRpcRequestContext() {
-    RpcConfiguration.requestContext.deserialize = async (serializedContext: SerializedRpcRequest): Promise<ClientRequestContext> => {
-      // Setup a ClientRequestContext if authorization is NOT required for the RPC operation
-      if (!serializedContext.authorization)
-        return new ClientRequestContext(serializedContext.id, serializedContext.applicationId, serializedContext.applicationVersion, serializedContext.sessionId);
-
-      // Setup an AuthorizationClientRequestContext if authorization is required for the RPC operation
-      let accessToken: AccessToken;
-      if (!IModelHost.authorizationClient) {
-        // Determine the access token from the frontend request
-        accessToken = AccessToken.fromTokenString(serializedContext.authorization);
-        const userId = serializedContext.userId;
-        if (userId)
-          accessToken.setUserInfo(new UserInfo(userId));
-      } else {
-        // Determine the access token from  the backend's authorization client
-        accessToken = await IModelHost.authorizationClient.getAccessToken();
-      }
-
-      return new AuthorizedClientRequestContext(accessToken, serializedContext.id, serializedContext.applicationId, serializedContext.applicationVersion, serializedContext.sessionId);
-    };
+    throw new IModelError(IModelStatus.BadRequest, `imodeljs-native version is (${thisVersion}). core-backend requires version (${requiredVersion})`);
   }
 
   /**
@@ -326,13 +297,7 @@ export class IModelHost {
 
     this.logStartup();
 
-    await HttpRequestHost.initialize(); // Initialize configuration for HTTP requests at the backend.
-
-    // Setup a current context for all requests that originate from this backend
-    const requestContext = new BackendRequestContext();
-    requestContext.enter();
-
-    this.backendVersion = require("../package.json").version; // eslint-disable-line @typescript-eslint/no-var-requires
+    this.backendVersion = require("../../package.json").version; // eslint-disable-line @typescript-eslint/no-var-requires
     initializeRpcBackend();
 
     if (this._platform === undefined) {
@@ -368,11 +333,10 @@ export class IModelHost {
       }
     }
 
-    this.setupCacheDirs(configuration);
-    IModelHubBackend.setIModelClient(configuration.imodelClient);
-    BriefcaseManager.initialize(this._briefcaseCacheDir);
+    this.setupHostDirs(configuration);
+    this._workspace = new ITwinWorkspace(configuration.workspace);
 
-    IModelHost.setupRpcRequestContext();
+    BriefcaseManager.initialize(this._briefcaseCacheDir);
 
     [
       IModelReadRpcImpl,
@@ -388,7 +352,8 @@ export class IModelHost {
       FunctionalSchema,
     ].forEach((schema) => schema.registerSchema()); // register all of the schemas
 
-    IModelHost._hubAccess = IModelHubBackend;
+    if (undefined !== configuration.hubAccess)
+      IModelHost._hubAccess = configuration.hubAccess;
     IModelHost.configuration = configuration;
     IModelHost.setupTileCache();
 
@@ -398,7 +363,7 @@ export class IModelHost {
     IModelHost.onAfterStartup.raiseEvent();
   }
 
-  private static _briefcaseCacheDir: string;
+  private static _briefcaseCacheDir: LocalDirName;
 
   private static logStartup() {
     if (!Logger.isEnabled(loggerCategory, LogLevel.Trace))
@@ -413,9 +378,9 @@ export class IModelHost {
       if (serviceNameComponents.length === 7) {
         startupInfo = {
           ...startupInfo,
-          contextId: serviceNameComponents[4],
+          iTwinId: serviceNameComponents[4],
           iModelId: serviceNameComponents[5],
-          changeSetId: serviceNameComponents[6],
+          changesetId: serviceNameComponents[6],
         };
       }
     }
@@ -423,9 +388,13 @@ export class IModelHost {
     Logger.logTrace(loggerCategory, "IModelHost.startup", () => startupInfo);
   }
 
-  private static setupCacheDirs(configuration: IModelHostConfiguration) {
-    this._cacheDir = configuration.cacheDir ? path.normalize(configuration.cacheDir) : NativeLibrary.defaultCacheDir;
-    IModelJsFs.recursiveMkDirSync(this._cacheDir); // make sure the directory for cacheDir exists.
+  private static setupHostDirs(configuration: IModelHostConfiguration) {
+    const setupDir = (dir: LocalDirName) => {
+      dir = path.normalize(dir);
+      IModelJsFs.recursiveMkDirSync(dir);
+      return dir;
+    };
+    this._cacheDir = setupDir(configuration.cacheDir ?? NativeLibrary.defaultCacheDir);
     this._briefcaseCacheDir = path.join(this._cacheDir, "imodels");
   }
 
@@ -550,7 +519,7 @@ export class KnownLocations {
   /** The directory where the imodeljs-native assets are stored. */
   public static get nativeAssetsDir(): string { return IModelHost.platform.DgnDb.getAssetsDir(); }
 
-  /** The directory where the imodeljs-backend assets are stored. */
+  /** The directory where the core-backend assets are stored. */
   public static get packageAssetsDir(): string {
     return path.join(__dirname, "assets");
   }
@@ -580,7 +549,7 @@ export abstract class FileNameResolver {
   public resolveKey(fileKey: string): string {
     const resolvedFileName: string | undefined = this.tryResolveKey(fileKey);
     if (undefined === resolvedFileName) {
-      throw new IModelError(IModelStatus.NotFound, `${fileKey} not resolved`, Logger.logWarning, loggerCategory);
+      throw new IModelError(IModelStatus.NotFound, `${fileKey} not resolved`);
     }
     return resolvedFileName;
   }
@@ -597,7 +566,7 @@ export abstract class FileNameResolver {
   public resolveFileName(inFileName: string): string {
     const resolvedFileName: string | undefined = this.tryResolveFileName(inFileName);
     if (undefined === resolvedFileName) {
-      throw new IModelError(IModelStatus.NotFound, `${inFileName} not resolved`, Logger.logWarning, loggerCategory);
+      throw new IModelError(IModelStatus.NotFound, `${inFileName} not resolved`);
     }
     return resolvedFileName;
   }

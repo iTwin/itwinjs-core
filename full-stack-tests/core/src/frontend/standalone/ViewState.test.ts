@@ -3,17 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { Angle, DeepCompare, Geometry, Matrix3d, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Angle, DeepCompare, Geometry, Matrix3d, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
-  AmbientOcclusion, BackgroundMapSettings, BackgroundMapType, ColorDef, HiddenLine, RenderMode, SpatialViewDefinitionProps, ViewDefinitionProps,
-} from "@bentley/imodeljs-common";
+  AmbientOcclusion, BackgroundMapType, BaseMapLayerSettings, ColorDef, HiddenLine, RenderMode, SpatialViewDefinitionProps, ViewDefinitionProps,
+} from "@itwin/core-common";
 import {
   AuxCoordSystemSpatialState, CategorySelectorState, DrawingModelState, DrawingViewState, IModelConnection, LookAtOrthoArgs, MarginPercent,
-  MockRender, ModelSelectorState, SheetModelState, SheetViewState, SnapshotConnection, SpatialModelState, SpatialViewState, StandardView,
+  ModelSelectorState, SheetModelState, SheetViewState, SnapshotConnection, SpatialModelState, SpatialViewState, StandardView,
   StandardViewId, ViewState, ViewState3d, ViewStatus,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
-import { Mutable } from "@bentley/bentleyjs-core";
+import { Mutable } from "@itwin/core-bentley";
+import { TestUtility } from "../TestUtility";
 
 describe("ViewState", () => {
   let imodel: IModelConnection;
@@ -23,7 +24,8 @@ describe("ViewState", () => {
   let unitTestRpcImp: TestRpcInterface;
 
   before(async () => {
-    await MockRender.App.startup();
+    await TestUtility.shutdownFrontend();
+    await TestUtility.startFrontend(TestUtility.iModelAppOptions, true);
     imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     const viewRows: ViewDefinitionProps[] = await imodel.views.queryProps({ from: SpatialViewState.classFullName });
     assert.exists(viewRows, "Should find some views");
@@ -39,7 +41,7 @@ describe("ViewState", () => {
     if (imodel) await imodel.close();
     if (imodel2) await imodel2.close();
     if (imodel3) await imodel3.close();
-    await MockRender.App.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   const compareView = (v1: SpatialViewState, v2: SpatialViewDefinitionProps, str: string) => {
@@ -140,20 +142,22 @@ describe("ViewState", () => {
     const vs0BackgroundColor = ColorDef.from(32, 1, 99);
     vs0DisplayStyle3d.backgroundColor = vs0BackgroundColor;
 
-    const oldBackgroundMap = vs0DisplayStyle3d.settings.backgroundMap;
+    const oldBackgroundMap = vs0DisplayStyle3d.settings.backgroundMap.toPersistentJSON();
     if (undefined !== oldBackgroundMap) {
-      const mt = oldBackgroundMap.mapType === BackgroundMapType.Aerial ? BackgroundMapType.Hybrid : BackgroundMapType.Hybrid;
-      vs0DisplayStyle3d.changeBackgroundMapProps(BackgroundMapSettings.fromJSON({
-        providerName: oldBackgroundMap.providerName === "BingProvider" ? "MapBoxProvider" : "BingProvider",
-        providerData: { mapType: mt },
-      }).toJSON());
+      // eslint-disable-next-line deprecation/deprecation
+      const mt = oldBackgroundMap.providerData?.mapType === BackgroundMapType.Aerial ? BackgroundMapType.Hybrid : BackgroundMapType.Hybrid;
+      vs0DisplayStyle3d.changeBackgroundMapProvider({
+        // eslint-disable-next-line deprecation/deprecation
+        name: oldBackgroundMap.providerName === "BingProvider" ? "MapBoxProvider" : "BingProvider",
+        type: mt,
+      });
+      vs0DisplayStyle3d.changeBackgroundMapProps({ useDepthBuffer: !oldBackgroundMap.useDepthBuffer });
     } else {
-      vs0DisplayStyle3d.changeBackgroundMapProps(BackgroundMapSettings.fromJSON({
-        providerName: "BingProvider",
-        providerData: {
-          mapType: BackgroundMapType.Aerial,
-        },
-      }).toJSON());
+      vs0DisplayStyle3d.changeBackgroundMapProvider({
+        name: "BingProvider",
+        type: BackgroundMapType.Aerial,
+      });
+      vs0DisplayStyle3d.changeBackgroundMapProps({ useDepthBuffer: true });
     }
     const vs0BackgroundMap = vs0DisplayStyle3d.settings.backgroundMap;
 
@@ -207,14 +211,18 @@ describe("ViewState", () => {
     assert.equal(vs0AOSettings.blurSigma, vs1AOSettings.blurSigma, "clone should copy displayStyle.ambientOcclusionSettings.blurSigma");
     assert.equal(vs0AOSettings.blurTexelStepSize, vs1AOSettings.blurTexelStepSize, "clone should copy displayStyle.ambientOcclusionSettings.blurTexelStepSize");
     assert.isTrue(vs0BackgroundColor.equals(vs1BackgroundColor), "clone should copy displayStyle.backgroundColor");
-    assert.isDefined(vs0BackgroundMap);
-    assert.isDefined(vs0BackgroundMap.mapType);
-    assert.isDefined(vs1BackgroundMap);
-    assert.isDefined(vs1BackgroundMap.mapType);
-    assert.equal(vs0BackgroundMap.mapType, vs1BackgroundMap.mapType, "clone should copy displayStyle.backgroundMap.mapType");
-    assert.isDefined(vs0BackgroundMap.providerName);
-    assert.isDefined(vs1BackgroundMap.providerName);
-    assert.equal(vs0BackgroundMap.providerName, vs1BackgroundMap.providerName, "clone should copy displayStyle.backgroundMap.providerName");
+
+    const vs0BackgroundBase = vs0.displayStyle.settings.mapImagery.backgroundBase as BaseMapLayerSettings;
+    expect(vs0BackgroundBase).instanceof(BaseMapLayerSettings);
+    const vs1BackgroundBase = vs1.displayStyle.settings.mapImagery.backgroundBase as BaseMapLayerSettings;
+    expect(vs1BackgroundBase).instanceof(BaseMapLayerSettings);
+
+    expect(vs0BackgroundBase.provider).not.to.be.undefined;
+    expect(vs1BackgroundBase.provider!.equals(vs0BackgroundBase.provider!)).to.be.true;
+
+    expect(vs0BackgroundMap.useDepthBuffer).not.to.equal(oldBackgroundMap?.useDepthBuffer ?? false);
+    expect(vs1BackgroundMap.useDepthBuffer).to.equal(vs0BackgroundMap.useDepthBuffer);
+
     assert.equal(vs0HLSettings.transparencyThreshold, vs1HLSettings.transparencyThreshold, "clone should copy displayStyle.hiddenLineSettings.transparencyThreshold");
     assert.isTrue(vs0MonochromeColor.equals(vs1MonochromeColor), "clone should copy displayStyle.monochromeColor");
   });
@@ -431,9 +439,7 @@ describe("ViewState", () => {
     // Add 2d models to selector
     view.modelSelector.addModels(["0x24", "0x28"]);
     await imodel2.models.load(view.modelSelector.models);
-    // eslint-disable-next-line deprecation/deprecation
     assert.instanceOf(imodel2.models.loaded.get("0x24"), DrawingModelState);
-    // eslint-disable-next-line deprecation/deprecation
     assert.instanceOf(imodel2.models.loaded.get("0x28"), SheetModelState);
     expect(view.modelSelector.models.size).to.equal(numSpatialModels + 2);
 
@@ -564,7 +570,7 @@ describe("ViewState2d", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    await MockRender.App.startup();
+    await TestUtility.startFrontend(undefined, true);
     imodel = await SnapshotConnection.openFile("ReadWriteTest.bim");
   });
 
@@ -572,7 +578,7 @@ describe("ViewState2d", () => {
     if (imodel)
       await imodel.close();
 
-    await MockRender.App.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("should have valid viewed extents", async () => {

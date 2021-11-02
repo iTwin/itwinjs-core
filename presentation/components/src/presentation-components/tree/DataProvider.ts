@@ -7,13 +7,13 @@
  */
 
 import memoize from "micro-memoize";
-import { IDisposable, Logger } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IDisposable, Logger } from "@itwin/core-bentley";
+import { IModelConnection } from "@itwin/core-frontend";
 import {
   DiagnosticsOptionsWithHandler, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, Node, NodeKey, NodePathElement, Paged, Ruleset,
-} from "@bentley/presentation-common";
-import { Presentation } from "@bentley/presentation-frontend";
-import { DelayLoadedTreeNodeItem, PageOptions, TreeNodeItem } from "@bentley/ui-components";
+} from "@itwin/presentation-common";
+import { Presentation } from "@itwin/presentation-frontend";
+import { DelayLoadedTreeNodeItem, PageOptions, TreeNodeItem } from "@itwin/components-react";
 import { createDiagnosticsOptions, DiagnosticsProps } from "../common/Diagnostics";
 import { RulesetRegistrationHelper } from "../common/RulesetRegistrationHelper";
 import { PresentationComponentsLoggerCategory } from "../ComponentsLoggerCategory";

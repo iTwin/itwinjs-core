@@ -8,29 +8,29 @@
 
 import * as hash from "object-hash";
 import * as path from "path";
-import { ClientRequestContext, Id64String } from "@bentley/bentleyjs-core";
-import { BriefcaseDb, IModelDb, IModelJsNative, IpcHost } from "@bentley/imodeljs-backend";
-import { FormatProps, UnitSystemKey } from "@bentley/imodeljs-quantity";
+import { BriefcaseDb, IModelDb, IModelJsNative, IpcHost } from "@itwin/core-backend";
+import { Id64String } from "@itwin/core-bentley";
+import { FormatProps, UnitSystemKey } from "@itwin/core-quantity";
 import {
   Content, ContentDescriptorRequestOptions, ContentFlags, ContentRequestOptions, ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor,
   DescriptorOverrides, DiagnosticsOptionsWithHandler, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup,
   DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions, FilterByInstancePathsHierarchyRequestOptions,
   FilterByTextHierarchyRequestOptions, getLocalesDirectory, HierarchyCompareInfo, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey,
-  KeySet, LabelDefinition, Node, NodeKey, NodePathElement, Paged, PagedResponse, PresentationError, PresentationStatus, RequestPriority, Ruleset,
-  SelectClassInfo, SelectionScope, SelectionScopeRequestOptions,
-} from "@bentley/presentation-common";
+  isSingleElementPropertiesRequestOptions, Key, KeySet, LabelDefinition, MultiElementPropertiesRequestOptions, Node, NodeKey, NodePathElement, Paged,
+  PagedResponse, PresentationError, PresentationStatus, Prioritized, Ruleset, SelectClassInfo, SelectionScope, SelectionScopeRequestOptions,
+  SingleElementPropertiesRequestOptions,
+} from "@itwin/presentation-common";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "./Constants";
-import { buildElementProperties } from "./ElementPropertiesHelper";
+import { buildElementsProperties, getElementIdsByClass, getElementsCount } from "./ElementPropertiesHelper";
 import {
   createDefaultNativePlatform, NativePlatformDefinition, NativePlatformRequestTypes, NativePresentationDefaultUnitFormats,
-  NativePresentationUnitSystem,
+  NativePresentationKeySetJSON, NativePresentationUnitSystem,
 } from "./NativePlatform";
-import { PresentationIpcHandler } from "./PresentationIpcHandler";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { SelectionScopesHelper } from "./SelectionScopesHelper";
 import { UpdatesTracker } from "./UpdatesTracker";
-import { getElementKey, WithClientRequestContext } from "./Utils";
+import { getElementKey } from "./Utils";
 
 /**
  * Presentation manager working mode.
@@ -86,7 +86,7 @@ export interface HierarchyCacheConfigBase {
 }
 
 /**
- * Configuration for memory hierarchy cache.
+ * Configuration for in-memory hierarchy cache.
  * @beta
  */
 export interface MemoryHierarchyCacheConfig extends HierarchyCacheConfigBase {
@@ -94,28 +94,48 @@ export interface MemoryHierarchyCacheConfig extends HierarchyCacheConfigBase {
 }
 
 /**
- * Configuration for disk hierarchy cache.
+ * Configuration for persistent disk hierarchy cache.
  * @beta
  */
 export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
   mode: HierarchyCacheMode.Disk;
+
   /**
-   * A directory for Presentation hierarchy cache. If not set hierarchy cache is created
-   * along side iModel.
+   * A directory for Presentation hierarchy cache. If set, the directory must exist.
+   *
+   * The default directory depends on the iModel and the way it's opened.
    */
   directory?: string;
 }
 
 /**
- * Configuration for hybrid hierarchy cache.
+ * Configuration for the experimental hybrid hierarchy cache.
+ *
+ * Hybrid cache uses a combination of in-memory and disk caches, which should make it a better
+ * alternative for cases when there are lots of simultaneous requests.
+ *
  * @beta
  */
 export interface HybridCacheConfig extends HierarchyCacheConfigBase {
   mode: HierarchyCacheMode.Hybrid;
-  /**
-   * Configuration for disk cache used to persist hierarchy.
-   */
+
+  /** Configuration for disk cache used to persist hierarchies. */
   disk?: DiskHierarchyCacheConfig;
+}
+
+/**
+ * Configuration for content cache.
+ * @public
+ */
+export interface ContentCacheConfig {
+  /**
+   * Maximum number of content descriptors cached in memory for quicker paged content requests.
+   *
+   * Defaults to `100`.
+   *
+   * @alpha
+   */
+  size?: number;
 }
 
 /**
@@ -188,17 +208,25 @@ export interface PresentationManagerProps {
 
   /**
    * Sets the active locale to use when localizing presentation-related
-   * strings. It can later be changed through [[PresentationManager]].
+   * strings. It can later be changed through [[PresentationManager.activeLocale]].
    */
-  activeLocale?: string;
+  defaultLocale?: string;
 
   /**
    * Sets the active unit system to use for formatting property values with
    * units. Default presentation units are used if this is not specified. The active unit
-   * system can later be changed through [[PresentationManager]] or overriden for each request
+   * system can later be changed through [[PresentationManager.activeUnitSystem]] or overriden for each request
    * through request options.
    */
-  activeUnitSystem?: UnitSystemKey;
+  defaultUnitSystem?: UnitSystemKey;
+
+  /**
+   * A map of default unit formats to use for formatting properties that don't have a presentation format
+   * in requested unit system.
+   */
+  defaultFormats?: {
+    [phenomenon: string]: UnitSystemFormat;
+  };
 
   /**
    * Should schemas preloading be enabled. If true, presentation manager listens
@@ -207,41 +235,15 @@ export interface PresentationManagerProps {
   enableSchemasPreload?: boolean;
 
   /**
-   * A map of 'priority' to 'number of slots allocated for simultaneously running tasks'
-   * where 'priority' is the highest task priority that can allocate a slot. Example:
-   * ```ts
-   * {
-   *   100: 1,
-   *   500: 2,
-   * }
-   * ```
-   * The above means there's one slot for tasks that are at most of 100 priority and there are
-   * 2 slots for tasks that have at most of 500 priority. Higher priority tasks may allocate lower
-   * priority slots, so a task of 400 priority could take all 3 slots.
-   *
-   * Configuring this map provides ability to choose how many tasks of what priority can run simultaneously.
-   * E.g. in the above example only 1 task can run simultaneously if it's priority is less than 100 even though
-   * we have lots of them queued. This leaves 2 slots for higher priority tasks which can be handled without
-   * having to wait for the lower priority slot to free up.
-   *
-   * Defaults to
-   * ```ts
-   * {
-   *   [RequestPriority.Preload]: 1,
-   *   [RequestPriority.Max]: 1,
-   * }
-   * ```
-   *
-   * **Warning:** Tasks with priority higher than maximum priority in the slots allocation map will never
-   * be handled.
+   * A number of worker threads to use for handling presentation requests. Defaults to `2`.
    */
-  taskAllocationsMap?: { [priority: number]: number };
+  workerThreadsCount?: number;
 
   /**
    * Presentation manager working mode. Backends that use iModels in read-write mode should
    * use `ReadWrite`, others might want to set to `ReadOnly` for better performance.
    *
-   * Defaults to `ReadWrite`.
+   * Defaults to [[PresentationManagerMode.ReadWrite]].
    */
   mode?: PresentationManagerMode;
 
@@ -253,21 +255,16 @@ export interface PresentationManagerProps {
    */
   updatesPollInterval?: number;
 
-  /**
-   * A configuration for Presentation hierarchy cache.
-   * @beta
-   */
-  cacheConfig?: HierarchyCacheConfig;
+  /** Options for caching. */
+  caching?: {
+    /**
+     * Hierarchies-related caching options.
+     * @beta
+     */
+    hierarchies?: HierarchyCacheConfig;
 
-  /** @alpha */
-  contentCacheSize?: number;
-
-  /**
-   * A map of default unit formats to use for formatting properties that don't have a presentation format
-   * in requested unit system.
-   */
-  defaultFormats?: {
-    [phenomenon: string]: UnitSystemFormat;
+    /** Content-related caching options. */
+    content?: ContentCacheConfig;
   };
 
   /**
@@ -305,10 +302,8 @@ export class PresentationManager {
   private _props: PresentationManagerProps;
   private _nativePlatform?: NativePlatformDefinition;
   private _rulesets: RulesetManager;
-  private _isOneFrontendPerBackend: boolean;
   private _isDisposed: boolean;
   private _disposeIModelOpenedListener?: () => void;
-  private _disposeIpcHandler?: () => void;
   private _updatesTracker?: UpdatesTracker;
 
   /** Get / set active locale used for localizing presentation data */
@@ -337,8 +332,8 @@ export class PresentationManager {
         taskAllocationsMap: createTaskAllocationsMap(props),
         mode,
         isChangeTrackingEnabled,
-        cacheConfig: createCacheConfig(this._props.cacheConfig),
-        contentCacheSize: this._props.contentCacheSize,
+        cacheConfig: createCacheConfig(this._props.caching?.hierarchies),
+        contentCacheSize: this._props.caching?.content?.size,
         defaultFormats: toNativeUnitFormatsMap(this._props.defaultFormats),
         useMmap: this._props.useMmap,
       });
@@ -347,8 +342,8 @@ export class PresentationManager {
 
     this.setupRulesetDirectories(props);
     if (props) {
-      this.activeLocale = props.activeLocale;
-      this.activeUnitSystem = props.activeUnitSystem;
+      this.activeLocale = props.defaultLocale;
+      this.activeUnitSystem = props.defaultUnitSystem;
     }
 
     this._rulesets = new RulesetManagerImpl(this.getNativePlatform);
@@ -356,16 +351,11 @@ export class PresentationManager {
     if (this._props.enableSchemasPreload)
       this._disposeIModelOpenedListener = BriefcaseDb.onOpened.addListener(this.onIModelOpened);
 
-    this._isOneFrontendPerBackend = IpcHost.isValid;
-
-    if (IpcHost.isValid) {
-      if (isChangeTrackingEnabled) {
-        this._updatesTracker = UpdatesTracker.create({
-          nativePlatformGetter: this.getNativePlatform,
-          pollInterval: props!.updatesPollInterval!,
-        });
-      }
-      this._disposeIpcHandler = PresentationIpcHandler.register();
+    if (IpcHost.isValid && isChangeTrackingEnabled) {
+      this._updatesTracker = UpdatesTracker.create({
+        nativePlatformGetter: this.getNativePlatform,
+        pollInterval: props.updatesPollInterval!,
+      });
     }
   }
 
@@ -385,9 +375,6 @@ export class PresentationManager {
       this._updatesTracker.dispose();
       this._updatesTracker = undefined;
     }
-
-    if (this._disposeIpcHandler)
-      this._disposeIpcHandler();
 
     this._isDisposed = true;
   }
@@ -444,14 +431,6 @@ export class PresentationManager {
 
   private getRulesetIdObject(rulesetOrId: Ruleset | string): { uniqueId: string, parts: { id: string, hash?: string } } {
     if (typeof rulesetOrId === "object") {
-      if (this._isOneFrontendPerBackend) {
-        // in case of native apps we don't have to enforce ruleset id uniqueness, since there's ony one
-        // frontend and it's up to the frontend to make sure rulesets are unique
-        return {
-          uniqueId: rulesetOrId.id,
-          parts: { id: rulesetOrId.id },
-        };
-      }
       const hashedId = hash.MD5(rulesetOrId);
       return {
         uniqueId: `${rulesetOrId.id}-${hashedId}`,
@@ -488,7 +467,7 @@ export class PresentationManager {
    * Retrieves nodes
    * @public
    */
-  public async getNodes(requestOptions: WithClientRequestContext<Paged<HierarchyRequestOptions<IModelDb, NodeKey>>>): Promise<Node[]> {
+  public async getNodes(requestOptions: Prioritized<Paged<HierarchyRequestOptions<IModelDb, NodeKey>>>): Promise<Node[]> {
     const { rulesetId, strippedOptions: { parentKey, ...strippedOptions } } = this.registerRuleset(requestOptions);
     const params = {
       requestId: parentKey ? NativePlatformRequestTypes.GetChildren : NativePlatformRequestTypes.GetRootNodes,
@@ -503,7 +482,7 @@ export class PresentationManager {
    * Retrieves nodes count
    * @public
    */
-  public async getNodesCount(requestOptions: WithClientRequestContext<HierarchyRequestOptions<IModelDb, NodeKey>>): Promise<number> {
+  public async getNodesCount(requestOptions: Prioritized<HierarchyRequestOptions<IModelDb, NodeKey>>): Promise<number> {
     const { rulesetId, strippedOptions: { parentKey, ...strippedOptions } } = this.registerRuleset(requestOptions);
     const params = {
       requestId: parentKey ? NativePlatformRequestTypes.GetChildrenCount : NativePlatformRequestTypes.GetRootNodesCount,
@@ -519,7 +498,7 @@ export class PresentationManager {
    * TODO: Return results in pages
    * @public
    */
-  public async getNodePaths(requestOptions: WithClientRequestContext<FilterByInstancePathsHierarchyRequestOptions<IModelDb>>): Promise<NodePathElement[]> {
+  public async getNodePaths(requestOptions: Prioritized<FilterByInstancePathsHierarchyRequestOptions<IModelDb>>): Promise<NodePathElement[]> {
     const { rulesetId, strippedOptions: { instancePaths, ...strippedOptions } } = this.registerRuleset(requestOptions);
     const params = {
       requestId: NativePlatformRequestTypes.GetNodePaths,
@@ -535,7 +514,7 @@ export class PresentationManager {
    * TODO: Return results in pages
    * @public
    */
-  public async getFilteredNodePaths(requestOptions: WithClientRequestContext<FilterByTextHierarchyRequestOptions<IModelDb>>): Promise<NodePathElement[]> {
+  public async getFilteredNodePaths(requestOptions: Prioritized<FilterByTextHierarchyRequestOptions<IModelDb>>): Promise<NodePathElement[]> {
     const { rulesetId, strippedOptions } = this.registerRuleset(requestOptions);
     const params = {
       requestId: NativePlatformRequestTypes.GetFilteredNodePaths,
@@ -546,7 +525,7 @@ export class PresentationManager {
   }
 
   /** @beta */
-  public async getContentSources(requestOptions: WithClientRequestContext<ContentSourcesRequestOptions<IModelDb>>): Promise<SelectClassInfo[]> {
+  public async getContentSources(requestOptions: Prioritized<ContentSourcesRequestOptions<IModelDb>>): Promise<SelectClassInfo[]> {
     const params = {
       requestId: NativePlatformRequestTypes.GetContentSources,
       rulesetId: "ElementProperties",
@@ -562,13 +541,13 @@ export class PresentationManager {
    * Retrieves the content descriptor which can be used to get content
    * @public
    */
-  public async getContentDescriptor(requestOptions: WithClientRequestContext<ContentDescriptorRequestOptions<IModelDb, KeySet>>): Promise<Descriptor | undefined> {
+  public async getContentDescriptor(requestOptions: Prioritized<ContentDescriptorRequestOptions<IModelDb, KeySet>>): Promise<Descriptor | undefined> {
     const { rulesetId, strippedOptions } = this.registerRuleset(requestOptions);
     const params = {
       requestId: NativePlatformRequestTypes.GetContentDescriptor,
       rulesetId,
       ...strippedOptions,
-      keys: getKeysForContentRequest(requestOptions.imodel, requestOptions.keys).toJSON(),
+      keys: getKeysForContentRequest(requestOptions.keys, (map) => bisElementInstanceKeysProcessor(requestOptions.imodel, map)),
     };
     const reviver = (key: string, value: any) => {
       return key === "" ? Descriptor.fromJSON(value) : value;
@@ -580,13 +559,13 @@ export class PresentationManager {
    * Retrieves the content set size based on the supplied content descriptor override
    * @public
    */
-  public async getContentSetSize(requestOptions: WithClientRequestContext<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>>): Promise<number> {
+  public async getContentSetSize(requestOptions: Prioritized<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>>): Promise<number> {
     const { rulesetId, strippedOptions: { descriptor, ...strippedOptions } } = this.registerRuleset(requestOptions);
     const params = {
       requestId: NativePlatformRequestTypes.GetContentSetSize,
       rulesetId,
       ...strippedOptions,
-      keys: getKeysForContentRequest(requestOptions.imodel, requestOptions.keys).toJSON(),
+      keys: getKeysForContentRequest(requestOptions.keys, (map) => bisElementInstanceKeysProcessor(requestOptions.imodel, map)),
       descriptorOverrides: createContentDescriptorOverrides(descriptor),
     };
     return this.request(params);
@@ -596,13 +575,13 @@ export class PresentationManager {
    * Retrieves the content based on the supplied content descriptor override.
    * @public
    */
-  public async getContent(requestOptions: WithClientRequestContext<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>>>): Promise<Content | undefined> {
+  public async getContent(requestOptions: Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>>>): Promise<Content | undefined> {
     const { rulesetId, strippedOptions: { descriptor, ...strippedOptions } } = this.registerRuleset(requestOptions);
     const params = {
       requestId: NativePlatformRequestTypes.GetContent,
       rulesetId,
       ...strippedOptions,
-      keys: getKeysForContentRequest(requestOptions.imodel, requestOptions.keys).toJSON(),
+      keys: getKeysForContentRequest(requestOptions.keys, (map) => bisElementInstanceKeysProcessor(requestOptions.imodel, map)),
       descriptorOverrides: createContentDescriptorOverrides(descriptor),
     };
     return this.request(params, Content.reviver);
@@ -610,19 +589,18 @@ export class PresentationManager {
 
   /**
    * Retrieves distinct values of specific field from the content based on the supplied content descriptor override.
-   * @param requestContext      The client request context
    * @param requestOptions      Options for the request
    * @return A promise object that returns either distinct values on success or an error string on error.
    * @public
    */
-  public async getPagedDistinctValues(requestOptions: WithClientRequestContext<DistinctValuesRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>>): Promise<PagedResponse<DisplayValueGroup>> {
+  public async getPagedDistinctValues(requestOptions: Prioritized<DistinctValuesRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>>): Promise<PagedResponse<DisplayValueGroup>> {
     const { rulesetId, strippedOptions } = this.registerRuleset(requestOptions);
     const { descriptor, keys, ...strippedOptionsNoDescriptorAndKeys } = strippedOptions;
     const params = {
       requestId: NativePlatformRequestTypes.GetPagedDistinctValues,
       rulesetId,
       ...strippedOptionsNoDescriptorAndKeys,
-      keys: getKeysForContentRequest(requestOptions.imodel, keys).toJSON(),
+      keys: getKeysForContentRequest(keys, (map) => bisElementInstanceKeysProcessor(requestOptions.imodel, map)),
       descriptorOverrides: createContentDescriptorOverrides(descriptor),
     };
     const reviver = (key: string, value: any) => {
@@ -638,25 +616,62 @@ export class PresentationManager {
    * Retrieves property data in a simplified format for a single element specified by ID.
    * @beta
    */
-  public async getElementProperties(requestOptions: WithClientRequestContext<ElementPropertiesRequestOptions<IModelDb>>): Promise<ElementProperties | undefined> {
-    const { elementId, ...optionsNoElementId } = requestOptions;
-    const content = await this.getContent({
-      ...optionsNoElementId,
-      descriptor: {
-        displayType: DefaultContentDisplayTypes.PropertyPane,
-        contentFlags: ContentFlags.ShowLabels,
-      },
-      rulesetOrId: "ElementProperties",
-      keys: new KeySet([{ className: "BisCore:Element", id: elementId }]),
-    });
-    return buildElementProperties(content);
+  public async getElementProperties(requestOptions: Prioritized<SingleElementPropertiesRequestOptions<IModelDb>>): Promise<ElementProperties | undefined>;
+  /**
+   * Retrieves property data in simplified format for multiple elements specified by class
+   * or all element.
+   * @alpha
+   */
+  public async getElementProperties(requestOptions: Prioritized<MultiElementPropertiesRequestOptions<IModelDb>>): Promise<PagedResponse<ElementProperties>>;
+  public async getElementProperties(requestOptions: Prioritized<ElementPropertiesRequestOptions<IModelDb>>): Promise<ElementProperties | undefined | PagedResponse<ElementProperties>> {
+    if (isSingleElementPropertiesRequestOptions(requestOptions)) {
+      const { elementId, ...optionsNoElementId } = requestOptions;
+      const content = await this.getContent({
+        ...optionsNoElementId,
+        descriptor: {
+          displayType: DefaultContentDisplayTypes.PropertyPane,
+          contentFlags: ContentFlags.ShowLabels,
+        },
+        rulesetOrId: "ElementProperties",
+        keys: new KeySet([{ className: "BisCore:Element", id: elementId }]),
+      });
+      const properties = buildElementsProperties(content);
+      return properties[0];
+    }
+
+    return this.getMultipleElementProperties(requestOptions);
+  }
+
+  private async getMultipleElementProperties(requestOptions: Prioritized<MultiElementPropertiesRequestOptions<IModelDb>>) {
+    const { elementClasses, paging, ...optionsNoElementClasses } = requestOptions;
+    const elementsCount = getElementsCount(requestOptions.imodel, requestOptions.elementClasses);
+    const elementIds = getElementIdsByClass(requestOptions.imodel, elementClasses, paging);
+
+    const elementProperties: ElementProperties[] = [];
+    for (const entry of elementIds) {
+      const properties = await buildElementsPropertiesInPages(entry[0], entry[1], async (keys) => {
+        const content = await this.getContent({
+          ...optionsNoElementClasses,
+          descriptor: {
+            displayType: DefaultContentDisplayTypes.PropertyPane,
+            contentFlags: ContentFlags.ShowLabels,
+          },
+          rulesetOrId: "ElementProperties",
+          keys,
+        });
+        return buildElementsProperties(content);
+      });
+      elementProperties.push(...properties);
+    }
+
+    return { total: elementsCount, items: elementProperties };
   }
 
   /**
    * Retrieves display label definition of specific item
    * @public
    */
-  public async getDisplayLabelDefinition(requestOptions: WithClientRequestContext<DisplayLabelRequestOptions<IModelDb, InstanceKey>>): Promise<LabelDefinition> {
+  public async getDisplayLabelDefinition(requestOptions: Prioritized<DisplayLabelRequestOptions<IModelDb, InstanceKey>>): Promise<LabelDefinition> {
     const params = {
       requestId: NativePlatformRequestTypes.GetDisplayLabel,
       ...requestOptions,
@@ -669,13 +684,13 @@ export class PresentationManager {
    * Retrieves display label definitions of specific items
    * @public
    */
-  public async getDisplayLabelDefinitions(requestOptions: WithClientRequestContext<Paged<DisplayLabelsRequestOptions<IModelDb, InstanceKey>>>): Promise<LabelDefinition[]> {
+  public async getDisplayLabelDefinitions(requestOptions: Prioritized<Paged<DisplayLabelsRequestOptions<IModelDb, InstanceKey>>>): Promise<LabelDefinition[]> {
     const concreteKeys = requestOptions.keys.map((k) => {
       if (k.className === "BisCore:Element")
         return getElementKey(requestOptions.imodel, k.id);
       return k;
     }).filter<InstanceKey>((k): k is InstanceKey => !!k);
-    const contentRequestOptions: WithClientRequestContext<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet>> = {
+    const contentRequestOptions: ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet> = {
       ...requestOptions,
       rulesetOrId: "RulesDrivenECPresentationManager_RulesetId_DisplayLabel",
       descriptor: {
@@ -685,7 +700,6 @@ export class PresentationManager {
       keys: new KeySet(concreteKeys),
     };
     const content = await this.getContent(contentRequestOptions);
-    requestOptions.requestContext.enter();
     return concreteKeys.map((key) => {
       const item = content ? content.contentSet.find((it) => it.primaryKeys.length > 0 && InstanceKey.compare(it.primaryKeys[0], key) === 0) : undefined;
       if (!item)
@@ -698,7 +712,7 @@ export class PresentationManager {
    * Retrieves available selection scopes.
    * @public
    */
-  public async getSelectionScopes(_requestOptions: WithClientRequestContext<SelectionScopeRequestOptions<IModelDb>>): Promise<SelectionScope[]> {
+  public async getSelectionScopes(_requestOptions: SelectionScopeRequestOptions<IModelDb>): Promise<SelectionScope[]> {
     return SelectionScopesHelper.getSelectionScopes();
   }
 
@@ -706,13 +720,13 @@ export class PresentationManager {
    * Computes selection set based on provided selection scope.
    * @public
    */
-  public async computeSelection(requestOptions: WithClientRequestContext<SelectionScopeRequestOptions<IModelDb> & { ids: Id64String[], scopeId: string }>): Promise<KeySet> {
-    const { requestContext, ids, scopeId, ...opts } = requestOptions; // eslint-disable-line @typescript-eslint/no-unused-vars
+  public async computeSelection(requestOptions: SelectionScopeRequestOptions<IModelDb> & { ids: Id64String[], scopeId: string }): Promise<KeySet> {
+    const { ids, scopeId, ...opts } = requestOptions; // eslint-disable-line @typescript-eslint/no-unused-vars
     return SelectionScopesHelper.computeSelection(opts, ids, scopeId);
   }
 
-  private async request<TParams extends { requestContext: ClientRequestContext, diagnostics?: DiagnosticsOptionsWithHandler, requestId: string, imodel: IModelDb, locale?: string, unitSystem?: UnitSystemKey }, TResult>(params: TParams, reviver?: (key: string, value: any) => any): Promise<TResult> {
-    const { requestContext, requestId, imodel, locale, unitSystem, diagnostics, ...strippedParams } = params;
+  private async request<TParams extends { diagnostics?: DiagnosticsOptionsWithHandler, requestId: string, imodel: IModelDb, locale?: string, unitSystem?: UnitSystemKey }, TResult>(params: TParams, reviver?: (key: string, value: any) => any): Promise<TResult> {
+    const { requestId, imodel, locale, unitSystem, diagnostics, ...strippedParams } = params;
     const imodelAddon = this.getNativePlatform().getImodelAddon(imodel);
     const nativeRequestParams: any = {
       requestId,
@@ -731,7 +745,6 @@ export class PresentationManager {
     }
 
     const response = await this.getNativePlatform().handleRequest(imodelAddon, JSON.stringify(nativeRequestParams));
-    requestContext.enter();
     diagnosticsListener && response.diagnostics && diagnosticsListener([response.diagnostics]);
     return JSON.parse(response.result, reviver);
   }
@@ -740,7 +753,7 @@ export class PresentationManager {
    * Compares two hierarchies specified in the request options
    * @public
    */
-  public async compareHierarchies(requestOptions: WithClientRequestContext<HierarchyCompareOptions<IModelDb, NodeKey>>): Promise<HierarchyCompareInfo> {
+  public async compareHierarchies(requestOptions: HierarchyCompareOptions<IModelDb, NodeKey>): Promise<HierarchyCompareInfo> {
     if (!requestOptions.prev.rulesetOrId && !requestOptions.prev.rulesetVariables)
       return { changes: [] };
 
@@ -767,24 +780,55 @@ export class PresentationManager {
   }
 }
 
-const getKeysForContentRequest = (imodel: IModelDb, keys: KeySet): KeySet => {
+function addInstanceKey(classInstancesMap: Map<string, Set<string>>, key: InstanceKey) {
+  let set = classInstancesMap.get(key.className);
+  // istanbul ignore else
+  if (!set) {
+    set = new Set();
+    classInstancesMap.set(key.className, set);
+  }
+  set.add(key.id);
+}
+function bisElementInstanceKeysProcessor(imodel: IModelDb, classInstancesMap: Map<string, Set<string>>) {
   const elementClassName = "BisCore:Element";
-  const instanceKeys = keys.instanceKeys;
-  if (!instanceKeys.has(elementClassName))
-    return keys;
-
-  const elementIds = instanceKeys.get(elementClassName)!;
-  const keyset = new KeySet();
-  keyset.add(keys);
-  elementIds.forEach((elementId) => {
-    const concreteKey = getElementKey(imodel, elementId);
-    if (concreteKey) {
-      keyset.delete({ className: elementClassName, id: elementId });
-      keyset.add(concreteKey);
-    }
+  const elementIds = classInstancesMap.get(elementClassName);
+  if (elementIds) {
+    const deleteElementIds = new Array<string>();
+    elementIds.forEach((elementId) => {
+      const concreteKey = getElementKey(imodel, elementId);
+      if (concreteKey && concreteKey.className !== elementClassName) {
+        deleteElementIds.push(elementId);
+        addInstanceKey(classInstancesMap, { className: concreteKey.className, id: elementId });
+      }
+    });
+    for (const id of deleteElementIds)
+      elementIds.delete(id);
+  }
+}
+/** @internal */
+export function getKeysForContentRequest(keys: Readonly<KeySet>, classInstanceKeysProcessor?: (keys: Map<string, Set<string>>) => void): NativePresentationKeySetJSON {
+  const result: NativePresentationKeySetJSON = {
+    instanceKeys: [],
+    nodeKeys: [],
+  };
+  const classInstancesMap = new Map<string, Set<string>>();
+  keys.forEach((key) => {
+    if (Key.isNodeKey(key))
+      result.nodeKeys.push(key);
+    if (Key.isInstanceKey(key))
+      addInstanceKey(classInstancesMap, key);
   });
-  return keyset;
-};
+
+  if (classInstanceKeysProcessor)
+    classInstanceKeysProcessor(classInstancesMap);
+
+  for (const entry of classInstancesMap) {
+    if (entry[1].size > 0)
+      result.instanceKeys.push([entry["0"], [...entry[1]]]);
+  }
+
+  return result;
+}
 
 const createContentDescriptorOverrides = (descriptorOrOverrides: Descriptor | DescriptorOverrides): DescriptorOverrides => {
   if (descriptorOrOverrides instanceof Descriptor)
@@ -804,13 +848,9 @@ const createLocaleDirectoryList = (props?: PresentationManagerProps) => {
 };
 
 const createTaskAllocationsMap = (props?: PresentationManagerProps) => {
-  if (props && props.taskAllocationsMap)
-    return props.taskAllocationsMap;
-
-  // by default we allocate one slot for preloading tasks and one for all other requests
+  const count = props?.workerThreadsCount ?? 2;
   return {
-    [RequestPriority.Preload]: 1,
-    [RequestPriority.Max]: 1,
+    [Number.MAX_SAFE_INTEGER]: count,
   };
 };
 
@@ -877,3 +917,15 @@ const getPresentationCommonAssetsRoot = (ovr?: string | { common: string }) => {
     return ovr.common;
   return PRESENTATION_COMMON_ASSETS_ROOT;
 };
+
+const ELEMENT_PROPERTIES_CONTENT_BATCH_SIZE = 100;
+async function buildElementsPropertiesInPages(className: string, ids: string[], getter: (keys: KeySet) => Promise<ElementProperties[]>) {
+  const elementProperties: ElementProperties[] = [];
+  const elementIds = [...ids];
+  while (elementIds.length > 0) {
+    const idsPage = elementIds.splice(0, ELEMENT_PROPERTIES_CONTENT_BATCH_SIZE);
+    const keys = new KeySet(idsPage.map((id) => ({ id, className })));
+    elementProperties.push(...(await getter(keys)));
+  }
+  return elementProperties;
+}

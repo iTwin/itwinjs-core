@@ -3,16 +3,23 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider } from "@bentley/ui-framework";
+import { ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider } from "@itwin/appui-react";
+import { StandardContentLayouts } from "@itwin/appui-abstract";
 
 export class ScheduleAnimationFrontstage extends FrontstageProvider {
+  public get id(): string {
+    return "ScheduleAnimationFrontstage";
+  }
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
 
     const myContentGroup: ContentGroup = new ContentGroup(
       {
+        id: "ScheduleAnimation",
+        layout: StandardContentLayouts.singleView,
         contents: [
           {
+            id: "ScheduleAnimation",
             classId: "ScheduleAnimationControl",
           },
         ],
@@ -20,9 +27,8 @@ export class ScheduleAnimationFrontstage extends FrontstageProvider {
     );
 
     return (
-      <Frontstage id="ScheduleAnimationFrontstage"
+      <Frontstage id={this.id}
         defaultTool={CoreTools.selectElementCommand}
-        defaultLayout="SingleContent"
         contentGroup={myContentGroup}
         isInFooterMode={false}
         applicationData={{ key: "value" }}

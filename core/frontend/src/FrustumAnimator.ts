@@ -6,8 +6,8 @@
  * @module Views
  */
 
-import { Angle, Geometry, Matrix3d, Point3d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
-import { Tweens } from "@bentley/imodeljs-common";
+import { Angle, Geometry, Matrix3d, Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
+import { Tweens } from "@itwin/core-common";
 import { Animator, ViewAnimationOptions } from "./ViewAnimation";
 import { ScreenViewport } from "./Viewport";
 import { ViewPose, ViewPose3d } from "./ViewPose";
@@ -131,7 +131,10 @@ export class FrustumAnimator implements Animator {
 
   /** @internal */
   public animate() {
-    return !this._tweens.update();
+    const didFinish = !this._tweens.update();
+    if (didFinish && this.options.animationFinishedCallback)
+      this.options.animationFinishedCallback(true);
+    return didFinish;
   }
 
   /** @internal */
@@ -139,5 +142,7 @@ export class FrustumAnimator implements Animator {
     // We were interrupted. Either go to: the final frame (normally) or, add a small fraction of the total duration (30ms for a .5 second duration) to
     // the current time for cancelOnAbort. That makes aborted animations show some progress, as happens when the mouse wheel rolls quickly.
     this._tweens.update(this.options.cancelOnAbort ? Date.now() + (this._duration * .06) : Infinity);
+    if (this.options.animationFinishedCallback)
+      this.options.animationFinishedCallback(false);
   }
 }

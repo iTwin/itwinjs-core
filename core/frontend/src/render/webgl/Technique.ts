@@ -6,8 +6,8 @@
  * @module WebGL
  */
 
-import { assert, dispose, using } from "@bentley/bentleyjs-core";
-import { WebGLContext } from "@bentley/webgl-compatibility";
+import { assert, dispose, using } from "@itwin/core-bentley";
+import { WebGLContext } from "@itwin/webgl-compatibility";
 import { ClippingProgram, createClippingProgram } from "./ClippingProgram";
 import { WebGLDisposable } from "./Disposable";
 import { DrawCommands, DrawParams } from "./DrawCommand";
@@ -27,7 +27,7 @@ import {
 } from "./glsl/CopyStencil";
 import { createEdgeBuilder } from "./glsl/Edge";
 import { createEVSMProgram } from "./glsl/EVSMFromDepth";
-import { addFeatureId, addFeatureSymbology, addRenderOrder, addUniformFeatureSymbology, FeatureSymbologyOptions } from "./glsl/FeatureSymbology";
+import { addFeatureId, addFeatureSymbology, addRenderOrder, addUniformFeatureSymbology, FeatureSymbologyOptions, mixFeatureColor } from "./glsl/FeatureSymbology";
 import { addFragColorWithPreMultipliedAlpha, addPickBufferOutputs } from "./glsl/Fragment";
 import { addLogDepth } from "./glsl/LogarithmicDepthBuffer";
 import { addUnlitMonochrome } from "./glsl/Monochrome";
@@ -42,7 +42,7 @@ import { createSurfaceBuilder, createSurfaceHiliter } from "./glsl/Surface";
 import { addTranslucency } from "./glsl/Translucency";
 import { addModelViewMatrix } from "./glsl/Vertex";
 import { RenderPass } from "./RenderFlags";
-import { ProgramBuilder } from "./ShaderBuilder";
+import { ProgramBuilder, VariableType, VertexShaderComponent } from "./ShaderBuilder";
 import { CompileStatus, ShaderProgram, ShaderProgramExecutor } from "./ShaderProgram";
 import { System } from "./System";
 import { Target } from "./Target";
@@ -609,8 +609,15 @@ class PointCloudTechnique extends VariedTechnique {
           flags.reset(featureMode, IsInstanced.No, IsShadowable.No, thematic);
           flags.isClassified = iClassified;
           const builder = createPointCloudBuilder(flags.isClassified, featureMode, thematic);
-          if (FeatureMode.Overrides === featureMode)
+          if (FeatureMode.Overrides === featureMode) {
             addUniformFeatureSymbology(builder, true);
+            builder.vert.addUniform("u_overrideColorMix", VariableType.Float, (prog) => {
+              prog.addGraphicUniform("u_overrideColorMix", (uniform, params) => {
+                uniform.setUniform1f(params.geometry.asPointCloud!.overrideColorMix);
+              });
+            });
+            builder.vert.set(VertexShaderComponent.ApplyFeatureColor, mixFeatureColor);
+          }
 
           this.addFeatureId(builder, featureMode);
           this.addShader(builder, flags, gl);

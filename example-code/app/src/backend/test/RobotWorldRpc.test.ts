@@ -3,15 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Id64, Id64String, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
-import { Angle, Point3d } from "@bentley/geometry-core";
-import { IModelJsFs, PhysicalModel, StandaloneDb } from "@bentley/imodeljs-backend";
+import { Id64, Id64String, OpenMode, ProcessDetector } from "@itwin/core-bentley";
+import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
+import { Angle, Point3d } from "@itwin/core-geometry";
+import { IModelJsFs, PhysicalModel, StandaloneDb } from "@itwin/core-backend";
 import {
   BentleyCloudRpcManager, BentleyCloudRpcParams, GeometricElement3dProps, IModel, IModelReadRpcInterface,
   RpcInterfaceDefinition, SnapshotIModelRpcInterface, TestRpcManager,
-} from "@bentley/imodeljs-common";
-import { BriefcaseConnection, NullRenderSystem } from "@bentley/imodeljs-frontend";
+} from "@itwin/core-common";
+import { BriefcaseConnection, NullRenderSystem } from "@itwin/core-frontend";
 import { RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface } from "../../common/RobotWorldRpcInterface";
 import { RobotWorldEngine } from "../RobotWorldEngine";
 import { RobotWorld } from "../RobotWorldSchema";
@@ -41,10 +41,6 @@ async function setUpTest() {
 
 if (ProcessDetector.isElectronAppFrontend) {
   describe("RobotWorldRpc", () => {
-
-    // This node-based implementation of XHR is *not* required by our RPC mechanism. It is required by our
-    // I18n module (specifically the i18next package).
-    (global as any).XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; // eslint-disable-line @typescript-eslint/no-var-requires
 
     it("should run robotWorld through Ipc as a client", async () => {
       // Simulate the deployment of the backend server

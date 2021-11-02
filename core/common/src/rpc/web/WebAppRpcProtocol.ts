@@ -18,7 +18,7 @@ import { CommonLoggerCategory } from "../../CommonLoggerCategory";
 import { RpcInterface } from "../../RpcInterface";
 import { RpcManager } from "../../RpcManager";
 import { RpcRoutingToken } from "../core/RpcRoutingToken";
-import { Logger } from "@bentley/bentleyjs-core";
+import { BentleyError, Logger } from "@itwin/core-bentley";
 
 class InitializeInterface extends RpcInterface {
   public static readonly interfaceName = "InitializeInterface";
@@ -47,9 +47,11 @@ class InitializeInterface extends RpcInterface {
  * @public
  */
 export interface HttpServerRequest extends Readable {
+  aborted: boolean;
   httpVersion: string;
   httpVersionMajor: number;
   httpVersionMinor: number;
+  complete: boolean;
   connection: any;
   headers: { [header: string]: string | string[] | undefined };
   rawHeaders: string[];
@@ -78,7 +80,7 @@ export interface HttpServerResponse extends Writable {
 }
 
 /** The HTTP application protocol.
- * @public
+ * @internal
  */
 export abstract class WebAppRpcProtocol extends RpcProtocol {
   public override preserveStreams = true;
@@ -102,7 +104,7 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
           (response.headers.get("Access-Control-Allow-Headers") || "").split(",").forEach((v) => this.allowedHeaders.add(v.trim()));
         }
       } catch (err) {
-        Logger.logWarning(CommonLoggerCategory.RpcInterfaceFrontend, "Unable to discover backend capabilities.", () => err);
+        Logger.logWarning(CommonLoggerCategory.RpcInterfaceFrontend, "Unable to discover backend capabilities.", BentleyError.getErrorProps(err));
       }
 
       resolve();

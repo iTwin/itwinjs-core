@@ -6,8 +6,8 @@
  * @module Schema
  */
 
-import { Id64, Id64String } from "@bentley/bentleyjs-core";
-import { EntityProps, PropertyCallback, PropertyMetaData } from "@bentley/imodeljs-common";
+import { Id64, Id64String } from "@itwin/core-bentley";
+import { EntityProps, PropertyCallback, PropertyMetaData } from "@itwin/core-common";
 import { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
 

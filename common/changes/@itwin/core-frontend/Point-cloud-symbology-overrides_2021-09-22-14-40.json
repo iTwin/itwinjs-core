@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Support transparency overrides for point clouds",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

@@ -33,7 +33,7 @@ CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-import { NodeStringDecoder, StringDecoder } from "string_decoder";
+import { StringDecoder } from "string_decoder";
 import { RpcSerializedValue } from "../../core/RpcMarshaling";
 
 const START = 0;
@@ -66,8 +66,8 @@ export class RpcMultipartParser {
   private _headerValueMark: number | null;
   private _partDataMark: number | null;
   private _partBoundaryFlag: boolean;
-  private _headerFieldDecoder: NodeStringDecoder | null;
-  private _headerValueDecoder: NodeStringDecoder | null;
+  private _headerFieldDecoder: StringDecoder | null;
+  private _headerValueDecoder: StringDecoder | null;
   private _headerField: string;
   private _partHeaders: { [index: string]: string };
   private _partName: string | null;

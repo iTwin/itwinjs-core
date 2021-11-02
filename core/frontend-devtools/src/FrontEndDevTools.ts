@@ -6,7 +6,7 @@
  * @module Utilities
  */
 
-import { IModelApp } from "@bentley/imodeljs-frontend";
+import { IModelApp } from "@itwin/core-frontend";
 import { EdgeDetectionEffect, EmbossEffect, GaussianBlurEffect, SharpenEffect, SharpnessEffect, UnsharpenEffect } from "./effects/Convolution";
 import { ClearEffectsTool } from "./effects/EffectTools";
 import { ExplosionEffect } from "./effects/Explosion";
@@ -79,7 +79,8 @@ export class FrontendDevTools {
 
     this._initialized = true;
 
-    const i18n = IModelApp.i18n.registerNamespace("FrontendDevTools");
+    const namespace = "FrontendDevTools";
+    const namespacePromise = IModelApp.localization.registerNamespace(namespace);
     const tools = [
       AttachMapLayerTool,
       AttachMapOverlayTool,
@@ -215,8 +216,8 @@ export class FrontendDevTools {
     ];
 
     for (const tool of tools)
-      tool.register(i18n);
+      tool.register(namespace);
 
-    return i18n.readFinished;
+    return namespacePromise;
   }
 }

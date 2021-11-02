@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix non-locatable override for point clouds",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend",
+  "email": "rbbentley@users.noreply.github.com"
+}

@@ -7,7 +7,7 @@
 
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { ECClass, ISchemaPartVisitor, RelationshipClass, Schema, SchemaContext, SchemaWalker } from "@bentley/ecschema-metadata";
+import { ECClass, ISchemaPartVisitor, RelationshipClass, Schema, SchemaContext, SchemaWalker } from "@itwin/ecschema-metadata";
 
 describe("SchemaWalker tests", () => {
   let testSchema: Schema;

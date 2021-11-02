@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ClipVector, Point3d, Transform } from "@bentley/geometry-core";
+import { ClipVector, Point3d, Transform } from "@itwin/core-geometry";
 import { ClipVolume } from "../../../render/webgl/ClipVolume";
 import { ClipStack } from "../../../render/webgl/ClipStack";
 import { RenderSystem } from "../../../render/RenderSystem";

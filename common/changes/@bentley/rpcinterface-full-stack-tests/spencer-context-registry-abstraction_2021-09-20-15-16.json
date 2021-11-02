@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/rpcinterface-full-stack-tests",
+      "comment": "Replaced ContextRegistry with generalized ITwinAccess interface",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/rpcinterface-full-stack-tests"
+}

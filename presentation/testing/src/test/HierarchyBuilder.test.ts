@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as moq from "typemoq";
-import { BeEvent, Guid } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { HierarchyRequestOptions, LabelDefinition, Node, NodeKey, RegisteredRuleset, Ruleset } from "@bentley/presentation-common";
-import { Presentation, PresentationManager, RulesetManager, RulesetVariablesManager } from "@bentley/presentation-frontend";
-import { TreeNodeItem } from "@bentley/ui-components";
+import { BeEvent, Guid } from "@itwin/core-bentley";
+import { IModelConnection } from "@itwin/core-frontend";
+import { HierarchyRequestOptions, LabelDefinition, Node, NodeKey, RegisteredRuleset, Ruleset } from "@itwin/presentation-common";
+import { Presentation, PresentationManager, RulesetManager, RulesetVariablesManager } from "@itwin/presentation-frontend";
+import { TreeNodeItem } from "@itwin/components-react";
 import { HierarchyBuilder, NodeMappingFunc } from "../presentation-testing/HierarchyBuilder";
 
 async function getRootNodes() {

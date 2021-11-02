@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { Vector3d, XYAndZ } from "@bentley/geometry-core";
+import { Vector3d, XYAndZ } from "@itwin/core-geometry";
 
 const scratchUInt16 = new Uint16Array(1);
 

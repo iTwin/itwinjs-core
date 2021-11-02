@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Range3d } from "@bentley/geometry-core";
+import { Range3d } from "@itwin/core-geometry";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { createBlankConnection } from "./createBlankConnection";

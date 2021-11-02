@@ -6,16 +6,17 @@
  * @module Core
  */
 
-import { BeEvent, IDisposable, Logger, OrderedId64Iterable } from "@bentley/bentleyjs-core";
-import { IModelConnection, IpcApp } from "@bentley/imodeljs-frontend";
-import { UnitSystemKey } from "@bentley/imodeljs-quantity";
+import { BeEvent, IDisposable, Logger, OrderedId64Iterable } from "@itwin/core-bentley";
+import { IModelConnection, IpcApp } from "@itwin/core-frontend";
+import { UnitSystemKey } from "@itwin/core-quantity";
 import {
   Content, ContentDescriptorRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, ContentUpdateInfo, Descriptor, DescriptorOverrides,
   DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ElementProperties,
   ElementPropertiesRequestOptions, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions,
-  HierarchyUpdateInfo, InstanceKey, Item, Key, KeySet, LabelDefinition, Node, NodeKey, NodeKeyJSON, NodePathElement, Paged, PagedResponse,
-  PageOptions, PresentationIpcEvents, RpcRequestsHandler, Ruleset, RulesetVariable, SelectClassInfo, UpdateInfo, UpdateInfoJSON, VariableValueTypes,
-} from "@bentley/presentation-common";
+  HierarchyUpdateInfo, InstanceKey, isSingleElementPropertiesRequestOptions, Item, Key, KeySet, LabelDefinition, MultiElementPropertiesRequestOptions,
+  Node, NodeKey, NodeKeyJSON, NodePathElement, Paged, PagedResponse, PageOptions, PresentationIpcEvents, RpcRequestsHandler, Ruleset, RulesetVariable,
+  SelectClassInfo, SingleElementPropertiesRequestOptions, UpdateInfo, UpdateInfoJSON, VariableValueTypes,
+} from "@itwin/presentation-common";
 import { PresentationFrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { IpcRequestsHandler } from "./IpcRequestsHandler";
 import { LocalizationHelper } from "./LocalizationHelper";
@@ -412,9 +413,23 @@ export class PresentationManager implements IDisposable {
    * Retrieves property data in a simplified format for a single element specified by ID.
    * @beta
    */
-  public async getElementProperties(requestOptions: ElementPropertiesRequestOptions<IModelConnection>): Promise<ElementProperties | undefined> {
+  public async getElementProperties(requestOptions: SingleElementPropertiesRequestOptions<IModelConnection>): Promise<ElementProperties | undefined>;
+  /**
+   * Retrieves property data in a simplified format for multiple elements specified by class
+   * or all elements.
+   * @alpha
+   */
+  public async getElementProperties(requestOptions: MultiElementPropertiesRequestOptions<IModelConnection>): Promise<PagedResponse<ElementProperties>>;
+  public async getElementProperties(requestOptions: ElementPropertiesRequestOptions<IModelConnection>): Promise<ElementProperties | undefined | PagedResponse<ElementProperties>> {
     await this.onConnection(requestOptions.imodel);
-    return this._requestsHandler.getElementProperties(this.toRpcTokenOptions(requestOptions));
+    if (isSingleElementPropertiesRequestOptions(requestOptions)) {
+      return this._requestsHandler.getElementProperties(this.toRpcTokenOptions(requestOptions));
+    }
+
+    const rpcOptions = this.toRpcTokenOptions(requestOptions);
+    return buildPagedResponse(requestOptions.paging, async (partialPageOptions) => {
+      return this._requestsHandler.getElementProperties({ ...rpcOptions, paging: partialPageOptions });
+    });
   }
 
   /** Retrieves display label definition of specific item. */

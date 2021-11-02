@@ -3,17 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import { assert } from "@bentley/bentleyjs-core";
-import { ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/lib/ElectronBackend";
+import { assert } from "@itwin/core-bentley";
+import { ElectronHost, ElectronHostOptions } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
-import { getRpcInterfaces, initializeDtaBackend } from "./Backend";
-import { IpcHandler } from "@bentley/imodeljs-backend";
+import { getRpcInterfaces, initializeDtaBackend, loadBackendConfig } from "./Backend";
+import { IpcHandler } from "@itwin/core-backend";
+import { getConfig } from "../common/DtaConfiguration";
 
 const mainWindowName = "mainWindow";
-const getWindowSize = () => {
-  const sizeStr = process.env.SVT_WINDOW_SIZE;
-  if (typeof sizeStr === "string") {
-    const parts = sizeStr.split(",");
+const getWindowSize = (winSize?: string) => {
+  if (undefined !== winSize) {
+    const parts = winSize.split(",");
     if (parts.length === 2) {
       let width = Number.parseInt(parts[0], 10);
       let height = Number.parseInt(parts[1], 10);
@@ -43,6 +43,9 @@ class DtaHandler extends IpcHandler implements DtaIpcInterface {
  * that starts from the file "index.ts". That launches the iModel.js frontend (IModelApp).
  */
 const dtaElectronMain = async () => {
+  // Need to load the config first to get the electron options
+  loadBackendConfig();
+
   const opts: ElectronHostOptions = {
     webResourcesPath: path.join(__dirname, "..", "..", "build"),
     iconName: "display-test-app.ico",
@@ -50,15 +53,18 @@ const dtaElectronMain = async () => {
     ipcHandlers: [DtaHandler],
     developmentServer: process.env.NODE_ENV === "development",
     authConfig: {
-      clientId: "imodeljs-electron-test",
-      scope: "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party imodel-extension-service-api offline_access",
+      clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
+      redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
+      scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
     },
   };
 
   await initializeDtaBackend(opts);
 
+  const configuration = getConfig();
+
   // Restore previous window size, position and maximized state
-  const sizeAndPosition = getWindowSize();
+  const sizeAndPosition = getWindowSize(configuration.windowSize);
   const maximizeWindow = undefined === sizeAndPosition || ElectronHost.getWindowMaximizedSetting(mainWindowName);
 
   // after backend is initialized, start display-test-app frontend process and open the window
@@ -70,7 +76,7 @@ const dtaElectronMain = async () => {
     ElectronHost.mainWindow.show();
   }
 
-  if (undefined === process.env.SVT_NO_DEV_TOOLS)
+  if (configuration.devTools)
     ElectronHost.mainWindow.webContents.toggleDevTools();
 
   // Handle custom keyboard shortcuts
@@ -86,16 +92,14 @@ const dtaElectronMain = async () => {
     });
   });
 
-  const configPathname = path.normalize(path.join(__dirname, "..", "..", "build", "configuration.json"));
-  const configuration = require(configPathname); // eslint-disable-line @typescript-eslint/no-var-requires
-  if (configuration.useIModelBank) {
+  // Custom orchestrator URL is used to define the iModelBank URL.
+  if (configuration.customOrchestratorUri) {
     ElectronHost.app.on("certificate-error", (event, _webContents, _url, _error, _certificate, callback) => {
       // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
       event.preventDefault();
       callback(true);
     });
   }
-
 };
 
 // execute this immediately when we load

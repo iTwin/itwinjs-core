@@ -7,29 +7,30 @@
  */
 
 import { join } from "path";
-import {
-  BeEvent, BentleyStatus, ChangeSetStatus, ClientRequestContext, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
-  IModelStatus, JsonUtils, Logger, OpenMode,
-} from "@bentley/bentleyjs-core";
-import { Range3d } from "@bentley/geometry-core";
-import {
-  AxisAlignedBox3d, Base64EncodedString, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex,
-  ChangesetIndexAndId, Code, CodeSpec, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DisplayStyleProps,
-  DomainOptions, EcefLocation, ElementAspectProps, ElementGeometryRequest, ElementGeometryUpdate, ElementGraphicsRequestProps, ElementLoadProps,
-  ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontProps, GeoCoordinatesResponseProps,
-  GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse,
-  IModelProps, IModelTileTreeProps, LocalFileName, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps, ModelProps,
-  ModelSelectorProps, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus,
-  SchemaState, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, StandaloneOpenOptions,
-  TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
-} from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import {
+  AccessToken, BeEvent, BentleyStatus, ChangeSetStatus, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus,
+  JsonUtils, Logger, OpenMode,
+} from "@itwin/core-bentley";
+import {
+  AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
+  CodeSpec, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
+  DomainOptions, EcefLocation, ECSqlReader, ElementAspectProps, ElementGeometryRequest, ElementGeometryUpdate, ElementGraphicsRequestProps,
+  ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontProps, GeoCoordinatesRequestProps,
+  GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesRequestProps,
+  IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName, MassPropertiesRequestProps,
+  MassPropertiesResponseProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryBinder,
+  QueryOptions, QueryOptionsBuilder, QueryRowFormat, RpcActivity, SchemaState, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions,
+  SpatialViewDefinitionProps, StandaloneOpenOptions, TextureData, TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinitionProps,
+  ViewQueryParams, ViewStateLoadProps, ViewStateProps,
+} from "@itwin/core-common";
+import { Range3d } from "@itwin/core-geometry";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager, PullChangesArgs, PushChangesArgs } from "./BriefcaseManager";
 import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { CodeSpecs } from "./CodeSpecs";
+import { ConcurrentQuery } from "./ConcurrentQuery";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { Element, SectionDrawing, Subject } from "./Element";
 import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
@@ -45,8 +46,6 @@ import { ServerBasedLocks } from "./ServerBasedLocks";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
-
-/// cspell:ignore ecef
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
@@ -84,6 +83,7 @@ export interface ComputedProjectExtents {
 }
 
 /**
+ * Interface for acquiring element locks to coordinate simultaneous edits from multiple briefcases.
  * @beta
  */
 export interface LockControl {
@@ -142,7 +142,7 @@ export interface LockControl {
   releaseAllLocks(): Promise<void>;
 }
 
-/** a LockControl that does not attempt to limit access between briefcases. This relies on change-merging to resolve conflicts. */
+/** A null-implementation of LockControl that does not attempt to limit access between briefcases. This relies on change-merging to resolve conflicts. */
 class NoLocks implements LockControl {
   public get isServerBased() { return false; }
   public close(): void { }
@@ -163,7 +163,7 @@ export enum BriefcaseLocalValue {
   NoLocking = "NoLocking"
 }
 
-// open an briefcaseDb, perform an operation, and then close file.
+// function to open an briefcaseDb, perform an operation, and then close it.
 const withBriefcaseDb = async (briefcase: OpenBriefcaseArgs, fn: (_db: BriefcaseDb) => Promise<any>) => {
   const db = await BriefcaseDb.open(briefcase);
   try {
@@ -173,7 +173,7 @@ const withBriefcaseDb = async (briefcase: OpenBriefcaseArgs, fn: (_db: Briefcase
   }
 };
 
-/** An iModel database file. The database file is either briefcase or a snapshot.
+/** An iModel database file. The database file can either be a briefcase or a snapshot.
  * @see [Accessing iModels]($docs/learning/backend/AccessingIModels.md)
  * @see [About IModelDb]($docs/learning/backend/IModelDb.md)
  * @public
@@ -189,7 +189,6 @@ export abstract class IModelDb extends IModel {
   public readonly views = new IModelDb.Views(this);
   public readonly tiles = new IModelDb.Tiles(this);
   private _relationships?: Relationships;
-  private _concurrentQueryInitialized: boolean = false;
   private readonly _statementCache = new StatementCache<ECSqlStatement>();
   private readonly _sqliteStatementCache = new StatementCache<SqliteStatement>();
   private _codeSpecs?: CodeSpecs;
@@ -223,11 +222,10 @@ export abstract class IModelDb extends IModel {
   public readonly onChangesetApplied = new BeEvent<() => void>();
   /** @internal */
   public notifyChangesetApplied() {
-    this.changeset = this.nativeDb.getParentChangeset();
+    this.changeset = this.nativeDb.getCurrentChangeset();
     this.onChangesetApplied.raiseEvent();
   }
 
-  public readFontJson(): string { return JSON.stringify(this.nativeDb.readFontMap()); }
   public get fontMap(): FontMap { return this._fontMap ?? (this._fontMap = new FontMap(this.nativeDb.readFontMap())); }
   public embedFont(prop: FontProps): FontProps { this._fontMap = undefined; return this.nativeDb.embedFont(prop); }
 
@@ -248,7 +246,7 @@ export abstract class IModelDb extends IModel {
 
   /** @internal */
   protected constructor(args: { nativeDb: IModelJsNative.DgnDb, key: string, changeset?: ChangesetIdWithIndex }) {
-    super({ ...args, iTwinId: args.nativeDb.queryProjectGuid(), iModelId: args.nativeDb.getDbGuid() });
+    super({ ...args, iTwinId: args.nativeDb.getITwinId(), iModelId: args.nativeDb.getIModelId() });
     this._nativeDb = args.nativeDb;
     this.nativeDb.setIModelDb(this);
     this.initializeIModelDb();
@@ -280,9 +278,9 @@ export abstract class IModelDb extends IModel {
   }
 
   /** @internal */
-  public async reattachDaemon(_user: AuthorizedClientRequestContext): Promise<void> { }
+  public async reattachDaemon(_accessToken: AccessToken): Promise<void> { }
 
-  /** Event called when the iModel is about to be closed */
+  /** Event called when the iModel is about to be closed. */
   public readonly onBeforeClose = new BeEvent<() => void>();
 
   /**
@@ -297,7 +295,7 @@ export abstract class IModelDb extends IModel {
 
   /** @internal */
   protected initializeIModelDb() {
-    const props = JSON.parse(this.nativeDb.getIModelProps()) as IModelProps;
+    const props = this.nativeDb.getIModelProps();
     super.initialize(props.rootSubject.name, props);
     if (this._initialized)
       return;
@@ -309,6 +307,7 @@ export abstract class IModelDb extends IModel {
 
     db.onNameChanged.addListener(() => IpcHost.notifyTxns(db, "notifyIModelNameChanged", db.name));
     db.onRootSubjectChanged.addListener(() => IpcHost.notifyTxns(db, "notifyRootSubjectChanged", db.rootSubject));
+
     db.onProjectExtentsChanged.addListener(() => IpcHost.notifyTxns(db, "notifyProjectExtentsChanged", db.projectExtents.toJSON()));
     db.onGlobalOriginChanged.addListener(() => IpcHost.notifyTxns(db, "notifyGlobalOriginChanged", db.globalOrigin.toJSON()));
     db.onEcefLocationChanged.addListener(() => IpcHost.notifyTxns(db, "notifyEcefLocationChanged", db.ecefLocation?.toJSON()));
@@ -404,6 +403,48 @@ export abstract class IModelDb extends IModel {
       throw err;
     }
   }
+  /** Allow to execute query and read results along with meta data. The result are streamed.
+   * @param params The values to bind to the parameters (if the ECSQL has any).
+   * @param config Allow to specify certain flags which control how query is executed.
+   * @returns Returns *ECSqlQueryReader* which help iterate over result set and also give access to meta data.
+   * @beta
+   * */
+  public createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader {
+    if (!this._nativeDb || !this._nativeDb.isOpen()) {
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "db not open");
+    }
+    const executor = {
+      execute: async (request: DbQueryRequest) => {
+        return ConcurrentQuery.executeQueryRequest(this._nativeDb!, request);
+      },
+    };
+    return new ECSqlReader(executor, ecsql, params, config);
+  }
+  /** Execute a query and stream its results
+   * The result of the query is async iterator over the rows. The iterator will get next page automatically once rows in current page has been read.
+   * [ECSQL row]($docs/learning/ECSQLRowFormat).
+   *
+   * See also:
+   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
+   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
+   *
+   * @param ecsql The ECSQL statement to execute
+   * @param params The values to bind to the parameters (if the ECSQL has any).
+   * @param rowFormat Specify what format the row will be returned. It default to Array format though to make it compilable with previous version use *QueryRowFormat.UseJsPropertyNames*
+   * @param options Allow to specify certain flags which control how query is executed.
+   * @returns Returns the query result as an *AsyncIterableIterator<any>*  which lazy load result as needed. The row format is determined by *rowFormat* parameter.
+   * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
+   * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
+   */
+  public async * query(ecsql: string, params?: QueryBinder, rowFormat = QueryRowFormat.UseArrayIndexes, options?: QueryOptions): AsyncIterableIterator<any> {
+    const builder = new QueryOptionsBuilder(options);
+    if (rowFormat === QueryRowFormat.UseJsPropertyNames) {
+      builder.setConvertClassIdsToNames(true);
+    }
+    const reader = this.createQueryReader(ecsql, params, builder.getOptions());
+    while (await reader.step())
+      yield reader.formatCurrentRow(rowFormat);
+  }
 
   /** Compute number of rows that would be returned by the ECSQL.
    *
@@ -412,140 +453,19 @@ export abstract class IModelDb extends IModel {
    * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
    *
    * @param ecsql The ECSQL statement to execute
-   * @param bindings The values to bind to the parameters (if the ECSQL has any).
-   * Pass an *array* of values if the parameters are *positional*.
-   * Pass an *object of the values keyed on the parameter name* for *named parameters*.
-   * The values in either the array or object must match the respective types of the parameters.
+   * @param params The values to bind to the parameters (if the ECSQL has any).
    * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
    * @returns Return row count.
-   * @throws [[IModelError]] If the statement is invalid
+   * @throws [IModelError]($common) If the statement is invalid
    */
-  public async queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number> {
-    for await (const row of this.query(`select count(*) nRows from (${ecsql})`, bindings)) {
-      return row.nRows;
+  public async queryRowCount(ecsql: string, params?: QueryBinder): Promise<number> {
+    for await (const row of this.query(`select count(*) from (${ecsql})`, params)) {
+      return row[0] as number;
     }
     throw new IModelError(DbResult.BE_SQLITE_ERROR, "Failed to get row count");
   }
 
-  /** Execute a query against this ECDb but restricted by quota and limit settings. This is intended to be used internally
-   * The result of the query is returned as an array of JavaScript objects where every array element represents an
-   * [ECSQL row]($docs/learning/ECSQLRowFormat).
-   *
-   * See also:
-   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
-   *
-   * @param ecsql The ECSQL statement to execute
-   * @param bindings The values to bind to the parameters (if the ECSQL has any).
-   * Pass an *array* of values if the parameters are *positional*.
-   * Pass an *object of the values keyed on the parameter name* for *named parameters*.
-   * The values in either the array or object must match the respective types of the parameters.
-   * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
-   * @param limitRows Specify upper limit for rows that can be returned by the query.
-   * @param quota Specify non binding quota. These values are constrained by global setting
-   * but never the less can be specified to narrow down the quota constraint for the query but staying under global settings.
-   * @param priority Specify non binding priority for the query. It can help user to adjust
-   * priority of query in queue so that small and quicker queries can be prioritized over others.
-   * @param restartToken when provide cancel the previous query with same token in same session.
-   * @returns Returns structure containing rows and status.
-   * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
-   * @internal
-   */
-  public async queryRows(ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string, abbreviateBlobs?: boolean): Promise<QueryResponse> {
-    const stats = this._concurrentQueryStats;
-    const config = IModelHost.configuration!.concurrentQuery;
-    stats.lastActivityTime = Date.now();
-    if (!this._concurrentQueryInitialized) {
-      // Initialize concurrent query and setup statistics reset timer
-      this._concurrentQueryInitialized = this.nativeDb.concurrentQueryInit(config);
-      stats.dispose = () => {
-        if (stats.logTimerHandle) {
-          clearInterval(stats.logTimerHandle);
-          stats.logTimerHandle = null;
-        }
-        if (stats.resetTimerHandle) {
-          clearInterval(stats.resetTimerHandle);
-          stats.resetTimerHandle = null;
-        }
-      };
-      // Concurrent query will reset and log statistics every 'resetStatisticsInterval'
-      const resetIntervalMs = 1000 * 60 * Math.max(config.resetStatisticsInterval ? config.resetStatisticsInterval : 60, 10);
-      stats.resetTimerHandle = setInterval(() => {
-        if (this.isOpen && this._concurrentQueryInitialized) {
-          try {
-            const timeElapsedSinceLastActivity = Date.now() - stats.lastActivityTime;
-            if (timeElapsedSinceLastActivity < resetIntervalMs) {
-              const statistics = JSON.parse(this.nativeDb.captureConcurrentQueryStats(true));
-              Logger.logInfo(loggerCategory, "Resetting concurrent query statistics", () => statistics);
-            }
-          } catch { }
-        } else {
-          clearInterval(stats.resetTimerHandle);
-          stats.resetTimerHandle = null;
-        }
-      }, resetIntervalMs);
-      (stats.resetTimerHandle as NodeJS.Timeout).unref();
-      // Concurrent query will log statistics every 'logStatisticsInterval'
-      const logIntervalMs = 1000 * 60 * Math.max(config.logStatisticsInterval ? config.logStatisticsInterval : 5, 5);
-      stats.logTimerHandle = setInterval(() => {
-        if (this.isOpen && this._concurrentQueryInitialized) {
-          try {
-            const timeElapsedSinceLastActivity = Date.now() - stats.lastActivityTime;
-            if (timeElapsedSinceLastActivity < logIntervalMs) {
-              const statistics = JSON.parse(this.nativeDb.captureConcurrentQueryStats(false));
-              Logger.logInfo(loggerCategory, "Concurrent query statistics", () => statistics);
-            }
-          } catch { }
-        } else {
-          clearInterval(stats.logTimerHandle);
-          stats.logTimerHandle = null;
-        }
-      }, logIntervalMs);
-      (stats.logTimerHandle as NodeJS.Timeout).unref();
-    }
-    if (!bindings) bindings = [];
-    if (!limit) limit = {};
-    if (!quota) quota = {};
-    if (!priority) priority = QueryPriority.Normal;
-
-    return new Promise<QueryResponse>((resolve) => {
-      if (!this.isOpen) {
-        resolve({ status: QueryResponseStatus.Done, rows: [] });
-      } else {
-        let sessionRestartToken = restartToken ? restartToken.trim() : "";
-        if (sessionRestartToken !== "")
-          sessionRestartToken = `${ClientRequestContext.current.sessionId}:${sessionRestartToken}`;
-
-        const postResult = this.nativeDb.postConcurrentQuery(ecsql, JSON.stringify(bindings, Base64EncodedString.replacer), limit!, quota!, priority!, sessionRestartToken, abbreviateBlobs);
-        if (postResult.status !== IModelJsNative.ConcurrentQuery.PostStatus.Done)
-          resolve({ status: QueryResponseStatus.PostError, rows: [] });
-
-        const poll = () => {
-          if (!this.nativeDb || !this.nativeDb.isOpen()) {
-            resolve({ status: QueryResponseStatus.Done, rows: [] });
-          } else {
-            const pollResult = this.nativeDb.pollConcurrentQuery(postResult.taskId);
-            if (pollResult.status === IModelJsNative.ConcurrentQuery.PollStatus.Done) {
-              resolve({ status: QueryResponseStatus.Done, rows: JSON.parse(pollResult.result, Base64EncodedString.reviver) });
-            } else if (pollResult.status === IModelJsNative.ConcurrentQuery.PollStatus.Partial) {
-              const returnBeforeStep = pollResult.result.length === 0;
-              resolve({ status: QueryResponseStatus.Partial, rows: returnBeforeStep ? [] : JSON.parse(pollResult.result, Base64EncodedString.reviver) });
-            } else if (pollResult.status === IModelJsNative.ConcurrentQuery.PollStatus.Timeout)
-              resolve({ status: QueryResponseStatus.Timeout, rows: [] });
-            else if (pollResult.status === IModelJsNative.ConcurrentQuery.PollStatus.Pending)
-              setTimeout(() => { poll(); }, config.pollInterval);
-            else if (pollResult.status === IModelJsNative.ConcurrentQuery.PollStatus.Cancelled)
-              resolve({ status: QueryResponseStatus.Cancelled, rows: [pollResult.result] });
-            else
-              resolve({ status: QueryResponseStatus.Error, rows: [pollResult.result] });
-          }
-        };
-        setTimeout(() => { poll(); }, config.pollInterval);
-      }
-    });
-  }
-
-  /** Execute a query and stream its results
+  /** Cancel any previous query with same token and run execute the current specified query.
    * The result of the query is async iterator over the rows. The iterator will get next page automatically once rows in current page has been read.
    * [ECSQL row]($docs/learning/ECSQLRowFormat).
    *
@@ -554,102 +474,19 @@ export abstract class IModelDb extends IModel {
    * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
    *
    * @param ecsql The ECSQL statement to execute
-   * @param bindings The values to bind to the parameters (if the ECSQL has any).
-   * Pass an *array* of values if the parameters are *positional*.
-   * Pass an *object of the values keyed on the parameter name* for *named parameters*.
-   * The values in either the array or object must match the respective types of the parameters.
-   * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
-   * @param limitRows Specify upper limit for rows that can be returned by the query.
-   * @param quota Specify non binding quota. These values are constrained by global setting
-   * but never the less can be specified to narrow down the quota constraint for the query but staying under global settings.
-   * @param priority Specify non binding priority for the query. It can help user to adjust
-   * priority of query in queue so that small and quicker queries can be prioritized over others.
-   * @returns Returns the query result as an *AsyncIterableIterator<any>*  which lazy load result as needed
-   * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
-   * @throws [[IModelError]] If there was any error while submitting, preparing or stepping into query
-   */
-  public async * query(ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority, abbreviateBlobs?: boolean): AsyncIterableIterator<any> {
-    let result: QueryResponse;
-    let offset: number = 0;
-    let rowsToGet = limitRows ? limitRows : -1;
-    do {
-      result = await this.queryRows(ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority, undefined, abbreviateBlobs);
-      while (result.status === QueryResponseStatus.Timeout) {
-        result = await this.queryRows(ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority, undefined, abbreviateBlobs);
-      }
-
-      if (result.status === QueryResponseStatus.Error) {
-        if (result.rows[0] === undefined) {
-          throw new IModelError(DbResult.BE_SQLITE_ERROR, "Invalid ECSql");
-        } else {
-          throw new IModelError(DbResult.BE_SQLITE_ERROR, result.rows[0]);
-        }
-      }
-
-      if (rowsToGet > 0) {
-        rowsToGet -= result.rows.length;
-      }
-      offset += result.rows.length;
-
-      for (const row of result.rows)
-        yield row;
-
-    } while (result.status !== QueryResponseStatus.Done);
-  }
-
-  /** Execute a query and stream its results
-   * The result of the query is async iterator over the rows. The iterator will get next page automatically once rows in current page has been read.
-   * [ECSQL row]($docs/learning/ECSQLRowFormat).
-   *
-   * See also:
-   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
-   *
    * @param token None empty restart token. The previous query with same token would be cancelled. This would cause
    * exception which user code must handle.
-   * @param ecsql The ECSQL statement to execute
-   * @param bindings The values to bind to the parameters (if the ECSQL has any).
-   * Pass an *array* of values if the parameters are *positional*.
-   * Pass an *object of the values keyed on the parameter name* for *named parameters*.
-   * The values in either the array or object must match the respective types of the parameters.
-   * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
-   * @param limitRows Specify upper limit for rows that can be returned by the query.
-   * @param quota Specify non binding quota. These values are constrained by global setting
-   * but never the less can be specified to narrow down the quota constraint for the query but staying under global settings.
-   * @param priority Specify non binding priority for the query. It can help user to adjust
-   * priority of query in queue so that small and quicker queries can be prioritized over others.
-   * @returns Returns the query result as an *AsyncIterableIterator<any>*  which lazy load result as needed
+   * @param params The values to bind to the parameters (if the ECSQL has any).
+   * @param rowFormat Specify what format the row will be returned. It default to Array format though to make it compilable with previous version use *QueryRowFormat.UseJsPropertyNames*
+   * @param options Allow to specify certain flags which control how query is executed.
+   * @returns Returns the query result as an *AsyncIterableIterator<any>*  which lazy load result as needed. The row format is determined by *rowFormat* parameter.
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
-   * @throws [[IModelError]] If there was any error while submitting, preparing or stepping into query
+   * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
    */
-  public async * restartQuery(token: string, ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any> {
-    let result: QueryResponse;
-    let offset: number = 0;
-    let rowsToGet = limitRows ? limitRows : -1;
-    do {
-      result = await this.queryRows(ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority, token);
-      while (result.status === QueryResponseStatus.Timeout) {
-        result = await this.queryRows(ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority, token);
-      }
-      if (result.status === QueryResponseStatus.Cancelled) {
-        throw new IModelError(DbResult.BE_SQLITE_INTERRUPT, `Query cancelled`);
-      } else if (result.status === QueryResponseStatus.Error) {
-        if (result.rows[0] === undefined) {
-          throw new IModelError(DbResult.BE_SQLITE_ERROR, "Invalid ECSql");
-        } else {
-          throw new IModelError(DbResult.BE_SQLITE_ERROR, result.rows[0]);
-        }
-      }
-
-      if (rowsToGet > 0) {
-        rowsToGet -= result.rows.length;
-      }
-      offset += result.rows.length;
-
-      for (const row of result.rows)
-        yield row;
-
-    } while (result.status !== QueryResponseStatus.Done);
+  public async * restartQuery(token: string, ecsql: string, params?: QueryBinder, rowFormat = QueryRowFormat.UseArrayIndexes, options?: QueryOptions): AsyncIterableIterator<any> {
+    for await (const row of this.query(ecsql, params, rowFormat, new QueryOptionsBuilder(options).setRestartToken(token).getOptions())) {
+      yield row;
+    }
   }
 
   /**
@@ -761,9 +598,6 @@ export abstract class IModelDb extends IModel {
     this._statementCache.clear();
     this._sqliteStatementCache.clear();
   }
-
-  /** Get the GUID of this iModel.  */
-  public getGuid(): GuidString { return this.nativeDb.getDbGuid(); }
 
   /** Update the project extents for this iModel.
    * <p><em>Example:</em>
@@ -912,10 +746,9 @@ export abstract class IModelDb extends IModel {
    */
   public static findByKey(key: string): IModelDb {
     const iModelDb = this.tryFindByKey(key);
-    if (undefined === iModelDb) {
-      Logger.logError(loggerCategory, "IModelDb not open or wrong type", () => ({ key }));
+    if (undefined === iModelDb)
       throw new IModelNotFoundResponse(); // a very specific status for the RpcManager
-    }
+
     return iModelDb;
   }
 
@@ -1014,9 +847,7 @@ export abstract class IModelDb extends IModel {
 
   /** @internal */
   public insertCodeSpec(codeSpec: CodeSpec): Id64String {
-    const { error, result } = this.nativeDb.insertCodeSpec(codeSpec.name, JSON.stringify(codeSpec.properties));
-    if (error) throw new IModelError(error.status, `inserting CodeSpec ${codeSpec}`);
-    return Id64.fromJSON(result);
+    return this.nativeDb.insertCodeSpec(codeSpec.name, codeSpec.properties);
   }
 
   /** Prepare an ECSQL statement.
@@ -1052,9 +883,8 @@ export abstract class IModelDb extends IModel {
   public getJsClass<T extends typeof Entity>(classFullName: string): T {
     try {
       return ClassRegistry.getClass(classFullName, this) as T;
-    } catch (err: any) {
+    } catch (err) {
       if (!ClassRegistry.isNotFoundError(err)) {
-        Logger.logError(loggerCategory, err.toString());
         throw err;
       }
 
@@ -1146,21 +976,13 @@ export abstract class IModelDb extends IModel {
     });
   }
 
-  /** Retrieve a named texture image from this iModel, as a Uint8Array.
+  /** Retrieve a named texture image from this iModel, as a TextureData.
    * @param props the texture load properties which must include the name of the texture to load
-   * @returns the Uint8Array or undefined if the texture image is not present.
+   * @returns the TextureData or undefined if the texture image is not present.
    * @alpha
    */
-  public async getTextureImage(requestContext: ClientRequestContext, props: TextureLoadProps): Promise<Uint8Array | undefined> {
-    requestContext.enter();
-    return new Promise<Uint8Array | undefined>((resolve, reject) => {
-      this.nativeDb.getTextureImage(props, (result) => {
-        if (result instanceof Error)
-          reject(result);
-        else
-          resolve(result);
-      });
-    });
+  public async queryTextureData(props: TextureLoadProps): Promise<TextureData | undefined> {
+    return this.nativeDb.queryTextureData(props);
   }
 
   /** Query a "file property" from this iModel, as a string.
@@ -1180,28 +1002,16 @@ export abstract class IModelDb extends IModel {
   /** Save a "file property" to this iModel
    * @param prop the FilePropertyProps that describes the new property
    * @param value either a string or a blob to save as the file property
-   * @returns 0 if successful, status otherwise
    */
-  public saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): DbResult {
-    try {
-      this.nativeDb.saveFileProperty(prop, strValue, blobVal);
-      return DbResult.BE_SQLITE_OK;
-    } catch (err: any) {
-      return err.errorNumber;
-    }
+  public saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void {
+    this.nativeDb.saveFileProperty(prop, strValue, blobVal);
   }
 
   /** delete a "file property" from this iModel
    * @param prop the FilePropertyProps that describes the property
-   * @returns 0 if successful, status otherwise
    */
-  public deleteFileProperty(prop: FilePropertyProps): DbResult {
-    try {
-      this.nativeDb.saveFileProperty(prop, undefined, undefined);
-      return DbResult.BE_SQLITE_OK;
-    } catch (err: any) {
-      return err.errorNumber;
-    }
+  public deleteFileProperty(prop: FilePropertyProps): void {
+    this.nativeDb.saveFileProperty(prop, undefined, undefined);
   }
 
   /** Query for the next available major id for a "file property" from this iModel.
@@ -1210,6 +1020,7 @@ export abstract class IModelDb extends IModel {
    */
   public queryNextAvailableFileProperty(prop: FilePropertyProps) { return this.nativeDb.queryNextAvailableFileProperty(prop); }
 
+  /** @internal */
   public async requestSnap(sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps> {
     let request = this._snaps.get(sessionId);
     if (undefined === request) {
@@ -1218,22 +1029,16 @@ export abstract class IModelDb extends IModel {
     } else
       request.cancelSnap();
 
-    return new Promise<SnapResponseProps>((resolve, reject) => {
-      if (!this.isOpen) {
-        reject(new Error("not open"));
-      } else {
-        request!.doSnap(this.nativeDb, JsonUtils.toObject(props), (ret: IModelJsNative.ErrorStatusOrResult<IModelStatus, SnapResponseProps>) => {
-          this._snaps.delete(sessionId);
-          if (ret.error !== undefined)
-            reject(new Error(ret.error.message));
-          else
-            resolve(ret.result!); // eslint-disable-line @typescript-eslint/no-unnecessary-type-assertion
-        });
-      }
-    });
+    try {
+      return await request.doSnap(this.nativeDb, JsonUtils.toObject(props));
+    } finally {
+      this._snaps.delete(sessionId);
+    }
   }
 
-  /** Cancel a previously requested snap. */
+  /** Cancel a previously requested snap.
+   * @internal
+   */
   public cancelSnap(sessionId: string): void {
     const request = this._snaps.get(sessionId);
     if (undefined !== request) {
@@ -1244,53 +1049,29 @@ export abstract class IModelDb extends IModel {
 
   /** Get the clip containment status for the supplied elements. */
   public async getGeometryContainment(props: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps> {
-    return new Promise<GeometryContainmentResponseProps>((resolve, reject) => {
-      if (!this.isOpen) {
-        reject(new Error("not open"));
-      } else {
-        this.nativeDb.getGeometryContainment(JSON.stringify(props), (ret: IModelJsNative.ErrorStatusOrResult<IModelStatus, GeometryContainmentResponseProps>) => {
-          if (ret.error !== undefined)
-            reject(new Error(ret.error.message));
-          else
-            resolve(ret.result!);
-        });
-      }
-    });
+    return this.nativeDb.getGeometryContainment(JsonUtils.toObject(props));
   }
 
   /** Get the mass properties for the supplied elements. */
   public async getMassProperties(props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> {
-    return new Promise<MassPropertiesResponseProps>((resolve, reject) => {
-      if (!this.isOpen) {
-        reject(new Error("not open"));
-      } else {
-        this.nativeDb.getMassProperties(JSON.stringify(props), (ret: IModelJsNative.ErrorStatusOrResult<IModelStatus, MassPropertiesResponseProps>) => {
-          if (ret.error !== undefined)
-            reject(new Error(ret.error.message));
-          else
-            resolve(ret.result!);
-        });
-      }
-    });
+    return this.nativeDb.getMassProperties(JsonUtils.toObject(props));
   }
 
   /** Get the IModel coordinate corresponding to each GeoCoordinate point in the input */
-  public async getIModelCoordinatesFromGeoCoordinates(props: string): Promise<IModelCoordinatesResponseProps> {
-    const resultString = this.nativeDb.getIModelCoordinatesFromGeoCoordinates(props);
-    return JSON.parse(resultString) as IModelCoordinatesResponseProps;
+  public async getIModelCoordinatesFromGeoCoordinates(props: IModelCoordinatesRequestProps): Promise<IModelCoordinatesResponseProps> {
+    return this.nativeDb.getIModelCoordinatesFromGeoCoordinates(props);
   }
 
   /** Get the GeoCoordinate (longitude, latitude, elevation) corresponding to each IModel Coordinate point in the input */
-  public async getGeoCoordinatesFromIModelCoordinates(props: string): Promise<GeoCoordinatesResponseProps> {
-    const resultString = this.nativeDb.getGeoCoordinatesFromIModelCoordinates(props);
-    return JSON.parse(resultString) as GeoCoordinatesResponseProps;
+  public async getGeoCoordinatesFromIModelCoordinates(props: GeoCoordinatesRequestProps): Promise<GeoCoordinatesResponseProps> {
+    return this.nativeDb.getGeoCoordinatesFromIModelCoordinates(props);
   }
 
   /** Export meshes suitable for graphics APIs from arbitrary geometry in elements in this IModelDb.
    *  * Requests can be slow when processing many elements so it is expected that this function be used on a dedicated backend,
    *    or that shared backends export a limited number of elements at a time.
    *  * Vertices are exported in the IModelDb's world coordinate system, which is right-handed with Z pointing up.
-   *  * The results of changing [ExportGraphicsOptions]($imodeljs-backend) during the [ExportGraphicsOptions.onGraphics]($imodeljs-backend) callback are not defined.
+   *  * The results of changing [ExportGraphicsOptions]($core-backend) during the [ExportGraphicsOptions.onGraphics]($core-backend) callback are not defined.
    *
    * Example that prints the mesh for element 1 to stdout in [OBJ format](https://en.wikipedia.org/wiki/Wavefront_.obj_file)
    * ```ts
@@ -1323,13 +1104,13 @@ export abstract class IModelDb extends IModel {
   }
 
   /**
-   * Exports meshes suitable for graphics APIs from a specified [GeometryPart]($imodeljs-backend)
+   * Exports meshes suitable for graphics APIs from a specified [GeometryPart]($core-backend)
    * in this IModelDb.
-   * The expected use case is to call [IModelDb.exportGraphics]($imodeljs-backend) and supply the
+   * The expected use case is to call [IModelDb.exportGraphics]($core-backend) and supply the
    * optional partInstanceArray argument, then call this function for each unique GeometryPart from
    * that list.
-   *  * The results of changing [ExportPartGraphicsOptions]($imodeljs-backend) during the
-   *    [ExportPartGraphicsOptions.onPartGraphics]($imodeljs-backend) callback are not defined.
+   *  * The results of changing [ExportPartGraphicsOptions]($core-backend) during the
+   *    [ExportPartGraphicsOptions.onPartGraphics]($core-backend) callback are not defined.
    *  * See export-gltf under test-apps in the iModel.js monorepo for a working reference.
    * @returns 0 is successful, status otherwise
    * @public
@@ -1357,7 +1138,7 @@ export abstract class IModelDb extends IModel {
   /** Create brep geometry for inclusion in an element's geometry stream.
    * @returns DbResult.BE_SQLITE_OK if successful
    * @throws [[IModelError]] to report issues with input geometry or parameters
-   * @see [IModelDb.elementGeometryUpdate]($imodeljs-backend)
+   * @see [IModelDb.elementGeometryUpdate]($core-backend)
    * @alpha
    */
   public createBRepGeometry(createProps: BRepGeometryCreate): DbResult {
@@ -1543,7 +1324,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * explicitly updating it is occasionally useful after modifying definition elements like line styles or materials that indirectly affect the appearance of
      * [[GeometricElement]]s that reference those definition elements in their geometry streams.
      * Cached [Tile]($frontend)s are only invalidated after the geometry guid of the model changes.
-     * @note This will throw IModelError with [IModelStatus.VersionTooOld]($bentleyjs-core) if a version of the BisCore schema older than 1.0.11 is present in the iModel.
+     * @note This will throw IModelError with [IModelStatus.VersionTooOld]($core-bentley) if a version of the BisCore schema older than 1.0.11 is present in the iModel.
      * @throws IModelError if unable to update the geometry guid.
      * @see [[TxnManager.onModelGeometryChanged]] for the event emitted in response to such a change.
      */
@@ -2050,10 +1831,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       } else if (viewDefinitionElement instanceof DrawingViewDefinition) {
         // Ensure view has known extents
         try {
-          const rangeVal = this._iModel.nativeDb.queryModelExtents(JSON.stringify({ id: viewDefinitionElement.baseModelId }));
-          if (rangeVal.result)
-            viewStateData.modelExtents = Range3d.fromJSON(JSON.parse(rangeVal.result).modelExtents);
-        } catch (_) {
+          const extentsJson = this._iModel.nativeDb.queryModelExtents({ id: viewDefinitionElement.baseModelId }).modelExtents;
+          viewStateData.modelExtents = Range3d.fromJSON(extentsJson);
+        } catch {
           //
         }
 
@@ -2068,7 +1848,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
               drawingToSpatialTransform: sectionDrawing.jsonProperties.drawingToSpatialTransform,
             };
           }
-        } catch (_) {
+        } catch {
           //
         }
       }
@@ -2136,11 +1916,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     public constructor(private _iModel: IModelDb) { }
 
     /** @internal */
-    public async requestTileTreeProps(requestContext: ClientRequestContext, id: string): Promise<IModelTileTreeProps> {
-      requestContext.enter();
+    public async requestTileTreeProps(id: string): Promise<IModelTileTreeProps> {
 
       return new Promise<IModelTileTreeProps>((resolve, reject) => {
-        requestContext.enter();
         this._iModel.nativeDb.getTileTree(id, (ret: IModelJsNative.ErrorStatusOrResult<IModelStatus, any>) => {
           if (undefined !== ret.error)
             reject(new IModelError(ret.error.status, `TreeId=${id}`));
@@ -2150,13 +1928,12 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       });
     }
 
-    private pollTileContent(resolve: (arg0: IModelJsNative.TileContent) => void, reject: (err: Error) => void, treeId: string, tileId: string, requestContext: ClientRequestContext) {
-      requestContext.enter();
+    private pollTileContent(resolve: (arg0: IModelJsNative.TileContent) => void, reject: (err: unknown) => void, treeId: string, tileId: string) {
 
       let ret;
       try {
         ret = this._iModel.nativeDb.pollTileContent(treeId, tileId);
-      } catch (err: any) {
+      } catch (err) {
         // Typically "imodel not open".
         reject(err);
         return;
@@ -2183,23 +1960,19 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         resolve(res);
       } else { // if the type is a number, it's the TileContentState enum
         // ###TODO: Decide appropriate timeout interval. May want to switch on state (new vs loading vs pending)
-        setTimeout(() => this.pollTileContent(resolve, reject, treeId, tileId, requestContext), 10);
+        setTimeout(() => this.pollTileContent(resolve, reject, treeId, tileId), 10);
       }
     }
 
     /** @internal */
-    public async requestTileContent(requestContext: ClientRequestContext, treeId: string, tileId: string): Promise<IModelJsNative.TileContent> {
-      requestContext.enter();
-
+    public async requestTileContent(treeId: string, tileId: string): Promise<IModelJsNative.TileContent> {
       return new Promise<IModelJsNative.TileContent>((resolve, reject) => {
-        this.pollTileContent(resolve, reject, treeId, tileId, requestContext);
+        this.pollTileContent(resolve, reject, treeId, tileId);
       });
     }
 
     /** @internal */
-    public async getTileContent(requestContext: ClientRequestContext, treeId: string, tileId: string): Promise<Uint8Array> {
-      requestContext.enter();
-
+    public async getTileContent(treeId: string, tileId: string): Promise<Uint8Array> {
       const ret = await new Promise<IModelJsNative.ErrorStatusOrResult<any, Uint8Array>>((resolve) => {
         this._iModel.nativeDb.getTileContent(treeId, tileId, resolve);
       });
@@ -2214,19 +1987,19 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
 }
 
 /**
- * Argument to a function that can accept an authenticated user.
+ * Argument to a function that can accept a valid access token.
  * @public
  */
-export interface UserArg {
-  /** If present, the user's access token for the requested operation. If not present, use [[IModelHost.getAccessToken]] */
-  readonly user?: AuthorizedClientRequestContext;
+export interface TokenArg {
+  /** If present, the access token for the requested operation. If not present, use [[IModelHost.getAccessToken]] */
+  readonly accessToken?: AccessToken;
 }
 
 /**
  * Arguments to open a BriefcaseDb
  * @public
  */
-export type OpenBriefcaseArgs = OpenBriefcaseProps & UserArg;
+export type OpenBriefcaseArgs = OpenBriefcaseProps & { rpcActivity?: RpcActivity };
 
 /**
  * A local copy of an iModel from iModelHub that can pull and potentially push changesets.
@@ -2288,7 +2061,7 @@ export class BriefcaseDb extends IModelDb {
   }
 
   protected constructor(args: { nativeDb: IModelJsNative.DgnDb, key: string, openMode: OpenMode, briefcaseId: number }) {
-    super({ ...args, changeset: args.nativeDb.getParentChangeset() });
+    super({ ...args, changeset: args.nativeDb.getCurrentChangeset() });
     this._openMode = args.openMode;
     this.briefcaseId = args.briefcaseId;
 
@@ -2344,7 +2117,7 @@ export class BriefcaseDb extends IModelDb {
     const nativeDb = this.openDgnDb(file, openMode);
     const briefcaseDb = new BriefcaseDb({ nativeDb, key: file.key ?? Guid.createValue(), openMode, briefcaseId: nativeDb.getBriefcaseId() });
 
-    BriefcaseManager.logUsage(args.user, briefcaseDb);
+    BriefcaseManager.logUsage(briefcaseDb);
     this.onOpened.raiseEvent(briefcaseDb, args);
     return briefcaseDb;
   }
@@ -2388,6 +2161,53 @@ export class BriefcaseDb extends IModelDb {
   }
 }
 
+/** Used to reattach Daemon from a user's accessToken for V2 checkpoints.
+ * @note Reattach only happens if the previous access token either has expired or is about to expire within an application-supplied safety duration.
+ */
+class DaemonReattach {
+  /** the time at which the current token should be refreshed (its expiry minus safetySeconds) */
+  private _timestamp = 0;
+  /** while a refresh is happening, all callers get this promise. */
+  private _promise: Promise<void> | undefined;
+  /** Time, in seconds, before the current token expires to obtain a new token. Default is 1 hour. */
+  private _safetySeconds: number;
+
+  constructor(expiry: number, safetySeconds?: number) {
+    this._safetySeconds = safetySeconds ?? 60 * 60; // default to 1 hour
+    this.setTimestamp(expiry);
+  }
+  private async performReattach(accessToken: AccessToken, iModel: IModelDb): Promise<void> {
+    this._timestamp = 0; // everyone needs to wait until token is valid
+
+    // we're going to request that the checkpoint manager use this user's accessToken to obtain a new access token for this checkpoint's storage account.
+    Logger.logInfo(BackendLoggerCategory.Authorization, "attempting to reattach checkpoint");
+    try {
+      // this exchanges the supplied user accessToken for an expiring blob-store token to read the checkpoint.
+      const response = await V2CheckpointManager.attach({ accessToken, iTwinId: iModel.iTwinId!, iModelId: iModel.iModelId, changeset: iModel.changeset });
+      Logger.logInfo(BackendLoggerCategory.Authorization, "reattached checkpoint successfully");
+      this.setTimestamp(response.expiryTimestamp);
+    } finally {
+      this._promise = undefined;
+    }
+  }
+
+  private setTimestamp(expiryTimestamp: number) {
+    this._timestamp = expiryTimestamp - (this._safetySeconds * 1000);
+    if (this._timestamp < Date.now())
+      Logger.logError(BackendLoggerCategory.Authorization, "attached with timestamp that expires before safety interval");
+  }
+
+  public async reattach(accessToken: AccessToken, iModel: IModelDb): Promise<void> {
+    if (this._timestamp > Date.now())
+      return; // current token is fine
+
+    if (undefined === this._promise) // has reattach already begun?
+      this._promise = this.performReattach(accessToken, iModel); // no, start it
+
+    return this._promise;
+  }
+
+}
 /** A *snapshot* iModel database file that is used for archival and data transfer purposes.
  * @see [Snapshot iModels]($docs/learning/backend/AccessingIModels.md#snapshot-imodels)
  * @see [About IModelDb]($docs/learning/backend/IModelDb.md)
@@ -2395,11 +2215,11 @@ export class BriefcaseDb extends IModelDb {
  */
 export class SnapshotDb extends IModelDb {
   public override get isSnapshot() { return true; }
-  private _reattachDueTimestamp: number | undefined;
+  private _daemonReattach: DaemonReattach | undefined;
   private _createClassViewsOnClose?: boolean;
 
   private constructor(nativeDb: IModelJsNative.DgnDb, key: string) {
-    super({ nativeDb, key, changeset: nativeDb.getParentChangeset() });
+    super({ nativeDb, key, changeset: nativeDb.getCurrentChangeset() });
     this._openMode = nativeDb.isReadonly() ? OpenMode.Readonly : OpenMode.ReadWrite;
   }
 
@@ -2455,7 +2275,7 @@ export class SnapshotDb extends IModelDb {
 
     // Replace iModelId if seedFile is a snapshot, preserve iModelId if seedFile is an iModelHub-managed briefcase
     if (!BriefcaseManager.isValidBriefcaseId(nativeDb.getBriefcaseId()))
-      nativeDb.setDbGuid(Guid.createValue());
+      nativeDb.setIModelId(Guid.createValue());
 
     nativeDb.deleteLocalValue(BriefcaseLocalValue.StandaloneEdit);
     nativeDb.saveChanges();
@@ -2518,6 +2338,7 @@ export class SnapshotDb extends IModelDb {
     const tempFileBase = join(IModelHost.cacheDir, `${checkpoint.iModelId}\$${checkpoint.changeset.id}`); // temp files for this checkpoint should go in the cacheDir.
     const snapshot = SnapshotDb.openFile(filePath, { lazyBlockCache: true, key, tempFileBase });
     snapshot._iTwinId = checkpoint.iTwinId;
+
     try {
       CheckpointManager.validateCheckpointGuids(checkpoint, snapshot.nativeDb);
     } catch (err: any) {
@@ -2525,25 +2346,15 @@ export class SnapshotDb extends IModelDb {
       throw err;
     }
 
-    snapshot.setReattachDueTimestamp(expiryTimestamp);
+    snapshot._daemonReattach = new DaemonReattach(expiryTimestamp, checkpoint.reattachSafetySeconds);
     return snapshot;
   }
 
-  /** Used to refresh the checkpoint daemon's access to this checkpoint's storage container if it's nearly expired.
-   * @throws [[IModelError]] If the db is not a checkpoint.
+  /** Used to refresh the daemon's accessToken if this is a V2 checkpoint.
    * @internal
    */
-  public override async reattachDaemon(user?: AuthorizedClientRequestContext): Promise<void> {
-    if (undefined !== this._reattachDueTimestamp && this._reattachDueTimestamp <= Date.now()) {
-      const { expiryTimestamp } = await V2CheckpointManager.attach({ user, iTwinId: this.iTwinId!, iModelId: this.iModelId, changeset: this.changeset });
-      this.setReattachDueTimestamp(expiryTimestamp);
-    }
-  }
-
-  private setReattachDueTimestamp(expiryTimestamp: number) {
-    const now = Date.now();
-    const expiresIn = expiryTimestamp - now;
-    this._reattachDueTimestamp = now + (expiresIn / 2);
+  public override async reattachDaemon(accessToken: AccessToken): Promise<void> {
+    return this._daemonReattach?.reattach(accessToken, this);
   }
 
   /** @internal */
@@ -2561,7 +2372,7 @@ export class SnapshotDb extends IModelDb {
 }
 
 /**
- * Standalone iModels are read/write files that are not associated with an Itwin or managed by iModelHub.
+ * Standalone iModels are read/write files that are not associated with an iTwin or managed by iModelHub.
  * They are relevant only for testing, or for small-scale single-user scenarios.
  * Standalone iModels are designed such that the API for Standalone iModels and Briefcase
  * iModels (those synchronized with iModelHub) are as similar and consistent as possible.
@@ -2597,7 +2408,7 @@ export class StandaloneDb extends BriefcaseDb {
     const nativeDb = new IModelHost.platform.DgnDb();
     nativeDb.createIModel(filePath, args);
     nativeDb.saveLocalValue(BriefcaseLocalValue.StandaloneEdit, args.allowEdit);
-    nativeDb.saveProjectGuid(Guid.empty);
+    nativeDb.setITwinId(Guid.empty);
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
     nativeDb.saveChanges();
     return new StandaloneDb({ nativeDb, key: Guid.createValue(), briefcaseId: BriefcaseIdValue.Unassigned, openMode: OpenMode.ReadWrite });
@@ -2628,7 +2439,7 @@ export class StandaloneDb extends BriefcaseDb {
     const nativeDb = this.openDgnDb(file, openMode);
 
     try {
-      const iTwinId = nativeDb.queryProjectGuid();
+      const iTwinId = nativeDb.getITwinId();
       if (iTwinId !== Guid.empty) // a "standalone" iModel means it is not associated with an iTwin
         throw new IModelError(IModelStatus.WrongIModel, `${filePath} is not a Standalone iModel. iTwinId=${iTwinId}`);
 

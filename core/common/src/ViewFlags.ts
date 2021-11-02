@@ -8,7 +8,7 @@
 
 // cspell:ignore ovrs
 
-import { JsonUtils, Mutable, NonFunctionPropertiesOf } from "@bentley/bentleyjs-core";
+import { JsonUtils, Mutable, NonFunctionPropertiesOf } from "@itwin/core-bentley";
 
 /** Enumerates the available basic rendering modes, as part of a [DisplayStyle]($backend)'s [[ViewFlags]].
  * The rendering mode broadly affects various aspects of the display style - in particular, whether and how surfaces and their edges are drawn.
@@ -34,7 +34,7 @@ export enum RenderMode {
    * Lighting (and by extension, shadows) is not applied.
    */
   SolidFill = 4,
-  /** Identical to [[RenderMode.SmoothShade]], except:
+  /** Identical to [[RenderMode.SolidFill]], except:
    *  - Surfaces are drawn using the [DisplayStyle]($backend)'s background color.
    *  - Edges are drawn using their surface's colors; this can be overridden using [[HiddenLine.Settings]].
    */

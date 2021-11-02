@@ -29,6 +29,12 @@ export type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
 export type Subtract<T, K> = Omit<T, keyof K>;
 
 /**
+ * Create a type from given type `T` and make specified properties optional.
+ * @public
+ */
+export type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+
+/**
  * A dictionary data structure.
  * @public
  */

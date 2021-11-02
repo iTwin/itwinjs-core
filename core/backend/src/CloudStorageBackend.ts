@@ -5,11 +5,11 @@
 import { PassThrough, Readable } from "stream";
 import * as zlib from "zlib";
 import * as Azure from "@azure/storage-blob";
-import { Logger, PerfLogger } from "@bentley/bentleyjs-core";
+import { Logger, PerfLogger } from "@itwin/core-bentley";
 import {
   BentleyStatus, CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageProvider, CloudStorageTileCache, IModelError, IModelRpcProps,
   TileContentIdentifier,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelHost } from "./IModelHost";
 

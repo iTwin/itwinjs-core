@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Clean up deprecated Drag & Drop related APIs",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}

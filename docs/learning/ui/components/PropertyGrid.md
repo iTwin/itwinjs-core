@@ -1,34 +1,34 @@
 # PropertyGrid
 
-The [PropertyGrid]($ui-components:PropertyGrid) category in the `@bentley/ui-components` package includes
+The [PropertyGrid]($components-react:PropertyGrid) category in the `@itwin/components-react` package includes
 classes and components for working with a PropertyGrid control.
 
 ## Components
 
 The following React components comprise the PropertyGrid control.
 
-- [PropertyGrid]($ui-components) - renders property categories
-- [PropertyList]($ui-components) - renders multiple properties within a category as a list
-- [PropertyRenderer]($ui-components) - renders a property
-- [PrimitivePropertyRenderer]($ui-components) - renders a primitive property
-- [NonPrimitivePropertyRenderer]($ui-components) - renders struct and array properties
-- [PropertyView]($ui-components) - renders a property as a label/value pair
-- [PropertyCategoryBlock]($ui-components) - Expandable block for a category; uses [ExpandableBlock]($ui-core) for rendering
+- [PropertyGrid]($components-react) - renders property categories
+- [PropertyList]($components-react) - renders multiple properties within a category as a list
+- [PropertyRenderer]($components-react) - renders a property
+- [PrimitivePropertyRenderer]($components-react) - renders a primitive property
+- [NonPrimitivePropertyRenderer]($components-react) - renders struct and array properties
+- [PropertyView]($components-react) - renders a property as a label/value pair
+- [PropertyCategoryBlock]($components-react) - Expandable block for a category; uses [ExpandableBlock]($core-react) for rendering
 
-There are a number of value renderer components for different types that can be found in the [Properties]($ui-components:Properties) category.
-Those components are managed by the [PropertyValueRendererManager]($ui-components).
+There are a number of value renderer components for different types that can be found in the [Properties]($components-react:Properties) category.
+Those components are managed by the [PropertyValueRendererManager]($components-react).
 
 ## Data Provider
 
-The PropertyGrid data provider is defined by the [IPropertyDataProvider]($ui-components) interface.
+The PropertyGrid data provider is defined by the [IPropertyDataProvider]($components-react) interface.
 The `getData` method provides data to the PropertyGrid component via the
-[PropertyData]($ui-components) interface. The `onDataChanged` event should be emitted when property
+[PropertyData]($components-react) interface. The `onDataChanged` event should be emitted when property
 data changes.
 
-In the PropertyData interface, the `categories` member provides an array of [PropertyCategory]($ui-components) and the
-`records` member provides a map of [PropertyRecord]($ui-abstract) associated with each category.
+In the PropertyData interface, the `categories` member provides an array of [PropertyCategory]($components-react) and the
+`records` member provides a map of [PropertyRecord]($appui-abstract) associated with each category.
 
-The [SimplePropertyDataProvider]($ui-components) class is an implementation of
+The [SimplePropertyDataProvider]($components-react) class is an implementation of
 IPropertyDataProvider that uses an associative array.
 The [PresentationPropertyDataProvider]($presentation-components) class is a
 Presentation Rules-driven implementation.
@@ -36,7 +36,7 @@ Developers may develop their own implementation of IPropertyDataProvider.
 
 ## Properties
 
-The PropertyGrid component properties are defined by the [PropertyGridProps]($ui-components) interface.
+The PropertyGrid component properties are defined by the [PropertyGridProps]($components-react) interface.
 
 The `dataProvider` prop, which is the only mandatory prop, specifies the property data provider.
 
@@ -50,7 +50,7 @@ provide a `onPropertySelectionChanged` callback function.
 To support property editing, set the `isPropertyEditingEnabled` prop to true and
 provide a `onPropertyUpdated` callback function.
 
-To support a link in a property, set the `links` member in a [PropertyRecord]($ui-abstract) and
+To support a link in a property, set the `links` member in a [PropertyRecord]($appui-abstract) and
 provide a `onPropertyLinkClick` callback function.
 
 ## Sample using Presentation Rules
@@ -59,10 +59,10 @@ The following sample uses Presentation Rules and Unified Selection.
 
 ```tsx
 import * as React from "react";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Orientation, useDisposable } from "@bentley/ui-core";
-import { VirtualizedPropertyGridWithDataProvider } from "@bentley/ui-components";
-import { PresentationPropertyDataProvider, usePropertyDataProviderWithUnifiedSelection } from "@bentley/presentation-components";
+import { IModelConnection } from "@itwin/core-frontend";
+import { Orientation, useDisposable } from "@itwin/core-react";
+import { VirtualizedPropertyGridWithDataProvider } from "@itwin/components-react";
+import { PresentationPropertyDataProvider, usePropertyDataProviderWithUnifiedSelection } from "@itwin/presentation-components";
 
 /** React properties for the property grid component */
 export interface Props {
@@ -96,6 +96,6 @@ export default function SimplePropertiesComponent(props: Props) {
 
 ## API Reference
 
-- [VirtualizedPropertyGridWithDataProvider]($ui-components)
-- [Properties in @bentley/ui-components]($ui-components:Properties)
-- [Properties in @bentley/ui-abstract]($ui-abstract:Properties)
+- [VirtualizedPropertyGridWithDataProvider]($components-react)
+- [Properties in @itwin/components-react]($components-react:Properties)
+- [Properties in @itwin/appui-abstract]($appui-abstract:Properties)

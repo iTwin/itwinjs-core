@@ -1,0 +1,77 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+@import "~@itwin/core-react/lib/cjs/core-react/z-index";
+@import "../safearea";
+@import "../widgetopacity";
+@import "variables";
+
+.nz-footer-footer {
+  position: relative;
+
+  >div {
+    background-color: $buic-background-statusbar;
+
+    border: {
+      width: 0;
+      top-width: 1px;
+      color: $buic-background-widget-stroke;
+      style: solid;
+    }
+
+    box-sizing: border-box;
+    bottom: 0;
+    width: 100%;
+    pointer-events: auto;
+
+    >.nz-messages {
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-100%);
+
+      @include uicore-z-index(status-message);
+    }
+
+    >.nz-indicators {
+      display: flex;
+      flex-direction: row;
+      height: $footer-height;
+    }
+  }
+
+  &:not(.nz-footer-mode) {
+    height: 100%;
+
+    >div {
+      position: absolute;
+      @include nz-widget-opacity;
+    }
+  }
+
+  &.nz-safe-area-left {
+    &.nz-footer-mode {
+      >div {
+        @include nz-safe-area-left;
+      }
+    }
+  }
+
+  &.nz-safe-area-right {
+    &.nz-footer-mode {
+      >div {
+        @include nz-safe-area-right;
+      }
+    }
+  }
+
+  &.nz-safe-area-bottom {
+    &.nz-footer-mode {
+      >div {
+        @include nz-safe-area-bottom;
+      }
+    }
+  }
+}

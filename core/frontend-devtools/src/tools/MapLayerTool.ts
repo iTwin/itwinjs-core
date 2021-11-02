@@ -7,8 +7,8 @@
  * @module Tools
  */
 
-import { ColorDef } from "@bentley/imodeljs-common";
-import { IModelApp, MapLayerSource, MapLayerSources, MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority, Tool, WmsUtilities } from "@bentley/imodeljs-frontend";
+import { BaseMapLayerSettings, ColorDef } from "@itwin/core-common";
+import { IModelApp, MapLayerSource, MapLayerSources, MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority, Tool, WmsUtilities } from "@itwin/core-frontend";
 import { parseBoolean } from "./parseBoolean";
 import { parseToggle } from "./parseToggle";
 
@@ -25,9 +25,9 @@ class AttachMapLayerBaseTool extends Tool {
 
     source.validateSource().then((validation) => {
       if (validation.status === MapLayerSourceStatus.Valid || validation.status === MapLayerSourceStatus.RequireAuth) {
-
         if (this._isBase) {
-          vp.displayStyle.changeBaseMapProps({ ...source, subLayers: validation.subLayers });
+          vp.displayStyle.backgroundMapBase = BaseMapLayerSettings.fromJSON({ ...source, subLayers: validation.subLayers });
+          vp.invalidateRenderPlan();
         } else {
           const layerSettings = source.toLayerSettings(validation.subLayers);
           if (layerSettings) {
@@ -37,19 +37,19 @@ class AttachMapLayerBaseTool extends Tool {
 
         if (validation.status === MapLayerSourceStatus.Valid) {
           vp.invalidateRenderPlan();
-          const msg = IModelApp.i18n.translate("FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayerAttached", { sourceName: source.name, sourceUrl: source.url });
+          const msg = IModelApp.localization.getLocalizedString("FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayerAttached", { sourceName: source.name, sourceUrl: source.url });
           IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
         } else if (validation.status === MapLayerSourceStatus.RequireAuth) {
-          const msg = IModelApp.i18n.translate("FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayerAttachedRequiresAuth", { sourceName: source.name });
+          const msg = IModelApp.localization.getLocalizedString("FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayerAttachedRequiresAuth", { sourceName: source.name });
           IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg));
         }
 
       } else {
-        const msg = IModelApp.i18n.translate("FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayerValidationFailed", { sourceUrl: source.url });
+        const msg = IModelApp.localization.getLocalizedString("FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayerValidationFailed", { sourceUrl: source.url });
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
       }
     }).catch((error) => {
-      const msg = IModelApp.i18n.translate("FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayerAttachError", { error, sourceUrl: source.url });
+      const msg = IModelApp.localization.getLocalizedString("FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayerAttachError", { error, sourceUrl: source.url });
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
     });
   }
@@ -421,7 +421,8 @@ export class MapBaseColorTool extends Tool {
     if (undefined === vp || !vp.view.isSpatialView())
       return false;
 
-    vp.displayStyle.changeBaseMapProps(color);
+    const curTransparency = vp.displayStyle.backgroundMapBase instanceof ColorDef ? vp.displayStyle.backgroundMapBase.getTransparency() : 0;
+    vp.displayStyle.backgroundMapBase = color.withTransparency(curTransparency);
     vp.invalidateRenderPlan();
 
     return true;
@@ -482,10 +483,10 @@ export class MapBaseVisibilityTool extends Tool {
    */
   public override async run(visible: boolean) {
     const vp = IModelApp.viewManager.selectedView;
-    if (undefined === vp || !vp.view.isSpatialView())
+    if (undefined === vp || !vp.view.isSpatialView() || vp.displayStyle.backgroundMapBase instanceof ColorDef)
       return false;
 
-    vp.displayStyle.changeBaseMapProps({ visible });
+    vp.displayStyle.backgroundMapBase = vp.displayStyle.backgroundMapBase.clone({ visible });
     vp.invalidateRenderPlan();
 
     return true;

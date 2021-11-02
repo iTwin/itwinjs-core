@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { ScreenViewport } from "@bentley/imodeljs-frontend";
-import { RelativePosition } from "@bentley/ui-abstract";
-import { OutsideClickEvent, Popup, useOnOutsideClick, WebFontIcon } from "@bentley/ui-core";
+import { ScreenViewport } from "@itwin/core-frontend";
+import { RelativePosition } from "@itwin/appui-abstract";
+import { OutsideClickEvent, Popup, useOnOutsideClick, WebFontIcon } from "@itwin/core-react";
 import { SubLayersPanel } from "./SubLayersTree";
 import { StyleMapLayerSettings } from "../Interfaces";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
@@ -22,8 +22,8 @@ export interface SubLayersPopupButtonProps {
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function SubLayersPopupButton({ mapLayerSettings, activeViewport }: SubLayersPopupButtonProps) {
 
-  const [showSubLayersLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:SubLayers.Show"));
-  const [hideSubLayersLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:SubLayers.Hide"));
+  const [showSubLayersLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:SubLayers.Show"));
+  const [hideSubLayersLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:SubLayers.Hide"));
   const [popupOpen, setPopupOpen] = React.useState(false);
   const buttonRef = React.useRef<HTMLButtonElement>(null);
 

@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
+import { IModelApp, Tool } from "@itwin/core-frontend";
 
 /** If an editing scope is currently in progress, end it; otherwise, begin a new one. */
 export class EditingScopeTool extends Tool {

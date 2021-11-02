@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-bentley",
+      "comment": "Drop deprecated ElectronUtils and Id methods.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-bentley",
+  "email": "31107829+calebmshafer@users.noreply.github.com"
+}

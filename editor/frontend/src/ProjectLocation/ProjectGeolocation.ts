@@ -6,11 +6,11 @@
  * @module Editing
  */
 
-import { AccuDrawHintBuilder, AccuDrawShortcuts, AngleDescription, BeButtonEvent, CanvasDecoration, CoreTools, DecorateContext, EventHandled, GraphicType, IModelApp, LengthDescription, PrimitiveTool, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection, Viewport } from "@bentley/imodeljs-frontend";
-import { Angle, Matrix3d, Point3d, Ray3d, Vector3d, XYAndZ } from "@bentley/geometry-core";
-import { Cartographic, ColorDef, LinePixels } from "@bentley/imodeljs-common";
+import { AccuDrawHintBuilder, AccuDrawShortcuts, AngleDescription, BeButtonEvent, CanvasDecoration, CoreTools, DecorateContext, EventHandled, GraphicType, IModelApp, LengthDescription, PrimitiveTool, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection, Viewport } from "@itwin/core-frontend";
+import { Angle, Matrix3d, Point3d, Ray3d, Vector3d, XYAndZ } from "@itwin/core-geometry";
+import { Cartographic, ColorDef, LinePixels } from "@itwin/core-common";
 import { ProjectExtentsClipDecoration } from "./ProjectExtentsDecoration";
-import { DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription } from "@bentley/ui-abstract";
+import { DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription } from "@itwin/appui-abstract";
 import { EditTools } from "../EditTool";
 
 function translatePrompt(key: string) { return EditTools.translate(`ProjectLocation:Prompts.${key}`); }
@@ -299,17 +299,16 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
     this.setupAndPromptForNextAction();
   }
 
-  public acceptCoordinates(): void {
+  public async acceptCoordinates(): Promise<void> {
     const deco = ProjectExtentsClipDecoration.get();
     if (undefined === deco)
       return;
 
-    const origin = new Cartographic(this.longitude, this.latitude, this.altitude);
+    const origin = Cartographic.fromRadians({longitude: this.longitude, latitude: this.latitude, height: this.altitude});
     if (!deco.updateEcefLocation(origin, this._origin, Angle.createRadians(this.north)))
       return;
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this.onReinitialize(); // Calls onRestartTool to exit...
+    return this.onReinitialize(); // Calls onRestartTool to exit...
   }
 
   public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
@@ -322,7 +321,7 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
 
     const needAcceptPoint = !haveKnownLocation && this._haveToolSettings;
     if (!needAcceptPoint)
-      this.acceptCoordinates();
+      await this.acceptCoordinates();
 
     return EventHandled.No;
   }
@@ -578,7 +577,7 @@ export class ProjectGeolocationMoveTool extends PrimitiveTool {
       deco.suspendGeolocationDecorations = false;
   }
 
-  private acceptOffset(ev: BeButtonEvent): void {
+  private async acceptOffset(ev: BeButtonEvent): Promise<void> {
     if (undefined === ev.viewport || undefined === this._origin)
       return;
 
@@ -590,8 +589,7 @@ export class ProjectGeolocationMoveTool extends PrimitiveTool {
     if (!deco.updateEcefLocation(origin, this._origin))
       return;
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this.onReinitialize(); // Calls onRestartTool to exit...
+    return this.onReinitialize(); // Calls onRestartTool to exit...
   }
 
   public override decorate(context: DecorateContext): void {
@@ -654,7 +652,7 @@ export class ProjectGeolocationMoveTool extends PrimitiveTool {
       return EventHandled.No;
     }
 
-    this.acceptOffset(ev);
+    await this.acceptOffset(ev);
     return EventHandled.No;
   }
 

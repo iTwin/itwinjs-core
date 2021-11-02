@@ -6,20 +6,9 @@
  * @module DisplayStyles
  */
 
-import { MapLayerProps } from "./MapLayerSettings";
+import { BackgroundMapProvider, BackgroundMapType } from "./BackgroundMapProvider";
 import { PlanarClipMaskProps, PlanarClipMaskSettings } from "./PlanarClipMask";
 import { TerrainProps, TerrainSettings } from "./TerrainSettings";
-
-/** Describes the type of background map displayed by a [[DisplayStyle]]
- * @see [[BackgroundMapProps]]
- * @see [[DisplayStyleSettingsProps]]
- * @public
- */
-export enum BackgroundMapType {
-  Street = 1,
-  Aerial = 2,
-  Hybrid = 3,
-}
 
 /** Describes the projection of the background map
  * @see [[BackgroundMapProps]]
@@ -33,24 +22,16 @@ export enum GlobeMode {
   Plane = 1,
 }
 
-/** JSON representation of the settings associated with a background map displayed by a [[DisplayStyle]].
- * @see [[DisplayStyleSettingsProps]]
+/** In-memory JSON representation of a [[BackgroundMapSettings]].
+ * @see [[PersistentBackgroundMapProps]] for the persistent JSON representation.
  * @public
  */
 export interface BackgroundMapProps {
   /** The elevation of the map in meters relative the WGS84 ellipsoid. Default value: 0. */
   groundBias?: number;
-  /** Identifies the source of the map tiles. Currently supported providers are "BingProvider" and "MapBoxProvider". Support for additional providers may be added in the future.
-   *
-   * Default value: "BingProvider"
+  /** A transparency value from 0.0 (fully opaque) to 1.0 (fully transparent) to apply to map graphics when drawing, or false to indicate the transparency should not be overridden.
+   * Default value: false.
    */
-  providerName?: string;
-  /** Options for customizing the tiles supplied by the provider. If undefined, default values of all members are used. */
-  providerData?: {
-    /** The type of map graphics to request. Default value: BackgroundMapType.Hybrid. */
-    mapType?: BackgroundMapType;
-  };
-  /** A transparency value from 0.0 (fully opaque) to 1.0 (fully transparent) to apply to map graphics when drawing, or false to indicate the transparency should not be overridden. Default value: false. */
   transparency?: number | false;
   /** If set to true, the map tiles will be rendered with depth, allowing them to obscure other geometry. Otherwise, they are always rendered behind all other geometry. Default value: false. */
   useDepthBuffer?: boolean;
@@ -68,22 +49,37 @@ export interface BackgroundMapProps {
    * @beta
    */
   planarClipMask?: PlanarClipMaskProps;
+
+  /** @see [[DeprecatedBackgroundMapProps.providerName]]. */
+  providerName?: never;
+  /** @see [[DeprecatedBackgroundMapProps.providerData]]. */
+  providerData?: never;
 }
 
-/** The current set of supported background map providers.
+/** Properties of [[PersistentBackgroundMapProps]] that have been deprecated, but are retained for backwards compatibility.
+ * These properties are omitted from [[BackgroundMapProps]] as they are no longer part of the API, but are included in
+ * [[PersistentBackgroundMapProps]] because they remain part of the persistence format.
  * @public
  */
-export type BackgroundMapProviderName = "BingProvider" | "MapBoxProvider";
-
-function normalizeMapType(props: BackgroundMapProps): BackgroundMapType {
-  switch (props.providerData?.mapType) {
-    case BackgroundMapType.Street:
-    case BackgroundMapType.Aerial:
-      return props.providerData.mapType;
-    default:
-      return BackgroundMapType.Hybrid;
-  }
+export interface DeprecatedBackgroundMapProps {
+  /** Identifies the source of the map tiles. Currently supported providers are "BingProvider" and "MapBoxProvider".
+   * Default value: "BingProvider"
+   * @deprecated use MapImageryProps.backgroundBase.
+   */
+  providerName?: string;
+  /** Options for customizing the tiles supplied by the provider. If undefined, default values of all members are used.
+   * @deprecated use MapImageryProps.backgroundBase
+   */
+  providerData?: {
+    /** The type of map graphics to request. Default value: BackgroundMapType.Hybrid. */
+    mapType?: BackgroundMapType;
+  };
 }
+
+/** Persistent JSON representation of a [[BackgroundMapSettings]].
+ * @public
+ */
+export type PersistentBackgroundMapProps = Omit<BackgroundMapProps, keyof DeprecatedBackgroundMapProps> & DeprecatedBackgroundMapProps;
 
 function normalizeGlobeMode(mode?: GlobeMode): GlobeMode {
   return GlobeMode.Plane === mode ? mode : GlobeMode.Ellipsoid;
@@ -96,20 +92,17 @@ function normalizeTransparency(trans?: number | false): number | false {
   return false;
 }
 
-function normalizeProviderName(provider?: string): BackgroundMapProviderName {
-  return "MapBoxProvider" === provider ? provider : "BingProvider";
-}
-
-/** Normalized representation of a [[BackgroundMapProps]] for which type and provider have been validated and default values have been applied where explicit values not defined.
+/** As part of a [[DisplayStyleSettings]], controls aspects of how the background map is displayed.
+ * @see [[DisplayStyleSettings.backgroundMap]] to query or change these settings for a display style.
+ * @see [[MapImagerySettings]] to control the type of imagery applied to the background map.
  * @public
  */
 export class BackgroundMapSettings {
+  /** Retained strictly for persistence. */
+  private readonly _provider: BackgroundMapProvider;
+
   /** Elevation in meters, relative to WGS84 Ellipsoid.. */
   public readonly groundBias: number;
-  /** Identifies the provider from which map image will be obtained. */
-  public readonly providerName: BackgroundMapProviderName;
-  /** The type of map graphics to be drawn. */
-  public readonly mapType: BackgroundMapType;
   /** A transparency value from 0.0 (fully opaque) to 1.0 (fully transparent) to apply to map graphics when drawing, or false to indicate the transparency should not be overridden. Default value: false. */
   public readonly transparency: number | false;
   /** If set to true, the map tiles will be rendered with depth, allowing them to obscure other geometry. Otherwise, they are always rendered behind all other geometry. Default value: false. */
@@ -129,10 +122,10 @@ export class BackgroundMapSettings {
    * allows the user to select elements that are behind the map.
    */
   public get locatable(): boolean {
-    // Handle deprecated TerrainProps.nonLocatable:
+    // Handle legacy TerrainProps.nonLocatable:
     // - If TerrainProps.nonLocatable=true and terrain is on, terrain is not locatable.
     // - Otherwise, use BackgroundMapProps.nonLocatable.
-    if (this.applyTerrain && !this.terrainSettings.locatable) // eslint-disable-line deprecation/deprecation
+    if (this.applyTerrain && this.terrainSettings.nonLocatable)
       return false;
 
     return this._locatable;
@@ -141,10 +134,8 @@ export class BackgroundMapSettings {
   /** If transparency is overridden, the transparency to apply; otherwise, undefined. */
   public get transparencyOverride(): number | undefined { return false !== this.transparency ? this.transparency : undefined; }
 
-  private constructor(props: BackgroundMapProps) {
+  private constructor(props: BackgroundMapProps | PersistentBackgroundMapProps) {
     this.groundBias = props.groundBias ?? 0;
-    this.providerName = normalizeProviderName(props.providerName);
-    this.mapType = normalizeMapType(props);
     this.transparency = normalizeTransparency(props.transparency);
     this.useDepthBuffer = props.useDepthBuffer ?? false;
     this.applyTerrain = props.applyTerrain ?? false;
@@ -152,23 +143,32 @@ export class BackgroundMapSettings {
     this.globeMode = normalizeGlobeMode(props.globeMode);
     this._locatable = true !== props.nonLocatable;
     this.planarClipMask = PlanarClipMaskSettings.fromJSON(props.planarClipMask);
+    this._provider = BackgroundMapProvider.fromBackgroundMapProps(props);
   }
 
-  /** Construct from JSON, performing validation and applying default values for undefined fields. */
+  /** Create settings from their persistent representation. In general, this method should only be used when reading the settings directly from
+   * the iModel - otherwise, prefer [[fromJSON]].
+   */
+  public static fromPersistentJSON(json?: PersistentBackgroundMapProps): BackgroundMapSettings {
+    return new this(json ?? {});
+  }
+
+  /** Construct from JSON, performing validation and applying default values for undefined fields.
+   * @see [[fromPersistentJSON]] if you are reading the settings directly from the iModel.
+   */
   public static fromJSON(json?: BackgroundMapProps): BackgroundMapSettings {
     return new BackgroundMapSettings(json ?? {});
   }
 
+  /** Convert these settings to their in-memory JSON representation.
+   * @see [[toPersistentJSON]] if you intend to write the JSON directly to an iModel.
+   */
   public toJSON(): BackgroundMapProps {
     const props: BackgroundMapProps = {};
     if (0 !== this.groundBias)
       props.groundBias = this.groundBias;
-    if ("BingProvider" !== this.providerName)
-      props.providerName = this.providerName;
     if (this.applyTerrain)
       props.applyTerrain = true;
-    if (BackgroundMapType.Hybrid !== this.mapType)
-      props.providerData = { mapType: this.mapType };
     if (false !== this.transparency)
       props.transparency = this.transparency;
     if (GlobeMode.Ellipsoid !== this.globeMode)
@@ -185,8 +185,24 @@ export class BackgroundMapSettings {
         break;
       }
     }
+
     if (this.planarClipMask.isValid)
       props.planarClipMask = this.planarClipMask.toJSON();
+
+    return props;
+  }
+
+  /** Convert these settings to their persistent representation. In general, this method should only be used when writing the settings directly to
+   * the iModel - otherwise, prefer [[toJSON]].
+   */
+  public toPersistentJSON(): PersistentBackgroundMapProps {
+    const props = this.toJSON() as PersistentBackgroundMapProps;
+
+    // Preserve deprecated imagery provider properties.
+    if ("BingProvider" !== this._provider.name)
+      props.providerName = this._provider.name; // eslint-disable-line deprecation/deprecation
+    if (BackgroundMapType.Hybrid !== this._provider.type)
+      props.providerData = { mapType: this._provider.type }; // eslint-disable-line deprecation/deprecation
 
     return props;
   }
@@ -196,23 +212,28 @@ export class BackgroundMapSettings {
     return this.equals(BackgroundMapSettings.fromJSON(json));
   }
 
+  /** Returns true if the persistent representation of these settings is equivalent to `json`. */
+  public equalsPersistentJSON(json?: PersistentBackgroundMapProps): boolean {
+    return this.equals(BackgroundMapSettings.fromPersistentJSON(json));
+  }
+
+  /** Returns true if these settings are equivalent to `other`. */
   public equals(other: BackgroundMapSettings): boolean {
-    return this.groundBias === other.groundBias && this.providerName === other.providerName && this.mapType === other.mapType
-      && this.useDepthBuffer === other.useDepthBuffer && this.transparency === other.transparency && this.globeMode === other.globeMode
-      && this._locatable === other._locatable && this.applyTerrain === other.applyTerrain && this.terrainSettings.equals(other.terrainSettings) && this.planarClipMask.equals(other.planarClipMask);
+    return this.groundBias === other.groundBias && this.useDepthBuffer === other.useDepthBuffer && this.transparency === other.transparency
+      && this.globeMode === other.globeMode && this._locatable === other._locatable && this.applyTerrain === other.applyTerrain
+      && this.terrainSettings.equals(other.terrainSettings) && this.planarClipMask.equals(other.planarClipMask)
+      && this._provider.name === other._provider.name && this._provider.type === other._provider.type;
   }
 
   /** Create a copy of this BackgroundMapSettings, optionally modifying some of its properties.
    * @param changedProps JSON representation of the properties to change.
    * @returns A BackgroundMapSettings with all of its properties set to match those of `this`, except those explicitly defined in `changedProps`.
-   * @note If changing the provider it is currently necessary to also make same change to update the imagery base layer.
    */
   public clone(changedProps?: BackgroundMapProps): BackgroundMapSettings {
     if (undefined === changedProps)
       return this;
 
     const props = {
-      providerName: changedProps.providerName ?? this.providerName,
       groundBias: changedProps.groundBias ?? this.groundBias,
       transparency: changedProps.transparency ?? this.transparency,
       useDepthBuffer: changedProps.useDepthBuffer ?? this.useDepthBuffer,
@@ -220,39 +241,11 @@ export class BackgroundMapSettings {
       nonLocatable: changedProps.nonLocatable ?? !this._locatable,
       applyTerrain: changedProps.applyTerrain ?? this.applyTerrain,
       terrainSettings: changedProps.terrainSettings ? this.terrainSettings.clone(changedProps.terrainSettings).toJSON() : this.terrainSettings.toJSON(),
-      providerData: {
-        mapType: changedProps.providerData?.mapType ?? this.mapType,
-      },
       planarClipMask: changedProps.planarClipMask ? this.planarClipMask.clone(changedProps.planarClipMask).toJSON() : this.planarClipMask.toJSON(),
+      providerName: this._provider.name,
+      providerData: { mapType: this._provider.type },
     };
 
-    return BackgroundMapSettings.fromJSON(props);
-  }
-
-  /** @internal */
-  public static providerFromMapLayer(props: MapLayerProps): BackgroundMapProps | undefined {
-    let providerName, mapType;
-    if (!props.url)
-      return undefined;
-    if (props.formatId === "BingMaps") {
-      providerName = "BingProvider";
-      if (props.url.indexOf("Road") > 0)
-        mapType = BackgroundMapType.Street;
-      else if (props.url.indexOf("AerialWithLabels") > 0)
-        mapType = BackgroundMapType.Hybrid;
-      else if (props.url.indexOf("Aerial") > 0)
-        mapType = BackgroundMapType.Aerial;
-    } else if (props.formatId === "MapboxImagery") {
-      providerName = "MapBoxProvider";
-      if (props.url.indexOf("streets-satellite") > 0)
-        mapType = BackgroundMapType.Hybrid;
-      else if (props.url.indexOf("streets") > 0)
-        mapType = BackgroundMapType.Street;
-      else if (props.url.indexOf("satellite") > 0)
-        mapType = BackgroundMapType.Aerial;
-    } else
-      return undefined;
-
-    return mapType !== undefined && providerName !== undefined ?  { providerName, providerData: { mapType } } : undefined;
+    return BackgroundMapSettings.fromPersistentJSON(props);
   }
 }

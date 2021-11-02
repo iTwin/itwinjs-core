@@ -5,4 +5,4 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-require("../lib/ecschema2ts_cli");
+require("../lib/cjs/ecschema2ts_cli");

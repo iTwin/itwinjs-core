@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Reduce ellipsoid occlusion tolerance to avoid misdisplayed tiles over horizon with depth off.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

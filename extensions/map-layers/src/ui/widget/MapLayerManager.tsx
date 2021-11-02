@@ -7,13 +7,13 @@
 // the following quiet warning caused by react-beautiful-dnd package
 /* eslint-disable @typescript-eslint/unbound-method */
 
-import { MapImagerySettings, MapSubLayerProps, MapSubLayerSettings } from "@bentley/imodeljs-common";
+import { MapImagerySettings, MapSubLayerProps, MapSubLayerSettings } from "@itwin/core-common";
 import {
   ImageryMapTileTree, IModelApp, MapLayerImageryProvider, MapLayerSettingsService, MapLayerSource, MapLayerSourceChangeType,
   MapLayerSources, NotifyMessageDetails, OutputMessagePriority, ScreenViewport, TileTreeOwner, Viewport,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { ToggleSwitch } from "@itwin/itwinui-react";
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import * as React from "react";
 import { DragDropContext, DropResult } from "react-beautiful-dnd";
 import { MapLayerOptions, MapTypesOptions, StyleMapLayerSettings } from "../Interfaces";
@@ -93,8 +93,8 @@ export function MapLayerManager(props: MapLayerManagerProps) {
   const [mapSources, setMapSources] = React.useState<MapLayerSource[] | undefined>();
   const [loadingSources, setLoadingSources] = React.useState(false);
   const [baseSources, setBaseSources] = React.useState<MapLayerSource[] | undefined>();
-  const [overlaysLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.OverlayLayers"));
-  const [underlaysLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.BackgroundLayers"));
+  const [overlaysLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Widget.OverlayLayers"));
+  const [underlaysLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Widget.BackgroundLayers"));
   const { activeViewport, mapLayerOptions } = props;
   const hideExternalMapLayersSection = mapLayerOptions?.hideExternalMapLayers ? mapLayerOptions.hideExternalMapLayers : false;
   const fetchPublicMapLayerSources = mapLayerOptions?.fetchPublicMapLayerSources ? mapLayerOptions.fetchPublicMapLayerSources : false;
@@ -215,7 +215,7 @@ export function MapLayerManager(props: MapLayerManagerProps) {
     setMapSources(newSources);
   }, [setMapSources]);
 
-  /*
+  /**
   * Handle change events in the MapLayerSettingsService
   */
   React.useEffect(() => {
@@ -279,7 +279,7 @@ export function MapLayerManager(props: MapLayerManagerProps) {
       case "zoom-to-layer":
         activeViewport.displayStyle.viewMapLayerRange(indexInDisplayStyle, mapLayerSettings.isOverlay, activeViewport).then((status) => {
           if (!status) {
-            const msg = MapLayersUiItemsProvider.i18n.translate("mapLayers:Messages.NoRangeDefined");
+            const msg = MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Messages.NoRangeDefined");
             IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, `${msg} [${mapLayerSettings.name}]`));
           }
         }).catch((_error) => { });
@@ -392,7 +392,7 @@ export function MapLayerManager(props: MapLayerManagerProps) {
       loadMapLayerSettingsFromViewport(activeViewport);
   }, [activeViewport, loadMapLayerSettingsFromViewport]);
 
-  const [baseMapPanelLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Basemap.BaseMapPanelTitle"));
+  const [baseMapPanelLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Basemap.BaseMapPanelTitle"));
 
   return (
     <SourceMapContext.Provider value={{

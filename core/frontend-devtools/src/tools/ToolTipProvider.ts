@@ -7,7 +7,7 @@
  * @module Tools
  */
 
-import { HitDetail, IModelApp, Tool, ToolTipProvider } from "@bentley/imodeljs-frontend";
+import { HitDetail, IModelApp, Tool, ToolTipProvider } from "@itwin/core-frontend";
 import { parseToggle } from "./parseToggle";
 
 /** Augments tooltips with detailed information useful for debugging.

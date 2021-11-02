@@ -1,13 +1,13 @@
 # Curve Collections
 
-A [CurveCollection]($geometry-core) is a an abstract base class for various collection of curves.
+A [CurveCollection]($core-geometry) is a an abstract base class for various collection of curves.
 
 There are 5 concrete derived types:
 
-- [Path]($geometry-core) - curve primitives joining head to tail
-- [Loop]($geometry-core) - curve primitives joining head to tail and closing to form a loop
-- [ParityRegion]($geometry-core) - `Loop`s that bound a planar area by parity rules.
-- [UnionRegion]($geometry-core) - boolean union of areas of `Loop`s and/or `ParityRegion`s
+- [Path]($core-geometry) - curve primitives joining head to tail
+- [Loop]($core-geometry) - curve primitives joining head to tail and closing to form a loop
+- [ParityRegion]($core-geometry) - `Loop`s that bound a planar area by parity rules.
+- [UnionRegion]($core-geometry) - boolean union of areas of `Loop`s and/or `ParityRegion`s
 
 ![>](./figs/CurveCollections/CurveCollectionClasses.png)
 
@@ -15,11 +15,11 @@ There are 5 concrete derived types:
 
 `Path` and `Loop` are collections for which
 
-- All members of the collection must be derived from [CurvePrimitive]($geometry-core), i.e. be one of
-  - [LineSegment3d]($geometry-core)
-  - [Arc3d]($geometry-core)
-  - [BSplineCurve3d]($geometry-core)
-  - [TransitionSpiral3d]($geometry-core)
+- All members of the collection must be derived from [CurvePrimitive]($core-geometry), i.e. be one of
+  - [LineSegment3d]($core-geometry)
+  - [Arc3d]($core-geometry)
+  - [BSplineCurve3d]($core-geometry)
+  - [TransitionSpiral3d]($core-geometry)
 - Successive `CurvePrimitive` members must match "head to tail".
 - In a `Loop`, the last member's head must match the first member's tail.
 - Throughout the library, a `Loop` is expected to be a "filled" planar region.

@@ -3,14 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Point3d } from "@bentley/geometry-core";
 import {
   ColorDef, FeatureAppearance, GraphicParams, ImageBuffer, ImageBufferFormat, RenderMaterial, RenderMode, RenderTexture, TextureMapping,
-} from "@bentley/imodeljs-common";
-import {
-  DecorateContext, FeatureSymbology, GraphicType, IModelApp, RenderGraphicOwner, SnapshotConnection, Viewport,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-common";
+import { DecorateContext, FeatureSymbology, GraphicType, IModelApp, RenderGraphicOwner, SnapshotConnection, Viewport } from "@itwin/core-frontend";
+import { Point3d } from "@itwin/core-geometry";
 import { testOnScreenViewport, TestViewport } from "../TestViewport";
+import { TestUtility } from "../TestUtility";
 
 interface GraphicOptions {
   color: ColorDef;
@@ -90,7 +89,7 @@ describe("Transparency", async () => {
   let decorator: TransparencyDecorator;
 
   before(async () => {
-    await IModelApp.startup();
+    await TestUtility.startFrontend();
     imodel = await SnapshotConnection.openFile("mirukuru.ibim");
   });
 
@@ -98,7 +97,7 @@ describe("Transparency", async () => {
     if (imodel)
       await imodel.close();
 
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   beforeEach(() => {
@@ -219,6 +218,7 @@ describe("Transparency", async () => {
       bytes.push(alpha);
 
     const img = ImageBuffer.create(new Uint8Array(bytes), fmt, 1);
+    // eslint-disable-next-line deprecation/deprecation
     const texture = IModelApp.renderSystem.createTextureFromImageBuffer(img, imodel, new RenderTexture.Params(imodel.transientIds.next));
     expect(texture).not.to.be.undefined;
     return texture!;

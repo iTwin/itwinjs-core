@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { IModelApp } from "@bentley/imodeljs-frontend";
-import { Dialog, FillCentered, LoadingSpinner, Spinner, SpinnerSize } from "@bentley/ui-core";
+import { IModelApp } from "@itwin/core-frontend";
+import { Dialog, FillCentered, LoadingSpinner, Spinner, SpinnerSize } from "@itwin/core-react";
 
 export interface SpinnerTestDialogProps {
   opened: boolean;
@@ -17,7 +17,7 @@ export interface SpinnerTestDialogState {
 
 export class SpinnerTestDialog extends React.Component<SpinnerTestDialogProps, SpinnerTestDialogState> {
   public override readonly state: Readonly<SpinnerTestDialogState>;
-  private _title = IModelApp.i18n.translate("SampleApp:buttons.spinnerTestDialog");
+  private _title = IModelApp.localization.getLocalizedString("SampleApp:buttons.spinnerTestDialog");
 
   constructor(props: SpinnerTestDialogProps) {
     super(props);

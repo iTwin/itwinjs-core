@@ -7,4 +7,4 @@
 !lib/**/*.js.map
 !*.md
 # then ignore some stuff again
-lib/test
+lib/**/test/**

@@ -46,7 +46,7 @@ describe("Composite Formats tests:", () => {
 
       Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(false);
-    } catch (err) {
+    } catch (err: any) {
       assert.strictEqual(err.message, "The Format test has a invalid unit specification..");
     }
   });
@@ -89,7 +89,7 @@ describe("Composite Formats tests:", () => {
 
       Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(false);
-    } catch (err) {
+    } catch (err: any) {
       assert.strictEqual(err.message, "The Format test has a invalid unit specification..");
       // eslint-disable-next-line no-console
       // console.log(err.message);

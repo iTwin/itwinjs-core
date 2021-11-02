@@ -7,8 +7,8 @@
  * @module Tools
  */
 
-import { ColorDef, LinePixels } from "@bentley/imodeljs-common";
-import { DecorateContext, GraphicType, IModelApp, TileTreeReference, Tool } from "@bentley/imodeljs-frontend";
+import { ColorDef, LinePixels } from "@itwin/core-common";
+import { DecorateContext, GraphicType, IModelApp, TileTreeReference, Tool } from "@itwin/core-frontend";
 import { parseToggle } from "./parseToggle";
 
 class TreeDecoration {

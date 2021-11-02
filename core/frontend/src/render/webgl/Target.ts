@@ -6,11 +6,11 @@
  * @module WebGL
  */
 
-import { assert, dispose, Id64, Id64String, IDisposable } from "@bentley/bentleyjs-core";
-import { Point2d, Point3d, Range3d, Transform, XAndY, XYZ } from "@bentley/geometry-core";
+import { assert, dispose, Id64, Id64String, IDisposable } from "@itwin/core-bentley";
+import { Point2d, Point3d, Range3d, Transform, XAndY, XYZ } from "@itwin/core-geometry";
 import {
   AmbientOcclusion, AnalysisStyle, Frustum, ImageBuffer, ImageBufferFormat, Npc, RenderMode, RenderTexture, SpatialClassifier, ThematicDisplayMode, ViewFlags,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { canvasToImageBuffer, canvasToResizedCanvasWithBars, imageBufferToCanvas } from "../../ImageUtil";
 import { HiliteSet } from "../../SelectionSet";
 import { SceneContext } from "../../ViewContext";
@@ -273,9 +273,16 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     if (undefined === color)
       return undefined;
 
-    this._fbo = FrameBuffer.create([color]);
+    const depth = System.instance.createDepthBuffer(rect.width, rect.height, 1);
+    if (undefined === depth) {
+      color.dispose();
+      return undefined;
+    }
+
+    this._fbo = FrameBuffer.create([color], depth);
     if (undefined === this._fbo) {
       color.dispose();
+      depth.dispose();
       return undefined;
     }
 
@@ -287,12 +294,16 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       return;
 
     const tx = this._fbo.getColor(0);
+    const db = this._fbo.depthBuffer;
     this._fbo = dispose(this._fbo);
     this._dcAssigned = false;
 
     // We allocated our framebuffer's color attachment, so must dispose of it too.
     assert(undefined !== tx);
     dispose(tx);
+    // We allocated our framebuffer's depth attachment, so must dispose of it too.
+    assert(undefined !== db);
+    dispose(db);
   }
 
   public override dispose() {
@@ -513,7 +524,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   protected drawOverlayDecorations(): void { }
 
-  /*
+  /**
    * Invoked via Viewport.changeView() when the owning Viewport is changed to look at a different view.
    * Invoked via dispose() when the target is being destroyed.
    * The primary difference is that in the former case we retain the SceneCompositor.

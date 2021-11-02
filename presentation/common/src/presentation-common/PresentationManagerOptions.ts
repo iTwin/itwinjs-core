@@ -6,29 +6,14 @@
  * @module Core
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
-import { UnitSystemKey } from "@bentley/imodeljs-quantity";
+import { Id64String } from "@itwin/core-bentley";
+import { UnitSystemKey } from "@itwin/core-quantity";
 import { SelectionInfo } from "./content/Descriptor";
 import { FieldDescriptor } from "./content/Fields";
 import { DiagnosticsOptionsWithHandler } from "./Diagnostics";
 import { InstanceKey } from "./EC";
 import { Ruleset } from "./rules/Ruleset";
 import { RulesetVariable } from "./RulesetVariables";
-
-/**
- * Enumeration of standard request priorities.
- * @public
- */
-export enum RequestPriority {
-  /** Priority for pre-loading requests */
-  Preload = 0,
-
-  /** Priority for general requests */
-  Normal = 1000,
-
-  /** Max possible priority */
-  Max = Number.MAX_SAFE_INTEGER,
-}
 
 /**
  * A generic request options type used for both hierarchy and content requests.
@@ -46,12 +31,6 @@ export interface RequestOptions<TIModel> {
    * unit is used if unit system is not specified.
    */
   unitSystem?: UnitSystemKey;
-
-  /**
-   * Optional request priority. Higher priority requests are handled first.
-   * Defaults to [[RequestPriority.Normal]]
-   */
-  priority?: number;
 
   /** @alpha */
   diagnostics?: DiagnosticsOptionsWithHandler;
@@ -154,12 +133,30 @@ export interface DistinctValuesRequestOptions<TIModel, TDescriptor, TKeySet, TRu
 }
 
 /**
- * Request type for element properties requests.
+ * Request type for element properties requests
  * @beta
  */
-export interface ElementPropertiesRequestOptions<TIModel> extends RequestOptions<TIModel> {
+export type ElementPropertiesRequestOptions<TIModel> = SingleElementPropertiesRequestOptions<TIModel> | MultiElementPropertiesRequestOptions<TIModel>;
+
+/**
+ * Request type for single element properties requests.
+ * @beta
+ */
+export interface SingleElementPropertiesRequestOptions<TIModel> extends RequestOptions<TIModel> {
   /** ID of the element to get properties for. */
   elementId: Id64String;
+}
+
+/**
+ * Request type for multiple elements properties requests.
+ * @beta
+ */
+export interface MultiElementPropertiesRequestOptions<TIModel> extends Paged<RequestOptions<TIModel>> {
+  /** Classes of the elements to get properties for. If `elementClasses` is undefined all classes
+   * are used. Classes should be specified in one of these formats: "<schema name or alias>.<class_name>",
+   * "<schema name or alias>:<class_name>".
+   */
+  elementClasses?: string[];
 }
 
 /**
@@ -222,3 +219,20 @@ export type Paged<TOptions extends {}> = TOptions & {
   /** Optional paging parameters */
   paging?: PageOptions;
 };
+
+/**
+ * A wrapper type that injects priority into supplied type.
+ * @public
+ */
+export type Prioritized<TOptions extends {}> = TOptions & {
+  /** Optional priority */
+  priority?: number;
+};
+
+/**
+ * Checks if supplied request options are for single or multiple element properties.
+ * @beta
+ */
+export function isSingleElementPropertiesRequestOptions<TIModel>(options: ElementPropertiesRequestOptions<TIModel>): options is SingleElementPropertiesRequestOptions<TIModel> {
+  return (options as SingleElementPropertiesRequestOptions<TIModel>).elementId !== undefined;
+}

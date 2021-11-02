@@ -1,6 +1,6 @@
 # AccessToken
 
-An application must fetch an [AccessToken]($itwin-client) from the Bentley Authorization Server to access various iTwin Services including iModelHub. AccessTokens are [JSON Web Tokens](https://jwt.io/) - they are time constrained and scoped down to restrict access to only specific services. The iTwin.js API uses the [OpenID Connect](https://openid.net/connect/) specification for *authentication* - i.e., determining "who" the user is, and the OAuth 2.0 protocol is used for *authorization* - i.e., delegating the application to talk to services like iModelHub on behalf of the user. The OpenID Connect specification is really just an extension of the OAuth 2.0 protocol.
+An application must fetch an `AccessToken` from the Bentley Authorization Server to access various iTwin Services including iModelHub. AccessTokens are [JSON Web Tokens](https://jwt.io/) - they are time constrained and scoped down to restrict access to only specific services. The iTwin.js API uses the [OpenID Connect](https://openid.net/connect/) specification for *authentication* - i.e., determining "who" the user is, and the OAuth 2.0 protocol is used for *authorization* - i.e., delegating the application to talk to services like iModelHub on behalf of the user. The OpenID Connect specification is really just an extension of the OAuth 2.0 protocol.
 
 The Bentley Authorization Service is built on the [IdentityServer4](http://docs.identityserver.io/en/latest/) framework, an officially [certified](https://openid.net/certification/) implementation of OpenID Connect.
 

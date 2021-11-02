@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { Arc3d, Loop, Path, Point2d, Point3d, Polyface, SolidPrimitive } from "@bentley/geometry-core";
+import { Arc3d, Loop, Path, Point2d, Point3d, Polyface, SolidPrimitive } from "@itwin/core-geometry";
 
 /** Base interface for a 2d [[GraphicPrimitive]] that can be supplied to [[GraphicBuilder.addPrimitive]].
  * @public
@@ -121,7 +121,7 @@ export interface GraphicPolyface {
   filled?: boolean;
 }
 
-/** A [[GraphicPrimitive]] representing a [SolidPrimitive]($geometry-core) to be supplied to [[GraphicBuilder.addPrimitive]].
+/** A [[GraphicPrimitive]] representing a [SolidPrimitive]($core-geometry) to be supplied to [[GraphicBuilder.addPrimitive]].
  * @see [[GraphicBuilder.addSolidPrimitive]].
  * @public
  */

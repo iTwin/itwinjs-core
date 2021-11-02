@@ -6,12 +6,12 @@
  * @module NativeApp
  */
 
-import { IModelStatus, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
+import { BentleyError, IModelStatus, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import {
   ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, IModelConnectionProps, IModelError, IModelRpcProps, IpcAppChannel, IpcAppFunctions,
   IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel, OpenBriefcaseProps, RemoveFunction, StandaloneOpenOptions,
   TileTreeContentIds, TxnNotifications,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { BriefcaseDb, IModelDb, StandaloneDb } from "./IModelDb";
 import { IModelHost, IModelHostConfiguration } from "./IModelHost";
@@ -158,10 +158,16 @@ export abstract class IpcHandler {
           throw new IModelError(IModelStatus.FunctionNotFound, `Method "${impl.constructor.name}.${funcName}" not found on IpcHandler registered for channel: ${impl.channelName}`);
 
         return { result: await func.call(impl, ...args) };
-      } catch (err: any) {
-        const ret: IpcInvokeReturn = { error: { name: err.constructor.name, message: err.message ?? "", errorNumber: err.errorNumber ?? 0 } };
+      } catch (err) {
+        const ret: IpcInvokeReturn = {
+          error: {
+            name: (err && typeof (err) === "object") ? err.constructor.name : "Unknown Error",
+            message: BentleyError.getErrorMessage(err),
+            errorNumber: (err as any).errorNumber ?? 0,
+          },
+        };
         if (!IpcHost.noStack)
-          ret.error.stack = err.stack ?? "";
+          ret.error.stack = BentleyError.getErrorStack(err);
         return ret;
       }
     });
@@ -175,8 +181,22 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   public get channelName() { return IpcAppChannel.Functions; }
 
   public async log(_timestamp: number, level: LogLevel, category: string, message: string, metaData?: any): Promise<void> {
-    Logger.logRaw(level, category, message, () => metaData);
+    switch (level) {
+      case LogLevel.Error:
+        Logger.logError(category, message, metaData);
+        break;
+      case LogLevel.Info:
+        Logger.logInfo(category, message, metaData);
+        break;
+      case LogLevel.Trace:
+        Logger.logTrace(category, message, metaData);
+        break;
+      case LogLevel.Warning:
+        Logger.logWarning(category, message, metaData);
+        break;
+    }
   }
+
   public async cancelTileContentRequests(tokenProps: IModelRpcProps, contentIds: TileTreeContentIds[]): Promise<void> {
     return cancelTileContentRequests(tokenProps, contentIds);
   }

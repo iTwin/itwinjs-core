@@ -5,20 +5,18 @@
 
 import { join } from "path";
 import * as sinon from "sinon";
-import { Guid, GuidString } from "@bentley/bentleyjs-core";
+import { Guid, GuidString } from "@itwin/core-bentley";
 import {
-  ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetProps, ChangesetRange, CodeProps, IModelVersion, LocalDirName,
-} from "@bentley/imodeljs-common";
+  ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetProps, ChangesetRange, IModelVersion, LocalDirName,
+} from "@itwin/core-common";
 import {
-  BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetRangeArg, CheckPointArg, CreateNewIModelProps, IModelIdArg, IModelNameArg, LockMap,
-  LockProps, V2CheckpointAccessProps,
+  BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetRangeArg, CheckpointArg, CreateNewIModelProps, IModelIdArg, IModelNameArg,
+  LockMap, LockProps, V2CheckpointAccessProps,
 } from "../BackendHubAccess";
-import { AuthorizedBackendRequestContext } from "../BackendRequestContext";
 import { CheckpointProps } from "../CheckpointManager";
 import { IModelHost } from "../IModelHost";
-import { IModelHubBackend } from "../IModelHubBackend";
+import { AcquireNewBriefcaseIdArg, TokenArg } from "../core-backend";
 import { IModelJsFs } from "../IModelJsFs";
-import { HubUtility } from "./integration/HubUtility";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { LocalHub } from "./LocalHub";
 
@@ -45,10 +43,9 @@ import { LocalHub } from "./LocalHub";
  * test against a "real" IModelHub, you can simply comment off the call [[startup]], though in that case you should make sure the name of your
  * iModel is unique so your test won't collide with other tests (iModel name uniqueness is not necessary for mocked tests.)
  *
- * Mocked tests must always start by creating a new iModel via [[IModelHost.hubAccess.createIModel]] with a `revision0` iModel.
+ * Mocked tests must always start by creating a new iModel via [[IModelHost.hubAccess.createNewIModel]] with a `revision0` iModel.
  * They use mock (aka "bogus") credentials for `AccessTokens`, which is fine since [[HubMock]] never accesses resources outside the current
- * computer. The mock `AccessTokens` are obtained by calling [[IModelTestUtils.getUserContext]]. There are 4 user profiles (Regular, Manager,
- * Super, SuperManager) for simulating different users/roles.
+ * computer.
  *
  * @note Only one HubMock at a time, *running in a single process*, may be active. The comments above about multiple simultaneous tests refer to tests
  * running on different computers, or on a single computer in multiple processes. All of those scenarios are problematic without mocking.
@@ -59,9 +56,16 @@ export class HubMock {
   private static mockRoot: LocalDirName | undefined;
   private static hubs = new Map<string, LocalHub>();
   private static _saveHubAccess: BackendHubAccess;
+  private static _iTwinId: GuidString | undefined;
 
   /** Determine whether a test us currently being run under HubMock */
   public static get isValid() { return undefined !== this.mockRoot; }
+
+  public static get iTwinId() {
+    if (undefined === this._iTwinId)
+      throw new Error("Either a previous test did not call HubMock.shutdown() properly, or more than one test is simultaneously attempting to use HubMock, which is not allowed");
+    return this._iTwinId;
+  }
 
   /**
    * Begin mocking IModelHub access. After this call, all access to IModelHub will be directed to a [[LocalHub]].
@@ -78,12 +82,7 @@ export class HubMock {
     IModelJsFs.purgeDirSync(this.mockRoot);
     this._saveHubAccess = IModelHost.hubAccess;
     IModelHost.setHubAccess(this);
-    HubUtility.iTwinId = Guid.createValue(); // all iModels for this test get the same "iTwinId"
-
-    sinon.stub(IModelHubBackend, "iModelClient").get(() => {
-      throw new Error("IModelHubAccess is mocked for this test - use only IModelHost.hubaccess functions");
-    });
-
+    HubMock._iTwinId = Guid.createValue(); // all iModels for this test get the same "iTwinId"
   }
 
   /** Stop a HubMock that was previously started with [[startup]]
@@ -93,7 +92,7 @@ export class HubMock {
     if (!this.isValid)
       return;
 
-    HubUtility.iTwinId = undefined;
+    HubMock._iTwinId = undefined;
     for (const hub of this.hubs)
       hub[1].cleanup();
 
@@ -160,16 +159,20 @@ export class HubMock {
     return this.findLocalHub(arg.iModelId).getLatestChangeset();
   }
 
+  private static async getAccessToken(arg: TokenArg) {
+    return arg.accessToken ?? await IModelHost.getAccessToken();
+  }
+
   public static async getMyBriefcaseIds(arg: IModelIdArg): Promise<number[]> {
-    const user = arg.user ?? await AuthorizedBackendRequestContext.create();
-    return this.findLocalHub(arg.iModelId).getBriefcaseIds(user.accessToken.getUserInfo()!.id);
+    const accessToken = await this.getAccessToken(arg);
+    return this.findLocalHub(arg.iModelId).getBriefcaseIds(accessToken);
   }
 
-  public static async acquireNewBriefcaseId(arg: IModelIdArg): Promise<number> {
-    const user = arg.user ?? await AuthorizedBackendRequestContext.create();
-    return this.findLocalHub(arg.iModelId).acquireNewBriefcaseId(user.accessToken.getUserInfo()!.id);
-
+  public static async acquireNewBriefcaseId(arg: AcquireNewBriefcaseIdArg): Promise<number> {
+    const accessToken = await this.getAccessToken(arg);
+    return this.findLocalHub(arg.iModelId).acquireNewBriefcaseId(accessToken, arg.briefcaseAlias);
   }
+
   /** Release a briefcaseId. After this call it is illegal to generate changesets for the released briefcaseId. */
   public static async releaseBriefcase(arg: BriefcaseIdArg): Promise<void> {
     return this.findLocalHub(arg.iModelId).releaseBriefcaseId(arg.briefcaseId);
@@ -199,28 +202,20 @@ export class HubMock {
     return undefined;
   }
 
-  public static async downloadV2Checkpoint(arg: CheckPointArg): Promise<ChangesetId> {
+  public static async downloadV2Checkpoint(arg: CheckpointArg): Promise<ChangesetId> {
     return this.findLocalHub(arg.checkpoint.iModelId).downloadCheckpoint({ changeset: arg.checkpoint.changeset, targetFile: arg.localFile });
   }
 
-  public static async downloadV1Checkpoint(arg: CheckPointArg): Promise<ChangesetId> {
+  public static async downloadV1Checkpoint(arg: CheckpointArg): Promise<ChangesetId> {
     return this.findLocalHub(arg.checkpoint.iModelId).downloadCheckpoint({ changeset: arg.checkpoint.changeset, targetFile: arg.localFile });
   }
 
   public static async releaseAllLocks(arg: BriefcaseDbArg) {
     const hub = this.findLocalHub(arg.iModelId);
-    const locks = hub.queryAllLocks(arg.briefcaseId);
-    hub.releaseLocks(locks, arg);
-  }
-
-  public static async releaseAllCodes(_arg: BriefcaseDbArg) {
+    hub.releaseAllLocks({ briefcaseId: arg.briefcaseId, changesetIndex: hub.getIndexFromChangeset(arg.changeset) });
   }
 
   public static async queryAllLocks(_arg: BriefcaseDbArg): Promise<LockProps[]> {
-    return [];
-  }
-
-  public static async queryAllCodes(_arg: BriefcaseDbArg): Promise<CodeProps[]> {
     return [];
   }
 

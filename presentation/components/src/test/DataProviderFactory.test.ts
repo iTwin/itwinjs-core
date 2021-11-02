@@ -3,15 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { Content, Item, RulesetsFactory } from "@bentley/presentation-common";
-import { createTestContentDescriptor, createTestSimpleContentField } from "@bentley/presentation-common/lib/test/_helpers/Content";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { createRandomRuleset } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
-import { TypeConverter, TypeConverterManager } from "@bentley/ui-components";
+import * as moq from "typemoq";
+import { Content, Item, RulesetsFactory } from "@itwin/presentation-common";
+import { createRandomRuleset, createTestContentDescriptor, createTestSimpleContentField } from "@itwin/presentation-common/lib/cjs/test";
+import { Presentation, PresentationManager } from "@itwin/presentation-frontend";
+import "@itwin/presentation-frontend/lib/cjs/test/_helpers/MockFrontendEnvironment";
+import { TypeConverter, TypeConverterManager } from "@itwin/components-react";
 import {
   DataProvidersFactory, DataProvidersFactoryProps, IPresentationPropertyDataProvider, PresentationTableDataProvider,
 } from "../presentation-components";

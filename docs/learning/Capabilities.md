@@ -182,14 +182,7 @@ Assistants for Tools to find existing geometry and for creating new geometry:
 - ✔️️ [Tentative Point](./frontend/primitivetools.md#snapping) performs finds element in response to a *tentative button* press
 - ✔️️ [AccuDraw](./frontend/primitivetools.md#accudraw) defines a work plane to aide entering coordinates
 
-## Extensions
-
-Load new functionality to a running instance of an application in a web browser.
-
-- 👷 Load registered [Extension](./frontend/Extensions.md)
-- 🎫 Register and upload your own Extensions
-
-## Bridging data into iModels
+## Synchronizing data into iModels
 
 Create iModels from data from external BIM/CAD/GIS/etc. applications.
 
@@ -351,7 +344,7 @@ Desktop and Mobile device Web browsers.
 
 ## Further Resources
 
-- [GitHub](https://github.com/imodeljs/imodeljs): the imodeljs repository along with samples.
+- [GitHub](https://github.com/iTwin/itwinjs-core): the imodeljs repository along with samples.
 - [Documentation](https://www.itwinjs.org/learning/):
   - Learning articles: explaining the iTwin.js library structure and architecture.
   - BIS docs: for understanding BIS schemas and the ECSql data query language.

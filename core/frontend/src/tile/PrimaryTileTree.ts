@@ -6,11 +6,11 @@
  * @module Tiles
  */
 
-import { assert, compareBooleans, compareStrings, Id64String } from "@bentley/bentleyjs-core";
-import { Geometry, Range3d, StringifiedClipVector, Transform } from "@bentley/geometry-core";
+import { assert, compareBooleans, compareStrings, Id64String } from "@itwin/core-bentley";
+import { Geometry, Range3d, StringifiedClipVector, Transform } from "@itwin/core-geometry";
 import {
   BatchType, compareIModelTileTreeIds, FeatureAppearance, FeatureAppearanceProvider, HiddenLine, iModelTileTreeIdToString, PrimaryTileTreeId, RenderMode, ViewFlagOverrides,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { GeometricModel3dState, GeometricModelState } from "../ModelState";
@@ -386,10 +386,17 @@ class MaskTreeReference extends TileTreeReference {
   private _owner: TileTreeOwner;
   public readonly model: GeometricModelState;
   public override get castsShadows() { return false; }
-  public constructor(model: GeometricModelState) {
+  public constructor(view: ViewState, model: GeometricModelState) {
     super();
     this.model = model;
-    this._id = { modelId: model.id, is3d: model.is3d, treeId: this.createTreeId(), isPlanProjection: false, forceNoInstancing: false };
+    this._id = {
+      modelId: model.id,
+      is3d: model.is3d,
+      treeId: this.createTreeId(),
+      isPlanProjection: isPlanProjection(view, model),
+      forceNoInstancing: false,
+    };
+
     this._owner = primaryTreeSupplier.getOwner(this._id, model.iModel);
   }
 
@@ -408,8 +415,8 @@ class MaskTreeReference extends TileTreeReference {
 }
 
 /** @internal */
-export function createMaskTreeReference(model: GeometricModelState): TileTreeReference {
-  return new MaskTreeReference(model);
+export function createMaskTreeReference(view: ViewState, model: GeometricModelState): TileTreeReference {
+  return new MaskTreeReference(view, model);
 }
 
 /** Provides [[TileTreeReference]]s for the loaded models present in a [[SpatialViewState]]'s [[ModelSelectorState]].

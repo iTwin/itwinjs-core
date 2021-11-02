@@ -8,8 +8,8 @@
 
 import {
   AxisOrder, ClipPlaneContainment, Constant, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point3d, Point4d, Range1d, Range2d, Range3d, Transform, Vector3d, XYAndZ, XYZ,
-} from "@bentley/geometry-core";
-import { Frustum, GridOrientationType, Npc, NpcCorners } from "@bentley/imodeljs-common";
+} from "@itwin/core-geometry";
+import { Frustum, GridOrientationType, Npc, NpcCorners } from "@itwin/core-common";
 import { ApproximateTerrainHeights } from "./ApproximateTerrainHeights";
 import { CoordSystem } from "./CoordSystem";
 import { Viewport } from "./Viewport";

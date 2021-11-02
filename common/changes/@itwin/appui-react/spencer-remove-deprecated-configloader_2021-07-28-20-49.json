@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Removed references to the deleted config-loader package",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react",
+  "email": "54333460+SpencerWBarnes@users.noreply.github.com"
+}

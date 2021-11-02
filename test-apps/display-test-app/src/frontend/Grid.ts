@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { parseArgs } from "@bentley/frontend-devtools";
-import { GridOrientationType } from "@bentley/imodeljs-common";
-import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
+import { parseArgs } from "@itwin/frontend-devtools";
+import { GridOrientationType } from "@itwin/core-common";
+import { IModelApp, Tool } from "@itwin/core-frontend";
 
 /** Change grid settings for testing. */
 export class ChangeGridSettingsTool extends Tool {

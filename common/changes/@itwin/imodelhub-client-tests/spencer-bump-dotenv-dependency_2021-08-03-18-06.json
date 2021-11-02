@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/imodelhub-client-tests",
+      "comment": "Bumped dotenv and removed deprecated @types/dotenv",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/imodelhub-client-tests",
+  "email": "54333460+SpencerWBarnes@users.noreply.github.com"
+}

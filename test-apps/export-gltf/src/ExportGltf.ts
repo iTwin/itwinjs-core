@@ -5,13 +5,13 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as yargs from "yargs";
-import { DbResult, Id64Array, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { Angle, Geometry, Matrix3d, Point3d } from "@bentley/geometry-core";
+import { DbResult, Id64Array, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
+import { Angle, Geometry, Matrix3d, Point3d } from "@itwin/core-geometry";
 import {
   ECSqlStatement, ExportGraphics, ExportGraphicsInfo, ExportGraphicsLines, ExportGraphicsMesh, ExportLinesInfo, ExportPartInfo,
   ExportPartInstanceInfo, ExportPartLinesInfo, IModelHost, SnapshotDb, Texture,
-} from "@bentley/imodeljs-backend";
-import { ColorDef, ImageSourceFormat } from "@bentley/imodeljs-common";
+} from "@itwin/core-backend";
+import { ColorDef, ImageSourceFormat } from "@itwin/core-common";
 
 const exportGraphicsDetailOptions = {
   chordTol: 0.001,

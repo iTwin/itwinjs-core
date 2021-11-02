@@ -1,0 +1,18 @@
+{
+  "check-coverage": true,
+  "statements": 100,
+  "functions": 100,
+  "branches": 100,
+  "lines": 100,
+  "require": [
+    "source-map-support/register",
+    "ts-node/register",
+    "ignore-styles",
+    "jsdom-global/register"
+  ],
+  "exclude": [
+    "src/presentation-components.ts",
+    "src/test/**",
+    "lib/cjs/test/**"
+  ]
+}

@@ -4,6 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { NodeKey } from "../../presentation-common";
 
+/**
+ * @internal Used for testing only.
+ */
 export const createTestNodeKey = (props?: Partial<NodeKey>) => ({
   type: "test-node",
   version: 0,

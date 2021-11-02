@@ -5,10 +5,10 @@
 import "./ViewsList.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { BeEvent } from "@bentley/bentleyjs-core";
-import { IModelReadRpcInterface, ViewDefinitionProps, ViewQueryParams } from "@bentley/imodeljs-common";
-import { IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
-import { CommonProps, LoadingSpinner } from "@bentley/ui-core";
+import { BeEvent } from "@itwin/core-bentley";
+import { IModelReadRpcInterface, ViewDefinitionProps, ViewQueryParams } from "@itwin/core-common";
+import { IModelConnection, ViewState } from "@itwin/core-frontend";
+import { CommonProps, LoadingSpinner } from "@itwin/core-react";
 import ViewItem, { ViewItemProps } from "./ViewItem";
 
 /** Properties for [[ViewsList]] component

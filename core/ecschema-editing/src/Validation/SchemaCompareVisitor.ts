@@ -10,7 +10,7 @@ import { AnyClass, AnyProperty, Constant, CustomAttributeClass, CustomAttributeC
   ECClass, EntityClass, Enumeration, Format, InvertedUnit, ISchemaPartVisitor, KindOfQuantity, Mixin,
   Phenomenon, Property, PropertyCategory, RelationshipClass, RelationshipConstraint, Schema, SchemaItem,
   StructClass, Unit, UnitSystem,
-} from "@bentley/ecschema-metadata";
+} from "@itwin/ecschema-metadata";
 import { ISchemaComparer } from "./SchemaComparer";
 
 /**

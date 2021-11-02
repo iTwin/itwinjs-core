@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { PropertyDescription } from "@bentley/ui-abstract";
-import { CellItem, RowItem, TableDataProvider, TypeConverterManager } from "@bentley/ui-components";
+import { PropertyDescription } from "@itwin/appui-abstract";
+import { CellItem, RowItem, TableDataProvider, TypeConverterManager } from "@itwin/components-react";
 
 export interface TableCellProps {
   tableDataProvider: TableDataProvider;

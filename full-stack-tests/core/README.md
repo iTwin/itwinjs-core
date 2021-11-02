@@ -3,7 +3,7 @@
 This package contains tests of standard iTwin.js RPC interfaces using a local client and server side.
 Every test in this directory should test frontend APIs with an actual backend.
 
-The tests run in both Electron and Chrome, using [Certa](https://www.npmjs.com/package/@bentley/certa), and should only include one test RPC interface.
+The tests run in both Electron and Chrome, using [Certa](https://www.npmjs.com/package/@itwin/certa), and should only include one test RPC interface.
 
 There are two types of tests;
 

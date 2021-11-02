@@ -6,8 +6,8 @@
  * @module WebGL
  */
 
-import { assert, dispose, Id64 } from "@bentley/bentleyjs-core";
-import { PackedFeature, PackedFeatureTable } from "@bentley/imodeljs-common";
+import { assert, dispose, Id64 } from "@itwin/core-bentley";
+import { PackedFeature, PackedFeatureTable } from "@itwin/core-common";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { DisplayParams } from "../primitives/DisplayParams";
 import { BatchOptions } from "../GraphicBuilder";
@@ -61,6 +61,9 @@ export function isFeatureHilited(feature: PackedFeature, hilites: Hilites): bool
 }
 
 /** @internal */
+export type FeatureOverridesCleanup = () => void;
+
+/** @internal */
 export class FeatureOverrides implements WebGLDisposable {
   public readonly target: Target;
   private readonly _options: BatchOptions;
@@ -75,6 +78,7 @@ export class FeatureOverrides implements WebGLDisposable {
   private _anyHilited = true;
   private _lutParams = new Float32Array(2);
   private _uniformSymbologyFlags = 0;
+  private _cleanup?: FeatureOverridesCleanup;
 
   public get anyOverridden() { return this._anyOverridden; }
   public get allHidden() { return this._allHidden; }
@@ -303,26 +307,31 @@ export class FeatureOverrides implements WebGLDisposable {
     this.updateUniformSymbologyFlags();
   }
 
-  private constructor(target: Target, options: BatchOptions) {
+  private constructor(target: Target, options: BatchOptions, cleanup: FeatureOverridesCleanup | undefined) {
     this.target = target;
     this._options = options;
+    this._cleanup = cleanup;
   }
 
-  public static createFromTarget(target: Target, options: BatchOptions) {
-    return new FeatureOverrides(target, options);
+  public static createFromTarget(target: Target, options: BatchOptions, cleanup: FeatureOverridesCleanup | undefined) {
+    return new FeatureOverrides(target, options, cleanup);
   }
 
   public get isDisposed(): boolean { return undefined === this._lut; }
 
   public dispose() {
     this._lut = dispose(this._lut);
+    if (this._cleanup) {
+      this._cleanup();
+      this._cleanup = undefined;
+    }
   }
 
   public initFromMap(map: PackedFeatureTable) {
     const nFeatures = map.numFeatures;
     assert(0 < nFeatures);
 
-    this.dispose();
+    this._lut = dispose(this._lut);
 
     const ovrs: FeatureSymbology.Overrides = this.target.currentFeatureSymbologyOverrides;
     this._mostRecentSymbologyOverrides = ovrs;
@@ -348,9 +357,9 @@ export class FeatureOverrides implements WebGLDisposable {
     const hilite = this.target.hilites;
     if (ovrsUpdated || hiliteUpdated || flashedId !== this._lastFlashId) {
       // _lut can be undefined if context was lost, (gl.createTexture returns null)
-      if (this._lut) {
+      if (this._lut)
         this._update(features, this._lut, this.target.flashed, undefined !== ovrs || hiliteUpdated ? hilite : undefined, ovrs);
-      }
+
       this._lastFlashId = flashedId;
     }
   }

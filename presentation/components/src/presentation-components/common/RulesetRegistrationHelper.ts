@@ -6,9 +6,9 @@
  * @module Core
  */
 
-import { IDisposable } from "@bentley/bentleyjs-core";
-import { RegisteredRuleset, Ruleset } from "@bentley/presentation-common";
-import { Presentation } from "@bentley/presentation-frontend";
+import { IDisposable } from "@itwin/core-bentley";
+import { RegisteredRuleset, Ruleset } from "@itwin/presentation-common";
+import { Presentation } from "@itwin/presentation-frontend";
 
 /**
  * A helper class that registers a given ruleset on create and unregisters it on disposal.

@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { BeDuration } from "@bentley/bentleyjs-core";
+import { BeDuration } from "@itwin/core-bentley";
 import {
   ChangeFlag, ChangeFlags, MutableChangeFlags, Viewport,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 
 /** Aspects of a Viewport that can become invalidated when its state changes. */
 export enum ViewportState {

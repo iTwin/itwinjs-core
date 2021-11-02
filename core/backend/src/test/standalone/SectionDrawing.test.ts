@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Id64 } from "@bentley/bentleyjs-core";
-import { Transform } from "@bentley/geometry-core";
-import { RelatedElement, SectionDrawingProps, SectionType } from "@bentley/imodeljs-common";
+import { Id64 } from "@itwin/core-bentley";
+import { Transform } from "@itwin/core-geometry";
+import { RelatedElement, SectionDrawingProps, SectionType } from "@itwin/core-common";
 import { Drawing, SectionDrawing } from "../../Element";
 import { DocumentListModel, DrawingModel } from "../../Model";
 import { SnapshotDb } from "../../IModelDb";

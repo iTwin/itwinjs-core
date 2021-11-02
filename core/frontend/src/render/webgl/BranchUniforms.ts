@@ -6,9 +6,9 @@
  * @module WebGL
  */
 
-import { assert } from "@bentley/bentleyjs-core";
-import { ClipVector, Matrix3d, Matrix4d, Point3d, Transform, XYZ } from "@bentley/geometry-core";
-import { ClipStyle, HiddenLine, ViewFlags } from "@bentley/imodeljs-common";
+import { assert } from "@itwin/core-bentley";
+import { ClipVector, Matrix3d, Matrix4d, Point3d, Transform, XYZ } from "@itwin/core-geometry";
+import { ClipStyle, HiddenLine, ViewFlags } from "@itwin/core-common";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { BranchState } from "./BranchState";
 import { BranchStack } from "./BranchStack";

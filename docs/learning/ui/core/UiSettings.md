@@ -1,12 +1,12 @@
 # UiSettings
 
-The [UiSettings]($ui-core:Inputs) category in the `@bentley/ui-core` package includes
+The [UiSettings]($core-react:Inputs) category in the `@itwin/core-react` package includes
 interfaces and classes for working with persistent UI settings.
 
-- [UiSettings]($ui-core) - Interface for getting, saving and deleting settings
-- [LocalUiSettings]($ui-core) - Implementation of UiSettings using Window.localStorage
-- [SessionUiSettings]($ui-core) - Implementation of UiSettings using Window.sessionStorage
+- [UiSettings]($core-react) - Interface for getting, saving and deleting settings
+- [LocalUiSettings]($core-react) - Implementation of UiSettings using Window.localStorage
+- [SessionUiSettings]($core-react) - Implementation of UiSettings using Window.sessionStorage
 
 ## API Reference
 
-- [UiSettings]($ui-core:UiSettings)
+- [UiSettings]($core-react:UiSettings)

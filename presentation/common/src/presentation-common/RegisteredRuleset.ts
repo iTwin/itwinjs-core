@@ -6,10 +6,9 @@
  * @module Core
  */
 
-import { IDisposable } from "@bentley/bentleyjs-core";
+import { IDisposable } from "@itwin/core-bentley";
 import { Rule } from "./rules/Rule";
 import { Ruleset, SupplementationInfo } from "./rules/Ruleset";
-import { SchemasSpecification } from "./rules/SchemasSpecification";
 import { VariablesGroup } from "./rules/Variables";
 
 /**
@@ -35,10 +34,6 @@ export class RegisteredRuleset implements IDisposable, Ruleset {
 
   public get uniqueIdentifier() { return this._uniqueIdentifier; }
   public get id(): string { return this._ruleset.id; }
-  public get supportedSchemas(): SchemasSpecification | undefined {
-    // eslint-disable-next-line deprecation/deprecation
-    return this._ruleset.supportedSchemas;
-  }
   public get supplementationInfo(): SupplementationInfo | undefined { return this._ruleset.supplementationInfo; }
   public get rules(): Rule[] { return this._ruleset.rules; }
   public get vars(): VariablesGroup[] | undefined { return this._ruleset.vars; }

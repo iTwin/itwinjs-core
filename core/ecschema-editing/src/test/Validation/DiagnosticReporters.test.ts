@@ -4,16 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { Logger } from "@bentley/bentleyjs-core";
-import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
-import { ECClass, EntityClass, PrimitiveProperty, PrimitiveType, Schema, SchemaContext } from "@bentley/ecschema-metadata";
+import { BentleyError, Logger } from "@itwin/core-bentley";
+import { EmptyLocalization } from "@itwin/core-common";
+import { EntityClass, PrimitiveProperty, PrimitiveType, Schema, SchemaContext } from "@itwin/ecschema-metadata";
+import { FormatDiagnosticReporter } from "../../ecschema-editing";
 import { MutableClass } from "../../Editing/Mutable/MutableClass";
 import { AnyDiagnostic, createPropertyDiagnosticClass, DiagnosticCategory } from "../../Validation/Diagnostic";
 import { LoggingDiagnosticReporter } from "../../Validation/LoggingDiagnosticReporter";
-import { FormatDiagnosticReporter } from "../../ecschema-editing";
+
 import sinon = require("sinon");
 
-/* eslint-disable-next-line deprecation/deprecation */
 class TestDiagnosticReporter extends FormatDiagnosticReporter {
   constructor(suppressions?: Map<string, string[]>) {
     super(suppressions);
@@ -23,7 +23,6 @@ class TestDiagnosticReporter extends FormatDiagnosticReporter {
 }
 
 describe("DiagnosticReporters tests", () => {
-  (global as any).XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; // eslint-disable-line @typescript-eslint/no-var-requires
 
   let testSchema: Schema;
   let testSchemaItem: EntityClass;
@@ -33,7 +32,7 @@ describe("DiagnosticReporters tests", () => {
   async function createTestDiagnostic(category: DiagnosticCategory, messageArgs: any[] = ["Param1", "Param2"]): Promise<AnyDiagnostic> {
     testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
     testSchemaItem = new EntityClass(testSchema, "TestEntity");
-    testProperty = await (testSchemaItem as ECClass as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.String);
+    testProperty = await (testSchemaItem as unknown as MutableClass).createPrimitiveProperty("TestProperty", PrimitiveType.String);
     const diagnosticClass = createPropertyDiagnosticClass("TestRuleSet-100", "Test Message {0} {1}");
     const diagnostic = new diagnosticClass(testProperty, messageArgs, category);
     // These were added to a test collection because the generator, createAsyncIterableDiagnostic,
@@ -108,7 +107,7 @@ describe("DiagnosticReporters tests", () => {
       expect(logMessage.calledOnceWith("ecschema-metadata", "Test Message Param1 Param2")).to.be.true;
       const metaDataFunc = logMessage.firstCall.args[2];
       assert.isDefined(metaDataFunc);
-      const metaData = metaDataFunc!();
+      const metaData = BentleyError.getMetaData(metaDataFunc) as any;
       assert.isDefined(metaData);
       expect(metaData.code).to.equal("TestRuleSet-100");
       expect(metaData.category).to.equal(DiagnosticCategory.Error);
@@ -118,11 +117,9 @@ describe("DiagnosticReporters tests", () => {
     });
 
     it("should log expected error with translated message", async () => {
-      const i18n = new I18N();
+      const i18n = new EmptyLocalization();
       const i18nMock = sinon.mock(i18n);
-      const registerNamespace = i18nMock.expects("registerNamespace");
-      registerNamespace.resolves(new I18NNamespace("ECSchemaMetaData", Promise.resolve()));
-      const translate = i18nMock.expects("translate");
+      const translate = i18nMock.expects("getLocalizedString");
       translate.returns("Translated text {0} {1}");
       const logMessage = sinon.stub(Logger, "logError");
       const reporter = new LoggingDiagnosticReporter(undefined, i18n);
@@ -134,11 +131,9 @@ describe("DiagnosticReporters tests", () => {
     });
 
     it("no message args, should log expected error with translated message", async () => {
-      const i18n = new I18N();
+      const i18n = new EmptyLocalization();
       const i18nMock = sinon.mock(i18n);
-      const registerNamespace = i18nMock.expects("registerNamespace");
-      registerNamespace.resolves(new I18NNamespace("ECSchemaMetaData", Promise.resolve()));
-      const translate = i18nMock.expects("translate");
+      const translate = i18nMock.expects("getLocalizedString");
       translate.returns("Translated text");
       const logMessage = sinon.stub(Logger, "logError");
       const reporter = new LoggingDiagnosticReporter(undefined, i18n);
@@ -159,7 +154,7 @@ describe("DiagnosticReporters tests", () => {
       expect(logMessage.calledOnceWith("ecschema-metadata", "Test Message Param1 Param2")).to.be.true;
       const metaDataFunc = logMessage.firstCall.args[2];
       assert.isDefined(metaDataFunc);
-      const metaData = metaDataFunc!();
+      const metaData = BentleyError.getMetaData(metaDataFunc) as any;
       assert.isDefined(metaData);
       expect(metaData.code).to.equal("TestRuleSet-100");
       expect(metaData.category).to.equal(DiagnosticCategory.Warning);
@@ -178,7 +173,7 @@ describe("DiagnosticReporters tests", () => {
       expect(logMessage.calledOnceWith("ecschema-metadata", "Test Message Param1 Param2")).to.be.true;
       const metaDataFunc = logMessage.firstCall.args[2];
       assert.isDefined(metaDataFunc);
-      const metaData = metaDataFunc!();
+      const metaData = BentleyError.getMetaData(metaDataFunc) as any;
       assert.isDefined(metaData);
       expect(metaData.code).to.equal("TestRuleSet-100");
       expect(metaData.category).to.equal(DiagnosticCategory.Message);
@@ -197,7 +192,7 @@ describe("DiagnosticReporters tests", () => {
       expect(logMessage.calledOnceWith("ecschema-metadata", "Test Message Param1 Param2")).to.be.true;
       const metaDataFunc = logMessage.firstCall.args[2];
       assert.isDefined(metaDataFunc);
-      const metaData = metaDataFunc!();
+      const metaData = BentleyError.getMetaData(metaDataFunc) as any;
       assert.isDefined(metaData);
       expect(metaData.code).to.equal("TestRuleSet-100");
       expect(metaData.category).to.equal(DiagnosticCategory.Suggestion);
@@ -207,3 +202,4 @@ describe("DiagnosticReporters tests", () => {
     });
   });
 });
+

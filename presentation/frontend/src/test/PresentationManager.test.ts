@@ -5,24 +5,24 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import sinon from "sinon";
-import { BeDuration, BeEvent, CompressedId64Set, Logger, using } from "@bentley/bentleyjs-core";
-import { IModelRpcProps, IpcListener, RemoveFunction } from "@bentley/imodeljs-common";
-import { IModelConnection, IpcApp } from "@bentley/imodeljs-frontend";
-import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
-import { UnitSystemKey } from "@bentley/imodeljs-quantity";
+import * as moq from "typemoq";
+import { BeDuration, BeEvent, CompressedId64Set, Logger, using } from "@itwin/core-bentley";
+import { IModelRpcProps, IpcListener, RemoveFunction } from "@itwin/core-common";
+import { IModelConnection, IpcApp } from "@itwin/core-frontend";
+import { ITwinLocalization } from "@itwin/core-i18n";
+import { UnitSystemKey } from "@itwin/core-quantity";
 import {
   Content, ContentDescriptorRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, ContentSourcesRpcResult, Descriptor,
   DescriptorOverrides, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ElementProperties,
-  ElementPropertiesRequestOptions, FieldDescriptor, FieldDescriptorType, FilterByInstancePathsHierarchyRequestOptions,
-  FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, InstanceKey, Item, KeySet, LabelDefinition, Node, NodeKey, NodePathElement, Paged,
-  PresentationIpcEvents, RegisteredRuleset, RpcRequestsHandler, Ruleset, RulesetVariable, SelectClassInfo, UpdateInfo, VariableValueTypes,
-} from "@bentley/presentation-common";
-import { createTestContentDescriptor } from "@bentley/presentation-common/lib/test/_helpers/Content";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
+  FieldDescriptor, FieldDescriptorType, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions,
+  InstanceKey, Item, KeySet, LabelDefinition, MultiElementPropertiesRequestOptions, Node, NodeKey, NodePathElement, Paged, PresentationIpcEvents,
+  RegisteredRuleset, RpcRequestsHandler, Ruleset, RulesetVariable, SelectClassInfo, SingleElementPropertiesRequestOptions, UpdateInfo,
+  VariableValueTypes,
+} from "@itwin/presentation-common";
 import {
   createRandomECInstanceKey, createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomLabelDefinition, createRandomNodePathElement,
-  createRandomRuleset, createRandomTransientId,
-} from "@bentley/presentation-common/lib/test/_helpers/random";
+  createRandomRuleset, createRandomTransientId, createTestContentDescriptor,
+} from "@itwin/presentation-common/lib/cjs/test";
 import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler";
 import { Presentation } from "../presentation-frontend/Presentation";
 import {
@@ -38,7 +38,7 @@ describe("PresentationManager", () => {
   const rulesetsManagerMock = moq.Mock.ofType<RulesetManagerImpl>();
   const rpcRequestsHandlerMock = moq.Mock.ofType<RpcRequestsHandler>();
   let manager: PresentationManager;
-  const i18nMock = moq.Mock.ofType<I18N>();
+  const i18nMock = moq.Mock.ofType<ITwinLocalization>();
   const testData = {
     imodelToken: moq.Mock.ofType<IModelRpcProps>().object,
     imodelMock: moq.Mock.ofType<IModelConnection>(),
@@ -69,10 +69,10 @@ describe("PresentationManager", () => {
 
   const mockI18N = () => {
     i18nMock.reset();
-    Presentation.setI18nManager(i18nMock.object);
+    Presentation.setLocalization(i18nMock.object);
     const resolvedPromise = new Promise<void>((resolve) => resolve());
-    i18nMock.setup((x) => x.registerNamespace(moq.It.isAny())).returns((name: string) => new I18NNamespace(name, resolvedPromise));
-    i18nMock.setup((x) => x.translate(moq.It.isAny(), moq.It.isAny())).returns((stringId) => stringId);
+    i18nMock.setup(async (x) => x.registerNamespace(moq.It.isAny())).returns(async () => resolvedPromise);
+    i18nMock.setup((x) => x.getLocalizedString(moq.It.isAny(), moq.It.isAny())).returns((stringId) => stringId);
   };
 
   const toIModelTokenOptions = <TOptions extends { imodel: IModelConnection, locale?: string, unitSystem?: UnitSystemKey }>(requestOptions: TOptions) => {
@@ -972,7 +972,7 @@ describe("PresentationManager", () => {
 
   describe("getElementProperties", () => {
 
-    it("requests element properties", async () => {
+    it("requests single element properties", async () => {
       const elementId = "0x123";
       const result: ElementProperties = {
         class: "test class",
@@ -980,7 +980,7 @@ describe("PresentationManager", () => {
         label: "test label",
         items: {},
       };
-      const options: ElementPropertiesRequestOptions<IModelConnection> = {
+      const options: SingleElementPropertiesRequestOptions<IModelConnection> = {
         imodel: testData.imodelMock.object,
         elementId,
       };
@@ -991,6 +991,64 @@ describe("PresentationManager", () => {
       const actualResult = await manager.getElementProperties(options);
       expect(actualResult).to.deep.eq(result);
       rpcRequestsHandlerMock.verifyAll();
+    });
+
+    it("requests multiple elements properties", async () => {
+      const elementClasses = ["TestSchema:TestClass"];
+      const result = {
+        total: 1,
+        items: [{
+          class: "test class",
+          id: "0x1",
+          label: "test label",
+          items: {},
+        }],
+      };
+      const options: MultiElementPropertiesRequestOptions<IModelConnection> = {
+        imodel: testData.imodelMock.object,
+        elementClasses,
+        paging: { start: 0, size: 0 },
+      };
+      rpcRequestsHandlerMock
+        .setup(async (x) => x.getElementProperties(toIModelTokenOptions(options)))
+        .returns(async () => result)
+        .verifiable();
+      const actualResult = await manager.getElementProperties(options);
+      expect(actualResult).to.deep.eq(result);
+      rpcRequestsHandlerMock.verifyAll();
+    });
+
+    it("requests multiple elements properties through multiple requests when getting partial responses", async () => {
+      const elementClasses = ["TestSchema:TestClass"];
+      const element1: ElementProperties = {
+        class: "test class",
+        id: "0x1",
+        label: "test label",
+        items: {},
+      };
+      const element2: ElementProperties = {
+        class: "test class",
+        id: "0x2",
+        label: "test label 2",
+        items: {},
+      };
+      const managerOptions: MultiElementPropertiesRequestOptions<IModelConnection> = {
+        imodel: testData.imodelMock.object,
+        elementClasses,
+        paging: undefined,
+      };
+      const rpcHandlerOptions = toIModelTokenOptions(managerOptions);
+      rpcRequestsHandlerMock
+        .setup(async (x) => x.getElementProperties({ ...rpcHandlerOptions, paging: { start: 0, size: 0 } }))
+        .returns(async () => ({ total: 2, items: [element1] }))
+        .verifiable();
+      rpcRequestsHandlerMock
+        .setup(async (x) => x.getElementProperties({ ...rpcHandlerOptions, paging: { start: 1, size: 0 } }))
+        .returns(async () => ({ total: 2, items: [element2] }))
+        .verifiable();
+      const actualResult = await manager.getElementProperties(managerOptions);
+      rpcRequestsHandlerMock.verifyAll();
+      expect(actualResult).to.deep.eq({ total: 2, items: [element1, element2] });
     });
 
   });

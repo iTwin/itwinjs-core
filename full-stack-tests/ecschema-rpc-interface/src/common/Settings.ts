@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { LogLevel } from "@bentley/bentleyjs-core";
-import { IModelReadRpcInterface } from "@bentley/imodeljs-common";
-import { TestUserCredentials } from "@bentley/oidc-signin-tool";
-import { ECSchemaRpcInterface } from "@bentley/ecschema-rpcinterface-common/lib/ECSchemaRpcInterface";
+import { LogLevel } from "@itwin/core-bentley";
+import { IModelReadRpcInterface } from "@itwin/core-common";
+import { TestUserCredentials } from "@itwin/oidc-signin-tool";
+import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common";
 
 export interface Backend {
   version: string;
@@ -15,10 +15,13 @@ export interface Backend {
 }
 
 export interface IModelData {
-  id: string;
-  projectId: string;
+  useName: boolean; // Defines whether or not to use the name of the iModel
+  id?: string; // The iModel Id - This is not required
   name?: string; // The name is not required to actually get the iModel, only the id.
-  changeSetId?: string;
+  useITwinName: boolean;
+  iTwinId?: string;
+  iTwinName?: string;
+  changesetId?: string;
 }
 
 export function getRpcInterfaces() {
@@ -50,12 +53,16 @@ export class Settings {
   constructor(env: NodeJS.ProcessEnv) {
     const isFrontend = (typeof (process) === "undefined");
     if (!isFrontend && undefined === env.TF_BUILD) {
+      const path = require("path"); // eslint-disable-line @typescript-eslint/no-var-requires
       const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
       const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
       // First check in process.cwd() for the config
-      const result = dotenv.config();
+      let result = dotenv.config();
       if (result.error) {
-        throw result.error;
+        const potential = path.resolve(process.cwd(), "..", "..", "..", "imodeljs-config", ".env");
+        result = dotenv.config({ path: potential });
+        if (result.error)
+          throw result.error;
       }
 
       dotenvExpand(result);
@@ -92,18 +99,20 @@ export class Settings {
       this.gprid = process.env.GPRID;
 
     //  Parse the iModel variables
-    if (undefined === process.env.IMODEL_PROJECTID)
-      throw new Error("Missing the 'IMODEL_PROJECTID' setting.");
+    if (!process.env.IMODEL_PROJECTID && !process.env.IMODEL_PROJECTNAME)
+      throw new Error("Missing the 'IMODEL_PROJECTID' or 'IMODEL_PROJECTNAME' setting.");
 
-    if (undefined === process.env.IMODEL_IMODELID)
-      throw new Error("Missing the 'IMODEL_IMODELID' setting.");
+    if (!process.env.IMODEL_IMODELID && !process.env.IMODEL_IMODELNAME)
+      throw new Error("Missing the 'IMODEL_IMODELID' or 'IMODEL_IMODELNAME' setting.");
 
     this.iModel = {
-      projectId: process.env.IMODEL_PROJECTID,
+      useName: !process.env.IMODEL_IMODELID,
       id: process.env.IMODEL_IMODELID,
-      // Neither of the next 2 are needed but since they'll be undefined anyway, just always set it.
       name: process.env.IMODEL_IMODELNAME,
-      changeSetId: process.env.IMODEL_CHANGESETID,
+      useITwinName: !process.env.IMODEL_PROJECTID,
+      iTwinId: process.env.IMODEL_PROJECTID,
+      iTwinName: process.env.IMODEL_PROJECTNAME,
+      changesetId: process.env.IMODEL_CHANGESETID,
     };
 
     // Parse logging level

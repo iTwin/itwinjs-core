@@ -1,6 +1,6 @@
-# The ui-components package
+# The components-react package
 
-The ui-components package contains React components that are data-oriented, such as PropertyGrid, Table and Tree.
+The components-react package contains React components that are data-oriented, such as PropertyGrid, Table and Tree.
 
 ## Topics
 

@@ -6,14 +6,14 @@
  * @module Measure
  */
 
-import { Id64, Id64Array, Id64String } from "@bentley/bentleyjs-core";
+import { Id64, Id64Array, Id64String } from "@itwin/core-bentley";
 import {
   AxisOrder, IModelJson, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, PointString3d, PolygonOps, Vector3d, XAndY, XYAndZ,
-} from "@bentley/geometry-core";
+} from "@itwin/core-geometry";
 import {
   BentleyStatus, ColorDef, GeometryStreamProps, LinePixels, MassPropertiesOperation, MassPropertiesRequestProps, MassPropertiesResponseProps,
-} from "@bentley/imodeljs-common";
-import { DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription } from "@bentley/ui-abstract";
+} from "@itwin/core-common";
+import { DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription } from "@itwin/appui-abstract";
 import { AccuDrawHintBuilder, ContextRotationId } from "../AccuDraw";
 import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
 import { HitDetail, HitGeomType } from "../HitDetail";

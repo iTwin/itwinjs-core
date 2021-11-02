@@ -5,9 +5,9 @@
 import "./SampleTimelineComponent.scss";
 import * as React from "react";
 import starSvg from "@bentley/icons-generic/icons/star.svg?sprite";
-import { TimelineComponent, TimelineDateMarkerProps, TimelineMenuItemProps } from "@bentley/ui-imodel-components";
-import { IconSpecUtilities } from "@bentley/ui-abstract";
-import { Icon } from "@bentley/ui-core";
+import { TimelineComponent, TimelineDateMarkerProps, TimelineMenuItemProps } from "@itwin/imodel-components-react";
+import { IconSpecUtilities } from "@itwin/appui-abstract";
+import { Icon } from "@itwin/core-react";
 export function ItemsAppendedSampleTimeline() {
   const duration = 8 * 1000;
   const startDate = new Date(2014, 6, 6);
@@ -175,8 +175,8 @@ export function CurrentDateMarkedCustomIconSampleTimeline() {
   const duration = 10 * 1000;
   const startDate = new Date("January 1, 2021");
   const endDate = new Date("July 1, 2022");
-  const starMarker = <span className="date-marker-icon"><Icon iconSpec={IconSpecUtilities.createSvgIconSpec(starSvg)}/></span>;
-  const markToday: TimelineDateMarkerProps = {date: new Date(), dateMarker: starMarker};
+  const starMarker = <span className="date-marker-icon"><Icon iconSpec={IconSpecUtilities.createSvgIconSpec(starSvg)} /></span>;
+  const markToday: TimelineDateMarkerProps = { date: new Date(), dateMarker: starMarker };
   return (
     <div style={{ width: "100%", height: "auto" }}>
       <TimelineComponent

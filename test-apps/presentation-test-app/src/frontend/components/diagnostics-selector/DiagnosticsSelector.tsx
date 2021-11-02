@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import "./DiagnosticsSelector.css";
 import React from "react";
-import { DiagnosticsLoggerSeverity } from "@bentley/presentation-common";
-import { DiagnosticsProps } from "@bentley/presentation-components";
-import { consoleDiagnosticsHandler } from "@bentley/presentation-frontend";
-import { PointProps } from "@bentley/ui-abstract";
-import { ContextMenuDirection, GlobalContextMenu } from "@bentley/ui-core";
+import { DiagnosticsLoggerSeverity } from "@itwin/presentation-common";
+import { DiagnosticsProps } from "@itwin/presentation-components";
+import { consoleDiagnosticsHandler } from "@itwin/presentation-frontend";
+import { PointProps } from "@itwin/appui-abstract";
+import { ContextMenuDirection, GlobalContextMenu } from "@itwin/core-react";
 import { LabeledSelect, ToggleSwitch } from "@itwin/itwinui-react";
 
 export interface DiagnosticsSelectorProps {
@@ -69,7 +69,8 @@ export function DiagnosticsSelector(props: DiagnosticsSelectorProps) {
             { value: "info", label: "Info" },
           ]}
           value={editorSeverity}
-          onChange={(newValue: string) => setEditorSeverity(newValue)} />
+          onChange={(newValue: string) => setEditorSeverity(newValue)}
+          size="small" />
         <LabeledSelect label="Dev severity"
           options={[
             { value: "error", label: "Error" },
@@ -79,7 +80,8 @@ export function DiagnosticsSelector(props: DiagnosticsSelectorProps) {
             { value: "trace", label: "Trace" },
           ]}
           value={devSeverity}
-          onChange={(newValue: string) => setDevSeverity(newValue)} />
+          onChange={(newValue: string) => setDevSeverity(newValue)}
+          size="small" />
         <ToggleSwitch label="Measure performance" labelPosition="right" checked={shouldMeasurePerformance} onChange={handleMeasurePerformanceChange} />
       </GlobalContextMenu>
     </React.Fragment>

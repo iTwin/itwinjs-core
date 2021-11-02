@@ -6,7 +6,7 @@
  * @module Content
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
+import { assert, Id64String } from "@itwin/core-bentley";
 import {
   ClassInfo, ClassInfoJSON, CompressedClassInfoJSON, PropertyInfo, PropertyInfoJSON, RelatedClassInfo, RelationshipPath, RelationshipPathJSON,
   StrippedRelationshipPath,
@@ -359,14 +359,14 @@ export class PropertiesField extends Field {
 }
 
 /**
- * Describes a content field that contains [Nested content]($docs/learning/presentation/Content/Terminology#nested-content).
+ * Describes a content field that contains [Nested content]($docs/presentation/Content/Terminology#nested-content).
  *
  * @public
  */
 export class NestedContentField extends Field {
   /** Information about an ECClass whose properties are nested inside this field */
   public contentClassInfo: ClassInfo;
-  /** Relationship path to [Primary class]($docs/learning/presentation/Content/Terminology#primary-class) */
+  /** Relationship path to [Primary class]($docs/presentation/Content/Terminology#primary-class) */
   public pathToPrimaryClass: RelationshipPath;
   /** @alpha */
   public relationshipMeaning: RelationshipMeaning;
@@ -386,7 +386,7 @@ export class NestedContentField extends Field {
    * @param isReadonly Are values in this field read-only
    * @param priority Priority of the field
    * @param contentClassInfo Information about an ECClass whose properties are nested inside this field
-   * @param pathToPrimaryClass Relationship path to [Primary class]($docs/learning/presentation/Content/Terminology#primary-class)
+   * @param pathToPrimaryClass Relationship path to [Primary class]($docs/presentation/Content/Terminology#primary-class)
    * @param nestedFields Contained nested fields
    * @param editor Property editor used to edit values of this field
    * @param autoExpand Flag specifying whether field should be expanded
@@ -478,6 +478,7 @@ export class NestedContentField extends Field {
    * @public
    */
   public static override fromCompressedJSON(json: NestedContentFieldJSON<Id64String>, classesMap: { [id: string]: CompressedClassInfoJSON }, categories: CategoryDescription[]) {
+    assert(classesMap.hasOwnProperty(json.contentClassInfo));
     const field = Object.create(NestedContentField.prototype);
     return Object.assign(field, json, this.fromCommonJSON(json, categories), {
       category: this.getCategoryFromFieldJson(json, categories),
@@ -599,6 +600,7 @@ function fromCompressedPropertyJSON(compressedPropertyJSON: PropertyJSON<string>
 }
 
 function fromCompressedPropertyInfoJSON(compressedPropertyJSON: PropertyInfoJSON<string>, classesMap: { [id: string]: CompressedClassInfoJSON }): PropertyInfo {
+  assert(classesMap.hasOwnProperty(compressedPropertyJSON.classInfo));
   return {
     ...compressedPropertyJSON,
     classInfo: { id: compressedPropertyJSON.classInfo, ...classesMap[compressedPropertyJSON.classInfo] },

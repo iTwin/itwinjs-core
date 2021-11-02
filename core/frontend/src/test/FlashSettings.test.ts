@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { BeDuration } from "@bentley/bentleyjs-core";
+import { BeDuration } from "@itwin/core-bentley";
 import { FlashMode, FlashSettings, FlashSettingsOptions } from "../FlashSettings";
 
 type FlashProps = Pick<FlashSettings, "duration" | "maxIntensity" | "litMode">;
@@ -43,7 +43,7 @@ describe("FlashSettings", () => {
     const defaults = new FlashSettings();
     expect(defaults.clone()).to.equal(defaults);
 
-    let settings = clone(defaults, { }, defaults);
+    let settings = clone(defaults, {}, defaults);
     expect(settings).not.to.equal(defaults);
 
     settings = clone(settings,

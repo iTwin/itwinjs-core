@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Remove deprecate QuantityFormatter methods",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

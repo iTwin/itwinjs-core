@@ -5,4 +5,4 @@ If you have a question that is not covered here, you might find an answer on one
 
 1. How are labels calculated in presentation-driven components like tree and property grid?
 
-    Presentation-driven components apply default BIS rules when creating content for these components. The rules include some label overrides whose behavior is described in detail [here](./presentation/DefaultBisRules.md#label-overrides).
+    Presentation-driven components apply default BIS rules when creating content for these components. The rules include some label overrides whose behavior is described in detail [here]($docs/presentation/Advanced/DefaultBisRules.md#label-overrides).

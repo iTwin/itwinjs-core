@@ -1,8 +1,8 @@
 # Widgets
 
 A **Widget** is a collection of UI components tied to a particular zone that allows the user to view and/or modify data relevant to their current context.
-A Widget is hosted in either a [Zone]($ui-framework) or [StagePanel]($ui-framework) that are part of a [Frontstage]($ui-framework).
-The [Widget]($ui-framework) React component is listed in the `widgets` Prop of a Zone React component or a StagePanel React component.
+A Widget is hosted in either a [Zone]($appui-react) or [StagePanel]($appui-react) that are part of a [Frontstage]($appui-react).
+The [Widget]($appui-react) React component is listed in the `widgets` Prop of a Zone React component or a StagePanel React component.
 
 A label for the Widget may be specified using the `label` or `labelKey` prop.
 An icon may be specified using the `iconSpec` prop.
@@ -59,7 +59,7 @@ As long as the application is using AppUi version "2" or later, a "pop-out" icon
 
 ## WidgetControls
 
-A subclass of [WidgetControl]($ui-framework) may be used to populate a widget. The `reactNode` property specifies the React component.
+A subclass of [WidgetControl]($appui-react) may be used to populate a widget. The `reactNode` property specifies the React component.
 The `options` parameter in the constructor contains the `applicationData` from the Widget component.
 The `setWidgetState` method may be called to set the state of the widget.
 
@@ -69,7 +69,7 @@ import * as React from "react";
 import {
   WidgetControl,
   ConfigurableCreateInfo,
-} from "@bentley/ui-framework";
+} from "@itwin/appui-react";
 
 import SimpleTreeComponent from "../components/Tree";
 
@@ -87,7 +87,7 @@ export class TreeWidget extends WidgetControl {
 
 ## WidgetDefs
 
-A [WidgetDef]($ui-framework) object is created for each Widget component in the frontstage. The WidgetDef contains properties and methods used to get information and change the state of the widget.
+A [WidgetDef]($appui-react) object is created for each Widget component in the frontstage. The WidgetDef contains properties and methods used to get information and change the state of the widget.
 
 The following example demonstrates how to open a widget programmatically. The example assumes an `id` prop of "VerticalPropertyGrid" has been provided on the Widget component.
 
@@ -130,7 +130,7 @@ function SampleToolWidget () {
   );
   ```
 
-There is an extensible Tool Widget named [BasicToolWidget]($ui-framework) in the ui-framework package. It supports the specification of additional horizontal and vertical toolbar items via props. It provides basic selection and measuring tools and supports the specification of additional horizontal and vertical toolbar items via props.
+There is an extensible Tool Widget named [BasicToolWidget]($appui-react) in the appui-react package. It supports the specification of additional horizontal and vertical toolbar items via props. It provides basic selection and measuring tools and supports the specification of additional horizontal and vertical toolbar items via props.
 
 ## Navigation Widget
 
@@ -161,8 +161,8 @@ function SampleNavigationWidget () {
   );
 ```
 
-There is an extensible Navigation Widget named [BasicNavigationWidget]($ui-framework) in the ui-framework package. It provides basic view manipulation tools and supports the specification of additional horizontal and vertical toolbar items via props.
+There is an extensible Navigation Widget named [BasicNavigationWidget]($appui-react) in the appui-react package. It provides basic view manipulation tools and supports the specification of additional horizontal and vertical toolbar items via props.
 
 ## API Reference
 
-- [Widget]($ui-framework:Widget)
+- [Widget]($appui-react:Widget)

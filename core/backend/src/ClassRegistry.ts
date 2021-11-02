@@ -6,8 +6,8 @@
  * @module Schema
  */
 
-import { IModelStatus, Logger } from "@bentley/bentleyjs-core";
-import { EntityMetaData, IModelError } from "@bentley/imodeljs-common";
+import { IModelStatus, Logger } from "@itwin/core-bentley";
+import { EntityMetaData, IModelError } from "@itwin/core-common";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { Schema, Schemas } from "./Schema";
@@ -28,7 +28,7 @@ export class ClassRegistry {
     const key = (`${schema.schemaName}:${entityClass.className}`).toLowerCase();
     if (this._classMap.has(key)) {
       const errMsg = `Class ${key} is already registered. Make sure static className member is correct on JavaScript class ${entityClass.name}`;
-      Logger.logError("imodeljs-frontend.classRegistry", errMsg);
+      Logger.logError("core-frontend.classRegistry", errMsg);
       throw new Error(errMsg);
     }
 

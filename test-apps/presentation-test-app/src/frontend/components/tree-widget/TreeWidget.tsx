@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { useResizeDetector } from "react-resize-detector";
-import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { DiagnosticsProps } from "@bentley/presentation-components";
-import { FilteringInput, FilteringInputStatus } from "@bentley/ui-components";
+import { IModelApp, IModelConnection } from "@itwin/core-frontend";
+import { DiagnosticsProps } from "@itwin/presentation-components";
+import { FilteringInput, FilteringInputStatus } from "@itwin/components-react";
 import { DiagnosticsSelector } from "../diagnostics-selector/DiagnosticsSelector";
 import { Tree } from "./Tree";
 
@@ -36,7 +36,7 @@ export function TreeWidget(props: Props) {
   return (
     <div className="treewidget">
       <div className="treewidget-header">
-        <h3>{IModelApp.i18n.translate("Sample:controls.tree")}</h3>
+        <h3>{IModelApp.localization.getLocalizedString("Sample:controls.tree")}</h3>
         <DiagnosticsSelector onDiagnosticsOptionsChanged={setDiagnosticsOptions} />
         {rulesetId ? <FilteringInput
           status={filteringStatus}

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Parser } from "@bentley/imodeljs-quantity";
+import { Parser } from "@itwin/core-quantity";
 import { assert } from "chai";
 import { LocalUnitFormatProvider } from "../quantity-formatting/LocalUnitFormatProvider";
 

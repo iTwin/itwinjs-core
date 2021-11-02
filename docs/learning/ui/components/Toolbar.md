@@ -1,16 +1,16 @@
 # Toolbar
 
-The [Toolbar]($ui-components:Toolbar) category in the `@bentley/ui-components` package includes
+The [Toolbar]($components-react:Toolbar) category in the `@itwin/components-react` package includes
 components that provide a toolbar that supports an overflow button.
 
 |Component|Description
 |-----|-----
-|[ToolbarWithOverflow]($ui-components)|Toolbar that can be oriented horizontal or vertical.
-|[PopupItem]($ui-components)|Toolbar button that display a popup panel
+|[ToolbarWithOverflow]($components-react)|Toolbar that can be oriented horizontal or vertical.
+|[PopupItem]($components-react)|Toolbar button that display a popup panel
 
 ## ToolbarWithOverflow
 
-[ToolbarWithOverflow]($ui-components) is a toolbar component that can be oriented horizontal or vertical. It will automatically show an overflow button if the all buttons cannot be displayed due to the size of the toolbar.
+[ToolbarWithOverflow]($components-react) is a toolbar component that can be oriented horizontal or vertical. It will automatically show an overflow button if the all buttons cannot be displayed due to the size of the toolbar.
 
 ### ToolbarWithOverflow Sample
 
@@ -47,11 +47,11 @@ The props defined above are all defaults, so the above definition could be short
 
 ### Toolbar Popup Buttons
 
-Toolbar support two basic Popup buttons, one that is created for a [GroupButton]($ui-abstract) definition that show a panel of tools to execute and one that shows custom contents in a popup panel using [CustomToolbarItem]($ui-components) definition.
+Toolbar support two basic Popup buttons, one that is created for a [GroupButton]($appui-abstract) definition that show a panel of tools to execute and one that shows custom contents in a popup panel using [CustomToolbarItem]($components-react) definition.
 
 #### Custom Popup Panel
 
-A [CustomToolbarItem]($ui-components) definition can be used to define a button with a custom pop-up panel. The `panelContentNode` property is used to define the React component to display in the popup panel.
+A [CustomToolbarItem]($components-react) definition can be used to define a button with a custom pop-up panel. The `panelContentNode` property is used to define the React component to display in the popup panel.
 
 ```tsx
 const buttonDefWithPopupPanel = {
@@ -66,7 +66,7 @@ const buttonDefWithPopupPanel = {
 
 #### Group Popup Panel
 
-Below is an example of setting up a [GroupButton]($ui-abstract) definition that shows a pop-up panel of actions.
+Below is an example of setting up a [GroupButton]($appui-abstract) definition that shows a pop-up panel of actions.
 
 ```tsx
 const childItems: ActionButton[] = [
@@ -81,5 +81,5 @@ const toolbarItemsWithGroup: CommonToolbarItem[] = [
 
 ## API Reference
 
-- [Abstract Toolbar definitions]($ui-abstract:Toolbar)
-- [Toolbar]($ui-components:Toolbar)
+- [Abstract Toolbar definitions]($appui-abstract:Toolbar)
+- [Toolbar]($components-react:Toolbar)

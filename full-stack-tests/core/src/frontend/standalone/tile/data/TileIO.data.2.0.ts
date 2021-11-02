@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ImdlFlags } from "@bentley/imodeljs-common";
+import { ImdlFlags } from "@itwin/core-common";
 
 // Binary tile data produced using version 2.0 of the tile format.
 export const TILE_DATA_2_0 = {
