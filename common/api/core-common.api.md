@@ -514,6 +514,12 @@ export interface BaseReaderOptions {
 }
 
 // @public
+export interface BasicPlanarClipMaskArgs {
+    invert?: boolean;
+    transparency?: number;
+}
+
+// @public
 export enum BatchType {
     PlanarClassifier = 2,
     Primary = 0,
@@ -2688,6 +2694,17 @@ export interface ElementLoadProps extends ElementLoadOptions {
     federationGuid?: GuidString;
     // (undocumented)
     id?: Id64String;
+}
+
+// @public
+export interface ElementPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
+    elementIds: Iterable<Id64String>;
+    exclude?: boolean;
+    modelIds?: Iterable<Id64String>;
+    // @internal (undocumented)
+    priority?: never;
+    // @internal (undocumented)
+    subCategoryIds?: never;
 }
 
 // @public
@@ -5389,6 +5406,19 @@ export interface ModelLoadProps {
 }
 
 // @public
+export interface ModelPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
+    // @internal (undocumented)
+    elementIds?: never;
+    // @internal (undocumented)
+    exclude?: never;
+    modelIds?: Iterable<Id64String>;
+    // @internal (undocumented)
+    priority?: never;
+    // @internal (undocumented)
+    subCategoryIds?: never;
+}
+
+// @public
 export interface ModelProps extends EntityProps {
     // (undocumented)
     isPrivate?: boolean;
@@ -5939,6 +5969,7 @@ export enum PlanarClipMaskPriority {
 
 // @public
 export interface PlanarClipMaskProps {
+    invert?: boolean;
     mode: PlanarClipMaskMode;
     modelIds?: CompressedId64Set;
     priority?: number;
@@ -5950,13 +5981,12 @@ export interface PlanarClipMaskProps {
 export class PlanarClipMaskSettings {
     clone(changedProps?: PlanarClipMaskProps): PlanarClipMaskSettings;
     get compressedModelIds(): CompressedId64Set | undefined;
-    static createByPriority(priority: number, transparency?: number): PlanarClipMaskSettings;
-    static createForElementsOrSubCategories(mode: PlanarClipMaskMode.IncludeElements | PlanarClipMaskMode.ExcludeElements | PlanarClipMaskMode.IncludeSubCategories, elementOrSubCategoryIds: Iterable<Id64String>, modelIds?: Iterable<Id64String>, transparency?: number): PlanarClipMaskSettings;
-    static createForModels(modelIds: Iterable<Id64String> | undefined, transparency?: number): PlanarClipMaskSettings;
+    static create(args: ModelPlanarClipMaskArgs | ElementPlanarClipMaskArgs | SubCategoryPlanarClipMaskArgs | PriorityPlanarClipMaskArgs): PlanarClipMaskSettings;
     static defaults: PlanarClipMaskSettings;
     // (undocumented)
     equals(other: PlanarClipMaskSettings): boolean;
     static fromJSON(json?: PlanarClipMaskProps): PlanarClipMaskSettings;
+    readonly invert: boolean;
     get isValid(): boolean;
     readonly mode: PlanarClipMaskMode;
     readonly modelIds?: OrderedId64Iterable;
@@ -6141,6 +6171,17 @@ export enum PrimitiveTypeCode {
     String = 2305,
     // (undocumented)
     Uninitialized = 0
+}
+
+// @public
+export interface PriorityPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
+    // @internal (undocumented)
+    elementIds?: never;
+    // @internal (undocumented)
+    exclude?: never;
+    // @internal (undocumented)
+    modelIds?: never;
+    priority: number;
 }
 
 // @beta
@@ -8274,6 +8315,18 @@ export class SubCategoryOverride {
     toJSON(): SubCategoryAppearance.Props;
     readonly transparency?: number;
     readonly weight?: number;
+}
+
+// @public
+export interface SubCategoryPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
+    // @internal (undocumented)
+    elementIds?: never;
+    // @internal (undocumented)
+    exclude?: never;
+    modelIds?: Iterable<Id64String>;
+    // @internal (undocumented)
+    priority?: never;
+    subCategoryIds: Iterable<Id64String>;
 }
 
 // @public

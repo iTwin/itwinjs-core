@@ -598,6 +598,7 @@ internal;TraversalChildrenDetails
 internal;TraversalDetails
 internal;TraversalSelectionContext
 public;tryImageElementFromUrl(url: string): Promise
+public;TwoWayViewportFrustumSync 
 public;TwoWayViewportSync
 public;Uniform
 public;UniformArrayParams 
