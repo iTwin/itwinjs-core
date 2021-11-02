@@ -212,6 +212,7 @@ export abstract class IModelDb extends IModel {
   private _codeSpecs?: CodeSpecs;
   private _classMetaDataRegistry?: MetaDataRegistry;
   protected _fontMap?: FontMap;
+  /** @internal */
   protected _workspace: Workspace;
   private readonly _snaps = new Map<string, IModelJsNative.SnapRequest>();
   private static _shutdownListener: VoidFunction | undefined; // so we only register listener once
