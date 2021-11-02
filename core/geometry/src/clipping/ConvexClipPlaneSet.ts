@@ -263,20 +263,21 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
    * * If no result is provide, there are no object allocations.
    * @param result optional Range1d to receive parameters along the ray.
    */
-  public hasIntersectionWithRay(ray: Ray3d, result?: Range1d): boolean {
+  public hasIntersectionWithRay(ray: Ray3d, result?: Range1d, tolerance: number = Geometry.smallMetricDistance ): boolean {
     // form low and high values in locals that do not require allocation.
     // transfer to caller-supplied result at end
     let t0 = -Geometry.hugeCoordinate;
     let t1 = Geometry.hugeCoordinate;
     if (result)
       result.setNull();
+    const velocityTolerance = 1.0e-13;
     for (const plane of this._planes) {
       const vD = plane.velocity(ray.direction);
       const vN = plane.altitude(ray.origin);
 
-      if (vD === 0.0) {
+      if (Math.abs (vD) <= velocityTolerance) {
         // Ray is parallel... No need to continue testing if outside halfspace.
-        if (vN < 0.0)
+        if (vN < -tolerance)
           return false;   // and result is a null range.
       } else {
         const rayFraction = - vN / vD;

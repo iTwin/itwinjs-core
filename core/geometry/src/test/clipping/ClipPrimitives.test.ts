@@ -26,6 +26,10 @@ import { GeometryQuery } from "../../curve/GeometryQuery";
 import { Sample } from "../../serialization/GeometrySamples";
 import { Point3dArray } from "../../geometry3d/PointHelpers";
 import { PolygonOps } from "../../geometry3d/PolygonOps";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { IndexedPolyface } from "../../polyface/Polyface";
+import { Cone } from "../../solid/Cone";
+import { ClippedPolyfaceBuilders, PolyfaceClip } from "../../core-geometry";
 
 /* eslint-disable no-console */
 
@@ -734,7 +738,7 @@ describe("ClipPrimitive", () => {
     const outerClip = ClipPrimitive.createCapture(convexClip.clone());
     ck.testFalse(outerClip.invisible);
     const rangeB = Range3d.createXYZXYZ(2000, 2000, 2000, 2001, 2001, 2001);
-    const holeClip = ClipPrimitive.createCapture(ConvexClipPlaneSet.createXYBox(1, 1, 4, 5), true);
+    const holeClip = ClipPrimitive.createCapture(convexClip.clone (),  true);
     ck.testTrue(holeClip.invisible);
     const clipVector0 = ClipVector.create([outerClip, holeClip]);
     const clipVector1 = clipVector0.clone();
@@ -779,4 +783,59 @@ describe("ClipPrimitive", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+// EDL Sept 2021
+// This test compares ClipPrimitive constructed via planes (directly) versus CipShape, with special focus on
+//   interaction with front and back clip planes.
+it("ClipPrimitiveMasking", () => {
+  const ck = new Checker();
+  const allGeometry: GeometryQuery[] = [];
+  const clipRange = Range3d.createXYZXYZ(0, 0, 0, 1, 1, 1);
+  const uncappedBoxSetA = ConvexClipPlaneSet.createRange3dPlanes (clipRange, true, true, true, true, false, false);
+  const uncappedBoxSetB = ConvexClipPlaneSet.createRange3dPlanes (clipRange);
+  const boxPrimitiveA = ClipPrimitive.createCapture(uncappedBoxSetA, false);
+  const boxPrimitiveB = ClipPrimitive.createCapture(uncappedBoxSetB, true);
+  const builder = PolyfaceBuilder.create();
+  const mesh = builder.claimPolyface();
+  {
+    const a = -0.3;
+    const b = 1.3;
+    addCone(builder, a,a,a, b, b, b, 0.12, 0.25);
+    addCone(builder, a,b,a, b,a,b, 0.25, 0.12);
+    addCone(builder, a, b,b, b,a,a, 0.25, 0.12);
+    addCone(builder, a, a, b, b,b,a, 0.25, 0.12);
+  }
+  let x0 = 0.0;
+  const outputStep = 10.0;
+  const y0 = 0.0;
+  GeometryCoreTestIO.captureRangeEdges(allGeometry, clipRange, x0, y0);
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y0);
+  clipAndOutput(allGeometry, boxPrimitiveA, mesh, clipRange, x0+= outputStep, y0, outputStep / 2.0);
+  clipAndOutput(allGeometry, boxPrimitiveB, mesh, clipRange, x0 += outputStep, y0, outputStep / 2.0);
+  GeometryCoreTestIO.saveGeometry(allGeometry, "ClipPrimitive", "ClipPrimitiveMasking");
+  expect(ck.getNumErrors()).equals(0);
 });
+
+});
+
+function clipAndOutput(allGeometry: GeometryQuery[], clipper: ClipPrimitive,
+  mesh: IndexedPolyface,
+    clipRange: Range3d | undefined,
+    x0: number, y0: number, yStep: number, buildClosureFaces: boolean = true) {
+    const unionOfConvexSets = clipper.fetchClipPlanesRef();
+  if (unionOfConvexSets) {
+    const builders = ClippedPolyfaceBuilders.create(true, true, buildClosureFaces);
+
+    PolyfaceClip.clipPolyfaceUnionOfConvexClipPlaneSetsToBuilders(mesh, unionOfConvexSets, builders, 0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, builders.builderA?.claimPolyface(), x0, y0);
+    GeometryCoreTestIO.captureRangeEdges(allGeometry, clipRange, x0, y0);
+    y0 += yStep;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, builders.builderB?.claimPolyface(), x0, y0);
+    GeometryCoreTestIO.captureRangeEdges(allGeometry, clipRange, x0, y0);
+  }
+}
+
+function addCone(builder: PolyfaceBuilder, x0: number, y0: number, z0: number,
+  x1: number, y1: number, z1: number, radius0: number, radius1: number) {
+  const cone = Cone.createAxisPoints(Point3d.create(x0, y0, z0), Point3d.create(x1, y1, z1), radius0, radius1, true);
+  builder.addCone(cone!);
+  }
