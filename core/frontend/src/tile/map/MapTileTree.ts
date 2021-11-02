@@ -536,7 +536,7 @@ export class MapTileTreeReference extends TileTreeReference {
     let tree;
     if (!isOverlay && this._baseLayerSettings !== undefined) {
       if (this._baseLayerSettings instanceof MapLayerSettings) {
-        tree = IModelApp.mapLayerFormatRegistry.createImageryMapLayerTree(this._baseLayerSettings, 0, iModel);
+        tree = createMapLayerTreeReference(this._baseLayerSettings, 0, iModel);
         this._baseTransparent = this._baseLayerSettings.transparency > 0;
       } else {
         this._baseColor = this._baseLayerSettings;
@@ -571,7 +571,7 @@ export class MapTileTreeReference extends TileTreeReference {
     this._baseLayerSettings = baseLayerSettings;
 
     if (baseLayerSettings instanceof MapLayerSettings) {
-      tree = IModelApp.mapLayerFormatRegistry.createImageryMapLayerTree(baseLayerSettings, 0, this._iModel);
+      tree = createMapLayerTreeReference(baseLayerSettings, 0, this._iModel);
       this._baseColor = undefined;
       this._baseTransparent = baseLayerSettings.transparency > 0;
     } else {
@@ -603,7 +603,7 @@ export class MapTileTreeReference extends TileTreeReference {
     for (let i = 0; i < layerSettings.length; i++) {
       const treeIndex = i + baseLayerIndex;
       if (treeIndex >= this._layerTrees.length || !this._layerTrees[treeIndex].layerSettings.displayMatches(layerSettings[i]))
-        this._layerTrees[treeIndex] = IModelApp.mapLayerFormatRegistry.createImageryMapLayerTree(layerSettings[i], treeIndex, this._iModel)!;
+        this._layerTrees[treeIndex] = createMapLayerTreeReference(layerSettings[i], treeIndex, this._iModel)!;
     }
     this.clearLayers();
   }
@@ -707,7 +707,7 @@ export class MapTileTreeReference extends TileTreeReference {
 
     this._layerTrees.forEach((layerTree) => {
       if (layerTree instanceof ClassifierMapLayerTileTreeReference)
-        context.addPlanarClassifier(tree.modelId, layerTree);
+        context.addPlanarClassifier(`MapLayer ${tree.modelId}-${layerTree.layerIndex}`, layerTree);
 
     });
 

@@ -7,7 +7,8 @@
  * @module Tools
  */
 
-import { BaseMapLayerSettings, ColorDef } from "@itwin/core-common";
+import { Id64String } from "@itwin/core-bentley";
+import { BaseMapLayerSettings, ColorDef, MapLayerSettings, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay } from "@itwin/core-common";
 import { IModelApp, MapLayerSource, MapLayerSources, MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority, Tool, WmsUtilities } from "@itwin/core-frontend";
 import { parseBoolean } from "./parseBoolean";
 import { parseToggle } from "./parseToggle";
@@ -52,6 +53,43 @@ class AttachMapLayerBaseTool extends Tool {
       const msg = IModelApp.localization.getLocalizedString("FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayerAttachError", { error, sourceUrl: source.url });
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
     });
+  }
+}
+
+/** Attach a map layer from URL base class. */
+export class AttachModelMapLayerTool extends Tool {
+  public static override get minArgs() { return 1; }
+  public static override get maxArgs() { return 1; }
+  public static override toolId = "AttachModelMapLayerTool";
+  constructor(protected _formatId: string) { super(); }
+
+  public override async run(name: string): Promise<boolean> {
+    const vp = IModelApp.viewManager.selectedView;
+    if (!vp)
+      return false;
+
+    const iModel = vp.iModel;
+    const elements = await iModel.elements.getProps(iModel.selectionSet.elements);
+    const modelIds = new Set<Id64String>();
+
+    const expand = 0;
+    const flags = {inside: SpatialClassifierInsideDisplay.ElementColor,  outside: SpatialClassifierOutsideDisplay.Off};
+
+    for (const element of elements)
+      modelIds.add(element.model);
+
+    for (const modelId of modelIds) {
+      const classifier = { name, expand, modelId, flags };
+      vp.displayStyle.attachMapLayerSettings(MapLayerSettings.fromJSON({name, classifier, url: "", formatId: "BIM"}), false);
+    }
+
+    return true;
+  }
+
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
+    return this.run(args[0]);
+  }
+  public async onRestartTool() {
   }
 }
 /** Attach a map layer from URL base class. */

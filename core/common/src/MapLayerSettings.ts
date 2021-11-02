@@ -282,6 +282,7 @@ export class MapLayerSettings {
       transparentBackground: undefined !== changedProps.transparentBackground ? changedProps.transparentBackground : this.transparentBackground,
       subLayers: undefined !== changedProps.subLayers ? changedProps.subLayers : this.subLayers,
       accessKey: undefined !== changedProps.accessKey ? changedProps.accessKey : this.accessKey,
+      classifier: undefined !== changedProps.classifier ? changedProps.classifier : this.classifier,
     };
   }
 
