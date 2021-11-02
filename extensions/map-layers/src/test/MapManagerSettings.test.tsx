@@ -38,8 +38,9 @@ describe("MapManagerSettings", () => {
     switch (toggleName) {
       case "locatable": return 0;
       case "mask": return 1;
-      case "depthBuffer": return 2;
-      case "terrain": return 3;
+      case "overrideMaskTransparency": return 2;
+      case "depthBuffer": return 3;
+      case "terrain": return 4;
     }
     assert.fail("invalid name provided.");
     return 0;
@@ -173,8 +174,35 @@ describe("MapManagerSettings", () => {
   it("Transparency slider", () => {
     viewportMock.verify((x) => x.changeBackgroundMapProps(moq.It.isAny()), moq.Times.never());
     const component = mountComponent();
-    component.find(".iui-slider-thumb").simulate("keydown", { key: SpecialKey.ArrowRight });
+
+    const sliders = component.find(".iui-slider-thumb");
+    sliders.at(0).simulate("keydown", { key: SpecialKey.ArrowRight });
     viewportMock.verify((x) => x.changeBackgroundMapProps({ transparency: 0.01 }), moq.Times.once());
+    component.unmount();
+  });
+
+  it("Mask Transparency slider", () => {
+    viewportMock.verify((x) => x.changeBackgroundMapProps(moq.It.isAny()), moq.Times.never());
+    const component = mountComponent();
+
+    let sliders = component.find(".iui-slider-thumb");
+
+    // Make sure the slider is disabled by default
+    expect(sliders.at(1).props()["aria-disabled"]).to.be.true;
+
+    // Turn on the mask toggle
+    const toggles = component.find(Toggle);
+    toggles.at(getToggleIndex("mask")).find("input").simulate("change", { checked: true });
+    toggles.at(getToggleIndex("overrideMaskTransparency")).find("input").simulate("change", { checked: true });
+    component.update();
+
+    // Make sure the slider is now enabled
+    sliders = component.find(".iui-slider-thumb");
+    expect(sliders.at(1).props()["aria-disabled"]).to.be.false;
+
+    sliders.at(0).simulate("keydown", { key: SpecialKey.ArrowUp });
+
+    viewportMock.verify((x) => x.changeBackgroundMapProps({ planarClipMask: { mode: PlanarClipMaskMode.Priority, priority: PlanarClipMaskPriority.BackgroundMap, transparency: 0 } }), moq.Times.once());
     component.unmount();
   });
 
@@ -203,12 +231,45 @@ describe("MapManagerSettings", () => {
     component.update();
 
     // 'changeBackgroundMapProps' should have been called once now
-    viewportMock.verify((x) => x.changeBackgroundMapProps({ planarClipMask: { mode: PlanarClipMaskMode.Priority, priority: PlanarClipMaskPriority.BackgroundMap } }), moq.Times.once());
+    viewportMock.verify((x) => x.changeBackgroundMapProps({ planarClipMask: { mode: PlanarClipMaskMode.Priority, priority: PlanarClipMaskPriority.BackgroundMap, transparency: undefined } }), moq.Times.once());
 
     toggles.at(getToggleIndex("mask")).find("input").simulate("change", { checked: true });
     component.update();
 
     viewportMock.verify((x) => x.changeBackgroundMapProps({ planarClipMask: { mode: PlanarClipMaskMode.None } }), moq.Times.once());
+    component.unmount();
+  });
+
+  it("Override Mask Transparency Toggle", () => {
+    viewportMock.verify((x) => x.changeBackgroundMapProps(moq.It.isAny()), moq.Times.never());
+    const component = mountComponent();
+
+    let toggles = component.find(Toggle);
+
+    // By default, the toggle should be disabled
+    expect(toggles.at(getToggleIndex("overrideMaskTransparency")).find(".uicore-disabled").exists()).to.be.true;
+
+    // First turn ON the masking toggle
+    toggles.at(getToggleIndex("mask")).find("input").simulate("change", { checked: true });
+    component.update();
+
+    toggles = component.find(Toggle);
+
+    // Toggle should be enabled now
+    expect(toggles.at(getToggleIndex("overrideMaskTransparency")).find(".uicore-disabled").exists()).to.be.false;
+
+    // .. then we can turn ON the override mask transparency
+    toggles.at(getToggleIndex("overrideMaskTransparency")).find("input").simulate("change", { checked: true });
+    component.update();
+
+    // 'changeBackgroundMapProps' should have been called once now
+    viewportMock.verify((x) => x.changeBackgroundMapProps({ planarClipMask: { mode: PlanarClipMaskMode.Priority, priority: PlanarClipMaskPriority.BackgroundMap, transparency: 0 } }), moq.Times.once());
+
+    // turn if OFF again
+    toggles.at(getToggleIndex("overrideMaskTransparency")).find("input").simulate("change", { checked: false });
+    component.update();
+
+    viewportMock.verify((x) => x.changeBackgroundMapProps({ planarClipMask: { mode: PlanarClipMaskMode.Priority, priority: PlanarClipMaskPriority.BackgroundMap, transparency: undefined } }), moq.Times.exactly(2));
     component.unmount();
   });
 

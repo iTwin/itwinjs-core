@@ -12,7 +12,7 @@ import * as React from "react";
 import { DialogButtonType } from "@itwin/appui-abstract";
 import { Dialog } from "@itwin/core-react";
 import { ColorDef } from "@itwin/core-common";
-import { ColorPickerPanel } from "./ColorPickerPanel";
+import { ColorBuilder, ColorInputPanel, ColorPalette, ColorPicker, ColorValue } from "@itwin/itwinui-react";
 
 /** Properties for the [[ColorPickerDialog]] React component
  * @beta
@@ -22,9 +22,10 @@ export interface ColorPickerDialogProps {
   color: ColorDef;
   onOkResult: (selectedColor: ColorDef) => void;
   onCancelResult: () => void;
+  /** displayed in rows of 9 items */
   colorPresets?: ColorDef[];
-  /** If set show either HSL or RGB input values. If undefined no input value is shown */
-  colorInputType?: "HSL" | "RGB";
+  /** If set show either HSL, RGB, or HEX input values. If undefined no input value is shown */
+  colorInputType?: "hsl" | "rgb" | "hex";
 }
 
 /**
@@ -44,7 +45,8 @@ export function ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResu
       onCancelResult();
   }, [onCancelResult]);
 
-  const handleColorChange = React.useCallback((newColorDef: ColorDef) => {
+  const handleColorChanged = React.useCallback((newColorValue: ColorValue) => {
+    const newColorDef = ColorDef.fromTbgr(newColorValue.toTbgr());
     setActiveColor(newColorDef);
   }, []);
 
@@ -53,21 +55,34 @@ export function ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResu
     { type: DialogButtonType.Cancel, onClick: handleCancel },
   ], [handleCancel, handleOk]);
 
+  const colorOptions = React.useMemo(() => {
+    if (colorPresets) {
+      return colorPresets.map((def) => ColorValue.fromTbgr(def.tbgr));
+    }
+    return undefined;
+  }, [colorPresets]);
+
   return (
     <div ref={dialogContainer}>
       <Dialog
         title={dialogTitle}
         opened={true}
-        resizable={true}
+        resizable={false}
         movable={true}
         modal={true}
         buttonCluster={buttonCluster}
         onClose={handleCancel}
         onEscape={handleCancel}
-        minHeight={340}
-        maxWidth={400}
+        minHeight={490}
+        maxWidth={320}
       >
-        <ColorPickerPanel colorInputType={colorInputType} activeColor={activeColor} colorPresets={colorPresets} onColorChange={handleColorChange} />
+        <ColorPicker selectedColor={ColorValue.fromTbgr(activeColor.tbgr)} onChangeComplete={handleColorChanged} >
+          <ColorBuilder />
+          {colorInputType &&
+            <ColorInputPanel defaultColorFormat={colorInputType} />}
+          {colorOptions &&
+            <ColorPalette colors={colorOptions} />}
+        </ColorPicker>
       </Dialog>
     </div >
   );

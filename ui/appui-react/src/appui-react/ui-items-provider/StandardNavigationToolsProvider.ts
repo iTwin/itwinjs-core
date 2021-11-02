@@ -34,25 +34,26 @@ export interface DefaultNavigationTools {
  * @public
  */
 export class StandardNavigationToolsProvider implements UiItemsProvider {
-  public static providerId = "uifw:StandardNavigationToolsProvider";
-  public readonly id = StandardNavigationToolsProvider.providerId;
-
   /**
    * static function to register the StandardContentToolsProvider
+   * @param providerId - unique identifier for this instance of the provider. This is required in case separate packages want
+   * to set up custom stage with their own subset of standard tools
    * @param defaultNavigationTools - if undefined all available tools are provided to stage. If defined only those
    * specific tool buttons are shown.
    * @param isSupportedStage - optional function that will be called to determine if tools should be added to current stage. If not set and
    * the current stage's `usage` is set to `StageUsage.General` then the provider will add items to frontstage.
    */
-  public static register(defaultNavigationTools?: DefaultNavigationTools, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean) {
-    UiItemsManager.register(new StandardNavigationToolsProvider(defaultNavigationTools, isSupportedStage));
+  public static register(providerId: string, defaultNavigationTools?: DefaultNavigationTools, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean) {
+    UiItemsManager.register(new StandardNavigationToolsProvider(providerId, defaultNavigationTools, isSupportedStage));
   }
 
-  public static unregister() {
-    UiItemsManager.unregister(StandardNavigationToolsProvider.providerId);
+  constructor(private _providerId: string, private defaultNavigationTools?: DefaultNavigationTools, private isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean) { }
+
+  public static unregister(providerId: string) {
+    UiItemsManager.unregister(providerId);
   }
 
-  constructor(private defaultNavigationTools?: DefaultNavigationTools, private isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean) { }
+  public get id(): string { return this._providerId; }
 
   public provideToolbarButtonItems(stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any): CommonToolbarItem[] {
     const items: CommonToolbarItem[] = [];
