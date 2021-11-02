@@ -15,8 +15,11 @@ function createTestCompiler(web: any, config: any, vol?: any) {
   } catch (err) {
     console.log(err);
   }
-  if (vol)
+  if (vol) {
+    vol.join = path.join;
     compiler.inputFileSystem = vol;
+    compiler.outputFileSystem = vol;
+  }
   return compiler;
 }
 
