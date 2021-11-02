@@ -257,7 +257,7 @@ export function KeyinPalettePanel({ keyins, onKeyinExecuted, historyLength: allo
   return <div className="uifw-command-palette-panel">
     <Input ref={inputRef} type="text" onKeyDown={onInputValueKeyDown}
       className={"uifw-command-palette-input"} data-testid="command-palette-input" onChange={onInputValueChange}
-      placeholder={placeholderLabel.current} value={currentKeyin}
+      placeholder={placeholderLabel.current} value={currentKeyin} size="small"
     />
     {(filteredKeyins.length > 0) &&
       <Listbox id="uifw-command-sources" className="map-manager-source-list" onKeyPress={handleKeypressOnKeyinsList}
