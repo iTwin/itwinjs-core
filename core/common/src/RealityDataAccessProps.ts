@@ -2,10 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @packageDocumentation
- * @module RealityData
- */
 
+/**
+ * @docs-group-description RealityData
+ * APIs for working with the ProjectWise Context Share.
+ */
 import { AccessToken } from "@itwin/core-bentley";
 
 /**
