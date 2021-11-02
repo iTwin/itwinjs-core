@@ -4,7 +4,7 @@ When an iTwin.js backend starts, [IModelHost.startup]($backend) creates an insta
 
 `IModelHost.appWorkspace` customizes the session according to the choices of the host application(s), including the default values for its settings.
 
-Whenever an application opens an iModel using the [IModelDb]($backend) class, it creates an instance of a [Workspace]($backend) in [IModelDb.workspace] to customize the session according to the choices made by administrators for the organization, the iTwin and the iModel.
+Whenever an application opens an iModel using the [IModelDb]($backend) class, it creates an instance of a [Workspace]($backend) in [IModelDb.workspace]($backend) to customize the session according to the choices made by administrators for the organization, the iTwin and the iModel.
 
 When combined, the `IModelHost.appWorkspace` and the `IModelDb.workspace` customize the session according to the:
 

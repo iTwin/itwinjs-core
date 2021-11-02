@@ -153,8 +153,4 @@ describe("WorkspaceFile", () => {
     settings.dropDictionary("imodel-02");
     expect(workspace.resolveContainerId(fontContainerName)).equals("fonts-01");
   });
-
-  it("appWorkspace", () => {
-
-  });
 });
