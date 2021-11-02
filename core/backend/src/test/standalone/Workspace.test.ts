@@ -13,11 +13,11 @@ import { IModelJsFs } from "../../IModelJsFs";
 import { EditableWorkspaceFile, ITwinWorkspace, WorkspaceContainerId, WorkspaceFile } from "../../workspace/Workspace";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { SettingDictionary, SettingsPriority } from "../../workspace/Settings";
+import { BaseSettings, SettingDictionary, SettingsPriority } from "../../workspace/Settings";
 
 describe("WorkspaceFile", () => {
 
-  const workspace = new ITwinWorkspace({ containerDir: join(KnownTestLocations.outputDir, "TestWorkspaces") });
+  const workspace = new ITwinWorkspace(new BaseSettings(), { containerDir: join(KnownTestLocations.outputDir, "TestWorkspaces") });
 
   function makeContainer(id: WorkspaceContainerId) {
     const wsFile = new EditableWorkspaceFile(id, workspace);
@@ -152,5 +152,9 @@ describe("WorkspaceFile", () => {
 
     settings.dropDictionary("imodel-02");
     expect(workspace.resolveContainerId(fontContainerName)).equals("fonts-01");
+  });
+
+  it("appWorkspace", () => {
+
   });
 });

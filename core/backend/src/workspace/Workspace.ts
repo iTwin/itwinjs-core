@@ -9,14 +9,14 @@
 import { createHash } from "crypto";
 import * as fs from "fs-extra";
 import { dirname, extname, join } from "path";
+import { NativeLibrary } from "@bentley/imodeljs-native";
 import { AccessToken, BeEvent, DbResult, OpenMode } from "@itwin/core-bentley";
 import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
 import { IModelDb } from "../IModelDb";
 import { IModelJsFs } from "../IModelJsFs";
 import { SQLiteDb } from "../SQLiteDb";
 import { SqliteStatement } from "../SqliteStatement";
-import { ITwinSettings, Settings, SettingsPriority } from "./Settings";
-import { BlobDaemon, BlobDaemonCommand, BlobDaemonCommandArg, NativeLibrary } from "@bentley/imodeljs-native";
+import { Settings, SettingsPriority } from "./Settings";
 
 /** The names of Settings used by Workspace
  * @beta
@@ -123,15 +123,6 @@ export interface WorkspaceContainer {
 }
 
 /**
- * Options supplied when opening a WorkspaceContainer.
- * @beta
- */
-export interface WorkspaceContainerOpts {
-  /** If present, the container will be closed and removed when the iModel is closed. */
-  forIModel?: IModelDb;
-}
-
-/**
  * Options for constructing a [[Workspace]].
  * @beta
  */
@@ -170,7 +161,7 @@ export interface Workspace {
    * If it is not  present or not up-to-date, it is downloaded first.
    * @returns a Promise that is resolved when the container is local, opened, and available for access.
    */
-  getContainer(props: WorkspaceContainerProps, opts?: WorkspaceContainerOpts): Promise<WorkspaceContainer>;
+  getContainer(props: WorkspaceContainerProps): Promise<WorkspaceContainer>;
   /** Load a WorkspaceResource of type string, parse it, and add it to the current Settings for this Workspace.
    * @note settingsRsc must specify a resource holding a stringified JSON representation of a [[SettingDictionary]]
    * @returns a Promise that is resolved when the settings resource has been loaded.
@@ -189,13 +180,13 @@ export class ITwinWorkspace implements Workspace {
   public readonly containerDir: LocalDirName;
   public readonly settings: Settings;
 
-  public constructor(opts?: WorkspaceOpts) {
-    this.settings = new ITwinSettings();
+  public constructor(settings: Settings, opts?: WorkspaceOpts) {
+    this.settings = settings;
     this.containerDir = opts?.containerDir ?? join(NativeLibrary.defaultLocalDir, "iTwin", "Workspace");
     this.filesDir = opts?.filesDir ?? join(this.containerDir, "Files");
   }
 
-  public async getContainer(props: WorkspaceContainerProps, opts?: WorkspaceContainerOpts): Promise<WorkspaceContainer> {
+  public async getContainer(props: WorkspaceContainerProps): Promise<WorkspaceContainer> {
     const id = this.resolveContainerId(props);
     if (undefined === id)
       throw new Error(`can't resolve container name [${props}]`);
@@ -203,11 +194,9 @@ export class ITwinWorkspace implements Workspace {
     if (container)
       return container;
 
-    container = new WorkspaceFile(id, this, opts);
+    container = new WorkspaceFile(id, this);
     container.open();
     this._containers.set(id, container);
-    if (opts?.forIModel)
-      opts.forIModel.onBeforeClose.addOnce(() => this.dropContainer(container!));
     return container;
   }
 
@@ -221,6 +210,7 @@ export class ITwinWorkspace implements Workspace {
   }
 
   public close() {
+    this.settings.close();
     for (const [_id, container] of this._containers)
       container.close();
     this._containers.clear();
@@ -247,7 +237,6 @@ export class ITwinWorkspace implements Workspace {
       }
       return undefined; // keep going through all settings dictionaries
     }, props)!;
-
   }
 }
 
@@ -260,12 +249,7 @@ export class WorkspaceFile implements WorkspaceContainer {
   public readonly workspace: Workspace;
   public readonly containerId: WorkspaceContainerId;
   public readonly localDbName: LocalDirName;
-  public readonly iModelOwner?: IModelDb;
   public readonly onContainerClosed = new BeEvent<() => void>();
-
-  private async runCommand(command: BlobDaemonCommand, dbProps: BlobDaemonCommandArg) {
-    await BlobDaemon.command(command, dbProps);
-  }
 
   public get containerFilesDir() { return join(this.workspace.filesDir, this.containerId); }
   public get isOpen() { return this.db.isOpen; }
@@ -293,12 +277,11 @@ export class WorkspaceFile implements WorkspaceContainer {
     this.noLeadingOrTrailingSpaces(id, "containerId");
   }
 
-  public constructor(containerId: WorkspaceContainerId, workspace: Workspace, opts?: WorkspaceContainerOpts) {
+  public constructor(containerId: WorkspaceContainerId, workspace: Workspace) {
     WorkspaceFile.validateContainerId(containerId);
     this.workspace = workspace;
     this.containerId = containerId;
     this.localDbName = join(workspace.containerDir, `${this.containerId}.${containerFileExt}`);
-    this.iModelOwner = opts?.forIModel;
   }
 
   public async attach(_token: AccessToken) {
@@ -495,6 +478,5 @@ export class EditableWorkspaceFile extends WorkspaceFile {
       fs.unlinkSync(file.localFileName);
     this.db.nativeDb.removeEmbeddedFile(rscName);
   }
-
 }
 
