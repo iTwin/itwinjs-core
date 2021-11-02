@@ -16,7 +16,7 @@ import { IModelJsFs } from "../IModelJsFs";
 import { SQLiteDb } from "../SQLiteDb";
 import { SqliteStatement } from "../SqliteStatement";
 import { ITwinSettings, Settings, SettingsPriority } from "./Settings";
-import { NativeLibrary } from "@bentley/imodeljs-native";
+import { BlobDaemon, BlobDaemonCommand, BlobDaemonCommandArg, NativeLibrary } from "@bentley/imodeljs-native";
 
 /** The names of Settings used by Workspace
  * @beta
@@ -48,7 +48,7 @@ export type WorkspaceContainerName = string;
  *  - be blank or start or end with a space
  *  - be longer than 255 characters
  *  - contain any characters with Unicode values less than 0x20
- *  - contain characters reserved for filename, device, wildcard, or url syntax (e.g. "\.<>:"/\\"`'|?*")
+ *  - contain characters reserved for filename, device, wildcard, or url syntax (e.g. "#\.<>:"/\\"`'|?*")
  * @beta
  */
 export type WorkspaceContainerId = string;
@@ -263,6 +263,10 @@ export class WorkspaceFile implements WorkspaceContainer {
   public readonly iModelOwner?: IModelDb;
   public readonly onContainerClosed = new BeEvent<() => void>();
 
+  private async runCommand(command: BlobDaemonCommand, dbProps: BlobDaemonCommandArg) {
+    await BlobDaemon.command(command, dbProps);
+  }
+
   public get containerFilesDir() { return join(this.workspace.filesDir, this.containerId); }
   public get isOpen() { return this.db.isOpen; }
 
@@ -284,7 +288,7 @@ export class WorkspaceFile implements WorkspaceContainer {
   }
 
   private static validateContainerId(id: WorkspaceContainerId) {
-    if (id === "" || id.length > 255 || /[\.<>:"/\\"`'|?*\u0000-\u001F]/g.test(id) || /^(con|prn|aux|nul|com\d|lpt\d)$/i.test(id))
+    if (id === "" || id.length > 255 || /[#\.<>:"/\\"`'|?*\u0000-\u001F]/g.test(id) || /^(con|prn|aux|nul|com\d|lpt\d)$/i.test(id))
       throw new Error(`invalid containerId: [${id}]`);
     this.noLeadingOrTrailingSpaces(id, "containerId");
   }
