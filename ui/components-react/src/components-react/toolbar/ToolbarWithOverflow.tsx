@@ -25,12 +25,17 @@ import { PopupItemWithDrag } from "./PopupItemWithDrag";
 import { Direction, DirectionHelpers, OrthogonalDirection, OrthogonalDirectionHelpers } from "./utilities/Direction";
 import { UiComponents } from "../UiComponents";
 
-/** Describes the data needed to insert a custom framework-specific button into an ToolbarWithOverflow.
+/** Describes the data needed to insert a custom `React` button into an ToolbarWithOverflow.
  * @public
  */
 export interface CustomToolbarItem extends CustomButtonDefinition {
+  /** React node that must result in providing a PopupItem @deprecated use panelContentNode */
   buttonNode?: React.ReactNode;
+  /** defines the content to display in popup panel */
   panelContentNode?: React.ReactNode;
+  /** If true the popup panel is mounted once and unmounted when button is unmounted. If false the
+   * content node is unmounted each time the popup is closed. */
+  keepContentsLoaded?: boolean;
 }
 
 /** Describes toolbar item.
@@ -130,20 +135,25 @@ export const ToolbarWithOverflowDirectionContext = React.createContext<ToolbarOv
 /** @internal */
 export function CustomItem({ item, addGroupSeparator }: { item: CustomToolbarItem, addGroupSeparator: boolean }) {
   const { useDragInteraction } = useToolbarWithOverflowDirectionContext();
+  const icon = React.useMemo(() => (item.icon &&
+    IconHelper.getIconReactNode(item.icon, item.internalData)) || /* istanbul ignore next */
+    <i className="icon icon-placeholder" />, [item.icon, item.internalData]);
+  const isDisabled = React.useMemo(() => ConditionalBooleanValue.getValue(item.isDisabled), [item.isDisabled]);
+  const title = React.useMemo(() => /* istanbul ignore next */ ConditionalStringValue.getValue(item.label) ?? item.id, [item.id, item.label]);
+  const badge = React.useMemo(() => BadgeUtilities.getComponentForBadgeType(item.badgeType), [item.badgeType]);
 
   if (item.panelContentNode) {
-    const badge = BadgeUtilities.getComponentForBadgeType(item.badgeType);
-    const title = ConditionalStringValue.getValue(item.label);
     return <PopupItem
       key={item.id}
       itemId={item.id}
-      icon={item.icon ? IconHelper.getIconReactNode(item.icon, item.internalData) : /* istanbul ignore next */ <i className="icon icon-placeholder" />}
-      isDisabled={ConditionalBooleanValue.getValue(item.isDisabled)}
-      title={title ? title : /* istanbul ignore next */ item.id}
+      icon={icon}
+      isDisabled={isDisabled}
+      title={title}
       panel={item.panelContentNode}
       hideIndicator={useDragInteraction}
       badge={badge}
       addGroupSeparator={addGroupSeparator}
+      keepContentsMounted={item.keepContentsLoaded}
     />;
   }
 
@@ -160,7 +170,7 @@ export function GroupPopupItem({ item, addGroupSeparator }: { item: GroupButton,
   const { useDragInteraction } = useToolbarWithOverflowDirectionContext();
   const title = ConditionalStringValue.getValue(item.label)!;
   const badge = BadgeUtilities.getComponentForBadgeType(item.badgeType);
-
+  const panel = React.useMemo(() => <PopupItemsPanel groupItem={item} activateOnPointerUp={false} />, [item]);
   if (useDragInteraction) {
     return <PopupItemWithDrag
       key={item.id}
@@ -179,7 +189,7 @@ export function GroupPopupItem({ item, addGroupSeparator }: { item: GroupButton,
     icon={IconHelper.getIconReactNode(item.icon, item.internalData)}
     isDisabled={ConditionalBooleanValue.getValue(item.isDisabled)}
     title={title}
-    panel={<PopupItemsPanel groupItem={item} activateOnPointerUp={false} />}
+    panel={panel}
     badge={badge}
     hideIndicator={useDragInteraction}
     addGroupSeparator={addGroupSeparator}

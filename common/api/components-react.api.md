@@ -664,9 +664,9 @@ export class CustomNumberPropertyEditor extends PropertyEditorBase {
 
 // @public
 export interface CustomToolbarItem extends CustomButtonDefinition {
-    // (undocumented)
+    // @deprecated
     buttonNode?: React.ReactNode;
-    // (undocumented)
+    keepContentsLoaded?: boolean;
     panelContentNode?: React.ReactNode;
 }
 
@@ -2246,6 +2246,7 @@ export function PopupItemPopup(props: PopupItemPopupProps): JSX.Element;
 // @public
 export interface PopupItemProps extends ToolbarButtonItemProps {
     hideIndicator?: boolean;
+    keepContentsMounted?: boolean;
     panel?: React.ReactNode;
 }
 

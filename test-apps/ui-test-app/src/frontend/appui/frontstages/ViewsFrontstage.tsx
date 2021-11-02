@@ -21,7 +21,7 @@ import {
   CursorPopupContent, CursorPopupManager, CursorUpdatedEventArgs, CustomItemDef,
   EmphasizeElementsChangedArgs, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider,
   GroupItemDef, HideIsolateEmphasizeAction, HideIsolateEmphasizeActionHandler,
-  HideIsolateEmphasizeManager, IModelConnectedViewSelector, MessageManager,
+  HideIsolateEmphasizeManager, MessageManager,
   ModalDialogManager, ModelessDialogManager, ModelsTreeNodeType, StagePanel,
   SyncUiEventId, ToolbarHelper, UiFramework, Widget, WIDGET_OPACITY_DEFAULT, Zone, ZoneLocation, ZoneState,
 } from "@itwin/appui-react";
@@ -48,16 +48,48 @@ import { UnifiedSelectionTableWidgetControl } from "../widgets/UnifiedSelectionT
 import { ViewportWidget } from "../widgets/ViewportWidget";
 import { VisibilityWidgetControl } from "../widgets/VisibilityWidget";
 import { NestedAnimationStage } from "./NestedAnimationStage";
+import { ViewSelectorPanel } from "../../tools/ViewSelectorPanel";
+
+function MyLoremIpsumPanel() {
+  React.useEffect(() => {
+    // eslint-disable-next-line no-console
+    console.log("mounting MyLoremIpsumPanel");
+    return () => {
+      // eslint-disable-next-line no-console
+      console.log("unmounting MyLoremIpsumPanel");
+    };
+  }, []);
+
+  return (
+    <div style={{ width: "400px", height: "300px", padding: "6px 0px 6px 6px" }}>
+      <ScrollView>
+        <div>
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+          Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
+          dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
+          proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+        </div>
+        {false && <ViewportWidget iTwinName="iModelHubTest" imodelName="GrandCanyonTerrain" />}
+        <div>
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+          Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
+          dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
+          proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+        </div>
+      </ScrollView>
+    </div>
+  );
+}
 
 /* eslint-disable react/jsx-key, deprecation/deprecation */
 function MySliderPanel() {
   const [sliderValues, setSliderValues] = React.useState([50]);
   React.useEffect(() => {
     // eslint-disable-next-line no-console
-    console.log("mounting my panel");
+    console.log("mounting MySliderPanel");
     return () => {
       // eslint-disable-next-line no-console
-      console.log("unmounting my panel");
+      console.log("unmounting MySliderPanel");
     };
   }, []);
 
@@ -254,17 +286,17 @@ export class ViewsFrontstage extends FrontstageProvider {
     HideIsolateEmphasizeActionHandler.emphasizeElementsChanged.addListener(this._onEmphasizeElementsChangedHandler);
   }
 
-  /** Get the CustomItemDef for ViewSelector  */
-  private get _viewSelectorItemDef() {
-    return new CustomItemDef({
-      customId: "sampleApp:viewSelector",
-      reactElement: (
-        <IModelConnectedViewSelector
-          listenForShowUpdates={false}  // Demo for showing only the same type of view in ViewSelector - See IModelViewport.tsx, onActivated
-        />
-      ),
-    });
-  }
+  /** DEPRECATED way of providing button --- Get the CustomItemDef for ViewSelector  */
+  // private get _viewSelectorItemDef() {
+  //   return new CustomItemDef({
+  //     customId: "sampleApp:viewSelector",
+  //     reactElement: (
+  //       <IModelConnectedViewSelector
+  //         listenForShowUpdates={false}  // Demo for showing only the same type of view in ViewSelector - See IModelViewport.tsx, onActivated
+  //       />
+  //     ),
+  //   });
+  // }
 
   /** Commands that opens switches the content layout */
   private get _additionalNavigationVerticalToolbarItems() {
@@ -275,11 +307,24 @@ export class ViewsFrontstage extends FrontstageProvider {
       icon: "icon-arrow-left",
       label: "Slider Test",
       panelContentNode: <MySliderPanel />,
+      keepContentsLoaded: true,
+      groupPriority: 20,
+    };
+
+    const customViewSelectorButton: CustomToolbarItem = {
+      isCustom: true,
+      id: "sampleApp:viewSelector",
+      itemPriority: 200,
+      icon: "icon-saved-view",
+      label: IModelApp.localization.getLocalizedString("SampleApp:buttons.selectViewToActivate"),
+      panelContentNode: <ViewSelectorPanel />,
+      keepContentsLoaded: true,
       groupPriority: 20,
     };
 
     return [
-      ToolbarHelper.createToolbarItemFromItemDef(200, this._viewSelectorItemDef),
+      // DEPRECATED way of providing view selector button --- ToolbarHelper.createToolbarItemFromItemDef(200, this._viewSelectorItemDef),
+      customViewSelectorButton,
       ToolbarHelper.createToolbarItemFromItemDef(210,
         new GroupItemDef({
           label: "Layout Demos",
@@ -702,24 +747,7 @@ class AdditionalTools {
       iconSpec: "icon-arrow-down",
       label: "Popup Test",
       badgeType: BadgeType.New,
-      popupPanelNode:
-        <div style={{ width: "400px", height: "300px", padding: "6px 0px 6px 6px" }}>
-          <ScrollView>
-            <div>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-              Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
-              dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-              proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-            </div>
-            {false && <ViewportWidget iTwinName="iModelHubTest" imodelName="GrandCanyonTerrain" />}
-            <div>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-              Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
-              dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-              proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-            </div>
-          </ScrollView>
-        </div>,
+      popupPanelNode: <MyLoremIpsumPanel />,
     });
   }
 
