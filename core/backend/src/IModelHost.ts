@@ -235,7 +235,7 @@ export class IModelHost {
   public static get cacheDir(): LocalDirName { return this._cacheDir; }
 
   /** The application [[Workspace]] for this `IModelHost`
-   * @note this `Workspace` only holds [[WorkspaceContainers]] and [[Settings]] scoped to the currently loaded application(s).
+   * @note this `Workspace` only holds [[WorkspaceContainer]]s and [[Settings]] scoped to the currently loaded application(s).
    * All organization, iTwin, and iModel based containers or settings must be accessed through [[IModelDb.workspace]] and
    * attempting to add them to this Workspace will fail.
    * @beta
