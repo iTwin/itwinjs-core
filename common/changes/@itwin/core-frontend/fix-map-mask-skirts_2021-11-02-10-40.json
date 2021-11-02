@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Don't draw terrain skirts if the background map has a transparent clip mask applied.",
+      "comment": "Omit terrain skirts if the background map has a transparent clip mask applied.",
       "type": "none"
     }
   ],
