@@ -5,8 +5,7 @@
 
 import { AccessToken, GuidString } from "@itwin/core-bentley";
 
-/**
- * Argument for methods that can supply an iTwinId and iModelId.
+/** Argument for methods that can supply an iTwinId and iModelId.
  * @beta
  */
 export interface ITwinIdArg {
@@ -14,34 +13,32 @@ export interface ITwinIdArg {
   readonly iModelId?: GuidString;
 }
 
-/**
- * Argument for methods that can supply an access token.
+/** Argument for methods that can supply an access token.
  * @beta
  */
 export interface TokenArg {
   accessToken?: AccessToken;
 }
 
-/**
- * Argument for methods that can supply the user preference content.
+/** Argument for methods that can supply the user preference content.
  * @beta
  */
 export interface PreferenceArg extends PreferenceKeyArg {
   readonly content?: any;
 }
 
-/**
- * Argument for methods that must supply a key for the user preference.
+/** Argument for methods that must supply a key for the user preference.
  * @beta
  */
 export interface PreferenceKeyArg {
+  readonly namespace?: string;
   readonly key: string;
 }
 
-/** The user preferences provides a way to store, get and delete preferences for an application at
+/** The user preferences provides a way to get, store and delete preferences for an application at
  * two different levels, iTwin and iModel.
  *
- * The preferences are different than any shared settings
+ * The user preferences are separate from any settings or configuration shared across multiple users.
  *
  * Note: Both the key and return type are intended to be abstract and allow any preferences to be stored.
  *     Based on this simple interface, the implementation of this interface can interpret the key as needed
@@ -49,7 +46,7 @@ export interface PreferenceKeyArg {
  * @beta
  */
 export interface UserPreferencesAccess {
-  /** A method to get a user preference based off of a key.
+  /** Method to get a user preference based off of a key within a namespace.
    *
    * If both iTwinId and iModelId are provided, the iModel level will be check first. If
    * it does not exist, the iTwin level will checked next.

@@ -8,10 +8,10 @@ import { Guid, GuidString } from "@itwin/core-bentley";
 
 import { MapLayerPreferences } from "../MapLayerPreferences";
 import { IModelApp, MapLayerSource } from "@itwin/core-frontend";
-import { setup, restore } from "./UserPreferencesMock";
+import { restore, setup } from "./UserPreferencesMock";
 
 chai.should();
-describe.only("MapLayerPreferences", () => {
+describe("MapLayerPreferences", () => {
   const iTwinId: GuidString = Guid.createValue();
   const iModelId: GuidString = Guid.createValue();
   const testName: string = `test${Guid.createValue()}`;
@@ -41,14 +41,14 @@ describe.only("MapLayerPreferences", () => {
     sources = await MapLayerPreferences.getSources(iTwinId, iModelId);
     foundSource = sources.some((value) => { return value.name === testName; });
     chai.assert.isTrue(foundSource);
-    await IModelApp.userPreferences.delete({
+    await IModelApp.userPreferences?.delete({
       key: `${(MapLayerPreferences as any).SourceNamespace}.${testName}`,
-      iTwinId: iTwinId,
+      iTwinId,
     });
 
-    const val = await IModelApp.userPreferences.get({
+    const val = await IModelApp.userPreferences?.get({
       key: `${(MapLayerPreferences as any).SourceNamespace}.${testName}`,
-      iTwinId: iTwinId,
+      iTwinId,
     });
     chai.assert.isUndefined(val, "the map layer should no longer exist");
   });
@@ -64,14 +64,14 @@ describe.only("MapLayerPreferences", () => {
     chai.assert.isTrue(success);
     success = await MapLayerPreferences.storeSource(layer!, true, iTwinId, iModelId);
     chai.assert.isFalse(success, "cannot store the iModel setting that conflicts with an iTwin setting");
-    await IModelApp.userPreferences.delete({
+    await IModelApp.userPreferences?.delete({
       key: `${(MapLayerPreferences as any).SourceNamespace}.${testName}`,
-      iTwinId: iTwinId,
+      iTwinId,
     });
 
-    const val = await IModelApp.userPreferences.get({
+    const val = await IModelApp.userPreferences?.get({
       key: `${(MapLayerPreferences as any).SourceNamespace}.${testName}`,
-      iTwinId: iTwinId,
+      iTwinId,
     });
     chai.assert.isUndefined(val, "the map layer should no longer exist");
   });
@@ -87,14 +87,14 @@ describe.only("MapLayerPreferences", () => {
     chai.assert.isTrue(success);
     success = await MapLayerPreferences.storeSource(layer!, false, iTwinId, iModelId);
     chai.assert.isTrue(success);
-    await IModelApp.userPreferences.delete({
+    await IModelApp.userPreferences?.delete({
       key: `${(MapLayerPreferences as any).SourceNamespace}.${testName}`,
-      iTwinId: iTwinId,
+      iTwinId,
     });
 
-    const val = await IModelApp.userPreferences.get({
+    const val = await IModelApp.userPreferences?.get({
       key: `${(MapLayerPreferences as any).SourceNamespace}.${testName}`,
-      iTwinId: iTwinId,
+      iTwinId,
     });
     chai.assert.isUndefined(val, "the map layer should no longer exist");
   });

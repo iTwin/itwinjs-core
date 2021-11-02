@@ -68,9 +68,10 @@ export class MapLayerPreferences {
       await MapLayersUI.iTwinAccess.save({
         accessToken,
         content: mapLayerSetting,
-        key: `${MapLayerPreferences._preferenceKey}.${sourceJSON.name}`,
+        namespace: MapLayerPreferences._preferenceKey,
+        key: sourceJSON.name,
         iTwinId,
-        iModelId: storeOnIModel ? iModelId : undefined
+        iModelId: storeOnIModel ? iModelId : undefined,
       });
       MapLayerPreferences.onLayerSourceChanged.raiseEvent(MapLayerSourceChangeType.Added, undefined, MapLayerSource.fromJSON(mapLayerSetting));
       return true;
@@ -95,15 +96,17 @@ export class MapLayerPreferences {
     try {
       await MapLayersUI.iTwinAccess.delete({
         accessToken,
-        key: `${MapLayerPreferences._preferenceKey}.${oldSource.name}`,
+        namespace: MapLayerPreferences._preferenceKey,
+        key: oldSource.name,
         iTwinId: projectId,
-        iModelId
+        iModelId,
       });
     } catch (_err) {
       await MapLayersUI.iTwinAccess.delete({
         accessToken,
-        key: `${MapLayerPreferences._preferenceKey}.${oldSource.name}`,
-        iTwinId: projectId
+        namespace: MapLayerPreferences._preferenceKey,
+        key: oldSource.name,
+        iTwinId: projectId,
       });
       storeOnIModel = true;
     }
@@ -120,8 +123,8 @@ export class MapLayerPreferences {
       key: `${MapLayerPreferences._preferenceKey}.${newSource.name}`,
       iTwinId: projectId,
       iModelId: storeOnIModel ? iModelId : undefined,
-      content: mapLayerSetting
-    })
+      content: mapLayerSetting,
+    });
 
     MapLayerPreferences.onLayerSourceChanged.raiseEvent(MapLayerSourceChangeType.Replaced, oldSource, newSource);
   }
@@ -138,15 +141,17 @@ export class MapLayerPreferences {
     try {
       await MapLayersUI.iTwinAccess.delete({
         accessToken,
-        key: `${MapLayerPreferences._preferenceKey}.${source.name}`,
+        namespace: MapLayerPreferences._preferenceKey,
+        key: source.name,
         iTwinId,
-        iModelId
+        iModelId,
       });
     } catch (_err) {
       // failed to store based on iModelId, attempt using iTwinId
       await MapLayersUI.iTwinAccess.delete({
         accessToken,
-        key: `${MapLayerPreferences._preferenceKey}.${source.name}`,
+        namespace: MapLayerPreferences._preferenceKey,
+        key: source.name,
         iTwinId,
       });
     }
@@ -171,8 +176,9 @@ export class MapLayerPreferences {
 
     const iTwinPreferenceByName = await MapLayersUI.iTwinAccess.get({
       accessToken,
-      key: `${MapLayerPreferences._preferenceKey}.${name}`,
-      iTwinId: iTwinId,
+      namespace: MapLayerPreferences._preferenceKey,
+      key: name,
+      iTwinId,
     });
 
     if (undefined !== iTwinPreferenceByName && storeOnIModel) {
@@ -184,8 +190,9 @@ export class MapLayerPreferences {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, infoMessage));
       await MapLayersUI.iTwinAccess.delete({
         accessToken,
-        key: `${MapLayerPreferences._preferenceKey}.${iTwinPreferenceByName.name}`,
-        iTwinId: iTwinId,
+        namespace: MapLayerPreferences._preferenceKey,
+        key: iTwinPreferenceByName.name,
+        iTwinId,
       });
     }
 
@@ -200,16 +207,18 @@ export class MapLayerPreferences {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, infoMessage));
       await MapLayersUI.iTwinAccess.delete({
         accessToken,
-        key: `${MapLayerPreferences._preferenceKey}.${settingFromUrl.name}`,
-        iTwinId: iTwinId,
+        namespace: MapLayerPreferences._preferenceKey,
+        key: settingFromUrl.name,
+        iTwinId,
       });
     }
 
     if (iModelId) { // delete any settings on model so user can update them if theres collisions
       const settingOnIModelFromName = await MapLayersUI.iTwinAccess.get({
         accessToken,
-        key: `${MapLayerPreferences._preferenceKey}.${name}`,
-        iTwinId: iTwinId,
+        namespace: MapLayerPreferences._preferenceKey,
+        key: name,
+        iTwinId,
         iModelId,
       });
       const settingFromUrlOnIModel = await MapLayerPreferences.getByUrl(url, iTwinId, iModelId);
@@ -218,9 +227,10 @@ export class MapLayerPreferences {
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, infoMessage));
         await MapLayersUI.iTwinAccess.delete({
           accessToken,
-          key: `${MapLayerPreferences._preferenceKey}.${settingOnIModelFromName.name}`,
-          iTwinId: iTwinId,
-          iModelId
+          namespace: MapLayerPreferences._preferenceKey,
+          key: settingOnIModelFromName.name,
+          iTwinId,
+          iModelId,
         });
       }
       if (settingFromUrlOnIModel) {
@@ -228,9 +238,10 @@ export class MapLayerPreferences {
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, infoMessage));
         await MapLayersUI.iTwinAccess.delete({
           accessToken,
-          key: `${MapLayerPreferences._preferenceKey}.${settingFromUrlOnIModel.name}`,
-          iTwinId: iTwinId,
-          iModelId
+          namespace: MapLayerPreferences._preferenceKey,
+          key: settingFromUrlOnIModel.name,
+          iTwinId,
+          iModelId,
         });
       }
     }
@@ -287,14 +298,14 @@ export class MapLayerPreferences {
     }
 
     try {
-      const userResultByImodel = await MapLayersUI.iTwinAccess.get({
+      const userResultByIModel = await MapLayersUI.iTwinAccess.get({
         accessToken,
         key: MapLayerPreferences._preferenceKey,
         iTwinId: projectId,
         iModelId,
       });
-      if (undefined !== userResultByImodel)
-        mapLayerList.push(userResultByImodel)
+      if (undefined !== userResultByIModel)
+        mapLayerList.push(userResultByIModel);
     } catch (err: any) {
       throw new Error(IModelApp.localization.getLocalizedString("mapLayers:CustomAttach.ErrorRetrieveUserProject", { errorMessage: err }));
     }

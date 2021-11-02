@@ -67,6 +67,7 @@ export interface PreferenceArg extends PreferenceKeyArg {
  * @beta
  */
 export interface PreferenceKeyArg {
+  readonly namespace?: string;
   readonly key: string;
 }
 

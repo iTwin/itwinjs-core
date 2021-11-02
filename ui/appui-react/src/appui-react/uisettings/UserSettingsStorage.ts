@@ -12,8 +12,9 @@ import { IModelApp } from "@itwin/core-frontend";
 import { UiSettingsResult, UiSettingsStatus, UiSettingsStorage } from "@itwin/core-react";
 
 /**
- * Implementation of [[UiSettings]] that uses settings admin from `IModelApp.settings`.
+ * Implementation of [[UiSettings]] that uses settings admin from [IModelApp.userPreferences]($core-frontend).
  * @public
+ * @deprecated Use [IModelApp.userPreferences]($core-frontend) API directly to store user preferences as a replacement.
  */
 export class UserSettingsStorage implements UiSettingsStorage {
   public async getSetting(namespace: string, name: string): Promise<UiSettingsResult> {

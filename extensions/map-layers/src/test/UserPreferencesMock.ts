@@ -7,8 +7,8 @@ import * as sinon from "sinon";
 import { MapLayersUI } from "../mapLayers";
 import { ITwinIdArg, PreferenceArg, PreferenceKeyArg, TokenArg } from "../ui/Interfaces";
 
-let iModelPrefs: Map<string, any> | undefined = undefined;
-let iTwinPrefs: Map<string, any> | undefined = undefined;
+let iModelPrefs: Map<string, any> | undefined;
+let iTwinPrefs: Map<string, any> | undefined;
 export function setup() {
   if (undefined === iModelPrefs || undefined === iTwinPrefs) {
     iModelPrefs = new Map<string, any>();
@@ -19,7 +19,7 @@ export function setup() {
     if (undefined === iModelPrefs || undefined === iTwinPrefs)
       throw new Error("The user preferences mock is not properly setup - please run the `setup` method.");
 
-    let returnVal = undefined;
+    let returnVal;
     if (arg.iModelId)
       returnVal = iModelPrefs.get(arg.key);
 
