@@ -10,7 +10,7 @@ import {
   assert, compareNumbers, compareStringsOrUndefined, CompressedId64Set, Id64String,
 } from "@itwin/core-bentley";
 import {
-  Cartographic, GeoCoordStatus, PlanarClipMaskPriority, PlanarClipMaskSettings,
+  Cartographic, DefaultSupportedTypes, GeoCoordStatus, PlanarClipMaskPriority, PlanarClipMaskSettings,
   RealityDataProvider,
   RealityDataSourceKey,
   SpatialClassifiers, ViewFlagOverrides,
@@ -22,7 +22,6 @@ import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { PlanarClipMaskState } from "../PlanarClipMaskState";
-import { DefaultSupportedTypes } from "../RealityDataAccessProps";
 import { RealityDataSource } from "../RealityDataSource";
 import { RenderMemory } from "../render/RenderMemory";
 import { SceneContext } from "../ViewContext";

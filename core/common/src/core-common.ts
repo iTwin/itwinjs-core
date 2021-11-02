@@ -84,6 +84,7 @@ export * from "./PlanarClipMask";
 export * from "./ModelGeometryChanges";
 export * from "./PlanProjectionSettings";
 export * from "./QPoint";
+export * from "./RealityDataAccessProps";
 export * from "./Render";
 export * from "./RenderMaterial";
 export * from "./RenderSchedule";
@@ -228,4 +229,8 @@ export * from "./WhiteOnWhiteReversalSettings";
 /**
  * @docs-group-description Authorization
  * Classes for managing AccessToken used for all requests in other classes.
+ */
+/**
+ * @docs-group-description RealityData
+ * Types for working with the RealityData API.
  */

@@ -13,7 +13,7 @@ import { TelemetryManager } from "@bentley/telemetry-client";
 import { UiAdmin } from "@itwin/appui-abstract";
 import { AccessToken, BeDuration, BeEvent, BentleyStatus, DbResult, dispose, Guid, GuidString, Logger } from "@itwin/core-bentley";
 import {
-  AuthorizationClient, IModelStatus, Localization, RpcConfiguration, RpcInterfaceDefinition, RpcRequest, SerializedRpcActivity,
+  AuthorizationClient, IModelStatus, Localization, RealityDataAccess, RpcConfiguration, RpcInterfaceDefinition, RpcRequest, SerializedRpcActivity,
 } from "@itwin/core-common";
 import { ITwinLocalization } from "@itwin/core-i18n";
 import { queryRenderCompatibility, WebGLRenderCompatibilityInfo } from "@itwin/webgl-compatibility";
@@ -31,7 +31,6 @@ import * as modelselector from "./ModelSelectorState";
 import * as modelState from "./ModelState";
 import { NotificationManager } from "./NotificationManager";
 import { QuantityFormatter } from "./quantity-formatting/QuantityFormatter";
-import { RealityDataAccess } from "./RealityDataAccessProps";
 import { RenderSystem } from "./render/RenderSystem";
 import { System } from "./render/webgl/System";
 import * as sheetState from "./SheetViewState";
