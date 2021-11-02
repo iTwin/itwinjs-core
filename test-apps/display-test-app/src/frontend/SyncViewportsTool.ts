@@ -3,7 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelApp, Tool, TwoWayViewportSync, Viewport } from "@itwin/core-frontend";
+import { IModelApp, Tool, TwoWayViewportFrustumSync, TwoWayViewportSync, Viewport } from "@itwin/core-frontend";
+
+class State {
+  constructor(public vp1: Viewport, public vp2: Viewport, public sync: TwoWayViewportSync) { }
+}
 
 /** Connect or disconnect two viewports using TwoWayViewportSync. */
 export class SyncViewportsTool extends Tool {
@@ -11,20 +15,20 @@ export class SyncViewportsTool extends Tool {
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 2; }
 
-  private static _vp1?: Viewport;
-  private static _vp2?: Viewport;
+  protected get syncType(): typeof TwoWayViewportSync { return TwoWayViewportSync; }
+
+  private static _state?: State;
   private static _removeListeners?: VoidFunction;
-  private static _sync = new TwoWayViewportSync();
 
   public override async run(vp1?: Viewport, vp2?: Viewport): Promise<boolean> {
     const that = SyncViewportsTool;
     if (!vp1 && !vp2) {
       that.disconnect();
     } else if (vp1 && vp2 && vp1 !== vp2) {
-      if (vp1 === that._vp1 && vp2 === that._vp2)
+      if (that._state && that._state.vp1 === vp1 && that._state.vp2 === vp2)
         that.disconnect();
       else
-        that.connect(vp1, vp2);
+        that.connect(vp1, vp2, this.syncType);
     }
 
     return true;
@@ -55,23 +59,29 @@ export class SyncViewportsTool extends Tool {
     return true;
   }
 
-  private static connect(vp1: Viewport, vp2: Viewport): void {
+  private static connect(vp1: Viewport, vp2: Viewport, type: typeof TwoWayViewportSync): void {
     this.disconnect();
-    this._sync.connect(vp1, vp2);
-    this._vp1 = vp1;
-    this._vp2 = vp2;
+    this._state = new State(vp1, vp2, new type());
+    this._state.sync.connect(vp1, vp2);
     const dispose1 = vp1.onDisposed.addOnce(() => this.disconnect());
     const dispose2 = vp2.onDisposed.addOnce(() => this.disconnect());
     this._removeListeners = () => { dispose1(); dispose2(); };
   }
 
   private static disconnect(): void {
-    this._sync.disconnect();
+    this._state?.sync.disconnect();
+    this._state = undefined;
+
     if (this._removeListeners) {
       this._removeListeners();
       this._removeListeners = undefined;
     }
-
-    this._vp1 = this._vp2 = undefined;
   }
+}
+
+/** Connect or disconnect two viewports using TwoWayViewportFrustumSync. */
+export class SyncViewportFrustaTool extends SyncViewportsTool {
+  public static override toolId = "SyncFrusta";
+
+  protected override get syncType() { return TwoWayViewportFrustumSync; }
 }

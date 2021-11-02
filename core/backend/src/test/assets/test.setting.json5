@@ -1,0 +1,135 @@
+{
+    "$schema": "./TestSettings.schema.json", // non-standard - supported by VSCode only
+    "editor/fontWeight": "normal",
+    "editor/fontSize": 12,
+    "editor/multiCursorModifier": "ctrlCmd",
+    "editor/cursorStyle": "line",
+    "window/restoreWindows": "all",
+    "cSpell/enableFiletypes": [
+        "c",
+        "cpp",
+        "csharp",
+        "go",
+        "html",
+        "javascript",
+        "javascriptreact",
+        "latex",
+        "markdown",
+        "php",
+        "plaintext",
+        "python",
+        "text",
+        "typescript",
+        "typescriptreact",
+        "xml",
+        "yml"
+    ],
+    "myApp/categories": [
+        "cat 2",
+        "junk"
+    ],
+    "editor/renderWhitespace": "selection",
+    "editor/lineHeight": 11,
+    "workspace/container/alias": [
+        {
+            "name": "default-fonts",
+            "id": "fonts-01"
+        },
+        {
+            "name": "gcs-data",
+            "id": "gcsdata-01"
+        }
+    ],
+    "workspace/fontList": [
+        {
+            "fontName": "Helvetica.ttf",
+            "container": "default-fonts"
+        },
+        {
+            "fontName": "Roboto-Regular.ttf",
+            "container": "default-fonts"
+        }
+    ],
+    "editor/tokenColorCustomizations": {
+        "Default High Contrast": {
+            "comments": "#FF0000"
+        },
+        "Visual Studio Light": {
+            "types": "#9c3569",
+            "variables": "#7e5007",
+            "textMateRules": [
+                {
+                    "scope": [
+                        "constant",
+                        "constant.language",
+                        "support.constant",
+                    ],
+                    "settings": {
+                        "foreground": "#d16c6c",
+                        "fontStyle": "bold"
+                    }
+                },
+                {
+                    "scope": [
+                        "comment",
+                    ],
+                    "settings": {
+                        "foreground": "#7c7b7b",
+                        "fontStyle": "italic"
+                    }
+                },
+                {
+                    "scope": [
+                        "variable.language",
+                    ],
+                    "settings": {
+                        "foreground": "#9c7325"
+                    }
+                },
+                {
+                    "scope": [
+                        "entity.name.class",
+                        "entity.name.section",
+                        "entity.name.selector",
+                        "entity.name.tag",
+                        "entity.name.type",
+                        "entity.other",
+                        "entity",
+                    ],
+                    "settings": {
+                        "foreground": "#0857be"
+                    }
+                },
+                {
+                    "scope": [
+                        "keyword.control",
+                        "keyword.operator.arithmetic",
+                        "keyword.operator.assignment",
+                        "keyword.operator.logical",
+                        "keyword.operator.new",
+                        "keyword.operator",
+                        "keyword.other",
+                        "keyword",
+                    ],
+                    "settings": {
+                        "foreground": "#068135",
+                        "fontStyle": "bold"
+                    }
+                },
+                {
+                    "scope": [
+                        "storage",
+                        "storage.type",
+                        "storage.modifier"
+                    ],
+                    "settings": {
+                        "foreground": "#723a3a",
+                        "fontStyle": "bold"
+                    }
+                }
+            ]
+        }
+    },
+    "workbench/colorTheme": "Visual Studio Light",
+    "app1/tree/blah": "blah default"
+}

@@ -903,15 +903,31 @@ export class TestRunner {
     totalTime /= timings.actualFps.length;
     const disjointTimerUsed = rowData.get("GPU-Total") !== undefined;
     const totalGpuTime = Number(disjointTimerUsed ? rowData.get("GPU-Total") : rowData.get("GPU Total Time"));
-    const gpuBound = disjointTimerUsed ? (totalGpuTime > totalRenderTime) : (totalGpuTime > totalRenderTime + 5); // Add a 5ms tolerance for readPixel in this case
-    const effectiveFps = 1000.0 / (gpuBound ? totalGpuTime : totalRenderTime);
+    const gpuTolerance = disjointTimerUsed ? 2 : 3;
+    const gpuBound = (totalGpuTime - totalRenderTime) > gpuTolerance;
+    const cpuBound = disjointTimerUsed ? (((totalRenderTime - totalGpuTime) > gpuTolerance) && (totalRenderTime > 2)) : !gpuBound;
+    let boundBy = "";
+    if (totalRenderTime < 2 && !gpuBound) // ie total cpu time < 2ms && !gpuBound
+      boundBy = "unmeasurable";
+    else if (!gpuBound && !cpuBound)
+      boundBy = "unknown";
+    else if (gpuBound)
+      boundBy = "gpu";
+    else
+      boundBy = "CPU";
+    if ((1000.0 / totalTime) > 59) // ie actual fps > 60fps - 1fps tolerance
+      boundBy += " (vsync)";
+    const totalCpuTime = totalRenderTime > 2 ? totalRenderTime : 2; // add 2ms lower bound to cpu total time for tolerance
+    const effectiveFps = 1000.0 / (totalGpuTime > totalCpuTime ? totalGpuTime : totalCpuTime);
     if (disjointTimerUsed) {
       rowData.set("GPU Total Time", totalGpuTime.toFixed(fixed));
       rowData.delete("GPU-Total");
     }
-    rowData.set("Bound By", gpuBound ? (effectiveFps < 60.0 ? "gpu" : "gpu ?") : "cpu *");
-    rowData.set("Effective Total Time", gpuBound ? totalGpuTime.toFixed(fixed) : totalRenderTime.toFixed(fixed)); // This is the total gpu time if gpu bound or the total cpu time if cpu bound; times gather with running continuously
+    rowData.set("Bound By", boundBy);
+    rowData.set("Effective Total Time", gpuBound ? totalGpuTime.toFixed(fixed) : totalCpuTime.toFixed(fixed)); // This is the total gpu time if gpu bound or the total cpu time if cpu bound; times gather with running continuously
     rowData.set("Effective FPS", effectiveFps.toFixed(fixed));
+    rowData.set("Actual Total Time", totalTime.toFixed(fixed));
+    rowData.set("Actual FPS", totalTime > 0.0 ? (1000.0 / totalTime).toFixed(fixed) : "0");
 
     return rowData;
   }

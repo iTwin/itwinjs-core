@@ -38,6 +38,11 @@ import { FrontstageManager } from "./frontstage/FrontstageManager";
 
 // cSpell:ignore Mobi
 
+/** Defined that available Ui Versions. It is recommended to always use the latest version available.
+ * @public
+ */
+export type FrameworkVersionId = "1" | "2";
+
 /** Interface to be implemented but any classes that wants to load their user settings when the UiSetting storage class is set.
  * @public
  */
@@ -64,8 +69,8 @@ export class UiVisibilityChangedEvent extends UiEvent<UiVisibilityEventArgs> { }
  * @internal
  */
 export interface FrameworkVersionChangedEventArgs {
-  oldVersion: string;
-  version: string;
+  oldVersion: FrameworkVersionId;
+  version: FrameworkVersionId;
 }
 
 /** FrameworkVersion Changed Event class.
@@ -92,7 +97,7 @@ export class UiFramework {
   private static _frameworkStateKeyInStore: string = "frameworkState";  // default name
   private static _backstageManager?: BackstageManager;
   private static _widgetManager?: WidgetManager;
-  private static _uiVersion = "";
+  private static _uiVersion: FrameworkVersionId = "2";
   private static _hideIsolateEmphasizeActionHandler?: HideIsolateEmphasizeActionHandler;
   private static _uiSettingsStorage: UiSettingsStorage = new LocalSettingsStorage(); // this provides a default storage location for settings
   private static _settingsManager?: SettingsManager;
@@ -122,11 +127,6 @@ export class UiFramework {
    * @public
    */
   public static readonly onUiVisibilityChanged = new UiVisibilityChangedEvent();
-
-  /** Get FrameworkVersion Changed event.
-   * @internal
-   */
-  public static readonly onFrameworkVersionChangedEvent = new FrameworkVersionChangedEvent();
 
   /**
    * Called by the application to initialize the UiFramework. Also initializes UIIModelComponents, UiComponents, UiCore.
@@ -173,8 +173,6 @@ export class UiFramework {
     UiFramework._hideIsolateEmphasizeActionHandler = new HideIsolateEmphasizeManager();  // this allows user to override the default HideIsolateEmphasizeManager implementation.
     UiFramework._widgetManager = new WidgetManager();
 
-    UiFramework.onFrameworkVersionChangedEvent.addListener(UiFramework._handleFrameworkVersionChangedEvent);
-
     // Initialize ui-imodel-components, ui-components, ui-core & ui-abstract
     await UiIModelComponents.initialize();
 
@@ -201,13 +199,12 @@ export class UiFramework {
     UiFramework._frameworkStateKeyInStore = "frameworkState";
     if (StateManager.isInitialized(true))
       StateManager.clearStore();
-    IModelApp.localization.unregisterNamespace(UiFramework.localizationNamespace);
+    // istanbul ignore next
+    IModelApp.localization?.unregisterNamespace(UiFramework.localizationNamespace);
     UiFramework._backstageManager = undefined;
     UiFramework._widgetManager = undefined;
     UiFramework._hideIsolateEmphasizeActionHandler = undefined;
     UiFramework._settingsManager = undefined;
-
-    UiFramework.onFrameworkVersionChangedEvent.removeListener(UiFramework._handleFrameworkVersionChangedEvent);
 
     UiIModelComponents.terminate();
     UiShowHideManager.terminate();
@@ -499,11 +496,11 @@ export class UiFramework {
   /** Returns the Ui Version.
    * @public
    */
-  public static get uiVersion(): string {
+  public static get uiVersion(): FrameworkVersionId {
     return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.frameworkVersion : this._uiVersion;
   }
 
-  public static setUiVersion(version: string) {
+  public static setUiVersion(version: FrameworkVersionId) {
     if (UiFramework.uiVersion === version)
       return;
 

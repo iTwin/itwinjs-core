@@ -93,6 +93,7 @@ Especially when combined with ambient occlusion, this effect can produce non-rea
 ![Fresnel effect applied to a plant model](./assets/fresnel-plant.jpg)
 
 The following code applies a display style similar to those illustrated above to a [Viewport]($frontend):
+
 ```
   // Enable ambient occlusion.
   viewport.viewFlags = viewport.viewFlags.with("ambientOcclusion", true);
@@ -108,8 +109,20 @@ The following code applies a display style similar to those illustrated above to
       intensity: 0.8,
       invert: true,
     },
+    // Disable directional lighting.
+    solar: {
+      intensity: 0,
+    },
   });
 ```
+
+## Viewport synchronization
+
+[TwoWayViewportSync]($frontend) establishes a connection between two [Viewport]($frontend)s such that any change to one viewport is reflected in the other. This includes not only [Frustum]($common) changes, but changes to the display style, category and model selectors, and so on. Synchronizing **everything** is not always desirable; and if the viewports are viewing two different [IModelConnection]($frontend)s it is not even meaningful, as category and model Ids from one iModel will not make sense in the context of the other iModel.
+
+Now, `TwoWayViewportSync` is extensible, allowing subclasses to specify which aspects of the viewports should be synchronized by overriding [TwoWayViewportSync.connectViewports]($frontend) and [TwoWayViewportSync.syncViewports]($frontend). To establish a connection between two viewports using your subclass `MyViewportSync`, use `MyViewportSync.connect(viewport1, viewport2)`.
+
+A new subclass [TwoWayViewportFrustumSync]($frontend) is supplied that synchronizes **only** the frusta of the viewports. The viewports will view the same volume of space, but may display different contents or apply different display styles. To establish this connection, use `TwoWayViewportFrustumSync.connect(viewport1, viewport2)`.
 
 ## BentleyError constructor no longer logs
 
@@ -1112,6 +1125,26 @@ The @itwin ui and @itwin/presentation-components packages are now dependent on R
 
 React 16 is not an officially supported version of iTwin.js app or Extension development using the iTwin.js AppUi.
 
+The component [FrameworkVersion]($appui-react) has been updated so it no longer takes a version prop. It now uses the value of `frameworkState.configurableUiState.frameworkVersion` from the redux store as the version. This value may be set using `UiFramework.setUiVersion` method and will be initialized to "2". Existing iModelApps using the 1.0 version of the user interface were not required to include the `<FrameworkVersion>` component in its component tree. It is now required that every iModelApp include the `<FrameworkVersion>` component and that the redux store entry mentioned above is specified to either "1" or "2". Below is a typical component tree for an iModeApp.
+
+```tsx
+<Provider store={MyIModelApp.store} >
+  <ThemeManager>
+    <SafeAreaContext.Provider value={SafeAreaInsets.All}>
+      <ToolbarDragInteractionContext.Provider value={false}>
+        <FrameworkVersion>
+          <UiSettingsProvider settingsStorage={uiSettingsStorage}>
+            <ConfigurableUiContent
+              appBackstage={<AppBackstageComposer />}
+            />
+          </UiSettingsProvider>
+        </FrameworkVersion>
+      </ToolbarDragInteractionContext.Provider>
+    </SafeAreaContext.Provider>
+  <ThemeManager>
+</Provider>
+```
+
 ### New options for defining Frontstages
 
 | Class/Component                                  | Description                                                                                      |
@@ -1255,6 +1288,10 @@ Developers should use equivalent components in @itwin/itwinui-react instead.
 | Deprecated in @itwin/components-react | Use from @itwin/itwinui-react instead |
 | ---------------------------------------- | ------------------------------------- |
 | Breadcrumb                               | Breadcrumbs                           |
+
+| Deprecated in @itwin/imodel-components-react | Use from @itwin/itwinui-react instead |
+| -------------------------------------------- | ------------------------------------- |
+| ColorPickerPanel                           | ColorPicker                           |
 
 #### Slider
 
