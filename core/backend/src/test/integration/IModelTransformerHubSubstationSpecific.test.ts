@@ -6,14 +6,16 @@
 import { assert } from "chai";
 import { join } from "path";
 import { ClientRequestContext, DbOpcode, DbResult, Guid, GuidString, Id64, Id64Array, Id64String, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { Point3d, Range2d, Range3d, StandardViewIndex, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Matrix3d, Matrix3dProps, Point3d, Range2d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
 import { ChangesType } from "@bentley/imodelhub-client";
-import {  ColorByName, ColorDef, IModel, IModelVersion, Placement3d, RenderMode, SubCategoryAppearance, ViewFlagProps, ViewFlags } from "@bentley/imodeljs-common";
+import {  ColorByName, ColorDef, IModel, IModelError, IModelVersion, Placement3d, RenderMode, RepositoryLinkProps, SubCategoryAppearance, ViewFlagProps, ViewFlags } from "@bentley/imodeljs-common";
 import {
   BackendLoggerCategory, BisCoreSchema, BriefcaseDb, CategorySelector, ConcurrencyControl, DefinitionModel, DisplayStyle2d, DisplayStyle3d, DisplayStyleCreationOptions, DocumentListModel, Drawing, DrawingCategory, DrawingViewDefinition, ECSqlStatement, ExternalSourceAspect,
   FunctionalModel,
   FunctionalSchema,
-  IModelDb,  IModelHost, IModelJsFs, IModelJsNative, IModelTransformer, InformationPartitionElement, ModelSelector, NativeLoggerCategory, PhysicalElement, PhysicalModel,
+  GeometricElement3d,
+  IModelDb,  IModelHost,IModelJsFs, IModelJsNative, IModelTransformer, InformationPartitionElement, LinkElement, ModelSelector, NativeLoggerCategory, PhysicalElement, PhysicalModel,
+  RepositoryLink,
   SnapshotDb, SpatialCategory, SpatialViewDefinition,
 } from "../../imodeljs-backend";
 import { HubMock } from "../HubMock";
@@ -195,8 +197,10 @@ describe.only("IModelTransformerHubSubstationSpecific (#integration)", () => {
     assert.isTrue(masterDb.isBriefcaseDb());
     assert.equal(masterDb.contextId, projectId);
     assert.equal(masterDb.iModelId, masterIModelId);
-    const changeSetMasterState0 = masterDb.changeSetId;
 
+    const placedBreaker = await placeACMEBreaker(requestContext, masterDb, "ACMEB1");
+    await saveAndPushChanges(masterDb, "State0 -> State1");
+    const changeSetMasterState0 = masterDb.changeSetId;
     // create Branch1 iModel using Master as a template
     const branchIModelName1 = "Branch1";
     const branchIModelId1 = await IModelHost.hubAccess.createIModel({ contextId: projectId, iModelName: branchIModelName1, description: `Branch1 of ${masterIModelName}`, revision0: masterDb.pathName });
@@ -217,13 +221,15 @@ describe.only("IModelTransformerHubSubstationSpecific (#integration)", () => {
     assert.equal(replayedDb.contextId, projectId);
 
     try {
+      // incert repository link of the parent
+      const repoLInkId =await  addReference(branchDb1, branchDb1.contextId, branchDb1.iModelId, branchDb1.name);
       // record provenance in Branch1 and Branch2 iModels
       const provenanceInserterB1 = new IModelTransformer(masterDb, branchDb1, {
         wasSourceIModelCopiedToTarget: true,
+        targetScopeElementId: repoLInkId,
       });
       await provenanceInserterB1.processAll();
       provenanceInserterB1.dispose();
-      assert.equal(count(masterDb, ExternalSourceAspect.classFullName), 0);
 
       // push Branch1 and Branch2 provenance changes
       await saveAndPushChanges(branchDb1, "State0");
@@ -232,7 +238,9 @@ describe.only("IModelTransformerHubSubstationSpecific (#integration)", () => {
 
       // push Branch1 State1
       // await importACMEBreakerDefination(requestContext, branchDb1);
-      await placeACMEBreaker(requestContext, branchDb1, "TEST01");
+      const point3d = new Point3d(placedBreaker.placement.origin.x+1, placedBreaker.placement.origin.y, placedBreaker.placement.origin.z);
+      await transformElement(branchDb1, placedBreaker.id, point3d, {} as Matrix3dProps, true);
+      await placeACMEBreaker(requestContext, branchDb1, "Test");
       await saveAndPushChanges(branchDb1, "State0 -> State1");
       const changeSetBranch1State1 = branchDb1.changeSetId;
       assert.notEqual(changeSetBranch1State1, changeSetBranch1State0);
@@ -240,8 +248,9 @@ describe.only("IModelTransformerHubSubstationSpecific (#integration)", () => {
       // merge changes made on Branch1 back to Master
       const branch1ToMaster = new IModelTransformer(branchDb1, masterDb, {
         isReverseSynchronization: true, // provenance stored in source/branch
+        noProvenance: true,
       });
-      await branch1ToMaster.processChanges(requestContext, changeSetBranch1State1);
+      await branch1ToMaster.processChanges(requestContext,changeSetBranch1State0);
       branch1ToMaster.dispose();
       assert.equal(count(masterDb, ExternalSourceAspect.classFullName), 0);
       await saveAndPushChanges(masterDb, "State0 -> State2"); // a squash of 2 branch changes into 1 in the masterDb change ledger
@@ -308,7 +317,7 @@ describe.only("IModelTransformerHubSubstationSpecific (#integration)", () => {
     await defImporter.importEquipmentDefinition(requestContext, breakerDefId!);
   }*/
 
-  function getEquipmentPlacementProps(srcIModelDbPath: string, targetIModelDb: IModelDb, equipmentDefId: string, placement: Placement3d, codeValue: string): EquipmentPlacementProps {
+  function getEquipmentPlacementProps(srcIModelDbPath: string, targetIModelDb: IModelDb, equipmentDefId: string, placement: Placement3d, codeValue?: string): EquipmentPlacementProps {
     const physicalModelId = targetIModelDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(targetIModelDb, IModel.rootSubjectId, "Substation Physical"))!;// IModelDb.rootSubjectId
     const functionalModelId = targetIModelDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(targetIModelDb, IModel.rootSubjectId, "Substation Functional"))!;
     const drawingModelId = targetIModelDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(targetIModelDb,IModel.rootSubjectId, "Substation Drawing"))!;
@@ -326,7 +335,7 @@ describe.only("IModelTransformerHubSubstationSpecific (#integration)", () => {
     return props;
   }
 
-  async function placeACMEBreaker(reqContext: AuthorizedClientRequestContext, iModelDb: IModelDb, codeValue: string) {
+  async function placeACMEBreaker(reqContext: AuthorizedClientRequestContext, iModelDb: IModelDb, codeValue?: string) {
     reqContext.enter();
     if (iModelDb.isBriefcaseDb()) {
       iModelDb.concurrencyControl.startBulkMode();
@@ -347,6 +356,80 @@ describe.only("IModelTransformerHubSubstationSpecific (#integration)", () => {
     }
     const physicalElement = iModelDb.elements.getElement<PhysicalElement>(placedBreakerEquipmentId, PhysicalElement);
     assert.isTrue(Id64.isValidId64(physicalElement.id));
-    assert.equal(physicalElement.code.value, codeValue);
+    // assert.equal(physicalElement.code.value, codeValue);
+    return physicalElement;
+  }
+
+  async function getIModelUrl(contextId: GuidString, iModelId: GuidString) {
+    const iModelHubUrl = "";
+
+    return `${iModelHubUrl}Context/${contextId}/iModel/${iModelId}`;
+  }
+
+  async  function insertRepositoryLink(targetDb: IModelDb,codeValue: string, url: string, format: string): Promise<string> {
+    if (!targetDb) return "";
+
+    const repositoryLinkProps: RepositoryLinkProps = {
+      classFullName: RepositoryLink.classFullName,
+      model: IModel.repositoryModelId,
+      code: LinkElement.createCode(targetDb, IModel.repositoryModelId, codeValue),
+      url,
+      format,
+    };
+
+    return targetDb?.elements.insertElement(repositoryLinkProps);
+
+  }
+  async function addReference(targetDb: IModelDb, sourceContextId: string, sourceIModelId: string, sourceIModelName: string) {
+    if (!targetDb || !(targetDb instanceof BriefcaseDb)) return;
+
+    const url = await getIModelUrl(sourceContextId,sourceIModelId);
+    sourceIModelName = sourceIModelName || "";
+    const referenceElementId = await insertRepositoryLink(targetDb,sourceIModelName, url, "bim");
+
+    await targetDb.concurrencyControl.request(requestContext);
+    requestContext.enter();
+    targetDb.saveChanges();
+
+    return referenceElementId;
+  }
+
+  async function transformElement(iModel: IModelDb ,elementId: string, point: Point3d, matrix3dProps: Matrix3dProps, isMove: boolean): Promise<any> {
+    const context: AuthorizedClientRequestContext = requestContext;
+    context.enter();
+
+    try {
+      const allElementIds: string[] = iModel.elements.queryChildren(elementId);
+      allElementIds.unshift(elementId);
+
+      const elementsToBeTransformed: GeometricElement3d[] = [];
+      allElementIds.forEach((id) => {
+        const geometricElement = iModel.elements.getElement<GeometricElement3d>(id, GeometricElement3d);
+        const transform3d = isMove ? Transform.createTranslationXYZ(point.x, point.y, point.z)
+          : Transform.createFixedPointAndMatrix(point, Matrix3d.fromJSON(matrix3dProps));
+        geometricElement.placement.multiplyTransform(transform3d);
+        elementsToBeTransformed.push(geometricElement);
+      });
+
+      // Acquire transform rights
+      if (iModel instanceof BriefcaseDb) {
+        await lockElements(context, iModel, DbOpcode.Update, elementsToBeTransformed);
+        context.enter();
+      }
+      elementsToBeTransformed.forEach((item) => iModel.elements.updateElement(item));
+
+      if (iModel.isBriefcaseDb()) {
+        await iModel.concurrencyControl.request(context);
+        context.enter();
+      }
+      iModel.saveChanges(`Transformed 3d element: `);
+
+      return;
+    } catch (e: any) {
+      context.enter();
+      iModel.abandonChanges();
+
+      throw new IModelError(IModelStatus.WriteError, e);
+    }
   }
 });

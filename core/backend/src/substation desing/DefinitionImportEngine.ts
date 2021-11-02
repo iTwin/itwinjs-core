@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { Id64String, IModelStatus } from "@bentley/bentleyjs-core";
 import {
-  DefinitionContainer, GeometricElement3d, IModelDb, IModelTransformer, Model, PhysicalElementFulfillsFunction, Relationship, SpatialCategory,
+  DefinitionContainer, GeometricElement3d, IModelDb, IModelTransformer, LinkElement, Model, PhysicalElementFulfillsFunction, Relationship, RepositoryLink, SpatialCategory,
 } from "../imodeljs-backend";
-import { IModel, IModelError, ModelProps } from "@bentley/imodeljs-common";
+import { IModel, IModelError, ModelProps, RepositoryLinkProps } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import {
   ElectricalEquipmentDefinition, ElectricalPhysicalRecipe, ElectricalPhysicalType, FunctionalContainer, PhysicalContainer,
@@ -25,8 +25,13 @@ export class DefinitionImportEngine extends IModelTransformer {
   private _targetDefinitionManager: StandardDefinitionManager;
   private _relationshipsToProcess: { [relName: string]: Id64String[] } = {};
 
-  public constructor(srcDefinitionManager: StandardDefinitionManager, targetDefinitionManager: StandardDefinitionManager) {
-    super(srcDefinitionManager.iModelDb, targetDefinitionManager.iModelDb);
+  public constructor(srcDefinitionManager: StandardDefinitionManager, targetDefinitionManager: StandardDefinitionManager, targetScopeElementId?: Id64String) {
+    super(srcDefinitionManager.iModelDb,targetDefinitionManager.iModelDb,
+      {
+        targetScopeElementId,
+        noProvenance: targetScopeElementId ? undefined : true, // can't store provenance if targetScopeElementId is not defined
+      });
+
     this._sourceDefinitionManager = srcDefinitionManager;
     this._targetDefinitionManager = targetDefinitionManager;
   }
@@ -176,3 +181,19 @@ export class DefinitionImportEngine extends IModelTransformer {
   }
 }
 
+/** Create a RepositoryLink for the catalog that will scope the provenance for elements imported from the catalog. */
+export function insertCatalogRepositoryLink(iModelDb: IModelDb, codeValue: string, url: string): Id64String {
+  const code = LinkElement.createCode(iModelDb, IModel.repositoryModelId, codeValue);
+  const repositoryLinkId = iModelDb.elements.queryElementIdByCode(code);
+  if (undefined === repositoryLinkId) {
+    const repositoryLinkProps: RepositoryLinkProps = {
+      classFullName: RepositoryLink.classFullName,
+      model: IModel.repositoryModelId,
+      code,
+      url,
+      format: "Catalog", // WIP: need to standardize format names
+    };
+    return iModelDb.elements.insertElement(repositoryLinkProps);
+  }
+  return repositoryLinkId;
+}

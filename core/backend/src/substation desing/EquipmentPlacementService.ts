@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
+import * as path from "path";
 import { Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { BackendLoggerCategory, IModelDb, SnapshotDb } from "../imodeljs-backend";
 import { Placement3d } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { DefinitionImportEngine } from "./DefinitionImportEngine";
+import { DefinitionImportEngine, insertCatalogRepositoryLink } from "./DefinitionImportEngine";
 import { EquipmentPlacementEngine } from "./EquipmentPlacementEngine";
 import { PhysicalTypeImportEngine } from "./PhysicalTypeImportEngine";
 import { StandardDefinitionManager } from "./StandardDefinitionManager";
@@ -83,7 +83,8 @@ export class EquipmentPlacementService {
     const srcDefManager = new StandardDefinitionManager(srcDb);
 
     const targetDefManager: StandardDefinitionManager = new StandardDefinitionManager(targetDb);
-    const definitionImporter = new DefinitionImportEngine(srcDefManager, targetDefManager);
+    const catalogRepositoryLinkId = insertCatalogRepositoryLink(targetDb, path.basename(srcDbPath), srcDbPath);
+    const definitionImporter = new DefinitionImportEngine(srcDefManager, targetDefManager, catalogRepositoryLinkId);
 
     const equipmentPlacer = new EquipmentPlacementEngine(targetDefManager, targetDefManager, equipmentPlacementProps.physicalModelId, equipmentPlacementProps.functionalModelId, equipmentPlacementProps.drawingModelId);
 
