@@ -169,10 +169,10 @@ export class InsertAndRetriangulateContext {
       if (movingPosition.isUnclassified)
         return false;
     }
-
+    let trap = 0;
     // double tol = vu_getMergeTol (pGraph);
     const ray = Ray3d.createXAxis();
-    for (; movingPosition.getITag() === 0;) {
+    for (; movingPosition.getITag() === 0 && trap < 2;) {
       if (announcer !== undefined) {
         const continueSearch = announcer(movingPosition);
         if (!continueSearch)
@@ -211,6 +211,13 @@ export class InsertAndRetriangulateContext {
             break;
           }
           case RayClassification.RC_TargetAfter: {
+            if (movingPosition.node === lastBefore.node
+              && movingPosition.isFace
+              && (lastBefore.isEdge || lastBefore.isVertex)){
+              trap++;
+            } else {
+              trap = 0;
+            }
             movingPosition.setFrom(lastBefore);
             break;
           }
@@ -225,8 +232,12 @@ export class InsertAndRetriangulateContext {
           break;
       }
     }
-
-    return movingPosition.isAtXY(xyz.x, xyz.y);
+    if (movingPosition.isAtXY(xyz.x, xyz.y))
+      return true;
+    if (trap > 1) {
+      return false;
+    }
+    return false;
   }
 }
 // Create a VuPositionDetail for specified fraction along any unmasked edge.
