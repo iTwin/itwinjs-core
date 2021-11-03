@@ -12,7 +12,6 @@ import { dirname, extname, join } from "path";
 import { NativeLibrary } from "@bentley/imodeljs-native";
 import { AccessToken, BeEvent, DbResult, OpenMode } from "@itwin/core-bentley";
 import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
-import { IModelDb } from "../IModelDb";
 import { IModelJsFs } from "../IModelJsFs";
 import { SQLiteDb } from "../SQLiteDb";
 import { SqliteStatement } from "../SqliteStatement";
