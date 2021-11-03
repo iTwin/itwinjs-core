@@ -644,7 +644,7 @@ describe("VUGraph", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it.skip("MovingPosition", () => {
+  it("MovingPosition", () => {
     const ck = new Checker();
     const outputManager = new OutputManager();
     const graph = new HalfEdgeGraph();
@@ -743,6 +743,8 @@ expectedTopo: HalfEdgeTopo | undefined) {
   markPosition(out, position);
   if (expectedTopo !== undefined) {
     ck.testExactNumber(expectedTopo as number, position.getTopo());
+  } else {
+    ck.testTrue(position.isExteriorTarget, "Expect exterior target setting");
   }
 
 }

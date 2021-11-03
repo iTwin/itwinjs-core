@@ -235,10 +235,23 @@ export class InsertAndRetriangulateContext {
     if (movingPosition.isAtXY(xyz.x, xyz.y))
       return true;
     if (trap > 1) {
+      // Ugh.  We exited the loop by repeatedly hitting the same node
+      // with edge or vertex type in lastBefore.
+      // This happens only when the target point is exterior.
+      // (Heavy triangulation use cases start with a convex hull and only do interior intersections,
+      //     so case only happens in contrived unit tests.... so far ...)
+      // What to mark?
+      // Leave it as is, but mark as exterior target
+      //
+      if (movingPosition.node !== undefined) {
+          movingPosition.setIsExteriorTarget(true);
+      }
       return false;
     }
+    // Murky here ...  should never be hit.  Has never been hit in unit tests.
     return false;
   }
+
 }
 // Create a VuPositionDetail for specified fraction along any unmasked edge.
 function moveToAnyUnmaskedEdge(graph: HalfEdgeGraph, position: HalfEdgePositionDetail, edgeFraction: number, skipMask: HalfEdgeMask): boolean {
