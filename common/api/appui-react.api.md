@@ -3917,7 +3917,7 @@ export class ModelsVisibilityHandler implements IVisibilityHandler {
     // (undocumented)
     protected changeElementGroupingNodeState(key: ECClassGroupingNodeKey, on: boolean): Promise<void>;
     // (undocumented)
-    protected changeElementsState(modelId: Id64String | undefined, categoryId: Id64String | undefined, elementIds: Id64String[], on: boolean): void;
+    protected changeElementsState(modelId: Id64String | undefined, categoryId: Id64String | undefined, elementIds: AsyncGenerator<Id64String>, on: boolean): Promise<void>;
     // (undocumented)
     protected changeElementState(id: Id64String, modelId: Id64String | undefined, categoryId: Id64String | undefined, on: boolean): Promise<void>;
     // (undocumented)
