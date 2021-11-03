@@ -103,7 +103,7 @@ describe("Settings", () => {
     },
   };
 
-  it.only("settings priorities", () => {
+  it("settings priorities", () => {
 
     const settings = iModel.workspace.settings;
     SettingsSpecRegistry.addGroup(app1);
