@@ -2842,6 +2842,9 @@ export function getIsHiddenIfFeatureOverridesActive(): ConditionalBooleanValue;
 // @beta
 export function getIsHiddenIfSelectionNotActive(): ConditionalBooleanValue;
 
+// @beta (undocumented)
+export function getListPanel(props: ListPickerProps): React.ReactNode;
+
 // @internal (undocumented)
 export const getNestedStagePanelKey: (location: StagePanelLocation_2) => NestedStagePanelKey<NestedStagePanelsManagerProps>;
 
@@ -3477,6 +3480,8 @@ export interface ListItem {
     // (undocumented)
     enabled: boolean;
     // (undocumented)
+    id?: string;
+    // (undocumented)
     name?: string;
     // (undocumented)
     type?: ListItemType;
@@ -3912,7 +3917,7 @@ export class ModelsVisibilityHandler implements IVisibilityHandler {
     // (undocumented)
     protected changeElementGroupingNodeState(key: ECClassGroupingNodeKey, on: boolean): Promise<void>;
     // (undocumented)
-    protected changeElementsState(modelId: Id64String | undefined, categoryId: Id64String | undefined, elementIds: Id64String[], on: boolean): void;
+    protected changeElementsState(modelId: Id64String | undefined, categoryId: Id64String | undefined, elementIds: AsyncGenerator<Id64String>, on: boolean): Promise<void>;
     // (undocumented)
     protected changeElementState(id: Id64String, modelId: Id64String | undefined, categoryId: Id64String | undefined, on: boolean): Promise<void>;
     // (undocumented)

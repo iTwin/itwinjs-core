@@ -33,6 +33,8 @@ public;Content
 public;ContentDescriptorRequestOptions
 public;ContentDescriptorRpcRequestOptions = PresentationRpcRequestOptions
 public;ContentFlags
+alpha;ContentInstanceKeysRequestOptions
+alpha;ContentInstanceKeysRpcRequestOptions = PresentationRpcRequestOptions
 public;ContentInstancesOfSpecificClassesSpecification 
 public;ContentJSON
 public;ContentModifier 
