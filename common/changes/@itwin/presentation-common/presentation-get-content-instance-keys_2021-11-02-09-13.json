@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-common",
+      "comment": "Add `getContentInstanceKeys` RPC to efficiently get content instance keys.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-common"
+}
