@@ -34,6 +34,7 @@ export enum ListItemType {
  */
 export interface ListItem {
   [key: string]: any;
+  id?: string;
   name?: string;
   enabled: boolean;
   type?: ListItemType;
@@ -158,7 +159,8 @@ export class ExpandableSection extends React.PureComponent<ExpandableSectionProp
   }
 }
 
-function getListPanel(props: ListPickerProps): React.ReactNode {
+/** @beta */
+export function getListPanel(props: ListPickerProps): React.ReactNode {
   const expandSingleSection = (): boolean => {
     const populatedContainers = props.items.filter((item: ListItem) => {
       return (item.type === ListItemType.Container && item.children!.length !== 0);

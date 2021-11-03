@@ -265,6 +265,7 @@ internal;getFloatingZoneStyle: (props: ZoneManagerProps) =>
 internal;getFrontstageStateSettingName(frontstageId: WidgetPanelsFrontstageState["id"]): string
 beta;getIsHiddenIfFeatureOverridesActive(): ConditionalBooleanValue
 beta;getIsHiddenIfSelectionNotActive(): ConditionalBooleanValue
+beta;getListPanel(props: ListPickerProps): React.ReactNode
 internal;getNestedStagePanelKey: (location: StagePanelLocation_2) => NestedStagePanelKey
 internal;getPanelZoneWidgets(frontstageDef: FrontstageDef, panelZone: WidgetIdTypes): WidgetDef[]
 beta;getQuantityFormatsSettingsManagerEntry(itemPriority: number, opts?: Partial
