@@ -1,17 +1,21 @@
 # Workspaces in iTwin.js
 
-When an iTwin.js backend starts, [IModelHost.startup]($backend) creates an instance of a [Workspace]($backend), in [IModelHost.workspace]($backend).
+When an iTwin.js backend starts, [IModelHost.startup]($backend) creates an instance of a [Workspace]($backend), in [IModelHost.appWorkspace]($backend).
 
-`IModelHost.workspace` customizes the session according to the choices of the:
- 1. host application(s)
+`IModelHost.appWorkspace` customizes the session according to the choices of the host application(s), including the default values for its settings.
+
+Whenever an application opens an iModel using the [IModelDb]($backend) class, it creates an instance of a [Workspace]($backend) in [IModelDb.workspace]($backend) to customize the session according to the choices made by administrators for the organization, the iTwin and the iModel.
+
+When combined, the `IModelHost.appWorkspace` and the `IModelDb.workspace` customize the session according to the:
+
+ 1. application's defaults
  2. organization of the user
  3. current iTwin
  4. current iModel
- 5. current "activity" being performed
 
 In the list above, later entries tend to change more frequently and, in the case of conflicting choices, later entries override earlier ones.
 
-`IModelHost.workspace` expresses the current state of the session in two forms:
+[Workspace]($backend)s expresses the current state of the session in two forms:
   1. [Settings](#settings)
   2. [WorkspaceContainers](#workspacecontainers)
 
