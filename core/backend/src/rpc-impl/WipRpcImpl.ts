@@ -6,7 +6,8 @@
  * @module RpcInterface
  */
 
-import { ChangedElements, IModelRpcProps, RpcInterface, RpcManager, WipRpcInterface } from "@itwin/core-common";
+import { BentleyStatus } from "@itwin/core-bentley";
+import { ChangedElements, IModelError, IModelRpcProps, RpcInterface, RpcManager, WipRpcInterface } from "@itwin/core-common";
 import { ChangedElementsManager } from "../ChangedElementsManager";
 import { ChangeSummaryManager } from "../ChangeSummaryManager";
 import { BriefcaseDb } from "../IModelDb";
@@ -28,10 +29,16 @@ export class WipRpcImpl extends RpcInterface implements WipRpcInterface {
   }
 
   public async getChangedElements(tokenProps: IModelRpcProps, startChangesetId: string, endChangesetId: string): Promise<ChangedElements | undefined> {
-    return ChangedElementsManager.getChangedElements(tokenProps.iModelId!, startChangesetId, endChangesetId);
+    if (undefined === tokenProps.iModelId) {
+      throw new IModelError(BentleyStatus.ERROR, "iModelId is undefined.");
+    }
+    return ChangedElementsManager.getChangedElements(tokenProps.iModelId, startChangesetId, endChangesetId);
   }
 
   public async isChangesetProcessed(tokenProps: IModelRpcProps, changesetId: string): Promise<boolean> {
-    return ChangedElementsManager.isProcessed(tokenProps.iModelId!, changesetId);
+    if (undefined === tokenProps.iModelId) {
+      throw new IModelError(BentleyStatus.ERROR, "iModelId is undefined.");
+    }
+    return ChangedElementsManager.isProcessed(tokenProps.iModelId, changesetId);
   }
 }

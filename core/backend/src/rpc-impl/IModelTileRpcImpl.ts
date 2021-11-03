@@ -6,9 +6,9 @@
  * @module RpcInterface
  */
 
-import { AccessToken, assert, BeDuration, Id64Array, Logger } from "@itwin/core-bentley";
+import { AccessToken, assert, BeDuration, BentleyStatus, Id64Array, Logger } from "@itwin/core-bentley";
 import {
-  CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageTileCache, ElementGraphicsRequestProps, IModelRpcProps,
+  CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageTileCache, ElementGraphicsRequestProps, IModelError, IModelRpcProps,
   IModelTileRpcInterface, IModelTileTreeProps, RpcInterface, RpcInvocation, RpcManager, RpcPendingResponse, TileContentIdentifier,
   TileContentSource, TileTreeContentIds, TileVersionInfo,
 } from "@itwin/core-common";
@@ -84,7 +84,10 @@ abstract class TileRequestMemoizer<Result, Props extends TileRequestProps> exten
 
     if (tileQP.isFulfilled) {
       this.log("completed", props);
-      return tileQP.result!;
+      if (undefined === tileQP.result) {
+        throw new IModelError(BentleyStatus.ERROR, "TileQP result is undefined.");
+      }
+      return tileQP.result;
     }
 
     assert(tileQP.isRejected);
@@ -189,7 +192,10 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
   public static register() { RpcManager.registerImpl(IModelTileRpcInterface, IModelTileRpcImpl); }
 
   public async requestTileTreeProps(tokenProps: IModelRpcProps, treeId: string): Promise<IModelTileTreeProps> {
-    return RequestTileTreePropsMemoizer.perform({ accessToken: RpcTrace.currentActivity!.accessToken, tokenProps, treeId });
+    if (undefined === RpcTrace.currentActivity) {
+      throw new IModelError(BentleyStatus.ERROR, "Current activity is undefined.");
+    }
+    return RequestTileTreePropsMemoizer.perform({ accessToken: RpcTrace.currentActivity.accessToken, tokenProps, treeId });
   }
 
   public async purgeTileTrees(tokenProps: IModelRpcProps, modelIds: Id64Array | undefined): Promise<void> {
@@ -197,23 +203,32 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
     if (null === modelIds)
       modelIds = undefined;
 
-    const db = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.currentActivity!.accessToken, tokenProps);
+    if (undefined === RpcTrace.currentActivity) {
+      throw new IModelError(BentleyStatus.ERROR, "Current activity is undefined.");
+    }
+    const db = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.currentActivity.accessToken, tokenProps);
     return db.nativeDb.purgeTileTrees(modelIds);
   }
 
   public async generateTileContent(tokenProps: IModelRpcProps, treeId: string, contentId: string, guid: string | undefined): Promise<TileContentSource> {
-    return RequestTileContentMemoizer.perform({ accessToken: RpcTrace.currentActivity!.accessToken, tokenProps, treeId, contentId, guid });
+    if (undefined === RpcTrace.currentActivity) {
+      throw new IModelError(BentleyStatus.ERROR, "Current activity is undefined.");
+    }
+    return RequestTileContentMemoizer.perform({ accessToken: RpcTrace.currentActivity.accessToken, tokenProps, treeId, contentId, guid });
   }
 
   public async retrieveTileContent(tokenProps: IModelRpcProps, key: TileContentIdentifier): Promise<Uint8Array> {
-    const db = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.currentActivity!.accessToken, tokenProps);
+    if (undefined === RpcTrace.currentActivity) {
+      throw new IModelError(BentleyStatus.ERROR, "Current activity is undefined.");
+    }
+    const db = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.currentActivity.accessToken, tokenProps);
     return db.tiles.getTileContent(key.treeId, key.contentId);
   }
 
   public async getTileCacheContainerUrl(_tokenProps: IModelRpcProps, id: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl> {
     const invocation = RpcInvocation.current(this);
 
-    if (!IModelHost.usingExternalTileCache) {
+    if (undefined === IModelHost.usingExternalTileCache) {
       return CloudStorageContainerUrl.empty();
     }
 
@@ -232,7 +247,10 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
 
   /** @internal */
   public async requestElementGraphics(rpcProps: IModelRpcProps, request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined> {
-    const iModel = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.currentActivity!.accessToken, rpcProps);
+    if (undefined === RpcTrace.currentActivity) {
+      throw new IModelError(BentleyStatus.ERROR, "Current activity is undefined.");
+    }
+    const iModel = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.currentActivity.accessToken, rpcProps);
     return iModel.generateElementGraphics(request);
   }
 }

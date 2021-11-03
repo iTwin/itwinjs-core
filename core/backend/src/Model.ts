@@ -8,10 +8,10 @@
 
 // cspell:ignore elid
 
-import { GuidString, Id64String, JsonUtils } from "@itwin/core-bentley";
+import { GuidString, Id64String, IModelStatus, JsonUtils } from "@itwin/core-bentley";
 import { Point2d, Range3d } from "@itwin/core-geometry";
 import {
-  AxisAlignedBox3d, ElementProps, GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, IModel, InformationPartitionElementProps,
+  AxisAlignedBox3d, ElementProps, GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, IModel, IModelError, InformationPartitionElementProps,
   ModelProps, RelatedElement,
 } from "@itwin/core-common";
 import { DefinitionPartition, DocumentPartition, InformationRecordPartition, PhysicalPartition, SpatialLocationPartition } from "./Element";
@@ -122,7 +122,10 @@ export class Model extends Entity implements ModelProps {
    * @beta
    */
   protected static onUpdate(arg: OnModelPropsArg): void {
-    arg.iModel.locks.checkExclusiveLock(arg.props.id!, "model", "update");
+    if (undefined === arg.props.id) {
+      throw new IModelError(IModelStatus.BadArg, "Id is undefined.");
+    }
+    arg.iModel.locks.checkExclusiveLock(arg.props.id, "model", "update");
   }
 
   /** Called after a Model is updated.

@@ -479,7 +479,10 @@ export class IModelHost {
   public static get compressCachedTiles(): boolean { return false !== IModelHost.configuration?.compressCachedTiles; }
 
   private static setupTileCache() {
-    const config = IModelHost.configuration!;
+    if (undefined === IModelHost.configuration) {
+      throw new IModelError(BentleyStatus.ERROR, "IModelHost configuration is undefined.");
+    }
+    const config = IModelHost.configuration;
     const credentials = config.tileCacheCredentials;
     if (undefined === credentials)
       return;

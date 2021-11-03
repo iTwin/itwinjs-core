@@ -75,13 +75,19 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    * or not. See [SQLite docs](https://www.sqlite.org/c3ref/stmt_readonly.html) for details.
    */
   public get isReadonly(): boolean {
-    return this._stmt!.isReadonly();
+    if (undefined === this._stmt) {
+      throw new Error("Statement is undefined.");
+    }
+    return this._stmt.isReadonly();
   }
 
   /** Reset this statement so that the next call to step will return the first row, if any.
    */
   public reset(): void {
-    this._stmt!.reset();
+    if (undefined === this._stmt) {
+      throw new Error("Statement is undefined.");
+    }
+    this._stmt.reset();
   }
 
   /** Call this function when finished with this statement. This releases the native resources held by the statement. */
@@ -111,23 +117,26 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    */
   public bindValue(parameter: BindParameter, value: any): void {
     let stat: DbResult;
+    if (undefined === this._stmt) {
+      throw new Error("Statement is undefined.");
+    }
     if (value === undefined || value === null) {
-      stat = this._stmt!.bindNull(parameter);
+      stat = this._stmt.bindNull(parameter);
     } else if (typeof (value) === "number") {
       if (Number.isInteger(value))
-        stat = this._stmt!.bindInteger(parameter, value);
+        stat = this._stmt.bindInteger(parameter, value);
       else
-        stat = this._stmt!.bindDouble(parameter, value);
+        stat = this._stmt.bindDouble(parameter, value);
     } else if (typeof (value) === "boolean") {
-      stat = this._stmt!.bindInteger(parameter, value ? 1 : 0);
+      stat = this._stmt.bindInteger(parameter, value ? 1 : 0);
     } else if (typeof (value) === "string") {
-      stat = this._stmt!.bindString(parameter, value);
+      stat = this._stmt.bindString(parameter, value);
     } else if (!!value.id) {
-      stat = this._stmt!.bindId(parameter, value.id);
+      stat = this._stmt.bindId(parameter, value.id);
     } else if (!!value.guid) {
-      stat = this._stmt!.bindGuid(parameter, value.guid);
+      stat = this._stmt.bindGuid(parameter, value.guid);
     } else if (value instanceof Uint8Array) {
-      stat = this._stmt!.bindBlob(parameter, value);
+      stat = this._stmt.bindBlob(parameter, value);
     } else
       throw new IModelError(DbResult.BE_SQLITE_ERROR, `Parameter value ${value} is of an unsupported data type.`);
 
@@ -144,42 +153,60 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    *  @param val integer to bind.
    */
   public bindInteger(parameter: BindParameter, val: number) {
-    this.checkBind(this._stmt!.bindInteger(parameter, val));
+    if (undefined === this._stmt) {
+      throw new Error("Statement is undefined.");
+    }
+    this.checkBind(this._stmt.bindInteger(parameter, val));
   }
   /** Bind a double parameter
    *  @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
    *  @param val double to bind.
    */
   public bindDouble(parameter: BindParameter, val: number) {
-    this.checkBind(this._stmt!.bindDouble(parameter, val));
+    if (undefined === this._stmt) {
+      throw new Error("Statement is undefined.");
+    }
+    this.checkBind(this._stmt.bindDouble(parameter, val));
   }
   /** Bind a string parameter
    *  @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
    *  @param val string to bind.
    */
   public bindString(parameter: BindParameter, val: string) {
-    this.checkBind(this._stmt!.bindString(parameter, val));
+    if (undefined === this._stmt) {
+      throw new Error("Statement is undefined.");
+    }
+    this.checkBind(this._stmt.bindString(parameter, val));
   }
   /** Bind an Id64String parameter as a 64-bit integer
    *  @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
    *  @param val Id to bind.
    */
   public bindId(parameter: BindParameter, id: Id64String) {
-    this.checkBind(this._stmt!.bindId(parameter, id));
+    if (undefined === this._stmt) {
+      throw new Error("Statement is undefined.");
+    }
+    this.checkBind(this._stmt.bindId(parameter, id));
   }
   /** Bind a Guid parameter
    *  @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
    *  @param val Guid to bind.
    */
   public bindGuid(parameter: BindParameter, guid: GuidString) {
-    this.checkBind(this._stmt!.bindGuid(parameter, guid));
+    if (undefined === this._stmt) {
+      throw new Error("Statement is undefined.");
+    }
+    this.checkBind(this._stmt.bindGuid(parameter, guid));
   }
   /** Bind a blob parameter
    *  @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
    *  @param val blob to bind.
    */
   public bindBlob(parameter: BindParameter, blob: Uint8Array) {
-    this.checkBind(this._stmt!.bindBlob(parameter, blob));
+    if (undefined === this._stmt) {
+      throw new Error("Statement is undefined.");
+    }
+    this.checkBind(this._stmt.bindBlob(parameter, blob));
   }
 
   /** Bind values to all parameters in the statement.
@@ -216,7 +243,10 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    * @throws [IModelError]($common) in case of errors
    */
   public clearBindings(): void {
-    const stat = this._stmt!.clearBindings();
+    if (undefined === this._stmt) {
+      throw new Error("Statement is undefined.");
+    }
+    const stat = this._stmt.clearBindings();
     if (stat !== DbResult.BE_SQLITE_OK)
       throw new IModelError(stat, "Error in clearBindings");
   }
@@ -232,40 +262,85 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    *  - [DbResult.BE_SQLITE_DONE]($core-bentley) if the statement has been executed successfully.
    *  - Error status in case of errors.
    */
-  public step(): DbResult { return this._stmt!.step(); }
+  public step(): DbResult {
+    if (undefined === this._stmt) {
+      throw new Error("Statement is undefined.");
+    }
+    return this._stmt.step();
+  }
 
   /** Get the query result's column count (only for SQL SELECT statements). */
-  public getColumnCount(): number { return this._stmt!.getColumnCount(); }
+  public getColumnCount(): number {
+    if (undefined === this._stmt) {
+      throw new Error("Statement is undefined.");
+    }
+    return this._stmt.getColumnCount();
+  }
 
   /** Get the value for the column at the given index in the query result.
    * @param columnIx Index of SQL column in query result (0-based)
    */
-  public getValue(columnIx: number): SqliteValue { return new SqliteValue(this._stmt!, columnIx); }
+  public getValue(columnIx: number): SqliteValue {
+    if (undefined === this._stmt) {
+      throw new Error("Statement is undefined.");
+    }
+    return new SqliteValue(this._stmt, columnIx);
+  }
 
   /** Get a value as a blob
    * @param colIndex Index of SQL column in query result (0-based)
    */
-  public getValueBlob(colIndex: number): Uint8Array { return this._stmt!.getValueBlob(colIndex); }
+  public getValueBlob(colIndex: number): Uint8Array {
+    if (undefined === this._stmt) {
+      throw new Error("Statement is undefined.");
+    }
+    return this._stmt.getValueBlob(colIndex);
+  }
   /** Get a value as a double
   * @param colIndex Index of SQL column in query result (0-based)
   */
-  public getValueDouble(colIndex: number): number { return this._stmt!.getValueDouble(colIndex); }
+  public getValueDouble(colIndex: number): number {
+    if (undefined === this._stmt) {
+      throw new Error("Statement is undefined.");
+    }
+    return this._stmt.getValueDouble(colIndex);
+  }
   /** Get a value as a integer
   * @param colIndex Index of SQL column in query result (0-based)
   */
-  public getValueInteger(colIndex: number): number { return this._stmt!.getValueInteger(colIndex); }
+  public getValueInteger(colIndex: number): number {
+    if (undefined === this._stmt) {
+      throw new Error("Statement is undefined.");
+    }
+    return this._stmt.getValueInteger(colIndex);
+  }
   /** Get a value as a string
   * @param colIndex Index of SQL column in query result (0-based)
   */
-  public getValueString(colIndex: number): string { return this._stmt!.getValueString(colIndex); }
+  public getValueString(colIndex: number): string {
+    if (undefined === this._stmt) {
+      throw new Error("Statement is undefined.");
+    }
+    return this._stmt.getValueString(colIndex);
+  }
   /** Get a value as an Id
   * @param colIndex Index of SQL column in query result (0-based)
   */
-  public getValueId(colIndex: number): Id64String { return this._stmt!.getValueId(colIndex); }
+  public getValueId(colIndex: number): Id64String {
+    if (undefined === this._stmt) {
+      throw new Error("Statement is undefined.");
+    }
+    return this._stmt.getValueId(colIndex);
+  }
   /** Get a value as a Guid
   * @param colIndex Index of SQL column in query result (0-based)
   */
-  public getValueGuid(colIndex: number): GuidString { return this._stmt!.getValueGuid(colIndex); }
+  public getValueGuid(colIndex: number): GuidString {
+    if (undefined === this._stmt) {
+      throw new Error("Statement is undefined.");
+    }
+    return this._stmt.getValueGuid(colIndex);
+  }
 
   /** Get the current row.
    * The returned row is formatted as JavaScript object where every SELECT clause item becomes a property in the JavaScript object.
@@ -451,8 +526,10 @@ export class StatementCache<Stmt extends Statement> {
       return;
     }
     if (this._cache.size >= this._cache.limit) {
-      const oldest = this._cache.shift()!;
-      oldest[1].dispose();
+      const oldest = this._cache.shift();
+      if (undefined !== oldest) {
+        oldest[1].dispose();
+      }
     }
     stmt.reset();
     stmt.clearBindings();

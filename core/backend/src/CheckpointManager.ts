@@ -238,8 +238,10 @@ export class CheckpointManager {
           await BriefcaseManager.pullAndApplyChangesets(db, { accessToken, toIndex });
         } else {
           // make sure the parent changeset index is saved in the file - old versions didn't have it.
-          currentChangeset.index = checkpoint.changeset.index!;
-          nativeDb.saveLocalValue("parentChangeSet", JSON.stringify(currentChangeset));
+          if (undefined !== checkpoint.changeset.index) {
+            currentChangeset.index = checkpoint.changeset.index;
+            nativeDb.saveLocalValue("parentChangeSet", JSON.stringify(currentChangeset));
+          }
         }
       } finally {
         db.saveChanges();

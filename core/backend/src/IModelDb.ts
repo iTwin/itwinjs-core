@@ -199,12 +199,12 @@ export abstract class IModelDb extends IModel {
   private static _shutdownListener: VoidFunction | undefined; // so we only register listener once
 
   /** @internal */
-  protected _locks?: LockControl = new NoLocks();
+  protected _locks: LockControl = new NoLocks();
   /**
    * Get the lock control for this iModel.
    * @beta
    */
-  public get locks() { return this._locks!; }
+  public get locks() { return this._locks; }
 
   /** Acquire the exclusive schema lock on this iModel.
    * > Note: To acquire the schema lock, all other briefcases must first release *all* their locks. No other briefcases
@@ -233,11 +233,16 @@ export abstract class IModelDb extends IModel {
   public get isReadonly(): boolean { return this.openMode === OpenMode.Readonly; }
 
   /** The Guid that identifies this iModel. */
-  public override get iModelId(): GuidString { return super.iModelId!; } // GuidString | undefined for the IModel superclass, but required for all IModelDb subclasses
+  public override get iModelId(): GuidString {
+    if (undefined === super.iModelId) {
+      throw new IModelError(BentleyStatus.ERROR, "iModelId is undefined.");
+    }
+    return super.iModelId;
+  } // GuidString | undefined for the IModel superclass, but required for all IModelDb subclasses
 
   private _nativeDb?: IModelJsNative.DgnDb;
   /** @internal*/
-  public get nativeDb(): IModelJsNative.DgnDb { return this._nativeDb!; }
+  public get nativeDb(): IModelJsNative.DgnDb { return this._nativeDb!; } // eslint-disable-line @typescript-eslint/no-non-null-assertion
 
   /** Get the full path fileName of this iModelDb
    * @note this member is only valid while the iModel is opened.
@@ -272,7 +277,6 @@ export abstract class IModelDb extends IModel {
     this.beforeClose();
     IModelDb._openDbs.delete(this._fileKey);
     this.locks.close();
-    this._locks = undefined;
     this.nativeDb.closeIModel();
     this._nativeDb = undefined; // the underlying nativeDb has been freed by closeIModel
   }
@@ -415,7 +419,7 @@ export abstract class IModelDb extends IModel {
     }
     const executor = {
       execute: async (request: DbQueryRequest) => {
-        return ConcurrentQuery.executeQueryRequest(this._nativeDb!, request);
+        return ConcurrentQuery.executeQueryRequest(this.nativeDb, request);
       },
     };
     return new ECSqlReader(executor, ecsql, params, config);
@@ -940,12 +944,14 @@ export abstract class IModelDb extends IModel {
     if (val.error)
       throw new IModelError(val.error.status, `Error getting class meta data for: ${classFullName}`);
 
-    const metaData = new EntityMetaData(JSON.parse(val.result!));
-    this.classMetaDataRegistry.add(classFullName, metaData);
+    if (undefined !== val.result) {
+      const metaData = new EntityMetaData(JSON.parse(val.result));
+      this.classMetaDataRegistry.add(classFullName, metaData);
 
-    // Recursive, to make sure that base classes are cached.
-    if (metaData.baseClasses !== undefined && metaData.baseClasses.length > 0)
-      metaData.baseClasses.forEach((baseClassName: string) => this.loadMetaData(baseClassName));
+      // Recursive, to make sure that base classes are cached.
+      if (metaData.baseClasses !== undefined && metaData.baseClasses.length > 0)
+        metaData.baseClasses.forEach((baseClassName: string) => this.loadMetaData(baseClassName));
+    }
   }
 
   /** Query if this iModel contains the definition of the specified class.
@@ -1268,9 +1274,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      */
     public getSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code, modelClass?: EntityClassType<Model>): T {
       const modeledElementProps = this._iModel.elements.getElementProps<ElementProps>(modeledElementId);
-      if (modeledElementProps.id === IModel.rootSubjectId)
+      if (undefined === modeledElementProps.id || modeledElementProps.id === IModel.rootSubjectId)
         throw new IModelError(IModelStatus.NotFound, "Root subject does not have a sub-model");
-      return this.getModel<T>(modeledElementProps.id!, modelClass);
+      return this.getModel<T>(modeledElementProps.id, modelClass);
     }
 
     /** Get the sub-model of the specified Element.
@@ -1282,10 +1288,10 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      */
     public tryGetSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code, modelClass?: EntityClassType<Model>): T | undefined {
       const modeledElementProps = this._iModel.elements.tryGetElementProps(modeledElementId);
-      if ((undefined === modeledElementProps) || (IModel.rootSubjectId === modeledElementProps.id))
+      if ((undefined === modeledElementProps) || (undefined === modeledElementProps.id) || (IModel.rootSubjectId === modeledElementProps.id))
         return undefined;
 
-      return this.tryGetModel<T>(modeledElementProps.id!, modelClass);
+      return this.tryGetModel<T>(modeledElementProps.id, modelClass);
     }
 
     /** Create a new model in memory.
@@ -1981,7 +1987,11 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         throw new IModelError(ret.error.status, `TreeId=${treeId} TileId=${tileId}`);
       }
 
-      return ret.result!;
+      if (undefined === ret.result) {
+        throw new IModelError(BentleyStatus.ERROR, "Result is undefined.");
+      }
+
+      return ret.result;
     }
   }
 }
@@ -2047,7 +2057,12 @@ export class BriefcaseDb extends IModelDb {
   }
 
   /** The Guid that identifies the *context* that owns this iModel. */
-  public override get iTwinId(): GuidString { return super.iTwinId!; } // GuidString | undefined for the superclass, but required for BriefcaseDb
+  public override get iTwinId(): GuidString {
+    if (undefined === super.iTwinId) {
+      throw new IModelError(BentleyStatus.ERROR, "iTwinId is undefined.");
+    }
+    return super.iTwinId;
+  } // GuidString | undefined for the superclass, but required for BriefcaseDb
 
   /**
    * Determine whether this BriefcaseDb should use a lock server.
@@ -2183,7 +2198,10 @@ class DaemonReattach {
     Logger.logInfo(BackendLoggerCategory.Authorization, "attempting to reattach checkpoint");
     try {
       // this exchanges the supplied user accessToken for an expiring blob-store token to read the checkpoint.
-      const response = await V2CheckpointManager.attach({ accessToken, iTwinId: iModel.iTwinId!, iModelId: iModel.iModelId, changeset: iModel.changeset });
+      if (undefined === iModel.iTwinId) {
+        throw new IModelError(BentleyStatus.ERROR, "iTwinId is undefined.");
+      }
+      const response = await V2CheckpointManager.attach({ accessToken, iTwinId: iModel.iTwinId, iModelId: iModel.iModelId, changeset: iModel.changeset });
       Logger.logInfo(BackendLoggerCategory.Authorization, "reattached checkpoint successfully");
       this.setTimestamp(response.expiryTimestamp);
     } finally {
@@ -2295,7 +2313,10 @@ export class SnapshotDb extends IModelDb {
   public static openForApplyChangesets(path: LocalFileName, props?: SnapshotOpenOptions): SnapshotDb {
     const file = { path, key: props?.key };
     const nativeDb = this.openDgnDb(file, OpenMode.ReadWrite, undefined, props);
-    return new SnapshotDb(nativeDb, file.key!);
+    if (undefined === file.key) {
+      throw new IModelError(BentleyStatus.ERROR, "File key is undefined.");
+    }
+    return new SnapshotDb(nativeDb, file.key);
   }
 
   /** Open a read-only iModel *snapshot*.
@@ -2307,7 +2328,10 @@ export class SnapshotDb extends IModelDb {
   public static openFile(path: LocalFileName, opts?: SnapshotOpenOptions): SnapshotDb {
     const file = { path, key: opts?.key };
     const nativeDb = this.openDgnDb(file, OpenMode.Readonly, undefined, opts);
-    return new SnapshotDb(nativeDb, file.key!);
+    if (undefined === file.key) {
+      throw new IModelError(BentleyStatus.ERROR, "File key is undefined.");
+    }
+    return new SnapshotDb(nativeDb, file.key);
   }
 
   /** Open a previously downloaded V1 checkpoint file.
@@ -2442,8 +2466,10 @@ export class StandaloneDb extends BriefcaseDb {
       const iTwinId = nativeDb.getITwinId();
       if (iTwinId !== Guid.empty) // a "standalone" iModel means it is not associated with an iTwin
         throw new IModelError(IModelStatus.WrongIModel, `${filePath} is not a Standalone iModel. iTwinId=${iTwinId}`);
-
-      return new StandaloneDb({ nativeDb, key: file.key!, openMode, briefcaseId: BriefcaseIdValue.Unassigned });
+      if (undefined === file.key) {
+        throw new IModelError(BentleyStatus.ERROR, "File key is undefined.");
+      }
+      return new StandaloneDb({ nativeDb, key: file.key, openMode, briefcaseId: BriefcaseIdValue.Unassigned });
     } catch (error) {
       nativeDb.closeIModel();
       throw error;

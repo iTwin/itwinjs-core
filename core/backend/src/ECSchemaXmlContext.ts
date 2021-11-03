@@ -6,6 +6,7 @@
  * @module Schema
  */
 
+import { BentleyStatus } from "@itwin/core-bentley";
 import { IModelError } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { IModelHost } from "./IModelHost";
@@ -25,23 +26,38 @@ export class ECSchemaXmlContext {
   }
 
   public addSchemaPath(searchPath: string): void {
-    this._nativeContext!.addSchemaPath(searchPath);
+    if (undefined === this._nativeContext) {
+      throw new IModelError(BentleyStatus.ERROR, "Native context is undefined.");
+    }
+    this._nativeContext.addSchemaPath(searchPath);
   }
 
   public setSchemaLocater(locater: IModelJsNative.ECSchemaXmlContext.SchemaLocaterCallback): void {
-    this._nativeContext!.setSchemaLocater(locater);
+    if (undefined === this._nativeContext) {
+      throw new IModelError(BentleyStatus.ERROR, "Native context is undefined.");
+    }
+    this._nativeContext.setSchemaLocater(locater);
   }
 
   public setFirstSchemaLocater(locater: IModelJsNative.ECSchemaXmlContext.SchemaLocaterCallback): void {
-    this._nativeContext!.setFirstSchemaLocater(locater);
+    if (undefined === this._nativeContext) {
+      throw new IModelError(BentleyStatus.ERROR, "Native context is undefined.");
+    }
+    this._nativeContext.setFirstSchemaLocater(locater);
   }
 
   public readSchemaFromXmlFile(filePath: string): any {
-    const response = this._nativeContext!.readSchemaFromXmlFile(filePath);
+    if (undefined === this._nativeContext) {
+      throw new IModelError(BentleyStatus.ERROR, "Native context is undefined.");
+    }
+    const response = this._nativeContext.readSchemaFromXmlFile(filePath);
     if (response.error) {
       throw new IModelError(response.error.status, response.error.message);
     }
 
-    return JSON.parse(response.result!);
+    if (undefined === response.result) {
+      throw new IModelError(BentleyStatus.ERROR, "Result is undefined.");
+    }
+    return JSON.parse(response.result);
   }
 }

@@ -6,7 +6,7 @@
  * @module iModels
  */
 
-import { AccessToken, assert, DbResult, GuidString, Id64String, IModelStatus, Logger, PerfLogger, using } from "@itwin/core-bentley";
+import { AccessToken, assert, BentleyStatus, DbResult, GuidString, Id64String, IModelStatus, Logger, PerfLogger, using } from "@itwin/core-bentley";
 import { ChangedValueState, ChangeOpCode, ChangesetRange, IModelError, IModelVersion } from "@itwin/core-common";
 import * as path from "path";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -232,11 +232,13 @@ export class ChangeSummaryManager {
         Logger.logTrace(loggerCategory, `Actual Change summary extraction done for changeset #${i + 1}.`, () => ({ iModelId, changeSetId: currentChangeSetId }));
 
         perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Add ChangeSet info to ChangeSummary");
-        const changeSummaryId = stat.result!;
-        summaries.push(changeSummaryId);
-        ChangeSummaryManager.addExtendedInfos(changesFile, changeSummaryId, currentChangeSetId, currentChangeSetInfo.parentId, currentChangeSetInfo.description, currentChangeSetInfo.pushDate, currentChangeSetInfo.userCreated);
-        perfLogger.dispose();
-        Logger.logTrace(loggerCategory, `Added extended infos to Change Summary for changeset #${i + 1}.`, () => ({ iModelId, changeSetId: currentChangeSetId }));
+        if (undefined !== stat.result) {
+          const changeSummaryId = stat.result;
+          summaries.push(changeSummaryId);
+          ChangeSummaryManager.addExtendedInfos(changesFile, changeSummaryId, currentChangeSetId, currentChangeSetInfo.parentId, currentChangeSetInfo.description, currentChangeSetInfo.pushDate, currentChangeSetInfo.userCreated);
+          perfLogger.dispose();
+          Logger.logTrace(loggerCategory, `Added extended infos to Change Summary for changeset #${i + 1}.`, () => ({ iModelId, changeSetId: currentChangeSetId }));
+        }
 
         Logger.logInfo(loggerCategory, `Finished Change Summary extraction for changeset #${i + 1}.`, () => ({ iModelId, changeSetId: currentChangeSetId }));
       }
@@ -525,7 +527,10 @@ export class ChangeSummaryManager {
       if (stat.error && stat.error.status !== DbResult.BE_SQLITE_OK)
         throw new IModelError(stat.error.status, stat.error.message);
 
-      changeSummaryId = stat.result!;
+      if (undefined === stat.result) {
+        throw new IModelError(BentleyStatus.ERROR, "Result is undefined.");
+      }
+      changeSummaryId = stat.result;
       ChangeSummaryManager.addExtendedInfos(changesFile, changeSummaryId, changesetId, changeset.parentId, changeset.description, changeset.pushDate, changeset.userCreated);
 
       changesFile.saveChanges();

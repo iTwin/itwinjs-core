@@ -207,8 +207,11 @@ export class ITwinSettings implements Settings {
 
   private updateDefaults() {
     const defaults: SettingDictionary = {};
-    for (const [specName, val] of SettingsSpecRegistry.allSpecs)
-      defaults[specName] = val.default!;
+    for (const [specName, val] of SettingsSpecRegistry.allSpecs) {
+      if (undefined !== val.default) {
+        defaults[specName] = val.default;
+      }
+    }
     this.addDictionary("_default_", 0, defaults);
   }
 

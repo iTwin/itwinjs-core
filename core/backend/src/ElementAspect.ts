@@ -6,11 +6,11 @@
  * @module ElementAspects
  */
 
-import { ChannelRootAspectProps, ElementAspectProps, ExternalSourceAspectProps, RelatedElement } from "@itwin/core-common";
+import { ChannelRootAspectProps, ElementAspectProps, ExternalSourceAspectProps, IModelError, RelatedElement } from "@itwin/core-common";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { ECSqlStatement } from "./ECSqlStatement";
-import { DbResult, Id64String } from "@itwin/core-bentley";
+import { BentleyStatus, DbResult, Id64String } from "@itwin/core-bentley";
 
 /** Argument for the `ElementAspect.onXxx` static methods
  * @beta
@@ -47,7 +47,11 @@ export class ElementAspect extends Entity implements ElementAspectProps {
   /** @internal */
   constructor(props: ElementAspectProps, iModel: IModelDb) {
     super(props, iModel);
-    this.element = RelatedElement.fromJSON(props.element)!;
+    const element = RelatedElement.fromJSON(props.element);
+    if (undefined === element) {
+      throw new IModelError(BentleyStatus.ERROR, "Element is undefined.");
+    }
+    this.element = element;
   }
 
   /** @internal */
@@ -177,7 +181,11 @@ export class ExternalSourceAspect extends ElementMultiAspect implements External
   /** @internal */
   constructor(props: ExternalSourceAspectProps, iModel: IModelDb) {
     super(props, iModel);
-    this.scope = RelatedElement.fromJSON(props.scope)!;
+    const scope = RelatedElement.fromJSON(props.scope);
+    if (undefined === scope) {
+      throw new IModelError(BentleyStatus.ERROR, "Scope is undefined.");
+    }
+    this.scope = scope;
     this.source = RelatedElement.fromJSON(props.source);
     this.identifier = props.identifier;
     this.kind = props.kind;

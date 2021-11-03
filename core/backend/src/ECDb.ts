@@ -278,7 +278,7 @@ export class ECDb implements IDisposable {
 
   /** @internal */
   public get nativeDb(): IModelJsNative.ECDb {
-    return this._nativeDb!;
+    return this._nativeDb!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
   }
 
   /** Allow to execute query and read results along with meta data. The result are streamed.
@@ -293,7 +293,7 @@ export class ECDb implements IDisposable {
     }
     const executor = {
       execute: async (request: DbQueryRequest) => {
-        return ConcurrentQuery.executeQueryRequest(this._nativeDb!, request);
+        return ConcurrentQuery.executeQueryRequest(this.nativeDb, request);
       },
     };
     return new ECSqlReader(executor, ecsql, params, config);
