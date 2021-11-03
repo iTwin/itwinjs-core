@@ -113,8 +113,6 @@ describe("Settings", () => {
     settings.addDictionary("iTwin.setting.json", SettingsPriority.iTwin, iTwinSettings);
 
     expect(() => IModelHost.appWorkspace.settings.addDictionary("iModel", SettingsPriority.iModel, imodel1Settings)).to.throw("Use IModelSettings");
-    expect(() => IModelHost.appWorkspace.settings.addDictionary("iModel", SettingsPriority.organization, imodel1Settings)).to.throw("Use IModelSettings");
-    expect(() => IModelHost.appWorkspace.settings.addDictionary("itwin", SettingsPriority.iTwin, iTwinSettings)).to.throw("Use IModelSettings");
 
     expect(settings.getString("app1/sub1")).equals(imodel2Settings["app1/sub1"]);
     expect(settings.getString("app2/setting6")).equals(iTwinSettings["app2/setting6"]);

@@ -158,12 +158,12 @@ export class IModelHostConfiguration {
 
 /**
  * Settings for the application workspace.
- * @note this includes the default dictionary
+ * @note this includes the default dictionary from the SettingsSpecRegistry
  */
 class ApplicationSettings extends BaseSettings {
   private _remove?: VoidFunction;
   protected override verifyPriority(priority: SettingsPriority) {
-    if (priority > SettingsPriority.application)
+    if (priority >= SettingsPriority.iModel) // iModel settings may not appear in ApplicationSettings
       throw new Error("Use IModelSettings");
   }
   private updateDefaults() {
