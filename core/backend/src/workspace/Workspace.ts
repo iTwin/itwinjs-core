@@ -93,8 +93,6 @@ export interface WorkspaceContainer {
   readonly containerId: WorkspaceContainerId;
   /** The Workspace that opened this WorkspaceContainer */
   readonly workspace: Workspace;
-  /** If present, IModelDb that owns this [[WorkspaceContainer]]. The lifetime of this container is paired with the iModelDb. */
-  readonly iModelOwner?: IModelDb;
   /** the directory for extracting file resources. */
   readonly containerFilesDir: LocalDirName;
   /** event raised when the container is closed. */
