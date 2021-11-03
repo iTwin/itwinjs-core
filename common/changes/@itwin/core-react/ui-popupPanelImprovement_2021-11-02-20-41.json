@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-react",
+      "comment": "Add prop that prevents popup children from unmounting when popup is closed.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-react"
+}

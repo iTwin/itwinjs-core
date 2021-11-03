@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "ClipUtilities.createComplementaryClips -- method to create a UnionOfConvexClipPlaneSets which covers the space outside of a ConvexClipPlaneSet",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}

@@ -95,28 +95,30 @@ function getGroupPriority(potentialId: any, defaultValue: number) {
  * @public
  */
 export class StandardContentToolsProvider implements UiItemsProvider {
-  public static providerId = "uifw:StandardContentToolsProvider";
-  public readonly id = StandardContentToolsProvider.providerId;
 
   /**
    * static function to register the StandardContentToolsProvider
+   * @param providerId - unique identifier for this instance of the provider.  This is required in case separate packages want
+   * to set up custom stage with their own subset of standard tools.
    * @param defaultContextTools - if undefined all available tools are provided to stage. If defined only those
    * specific tool buttons are shown.
    * @param isSupportedStage - optional function that will be called to determine if tools should be added to current stage. If not set and
    * the current stage's `usage` is set to `StageUsage.General` then the provider will add items to frontstage.
    */
-  public static register(defaultContextTools?: DefaultContentTools, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean) {
-    UiItemsManager.register(new StandardContentToolsProvider(defaultContextTools, isSupportedStage));
+  public static register(providerId: string, defaultContextTools?: DefaultContentTools, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean) {
+    UiItemsManager.register(new StandardContentToolsProvider(providerId, defaultContextTools, isSupportedStage));
 
     // register core commands not automatically registered
     ViewClipByPlaneTool.register();
   }
 
-  public static unregister() {
-    UiItemsManager.unregister(StandardContentToolsProvider.providerId);
+  public static unregister(providerId: string) {
+    UiItemsManager.unregister(providerId);
   }
 
-  constructor(private defaultContextTools?: DefaultContentTools, private isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean) { }
+  constructor(private _providerId: string, private defaultContextTools?: DefaultContentTools, private isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean) { }
+
+  public get id(): string { return this._providerId; }
 
   public provideToolbarButtonItems(stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any): CommonToolbarItem[] {
     const items: CommonToolbarItem[] = [];

@@ -160,7 +160,8 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
 
   public override forceTileLoad(tile: Tile): boolean {
     // Force loading of the metadata availability tiles as these are required for determining the availability of descendants.
-    return undefined !== this._metaDataAvailableLevel && tile.depth === 1 + this._metaDataAvailableLevel && !(tile as MapTile).everLoaded;
+    const mapTile = tile as MapTile;
+    return undefined !== this._metaDataAvailableLevel && mapTile.quadId.level === this._metaDataAvailableLevel && !mapTile.everLoaded;
   }
 
   constructor(iModel: IModelConnection, modelId: Id64String, private _accessToken: string, private _tileUrlTemplate: string,
@@ -180,7 +181,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     if (quadId.level > this.maxDepth)
       return false;
 
-    return this._tileAvailability ? this._tileAvailability.isTileAvailable(quadId.level - 1, quadId.column, quadId.row) : true;
+    return this._tileAvailability ? this._tileAvailability.isTileAvailable(quadId.level, quadId.column, quadId.row) : true;
   }
 
   public override async getMesh(tile: MapTile, data: Uint8Array): Promise<TerrainMeshPrimitive | undefined> {
@@ -374,11 +375,11 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
   }
 
   public override constructUrl(row: number, column: number, zoomLevel: number): string {
-    return this._tileUrlTemplate.replace("{z}", (zoomLevel - 1).toString()).replace("{x}", column.toString()).replace("{y}", row.toString());
+    return this._tileUrlTemplate.replace("{z}", zoomLevel.toString()).replace("{x}", column.toString()).replace("{y}", row.toString());
   }
 
   public getChildHeightRange(quadId: QuadId, rectangle: MapCartoRectangle, parent: MapTile): Range1d | undefined {
-    return (quadId.level <= ApproximateTerrainHeights.maxLevel) ? ApproximateTerrainHeights.instance.getMinimumMaximumHeights(rectangle) : (parent).heightRange;
+    return (quadId.level < ApproximateTerrainHeights.maxLevel) ? ApproximateTerrainHeights.instance.getMinimumMaximumHeights(rectangle) : (parent).heightRange;
   }
   /**
    * Specifies the quality of terrain created from heightmaps.  A value of 1.0 will

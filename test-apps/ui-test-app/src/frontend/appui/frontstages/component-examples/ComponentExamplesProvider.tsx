@@ -55,8 +55,8 @@ function DualColorPickers() {
 
   return (
     <div style={{ display: "flex", gap: "4px" }}>
-      <ColorPickerPopup initialColor={colorDef} onClose={onPopupClose} colorInputType="RGB" />
-      <ColorPickerPopup initialColor={colorDef} onClose={onPopupClose} colorInputType="HSL" showCaret />
+      <ColorPickerPopup initialColor={colorDef} onClose={onPopupClose} colorInputType="rgb" />
+      <ColorPickerPopup initialColor={colorDef} onClose={onPopupClose} colorInputType="hsl" showCaret />
     </div>
   );
 }
@@ -427,7 +427,7 @@ export function ColorPickerToggle() {
     e.preventDefault();
     ModalDialogManager.openDialog(<ColorPickerDialog dialogTitle={colorDialogTitle} color={newColor} colorPresets={presetColors.current}
       onOkResult={handleBackgroundColorDialogOk} onCancelResult={handleBackgroundColorDialogCancel}
-      colorInputType="RGB" />);
+      colorInputType="rgb" />);
   }, [presetColors, handleBackgroundColorDialogOk, colorDialogTitle, handleBackgroundColorDialogCancel]);
 
   return (
@@ -670,25 +670,25 @@ export class ComponentExamplesProvider {
           </ExpandableList>),
         createComponentExample("ExpandableList w/ singleExpandOnly", "ExpandableList with singleExpandOnly prop",
           <ExpandableList className="uicore-full-width" singleExpandOnly={true} defaultActiveBlock={0}>
-            <ExpandableBlock title="Test1" isExpanded={false} >
+            <ExpandableBlock title="Test1" isExpanded={false} size='small' >
               Hello World 1
             </ExpandableBlock>
-            <ExpandableBlock title="Test2" isExpanded={false} >
+            <ExpandableBlock title="Test2" isExpanded={false} size='small' >
               Hello World 2
             </ExpandableBlock>
-            <ExpandableBlock title="Test3" isExpanded={false} >
+            <ExpandableBlock title="Test3" isExpanded={false} size='small' >
               Hello World 3
             </ExpandableBlock>
           </ExpandableList>),
         createComponentExample("ExpandableList w/ singleIsCollapsible", "ExpandableList with singleIsCollapsible prop",
           <ExpandableList className="uicore-full-width" singleExpandOnly={true} singleIsCollapsible={true} defaultActiveBlock={0}>
-            <ExpandableBlock title="Test1" isExpanded={false} >
+            <ExpandableBlock title="Test1" isExpanded={false} size='small' >
               Hello World 1
             </ExpandableBlock>
-            <ExpandableBlock title="Test2" isExpanded={false} >
+            <ExpandableBlock title="Test2" isExpanded={false} size='small' >
               Hello World 2
             </ExpandableBlock>
-            <ExpandableBlock title="Test3" isExpanded={false} >
+            <ExpandableBlock title="Test3" isExpanded={false} size='small' >
               Hello World 3
             </ExpandableBlock>
           </ExpandableList>),

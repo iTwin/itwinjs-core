@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-backend",
-  "version": "3.0.0-dev.102",
+  "version": "3.0.0-dev.107",
   "description": "iTwin.js backend components",
   "main": "lib/cjs/core-backend.js",
   "typings": "lib/cjs/core-backend",
@@ -38,11 +38,11 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.102",
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.102",
-    "@itwin/core-common": "workspace:^3.0.0-dev.102",
-    "@itwin/core-geometry": "workspace:^3.0.0-dev.102",
-    "@itwin/ecschema-metadata": "workspace:^3.0.0-dev.102"
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.107",
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.107",
+    "@itwin/core-common": "workspace:^3.0.0-dev.107",
+    "@itwin/core-geometry": "workspace:^3.0.0-dev.107",
+    "@itwin/ecschema-metadata": "workspace:^3.0.0-dev.107"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -84,6 +84,7 @@
     "@bentley/telemetry-client": "workspace:*",
     "form-data": "^2.3.2",
     "fs-extra": "^8.1.0",
+    "json5": "^2.2.0",
     "js-base64": "^3.6.1",
     "multiparty": "^4.2.1",
     "semver": "^5.5.0",

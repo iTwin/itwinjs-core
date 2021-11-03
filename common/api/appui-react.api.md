@@ -2842,6 +2842,9 @@ export function getIsHiddenIfFeatureOverridesActive(): ConditionalBooleanValue;
 // @beta
 export function getIsHiddenIfSelectionNotActive(): ConditionalBooleanValue;
 
+// @beta (undocumented)
+export function getListPanel(props: ListPickerProps): React.ReactNode;
+
 // @internal (undocumented)
 export const getNestedStagePanelKey: (location: StagePanelLocation_2) => NestedStagePanelKey<NestedStagePanelsManagerProps>;
 
@@ -3477,6 +3480,8 @@ export interface ListItem {
     // (undocumented)
     enabled: boolean;
     // (undocumented)
+    id?: string;
+    // (undocumented)
     name?: string;
     // (undocumented)
     type?: ListItemType;
@@ -3912,7 +3917,7 @@ export class ModelsVisibilityHandler implements IVisibilityHandler {
     // (undocumented)
     protected changeElementGroupingNodeState(key: ECClassGroupingNodeKey, on: boolean): Promise<void>;
     // (undocumented)
-    protected changeElementsState(modelId: Id64String | undefined, categoryId: Id64String | undefined, elementIds: Id64String[], on: boolean): void;
+    protected changeElementsState(modelId: Id64String | undefined, categoryId: Id64String | undefined, elementIds: AsyncGenerator<Id64String>, on: boolean): Promise<void>;
     // (undocumented)
     protected changeElementState(id: Id64String, modelId: Id64String | undefined, categoryId: Id64String | undefined, on: boolean): Promise<void>;
     // (undocumented)
@@ -5594,18 +5599,16 @@ export interface StagePanelZonesProps {
 
 // @public
 export class StandardContentToolsProvider implements UiItemsProvider {
-    constructor(defaultContextTools?: DefaultContentTools | undefined, isSupportedStage?: ((stageId: string, stageUsage: string, stageAppData?: any) => boolean) | undefined);
+    constructor(_providerId: string, defaultContextTools?: DefaultContentTools | undefined, isSupportedStage?: ((stageId: string, stageUsage: string, stageAppData?: any) => boolean) | undefined);
     // (undocumented)
-    readonly id: string;
-    // (undocumented)
-    static providerId: string;
+    get id(): string;
     // (undocumented)
     provideStatusBarItems(stageId: string, stageUsage: string, stageAppData?: any): CommonStatusBarItem[];
     // (undocumented)
     provideToolbarButtonItems(stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any): CommonToolbarItem[];
-    static register(defaultContextTools?: DefaultContentTools, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean): void;
+    static register(providerId: string, defaultContextTools?: DefaultContentTools, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean): void;
     // (undocumented)
-    static unregister(): void;
+    static unregister(providerId: string): void;
 }
 
 // @public
@@ -5656,16 +5659,14 @@ export interface StandardMessageBoxProps extends CommonProps {
 
 // @public
 export class StandardNavigationToolsProvider implements UiItemsProvider {
-    constructor(defaultNavigationTools?: DefaultNavigationTools | undefined, isSupportedStage?: ((stageId: string, stageUsage: string, stageAppData?: any) => boolean) | undefined);
+    constructor(_providerId: string, defaultNavigationTools?: DefaultNavigationTools | undefined, isSupportedStage?: ((stageId: string, stageUsage: string, stageAppData?: any) => boolean) | undefined);
     // (undocumented)
-    readonly id: string;
-    // (undocumented)
-    static providerId: string;
+    get id(): string;
     // (undocumented)
     provideToolbarButtonItems(stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any): CommonToolbarItem[];
-    static register(defaultNavigationTools?: DefaultNavigationTools, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean): void;
+    static register(providerId: string, defaultNavigationTools?: DefaultNavigationTools, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean): void;
     // (undocumented)
-    static unregister(): void;
+    static unregister(providerId: string): void;
 }
 
 // @alpha
@@ -5686,16 +5687,14 @@ export class StandardRotationNavigationAidControl extends NavigationAidControl {
 
 // @public
 export class StandardStatusbarItemsProvider implements UiItemsProvider {
-    constructor(_defaultItems?: DefaultStatusbarItems | undefined, _isSupportedStage?: ((stageId: string, stageUsage: string, stageAppData?: any) => boolean) | undefined);
+    constructor(_providerId: string, _defaultItems?: DefaultStatusbarItems | undefined, _isSupportedStage?: ((stageId: string, stageUsage: string, stageAppData?: any) => boolean) | undefined);
     // (undocumented)
-    readonly id: string;
-    // (undocumented)
-    static providerId: string;
+    get id(): string;
     // (undocumented)
     provideStatusBarItems(stageId: string, stageUsage: string, stageAppData?: any): CommonStatusBarItem[];
-    static register(defaultItems?: DefaultStatusbarItems, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean): void;
+    static register(providerId: string, defaultItems?: DefaultStatusbarItems, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean): void;
     // (undocumented)
-    static unregister(): void;
+    static unregister(providerId: string): void;
 }
 
 // @public

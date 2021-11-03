@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/components-react",
+      "comment": "Lock down and update version numbers so docs will build.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/components-react"
+}

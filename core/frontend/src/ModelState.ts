@@ -169,7 +169,7 @@ export abstract class GeometricModelState extends ModelState implements Geometri
     const tilesetUrl = this.jsonProperties.tilesetUrl;
 
     if(tilesetUrl) {
-      const rdSourceKeyCS = RealityDataSource.createRealityDataSourceKeyFromUrl(tilesetUrl);
+      const rdSourceKeyCS = RealityDataSource.createKeyFromUrl(tilesetUrl);
       return createRealityTileTreeReference({
         rdSourceKey: rdSourceKeyCS,
         url : tilesetUrl,
