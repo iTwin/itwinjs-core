@@ -59,7 +59,7 @@ class Tool2UiProvider extends ToolUiProvider {
       { labelNode: IModelApp.localization.getLocalizedString("SampleApp:tool2.number"), editorNode: <input type="number" min="10" max="20" /> },
       { labelNode: "Slider", editorNode: <BasicSlider /> },
       { labelNode: "Slider w/ Ticks", editorNode: <FancySlider /> },
-      { labelNode: "Input", editorNode: <Input /> },
+      { labelNode: "Input", editorNode: <Input size="small" /> },
     ];
   }
 }

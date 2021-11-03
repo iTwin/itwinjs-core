@@ -154,14 +154,14 @@ export class TableExampleContent extends React.Component<{}, TableExampleState> 
     return (
       <div style={{ width: "100%", height: "100%", display: "flex", flexFlow: "column" }}>
         <div style={{ display: "flex", alignItems: "center", height: "32px" }}>
-          <Select onChange={this._onChangeSelectionMode} aria-label="Selection Mode" value={this.state.selectionMode} options={this._selectionModes} />
+          <Select onChange={this._onChangeSelectionMode} aria-label="Selection Mode" value={this.state.selectionMode} options={this._selectionModes} size="small" />
           <Gap />
-          <Select onChange={this._onChangeTableSelectionTarget} aria-label="Selection Target" value={this.state.tableSelectionTarget} options={this._selectionTargets} />
+          <Select onChange={this._onChangeTableSelectionTarget} aria-label="Selection Target" value={this.state.tableSelectionTarget} options={this._selectionTargets} size="small" />
           <Gap />
           <label>
             <BodyText>Top row:</BodyText>
             &nbsp;
-            <Input onChange={this._onRequestedTopRowChange} style={{ width: "100px" }} />
+            <Input onChange={this._onRequestedTopRowChange} style={{ width: "100px" }} size="small" />
             &nbsp;
             <span>({this.state.topRow})</span>
           </label>

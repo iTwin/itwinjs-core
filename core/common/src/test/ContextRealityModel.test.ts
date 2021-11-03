@@ -86,7 +86,7 @@ describe("ContextRealityModel", () => {
     model = makeModel(props);
     model.appearanceOverrides = FeatureAppearance.fromJSON({ weight: 5 });
     model.classifiers!.add(new SpatialClassifier("0x123", "new"));
-    model.planarClipMaskSettings = PlanarClipMaskSettings.createByPriority(123);
+    model.planarClipMaskSettings = PlanarClipMaskSettings.create({ priority: 123 });
 
     expectProps(props, {
       tilesetUrl: "a",
@@ -165,7 +165,7 @@ describe("ContextRealityModel", () => {
     model.onPlanarClipMaskChanged.addListener((x, m) => { expect(m).to.equal(model); mask = x; });
     model.onAppearanceOverridesChanged.addListener((x, m) => { expect(m).to.equal(model); app = x; });
 
-    const newMask = model.planarClipMaskSettings = PlanarClipMaskSettings.createByPriority(1234);
+    const newMask = model.planarClipMaskSettings = PlanarClipMaskSettings.create({ priority: 1234 });
     expect(mask).to.equal(newMask);
     expect(model.planarClipMaskSettings).to.equal(newMask);
 
@@ -389,9 +389,9 @@ describe("ContextRealityModels", () => {
     }
 
     it("are dispatched when clip mask or appearance is changed", () => {
-      models.models[0].planarClipMaskSettings = PlanarClipMaskSettings.createByPriority(1);
+      models.models[0].planarClipMaskSettings = PlanarClipMaskSettings.create({ priority: 1 });
       models.models[1].appearanceOverrides = FeatureAppearance.fromJSON({ weight: 1 });
-      models.models[1].planarClipMaskSettings = PlanarClipMaskSettings.createByPriority(2);
+      models.models[1].planarClipMaskSettings = PlanarClipMaskSettings.create({ priority: 2 });
       models.models[0].appearanceOverrides = undefined;
 
       expectEvents([
@@ -406,9 +406,9 @@ describe("ContextRealityModels", () => {
       const m0 = models.models[0];
       const m1 = models.models[1];
 
-      m0.planarClipMaskSettings = PlanarClipMaskSettings.createByPriority(1);
+      m0.planarClipMaskSettings = PlanarClipMaskSettings.create({ priority: 1 });
       models.delete(m0);
-      m0.planarClipMaskSettings = PlanarClipMaskSettings.createByPriority(2);
+      m0.planarClipMaskSettings = PlanarClipMaskSettings.create({ priority: 2 });
 
       m1.appearanceOverrides = FeatureAppearance.fromJSON({ weight: 1 });
       models.clear();

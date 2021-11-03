@@ -261,7 +261,8 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
         <Input type="text" className="map-manager-source-list-filter"
           placeholder={placeholderLabel}
           value={sourceFilterString}
-          onChange={handleFilterTextChanged} />
+          onChange={handleFilterTextChanged}
+          size="small" />
         <Button className="map-manager-add-source-button" title={addCustomLayerToolTip} onClick={handleAddNewMapSource}>
           {addCustomLayerLabel}</Button>
       </div>
