@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-react",
+      "comment": "Update IconComponent SCSS to ensure color for inline svg is set.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-react"
+}

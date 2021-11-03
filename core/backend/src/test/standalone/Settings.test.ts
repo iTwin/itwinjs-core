@@ -108,9 +108,18 @@ describe("Settings", () => {
     const settings = iModel.workspace.settings;
     SettingsSpecRegistry.addGroup(app1);
     IModelHost.appWorkspace.settings.addDictionary("app1", SettingsPriority.application, app1Settings);
+
+    let settingsChanged = 0;
+    settings.onSettingsChanged.addListener(() => settingsChanged++);
+
     settings.addDictionary("iModel1.setting.json", SettingsPriority.iModel, imodel1Settings);
+    expect(settingsChanged).eq(1);
     settings.addDictionary("iModel2.setting.json", SettingsPriority.iModel, imodel2Settings);
+    expect(settingsChanged).eq(2);
     settings.addDictionary("iTwin.setting.json", SettingsPriority.iTwin, iTwinSettings);
+    expect(settingsChanged).eq(3);
+
+    expect(() => IModelHost.appWorkspace.settings.addDictionary("iModel", SettingsPriority.iModel, imodel1Settings)).to.throw("Use IModelSettings");
 
     expect(() => IModelHost.appWorkspace.settings.addDictionary("iModel", SettingsPriority.iModel, imodel1Settings)).to.throw("Use IModelSettings");
 
@@ -141,6 +150,7 @@ describe("Settings", () => {
     iTwinSettings["app2/setting6"] = "new value for 6";
     settings.addDictionary("iTwin.setting.json", SettingsPriority.iTwin, iTwinSettings);
     expect(settings.getString("app2/setting6")).equals(iTwinSettings["app2/setting6"]);
+    expect(settingsChanged).eq(4);
 
     (app1.properties["app1/strVal"] as Mutable<SettingSpec>).default = "new default";
     SettingsSpecRegistry.addGroup(app1);
@@ -157,6 +167,7 @@ describe("Settings", () => {
     expect(inspect[4]).to.deep.equal({ value: "val1", dictionary: "_default_", priority: 0 });
 
     settings.dropDictionary("iTwin.setting.json");
+    expect(settingsChanged).eq(5);
     expect(settings.getString("app2/setting6")).is.undefined;
   });
 

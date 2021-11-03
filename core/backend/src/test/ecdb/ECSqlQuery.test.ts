@@ -107,7 +107,7 @@ describe("ECSql Query", () => {
             cancelled++;
             resolve();
           } else {
-            reject();
+            reject(new Error("rejected"));
           }
         }
       });

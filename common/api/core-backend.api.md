@@ -4379,7 +4379,6 @@ export interface WorkspaceContainer {
     getBlob(rscName: WorkspaceResourceName): Uint8Array | undefined;
     getFile(rscName: WorkspaceResourceName, targetFileName?: LocalFileName): LocalFileName | undefined;
     getString(rscName: WorkspaceResourceName): string | undefined;
-    readonly iModelOwner?: IModelDb;
     readonly onContainerClosed: BeEvent<() => void>;
     readonly workspace: Workspace;
 }

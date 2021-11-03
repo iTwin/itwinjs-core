@@ -7,4 +7,7 @@
 .core-svg-icon {
   width:  $uicore-icons-small;
   height: $uicore-icons-small;
+  svg {
+    fill: currentColor;
+  }
 }

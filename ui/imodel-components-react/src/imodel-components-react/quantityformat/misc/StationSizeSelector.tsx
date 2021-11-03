@@ -35,6 +35,6 @@ export function StationSizeSelector(props: StationSizeSelectorProps) {
   }, [onChange]);
 
   return (
-    <Select options={separatorOptions.current} disabled={disabled} value={value} onChange={handleOnChange} {...otherProps} />
+    <Select options={separatorOptions.current} disabled={disabled} value={value} onChange={handleOnChange} size="small" {...otherProps} />
   );
 }

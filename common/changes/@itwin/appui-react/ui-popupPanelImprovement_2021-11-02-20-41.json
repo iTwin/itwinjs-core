@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Add prop that prevents popup button panel from unmounting when closed.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}

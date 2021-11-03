@@ -6,18 +6,18 @@
  * @module Core
  */
 
-import { BeEvent, IDisposable, Logger, OrderedId64Iterable } from "@itwin/core-bentley";
+import { BeEvent, CompressedId64Set, IDisposable, OrderedId64Iterable } from "@itwin/core-bentley";
 import { IModelConnection, IpcApp } from "@itwin/core-frontend";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import {
-  Content, ContentDescriptorRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, ContentUpdateInfo, Descriptor, DescriptorOverrides,
-  DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ElementProperties,
-  ElementPropertiesRequestOptions, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions,
-  HierarchyUpdateInfo, InstanceKey, isSingleElementPropertiesRequestOptions, Item, Key, KeySet, LabelDefinition, MultiElementPropertiesRequestOptions,
-  Node, NodeKey, NodeKeyJSON, NodePathElement, Paged, PagedResponse, PageOptions, PresentationIpcEvents, RpcRequestsHandler, Ruleset, RulesetVariable,
-  SelectClassInfo, SingleElementPropertiesRequestOptions, UpdateInfo, UpdateInfoJSON, VariableValueTypes,
+  Content, ContentDescriptorRequestOptions, ContentInstanceKeysRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, ContentUpdateInfo,
+  Descriptor, DescriptorOverrides, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions,
+  ElementProperties, ElementPropertiesRequestOptions, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions,
+  HierarchyRequestOptions, HierarchyUpdateInfo, InstanceKey, isSingleElementPropertiesRequestOptions, Item, Key, KeySet, LabelDefinition,
+  MultiElementPropertiesRequestOptions, Node, NodeKey, NodeKeyJSON, NodePathElement, Paged, PagedResponse, PageOptions, PresentationIpcEvents,
+  RpcRequestsHandler, Ruleset, RulesetVariable, SelectClassInfo, SingleElementPropertiesRequestOptions, UpdateInfo, UpdateInfoJSON,
+  VariableValueTypes,
 } from "@itwin/presentation-common";
-import { PresentationFrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { IpcRequestsHandler } from "./IpcRequestsHandler";
 import { LocalizationHelper } from "./LocalizationHelper";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
@@ -282,7 +282,7 @@ export class PresentationManager implements IDisposable {
     await this.onConnection(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({ ...options, parentKey: optionalNodeKeyToJson(options.parentKey) });
-    const result = await buildPagedResponse(options.paging, async (partialPageOptions) => this._requestsHandler.getPagedNodes({ ...rpcOptions, paging: partialPageOptions }));
+    const result = await buildPagedArrayResponse(options.paging, async (partialPageOptions) => this._requestsHandler.getPagedNodes({ ...rpcOptions, paging: partialPageOptions }));
     return this._localizationHelper.getLocalizedNodes(result.items.map(Node.fromJSON));
   }
 
@@ -299,7 +299,7 @@ export class PresentationManager implements IDisposable {
     await this.onConnection(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({ ...options, parentKey: optionalNodeKeyToJson(options.parentKey) });
-    const result = await buildPagedResponse(options.paging, async (partialPageOptions) => this._requestsHandler.getPagedNodes({ ...rpcOptions, paging: partialPageOptions }));
+    const result = await buildPagedArrayResponse(options.paging, async (partialPageOptions) => this._requestsHandler.getPagedNodes({ ...rpcOptions, paging: partialPageOptions }));
     return {
       count: result.total,
       nodes: this._localizationHelper.getLocalizedNodes(result.items.map(Node.fromJSON)),
@@ -373,7 +373,7 @@ export class PresentationManager implements IDisposable {
       keys: stripTransientElementKeys(requestOptions.keys).toJSON(),
     });
     let descriptor = (requestOptions.descriptor instanceof Descriptor) ? requestOptions.descriptor : undefined;
-    const result = await buildPagedResponse(options.paging, async (partialPageOptions, requestIndex) => {
+    const result = await buildPagedArrayResponse(options.paging, async (partialPageOptions, requestIndex) => {
       if (0 === requestIndex && !descriptor) {
         const content = await this._requestsHandler.getPagedContent({ ...rpcOptions, paging: partialPageOptions });
         if (content) {
@@ -402,7 +402,7 @@ export class PresentationManager implements IDisposable {
       descriptor: getDescriptorOverrides(options.descriptor),
       keys: stripTransientElementKeys(options.keys).toJSON(),
     };
-    const result = await buildPagedResponse(requestOptions.paging, async (partialPageOptions) => this._requestsHandler.getPagedDistinctValues({ ...rpcOptions, paging: partialPageOptions }));
+    const result = await buildPagedArrayResponse(requestOptions.paging, async (partialPageOptions) => this._requestsHandler.getPagedDistinctValues({ ...rpcOptions, paging: partialPageOptions }));
     return {
       ...result,
       items: result.items.map(DisplayValueGroup.fromJSON),
@@ -427,9 +427,39 @@ export class PresentationManager implements IDisposable {
     }
 
     const rpcOptions = this.toRpcTokenOptions(requestOptions);
-    return buildPagedResponse(requestOptions.paging, async (partialPageOptions) => {
+    return buildPagedArrayResponse(requestOptions.paging, async (partialPageOptions) => {
       return this._requestsHandler.getElementProperties({ ...rpcOptions, paging: partialPageOptions });
     });
+  }
+
+  /**
+   * Retrieves content item instance keys.
+   * @alpha
+   */
+  public async getContentInstanceKeys(requestOptions: ContentInstanceKeysRequestOptions<IModelConnection, KeySet, RulesetVariable>): Promise<{ total: number, items: () => AsyncGenerator<InstanceKey> }> {
+    await this.onConnection(requestOptions.imodel);
+    const options = await this.addRulesetAndVariablesToOptions(requestOptions);
+    const rpcOptions = {
+      ...this.toRpcTokenOptions(options),
+      keys: stripTransientElementKeys(options.keys).toJSON(),
+    };
+
+    const props = {
+      page: requestOptions.paging,
+      get: async (page: Required<PageOptions>) => {
+        const keys = await this._requestsHandler.getContentInstanceKeys({ ...rpcOptions, paging: page });
+        return {
+          total: keys.total,
+          items: keys.items.instanceKeys.reduce((instanceKeys, entry) => {
+            for (const id of CompressedId64Set.iterable(entry[1])) {
+              instanceKeys.push({ className: entry[0], id });
+            }
+            return instanceKeys;
+          }, new Array<InstanceKey>()),
+        };
+      },
+    };
+    return createPagedGeneratorResponse(props);
   }
 
   /** Retrieves display label definition of specific item. */
@@ -444,7 +474,7 @@ export class PresentationManager implements IDisposable {
   public async getDisplayLabelDefinitions(requestOptions: DisplayLabelsRequestOptions<IModelConnection, InstanceKey>): Promise<LabelDefinition[]> {
     await this.onConnection(requestOptions.imodel);
     const rpcOptions = this.toRpcTokenOptions({ ...requestOptions, keys: requestOptions.keys.map(InstanceKey.toJSON) });
-    const result = await buildPagedResponse(undefined, async (partialPageOptions) => {
+    const result = await buildPagedArrayResponse(undefined, async (partialPageOptions) => {
       const partialKeys = (!partialPageOptions.start) ? rpcOptions.keys : rpcOptions.keys.slice(partialPageOptions.start);
       return this._requestsHandler.getPagedDisplayLabelDefinitions({ ...rpcOptions, keys: partialKeys });
     });
@@ -461,33 +491,60 @@ const getDescriptorOverrides = (descriptorOrOverrides: Descriptor | DescriptorOv
 
 const optionalNodeKeyToJson = (key: NodeKey | undefined): NodeKeyJSON | undefined => key ? NodeKey.toJSON(key) : undefined;
 
-/** @internal */
-export const buildPagedResponse = async <TItem>(requestedPage: PageOptions | undefined, getter: (page: Required<PageOptions>, requestIndex: number) => Promise<PagedResponse<TItem>>): Promise<PagedResponse<TItem>> => {
-  const requestedPageStart = requestedPage?.start ?? 0;
-  const requestedPageSize = requestedPage?.size ?? 0;
+interface PagedGeneratorCreateProps<TPagedResponseItem> {
+  page: PageOptions | undefined;
+  get: (pageStart: Required<PageOptions>, requestIndex: number) => Promise<{ total: number, items: TPagedResponseItem[] }>;
+}
+async function createPagedGeneratorResponse<TPagedResponseItem>(props: PagedGeneratorCreateProps<TPagedResponseItem>) {
+  const requestedPageStart = props.page?.start ?? 0;
+  const requestedPageSize = props.page?.size ?? 0;
   let pageStart = requestedPageStart;
   let pageSize = requestedPageSize;
-  let totalCount;
+  let receivedItemsCount = 0;
   let requestIndex = 0;
-  const items = new Array<TItem>();
-  while (true) {
-    const partialResult = await getter({ start: pageStart, size: pageSize }, requestIndex++);
-    if (partialResult.total !== 0 && partialResult.items.length === 0) {
-      if (requestedPageStart >= partialResult.total)
-        Logger.logWarning(PresentationFrontendLoggerCategory.Package, `Requested page with start index ${requestedPageStart} is out of bounds. Total number of items: ${partialResult.total}`);
-      else
-        Logger.logError(PresentationFrontendLoggerCategory.Package, "Paged request returned non zero total count but no items");
-      return { total: 0, items: [] };
+
+  const firstPage = await props.get({ start: pageStart, size: pageSize }, requestIndex++);
+  return {
+    total: firstPage.total,
+    async *items() {
+      let partialResult = firstPage;
+      while (true) {
+        for (const item of partialResult.items) {
+          yield item;
+          ++receivedItemsCount;
+        }
+
+        if (partialResult.total !== 0 && receivedItemsCount === 0) {
+          if (pageStart >= partialResult.total)
+            throw new Error(`Requested page with start index ${pageStart} is out of bounds. Total number of items: ${partialResult.total}`);
+          throw new Error("Paged request returned non zero total count but no items");
+        }
+
+        if (requestedPageSize !== 0 && receivedItemsCount >= requestedPageSize || receivedItemsCount >= (partialResult.total - requestedPageStart))
+          break;
+
+        if (requestedPageSize !== 0)
+          pageSize = requestedPageSize - receivedItemsCount;
+        pageStart = requestedPageStart + receivedItemsCount;
+
+        partialResult = await props.get({ start: pageStart, size: pageSize }, requestIndex++);
+      }
+    },
+  };
+}
+
+/** @internal */
+export const buildPagedArrayResponse = async <TItem>(requestedPage: PageOptions | undefined, getter: (page: Required<PageOptions>, requestIndex: number) => Promise<PagedResponse<TItem>>): Promise<PagedResponse<TItem>> => {
+  try {
+    const items = new Array<TItem>();
+    const gen = await createPagedGeneratorResponse({ page: requestedPage, get: getter });
+    for await (const item of gen.items()) {
+      items.push(item);
     }
-    totalCount = partialResult.total;
-    items.push(...partialResult.items);
-    if (requestedPageSize !== 0 && items.length >= requestedPageSize || items.length >= (partialResult.total - requestedPageStart))
-      break;
-    if (requestedPageSize !== 0)
-      pageSize -= partialResult.items.length;
-    pageStart += partialResult.items.length;
+    return { total: gen.total, items };
+  } catch {
+    return { total: 0, items: [] };
   }
-  return { total: totalCount, items };
 };
 
 const stripTransientElementKeys = (keys: KeySet) => {
