@@ -221,13 +221,16 @@ export class BaseSettings implements Settings {
     this.verifyPriority(priority);
     this.dropDictionary(dictionaryName, false); // make sure we don't have the same dictionary twice
     const file = new SettingsDictionary(dictionaryName, priority, settings);
-    for (let i = 0; i < this._dictionaries.length; ++i) {
-      if (this._dictionaries[i].priority <= file.priority) {
-        this._dictionaries.splice(i, 0, file);
-        return;
+    const doAdd = () => {
+      for (let i = 0; i < this._dictionaries.length; ++i) {
+        if (this._dictionaries[i].priority <= file.priority) {
+          this._dictionaries.splice(i, 0, file);
+          return;
+        }
       }
-    }
-    this._dictionaries.push(file);
+      this._dictionaries.push(file);
+    };
+    doAdd();
     this.onSettingsChanged.raiseEvent();
   }
 
