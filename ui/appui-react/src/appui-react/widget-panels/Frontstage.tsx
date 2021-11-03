@@ -248,11 +248,12 @@ export function useLabels() {
 
 /** @internal */
 export function addWidgets(state: NineZoneState, widgets: ReadonlyArray<WidgetDef>, side: PanelSide, widgetId: WidgetIdTypes): NineZoneState {
-  if (widgets.length === 0)
+  const visibleWidgets = widgets.filter((w) => w.isVisible);
+  if (visibleWidgets.length === 0)
     return state;
 
   const tabs = new Array<string>();
-  for (const widget of widgets) {
+  for (const widget of visibleWidgets) {
     const label = getWidgetLabel(widget.label);
     state = addTab(state, widget.id, {
       label,
@@ -263,7 +264,7 @@ export function addWidgets(state: NineZoneState, widgets: ReadonlyArray<WidgetDe
     tabs.push(widget.id);
   }
 
-  const activeWidget = widgets.find((widget) => widget.isActive);
+  const activeWidget = visibleWidgets.find((widget) => widget.isActive);
   const minimized = !activeWidget;
   state = addPanelWidget(state, side, widgetId, tabs, {
     activeTabId: activeWidget ? activeWidget.id : tabs[0],
@@ -381,6 +382,24 @@ export function addMissingWidgets(frontstageDef: FrontstageDef, initialState: Ni
   state = appendWidgets(state, determineNewWidgets(frontstageDef.bottomPanel?.panelZones.start.widgetDefs, initialState), "bottom", 0);
   state = appendWidgets(state, determineNewWidgets(frontstageDef.bottomMostPanel?.panelWidgetDefs, initialState), "bottom", 1); // eslint-disable-line deprecation/deprecation
   state = appendWidgets(state, determineNewWidgets(frontstageDef.bottomPanel?.panelZones.end.widgetDefs, initialState), "bottom", 1);
+
+  return state;
+}
+
+/** Removes widgets with Hidden defaultState. */
+function removeHiddenWidgets(state: NineZoneState, frontstageDef: FrontstageDef): NineZoneState {
+  const tabs = Object.values(state.tabs);
+  for (const tab of tabs) {
+    const widgetDef = frontstageDef.findWidgetDef(tab.id);
+    if (!widgetDef)
+      continue;
+
+    if (widgetDef.defaultState === WidgetState.Hidden) {
+      state = produce(state, (draft) => {
+        hideWidget(draft, widgetDef);
+      });
+    }
+  }
 
   return state;
 }
@@ -789,9 +808,9 @@ export const setWidgetState = produce((
   widgetDef: WidgetDef,
   state: WidgetState,
 ) => {
-  const id = widgetDef.id;
-  let location = findTab(nineZone, id);
   if (state === WidgetState.Open) {
+    const id = widgetDef.id;
+    let location = findTab(nineZone, id);
     if (!location) {
       addRemovedTab(nineZone, widgetDef);
       location = findTab(nineZone, id);
@@ -801,6 +820,8 @@ export const setWidgetState = produce((
     widget.minimized = false;
     widget.activeTabId = id;
   } else if (state === WidgetState.Closed) {
+    const id = widgetDef.id;
+    let location = findTab(nineZone, id);
     if (!location) {
       addRemovedTab(nineZone, widgetDef);
       location = findTab(nineZone, id);
@@ -822,21 +843,27 @@ export const setWidgetState = produce((
       return;
     }
   } else if (state === WidgetState.Hidden) {
-    if (!location)
-      return;
-    const widgetId = location.widgetId;
-    const side = "side" in location ? location.side : "left";
-    const widgetIndex = "side" in location ? nineZone.panels[side].widgets.indexOf(widgetId) : 0;
-    const tabIndex = nineZone.widgets[location.widgetId].tabs.indexOf(id);
-    widgetDef.tabLocation = {
-      side,
-      tabIndex,
-      widgetId,
-      widgetIndex,
-    };
-    removeTab(nineZone, id);
+    hideWidget(nineZone, widgetDef);
   }
 });
+
+/** Stores widget location and hides it in the UI. */
+function hideWidget(state: Draft<NineZoneState>, widgetDef: WidgetDef) {
+  const location = findTab(state, widgetDef.id);
+  if (!location)
+    return;
+  const widgetId = location.widgetId;
+  const side = "side" in location ? location.side : "left";
+  const widgetIndex = "side" in location ? state.panels[side].widgets.indexOf(widgetId) : 0;
+  const tabIndex = state.widgets[location.widgetId].tabs.indexOf(widgetDef.id);
+  widgetDef.tabLocation = {
+    side,
+    tabIndex,
+    widgetId,
+    widgetIndex,
+  };
+  removeTab(state, widgetDef.id);
+}
 
 /** @internal */
 export const showWidget = produce((nineZone: Draft<NineZoneState>, id: TabState["id"]) => {
@@ -906,6 +933,7 @@ export function useSavedFrontstageState(frontstageDef: FrontstageDef) {
       ) {
         const restored = restoreNineZoneState(frontstageDef, settingsResult.setting.nineZone);
         let state = addMissingWidgets(frontstageDef, restored);
+        state = removeHiddenWidgets(state, frontstageDef);
         state = processPopoutWidgets(state, frontstageDef);
         frontstageDef.nineZoneState = state;
         return;
@@ -1049,6 +1077,7 @@ export function useItemsManager(frontstageDef: FrontstageDef) {
       return;
     state = addMissingWidgets(def, state);
     state = removeMissingWidgets(def, state);
+    state = removeHiddenWidgets(state, def); // TODO: should only apply to widgets provided by registered provider in onUiProviderRegisteredEvent.
     def.nineZoneState = state;
   };
 
@@ -1085,6 +1114,9 @@ export function useSyncDefinitions(frontstageDef: FrontstageDef) {
   React.useEffect(() => {
     if (!nineZone)
       return;
+    if (frontstageDef.nineZoneState !== nineZone)
+      return;
+
     for (const panelSide of panelSides) {
       const panel = nineZone.panels[panelSide];
       const location = toStagePanelLocation(panelSide);
