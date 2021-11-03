@@ -608,6 +608,59 @@ describe("Content", () => {
 
   });
 
+  describe("Content instance keys", () => {
+
+    it("retrieves content instance keys for given input", async () => {
+      const ruleset: Ruleset = {
+        id: "model elements",
+        rules: [{
+          ruleType: RuleTypes.Content,
+          specifications: [{
+            specType: ContentSpecificationTypes.ContentRelatedInstances,
+            relationshipPaths: [{
+              relationship: { schemaName: "BisCore", className: "ModelContainsElements" },
+              direction: RelationshipDirection.Forward,
+            }],
+          }],
+        }],
+      };
+      const modelKeys = new KeySet([{ className: "BisCore:DictionaryModel", id: "0x10" }]);
+      const result = await Presentation.presentation.getContentInstanceKeys({
+        imodel,
+        rulesetOrId: ruleset,
+        keys: modelKeys,
+      });
+      expect(result.total).to.eq(7);
+
+      const resultKeys = [];
+      for await (const key of result.items())
+        resultKeys.push(key);
+      expect(resultKeys).to.deep.eq([{
+        className: "BisCore:LineStyle",
+        id: "0x1d",
+      }, {
+        className: "BisCore:LineStyle",
+        id: "0x1e",
+      }, {
+        className: "BisCore:LineStyle",
+        id: "0x1f",
+      }, {
+        className: "BisCore:LineStyle",
+        id: "0x20",
+      }, {
+        className: "BisCore:LineStyle",
+        id: "0x21",
+      }, {
+        className: "BisCore:LineStyle",
+        id: "0x22",
+      }, {
+        className: "BisCore:LineStyle",
+        id: "0x23",
+      }]);
+    });
+
+  });
+
   describe("when request in the backend exceeds the backend timeout time", () => {
 
     let raceStub: sinon.SinonStub<[readonly unknown[]], Promise<unknown>>;

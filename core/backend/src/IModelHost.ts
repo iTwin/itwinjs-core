@@ -12,7 +12,7 @@ import * as semver from "semver";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
 import { TelemetryManager } from "@bentley/telemetry-client";
 import { AccessToken, assert, BeEvent, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, ProcessDetector } from "@itwin/core-bentley";
-import { AuthorizationClient, BentleyStatus, IModelError, SessionProps } from "@itwin/core-common";
+import { AuthorizationClient, BentleyStatus, IModelError, LocalDirName, SessionProps } from "@itwin/core-common";
 import { AliCloudStorageService } from "./AliCloudStorageService";
 import { BackendHubAccess } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -28,6 +28,7 @@ import { IModelTileRpcImpl } from "./rpc-impl/IModelTileRpcImpl";
 import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
+import { ITwinWorkspace, Workspace, WorkspaceOpts } from "./workspace/Workspace";
 
 const loggerCategory = BackendLoggerCategory.IModelHost;
 
@@ -85,10 +86,15 @@ export class IModelHostConfiguration {
    *   - etc.
    * @see [[IModelHost.cacheDir]] for the value it's set to after startup
    */
-  public cacheDir?: string;
+  public cacheDir?: LocalDirName;
+
+  /** Options for creating the [[Workspace]]
+   * @beta
+   */
+  public workspace?: WorkspaceOpts;
 
   /** The directory where the app's assets are found. */
-  public appAssetsDir?: string;
+  public appAssetsDir?: LocalDirName;
 
   /** The kind of iModel hub server to use.
    * @beta
@@ -161,6 +167,7 @@ export class IModelHost {
 
   public static backendVersion = "";
   private static _cacheDir = "";
+  private static _workspace: Workspace;
 
   private static _platform?: typeof IModelJsNative;
   /** @internal */
@@ -192,8 +199,13 @@ export class IModelHost {
   public static get applicationVersion() { return this.session.applicationVersion; }
   public static set applicationVersion(version: string) { this.session.applicationVersion = version; }
 
-  /** Root of the directory holding all the files that iModel.js caches */
-  public static get cacheDir(): string { return this._cacheDir; }
+  /** Root directory holding files that iTwin.js caches */
+  public static get cacheDir(): LocalDirName { return this._cacheDir; }
+
+  /** The Workspace for this `IModelHost`
+   * @beta
+   */
+  public static get workspace(): Workspace { return this._workspace; }
 
   /** The optional [[FileNameResolver]] that resolves keys and partial file names for snapshot iModels. */
   public static snapshotFileNameResolver?: FileNameResolver;
@@ -321,7 +333,9 @@ export class IModelHost {
       }
     }
 
-    this.setupCacheDirs(configuration);
+    this.setupHostDirs(configuration);
+    this._workspace = new ITwinWorkspace(configuration.workspace);
+
     BriefcaseManager.initialize(this._briefcaseCacheDir);
 
     [
@@ -349,7 +363,7 @@ export class IModelHost {
     IModelHost.onAfterStartup.raiseEvent();
   }
 
-  private static _briefcaseCacheDir: string;
+  private static _briefcaseCacheDir: LocalDirName;
 
   private static logStartup() {
     if (!Logger.isEnabled(loggerCategory, LogLevel.Trace))
@@ -374,9 +388,13 @@ export class IModelHost {
     Logger.logTrace(loggerCategory, "IModelHost.startup", () => startupInfo);
   }
 
-  private static setupCacheDirs(configuration: IModelHostConfiguration) {
-    this._cacheDir = configuration.cacheDir ? path.normalize(configuration.cacheDir) : NativeLibrary.defaultCacheDir;
-    IModelJsFs.recursiveMkDirSync(this._cacheDir); // make sure the directory for cacheDir exists.
+  private static setupHostDirs(configuration: IModelHostConfiguration) {
+    const setupDir = (dir: LocalDirName) => {
+      dir = path.normalize(dir);
+      IModelJsFs.recursiveMkDirSync(dir);
+      return dir;
+    };
+    this._cacheDir = setupDir(configuration.cacheDir ?? NativeLibrary.defaultCacheDir);
     this._briefcaseCacheDir = path.join(this._cacheDir, "imodels");
   }
 

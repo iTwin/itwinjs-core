@@ -35,6 +35,7 @@ public;Animator
 internal;ArcGisErrorCode
 internal;ArcGisGenerateTokenOptions
 internal;ArcGISMapLayerImageryProvider 
+internal;ArcGISTileMap
 internal;ArcGisToken
 internal;ArcGisTokenClientType
 internal;ArcGisTokenGenerator
@@ -597,6 +598,7 @@ internal;TraversalChildrenDetails
 internal;TraversalDetails
 internal;TraversalSelectionContext
 public;tryImageElementFromUrl(url: string): Promise
+public;TwoWayViewportFrustumSync 
 public;TwoWayViewportSync
 public;Uniform
 public;UniformArrayParams 
