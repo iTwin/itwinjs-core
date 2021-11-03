@@ -27,6 +27,7 @@ export class LightingEditor {
     this.addSolar(content);
     this.addIntensities(content);
     this.addAmbient(content);
+    this.addFresnel(content);
     this.addHemisphere(content);
 
     const celInput = createLabeledNumericInput({
@@ -142,6 +143,24 @@ export class LightingEditor {
       if (settings) {
         portrait.value = settings.portraitIntensity.toString();
         specular.value = settings.specularIntensity.toString();
+      }
+    });
+  }
+
+  private addFresnel(parent: HTMLElement): void {
+    const span = document.createElement("span");
+    span.style.display = "flex";
+    parent.appendChild(span);
+
+    const intensityInput = this.addIntensityInput(span, "Fresnel", this._vp.lightSettings?.fresnel.intensity ?? 0, (intensity) => this.updateSettings({ fresnel: { intensity } }));
+    intensityInput.style.marginRight = "0.67em";
+
+    const cb = this.addCheckBox("Invert", (invert: boolean) => this.updateSettings({ fresnel: { invert } }), span);
+    this._updates.push(() => {
+      const lights = this._vp.lightSettings;
+      if (lights) {
+        intensityInput.value = lights.fresnel.intensity.toString();
+        cb.checkbox.checked = lights.fresnel.invert;
       }
     });
   }

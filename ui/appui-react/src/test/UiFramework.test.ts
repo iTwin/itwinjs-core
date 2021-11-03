@@ -221,8 +221,6 @@ describe("UiFramework localStorage Wrapper", () => {
       const uiVersion = "2";
       UiFramework.setUiVersion(uiVersion);
       expect(UiFramework.uiVersion).to.eql(uiVersion);
-      UiFramework.setUiVersion("");
-      expect(UiFramework.uiVersion).to.eql(uiVersion);
 
       const useDragInteraction = true;
       UiFramework.setUseDragInteraction(useDragInteraction);

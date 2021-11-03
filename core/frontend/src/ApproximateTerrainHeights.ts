@@ -48,8 +48,8 @@ export class ApproximateTerrainHeights {
     if (undefined === this._terrainHeights)
       return result;   // Not initialized.
 
-    let level = quadId.level - 1, column = quadId.column, row = quadId.row;
-    if (quadId.level > 6) {
+    let level = quadId.level, column = quadId.column, row = quadId.row;
+    if (level > 6) {
       column = column >> (level - 6);
       row = row >> quadId.row >> ((level - 6));
       level = 6;
@@ -99,7 +99,7 @@ export class ApproximateTerrainHeights {
       let failed = false;
       for (let j = 0; j < 4; ++j) {
         const corner = this._scratchCorners[j];
-        this._tilingScheme.cartographicToTileXY(corner, i + 1, this._scratchTileXY);    // Note level for iModelJS is Cesium+1 (our root is zero).
+        this._tilingScheme.cartographicToTileXY(corner, i, this._scratchTileXY);
         if (j === 0) {
           currentX = this._scratchTileXY.x;
           currentY = this._scratchTileXY.y;

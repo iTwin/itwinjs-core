@@ -1109,6 +1109,12 @@
       ]
     },
     {
+      "name": "json5",
+      "allowedCategories": [
+        "backend"
+      ]
+    },
+    {
       "name": "jsonc-parser",
       "allowedCategories": [
         "tools"

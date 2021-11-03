@@ -223,12 +223,12 @@ internal;FrameworkStagePanelProps
 public;FrameworkState
 alpha;FrameworkToolAdmin 
 public;FrameworkUiAdmin 
-alpha;FrameworkVersion(props: FrameworkVersionProps): JSX.Element
-alpha;FrameworkVersion = "1" | "2"
+public;FrameworkVersion(props: FrameworkVersionProps): JSX.Element
 internal;FrameworkVersionChangedEvent 
 internal;FrameworkVersionChangedEventArgs
-internal;FrameworkVersionContext: React.Context
-alpha;FrameworkVersionProps
+public;FrameworkVersionContext: React.Context
+public;FrameworkVersionId = "1" | "2"
+public;FrameworkVersionProps
 internal;FrameworkVersionSwitch(props: FrameworkVersionSwitchProps): JSX.Element
 internal;FrameworkVersionSwitchProps
 internal;FrameworkZone 
@@ -265,6 +265,7 @@ internal;getFloatingZoneStyle: (props: ZoneManagerProps) =>
 internal;getFrontstageStateSettingName(frontstageId: WidgetPanelsFrontstageState["id"]): string
 beta;getIsHiddenIfFeatureOverridesActive(): ConditionalBooleanValue
 beta;getIsHiddenIfSelectionNotActive(): ConditionalBooleanValue
+beta;getListPanel(props: ListPickerProps): React.ReactNode
 internal;getNestedStagePanelKey: (location: StagePanelLocation_2) => NestedStagePanelKey
 internal;getPanelZoneWidgets(frontstageDef: FrontstageDef, panelZone: WidgetIdTypes): WidgetDef[]
 beta;getQuantityFormatsSettingsManagerEntry(itemPriority: number, opts?: Partial
@@ -659,7 +660,7 @@ public;useBackstageManager: () => BackstageManager
 internal;useDefaultBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem[]
 public;useDefaultStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[]
 public;useDefaultToolbarItems: (manager: ToolbarItemsManager) => readonly CommonToolbarItem[]
-internal;useFrameworkVersion(): FrameworkVersion
+public;useFrameworkVersion(): FrameworkVersionId
 internal;useFrontstageManager(frontstageDef: FrontstageDef): void
 internal;useGroupedItems: (items: ReadonlyArray
 internal;useHorizontalToolSettingNodes(): ToolSettingsEntry[] | undefined

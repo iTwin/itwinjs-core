@@ -52,6 +52,13 @@ describe("IModelHost", () => {
     IModelHost.onBeforeShutdown.addOnce(eventHandler);
     const filename = IModelTestUtils.resolveAssetFile("GetSetAutoHandledStructProperties.bim");
 
+    const workspaceClose = sinon.spy((IModelHost.appWorkspace as any), "close");
+    const saveSettings = IModelHost.appWorkspace.settings as any;
+    const settingClose = sinon.spy(saveSettings, "close");
+    expect(workspaceClose.callCount).eq(0);
+    expect(settingClose.callCount).eq(0);
+    expect(saveSettings._remove).to.not.be.undefined;
+
     // shutdown should close any opened iModels. Make sure that happens
     const imodel1 = SnapshotDb.openFile(filename, { key: "imodel1" });
     const imodel2 = SnapshotDb.openFile(filename, { key: "imodel2" });
@@ -68,6 +75,9 @@ describe("IModelHost", () => {
     assert.isFalse(imodel1.isOpen, "shutdown should close iModel1");
     assert.isFalse(imodel2.isOpen, "shutdown should close iModel2");
     assert.isFalse(imodel3.isOpen, "shutdown should close iModel3");
+    expect(workspaceClose.callCount).eq(1);
+    expect(settingClose.callCount).eq(1);
+    expect(saveSettings._remove).to.be.undefined;
   });
 
   it("should auto-shutdown on process beforeExit event", async () => {

@@ -238,7 +238,8 @@ display-test-app has access to all key-ins defined in the imodeljs-frontend and 
   * `gridsPerRef=number` Specify number of grid lines to display per reference line.
   * `orientation=0|1|2|3|4` Value for GridOrientationType.
 * `dta model transform` - Apply a display transform to all models currently displayed in the selected viewport. Origin is specified like `x=1 y=2 z=3`; pitch and roll as `p=45 r=90` in degrees. Any argument can be omitted. Omitting all arguments clears the display transform. Snapping intentionally does not take the display transform into account.
-* `dta viewport sync *viewportId1* *viewportId2* - Synchronize the contents of two viewports, specifying them by integer Id displayed in their title bars. Omit the Ids to disconnect two previously synchronized viewports.
+* `dta viewport sync *viewportId1* *viewportId2*` - Synchronize the contents of two viewports, specifying them by integer Id displayed in their title bars. Omit the Ids to disconnect two previously synchronized viewports.
+* `dta frustum sync *viewportId1* *viewportId2*` - Like `dta viewport sync but synchronizes only the frusta of the viewports.
 
 ## Editing
 

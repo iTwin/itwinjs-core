@@ -1572,6 +1572,7 @@ describe("Frontstage local storage wrapper", () => {
 
       it("should not update size if FrontstageManager.nineZoneSize is not initialized", () => {
         const { rerender } = renderHook((props) => useUpdateNineZoneSize(props), { initialProps: new FrontstageDef() });
+        FrontstageManager.nineZoneSize = undefined;
 
         const newFrontstageDef = new FrontstageDef();
         newFrontstageDef.nineZoneState = createNineZoneState({ size: { height: 1, width: 2 } });
@@ -1850,6 +1851,7 @@ describe("Frontstage local storage wrapper", () => {
         UiItemsManager.unregister("TestUi2Provider");
         FrontstageManager.clearFrontstageDefs();
         FrontstageManager.setActiveFrontstageDef(undefined);
+        FrontstageManager.nineZoneSize = undefined;
       });
 
       afterEach(() => {
