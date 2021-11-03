@@ -138,7 +138,7 @@ export const {
 } = ext.exports;
 
 // re-export commmon
-export const { ColorDef } = ext.exports;
+export const { ClipStyle, Placement2d, ColorDef } = ext.exports;
 
 // export extension stuff
-export const { registerTool } = ext.api;
+export const { registerTool, registerToolOnly, registerToolGroup } = ext.api;

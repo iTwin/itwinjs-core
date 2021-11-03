@@ -23,6 +23,10 @@ export {
   ExtensionHost,
 } from "@itwin/core-frontend";
 
-export { ColorDef } from "@itwin/core-common";
+export { ClipStyle, Placement2d, ColorDef } from "@itwin/core-common";
 
 export function registerTool(t: typeof import("@itwin/core-frontend").Tool): Promise<void>
+
+export function registerToolOnly(t: typeof import("@itwin/core-frontend").Tool): Promise<void>
+
+export function registerToolGroup(tg: typeof import("@itwin/core-frontend").ToolGroupButton): Promise<void>
