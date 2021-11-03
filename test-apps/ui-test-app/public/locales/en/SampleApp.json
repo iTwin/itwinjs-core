@@ -101,6 +101,7 @@
   "buttons": {
     "toolGroup": "Tool Group",
     "anotherGroup": "Another Group",
+    "selectViewToActivate": "Select View to activate",
     "tool1": "Tool 1",
     "tool2": "Tool 2",
     "tool3": "Tool 3",

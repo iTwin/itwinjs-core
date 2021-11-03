@@ -2842,6 +2842,9 @@ export function getIsHiddenIfFeatureOverridesActive(): ConditionalBooleanValue;
 // @beta
 export function getIsHiddenIfSelectionNotActive(): ConditionalBooleanValue;
 
+// @beta (undocumented)
+export function getListPanel(props: ListPickerProps): React.ReactNode;
+
 // @internal (undocumented)
 export const getNestedStagePanelKey: (location: StagePanelLocation_2) => NestedStagePanelKey<NestedStagePanelsManagerProps>;
 
@@ -3476,6 +3479,8 @@ export interface ListItem {
     children?: ListItem[];
     // (undocumented)
     enabled: boolean;
+    // (undocumented)
+    id?: string;
     // (undocumented)
     name?: string;
     // (undocumented)
