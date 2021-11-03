@@ -27,6 +27,7 @@ import { LineStringOffsetClipperContext } from "./internalContexts/LineStringOff
 import { Point3dArrayCarrier } from "../geometry3d/Point3dArrayCarrier";
 import { XAndY } from "../geometry3d/XYZProps";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
+import { CurveFactory } from "../curve/CurveFactory";
 
 /** Enumerated type for describing where geometry lies with respect to clipping planes.
  * @public
@@ -39,6 +40,18 @@ export enum ClipPlaneContainment {
   /** All points outside */
   StronglyOutside = 3,
 }
+/**
+ * Enumeration of ways to handle an intermediate fragment from a clipping step
+ * @public
+ */
+export enum ClipStepAction  {
+  /** Pass fragments directly to final accepted "in" state */
+  acceptIn = 1,
+  /** Pass fragments directly to final accepted "out" state */
+  acceptOut = -1,
+/** forward fragments to subsequent steps. */
+  passToNextStep = 0
+  }
 
 /** Enumerated type for describing what must yet be done to clip a piece of geometry.
  * @public
@@ -77,7 +90,26 @@ export interface Clipper {
    * @returns true if one or more arcs portions were announced, false if entirely outside.
    */
   announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
+/** Optional polygon clip method.
+ * * This is  expected to be implemented by planar clip structures.
+ * * This is  unimplemented for curve clippers (e.g. sphere) for which polygon clip result has
+ *    curved edges.
+ */
+  appendPolygonClip?: AppendPolygonClipFunction;
 }
+  /**
+   * Signature of method to execute polygon clip, distributing fragments of xyz among insideFragments and outsideFragments
+   * @param xyz input polygon.  This is not changed.
+   * @param insideFragments Array to receive "inside" fragments.  Each fragment is a GrowableXYZArray grabbed from the cache.  This is NOT cleared.
+   * @param outsideFragments Array to receive "outside" fragments.  Each fragment is a GrowableXYZArray grabbed from the cache.  This is NOT cleared.
+   * @param arrayCache cache for reusable GrowableXYZArray.
+   */
+   type AppendPolygonClipFunction = (
+  xyz: GrowableXYZArray,
+  insideFragments: GrowableXYZArray[],
+  outsideFragments: GrowableXYZArray[],
+  arrayCache: GrowableXYZArrayCache) => void;
+
 /**
  * Interface for clipping polygons.
  * Supported by:
@@ -86,18 +118,7 @@ export interface Clipper {
  * @public
  */
 export interface PolygonClipper {
-  /**
-   *
-   * @param xyz input polygon.  This is not changed.
-   * @param insideFragments Array to receive "inside" fragments.  Each fragment is a GrowableXYZArray grabbed from the cache.  This is NOT cleared.
-   * @param outsideFragments Array to receive "outside" fragments.  Each fragment is a GrowableXYZArray grabbed from the cache.  This is NOT cleared.
-   * @param arrayCache cache for reusable GrowableXYZArray.
-   */
-  appendPolygonClip(
-    xyz: GrowableXYZArray,
-    insideFragments: GrowableXYZArray[],
-    outsideFragments: GrowableXYZArray[],
-    arrayCache: GrowableXYZArrayCache): void;
+  appendPolygonClip: AppendPolygonClipFunction;
 }
 /** Static class whose various methods are functions for clipping geometry
  * @public
@@ -498,8 +519,8 @@ export class ClipUtilities {
    * @param singleton single array which may be a replacement for multiple fragments
    * @param cache cache for array management
    */
-  public static restoreSingletonInPlaceOfMultipleShards(fragments: GrowableXYZArray[], baseCount: number, singleton: GrowableXYZArray, arrayCache: GrowableXYZArrayCache) {
-    if (fragments.length > baseCount + 1) {
+  public static restoreSingletonInPlaceOfMultipleShards(fragments: GrowableXYZArray[] | undefined, baseCount: number, singleton: GrowableXYZArray, arrayCache: GrowableXYZArrayCache) {
+    if (fragments && fragments.length > baseCount + 1) {
       while (fragments.length > baseCount) {
         const f = fragments.pop();
         arrayCache.dropToCache(f);
@@ -533,52 +554,52 @@ export class ClipUtilities {
     else
       cache.dropToCache(data);
   }
-/**
- * Find the portion of a line within a half-plane clip.
- * * The half-plane clip is to the left of the line from clipA to clipB.
- * * The original clipped segment has fractions 0 and 1 at respective segment points.
- * * Caller initializes the interval
- * * This method reduces the interval size.
- * * See clipSegmentToCCWTriangleXY for typical use.
- * @param linePointA First point of clip line
- * @param linePointB Second point of clip line
- * @param segmentPoint0 First point of clipped segment
- * @param segmentPoint1 Second point of clipped segment
- * @param interval Live interval.
-   * @param absoluteTolerance absolute tolerance for both cross product values to indicate "on" the line
- */
+  /**
+   * Find the portion of a line within a half-plane clip.
+   * * The half-plane clip is to the left of the line from clipA to clipB.
+   * * The original clipped segment has fractions 0 and 1 at respective segment points.
+   * * Caller initializes the interval
+   * * This method reduces the interval size.
+   * * See clipSegmentToCCWTriangleXY for typical use.
+   * @param linePointA First point of clip line
+   * @param linePointB Second point of clip line
+   * @param segmentPoint0 First point of clipped segment
+   * @param segmentPoint1 Second point of clipped segment
+   * @param interval Live interval.
+     * @param absoluteTolerance absolute tolerance for both cross product values to indicate "on" the line
+   */
   public static clipSegmentToLLeftOfLineXY(linePointA: XAndY, linePointB: XAndY, segmentPoint0: XAndY, segmentPoint1: XAndY, interval: Range1d,
-  absoluteTolerance: number = 1.0e-14) {
-  const ux = linePointB.x - linePointA.x;
-  const uy = linePointB.y - linePointA.y;
-  // negative is in positive is out ...
-  const h0 = -(ux * (segmentPoint0.y - linePointA.y) - uy * (segmentPoint0.x - linePointA.x));
+    absoluteTolerance: number = 1.0e-14) {
+    const ux = linePointB.x - linePointA.x;
+    const uy = linePointB.y - linePointA.y;
+    // negative is in positive is out ...
+    const h0 = -(ux * (segmentPoint0.y - linePointA.y) - uy * (segmentPoint0.x - linePointA.x));
     const h1 = -(ux * (segmentPoint1.y - linePointA.y) - uy * (segmentPoint1.x - linePointA.x));
     if (h0 < absoluteTolerance && h1 < absoluteTolerance) {
       // The entire segment is in .....
       return;
-      }
-  if (h0 * h1 > 0.0) {
-    if (h0 > 0.0)
-      interval.setNull ();
-  } else if (h0 * h1 < 0.0) {
-  // strict crossing with safe fraction . . .
-  const fraction = -h0 / (h1 - h0);
-  if (h0 < 0.0){
-    return interval.intersectRangeXXInPlace (0.0, fraction);
-    }else {
-      return interval.intersectRangeXXInPlace (fraction, 1.0);
     }
-  } else {
-    // There is an exact hit at one end, possibly non-zero at the other ... the sign of either determines which side is in play
-    // A zero and a zero or negative is entirely in, which does not alter the prior clip.
-    if (h0 > 0.0) {
-      interval.intersectRangeXXInPlace(1.0, 1.0);
-    } else if (h1 > 0.0) {
-      interval.intersectRangeXXInPlace(0.0, 0.0);
+    if (h0 * h1 > 0.0) {
+      if (h0 > 0.0)
+        interval.setNull();
+    } else if (h0 * h1 < 0.0) {
+      // strict crossing with safe fraction . . .
+      const fraction = -h0 / (h1 - h0);
+      if (h0 < 0.0) {
+        return interval.intersectRangeXXInPlace(0.0, fraction);
+      } else {
+        return interval.intersectRangeXXInPlace(fraction, 1.0);
+      }
+    } else {
+      // There is an exact hit at one end, possibly non-zero at the other ... the sign of either determines which side is in play
+      // A zero and a zero or negative is entirely in, which does not alter the prior clip.
+      if (h0 > 0.0) {
+        interval.intersectRangeXXInPlace(1.0, 1.0);
+      } else if (h1 > 0.0) {
+        interval.intersectRangeXXInPlace(0.0, 0.0);
+      }
     }
   }
-}
   /**
    * Clip an interval of a line segment to a triangle.
    * * Triangle is assumed CCW
@@ -591,7 +612,7 @@ export class ClipUtilities {
    * @param absoluteTolerance absolute tolerance for begin "on a line"
    */
   public static clipSegmentToCCWTriangleXY(pointA: XAndY, pointB: XAndY, pointC: XAndY, segment0: XAndY, segment1: XAndY, interval: Range1d,
-      absoluteTolerance: number = 1.0e-14) {
+    absoluteTolerance: number = 1.0e-14) {
     if (!interval.isNull) {
       this.clipSegmentToLLeftOfLineXY(pointA, pointB, segment0, segment1, interval, absoluteTolerance);
       if (!interval.isNull) {
@@ -603,50 +624,50 @@ export class ClipUtilities {
     }
   }
 
-/**
- * Find the portion of a line within a half-plane clip.
- * * The half-plane clip is to the left of the line from clipA to clipB.
- * * The original clipped segment has fractions 0 and 1 at respective segment points.
- * * Caller initializes the interval
- * * This method reduces the interval size.
- * * See clipSegmentToCCWTriangleXY for typical use.
- * @param linePointA First point of clip line
- * @param linePointB Second point of clip line
- * @param segmentPoint0 First point of clipped segment
- * @param segmentPoint1 Second point of clipped segment
- * @param interval Live interval.
-   * @param absoluteTolerance absolute tolerance for both cross product values to indicate "on" the line
- */
+  /**
+   * Find the portion of a line within a half-plane clip.
+   * * The half-plane clip is to the left of the line from clipA to clipB.
+   * * The original clipped segment has fractions 0 and 1 at respective segment points.
+   * * Caller initializes the interval
+   * * This method reduces the interval size.
+   * * See clipSegmentToCCWTriangleXY for typical use.
+   * @param linePointA First point of clip line
+   * @param linePointB Second point of clip line
+   * @param segmentPoint0 First point of clipped segment
+   * @param segmentPoint1 Second point of clipped segment
+   * @param interval Live interval.
+     * @param absoluteTolerance absolute tolerance for both cross product values to indicate "on" the line
+   */
   public static clipSegmentBelowPlaneXY(plane: Plane3dByOriginAndUnitNormal, segmentPoint0: XAndY, segmentPoint1: XAndY, interval: Range1d,
-  absoluteTolerance: number = 1.0e-14) {
-  // negative is in positive is out ...
-  const h0 = plane.altitudeXY (segmentPoint0.x, segmentPoint0.y);
-  const h1 = plane.altitudeXY(segmentPoint1.x, segmentPoint1.y);
-  if (h0 < absoluteTolerance && h1 < absoluteTolerance) {
+    absoluteTolerance: number = 1.0e-14) {
+    // negative is in positive is out ...
+    const h0 = plane.altitudeXY(segmentPoint0.x, segmentPoint0.y);
+    const h1 = plane.altitudeXY(segmentPoint1.x, segmentPoint1.y);
+    if (h0 < absoluteTolerance && h1 < absoluteTolerance) {
       // The entire segment is in ..... the interval is unaffected.
       return;
-      }
-  if (h0 * h1 > 0.0) {
-    if (h0 > 0.0)
-      interval.setNull();
-  } else if (h0 * h1 < 0.0) {
-  // strict crossing with safe fraction . . .
-  const fraction = -h0 / (h1 - h0);
-  if (h0 < 0.0){
-    return interval.intersectRangeXXInPlace (0.0, fraction);
-    }else {
-      return interval.intersectRangeXXInPlace (fraction, 1.0);
     }
-  } else {
-    // There is an exact hit at one end, possibly non-zero at the other ... the sign of either determines which side is in play
-    // A zero and a zero or negative is entirely in, which does not alter the prior clip.
-    if (h0 > 0.0) {
-      interval.intersectRangeXXInPlace(1.0, 1.0);
-    } else if (h1 > 0.0) {
-      interval.intersectRangeXXInPlace(0.0, 0.0);
+    if (h0 * h1 > 0.0) {
+      if (h0 > 0.0)
+        interval.setNull();
+    } else if (h0 * h1 < 0.0) {
+      // strict crossing with safe fraction . . .
+      const fraction = -h0 / (h1 - h0);
+      if (h0 < 0.0) {
+        return interval.intersectRangeXXInPlace(0.0, fraction);
+      } else {
+        return interval.intersectRangeXXInPlace(fraction, 1.0);
+      }
+    } else {
+      // There is an exact hit at one end, possibly non-zero at the other ... the sign of either determines which side is in play
+      // A zero and a zero or negative is entirely in, which does not alter the prior clip.
+      if (h0 > 0.0) {
+        interval.intersectRangeXXInPlace(1.0, 1.0);
+      } else if (h1 > 0.0) {
+        interval.intersectRangeXXInPlace(0.0, 0.0);
+      }
     }
   }
-}
   /**
    * Clip an interval of a line segment to an array of planes
    * * plane normals assumed OUTWARD
@@ -672,7 +693,7 @@ export class ClipUtilities {
    * @param announce caller's handler for simple point pairs.
    */
   public static announcePolylineClip(clipper: Clipper, points: Point3d[], announce: (point0: Point3d, point1: Point3d) => void) {
-    for (let i = 0; i + 1 < points.length; i++){
+    for (let i = 0; i + 1 < points.length; i++) {
       clipper.announceClippedSegmentIntervals(0, 1, points[i], points[i + 1],
         (f0: number, f1: number) => {
           announce(points[i].interpolate(f0, points[i + 1]), points[i].interpolate(f1, points[i + 1]));
@@ -686,11 +707,204 @@ export class ClipUtilities {
    */
   public static sumPolylineClipLength(clipper: Clipper, points: Point3d[]) {
     let s = 0;
-    for (let i = 0; i + 1 < points.length; i++){
+    for (let i = 0; i + 1 < points.length; i++) {
       const a = points[i].distance(points[i + 1]);
       clipper.announceClippedSegmentIntervals(0, 1, points[i], points[i + 1],
-        (f0: number, f1: number) => {s += Math.abs(f1 - f0) * a;});
+        (f0: number, f1: number) => { s += Math.abs(f1 - f0) * a; });
     }
     return s;
   }
+  /**
+   * Pass polygon `xyz` through a sequence of PolygonClip steps.
+   * * At the outset, `xyz` is the (only) entry in a set of candidates.
+   * * For each clipper, each candidate is presented for appendPolygon to inside and outside parts.
+   * * Each (in,out) result is distributed among (acceptedIn, acceptedOut, candidates) according to
+   *      (inAction, outAction)
+   * * At the end, all remaining candidates are distributed among (acceptedIn, acceptedOut, finalUnknown)
+   *     according to finalAction
+   * * Any clipper that does not have an appendPolygonClip method is skipped.
+   * @param xyz
+   * @param clippers
+   * @param acceptedIn
+   * @param acceptedOut
+   * @param finalCandidates
+   * @param inAction
+   * @param outAction
+   * @param finalCandidateAction
+   */
+  public static doPolygonClipSequence(
+    xyz: GrowableXYZArray,
+    clippers: Clipper[],
+    acceptedIn: GrowableXYZArray[] | undefined,
+    acceptedOut: GrowableXYZArray[] | undefined,
+    finalCandidates: GrowableXYZArray[] | undefined,
+    inAction: ClipStepAction,
+    outAction: ClipStepAction,
+    finalFragmentAction: ClipStepAction,
+    arrayCache: GrowableXYZArrayCache | undefined
+  ) {
+    if (arrayCache === undefined)
+      arrayCache = new GrowableXYZArrayCache();
+    let candidates = [arrayCache.grabAndFill(xyz)];
+    let nextCandidates: GrowableXYZArray[] = [];
+    const intermediateIn: GrowableXYZArray[] = [];
+    const intermediateOut: GrowableXYZArray[] = [];
+    const oldInsideCount = acceptedIn ? acceptedIn.length : 0;
+    const oldOutsideCount = acceptedOut ? acceptedOut.length : 0;
+    let shard;
+    // At each convex set, carryForwardA is all the fragments that have been outside all previous convex sets.
+    // Clip each such fragment to the current set, sending the outside parts to carryForwardB, which will got to the next clipper
+    // The final surviving carryForward really is out.
+    for (const c of clippers) {
+      if (c.appendPolygonClip) {
+        while (undefined !== (shard = candidates.pop())) {
+          c.appendPolygonClip(shard, intermediateIn, intermediateOut, arrayCache);
+          distributeFragments(inAction, intermediateIn, acceptedIn, acceptedOut, nextCandidates, arrayCache);
+          distributeFragments(outAction, intermediateOut, acceptedIn, acceptedOut, nextCandidates, arrayCache);
+          arrayCache.dropToCache(shard);
+        }
+        // candidates is empty !!
+        const temp = candidates; candidates = nextCandidates; nextCandidates = temp;
+      }
+    }
+    distributeFragments(finalFragmentAction, candidates, acceptedIn, acceptedOut, finalCandidates, arrayCache);
+    // Note: The following assumes that there were no residual candidates ... need to track if that happened?
+    // If nothing was out, the inside fragments can be replaced by the original.
+    if (acceptedOut?.length === oldOutsideCount)
+      ClipUtilities.restoreSingletonInPlaceOfMultipleShards(acceptedIn, oldInsideCount, xyz, arrayCache);
+    // If nothing was in, the outside fragments can be replaced by the original.
+    if (acceptedIn?.length === oldInsideCount)
+      ClipUtilities.restoreSingletonInPlaceOfMultipleShards(acceptedOut, oldOutsideCount, xyz, arrayCache);
+  }
+  /**
+   * Pass polygon `xyz` through a sequence of PolygonClip steps with "parity" rules
+   */
+  public static doPolygonClipParitySequence(
+    xyz: GrowableXYZArray,
+    clippers: Clipper[],
+    acceptedIn: GrowableXYZArray[] | undefined,
+    acceptedOut: GrowableXYZArray[] | undefined,
+    arrayCache: GrowableXYZArrayCache | undefined
+  ) {
+    if (arrayCache === undefined)
+      arrayCache = new GrowableXYZArrayCache();
+    let candidatesOut = [arrayCache.grabAndFill(xyz)];
+    let candidatesIn: GrowableXYZArray[] = [];
+    let nextCandidatesIn: GrowableXYZArray[] = [];
+    let nextCandidatesOut: GrowableXYZArray[] = [];
+    const intermediateIn: GrowableXYZArray[] = [];
+    const intermediateOut: GrowableXYZArray[] = [];
+    let shard;
+    // at each step ..
+    // candidatesIn and candidatesOut are evolved in and out
+    // nextCandidatesIn and nextCandidatesOut are EMPTY
+    for (const c of clippers) {
+      if (c.appendPolygonClip) {
+        // (IN,OUT) parts of IN parts distribute to (OUT,IN)
+        while (undefined !== (shard = candidatesIn.pop())) {
+          c.appendPolygonClip(shard, intermediateIn, intermediateOut, arrayCache);
+          distributeFragments(ClipStepAction.acceptOut, intermediateIn, nextCandidatesIn, nextCandidatesOut, undefined, arrayCache);
+          distributeFragments(ClipStepAction.acceptIn, intermediateOut, nextCandidatesIn, nextCandidatesOut, undefined, arrayCache);
+          arrayCache.dropToCache(shard);
+        }
+        // (IN,OUT) parts of IN parts distribute to (OUT,IN)
+        while (undefined !== (shard = candidatesOut.pop())) {
+          c.appendPolygonClip(shard, intermediateIn, intermediateOut, arrayCache);
+          distributeFragments(ClipStepAction.acceptIn, intermediateIn, nextCandidatesIn, nextCandidatesOut, undefined, arrayCache);
+          distributeFragments(ClipStepAction.acceptOut, intermediateOut, nextCandidatesIn, nextCandidatesOut, undefined, arrayCache);
+          arrayCache.dropToCache(shard);
+        }
+        // reload each candidate step
+        const tempA = candidatesIn; candidatesIn = nextCandidatesIn; nextCandidatesIn = tempA;
+        const tempB = candidatesOut; candidatesOut = nextCandidatesOut; nextCandidatesOut = tempB;
+      }
+    }
+    // candidatesIn and candidatesOut are final ....
+    if (candidatesOut.length === 0)
+      acceptedIn?.push(arrayCache.grabAndFill(xyz));
+    else if (candidatesOut.length === 0)
+      acceptedOut?.push(arrayCache.grabAndFill(xyz));
+    else {
+      moveFragments(candidatesIn, acceptedIn, arrayCache);
+      moveFragments(candidatesOut, acceptedOut, arrayCache);
+    }
+  }
+  /** For each plane of clipper, construct a UnionOfConvexClipPlaneSets for an outer (infinite) convex volume that
+   * abuts the outer volume of the neighbor faces.
+   *
+   */
+  public static createComplementaryClips(clipper: ConvexClipPlaneSet): UnionOfConvexClipPlaneSets {
+    const planes = clipper.planes;
+    const interval = Range1d.createNull();
+    const n = planes.length;
+    const newClippers: ConvexClipPlaneSet[] = [];
+    for (const p of planes){
+      const outerSet = ConvexClipPlaneSet.createEmpty();
+      outerSet.addPlaneToConvexSet(p.cloneNegated());
+      newClippers.push(outerSet);
+      }
+    for (let i = 0; i < n; i++) {
+      for (let j = i + 1; j < n; j++) {
+        const ray = CurveFactory.planePlaneIntersectionRay(planes[i], planes[j]);
+        if (ray) {
+          if (clipper.hasIntersectionWithRay(ray, interval)) {
+            // the normal-to-normal vector is bisector (or close to bisector?)
+            const newNormal = planes[j].inwardNormalRef.minus(planes[i].inwardNormalRef);
+            const plane1 = ClipPlane.createNormalAndPoint(newNormal, ray.origin);
+            if (plane1) {
+              const plane2 = plane1.cloneNegated();
+              newClippers[i].addPlaneToConvexSet(plane1);
+              newClippers[j].addPlaneToConvexSet(plane2);
+            }
+          }
+        }
+      }
+    }
+    return UnionOfConvexClipPlaneSets.createConvexSets(newClippers);
+  }
+}
+function moveFragments(
+  fragments: GrowableXYZArray[],
+  destination: GrowableXYZArray[] | undefined,
+  arrayCache: GrowableXYZArrayCache) {
+  if (destination === undefined)
+    arrayCache.dropAllToCache(fragments);
+  else {
+    for (const f of fragments)
+      destination.push(f);
+  }
+  fragments.length = 0;
+}
+/**
+ * Distribute fragments among acceptedIn, acceptedOut, and passToNextStep as directed by action.
+ * * If the indicated destination is unknown, drop the fragments to the arrayCache.
+ * @param action destination selector
+ * @param fragments fragments to be distributed
+ * @param acceptedIn destination for "in"
+ * @param acceptedOut destination for "out"
+ * @param passToNextStep destination for fragments to be passed to a later step
+ * @param arrayCache destination for un-distributed fragments.
+ */
+function distributeFragments(
+  action: ClipStepAction,
+  fragments: GrowableXYZArray[],
+  acceptedIn: GrowableXYZArray[] | undefined,
+  acceptedOut: GrowableXYZArray[] | undefined,
+  passToNextStep: GrowableXYZArray[] | undefined,
+  arrayCache: GrowableXYZArrayCache) {
+  let destination;
+  if (action === ClipStepAction.acceptIn)
+    destination = acceptedIn;
+  else if (action === ClipStepAction.acceptOut)
+    destination = acceptedOut;
+  else if (action === ClipStepAction.passToNextStep)
+    destination = passToNextStep;
+// remark: if action is other than the enum values, destination is undefined
+  if (destination === undefined)
+    arrayCache.dropAllToCache(fragments);
+  else {
+    for (const f of fragments)
+      destination.push(f);
+  }
+  fragments.length = 0;
 }

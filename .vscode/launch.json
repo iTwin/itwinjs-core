@@ -459,19 +459,19 @@
     },
     // UI TESTS
     {
-      "name": "[UI] Tests: Abstract",
+      "name": "[UI] Tests: AppUi Abstract",
       "presentation": {
         "group": "4_UI"
       },
-      "cwd": "${workspaceFolder}/ui/abstract",
+      "cwd": "${workspaceFolder}/ui/appui-abstract",
       "type": "pwa-node",
       "request": "launch",
-      "program": "${workspaceFolder}/ui/abstract/node_modules/mocha/bin/_mocha",
+      "program": "${workspaceFolder}/ui/appui-abstract/node_modules/mocha/bin/_mocha",
       "args": [
         "--config",
         "../.mocharc.json",
         "--no-timeouts",
-        "lib/test/**/*.test.js"
+        "lib/cjs/test/**/*.test.js"
       ],
       "skipFiles": [
         "<node_internals>/**/*.js",
@@ -482,19 +482,19 @@
       ]
     },
     {
-      "name": "[UI] Tests: Components",
+      "name": "[UI] Tests: Components React",
       "presentation": {
         "group": "4_UI"
       },
-      "cwd": "${workspaceFolder}/ui/components",
+      "cwd": "${workspaceFolder}/ui/components-react",
       "type": "pwa-node",
       "request": "launch",
-      "program": "${workspaceFolder}/ui/components/node_modules/mocha/bin/_mocha",
+      "program": "${workspaceFolder}/ui/components-react/node_modules/mocha/bin/_mocha",
       "args": [
         "--config",
         "../.mocharc.json",
         "--no-timeouts",
-        "lib/test/**/*.test.js"
+        "lib/cjs/test/**/*.test.js"
       ],
       "skipFiles": [
         "<node_internals>/**/*.js",
@@ -505,57 +505,57 @@
       ]
     },
     {
-      "name": "[UI] Tests: Core",
+      "name": "[UI] Tests: Core React",
       "presentation": {
         "group": "4_UI"
       },
-      "cwd": "${workspaceFolder}/ui/core",
+      "cwd": "${workspaceFolder}/ui/core-react",
       "type": "pwa-node",
       "request": "launch",
-      "program": "${workspaceFolder}/ui/core/node_modules/mocha/bin/_mocha",
+      "program": "${workspaceFolder}/ui/core-react/node_modules/mocha/bin/_mocha",
       "args": [
         "--config",
         "../.mocharc.json",
         "--no-timeouts",
-        "lib/test/**/*.test.js"
+        "lib/cjs/test/**/*.test.js"
       ],
       "outFiles": [
         "${workspaceFolder}/{core,ui}/*/lib/**/*.js"
       ]
     },
     {
-      "name": "[UI] Tests: IModel Components",
+      "name": "[UI] Tests: IModel Components React",
       "presentation": {
         "group": "4_UI"
       },
-      "cwd": "${workspaceFolder}/ui/imodel-components",
+      "cwd": "${workspaceFolder}/ui/imodel-components-react",
       "type": "pwa-node",
       "request": "launch",
-      "program": "${workspaceFolder}/ui/imodel-components/node_modules/mocha/bin/_mocha",
+      "program": "${workspaceFolder}/ui/imodel-components-react/node_modules/mocha/bin/_mocha",
       "args": [
         "--config",
         "../.mocharc.json",
         "--no-timeouts",
-        "lib/test/**/*.test.js"
+        "lib/cjs/test/**/*.test.js"
       ],
       "outFiles": [
-        "${workspaceFolder}/{core,ui}/*/lib/**/*.js"
+        "${workspaceFolder}/{core,ui}/*/lib/cjs/**/*.js"
       ]
     },
     {
-      "name": "[UI] Tests: Framework",
+      "name": "[UI] Tests: AppUi React",
       "presentation": {
         "group": "4_UI"
       },
-      "cwd": "${workspaceFolder}/ui/framework",
+      "cwd": "${workspaceFolder}/ui/appui-react",
       "type": "pwa-node",
       "request": "launch",
-      "program": "${workspaceFolder}/ui/framework/node_modules/mocha/bin/_mocha",
+      "program": "${workspaceFolder}/ui/appui-react/node_modules/mocha/bin/_mocha",
       "args": [
         "--config",
         "../.mocharc.json",
         "--no-timeouts",
-        "lib/test/**/*.test.js"
+        "lib/cjs/test/**/*.test.js"
       ],
       "outFiles": [
         "${workspaceFolder}/{core,clients,ui,presentation}/*/lib/**/*.js"
@@ -563,19 +563,19 @@
       "outputCapture": "std"
     },
     {
-      "name": "[UI] Tests: 9zone",
+      "name": "[UI] Tests: ApppUi Layout React",
       "presentation": {
         "group": "4_UI"
       },
-      "cwd": "${workspaceFolder}/ui/ninezone",
+      "cwd": "${workspaceFolder}/ui/appui-layout-react",
       "type": "pwa-node",
       "request": "launch",
-      "program": "${workspaceFolder}/ui/ninezone/node_modules/mocha/bin/_mocha",
+      "program": "${workspaceFolder}/ui/appui-layout-react/node_modules/mocha/bin/_mocha",
       "args": [
         "--config",
         "../.mocharc.json",
         "--no-timeouts",
-        "lib/test/**/*.test.js"
+        "lib/cjs/test/**/*.test.js"
       ],
       "outFiles": [
         "${workspaceFolder}/ui/*/lib/**/*.js"
@@ -615,7 +615,7 @@
         "--config",
         "../.mocharc.json",
         "--no-timeouts",
-        "lib/test/**/*.test.js"
+        "lib/cjs/test/**/*.test.js"
       ],
       "outFiles": [
         "${workspaceFolder}/{core,presentation}/*/lib/**/*.js"
@@ -634,7 +634,7 @@
         "--config",
         "../.mocharc.json",
         "--no-timeouts",
-        "lib/test/**/*.test.js"
+        "lib/cjs/test/**/*.test.js"
       ],
       "outFiles": [
         "${workspaceFolder}/{core,presentation}/*/lib/**/*.js"
@@ -657,7 +657,7 @@
         "ignore-styles",
         "-r",
         "jsdom-global/register",
-        "lib/test/**/*.test.js"
+        "lib/cjs/test/**/*.test.js"
       ],
       "outFiles": [
         "${workspaceFolder}/{core,ui,presentation}/*/lib/**/*.js"
@@ -678,7 +678,7 @@
         "--no-timeouts",
         "-r",
         "jsdom-global/register",
-        "lib/test/**/*.test.js"
+        "lib/cjs/test/**/*.test.js"
       ],
       "outFiles": [
         "${workspaceFolder}/{core,clients,presentation}/*/lib/**/*.js"
@@ -725,7 +725,7 @@
         "ignore-styles",
         "-r",
         "jsdom-global/register",
-        "lib/test/**/*.test.js"
+        "lib/cjs/test/**/*.test.js"
       ],
       "outFiles": [
         "${workspaceFolder}/{core,clients,ui,presentation}/*/lib/**/*.js"

@@ -12,7 +12,7 @@ import * as semver from "semver";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
 import { TelemetryManager } from "@bentley/telemetry-client";
 import { AccessToken, assert, BeEvent, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, ProcessDetector } from "@itwin/core-bentley";
-import { AuthorizationClient, BentleyStatus, IModelError, SessionProps } from "@itwin/core-common";
+import { AuthorizationClient, BentleyStatus, IModelError, LocalDirName, SessionProps } from "@itwin/core-common";
 import { AliCloudStorageService } from "./AliCloudStorageService";
 import { BackendHubAccess } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -28,6 +28,9 @@ import { IModelTileRpcImpl } from "./rpc-impl/IModelTileRpcImpl";
 import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
+import { ITwinWorkspace, Workspace, WorkspaceOpts } from "./workspace/Workspace";
+import { BaseSettings, SettingDictionary, SettingsPriority } from "./workspace/Settings";
+import { SettingsSpecRegistry } from "./workspace/SettingsSpecRegistry";
 
 const loggerCategory = BackendLoggerCategory.IModelHost;
 
@@ -85,10 +88,15 @@ export class IModelHostConfiguration {
    *   - etc.
    * @see [[IModelHost.cacheDir]] for the value it's set to after startup
    */
-  public cacheDir?: string;
+  public cacheDir?: LocalDirName;
+
+  /** Options for creating the [[Workspace]]
+   * @beta
+   */
+  public workspace?: WorkspaceOpts;
 
   /** The directory where the app's assets are found. */
-  public appAssetsDir?: string;
+  public appAssetsDir?: LocalDirName;
 
   /** The kind of iModel hub server to use.
    * @beta
@@ -148,6 +156,36 @@ export class IModelHostConfiguration {
 
 }
 
+/**
+ * Settings for the application workspace.
+ * @note this includes the default dictionary from the SettingsSpecRegistry
+ */
+class ApplicationSettings extends BaseSettings {
+  private _remove?: VoidFunction;
+  protected override verifyPriority(priority: SettingsPriority) {
+    if (priority >= SettingsPriority.iModel) // iModel settings may not appear in ApplicationSettings
+      throw new Error("Use IModelSettings");
+  }
+  private updateDefaults() {
+    const defaults: SettingDictionary = {};
+    for (const [specName, val] of SettingsSpecRegistry.allSpecs)
+      defaults[specName] = val.default!;
+    this.addDictionary("_default_", 0, defaults);
+  }
+
+  public constructor() {
+    super();
+    this._remove = SettingsSpecRegistry.onSpecsChanged.addListener(() => this.updateDefaults());
+    this.updateDefaults();
+  }
+  public override close() {
+    if (this._remove) {
+      this._remove();
+      this._remove = undefined;
+    }
+  }
+}
+
 /** IModelHost initializes ($backend) and captures its configuration. A backend must call [[IModelHost.startup]] before using any backend classes.
  * See [the learning article]($docs/learning/backend/IModelHost.md)
  * @public
@@ -161,6 +199,7 @@ export class IModelHost {
 
   public static backendVersion = "";
   private static _cacheDir = "";
+  private static _appWorkspace?: Workspace;
 
   private static _platform?: typeof IModelJsNative;
   /** @internal */
@@ -192,8 +231,16 @@ export class IModelHost {
   public static get applicationVersion() { return this.session.applicationVersion; }
   public static set applicationVersion(version: string) { this.session.applicationVersion = version; }
 
-  /** Root of the directory holding all the files that iModel.js caches */
-  public static get cacheDir(): string { return this._cacheDir; }
+  /** Root directory holding files that iTwin.js caches */
+  public static get cacheDir(): LocalDirName { return this._cacheDir; }
+
+  /** The application [[Workspace]] for this `IModelHost`
+   * @note this `Workspace` only holds [[WorkspaceContainer]]s and [[Settings]] scoped to the currently loaded application(s).
+   * All organization, iTwin, and iModel based containers or settings must be accessed through [[IModelDb.workspace]] and
+   * attempting to add them to this Workspace will fail.
+   * @beta
+   */
+  public static get appWorkspace(): Workspace { return this._appWorkspace!; }
 
   /** The optional [[FileNameResolver]] that resolves keys and partial file names for snapshot iModels. */
   public static snapshotFileNameResolver?: FileNameResolver;
@@ -321,7 +368,9 @@ export class IModelHost {
       }
     }
 
-    this.setupCacheDirs(configuration);
+    this.setupHostDirs(configuration);
+    this._appWorkspace = new ITwinWorkspace(new ApplicationSettings(), configuration.workspace);
+
     BriefcaseManager.initialize(this._briefcaseCacheDir);
 
     [
@@ -349,7 +398,7 @@ export class IModelHost {
     IModelHost.onAfterStartup.raiseEvent();
   }
 
-  private static _briefcaseCacheDir: string;
+  private static _briefcaseCacheDir: LocalDirName;
 
   private static logStartup() {
     if (!Logger.isEnabled(loggerCategory, LogLevel.Trace))
@@ -374,9 +423,13 @@ export class IModelHost {
     Logger.logTrace(loggerCategory, "IModelHost.startup", () => startupInfo);
   }
 
-  private static setupCacheDirs(configuration: IModelHostConfiguration) {
-    this._cacheDir = configuration.cacheDir ? path.normalize(configuration.cacheDir) : NativeLibrary.defaultCacheDir;
-    IModelJsFs.recursiveMkDirSync(this._cacheDir); // make sure the directory for cacheDir exists.
+  private static setupHostDirs(configuration: IModelHostConfiguration) {
+    const setupDir = (dir: LocalDirName) => {
+      dir = path.normalize(dir);
+      IModelJsFs.recursiveMkDirSync(dir);
+      return dir;
+    };
+    this._cacheDir = setupDir(configuration.cacheDir ?? NativeLibrary.defaultCacheDir);
     this._briefcaseCacheDir = path.join(this._cacheDir, "imodels");
   }
 
@@ -389,6 +442,8 @@ export class IModelHost {
     IModelHost._isValid = false;
     IModelHost.onBeforeShutdown.raiseEvent();
     IModelHost.configuration = undefined;
+    IModelHost.appWorkspace.close();
+    IModelHost._appWorkspace = undefined;
     process.removeListener("beforeExit", IModelHost.shutdown);
   }
 

@@ -8,7 +8,6 @@
 
 import {
   asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, Constructor, dispose, Id64, Id64Arg, Id64Set, Id64String, IDisposable, isInstanceOf,
-  ProcessDetector,
   StopWatch,
 } from "@itwin/core-bentley";
 import {
@@ -179,6 +178,25 @@ export type OnFlashedIdChangedEventArgs = {
   readonly previous: Id64String;
   readonly current: undefined;
 };
+
+/** Arguments to [[Viewport.getPixelDataWorldPoint]].
+ * @public
+ */
+export interface GetPixelDataWorldPointArgs {
+  /** The buffer containing the pixel data. @see [[Viewport.readPixels]]. */
+  pixels: Pixel.Buffer;
+  /** The x coordinate of the pixel of interest, in view coordinates. */
+  x: number;
+  /** The y coordinate of the pixel of interest, in view coordinates. */
+  y: number;
+  /** If true, then the world point of a pixel associated with a model will preserve any transforms applied to the model at display time,
+   * such as those supplied by a [[ModelDisplayTransformProvider]] or [PlanProjectionSettings.elevation]($common).
+   * Otherwise, the world point will be multiplied by the inverse of any such transforms to correlate it with the model's true coordinate space.
+   */
+  preserveModelDisplayTransforms?: boolean;
+  /** If supplied, this point will be modified to store the returned point, instead of allocating a new point. */
+  out?: Point3d;
+}
 
 /** A Viewport renders the contents of one or more [GeometricModel]($backend)s onto an `HTMLCanvasElement`.
  *
@@ -1405,7 +1423,9 @@ export abstract class Viewport implements IDisposable {
   public markSelectionSetDirty() { this._selectionSetDirty = true; }
 
   /** True if this is a 3d view with the camera turned on. */
-  public get isCameraOn(): boolean { return this.view.isCameraEnabled(); }
+  public get isCameraOn(): boolean {
+    return this.view.is3d() && this.view.isCameraOn;
+  }
 
   /** @internal */
   public changeDynamics(dynamics: GraphicList | undefined): void {
@@ -1784,7 +1804,7 @@ export abstract class Viewport implements IDisposable {
       return;
 
     const distXYZ = new Point3d(screenDist.x, screenDist.y, 0);
-    if (view.isCameraEnabled()) {
+    if (view.is3d() && view.isCameraOn) {
       const frust = this.getFrustum(CoordSystem.View, false)!;
       frust.translate(distXYZ);
       this.viewToWorldArray(frust.points);
@@ -1810,7 +1830,7 @@ export abstract class Viewport implements IDisposable {
     if (undefined === view)
       return ViewStatus.InvalidViewport;
 
-    if (view.isCameraEnabled()) {
+    if (view.is3d() && view.isCameraOn) {
       const centerNpc = newCenter ? this.worldToNpc(newCenter) : NpcCenter.clone();
       const scaleTransform = Transform.createFixedPointAndMatrix(centerNpc, Matrix3d.createScale(factor, factor, 1.0));
 
@@ -2047,7 +2067,7 @@ export abstract class Viewport implements IDisposable {
     const planeNormal = rMatrix.getRow(2);
 
     let eyeVec: Vector3d;
-    if (this.view.isCameraEnabled())
+    if (this.view.is3d() && this.view.isCameraOn)
       eyeVec = this.view.camera.eye.vectorTo(point);
     else
       eyeVec = this._viewingSpace.rotation.getRow(2);
@@ -2387,8 +2407,8 @@ export abstract class Viewport implements IDisposable {
     return this.target.readImageToCanvas();
   }
 
-  /** Get the point at the specified x and y location in the pixel buffer in npc coordinates
-   * @beta
+  /** Get the point at the specified x and y location in the pixel buffer in npc coordinates.
+   * @see [[getPixelDataWorldPoint]] to obtain the point in [[CoordSystem.World]].
    */
   public getPixelDataNpcPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined {
     const z = pixels.getPixel(x, y).distanceFraction;
@@ -2413,20 +2433,23 @@ export abstract class Viewport implements IDisposable {
     return result;
   }
 
-  /** Get the point at the specified x and y location in the pixel buffer in world coordinates
-   * @beta
+  /** Get the point at the specified x and y location in the pixel buffer in world coordinates.
+   * @see [[getPixelDataNpcPoint]] to obtain the point in [[CoordSystem.Npc]].
    */
-  public getPixelDataWorldPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined {
+  public getPixelDataWorldPoint(args: GetPixelDataWorldPointArgs): Point3d | undefined {
+    const { pixels, x, y, out, preserveModelDisplayTransforms } = args;
     const npc = this.getPixelDataNpcPoint(pixels, x, y, out);
     if (undefined !== npc) {
       this.npcToWorld(npc, npc);
 
       // If this is a plan projection model, invert the elevation applied to its display transform.
       // Likewise, if it is a hit on a model with a display transform, reverse the display transform.
-      const modelId = pixels.getPixel(x, y).featureTable?.modelId;
-      if (undefined !== modelId) {
-        npc.z -= this.view.getModelElevation(modelId);
-        this.view.transformPointByModelDisplayTransform(modelId, npc, true);
+      if (!preserveModelDisplayTransforms) {
+        const modelId = pixels.getPixel(x, y).featureTable?.modelId;
+        if (undefined !== modelId) {
+          npc.z -= this.view.getModelElevation(modelId);
+          this.view.transformPointByModelDisplayTransform(modelId, npc, true);
+        }
       }
     }
 
@@ -2889,6 +2912,7 @@ export class ScreenViewport extends Viewport {
     locateOpts.allowNonLocatable = (undefined === options || !options.excludeNonLocatable);
     locateOpts.allowDecorations = (undefined === options || !options.excludeDecorations);
     locateOpts.allowExternalIModels = (undefined === options || !options.excludeExternalIModels);
+    locateOpts.preserveModelDisplayTransforms = true;
 
     if (0 !== this.picker.doPick(this, pickPoint, radius, locateOpts)) {
       const hitDetail = this.picker.getHit(0)!;
@@ -3230,15 +3254,15 @@ export class ScreenViewport extends Viewport {
 
       this.addChildDiv(this.vpDiv, webglCanvas, 5);
 
-      /** The following workaround resolves an issue specific to iOS Safari. We really want this webgl canvas' zIndex to be
-       * lower than this.canvas, but if we do that on iOS Safari, Safari may decide to not display the canvas contents once
-       * it is re-added to the parent div after dropping other viewports. It will only display it once resizing the view.
-       * The offending element here is the 2d canvas sitting on top of the webgl canvas. We need to clear its contents
-       * immediately on iOS. Even though the 2d canvas gets cleared in OnScreenTarget.drawOverlayDecorations() in this case,
-       * it looks like iOS needs an immediate clear.
+      /** We really want this WebGL canvas' zIndex to be lower than this.canvas, but if we do that, browsers can decide to
+       * not update the WebGL canvas contents once it is re-added to the parent div after dropping other viewports.
+       * The offending element is the 2d canvas sitting on top of the WebGL canvas. We need to clear the 2d canvas' contents
+       * in order to ensure browsers allow the underlying WebGL canvas to update. If a decorator is present, the 2d canvas
+       * is cleared during the frame render process by virtue of updating the decorator. For the non-decorator case, and for
+       * iOS, we must make sure we still clear the 2d canvas, done here. iOS appears to need this clear even when decorators
+       * clear the canvas later in the frame render process.
        */
-      if (ProcessDetector.isIOSBrowser)
-        _clear2dCanvas(this.canvas);
+      _clear2dCanvas(this.canvas);
     }
 
     this.target.updateViewRect();

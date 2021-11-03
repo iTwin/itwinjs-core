@@ -192,7 +192,7 @@ describe("DisplayStyleSettings", () => {
 
   describe("planarClipMasks", () => {
     function makeSettings(priority: number) {
-      return PlanarClipMaskSettings.createByPriority(priority);
+      return PlanarClipMaskSettings.create({ priority });
     }
 
     function makeProps(priority: number, modelId: Id64String) {

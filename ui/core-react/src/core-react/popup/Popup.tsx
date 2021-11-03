@@ -74,6 +74,9 @@ export interface PopupProps extends CommonProps {
   closeOnContextMenu?: boolean;
   /** If false outside click processing and closing are skipped if click occurs in another Popup component, default to false. */
   closeOnNestedPopupOutsideClick?: boolean;
+  /** If true the children are mounted once and unmounted when this component is unmounted. If false the
+   * children are unmounted each time the popup is closed. */
+  keepContentsMounted?: boolean;
 }
 
 /** @internal */
@@ -531,6 +534,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
       this.props.showArrow && "arrow",
       !animate && "core-popup-animation-none",
       this.props.className,
+      (!this.props.isOpen && this.props.keepContentsMounted) && "core-popup-hidden"
     );
 
     const style: React.CSSProperties = {
@@ -541,7 +545,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
 
     const role = this.props.role ? this.props.role : "dialog";  // accessibility property
 
-    if (!this.props.isOpen) {
+    if (!this.props.isOpen && !this.props.keepContentsMounted) {
       return null;
     }
 

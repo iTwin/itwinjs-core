@@ -49,6 +49,9 @@ export interface PopupItemProps extends ToolbarButtonItemProps {
   hideIndicator?: boolean;
   /** Panel of the toolbar. */
   panel?: React.ReactNode;
+  /** If true the popup panel is mounted once and unmounted when button is unmounted. If false the
+   * content node is unmounted each time the popup is closed. */
+  keepContentsMounted?: boolean;
 }
 
 /** Popup toolbar item that displays a panel
@@ -118,6 +121,7 @@ export function PopupItem(props: PopupItemProps) {
         onClose={handleClose}
         position={toToolbarPopupRelativePosition(expandsToDirection, panelAlignment)}
         target={target}
+        keepContentsMounted={props.keepContentsMounted}
       >
         {panel}
       </PopupItemPopup>
@@ -132,6 +136,7 @@ interface PopupItemPopupProps {
   onClose(): void;
   position: RelativePosition;
   target?: HTMLElement;
+  keepContentsMounted?: boolean;
 }
 
 /** @internal */

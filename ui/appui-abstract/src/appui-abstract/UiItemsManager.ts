@@ -10,9 +10,9 @@ import { BeEvent, Logger } from "@itwin/core-bentley";
 import { BackstageItem } from "./backstage/BackstageItem";
 import { CommonStatusBarItem } from "./statusbar/StatusBarItem";
 import { CommonToolbarItem, ToolbarOrientation, ToolbarUsage } from "./toolbars/ToolbarItem";
-import { UiAbstract } from "./UiAbstract";
 import { AbstractWidgetProps } from "./widget/AbstractWidgetProps";
 import { AbstractZoneLocation, StagePanelLocation, StagePanelSection } from "./widget/StagePanel";
+import { loggerCategory } from "./utils/misc";
 
 /** Action taken by the application on item provided by a UiItemsProvider
  * @public
@@ -100,10 +100,10 @@ export class UiItemsManager {
    */
   public static register(uiProvider: UiItemsProvider): void {
     if (UiItemsManager.getUiItemsProvider(uiProvider.id)) {
-      Logger.logInfo(UiAbstract.loggerCategory(this), `UiItemsProvider (${uiProvider.id}) is already loaded`);
+      Logger.logInfo(loggerCategory(this), `UiItemsProvider (${uiProvider.id}) is already loaded`);
     } else {
       UiItemsManager._registeredUiItemsProviders.set(uiProvider.id, uiProvider);
-      Logger.logInfo(UiAbstract.loggerCategory(this), `UiItemsProvider (${uiProvider.id}) loaded`);
+      Logger.logInfo(loggerCategory(this), `UiItemsProvider (${uiProvider.id}) loaded`);
 
       UiItemsManager.sendRegisteredEvent({ providerId: uiProvider.id } as UiItemProviderRegisteredEventArgs);
     }
@@ -115,7 +115,7 @@ export class UiItemsManager {
       return;
 
     UiItemsManager._registeredUiItemsProviders.delete(uiProviderId);
-    Logger.logInfo(UiAbstract.loggerCategory(this), `UiItemsProvider (${uiProviderId}) unloaded`);
+    Logger.logInfo(loggerCategory(this), `UiItemsProvider (${uiProviderId}) unloaded`);
 
     // trigger a refresh of the ui
     UiItemsManager.sendRegisteredEvent({ providerId: uiProviderId } as UiItemProviderRegisteredEventArgs);

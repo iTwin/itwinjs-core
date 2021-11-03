@@ -9,10 +9,12 @@
 
 import { Arc3d } from "../curve/Arc3d";
 import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "../curve/CurvePrimitive";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Range1d } from "../geometry3d/Range";
+import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
 import { Range1dArray } from "../numerics/Range1dArray";
-import { Clipper } from "./ClipUtils";
+import { Clipper, ClipStepAction, ClipUtilities, PolygonClipper } from "./ClipUtils";
 
 /** BooleanClipNode is an abstract base class for boolean actions by an array of clippers.
  * * Derived class must implement
@@ -207,7 +209,7 @@ export abstract class BooleanClipNode implements Clipper {
 
 }
 /**
- * Implement BooleanClipNode virtual methods for intersection (boolean OR) among children
+ * Implement [BooleanClipNode] virtual methods for intersection (boolean OR) among children
  * @internal
  */
 export class BooleanClipNodeUnion extends BooleanClipNode {
@@ -226,10 +228,21 @@ export class BooleanClipNodeUnion extends BooleanClipNode {
   public combineIntervals(operandA: Range1d[], operandB: Range1d[]): Range1d[] {
     return Range1dArray.unionSorted(operandA, operandB);
   }
+  public appendPolygonClip(
+    xyz: GrowableXYZArray,
+    insideFragments: GrowableXYZArray[],
+    outsideFragments: GrowableXYZArray[],
+    arrayCache: GrowableXYZArrayCache) {
+    ClipUtilities.doPolygonClipSequence(xyz, this._clippers,
+      this._keepInside ? insideFragments : outsideFragments,
+      this._keepInside ? outsideFragments : insideFragments,
+      undefined,
+      ClipStepAction.acceptIn, ClipStepAction.passToNextStep, ClipStepAction.acceptOut, arrayCache);
+    }
 }
 
 /**
- * Implement BooleanClipNode virtual methods for intersection (boolean OR) among children
+ * Implement [BooleanClipNode] virtual methods for intersection (boolean OR) among children
  * @internal
  */
 export class BooleanClipNodeParity extends BooleanClipNode {
@@ -249,12 +262,22 @@ export class BooleanClipNodeParity extends BooleanClipNode {
   public combineIntervals(operandA: Range1d[], operandB: Range1d[]): Range1d[] {
     return Range1dArray.paritySorted(operandA, operandB);
   }
+  public appendPolygonClip(
+    xyz: GrowableXYZArray,
+    insideFragments: GrowableXYZArray[],
+    outsideFragments: GrowableXYZArray[],
+    arrayCache: GrowableXYZArrayCache) {
+    ClipUtilities.doPolygonClipParitySequence(xyz, this._clippers,
+      this._keepInside ? insideFragments : outsideFragments,
+      this._keepInside ? outsideFragments : insideFragments,
+    arrayCache);
+    }
 }
 /**
- * Implement BooleanClipNode virtual methods for intersection (boolean OR) among children
+ * Implement [BooleanClipNode] virtual methods for intersection (boolean OR) among children
  * @internal
  */
-export class BooleanClipNodeIntersection extends BooleanClipNode {
+export class BooleanClipNodeIntersection extends BooleanClipNode implements PolygonClipper{
   public get operationName(): string { return this._keepInside ? "AND" : "NAND"; }
   public constructor(keepInside: boolean) {
     super(keepInside);
@@ -270,4 +293,17 @@ export class BooleanClipNodeIntersection extends BooleanClipNode {
   public combineIntervals(operandA: Range1d[], operandB: Range1d[]): Range1d[] {
     return Range1dArray.intersectSorted(operandA, operandB);
   }
+  public appendPolygonClip(
+    xyz: GrowableXYZArray,
+    insideFragments: GrowableXYZArray[],
+    outsideFragments: GrowableXYZArray[],
+    arrayCache: GrowableXYZArrayCache) {
+
+    ClipUtilities.doPolygonClipSequence(xyz, this._clippers,
+      this._keepInside ? insideFragments : outsideFragments,
+      this._keepInside ? outsideFragments : insideFragments,
+      undefined,
+      ClipStepAction.passToNextStep, ClipStepAction.acceptOut, ClipStepAction.acceptIn, arrayCache);
+    }
+
 }

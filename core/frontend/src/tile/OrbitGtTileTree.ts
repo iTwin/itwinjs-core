@@ -21,8 +21,6 @@ import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { RealityData } from "../RealityDataAccessProps";
-import { RealityDataConnection } from "../RealityDataConnection";
 import { RealityDataSource } from "../RealityDataSource";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { PointCloudArgs } from "../render/primitives/PointCloudPrimitive";
@@ -343,23 +341,6 @@ export namespace OrbitGtTileTree {
     orbitGtBlob?: OrbitGtBlobProps;
     modelId?: Id64String;
   }
-  /**
-   * Gets string url to fetch blob data from. Access is read-only.
-   * @param accessToken The client request context.
-   * @param name name or path of tile
-   * @param nameRelativeToRootDocumentPath (optional default is false) Indicates if the given name is relative to the root document path.
-   * @returns string url for blob data
-   */
-  export async function getBlobStringUrl(accessToken: string, realityData: RealityData): Promise<string> {
-    const url = await realityData.getBlobUrl(accessToken);
-
-    const host = `${url.origin + url.pathname}/`;
-
-    const query = url.search;
-
-    return `${host}${realityData.rootDocument}${query}`;
-  }
-
   function isValidSASToken(downloadUrl: string): boolean {
 
     // Create fake URL for and parameter parsing and SAS token URI parsing
@@ -390,19 +371,23 @@ export namespace OrbitGtTileTree {
   }
 
   export async function createOrbitGtTileTree(rdSourceKey: RealityDataSourceKey, iModel: IModelConnection, modelId: Id64String): Promise<TileTree | undefined> {
-    const rdConnection = await RealityDataConnection.fromSourceKey(rdSourceKey, iModel.iTwinId);
+    const rdSource = await RealityDataSource.fromKey(rdSourceKey, iModel.iTwinId);
     const isContextShare = rdSourceKey.provider === RealityDataProvider.ContextShare;
+    const isTilestUrl = rdSourceKey.provider === RealityDataProvider.TilesetUrl;
 
     let blobStringUrl: string;
     if (isContextShare) {
-      const realityData = rdConnection ? rdConnection.realityData : undefined;
-      if (rdConnection === undefined || realityData === undefined)
+      const realityData = rdSource ? rdSource.realityData : undefined;
+      if (rdSource === undefined || realityData === undefined )
         return undefined;
       const docRootName = realityData.rootDocument;
       if (!docRootName)
         return undefined;
       const token = await IModelApp.getAccessToken();
-      blobStringUrl = await getBlobStringUrl(token, realityData );
+      const blobUrl = await realityData.getBlobUrl(token, docRootName);
+      blobStringUrl = blobUrl.toString();
+    } else if (isTilestUrl) {
+      blobStringUrl = rdSourceKey.id;
     } else {
       const orbitGtBlobProps = RealityDataSource.createOrbitGtBlobPropsFromKey(rdSourceKey);
       if (orbitGtBlobProps === undefined)
@@ -495,7 +480,7 @@ class OrbitGtTreeReference extends RealityModelTileTree.Reference {
       this._rdSourceKey = RealityDataSource.createKeyFromOrbitGtBlobProps(props.orbitGtBlob);
     } else {
       // TODO: Maybe we should throw an exception
-      this._rdSourceKey = RealityDataSource.createFromBlobUrl("", RealityDataProvider.OrbitGtBlob, RealityDataFormat.OPC);
+      this._rdSourceKey = RealityDataSource.createKeyFromBlobUrl("", RealityDataProvider.OrbitGtBlob, RealityDataFormat.OPC);
     }
 
     const ogtTreeId: OrbitGtTreeId = { rdSourceKey: this._rdSourceKey, modelId: this.modelId };

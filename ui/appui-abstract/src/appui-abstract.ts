@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-export * from "./appui-abstract/UiAbstract";
 export * from "./appui-abstract/UiAdmin";
 export * from "./appui-abstract/UiItemsManager";
 
@@ -54,7 +53,7 @@ export * from "./appui-abstract/statusbar/StatusBarItem";
 export * from "./appui-abstract/statusbar/StatusBarItemsManager";
 
 export * from "./appui-abstract/utils/callbacks";
-export * from "./appui-abstract/utils/getClassName";
+export * from "./appui-abstract/utils/misc";
 export * from "./appui-abstract/utils/isLetter";
 export * from "./appui-abstract/utils/IconSpecUtilities";
 export * from "./appui-abstract/utils/PointProps";

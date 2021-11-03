@@ -8,7 +8,7 @@ import {
   ArrayValue, BasePropertyEditorParams, ButtonGroupEditorParams, ColorEditorParams, CustomFormattedNumberParams, DisplayMessageType,
   ImageCheckBoxParams, MessagePresenter, MessageSeverity, ParseResults,
   Primitives, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyEditorParamTypes, PropertyRecord, PropertyValue, PropertyValueFormat,
-  StandardEditorNames, StandardTypeNames, StructValue, UiAbstract,
+  StandardEditorNames, StandardTypeNames, StructValue, UiAdmin,
 } from "@itwin/appui-abstract";
 import { AsyncValueProcessingResult, ColumnDescription, CompositeFilterDescriptorCollection, DataControllerBase, FilterableTable, TableFilterDescriptorCollection } from "@itwin/components-react";
 import { UiIModelComponents } from "../imodel-components-react/UiIModelComponents";
@@ -29,7 +29,7 @@ export class TestUtils {
       TestUtils._i18n = new ITwinLocalization();
       await TestUtils._i18n.initialize(["IModelJs"]);
 
-      await UiIModelComponents.initialize(TestUtils.i18n);
+      await UiIModelComponents.initialize();
       TestUtils._uiIModelComponentsInitialized = true;
 
       const mp: MessagePresenter = {
@@ -37,7 +37,7 @@ export class TestUtils {
         displayInputFieldMessage: (_inputField: HTMLElement, _severity: MessageSeverity, _briefMessage: HTMLElement | string, _detailedMessage?: HTMLElement | string): void => { },
         closeInputFieldMessage: (): void => { },
       };
-      UiAbstract.messagePresenter = mp;
+      UiAdmin.messagePresenter = mp;
     }
   }
 

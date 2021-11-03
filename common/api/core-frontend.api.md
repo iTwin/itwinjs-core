@@ -230,10 +230,11 @@ import { Range3d } from '@itwin/core-geometry';
 import { Range3dProps } from '@itwin/core-geometry';
 import { Ray3d } from '@itwin/core-geometry';
 import { ReadonlySortedArray } from '@itwin/core-bentley';
+import { RealityData } from '@itwin/core-common';
+import { RealityDataAccess } from '@itwin/core-common';
 import { RealityDataFormat } from '@itwin/core-common';
 import { RealityDataProvider } from '@itwin/core-common';
 import { RealityDataSourceKey } from '@itwin/core-common';
-import { RealityDataSourceProps } from '@itwin/core-common';
 import { RelatedElement } from '@itwin/core-common';
 import { RelativePosition } from '@itwin/appui-abstract';
 import { RemoveFunction } from '@itwin/core-common';
@@ -1111,6 +1112,8 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     // (undocumented)
     protected get _filterByCartoRange(): boolean;
     // (undocumented)
+    protected _generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void): void;
+    // (undocumented)
     protected getLayerString(prefix?: string): string;
     // (undocumented)
     getLogo(_vp: ScreenViewport): HTMLTableRowElement;
@@ -1127,13 +1130,33 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     // (undocumented)
     serviceJson: any;
     // (undocumented)
-    protected _testChildAvailability(tile: ImageryMapTile, resolveChildren: () => void): void;
-    // (undocumented)
     uintToString(uintArray: any): {
         type: "Buffer";
         data: number[];
     };
 }
+
+// @internal (undocumented)
+export class ArcGISTileMap {
+    constructor(restBaseUrl: string, nbLods?: number);
+    // (undocumented)
+    fallbackTileMapRequestSize: number;
+    // (undocumented)
+    protected fetchAndReadTilemap(queryTiles: QuadId[], reqWidth: number, reqHeight: number): Promise<boolean[]>;
+    // (undocumented)
+    protected fetchTileMapFromServer(level: number, row: number, column: number, width: number, height: number): Promise<any>;
+    // (undocumented)
+    protected getAvailableTilesFromCache(tiles: QuadId[]): {
+        allTilesFound: boolean;
+        available: boolean[];
+    };
+    // (undocumented)
+    getChildrenAvailability(childIds: QuadId[]): Promise<boolean[]>;
+    // (undocumented)
+    protected getChildrenAvailabilityFromServer(childIds: QuadId[]): Promise<boolean[]>;
+    // (undocumented)
+    tileMapRequestSize: number;
+    }
 
 // @internal (undocumented)
 export interface ArcGisToken {
@@ -1764,6 +1787,16 @@ export class CategorySelectorState extends ElementState {
 }
 
 // @internal
+export class CesiumIonAssetProvider {
+    static isProviderUrl(url: string): boolean;
+    // (undocumented)
+    static parseCesiumUrl(url: string): {
+        id: number;
+        key: string;
+    } | undefined;
+}
+
+// @internal
 export enum ChangeFlag {
     // (undocumented)
     All = 268435455,
@@ -1925,6 +1958,23 @@ export enum ContextRotationId {
     Top = 0,
     // (undocumented)
     View = 6
+}
+
+// @internal
+export class ContextShareProvider {
+    // (undocumented)
+    static getInfoFromBlobUrl(blobUrl: string): {
+        provider: RealityDataProvider;
+        format: RealityDataFormat;
+        id: string;
+    };
+    static getInfoFromUrl(tilesetUrl: string): {
+        provider: RealityDataProvider;
+        format: RealityDataFormat;
+        id: string;
+        iTwinId: string | undefined;
+    };
+    static isProviderUrl(tilesetUrl: string): boolean;
 }
 
 // @public (undocumented)
@@ -3281,7 +3331,7 @@ export class FuzzySearchResults<T> implements Iterable<T> {
 
 // @internal
 export class GeoConverter {
-    constructor(iModel: IModelConnection, datum: string);
+    constructor(iModel: IModelConnection, datumOrGCRS: string | GeographicCRSProps);
     // (undocumented)
     getCachedIModelCoordinatesFromGeoCoordinates(geoPoints: XYZProps[]): CachedIModelCoordinatesResponseProps;
     // (undocumented)
@@ -3355,7 +3405,7 @@ export abstract class GeometricModelState extends ModelState implements Geometri
 export class GeoServices {
     constructor(iModel: IModelConnection);
     // (undocumented)
-    getConverter(datum?: string): GeoConverter | undefined;
+    getConverter(datumOrGCRS?: string | GeographicCRSProps): GeoConverter | undefined;
     }
 
 // @public
@@ -3390,6 +3440,15 @@ export function getImageSourceFormatForMimeType(mimeType: string): ImageSourceFo
 
 // @public
 export function getImageSourceMimeType(format: ImageSourceFormat): string;
+
+// @public
+export interface GetPixelDataWorldPointArgs {
+    out?: Point3d;
+    pixels: Pixel.Buffer;
+    preserveModelDisplayTransforms?: boolean;
+    x: number;
+    y: number;
+}
 
 // @beta
 export function getQuantityTypeKey(type: QuantityTypeArg): QuantityTypeKey;
@@ -4210,7 +4269,7 @@ export class ImageryMapTile extends RealityTile {
     // (undocumented)
     get texture(): RenderTexture | undefined;
     // (undocumented)
-    get tilingScheme(): WebMercatorTilingScheme;
+    get tilingScheme(): MapTilingScheme;
 }
 
 // @internal (undocumented)
@@ -4235,7 +4294,7 @@ export class ImageryMapTileTree extends RealityTileTree {
     // (undocumented)
     protected _selectTiles(_args: TileDrawArgs): Tile[];
     // (undocumented)
-    tilingScheme: WebMercatorTilingScheme;
+    get tilingScheme(): MapTilingScheme;
     // (undocumented)
     get viewFlagOverrides(): ViewFlagOverrides;
 }
@@ -4943,6 +5002,7 @@ export class LocateOptions {
     // (undocumented)
     init(): void;
     maxHits: number;
+    preserveModelDisplayTransforms: boolean;
     // (undocumented)
     setFrom(other: LocateOptions): void;
 }
@@ -5202,6 +5262,10 @@ export abstract class MapLayerImageryProvider {
     // (undocumented)
     protected get _filterByCartoRange(): boolean;
     // (undocumented)
+    generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void): void;
+    // (undocumented)
+    protected _generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void): void;
+    // (undocumented)
     getEPSG3857Extent(row: number, column: number, zoomLevel: number): {
         left: number;
         right: number;
@@ -5219,9 +5283,11 @@ export abstract class MapLayerImageryProvider {
     // (undocumented)
     getLogo(_viewport: ScreenViewport): HTMLTableRowElement | undefined;
     // (undocumented)
+    getPotentialChildIds(tile: ImageryMapTile): QuadId[];
+    // (undocumented)
     protected getRequestAuthorization(): RequestBasicCredentials | undefined;
     // (undocumented)
-    getToolTip(_strings: string[], _quadId: QuadId, _carto: Cartographic, _tree: ImageryMapTileTree): Promise<void>;
+    getToolTip(strings: string[], quadId: QuadId, _carto: Cartographic, tree: ImageryMapTileTree): Promise<void>;
     // (undocumented)
     protected _hasSuccessfullyFetchedTile: boolean;
     // (undocumented)
@@ -5251,17 +5317,17 @@ export abstract class MapLayerImageryProvider {
     // (undocumented)
     status: MapLayerImageryProviderStatus;
     // (undocumented)
-    testChildAvailability(tile: ImageryMapTile, resolveChildren: () => void): void;
-    // (undocumented)
-    protected _testChildAvailability(_tile: ImageryMapTile, resolveChildren: () => void): void;
-    // (undocumented)
     get tileSize(): number;
+    // (undocumented)
+    get tilingScheme(): MapTilingScheme;
     // (undocumented)
     protected toolTipFromJsonUrl(_strings: string[], url: string): Promise<void>;
     // (undocumented)
     protected toolTipFromUrl(strings: string[], url: string): Promise<void>;
     // (undocumented)
     get transparentBackgroundString(): string;
+    // (undocumented)
+    get useGeographicTilingScheme(): boolean;
     // (undocumented)
     get usesCachedTiles(): boolean;
     // (undocumented)
@@ -5740,14 +5806,18 @@ export class MapTileTreeReference extends TileTreeReference {
 
 // @internal (undocumented)
 export abstract class MapTilingScheme {
-    protected constructor(numberOfLevelZeroTilesX: number, numberOfLevelZeroTilesY: number, rowZeroAtNorthPole: boolean);
+    protected constructor(numberOfLevelZeroTilesX: number, numberOfLevelZeroTilesY: number, rowZeroAtNorthPole: boolean, _rectangle?: Range2d);
     // (undocumented)
     cartographicToFraction(latitudeRadians: number, longitudeRadians: number, result: Point2d): Point2d;
     cartographicToTileXY(carto: Cartographic, level: number, result?: Point2d): Point2d;
     // (undocumented)
     computeMercatorFractionToDb(ecefToDb: Transform, bimElevationOffset: number, iModel: IModelConnection, applyTerrain: boolean): Transform;
     fractionToCartographic(xFraction: number, yFraction: number, result: Cartographic, height?: number): Cartographic;
+    // (undocumented)
+    getNumberOfXChildrenAtLevel(level: number): number;
     getNumberOfXTilesAtLevel(level: number): number;
+    // (undocumented)
+    getNumberOfYChildrenAtLevel(level: number): number;
     getNumberOfYTilesAtLevel(level: number): number;
     // (undocumented)
     abstract latitudeToYFraction(latitude: number): number;
@@ -5757,6 +5827,8 @@ export abstract class MapTilingScheme {
     readonly numberOfLevelZeroTilesX: number;
     // (undocumented)
     readonly numberOfLevelZeroTilesY: number;
+    // (undocumented)
+    get rootLevel(): 0 | -1;
     // (undocumented)
     rowZeroAtNorthPole: boolean;
     // (undocumented)
@@ -5778,6 +5850,8 @@ export abstract class MapTilingScheme {
     xFractionToLongitude(xFraction: number): number;
     // (undocumented)
     xFractionToTileX(xFraction: number, level: number): number;
+    // (undocumented)
+    protected yFractionFlip(fraction: number): number;
     // (undocumented)
     abstract yFractionToLatitude(yFraction: number): number;
     // (undocumented)
@@ -6826,7 +6900,6 @@ export class OrbitGtTileTree extends TileTree {
 export namespace OrbitGtTileTree {
     // (undocumented)
     export function createOrbitGtTileTree(rdSourceKey: RealityDataSourceKey, iModel: IModelConnection, modelId: Id64String): Promise<TileTree | undefined>;
-    export function getBlobStringUrl(accessToken: string, realityData: RealityData): Promise<string>;
     // (undocumented)
     export interface ReferenceProps extends RealityModelTileTree.ReferenceBaseProps {
         // (undocumented)
@@ -7233,6 +7306,8 @@ export class QuadId {
     // (undocumented)
     getLatLongRange(mapTilingScheme: MapTilingScheme): Range2d;
     // (undocumented)
+    static getTileContentId(level: number, column: number, row: number): string;
+    // (undocumented)
     get isValid(): boolean;
     // (undocumented)
     level: number;
@@ -7399,61 +7474,44 @@ export function readElementGraphics(bytes: Uint8Array, iModel: IModelConnection,
 // @internal
 export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined;
 
-// @internal
-export interface RealityDataConnection {
+// @alpha
+export interface RealityDataSource {
+    // @internal
+    getRootDocument(iTwinId: GuidString | undefined): Promise<any>;
     getServiceUrl(iTwinId: GuidString | undefined): Promise<string | undefined>;
+    // @internal
+    getTileContent(name: string): Promise<any>;
+    // @internal
+    getTileJson(name: string): Promise<any>;
+    // (undocumented)
+    readonly isContextShare: boolean;
+    // (undocumented)
+    readonly key: RealityDataSourceKey;
     readonly realityData: RealityData | undefined;
+    // (undocumented)
+    readonly realityDataId: string | undefined;
     readonly realityDataType: string | undefined;
-    readonly source: RealityDataSource;
 }
 
-// @internal (undocumented)
-export namespace RealityDataConnection {
-    export function fromSourceKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataConnection | undefined>;
+// @alpha (undocumented)
+export namespace RealityDataSource {
+    // (undocumented)
+    export function createKeyFromBlobUrl(blobUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey;
+    // (undocumented)
+    export function createKeyFromOrbitGtBlobProps(orbitGtBlob: OrbitGtBlobProps, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey;
+    // (undocumented)
+    export function createKeyFromUrl(tilesetUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey;
+    // (undocumented)
+    export function createOrbitGtBlobPropsFromKey(rdSourceKey: RealityDataSourceKey): OrbitGtBlobProps | undefined;
+    // (undocumented)
+    export function formatfromUrl(tilesetUrl: string): RealityDataFormat;
+    // @internal
+    export function fromKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined>;
+    export function keyToString(rdSourceKey: RealityDataSourceKey): string;
 }
-
-// @alpha
-export class RealityDataSource {
-    protected constructor(props: RealityDataSourceProps);
-    // (undocumented)
-    static createFromBlobUrl(blobUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey;
-    // (undocumented)
-    static createKeyFromOrbitGtBlobProps(orbitGtBlob: OrbitGtBlobProps, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey;
-    // (undocumented)
-    static createOrbitGtBlobPropsFromKey(rdSourceKey: RealityDataSourceKey): OrbitGtBlobProps | undefined;
-    // (undocumented)
-    static createRealityDataSourceKeyFromUrl(tilesetUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey;
-    static fromProps(props: RealityDataSourceProps): RealityDataSource;
-    getServiceUrl(iTwinId: GuidString | undefined): Promise<string | undefined>;
-    // (undocumented)
-    get isContextShare(): boolean;
-    // (undocumented)
-    get iTwinId(): string | undefined;
-    // (undocumented)
-    readonly rdSourceKey: RealityDataSourceKey;
-    // (undocumented)
-    get realityDataId(): string | undefined;
-    }
-
-// @alpha
-export function realityDataSourceKeyToString(rdSourceKey: RealityDataSourceKey): string;
 
 // @internal (undocumented)
 export type RealityModelSource = ViewState | DisplayStyleState;
-
-// @internal
-export class RealityModelTileClient {
-    constructor(rdConnection: RealityDataConnection, iTwinId?: string);
-    // (undocumented)
-    getBlobAccessData(): Promise<URL | undefined>;
-    getRealityDataType(): Promise<string | undefined>;
-    // (undocumented)
-    getRootDocument(url: string): Promise<any>;
-    getTileContent(url: string): Promise<any>;
-    getTileJson(url: string): Promise<any>;
-    // (undocumented)
-    readonly rdsProps?: RDSClientProps;
-    }
 
 // @internal (undocumented)
 export class RealityModelTileTree extends RealityTileTree {
@@ -11139,10 +11197,22 @@ export class TraversalSelectionContext {
 export function tryImageElementFromUrl(url: string): Promise<HTMLImageElement | undefined>;
 
 // @public
+export class TwoWayViewportFrustumSync extends TwoWayViewportSync {
+    // @internal
+    protected connectViewports(source: Viewport, target: Viewport): void;
+    // @internal
+    protected syncViewports(source: Viewport, target: Viewport): void;
+}
+
+// @public
 export class TwoWayViewportSync {
-    connect(view1: Viewport, view2: Viewport): void;
+    connect(viewport1: Viewport, viewport2: Viewport): void;
+    protected connectViewports(source: Viewport, target: Viewport): void;
     disconnect(): void;
-    }
+    // (undocumented)
+    protected readonly _disconnect: VoidFunction[];
+    protected syncViewports(source: Viewport, target: Viewport): void;
+}
 
 // @public
 export interface Uniform {
@@ -12263,10 +12333,8 @@ export abstract class Viewport implements IDisposable {
     getFrustum(sys?: CoordSystem, adjustedBox?: boolean, box?: Frustum): Frustum;
     // @internal (undocumented)
     getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined;
-    // @beta
     getPixelDataNpcPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined;
-    // @beta
-    getPixelDataWorldPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined;
+    getPixelDataWorldPoint(args: GetPixelDataWorldPointArgs): Point3d | undefined;
     getPixelSizeAtPoint(point?: Point3d): number;
     // @internal (undocumented)
     getSubCategories(categoryId: Id64String): Id64Set | undefined;
@@ -12716,7 +12784,6 @@ export abstract class ViewState extends ElementState {
     is2d(): this is ViewState2d;
     abstract is3d(): this is ViewState3d;
     get isAttachedToViewport(): boolean;
-    isCameraEnabled(): this is ViewState3d;
     abstract isDrawingView(): this is DrawingViewState;
     // (undocumented)
     isPrivate?: boolean;
@@ -13270,6 +13337,8 @@ export namespace WmtsCapability {
     export class Contents {
         constructor(_json: any);
         // (undocumented)
+        getEpsg4326CompatibleTileMatrixSet(): WmtsCapability.TileMatrixSet[];
+        // (undocumented)
         getGoogleMapsCompatibleTileMatrixSet(): WmtsCapability.TileMatrixSet[];
         // (undocumented)
         readonly layers: WmtsCapability.Layer[];
@@ -13444,10 +13513,20 @@ export namespace WmtsCapability {
         readonly wellKnownScaleSet: string;
     }
     // (undocumented)
+    export class TileMatrixSetLimits {
+        constructor(_json: any);
+        // (undocumented)
+        limits?: Range2d;
+        // (undocumented)
+        tileMatrix?: string;
+    }
+    // (undocumented)
     export class TileMatrixSetLink {
         constructor(_json: any);
         // (undocumented)
         readonly tileMatrixSet: string;
+        // (undocumented)
+        readonly tileMatrixSetLimits: TileMatrixSetLimits[];
     }
     // (undocumented)
     export abstract class XmlConstants {
@@ -13490,10 +13569,16 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
     // (undocumented)
     constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
     // (undocumented)
+    displayedLayerName: string;
+    // (undocumented)
+    protected _generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void): void;
+    // (undocumented)
     initialize(): Promise<void>;
     // (undocumented)
     get mutualExclusiveSubLayer(): boolean;
-    }
+    // (undocumented)
+    get useGeographicTilingScheme(): boolean;
+}
 
 // @public
 export interface ZoomToOptions {

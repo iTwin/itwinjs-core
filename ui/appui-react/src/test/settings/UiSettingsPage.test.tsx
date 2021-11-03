@@ -19,6 +19,8 @@ describe("UiSettingsPage", () => {
     // create a new mock each run so there are no "stored values"
     localStorageMock = storageMock();
     await TestUtils.initializeUiFramework();
+    UiFramework.setUiVersion("1");
+    await TestUtils.flushAsyncOperations();
     Object.defineProperty(window, "localStorage", {
       get: () => localStorageMock,
     });

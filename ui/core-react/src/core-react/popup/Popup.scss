@@ -25,6 +25,10 @@
  &.core-popup-animation-none {
   animation-duration: 0s;
  }
+
+ &.core-popup-hidden {
+  display: none;
+ }
 }
 
 .core-popup.arrow::after, .core-popup.arrow::before {
