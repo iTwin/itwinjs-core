@@ -1,0 +1,198 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`strip-assert-loader should safely handle commented-out asserts 1`] = `
+"(window[\\"webpackJsonp\\"] = window[\\"webpackJsonp\\"] || []).push([[0],[
+/* 0 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__(1);
+
+
+/***/ }),
+/* 1 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+\\"use strict\\";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _itwin_core_bentley__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2);
+/* harmony import */ var _itwin_core_bentley__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_itwin_core_bentley__WEBPACK_IMPORTED_MODULE_0__);
+
+// void 0;                             
+/* void 0;        */
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports) {
+
+module.exports = require(\\"@itwin/core-bentley\\");
+
+/***/ })
+],[[0,1]]]);"
+`;
+
+exports[`strip-assert-loader should safely strip cjs asserts inside single-line if 1`] = `
+"(window[\\"webpackJsonp\\"] = window[\\"webpackJsonp\\"] || []).push([[0],[
+/* 0 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__(1);
+
+
+/***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+const core_bentley_1 = __webpack_require__(2);
+if (true) void 0;                           
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports) {
+
+module.exports = require(\\"@itwin/core-bentley\\");
+
+/***/ })
+],[[0,1]]]);"
+`;
+
+exports[`strip-assert-loader should safely strip esm asserts inside single-line if 1`] = `
+"(window[\\"webpackJsonp\\"] = window[\\"webpackJsonp\\"] || []).push([[0],[
+/* 0 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__(1);
+
+
+/***/ }),
+/* 1 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+\\"use strict\\";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _itwin_core_bentley__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2);
+/* harmony import */ var _itwin_core_bentley__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_itwin_core_bentley__WEBPACK_IMPORTED_MODULE_0__);
+if (true)
+void 0;                             
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports) {
+
+module.exports = require(\\"@itwin/core-bentley\\");
+
+/***/ })
+],[[0,1]]]);"
+`;
+
+exports[`strip-assert-loader should strip cjs asserts from _within_ core-bentley package 1`] = `
+"(window[\\"webpackJsonp\\"] = window[\\"webpackJsonp\\"] || []).push([[0],[
+/* 0 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__(1);
+
+
+/***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__(2);
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+const Assert_1 = __webpack_require__(3);
+void 0;                                           
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports) {
+
+function assert(foo, bar) {console.log(foo,bar);} exports.assert = assert;
+
+/***/ })
+],[[0,1]]]);"
+`;
+
+exports[`strip-assert-loader should strip cjs asserts from core-bentley package 1`] = `
+"(window[\\"webpackJsonp\\"] = window[\\"webpackJsonp\\"] || []).push([[0],[
+/* 0 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__(1);
+
+
+/***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+const core_bentley_1 = __webpack_require__(2);
+void 0;                           
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports) {
+
+module.exports = require(\\"@itwin/core-bentley\\");
+
+/***/ })
+],[[0,1]]]);"
+`;
+
+exports[`strip-assert-loader should strip esm asserts from _within_ core-bentley package 1`] = `
+"(window[\\"webpackJsonp\\"] = window[\\"webpackJsonp\\"] || []).push([[0],[
+/* 0 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__(1);
+
+
+/***/ }),
+/* 1 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+\\"use strict\\";
+// ESM COMPAT FLAG
+__webpack_require__.r(__webpack_exports__);
+
+// CONCATENATED MODULE: ./lib/test/assets/strip-assert-loader-test/node_modules/@itwin/core-bentley/lib/esm/Assert.js
+function assert(foo, bar) {console.log(foo,bar);}
+// CONCATENATED MODULE: ./lib/test/assets/strip-assert-loader-test/node_modules/@itwin/core-bentley/lib/esm/index.js
+
+void 0;                             
+// CONCATENATED MODULE: ./lib/test/assets/strip-assert-loader-test/test.js
+
+
+/***/ })
+],[[0,1]]]);"
+`;
+
+exports[`strip-assert-loader should strip esm asserts from core-bentley package 1`] = `
+"(window[\\"webpackJsonp\\"] = window[\\"webpackJsonp\\"] || []).push([[0],[
+/* 0 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__(1);
+
+
+/***/ }),
+/* 1 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+\\"use strict\\";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _itwin_core_bentley__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2);
+/* harmony import */ var _itwin_core_bentley__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_itwin_core_bentley__WEBPACK_IMPORTED_MODULE_0__);
+
+void 0;                             
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports) {
+
+module.exports = require(\\"@itwin/core-bentley\\");
+
+/***/ })
+],[[0,1]]]);"
+`;
