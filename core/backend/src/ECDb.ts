@@ -6,7 +6,7 @@ import { IModelJsNative } from "@bentley/imodeljs-native";
 /** @packageDocumentation
  * @module ECDb
  */
-import { DbResult, IDisposable, Logger, OpenMode } from "@itwin/core-bentley";
+import { assert, DbResult, IDisposable, Logger, OpenMode } from "@itwin/core-bentley";
 import { DbQueryRequest, ECSqlReader, IModelError, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ConcurrentQuery } from "./ConcurrentQuery";
@@ -275,7 +275,8 @@ export class ECDb implements IDisposable {
 
   /** @internal */
   public get nativeDb(): IModelJsNative.ECDb {
-    return this._nativeDb!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
+    assert(undefined !== this._nativeDb);
+    return this._nativeDb;
   }
 
   /** Allow to execute query and read results along with meta data. The result are streamed.

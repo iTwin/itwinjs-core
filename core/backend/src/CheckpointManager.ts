@@ -238,10 +238,8 @@ export class CheckpointManager {
           await BriefcaseManager.pullAndApplyChangesets(db, { accessToken, toIndex });
         } else {
           // make sure the parent changeset index is saved in the file - old versions didn't have it.
-          if (undefined !== checkpoint.changeset.index) {
-            currentChangeset.index = checkpoint.changeset.index;
-            nativeDb.saveLocalValue("parentChangeSet", JSON.stringify(currentChangeset));
-          }
+          currentChangeset.index = checkpoint.changeset.index!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
+          nativeDb.saveLocalValue("parentChangeSet", JSON.stringify(currentChangeset));
         }
       } finally {
         db.saveChanges();

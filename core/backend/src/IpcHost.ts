@@ -44,9 +44,9 @@ export class IpcHost {
   private static _ipc: IpcSocketBackend | undefined;
   /** Get the implementation of the [IpcSocketBackend]($common) interface. */
   private static get ipc(): IpcSocketBackend {
-    if (undefined === this._ipc) {
+    if (undefined === this._ipc)
       throw new IModelError(BentleyStatus.ERROR, "File key is undefined.");
-    }
+
     return this._ipc;
   }
   /** Determine whether Ipc is available for this backend. This will only be true if [[startup]] has been called on this class. */

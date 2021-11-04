@@ -395,7 +395,7 @@ export class BriefcaseManager {
     const changesets = await IModelHost.hubAccess.downloadChangesets({
       accessToken: arg.accessToken,
       iModelId: db.iModelId,
-      range: { first: reverse && arg.toIndex ? arg.toIndex + 1 : currentIndex + 1, end: reverse ? currentIndex : arg.toIndex },
+      range: { first: reverse ? arg.toIndex! + 1 : currentIndex + 1, end: reverse ? currentIndex : arg.toIndex }, // eslint-disable-line @typescript-eslint/no-non-null-assertion
       targetDir: BriefcaseManager.getChangeSetsPath(db.iModelId),
     });
 

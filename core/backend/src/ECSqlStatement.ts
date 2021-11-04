@@ -6,7 +6,7 @@
  * @module ECSQL
  */
 
-import { BentleyStatus, DbResult, GuidString, Id64String, IDisposable, StatusCodeWithMessage } from "@itwin/core-bentley";
+import { assert, BentleyStatus, DbResult, GuidString, Id64String, IDisposable, StatusCodeWithMessage } from "@itwin/core-bentley";
 import { LowAndHighXYZ, Range3d, XAndY, XYAndZ, XYZ } from "@itwin/core-geometry";
 import { ECJsNames, ECSqlValueType, IModelError, NavigationBindingValue, NavigationValue } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
@@ -56,9 +56,9 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   private _sql: string | undefined;
 
   public get sql() {
-    if (undefined === this._sql) {
+    if (undefined === this._sql)
       throw new IModelError(BentleyStatus.ERROR, "SQL is undefined.");
-    }
+
     return this._sql;
   }
   /** Check if this statement has been prepared successfully or not */
@@ -96,9 +96,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
 
   /** Reset this statement so that the next call to step will return the first row, if any. */
   public reset(): void {
-    if (undefined === this._stmt) {
-      throw new IModelError(BentleyStatus.ERROR, "Statement is undefined.");
-    }
+    assert(undefined !== this._stmt);
     this._stmt.reset();
   }
 
@@ -106,9 +104,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * @internal
    */
   public getNativeSql(): string {
-    if (undefined === this._stmt) {
-      throw new IModelError(BentleyStatus.ERROR, "Statement is undefined.");
-    }
+    assert(undefined !== this._stmt);
     return this._stmt.getNativeSql();
   }
 
@@ -228,9 +224,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * @param parameter Index (1-based) or name of the parameter
    */
   public getBinder(parameter: string | number): ECSqlBinder {
-    if (undefined === this._stmt) {
-      throw new IModelError(BentleyStatus.ERROR, "Statement is undefined.");
-    }
+    assert(undefined !== this._stmt);
     return new ECSqlBinder(this._stmt.getBinder(parameter));
   }
 
@@ -295,9 +289,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * See also: [Code Samples]($docs/learning/backend/ECSQLCodeExamples)
    */
   public step(): DbResult {
-    if (undefined === this._stmt) {
-      throw new IModelError(BentleyStatus.ERROR, "Statement is undefined.");
-    }
+    assert(undefined !== this._stmt);
     return this._stmt.step();
   }
 
@@ -320,9 +312,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * call. In case of error, the respective error code is returned.
    */
   public stepForInsert(): ECSqlInsertResult {
-    if (undefined === this._stmt) {
-      throw new IModelError(BentleyStatus.ERROR, "Statement is undefined.");
-    }
+    assert(undefined !== this._stmt);
     const r: { status: DbResult, id: string } = this._stmt.stepForInsert();
     if (r.status === DbResult.BE_SQLITE_DONE)
       return new ECSqlInsertResult(r.status, r.id);
@@ -332,9 +322,8 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
 
   /** Get the query result's column count (only for ECSQL SELECT statements). */
   public getColumnCount(): number {
-    if (undefined === this._stmt) {
-      throw new IModelError(BentleyStatus.ERROR, "Statement is undefined.");
-    } return this._stmt.getColumnCount();
+    assert(undefined !== this._stmt);
+    return this._stmt.getColumnCount();
   }
 
   /** Get the current row.
@@ -404,9 +393,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * See also: [Code Samples]($docs/learning/backend/ECSQLCodeExamples#working-with-the-query-result)
    */
   public getValue(columnIx: number): ECSqlValue {
-    if (undefined === this._stmt) {
-      throw new IModelError(BentleyStatus.ERROR, "Statement is undefined.");
-    }
+    assert(undefined !== this._stmt);
     return new ECSqlValue(this._stmt.getValue(columnIx));
   }
 }

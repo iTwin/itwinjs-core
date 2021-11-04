@@ -48,9 +48,9 @@ export class ElementAspect extends Entity implements ElementAspectProps {
   constructor(props: ElementAspectProps, iModel: IModelDb) {
     super(props, iModel);
     const element = RelatedElement.fromJSON(props.element);
-    if (undefined === element) {
+    if (undefined === element)
       throw new IModelError(BentleyStatus.ERROR, "Element is undefined.");
-    }
+
     this.element = element;
   }
 
@@ -181,11 +181,7 @@ export class ExternalSourceAspect extends ElementMultiAspect implements External
   /** @internal */
   constructor(props: ExternalSourceAspectProps, iModel: IModelDb) {
     super(props, iModel);
-    const scope = RelatedElement.fromJSON(props.scope);
-    if (undefined === scope) {
-      throw new IModelError(BentleyStatus.ERROR, "Scope is undefined.");
-    }
-    this.scope = scope;
+    this.scope = RelatedElement.fromJSON(props.scope)!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
     this.source = RelatedElement.fromJSON(props.source);
     this.identifier = props.identifier;
     this.kind = props.kind;

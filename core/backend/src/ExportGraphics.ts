@@ -6,9 +6,9 @@
  * @module iModels
  */
 
-import { BentleyStatus, Id64Array, Id64String } from "@itwin/core-bentley";
+import { assert, Id64Array, Id64String } from "@itwin/core-bentley";
 import { IndexedPolyface, Polyface, PolyfaceData, PolyfaceVisitor } from "@itwin/core-geometry";
-import { GeometryClass, IModelError } from "@itwin/core-common";
+import { GeometryClass } from "@itwin/core-common";
 
 /** A collection of line segments, suitable for direct use with graphics APIs.
  * The structure of this data matches GL_LINES in OpenGL.
@@ -277,17 +277,13 @@ export namespace ExportGraphics {
     for (let i = 0; i < p.length; i += 3)
       polyface.data.point.pushXYZ(p[i], p[i + 1], p[i + 2]);
 
-    if (undefined === polyface.data.normal) {
-      throw new IModelError(BentleyStatus.ERROR, "Field 'normal' is missing in polyface data.");
-    }
     const n: Float32Array = mesh.normals;
+    assert(undefined !== polyface.data.normal);
     for (let i = 0; i < n.length; i += 3)
       polyface.data.normal.pushXYZ(n[i], n[i + 1], n[i + 2]);
 
-    if (undefined === polyface.data.param) {
-      throw new IModelError(BentleyStatus.ERROR, "Field 'param' is missing in polyface data.");
-    }
     const uv: Float32Array = mesh.params;
+    assert(undefined !== polyface.data.param);
     for (let i = 0; i < uv.length; i += 2)
       polyface.data.param.pushXY(uv[i], uv[i + 1]);
 

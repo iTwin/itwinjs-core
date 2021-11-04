@@ -75,18 +75,14 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    * or not. See [SQLite docs](https://www.sqlite.org/c3ref/stmt_readonly.html) for details.
    */
   public get isReadonly(): boolean {
-    if (undefined === this._stmt) {
-      throw new Error("Statement is undefined.");
-    }
+    assert(undefined !== this._stmt);
     return this._stmt.isReadonly();
   }
 
   /** Reset this statement so that the next call to step will return the first row, if any.
    */
   public reset(): void {
-    if (undefined === this._stmt) {
-      throw new Error("Statement is undefined.");
-    }
+    assert(undefined !== this._stmt);
     this._stmt.reset();
   }
 
@@ -117,9 +113,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    */
   public bindValue(parameter: BindParameter, value: any): void {
     let stat: DbResult;
-    if (undefined === this._stmt) {
-      throw new Error("Statement is undefined.");
-    }
+    assert(undefined !== this._stmt);
     if (value === undefined || value === null) {
       stat = this._stmt.bindNull(parameter);
     } else if (typeof (value) === "number") {
@@ -153,9 +147,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    *  @param val integer to bind.
    */
   public bindInteger(parameter: BindParameter, val: number) {
-    if (undefined === this._stmt) {
-      throw new Error("Statement is undefined.");
-    }
+    assert(undefined !== this._stmt);
     this.checkBind(this._stmt.bindInteger(parameter, val));
   }
   /** Bind a double parameter
@@ -163,9 +155,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    *  @param val double to bind.
    */
   public bindDouble(parameter: BindParameter, val: number) {
-    if (undefined === this._stmt) {
-      throw new Error("Statement is undefined.");
-    }
+    assert(undefined !== this._stmt);
     this.checkBind(this._stmt.bindDouble(parameter, val));
   }
   /** Bind a string parameter
@@ -173,9 +163,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    *  @param val string to bind.
    */
   public bindString(parameter: BindParameter, val: string) {
-    if (undefined === this._stmt) {
-      throw new Error("Statement is undefined.");
-    }
+    assert(undefined !== this._stmt);
     this.checkBind(this._stmt.bindString(parameter, val));
   }
   /** Bind an Id64String parameter as a 64-bit integer
@@ -183,9 +171,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    *  @param val Id to bind.
    */
   public bindId(parameter: BindParameter, id: Id64String) {
-    if (undefined === this._stmt) {
-      throw new Error("Statement is undefined.");
-    }
+    assert(undefined !== this._stmt);
     this.checkBind(this._stmt.bindId(parameter, id));
   }
   /** Bind a Guid parameter
@@ -193,9 +179,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    *  @param val Guid to bind.
    */
   public bindGuid(parameter: BindParameter, guid: GuidString) {
-    if (undefined === this._stmt) {
-      throw new Error("Statement is undefined.");
-    }
+    assert(undefined !== this._stmt);
     this.checkBind(this._stmt.bindGuid(parameter, guid));
   }
   /** Bind a blob parameter
@@ -203,9 +187,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    *  @param val blob to bind.
    */
   public bindBlob(parameter: BindParameter, blob: Uint8Array) {
-    if (undefined === this._stmt) {
-      throw new Error("Statement is undefined.");
-    }
+    assert(undefined !== this._stmt);
     this.checkBind(this._stmt.bindBlob(parameter, blob));
   }
 
@@ -243,9 +225,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    * @throws [IModelError]($common) in case of errors
    */
   public clearBindings(): void {
-    if (undefined === this._stmt) {
-      throw new Error("Statement is undefined.");
-    }
+    assert(undefined !== this._stmt);
     const stat = this._stmt.clearBindings();
     if (stat !== DbResult.BE_SQLITE_OK)
       throw new IModelError(stat, "Error in clearBindings");
@@ -263,17 +243,13 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    *  - Error status in case of errors.
    */
   public step(): DbResult {
-    if (undefined === this._stmt) {
-      throw new Error("Statement is undefined.");
-    }
+    assert(undefined !== this._stmt);
     return this._stmt.step();
   }
 
   /** Get the query result's column count (only for SQL SELECT statements). */
   public getColumnCount(): number {
-    if (undefined === this._stmt) {
-      throw new Error("Statement is undefined.");
-    }
+    assert(undefined !== this._stmt);
     return this._stmt.getColumnCount();
   }
 
@@ -281,9 +257,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    * @param columnIx Index of SQL column in query result (0-based)
    */
   public getValue(columnIx: number): SqliteValue {
-    if (undefined === this._stmt) {
-      throw new Error("Statement is undefined.");
-    }
+    assert(undefined !== this._stmt);
     return new SqliteValue(this._stmt, columnIx);
   }
 
@@ -291,54 +265,42 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    * @param colIndex Index of SQL column in query result (0-based)
    */
   public getValueBlob(colIndex: number): Uint8Array {
-    if (undefined === this._stmt) {
-      throw new Error("Statement is undefined.");
-    }
+    assert(undefined !== this._stmt);
     return this._stmt.getValueBlob(colIndex);
   }
   /** Get a value as a double
   * @param colIndex Index of SQL column in query result (0-based)
   */
   public getValueDouble(colIndex: number): number {
-    if (undefined === this._stmt) {
-      throw new Error("Statement is undefined.");
-    }
+    assert(undefined !== this._stmt);
     return this._stmt.getValueDouble(colIndex);
   }
   /** Get a value as a integer
   * @param colIndex Index of SQL column in query result (0-based)
   */
   public getValueInteger(colIndex: number): number {
-    if (undefined === this._stmt) {
-      throw new Error("Statement is undefined.");
-    }
+    assert(undefined !== this._stmt);
     return this._stmt.getValueInteger(colIndex);
   }
   /** Get a value as a string
   * @param colIndex Index of SQL column in query result (0-based)
   */
   public getValueString(colIndex: number): string {
-    if (undefined === this._stmt) {
-      throw new Error("Statement is undefined.");
-    }
+    assert(undefined !== this._stmt);
     return this._stmt.getValueString(colIndex);
   }
   /** Get a value as an Id
   * @param colIndex Index of SQL column in query result (0-based)
   */
   public getValueId(colIndex: number): Id64String {
-    if (undefined === this._stmt) {
-      throw new Error("Statement is undefined.");
-    }
+    assert(undefined !== this._stmt);
     return this._stmt.getValueId(colIndex);
   }
   /** Get a value as a Guid
   * @param colIndex Index of SQL column in query result (0-based)
   */
   public getValueGuid(colIndex: number): GuidString {
-    if (undefined === this._stmt) {
-      throw new Error("Statement is undefined.");
-    }
+    assert(undefined !== this._stmt);
     return this._stmt.getValueGuid(colIndex);
   }
 

@@ -6,9 +6,9 @@
  * @module RpcInterface
  */
 
-import { AccessToken, assert, BeDuration, BentleyStatus, Id64Array, Logger } from "@itwin/core-bentley";
+import { AccessToken, assert, BeDuration, Id64Array, Logger } from "@itwin/core-bentley";
 import {
-  CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageTileCache, ElementGraphicsRequestProps, IModelError, IModelRpcProps,
+  CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageTileCache, ElementGraphicsRequestProps, IModelRpcProps,
   IModelTileRpcInterface, IModelTileTreeProps, RpcInterface, RpcInvocation, RpcManager, RpcPendingResponse, TileContentIdentifier,
   TileContentSource, TileTreeContentIds, TileVersionInfo,
 } from "@itwin/core-common";
@@ -84,9 +84,7 @@ abstract class TileRequestMemoizer<Result, Props extends TileRequestProps> exten
 
     if (tileQP.isFulfilled) {
       this.log("completed", props);
-      if (undefined === tileQP.result) {
-        throw new IModelError(BentleyStatus.ERROR, "TileQP result is undefined.");
-      }
+      assert(undefined !== tileQP.result);
       return tileQP.result;
     }
 
@@ -192,9 +190,7 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
   public static register() { RpcManager.registerImpl(IModelTileRpcInterface, IModelTileRpcImpl); }
 
   public async requestTileTreeProps(tokenProps: IModelRpcProps, treeId: string): Promise<IModelTileTreeProps> {
-    if (undefined === RpcTrace.currentActivity) {
-      throw new IModelError(BentleyStatus.ERROR, "Current activity is undefined.");
-    }
+    assert(undefined !== RpcTrace.currentActivity);
     return RequestTileTreePropsMemoizer.perform({ accessToken: RpcTrace.currentActivity.accessToken, tokenProps, treeId });
   }
 
@@ -203,24 +199,18 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
     if (null === modelIds)
       modelIds = undefined;
 
-    if (undefined === RpcTrace.currentActivity) {
-      throw new IModelError(BentleyStatus.ERROR, "Current activity is undefined.");
-    }
+    assert(undefined !== RpcTrace.currentActivity);
     const db = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.currentActivity.accessToken, tokenProps);
     return db.nativeDb.purgeTileTrees(modelIds);
   }
 
   public async generateTileContent(tokenProps: IModelRpcProps, treeId: string, contentId: string, guid: string | undefined): Promise<TileContentSource> {
-    if (undefined === RpcTrace.currentActivity) {
-      throw new IModelError(BentleyStatus.ERROR, "Current activity is undefined.");
-    }
+    assert(undefined !== RpcTrace.currentActivity);
     return RequestTileContentMemoizer.perform({ accessToken: RpcTrace.currentActivity.accessToken, tokenProps, treeId, contentId, guid });
   }
 
   public async retrieveTileContent(tokenProps: IModelRpcProps, key: TileContentIdentifier): Promise<Uint8Array> {
-    if (undefined === RpcTrace.currentActivity) {
-      throw new IModelError(BentleyStatus.ERROR, "Current activity is undefined.");
-    }
+    assert(undefined !== RpcTrace.currentActivity);
     const db = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.currentActivity.accessToken, tokenProps);
     return db.tiles.getTileContent(key.treeId, key.contentId);
   }
@@ -228,7 +218,7 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
   public async getTileCacheContainerUrl(_tokenProps: IModelRpcProps, id: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl> {
     const invocation = RpcInvocation.current(this);
 
-    if (undefined === IModelHost.usingExternalTileCache) {
+    if (!IModelHost.usingExternalTileCache) {
       return CloudStorageContainerUrl.empty();
     }
 
@@ -247,9 +237,7 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
 
   /** @internal */
   public async requestElementGraphics(rpcProps: IModelRpcProps, request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined> {
-    if (undefined === RpcTrace.currentActivity) {
-      throw new IModelError(BentleyStatus.ERROR, "Current activity is undefined.");
-    }
+    assert(undefined !== RpcTrace.currentActivity);
     const iModel = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.currentActivity.accessToken, rpcProps);
     return iModel.generateElementGraphics(request);
   }

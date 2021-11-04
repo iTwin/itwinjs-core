@@ -37,9 +37,9 @@ export class RpcBriefcaseUtility {
   private static async downloadAndOpen(args: DownloadAndOpenArgs): Promise<BriefcaseDb> {
     const { activity, tokenProps } = args;
     const accessToken = activity.accessToken;
-    if (undefined === tokenProps.iModelId) {
+    if (undefined === tokenProps.iModelId)
       throw new IModelError(BentleyStatus.ERROR, "iModelId is undefined.");
-    }
+
     const iModelId = tokenProps.iModelId;
     let myBriefcaseIds: number[];
     if (args.syncMode === SyncMode.PullOnly) {
@@ -81,9 +81,9 @@ export class RpcBriefcaseUtility {
     }
 
     // no local briefcase available. Download one and open it.
-    if (undefined === tokenProps.iTwinId) {
+    if (undefined === tokenProps.iTwinId)
       throw new IModelError(BentleyStatus.ERROR, "iTwinId is undefined.");
-    }
+
     const request: RequestNewBriefcaseArg = {
       accessToken,
       iTwinId: tokenProps.iTwinId,
@@ -143,15 +143,12 @@ export class RpcBriefcaseUtility {
       return briefcaseDb;
     }
 
-    if (undefined === tokenProps.iModelId) {
+    if (undefined === tokenProps.iModelId)
       throw new IModelError(BentleyStatus.ERROR, "iModelId is undefined.");
-    }
-    if (undefined === tokenProps.iTwinId) {
+    if (undefined === tokenProps.iTwinId)
       throw new IModelError(BentleyStatus.ERROR, "iTwinId is undefined.");
-    }
-    if (undefined === tokenProps.changeset) {
+    if (undefined === tokenProps.changeset)
       throw new IModelError(BentleyStatus.ERROR, "Changeset is undefined.");
-    }
 
     const checkpoint: CheckpointProps = {
       iModelId: tokenProps.iModelId,

@@ -218,12 +218,12 @@ export abstract class IModelDb extends IModel {
   private static _shutdownListener: VoidFunction | undefined; // so we only register listener once
 
   /** @internal */
-  protected _locks: LockControl = new NoLocks();
+  protected _locks?: LockControl = new NoLocks();
   /**
    * Get the [[LockControl]] for this iModel.
    * @beta
    */
-  public get locks(): LockControl { return this._locks; }
+  public get locks(): LockControl { return this._locks!; } // eslint-disable-line @typescript-eslint/no-non-null-assertion
 
   /**
    * Get the [[Workspace]] for this iModel.

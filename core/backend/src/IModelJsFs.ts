@@ -123,7 +123,7 @@ export class IModelJsFs {
     for (const childPath of IModelJsFs.readdirSync(rootDir)) {
       const fullPath = path.join(rootDir, childPath);
       const isDir = IModelJsFs.lstatSync(fullPath)?.isDirectory;
-      if (!cb(fullPath, isDir!)) { // eslint-disable-line @typescript-eslint/no-non-null-assertion
+      if (!cb(fullPath, isDir ?? false)) {
         return;
       }
       // Need to check if the directory still exists in case the callback has deleted it.
