@@ -31,7 +31,7 @@ import { RenderGraphic, RenderGraphicOwner } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
 import { CreateTextureArgs, CreateTextureFromSourceArgs, TextureCacheKey, TextureTransparency } from "../RenderTexture";
 import {
-  DebugShaderFile, GLTimerResultCallback, PlanarGridProps, RenderAreaPattern, RenderDiagnostics, RenderGeometry, RenderSystem, RenderSystemDebugControl, TerrainTexture,
+  DebugShaderFile, GLTimerResultCallback, MapLayerClassifiers, PlanarGridProps, RenderAreaPattern, RenderDiagnostics, RenderGeometry, RenderSystem, RenderSystemDebugControl, TerrainTexture,
 } from "../RenderSystem";
 import { RenderTarget } from "../RenderTarget";
 import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "../ScreenSpaceEffectBuilder";
@@ -510,8 +510,8 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return RealityMeshGeometry.createFromTerrainMesh(terrainMesh, transform);
   }
 
-  public override createRealityMeshGraphic(terrainGeometry: RealityMeshGeometry, featureTable: PackedFeatureTable, tileId: string | undefined, baseColor: ColorDef | undefined, baseTransparent: boolean, textures?: TerrainTexture[]): RenderGraphic | undefined {
-    return RealityMeshGeometry.createGraphic(this, terrainGeometry, featureTable, tileId, baseColor, baseTransparent, textures);
+  public override createRealityMeshGraphic(terrainGeometry: RealityMeshGeometry, featureTable: PackedFeatureTable, tileId: string | undefined, baseColor: ColorDef | undefined, baseTransparent: boolean, textures?: TerrainTexture[], layerClassifiers?: MapLayerClassifiers): RenderGraphic | undefined {
+    return RealityMeshGeometry.createGraphic(this, terrainGeometry, featureTable, tileId, baseColor, baseTransparent, textures, layerClassifiers);
   }
   public override createRealityMesh(realityMesh: RealityMeshPrimitive): RenderGraphic | undefined {
     const geom = RealityMeshGeometry.createFromRealityMesh(realityMesh);

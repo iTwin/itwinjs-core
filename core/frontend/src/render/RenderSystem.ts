@@ -33,6 +33,7 @@ import { RenderMemory } from "./RenderMemory";
 import { RenderTarget } from "./RenderTarget";
 import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "./ScreenSpaceEffectBuilder";
 import { CreateTextureArgs, CreateTextureFromSourceArgs, TextureCacheKey, TextureTransparency } from "./RenderTexture";
+import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
 
 /* eslint-disable no-restricted-syntax */
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh
@@ -50,6 +51,9 @@ export abstract class RenderTextureDrape implements IDisposable {
 
 /** @internal */
 export type TextureDrapeMap = Map<Id64String, RenderTextureDrape>;
+
+/** @internal */
+export type MapLayerClassifiers = Map<number, RenderPlanarClassifier>;
 
 /** Describes a texture loaded from an HTMLImageElement
  * ###TODO Replace with TextureImage from RenderTexture.ts after we start returning transparency info from the backend.
@@ -373,7 +377,7 @@ export abstract class RenderSystem implements IDisposable {
   /** @internal */
   public createRealityMeshFromTerrain(_terrainMesh: TerrainMeshPrimitive, _transform?: Transform): RenderRealityMeshGeometry | undefined { return undefined; }
   /** @internal */
-  public createRealityMeshGraphic(_terrainGeometry: RenderRealityMeshGeometry, _featureTable: PackedFeatureTable, _tileId: string | undefined, _baseColor: ColorDef | undefined, _baseTransparent: boolean, _textures?: TerrainTexture[]): RenderGraphic | undefined { return undefined; }
+  public createRealityMeshGraphic(_terrainGeometry: RenderRealityMeshGeometry, _featureTable: PackedFeatureTable, _tileId: string | undefined, _baseColor: ColorDef | undefined, _baseTransparent: boolean, _textures?: TerrainTexture[], _layerClassifiers?: MapLayerClassifiers): RenderGraphic | undefined { return undefined; }
   /** @internal */
   public createRealityMesh(_realityMesh: RealityMeshPrimitive): RenderGraphic | undefined { return undefined; }
   /** @internal */

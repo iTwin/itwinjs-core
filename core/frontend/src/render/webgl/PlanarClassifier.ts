@@ -340,7 +340,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     1, 0, 0, 0,
     0, 0, 0, 1);
   private _debugFrustum?: Frustum;
-  private _doDebugFrustum = false;
+  private _doDebugFrustum = true;
   private _debugFrustumGraphic?: RenderGraphic = undefined;
   private _isClassifyingPointCloud?: boolean; // we will detect this the first time we draw
   private readonly _bgColor = ColorDef.from(0, 0, 0, 255);

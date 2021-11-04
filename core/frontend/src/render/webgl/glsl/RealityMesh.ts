@@ -8,7 +8,9 @@
 
 import { assert } from "@itwin/core-bentley";
 import { ColorDef } from "@itwin/core-common";
+import { Matrix4d } from "@itwin/core-geometry";
 import { AttributeMap } from "../AttributeMap";
+import { Matrix4 } from "../Matrix";
 import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
 import { System } from "../System";
@@ -35,30 +37,46 @@ const computeNormal = `
 
 const applyTexture = `
 bool applyTexture(inout vec4 col, sampler2D sampler, mat4 params) {
-  vec4 texTransform = params[0].xyzw;
-  vec4 texClip = params[1].xyzw;
-  float layerAlpha = params[2].x;
-  vec2 uv = vec2(texTransform[0] + texTransform[2] * v_texCoord.x, texTransform[1] + texTransform[3] * v_texCoord.y);
-  if (uv.x >= texClip[0] && uv.x <= texClip[2] && uv.y >= texClip[1] && uv.y <= texClip[3]) {
+  vec2 uv;
+  float layerAlpha;
+  if (params[3][3] != 0.0) {
+    vec4  eye4 = vec4(v_eyeSpace, 1.0);
+    vec4  classPos4 = params * eye4;
+    uv.x = classPos4.x / classPos4.w;
+    uv.y = (classPos4.y / classPos4.w) / 2.0;
+    layerAlpha = 1.0;
+    if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0)
+      return false;
+  } else {
+    vec4 texTransform = params[0].xyzw;
+    vec4 texClip = params[1].xyzw;
+    layerAlpha = params[2].x;
+    uv = vec2(texTransform[0] + texTransform[2] * v_texCoord.x, texTransform[1] + texTransform[3] * v_texCoord.y);
+    if (uv.x < texClip[0] || uv.x > texClip[2] || uv.y < texClip[1] || uv.y > texClip[3])
+      return false;
     uv.y = 1.0 - uv.y;
-    vec4 texCol = TEXTURE(sampler, uv);
-    float alpha = layerAlpha * texCol.a;
-    if (alpha > 0.05) {
-      col.rgb = (1.0 - alpha) * col.rgb + alpha * texCol.rgb;
-      if (texCol.a > 0.1)
-        featureIncrement = params[2].y;
-      if (alpha > col.a)
-        col.a = alpha;
-    }
-    return true;
   }
+ vec4 texCol = TEXTURE(sampler, uv);
+ float alpha = layerAlpha * texCol.a;
+ if (alpha > 0.05) {
+  col.rgb = (1.0 - alpha) * col.rgb + alpha * texCol.rgb;
+  if (texCol.a > 0.1)
+    featureIncrement = params[2].y;
 
-  return false;
+  if (alpha > col.a)
+    col.a = alpha;
+
+  return true;
+  }
+return false;
 }
 `;
 
 const computeTexCoord = "return unquantize2d(a_uvParam, u_qTexCoordParams);";
 const overrideFeatureId = "return addUInt32s(feature_id * 255.0, vec4(featureIncrement, 0.0, 0.0, 0.0)) / 255.0;";
+const scratchMatrix4d1 = Matrix4d.createIdentity();
+const scratchMatrix4d2 = Matrix4d.createIdentity();
+const scratchMatrix4d3 = Matrix4d.createIdentity();
 
 function addTextures(builder: ProgramBuilder, maxTexturesPerMesh: number) {
   builder.vert.addFunction(unquantize2d);
@@ -74,7 +92,7 @@ function addTextures(builder: ProgramBuilder, maxTexturesPerMesh: number) {
 
   builder.frag.addUniform("u_texturesPresent", VariableType.Boolean, (program) => {
     program.addGraphicUniform("u_texturesPresent", (uniform, params) => {
-      const textureCount = params.geometry.asRealityMesh!.textureParams?.textures.length;
+      const textureCount = params.geometry.asRealityMesh!.textureParams?.params.length;
       uniform.setUniform1i(textureCount ? 1 : 0);
     });
   });
@@ -85,7 +103,7 @@ function addTextures(builder: ProgramBuilder, maxTexturesPerMesh: number) {
       prog.addGraphicUniform(textureLabel, (uniform, params) => {
         const textureUnits = [TextureUnit.RealityMesh0, TextureUnit.RealityMesh1, params.target.drawForReadPixels ? TextureUnit.ShadowMap : TextureUnit.PickDepthAndOrder, TextureUnit.RealityMesh3, TextureUnit.RealityMesh4, TextureUnit.RealityMesh5];
         const realityMesh = params.geometry.asRealityMesh!;
-        const realityTexture = realityMesh.textureParams ? realityMesh.textureParams.textures[i] : undefined;
+        const realityTexture = realityMesh.textureParams ? realityMesh.textureParams.params[i].texture : undefined;
         if (realityTexture !== undefined) {
           const texture = realityTexture as Texture;
           texture.texture.bindSampler(uniform, textureUnits[i]);
@@ -99,10 +117,18 @@ function addTextures(builder: ProgramBuilder, maxTexturesPerMesh: number) {
     builder.frag.addUniform(paramsLabel, VariableType.Mat4, (prog) => {
       prog.addGraphicUniform(paramsLabel, (uniform, params) => {
         const realityMesh = params.geometry.asRealityMesh!;
-        const textureParams = realityMesh.textureParams;
-        assert(undefined !== textureParams);
-        if (undefined !== textureParams) {
-          uniform.setMatrix4(textureParams.matrices[i]);
+        const textureParam = realityMesh.textureParams?.params[i];
+        assert(undefined !== textureParam);
+        if (undefined !== textureParam) {
+          if (textureParam.isProjected) {
+            const modelToTexture = textureParam.matrix.toMatrix4d(scratchMatrix4d1);
+            const modelToEye = Matrix4d.createTransform(params.target.uniforms.frustum.viewMatrix);
+            const eyeToModel = modelToEye.createInverse(scratchMatrix4d2);
+            const eyeToTexture = modelToTexture.multiplyMatrixMatrix(eyeToModel!, scratchMatrix4d3);
+            uniform.setMatrix4(Matrix4.fromMatrix4d(eyeToTexture, textureParam.scratchMatrix));
+
+          } else
+            uniform.setMatrix4(textureParam.matrix);
         }
       });
     });

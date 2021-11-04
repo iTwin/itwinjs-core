@@ -439,7 +439,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public changePlanarClassifiers(planarClassifiers?: PlanarClassifierMap) {
     this.changeDrapesOrClassifiers<RenderPlanarClassifier>(this._planarClassifiers, planarClassifiers);
     this._planarClassifiers = planarClassifiers;
-
   }
 
   public changeDynamics(dynamics?: GraphicList) {

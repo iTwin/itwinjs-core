@@ -21,6 +21,7 @@ import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { PlanarClipMaskState } from "../../PlanarClipMaskState";
 import { FeatureSymbology } from "../../render/FeatureSymbology";
+import { RenderPlanarClassifier } from "../../render/RenderPlanarClassifier";
 import { SceneContext } from "../../ViewContext";
 import { ScreenViewport } from "../../Viewport";
 import {
@@ -29,6 +30,7 @@ import {
   DisclosedTileTreeSet,
   EllipsoidTerrainProvider,
   getCesiumTerrainProvider,
+  GraphicsCollectorDrawArgs,
   ImageryMapLayerTreeReference,
   ImageryMapTileTree,
   MapCartoRectangle,
@@ -38,6 +40,7 @@ import {
   MapTilingScheme,
   PlanarTilePatch,
   QuadId,
+  RealityTile,
   RealityTileDrawArgs,
   RealityTileTree,
   RealityTileTreeParams, Tile,
@@ -122,8 +125,9 @@ export class MapTileTree extends RealityTileTree {
 
   public imageryTrees: ImageryMapTileTree[] = [];
   private _layerSettings = new Map<Id64String, MapLayerSettings>();
+  public layerClassifiers = new Map<number, RenderPlanarClassifier>();
 
-  public addImageryLayer(tree: ImageryMapTileTree, settings: MapLayerSettings) {
+  public  addImageryLayer(tree: ImageryMapTileTree, settings: MapLayerSettings) {
     const maxLayers = IModelApp.renderSystem.maxRealityImageryLayers;
     if (this.imageryTrees.length < maxLayers) {
       this.imageryTrees.push(tree);
@@ -132,10 +136,28 @@ export class MapTileTree extends RealityTileTree {
       // TBD -- Notify user that layers is being ignored?
     }
   }
-  public clearImageryLayers() {
+  public addClassifierLayer(layerTreeRef: ClassifierMapLayerTileTreeReference, context: SceneContext) {
+    const classifier = context.addPlanarClassifier(`MapLayer ${this.modelId}-${layerTreeRef.layerIndex}`, layerTreeRef);
+    if (classifier)
+      this.layerClassifiers.set(layerTreeRef.layerIndex, classifier);
+  }
+
+  protected override collectClassifierGraphics(args: TileDrawArgs, selectedTiles: RealityTile[]) {
+    super.collectClassifierGraphics(args, selectedTiles);
+
+    this.layerClassifiers.forEach((layerClassifier: RenderPlanarClassifier) => {
+      if (!(args instanceof GraphicsCollectorDrawArgs))
+        layerClassifier.collectGraphics(args.context, { modelId: this.modelId, tiles: selectedTiles, location: args.location, isPointCloud: this.isPointCloud });
+
+    });
+  }
+
+  public clearImageryTreesAndClassifiers() {
     this.imageryTrees.length = 0;
     this._layerSettings.clear();
+    this.layerClassifiers.clear();
   }
+
   public override get isTransparent() {
     return this.mapTransparent || this.baseTransparent;
   }
@@ -666,7 +688,7 @@ export class MapTileTreeReference extends TileTreeReference {
     return index < 0 || treeIndex >= this._layerTrees.length ? undefined : this._layerTrees[treeIndex];
   }
 
-  public initializeImagery(): boolean {
+  public initializeLayers(context: SceneContext): boolean {
     const tree = this.treeOwner.load() as MapTileTree;
     if (undefined === tree)
       return false;     // Not loaded yet.
@@ -690,9 +712,10 @@ export class MapTileTreeReference extends TileTreeReference {
           return false; // Not loaded yet.
         if (layerTree instanceof ImageryMapTileTree)
           tree.addImageryLayer(layerTree, layerTreeRef.layerSettings);
+        else if (layerTreeRef instanceof ClassifierMapLayerTileTreeReference)
+          tree.addClassifierLayer(layerTreeRef, context);
       }
     }
-
     return true;
   }
 
@@ -702,14 +725,8 @@ export class MapTileTreeReference extends TileTreeReference {
       return;
 
     const tree = this.treeOwner.load() as MapTileTree;
-    if (undefined === tree || !this.initializeImagery())
+    if (undefined === tree || !this.initializeLayers(context))
       return;     // Not loaded yet.
-
-    this._layerTrees.forEach((layerTree) => {
-      if (layerTree instanceof ClassifierMapLayerTileTreeReference)
-        context.addPlanarClassifier(`MapLayer ${tree.modelId}-${layerTree.layerIndex}`, layerTree);
-
-    });
 
     if (this._planarClipMask && this._planarClipMask.settings.isValid)
       context.addPlanarClassifier(tree.modelId, undefined, this._planarClipMask);
@@ -725,7 +742,7 @@ export class MapTileTreeReference extends TileTreeReference {
     if (undefined !== args)
       tree.draw(args);
 
-    tree.clearImageryLayers();
+    tree.clearImageryTreesAndClassifiers();
   }
 
   public override createDrawArgs(context: SceneContext): TileDrawArgs | undefined {

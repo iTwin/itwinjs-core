@@ -19,58 +19,71 @@ import { RealityMeshPrimitive } from "../primitives/mesh/RealityMeshPrimitive";
 import { TerrainMeshPrimitive } from "../primitives/mesh/TerrainMeshPrimitive";
 import { RenderGraphic } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
-import { RenderSystem, TerrainTexture } from "../RenderSystem";
+import { MapLayerClassifiers, RenderSystem, TerrainTexture } from "../RenderSystem";
 import { GL } from "./GL";
 import { Primitive } from "./Primitive";
 import { RenderOrder, RenderPass } from "./RenderFlags";
 import { System } from "./System";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
+import { RenderPlanarClassifier } from "../RenderPlanarClassifier";
+import { PlanarClassifier } from "./PlanarClassifier";
+import { MapCartoRectangle } from "../../tile/internal";
 
 const scratchOverlapRange = Range2d.createNull();
 
+type TerrainTextureOrClassifier = TerrainTexture | RenderPlanarClassifier;
+
+class RealityTextureParam {
+  constructor(public texture: RenderTexture | undefined, public matrix: Matrix4, public isProjected: boolean, public scratchMatrix = new Matrix4()) {}
+}
 /** @internal */
 export class RealityTextureParams {
-
-  constructor(public matrices: Matrix4[], public textures: RenderTexture[]) { }
-  public static create(terrainTextures: TerrainTexture[]) {
+  constructor(public params: RealityTextureParam[]) {}
+  public static create(textures: TerrainTextureOrClassifier[]) {
     const maxTexturesPerMesh = System.instance.maxRealityImageryLayers;
-    assert(terrainTextures.length <= maxTexturesPerMesh);
+    assert(textures.length <= maxTexturesPerMesh);
 
-    const renderTextures = [];
-    const matrices = new Array<Matrix4>();
-    for (const terrainTexture of terrainTextures) {
-      const matrix = new Matrix4();      // Published as Mat4.
-      renderTextures.push(terrainTexture.texture);
-      assert(terrainTexture.texture !== undefined, "Texture not defined in TerrainTextureParams constructor");
-      matrix.data[0] = terrainTexture.translate.x;
-      matrix.data[1] = terrainTexture.translate.y;
-      matrix.data[2] = terrainTexture.scale.x;
-      matrix.data[3] = terrainTexture.scale.y;
+    const params = new Array<RealityTextureParam>();
+    for (const texture of textures) {
+      if (texture instanceof TerrainTexture) {
+        const terrainTexture = texture;
+        const matrix = new Matrix4();      // Published as Mat4.
+        assert(terrainTexture.texture !== undefined, "Texture not defined in TerrainTextureParams constructor");
+        matrix.data[0] = terrainTexture.translate.x;
+        matrix.data[1] = terrainTexture.translate.y;
+        matrix.data[2] = terrainTexture.scale.x;
+        matrix.data[3] = terrainTexture.scale.y;
 
-      if (terrainTexture.clipRectangle) {
-        matrix.data[4] = terrainTexture.clipRectangle.low.x;
-        matrix.data[5] = terrainTexture.clipRectangle.low.y;
-        matrix.data[6] = terrainTexture.clipRectangle.high.x;
-        matrix.data[7] = terrainTexture.clipRectangle.high.y;
+        if (terrainTexture.clipRectangle) {
+          matrix.data[4] = terrainTexture.clipRectangle.low.x;
+          matrix.data[5] = terrainTexture.clipRectangle.low.y;
+          matrix.data[6] = terrainTexture.clipRectangle.high.x;
+          matrix.data[7] = terrainTexture.clipRectangle.high.y;
+        } else {
+          matrix.data[4] = matrix.data[5] = 0;
+          matrix.data[6] = matrix.data[7] = 1;
+        }
+        matrix.data[8] = (1.0 - terrainTexture.transparency);
+        matrix.data[9] = terrainTexture.featureId;
+        matrix.data[15] = 0.0;      // Denotes a terrain texture
+        params.push(new RealityTextureParam(terrainTexture.texture, matrix, false));
       } else {
-        matrix.data[4] = matrix.data[5] = 0;
-        matrix.data[6] = matrix.data[7] = 1;
+        const classifier = texture as PlanarClassifier;
+        params.push(new RealityTextureParam(classifier.texture, Matrix4.fromMatrix4d(classifier.projectionMatrix), true));
       }
-      matrix.data[8] = (1.0 - terrainTexture.transparency);
-      matrix.data[9] = terrainTexture.featureId;
-      matrices.push(matrix);
     }
 
-    for (let i = terrainTextures.length; i < maxTexturesPerMesh; i++) {
+    for (let i = textures.length; i < maxTexturesPerMesh; i++) {
       const matrix = new Matrix4();
       matrix.data[0] = matrix.data[1] = 0.0;
       matrix.data[2] = matrix.data[3] = 1.0;
       matrix.data[4] = matrix.data[5] = 1;
       matrix.data[6] = matrix.data[7] = -1;
-      matrices.push(matrix);
+      matrix.data[15] = 0;        // Denotes a terrain texture.
+      params.push(new RealityTextureParam(undefined, matrix, false));
     }
-    return new RealityTextureParams(matrices, renderTextures);
+    return new RealityTextureParams(params);
   }
 }
 
@@ -95,7 +108,6 @@ export class RealityMeshGeometryParams extends IndexedGeometryParams {
         this.buffers.addBuffer(normals, [BufferParameters.create(attrParams.location, 2, GL.DataType.UnsignedByte, false, 0, 0, false)]);
       this.normals = normals;
     }
-
     this.featureID = featureID;
   }
 
@@ -126,6 +138,8 @@ export class RealityMeshGeometryParams extends IndexedGeometryParams {
     dispose(this.uvParams);
   }
 }
+
+const fullCartoRectangle = MapCartoRectangle.create();
 
 /** @internal */
 export class RealityMeshGeometry extends IndexedGeometry implements IDisposable, RenderMemory.Consumer {
@@ -163,48 +177,50 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
     return Range3d.createXYZXYZ(this.qOrigin[0], this.qOrigin[1], this.qOrigin[2], this.qOrigin[0] + Quantization.rangeScale16 * this.qScale[0], this.qOrigin[1] + Quantization.rangeScale16 * this.qScale[1], this.qOrigin[2] + Quantization.rangeScale16 * this.qScale[2]);
   }
 
-  public static createGraphic(system: RenderSystem, realityMesh: RealityMeshGeometry, featureTable: PackedFeatureTable, tileId: string | undefined, baseColor: ColorDef | undefined, baseTransparent: boolean, textures?: TerrainTexture[]): RenderGraphic | undefined {
+  public static createGraphic(system: RenderSystem, realityMesh: RealityMeshGeometry, featureTable: PackedFeatureTable, tileId: string | undefined, baseColor: ColorDef | undefined, baseTransparent: boolean, textures?: TerrainTexture[], layerClassifiers?: MapLayerClassifiers): RenderGraphic | undefined {
     const meshes = [];
     if (textures === undefined)
       textures = [];
 
     const texturesPerMesh = System.instance.maxRealityImageryLayers;
-    const layers = new Array<TerrainTexture[]>();
-    let layerCount = 0;
+    const layers = new Array<(TerrainTexture | RenderPlanarClassifier)[]>();
+    // Collate the textures and classifiers layers into a single array.
     for (const texture of textures) {
       const layer = layers[texture.layerIndex];
       if (layer) {
-        layer.push(texture);
+        (layer as TerrainTexture[]).push(texture);
       } else {
-        layerCount++;
         layers[texture.layerIndex] = [texture];
       }
     }
-    if (layerCount < 2) {
+    layerClassifiers?.forEach((layerClassifier, layerIndex) => layers[layerIndex] = [layerClassifier]);
+
+    if (layers.length < 2 && !layerClassifiers?.size) {
       // If only there is not more than one layer then we can group all of the textures into a single draw call.
       meshes.push(new RealityMeshGeometry(realityMesh._realityMeshParams, RealityTextureParams.create(textures), realityMesh._transform, baseColor, baseTransparent, realityMesh._isTerrain));
     } else {
       const primaryLayer = layers.shift()!;
       for (const primaryTexture of primaryLayer) {
-        const targetRectangle = primaryTexture.targetRectangle;
+        const targetRectangle = (primaryTexture instanceof TerrainTexture) ? primaryTexture.targetRectangle : fullCartoRectangle;
         const overlapMinimum = 1.0E-5 * (targetRectangle.high.x - targetRectangle.low.x) * (targetRectangle.high.y - targetRectangle.low.y);
         const layerTextures = [primaryTexture];
         for (const secondaryLayer of layers) {
           if (!secondaryLayer)
             continue;
           for (const secondaryTexture of secondaryLayer) {
-            const secondaryRectangle = secondaryTexture.targetRectangle;
+            const secondaryRectangle = (secondaryTexture instanceof TerrainTexture) ? secondaryTexture.targetRectangle : fullCartoRectangle;
             const overlap = targetRectangle.intersect(secondaryRectangle, scratchOverlapRange);
             if (!overlap.isNull && (overlap.high.x - overlap.low.x) * (overlap.high.y - overlap.low.y) > overlapMinimum) {
               const textureRange = Range2d.createXYXY(overlap.low.x, overlap.low.y, overlap.high.x, overlap.high.y);
               secondaryRectangle.worldToLocal(textureRange.low, textureRange.low);
               secondaryRectangle.worldToLocal(textureRange.high, textureRange.high);
 
-              if (secondaryTexture.clipRectangle)
+              if (secondaryTexture instanceof TerrainTexture && secondaryTexture.clipRectangle)
                 textureRange.intersect(secondaryTexture.clipRectangle, textureRange);
 
-              if (!textureRange.isNull)
-                layerTextures.push(new TerrainTexture(secondaryTexture.texture, secondaryTexture.featureId, secondaryTexture.scale, secondaryTexture.translate, secondaryTexture.targetRectangle, secondaryTexture.layerIndex, secondaryTexture.transparency, textureRange));
+              if (!textureRange.isNull) {
+                layerTextures.push(secondaryTexture instanceof RenderPlanarClassifier ? secondaryTexture : new TerrainTexture(secondaryTexture.texture, secondaryTexture.featureId, secondaryTexture.scale, secondaryTexture.translate, secondaryTexture.targetRectangle, secondaryTexture.layerIndex, secondaryTexture.transparency, textureRange));
+              }
             }
             layerTextures.length = Math.min(layerTextures.length, texturesPerMesh);
             meshes.push(new RealityMeshGeometry(realityMesh._realityMeshParams, RealityTextureParams.create(layerTextures), realityMesh._transform, baseColor, baseTransparent, realityMesh._isTerrain));
