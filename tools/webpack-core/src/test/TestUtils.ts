@@ -43,7 +43,7 @@ export function getTestConfig(srcFile: string, pluginsToTest: any[], externalsTo
       pathinfo: false,
     },
     plugins: pluginsToTest,
-    externals: externalsToTest,
+    externals: Object.fromEntries(externalsToTest?.map(e => [e, `commonjs ${e}`]) ?? []),
     optimization: { minimize: false, runtimeChunk: true },
     module: {
       rules,

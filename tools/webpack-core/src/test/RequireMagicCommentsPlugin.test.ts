@@ -30,7 +30,7 @@ describe("RequireMagicCommentsPlugin", () => {
 
     const result = await runWebpack(testConfig, vol);
     expect(result.logging.RequireMagicCommentsPlugin.entries[0].message).to.include(`Handler for /*test*/ - transformed "foo" => "bar"`);
-    expect(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8")).to.matchSnapshot();
+    expect(vol.readFileSync(path.join(__dirname, "dist/test.js"), "utf8")).to.matchSnapshot();
   });
 
   it("should work with external comments and addExternalPrefix handler", async () => {
@@ -42,7 +42,7 @@ describe("RequireMagicCommentsPlugin", () => {
 
     const result = await runWebpack(testConfig, vol);
     expect(result.logging.RequireMagicCommentsPlugin.entries[0].message).to.include(`Handler for /*webpack: external*/ - transformed "foo" => "BeWebpack-EXTERNAL:foo"`);
-    expect(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8")).to.matchSnapshot();
+    expect(vol.readFileSync(path.join(__dirname, "dist/test.js"), "utf8")).to.matchSnapshot();
   });
 
   it("should work with external comments and resolve not converted", async () => {
@@ -55,7 +55,7 @@ describe("RequireMagicCommentsPlugin", () => {
 
     const result = await runWebpack(testConfig, vol);
     expect(result.logging.RequireMagicCommentsPlugin.entries[0].message).to.include(`Handler for /*test*/ - transformed "foo" => "bar"`);
-    expect(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8")).to.matchSnapshot();
+    expect(vol.readFileSync(path.join(__dirname, "dist/test.js"), "utf8")).to.matchSnapshot();
   });
 
   it("should work with external comments and resolve converted", async () => {
@@ -69,7 +69,7 @@ describe("RequireMagicCommentsPlugin", () => {
     const result = await runWebpack(testConfig, vol);
     expect(result.logging.RequireMagicCommentsPlugin.entries[0].message).to.include(`Converting require.resolve => require for "foo"`);
     expect(result.logging.RequireMagicCommentsPlugin.entries[1].message).to.include(`Handler for /*test*/ - transformed "foo" => "bar"`);
-    expect(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8")).to.matchSnapshot();
+    expect(vol.readFileSync(path.join(__dirname, "dist/test.js"), "utf8")).to.matchSnapshot();
   });
 
   it("should work with external comments with resolve not converted and addExternalPrefix handler", async () => {
@@ -81,7 +81,7 @@ describe("RequireMagicCommentsPlugin", () => {
 
     const result = await runWebpack(testConfig, vol);
     expect(result.logging.RequireMagicCommentsPlugin.entries[0].message).to.include(`Handler for /*webpack: external*/ - transformed "foo" => "BeWebpack-EXTERNAL:foo"`);
-    expect(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8")).to.matchSnapshot();
+    expect(vol.readFileSync(path.join(__dirname, "dist/test.js"), "utf8")).to.matchSnapshot();
   });
 
   it("should work with external comments with resolve converted and addExternalPrefix handler", async () => {
@@ -94,7 +94,7 @@ describe("RequireMagicCommentsPlugin", () => {
     const result = await runWebpack(testConfig, vol);
     expect(result.logging.RequireMagicCommentsPlugin.entries[0].message).to.include(`Converting require.resolve => require for "foo"`);
     expect(result.logging.RequireMagicCommentsPlugin.entries[1].message).to.include(`Handler for /*webpack: external*/ - transformed "foo" => "BeWebpack-EXTERNAL:foo"`);
-    expect(fs.readFileSync(path.join(__dirname, "dist/test.js"), "utf8")).to.matchSnapshot();
+    expect(vol.readFileSync(path.join(__dirname, "dist/test.js"), "utf8")).to.matchSnapshot();
   });
 
   it("should work with copyfile comments and addCopyFileSuffix handler", async () => {
