@@ -6,25 +6,32 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
+import { PropertyRecord } from "@itwin/appui-abstract";
 import { BeEvent, Id64String, using } from "@itwin/core-bentley";
-import { IModelConnection, PerModelCategoryVisibility, SpatialViewState, Viewport, ViewState, ViewState3d } from "@itwin/core-frontend";
+import { QueryRowFormat } from "@itwin/core-common";
+import {
+  IModelApp, IModelConnection, NoRenderApp, PerModelCategoryVisibility, SpatialViewState, Viewport, ViewState, ViewState3d,
+} from "@itwin/core-frontend";
+import { isPromiseLike } from "@itwin/core-react";
 import { createRandomId } from "@itwin/presentation-common/lib/cjs/test";
 import { FilteredPresentationTreeDataProvider } from "@itwin/presentation-components";
-import { PropertyRecord } from "@itwin/appui-abstract";
-import { isPromiseLike } from "@itwin/core-react";
+import { IModelHierarchyChangeEventArgs, Presentation, PresentationManager } from "@itwin/presentation-frontend";
 import { ModelsVisibilityHandler, ModelsVisibilityHandlerProps } from "../../../appui-react/imodel-components/models-tree/ModelsVisibilityHandler";
 import { TestUtils } from "../../TestUtils";
 import { createCategoryNode, createElementClassGroupingNode, createElementNode, createModelNode, createSubjectNode } from "../Common";
-import { IModelHierarchyChangeEventArgs, Presentation, PresentationManager } from "@itwin/presentation-frontend";
 
 describe("ModelsVisibilityHandler", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
+    await NoRenderApp.startup({
+      localization: TestUtils.localization,
+    });
   });
 
-  after(() => {
+  after(async () => {
     TestUtils.terminateUiFramework();
+    await IModelApp.shutdown();
   });
 
   const imodelMock = moq.Mock.ofType<IModelConnection>();
@@ -90,14 +97,14 @@ describe("ModelsVisibilityHandler", () => {
   }
 
   const mockSubjectModelIds = (props: SubjectModelIdsMockProps) => {
-    props.imodelMock.setup((x) => x.query(moq.It.is((q: string) => (-1 !== q.indexOf("FROM bis.Subject")))))
+    props.imodelMock.setup((x) => x.query(moq.It.is((q: string) => (-1 !== q.indexOf("FROM bis.Subject"))), undefined, QueryRowFormat.UseJsPropertyNames))
       .returns(async function* () {
         const list = new Array<{ id: Id64String, parentId: Id64String }>();
         props.subjectsHierarchy.forEach((ids, parentId) => ids.forEach((id) => list.push({ id, parentId })));
         while (list.length)
           yield list.shift();
       });
-    props.imodelMock.setup((x) => x.query(moq.It.is((q: string) => (-1 !== q.indexOf("FROM bis.InformationPartitionElement")))))
+    props.imodelMock.setup((x) => x.query(moq.It.is((q: string) => (-1 !== q.indexOf("FROM bis.InformationPartitionElement"))), undefined, QueryRowFormat.UseJsPropertyNames))
       .returns(async function* () {
         const list = new Array<{ id: Id64String, subjectId: Id64String, content?: string }>();
         props.subjectModels.forEach((modelInfos, subjectId) => modelInfos.forEach((modelInfo) => list.push({ id: modelInfo.id, subjectId, content: modelInfo.content })));
@@ -291,7 +298,7 @@ describe("ModelsVisibilityHandler", () => {
         await using(createHandler({ viewport: vpMock.object }), async (handler) => {
           await Promise.all([handler.getVisibilityStatus(node, node.__key), handler.getVisibilityStatus(node, node.__key)]);
           // expect the `query` to be called only twice (once for subjects and once for models)
-          imodelMock.verify((x) => x.query(moq.It.isAnyString()), moq.Times.exactly(2));
+          imodelMock.verify((x) => x.query(moq.It.isAnyString(), undefined, QueryRowFormat.UseJsPropertyNames), moq.Times.exactly(2));
         });
       });
 
@@ -644,7 +651,16 @@ describe("ModelsVisibilityHandler", () => {
 
         await using(createHandler({ viewport: vpMock.object }), async (handler) => {
           // note: need to override to avoid running queries on the imodel
-          (handler as any).getGroupedElementIds = async () => ({ categoryId: "0x1", modelId: "0x2", elementIds: groupedElementIds });
+          (handler as any).getGroupedElementIds = async () => ({
+            categoryId: "0x1",
+            modelId: "0x2",
+            elementIds: {
+              async* getElementIds() {
+                for (const id of groupedElementIds)
+                  yield id;
+              },
+            },
+          });
 
           const result = handler.getVisibilityStatus(node, node.__key);
           expect(isPromiseLike(result)).to.be.true;
@@ -667,7 +683,16 @@ describe("ModelsVisibilityHandler", () => {
 
         await using(createHandler({ viewport: vpMock.object }), async (handler) => {
           // note: need to override to avoid running queries on the imodel
-          (handler as any).getGroupedElementIds = async () => ({ categoryId: "0x1", modelId: "0x2", elementIds: groupedElementIds });
+          (handler as any).getGroupedElementIds = async () => ({
+            categoryId: "0x1",
+            modelId: "0x2",
+            elementIds: {
+              async* getElementIds() {
+                for (const id of groupedElementIds)
+                  yield id;
+              },
+            },
+          });
 
           const result = handler.getVisibilityStatus(node, node.__key);
           expect(isPromiseLike(result)).to.be.true;
@@ -691,7 +716,16 @@ describe("ModelsVisibilityHandler", () => {
 
         await using(createHandler({ viewport: vpMock.object }), async (handler) => {
           // note: need to override to avoid running queries on the imodel
-          (handler as any).getGroupedElementIds = async () => ({ categoryId: "0x1", modelId: "0x2", elementIds: groupedElementIds });
+          (handler as any).getGroupedElementIds = async () => ({
+            categoryId: "0x1",
+            modelId: "0x2",
+            elementIds: {
+              async* getElementIds() {
+                for (const id of groupedElementIds)
+                  yield id;
+              },
+            },
+          });
 
           const result = handler.getVisibilityStatus(node, node.__key);
           expect(isPromiseLike(result)).to.be.true;
@@ -714,7 +748,16 @@ describe("ModelsVisibilityHandler", () => {
 
         await using(createHandler({ viewport: vpMock.object }), async (handler) => {
           // note: need to override to avoid running queries on the imodel
-          (handler as any).getGroupedElementIds = async () => ({ categoryId: "0x1", modelId: "0x2", elementIds: groupedElementIds });
+          (handler as any).getGroupedElementIds = async () => ({
+            categoryId: "0x1",
+            modelId: "0x2",
+            elementIds: {
+              async* getElementIds() {
+                for (const id of groupedElementIds)
+                  yield id;
+              },
+            },
+          });
 
           const result = handler.getVisibilityStatus(node, node.__key);
           expect(isPromiseLike(result)).to.be.true;
@@ -737,7 +780,16 @@ describe("ModelsVisibilityHandler", () => {
 
         await using(createHandler({ viewport: vpMock.object }), async (handler) => {
           // note: need to override to avoid running queries on the imodel
-          (handler as any).getGroupedElementIds = async () => ({ categoryId: "0x1", modelId: "0x2", elementIds: groupedElementIds });
+          (handler as any).getGroupedElementIds = async () => ({
+            categoryId: "0x1",
+            modelId: "0x2",
+            elementIds: {
+              async* getElementIds() {
+                for (const id of groupedElementIds)
+                  yield id;
+              },
+            },
+          });
 
           const result = handler.getVisibilityStatus(node, node.__key);
           expect(isPromiseLike(result)).to.be.true;
@@ -760,7 +812,16 @@ describe("ModelsVisibilityHandler", () => {
 
         await using(createHandler({ viewport: vpMock.object }), async (handler) => {
           // note: need to override to avoid running queries on the imodel
-          (handler as any).getGroupedElementIds = async () => ({ categoryId: "0x1", modelId: "0x2", elementIds: groupedElementIds });
+          (handler as any).getGroupedElementIds = async () => ({
+            categoryId: "0x1",
+            modelId: "0x2",
+            elementIds: {
+              async* getElementIds() {
+                for (const id of groupedElementIds)
+                  yield id;
+              },
+            },
+          });
 
           const result = handler.getVisibilityStatus(node, node.__key);
           expect(isPromiseLike(result)).to.be.true;
@@ -1271,7 +1332,16 @@ describe("ModelsVisibilityHandler", () => {
 
         await using(createHandler({ viewport: vpMock.object }), async (handler) => {
           // note: need to override to avoid running queries on the imodel
-          (handler as any).getGroupedElementIds = async () => ({ categoryId: "0x1", modelId: "0x2", elementIds: groupedElementIds });
+          (handler as any).getGroupedElementIds = async () => ({
+            categoryId: "0x1",
+            modelId: "0x2",
+            elementIds: {
+              async* getElementIds() {
+                for (const id of groupedElementIds)
+                  yield id;
+              },
+            },
+          });
 
           await handler.changeVisibility(node, node.__key, true);
           vpMock.verifyAll();
@@ -1304,7 +1374,12 @@ describe("ModelsVisibilityHandler", () => {
 
         await using(createHandler({ viewport: vpMock.object }), async (handler) => {
           // note: need to override to avoid running queries on the imodel
-          (handler as any).getAssemblyElementIds = async () => assemblyChildrenIds;
+          (handler as any).getAssemblyElementIds = () => ({
+            async* getElementIds() {
+              for (const id of assemblyChildrenIds)
+                yield id;
+            },
+          });
 
           await handler.changeVisibility(node, node.__key, true);
           vpMock.verifyAll();
@@ -1337,7 +1412,12 @@ describe("ModelsVisibilityHandler", () => {
 
         await using(createHandler({ viewport: vpMock.object }), async (handler) => {
           // note: need to override to avoid running a query on the imodel
-          (handler as any).getAssemblyElementIds = async () => assemblyChildrenIds;
+          (handler as any).getAssemblyElementIds = () => ({
+            async* getElementIds() {
+              for (const id of assemblyChildrenIds)
+                yield id;
+            },
+          });
 
           await handler.changeVisibility(node, node.__key, true);
           vpMock.verifyAll();
@@ -1366,7 +1446,9 @@ describe("ModelsVisibilityHandler", () => {
 
         await using(createHandler({ viewport: vpMock.object }), async (handler) => {
           // note: need to override to avoid running a query on the imodel
-          (handler as any).getAssemblyElementIds = async () => [];
+          (handler as any).getAssemblyElementIds = () => ({
+            async* getElementIds() { },
+          });
 
           await handler.changeVisibility(node, node.__key, true);
           vpMock.verifyAll();
@@ -1395,7 +1477,12 @@ describe("ModelsVisibilityHandler", () => {
 
         await using(createHandler({ viewport: vpMock.object }), async (handler) => {
           // note: need to override to avoid running queries on the imodel
-          (handler as any).getAssemblyElementIds = async () => assemblyChildrenIds;
+          (handler as any).getAssemblyElementIds = () => ({
+            async* getElementIds() {
+              for (const id of assemblyChildrenIds)
+                yield id;
+            },
+          });
 
           await handler.changeVisibility(node, node.__key, false);
           vpMock.verifyAll();
@@ -1428,7 +1515,12 @@ describe("ModelsVisibilityHandler", () => {
 
         await using(createHandler({ viewport: vpMock.object }), async (handler) => {
           // note: need to override to avoid running a query on the imodel
-          (handler as any).getAssemblyElementIds = async () => assemblyChildrenIds;
+          (handler as any).getAssemblyElementIds = () => ({
+            async* getElementIds() {
+              for (const id of assemblyChildrenIds)
+                yield id;
+            },
+          });
 
           await handler.changeVisibility(node, node.__key, false);
           vpMock.verifyAll();
@@ -1455,7 +1547,9 @@ describe("ModelsVisibilityHandler", () => {
 
         await using(createHandler({ viewport: vpMock.object }), async (handler) => {
           // note: need to override to avoid running a query on the imodel
-          (handler as any).getAssemblyElementIds = async () => [];
+          (handler as any).getAssemblyElementIds = () => ({
+            async* getElementIds() { },
+          });
 
           await handler.changeVisibility(node, node.__key, false);
           vpMock.verifyAll();
