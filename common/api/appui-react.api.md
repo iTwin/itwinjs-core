@@ -602,7 +602,11 @@ export function BackstageAppButton(props: BackstageAppButtonProps): JSX.Element;
 
 // @public
 export interface BackstageAppButtonProps {
+    // (undocumented)
+    execute?: () => void;
     icon?: string;
+    // (undocumented)
+    label?: string;
 }
 
 // @public
