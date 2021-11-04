@@ -542,16 +542,17 @@ describe("Curves", () => {
     ck.checkpoint("End CurvePrimitive.Evaluations");
     expect(ck.getNumErrors()).equals(0);
   });
-  it("Create and exercise distanceIndex", () => {
+  it.only("Create and exercise distanceIndex", () => {
     const ck = new Checker();
     const paths = Sample.createCurveChainWithDistanceIndex();
-    const dx = 10.0;
-    const allGeometry = [];
+    let dx = 0.0;
+    const dxGap = 1.0;
+    const allGeometry: GeometryQuery[] = [];
     for (const p of paths) {
       const q = p.clone()!;
-      ck.testTrue(p.isAlmostEqual(q));
-      q.tryTranslateInPlace(dx, 0, 0);
-      allGeometry.push(p.clone());
+      ck.testTrue(p.isAlmostEqual(q), "clone is same curve");
+      GeometryCoreTestIO.captureGeometry(allGeometry, q, dx, 0.0);
+      dx += p.range()!.xLength() + dxGap;
       ExerciseCurve.exerciseFractionToPoint(ck, p, true, false);
       ExerciseCurve.exerciseStroke(ck, p);
       ExerciseCurve.exerciseClosestPoint(ck, p, 0.1);
@@ -584,7 +585,6 @@ describe("Curves", () => {
         if (!ck.testPoint3d(ray1.origin, c1.point))
           p.closestPoint(p1, false);
       }
-
       const c0x = p.closestPoint(p0, CurveExtendMode.OnCurve);
       const c1x = p.closestPoint(p1, CurveExtendMode.OnCurve);
       const proximityFactor = 0.01;   // WE TRUST THAT THE CURVE DOES NOT BEND MUCH IN SMALL EXTRAPOLATION -- projected point should be closer than extension distance.

@@ -306,7 +306,10 @@ export class InterpolationCurve3d extends ProxyCurve {
     const proxyOk = this._proxyCurve.tryTransformInPlace(transform);
     if (proxyOk) {
       transform.multiplyPoint3dArrayInPlace(this._options.fitPoints);
-      // START HERE: transform start/endTangent
+      if (this._options.startTangent)
+        transform.multiplyVectorInPlace(this._options.startTangent);
+      if (this._options.endTangent)
+        transform.multiplyVectorInPlace(this._options.endTangent);
     }
     return proxyOk;
   }
