@@ -8,10 +8,10 @@
 
 // cspell:ignore elid
 
-import { GuidString, Id64String, IModelStatus, JsonUtils } from "@itwin/core-bentley";
+import { GuidString, Id64String, JsonUtils } from "@itwin/core-bentley";
 import { Point2d, Range3d } from "@itwin/core-geometry";
 import {
-  AxisAlignedBox3d, ElementProps, GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, IModel, IModelError, InformationPartitionElementProps,
+  AxisAlignedBox3d, ElementProps, GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, IModel, InformationPartitionElementProps,
   ModelProps, RelatedElement,
 } from "@itwin/core-common";
 import { DefinitionPartition, DocumentPartition, InformationRecordPartition, PhysicalPartition, SpatialLocationPartition } from "./Element";

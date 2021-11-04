@@ -7,9 +7,9 @@
  */
 
 import {
-  assert, BeEvent, BentleyError, BentleyStatus, compareStrings, CompressedId64Set, DbResult, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array,
+  assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbResult, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array,
 } from "@itwin/core-bentley";
-import { ChangedEntities, EntityIdAndClassIdIterable, IModelError, ModelGeometryChangesProps, ModelIdAndGeometryGuid } from "@itwin/core-common";
+import { ChangedEntities, EntityIdAndClassIdIterable, ModelGeometryChangesProps, ModelIdAndGeometryGuid } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseDb, StandaloneDb } from "./IModelDb";
 import { IpcHost } from "./IpcHost";
@@ -164,9 +164,7 @@ class ChangedEntitiesProc {
         ? "SELECT ElementId, ChangeType, ECClassId FROM temp.txn_Elements"
         : "SELECT ModelId, ChangeType, ECClassId FROM temp.txn_Models";
       iModel.withPreparedSqliteStatement(select, (sql: SqliteStatement) => {
-        if (undefined === sql.stmt) {
-          throw new IModelError(BentleyStatus.ERROR, "SQL statement is undefined.");
-        }
+        assert(undefined !== sql.stmt);
         const stmt = sql.stmt;
         while (sql.step() === DbResult.BE_SQLITE_ROW) {
           const id = stmt.getValueId(0);

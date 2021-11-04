@@ -6,7 +6,7 @@
  * @module NativeApp
  */
 
-import { BentleyError, BentleyStatus, IModelStatus, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
+import { assert, BentleyError, BentleyStatus, IModelStatus, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import {
   ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, IModelConnectionProps, IModelError, IModelRpcProps, IpcAppChannel, IpcAppFunctions,
   IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel, OpenBriefcaseProps, RemoveFunction, StandaloneOpenOptions,
@@ -253,8 +253,8 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
     const val: IModelJsNative.ErrorStatusOrResult<any, boolean> = IModelDb.findByKey(key).nativeDb.setGeometricModelTrackingEnabled(startSession);
     if (val.error)
       throw new IModelError(val.error.status, "Failed to toggle graphical editing scope");
-
-    return val.result ?? false;
+    assert(undefined !== val.result);
+    return val.result;
   }
   public async isGraphicalEditingSupported(key: string): Promise<boolean> {
     return IModelDb.findByKey(key).nativeDb.isGeometricModelTrackingSupported();

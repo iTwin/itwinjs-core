@@ -6,7 +6,7 @@
  * @module ECSQL
  */
 
-import { assert, BentleyStatus, DbResult, GuidString, Id64String, IDisposable, StatusCodeWithMessage } from "@itwin/core-bentley";
+import { assert, DbResult, GuidString, Id64String, IDisposable, StatusCodeWithMessage } from "@itwin/core-bentley";
 import { LowAndHighXYZ, Range3d, XAndY, XYAndZ, XYZ } from "@itwin/core-geometry";
 import { ECJsNames, ECSqlValueType, IModelError, NavigationBindingValue, NavigationValue } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
@@ -56,9 +56,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   private _sql: string | undefined;
 
   public get sql() {
-    if (undefined === this._sql)
-      throw new IModelError(BentleyStatus.ERROR, "SQL is undefined.");
-
+    assert(undefined !== this._sql);
     return this._sql;
   }
   /** Check if this statement has been prepared successfully or not */
@@ -296,9 +294,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   /** @internal added this back in for testing purposes */
   public async stepAsync(): Promise<DbResult> {
     return new Promise((resolve, _reject) => {
-      if (undefined === this._stmt) {
-        throw new IModelError(BentleyStatus.ERROR, "Statement is undefined.");
-      }
+      assert(undefined !== this._stmt);
       this._stmt.stepAsync(resolve);
     });
   }

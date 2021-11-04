@@ -6,11 +6,10 @@
  * @module SQLiteDb
  */
 
-import { BentleyStatus, DbResult, IDisposable, OpenMode } from "@itwin/core-bentley";
+import { DbResult, IDisposable, OpenMode } from "@itwin/core-bentley";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { IModelHost } from "./IModelHost";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
-import { IModelError } from "@itwin/core-common";
 
 /** A SQLiteDb file
  * @public
@@ -21,10 +20,7 @@ export class SQLiteDb implements IDisposable {
 
   /** @internal */
   public get nativeDb(): IModelJsNative.SQLiteDb {
-    if (undefined === this._nativeDb) {
-      throw new IModelError(BentleyStatus.ERROR, "Db is not open.");
-    }
-    return this._nativeDb;
+    return this._nativeDb!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
   }
 
   constructor() {

@@ -232,13 +232,12 @@ export class ChangeSummaryManager {
         Logger.logTrace(loggerCategory, `Actual Change summary extraction done for changeset #${i + 1}.`, () => ({ iModelId, changeSetId: currentChangeSetId }));
 
         perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Add ChangeSet info to ChangeSummary");
-        if (undefined !== stat.result) {
-          const changeSummaryId = stat.result;
-          summaries.push(changeSummaryId);
-          ChangeSummaryManager.addExtendedInfos(changesFile, changeSummaryId, currentChangeSetId, currentChangeSetInfo.parentId, currentChangeSetInfo.description, currentChangeSetInfo.pushDate, currentChangeSetInfo.userCreated);
-          perfLogger.dispose();
-          Logger.logTrace(loggerCategory, `Added extended infos to Change Summary for changeset #${i + 1}.`, () => ({ iModelId, changeSetId: currentChangeSetId }));
-        }
+        assert(undefined !== stat.result);
+        const changeSummaryId = stat.result;
+        summaries.push(changeSummaryId);
+        ChangeSummaryManager.addExtendedInfos(changesFile, changeSummaryId, currentChangeSetId, currentChangeSetInfo.parentId, currentChangeSetInfo.description, currentChangeSetInfo.pushDate, currentChangeSetInfo.userCreated);
+        perfLogger.dispose();
+        Logger.logTrace(loggerCategory, `Added extended infos to Change Summary for changeset #${i + 1}.`, () => ({ iModelId, changeSetId: currentChangeSetId }));
 
         Logger.logInfo(loggerCategory, `Finished Change Summary extraction for changeset #${i + 1}.`, () => ({ iModelId, changeSetId: currentChangeSetId }));
       }

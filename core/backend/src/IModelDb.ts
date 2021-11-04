@@ -9,7 +9,7 @@
 import { join } from "path";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import {
-  AccessToken, BeEvent, BentleyStatus, ChangeSetStatus, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus,
+  AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus,
   JsonUtils, Logger, OpenMode,
 } from "@itwin/core-bentley";
 import {
@@ -259,9 +259,7 @@ export abstract class IModelDb extends IModel {
 
   /** The Guid that identifies this iModel. */
   public override get iModelId(): GuidString {
-    if (undefined === super.iModelId) {
-      throw new IModelError(BentleyStatus.ERROR, "iModelId is undefined.");
-    }
+    assert(undefined !== super.iModelId);
     return super.iModelId;
   } // GuidString | undefined for the IModel superclass, but required for all IModelDb subclasses
 
@@ -304,6 +302,7 @@ export abstract class IModelDb extends IModel {
     IModelDb._openDbs.delete(this._fileKey);
     this._workspace.close();
     this.locks.close();
+    this._locks = undefined;
     this.nativeDb.closeIModel();
     this._nativeDb = undefined; // the underlying nativeDb has been freed by closeIModel
   }
@@ -2013,10 +2012,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         throw new IModelError(ret.error.status, `TreeId=${treeId} TileId=${tileId}`);
       }
 
-      if (undefined === ret.result) {
-        throw new IModelError(BentleyStatus.ERROR, "Result is undefined.");
-      }
-
+      assert(undefined !== ret.result);
       return ret.result;
     }
   }
