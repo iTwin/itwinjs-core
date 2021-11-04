@@ -101,6 +101,7 @@ export function BasicToolWidget(props: BasicToolWidgetProps) {
   }, [props.showCategoryAndModelsContextTools, props.additionalHorizontalItems, props.additionalVerticalItems, getHorizontalToolbarItems, getVerticalToolbarItems]);
 
   const uiIsVisible = useUiVisibility();
+  // istanbul ignore next
   const className = classnames(
     !uiIsVisible && "nz-hidden",
   );

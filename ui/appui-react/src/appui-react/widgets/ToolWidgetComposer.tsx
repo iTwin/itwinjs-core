@@ -22,6 +22,8 @@ import { UiShowHideManager } from "../utils/UiShowHideManager";
 export interface BackstageAppButtonProps {
   /** Icon specification for the App button */
   icon?: string;
+  label?: string;
+  execute?: () => void;
 }
 
 /**
@@ -29,14 +31,21 @@ export interface BackstageAppButtonProps {
  * @public
  */
 export function BackstageAppButton(props: BackstageAppButtonProps) {
-  const backstageLabel = React.useRef(UiFramework.translate("buttons.openBackstageMenu"));
-  const backstageToggleCommand = BackstageManager.getBackstageToggleCommand(props.icon);
+  const backstageToggleCommand = React.useMemo(() => BackstageManager.getBackstageToggleCommand(props.icon), [props.icon]);
+  const backstageLabel = React.useMemo(() => props.label || backstageToggleCommand.tooltip, [backstageToggleCommand.tooltip, props.label]);
   const [icon, setIcon] = React.useState(props.icon ? props.icon : IconSpecUtilities.createSvgIconSpec(widgetIconSvg));
   const isInitialMount = React.useRef(true);
   const useSmallAppButton = "1" !== useFrameworkVersion();
   const divClassName = useSmallAppButton ? "uifw-app-button-small" : undefined;
   const { onElementRef, proximityScale } = useWidgetOpacityContext();
   const ref = React.useRef<HTMLDivElement>(null);
+
+  const handleClick = React.useCallback(() => {
+    if (props.execute)
+      props.execute();
+    else
+      backstageToggleCommand.execute();
+  }, [backstageToggleCommand, props]);
 
   React.useEffect(() => {
     if (isInitialMount.current) {
@@ -58,11 +67,11 @@ export function BackstageAppButton(props: BackstageAppButtonProps) {
       <AppButton
         small={useSmallAppButton}
         mouseProximity={buttonProximityScale}
-        onClick={backstageToggleCommand.execute}
+        onClick={handleClick}
         icon={
           <Icon iconSpec={icon} />
         }
-        title={backstageToggleCommand.tooltip || backstageLabel.current}
+        title={backstageLabel}
       />
     </div>
   );
