@@ -4473,20 +4473,20 @@ export class SavedView {
 }
 
 // @public
-export class SavedViewLayout {
-    static emphasizeElementsFromProps(contentGroup: ContentGroup, savedProps: SavedViewLayoutProps): boolean;
-    static viewLayoutToProps(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup, emphasizeElements?: boolean, contentCallback?: ContentCallback): SavedViewLayoutProps;
-    static viewStatesFromProps(iModelConnection: IModelConnection, savedProps: SavedViewLayoutProps): Promise<Array<ViewState | undefined>>;
+export class StageContentLayout {
+    static emphasizeElementsFromProps(contentGroup: ContentGroup, savedProps: StageContentLayoutProps): boolean;
+    static viewLayoutToProps(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup, emphasizeElements?: boolean, contentCallback?: ContentCallback): StageContentLayoutProps;
+    static viewStatesFromProps(iModelConnection: IModelConnection, savedProps: StageContentLayoutProps): Promise<Array<ViewState | undefined>>;
 }
 
 // @public
-export interface SavedViewLayoutProps {
+export interface StageContentLayoutProps {
     // (undocumented)
     contentGroupProps: ContentGroupProps;
     // (undocumented)
     contentLayoutProps?: ContentLayoutProps;
     // (undocumented)
-    savedViews: SavedViewProps[];
+    viewStateProps: SavedViewProps[];
 }
 
 // @public

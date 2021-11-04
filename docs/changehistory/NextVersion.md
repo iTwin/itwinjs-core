@@ -916,7 +916,11 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `reactElement` in ToolWidgetDef            | `ToolWidgetDef.reactNode`                                                                                                     |
 | `reactElement` in WidgetControl            | `WidgetControl.reactNode`                                                                                                     |
 | `reactElement` in WidgetDef                | `WidgetDef.reactNode`                                                                                                         |
-| `ReactMessage`                             | `ReactMessage` in @itwin/core-react                                                                                        |
+| `ReactMessage`                             | `ReactMessage` in @itwin/core-react                                                                                           |
+| `SavedView`                                | `ViewStateHelper`                                                                                                             |
+| `SavedViewProps`                           | `ViewStateHelperProps`                                                                                                        |
+| `SavedViewLayout`                          | `StageContentLayout`                                                                                                          |
+| `SavedViewLayoutProps`                     | `StageContentLayoutProps`                                                                                                     |
 | `SpecialKey`                               | `SpecialKey` in @itwin/appui-abstract                                                                                         |
 | `WidgetState`                              | `WidgetState` in @itwin/appui-abstract                                                                                        |
 | `UserProfileBackstageItem`                 | *eliminated*                                                                                                                  |
