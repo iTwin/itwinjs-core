@@ -9,7 +9,6 @@
 import * as fs from "fs-extra";
 import { parse } from "json5";
 import { BeEvent, JSONSchemaType } from "@itwin/core-bentley";
-import { SettingsSpecRegistry } from "./SettingsSpecRegistry";
 import { LocalFileName } from "@itwin/core-common";
 
 /** The type of a Setting, according to its schema
@@ -82,6 +81,9 @@ export enum SettingsPriority {
  * @beta
  */
 export interface Settings {
+  /** @internal */
+  close(): void;
+
   /** Event raised whenever a SettingsDictionary is added or removed. */
   readonly onSettingsChanged: BeEvent<() => void>;
 
@@ -201,22 +203,11 @@ class SettingsDictionary {
  * Internal implementation of Settings interface.
  * @internal
  */
-export class ITwinSettings implements Settings {
+export class BaseSettings implements Settings {
   private _dictionaries: SettingsDictionary[] = [];
+  protected verifyPriority(_priority: SettingsPriority) { }
+  public close() { }
   public readonly onSettingsChanged = new BeEvent<() => void>();
-
-  private updateDefaults() {
-    const defaults: SettingDictionary = {};
-    for (const [specName, val] of SettingsSpecRegistry.allSpecs)
-      defaults[specName] = val.default!;
-    this.addDictionary("_default_", 0, defaults);
-  }
-
-  public constructor() {
-    SettingsSpecRegistry.onSpecsChanged.addListener(() => this.updateDefaults());
-    this._dictionaries = [];
-    this.updateDefaults();
-  }
 
   public addFile(fileName: LocalFileName, priority: SettingsPriority) {
     this.addJson(fileName, priority, fs.readFileSync(fileName, "utf-8"));
@@ -227,15 +218,19 @@ export class ITwinSettings implements Settings {
   }
 
   public addDictionary(dictionaryName: string, priority: SettingsPriority, settings: SettingDictionary) {
+    this.verifyPriority(priority);
     this.dropDictionary(dictionaryName, false); // make sure we don't have the same dictionary twice
     const file = new SettingsDictionary(dictionaryName, priority, settings);
-    for (let i = 0; i < this._dictionaries.length; ++i) {
-      if (this._dictionaries[i].priority <= file.priority) {
-        this._dictionaries.splice(i, 0, file);
-        return;
+    const doAdd = () => {
+      for (let i = 0; i < this._dictionaries.length; ++i) {
+        if (this._dictionaries[i].priority <= file.priority) {
+          this._dictionaries.splice(i, 0, file);
+          return;
+        }
       }
-    }
-    this._dictionaries.push(file);
+      this._dictionaries.push(file);
+    };
+    doAdd();
     this.onSettingsChanged.raiseEvent();
   }
 
