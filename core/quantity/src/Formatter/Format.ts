@@ -30,7 +30,7 @@ export class BaseFormat {
   protected _thousandSeparator: string = QuantityConstants.LocaleSpecificThousandSeparator;
   protected _uomSeparator = " "; // optional; default is " "; defined separator between magnitude and the unit
   protected _stationSeparator = "+"; // optional; default is "+"
-  protected _formatTraits: FormatTraits = 0x0;
+  protected _formatTraits: FormatTraits = FormatTraits.Uninitialized;
   protected _spacer: string = " "; // optional; default is " "
   protected _includeZero: boolean = true; // optional; default is true
   protected _minWidth?: number; // optional; positive int
@@ -256,7 +256,7 @@ export class Format extends BaseFormat {
 
     if (undefined !== options?.precision) {
       // ensure specified precision is valid
-      const precision = Format.parsePrecision(options?.precision, "clone", newFormat._type);
+      const precision = parsePrecision(options?.precision, newFormat._type, newFormat.name);
       newFormat._precision = precision;
     }
 
@@ -271,102 +271,6 @@ export class Format extends BaseFormat {
       }
     }
     return newFormat;
-  }
-
-  private loadFormatProperties(jsonObj: FormatProps) {
-    if (isCustomFormatProps(jsonObj))
-      this._customProps = jsonObj.custom;
-
-    if (undefined === jsonObj.type) // type is required
-      throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} does not have the required 'type' attribute.`);
-    if (typeof (jsonObj.type) !== "string")
-      throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'type' attribute. It should be of type 'string'.`);
-    this._type = Format.parseFormatType(jsonObj.type, this.name);
-
-    if (undefined === jsonObj.precision) // precision is required
-      throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} does not have the required 'precision' attribute.`);
-    else if (typeof (jsonObj.precision) !== "number") // must be a number
-      throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'precision' attribute. It should be of type 'number'.`);
-    else if (!Number.isInteger(jsonObj.precision)) // must be an integer
-      throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'precision' attribute. It should be an integer.`);
-    this._precision = Format.parsePrecision(jsonObj.precision, this.name, this._type);
-
-    if (this.type === FormatType.Scientific) {
-      if (undefined === jsonObj.scientificType) // if format type is scientific and scientific type is undefined, throw
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has type 'Scientific' therefore attribute 'scientificType' is required.`);
-      if (typeof (jsonObj.scientificType) !== "string")
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'scientificType' attribute. It should be of type 'string'.`);
-      this._scientificType = Format.parseScientificType(jsonObj.scientificType.toLowerCase(), this.name);
-    }
-
-    if (this.type === FormatType.Station) {
-      if (undefined === jsonObj.stationOffsetSize)
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has type 'Station' therefore attribute 'stationOffsetSize' is required.`);
-      if (typeof (jsonObj.stationOffsetSize) !== "number")
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'stationOffsetSize' attribute. It should be of type 'number'.`);
-      if (!Number.isInteger(jsonObj.stationOffsetSize) || jsonObj.stationOffsetSize <= 0) // must be a positive int > 0
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'stationOffsetSize' attribute. It should be a positive integer.`);
-      this._stationOffsetSize = jsonObj.stationOffsetSize;
-    }
-
-    if (undefined !== jsonObj.roundFactor) { // optional; default is 0.0
-      if (typeof (jsonObj.roundFactor) !== "number")
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'roundFactor' attribute. It should be of type 'number'.`);
-      if (jsonObj.roundFactor !== this.roundFactor) // if roundFactor isn't default value of 0.0, reassign roundFactor variable
-        this._roundFactor = jsonObj.roundFactor;
-    }
-
-    if (undefined !== jsonObj.minWidth) { // optional
-      if (typeof (jsonObj.minWidth) !== "number")
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'minWidth' attribute. It should be of type 'number'.`);
-      if (!Number.isInteger(jsonObj.minWidth) || jsonObj.minWidth < 0) // must be a positive int
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'minWidth' attribute. It should be a positive integer.`);
-      this._minWidth = jsonObj.minWidth;
-    }
-
-    if (undefined !== jsonObj.showSignOption) { // optional; default is "onlyNegative"
-      if (typeof (jsonObj.showSignOption) !== "string")
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'showSignOption' attribute. It should be of type 'string'.`);
-      this._showSignOption = Format.parseShowSignOption(jsonObj.showSignOption, this.name);
-    }
-
-    if (undefined !== jsonObj.formatTraits && jsonObj.formatTraits.length !== 0) { // FormatTraits is optional
-      if (!Array.isArray(jsonObj.formatTraits) && typeof (jsonObj.formatTraits) !== "string") // must be either an array of strings or a string
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'formatTraits' attribute. It should be of type 'string' or 'string[]'.`);
-      this.verifyFormatTraitsOptions(jsonObj.formatTraits); // check that all of the options for formatTraits are valid. If now, throw
-    }
-
-    if (undefined !== jsonObj.decimalSeparator) { // optional
-      if (typeof (jsonObj.decimalSeparator) !== "string") // not a string or not a one character string
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'decimalSeparator' attribute. It should be of type 'string'.`);
-      if (jsonObj.decimalSeparator.length !== 1)
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'decimalSeparator' attribute. It must be a one character string.`);
-      this._decimalSeparator = jsonObj.decimalSeparator;
-    }
-
-    if (undefined !== jsonObj.thousandSeparator) { // optional
-      if (typeof (jsonObj.thousandSeparator) !== "string")
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'thousandSeparator' attribute. It should be of type 'string'.`);
-      if (jsonObj.thousandSeparator.length !== 1)
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'thousandSeparator' attribute. It must be a one character string.`);
-      this._thousandSeparator = jsonObj.thousandSeparator;
-    }
-
-    if (undefined !== jsonObj.uomSeparator) { // optional; default is " "
-      if (typeof (jsonObj.uomSeparator) !== "string")
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'uomSeparator' attribute. It should be of type 'string'.`);
-      if (jsonObj.uomSeparator.length < 0 || jsonObj.uomSeparator.length > 1)
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'uomSeparator' attribute. It must be empty or a string with a single character.`);
-      this._uomSeparator = jsonObj.uomSeparator;
-    }
-
-    if (undefined !== jsonObj.stationSeparator) { // optional; default is "+"
-      if (typeof (jsonObj.stationSeparator) !== "string")
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'stationSeparator' attribute. It should be of type 'string'.`);
-      if (jsonObj.stationSeparator.length !== 1)
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'stationSeparator' attribute. It must be a one character string.`);
-      this._stationSeparator = jsonObj.stationSeparator;
-    }
   }
 
   /**

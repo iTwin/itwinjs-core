@@ -54,7 +54,7 @@ describe("Unit Provider tests", () => {
   it("should throw when schema is not found", async () => {
     try {
       await provider.findUnitByName("MockSchema.KM");
-    } catch (err) {
+    } catch (err: any) {
       expect(err).to.be.an("error");
       expect(err.message).to.equal("Cannot find schema for unit");
     }
@@ -63,7 +63,7 @@ describe("Unit Provider tests", () => {
   it("should throw when phenomenon is not found", async () => {
     try {
       await provider.findUnitByName("Units.MOCKUNIT");
-    } catch (err) {
+    } catch (err: any) {
       expect(err).to.be.an("error");
       expect(err.message).to.equal("Cannot find schema item/unit");
     }
@@ -103,7 +103,7 @@ describe("Unit Provider tests", () => {
   it("should throw when schema is not found", async () => {
     try {
       await provider.findUnitsByPhenomenon("MockSchema.VELOCITY");
-    } catch (err) {
+    } catch (err: any) {
       expect(err).to.be.an("error");
       expect(err.message).to.equal("Cannot find schema for phenomenon");
     }
@@ -112,7 +112,7 @@ describe("Unit Provider tests", () => {
   it("should throw when phenomenon is not found", async () => {
     try {
       await provider.findUnitsByPhenomenon("SIUnits.VELOCITY");
-    } catch (err) {
+    } catch (err: any) {
       expect(err).to.be.an("error");
       expect(err.message).to.equal("Cannot find schema item/phenomenon");
     }
@@ -224,7 +224,7 @@ describe("Unit Provider tests", () => {
   it("should not find any units when unitLabel does not match any display labels or alternate display labels", async () => {
     try {
       await provider.findUnit("MockUnitLabel");
-    } catch (err) {
+    } catch (err: any) {
       expect(err).to.be.an("error");
       expect(err.message).to.equal("Cannot find unit with label");
     }
@@ -233,14 +233,14 @@ describe("Unit Provider tests", () => {
   it("should not find any units when schemaName does not exist within context", async () => {
     try {
       await provider.findUnit("ft", "MockSchema");
-    } catch (err) {
+    } catch (err: any) {
       expect(err).to.be.an("error");
       expect(err.message).to.equal("Cannot find unit with label");
     }
 
     try {
       await provider.findUnit("sec", "MockSchema");
-    } catch (err) {
+    } catch (err: any) {
       expect(err).to.be.an("error");
       expect(err.message).to.equal("Cannot find unit with label");
     }
@@ -249,14 +249,14 @@ describe("Unit Provider tests", () => {
   it("should not find any units when phenomenon does not match any unit", async () => {
     try {
       await provider.findUnit("ft", undefined, "MockPhenomenon");
-    } catch (err) {
+    } catch (err: any) {
       expect(err).to.be.an("error");
       expect(err.message).to.equal("Cannot find unit with label");
     }
 
     try {
       await provider.findUnit("sec", undefined, "MockPhenomenon");
-    } catch (err) {
+    } catch (err: any) {
       expect(err).to.be.an("error");
       expect(err.message).to.equal("Cannot find unit with label");
     }
@@ -265,14 +265,14 @@ describe("Unit Provider tests", () => {
   it("should not find any units when unitSystem does not match any unit", async () => {
     try {
       await provider.findUnit("ft", undefined, undefined, "MockUnitSystem");
-    } catch (err) {
+    } catch (err: any) {
       expect(err).to.be.an("error");
       expect(err.message).to.equal("Cannot find unit with label");
     }
 
     try {
       await provider.findUnit("sec", undefined, undefined, "MockUnitSystem");
-    } catch (err) {
+    } catch (err: any) {
       expect(err).to.be.an("error");
       expect(err.message).to.equal("Cannot find unit with label");
     }

@@ -11,7 +11,7 @@ import {
   Format, FormatProps, FormatterSpec, ParseError, ParserSpec, QuantityParseResult, UnitConversion, UnitProps, UnitsProvider, UnitSystemKey,
 } from "@itwin/core-quantity";
 import { IModelApp } from "../IModelApp";
-import { IModelConnection } from "../imodeljs-frontend";
+import { IModelConnection } from "../IModelConnection";
 
 // cSpell:ignore FORMATPROPS FORMATKEY ussurvey uscustomary USCUSTOM
 

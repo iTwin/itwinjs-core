@@ -74,19 +74,19 @@ export class Format extends SchemaItem {
     this._units.push([unit, label]);
   }
 
-  protected setPrecision(precision: number) { this._base._precision = precision; }
+  protected setPrecision(precision: number) { this._base.precision = precision; }
 
   private typecheck(formatProps: FormatProps) {
     this._base.loadFormatProperties(formatProps);
 
     if (undefined !== formatProps.composite) { // TODO: This is duplicated below when the units need to be processed...
       if (undefined !== formatProps.composite.includeZero)
-        this._base._includeZero = formatProps.composite.includeZero;
+        this._base.includeZero = formatProps.composite.includeZero;
 
       if (undefined !== formatProps.composite.spacer) {
         if (formatProps.composite.spacer.length > 1)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.fullName} has a composite with an invalid 'spacer' attribute. It should be an empty or one character string.`);
-        this._base._spacer = formatProps.composite.spacer;
+        this._base.spacer = formatProps.composite.spacer;
       }
 
       // Composite requires 1-4 units
@@ -141,7 +141,7 @@ export class Format extends SchemaItem {
     // Serialize the minimal amount of information needed so anything that is the same as the default, do not serialize.
     if (0.0 !== this.roundFactor) schemaJson.roundFactor = this.roundFactor;
     if (ShowSignOption.OnlyNegative !== this.showSignOption) schemaJson.showSignOption = showSignOptionToString(this.showSignOption);
-    if (0x0 !== this.formatTraits) schemaJson.formatTraits = formatTraitsToArray(this.formatTraits);
+    if (FormatTraits.Uninitialized !== this.formatTraits) schemaJson.formatTraits = formatTraitsToArray(this.formatTraits);
     if ("." !== this.decimalSeparator) schemaJson.decimalSeparator = this.decimalSeparator;
     if ("," !== this.thousandSeparator) schemaJson.thousandSeparator = this.thousandSeparator;
     if (" " !== this.uomSeparator) schemaJson.uomSeparator = this.uomSeparator;
@@ -226,49 +226,49 @@ export class Format extends SchemaItem {
    * @alpha Used in schema editing.
    */
   protected setFormatType(formatType: FormatType) {
-    this._base._type = formatType;
+    this._base.type = formatType;
   }
 
   /**
    * @alpha Used in schema editing.
    */
   protected setRoundFactor(roundFactor: number) {
-    this._base._roundFactor = roundFactor;
+    this._base.roundFactor = roundFactor;
   }
 
   /**
    * @alpha Used in schema editing.
    */
   protected setShowSignOption(signOption: ShowSignOption) {
-    this._base._showSignOption = signOption;
+    this._base.showSignOption = signOption;
   }
 
   /**
    * @alpha Used in schema editing.
    */
   protected setDecimalSeparator(separator: string) {
-    this._base._decimalSeparator = separator;
+    this._base.decimalSeparator = separator;
   }
 
   /**
    * @alpha Used in schema editing.
    */
   protected setThousandSeparator(separator: string) {
-    this._base._thousandSeparator = separator;
+    this._base.thousandSeparator = separator;
   }
 
   /**
    * @alpha Used in schema editing.
    */
   protected setUomSeparator(separator: string) {
-    this._base._uomSeparator = separator;
+    this._base.uomSeparator = separator;
   }
 
   /**
    * @alpha Used in schema editing.
    */
   protected setStationSeparator(separator: string) {
-    this._base._stationSeparator = separator;
+    this._base.stationSeparator = separator;
   }
 }
 

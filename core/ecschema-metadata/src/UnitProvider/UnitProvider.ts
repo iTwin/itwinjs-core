@@ -4,7 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
 import { UnitExtraData } from "@bentley/imodeljs-quantity";
-import { SchemaContext, SchemaItem, SchemaItemKey, SchemaKey, Unit } from "../ecschema-metadata";
+import { SchemaContext } from "../Context";
+import { SchemaItem } from "../Metadata/SchemaItem";
+import { SchemaItemKey, SchemaKey } from "../SchemaKey";
+import { Unit } from "../Metadata/Unit";
 import { SchemaItemType } from "../ECObjects";
 
 /**
@@ -37,14 +40,14 @@ export class UnitProvider {
     }
 
     const itemKey = new SchemaItemKey(schemaItemName, schema.schemaKey);
-    const item = await this._context.getSchemaItem(itemKey);
+    const item = await this._context.getSchemaItem<Unit>(itemKey);
     if (!item)
       throw new BentleyError(BentleyStatus.ERROR, "Cannot find schema item/unit", () => {
         return { item: schemaItemName, schema: schemaName };
       });
 
     if (item.schemaItemType === SchemaItemType.Unit)
-      return item as Unit;
+      return item;
 
     throw new BentleyError(BentleyStatus.ERROR, "Item is not a unit", () => {
       return { itemType: item.key.fullName };
