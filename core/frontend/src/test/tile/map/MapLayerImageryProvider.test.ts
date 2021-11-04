@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { MapLayerSettings, ServerError } from "@itwin/core-common";
+import { MapLayerProps, MapLayerSettings, ServerError } from "@itwin/core-common";
 import { RequestBasicCredentials } from "@bentley/itwin-client";
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
@@ -129,6 +129,58 @@ describe("WmsMapLayerImageryProvider", () => {
     tileData = await provider.loadTile(0, 0, 0);
     chai.expect(tileData).to.undefined;
 
+  });
+
+  it("should create a GetMap requests URL using the right 'CRS'", async () => {
+    const layerPros: MapLayerProps = {
+      formatId: "WMS",
+      url: "https://localhost/wms",
+      name: "Test WMS",
+      subLayers: [
+        {name: "continents", id:0, visible:true},
+        {name: "continents2", id:1, visible:false},
+      ]};
+    let settings = MapLayerSettings.fromJSON(layerPros);
+    if (!settings)
+      chai.assert.fail("Could not create settings");
+
+    const fakeCapabilities = await WmsCapabilities.create("assets/wms_capabilities/continents.xml");
+    sandbox.stub(WmsCapabilities, "create").callsFake(async function _(_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) {
+      return  fakeCapabilities;
+    });
+
+    let provider = new WmsMapLayerImageryProvider(settings);
+    await provider.initialize();
+    let url = await provider.constructUrl(0,0,0);
+    chai.expect(url).to.contain("4326");
+
+    // Mark 'continents' and 'continents2' visible, in that case the request
+    // should still be in EPSG:4326 because continents is only available in in EPSG:4326
+    layerPros.subLayers![1].visible = true;
+    settings = MapLayerSettings.fromJSON(layerPros);
+    provider = new WmsMapLayerImageryProvider(settings);
+    await provider.initialize();
+    url = await provider.constructUrl(0,0,0);
+    chai.expect(url).to.contain("4326");
+
+    // Mark 'continents' non visible.
+    // URL should now be in EPSG:3857 because continents2 can be displayed in [4326,3857],
+    // and 3857 is our favorite CRS.
+    layerPros.subLayers![0].visible = false;
+    settings = MapLayerSettings.fromJSON(layerPros);
+    provider = new WmsMapLayerImageryProvider(settings);
+    await provider.initialize();
+    url = await provider.constructUrl(0,0,0);
+    chai.expect(url).to.contain("3857");
+
+    // Mark 'continents' and 'continents2' non-visible... leaving nothing to display.
+    // An empty URL should be created in that case
+    layerPros.subLayers![1].visible = false;
+    settings = MapLayerSettings.fromJSON(layerPros);
+    provider = new WmsMapLayerImageryProvider(settings);
+    await provider.initialize();
+    url = await provider.constructUrl(0,0,0);
+    chai.expect(url).to.be.empty;
   });
 });
 
