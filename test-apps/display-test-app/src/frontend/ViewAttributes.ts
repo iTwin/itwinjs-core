@@ -57,6 +57,20 @@ const renderingStyles: RenderingStyle[] = [{
     solar: { direction: [-0.9833878378071199, -0.18098510351728977, 0.013883542698953828] },
   },
 }, {
+  name: "Ambient",
+  environment: {
+    sky: { display: true, groundColor: 8228728, zenithColor: 16741686, nadirColor: 3880, skyColor: 16764303 },
+    ground: { display: false, elevation: -0.01, aboveColor: 32768, belowColor: 1262987 },
+  },
+  viewflags: { ...renderingStyleViewFlags, visEdges: false, ambientOcclusion: true },
+  lights: {
+    solar: { intensity: 0 },
+    portrait: { intensity: 0 },
+    ambient: { intensity: 0.55 },
+    fresnel: { intensity: 0.8, invert: true },
+    specularIntensity: 0,
+  },
+}, {
   name: "Illustration",
   environment: {},
   backgroundColor: 10921638,
