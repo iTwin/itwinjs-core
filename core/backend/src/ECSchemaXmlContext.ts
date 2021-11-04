@@ -6,7 +6,7 @@
  * @module Schema
  */
 
-import { assert, BentleyStatus } from "@itwin/core-bentley";
+import { assert } from "@itwin/core-bentley";
 import { IModelError } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { IModelHost } from "./IModelHost";
@@ -47,9 +47,7 @@ export class ECSchemaXmlContext {
       throw new IModelError(response.error.status, response.error.message);
     }
 
-    if (undefined === response.result)
-      throw new IModelError(BentleyStatus.ERROR, "Result is undefined.");
-
+    assert(undefined !== response.result);
     return JSON.parse(response.result);
   }
 }

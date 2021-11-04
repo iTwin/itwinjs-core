@@ -82,9 +82,7 @@ export class RpcBriefcaseUtility {
     }
 
     // no local briefcase available. Download one and open it.
-    if (undefined === tokenProps.iTwinId)
-      throw new IModelError(BentleyStatus.ERROR, "iTwinId is undefined.");
-
+    assert(undefined !== tokenProps.iTwinId);
     const request: RequestNewBriefcaseArg = {
       accessToken,
       iTwinId: tokenProps.iTwinId,

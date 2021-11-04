@@ -234,9 +234,8 @@ export class ITwinWorkspace implements Workspace {
       }
       return undefined; // keep going through all settings dictionaries
     }, props);
-    if (undefined === id) {
+    if (undefined === id)
       throw new Error("Unable to resolve container id.");
-    }
     return id;
 
   }

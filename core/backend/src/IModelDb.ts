@@ -2077,13 +2077,11 @@ export class BriefcaseDb extends IModelDb {
     return db?.isBriefcaseDb() ? db : undefined;
   }
 
-  /** The Guid that identifies the *context* that owns this iModel. */
-  public override get iTwinId(): GuidString {
-    if (undefined === super.iTwinId) {
-      throw new IModelError(BentleyStatus.ERROR, "iTwinId is undefined.");
-    }
-    return super.iTwinId;
-  } // GuidString | undefined for the superclass, but required for BriefcaseDb
+  /**
+   * The Guid that identifies the *context* that owns this iModel.
+   * GuidString | undefined for the superclass, but required for BriefcaseDb
+   * */
+  public override get iTwinId(): GuidString { return super.iTwinId!; } // eslint-disable-line @typescript-eslint/no-non-null-assertion
 
   /**
    * Determine whether this BriefcaseDb should use a lock server.
@@ -2219,9 +2217,7 @@ class DaemonReattach {
     Logger.logInfo(BackendLoggerCategory.Authorization, "attempting to reattach checkpoint");
     try {
       // this exchanges the supplied user accessToken for an expiring blob-store token to read the checkpoint.
-      if (undefined === iModel.iTwinId) {
-        throw new IModelError(BentleyStatus.ERROR, "iTwinId is undefined.");
-      }
+      assert(undefined !== iModel.iTwinId);
       const response = await V2CheckpointManager.attach({ accessToken, iTwinId: iModel.iTwinId, iModelId: iModel.iModelId, changeset: iModel.changeset });
       Logger.logInfo(BackendLoggerCategory.Authorization, "reattached checkpoint successfully");
       this.setTimestamp(response.expiryTimestamp);
