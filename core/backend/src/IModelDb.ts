@@ -46,6 +46,8 @@ import { ServerBasedLocks } from "./ServerBasedLocks";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
+import { BaseSettings, SettingName, SettingResolver, SettingsPriority, SettingType } from "./workspace/Settings";
+import { ITwinWorkspace, Workspace } from "./workspace/Workspace";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
@@ -173,6 +175,22 @@ const withBriefcaseDb = async (briefcase: OpenBriefcaseArgs, fn: (_db: Briefcase
   }
 };
 
+/**
+ * Settings for an individual iModel. May only include settings priority for iModel, iTwin and organization.
+ * @note if there is more than one iModel for an iTwin or organization, they will *each* hold a copy of the settings for those priorities.
+ */
+class IModelSettings extends BaseSettings {
+  protected override verifyPriority(priority: SettingsPriority) {
+    if (priority <= SettingsPriority.application)
+      throw new Error("Use IModelHost.appSettings");
+  }
+
+  // attempt to resolve a setting from this iModel's settings, otherwise use appWorkspace's settings, otherwise defaultValue.
+  public override resolveSetting<T extends SettingType>(name: SettingName, resolver: SettingResolver<T>, defaultValue?: T): T | undefined {
+    return super.resolveSetting(name, resolver) ?? IModelHost.appWorkspace.settings.resolveSetting(name, resolver, defaultValue);
+  }
+}
+
 /** An iModel database file. The database file can either be a briefcase or a snapshot.
  * @see [Accessing iModels]($docs/learning/backend/AccessingIModels.md)
  * @see [About IModelDb]($docs/learning/backend/IModelDb.md)
@@ -194,17 +212,24 @@ export abstract class IModelDb extends IModel {
   private _codeSpecs?: CodeSpecs;
   private _classMetaDataRegistry?: MetaDataRegistry;
   protected _fontMap?: FontMap;
-  protected _concurrentQueryStats = { resetTimerHandle: (null as any), logTimerHandle: (null as any), lastActivityTime: Date.now(), dispose: () => { } };
+  /** @internal */
+  protected _workspace: Workspace;
   private readonly _snaps = new Map<string, IModelJsNative.SnapRequest>();
   private static _shutdownListener: VoidFunction | undefined; // so we only register listener once
 
   /** @internal */
   protected _locks?: LockControl = new NoLocks();
   /**
-   * Get the lock control for this iModel.
+   * Get the [[LockControl]] for this iModel.
    * @beta
    */
-  public get locks() { return this._locks!; }
+  public get locks(): LockControl { return this._locks!; }
+
+  /**
+   * Get the [[Workspace]] for this iModel.
+   * @beta
+   */
+  public get workspace(): Workspace { return this._workspace; }
 
   /** Acquire the exclusive schema lock on this iModel.
    * > Note: To acquire the schema lock, all other briefcases must first release *all* their locks. No other briefcases
@@ -251,6 +276,7 @@ export abstract class IModelDb extends IModel {
     this.nativeDb.setIModelDb(this);
     this.initializeIModelDb();
     IModelDb._openDbs.set(this._fileKey, this);
+    this._workspace = new ITwinWorkspace(new IModelSettings(), IModelHost.appWorkspace);
 
     if (undefined === IModelDb._shutdownListener) { // the first time we create an IModelDb, add a listener to close any orphan files at shutdown.
       IModelDb._shutdownListener = IModelHost.onBeforeShutdown.addListener(() => {
@@ -271,6 +297,7 @@ export abstract class IModelDb extends IModel {
 
     this.beforeClose();
     IModelDb._openDbs.delete(this._fileKey);
+    this._workspace.close();
     this.locks.close();
     this._locks = undefined;
     this.nativeDb.closeIModel();
@@ -290,7 +317,6 @@ export abstract class IModelDb extends IModel {
   protected beforeClose() {
     this.onBeforeClose.raiseEvent();
     this.clearCaches();
-    this._concurrentQueryStats.dispose();
   }
 
   /** @internal */
