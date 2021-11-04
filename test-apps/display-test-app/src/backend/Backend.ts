@@ -128,10 +128,11 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
   iModelHost.logTileLoadTimeThreshold = 3;
   iModelHost.logTileSizeThreshold = 500000;
 
+  let hubClient;
   if (dtaConfig.customOrchestratorUri)
-    IModelHubBackend.setIModelClient(new IModelBankClient(dtaConfig.customOrchestratorUri, new UrlFileHandler()));
+    hubClient = new IModelBankClient(dtaConfig.customOrchestratorUri, new UrlFileHandler());
 
-  iModelHost.hubAccess = IModelHubBackend;
+  iModelHost.hubAccess = new IModelHubBackend(hubClient);
 
   if (dtaConfig.useFakeCloudStorageTileCache)
     iModelHost.tileCacheService = new FakeTileCacheService(path.normalize(path.join(__dirname, "tiles")), "http://localhost:3001"); // puts the cache in "./lib/backend/tiles" and serves them from "http://localhost:3001/tiles"

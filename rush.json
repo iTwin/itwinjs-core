@@ -31,7 +31,7 @@
     "sampleEmail": "mrexample@users.noreply.github.com"
   },
   "repository": {
-    "url": "https://github.com/imodeljs/imodeljs"
+    "url": "https://github.com/iTwin/itwinjs-core"
   },
   "projects": [
     {
@@ -53,7 +53,7 @@
       "projectFolder": "clients/imodelhub",
       "reviewCategory": "common",
       "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep",
+      "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
       "packageName": "@bentley/itwin-client",
@@ -246,42 +246,42 @@
     },
     {
       "packageName": "@itwin/appui-abstract",
-      "projectFolder": "ui/abstract",
+      "projectFolder": "ui/appui-abstract",
       "reviewCategory": "frontend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
       "packageName": "@itwin/core-react",
-      "projectFolder": "ui/core",
+      "projectFolder": "ui/core-react",
       "reviewCategory": "frontend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
       "packageName": "@itwin/components-react",
-      "projectFolder": "ui/components",
+      "projectFolder": "ui/components-react",
       "reviewCategory": "frontend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
       "packageName": "@itwin/imodel-components-react",
-      "projectFolder": "ui/imodel-components",
+      "projectFolder": "ui/imodel-components-react",
       "reviewCategory": "frontend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
       "packageName": "@itwin/appui-layout-react",
-      "projectFolder": "ui/ninezone",
+      "projectFolder": "ui/appui-layout-react",
       "reviewCategory": "frontend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
       "packageName": "@itwin/appui-react",
-      "projectFolder": "ui/framework",
+      "projectFolder": "ui/appui-react",
       "reviewCategory": "frontend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"

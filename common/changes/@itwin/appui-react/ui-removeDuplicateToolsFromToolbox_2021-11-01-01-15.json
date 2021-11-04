@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Filter out duplicate tools that may be registered in different UiItemProviders. First one in wins.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}

@@ -315,6 +315,19 @@ export class Point4d implements BeJSONFunctions {
   public velocityXYZ(x: number, y: number, z: number): number {
     return this.xyzw[0] * x + this.xyzw[1] * y + this.xyzw[2] * z;
   }
+/**
+ * Return the x component of the normal used to evaluate altitude.
+ */
+  public normalX(): number {return this.x; }
+  /**
+  * Return the x component of the normal used to evaluate altitude.
+  */
+  public normalY(): number {return this.y; }
+  /**
+  * Return the z component of the normal used to evaluate altitude.
+  */
+  public normalZ(): number {return this.z; }
+
   /** unit X vector */
   public static unitX(): Point4d { return new Point4d(1, 0, 0, 0); }
   /** unit Y vector */

@@ -97,6 +97,7 @@ public;LayoutHorizontalSplitProps
 public;LayoutSplitPropsBase
 public;LayoutVerticalSplitProps 
 public;LinkElementsInfo
+internal;loggerCategory: (obj: any) => string
 internal;matchesCamelCase(word: string, camelCaseWord: string): IMatch[] | null
 internal;matchesContiguousSubString(word: string, wordToMatchAgainst: string): IMatch[] | null
 internal;matchesFuzzy(word: string, wordToMatchAgainst: string, enableSeparateSubstringMatching?: boolean): IMatch[] | null
@@ -159,7 +160,6 @@ internal;ToolbarItemsManager
 public;ToolbarItemUtilities
 public;ToolbarOrientation
 public;ToolbarUsage
-public;UiAbstract
 public;UiAdmin
 public;class UiDataProvider
 public;UiError 

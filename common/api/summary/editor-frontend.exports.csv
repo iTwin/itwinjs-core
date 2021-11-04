@@ -2,6 +2,7 @@ sep=;
 Release Tag;API Item
 alpha;ArcMethod
 alpha;BCurveMethod
+alpha;class BooleanOperationTool 
 alpha;CircleMethod
 alpha;computeChordToleranceFromPoint(vp: Viewport, pt: Point3d, radius?: number): number
 alpha;computeChordToleranceFromRange(vp: Viewport, range: Range3d): number
@@ -20,6 +21,8 @@ alpha;EditorOptions
 alpha;EditTools
 alpha;class ElementGeometryCacheTool 
 alpha;ElementGeometryGraphicsProvider
+alpha;HollowFacesTool 
+alpha;IntersectSolidElementsTool 
 alpha;class LocateSubEntityTool 
 alpha;MoveElementsTool 
 alpha;OffsetFacesTool 
@@ -36,9 +39,12 @@ alpha;RedoTool
 alpha;RotateAbout
 alpha;RotateElementsTool 
 alpha;RotateMethod
+alpha;SewSheetElementsTool 
 alpha;SubEntityData
+alpha;SubtractSolidElementsTool 
 alpha;class TransformElementsTool 
 alpha;TransformGraphicsData
 alpha;TransformGraphicsProvider
 alpha;UndoAllTool 
 alpha;UndoTool 
+alpha;UniteSolidElementsTool 

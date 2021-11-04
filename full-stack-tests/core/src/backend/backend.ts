@@ -77,10 +77,8 @@ async function init() {
   // Bootstrap the cloud environment
   await CloudEnv.initialize();
 
-  IModelHubBackend.setIModelClient(CloudEnv.cloudEnv.imodelClient);
-
   const iModelHost = new IModelHostConfiguration();
-  iModelHost.hubAccess = IModelHubBackend;
+  iModelHost.hubAccess = new IModelHubBackend(CloudEnv.cloudEnv.imodelClient);
 
   if (ProcessDetector.isElectronAppBackend) {
     await ElectronHost.startup({ electronHost: { rpcInterfaces }, iModelHost });

@@ -320,6 +320,7 @@ describe("ImodelChangesetPerformance big datasets", () => {
   // TODO: Update config to use iTwin terminology
   const configData = require(path.join(__dirname, "CSPerfConfig.json")); // eslint-disable-line @typescript-eslint/no-var-requires
   const csvPath = path.join(KnownTestLocations.outputDir, "ApplyCSLocalPerf.csv");
+  const hubBackend = new IModelHubBackend();
 
   before(async () => {
     iModelRootDir = configData.rootDir;
@@ -350,7 +351,7 @@ describe("ImodelChangesetPerformance big datasets", () => {
     // get first changeset as betweenChangeSets skips the first entry
     const csQuery1 = new ChangeSetQuery();
     csQuery1.byId(changesets[0].id);
-    await IModelHubBackend.iModelClient.changeSets.download(accessToken, imodelId, csQuery1, downloadDir);
+    await hubBackend.iModelClient.changeSets.download(accessToken, imodelId, csQuery1, downloadDir);
     const incr: number = 100;
     for (let j = 0; j <= changesets.length; j = j + incr) {
       const csQuery = new ChangeSetQuery();
@@ -360,7 +361,7 @@ describe("ImodelChangesetPerformance big datasets", () => {
         csQuery.betweenChangeSets(changesets[j].id, changesets[changesets.length - 1].id);
       csQuery.selectDownloadUrl();
 
-      await IModelHubBackend.iModelClient.changeSets.download(accessToken, imodelId, csQuery, downloadDir);
+      await hubBackend.iModelClient.changeSets.download(accessToken, imodelId, csQuery, downloadDir);
     }
   }
   async function setupIModel(iModelInfo: any) {
@@ -386,11 +387,11 @@ describe("ImodelChangesetPerformance big datasets", () => {
 
     const query = new VersionQuery();
     query.orderBy("createdDate");
-    const namedVers = await IModelHubBackend.iModelClient.versions.get(accessToken, iModelInfo.modelId, query);
+    const namedVers = await hubBackend.iModelClient.versions.get(accessToken, iModelInfo.modelId, query);
     fs.writeFileSync(path.join(downloadDir, "namedVersions.json"), JSON.stringify(namedVers, undefined, 4));
 
     const query2 = new CheckpointQuery();
-    const checkpoints = await IModelHubBackend.iModelClient.checkpoints.get(accessToken, iModelInfo.modelId, query2);
+    const checkpoints = await hubBackend.iModelClient.checkpoints.get(accessToken, iModelInfo.modelId, query2);
     fs.writeFileSync(path.join(downloadDir, "checkPoints.json"), JSON.stringify(checkpoints, undefined, 4));
 
     const modelSummary = {
@@ -410,7 +411,7 @@ describe("ImodelChangesetPerformance big datasets", () => {
     // now download the seed file, if not there
     const seedPathname = path.join(downloadDir, "seed", iModelInfo.modelName!.concat(".bim"));
     if (!fs.existsSync(seedPathname))
-      await IModelHubBackend.iModelClient.iModels.download(accessToken, iModelInfo.modelId, seedPathname);
+      await hubBackend.iModelClient.iModels.download(accessToken, iModelInfo.modelId, seedPathname);
 
     // now download changesets. first check if there are some, then download only newer ones
     const csDir = path.join(downloadDir, "changeSets");
@@ -433,7 +434,7 @@ describe("ImodelChangesetPerformance big datasets", () => {
         for (const cs of missingChangesets) {
           const csQuery = new ChangeSetQuery();
           csQuery.byId(cs.id);
-          await IModelHubBackend.iModelClient.changeSets.download(accessToken, iModelInfo.modelId, csQuery, csDir);
+          await hubBackend.iModelClient.changeSets.download(accessToken, iModelInfo.modelId, csQuery, csDir);
         }
       } else {
         // download all again
@@ -626,6 +627,7 @@ describe("ImodelChangesetPerformance own data", () => {
       fs.mkdirSync(outDir);
 
     accessToken = await TestUtility.getAccessToken(TestUsers.regular);
+    const hubBackend = new IModelHubBackend();
     for (const opSize of opSizes) {
       for (const baseName of baseNames) {
         const iModelName = `${iModelNameBase + baseName}_${opSize.toString()}`;
@@ -668,9 +670,9 @@ describe("ImodelChangesetPerformance own data", () => {
           await iModelDb.pushChanges({ accessToken, description: `Seed data for ${className}` });
 
           // create named version here
-          const changeSets = await IModelHubBackend.iModelClient.changeSets.get(accessToken, iModelId);
+          const changeSets = await hubBackend.iModelClient.changeSets.get(accessToken, iModelId);
           const lastCSId = changeSets[changeSets.length - 1].wsgId;
-          const seedData = await IModelHubBackend.iModelClient.versions.create(accessToken, iModelId, lastCSId, seedVersionName);
+          const seedData = await hubBackend.iModelClient.versions.create(accessToken, iModelId, lastCSId, seedVersionName);
           assert.equal(seedData.name, seedVersionName);
 
           const minId: number = PerfTestUtility.getMinId(iModelDb, "bis.PhysicalElement");

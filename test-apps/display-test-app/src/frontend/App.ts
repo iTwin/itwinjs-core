@@ -36,12 +36,12 @@ import { Notifications } from "./Notifications";
 import { OutputShadersTool } from "./OutputShadersTool";
 import { PathDecorationTestTool } from "./PathDecorationTest";
 import { ToggleShadowMapTilesTool } from "./ShadowMapDecoration";
-import { signIn } from "./signIn";
+import { signIn, signOut } from "./signIn";
 import {
   CloneViewportTool, CloseIModelTool, CloseWindowTool, CreateWindowTool, DockWindowTool, FocusWindowTool, MaximizeWindowTool, OpenIModelTool,
   ReopenIModelTool, ResizeWindowTool, RestoreWindowTool, Surface,
 } from "./Surface";
-import { SyncViewportsTool } from "./SyncViewportsTool";
+import { SyncViewportFrustaTool, SyncViewportsTool } from "./SyncViewportsTool";
 import { TimePointComparisonTool } from "./TimePointComparison";
 import { UiManager } from "./UiManager";
 import { MarkupTool, ModelClipTool, SaveImageTool, ZoomToSelectedElementsTool } from "./Viewer";
@@ -81,6 +81,14 @@ class SignInTool extends Tool {
   public static override toolId = "SignIn";
   public override async run(): Promise<boolean> {
     await signIn();
+    return true;
+  }
+}
+
+class SignOutTool extends Tool {
+  public static override toolId = "SignOut";
+  public override async run(): Promise<boolean> {
+    await signOut();
     return true;
   }
 }
@@ -278,7 +286,9 @@ export class DisplayTestApp {
       SaveImageTool,
       ShutDownTool,
       SignInTool,
+      SignOutTool,
       SVTSelectionTool,
+      SyncViewportFrustaTool,
       SyncViewportsTool,
       ToggleAspectRatioSkewDecoratorTool,
       TimePointComparisonTool,

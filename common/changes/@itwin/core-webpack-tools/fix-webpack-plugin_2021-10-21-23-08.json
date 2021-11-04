@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-webpack-tools",
+      "comment": "Add node-fetch to the BackendDefaultPlugin list of ignored optional dependencies",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-webpack-tools"
+}

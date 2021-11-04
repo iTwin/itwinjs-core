@@ -14,8 +14,8 @@ import {
 } from "../presentation-common";
 import { FieldDescriptorType } from "../presentation-common/content/Fields";
 import {
-  FilterByInstancePathsHierarchyRpcRequestOptions, FilterByTextHierarchyRpcRequestOptions, MultiElementPropertiesRpcRequestOptions,
-  SingleElementPropertiesRpcRequestOptions,
+  ContentInstanceKeysRpcRequestOptions, FilterByInstancePathsHierarchyRpcRequestOptions, FilterByTextHierarchyRpcRequestOptions,
+  MultiElementPropertiesRpcRequestOptions, SingleElementPropertiesRpcRequestOptions,
 } from "../presentation-common/PresentationRpcInterface";
 import { createTestContentDescriptor } from "./_helpers/Content";
 import { createRandomECInstanceKey, createRandomECInstancesNodeKey, createRandomECInstancesNodeKeyJSON } from "./_helpers/random";
@@ -184,6 +184,16 @@ describe("PresentationRpcInterface", () => {
         elementClasses: ["TestSchema:TestClass"],
       };
       await rpcInterface.getElementProperties(token, options);
+      expect(spy).to.be.calledOnceWith(toArguments(token, options));
+    });
+
+    it("forwards getContentInstanceKeys call", async () => {
+      const options: ContentInstanceKeysRpcRequestOptions = {
+        rulesetOrId: "test ruleset",
+        displayType: "test display type",
+        keys: new KeySet().toJSON(),
+      };
+      await rpcInterface.getContentInstanceKeys(token, options);
       expect(spy).to.be.calledOnceWith(toArguments(token, options));
     });
 

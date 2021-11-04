@@ -664,9 +664,9 @@ export class CustomNumberPropertyEditor extends PropertyEditorBase {
 
 // @public
 export interface CustomToolbarItem extends CustomButtonDefinition {
-    // (undocumented)
+    // @deprecated
     buttonNode?: React.ReactNode;
-    // (undocumented)
+    keepContentsLoaded?: boolean;
     panelContentNode?: React.ReactNode;
 }
 
@@ -891,13 +891,9 @@ export interface EditableTreeDataProvider extends ITreeDataProvider {
 
 // @public
 export class EditorContainer extends React.PureComponent<EditorContainerProps> {
-    // (undocumented)
-    componentDidMount(): void;
-    // (undocumented)
-    componentWillUnmount(): void;
     // @internal (undocumented)
     render(): JSX.Element;
-    }
+}
 
 // @public
 export interface EditorContainerProps extends CommonProps {
@@ -2250,6 +2246,7 @@ export function PopupItemPopup(props: PopupItemPopupProps): JSX.Element;
 // @public
 export interface PopupItemProps extends ToolbarButtonItemProps {
     hideIndicator?: boolean;
+    keepContentsMounted?: boolean;
     panel?: React.ReactNode;
 }
 
@@ -4147,6 +4144,7 @@ export interface TypeEditor {
 export class UiComponents {
     static initialize(localization: Localization): Promise<void>;
     static get initialized(): boolean;
+    // @internal
     static get localization(): Localization;
     static get localizationNamespace(): string;
     // @internal (undocumented)
