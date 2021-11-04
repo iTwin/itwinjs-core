@@ -87,13 +87,13 @@ export function MapManagerSettings() {
   const [maskTransparency, setMaskTransparency] = React.useState(() =>
     backgroundMapSettings.planarClipMask.transparency === undefined
       ? undefined
-      : Math.round((backgroundMapSettings.planarClipMask.transparency ) * 100) / 100);
+      : Math.round((backgroundMapSettings.planarClipMask.transparency) * 100) / 100);
 
-  const getNormalizedMaskTransparency = React.useCallback(() => {return (maskTransparency === undefined ? 0 : maskTransparency);}, [maskTransparency]);
+  const getNormalizedMaskTransparency = React.useCallback(() => { return (maskTransparency === undefined ? 0 : maskTransparency); }, [maskTransparency]);
 
   const updateMaskingSettings = React.useCallback((option: MapMaskingOption) => {
     if (option === MapMaskingOption.AllModels) {
-      activeViewport!.changeBackgroundMapProps({ planarClipMask: { mode: PlanarClipMaskMode.Priority, priority: PlanarClipMaskPriority.BackgroundMap, transparency:maskTransparency } });
+      activeViewport!.changeBackgroundMapProps({ planarClipMask: { mode: PlanarClipMaskMode.Priority, priority: PlanarClipMaskPriority.BackgroundMap, transparency: maskTransparency } });
     }
     if (option === MapMaskingOption.None) {
       activeViewport!.changeBackgroundMapProps({ planarClipMask: { mode: PlanarClipMaskMode.None } });
@@ -114,7 +114,7 @@ export function MapManagerSettings() {
 
   const onOverrideMaskTransparencyToggle = React.useCallback((checked: boolean) => {
     const trans = checked ? getNormalizedMaskTransparency() : undefined;
-    activeViewport!.changeBackgroundMapProps({ planarClipMask: {mode: PlanarClipMaskMode.Priority, priority: PlanarClipMaskPriority.BackgroundMap, transparency:trans }});
+    activeViewport!.changeBackgroundMapProps({ planarClipMask: { mode: PlanarClipMaskMode.Priority, priority: PlanarClipMaskPriority.BackgroundMap, transparency: trans } });
 
     setOverrideMaskTransparency(checked);
   }, [activeViewport, getNormalizedMaskTransparency]);
@@ -135,7 +135,7 @@ export function MapManagerSettings() {
 
   const handleMaskTransparencyChange = React.useCallback((values: readonly number[]) => {
     const newTransparency = values[0] / 100;
-    activeViewport!.changeBackgroundMapProps({ planarClipMask: { mode: PlanarClipMaskMode.Priority, priority: PlanarClipMaskPriority.BackgroundMap, transparency:newTransparency} });
+    activeViewport!.changeBackgroundMapProps({ planarClipMask: { mode: PlanarClipMaskMode.Priority, priority: PlanarClipMaskPriority.BackgroundMap, transparency: newTransparency } });
     activeViewport!.invalidateRenderPlan();
     setMaskTransparency(newTransparency);
   }, [activeViewport]);
@@ -192,8 +192,8 @@ export function MapManagerSettings() {
   const [exaggerationLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Settings.Exaggeration"));
   const [locatableLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Settings.Locatable"));
   const [maskingLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Settings.Mask"));
-  const [overrideMaskTransparencyLabel] =  React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Settings.OverrideMaskTransparency"));
-  const [maskTransparencyLabel] =  React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Settings.MaskTransparency"));
+  const [overrideMaskTransparencyLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Settings.OverrideMaskTransparency"));
+  const [maskTransparencyLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Settings.MaskTransparency"));
 
   return (
     <>
@@ -214,7 +214,7 @@ export function MapManagerSettings() {
         <Toggle disabled={masking === MapMaskingOption.None} onChange={onOverrideMaskTransparencyToggle} isOn={overrideMaskTransparency} />
 
         <span className="map-manager-settings-label">{maskTransparencyLabel}</span>
-        <Slider disabled={masking === MapMaskingOption.None || !overrideMaskTransparency} min={0} max={100} showMinMax showTooltip values={[getNormalizedMaskTransparency() * 100]} onChange={handleMaskTransparencyChange} step={1} />
+        <Slider disabled={masking === MapMaskingOption.None || !overrideMaskTransparency} min={0} max={100} values={[getNormalizedMaskTransparency() * 100]} onChange={handleMaskTransparencyChange} step={1} />
 
         <>
           <span className="map-manager-settings-label">{elevationOffsetLabel}</span>
@@ -240,7 +240,7 @@ export function MapManagerSettings() {
             <NumberInput value={terrainOrigin} disabled={!applyTerrain} onChange={handleHeightOriginChange} onKeyDown={onKeyDown} />
 
             <span className="map-manager-settings-label">{heightOriginLabel}</span>
-            <Select options={terrainHeightOptions.current} disabled={!applyTerrain} value={heightOriginMode} onChange={handleElevationTypeSelected} />
+            <Select options={terrainHeightOptions.current} disabled={!applyTerrain} value={heightOriginMode} onChange={handleElevationTypeSelected} size="small" />
 
             <span className="map-manager-settings-label">{exaggerationLabel}</span>
             <NumberInput value={exaggeration} disabled={!applyTerrain} onChange={handleExaggerationChange} onKeyDown={onKeyDown} />

@@ -125,7 +125,7 @@ export class ITwinLocalization implements Localization {
     return value;
   }
 
-  /** Similar to 'translate()' but the namespace is a separate param and the key does not include the namespace.
+  /** Similar to `getLocalizedString` but the namespace is a separate param and the key does not include the namespace.
    * @param namespace - the namespace that identifies the particular localization file that contains the property.
    * @param key - the key that matches a property in the JSON localization file.
    * @returns The string corresponding to the first key that resolves.

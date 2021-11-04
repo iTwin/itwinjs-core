@@ -108,7 +108,7 @@ describe("ToolRegistry", () => {
     testKeyinArgs(`uccalc this has "a quoted string"`, ["this", "has", "a quoted string"]);
     testKeyinArgs(`uccalc "a quoted string" is before me`, ["a quoted string", "is", "before", "me"]);
     testKeyinArgs(`uccalc "my arg"`, ["my arg"]);
-  });
+  }).timeout(8000); // for whatever reason 2 seconds often isn't enough time for macOS to run this test...
 
   it("Should parse quoted arguments with embedded quotes", () => {
     testKeyinArgs(`uccalc "a single "" inside"`, [`a single " inside`]);

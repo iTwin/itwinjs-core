@@ -230,6 +230,8 @@ import { Range3d } from '@itwin/core-geometry';
 import { Range3dProps } from '@itwin/core-geometry';
 import { Ray3d } from '@itwin/core-geometry';
 import { ReadonlySortedArray } from '@itwin/core-bentley';
+import { RealityData } from '@itwin/core-common';
+import { RealityDataAccess } from '@itwin/core-common';
 import { RealityDataFormat } from '@itwin/core-common';
 import { RealityDataProvider } from '@itwin/core-common';
 import { RealityDataSourceKey } from '@itwin/core-common';
@@ -11195,10 +11197,22 @@ export class TraversalSelectionContext {
 export function tryImageElementFromUrl(url: string): Promise<HTMLImageElement | undefined>;
 
 // @public
+export class TwoWayViewportFrustumSync extends TwoWayViewportSync {
+    // @internal
+    protected connectViewports(source: Viewport, target: Viewport): void;
+    // @internal
+    protected syncViewports(source: Viewport, target: Viewport): void;
+}
+
+// @public
 export class TwoWayViewportSync {
-    connect(view1: Viewport, view2: Viewport): void;
+    connect(viewport1: Viewport, viewport2: Viewport): void;
+    protected connectViewports(source: Viewport, target: Viewport): void;
     disconnect(): void;
-    }
+    // (undocumented)
+    protected readonly _disconnect: VoidFunction[];
+    protected syncViewports(source: Viewport, target: Viewport): void;
+}
 
 // @public
 export interface Uniform {
