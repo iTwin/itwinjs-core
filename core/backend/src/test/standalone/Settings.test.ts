@@ -7,7 +7,7 @@ import { expect } from "chai";
 import { Mutable } from "@itwin/core-bentley";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelHost } from "../../IModelHost";
-import { SettingsPriority } from "../../workspace/Settings";
+import { SettingDictionary, SettingsPriority } from "../../workspace/Settings";
 import { SettingsGroupSpec, SettingSpec, SettingsSpecRegistry } from "../../workspace/SettingsSpecRegistry";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -58,7 +58,7 @@ describe("Settings", () => {
     },
   };
 
-  const app1Settings = {
+  const app1Settings: SettingDictionary = {
     "app1/sub1": "app1 value",
     "app1/sub2": {
       arr: ["app1", "app2"],
@@ -68,7 +68,7 @@ describe("Settings", () => {
     "app1/setting5": "app setting 5 val",
   };
 
-  const imodel1Settings = {
+  const imodel1Settings: SettingDictionary = {
     "app1/sub1": "imodel1 value",
     "app1/sub2": {
       arr: ["a1", "a2"],
@@ -77,14 +77,14 @@ describe("Settings", () => {
     "app1/setting3": "setting 3 val",
   };
 
-  const imodel2Settings = {
+  const imodel2Settings: SettingDictionary = {
     "app1/sub1": "imodel2 value",
     "app1/sub2": {
       arr: ["a21", "a22"],
     },
   };
 
-  const iTwinSettings = {
+  const iTwinSettings: SettingDictionary = {
     "app1/sub1": "val3",
     "app1/sub2": {
       arr: ["a31", "a32", "a33"],

@@ -16,6 +16,7 @@ import { IModelJsFs } from "../IModelJsFs";
 import { SQLiteDb } from "../SQLiteDb";
 import { SqliteStatement } from "../SqliteStatement";
 import { Settings, SettingsPriority } from "./Settings";
+import { CloudContainer, CloudContainerProps } from "./CloudContainer";
 
 /** The names of Settings used by Workspace
  * @beta
@@ -51,6 +52,8 @@ export type WorkspaceContainerName = string;
  * @beta
  */
 export type WorkspaceContainerId = string;
+
+export type WorkspaceContainerVersionName = string;
 
 /**
  * The name for identifying WorkspaceResources in a [[WorkspaceContainer]].
@@ -90,6 +93,8 @@ export interface WorkspaceResourceProps {
 export interface WorkspaceContainer {
   /** The WorkspaceContainerId of this container. */
   readonly containerId: WorkspaceContainerId;
+  /** The version name for this container. */
+  readonly versionName: WorkspaceContainerVersionName;
   /** The Workspace that opened this WorkspaceContainer */
   readonly workspace: Workspace;
   /** the directory for extracting file resources. */
@@ -183,7 +188,7 @@ export class ITwinWorkspace implements Workspace {
     this.filesDir = opts?.filesDir ?? join(this.containerDir, "Files");
   }
 
-  public async getContainer(props: WorkspaceContainerProps): Promise<WorkspaceContainer> {
+  public async getContainer(props: WorkspaceContainerProps, cloudProps?: CloudContainerProps): Promise<WorkspaceContainer> {
     const id = this.resolveContainerId(props);
     if (undefined === id)
       throw new Error(`can't resolve container name [${props}]`);
@@ -192,6 +197,9 @@ export class ITwinWorkspace implements Workspace {
       return container;
 
     container = new WorkspaceFile(id, this);
+    if (cloudProps)
+      await CloudContainer.downloadFile({ localFile: container.localDbName, dbAlias: container.versionName, ...cloudProps });
+
     container.open();
     this._containers.set(id, container);
     return container;
@@ -245,7 +253,8 @@ export class WorkspaceFile implements WorkspaceContainer {
   protected readonly db = new SQLiteDb(); // eslint-disable-line @typescript-eslint/naming-convention
   public readonly workspace: Workspace;
   public readonly containerId: WorkspaceContainerId;
-  public readonly localDbName: LocalDirName;
+  public readonly localDbName: LocalFileName;
+  public readonly versionName: WorkspaceContainerVersionName;
   public readonly onContainerClosed = new BeEvent<() => void>();
 
   public get containerFilesDir() { return join(this.workspace.filesDir, this.containerId); }
@@ -275,9 +284,11 @@ export class WorkspaceFile implements WorkspaceContainer {
   }
 
   public constructor(containerId: WorkspaceContainerId, workspace: Workspace) {
+    [containerId, this.versionName] = containerId.split("#", 2);
     WorkspaceFile.validateContainerId(containerId);
     this.workspace = workspace;
     this.containerId = containerId;
+    this.versionName = this.versionName ?? "v0";
     this.localDbName = join(workspace.containerDir, `${this.containerId}.${containerFileExt}`);
   }
 
