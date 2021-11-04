@@ -33,6 +33,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   public async getConnectionProps(tokenProps: IModelRpcOpenProps): Promise<IModelConnectionProps> {
     return RpcBriefcaseUtility.openWithTimeout(RpcTrace.currentActivity!, tokenProps, SyncMode.FixedVersion);
   }
+
   public async queryRows(tokenProps: IModelRpcProps, request: DbQueryRequest): Promise<DbQueryResponse> {
     const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.currentActivity!.accessToken, tokenProps);
     return ConcurrentQuery.executeQueryRequest(iModelDb.nativeDb, request);

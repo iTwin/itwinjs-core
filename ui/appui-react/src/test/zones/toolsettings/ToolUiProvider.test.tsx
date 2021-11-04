@@ -58,40 +58,40 @@ describe("ToolUiProvider", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
+  });
 
-    after(() => {
-      TestUtils.terminateUiFramework();
-    });
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
 
-    class Frontstage1 extends FrontstageProvider {
-      public static stageId = "ToolUiProvider-TestFrontstage";
-      public get id(): string {
-        return Frontstage1.stageId;
-      }
-
-      public get frontstage(): React.ReactElement<FrontstageProps> {
-        return (
-          <Frontstage
-            id={this.id}
-            defaultTool={CoreTools.selectElementCommand}
-            contentGroup={TestUtils.TestContentGroup1}
-            topCenter={
-              <Zone
-                widgets={[
-                  <Widget isToolSettings={true} />, // eslint-disable-line react/jsx-key
-                ]}
-              />
-            }
-          />
-        );
-      }
+  class Frontstage1 extends FrontstageProvider {
+    public static stageId = "ToolUiProvider-TestFrontstage";
+    public get id(): string {
+      return Frontstage1.stageId;
     }
 
-    const frontstageProvider = new Frontstage1();
-    ConfigurableUiManager.addFrontstageProvider(frontstageProvider);
+    public get frontstage(): React.ReactElement<FrontstageProps> {
+      return (
+        <Frontstage
+          id={this.id}
+          defaultTool={CoreTools.selectElementCommand}
+          contentGroup={TestUtils.TestContentGroup1}
+          topCenter={
+            <Zone
+              widgets={[
+                <Widget isToolSettings={true} />, // eslint-disable-line react/jsx-key
+              ]}
+            />
+          }
+        />
+      );
+    }
+  }
 
-    ConfigurableUiManager.registerControl(testToolId, Tool2UiProvider);
-  });
+  const frontstageProvider = new Frontstage1();
+  ConfigurableUiManager.addFrontstageProvider(frontstageProvider);
+
+  ConfigurableUiManager.registerControl(testToolId, Tool2UiProvider);
 
   class TestDataProvider extends UiLayoutDataProvider { }
 

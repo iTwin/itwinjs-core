@@ -6,7 +6,7 @@
  * @module TileTreeSupplier
  */
 
-import { BeTimePoint, compareStringsOrUndefined, Guid, Id64String } from "@itwin/core-bentley";
+import { BeTimePoint, compareStringsOrUndefined, Id64String } from "@itwin/core-bentley";
 import {
   BatchType, Cartographic, ColorDef, Feature, FeatureTable, Frustum, FrustumPlanes, GeoCoordStatus, OrbitGtBlobProps, PackedFeatureTable, QParams3d,
   Quantization, RealityDataFormat, RealityDataProvider, RealityDataSourceKey, ViewFlagOverrides,
@@ -21,8 +21,6 @@ import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { RealityData } from "../RealityDataAccessProps";
-import { RealityDataConnection } from "../RealityDataConnection";
 import { RealityDataSource } from "../RealityDataSource";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { PointCloudArgs } from "../render/primitives/PointCloudPrimitive";
@@ -343,35 +341,65 @@ export namespace OrbitGtTileTree {
     orbitGtBlob?: OrbitGtBlobProps;
     modelId?: Id64String;
   }
-  /**
-   * Gets string url to fetch blob data from. Access is read-only.
-   * @param accessToken The client request context.
-   * @param name name or path of tile
-   * @param nameRelativeToRootDocumentPath (optional default is false) Indicates if the given name is relative to the root document path.
-   * @returns string url for blob data
-   */
-  export async function getBlobStringUrl(accessToken: string, realityData: RealityData): Promise<string> {
-    const url = await realityData.getBlobUrl(accessToken);
+  function isValidSASToken(downloadUrl: string): boolean {
 
-    const host = `${url.origin + url.pathname}/`;
+    // Create fake URL for and parameter parsing and SAS token URI parsing
+    if(!downloadUrl.startsWith("http"))
+      downloadUrl = `http://x.com/x?${downloadUrl}`;
 
-    const query = url.search;
+    const sasUrl = new URL(downloadUrl);
 
-    return `${host}${realityData.rootDocument}${query}`;
+    const se = sasUrl.searchParams.get("se");
+    if (se) {
+      const expiryUTC = new Date(se);
+      const now = new Date();
+      const currentUTC = new Date(now?.toUTCString());
+
+      return expiryUTC >= currentUTC;
+    }
+
+    return false;
+  }
+  function isValidOrbitGtBlobProps(props: OrbitGtBlobProps): boolean {
+
+    // Check main OrbitGtBlobProps fields are defined
+    if(!props.accountName || !props.containerName || !props.blobFileName || !props.sasToken)
+      return false;
+
+    // Check SAS token is valid
+    return isValidSASToken(props.sasToken);
   }
 
   export async function createOrbitGtTileTree(rdSourceKey: RealityDataSourceKey, iModel: IModelConnection, modelId: Id64String): Promise<TileTree | undefined> {
-    const rdConnection = await RealityDataConnection.fromSourceKey(rdSourceKey, iModel.iTwinId);
+    const rdSource = await RealityDataSource.fromKey(rdSourceKey, iModel.iTwinId);
+    const isContextShare = rdSourceKey.provider === RealityDataProvider.ContextShare;
+    const isTilestUrl = rdSourceKey.provider === RealityDataProvider.TilesetUrl;
 
-    const realityData = rdConnection ? rdConnection.realityData : undefined;
-    if (rdConnection === undefined || realityData === undefined )
-      return undefined;
+    let blobStringUrl: string;
+    if (isContextShare) {
+      const realityData = rdSource ? rdSource.realityData : undefined;
+      if (rdSource === undefined || realityData === undefined )
+        return undefined;
+      const docRootName = realityData.rootDocument;
+      if (!docRootName)
+        return undefined;
+      const token = await IModelApp.getAccessToken();
+      const blobUrl = await realityData.getBlobUrl(token, docRootName);
+      blobStringUrl = blobUrl.toString();
+    } else if (isTilestUrl) {
+      blobStringUrl = rdSourceKey.id;
+    } else {
+      const orbitGtBlobProps = RealityDataSource.createOrbitGtBlobPropsFromKey(rdSourceKey);
+      if (orbitGtBlobProps === undefined)
+        return undefined;
+      if(!isValidOrbitGtBlobProps(orbitGtBlobProps))
+        return undefined;
+      const { accountName, containerName, blobFileName, sasToken } = orbitGtBlobProps;
+      blobStringUrl = blobFileName;
+      if (accountName.length > 0)
+        blobStringUrl = UrlFS.getAzureBlobSasUrl(accountName, containerName, blobFileName, sasToken);
+    }
 
-    const docRootName = realityData.rootDocument;
-    if (!docRootName)
-      return undefined;
-    const token = await IModelApp.getAccessToken();
-    const blobStringUrl = await getBlobStringUrl(token,realityData);
     if (Downloader.INSTANCE == null) Downloader.INSTANCE = new DownloaderXhr();
     if (CRSManager.ENGINE == null) CRSManager.ENGINE = await OnlineEngine.create();
     // wrap a caching layer (16 MB) around the blob file
@@ -448,15 +476,11 @@ class OrbitGtTreeReference extends RealityModelTileTree.Reference {
     // Create rdSourceKey if not provided
     if (props.rdSourceKey) {
       this._rdSourceKey = props.rdSourceKey;
-    } else if (props.orbitGtBlob && props.orbitGtBlob.rdsUrl) {
-      this._rdSourceKey = RealityDataSource.createRealityDataSourceKeyFromUrl(props.orbitGtBlob.rdsUrl, RealityDataProvider.ContextShare);
-    } else if (props.orbitGtBlob && props.orbitGtBlob.containerName && Guid.isGuid(props.orbitGtBlob.containerName)) {
-      this._rdSourceKey = {provider: RealityDataProvider.ContextShare, format: RealityDataFormat.OPC, id: props.orbitGtBlob.containerName };
     } else if (props.orbitGtBlob) {
-      this._rdSourceKey = RealityDataSource.createFromBlobUrl(props.orbitGtBlob.blobFileName, RealityDataProvider.ContextShare);
+      this._rdSourceKey = RealityDataSource.createKeyFromOrbitGtBlobProps(props.orbitGtBlob);
     } else {
       // TODO: Maybe we should throw an exception
-      this._rdSourceKey = RealityDataSource.createFromBlobUrl("", RealityDataProvider.ContextShare);
+      this._rdSourceKey = RealityDataSource.createKeyFromBlobUrl("", RealityDataProvider.OrbitGtBlob, RealityDataFormat.OPC);
     }
 
     const ogtTreeId: OrbitGtTreeId = { rdSourceKey: this._rdSourceKey, modelId: this.modelId };

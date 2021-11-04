@@ -6,9 +6,8 @@
   "description": "Converter to import IModelJson files into bim files.",
   "main": "./lib/main.js",
   "scripts": {
-    "compile": "npm run -s build",
-    "build": "npm run -s build:cjs",
-    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
+    "build": "tsc 1>&2",
+    "build:ci": "npm run -s build",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "",
     "test": "",
@@ -29,9 +28,7 @@
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "@bentley/backend-itwin-client": "workspace:*",
     "@itwin/core-common": "workspace:*",
-    "@itwin/core-i18n": "workspace:*",
     "chai": "^4.1.2",
     "yargs": "^16.0.0"
   },

@@ -68,14 +68,6 @@ export class PopupButton extends React.PureComponent<PopupButtonProps, PopupButt
   public override componentDidMount() {
     if (this.props.setFocus && this._buttonRef.current)
       this._buttonRef.current.focus();
-    this._buttonRef.current?.addEventListener("keydown", this._handleKeyDown);
-  }
-
-  /** @internal */
-  public override componentWillUnmount() {
-    // istanbul ignore next
-    if (this._buttonRef.current)
-      this._buttonRef.current.removeEventListener("keydown", this._handleKeyDown);
   }
 
   private _togglePopup = (event: React.MouseEvent) => {
@@ -100,10 +92,7 @@ export class PopupButton extends React.PureComponent<PopupButtonProps, PopupButt
       });
   };
 
-  private _emptyKeyDown = (_event: React.KeyboardEvent) => {
-
-  };
-  private _handleKeyDown = (event: KeyboardEvent) => {
+  private _handleKeyDown = (event: React.KeyboardEvent) => {
     // istanbul ignore else
     if ((event.key === SpecialKey.ArrowDown || event.key === SpecialKey.Space || event.key === SpecialKey.Enter) && !this.state.showPopup) {
       event.preventDefault();
@@ -133,7 +122,7 @@ export class PopupButton extends React.PureComponent<PopupButtonProps, PopupButt
       <div className={this.props.className}>
         <div className={classNames}
           onClick={this._togglePopup}
-          onKeyDown={this._emptyKeyDown}
+          onKeyDown={this._handleKeyDown}
           data-testid="components-popup-button"
           tabIndex={0}
           ref={this._buttonRef}

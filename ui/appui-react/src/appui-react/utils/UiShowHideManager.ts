@@ -209,4 +209,8 @@ export class UiShowHideManager {
     UiFramework.setIsUiVisible(false);
   }
 
+  /** @internal */
+  public static terminate() {
+    UiShowHideManager.cancelTimer();
+  }
 }

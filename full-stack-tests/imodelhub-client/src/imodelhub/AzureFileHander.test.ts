@@ -6,7 +6,7 @@ import * as chai from "chai";
 import * as stream from "stream";
 import { URL } from "url";
 import { SasUrlExpired } from "@bentley/itwin-client";
-import { AzureFileHandler, BufferedStream } from "@bentley/backend-itwin-client";
+import { AzureFileHandler, BufferedStream } from "@bentley/imodelhub-client/lib/cjs/imodelhub-node";
 import { workDir } from "./TestConstants";
 
 /* eslint-disable @typescript-eslint/unbound-method */

@@ -3,21 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import {
-  Code, DisplayStyle3dProps, DisplayStyleProps, ElementProps, RenderSchedule, RenderTimelineProps,
-} from "@itwin/core-common";
-import {
-  CheckpointConnection, DisplayStyle3dState, IModelApp, IModelConnection, SpatialViewState, ViewState,
-} from "@itwin/core-frontend";
+import { Code, DisplayStyle3dProps, DisplayStyleProps, ElementProps, RenderSchedule, RenderTimelineProps } from "@itwin/core-common";
+import { CheckpointConnection, DisplayStyle3dState, IModelApp, IModelConnection, SpatialViewState, ViewState } from "@itwin/core-frontend";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
-import { TestUtility } from "./TestUtility";
+import { TestUtility } from "../TestUtility";
 
 function countTileTrees(view: ViewState): number {
   let numTrees = 0;
   view.forEachModelTreeRef((_) => ++numTrees);
   return numTrees;
 }
-// eslint-disable-file deprecation/deprecation
 
 describe("Schedule script (#integration)", () => {
   let dbOld: IModelConnection; // BisCore 1.0.8. No RenderTimeline element.
@@ -29,8 +24,8 @@ describe("Schedule script (#integration)", () => {
   const modelId = "0x10000000001";
 
   before(async () => {
-    await IModelApp.shutdown();
-    await IModelApp.startup(TestUtility.iModelAppOptions);
+    await TestUtility.shutdownFrontend();
+    await TestUtility.startFrontend(TestUtility.iModelAppOptions);
     await TestUtility.initialize(TestUsers.regular);
 
     const iTwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
@@ -43,7 +38,7 @@ describe("Schedule script (#integration)", () => {
   after(async () => {
     await dbOld.close();
     await dbNew.close();
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("obtains tile tree with script source Id", async () => {

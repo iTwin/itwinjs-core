@@ -14,7 +14,7 @@ import * as React from "react";
 import { Logger } from "@itwin/core-bentley";
 import {
   CustomFormattedNumberParams, IconEditorParams, InputEditorSizeParams, MessageSeverity, PrimitiveValue, PropertyEditorParams, PropertyEditorParamTypes,
-  PropertyRecord, PropertyValue, PropertyValueFormat, SpecialKey, StandardEditorNames, StandardTypeNames, UiAbstract,
+  PropertyRecord, PropertyValue, PropertyValueFormat, SpecialKey, StandardEditorNames, StandardTypeNames, UiAdmin,
 } from "@itwin/appui-abstract";
 import { Icon, IconInput, Input, InputProps } from "@itwin/core-react";
 import { UiComponents } from "../UiComponents";
@@ -72,9 +72,9 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
       } else {
         // istanbul ignore else
         if (this.htmlElement)
-          UiAbstract.messagePresenter.displayInputFieldMessage(this.htmlElement, MessageSeverity.Error, parseResults.parseError ? parseResults.parseError : /* istanbul ignore next */ UiComponents.translate("errors.unable-to-parse-quantity"));
+          UiAdmin.messagePresenter.displayInputFieldMessage(this.htmlElement, MessageSeverity.Error, parseResults.parseError ? parseResults.parseError : /* istanbul ignore next */ UiComponents.translate("errors.unable-to-parse-quantity"));
         else
-          UiAbstract.messagePresenter.displayMessage(MessageSeverity.Error, parseResults.parseError ? parseResults.parseError : /* istanbul ignore next */ UiComponents.translate("errors.unable-to-parse-quantity"));
+          UiAdmin.messagePresenter.displayMessage(MessageSeverity.Error, parseResults.parseError ? parseResults.parseError : /* istanbul ignore next */ UiComponents.translate("errors.unable-to-parse-quantity"));
 
         const displayValue = (record.value.displayValue && record.value.displayValue.length > 0) ? record.value.displayValue : /* istanbul ignore next */ (this._formatParams as CustomFormattedNumberParams).formatFunction(record.value.value as number);
         propertyValue = {
@@ -220,7 +220,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
     this.setState({ inputValue: initialDisplayValue });
   }
 
-  private _onKeyPress = (e: KeyboardEvent) => {
+  private _onKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     // istanbul ignore else
     if (e.key === SpecialKey.Escape) {
       const initialDisplayValue = this._getInitialDisplayValue();
@@ -237,7 +237,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
 
     // istanbul ignore else
     if (e.key !== SpecialKey.Enter) {
-      UiAbstract.messagePresenter.closeInputFieldMessage();
+      UiAdmin.messagePresenter.closeInputFieldMessage();
     }
   };
 
@@ -272,7 +272,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
       onBlur: this.props.onBlur,
       onFocus: this._onFocus,
       setFocus: this.shouldSetFocus(),
-      nativeKeyHandler: this._onKeyPress,
+      onKeyDown: this._onKeyPress,
     };
 
     let reactNode: React.ReactNode;

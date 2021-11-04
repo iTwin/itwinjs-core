@@ -10,6 +10,7 @@
 import { Arc3d } from "../curve/Arc3d";
 import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
 import { Geometry } from "../Geometry";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Angle } from "../geometry3d/Angle";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
@@ -88,10 +89,16 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
    * * Each plane reference in the `planes` array is taken into the result.
    * * The input array itself is NOT taken into the result.
    */
-  public static createPlanes(planes: ClipPlane[], result?: ConvexClipPlaneSet): ConvexClipPlaneSet {
+  public static createPlanes(planes: (ClipPlane | Plane3dByOriginAndUnitNormal)[], result?: ConvexClipPlaneSet): ConvexClipPlaneSet {
     result = result ? result : new ConvexClipPlaneSet();
-    for (const plane of planes)
-      result._planes.push(plane);
+    for (const plane of planes) {
+      if (plane instanceof ClipPlane) {
+        result._planes.push(plane);
+      } else if (plane instanceof Plane3dByOriginAndUnitNormal) {
+        const clipPlane = ClipPlane.createPlane(plane);
+        result._planes.push(clipPlane);
+      }
+    }
     return result;
   }
 
@@ -256,20 +263,21 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
    * * If no result is provide, there are no object allocations.
    * @param result optional Range1d to receive parameters along the ray.
    */
-  public hasIntersectionWithRay(ray: Ray3d, result?: Range1d): boolean {
+  public hasIntersectionWithRay(ray: Ray3d, result?: Range1d, tolerance: number = Geometry.smallMetricDistance ): boolean {
     // form low and high values in locals that do not require allocation.
     // transfer to caller-supplied result at end
     let t0 = -Geometry.hugeCoordinate;
     let t1 = Geometry.hugeCoordinate;
     if (result)
       result.setNull();
+    const velocityTolerance = 1.0e-13;
     for (const plane of this._planes) {
       const vD = plane.velocity(ray.direction);
       const vN = plane.altitude(ray.origin);
 
-      if (vD === 0.0) {
+      if (Math.abs (vD) <= velocityTolerance) {
         // Ray is parallel... No need to continue testing if outside halfspace.
-        if (vN < 0.0)
+        if (vN < -tolerance)
           return false;   // and result is a null range.
       } else {
         const rayFraction = - vN / vD;
@@ -553,9 +561,11 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
    * Add a plane to the convex set.
    * @param plane plane to add
    */
-  public addPlaneToConvexSet(plane: ClipPlane | undefined) {
-    if (plane)
+  public addPlaneToConvexSet(plane: ClipPlane | Plane3dByOriginAndUnitNormal| undefined) {
+    if (plane instanceof ClipPlane)
       this._planes.push(plane);
+    else if (plane instanceof Plane3dByOriginAndUnitNormal)
+      this._planes.push(ClipPlane.createPlane(plane));
   }
   /**
    * test many points.  Distribute them to arrays depending on in/out result.

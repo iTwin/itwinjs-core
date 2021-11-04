@@ -130,7 +130,7 @@ export class FrontstageUi2 {
   private static registerToolProviders() {
 
     // Provides standard tools for ToolWidget in ui2.0 stage
-    StandardContentToolsProvider.register({
+    StandardContentToolsProvider.register("ui2-standardContentTools", {
       horizontal: {
         clearSelection: true,
         clearDisplayOverrides: true,
@@ -143,12 +143,12 @@ export class FrontstageUi2 {
     });
 
     // Provides standard tools for NavigationWidget in ui2.0 stage
-    StandardNavigationToolsProvider.register(undefined, (stageId: string, _stageUsage: string, _applicationData: any) => {
+    StandardNavigationToolsProvider.register("ui2-standardNavigationTools", undefined, (stageId: string, _stageUsage: string, _applicationData: any) => {
       return stageId === "Ui2";
     });
 
     // Provides standard status fields for ui2.0 stage
-    StandardStatusbarItemsProvider.register(undefined, (stageId: string, _stageUsage: string, _applicationData: any) => {
+    StandardStatusbarItemsProvider.register("ui2-standardStatusItems", undefined, (stageId: string, _stageUsage: string, _applicationData: any) => {
       return stageId === "Ui2";
     });
 

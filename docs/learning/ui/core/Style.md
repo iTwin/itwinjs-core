@@ -11,16 +11,16 @@ and typography.
 ## Colors and Themes
 
 There are two color themes delivered in `@itwin/core-react`: 'light' and 'dark'.
-The color values for each theme are defined in `ui-core/style/colorthemes.scss`.
+The color values for each theme are defined in `core-react/style/colorthemes.scss`.
 This file is imported in `@itwin/core-react` by UiCore.ts and that should be the only place where it is imported.
-(It should **not** be imported by any \*.scss or other ui-core files.)
+(It should **not** be imported by any \*.scss or other core-react files.)
 
 The color theme system uses CSS variables (aka. CSS custom properties) to define the color values. The values of the CSS variables are changed when the name of the "data-theme" document element attribute is set.
 The `ThemeManager` component in the `@itwin/appui-react` package does this by calling `document.documentElement.setAttribute("data-theme", theme)`.
 
 Sass variables are used in the UI components to reference the CSS variables set to the themed colors.
 These themed color Sass variables are defined in the
-`ui-core/style/themecolors.scss` file and begin with `$buic-`. These should be used when styling a themed component.
+`core-react/style/themecolors.scss` file and begin with `$buic-`. These should be used when styling a themed component.
 There are older Sass variables that begin with `$uicore-`. These should **not** be used when styling a themed component.
 Examples of these variables include `$uicore-text-color`, `$uicore-green` and `$uicore-blue`.
 
@@ -56,7 +56,7 @@ The following Sass variables define the basic background and foreground themed c
 | $buic-foreground-warning-tint | Slightly lighter than -warning                                 |
 
 There are additional Sass variables defined in
-`ui-core/style/themecolors.scss` for different contexts.
+`core-react/style/themecolors.scss` for different contexts.
 For instance, the `$buic-text-color` and `$buic-icon-color` variables are assigned to `$buic-foreground-body`.
 `$buic-background-control` is assigned to `$buic-background-1`.
 `$buic-background-control-stroke` is assigned to `$buic-background-5`.
@@ -65,7 +65,7 @@ Since there are variables defined for the different background contexts, they sh
 `$buic-background-1` through `$buic-background-5` variables should rarely be used directly.
 
 ```scss
-@import "~@itwin/core-react/lib/cjs/ui-core/style/themecolors";
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
 
 .my-component {
   color: $buic-text-color;
@@ -92,7 +92,7 @@ Several breakpoints are defined for dealing with screens and devices with differ
 ### Example
 
 ```scss
-@import "~@itwin/core-react/lib/cjs/ui-core/style/breakpoints";
+@import "~@itwin/core-react/lib/cjs/core-react/style/breakpoints";
 
 .toolAssistance-separator {
   @include for-tablet-landscape-down {
@@ -103,7 +103,7 @@ Several breakpoints are defined for dealing with screens and devices with differ
 
 ## Opacity
 
-Different opacity stops are defined in the `ui-core/style/opacity.scss` file.
+Different opacity stops are defined in the `core-react/style/opacity.scss` file.
 
 | Opacity Variable         | Opacity Level |
 | ------------------------ | ------------- |
@@ -118,7 +118,7 @@ Different opacity stops are defined in the `ui-core/style/opacity.scss` file.
 
 ## Spacing
 
-Different spacing values are defined in the `ui-core/style/space.scss` file.
+Different spacing values are defined in the `core-react/style/space.scss` file.
 
 | Space Variable | Space Amount |
 | -------------- | ------------ |
@@ -134,7 +134,7 @@ Different spacing values are defined in the `ui-core/style/space.scss` file.
 
 ## Typography
 
-Different font sizes, weights and families are defined in the `ui-core/style/typography.scss` file.
+Different font sizes, weights and families are defined in the `core-react/style/typography.scss` file.
 
 | Font Size Variable           | Font Size Amount |
 | ---------------------------- | ---------------- |
@@ -153,7 +153,7 @@ Different font sizes, weights and families are defined in the `ui-core/style/typ
 | $uicore-font-weight-semibold | 600                |
 | $uicore-font-weight-bold     | 700                |
 
-The `ui-core/text/index.scss` file also brings in several mixins that assist with styling text. The `uicore-text` mixin takes a text type name and defines font size, weight & line height.
+The `core-react/text/index.scss` file also brings in several mixins that assist with styling text. The `uicore-text` mixin takes a text type name and defines font size, weight & line height.
 
 | Text Type    | Description    |
 | ------------ | -------------- |
@@ -207,7 +207,7 @@ For any container CSS class that shows a scrollbar, the `uicore-touch-scrolling`
 ### Example
 
 ```scss
-@import "~@itwin/core-react/lib/cjs/ui-core/scrollbar";
+@import "~@itwin/core-react/lib/cjs/core-react/scrollbar";
 
 .my-scrollable-container {
   @include uicore-touch-scrolling;
@@ -246,7 +246,7 @@ listed in order from lowest to top-most:
 ### Example
 
 ```scss
-@import "~@itwin/core-react/lib/cjs/ui-core/z-index";
+@import "~@itwin/core-react/lib/cjs/core-react/z-index";
 
 .my-tooltip {
   @include uicore-z-index(tooltip);

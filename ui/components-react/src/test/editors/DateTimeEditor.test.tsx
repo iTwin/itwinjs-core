@@ -15,6 +15,7 @@ import { EditorContainer /* PropertyUpdatedArgs */ } from "../../components-reac
 import { DateTimeEditor } from "../../components-react/editors/DateTimeEditor";
 import TestUtils, { MineDataController } from "../TestUtils";
 import { PropertyEditorManager } from "../../components-react/editors/PropertyEditorManager";
+import { findInstance } from "../ReactInstance";
 
 function createDateProperty(propertyName: string, value: Date, option: number) {
   const v: PropertyValue = {
@@ -250,4 +251,15 @@ describe("<DateTimeEditor />", () => {
     PropertyEditorManager.deregisterDataController("myData");
   });
 
+  it("should receive focus", async () => {
+    const record = createDateProperty("Test", date, 0);  // 0 creates a long DateTime record
+    const renderedComponent = render(<DateTimeEditor showTime={true} propertyRecord={record} />);
+    expect(await waitFor(() => renderedComponent.getByText(date.toLocaleString()))).to.exist;
+    const popupButton = await renderedComponent.findByTestId("components-popup-button");
+    expect(popupButton).not.to.be.null;
+    popupButton.focus();
+    const editor = findInstance(renderedComponent.container.firstChild);
+    expect (editor).not.to.be.null;
+    expect (editor.hasFocus).to.be.true;
+  });
 });

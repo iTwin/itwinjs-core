@@ -344,6 +344,13 @@ export class PolygonOps {
     }
     return 0.5 * area;
   }
+  /** Sum the areaXY () values for multiple polygons */
+  public static sumAreaXY(polygons: Point3d[][]): number{
+    let s = 0.0;
+    for (const p of polygons)
+      s += this.areaXY(p);
+    return s;
+  }
   /**
    * Return a Ray3d with (assuming the polygon is planar and not self-intersecting)
    * * origin at the centroid of the (3D) polygon

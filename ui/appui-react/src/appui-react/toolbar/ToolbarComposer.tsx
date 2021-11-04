@@ -164,23 +164,27 @@ function combineItems(defaultItems: ReadonlyArray<CommonToolbarItem>, addonItems
   // istanbul ignore else
   if (defaultItems.length) {
     defaultItems.forEach((srcItem: CommonToolbarItem) => {
-      // if the default item is a group that an addon may insert into copy it so we don't mess with original
-      const toolbarItem = ToolbarItemUtilities.isGroupButton(srcItem) ? cloneGroup(srcItem) : srcItem;
-      if (toolbarItem.parentToolGroupId && (ToolbarItemUtilities.isGroupButton(toolbarItem) || ToolbarItemUtilities.isActionButton(toolbarItem)))
-        groupChildren.push(toolbarItem);
-      else
-        items.push(toolbarItem);
+      if (-1 === items.findIndex((item) => item.id === srcItem.id)) {
+        // if the default item is a group that an addon may insert into copy it so we don't mess with original
+        const toolbarItem = ToolbarItemUtilities.isGroupButton(srcItem) ? cloneGroup(srcItem) : srcItem;
+        if (toolbarItem.parentToolGroupId && (ToolbarItemUtilities.isGroupButton(toolbarItem) || ToolbarItemUtilities.isActionButton(toolbarItem)))
+          groupChildren.push(toolbarItem);
+        else
+          items.push(toolbarItem);
+      }
     });
   }
   // istanbul ignore else
   if (addonItems.length) {
     addonItems.forEach((srcItem: CommonToolbarItem) => {
-      // if the default item is a group that an addon may insert into copy it so we don't mess with original
-      const toolbarItem = ToolbarItemUtilities.isGroupButton(srcItem) ? cloneGroup(srcItem) : srcItem;
-      if (toolbarItem.parentToolGroupId && (ToolbarItemUtilities.isGroupButton(toolbarItem) || ToolbarItemUtilities.isActionButton(toolbarItem)))
-        groupChildren.push(toolbarItem);
-      else
-        items.push(toolbarItem);
+      if (-1 === items.findIndex((item) => item.id === srcItem.id)) {
+        // if the default item is a group that an addon may insert into copy it so we don't mess with original
+        const toolbarItem = ToolbarItemUtilities.isGroupButton(srcItem) ? cloneGroup(srcItem) : srcItem;
+        if (toolbarItem.parentToolGroupId && (ToolbarItemUtilities.isGroupButton(toolbarItem) || ToolbarItemUtilities.isActionButton(toolbarItem)))
+          groupChildren.push(toolbarItem);
+        else
+          items.push(toolbarItem);
+      }
     });
   }
 
@@ -240,14 +244,10 @@ export interface ExtensibleToolbarProps {
  */
 export function ToolbarComposer(props: ExtensibleToolbarProps) {
   const { usage, orientation } = props;
-  const [defaultItemsManager] = React.useState(() => new ToolbarItemsManager(props.items));
-  const isInitialMount = React.useRef(true);
+
+  const [defaultItemsManager, setDefaultItemsManager] = React.useState(() => new ToolbarItemsManager(props.items));
   React.useEffect(() => {
-    if (isInitialMount.current)
-      isInitialMount.current = false;
-    else {
-      defaultItemsManager.items = props.items;
-    }
+    setDefaultItemsManager(new ToolbarItemsManager(props.items));
   }, [props.items]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // process default items

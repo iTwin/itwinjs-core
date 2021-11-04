@@ -6,9 +6,9 @@
 import { expect } from "chai";
 import { BeDuration, BeTimePoint } from "@itwin/core-bentley";
 import {
-  DisclosedTileTreeSet, IModelApp, IModelConnection, IModelTileTree, SnapshotConnection, Tile, TileLoadStatus,
-  TileTree, TileUsageMarker, Viewport,
+  DisclosedTileTreeSet, IModelApp, IModelConnection, IModelTileTree, SnapshotConnection, Tile, TileLoadStatus, TileTree, TileUsageMarker, Viewport,
 } from "@itwin/core-frontend";
+import { TestUtility } from "../../TestUtility";
 import { createOnScreenTestViewport, testOffScreenViewport, testOnScreenViewport, TestViewport, testViewports } from "../../TestViewport";
 
 describe("Tile unloading", async () => {
@@ -25,7 +25,7 @@ describe("Tile unloading", async () => {
   };
 
   before(async () => {
-    await IModelApp.startup({ tileAdmin: tileOpts });
+    await TestUtility.startFrontend({ tileAdmin: tileOpts });
     imodel = await SnapshotConnection.openFile("CompatibilityTestSeed.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
@@ -33,7 +33,7 @@ describe("Tile unloading", async () => {
     if (imodel)
       await imodel.close();
 
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   function getTileTree(vp: Viewport): TileTree {

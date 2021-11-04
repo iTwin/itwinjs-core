@@ -7,9 +7,9 @@
  */
 
 import { assert, BeEvent } from "@itwin/core-bentley";
-import { SpatialClassifierProps, SpatialClassifiers } from "./SpatialClassification";
-import { PlanarClipMaskMode, PlanarClipMaskProps, PlanarClipMaskSettings } from "./PlanarClipMask";
 import { FeatureAppearance, FeatureAppearanceProps } from "./FeatureSymbology";
+import { PlanarClipMaskMode, PlanarClipMaskProps, PlanarClipMaskSettings } from "./PlanarClipMask";
+import { SpatialClassifierProps, SpatialClassifiers } from "./SpatialClassification";
 
 /** JSON representation of the blob properties for an OrbitGt property cloud.
  * @alpha
@@ -30,18 +30,25 @@ export enum RealityDataProvider {
    * This is the legacy mode where the access to the 3d tiles is harcoded in ContextRealityModelProps.tilesetUrl property.
    * It was use to support RealityMesh3DTiles, Terrain3DTiles, Cesium3DTiles
    * You should use other mode when possible
-   * @see [[RealityDataSource.createRealityDataSourceKeyFromUrl]] that will try to detect provider from an URL
-   * */
+   * @see [[RealityDataSource.createKeyFromUrl]] that will try to detect provider from an URL
+   */
   TilesetUrl = "TilesetUrl",
+  /**
+   * This is the legacy mode where the access to the 3d tiles is harcoded in ContextRealityModelProps.OrbitGtBlob property.
+   * It was use to support OrbitPointCloud (OPC) from other server than ContextShare
+   * You should use other mode when possible
+   * @see [[RealityDataSource.createRealityDataSourceKeyFromUrl]] that will try to detect provider from an URL
+   */
+  OrbitGtBlob = "OrbitGtBlob",
   /**
    * Will provide access url from realityDataId and iTwinId on contextShare for 3dTile storage format or  OPC storage format
    * This provider support all type of 3dTile storage fomat and OrbitPointCloud: RealityMesh3DTiles, Terrain3DTiles, Cesium3DTiles, OPC
    * @see [[RealityDataFormat]].
-  */
+   */
   ContextShare = "ContextShare",
   /**
    * Will provide Open Street Map Building (OSM) from Cesium Ion (in 3dTile format)
-  */
+   */
   CesiumIonAsset = "CesiumIonAsset",
 }
 
@@ -60,8 +67,8 @@ export enum RealityDataFormat {
 }
 
 /**
- * Key used by RealityDataConnection to identify RealityDataSource and reality data format
- * This key identify one and only one reality data on the provider
+ * Key used by RealityDataSource to identify provider and reality data format
+ * This key identify one and only one reality data source on the provider
  * @alpha
  */
 export interface RealityDataSourceKey {

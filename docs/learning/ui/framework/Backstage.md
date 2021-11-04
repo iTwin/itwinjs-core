@@ -38,5 +38,5 @@ Below is an example of defining the ConfigurableUiContent and specifying the bac
 
 ## API Reference
 
-- [Backstage in ui-framework]($appui-react:Backstage)
-- [Backstage in ui-abstract]($appui-abstract:Backstage)
+- [Backstage in appui-react]($appui-react:Backstage)
+- [Backstage in appui-abstract]($appui-abstract:Backstage)

@@ -10,7 +10,6 @@ import { UiItemsManager } from "@itwin/appui-abstract";
 import { ScrollableWidgetContent, TabIdContext } from "@itwin/appui-layout-react";
 import { useActiveFrontstageDef } from "../frontstage/Frontstage";
 import { WidgetDef } from "../widgets/WidgetDef";
-import { UiFramework } from "../UiFramework";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { FrontstageNineZoneStateChangedEventArgs } from "../frontstage/FrontstageDef";
 
@@ -43,15 +42,6 @@ export function useWidgetDef(): WidgetDef | undefined {
     return () => {
       FrontstageManager.onFrontstageNineZoneStateChangedEvent.removeListener(listener);
     };
-  }, [frontstage, tabId]);
-
-  React.useEffect(() => {
-    // istanbul ignore next
-    const handlerActivated = () => {
-      setWidgetDef(frontstage?.findWidgetDef(tabId));
-    };
-
-    return UiFramework.widgetManager.onWidgetProvidersChanged.addListener(handlerActivated);
   }, [frontstage, tabId]);
 
   React.useEffect(() => {

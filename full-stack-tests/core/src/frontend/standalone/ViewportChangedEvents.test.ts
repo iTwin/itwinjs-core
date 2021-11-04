@@ -9,9 +9,10 @@ import {
   AmbientOcclusion, AnalysisStyle, ClipStyle, ColorDef, FeatureAppearance, ModelClipGroup, ModelClipGroups, MonochromeMode, PlanProjectionSettings, SubCategoryOverride, ThematicDisplay, ViewFlags,
 } from "@itwin/core-common";
 import {
-  ChangeFlag, FeatureSymbology, MockRender, PerModelCategoryVisibility, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId, Viewport,
+  ChangeFlag, FeatureSymbology, PerModelCategoryVisibility, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId, Viewport,
 } from "@itwin/core-frontend";
 import { ViewportChangedHandler, ViewportState } from "../ViewportChangedHandler";
+import { TestUtility } from "../TestUtility";
 
 describe("Viewport changed events", async () => {
   // test.bim:
@@ -43,7 +44,7 @@ describe("Viewport changed events", async () => {
   document.body.appendChild(viewDiv);
 
   before(async () => {
-    await MockRender.App.startup();
+    await TestUtility.startFrontend(undefined, true);
     testBim = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     testImodel = await SnapshotConnection.openFile("testImodel.bim"); // relative path resolved by BackendTestAssetResolver
   });
@@ -55,7 +56,7 @@ describe("Viewport changed events", async () => {
     if (undefined !== testImodel)
       await testImodel.close();
 
-    await MockRender.App.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   afterEach(() => {

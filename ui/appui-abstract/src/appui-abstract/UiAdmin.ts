@@ -17,6 +17,9 @@ import { PropertyRecord } from "./properties/Record";
 import { UiDataProvider } from "./dialogs/UiDataProvider";
 import { DialogLayoutDataProvider } from "./dialogs/UiLayoutDataProvider";
 import { PointProps } from "./utils/PointProps";
+import { loggerCategory } from "./utils/misc";
+import { MessagePresenter } from "./notification/MessagePresenter";
+import { UiError } from "./utils/UiError";
 
 /** The Generic UI Event args contains information useful for any UI message
  * @public
@@ -65,6 +68,17 @@ export interface UiFlags {
  */
 export class UiAdmin {
   private _featureFlags: UiFlags = {};
+  private static _messagePresenter?: MessagePresenter;
+
+  /** The MessagePresenter used to display messages. */
+  public static get messagePresenter(): MessagePresenter {
+    if (!UiAdmin._messagePresenter)
+      throw new UiError(loggerCategory(this), "UiAdmin.messagePresenter not set");
+    return UiAdmin._messagePresenter;
+  }
+  public static set messagePresenter(mp: MessagePresenter) {
+    UiAdmin._messagePresenter = mp;
+  }
 
   public get featureFlags(): UiFlags {
     return { ...this._featureFlags }; // return copy so no direct access to modify value

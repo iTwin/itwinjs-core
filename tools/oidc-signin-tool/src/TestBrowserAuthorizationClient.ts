@@ -379,6 +379,16 @@ export class TestBrowserAuthorizationClient implements AuthorizationClient {
         }),
         page.$eval(".allow", (button: any) => button.click()),
       ]);
+    } else if (await page.title() === "Permissions") { // Another new consent page...
+      await page.waitForSelector("div.iui-input-bar button");
+
+      await Promise.all([
+        page.waitForNavigation({
+          timeout: 60000,
+          waitUntil: "networkidle2",
+        }),
+        page.$eval("div.iui-input-bar button span", (button: any) => button.click()),
+      ]);
     }
   }
 

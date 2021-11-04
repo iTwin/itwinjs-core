@@ -125,6 +125,13 @@ export interface PlaneAltitudeEvaluator {
    * @param point xyzw data.
    */
   weightedAltitude(point: Point4d): number;
+  /** x part of normal vector */
+  normalX(): number;
+  /** x part of normal vector */
+  normalY(): number;
+  /** x part of normal vector */
+  normalZ(): number;
+
 }
 /**
  * Interface for `toJSON` and `setFromJSON` methods

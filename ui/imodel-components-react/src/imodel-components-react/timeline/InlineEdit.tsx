@@ -77,9 +77,11 @@ export class InlineEdit extends React.Component<InlineEditProps, InlineEditState
       <Input
         data-testid="timeline-duration-edit-input"
         className={classnames("inline-edit-input", this.props.className)}
+        style={this.props.style}
         ref={this._inputRef}
         type="text"
         value={this.state.value}
+        size="small"
         onFocus={this._onFocus}
         onBlur={this._onBlur}
         onKeyDown={this._onKeyDown}

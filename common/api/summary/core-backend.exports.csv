@@ -10,6 +10,7 @@ public;AuxCoordSystemSpatial
 beta;AzureBlobStorage 
 beta;BackendHubAccess
 public;BackendLoggerCategory
+internal;BaseSettings 
 public;BindParameter = number | string
 public;BisCoreSchema 
 public;BriefcaseDb 
@@ -30,7 +31,7 @@ beta;ChangeSummaryExtractOptions
 deprecated;ChangeSummaryExtractOptions
 beta;ChangeSummaryManager
 public;ChannelRootAspect 
-internal;CheckPointArg = DownloadRequest
+internal;CheckpointArg = DownloadRequest
 internal;CheckpointManager
 public;CheckpointProps 
 public;ClassRegistry
@@ -60,6 +61,7 @@ internal;DevToolsProcessStats
 internal;DevToolsStats
 internal;DevToolsStatsFormatter
 public;DictionaryModel 
+beta;DictionaryName = string
 public;class DisplayStyle 
 public;DisplayStyle2d 
 public;DisplayStyle3d 
@@ -88,6 +90,7 @@ public;ECSqlInsertResult
 public;ECSqlStatement 
 public;ECSqlValue
 public;ECSqlValueIterator 
+beta;EditableWorkspaceFile 
 public;Element 
 public;ElementAspect 
 beta;ElementDrivesElement 
@@ -181,7 +184,6 @@ internal;TileContentState
 internal;Tiles
 public;IModelHost
 public;IModelHostConfiguration
-internal;IModelHubBackend
 public;IModelIdArg 
 public;IModelJsFs
 public;IModelJsFsStats
@@ -194,11 +196,13 @@ public;class InformationRecordElement
 public;InformationRecordModel 
 public;InformationRecordPartition 
 public;class InformationReferenceElement 
+internal;initializeRpcBackend(): void
 beta;InstanceChange
 public;class IpcHandler
 public;IpcHost
 public;IpcHostOpts
 public;ITwinIdArg
+internal;ITwinWorkspace 
 public;KnownLocations
 internal;LightLocation 
 public;LineStyle 
@@ -267,6 +271,7 @@ public;RepositoryModel
 public;RequestNewBriefcaseArg 
 public;class RoleElement 
 public;RoleModel 
+public;RpcTrace
 public;Schema
 internal;SchemaKey = IModelJsNative.ECSchemaXmlContext.SchemaKey
 internal;SchemaMatchType = IModelJsNative.ECSchemaXmlContext.SchemaMatchType
@@ -276,6 +281,17 @@ public;SectionDrawing
 public;SectionDrawingLocation 
 public;SectionDrawingModel 
 internal;setMaxEntitiesPerEvent(max: number): number
+beta;SettingDictionary = SettingObject
+beta;SettingInspector
+beta;SettingName = string
+beta;SettingObject
+beta;SettingResolver
+beta;Settings
+beta;SettingsGroupSpec
+beta;SettingSpec 
+beta;SettingsPriority
+beta;SettingsSpecRegistry
+beta;SettingType = JSONSchemaType
 public;Sheet 
 public;SheetBorderTemplate 
 public;SheetModel 
@@ -324,7 +340,7 @@ public;class TypeDefinitionElement
 public;UpdateModelOptions 
 public;UrlLink 
 internal;V1CheckpointManager
-beta;V2CheckpointAccessProps
+internal;V2CheckpointAccessProps
 internal;V2CheckpointManager
 public;ValidationError
 public;ViewAttachment 
@@ -334,3 +350,12 @@ public;ViewDefinition2d
 public;class ViewDefinition3d 
 public;VolumeElement 
 public;WebMercatorModel 
+beta;Workspace
+beta;WorkspaceContainer
+beta;WorkspaceContainerId = string
+beta;WorkspaceContainerName = string
+beta;WorkspaceContainerProps = WorkspaceContainerName |
+beta;WorkspaceFile 
+beta;WorkspaceOpts
+beta;WorkspaceResourceName = string
+beta;WorkspaceResourceProps

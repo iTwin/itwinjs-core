@@ -6,8 +6,10 @@ import { expect } from "chai";
 import { BeDuration } from "@itwin/core-bentley";
 import { ServerTimeoutError } from "@itwin/core-common";
 import {
-  IModelApp, IModelTile, IModelTileContent, IModelTileTree, IpcApp, RenderGraphic, RenderMemory, SnapshotConnection, Tile, TileLoadStatus, TileRequestChannel, Viewport,
+  IModelApp, IModelTile, IModelTileContent, IModelTileTree, IpcApp, RenderGraphic, RenderMemory, SnapshotConnection, Tile, TileLoadStatus,
+  TileRequestChannel, Viewport,
 } from "@itwin/core-frontend";
+import { TestUtility } from "../../TestUtility";
 import { TILE_DATA_2_0 } from "./data/TileIO.data.2.0";
 import { fakeViewState } from "./TileIO.test";
 
@@ -56,13 +58,13 @@ describe("IModelTileRequestChannels", () => {
     let imodel: SnapshotConnection;
 
     beforeEach(async () => {
-      await IModelApp.startup();
+      await TestUtility.startFrontend();
       imodel = await SnapshotConnection.openFile("test.bim");
     });
 
     afterEach(async () => {
       await imodel.close();
-      await IModelApp.shutdown();
+      await TestUtility.shutdownFrontend();
     });
 
     async function getTile() {
@@ -140,13 +142,13 @@ describe("IModelTileRequestChannels", () => {
     let imodel: SnapshotConnection;
 
     beforeEach(async () => {
-      await IModelApp.startup({ tileAdmin: { cacheTileMetadata: true } });
+      await TestUtility.startFrontend({ tileAdmin: { cacheTileMetadata: true } });
       imodel = await SnapshotConnection.openFile("test.bim");
     });
 
     afterEach(async () => {
       await imodel.close();
-      await IModelApp.shutdown();
+      await TestUtility.shutdownFrontend();
     });
 
     async function getTile() {
@@ -316,8 +318,8 @@ describe("IModelTileRequestChannels", () => {
 });
 
 describe("RPC channels", () => {
-  before(async () => { await IModelApp.startup(); });
-  after(async () => { await IModelApp.shutdown(); });
+  before(async () => { await TestUtility.startFrontend(); });
+  after(async () => { await TestUtility.shutdownFrontend(); });
 
   it("use http or rpc concurrency based on type of app", async () => {
     const channels = IModelApp.tileAdmin.channels;

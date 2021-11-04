@@ -15,6 +15,7 @@ import { SliderEditor } from "../../components-react/editors/SliderEditor";
 import TestUtils, { MineDataController } from "../TestUtils";
 import { EditorContainer } from "../../components-react/editors/EditorContainer";
 import { PropertyEditorManager } from "../../components-react/editors/PropertyEditorManager";
+import { findInstance } from "../ReactInstance";
 
 describe("<SliderEditor />", () => {
   before(async () => {
@@ -640,6 +641,17 @@ describe("<SliderEditor />", () => {
     expect(spyOnCommit.called).to.be.false;
 
     PropertyEditorManager.deregisterDataController("myData");
+  });
+  it("should receive focus", async () => {
+    const propertyRecord = TestUtils.createNumericProperty("Test", 50, StandardEditorNames.Slider);
+    const renderedComponent = render(<SliderEditor propertyRecord={propertyRecord} />);
+    expect(renderedComponent).not.to.be.undefined;
+    const popupButton = await renderedComponent.findByTestId("components-popup-button");
+    expect(popupButton).not.to.be.null;
+    popupButton.focus();
+    const editor = findInstance(renderedComponent.container.firstChild);
+    expect (editor).not.to.be.null;
+    expect (editor.hasFocus).to.be.true;
   });
 
 });

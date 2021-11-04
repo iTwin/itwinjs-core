@@ -9,10 +9,13 @@ import { AbstractToolbarProps } from "../appui-abstract/items/AbstractToolbarPro
 import { RelativePosition } from "../appui-abstract/items/RelativePosition";
 import { PropertyDescription } from "../appui-abstract/properties/Description";
 import { UiAdmin } from "../appui-abstract/UiAdmin";
+import { loggerCategory } from "../appui-abstract/utils/misc";
 import { UiDataProvider } from "../appui-abstract/dialogs/UiDataProvider";
 import { StandardTypeNames } from "../appui-abstract/properties/StandardTypeNames";
 import { DialogLayoutDataProvider } from "../appui-abstract/dialogs/UiLayoutDataProvider";
 import { DialogItem, DialogPropertySyncItem } from "../appui-abstract/dialogs/DialogItem";
+import { DisplayMessageType, MessagePresenter } from "../appui-abstract/notification/MessagePresenter";
+import { MessageSeverity } from "../appui-abstract/notification/MessageSeverity";
 
 describe("UiAdmin", () => {
 
@@ -24,6 +27,20 @@ describe("UiAdmin", () => {
 
   it("onInitialized should do nothing", () => {
     uiAdmin.onInitialized();
+  });
+
+  it("messagePresenter should throw Error without being set", () => {
+    expect(() => UiAdmin.messagePresenter).to.throw(Error);
+  });
+
+  it("messagePresenter should return set object", () => {
+    const mp: MessagePresenter = {
+      displayMessage: (_severity: MessageSeverity, _briefMessage: HTMLElement | string, _detailedMessage?: HTMLElement | string, _messageType?: DisplayMessageType.Toast): void => { },
+      displayInputFieldMessage: (_inputField: HTMLElement, _severity: MessageSeverity, _briefMessage: HTMLElement | string, _detailedMessage?: HTMLElement | string): void => { },
+      closeInputFieldMessage: (): void => { },
+    };
+    UiAdmin.messagePresenter = mp;
+    expect(UiAdmin.messagePresenter).to.eq(mp);
   });
 
   it("cursorPosition should return zeros", () => {
@@ -212,4 +229,10 @@ describe("UiAdmin", () => {
     expect(uiAdmin.closeDialog("test-modal")).to.be.false;
   });
 
+});
+
+describe("loggerCategory", () => {
+  it("loggerCategory passed null should return 'appui-abstract'", () => {
+    expect(loggerCategory(null)).to.eq("appui-abstract");
+  });
 });

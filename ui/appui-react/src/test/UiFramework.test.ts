@@ -34,6 +34,16 @@ describe("UiFramework localStorage Wrapper", () => {
     Object.defineProperty(window, "localStorage", localStorageToRestore);
   });
 
+  describe("UiFramework basic Initialization", () => {
+    it("should initialize default StateManager", async () => {
+      await UiFramework.initialize(undefined);
+      const uiVersion = "2";
+      UiFramework.setUiVersion(uiVersion);
+      expect(UiFramework.uiVersion).to.eql(uiVersion);
+      UiFramework.terminate();
+    });
+  });
+
   describe("UiFramework", () => {
 
     beforeEach(() => {
@@ -46,10 +56,6 @@ describe("UiFramework localStorage Wrapper", () => {
 
     it("store should throw Error without initialize", () => {
       expect(() => UiFramework.store).to.throw(Error);
-    });
-
-    it("localization should throw Error without initialize", () => {
-      expect(() => UiFramework.localization).to.throw(Error);
     });
 
     it("localizationNamespace should return UiFramework", () => {
@@ -108,9 +114,9 @@ describe("UiFramework localStorage Wrapper", () => {
     it("calling initialize twice should log", async () => {
       const spyLogger = sinon.spy(Logger, "logInfo");
       expect(UiFramework.initialized).to.be.false;
-      await UiFramework.initialize(TestUtils.store, TestUtils.localization);
+      await UiFramework.initialize(TestUtils.store);
       expect(UiFramework.initialized).to.be.true;
-      await UiFramework.initialize(TestUtils.store, TestUtils.localization);
+      await UiFramework.initialize(TestUtils.store);
       spyLogger.calledOnce.should.true;
     });
 
@@ -214,8 +220,6 @@ describe("UiFramework localStorage Wrapper", () => {
 
       const uiVersion = "2";
       UiFramework.setUiVersion(uiVersion);
-      expect(UiFramework.uiVersion).to.eql(uiVersion);
-      UiFramework.setUiVersion("");
       expect(UiFramework.uiVersion).to.eql(uiVersion);
 
       const useDragInteraction = true;

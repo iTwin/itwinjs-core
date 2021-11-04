@@ -46,7 +46,7 @@ export class LargeThumbnail extends Thumbnail { }
  * @public
  */
 export interface TipThumbnail {
-  /** Id of the iModel's parent iTwin ([[ITwin]]). */
+  /** Id of the iModel's parent iTwin. */
   iTwinId: string;
   /** Size of the [[Thumbnail]]. */
   size: ThumbnailSize;
@@ -88,7 +88,7 @@ export class ThumbnailHandler {
   }
 
   /** Get relative url for tip Thumbnail requests.
-   * @param iTwinId Id of the iModel's parent iTwin ([[ITwin]]).
+   * @param iTwinId Id of the iModel's parent iTwin.
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param size Size of the thumbnail.
    */

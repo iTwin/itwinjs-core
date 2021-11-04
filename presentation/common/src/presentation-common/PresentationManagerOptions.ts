@@ -160,6 +160,20 @@ export interface MultiElementPropertiesRequestOptions<TIModel> extends Paged<Req
 }
 
 /**
+ * Request type for content instance keys' requests.
+ * @alpha
+ */
+export interface ContentInstanceKeysRequestOptions<TIModel, TKeySet, TRulesetVariable = RulesetVariable> extends Paged<RequestOptionsWithRuleset<TIModel, TRulesetVariable>> {
+  /**
+   * Content display type.
+   * @see [[DefaultContentDisplayTypes]]
+   */
+  displayType?: string;
+  /** Input keys for getting the content. */
+  keys: TKeySet;
+}
+
+/**
  * Request type for label requests
  * @public
  */

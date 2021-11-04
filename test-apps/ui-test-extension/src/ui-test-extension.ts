@@ -29,7 +29,6 @@ export class UiTestExtension {
   /** We'll register the uiTestExtension.json as the Extension's namespace/ */
   public static readonly localizationNamespace = "uiTestExtension";
   /** The uiProvider will add a tool to the Toolbar and an item to the StatusBar in the host app */
-
   private static registerUiComponents(): void {
     SampleTool.register(UiTestExtension.localizationNamespace);
     GenericTool.register(UiTestExtension.localizationNamespace);

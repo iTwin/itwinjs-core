@@ -157,7 +157,7 @@ const testToolsArray: DefaultContentTools[] = [
 ];
 
 describe("StandardContentToolsProvider", () => {
-
+  const testContentToolProviderId = "ui2-standardContentTools";
   // avoid problems due to no real localization resources by return dummy values for englishKeyin and keyin properties.
   before(async () => {
     await TestUtils.initializeUiFramework();
@@ -171,18 +171,18 @@ describe("StandardContentToolsProvider", () => {
   });
 
   it("should register StandardContentToolsProvider with defaults", () => {
-    StandardContentToolsProvider.register();
+    StandardContentToolsProvider.register(testContentToolProviderId);
     expect(UiItemsManager.hasRegisteredProviders).to.be.true;
     expect(UiItemsManager.getToolbarButtonItems("test", StageUsage.General, ToolbarUsage.ContentManipulation,
       ToolbarOrientation.Horizontal, undefined).length).to.eq(5);
     expect(UiItemsManager.getToolbarButtonItems("test", StageUsage.General, ToolbarUsage.ContentManipulation,
       ToolbarOrientation.Vertical, undefined).length).to.eq(3);
-    StandardContentToolsProvider.unregister();
+    StandardContentToolsProvider.unregister(testContentToolProviderId);
     expect(UiItemsManager.hasRegisteredProviders).to.be.false;
   });
 
   it("should register StandardContentToolsProvider with group buttons", () => {
-    StandardContentToolsProvider.register({
+    StandardContentToolsProvider.register(testContentToolProviderId, {
       horizontal: {
         clearSelection: true,
         clearDisplayOverrides: true,
@@ -198,12 +198,12 @@ describe("StandardContentToolsProvider", () => {
       ToolbarOrientation.Horizontal, undefined).length).to.eq(5);
     expect(UiItemsManager.getToolbarButtonItems("test", StageUsage.General, ToolbarUsage.ContentManipulation,
       ToolbarOrientation.Vertical, undefined).length).to.eq(3);
-    StandardContentToolsProvider.unregister();
+    StandardContentToolsProvider.unregister(testContentToolProviderId);
     expect(UiItemsManager.hasRegisteredProviders).to.be.false;
   });
 
   it("should register StandardContentToolsProvider with no horizontal buttons", () => {
-    StandardContentToolsProvider.register({
+    StandardContentToolsProvider.register(testContentToolProviderId, {
       horizontal: {},
     }, (stageId: string, _stageUsage: string, _applicationData: any) => {
       return "test" === stageId;
@@ -213,12 +213,12 @@ describe("StandardContentToolsProvider", () => {
       ToolbarOrientation.Horizontal, undefined).length).to.eq(0);
     expect(UiItemsManager.getToolbarButtonItems("test", StageUsage.General, ToolbarUsage.ContentManipulation,
       ToolbarOrientation.Vertical, undefined).length).to.eq(3);
-    StandardContentToolsProvider.unregister();
+    StandardContentToolsProvider.unregister(testContentToolProviderId);
     expect(UiItemsManager.hasRegisteredProviders).to.be.false;
   });
 
   it("should register StandardContentToolsProvider with no vertical buttons", () => {
-    StandardContentToolsProvider.register({
+    StandardContentToolsProvider.register(testContentToolProviderId, {
       horizontal: {
         clearSelection: true,
         clearDisplayOverrides: true,
@@ -236,12 +236,12 @@ describe("StandardContentToolsProvider", () => {
     expect(UiItemsManager.getToolbarButtonItems("test", StageUsage.General, ToolbarUsage.ContentManipulation,
       ToolbarOrientation.Vertical, undefined).length).to.eq(0);
 
-    StandardContentToolsProvider.unregister();
+    StandardContentToolsProvider.unregister(testContentToolProviderId);
     expect(UiItemsManager.hasRegisteredProviders).to.be.false;
   });
 
   it("should process app data group options", () => {
-    StandardContentToolsProvider.register({
+    StandardContentToolsProvider.register(testContentToolProviderId, {
       horizontal: {
         clearSelection: true,
         clearDisplayOverrides: true,
@@ -263,13 +263,13 @@ describe("StandardContentToolsProvider", () => {
         ToolbarOrientation.Vertical, testAppDataProps).length).to.eq(0);
     });
 
-    StandardContentToolsProvider.unregister();
+    StandardContentToolsProvider.unregister(testContentToolProviderId);
     expect(UiItemsManager.hasRegisteredProviders).to.be.false;
 
   });
 
   it("should process all combinations of options", () => {
-    StandardContentToolsProvider.register(undefined, (_stageId: string, _stageUsage: string, _applicationData: any) => {
+    StandardContentToolsProvider.register(testContentToolProviderId, undefined, (_stageId: string, _stageUsage: string, _applicationData: any) => {
       return true;
     });
     expect(UiItemsManager.hasRegisteredProviders).to.be.true;
@@ -279,17 +279,17 @@ describe("StandardContentToolsProvider", () => {
       ToolbarOrientation.Vertical, undefined);
     UiItemsManager.getStatusBarItems("test", StageUsage.General);
 
-    StandardContentToolsProvider.unregister();
+    StandardContentToolsProvider.unregister(testContentToolProviderId);
 
     testToolsArray.forEach((defaultTools: DefaultContentTools) => {
-      StandardContentToolsProvider.register(defaultTools);
+      StandardContentToolsProvider.register(testContentToolProviderId, defaultTools);
       expect(UiItemsManager.hasRegisteredProviders).to.be.true;
       UiItemsManager.getToolbarButtonItems("test", StageUsage.General, ToolbarUsage.ContentManipulation,
         ToolbarOrientation.Horizontal, undefined);
       UiItemsManager.getToolbarButtonItems("test", StageUsage.General, ToolbarUsage.ContentManipulation,
         ToolbarOrientation.Vertical, undefined);
       UiItemsManager.getStatusBarItems("test", StageUsage.General);
-      StandardContentToolsProvider.unregister();
+      StandardContentToolsProvider.unregister(testContentToolProviderId);
       expect(UiItemsManager.hasRegisteredProviders).to.be.false;
     });
   });

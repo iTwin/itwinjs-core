@@ -5,7 +5,6 @@
 
 import { expect } from "chai";
 import { ByteStream } from "@itwin/core-bentley";
-import { Range3d, Range3dProps } from "@itwin/core-geometry";
 import {
   BatchType, computeChildTileProps, computeTileChordTolerance, ContentIdProvider, defaultTileOptions, ImdlHeader, iModelTileTreeIdToString,
   TileMetadata, TileProps, TileTreeMetadata,
@@ -13,6 +12,8 @@ import {
 import {
   GeometricModelState, IModelApp, IModelConnection, IModelTile, IModelTileTree, SnapshotConnection, Tile, TileTreeLoadStatus,
 } from "@itwin/core-frontend";
+import { Range3d, Range3dProps } from "@itwin/core-geometry";
+import { TestUtility } from "../../TestUtility";
 import { fakeViewState } from "./TileIO.test";
 
 describe("Tile tolerance", () => {
@@ -22,7 +23,7 @@ describe("Tile tolerance", () => {
   const treeId = iModelTileTreeIdToString(modelId, { type: BatchType.Primary, edgesRequired: false }, defaultTileOptions);
 
   before(async () => {
-    await IModelApp.startup({ tileAdmin: { minimumSpatialTolerance } });
+    await TestUtility.startFrontend({ tileAdmin: { minimumSpatialTolerance } });
     imodel = await SnapshotConnection.openFile("CompatibilityTestSeed.bim");
   });
 
@@ -30,7 +31,7 @@ describe("Tile tolerance", () => {
     if (imodel)
       await imodel.close();
 
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   function makeTile(props: TileProps): TileMetadata {

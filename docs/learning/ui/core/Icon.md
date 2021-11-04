@@ -80,37 +80,10 @@ import { SvgPath } from "@itwin/core-react";
 
 A few entries are required in the package,.json and tsconfig.json to support SVG files.
 
-In package.json, add a dependency on `svg-sprite-loader` to load the SVG files:
+In package.json file make sure svg assets are copied along with other assets.  An example entry is shown below.
 
 ```json
-"dependencies": {
-. . .
-    "svg-sprite-loader": "^3.8.0"
-```
-
-In package.json, add a `sourceResources` entry in the `iModelJS.buildModule` section
-to copy SVG files to the `lib` directory:
-
-```json
-  "iModelJs": {
-    "buildModule": {
-      "type": "application",
-      "sourceResources": [
-. . .
-        {
-          "source": "./src/**/*.svg",
-          "dest": "./lib"
-        },
-```
-
-In tsconfig.json, add a `types` entry for `@bentley/webpack-tools` in the `compilerOptions` section to support SVG files:
-
-```json
-"compilerOptions": {
-. . .
-    "types": [
-      "@bentley/webpack-tools"
-    ]
+    "copy:assets": "cpx \"./src/**/*.{*css,json,svg}\" \"./lib\" && cpx \"./src/public/**/*\" ./lib/public/",
 ```
 
 ## API Reference

@@ -14,7 +14,7 @@ import { Localization, RpcActivity } from "@itwin/core-common";
 import { IModelApp, IModelConnection, SnapMode, ViewState } from "@itwin/core-frontend";
 import { Presentation } from "@itwin/presentation-frontend";
 import { TelemetryEvent } from "@bentley/telemetry-client";
-import { getClassName, UiAbstract, UiError } from "@itwin/appui-abstract";
+import { getClassName, UiAdmin, UiError } from "@itwin/appui-abstract";
 import { LocalSettingsStorage, SettingsManager, UiEvent, UiSettingsStorage } from "@itwin/core-react";
 import { UiIModelComponents } from "@itwin/imodel-components-react";
 import { BackstageManager } from "./backstage/BackstageManager";
@@ -37,6 +37,11 @@ import { WidgetManager } from "./widgets/WidgetManager";
 import { FrontstageManager } from "./frontstage/FrontstageManager";
 
 // cSpell:ignore Mobi
+
+/** Defined that available Ui Versions. It is recommended to always use the latest version available.
+ * @public
+ */
+export type FrameworkVersionId = "1" | "2";
 
 /** Interface to be implemented but any classes that wants to load their user settings when the UiSetting storage class is set.
  * @public
@@ -64,8 +69,8 @@ export class UiVisibilityChangedEvent extends UiEvent<UiVisibilityEventArgs> { }
  * @internal
  */
 export interface FrameworkVersionChangedEventArgs {
-  oldVersion: string;
-  version: string;
+  oldVersion: FrameworkVersionId;
+  version: FrameworkVersionId;
 }
 
 /** FrameworkVersion Changed Event class.
@@ -87,13 +92,12 @@ export interface TrackingTime {
  */
 export class UiFramework {
   private static _initialized = false;
-  private static _localization?: Localization;
   private static _store?: Store<any>;
   private static _complaint = "UiFramework not initialized";
   private static _frameworkStateKeyInStore: string = "frameworkState";  // default name
   private static _backstageManager?: BackstageManager;
   private static _widgetManager?: WidgetManager;
-  private static _uiVersion = "";
+  private static _uiVersion: FrameworkVersionId = "2";
   private static _hideIsolateEmphasizeActionHandler?: HideIsolateEmphasizeActionHandler;
   private static _uiSettingsStorage: UiSettingsStorage = new LocalSettingsStorage(); // this provides a default storage location for settings
   private static _settingsManager?: SettingsManager;
@@ -124,44 +128,40 @@ export class UiFramework {
    */
   public static readonly onUiVisibilityChanged = new UiVisibilityChangedEvent();
 
-  /** Get FrameworkVersion Changed event.
-   * @internal
-   */
-  public static readonly onFrameworkVersionChangedEvent = new FrameworkVersionChangedEvent();
-
   /**
-   * Called by the application to initialize the UiFramework. Also initializes UIIModelComponents, UiComponents, UiCore and UiAbstract.
+   * Called by the application to initialize the UiFramework. Also initializes UIIModelComponents, UiComponents, UiCore.
    * @param store The single Redux store created by the host application. If this is `undefined` then it is assumed that the [[StateManager]] is being used to provide the Redux store.
-   * @param localization The internationalization service created by the application. Defaults to IModelApp.localization.
    * @param frameworkStateKey The name of the key used by the app when adding the UiFramework state into the Redux store. If not defined "frameworkState" is assumed. This value is ignored if [[StateManager]] is being used. The StateManager use "frameworkState".
    */
-  public static async initialize(store: Store<any> | undefined, localization?: Localization, frameworkStateKey?: string): Promise<void> {
-    return this.initializeEx(store, localization, frameworkStateKey);
+  public static async initialize(store: Store<any> | undefined, frameworkStateKey?: string): Promise<void> {
+    return this.initializeEx(store, frameworkStateKey);
   }
 
   /**
-   * Called by the application to initialize the UiFramework. Also initializes UIIModelComponents, UiComponents, UiCore and UiAbstract.
+   * Called by the application to initialize the UiFramework. Also initializes UIIModelComponents, UiComponents, UiCore.
    * @param store The single Redux store created by the host application. If this is `undefined` then it is assumed that the [[StateManager]] is being used to provide the Redux store.
-   * @param localization The internationalization service created by the application. Defaults to IModelApp.localization.
    * @param frameworkStateKey The name of the key used by the app when adding the UiFramework state into the Redux store. If not defined "frameworkState" is assumed. This value is ignored if [[StateManager]] is being used. The StateManager use "frameworkState".
    *
    * @internal
    */
-  public static async initializeEx(store: Store<any> | undefined, localization?: Localization, frameworkStateKey?: string): Promise<void> {
+  public static async initializeEx(store: Store<any> | undefined, frameworkStateKey?: string): Promise<void> {
     if (UiFramework._initialized) {
       Logger.logInfo(UiFramework.loggerCategory(UiFramework), `UiFramework.initialize already called`);
       return;
     }
 
-    // if store is undefined then the StateManager class should have been initialized by parent app and the apps default set of reducer registered with it.
+    /* if store is undefined then the StateManager class should have been initialized by parent app and the apps default set of reducers registered with it.
+      If the app has no reducers to add and does not initialize a StateManager then just initialize the StateManager with the default framework reducer now */
+    if (undefined === store && !StateManager.isInitialized(true))
+      new StateManager();
+
     UiFramework._store = store;
-    UiFramework._localization = localization || IModelApp.localization;
     // ignore setting _frameworkStateKeyInStore if not using store
     if (frameworkStateKey && store)
       UiFramework._frameworkStateKeyInStore = frameworkStateKey;
 
     // set up namespace and register all tools from package
-    const frameworkNamespace = UiFramework._localization.registerNamespace(UiFramework.localizationNamespace);
+    const frameworkNamespace = IModelApp.localization?.registerNamespace(UiFramework.localizationNamespace);
     [
       restoreLayoutTools,
       keyinPaletteTools,
@@ -173,17 +173,15 @@ export class UiFramework {
     UiFramework._hideIsolateEmphasizeActionHandler = new HideIsolateEmphasizeManager();  // this allows user to override the default HideIsolateEmphasizeManager implementation.
     UiFramework._widgetManager = new WidgetManager();
 
-    UiFramework.onFrameworkVersionChangedEvent.addListener(UiFramework._handleFrameworkVersionChangedEvent);
-
     // Initialize ui-imodel-components, ui-components, ui-core & ui-abstract
-    await UiIModelComponents.initialize(UiFramework._localization);
+    await UiIModelComponents.initialize();
 
     UiFramework.settingsManager.onSettingsProvidersChanged.addListener(() => {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.SettingsProvidersChanged);
     });
 
-    // Initialize the MessagePresenter interface in UiAbstract for Editor notifications
-    UiAbstract.messagePresenter = IModelApp.notifications;
+    // Initialize the MessagePresenter interface in UiAdmin for Editor notifications
+    UiAdmin.messagePresenter = IModelApp.notifications;
 
     UiFramework._initialized = true;
 
@@ -199,18 +197,17 @@ export class UiFramework {
   public static terminate() {
     UiFramework._store = undefined;
     UiFramework._frameworkStateKeyInStore = "frameworkState";
-
-    if (UiFramework._localization)
-      UiFramework._localization.unregisterNamespace(UiFramework.localizationNamespace);
-    UiFramework._localization = undefined;
+    if (StateManager.isInitialized(true))
+      StateManager.clearStore();
+    // istanbul ignore next
+    IModelApp.localization?.unregisterNamespace(UiFramework.localizationNamespace);
     UiFramework._backstageManager = undefined;
     UiFramework._widgetManager = undefined;
     UiFramework._hideIsolateEmphasizeActionHandler = undefined;
     UiFramework._settingsManager = undefined;
 
-    UiFramework.onFrameworkVersionChangedEvent.removeListener(UiFramework._handleFrameworkVersionChangedEvent);
-
     UiIModelComponents.terminate();
+    UiShowHideManager.terminate();
     UiFramework._initialized = false;
   }
 
@@ -249,17 +246,20 @@ export class UiFramework {
 
     // istanbul ignore else
     if (!StateManager.isInitialized(true))
-      throw new UiError(UiFramework.loggerCategory(this), UiFramework._complaint);
+      throw new UiError(UiFramework.loggerCategory(this), `Error trying to access redux store before either store or StateManager has been initialized.`);
 
     // istanbul ignore next
     return StateManager.store;
   }
 
-  /** The internationalization service created by the app. */
+  /** The internationalization service created by the app.
+   * @internal
+  */
   public static get localization(): Localization {
-    if (!UiFramework._localization)
-      throw new UiError(UiFramework.loggerCategory(this), UiFramework._complaint);
-    return UiFramework._localization;
+    // istanbul ignore next
+    if (!IModelApp.localization)
+      throw new UiError(UiFramework.loggerCategory(this), `IModelApp.localization has not been defined.`);
+    return IModelApp.localization;
   }
 
   /** The internationalization service namespace. */
@@ -304,7 +304,7 @@ export class UiFramework {
    * @internal
    */
   public static translate(key: string | string[]): string {
-    return UiFramework.localization.getLocalizedStringWithNamespace(UiFramework.localizationNamespace, key);
+    return IModelApp.localization.getLocalizedStringWithNamespace(UiFramework.localizationNamespace, key);
   }
 
   /** @internal */
@@ -378,7 +378,7 @@ export class UiFramework {
     const oldConnection = UiFramework.getIModelConnection();
     if (oldConnection !== iModelConnection) {
       if (oldConnection?.iModelId)
-        FrontstageManager.clearFrontstageDefsForIModelId(oldConnection?.iModelId);
+        FrontstageManager.clearFrontstageDefsForIModelId(oldConnection.iModelId);
       oldConnection && undefined === iModelConnection && SyncUiEventDispatcher.clearConnectionEvents(oldConnection);
       iModelConnection && SyncUiEventDispatcher.initializeConnectionEvents(iModelConnection);
       UiFramework.dispatchActionToStore(SessionStateActionId.SetIModelConnection, iModelConnection, immediateSync);
@@ -496,11 +496,11 @@ export class UiFramework {
   /** Returns the Ui Version.
    * @public
    */
-  public static get uiVersion(): string {
+  public static get uiVersion(): FrameworkVersionId {
     return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.frameworkVersion : this._uiVersion;
   }
 
-  public static setUiVersion(version: string) {
+  public static setUiVersion(version: FrameworkVersionId) {
     if (UiFramework.uiVersion === version)
       return;
 
@@ -533,7 +533,7 @@ export class UiFramework {
       };
       const telemetryEvent = new TelemetryEvent(eventName, eventId, iTwinId, iModeId, changeSetId, time, additionalProperties);
       await IModelApp.telemetry.postTelemetry(activity, telemetryEvent);
-    } catch {}
+    } catch { }
   }
   private static _handleFrameworkVersionChangedEvent = (args: FrameworkVersionChangedEventArgs) => {
     // Log Ui Version used

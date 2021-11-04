@@ -74,8 +74,8 @@ export class SliderEditor extends React.PureComponent<PropertyEditorProps, Slide
   public get hasFocus(): boolean {
     let containsFocus = false;
     // istanbul ignore else
-    if (this._divElement.current)
-      containsFocus = this._divElement.current.contains(document.activeElement);
+    if (this.htmlElement)
+      containsFocus = this.htmlElement.contains(document.activeElement);
     return containsFocus;
   }
 

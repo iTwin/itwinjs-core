@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { CheckpointConnection, IModelApp, SheetViewState } from "@itwin/core-frontend";
+import { CheckpointConnection, SheetViewState } from "@itwin/core-frontend";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { testOnScreenViewport } from "../TestViewport";
-import { TestUtility } from "./TestUtility";
+import { TestUtility } from "../TestUtility";
 
 describe("Sheet views (#integration)", () => {
   let imodel: CheckpointConnection;
@@ -14,7 +14,7 @@ describe("Sheet views (#integration)", () => {
   const attachmentCategoryId = "0x93";
 
   before(async () => {
-    await IModelApp.startup(TestUtility.iModelAppOptions);
+    await TestUtility.startFrontend(TestUtility.iModelAppOptions);
     await TestUtility.initialize(TestUsers.regular);
 
     const iTwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
@@ -26,7 +26,7 @@ describe("Sheet views (#integration)", () => {
     if (imodel)
       await imodel.close();
 
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("loads view attachment info", async () => {

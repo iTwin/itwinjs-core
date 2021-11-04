@@ -6,7 +6,6 @@ export * from "./Client";
 export * from "./ITwinClientLoggerCategory";
 export * from "./FileHandler";
 export * from "./Request";
-export * from "./Token";
 export * from "./ImsAuthorizationClient";
 
 /** @docs-package-description

@@ -4,7 +4,7 @@ The [ChildWindowManager]($appui-react) class, available via property `UiFramewor
 
 ## Popup URL
 
-There are two options when opening a child popup window, the first is to allow ui-framework to open a blank URL and seed the HTML document with a div that can be targeted by React. Below is an example of code that would open a popup window using a blank URL.
+There are two options when opening a child popup window, the first is to allow appui-react to open a blank URL and seed the HTML document with a div that can be targeted by React. Below is an example of code that would open a popup window using a blank URL.
 
 ```tsx
   const childWindowId="popout-widget-1";

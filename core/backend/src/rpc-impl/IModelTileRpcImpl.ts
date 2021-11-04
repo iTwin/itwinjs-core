@@ -31,7 +31,7 @@ function generateTileRequestKey(props: TileRequestProps): string {
     key: token.key,
     iTwinId: token.iTwinId,
     iModelId: token.iModelId,
-    changeSetId: token.changeset?.id,
+    changesetId: token.changeset?.id,
   })}:${props.treeId}`;
 }
 
@@ -111,6 +111,10 @@ class RequestTileTreePropsMemoizer extends TileRequestMemoizer<IModelTileTreePro
 
   private constructor() {
     super(getTileTreeProps, generateTileRequestKey);
+    IModelHost.onBeforeShutdown.addOnce(() => {
+      this.dispose();
+      RequestTileTreePropsMemoizer._instance = undefined;
+    });
   }
 
   public static async perform(props: TileRequestProps): Promise<IModelTileTreeProps> {
@@ -162,6 +166,10 @@ class RequestTileContentMemoizer extends TileRequestMemoizer<TileContentSource, 
 
   private constructor() {
     super(getTileContent, generateTileContentKey);
+    IModelHost.onBeforeShutdown.addOnce(() => {
+      this.dispose();
+      RequestTileContentMemoizer._instance = undefined;
+    });
   }
 
   public static get instance() {

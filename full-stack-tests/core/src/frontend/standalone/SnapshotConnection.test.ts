@@ -5,15 +5,16 @@
 import { assert } from "chai";
 import { Guid } from "@itwin/core-bentley";
 import { IModel } from "@itwin/core-common";
-import { IModelApp, SnapshotConnection } from "@itwin/core-frontend";
+import { SnapshotConnection } from "@itwin/core-frontend";
+import { TestUtility } from "../TestUtility";
 
 describe("SnapshotConnection", () => {
   before(async () => {
-    await IModelApp.startup();
+    await TestUtility.startFrontend();
   });
 
   after(async () => {
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("SnapshotConnection properties", async () => {

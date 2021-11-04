@@ -4,9 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 export * from "./HubMock";
 export * from "./IModelTestUtils";
-export * from "./integration/HubUtility";
-export * from "./integration/TestChangeSetUtility";
 export * from "./KnownTestLocations";
 export * from "./LocalHub";
 export * from "./RevisionUtility";
-
+export * from "./TestChangeSetUtility";
+export * from "./TestUtils";

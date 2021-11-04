@@ -42,24 +42,25 @@ export interface DefaultStatusbarItems {
  * @public
  */
 export class StandardStatusbarItemsProvider implements UiItemsProvider {
-  public static providerId = "uifw:StandardStatusbarItemsProvider";
-  public readonly id = StandardStatusbarItemsProvider.providerId;
+  constructor(private _providerId: string, private _defaultItems?: DefaultStatusbarItems, private _isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean) { }
 
-  constructor(private _defaultItems?: DefaultStatusbarItems, private _isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean) { }
+  public get id(): string { return this._providerId; }
 
   /**
   * static function to register the StandardStatusbarItemsProvider
+  * @param providerId - unique identifier for this instance of the provider. This is required in case separate packages want
+  * to set up custom stage with their own subset of standard status bar items.
   * @param defaultItems - if undefined all available tools are provided to stage. If defined only those
   * specific tool buttons are shown.
   * @param isSupportedStage - optional function that will be called to determine if tools should be added to current stage. If not set and
   * the current stage's `usage` is set to `StageUsage.General` then the provider will add items to frontstage.
   */
-  public static register(defaultItems?: DefaultStatusbarItems, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean) {
-    UiItemsManager.register(new StandardStatusbarItemsProvider(defaultItems, isSupportedStage));
+  public static register(providerId: string, defaultItems?: DefaultStatusbarItems, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean) {
+    UiItemsManager.register(new StandardStatusbarItemsProvider(providerId, defaultItems, isSupportedStage));
   }
 
-  public static unregister() {
-    UiItemsManager.unregister(StandardStatusbarItemsProvider.providerId);
+  public static unregister(providerId: string) {
+    UiItemsManager.unregister(providerId);
   }
 
   public provideStatusBarItems(stageId: string, stageUsage: string, stageAppData?: any): CommonStatusBarItem[] {

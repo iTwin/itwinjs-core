@@ -8,7 +8,7 @@ Settings that are set up to be stored between "session" need to be stored and re
 
 If an application wants to store settings only for the current session [SessionSettingsStorage]($core-react) is available.
 
-An application can choose to create and register their own class that implements the [UiSettingsStorage](ui-core) interface, if a custom storage location is desired for UI Settings.
+An application can choose to create and register their own class that implements the [UiSettingsStorage]($core-react) interface, if a custom storage location is desired for UI Settings.
 
 ### Defining which storage to use
 
@@ -27,18 +27,26 @@ Typically in the index.tsx file of an IModelApp that uses `App UI` user interfac
 The component [UiSettingsProvider]($appui-react) can be added into the component tree to provide the storage object via React context. See hook [useUiSettingsStorageContext]($appui-react). Below is an example of how to wrap the [ConfigurableUiContent]($appui-react) element so that the context is available to all App UI components.
 
 ```tsx
-<FrameworkVersion version="2">
-  <UiSettingsProvider settingsStorage={uiSettingsStorage}>
-    <ConfigurableUiContent
-      appBackstage={<AppBackstageComposer />}
-    />
-  </UiSettingsProvider>
-</FrameworkVersion>
+<Provider store={MyIModelApp.store} >
+  <ThemeManager>
+    <SafeAreaContext.Provider value={SafeAreaInsets.All}>
+      <ToolbarDragInteractionContext.Provider value={false}>
+        <FrameworkVersion>
+          <UiSettingsProvider settingsStorage={uiSettingsStorage}>
+            <ConfigurableUiContent
+              appBackstage={<AppBackstageComposer />}
+            />
+          </UiSettingsProvider>
+        </FrameworkVersion>
+      </ToolbarDragInteractionContext.Provider>
+    </SafeAreaContext.Provider>
+  <ThemeManager>
+</Provider>
 ```
 
 ## UserSettingsProvider
 
-The [UserSettingsProvider]($appui-react) interface can be implemented by classes that want to restore their saved settings when the method [UiFramework.setUiSettingsStorage]($appui-react) is called to set the UiSettingsStorage. A `UserSettingsProvider` class must be registered by calling [UiFramework.registerUserSettingsProvider] and supplying the implementing class instance. The `UserSettingsProvider` interface only requires that the provider define a unique `providerId` that is used to ensure the provider is only registered once. It must also implement the method `loadUserSettings(storage: UiSettingsStorage)` to asynchronously load its settings from [UiSettingsStorage](ui-core).
+The [UserSettingsProvider]($appui-react) interface can be implemented by classes that want to restore their saved settings when the method [UiFramework.setUiSettingsStorage]($appui-react) is called to set the UiSettingsStorage. A `UserSettingsProvider` class must be registered by calling [UiFramework.registerUserSettingsProvider] and supplying the implementing class instance. The `UserSettingsProvider` interface only requires that the provider define a unique `providerId` that is used to ensure the provider is only registered once. It must also implement the method `loadUserSettings(storage: UiSettingsStorage)` to asynchronously load its settings from [UiSettingsStorage]($core-react).
 
 ### AppUiSettings
 

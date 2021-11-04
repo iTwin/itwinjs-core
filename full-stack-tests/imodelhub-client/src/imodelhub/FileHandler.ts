@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AzureFileHandler, LocalhostHandler, StorageServiceFileHandler, UrlFileHandler } from "@bentley/backend-itwin-client";
+import { AzureFileHandler, LocalhostHandler, StorageServiceFileHandler, UrlFileHandler } from "@bentley/imodelhub-client/lib/cjs/imodelhub-node";
 import { TestConfig } from "../TestConfig";
 
 export function createFileHandler(useDownloadBuffer?: boolean) {

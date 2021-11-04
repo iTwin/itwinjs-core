@@ -106,7 +106,7 @@ export interface LocalBriefcaseProps {
   /** The briefcaseId. */
   readonly briefcaseId: BriefcaseId;
 
-  /** The current changeSetId.
+  /** The current changesetId.
    * @note ChangeSet Ids are string hash values based on the ChangeSet's content and parent.
    */
   readonly changeset: ChangesetIdWithIndex;

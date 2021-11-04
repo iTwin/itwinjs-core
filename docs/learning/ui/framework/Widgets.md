@@ -130,7 +130,7 @@ function SampleToolWidget () {
   );
   ```
 
-There is an extensible Tool Widget named [BasicToolWidget]($appui-react) in the ui-framework package. It supports the specification of additional horizontal and vertical toolbar items via props. It provides basic selection and measuring tools and supports the specification of additional horizontal and vertical toolbar items via props.
+There is an extensible Tool Widget named [BasicToolWidget]($appui-react) in the appui-react package. It supports the specification of additional horizontal and vertical toolbar items via props. It provides basic selection and measuring tools and supports the specification of additional horizontal and vertical toolbar items via props.
 
 ## Navigation Widget
 
@@ -161,7 +161,7 @@ function SampleNavigationWidget () {
   );
 ```
 
-There is an extensible Navigation Widget named [BasicNavigationWidget]($appui-react) in the ui-framework package. It provides basic view manipulation tools and supports the specification of additional horizontal and vertical toolbar items via props.
+There is an extensible Navigation Widget named [BasicNavigationWidget]($appui-react) in the appui-react package. It provides basic view manipulation tools and supports the specification of additional horizontal and vertical toolbar items via props.
 
 ## API Reference
 

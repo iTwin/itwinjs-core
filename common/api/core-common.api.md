@@ -28,7 +28,6 @@ import { GeometryQuery } from '@itwin/core-geometry';
 import { GeoServiceStatus } from '@itwin/core-bentley';
 import { GetMetaDataFunction } from '@itwin/core-bentley';
 import { GuidString } from '@itwin/core-bentley';
-import { GuidString as GuidString_2 } from '@itwin/core-bentley/src/Id';
 import { Id64 } from '@itwin/core-bentley';
 import { Id64Array } from '@itwin/core-bentley';
 import { Id64Set } from '@itwin/core-bentley';
@@ -512,6 +511,12 @@ export interface BaseReaderOptions {
     quota?: QueryQuota;
     restartToken?: string;
     usePrimaryConn?: boolean;
+}
+
+// @public
+export interface BasicPlanarClipMaskArgs {
+    invert?: boolean;
+    transparency?: number;
 }
 
 // @public
@@ -1985,6 +1990,20 @@ export interface DecorationGeometryProps {
     readonly id: Id64String;
 }
 
+// @beta
+export enum DefaultSupportedTypes {
+    // (undocumented)
+    Cesium3dTiles = "Cesium3DTiles",
+    // (undocumented)
+    OMR = "OMR",
+    // (undocumented)
+    OPC = "OPC",
+    // (undocumented)
+    RealityMesh3dTiles = "RealityMesh3DTiles",
+    // (undocumented)
+    Terrain3dTiles = "Terrain3DTiles"
+}
+
 // @internal (undocumented)
 export const defaultTileOptions: TileOptions;
 
@@ -2678,6 +2697,17 @@ export interface ElementLoadProps extends ElementLoadOptions {
 }
 
 // @public
+export interface ElementPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
+    elementIds: Iterable<Id64String>;
+    exclude?: boolean;
+    modelIds?: Iterable<Id64String>;
+    // @internal (undocumented)
+    priority?: never;
+    // @internal (undocumented)
+    subCategoryIds?: never;
+}
+
+// @public
 export interface ElementProps extends EntityProps {
     code: CodeProps;
     federationGuid?: GuidString;
@@ -3180,6 +3210,23 @@ export interface FormDataCommon {
 }
 
 // @public
+export class FresnelSettings {
+    clone(changedProps?: FresnelSettingsProps): FresnelSettings;
+    static create(intensity?: number, invert?: boolean): FresnelSettings;
+    equals(rhs: FresnelSettings): boolean;
+    static fromJSON(props?: FresnelSettingsProps): FresnelSettings;
+    readonly intensity: number;
+    readonly invert: boolean;
+    toJSON(): FresnelSettingsProps | undefined;
+}
+
+// @public
+export interface FresnelSettingsProps {
+    intensity?: number;
+    invert?: boolean;
+}
+
+// @public
 export class Frustum {
     constructor();
     clone(result?: Frustum): Frustum;
@@ -3277,7 +3324,7 @@ export interface GeoCoordinatesRequestProps {
     // (undocumented)
     iModelCoords: XYZProps[];
     // (undocumented)
-    targetDatum: string;
+    target: string;
 }
 
 // @beta
@@ -4476,7 +4523,7 @@ export interface IModelCoordinatesRequestProps {
     // (undocumented)
     geoCoords: XYZProps[];
     // (undocumented)
-    sourceDatum: string;
+    source: string;
 }
 
 // @beta (undocumented)
@@ -4625,7 +4672,7 @@ export interface IModelTileTreeProps extends TileTreeProps {
 
 // @public
 export class IModelVersion {
-    static asOfChangeSet(changeSetId: string): IModelVersion;
+    static asOfChangeSet(changesetId: string): IModelVersion;
     static first(): IModelVersion;
     static fromJSON(json: IModelVersionProps): IModelVersion;
     getAsOfChangeSet(): ChangesetId | undefined;
@@ -4903,12 +4950,12 @@ export class LightSettings {
     // (undocumented)
     equals(rhs: LightSettings): boolean;
     // (undocumented)
+    readonly fresnel: FresnelSettings;
+    // (undocumented)
     static fromJSON(props?: LightSettingsProps): LightSettings;
     // (undocumented)
     readonly hemisphere: HemisphereLights;
-    // (undocumented)
     readonly numCels: number;
-    // (undocumented)
     readonly portraitIntensity: number;
     // (undocumented)
     readonly solar: SolarLight;
@@ -4921,6 +4968,7 @@ export class LightSettings {
 // @public
 export interface LightSettingsProps {
     ambient?: AmbientLightProps;
+    fresnel?: FresnelSettingsProps;
     hemisphere?: HemisphereLightsProps;
     numCels?: number;
     portrait?: {
@@ -5355,6 +5403,19 @@ export interface ModelLoadProps {
     code?: CodeProps;
     // (undocumented)
     id?: Id64String;
+}
+
+// @public
+export interface ModelPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
+    // @internal (undocumented)
+    elementIds?: never;
+    // @internal (undocumented)
+    exclude?: never;
+    modelIds?: Iterable<Id64String>;
+    // @internal (undocumented)
+    priority?: never;
+    // @internal (undocumented)
+    subCategoryIds?: never;
 }
 
 // @public
@@ -5908,6 +5969,7 @@ export enum PlanarClipMaskPriority {
 
 // @public
 export interface PlanarClipMaskProps {
+    invert?: boolean;
     mode: PlanarClipMaskMode;
     modelIds?: CompressedId64Set;
     priority?: number;
@@ -5919,13 +5981,12 @@ export interface PlanarClipMaskProps {
 export class PlanarClipMaskSettings {
     clone(changedProps?: PlanarClipMaskProps): PlanarClipMaskSettings;
     get compressedModelIds(): CompressedId64Set | undefined;
-    static createByPriority(priority: number, transparency?: number): PlanarClipMaskSettings;
-    static createForElementsOrSubCategories(mode: PlanarClipMaskMode.IncludeElements | PlanarClipMaskMode.ExcludeElements | PlanarClipMaskMode.IncludeSubCategories, elementOrSubCategoryIds: Iterable<Id64String>, modelIds?: Iterable<Id64String>, transparency?: number): PlanarClipMaskSettings;
-    static createForModels(modelIds: Iterable<Id64String> | undefined, transparency?: number): PlanarClipMaskSettings;
+    static create(args: ModelPlanarClipMaskArgs | ElementPlanarClipMaskArgs | SubCategoryPlanarClipMaskArgs | PriorityPlanarClipMaskArgs): PlanarClipMaskSettings;
     static defaults: PlanarClipMaskSettings;
     // (undocumented)
     equals(other: PlanarClipMaskSettings): boolean;
     static fromJSON(json?: PlanarClipMaskProps): PlanarClipMaskSettings;
+    readonly invert: boolean;
     get isValid(): boolean;
     readonly mode: PlanarClipMaskMode;
     readonly modelIds?: OrderedId64Iterable;
@@ -6110,6 +6171,17 @@ export enum PrimitiveTypeCode {
     String = 2305,
     // (undocumented)
     Uninitialized = 0
+}
+
+// @public
+export interface PriorityPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
+    // @internal (undocumented)
+    elementIds?: never;
+    // @internal (undocumented)
+    exclude?: never;
+    // @internal (undocumented)
+    modelIds?: never;
+    priority: number;
 }
 
 // @beta
@@ -6546,6 +6618,26 @@ export interface ReadableFormData extends Readable {
 // @internal
 export function readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription;
 
+// @beta
+export interface RealityData {
+    // (undocumented)
+    getBlobUrl(accessToken: AccessToken, blobPath: string): Promise<URL>;
+    // (undocumented)
+    id?: string;
+    // (undocumented)
+    rootDocument?: string;
+    // (undocumented)
+    type?: string;
+}
+
+// @beta
+export interface RealityDataAccess {
+    // (undocumented)
+    getRealityData: (accessToken: AccessToken, iTwinId: string | undefined, realityDataId: string) => Promise<RealityData>;
+    // (undocumented)
+    getRealityDataUrl: (iTwinId: string | undefined, realityDataId: string) => Promise<string>;
+}
+
 // @alpha
 export enum RealityDataFormat {
     OPC = "OPC",
@@ -6556,6 +6648,7 @@ export enum RealityDataFormat {
 export enum RealityDataProvider {
     CesiumIonAsset = "CesiumIonAsset",
     ContextShare = "ContextShare",
+    OrbitGtBlob = "OrbitGtBlob",
     TilesetUrl = "TilesetUrl"
 }
 
@@ -7262,10 +7355,10 @@ export class RpcInvocation {
     static runActivity: RpcActivityRun;
     // (undocumented)
     static sanitizeForLog(activity?: RpcActivity): {
-        activityId: string;
-        sessionId: string;
-        applicationId: string;
-        applicationVersion: string;
+        ActivityId: string;
+        SessionId: string;
+        ApplicationId: string;
+        ApplicationVersion: string;
         rpcMethod: string | undefined;
     } | undefined;
     get status(): RpcRequestStatus;
@@ -7844,7 +7937,7 @@ export class ServerTimeoutError extends ServerError {
 export interface SessionProps {
     readonly applicationId: string;
     readonly applicationVersion: string;
-    readonly sessionId: GuidString_2;
+    readonly sessionId: GuidString;
 }
 
 // @beta
@@ -8222,6 +8315,18 @@ export class SubCategoryOverride {
     toJSON(): SubCategoryAppearance.Props;
     readonly transparency?: number;
     readonly weight?: number;
+}
+
+// @public
+export interface SubCategoryPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
+    // @internal (undocumented)
+    elementIds?: never;
+    // @internal (undocumented)
+    exclude?: never;
+    modelIds?: Iterable<Id64String>;
+    // @internal (undocumented)
+    priority?: never;
+    subCategoryIds: Iterable<Id64String>;
 }
 
 // @public
@@ -8952,13 +9057,13 @@ export class VerticalCRS implements VerticalCRSProps {
     constructor(data?: VerticalCRSProps);
     equals(other: VerticalCRS): boolean;
     static fromJSON(data: VerticalCRSProps): VerticalCRS;
-    readonly id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88";
+    readonly id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88" | "LOCAL_ELLIPSOID";
     toJSON(): VerticalCRSProps;
 }
 
 // @public
 export interface VerticalCRSProps {
-    id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88";
+    id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88" | "LOCAL_ELLIPSOID";
 }
 
 // @public (undocumented)
