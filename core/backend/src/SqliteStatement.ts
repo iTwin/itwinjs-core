@@ -489,9 +489,8 @@ export class StatementCache<Stmt extends Statement> {
     }
     if (this._cache.size >= this._cache.limit) {
       const oldest = this._cache.shift();
-      if (undefined !== oldest) {
-        oldest[1].dispose();
-      }
+      assert(undefined !== oldest);
+      oldest[1].dispose();
     }
     stmt.reset();
     stmt.clearBindings();

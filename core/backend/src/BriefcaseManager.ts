@@ -345,7 +345,8 @@ export class BriefcaseManager {
     const files = IModelJsFs.readdirSync(folderPathname);
     for (const file of files) {
       const curPath = path.join(folderPathname, file);
-      const locStatus = (IModelJsFs.lstatSync(curPath)?.isDirectory) ? BriefcaseManager.deleteFolderAndContents(curPath) : BriefcaseManager.deleteFile(curPath);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const locStatus = (IModelJsFs.lstatSync(curPath)!.isDirectory) ? BriefcaseManager.deleteFolderAndContents(curPath) : BriefcaseManager.deleteFile(curPath);
       if (!locStatus)
         status = false;
     }

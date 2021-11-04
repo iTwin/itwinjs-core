@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { AccessToken, BeDuration, BentleyStatus, IModelStatus, Logger } from "@itwin/core-bentley";
+import { AccessToken, assert, BeDuration, BentleyStatus, IModelStatus, Logger } from "@itwin/core-bentley";
 import {
   BriefcaseProps, IModelConnectionProps, IModelError, IModelRpcOpenProps, IModelRpcProps, IModelVersion, RpcActivity, RpcPendingResponse, SyncMode,
 } from "@itwin/core-common";
@@ -64,8 +64,9 @@ export class RpcBriefcaseUtility {
               if (args.forceDownload)
                 throw new Error(); // causes delete below
               const db = await BriefcaseDb.open({ fileName });
-              if (undefined !== tokenProps.changeset && db.changeset.id !== tokenProps.changeset.id) {
-                const toIndex = tokenProps.changeset.index ??
+              if (db.changeset.id !== tokenProps.changeset?.id) {
+                assert(undefined !== tokenProps.changeset);
+                const toIndex = tokenProps.changeset?.index ??
                   (await IModelHost.hubAccess.getChangesetFromVersion({ accessToken, iModelId, version: IModelVersion.asOfChangeSet(tokenProps.changeset.id) })).index;
                 await BriefcaseManager.pullAndApplyChangesets(db, { accessToken, toIndex });
               }

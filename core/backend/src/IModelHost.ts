@@ -169,9 +169,8 @@ class ApplicationSettings extends BaseSettings {
   private updateDefaults() {
     const defaults: SettingDictionary = {};
     for (const [specName, val] of SettingsSpecRegistry.allSpecs) {
-      if (undefined !== val.default) {
-        defaults[specName] = val.default;
-      }
+      assert(undefined !== val.default);
+      defaults[specName] = val.default;
     }
     this.addDictionary("_default_", 0, defaults);
   }

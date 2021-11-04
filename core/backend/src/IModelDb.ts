@@ -969,14 +969,13 @@ export abstract class IModelDb extends IModel {
     if (val.error)
       throw new IModelError(val.error.status, `Error getting class meta data for: ${classFullName}`);
 
-    if (undefined !== val.result) {
-      const metaData = new EntityMetaData(JSON.parse(val.result));
-      this.classMetaDataRegistry.add(classFullName, metaData);
+    assert(undefined !== val.result);
+    const metaData = new EntityMetaData(JSON.parse(val.result));
+    this.classMetaDataRegistry.add(classFullName, metaData);
 
-      // Recursive, to make sure that base classes are cached.
-      if (metaData.baseClasses !== undefined && metaData.baseClasses.length > 0)
-        metaData.baseClasses.forEach((baseClassName: string) => this.loadMetaData(baseClassName));
-    }
+    // Recursive, to make sure that base classes are cached.
+    if (metaData.baseClasses !== undefined && metaData.baseClasses.length > 0)
+      metaData.baseClasses.forEach((baseClassName: string) => this.loadMetaData(baseClassName));
   }
 
   /** Query if this iModel contains the definition of the specified class.
