@@ -58,11 +58,12 @@ const renderingStyles: RenderingStyle[] = [{
   },
 }, {
   name: "Ambient",
+  backgroundColor: 10921638,
   environment: {
-    sky: { display: true, groundColor: 8228728, zenithColor: 16741686, nadirColor: 3880, skyColor: 16764303 },
-    ground: { display: false, elevation: -0.01, aboveColor: 32768, belowColor: 1262987 },
+    sky: { display: false },
+    ground: { display: false },
   },
-  viewflags: { ...renderingStyleViewFlags, visEdges: false, ambientOcclusion: true },
+  viewflags: { ...renderingStyleViewFlags, ambientOcclusion: true },
   lights: {
     solar: { intensity: 0 },
     portrait: { intensity: 0 },
