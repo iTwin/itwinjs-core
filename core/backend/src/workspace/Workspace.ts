@@ -200,16 +200,14 @@ export class ITwinWorkspace implements Workspace {
     const id = this.resolveContainerId(props);
     if (undefined === id)
       throw new Error(`can't resolve container name [${props}]`);
-    let container = this._containers.get(id);
-    if (container)
-      return container;
 
-    container = new WorkspaceFile(id, this);
+    const container = this._containers.get(id) ?? new WorkspaceFile(id, this);
+    if (!container.isOpen) {
+      if (cloudProps)
+        await CloudSqlite.downloadDb(container, cloudProps);
+      container.open();
+    }
 
-    if (cloudProps)
-      await CloudSqlite.downloadDb(container, cloudProps);
-
-    container.open();
     return container;
   }
 
