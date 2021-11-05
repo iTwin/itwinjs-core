@@ -27,7 +27,7 @@ export namespace CloudSqlite {
   }
 }
 
-/** @internal */
+/** @beta */
 export class CloudSqlite {
   private static containerProcess?: ChildProcess;
   private static removeShutdownListener?: VoidFunction;

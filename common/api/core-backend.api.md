@@ -14,6 +14,8 @@ import { AxisAlignedBox3d } from '@itwin/core-common';
 import { Base64EncodedString } from '@itwin/core-common';
 import { BeDuration } from '@itwin/core-bentley';
 import { BeEvent } from '@itwin/core-bentley';
+import { BlobCacheProps } from '@bentley/imodeljs-native';
+import { BlobContainerProps } from '@bentley/imodeljs-native';
 import { BRepGeometryCreate } from '@itwin/core-common';
 import { BriefcaseId } from '@itwin/core-common';
 import { BriefcaseProps } from '@itwin/core-common';
@@ -46,6 +48,7 @@ import { ColorDef } from '@itwin/core-common';
 import { CreateEmptySnapshotIModelProps } from '@itwin/core-common';
 import { CreateEmptyStandaloneIModelProps } from '@itwin/core-common';
 import { CreateSnapshotIModelProps } from '@itwin/core-common';
+import { DaemonProps } from '@bentley/imodeljs-native';
 import { DbResult } from '@itwin/core-bentley';
 import { DefinitionElementProps } from '@itwin/core-common';
 import { DisplayStyle3dProps } from '@itwin/core-common';
@@ -380,9 +383,9 @@ export class BaseSettings implements Settings {
     // (undocumented)
     dropDictionary(dictionaryName: DictionaryName, raiseEvent?: boolean): boolean;
     // (undocumented)
-    getArray<T>(name: SettingName, defaultValue: Array<T>): Array<T>;
+    getArray<T extends SettingType>(name: SettingName, defaultValue: Array<T>): Array<T>;
     // (undocumented)
-    getArray<T>(name: SettingName): Array<T> | undefined;
+    getArray<T extends SettingType>(name: SettingName): Array<T> | undefined;
     // (undocumented)
     getBoolean(name: SettingName, defaultValue: boolean): boolean;
     // (undocumented)
@@ -392,9 +395,9 @@ export class BaseSettings implements Settings {
     // (undocumented)
     getNumber(name: SettingName): number | undefined;
     // (undocumented)
-    getObject(name: SettingName, defaultValue: SettingObject): SettingObject;
+    getObject<T extends object>(name: SettingName, defaultValue: T): T;
     // (undocumented)
-    getObject(name: SettingName): SettingObject | undefined;
+    getObject<T extends object>(name: SettingName): T | undefined;
     // (undocumented)
     getSetting<T extends SettingType>(name: SettingName, defaultValue?: T): T | undefined;
     // (undocumented)
@@ -682,6 +685,52 @@ export class ClassRegistry {
     static unregisterCLass(classFullName: string): boolean;
     // @internal
     static unregisterClassesFrom(schema: typeof Schema): void;
+}
+
+// @beta (undocumented)
+export namespace CloudSqlite {
+    // (undocumented)
+    export type AccessProps = AccountProps & ContainerProps;
+    // (undocumented)
+    export type AccountProps = BlobCacheProps;
+    // (undocumented)
+    export type ContainerProps = BlobContainerProps;
+    // (undocumented)
+    export type DbAlias = string;
+    // (undocumented)
+    export interface DbProps {
+        // (undocumented)
+        dbAlias: DbAlias;
+        // (undocumented)
+        localDbName: LocalFileName;
+    }
+    // (undocumented)
+    export type Logger = (stream: NodeJS.ReadableStream) => void;
+    // (undocumented)
+    export type ProcessProps = DaemonProps & AccountProps & {
+        stdoutLogger?: Logger;
+        stderrLogger?: Logger;
+    };
+}
+
+// @beta (undocumented)
+export class CloudSqlite {
+    // (undocumented)
+    static attach(dbAlias: CloudSqlite.DbAlias, props: CloudSqlite.AccessProps): Promise<string>;
+    // (undocumented)
+    static copyDb(oldVersion: string, newVersion: string, props: CloudSqlite.AccessProps): Promise<void>;
+    // (undocumented)
+    static create(props: CloudSqlite.AccessProps): Promise<void>;
+    // (undocumented)
+    static downloadDb(wsFile: CloudSqlite.DbProps, props: CloudSqlite.AccessProps): Promise<void>;
+    // (undocumented)
+    static get isRunning(): boolean;
+    // (undocumented)
+    static startProcess(props: CloudSqlite.ProcessProps): void;
+    // (undocumented)
+    static stopProcess(): void;
+    // (undocumented)
+    static uploadDb(wsFile: CloudSqlite.DbProps, props: CloudSqlite.AccessProps): Promise<void>;
 }
 
 // @beta (undocumented)
@@ -1289,9 +1338,11 @@ export class EditableWorkspaceFile extends WorkspaceFile {
     addBlob(rscName: WorkspaceResourceName, val: Uint8Array): void;
     addFile(rscName: WorkspaceResourceName, localFileName: LocalFileName, fileExt?: string): void;
     addString(rscName: WorkspaceResourceName, val: string): void;
-    create(): void;
     // (undocumented)
-    lockContainer(): Promise<void>;
+    static cloneVersion(oldVersion: WorkspaceContainerVersion, newVersion: WorkspaceContainerVersion, cloudProps: CloudSqlite.AccessProps): Promise<void>;
+    create(cloudProps?: CloudSqlite.AccessProps): Promise<void>;
+    // (undocumented)
+    openCloudDb(props: CloudSqlite.AccessProps): Promise<void>;
     removeBlob(rscName: WorkspaceResourceName): void;
     removeFile(rscName: WorkspaceResourceName): void;
     removeString(rscName: WorkspaceResourceName): void;
@@ -1299,7 +1350,7 @@ export class EditableWorkspaceFile extends WorkspaceFile {
     updateFile(rscName: WorkspaceResourceName, localFileName: LocalFileName): void;
     updateString(rscName: WorkspaceResourceName, val: string): void;
     // (undocumented)
-    upload(): Promise<void>;
+    upload(cloudProps: CloudSqlite.AccessProps): Promise<void>;
     }
 
 // @public
@@ -2674,6 +2725,8 @@ export interface ITwinIdArg {
 export class ITwinWorkspace implements Workspace {
     constructor(settings: Settings, opts?: WorkspaceOpts);
     // (undocumented)
+    addContainer(container: WorkspaceFile): void;
+    // (undocumented)
     close(): void;
     // (undocumented)
     readonly containerDir: LocalDirName;
@@ -2682,7 +2735,7 @@ export class ITwinWorkspace implements Workspace {
     // (undocumented)
     readonly filesDir: LocalDirName;
     // (undocumented)
-    getContainer(props: WorkspaceContainerProps): Promise<WorkspaceContainer>;
+    getContainer(props: WorkspaceContainerProps, cloudProps?: CloudSqlite.AccessProps): Promise<WorkspaceContainer>;
     // (undocumented)
     loadSettingsDictionary(settingRsc: WorkspaceResourceProps, priority: SettingsPriority): Promise<void>;
     // (undocumented)
@@ -3589,18 +3642,18 @@ export interface Settings {
     // @internal (undocumented)
     close(): void;
     dropDictionary(dictionaryName: DictionaryName): void;
-    getArray<T>(settingName: SettingName, defaultValue: Array<T>): Array<T>;
+    getArray<T extends SettingType>(settingName: SettingName, defaultValue: Array<T>): Array<T>;
     // (undocumented)
-    getArray<T>(settingName: SettingName): Array<T> | undefined;
+    getArray<T extends SettingType>(settingName: SettingName): Array<T> | undefined;
     getBoolean(settingName: SettingName, defaultValue: boolean): boolean;
     // (undocumented)
     getBoolean(settingName: SettingName, defaultValue?: boolean): boolean | undefined;
     getNumber(settingName: SettingName, defaultValue: number): number;
     // (undocumented)
     getNumber(settingName: SettingName): number | undefined;
-    getObject(settingName: SettingName, defaultValue: SettingObject): SettingObject;
+    getObject<T extends object>(settingName: SettingName, defaultValue: T): T;
     // (undocumented)
-    getObject(settingName: SettingName): SettingObject | undefined;
+    getObject<T extends object>(settingName: SettingName): T | undefined;
     getSetting<T extends SettingType>(settingName: SettingName, defaultValue?: T): T | undefined;
     getString(settingName: SettingName, defaultValue: string): string;
     // (undocumented)
@@ -4362,11 +4415,13 @@ export class WebMercatorModel extends SpatialModel {
 
 // @beta
 export interface Workspace {
+    // @internal (undocumented)
+    addContainer(container: WorkspaceFile): void;
     close(): void;
     readonly containerDir: LocalDirName;
     dropContainer(container: WorkspaceContainer): void;
     readonly filesDir: LocalDirName;
-    getContainer(props: WorkspaceContainerProps): Promise<WorkspaceContainer>;
+    getContainer(props: WorkspaceContainerProps, cloudProps?: CloudSqlite.AccessProps): Promise<WorkspaceContainer>;
     loadSettingsDictionary(settingRsc: WorkspaceResourceProps, priority: SettingsPriority): Promise<void>;
     resolveContainerId(props: WorkspaceContainerProps): WorkspaceContainerId;
     readonly settings: Settings;
@@ -4376,6 +4431,7 @@ export interface Workspace {
 export interface WorkspaceContainer {
     readonly containerFilesDir: LocalDirName;
     readonly containerId: WorkspaceContainerId;
+    readonly dbAlias: WorkspaceContainerVersion;
     getBlob(rscName: WorkspaceResourceName): Uint8Array | undefined;
     getFile(rscName: WorkspaceResourceName, targetFileName?: LocalFileName): LocalFileName | undefined;
     getString(rscName: WorkspaceResourceName): string | undefined;
@@ -4395,10 +4451,11 @@ export type WorkspaceContainerProps = WorkspaceContainerName | {
 };
 
 // @beta
+export type WorkspaceContainerVersion = string;
+
+// @beta
 export class WorkspaceFile implements WorkspaceContainer {
     constructor(containerId: WorkspaceContainerId, workspace: Workspace);
-    // (undocumented)
-    attach(_token: AccessToken): Promise<void>;
     // (undocumented)
     close(): void;
     // (undocumented)
@@ -4408,7 +4465,7 @@ export class WorkspaceFile implements WorkspaceContainer {
     // (undocumented)
     protected readonly db: SQLiteDb;
     // (undocumented)
-    download(): Promise<void>;
+    dbAlias: WorkspaceContainerVersion;
     // (undocumented)
     getBlob(rscName: WorkspaceResourceName): Uint8Array | undefined;
     // (undocumented)
@@ -4418,7 +4475,7 @@ export class WorkspaceFile implements WorkspaceContainer {
     // (undocumented)
     get isOpen(): boolean;
     // (undocumented)
-    readonly localDbName: LocalDirName;
+    localDbName: LocalFileName;
     // (undocumented)
     protected static noLeadingOrTrailingSpaces(name: string, msg: string): void;
     // (undocumented)

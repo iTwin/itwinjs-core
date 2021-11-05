@@ -53,6 +53,11 @@ export type WorkspaceContainerName = string;
  */
 export type WorkspaceContainerId = string;
 
+/**
+ * The version name for a WorkpsaceContainer. More than one version of a Workspace may be stored in the same [[CloudSqlite]] container. This
+ * string identifies a specific version.
+ * @beta
+ */
 export type WorkspaceContainerVersion = string;
 
 /**
