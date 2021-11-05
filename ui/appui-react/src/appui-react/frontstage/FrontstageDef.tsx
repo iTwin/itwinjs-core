@@ -10,11 +10,11 @@
 
 import * as React from "react";
 import { IModelApp, ScreenViewport } from "@itwin/core-frontend";
-import { PointProps, StagePanelLocation, StageUsage, UiError } from "@itwin/appui-abstract";
+import { PointProps, StagePanelLocation, StageUsage, UiError, WidgetState } from "@itwin/appui-abstract";
 import { RectangleProps, SizeProps } from "@itwin/core-react";
 import {
   dockWidgetContainer, findTab, findWidget, floatWidget, isFloatingLocation, isPopoutLocation, isPopoutWidgetLocation,
-  NineZoneManagerProps, NineZoneState, popoutWidgetToChildWindow, setFloatingWidgetContainerBounds,
+  NineZoneManagerProps, NineZoneState, PanelSide, PanelState, popoutWidgetToChildWindow, setFloatingWidgetContainerBounds,
 } from "@itwin/appui-layout-react";
 import { ContentControl } from "../content/ContentControl";
 import { ContentGroup, ContentGroupProvider } from "../content/ContentGroup";
@@ -22,7 +22,7 @@ import { ContentLayoutDef } from "../content/ContentLayout";
 import { ContentLayoutManager } from "../content/ContentLayoutManager";
 import { ContentViewManager } from "../content/ContentViewManager";
 import { ToolItemDef } from "../shared/ToolItemDef";
-import { StagePanelDef } from "../stagepanels/StagePanelDef";
+import { StagePanelDef, StagePanelState, toPanelSide } from "../stagepanels/StagePanelDef";
 import { UiFramework } from "../UiFramework";
 import { WidgetControl } from "../widgets/WidgetControl";
 import { WidgetDef } from "../widgets/WidgetDef";
@@ -37,6 +37,7 @@ import { PopoutWidget } from "../childwindow/PopoutWidget";
 import { setImmediate } from "timers";
 import { saveFrontstagePopoutWidgetSizeAndPosition } from "../widget-panels/Frontstage";
 import { BentleyStatus } from "@itwin/core-bentley";
+import { getStagePanelType } from "../stagepanels/StagePanel";
 
 /** @internal */
 export interface FrontstageEventArgs {
@@ -555,6 +556,41 @@ export class FrontstageDef {
       }
     }
     FrontstageManager.onFrontstageRestoreLayoutEvent.emit({ frontstageDef: this });
+  }
+
+  /** Used only in UI 2.0 to determine WidgetState from NinezoneState
+   *  @internal
+   */
+  public getWidgetCurrentState(widgetDef: WidgetDef): WidgetState | undefined {
+    // istanbul ignore else
+    if (this.nineZoneState) {
+      const location = findTab(this.nineZoneState, widgetDef.id);
+      if (!location)
+        return WidgetState.Hidden;
+
+      const widgetContainer = this.nineZoneState.widgets[location.widgetId];
+      if (widgetDef.id !== widgetContainer.activeTabId)
+        return WidgetState.Open;
+      else
+        return WidgetState.Closed;
+    }
+    return widgetDef.defaultState;
+  }
+
+  /** Used only in UI 2.0 to determine StagePanelState and size from NinezoneState
+   *  @internal
+   */
+  public getPanelCurrentState(panelDef: StagePanelDef): [StagePanelState, number] {
+    // istanbul ignore else
+    if (this.nineZoneState) {
+      const side = toPanelSide(panelDef.location);
+      const panel = this.nineZoneState.panels[side];
+      if (panel) {
+        return [panel.collapsed ? StagePanelState.Minimized : StagePanelState.Open, panel.size ?? 0];
+      }
+      return [StagePanelState.Off, 0];
+    }
+    return [panelDef.defaultState, panelDef.defaultSize ?? 0];
   }
 
   public isPopoutWidget(widgetId: string) {

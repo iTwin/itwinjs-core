@@ -18,7 +18,7 @@ import {
   FrontstageManager, FrontstageProvider, getWidgetId, initializeNineZoneState, initializePanel, isFrontstageStateSettingResult, ModalFrontstageComposer,
   packNineZoneState, restoreNineZoneState, setWidgetState, showWidget, StagePanel, StagePanelDef, StagePanelState, StagePanelZoneDef, StagePanelZonesDef,
   UiSettingsProvider, useActiveModalFrontstageInfo, useFrontstageManager, useNineZoneDispatch, useNineZoneState, useSavedFrontstageState,
-  useSaveFrontstageSettings, useSyncDefinitions, useUpdateNineZoneSize, Widget, WidgetDef, WidgetPanelsFrontstage, WidgetPanelsFrontstageState, Zone, ZoneDef,
+  useSaveFrontstageSettings, useUpdateNineZoneSize, Widget, WidgetDef, WidgetPanelsFrontstage, WidgetPanelsFrontstageState, Zone, ZoneDef,
 } from "../../appui-react";
 import TestUtils, { mount, storageMock, stubRaf, UiSettingsStub } from "../TestUtils";
 import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
@@ -866,6 +866,7 @@ describe("Frontstage local storage wrapper", () => {
       });
     });
 
+    /* ---
     describe("useSyncDefinitions", () => {
       it("should set panel widget state to Open", () => {
         const frontstageDef = new FrontstageDef();
@@ -973,7 +974,7 @@ describe("Frontstage local storage wrapper", () => {
         spy.calledOnceWithExactly(WidgetState.Closed).should.true;
       });
     });
-
+*/
     describe("initializeNineZoneState", () => {
       it("should initialize widgets", () => {
         const frontstageDef = new FrontstageDef();

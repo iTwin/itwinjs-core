@@ -79,7 +79,17 @@ export class StagePanelDef extends WidgetHost {
   public get minSize() { return this._minSize; }
 
   /** Default size of the panel */
-  public get size() { return this._size; }
+  public get size() {
+    if ("1" === UiFramework.uiVersion)
+      return this._size;
+
+    if (FrontstageManager.activeFrontstageDef) {
+      const [_, size] = FrontstageManager.activeFrontstageDef?.getPanelCurrentState(this);
+      return size;
+    }
+
+    return this._defaultSize;
+  }
 
   public set size(size) {
     if (this._size === size)
@@ -119,7 +129,14 @@ export class StagePanelDef extends WidgetHost {
 
   /** Panel state. Defaults to PanelState.Open. */
   public get panelState() {
-    return this._panelState;
+    if ("1" === UiFramework.uiVersion)
+      return this._panelState;
+
+    if (FrontstageManager.activeFrontstageDef) {
+      const [state] = FrontstageManager.activeFrontstageDef?.getPanelCurrentState(this);
+      return state;
+    }
+    return this.defaultState;
   }
 
   public set panelState(panelState: StagePanelState) {
