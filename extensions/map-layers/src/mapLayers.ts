@@ -2,20 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelApp, MapLayerSources, NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
+import { IModelApp, MapLayerSources, NotifyMessageDetails, OutputMessagePriority, UserPreferencesAccess } from "@itwin/core-frontend";
 import { MapLayersUiItemsProvider, MapLayersWidgetControl } from "./ui/MapLayersUiItemsProvider";
 import { UiItemsManager } from "@itwin/appui-abstract";
 import { ConfigurableUiManager } from "@itwin/appui-react";
-import { BentleyError } from "@itwin/core-bentley";
 import { MapLayerPreferences } from "./MapLayerPreferences";
-import { ITwinPreferencesAccess } from "./ui/Interfaces";
 
-/**
- * MapLayersApi is use when the package is used as a dependency to another app and not used as an extension.
+/** MapLayersUI is use when the package is used as a dependency to another app.
  * '''ts
- *  // if registerItemsProvider is false the MapLayersWidgetControl control will be registered with appui-react's ConfigurableUiManager
- *  // so it can be explicitly added to a stage via a FrontstageDef.
- *  await MapLayersUI.initialize (registerItemsProvider);
+ *  await MapLayersUI.initialize(registerItemsProvider);
  * '''
  * @beta
  */
@@ -23,18 +18,23 @@ export class MapLayersUI {
   private static _defaultNs = "mapLayers";
   private static _uiItemsProvider: MapLayersUiItemsProvider;
 
-  public static iTwinAccess: ITwinPreferencesAccess;
+  private static _iTwinConfig?: UserPreferencesAccess;
+  public static get iTwinConfig(): UserPreferencesAccess | undefined { return this._iTwinConfig; }
 
-  /** Used to initialize the MapLayersAPI when used as a package. If `registerItemsProvider` is true then the
-   * UiItemsProvider will automatically insert the UI items into the host applications UI. If it is false then
-   * explicitly add widget definition to a specific FrontStage definition using the following syntax.
-   * ``` tsx
-   * <Widget id={MapLayersWidgetControl.id} label={MapLayersWidgetControl.label} control={MapLayersWidgetControl}
+  /** Used to initialize the Map Layers.
+   *
+   * If `registerItemsProvider` is true, the UiItemsProvider will automatically insert the UI items into the host applications UI.
+   * If it is false, explicitly add widget definition to a specific FrontStage definition using the following syntax.
+   *
+   *   ```tsx
+   *   <Widget id={MapLayersWidgetControl.id} label={MapLayersWidgetControl.label} control={MapLayersWidgetControl}
    *   iconSpec={MapLayersWidgetControl.iconSpec} />,
-   * ```
+   *   ```
+   *
+   * If an iTwinConfig is provided, it will be used y
    */
-  public static async initialize(registerItemsProvider = true, iTwinConfig?: ITwinPreferencesAccess): Promise<void> {
-    MapLayersUI.iTwinAccess = iTwinConfig!;
+  public static async initialize(registerItemsProvider = true, iTwinConfig?: UserPreferencesAccess): Promise<void> {
+    MapLayersUI._iTwinConfig = iTwinConfig;
 
     // if (iModel && iModel.iTwinId && iModel.iModelId) {
     //   try {

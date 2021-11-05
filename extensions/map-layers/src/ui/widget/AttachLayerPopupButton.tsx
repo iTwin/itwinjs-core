@@ -12,7 +12,7 @@ import { MapUrlDialog } from "./MapUrlDialog";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import { ConfirmMessageDialog } from "./ConfirmMessageDialog";
 import { Button, Input } from "@itwin/itwinui-react";
-import { MapLayersUI } from "../../mapLayers";
+import { MapLayerPreferences } from "../../MapLayerPreferences";
 
 // cSpell:ignore droppable Sublayer
 
@@ -199,7 +199,7 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
     const layerName = source.name;
     if (!!iTwinId && !!iModelId) {
       try {
-        // await MapLayersUI.iTwinAccess.delete({ key: source, iTwinId, iModelId });
+        await MapLayerPreferences.deleteByName(source, iTwinId, iModelId);
         const msg = MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:CustomAttach.RemoveLayerDefSuccess", { layerName });
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
       } catch (err: any) {

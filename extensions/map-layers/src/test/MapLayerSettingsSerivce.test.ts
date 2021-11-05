@@ -7,7 +7,7 @@ import * as sinon from "sinon";
 import { Guid, GuidString } from "@itwin/core-bentley";
 
 import { MapLayerPreferences } from "../MapLayerPreferences";
-import { IModelApp, MapLayerSource } from "@itwin/core-frontend";
+import { MapLayerSource } from "@itwin/core-frontend";
 import { restore, setup } from "./UserPreferencesMock";
 
 chai.should();
@@ -41,16 +41,6 @@ describe("MapLayerPreferences", () => {
     sources = await MapLayerPreferences.getSources(iTwinId, iModelId);
     foundSource = sources.some((value) => { return value.name === testName; });
     chai.assert.isTrue(foundSource);
-    await IModelApp.userPreferences?.delete({
-      key: `${(MapLayerPreferences as any).SourceNamespace}.${testName}`,
-      iTwinId,
-    });
-
-    const val = await IModelApp.userPreferences?.get({
-      key: `${(MapLayerPreferences as any).SourceNamespace}.${testName}`,
-      iTwinId,
-    });
-    chai.assert.isUndefined(val, "the map layer should no longer exist");
   });
 
   it("should not be able to store model setting if same setting exists as project setting", async () => {
@@ -64,16 +54,6 @@ describe("MapLayerPreferences", () => {
     chai.assert.isTrue(success);
     success = await MapLayerPreferences.storeSource(layer!, true, iTwinId, iModelId);
     chai.assert.isFalse(success, "cannot store the iModel setting that conflicts with an iTwin setting");
-    await IModelApp.userPreferences?.delete({
-      key: `${(MapLayerPreferences as any).SourceNamespace}.${testName}`,
-      iTwinId,
-    });
-
-    const val = await IModelApp.userPreferences?.get({
-      key: `${(MapLayerPreferences as any).SourceNamespace}.${testName}`,
-      iTwinId,
-    });
-    chai.assert.isUndefined(val, "the map layer should no longer exist");
   });
 
   it("should be able to store project setting if same setting exists as project setting", async () => {
@@ -87,16 +67,6 @@ describe("MapLayerPreferences", () => {
     chai.assert.isTrue(success);
     success = await MapLayerPreferences.storeSource(layer!, false, iTwinId, iModelId);
     chai.assert.isTrue(success);
-    await IModelApp.userPreferences?.delete({
-      key: `${(MapLayerPreferences as any).SourceNamespace}.${testName}`,
-      iTwinId,
-    });
-
-    const val = await IModelApp.userPreferences?.get({
-      key: `${(MapLayerPreferences as any).SourceNamespace}.${testName}`,
-      iTwinId,
-    });
-    chai.assert.isUndefined(val, "the map layer should no longer exist");
   });
 
   it("should be able to delete a mapSource stored on project and imodel level", async () => {
