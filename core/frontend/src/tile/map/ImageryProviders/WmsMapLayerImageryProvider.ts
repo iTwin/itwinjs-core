@@ -121,7 +121,7 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
     return layers.join("%2C");
   }
 
-  public getCrsSupport(): {support3857: boolean,  support4326: boolean} {
+  public getCrsSupport(): WmsCrsSupport {
     const layersCrs = this.getVisibleLayersSrs();
 
     let support3857: boolean|undefined;
