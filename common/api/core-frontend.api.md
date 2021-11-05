@@ -7233,6 +7233,8 @@ export interface PreferenceArg extends PreferenceKeyArg {
 export interface PreferenceKeyArg {
     // (undocumented)
     readonly key: string;
+    // (undocumented)
+    readonly namespace?: string;
 }
 
 // @public

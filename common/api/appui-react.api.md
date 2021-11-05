@@ -6823,7 +6823,7 @@ export interface UserSettingsProvider {
     providerId: string;
 }
 
-// @public
+// @public @deprecated
 export class UserSettingsStorage implements UiSettingsStorage {
     // (undocumented)
     deleteSetting(namespace: string, name: string): Promise<UiSettingsResult>;

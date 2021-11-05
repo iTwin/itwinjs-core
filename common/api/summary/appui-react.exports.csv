@@ -669,6 +669,7 @@ internal;useNineZoneState(frontstageDef: FrontstageDef): NineZoneState | undefin
 public;UserInfo
 public;UserSettingsProvider
 public;UserSettingsStorage 
+deprecated;UserSettingsStorage 
 internal;useSavedFrontstageState(frontstageDef: FrontstageDef): void
 internal;useSaveFrontstageSettings(frontstageDef: FrontstageDef): void
 public;useScheduleAnimationDataProvider(viewport: ScreenViewport | undefined): ScheduleAnimationTimelineDataProvider | undefined
