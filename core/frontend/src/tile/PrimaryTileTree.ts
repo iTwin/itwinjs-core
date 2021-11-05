@@ -13,7 +13,7 @@ import {
 } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { AnimationNodeId } from "../imodeljs-frontend";
+import { AnimationNodeId } from "../render/GraphicBranch";
 import { GeometricModel3dState, GeometricModelState } from "../ModelState";
 import { RenderClipVolume } from "../render/RenderClipVolume";
 import { formatAnimationBranchId, RenderScheduleState } from "../RenderScheduleState";
