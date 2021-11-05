@@ -119,7 +119,7 @@ export class ToggleTileTreeReferencesTool extends Tool {
   private _which?: "all" | "animated" | "primary" | "section" | number[];
   private _deactivate?: boolean;
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]) {
     const which = args[0].toLowerCase();
     switch (which) {
       case "all":
@@ -149,7 +149,7 @@ export class ToggleTileTreeReferencesTool extends Tool {
     return this.run();
   }
 
-  public override run(): boolean {
+  public override async run(): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (!vp || !this._which || !vp.view.isSpatialView())
       return false;

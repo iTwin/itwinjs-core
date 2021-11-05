@@ -25,7 +25,7 @@ export class DumpPlanProjectionSettingsTool extends DisplayStyleTool {
 
   protected override get require3d() { return true; }
 
-  protected parse(args: string[]) {
+  protected async parse(args: string[]) {
     if (1 === args.length)
       this._copyToClipboard = "c" === args[0].toLowerCase();
 
@@ -82,7 +82,7 @@ export abstract class OverrideSubCategoryPriorityTool extends DisplayStyleTool {
     return true;
   }
 
-  protected parse(args: string[]) {
+  protected async parse(args: string[]) {
     for (const id of args[0].split(","))
       this._subcatIds.add(id);
 
@@ -115,7 +115,7 @@ export abstract class ChangePlanProjectionSettingsTool extends DisplayStyleTool 
     return true;
   }
 
-  protected parse(inputArgs: string[]) {
+  protected async parse(inputArgs: string[]) {
     if (!this.parseModels(inputArgs[0]))
       return false;
 

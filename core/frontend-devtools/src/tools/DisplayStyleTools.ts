@@ -7,6 +7,7 @@
  * @module Tools
  */
 
+import { CompressedId64Set } from "@itwin/core-bentley";
 import {
   DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, ElementLoadOptions, RenderMode, RenderSchedule, RenderTimelineProps,
   SubCategoryAppearance, SubCategoryOverride, ViewFlags, ViewFlagsProperties, WhiteOnWhiteReversalSettings,
@@ -38,9 +39,9 @@ export abstract class DisplayStyleTool extends Tool {
   // Return true if the display style was modified - we will invalidate the viewport's render plan.
   protected abstract execute(vp: Viewport): boolean;
   // Return false if failed to parse.
-  protected abstract async parse(args: string[], vp: Viewport): Promise<boolean>;
+  protected abstract parse(args: string[], vp: Viewport): Promise<boolean>;
 
-  public override run(): boolean {
+  public override async run(): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== vp && (!this.require3d || vp.view.is3d()) && this.execute(vp))
       vp.displayStyle = vp.view.displayStyle;
@@ -130,7 +131,7 @@ export class ToggleSkyboxTool extends DisplayStyleTool {
 
   public override get require3d() { return true; }
 
-  public parse(_args: string[]) { return true; } // no arguments
+  public async parse(_args: string[]): Promise<boolean> { return true; } // no arguments
 
   public execute(vp: Viewport): boolean {
     const style = vp.view.displayStyle as DisplayStyle3dState;
@@ -163,7 +164,7 @@ export class SaveRenderingStyleTool extends DisplayStyleTool {
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 7; }
 
-  public parse(inputArgs: string[]) {
+  public async parse(inputArgs: string[]) {
     const args = parseArgs(inputArgs);
     function getArg(name: string): true | undefined {
       return args.getBoolean(name) ? true : undefined;
@@ -205,7 +206,7 @@ export class ApplyRenderingStyleTool extends DisplayStyleTool {
   public static override get minArgs() { return 1; }
   public static override get maxArgs() { return 1; }
 
-  public parse(args: string[]) {
+  public async parse(args: string[]) {
     try {
       this._overrides = JSON.parse(args[0]);
       return true;
@@ -234,7 +235,7 @@ export class OverrideSubCategoryTool extends DisplayStyleTool {
   public static override get minArgs() { return 1; }
   public static override get maxArgs() { return 7; }
 
-  public parse(inArgs: string[]): boolean {
+  public async parse(inArgs: string[]) {
     const args = parseArgs(inArgs);
     const ids = args.get("i");
     if (ids)
@@ -272,7 +273,7 @@ export class QueryScheduleScriptTool extends DisplayStyleTool {
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 3; }
 
-  public parse(input: string[], vp: Viewport): boolean {
+  public async parse(input: string[], vp: Viewport) {
     const args = parseArgs(input);
     this._sourceId = args.get("i") ?? vp.displayStyle.scheduleScriptReference?.sourceId;
     if (!this._sourceId)
@@ -353,7 +354,7 @@ export class WoWIgnoreBackgroundTool extends DisplayStyleTool {
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 1; }
 
-  public parse(args: string[]): boolean {
+  public async parse(args: string[]) {
     const ignore = parseToggle(args[0]);
     if (typeof ignore === "string")
       return false;
