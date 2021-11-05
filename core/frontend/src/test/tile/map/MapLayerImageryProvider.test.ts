@@ -88,6 +88,10 @@ describe("WmsMapLayerImageryProvider", () => {
     if (!settings)
       chai.assert.fail("Could not create settings");
 
+    sandbox.stub(WmsMapLayerImageryProvider.prototype, "constructUrl").callsFake(async function (_row: number, _column: number, _zoomLevel: number) {
+      return "https://fake/url";
+    });
+
     // Test with empty body
     const makeTileRequestStub = sandbox.stub(MapLayerImageryProvider.prototype, "makeTileRequest").callsFake(async function (_url: string) {
       const header: any = { "content-type": "image/png" };
@@ -203,6 +207,10 @@ describe("MapLayerImageryProvider with IModelApp", () => {
       chai.assert.fail("Could not create settings");
     const provider = new WmsMapLayerImageryProvider(settings);
     const outputMessageSpy = sinon.spy(IModelApp.notifications, "outputMessage");
+
+    sandbox.stub(WmsMapLayerImageryProvider.prototype, "constructUrl").callsFake(async function (_row: number, _column: number, _zoomLevel: number) {
+      return "https://fake/url";
+    });
 
     // Make the tile fetch fails with error 401
     let makeTileRequestStub = sandbox.stub(MapLayerImageryProvider.prototype, "makeTileRequest").callsFake(async function (_url: string) {
