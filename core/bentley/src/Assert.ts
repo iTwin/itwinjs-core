@@ -21,7 +21,7 @@ let assertionsEnabled = process.env.NODE_ENV === "development";
  *
  * By default, `assert` does nothing unless the environment variable `NODE_ENV` exists and is set to `development`. Use [[setAssertionsEnabled]] to override this behavior.
  *
- * Note that even when assertions are enabled, calls to `assert` remain in the code and their arguments will be evaluated at run-time.
+ * Note that even when assertions are disabled, calls to `assert` remain in the code and their arguments will be evaluated at run-time.
  * Therefore, if your condition or message requires computation, prefer to pass it as a function to prevent it from being evaluated when assertions are disabled.
  *
  * @param condition The condition that is asserted to be `true`. If the condition is more complex than a simple `boolean` variable, pass it as a function to prevent it from being evaluated when assertions are disabled.
