@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Make it possible to set label and execute function for BackstageAppButton",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}
