@@ -38,7 +38,7 @@ export * from "./domains/FunctionalSchema";
 export * from "./domains/FunctionalElements";
 export * from "./domains/GenericSchema";
 export * from "./domains/GenericElements";
-export { IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
+export { IModelJsNative, NativeLoggerCategory, BlobDaemon, BlobDaemonCommandArg } from "@bentley/imodeljs-native";
 export * from "./IModelCloneContext";
 export * from "./IModelHost";
 export * from "./IModelSchemaLoader";
