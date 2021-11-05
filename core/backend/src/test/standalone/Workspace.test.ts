@@ -14,9 +14,8 @@ import { EditableWorkspaceFile, ITwinWorkspace, WorkspaceContainerId, WorkspaceF
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { BaseSettings, SettingDictionary, SettingsPriority } from "../../workspace/Settings";
-import { CloudAccountProps, CloudContainerProps } from "../../workspace/CloudContainer";
 
-describe.only("WorkspaceFile", () => {
+describe("WorkspaceFile", () => {
 
   const workspace = new ITwinWorkspace(new BaseSettings(), { containerDir: join(KnownTestLocations.outputDir, "TestWorkspaces") });
 
@@ -116,14 +115,14 @@ describe.only("WorkspaceFile", () => {
   it("resolve workspace alias", async () => {
     const settingsFile = IModelTestUtils.resolveAssetFile("test.setting.json5");
     const defaultContainer = makeContainer("defaults");
-    expect(defaultContainer.versionName).equals("v0");
+    expect(defaultContainer.dbAlias).equals("v0");
     defaultContainer.addString("default-settings", fs.readFileSync(settingsFile, "utf-8"));
     defaultContainer.close();
 
     const schemaFile = IModelTestUtils.resolveAssetFile("TestSettings.schema.json");
     const fontsContainer = makeContainer("fonts-01#v23");
     expect(fontsContainer.containerId).equals("fonts-01");
-    expect(fontsContainer.versionName).equals("v23");
+    expect(fontsContainer.dbAlias).equals("v23");
 
     fontsContainer.addFile("Helvetica.ttf", schemaFile, "ttf");
     fontsContainer.close();
@@ -159,27 +158,4 @@ describe.only("WorkspaceFile", () => {
     expect(workspace.resolveContainerId(fontContainerName)).equals("fonts-01");
   });
 
-  it("cloud containers", () => {
-    const containerProps: CloudAccountProps = {
-      user: "devstoreaccount1",
-      storageType: "azure?emulator=127.0.0.1:10000&sas=0",
-    };
-    const cloudAccount: CloudContainerProps = {
-      container: "test-container",
-      auth: "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==",
-    }
-  };
-
-  const iTwinSettings: SettingDictionary = {
-    "cloudContainer/test1/containerProps": containerProps,
-
-
-  }
-  "app1/sub1": "val3",
-    "app1/sub2": {
-    arr: ["a31", "a32", "a33"],
-      },
-
-
-});
 });

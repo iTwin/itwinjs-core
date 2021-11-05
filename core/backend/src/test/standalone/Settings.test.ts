@@ -68,7 +68,7 @@ describe("Settings", () => {
     "app1/setting5": "app setting 5 val",
   };
 
-  const imodel1Settings: SettingDictionary = {
+  const imodel1Settings = {
     "app1/sub1": "imodel1 value",
     "app1/sub2": {
       arr: ["a1", "a2"],
@@ -77,14 +77,14 @@ describe("Settings", () => {
     "app1/setting3": "setting 3 val",
   };
 
-  const imodel2Settings: SettingDictionary = {
+  const imodel2Settings = {
     "app1/sub1": "imodel2 value",
     "app1/sub2": {
       arr: ["a21", "a22"],
     },
   };
 
-  const iTwinSettings: SettingDictionary = {
+  const iTwinSettings = {
     "app1/sub1": "val3",
     "app1/sub2": {
       arr: ["a31", "a32", "a33"],
