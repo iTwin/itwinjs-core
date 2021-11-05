@@ -24,8 +24,8 @@ let assertionsEnabled = process.env.NODE_ENV === "development";
  * Note that even when assertions are enabled, calls to `assert` remain in the code and their arguments will be evaluated at run-time.
  * Therefore, if your condition or message requires computation, prefer to pass it as a function to prevent it from being evaluated when assertions are disabled.
  *
- * @param condition The condition that is asserted to be `true`.
- * @param message An optional description of the condition being asserted, to be included in the exception if `condition` is `false`. Defaults to "Programmer Error".
+ * @param condition The condition that is asserted to be `true`. If the condition is more complex than a simple `boolean` variable, pass it as a function to prevent it from being evaluated when assertions are disabled.
+ * @param message An optional description of the condition being asserted, to be included in the exception if `condition` is `false`. If the message must be computed, pass it as a function to prevent it from being evaluated when assertions are disabled. Defaults to "Programmer Error".
  * @throws Error containing the specified `message` if `condition` is `false`.
  * @see [[setAssertionsEnabled]] to enable or disable assertions.
  * @public
