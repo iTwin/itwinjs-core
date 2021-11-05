@@ -73,7 +73,7 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, UIDo
         pickSnapshot();
     }
     func pickSnapshot(){
-        let picker = UIDocumentPickerViewController(documentTypes: ["com.bentley.app.bim"], in: .open);
+        let picker = UIDocumentPickerViewController(documentTypes: ["public.data"], in: .open);
         picker.modalPresentationStyle = .fullScreen;
         picker.allowsMultipleSelection = false;
         picker.directoryURL = getDocumentsDirectory();
