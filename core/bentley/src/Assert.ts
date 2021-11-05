@@ -6,9 +6,10 @@
  * @module Utils
  */
 
-let assertionsEnabled = process.env.NODE_ENV === "development";
+const assertionsEnabled = process.env.NODE_ENV === "development";
 
-/** Asserts that a condition is `true` and - when enabled - throws an error if it is not.
+/** Asserts that a condition is `true` and - when enabled - throws an error if it is not. Assertions are enabled only if `process.NODE_ENV` is set to `development`.
+ *
  * Assertions exist solely to assist programmers during development, in the following ways:
  *  1 They allow the programmer to declare conditions that they believe cannot possibly occur. If such conditions occur, they indicate
  *    a serious flaw in the programmer's logic.
@@ -19,15 +20,12 @@ let assertionsEnabled = process.env.NODE_ENV === "development";
  * such as failing to write to a file or load a resource over the network. If the condition asserted ever fails in a production environment,
  * the programmer has made a serious mistake.
  *
- * By default, `assert` does nothing unless the environment variable `NODE_ENV` exists and is set to `development`. Use [[setAssertionsEnabled]] to override this behavior.
- *
  * Note that even when assertions are disabled, calls to `assert` remain in the code and their arguments will be evaluated at run-time.
  * Therefore, if your condition or message requires computation, prefer to pass it as a function to prevent it from being evaluated when assertions are disabled.
  *
  * @param condition The condition that is asserted to be `true`. If the condition is more complex than a simple `boolean` variable, pass it as a function to prevent it from being evaluated when assertions are disabled.
  * @param message An optional description of the condition being asserted, to be included in the exception if `condition` is `false`. If the message must be computed, pass it as a function to prevent it from being evaluated when assertions are disabled. Defaults to "Programmer Error".
  * @throws Error containing the specified `message` if `condition` is `false`.
- * @see [[setAssertionsEnabled]] to enable or disable assertions.
  * @public
  */
 export function assert(condition: boolean | (() => boolean), message?: string | (() => string)): asserts condition {
@@ -45,17 +43,4 @@ export function assert(condition: boolean | (() => boolean), message?: string | 
     message = message();
 
   throw new Error(`Assert: ${message}`);
-}
-
-/** Sets whether the [[assert]] function is enabled.
- * When [[assert]] is disabled, it returns immediately without evaluating the asserted condition. By default, it is enabled only if
- * the environment variable `NODE_ENV` exists and is set to `development`.
- * @param enabled If true, `assert` will throw upon a false assertion.
- * @returns true if assertions were enabled prior to this call.
- * @public
- */
-export function setAssertionsEnabled(enabled: boolean): boolean {
-  const wasEnabled = assertionsEnabled;
-  assertionsEnabled = enabled;
-  return wasEnabled;
 }
