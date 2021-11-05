@@ -96,7 +96,6 @@ export function parseTileTreeIdAndContentId(treeId: string, contentId: string): 
   let type: BatchType,
     expansion: number | undefined,
     animationId: string | undefined,
-    nodeId: number | undefined,
     edgesRequired: boolean | undefined,
     sectionCut: string | undefined;
 
@@ -116,7 +115,7 @@ export function parseTileTreeIdAndContentId(treeId: string, contentId: string): 
 
   // Animation
   // eslint-disable-next-line prefer-const
-  ({ idx, animationId, nodeId } = parseAnimation(idx, treeId, animationId, nodeId));
+  ({ idx, animationId } = parseAnimation(idx, treeId, animationId));
 
   if (type === BatchType.Primary) {
     ({ idx, edgesRequired, sectionCut } = parsePrimary(idx, treeId, edgesRequired, sectionCut));
@@ -127,7 +126,7 @@ export function parseTileTreeIdAndContentId(treeId: string, contentId: string): 
     throw new Error("Invalid tree Id");
 
   const { flags: treeFlags } = treeFlagsAndFormatVersionFromId(treeId);
-  const parsedTreeId = getTreeId(type, edgesRequired, sectionCut, animationId, nodeId, expansion, (treeFlags & TreeFlags.EnforceDisplayPriority) !== 0 ? true : undefined);
+  const parsedTreeId = getTreeId(type, edgesRequired, sectionCut, animationId, expansion, (treeFlags & TreeFlags.EnforceDisplayPriority) !== 0 ? true : undefined);
   const options = TileOptions.fromTreeIdAndContentId(treeId, contentId);
 
   let parsedContentId: ContentIdSpec;
@@ -148,14 +147,13 @@ export function parseTileTreeIdAndContentId(treeId: string, contentId: string): 
   };
 }
 
-function getTreeId(type: BatchType, edgesRequired?: boolean, sectionCut?: string, animationId?: string, nodeId?: number, expansion?: number, enforceDisplayPriority?: boolean): IModelTileTreeId {
+function getTreeId(type: BatchType, edgesRequired?: boolean, sectionCut?: string, animationId?: string, expansion?: number, enforceDisplayPriority?: boolean): IModelTileTreeId {
   if (type === BatchType.Primary)
     return {
       type,
       edgesRequired,
       sectionCut,
       animationId,
-      animationTransformNodeId: nodeId,
       enforceDisplayPriority,
     } as PrimaryTileTreeId;
   else
@@ -163,7 +161,6 @@ function getTreeId(type: BatchType, edgesRequired?: boolean, sectionCut?: string
       type,
       expansion,
       animationId,
-      animationTransformNodeId: nodeId,
     } as ClassifierTileTreeId;
 }
 
@@ -218,7 +215,7 @@ function parseClassifier(idx: number, treeId: string, expansion: number | undefi
   return { idx, type, expansion };
 }
 
-function parseAnimation(idx: number, treeId: string, animationId: string | undefined, nodeId: number | undefined) {
+function parseAnimation(idx: number, treeId: string, animationId: string | undefined) {
   if (idx < treeId.length && treeId[idx] === "A") {
     if (idx + 1 < treeId.length && treeId[idx + 1] !== ":")
       throw new Error("Invalid tree Id");
@@ -238,21 +235,9 @@ function parseAnimation(idx: number, treeId: string, animationId: string | undef
       throw new Error("Invalid tree Id");
     idx++; // #
 
-    // Parse animation node id
-    let nodeIdStr = "";
-    while (idx < treeId.length && treeId[idx] !== "_") {
-      nodeIdStr += treeId[idx++];
-    }
-
-    nodeId = Number.parseInt(nodeIdStr, 16);
-    if (idx === treeId.length || !Number.isFinite(nodeId) || nodeId.toString(16).toUpperCase() !== nodeIdStr.toUpperCase()) // if toString doesn't round-trip, that means there were invalid characters in the string
-      throw new Error("Invalid tree Id");
-    idx++; // _
-
-    if (nodeId === Constants.untransformedNodeValue)
-      nodeId = undefined;
   }
-  return { idx, animationId, nodeId };
+
+  return { idx, animationId };
 }
 
 /** @internal */

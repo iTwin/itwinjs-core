@@ -173,7 +173,7 @@ describe("TileMetadata", () => {
       {
         id: primaryId(true, true, undefined, "0x1a"),
         baseId: "A:0x1a_",
-        flags: kDefaultts,
+        flags: kDefaults,
       },
 
       {
@@ -397,7 +397,6 @@ describe("TileMetadata", () => {
         edgesRequired: true,
         sectionCut: "010_1_0_-5_30_0_-1_5e-11____",
         animationId: undefined,
-        animationTransformNodeId: undefined,
         enforceDisplayPriority: undefined,
       },
       contentId: { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 },
