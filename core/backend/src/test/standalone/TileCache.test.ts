@@ -164,7 +164,7 @@ describe("TileCache, open v2", async () => {
     await RpcTrace.run(fakeRpc, async () => tileRpcInterface.generateTileContent(checkpoint.getRpcProps(), tileProps!.treeId, tileProps!.contentId, tileProps!.guid));
     assert.equal(errorLogStub.callCount, 2); // checkpoint token expiry bad, should be logged with RPC info
 
-    assert.include(errorStringify.getCall(0).returnValue, `"activityId":"${fakeRpc.activityId}"`); // from rpc, should include RPC activity
+    assert.include(errorStringify.getCall(0).returnValue, `"ActivityId":"${fakeRpc.activityId}"`); // from rpc, should include RPC activity
     expect(errorStringify.getCall(0).returnValue).to.not.include("token"); // but token should not appear
 
     // Make sure .Tiles exists in the cacheDir. This was enforced by opening it as a V2 Checkpoint which passes as part of its open params a tempFileBasename.

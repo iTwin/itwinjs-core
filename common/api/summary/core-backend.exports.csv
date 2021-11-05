@@ -10,6 +10,7 @@ public;AuxCoordSystemSpatial
 beta;AzureBlobStorage 
 beta;BackendHubAccess
 public;BackendLoggerCategory
+internal;BaseSettings 
 public;BindParameter = number | string
 public;BisCoreSchema 
 public;BriefcaseDb 
@@ -201,7 +202,6 @@ public;class IpcHandler
 public;IpcHost
 public;IpcHostOpts
 public;ITwinIdArg
-internal;ITwinSettings 
 internal;ITwinWorkspace 
 public;KnownLocations
 internal;LightLocation 
@@ -354,7 +354,6 @@ beta;Workspace
 beta;WorkspaceContainer
 beta;WorkspaceContainerId = string
 beta;WorkspaceContainerName = string
-beta;WorkspaceContainerOpts
 beta;WorkspaceContainerProps = WorkspaceContainerName |
 beta;WorkspaceFile 
 beta;WorkspaceOpts

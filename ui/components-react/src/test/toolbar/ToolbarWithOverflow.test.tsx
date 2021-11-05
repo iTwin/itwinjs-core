@@ -380,6 +380,43 @@ describe("<ToolbarWithOverflow />", () => {
       onKeyDownSpy.calledOnce.should.true;
     });
 
+    it("should open panel when popup item clicked", () => {
+      const getCustomDefWithPopupPanel = (): CustomToolbarItem => {
+        return {
+          id: "TestPopupPanelButton",
+          itemPriority: 10,
+          icon: "icon-placeholder",
+          label: "PopupEntry",
+          isCustom: true,
+          panelContentNode: <div data-testid="popup-panel">HelloWorld!</div>,
+          keepContentsLoaded: true,
+        };
+      };
+
+      const toolbarItems: CommonToolbarItem[] = [
+        getCustomDefWithPopupPanel(),
+      ];
+
+      // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
+      sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
+        if (this.classList.contains("components-toolbar-overflow-sizer")) {
+          return DOMRect.fromRect({ width: 252 }); // 6*42 = 252
+        } else if (this.classList.contains("components-toolbar-item-container")) {
+          return DOMRect.fromRect({ width: 40 });
+        }
+        return new DOMRect();
+      });
+      const onKeyDownSpy = sinon.spy();
+      const renderedComponent = render(<ToolbarWithOverflow items={toolbarItems} onKeyDown={onKeyDownSpy} />);
+      expect(renderedComponent).not.to.be.undefined;
+      // since keepContentsLoaded is true the popup-panel will render and its display will be set to `none`
+      const popupDiv = renderedComponent.queryByTestId("core-popup");
+      expect(popupDiv!.classList.contains("core-popup-hidden")).to.be.true;
+      const button = renderedComponent.queryByTitle("PopupEntry");
+      fireEvent.click(button!);
+      expect(popupDiv!.classList.contains("core-popup-hidden")).to.be.false;
+    });
+
     it("should accept a self defined button", () => {
       const getCustomDef = (): CustomToolbarItem => {
         return {

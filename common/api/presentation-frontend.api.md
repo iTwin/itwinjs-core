@@ -7,6 +7,7 @@
 import { BeEvent } from '@itwin/core-bentley';
 import { Content } from '@itwin/presentation-common';
 import { ContentDescriptorRequestOptions } from '@itwin/presentation-common';
+import { ContentInstanceKeysRequestOptions } from '@itwin/presentation-common';
 import { ContentRequestOptions } from '@itwin/presentation-common';
 import { ContentSourcesRequestOptions } from '@itwin/presentation-common';
 import { ContentUpdateInfo } from '@itwin/presentation-common';
@@ -75,7 +76,7 @@ export class BrowserLocalFavoritePropertiesStorage implements IFavoritePropertie
 }
 
 // @internal (undocumented)
-export const buildPagedResponse: <TItem>(requestedPage: PageOptions | undefined, getter: (page: Required<PageOptions>, requestIndex: number) => Promise<PagedResponse<TItem>>) => Promise<PagedResponse<TItem>>;
+export const buildPagedArrayResponse: <TItem>(requestedPage: PageOptions | undefined, getter: (page: Required<PageOptions>, requestIndex: number) => Promise<PagedResponse<TItem>>) => Promise<PagedResponse<TItem>>;
 
 // @alpha (undocumented)
 export function consoleDiagnosticsHandler(scopeLogs: DiagnosticsScopeLogs[]): void;
@@ -295,6 +296,11 @@ export class PresentationManager implements IDisposable {
         size: number;
     } | undefined>;
     getContentDescriptor(requestOptions: ContentDescriptorRequestOptions<IModelConnection, KeySet, RulesetVariable>): Promise<Descriptor | undefined>;
+    // @alpha
+    getContentInstanceKeys(requestOptions: ContentInstanceKeysRequestOptions<IModelConnection, KeySet, RulesetVariable>): Promise<{
+        total: number;
+        items: () => AsyncGenerator<InstanceKey>;
+    }>;
     getContentSetSize(requestOptions: ContentRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>): Promise<number>;
     // @beta
     getContentSources(requestOptions: ContentSourcesRequestOptions<IModelConnection>): Promise<SelectClassInfo[]>;
