@@ -13311,10 +13311,7 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
     // (undocumented)
     constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
     // (undocumented)
-    getCrsSupport(): {
-        support3857: boolean;
-        support4326: boolean;
-    };
+    getCrsSupport(): WmsCrsSupport;
     // (undocumented)
     getToolTip(strings: string[], quadId: QuadId, carto: Cartographic, tree: ImageryMapTileTree): Promise<void>;
     // (undocumented)
