@@ -3,20 +3,21 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { BisCodeSpec, CodeScopeSpec, CodeSpec } from "@bentley/imodeljs-common";
-import { IModelApp, IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { BisCodeSpec, CodeScopeSpec, CodeSpec } from "@itwin/core-common";
+import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { TestUtility } from "../TestUtility";
 
 describe("CodeSpecs", async () => {
   let iModel: IModelConnection;
 
   before(async () => {
-    await IModelApp.startup();
+    await TestUtility.startFrontend();
     iModel = await SnapshotConnection.openFile("test.bim");
   });
 
   after(async () => {
     if (iModel) await iModel.close();
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("should load CodeSpecs", async () => {

@@ -6,21 +6,20 @@
  * @module Tree
  */
 
-import * as immer from "immer";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import * as React from "react";
+import { Subscription } from "rxjs/internal/Subscription";
+import { HierarchyUpdateRecord, PageOptions, UPDATE_FULL } from "@itwin/presentation-common";
+import { IModelHierarchyChangeEventArgs, Presentation } from "@itwin/presentation-frontend";
 import {
-  HierarchyUpdateRecord, PageOptions, PartialHierarchyModification, RegisteredRuleset, Ruleset, RulesetVariable, UPDATE_FULL, VariableValue,
-} from "@bentley/presentation-common";
-import { IModelHierarchyChangeEventArgs, Presentation } from "@bentley/presentation-frontend";
-import {
-  isTreeModelNode, isTreeModelNodePlaceholder, MutableTreeModel, MutableTreeModelNode, PagedTreeNodeLoader, RenderedItemsRange, Subscription,
-  TreeModel, TreeModelNode, TreeModelNodeInput, TreeModelSource, TreeNodeItem, TreeNodeItemData, usePagedTreeNodeLoader, VisibleTreeNodes,
-} from "@bentley/ui-components";
-import { useDisposable } from "@bentley/ui-core";
+  computeVisibleNodes, isTreeModelNode, isTreeModelNodePlaceholder, MutableTreeModel, MutableTreeModelNode, PagedTreeNodeLoader, RenderedItemsRange,
+  TreeModelNode, TreeModelNodeInput, TreeModelSource, TreeNodeItem, usePagedTreeNodeLoader, VisibleTreeNodes,
+} from "@itwin/components-react";
+import { RulesetRegistrationHelper } from "../../common/RulesetRegistrationHelper";
 import { PresentationTreeDataProvider, PresentationTreeDataProviderProps } from "../DataProvider";
 import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
-import { createPartialTreeNodeItem, createTreeNodeId, createTreeNodeItem, CreateTreeNodeItemProps } from "../Utils";
-import { getExpandedNodeItems, useExpandedNodesTracking } from "./UseExpandedNodesTracking";
+import { createTreeNodeId, createTreeNodeItem, CreateTreeNodeItemProps } from "../Utils";
+import { reloadTree } from "./TreeReloader";
+import { useExpandedNodesTracking } from "./UseExpandedNodesTracking";
 
 /**
  * Properties for [[usePresentationTreeNodeLoader]] hook.
@@ -38,305 +37,294 @@ export interface PresentationTreeNodeLoaderProps extends PresentationTreeDataPro
   pagingSize: number;
 
   /**
-   * Should node loader initiate loading of the whole hierarchy as soon as it's created.
-   * @alpha @deprecated Will be removed on 3.0.
-   */
-  preloadingEnabled?: boolean;
-
-  /**
    * Auto-update the hierarchy when ruleset, ruleset variables or data in the iModel changes.
    * @alpha
    */
   enableHierarchyAutoUpdate?: boolean;
+}
+
+/**
+ * Return type for [[usePresentationTreeNodeLoader]] hook.
+ * @public
+ */
+export interface PresentationTreeNodeLoaderResult {
+  /** Tree node loader to be used with a tree component */
+  nodeLoader: PagedTreeNodeLoader<IPresentationTreeDataProvider>;
 
   /**
-   * Used for testing
-   * @internal
+   * Callback for when rendered tree node item range changes. This property should be passed to
+   * [ControlledTree]($components-react) when property `enableHierarchyAutoUpdate` is `true`.
+   * @alpha
    */
-  dataProvider?: IPresentationTreeDataProvider;
+  onItemsRendered: (items: RenderedItemsRange) => void;
 }
 
 /**
  * Custom hooks which creates PagedTreeNodeLoader with PresentationTreeDataProvider using
  * supplied imodel and ruleset.
- *
  * @public
  */
-export function usePresentationTreeNodeLoader(props: PresentationTreeNodeLoaderProps) {
-  interface Info {
-    treeModel: MutableTreeModel | undefined;
-  }
+export function usePresentationTreeNodeLoader(
+  props: PresentationTreeNodeLoaderProps,
+): PresentationTreeNodeLoaderResult {
+  const dataProviderProps: PresentationTreeDataProviderProps = React.useMemo(
+    () => ({
+      imodel: props.imodel,
+      ruleset: props.ruleset,
+      pagingSize: props.pagingSize,
+      appendChildrenCountForGroupingNodes: props.appendChildrenCountForGroupingNodes,
+      dataSourceOverrides: props.dataSourceOverrides,
+      ruleDiagnostics: props.ruleDiagnostics,
+      devDiagnostics: props.devDiagnostics,
+    }),
+    [
+      props.appendChildrenCountForGroupingNodes,
+      props.dataSourceOverrides,
+      props.devDiagnostics,
+      props.imodel,
+      props.pagingSize,
+      props.ruleDiagnostics,
+      props.ruleset,
+    ],
+  );
 
-  const [info, setInfo] = useState<Info>({ treeModel: undefined });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const dataProvider = useDisposable(useCallback(() => createDataProvider(props), [info, ...Object.values(props)]));
-
-  let treeModelSeed = props.enableHierarchyAutoUpdate ? info.treeModel : undefined;
-  // Set treeModelSeed to undefined if props have changed
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useMemo(() => treeModelSeed = undefined, Object.values(props));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const modelSource = useMemo(() => new TreeModelSource(treeModelSeed), [dataProvider]);
-
-  const rerenderWithTreeModel = useCallback((treeModel?: MutableTreeModel) => setInfo({ treeModel }), []);
-  const modelSourceUpdateProps: ModelSourceUpdateProps = {
-    enable: props.enableHierarchyAutoUpdate,
-    modelSource,
-    rerenderWithTreeModel,
-    dataProvider,
-    treeNodeItemCreationProps: useMemo(() => ({ appendChildrenCountForGroupingNodes: props.appendChildrenCountForGroupingNodes }), [props.appendChildrenCountForGroupingNodes]),
-  };
-
-  const onItemsRendered = useModelSourceUpdateOnIModelHierarchyUpdate(modelSourceUpdateProps);
-  useModelSourceUpdateOnRulesetModification(modelSourceUpdateProps);
-  useModelSourceUpdateOnRulesetVariablesChange(modelSourceUpdateProps);
+  const [
+    { modelSource, rulesetRegistration, dataProvider },
+    setTreeNodeLoaderState,
+  ] = useResettableState<TreeNodeLoaderState>(
+    () => ({
+      modelSource: new TreeModelSource(),
+      rulesetRegistration: new RulesetRegistrationHelper(dataProviderProps.ruleset),
+      dataProvider: new PresentationTreeDataProvider({
+        ...dataProviderProps,
+        ruleset: typeof dataProviderProps.ruleset === "string"
+          ? dataProviderProps.ruleset
+          : /* istanbul ignore next */ dataProviderProps.ruleset.id,
+      }),
+    }),
+    [dataProviderProps],
+  );
+  React.useEffect(() => { return () => rulesetRegistration.dispose(); }, [rulesetRegistration]);
+  React.useEffect(() => { return () => dataProvider.dispose(); }, [dataProvider]);
 
   const nodeLoader = usePagedTreeNodeLoader(dataProvider, props.pagingSize, modelSource);
-  // When node loader is changed, all node loads automatically get cancelled; need to resume
-  useResumeNodeLoading(modelSource, nodeLoader);
+
+  const params = {
+    enable: !!props.enableHierarchyAutoUpdate,
+    pageSize: props.pagingSize,
+    modelSource,
+    dataProviderProps,
+    setTreeNodeLoaderState,
+  };
+  const onItemsRendered = useModelSourceUpdateOnIModelHierarchyUpdate({
+    ...params,
+    dataProvider,
+    treeNodeItemCreationProps: { appendChildrenCountForGroupingNodes: props.appendChildrenCountForGroupingNodes },
+  });
+  useModelSourceUpdateOnRulesetModification(params);
+  useModelSourceUpdateOnRulesetVariablesChange({ ...params, rulesetId: dataProvider.rulesetId });
+
   return { nodeLoader, onItemsRendered };
 }
 
-/** Starts loading children for nodes that are marked as loading, each time arguments change. */
-function useResumeNodeLoading(
-  modelSource: TreeModelSource,
-  nodeLoader: PagedTreeNodeLoader<IPresentationTreeDataProvider>,
-): void {
-  useEffect(
-    () => {
-      let subscriptions: Subscription | undefined;
-      for (const node of modelSource.getModel().iterateTreeModelNodes()) {
-        if (!node.isLoading) {
-          continue;
-        }
-
-        if (subscriptions === undefined) {
-          subscriptions = nodeLoader.loadNode(node, 0).subscribe();
-        } else {
-          subscriptions.add(nodeLoader.loadNode(node, 0).subscribe());
-        }
-      }
-
-      return () => subscriptions?.unsubscribe();
-    },
-    [modelSource, nodeLoader],
-  );
-}
-
-interface ModelSourceUpdateProps {
-  enable?: boolean;
+interface TreeNodeLoaderState {
   modelSource: TreeModelSource;
-  rerenderWithTreeModel: (treeModel?: MutableTreeModel) => void;
+  rulesetRegistration: RulesetRegistrationHelper;
   dataProvider: IPresentationTreeDataProvider;
-  treeNodeItemCreationProps: CreateTreeNodeItemProps;
 }
 
-function useModelSourceUpdateOnIModelHierarchyUpdate(props: ModelSourceUpdateProps) {
-  const { modelSource, dataProvider, rerenderWithTreeModel } = props;
-  useExpandedNodesTracking({ modelSource, dataProvider, enableNodesTracking: !!props.enable });
-  const renderedItems = useRef<RenderedItemsRange | undefined>(undefined);
-  const onItemsRendered = useCallback((items: RenderedItemsRange) => {
-    renderedItems.current = items;
-  }, []);
+/**
+ * Resets state to `initialValue` when dependencies change. Avoid using in new places because this hook is only intended
+ * for use in poorly designed custom hooks.
+ */
+function useResettableState<T>(initialValue: () => T, dependencies: unknown[]): [T, React.Dispatch<React.SetStateAction<T>>] {
+  const stateRef = React.useRef<T>() as React.MutableRefObject<T>;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  React.useMemo(() => stateRef.current = initialValue(), dependencies);
 
-  const onIModelHierarchyChanged = useCallback(
-    async (args: IModelHierarchyChangeEventArgs) => {
-      if (args.rulesetId === dataProvider.rulesetId && args.imodelKey === dataProvider.imodel.key) {
-        if (args.updateInfo === UPDATE_FULL) {
-          rerenderWithTreeModel(undefined);
-        } else {
-          await updateModelSourceAfterIModelChange(modelSource, rerenderWithTreeModel, args.updateInfo, dataProvider, props.treeNodeItemCreationProps, renderedItems.current);
-        }
-      }
-    },
-    [modelSource, dataProvider, rerenderWithTreeModel, props.treeNodeItemCreationProps],
-  );
-  useEffect(
+  const [_, setState] = React.useState({});
+  const setNewStateRef = React.useRef((action: T | ((previousState: T) => T)) => {
+    const newState = action instanceof Function ? action(stateRef.current) : /* istanbul ignore next */ action;
+    // istanbul ignore else
+    if (newState !== stateRef.current) {
+      stateRef.current = newState;
+      setState({});
+    }
+  });
+  return [stateRef.current, setNewStateRef.current];
+}
+
+function useModelSourceUpdateOnIModelHierarchyUpdate(params: {
+  enable: boolean;
+  dataProvider: IPresentationTreeDataProvider;
+  dataProviderProps: PresentationTreeDataProviderProps;
+  pageSize: number;
+  modelSource: TreeModelSource;
+  setTreeNodeLoaderState: React.Dispatch<React.SetStateAction<TreeNodeLoaderState>>;
+  treeNodeItemCreationProps: CreateTreeNodeItemProps;
+}): (items: RenderedItemsRange) => void {
+  const {
+    enable,
+    dataProvider,
+    dataProviderProps,
+    pageSize,
+    modelSource,
+    setTreeNodeLoaderState,
+    treeNodeItemCreationProps,
+  } = params;
+
+  useExpandedNodesTracking({ modelSource, dataProvider, enableNodesTracking: enable });
+  const renderedItems = React.useRef<RenderedItemsRange | undefined>(undefined);
+  const onItemsRendered = React.useCallback((items: RenderedItemsRange) => { renderedItems.current = items; }, []);
+
+  React.useEffect(
     () => {
-      return props.enable
-        ? Presentation.presentation.onIModelHierarchyChanged.addListener(onIModelHierarchyChanged)
-        : undefined;
+      if (!enable) {
+        return;
+      }
+
+      let subscription: Subscription | undefined;
+      const removeListener = Presentation.presentation.onIModelHierarchyChanged.addListener(
+        async (args: IModelHierarchyChangeEventArgs) => {
+          if (args.rulesetId !== dataProvider.rulesetId || args.imodelKey !== dataProvider.imodel.key) {
+            return;
+          }
+
+          const newDataProvider = new PresentationTreeDataProvider({ ...dataProviderProps, ruleset: args.rulesetId });
+          if (args.updateInfo === UPDATE_FULL) {
+            subscription = reloadTree(modelSource.getModel(), newDataProvider, pageSize).subscribe({
+              next: (newModelSource) => setTreeNodeLoaderState((prevState) => ({
+                modelSource: newModelSource,
+                rulesetRegistration: prevState.rulesetRegistration,
+                dataProvider: newDataProvider,
+              })),
+            });
+          } else {
+            const newModelSource = await updateModelSourceAfterIModelChange(
+              modelSource,
+              args.updateInfo,
+              newDataProvider,
+              treeNodeItemCreationProps,
+              renderedItems.current,
+            );
+            setTreeNodeLoaderState((prevState) => ({
+              modelSource: newModelSource,
+              rulesetRegistration: prevState.rulesetRegistration,
+              dataProvider: newDataProvider,
+            }));
+          }
+        },
+      );
+
+      return () => {
+        removeListener();
+        subscription?.unsubscribe();
+      };
     },
-    [onIModelHierarchyChanged, props.enable],
+    [dataProvider, modelSource, enable, pageSize, treeNodeItemCreationProps, dataProviderProps, setTreeNodeLoaderState],
   );
 
   return onItemsRendered;
 }
 
-function useModelSourceUpdateOnRulesetModification(props: ModelSourceUpdateProps) {
-  const onRulesetModified = useCallback(async (curr: RegisteredRuleset, prev: Ruleset) => {
-    if (curr.id === props.dataProvider.rulesetId) {
-      const compareResult = await Presentation.presentation.compareHierarchies({
-        imodel: props.dataProvider.imodel,
-        prev: {
-          rulesetOrId: prev,
-        },
-        rulesetOrId: curr.toJSON(),
-        expandedNodeKeys: getExpandedNodeKeys(props.modelSource, props.dataProvider),
-      });
-      updateModelSource(props.modelSource, props.rerenderWithTreeModel, compareResult, props.treeNodeItemCreationProps);
-    }
-  }, [props.dataProvider, props.modelSource, props.rerenderWithTreeModel, props.treeNodeItemCreationProps]);
-  useEffect(() => {
-    return props.enable ? Presentation.presentation.rulesets().onRulesetModified.addListener(onRulesetModified) : undefined;
-  }, [onRulesetModified, props.enable]);
-}
+function useModelSourceUpdateOnRulesetModification(params: {
+  enable: boolean;
+  dataProviderProps: PresentationTreeDataProviderProps;
+  pageSize: number;
+  modelSource: TreeModelSource;
+  setTreeNodeLoaderState: React.Dispatch<React.SetStateAction<TreeNodeLoaderState>>;
+}): void {
+  const { enable, dataProviderProps, pageSize, modelSource, setTreeNodeLoaderState } = params;
 
-function useModelSourceUpdateOnRulesetVariablesChange(props: ModelSourceUpdateProps) {
-  const onRulesetVariableChanged = useCallback(async (variableId: string, prevValue: VariableValue | undefined) => {
-    // note: we should probably debounce these events while accumulating changed variables in case multiple vars are changed
-    const prevVariables: RulesetVariable[] = [];
-    Presentation.presentation.vars(props.dataProvider.rulesetId).getAllVariables().forEach((variable) => {
-      if (variableId !== variable.id)
-        prevVariables.push(variable);
-      else if (prevValue !== undefined)
-        prevVariables.push({ ...variable, value: prevValue } as RulesetVariable);
-    });
-    const compareResult = await Presentation.presentation.compareHierarchies({
-      imodel: props.dataProvider.imodel,
-      prev: {
-        rulesetVariables: prevVariables,
-      },
-      rulesetOrId: props.dataProvider.rulesetId,
-      expandedNodeKeys: getExpandedNodeKeys(props.modelSource, props.dataProvider),
-    });
-    updateModelSource(props.modelSource, props.rerenderWithTreeModel, compareResult, props.treeNodeItemCreationProps);
-  }, [props.dataProvider, props.modelSource, props.rerenderWithTreeModel, props.treeNodeItemCreationProps]);
-  useEffect(() => {
-    return props.enable ? Presentation.presentation.vars(props.dataProvider.rulesetId).onVariableChanged.addListener(onRulesetVariableChanged) : undefined;
-  }, [props.dataProvider.rulesetId, onRulesetVariableChanged, props.enable]);
-}
-
-function updateModelSource(
-  modelSource: TreeModelSource,
-  rerenderWithTreeModel: (treeModel?: MutableTreeModel) => void,
-  hierarchyModifications: PartialHierarchyModification[],
-  treeNodeItemCreationProps: CreateTreeNodeItemProps,
-) {
-  const newModel = updateTreeModel(modelSource.getModel(), hierarchyModifications, treeNodeItemCreationProps);
-  if (newModel !== modelSource.getModel() || newModel === undefined) {
-    rerenderWithTreeModel(newModel);
-  }
-}
-
-/** @internal */
-export function updateTreeModel(
-  treeModel: TreeModel,
-  hierarchyModifications: PartialHierarchyModification[],
-  treeNodeItemCreationProps: CreateTreeNodeItemProps,
-): MutableTreeModel | undefined {
-  let encounteredAnError = false;
-  const updatedTreeModel = immer.produce(treeModel as MutableTreeModel, (model) => {
-    for (const modification of hierarchyModifications) {
-      switch (modification.type) {
-        case "Insert":
-          const nodeInput = convertToTreeModelNodeInput(createTreeNodeItem(modification.node));
-          const parentId = modification.parent === undefined ? undefined : createTreeNodeId(modification.parent);
-          model.insertChild(parentId, nodeInput, modification.position);
-          break;
-
-        case "Update":
-          const existingNode = model.getNode(createTreeNodeId(modification.target));
-          if (existingNode === undefined) {
-            break;
-          }
-
-          const updatedItem = {
-            ...existingNode.item,
-            ...createPartialTreeNodeItem(modification.changes, existingNode.parentId, treeNodeItemCreationProps),
-          };
-
-          delete existingNode.editingInfo;
-          existingNode.item = updatedItem;
-          existingNode.label = updatedItem.label;
-          existingNode.description = updatedItem.description ?? "";
-
-          if ("hasChildren" in modification.changes) {
-            model.setNumChildren(existingNode.id, modification.changes.hasChildren ? undefined : 0);
-            if (!modification.changes.hasChildren) {
-              existingNode.isExpanded = false;
-              existingNode.isLoading = false;
-            }
-          }
-
-          if ("key" in modification.changes && existingNode.id !== updatedItem.id) {
-            if (!model.changeNodeId(existingNode.id, updatedItem.id)) {
-              encounteredAnError = true;
-              return;
-            }
-
-            existingNode.isSelected = false;
-          }
-
-          break;
-
-        case "Delete":
-          // eslint-disable-next-line deprecation/deprecation
-          const nodeToRemove = model.getNode(createTreeNodeId(modification.target));
-          if (nodeToRemove === undefined) {
-            break;
-          }
-
-          model.removeChild(nodeToRemove.parentId, nodeToRemove.id);
-          break;
+  React.useEffect(
+    () => {
+      if (!enable) {
+        return;
       }
-    }
-  });
 
-  if (encounteredAnError) {
-    return undefined;
-  }
+      let subscription: Subscription | undefined;
+      const removeListener = Presentation.presentation.rulesets().onRulesetModified.addListener((ruleset) => {
+        const dataProvider = new PresentationTreeDataProvider({ ...dataProviderProps, ruleset: ruleset.id });
+        subscription = reloadTree(modelSource.getModel(), dataProvider, pageSize).subscribe({
+          next: (newModelSource) => setTreeNodeLoaderState((prevState) => ({
+            modelSource: newModelSource,
+            rulesetRegistration: prevState.rulesetRegistration,
+            dataProvider,
+          })),
+        });
+      });
 
-  return updatedTreeModel;
+      return () => {
+        removeListener();
+        subscription?.unsubscribe();
+      };
+    },
+    [dataProviderProps, enable, modelSource, pageSize, setTreeNodeLoaderState],
+  );
 }
 
-function convertToTreeModelNodeInput(item: TreeNodeItemData): TreeModelNodeInput {
-  return {
-    description: item.description,
-    isExpanded: !!item.autoExpand,
-    id: item.id,
-    item,
-    label: item.label,
-    isLoading: false,
-    numChildren: item.hasChildren ? undefined : 0,
-    isSelected: false,
-  };
-}
+function useModelSourceUpdateOnRulesetVariablesChange(params: {
+  enable: boolean;
+  dataProviderProps: PresentationTreeDataProviderProps;
+  pageSize: number;
+  rulesetId: string;
+  modelSource: TreeModelSource;
+  setTreeNodeLoaderState: React.Dispatch<React.SetStateAction<TreeNodeLoaderState>>;
+}): void {
+  const { enable, dataProviderProps, pageSize, rulesetId, modelSource, setTreeNodeLoaderState } = params;
 
-function getExpandedNodeKeys(modelSource: TreeModelSource, dataProvider: IPresentationTreeDataProvider) {
-  return getExpandedNodeItems(modelSource).map((item) => dataProvider.getNodeKey(item));
-}
+  React.useEffect(
+    () => {
+      if (!enable) {
+        return;
+      }
 
-function createDataProvider(props: PresentationTreeNodeLoaderProps): IPresentationTreeDataProvider {
-  let dataProvider: IPresentationTreeDataProvider;
-  if (props.dataProvider) {
-    dataProvider = props.dataProvider;
-  } else {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { dataProvider: testDataProvider, ...providerProps } = props;
-    dataProvider = new PresentationTreeDataProvider(providerProps);
-  }
-  return dataProvider;
+      let subscription: Subscription | undefined;
+      const removeListener = Presentation.presentation.vars(rulesetId).onVariableChanged.addListener(() => {
+        // note: we should probably debounce these events while accumulating changed variables in case multiple vars are changed
+        const dataProvider = new PresentationTreeDataProvider({ ...dataProviderProps, ruleset: rulesetId });
+        subscription = reloadTree(modelSource.getModel(), dataProvider, pageSize).subscribe({
+          next: (newModelSource) => setTreeNodeLoaderState((prevState) => ({
+            modelSource: newModelSource,
+            rulesetRegistration: prevState.rulesetRegistration,
+            dataProvider,
+          })),
+        });
+      });
+
+      return () => {
+        removeListener();
+        subscription?.unsubscribe();
+      };
+    },
+    [dataProviderProps, enable, modelSource, pageSize, rulesetId, setTreeNodeLoaderState],
+  );
 }
 
 async function updateModelSourceAfterIModelChange(
   modelSource: TreeModelSource,
-  rerenderWithTreeModel: (treeModel?: MutableTreeModel) => void,
   hierarchyUpdateRecords: HierarchyUpdateRecord[],
   dataProvider: IPresentationTreeDataProvider,
   treeNodeItemCreationProps: CreateTreeNodeItemProps,
   renderedItems?: RenderedItemsRange,
-) {
-  const modelWithUpdateRecords = applyHierarchyChanges(modelSource.getModel() as MutableTreeModel, hierarchyUpdateRecords, [], treeNodeItemCreationProps);
-  if (modelWithUpdateRecords === modelSource.getModel())
-    return;
+): Promise<TreeModelSource> {
+  const modelWithUpdateRecords = applyHierarchyChanges(
+    modelSource.getModel() as MutableTreeModel,
+    hierarchyUpdateRecords,
+    [],
+    treeNodeItemCreationProps,
+  );
+  if (modelWithUpdateRecords === modelSource.getModel()) {
+    return modelSource;
+  }
 
-  if (!renderedItems)
-    return rerenderWithTreeModel(modelWithUpdateRecords);
+  if (!renderedItems) {
+    return new TreeModelSource(modelWithUpdateRecords);
+  }
 
-  const reloadedHierarchyParts = await reloadVisibleHierarchyParts(new TreeModelSource(modelWithUpdateRecords).getVisibleNodes(), renderedItems, dataProvider);
+  const reloadedHierarchyParts = await reloadVisibleHierarchyParts(computeVisibleNodes(modelWithUpdateRecords), renderedItems, dataProvider);
   const newModel = applyHierarchyChanges(modelSource.getModel() as MutableTreeModel, hierarchyUpdateRecords, reloadedHierarchyParts, treeNodeItemCreationProps);
-  rerenderWithTreeModel(newModel);
+  return new TreeModelSource(newModel);
 }
 
 /** @internal */
@@ -353,7 +341,8 @@ export function applyHierarchyChanges(
   reloadedHierarchyParts: ReloadedHierarchyPart[],
   treeNodeItemCreationProps: CreateTreeNodeItemProps
 ) {
-  const updatedTreeModel = immer.produce(treeModel, (model: MutableTreeModel) => {
+  const modelSource = new TreeModelSource(treeModel);
+  modelSource.modifyModel((model: MutableTreeModel) => {
     const updateParentIds = hierarchyUpdateRecords
       .map((record) => record.parent ? createTreeNodeId(record.parent) : undefined);
     for (const record of hierarchyUpdateRecords) {
@@ -390,7 +379,7 @@ export function applyHierarchyChanges(
       }
     }
   });
-  return updatedTreeModel;
+  return modelSource.getModel() as MutableTreeModel;
 }
 
 function rebuildSubTree(oldModel: MutableTreeModel, newModel: MutableTreeModel, parentNode: TreeModelNode, excludedNodeIds: Array<string | undefined>) {
@@ -410,7 +399,16 @@ function rebuildSubTree(oldModel: MutableTreeModel, newModel: MutableTreeModel, 
 }
 
 function createModelNodeInput(oldNode: MutableTreeModelNode | undefined, newNode: TreeNodeItem): TreeModelNodeInput {
-  const newInput = convertToTreeModelNodeInput(newNode);
+  const newInput = {
+    description: newNode.description,
+    isExpanded: !!newNode.autoExpand,
+    id: newNode.id,
+    item: newNode,
+    label: newNode.label,
+    isLoading: false,
+    numChildren: 0,
+    isSelected: false,
+  };
   if (!oldNode) {
     return newInput;
   }
@@ -430,7 +428,15 @@ export async function reloadVisibleHierarchyParts(
   dataProvider: IPresentationTreeDataProvider,
 ) {
   const itemsRange = getItemsRange(renderedItems, visibleNodes);
-  const partsToReload = new Map<string | undefined, { parentItem: TreeNodeItem | undefined, startIndex: number, endIndex: number }>();
+
+  interface ChildRange {
+    parentItem: TreeNodeItem | undefined;
+    startIndex: number;
+    endIndex: number;
+  }
+
+  const partsToReload = new Map<string | undefined, ChildRange>();
+
   for (let i = itemsRange.startIndex; i <= itemsRange.endIndex; i++) {
     const node = visibleNodes.getAtIndex(i);
     if (!node || !isTreeModelNodePlaceholder(node))

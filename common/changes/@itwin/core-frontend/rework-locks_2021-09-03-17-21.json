@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "rename contexId to iTwinId",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

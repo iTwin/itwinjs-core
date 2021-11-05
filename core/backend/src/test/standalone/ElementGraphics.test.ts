@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { assert } from "@bentley/bentleyjs-core";
-import { CurrentImdlVersion, DynamicGraphicsRequest3dProps, ElementGeometry, ElementGeometryDataEntry, ElementGraphicsRequestProps, GeometryStreamIterator } from "@bentley/imodeljs-common";
+import { assert } from "@itwin/core-bentley";
+import { CurrentImdlVersion, DynamicGraphicsRequest3dProps, ElementGeometry, ElementGeometryDataEntry, ElementGraphicsRequestProps, GeometryStreamIterator } from "@itwin/core-common";
 import { ElementGraphicsStatus } from "@bentley/imodeljs-native";
-import { GeometricElement3d, SnapshotDb } from "../../imodeljs-backend";
+import { GeometricElement3d, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("ElementGraphics", () => {
@@ -118,21 +118,21 @@ describe("ElementGraphics", () => {
   });
 
   it("produces expected errors", async () => {
-    type TestCase = [ ElementGraphicsStatus, Partial<ElementGraphicsRequestProps> ];
+    type TestCase = [ElementGraphicsStatus, Partial<ElementGraphicsRequestProps>];
     const testCases: TestCase[] = [
-      [ ElementGraphicsStatus.ElementNotFound, { elementId: "0" } ],
-      [ ElementGraphicsStatus.ElementNotFound, { elementId: "0x12345678" } ],
-      [ ElementGraphicsStatus.ElementNotFound, { elementId: undefined } ],
+      [ElementGraphicsStatus.ElementNotFound, { elementId: "0" }],
+      [ElementGraphicsStatus.ElementNotFound, { elementId: "0x12345678" }],
+      [ElementGraphicsStatus.ElementNotFound, { elementId: undefined }],
 
-      [ ElementGraphicsStatus.InvalidJson, { id: undefined } ],
-      [ ElementGraphicsStatus.InvalidJson, { toleranceLog10: undefined } ],
+      [ElementGraphicsStatus.InvalidJson, { id: undefined }],
+      [ElementGraphicsStatus.InvalidJson, { toleranceLog10: undefined }],
 
-      [ ElementGraphicsStatus.InvalidJson, { toleranceLog10: 12.5 } ],
-      [ ElementGraphicsStatus.InvalidJson, { toleranceLog10: "tol" as any } ],
+      [ElementGraphicsStatus.InvalidJson, { toleranceLog10: 12.5 }],
+      [ElementGraphicsStatus.InvalidJson, { toleranceLog10: "tol" as any }],
 
-      [ ElementGraphicsStatus.Success, { formatVersion: undefined } ],
-      [ ElementGraphicsStatus.UnknownMajorFormatVersion, { formatVersion: CurrentImdlVersion.Major + 1 } ],
-      [ ElementGraphicsStatus.UnknownMajorFormatVersion, { formatVersion: "latest" as any } ],
+      [ElementGraphicsStatus.Success, { formatVersion: undefined }],
+      [ElementGraphicsStatus.UnknownMajorFormatVersion, { formatVersion: CurrentImdlVersion.Major + 1 }],
+      [ElementGraphicsStatus.UnknownMajorFormatVersion, { formatVersion: "latest" as any }],
     ];
 
     for (const testCase of testCases) {

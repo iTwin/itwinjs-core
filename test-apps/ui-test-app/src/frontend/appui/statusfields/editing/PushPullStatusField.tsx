@@ -4,19 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 import "./PushPullField.scss";
 import * as React from "react";
-import { BeEvent } from "@bentley/bentleyjs-core";
-import { ChangeSetPostPushEvent, ChangeSetQuery } from "@bentley/imodelhub-client";
+import { BeEvent } from "@itwin/core-bentley";
+import { ChangeSetPostPushEvent, ChangeSetQuery, IModelHubFrontend } from "@bentley/imodelhub-client";
 import {
-  AuthorizedFrontendRequestContext, BriefcaseConnection, IModelApp, IModelHubFrontend, NotifyMessageDetails, OutputMessageAlert,
-  OutputMessagePriority, OutputMessageType,
-} from "@bentley/imodeljs-frontend";
-import { Icon, Spinner, SpinnerSize } from "@bentley/ui-core";
-import { StatusFieldProps, UiFramework } from "@bentley/ui-framework";
-import { FooterIndicator } from "@bentley/ui-ninezone";
+  BriefcaseConnection, IModelApp, NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType,
+} from "@itwin/core-frontend";
+import { Icon } from "@itwin/core-react";
+import { StatusFieldProps, UiFramework } from "@itwin/appui-react";
+import { FooterIndicator } from "@itwin/appui-layout-react";
+import { ProgressRadial } from "@itwin/itwinui-react";
 import { ErrorHandling } from "../../../api/ErrorHandling";
 
 function translate(prompt: string) {
-  return IModelApp.i18n.translate(`SampleApp:statusFields.${prompt}`);
+  return IModelApp.localization.getLocalizedString(`SampleApp:statusFields.${prompt}`);
 }
 
 interface PushPullState {
@@ -33,8 +33,11 @@ class SyncManager {
   public static changesetListenerInitialized = false;
   public static localChangesListenerInitialized = false;
 
-  public static get briefcaseConnection(): BriefcaseConnection {
-    return UiFramework.getIModelConnection()! as BriefcaseConnection;
+  public static get briefcaseConnection(): BriefcaseConnection | undefined {
+    const iModelConnection = UiFramework.getIModelConnection();
+    if (iModelConnection && iModelConnection.isBriefcaseConnection())
+      return iModelConnection;
+    return undefined;
   }
 
   public static async initializeChangesetListener() {
@@ -42,43 +45,45 @@ class SyncManager {
       return;
     this.changesetListenerInitialized = true;
 
-    const iModelId = this.briefcaseConnection.iModelId;
-    try {
-      const requestContext = await AuthorizedFrontendRequestContext.create();
+    if (this.briefcaseConnection) {
+      const iModelId = this.briefcaseConnection.iModelId;
+      try {
+        const accessToken = await IModelApp.getAccessToken();
+        // Bootstrap the process by finding out if there are newer changesets on the server already.
+        this.state.parentChangesetId = this.briefcaseConnection.changeset.id;
 
-      // Bootstrap the process by finding out if there are newer changesets on the server already.
-      this.state.parentChangesetId = this.briefcaseConnection.changeSetId!;
+        if (!!this.state.parentChangesetId) {  // avoid error if imodel has no changesets.
+          const hubAccess = new IModelHubFrontend();
+          const allOnServer = await hubAccess.hubClient.changeSets.get(accessToken, iModelId, new ChangeSetQuery().fromId(this.state.parentChangesetId));
+          this.state.changesOnServer = allOnServer.map((changeset) => changeset.id!);
 
-      if (!!this.state.parentChangesetId) {  // avoid error if imodel has no changesets.
-        const allOnServer = await IModelHubFrontend.iModelClient.changeSets.get(requestContext, iModelId, new ChangeSetQuery().fromId(this.state.parentChangesetId));
-        this.state.changesOnServer = allOnServer.map((changeset) => changeset.id!);
+          this.onStateChange.raiseEvent();
 
-        this.onStateChange.raiseEvent();
+          // Once the initial state of the briefcase is known, register for events announcing new changesets
+          const changeSetSubscription = await hubAccess.hubClient.events.subscriptions.create(accessToken, iModelId, ["ChangeSetPostPushEvent"]); // eslint-disable-line deprecation/deprecation
 
-        // Once the initial state of the briefcase is known, register for events announcing new changesets
-        const changeSetSubscription = await IModelHubFrontend.iModelClient.events.subscriptions.create(requestContext, iModelId, ["ChangeSetPostPushEvent"]); // eslint-disable-line deprecation/deprecation
-
-        IModelHubFrontend.iModelClient.events.createListener(requestContext, async () => requestContext.accessToken, changeSetSubscription.wsgId, iModelId, async (receivedEvent: ChangeSetPostPushEvent) => {
-          if (receivedEvent.changeSetId !== this.state.parentChangesetId) {
-            this.state.changesOnServer.push(receivedEvent.changeSetId);
-            this.onStateChange.raiseEvent();
-          }
-        });
+          hubAccess.hubClient.events.createListener(async () => accessToken, changeSetSubscription.wsgId, iModelId, async (receivedEvent: ChangeSetPostPushEvent) => {
+            if (receivedEvent.changeSetId !== this.state.parentChangesetId) {
+              this.state.changesOnServer.push(receivedEvent.changeSetId);
+              this.onStateChange.raiseEvent();
+            }
+          });
+        }
+      } catch (err: any) {
+        ErrorHandling.onUnexpectedError(err);
       }
-    } catch (err) {
-      ErrorHandling.onUnexpectedError(err);
     }
   }
 
   public static async initializeLocalChangesListener() {
-    if (this.localChangesListenerInitialized)
+    if (this.localChangesListenerInitialized || undefined === this.briefcaseConnection)
       return;
 
     this.localChangesListenerInitialized = true;
     try {
       // Bootstrap the process by finding out if the briefcase has local txns already.
       this.state.mustPush = await this.briefcaseConnection.hasPendingTxns();
-    } catch (err) {
+    } catch (err: any) {
       ErrorHandling.onUnexpectedError(err);
     }
 
@@ -86,27 +91,29 @@ class SyncManager {
 
     // Once the initial state of the briefcase is known, register for events announcing new txns and pushes that clear local txns.
     const txns = this.briefcaseConnection.txns;
-    txns.onCommitted.addListener((hasPendingTxns, time) => {
-      if (time > this.state.timeOfLastSaveEvent) { // work around out-of-order events
-        this.state.timeOfLastSaveEvent = time;
-        this.state.mustPush = hasPendingTxns;
+    if (txns) {
+      txns.onCommitted.addListener((hasPendingTxns, time) => {
+        if (time > this.state.timeOfLastSaveEvent) { // work around out-of-order events
+          this.state.timeOfLastSaveEvent = time;
+          this.state.mustPush = hasPendingTxns;
+          this.onStateChange.raiseEvent();
+        }
+      });
+
+      txns.onChangesPushed.addListener((parentChangeset) => {
+        // In case I got the changeSetSubscription event first, remove the changeset that I pushed from the list of server changes waiting to be merged.
+        const allChangesOnServer = this.state.changesOnServer.filter((cs) => cs !== parentChangeset.id);
+        this.state.mustPush = false;
+        this.state.changesOnServer = allChangesOnServer;
+        this.state.parentChangesetId = parentChangeset.id;
         this.onStateChange.raiseEvent();
-      }
-    });
+      });
 
-    txns.onChangesPushed.addListener((parentChangeSetId) => {
-      // In case I got the changeSetSubscription event first, remove the changeset that I pushed from the list of server changes waiting to be merged.
-      const allChangesOnServer = this.state.changesOnServer.filter((cs) => cs !== parentChangeSetId);
-      this.state.mustPush = false;
-      this.state.changesOnServer = allChangesOnServer;
-      this.state.parentChangesetId = parentChangeSetId;
-      this.onStateChange.raiseEvent();
-    });
-
-    txns.onChangesPulled.addListener((parentChangeSetId) => {
-      this.updateParentChangesetId(parentChangeSetId);
-      this.onStateChange.raiseEvent();
-    });
+      txns.onChangesPulled.addListener((parentChangeset) => {
+        this.updateParentChangesetId(parentChangeset.id);
+        this.onStateChange.raiseEvent();
+      });
+    }
   }
 
   private static updateParentChangesetId(parentChangeSetId: string) {
@@ -119,7 +126,7 @@ class SyncManager {
   }
 
   public static async syncChanges(doPush: boolean) {
-    if (this.state.isSynchronizing)
+    if (this.state.isSynchronizing || undefined === this.briefcaseConnection)
       return;
 
     const failmsg = translate(doPush ? "pullMergePushFailed" : "pullMergeFailed");
@@ -129,9 +136,9 @@ class SyncManager {
 
     try {
       await this.briefcaseConnection.pushChanges("");
-      const parentChangesetId = this.briefcaseConnection.changeSetId!;
+      const parentChangesetId = this.briefcaseConnection.changeset.id;
       this.updateParentChangesetId(parentChangesetId);
-    } catch (err) {
+    } catch (err: any) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, failmsg, err.message, OutputMessageType.Alert, OutputMessageAlert.Dialog));
     } finally {
       this.state.isSynchronizing = false;
@@ -145,20 +152,30 @@ export class PushPullStatusField extends React.Component<StatusFieldProps, PushP
     super(props, context);
 
     this.state = SyncManager.state;
+  }
 
-    SyncManager.onStateChange.addListener(() => {
-      this.setState(SyncManager.state);
-    });
+  private syncState = () => {
+    this.setState(SyncManager.state);
+  };
 
-    SyncManager.initializeLocalChangesListener().catch((err) => ErrorHandling.onUnexpectedError(err));
-    SyncManager.initializeChangesetListener().catch((err) => ErrorHandling.onUnexpectedError(err));
+  public override componentDidMount(): void {
+    if (SyncManager.briefcaseConnection) {
+      SyncManager.onStateChange.addListener(this.syncState);
+      SyncManager.initializeLocalChangesListener().catch((err) => ErrorHandling.onUnexpectedError(err));
+      SyncManager.initializeChangesetListener().catch((err) => ErrorHandling.onUnexpectedError(err));
+    }
+  }
+
+  public override componentWillUnmount() {
+    SyncManager.onStateChange.removeListener(this.syncState);
   }
 
   private get mustPush(): boolean { return this.state.mustPush; }
   private get mustPull(): boolean { return this.state.changesOnServer.length !== 0; }
 
   public override render() {
-    if (UiFramework.getIModelConnection() === undefined)
+    // only display status complete status field if IModelConnection is a BriefcaseConnection
+    if (undefined === SyncManager.briefcaseConnection)
       return <div />;
 
     if (this.state.isSynchronizing) {
@@ -170,7 +187,7 @@ export class PushPullStatusField extends React.Component<StatusFieldProps, PushP
         >
           <div id="simple-editor-app-statusFields-pushPull-buttons" title="Synchronizing...">
             <div>
-              <Spinner size={SpinnerSize.Small} />
+              <ProgressRadial size="x-small" indeterminate />
             </div>
             <span> </span>
             <div>

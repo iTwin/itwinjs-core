@@ -1,0 +1,30 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/z-index";
+
+.nz-stagePanels-stagePanels {
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  pointer-events: none;
+  min-height: 0;
+
+  >.nz-rows {
+    display: flex;
+    flex-direction: column;
+    flex: 1 100%;
+    min-width: 0;
+
+    >.nz-content {
+      flex: 1 100%;
+      min-height: 0;
+    }
+  }
+
+  >.nz-panel,
+  .nz-rows>.nz-panel {
+    position: relative;
+  }
+}

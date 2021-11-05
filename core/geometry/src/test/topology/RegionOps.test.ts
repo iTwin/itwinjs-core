@@ -113,6 +113,7 @@ class PolygonBooleanTests {
     const range = Range3d.createArray(boundary0);
     const noisyDeltaX = range.xLength() * 1.25;
     let dx1 = noisyDeltaX;
+    const dx1Start = 2 * noisyDeltaX;
     let boolOp = "";
     const noisy = this.getNoisy();
     if (noisy !== 0)
@@ -138,7 +139,7 @@ class PolygonBooleanTests {
     this.y0 = 0.0;
     GeometryCoreTestIO.captureGeometry(this.allGeometry, LineString3d.create(boundary0), this.x0, this.y0);
     GeometryCoreTestIO.captureGeometry(this.allGeometry, LineString3d.create(boundary1), this.x0, this.y0);
-    this.y0 += yStep; dx1 = 0.0;
+    this.y0 += yStep; dx1 = dx1Start;
     boolOp = "Union";
     let unionArea;
     let differenceAreaBOnly;
@@ -149,7 +150,7 @@ class PolygonBooleanTests {
       unionArea = PolyfaceQuery.sumFacetAreas(unionRegion);
       GeometryCoreTestIO.captureGeometry(this.allGeometry, unionRegion, this.x0, this.y0);
     }
-    this.y0 += yStep; dx1 = 0.0;
+    this.y0 += yStep; dx1 = dx1Start;
 
     boolOp = "Intersection";
     const intersectionRegion = RegionOps.polygonXYAreaIntersectLoopsToPolyface(boundary0, boundary1);
@@ -157,7 +158,7 @@ class PolygonBooleanTests {
       intersectionArea = PolyfaceQuery.sumFacetAreas(intersectionRegion);
       GeometryCoreTestIO.captureGeometry(this.allGeometry, intersectionRegion, this.x0, this.y0);
     }
-    this.y0 += yStep; dx1 = 0.0;
+    this.y0 += yStep; dx1 = dx1Start;
 
     boolOp = "Difference";
     const differenceRegionAOnly = RegionOps.polygonXYAreaDifferenceLoopsToPolyface(boundary0, boundary1);
@@ -165,7 +166,7 @@ class PolygonBooleanTests {
       differenceAreaAOnly = PolyfaceQuery.sumFacetAreas(differenceRegionAOnly);
       GeometryCoreTestIO.captureGeometry(this.allGeometry, differenceRegionAOnly, this.x0, this.y0);
     }
-    this.y0 += yStep; dx1 = 0.0;
+    this.y0 += yStep; dx1 = dx1Start;
 
     boolOp = "Difference";
     const differenceRegionBOnly = RegionOps.polygonXYAreaDifferenceLoopsToPolyface(boundary1, boundary0);
@@ -175,7 +176,7 @@ class PolygonBooleanTests {
     }
 
     if (unionArea !== undefined && intersectionArea !== undefined && differenceAreaAOnly !== undefined && differenceAreaBOnly !== undefined) {
-      this.ck.testCoordinate(unionArea, differenceAreaAOnly + differenceAreaBOnly + intersectionArea);
+      this.ck.testCoordinate(unionArea, differenceAreaAOnly + differenceAreaBOnly + intersectionArea, "union = A1 + intersection + B1");
     }
     this.x0 += 2.0 * range.xLength() + dx1;
     this.y0 = 0.0;
@@ -199,6 +200,13 @@ describe("RegionOps", () => {
     expect(context.getNumErrors()).equals(0);
   });
 
+  it("BooleanDisjointRectangles", () => {
+    const context = new PolygonBooleanTests();
+    context.setDebugControls(10, 1);
+    context.testBooleans(Sample.createRectangleXY(0, 0, 5, 2), Sample.createRectangleXY(1, 4, 2, 3));
+    context.saveAndReset("RegionOps", "BooleanDisjointRectangles");
+    expect(context.getNumErrors()).equals(0);
+  });
   it.skip("BooleanFractalAB", () => {
     // EDL July 15 2019 This triggers euler problem
     const context = new PolygonBooleanTests();

@@ -11,16 +11,15 @@ class ProxyAuthClient : NSObject, AuthorizationClient {
     var startsAt = 1614640594109.5281;
     var userToken = "...";
 
-    func initialize(_ requestContext: ClientRequestContext?, settings authSettings: AuthSettings, onComplete completion: @escaping AuthorizationClientCallback) {
-        completion(requestContext ?? ClientRequestContext(), nil);
+    func initialize(_ authSettings: AuthSettings, onComplete completion: @escaping AuthorizationClientCallback) {
+        completion(nil);
     }
-    func sign(in requestContext: ClientRequestContext?, onComplete completion: @escaping AuthorizationClientCallback) {
-        completion(requestContext ?? ClientRequestContext(), nil);
+    func sign(in completion: @escaping AuthorizationClientCallback) {
+        completion(nil);
         raiseOnUserStateChanged(token: userToken, err: nil);
     }
-    func signOut(_ requestContext: ClientRequestContext?, onComplete completion: @escaping AuthorizationClientCallback) {
-        let ctx = requestContext ?? ClientRequestContext();
-        completion(ctx, nil);
+    func signOut(_ completion: @escaping AuthorizationClientCallback) {
+        completion(nil);
         raiseOnUserStateChanged(token: userToken, err: nil);
     }
     func wrapTokenInJson(token: String?) -> String? {
@@ -44,9 +43,9 @@ class ProxyAuthClient : NSObject, AuthorizationClient {
             onUserStateChanged!(jToken, err);
         }
     }
-    func getAccessToken(_ requestContext: ClientRequestContext?, onComplete completion: @escaping AccessTokenCallback) {
+    func getAccessToken(_ completion: @escaping AccessTokenCallback) {
         let jToken = wrapTokenInJson(token: userToken);
-        completion(requestContext ?? ClientRequestContext(), jToken, nil);
+        completion(jToken, nil);
     }
     func resumeExternalUserAgentFlow(_ url: URL) -> Bool {
         return true;

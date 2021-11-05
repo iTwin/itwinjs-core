@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "suppress error logging during test that expect errors",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

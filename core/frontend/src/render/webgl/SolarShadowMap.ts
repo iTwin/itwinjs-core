@@ -7,10 +7,10 @@
  * @module WebGL
  */
 
-import { assert, dispose } from "@bentley/bentleyjs-core";
-import { ClipUtilities, ConvexClipPlaneSet, Geometry, GrowableXYZArray, Map4d, Matrix3d, Matrix4d, Point3d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
-import { Frustum, FrustumPlanes, RenderMode, RenderTexture, SolarShadowSettings, ViewFlags } from "@bentley/imodeljs-common";
-import { RenderType } from "@bentley/webgl-compatibility";
+import { assert, dispose } from "@itwin/core-bentley";
+import { ClipUtilities, ConvexClipPlaneSet, Geometry, GrowableXYZArray, Map4d, Matrix3d, Matrix4d, Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
+import { Frustum, FrustumPlanes, RenderMode, RenderTexture, SolarShadowSettings, ViewFlags } from "@itwin/core-common";
+import { RenderType } from "@itwin/webgl-compatibility";
 import { Tile, TileDrawArgs, TileTreeReference, TileVisibility } from "../../tile/internal";
 import { SceneContext } from "../../ViewContext";
 import { RenderGraphic } from "../RenderGraphic";
@@ -161,12 +161,12 @@ class Bundle implements WebGLDisposable {
     if (undefined === fboSM)
       return undefined;
 
-    const depthTexture = new Texture(new RenderTexture.Params(undefined, RenderTexture.Type.TileSection, true), depthTextureHandle);
+    const depthTexture = new Texture({ ownership: "external", type: RenderTexture.Type.TileSection, handle: depthTextureHandle });
     const evsmGeom = EVSMGeometry.createGeometry(depthTexture.texture.getHandle()!, shadowMapWidth, shadowMapHeight);
     if (undefined === evsmGeom)
       return undefined;
 
-    const shadowMapTexture = new Texture(new RenderTexture.Params(undefined, RenderTexture.Type.Normal, true), shadowMapTextureHandle);
+    const shadowMapTexture = new Texture({ type: RenderTexture.Type.Normal, ownership: "external", handle: shadowMapTextureHandle });
     const renderCommands = new RenderCommands(target, stack, batch);
     return new Bundle(depthTexture, shadowMapTexture, fbo, fboSM, evsmGeom, renderCommands);
   }
@@ -355,7 +355,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
     mapToWorld.multiplyPoint3dArrayQuietNormalize(scratchFrustum.points);       // This frustum represents the shadwowing geometry.  Intersect it with background geometry and expand the range depth to include that intersection.
     const backgroundMapGeometry = context.viewport.view.displayStyle.getBackgroundMapGeometry();
     if (undefined !== backgroundMapGeometry) {
-      const backgroundDepthRange = backgroundMapGeometry.getFrustumIntersectionDepthRange(this._shadowFrustum, iModel.projectExtents);
+      const backgroundDepthRange = backgroundMapGeometry.getFrustumIntersectionDepthRange(this._shadowFrustum);
       if (!backgroundDepthRange.isNull)
         shadowRange.low.z = Math.min(shadowRange.low.z, backgroundDepthRange.low);
     }
@@ -448,17 +448,17 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
     const gl = System.instance.context;
     gl.viewport(0, 0, shadowMapWidth, shadowMapHeight);
 
-    const viewFlags = target.currentViewFlags.clone(this._scratchViewFlags);
-    viewFlags.renderMode = RenderMode.SmoothShade;
-    viewFlags.transparency = false;
-    // viewFlags.textures = false;  // need textures for alpha transparency shadows
-    viewFlags.lighting = false;
-    viewFlags.shadows = false;
-    viewFlags.noGeometryMap = true;
-    viewFlags.monochrome = false;
-    // viewFlags.materials = false; material transparency affects whether or not surface casts shadows
-    viewFlags.ambientOcclusion = false;
-    viewFlags.visibleEdges = viewFlags.hiddenEdges = false;
+    // NB: textures and materials are needed because their transparencies affect whether or not a surface casts shadows
+    const viewFlags = target.currentViewFlags.copy({
+      renderMode: RenderMode.SmoothShade,
+      transparency: false,
+      lighting: false,
+      shadows: false,
+      monochrome: false,
+      ambientOcclusion: false,
+      visibleEdges: false,
+      hiddenEdges: false,
+    });
 
     System.instance.applyRenderState(this._renderState);
     const prevPlan = target.plan;

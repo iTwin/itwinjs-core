@@ -6,7 +6,7 @@
  * @module Analytical
  */
 
-import { GeometricModel3d } from "@bentley/imodeljs-backend";
+import { GeometricModel3d } from "@itwin/core-backend";
 
 /** A container for persisting AnalyticalElement instances used to model a specialized analytical perspective.
  * @beta

@@ -6,8 +6,8 @@
  * @module Core
  */
 
-import { assert, BeEvent, Id64, Id64String, OrderedId64Iterable } from "@bentley/bentleyjs-core";
-import { RulesetVariable, VariableValue, VariableValueTypes } from "@bentley/presentation-common";
+import { assert, BeEvent, Id64, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
+import { RulesetVariable, VariableValue, VariableValueTypes } from "@itwin/presentation-common";
 import { IpcRequestsHandler } from "./IpcRequestsHandler";
 
 /**
@@ -242,7 +242,7 @@ export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
    * Sets `number[]` variable value
    */
   public async setInts(variableId: string, value: number[]): Promise<void> {
-    await this.setValue({ id: variableId, type: VariableValueTypes.IntArray, value });
+    await this.setValue({ id: variableId, type: VariableValueTypes.IntArray, value: [...value] });
   }
 
   /**
@@ -272,7 +272,7 @@ export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
    * Sets `Id64String[]` variable value
    */
   public async setId64s(variableId: string, value: Id64String[]): Promise<void> {
-    await this.setValue({ id: variableId, type: VariableValueTypes.Id64Array, value: OrderedId64Iterable.sortArray(value) });
+    await this.setValue({ id: variableId, type: VariableValueTypes.Id64Array, value: [...OrderedId64Iterable.sortArray(value)] });
   }
 }
 
@@ -292,9 +292,6 @@ function variablesEqual(lhs: RulesetVariable, rhs: RulesetVariable) {
 }
 
 function arraysEqual(lhs: any[], rhs: any[]) {
-  if (lhs === rhs)
-    return true;
-
   if (lhs.length !== rhs.length)
     return false;
 

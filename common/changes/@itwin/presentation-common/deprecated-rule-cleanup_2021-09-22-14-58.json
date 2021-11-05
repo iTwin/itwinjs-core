@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-common",
+      "comment": "Removed deprecated rules for iModel.js 3.0.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-common"
+}

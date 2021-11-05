@@ -447,6 +447,9 @@
     },
     "ToggleTileTreeReferences": {
       "keyin": "fdt toggle treerefs"
+    },
+   "WoWIgnoreBackground": {
+      "keyin": "fdt wow ignore background"
     }
   }
 }

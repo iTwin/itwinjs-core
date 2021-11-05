@@ -1,0 +1,35 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<TextEditor /> renders correctly 1`] = `
+<ForwardRef
+  aria-label="editor.text"
+  className="components-cell-editor components-text-editor"
+  data-testid="components-text-editor"
+  onChange={[Function]}
+  readOnly={false}
+  style={
+    Object {
+      "minWidth": "6em",
+    }
+  }
+  type="text"
+  value=""
+/>
+`;
+
+exports[`<TextEditor /> renders correctly with style 1`] = `
+<ForwardRef
+  aria-label="editor.text"
+  className="components-cell-editor components-text-editor"
+  data-testid="components-text-editor"
+  onChange={[Function]}
+  readOnly={false}
+  style={
+    Object {
+      "color": "red",
+    }
+  }
+  type="text"
+  value=""
+/>
+`;

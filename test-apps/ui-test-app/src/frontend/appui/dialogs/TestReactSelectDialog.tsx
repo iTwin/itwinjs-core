@@ -2,9 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 import * as React from "react";
-import { Dialog, DialogButtonType, LabeledThemedSelect, ThemedSelect } from "@bentley/ui-core";
-import { ModalDialogManager } from "@bentley/ui-framework";
+import { Dialog, LabeledThemedSelect, ThemedSelect } from "@itwin/core-react";
+import { ModalDialogManager } from "@itwin/appui-react";
+import { DialogButtonType } from "@itwin/appui-abstract";
 
 enum ColorOptions {
   Red,

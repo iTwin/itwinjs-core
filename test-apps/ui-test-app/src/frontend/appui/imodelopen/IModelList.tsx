@@ -5,20 +5,21 @@
 import "./IModelList.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { SearchBox, Toggle } from "@bentley/ui-core";
-import { IModelInfo } from "@bentley/ui-framework";
+import { SearchBox } from "@itwin/core-react";
+import { Button, ToggleSwitch } from "@itwin/itwinui-react";
 import { IModelCard } from "./IModelCard";
-import { ProjectDialog } from "./ProjectDialog";
+import { BasicIModelInfo, IModelInfo } from "../ExternalIModel";
+import { ITwinDialog } from "./ITwinDialog";
 
 /** Properties for the [[IModelList]] component */
 export interface IModelListProps {
   iModels?: IModelInfo[];
-  onIModelSelected?: (iModel: IModelInfo) => void;
+  onIModelSelected?: (iModelInfo: BasicIModelInfo) => void;
 }
 
 interface IModelListState {
   showDescriptions: boolean;
-  showProjectDialog: boolean;
+  showITwinDialog: boolean;
   currentIModel?: IModelInfo;
   showDetails: boolean;
   filter: string;
@@ -34,7 +35,7 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
 
     this.state = {
       showDescriptions: true, /* show descriptions by default */
-      showProjectDialog: false,
+      showITwinDialog: false,
       showDetails: false,
       filter: "",
     };
@@ -48,12 +49,12 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
     this.setState({ showDetails: true });
   };
 
-  private _onShowProjectsSelector = () => {
-    this.setState({ showProjectDialog: true });
+  private _onShowITwinsSelector = () => {
+    this.setState({ showITwinDialog: true });
   };
 
-  private _onProjectsSelectorClose = () => {
-    this.setState({ showProjectDialog: false });
+  private _onITwinsSelectorClose = () => {
+    this.setState({ showITwinDialog: false });
   };
 
   private _handleSearchValueChanged = (value: string): void => {
@@ -83,15 +84,14 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
 
   private renderIModel(iModelInfo: IModelInfo) {
     const size = `${Math.floor(Math.random() * 100).toString()} MB`;
-    // const checked = Math.random() > .5;
     return (
-      <tr key={iModelInfo.wsgId}>
+      <tr key={iModelInfo.id}>
         <td onClick={this._onIModelClick.bind(this, iModelInfo)}><span className="icon icon-placeholder" />{iModelInfo.name}</td>
         <td onClick={this._onIModelClick.bind(this, iModelInfo)}>{size}</td>
         <td onClick={this._onIModelClick.bind(this, iModelInfo)}>This device</td>
         <td onClick={this._onIModelClick.bind(this, iModelInfo)}>{iModelInfo.createdDate.toLocaleString()}</td>
         <td>
-          <Toggle className="toggle-offline" showCheckmark={true} />
+          <ToggleSwitch className="toggle-offline" />
         </td>
       </tr>
     );
@@ -101,10 +101,11 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
     return (
       <div className="cards">
         {iModels.map((iModelInfo: IModelInfo) => (
-          <IModelCard key={iModelInfo.wsgId}
+          <IModelCard key={iModelInfo.id}
             iModel={iModelInfo}
             showDescription={this.state.showDescriptions}
-            onSelectIModel={this.props.onIModelSelected} />
+            onSelectIModel={this.props.onIModelSelected}
+          />
         ))}
       </div>
     );
@@ -136,10 +137,10 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
       return (
         <div className="cards-empty">
           <div className="fade-in-fast">
-            There are no iModels associated to this project.
-            <button onClick={this._onShowProjectsSelector}>Search for active projects in your Organization?</button>
+            There are no iModels associated to this ITwin.
+            <Button styleType="cta" onClick={this._onShowITwinsSelector}>Search for active iTwins in your Organization?</Button>
           </div>
-          {this.state.showProjectDialog && <ProjectDialog onClose={this._onProjectsSelectorClose} />}
+          {this.state.showITwinDialog && <ITwinDialog onClose={this._onITwinsSelectorClose} />}
         </div>
       );
     } else {

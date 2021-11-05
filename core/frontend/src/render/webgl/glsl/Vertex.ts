@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { DrawParams } from "../DrawCommand";
 import { UniformHandle } from "../UniformHandle";
 import { Matrix4 } from "../Matrix";

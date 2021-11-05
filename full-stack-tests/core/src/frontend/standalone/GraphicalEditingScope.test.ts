@@ -5,14 +5,14 @@
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import * as path from "path";
-import { BeDuration, compareStrings, DbOpcode, Guid, Id64String, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
-import { Point3d, Range3d, Transform } from "@bentley/geometry-core";
-import { BatchType, ChangedEntities, ElementGeometryChange, IModelError } from "@bentley/imodeljs-common";
+import { BeDuration, compareStrings, DbOpcode, Guid, Id64String, OpenMode, ProcessDetector } from "@itwin/core-bentley";
+import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
+import { BatchType, ChangedEntities, ElementGeometryChange, IModelError } from "@itwin/core-common";
 import {
-  BriefcaseConnection, EditingFunctions, GeometricModel3dState, GraphicalEditingScope, IModelTileTree, IModelTileTreeParams, TileLoadPriority,
-} from "@bentley/imodeljs-frontend";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
-import { deleteElements, initializeEditTools, insertLineElement, makeLineSegment, transformElements } from "../Editing";
+  BriefcaseConnection, GeometricModel3dState, GraphicalEditingScope, IModelTileTree, IModelTileTreeParams, TileLoadPriority,
+} from "@itwin/core-frontend";
+import { callFullStackTestIpc, deleteElements, initializeEditTools, insertLineElement, makeLineSegment, makeModelCode, transformElements } from "../Editing";
+import { TestUtility } from "../TestUtility";
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);
@@ -26,9 +26,9 @@ describe("GraphicalEditingScope", () => {
   if (ProcessDetector.isElectronAppFrontend) {
     let imodel: BriefcaseConnection | undefined;
     // Editable; BisCore version < 1.0.11
-    const oldFilePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim");
+    const oldFilePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/test.bim");
     // Editable; BisCore version == 1.0.11
-    const newFilePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/planprojection.bim");
+    const newFilePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/planprojection.bim");
 
     async function closeIModel(): Promise<void> {
       if (imodel) {
@@ -38,13 +38,13 @@ describe("GraphicalEditingScope", () => {
     }
 
     before(async () => {
-      await ElectronApp.startup();
+      await TestUtility.startFrontend();
       await initializeEditTools();
     });
 
     after(async () => {
       await closeIModel();
-      await ElectronApp.shutdown();
+      await TestUtility.shutdownFrontend();
     });
 
     afterEach(async () => {
@@ -139,11 +139,9 @@ describe("GraphicalEditingScope", () => {
 
     it("accumulates geometry changes", async () => {
       imodel = await openWritable();
-      // eslint-disable-next-line deprecation/deprecation
-      const editing = new EditingFunctions(imodel);
-      const modelId = await editing.models.createAndInsertPhysicalModel(await editing.codes.makeModelCode(imodel.models.repositoryModelId, Guid.createValue()));
+      const modelId = await callFullStackTestIpc("createAndInsertPhysicalModel", imodel.key, (await makeModelCode(imodel, imodel.models.repositoryModelId, Guid.createValue())));
       const dictModelId = await imodel.models.getDictionaryModel();
-      const category = await editing.categories.createAndInsertSpatialCategory(dictModelId, Guid.createValue(), { color: 0 });
+      const category = await callFullStackTestIpc("createAndInsertSpatialCategory", imodel.key, dictModelId, Guid.createValue(), { color: 0 });
       await imodel.saveChanges();
 
       // Enter an editing scope.
@@ -243,11 +241,9 @@ describe("GraphicalEditingScope", () => {
       imodel = await openWritable();
 
       // Initial geometric model contains one line element.
-      // eslint-disable-next-line deprecation/deprecation
-      const editing = new EditingFunctions(imodel);
-      const modelId = await editing.models.createAndInsertPhysicalModel(await editing.codes.makeModelCode(imodel.models.repositoryModelId, Guid.createValue()));
+      const modelId = await callFullStackTestIpc("createAndInsertPhysicalModel", imodel.key, (await makeModelCode(imodel, imodel.models.repositoryModelId, Guid.createValue())));
       const dictModelId = await imodel.models.getDictionaryModel();
-      const category = await editing.categories.createAndInsertSpatialCategory(dictModelId, Guid.createValue(), { color: 0 });
+      const category = await callFullStackTestIpc("createAndInsertSpatialCategory", imodel.key, dictModelId, Guid.createValue(), { color: 0 });
       const elem1 = await insertLineElement(imodel, modelId, category, makeLineSegment(new Point3d(0, 0, 0), new Point3d(10, 0, 0)));
       await imodel.saveChanges();
 

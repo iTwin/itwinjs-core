@@ -3,13 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { CompressedId64Set } from "@bentley/bentleyjs-core";
-import { Vector3d } from "@bentley/geometry-core";
+import { CompressedId64Set } from "@itwin/core-bentley";
+import { Vector3d } from "@itwin/core-geometry";
 import {
   BackgroundMapType, ColorByName, DisplayStyle3dProps, DisplayStyle3dSettingsProps, PlanarClipMaskMode, PlanarClipMaskSettings,
   SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, ThematicDisplayMode,
-} from "@bentley/imodeljs-common";
-import { ContextRealityModelState, DisplayStyle3dState, IModelConnection, MockRender, SnapshotConnection } from "@bentley/imodeljs-frontend";
+} from "@itwin/core-common";
+import { ContextRealityModelState, DisplayStyle3dState, IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { TestUtility } from "../TestUtility";
 
 describe("DisplayStyle", () => {
   let imodel: IModelConnection;
@@ -24,7 +25,7 @@ describe("DisplayStyle", () => {
   };
 
   before(async () => {
-    await MockRender.App.startup();
+    await TestUtility.startFrontend(undefined, true);
     imodel = await SnapshotConnection.openFile("test.bim");
   });
 
@@ -32,7 +33,7 @@ describe("DisplayStyle", () => {
     if (imodel)
       await imodel.close();
 
-    await MockRender.App.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("should clone correctly", () => {

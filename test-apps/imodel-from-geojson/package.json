@@ -4,8 +4,8 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "compile": "npm run build",
     "build": "tsc 1>&2",
+    "build:ci": "npm run -s build",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "",
     "docs": "",
@@ -14,31 +14,29 @@
   },
   "repository": {},
   "dependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
-    "@bentley/geometry-core": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "@bentley/imodeljs-common": "workspace:*",
-    "@bentley/imodeljs-backend": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/core-backend": "workspace:*",
     "fs-extra": "^8.1.0",
-    "request-promise-native": "^1.0.5",
     "yargs": "^16.0.0"
   },
   "devDependencies": {
-    "@bentley/build-tools": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@types/fs-extra": "^4.0.7",
     "@types/lodash": "^4.14.0",
-    "@types/node": "10.14.1",
+    "@types/node": "14.14.31",
     "@types/yargs": "^12.0.5",
-    "@types/request-promise-native": "^1.0.15",
     "eslint": "^7.11.0",
     "rimraf": "^3.0.2",
-    "typescript": "~4.3.0"
+    "typescript": "~4.4.0"
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended"
+    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }

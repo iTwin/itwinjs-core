@@ -1,0 +1,15 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-frontend",
+      "comment": "Allow supplying `SelectionManager` and `FavoritePropertiesManager` props when initializing `Presentation`.",
+      "type": "none"
+    },
+    {
+      "packageName": "@itwin/presentation-frontend",
+      "comment": "Change default `IFavoritePropertiesStorage` implementation to no-op and provide ability to choose another one when initializing `Presentation`.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-frontend"
+}

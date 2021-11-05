@@ -6,7 +6,7 @@
  * @module Editing
  */
 
-import { PhenomenonProps, SchemaKey } from "@bentley/ecschema-metadata";
+import { PhenomenonProps, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { MutablePhenomenon } from "./Mutable/MutablePhenomenon";
 

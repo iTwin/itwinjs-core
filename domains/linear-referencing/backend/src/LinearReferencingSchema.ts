@@ -7,7 +7,7 @@
  */
 
 import * as path from "path";
-import { ClassRegistry, KnownLocations, Schema, Schemas } from "@bentley/imodeljs-backend";
+import { ClassRegistry, KnownLocations, Schema, Schemas } from "@itwin/core-backend";
 import * as aspectsModule from "./LinearReferencingElementAspects";
 import * as elementsModule from "./LinearReferencingElements";
 import * as relationshipsModule from "./LinearReferencingRelationships";

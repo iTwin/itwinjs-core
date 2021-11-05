@@ -7,10 +7,9 @@
  */
 
 import * as Rules from "../Validation/ECRules";
-
-import { CustomAttribute, Schema, SchemaContext, SchemaItemKey, SchemaKey, SchemaMatchType } from "@bentley/ecschema-metadata";
+import { CustomAttribute, ECObjectsError, ECObjectsStatus, Schema, SchemaContext, SchemaItemKey, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 import { MutableSchema } from "./Mutable/MutableSchema";
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { Constants } from "./Constants";
 import { CustomAttributes } from "./CustomAttributes";
 import { Entities } from "./Entities";
@@ -91,11 +90,15 @@ export class SchemaContextEditor {
   }
 
   /**
-   * Helper method for retrieving a schema, previously addeded, from the SchemaContext.
+   * Helper method for retrieving a schema, previously added, from the SchemaContext.
    * @param schemaKey The SchemaKey identifying the schema.
   */
   public async getSchema(schemaKey: SchemaKey): Promise<MutableSchema> {
-    return (await this.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest)) as MutableSchema;
+    const schema = (await this.schemaContext.getCachedSchema<MutableSchema>(schemaKey, SchemaMatchType.Latest));
+    if (schema === undefined)
+      throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema,`Schema Key ${schemaKey.toString(true)} not found in context`);
+
+    return schema;
   }
   /**
    * Creates a Schema with the given properties and adds it to the current schema context.
@@ -118,7 +121,10 @@ export class SchemaContextEditor {
    * @param refSchema The referenced schema to add.
    */
   public async addSchemaReference(schemaKey: SchemaKey, refSchema: Schema): Promise<SchemaEditResults> {
-    const schema = (await this.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Exact)) as MutableSchema;
+    const schema = (await this.schemaContext.getCachedSchema<MutableSchema>(schemaKey, SchemaMatchType.Exact));
+    if (schema === undefined)
+      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+
     await schema.addReference(refSchema);
     const diagnostics = Rules.validateSchemaReferences(schema);
 
@@ -145,7 +151,10 @@ export class SchemaContextEditor {
    * @param customAttribute The CustomAttribute instance to add.
    */
   public async addCustomAttribute(schemaKey: SchemaKey, customAttribute: CustomAttribute): Promise<SchemaEditResults> {
-    const schema = (await this.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest)) as MutableSchema;
+    const schema = (await this.schemaContext.getCachedSchema<MutableSchema>(schemaKey, SchemaMatchType.Latest));
+    if (schema === undefined)
+      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+
     schema.addCustomAttribute(customAttribute);
 
     const diagnostics = Rules.validateCustomAttributeInstance(schema, customAttribute);
@@ -164,11 +173,26 @@ export class SchemaContextEditor {
   }
 
   /**
+   * Sets the schema version.
+   * @param schemaKey The SchemaKey identifying the schema.
+   * @param readVersion The read version of the schema. If not specified, the existing read version will be maintained.
+   * @param writeVersion The write version of the schema. If not specified, the existing write version will be maintained.
+   * @param minorVersion The minor version of the schema. If not specified, the existing minor version will be maintained.
+   */
+  public async setVersion(schemaKey: SchemaKey, readVersion?: number, writeVersion?: number, minorVersion?: number): Promise<SchemaEditResults> {
+    const schema = (await this.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest));
+    if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+
+    schema.setVersion(readVersion || schema.readVersion, writeVersion || schema.writeVersion, minorVersion || schema.minorVersion);
+    return {};
+  }
+
+  /**
    * Increments the minor version of a schema.
    * @param schemaKey The SchemaKey identifying the schema.
    */
   public async incrementMinorVersion(schemaKey: SchemaKey): Promise<SchemaEditResults> {
-    const schema = (await this.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest)) as MutableSchema;
+    const schema = (await this.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest));
     if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
     schema.setVersion(schema.readVersion, schema.writeVersion, schema.minorVersion + 1);

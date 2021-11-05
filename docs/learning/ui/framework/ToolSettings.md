@@ -48,7 +48,7 @@ export class SampleToolWithSetting extends PrimitiveTool {
   }
 
   // Respond to user changes in the tool settings UI components
-  public applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean {
+  public async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
     if (updatedValue.propertyName === this.useLengthProperty.name) {
       this.useLength = updatedValue.value.value as boolean;
       IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.useLengthProperty.item);
@@ -84,17 +84,17 @@ If the 'Active' Tool updates a property that is being displayed by a type editor
 
 ### Classes and Interfaces used the the Default Tool Settings Provider
 
-The following classes defined within the ui-abstract package are used by the Default Tool Settings Provider.
+The following classes defined within the appui-abstract package are used by the Default Tool Settings Provider.
 
-- [DialogItem]($ui-abstract)
-- [PropertyRecord]($ui-abstract)
-- [PropertyDescription]($ui-abstract)
-- [DialogItemValue]($ui-abstract)
-- [DialogPropertySyncItem]($ui-abstract)
-- [EditorPosition]($ui-abstract)
-- [PropertyEditorParamTypes]($ui-abstract)
-- [PropertyValue]($ui-abstract)
+- [DialogItem]($appui-abstract)
+- [PropertyRecord]($appui-abstract)
+- [PropertyDescription]($appui-abstract)
+- [DialogItemValue]($appui-abstract)
+- [DialogPropertySyncItem]($appui-abstract)
+- [EditorPosition]($appui-abstract)
+- [PropertyEditorParamTypes]($appui-abstract)
+- [PropertyValue]($appui-abstract)
 
 ## API Reference
 
-- [ToolSettings]($ui-framework:ToolSettings)
+- [ToolSettings]($appui-react:ToolSettings)

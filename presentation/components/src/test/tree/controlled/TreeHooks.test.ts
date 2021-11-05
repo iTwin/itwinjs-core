@@ -4,27 +4,22 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { it } from "mocha";
-import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { BeEvent, IDisposable } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
+import { ITwinLocalization } from "@itwin/core-i18n";
+import { Node, RegisteredRuleset, RulesetVariable, StandardNodeTypes, VariableValueTypes } from "@itwin/presentation-common";
+import { Presentation, PresentationManager, RulesetManager, RulesetVariablesManager } from "@itwin/presentation-frontend";
+import { PrimitiveValue } from "@itwin/appui-abstract";
 import {
-  LabelDefinition, LabelGroupingNodeKey, Node, PartialHierarchyModification, RegisteredRuleset, RulesetVariable, StandardNodeTypes,
-  VariableValueTypes,
-} from "@bentley/presentation-common";
-import { Presentation, PresentationManager, RulesetManager, RulesetVariablesManager } from "@bentley/presentation-frontend";
-import { PrimitiveValue, PropertyRecord } from "@bentley/ui-abstract";
-import {
-  from, MutableTreeModel, PagedTreeNodeLoader, TreeDataChangesListener, TreeModel, TreeModelNode, TreeModelNodeEditingInfo, TreeModelNodeInput,
-  TreeModelSource, TreeNodeItem,
-} from "@bentley/ui-components";
+  computeVisibleNodes, MutableTreeModel, TreeModel, TreeModelNode, TreeModelNodeEditingInfo, TreeModelNodeInput, UiComponents,
+} from "@itwin/components-react";
 import { act, cleanup, renderHook } from "@testing-library/react-hooks";
 import { IPresentationTreeDataProvider } from "../../../presentation-components";
 import {
-  applyHierarchyChanges, PresentationTreeNodeLoaderProps, reloadVisibleHierarchyParts, updateTreeModel, usePresentationTreeNodeLoader,
+  applyHierarchyChanges, PresentationTreeNodeLoaderProps, reloadVisibleHierarchyParts, usePresentationTreeNodeLoader,
 } from "../../../presentation-components/tree/controlled/TreeHooks";
 import { createTreeNodeItem } from "../../../presentation-components/tree/Utils";
-import { createRandomTreeNodeItem, mockPresentationManager } from "../../_helpers/UiComponents";
+import { mockPresentationManager } from "../../_helpers/UiComponents";
 
 describe("usePresentationNodeLoader", () => {
   let onIModelHierarchyChanged: PresentationManager["onIModelHierarchyChanged"];
@@ -41,6 +36,14 @@ describe("usePresentationNodeLoader", () => {
     pagingSize: 5,
   };
 
+  before(async () => {
+    await UiComponents.initialize(new ITwinLocalization());
+  });
+
+  after(() => {
+    UiComponents.terminate();
+  });
+
   beforeEach(() => {
     imodelMock.reset();
     imodelMock.setup((x) => x.key).returns(() => imodelKey);
@@ -51,6 +54,9 @@ describe("usePresentationNodeLoader", () => {
     onRulesetModified = mocks.rulesetsManager.object.onRulesetModified;
     onRulesetVariableChanged = mocks.rulesetVariablesManager.object.onVariableChanged;
     mocks.presentationManager.setup((x) => x.stateTracker).returns(() => undefined);
+    mocks.presentationManager
+      .setup(async (x) => x.getNodesAndCount(moq.It.isAny()))
+      .returns(async () => ({ count: 0, nodes: [] }));
     Presentation.setPresentationManager(mocks.presentationManager.object);
   });
 
@@ -106,12 +112,6 @@ describe("usePresentationNodeLoader", () => {
   });
 
   describe("auto-updating model source", () => {
-    const hierarchyChange: PartialHierarchyModification = {
-      type: "Insert",
-      node: { key: { type: "", pathFromRoot: [] }, label: LabelDefinition.fromLabelString("") },
-      position: 0,
-    };
-
     beforeEach(() => {
       initialProps.enableHierarchyAutoUpdate = true;
     });
@@ -140,8 +140,8 @@ describe("usePresentationNodeLoader", () => {
       expect(result.current.nodeLoader).to.eq(oldNodeLoader);
     });
 
-    it("creates a new nodeLoader when `PresentationManager` raises a related `onIModelHierarchyChanged` event with FULL hierarchy update", () => {
-      const { result } = renderHook(
+    it("creates a new nodeLoader when `PresentationManager` raises a related `onIModelHierarchyChanged` event with FULL hierarchy update", async () => {
+      const { result, waitForNextUpdate } = renderHook(
         (props: PresentationTreeNodeLoaderProps) => usePresentationTreeNodeLoader(props),
         { initialProps: { ...initialProps, ruleset: rulesetId } },
       );
@@ -149,11 +149,12 @@ describe("usePresentationNodeLoader", () => {
 
       onIModelHierarchyChanged.raiseEvent({ rulesetId, updateInfo: "FULL", imodelKey });
 
+      await waitForNextUpdate();
       expect(result.current.nodeLoader).to.not.eq(oldNodeLoader);
     });
 
-    it("creates a new nodeLoader when `PresentationManager` raises a related `onIModelHierarchyChanged` event with partial hierarchy updates", () => {
-      const { result } = renderHook(
+    it("creates a new nodeLoader when `PresentationManager` raises a related `onIModelHierarchyChanged` event with partial hierarchy updates", async () => {
+      const { result, waitForNextUpdate } = renderHook(
         (props: PresentationTreeNodeLoaderProps) => usePresentationTreeNodeLoader(props),
         { initialProps },
       );
@@ -161,6 +162,7 @@ describe("usePresentationNodeLoader", () => {
 
       onIModelHierarchyChanged.raiseEvent({ rulesetId, updateInfo: [{ parent: undefined, nodesCount: 2 }], imodelKey });
 
+      await waitForNextUpdate();
       expect(result.current.nodeLoader).to.not.eq(oldNodeLoader);
     });
 
@@ -185,24 +187,11 @@ describe("usePresentationNodeLoader", () => {
       const oldNodeLoader = result.current.nodeLoader;
 
       const currRuleset = new RegisteredRuleset({ id: rulesetId, rules: [] }, "", () => { });
-      presentationManagerMock
-        .setup(async (x) => x.compareHierarchies({
-          imodel: imodelMock.object,
-          prev: {
-            rulesetOrId: currRuleset.toJSON(),
-          },
-          rulesetOrId: currRuleset.toJSON(),
-          expandedNodeKeys: [],
-        }))
-        .returns(async () => [hierarchyChange])
-        .verifiable();
-
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       act(() => { onRulesetModified.raiseEvent(currRuleset, currRuleset.toJSON()); });
       await waitForNextUpdate();
 
       expect(result.current.nodeLoader).to.not.eq(oldNodeLoader);
-      presentationManagerMock.verifyAll();
     });
 
     it("creates a new nodeLoader when `RulesetVariablesManager` raises an `onRulesetVariableChanged` event with a new value", async () => {
@@ -222,19 +211,6 @@ describe("usePresentationNodeLoader", () => {
         value: 123,
       }];
 
-      presentationManagerMock
-        .setup(async (x) => x.compareHierarchies({
-          imodel: imodelMock.object,
-          prev: {
-            rulesetVariables: [
-              variables[1],
-            ],
-          },
-          rulesetOrId: rulesetId,
-          expandedNodeKeys: [],
-        }))
-        .returns(async () => [hierarchyChange])
-        .verifiable();
       rulesetVariablesManagerMock.setup((x) => x.getAllVariables()).returns(() => variables);
 
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -242,7 +218,6 @@ describe("usePresentationNodeLoader", () => {
       await waitForNextUpdate();
 
       expect(result.current.nodeLoader).to.not.eq(oldNodeLoader);
-      presentationManagerMock.verifyAll();
     });
 
     it("creates a new nodeLoader when `RulesetVariablesManager` raises an `onRulesetVariableChanged` event with a changed value", async () => {
@@ -262,20 +237,6 @@ describe("usePresentationNodeLoader", () => {
         value: 123,
       }];
 
-      presentationManagerMock
-        .setup(async (x) => x.compareHierarchies({
-          imodel: imodelMock.object,
-          prev: {
-            rulesetVariables: [
-              { ...variables[0], value: "prev" } as RulesetVariable,
-              variables[1],
-            ],
-          },
-          rulesetOrId: rulesetId,
-          expandedNodeKeys: [],
-        }))
-        .returns(async () => [hierarchyChange])
-        .verifiable();
       rulesetVariablesManagerMock.setup((x) => x.getAllVariables()).returns(() => variables);
 
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -283,7 +244,6 @@ describe("usePresentationNodeLoader", () => {
       await waitForNextUpdate();
 
       expect(result.current.nodeLoader).to.not.eq(oldNodeLoader);
-      presentationManagerMock.verifyAll();
     });
 
     it("creates a new nodeLoader when `RulesetVariablesManager` raises an `onRulesetVariableChanged` event with a removed value", async () => {
@@ -299,17 +259,6 @@ describe("usePresentationNodeLoader", () => {
         value: 123,
       }];
 
-      presentationManagerMock
-        .setup(async (x) => x.compareHierarchies({
-          imodel: imodelMock.object,
-          prev: {
-            rulesetVariables: variables,
-          },
-          rulesetOrId: rulesetId,
-          expandedNodeKeys: [],
-        }))
-        .returns(async () => [hierarchyChange])
-        .verifiable();
       rulesetVariablesManagerMock.setup((x) => x.getAllVariables()).returns(() => variables);
 
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -317,7 +266,6 @@ describe("usePresentationNodeLoader", () => {
       await waitForNextUpdate();
 
       expect(result.current.nodeLoader).to.not.eq(oldNodeLoader);
-      presentationManagerMock.verifyAll();
     });
 
     it("does not create a new nodeLoader when `onRulesetModified` event is raised but there are no changes", () => {
@@ -328,18 +276,6 @@ describe("usePresentationNodeLoader", () => {
       const oldNodeLoader = result.current.nodeLoader;
 
       const currRuleset = new RegisteredRuleset({ id: rulesetId, rules: [] }, "", () => { });
-      presentationManagerMock
-        .setup(async (x) => x.compareHierarchies({
-          imodel: imodelMock.object,
-          prev: {
-            rulesetOrId: currRuleset.toJSON(),
-          },
-          rulesetOrId: currRuleset.toJSON(),
-          expandedNodeKeys: [],
-        }))
-        .returns(async () => [])
-        .verifiable();
-
       onRulesetModified.raiseEvent(currRuleset, currRuleset.toJSON());
 
       expect(result.current.nodeLoader).to.eq(oldNodeLoader);
@@ -367,9 +303,6 @@ describe("usePresentationNodeLoader", () => {
       initialModelSource.modifyModel((treeModel) => treeModel.insertChild(undefined, createNodeInput("test"), 0));
 
       // Update tree so that `info.treeModel` is not undefined
-      presentationManagerMock
-        .setup(async (x) => x.compareHierarchies(moq.It.isAny()))
-        .returns(async () => [{ type: "Update", target: createNode("test").key, changes: createNode("test_updated") }]);
       onRulesetModified.raiseEvent(
         new RegisteredRuleset({ id: "initial", rules: [] }, "", () => { }),
         { id: "initial", rules: [] },
@@ -379,78 +312,6 @@ describe("usePresentationNodeLoader", () => {
       rerender({ ...initialProps, ruleset: "updated" });
       const newModelSource = result.current.nodeLoader.modelSource;
       expectTree(newModelSource.getModel(), []);
-    });
-
-    it("sends visible expanded nodes when comparing hierarchies due to ruleset modification", async () => {
-      const { result, waitForNextUpdate } = renderHook(
-        (props: PresentationTreeNodeLoaderProps) => usePresentationTreeNodeLoader(props),
-        { initialProps },
-      );
-
-      const createTreeModelNodeInput = (id: string, isExpanded: boolean): TreeModelNodeInput => ({
-        id,
-        label: PropertyRecord.fromString(id),
-        item: createRandomTreeNodeItem(),
-        isExpanded,
-        isLoading: false,
-        numChildren: 1,
-        isSelected: false,
-      });
-      const a = createTreeModelNodeInput("a", true);
-      const b = createTreeModelNodeInput("b", true);
-      const c = createTreeModelNodeInput("c", false);
-      const d = createTreeModelNodeInput("d", true);
-      result.current.nodeLoader.modelSource.modifyModel((model) => {
-        model.setChildren(undefined, [a], 0);
-        model.setChildren(a.id, [b, c], 0);
-        model.setChildren(c.id, [d], 0);
-      });
-
-      const currRuleset = new RegisteredRuleset({ id: rulesetId, rules: [] }, "", () => { });
-      presentationManagerMock
-        .setup(async (x) => x.compareHierarchies({
-          imodel: imodelMock.object,
-          prev: {
-            rulesetOrId: currRuleset.toJSON(),
-          },
-          rulesetOrId: currRuleset.toJSON(),
-          expandedNodeKeys: [
-            result.current.nodeLoader.dataProvider.getNodeKey(a.item),
-            result.current.nodeLoader.dataProvider.getNodeKey(b.item),
-          ],
-        }))
-        .returns(async () => [hierarchyChange])
-        .verifiable();
-
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      act(() => { onRulesetModified.raiseEvent(currRuleset, currRuleset.toJSON()); });
-
-      await waitForNextUpdate();
-      presentationManagerMock.verifyAll();
-    });
-
-    it("reinitiates node loading on hierarchy change", () => {
-      const { result } = renderHook(
-        (props: PresentationTreeNodeLoaderProps) => usePresentationTreeNodeLoader(props),
-        { initialProps },
-      );
-      result.current.nodeLoader.modelSource.modifyModel((model) => {
-        model.setChildren(undefined, [createNodeInput("loading_node1"), createNodeInput("loading_node2"), createNodeInput("loaded-node")], 0);
-        model.getNode("loading_node1")!.isLoading = true;
-        model.getNode("loading_node2")!.isLoading = true;
-      });
-
-      const spyLoadNode = sinon.stub(PagedTreeNodeLoader.prototype, "loadNode").returns(from([]));
-
-      void act(() => {
-        onIModelHierarchyChanged.raiseEvent({
-          imodelKey,
-          rulesetId,
-          updateInfo: [{ parent: { type: StandardNodeTypes.ECInstancesNode, instanceKeys: [], pathFromRoot: ["loaded-node"] }, nodesCount: 2 }],
-        });
-      });
-
-      expect(spyLoadNode).to.have.been.called.calledTwice;
     });
 
     it("reloads nodes and creates a new nodeLoader when 'onIModelHierarchyChanged' event is raised", async () => {
@@ -473,49 +334,6 @@ describe("usePresentationNodeLoader", () => {
       expect(result.current.nodeLoader).to.not.eq(oldNodeLoader);
       presentationManagerMock.verifyAll();
     });
-  });
-
-  it("uses supplied dataProvider", () => {
-    // dispatch function from useState hook does not work with mocked object because it is function
-    const dataProvider: IPresentationTreeDataProvider = {
-      imodel: imodelMock.object,
-      rulesetId: "",
-      onTreeNodeChanged: new BeEvent<TreeDataChangesListener>(),
-      dispose: () => { },
-      getFilteredNodePaths: async () => [],
-      getNodeKey: (node: TreeNodeItem) => (node as any).__key,
-      getNodesCount: async () => 0,
-      getNodes: async () => [],
-      loadHierarchy: async () => { },
-    };
-    const { result } = renderHook(
-      (props: PresentationTreeNodeLoaderProps) => usePresentationTreeNodeLoader(props),
-      { initialProps: { ...initialProps, dataProvider } },
-    );
-    expect(result.current.nodeLoader.dataProvider).to.be.eq(dataProvider);
-  });
-
-  it("uses supplied disposable dataProvider and disposes it on unmount", () => {
-    // dispatch function from useState hook does not work with mocked object because it is function
-    const dataProvider: IPresentationTreeDataProvider & IDisposable = {
-      imodel: imodelMock.object,
-      rulesetId: "",
-      onTreeNodeChanged: new BeEvent<TreeDataChangesListener>(),
-      getFilteredNodePaths: async () => [],
-      getNodeKey: (node: TreeNodeItem) => (node as any).__key,
-      getNodesCount: async () => 0,
-      getNodes: async () => [],
-      loadHierarchy: async () => { },
-      dispose: sinon.spy(),
-    };
-    const { result, unmount } = renderHook(
-      (props: PresentationTreeNodeLoaderProps) => usePresentationTreeNodeLoader(props),
-      { initialProps: { ...initialProps, dataProvider } },
-    );
-    expect(result.current.nodeLoader.dataProvider).to.be.eq(dataProvider);
-    expect(dataProvider.dispose).to.not.be.called;
-    unmount();
-    expect(dataProvider.dispose).to.be.calledOnce;
   });
 });
 
@@ -631,297 +449,6 @@ function createTreeModel(hierarchy: TreeHierarchy[]): MutableTreeModel {
     }
   }
 }
-
-describe("updateTreeModel", () => {
-  it("returns `undefined` on failure", () => {
-    const initialTree = createTreeModel(["root1", "root2"]);
-    const updatedTree = updateTreeModel(
-      initialTree,
-      [{
-        type: "Update",
-        target: createNode("root1").key,
-        changes: { key: createNode("root2").key, label: LabelDefinition.fromLabelString("root2") },
-      }],
-      {},
-    );
-    expect(updatedTree).to.be.undefined;
-  });
-
-  it("keeps nodes selected", () => {
-    const initialTree = createTreeModel(
-      [{ label: "root1", selected: true }, { label: "root2", selected: true }, "root3"],
-    );
-    const updatedTree = updateTreeModel(
-      initialTree,
-      [{
-        type: "Update",
-        target: createNode("root1").key,
-        changes: { description: "updated description" },
-      }],
-      {}
-    );
-    expect(updatedTree).to.be.not.equal(initialTree);
-    expectTree(updatedTree!, [{ label: "root1", selected: true }, { label: "root2", selected: true }, "root3"]);
-  });
-
-  it("keeps nodes expanded", () => {
-    const initialTree = createTreeModel(
-      [{ label: "root1", expanded: true }, { label: "root2", expanded: true }, "root3"],
-    );
-    const updatedTree = updateTreeModel(
-      initialTree,
-      [{
-        type: "Update",
-        target: createNode("root1").key,
-        changes: { description: "updated description" },
-      }],
-      {}
-    );
-    expect(updatedTree).to.be.not.equal(initialTree);
-    expectTree(updatedTree!, [{ label: "root1", expanded: true }, { label: "root2", expanded: true }, "root3"]);
-  });
-
-  describe("node insertion", () => {
-    it("inserts root node", () => {
-      const initialTree = createTreeModel(["root1", "root2"]);
-      const updatedTree = updateTreeModel(
-        initialTree,
-        [{ type: "Insert", position: 1, node: createNode("inserted_node") }],
-        { appendChildrenCountForGroupingNodes: false },
-      );
-      expectTree(updatedTree!, ["root1", "inserted_node", "root2"]);
-    });
-
-    it("inserts child node wihout children", () => {
-      const initialTree = createTreeModel([{ ["root1"]: ["child1"] }]);
-      const updatedTree = updateTreeModel(
-        initialTree,
-        [{ type: "Insert", parent: createNode("root1").key, position: 0, node: createNode("inserted_node") }],
-        {},
-      );
-      expectTree(updatedTree!, [{ ["root1"]: ["inserted_node", "child1"] }]);
-      expect(updatedTree!.getNode("root1")!.numChildren).to.be.equal(2);
-      expect(updatedTree!.getNode("inserted_node")!.numChildren).to.be.equal(0);
-    });
-
-    it("inserts child node with children", () => {
-      const initialTree = createTreeModel([{ ["root1"]: ["child1"] }]);
-      const node = createNode("inserted_node");
-      node.hasChildren = true;
-      const updatedTree = updateTreeModel(
-        initialTree,
-        [{ type: "Insert", parent: createNode("root1").key, position: 0, node }],
-        {},
-      );
-      expectTree(updatedTree!, [{ ["root1"]: ["inserted_node", "child1"] }]);
-      expect(updatedTree!.getNode("root1")!.numChildren).to.be.equal(2);
-      expect(updatedTree!.getNode("inserted_node")!.numChildren).to.be.equal(undefined);
-    });
-
-    it("creates new hierarchy level", () => {
-      const initialTree = createTreeModel([{ ["root1"]: ["child1"] }]);
-      const updatedTree = updateTreeModel(
-        initialTree,
-        [{ type: "Insert", parent: createNode("child1").key, position: 0, node: createNode("inserted_node") }],
-        {},
-      );
-      expectTree(updatedTree!, [{ ["root1"]: [{ ["child1"]: ["inserted_node"] }] }]);
-      expect(updatedTree!.getNode("child1")!.numChildren).to.be.equal(1);
-    });
-  });
-
-  describe("node update", () => {
-    it("ignores nodes that do not exist", () => {
-      const initialTree = createTreeModel(["root1", "root2"]);
-      const updatedTree = updateTreeModel(
-        initialTree,
-        [{
-          type: "Update",
-          target: createNode("root3").key,
-          changes: { description: "new description" },
-        }],
-        {},
-      );
-      expect(initialTree).to.be.equal(updatedTree);
-    });
-
-    it("updates existing node", () => {
-      const initialTree = createTreeModel(["root1", "root2", "root3"]);
-      const updatedTree = updateTreeModel(
-        initialTree,
-        [{
-          type: "Update",
-          target: createNode("root2").key,
-          changes: {
-            key: createNode("root2").key,
-            label: LabelDefinition.fromLabelString("updated_node"),
-            description: "updated description",
-          },
-        }],
-        {},
-      );
-      expectTree(updatedTree!, ["root1", "updated_node", "root3"]);
-      expect(updatedTree!.getNode("root2")?.description).to.be.equal("updated description");
-    });
-
-    it("removes children if node no longer has them", () => {
-      const initialTree = createTreeModel([{ ["root1"]: ["child1"] }, "root2"]);
-      const updatedTree = updateTreeModel(
-        initialTree,
-        [{
-          type: "Update",
-          target: createNode("root1").key,
-          changes: { hasChildren: false },
-        }],
-        {},
-      );
-      expectTree(updatedTree!, ["root1", "root2"]);
-      expect(updatedTree!.getNode("root1")!.numChildren).to.be.equal(0);
-    });
-
-    it("makes node expandable if it has children after update", () => {
-      const initialTree = createTreeModel(["root1", "root2"]);
-      const updatedTree = updateTreeModel(
-        initialTree,
-        [{
-          type: "Update",
-          target: createNode("root1").key,
-          changes: { hasChildren: true },
-        }],
-        {},
-      );
-      expectTree(updatedTree!, ["root1", "root2"]);
-      expect(updatedTree!.getNode("root1")!.numChildren).to.be.undefined;
-    });
-
-    it("updates node key", () => {
-      const initialTree = createTreeModel(["root1", "root2"]);
-      const updatedTree = updateTreeModel(
-        initialTree,
-        [{
-          type: "Update",
-          target: createNode("root1").key,
-          changes: { key: createNode("updated_node").key, label: LabelDefinition.fromLabelString("updated_node") },
-        }],
-        {},
-      );
-      expectTree(updatedTree!, ["updated_node", "root2"]);
-      expect(updatedTree!.getNode("updated_node")).not.to.be.undefined;
-    });
-
-    it("appends child count for grouping nodes", () => {
-      const initialTree = createTreeModel(["root1", "root2"]);
-      const updatedKey: LabelGroupingNodeKey = {
-        groupedInstancesCount: 10,
-        pathFromRoot: [],
-        type: StandardNodeTypes.DisplayLabelGroupingNode,
-        label: "",
-      };
-      const updatedTree = updateTreeModel(
-        initialTree,
-        [{
-          type: "Update",
-          target: createNode("root1").key,
-          changes: { key: updatedKey, label: LabelDefinition.fromLabelString("updated_node") },
-        }],
-        { appendChildrenCountForGroupingNodes: true },
-      );
-      expectTree(updatedTree!, ["updated_node (10)", "root2"]);
-    });
-
-    it("exits edit state on modified nodes", () => {
-      const editingInfo: TreeModelNodeEditingInfo = { onCommit: () => { }, onCancel: () => { } };
-      const initialTree = createTreeModel([{ label: "root1", editingInfo }, { label: "root2", editingInfo }]);
-      const updatedTree = updateTreeModel(
-        initialTree,
-        [{
-          type: "Update",
-          target: createNode("root1").key,
-          changes: { key: createNode("root1").key, label: LabelDefinition.fromLabelString("updated_node") },
-        }],
-        {}
-      );
-      expectTree(updatedTree!, ["updated_node", { label: "root2", editingInfo }]);
-    });
-
-    it("collapses nodes that no longer have children", () => {
-      const initialTree = createTreeModel([
-        { label: "root1", expanded: true, loading: true, children: ["child1"] },
-        { label: "root2", expanded: true, loading: true, children: ["child2"] },
-      ]);
-      const updatedTree = updateTreeModel(
-        initialTree,
-        [{
-          type: "Update",
-          target: createNode("root1").key,
-          changes: { hasChildren: false },
-        }],
-        {},
-      );
-      expectTree(
-        updatedTree!,
-        ["root1", { label: "root2", expanded: true, loading: true, children: ["child2"] }],
-      );
-    });
-
-    it("deselects nodes that have changed keys", () => {
-      const initialTree = createTreeModel([{ label: "root1", selected: true }, { label: "root2", selected: true }]);
-      const updatedTree = updateTreeModel(
-        initialTree,
-        [{
-          type: "Update",
-          target: createNode("root1").key,
-          changes: { key: createNode("updated_key").key, label: LabelDefinition.fromLabelString("updated_node") },
-        }],
-        {}
-      );
-      expectTree(updatedTree!, ["updated_node", { label: "root2", selected: true }]);
-    });
-  });
-
-  describe("node removal", () => {
-    it("removes root node", () => {
-      const initialTree = createTreeModel(["root1", "root2", "root3"]);
-      const updatedTree = updateTreeModel(
-        initialTree,
-        [{ type: "Delete", target: createNode("root2").key, parent: undefined, position: 1 }],
-        {},
-      );
-      expectTree(updatedTree!, ["root1", "root3"]);
-    });
-
-    it("removes child node", () => {
-      const initialTree = createTreeModel([{ ["root1"]: ["child1", "child2"] }, "root2"]);
-      const updatedTree = updateTreeModel(
-        initialTree,
-        [{ type: "Delete", target: createNode("child1").key, parent: createNode("root1").key, position: 0 }],
-        {},
-      );
-      expectTree(updatedTree!, [{ ["root1"]: ["child2"] }, "root2"]);
-    });
-
-    it("removes children along with removed node", () => {
-      const initialTree = createTreeModel([{ ["root1"]: ["child1", "child2"] }, "root2"]);
-      const updatedTree = updateTreeModel(
-        initialTree,
-        [{ type: "Delete", target: createNode("root1").key, parent: undefined, position: 0 }],
-        {},
-      );
-      expectTree(updatedTree!, ["root2"]);
-    });
-
-    it("ignores deletion of node that does not exist", () => {
-      const initialTree = createTreeModel(["root1", "root2"]);
-      const updatedTree = updateTreeModel(
-        initialTree,
-        [{ type: "Delete", target: createNode("root3").key, parent: undefined, position: 2 }],
-        {},
-      );
-      expect(updatedTree).to.be.equal(initialTree);
-      expectTree(updatedTree!, ["root1", "root2"]);
-    });
-  });
-});
 
 describe("applyHierarchyUpdateRecords", () => {
   it("returns same model if node was not present in model", () => {
@@ -1121,7 +648,7 @@ describe("reloadVisibleHierarchyParts", () => {
   function createVisibleNodes(rootNodesCount: number, hierarchy: HierarchyItem[],) {
     const model = new MutableTreeModel();
     addNodes(model, undefined, hierarchy, rootNodesCount);
-    return new TreeModelSource(model).getVisibleNodes();
+    return computeVisibleNodes(model);
   }
 
   const dataProviderMock = moq.Mock.ofType<IPresentationTreeDataProvider>();

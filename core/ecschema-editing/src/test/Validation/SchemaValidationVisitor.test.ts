@@ -7,9 +7,9 @@ import { expect } from "chai";
 import { AnyProperty, Constant, CustomAttributeClass, ECClass, EntityClass, Enumeration, Format,
   InvertedUnit, KindOfQuantity, Mixin, Phenomenon, PrimitiveType, PropertyCategory, RelationshipClass,
   RelationshipConstraint, RelationshipEnd, Schema, SchemaContext, StructClass, Unit, UnitSystem,
-} from "@bentley/ecschema-metadata";
+} from "@itwin/ecschema-metadata";
 import { MutableClass } from "../../Editing/Mutable/MutableClass";
-import { MutableProperty } from "@bentley/ecschema-metadata/src/Metadata/Property";
+import { MutableProperty } from "@itwin/ecschema-metadata/src/Metadata/Property";
 import { DiagnosticCategory } from "../../Validation/Diagnostic";
 import { SchemaValidationVisitor } from "../../Validation/SchemaValidationVisitor";
 import { ApplySuppressionSet, EmptyRuleSet, IgnoreSuppressionSet, TestDiagnostics, TestReporter, TestRuleSet, TestRuleSetB } from "../TestUtils/DiagnosticHelpers";

@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as React from "react";
-import { Id64String } from "@bentley/bentleyjs-core";
-import { IModelApp, IModelConnection, ScreenViewport } from "@bentley/imodeljs-frontend";
-import { ViewportComponent } from "@bentley/ui-components";
-import { LoadingSpinner } from "@bentley/ui-core";
-import { ConfigurableCreateInfo, ViewSelector, ViewSelectorChangedEventArgs, WidgetControl } from "@bentley/ui-framework";
+import { Id64String } from "@itwin/core-bentley";
+import { IModelApp, IModelConnection, ScreenViewport } from "@itwin/core-frontend";
+import { ViewportComponent } from "@itwin/imodel-components-react";
+import { LoadingSpinner } from "@itwin/core-react";
+import { ConfigurableCreateInfo, ViewSelector, ViewSelectorChangedEventArgs, WidgetControl } from "@itwin/appui-react";
 import { ExternalIModel } from "../ExternalIModel";
 
 /** Viewport Widget Control */
@@ -17,12 +17,12 @@ export class ViewportWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    this.reactNode = <ViewportWidget projectName={options.projectName} imodelName={options.imodelName} />;
+    this.reactNode = <ViewportWidget iTwinName={options.projectName} imodelName={options.imodelName} />;
   }
 }
 
 export interface ViewportWidgetProps {
-  projectName: string;
+  iTwinName: string;
   imodelName: string;
 }
 
@@ -33,7 +33,7 @@ interface ViewportWidgetState {
 
 /** Widget that displays a ViewportComponent or Loading message */
 export class ViewportWidget extends React.Component<ViewportWidgetProps, ViewportWidgetState> {
-  private _loading = IModelApp.i18n.translate("SampleApp:Test.loading");
+  private _loading = IModelApp.localization.getLocalizedString("SampleApp:Test.loading");
   private _viewport: ScreenViewport | undefined;
 
   public override readonly state: Readonly<ViewportWidgetState> = {
@@ -42,7 +42,7 @@ export class ViewportWidget extends React.Component<ViewportWidgetProps, Viewpor
   };
 
   public override async componentDidMount() {
-    const externalIModel = new ExternalIModel(this.props.projectName, this.props.imodelName);
+    const externalIModel = await ExternalIModel.create({iTwinName: this.props.iTwinName, iModelName: this.props.imodelName});
     await externalIModel.openIModel();
 
     if (externalIModel.viewId && externalIModel.iModelConnection) {
@@ -92,7 +92,7 @@ export class ViewportWidget extends React.Component<ViewportWidgetProps, Viewpor
 
 /** Widget that displays a ViewportComponent or Loading message */
 export class IModelViewport extends React.Component<ViewportWidgetProps, ViewportWidgetState> {
-  private _loading = IModelApp.i18n.translate("SampleApp:Test.loading");
+  private _loading = IModelApp.localization.getLocalizedString("SampleApp:Test.loading");
   private _viewport: ScreenViewport | undefined;
 
   public override readonly state: Readonly<ViewportWidgetState> = {
@@ -101,7 +101,7 @@ export class IModelViewport extends React.Component<ViewportWidgetProps, Viewpor
   };
 
   public override async componentDidMount() {
-    const externalIModel = new ExternalIModel(this.props.projectName, this.props.imodelName);
+    const externalIModel = await ExternalIModel.create({iTwinName: this.props.iTwinName, iModelName: this.props.imodelName});
     await externalIModel.openIModel();
 
     if (externalIModel.viewId && externalIModel.iModelConnection) {

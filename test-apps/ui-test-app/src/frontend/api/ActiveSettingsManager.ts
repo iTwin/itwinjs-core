@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BeEvent, Id64Array, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
-import { IModelError } from "@bentley/imodeljs-common";
-import { IModelApp, SpatialViewState, ViewState, ViewState2d } from "@bentley/imodeljs-frontend";
-import { UiFramework } from "@bentley/ui-framework";
+import { UiFramework } from "@itwin/appui-react";
+import { BeEvent, Id64Array, Id64String, IModelStatus } from "@itwin/core-bentley";
+import { IModelError, QueryRowFormat } from "@itwin/core-common";
+import { IModelApp, SpatialViewState, ViewState, ViewState2d } from "@itwin/core-frontend";
 import { ErrorHandling } from "./ErrorHandling";
 
 export const iModelInfoAvailableEvent = new BeEvent();
@@ -46,7 +46,7 @@ export class ModelNameCache extends NamedElementCache {
   public async findAll() {
     const wh = this.nameSelectWhereClause;
     this.cache = [];
-    for await (const result of UiFramework.getIModelConnection()!.query(`select ecinstanceid as id, codevalue as name from bis.InformationPartitionElement ${wh}`)) {
+    for await (const result of UiFramework.getIModelConnection()!.query(`select ecinstanceid as id, codevalue as name from bis.InformationPartitionElement ${wh}`, undefined, QueryRowFormat.UseJsPropertyNames)) {
       this.cache.push({ id: result.id, name: result.name });
     }
     iModelInfoAvailableEvent.raiseEvent();
@@ -58,7 +58,7 @@ export class CategoryNameCache extends NamedElementCache {
   public async findAll() {
     const wh = this.nameSelectWhereClause;
     this.cache = [];
-    for await (const result of UiFramework.getIModelConnection()!.query(`select ecinstanceid as id, codevalue as name from bis.Category ${wh}`)) {
+    for await (const result of UiFramework.getIModelConnection()!.query(`select ecinstanceid as id, codevalue as name from bis.Category ${wh}`, undefined, QueryRowFormat.UseJsPropertyNames)) {
       this.cache.push({ id: result.id, name: result.name });
     }
     iModelInfoAvailableEvent.raiseEvent();
@@ -115,7 +115,7 @@ export class ActiveSettingsManager {
     else if (view instanceof SpatialViewState)
       models = Array.from(view.modelSelector.models);
     else {
-      throw new IModelError(IModelStatus.BadArg, "only 2d and spatial views are supported", Logger.logError, "simple-editor-app", () => view);
+      throw new IModelError(IModelStatus.BadArg, "only 2d and spatial views are supported");
     }
 
     if (models.length === 0) {

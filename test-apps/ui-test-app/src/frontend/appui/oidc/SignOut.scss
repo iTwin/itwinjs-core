@@ -1,0 +1,84 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+@import "~@itwin/itwinui-css/scss/style/typography";
+
+$user-profile-circle-size: 60px;
+
+.uifw-user-profile {
+  background: $buic-background-window;
+  width: auto;
+  height: auto;
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  padding: 30px;
+  border-radius: 3px;
+  font-size: $iui-font-size;
+  box-shadow: 2px 4px 8px 2px rgba(0, 0, 0, 0.25);
+
+  >.profile-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    >.circle {
+      font-size: 2em;
+      width: $user-profile-circle-size;
+      height: $user-profile-circle-size;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: $buic-accessory-hollow;
+      margin-bottom: 10px;
+      -webkit-border-radius: 50%;
+      -moz-border-radius: 50%;
+      border-radius: 50%;
+      border: 2px solid rgba($buic-background-5, 0.1);
+    }
+
+    >span:not(.circle) {
+      margin-top: 15px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: $buic-foreground-body;
+      overflow: hidden;
+    }
+  }
+
+  >.user-profile-separator {
+    flex: initial;
+    width: 1px;
+    margin: 10px 30px;
+    background: $buic-foreground-disabled;
+  }
+
+  >.signout {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    >span:first-of-type {
+      font-size: $iui-font-size-title;
+      color: $buic-foreground-body;
+      margin-top: 10px;
+    }
+
+    >span:last-of-type {
+      margin-top: 40px;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    >button {
+      width: 75%;
+      margin: auto 0 0 0;
+    }
+  }
+}

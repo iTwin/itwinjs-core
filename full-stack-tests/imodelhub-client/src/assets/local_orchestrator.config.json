@@ -5,10 +5,7 @@
   "keyFile": "TBD",
   "certFile": "TBD",
   "backofficeServicesConfig": {
-    "imodelbank_backoffice_serviceidentity_username": "${imjs_test_regular_user_name}",
-    "imodelbank_backoffice_serviceidentity_pwd": "${imjs_test_regular_user_password}",
-    "imjs_default_relying_party_uri": "${imjs_default_relying_party_uri}",
-    "imjs_buddi_url": "${imjs_buddi_url}",
-    "imjs_buddi_resolve_url_using_region": "${imjs_buddi_resolve_url_using_region}"
+    "imodelbank_backoffice_serviceidentity_username": "${IMJS_TEST_REGULAR_USER_NAME}",
+    "imodelbank_backoffice_serviceidentity_pwd": "${IMJS_TEST_REGULAR_USER_PASSWORD}",
   }
 }

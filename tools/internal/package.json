@@ -1,6 +1,6 @@
 {
   "name": "internal-tools",
-  "version": "0.0.0",
+  "version": "3.0.0-dev.69",
   "description": "Internal build tools for Tools for collecting and reporting performance data",
   "license": "MIT",
   "main": "bin/internal-tools.js",
@@ -8,8 +8,8 @@
     "internal-tools": "./bin/internal-tools.js"
   },
   "scripts": {
-    "compile": "",
     "build": "",
+    "build:ci": "",
     "clean": "",
     "docs": "",
     "lint": "",

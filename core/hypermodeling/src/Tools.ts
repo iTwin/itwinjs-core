@@ -6,16 +6,8 @@
  * @module HyperModeling
  */
 
-import { SectionType } from "@bentley/imodeljs-common";
-import {
-  I18N,
-  I18NNamespace,
-} from "@bentley/imodeljs-i18n";
-import {
-  IModelApp,
-  ScreenViewport,
-  Tool,
-} from "@bentley/imodeljs-frontend";
+import { SectionType } from "@itwin/core-common";
+import { IModelApp, ScreenViewport, Tool } from "@itwin/core-frontend";
 import { HyperModeling } from "./HyperModeling";
 import { SectionGraphicsConfig, SectionMarkerConfig } from "./HyperModelingConfig";
 import { HyperModelingDecorator } from "./HyperModelingDecorator";
@@ -38,15 +30,15 @@ class HyperModelingTool extends Tool {
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 1; }
 
-  public override run(enable?: boolean, vp?: ScreenViewport): boolean {
+  public override async run(enable?: boolean, vp?: ScreenViewport): Promise<boolean> {
     vp = vp ?? IModelApp.viewManager.selectedView;
     if (vp)
-      HyperModeling.startOrStop(vp, enable); // eslint-disable-line @typescript-eslint/no-floating-promises
+      await HyperModeling.startOrStop(vp, enable);
 
     return true;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const enable = parseToggle(args[0]);
     return typeof enable !== "string" && this.run(enable);
   }
@@ -66,7 +58,7 @@ class SectionGraphicsConfigTool extends Tool {
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 4; }
 
-  public override run(config?: SectionGraphicsConfig): boolean {
+  public override async run(config?: SectionGraphicsConfig): Promise<boolean> {
     if (!config) {
       config = {
         ignoreClip: false,
@@ -80,7 +72,7 @@ class SectionGraphicsConfigTool extends Tool {
     return true;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     if (0 === args.length)
       return this.run(); // restore defaults...
 
@@ -121,13 +113,13 @@ abstract class SectionMarkerConfigTool extends Tool {
 
   protected abstract update(config: SectionMarkerConfig): void;
 
-  public override run(config?: SectionMarkerConfig): boolean {
+  public override async run(config?: SectionMarkerConfig): Promise<boolean> {
     config = config ?? { ignoreModelSelector: false, ignoreCategorySelector: false, hiddenSectionTypes: [] };
     this.update(config);
     return true;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     if (0 === args.length)
       return this.run(); // restore defaults...
 
@@ -198,8 +190,8 @@ class SectionMarkerDecoratorConfigTool extends SectionMarkerConfigTool {
 }
 
 /** @internal */
-export function registerTools(namespace: I18NNamespace | undefined, i18n: I18N): void {
-  const register = (tool: typeof Tool) => IModelApp.tools.register(tool, namespace, i18n);
+export function registerTools(namespace: string): void {
+  const register = (tool: typeof Tool) => IModelApp.tools.register(tool, namespace);
   register(HyperModelingTool);
   register(SectionGraphicsConfigTool);
   register(SectionMarkerDecoratorConfigTool);

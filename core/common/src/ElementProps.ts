@@ -6,17 +6,11 @@
  * @module Entities
  */
 
-import {
-  GuidString,
-  Id64,
-  Id64String,
-  Logger,
-} from "@bentley/bentleyjs-core";
+import { GuidString, Id64, Id64String } from "@itwin/core-bentley";
 import {
   AngleProps, ClipVectorProps, LowAndHighXY, LowAndHighXYZ, TransformProps, XYProps, XYZProps, YawPitchRollProps,
-} from "@bentley/geometry-core";
+} from "@itwin/core-geometry";
 import { CodeProps } from "./Code";
-import { CommonLoggerCategory } from "./CommonLoggerCategory";
 import { EntityProps } from "./EntityProps";
 import { GeometryStreamProps } from "./geometry/GeometryStream";
 import { IModelError, IModelStatus } from "./IModelError";
@@ -42,7 +36,10 @@ export interface ElementProps extends EntityProps {
   code: CodeProps;
   /** The Parent of this element, if defined. */
   parent?: RelatedElementProps;
-  /** A [FederationGuid]($docs/bis/intro/element-fundamentals.md#federationguid) assigned to this element by some other federated database */
+  /** A [FederationGuid]($docs/bis/intro/element-fundamentals.md#federationguid) assigned to this element.
+   * @note  On insert, if this is a valid Guid, the value is preserved. If it is `undefined`, a new Guid is created. If it is an invalid Guid (e.g. Guid.empty), the
+   * resultant element will have a `null` federationGuid. For update, `undefined` means "don't change."
+   */
   federationGuid?: GuidString;
   /** A [user-assigned label]($docs/bis/intro/element-fundamentals.md#userlabel) for this element. */
   userLabel?: string;
@@ -77,7 +74,7 @@ export class RelatedElement implements RelatedElementProps {
     if ((typeof json === "object") && ("id" in json)) {
       const r = RelatedElement.fromJSON(json);
       if (r === undefined)
-        throw new IModelError(IModelStatus.BadArg, "Problem parsing Id64 from json", Logger.logWarning, CommonLoggerCategory.ElementProps);
+        throw new IModelError(IModelStatus.BadArg, "Problem parsing Id64 from json");
       return r.id;
     }
     return Id64.fromJSON(json);
@@ -224,7 +221,7 @@ export interface ViewAttachmentProps extends GeometricElement2dProps {
   jsonProperties?: {
     /** Integer priority in [-500,500]. Where two attachments overlap, the one with the higher priority draws in front of the other. Default: 0. */
     displayPriority?: number;
-    /** JSON representation of a [ClipVector]($geometry-core] in sheet coordinate space, used to clip the attachment's graphics on the sheet. */
+    /** JSON representation of a [ClipVector]($core-geometry] in sheet coordinate space, used to clip the attachment's graphics on the sheet. */
     clip?: ClipVectorProps;
     /** Options for customizing how the view attachment is displayed on the sheet. */
     displayOptions?: {

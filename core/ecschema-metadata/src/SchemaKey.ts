@@ -134,7 +134,7 @@ export class SchemaKey {
     return new SchemaKey(schemaName, new ECVersion(readVer, writeVer, minorVer));
   }
 
-  /*
+  /**
    * Compares two schema names, case-insensitive.
    * @return True if they match; otherwise, false.
    */

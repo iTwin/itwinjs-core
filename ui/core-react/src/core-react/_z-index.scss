@@ -1,0 +1,62 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "_helpers";
+
+// Order matters, last is top-most on screen.
+$uicore-internal-z-index-layers:
+  view-overlay,
+  widget-grip,
+  dragged-widget,
+  zone-target,
+  zone-outline,
+  toolbar-panels,
+  tool-settings-popup,
+  status-overflow-popup,
+  status-popup,
+  modal-frontstage-overlay,
+  modal-frontstage,
+  dialog,
+  dialog-popup,
+  status-message,
+  tooltip,
+  context-menu-z,
+  dragdrop,
+  cursor-overlay,
+  drag-target,
+  drag-preview,
+  backstage-overlay,
+  backstage,
+  keyin-palette-overlay;
+
+$uicore-z-index-step: 1000;
+
+@function uicore-internal-get-next-z-index-step($counter) {
+  @return $counter + $uicore-z-index-step;
+}
+
+$uicore-internal-z-index-layer-map: uicore-map-from-array-with-result-arg($uicore-internal-z-index-layers, get-function(uicore-internal-get-next-z-index-step), 0);
+
+// Use this to get z-index value
+@function uicore-get-z-index($layer) {
+  @if map_has_key($uicore-internal-z-index-layer-map, $layer) {
+    @return map-get($uicore-internal-z-index-layer-map, $layer);
+  }
+  @else {
+    @error "Failed to get z-index for $layer: #{$layer}";
+  }
+}
+
+// Use this to add z-index property
+@mixin uicore-z-index($layer) {
+  z-index: uicore-get-z-index($layer);
+}
+
+// Use this to add a CSS variable for each z-index layer
+@mixin uicore-z-index-variables() {
+  @each $layer in $uicore-internal-z-index-layers {
+    $z-index: uicore-get-z-index($layer);
+    --uicore-z-index-#{$layer}: #{$z-index};
+  }
+}

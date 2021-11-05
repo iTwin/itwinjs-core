@@ -6,7 +6,7 @@
  * @module Validation
  */
 
-import { ISchemaPartVisitor, Schema } from "@bentley/ecschema-metadata";
+import { ISchemaPartVisitor, Schema } from "@itwin/ecschema-metadata";
 import { IRuleSet } from "./Rules";
 import { SchemaValidationVisitor } from "./SchemaValidationVisitor";
 import { IDiagnosticReporter, SuppressionDiagnosticReporter } from "./DiagnosticReporter";

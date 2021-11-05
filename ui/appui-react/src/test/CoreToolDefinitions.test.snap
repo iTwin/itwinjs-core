@@ -1,0 +1,688 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool Definitions 1`] = `
+<ToolWidgetWithDef
+  horizontalToolbar={
+    <Toolbar
+      expandsTo={4}
+      items={
+        <UNDEFINED>
+          <ActionItemButton
+            actionItem={
+              ToolItemDef {
+                "_commandHandler": Object {
+                  "execute": [Function],
+                  "getCommandArgs": undefined,
+                  "parameters": undefined,
+                },
+                "_description": "",
+                "_isActive": false,
+                "_label": "",
+                "_onItemExecuted": undefined,
+                "_tooltip": "",
+                "badgeType": undefined,
+                "execute": [Function],
+                "getKey": [Function],
+                "handleSizeKnown": [Function],
+                "iconSpec": "icon-cursor",
+                "isDisabled": undefined,
+                "isEnabled": true,
+                "isHidden": undefined,
+                "isPressed": false,
+                "isVisible": true,
+                "stateSyncIds": Array [],
+                "toolId": "Select",
+              }
+            }
+          />
+          <ActionItemButton
+            actionItem={
+              ToolItemDef {
+                "_commandHandler": Object {
+                  "execute": [Function],
+                  "getCommandArgs": undefined,
+                  "parameters": undefined,
+                },
+                "_description": "",
+                "_isActive": false,
+                "_label": "",
+                "_onItemExecuted": undefined,
+                "_tooltip": "",
+                "badgeType": undefined,
+                "execute": [Function],
+                "getKey": [Function],
+                "handleSizeKnown": [Function],
+                "iconSpec": "icon-fit-to-view",
+                "isDisabled": undefined,
+                "isEnabled": true,
+                "isHidden": undefined,
+                "isPressed": false,
+                "isVisible": true,
+                "stateSyncIds": Array [],
+                "toolId": "View.Fit",
+              }
+            }
+          />
+          <ActionItemButton
+            actionItem={
+              ToolItemDef {
+                "_commandHandler": Object {
+                  "execute": [Function],
+                  "getCommandArgs": undefined,
+                  "parameters": undefined,
+                },
+                "_description": "",
+                "_isActive": false,
+                "_label": "",
+                "_onItemExecuted": undefined,
+                "_tooltip": "",
+                "badgeType": undefined,
+                "execute": [Function],
+                "getKey": [Function],
+                "handleSizeKnown": [Function],
+                "iconSpec": "icon-window-area",
+                "isDisabled": undefined,
+                "isEnabled": true,
+                "isHidden": undefined,
+                "isPressed": false,
+                "isVisible": true,
+                "stateSyncIds": Array [],
+                "toolId": "View.WindowArea",
+              }
+            }
+          />
+          <ActionItemButton
+            actionItem={
+              ToolItemDef {
+                "_commandHandler": Object {
+                  "execute": [Function],
+                  "getCommandArgs": undefined,
+                  "parameters": undefined,
+                },
+                "_description": "",
+                "_isActive": false,
+                "_label": "",
+                "_onItemExecuted": undefined,
+                "_tooltip": "",
+                "badgeType": undefined,
+                "execute": [Function],
+                "getKey": [Function],
+                "handleSizeKnown": [Function],
+                "iconSpec": "icon-zoom",
+                "isDisabled": undefined,
+                "isEnabled": true,
+                "isHidden": undefined,
+                "isPressed": false,
+                "isVisible": true,
+                "stateSyncIds": Array [],
+                "toolId": "View.Zoom",
+              }
+            }
+          />
+          <ActionItemButton
+            actionItem={
+              ToolItemDef {
+                "_commandHandler": Object {
+                  "execute": [Function],
+                  "getCommandArgs": undefined,
+                  "parameters": undefined,
+                },
+                "_description": "",
+                "_isActive": false,
+                "_label": "",
+                "_onItemExecuted": undefined,
+                "_tooltip": "",
+                "badgeType": undefined,
+                "execute": [Function],
+                "getKey": [Function],
+                "handleSizeKnown": [Function],
+                "iconSpec": "icon-hand-2",
+                "isDisabled": undefined,
+                "isEnabled": true,
+                "isHidden": undefined,
+                "isPressed": false,
+                "isVisible": true,
+                "stateSyncIds": Array [],
+                "toolId": "View.Pan",
+              }
+            }
+          />
+          <ActionItemButton
+            actionItem={
+              ToolItemDef {
+                "_commandHandler": Object {
+                  "execute": [Function],
+                  "getCommandArgs": undefined,
+                  "parameters": undefined,
+                },
+                "_description": "",
+                "_isActive": false,
+                "_label": "",
+                "_onItemExecuted": undefined,
+                "_tooltip": "",
+                "badgeType": undefined,
+                "execute": [Function],
+                "getKey": [Function],
+                "handleSizeKnown": [Function],
+                "iconSpec": ConditionalStringValue {
+                  "_value": "icon-gyroscope",
+                  "stringGetter": [Function],
+                  "syncEventIds": Array [
+                    "activecontentchanged",
+                    "activeviewportchanged",
+                    "viewstatechanged",
+                  ],
+                },
+                "isDisabled": undefined,
+                "isEnabled": true,
+                "isHidden": undefined,
+                "isPressed": false,
+                "isVisible": true,
+                "stateSyncIds": Array [],
+                "toolId": "View.Rotate",
+              }
+            }
+          />
+          <ActionItemButton
+            actionItem={
+              ToolItemDef {
+                "_commandHandler": Object {
+                  "execute": [Function],
+                  "getCommandArgs": undefined,
+                  "parameters": undefined,
+                },
+                "_description": "",
+                "_isActive": false,
+                "_label": "",
+                "_onItemExecuted": undefined,
+                "_tooltip": "",
+                "badgeType": undefined,
+                "execute": [Function],
+                "getKey": [Function],
+                "handleSizeKnown": [Function],
+                "iconSpec": "icon-walk",
+                "isDisabled": undefined,
+                "isEnabled": true,
+                "isHidden": ConditionalBooleanValue {
+                  "_value": undefined,
+                  "syncEventIds": Array [
+                    "activecontentchanged",
+                    "activeviewportchanged",
+                    "viewstatechanged",
+                  ],
+                  "testFunc": [Function],
+                },
+                "isPressed": false,
+                "isVisible": true,
+                "stateSyncIds": Array [],
+                "toolId": "View.Walk",
+              }
+            }
+          />
+          <ActionItemButton
+            actionItem={
+              ToolItemDef {
+                "_commandHandler": Object {
+                  "execute": [Function],
+                  "getCommandArgs": undefined,
+                  "parameters": undefined,
+                },
+                "_description": "",
+                "_isActive": false,
+                "_label": "",
+                "_onItemExecuted": undefined,
+                "_tooltip": "",
+                "badgeType": undefined,
+                "execute": [Function],
+                "getKey": [Function],
+                "handleSizeKnown": [Function],
+                "iconSpec": ConditionalStringValue {
+                  "_value": "icon-camera-animation-disabled",
+                  "stringGetter": [Function],
+                  "syncEventIds": Array [
+                    "activecontentchanged",
+                    "activeviewportchanged",
+                    "viewstatechanged",
+                  ],
+                },
+                "isDisabled": undefined,
+                "isEnabled": true,
+                "isHidden": ConditionalBooleanValue {
+                  "_value": undefined,
+                  "syncEventIds": Array [
+                    "activecontentchanged",
+                    "activeviewportchanged",
+                    "viewstatechanged",
+                  ],
+                  "testFunc": [Function],
+                },
+                "isPressed": false,
+                "isVisible": true,
+                "stateSyncIds": Array [],
+                "toolId": "View.ToggleCamera",
+              }
+            }
+          />
+          <ActionItemButton
+            actionItem={
+              ToolItemDef {
+                "_commandHandler": Object {
+                  "execute": [Function],
+                  "getCommandArgs": undefined,
+                  "parameters": undefined,
+                },
+                "_description": "",
+                "_isActive": false,
+                "_label": "",
+                "_onItemExecuted": undefined,
+                "_tooltip": "",
+                "badgeType": undefined,
+                "execute": [Function],
+                "getKey": [Function],
+                "handleSizeKnown": [Function],
+                "iconSpec": "icon-airplane",
+                "isDisabled": undefined,
+                "isEnabled": true,
+                "isHidden": undefined,
+                "isPressed": false,
+                "isVisible": true,
+                "stateSyncIds": Array [],
+                "toolId": "View.Fly",
+              }
+            }
+          />
+          <ActionItemButton
+            actionItem={
+              ToolItemDef {
+                "_commandHandler": Object {
+                  "execute": [Function],
+                  "getCommandArgs": undefined,
+                  "parameters": undefined,
+                },
+                "_description": "",
+                "_isActive": false,
+                "_label": "",
+                "_onItemExecuted": undefined,
+                "_tooltip": "",
+                "badgeType": undefined,
+                "execute": [Function],
+                "getKey": [Function],
+                "handleSizeKnown": [Function],
+                "iconSpec": "icon-section-plane",
+                "isDisabled": undefined,
+                "isEnabled": true,
+                "isHidden": undefined,
+                "isPressed": false,
+                "isVisible": true,
+                "stateSyncIds": Array [],
+                "toolId": "ViewClip.ByPlane",
+              }
+            }
+          />
+          <ActionItemButton
+            actionItem={
+              ToolItemDef {
+                "_commandHandler": Object {
+                  "execute": [Function],
+                  "getCommandArgs": undefined,
+                  "parameters": undefined,
+                },
+                "_description": "",
+                "_isActive": false,
+                "_label": "",
+                "_onItemExecuted": undefined,
+                "_tooltip": "",
+                "badgeType": undefined,
+                "execute": [Function],
+                "getKey": [Function],
+                "handleSizeKnown": [Function],
+                "iconSpec": "icon-section-element",
+                "isDisabled": undefined,
+                "isEnabled": true,
+                "isHidden": undefined,
+                "isPressed": false,
+                "isVisible": true,
+                "stateSyncIds": Array [],
+                "toolId": "ViewClip.ByElement",
+              }
+            }
+          />
+          <ActionItemButton
+            actionItem={
+              ToolItemDef {
+                "_commandHandler": Object {
+                  "execute": [Function],
+                  "getCommandArgs": undefined,
+                  "parameters": undefined,
+                },
+                "_description": "",
+                "_isActive": false,
+                "_label": "",
+                "_onItemExecuted": undefined,
+                "_tooltip": "",
+                "badgeType": undefined,
+                "execute": [Function],
+                "getKey": [Function],
+                "handleSizeKnown": [Function],
+                "iconSpec": "icon-section-shape",
+                "isDisabled": undefined,
+                "isEnabled": true,
+                "isHidden": undefined,
+                "isPressed": false,
+                "isVisible": true,
+                "stateSyncIds": Array [],
+                "toolId": "ViewClip.ByShape",
+              }
+            }
+          />
+          <ActionItemButton
+            actionItem={
+              ToolItemDef {
+                "_commandHandler": Object {
+                  "execute": [Function],
+                  "getCommandArgs": undefined,
+                  "parameters": undefined,
+                },
+                "_description": "",
+                "_isActive": false,
+                "_label": "",
+                "_onItemExecuted": undefined,
+                "_tooltip": "",
+                "badgeType": undefined,
+                "execute": [Function],
+                "getKey": [Function],
+                "handleSizeKnown": [Function],
+                "iconSpec": "icon-section-range",
+                "isDisabled": undefined,
+                "isEnabled": true,
+                "isHidden": undefined,
+                "isPressed": false,
+                "isVisible": true,
+                "stateSyncIds": Array [],
+                "toolId": "ViewClip.ByRange",
+              }
+            }
+          />
+        </UNDEFINED>
+      }
+      panelAlignment={0}
+    />
+  }
+  toolWidgetDef={
+    ToolWidgetDef {
+      "_appButton": undefined,
+      "_backstageLabel": "buttons.openBackstageMenu",
+      "_canPopout": undefined,
+      "_classId": undefined,
+      "_defaultFloatingPosition": undefined,
+      "_defaultState": 4,
+      "_fillZone": false,
+      "_floatingContainerId": undefined,
+      "_handleSyncUiEvent": [Function],
+      "_id": "toolWidget",
+      "_isFloatingStateSupported": false,
+      "_isFloatingStateWindowResizable": true,
+      "_isFreeform": false,
+      "_isStatusBar": false,
+      "_isToolSettings": false,
+      "_label": "",
+      "_onWidgetStateChanged": undefined,
+      "_preferredPanelSize": undefined,
+      "_priority": 0,
+      "_restoreTransientState": undefined,
+      "_saveTransientState": undefined,
+      "_state": 4,
+      "_stateChanged": false,
+      "_syncEventIds": Array [],
+      "_tabLocation": Object {
+        "side": "left",
+        "tabIndex": 0,
+        "widgetId": "",
+        "widgetIndex": 0,
+      },
+      "_toolbarBaseName": "[]ToolWidget",
+      "_tooltip": "",
+      "_widgetType": 0,
+      "horizontalDirection": 4,
+      "horizontalItems": undefined,
+      "horizontalPanelAlignment": 0,
+      "verticalDirection": 3,
+      "verticalItems": undefined,
+      "verticalPanelAlignment": 0,
+    }
+  }
+/>
+`;
+
+exports[`CoreToolDefinitions ToolWidgetComposer should render correctly with Core Tool Definitions 1`] = `
+<ContextProvider
+  value={
+    Object {
+      "onElementRef": [Function],
+      "proximityScale": 1,
+    }
+  }
+>
+  <ToolsArea
+    horizontalToolbar={
+      <ToolbarWithOverflow
+        expandsTo={4}
+        items={
+          Array [
+            Object {
+              "badgeType": undefined,
+              "buttonNode": <PopupButton
+                iconSpec="icon-process"
+                labelKey="UiFramework:keyinbrowser.label"
+                onSizeKnown={[Function]}
+              >
+                [Function]
+              </PopupButton>,
+              "icon": "icon-process",
+              "id": "uif:keyinbrowser",
+              "internalData": Map {},
+              "isCustom": true,
+              "isDisabled": undefined,
+              "isHidden": undefined,
+              "itemPriority": 10,
+              "label": "keyinbrowser.label",
+              "panelContentNode": <UNDEFINED>
+                [Function]
+              </UNDEFINED>,
+            },
+            Object {
+              "badgeType": undefined,
+              "execute": [Function],
+              "icon": "icon-cursor",
+              "id": "Select",
+              "internalData": Map {},
+              "isActive": false,
+              "isDisabled": undefined,
+              "isHidden": undefined,
+              "itemPriority": 20,
+              "label": "",
+            },
+            Object {
+              "badgeType": undefined,
+              "execute": [Function],
+              "icon": "icon-fit-to-view",
+              "id": "View.Fit",
+              "internalData": Map {},
+              "isActive": false,
+              "isDisabled": undefined,
+              "isHidden": undefined,
+              "itemPriority": 30,
+              "label": "",
+            },
+            Object {
+              "badgeType": undefined,
+              "execute": [Function],
+              "icon": "icon-window-area",
+              "id": "View.WindowArea",
+              "internalData": Map {},
+              "isActive": false,
+              "isDisabled": undefined,
+              "isHidden": undefined,
+              "itemPriority": 40,
+              "label": "",
+            },
+            Object {
+              "badgeType": undefined,
+              "execute": [Function],
+              "icon": "icon-zoom",
+              "id": "View.Zoom",
+              "internalData": Map {},
+              "isActive": false,
+              "isDisabled": undefined,
+              "isHidden": undefined,
+              "itemPriority": 50,
+              "label": "",
+            },
+            Object {
+              "badgeType": undefined,
+              "execute": [Function],
+              "icon": "icon-hand-2",
+              "id": "View.Pan",
+              "internalData": Map {},
+              "isActive": false,
+              "isDisabled": undefined,
+              "isHidden": undefined,
+              "itemPriority": 60,
+              "label": "",
+            },
+            Object {
+              "badgeType": undefined,
+              "execute": [Function],
+              "icon": ConditionalStringValue {
+                "_value": "icon-gyroscope",
+                "stringGetter": [Function],
+                "syncEventIds": Array [
+                  "activecontentchanged",
+                  "activeviewportchanged",
+                  "viewstatechanged",
+                ],
+              },
+              "id": "View.Rotate",
+              "internalData": Map {},
+              "isActive": false,
+              "isDisabled": undefined,
+              "isHidden": undefined,
+              "itemPriority": 70,
+              "label": "",
+            },
+            Object {
+              "badgeType": undefined,
+              "execute": [Function],
+              "icon": "icon-walk",
+              "id": "View.Walk",
+              "internalData": Map {},
+              "isActive": false,
+              "isDisabled": undefined,
+              "isHidden": ConditionalBooleanValue {
+                "_value": undefined,
+                "syncEventIds": Array [
+                  "activecontentchanged",
+                  "activeviewportchanged",
+                  "viewstatechanged",
+                ],
+                "testFunc": [Function],
+              },
+              "itemPriority": 80,
+              "label": "",
+            },
+            Object {
+              "badgeType": undefined,
+              "execute": [Function],
+              "icon": ConditionalStringValue {
+                "_value": "icon-camera-animation-disabled",
+                "stringGetter": [Function],
+                "syncEventIds": Array [
+                  "activecontentchanged",
+                  "activeviewportchanged",
+                  "viewstatechanged",
+                ],
+              },
+              "id": "View.ToggleCamera",
+              "internalData": Map {},
+              "isActive": false,
+              "isDisabled": undefined,
+              "isHidden": ConditionalBooleanValue {
+                "_value": undefined,
+                "syncEventIds": Array [
+                  "activecontentchanged",
+                  "activeviewportchanged",
+                  "viewstatechanged",
+                ],
+                "testFunc": [Function],
+              },
+              "itemPriority": 90,
+              "label": "",
+            },
+            Object {
+              "badgeType": undefined,
+              "execute": [Function],
+              "icon": "icon-airplane",
+              "id": "View.Fly",
+              "internalData": Map {},
+              "isActive": false,
+              "isDisabled": undefined,
+              "isHidden": undefined,
+              "itemPriority": 100,
+              "label": "",
+            },
+            Object {
+              "badgeType": undefined,
+              "execute": [Function],
+              "icon": "icon-section-plane",
+              "id": "ViewClip.ByPlane",
+              "internalData": Map {},
+              "isActive": false,
+              "isDisabled": undefined,
+              "isHidden": undefined,
+              "itemPriority": 110,
+              "label": "",
+            },
+            Object {
+              "badgeType": undefined,
+              "execute": [Function],
+              "icon": "icon-section-element",
+              "id": "ViewClip.ByElement",
+              "internalData": Map {},
+              "isActive": false,
+              "isDisabled": undefined,
+              "isHidden": undefined,
+              "itemPriority": 120,
+              "label": "",
+            },
+            Object {
+              "badgeType": undefined,
+              "execute": [Function],
+              "icon": "icon-section-shape",
+              "id": "ViewClip.ByShape",
+              "internalData": Map {},
+              "isActive": false,
+              "isDisabled": undefined,
+              "isHidden": undefined,
+              "itemPriority": 130,
+              "label": "",
+            },
+            Object {
+              "badgeType": undefined,
+              "execute": [Function],
+              "icon": "icon-section-range",
+              "id": "ViewClip.ByRange",
+              "internalData": Map {},
+              "isActive": false,
+              "isDisabled": undefined,
+              "isHidden": undefined,
+              "itemPriority": 140,
+              "label": "",
+            },
+          ]
+        }
+      />
+    }
+    onMouseEnter={[Function]}
+  />
+</ContextProvider>
+`;

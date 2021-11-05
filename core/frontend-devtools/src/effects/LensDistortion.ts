@@ -6,8 +6,8 @@
  * @module Effects
  */
 
-import { assert } from "@bentley/bentleyjs-core";
-import { ScreenSpaceEffectBuilder, Tool, UniformType, VaryingType } from "@bentley/imodeljs-frontend";
+import { assert } from "@itwin/core-bentley";
+import { ScreenSpaceEffectBuilder, Tool, UniformType, VaryingType } from "@itwin/core-frontend";
 import { AddEffectTool, refreshViewportsForEffect } from "./EffectTools";
 import { parseArgs } from "../tools/parseArgs";
 
@@ -81,7 +81,7 @@ export class LensDistortionEffect extends AddEffectTool {
       name: "height",
       type: UniformType.Float,
       bind: (uniform, context) => {
-        assert(context.viewport.view.isCameraEnabled());
+        assert(context.viewport.view.is3d() && context.viewport.view.isCameraOn);
         const fov = context.viewport.view.camera.lens.radians;
         const height = Math.tan(fov / 2) / context.viewport.viewRect.aspect;
         uniform.setUniform1f(height);
@@ -101,14 +101,14 @@ export class LensDistortionConfig extends Tool {
   public static strength = 0.5;
   public static cylindricalRatio = 0.5;
 
-  public override run(strength?: number, ratio?: number): boolean {
+  public override async run(strength?: number, ratio?: number): Promise<boolean> {
     LensDistortionConfig.strength = strength ?? 0.5;
     LensDistortionConfig.cylindricalRatio = ratio ?? 0.5;
     refreshViewportsForEffect("fdt lensdistortion");
     return true;
   }
 
-  public override parseAndRun(...input: string[]): boolean {
+  public override async parseAndRun(...input: string[]): Promise<boolean> {
     const args = parseArgs(input);
     return this.run(args.getFloat("s"), args.getFloat("r"));
   }

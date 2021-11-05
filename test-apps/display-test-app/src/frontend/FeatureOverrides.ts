@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { dispose, Id64String, IDisposable } from "@bentley/bentleyjs-core";
+import { dispose, Id64String, IDisposable } from "@itwin/core-bentley";
 import {
   ColorInputProps, ComboBox, ComboBoxHandler, convertHexToRgb, createButton, createCheckBox, createColorInput, createComboBox, createNumericInput,
-} from "@bentley/frontend-devtools";
-import { FeatureAppearance, FeatureAppearanceProps, LinePixels, RgbColor } from "@bentley/imodeljs-common";
-import { FeatureOverrideProvider, FeatureSymbology, Viewport } from "@bentley/imodeljs-frontend";
+} from "@itwin/frontend-devtools";
+import { FeatureAppearance, FeatureAppearanceProps, LinePixels, RgbColor } from "@itwin/core-common";
+import { FeatureOverrideProvider, FeatureSymbology, Viewport } from "@itwin/core-frontend";
 import { ToolBarDropDown } from "./ToolBar";
 
 export class Provider implements FeatureOverrideProvider {

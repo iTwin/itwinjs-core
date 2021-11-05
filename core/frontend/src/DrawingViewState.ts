@@ -6,29 +6,27 @@
  * @module Views
  */
 
-import { assert, dispose, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { assert, dispose, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  Constant, Range3d, Transform, TransformProps, Vector3d,
-} from "@bentley/geometry-core";
-import {
-  AxisAlignedBox3d, Frustum, SectionDrawingViewProps, ViewDefinition2dProps, ViewFlagOverrides, ViewStateProps,
-} from "@bentley/imodeljs-common";
-import { ViewRect } from "./ViewRect";
-import { Frustum2d } from "./Frustum2d";
-import { ExtentLimits, ViewState2d, ViewState3d } from "./ViewState";
-import { IModelConnection } from "./IModelConnection";
-import { IModelApp } from "./IModelApp";
+  AxisAlignedBox3d, Frustum, QueryRowFormat, SectionDrawingViewProps, ViewDefinition2dProps, ViewFlagOverrides, ViewStateProps,
+} from "@itwin/core-common";
+import { Constant, Range3d, Transform, TransformProps, Vector3d } from "@itwin/core-geometry";
 import { CategorySelectorState } from "./CategorySelectorState";
-import { DisplayStyle2dState } from "./DisplayStyleState";
 import { CoordSystem } from "./CoordSystem";
-import { OffScreenViewport } from "./Viewport";
-import { SceneContext } from "./ViewContext";
+import { DisplayStyle2dState } from "./DisplayStyleState";
+import { Frustum2d } from "./Frustum2d";
+import { IModelApp } from "./IModelApp";
+import { IModelConnection } from "./IModelConnection";
 import { FeatureSymbology } from "./render/FeatureSymbology";
-import { Scene } from "./render/Scene";
-import { MockRender } from "./render/MockRender";
 import { GraphicBranch, GraphicBranchOptions } from "./render/GraphicBranch";
+import { MockRender } from "./render/MockRender";
 import { RenderGraphic } from "./render/RenderGraphic";
+import { Scene } from "./render/Scene";
 import { DisclosedTileTreeSet, TileGraphicType } from "./tile/internal";
+import { SceneContext } from "./ViewContext";
+import { OffScreenViewport } from "./Viewport";
+import { ViewRect } from "./ViewRect";
+import { ExtentLimits, ViewState2d, ViewState3d } from "./ViewState";
 
 /** Strictly for testing.
  * @internal
@@ -180,10 +178,7 @@ class SectionAttachment {
       },
     };
 
-    this._viewFlagOverrides = new ViewFlagOverrides(view.viewFlags);
-    this._viewFlagOverrides.setApplyLighting(false);
-    this._viewFlagOverrides.setShowShadows(false);
-
+    this._viewFlagOverrides = { ...view.viewFlags, lighting: false, shadows: false };
     this._drawingExtents = this.viewport.viewingSpace.viewDelta.clone();
     this._toDrawing.multiplyVector(this._drawingExtents, this._drawingExtents);
     this._drawingExtents.z = Math.abs(this._drawingExtents.z);
@@ -358,12 +353,12 @@ export class DrawingViewState extends ViewState2d {
         FROM bis.SectionDrawing
         WHERE ECInstanceId=${this.baseModelId}`;
 
-      for await (const row of this.iModel.query(ecsql)) {
+      for await (const row of this.iModel.query(ecsql, undefined, QueryRowFormat.UseJsPropertyNames)) {
         spatialView = Id64.fromJSON(row.spatialView?.id);
         displaySpatialView = !!row.displaySpatialView;
         try {
           drawingToSpatialTransform = JSON.parse(row.drawingToSpatialTransform);
-        } catch (_) {
+        } catch {
           // We'll use identity transform.
         }
 

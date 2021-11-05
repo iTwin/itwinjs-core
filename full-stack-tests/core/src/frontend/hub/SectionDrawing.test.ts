@@ -3,31 +3,28 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { CheckpointConnection, DrawingViewState, IModelApp, IModelConnection, SectionDrawingModelState } from "@bentley/imodeljs-frontend";
-import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
+import { CheckpointConnection, DrawingViewState, IModelConnection, SectionDrawingModelState } from "@itwin/core-frontend";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
+import { TestUtility } from "../TestUtility";
 import { testOnScreenViewport, TestViewport } from "../TestViewport";
-import { TestUtility } from "./TestUtility";
 
 describe("Section Drawings (#integration)", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    await IModelApp.startup({
-      authorizationClient: await TestUtility.initializeTestProject(TestUtility.testContextName, TestUsers.regular),
-      imodelClient: TestUtility.imodelCloudEnv.imodelClient,
-      applicationVersion: "1.2.1.1",
-    });
+    await TestUtility.startFrontend(TestUtility.iModelAppOptions);
+    await TestUtility.initialize(TestUsers.regular);
 
-    const contextId = await TestUtility.queryContextIdByName(TestUtility.testContextName);
-    const iModelId = await TestUtility.queryIModelIdbyName(contextId, TestUtility.testIModelNames.sectionDrawingLocations);
-    imodel = await CheckpointConnection.openRemote(contextId, iModelId);
+    const iTwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
+    const iModelId = await TestUtility.queryIModelIdByName(iTwinId, TestUtility.testIModelNames.sectionDrawingLocations);
+    imodel = await CheckpointConnection.openRemote(iTwinId, iModelId);
   });
 
   after(async () => {
     if (imodel)
       await imodel.close();
 
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   afterEach(() => {

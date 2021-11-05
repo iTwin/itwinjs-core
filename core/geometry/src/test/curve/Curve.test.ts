@@ -44,6 +44,7 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
 import { DirectSpiral3d } from "../../curve/spiral/DirectSpiral3d";
+import { InterpolationCurve3d } from "../../bspline/InterpolationCurve3d";
 
 /* eslint-disable no-console */
 
@@ -471,6 +472,23 @@ class ExerciseCurve {
         ExerciseCurve.exerciseClosestPoint(ck, bcurveH, 0.1);
         ExerciseCurve.exerciseClosestPoint(ck, bcurveH, 0.48);
         ExerciseCurve.exerciseClosestPoint(ck, bcurveH, 0.82);
+      }
+    }
+
+    for (const points of [
+            Sample.createArcStrokes(4, Point3d.create(0, 0, 0), 2.0, Angle.createDegrees(0), Angle.createDegrees(225))]) {
+      const interpolationCurve = InterpolationCurve3d.create(
+        {
+          fitPoints: points,
+        });
+
+      if (ck.testPointer(interpolationCurve)) {
+        ExerciseCurve.exerciseFractionToPoint(ck, interpolationCurve, false, false);
+        ExerciseCurve.exerciseStroke(ck, interpolationCurve);
+        ExerciseCurve.exerciseMoveSignedDistance(ck, interpolationCurve);
+        ExerciseCurve.exerciseClosestPoint(ck, interpolationCurve, 0.1);
+        ExerciseCurve.exerciseClosestPoint(ck, interpolationCurve, 0.48);
+        ExerciseCurve.exerciseClosestPoint(ck, interpolationCurve, 0.82);
       }
     }
 

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/ecschema-metadata",
+      "comment": "remove alpha toXmlString method and its implicit xmldom dependency",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/ecschema-metadata",
+  "email": "MichaelBelousov@users.noreply.github.com"
+}

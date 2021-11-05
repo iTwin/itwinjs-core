@@ -3,22 +3,26 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { Id64String } from "@bentley/bentleyjs-core";
-import { ViewDefinitionProps } from "@bentley/imodeljs-common";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { Id64String } from "@itwin/core-bentley";
+import { ViewDefinitionProps } from "@itwin/core-common";
+import { IModelConnection } from "@itwin/core-frontend";
 
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
+import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { OpenDialogOptions } from "electron";
 
-import { Button, ButtonSize, ButtonType, FillCentered, Headline } from "@bentley/ui-core";
+import { FillCentered } from "@itwin/core-react";
 import {
   ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageManager,
   FrontstageProps, FrontstageProvider, ToolWidget, UiFramework, Widget, Zone,
-} from "@bentley/ui-framework";
+} from "@itwin/appui-react";
 import { SampleAppIModelApp } from "../..";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { IModelViewPicker } from "../imodelopen/IModelViewPicker";
 import { LocalFileSupport } from "../LocalFileSupport";
+import { Button, Headline } from "@itwin/itwinui-react";
+import { StageUsage, StandardContentLayouts } from "@itwin/appui-abstract";
+import { hasSavedViewLayoutProps } from "../../tools/UiProviderTool";
+import { ViewsFrontstage } from "./ViewsFrontstage";
 
 class LocalFileOpenControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -39,29 +43,38 @@ class LocalFileOpenControl extends ContentControl {
 
 /** LocalFileOpenFrontstage displays the file picker and view picker. */
 export class LocalFileOpenFrontstage extends FrontstageProvider {
+  public get id(): string {
+    return "LocalFileOpen";
+  }
+
   public static async open() {
     if (LocalFileSupport.localFilesSupported()) {
       const frontstageProvider = new LocalFileOpenFrontstage();
       FrontstageManager.addFrontstageProvider(frontstageProvider);
-      await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+      const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+      await FrontstageManager.setActiveFrontstageDef(frontstageDef);
     }
   }
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
     const contentGroup: ContentGroup = new ContentGroup({
+      id: "LocalFileOpenGroup",
+      layout: StandardContentLayouts.singleView,
       contents: [
         {
+          id: "file-open",
           classId: LocalFileOpenControl,
         },
       ],
     });
 
     return (
-      <Frontstage id="LocalFileOpen"
+      <Frontstage id={this.id}
         defaultTool={CoreTools.selectElementCommand}
-        defaultLayout="SingleContent"
         contentGroup={contentGroup}
         isInFooterMode={false}
+        isIModelIndependent={true}
+        usage={StageUsage.Private}
         contentManipulationTools={
           <Zone
             widgets={[
@@ -95,6 +108,7 @@ interface LocalFilePageProps {
 
 interface LocalFilePageState {
   iModelConnection: IModelConnection | undefined;
+  hasSavedContentGroup: boolean;
 }
 
 /** LocalFilePage displays the file picker and view picker. */
@@ -103,14 +117,13 @@ class LocalFilePage extends React.Component<LocalFilePageProps, LocalFilePageSta
 
   public override readonly state: Readonly<LocalFilePageState> = {
     iModelConnection: undefined,
+    hasSavedContentGroup: false,
   };
 
   public override componentDidMount() {
     if (!this.state.iModelConnection) {
       if (ElectronApp.isValid) {
         this._handleElectronFileOpen(); // eslint-disable-line @typescript-eslint/no-floating-promises
-      } else if (this._input) {
-        this._handleButtonClick();
       }
     }
   }
@@ -131,9 +144,10 @@ class LocalFilePage extends React.Component<LocalFilePageProps, LocalFilePageSta
         const file: File = this._input.files[0];
         if (file) {
           const iModelConnection = await LocalFileSupport.openLocalFile(file.name, this.props.writable);
+          const hasSavedContentGroup = await hasSavedViewLayoutProps(ViewsFrontstage.stageId, iModelConnection);
           if (iModelConnection) {
             SampleAppIModelApp.setIsIModelLocal(true, true);
-            this.setState({ iModelConnection });
+            this.setState({ iModelConnection, hasSavedContentGroup });
           }
         }
       }
@@ -154,9 +168,10 @@ class LocalFilePage extends React.Component<LocalFilePageProps, LocalFilePageSta
     const filePath = val.filePaths[0];
     if (filePath) {
       const iModelConnection = await LocalFileSupport.openLocalFile(filePath, this.props.writable);
+      const hasSavedContentGroup = await hasSavedViewLayoutProps(ViewsFrontstage.stageId, this.state.iModelConnection);
       if (iModelConnection) {
         SampleAppIModelApp.setIsIModelLocal(true, true);
-        this.setState({ iModelConnection });
+        this.setState({ iModelConnection, hasSavedContentGroup });
       }
     }
   };
@@ -179,8 +194,13 @@ class LocalFilePage extends React.Component<LocalFilePageProps, LocalFilePageSta
   };
 
   public override render() {
+    if (this.state.hasSavedContentGroup && this.state.iModelConnection) {
+      this.props.onViewsSelected(this.state.iModelConnection, []);
+      return null;
+    }
+
     if (!this.state.iModelConnection) {
-      const title = UiFramework.i18n.translate("SampleApp:localFileStage.localFile");
+      const title = UiFramework.localization.getLocalizedString("SampleApp:localFileStage.localFile");
 
       return (
         <>
@@ -193,8 +213,8 @@ class LocalFilePage extends React.Component<LocalFilePageProps, LocalFilePageSta
                 type="file" accept=".bim,.ibim" onChange={this._handleFileInputChange}
                 style={{ display: "none" }} />
             }
-            <Button size={ButtonSize.Large} buttonType={ButtonType.Primary} onClick={this._handleButtonClick}>
-              {UiFramework.i18n.translate("SampleApp:localFileStage.selectFile")}
+            <Button size="large" styleType="cta" onClick={this._handleButtonClick}>
+              {UiFramework.localization.getLocalizedString("SampleApp:localFileStage.selectFile")}
             </Button>
           </FillCentered >
         </>

@@ -9,7 +9,7 @@
 import { AnyClass, AnyECType, AnyProperty, Constant, CustomAttribute, CustomAttributeClass,
   CustomAttributeContainerProps, EntityClass, Enumeration, Format, InvertedUnit, KindOfQuantity, Mixin, Phenomenon,
   PropertyCategory, RelationshipClass, RelationshipConstraint, Schema, SchemaItem, StructClass, Unit,
-  UnitSystem } from "@bentley/ecschema-metadata";
+  UnitSystem } from "@itwin/ecschema-metadata";
 import { BaseDiagnostic } from "./Diagnostic";
 
 /**
@@ -22,7 +22,7 @@ export type IRule<T extends AnyECType, U = {}> = (ecDefinition: T, ...args: U[])
 export type BaseRule<T extends AnyECType, U extends AnyECType> = IRule<T, U>;
 
 /**
- * Interface used to represent logical collection of [IRule]($ecschema-metadata) instances.
+ * Interface used to represent logical collection of [IRule]($ecschema-editing) instances.
  * @beta
  */
 export interface IRuleSet {

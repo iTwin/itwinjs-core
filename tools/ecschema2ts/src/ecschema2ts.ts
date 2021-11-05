@@ -5,7 +5,7 @@
 
 import {
   ECClass, ECClassModifier, EntityClass, Enumeration, EnumerationProperty, Mixin, PrimitiveProperty, PrimitiveType, Schema, SchemaItem, SchemaItemType, StructClass, StructProperty,
-} from "@bentley/ecschema-metadata";
+} from "@itwin/ecschema-metadata";
 
 interface TsBentleyModule {
   moduleName: string;
@@ -16,19 +16,19 @@ const customHandledPropertyCA: string = "BisCore.CustomHandledProperty";
 const elementECClassName: string = "BisCore.Element";
 const tsBentleyModules: { [index: string]: TsBentleyModule } = {
   tsIModelJsCommon: {
-    moduleName: "@bentley/imodeljs-common",
+    moduleName: "@itwin/core-common",
     resolvedConflictName: "BeIModelJsCommon",
   },
   tsIModelJsBackend: {
-    moduleName: "@bentley/imodeljs-backend",
+    moduleName: "@itwin/core-backend",
     resolvedConflictName: "BeIModelJsBackend",
   },
   tsGeometryCore: {
-    moduleName: "@bentley/geometry-core",
+    moduleName: "@itwin/core-geometry",
     resolvedConflictName: "BeGeometryCore",
   },
   tsBentleyJsCore: {
-    moduleName: "@bentley/bentleyjs-core",
+    moduleName: "@itwin/core-bentley",
     resolvedConflictName: "BeBentleyJsCore",
   },
 };
@@ -120,7 +120,7 @@ export class ECSchemaToTs {
     let outputString: string = "";
 
     // import modules
-    outputString += "import { ClassRegistry, Schema, Schemas } from \"@bentley/imodeljs-backend\";\n";
+    outputString += "import { ClassRegistry, Schema, Schemas } from \"@itwin/core-backend\";\n";
     outputString += `import * as elementsModule from "./${schemaName}Elements";\n\n`;
 
     // create new schema class
@@ -280,7 +280,7 @@ export class ECSchemaToTs {
       modifier = "abstract ";
     outputString += `export ${modifier}class ${ecClass.name} extends `;
 
-    // extend base class if there is any. Default will be Entity class defined in @bentley/imodeljs-backend
+    // extend base class if there is any. Default will be Entity class defined in @itwin/core-backend
     const base = ecClass.getBaseClassSync();
     if (base)
       outputString += this.addImportBaseClass(classNameToModule, base, ecClass);

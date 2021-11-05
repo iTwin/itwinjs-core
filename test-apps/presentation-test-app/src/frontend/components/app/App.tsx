@@ -5,15 +5,17 @@
 import "./App.css";
 import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 import * as React from "react";
-import { Geometry } from "@bentley/geometry-core";
-import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { DefaultContentDisplayTypes, PresentationUnitSystem } from "@bentley/presentation-common";
+import { Geometry } from "@itwin/core-geometry";
+import { IModelApp, IModelConnection } from "@itwin/core-frontend";
+import { UnitSystemKey } from "@itwin/core-quantity";
+import { DefaultContentDisplayTypes } from "@itwin/presentation-common";
 import {
   DataProvidersFactory, IPresentationPropertyDataProvider, IPresentationTableDataProvider, UnifiedSelectionContextProvider,
-} from "@bentley/presentation-components";
-import { Presentation, SelectionChangeEventArgs } from "@bentley/presentation-frontend";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { ElementSeparator, LabeledToggle, Orientation, RatioChangeResult } from "@bentley/ui-core";
+} from "@itwin/presentation-components";
+import { Presentation, SelectionChangeEventArgs } from "@itwin/presentation-frontend";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { ElementSeparator, Orientation, RatioChangeResult } from "@itwin/core-react";
+import { ToggleSwitch } from "@itwin/itwinui-react";
 import { MyAppFrontend, MyAppSettings } from "../../api/MyAppFrontend";
 import FindSimilarWidget from "../find-similar-widget/FindSimilarWidget";
 import { GridWidget } from "../grid-widget/GridWidget";
@@ -33,7 +35,7 @@ export interface State {
   contentRatio: number;
   contentWidth?: number;
   similarInstancesProvider?: IPresentationTableDataProvider;
-  activeUnitSystem?: PresentationUnitSystem;
+  activeUnitSystem?: UnitSystemKey;
   persistSettings: boolean;
 }
 
@@ -95,14 +97,14 @@ export default class App extends React.Component<{}, State> {
   };
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  private onUnitSystemSelected = (unitSystem: PresentationUnitSystem | undefined) => {
+  private onUnitSystemSelected = (unitSystem: UnitSystemKey | undefined) => {
     Presentation.presentation.activeUnitSystem = unitSystem;
     this.setState({ activeUnitSystem: unitSystem }, () => this.updateAppSettings());
   };
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  private onPersistSettingsValueChange = (enabled: boolean) => {
-    this.setState({ persistSettings: enabled }, () => this.updateAppSettings());
+  private onPersistSettingsValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    this.setState({ persistSettings: e.target.checked }, () => this.updateAppSettings());
   };
 
   private _onTreePaneRatioChanged = (ratio: number): RatioChangeResult => {
@@ -259,13 +261,13 @@ export default class App extends React.Component<{}, State> {
     return (
       <div className="app">
         <div className="app-header">
-          <h2>{IModelApp.i18n.translate("Sample:welcome-message")}</h2>
+          <h2>{IModelApp.localization.getLocalizedString("Sample:welcome-message")}</h2>
         </div>
         <div className="app-pickers">
           <IModelSelector onIModelSelected={this.onIModelSelected} activeIModelPath={this.state.imodelPath} />
           <RulesetSelector onRulesetSelected={this.onRulesetSelected} activeRulesetId={this.state.currentRulesetId} />
           <UnitSystemSelector selectedUnitSystem={this.state.activeUnitSystem} onUnitSystemSelected={this.onUnitSystemSelected} />
-          <LabeledToggle label="Persist settings" isOn={this.state.persistSettings} onChange={this.onPersistSettingsValueChange} />
+          <ToggleSwitch label="Persist settings" labelPosition="right" checked={this.state.persistSettings} onChange={this.onPersistSettingsValueChange} />
         </div>
         {imodelComponents}
       </div>

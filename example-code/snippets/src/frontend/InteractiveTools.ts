@@ -2,40 +2,40 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Point3d, Vector3d } from "@bentley/geometry-core";
-import { ColorDef } from "@bentley/imodeljs-common";
+import { Point3d, Vector3d } from "@itwin/core-geometry";
+import { ColorDef } from "@itwin/core-common";
 import {
   AccuDrawHintBuilder, BeButtonEvent, DynamicsContext, EventHandled, HitDetail, IModelApp, LocateFilterStatus, LocateResponse, PrimitiveTool,
   Viewport,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 
 export class SamplePrimitiveTool extends PrimitiveTool {
   public static override toolId = "Sample.Run";
 
   // __PUBLISH_EXTRACT_START__ PrimitiveTool_SelectedViewport
-  public override onSelectedViewportChanged(_previous: Viewport | undefined, current: Viewport | undefined): void {
+  public override async onSelectedViewportChanged(_previous: Viewport | undefined, current: Viewport | undefined) {
     if (this.isCompatibleViewport(current, true))
       return;
-    this.onRestartTool();
+    return this.onRestartTool();
   }
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ PrimitiveTool_Restart
-  public onRestartTool(): void {
+  public async onRestartTool() {
     const tool = new SamplePrimitiveTool();
-    if (!tool.run())
-      this.exitTool();
+    if (!await tool.run())
+      return this.exitTool();
   }
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ PrimitiveTool_Run
-  public override run(): boolean {
+  public override async run(): Promise<boolean> {
     const { toolAdmin, viewManager } = IModelApp;
-    if (!this.isCompatibleViewport(viewManager.selectedView, false) || !toolAdmin.onInstallTool(this))
+    if (!this.isCompatibleViewport(viewManager.selectedView, false) || !await toolAdmin.onInstallTool(this))
       return false;
 
-    toolAdmin.startPrimitiveTool(this);
-    toolAdmin.onPostInstallTool(this);
+    await toolAdmin.startPrimitiveTool(this);
+    await toolAdmin.onPostInstallTool(this);
     return true;
   }
   // __PUBLISH_EXTRACT_END__
@@ -68,18 +68,18 @@ export class SampleSnapTool extends PrimitiveTool {
     return EventHandled.No;
   }
 
-  public override onPostInstall() {
-    super.onPostInstall();
+  public override async onPostInstall() {
+    await super.onPostInstall();
     IModelApp.accuSnap.enableSnap(true); // Enable AccuSnap so that linestring can be created by snapping to existing geometry
   }
   // __PUBLISH_EXTRACT_END__
 
-  public onRestartTool(): void { this.exitTool(); }
+  public async onRestartTool() { return this.exitTool(); }
 }
 
 export class SampleLocateTool extends PrimitiveTool {
   public static override toolId = "Sample.Locate";
-  public onRestartTool(): void { this.exitTool(); }
+  public async onRestartTool() { return this.exitTool(); }
 
   // __PUBLISH_EXTRACT_START__ PrimitiveTool_Locate
   public override async filterHit(hit: HitDetail, _out?: LocateResponse): Promise<LocateFilterStatus> {
@@ -97,8 +97,8 @@ export class SampleLocateTool extends PrimitiveTool {
     return EventHandled.No;
   }
 
-  public override onPostInstall() {
-    super.onPostInstall();
+  public override async onPostInstall() {
+    await super.onPostInstall();
     this.initLocateElements(); // Enable AccuSnap locate, set view cursor, add CoordinateLockOverrides to disable unwanted pre-locate point adjustments...
   }
   // __PUBLISH_EXTRACT_END__
@@ -150,16 +150,16 @@ export class CreateByPointsTool extends PrimitiveTool {
   }
 
   public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
-    this.onReinitialize(); // Complete current linestring
+    await this.onReinitialize(); // Complete current linestring
     return EventHandled.No;
   }
 
-  public override onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
+  public override async onPostInstall() { await super.onPostInstall(); this.setupAndPromptForNextAction(); }
   // __PUBLISH_EXTRACT_END__
 
-  public onRestartTool(): void {
+  public async onRestartTool() {
     const tool = new CreateByPointsTool();
-    if (!tool.run())
-      this.exitTool();
+    if (!await tool.run())
+      return this.exitTool();
   }
 }

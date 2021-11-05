@@ -3,21 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import {
-  Code, DisplayStyle3dProps, DisplayStyleProps, ElementProps, RenderSchedule, RenderTimelineProps,
-} from "@bentley/imodeljs-common";
-import {
-  CheckpointConnection, DisplayStyle3dState, IModelApp, IModelConnection, SpatialViewState, ViewState,
-} from "@bentley/imodeljs-frontend";
-import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
-import { TestUtility } from "./TestUtility";
+import { Code, DisplayStyle3dProps, DisplayStyleProps, ElementProps, RenderSchedule, RenderTimelineProps } from "@itwin/core-common";
+import { CheckpointConnection, DisplayStyle3dState, IModelApp, IModelConnection, SpatialViewState, ViewState } from "@itwin/core-frontend";
+import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
+import { TestUtility } from "../TestUtility";
 
 function countTileTrees(view: ViewState): number {
   let numTrees = 0;
   view.forEachModelTreeRef((_) => ++numTrees);
   return numTrees;
 }
-// eslint-disable-file deprecation/deprecation
 
 describe("Schedule script (#integration)", () => {
   let dbOld: IModelConnection; // BisCore 1.0.8. No RenderTimeline element.
@@ -29,24 +24,21 @@ describe("Schedule script (#integration)", () => {
   const modelId = "0x10000000001";
 
   before(async () => {
-    await IModelApp.shutdown();
-    await IModelApp.startup({
-      authorizationClient: await TestUtility.initializeTestProject(TestUtility.testContextName, TestUsers.regular),
-      imodelClient: TestUtility.imodelCloudEnv.imodelClient,
-      applicationVersion: "1.2.1.1",
-    });
+    await TestUtility.shutdownFrontend();
+    await TestUtility.startFrontend(TestUtility.iModelAppOptions);
+    await TestUtility.initialize(TestUsers.regular);
 
-    const contextId = await TestUtility.queryContextIdByName(TestUtility.testContextName);
-    const oldIModelId = await TestUtility.queryIModelIdbyName(contextId, TestUtility.testIModelNames.synchro);
-    dbOld = await CheckpointConnection.openRemote(contextId, oldIModelId);
-    const newIModelId = await TestUtility.queryIModelIdbyName(contextId, TestUtility.testIModelNames.synchroNew);
-    dbNew = await CheckpointConnection.openRemote(contextId, newIModelId);
+    const iTwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
+    const oldIModelId = await TestUtility.queryIModelIdByName(iTwinId, TestUtility.testIModelNames.synchro);
+    dbOld = await CheckpointConnection.openRemote(iTwinId, oldIModelId);
+    const newIModelId = await TestUtility.queryIModelIdByName(iTwinId, TestUtility.testIModelNames.synchroNew);
+    dbNew = await CheckpointConnection.openRemote(iTwinId, newIModelId);
   });
 
   after(async () => {
     await dbOld.close();
     await dbNew.close();
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("obtains tile tree with script source Id", async () => {
@@ -58,7 +50,7 @@ describe("Schedule script (#integration)", () => {
       let threw = false;
       try {
         treeProps = await IModelApp.tileAdmin.requestTileTreeProps(imodel, treeId);
-      } catch (_) {
+      } catch {
         threw = true;
       }
 

@@ -2,40 +2,42 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { GuidString, Id64, Logger } from "@bentley/bentleyjs-core";
-import { Briefcase, CodeQuery, CodeState, HubCode, IModelClient, Lock, LockLevel, LockQuery, LockType } from "@bentley/imodelhub-client";
-import { AccessToken, AuthenticationError, AuthorizedClientRequestContext, ResponseError } from "@bentley/itwin-client";
-import * as utils from "./TestUtils";
+import { AccessToken, GuidString, Id64, Logger } from "@itwin/core-bentley";
+import {
+  AuthenticationError, Briefcase, CodeQuery, CodeState, HubCode, IModelClient, Lock, LockLevel, LockQuery, LockType,
+} from "@bentley/imodelhub-client";
+import { ResponseError } from "@bentley/itwin-client";
 import { TestConfig } from "../TestConfig";
+import * as utils from "./TestUtils";
 
 describe.skip("iModelHub Performance tests", () => {
-  let contextId: string;
+  let iTwinId: string;
   let imodelId: GuidString;
   let briefcase1: Briefcase;
   let briefcase2: Briefcase;
   let imodelHubClient: IModelClient;
-  let requestContext: AuthorizedClientRequestContext;
+  let accessToken: AccessToken;
 
   async function setup(recreate = false) {
-    const accessToken: AccessToken = await utils.login();
-    requestContext = new AuthorizedClientRequestContext(accessToken);
+    accessToken = await utils.login();
 
-    contextId = await utils.getProjectId(requestContext);
-    await utils.createIModel(requestContext, utils.sharedimodelName, contextId, true, recreate);
-    imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, contextId);
+    iTwinId = await utils.getITwinId(accessToken);
+    await utils.createIModel(accessToken, utils.sharedimodelName, iTwinId, true, recreate);
+    imodelId = await utils.getIModelId(accessToken, utils.sharedimodelName, iTwinId);
     imodelHubClient = utils.getDefaultClient();
-    const briefcases = await utils.getBriefcases(requestContext, imodelId, 2);
+    const briefcases = await utils.getBriefcases(accessToken, imodelId, 2);
     briefcase1 = briefcases[0];
     briefcase2 = briefcases[1];
   }
 
   before(async () => {
     await setup(true);
+    accessToken = await utils.login();
   });
 
   after(async () => {
     if (TestConfig.enableIModelBank) {
-      await utils.deleteIModelByName(requestContext, contextId, utils.sharedimodelName);
+      await utils.deleteIModelByName(accessToken, iTwinId, utils.sharedimodelName);
     }
   });
 
@@ -55,7 +57,7 @@ describe.skip("iModelHub Performance tests", () => {
       code.value = `${j++}`;
       return code;
     });
-    await imodelHubClient.codes.update(requestContext, imodelId, codes, { codesPerRequest: perRequest });
+    await imodelHubClient.codes.update(accessToken, imodelId, codes, { codesPerRequest: perRequest });
   }
 
   it.skip("Reserve codes", async () => {
@@ -73,8 +75,6 @@ describe.skip("iModelHub Performance tests", () => {
           await reserveCodes(startingCount, size, size, briefcase1, scope);
         } catch (err) {
           if ((err instanceof ResponseError && err.status === 401) || err instanceof AuthenticationError) {
-            const accessToken = await utils.login();
-            requestContext = new AuthorizedClientRequestContext(accessToken);
             startTime = Date.now();
             startingCount += size;
             await reserveCodes(startingCount, size, size, briefcase1, scope);
@@ -87,12 +87,10 @@ describe.skip("iModelHub Performance tests", () => {
 
   async function ensureCodesCount(count: number, briefcase: Briefcase, codeScope: string, query = new CodeQuery()) {
     try {
-      const currentCount = (await imodelHubClient.codes.get(requestContext, imodelId, query)).length;
+      const currentCount = (await imodelHubClient.codes.get(accessToken, imodelId, query)).length;
       await reserveCodes(currentCount, count - currentCount, 50000, briefcase, codeScope);
     } catch (err) {
       if ((err instanceof ResponseError && err.status === 401) || err instanceof AuthenticationError) {
-        const accessToken = await utils.login();
-        requestContext = new AuthorizedClientRequestContext(accessToken);
         await ensureCodesCount(count, briefcase, codeScope, query);
       }
     }
@@ -109,13 +107,11 @@ describe.skip("iModelHub Performance tests", () => {
         let startTime = Date.now();
         Logger.logTrace("performance", `Test ${run} Started`);
         try {
-          await imodelHubClient.codes.get(requestContext, imodelId);
+          await imodelHubClient.codes.get(accessToken, imodelId);
         } catch (err) {
           if ((err instanceof ResponseError && err.status === 401) || err instanceof AuthenticationError) {
-            const accessToken = await utils.login();
-            requestContext = new AuthorizedClientRequestContext(accessToken);
             startTime = Date.now();
-            await imodelHubClient.codes.get(requestContext, imodelId, new CodeQuery());
+            await imodelHubClient.codes.get(accessToken, imodelId, new CodeQuery());
           }
         }
         Logger.logTrace("performance", `Test ${run} End ${Date.now() - startTime}`);
@@ -134,13 +130,11 @@ describe.skip("iModelHub Performance tests", () => {
         let startTime = Date.now();
         Logger.logTrace("performance", `Test ${run} Started`);
         try {
-          await imodelHubClient.codes.get(requestContext, imodelId, query);
+          await imodelHubClient.codes.get(accessToken, imodelId, query);
         } catch (err) {
           if ((err instanceof ResponseError && err.status === 401) || err instanceof AuthenticationError) {
-            const accessToken = await utils.login();
-            requestContext = new AuthorizedClientRequestContext(accessToken);
             startTime = Date.now();
-            await imodelHubClient.codes.get(requestContext, imodelId, query);
+            await imodelHubClient.codes.get(accessToken, imodelId, query);
           }
         }
         Logger.logTrace("performance", `Test ${run} End ${Date.now() - startTime}`);
@@ -153,7 +147,7 @@ describe.skip("iModelHub Performance tests", () => {
     const sizes: number[] = [3000, 4000, 5000, 6000, 7000, 8000];
     const runCount = 25;
     await ensureCodesCount(10000, briefcase1, "RetrieveCodesByIds");
-    const codes = await imodelHubClient.codes.get(requestContext, imodelId);
+    const codes = await imodelHubClient.codes.get(accessToken, imodelId);
     for (const size of sizes) {
       Logger.logTrace("performance", `Test Case ${size} Started`);
       for (let run = 0; run < runCount; ++run) {
@@ -161,13 +155,11 @@ describe.skip("iModelHub Performance tests", () => {
         const query = new CodeQuery().byCodes(codes.slice(0, size));
         Logger.logTrace("performance", `Test ${run} Started`);
         try {
-          await imodelHubClient.codes.get(requestContext, imodelId, query);
+          await imodelHubClient.codes.get(accessToken, imodelId, query);
         } catch (err) {
           if ((err instanceof ResponseError && err.status === 401) || err instanceof AuthenticationError) {
-            const accessToken = await utils.login();
-            requestContext = new AuthorizedClientRequestContext(accessToken);
             startTime = Date.now();
-            await imodelHubClient.codes.get(requestContext, imodelId, query);
+            await imodelHubClient.codes.get(accessToken, imodelId, query);
           }
         }
         Logger.logTrace("performance", `Test ${run} End ${Date.now() - startTime}`);
@@ -190,14 +182,14 @@ describe.skip("iModelHub Performance tests", () => {
       j++;
       return lock;
     });
-    await imodelHubClient.locks.update(requestContext, imodelId, locks, { locksPerRequest: perRequest });
+    await imodelHubClient.locks.update(accessToken, imodelId, locks, { locksPerRequest: perRequest });
   }
 
   it.skip("Acquire locks", async () => {
     await setup(true);
     const sizes: number[] = [10000, 20000, 30000, 40000, 50000, 70000, 80000, 90000, 100000];
     const runCount = 25;
-    let startingCount = (await imodelHubClient.locks.get(requestContext, imodelId)).length;
+    let startingCount = (await imodelHubClient.locks.get(accessToken, imodelId)).length;
     for (const size of sizes) {
       Logger.logTrace("performance", `Test Case ${size} Started`);
       for (let run = 0; run < runCount; ++run) {
@@ -207,8 +199,6 @@ describe.skip("iModelHub Performance tests", () => {
           await acquireLocks(startingCount, size, size, briefcase1);
         } catch (err) {
           if ((err instanceof ResponseError && err.status === 401) || err instanceof AuthenticationError) {
-            const accessToken = await utils.login();
-            requestContext = new AuthorizedClientRequestContext(accessToken);
             startTime = Date.now();
             await acquireLocks(startingCount, size, size, briefcase1);
           }
@@ -221,12 +211,10 @@ describe.skip("iModelHub Performance tests", () => {
 
   async function ensureLocksCount(startingCount: number, count: number, briefcase: Briefcase, query = new LockQuery()) {
     try {
-      const currentCount = (await imodelHubClient.locks.get(requestContext, imodelId, query)).length;
+      const currentCount = (await imodelHubClient.locks.get(accessToken, imodelId, query)).length;
       await acquireLocks(startingCount + currentCount, count - currentCount, 1000, briefcase);
     } catch (err) {
       if ((err instanceof ResponseError && err.status === 401) || err instanceof AuthenticationError) {
-        const accessToken = await utils.login();
-        requestContext = new AuthorizedClientRequestContext(accessToken);
         await ensureLocksCount(startingCount, count, briefcase, query);
       }
     }
@@ -243,13 +231,11 @@ describe.skip("iModelHub Performance tests", () => {
         let startTime = Date.now();
         Logger.logTrace("performance", `Test ${run} Started`);
         try {
-          await imodelHubClient.locks.get(requestContext, imodelId);
+          await imodelHubClient.locks.get(accessToken, imodelId);
         } catch (err) {
           if ((err instanceof ResponseError && err.status === 401) || err instanceof AuthenticationError) {
-            const accessToken = await utils.login();
-            requestContext = new AuthorizedClientRequestContext(accessToken);
             startTime = Date.now();
-            await imodelHubClient.locks.get(requestContext, imodelId);
+            await imodelHubClient.locks.get(accessToken, imodelId);
           }
         }
         Logger.logTrace("performance", `Test ${run} End ${Date.now() - startTime}`);
@@ -268,14 +254,11 @@ describe.skip("iModelHub Performance tests", () => {
         let startTime = Date.now();
         Logger.logTrace("performance", `Test ${run} Started`);
         try {
-          await imodelHubClient.locks.get(requestContext, imodelId, query);
+          await imodelHubClient.locks.get(accessToken, imodelId, query);
         } catch (err) {
           if ((err instanceof ResponseError && err.status === 401) || err instanceof AuthenticationError) {
-            const accessToken = await utils.login();
-            requestContext = new AuthorizedClientRequestContext(accessToken);
-
             startTime = Date.now();
-            await imodelHubClient.locks.get(requestContext, imodelId, query);
+            await imodelHubClient.locks.get(accessToken, imodelId, query);
           }
         }
         Logger.logTrace("performance", `Test ${run} End ${Date.now() - startTime}`);
@@ -289,7 +272,7 @@ describe.skip("iModelHub Performance tests", () => {
     const runCount = 25;
     const briefcaseQuery = new LockQuery().byBriefcaseId(briefcase1.briefcaseId!);
     await ensureLocksCount(0, 1000000, briefcase1, briefcaseQuery);
-    const locks = await imodelHubClient.locks.get(requestContext, imodelId, briefcaseQuery);
+    const locks = await imodelHubClient.locks.get(accessToken, imodelId, briefcaseQuery);
     for (const size of sizes) {
       Logger.logTrace("performance", `Test Case ${size} Started`);
       for (let run = 0; run < runCount; ++run) {
@@ -297,13 +280,11 @@ describe.skip("iModelHub Performance tests", () => {
         const query = new LockQuery().byLocks(locks.slice(0, size));
         Logger.logTrace("performance", `Test ${run} Started`);
         try {
-          await imodelHubClient.locks.get(requestContext, imodelId, query);
+          await imodelHubClient.locks.get(accessToken, imodelId, query);
         } catch (err) {
           if ((err instanceof ResponseError && err.status === 401) || err instanceof AuthenticationError) {
-            const accessToken: AccessToken = await utils.login();
-            requestContext = new AuthorizedClientRequestContext(accessToken);
             startTime = Date.now();
-            await imodelHubClient.locks.get(requestContext, imodelId, query);
+            await imodelHubClient.locks.get(accessToken, imodelId, query);
           }
         }
         Logger.logTrace("performance", `Test ${run} End ${Date.now() - startTime}`);

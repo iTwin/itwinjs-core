@@ -5,9 +5,8 @@
 import * as chai from "chai";
 import * as stream from "stream";
 import { URL } from "url";
-import { AuthorizedClientRequestContext, SasUrlExpired } from "@bentley/itwin-client";
-import { AzureFileHandler, BufferedStream } from "@bentley/backend-itwin-client";
-import { MockAccessToken } from "./TestUtils";
+import { SasUrlExpired } from "@bentley/itwin-client";
+import { AzureFileHandler, BufferedStream } from "@bentley/imodelhub-client/lib/cjs/imodelhub-node";
 import { workDir } from "./TestConstants";
 
 /* eslint-disable @typescript-eslint/unbound-method */
@@ -35,7 +34,7 @@ describe("iModelHub AzureFileHandler", () => {
 
   it("Check for SasUrlExpired exception", async () => {
     const expiredLink = "https://imodelhubprodsa01.blob.core.windows.net/imodelhub-04dcd32a-781b-4b4d-8e27-2175793f6ffa/fca1ee0731957db792373f809d0f102bbb9dbe61.cs?sv=2018-03-28&sr=b&sig=NXfWf%2BRZURZHTVX%2B1FPqVc4m%2F5zAC%2BJhAx%2FrcfDoH%2BQ%3D&st=2020-04-07T18%3A16%3A57Z&se=2020-04-07T18%3A26%3A57Z&sp=r%22"; const az = new AzureFileHandler();
-    const mockRequestContext = new AuthorizedClientRequestContext(new MockAccessToken());
+    const mockRequestContext = "";
     try {
       await az.downloadFile(mockRequestContext, expiredLink, workDir);
       chai.assert(false, "expect SasUrlExpired exception");

@@ -1,0 +1,61 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/geometry";
+@import "../../scrollbar";
+@import "variables";
+
+.nz-widget-toolSettings-scrollable {
+  $triangle-width: 14px;
+  $triangle-height: 8px;
+  $max-height: 100px;
+  $triangle-color: $buic-background-widget-stroke;
+  position: relative;
+
+  >.nz-content {
+    max-height: $max-height;
+    overflow: auto;
+
+    @include nz-hidden-scrollbar;
+  }
+
+  >.nz-indicator {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    height: 20px;
+    position: absolute;
+    left: 0;
+    padding: 3px;
+    box-sizing: border-box;
+
+    >.nz-triangle {
+      cursor: pointer;
+
+      &:focus {
+        outline: none;
+      }
+    }
+
+    &:not(.nz-bottom) {
+      align-items: flex-start;
+      top: 0;
+      background: linear-gradient($nz-widget-background-color 15%, transparent);
+
+      >.nz-triangle {
+        @include triangle-top($height: $triangle-height, $width: $triangle-width, $color: $triangle-color);
+      }
+    }
+
+    &.nz-bottom {
+      align-items: flex-end;
+      bottom: 0;
+      background: linear-gradient(transparent, $nz-widget-background-color 85%);
+
+      >.nz-triangle {
+        @include triangle-bottom($height: $triangle-height, $width: $triangle-width, $color: $triangle-color);
+      }
+    }
+  }
+}

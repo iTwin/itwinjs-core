@@ -7,12 +7,12 @@
  */
 
 import {
-  assert, BeDuration, BeEvent, BeTimePoint, Id64Array, ProcessDetector,
-} from "@bentley/bentleyjs-core";
+  assert, BeDuration, BeEvent, BentleyStatus, BeTimePoint, Id64Array, IModelStatus, ProcessDetector,
+} from "@itwin/core-bentley";
 import {
-  CloudStorageTileCache, defaultTileOptions, ElementGraphicsRequestProps, getMaximumMajorTileFormatVersion, IModelTileRpcInterface,
-  IModelTileTreeProps, RpcOperation, RpcResponseCacheControl, ServerTimeoutError, TileVersionInfo,
-} from "@bentley/imodeljs-common";
+  BackendError, CloudStorageTileCache, defaultTileOptions, ElementGraphicsRequestProps, getMaximumMajorTileFormatVersion, IModelError, IModelTileRpcInterface,
+  IModelTileTreeProps, RpcOperation, RpcResponseCacheControl, ServerTimeoutError, TileContentSource, TileVersionInfo,
+} from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { IpcApp } from "../IpcApp";
 import { IModelConnection } from "../IModelConnection";
@@ -131,6 +131,8 @@ export class TileAdmin {
   /** @internal */
   public readonly useProjectExtents: boolean;
   /** @internal */
+  public readonly optimizeBRepProcessing: boolean;
+  /** @internal */
   public readonly maximumLevelsToSkip: number;
   /** @internal */
   public readonly mobileRealityTileMinToleranceRatio: number;
@@ -142,6 +144,8 @@ export class TileAdmin {
   public readonly contextPreloadParentDepth: number;
   /** @internal */
   public readonly contextPreloadParentSkip: number;
+  /** @beta */
+  public readonly cesiumIonKey?: string;
   private readonly _removeIModelConnectionOnCloseListener: () => void;
   private _totalElided = 0;
   private _rpcInitialized = false;
@@ -200,7 +204,7 @@ export class TileAdmin {
     if (undefined === options)
       options = {};
 
-    this.channels = new TileRequestChannels(rpcConcurrency);
+    this.channels = new TileRequestChannels(rpcConcurrency, true === options.cacheTileMetadata);
 
     this._maxActiveTileTreePropsRequests = options.maxActiveTileTreePropsRequests ?? 10;
     this._defaultTileSizeModifier = (undefined !== options.defaultTileSizeModifier && options.defaultTileSizeModifier > 0) ? options.defaultTileSizeModifier : 1.0;
@@ -214,7 +218,9 @@ export class TileAdmin {
     this.alwaysSubdivideIncompleteTiles = options.alwaysSubdivideIncompleteTiles ?? defaultTileOptions.alwaysSubdivideIncompleteTiles;
     this.maximumMajorTileFormatVersion = options.maximumMajorTileFormatVersion ?? defaultTileOptions.maximumMajorTileFormatVersion;
     this.useProjectExtents = options.useProjectExtents ?? defaultTileOptions.useProjectExtents;
+    this.optimizeBRepProcessing = options.optimizeBRepProcessing ?? defaultTileOptions.optimizeBRepProcessing;
     this.mobileRealityTileMinToleranceRatio = Math.max(options.mobileRealityTileMinToleranceRatio ?? 3.0, 1.0);
+    this.cesiumIonKey = options.cesiumIonKey;
 
     const gpuMemoryLimits = options.gpuMemoryLimits;
     let gpuMemoryLimit: GpuMemoryLimit | undefined;
@@ -235,7 +241,7 @@ export class TileAdmin {
       this.maximumLevelsToSkip = 1;
 
     const minSpatialTol = options.minimumSpatialTolerance;
-    this.minimumSpatialTolerance = minSpatialTol ? Math.max(minSpatialTol, 0) : 0;
+    this.minimumSpatialTolerance = undefined !== minSpatialTol ? Math.max(minSpatialTol, 0) : 0.001;
 
     const clamp = (seconds: number, min: number, max: number): BeDuration => {
       seconds = Math.min(seconds, max);
@@ -585,14 +591,28 @@ export class TileAdmin {
   public async generateTileContent(tile: IModelTile): Promise<Uint8Array> {
     this.initializeRpc();
     const props = this.getTileRequestProps(tile);
-    return IModelTileRpcInterface.getClient().generateTileContent(props.tokenProps, props.treeId, props.contentId, props.guid);
+    const retrieveMethod = await IModelTileRpcInterface.getClient().generateTileContent(props.tokenProps, props.treeId, props.contentId, props.guid);
+    if (tile.request?.isCanceled) {
+      // the content is no longer needed, return an empty array.
+      return new Uint8Array();
+    }
+
+    if (retrieveMethod === TileContentSource.ExternalCache) {
+      const tileContent = await this.requestCachedTileContent(tile);
+      if (tileContent === undefined)
+        throw new IModelError(IModelStatus.NoContent, "Failed to fetch generated tile from external cache");
+      return tileContent;
+    } else if (retrieveMethod === TileContentSource.Backend) {
+      return IModelTileRpcInterface.getClient().retrieveTileContent(props.tokenProps, this.getTileRequestProps(tile));
+    }
+    throw new BackendError(BentleyStatus.ERROR, "", "Invalid response from RPC backend");
   }
 
   /** @internal */
   private getTileRequestProps(tile: IModelTile) {
     const tree = tile.iModelTree;
     const tokenProps = tree.iModel.getRpcProps();
-    let guid = tree.geometryGuid || tokenProps.changeSetId || "first";
+    let guid = tree.geometryGuid || tokenProps.changeset?.id || "first";
     if (tree.contentIdQualifier)
       guid = `${guid}_${tree.contentIdQualifier}`;
 
@@ -819,7 +839,7 @@ export class TileAdmin {
     const retryInterval = this._retryInterval;
     RpcOperation.lookup(IModelTileRpcInterface, "requestTileTreeProps").policy.retryInterval = () => retryInterval;
 
-    const policy = RpcOperation.lookup(IModelTileRpcInterface, "requestTileContent").policy;
+    const policy = RpcOperation.lookup(IModelTileRpcInterface, "generateTileContent").policy;
     policy.retryInterval = () => retryInterval;
     policy.allowResponseCaching = () => RpcResponseCacheControl.Immutable;
 
@@ -944,6 +964,19 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
      */
     useProjectExtents?: boolean;
 
+    /** When producing facets from BRep entities, use an optimized pipeline to improve performance.
+     * Default value: true
+     * @internal
+     */
+    optimizeBRepProcessing?: boolean;
+
+    /** Specifies that metadata about each [[IModelTile]] loaded during the session should be cached until the corresponding [[IModelConnection]] is closed; and
+     * that the graphics for cached tiles should never be reloaded when the tile is re-requested after having been discarded. This fulfills a niche scenario in
+     * which the application does not care about displaying the graphics, only about ensuring the tile content is generated and uploaded to blob storage.
+     * @internal
+     */
+    cacheTileMetadata?: boolean;
+
     /** The minimum number of seconds to keep a Tile in memory after it has become unused.
      * Each tile has an expiration timer. Each time tiles are selected for drawing in a view, if we decide to draw a tile we reset its expiration timer.
      * Otherwise, if its expiration timer has exceeded this minimum, we discard it along with all of its children. This allows us to free up memory for other tiles.
@@ -1059,10 +1092,16 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
     /** If defined and greater than zero, specifies the minimum chord tolerance in meters of a tile. A tile with chord tolerance less than this minimum will not be refined.
      * Applies only to spatial models, which model real-world assets on real-world scales.
      * A reasonable value is on the order of millimeters.
-     * Default value: undefined
+     * Default value: 0.001 (1 millimeter).
      * @public
      */
     minimumSpatialTolerance?: number;
+
+    /** An API key that can be used to access content from [Cesium ION](https://cesium.com/platform/cesium-ion/) like terrain meshes and OpenStreetMap Buildings meshes.
+     * If a valid key is not supplied, such content can neither be obtained nor displayed.
+     * @public
+     */
+    cesiumIonKey?: string;
   }
 
   /** The number of bytes of GPU memory associated with the various [[GpuMemoryLimit]]s for non-mobile devices.

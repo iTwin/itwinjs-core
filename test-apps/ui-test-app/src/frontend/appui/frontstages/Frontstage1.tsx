@@ -3,19 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { PlaybackSettings, TimelineComponent, TimelinePausePlayAction, TimelinePausePlayArgs } from "@bentley/ui-components";
+import { PlaybackSettings, TimelineComponent, TimelinePausePlayAction, TimelinePausePlayArgs } from "@itwin/imodel-components-react";
 import {
-  ActionItemButton, CommandItemDef, ContentLayoutManager, CoreTools, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, GroupButton,
+  ActionItemButton, CommandItemDef, ContentGroup, ContentLayoutDef, ContentLayoutManager, CoreTools, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, GroupButton,
   NavigationWidget, StagePanel, ToolButton, ToolWidget, useWidgetDirection, Widget, WidgetStateChangedEventArgs, Zone, ZoneLocation,
   ZoneState,
-} from "@bentley/ui-framework";
-import { Direction, Toolbar } from "@bentley/ui-ninezone";
+} from "@itwin/appui-react";
+import { Direction, Toolbar } from "@itwin/appui-layout-react";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { SmallStatusBarWidgetControl } from "../statusbars/SmallStatusBar";
 import { HorizontalPropertyGridWidgetControl, VerticalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 import { TableDemoWidgetControl } from "../widgets/TableDemoWidget";
 import { NestedFrontstage1 } from "./NestedFrontstage1";
-import { UiAdmin, WidgetState } from "@bentley/ui-abstract";
+import { StandardContentLayouts, UiAdmin, WidgetState } from "@itwin/appui-abstract";
+import { AppUi } from "../AppUi";
 
 /* eslint-disable react/jsx-key, deprecation/deprecation */
 
@@ -76,6 +77,10 @@ function SampleTimelineComponent() {
 }
 
 export class Frontstage1 extends FrontstageProvider {
+  public get id(): string {
+    return "Test1";
+  }
+
   private _topMostPanel = {
     widgets: [
       <Widget element={<>
@@ -128,15 +133,14 @@ export class Frontstage1 extends FrontstageProvider {
   };
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
+    const contentGroup = new ContentGroup(AppUi.TestContentGroup1);
     return (
-      <Frontstage id="Test1"
+      <Frontstage id={this.id}
         version={1}
         defaultTool={CoreTools.selectElementCommand}
-        defaultLayout="TwoHalvesVertical"
-        contentGroup="TestContentGroup1"
+        contentGroup={contentGroup}
         defaultContentId="TestContent1"
         isInFooterMode={true}
-        applicationData={{ key: "value" }}
         topLeft={
           <Zone
             widgets={[
@@ -244,10 +248,11 @@ export class Frontstage1 extends FrontstageProvider {
  */
 class FrontstageToolWidget extends React.Component {
   private static _frontstage1Def: FrontstageDef | undefined;
-  private static get frontstage1Def(): FrontstageDef {
+
+  private static async getFrontstage1Def() {
     if (!this._frontstage1Def) {
       const frontstageProvider = new NestedFrontstage1();
-      this._frontstage1Def = frontstageProvider.initializeDef();
+      this._frontstage1Def = await FrontstageDef.create(frontstageProvider);
     }
     return this._frontstage1Def;
   }
@@ -258,12 +263,13 @@ class FrontstageToolWidget extends React.Component {
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:buttons.openNestedFrontstage1",
       execute: async () => {
-        await FrontstageManager.openNestedFrontstage(FrontstageToolWidget.frontstage1Def);
+        const frontstage1Def = await FrontstageToolWidget.getFrontstage1Def();
+        await FrontstageManager.openNestedFrontstage(frontstage1Def);
       },
     });
   }
 
-  /** Command that opens switches the content layout */
+  /** Command that opens switches the content layout - TODO Review */
   private get _switchLayout() {
     return new CommandItemDef({
       iconSpec: "icon-placeholder",
@@ -271,7 +277,7 @@ class FrontstageToolWidget extends React.Component {
       execute: async () => {
         const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
         if (activeFrontstageDef) {
-          const contentLayout = ContentLayoutManager.findLayout("TwoHalvesHorizontal");
+          const contentLayout = new ContentLayoutDef(StandardContentLayouts.twoHorizontalSplit);
           if (contentLayout && activeFrontstageDef.contentGroup) {
             await ContentLayoutManager.setActiveLayout(contentLayout, activeFrontstageDef.contentGroup);
           }

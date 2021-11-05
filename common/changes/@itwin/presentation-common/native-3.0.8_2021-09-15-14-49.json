@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-common",
+      "comment": "Added 'BaseNodeKey.version' property and 'NodeKey.equals' function to compare keys taking their versions into account.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-common"
+}

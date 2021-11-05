@@ -10,7 +10,7 @@ import { AnyClass, AnyProperty, CustomAttribute, CustomAttributeContainerProps, 
   ECStringConstants, EntityClass, Enumeration, PrimitiveProperty, PrimitiveType, primitiveTypeToString,
   Property, RelationshipClass, RelationshipConstraint, RelationshipMultiplicity, Schema, SchemaGraph, SchemaItemType,
   schemaItemTypeToString, StrengthDirection, strengthDirectionToString,
-} from "@bentley/ecschema-metadata";
+} from "@itwin/ecschema-metadata";
 import {
   ClassDiagnostic, createClassDiagnosticClass, createCustomAttributeContainerDiagnosticClass, createPropertyDiagnosticClass,
   createRelationshipConstraintDiagnosticClass, createSchemaDiagnosticClass, createSchemaItemDiagnosticClass, CustomAttributeContainerDiagnostic,
@@ -453,15 +453,31 @@ export async function* validateNavigationProperty(property: AnyProperty): AsyncI
     yield new Diagnostics.NavigationRelationshipAbstractConstraintEntityOrMixin(property, [property.fullName, relationship.fullName]);
   }
 
-  let concreteClass = false;
+  const isClassSupported = async (ecClass: ECClass, propertyName: string, constraintName: string): Promise<boolean> => {
+    if (constraintName === ecClass.fullName && undefined !== await ecClass.getProperty(propertyName))
+      return true;
+
+    const inheritedProp = await ecClass.getInheritedProperty(propertyName);
+    if (inheritedProp && constraintName === inheritedProp.class.fullName)
+      return true;
+
+    const baseClass = await ecClass.baseClass;
+    if (!baseClass)
+      return false;
+
+    return isClassSupported(baseClass, propertyName, constraintName);
+  };
+
+  let classSupported = false;
   if (thisConstraint.constraintClasses) {
     for (const constraintClass of thisConstraint.constraintClasses) {
-      if (constraintClass.fullName === property.class.fullName)
-        concreteClass = true;
+      classSupported = await isClassSupported(property.class, property.name, constraintClass.fullName);
+      if (classSupported)
+        break;
     }
   }
 
-  if (!concreteClass)
+  if (!classSupported)
     yield new Diagnostics.NavigationClassMustBeAConstraintClassOfRelationship(property, [property.class.name, property.name, relationship.fullName, navigationClassSide]);
 
   if (thatConstraint.multiplicity === RelationshipMultiplicity.oneMany || thatConstraint.multiplicity === RelationshipMultiplicity.zeroMany) {

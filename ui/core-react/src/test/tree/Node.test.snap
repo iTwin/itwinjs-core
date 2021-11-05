@@ -1,0 +1,250 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Node /> renders correctly 1`] = `
+<div
+  className="core-tree-node"
+  onClick={[Function]}
+  role="treeitem"
+  tabIndex={-1}
+>
+  <div
+    className="contents"
+    style={
+      Object {
+        "marginLeft": 0,
+      }
+    }
+  >
+    <ExpansionToggle
+      className="expansion-toggle"
+      onClick={[Function]}
+    />
+    a
+  </div>
+</div>
+`;
+
+exports[`<Node /> renders expander correctly 1`] = `
+<div
+  className="core-tree-node"
+  onClick={[Function]}
+  role="treeitem"
+  tabIndex={-1}
+>
+  <div
+    className="contents"
+    style={
+      Object {
+        "marginLeft": 24,
+      }
+    }
+  >
+    a
+  </div>
+</div>
+`;
+
+exports[`<Node /> renders expander correctly 2`] = `
+<div
+  className="core-tree-node"
+  onClick={[Function]}
+  role="treeitem"
+  tabIndex={-1}
+>
+  <div
+    className="contents"
+    style={
+      Object {
+        "marginLeft": 0,
+      }
+    }
+  >
+    <ExpansionToggle
+      className="expansion-toggle"
+      isExpanded={true}
+      onClick={[Function]}
+    />
+    a
+  </div>
+</div>
+`;
+
+exports[`<Node /> renders expander correctly 3`] = `
+<div
+  className="core-tree-node"
+  onClick={[Function]}
+  role="treeitem"
+  tabIndex={-1}
+>
+  <div
+    className="contents"
+    style={
+      Object {
+        "marginLeft": 24,
+      }
+    }
+  >
+    a
+  </div>
+</div>
+`;
+
+exports[`<Node /> renders icon correctly 1`] = `
+<div
+  className="core-tree-node"
+  onClick={[Function]}
+  role="treeitem"
+  tabIndex={-1}
+>
+  <div
+    className="contents"
+    style={
+      Object {
+        "marginLeft": 0,
+      }
+    }
+  >
+    <ExpansionToggle
+      className="expansion-toggle"
+      onClick={[Function]}
+    />
+    <div
+      className="core-tree-node-icon"
+    >
+      <img
+        alt="Test"
+        src="testIcon"
+      />
+    </div>
+    a
+  </div>
+</div>
+`;
+
+exports[`<Node /> renders label correctly 1`] = `
+<div
+  className="core-tree-node"
+  onClick={[Function]}
+  role="treeitem"
+  tabIndex={-1}
+>
+  <div
+    className="contents"
+    style={
+      Object {
+        "marginLeft": 0,
+      }
+    }
+  >
+    <ExpansionToggle
+      className="expansion-toggle"
+      onClick={[Function]}
+    />
+    <span
+      id="test"
+    >
+      This is some test label
+    </span>
+  </div>
+</div>
+`;
+
+exports[`<Node /> renders loader correctly 1`] = `
+<div
+  className="core-tree-node"
+  onClick={[Function]}
+  role="treeitem"
+  tabIndex={-1}
+>
+  <div
+    className="contents"
+    style={
+      Object {
+        "marginLeft": 0,
+      }
+    }
+  >
+    <div
+      className="loader"
+    >
+      <ProgressRadial
+        indeterminate={true}
+        size="x-small"
+      />
+    </div>
+    a
+  </div>
+</div>
+`;
+
+exports[`<Node /> should set is-focused class 1`] = `
+<div
+  className="core-tree-node is-focused"
+  onClick={[Function]}
+  role="treeitem"
+  tabIndex={-1}
+>
+  <div
+    className="contents"
+    style={
+      Object {
+        "marginLeft": 0,
+      }
+    }
+  >
+    <ExpansionToggle
+      className="expansion-toggle"
+      onClick={[Function]}
+    />
+    a
+  </div>
+</div>
+`;
+
+exports[`<Node /> should set is-hover-disabled class 1`] = `
+<div
+  className="core-tree-node is-hover-disabled"
+  onClick={[Function]}
+  role="treeitem"
+  tabIndex={-1}
+>
+  <div
+    className="contents"
+    style={
+      Object {
+        "marginLeft": 0,
+      }
+    }
+  >
+    <ExpansionToggle
+      className="expansion-toggle"
+      onClick={[Function]}
+    />
+    a
+  </div>
+</div>
+`;
+
+exports[`<Node /> should set is-selected class 1`] = `
+<div
+  className="core-tree-node is-selected"
+  onClick={[Function]}
+  role="treeitem"
+  tabIndex={-1}
+>
+  <div
+    className="contents"
+    style={
+      Object {
+        "marginLeft": 0,
+      }
+    }
+  >
+    <ExpansionToggle
+      className="expansion-toggle"
+      onClick={[Function]}
+    />
+    a
+  </div>
+</div>
+`;

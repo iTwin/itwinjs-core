@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import "./AppStatusBar.scss";
 import * as React from "react";
-import { ConditionalBooleanValue, StatusBarSection } from "@bentley/ui-abstract";
+import { ConditionalBooleanValue, StatusBarSection } from "@itwin/appui-abstract";
 import {
   ActivityCenterField, ClearEmphasisStatusField, ConfigurableUiManager, FooterModeField, MessageCenterField, SectionsStatusField, SelectionInfoField,
   SelectionScopeField, SnapModeField, StatusBarComposer, StatusBarItem, StatusBarItemUtilities, StatusBarWidgetControl, StatusBarWidgetControlArgs,
   TileLoadingIndicator, ToolAssistanceField, ViewAttributesStatusField, withMessageCenterFieldProps, withStatusFieldProps,
-} from "@bentley/ui-framework";
-import { FooterSeparator } from "@bentley/ui-ninezone";
+} from "@itwin/appui-react";
+import { FooterSeparator } from "@itwin/appui-layout-react";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../..";
 import { DisplayStyleField } from "../statusfields/DisplayStyleField";
 
@@ -32,7 +32,7 @@ const Sections = withStatusFieldProps(SectionsStatusField);
 const SelectionInfo = withStatusFieldProps(SelectionInfoField);
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const SelectionScope = withStatusFieldProps(SelectionScopeField);
-// eslint-disable-next-line @typescript-eslint/naming-convention
+// eslint-disable-next-line
 const ClearEmphasis = withStatusFieldProps(ClearEmphasisStatusField);
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const TileLoadIndicator = withStatusFieldProps(TileLoadingIndicator);

@@ -889,7 +889,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     let add = true;
     const addFraction = fraction !== undefined && this._fractions !== undefined;
     if (n > 0) {
-      if (addFraction && Geometry.isSameCoordinate(fraction!, this._fractions!.back()))
+      if (addFraction && Geometry.isSameCoordinate(fraction, this._fractions!.back()))
         add = false;
       if (point.isAlmostEqual(this._points.getPoint3dAtUncheckedPointIndex(n - 1)))
         add = false;
@@ -898,7 +898,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     if (add) {
       this._points.push(point);
       if (addFraction)
-        this.addFraction(fraction!);
+        this.addFraction(fraction);
     }
 
   }
@@ -1088,7 +1088,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     const myData = StrokeCountMap.createWithCurvePrimitiveAndOptionalParent(this, parentStrokeMap, []);
     for (let i = 1; i < numPoints; i++) {
       const segmentLength = this._points.distanceIndexIndex(i - 1, i)!;
-      const numStrokeOnSegment = applyOptions ? options!.applyMaxEdgeLength(1, segmentLength)! : 1;
+      const numStrokeOnSegment = applyOptions ? options.applyMaxEdgeLength(1, segmentLength)! : 1;
       myData.addToCountAndLength(numStrokeOnSegment, segmentLength);
     }
     CurvePrimitive.installStrokeCountMap(this, myData, parentStrokeMap);

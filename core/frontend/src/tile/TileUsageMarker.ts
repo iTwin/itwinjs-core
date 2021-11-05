@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { BeTimePoint } from "@bentley/bentleyjs-core";
+import { BeTimePoint } from "@itwin/core-bentley";
 import { IModelApp } from "../IModelApp";
 import { Viewport } from "../Viewport";
 

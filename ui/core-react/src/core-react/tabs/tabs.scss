@@ -1,0 +1,117 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "../style/index";
+@import "../icons/variables";
+@import "~@itwin/itwinui-css/scss/style/speed";
+@import "~@itwin/itwinui-css/scss/style/typography";
+
+@mixin uicore-tabs {
+
+  display:            block;
+  list-style:         none;
+  padding:            0;
+  margin:             0;
+  box-sizing:         border-box;
+  border:             none;
+  outline:            none;
+
+  > li {
+
+    display:        block;
+    position:       relative;
+    padding:        0;
+    margin:         0;
+
+    &.core-tab-item-disabled {
+      pointer-events: none;
+    }
+
+    > a {
+
+      display:        block;
+      position:       relative;
+      padding:        $uicore-bordered-padding ( $iui-font-size - 1px ) $uicore-unbordered-padding;
+      margin:         0;
+      line-height:    $uicore-line-height;
+      color:          $buic-text-color;
+      cursor:         pointer;
+
+      .uicore-tabs-inline-label {
+
+        &.core-tab-item-disabled {
+          color: $buic-foreground-disabled;
+
+          .uicore-tabs-subLabel {
+            color: $buic-foreground-disabled;
+          }
+        }
+
+        .uicore-tabs-icon {
+          width: ( $uicore-icons-small + 12px );
+          height: ( $uicore-icons-small + 12px );
+          display: flex;
+          align-items: center;
+        }
+      }
+
+      &::after {
+
+        content:            "";
+        position:           absolute;
+        z-index:            1;
+        transition:         all $iui-speed-fast;
+        top:                0;
+        left:               0;
+        background:         $buic-foreground-primary;
+        opacity:            0;
+      }
+
+      &:hover {
+
+        text-decoration:    none;
+        color:              $buic-foreground-activehover;
+
+        &::after {
+
+          opacity:        1;
+        }
+      }
+    }
+
+    &.core-active {
+
+      > a {
+
+        font-weight:        $iui-font-weight-bold;
+
+        &::after {
+
+          opacity:        1;
+        }
+      }
+    }
+
+    .uicore-tabs-label-subLabel-container {
+      display: flex;
+      flex-direction: column;
+      .uicore-tabs-subLabel {
+        font-size: $iui-font-size-small;
+        font-weight: $iui-font-weight-semibold;
+      }
+    }
+    &:not(.core-active) {
+      .uicore-tabs-label-subLabel-container {
+        .uicore-tabs-subLabel {
+          color: $buic-text-color-muted;
+          font-weight: $iui-font-weight-light;
+        }
+      }
+    }
+  }
+
+  &.uicore-tabs-green > li > a::after {
+    background-color:     $buic-foreground-success;
+  }
+}

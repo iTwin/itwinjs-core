@@ -9,6 +9,11 @@
 ---
 
 ### Versions
+
+- [2.19.0](./2.19.0.md)
+
+- [2.18.0](./2.18.0.md)
+
 - [2.17.0](./2.17.0.md)
 
 - [2.16.0](./2.16.0.md)
@@ -20,7 +25,6 @@
 - [2.13.0](./2.13.0.md)
 
 - [2.12.0](./2.12.0.md)
-
 
 - [2.11.0](./2.11.0.md)
 
@@ -85,15 +89,15 @@
 
 ### [Change Logs](./ChangeLogs.md)
 
-- [imodeljs-backend](../reference/imodeljs-backend/changelog)
+- [core-backend](../reference/core-backend/changelog)
 
-- [imodeljs-frontend](../reference/imodeljs-frontend/changelog)
+- [core-frontend](../reference/core-frontend/changelog)
 
-- [imodeljs-common](../reference/imodeljs-common/changelog)
+- [core-common](../reference/core-common/changelog)
 
-- [geometry-core](../reference/geometry-core/changelog)
+- [core-geometry](../reference/core-geometry/changelog)
 
-- [bentleyjs-core](../reference/bentleyjs-core/changelog)
+- [core-bentley](../reference/core-bentley/changelog)
 
 <script>
     $("[id='previous versions']").next("ul").hide();

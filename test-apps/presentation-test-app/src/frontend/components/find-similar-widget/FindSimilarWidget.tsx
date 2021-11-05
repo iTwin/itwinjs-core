@@ -5,11 +5,11 @@
 
 import "./FindSimilarWidget.css";
 import * as React from "react";
-import { IModelApp } from "@bentley/imodeljs-frontend";
-import { IPresentationTableDataProvider, tableWithUnifiedSelection } from "@bentley/presentation-components";
-import { SelectionMode, Table } from "@bentley/ui-components";
+import { IModelApp } from "@itwin/core-frontend";
+import { IPresentationTableDataProvider, tableWithUnifiedSelection } from "@itwin/presentation-components";
+import { SelectionMode, Table } from "@itwin/components-react";
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
+// eslint-disable-next-line deprecation/deprecation
 const SampleTable = tableWithUnifiedSelection(Table);
 
 export interface Props {
@@ -38,9 +38,9 @@ export default class FindSimilarWidget extends React.PureComponent<Props> {
     return (
       <div className="find-similar-widget">
         <div className="find-similar-header">
-          <h3>{IModelApp.i18n.translate("Sample:controls.find-similar.results")}</h3>
+          <h3>{IModelApp.localization.getLocalizedString("Sample:controls.find-similar.results")}</h3>
           <button onClick={this._onDismissClicked}>
-            {IModelApp.i18n.translate("Sample:controls.find-similar.dismiss-button.label")}
+            {IModelApp.localization.getLocalizedString("Sample:controls.find-similar.dismiss-button.label")}
           </button>
         </div>
         <div className="find-similar-widget-content">

@@ -6,7 +6,7 @@
  * @module Metadata
  */
 
-import { assert, BentleyError } from "@bentley/bentleyjs-core";
+import { assert, BentleyError } from "@itwin/core-bentley";
 
 /** @beta */
 export enum ECObjectsStatus {

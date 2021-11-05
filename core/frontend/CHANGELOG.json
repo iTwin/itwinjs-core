@@ -1,15 +1,288 @@
 {
-  "name": "@bentley/imodeljs-frontend",
+  "name": "@itwin/core-frontend",
   "entries": [
     {
+      "version": "2.19.13",
+      "tag": "@itwin/core-frontend_v2.19.13",
+      "date": "Tue, 21 Sep 2021 21:06:40 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "added callback after animating frustum change"
+          },
+          {
+            "comment": "Fix OIDC access token that didn't get renew in code that get Reality Data tiles"
+          },
+          {
+            "comment": "Remove hardcoded contextId (aka iTwinId) used for testing"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.19.12",
+      "tag": "@itwin/core-frontend_v2.19.12",
+      "date": "Wed, 15 Sep 2021 18:06:46 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.11",
+      "tag": "@itwin/core-frontend_v2.19.11",
+      "date": "Thu, 09 Sep 2021 21:04:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Allow white-on-white reversal to be applied regardless of background color."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.19.10",
+      "tag": "@itwin/core-frontend_v2.19.10",
+      "date": "Wed, 08 Sep 2021 14:36:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Geometry created by a GraphicBuilder needs to have its specified placement transform applied properly."
+          },
+          {
+            "comment": "The previous fix to the graphicbuilder transform problem actually resulted in some graphicbuilder primitives being transformed twice because they already had the transform applied to them. This fixes that issue by moving the transformation only to primitives that were missing it. This also adds code to ensure that GeometryAccumulator does not mutate the graphicbuilder's transform in-place."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.19.9",
+      "tag": "@itwin/core-frontend_v2.19.9",
+      "date": "Wed, 25 Aug 2021 15:36:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Correct OpenStreetMap display with reprojection, clipping or geoid offset"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.19.8",
+      "tag": "@itwin/core-frontend_v2.19.8",
+      "date": "Mon, 23 Aug 2021 13:23:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.7",
+      "tag": "@itwin/core-frontend_v2.19.7",
+      "date": "Fri, 20 Aug 2021 17:47:22 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.6",
+      "tag": "@itwin/core-frontend_v2.19.6",
+      "date": "Tue, 17 Aug 2021 20:34:29 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.5",
+      "tag": "@itwin/core-frontend_v2.19.5",
+      "date": "Fri, 13 Aug 2021 21:48:08 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Orbit OPC OrbitGtBlobProps initialization and SAS token update."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.19.4",
+      "tag": "@itwin/core-frontend_v2.19.4",
+      "date": "Thu, 12 Aug 2021 13:09:26 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.3",
+      "tag": "@itwin/core-frontend_v2.19.3",
+      "date": "Wed, 04 Aug 2021 20:29:34 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "ViewCreator3d fix - modelExtents now computed from all model ranges"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.19.2",
+      "tag": "@itwin/core-frontend_v2.19.2",
+      "date": "Tue, 03 Aug 2021 18:26:23 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.1",
+      "tag": "@itwin/core-frontend_v2.19.1",
+      "date": "Thu, 29 Jul 2021 20:01:11 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Viewport.zoomToElements includes only 2d or 3d elements based on view type."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.19.0",
+      "tag": "@itwin/core-frontend_v2.19.0",
+      "date": "Mon, 26 Jul 2021 12:21:25 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "BriefcaseConnection.PullAndMergeChanges now returns both changesetId and changesetIndex"
+          },
+          {
+            "comment": "Adjust the range of a RenderGraphic based on displacement applied by the viewport's AnalysisStyle, if any, so that displaced portions of the mesh can be located by tools."
+          },
+          {
+            "comment": "Added support for PointCloudModel attachments in OPC format with RDS URL resolving to OrbitGtBlobProps."
+          },
+          {
+            "comment": "Handle failures in models query when isNotSpatiallyLocated property does not exist in the schema"
+          },
+          {
+            "comment": "GraphicBuilder now generates normals for polyfaces if requested."
+          },
+          {
+            "comment": "remove internal barrel-import usage"
+          },
+          {
+            "comment": "Stop delivering pseudo-localized strings"
+          },
+          {
+            "comment": "Fix multi-model animation issue."
+          },
+          {
+            "comment": "Handle degenerate frustum in BackgroundMapGeometry.getFrustumIntersectionDepthRange."
+          },
+          {
+            "comment": "Add support to GraphicBuilder for solid primitives and visible edges."
+          },
+          {
+            "comment": "move check for redirect callback handling in WebViewerApp to before IModelApp.startup call"
+          },
+          {
+            "comment": "Support reprojection of Cesium OSM tiles"
+          },
+          {
+            "comment": "internal async order change"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.18.4",
+      "tag": "@itwin/core-frontend_v2.18.4",
+      "date": "Tue, 10 Aug 2021 19:35:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.18.3",
+      "tag": "@itwin/core-frontend_v2.18.3",
+      "date": "Wed, 28 Jul 2021 17:16:30 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.18.2",
+      "tag": "@itwin/core-frontend_v2.18.2",
+      "date": "Mon, 26 Jul 2021 16:18:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.18.1",
+      "tag": "@itwin/core-frontend_v2.18.1",
+      "date": "Fri, 16 Jul 2021 17:45:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add IModelConnection.Elements.getPlacements and update Viewport and ViewClipByElementTool to use it."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.18.0",
+      "tag": "@itwin/core-frontend_v2.18.0",
+      "date": "Fri, 09 Jul 2021 18:11:24 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "add GraphicBuilder.addCurvePrimitive."
+          },
+          {
+            "comment": "Add Tiles.updateForScheduleScript to refresh tiles after modifying schedule script.\""
+          },
+          {
+            "comment": "Update Toolsettings set-up in SetCameraTool to fix enable/disable setting of input field."
+          },
+          {
+            "comment": "Add Viewport.flashedId property and corresponding onFlashedIdChanged event."
+          },
+          {
+            "comment": "Added support for ESRI MapServer exposing a minimum LOD."
+          },
+          {
+            "comment": "Fix the Nadir color for 2 colors skybox in the context of background map."
+          },
+          {
+            "comment": "Add ability to clone Format and to add property setters. This allows a user to synchronously tweak a format in the frontend."
+          },
+          {
+            "comment": "Fix issue with TouchCursor unexpectedly disappearing when disabling snap/locate."
+          },
+          {
+            "comment": "pickable decoration enhancement"
+          },
+          {
+            "comment": "Update tile trees when project extents change."
+          },
+          {
+            "comment": "Remove BackgroundMapLocation use EcefLocation directly."
+          },
+          {
+            "comment": "Clean up and promote AnalysisStyle APIs."
+          },
+          {
+            "comment": "TileAdmin.requestElementGraphics can now produce section-cut graphics."
+          },
+          {
+            "comment": "Update tooltips of RealityData with its type"
+          },
+          {
+            "comment": "Add API to wait until all pending external textures have finished loading."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.17.3",
+      "tag": "@itwin/core-frontend_v2.17.3",
+      "date": "Mon, 26 Jul 2021 16:08:36 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.17.2",
+      "tag": "@itwin/core-frontend_v2.17.2",
+      "date": "Thu, 08 Jul 2021 15:23:00 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.17.1",
-      "tag": "@bentley/imodeljs-frontend_v2.17.1",
+      "tag": "@itwin/core-frontend_v2.17.1",
       "date": "Fri, 02 Jul 2021 15:38:31 GMT",
       "comments": {}
     },
     {
       "version": "2.17.0",
-      "tag": "@bentley/imodeljs-frontend_v2.17.0",
+      "tag": "@itwin/core-frontend_v2.17.0",
       "date": "Mon, 28 Jun 2021 16:20:11 GMT",
       "comments": {
         "none": [
@@ -80,32 +353,38 @@
       }
     },
     {
+      "version": "2.16.10",
+      "tag": "@itwin/core-frontend_v2.16.10",
+      "date": "Thu, 22 Jul 2021 20:23:45 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.16.9",
-      "tag": "@bentley/imodeljs-frontend_v2.16.9",
+      "tag": "@itwin/core-frontend_v2.16.9",
       "date": "Tue, 06 Jul 2021 22:08:34 GMT",
       "comments": {}
     },
     {
       "version": "2.16.8",
-      "tag": "@bentley/imodeljs-frontend_v2.16.8",
+      "tag": "@itwin/core-frontend_v2.16.8",
       "date": "Fri, 02 Jul 2021 17:40:46 GMT",
       "comments": {}
     },
     {
       "version": "2.16.7",
-      "tag": "@bentley/imodeljs-frontend_v2.16.7",
+      "tag": "@itwin/core-frontend_v2.16.7",
       "date": "Mon, 28 Jun 2021 18:13:04 GMT",
       "comments": {}
     },
     {
       "version": "2.16.6",
-      "tag": "@bentley/imodeljs-frontend_v2.16.6",
+      "tag": "@itwin/core-frontend_v2.16.6",
       "date": "Mon, 28 Jun 2021 13:12:55 GMT",
       "comments": {}
     },
     {
       "version": "2.16.5",
-      "tag": "@bentley/imodeljs-frontend_v2.16.5",
+      "tag": "@itwin/core-frontend_v2.16.5",
       "date": "Fri, 25 Jun 2021 16:03:01 GMT",
       "comments": {
         "none": [
@@ -117,25 +396,25 @@
     },
     {
       "version": "2.16.4",
-      "tag": "@bentley/imodeljs-frontend_v2.16.4",
+      "tag": "@itwin/core-frontend_v2.16.4",
       "date": "Wed, 23 Jun 2021 17:09:07 GMT",
       "comments": {}
     },
     {
       "version": "2.16.3",
-      "tag": "@bentley/imodeljs-frontend_v2.16.3",
+      "tag": "@itwin/core-frontend_v2.16.3",
       "date": "Wed, 16 Jun 2021 20:29:32 GMT",
       "comments": {}
     },
     {
       "version": "2.16.2",
-      "tag": "@bentley/imodeljs-frontend_v2.16.2",
+      "tag": "@itwin/core-frontend_v2.16.2",
       "date": "Thu, 03 Jun 2021 18:08:11 GMT",
       "comments": {}
     },
     {
       "version": "2.16.1",
-      "tag": "@bentley/imodeljs-frontend_v2.16.1",
+      "tag": "@itwin/core-frontend_v2.16.1",
       "date": "Thu, 27 May 2021 20:04:22 GMT",
       "comments": {
         "none": [
@@ -147,7 +426,7 @@
     },
     {
       "version": "2.16.0",
-      "tag": "@bentley/imodeljs-frontend_v2.16.0",
+      "tag": "@itwin/core-frontend_v2.16.0",
       "date": "Mon, 24 May 2021 15:58:39 GMT",
       "comments": {
         "none": [
@@ -273,31 +552,31 @@
     },
     {
       "version": "2.15.6",
-      "tag": "@bentley/imodeljs-frontend_v2.15.6",
+      "tag": "@itwin/core-frontend_v2.15.6",
       "date": "Wed, 26 May 2021 15:55:19 GMT",
       "comments": {}
     },
     {
       "version": "2.15.5",
-      "tag": "@bentley/imodeljs-frontend_v2.15.5",
+      "tag": "@itwin/core-frontend_v2.15.5",
       "date": "Thu, 20 May 2021 15:06:26 GMT",
       "comments": {}
     },
     {
       "version": "2.15.4",
-      "tag": "@bentley/imodeljs-frontend_v2.15.4",
+      "tag": "@itwin/core-frontend_v2.15.4",
       "date": "Tue, 18 May 2021 21:59:07 GMT",
       "comments": {}
     },
     {
       "version": "2.15.3",
-      "tag": "@bentley/imodeljs-frontend_v2.15.3",
+      "tag": "@itwin/core-frontend_v2.15.3",
       "date": "Mon, 17 May 2021 13:31:38 GMT",
       "comments": {}
     },
     {
       "version": "2.15.2",
-      "tag": "@bentley/imodeljs-frontend_v2.15.2",
+      "tag": "@itwin/core-frontend_v2.15.2",
       "date": "Wed, 12 May 2021 18:08:13 GMT",
       "comments": {
         "none": [
@@ -312,7 +591,7 @@
     },
     {
       "version": "2.15.1",
-      "tag": "@bentley/imodeljs-frontend_v2.15.1",
+      "tag": "@itwin/core-frontend_v2.15.1",
       "date": "Wed, 05 May 2021 13:18:31 GMT",
       "comments": {
         "none": [
@@ -327,7 +606,7 @@
     },
     {
       "version": "2.15.0",
-      "tag": "@bentley/imodeljs-frontend_v2.15.0",
+      "tag": "@itwin/core-frontend_v2.15.0",
       "date": "Fri, 30 Apr 2021 12:36:58 GMT",
       "comments": {
         "none": [
@@ -423,19 +702,19 @@
     },
     {
       "version": "2.14.4",
-      "tag": "@bentley/imodeljs-frontend_v2.14.4",
+      "tag": "@itwin/core-frontend_v2.14.4",
       "date": "Thu, 22 Apr 2021 21:07:33 GMT",
       "comments": {}
     },
     {
       "version": "2.14.3",
-      "tag": "@bentley/imodeljs-frontend_v2.14.3",
+      "tag": "@itwin/core-frontend_v2.14.3",
       "date": "Thu, 15 Apr 2021 15:13:16 GMT",
       "comments": {}
     },
     {
       "version": "2.14.2",
-      "tag": "@bentley/imodeljs-frontend_v2.14.2",
+      "tag": "@itwin/core-frontend_v2.14.2",
       "date": "Thu, 08 Apr 2021 14:30:09 GMT",
       "comments": {
         "none": [
@@ -447,7 +726,7 @@
     },
     {
       "version": "2.14.1",
-      "tag": "@bentley/imodeljs-frontend_v2.14.1",
+      "tag": "@itwin/core-frontend_v2.14.1",
       "date": "Mon, 05 Apr 2021 16:28:00 GMT",
       "comments": {
         "none": [
@@ -462,7 +741,7 @@
     },
     {
       "version": "2.14.0",
-      "tag": "@bentley/imodeljs-frontend_v2.14.0",
+      "tag": "@itwin/core-frontend_v2.14.0",
       "date": "Fri, 02 Apr 2021 13:18:42 GMT",
       "comments": {
         "none": [
@@ -531,7 +810,7 @@
     },
     {
       "version": "2.13.0",
-      "tag": "@bentley/imodeljs-frontend_v2.13.0",
+      "tag": "@itwin/core-frontend_v2.13.0",
       "date": "Tue, 09 Mar 2021 20:28:13 GMT",
       "comments": {
         "none": [
@@ -621,13 +900,13 @@
     },
     {
       "version": "2.12.3",
-      "tag": "@bentley/imodeljs-frontend_v2.12.3",
+      "tag": "@itwin/core-frontend_v2.12.3",
       "date": "Mon, 08 Mar 2021 15:32:00 GMT",
       "comments": {}
     },
     {
       "version": "2.12.2",
-      "tag": "@bentley/imodeljs-frontend_v2.12.2",
+      "tag": "@itwin/core-frontend_v2.12.2",
       "date": "Wed, 03 Mar 2021 18:48:52 GMT",
       "comments": {
         "none": [
@@ -642,7 +921,7 @@
     },
     {
       "version": "2.12.1",
-      "tag": "@bentley/imodeljs-frontend_v2.12.1",
+      "tag": "@itwin/core-frontend_v2.12.1",
       "date": "Tue, 23 Feb 2021 20:54:45 GMT",
       "comments": {
         "none": [
@@ -657,7 +936,7 @@
     },
     {
       "version": "2.12.0",
-      "tag": "@bentley/imodeljs-frontend_v2.12.0",
+      "tag": "@itwin/core-frontend_v2.12.0",
       "date": "Thu, 18 Feb 2021 22:10:13 GMT",
       "comments": {
         "none": [
@@ -723,7 +1002,7 @@
     },
     {
       "version": "2.11.2",
-      "tag": "@bentley/imodeljs-frontend_v2.11.2",
+      "tag": "@itwin/core-frontend_v2.11.2",
       "date": "Thu, 18 Feb 2021 02:50:59 GMT",
       "comments": {
         "none": [
@@ -735,13 +1014,13 @@
     },
     {
       "version": "2.11.1",
-      "tag": "@bentley/imodeljs-frontend_v2.11.1",
+      "tag": "@itwin/core-frontend_v2.11.1",
       "date": "Thu, 04 Feb 2021 17:22:41 GMT",
       "comments": {}
     },
     {
       "version": "2.11.0",
-      "tag": "@bentley/imodeljs-frontend_v2.11.0",
+      "tag": "@itwin/core-frontend_v2.11.0",
       "date": "Thu, 28 Jan 2021 13:39:27 GMT",
       "comments": {
         "none": [
@@ -822,13 +1101,13 @@
     },
     {
       "version": "2.10.3",
-      "tag": "@bentley/imodeljs-frontend_v2.10.3",
+      "tag": "@itwin/core-frontend_v2.10.3",
       "date": "Fri, 08 Jan 2021 18:34:03 GMT",
       "comments": {}
     },
     {
       "version": "2.10.2",
-      "tag": "@bentley/imodeljs-frontend_v2.10.2",
+      "tag": "@itwin/core-frontend_v2.10.2",
       "date": "Fri, 08 Jan 2021 14:52:02 GMT",
       "comments": {
         "none": [
@@ -843,7 +1122,7 @@
     },
     {
       "version": "2.10.1",
-      "tag": "@bentley/imodeljs-frontend_v2.10.1",
+      "tag": "@itwin/core-frontend_v2.10.1",
       "date": "Tue, 22 Dec 2020 00:53:38 GMT",
       "comments": {
         "none": [
@@ -855,7 +1134,7 @@
     },
     {
       "version": "2.10.0",
-      "tag": "@bentley/imodeljs-frontend_v2.10.0",
+      "tag": "@itwin/core-frontend_v2.10.0",
       "date": "Fri, 18 Dec 2020 18:24:01 GMT",
       "comments": {
         "none": [
@@ -897,7 +1176,7 @@
     },
     {
       "version": "2.9.9",
-      "tag": "@bentley/imodeljs-frontend_v2.9.9",
+      "tag": "@itwin/core-frontend_v2.9.9",
       "date": "Sun, 13 Dec 2020 19:00:03 GMT",
       "comments": {
         "none": [
@@ -909,13 +1188,13 @@
     },
     {
       "version": "2.9.8",
-      "tag": "@bentley/imodeljs-frontend_v2.9.8",
+      "tag": "@itwin/core-frontend_v2.9.8",
       "date": "Fri, 11 Dec 2020 02:57:36 GMT",
       "comments": {}
     },
     {
       "version": "2.9.7",
-      "tag": "@bentley/imodeljs-frontend_v2.9.7",
+      "tag": "@itwin/core-frontend_v2.9.7",
       "date": "Wed, 09 Dec 2020 20:58:23 GMT",
       "comments": {
         "none": [
@@ -927,31 +1206,31 @@
     },
     {
       "version": "2.9.6",
-      "tag": "@bentley/imodeljs-frontend_v2.9.6",
+      "tag": "@itwin/core-frontend_v2.9.6",
       "date": "Mon, 07 Dec 2020 18:40:48 GMT",
       "comments": {}
     },
     {
       "version": "2.9.5",
-      "tag": "@bentley/imodeljs-frontend_v2.9.5",
+      "tag": "@itwin/core-frontend_v2.9.5",
       "date": "Sat, 05 Dec 2020 01:55:56 GMT",
       "comments": {}
     },
     {
       "version": "2.9.4",
-      "tag": "@bentley/imodeljs-frontend_v2.9.4",
+      "tag": "@itwin/core-frontend_v2.9.4",
       "date": "Wed, 02 Dec 2020 20:55:40 GMT",
       "comments": {}
     },
     {
       "version": "2.9.3",
-      "tag": "@bentley/imodeljs-frontend_v2.9.3",
+      "tag": "@itwin/core-frontend_v2.9.3",
       "date": "Mon, 23 Nov 2020 20:57:56 GMT",
       "comments": {}
     },
     {
       "version": "2.9.2",
-      "tag": "@bentley/imodeljs-frontend_v2.9.2",
+      "tag": "@itwin/core-frontend_v2.9.2",
       "date": "Mon, 23 Nov 2020 15:33:50 GMT",
       "comments": {
         "none": [
@@ -963,13 +1242,13 @@
     },
     {
       "version": "2.9.1",
-      "tag": "@bentley/imodeljs-frontend_v2.9.1",
+      "tag": "@itwin/core-frontend_v2.9.1",
       "date": "Thu, 19 Nov 2020 17:03:42 GMT",
       "comments": {}
     },
     {
       "version": "2.9.0",
-      "tag": "@bentley/imodeljs-frontend_v2.9.0",
+      "tag": "@itwin/core-frontend_v2.9.0",
       "date": "Wed, 18 Nov 2020 16:01:50 GMT",
       "comments": {
         "none": [
@@ -1026,7 +1305,7 @@
     },
     {
       "version": "2.8.1",
-      "tag": "@bentley/imodeljs-frontend_v2.8.1",
+      "tag": "@itwin/core-frontend_v2.8.1",
       "date": "Tue, 03 Nov 2020 00:33:56 GMT",
       "comments": {
         "none": [
@@ -1038,7 +1317,7 @@
     },
     {
       "version": "2.8.0",
-      "tag": "@bentley/imodeljs-frontend_v2.8.0",
+      "tag": "@itwin/core-frontend_v2.8.0",
       "date": "Fri, 23 Oct 2020 17:04:02 GMT",
       "comments": {
         "none": [
@@ -1101,13 +1380,13 @@
     },
     {
       "version": "2.7.6",
-      "tag": "@bentley/imodeljs-frontend_v2.7.6",
+      "tag": "@itwin/core-frontend_v2.7.6",
       "date": "Wed, 11 Nov 2020 16:28:23 GMT",
       "comments": {}
     },
     {
       "version": "2.7.5",
-      "tag": "@bentley/imodeljs-frontend_v2.7.5",
+      "tag": "@itwin/core-frontend_v2.7.5",
       "date": "Fri, 23 Oct 2020 16:23:50 GMT",
       "comments": {
         "none": [
@@ -1119,25 +1398,25 @@
     },
     {
       "version": "2.7.4",
-      "tag": "@bentley/imodeljs-frontend_v2.7.4",
+      "tag": "@itwin/core-frontend_v2.7.4",
       "date": "Mon, 19 Oct 2020 17:57:01 GMT",
       "comments": {}
     },
     {
       "version": "2.7.3",
-      "tag": "@bentley/imodeljs-frontend_v2.7.3",
+      "tag": "@itwin/core-frontend_v2.7.3",
       "date": "Wed, 14 Oct 2020 17:00:59 GMT",
       "comments": {}
     },
     {
       "version": "2.7.2",
-      "tag": "@bentley/imodeljs-frontend_v2.7.2",
+      "tag": "@itwin/core-frontend_v2.7.2",
       "date": "Tue, 13 Oct 2020 18:20:38 GMT",
       "comments": {}
     },
     {
       "version": "2.7.1",
-      "tag": "@bentley/imodeljs-frontend_v2.7.1",
+      "tag": "@itwin/core-frontend_v2.7.1",
       "date": "Thu, 08 Oct 2020 13:04:35 GMT",
       "comments": {
         "none": [
@@ -1149,7 +1428,7 @@
     },
     {
       "version": "2.7.0",
-      "tag": "@bentley/imodeljs-frontend_v2.7.0",
+      "tag": "@itwin/core-frontend_v2.7.0",
       "date": "Fri, 02 Oct 2020 18:03:32 GMT",
       "comments": {
         "none": [
@@ -1209,19 +1488,19 @@
     },
     {
       "version": "2.6.5",
-      "tag": "@bentley/imodeljs-frontend_v2.6.5",
+      "tag": "@itwin/core-frontend_v2.6.5",
       "date": "Sat, 26 Sep 2020 16:06:34 GMT",
       "comments": {}
     },
     {
       "version": "2.6.4",
-      "tag": "@bentley/imodeljs-frontend_v2.6.4",
+      "tag": "@itwin/core-frontend_v2.6.4",
       "date": "Tue, 22 Sep 2020 17:40:07 GMT",
       "comments": {}
     },
     {
       "version": "2.6.3",
-      "tag": "@bentley/imodeljs-frontend_v2.6.3",
+      "tag": "@itwin/core-frontend_v2.6.3",
       "date": "Mon, 21 Sep 2020 14:47:09 GMT",
       "comments": {
         "none": [
@@ -1233,7 +1512,7 @@
     },
     {
       "version": "2.6.2",
-      "tag": "@bentley/imodeljs-frontend_v2.6.2",
+      "tag": "@itwin/core-frontend_v2.6.2",
       "date": "Mon, 21 Sep 2020 13:07:44 GMT",
       "comments": {
         "none": [
@@ -1245,13 +1524,13 @@
     },
     {
       "version": "2.6.1",
-      "tag": "@bentley/imodeljs-frontend_v2.6.1",
+      "tag": "@itwin/core-frontend_v2.6.1",
       "date": "Fri, 18 Sep 2020 13:15:09 GMT",
       "comments": {}
     },
     {
       "version": "2.6.0",
-      "tag": "@bentley/imodeljs-frontend_v2.6.0",
+      "tag": "@itwin/core-frontend_v2.6.0",
       "date": "Thu, 17 Sep 2020 13:16:12 GMT",
       "comments": {
         "none": [
@@ -1299,7 +1578,7 @@
     },
     {
       "version": "2.5.5",
-      "tag": "@bentley/imodeljs-frontend_v2.5.5",
+      "tag": "@itwin/core-frontend_v2.5.5",
       "date": "Wed, 02 Sep 2020 17:42:23 GMT",
       "comments": {
         "none": [
@@ -1311,25 +1590,25 @@
     },
     {
       "version": "2.5.4",
-      "tag": "@bentley/imodeljs-frontend_v2.5.4",
+      "tag": "@itwin/core-frontend_v2.5.4",
       "date": "Fri, 28 Aug 2020 15:34:15 GMT",
       "comments": {}
     },
     {
       "version": "2.5.3",
-      "tag": "@bentley/imodeljs-frontend_v2.5.3",
+      "tag": "@itwin/core-frontend_v2.5.3",
       "date": "Wed, 26 Aug 2020 11:46:00 GMT",
       "comments": {}
     },
     {
       "version": "2.5.2",
-      "tag": "@bentley/imodeljs-frontend_v2.5.2",
+      "tag": "@itwin/core-frontend_v2.5.2",
       "date": "Tue, 25 Aug 2020 22:09:08 GMT",
       "comments": {}
     },
     {
       "version": "2.5.1",
-      "tag": "@bentley/imodeljs-frontend_v2.5.1",
+      "tag": "@itwin/core-frontend_v2.5.1",
       "date": "Mon, 24 Aug 2020 18:13:04 GMT",
       "comments": {
         "none": [
@@ -1341,7 +1620,7 @@
     },
     {
       "version": "2.5.0",
-      "tag": "@bentley/imodeljs-frontend_v2.5.0",
+      "tag": "@itwin/core-frontend_v2.5.0",
       "date": "Thu, 20 Aug 2020 20:57:09 GMT",
       "comments": {
         "none": [
@@ -1401,7 +1680,7 @@
     },
     {
       "version": "2.4.2",
-      "tag": "@bentley/imodeljs-frontend_v2.4.2",
+      "tag": "@itwin/core-frontend_v2.4.2",
       "date": "Fri, 14 Aug 2020 16:34:09 GMT",
       "comments": {
         "none": [
@@ -1416,7 +1695,7 @@
     },
     {
       "version": "2.4.1",
-      "tag": "@bentley/imodeljs-frontend_v2.4.1",
+      "tag": "@itwin/core-frontend_v2.4.1",
       "date": "Fri, 07 Aug 2020 19:57:43 GMT",
       "comments": {
         "none": [
@@ -1431,7 +1710,7 @@
     },
     {
       "version": "2.4.0",
-      "tag": "@bentley/imodeljs-frontend_v2.4.0",
+      "tag": "@itwin/core-frontend_v2.4.0",
       "date": "Tue, 28 Jul 2020 16:26:24 GMT",
       "comments": {
         "none": [
@@ -1473,7 +1752,7 @@
     },
     {
       "version": "2.3.3",
-      "tag": "@bentley/imodeljs-frontend_v2.3.3",
+      "tag": "@itwin/core-frontend_v2.3.3",
       "date": "Thu, 23 Jul 2020 12:57:15 GMT",
       "comments": {
         "none": [
@@ -1485,19 +1764,19 @@
     },
     {
       "version": "2.3.2",
-      "tag": "@bentley/imodeljs-frontend_v2.3.2",
+      "tag": "@itwin/core-frontend_v2.3.2",
       "date": "Tue, 14 Jul 2020 23:50:36 GMT",
       "comments": {}
     },
     {
       "version": "2.3.1",
-      "tag": "@bentley/imodeljs-frontend_v2.3.1",
+      "tag": "@itwin/core-frontend_v2.3.1",
       "date": "Mon, 13 Jul 2020 18:50:14 GMT",
       "comments": {}
     },
     {
       "version": "2.3.0",
-      "tag": "@bentley/imodeljs-frontend_v2.3.0",
+      "tag": "@itwin/core-frontend_v2.3.0",
       "date": "Fri, 10 Jul 2020 17:23:14 GMT",
       "comments": {
         "none": [
@@ -1545,13 +1824,13 @@
     },
     {
       "version": "2.2.1",
-      "tag": "@bentley/imodeljs-frontend_v2.2.1",
+      "tag": "@itwin/core-frontend_v2.2.1",
       "date": "Tue, 07 Jul 2020 14:44:52 GMT",
       "comments": {}
     },
     {
       "version": "2.2.0",
-      "tag": "@bentley/imodeljs-frontend_v2.2.0",
+      "tag": "@itwin/core-frontend_v2.2.0",
       "date": "Fri, 19 Jun 2020 14:10:03 GMT",
       "comments": {
         "none": [
@@ -1596,7 +1875,7 @@
     },
     {
       "version": "2.1.0",
-      "tag": "@bentley/imodeljs-frontend_v2.1.0",
+      "tag": "@itwin/core-frontend_v2.1.0",
       "date": "Thu, 28 May 2020 22:48:59 GMT",
       "comments": {
         "none": [
@@ -1656,7 +1935,7 @@
     },
     {
       "version": "2.0.0",
-      "tag": "@bentley/imodeljs-frontend_v2.0.0",
+      "tag": "@itwin/core-frontend_v2.0.0",
       "date": "Wed, 06 May 2020 13:17:49 GMT",
       "comments": {
         "none": [
@@ -2070,7 +2349,7 @@
     },
     {
       "version": "1.14.1",
-      "tag": "@bentley/imodeljs-frontend_v1.14.1",
+      "tag": "@itwin/core-frontend_v1.14.1",
       "date": "Wed, 22 Apr 2020 19:04:00 GMT",
       "comments": {
         "none": [
@@ -2082,7 +2361,7 @@
     },
     {
       "version": "1.14.0",
-      "tag": "@bentley/imodeljs-frontend_v1.14.0",
+      "tag": "@itwin/core-frontend_v1.14.0",
       "date": "Tue, 31 Mar 2020 15:44:19 GMT",
       "comments": {
         "none": [
@@ -2100,7 +2379,7 @@
     },
     {
       "version": "1.13.0",
-      "tag": "@bentley/imodeljs-frontend_v1.13.0",
+      "tag": "@itwin/core-frontend_v1.13.0",
       "date": "Wed, 04 Mar 2020 16:16:31 GMT",
       "comments": {
         "none": [
@@ -2112,7 +2391,7 @@
     },
     {
       "version": "1.12.0",
-      "tag": "@bentley/imodeljs-frontend_v1.12.0",
+      "tag": "@itwin/core-frontend_v1.12.0",
       "date": "Wed, 12 Feb 2020 17:45:50 GMT",
       "comments": {
         "none": [
@@ -2190,7 +2469,7 @@
     },
     {
       "version": "1.11.0",
-      "tag": "@bentley/imodeljs-frontend_v1.11.0",
+      "tag": "@itwin/core-frontend_v1.11.0",
       "date": "Wed, 22 Jan 2020 19:24:12 GMT",
       "comments": {
         "none": [
@@ -2262,7 +2541,7 @@
     },
     {
       "version": "1.10.0",
-      "tag": "@bentley/imodeljs-frontend_v1.10.0",
+      "tag": "@itwin/core-frontend_v1.10.0",
       "date": "Tue, 07 Jan 2020 19:44:01 GMT",
       "comments": {
         "none": [
@@ -2361,7 +2640,7 @@
     },
     {
       "version": "1.9.0",
-      "tag": "@bentley/imodeljs-frontend_v1.9.0",
+      "tag": "@itwin/core-frontend_v1.9.0",
       "date": "Tue, 10 Dec 2019 18:08:56 GMT",
       "comments": {
         "none": [
@@ -2439,7 +2718,7 @@
     },
     {
       "version": "1.8.0",
-      "tag": "@bentley/imodeljs-frontend_v1.8.0",
+      "tag": "@itwin/core-frontend_v1.8.0",
       "date": "Fri, 22 Nov 2019 14:03:34 GMT",
       "comments": {
         "none": [
@@ -2547,7 +2826,7 @@
     },
     {
       "version": "1.7.0",
-      "tag": "@bentley/imodeljs-frontend_v1.7.0",
+      "tag": "@itwin/core-frontend_v1.7.0",
       "date": "Fri, 01 Nov 2019 13:28:37 GMT",
       "comments": {
         "none": [
@@ -2694,7 +2973,7 @@
     },
     {
       "version": "1.6.0",
-      "tag": "@bentley/imodeljs-frontend_v1.6.0",
+      "tag": "@itwin/core-frontend_v1.6.0",
       "date": "Wed, 09 Oct 2019 20:28:42 GMT",
       "comments": {
         "none": [
@@ -2760,7 +3039,7 @@
     },
     {
       "version": "1.5.0",
-      "tag": "@bentley/imodeljs-frontend_v1.5.0",
+      "tag": "@itwin/core-frontend_v1.5.0",
       "date": "Mon, 30 Sep 2019 22:28:48 GMT",
       "comments": {
         "none": [
@@ -2901,7 +3180,7 @@
     },
     {
       "version": "1.4.0",
-      "tag": "@bentley/imodeljs-frontend_v1.4.0",
+      "tag": "@itwin/core-frontend_v1.4.0",
       "date": "Tue, 10 Sep 2019 12:09:49 GMT",
       "comments": {
         "none": [
@@ -2994,7 +3273,7 @@
     },
     {
       "version": "1.3.0",
-      "tag": "@bentley/imodeljs-frontend_v1.3.0",
+      "tag": "@itwin/core-frontend_v1.3.0",
       "date": "Tue, 13 Aug 2019 20:25:53 GMT",
       "comments": {
         "none": [
@@ -3108,7 +3387,7 @@
     },
     {
       "version": "1.2.0",
-      "tag": "@bentley/imodeljs-frontend_v1.2.0",
+      "tag": "@itwin/core-frontend_v1.2.0",
       "date": "Wed, 24 Jul 2019 11:47:26 GMT",
       "comments": {
         "none": [
@@ -3180,7 +3459,7 @@
     },
     {
       "version": "1.1.0",
-      "tag": "@bentley/imodeljs-frontend_v1.1.0",
+      "tag": "@itwin/core-frontend_v1.1.0",
       "date": "Mon, 01 Jul 2019 19:04:29 GMT",
       "comments": {
         "none": [
@@ -3300,7 +3579,7 @@
     },
     {
       "version": "1.0.0",
-      "tag": "@bentley/imodeljs-frontend_v1.0.0",
+      "tag": "@itwin/core-frontend_v1.0.0",
       "date": "Mon, 03 Jun 2019 18:09:39 GMT",
       "comments": {
         "none": [
@@ -3465,7 +3744,7 @@
     },
     {
       "version": "0.191.0",
-      "tag": "@bentley/imodeljs-frontend_v0.191.0",
+      "tag": "@itwin/core-frontend_v0.191.0",
       "date": "Mon, 13 May 2019 15:52:05 GMT",
       "comments": {
         "none": [
@@ -3795,7 +4074,7 @@
     },
     {
       "version": "0.190.0",
-      "tag": "@bentley/imodeljs-frontend_v0.190.0",
+      "tag": "@itwin/core-frontend_v0.190.0",
       "date": "Thu, 14 Mar 2019 14:26:49 GMT",
       "comments": {
         "none": [
@@ -3831,7 +4110,7 @@
     },
     {
       "version": "0.189.0",
-      "tag": "@bentley/imodeljs-frontend_v0.189.0",
+      "tag": "@itwin/core-frontend_v0.189.0",
       "date": "Wed, 06 Mar 2019 15:41:22 GMT",
       "comments": {
         "none": [
@@ -4068,7 +4347,7 @@
     },
     {
       "version": "0.188.0",
-      "tag": "@bentley/imodeljs-frontend_v0.188.0",
+      "tag": "@itwin/core-frontend_v0.188.0",
       "date": "Wed, 16 Jan 2019 16:36:09 GMT",
       "comments": {
         "none": [
@@ -4089,13 +4368,13 @@
     },
     {
       "version": "0.187.0",
-      "tag": "@bentley/imodeljs-frontend_v0.187.0",
+      "tag": "@itwin/core-frontend_v0.187.0",
       "date": "Tue, 15 Jan 2019 15:18:59 GMT",
       "comments": {}
     },
     {
       "version": "0.186.0",
-      "tag": "@bentley/imodeljs-frontend_v0.186.0",
+      "tag": "@itwin/core-frontend_v0.186.0",
       "date": "Mon, 14 Jan 2019 23:09:10 GMT",
       "comments": {
         "none": [
@@ -4107,7 +4386,7 @@
     },
     {
       "version": "0.185.0",
-      "tag": "@bentley/imodeljs-frontend_v0.185.0",
+      "tag": "@itwin/core-frontend_v0.185.0",
       "date": "Fri, 11 Jan 2019 18:29:00 GMT",
       "comments": {
         "none": [
@@ -4125,7 +4404,7 @@
     },
     {
       "version": "0.184.0",
-      "tag": "@bentley/imodeljs-frontend_v0.184.0",
+      "tag": "@itwin/core-frontend_v0.184.0",
       "date": "Thu, 10 Jan 2019 22:46:17 GMT",
       "comments": {
         "none": [
@@ -4170,7 +4449,7 @@
     },
     {
       "version": "0.183.0",
-      "tag": "@bentley/imodeljs-frontend_v0.183.0",
+      "tag": "@itwin/core-frontend_v0.183.0",
       "date": "Mon, 07 Jan 2019 21:49:21 GMT",
       "comments": {
         "none": [
@@ -4191,7 +4470,7 @@
     },
     {
       "version": "0.182.0",
-      "tag": "@bentley/imodeljs-frontend_v0.182.0",
+      "tag": "@itwin/core-frontend_v0.182.0",
       "date": "Mon, 07 Jan 2019 13:31:34 GMT",
       "comments": {
         "none": [
@@ -4203,7 +4482,7 @@
     },
     {
       "version": "0.181.0",
-      "tag": "@bentley/imodeljs-frontend_v0.181.0",
+      "tag": "@itwin/core-frontend_v0.181.0",
       "date": "Fri, 04 Jan 2019 13:02:40 GMT",
       "comments": {
         "none": [
@@ -4218,7 +4497,7 @@
     },
     {
       "version": "0.180.0",
-      "tag": "@bentley/imodeljs-frontend_v0.180.0",
+      "tag": "@itwin/core-frontend_v0.180.0",
       "date": "Wed, 02 Jan 2019 15:18:23 GMT",
       "comments": {
         "none": [
@@ -4260,7 +4539,7 @@
     },
     {
       "version": "0.179.0",
-      "tag": "@bentley/imodeljs-frontend_v0.179.0",
+      "tag": "@itwin/core-frontend_v0.179.0",
       "date": "Wed, 19 Dec 2018 18:26:14 GMT",
       "comments": {
         "none": [
@@ -4284,7 +4563,7 @@
     },
     {
       "version": "0.178.0",
-      "tag": "@bentley/imodeljs-frontend_v0.178.0",
+      "tag": "@itwin/core-frontend_v0.178.0",
       "date": "Thu, 13 Dec 2018 22:06:10 GMT",
       "comments": {
         "none": [
@@ -4308,7 +4587,7 @@
     },
     {
       "version": "0.177.0",
-      "tag": "@bentley/imodeljs-frontend_v0.177.0",
+      "tag": "@itwin/core-frontend_v0.177.0",
       "date": "Wed, 12 Dec 2018 17:21:31 GMT",
       "comments": {
         "none": [
@@ -4326,7 +4605,7 @@
     },
     {
       "version": "0.176.0",
-      "tag": "@bentley/imodeljs-frontend_v0.176.0",
+      "tag": "@itwin/core-frontend_v0.176.0",
       "date": "Mon, 10 Dec 2018 21:19:45 GMT",
       "comments": {
         "none": [
@@ -4347,7 +4626,7 @@
     },
     {
       "version": "0.175.0",
-      "tag": "@bentley/imodeljs-frontend_v0.175.0",
+      "tag": "@itwin/core-frontend_v0.175.0",
       "date": "Mon, 10 Dec 2018 17:08:55 GMT",
       "comments": {
         "none": [
@@ -4359,7 +4638,7 @@
     },
     {
       "version": "0.174.0",
-      "tag": "@bentley/imodeljs-frontend_v0.174.0",
+      "tag": "@itwin/core-frontend_v0.174.0",
       "date": "Mon, 10 Dec 2018 13:24:09 GMT",
       "comments": {
         "none": [
@@ -4371,7 +4650,7 @@
     },
     {
       "version": "0.173.0",
-      "tag": "@bentley/imodeljs-frontend_v0.173.0",
+      "tag": "@itwin/core-frontend_v0.173.0",
       "date": "Thu, 06 Dec 2018 22:03:29 GMT",
       "comments": {
         "none": [
@@ -4389,7 +4668,7 @@
     },
     {
       "version": "0.172.0",
-      "tag": "@bentley/imodeljs-frontend_v0.172.0",
+      "tag": "@itwin/core-frontend_v0.172.0",
       "date": "Tue, 04 Dec 2018 17:24:39 GMT",
       "comments": {
         "none": [
@@ -4401,7 +4680,7 @@
     },
     {
       "version": "0.171.0",
-      "tag": "@bentley/imodeljs-frontend_v0.171.0",
+      "tag": "@itwin/core-frontend_v0.171.0",
       "date": "Mon, 03 Dec 2018 18:52:58 GMT",
       "comments": {
         "none": [
@@ -4443,7 +4722,7 @@
     },
     {
       "version": "0.170.0",
-      "tag": "@bentley/imodeljs-frontend_v0.170.0",
+      "tag": "@itwin/core-frontend_v0.170.0",
       "date": "Mon, 26 Nov 2018 19:38:42 GMT",
       "comments": {
         "none": [
@@ -4458,19 +4737,19 @@
     },
     {
       "version": "0.169.0",
-      "tag": "@bentley/imodeljs-frontend_v0.169.0",
+      "tag": "@itwin/core-frontend_v0.169.0",
       "date": "Tue, 20 Nov 2018 16:17:15 GMT",
       "comments": {}
     },
     {
       "version": "0.168.0",
-      "tag": "@bentley/imodeljs-frontend_v0.168.0",
+      "tag": "@itwin/core-frontend_v0.168.0",
       "date": "Sat, 17 Nov 2018 14:20:11 GMT",
       "comments": {}
     },
     {
       "version": "0.167.0",
-      "tag": "@bentley/imodeljs-frontend_v0.167.0",
+      "tag": "@itwin/core-frontend_v0.167.0",
       "date": "Fri, 16 Nov 2018 21:45:44 GMT",
       "comments": {
         "none": [
@@ -4488,7 +4767,7 @@
     },
     {
       "version": "0.166.0",
-      "tag": "@bentley/imodeljs-frontend_v0.166.0",
+      "tag": "@itwin/core-frontend_v0.166.0",
       "date": "Mon, 12 Nov 2018 16:42:10 GMT",
       "comments": {
         "none": [
@@ -4500,7 +4779,7 @@
     },
     {
       "version": "0.165.0",
-      "tag": "@bentley/imodeljs-frontend_v0.165.0",
+      "tag": "@itwin/core-frontend_v0.165.0",
       "date": "Mon, 12 Nov 2018 15:47:00 GMT",
       "comments": {
         "none": [
@@ -4515,7 +4794,7 @@
     },
     {
       "version": "0.164.0",
-      "tag": "@bentley/imodeljs-frontend_v0.164.0",
+      "tag": "@itwin/core-frontend_v0.164.0",
       "date": "Thu, 08 Nov 2018 17:59:20 GMT",
       "comments": {
         "none": [
@@ -4551,7 +4830,7 @@
     },
     {
       "version": "0.163.0",
-      "tag": "@bentley/imodeljs-frontend_v0.163.0",
+      "tag": "@itwin/core-frontend_v0.163.0",
       "date": "Wed, 31 Oct 2018 20:55:37 GMT",
       "comments": {
         "none": [
@@ -4575,7 +4854,7 @@
     },
     {
       "version": "0.162.0",
-      "tag": "@bentley/imodeljs-frontend_v0.162.0",
+      "tag": "@itwin/core-frontend_v0.162.0",
       "date": "Wed, 24 Oct 2018 19:20:06 GMT",
       "comments": {
         "none": [
@@ -4602,31 +4881,31 @@
     },
     {
       "version": "0.161.0",
-      "tag": "@bentley/imodeljs-frontend_v0.161.0",
+      "tag": "@itwin/core-frontend_v0.161.0",
       "date": "Fri, 19 Oct 2018 13:04:14 GMT",
       "comments": {}
     },
     {
       "version": "0.160.0",
-      "tag": "@bentley/imodeljs-frontend_v0.160.0",
+      "tag": "@itwin/core-frontend_v0.160.0",
       "date": "Wed, 17 Oct 2018 18:18:38 GMT",
       "comments": {}
     },
     {
       "version": "0.159.0",
-      "tag": "@bentley/imodeljs-frontend_v0.159.0",
+      "tag": "@itwin/core-frontend_v0.159.0",
       "date": "Tue, 16 Oct 2018 14:09:09 GMT",
       "comments": {}
     },
     {
       "version": "0.158.0",
-      "tag": "@bentley/imodeljs-frontend_v0.158.0",
+      "tag": "@itwin/core-frontend_v0.158.0",
       "date": "Mon, 15 Oct 2018 19:36:09 GMT",
       "comments": {}
     },
     {
       "version": "0.157.0",
-      "tag": "@bentley/imodeljs-frontend_v0.157.0",
+      "tag": "@itwin/core-frontend_v0.157.0",
       "date": "Sun, 14 Oct 2018 17:20:06 GMT",
       "comments": {
         "none": [
@@ -4638,7 +4917,7 @@
     },
     {
       "version": "0.156.0",
-      "tag": "@bentley/imodeljs-frontend_v0.156.0",
+      "tag": "@itwin/core-frontend_v0.156.0",
       "date": "Fri, 12 Oct 2018 23:00:10 GMT",
       "comments": {
         "none": [

@@ -1,13 +1,13 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-@import "@bentley/ui-core/lib/ui-core/index.scss";
- @import "@bentley/ui-ninezone/lib/ui-ninezone/_scrollbar";
+@import "@itwin/core-react/lib/cjs/core-react/index.scss";
+@import "@itwin/appui-layout-react/lib/cjs/appui-layout-react/_scrollbar";
 
- .ninezone-plugin-content-container {
-   height: 100%;
-   width: 100%;
-   user-select: none;
- }
+.ninezone-plugin-content-container {
+  height: 100%;
+  width: 100%;
+  user-select: none;
+}

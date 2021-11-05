@@ -6,12 +6,12 @@
  * @module NativeApp
  */
 
-import { ClientRequestContext, IModelStatus, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
+import { BentleyError, IModelStatus, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import {
-  EditingScopeNotifications, IModelConnectionProps, IModelError, IModelRpcProps, IModelVersion, IModelVersionProps,
-  IpcAppChannel, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel, OpenBriefcaseProps,
-  RemoveFunction, StandaloneOpenOptions, TileTreeContentIds, TxnNotifications,
-} from "@bentley/imodeljs-common";
+  ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, IModelConnectionProps, IModelError, IModelRpcProps, IpcAppChannel, IpcAppFunctions,
+  IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel, OpenBriefcaseProps, RemoveFunction, StandaloneOpenOptions,
+  TileTreeContentIds, TxnNotifications,
+} from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { BriefcaseDb, IModelDb, StandaloneDb } from "./IModelDb";
 import { IModelHost, IModelHostConfiguration } from "./IModelHost";
@@ -159,9 +159,15 @@ export abstract class IpcHandler {
 
         return { result: await func.call(impl, ...args) };
       } catch (err) {
-        const ret: IpcInvokeReturn = { error: { name: err.constructor.name, message: err.message ?? "", errorNumber: err.errorNumber ?? 0 } };
+        const ret: IpcInvokeReturn = {
+          error: {
+            name: (err && typeof (err) === "object") ? err.constructor.name : "Unknown Error",
+            message: BentleyError.getErrorMessage(err),
+            errorNumber: (err as any).errorNumber ?? 0,
+          },
+        };
         if (!IpcHost.noStack)
-          ret.error.stack = err.stack ?? "";
+          ret.error.stack = BentleyError.getErrorStack(err);
         return ret;
       }
     });
@@ -175,8 +181,22 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   public get channelName() { return IpcAppChannel.Functions; }
 
   public async log(_timestamp: number, level: LogLevel, category: string, message: string, metaData?: any): Promise<void> {
-    Logger.logRaw(level, category, message, () => metaData);
+    switch (level) {
+      case LogLevel.Error:
+        Logger.logError(category, message, metaData);
+        break;
+      case LogLevel.Info:
+        Logger.logInfo(category, message, metaData);
+        break;
+      case LogLevel.Trace:
+        Logger.logTrace(category, message, metaData);
+        break;
+      case LogLevel.Warning:
+        Logger.logWarning(category, message, metaData);
+        break;
+    }
   }
+
   public async cancelTileContentRequests(tokenProps: IModelRpcProps, contentIds: TileTreeContentIds[]): Promise<void> {
     return cancelTileContentRequests(tokenProps, contentIds);
   }
@@ -184,8 +204,7 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
     return IModelDb.findByKey(key).nativeDb.cancelElementGraphicsRequests(requestIds);
   }
   public async openBriefcase(args: OpenBriefcaseProps): Promise<IModelConnectionProps> {
-    const requestContext = args.readonly === true ? new ClientRequestContext() : await IModelHost.getAuthorizedContext();
-    const db = await BriefcaseDb.open(requestContext, args);
+    const db = await BriefcaseDb.open(args);
     return db.toJSON();
   }
   public async openStandalone(filePath: string, openMode: OpenMode, opts?: StandaloneOpenOptions): Promise<IModelConnectionProps> {
@@ -214,16 +233,15 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
     return IModelDb.findByKey(key).nativeDb.getUndoString();
   }
 
-  public async pullAndMergeChanges(key: string, version?: IModelVersionProps): Promise<string> {
+  public async pullChanges(key: string, toIndex?: ChangesetIndex): Promise<ChangesetIndexAndId> {
     const iModelDb = BriefcaseDb.findByKey(key);
-    const requestContext = await IModelHost.getAuthorizedContext();
-    return iModelDb.pullAndMergeChanges(requestContext, version ? IModelVersion.fromJSON(version) : undefined);
+    await iModelDb.pullChanges({ toIndex });
+    return iModelDb.changeset as ChangesetIndexAndId;
   }
-  public async pushChanges(key: string, description: string): Promise<string> {
+  public async pushChanges(key: string, description: string): Promise<ChangesetIndexAndId> {
     const iModelDb = BriefcaseDb.findByKey(key);
-    const requestContext = await IModelHost.getAuthorizedContext();
-    await iModelDb.pushChanges(requestContext, description);
-    return iModelDb.changeSetId;
+    await iModelDb.pushChanges({ description });
+    return iModelDb.changeset as ChangesetIndexAndId;
   }
 
   public async toggleGraphicalEditingScope(key: string, startSession: boolean): Promise<boolean> {

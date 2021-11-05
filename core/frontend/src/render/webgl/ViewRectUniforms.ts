@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { Matrix4d } from "@bentley/geometry-core";
+import { Matrix4d } from "@itwin/core-geometry";
 import { UniformHandle } from "./UniformHandle";
 import { Matrix4 } from "./Matrix";
 import { desync, sync } from "./Sync";

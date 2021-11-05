@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodelhub-client",
+      "comment": " Renamed an iModel's parent container to iTwin",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodelhub-client"
+}

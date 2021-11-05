@@ -6,12 +6,13 @@
  * @module Core
  */
 
-import { ClientRequestContext, IDisposable } from "@bentley/bentleyjs-core";
-import { IModelDb, IModelHost, IModelJsNative } from "@bentley/imodeljs-backend";
+import { IModelDb, IModelHost, IModelJsNative } from "@itwin/core-backend";
+import { IDisposable } from "@itwin/core-bentley";
+import { FormatProps } from "@itwin/core-quantity";
 import {
-  DiagnosticsScopeLogs, PresentationError, PresentationStatus, UpdateInfoJSON, VariableValue, VariableValueJSON, VariableValueTypes,
-} from "@bentley/presentation-common";
-import { HierarchyCacheMode, PresentationManagerMode, UnitSystemFormat } from "./PresentationManager";
+  DiagnosticsScopeLogs, NodeKeyJSON, PresentationError, PresentationStatus, UpdateInfoJSON, VariableValue, VariableValueJSON, VariableValueTypes,
+} from "@itwin/presentation-common";
+import { HierarchyCacheMode, PresentationManagerMode } from "./PresentationManager";
 
 /** @internal */
 export enum NativePlatformRequestTypes {
@@ -21,7 +22,7 @@ export enum NativePlatformRequestTypes {
   GetChildrenCount = "GetChildrenCount",
   GetNodePaths = "GetNodePaths",
   GetFilteredNodePaths = "GetFilteredNodePaths",
-  LoadHierarchy = "LoadHierarchy",
+  GetContentSources = "GetContentSources",
   GetContentDescriptor = "GetContentDescriptor",
   GetContentSetSize = "GetContentSetSize",
   GetContent = "GetContent",
@@ -29,6 +30,31 @@ export enum NativePlatformRequestTypes {
   GetPagedDistinctValues = "GetPagedDistinctValues",
   GetDisplayLabel = "GetDisplayLabel",
   CompareHierarchies = "CompareHierarchies",
+}
+
+/**
+ * Enumeration of unit systems supported by native presentation manager.
+ * @internal
+ */
+export enum NativePresentationUnitSystem {
+  Metric = "metric",
+  BritishImperial = "british-imperial",
+  UsCustomary = "us-customary",
+  UsSurvey = "us-survey",
+}
+
+/** @internal */
+export interface NativePresentationDefaultUnitFormats {
+  [phenomenon: string]: {
+    unitSystems: NativePresentationUnitSystem[];
+    format: FormatProps;
+  };
+}
+
+/** @internal */
+export interface NativePresentationKeySetJSON {
+  instanceKeys: Array<[string, string[]]>;
+  nodeKeys: NodeKeyJSON[];
 }
 
 /** @internal */
@@ -70,7 +96,7 @@ export interface DefaultNativePlatformProps {
   isChangeTrackingEnabled: boolean;
   cacheConfig?: IModelJsNative.ECPresentationHierarchyCacheConfig;
   contentCacheSize?: number;
-  defaultFormats?: { [phenomenon: string]: UnitSystemFormat };
+  defaultFormats?: NativePresentationDefaultUnitFormats;
   useMmap?: boolean | number;
 }
 
@@ -93,7 +119,7 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
         default: return PresentationStatus.Error;
       }
     }
-    private getSerializedDefaultFormatsMap(defaultMap: { [phenomenon: string]: UnitSystemFormat }) {
+    private getSerializedDefaultFormatsMap(defaultMap: NativePresentationDefaultUnitFormats) {
       const res: {
         [phenomenon: string]: {
           unitSystems: string[];
@@ -127,16 +153,10 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
       this._nativeAddon.dispose();
     }
     public async forceLoadSchemas(db: any): Promise<NativePlatformResponse<void>> {
-      const requestContext = ClientRequestContext.current;
-      return new Promise((resolve: (result: NativePlatformResponse<void>) => void, reject: () => void) => {
-        requestContext.enter();
-        this._nativeAddon.forceLoadSchemas(db, (response: IModelJsNative.ECPresentationManagerResponse<void>) => {
-          if (response.error)
-            reject();
-          else
-            resolve(this.createSuccessResponse(response));
-        });
-      });
+      const response = await this._nativeAddon.forceLoadSchemas(db);
+      if (response.error)
+        throw new PresentationError(PresentationStatus.Error, response.error.message);
+      return this.createSuccessResponse(response);
     }
     public setupRulesetDirectories(directories: string[]) {
       return this.handleVoidResult(this._nativeAddon.setupRulesetDirectories(directories));
@@ -162,11 +182,9 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
       return this.handleVoidResult(this._nativeAddon.clearRulesets());
     }
     public async handleRequest(db: any, options: string) {
-      const requestContext = ClientRequestContext.current;
       const requestGuid = this.handleResult(this._nativeAddon.queueRequest(db, options)).result;
       return new Promise((resolve: (result: NativePlatformResponse<any>) => void, reject) => {
         const interval = setInterval(() => {
-          requestContext.enter();
           const pollResult = this._nativeAddon.pollResponse(requestGuid);
           if (pollResult.error) {
             if (pollResult.error.status !== IModelJsNative.ECPresentationStatus.Pending) {

@@ -7,9 +7,9 @@
  * @module WebGL
  */
 
-import { assert, dispose } from "@bentley/bentleyjs-core";
-import { Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Vector3d } from "@bentley/geometry-core";
-import { ColorDef, Frustum, FrustumPlanes, RenderTexture } from "@bentley/imodeljs-common";
+import { assert, dispose } from "@itwin/core-bentley";
+import { Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Vector3d } from "@itwin/core-geometry";
+import { ColorDef, Frustum, FrustumPlanes, RenderTexture } from "@itwin/core-common";
 import { GraphicsCollectorDrawArgs, MapTileTreeReference, TileTreeReference } from "../../tile/internal";
 import { SceneContext } from "../../ViewContext";
 import { ViewState3d } from "../../ViewState";
@@ -135,7 +135,8 @@ export class BackgroundMapDrape extends TextureDrape {
         assert(false, "Failed to create planar texture");
         return;
       }
-      this._texture = new Texture(new RenderTexture.Params(undefined, RenderTexture.Type.TileSection, true), colorTextureHandle);
+
+      this._texture = new Texture({ ownership: "external", type: RenderTexture.Type.TileSection, handle: colorTextureHandle });
       this._fbo = FrameBuffer.create([colorTextureHandle]);
     }
     if (undefined === this._fbo) {

@@ -5,7 +5,7 @@
 
 import {
   IModelApp, NotifyMessageDetails, OutputMessagePriority, PerformanceMetrics, ScreenViewport, Target, Tool, Viewport,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 
 export interface FpsMonitorProps {
   checkbox: HTMLInputElement;
@@ -82,7 +82,7 @@ export class RecordFpsTool extends Tool {
   private _metrics?: PerformanceMetrics;
   private _dispose?: () => void;
 
-  public override run(numFramesToRecord = 150): boolean {
+  public override async run(numFramesToRecord = 150): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp || 0 >= numFramesToRecord)
       return true;
@@ -100,7 +100,7 @@ export class RecordFpsTool extends Tool {
     return true;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     let numFramesToRecord;
     if (1 === args.length) {
       numFramesToRecord = parseInt(args[0], 10);

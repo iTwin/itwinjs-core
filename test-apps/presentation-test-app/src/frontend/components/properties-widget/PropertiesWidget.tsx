@@ -5,21 +5,22 @@
 
 import "./PropertiesWidget.css";
 import * as React from "react";
-import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { Field } from "@bentley/presentation-common";
+import { useResizeDetector } from "react-resize-detector";
+import { IModelApp, IModelConnection } from "@itwin/core-frontend";
+import { Field } from "@itwin/presentation-common";
 import {
   DiagnosticsProps, FavoritePropertiesDataFilterer, IPresentationPropertyDataProvider, PresentationPropertyDataProvider,
   usePropertyDataProviderWithUnifiedSelection,
-} from "@bentley/presentation-components";
-import { FavoritePropertiesScope, Presentation } from "@bentley/presentation-frontend";
-import { PropertyRecord } from "@bentley/ui-abstract";
+} from "@itwin/presentation-components";
+import { FavoritePropertiesScope, Presentation } from "@itwin/presentation-frontend";
+import { PropertyRecord } from "@itwin/appui-abstract";
 import {
   ActionButtonRendererProps, CompositeFilterType, CompositePropertyDataFilterer, DisplayValuePropertyDataFilterer, FilteredPropertyData,
-  FilteringInput, FilteringInputStatus, FilteringPropertyDataProvider, LabelPropertyDataFilterer, PropertyCategory, PropertyCategoryLabelFilterer,
+  FilteringInput, FilteringInputStatus, FilteringPropertyDataProvider, HighlightInfo, LabelPropertyDataFilterer, PropertyCategory, PropertyCategoryLabelFilterer,
   PropertyData, PropertyGridContextMenuArgs, useAsyncValue, useDebouncedAsyncValue, VirtualizedPropertyGridWithDataProvider,
-} from "@bentley/ui-components";
-import { HighlightInfo } from "@bentley/ui-components/lib/ui-components/common/HighlightingComponentProps";
-import { ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Orientation, Toggle, useDisposable } from "@bentley/ui-core";
+} from "@itwin/components-react";
+import { ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Orientation, useDisposable } from "@itwin/core-react";
+import { ToggleSwitch } from "@itwin/itwinui-react";
 import { DiagnosticsSelector } from "../diagnostics-selector/DiagnosticsSelector";
 
 const FAVORITES_SCOPE = FavoritePropertiesScope.IModel;
@@ -58,9 +59,11 @@ export function PropertiesWidget(props: Props) {
       setActiveHighlight(newFilteringResult.getMatchByIndex(activeMatchIndex));
   }, [activeMatchIndex]);
 
+  const { width, height, ref } = useResizeDetector();
+
   return (
     <div className="PropertiesWidget">
-      <h3>{IModelApp.i18n.translate("Sample:controls.properties.widget-label")}</h3>
+      <h3>{IModelApp.localization.getLocalizedString("Sample:controls.properties.widget-label")}</h3>
       <DiagnosticsSelector onDiagnosticsOptionsChanged={setDiagnosticsOptions} />
       {rulesetId
         ? (<div className="SearchBar">
@@ -72,15 +75,17 @@ export function PropertiesWidget(props: Props) {
             resultSelectorProps={resultSelectorProps}
             status={filterText.length !== 0 ? FilteringInputStatus.FilteringFinished : FilteringInputStatus.ReadyToFilter}
           />
-          <Toggle
+          <ToggleSwitch
             title="Favorites"
-            onChange={(on) => setIsFavoritesFilterActive(on)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setIsFavoritesFilterActive(e.target.checked)}
           />
         </div>)
         : null}
-      <div className="ContentContainer">
-        {rulesetId
+      <div ref={ref} className="ContentContainer">
+        {rulesetId && width && height
           ? <PropertyGrid
+            width={width}
+            height={height}
             imodel={imodel}
             rulesetId={rulesetId}
             filtering={{ filter: filterText, onlyFavorites: isFavoritesFilterActive, activeHighlight, onFilteringStateChanged }}
@@ -105,9 +110,11 @@ interface PropertyGridProps {
     onFilteringStateChanged: (result: FilteredPropertyData | undefined) => void;
   };
   onFindSimilar?: (propertiesProvider: IPresentationPropertyDataProvider, record: PropertyRecord) => void;
+  width: number;
+  height: number;
 }
 function PropertyGrid(props: PropertyGridProps) {
-  const { imodel, rulesetId, diagnostics, filtering, onFindSimilar: onFindSimilarProp } = props;
+  const { imodel, rulesetId, diagnostics, filtering, onFindSimilar: onFindSimilarProp, width, height } = props;
 
   const dataProvider = useDisposable(React.useCallback(
     () => {
@@ -160,15 +167,17 @@ function PropertyGrid(props: PropertyGridProps) {
   }, [onFindSimilarProp, dataProvider]);
 
   if (numSelectedElements === 0) {
-    return <FillCentered>{IModelApp.i18n.translate("Sample:property-grid.no-elements-selected")}</FillCentered>;
+    return <FillCentered>{IModelApp.localization.getLocalizedString("Sample:property-grid.no-elements-selected")}</FillCentered>;
   }
 
   if (isOverLimit) {
-    return <FillCentered>{IModelApp.i18n.translate("Sample:property-grid.too-many-elements-selected")}</FillCentered>;
+    return <FillCentered>{IModelApp.localization.getLocalizedString("Sample:property-grid.too-many-elements-selected")}</FillCentered>;
   }
 
   return <>
     <VirtualizedPropertyGridWithDataProvider
+      width={width}
+      height={height}
       dataProvider={filteringDataProvider}
       isPropertyHoverEnabled={true}
       onPropertyContextMenu={onPropertyContextMenu}
@@ -218,15 +227,15 @@ function PropertiesWidgetContextMenu(props: PropertiesWidgetContextMenuProps) {
         items.push({
           key: "remove-favorite",
           onSelect: async () => removeFavorite(field),
-          title: IModelApp.i18n.translate("Sample:controls.properties.context-menu.remove-favorite.description"),
-          label: IModelApp.i18n.translate("Sample:controls.properties.context-menu.remove-favorite.label"),
+          title: IModelApp.localization.getLocalizedString("Sample:controls.properties.context-menu.remove-favorite.description"),
+          label: IModelApp.localization.getLocalizedString("Sample:controls.properties.context-menu.remove-favorite.label"),
         });
       } else {
         items.push({
           key: "add-favorite",
           onSelect: async () => addFavorite(field),
-          title: IModelApp.i18n.translate("Sample:controls.properties.context-menu.add-favorite.description"),
-          label: IModelApp.i18n.translate("Sample:controls.properties.context-menu.add-favorite.label"),
+          title: IModelApp.localization.getLocalizedString("Sample:controls.properties.context-menu.add-favorite.description"),
+          label: IModelApp.localization.getLocalizedString("Sample:controls.properties.context-menu.add-favorite.label"),
         });
       }
     }
@@ -234,8 +243,8 @@ function PropertiesWidgetContextMenu(props: PropertiesWidgetContextMenuProps) {
       items.push({
         key: "find-similar",
         onSelect: onFindSimilar,
-        title: IModelApp.i18n.translate("Sample:controls.properties.context-menu.find-similar.description"),
-        label: IModelApp.i18n.translate("Sample:controls.properties.context-menu.find-similar.label"),
+        title: IModelApp.localization.getLocalizedString("Sample:controls.properties.context-menu.find-similar.description"),
+        label: IModelApp.localization.getLocalizedString("Sample:controls.properties.context-menu.find-similar.label"),
       });
     }
     return items;

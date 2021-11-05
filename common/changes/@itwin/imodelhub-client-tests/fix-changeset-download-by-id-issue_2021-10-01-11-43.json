@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/imodelhub-client-tests",
+      "comment": "Added changeset download by id test",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/imodelhub-client-tests"
+}

@@ -7,10 +7,10 @@
  */
 
 import * as React from "react";
-import {  IModelApp, Tool } from "@bentley/imodeljs-frontend";
-import { ModalDialogManager } from "@bentley/ui-framework";
+import {  IModelApp, Tool } from "@itwin/core-frontend";
+import { ModalDialogManager } from "@itwin/appui-react";
 import { SampleModalDialog } from "../dialogs/SampleModalDialog";
-import { BadgeType, ConditionalBooleanValue, IconSpecUtilities, ToolbarItemUtilities } from "@bentley/ui-abstract";
+import { BadgeType, ConditionalBooleanValue, IconSpecUtilities, ToolbarItemUtilities } from "@itwin/appui-abstract";
 import { TraceUiItemsProvider } from "../NetworkTraceUIProvider";
 import connectedIcon from "../icons/connected-query.svg?sprite";
 
@@ -29,13 +29,9 @@ export class OpenTraceDialogTool extends Tool {
   // istanbul ignore next
   public static override get maxArgs() { return 0; }
 
-  public override run(): boolean {
+  public override async run(): Promise<boolean> {
     ModalDialogManager.openDialog(<SampleModalDialog />);
     return true;
-  }
-
-  public override parseAndRun(): boolean {
-    return this.run();
   }
 
   public static override get flyover(): string {
@@ -67,7 +63,7 @@ export class OpenTraceDialogTool extends Tool {
     };
 
     return ToolbarItemUtilities.createActionButton(OpenTraceDialogTool.toolId, itemPriority, OpenTraceDialogTool.iconSpec, OpenTraceDialogTool.flyover,
-      () => { IModelApp.tools.run(OpenTraceDialogTool.toolId); },
+      async () => { await IModelApp.tools.run(OpenTraceDialogTool.toolId); },
       overrides);
   }
 }

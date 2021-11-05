@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/frontend-devtools",
+      "comment": "Update release tags",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/frontend-devtools",
+  "email": "31107829+calebmshafer@users.noreply.github.com"
+}

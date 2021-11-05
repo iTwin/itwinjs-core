@@ -1,20 +1,20 @@
 # Text
 
-The [Text]($ui-core:Text) category in the `@bentley/ui-core` package includes
+The [Text]($core-react:Text) category in the `@itwin/core-react` package includes
 CSS classes and React components for working with styled text.
 
 |Component|Description
 |-----|-----
-|[StyledText]($ui-core)|base component for other text components that pass a main CSS class name
-|[BodyText]($ui-core)|uses the `uicore-text-body` CSS class, which has a 14px font-size
-|[BlockText]($ui-core)|uses the `uicore-text-block` CSS class, which has a 14px font-size and block spacing
-|[DisabledText]($ui-core)|uses the `uicore-text-disabled` CSS class, which has the `$buic-foreground-disabled` color
-|[Headline]($ui-core)|uses the `uicore-text-headline` CSS class, which has a 32px font-size
-|[LeadingText]($ui-core)|uses the `uicore-text-leading` CSS class, which has a 16px font-size
-|[MutedText]($ui-core)|uses the `uicore-text-muted` CSS class, which has the `$buic-foreground-muted` color
-|[SmallText]($ui-core)|uses the `uicore-text-small` CSS class, which has a 12px font-size
-|[Subheading]($ui-core)|uses the `uicore-text-subheading` CSS class, which has a 18px font-size
-|[Title]($ui-core)|uses the `uicore-text-title` CSS class, which has a 24px font-size
+|[StyledText]($core-react)|base component for other text components that pass a main CSS class name
+|[BodyText]($core-react)|uses the `uicore-text-body` CSS class, which has a 14px font-size
+|[BlockText]($core-react)|uses the `uicore-text-block` CSS class, which has a 14px font-size and block spacing
+|[DisabledText]($core-react)|uses the `uicore-text-disabled` CSS class, which has the `$buic-foreground-disabled` color
+|[Headline]($core-react)|uses the `uicore-text-headline` CSS class, which has a 32px font-size
+|[LeadingText]($core-react)|uses the `uicore-text-leading` CSS class, which has a 16px font-size
+|[MutedText]($core-react)|uses the `uicore-text-muted` CSS class, which has the `$buic-foreground-muted` color
+|[SmallText]($core-react)|uses the `uicore-text-small` CSS class, which has a 12px font-size
+|[Subheading]($core-react)|uses the `uicore-text-subheading` CSS class, which has a 18px font-size
+|[Title]($core-react)|uses the `uicore-text-title` CSS class, which has a 24px font-size
 
 ## Examples
 
@@ -38,4 +38,4 @@ CSS classes and React components for working with styled text.
 
 ## API Reference
 
-- [Text]($ui-core:Text)
+- [Text]($core-react:Text)

@@ -32,7 +32,6 @@ import { RelationshipClass } from "./RelationshipClass";
 import { SchemaItem } from "./SchemaItem";
 import { Unit } from "./Unit";
 import { UnitSystem } from "./UnitSystem";
-import { DOMParser, XMLSerializer } from "xmldom";
 
 const SCHEMAURL3_2_JSON = "https://dev.bentley.com/json_schemas/ec/32/ecschema";
 const SCHEMAURL3_2_XML = "http://www.bentley.com/schemas/Bentley.ECXML.3.2";
@@ -150,6 +149,29 @@ export class Schema implements CustomAttributeContainerProps {
     const item = new type(this, name, modifier);
     this.addItem(item);
     return item;
+  }
+
+  /**
+   * Deletes a class from within this schema.
+   * @param name the local (unqualified) class name, lookup is case-insensitive
+   * @alpha
+   */
+  protected async deleteClass(name: string): Promise<void> {
+    const schemaItem = await this.getItem(name);
+    if (ECClass.isECClass(schemaItem)) {
+      this._items.delete(name.toUpperCase());
+    }
+  }
+
+  /**
+   * Deletes a class from within this schema.
+   * @param name the local (unqualified) class name, lookup is case-insensitive
+   * @alpha
+   */
+  protected deleteClassSync(name: string): void {
+    const schemaItem = this.getItemSync(name);
+    if (ECClass.isECClass(schemaItem))
+      this._items.delete(name.toUpperCase());
   }
 
   /**
@@ -501,17 +523,6 @@ export class Schema implements CustomAttributeContainerProps {
   }
 
   /**
-   * Serializes the schema to a string of XML
-   * @alpha
-   */
-  public async toXmlString() {
-    const xmlDoc = new DOMParser().parseFromString(`<?xml version="1.0" encoding="UTF-8"?>`, "application/xml");
-    const filledDoc = await this.toXml(xmlDoc);
-    const schemaText = new XMLSerializer().serializeToString(filledDoc);
-    return schemaText;
-  }
-
-  /**
    * Converts the schema to a DOM XML Document.
    * @param schemaXml An empty DOM document to which the schema will be written
    */
@@ -659,4 +670,6 @@ export abstract class MutableSchema extends Schema {
   public abstract override addReference(refSchema: Schema): Promise<void>;
   public abstract override addReferenceSync(refSchema: Schema): void;
   public abstract override setContext(schemaContext: SchemaContext): void;
+  public abstract override deleteClass(name: string): Promise<void>;
+  public abstract override deleteClassSync(name: string): void;
 }

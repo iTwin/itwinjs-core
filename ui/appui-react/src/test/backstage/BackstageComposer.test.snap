@@ -1,0 +1,125 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`BackstageComposer should render 1`] = `
+<Backstage
+  isOpen={false}
+  onClose={[Function]}
+  safeAreaInsets={0}
+  showOverlay={true}
+/>
+`;
+
+exports[`BackstageComposer should render backstage separators 1`] = `
+<Backstage
+  isOpen={false}
+  onClose={[Function]}
+  safeAreaInsets={0}
+  showOverlay={true}
+>
+  <BackstageComposerItem
+    item={
+      Object {
+        "groupPriority": 100,
+        "id": "Stage",
+        "itemPriority": 50,
+        "label": "Custom Label",
+        "stageId": "stage-1",
+        "type": 2,
+      }
+    }
+    key="Stage"
+  />
+  <BackstageSeparator />
+  <BackstageComposerItem
+    item={
+      Object {
+        "execute": [Function],
+        "groupPriority": 200,
+        "id": "Action",
+        "itemPriority": 50,
+        "label": "Custom Label",
+        "type": 1,
+      }
+    }
+    key="Action"
+  />
+</Backstage>
+`;
+
+exports[`BackstageComposerItem BackstageComposerActionItem should render 1`] = `
+<BackstageItem
+  icon={
+    <Icon
+      iconSpec={undefined}
+    />
+  }
+  isActive={false}
+  isDisabled={false}
+  itemId="Action"
+  onClick={[Function]}
+>
+  Custom Label
+</BackstageItem>
+`;
+
+exports[`BackstageComposerItem BackstageComposerItem should render action item 1`] = `
+<BackstageComposerActionItem
+  item={
+    Object {
+      "execute": [Function],
+      "groupPriority": 100,
+      "id": "Action",
+      "itemPriority": 50,
+      "label": "Custom Label",
+      "type": 1,
+    }
+  }
+/>
+`;
+
+exports[`BackstageComposerItem BackstageComposerItem should render stage launcher 1`] = `
+<BackstageComposerStageLauncher
+  item={
+    Object {
+      "groupPriority": 100,
+      "id": "Stage",
+      "itemPriority": 50,
+      "label": "Custom Label",
+      "stageId": "stage-1",
+      "type": 2,
+    }
+  }
+/>
+`;
+
+exports[`BackstageComposerItem BackstageComposerItem should render with badgeType 1`] = `
+<BackstageComposerActionItem
+  item={
+    Object {
+      "badgeType": 1,
+      "execute": [Function],
+      "groupPriority": 100,
+      "id": "Action",
+      "itemPriority": 50,
+      "label": "Custom Label",
+      "type": 1,
+    }
+  }
+/>
+`;
+
+exports[`BackstageComposerItem BackstageComposerStageLauncher should render 1`] = `
+<BackstageItem
+  icon={
+    <Icon
+      iconSpec={undefined}
+    />
+  }
+  isActive={false}
+  isDisabled={false}
+  itemId="Stage"
+  onClick={[Function]}
+>
+  Custom Label
+</BackstageItem>
+`;

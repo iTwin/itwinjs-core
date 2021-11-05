@@ -6,26 +6,12 @@ public;CacheInvalidationProps
 public;ContentDataProvider 
 public;ContentDataProviderProps 
 public;ControlledPresentationTreeFilteringProps
-beta;ControlledTreeFilteringProps = ControlledPresentationTreeFilteringProps
-deprecated;ControlledTreeFilteringProps = ControlledPresentationTreeFilteringProps
-beta;ControlledTreeWithFilteringSupportProps
-deprecated;ControlledTreeWithFilteringSupportProps
-beta;ControlledTreeWithVisibleNodesProps 
-deprecated;ControlledTreeWithVisibleNodesProps 
 alpha;createDiagnosticsOptions(props: DiagnosticsProps): DiagnosticsOptionsWithHandler | undefined
 internal;createFieldInfo(field: Field, namePrefix?: string):
 internal;createPropertyDescriptionFromFieldInfo(info: FieldInfo): PropertyDescription
 public;DataProvidersFactory
 public;DataProvidersFactoryProps
 public;DEFAULT_PROPERTY_GRID_RULESET: Ruleset
-beta;DEPRECATED_controlledTreeWithFilteringSupport
-deprecated;DEPRECATED_controlledTreeWithFilteringSupport
-beta;DEPRECATED_controlledTreeWithVisibleNodes
-deprecated;DEPRECATED_controlledTreeWithVisibleNodes
-public;DEPRECATED_treeWithFilteringSupport
-deprecated;DEPRECATED_treeWithFilteringSupport
-public;DEPRECATED_treeWithUnifiedSelection
-deprecated;DEPRECATED_treeWithUnifiedSelection
 public;DiagnosticsProps
 beta;FavoritePropertiesDataFilterer 
 beta;FavoritePropertiesDataFiltererProps
@@ -49,6 +35,7 @@ public;IPresentationTableDataProvider = TableDataProvider & IContentDataProvider
 public;IPresentationTreeDataProvider 
 internal;IPropertiesAppender
 public;IUnifiedSelectionComponent
+internal;PRESENTATION_TREE_NODE_KEY = "__presentation-components/key"
 public;PresentationComponentsLoggerCategory
 public;PresentationLabelsProvider 
 public;PresentationLabelsProviderProps
@@ -60,11 +47,8 @@ public;PresentationTreeDataProvider
 beta;PresentationTreeDataProviderDataSourceEntryPoints
 public;PresentationTreeDataProviderProps 
 public;PresentationTreeNodeLoaderProps 
+public;PresentationTreeNodeLoaderResult
 public;PropertyDataProviderWithUnifiedSelectionProps
-public;propertyGridWithUnifiedSelection
-deprecated;propertyGridWithUnifiedSelection
-public;PropertyGridWithUnifiedSelectionProps
-deprecated;PropertyGridWithUnifiedSelectionProps
 internal;class PropertyRecordsBuilder 
 internal;ReloadedHierarchyPart
 internal;reloadVisibleHierarchyParts(visibleNodes: VisibleTreeNodes, renderedItems: RenderedItemsRange, dataProvider: IPresentationTreeDataProvider): Promise
@@ -72,23 +56,16 @@ public;TABLE_DATA_PROVIDER_DEFAULT_CACHED_PAGES_COUNT = 5
 public;TABLE_DATA_PROVIDER_DEFAULT_PAGE_SIZE = 20
 public;tableWithUnifiedSelection
 public;TableWithUnifiedSelectionProps
-public;TreeWithFilteringSupportProps
-deprecated;TreeWithFilteringSupportProps
-public;TreeWithUnifiedSelectionProps
-deprecated;TreeWithUnifiedSelectionProps
 beta;UnifiedSelectionContext
 beta;UnifiedSelectionContextProvider(props: UnifiedSelectionContextProviderProps): React.ReactElement
 beta;UnifiedSelectionContextProviderProps
 beta;UnifiedSelectionState = (selectionLevel?: number) => Readonly
 public;UnifiedSelectionTreeEventHandler 
 public;UnifiedSelectionTreeEventHandlerParams
-internal;updateTreeModel(treeModel: TreeModel, hierarchyModifications: PartialHierarchyModification[], treeNodeItemCreationProps: CreateTreeNodeItemProps): MutableTreeModel | undefined
 public;useControlledPresentationTreeFiltering(props: ControlledPresentationTreeFilteringProps):
-beta;useControlledTreeFiltering: typeof useControlledPresentationTreeFiltering
-deprecated;useControlledTreeFiltering: typeof useControlledPresentationTreeFiltering
 internal;useFilteredNodeLoader(nodeLoader: AbstractTreeNodeLoaderWithProvider
 internal;useNodeHighlightingProps(filter: string | undefined, filteredNodeLoader?: ITreeNodeLoaderWithProvider
-public;usePresentationTreeNodeLoader(props: PresentationTreeNodeLoaderProps):
+public;usePresentationTreeNodeLoader(props: PresentationTreeNodeLoaderProps): PresentationTreeNodeLoaderResult
 public;usePropertyDataProviderWithUnifiedSelection(props: PropertyDataProviderWithUnifiedSelectionProps): UsePropertyDataProviderWithUnifiedSelectionResult
 public;UsePropertyDataProviderWithUnifiedSelectionResult
 public;useRulesetRegistration(ruleset: Ruleset): void

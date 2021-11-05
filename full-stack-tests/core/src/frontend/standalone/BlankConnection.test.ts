@@ -3,10 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Guid, GuidString } from "@bentley/bentleyjs-core";
-import { Point3d, Range3d, Vector3d } from "@bentley/geometry-core";
-import { Cartographic, ElementProps, IModel } from "@bentley/imodeljs-common";
-import { BlankConnection, MockRender, ScreenViewport, SpatialViewState } from "@bentley/imodeljs-frontend";
+import { Guid, GuidString } from "@itwin/core-bentley";
+import { Point3d, Range3d, Vector3d } from "@itwin/core-geometry";
+import { Cartographic, ElementProps, IModel } from "@itwin/core-common";
+import { BlankConnection, ScreenViewport, SpatialViewState } from "@itwin/core-frontend";
+import { TestUtility } from "../TestUtility";
 
 function createViewDiv() {
   const div = document.createElement("div");
@@ -19,28 +20,28 @@ function createViewDiv() {
 describe("Blank Connection", () => {
   let blankConnection: BlankConnection;
   const viewDiv = createViewDiv();
-  const contextId: GuidString = Guid.createValue();
+  const iTwinId: GuidString = Guid.createValue();
 
   before(async () => {
-    await MockRender.App.startup();
-    const exton = Cartographic.fromDegrees(-75.686694, 40.065757, 0);
+    await TestUtility.startFrontend(undefined, true);
+    const exton = Cartographic.fromDegrees({ longitude: -75.686694, latitude: 40.065757, height: 0 });
     blankConnection = BlankConnection.create({
       name: "test",
       location: exton,
       extents: new Range3d(-1000, -1000, -100, 1000, 1000, 100),
-      contextId,
+      iTwinId,
     });
   });
   after(async () => {
     if (blankConnection) { await blankConnection.close(); }
-    await MockRender.App.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("BlankConnection properties", async () => {
     assert.isFalse(blankConnection.isOpen, "A BlankConnection is never considered open");
     assert.isTrue(blankConnection.isClosed, "A BlankConnection is always considered closed");
     assert.isUndefined(blankConnection.iModelId);
-    assert.equal(contextId, blankConnection.contextId);
+    assert.equal(iTwinId, blankConnection.iTwinId);
     assert.throws(() => blankConnection.getRpcProps());
     const elementProps: ElementProps[] = await blankConnection.elements.getProps(IModel.rootSubjectId);
     assert.equal(0, elementProps.length);

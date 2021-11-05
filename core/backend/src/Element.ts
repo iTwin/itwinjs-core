@@ -6,17 +6,15 @@
  * @module Elements
  */
 
-import { assert, CompressedId64Set, DbOpcode, GuidString, Id64, Id64Set, Id64String, JsonUtils, OrderedId64Array } from "@bentley/bentleyjs-core";
-import { ClipVector, Range3d, Transform } from "@bentley/geometry-core";
+import { CompressedId64Set, GuidString, Id64, Id64Set, Id64String, JsonUtils, OrderedId64Array } from "@itwin/core-bentley";
+import { ClipVector, Range3d, Transform } from "@itwin/core-geometry";
 import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementAlignedBox3d, ElementProps, EntityMetaData,
   GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps, GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps,
   GeometryStreamProps, IModel, InformationPartitionElementProps, LineStyleProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d,
   Placement3d, RelatedElement, RenderSchedule, RenderTimelineProps, RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps,
   SectionType, SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps,
-} from "@bentley/imodeljs-common";
-import { LockScope } from "./BackendHubAccess";
-import { ConcurrencyControl } from "./ConcurrencyControl";
+} from "@itwin/core-common";
 import { Entity } from "./Entity";
 import { IModelCloneContext } from "./IModelCloneContext";
 import { IModelDb } from "./IModelDb";
@@ -137,54 +135,6 @@ export class Element extends Entity implements ElementProps {
     this.jsonProperties = { ...props.jsonProperties }; // make sure we have our own copy
   }
 
-  /** Disclose the codes and locks needed to perform the specified operation on this element
-   * @param req the request to populate
-   * @param props the version of the element that will be written
-   * @param iModel the iModel
-   * @param opcode the operation
-   * @param original a pre-change copy of the element. Passed only in the case of Update.
-   * @beta
-   */
-  public static populateRequest(req: ConcurrencyControl.Request, props: ElementProps, iModel: IModelDb, opcode: DbOpcode, original: ElementProps | undefined) {
-    assert(iModel.isBriefcaseDb());
-    if (!iModel.isBriefcaseDb()) {
-      return;
-    }
-    switch (opcode) {
-      case DbOpcode.Insert: {
-        if (Code.isValid(props.code) && !Code.isEmpty(props.code))
-          req.addCodes([props.code]);
-        req.addLocks([ConcurrencyControl.Request.getModelLock(props.model, LockScope.Shared)]);
-        break;
-      }
-      case DbOpcode.Delete: {
-        assert(props.id !== undefined);
-        req.addLocks([ConcurrencyControl.Request.getElementLock(props.id, LockScope.Exclusive)]);
-
-        // Elements.deleteElement will automatically delete children, so we must automatically request the necessary resources for the children.
-        iModel.elements.queryChildren(props.id).forEach((childId) => {
-          this.populateRequest(req, { ...props, id: childId } as ElementProps, iModel, opcode, original); // (Rather than load the child's props, just fake it. We know that only the id property is needed. Likewise, pass anything for "original", since it's not used in the delete case. )
-        });
-        break;
-      }
-      case DbOpcode.Update: {
-        assert(props.id !== undefined);
-        req.addLocks([ConcurrencyControl.Request.getElementLock(props.id, LockScope.Exclusive)]);
-
-        assert(original !== undefined && original.id === props.id);
-        if (original !== undefined) {
-
-          if (Code.isValid(props.code) && !Code.isEmpty(props.code) && !Code.equalCodes(props.code, original.code))
-            req.addCodes([props.code]);
-
-          if (props.model !== original.model)
-            req.addLocks([ConcurrencyControl.Request.getModelLock(original.model, LockScope.Shared)]);
-        }
-        break;
-      }
-    }
-  }
-
   /** Called before a new Element is inserted.
    * @note throw an exception to disallow the insert
    * @note If you override this method, you must call super.
@@ -192,9 +142,10 @@ export class Element extends Entity implements ElementProps {
    * @beta
    */
   protected static onInsert(arg: OnElementPropsArg): void {
-    if (arg.iModel.isBriefcaseDb()) {
-      arg.iModel.concurrencyControl.onElementWrite(this, arg.props, DbOpcode.Insert);
-    }
+    const { iModel, props } = arg;
+    iModel.locks.checkSharedLock(props.model, "model", "insert"); // inserting requires shared lock on model
+    if (props.parent)   // inserting requires shared lock on parent, if present
+      iModel.locks.checkSharedLock(props.parent.id, "parent", "insert");
   }
 
   /** Called after a new Element was inserted.
@@ -203,9 +154,7 @@ export class Element extends Entity implements ElementProps {
    * @beta
    */
   protected static onInserted(arg: OnElementIdArg): void {
-    if (arg.iModel.isBriefcaseDb()) {
-      arg.iModel.concurrencyControl.onElementWritten(this, arg.id, DbOpcode.Insert);
-    }
+    arg.iModel.locks.elementWasCreated(arg.id);
   }
 
   /** Called before an Element is updated.
@@ -215,9 +164,7 @@ export class Element extends Entity implements ElementProps {
    * @beta
    */
   protected static onUpdate(arg: OnElementPropsArg): void {
-    if (arg.iModel.isBriefcaseDb()) {
-      arg.iModel.concurrencyControl.onElementWrite(this, arg.props, DbOpcode.Update);
-    }
+    arg.iModel.locks.checkExclusiveLock(arg.props.id!, "element", "update");
   }
 
   /** Called after an Element was updated.
@@ -225,11 +172,7 @@ export class Element extends Entity implements ElementProps {
    * @note `this` is the class of the Element that was updated
    * @beta
    */
-  protected static onUpdated(arg: OnElementIdArg): void {
-    if (arg.iModel.isBriefcaseDb()) {
-      arg.iModel.concurrencyControl.onElementWritten(this, arg.id, DbOpcode.Update);
-    }
-  }
+  protected static onUpdated(_arg: OnElementIdArg): void { }
 
   /** Called before an Element is deleted.
    * @note throw an exception to disallow the delete
@@ -238,11 +181,7 @@ export class Element extends Entity implements ElementProps {
    * @beta
    */
   protected static onDelete(arg: OnElementIdArg): void {
-    if (arg.iModel.isBriefcaseDb()) {
-      const props = arg.iModel.elements.tryGetElementProps(arg.id);
-      if (props !== undefined)
-        arg.iModel.concurrencyControl.onElementWrite(this, props, DbOpcode.Delete);
-    }
+    arg.iModel.locks.checkExclusiveLock(arg.id, "element", "delete");
   }
 
   /** Called after an Element was deleted.
@@ -467,15 +406,6 @@ export class Element extends Entity implements ElementProps {
   public update() { this.iModel.elements.updateElement(this); }
   /** Delete this Element from the iModel. */
   public delete() { this.iModel.elements.deleteElement(this.id); }
-
-  /** Add a request for locks, code reservations, and anything else that would be needed to carry out the specified operation.
-   * @param opcode The operation that will be performed on the element.
-   */
-  public override buildConcurrencyControlRequest(opcode: DbOpcode): void {
-    if (this.iModel.isBriefcaseDb()) {
-      this.iModel.concurrencyControl.buildRequestForElement(this, opcode);
-    }
-  }
 }
 
 /** An abstract base class to model real world entities that intrinsically have geometry.
@@ -995,31 +925,6 @@ export class Sheet extends Document implements SheetProps {
     const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.sheet);
     return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
   }
-}
-
-/** An Information Carrier carries information, but is not the information itself. For example, the arrangement
- * of ink on paper or the sequence of electronic bits are information carriers.
- * @deprecated BisCore will focus on the information itself and not how it is carried.
- * @note This TypeScript class should not be removed until the (deprecated) InformationCarrierElement class is removed from the BisCore schema.
- * @internal
- */
-export abstract class InformationCarrierElement extends Element {
-  /** @internal */
-  public static override get className(): string { return "InformationCarrierElement"; }
-  /** @internal */
-  constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
-}
-
-/** An Information Carrier that carries a Document. An electronic file is a good example.
- * @deprecated BisCore will focus on the information itself and not how it is carried.
- * @note This TypeScript class should not be removed until the (deprecated) DocumentCarrier class is removed from the BisCore schema.
- * @internal
- */
-export abstract class DocumentCarrier extends InformationCarrierElement {  // eslint-disable-line deprecation/deprecation
-  /** @internal */
-  public static override get className(): string { return "DocumentCarrier"; }
-  /** @internal */
-  constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
 }
 
 /** Information Record Element is an abstract base class for modeling information records. Information Record
@@ -1640,7 +1545,7 @@ export class RenderTimeline extends InformationRecordElement {
   private static parseScriptProps(json: string): RenderSchedule.ScriptProps {
     try {
       return JSON.parse(json);
-    } catch (_) {
+    } catch {
       return [];
     }
   }

@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { MapLayerSettings } from "@bentley/imodeljs-common";
+import { MapLayerSettings } from "@itwin/core-common";
 import { HitDetail } from "../../HitDetail";
 import { MapLayerImageryProvider, TileTreeReference } from "../internal";
 

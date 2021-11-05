@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module Geometry
  */
-// cspell:ignore NAVD, NGVD
+// cspell:ignore NAVD, NGVD, NSRS, Helmert
 
 import { GeodeticDatum, GeodeticDatumProps } from "./GeodeticDatum";
 import { GeodeticEllipsoid, GeodeticEllipsoidProps } from "./GeodeticEllipsoid";
@@ -67,9 +67,8 @@ export class HorizontalCRSExtent implements HorizontalCRSExtentProps {
     return { southWest: this.southWest.toJSON(), northEast: this.northEast.toJSON() };
   }
 
-  /** Compares two Extents. It is a strict compare operation.
-   * It is useful for tests purposes only.
-   *  @internal */
+  /** Compares two Extents. It applies a minuscule tolerance to comparing numbers.
+   *  @public */
   public equals(other: HorizontalCRSExtent): boolean {
     return this.southWest.equals(other.southWest) && this.northEast.equals(other.northEast);
   }
@@ -239,10 +238,9 @@ export class HorizontalCRS implements HorizontalCRSProps {
     return data;
   }
 
-  /** Compares two horizontal CRS. It is a strict compare operation not an equivalence test.
-   * It takes into account descriptive properties not only mathematical definition properties.
-   * It is useful for tests purposes only.
-   *  @internal */
+  /** Compares two horizontal CRS. It is not an equivalence test as descriptive properties are also compared
+   * but number compares are applied a minuscule tolerance.
+   *  @public */
   public equals(other: HorizontalCRS): boolean {
     if (this.id !== other.id ||
       this.description !== other.description ||
@@ -286,23 +284,34 @@ export class HorizontalCRS implements HorizontalCRSProps {
  * @public
  */
 export interface VerticalCRSProps {
-  /** Vertical CRS Key name. */
-  id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88";
+  /** Vertical CRS Key name.
+   * @see [[VerticalCRS.id]]
+   */
+  id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88" | "LOCAL_ELLIPSOID";
 }
 
 /** Vertical Coordinate reference System implementation.
  *  The VerticalCRS contains currently a single identifier property of string type. Although
- *  we currently only support four distinct key values "GEOID", "ELLIPSOID", "NAVD88" and "NGVD29"
+ *  we currently only support five distinct key values "GEOID", "ELLIPSOID", "NAVD88", "NGVD29" and "LOCAL_ELLIPSOID"
  *  we expect to support a broader set in the future including, eventually, user defined vertical CRS
  *  which will require additional parameters to be added.
  *  @public
 */
 export class VerticalCRS implements VerticalCRSProps {
-  /** Vertical CRS Key name. The only supported values are currently "GEOID", "ELLIPSOID", "NAVD88" and "NGVD29". The default is ELLIPSOID */
-  public readonly id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88";
+  /** Vertical CRS Key name. The only supported values are currently "GEOID", "ELLIPSOID", "NAVD88", "NGVD29" and "LOCAL_ELLIPSOID".
+   *  GEOID indicates elevations are to be interpreted relative to the local Geoid of the dataset. It can also be considered to be Mean Sea Level.
+   *  NAVD88 is the local geoid model for the USA. This vertical datum can only be used if the horizontal portion is based on a
+   *         datum variation of NAD83, NAD27, NSRS2007 and NSRS2011.
+   *  NGVD29 is the former local geoid model for the USA. This vertical datum can only be used if the horizontal portion is based on a
+   *         datum variation of NAD83, NAD27, NSRS2007 and NSRS2011.
+   *  ELLIPSOID indicates that elevations are relative to the surface of the WGS84(or current coincident) ellipsoid.
+   *  LOCAL_ELLIPSOID indicates that elevations are relative to the surface of the local ellipsoid used by the horizontal CRS. It can only
+   *         be used for datums that are not considered coincident vertically with WGS84. Use of this vertical datum is strongly discouraged.
+  */
+  public readonly id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88" | "LOCAL_ELLIPSOID";
 
   public constructor(data?: VerticalCRSProps) {
-    this.id = "ELLIPSOID";
+    this.id = "GEOID";
     if (data)
       this.id = data.id;
   }
@@ -319,16 +328,16 @@ export class VerticalCRS implements VerticalCRSProps {
     return { id: this.id };
   }
 
-  /** Compares two vertical CRS. It is a strict compare operation not an equivalence test.
-   * It takes into account descriptive properties not only mathematical definition properties.
-   * It is useful for tests purposes only.
-   *  @internal */
+  /** Compares two vertical CRS.
+   *  @public */
   public equals(other: VerticalCRS): boolean {
     return (this.id === other.id);
   }
 }
 
-/** Geographic Coordinate Reference System definition that includes both the horizontal and vertical definitions
+/** Geographic Coordinate Reference System definition that includes the horizontal and vertical definitions as well as an optional
+ *  additional transformation.
+ *  @see [[GeographicCRS]].
  *  @public
  */
 export interface GeographicCRSProps {
@@ -341,8 +350,11 @@ export interface GeographicCRSProps {
 }
 
 /** Geographic Coordinate Reference System implementation. This is the class that indicates the definition of a Geographic
- *  coordinate reference system comprised of two components: Horizontal and Vertical.
- *  The vertical component (see [[VerticalCRS]]) is the simplest being formed of a simple identifier as a string.
+ *  coordinate reference system comprised of three components: Horizontal and Vertical and an optional additional transform.
+ *  The vertical component (see [[VerticalCRS]]) is the simplest portion containing a simple identifier as a string.
+ *  The optional additional transform of which, currently, only the type Helmert 2D with Z offset [[Helmert2DWithZOffset]] is supported
+ *  defines a transformation of x,y, and z cartesian coordinate of the projection to the final
+ *  Geographic Coordinate Reference System cartesian coordinates.
  *  The horizontal component contains a list of identification and documentation properties as well as
  *  defining details possibly including the projection with method and parameters, the definition of the datum, ellipsoid, extent and so on.
  *  The principle of describing a Geographic CRS is that the definition may be incomplete. The whole set of classes related to geographic
@@ -358,8 +370,7 @@ export interface GeographicCRSProps {
  *  The reprojection engine will use the engine internal dictionary to obtain the details if it can.
  *  Some definitions will originate from other sources (a parsed WKT for example) and the reprojection engine will require
  *  all mathematical and operational details to perform any conversion (descriptive information are ignored in the conversion process).
- *  @note In the absence of the verticalCRS property then ELLIPSOID (Geodetic elevation) will be assumed by reprojection engines.
- *  @note see important detailed explanation in the [[HorizontalCRS]] documentation.
+ *  @note see important detailed explanation in the [[HorizontalCRS]], [[VerticalCRS]] and [[AdditionalTransform]] documentation.
  *  @note Earth Centered, Earth Fixed coordinate system (ECEF) is a full 3D cartesian system that unambiguously
  *        expressed coordinates relative to the Earth Center. Since there is no horizontal portion independent from
  *        the vertical portion this system cannot be represented by a GeographicCRS and remains a separate concept.
@@ -403,10 +414,9 @@ export class GeographicCRS implements GeographicCRSProps {
     return data;
   }
 
-  /** Compares two Geographic CRS. It is a strict compare operation not an equivalence test.
+  /** Compares two Geographic CRS. It is a strict compare operation not an equivalence test though
+   * number compares are applied a minuscule tolerance.
    * It takes into account descriptive properties not only mathematical definition properties.
-   * It is useful for tests purposes only.
-  /** Compares two Geographic CRS for exact equality, comparing both mathematical and descriptive properties.
    * @public
    */
   public equals(other: GeographicCRS): boolean {

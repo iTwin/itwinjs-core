@@ -3,54 +3,28 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DialogButtonType } from "@bentley/ui-core";
+import { IModelApp } from "@itwin/core-frontend";
+import { Localization } from "@itwin/core-common";
+import { UnitSystemKey } from "@itwin/core-quantity";
+import { Presentation } from "@itwin/presentation-frontend";
 import {
-  DialogButtonDef,
-  DialogItem, DialogItemValue,
-  DialogLayoutDataProvider, DialogPropertySyncItem, PropertyDescription,
-} from "@bentley/ui-abstract";
-import { IModelApp } from "@bentley/imodeljs-frontend";
-import { I18N } from "@bentley/imodeljs-i18n";
-import { PresentationUnitSystem } from "@bentley/presentation-common";
-import { Presentation } from "@bentley/presentation-frontend";
-
-enum UnitsOptions {
-  Metric,
-  Imperial,
-  UsSurvey,
-  UsCustomary,
-}
+  DialogButtonDef, DialogButtonType, DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertySyncItem, PropertyDescription,
+} from "@itwin/appui-abstract";
 
 /** UnitsPopup is a modal dialog with only one DialogItem. It is intended to be a very basic example of using DialogItem interfaces and the DialogLayoutDataProvider to create React UI
  * in an iModel.js app and to apply changes only when the user hits the OK button.
  */
 export class UnitsPopupUiDataProvider extends DialogLayoutDataProvider {
-  public static i18n: I18N;
+  public static localization: Localization;
 
-  constructor(i18N: I18N) {
+  constructor(localization: Localization) {
     super();
-    UnitsPopupUiDataProvider.i18n = i18N;
+    UnitsPopupUiDataProvider.localization = localization;
   }
 
   private _handleOK = async () => {
-    switch (this.option) {
-      case UnitsOptions.Imperial:
-        Presentation.presentation.activeUnitSystem = PresentationUnitSystem.BritishImperial;
-        await IModelApp.quantityFormatter.setActiveUnitSystem("imperial");
-        break;
-      case UnitsOptions.Metric:
-        Presentation.presentation.activeUnitSystem = PresentationUnitSystem.Metric;
-        await IModelApp.quantityFormatter.setActiveUnitSystem("metric");
-        break;
-      case UnitsOptions.UsSurvey:
-        Presentation.presentation.activeUnitSystem = PresentationUnitSystem.UsSurvey;
-        await IModelApp.quantityFormatter.setActiveUnitSystem("usSurvey");
-        break;
-      case UnitsOptions.UsCustomary:
-        Presentation.presentation.activeUnitSystem = PresentationUnitSystem.UsCustomary;
-        await IModelApp.quantityFormatter.setActiveUnitSystem("usCustomary");
-        break;
-    }
+    Presentation.presentation.activeUnitSystem = this.option;
+    await IModelApp.quantityFormatter.setActiveUnitSystem(this.option);
   };
 
   public override supplyButtonData(): DialogButtonDef[] | undefined {
@@ -66,44 +40,31 @@ export class UnitsPopupUiDataProvider extends DialogLayoutDataProvider {
   private static _getEnumAsPicklistDescription = (): PropertyDescription => {
     return {
       name: UnitsPopupUiDataProvider._optionsName,
-      displayLabel: UnitsPopupUiDataProvider.i18n.translate("uiTestExtension:StatusBar.Units"),
+      displayLabel: UnitsPopupUiDataProvider.localization.getLocalizedString("uiTestExtension:StatusBar.Units"),
       typename: "enum",
       enum: {
         choices: [
-          { label: UnitsPopupUiDataProvider.i18n.translate("uiTestExtension:StatusBar.Metric"), value: UnitsOptions.Metric },
-          { label: UnitsPopupUiDataProvider.i18n.translate("uiTestExtension:StatusBar.Imperial"), value: UnitsOptions.Imperial },
-          { label: UnitsPopupUiDataProvider.i18n.translate("uiTestExtension:StatusBar.UsSurvey"), value: UnitsOptions.UsSurvey },
-          { label: UnitsPopupUiDataProvider.i18n.translate("uiTestExtension:StatusBar.UsCustomary"), value: UnitsOptions.UsCustomary },
+          { label: UnitsPopupUiDataProvider.localization.getLocalizedString("uiTestExtension:StatusBar.Metric"), value: "metric" },
+          { label: UnitsPopupUiDataProvider.localization.getLocalizedString("uiTestExtension:StatusBar.Imperial"), value: "imperial" },
+          { label: UnitsPopupUiDataProvider.localization.getLocalizedString("uiTestExtension:StatusBar.UsSurvey"), value: "usSurvey" },
+          { label: UnitsPopupUiDataProvider.localization.getLocalizedString("uiTestExtension:StatusBar.UsCustomary"), value: "usCustomary" },
         ],
       },
     };
   };
 
-  private getValueForActiveUnitSystem() {
-    switch (IModelApp.quantityFormatter.activeUnitSystem) {
-      case "imperial":
-        return UnitsOptions.Imperial;
-      case "metric":
-        return UnitsOptions.Metric;
-      case "usSurvey":
-        return UnitsOptions.UsSurvey;
-      case "usCustomary":
-        return UnitsOptions.UsCustomary;
-    }
+  private _optionsValue: DialogItemValue = { value: IModelApp.quantityFormatter.activeUnitSystem };
+
+  public get option(): UnitSystemKey {
+    return this._optionsValue.value as UnitSystemKey;
   }
 
-  private _optionsValue: DialogItemValue = { value: this.getValueForActiveUnitSystem() };
-
-  public get option() {
-    return this._optionsValue.value;
-  }
-
-  public set option(option) {
+  public set option(option: UnitSystemKey) {
     this._optionsValue = { value: option };
   }
 
   public override applyUiPropertyChange = (updatedValue: DialogPropertySyncItem): void => {
-    this.option = updatedValue.value.value;
+    this.option = updatedValue.value.value as UnitSystemKey;
   };
 
   public override supplyDialogItems(): DialogItem[] | undefined {

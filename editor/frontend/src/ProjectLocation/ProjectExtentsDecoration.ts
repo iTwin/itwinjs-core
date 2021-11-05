@@ -6,13 +6,20 @@
  * @module Editing
  */
 
-import { Angle, Arc3d, AxisIndex, AxisOrder, ClipShape, ClipVector, Constant, Matrix3d, Point3d, PolygonOps, Range1d, Range3d, Range3dProps, Ray3d, Transform, Vector3d } from "@bentley/geometry-core";
-import { Cartographic, ColorDef, EcefLocation, EcefLocationProps } from "@bentley/imodeljs-common";
-import { BeButton, BeButtonEvent, BriefcaseConnection, CoreTools, DecorateContext, EditManipulator, EventHandled, GraphicType, HitDetail, IModelApp, IModelConnection, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotifyMessageDetails, OutputMessagePriority, QuantityType, ScreenViewport, Tool, ViewClipControlArrow, ViewClipDecorationProvider, ViewClipShapeModifyTool, ViewClipTool, Viewport } from "@bentley/imodeljs-frontend";
-import { ProjectGeolocationNorthTool, ProjectGeolocationPointTool } from "./ProjectGeolocation";
-import { BeDuration, BeEvent } from "@bentley/bentleyjs-core";
+import { BeDuration, BeEvent, BentleyError } from "@itwin/core-bentley";
+import { Cartographic, ColorDef, EcefLocation, EcefLocationProps } from "@itwin/core-common";
+import {
+  BeButton, BeButtonEvent, BriefcaseConnection, CoreTools, DecorateContext, EditManipulator, EventHandled, GraphicType, HitDetail, IModelApp,
+  IModelConnection, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotifyMessageDetails, OutputMessagePriority, QuantityType, ScreenViewport,
+  Tool, ViewClipControlArrow, ViewClipDecorationProvider, ViewClipShapeModifyTool, ViewClipTool, Viewport,
+} from "@itwin/core-frontend";
+import {
+  Angle, Arc3d, AxisIndex, AxisOrder, ClipShape, ClipVector, Constant, Matrix3d, Point3d, PolygonOps, Range1d, Range3d, Range3dProps, Ray3d,
+  Transform, Vector3d,
+} from "@itwin/core-geometry";
+import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@itwin/editor-common";
 import { EditTools } from "../EditTool";
-import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@bentley/imodeljs-editor-common";
+import { ProjectGeolocationNorthTool, ProjectGeolocationPointTool } from "./ProjectGeolocation";
 
 function translateMessage(key: string) { return EditTools.translate(`ProjectLocation:Message.${key}`); }
 function translateMessageBold(key: string) { return `<b>${translateMessage(key)}:</b> `; }
@@ -36,9 +43,7 @@ function enableBackgroundMap(viewport: Viewport, onOff: boolean): boolean {
   if (onOff === viewport.viewFlags.backgroundMap)
     return false;
 
-  const viewFlags = viewport.viewFlags.clone();
-  viewFlags.backgroundMap = onOff;
-  viewport.viewFlags = viewFlags;
+  viewport.viewFlags = viewport.viewFlags.with("backgroundMap", onOff);
   return true;
 }
 
@@ -96,7 +101,7 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
   protected _removeViewCloseListener?: () => void;
   public suspendGeolocationDecorations = false;
 
-  /** Called when project extents or geolocation is modfied */
+  /** Called when project extents or geolocation is modified */
   public readonly onChanged = new BeEvent<(iModel: IModelConnection, ev: ProjectLocationChanged) => void>();
 
   public constructor(public viewport: ScreenViewport) {
@@ -277,14 +282,14 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     super.clearControls();
   }
 
-  protected modifyControls(hit: HitDetail, _ev: BeButtonEvent): boolean {
+  protected async modifyControls(hit: HitDetail, _ev: BeButtonEvent): Promise<boolean> {
     if (undefined === this._clip || hit.sourceId === this._clipId)
       return false;
 
     const saveQualifiers = IModelApp.toolAdmin.currentInputState.qualifiers;
     if (undefined !== this._clipShape) {
       const clipShapeModifyTool = new ViewClipShapeModifyTool(this, this._clip, this.viewport, hit.sourceId, this._controlIds, this._controls);
-      this._suspendDecorator = clipShapeModifyTool.run();
+      this._suspendDecorator = await clipShapeModifyTool.run();
     }
 
     if (this._suspendDecorator)
@@ -300,13 +305,13 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
   public override async onDecorationButtonEvent(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled> {
     if (hit.sourceId === this._monumentId) {
       if (BeButton.Data === ev.button && !ev.isDown && !ev.isDragging)
-        ProjectGeolocationPointTool.startTool();
+        await ProjectGeolocationPointTool.startTool();
       return EventHandled.Yes; // Only pickable for tooltip, don't allow selection...
     }
 
     if (hit.sourceId === this._northId) {
       if (BeButton.Data === ev.button && !ev.isDown && !ev.isDragging)
-        ProjectGeolocationNorthTool.startTool();
+        await ProjectGeolocationNorthTool.startTool();
       return EventHandled.Yes; // Only pickable for tooltip, don't allow selection...
     }
 
@@ -867,7 +872,7 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     ProjectExtentsClipDecoration._decorator = undefined;
   }
 
-  public static update(): void {
+  public static async update(): Promise<void> {
     const deco = ProjectExtentsClipDecoration._decorator;
     if (undefined === deco)
       return;
@@ -875,8 +880,7 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     clipToProjectExtents(deco.viewport);
     deco.init();
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    deco.updateControls();
+    return deco.updateControls();
   }
 }
 
@@ -886,11 +890,11 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
 export class ProjectLocationShowTool extends Tool {
   public static override toolId = "ProjectLocation.Show";
 
-  public override run(): boolean {
+  public override async run(): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp || !ProjectExtentsClipDecoration.show(vp))
       return false;
-    IModelApp.toolAdmin.startDefaultTool();
+    await IModelApp.toolAdmin.startDefaultTool();
     return true;
   }
 }
@@ -901,9 +905,9 @@ export class ProjectLocationShowTool extends Tool {
 export class ProjectLocationHideTool extends Tool {
   public static override toolId = "ProjectLocation.Hide";
 
-  public override run(): boolean {
+  public override async run(): Promise<boolean> {
     ProjectExtentsClipDecoration.hide();
-    IModelApp.toolAdmin.startDefaultTool();
+    await IModelApp.toolAdmin.startDefaultTool();
     return true;
   }
 }
@@ -914,9 +918,9 @@ export class ProjectLocationHideTool extends Tool {
 export class ProjectLocationCancelTool extends Tool {
   public static override toolId = "ProjectLocation.Cancel";
 
-  public override run(): boolean {
+  public override async run(): Promise<boolean> {
     ProjectExtentsClipDecoration.clear();
-    IModelApp.toolAdmin.startDefaultTool();
+    await IModelApp.toolAdmin.startDefaultTool();
     return true;
   }
 }
@@ -963,34 +967,35 @@ export class ProjectLocationSaveTool extends Tool {
       await deco.iModel.saveChanges(this.toolId);
       await deco.iModel.txns.restartTxnSession();
     } catch (err) {
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, err.toString()));
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, BentleyError.getErrorMessage(err) || "An unknown error occurred."));
     }
 
     deco.onChanged.raiseEvent(deco.iModel, ProjectLocationChanged.Save);
-    ProjectExtentsClipDecoration.update();
-    IModelApp.toolAdmin.startDefaultTool();
+    await ProjectExtentsClipDecoration.update();
+    return IModelApp.toolAdmin.startDefaultTool();
   }
 
-  public override run(): boolean {
+  public override async run(): Promise<boolean> {
     const deco = ProjectExtentsClipDecoration.get();
     if (undefined === deco) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, translateMessage("NotActive")));
       return false;
     }
 
-    if (deco.iModel.isReadonly)
-      return false;
+    if (deco.iModel.isReadonly) {
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, translateMessage("Readonly")));
+      return true;
+    }
 
     const extents = deco.getModifiedExtents();
     const ecefLocation = deco.getModifiedEcefLocation();
 
     if (undefined === extents && undefined === ecefLocation) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, translateMessage("NoChanges")));
-      return false;
+      return true;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this.saveChanges(deco, extents, ecefLocation);
+    await this.saveChanges(deco, extents, ecefLocation);
     return true;
   }
 }

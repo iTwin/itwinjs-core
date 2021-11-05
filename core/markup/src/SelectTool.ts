@@ -6,12 +6,12 @@
  * @module MarkupTools
  */
 
-import { BeEvent } from "@bentley/bentleyjs-core";
-import { Point2d, Point3d, Transform, Vector2d, XAndY } from "@bentley/geometry-core";
+import { BeEvent } from "@itwin/core-bentley";
+import { Point2d, Point3d, Transform, Vector2d, XAndY } from "@itwin/core-geometry";
 import {
   BeButton, BeButtonEvent, BeModifierKeys, BeTouchEvent, CoreTools, EventHandled, IModelApp, InputSource, ToolAssistance, ToolAssistanceImage,
   ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { ArrayXY, Box, Container, G, Line, Element as MarkupElement, Text as MarkupText, Matrix, Point, Polygon } from "@svgdotjs/svg.js";
 import { MarkupApp } from "./Markup";
 import { MarkupTool } from "./MarkupTool";
@@ -30,7 +30,7 @@ export abstract class ModifyHandle {
   constructor(public handles: Handles) { }
   /** perform the modification given a current mouse position. */
   public abstract modify(ev: BeButtonEvent): void;
-  public onClick(_ev: BeButtonEvent) { }
+  public async onClick(_ev: BeButtonEvent): Promise<void> { }
 
   /** set the position for this handle on the screen given the current state of the element */
   public abstract setPosition(): void;
@@ -233,11 +233,11 @@ class MoveHandle extends ModifyHandle {
     this._shape.addClass(MarkupApp.moveHandleClass);
     this.setMouseHandler(this._shape);
   }
-  public override onClick(_ev: BeButtonEvent) {
+  public override async onClick(_ev: BeButtonEvent): Promise<void> {
     const el = this.handles.el;
     // eslint-disable-next-line deprecation/deprecation
     if (el instanceof MarkupText || (el instanceof G && el.node.className.baseVal === MarkupApp.boxedTextClass)) // if they click on the move handle of a text element, start the text editor
-      new EditTextTool(el).run();
+      await new EditTextTool(el).run();
   }
   /** draw the outline of the element's bbox (in viewbox coordinates) */
   public setPosition() {
@@ -504,16 +504,16 @@ export class SelectTool extends MarkupTool {
     this.cancelDrag();
     this.markup.selected.emptyAll();
   }
-  public override onCleanup(): void { this.clearSelect(); }
-  public override onPostInstall() { this.initSelect(); super.onPostInstall(); }
-  public override onRestartTool(): void { this.initSelect(); }
+  public override async onCleanup() { this.clearSelect(); }
+  public override async onPostInstall() { this.initSelect(); return super.onPostInstall(); }
+  public override async onRestartTool() { this.initSelect(); }
 
   protected override showPrompt(): void {
-    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.i18n.translate(`${MarkupTool.toolKey}Select.Prompts.IdentifyMarkup`));
+    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.localization.getLocalizedString(`${MarkupTool.toolKey}Select.Prompts.IdentifyMarkup`));
     const mouseInstructions: ToolAssistanceInstruction[] = [];
     const touchInstructions: ToolAssistanceInstruction[] = [];
 
-    const acceptMsg = IModelApp.i18n.translate(`${MarkupTool.toolKey}Select.Prompts.AcceptMarkup`);
+    const acceptMsg = IModelApp.localization.getLocalizedString(`${MarkupTool.toolKey}Select.Prompts.AcceptMarkup`);
     touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, acceptMsg, false, ToolAssistanceInputMethod.Touch));
     mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, acceptMsg, false, ToolAssistanceInputMethod.Mouse));
 
@@ -564,7 +564,7 @@ export class SelectTool extends MarkupTool {
         if (ev.isControlKey)
           selected.drop(handles.el);
         else
-          handles.active.onClick(ev);
+          await handles.active.onClick(ev);
         handles.active = undefined;
         return EventHandled.Yes;
       }
@@ -766,7 +766,7 @@ export class SelectTool extends MarkupTool {
         markup.deleteSelected();
         return EventHandled.Yes;
       case "escape": // esc = cancel current operation
-        this.exitTool();
+        await this.exitTool();
         return EventHandled.Yes;
       case "b": // alt-shift-b = send to back
         return (key.altKey && key.shiftKey) ? (markup.sendToBack(), EventHandled.Yes) : EventHandled.No;

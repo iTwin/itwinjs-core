@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-react",
+      "comment": "Allow size of NumberInput container to be sized via a style prop.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-react",
+  "email": "65047615+bsteinbk@users.noreply.github.com"
+}

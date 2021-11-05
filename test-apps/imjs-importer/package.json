@@ -6,17 +6,17 @@
   "description": "Converter to import IModelJson files into bim files.",
   "main": "./lib/main.js",
   "scripts": {
-    "compile": "npm run build",
     "build": "tsc 1>&2",
+    "build:ci": "npm run -s build",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "",
     "test": "",
     "cover": "",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "blint": "npm run build && npm run lint",
+    "blint": "npm run -s build && npm run -s lint",
     "main1": "node lib/main.js",
     "byDirectory": "node lib/byDirectory.js --input=CurveFactory --output=abc",
-    "test1": "npm run test1:unit ",
+    "test1": "npm run -s test1:unit ",
     "test1:unit": "mocha --config ./test/unit/.mocharc.json \"test/unit/**/*.test.ts*\""
   },
   "author": {
@@ -24,35 +24,31 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "workspace:*",
-    "@bentley/config-loader": "workspace:*",
-    "@bentley/geometry-core": "workspace:*",
-    "@bentley/imodeljs-backend": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
+    "@itwin/core-backend": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "@bentley/backend-itwin-client": "workspace:*",
-    "@bentley/imodeljs-common": "workspace:*",
-    "@bentley/imodeljs-i18n": "workspace:*",
-    "@bentley/logger-config": "workspace:*",
+    "@itwin/core-common": "workspace:*",
     "chai": "^4.1.2",
     "yargs": "^16.0.0"
   },
   "devDependencies": {
-    "@bentley/build-tools": "workspace:*",
-    "@bentley/eslint-plugin": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^8.2.2",
-    "@types/node": "10.14.1",
+    "@types/node": "14.14.31",
     "@types/yargs": "^12.0.5",
     "chai": "^4.1.2",
     "eslint": "^7.11.0",
     "mocha": "^8.3.2",
     "rimraf": "^3.0.2",
-    "typescript": "~4.3.0"
+    "typescript": "~4.4.0"
   },
   "eslintConfig": {
     "plugins": [
-      "@bentley"
+      "@itwin"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended"
+    "extends": "plugin:@itwin/itwinjs-recommended"
   }
 }

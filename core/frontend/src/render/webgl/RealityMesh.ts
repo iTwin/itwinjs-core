@@ -7,10 +7,13 @@
  * @module WebGL
  */
 
-import { assert, dispose, IDisposable } from "@bentley/bentleyjs-core";
-import { Range2d, Range3d, Transform, Vector2d } from "@bentley/geometry-core";
-import { ColorDef, PackedFeatureTable, Quantization, RenderTexture } from "@bentley/imodeljs-common";
-import { AttributeMap, BufferHandle, BufferParameters, IndexedGeometry, IndexedGeometryParams, Matrix4, QBufferHandle2d, QBufferHandle3d } from "../../webgl";
+import { assert, dispose, IDisposable } from "@itwin/core-bentley";
+import { Range2d, Range3d, Transform, Vector2d } from "@itwin/core-geometry";
+import { ColorDef, PackedFeatureTable, Quantization, RenderTexture } from "@itwin/core-common";
+import { AttributeMap } from "./AttributeMap";
+import { BufferHandle, BufferParameters, QBufferHandle2d, QBufferHandle3d } from "./AttributeBuffers";
+import { IndexedGeometry, IndexedGeometryParams } from "./CachedGeometry";
+import { Matrix4 } from "./Matrix";
 import { GraphicBranch } from "../GraphicBranch";
 import { RealityMeshPrimitive } from "../primitives/mesh/RealityMeshPrimitive";
 import { TerrainMeshPrimitive } from "../primitives/mesh/TerrainMeshPrimitive";
@@ -131,7 +134,7 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
   public get uvQParams() { return this._realityMeshParams.uvParams.params; }
   public override get hasFeatures(): boolean { return this._realityMeshParams.featureID !== undefined; }
   public override get supportsThematicDisplay() { return true; }
-  public get overrideColorMix() { return .5; }     // TThis could be a setting from either the mesh or the override if required.
+  public get overrideColorMix() { return .5; }     // This could be a setting from either the mesh or the override if required.
 
   private constructor(private _realityMeshParams: RealityMeshGeometryParams, public textureParams: RealityTextureParams | undefined, private readonly _transform: Transform | undefined, public readonly baseColor: ColorDef | undefined, private _baseIsTransparent: boolean, private _isTerrain: boolean) {
     super(_realityMeshParams);
@@ -215,7 +218,7 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
 
     const branch = new GraphicBranch(true);
     for (const mesh of meshes) {
-      const primitive = Primitive.create(() => mesh);
+      const primitive = Primitive.create(mesh);
       branch.add(system.createBatch(primitive!, featureTable, mesh.getRange(), { tileId }));
     }
 

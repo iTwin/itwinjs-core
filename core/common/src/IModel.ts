@@ -6,13 +6,13 @@
  * @module iModels
  */
 
+import { assert, BeEvent, GeoServiceStatus, GuidString, Id64, Id64String, IModelStatus, Mutable, OpenMode } from "@itwin/core-bentley";
 import {
-  assert, BeEvent, GeoServiceStatus, GuidString, Id64, Id64String, IModelStatus, Logger, OpenMode,
-} from "@bentley/bentleyjs-core";
-import {
-  Angle, AxisIndex, AxisOrder, Constant, Geometry, Matrix3d, Point3d, Range3d, Range3dProps, Transform, Vector3d, XYAndZ, XYZProps, YawPitchRollAngles, YawPitchRollProps,
-} from "@bentley/geometry-core";
-import { Cartographic, LatLongAndHeight } from "./geometry/Cartographic";
+  Angle, AxisIndex, AxisOrder, Constant, Geometry, Matrix3d, Point3d, Range3d, Range3dProps, Transform, Vector3d, XYAndZ, XYZProps,
+  YawPitchRollAngles, YawPitchRollProps,
+} from "@itwin/core-geometry";
+import { ChangesetIdWithIndex } from "./ChangesetProps";
+import { Cartographic, CartographicProps } from "./geometry/Cartographic";
 import { GeographicCRS, GeographicCRSProps } from "./geometry/CoordinateReferenceSystem";
 import { AxisAlignedBox3d } from "./geometry/Placement";
 import { IModelError } from "./IModelError";
@@ -22,16 +22,15 @@ import { ThumbnailProps } from "./Thumbnail";
  * @public
  */
 export interface IModelRpcOpenProps {
-  /** The context (Project, Asset, or other infrastructure) in which the iModel exists - must be defined for briefcases that are synchronized with iModelHub. */
-  readonly contextId?: GuidString;
+  /** The iTwin in which the iModel exists - must be defined for briefcases that are synchronized with iModelHub. */
+  readonly iTwinId?: GuidString;
   /** Guid of the iModel. */
   readonly iModelId?: GuidString;
-  /** Id of the last ChangeSet that was applied to the iModel - must be defined for briefcases that are synchronized with iModelHub. An empty string indicates the first version.
-   * @note ChangeSet Ids are string hash values based on the ChangeSet's content and parent.
+
+  /** Id of the last Changeset that was applied to the iModel - must be defined for briefcases that are synchronized with iModelHub.
+   * @note Changeset Ids are string hash values based on the content and parent.
    */
-  changeSetId?: string;
-  /** Mode used to open the iModel */
-  openMode?: OpenMode;
+  readonly changeset?: ChangesetIdWithIndex;
 }
 
 /** The properties that identify an opened iModel for RPC operations.
@@ -47,15 +46,15 @@ export interface IModelRpcProps extends IModelRpcOpenProps {
  */
 export interface EcefLocationProps {
   /** The Origin of an iModel on the earth in ECEF coordinates */
-  origin: XYZProps;
+  readonly origin: XYZProps;
   /** The [orientation](https://en.wikipedia.org/wiki/Geographic_coordinate_conversion) of an iModel on the earth. */
-  orientation: YawPitchRollProps;
+  readonly orientation: YawPitchRollProps;
   /** Optional position on the earth used to establish the ECEF coordinates. */
-  cartographicOrigin?: LatLongAndHeight;
+  readonly cartographicOrigin?: CartographicProps;
   /** Optional X column vector used with [[yVector]] to calculate potentially non-rigid transform if a projection is present. */
-  xVector?: XYZProps;
+  readonly xVector?: XYZProps;
   /** Optional Y column vector used with [[xVector]] to calculate potentially non-rigid transform if a projection is present. */
-  yVector?: XYZProps;
+  readonly yVector?: XYZProps;
 }
 
 /** Properties of the [Root Subject]($docs/bis/intro/glossary#subject-root).
@@ -63,9 +62,9 @@ export interface EcefLocationProps {
  */
 export interface RootSubjectProps {
   /** The name of the root subject. */
-  name: string;
+  readonly name: string;
   /** Description of the root subject (optional). */
-  description?: string;
+  readonly description?: string;
 }
 
 /** Properties of an iModel that are always held in memory whenever one is opened, both on the frontend and on the backend .
@@ -73,17 +72,17 @@ export interface RootSubjectProps {
  */
 export interface IModelProps {
   /** The name and description of the root subject of this iModel */
-  rootSubject: RootSubjectProps;
+  readonly rootSubject: RootSubjectProps;
   /** The volume of the entire project, in spatial coordinates */
-  projectExtents?: Range3dProps;
+  readonly projectExtents?: Range3dProps;
   /** An offset to be applied to all spatial coordinates. This is normally used to transform spatial coordinates into the Cartesian coordinate system of a Geographic Coordinate System. */
-  globalOrigin?: XYZProps;
+  readonly globalOrigin?: XYZProps;
   /** The location of the iModel in Earth Centered Earth Fixed coordinates. iModel units are always meters */
-  ecefLocation?: EcefLocationProps;
+  readonly ecefLocation?: EcefLocationProps;
   /** The Geographic Coordinate Reference System indicating the projection and datum used. */
-  geographicCoordinateSystem?: GeographicCRSProps;
+  readonly geographicCoordinateSystem?: GeographicCRSProps;
   /** The name of the iModel. */
-  name?: string;
+  readonly name?: string;
 }
 
 /** The properties returned by the backend when creating a new [[IModelConnection]] from the frontend, either with Rpc or with Ipc.
@@ -98,13 +97,13 @@ export type IModelConnectionProps = IModelProps & IModelRpcProps;
  */
 export interface CreateIModelProps extends IModelProps {
   /** The GUID of new iModel. If not present, a GUID will be generated. */
-  guid?: GuidString;
+  readonly guid?: GuidString;
   /** Client name for new iModel */
-  client?: string;
+  readonly client?: string;
   /** Thumbnail for new iModel
    * @alpha
    */
-  thumbnail?: ThumbnailProps;
+  readonly thumbnail?: ThumbnailProps;
 }
 
 /** Encryption-related properties that can be supplied when creating or opening snapshot iModels.
@@ -112,7 +111,7 @@ export interface CreateIModelProps extends IModelProps {
  */
 export interface IModelEncryptionProps {
   /** The password used to encrypt/decrypt the snapshot iModel. */
-  password?: string;
+  readonly password?: string;
 }
 
 /**
@@ -124,7 +123,7 @@ export interface IModelEncryptionProps {
  * @public
  */
 export interface OpenDbKey {
-  key?: string;
+  readonly key?: string;
 }
 
 /** Options to open a [SnapshotDb]($backend).
@@ -132,9 +131,17 @@ export interface OpenDbKey {
  */
 export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey {
   /** @internal */
-  lazyBlockCache?: boolean;
+  readonly lazyBlockCache?: boolean;
   /** @internal */
-  autoUploadBlocks?: boolean;
+  readonly autoUploadBlocks?: boolean;
+  /**
+   * The "base" name that can be used for creating temporary files related to this Db.
+   * The string should be a name related to the current Db filename using some known pattern so that all files named "baseName*" can be deleted externally during cleanup.
+   * It must be the name of a file (that may or may not exist) in a writable directory.
+   * If not present, the baseName will default to the database's file name (including the path).
+   * @internal
+   */
+  readonly tempFileBase?: string;
 }
 
 /** Options to open a [StandaloneDb]($backend) via [StandaloneDb.openFile]($backend) from the backend,
@@ -150,7 +157,7 @@ export interface CreateSnapshotIModelProps extends IModelEncryptionProps {
   /** If true, then create SQLite views for Model, Element, ElementAspect, and Relationship classes.
    * These database views can often be useful for interoperability workflows.
    */
-  createClassViews?: boolean;
+  readonly createClassViews?: boolean;
 }
 
 /** The options that can be specified when creating an *empty* snapshot iModel.
@@ -164,7 +171,7 @@ export type CreateEmptySnapshotIModelProps = CreateIModelProps & CreateSnapshotI
  */
 export interface CreateStandaloneIModelProps extends IModelEncryptionProps {
   /** If present, file will allow local editing, but cannot be used to create changesets */
-  allowEdit?: string;
+  readonly allowEdit?: string;
 }
 
 /** The options that can be specified when creating an *empty* standalone iModel.
@@ -175,8 +182,8 @@ export type CreateEmptyStandaloneIModelProps = CreateIModelProps & CreateStandal
 
 /** @public */
 export interface FilePropertyProps {
-  namespace: string;
-  name: string;
+  readonly namespace: string;
+  readonly name: string;
   id?: number | string;
   subId?: number | string;
 }
@@ -200,14 +207,14 @@ export class EcefLocation implements EcefLocationProps {
   private _transform: Transform;
 
   /** Get the transform from iModel Spatial coordinates to ECEF from this EcefLocation */
-  public getTransform(): Transform { return this._transform;  }
+  public getTransform(): Transform { return this._transform; }
 
   /** Construct a new EcefLocation. Once constructed, it is frozen and cannot be modified. */
   constructor(props: EcefLocationProps) {
     this.origin = Point3d.fromJSON(props.origin).freeze();
     this.orientation = YawPitchRollAngles.fromJSON(props.orientation).freeze();
     if (props.cartographicOrigin)
-      this.cartographicOrigin = Cartographic.fromRadians(props.cartographicOrigin.longitude, props.cartographicOrigin.latitude, props.cartographicOrigin.height).freeze();
+      this.cartographicOrigin = Cartographic.fromRadians({ longitude: props.cartographicOrigin.longitude, latitude: props.cartographicOrigin.latitude, height: props.cartographicOrigin.height }).freeze();
     if (props.xVector && props.yVector) {
       this.xVector = Vector3d.fromJSON(props.xVector);
       this.yVector = Vector3d.fromJSON(props.yVector);
@@ -228,8 +235,8 @@ export class EcefLocation implements EcefLocationProps {
   public static createFromCartographicOrigin(origin: Cartographic, point?: Point3d, angle?: Angle) {
     const ecefOrigin = origin.toEcef();
     const deltaRadians = 10 / Constant.earthRadiusWGS84.polar;
-    const northCarto = Cartographic.fromRadians(origin.longitude, origin.latitude + deltaRadians, origin.height);
-    const eastCarto = Cartographic.fromRadians(origin.longitude + deltaRadians, origin.latitude, origin.height);
+    const northCarto = Cartographic.fromRadians({ longitude: origin.longitude, latitude: origin.latitude + deltaRadians, height: origin.height });
+    const eastCarto = Cartographic.fromRadians({ longitude: origin.longitude + deltaRadians, latitude: origin.latitude, height: origin.height });
     const ecefNorth = northCarto.toEcef();
     const ecefEast = eastCarto.toEcef();
     const xVector = Vector3d.createStartEnd(ecefOrigin, ecefEast).normalize();
@@ -276,7 +283,7 @@ export class EcefLocation implements EcefLocationProps {
   }
 
   public toJSON(): EcefLocationProps {
-    const props: EcefLocationProps = {
+    const props: Mutable<EcefLocationProps> = {
       origin: this.origin.toJSON(),
       orientation: this.orientation.toJSON(),
     };
@@ -336,7 +343,7 @@ export abstract class IModel implements IModelProps {
   public set name(name: string) {
     if (name !== this._name) {
       const old = this._name;
-      this._name =  name;
+      this._name = name;
       if (undefined !== old)
         this.onNameChanged.raiseEvent(old);
     }
@@ -465,44 +472,44 @@ export abstract class IModel implements IModelProps {
   public get key(): string { return this._fileKey; }
 
   /** @internal */
-  protected _contextId?: GuidString;
-  /** The Guid that identifies the *context* that owns this iModel. */
-  public get contextId(): GuidString | undefined { return this._contextId; }
+  protected _iTwinId?: GuidString;
+  /** The Guid that identifies the iTwin that owns this iModel. */
+  public get iTwinId(): GuidString | undefined { return this._iTwinId; }
 
   /** The Guid that identifies this iModel. */
   public get iModelId(): GuidString | undefined { return this._iModelId; }
 
-  /** @internal */
-  protected _changeSetId: string | undefined;
-  /** The Id of the last changeset that was applied to this iModel.
-   * @note An empty string indicates the first version while `undefined` mean no changeset information is available.
-   */
-  public get changeSetId() { return this._changeSetId; }
+  /** @public */
+  public changeset: ChangesetIdWithIndex;
 
+  protected _openMode = OpenMode.Readonly;
   /** The [[OpenMode]] used for this IModel. */
-  public readonly openMode: OpenMode;
+  public get openMode(): OpenMode { return this._openMode; }
 
   /** Return a token for RPC operations. */
   public getRpcProps(): IModelRpcProps {
     if (!this.isOpen)
-      throw new IModelError(IModelStatus.BadRequest, "IModel is not open for rpc", Logger.logError);
+      throw new IModelError(IModelStatus.BadRequest, "IModel is not open for rpc");
 
     return {
       key: this._fileKey,
-      contextId: this.contextId,
+      iTwinId: this.iTwinId,
       iModelId: this.iModelId,
-      changeSetId: this.changeSetId,
-      openMode: this.openMode,
+      changeset: this.changeset,
     };
   }
 
   /** @internal */
-  protected constructor(tokenProps: IModelRpcProps | undefined, openMode: OpenMode) {
-    this._fileKey = tokenProps?.key ?? "";
-    this._contextId = tokenProps?.contextId;
-    this._iModelId = tokenProps?.iModelId;
-    this._changeSetId = tokenProps?.changeSetId;
-    this.openMode = openMode; // Note: The open mode passed through the RPC layer is ignored in the case of IModelDb-s
+  protected constructor(tokenProps?: IModelRpcProps) {
+    this.changeset = { id: "", index: 0 };
+    this._fileKey = "";
+    if (tokenProps) {
+      this._fileKey = tokenProps.key;
+      this._iTwinId = tokenProps.iTwinId;
+      this._iModelId = tokenProps.iModelId;
+      if (tokenProps.changeset)
+        this.changeset = tokenProps.changeset;
+    }
   }
 
   /** @internal */

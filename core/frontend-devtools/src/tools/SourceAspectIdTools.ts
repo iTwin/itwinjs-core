@@ -7,7 +7,9 @@
  * @module Tools
  */
 
-import { IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool } from "@bentley/imodeljs-frontend";
+import { BentleyError } from "@itwin/core-bentley";
+import { QueryRowFormat } from "@itwin/core-common";
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool } from "@itwin/core-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseArgs } from "./parseArgs";
 
@@ -22,14 +24,14 @@ export abstract class SourceAspectIdTool extends Tool {
 
   protected abstract getECSql(queryId: string): string;
 
-  public override run(idToQuery?: string, copyToClipboard?: boolean): boolean {
+  public override async run(idToQuery?: string, copyToClipboard?: boolean): Promise<boolean> {
     if (typeof idToQuery === "string")
-      this.doQuery(idToQuery, true === copyToClipboard); // eslint-disable-line @typescript-eslint/no-floating-promises
+      await this.doQuery(idToQuery, true === copyToClipboard);
 
     return true;
   }
 
-  public override parseAndRun(...keyinArgs: string[]): boolean {
+  public override async parseAndRun(...keyinArgs: string[]): Promise<boolean> {
     const args = parseArgs(keyinArgs);
     return this.run(args.get("i"), args.getBoolean("c"));
   }
@@ -41,10 +43,10 @@ export abstract class SourceAspectIdTool extends Tool {
 
     let resultId;
     try {
-      for await (const row of imodel.query(this.getECSql(queryId), undefined, 1))
+      for await (const row of imodel.query(this.getECSql(queryId), undefined, QueryRowFormat.UseJsPropertyNames, { limit: { count: 1 } }))
         resultId = row.resultId;
     } catch (ex) {
-      resultId = ex.toString();
+      resultId = BentleyError.getErrorMessage(ex);
     }
 
     if (typeof resultId !== "string")

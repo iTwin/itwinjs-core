@@ -10,7 +10,7 @@ import { Point2d } from "../geometry3d/Point2dVector2d";
 import { PolyfaceData } from "./PolyfaceData";
 import { IndexedPolyface, Polyface, PolyfaceVisitor } from "./Polyface";
 import { Geometry } from "../Geometry";
-/* eslint-disable @bentley/prefer-get */
+/* eslint-disable @itwin/prefer-get */
 /**
  * An `IndexedPolyfaceVisitor` is an iterator-like object that "visits" facets of a mesh.
  * * The visitor extends a `PolyfaceData ` class, so it can at any time hold all the data of a single facet.

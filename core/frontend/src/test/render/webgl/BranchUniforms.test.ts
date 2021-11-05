@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { dispose } from "@bentley/bentleyjs-core";
-import { ClipVector, Point3d, Transform } from "@bentley/geometry-core";
+import { dispose } from "@itwin/core-bentley";
+import { ClipVector, Point3d, Transform } from "@itwin/core-geometry";
 import { IModelApp } from "../../../IModelApp";
 import { ViewRect } from "../../../ViewRect";
 import { createEmptyRenderPlan } from "../../../render/RenderPlan";
@@ -16,7 +16,7 @@ import { Target } from "../../../render/webgl/Target";
 
 function makeClipVolume(): ClipVolume {
   const vec = ClipVector.createEmpty();
-  expect(vec.appendShape([ Point3d.create(1, 1, 0), Point3d.create(2, 1, 0), Point3d.create(2, 2, 0)])).to.be.true;
+  expect(vec.appendShape([Point3d.create(1, 1, 0), Point3d.create(2, 1, 0), Point3d.create(2, 2, 0)])).to.be.true;
   const vol = ClipVolume.create(vec)!;
   expect(vol).not.to.be.undefined;
   return vol;
@@ -30,7 +30,7 @@ interface ClipInfo {
 function makeBranch(info: ClipInfo): Branch {
   const branch = new GraphicBranch();
   if (undefined !== info.noViewClip)
-    branch.viewFlagOverrides.setShowClipVolume(!info.noViewClip);
+    branch.viewFlagOverrides.clipVolume = !info.noViewClip;
 
   const graphic = IModelApp.renderSystem.createGraphicBranch(branch, Transform.identity, { clipVolume: info.clip });
   expect(graphic instanceof Branch).to.be.true;
@@ -66,7 +66,7 @@ function expectClipStack(target: Target, expected: Array<{ numRows: number }>): 
  */
 function testBranches(viewClip: ClipInfo, branches: ClipInfo[], expectViewClip: boolean, expectedClips: Array<{ numRows: number }>): void {
   const plan = { ...createEmptyRenderPlan(), clip: viewClip.clip?.clipVector };
-  plan.viewFlags.clipVolume = true !== viewClip.noViewClip;
+  plan.viewFlags = plan.viewFlags.with("clipVolume", true !== viewClip.noViewClip);
 
   const target = makeTarget();
   target.changeRenderPlan(plan);
@@ -74,7 +74,7 @@ function testBranches(viewClip: ClipInfo, branches: ClipInfo[], expectViewClip: 
 
   const uniforms = target.uniforms.branch;
   expect(uniforms.length).to.equal(1);
-  const prevClips = [ ...uniforms.clipStack.clips ];
+  const prevClips = [...uniforms.clipStack.clips];
   const hadClip = uniforms.clipStack.hasClip;
   const hadViewClip = uniforms.clipStack.hasViewClip;
 
@@ -105,12 +105,12 @@ describe("BranchUniforms", async () => {
   });
 
   it("should set view clip based on RenderPlan", () => {
-    testBranches({ }, [], false, [ ClipStack.emptyViewClip ]);
-    testBranches({ noViewClip: true }, [], false, [ ClipStack.emptyViewClip ]);
+    testBranches({}, [], false, [ClipStack.emptyViewClip]);
+    testBranches({ noViewClip: true }, [], false, [ClipStack.emptyViewClip]);
 
     const clip = makeClipVolume();
-    testBranches({ clip }, [], true, [ clip ]);
-    testBranches({ clip, noViewClip: true }, [], false, [ clip ]);
+    testBranches({ clip }, [], true, [clip]);
+    testBranches({ clip, noViewClip: true }, [], false, [clip]);
   });
 
   it("should propagate view clip to branches based on view flags", () => {
@@ -119,7 +119,7 @@ describe("BranchUniforms", async () => {
     testBranches({ clip, noViewClip: true }, [{}], false, [clip]);
     testBranches({ clip }, [{ noViewClip: true }], false, [clip]);
     testBranches({ clip }, [{ noViewClip: true }, { noViewClip: false }], true, [clip]);
-    testBranches({ clip }, [{ noViewClip: false }, {noViewClip: true }], false, [clip]);
+    testBranches({ clip }, [{ noViewClip: false }, { noViewClip: true }], false, [clip]);
   });
 
   it("should apply branch clips regardless of view flags", () => {
@@ -128,7 +128,7 @@ describe("BranchUniforms", async () => {
     testBranches({ clip: viewClip }, [{ clip: branchClip }], true, [viewClip, branchClip]);
     testBranches({ clip: viewClip, noViewClip: true }, [{ clip: branchClip }], false, [viewClip, branchClip]);
     testBranches({ clip: viewClip }, [{ clip: branchClip, noViewClip: true }], false, [viewClip, branchClip]);
-    testBranches({ clip: viewClip }, [{ clip: branchClip, noViewClip: true }, { }], false, [viewClip, branchClip]);
+    testBranches({ clip: viewClip }, [{ clip: branchClip, noViewClip: true }, {}], false, [viewClip, branchClip]);
     testBranches({ clip: viewClip }, [{ clip: branchClip, noViewClip: true }, { noViewClip: true }], false, [viewClip, branchClip]);
   });
 

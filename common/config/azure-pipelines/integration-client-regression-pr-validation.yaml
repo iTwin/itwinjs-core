@@ -1,0 +1,21 @@
+# iModel.js Integration Client Regression PR Validation Build
+#
+# This integration test job uses the older internal 'imsoidcui' IMS authority and
+# OIDC clients to make sure that workflow is still supported.
+
+trigger:
+  - master
+
+variables:
+  - group: iModel.js non-secret config variables
+  - group: iModel.js Integration Test Users
+
+jobs:
+  - job: Node_14_x
+    condition: succeeded()
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+      - template: templates/integration-test-steps.yaml
+        parameters:
+          Node_Version: 14.x

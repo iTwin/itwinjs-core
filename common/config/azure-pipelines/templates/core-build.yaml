@@ -57,19 +57,16 @@ steps:
     displayName: rush audit
     workingDirectory: ${{ parameters.workingDir }}
     condition: and(succeeded(), ne(variables['Agent.OS'], 'Darwin'))
-  - script: node common/scripts/install-run-rush.js build -v -p max
+  - script: node common/scripts/install-run-rush.js build:ci -v -p max
     displayName: rush build
     workingDirectory: ${{ parameters.workingDir }}
     condition: and(succeeded(), not(and(eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Agent.OS'], 'Darwin'))))
-  - script: node common/scripts/install-run-rush.js compile -v -p max
+  - script: node common/scripts/install-run-rush.js build -v -p max
     displayName: rush build
     workingDirectory: ${{ parameters.workingDir }}
     condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Agent.OS'], 'Darwin'))
   - script: node common/scripts/install-run-rush.js lint
     displayName: rush lint
-    workingDirectory: ${{ parameters.workingDir }}
-  - script: node common/scripts/install-run-rush.js extract-api
-    displayName: rush extract-api
     workingDirectory: ${{ parameters.workingDir }}
 
   # By default linux agents do not have a real display so use the virtual framebuffer

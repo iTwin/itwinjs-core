@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, Id64, Id64Arg, Id64Set, Id64String } from "@bentley/bentleyjs-core";
-import { SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { assert, Id64, Id64Arg, Id64Set, Id64String } from "@itwin/core-bentley";
+import { QueryRowFormat, SubCategoryAppearance } from "@itwin/core-common";
 import { IModelConnection } from "./IModelConnection";
 
 /** A cancelable paginated request for subcategory information.
@@ -151,12 +151,12 @@ export namespace SubCategoriesCache { // eslint-disable-line no-redeclare
 
       try {
         const ecsql = this._ecsql[this._curECSqlIndex];
-        for await (const row of this._imodel.query(ecsql)) {
-          this._result.push(row);
+        for await (const row of this._imodel.query(ecsql, undefined, QueryRowFormat.UseJsPropertyNames)) {
+          this._result.push(row as ResultRow);
           if (this.wasCanceled)
             return undefined;
         }
-      } catch (_) {
+      } catch {
         // ###TODO: detect cases in which retry is warranted
         // Note that currently, if we succeed in obtaining some pages of results and fail to retrieve another page, we will end up processing the
         // incomplete results. Since we're not retrying, that's the best we can do.

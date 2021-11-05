@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { ElementAlignedBox3d } from "@bentley/imodeljs-common";
+import { ElementAlignedBox3d } from "@itwin/core-common";
 import { RenderGraphic } from "../render/RenderGraphic";
 
 /**

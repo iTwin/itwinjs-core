@@ -6,13 +6,12 @@
  * @module Tiles
  */
 
-import { assert, Id64String } from "@bentley/bentleyjs-core";
-import { Angle, Ellipsoid, EllipsoidPatch, Point2d, Point3d, Range1d, Range3d, Transform } from "@bentley/geometry-core";
-import { QParams3d, QPoint2d } from "@bentley/imodeljs-common";
+import { assert, Id64String } from "@itwin/core-bentley";
+import { Angle, Ellipsoid, EllipsoidPatch, Point2d, Point3d, Range1d, Range3d, Transform } from "@itwin/core-geometry";
+import { QParams3d, QPoint2d } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
 import { TerrainMeshPrimitive } from "../../render/primitives/mesh/TerrainMeshPrimitive";
-import { MapCartoRectangle, MapTile, QuadId, TerrainMeshProvider } from "../internal";
-import { MapTilingScheme, WebMercatorTilingScheme } from "./MapTilingScheme";
+import { MapCartoRectangle, MapTile, MapTilingScheme, QuadId, TerrainMeshProvider, WebMercatorTilingScheme } from "../internal";
 
 const scratchPoint2d = Point2d.createZero();
 const scratchPoint = Point3d.createZero();

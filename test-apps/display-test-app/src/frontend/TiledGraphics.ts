@@ -3,9 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { QueryRowFormat } from "@itwin/core-common";
 import {
   FeatureSymbology, IModelConnection, SceneContext, SnapshotConnection, SpatialModelState, TiledGraphicsProvider, TileTreeReference, Viewport,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { DisplayTestApp } from "./App";
 
 /** A reference to a TileTree originating from a different IModelConnection than the one the user opened. */
@@ -72,7 +73,7 @@ class Provider implements TiledGraphicsProvider {
     // Enable all categories (and subcategories thereof)
     const ecsql = "SELECT DISTINCT Category.Id as CategoryId from BisCore.GeometricElement3d WHERE Category.Id IN (SELECT ECInstanceId from BisCore.SpatialCategory)";
     const catIds: string[] = [];
-    for await (const catId of iModel.query(ecsql))
+    for await (const catId of iModel.query(ecsql, undefined, QueryRowFormat.UseJsPropertyNames))
       catIds.push(catId.categoryId);
 
     const subcatsRequest = iModel.subcategories.load(catIds);
@@ -119,7 +120,7 @@ export async function toggleExternalTiledGraphicsProvider(vp: Viewport): Promise
     const provider = await Provider.create(vp, iModel);
     providersByViewport.set(vp, provider);
     vp.addTiledGraphicsProvider(provider);
-  } catch (err) {
+  } catch (err: any) {
     alert(err.toString());
     return;
   }

@@ -7,7 +7,7 @@
  * @module Tools
  */
 
-import { HitDetail, IModelApp, Tool, ToolTipProvider } from "@bentley/imodeljs-frontend";
+import { HitDetail, IModelApp, Tool, ToolTipProvider } from "@itwin/core-frontend";
 import { parseToggle } from "./parseToggle";
 
 /** Augments tooltips with detailed information useful for debugging.
@@ -60,15 +60,15 @@ export class ToggleToolTipsTool extends Tool {
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 1; }
 
-  public override run(enable?: boolean): boolean {
+  public override async run(enable?: boolean): Promise<boolean> {
     DebugToolTipProvider.setEnabled(enable);
     return true;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const enable = parseToggle(args[0]);
     if (typeof enable !== "string")
-      this.run(enable);
+      await this.run(enable);
 
     return true;
   }

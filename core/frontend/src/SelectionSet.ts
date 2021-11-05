@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module SelectionSet
  */
-import { BeEvent, Id64, Id64Arg, Id64String } from "@bentley/bentleyjs-core";
+import { BeEvent, Id64, Id64Arg, Id64String } from "@itwin/core-bentley";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 

@@ -23,23 +23,9 @@ steps:
     displayName: rush install
 
   - script: |
-      node ./common/scripts/install-run-rush build -v --to backend-itwin-client
-
-      node ./common/scripts/install-run-rush build -v --to context-registry-client
-
-      node ./common/scripts/install-run-rush build -v --to extension-client
-
-      node ./common/scripts/install-run-rush build -v --to product-settings-client
-
-      node ./common/scripts/install-run-rush build -v --to projectshare-client
-
-      node ./common/scripts/install-run-rush build -v --to rbac-client
-
       node ./common/scripts/install-run-rush build -v --to reality-data-client
 
-      node ./common/scripts/install-run-rush build -v --to usage-logging-client
-
-      node ./common/scripts/install-run-rush build -v --to imodeljs-backend
+      node ./common/scripts/install-run-rush build -v --to backend-integration-tests
 
       node ./common/scripts/install-run-rush build -v --to imodelhub-client-tests
 
@@ -53,49 +39,13 @@ steps:
     displayName: "Rush build"
 
   - script: "npm run test:integration"
-    workingDirectory: "clients/context-registry"
-    displayName: "Run Context Registry Client Tests"
-    condition: succeededOrFailed()
-
-  - script: "npm run test:integration"
-    workingDirectory: clients/extension
-    displayName: "Run Extension Client Tests"
-    condition: succeededOrFailed()
-
-  - script: "npm run test:integration"
-    workingDirectory: "clients/product-settings"
-    displayName: "Run Product Settings Client Tests"
-    condition: succeededOrFailed()
-    enabled: false
-
-  - script: "npm run test:integration"
-    workingDirectory: clients/projectshare
-    displayName: "Run ProjectShare Client Tests"
-    condition: succeededOrFailed()
-
-  - script: "npm run test:integration"
-    workingDirectory: clients/rbac
-    displayName: "Run RBAC Client Tests"
-    condition: succeededOrFailed()
-
-  - script: "npm run test:integration"
     workingDirectory: clients/reality-data
     displayName: "Run Reality Data Client Tests"
     condition: succeededOrFailed()
 
   - script: "npm run test:integration"
-    workingDirectory: "clients/usage-logging"
-    displayName: "Run Usage Logging Tests"
-    condition: succeededOrFailed()
-
-  - script: "npm run test:integration"
-    workingDirectory: "core/backend"
+    workingDirectory: "full-stack-tests/backend"
     displayName: "Run Backend Tests"
-    condition: succeededOrFailed()
-
-  - script: "npm run test:integration"
-    workingDirectory: "core/backend-itwin-client"
-    displayName: "Run Backend iTwin Client Tests"
     condition: succeededOrFailed()
 
   - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration
@@ -124,46 +74,6 @@ steps:
     condition: succeededOrFailed()
 
   - task: PublishTestResults@2
-    displayName: "Publish Context Registry Client Test Results"
-    inputs:
-      testResultsFiles: "clients/context-registry/lib/test/junit_results.xml"
-      testRunTitle: "Client - Context Registry Tests - ${{ parameters.Node_Version }}"
-    continueOnError: true
-    condition: succeededOrFailed()
-
-  - task: PublishTestResults@2
-    displayName: "Publish Extension Clients Test Results"
-    inputs:
-      testResultsFiles: "clients/extension/lib/test/junit_results.xml"
-      testRunTitle: "Client - Extension Tests - ${{ parameters.Node_Version }}"
-    continueOnError: true
-    condition: succeededOrFailed()
-
-  - task: PublishTestResults@2
-    displayName: "Publish Product Settings Clients Test Results"
-    inputs:
-      testResultsFiles: "clients/product-settings/lib/test/junit_results.xml"
-      testRunTitle: "Client - Product Settings Tests - ${{ parameters.Node_Version }}"
-    continueOnError: true
-    condition: succeededOrFailed()
-
-  - task: PublishTestResults@2
-    displayName: "Publish Project Share Clients Test Results"
-    inputs:
-      testResultsFiles: "clients/projectshare/lib/test/junit_results.xml"
-      testRunTitle: "Client - Project Share Tests - ${{ parameters.Node_Version }}"
-    continueOnError: true
-    condition: succeededOrFailed()
-
-  - task: PublishTestResults@2
-    displayName: "Publish RBAC Clients Test Results"
-    inputs:
-      testResultsFiles: "clients/rbac/lib/test/junit_results.xml"
-      testRunTitle: "Client - RBAC Tests - ${{ parameters.Node_Version }}"
-    continueOnError: true
-    condition: succeededOrFailed()
-
-  - task: PublishTestResults@2
     displayName: "Publish Reality Data Clients Test Results"
     inputs:
       testResultsFiles: "clients/reality-data/lib/test/junit_results.xml"
@@ -172,26 +82,10 @@ steps:
     condition: succeededOrFailed()
 
   - task: PublishTestResults@2
-    displayName: "Publish Usage Logging Clients Test Results"
-    inputs:
-      testResultsFiles: "clients/usage-logging/lib/test/junit_results.xml"
-      testRunTitle: "Client - Usage Logging Tests - ${{ parameters.Node_Version }}"
-    continueOnError: true
-    condition: succeededOrFailed()
-
-  - task: PublishTestResults@2
     displayName: "Publish Backend Test Results"
     inputs:
-      testResultsFiles: "core/backend/lib/test/junit_results.xml"
+      testResultsFiles: "full-stack-tests/backend/lib/test/junit_results.xml"
       testRunTitle: "Core - Backend Tests - ${{ parameters.Node_Version }}"
-    continueOnError: true
-    condition: succeededOrFailed()
-
-  - task: PublishTestResults@2
-    displayName: "Publish Backend iTwin Client Test Results"
-    inputs:
-      testResultsFiles: "core/backend-itwin-client/lib/test/junit_results.xml"
-      testRunTitle: "Core - Backend iTwin Client Tests - ${{ parameters.Node_Version }}"
     continueOnError: true
     condition: succeededOrFailed()
 
@@ -207,14 +101,6 @@ steps:
     inputs:
       testResultsFiles: "full-stack-tests/imodelhub-client/lib/test/junit_results.xml"
       testRunTitle: "iModelHub Client - Integration Tests - ${{ parameters.Node_Version }}"
-    condition: succeededOrFailed()
-
-  - task: PublishTestResults@2
-    displayName: "Publish Native App Integration Test Results"
-    inputs:
-      testResultsFiles: "full-stack-tests/native-app/lib/test/junit_results.xml"
-      testRunTitle: "Native App - Integration Tests - ${{ parameters.Node_Version }}"
-    enabled: false
     condition: succeededOrFailed()
 
   - task: PublishTestResults@2

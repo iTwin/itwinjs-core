@@ -3,28 +3,32 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { WidgetState } from "@bentley/ui-abstract";
+import { WidgetState } from "@itwin/appui-abstract";
 import {
-  ActionItemButton, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, GroupButton, NavigationWidget,
+  ActionItemButton, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, GroupButton, NavigationWidget,
   NestedFrontstage, ToolButton, ToolWidget, Widget, Zone, ZoneLocation, ZoneState,
-} from "@bentley/ui-framework";
-import { Direction, Toolbar } from "@bentley/ui-ninezone";
+} from "@itwin/appui-react";
+import { Direction, Toolbar } from "@itwin/appui-layout-react";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { SmallStatusBarWidgetControl } from "../statusbars/SmallStatusBar";
 import { HorizontalPropertyGridWidgetControl, VerticalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
+import { AppUi } from "../AppUi";
 
 /* eslint-disable react/jsx-key, deprecation/deprecation */
 
 export class NestedFrontstage2 extends FrontstageProvider {
+  public get id(): string {
+    return "NestedFrontstage2";
+  }
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
+    const contentGroup = new ContentGroup(AppUi.TestContentGroup2);
+
     return (
-      <Frontstage id="NestedFrontstage2"
+      <Frontstage id={this.id}
         defaultTool={CoreTools.rotateViewCommand}
-        defaultLayout="TwoHalvesVertical"
-        contentGroup="TestContentGroup2"
+        contentGroup={contentGroup}
         isInFooterMode={false}
-        applicationData={{ key: "value" }}
         contentManipulationTools={
           <Zone
             widgets={[

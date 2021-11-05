@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-react",
+      "comment": "Avoid error seen sometimes in Electron where resizeObserver.current is null.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-react",
+  "email": "65047615+bsteinbk@users.noreply.github.com"
+}

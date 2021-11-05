@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-abstract",
+      "comment": "Replaced ui-core Slider with one from iTwinUi-react. ",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-abstract",
+  "email": "65047615+bsteinbk@users.noreply.github.com"
+}

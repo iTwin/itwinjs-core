@@ -1,8 +1,13 @@
 sep=;
 Release Tag;API Item
 beta;AnyDiagnostic = IDiagnostic
+alpha;BaseClassDelta 
 beta;class BaseDiagnostic
 beta;BaseRule
+alpha;class BaseSchemaChange 
+alpha;class BaseSchemaChanges 
+alpha;ChangeType
+alpha;ClassChanges 
 beta;class ClassDiagnostic
 beta;createClassDiagnosticClass
 beta;createCustomAttributeContainerDiagnosticClass
@@ -10,6 +15,8 @@ beta;createPropertyDiagnosticClass
 beta;createRelationshipConstraintDiagnosticClass
 beta;createSchemaDiagnosticClass
 beta;createSchemaItemDiagnosticClass
+alpha;CustomAttributeContainerChange 
+alpha;CustomAttributeContainerChanges 
 beta;class CustomAttributeContainerDiagnostic
 beta;DiagnosticCategory
 beta;diagnosticCategoryToString(category: DiagnosticCategory): "Error" | "Warning" | "Message" | "Suggestion"
@@ -18,26 +25,56 @@ beta;Diagnostics:
 beta;DiagnosticType
 beta;diagnosticTypeToString(type: DiagnosticType): "CustomAttributeContainer" | "None" | "Property" | "RelationshipConstraint" | "Schema" | "SchemaItem"
 beta;ECRuleSet: IRuleSet
+alpha;EntityMixinChange 
+alpha;EntityMixinChanges 
+alpha;EnumerationChanges 
+alpha;EnumeratorChanges 
+alpha;EnumeratorDelta 
+alpha;EnumeratorMissing 
+alpha;FormatChanges 
 beta;class FormatDiagnosticReporter 
+alpha;FormatUnitChange 
+alpha;FormatUnitChanges 
 beta;IDiagnostic
 beta;IDiagnosticReporter
 beta;IRule
 beta;IRuleSet
 beta;IRuleSuppressionMap
 beta;IRuleSuppressionSet
+alpha;ISchemaChange
+alpha;ISchemaChanges
+alpha;ISchemaComparer
+alpha;ISchemaCompareReporter
 beta;ISuppressionRule
+alpha;KindOfQuantityChanges 
 beta;LoggingDiagnosticReporter 
+alpha;PresentationUnitChange 
+alpha;PresentationUnitChanges 
+alpha;PropertyChanges 
 beta;class PropertyDiagnostic
 alpha;PropertyEditResults
+alpha;PropertyMissing 
+alpha;PropertyValueChange 
+alpha;RelationshipConstraintChanges 
+alpha;RelationshipConstraintClassChange 
 beta;class RelationshipConstraintDiagnostic
+alpha;SchemaChanges 
 beta;SchemaCompareCodes:
 beta;SchemaCompareDiagnostics:
+alpha;SchemaCompareDirection
+alpha;SchemaComparer
 alpha;SchemaContextEditor
 beta;class SchemaDiagnostic
 alpha;SchemaEditResults
+alpha;class SchemaItemChange 
+alpha;SchemaItemChanges 
 beta;class SchemaItemDiagnostic
 alpha;SchemaItemEditResults
+alpha;SchemaItemMissing 
+alpha;SchemaReferenceDelta 
+alpha;SchemaReferenceMissing 
 beta;SchemaValidater
 beta;SchemaValidationVisitor 
 internal;SchemaWalker
 beta;class SuppressionDiagnosticReporter 
+alpha;UnitLabelOverrideDelta 

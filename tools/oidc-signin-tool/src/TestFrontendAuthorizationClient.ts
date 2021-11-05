@@ -3,20 +3,21 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AuthStatus, BeEvent, BentleyError } from "@bentley/bentleyjs-core";
-import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { AccessToken } from "@bentley/itwin-client";
+import { AccessToken, AuthStatus, BeEvent, BentleyError } from "@itwin/core-bentley";
+import { AuthorizationClient } from "@itwin/core-common";
 
 /**
  * Basic FrontendAuthorizationClient to use with an already created access token.
  * @internal
  */
-export class TestFrontendAuthorizationClient implements FrontendAuthorizationClient {
-  private _activeToken?: AccessToken;
+export class TestFrontendAuthorizationClient implements AuthorizationClient {
+  private _activeToken: AccessToken = "";
 
-  constructor(private _accessToken?: AccessToken) {
+  constructor(private _accessToken: AccessToken) {
     this._activeToken = this._accessToken;
-    this.onUserStateChanged.raiseEvent(this._activeToken);
+    if (!this._activeToken?.toLowerCase().includes("bearer"))
+      this._activeToken = `Bearer ${this._accessToken}`;
+    this.onAccessTokenChanged.raiseEvent(this._activeToken);
   }
 
   public get isAuthorized(): boolean {
@@ -33,12 +34,12 @@ export class TestFrontendAuthorizationClient implements FrontendAuthorizationCli
 
   public async signIn(): Promise<void> {
     this._activeToken = this._accessToken;
-    this.onUserStateChanged.raiseEvent(this._activeToken);
+    this.onAccessTokenChanged.raiseEvent(this._activeToken);
   }
 
   public async signOut(): Promise<void> {
-    this._activeToken = undefined;
-    this.onUserStateChanged.raiseEvent(this._activeToken);
+    this._activeToken = "";
+    this.onAccessTokenChanged.raiseEvent(this._activeToken);
   }
 
   public async getAccessToken(): Promise<AccessToken> {
@@ -47,5 +48,5 @@ export class TestFrontendAuthorizationClient implements FrontendAuthorizationCli
     return this._activeToken;
   }
 
-  public readonly onUserStateChanged = new BeEvent<(token: AccessToken | undefined) => void>();
+  public readonly onAccessTokenChanged = new BeEvent<(token: AccessToken) => void>();
 }

@@ -2,11 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/* eslint-disable deprecation/deprecation */
 import { expect } from "chai";
 import * as faker from "faker";
+import * as moq from "typemoq";
 import { RegisteredRuleset, Ruleset, RuleTypes } from "../presentation-common";
-import * as moq from "./_helpers/Mocks";
 
 describe("RegisteredRuleset", () => {
 
@@ -25,7 +24,11 @@ describe("RegisteredRuleset", () => {
     beforeEach(() => {
       ruleset = {
         id: faker.random.uuid(),
-        supportedSchemas: { schemaNames: [faker.random.word()] },
+        requiredSchemas: [
+          {
+            name: faker.random.word(),
+          },
+        ],
         supplementationInfo: {
           supplementationPurpose: faker.random.words(),
         },
@@ -44,7 +47,6 @@ describe("RegisteredRuleset", () => {
     it("returns wrapper ruleset properties", () => {
       expect(registered.uniqueIdentifier).to.eq(uniqueIdentifier);
       expect(registered.id).to.deep.equal(ruleset.id);
-      expect(registered.supportedSchemas).to.deep.equal(ruleset.supportedSchemas);
       expect(registered.supplementationInfo).to.deep.equal(ruleset.supplementationInfo);
       expect(registered.rules).to.deep.equal(ruleset.rules);
       expect(registered.vars).to.deep.equal(ruleset.vars);

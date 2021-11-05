@@ -8,7 +8,7 @@ module.exports = {
     "jsx-a11y"
   ],
   "extends": [
-    "plugin:@bentley/imodeljs-recommended",
+    "plugin:@itwin/itwinjs-recommended",
     "plugin:jsx-a11y/recommended"
   ],
   "rules": {

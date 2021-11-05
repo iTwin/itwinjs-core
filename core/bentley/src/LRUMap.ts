@@ -9,7 +9,7 @@
 import { OrderedComparator } from "./Compare";
 import { Dictionary } from "./Dictionary";
 
-/*
+/**
  * Derived from:
  * Licensed under MIT. Copyright (c) 2010 Rasmus Andersson <http://hunch.se/>
  * See README.md at https://github.com/rsms/js-lru for details.

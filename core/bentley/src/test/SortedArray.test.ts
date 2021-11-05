@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { compareStrings, SortedArray } from "../bentleyjs-core";
+import { compareStrings, SortedArray } from "../core-bentley";
 import { compareBooleans, compareNumbers, compareNumbersOrUndefined, compareStringsOrUndefined, compareWithTolerance } from "../Compare";
 
 class Thing {

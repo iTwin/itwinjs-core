@@ -5,15 +5,22 @@
 import * as React from "react";
 import {
   ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, NestedFrontstage, ToolWidget, Widget, Zone,
-} from "@bentley/ui-framework";
+} from "@itwin/appui-react";
+import { StandardContentLayouts } from "@itwin/appui-abstract";
 
 export class NestedAnimationStage extends FrontstageProvider {
+  public get id(): string {
+    return "NestedAnimationStage";
+  }
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
     const myContentGroup: ContentGroup = new ContentGroup(
       {
+        id: "ScheduleAnimation",
+        layout: StandardContentLayouts.singleView,
         contents: [
           {
+            id: "ScheduleAnimationView",
             classId: "ScheduleAnimationControl",
           },
         ],
@@ -21,12 +28,10 @@ export class NestedAnimationStage extends FrontstageProvider {
     );
 
     return (
-      <Frontstage id="NestedAnimationStage"
+      <Frontstage id={this.id}
         defaultTool={CoreTools.selectElementCommand}
-        defaultLayout="SingleContent"
         contentGroup={myContentGroup}
         isInFooterMode={false}
-        applicationData={{ key: "value" }}
         contentManipulationTools={
           <Zone
             widgets={[

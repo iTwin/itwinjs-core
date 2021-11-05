@@ -3,26 +3,24 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
+import "@itwin/presentation-frontend/lib/cjs/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import * as faker from "faker";
 import * as path from "path";
 import * as sinon from "sinon";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { I18N } from "@bentley/imodeljs-i18n";
+import * as moq from "typemoq";
+import { IModelConnection } from "@itwin/core-frontend";
+import { ITwinLocalization } from "@itwin/core-i18n";
 import {
-  Content, DefaultContentDisplayTypes, Descriptor, DisplayValue, FieldDescriptorType, Item, KeySet, NestedContentValue, PresentationError,
+  Content, DefaultContentDisplayTypes, Descriptor, FieldDescriptorType, Item, KeySet, NestedContentValue, PresentationError,
   SortDirection as PresentationSortDirection, RelationshipMeaning, ValuesDictionary,
-} from "@bentley/presentation-common";
-import { createTestContentDescriptor, createTestSimpleContentField } from "@bentley/presentation-common/lib/test/_helpers/Content";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { PromiseContainer } from "@bentley/presentation-common/lib/test/_helpers/Promises";
+} from "@itwin/presentation-common";
 import {
-  createRandomDescriptor, createRandomECInstanceKey, createRandomNestedContentField, createRandomPrimitiveField,
-} from "@bentley/presentation-common/lib/test/_helpers/random";
-import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
-import { RowItem } from "@bentley/ui-components";
-import { HorizontalAlignment, SortDirection } from "@bentley/ui-core";
+  createRandomECInstanceKey, createTestContentDescriptor, createTestContentItem, createTestNestedContentField, createTestSimpleContentField, PromiseContainer,
+} from "@itwin/presentation-common/lib/cjs/test";
+import { Presentation, PresentationManager } from "@itwin/presentation-frontend";
+import { RowItem } from "@itwin/components-react";
+import { HorizontalAlignment, SortDirection } from "@itwin/core-react";
 import { CacheInvalidationProps } from "../../presentation-components/common/ContentDataProvider";
 import { initializeLocalization } from "../../presentation-components/common/Utils";
 import { PresentationTableDataProvider, TABLE_DATA_PROVIDER_DEFAULT_PAGE_SIZE } from "../../presentation-components/table/DataProvider";
@@ -34,9 +32,7 @@ import { mockPresentationManager } from "../_helpers/UiComponents";
  */
 class Provider extends PresentationTableDataProvider {
   public override invalidateCache(props: CacheInvalidationProps) { super.invalidateCache(props); }
-  public override shouldConfigureContentDescriptor() { return super.shouldConfigureContentDescriptor(); } // eslint-disable-line deprecation/deprecation
-  public override configureContentDescriptor(descriptor: Descriptor) { return super.configureContentDescriptor(descriptor); } // eslint-disable-line deprecation/deprecation
-  public override getDescriptorOverrides() { return super.getDescriptorOverrides(); }
+  public override async getDescriptorOverrides() { return super.getDescriptorOverrides(); }
 }
 
 describe("TableDataProvider", () => {
@@ -55,9 +51,11 @@ describe("TableDataProvider", () => {
     const mocks = mockPresentationManager();
     presentationManagerMock = mocks.presentationManager;
     Presentation.setPresentationManager(presentationManagerMock.object);
-    Presentation.setI18nManager(new I18N("", {
+    const localize = new ITwinLocalization({
       urlTemplate: `file://${path.resolve("public/locales")}/{{lng}}/{{ns}}.json`,
-    }));
+    });
+    await localize.initialize(["iModelJS"]);
+    Presentation.setLocalization(localize);
     await initializeLocalization();
 
     provider = new Provider({ imodel: imodelMock.object, ruleset: rulesetId });
@@ -74,7 +72,7 @@ describe("TableDataProvider", () => {
       "", undefined, {}, {}, []);
   };
   const createContent = (recordsCount: number, itemsGenerator: () => Item = createEmptyContentItem): Content => {
-    const descriptor = createRandomDescriptor();
+    const descriptor = createTestContentDescriptor({ fields: [] });
     const records = new Array<Item>();
     while (recordsCount--) {
       records.push(itemsGenerator());
@@ -119,7 +117,7 @@ describe("TableDataProvider", () => {
     it("resets filtering, sorting, memoized columns and raises onColumnsChanged event when 'descriptor' flag is set", async () => {
       const onColumnsChangedSpy = sinon.spy(provider.onColumnsChanged, "raiseEvent");
       presentationManagerMock.setup(async (x) => x.getContentDescriptor(moq.It.isAny()))
-        .returns(async () => createRandomDescriptor());
+        .returns(async () => createTestContentDescriptor({ fields: [createTestSimpleContentField()] }));
 
       provider.filterExpression = faker.random.words();
       await provider.sort(0, SortDirection.Descending);
@@ -180,14 +178,6 @@ describe("TableDataProvider", () => {
 
   });
 
-  describe("shouldConfigureContentDescriptor", () => {
-
-    it("return false", () => {
-      expect(provider.shouldConfigureContentDescriptor()).to.be.false;
-    });
-
-  });
-
   describe("filterExpression", () => {
 
     it("sets a different filterExpression and clears caches", () => {
@@ -210,9 +200,9 @@ describe("TableDataProvider", () => {
       expect(invalidateCacheSpy).to.not.be.called;
     });
 
-    it("applies filter expression to descriptor overrides", () => {
+    it("applies filter expression to descriptor overrides", async () => {
       provider.filterExpression = "test";
-      expect(provider.getDescriptorOverrides()).to.deep.eq({
+      expect(await provider.getDescriptorOverrides()).to.deep.eq({
         displayType: provider.displayType,
         filterExpression: "test",
       });
@@ -223,14 +213,14 @@ describe("TableDataProvider", () => {
   describe("sort", () => {
 
     it("throws when trying to sort by invalid column", async () => {
-      const source = createRandomDescriptor(undefined, []);
+      const source = createTestContentDescriptor({ fields: [] });
       presentationManagerMock.setup(async (x) => x.getContentDescriptor(moq.It.isAny()))
         .returns(async () => source);
       await expect(provider.sort(0, SortDirection.NoSort)).to.eventually.be.rejectedWith(PresentationError);
     });
 
     it("invalidates descriptor configuration and content", async () => {
-      const source = createRandomDescriptor();
+      const source = createTestContentDescriptor({ fields: [createTestSimpleContentField()] });
       presentationManagerMock.setup(async (x) => x.getContentDescriptor(moq.It.isAny()))
         .returns(async () => source);
       const invalidateCacheMock = moq.Mock.ofInstance(provider.invalidateCache);
@@ -240,14 +230,14 @@ describe("TableDataProvider", () => {
     });
 
     it("sets sorting properties", async () => {
-      const source = createRandomDescriptor();
+      const source = createTestContentDescriptor({ fields: [createTestSimpleContentField()] });
       presentationManagerMock.setup(async (x) => x.getContentDescriptor(moq.It.isAny()))
         .returns(async () => source);
 
       await provider.sort(0, SortDirection.Descending);
       expect(provider.sortColumnKey).to.eq((await provider.getColumns())[0].key);
       expect(provider.sortDirection).to.eq(SortDirection.Descending);
-      expect(provider.getDescriptorOverrides()).to.deep.eq({
+      expect(await provider.getDescriptorOverrides()).to.deep.eq({
         displayType: provider.displayType,
         sorting: {
           field: { type: FieldDescriptorType.Name, fieldName: provider.sortColumnKey },
@@ -258,7 +248,7 @@ describe("TableDataProvider", () => {
       await provider.sort(0, SortDirection.Ascending);
       expect(provider.sortColumnKey).to.eq((await provider.getColumns())[0].key);
       expect(provider.sortDirection).to.eq(SortDirection.Ascending);
-      expect(provider.getDescriptorOverrides()).to.deep.eq({
+      expect(await provider.getDescriptorOverrides()).to.deep.eq({
         displayType: provider.displayType,
         sorting: {
           field: { type: FieldDescriptorType.Name, fieldName: provider.sortColumnKey },
@@ -269,7 +259,7 @@ describe("TableDataProvider", () => {
       await provider.sort(0, SortDirection.NoSort);
       expect(provider.sortColumnKey).to.eq((await provider.getColumns())[0].key);
       expect(provider.sortDirection).to.eq(SortDirection.NoSort);
-      expect(provider.getDescriptorOverrides()).to.deep.eq({
+      expect(await provider.getDescriptorOverrides()).to.deep.eq({
         displayType: provider.displayType,
       });
     });
@@ -283,7 +273,7 @@ describe("TableDataProvider", () => {
     });
 
     it("returns valid sorting column", async () => {
-      const source = createRandomDescriptor();
+      const source = createTestContentDescriptor({ fields: [createTestSimpleContentField()] });
       presentationManagerMock.setup(async (x) => x.getContentDescriptor(moq.It.isAny()))
         .returns(async () => source);
       await provider.sort(0, SortDirection.Descending);
@@ -296,7 +286,7 @@ describe("TableDataProvider", () => {
   describe("getColumns", () => {
 
     it("returns valid column descriptions", async () => {
-      const descriptor = createRandomDescriptor();
+      const descriptor = createTestContentDescriptor({ fields: [] });
       (provider as any).getContentDescriptor = () => descriptor;
       const cols = await provider.getColumns();
       expect(cols).to.matchSnapshot();
@@ -327,32 +317,39 @@ describe("TableDataProvider", () => {
     });
 
     it("returns one column descriptor when display type is list", async () => {
-      const descriptor = createRandomDescriptor(DefaultContentDisplayTypes.List);
+      const descriptor = createTestContentDescriptor({ fields: [], displayType: DefaultContentDisplayTypes.List });
       (provider as any).getContentDescriptor = () => descriptor;
       const cols = await provider.getColumns();
       expect(cols.length).to.be.eq(1);
       expect(cols).to.matchSnapshot();
     });
 
-    it("extracts nested fields of sameInstance", async () => {
-      const childFields = [createRandomPrimitiveField(), createRandomPrimitiveField()];
-      const childNestedField = createRandomNestedContentField(childFields);
-      childNestedField.relationshipMeaning = RelationshipMeaning.SameInstance;
-      const fields = [createRandomPrimitiveField(), createRandomPrimitiveField(), childNestedField];
-      const nestedField = createRandomNestedContentField(fields);
-      nestedField.relationshipMeaning = RelationshipMeaning.SameInstance;
-      const descriptor = createRandomDescriptor(undefined, [nestedField]);
+    it("extracts nested fields from their nested content field when its relationship meaning is `SameInstance`", async () => {
+      const deeplyNestedChildFields = [createTestSimpleContentField({ name: "a" }), createTestSimpleContentField({ name: "b" })];
+      const childNestedContentField = createTestNestedContentField({
+        name: "child-nested-content",
+        relationshipMeaning: RelationshipMeaning.SameInstance,
+        nestedFields: deeplyNestedChildFields,
+      });
+      const nestedChildFields = [createTestSimpleContentField({ name: "c" }), createTestSimpleContentField({ name: "d" }), childNestedContentField];
+      const nestedContentField = createTestNestedContentField({
+        name: "root-nested-content",
+        relationshipMeaning: RelationshipMeaning.SameInstance,
+        nestedFields: nestedChildFields,
+      });
+      const descriptor = createTestContentDescriptor({ fields: [nestedContentField] });
       (provider as any).getContentDescriptor = () => descriptor;
+
       const cols = await provider.getColumns();
       expect(cols.length).to.be.eq(4);
-      expect(cols[0].label).to.be.eq(fields[0].label);
-      expect(cols[1].label).to.be.eq(fields[1].label);
-      expect(cols[2].label).to.be.eq(childFields[0].label);
-      expect(cols[3].label).to.be.eq(childFields[1].label);
+      expect(cols[0].label).to.be.eq(deeplyNestedChildFields[0].label);
+      expect(cols[1].label).to.be.eq(deeplyNestedChildFields[1].label);
+      expect(cols[2].label).to.be.eq(nestedChildFields[0].label);
+      expect(cols[3].label).to.be.eq(nestedChildFields[1].label);
     });
 
     it("memoizes result", async () => {
-      const descriptor = createRandomDescriptor();
+      const descriptor = createTestContentDescriptor({ fields: [] });
       const resultPromiseContainer = new PromiseContainer<Descriptor>();
       const getContentDescriptorMock = moq.Mock.ofInstance(() => (provider as any).getContentDescriptor);
       getContentDescriptorMock.setup((x) => x()).returns(async () => resultPromiseContainer.promise).verifiable(moq.Times.once());
@@ -396,7 +393,7 @@ describe("TableDataProvider", () => {
     it("throws when content record is invalid - contains invalid number of primary keys", async () => {
       const record = createEmptyContentItem();
       record.primaryKeys = [];
-      (provider as any).getContent = async () => new Content(createRandomDescriptor(), [record]);
+      (provider as any).getContent = async () => new Content(createTestContentDescriptor({ fields: [] }), [record]);
       await expect(provider.getRow(0)).to.eventually.be.rejectedWith(PresentationError);
     });
 
@@ -429,7 +426,7 @@ describe("TableDataProvider", () => {
     });
 
     it("returns valid row item", async () => {
-      const descriptor = createRandomDescriptor();
+      const descriptor = createTestContentDescriptor({ fields: [] });
       const values: ValuesDictionary<any> = {};
       const displayValues: ValuesDictionary<any> = {};
       descriptor.fields.forEach((field) => {
@@ -443,169 +440,161 @@ describe("TableDataProvider", () => {
       expect(row).to.matchSnapshot();
     });
 
-    it("extracts rows with nested sameInstance field and sets mergedFieldsCount if there was more than one value in the nestedField", async () => {
-      const fields = [createRandomPrimitiveField(), createRandomPrimitiveField()];
-      const nestedField = createRandomNestedContentField(fields);
-      nestedField.relationshipMeaning = RelationshipMeaning.SameInstance;
-      const descriptor = createRandomDescriptor(undefined, [nestedField]);
+    it("extracts columns from nested content field with `SameInstance` relationship meaning and sets `mergedFieldsCount` when there's more than one nested value", async () => {
+      const childFields = [createTestSimpleContentField({ name: "a" }), createTestSimpleContentField({ name: "b" })];
+      const nestedContentField = createTestNestedContentField({
+        relationshipMeaning: RelationshipMeaning.SameInstance,
+        nestedFields: childFields,
+      });
+      const descriptor = createTestContentDescriptor({ fields: [nestedContentField] });
       const values = {
-        [nestedField.name]: [{
+        [nestedContentField.name]: [{
           primaryKeys: [createRandomECInstanceKey()],
           values: {
-            [nestedField.nestedFields[0].name]: faker.random.word(),
-            [nestedField.nestedFields[1].name]: faker.random.word(),
+            [childFields[0].name]: "a1",
+            [childFields[1].name]: "b1",
           },
           displayValues: {
-            [nestedField.nestedFields[0].name]: faker.random.words(),
-            [nestedField.nestedFields[1].name]: faker.random.words(),
+            [childFields[0].name]: "a1",
+            [childFields[1].name]: "b1",
           },
           mergedFieldNames: [],
         }, {
           primaryKeys: [createRandomECInstanceKey()],
           values: {
-            [nestedField.nestedFields[0].name]: faker.random.word(),
-            [nestedField.nestedFields[1].name]: faker.random.word(),
+            [childFields[0].name]: "a2",
+            [childFields[1].name]: "b2",
           },
           displayValues: {
-            [nestedField.nestedFields[0].name]: faker.random.words(),
-            [nestedField.nestedFields[1].name]: faker.random.words(),
+            [childFields[0].name]: "a2",
+            [childFields[1].name]: "b2",
           },
           mergedFieldNames: [],
         }] as NestedContentValue[],
       };
       const displayValues = {
-        [nestedField.name]: [{
-          primaryKeys: [createRandomECInstanceKey()],
-          values: {
-            [nestedField.nestedFields[0].name]: faker.random.word(),
-            [nestedField.nestedFields[1].name]: faker.random.word(),
-          },
-          displayValues: {
-            [nestedField.nestedFields[0].name]: faker.random.words(),
-            [nestedField.nestedFields[1].name]: faker.random.words(),
-          },
-          mergedFieldNames: [],
-        }, {
-          primaryKeys: [createRandomECInstanceKey()],
-          values: {
-            [nestedField.nestedFields[0].name]: faker.random.word(),
-            [nestedField.nestedFields[1].name]: faker.random.word(),
-          },
-          displayValues: {
-            [nestedField.nestedFields[0].name]: faker.random.words(),
-            [nestedField.nestedFields[1].name]: faker.random.words(),
-          },
-          mergedFieldNames: [],
-        }] as DisplayValue[],
+        [nestedContentField.name]: undefined,
       };
-      const record = new Item([createRandomECInstanceKey()],
-        faker.random.words(), faker.random.word(), undefined, values, displayValues, []);
+      const record = createTestContentItem({ values, displayValues });
       (provider as any).getContent = async () => new Content(descriptor, [record]);
+
       const row = await provider.getRow(0);
       expect(row.cells.length).to.eq(2);
-
+      expect(row.cells[0].record!.property.name).to.eq(childFields[0].name);
       expect(row.cells[0].mergedCellsCount).to.eq(2);
       expect(row.cells[0].alignment).to.eq(HorizontalAlignment.Center);
+      expect(row.cells[1].record!.property.name).to.eq(childFields[1].name);
       expect(row.cells[1].mergedCellsCount).to.be.undefined;
       expect(row.cells[1].alignment).to.be.undefined;
     });
 
-    it("extracts rows with nested sameInstance field and doesn't set mergedFieldsCount if there is only one value in the nestedField", async () => {
-      const childFields = [createRandomPrimitiveField(), createRandomPrimitiveField()];
-      const childNestedField = createRandomNestedContentField(childFields);
-      childNestedField.relationshipMeaning = RelationshipMeaning.SameInstance;
-      const fields = [createRandomPrimitiveField(), createRandomPrimitiveField(), childNestedField];
-      const nestedField = createRandomNestedContentField(fields);
-      nestedField.relationshipMeaning = RelationshipMeaning.SameInstance;
-      const descriptor = createRandomDescriptor(undefined, [nestedField]);
+    it("extracts columns from nested content field with `SameInstance` relationship meaning and doesn't set `mergedFieldsCount` when there's only one nested value", async () => {
+      const deeplyNestedChildFields = [createTestSimpleContentField({ name: "a" }), createTestSimpleContentField({ name: "b" })];
+      const childNestedContentField = createTestNestedContentField({
+        name: "child-nested-content",
+        relationshipMeaning: RelationshipMeaning.SameInstance,
+        nestedFields: deeplyNestedChildFields,
+      });
+      const nestedChildFields = [createTestSimpleContentField({ name: "c" }), createTestSimpleContentField({ name: "d" }), childNestedContentField];
+      const nestedContentField = createTestNestedContentField({
+        name: "root-nested-content",
+        relationshipMeaning: RelationshipMeaning.SameInstance,
+        nestedFields: nestedChildFields,
+      });
+      const descriptor = createTestContentDescriptor({ fields: [nestedContentField] });
+      (provider as any).getContentDescriptor = () => descriptor;
+
       const values = {
-        [nestedField.name]: [{
+        [nestedContentField.name]: [{
           primaryKeys: [createRandomECInstanceKey()],
           values: {
-            [nestedField.nestedFields[0].name]: faker.random.word(),
-            [nestedField.nestedFields[1].name]: faker.random.word(),
-            [childNestedField.name]: [{
+            [nestedChildFields[0].name]: "c",
+            [nestedChildFields[1].name]: "d",
+            [childNestedContentField.name]: [{
               primaryKeys: [createRandomECInstanceKey()],
               values: {
-                [childFields[0].name]: faker.random.words(),
-                [childFields[1].name]: faker.random.words(),
+                [deeplyNestedChildFields[0].name]: "a",
+                [deeplyNestedChildFields[1].name]: "b",
               },
               displayValues: {
-                [childFields[0].name]: faker.random.words(),
-                [childFields[1].name]: faker.random.words(),
+                [deeplyNestedChildFields[0].name]: "a",
+                [deeplyNestedChildFields[1].name]: "b",
               },
               mergedFieldNames: [],
             }] as NestedContentValue[],
           },
           displayValues: {
-            [nestedField.nestedFields[0].name]: faker.random.words(),
-            [nestedField.nestedFields[1].name]: faker.random.words(),
+            [nestedChildFields[0].name]: "c",
+            [nestedChildFields[1].name]: "d",
           },
           mergedFieldNames: [],
         }] as NestedContentValue[],
       };
       const displayValues = {
-        [nestedField.name]: [{
-          primaryKeys: [createRandomECInstanceKey()],
-          values: {
-            [nestedField.nestedFields[0].name]: faker.random.word(),
-            [nestedField.nestedFields[1].name]: faker.random.word(),
-          },
-          displayValues: {
-            [nestedField.nestedFields[0].name]: faker.random.words(),
-            [nestedField.nestedFields[1].name]: faker.random.words(),
-          },
-          mergedFieldNames: [],
-        }] as DisplayValue[],
+        [nestedContentField.name]: undefined,
       };
-      const record = new Item([createRandomECInstanceKey()],
-        faker.random.words(), faker.random.word(), undefined, values, displayValues, []);
+      const record = createTestContentItem({ values, displayValues });
       (provider as any).getContent = async () => new Content(descriptor, [record]);
+
       const row = await provider.getRow(0);
       expect(row.cells.length).to.eq(4);
-
+      expect(row.cells[0].record!.property.name).to.eq(nestedChildFields[0].name);
       expect(row.cells[0].mergedCellsCount).to.be.undefined;
       expect(row.cells[0].alignment).to.be.undefined;
+      expect(row.cells[1].record!.property.name).to.eq(nestedChildFields[1].name);
       expect(row.cells[1].mergedCellsCount).to.be.undefined;
       expect(row.cells[1].alignment).to.be.undefined;
+      expect(row.cells[2].record!.property.name).to.eq(deeplyNestedChildFields[0].name);
       expect(row.cells[2].mergedCellsCount).to.be.undefined;
       expect(row.cells[2].alignment).to.be.undefined;
+      expect(row.cells[3].record!.property.name).to.eq(deeplyNestedChildFields[1].name);
       expect(row.cells[3].mergedCellsCount).to.be.undefined;
       expect(row.cells[3].alignment).to.be.undefined;
     });
 
-    it("extracts rows with nested sameInstance field and doesn't set mergedFieldsCount if there are no values in the nestedFields", async () => {
-      const childFields = [createRandomPrimitiveField(), createRandomPrimitiveField()];
-      const childNestedField = createRandomNestedContentField(childFields);
-      childNestedField.relationshipMeaning = RelationshipMeaning.SameInstance;
-      const fields = [createRandomPrimitiveField(), createRandomPrimitiveField(), childNestedField];
-      const nestedField = createRandomNestedContentField(fields);
-      nestedField.relationshipMeaning = RelationshipMeaning.SameInstance;
-      const descriptor = createRandomDescriptor(undefined, [nestedField]);
+    it("extracts columns from nested content field with `SameInstance` relationship meaning and doesn't set `mergedFieldsCount` when there're no nested values", async () => {
+      const deeplyNestedChildFields = [createTestSimpleContentField({ name: "a" }), createTestSimpleContentField({ name: "b" })];
+      const childNestedContentField = createTestNestedContentField({
+        name: "child-nested-content",
+        relationshipMeaning: RelationshipMeaning.SameInstance,
+        nestedFields: deeplyNestedChildFields,
+      });
+      const nestedChildFields = [createTestSimpleContentField({ name: "c" }), createTestSimpleContentField({ name: "d" }), childNestedContentField];
+      const nestedContentField = createTestNestedContentField({
+        name: "root-nested-content",
+        relationshipMeaning: RelationshipMeaning.SameInstance,
+        nestedFields: nestedChildFields,
+      });
+      const descriptor = createTestContentDescriptor({ fields: [nestedContentField] });
+      (provider as any).getContentDescriptor = () => descriptor;
+
       const values = {
-        [nestedField.name]: [],
+        [nestedContentField.name]: [],
       };
       const displayValues = {
-        [nestedField.name]: [],
+        [nestedContentField.name]: undefined,
       };
-      const record = new Item([createRandomECInstanceKey()],
-        faker.random.words(), faker.random.word(), undefined, values, displayValues, []);
+      const record = createTestContentItem({ values, displayValues });
       (provider as any).getContent = async () => new Content(descriptor, [record]);
+
       const row = await provider.getRow(0);
       expect(row.cells.length).to.eq(4);
-
+      expect(row.cells[0].record!.property.name).to.eq(nestedChildFields[0].name);
       expect(row.cells[0].mergedCellsCount).to.be.undefined;
       expect(row.cells[0].alignment).to.be.undefined;
+      expect(row.cells[1].record!.property.name).to.eq(nestedChildFields[1].name);
       expect(row.cells[1].mergedCellsCount).to.be.undefined;
       expect(row.cells[1].alignment).to.be.undefined;
+      expect(row.cells[2].record!.property.name).to.eq(deeplyNestedChildFields[0].name);
       expect(row.cells[2].mergedCellsCount).to.be.undefined;
       expect(row.cells[2].alignment).to.be.undefined;
+      expect(row.cells[3].record!.property.name).to.eq(deeplyNestedChildFields[1].name);
       expect(row.cells[3].mergedCellsCount).to.be.undefined;
       expect(row.cells[3].alignment).to.be.undefined;
     });
 
     it("returns valid row when display type is list", async () => {
-      const descriptor = createRandomDescriptor(DefaultContentDisplayTypes.List);
+      const descriptor = createTestContentDescriptor({ displayType: DefaultContentDisplayTypes.List, fields: [] });
       const values: ValuesDictionary<any> = {};
       const displayValues: ValuesDictionary<any> = {};
       const record = new Item([createRandomECInstanceKey()],

@@ -2,36 +2,36 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
-import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { getAccessTokenFromBackend, TestUserCredentials, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
-
-function isOfflineSet(): boolean {
-  const index = process.argv.indexOf("--offline");
-  return process.argv[index + 1] === "mock";
-}
+import { AccessToken } from "@itwin/core-bentley";
+import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
+import { getAccessTokenFromBackend, TestUserCredentials, TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 
 /** Basic configuration used by all tests
  */
 export class TestConfig {
-  /** Name of project used by most tests */
-  public static readonly projectName: string = "iModelJsIntegrationTest";
-  public static readonly enableMocks: boolean = isOfflineSet();
+  /** Name of iTwin used by most tests */
+  public static readonly iTwinName: string = "iModelJsIntegrationTest";
 
   /** Login the specified user and return the AuthorizationToken */
-  public static async getAuthorizedClientRequestContext(user: TestUserCredentials = TestUsers.regular): Promise<AuthorizedClientRequestContext> {
-    const accessToken = await getAccessTokenFromBackend(user);
-    return new AuthorizedClientRequestContext((accessToken as any) as AccessToken);
+  public static async getAccessToken(user: TestUserCredentials = TestUsers.regular): Promise<AccessToken> {
+    return getAccessTokenFromBackend(user);
   }
 
-  public static async queryProject(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<Project> {
-    const contextRegistry = new ContextRegistryClient();
-    const project: Project | undefined = await contextRegistry.getProject(requestContext, {
-      $select: "*",
-      $filter: `Name+eq+'${projectName}'`,
+  public static async getITwinByName(accessToken: AccessToken, name: string): Promise<ITwin> {
+    const iTwinAccessClient = new ProjectsAccessClient();
+    const iTwinList: ITwin[] = await iTwinAccessClient.getAll(accessToken, {
+      search: {
+        searchString: name,
+        propertyName: ProjectsSearchableProperty.Name,
+        exactMatch: true,
+      },
     });
-    if (!project || !project.wsgId)
-      throw new Error(`Project ${projectName} not found for user.`);
-    return project;
+
+    if (iTwinList.length === 0)
+      throw new Error(`ITwin ${name} was not found for user.`);
+    else if (iTwinList.length > 1)
+      throw new Error(`Multiple iTwins named ${name} were found for the user.`);
+
+    return iTwinList[0];
   }
 }

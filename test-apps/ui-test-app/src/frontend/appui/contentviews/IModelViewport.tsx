@@ -6,9 +6,9 @@ import * as React from "react";
 import {
   ConfigurableCreateInfo, ConfigurableUiManager, ContentViewManager, IModelViewportControlOptions,
   IModelViewportControl as UIFW_IModelViewportControl, ViewSelector, ViewUtilities,
-} from "@bentley/ui-framework";
+} from "@itwin/appui-react";
 // uncomment following to test overriding default view overlay
-// import { ScreenViewport } from "@bentley/imodeljs-frontend";
+// import { ScreenViewport } from "@itwin/core-frontend";
 // import { MyCustomViewOverlay } from "../frontstages/FrontstageUi2";
 
 /** iModel Viewport Control

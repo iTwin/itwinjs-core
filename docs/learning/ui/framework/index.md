@@ -1,10 +1,12 @@
-# The ui-framework package
+# The appui-react package
 
-The ui-framework package contains application fragments for Login, Project, iModel and View selection, and configuration of the application UI including the Backstage, Frontstages, Zones, Widgets, etc.
+The appui-react package contains classes and components for specifying the application UI consisting of the
+Backstage, Frontstages, Content Views, Tool Bars, Status Bars, Widgets and Panels.
 
 ## Application UI Configuration
 
-There are numerous React components and TypeScript classes in the `@bentley/ui-framework` package for configuring the application user interface. The following constructs are defined using these components and classes:
+There are numerous TypeScript classes and React components in the `@itwin/appui-react` package for configuring the application user interface.
+The following constructs are defined using these components and classes:
 
 - [Frontstages and Zones](./Frontstages.md)
   - [Nested Frontstages](./NestedFrontstage.md)
@@ -13,15 +15,15 @@ There are numerous React components and TypeScript classes in the `@bentley/ui-f
 - [Widgets](./Widgets.md)
 - [Child Windows](./ChildWindows.md)
 - [Status Bar and Fields](./StatusBar.md)
-- [Navigation Aids]($ui-framework:NavigationAids) - A user interface control that moves the user's perspective around within a specific Content View.
+- [Navigation Aids](./NavigationAids.md)
 - [Tool Settings](./ToolSettings.md)
 - [Stage Panels](./StagePanels.md)
 - [Backstage](./Backstage.md)
 - [Notifications and Messages](./Notifications.md)
 - [Dialogs](./Dialogs.md)
-- [Workflows and Tasks](./TasksWorkflows.md)
-- [KeyboardShortcut]($ui-framework:KeyboardShortcut) - A keystroke or combination of keystrokes used to launch a command or tool.
 - [UI Settings](./UiSettings.md)
+- [AccuDraw UI](./AccuDraw.md)
+- [KeyboardShortcuts]($appui-react:KeyboardShortcut) - A keystroke or combination of keystrokes used to launch a command or tool.
 
 ## Other Topics
 

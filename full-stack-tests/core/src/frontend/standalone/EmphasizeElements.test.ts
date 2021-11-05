@@ -3,11 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { ColorDef, Feature, FeatureAppearance, FeatureAppearanceProps, FeatureOverrideType, LinePixels, RgbColor } from "@bentley/imodeljs-common";
+import { ColorDef, Feature, FeatureAppearance, FeatureAppearanceProps, FeatureOverrideType, LinePixels, RgbColor } from "@itwin/core-common";
 import {
-  EmphasizeElements, FeatureSymbology, IModelConnection, MockRender, ScreenViewport, SnapshotConnection, SpatialViewState,
+  EmphasizeElements, FeatureSymbology, IModelConnection, ScreenViewport, SnapshotConnection, SpatialViewState,
   StandardViewId,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
+import { TestUtility } from "../TestUtility";
 
 describe("EmphasizeElements tests", () => {
   let imodel: IModelConnection;
@@ -19,7 +20,7 @@ describe("EmphasizeElements tests", () => {
   document.body.appendChild(viewDiv);
 
   before(async () => {
-    await MockRender.App.startup();
+    await TestUtility.startFrontend(undefined, true);
     imodel = await SnapshotConnection.openFile("test.bim");
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
@@ -27,7 +28,7 @@ describe("EmphasizeElements tests", () => {
 
   after(async () => {
     if (imodel) await imodel.close();
-    await MockRender.App.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("Emphasize add/replace/clear", async () => {
@@ -257,9 +258,7 @@ describe("EmphasizeElements tests", () => {
     const vp = ScreenViewport.create(viewDiv, spatialView.clone());
     EmphasizeElements.clear(vp);
 
-    const vf = vp.viewFlags.clone();
-    vf.weights = true;
-    vp.viewFlags = vf;
+    vp.viewFlags = vp.viewFlags.with("weights", true);
 
     const expectAppearance = (color: ColorDef, type: FeatureOverrideType, expectedAppearance: FeatureAppearanceProps) => {
       const emph = EmphasizeElements.getOrCreate(vp);

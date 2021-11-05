@@ -6,16 +6,17 @@
  * @module iModelHubClient
  */
 
-import * as deepAssign from "deep-assign";
-import { GetMetaDataFunction, Guid, HttpStatus, IModelHubStatus, LogFunction, Logger, WSStatus } from "@bentley/bentleyjs-core";
-import { ResponseError, WsgError } from "@bentley/itwin-client";
+import deepAssign from "deep-assign";
+import { GetMetaDataFunction, Guid, HttpStatus, IModelHubStatus, LogFunction, Logger } from "@itwin/core-bentley";
+import { ResponseError } from "@bentley/itwin-client";
+import { WsgError, WSStatus } from "../wsg/WsgClient";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
 
 const loggerCategory: string = IModelHubClientLoggerCategory.IModelHub;
 
 /**
  * Error returned from iModelHub service.
- * @public
+ * @internal
  */
 export class IModelHubError extends WsgError {
   /** Extended data of the error. */
@@ -60,7 +61,7 @@ export class IModelHubError extends WsgError {
   }
 
   /**
-   * Make extended data available publically.
+   * Make extended data available publicly.
    */
   private copyExtendedData(): void {
     this.data = this._data;
@@ -163,13 +164,13 @@ export class IModelHubError extends WsgError {
    * @internal
    */
   public override log(): void {
-    (this.getLogLevel())(loggerCategory, this.logMessage(), this.getMetaData());
+    (this.getLogLevel())(loggerCategory, this.logMessage(), () => this.getMetaData());
   }
 }
 
 /**
  * Errors for incorrect iModelHub requests.
- * @public
+ * @internal
  */
 export class IModelHubClientError extends IModelHubError {
   /** Creates IModelHubClientError from id.

@@ -3,15 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { Id64, Id64Set } from "@bentley/bentleyjs-core";
-import { Matrix4d, Point3d, XYZProps, YawPitchRollAngles } from "@bentley/geometry-core";
+import { AccessToken, Id64, Id64Set } from "@itwin/core-bentley";
+import { Matrix4d, Point3d, XYZProps, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
-  EcefLocation, GeoCoordStatus, IModelCoordinatesResponseProps, IModelReadRpcInterface, IModelVersion, MassPropertiesOperation,
-  MassPropertiesRequestProps, ModelQueryParams, SnapResponseProps,
-} from "@bentley/imodeljs-common";
-import { CheckpointConnection, IModelApp, IModelConnection, SpatialModelState, ViewState } from "@bentley/imodeljs-frontend";
-import { AccessToken } from "@bentley/itwin-client";
-import { TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/lib/frontend";
+  EcefLocation, GeoCoordStatus, IModelReadRpcInterface, IModelVersion, MassPropertiesOperation, MassPropertiesRequestProps, ModelQueryParams,
+} from "@itwin/core-common";
+import { CheckpointConnection, IModelApp, IModelConnection, SpatialModelState, ViewState } from "@itwin/core-frontend";
+import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { TestContext } from "./setup/TestContext";
 
 /* eslint-disable deprecation/deprecation */
@@ -39,10 +37,10 @@ describe("IModel Connection", () => {
   });
 
   it("should successfully open an IModelConnection for read", async () => {
-    const contextId = testContext.iModelWithChangesets!.contextId;
+    const iTwinId = testContext.iModelWithChangesets!.iTwinId;
     const iModelId = testContext.iModelWithChangesets!.iModelId;
 
-    const iModel: IModelConnection = await CheckpointConnection.openRemote(contextId, iModelId);
+    const iModel: IModelConnection = await CheckpointConnection.openRemote(iTwinId, iModelId);
 
     expect(iModel).to.exist.and.be.not.empty;
 
@@ -52,15 +50,15 @@ describe("IModel Connection", () => {
 
   it("should successfully close an open an IModelConnection", async () => {
     const iModelId = testContext.iModelWithChangesets!.iModelId;
-    const contextId = testContext.iModelWithChangesets!.contextId;
-    const iModel = await CheckpointConnection.openRemote(contextId, iModelId);
+    const iTwinId = testContext.iModelWithChangesets!.iTwinId;
+    const iModel = await CheckpointConnection.openRemote(iTwinId, iModelId);
 
     expect(iModel).to.exist;
     return expect(iModel.close()).to.eventually.be.fulfilled;
   });
 });
 
-describe("IModel Connection with client credentials", () => {
+describe.skip("IModel Connection with client credentials", () => {
   let accessToken: AccessToken;
   let testContext: TestContext;
 
@@ -70,17 +68,16 @@ describe("IModel Connection with client credentials", () => {
     // If client credentials are not supplied or imodel read rpc tests are disabled skip test suite
     if (!testContext.settings.clientConfiguration || !testContext.settings.runiModelReadRpcTests)
       this.skip();
-
     accessToken = testContext.clientAccessToken!;
     IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
   });
 
   it("should successfully open an IModelConnection for read", async () => {
-    const contextId = testContext.iModelWithChangesets!.contextId;
+    const iTwinId = testContext.iModelWithChangesets!.iTwinId;
     const iModelId = testContext.iModelWithChangesets!.iModelId;
-    const changeSetId = (await testContext.iModelWithChangesets!.getConnection()).changeSetId;
+    const changeSetId = (await testContext.iModelWithChangesets!.getConnection()).changeset.id;
 
-    const iModel: IModelConnection = await CheckpointConnection.openRemote(contextId, iModelId, undefined === changeSetId ? IModelVersion.latest() : IModelVersion.asOfChangeSet(changeSetId));
+    const iModel = await CheckpointConnection.openRemote(iTwinId, iModelId, undefined === changeSetId ? IModelVersion.latest() : IModelVersion.asOfChangeSet(changeSetId));
 
     expect(iModel).to.exist.and.be.not.empty;
 
@@ -89,9 +86,9 @@ describe("IModel Connection with client credentials", () => {
   });
 });
 
-describe("IModelReadRpcInterface Methods requestable from an IModelConnection", () => {
+describe("IModelReadRpcInterface Methods from an IModelConnection", () => {
   let iModel: IModelConnection;
-  let contextId: string;
+  let iTwinId: string;
   let accessToken: AccessToken;
   let testContext: TestContext;
 
@@ -103,19 +100,18 @@ describe("IModelReadRpcInterface Methods requestable from an IModelConnection", 
     }
 
     const iModelId = testContext.iModelWithChangesets!.iModelId;
-    contextId = testContext.iModelWithChangesets!.contextId;
+    iTwinId = testContext.iModelWithChangesets!.iTwinId;
     accessToken = testContext.adminUserAccessToken;
     IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
-    iModel = await CheckpointConnection.openRemote(contextId, iModelId);
+    iModel = await CheckpointConnection.openRemote(iTwinId, iModelId);
   });
 
-  it("IModelReadRpcInterface method queryEntityIds should work as expected", async () => {
-    const ids: Id64Set = await iModel.elements.queryIds({ limit: 10, from: "BisCore:Subject" });
-
+  it("queryEntityIds should work as expected", async () => {
+    const ids = await iModel.elements.queryIds({ limit: 10, from: "BisCore:Subject" });
     expect(ids).to.exist;
   });
 
-  it("IModelReadRpcInterface method getToolTipMessage should work as expected", async () => {
+  it("getToolTipMessage should work as expected", async () => {
     const ids: Id64Set = await iModel.elements.queryIds({ limit: 10, from: "BisCore:Subject" });
     const id = ids.values().next().value;
 
@@ -124,20 +120,20 @@ describe("IModelReadRpcInterface Methods requestable from an IModelConnection", 
     expect(tooltip).to.not.be.undefined;
   });
 
-  it("IModelReadRpcInterface method getDefaultViewId should work as expected", async () => {
+  it("getDefaultViewId should work as expected", async () => {
     const result = await iModel.views.queryDefaultViewId();
 
     expect(result).to.not.be.undefined;
   });
 
-  it("IModelReadRpcInterface method getGeometrySummary should work as expected", async () => {
+  it("getGeometrySummary should work as expected", async () => {
     const ids: Id64Set = await iModel.elements.queryIds({ limit: 10, from: "BisCore:Subject" });
     const id = ids.values().next().value;
     const result = await IModelReadRpcInterface.getClient().getGeometrySummary(iModel.getRpcProps(), { elementIds: [id], options: {} });
     expect(result).to.not.be.undefined;
   });
 
-  it("IModelReadRpcInterface method requestSnap should work as expected", async () => {
+  it("requestSnap should work as expected", async () => {
     const ids: Id64Set = await iModel.elements.queryIds({ limit: 10, from: "BisCore:PhysicalElement" });
     const id = ids.values().next().value;
 
@@ -152,7 +148,7 @@ describe("IModelReadRpcInterface Methods requestable from an IModelConnection", 
     expect(snap.status).to.not.be.undefined;
   });
 
-  it("IModelReadRpcInterface method queryModelProps should work as expected", async () => {
+  it("queryModelProps should work as expected", async () => {
     const modelQueryParams: ModelQueryParams = { limit: 10, from: SpatialModelState.classFullName, wantPrivate: false };
     const curModelProps = await iModel.models.queryProps(modelQueryParams);
 
@@ -160,7 +156,7 @@ describe("IModelReadRpcInterface Methods requestable from an IModelConnection", 
     expect(curModelProps.length).gt(0);
   });
 
-  it("IModelReadRpcInterface method getModelProps should work as expected", async () => {
+  it("getModelProps should work as expected", async () => {
     const modelQueryParams: ModelQueryParams = { limit: 10, from: SpatialModelState.classFullName, wantPrivate: false };
     const curModelProps = await iModel.models.queryProps(modelQueryParams);
     const modelId = curModelProps[0].id!.toString();
@@ -171,12 +167,12 @@ describe("IModelReadRpcInterface Methods requestable from an IModelConnection", 
     expect(iModel.models.loaded.get(modelId)).to.not.be.undefined;
   });
 
-  it("IModelReadRpcInterface method getClassHierarchy should work as expected", async () => {
+  it("getClassHierarchy should work as expected", async () => {
     const result = await iModel.findClassFor("BisCore:LineStyle", undefined);
     expect(result).undefined;
   });
 
-  it("IModelReadRpcInterface method getViewThumbnail should work as expected", async () => {
+  it("getViewThumbnail should work as expected", async () => {
     const modelQueryParams: ModelQueryParams = { limit: 10, from: ViewState.classFullName };
     const modelProps = await iModel.views.queryProps(modelQueryParams);
     const viewId = modelProps[0].id!.toString();
@@ -184,23 +180,23 @@ describe("IModelReadRpcInterface Methods requestable from an IModelConnection", 
     expect(result).to.not.be.undefined;
   });
 
-  it("IModelReadRpcInterface method getIModelCoordinatesFromGeoCoordinates should work as expected", async () => {
+  it("getIModelCoordinatesFromGeoCoordinates should work as expected", async () => {
     const wgs84Converter = iModel.geoServices.getConverter("WGS84");
     const nad27Converter = iModel.geoServices.getConverter("NAD27");
 
     const geoPointList: XYZProps[] = [];
 
-    for (let iLatitude: number = 0; iLatitude < 10; iLatitude++) {
-      for (let iLongitude: number = 0; iLongitude < 10; iLongitude++) {
+    for (let iLatitude = 0; iLatitude < 10; iLatitude++) {
+      for (let iLongitude = 0; iLongitude < 10; iLongitude++) {
         geoPointList.push({ x: (132.600 + 0.02 * iLongitude), y: (34.350 + 0.02 * iLatitude), z: 0.0 });
       }
     }
 
     const testPoints: XYZProps[] = [];
-    for (let iGeoPoint: number = 1; iGeoPoint < geoPointList.length; iGeoPoint += 2)
+    for (let iGeoPoint = 1; iGeoPoint < geoPointList.length; iGeoPoint += 2)
       testPoints.push(geoPointList[iGeoPoint]);
 
-    const wgs84Response: IModelCoordinatesResponseProps = await wgs84Converter!.getIModelCoordinatesFromGeoCoordinates(testPoints);
+    const wgs84Response = await wgs84Converter!.getIModelCoordinatesFromGeoCoordinates(testPoints);
 
     // shouldn't have any from the cache.
     expect(wgs84Response.fromCache === 0).to.be.true;
@@ -216,17 +212,15 @@ describe("IModelReadRpcInterface Methods requestable from an IModelConnection", 
     expect(nad27Response.fromCache).eq(0);
   });
 
-  it("IModelReadRpcInterface method getGeoCoordinatesFromIModelCoordinates should work as expected", async () => {
-    const ecefProps: EcefLocation = new EcefLocation({ orientation: YawPitchRollAngles.createDegrees(0, 0, 0), origin: Point3d.create(0, 0, 0) });
+  it("getGeoCoordinatesFromIModelCoordinates should work as expected", async () => {
+    const ecefProps = new EcefLocation({ orientation: YawPitchRollAngles.createDegrees(0, 0, 0), origin: Point3d.create(0, 0, 0) });
     iModel.setEcefLocation(ecefProps);
 
-    try {
-      await iModel.spatialToCartographic({ x: 6378.137, y: 0, z: 0 });
-    } catch (error) { }
+    await iModel.spatialToCartographic({ x: 6378.137, y: 0, z: 0 });
   });
 
   /* NEEDSWORK queryPage no longer exists; you cannot specify a specific rows-per-page to query for (only a maximum via LIMIT).
-  it("iModelReadRpcInterface method queryRowCount should work as expected", async () => {
+  it("queryRowCount should work as expected", async () => {
     const getRowPerPage = (nPageSize: number, nRowCount: number) => {
       const nRowPerPage = nRowCount / nPageSize;
       const nPages = Math.ceil(nRowPerPage);
@@ -266,7 +260,7 @@ describe("IModelReadRpcInterface Methods requestable from an IModelConnection", 
   });
   */
 
-  it("iModelReadRpcInterface method queryModelRanges should work as expected", async () => {
+  it("queryModelRanges should work as expected", async () => {
     const modelProps = await iModel.models.queryProps({ limit: 10, from: "BisCore.SpatialModel" });
     const modelId = modelProps[0].id!.toString();
 
@@ -285,7 +279,8 @@ describe("IModelReadRpcInterface Methods requestable from an IModelConnection", 
     expect(ranges.length).to.be.gte(1);
 
   });
-  it("iModelReadRpcInterface method queryModelRanges should properly handle models that aren't geometric", async () => {
+
+  it("queryModelRanges should properly handle models that aren't geometric", async () => {
     // the below clause is created specifically for the test iModel, if that iModel were to be changed and it contained models that were geometricModels
     // but not PhysicalModels then the test may fail.
     let ranges;
@@ -311,7 +306,7 @@ describe("IModelReadRpcInterface Methods requestable from an IModelConnection", 
     expect(ranges).to.not.be.undefined;
     expect(ranges.length).to.be.equal(1);
   });
-  it("iModelReadRpcInterface method getMassProperties should work as expected", async () => {
+  it("getMassProperties should work as expected", async () => {
     const requestProps: MassPropertiesRequestProps = {
       operation: MassPropertiesOperation.AccumulateVolumes,
     };
@@ -323,7 +318,7 @@ describe("IModelReadRpcInterface Methods requestable from an IModelConnection", 
 
 describe("Snapping", () => {
   let iModel: IModelConnection;
-  let contextId: string;
+  let iTwinId: string;
   let accessToken: AccessToken;
   let testContext: TestContext;
 
@@ -334,14 +329,14 @@ describe("Snapping", () => {
       this.skip();
 
     const iModelId = testContext.iModelWithChangesets!.iModelId;
-    contextId = testContext.iModelWithChangesets!.contextId;
+    iTwinId = testContext.iModelWithChangesets!.iTwinId;
     accessToken = testContext.adminUserAccessToken;
     IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
-    iModel = await CheckpointConnection.openRemote(contextId, iModelId);
+    iModel = await CheckpointConnection.openRemote(iTwinId, iModelId);
   });
 
   it("should be able to request a snap", async () => {
-    const ids: Id64Set = await iModel.elements.queryIds({ limit: 10, from: "BisCore:PhysicalElement" });
+    const ids = await iModel.elements.queryIds({ limit: 10, from: "BisCore:PhysicalElement" });
     const id = ids.values().next().value;
 
     const worldToView = Matrix4d.createIdentity();
@@ -353,12 +348,11 @@ describe("Snapping", () => {
     };
 
     const snap = await IModelReadRpcInterface.getClient().requestSnap(iModel.getRpcProps(), id, snapProps);
-
     expect(snap.status).to.not.be.undefined;
   });
 
   it("should be able to cancel a snap", async () => {
-    const ids: Id64Set = await iModel.elements.queryIds({ limit: 10, from: "BisCore:PhysicalElement" });
+    const ids = await iModel.elements.queryIds({ limit: 10, from: "BisCore:PhysicalElement" });
     const id = ids.values().next().value;
 
     const worldToView = Matrix4d.createIdentity();
@@ -369,15 +363,17 @@ describe("Snapping", () => {
       worldToView: worldToView.toJSON(),
     };
 
-    const requestSnapPromises: Array<Promise<SnapResponseProps>> = [];
-    requestSnapPromises.push(IModelReadRpcInterface.getClient().requestSnap(iModel.getRpcProps(), id, snapProps));
-    await IModelReadRpcInterface.getClient().cancelSnap(iModel.getRpcProps(), id);
-
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    const promise = IModelReadRpcInterface.getClient().requestSnap(iModel.getRpcProps(), id, snapProps);
     try {
-      const snaps = await Promise.all(requestSnapPromises);
-      expect(snaps[0].status).to.not.be.undefined; // This is what we expect if the snap is completed before the cancellation is processed.
-    } catch (err) {
+      await IModelReadRpcInterface.getClient().cancelSnap(iModel.getRpcProps(), id);
+      const snap = await promise;
+
+      // This is what we expect if the snap is completed before the cancellation is processed.
+      expect(snap.status).not.to.be.undefined;
+    } catch (err: any) {
       // This is what we expect if the cancellation occurs in time to really cancel the snap.
+      expect(err.message).to.equal("aborted");
     }
   });
 });

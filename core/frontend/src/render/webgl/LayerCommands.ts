@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert, compareNumbers, compareStrings, SortedArray } from "@bentley/bentleyjs-core";
+import { assert, compareNumbers, compareStrings, SortedArray } from "@itwin/core-bentley";
 import {
   DrawCommand, DrawCommands, PopBatchCommand, PopBranchCommand, PopCommand, PushBatchCommand, PushBranchCommand, PushCommand,
 } from "./DrawCommand";

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/webgl-compatibility",
+      "comment": "rename to @itwin/webgl-compatibility",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/webgl-compatibility"
+}

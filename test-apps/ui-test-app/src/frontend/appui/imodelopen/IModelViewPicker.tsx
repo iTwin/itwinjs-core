@@ -6,10 +6,10 @@ import "./Common.scss";
 import "./IModelViewPicker.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { ViewDefinitionProps, ViewQueryParams } from "@bentley/imodeljs-common";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Spinner, SpinnerSize } from "@bentley/ui-core";
-import { IModelInfo, UiFramework } from "@bentley/ui-framework";
+import { ViewDefinitionProps, ViewQueryParams } from "@itwin/core-common";
+import { IModelConnection } from "@itwin/core-frontend";
+import { Button, ProgressRadial } from "@itwin/itwinui-react";
+import { ExternalIModel } from "../ExternalIModel";
 
 interface ViewCardProps {
   view: ViewDefinitionProps;
@@ -59,7 +59,7 @@ class ViewCard extends React.Component<ViewCardProps, ViewCardState> {
 
 /** Properties for the [[IModelViewPicker]] component */
 export interface ViewsProps {
-  iModelInfo?: IModelInfo;
+  iModelInfo?: { id: string, iTwinId: string, name: string };
   iModelConnection?: IModelConnection;
   onViewsSelected?: (views: ViewDefinitionProps[]) => void;
   onClose: () => void;
@@ -110,11 +110,9 @@ export class IModelViewPicker extends React.Component<ViewsProps, ViewsState> {
 
   private async startRetrieveViews() {
     if (this.props.iModelInfo) {
-      const projectInfo = this.props.iModelInfo.projectInfo;
-      const iModelWsgId = this.props.iModelInfo.wsgId;
-
-      // this.setState({ waitingForViews: true });
-      this._iModelConnection = await UiFramework.iModelServices.openIModel(projectInfo.wsgId, iModelWsgId);
+      const iModel = await ExternalIModel.create({iTwinId: this.props.iModelInfo.iTwinId, iModelId: this.props.iModelInfo.id});
+      await iModel.openIModel();
+      this._iModelConnection = iModel.iModelConnection!;
     } else if (this.props.iModelConnection) {
       this._iModelConnection = this.props.iModelConnection;
     } else {
@@ -136,7 +134,7 @@ export class IModelViewPicker extends React.Component<ViewsProps, ViewsState> {
     if (this.state.waitingForViews) {
       return (
         <div className="loading">
-          <Spinner size={SpinnerSize.Large} />
+          <ProgressRadial size="large" indeterminate />
         </div>
       );
     } else if (this.state.views && this.state.views.length > 0) {
@@ -172,7 +170,7 @@ export class IModelViewPicker extends React.Component<ViewsProps, ViewsState> {
           </div>
           {this.renderViews()}
           <div className="views-footer">
-            <button data-tg-on={this.state.selectedViews.length} disabled={this.state.selectedViews.length === 0} onClick={this._onOKPressed}>Open</button>
+            <Button styleType="high-visibility" data-tg-on={this.state.selectedViews.length} disabled={this.state.selectedViews.length === 0} onClick={this._onOKPressed}>Open</Button>
           </div>
         </div>
       </div>

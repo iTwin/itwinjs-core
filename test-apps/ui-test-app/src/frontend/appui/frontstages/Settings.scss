@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@bentley/ui-core/lib/ui-core/style/themecolors";
-@import "~@bentley/ui-core/lib/ui-core/style/typography";
-@import "~@bentley/ui-core/lib/ui-core/base/base";
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+@import "~@itwin/core-react/lib/cjs/core-react/base/base";
+@import "~@itwin/itwinui-css/scss/style/typography";
 
 // cspell:ignore leftpanel rightpanel
 
@@ -14,13 +14,13 @@ $settings-rightpanel-width: 220px;
 .components-settings-container {
   height: calc(100% - 50px);
   overflow: hidden;
-  }
+}
 
 .uifw-settings {
   background: $buic-background-dialog;
   color: $buic-text-color;
   border-radius: 3px;
-  font-size: $uicore-font-size;
+  font-size: $iui-font-size;
   display: flex;
   flex-direction: column;
 }
@@ -28,30 +28,30 @@ $settings-rightpanel-width: 220px;
 .uifw-settings-item {
   display: flex;
 
-  > .panel {
+  >.panel {
     flex: 1;
     display: flex;
     box-sizing: border-box;
   }
 
-  > .left-panel {
+  >.left-panel {
     flex-direction: column;
     min-width: $settings-leftpanel-width;
     padding: 20px 15px 20px 15px;
 
-    > .title {
+    >.title {
       font-size: 18px;
     }
 
-    > .description {
+    >.description {
       margin-top: 10px;
       font-size: 12px;
       color: $buic-text-color-muted;
     }
   }
 
-  > .right-panel {
-    display:flex;
+  >.right-panel {
+    display: flex;
     align-items: center;
     min-width: $settings-rightpanel-width;
     padding: 30px 50px 30px 30px;

@@ -22,7 +22,7 @@ import { Clipper, ClipPlaneContainment, ClipUtilities, PolygonClipper } from "./
 import { ConvexClipPlaneSet, ConvexClipPlaneSetProps } from "./ConvexClipPlaneSet";
 import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
 
-/** Wire format descrbing a [[UnionOfConvexClipPlaneSets]].
+/** Wire format describing a [[UnionOfConvexClipPlaneSets]].
  * @public
  */
 export type UnionOfConvexClipPlaneSetsProps = ConvexClipPlaneSetProps[];
@@ -98,8 +98,11 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
       result._convexSets.push(convexSet.clone());
     return result;
   }
-  /** Append `toAdd` to the array of `ConvexClipPlaneSet` */
-  public addConvexSet(toAdd: ConvexClipPlaneSet) {
+  /** Append `toAdd` to the array of `ConvexClipPlaneSet`.
+   * * undefined toAdd is ignored.
+   */
+  public addConvexSet(toAdd: ConvexClipPlaneSet | undefined) {
+    if (toAdd)
     this._convexSets.push(toAdd);
   }
 
@@ -296,6 +299,13 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
     if (zHigh) {
       const convexSet = ConvexClipPlaneSet.createEmpty();
       convexSet.addZClipPlanes(invisible, undefined, zHigh);
+      this._convexSets.push(convexSet);
+    }
+  }
+  /** move convex sets from source.*/
+  public takeConvexSets(source: UnionOfConvexClipPlaneSets) {
+    let convexSet;
+    while ((undefined !== (convexSet = source._convexSets.pop()))) {
       this._convexSets.push(convexSet);
     }
   }

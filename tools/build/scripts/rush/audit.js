@@ -37,9 +37,13 @@ const rushCommonDir = path.join(__dirname, "../../../../common/");
   // for development dependencies only.
   // All security issues should be addressed asap.
   const excludedAdvisories = [
-    1700, // https://npmjs.com/advisories/1700
-    1754, // https://npmjs.com/advisories/1754. Waiting for fix, https://github.com/svg/svgo/pull/1485.
-    1755, // https://npmjs.com/advisories/1755. Waiting for fix, https://github.com/sindresorhus/normalize-url/issues/135
+    "GHSA-8p5q-j9m2-g8wr", // https://github.com/advisories/GHSA-8p5q-j9m2-g8wr.
+    "GHSA-ww39-953v-wcq6", // https://github.com/advisories/GHSA-ww39-953v-wcq6.
+    "GHSA-8v27-2fg9-7h62", // https://github.com/advisories/GHSA-8v27-2fg9-7h62.
+    "GHSA-33f9-j839-rf8h", // https://github.com/advisories/GHSA-33f9-j839-rf8h.
+    "GHSA-c36v-fmgq-m8hx", // https://github.com/advisories/GHSA-c36v-fmgq-m8hx.
+    "GHSA-4jqc-8m5r-9rpr", // https://github.com/advisories/GHSA-4jqc-8m5r-9rpr.
+    "GHSA-whgm-jr23-g3j9", // https://github.com/advisories/GHSA-whgm-jr23-g3j9.
   ];
 
   let shouldFailBuild = false;
@@ -54,10 +58,10 @@ const rushCommonDir = path.join(__dirname, "../../../../common/");
       const message = `${severity} Security Vulnerability: ${advisory.title} in ${advisory.module_name} (from ${mpath}).  See ${advisory.url} for more info.`;
 
       // For now, we'll only treat CRITICAL and HIGH vulnerabilities as errors in CI builds.
-      if (!excludedAdvisories.includes(advisory.id) && (severity === "HIGH" || severity === "CRITICAL")) {
+      if (!excludedAdvisories.includes(advisory.github_advisory_id) && (severity === "HIGH" || severity === "CRITICAL")) {
         logBuildError(message);
         shouldFailBuild = true;
-      } else if (excludedAdvisories.includes(advisory.id) || severity === "MODERATE") // Only warn on MODERATE severity items
+      } else if (excludedAdvisories.includes(advisory.github_advisory_id) || severity === "MODERATE") // Only warn on MODERATE severity items
         logBuildWarning(message);
     }
   }

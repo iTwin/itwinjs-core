@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "separate OnViewExtentsError from ViewChangeOptions ",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

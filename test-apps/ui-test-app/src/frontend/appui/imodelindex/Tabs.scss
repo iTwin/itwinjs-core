@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@bentley/ui-core/lib/ui-core/style/colors";
-@import "~@bentley/ui-core/lib/ui-core/style/typography";
+@import "~@itwin/core-react/lib/cjs/core-react/style/colors";
+@import "~@itwin/itwinui-css/scss/style/typography";
 
 .tabstrip {
-	position: relative;
+  position: relative;
   color: $uicore-text-color;
-  font-size: $uicore-font-size;
+  font-size: $iui-font-size;
 }
 
 .tabstrip nav {
@@ -23,8 +23,8 @@
 }
 
 .tabstrip nav ul li {
-	position: relative;
-	display: block;
+  position: relative;
+  display: block;
   padding: 0 30px;
   cursor: pointer;
 }
@@ -33,7 +33,7 @@
   background: $uicore-white;
   color: rgba($uicore-text-color, 1);
   -webkit-transition: background .3s;
-	transition: background .3s;
+  transition: background .3s;
 }
 
 .tabstrip nav a {
@@ -41,10 +41,10 @@
   display: block;
   padding: 1em 0;
   color: rgba($uicore-text-color, .85);
-	text-overflow: ellipsis;
-	white-space: nowrap;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   -webkit-transition: color 0.25s;
-	transition: color 0.25s;
+  transition: color 0.25s;
 }
 
 .tabstrip nav ul li.tab-active a {
@@ -52,7 +52,7 @@
 }
 
 .tabstrip nav a:focus {
-	outline: none;
+  outline: none;
 }
 
 .tabstrip nav ul li.tab-active::before,

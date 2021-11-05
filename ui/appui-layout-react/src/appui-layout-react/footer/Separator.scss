@@ -1,0 +1,14 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+@import "variables";
+
+.nz-footer-separator {
+  height: calc(100% - (#{$nz-footer-indicator-vertical-padding} * 2));
+  width: 1px;
+  filter: drop-shadow(1px 0 $buic-foreground-body-reverse);
+  margin: $nz-footer-indicator-vertical-padding 0;
+  background-color: $buic-foreground-disabled;
+}

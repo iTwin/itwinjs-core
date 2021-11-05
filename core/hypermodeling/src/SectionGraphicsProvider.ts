@@ -6,14 +6,14 @@
  * @module HyperModeling
  */
 
-import { assert, compareBooleans, compareStrings, Id64 } from "@bentley/bentleyjs-core";
-import { ClipShape, ClipVector, Point3d, Range3d, Transform } from "@bentley/geometry-core";
-import { ColorDef, Placement2d, ViewAttachmentProps, ViewDefinition2dProps, ViewFlagOverrides } from "@bentley/imodeljs-common";
+import { assert, compareBooleans, compareStrings, Id64 } from "@itwin/core-bentley";
+import { ClipShape, ClipVector, Point3d, Range3d, Transform } from "@itwin/core-geometry";
+import { ColorDef, Placement2d, ViewAttachmentProps, ViewDefinition2dProps, ViewFlagOverrides } from "@itwin/core-common";
 import {
   CategorySelectorState, DisclosedTileTreeSet, DisplayStyle2dState, DrawingViewState,
   FeatureSymbology, GeometricModel2dState, GraphicBranch, HitDetail, IModelApp, IModelConnection, RenderClipVolume, RenderSystem, SheetModelState, Tile, TileContent, TiledGraphicsProvider, TileDrawArgs,
   TileLoadPriority, TileRequest, TileRequestChannel, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier, Viewport, ViewState2d,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { SectionDrawingLocationState } from "./SectionDrawingLocationState";
 import { HyperModeling } from "./HyperModeling";
 
@@ -65,7 +65,7 @@ class ProxyTreeSupplier implements TileTreeSupplier {
 
       const ctor = id.isSheet ? SheetProxyTree : DrawingProxyTree;
       return new ctor({ tree, ref: treeRef, view, state: id.state, attachment: id.attachment });
-    } catch (_) {
+    } catch {
       return undefined;
     }
   }
@@ -174,11 +174,12 @@ abstract class ProxyTree extends TileTree {
     if (undefined !== inverse)
       inverse.multiplyRange(range, range);
 
-    this._viewFlagOverrides = new ViewFlagOverrides(view.viewFlags);
-    this._viewFlagOverrides.setApplyLighting(false);
-
-    // View clip (section clip) should not apply to 2d graphics.
-    this._viewFlagOverrides.setShowClipVolume(false);
+    this._viewFlagOverrides = {
+      ...view.viewFlags,
+      lighting: false,
+      // View clip (section clip) should not apply to 2d graphics.
+      clipVolume: false,
+    };
 
     this._rootTile = new ProxyTile(this, range);
   }
@@ -285,7 +286,7 @@ class ProxyTile extends Tile {
     const sectionTree = proxyTree.tree;
 
     const location = proxyTree.iModelTransform.multiplyTransformTransform(sectionTree.iModelTransform);
-    const clipVolume = true === proxyTree.viewFlagOverrides.clipVolumeOverride ? proxyTree.clipVolume : undefined;
+    const clipVolume = true === proxyTree.viewFlagOverrides.clipVolume ? proxyTree.clipVolume : undefined;
     args = new TileDrawArgs({ context: args.context, location, tree: sectionTree, now: args.now, viewFlagOverrides: proxyTree.viewFlagOverrides, clipVolume, parentsAndChildrenExclusive: args.parentsAndChildrenExclusive, symbologyOverrides: proxyTree.symbologyOverrides });
     sectionTree.draw(args);
 
@@ -309,8 +310,7 @@ class ProxyTile extends Tile {
 
     const branch = new GraphicBranch();
     branch.entries.push(builder.finish());
-    branch.setViewFlagOverrides(new ViewFlagOverrides());
-    branch.viewFlagOverrides.setShowClipVolume(false);
+    branch.setViewFlagOverrides({ clipVolume: false });
     args.context.outputGraphic(args.context.createGraphicBranch(branch, Transform.createIdentity()));
   }
 }

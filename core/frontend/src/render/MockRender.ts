@@ -3,15 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { dispose } from "@bentley/bentleyjs-core";
-import { Transform } from "@bentley/geometry-core";
-import { ElementAlignedBox3d, PackedFeatureTable } from "@bentley/imodeljs-common";
+import { dispose } from "@itwin/core-bentley";
+import { Transform } from "@itwin/core-geometry";
+import { ElementAlignedBox3d, PackedFeatureTable } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { ViewRect } from "../ViewRect";
 import { Decorations } from "./Decorations";
 import { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
-import { GraphicBuilderOptions } from "./GraphicBuilder";
+import { CustomGraphicBuilderOptions, ViewportGraphicBuilderOptions } from "./GraphicBuilder";
 import { Pixel } from "./Pixel";
 import { PrimitiveBuilder } from "./primitives/geometry/GeometryListBuilder";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
@@ -19,7 +19,7 @@ import { MeshParams, PointStringParams, PolylineParams } from "./primitives/Vert
 import { GraphicList, RenderGraphic } from "./RenderGraphic";
 import { RenderMemory } from "./RenderMemory";
 import { RenderPlan } from "./RenderPlan";
-import { RenderSystem } from "./RenderSystem";
+import { RenderAreaPattern, RenderGeometry, RenderSystem } from "./RenderSystem";
 import { RenderTarget } from "./RenderTarget";
 import { Scene } from "./Scene";
 
@@ -72,7 +72,7 @@ export namespace MockRender {
 
   /** @internal */
   export class Builder extends PrimitiveBuilder {
-    public constructor(system: System, options: GraphicBuilderOptions) {
+    public constructor(system: System, options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions) {
       super(system, options);
     }
   }
@@ -114,6 +114,18 @@ export namespace MockRender {
   }
 
   /** @internal */
+  export class Geometry implements RenderGeometry {
+    public dispose(): void { }
+    public collectStatistics(): void { }
+  }
+
+  /** @internal */
+  export class AreaPattern implements RenderAreaPattern {
+    public dispose(): void { }
+    public collectStatistics(): void { }
+  }
+
+  /** @internal */
   export class System extends RenderSystem {
     public get isValid() { return true; }
     public dispose(): void { }
@@ -126,7 +138,7 @@ export namespace MockRender {
     public createTarget(canvas: HTMLCanvasElement): OnScreenTarget { return new OnScreenTarget(this, canvas); }
     public createOffscreenTarget(rect: ViewRect): RenderTarget { return new OffScreenTarget(this, rect); }
 
-    public createGraphic(options: GraphicBuilderOptions) {
+    public createGraphic(options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions) {
       return new Builder(this, options);
     }
 
@@ -138,6 +150,12 @@ export namespace MockRender {
     public override createPolyline(_params: PolylineParams) { return new Graphic(); }
     public override createPointString(_params: PointStringParams) { return new Graphic(); }
     public override createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection) { return new Graphic(); }
+    public override createRenderGraphic() { return new Graphic(); }
+
+    public override createMeshGeometry() { return new Geometry(); }
+    public override createPolylineGeometry() { return new Geometry(); }
+    public override createPointStringGeometry() { return new Geometry(); }
+    public override createAreaPattern() { return new AreaPattern(); }
   }
 
   /** @internal */

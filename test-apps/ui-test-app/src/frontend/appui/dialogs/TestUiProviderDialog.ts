@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
-import { IModelApp, LengthDescription, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
+import { ColorByName, ColorDef } from "@itwin/core-common";
+import { IModelApp, LengthDescription, NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
 import {
   ColorEditorParams, DialogButtonDef, DialogButtonType, DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertySyncItem, InputEditorSizeParams, PropertyDescription,
-  PropertyEditorParamTypes, SuppressLabelEditorParams,
-} from "@bentley/ui-abstract";
+  PropertyEditorParamTypes, StandardEditorNames, StandardTypeNames, SuppressLabelEditorParams,
+} from "@itwin/appui-abstract";
 
 enum ColorOptions {
   Red,
@@ -151,9 +151,9 @@ export class TestUiProvider extends DialogLayoutDataProvider {
     return {
       name: TestUiProvider._weightName,
       displayLabel: "Weight",
-      typename: "number",
+      typename: StandardTypeNames.Number,
       editor: {
-        name: "weight-picker",
+        name: StandardEditorNames.WeightPicker,
       },
     };
   };
@@ -174,8 +174,8 @@ export class TestUiProvider extends DialogLayoutDataProvider {
     return {
       name: TestUiProvider._lockToggleName,
       displayLabel: "Lock",
-      typename: "boolean",
-      editor: { name: "toggle" },
+      typename: StandardTypeNames.Boolean,
+      editor: { name: StandardEditorNames.Toggle },
     };
   };
 
@@ -215,7 +215,7 @@ export class TestUiProvider extends DialogLayoutDataProvider {
     return {
       name: TestUiProvider._stateName,
       displayLabel: "State",
-      typename: "string",
+      typename: StandardTypeNames.String,
       editor: {
         params: [{
           type: PropertyEditorParamTypes.InputEditorSize,

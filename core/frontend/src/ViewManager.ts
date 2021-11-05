@@ -5,8 +5,8 @@
 /** @packageDocumentation
  * @module Views
  */
-import { BeEvent, BentleyStatus, BeTimePoint, BeUiEvent, Id64Arg } from "@bentley/bentleyjs-core";
-import { GeometryStreamProps } from "@bentley/imodeljs-common";
+import { BeEvent, BentleyStatus, BeTimePoint, BeUiEvent, Id64Arg } from "@itwin/core-bentley";
+import { GeometryStreamProps } from "@itwin/core-common";
 import { HitDetail } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
@@ -211,7 +211,7 @@ export class ViewManager implements Iterable<ScreenViewport> {
   }
 
   /** Sets the selected [[Viewport]]. */
-  public setSelectedView(vp: ScreenViewport | undefined): BentleyStatus {
+  public async setSelectedView(vp: ScreenViewport | undefined): Promise<BentleyStatus> {
     if (undefined === vp)
       vp = this.getFirstOpenView();
 
@@ -229,14 +229,14 @@ export class ViewManager implements Iterable<ScreenViewport> {
     this.notifySelectedViewportChanged(previousVp, vp);
 
     if (undefined === previousVp)
-      IModelApp.toolAdmin.startDefaultTool();
+      await IModelApp.toolAdmin.startDefaultTool();
 
     return BentleyStatus.SUCCESS;
   }
 
   /** @internal */
-  public notifySelectedViewportChanged(previous: ScreenViewport | undefined, current: ScreenViewport | undefined): void {
-    IModelApp.toolAdmin.onSelectedViewportChanged(previous, current);
+  public notifySelectedViewportChanged(previous: ScreenViewport | undefined, current: ScreenViewport | undefined) {
+    IModelApp.toolAdmin.onSelectedViewportChanged(previous, current);// eslint-disable-line @typescript-eslint/no-floating-promises
     this.onSelectedViewportChanged.emit({ previous, current });
   }
 
@@ -265,7 +265,7 @@ export class ViewManager implements Iterable<ScreenViewport> {
     newVp.setEventController(new EventController(newVp)); // this will direct events to the viewport
     this._viewports.push(newVp);
     this.updateRenderToScreen();
-    this.setSelectedView(newVp);
+    this.setSelectedView(newVp);// eslint-disable-line @typescript-eslint/no-floating-promises
 
     // Start up the render loop if necessary.
     if (1 === this._viewports.length)
@@ -302,7 +302,7 @@ export class ViewManager implements Iterable<ScreenViewport> {
     this._viewports.splice(index, 1);
 
     if (this.selectedView === vp) // if removed viewport was selectedView, set it to undefined.
-      this.setSelectedView(undefined);
+      this.setSelectedView(undefined);// eslint-disable-line @typescript-eslint/no-floating-promises
 
     vp.rendersToScreen = false;
     this.updateRenderToScreen();
@@ -319,13 +319,6 @@ export class ViewManager implements Iterable<ScreenViewport> {
   /** Iterate over the viewports registered with the view manager. */
   public [Symbol.iterator](): Iterator<ScreenViewport> {
     return this._viewports[Symbol.iterator]();
-  }
-
-  /** Call the specified function on each [[Viewport]] registered with the ViewManager.
-   * @deprecated Use a `for..of` loop.
-   */
-  public forEachViewport(func: (vp: ScreenViewport) => void) {
-    this._viewports.forEach((vp) => func(vp));
   }
 
   /** Force each registered [[Viewport]] to regenerate all of its cached [[Decorations]] on the next frame. If the decorator parameter is specified, only
@@ -529,7 +522,7 @@ export class ViewManager implements Iterable<ScreenViewport> {
     return undefined;
   }
 
-  /** Allow a pickable decoration created using a persistent element id to augment or replace the the persistent elemennt's tooltip.
+  /** Allow a pickable decoration created using a persistent element id to augment or replace the the persistent element's tooltip.
    * @internal
    */
   public async overrideElementToolTip(hit: HitDetail): Promise<HTMLElement | string> {
@@ -551,7 +544,7 @@ export class ViewManager implements Iterable<ScreenViewport> {
     return EventHandled.No;
   }
 
-  /** Allow a pickable decoration created using a persistent element id to control whether snapping uses the persistent elemennt's geometry.
+  /** Allow a pickable decoration created using a persistent element id to control whether snapping uses the persistent element's geometry.
    * @internal
    */
   public overrideElementGeometry(hit: HitDetail): GeometryStreamProps | undefined {

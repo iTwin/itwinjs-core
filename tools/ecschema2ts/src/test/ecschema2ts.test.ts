@@ -5,8 +5,8 @@
 import { ECSchemaToTs } from "../ecschema2ts";
 import { assert } from "chai";
 import * as utils from "./utilities/utils";
-import { SchemaContext } from "@bentley/ecschema-metadata";
-import { SchemaXmlFileLocater } from "@bentley/ecschema-locaters";
+import { SchemaContext } from "@itwin/ecschema-metadata";
+import { SchemaXmlFileLocater } from "@itwin/ecschema-locaters";
 
 describe("Convert schema xml string to typescript string", () => {
   let ecschema2ts: ECSchemaToTs;
@@ -26,7 +26,7 @@ describe("Convert schema xml string to typescript string", () => {
       <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
       </ECSchema>`;
 
-    const expectedSchemaTsString = utils.dedent`import { ClassRegistry, Schema, Schemas } from "@bentley/imodeljs-backend";
+    const expectedSchemaTsString = utils.dedent`import { ClassRegistry, Schema, Schemas } from "@itwin/core-backend";
       import * as elementsModule from "./TestSchemaElements";
 
       export class TestSchema extends Schema {
@@ -73,7 +73,7 @@ describe("Convert schema xml string to typescript string", () => {
         </ECStructClass>
       </ECSchema>`;
 
-    const expectedSchemaTsString = utils.dedent`import { ClassRegistry, Schema, Schemas } from "@bentley/imodeljs-backend";
+    const expectedSchemaTsString = utils.dedent`import { ClassRegistry, Schema, Schemas } from "@itwin/core-backend";
       import * as elementsModule from "./TestSchemaElements";
 
       export class TestSchema extends Schema {
@@ -90,7 +90,7 @@ describe("Convert schema xml string to typescript string", () => {
         }
       }\n\n`;
 
-    const expectedElementTsString = utils.dedent`import { Entity, IModelDb } from "@bentley/imodeljs-backend";
+    const expectedElementTsString = utils.dedent`import { Entity, IModelDb } from "@itwin/core-backend";
       import { TestEntityProps } from "./TestSchemaElementProps";
 
       export class TestEntity extends Entity implements TestEntityProps {
@@ -101,8 +101,8 @@ describe("Convert schema xml string to typescript string", () => {
         }
       }\n\n`;
 
-    const expectedPropTsString = utils.dedent`import { EntityProps } from "@bentley/imodeljs-common";
-      import { Point2d, Point3d } from "@bentley/geometry-core";
+    const expectedPropTsString = utils.dedent`import { EntityProps } from "@itwin/core-common";
+      import { Point2d, Point3d } from "@itwin/core-geometry";
 
       export interface TestEntityProps extends EntityProps {
         primPropString?: string;
@@ -145,8 +145,8 @@ describe("ecxml to typescript string", () => {
         expectedPropsImportTs: [],
         expectedPropsTs: [],
         expectedElemImportTs: [
-          new RegExp(`import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b).* } from "@bentley/imodeljs-backend";`),
-          new RegExp(`import { EntityProps } from "@bentley/imodeljs-common";`),
+          new RegExp(`import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b).* } from "@itwin/core-backend";`),
+          new RegExp(`import { EntityProps } from "@itwin/core-common";`),
         ],
         expectedElemTs: [utils.dedent`
           export class EntityTest extends Entity {
@@ -173,8 +173,8 @@ describe("ecxml to typescript string", () => {
         expectedPropsImportTs: [],
         expectedPropsTs: [],
         expectedElemImportTs: [
-          new RegExp(`import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b).* } from "@bentley/imodeljs-backend";`),
-          new RegExp(`import { EntityProps } from "@bentley/imodeljs-common";`),
+          new RegExp(`import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b).* } from "@itwin/core-backend";`),
+          new RegExp(`import { EntityProps } from "@itwin/core-common";`),
         ],
         expectedElemTs: [utils.dedent`
           /**
@@ -204,8 +204,8 @@ describe("ecxml to typescript string", () => {
         expectedPropsImportTs: [],
         expectedPropsTs: [],
         expectedElemImportTs: [
-          new RegExp(`import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b).* } from "@bentley/imodeljs-backend";`),
-          new RegExp(`import { EntityProps } from "@bentley/imodeljs-common";`),
+          new RegExp(`import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b).* } from "@itwin/core-backend";`),
+          new RegExp(`import { EntityProps } from "@itwin/core-common";`),
         ],
         expectedElemTs: [utils.dedent`
           export abstract class EntityTest extends Entity {
@@ -234,7 +234,7 @@ describe("ecxml to typescript string", () => {
         expectedSchemaImportTs: utils.createExpectedSchemaImportTs("TestSchema"),
         expectedSchemaTs: utils.createExpectedSchemaTsString("TestSchema"),
         expectedPropsImportTs: [
-          new RegExp(`import { EntityProps } from "@bentley/imodeljs-common";`),
+          new RegExp(`import { EntityProps } from "@itwin/core-common";`),
         ],
         expectedPropsTs: [utils.dedent`
           export interface EntityTestProps extends EntityProps {
@@ -242,8 +242,8 @@ describe("ecxml to typescript string", () => {
           }`,
         ],
         expectedElemImportTs: [
-          new RegExp(`import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b).* } from "@bentley/imodeljs-backend";`),
-          new RegExp(`import { EntityProps } from "@bentley/imodeljs-common";`),
+          new RegExp(`import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b).* } from "@itwin/core-backend";`),
+          new RegExp(`import { EntityProps } from "@itwin/core-common";`),
           new RegExp(`import { EntityTestProps } from "./TestSchemaElementProps";`),
         ],
         expectedElemTs: [utils.dedent`
@@ -292,7 +292,7 @@ describe("ecxml to typescript string", () => {
         expectedSchemaImportTs: utils.createExpectedSchemaImportTs("TestSchema"),
         expectedSchemaTs: utils.createExpectedSchemaTsString("TestSchema"),
         expectedPropsImportTs: [
-          new RegExp(`import { EntityProps } from "@bentley/imodeljs-common";`),
+          new RegExp(`import { EntityProps } from "@itwin/core-common";`),
         ],
         expectedPropsTs: [utils.dedent`
           export interface IMixin {
@@ -308,7 +308,7 @@ describe("ecxml to typescript string", () => {
           }`,
         ],
         expectedElemImportTs: [
-          new RegExp(`import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b).* } from "@bentley/imodeljs-backend";`),
+          new RegExp(`import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b).* } from "@itwin/core-backend";`),
           new RegExp(`import { (?=.*\\b(EntityTestProps)\\b)(?=.*\\b(BaseEntityTestProps)\\b).* } from "./TestSchemaElementProps";`),
         ],
         expectedElemTs: [utils.dedent`
@@ -361,7 +361,7 @@ describe("ecxml to typescript string", () => {
           }`,
         ],
         expectedElemImportTs: [
-          new RegExp(`import { IModelDb } from "@bentley/imodeljs-backend";`),
+          new RegExp(`import { IModelDb } from "@itwin/core-backend";`),
           new RegExp(`import { EntityTestProps } from "./TestSchemaElementProps";`),
           new RegExp(`import { BaseEntityTest } from "./ReferenceSchemaElements";`),
         ],
@@ -645,7 +645,7 @@ describe("ecxml to typescript string", () => {
         expectedPropsImportTs: [],
         expectedPropsTs: [],
         expectedElemImportTs: [
-          new RegExp(`import { IModelDb } from "@bentley/imodeljs-backend";`),
+          new RegExp(`import { IModelDb } from "@itwin/core-backend";`),
           new RegExp(`import { TestBase } from "./RefSchemaElements";`),
           new RegExp(`import { TestBaseProps } from "./RefSchemaElementProps";`),
         ],
@@ -693,7 +693,7 @@ describe("ecxml to typescript string", () => {
         expectedPropsImportTs: [],
         expectedPropsTs: [],
         expectedElemImportTs: [
-          new RegExp(`import { IModelDb } from "@bentley/imodeljs-backend";`),
+          new RegExp(`import { IModelDb } from "@itwin/core-backend";`),
           new RegExp(`import { TestBase } from "./RefSchemaElements";`),
           new RegExp(`import { TestBase as SecondRefSchemaElementsTestBase } from "./SecondRefSchemaElements";`),
           new RegExp(`import { TestBaseProps } from "./RefSchemaElementProps";`),
@@ -757,7 +757,7 @@ describe("ecxml to typescript string", () => {
         expectedPropsImportTs: [],
         expectedPropsTs: [],
         expectedElemImportTs: [
-          new RegExp(`import { IModelDb } from "@bentley/imodeljs-backend";`),
+          new RegExp(`import { IModelDb } from "@itwin/core-backend";`),
           new RegExp(`import { (?=.*\\b(TestBase)\\b)(?=.*\\b(TestBase2)\\b).* } from "./RefSchemaElements";`),
           new RegExp(`import { TestBase as SecondRefSchemaElementsTestBase } from "./SecondRefSchemaElements";`),
           new RegExp(`import { (?=.*\\b(TestBaseProps)\\b)(?=.*\\b(TestBase2Props)\\b).* } from "./RefSchemaElementProps";`),
@@ -818,8 +818,8 @@ describe("ecxml to typescript string", () => {
         expectedSchemaImportTs: utils.createExpectedSchemaImportTs("TestSchema"),
         expectedSchemaTs: utils.createExpectedSchemaTsString("TestSchema"),
         expectedPropsImportTs: [
-          new RegExp(`import { GuidString } from "@bentley/bentleyjs-core";`),
-          new RegExp(`import { (?=.*\\b(Point2d)\\b)(?=.*\\b(Point3d)\\b).* } from "@bentley/geometry-core";`),
+          new RegExp(`import { GuidString } from "@itwin/core-bentley";`),
+          new RegExp(`import { (?=.*\\b(Point2d)\\b)(?=.*\\b(Point3d)\\b).* } from "@itwin/core-geometry";`),
           new RegExp(`import { StructClass } from "./RefSchemaElementProps";`),
           new RegExp(`import { PropEnum } from "./RefSchemaElements";`),
         ],
@@ -833,7 +833,7 @@ describe("ecxml to typescript string", () => {
           }`,
         ],
         expectedElemImportTs: [
-          new RegExp(`import { (?=.*\\b(IModelDb)\\b)(?=.*\\b(Entity)\\b).* } from "@bentley/imodeljs-backend";`),
+          new RegExp(`import { (?=.*\\b(IModelDb)\\b)(?=.*\\b(Entity)\\b).* } from "@itwin/core-backend";`),
           new RegExp(`import { TestClassProps } from "./TestSchemaElementProps";`),
         ],
         expectedElemTs: [utils.dedent`
@@ -861,8 +861,8 @@ describe("ecxml to typescript string", () => {
         expectedPropsImportTs: [],
         expectedPropsTs: [],
         expectedElemImportTs: [
-          new RegExp(`import { (?=.*\\b(IModelDb)\\b)(?=.*\\b(Entity)\\b).* } from "@bentley/imodeljs-backend";`),
-          new RegExp(`import { EntityProps } from "@bentley/imodeljs-common";`),
+          new RegExp(`import { (?=.*\\b(IModelDb)\\b)(?=.*\\b(Entity)\\b).* } from "@itwin/core-backend";`),
+          new RegExp(`import { EntityProps } from "@itwin/core-common";`),
         ],
         expectedElemTs: [utils.dedent`
           export class TestClass extends Entity {
@@ -1023,8 +1023,8 @@ describe("ecxml to typescript string", () => {
         expectedPropsImportTs: [],
         expectedPropsTs: [],
         expectedElemImportTs: [
-          new RegExp(`import { Entity, IModelDb } from "@bentley/imodeljs-backend";`),
-          new RegExp(`import { EntityProps } from "@bentley/imodeljs-common";`),
+          new RegExp(`import { Entity, IModelDb } from "@itwin/core-backend";`),
+          new RegExp(`import { EntityProps } from "@itwin/core-common";`),
         ],
         expectedElemTs: [utils.dedent`
           export class Building extends Entity {
@@ -1055,8 +1055,8 @@ describe("ecxml to typescript string", () => {
         expectedPropsImportTs: [],
         expectedPropsTs: [],
         expectedElemImportTs: [
-          new RegExp(`import { SpatialLocationElement, IModelDb } from "@bentley/imodeljs-backend";`),
-          new RegExp(`import { GeometricElement3dProps } from "@bentley/imodeljs-common";`),
+          new RegExp(`import { SpatialLocationElement, IModelDb } from "@itwin/core-backend";`),
+          new RegExp(`import { GeometricElement3dProps } from "@itwin/core-common";`),
         ],
         expectedElemTs: [utils.dedent`
           export class Building extends SpatialLocationElement {
@@ -1092,8 +1092,8 @@ describe("ecxml to typescript string", () => {
         expectedPropsImportTs: [],
         expectedPropsTs: [],
         expectedElemImportTs: [
-          new RegExp(`import { Sheet, IModelDb } from "@bentley/imodeljs-backend";`),
-          new RegExp(`import { SheetProps } from "@bentley/imodeljs-common";`),
+          new RegExp(`import { Sheet, IModelDb } from "@itwin/core-backend";`),
+          new RegExp(`import { SheetProps } from "@itwin/core-common";`),
         ],
         expectedElemTs: [utils.dedent`
           export class Building extends Sheet {

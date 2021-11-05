@@ -3,14 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Point3d, Transform } from "@bentley/geometry-core";
 import {
   ColorDef, FeatureAppearance, GraphicParams, ImageBuffer, ImageBufferFormat, RenderMaterial, RenderMode, RenderTexture, TextureMapping,
-} from "@bentley/imodeljs-common";
-import {
-  DecorateContext, FeatureSymbology, GraphicType, IModelApp, RenderGraphicOwner, SnapshotConnection, Viewport,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-common";
+import { DecorateContext, FeatureSymbology, GraphicType, IModelApp, RenderGraphicOwner, SnapshotConnection, Viewport } from "@itwin/core-frontend";
+import { Point3d } from "@itwin/core-geometry";
 import { testOnScreenViewport, TestViewport } from "../TestViewport";
+import { TestUtility } from "../TestUtility";
 
 interface GraphicOptions {
   color: ColorDef;
@@ -70,8 +69,14 @@ class TransparencyDecorator {
     const gfParams = GraphicParams.fromSymbology(opts.color, opts.color, 1);
     gfParams.material = opts.material;
 
-    const builder = vp.target.renderSystem.createGraphicBuilder(Transform.createIdentity(), GraphicType.Scene, vp, opts.pickableId);
-    builder.wantNormals = builder.wantEdges = false;
+    const builder = vp.target.renderSystem.createGraphic({
+      type: GraphicType.Scene,
+      viewport: vp,
+      pickable: opts.pickableId ? { id: opts.pickableId } : undefined,
+      wantNormals: false,
+      generateEdges: false,
+    });
+
     builder.activateGraphicParams(gfParams);
     builder.addShape(pts);
 
@@ -84,7 +89,7 @@ describe("Transparency", async () => {
   let decorator: TransparencyDecorator;
 
   before(async () => {
-    await IModelApp.startup();
+    await TestUtility.startFrontend();
     imodel = await SnapshotConnection.openFile("mirukuru.ibim");
   });
 
@@ -92,7 +97,7 @@ describe("Transparency", async () => {
     if (imodel)
       await imodel.close();
 
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   beforeEach(() => {
@@ -111,11 +116,10 @@ describe("Transparency", async () => {
       expect(viewport.displayStyle.backgroundColor.equals(ColorDef.black)).to.be.true;
 
       viewport.changeViewedModels([]);
-      viewport.viewFlags.lighting = false;
+      viewport.viewFlags = viewport.viewFlags.with("lighting", false);
       viewport.isFadeOutActive = true;
 
       setup(viewport);
-      viewport.viewFlags = viewport.viewFlags.clone();
       viewport.addFeatureOverrideProvider(decorator);
 
       viewport.renderFrame();
@@ -214,6 +218,7 @@ describe("Transparency", async () => {
       bytes.push(alpha);
 
     const img = ImageBuffer.create(new Uint8Array(bytes), fmt, 1);
+    // eslint-disable-next-line deprecation/deprecation
     const texture = IModelApp.renderSystem.createTextureFromImageBuffer(img, imodel, new RenderTexture.Params(imodel.transientIds.next));
     expect(texture).not.to.be.undefined;
     return texture!;

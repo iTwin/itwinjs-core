@@ -82,47 +82,8 @@ export class BGFBReader {
     }
     return undefined;
   }
-/*
-  public writeInterpolationCurve3dAsFBVariantGeometry(data: InterpolationCurve3dData): number | undefined {
-    const fitPointsOffset = this.writeDoubleArray(data.copyFitPointsFloat64Array());
-    if (fitPointsOffset === undefined)
-    return undefined;
-  const knotOffset = data.knots ? this.writeDoubleArray(data.knots) : 0;
 
-    // REMARK: some native or flatbuffer quirk made startTangent a point and endTangent a vector.
-  const startTangentOffset = data.startTangent ?
-    BGFBAccessors.DPoint3d.createDPoint3d(this.builder,
-      data.startTangent.x, data.startTangent.y, data.startTangent.z)
-      : 0;
-  const endTangentOffset = data.endTangent ?
-      BGFBAccessors.DVector3d.createDVector3d(this.builder,
-        data.endTangent.x, data.endTangent.y, data.endTangent.z)
-        : 0;
-    BGFBAccessors.InterpolationCurve.startInterpolationCurve(this.builder);
-  BGFBAccessors.InterpolationCurve.addFitPoints(this.builder, fitPointsOffset);
-  if (data.order)
-    BGFBAccessors.InterpolationCurve.addOrder(this.builder, data.order);
-  if (data.closed)
-    BGFBAccessors.InterpolationCurve.addClosed(this.builder, data.closed);
-  if (data.isChordLenKnots)
-    BGFBAccessors.InterpolationCurve.addIsChordLenKnots(this.builder, data.isChordLenKnots);
-  if (data.isColinearTangents)
-    BGFBAccessors.InterpolationCurve.addIsColinearTangents(this.builder, data.isColinearTangents);
-  if (data.isChordLenKnots)
-    BGFBAccessors.InterpolationCurve.addIsChordLenKnots(this.builder, data.isChordLenKnots);
-  if (data.isNaturalTangents)
-    BGFBAccessors.InterpolationCurve.addIsNaturalTangents(this.builder, data.isNaturalTangents);
-  if (startTangentOffset !== 0)
-    BGFBAccessors.InterpolationCurve.addStartTangent(this.builder, startTangentOffset);
-  if (endTangentOffset !== 0)
-    BGFBAccessors.InterpolationCurve.addEndTangent(this.builder, endTangentOffset);
-  if (knotOffset !== 0)
-    BGFBAccessors.InterpolationCurve.addKnots(this.builder, knotOffset);
-  const headerOffset = BGFBAccessors.InterpolationCurve.endInterpolationCurve(this.builder);
-  return BGFBAccessors.VariantGeometry.createVariantGeometry(this.builder, BGFBAccessors.VariantGeometryUnion.tagInterpolationCurve, headerOffset, 0);
-  }
-*/
-/**
+ /**
  * Extract an interpolating curve
  * @param variant read position in the flat buffer.
  */
@@ -132,7 +93,7 @@ export class BGFBReader {
     const knots = header.knotsArray();
       const options = new InterpolationCurve3dOptions(Point3dArray.clonePoint3dArray(xyzArray), knots ? NumberArray.create(knots) : undefined);
       const startTangent = header.startTangent();
-      const endTangent = header.startTangent();
+      const endTangent = header.endTangent();
       options.captureOptionalProps(
         header.order(),
         header.closed(),

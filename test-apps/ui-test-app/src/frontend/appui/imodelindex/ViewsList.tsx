@@ -5,10 +5,10 @@
 import "./ViewsList.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { BeEvent } from "@bentley/bentleyjs-core";
-import { IModelReadRpcInterface, ViewDefinitionProps, ViewQueryParams } from "@bentley/imodeljs-common";
-import { IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
-import { CommonProps, LoadingSpinner } from "@bentley/ui-core";
+import { BeEvent } from "@itwin/core-bentley";
+import { IModelReadRpcInterface, ViewDefinitionProps, ViewQueryParams } from "@itwin/core-common";
+import { IModelConnection, ViewState } from "@itwin/core-frontend";
+import { CommonProps, LoadingSpinner } from "@itwin/core-react";
 import ViewItem, { ViewItemProps } from "./ViewItem";
 
 /** Properties for [[ViewsList]] component
@@ -94,7 +94,7 @@ export class ViewsList extends React.Component<ViewsListProps, ViewsListState> {
 
   public override async componentDidUpdate(nextProps: ViewsListProps) {
     // if no incoming imodel exists or either the incoming imodel's id or changeset id is different from the current imodel then clear cache
-    if (!nextProps.iModelConnection || (this.props.iModelConnection && (this.props.iModelConnection.iModelId !== nextProps.iModelConnection.iModelId || this.props.iModelConnection.changeSetId !== nextProps.iModelConnection.changeSetId))) {
+    if (!nextProps.iModelConnection || (this.props.iModelConnection && (this.props.iModelConnection.iModelId !== nextProps.iModelConnection.iModelId || this.props.iModelConnection.changeset.id !== nextProps.iModelConnection.changeset.id))) {
       // Clear cache
       this._viewDefCache = undefined;
       // if incoming imodel exists then load new views

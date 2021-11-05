@@ -6,16 +6,16 @@
  * @module IModelConnection
  */
 
-import { assert, BeEvent, CompressedId64Set, Guid, GuidString, Id64String, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { assert, BeEvent, CompressedId64Set, Guid, GuidString, Id64String, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import {
-  IModelConnectionProps, IModelError, IModelVersionProps, OpenBriefcaseProps,
-  StandaloneOpenOptions,
-} from "@bentley/imodeljs-common";
+  ChangesetIndex,
+  ChangesetIndexAndId, IModelConnectionProps, IModelError, OpenBriefcaseProps, StandaloneOpenOptions,
+} from "@itwin/core-common";
+import { BriefcaseTxns } from "./BriefcaseTxns";
+import { GraphicalEditingScope } from "./GraphicalEditingScope";
+import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { IpcApp } from "./IpcApp";
-import { GraphicalEditingScope } from "./GraphicalEditingScope";
-import { BriefcaseTxns } from "./BriefcaseTxns";
-import { IModelApp } from "./IModelApp";
 import { disposeTileTreesForGeometricModels } from "./tile/internal";
 
 /** Keeps track of changes to models, buffering them until synchronization points.
@@ -159,14 +159,15 @@ export class BriefcaseConnection extends IModelConnection {
   /** @internal */
   public override isBriefcaseConnection(): this is BriefcaseConnection { return true; }
 
-  /** The Guid that identifies the *context* that owns this iModel. */
-  public override get contextId(): GuidString { return super.contextId!; } // GuidString | undefined for IModelConnection, but required for BriefcaseConnection
+  /** The Guid that identifies the iTwin that owns this iModel. */
+  public override get iTwinId(): GuidString { return super.iTwinId!; } // GuidString | undefined for IModelConnection, but required for BriefcaseConnection
 
   /** The Guid that identifies this iModel. */
   public override get iModelId(): GuidString { return super.iModelId!; } // GuidString | undefined for IModelConnection, but required for BriefcaseConnection
 
-  protected constructor(props: IModelConnectionProps) {
+  protected constructor(props: IModelConnectionProps, openMode: OpenMode) {
     super(props);
+    this._openMode = openMode;
     this.txns = new BriefcaseTxns(this);
     this._modelsMonitor = new ModelChangeMonitor(this);
   }
@@ -174,7 +175,7 @@ export class BriefcaseConnection extends IModelConnection {
   /** Open a BriefcaseConnection to a [BriefcaseDb]($backend). */
   public static async openFile(briefcaseProps: OpenBriefcaseProps): Promise<BriefcaseConnection> {
     const iModelProps = await IpcApp.callIpcHost("openBriefcase", briefcaseProps);
-    const connection = new this({ ...briefcaseProps, ...iModelProps });
+    const connection = new this({ ...briefcaseProps, ...iModelProps }, briefcaseProps.readonly ? OpenMode.Readonly : OpenMode.ReadWrite);
     IModelConnection.onOpen.raiseEvent(connection);
     return connection;
   }
@@ -184,7 +185,7 @@ export class BriefcaseConnection extends IModelConnection {
    */
   public static async openStandalone(filePath: string, openMode: OpenMode = OpenMode.ReadWrite, opts?: StandaloneOpenOptions): Promise<BriefcaseConnection> {
     const openResponse = await IpcApp.callIpcHost("openStandalone", filePath, openMode, opts);
-    const connection = new this(openResponse);
+    const connection = new this(openResponse, openMode);
     IModelConnection.onOpen.raiseEvent(connection);
     return connection;
   }
@@ -210,12 +211,12 @@ export class BriefcaseConnection extends IModelConnection {
   }
 
   private requireTimeline() {
-    if (this.contextId === Guid.empty)
+    if (this.iTwinId === Guid.empty)
       throw new IModelError(IModelStatus.WrongIModel, "iModel has no timeline");
   }
 
   /** Query if there are any pending Txns in this briefcase that are waiting to be pushed. */
-  public async hasPendingTxns(): Promise<boolean> { // eslint-disable-line @bentley/prefer-get
+  public async hasPendingTxns(): Promise<boolean> { // eslint-disable-line @itwin/prefer-get
     return this.txns.hasPendingTxns();
   }
 
@@ -227,12 +228,12 @@ export class BriefcaseConnection extends IModelConnection {
   }
 
   /** Pull (and potentially merge if there are local changes) up to a specified changeset from iModelHub into this briefcase
-   * @param version The version to pull changes to. If `undefined`, pull all changes.
+   * @param toIndex The changeset index to pull changes to. If `undefined`, pull all changes.
    * @see [[BriefcaseTxns.onChangesPulled]] for the event dispatched after changes are pulled.
    */
-  public async pullAndMergeChanges(version?: IModelVersionProps): Promise<void> {
+  public async pullChanges(toIndex?: ChangesetIndex): Promise<void> {
     this.requireTimeline();
-    this._changeSetId = await IpcApp.callIpcHost("pullAndMergeChanges", this.key, version);
+    this.changeset = await IpcApp.callIpcHost("pullChanges", this.key, toIndex);
   }
 
   /** Create a changeset from local Txns and push to iModelHub. On success, clear Txn table.
@@ -240,7 +241,7 @@ export class BriefcaseConnection extends IModelConnection {
    * @returns the changesetId of the pushed changes
    * @see [[BriefcaseTxns.onChangesPushed]] for the event dispatched after changes are pushed.
    */
-  public async pushChanges(description: string): Promise<string> {
+  public async pushChanges(description: string): Promise<ChangesetIndexAndId> {
     this.requireTimeline();
     return IpcApp.callIpcHost("pushChanges", this.key, description);
   }

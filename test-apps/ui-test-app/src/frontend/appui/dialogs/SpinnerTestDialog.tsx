@@ -3,11 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { IModelApp } from "@bentley/imodeljs-frontend";
-import { Dialog, FillCentered, LoadingSpinner, Spinner, SpinnerSize } from "@bentley/ui-core";
+import { IModelApp } from "@itwin/core-frontend";
+import { Dialog, FillCentered, LoadingSpinner, Spinner, SpinnerSize } from "@itwin/core-react";
 
 export interface SpinnerTestDialogProps {
   opened: boolean;
+  onClose: () => void;
 }
 
 export interface SpinnerTestDialogState {
@@ -16,7 +17,7 @@ export interface SpinnerTestDialogState {
 
 export class SpinnerTestDialog extends React.Component<SpinnerTestDialogProps, SpinnerTestDialogState> {
   public override readonly state: Readonly<SpinnerTestDialogState>;
-  private _title = IModelApp.i18n.translate("SampleApp:buttons.spinnerTestDialog");
+  private _title = IModelApp.localization.getLocalizedString("SampleApp:buttons.spinnerTestDialog");
 
   constructor(props: SpinnerTestDialogProps) {
     super(props);
@@ -30,63 +31,35 @@ export class SpinnerTestDialog extends React.Component<SpinnerTestDialogProps, S
       <Dialog
         title={this._title}
         opened={this.state.opened}
-        modal={true}
+        modal={false}
+        movable={true}
         width={470}
-        height={700}
-        onClose={this._handleCancel}
-        onEscape={this._handleCancel}
-        onOutsideClick={this._handleCancel}
+        height={500}
+        onClose={this._handleClose}
+        onEscape={this._handleClose}
       >
         <div style={{ display: "flex", flexDirection: "row", marginBottom: "5px" }}>
           <span style={{ flex: "1", marginRight: "5px" }}>
             <FillCentered>
+              {/* eslint-disable-next-line deprecation/deprecation */}
               <Spinner size={SpinnerSize.XLarge} />
+              {/* eslint-disable-next-line deprecation/deprecation */}
               <Spinner size={SpinnerSize.Large} />
+              {/* eslint-disable-next-line deprecation/deprecation */}
               <Spinner size={SpinnerSize.Medium} />
+              {/* eslint-disable-next-line deprecation/deprecation */}
               <Spinner size={SpinnerSize.Small} />
             </FillCentered>
           </span>
           <span style={{ flex: "1", marginLeft: "5px" }}>
             <FillCentered>
+              {/* eslint-disable-next-line deprecation/deprecation */}
               <Spinner size={SpinnerSize.XLarge} />
+              {/* eslint-disable-next-line deprecation/deprecation */}
               <Spinner size={SpinnerSize.Large} />
+              {/* eslint-disable-next-line deprecation/deprecation */}
               <Spinner size={SpinnerSize.Medium} />
-              <Spinner size={SpinnerSize.Small} />
-            </FillCentered>
-          </span>
-        </div>
-        <div style={{ display: "flex", flexDirection: "row", marginBottom: "5px" }}>
-          <span style={{ flex: "1", marginRight: "5px" }}>
-            <FillCentered>
-              <Spinner size={SpinnerSize.XLarge} />
-              <Spinner size={SpinnerSize.Large} />
-              <Spinner size={SpinnerSize.Medium} />
-              <Spinner size={SpinnerSize.Small} />
-            </FillCentered>
-          </span>
-          <span style={{ flex: "1", marginLeft: "5px" }}>
-            <FillCentered>
-              <Spinner size={SpinnerSize.XLarge} />
-              <Spinner size={SpinnerSize.Large} />
-              <Spinner size={SpinnerSize.Medium} />
-              <Spinner size={SpinnerSize.Small} />
-            </FillCentered>
-          </span>
-        </div>
-        <div style={{ display: "flex", flexDirection: "row", marginBottom: "5px" }}>
-          <span style={{ flex: "1", marginRight: "5px" }}>
-            <FillCentered>
-              <Spinner size={SpinnerSize.XLarge} />
-              <Spinner size={SpinnerSize.Large} />
-              <Spinner size={SpinnerSize.Medium} />
-              <Spinner size={SpinnerSize.Small} />
-            </FillCentered>
-          </span>
-          <span style={{ flex: "1", marginLeft: "5px" }}>
-            <FillCentered>
-              <Spinner size={SpinnerSize.XLarge} />
-              <Spinner size={SpinnerSize.Large} />
-              <Spinner size={SpinnerSize.Medium} />
+              {/* eslint-disable-next-line deprecation/deprecation */}
               <Spinner size={SpinnerSize.Small} />
             </FillCentered>
           </span>
@@ -95,30 +68,30 @@ export class SpinnerTestDialog extends React.Component<SpinnerTestDialogProps, S
         <div style={{ display: "flex", flexDirection: "row" }}>
           <span style={{ flex: "1", marginRight: "5px" }}>
             <div style={{ border: "1px solid black", marginBottom: "10px" }}>
-              <LoadingSpinner size={SpinnerSize.XLarge} message="This is a LoadingSpinner" />
+              <LoadingSpinner size="large" message="This is a LoadingSpinner" />
             </div>
             <div style={{ border: "1px solid black", marginBottom: "10px" }}>
-              <LoadingSpinner size={SpinnerSize.Large} message="This is a LoadingSpinner" />
+              <LoadingSpinner size="" message="This is a LoadingSpinner" />
             </div>
             <div style={{ border: "1px solid black", marginBottom: "10px" }}>
-              <LoadingSpinner size={SpinnerSize.Medium} message="This is a LoadingSpinner" />
+              <LoadingSpinner size="small" message="This is a LoadingSpinner" />
             </div>
             <div style={{ border: "1px solid black" }}>
-              <LoadingSpinner size={SpinnerSize.Small} message="This is a LoadingSpinner" />
+              <LoadingSpinner size="x-small" message="This is a LoadingSpinner" />
             </div>
           </span>
           <span style={{ flex: "1", marginLeft: "5px" }}>
             <div style={{ border: "1px solid black", marginBottom: "10px" }}>
-              <LoadingSpinner size={SpinnerSize.XLarge} message="This is a LoadingSpinner" messageOnTop={true} />
+              <LoadingSpinner size="large" message="This is a LoadingSpinner" messageOnTop={true} />
             </div>
             <div style={{ border: "1px solid black", marginBottom: "10px" }}>
-              <LoadingSpinner size={SpinnerSize.Large} message="This is a LoadingSpinner" messageOnTop={true} />
+              <LoadingSpinner size="" message="This is a LoadingSpinner" messageOnTop={true} />
             </div>
             <div style={{ border: "1px solid black", marginBottom: "10px" }}>
-              <LoadingSpinner size={SpinnerSize.Medium} message="This is a LoadingSpinner" messageOnTop={true} />
+              <LoadingSpinner size="small" message="This is a LoadingSpinner" messageOnTop={true} />
             </div>
             <div style={{ border: "1px solid black" }}>
-              <LoadingSpinner size={SpinnerSize.Small} message="This is a LoadingSpinner" messageOnTop={true} />
+              <LoadingSpinner size="x-small" message="This is a LoadingSpinner" messageOnTop={true} />
             </div>
           </span>
         </div>
@@ -126,8 +99,9 @@ export class SpinnerTestDialog extends React.Component<SpinnerTestDialogProps, S
     );
   }
 
-  private _handleCancel = () => {
+  private _handleClose = () => {
     this._closeDialog();
+    this.props.onClose();
   };
 
   private _closeDialog = () => {

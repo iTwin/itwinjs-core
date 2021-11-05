@@ -6,9 +6,9 @@
  * @module Tiles
  */
 
-import { assert, BentleyError, IModelStatus } from "@bentley/bentleyjs-core";
-import { Range2d } from "@bentley/geometry-core";
-import { ImageSource, MapLayerSettings } from "@bentley/imodeljs-common";
+import { assert, BentleyError, IModelStatus } from "@itwin/core-bentley";
+import { Range2d } from "@itwin/core-geometry";
+import { ImageSource, MapLayerSettings } from "@itwin/core-common";
 import { request, RequestOptions, Response } from "@bentley/itwin-client";
 import { IModelApp } from "../../../IModelApp";
 import { ScreenViewport } from "../../../Viewport";
@@ -166,12 +166,11 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
   // initializes the BingImageryProvider by reading the templateUrl, logo image, and attribution list.
   public override async initialize(): Promise<void> {
     // get the template url
-    // NEEDSWORK - should get bing key from server. Currently coming from iModelApp defaultMapLayerOptions
     const bingRequestUrl = this._urlBase.replace("{bingKey}", this._settings.accessKey ? this._settings.accessKey.value : "");
     const requestOptions: RequestOptions = { method: "GET" };
 
     try {
-      const response: Response = await request(this._requestContext, bingRequestUrl, requestOptions);
+      const response: Response = await request(bingRequestUrl, requestOptions);
       const bingResponseProps: any = response.body;
 
       const thisResourceSetProps = bingResponseProps.resourceSets[0];

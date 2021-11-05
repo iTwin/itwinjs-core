@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-common",
+      "comment": "Added `ignoreCategories` parameter in `createFieldHierarchies` function for adding all of the nested properties to parent field's child fields without considering categories. ",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-common",
+  "email": "30312645+aurislt7@users.noreply.github.com"
+}

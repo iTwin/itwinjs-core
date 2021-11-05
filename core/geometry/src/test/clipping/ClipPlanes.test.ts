@@ -1202,3 +1202,295 @@ describe("PolygonClipper", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 });
+
+class OutputManager {
+  public x0: number = 0;
+  public y0: number = 0;
+  public allGeometry: GeometryQuery[] = [];
+  public drawArrow(pointA: Point3d, vector: Vector3d, headLengthFraction: number = 0.10, headWidthFraction: number = 0.05) {
+    const pointB = pointA.plus(vector);
+    const pointC = pointA.interpolatePerpendicularXY(1.0 - headLengthFraction, pointB, headWidthFraction);
+    const pointD = pointA.interpolatePerpendicularXY(1.0 - headLengthFraction, pointB, -headWidthFraction);
+    GeometryCoreTestIO.captureCloneGeometry(this.allGeometry, [pointA, pointB, pointC, pointD, pointB], this.x0, this.y0);
+  }
+
+  public drawPerpendicular(pointA: Point3d, vector: Vector3d, fractionAlong: number, leftFraction: number = -1.0, rightFraction: number = 1.0) {
+    if (!Geometry.isSameCoordinate (leftFraction, rightFraction)){
+      const pointB = pointA.plus(vector);
+      const pointC = pointA.interpolatePerpendicularXY(fractionAlong, pointB, leftFraction);
+      const pointD = pointA.interpolatePerpendicularXY(fractionAlong, pointB, rightFraction);
+      GeometryCoreTestIO.captureCloneGeometry(this.allGeometry, [pointC, pointD], this.x0, this.y0);
+}
+  }
+
+  public drawPolygon(points: GrowableXYZArray | Point3d[], forceClosure: boolean = false) {
+    if (points instanceof GrowableXYZArray){
+    if (forceClosure)
+      points.forceClosure();
+      GeometryCoreTestIO.createAndCaptureLoop(this.allGeometry, points, this.x0, this.y0);
+    } else {
+      if (forceClosure)
+        points.push(points[0]);
+      GeometryCoreTestIO.createAndCaptureLoop(this.allGeometry, points, this.x0, this.y0);
+      }
+  }
+  public drawAxes(r: number = 10, arrowLength: number = 1, originX: number = 0, originY: number = 0) {
+    const f = 0.5 * arrowLength / r;
+    this.drawArrow(Point3d.create(originX - r, 0, 0), Vector3d.create(2 * r, 0, 0), f, 0.5 * f);
+    this.drawArrow(Point3d.create(0, originY - r, 0), Vector3d.create(0, 2 * r, 0), f, 0.5 * f);
+  }
+
+  public drawMinus(xyz: Point3d, radius: number = 0.1) {
+    GeometryCoreTestIO.captureCloneGeometry(this.allGeometry,
+      [xyz.plusXYZ(-radius, 0, 0), xyz.plusXYZ(radius, 0, 0)],
+      this.x0, this.y0);
+  }
+
+  public drawPlus(xyz: Point3d, radius: number = 0.1) {
+    GeometryCoreTestIO.captureCloneGeometry(this.allGeometry,
+      [xyz.plusXYZ(-radius, 0, 0), xyz.plusXYZ(radius, 0, 0)],
+      this.x0, this.y0);
+      GeometryCoreTestIO.captureCloneGeometry(this.allGeometry,
+        [xyz.plusXYZ(0, -radius, 0), xyz.plusXYZ(0, radius, 0)],
+        this.x0, this.y0);
+  }
+
+  public captureClone(data: GeometryQuery | undefined) {
+    GeometryCoreTestIO.captureCloneGeometry(this.allGeometry, data, this.x0, this.y0);
+  }
+
+  public saveToFile(directoryName: string, fileName: string) {
+    GeometryCoreTestIO.saveGeometry(this.allGeometry, directoryName, fileName);
+    this.allGeometry = [];
+  }
+  /**
+   * Move the origin by dx,dy
+   */
+  public shift(dx: number, dy: number) {
+    this.x0 += dx;
+    this.y0 += dy;
+  }
+  public setX0(x0: number): number { const a = this.x0; this.x0 = x0; return a;}
+  public setY0(y0: number): number { const a = this.y0; this.y0 = y0; return a;}
+}
+/**
+ * Create planes with (inward) normal computed as cross product of sweepVector edge vectors.
+ * Apply invisibleBits of respective edges
+ * closure edge is added.
+ */
+function createSweptConvexClipperForPolygon(points: Point3d[], invisibleBits: boolean[], sweepVector: Vector3d): ConvexClipPlaneSet | undefined {
+  if (points.length > 2){
+    let pointA = points[points.length - 1];
+    const clipper = ConvexClipPlaneSet.createEmpty();
+    for (let i = 0; i < points.length; i++) {
+      const pointB = points[i];
+      const inwardNormal = sweepVector.crossProductStartEnd(pointA, pointB);
+      const bit = invisibleBits[i];
+      const plane = ClipPlane.createNormalAndPoint(inwardNormal, pointA, bit, bit);
+      if (plane)
+        clipper.addPlaneToConvexSet(plane);
+      pointA = pointB;
+    }
+    if (clipper.planes.length > 0)
+      return clipper;
+  }
+  return undefined;
+}
+/**
+ * Create a UnionOfConvexClipPlaneSets by "tiling" between two linestrings with the same number of points.
+ * * Each quad between corresponding edge is checked to see if it is convex and can be done as a single ConvexClipPlaneSets (or must be reduced to two triangles)
+ * * If point counts are different, use the smaller count.
+ * * "interior" edges are marked
+ */
+function createUnionOfConvexClipPlaneSetsBetweenCompatibleLineStringSweeps(pointA: Point3d[], pointB: Point3d[], sweepVector: Vector3d, hideInteriorPlanes: boolean): UnionOfConvexClipPlaneSets{
+  const n = Math.min(pointA.length, pointB.length);
+  const allClippers = UnionOfConvexClipPlaneSets.createEmpty();
+  for (let i = 0; i + 1 < n; i++){
+    const hide0 = (i !== 0);
+    const hide1 = (i + 1 !== n);
+    const pA0 = pointA[i];
+    const pA1 = pointA[i + 1];
+    const pB0 = pointB[i];
+    const pB1 = pointB[i + 1];
+    const cross0 = pA0.crossProductToPoints(pA1, pB0);
+    const cross1 = pA1.crossProductToPoints(pB1, pB0);
+    const a0 = cross0.dotProduct(sweepVector);
+    const a1 = cross1.dotProduct(sweepVector);
+    if (a0 * a1 < 0 || !hideInteriorPlanes) {
+      if (a0 > 0)
+        allClippers.addConvexSet(createSweptConvexClipperForPolygon([pA0, pA1, pB0], [false, hideInteriorPlanes, hide0], sweepVector));
+      else
+        allClippers.addConvexSet(createSweptConvexClipperForPolygon([pA0, pB0, pA1], [hide0, hideInteriorPlanes, false], sweepVector));
+
+      if (a1 > 0)
+        allClippers.addConvexSet(createSweptConvexClipperForPolygon([pA1, pB1, pB0], [hide1, false, hideInteriorPlanes], sweepVector));
+      else
+        allClippers.addConvexSet(createSweptConvexClipperForPolygon([pB1, pA1, pB0], [hide1, hideInteriorPlanes, false], sweepVector));
+    } else {
+      const loopPoints = [pA0, pA1, pB1, pB0];
+      if (a0 < 0)
+        loopPoints.reverse();   // reversal preserves 01 sequencing used in visibility check
+        allClippers.addConvexSet(createSweptConvexClipperForPolygon(loopPoints, [false, hide1, false, hide0], sweepVector));
+      }
+  }
+  return allClippers;
+  }
+
+describe("ClipPlaneDocs", () => {
+  it("Quadrants", () => {
+    const ck = new Checker();
+    const out = new OutputManager();
+    const a = 5.0;  // clipped polygon extent
+    const b = 7.0 * a; // step between origins of successive snips
+    const c = 3.0;    // length of arrows for planes
+    const c1 = c / 10.0;
+    const axisLength = 2.0 * a;
+    const axisArrowLength = 1.0;
+    const work = new GrowableXYZArray();
+
+    // If the normal is nonzero, add a plane to the clipper.
+    // Draw its placement arrow -- negate it for display if placementCoordinate is negative.
+    const applyConditionalPlane1 = (clipper: ConvexClipPlaneSet, plane: Plane3dByOriginAndUnitNormal | undefined) => {
+      if (plane !== undefined){
+        out.drawArrow(plane.getOriginRef(), plane.getNormalRef().scale (3.0), 0.15, 0.10);
+        out.drawPerpendicular(plane.getOriginRef(), plane.getNormalRef(), 0.0, -6.0, 6.0);
+        clipper.addPlaneToConvexSet(ClipPlane.createPlane (plane));
+      }
+    };
+
+    for (const xSign of [-1, 0, 1]) {
+      out.setY0(0);
+      for (const ySign of [-1, 0, 1]) {
+        const ay = 2 * Geometry.split3WaySign(ySign, -c, c, c);
+        const cy = Geometry.split3WaySign(ySign, -c1, c1, c1);
+          out.drawAxes(axisLength, axisArrowLength);
+        const ax = 2 * Geometry.split3WaySign(xSign, -c, c, c);
+        const cx = Geometry.split3WaySign(xSign, -c1, c1, c1);
+        const xPlane = Plane3dByOriginAndUnitNormal.createXYZUVW(cx, ay, 0, xSign, 0, 0);    // undefined is expected in 0 case!
+        const yPlane = Plane3dByOriginAndUnitNormal.createXYZUVW(ax, cy, 0, 0, ySign, 0);    // undefined is expected in 0 case!
+        const clipper = ConvexClipPlaneSet.createEmpty();
+        applyConditionalPlane1(clipper, xPlane);
+        applyConditionalPlane1(clipper, yPlane);
+        const polygonToClip = GrowableXYZArray.create(Sample.createArcStrokes(3, Point3d.create(0, 0), a, Angle.createDegrees(15),
+          Angle.createDegrees(375), true, -0.04));
+        clipper.clipConvexPolygonInPlace(polygonToClip, work);
+        out.drawPolygon(polygonToClip, true);
+        out.shift(0, b);
+      }
+      out.shift(b, 0);
+    }
+    out.saveToFile("ClipPlaneDocs", "Quadrants");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("SinglePlaneWithGridTests", () => {
+    const out = new OutputManager();
+    const ck = new Checker();
+    const grid = Sample.createXYGrid(15, 13, 1, 1);
+    const insideSize = 0.2;
+    const outsideSize = 0.1;
+
+    const showClipPlaneEffects = (myPlanes: Plane3dByOriginAndUnitNormal[], points: Point3d[]) => {
+      const convexSet = ConvexClipPlaneSet.createPlanes(myPlanes);
+      for (const plane of myPlanes) {
+        out.drawArrow(plane.getOriginRef(), plane.getNormalRef(), 0.3, 0.1);
+        out.drawPerpendicular(plane.getOriginRef(), plane.getNormalRef(), 0, -10, 10);
+      }
+
+      for (const xyz of points) {
+        const in1 = convexSet.isPointInside(xyz);
+        if (in1)
+          out.drawPlus(xyz, insideSize);
+        else
+          out.drawMinus(xyz, outsideSize);
+      }
+    };
+    const planes = [
+      Plane3dByOriginAndUnitNormal.createXYZUVW(8, 9,  0, -1, -3, 0)!,
+      Plane3dByOriginAndUnitNormal.createXYZUVW(5, 8, 0, 4, 1.5, 0)!,
+      Plane3dByOriginAndUnitNormal.createXYZUVW(9, 4, 0, -4, 1.5, 0)!];
+
+    for (const plane of planes) {
+      const clipPlane = ClipPlane.createPlane(plane);
+      out.drawArrow(plane.getOriginRef(), plane.getNormalRef(), 0.3, 0.1);
+      out.drawPerpendicular(plane.getOriginRef(), plane.getNormalRef(), 0, -10, 10);
+      for (const xyz of grid) {
+        const in1 = clipPlane.isPointInside(xyz);
+        if (in1)
+          out.drawPlus(xyz, insideSize);
+        else
+          out.drawMinus(xyz, outsideSize);
+      }
+      out.shift(30, 0);
+    }
+
+    out.setX0(0);
+    out.setY0(60);
+    // Test again with growing convexSet ...
+    const activePlanes = [];
+    for (const plane of planes) {
+      activePlanes.push(plane);
+      showClipPlaneEffects(activePlanes, grid);
+      out.shift(30, 0);
+    }
+
+    const planesForUnboundedConvexSet = [
+      Plane3dByOriginAndUnitNormal.createXYZUVW(4.1, 2.1, 0, 1, 3, 0)!,
+      Plane3dByOriginAndUnitNormal.createXYZUVW(2.5, 6.5, 0, 1, 0, 0)!,
+      Plane3dByOriginAndUnitNormal.createXYZUVW(4.1, 12.1, 0, 1, -2, 0)!];
+
+    showClipPlaneEffects(planesForUnboundedConvexSet, grid);
+    out.shift(30, 0);
+
+    out.saveToFile("ClipPlaneDocs", "SinglePlaneWithGridTests");
+  expect(ck.getNumErrors()).equals(0);
+  });
+  it("UnionOfConvexClipPlaneSets", () => {
+    const ck = new Checker();
+    const out = new OutputManager();
+    const pointsA0 = [Point3d.create(-1, -1), Point3d.create(1, -1), Point3d.create(3, -2), Point3d.create(4, 0)];
+    const pointsA1 = [Point3d.create(-1, 2), Point3d.create(1, 0), Point3d.create(2, 1), Point3d.create(4, 1)];
+    const pointsA2 = [Point3d.create(-1, 2), Point3d.create(1, -2), Point3d.create(2, 1), Point3d.create(4, 1)];
+    const polygonA = [...pointsA0, ...(pointsA1.slice().reverse())];
+    const polygonB = polygonA;
+    // this shows the construction function aggressively forcing positive clips with bad ata.
+    const polygonC = [...pointsA0, ...(pointsA2.slice().reverse())];
+    const clipperA = createUnionOfConvexClipPlaneSetsBetweenCompatibleLineStringSweeps(pointsA0, pointsA1, Vector3d.unitZ(), false);
+
+    const clipperB = createUnionOfConvexClipPlaneSetsBetweenCompatibleLineStringSweeps(pointsA0, pointsA1, Vector3d.unitZ(), true);
+    const clipperC = createUnionOfConvexClipPlaneSetsBetweenCompatibleLineStringSweeps(pointsA0, pointsA2, Vector3d.unitZ(), true);
+
+    const polygonQ = Sample.createArcStrokes(3, Point3d.create(1, 0, 0), 4, Angle.createDegrees(0), Angle.createDegrees(360), true, -0.01);
+
+    for (const clipData of [{ clipper: clipperA, polygon: polygonA, doPolyface: true },
+      { clipper: clipperB, polygon: polygonB, doPolyface: true },
+      { clipper: clipperC, polygon: polygonC, doPolyface: false }]) {
+      for (const polygon of [polygonQ]) {
+        out.drawPolygon(clipData.polygon, true);
+        out.drawPolygon(polygon, false);
+        const clippedPolygon: GrowableXYZArray[] = [];
+        clipData.clipper.polygonClip(polygon, clippedPolygon);
+        out.shift(0, 10);
+        for (const clip of clippedPolygon)
+          out.drawPolygon(clip, false);
+        if (clipData.doPolyface) {
+          const polyfaceQ = PolyfaceBuilder.pointsToTriangulatedPolyface(polygonQ);
+          if (polyfaceQ) {
+            out.shift(0, 15);
+            out.captureClone(polyfaceQ);
+            const builders = ClippedPolyfaceBuilders.create(true, true);
+            PolyfaceClip.clipPolyfaceUnionOfConvexClipPlaneSetsToBuilders(polyfaceQ, clipData.clipper, builders, 0);
+            out.shift(0, 10);
+            out.captureClone(builders.claimPolyface(0, true));
+            out.shift(0, 10);
+            out.captureClone(builders.claimPolyface(1, true));
+          }
+       }
+      }
+      out.shift(12, 0);
+      out.setY0(0);
+      }
+    out.saveToFile("ClipPlaneDocs", "UnionOfConvexClipPlaneSets");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+});

@@ -3,22 +3,21 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { Arc3d, IndexedPolyface, LineString3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, Transform } from "@bentley/geometry-core";
-import { ColorDef, GraphicParams } from "@bentley/imodeljs-common";
-import {
-  GraphicType, IModelApp, IModelConnection, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId,
-} from "@bentley/imodeljs-frontend";
+import { ColorDef, GraphicParams } from "@itwin/core-common";
+import { GraphicType, IModelApp, IModelConnection, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId } from "@itwin/core-frontend";
+import { Branch } from "@itwin/core-frontend/lib/cjs/webgl";
 import {
   DisplayParams, Geometry, GeometryAccumulator, PrimitiveBuilder, StrokesPrimitiveList, StrokesPrimitivePointList, StrokesPrimitivePointLists,
-} from "@bentley/imodeljs-frontend/lib/render-primitives";
-import { Branch } from "@bentley/imodeljs-frontend/lib/webgl";
+} from "@itwin/core-frontend/lib/cjs/render-primitives";
+import { Arc3d, IndexedPolyface, LineString3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, Transform } from "@itwin/core-geometry";
+import { TestUtility } from "../TestUtility";
 
 describe("PrimitiveBuilder", () => {
   let imodel: IModelConnection;
   let viewport: ScreenViewport;
 
   before(async () => {   // Create a ViewState to load into a Viewport
-    await IModelApp.startup();
+    await TestUtility.startFrontend();
     imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
 
     const viewDiv = document.createElement("div");
@@ -35,7 +34,7 @@ describe("PrimitiveBuilder", () => {
   after(async () => {
     if (viewport) viewport.dispose();
     if (imodel) await imodel.close();
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("should produce proper arc strokes for specific tolerances", () => {
@@ -330,7 +329,7 @@ describe("PrimitiveBuilder", () => {
 
   it("should be able to finish graphics", () => {
     const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, { type: GraphicType.Scene, viewport });
-    const accum = new GeometryAccumulator({ iModel: imodel });
+    const accum = new GeometryAccumulator();
 
     const gfParams: GraphicParams = new GraphicParams();
     gfParams.lineColor = ColorDef.white;

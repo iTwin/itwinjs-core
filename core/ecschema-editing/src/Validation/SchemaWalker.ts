@@ -5,7 +5,7 @@
 
 import { ECClass, ISchemaPartVisitor, RelationshipClass, Schema, SchemaItem,
   SchemaItemType, SchemaPartVisitorDelegate,
-} from "@bentley/ecschema-metadata";
+} from "@itwin/ecschema-metadata";
 
 /**
  * The purpose of this class is to traverse a given schema, allowing clients to hook into

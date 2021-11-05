@@ -8,11 +8,11 @@
 
 import {
   assert, BeTimePoint, ByteStream, compareStrings, DbOpcode, Id64, Id64Array, Id64String, partitionArray, SortedArray,
-} from "@bentley/bentleyjs-core";
-import { Range3d, Transform } from "@bentley/geometry-core";
+} from "@itwin/core-bentley";
+import { Range3d, Transform } from "@itwin/core-geometry";
 import {
   BatchType, ElementGeometryChange, ElementGraphicsRequestProps, FeatureAppearance, FeatureAppearanceProvider, FeatureAppearanceSource, GeometryClass, TileFormat,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { RenderSystem } from "../render/RenderSystem";
 import { Viewport } from "../Viewport";
 import { IModelApp } from "../IModelApp";
@@ -390,7 +390,7 @@ class GraphicsTile extends Tile {
     if (reader) {
       try {
         content = await reader.read();
-      } catch (_) {
+      } catch {
         //
       }
     }

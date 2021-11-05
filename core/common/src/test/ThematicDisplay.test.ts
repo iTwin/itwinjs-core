@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Point3d, Range1d, Vector3d } from "@bentley/geometry-core";
+import { Point3d, Range1d, Vector3d } from "@itwin/core-geometry";
 import { expect } from "chai";
 import { ColorDef } from "../ColorDef";
 import { ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps, ThematicDisplaySensorSettings, ThematicGradientColorScheme, ThematicGradientMode } from "../ThematicDisplay";

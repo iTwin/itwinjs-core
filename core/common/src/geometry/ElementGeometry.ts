@@ -6,8 +6,8 @@
  * @module Geometry
  */
 import { flatbuffers } from "flatbuffers";
-import { Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Angle, AngleSweep, Arc3d, BentleyGeometryFlatBuffer, CurveCollection, FrameBuilder, GeometryQuery, LineString3d, Loop, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point3dArray, PointString3d, Polyface, PolyfaceQuery, Range3d, SolidPrimitive, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Id64, Id64String } from "@itwin/core-bentley";
+import { Angle, AngleSweep, Arc3d, BentleyGeometryFlatBuffer, CurveCollection, FrameBuilder, GeometryQuery, LineString3d, Loop, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point3dArray, PointString3d, Polyface, PolyfaceQuery, Range3d, SolidPrimitive, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { EGFBAccessors } from "./ElementGeometryFB";
 import { Base64EncodedString } from "../Base64EncodedString";
 import { TextString, TextStringProps } from "./TextString";
@@ -33,24 +33,24 @@ export enum ElementGeometryOpcode {
   PartReference = 3,
   /** Sets symbology for subsequent geometry to override [SubCategory]($backend) appearance */
   BasicSymbology = 4,
-  /** A line, line string, shape, or point string (automatic simplification of a [CurvePrimitive]($geometry-core) or [CurveCollection]($geometry-core)) */
+  /** A line, line string, shape, or point string (automatic simplification of a [CurvePrimitive]($core-geometry) or [CurveCollection]($core-geometry)) */
   PointPrimitive = 5,
-  /** A 2d line, line string, shape, or point string (automatic simplification of a [CurvePrimitive]($geometry-core) or [CurveCollection]($geometry-core)) */
+  /** A 2d line, line string, shape, or point string (automatic simplification of a [CurvePrimitive]($core-geometry) or [CurveCollection]($core-geometry)) */
   PointPrimitive2d = 6,
-  /** Arc or ellipse (automatic simplification of a [CurvePrimitive]($geometry-core) or [CurveCollection]($geometry-core)) */
+  /** Arc or ellipse (automatic simplification of a [CurvePrimitive]($core-geometry) or [CurveCollection]($core-geometry)) */
   ArcPrimitive = 7,
-  /** [CurveCollection]($geometry-core) */
+  /** [CurveCollection]($core-geometry) */
   // eslint-disable-next-line @typescript-eslint/no-shadow
   CurveCollection = 8,
-  /** [Polyface]($geometry-core) */
+  /** [Polyface]($core-geometry) */
   // eslint-disable-next-line @typescript-eslint/no-shadow
   Polyface = 9,
-  /** [CurvePrimitive]($geometry-core) */
+  /** [CurvePrimitive]($core-geometry) */
   CurvePrimitive = 10,
-  /** [SolidPrimitive]($geometry-core) */
+  /** [SolidPrimitive]($core-geometry) */
   // eslint-disable-next-line @typescript-eslint/no-shadow
   SolidPrimitive = 11,
-  /** [BSplineSurface3d]($geometry-core) */
+  /** [BSplineSurface3d]($core-geometry) */
   BsplineSurface = 12,
   /** Opaque and [[Gradient]] fills. */
   Fill = 19,
@@ -84,7 +84,7 @@ export interface ElementGeometryDataEntry {
  * @alpha
  */
 export interface ElementGeometryInfo {
-  /** ID for the [Category]($imodeljs-backend), undefined for geometry parts */
+  /** ID for the [Category]($core-backend), undefined for geometry parts */
   categoryId?: Id64String;
   /** A row-major storage 4x3 transform to world coordinate, undefined for geometry parts */
   sourceToWorld?: Float64Array;
@@ -99,12 +99,12 @@ export interface ElementGeometryInfo {
 }
 
 /** A callback function that receives geometry stream data.
- * @see [IModelDb.elementGeometryRequest]($imodeljs-backend)
+ * @see [IModelDb.elementGeometryRequest]($core-backend)
  * @alpha
  */
 export type ElementGeometryFunction = (info: ElementGeometryInfo) => void;
 
-/** Parameters for [IModelDb.elementGeometryRequest]($imodeljs-backend)
+/** Parameters for [IModelDb.elementGeometryRequest]($core-backend)
  * @alpha
  */
 export interface ElementGeometryRequest {
@@ -116,17 +116,17 @@ export interface ElementGeometryRequest {
   skipBReps?: boolean;
   /** When not omitting BReps, whether to return a mesh or curve representation instead of the brep data */
   replaceBReps?: boolean;
-  /** Option for replaceBReps, max distance from a face to the original geometry, see [StrokeOptions]($geometry-core) */
+  /** Option for replaceBReps, max distance from a face to the original geometry, see [StrokeOptions]($core-geometry) */
   chordTol?: number;
-  /** Option for replaceBReps, max angle difference in radians for approximated face, see [StrokeOptions]($geometry-core) */
+  /** Option for replaceBReps, max angle difference in radians for approximated face, see [StrokeOptions]($core-geometry) */
   angleTol?: number;
-  /** Option for replaceBReps, max length of any edge in generated faces, see [StrokeOptions]($geometry-core) */
+  /** Option for replaceBReps, max length of any edge in generated faces, see [StrokeOptions]($core-geometry) */
   maxEdgeLength?: number;
   /** Option for replaceBReps, ignore faces with bounding boxes smaller than this size when facetting */
   minBRepFeatureSize?: number;
 }
 
-/** Parameters for [IModelDb.elementGeometryUpdate]($imodeljs-backend)
+/** Parameters for [IModelDb.elementGeometryUpdate]($core-backend)
  * @alpha
  */
 export interface ElementGeometryUpdate {
@@ -168,6 +168,8 @@ export enum BRepGeometryOperation {
   Loft = 9,
   /** Create a solid or sheet with all non-smooth/non-laminar edges rounded */
   Round = 10,
+  /** Offset all faces of a solid or sheet target by the supplied distance. */
+  Offset = 11,
 }
 
 /** Parameters for [[BRepGeometryOperation.Cut]]
@@ -206,7 +208,15 @@ export interface BRepRoundProps {
   radius: number;
 }
 
-/** Parameters for [IModelDb.createBRepGeometry]($imodeljs-backend)
+/** Parameters for [[BRepGeometryOperation.Offset]]
+ * @alpha
+ */
+export interface BRepOffsetProps {
+  /** Offset to apply to all faces; positive value offsets outwards, negative value offsets inwards */
+  distance: number;
+}
+
+/** Parameters for [IModelDb.createBRepGeometry]($core-backend)
  * @alpha
  */
 export interface BRepGeometryCreate {
@@ -219,7 +229,7 @@ export interface BRepGeometryCreate {
   /** Whether disjoint results should be returned as multiple entries or a single disjoint body */
   separateDisjoint?: boolean;
   /** Options and parameters for this operation */
-  parameters?: BRepCutProps | BRepThickenProps | BRepHollowProps | BRepRoundProps;
+  parameters?: BRepCutProps | BRepThickenProps | BRepHollowProps | BRepRoundProps | BRepOffsetProps;
 }
 
 /** Information provided to [[BRepGeometryFunction]].
@@ -231,7 +241,7 @@ export interface BRepGeometryInfo {
 }
 
 /** A callback function that receives brep operation result geometry.
- * @see [IModelDb.createBRepGeometry]($imodeljs-backend)
+ * @see [IModelDb.createBRepGeometry]($core-backend)
  * @alpha
  */
 export type BRepGeometryFunction = (info: BRepGeometryInfo) => void;

@@ -1,6 +1,144 @@
-# Change Log - @bentley/imodeljs-backend
+# Change Log - @itwin/core-backend
 
-This log was last generated on Tue, 06 Jul 2021 22:08:34 GMT and should not be manually modified.
+This log was last generated on Tue, 21 Sep 2021 21:06:40 GMT and should not be manually modified.
+
+## 2.19.13
+Tue, 21 Sep 2021 21:06:40 GMT
+
+_Version update only_
+
+## 2.19.12
+Wed, 15 Sep 2021 18:06:46 GMT
+
+_Version update only_
+
+## 2.19.11
+Thu, 09 Sep 2021 21:04:58 GMT
+
+_Version update only_
+
+## 2.19.10
+Wed, 08 Sep 2021 14:36:01 GMT
+
+_Version update only_
+
+## 2.19.9
+Wed, 25 Aug 2021 15:36:01 GMT
+
+### Updates
+
+- throw better exception if IModelHost.startup has not been called
+
+## 2.19.8
+Mon, 23 Aug 2021 13:23:13 GMT
+
+_Version update only_
+
+## 2.19.7
+Fri, 20 Aug 2021 17:47:22 GMT
+
+### Updates
+
+- add queryV2Checkpoint to BackendHubAccess
+- use native serializer for processing schemas in transformer
+- only export necessary schemas during imodel transformation
+
+## 2.19.6
+Tue, 17 Aug 2021 20:34:29 GMT
+
+_Version update only_
+
+## 2.19.5
+Fri, 13 Aug 2021 21:48:08 GMT
+
+_Version update only_
+
+## 2.19.4
+Thu, 12 Aug 2021 13:09:26 GMT
+
+### Updates
+
+- clear statement cache before applying schema changesets
+- Tests for solid kernel severe error exceptions.
+
+## 2.19.3
+Wed, 04 Aug 2021 20:29:34 GMT
+
+_Version update only_
+
+## 2.19.2
+Tue, 03 Aug 2021 18:26:23 GMT
+
+_Version update only_
+
+## 2.19.1
+Thu, 29 Jul 2021 20:01:11 GMT
+
+### Updates
+
+- Refresh access token when setting up V1 Checkpoints if possible
+
+## 2.19.0
+Mon, 26 Jul 2021 12:21:25 GMT
+
+### Updates
+
+- Reactivated test that stopped working when a previous PR for ecef dependency to geographicCRS was reverted
+- store changesetIndex on IModelDb
+- Better error checks when creating SpatialViewDefinition-s.
+- remove internal barrel-import usage
+- throw exception when attempting to download a briefcase on top of an existing file
+- Add case for InterpolationCurve3d
+- Use worker thread for mass properties calculations.
+- Add offset body operation for IFC connector.
+- Correctly handle case where subtract operation consumes target body.
+- await returned promise to ensure finally block doesn't intercept it
+
+## 2.18.4
+Tue, 10 Aug 2021 19:35:13 GMT
+
+_Version update only_
+
+## 2.18.3
+Wed, 28 Jul 2021 17:16:30 GMT
+
+_Version update only_
+
+## 2.18.2
+Mon, 26 Jul 2021 16:18:31 GMT
+
+_Version update only_
+
+## 2.18.1
+Fri, 16 Jul 2021 17:45:09 GMT
+
+_Version update only_
+
+## 2.18.0
+Fri, 09 Jul 2021 18:11:24 GMT
+
+### Updates
+
+- TemplateModelCloner now assigns a new FederationGuid for cloned element instances.
+- Accomodated the inability to reverse Changesets when creating change summaries.
+- fix lint issue
+- begin api transition to changeset index rather than changeset Id
+- Use ecef location calculated for projected iModels
+- Push refreshes access token if necessary.
+- Do not reuse briefcase ids in ReadWrite workflows when using the RPC interfaces (if the briefcase was not found in the local file system)
+- Add missing SectionDrawing properties.
+
+## 2.17.3
+Mon, 26 Jul 2021 16:08:36 GMT
+
+_Version update only_
+
+## 2.17.2
+Thu, 08 Jul 2021 15:23:00 GMT
+
+### Updates
+
+- Do not reuse briefcase ids in ReadWrite workflows when using the RPC interfaces (if the briefcase was not found in the local file system)
 
 ## 2.17.1
 Fri, 02 Jul 2021 15:38:31 GMT
@@ -34,6 +172,11 @@ Mon, 28 Jun 2021 16:20:11 GMT
 - fix schema-import occurring potentially out of order
 - dont reimport schemas that already exist by default during transformations
 - Use ecef location calculated for projected iModels
+
+## 2.16.10
+Thu, 22 Jul 2021 20:23:45 GMT
+
+_Version update only_
 
 ## 2.16.9
 Tue, 06 Jul 2021 22:08:34 GMT
@@ -637,7 +780,7 @@ Fri, 19 Jun 2020 14:10:03 GMT
 - Add missing properties to UrlLink and RepositoryLink
 - Bump tile version
 - Add IModelExporter.wantGeometry to optimize cases where geometry is not required
-- Move linear referencing domain types out to new @bentley/linear-referencing-backend package.
+- Move linear referencing domain types out to new @itwin/linear-referencing-backend package.
 - Added test for null string access via ECSqlStatement
 - Add PhysicalElement.physicalMaterial
 - Add PhysicalMaterial
@@ -1065,7 +1208,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Fix for Render Gradient.Symb test
 - Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
 - Add IModelDb.createSnapshot/openSnapshot/closeSnapshot, deprecate IModelDb.createStandalone/openStandalone/closeStandalone
-- Moved IModelJsExpressServer class into a new package (@bentley/express-server).
+- Moved IModelJsExpressServer class into a new package (@itwin/express-server).
 - Simplified tile caching IModelHost config and removed dev flags. Allow
 - Typo in documentation
 - Fix missing ULAS client request data
@@ -1158,7 +1301,7 @@ Mon, 07 Jan 2019 21:49:21 GMT
 
 ### Updates
 
-- Moved electron utilities into a separate "@bentley/electron-manager" package.
+- Moved electron utilities into a separate "@itwin/core-electron" package.
 
 ## 0.182.0
 Mon, 07 Jan 2019 13:31:34 GMT

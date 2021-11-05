@@ -6,7 +6,7 @@
  * @module DisplayStyles
  */
 
-import { Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
 import { ColorDef } from "./ColorDef";
 import { SubCategoryAppearance } from "./SubCategoryAppearance";
 
@@ -62,7 +62,7 @@ export class SubCategoryOverride {
    * @internal
    */
   public toJSON(): SubCategoryAppearance.Props {
-    const props: SubCategoryAppearance.Props = { };
+    const props: SubCategoryAppearance.Props = {};
     if (undefined !== this.invisible)
       props.invisible = this.invisible;
 

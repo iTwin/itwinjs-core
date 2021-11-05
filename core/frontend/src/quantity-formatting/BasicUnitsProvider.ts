@@ -8,7 +8,7 @@
 
 import {
   BadUnit, BasicUnit, UnitConversion, UnitProps, UnitsProvider,
-} from "@bentley/imodeljs-quantity";
+} from "@itwin/core-quantity";
 
 // cSpell:ignore ussurvey USCUSTOM
 

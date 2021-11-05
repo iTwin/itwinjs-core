@@ -1,0 +1,47 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<EnumEditor /> renders correctly 1`] = `
+<div>
+  <Select
+    aria-label=""
+    className="components-cell-editor components-enum-editor"
+    data-testid="components-select-editor"
+    onChange={[Function]}
+    options={Array []}
+    popoverProps={
+      Object {
+        "appendTo": [Function],
+      }
+    }
+    style={
+      Object {
+        "minWidth": "6em",
+      }
+    }
+    value=""
+  />
+</div>
+`;
+
+exports[`<EnumEditor /> renders correctly with style 1`] = `
+<div>
+  <Select
+    aria-label=""
+    className="components-cell-editor components-enum-editor"
+    data-testid="components-select-editor"
+    onChange={[Function]}
+    options={Array []}
+    popoverProps={
+      Object {
+        "appendTo": [Function],
+      }
+    }
+    style={
+      Object {
+        "color": "red",
+      }
+    }
+    value=""
+  />
+</div>
+`;

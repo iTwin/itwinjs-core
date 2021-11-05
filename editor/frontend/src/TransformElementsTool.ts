@@ -3,18 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Id64, Id64Arg, Id64String } from "@bentley/bentleyjs-core";
-import { Angle, Geometry, Matrix3d, Point3d, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { BentleyError, Id64, Id64Arg, Id64String } from "@itwin/core-bentley";
+import { Angle, Geometry, Matrix3d, Point3d, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   ColorDef, GeometricElementProps, IModelStatus, isPlacement2dProps, LinePixels, PersistentGraphicsRequestProps, Placement, Placement2d, Placement3d,
-} from "@bentley/imodeljs-common";
-import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@bentley/imodeljs-editor-common";
+} from "@itwin/core-common";
+import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@itwin/editor-common";
 import {
   AccuDrawHintBuilder, AngleDescription, BeButtonEvent, CoreTools, DynamicsContext, ElementSetTool, GraphicBranch, GraphicType, IModelApp,
   IModelConnection, IpcApp, NotifyMessageDetails, OutputMessagePriority, readElementGraphics, RenderGraphic, RenderGraphicOwner,
   ToolAssistanceInstruction,
-} from "@bentley/imodeljs-frontend";
-import { DialogItem, DialogProperty, DialogPropertySyncItem, EnumerationChoice, PropertyDescriptionHelper } from "@bentley/ui-abstract";
+} from "@itwin/core-frontend";
+import { DialogItem, DialogProperty, DialogPropertySyncItem, EnumerationChoice, PropertyDescriptionHelper } from "@itwin/appui-abstract";
 import { EditTools } from "./EditTool";
 
 /** @alpha */
@@ -261,7 +261,7 @@ export abstract class TransformElementsTool extends ElementSetTool {
       if (IModelStatus.Success === await TransformElementsTool.callCommand("transformPlacement", this.agenda.compressIds(), transform.toJSON()))
         await this.saveChanges();
     } catch (err) {
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, err.toString()));
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, BentleyError.getErrorMessage(err) || "An unknown error occurred."));
     }
   }
 
@@ -279,10 +279,9 @@ export abstract class TransformElementsTool extends ElementSetTool {
     return super.onProcessComplete();
   }
 
-  public override onCleanup(): void {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this.clearAgendaGraphics();
-    super.onCleanup();
+  public override async onCleanup() {
+    await this.clearAgendaGraphics();
+    return super.onCleanup();
   }
 }
 
@@ -304,10 +303,10 @@ export class MoveElementsTool extends TransformElementsTool {
     super.provideToolAssistance(mainMsg);
   }
 
-  public onRestartTool(): void {
+  public async onRestartTool(): Promise<void> {
     const tool = new MoveElementsTool();
-    if (!tool.run())
-      this.exitTool();
+    if (!await tool.run())
+      return this.exitTool();
   }
 }
 
@@ -490,7 +489,7 @@ export class RotateElementsTool extends TransformElementsTool {
       if (IModelStatus.Success === await TransformElementsTool.callCommand("rotatePlacement", this.agenda.compressIds(), transform.matrix.toJSON(), RotateAbout.Center === this.rotateAbout))
         await this.saveChanges();
     } catch (err) {
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, err.toString()));
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, BentleyError.getErrorMessage(err) || "An unknown error occurred."));
     }
   }
 
@@ -563,11 +562,11 @@ export class RotateElementsTool extends TransformElementsTool {
     super.provideToolAssistance(mainMsg);
   }
 
-  public override applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean {
+  public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
     if (this.methodProperty.name === updatedValue.propertyName) {
       this.methodProperty.value = updatedValue.value.value as number;
       IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.methodProperty.item);
-      this.onRestartTool(); // calling restart, not reinitialize to not exit tool for selection set...
+      await this.onRestartTool(); // calling restart, not reinitialize to not exit tool for selection set...
       return true;
     } else if (this.aboutProperty.name === updatedValue.propertyName) {
       this.aboutProperty.value = updatedValue.value.value as number;
@@ -593,17 +592,17 @@ export class RotateElementsTool extends TransformElementsTool {
     return toolSettings;
   }
 
-  public onRestartTool(): void {
+  public async onRestartTool(): Promise<void> {
     const tool = new RotateElementsTool();
-    if (!tool.run())
-      this.exitTool();
+    if (!await tool.run())
+      return this.exitTool();
   }
 
-  public override onInstall(): boolean {
-    if (!super.onInstall())
+  public override async onInstall(): Promise<boolean> {
+    if (!await super.onInstall())
       return false;
 
-    // Setup initial values here instead of supplyToolSettingsProperties to support keyin args w/o ui-framework...
+    // Setup initial values here instead of supplyToolSettingsProperties to support keyin args w/o appui-react...
     const rotateMethod = IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValue(this.toolId, this.methodProperty.name);
     if (undefined !== rotateMethod)
       this.methodProperty.dialogItemValue = rotateMethod;
@@ -624,7 +623,7 @@ export class RotateElementsTool extends TransformElementsTool {
    *  - `about=0|1|2` Location to rotate about. 0 for point, 1 for placement origin, and 2 for center of range.
    *  - `angle=number` Rotation angle in degrees when not defining angle by points.
    */
-  public override parseAndRun(...inputArgs: string[]): boolean {
+  public override async parseAndRun(...inputArgs: string[]): Promise<boolean> {
     let rotateMethod;
     let rotateAbout;
     let rotateAngle;

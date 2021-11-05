@@ -20,7 +20,7 @@
         "group": "0_CoreTests",
         "order": 1
       },
-      "cwd": "${workspaceFolder}/core/backend/",
+      "cwd": "${workspaceFolder}/full-stack-tests/backend/",
       "type": "pwa-node",
       "request": "launch",
       "runtimeExecutable": "npm",
@@ -29,11 +29,11 @@
         "test:integration"
       ],
       "outFiles": [
-        "${workspaceFolder}/core/backend/lib/**/*.js"
+        "${workspaceFolder}/{core,clients,full-stack-tests}/*/lib/**/*.js"
       ]
     },
     {
-      "name": "Backend Tests (Standalone)",
+      "name": "Backend Tests",
       "presentation": {
         "group": "0_CoreTests",
         "order": 1
@@ -47,6 +47,41 @@
       ],
       "outFiles": [
         "${workspaceFolder}/core/backend/lib/**/*.js"
+      ]
+    },
+    {
+      "name": "Transformer Tests (Integration)",
+      "presentation": {
+        "group": "0_CoreTests",
+        "order": 1
+      },
+      "cwd": "${workspaceFolder}/core/transformer/",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "test:integration"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/core/transformer/lib/**/*.js"
+      ]
+    },
+    {
+      "name": "Transformer Tests (Standalone)",
+      "presentation": {
+        "group": "0_CoreTests",
+        "order": 1
+      },
+      "cwd": "${workspaceFolder}/core/transformer/",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "test"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/core/transformer/lib/**/*.js"
       ]
     },
     {
@@ -248,60 +283,6 @@
         "[NODE] Certa Test Runner for HyperModeling Tests"
       ]
     },
-    {
-      "name": "IModelBridgeFwk Tests (all)",
-      "presentation": {
-        "group": "0_CoreTests",
-        "order": 5
-      },
-      "cwd": "${workspaceFolder}/core/imodel-bridge",
-      "type": "pwa-node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run",
-        "test:all"
-      ],
-      "outFiles": [
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
-      ]
-    },
-    {
-      "name": "IModelBridgeFwk Tests (standalone)",
-      "presentation": {
-        "group": "0_CoreTests",
-        "order": 5
-      },
-      "cwd": "${workspaceFolder}/core/imodel-bridge",
-      "type": "pwa-node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run",
-        "test:standalone"
-      ],
-      "outFiles": [
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
-      ]
-    },
-    {
-      "name": "IModelBridgeFwk Tests (integration)",
-      "presentation": {
-        "group": "0_CoreTests",
-        "order": 6
-      },
-      "cwd": "${workspaceFolder}/core/imodel-bridge",
-      "type": "pwa-node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run",
-        "test:integration"
-      ],
-      "outFiles": [
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
-      ]
-    },
     { /* PARTIAL */
       "name": "[NODE] Certa Test Runner for Markup Tests",
       "presentation": {
@@ -361,24 +342,6 @@
       ]
     },
     // CLIENTS TESTS
-    {
-      "name": "Backend iTwin Client Tests (Integration)",
-      "presentation": {
-        "group": "3_ClientsTests",
-        "order": 1
-      },
-      "cwd": "${workspaceFolder}/core/backend-itwin-client",
-      "type": "pwa-node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run",
-        "test:integration"
-      ],
-      "outFiles": [
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
-      ]
-    },
     { /* PARTIAL */
       "name": "[NODE] Certa Test Runner for Clients Tests",
       "presentation": {
@@ -419,44 +382,6 @@
       ],
       "cascadeTerminateToConfigurations": [
         "[NODE] Certa Test Runner for Clients Tests"
-      ]
-    },
-    { /* PARTIAL */
-      "name": "[NODE] Certa Test Runner for Extension Client Tests (Integration)",
-      "presentation": {
-        "hidden": true
-      },
-      "cwd": "${workspaceFolder}/clients/extension",
-      "type": "pwa-node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run",
-        "test:integration:chrome -- --debug"
-      ],
-      "outFiles": [
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
-      ],
-      "outputCapture": "std",
-      "attachSimplePort": 5858, // NB: This must match ports.debugging in clients/extension/certa.json
-      "cascadeTerminateToConfigurations": [
-        "[BROWSER] Extension Client Tests (Integration)"
-      ]
-    },
-    { /* PARTIAL */
-      "name": "[BROWSER] Extension Client Tests (Integration)",
-      "presentation": {
-        "hidden": true
-      },
-      "type": "pwa-chrome",
-      "request": "attach",
-      "port": 9223, // NB: This must match ports.frontendDebugging in core/markup/certa.json
-      "timeout": 20000,
-      "outFiles": [
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
-      ],
-      "cascadeTerminateToConfigurations": [
-        "[NODE] Certa Test Runner for Extension Client Tests (Integration)"
       ]
     },
     {
@@ -532,38 +457,21 @@
         "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
       ]
     },
-    {
-      "name": "Backend iTwin Client Tests (Offline)",
-      "presentation": {
-        "group": "3_ClientsTests",
-        "order": 3
-      },
-      "cwd": "${workspaceFolder}/core/backend-itwin-client",
-      "type": "pwa-node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "test"
-      ],
-      "outFiles": [
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
-      ]
-    },
     // UI TESTS
     {
-      "name": "[UI] Tests: Abstract",
+      "name": "[UI] Tests: AppUi Abstract",
       "presentation": {
         "group": "4_UI"
       },
-      "cwd": "${workspaceFolder}/ui/abstract",
+      "cwd": "${workspaceFolder}/ui/appui-abstract",
       "type": "pwa-node",
       "request": "launch",
-      "program": "${workspaceFolder}/ui/abstract/node_modules/mocha/bin/_mocha",
+      "program": "${workspaceFolder}/ui/appui-abstract/node_modules/mocha/bin/_mocha",
       "args": [
         "--config",
         "../.mocharc.json",
         "--no-timeouts",
-        "lib/test/**/*.test.js"
+        "lib/cjs/test/**/*.test.js"
       ],
       "skipFiles": [
         "<node_internals>/**/*.js",
@@ -574,19 +482,19 @@
       ]
     },
     {
-      "name": "[UI] Tests: Components",
+      "name": "[UI] Tests: Components React",
       "presentation": {
         "group": "4_UI"
       },
-      "cwd": "${workspaceFolder}/ui/components",
+      "cwd": "${workspaceFolder}/ui/components-react",
       "type": "pwa-node",
       "request": "launch",
-      "program": "${workspaceFolder}/ui/components/node_modules/mocha/bin/_mocha",
+      "program": "${workspaceFolder}/ui/components-react/node_modules/mocha/bin/_mocha",
       "args": [
         "--config",
         "../.mocharc.json",
         "--no-timeouts",
-        "lib/test/**/*.test.js"
+        "lib/cjs/test/**/*.test.js"
       ],
       "skipFiles": [
         "<node_internals>/**/*.js",
@@ -597,38 +505,57 @@
       ]
     },
     {
-      "name": "[UI] Tests: Core",
+      "name": "[UI] Tests: Core React",
       "presentation": {
         "group": "4_UI"
       },
-      "cwd": "${workspaceFolder}/ui/core",
+      "cwd": "${workspaceFolder}/ui/core-react",
       "type": "pwa-node",
       "request": "launch",
-      "program": "${workspaceFolder}/ui/core/node_modules/mocha/bin/_mocha",
+      "program": "${workspaceFolder}/ui/core-react/node_modules/mocha/bin/_mocha",
       "args": [
         "--config",
         "../.mocharc.json",
         "--no-timeouts",
-        "lib/test/**/*.test.js"
+        "lib/cjs/test/**/*.test.js"
       ],
       "outFiles": [
         "${workspaceFolder}/{core,ui}/*/lib/**/*.js"
       ]
     },
     {
-      "name": "[UI] Tests: Framework",
+      "name": "[UI] Tests: IModel Components React",
       "presentation": {
         "group": "4_UI"
       },
-      "cwd": "${workspaceFolder}/ui/framework",
+      "cwd": "${workspaceFolder}/ui/imodel-components-react",
       "type": "pwa-node",
       "request": "launch",
-      "program": "${workspaceFolder}/ui/framework/node_modules/mocha/bin/_mocha",
+      "program": "${workspaceFolder}/ui/imodel-components-react/node_modules/mocha/bin/_mocha",
       "args": [
         "--config",
         "../.mocharc.json",
         "--no-timeouts",
-        "lib/test/**/*.test.js"
+        "lib/cjs/test/**/*.test.js"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/{core,ui}/*/lib/cjs/**/*.js"
+      ]
+    },
+    {
+      "name": "[UI] Tests: AppUi React",
+      "presentation": {
+        "group": "4_UI"
+      },
+      "cwd": "${workspaceFolder}/ui/appui-react",
+      "type": "pwa-node",
+      "request": "launch",
+      "program": "${workspaceFolder}/ui/appui-react/node_modules/mocha/bin/_mocha",
+      "args": [
+        "--config",
+        "../.mocharc.json",
+        "--no-timeouts",
+        "lib/cjs/test/**/*.test.js"
       ],
       "outFiles": [
         "${workspaceFolder}/{core,clients,ui,presentation}/*/lib/**/*.js"
@@ -636,19 +563,19 @@
       "outputCapture": "std"
     },
     {
-      "name": "[UI] Tests: 9zone",
+      "name": "[UI] Tests: ApppUi Layout React",
       "presentation": {
         "group": "4_UI"
       },
-      "cwd": "${workspaceFolder}/ui/ninezone",
+      "cwd": "${workspaceFolder}/ui/appui-layout-react",
       "type": "pwa-node",
       "request": "launch",
-      "program": "${workspaceFolder}/ui/ninezone/node_modules/mocha/bin/_mocha",
+      "program": "${workspaceFolder}/ui/appui-layout-react/node_modules/mocha/bin/_mocha",
       "args": [
         "--config",
         "../.mocharc.json",
         "--no-timeouts",
-        "lib/test/**/*.test.js"
+        "lib/cjs/test/**/*.test.js"
       ],
       "outFiles": [
         "${workspaceFolder}/ui/*/lib/**/*.js"
@@ -688,7 +615,7 @@
         "--config",
         "../.mocharc.json",
         "--no-timeouts",
-        "lib/test/**/*.test.js"
+        "lib/cjs/test/**/*.test.js"
       ],
       "outFiles": [
         "${workspaceFolder}/{core,presentation}/*/lib/**/*.js"
@@ -707,7 +634,7 @@
         "--config",
         "../.mocharc.json",
         "--no-timeouts",
-        "lib/test/**/*.test.js"
+        "lib/cjs/test/**/*.test.js"
       ],
       "outFiles": [
         "${workspaceFolder}/{core,presentation}/*/lib/**/*.js"
@@ -730,7 +657,7 @@
         "ignore-styles",
         "-r",
         "jsdom-global/register",
-        "lib/test/**/*.test.js"
+        "lib/cjs/test/**/*.test.js"
       ],
       "outFiles": [
         "${workspaceFolder}/{core,ui,presentation}/*/lib/**/*.js"
@@ -751,7 +678,7 @@
         "--no-timeouts",
         "-r",
         "jsdom-global/register",
-        "lib/test/**/*.test.js"
+        "lib/cjs/test/**/*.test.js"
       ],
       "outFiles": [
         "${workspaceFolder}/{core,clients,presentation}/*/lib/**/*.js"
@@ -798,7 +725,7 @@
         "ignore-styles",
         "-r",
         "jsdom-global/register",
-        "lib/test/**/*.test.js"
+        "lib/cjs/test/**/*.test.js"
       ],
       "outFiles": [
         "${workspaceFolder}/{core,clients,ui,presentation}/*/lib/**/*.js"
@@ -889,23 +816,6 @@
       ],
       "outFiles": [
         "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
-      ]
-    },
-    {
-      "name": "Extension CLI Tests (Integration)",
-      "presentation": {
-        "group": "6_Misc"
-      },
-      "cwd": "${workspaceFolder}/tools/extension-cli",
-      "type": "pwa-node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run",
-        "wip-test:integration"
-      ],
-      "outFiles": [
-        "${workspaceFolder}/{core,clients,tools}/*/lib/**/*.js"
       ]
     },
     {
@@ -1046,7 +956,7 @@
         "--remote-debugging-port=9223"
       ],
       "env": {
-        "SVT_LOG_LEVEL": "TRACE",
+        "IMJS_LOG_LEVEL": "TRACE",
         "NODE_ENV": "development"
       },
       "outFiles": [
@@ -1118,7 +1028,7 @@
       "type": "pwa-node",
       "request": "launch",
       "env": {
-        "SVT_LOG_LEVEL": "TRACE"
+        "IMJS_LOG_LEVEL": "TRACE"
       },
       "program": "${workspaceFolder}/test-apps/display-test-app/lib/backend/WebMain.js",
       "outFiles": [
@@ -1161,8 +1071,8 @@
         "--remote-debugging-port=9223"
       ],
       "env": {
-        "SVT_LOG_LEVEL": "TRACE",
-        "SVT_NO_DEV_TOOLS": "1",
+        "IMJS_LOG_LEVEL": "TRACE",
+        "IMJS_NO_DEV_TOOLS": "1",
         "NODE_ENV": "development"
       },
       "outFiles": [
@@ -1436,98 +1346,6 @@
       ]
     },
     { /* PARTIAL */
-      "name": "[BACKEND] Full Stack NativeApp Integration Tests",
-      "presentation": {
-        "hidden": true
-      },
-      "cwd": "${workspaceFolder}/full-stack-tests/native-app/",
-      "type": "pwa-node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run",
-        "test:integration:electron",
-        "--",
-        "--debug"
-      ],
-      "outFiles": [
-        "${workspaceFolder}/full-stack-tests/native-app/lib/**/*.js",
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
-        "${workspaceFolder}/ui/abstract/lib/**/*.js",
-        "${workspaceFolder}/tools/certa/lib/**/*.js"
-      ],
-      "outputCapture": "std",
-      "attachSimplePort": 5858, // NB: This must match ports.debugging in full-stack-tests/native-app/certa.json
-      "cascadeTerminateToConfigurations": [
-        "[FRONTEND] Full Stack NativeApp Integration Tests"
-      ]
-    },
-    { /* PARTIAL */
-      "name": "[FRONTEND] Full Stack NativeApp Integration Tests",
-      "presentation": {
-        "hidden": true
-      },
-      "type": "pwa-chrome",
-      "request": "attach",
-      "port": 9223, // NB: This must match ports.frontendDebugging in full-stack-tests/native-app/certa.json
-      "timeout": 200000,
-      "outFiles": [
-        "${workspaceFolder}/full-stack-tests/native-app/lib/**/*.js",
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
-        "${workspaceFolder}/ui/abstract/lib/**/*.js",
-        "${workspaceFolder}/tools/certa/lib/**/*.js"
-      ],
-      "cascadeTerminateToConfigurations": [
-        "[BACKEND] Full Stack NativeApp Integration Tests"
-      ]
-    },
-    { /* PARTIAL */
-      "name": "[BACKEND] Full Stack NativeApp Tests",
-      "presentation": {
-        "hidden": true
-      },
-      "cwd": "${workspaceFolder}/full-stack-tests/native-app/",
-      "type": "pwa-node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run",
-        "test:electron",
-        "--",
-        "--debug"
-      ],
-      "outFiles": [
-        "${workspaceFolder}/full-stack-tests/native-app/lib/**/*.js",
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
-        "${workspaceFolder}/ui/abstract/lib/**/*.js",
-        "${workspaceFolder}/tools/certa/lib/**/*.js"
-      ],
-      "outputCapture": "std",
-      "attachSimplePort": 5858, // NB: This must match ports.debugging in full-stack-tests/native-app/certa.json
-      "cascadeTerminateToConfigurations": [
-        "[FRONTEND] Full Stack NativeApp Tests"
-      ]
-    },
-    { /* PARTIAL */
-      "name": "[FRONTEND] Full Stack NativeApp Tests",
-      "presentation": {
-        "hidden": true
-      },
-      "type": "pwa-chrome",
-      "request": "attach",
-      "port": 9223, // NB: This must match ports.frontendDebugging in full-stack-tests/native-app/certa.json
-      "timeout": 200000,
-      "outFiles": [
-        "${workspaceFolder}/full-stack-tests/native-app/lib/**/*.js",
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
-        "${workspaceFolder}/ui/abstract/lib/**/*.js",
-        "${workspaceFolder}/tools/certa/lib/**/*.js"
-      ],
-      "cascadeTerminateToConfigurations": [
-        "[BACKEND] Full Stack NativeApp Tests"
-      ]
-    },
-    { /* PARTIAL */
       "name": "[BACKEND] Full Stack RPC Tests",
       "presentation": {
         "hidden": true
@@ -1635,6 +1453,21 @@
         "[NODE] Certa Test Runner for Full Stack RPC Interface Tests",
         "[BACKEND] Local Backend for Full Stack RPC Interface Tests"
       ]
+    },
+    {
+      "name": "eslint rule test @bentley/no-internal-barrel-imports",
+      "presentation": {
+        "group": "6_Misc"
+      },
+      "cwd": "${workspaceFolder}/tools/eslint-plugin",
+      "type": "pwa-node",
+      "request": "launch",
+      "program": "${workspaceFolder}/tools/eslint-plugin/node_modules/mocha/bin/_mocha",
+      "args": [
+        "${workspaceFolder}/tools/eslint-plugin/tests/no-internal-barrel-imports.js",
+        "--timeout 50000" // for easier debugging
+      ],
+      "console": "integratedTerminal",
     }
   ],
   "compounds": [
@@ -1782,28 +1615,6 @@
       ]
     },
     {
-      "name": "Full Stack NativeApp Integration Tests",
-      "presentation": {
-        "group": "2_FullStackTests",
-        "order": 1
-      },
-      "configurations": [
-        "[BACKEND] Full Stack NativeApp Integration Tests",
-        "[FRONTEND] Full Stack NativeApp Integration Tests"
-      ]
-    },
-    {
-      "name": "Full Stack NativeApp Tests",
-      "presentation": {
-        "group": "2_FullStackTests",
-        "order": 1
-      },
-      "configurations": [
-        "[BACKEND] Full Stack NativeApp Tests",
-        "[FRONTEND] Full Stack NativeApp Tests"
-      ]
-    },
-    {
       "name": "Full Stack RPC Tests",
       "presentation": {
         "group": "2_FullStackTests",
@@ -1837,17 +1648,6 @@
         "[BROWSER] Clients Tests"
       ]
     },
-    {
-      "name": "Extension Client Tests (Integration)",
-      "presentation": {
-        "group": "3_ClientsTests",
-        "order": 2
-      },
-      "configurations": [
-        "[BROWSER] Extension Client Tests (Integration)",
-        "[NODE] Certa Test Runner for Extension Client Tests (Integration)"
-      ]
-    }
   ],
   "inputs": [
     {
@@ -1876,9 +1676,7 @@
       "description": "Select client library to debug",
       "type": "pickString",
       "options": [
-        "product-settings",
-        "projectshare",
-        "rbac"
+        "product-settings"
       ]
     }
   ]

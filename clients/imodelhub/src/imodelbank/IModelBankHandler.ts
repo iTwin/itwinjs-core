@@ -5,7 +5,6 @@
 /** @packageDocumentation
  * @module iModelBankClient
  */
-import { assert, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { FileHandler } from "@bentley/itwin-client";
 import { IModelBaseHandler } from "../imodelhub/BaseHandler";
 
@@ -29,11 +28,9 @@ export class IModelBankHandler extends IModelBaseHandler {
     }
   }
 
-  protected override getUrlSearchKey(): string { assert(false, "Bentley cloud-specific method should be factored out of WsgClient base class"); return ""; }
-
   public override baseUrl?: string;
 
-  public override async getUrl(_requestContext: ClientRequestContext, excludeApiVersion?: boolean): Promise<string> {
+  public override async getUrl(excludeApiVersion?: boolean): Promise<string> {
     if (this._url)
       return this._url;
 

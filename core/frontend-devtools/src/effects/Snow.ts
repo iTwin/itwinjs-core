@@ -6,12 +6,12 @@
  * @module Effects
  */
 
-import { dispose } from "@bentley/bentleyjs-core";
-import { Point2d, Range1d, Range2d, Vector2d } from "@bentley/geometry-core";
-import { RenderTexture } from "@bentley/imodeljs-common";
+import { dispose } from "@itwin/core-bentley";
+import { Point2d, Range1d, Range2d, Vector2d } from "@itwin/core-geometry";
+import { RenderTexture } from "@itwin/core-common";
 import {
-  DecorateContext, Decorator, GraphicType, imageElementFromUrl, IModelApp, ParticleCollectionBuilder, ParticleProps, Tool, Viewport,
-} from "@bentley/imodeljs-frontend";
+  DecorateContext, Decorator, GraphicType, imageElementFromUrl, IModelApp, ParticleCollectionBuilder, ParticleProps, TextureTransparency, Tool, Viewport,
+} from "@itwin/core-frontend";
 import { parseToggle } from "../tools/parseToggle";
 import { randomFloat, randomInteger } from "./Random";
 
@@ -225,10 +225,11 @@ export class SnowDecorator implements Decorator {
     else if (undefined === decorator && enable) {
       // Create a texture to use for the particles.
       // Note: the decorator takes ownership of the texture, and disposes of it when the decorator is disposed.
-      const isOwned = true;
-      const params = new RenderTexture.Params(undefined, undefined, isOwned);
       const image = await imageElementFromUrl("./sprites/particle_snow.png");
-      const texture = IModelApp.renderSystem.createTextureFromImage(image, true, undefined, params);
+      const texture = IModelApp.renderSystem.createTexture({
+        ownership: "external",
+        image: { source: image, transparency: TextureTransparency.Mixed },
+      });
 
       new SnowDecorator(viewport, texture);
     }
@@ -242,18 +243,18 @@ export class SnowDecorator implements Decorator {
 export class SnowEffect extends Tool {
   public static override toolId = "SnowEffect";
 
-  public override run(enable?: boolean): boolean {
+  public override async run(enable?: boolean): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (vp)
-      SnowDecorator.toggle(vp, enable); // eslint-disable-line @typescript-eslint/no-floating-promises
+      await SnowDecorator.toggle(vp, enable);
 
     return true;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const enable = parseToggle(args[0]);
     if (typeof enable !== "string")
-      this.run(enable);
+      await this.run(enable);
 
     return true;
   }

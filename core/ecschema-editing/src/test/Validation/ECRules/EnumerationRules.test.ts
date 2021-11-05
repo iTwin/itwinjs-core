@@ -4,8 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { DiagnosticCategory, DiagnosticType, Enumeration, PrimitiveType, Schema, SchemaContext } from "@bentley/ecschema-metadata";
+import { Enumeration, PrimitiveType, Schema, SchemaContext } from "@itwin/ecschema-metadata";
 import * as Rules from "../../../Validation/ECRules";
+import { DiagnosticCategory, DiagnosticType } from "../../../Validation/Diagnostic";
 
 /* eslint-disable deprecation/deprecation */
 

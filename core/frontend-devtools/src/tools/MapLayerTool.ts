@@ -7,8 +7,8 @@
  * @module Tools
  */
 
-import { ColorDef } from "@bentley/imodeljs-common";
-import { IModelApp, MapLayerSource, MapLayerSources, MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority, Tool, WmsUtilities } from "@bentley/imodeljs-frontend";
+import { BaseMapLayerSettings, ColorDef } from "@itwin/core-common";
+import { IModelApp, MapLayerSource, MapLayerSources, MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority, Tool, WmsUtilities } from "@itwin/core-frontend";
 import { parseBoolean } from "./parseBoolean";
 import { parseToggle } from "./parseToggle";
 
@@ -25,9 +25,9 @@ class AttachMapLayerBaseTool extends Tool {
 
     source.validateSource().then((validation) => {
       if (validation.status === MapLayerSourceStatus.Valid || validation.status === MapLayerSourceStatus.RequireAuth) {
-
         if (this._isBase) {
-          vp.displayStyle.changeBaseMapProps({ ...source, subLayers: validation.subLayers });
+          vp.displayStyle.backgroundMapBase = BaseMapLayerSettings.fromJSON({ ...source, subLayers: validation.subLayers });
+          vp.invalidateRenderPlan();
         } else {
           const layerSettings = source.toLayerSettings(validation.subLayers);
           if (layerSettings) {
@@ -37,19 +37,19 @@ class AttachMapLayerBaseTool extends Tool {
 
         if (validation.status === MapLayerSourceStatus.Valid) {
           vp.invalidateRenderPlan();
-          const msg = IModelApp.i18n.translate("FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayerAttached", { sourceName: source.name, sourceUrl: source.url });
+          const msg = IModelApp.localization.getLocalizedString("FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayerAttached", { sourceName: source.name, sourceUrl: source.url });
           IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
         } else if (validation.status === MapLayerSourceStatus.RequireAuth) {
-          const msg = IModelApp.i18n.translate("FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayerAttachedRequiresAuth", { sourceName: source.name });
+          const msg = IModelApp.localization.getLocalizedString("FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayerAttachedRequiresAuth", { sourceName: source.name });
           IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg));
         }
 
       } else {
-        const msg = IModelApp.i18n.translate("FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayerValidationFailed", { sourceUrl: source.url });
+        const msg = IModelApp.localization.getLocalizedString("FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayerValidationFailed", { sourceUrl: source.url });
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
       }
     }).catch((error) => {
-      const msg = IModelApp.i18n.translate("FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayerAttachError", { error, sourceUrl: source.url });
+      const msg = IModelApp.localization.getLocalizedString("FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayerAttachError", { error, sourceUrl: source.url });
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
     });
   }
@@ -60,12 +60,12 @@ class AttachMapLayerByURLBaseTool extends AttachMapLayerBaseTool {
   public static override get maxArgs() { return 4; }
   constructor(protected _formatId: string) { super(); }
 
-  public override run(url: string, name?: string, userName?: string, password?: string): boolean {
+  public override async run(url: string, name?: string, userName?: string, password?: string): Promise<boolean> {
     this.doAttach(MapLayerSource.fromJSON({ url, name: (name ? name : url), formatId: this._formatId, userName, password }));
     return true;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     return this.run(args[0], args[1], args[2], args[3]);
   }
 }
@@ -79,7 +79,7 @@ export class AttachWmsMapLayerByUrlTool extends AttachMapLayerByURLBaseTool {
   /** This method runs the tool, attaching a WMS map layer from a given URL.
    * @param args contains url, name, userName, password in array order
    */
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     return this.run(WmsUtilities.getBaseUrl(args[0]), args[1], args[2], args[3]);
   }
 }
@@ -93,7 +93,7 @@ export class AttachWmtsMapLayerByUrlTool extends AttachMapLayerByURLBaseTool {
   /** This method runs the tool, attaching a WMTS map layer from a given URL.
    * @param args contains url, name, userName, password in array order
    */
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     return this.run(WmsUtilities.getBaseUrl(args[0]), args[1], args[2], args[3]);
   }
 }
@@ -125,7 +125,7 @@ export class AttachMapLayerTool extends AttachMapLayerBaseTool {
   /** This method runs the tool, adding a map layer from a specified name in MayLayerSources.json.
    * @param name the name of the map layer to add
    */
-  public override run(name: string): boolean {
+  public override async run(name: string): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (vp === undefined)
       return false;
@@ -144,7 +144,7 @@ export class AttachMapLayerTool extends AttachMapLayerBaseTool {
   /** Executes this tool's run method with args[0] containing `name`.
    * @see [[run]]
    */
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     return this.run(args[0]);
   }
 }
@@ -177,11 +177,11 @@ export class DetachMapLayersTool extends Tool {
   public static override toolId = "DetachMapLayersTool";
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 0; }
-  public override parseAndRun(..._args: string[]): boolean {
+  public override async parseAndRun(..._args: string[]): Promise<boolean> {
     return this.run();
   }
 
-  public override run(): boolean {
+  public override async run(): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (vp === undefined)
       return false;
@@ -209,7 +209,7 @@ export class MapLayerVisibilityTool extends Tool {
    * @param layerIndex the index of the layer to change
    * @param visible a boolean that should be true if the layer should be visible
    */
-  public override run(layerIndex: number, enable?: boolean): boolean {
+  public override async run(layerIndex: number, enable?: boolean): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp || !vp.view.isSpatialView())
       return false;
@@ -229,11 +229,11 @@ export class MapLayerVisibilityTool extends Tool {
   /** Executes this tool's run method with args[0] containing `enable` and args[1] containing `layerIndex`.
    * @see [[run]]
    */
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const enable = parseToggle(args[0]);
     const layerIndex = parseLayerIndex(args);
     if (typeof enable !== "string")
-      this.run(layerIndex, enable);
+      await this.run(layerIndex, enable);
 
     return true;
   }
@@ -249,7 +249,7 @@ export class ReorderMapLayers extends Tool {
    * @param from a numeric value specifying the layer index that is being moved
    * @param from a numeric value specifying the layer index to move that layer to
    */
-  public override run(from: number, to: number): boolean {
+  public override async run(from: number, to: number): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp || !vp.view.isSpatialView())
       return false;
@@ -261,10 +261,10 @@ export class ReorderMapLayers extends Tool {
   /** Executes this tool's run method with args[0] containing `from` and args[1] containing `to`.
    * @see [[run]]
    */
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const from = parseInt(args[0], 10);
     const to = parseInt(args[1], 10);
-    this.run(from, to);
+    await this.run(from, to);
     return true;
   }
 
@@ -281,7 +281,7 @@ export class MapLayerTransparencyTool extends Tool {
    * @param layerIndex the index of the layer to change
    * @param transparency a numeric value in the range 0.0 (fully opaque) to 1.0 (fully transparent)
    */
-  public override run(layerIndex: number, transparency: number): boolean {
+  public override async run(layerIndex: number, transparency: number): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp || !vp.view.isSpatialView())
       return false;
@@ -294,11 +294,11 @@ export class MapLayerTransparencyTool extends Tool {
   /** Executes this tool's run method with args[0] containing `transparency` and args[1] containing `layerIndex`.
    * @see [[run]]
    */
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const transparency = parseFloat(args[0]);
     const layerIndex = parseLayerIndex(args);
     if (transparency >= 0 && transparency <= 1)
-      this.run(layerIndex, transparency);
+      await this.run(layerIndex, transparency);
 
     return true;
   }
@@ -306,7 +306,7 @@ export class MapLayerTransparencyTool extends Tool {
 /** This tool sets the visibility of the map sublayer.
  * @beta
  */
-export class MapLayerSubLayerVisiblityTool extends Tool {
+export class MapLayerSubLayerVisibilityTool extends Tool {
   public static override toolId = "SetMapSubLayerVisibility";
   public static override get minArgs() { return 1; }
   public static override get maxArgs() { return 2; }
@@ -315,7 +315,7 @@ export class MapLayerSubLayerVisiblityTool extends Tool {
    * @param layerIndex the index of the layer to change
    * @param visible a boolean that should be true if the sublayer should be visible
    */
-  public override run(layerIndex: number, visible: boolean): boolean {
+  public override async run(layerIndex: number, visible: boolean): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp || !vp.view.isSpatialView())
       return false;
@@ -329,10 +329,10 @@ export class MapLayerSubLayerVisiblityTool extends Tool {
   /** Executes this tool's run method with args[0] containing `transparency` and args[1] containing `layerIndex`.
    * @see [[run]]
    */
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const on = args[0] !== "off";
     const layerIndex = parseLayerIndex(args);
-    this.run(layerIndex, on);
+    await this.run(layerIndex, on);
 
     return true;
   }
@@ -349,7 +349,7 @@ export class MapLayerZoomTool extends Tool {
   /** This method runs the tool, changing the viewport so it is zoomed to the range of a map layer.
    * @param layerIndex the index of the layer whose range to zoom to
    */
-  public override run(layerIndex: number): boolean {
+  public override async run(layerIndex: number): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp || !vp.view.isSpatialView())
       return false;
@@ -362,9 +362,9 @@ export class MapLayerZoomTool extends Tool {
   /** Executes this tool's run method with args[0] containing `layerIndex`.
    * @see [[run]]
    */
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const layerIndex = parseLayerIndex(args);
-    this.run(layerIndex);
+    await this.run(layerIndex);
 
     return true;
   }
@@ -381,7 +381,7 @@ export class ToggleTerrainTool extends Tool {
   /** This method runs the tool, changing whether to apply terrain heights to the map.
    * @param enable whether or not to enable terrain heights on the map
    */
-  public override run(enable?: boolean): boolean {
+  public override async run(enable?: boolean): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp || !vp.view.isSpatialView())
       return false;
@@ -396,10 +396,10 @@ export class ToggleTerrainTool extends Tool {
   /** Executes this tool's run method with args[0] containing `enable`.
    * @see [[run]]
    */
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const enable = parseToggle(args[0]);
     if (typeof enable !== "string")
-      this.run(enable);
+      await this.run(enable);
 
     return true;
   }
@@ -416,12 +416,13 @@ export class MapBaseColorTool extends Tool {
   /** This method runs the tool, changing the color of the base map.
    * @param color the color for the base map
    */
-  public override run(color: ColorDef) {
+  public override async run(color: ColorDef) {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp || !vp.view.isSpatialView())
       return false;
 
-    vp.displayStyle.changeBaseMapProps(color);
+    const curTransparency = vp.displayStyle.backgroundMapBase instanceof ColorDef ? vp.displayStyle.backgroundMapBase.getTransparency() : 0;
+    vp.displayStyle.backgroundMapBase = color.withTransparency(curTransparency);
     vp.invalidateRenderPlan();
 
     return true;
@@ -431,7 +432,7 @@ export class MapBaseColorTool extends Tool {
    * These rgb values will be used to construct the `color` parameter passed to this tool's run method.
    * @see [[run]]
    */
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const red = parseFloat(args[0]), green = parseFloat(args[1]), blue = parseFloat(args[2]);
 
     return (isNaN(red) || red < 0 || red > 255 || isNaN(green) || green < 0 || green > 255 || isNaN(blue) || blue < 0 || blue > 255) ? false : this.run(ColorDef.from(red, green, blue));
@@ -448,7 +449,7 @@ export class MapBaseTransparencyTool extends Tool {
   /** This method runs the tool, changing the transparency of the base map.
    * @param transparency a numeric value in range 0.0 to 1.0 whether 0.0 means fully opaque and 1.0 means fully transparent
    */
-  public override run(transparency: number) {
+  public override async run(transparency: number) {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp || !vp.view.isSpatialView())
       return false;
@@ -462,7 +463,7 @@ export class MapBaseTransparencyTool extends Tool {
   /** Executes this tool's run method with args[0] containing `transparency`.
    * @see [[run]]
    */
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const transparency = parseFloat(args[0]);
 
     return (isNaN(transparency) || transparency < 0 || transparency > 1) ? false : this.run(transparency);
@@ -480,12 +481,12 @@ export class MapBaseVisibilityTool extends Tool {
   /** This method runs the tool, changing the visibility of the base map.
    * @param visible a boolean which specifies whether or not to make the base map visible
    */
-  public override run(visible: boolean) {
+  public override async run(visible: boolean) {
     const vp = IModelApp.viewManager.selectedView;
-    if (undefined === vp || !vp.view.isSpatialView())
+    if (undefined === vp || !vp.view.isSpatialView() || vp.displayStyle.backgroundMapBase instanceof ColorDef)
       return false;
 
-    vp.displayStyle.changeBaseMapProps({ visible });
+    vp.displayStyle.backgroundMapBase = vp.displayStyle.backgroundMapBase.clone({ visible });
     vp.invalidateRenderPlan();
 
     return true;
@@ -494,7 +495,7 @@ export class MapBaseVisibilityTool extends Tool {
   /** Executes this tool's run method with args[0] containing `visible`.
    * @see [[run]]
    */
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const visible = parseBoolean(args[0]);
 
     return (visible !== undefined ? this.run(visible) : false);

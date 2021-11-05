@@ -7,14 +7,14 @@
  * @module Tools
  */
 
-import { IModelApp, PrimitiveVisibility, RenderTargetDebugControl, ScreenViewport, Tool } from "@bentley/imodeljs-frontend";
+import { IModelApp, PrimitiveVisibility, RenderTargetDebugControl, ScreenViewport, Tool } from "@itwin/core-frontend";
 import { parseToggle } from "./parseToggle";
 
 /** Executes some code against a RenderTargetDebugControl obtained from the selected viewport.
  * @beta
  */
 export abstract class RenderTargetDebugControlTool extends Tool {
-  public override run(_args: any[]): boolean {
+  public override async run(_args: any[]): Promise<boolean> {
     const view = IModelApp.viewManager.selectedView;
     const control = undefined !== view ? view.target.debugControl : undefined;
     if (undefined !== control)
@@ -47,11 +47,11 @@ export abstract class RenderTargetDebugControlToggleTool extends RenderTargetDeb
     vp.invalidateRenderPlan();
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const enable = parseToggle(args[0]);
     if (typeof enable !== "string") {
       this._enable = enable;
-      this.run([]);
+      await this.run([]);
     }
 
     return true;
@@ -90,7 +90,7 @@ export class TogglePrimitiveVisibilityTool extends RenderTargetDebugControlTool 
     vp.invalidateScene();
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     if (0 < args.length) {
       switch (args[0].toLowerCase()) {
         case "instanced":
@@ -170,7 +170,7 @@ export class SetAASamplesTool extends RenderTargetDebugControlTool {
   /** Runs this tool, setting the number of antialiasing samples to use (<=1 for no antialiasing).
    * @param args contains the arguments used by the tool's run method: args[0] contains the number of samples; optionally args[1] can contain the word "all" in order to set those number of samples for all viewports.
    */
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     if (0 < args.length)
       this._aaSamples = parseInt(args[0], 10);
     this._changeAll = (1 < args.length && args[1].toLowerCase() === "all");

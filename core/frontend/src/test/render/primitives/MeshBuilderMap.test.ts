@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { Arc3d, LineString3d, Loop, Point3d, Range3d, Transform } from "@bentley/geometry-core";
-import { ColorDef, GraphicParams } from "@bentley/imodeljs-common";
+import { Arc3d, LineString3d, Loop, Point3d, Range3d, Transform } from "@itwin/core-geometry";
+import { ColorDef, GraphicParams } from "@itwin/core-common";
 import { GraphicType } from "../../../render/GraphicBuilder";
 import { IModelApp } from "../../../IModelApp";
 import { IModelConnection } from "../../../IModelConnection";
@@ -14,9 +14,13 @@ import { ScreenViewport } from "../../../Viewport";
 import { StandardViewId } from "../../../StandardView";
 import { createBlankConnection } from "../../createBlankConnection";
 import { FakeDisplayParams } from "./Fake";
-import {
-  DisplayParams, GenerateEdges, Geometry, GeometryList, GeometryOptions, Mesh, MeshBuilderMap, PreserveOrder, PrimitiveBuilder, SurfacesOnly, ToleranceRatio,
-} from "../../../render-primitives";
+import { DisplayParams } from "../../../render/primitives/DisplayParams";
+import { GenerateEdges, GeometryOptions, PreserveOrder, SurfacesOnly, ToleranceRatio } from "../../../render/primitives/Primitives";
+import { GeometryList } from "../../../render/primitives/geometry/GeometryList";
+import { PrimitiveBuilder } from "../../../render/primitives/geometry/GeometryListBuilder";
+import { Geometry } from "../../../render/primitives/geometry/GeometryPrimitives";
+import { MeshBuilderMap } from "../../../render/primitives/mesh/MeshBuilderMap";
+import { Mesh } from "../../../render/primitives/mesh/MeshPrimitives";
 
 describe("MeshBuilderMap Tests", () => {
   let imodel: IModelConnection;

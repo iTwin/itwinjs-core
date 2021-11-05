@@ -1154,8 +1154,8 @@ Object {
     "test-category": Array [
       PropertyRecord {
         "property": Object {
-          "displayLabel": "Simple Field",
-          "name": "SimpleField",
+          "displayLabel": "Properties Field",
+          "name": "PropertiesField",
           "typename": "MyArray[]",
         },
         "value": Object {
@@ -1163,8 +1163,8 @@ Object {
             PropertyRecord {
               "description": "some display value 1",
               "property": Object {
-                "displayLabel": "Simple Field",
-                "name": "SimpleField",
+                "displayLabel": "Properties Field",
+                "name": "PropertiesField",
                 "typename": "MyType",
               },
               "value": Object {
@@ -1176,8 +1176,8 @@ Object {
             PropertyRecord {
               "description": "some display value 2",
               "property": Object {
-                "displayLabel": "Simple Field",
-                "name": "SimpleField",
+                "displayLabel": "Properties Field",
+                "name": "PropertiesField",
                 "typename": "MyType",
               },
               "value": Object {
@@ -1266,8 +1266,8 @@ Object {
     "test-category": Array [
       PropertyRecord {
         "property": Object {
-          "displayLabel": "Simple Field",
-          "name": "SimpleField",
+          "displayLabel": "Properties Field",
+          "name": "PropertiesField",
           "typename": "MyStruct",
         },
         "value": Object {
@@ -2449,8 +2449,8 @@ Object {
     "test-category": Array [
       PropertyRecord {
         "property": Object {
-          "displayLabel": "Simple Field",
-          "name": "SimpleField",
+          "displayLabel": "Properties Field",
+          "name": "PropertiesField",
           "typename": "MyArray[]",
         },
         "value": Object {
@@ -2458,8 +2458,8 @@ Object {
             PropertyRecord {
               "description": "some display value 1",
               "property": Object {
-                "displayLabel": "Simple Field",
-                "name": "SimpleField",
+                "displayLabel": "Properties Field",
+                "name": "PropertiesField",
                 "typename": "MyType",
               },
               "value": Object {
@@ -2471,8 +2471,8 @@ Object {
             PropertyRecord {
               "description": "some display value 2",
               "property": Object {
-                "displayLabel": "Simple Field",
-                "name": "SimpleField",
+                "displayLabel": "Properties Field",
+                "name": "PropertiesField",
                 "typename": "MyType",
               },
               "value": Object {
@@ -2561,8 +2561,8 @@ Object {
     "test-category": Array [
       PropertyRecord {
         "property": Object {
-          "displayLabel": "Simple Field",
-          "name": "SimpleField",
+          "displayLabel": "Properties Field",
+          "name": "PropertiesField",
           "typename": "MyStruct",
         },
         "value": Object {

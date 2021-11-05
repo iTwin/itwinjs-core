@@ -1,0 +1,38 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+
+// Common
+$button-stroke-width: 2px;
+$button-background-color: $buic-background-toolbar;
+$button-stroke-color: $buic-background-toolbutton-stroke;
+$button-stroke-radius: 3px;
+
+$icon-color: $buic-icon-color;
+$pressed-icon-color: $buic-icon-color-reverse;
+$hovered-icon-color: $buic-foreground-primary-tone;
+$icon-shadow: drop-shadow(0 1px 0 $buic-icon-color-reverse);
+$no-shadow: drop-shadow(0 0 0 transparent);
+
+$bar-width: 8px;
+$bar-height: 2px;
+$bar-right-corner-radius: 1px;
+
+// Mouse + Large screen
+$mls-button-width: 60px;
+$mls-button-height: 60px;
+
+$mls-navigation-aid-width: 60px;
+$mls-navigation-aid-height: 60px;
+
+$mls-icon-size: 36px;
+
+// For ui20 - include 2px for border 40+2=42 due to box-sizing:border-box.
+$mls-small-button-width: 42px;
+$mls-small-button-height: 42px;
+$mls-small-button-icon-size: 24px;
+$mls-small-button-gap: 6px;
+$small-bar-width: 4px;
+$small-bar-height: 2px;

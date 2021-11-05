@@ -6,55 +6,51 @@ import * as React from "react";
 import {
   BaseItemState,
   CommandItemDef,
-  ContentGroup, ContentLayoutDef, ContentViewManager, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, GroupItemDef, ItemList, NavigationWidget,
+  ContentGroup, ContentViewManager, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, GroupItemDef, ItemList, NavigationWidget,
   SelectionContextToolDefinitions,
   SessionStateActionId,
   SyncUiEventId,
   ToolWidget, UiFramework, Widget, Zone, ZoneState,
-} from "@bentley/ui-framework";
+} from "@itwin/appui-react";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { TreeExampleContentControl } from "../contentviews/TreeExampleContent";
 import { SmallStatusBarWidgetControl } from "../statusbars/SmallStatusBar";
-import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
 import {
-  HorizontalPropertyGridContentControl, HorizontalPropertyGridWidgetControl, VerticalPropertyGridWidgetControl,
+  HorizontalPropertyGridContentControl, HorizontalPropertyGridWidgetControl,
 } from "../widgets/PropertyGridDemoWidget";
-import { IModelApp } from "@bentley/imodeljs-frontend";
-import { ConditionalBooleanValue, WidgetState } from "@bentley/ui-abstract";
+import { IModelApp } from "@itwin/core-frontend";
+import { ConditionalBooleanValue, StandardContentLayouts, WidgetState } from "@itwin/appui-abstract";
 
 /* eslint-disable react/jsx-key, deprecation/deprecation */
 
 export class Frontstage2 extends FrontstageProvider {
+  public get id(): string {
+    return "Test2";
+  }
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
-    const contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(
-      { // Four Views, two stacked on the left, two stacked on the right.
-        descriptionKey: "SampleApp:ContentLayoutDef.FourQuadrants",
-        verticalSplit: {
-          percentage: 0.50,
-          minSizeLeft: 100, minSizeRight: 100,
-          left: { horizontalSplit: { percentage: 0.50, top: 0, bottom: 1, minSizeTop: 100, minSizeBottom: 100 } },
-          right: { horizontalSplit: { percentage: 0.50, top: 2, bottom: 3, minSizeTop: 100, minSizeBottom: 100 } },
-        },
-      },
-    );
-
     const myContentGroup: ContentGroup = new ContentGroup(
       {
+        id: "frontstage2",
+        layout: StandardContentLayouts.fourQuadrants,
         contents: [
           {
+            id: "imodelView1",
             classId: "UiFramework.IModelViewportControl",
-            applicationData: { label: "Content 1a", bgColor: "black", disableDefaultViewOverlay: true },
+            applicationData: { label: "Content 1a", bgColor: "black" },
           },
           {
+            id: "treeView",
             classId: TreeExampleContentControl,
             applicationData: { label: "Content 2a", bgColor: "black" },
           },
           {
+            id: "imodelView2",
             classId: "TestApp.IModelViewport",
-            applicationData: { label: "Content 3a", bgColor: "black", disableDefaultViewOverlay: true },
+            applicationData: { label: "Content 3a", bgColor: "black" },
           },
           {
+            id: "gridView",
             classId: HorizontalPropertyGridContentControl,
             applicationData: { label: "Content 4a", bgColor: "black" },
           },
@@ -63,10 +59,10 @@ export class Frontstage2 extends FrontstageProvider {
     );
 
     return (
-      <Frontstage id="Test2"
+      <Frontstage id={this.id}
         defaultTool={CoreTools.selectElementCommand}
-        defaultLayout={contentLayoutDef} contentGroup={myContentGroup}
-        isInFooterMode={false} applicationData={{ key: "value", disableDefaultViewOverlay: true }}
+        contentGroup={myContentGroup}
+        isInFooterMode={false} applicationData={{ key: "value" }}
 
         contentManipulationTools={
           <Zone
@@ -89,13 +85,6 @@ export class Frontstage2 extends FrontstageProvider {
             ]}
           />
         }
-        centerRight={
-          <Zone allowsMerging={true} defaultState={ZoneState.Minimized}
-            widgets={[
-              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl} />,
-            ]}
-          />
-        }
         statusBar={
           <Zone defaultState={ZoneState.Open}
             widgets={[
@@ -106,7 +95,6 @@ export class Frontstage2 extends FrontstageProvider {
         bottomRight={
           <Zone allowsMerging={true} defaultState={ZoneState.Minimized}
             widgets={[
-              <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Hidden} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
               <Widget defaultState={WidgetState.Hidden} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.HorizontalPropertyGrid" control={HorizontalPropertyGridWidgetControl} />,
             ]}
           />
@@ -162,7 +150,7 @@ class FrontstageToolWidget extends React.Component {
         if (tool)
           tool.onRestartTool();
         else
-          IModelApp.toolAdmin.startDefaultTool();
+          void IModelApp.toolAdmin.startDefaultTool();
       },
     });
   }

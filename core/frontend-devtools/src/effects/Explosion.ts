@@ -6,12 +6,12 @@
  * @module Effects
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
-import { Point3d, Range1d, Vector3d } from "@bentley/geometry-core";
-import { RenderTexture } from "@bentley/imodeljs-common";
+import { Id64String } from "@itwin/core-bentley";
+import { Point3d, Range1d, Vector3d } from "@itwin/core-geometry";
+import { RenderTexture } from "@itwin/core-common";
 import {
-  DecorateContext, GraphicType, HitDetail, imageElementFromUrl, IModelApp, IModelConnection, ParticleCollectionBuilder, ParticleProps, Tool,
-} from "@bentley/imodeljs-frontend";
+  DecorateContext, GraphicType, HitDetail, imageElementFromUrl, IModelApp, IModelConnection, ParticleCollectionBuilder, ParticleProps, TextureTransparency, Tool,
+} from "@itwin/core-frontend";
 import { randomFloat, randomFloatInRange, randomIntegerInRange, randomPositionInRange } from "./Random";
 
 /** Represents one particle in the system. */
@@ -186,10 +186,11 @@ class ParticleSystem {
 
   public static async addDecorator(iModel: IModelConnection): Promise<void> {
     // Note: The decorator takes ownership of the texture, and disposes of it when the decorator is disposed.
-    const isOwned = true;
-    const params = new RenderTexture.Params(undefined, undefined, isOwned);
     const image = await imageElementFromUrl("./sprites/particle_explosion.png");
-    const texture = IModelApp.renderSystem.createTextureFromImage(image, true, undefined, params);
+    const texture = IModelApp.renderSystem.createTexture({
+      ownership: "external",
+      image: { source: image, transparency: TextureTransparency.Mixed },
+    });
     if (texture)
       IModelApp.viewManager.addDecorator(new ParticleSystem(texture, iModel, randomIntegerInRange(this.numEmissionsRange)));
   }
@@ -202,10 +203,10 @@ export class ExplosionEffect extends Tool {
   public static override toolId = "ExplosionEffect";
 
   /** This method runs the tool, applying an explosion particle effect. */
-  public override run(): boolean {
+  public override async run(): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (vp)
-      ParticleSystem.addDecorator(vp.iModel); // eslint-disable-line @typescript-eslint/no-floating-promises
+      await ParticleSystem.addDecorator(vp.iModel);
 
     return true;
   }

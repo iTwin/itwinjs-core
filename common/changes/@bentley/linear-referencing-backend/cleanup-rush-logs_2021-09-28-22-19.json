@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/linear-referencing-backend",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/linear-referencing-backend"
+}

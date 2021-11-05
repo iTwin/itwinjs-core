@@ -6,10 +6,10 @@
  * @module Rendering
  */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import {
   CurveChain, IndexedPolyface, Loop, Path, Point3d, PolyfaceBuilder, PolyfaceQuery, Range3d, SolidPrimitive, StrokeOptions, SweepContour, Transform,
-} from "@bentley/geometry-core";
+} from "@itwin/core-geometry";
 import { DisplayParams } from "../DisplayParams";
 import { PolyfacePrimitive, PolyfacePrimitiveList } from "../Polyface";
 import { StrokesPrimitive, StrokesPrimitiveList, StrokesPrimitivePointList, StrokesPrimitivePointLists } from "../Strokes";
@@ -219,7 +219,7 @@ export class PrimitivePolyfaceGeometry extends Geometry {
 
   public constructor(polyface: IndexedPolyface, tf: Transform, range: Range3d, params: DisplayParams) {
     super(tf, range, params);
-    this.polyface = polyface;
+    this.polyface = tf.isIdentity ? polyface : polyface.cloneTransformed(tf);
   }
 
   protected _getPolyfaces(facetOptions: StrokeOptions): PolyfacePrimitiveList | undefined {
@@ -241,7 +241,6 @@ export class PrimitivePolyfaceGeometry extends Geometry {
       PolyfaceQuery.buildAverageNormals(this.polyface);
     }
 
-    assert(this.transform.isIdentity);
     return new PolyfacePrimitiveList(PolyfacePrimitive.create(this.displayParams, this.polyface));
   }
 
@@ -253,7 +252,8 @@ class SolidPrimitiveGeometry extends Geometry {
 
   public constructor(primitive: SolidPrimitive, tf: Transform, range: Range3d, params: DisplayParams) {
     super(tf, range, params);
-    this._primitive = primitive;
+    const xformPrim = tf.isIdentity ? primitive : primitive.cloneTransformed(tf);
+    this._primitive = xformPrim !== undefined ? xformPrim as SolidPrimitive : primitive;
   }
 
   protected _getStrokes() { return undefined; }

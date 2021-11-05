@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-components",
+      "comment": "Created an additional nodeLoader used only when filtering Tree Component. That fixed the bug when spinner was not showing when filtering was in progress. ",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-components",
+  "email": "30312645+aurislt7@users.noreply.github.com"
+}

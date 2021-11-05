@@ -8,13 +8,13 @@ declare let _CertaConsole: undefined | ((name: string, args: any[]) => void); //
 
 // Redirect all console output back to the main (backend) process, if necessary
 if (typeof _CertaConsole !== "undefined") {
-  function forwardConsole(name: keyof typeof console) {
+  function forwardConsole(name: "log" | "error" | "dir") {
     const original = console[name];
     console[name] = (...args: any[]) => {
       _CertaConsole!(name, args);
       // Also preserve the original behavior. This way, test progress is reported in both the backend _and_ frontend processes.
       // This helps keep the output readable when debugging the frontend.
-      original.apply(console, args);
+      original.apply(console, args as any);
     };
   }
   forwardConsole("log");

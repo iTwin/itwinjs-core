@@ -2,17 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import { assert } from "chai";
 import * as path from "path";
-import { Guid, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { Guid, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  BackendRequestContext, ClassRegistry, IModelDb, IModelHost, IModelJsFs, PhysicalModel, PhysicalPartition, Schema, Schemas, SnapshotDb,
-  SpatialCategory, SubjectOwnsPartitionElements,
-} from "@bentley/imodeljs-backend";
+  ClassRegistry, IModelDb, IModelHost, IModelJsFs, PhysicalModel, PhysicalPartition, Schema, Schemas, SnapshotDb, SpatialCategory,
+  SubjectOwnsPartitionElements,
+} from "@itwin/core-backend";
 import {
   CategoryProps, Code, GeometricElement3dProps, IModel, InformationPartitionElementProps, PhysicalElementProps,
-} from "@bentley/imodeljs-common";
-import { ILinearElementProps, LinearlyLocatedAttributionProps, LinearlyReferencedFromToLocationProps } from "@bentley/linear-referencing-common";
+} from "@itwin/core-common";
+import { ILinearElementProps, LinearlyLocatedAttributionProps, LinearlyReferencedFromToLocationProps } from "@itwin/linear-referencing-common";
 import {
   LinearElement, LinearlyLocated, LinearlyLocatedAttribution, LinearlyLocatedSingleFromTo, LinearlyReferencedFromToLocation, LinearReferencingSchema,
 } from "../linear-referencing-backend";
@@ -90,7 +91,7 @@ describe("LinearReferencing Domain", () => {
     });
 
     // Import the LinearReferencing schema
-    await iModelDb.importSchemas(new BackendRequestContext(), [LinearReferencingSchema.schemaFilePath, TestLinearReferencingSchema.schemaFilePath]);
+    await iModelDb.importSchemas([LinearReferencingSchema.schemaFilePath, TestLinearReferencingSchema.schemaFilePath]);
     iModelDb.saveChanges("Import TestLinearReferencing schema");
 
     // Insert a SpatialCategory

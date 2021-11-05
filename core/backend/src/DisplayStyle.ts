@@ -6,11 +6,11 @@
  * @module ViewDefinitions
  */
 
-import { CompressedId64Set, Id64, Id64Array, Id64Set, Id64String, OrderedId64Iterable } from "@bentley/bentleyjs-core";
+import { CompressedId64Set, Id64, Id64Array, Id64Set, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import {
   BisCodeSpec, Code, CodeScopeProps, CodeSpec, ColorDef, DisplayStyle3dProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
   DisplayStyleProps, DisplayStyleSettings, PlanProjectionSettingsProps, RenderSchedule, SkyBoxImageProps, ViewFlags,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { DefinitionElement, RenderTimeline } from "./Element";
 import { IModelCloneContext } from "./IModelCloneContext";
 import { IModelDb } from "./IModelDb";
@@ -162,7 +162,7 @@ export class DisplayStyle2d extends DisplayStyle {
         styles: {
           backgroundColor: 0,
           monochromeColor: ColorDef.white.toJSON(),
-          viewflags: ViewFlags.createFrom(),
+          viewflags: ViewFlags.defaults,
         },
       },
     };
@@ -185,7 +185,7 @@ export class DisplayStyle2d extends DisplayStyle {
  * Most properties are inherited from [DisplayStyle3dSettingsProps]($common), but for backwards compatibility reasons, this interface is slightly awkward:
  * - It adds a `viewFlags` member that differs only in case and type from [DisplayStyleSettingsProps.viewflags]($common); and
  * - It extends the type of [DisplayStyleSettingsProps.backgroundColor]($common) to include [ColorDef]($common).
- * These idiosyncrasies will be addressed in a future version of imodeljs-backend.
+ * These idiosyncrasies will be addressed in a future version of core-backend.
  * @see [[DisplayStyle3d.create]].
  * @public
  */

@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { OpenMode } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { OpenMode } from "@itwin/core-bentley";
+import { IModelConnection } from "@itwin/core-frontend";
 
 export function setTitle(imodel: IModelConnection) {
   let prefix = "";

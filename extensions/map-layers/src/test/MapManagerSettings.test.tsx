@@ -2,22 +2,24 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 
-import { DisplayStyle3dState, IModelConnection, MockRender, ScreenViewport, ViewState3d } from "@bentley/imodeljs-frontend";
 import { assert, expect } from "chai";
 import * as enzyme from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { TestUtils } from "./TestUtils";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
+import * as moq from "typemoq";
 import {
-  BackgroundMapSettings, DisplayStyle3dSettings, PlanarClipMaskMode,
+  BackgroundMapSettings, DisplayStyle3dSettings, EmptyLocalization, PlanarClipMaskMode,
   PlanarClipMaskPriority, TerrainHeightOriginMode, TerrainSettings,
-} from "@bentley/imodeljs-common";
-import { MapManagerSettings } from "../ui/widget/MapManagerSettings";
+} from "@itwin/core-common";
+import { DisplayStyle3dState, IModelConnection, MockRender, ScreenViewport, ViewState3d } from "@itwin/core-frontend";
+import { SpecialKey } from "@itwin/appui-abstract";
+import { NumberInput, Toggle } from "@itwin/core-react";
+import { Select } from "@itwin/itwinui-react";
 import { SourceMapContext } from "../ui/widget/MapLayerManager";
-import { NumberInput, Select, Toggle } from "@bentley/ui-core";
-import { SpecialKey } from "@bentley/ui-abstract";
+import { MapManagerSettings } from "../ui/widget/MapManagerSettings";
+import { TestUtils } from "./TestUtils";
 
 describe("MapManagerSettings", () => {
   const viewportMock = moq.Mock.ofType<ScreenViewport>();
@@ -36,8 +38,9 @@ describe("MapManagerSettings", () => {
     switch (toggleName) {
       case "locatable": return 0;
       case "mask": return 1;
-      case "depthBuffer": return 2;
-      case "terrain": return 3;
+      case "overrideMaskTransparency": return 2;
+      case "depthBuffer": return 3;
+      case "terrain": return 4;
     }
     assert.fail("invalid name provided.");
     return 0;
@@ -63,8 +66,8 @@ describe("MapManagerSettings", () => {
   };
 
   before(async () => {
+    await MockRender.App.startup({localization: new EmptyLocalization()});
     await TestUtils.initialize();
-    await MockRender.App.startup({});
   });
 
   after(async () => {
@@ -135,9 +138,10 @@ describe("MapManagerSettings", () => {
     let toggles = component.find(Toggle);
 
     // Elevation type should be disabled initially
-    expect(component.find("select").at(0).html().includes('disabled=""')).to.be.true;
+    let select = component.find(Select);
+    expect(select.props().disabled).to.be.true;
 
-    expect(toggles.at(getToggleIndex("depthBuffer")).find(".uicore-disabled").exists()).to.be.false;
+    expect(toggles.at(getToggleIndex("depthBuffer")).find(".iui-disabled").exists()).to.be.false;
 
     // 'changeBackgroundMapProps' should not have been called before terrain is toggled
     viewportMock.verify((x) => x.changeBackgroundMapProps(moq.It.isAny()), moq.Times.never());
@@ -162,15 +166,43 @@ describe("MapManagerSettings", () => {
     expect(numericInputs.at(2).find("input").html().includes('disabled=""')).to.be.false;
 
     // Elevation type should be enabled
-    expect(component.find("select").at(0).html().includes('disabled=""')).to.be.false;
+    select = component.find(Select);
+    expect(select.props().disabled).to.be.false;
     component.unmount();
   });
 
   it("Transparency slider", () => {
     viewportMock.verify((x) => x.changeBackgroundMapProps(moq.It.isAny()), moq.Times.never());
     const component = mountComponent();
-    component.find(".core-slider-handle").simulate("keydown", { key: SpecialKey.ArrowUp });
+
+    const sliders = component.find(".iui-slider-thumb");
+    sliders.at(0).simulate("keydown", { key: SpecialKey.ArrowRight });
     viewportMock.verify((x) => x.changeBackgroundMapProps({ transparency: 0.01 }), moq.Times.once());
+    component.unmount();
+  });
+
+  it("Mask Transparency slider", () => {
+    viewportMock.verify((x) => x.changeBackgroundMapProps(moq.It.isAny()), moq.Times.never());
+    const component = mountComponent();
+
+    let sliders = component.find(".iui-slider-thumb");
+
+    // Make sure the slider is disabled by default
+    expect(sliders.at(1).props()["aria-disabled"]).to.be.true;
+
+    // Turn on the mask toggle
+    const toggles = component.find(Toggle);
+    toggles.at(getToggleIndex("mask")).find("input").simulate("change", { checked: true });
+    toggles.at(getToggleIndex("overrideMaskTransparency")).find("input").simulate("change", { checked: true });
+    component.update();
+
+    // Make sure the slider is now enabled
+    sliders = component.find(".iui-slider-thumb");
+    expect(sliders.at(1).props()["aria-disabled"]).to.be.false;
+
+    sliders.at(0).simulate("keydown", { key: SpecialKey.ArrowUp });
+
+    viewportMock.verify((x) => x.changeBackgroundMapProps({ planarClipMask: { mode: PlanarClipMaskMode.Priority, priority: PlanarClipMaskPriority.BackgroundMap, transparency: 0 } }), moq.Times.once());
     component.unmount();
   });
 
@@ -199,12 +231,45 @@ describe("MapManagerSettings", () => {
     component.update();
 
     // 'changeBackgroundMapProps' should have been called once now
-    viewportMock.verify((x) => x.changeBackgroundMapProps({ planarClipMask: { mode: PlanarClipMaskMode.Priority, priority: PlanarClipMaskPriority.BackgroundMap } }), moq.Times.once());
+    viewportMock.verify((x) => x.changeBackgroundMapProps({ planarClipMask: { mode: PlanarClipMaskMode.Priority, priority: PlanarClipMaskPriority.BackgroundMap, transparency: undefined } }), moq.Times.once());
 
     toggles.at(getToggleIndex("mask")).find("input").simulate("change", { checked: true });
     component.update();
 
     viewportMock.verify((x) => x.changeBackgroundMapProps({ planarClipMask: { mode: PlanarClipMaskMode.None } }), moq.Times.once());
+    component.unmount();
+  });
+
+  it("Override Mask Transparency Toggle", () => {
+    viewportMock.verify((x) => x.changeBackgroundMapProps(moq.It.isAny()), moq.Times.never());
+    const component = mountComponent();
+
+    let toggles = component.find(Toggle);
+
+    // By default, the toggle should be disabled
+    expect(toggles.at(getToggleIndex("overrideMaskTransparency")).find(".uicore-disabled").exists()).to.be.true;
+
+    // First turn ON the masking toggle
+    toggles.at(getToggleIndex("mask")).find("input").simulate("change", { checked: true });
+    component.update();
+
+    toggles = component.find(Toggle);
+
+    // Toggle should be enabled now
+    expect(toggles.at(getToggleIndex("overrideMaskTransparency")).find(".uicore-disabled").exists()).to.be.false;
+
+    // .. then we can turn ON the override mask transparency
+    toggles.at(getToggleIndex("overrideMaskTransparency")).find("input").simulate("change", { checked: true });
+    component.update();
+
+    // 'changeBackgroundMapProps' should have been called once now
+    viewportMock.verify((x) => x.changeBackgroundMapProps({ planarClipMask: { mode: PlanarClipMaskMode.Priority, priority: PlanarClipMaskPriority.BackgroundMap, transparency: 0 } }), moq.Times.once());
+
+    // turn if OFF again
+    toggles.at(getToggleIndex("overrideMaskTransparency")).find("input").simulate("change", { checked: false });
+    component.update();
+
+    viewportMock.verify((x) => x.changeBackgroundMapProps({ planarClipMask: { mode: PlanarClipMaskMode.Priority, priority: PlanarClipMaskPriority.BackgroundMap, transparency: undefined } }), moq.Times.exactly(2));
     component.unmount();
   });
 
@@ -257,7 +322,7 @@ describe("MapManagerSettings", () => {
     toggles.at(getToggleIndex("terrain")).find("input").simulate("change", { checked: true });
 
     const select = component.find(Select);
-    select.props().onChange!({ target: { value: "geoid" } } as any);
+    select.props().onChange!("geoid");
     viewportMock.verify((x) => x.changeBackgroundMapProps({ terrainSettings: { heightOriginMode: TerrainHeightOriginMode.Geoid } }), moq.Times.once());
     component.unmount();
   });
@@ -272,7 +337,7 @@ describe("MapManagerSettings", () => {
     toggles.at(getToggleIndex("terrain")).find("input").simulate("change", { checked: true });
 
     const select = component.find(Select);
-    select.props().onChange!({ target: { value: "geodetic" } } as any);
+    select.props().onChange!("geodetic");
     viewportMock.verify((x) => x.changeBackgroundMapProps({ terrainSettings: { heightOriginMode: TerrainHeightOriginMode.Geodetic } }), moq.Times.once());
     component.unmount();
   });
@@ -287,8 +352,9 @@ describe("MapManagerSettings", () => {
     toggles.at(getToggleIndex("terrain")).find("input").simulate("change", { checked: true });
 
     const select = component.find(Select);
-    select.props().onChange!({ target: { value: "ground" } } as any);
+    select.props().onChange!("ground");
     viewportMock.verify((x) => x.changeBackgroundMapProps({ terrainSettings: { heightOriginMode: TerrainHeightOriginMode.Ground } }), moq.Times.once());
     component.unmount();
   });
 });
+

@@ -2,11 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import * as path from "path";
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { ClassRegistry, IModelDb, IModelHost, Schema, Schemas, SpatialCategory } from "@bentley/imodeljs-backend";
-import { ColorByName, IModelError, IModelStatus, SubCategoryAppearance } from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { ClassRegistry, IModelDb, IModelHost, Schema, Schemas, SpatialCategory } from "@itwin/core-backend";
+import { ColorByName, IModelError, IModelStatus, SubCategoryAppearance } from "@itwin/core-common";
 import * as _schemaNames from "../common/RobotWorldSchema";
 import * as obstacles from "./BarrierElement";
 
@@ -42,8 +41,7 @@ export class RobotWorld extends Schema {
 
   // Import the RobotWorld schema into the specified iModel.
   // Also do some one-time bootstrapping of supporting definitions such as Categories.
-  public static async importSchema(requestContext: ClientRequestContext | AuthorizedClientRequestContext, iModelDb: IModelDb): Promise<void> {
-    requestContext.enter();
+  public static async importSchema(iModelDb: IModelDb): Promise<void> {
     if (iModelDb.containsClass(_schemaNames.Class.Robot))
       return;
 
@@ -53,8 +51,7 @@ export class RobotWorld extends Schema {
     // Must import the schema. The schema must be installed alongside the app in its
     // assets directory. Note that, for portability, make sure the case of
     // the filename is correct!
-    await iModelDb.importSchemas(requestContext, [path.join(IModelHost.appAssetsDir!, "RobotWorld.ecschema.xml")]);
-    requestContext.enter();
+    await iModelDb.importSchemas([path.join(IModelHost.appAssetsDir!, "RobotWorld.ecschema.xml")]);
 
     // This is the right time to create definitions, such as Categories, that will
     // be used with the classes in this schema.

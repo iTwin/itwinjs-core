@@ -33,12 +33,6 @@ describe("CopyBentleyStaticResourcesPlugin", () => {
     expect(fs.readFileSync(path.join(__dirname, "dist/assets/staticResourcePlugin.js"), "utf8")).to.equal(`console.log("Fake resource");`);
   });
 
-  it("should log warning when unable to find node_modules/@bentley directory", async () => {
-    setApplicationDir(__dirname);
-    const result = await runWebpack(testConfig, vol);
-    expect(result.logging.CopyBentleyStaticResourcesPlugin.entries[0].message).to.include(`Can't locate`);
-  });
-
   afterEach(() => {
     resetPaths();
     vol.reset();

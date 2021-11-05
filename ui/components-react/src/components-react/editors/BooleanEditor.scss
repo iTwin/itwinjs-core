@@ -1,0 +1,24 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/itwinui-css/scss/style/space";
+@import "~@itwin/itwinui-css/scss/style/typography";
+
+$checkbox-size: $iui-font-size * 1.2;
+
+.components-boolean-editor {
+  height:      $checkbox-size;
+  width:       $checkbox-size;
+  margin-left: 0px;
+
+  &.components-cell-editor {
+    border:      none;
+  }
+}
+
+.components-property-list--horizontal {
+  .components-boolean-editor {
+    margin-left:        $iui-s;    // Clear the resizer in the PropertyGrid
+  }
+}

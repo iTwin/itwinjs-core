@@ -3,19 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Field } from "@bentley/presentation-common";
+import { IModelApp, IModelConnection } from "@itwin/core-frontend";
+import { Field } from "@itwin/presentation-common";
 import {
   IPresentationPropertyDataProvider, PresentationPropertyDataProvider, usePropertyDataProviderWithUnifiedSelection,
-} from "@bentley/presentation-components";
-import { FavoritePropertiesScope, Presentation } from "@bentley/presentation-frontend";
+} from "@itwin/presentation-components";
+import { FavoritePropertiesScope, Presentation } from "@itwin/presentation-frontend";
 import {
   ActionButtonRendererProps, PropertyGridContextMenuArgs, useAsyncValue, VirtualizedPropertyGridWithDataProvider,
   VirtualizedPropertyGridWithDataProviderProps,
-} from "@bentley/ui-components";
-import { ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Icon, Orientation } from "@bentley/ui-core";
-import { ConfigurableCreateInfo, useActiveIModelConnection, useFrameworkVersion, WidgetControl } from "@bentley/ui-framework";
-import { ExtensionUiItemsProvider } from "../ExtensionUiItemsProvider";
+} from "@itwin/components-react";
+import { ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Icon, Orientation, ResizableContainerObserver } from "@itwin/core-react";
+import { ConfigurableCreateInfo, useActiveIModelConnection, useFrameworkVersion, WidgetControl } from "@itwin/appui-react";
 
 export type ContextMenuItemInfo = ContextMenuItemProps & React.Attributes & { label: string };
 
@@ -60,7 +59,7 @@ function FavoriteActionButton({ field, imodel }: { field: Field, imodel: IModelC
 function PresentationPropertyGrid(props: VirtualizedPropertyGridWithDataProviderProps & { dataProvider: IPresentationPropertyDataProvider }) {
   const { isOverLimit } = usePropertyDataProviderWithUnifiedSelection({ dataProvider: props.dataProvider });
   if (isOverLimit) {
-    return (<FillCentered>{ExtensionUiItemsProvider.i18n.translate("uiTestExtension:properties.too-many-elements-selected")}</FillCentered>);
+    return (<FillCentered>{IModelApp.localization.getLocalizedString("uiTestExtension:properties.too-many-elements-selected")}</FillCentered>);
   }
   return <VirtualizedPropertyGridWithDataProvider {...props} />;
 }
@@ -118,16 +117,16 @@ export function PresentationPropertyGridWidget() {
                 key: "remove-favorite",
                 icon: "icon-remove-2",
                 onSelect: async () => onRemoveFavorite(field),
-                title: ExtensionUiItemsProvider.i18n.translate("uiTestExtension:properties.context-menu.remove-favorite.description"),
-                label: ExtensionUiItemsProvider.i18n.translate("uiTestExtension:properties.context-menu.remove-favorite.label"),
+                title: IModelApp.localization.getLocalizedString("uiTestExtension:properties.context-menu.remove-favorite.description"),
+                label: IModelApp.localization.getLocalizedString("uiTestExtension:properties.context-menu.remove-favorite.label"),
               });
             } else {
               items.push({
                 key: "add-favorite",
                 icon: "icon-add",
                 onSelect: async () => onAddFavorite(field),
-                title: ExtensionUiItemsProvider.i18n.translate("uiTestExtension:properties.context-menu.add-favorite.description"),
-                label: ExtensionUiItemsProvider.i18n.translate("uiTestExtension:properties.context-menu.add-favorite.label"),
+                title: IModelApp.localization.getLocalizedString("uiTestExtension:properties.context-menu.add-favorite.description"),
+                label: IModelApp.localization.getLocalizedString("uiTestExtension:properties.context-menu.add-favorite.label"),
               });
             }
           }
@@ -171,13 +170,18 @@ export function PresentationPropertyGridWidget() {
     return null;
   }, [dataProvider, iModelConnection]);
 
+  const [gridSize, setGridSize] = React.useState<{ width: number, height: number }>();
+  const onGridResize = React.useCallback((width, height) => setGridSize({ width, height }), []);
+
   return (
     <div data-component-id={componentId} style={style}>
-      {dataProvider &&
+      {dataProvider && gridSize?.width && gridSize.height &&
         <>
           <PresentationPropertyGrid
             dataProvider={dataProvider}
             orientation={Orientation.Horizontal}
+            width={gridSize.width}
+            height={gridSize.height}
             isPropertyHoverEnabled={true}
             onPropertyContextMenu={onPropertyContextMenu}
             actionButtonRenderers={[favoriteActionButtonRenderer]}
@@ -206,6 +210,7 @@ export function PresentationPropertyGridWidget() {
           }
         </>
       }
+      <ResizableContainerObserver onResize={onGridResize} />
     </div>
   );
 }
@@ -221,7 +226,7 @@ export class PresentationPropertyGridWidgetControl extends WidgetControl {
   public static id = "uiTestExtension:PresentationPropertyGridWidget";
   public static iconSpec = "icon-info";
   public static get label(): string {
-    return ExtensionUiItemsProvider.i18n.translate("uiTestExtension:properties.widget-label");
+    return IModelApp.localization.getLocalizedString("uiTestExtension:properties.widget-label");
   }
 
   constructor(info: ConfigurableCreateInfo, options: any) {

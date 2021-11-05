@@ -655,8 +655,6 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   /** Announce a single triangle facet's point indexes.
    *
    * * The actual quad may be reversed or triangulated based on builder setup.
-   * *  indexA0 and indexA1 are in the forward order at the "A" end of the quad
-   * *  indexB0 and indexB1 are in the forward order at the "B" end of hte quad.
    */
   private addIndexedTrianglePointIndexes(indexA: number, indexB: number, indexC: number, terminateFacet: boolean = true) {
     if (!this._reversed) {
@@ -1613,18 +1611,50 @@ export class PolyfaceBuilder extends NullGeometryHandler {
 
       if (v > 0) {
         for (let u = 0; u < numU; u++) {
-          this.addIndexedQuadPointIndexes(
-            xyzIndex0.atUncheckedIndex(u), xyzIndex0.atUncheckedIndex(u + 1),
-            xyzIndex1.atUncheckedIndex(u), xyzIndex1.atUncheckedIndex(u + 1), false);
-          if (needNormals)
-            this.addIndexedQuadNormalIndexes(
-              normalIndex0!.atUncheckedIndex(u), normalIndex0!.atUncheckedIndex(u + 1),
-              normalIndex1!.atUncheckedIndex(u), normalIndex1!.atUncheckedIndex(u + 1));
-          if (needParams)
-            this.addIndexedQuadParamIndexes(
-              paramIndex0!.atUncheckedIndex(u), paramIndex0!.atUncheckedIndex(u + 1),
-              paramIndex1!.atUncheckedIndex(u), paramIndex1!.atUncheckedIndex(u + 1));
-          this._polyface.terminateFacet();
+          if (!this._options.shouldTriangulate) {
+            this.addIndexedQuadPointIndexes(
+              xyzIndex0.atUncheckedIndex(u), xyzIndex0.atUncheckedIndex(u + 1),
+              xyzIndex1.atUncheckedIndex(u), xyzIndex1.atUncheckedIndex(u + 1), false);
+            if (needNormals)
+              this.addIndexedQuadNormalIndexes(
+                normalIndex0!.atUncheckedIndex(u), normalIndex0!.atUncheckedIndex(u + 1),
+                normalIndex1!.atUncheckedIndex(u), normalIndex1!.atUncheckedIndex(u + 1));
+            if (needParams)
+              this.addIndexedQuadParamIndexes(
+                paramIndex0!.atUncheckedIndex(u), paramIndex0!.atUncheckedIndex(u + 1),
+                paramIndex1!.atUncheckedIndex(u), paramIndex1!.atUncheckedIndex(u + 1));
+            this._polyface.terminateFacet();
+
+          } else {
+            this.addIndexedTrianglePointIndexes(
+              xyzIndex0.atUncheckedIndex(u), xyzIndex0.atUncheckedIndex(u + 1),
+              xyzIndex1.atUncheckedIndex(u), false);
+            if (needNormals)
+              this.addIndexedTriangleNormalIndexes(
+                normalIndex0!.atUncheckedIndex(u), normalIndex0!.atUncheckedIndex(u + 1),
+                normalIndex1!.atUncheckedIndex(u));
+            if (needParams)
+              this.addIndexedTriangleParamIndexes(
+                paramIndex0!.atUncheckedIndex(u), paramIndex0!.atUncheckedIndex(u + 1),
+                paramIndex1!.atUncheckedIndex(u));
+            this._polyface.terminateFacet();
+
+            this.addIndexedTrianglePointIndexes(
+              xyzIndex1.atUncheckedIndex(u),
+              xyzIndex0.atUncheckedIndex(u + 1),
+              xyzIndex1.atUncheckedIndex(u + 1), false);
+            if (needNormals)
+              this.addIndexedTriangleNormalIndexes(
+                normalIndex1!.atUncheckedIndex(u),
+                normalIndex0!.atUncheckedIndex(u + 1),
+                normalIndex1!.atUncheckedIndex(u + 1));
+            if (needParams)
+              this.addIndexedTriangleParamIndexes(
+                paramIndex1!.atUncheckedIndex(u),
+                paramIndex0!.atUncheckedIndex(u + 1),
+                paramIndex1!.atUncheckedIndex(u + 1));
+            this._polyface.terminateFacet();
+          }
         }
       }
       indexSwap = xyzIndex1; xyzIndex1 = xyzIndex0; xyzIndex0 = indexSwap;

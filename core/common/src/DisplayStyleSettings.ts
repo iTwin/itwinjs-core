@@ -9,18 +9,20 @@
 // cspell:ignore greyscale ovrs
 
 import {
-  assert, BeEvent, CompressedId64Set, Id64, Id64Array, Id64String, JsonUtils, MutableCompressedId64Set, ObservableSet, OrderedId64Iterable,
-} from "@bentley/bentleyjs-core";
-import { XYZProps } from "@bentley/geometry-core";
+  assert, BeEvent, CompressedId64Set, Id64, Id64Array, Id64String, JsonUtils, MutableCompressedId64Set, OrderedId64Iterable,
+} from "@itwin/core-bentley";
+import { XYZProps } from "@itwin/core-geometry";
 import { AmbientOcclusion } from "./AmbientOcclusion";
 import { AnalysisStyle, AnalysisStyleProps } from "./AnalysisStyle";
-import { BackgroundMapProps, BackgroundMapSettings } from "./BackgroundMapSettings";
+import { BackgroundMapSettings, PersistentBackgroundMapProps } from "./BackgroundMapSettings";
 import { ClipStyle, ClipStyleProps } from "./ClipStyle";
 import { ColorDef, ColorDefProps } from "./ColorDef";
 import { DefinitionElementProps } from "./ElementProps";
 import { GroundPlaneProps } from "./GroundPlane";
 import { HiddenLine } from "./HiddenLine";
-import { FeatureAppearance, FeatureAppearanceProps, PlanarClipMaskProps, PlanarClipMaskSettings, SubCategoryOverride } from "./imodeljs-common";
+import { FeatureAppearance, FeatureAppearanceProps } from "./FeatureSymbology";
+import { PlanarClipMaskProps, PlanarClipMaskSettings } from "./PlanarClipMask";
+import { SubCategoryOverride } from "./SubCategoryOverride";
 import { LightSettings, LightSettingsProps } from "./LightSettings";
 import { MapImageryProps, MapImagerySettings } from "./MapImagerySettings";
 import { PlanProjectionSettings, PlanProjectionSettingsProps } from "./PlanProjectionSettings";
@@ -34,6 +36,7 @@ import { Cartographic } from "./geometry/Cartographic";
 import { IModel } from "./IModel";
 import { calculateSolarDirection } from "./SolarCalculate";
 import { ContextRealityModel, ContextRealityModelProps, ContextRealityModels } from "./ContextRealityModel";
+import { WhiteOnWhiteReversalProps, WhiteOnWhiteReversalSettings } from "./WhiteOnWhiteReversalSettings";
 
 /** Describes the [[SubCategoryOverride]]s applied to a [[SubCategory]] by a [[DisplayStyle]].
  * @see [[DisplayStyleSettingsProps]]
@@ -123,7 +126,7 @@ export interface DisplayStyleSettingsProps {
   subCategoryOvr?: DisplayStyleSubCategoryProps[];
 
   /** Settings controlling display of map within views of geolocated models. */
-  backgroundMap?: BackgroundMapProps;
+  backgroundMap?: PersistentBackgroundMapProps;
   /** @see [[DisplayStyleSettings.contextRealityModels]]. */
   contextRealityModels?: ContextRealityModelProps[];
   /** Ids of elements not to be displayed in the view. Prefer the compressed format, especially when sending between frontend and backend - the number of Ids may be quite large. */
@@ -134,11 +137,12 @@ export interface DisplayStyleSettingsProps {
   mapImagery?: MapImageryProps;
   /** Overrides applied to the appearance of models in the view. */
   modelOvr?: DisplayStyleModelAppearanceProps[];
-  /** Style applied by the view's [ClipVector]($geometry-core). */
+  /** Style applied by the view's [ClipVector]($core-geometry). */
   clipStyle?: ClipStyleProps;
   /** Planar clip masks applied to reality models. */
   planarClipOvr?: DisplayStylePlanarClipMaskProps[];
-
+  /** @see [[DisplayStyleSettings.whiteOnWhiteReversal]]. */
+  whiteOnWhiteReversal?: WhiteOnWhiteReversalProps;
 }
 
 /** JSON representation of settings associated with a [[DisplayStyle3dProps]].
@@ -160,8 +164,8 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
   lights?: LightSettingsProps;
   /** Settings controlling how plan projection models are to be rendered. The key for each entry is the Id of the model to which the settings apply. */
   planProjections?: { [modelId: string]: PlanProjectionSettingsProps };
-  /** Old lighting settings - only `sunDir` was ever used; it is now part of `lights`.
-   * @deprecated
+  /** Old lighting settings - only `sunDir` was ever used; it is now part of [[lights]].
+   * DisplayStyle3dSettings will construct a LightSettings from sceneLights.sunDir IFF [[lights]] is not present.
    * @internal
    */
   sceneLights?: { sunDir?: XYZProps };
@@ -188,15 +192,15 @@ export interface DisplayStyle3dProps extends DisplayStyleProps {
 }
 
 /** Controls which settings are serialized by [[DisplayStyleSettings.toOverrides]]. A display style includes some settings that are specific to a given iModel - for example,
- * the subcategory overrides are indexed by subcategory Ids and model appearance overrides are indexed by model ids. Other settings are specific to a given project, like the set of displayed context reality models. Such settings can be useful
- * when creating display style overrides intended for use with a specific iModel or project, but should be omitted when creating general-purpose display style overrides intended
- * for use with any iModel or project. This is the default behavior if no more specific options are provided.
+ * the subcategory overrides are indexed by subcategory Ids and model appearance overrides are indexed by model ids. Other settings are specific to a given iTwin, like the set of displayed context reality models. Such settings can be useful
+ * when creating display style overrides intended for use with a specific iModel or iTwin, but should be omitted when creating general-purpose display style overrides intended
+ * for use with any iModel or iTwin. This is the default behavior if no more specific options are provided.
  * @public
  */
 export interface DisplayStyleOverridesOptions {
   /** Serialize all settings. Applying the resultant [[DisplayStyleSettingsProps]] will produce a [[DisplayStyleSettings]] identical to the original settings. */
   includeAll?: true;
-  /** Serialize iModel-specific settings. These settings are only meaningful within the context of a specific iModel. Setting this to `true` implies all project-specific settings will be serialized too.
+  /** Serialize iModel-specific settings. These settings are only meaningful within the context of a specific iModel. Setting this to `true` implies all iTwin-specific settings will be serialized too.
    * The following are iModel-specific settings:
    *  * Subcategory overrides.
    *  * Model Appearance overrides.
@@ -209,12 +213,12 @@ export interface DisplayStyleOverridesOptions {
    *    * If the display style settings are associated with a [DisplayStyleState]($frontend), then overriding thematic settings will compute a default height range based on the iModel's project extents.
    */
   includeIModelSpecific?: true;
-  /** Serialize project-specific settings. These settings are only meaningful within the context of a specific project. These settings are always included if `includeIModelSpecific` is `true`.
-   * The following are project-specific settings:
+  /** Serialize iTwin-specific settings. These settings are only meaningful within the context of a specific iTwin. These settings are always included if `includeIModelSpecific` is `true`.
+   * The following are iTwin-specific settings:
    *  * Context reality models. If iModel-specific settings are *not* serialized, the classifiers will be omitted.
    *  * Time point.
    */
-  includeProjectSpecific?: true;
+  includeITwinSpecific?: true;
   /** Serialize settings related to drawing aid decorations (the ACS triad and the grid). */
   includeDrawingAids?: true;
   /** Serialize the background map settings. */
@@ -232,7 +236,6 @@ export interface DisplayStyleOverridesOptions {
 class ExcludedElements implements OrderedId64Iterable {
   private readonly _json: DisplayStyleSettingsProps;
   private readonly _ids: MutableCompressedId64Set;
-  private _set?: ObservableSet<Id64String>;
   private _synchronizing = false;
 
   public constructor(json: DisplayStyleSettingsProps) {
@@ -245,7 +248,6 @@ class ExcludedElements implements OrderedId64Iterable {
 
   public reset(ids: CompressedId64Set | OrderedId64Iterable | undefined) {
     this.synchronize(() => {
-      this._set?.clear();
       this._ids.reset((ids && "string" !== typeof ids) ? CompressedId64Set.compressIds(ids) : ids);
     });
   }
@@ -256,51 +258,20 @@ class ExcludedElements implements OrderedId64Iterable {
 
   public add(ids: Iterable<Id64String>): void {
     this.synchronize(() => {
-      for (const id of ids) {
+      for (const id of ids)
         this._ids.add(id);
-        this._set?.add(id);
-      }
     });
   }
 
   public delete(ids: Iterable<Id64String>): void {
     this.synchronize(() => {
-      for (const id of ids) {
+      for (const id of ids)
         this._ids.delete(id);
-        this._set?.delete(id);
-      }
     });
-  }
-
-  public obtainSet(): Set<Id64String> {
-    if (this._set)
-      return this._set;
-
-    this.synchronize(() => {
-      this._set = new ObservableSet<string>(this._ids);
-      this._set.onAdded.addListener((id) => this.onAdded(id));
-      this._set.onDeleted.addListener((id) => this.onDeleted(id));
-      this._set.onCleared.addListener(() => this.onCleared());
-    });
-
-    assert(undefined !== this._set);
-    return this._set;
   }
 
   public [Symbol.iterator]() {
     return this._ids[Symbol.iterator]();
-  }
-
-  private onAdded(id: Id64String): void {
-    this.synchronize(() => this._ids.add(id));
-  }
-
-  private onDeleted(id: Id64String): void {
-    this.synchronize(() => this._ids.delete(id));
-  }
-
-  private onCleared(): void {
-    this.synchronize(() => this._ids.clear());
   }
 
   /** The JSON must be kept up-to-date at all times. */
@@ -438,7 +409,7 @@ export interface DisplayStyleSettingsOptions {
  */
 export class DisplayStyleSettings {
   protected readonly _json: DisplayStyleSettingsProps;
-  private readonly _viewFlags: ViewFlags;
+  private _viewFlags: ViewFlags;
   private _background: ColorDef;
   private _monochrome: ColorDef;
   private _monochromeMode: MonochromeMode;
@@ -451,6 +422,7 @@ export class DisplayStyleSettings {
   private _analysisStyle?: AnalysisStyle;
   private _clipStyle: ClipStyle;
   private readonly _contextRealityModels: ContextRealityModels;
+  private _whiteOnWhiteReversal: WhiteOnWhiteReversalSettings;
 
   public is3d(): this is DisplayStyle3dSettings {
     return false;
@@ -483,7 +455,7 @@ export class DisplayStyleSettings {
   /** Event raised just prior to assignment to the [[backgroundMap]] property. */
   public readonly onBackgroundMapChanged = new BeEvent<(newMap: BackgroundMapSettings) => void>();
   /** Event raised just prior to assignment to the [[mapImagery]] property.
-   * @alpha
+   * @beta
    */
   public readonly onMapImageryChanged = new BeEvent<(newImagery: Readonly<MapImagerySettings>) => void>();
   /** Event raised just prior to assignment to the `scheduleScriptProps` property.
@@ -524,6 +496,8 @@ export class DisplayStyleSettings {
   public readonly onPlanProjectionSettingsChanged = new BeEvent<(modelId: Id64String, newSettings: PlanProjectionSettings | undefined) => void>();
   /** Event raised just before adding or removing an entry from [[planarClipMasks]]. */
   public readonly onPlanarClipMaskChanged = new BeEvent<(modelId: Id64String, newSettings: PlanarClipMaskSettings | undefined) => void>();
+  /** Event raised just prior to assignment to the [[whiteOnWhiteReversal]] property. */
+  public readonly onWhiteOnWhiteReversalChanged = new BeEvent<(newSettings: WhiteOnWhiteReversalSettings) => void>();
 
   /** Construct a new DisplayStyleSettings from an [[ElementProps.jsonProperties]].
    * @param jsonProperties An object with an optional `styles` property containing a display style's settings.
@@ -543,14 +517,19 @@ export class DisplayStyleSettings {
     this._monochrome = undefined !== this._json.monochromeColor ? ColorDef.fromJSON(this._json.monochromeColor) : ColorDef.white;
     this._monochromeMode = MonochromeMode.Flat === this._json.monochromeMode ? MonochromeMode.Flat : MonochromeMode.Scaled;
 
-    this._backgroundMap = BackgroundMapSettings.fromJSON(this._json.backgroundMap);
-    this._mapImagery = MapImagerySettings.fromJSON(this._json.mapImagery, this._json.backgroundMap);
+    this._backgroundMap = BackgroundMapSettings.fromPersistentJSON(this._json.backgroundMap);
+    this._mapImagery = MapImagerySettings.createFromJSON(this._json.mapImagery, this._json.backgroundMap);
+
+    // Ensure that if we used the deprecated imagery properties from this._backgroundMap to set up the base layer of this._mapImagery,
+    // we update our JSON to include that base layer.
+    this._json.mapImagery = this._mapImagery.toJSON();
 
     this._excludedElements = new ExcludedElements(this._json);
 
     if (this._json.analysisStyle)
       this._analysisStyle = AnalysisStyle.fromJSON(this._json.analysisStyle);
 
+    this._whiteOnWhiteReversal = WhiteOnWhiteReversalSettings.fromJSON(this._json.whiteOnWhiteReversal);
     this._clipStyle = ClipStyle.fromJSON(this._json.clipStyle);
 
     this._subCategoryOverrides = new OverridesMap<DisplayStyleSubCategoryProps, SubCategoryOverride>(this._json, "subCategoryOvr", this.onSubCategoryOverridesChanged,
@@ -580,20 +559,14 @@ export class DisplayStyleSettings {
     this._contextRealityModels = new ContextRealityModels(this._json, options?.createContextRealityModel);
   }
 
-  /** Flags controlling various aspects of the display style. To change the style's view flags, do something like:
-   * ```ts
-   *  const flags = settings.viewFlags.clone();
-   *  flags.renderMode = RenderMode.SmoothShade; // or any other alterations.
-   *  settings.viewFlags = flags;
-   * @note Don't modify this object directly - clone it and modify the clone, then pass the clone to the setter.
-   */
+  /** Flags controlling various aspects of the display style. */
   public get viewFlags(): ViewFlags { return this._viewFlags; }
   public set viewFlags(flags: ViewFlags) {
     if (this.viewFlags.equals(flags))
       return;
 
     this.onViewFlagsChanged.raiseEvent(flags);
-    flags.clone(this._viewFlags);
+    this._viewFlags = flags;
     this._json.viewflags = flags.toJSON();
   }
 
@@ -642,16 +615,12 @@ export class DisplayStyleSettings {
     if (!this.backgroundMap.equals(map)) {
       this.onBackgroundMapChanged.raiseEvent(map);
       this._backgroundMap = map; // it's an immutable type.
-      this._json.backgroundMap = map.toJSON();
+      this._json.backgroundMap = map.toPersistentJSON();
     }
   }
 
-  /** Get the map imagery for this display style.  Map imagery includes the background map base as well as background layers and overlay layers.
-   * In earlier versions only a background map image was supported as specified by the providerName and mapType members of [[BackgroundMapSettings]] object.
-   * In order to provide backward compatibility the original [[BackgroundMapSettings]] are synchronized with the [[MapImagerySettings]] base layer as long as
-   * the settings are compatible.  The map imagery typically only should be modified only through  [DisplayStyleState]($frontend) methods.
-   * Map imagery should only be modified from backend, changes to map imagery from front end should be handled only through [DisplayStyleState]($frontend) methods.
-   * @alpha
+  /** Settings defining the map imagery layers to be displayed within the view.
+   * @beta
    */
   public get mapImagery(): MapImagerySettings { return this._mapImagery; }
 
@@ -734,6 +703,21 @@ export class DisplayStyleSettings {
     this._json.analysisFraction = Math.max(0, Math.min(1, fraction));
   }
 
+  /** Settings controlling how white-on-white reversal is applied. */
+  public get whiteOnWhiteReversal(): WhiteOnWhiteReversalSettings { return this._whiteOnWhiteReversal; }
+  public set whiteOnWhiteReversal(settings: WhiteOnWhiteReversalSettings) {
+    if (settings.equals(this.whiteOnWhiteReversal))
+      return;
+
+    this.onWhiteOnWhiteReversalChanged.raiseEvent(settings);
+    this._whiteOnWhiteReversal = settings;
+    const json = settings.toJSON();
+    if (json)
+      this._json.whiteOnWhiteReversal = json;
+    else
+      delete this._json.whiteOnWhiteReversal;
+  }
+
   /** Customize the way geometry belonging to a [[SubCategory]] is drawn by this display style.
    * @param id The Id of the SubCategory whose appearance is to be overridden.
    * @param ovr The overrides to apply to the [[SubCategoryAppearance]].
@@ -808,15 +792,6 @@ export class DisplayStyleSettings {
   }
 
   /** The set of elements that will not be drawn by this display style.
-   * @returns The set of excluded elements.
-   * @note The set and the Ids it contains may be very large. It is allocated the first time this property is requested.
-   * @deprecated Use [[excludedElementIds]] for better performance and reduced memory overhead, unless efficient lookup of Ids within the set is required.
-   */
-  public get excludedElements(): Set<Id64String> {
-    return this._excludedElements.obtainSet();
-  }
-
-  /** The set of elements that will not be drawn by this display style.
    * @returns An iterable over the elements' Ids.
    */
   public get excludedElementIds(): OrderedId64Iterable {
@@ -856,7 +831,7 @@ export class DisplayStyleSettings {
     this.onExcludedElementsChanged.raiseEvent();
   }
 
-  /** The style applied to the view's [ClipVector]($geometry-core). */
+  /** The style applied to the view's [ClipVector]($core-geometry). */
   public get clipStyle(): ClipStyle {
     return this._clipStyle;
   }
@@ -875,7 +850,7 @@ export class DisplayStyleSettings {
   }
 
   /** Serialize a subset of these settings to JSON, such that they can be applied to another DisplayStyleSettings to selectively override those settings.
-   * @param options Specifies which settings should be serialized. By default, settings that are specific to an iModel (e.g., subcategory overrides) or project (e.g., context reality models)
+   * @param options Specifies which settings should be serialized. By default, settings that are specific to an iModel (e.g., subcategory overrides) or iTwin (e.g., context reality models)
    * are omitted, as are drawing aids (e.g., ACS triad and grid).
    * @returns a JSON representation of the selected settings suitable for passing to [[applyOverrides]].
    * @see [[applyOverrides]] to apply the overrides to another DisplayStyleSettings..
@@ -894,19 +869,22 @@ export class DisplayStyleSettings {
       backgroundColor: this.backgroundColor.toJSON(),
       monochromeColor: this.monochromeColor.toJSON(),
       monochromeMode: this.monochromeMode,
+      whiteOnWhiteReversal: this.whiteOnWhiteReversal.toJSON() ?? { ignoreBackgroundColor: false },
     };
 
-    if (options?.includeBackgroundMap)
-      props.backgroundMap = this.backgroundMap.toJSON();
-    else
+    if (options?.includeBackgroundMap) {
+      props.backgroundMap = this.backgroundMap.toPersistentJSON();
+      props.mapImagery = this.mapImagery.toJSON();
+    } else {
       delete viewflags.backgroundMap;
+    }
 
     if (!options?.includeDrawingAids) {
       delete viewflags.acs;
       delete viewflags.grid;
     }
 
-    if (options?.includeProjectSpecific || options?.includeIModelSpecific) {
+    if (options?.includeITwinSpecific || options?.includeIModelSpecific) {
       props.timePoint = this.timePoint;
       if (this._json.contextRealityModels) {
         props.contextRealityModels = this._json.contextRealityModels;
@@ -979,7 +957,10 @@ export class DisplayStyleSettings {
       this.monochromeMode = overrides.monochromeMode;
 
     if (overrides.backgroundMap)
-      this.backgroundMap = BackgroundMapSettings.fromJSON(overrides.backgroundMap);
+      this.backgroundMap = BackgroundMapSettings.fromPersistentJSON(overrides.backgroundMap);
+
+    if (overrides.mapImagery)
+      this.mapImagery = MapImagerySettings.createFromJSON(overrides.mapImagery, this.backgroundMap.toPersistentJSON());
 
     if (undefined !== overrides.timePoint)
       this.timePoint = overrides.timePoint;
@@ -992,6 +973,9 @@ export class DisplayStyleSettings {
 
     if (overrides.analysisStyle)
       this.analysisStyle = AnalysisStyle.fromJSON(overrides.analysisStyle);
+
+    if (overrides.whiteOnWhiteReversal)
+      this.whiteOnWhiteReversal = WhiteOnWhiteReversalSettings.fromJSON(overrides.whiteOnWhiteReversal);
 
     if (undefined !== overrides.analysisFraction)
       this.analysisFraction = overrides.analysisFraction;
@@ -1052,7 +1036,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     if (this._json3d.lights) {
       this._lights = LightSettings.fromJSON(this._json3d.lights);
     } else {
-      const sunDir = this._json3d.sceneLights?.sunDir; // eslint-disable-line deprecation/deprecation
+      const sunDir = this._json3d.sceneLights?.sunDir;
       this._lights = LightSettings.fromJSON(sunDir ? { solar: { direction: sunDir } } : undefined);
     }
 
@@ -1250,7 +1234,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
         cartoCenter = Cartographic.fromEcef(location.ecefLocation.origin);
 
       if (!cartoCenter)
-        cartoCenter = Cartographic.fromDegrees(-75.17035, 39.954927, 0.0);
+        cartoCenter = Cartographic.fromDegrees({ longitude: -75.17035, latitude: 39.954927, height: 0.0 });
     } else {
       cartoCenter = location;
     }

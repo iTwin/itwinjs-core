@@ -6,9 +6,10 @@
 import { expect } from "chai";
 import {
   AnyEnumerator, Constant, CustomAttributeClass, EntityClass, Enumeration, Format, InvertedUnit, KindOfQuantity, Mixin, Phenomenon, PrimitiveProperty,
-  PropertyCategory, RelationshipClass, RelationshipConstraint, RelationshipEnd, Schema, SchemaCompareDiagnostics, SchemaContext, SchemaItemType, Unit,
-} from "@bentley/ecschema-metadata";
+  PropertyCategory, RelationshipClass, RelationshipConstraint, RelationshipEnd, Schema, SchemaContext, SchemaItemType, Unit,
+} from "@itwin/ecschema-metadata";
 import { ChangeType, SchemaChanges } from "../../Validation/SchemaChanges";
+import { SchemaCompareDiagnostics } from "../../Validation/SchemaCompareDiagnostics";
 
 /* eslint-disable deprecation/deprecation */
 

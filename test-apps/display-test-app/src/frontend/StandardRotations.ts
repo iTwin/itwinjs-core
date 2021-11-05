@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelApp, Viewport } from "@bentley/imodeljs-frontend";
+import { IModelApp, Viewport } from "@itwin/core-frontend";
 import { createToolButton, ToolBarDropDown } from "./ToolBar";
 
 const entries = [
@@ -43,7 +43,7 @@ export class StandardRotations extends ToolBarDropDown {
 
       div.appendChild(createToolButton({
         iconUnicode: entries[i],
-        click: () => IModelApp.tools.run("View.Standard", IModelApp.viewManager.selectedView, i),
+        click: async () => IModelApp.tools.run("View.Standard", IModelApp.viewManager.selectedView, i),
       }));
     }
 

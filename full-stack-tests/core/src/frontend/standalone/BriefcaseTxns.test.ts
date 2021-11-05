@@ -4,27 +4,27 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as path from "path";
-import { Guid, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
-import { Transform } from "@bentley/geometry-core";
-import { BriefcaseConnection, EditingFunctions } from "@bentley/imodeljs-frontend";
-import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
-import { deleteElements, initializeEditTools, insertLineElement, transformElements } from "../Editing";
+import { Guid, OpenMode, ProcessDetector } from "@itwin/core-bentley";
+import { Transform } from "@itwin/core-geometry";
+import { BriefcaseConnection } from "@itwin/core-frontend";
+import { callFullStackTestIpc, deleteElements, initializeEditTools, insertLineElement, makeModelCode, transformElements } from "../Editing";
+import { TestUtility } from "../TestUtility";
 
-describe("BriefcaseTxns", () => {
+describe.skip("BriefcaseTxns", () => {
   if (ProcessDetector.isElectronAppFrontend) {
     let imodel: BriefcaseConnection;
 
     before(async () => {
-      await ElectronApp.startup();
+      await TestUtility.startFrontend();
       await initializeEditTools();
     });
 
     after(async () => {
-      await ElectronApp.shutdown();
+      await TestUtility.shutdownFrontend();
     });
 
     beforeEach(async () => {
-      const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/planprojection.bim");
+      const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/planprojection.bim");
       imodel = await BriefcaseConnection.openStandalone(filePath, OpenMode.ReadWrite);
     });
 
@@ -66,15 +66,13 @@ describe("BriefcaseTxns", () => {
 
       const expectCommit = async (...evts: TxnEvent[]) => expectEvents(["onCommit", ...evts, "onCommitted"]);
 
-      // eslint-disable-next-line deprecation/deprecation
-      const editing = new EditingFunctions(imodel);
-
       const dictModelId = await imodel.models.getDictionaryModel();
-      const category = await editing.categories.createAndInsertSpatialCategory(dictModelId, Guid.createValue(), { color: 0 });
+      const category = await callFullStackTestIpc("createAndInsertSpatialCategory", imodel.key, dictModelId, Guid.createValue(), { color: 0 });
       await imodel.saveChanges();
       await expectCommit("onElementsChanged");
 
-      const model = await editing.models.createAndInsertPhysicalModel(await editing.codes.makeModelCode(imodel.models.repositoryModelId, Guid.createValue()));
+      const code = await makeModelCode(imodel, imodel.models.repositoryModelId, Guid.createValue());
+      const model = await callFullStackTestIpc("createAndInsertPhysicalModel", imodel.key, code);
       await imodel.saveChanges();
       await expectCommit("onElementsChanged", "onModelsChanged");
 
@@ -88,7 +86,6 @@ describe("BriefcaseTxns", () => {
       await imodel.saveChanges();
       await expectCommit("onModelGeometryChanged", "onElementsChanged");
 
-      // eslint-disable-next-line deprecation/deprecation
       await deleteElements(imodel, [elem1]);
       await imodel.saveChanges();
       await expectCommit("onModelGeometryChanged", "onElementsChanged");

@@ -7,10 +7,11 @@
  * @module Tools
  */
 
-import { ViewStateProps } from "@bentley/imodeljs-common";
+import { BentleyError } from "@itwin/core-bentley";
+import { ViewStateProps } from "@itwin/core-common";
 import {
   EntityState, IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, Tool, ViewState,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseArgs } from "./parseArgs";
 
@@ -59,14 +60,14 @@ export class SaveViewTool extends Tool {
     return true;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     if (this.parse(args))
       return this.run();
     else
       return false;
   }
 
-  public override run(): boolean {
+  public override async run(): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, "No viewport"));
@@ -80,7 +81,7 @@ export class SaveViewTool extends Tool {
       copyStringToClipboard(json);
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "JSON copied to clipboard"));
     } catch (err) {
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, err.toString()));
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, BentleyError.getErrorMessage(err) || "An unknown error occurred."));
     }
 
     return true;
@@ -97,7 +98,7 @@ export class ApplyViewTool extends Tool {
   public static override get maxArgs() { return 1; }
   public static override get minArgs() { return 1; }
 
-  public override run(view?: ViewState): boolean {
+  public override async run(view?: ViewState): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== view && undefined !== vp)
       vp.changeView(view);
@@ -105,7 +106,7 @@ export class ApplyViewTool extends Tool {
     return true;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp || 0 === args.length)
       return true;
@@ -113,10 +114,10 @@ export class ApplyViewTool extends Tool {
     try {
       const json = JSON.parse(args[0]);
 
-      // ###TODO: async...
-      deserializeViewState(json, vp.iModel).then((view) => this.run(view)); // eslint-disable-line @typescript-eslint/no-floating-promises
+      const view = await deserializeViewState(json, vp.iModel);
+      await this.run(view);
     } catch (err) {
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, err.toString()));
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, BentleyError.getErrorMessage(err) || "An unknown error occurred."));
     }
 
     return true;
@@ -131,11 +132,11 @@ export class ApplyViewByIdTool extends Tool {
   public static override get minArgs() { return 1; }
   public static override get maxArgs() { return 1; }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     return this.run(args[0]);
   }
 
-  public override run(viewId?: string): boolean {
+  public override async run(viewId?: string): Promise<boolean> {
     if (typeof viewId !== "string")
       return false;
 

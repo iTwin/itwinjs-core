@@ -6,9 +6,9 @@
  * @module Tiles
  */
 
-import { assert, dispose } from "@bentley/bentleyjs-core";
-import { AxisOrder, BilinearPatch, ClipPlane, ClipPrimitive, ClipShape, ClipVector, Constant, ConvexClipPlaneSet, EllipsoidPatch, LongitudeLatitudeNumber, Matrix3d, Point3d, PolygonOps, Range1d, Range2d, Range3d, Ray3d, Transform, Vector2d, Vector3d } from "@bentley/geometry-core";
-import { ColorByName, ColorDef, FrustumPlanes, GlobeMode, PackedFeatureTable, RenderTexture } from "@bentley/imodeljs-common";
+import { assert, dispose } from "@itwin/core-bentley";
+import { AxisOrder, BilinearPatch, ClipPlane, ClipPrimitive, ClipShape, ClipVector, Constant, ConvexClipPlaneSet, EllipsoidPatch, LongitudeLatitudeNumber, Matrix3d, Point3d, PolygonOps, Range1d, Range2d, Range3d, Ray3d, Transform, Vector2d, Vector3d } from "@itwin/core-geometry";
+import { ColorByName, ColorDef, FrustumPlanes, GlobeMode, PackedFeatureTable, RenderTexture } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { GraphicBuilder } from "../../render/GraphicBuilder";
 import { TerrainMeshPrimitive } from "../../render/primitives/mesh/TerrainMeshPrimitive";
@@ -16,8 +16,10 @@ import { RenderGraphic } from "../../render/RenderGraphic";
 import { RenderMemory } from "../../render/RenderMemory";
 import { RenderRealityMeshGeometry, RenderSystem, TerrainTexture } from "../../render/RenderSystem";
 import { ViewingSpace } from "../../ViewingSpace";
-import { ImageryMapTile, MapCartoRectangle, MapTileLoader, MapTileTree, QuadId, RealityTile, Tile, TileContent, TileDrawArgs, TileLoadStatus, TileParams, TileTreeLoadStatus, TraversalSelectionContext } from "../internal";
-import { TileGraphicType } from "../TileTreeReference";
+import {
+  ImageryMapTile, MapCartoRectangle, MapTileLoader, MapTileTree, QuadId, RealityTile, Tile, TileContent, TileDrawArgs, TileGraphicType,
+  TileLoadStatus, TileParams, TileTreeLoadStatus, TraversalSelectionContext,
+} from "../internal";
 
 /** @internal */
 export class PlanarTilePatch {
@@ -282,7 +284,7 @@ export class MapTile extends RealityTile {
       for (const cornerNormal of this._cornerRays) {
         const eyeNormal = Vector3d.createStartEnd(viewingSpace.eyePoint, cornerNormal.origin, scratchNormal);
         eyeNormal.normalizeInPlace();
-        if (eyeNormal.dotProduct(cornerNormal.direction) < .1)
+        if (eyeNormal.dotProduct(cornerNormal.direction) < .01)
           return false;
       }
     } else {
@@ -296,8 +298,9 @@ export class MapTile extends RealityTile {
 
   protected override _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
     const mapTree = this.mapTree;
-    const rowCount = (this.quadId.level === 0) ? mapTree.sourceTilingScheme.numberOfLevelZeroTilesY : 2;
-    const columnCount = (this.quadId.level === 0) ? mapTree.sourceTilingScheme.numberOfLevelZeroTilesX : 2;
+    const childLevel = this.quadId.level + 1;
+    const rowCount = mapTree.sourceTilingScheme.getNumberOfYChildrenAtLevel(childLevel);
+    const columnCount = mapTree.sourceTilingScheme.getNumberOfXChildrenAtLevel(childLevel);
 
     const resolveChildren = (children: Tile[]) => {
       const childrenRange = Range3d.createNull();
@@ -363,9 +366,8 @@ export class MapTile extends RealityTile {
 
         children.push(this.mapTree.createGlobeChild({ contentId: quadId.contentId, maximumSize: 512, range, parent: this, isLeaf: false }, quadId, range.corners(), rectangle, ellipsoidPatch, heightRange));
       }
-      resolve(children);
     }
-
+    resolve(children);
     return children;
   }
 
@@ -629,7 +631,6 @@ export class MapTile extends RealityTile {
 
 /** @internal */
 export class UpsampledMapTile extends MapTile {
-  public get isLoadable() { return false; }
   public override get isUpsampled() { return true; }
   public override get isEmpty() { return false; }
   public override get loadableTile(): RealityTile {
@@ -666,4 +667,8 @@ export class UpsampledMapTile extends MapTile {
   public override get isQueued(): boolean { return this.loadableTile.isQueued; }
   public override get isNotFound(): boolean { return this.loadableTile.isNotFound; }
   public override get isReady(): boolean { return (this._geometry !== undefined || this.loadableTile.loadStatus === TileLoadStatus.Ready) && this.baseImageryIsReady; }
+  public override markUsed(args: TileDrawArgs): void {
+    args.markUsed(this);
+    args.markUsed(this.loadableTile);
+  }
 }

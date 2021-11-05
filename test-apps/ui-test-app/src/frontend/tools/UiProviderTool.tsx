@@ -9,32 +9,39 @@
 // cSpell: ignore popout
 
 import * as React from "react";
-import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, Tool } from "@itwin/core-frontend";
+import { UiTestExtension } from "@itwin/ui-test-extension";
+
 import {
   AbstractStatusBarItemUtilities, AbstractWidgetProps, BadgeType, CommonStatusBarItem, CommonToolbarItem, ConditionalBooleanValue,
-  ConditionalStringValue, IconSpecUtilities, StagePanelLocation, StagePanelSection, StageUsage, StatusBarSection, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage,
-  UiItemsManager, UiItemsProvider,
-} from "@bentley/ui-abstract";
-import { FillCentered } from "@bentley/ui-core";
+  ConditionalStringValue, IconSpecUtilities, StagePanelLocation, StagePanelSection, StageUsage, StatusBarSection,
+  ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage,
+  UiItemsManager, UiItemsProvider, WidgetState,
+} from "@itwin/appui-abstract";
+import { FillCentered, LocalSettingsStorage } from "@itwin/core-react";
 import {
-  ActionCreatorsObject, ActionsUnion, ChildWindowLocationProps, createAction,
-  ReducerRegistryInstance, StateManager, StatusBarItemUtilities, UiFramework, withStatusFieldProps,
-} from "@bentley/ui-framework";
+  ActionCreatorsObject, ActionsUnion, ChildWindowLocationProps, ContentGroup, ContentLayoutManager, ContentProps, createAction,
+  FrontstageManager, ReducerRegistryInstance, SavedViewLayout, SavedViewLayoutProps, StateManager, StatusBarItemUtilities, SyncUiEventId,
+  UiFramework, withStatusFieldProps,
+} from "@itwin/appui-react";
 import { ShadowField } from "../appui/statusfields/ShadowField";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../index";
 import toolIconSvg from "@bentley/icons-generic/icons/window-add.svg?sprite";
 import tool2IconSvg from "@bentley/icons-generic/icons/window-maximize.svg?sprite";
 import tool3IconSvg from "@bentley/icons-generic/icons/3d-render.svg?sprite";
+import layoutRestoreIconSvg from "@bentley/icons-generic/icons/download.svg?sprite";
+import removeLayoutIconSvg from "@bentley/icons-generic/icons/remove.svg?sprite";
+import layoutSaveIconSvg from "@bentley/icons-generic/icons/upload.svg?sprite";
 import { PopupTestPanel } from "./PopupTestPanel";
 import { PopupTestView } from "./PopupTestView";
 import { ComponentExamplesPage } from "../appui/frontstages/component-examples/ComponentExamples";
 import { ComponentExamplesProvider } from "../appui/frontstages/component-examples/ComponentExamplesProvider";
+import { ITwinUIExamplesProvider } from "../appui/frontstages/component-examples/ITwinUIExamplesProvider";
 
 // Simulate redux state being added via a extension
 interface SampleExtensionState {
   extensionUiVisible?: boolean;
 }
-
 class SampleExtensionStateManager {
   public static extensionStateManagerLoaded = false;
 
@@ -122,7 +129,13 @@ class TestUiProvider implements UiItemsProvider {
         });
       const groupSpec = ToolbarItemUtilities.createGroupButton("test-tool-group", 230, "icon-developer", "test group", [childActionSpec, simpleActionSpec], { badgeType: BadgeType.TechnicalPreview, parentToolGroupId: "tool-formatting-setting" });
 
-      return [simpleActionSpec, nestedActionSpec, groupSpec];
+      const isClearMeasureHiddenCondition = new ConditionalBooleanValue((): boolean => !IModelApp.toolAdmin.currentTool?.toolId.startsWith("Measure."), [SyncUiEventId.ToolActivated]);
+      const clearMeasureActionSpec = ToolbarItemUtilities.createActionButton("clear-measure-tool", 100, "icon-paintbrush", "Clear Measure Decorations",
+        (): void => {
+          IModelApp.toolAdmin.currentTool?.onReinitialize();
+        }, { isHidden: isClearMeasureHiddenCondition });
+
+      return [clearMeasureActionSpec, simpleActionSpec, nestedActionSpec, groupSpec];
     }
     return [];
   }
@@ -153,6 +166,8 @@ class TestUiProvider implements UiItemsProvider {
             SampleExtensionStateManager.isExtensionUiVisible = !SampleExtensionStateManager.isExtensionUiVisible;
           }));
 
+      statusBarItems.push(AbstractStatusBarItemUtilities.createLabelItem("ExtensionTest:StatusBarLabel1", StatusBarSection.Center, 111, iconCondition, labelCondition));
+
       // add entry that supplies react component
       statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("ShadowToggle", StatusBarSection.Right, 5, <ShadowToggle />));
     }
@@ -163,20 +178,79 @@ class TestUiProvider implements UiItemsProvider {
     const widgets: AbstractWidgetProps[] = [];
     const allowedStages = ["ViewsFrontstage", "Ui2"];
     // Section parameter is ignored. The widget will be added once to the top section of a right panel.
-    if (allowedStages.includes(stageId) && location === StagePanelLocation.Right) {
+    if (allowedStages.includes(stageId) && location === StagePanelLocation.Right && section === StagePanelSection.Start) {
       widgets.push({
         id: "addonWidget",
-        getWidgetContent: () => <FillCentered>Addon Widget in panel</FillCentered>, // eslint-disable-line react/display-name
+        label: "Add On 1",
+        getWidgetContent: () => <FillCentered>Addon Widget  (id: addonWidget)</FillCentered>, // eslint-disable-line react/display-name
+        defaultState: WidgetState.Floating,
+        floatingContainerId: "floating-addonWidget-container",
+        isFloatingStateSupported: true,
+      });
+      widgets.push({
+        label: "Add On 2",
+        id: "addonWidget2",
+        getWidgetContent: () => <FillCentered>Addon Widget 2 (id: addonWidget2)</FillCentered>, // eslint-disable-line react/display-name
+        defaultState: WidgetState.Floating,
+        floatingContainerId: "floating-addonWidget-container",
+        isFloatingStateSupported: true,
       });
     }
+
     if (allowedStages.includes(stageId) && location === StagePanelLocation.Right && section === StagePanelSection.Middle) {
       widgets.push({
+        label: "Add On 3",
         id: "addonWidgetMiddle",
-        getWidgetContent: () => <FillCentered>Addon Widget in middle section</FillCentered>, // eslint-disable-line react/display-name
+        // eslint-disable-next-line react/display-name
+        getWidgetContent: () => {
+          return (<FillCentered>
+            <div style={{ margin: "5px", display: "flex", flexDirection: "column", alignItems: "center" }}>
+              Widget id: addonWidgetMiddle
+              <div>
+                (Not Resizable)
+              </div>
+            </div>
+          </FillCentered>);
+        },
+        defaultState: WidgetState.Floating,
+        isFloatingStateSupported: true,
+        defaultFloatingPosition: { x: 200, y: 200 },
+        isFloatingStateWindowResizable: false,
       });
     }
     return widgets;
   }
+}
+
+function getImodelSpecificKey(inKey: string, iModelConnection: IModelConnection | undefined) {
+  const imodelId = iModelConnection?.iModelId ?? "unknownImodel";
+  return `[${imodelId}]${inKey}`;
+}
+
+export async function hasSavedViewLayoutProps(activeFrontstageId: string, iModelConnection: IModelConnection | undefined) {
+  const localSettings = new LocalSettingsStorage();
+  return localSettings.hasSetting("ContentGroupLayout", getImodelSpecificKey(activeFrontstageId, iModelConnection));
+}
+
+export async function getSavedViewLayoutProps(activeFrontstageId: string, iModelConnection: IModelConnection | undefined) {
+  const localSettings = new LocalSettingsStorage();
+  const result = await localSettings.getSetting("ContentGroupLayout", getImodelSpecificKey(activeFrontstageId, iModelConnection));
+
+  if (result.setting) {
+    // Parse SavedViewLayoutProps
+    const savedViewLayoutProps: SavedViewLayoutProps = result.setting;
+    if (iModelConnection) {
+      // Create ViewStates
+      const viewStates = await SavedViewLayout.viewStatesFromProps(iModelConnection, savedViewLayoutProps);
+
+      // Add applicationData to the ContentProps
+      savedViewLayoutProps.contentGroupProps.contents.forEach((contentProps: ContentProps, index: number) => {
+        contentProps.applicationData = { viewState: viewStates[index], iModelConnection };
+      });
+    }
+    return savedViewLayoutProps;
+  }
+  return undefined;
 }
 
 /** An Immediate Tool that toggles the test ui provider defined above. */
@@ -184,7 +258,7 @@ export class UiProviderTool extends Tool {
   public static testExtensionLoaded = "";
 
   public static override toolId = "TestUiProvider";
-  public override run(_args: any[]): boolean {
+  public override async run(_args: any[]): Promise<boolean> {
     // load state before ui provide so state is available when rendering on load occurs.
     if (!SampleExtensionStateManager.extensionStateManagerLoaded)
       SampleExtensionStateManager.initialize();
@@ -202,6 +276,122 @@ export class UiProviderTool extends Tool {
   }
 }
 
+export class TestExtensionUiProviderTool extends Tool {
+  public static testExtensionLoaded = "";
+
+  public static override toolId = "TestExtensionUiProvider";
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 0; }
+  public static override get keyin(): string {
+    return "load test extension";
+  }
+  public static override get englishKeyin(): string {
+    return this.keyin;
+  }
+  public override async run(_args: any[]): Promise<boolean> {
+    await UiTestExtension.initialize();
+    return true;
+  }
+}
+
+export class SaveContentLayoutTool extends Tool {
+  public static override toolId = "SaveContentLayoutTool";
+  public static override iconSpec = IconSpecUtilities.createSvgIconSpec(layoutSaveIconSvg);
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 0; }
+  public static override get keyin(): string {
+    return "content layout save";
+  }
+
+  public static override get englishKeyin(): string {
+    return this.keyin;
+  }
+
+  public override async run(): Promise<boolean> {
+    if (FrontstageManager.activeFrontstageDef && ContentLayoutManager.activeLayout && ContentLayoutManager.activeContentGroup) {
+      const localSettings = new LocalSettingsStorage();
+
+      // Create props for the Layout, ContentGroup and ViewStates
+      const savedViewLayoutProps = SavedViewLayout.viewLayoutToProps(ContentLayoutManager.activeLayout,
+        ContentLayoutManager.activeContentGroup, true, (contentProps: ContentProps) => {
+          if (contentProps.applicationData) {
+            if (contentProps.applicationData.iModelConnection)
+              delete contentProps.applicationData.iModelConnection;
+            if (contentProps.applicationData.viewState)
+              delete contentProps.applicationData.viewState;
+          }
+        });
+
+      if (savedViewLayoutProps.contentLayoutProps)
+        delete savedViewLayoutProps.contentLayoutProps;
+
+      if (FrontstageManager.activeFrontstageDef.contentGroupProvider)
+        savedViewLayoutProps.contentGroupProps = FrontstageManager.activeFrontstageDef.contentGroupProvider.prepareToSaveProps(savedViewLayoutProps.contentGroupProps);
+
+      await localSettings.saveSetting("ContentGroupLayout",
+        getImodelSpecificKey(FrontstageManager.activeFrontstageDef.id, UiFramework.getIModelConnection()),
+        savedViewLayoutProps);
+    }
+    return true;
+  }
+
+}
+
+export class RestoreSavedContentLayoutTool extends Tool {
+  public static override toolId = "RestoreSavedContentLayoutTool";
+  public static override iconSpec = IconSpecUtilities.createSvgIconSpec(layoutRestoreIconSvg);
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 0; }
+  public static override get keyin(): string {
+    return "content layout restore";
+  }
+  public static override get englishKeyin(): string {
+    return this.keyin;
+  }
+
+  public override async run(): Promise<boolean> {
+    if (FrontstageManager.activeFrontstageDef) {
+      const savedViewLayoutProps = await getSavedViewLayoutProps(FrontstageManager.activeFrontstageDef.id, UiFramework.getIModelConnection());
+      if (savedViewLayoutProps) {
+        let contentGroupProps = savedViewLayoutProps.contentGroupProps;
+        if (FrontstageManager.activeFrontstageDef.contentGroupProvider)
+          contentGroupProps = FrontstageManager.activeFrontstageDef.contentGroupProvider.applyUpdatesToSavedProps(savedViewLayoutProps.contentGroupProps);
+        const contentGroup = new ContentGroup(contentGroupProps);
+
+        // activate the layout
+        await ContentLayoutManager.setActiveContentGroup(contentGroup);
+
+        // emphasize the elements
+        SavedViewLayout.emphasizeElementsFromProps(contentGroup, savedViewLayoutProps);
+      }
+    }
+    return true;
+  }
+}
+
+export class RemoveSavedContentLayoutTool extends Tool {
+  public static override toolId = "RemoveSavedContentLayoutTool";
+  public static override iconSpec = IconSpecUtilities.createSvgIconSpec(removeLayoutIconSvg);
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 0; }
+  public static override get keyin(): string {
+    return "content layout remove";
+  }
+  public static override get englishKeyin(): string {
+    return this.keyin;
+  }
+
+  public override async run(): Promise<boolean> {
+    if (FrontstageManager.activeFrontstageDef) {
+      const localSettings = new LocalSettingsStorage();
+
+      await localSettings.deleteSetting("ContentGroupLayout",
+        getImodelSpecificKey(FrontstageManager.activeFrontstageDef.id, UiFramework.getIModelConnection()));
+    }
+    return true;
+  }
+}
+
 export class OpenComponentExamplesPopoutTool extends Tool {
   public static override toolId = "openComponentExamplesChildWindow";
   public static override iconSpec = IconSpecUtilities.createSvgIconSpec(toolIconSvg);
@@ -209,9 +399,8 @@ export class OpenComponentExamplesPopoutTool extends Tool {
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 0; }
 
-  public override run(): boolean {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this._run();
+  public override async run(): Promise<boolean> {
+    await this._run();
     return true;
   }
 
@@ -224,7 +413,9 @@ export class OpenComponentExamplesPopoutTool extends Tool {
     };
     const connection = UiFramework.getIModelConnection();
     if (connection)
-      UiFramework.childWindowManager.openChildWindow("ComponentExamples", "Component Examples", <ComponentExamplesPage categories={ComponentExamplesProvider.categories} hideThemeOption />, location, UiFramework.useDefaultPopoutUrl);
+      UiFramework.childWindowManager.openChildWindow("ComponentExamples", "Component Examples",
+        <ComponentExamplesPage categories={[...ComponentExamplesProvider.categories, ...ITwinUIExamplesProvider.categories]} hideThemeOption />,
+        location, UiFramework.useDefaultPopoutUrl);
   }
 
   public static override get flyover(): string {
@@ -245,7 +436,7 @@ export class OpenComponentExamplesPopoutTool extends Tool {
       groupPriority,
     };
     return ToolbarItemUtilities.createActionButton(OpenComponentExamplesPopoutTool.toolId, itemPriority, OpenComponentExamplesPopoutTool.iconSpec, OpenComponentExamplesPopoutTool.flyover,
-      () => { IModelApp.tools.run(OpenComponentExamplesPopoutTool.toolId); }, overrides);
+      async () => { await IModelApp.tools.run(OpenComponentExamplesPopoutTool.toolId); }, overrides);
   }
 }
 export class OpenCustomPopoutTool extends Tool {
@@ -255,9 +446,8 @@ export class OpenCustomPopoutTool extends Tool {
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 0; }
 
-  public override run(): boolean {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this._run();
+  public override async run(): Promise<boolean> {
+    await this._run();
     return true;
   }
 
@@ -289,7 +479,7 @@ export class OpenCustomPopoutTool extends Tool {
       groupPriority,
     };
     return ToolbarItemUtilities.createActionButton(OpenCustomPopoutTool.toolId, itemPriority, OpenCustomPopoutTool.iconSpec, OpenCustomPopoutTool.flyover,
-      () => { IModelApp.tools.run(OpenCustomPopoutTool.toolId); }, overrides);
+      async () => { await IModelApp.tools.run(OpenCustomPopoutTool.toolId); }, overrides);
   }
 }
 
@@ -300,9 +490,8 @@ export class OpenViewPopoutTool extends Tool {
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 0; }
 
-  public override run(): boolean {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this._run();
+  public override async run(): Promise<boolean> {
+    await this._run();
     return true;
   }
 
@@ -334,7 +523,6 @@ export class OpenViewPopoutTool extends Tool {
       groupPriority,
     };
     return ToolbarItemUtilities.createActionButton(OpenViewPopoutTool.toolId, itemPriority, OpenViewPopoutTool.iconSpec, OpenViewPopoutTool.flyover,
-      () => { IModelApp.tools.run(OpenViewPopoutTool.toolId); }, overrides);
+      async () => { await IModelApp.tools.run(OpenViewPopoutTool.toolId); }, overrides);
   }
 }
-

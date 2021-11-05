@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "Implement appendPolygonClip in deep boolean trees.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}

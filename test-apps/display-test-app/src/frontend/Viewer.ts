@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64String } from "@bentley/bentleyjs-core";
-import { ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Point2d, Vector3d } from "@bentley/geometry-core";
-import { ModelClipGroup, ModelClipGroups } from "@bentley/imodeljs-common";
+import { Id64String } from "@itwin/core-bentley";
+import { ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Point2d, Vector3d } from "@itwin/core-geometry";
+import { ModelClipGroup, ModelClipGroups } from "@itwin/core-common";
 import {
   imageBufferToPngDataUrl, IModelApp, IModelConnection, NotifyMessageDetails, openImageDataUrlInNewWindow, OutputMessagePriority, ScreenViewport,
   Tool, Viewport, ViewState,
-} from "@bentley/imodeljs-frontend";
-import { MarkupApp, MarkupData } from "@bentley/imodeljs-markup";
+} from "@itwin/core-frontend";
+import { MarkupApp, MarkupData } from "@itwin/core-markup";
 import { ClassificationsPanel } from "./ClassificationsPanel";
 import { DebugWindow } from "./DebugWindow";
 import { FeatureOverridesPanel } from "./FeatureOverrides";
@@ -24,7 +24,7 @@ import { createImageButton, createToolButton, ToolBar } from "./ToolBar";
 import { ViewAttributesPanel } from "./ViewAttributes";
 import { ViewList, ViewPicker } from "./ViewPicker";
 import { Window } from "./Window";
-import { openStandaloneIModel } from "./openStandaloneIModel";
+import { openIModel } from "./openIModel";
 
 // cspell:ignore savedata topdiv savedview viewtop
 
@@ -52,10 +52,10 @@ async function zoomToSelectedElements(vp: Viewport) {
 
 export class ZoomToSelectedElementsTool extends Tool {
   public static override toolId = "ZoomToSelectedElements";
-  public override run(_args: any[]): boolean {
+  public override async run(_args: any[]): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== vp)
-      zoomToSelectedElements(vp); // eslint-disable-line @typescript-eslint/no-floating-promises
+      await zoomToSelectedElements(vp);
 
     return true;
   }
@@ -63,7 +63,7 @@ export class ZoomToSelectedElementsTool extends Tool {
 
 export class SaveImageTool extends Tool {
   public static override toolId = "SaveImage";
-  public override run(_args: any[]): boolean {
+  public override async run(_args: any[]): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== vp)
       saveImage(vp);
@@ -74,7 +74,7 @@ export class SaveImageTool extends Tool {
 
 export class ModelClipTool extends Tool {
   public static override toolId = "ModelClip";
-  public override run(_args: any[]): boolean {
+  public override async run(_args: any[]): Promise<boolean> {
     const view = IModelApp.viewManager.selectedView?.view;
     if (!view || !view.isSpatialView() || view.modelSelector.models.size < 2)
       return true;
@@ -110,7 +110,7 @@ export class MarkupTool extends Tool {
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 1; }
 
-  public override run(wantSavedData: boolean): boolean {
+  public override async run(wantSavedData: boolean): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp)
       return true;
@@ -119,7 +119,7 @@ export class MarkupTool extends Tool {
       // NOTE: Because we don't have separate START and STOP buttons in the test app, exit markup mode only when the Markup Select tool is active, otherwise start the Markup Select tool...
       const startMarkupSelect = IModelApp.toolAdmin.defaultToolId === MarkupApp.markupSelectToolId && (undefined === IModelApp.toolAdmin.activeTool || MarkupApp.markupSelectToolId !== IModelApp.toolAdmin.activeTool.toolId);
       if (startMarkupSelect) {
-        IModelApp.toolAdmin.startDefaultTool();
+        await IModelApp.toolAdmin.startDefaultTool();
         return true;
       }
       MarkupApp.props.result.maxWidth = 1500;
@@ -132,13 +132,13 @@ export class MarkupTool extends Tool {
     } else {
       MarkupApp.props.active.element.stroke = "white"; // as an example, set default color for elements
       MarkupApp.markupSelectToolId = "Markup.TestSelect"; // as an example override the default markup select tool to launch redline tools using key events
-      MarkupApp.start(vp, wantSavedData ? MarkupTool.savedData : undefined); // eslint-disable-line @typescript-eslint/no-floating-promises
+      await MarkupApp.start(vp, wantSavedData ? MarkupTool.savedData : undefined);
     }
 
     return true;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const wantSavedData = "savedata" === args[0]?.toLowerCase();
     return this.run(wantSavedData);
   }
@@ -192,10 +192,7 @@ export class Viewer extends Window {
 
   private _maybeDisableEdges() {
     if (this.disableEdges && (this.viewport.viewFlags.visibleEdges || this.viewport.viewFlags.hiddenEdges)) {
-      const vf = this.viewport.viewFlags.clone();
-      vf.visibleEdges = false;
-      vf.hiddenEdges = false;
-      this.viewport.viewFlags = vf;
+      this.viewport.viewFlags = this.viewport.viewFlags.copy({ visibleEdges: false, hiddenEdges: false });
     }
   }
 
@@ -221,8 +218,8 @@ export class Viewer extends Window {
     this.toolBar.addItem(createToolButton({
       iconUnicode: "\ue9cc",
       tooltip: "Open iModel from disk",
-      click: () => {
-        this.selectIModel(); // eslint-disable-line @typescript-eslint/no-floating-promises
+      click: async () => {
+        await this.selectIModel();
       },
     }));
 
@@ -263,13 +260,13 @@ export class Viewer extends Window {
 
     this.toolBar.addItem(createImageButton({
       src: "zoom.svg",
-      click: () => IModelApp.tools.run("SVTSelect"),
+      click: async () => IModelApp.tools.run("SVTSelect"),
       tooltip: "Element selection",
     }));
 
     this.toolBar.addItem(createToolButton({
       iconUnicode: "\ueb08",
-      click: () => IModelApp.tools.run("Measure.Distance", IModelApp.viewManager.selectedView!),
+      click: async () => IModelApp.tools.run("Measure.Distance", IModelApp.viewManager.selectedView!),
       tooltip: "Measure distance",
     }));
 
@@ -285,19 +282,19 @@ export class Viewer extends Window {
 
     this.toolBar.addItem(createImageButton({
       src: "fit-to-view.svg",
-      click: () => IModelApp.tools.run("View.Fit", this.viewport, true),
+      click: async () => IModelApp.tools.run("View.Fit", this.viewport, true),
       tooltip: "Fit view",
     }));
 
     this.toolBar.addItem(createImageButton({
       src: "window-area.svg",
-      click: () => IModelApp.tools.run("View.WindowArea", this.viewport),
+      click: async () => IModelApp.tools.run("View.WindowArea", this.viewport),
       tooltip: "Window area",
     }));
 
     this.toolBar.addItem(createImageButton({
       src: "rotate-left.svg",
-      click: () => IModelApp.tools.run("View.Rotate", this.viewport),
+      click: async () => IModelApp.tools.run("View.Rotate", this.viewport),
       tooltip: "Rotate",
     }));
 
@@ -310,7 +307,7 @@ export class Viewer extends Window {
 
     const walk = createImageButton({
       src: "walk.svg",
-      click: () => IModelApp.tools.run("View.LookAndMove", this.viewport),
+      click: async () => IModelApp.tools.run("View.LookAndMove", this.viewport),
       tooltip: "Walk",
     });
     this._3dOnly.push(walk);
@@ -318,13 +315,13 @@ export class Viewer extends Window {
 
     this.toolBar.addItem(createToolButton({
       iconUnicode: "\ue982", // "undo"
-      click: () => IModelApp.tools.run("View.Undo", this.viewport),
+      click: async () => IModelApp.tools.run("View.Undo", this.viewport),
       tooltip: "View undo",
     }));
 
     this.toolBar.addItem(createToolButton({
       iconUnicode: "\ue983", // "redo"
-      click: () => IModelApp.tools.run("View.Redo", this.viewport),
+      click: async () => IModelApp.tools.run("View.Redo", this.viewport),
       tooltip: "View redo",
     }));
 
@@ -432,8 +429,8 @@ export class Viewer extends Window {
     const sameFile = filename === this._imodel.key;
     if (!sameFile) {
       try {
-        newIModel = await openStandaloneIModel(filename, this.surface.openReadWrite);
-      } catch (err) {
+        newIModel = await openIModel(filename, this.surface.openReadWrite);
+      } catch (err: any) {
         alert(err.toString());
         return;
       }
@@ -445,7 +442,7 @@ export class Viewer extends Window {
     await this.clearViews();
 
     if (sameFile)
-      newIModel = await openStandaloneIModel(filename, this.surface.openReadWrite);
+      newIModel = await openIModel(filename, this.surface.openReadWrite);
 
     this._imodel = newIModel!;
     await this.buildViewList();
@@ -466,7 +463,7 @@ export class Viewer extends Window {
     try {
       await this.resetIModel(filename);
       setTitle(this._imodel);
-    } catch (_) {
+    } catch {
       alert("Error - could not open file.");
     }
   }
@@ -477,7 +474,7 @@ export class Viewer extends Window {
 
   public override onFocus(): void {
     this._header.element.classList.add("viewport-header-focused");
-    IModelApp.viewManager.setSelectedView(this.viewport);
+    void IModelApp.viewManager.setSelectedView(this.viewport);
   }
 
   public override onLoseFocus(): void {
@@ -509,7 +506,9 @@ export class Viewer extends Window {
   public override onClosed(): void {
     if (undefined === IModelApp.viewManager.selectedView) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Closing iModel..."));
-      this.closeIModel().then(() => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "iModel closed."))); // eslint-disable-line @typescript-eslint/no-floating-promises
+
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      this.closeIModel().then(() => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "iModel closed.")));
     }
   }
 

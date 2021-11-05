@@ -4,12 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 import * as ec from "../../presentation-common/EC";
 
+/**
+ * @internal Used for testing only.
+ */
 export const createTestECInstanceKey = (props?: Partial<ec.InstanceKey>) => ({
   className: "SchemaName:ClassName",
   id: "0x1",
   ...props,
 });
 
+/**
+ * @internal Used for testing only.
+ */
 export const createTestECClassInfo = (props?: Partial<ec.ClassInfo>) => ({
   id: "0x1",
   name: "SchemaName:ClassName",
@@ -17,16 +23,32 @@ export const createTestECClassInfo = (props?: Partial<ec.ClassInfo>) => ({
   ...props,
 });
 
+/**
+ * @internal Used for testing only.
+ */
 export const createTestRelatedClassInfo = (props?: Partial<ec.RelatedClassInfo>) => ({
-  sourceClassInfo: createTestECClassInfo({ name: "source:class", label: "Source" }),
-  targetClassInfo: createTestECClassInfo({ name: "target:class", label: "Target" }),
+  sourceClassInfo: createTestECClassInfo({ id: "0x1", name: "source:class", label: "Source" }),
+  targetClassInfo: createTestECClassInfo({ id: "0x2", name: "target:class", label: "Target" }),
   isPolymorphicTargetClass: false,
-  relationshipInfo: createTestECClassInfo({ name: "relationship:class", label: "Relationship" }),
+  relationshipInfo: createTestECClassInfo({ id: "0x3", name: "relationship:class", label: "Relationship" }),
   isForwardRelationship: false,
   isPolymorphicRelationship: false,
   ...props,
 });
 
+/**
+ * @internal Used for testing only.
+ */
+export const createTestRelatedClassInfoWithOptionalRelationship = (props?: Partial<ec.RelatedClassInfoWithOptionalRelationship>) => ({
+  sourceClassInfo: createTestECClassInfo({ id: "0x1", name: "source:class", label: "Source" }),
+  targetClassInfo: createTestECClassInfo({ id: "0x2", name: "target:class", label: "Target" }),
+  isPolymorphicTargetClass: false,
+  ...props,
+});
+
+/**
+ * @internal Used for testing only.
+ */
 export const createTestRelationshipPath = (length: number = 2) => {
   const path = new Array<ec.RelatedClassInfo>();
   while (length--)
@@ -34,6 +56,9 @@ export const createTestRelationshipPath = (length: number = 2) => {
   return path;
 };
 
+/**
+ * @internal Used for testing only.
+ */
 export const createTestPropertyInfo = (props?: Partial<ec.PropertyInfo>) => ({
   classInfo: createTestECClassInfo(),
   name: "PropertyName",

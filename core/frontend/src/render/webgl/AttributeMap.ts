@@ -40,6 +40,8 @@ class AttributeMapEntry {
       ["a_instanceOverrides", VariableType.Vec4],
       ["a_instanceRgba", VariableType.Vec4],
       ["a_featureId", VariableType.Vec3],
+      ["a_patternX", VariableType.Float],
+      ["a_patternY", VariableType.Float],
     ];
 
     let location = attributes.length;

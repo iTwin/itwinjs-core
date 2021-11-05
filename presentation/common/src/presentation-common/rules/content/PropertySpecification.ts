@@ -6,8 +6,9 @@
  * @module PresentationRules
  */
 
-import { PropertyEditorSpecification } from "./modifiers/PropertyEditorsSpecification";
 import { CustomRendererSpecification } from "./modifiers/CustomRendererSpecification";
+import { CategoryIdentifier } from "./modifiers/PropertyCategorySpecification";
+import { PropertyEditorSpecification } from "./modifiers/PropertyEditorsSpecification";
 
 /**
  * A container structure for possible property overrides
@@ -16,16 +17,22 @@ import { CustomRendererSpecification } from "./modifiers/CustomRendererSpecifica
 export interface PropertyOverrides {
   /** Priority of the specified overrides. */
   overridesPriority?: number;
-  /** Label override. May be [localized]($docs/learning/presentation/Localization.md). */
+
+  /** Label override. May be [localized]($docs/presentation/Advanced/Localization.md). */
   labelOverride?: string;
-  /** ID of a category specified through `PropertyCategorySpecification` in this scope. */
-  categoryId?: string;
+
+  /** Identifier of a category that should be used for the property. */
+  categoryId?: string | CategoryIdentifier;
+
   /** Display override. `true` to force display, `false` to force hide, `undefined` to use default. */
   isDisplayed?: boolean;
+
   /** Custom property renderer specification. */
   renderer?: CustomRendererSpecification;
+
   /** Custom property editor specification. */
   editor?: PropertyEditorSpecification;
+
   /**
    * Flag to control behavior of `isDisplayed` override when it's set to `true`.
    * By default, forcing property display hides all other properties.
@@ -38,7 +45,7 @@ export interface PropertyOverrides {
 /**
  * Specification of an ECProperty and its overrides
  *
- * @see [More details]($docs/learning/presentation/Content/PropertySpecification.md)
+ * @see [More details]($docs/presentation/Content/PropertySpecification.md)
  * @public
  */
 export interface PropertySpecification extends PropertyOverrides {
