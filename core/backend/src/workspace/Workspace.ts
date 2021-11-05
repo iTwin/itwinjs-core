@@ -165,7 +165,7 @@ export interface Workspace {
   resolveContainerId(props: WorkspaceContainerProps): WorkspaceContainerId;
   /**
    * Get an open [[WorkspaceContainer]]. If the container is present but not open, it is opened first.
-   * If [[cloudProps]] are supplied, and if container is not  present or not up-to-date, it is downloaded first.
+   * If `cloudProps` are supplied, and if container is not  present or not up-to-date, it is downloaded first.
    * @returns a Promise that is resolved when the container is local, opened, and available for access.
    */
   getContainer(props: WorkspaceContainerProps, cloudProps?: CloudSqlite.AccessProps): Promise<WorkspaceContainer>;
