@@ -108,4 +108,3 @@ describe("Test shader compilation", () => {
     expect(prog.isUncompiled).to.equal(true);
   });
 });
-
