@@ -1,0 +1,14 @@
+# Thematic Display
+
+Thematic display applies a color gradient to the scene to help visualize attributes of the geometry within the scene. The following attributes are supported:
+
+- Elevation: color is assigned based on the Z position in world space.
+- Slope: color is assigned based on the angle between the surface and a given axis (often, the world up-vector).
+- Hill shade: color is assigned based on the direction of the sun shining on the surface.
+- Sensor distance: given any number of sensors positioned in the scene and providing a sensor reading value, color is assigned based on the values provided by the sensors, weighted by distance from each sensor.
+
+The gradient can be applied smoothly, or using discrete steps. The stepped gradient can optionally display delimiters between each discrete color; or the delimiters can be displayed by themselves producing an isoline visualization. It can be applied to design models, reality models, and 3d terrain meshes.
+
+[This sample](https://www.itwinjs.org/sample-showcase/?group=Viewer+Features&sample=thematic-display-sample&imodel=CoffsHarborDemo) attempts to demonstrate the feature, but does not do a very good job of it.
+
+
