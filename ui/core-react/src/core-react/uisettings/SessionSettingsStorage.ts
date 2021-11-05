@@ -12,11 +12,11 @@ import { UiSettingsResult, UiSettingsStatus, UiSettingsStorage } from "./UiSetti
  * Implementation of [[UiSettings]] using Window.sessionStorage.
  * @public
  */
-export class SessionSettingsStorage implements UiSettingsStorage {
+export class SessionSettingsStorage implements UiSettingsStorage { // eslint-disable-line deprecation/deprecation
 
   constructor(public w: Window = window) { }
 
-  public async getSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult> {
+  public async getSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult> { // eslint-disable-line deprecation/deprecation
     const setting = this.w.sessionStorage.getItem(`${settingNamespace}.${settingName}`);
     if (setting !== null)
       return { status: UiSettingsStatus.Success, setting: JSON.parse(setting) };
@@ -24,12 +24,12 @@ export class SessionSettingsStorage implements UiSettingsStorage {
       return { status: UiSettingsStatus.NotFound };
   }
 
-  public async saveSetting(settingNamespace: string, settingName: string, setting: any): Promise<UiSettingsResult> {
+  public async saveSetting(settingNamespace: string, settingName: string, setting: any): Promise<UiSettingsResult> { // eslint-disable-line deprecation/deprecation
     this.w.sessionStorage.setItem(`${settingNamespace}.${settingName}`, JSON.stringify(setting));
     return { status: UiSettingsStatus.Success };
   }
 
-  public async deleteSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult> {
+  public async deleteSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult> { // eslint-disable-line deprecation/deprecation
     const name = `${settingNamespace}.${settingName}`;
     const setting = this.w.sessionStorage.getItem(name);
     if (setting === null)

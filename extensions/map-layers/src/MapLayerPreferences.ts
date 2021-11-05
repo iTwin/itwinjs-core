@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IModelApp, MapLayerSource, NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
-import { BeEvent, GuidString, Logger } from "@itwin/core-bentley";
+import { BeEvent, GuidString } from "@itwin/core-bentley";
 import { MapLayersUI } from "./mapLayers";
 
 /** @internal */

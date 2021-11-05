@@ -23,22 +23,22 @@ export class UiSetting<T> {
   }
 
   /** Gets the setting from [[UiSettingsStorage]] */
-  public async getSetting(storage: UiSettingsStorage): Promise<UiSettingsResult> {
+  public async getSetting(storage: UiSettingsStorage): Promise<UiSettingsResult> { // eslint-disable-line deprecation/deprecation
     return storage.getSetting(this.settingNamespace, this.settingName);
   }
 
   /** Saves the setting value from the `getValue` function to UiSettings */
-  public async saveSetting(storage: UiSettingsStorage): Promise<UiSettingsResult> {
+  public async saveSetting(storage: UiSettingsStorage): Promise<UiSettingsResult> { // eslint-disable-line deprecation/deprecation
     return storage.saveSetting(this.settingNamespace, this.settingName, this.getValue());
   }
 
   /** Deletes the setting from UiSettings */
-  public async deleteSetting(storage: UiSettingsStorage): Promise<UiSettingsResult> {
+  public async deleteSetting(storage: UiSettingsStorage): Promise<UiSettingsResult> { // eslint-disable-line deprecation/deprecation
     return storage.deleteSetting(this.settingNamespace, this.settingName);
   }
 
   /** Gets the setting from UiSettings and applies the value using the `applyValue` function */
-  public async getSettingAndApplyValue(storage: UiSettingsStorage): Promise<UiSettingsResult> {
+  public async getSettingAndApplyValue(storage: UiSettingsStorage): Promise<UiSettingsResult> { // eslint-disable-line deprecation/deprecation
     if (this.applyValue) {
       const result = await this.getSetting(storage);
       if (result.status === UiSettingsStatus.Success) {

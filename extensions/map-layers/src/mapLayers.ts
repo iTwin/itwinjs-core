@@ -2,11 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelApp, MapLayerSources, NotifyMessageDetails, OutputMessagePriority, UserPreferencesAccess } from "@itwin/core-frontend";
+import { IModelApp, UserPreferencesAccess } from "@itwin/core-frontend";
 import { MapLayersUiItemsProvider, MapLayersWidgetControl } from "./ui/MapLayersUiItemsProvider";
 import { UiItemsManager } from "@itwin/appui-abstract";
 import { ConfigurableUiManager } from "@itwin/appui-react";
-import { MapLayerPreferences } from "./MapLayerPreferences";
 
 /** MapLayersUI is use when the package is used as a dependency to another app.
  * '''ts

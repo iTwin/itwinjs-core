@@ -6,20 +6,22 @@
  * @module UiSettings
  */
 
+/** eslint-disable deprecation/deprecation */
+
 /** Interface for getting, saving and deleting settings.
  * @public
  * @deprecated Use [[UserPreferences]]
  */
 export interface UiSettingsStorage {
-  getSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
-  saveSetting(settingNamespace: string, settingName: string, setting: any): Promise<UiSettingsResult>;
-  deleteSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
+  getSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>; // eslint-disable-line deprecation/deprecation
+  saveSetting(settingNamespace: string, settingName: string, setting: any): Promise<UiSettingsResult>; // eslint-disable-line deprecation/deprecation
+  deleteSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>; // eslint-disable-line deprecation/deprecation
 }
 
 /** Alias for [[UiSettingsStorage]]
  * @public
  */
-export type UiSettings = UiSettingsStorage;
+export type UiSettings = UiSettingsStorage; // eslint-disable-line deprecation/deprecation
 
 /** Enum for [[UiSettingsStorage]] status.
  * @public
