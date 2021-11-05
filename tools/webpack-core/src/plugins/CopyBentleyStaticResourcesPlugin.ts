@@ -153,3 +153,26 @@ export class CopyStaticAssetsPlugin {
     new CopyPlugin({ patterns }).apply(compiler);
   }
 }
+
+export class CopyBackendStaticAssetsPlugin {
+  constructor() {}
+
+  private _getPatterns() {
+    return ["@bentley", "@itwin"].map((scope) => {
+      return {
+        from: "**/assets/**/*",
+        context: `node_modules/${scope}`,
+        noErrorOnMissing: true,
+        to({ absoluteFilename }: { absoluteFilename: string }) {
+          const regex = new RegExp("(assets(?:\\\\|\/))(.*)");
+          return regex.exec(absoluteFilename)![0];
+        },
+      };
+    });
+  }
+
+  public apply(compiler: Compiler) {
+    const patterns = this._getPatterns();
+    new CopyPlugin({ patterns }).apply(compiler);
+  }
+}
