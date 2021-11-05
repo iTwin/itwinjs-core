@@ -73,7 +73,7 @@ export class ECObjectsError extends BentleyError {
       case ECObjectsStatus.SchemaContextUndefined: return this._appendMessage("ECObjectsStatus.SchemaContextUndefined");
       case ECObjectsStatus.DifferentSchemaContexts: return this._appendMessage("ECObjectsStatus.DifferentSchemaContexts");
       default:
-        assert(false);
+        assert(false, "Invalid ECObjectsStatus for ECObjectsError");
         /* istanbul ignore next */
         return this._appendMessage(`Error ${this.errorNumber.toString()}`);
     }
