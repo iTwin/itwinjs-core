@@ -793,7 +793,8 @@ class AdditionalTools {
         const widgetDef = frontstageDef.findWidgetDef("uitestapp-test-wd3");
         if (!widgetDef)
           return;
-        widgetDef.show();
+        widgetDef.setWidgetState(WidgetState.Open);
+        widgetDef.expand();
       },
     }), { groupPriority: 30 }),
     ToolbarHelper.createToolbarItemFromItemDef(140, CoreTools.restoreFrontstageLayoutCommandItemDef, { groupPriority: 40 }),
