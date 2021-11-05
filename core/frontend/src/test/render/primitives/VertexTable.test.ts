@@ -48,9 +48,7 @@ class FakeTexture extends RenderTexture {
 }
 
 describe("VertexLUT", () => {
-  before(async () => {
-    await MockRender.App.startup();
-  });
+  before(async () => MockRender.App.startup());
   after(async () => MockRender.App.shutdown());
 
   it("should produce correct VertexLUT.Params from MeshArgs", () => {

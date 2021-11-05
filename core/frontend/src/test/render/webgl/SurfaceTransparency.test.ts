@@ -20,7 +20,7 @@ import { RenderPass } from "../../../render/webgl/RenderFlags";
 import { MeshGraphic, SurfaceGeometry } from "../../../render/webgl/Mesh";
 import { MeshArgs } from "../../../render/primitives/mesh/MeshPrimitives";
 import { MeshParams } from "../../../render/primitives/VertexTable";
-import { createBlankConnection } from "../../createBlankConnection"
+import { createBlankConnection } from "../../createBlankConnection";
 
 function createMesh(transparency: number, mat?: RenderMaterial | RenderTexture): RenderGraphic {
   const args = new MeshArgs();

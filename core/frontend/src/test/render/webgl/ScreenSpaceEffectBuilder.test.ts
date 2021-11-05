@@ -5,7 +5,9 @@
 
 import { expect } from "chai";
 import { IModelApp } from "../../../IModelApp";
-import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams, UniformType, VaryingType } from "../../../render/ScreenSpaceEffectBuilder";
+import {
+  ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams, UniformType, VaryingType,
+} from "../../../render/ScreenSpaceEffectBuilder";
 import { System } from "../../../render/webgl/System";
 
 describe("ScreenSpaceEffectBuilder", () => {

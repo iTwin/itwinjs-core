@@ -23,9 +23,7 @@ const bitmapData = new Uint8Array([
 ]);
 
 describe("Texture tests", () => {
-  before(async () => {
-    await IModelApp.startup();
-  });
+  before(async () => IModelApp.startup());
   after(async () => IModelApp.shutdown());
 
   it("should produce an attachment texture (rgb, unsigned byte)", () => {
