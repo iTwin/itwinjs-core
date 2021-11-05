@@ -25,24 +25,25 @@ export class ECSchemaXmlContext {
     this._nativeContext = new IModelHost.platform.ECSchemaXmlContext();
   }
 
-  public addSchemaPath(searchPath: string): void {
+  public get nativeContext(): IModelJsNative.ECSchemaXmlContext {
     assert(undefined !== this._nativeContext);
-    this._nativeContext.addSchemaPath(searchPath);
+    return this._nativeContext;
+  }
+
+  public addSchemaPath(searchPath: string): void {
+    this.nativeContext.addSchemaPath(searchPath);
   }
 
   public setSchemaLocater(locater: IModelJsNative.ECSchemaXmlContext.SchemaLocaterCallback): void {
-    assert(undefined !== this._nativeContext);
-    this._nativeContext.setSchemaLocater(locater);
+    this.nativeContext.setSchemaLocater(locater);
   }
 
   public setFirstSchemaLocater(locater: IModelJsNative.ECSchemaXmlContext.SchemaLocaterCallback): void {
-    assert(undefined !== this._nativeContext);
-    this._nativeContext.setFirstSchemaLocater(locater);
+    this.nativeContext.setFirstSchemaLocater(locater);
   }
 
   public readSchemaFromXmlFile(filePath: string): any {
-    assert(undefined !== this._nativeContext);
-    const response = this._nativeContext.readSchemaFromXmlFile(filePath);
+    const response = this.nativeContext.readSchemaFromXmlFile(filePath);
     if (response.error) {
       throw new IModelError(response.error.status, response.error.message);
     }

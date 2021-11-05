@@ -55,10 +55,8 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   private _stmt: IModelJsNative.ECSqlStatement | undefined;
   private _sql: string | undefined;
 
-  public get sql() {
-    assert(undefined !== this._sql);
-    return this._sql;
-  }
+  public get sql() { return this._sql!; } // eslint-disable-line @typescript-eslint/no-non-null-assertion
+
   /** Check if this statement has been prepared successfully or not */
   public get isPrepared(): boolean { return !!this._stmt; }
 
@@ -286,16 +284,12 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    *
    * See also: [Code Samples]($docs/learning/backend/ECSQLCodeExamples)
    */
-  public step(): DbResult {
-    assert(undefined !== this._stmt);
-    return this._stmt.step();
-  }
+  public step(): DbResult { return this._stmt!.step(); } // eslint-disable-line @typescript-eslint/no-non-null-assertion
 
   /** @internal added this back in for testing purposes */
   public async stepAsync(): Promise<DbResult> {
     return new Promise((resolve, _reject) => {
-      assert(undefined !== this._stmt);
-      this._stmt.stepAsync(resolve);
+      this._stmt!.stepAsync(resolve); // eslint-disable-line @typescript-eslint/no-non-null-assertion
     });
   }
 
@@ -317,10 +311,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   }
 
   /** Get the query result's column count (only for ECSQL SELECT statements). */
-  public getColumnCount(): number {
-    assert(undefined !== this._stmt);
-    return this._stmt.getColumnCount();
-  }
+  public getColumnCount(): number { return this._stmt!.getColumnCount(); } // eslint-disable-line @typescript-eslint/no-non-null-assertion
 
   /** Get the current row.
    * The returned row is formatted as JavaScript object where every SELECT clause item becomes a property in the JavaScript object.

@@ -1312,7 +1312,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      */
     public tryGetSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code, modelClass?: EntityClassType<Model>): T | undefined {
       const modeledElementProps = this._iModel.elements.tryGetElementProps(modeledElementId);
-      if ((undefined === modeledElementProps) || (undefined === modeledElementProps.id) || (IModel.rootSubjectId === modeledElementProps.id))
+      if (undefined === modeledElementProps?.id || (IModel.rootSubjectId === modeledElementProps.id))
         return undefined;
 
       return this.tryGetModel<T>(modeledElementProps.id, modelClass);
@@ -2330,9 +2330,7 @@ export class SnapshotDb extends IModelDb {
   public static openForApplyChangesets(path: LocalFileName, props?: SnapshotOpenOptions): SnapshotDb {
     const file = { path, key: props?.key };
     const nativeDb = this.openDgnDb(file, OpenMode.ReadWrite, undefined, props);
-    if (undefined === file.key) {
-      throw new IModelError(BentleyStatus.ERROR, "File key is undefined.");
-    }
+    assert(undefined !== file.key);
     return new SnapshotDb(nativeDb, file.key);
   }
 
@@ -2345,9 +2343,7 @@ export class SnapshotDb extends IModelDb {
   public static openFile(path: LocalFileName, opts?: SnapshotOpenOptions): SnapshotDb {
     const file = { path, key: opts?.key };
     const nativeDb = this.openDgnDb(file, OpenMode.Readonly, undefined, opts);
-    if (undefined === file.key) {
-      throw new IModelError(BentleyStatus.ERROR, "File key is undefined.");
-    }
+    assert(undefined !== file.key);
     return new SnapshotDb(nativeDb, file.key);
   }
 
@@ -2483,9 +2479,7 @@ export class StandaloneDb extends BriefcaseDb {
       const iTwinId = nativeDb.getITwinId();
       if (iTwinId !== Guid.empty) // a "standalone" iModel means it is not associated with an iTwin
         throw new IModelError(IModelStatus.WrongIModel, `${filePath} is not a Standalone iModel. iTwinId=${iTwinId}`);
-      if (undefined === file.key) {
-        throw new IModelError(BentleyStatus.ERROR, "File key is undefined.");
-      }
+      assert(undefined !== file.key);
       return new StandaloneDb({ nativeDb, key: file.key, openMode, briefcaseId: BriefcaseIdValue.Unassigned });
     } catch (error) {
       nativeDb.closeIModel();
