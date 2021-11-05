@@ -5279,6 +5279,15 @@ export abstract class MapLayerImageryProvider {
     // (undocumented)
     getEPSG3857Y(latitude: number): number;
     // (undocumented)
+    getEPSG4326Extent(row: number, column: number, zoomLevel: number): {
+        longitudeLeft: number;
+        longitudeRight: number;
+        latitudeTop: number;
+        latitudeBottom: number;
+    };
+    // (undocumented)
+    getEPSG4326ExtentString(row: number, column: number, zoomLevel: number, latLongAxisOrdering: boolean): string;
+    // (undocumented)
     protected getImageFromTileResponse(tileResponse: Response, zoomLevel: number): ImageSource | undefined;
     // (undocumented)
     getLogo(_viewport: ScreenViewport): HTMLTableRowElement | undefined;
@@ -13217,6 +13226,8 @@ export class WmsCapabilities {
     // (undocumented)
     getSubLayers(visible?: boolean): undefined | MapSubLayerProps[];
     // (undocumented)
+    getSubLayersCrs(subLayerNames: string[]): Map<string, string[]> | undefined;
+    // (undocumented)
     get json(): any;
     // (undocumented)
     readonly layer?: WmsCapability.Layer;
@@ -13237,6 +13248,8 @@ export namespace WmsCapability {
         readonly cartoRange?: MapCartoRectangle;
         // (undocumented)
         getSubLayers(visible?: boolean): MapSubLayerProps[];
+        // (undocumented)
+        getSubLayersCrs(layerNameFilter: string[]): Map<string, string[]>;
         // (undocumented)
         readonly queryable: boolean;
         // (undocumented)
@@ -13270,7 +13283,11 @@ export namespace WmsCapability {
         // (undocumented)
         readonly children?: SubLayer[];
         // (undocumented)
+        readonly crs: string[];
+        // (undocumented)
         readonly name: string;
+        // (undocumented)
+        readonly ownCrs: string[];
         // (undocumented)
         readonly parent?: SubLayer | undefined;
         // (undocumented)
@@ -13281,10 +13298,20 @@ export namespace WmsCapability {
 }
 
 // @internal (undocumented)
+export interface WmsCrsSupport {
+    // (undocumented)
+    support3857: boolean;
+    // (undocumented)
+    support4326: boolean;
+}
+
+// @internal (undocumented)
 export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
     constructor(settings: MapLayerSettings);
     // (undocumented)
     constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
+    // (undocumented)
+    getCrsSupport(): WmsCrsSupport;
     // (undocumented)
     getToolTip(strings: string[], quadId: QuadId, carto: Cartographic, tree: ImageryMapTileTree): Promise<void>;
     // (undocumented)
