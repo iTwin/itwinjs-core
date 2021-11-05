@@ -44,6 +44,8 @@ export interface UiItemsProvider {
    */
   provideWidgets?: (stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection,
     zoneLocation?: AbstractZoneLocation, stageAppData?: any) => ReadonlyArray<AbstractWidgetProps>;
+  /** Function called when the provider is unregistered via `ItemsManager.unregister` to allow provider to do cleanup. */
+  onUnregister?: () => void;
   /** Called if the application changed the Toolbar button item */
   onToolbarButtonItemArbiterChange?: (item: CommonToolbarItem, action: UiItemsApplicationAction) => void;
   /** Called if the application changed the StatusBar item */
@@ -111,8 +113,11 @@ export class UiItemsManager {
 
   /** Remove a specific UiItemsProvider from the list of available providers. */
   public static unregister(uiProviderId: string): void {
-    if (!UiItemsManager.getUiItemsProvider(uiProviderId))
+    const provider = UiItemsManager.getUiItemsProvider(uiProviderId);
+    if (!provider)
       return;
+
+    provider.onUnregister && provider.onUnregister();
 
     UiItemsManager._registeredUiItemsProviders.delete(uiProviderId);
     Logger.logInfo(loggerCategory(this), `UiItemsProvider (${uiProviderId}) unloaded`);
