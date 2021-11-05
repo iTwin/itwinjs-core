@@ -7,7 +7,7 @@ import { expect } from "chai";
 import { Mutable } from "@itwin/core-bentley";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelHost } from "../../IModelHost";
-import { SettingDictionary, SettingsPriority } from "../../workspace/Settings";
+import { SettingsPriority } from "../../workspace/Settings";
 import { SettingsGroupSpec, SettingSpec, SettingsSpecRegistry } from "../../workspace/SettingsSpecRegistry";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -58,7 +58,7 @@ describe("Settings", () => {
     },
   };
 
-  const app1Settings: SettingDictionary = {
+  const app1Settings = {
     "app1/sub1": "app1 value",
     "app1/sub2": {
       arr: ["app1", "app2"],

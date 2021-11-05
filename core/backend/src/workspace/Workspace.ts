@@ -53,7 +53,7 @@ export type WorkspaceContainerName = string;
  */
 export type WorkspaceContainerId = string;
 
-export type WorkspaceContainerVersionName = string;
+export type WorkspaceContainerVersionAlias = string;
 
 /**
  * The name for identifying WorkspaceResources in a [[WorkspaceContainer]].
@@ -93,8 +93,8 @@ export interface WorkspaceResourceProps {
 export interface WorkspaceContainer {
   /** The WorkspaceContainerId of this container. */
   readonly containerId: WorkspaceContainerId;
-  /** The version name for this container. */
-  readonly dbAlias: WorkspaceContainerVersionName;
+  /** The version alias for this container. */
+  readonly dbAlias: WorkspaceContainerVersionAlias;
   /** The Workspace that opened this WorkspaceContainer */
   readonly workspace: Workspace;
   /** the directory for extracting file resources. */
@@ -260,7 +260,7 @@ export class WorkspaceFile implements WorkspaceContainer {
   public readonly workspace: Workspace;
   public readonly containerId: WorkspaceContainerId;
   public localDbName: LocalFileName;
-  public dbAlias: WorkspaceContainerVersionName;
+  public dbAlias: WorkspaceContainerVersionAlias;
   public readonly onContainerClosed = new BeEvent<() => void>();
 
   public get containerFilesDir() { return join(this.workspace.filesDir, this.containerId); }
@@ -405,7 +405,7 @@ export class EditableWorkspaceFile extends WorkspaceFile {
       await CloudSqlite.create(cloudProps);
   }
 
-  public static async cloneVersion(oldVersion: WorkspaceContainerVersionName, newVersion: WorkspaceContainerVersionName, cloudProps: CloudSqlite.AccessProps) {
+  public static async cloneVersion(oldVersion: WorkspaceContainerVersionAlias, newVersion: WorkspaceContainerVersionAlias, cloudProps: CloudSqlite.AccessProps) {
     return CloudSqlite.copyDb(oldVersion, newVersion, cloudProps);
   }
 
