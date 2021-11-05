@@ -677,7 +677,6 @@ internal;useSaveFrontstageSettings(frontstageDef: FrontstageDef): void
 public;useScheduleAnimationDataProvider(viewport: ScreenViewport | undefined): ScheduleAnimationTimelineDataProvider | undefined
 beta;useSolarDataProvider(viewport: ScreenViewport | undefined): SolarDataProvider | undefined
 internal;useStatusBarEntry(): DockedStatusBarEntryContextArg
-internal;useSyncDefinitions(frontstageDef: FrontstageDef): void
 internal;useToolSettingsNode(): string | number | boolean | {} | React.ReactElement
 public;useUiItemsProviderBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem[]
 public;useUiItemsProviderStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[]

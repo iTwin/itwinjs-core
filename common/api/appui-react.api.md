@@ -2531,8 +2531,12 @@ export class FrontstageDef {
     getFloatingWidgetContainerIdByWidgetId(widgetId: string): string | undefined;
     // (undocumented)
     getFloatingWidgetContainerIds(): string[];
+    // @internal
+    getPanelCurrentState(panelDef: StagePanelDef): [StagePanelState, number];
     // @beta
     getStagePanelDef(location: StagePanelLocation_2): StagePanelDef | undefined;
+    // @internal
+    getWidgetCurrentState(widgetDef: WidgetDef): WidgetState | undefined;
     getZoneDef(zoneId: number): ZoneDef | undefined;
     // (undocumented)
     get id(): string;
@@ -6853,9 +6857,6 @@ export function useSolarDataProvider(viewport: ScreenViewport | undefined): Sola
 
 // @internal (undocumented)
 export function useStatusBarEntry(): DockedStatusBarEntryContextArg;
-
-// @internal (undocumented)
-export function useSyncDefinitions(frontstageDef: FrontstageDef): void;
 
 // @internal (undocumented)
 export function useToolSettingsNode(): string | number | boolean | {} | React.ReactElement<any, string | React.JSXElementConstructor<any>> | React.ReactNodeArray | React.ReactPortal | null | undefined;
