@@ -23,6 +23,10 @@ describe("IModelHost", () => {
     sinon.restore();
   });
 
+  after(async () => {
+    await TestUtils.startBackend();
+  });
+
   it("valid default configuration", async () => {
     await IModelHost.startup();
 
