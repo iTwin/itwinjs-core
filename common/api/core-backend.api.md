@@ -1148,6 +1148,8 @@ export class ECSchemaXmlContext {
     // (undocumented)
     addSchemaPath(searchPath: string): void;
     // (undocumented)
+    get nativeContext(): IModelJsNative.ECSchemaXmlContext;
+    // (undocumented)
     readSchemaFromXmlFile(filePath: string): any;
     // (undocumented)
     setFirstSchemaLocater(locater: IModelJsNative.ECSchemaXmlContext.SchemaLocaterCallback): void;
