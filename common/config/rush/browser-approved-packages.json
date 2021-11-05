@@ -232,7 +232,7 @@
     },
     {
       "name": "@itwin/reality-data-client",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "common", "integration-testing", "internal" ]
     },
     {
       "name": "@itwin/service-authorization",
