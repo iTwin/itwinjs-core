@@ -8,7 +8,8 @@
 
 const assertionsEnabled = process.env.NODE_ENV === "development";
 
-/** Asserts that a condition is `true` and - when enabled - throws an error if it is not. Assertions are enabled only if `process.NODE_ENV` is set to `development` at build time.
+/** Asserts that a condition is `true` and - when enabled - throws an error if it is not.
+ * Assertions are enabled only if the build configuration defines `process.NODE_ENV` as `development` at build time.
  *
  * Assertions exist solely to assist programmers during development, in the following ways:
  *  1 They allow the programmer to declare conditions that they believe cannot possibly occur. If such conditions occur, they indicate
