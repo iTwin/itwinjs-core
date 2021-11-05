@@ -102,7 +102,6 @@ public;ReadonlyOrderedSet
 public;ReadonlySortedArray
 beta;RepositoryStatus
 beta;RpcInterfaceStatus
-public;setAssertionsEnabled(enabled: boolean): boolean
 public;shallowClone
 public;SortedArray
 beta;StatusCodeWithMessage

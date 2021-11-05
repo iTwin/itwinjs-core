@@ -1441,9 +1441,6 @@ export enum RpcInterfaceStatus {
 }
 
 // @public
-export function setAssertionsEnabled(enabled: boolean): boolean;
-
-// @public
 export function shallowClone<T>(value: T): T;
 
 // @public
