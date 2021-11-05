@@ -19,7 +19,28 @@ let assertionsEnabled = process.env.NODE_ENV === "development";
  * which indicate a misuse of the API which should be eliminated during development.
  * @public
  */
-export function assert(condition: boolean | (() => boolean), msg?: string | (() => string)): asserts condition {
+
+/** Asserts that a condition is `true` and - in development builds - throws an error if it is not.
+ * Assertions serve two purposes:
+ *  1 They allow the programmer to declare conditions that they believe cannot possibly occur. If such conditions occur, they indicate
+ *    a serious flaw in the programmer's logic.
+ *  2 They allow the programmer to assure the TypeScript compiler of the truth of some condition that the compiler cannot itself infer.
+ *
+ * Both purposes are intended for **programmers only**, to verify their assumptions during development. Assertions should **never** be used to test
+ * for conditions - however unlikely - that could be expected to occur at run-time, such as failing to write to a file or load a resource over the network.
+ *
+ * By default, `assert` does nothing unless the environment variable `NODE_ENV` exists and is set to `development`. Use [[setAssertionsEnabled]] to override this behavior.
+ *
+ * If your condition and/or message is relatively expensive to compute (e.g., more complex than just a plain boolean or string), pass them as functions to prevent them
+ * from being evaluated when assertions are disabled.
+ *
+ * @param condition The condition that is asserted to be `true`.
+ * @param message An optional description of the condition being asserted, to be included in the exception if `condition` is `false`. Defaults to "Programmer Error".
+ * @throws Error containing the specified `message` if `condition` is `false`.
+ * @see [[setAssertionsEnabled]] to enable or disable assertions.
+ * @public
+ */
+export function assert(condition: boolean | (() => boolean), message?: string | (() => string)): asserts condition {
   if (!assertionsEnabled)
     return;
 
@@ -29,13 +50,20 @@ export function assert(condition: boolean | (() => boolean), msg?: string | (() 
   if (condition)
     return;
 
-  msg = msg ?? "Programmer Error";
-  if ("string" !== typeof msg)
-    msg = msg();
+  message = message ?? "Programmer Error";
+  if ("string" !== typeof message)
+    message = message();
 
-  throw new Error(`Assert: ${msg}`);
+  throw new Error(`Assert: ${message}`);
 }
 
+/** Sets whether the [[assert]] function is enabled.
+ * When [[assert]] is disabled, it returns immediately without evaluating the asserted condition. By default, it is enabled only if
+ * the environment variable `NODE_ENV` exists and is set to `development`.
+ * @param enabled If true, `assert` will throw upon a false assertion.
+ * @returns true if assertions were enabled prior to this call.
+ * @public
+ */
 export function setAssertionsEnabled(enabled: boolean): boolean {
   const wasEnabled = assertionsEnabled;
   assertionsEnabled = enabled;

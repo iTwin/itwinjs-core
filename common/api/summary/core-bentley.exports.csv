@@ -4,7 +4,7 @@ beta;AbandonedError
 beta;AccessToken = string
 public;areEqualPossiblyUndefined
 public;asInstanceOf
-public;assert(condition: boolean, msg?: string): asserts condition
+public;assert(condition: boolean | (() => boolean), message?: string | (() => string)): asserts condition
 public;AsyncFunction = (...args: any) => Promise
 public;AsyncMethodsOf
 alpha;AsyncMutex
@@ -102,6 +102,7 @@ public;ReadonlyOrderedSet
 public;ReadonlySortedArray
 beta;RepositoryStatus
 beta;RpcInterfaceStatus
+public;setAssertionsEnabled(enabled: boolean): boolean
 public;shallowClone
 public;SortedArray
 beta;StatusCodeWithMessage

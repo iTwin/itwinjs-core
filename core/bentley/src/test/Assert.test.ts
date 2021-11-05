@@ -36,9 +36,9 @@ describe("assert", () => {
 
   it("only evaluates condition function if enabled", () => {
     let called = false;
-    const condition = () => { called = true; return false; }
+    const condition = () => { called = true; return false; };
     setAssertionsEnabled(false);
-    assert(() => condition);
+    assert(condition);
     expect(called).to.be.false;
 
     setAssertionsEnabled(true);
@@ -50,7 +50,7 @@ describe("assert", () => {
 
   it("only evaluates message function if condition is false", () => {
     let called = false;
-    const message = () => { called = true; return "message"; }
+    const message = () => { called = true; return "message"; };
 
     assert(true, message);
     expect(called).to.be.false;
