@@ -5,9 +5,10 @@
 import * as chai from "chai";
 import * as sinon from "sinon";
 import { Guid, GuidString } from "@itwin/core-bentley";
+import { EmptyLocalization } from "@itwin/core-common";
+import { MapLayerSource, MockRender } from "@itwin/core-frontend";
 
 import { MapLayerPreferences } from "../MapLayerPreferences";
-import { MapLayerSource } from "@itwin/core-frontend";
 import { restore, setup } from "./UserPreferencesMock";
 
 chai.should();
@@ -16,12 +17,14 @@ describe("MapLayerPreferences", () => {
   const iModelId: GuidString = Guid.createValue();
   const testName: string = `test${Guid.createValue()}`;
 
-  before(async () => {
+  beforeEach(async () => {
+    await MockRender.App.startup({localization: new EmptyLocalization()});
     setup();
   });
-  after(async () => {
+  afterEach(async () => {
     restore();
     sinon.restore();
+    await MockRender.App.shutdown();
   });
 
   it("should store and retrieve layer", async () => {
@@ -81,10 +84,10 @@ describe("MapLayerPreferences", () => {
 
     chai.assert.isTrue(await MapLayerPreferences.storeSource(layer!, true, iTwinId, iModelId));
     await MapLayerPreferences.deleteByName(layer!, iTwinId, iModelId);
-    chai.assert.isUndefined(MapLayerPreferences.getByUrl(layer!.url, iTwinId, iModelId));
+    chai.assert.isUndefined(await MapLayerPreferences.getByUrl(layer!.url, iTwinId, iModelId));
 
     chai.assert.isTrue(await MapLayerPreferences.storeSource(layer!, false, iTwinId, iModelId));
     await MapLayerPreferences.deleteByName(layer!, iTwinId, iModelId);
-    chai.assert.isUndefined(MapLayerPreferences.getByUrl(layer!.url, iTwinId, iModelId));
+    chai.assert.isUndefined(await MapLayerPreferences.getByUrl(layer!.url, iTwinId, iModelId));
   });
 });

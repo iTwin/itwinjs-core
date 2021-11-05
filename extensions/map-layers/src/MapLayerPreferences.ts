@@ -275,7 +275,7 @@ export class MapLayerPreferences {
       iModelId,
     });
 
-    if (undefined === settingResponse)
+    if (undefined === settingResponse || 0 === settingResponse.length)
       return undefined;
 
     let savedMapLayer;

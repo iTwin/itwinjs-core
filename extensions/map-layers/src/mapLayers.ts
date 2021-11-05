@@ -35,14 +35,6 @@ export class MapLayersUI {
   public static async initialize(registerItemsProvider = true, iTwinConfig?: UserPreferencesAccess): Promise<void> {
     MapLayersUI._iTwinConfig = iTwinConfig;
 
-    // if (iModel && iModel.iTwinId && iModel.iModelId) {
-    //   try {
-    //     (await MapLayerPreferences.getSources(iModel.iTwinId, iModel.iModelId)).forEach((source) => MapLayerSources.addSourceToMapLayerSources(source));
-    //   } catch (err) {
-    //     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.localization.getLocalizedString("mapLayers:CustomAttach.ErrorLoadingLayers"), BentleyError.getErrorMessage(err)));
-    //   }
-    // }
-
     // register namespace containing localized strings for this package
     await IModelApp.localization.registerNamespace(this.localizationNamespace);
 
