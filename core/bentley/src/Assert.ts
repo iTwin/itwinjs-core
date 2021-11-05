@@ -6,6 +6,8 @@
  * @module Utils
  */
 
+let assertionsEnabled = process.env.NODE_ENV === "development";
+
 /**
  * Asserts that a condition is `true`, and in development builds throws an error if it is not.
  * This is an [assertion function](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-7.html#assertion-functions) that alters the
@@ -17,7 +19,25 @@
  * which indicate a misuse of the API which should be eliminated during development.
  * @public
  */
-export function assert(condition: boolean, msg?: string): asserts condition {
-  if (!condition)
-    throw new Error(`Assert: ${msg ?? "Programmer Error"}`);
+export function assert(condition: boolean | (() => boolean), msg?: string | (() => string)): asserts condition {
+  if (!assertionsEnabled)
+    return;
+
+  if ("boolean" !== typeof condition)
+    condition = condition();
+
+  if (condition)
+    return;
+
+  msg = msg ?? "Programmer Error";
+  if ("string" !== typeof msg)
+    msg = msg();
+
+  throw new Error(`Assert: ${msg}`);
+}
+
+export function setAssertionsEnabled(enabled: boolean): boolean {
+  const wasEnabled = assertionsEnabled;
+  assertionsEnabled = enabled;
+  return wasEnabled;
 }
