@@ -13,7 +13,7 @@ import {
   XYAndZ, XYZ, YawPitchRollAngles,
 } from "@itwin/core-geometry";
 import {
-  AnalysisStyle, AxisAlignedBox3d, Camera, Cartographic, ColorDef, FeatureAppearance, Frustum, GlobeMode, GraphicParams, GridOrientationType,
+  AnalysisStyle, AxisAlignedBox3d, Camera, Cartographic, ColorDef, FeatureAppearance, Frustum, GlobeMode, Gradient, GraphicParams, GridOrientationType,
   ModelClipGroups, Npc, RenderMaterial, RenderSchedule, SubCategoryOverride, TextureMapping, ViewDefinition2dProps, ViewDefinition3dProps,
   ViewDefinitionProps, ViewDetails, ViewDetails3d, ViewFlags, ViewStateProps,
 } from "@itwin/core-common";
@@ -1982,23 +1982,23 @@ export abstract class ViewState3d extends ViewState {
 
   public override decorate(context: DecorateContext): void {
     super.decorate(context);
-    this.drawSkyBox(context);
+    // ###TODO this.drawSkyBox(context);
     this.drawGroundPlane(context);
   }
 
   /** @internal */
-  protected drawSkyBox(context: DecorateContext): void {
-    const style3d = this.getDisplayStyle3d();
-    if (!style3d.environment.sky.display)
-      return;
+  // ###TODO protected drawSkyBox(_context: DecorateContext): void {
+  // ###TODO   const style3d = this.getDisplayStyle3d();
+  // ###TODO   if (!style3d.environment.displaySky)
+  // ###TODO     return;
 
-    const vp = context.viewport;
-    const skyBoxParams = style3d.loadSkyBoxParams(vp.target.renderSystem, vp);
-    if (undefined !== skyBoxParams) {
-      const skyBoxGraphic = IModelApp.renderSystem.createSkyBox(skyBoxParams);
-      context.setSkyBox(skyBoxGraphic!);
-    }
-  }
+  // ###TODO   const vp = context.viewport;
+  // ###TODO   const skyBoxParams = style3d.loadSkyBoxParams(vp.target.renderSystem, vp);
+  // ###TODO   if (undefined !== skyBoxParams) {
+  // ###TODO     const skyBoxGraphic = IModelApp.renderSystem.createSkyBox(skyBoxParams);
+  // ###TODO     context.setSkyBox(skyBoxGraphic!);
+  // ###TODO   }
+  // ###TODO }
 
   /** Returns the ground elevation taken from the environment added with the global z position of this imodel. */
   public getGroundElevation(): number {
@@ -2010,7 +2010,7 @@ export abstract class ViewState3d extends ViewState {
   public getGroundExtents(vp?: Viewport): AxisAlignedBox3d {
     const displayStyle = this.getDisplayStyle3d();
     const extents = new Range3d();
-    if (!displayStyle.environment.ground.display)
+    if (!displayStyle.environment.displayGround)
       return extents; // Ground plane is not enabled
 
     const elevation = this.getGroundElevation();
@@ -2050,16 +2050,16 @@ export abstract class ViewState3d extends ViewState {
     if (extents.isNull)
       return;
 
-    const ground = this.getDisplayStyle3d().environment.ground;
-    if (!ground.display)
+    if (!this.getDisplayStyle3d().environment.displayGround)
       return;
 
+    const ground = this.getDisplayStyle3d().environment.ground;
     const points: Point3d[] = [extents.low.clone(), extents.low.clone(), extents.high.clone(), extents.high.clone()];
     points[1].x = extents.high.x;
     points[3].x = extents.low.x;
 
     const aboveGround = this.isEyePointAbove(extents.low.z);
-    const gradient = ground.getGroundPlaneGradient(aboveGround);
+    const gradient = new Gradient.Symb(); // ###TODO ground.getGroundPlaneGradient(aboveGround);
     const texture = context.viewport.target.renderSystem.getGradientTexture(gradient, this.iModel);
     if (!texture)
       return;

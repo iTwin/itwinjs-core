@@ -8,9 +8,11 @@
 
 import { base64StringToUint8Array, Id64String, IDisposable } from "@itwin/core-bentley";
 import { ClipVector, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform, Vector2d, XAndY } from "@itwin/core-geometry";
-import { ColorDef, ElementAlignedBox3d, FeatureIndexType, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, isValidImageSourceFormat, PackedFeatureTable, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, TextureProps } from "@itwin/core-common";
+import {
+  ColorDef, ElementAlignedBox3d, FeatureIndexType, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat,
+  isValidImageSourceFormat, PackedFeatureTable, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, SkyGradient, TextureProps,
+} from "@itwin/core-common";
 import { WebGLExtensionName } from "@itwin/webgl-compatibility";
-import { SkyBox } from "../DisplayStyleState";
 import { imageElementFromImageSource } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -203,6 +205,37 @@ export type RenderGeometry = IDisposable & RenderMemory.Consumer;
  * @internal
  */
 export type RenderAreaPattern = IDisposable & RenderMemory.Consumer;
+
+// ###TODO rename, clean up.
+export namespace SkyBox {
+  /** Parameters defining a spherical [[SkyBox]].
+   * @public
+   */
+  export class SphereParams {
+    public constructor(public readonly texture: RenderTexture, public readonly rotation: number) { }
+  }
+
+  /** Parameters used by the [[RenderSystem]] to instantiate a [[SkyBox]].
+   * @public
+   */
+  export class CreateParams {
+    public readonly gradient?: SkyGradient;
+    public readonly sphere?: SphereParams;
+    public readonly cube?: RenderTexture;
+    public readonly zOffset: number;
+
+    private constructor(zOffset: number, gradient?: SkyGradient, sphere?: SphereParams, cube?: RenderTexture) {
+      this.gradient = gradient;
+      this.sphere = sphere;
+      this.cube = cube;
+      this.zOffset = zOffset;
+    }
+
+    public static createForGradient(gradient: SkyGradient, zOffset: number) { return new CreateParams(zOffset, gradient); }
+    public static createForSphere(sphere: SphereParams, zOffset: number) { return new CreateParams(zOffset, undefined, sphere); }
+    public static createForCube(cube: RenderTexture) { return new CreateParams(0.0, undefined, undefined, cube); }
+  }
+}
 
 /** A RenderSystem provides access to resources used by the internal WebGL-based rendering system.
  * An application rarely interacts directly with the RenderSystem; instead it interacts with types like [[Viewport]] which
