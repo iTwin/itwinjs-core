@@ -6,8 +6,9 @@
  * @module DisplayStyles
  */
 
-import { Id64String } from "@itwin/core-bentley";
-import { ColorDefProps } from "./ColorDef";
+import { NonFunctionPropertiesOf } from "@itwin/core-bentley";
+import { ColorDef, ColorDefProps } from "./ColorDef";
+import { TextureImageSpec } from "./RenderTexture";
 
 /** Enumerates the supported types of [SkyBox]($frontend) images.
  * @public
@@ -27,30 +28,30 @@ export enum SkyBoxImageType {
  */
 export interface SkyCubeProps {
   /** Id of a persistent texture element stored in the iModel to use for the front side of the skybox cube. */
-  front?: Id64String;
+  front: TextureImageSpec;
   /** Id of a persistent texture element stored in the iModel to use for the back side of the skybox cube. */
-  back?: Id64String;
+  back: TextureImageSpec;
   /** Id of a persistent texture element stored in the iModel to use for the top of the skybox cube. */
-  top?: Id64String;
+  top: TextureImageSpec;
   /** Id of a persistent texture element stored in the iModel to use for the bottom of the skybox cube. */
-  bottom?: Id64String;
+  bottom: TextureImageSpec;
   /** Id of a persistent texture element stored in the iModel to use for the right side of the skybox cube. */
-  right?: Id64String;
+  right: TextureImageSpec;
   /** Id of a persistent texture element stored in the iModel to use for the left side of the skybox cube. */
-  left?: Id64String;
+  left: TextureImageSpec;
 }
 
-/** JSON representation of an image or images used by a [SkySphere]($frontend) or [SkyCube]($frontend).
- * @public
- */
-export interface SkyBoxImageProps {
-  /** The type of skybox image. */
-  type?: SkyBoxImageType;
-  /** For [[SkyBoxImageType.Spherical]], the Id of a persistent texture element stored in the iModel to be drawn as the "sky". */
-  texture?: Id64String;
-  /** For [[SkyBoxImageType.Cube]], the Ids of persistent texture elements stored in the iModel drawn on each face of the cube. */
-  textures?: SkyCubeProps;
+export interface SkySphereImageProps {
+  type: SkyBoxImageType.Spherical;
+  texture: TextureImageSpec;
 }
+
+export interface SkyCubeImageProps {
+  type: SkyBoxImageType.Cube;
+  textures: SkyCubeProps;
+}
+
+export type SkyBoxImageProps = SkySphereImageProps | SkyCubeImageProps | { type?: SkyBoxImageType; texture?: never; textures?: never };
 
 /** JSON representation of a [SkyBox]($frontend) that can be drawn as the background of a [ViewState3d]($frontend).
  * An object of this type can describe one of several types of sky box:
@@ -109,4 +110,174 @@ export interface SkyBoxProps {
    * Default: undefined.
    */
   image?: SkyBoxImageProps;
+}
+
+const defaultGroundColor = ColorDef.from(143, 205, 125);
+const defaultZenithColor = ColorDef.from(54, 117, 255);
+const defaultNadirColor = ColorDef.from(40, 125, 0);
+const defaultSkyColor = ColorDef.from(142, 205, 255);
+const defaultExponent = 4.0;
+
+function colorDefFromJson(props?: ColorDefProps): ColorDef | undefined {
+  return props ? ColorDef.fromJSON(props) : undefined;
+}
+
+export type SkyGradientProperties = NonFunctionPropertiesOf<SkyGradient>;
+
+export class SkyGradient {
+  public readonly twoColor: boolean;
+  public readonly skyColor: ColorDef;
+  public readonly groundColor: ColorDef;
+  public readonly zenithColor: ColorDef;
+  public readonly nadirColor: ColorDef;
+  public readonly skyExponent: number;
+  public readonly groundExponent: number;
+
+  private constructor(args: Partial<SkyGradientProperties>) {
+    this.twoColor = args.twoColor ?? false;
+    this.skyColor = args.skyColor ?? defaultSkyColor;
+    this.groundColor = args.groundColor ?? defaultGroundColor;
+    this.nadirColor = args.nadirColor ?? defaultNadirColor;
+    this.zenithColor = args.zenithColor ?? defaultZenithColor;
+    this.skyExponent = args.skyExponent ?? defaultExponent;
+    this.groundExponent = args.groundExponent ?? defaultExponent;
+  }
+
+  public static readonly defaults = new SkyGradient({});
+
+  public static create(props?: Partial<SkyGradientProperties>): SkyGradient {
+    return props ? new this(props) : this.defaults;
+  }
+
+  public static fromJSON(props?: SkyBoxProps): SkyGradient {
+    if (!props)
+      return this.defaults;
+
+    return new this({
+      twoColor: props.twoColor,
+      skyExponent: props.skyExponent,
+      groundExponent: props.groundExponent,
+      skyColor: colorDefFromJson(props.skyColor),
+      groundColor: colorDefFromJson(props.groundColor),
+      nadirColor: colorDefFromJson(props.nadirColor),
+      zenithColor: colorDefFromJson(props.zenithColor),
+    });
+  }
+
+  public clone(changedProps: SkyGradientProperties): SkyGradient {
+    return new SkyGradient({ ...this, ...changedProps });
+  }
+
+  public toJSON(): SkyBoxProps {
+    const props: SkyBoxProps = {
+      skyColor: this.skyColor.toJSON(),
+      groundColor: this.groundColor.toJSON(),
+      nadirColor: this.nadirColor.toJSON(),
+      zenithColor: this.zenithColor.toJSON(),
+    };
+
+    if (this.groundExponent !== defaultExponent)
+      props.groundExponent = this.groundExponent;
+
+    if (this.skyExponent !== defaultExponent)
+      props.skyExponent = defaultExponent;
+
+    if (this.twoColor)
+      props.twoColor = this.twoColor;
+
+    return props;
+  }
+
+  public equals(other: SkyGradient): boolean {
+    if (this === other)
+      return true;
+
+    return this.twoColor === other.twoColor && this.skyColor.equals(other.skyColor) && this.groundColor.equals(other.groundColor) &&
+      this.zenithColor.equals(other.zenithColor) && this.nadirColor.equals(other.nadirColor);
+  }
+}
+
+export type SkyBoxProperties = NonFunctionPropertiesOf<SkyBox>;
+
+export class SkyBox {
+  public readonly gradient: SkyGradient;
+
+  protected constructor(gradient: SkyGradient) {
+    this.gradient = gradient;
+  }
+
+  public static readonly defaults = new SkyBox(SkyGradient.defaults);
+
+  public static createGradient(gradient?: SkyGradient): SkyBox {
+    return gradient ? new this(gradient) : this.defaults;
+  }
+
+  public static fromJSON(props?: SkyBoxProps): SkyBox {
+    const gradient = SkyGradient.fromJSON(props);
+
+    if (props?.image) {
+      switch (props.image.type) {
+        case SkyBoxImageType.Spherical:
+          if (undefined !== props.image.texture)
+            return new SkySphere(props.image.texture, gradient);
+
+          break;
+        case SkyBoxImageType.Cube: {
+          const tx = props.image.textures;
+          if (tx && undefined !== tx.top && undefined !== tx.bottom && undefined !== tx.right && undefined !== tx.left && undefined !== tx.front && undefined != tx.back)
+            return new SkyCube(tx, gradient);
+
+          break;
+        }
+      }
+    }
+
+    return this.createGradient(gradient);
+  }
+
+  public toJSON(display?: boolean): SkyBoxProps {
+    const props = this.gradient.toJSON();
+    if (undefined !== display)
+      props.display = display;
+
+    return props;
+  }
+}
+
+export class SkySphere extends SkyBox {
+  public readonly image: TextureImageSpec;
+
+  public constructor(image: TextureImageSpec, gradient?: SkyGradient) {
+    super(gradient ?? SkyGradient.defaults);
+    this.image = image;
+  }
+
+  public override toJSON(display?: boolean): SkyBoxProps {
+    const props = super.toJSON(display);
+    props.image = {
+      type: SkyBoxImageType.Spherical,
+      texture: this.image,
+    };
+
+    return props;
+  }
+}
+
+export class SkyCube extends SkyBox {
+  public readonly images: SkyCubeProps;
+
+  public constructor(images: SkyCubeProps, gradient?: SkyGradient) {
+    super(gradient ?? SkyGradient.defaults);
+    this.images = { ...images };
+  }
+
+  public override toJSON(display?: boolean): SkyBoxProps {
+    const props = super.toJSON(display);
+    props.image = {
+      type: SkyBoxImageType.Cube,
+      textures: { ...this.images },
+    };
+
+    return props;
+  }
 }
