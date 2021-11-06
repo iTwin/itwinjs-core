@@ -1190,14 +1190,28 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
       this._json3d.solarShadows = json;
   }
 
-  /** @internal */
+  /** @public */
   public get environment(): Environment {
     return this._environment;
   }
   public set environment(environment: Environment) {
-    this.onEnvironmentChanged.raiseEvent(environment);
-    this._environment = environment;
-    this._json3d.environment = environment.toJSON();
+    if (environment !== this.environment) {
+      this.onEnvironmentChanged.raiseEvent(environment);
+      this._environment = environment;
+      this._json3d.environment = environment.toJSON();
+    }
+  }
+
+  public toggleSkyBox(display?: boolean): void {
+    display = display ?? this.environment.displaySky;
+    if (display !== this.environment.displaySky)
+      this.environment = this.environment.withDisplay({ sky: display });
+  }
+
+  public toggleGroundPlane(display?: boolean): void {
+    display = display ?? this.environment.displayGround;
+    if (display !== this.environment.displayGround)
+      this.environment = this.environment.withDisplay({ ground: display });
   }
 
   public get lights(): LightSettings {

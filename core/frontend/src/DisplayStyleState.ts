@@ -10,7 +10,7 @@ import { Angle, Range1d, Vector3d } from "@itwin/core-geometry";
 import {
   BackgroundMapProps, BackgroundMapProvider, BackgroundMapProviderProps, BackgroundMapSettings,
   BaseLayerSettings, BaseMapLayerSettings, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
-  DisplayStyleProps, DisplayStyleSettings, EnvironmentProps, FeatureAppearance, GlobeMode, GroundPlane, LightSettings, MapLayerProps,
+  DisplayStyleProps, DisplayStyleSettings, Environment, FeatureAppearance, GlobeMode, GroundPlane, LightSettings, MapLayerProps,
   MapLayerSettings, MapSubLayerProps, RenderSchedule, RenderTexture, RenderTimelineProps, SkyBoxImageType, SkyBoxProps,
   SkyCubeProps, SolarShadowSettings, SubCategoryOverride, SubLayerId, TerrainHeightOriginMode, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, ViewFlags,
 } from "@itwin/core-common";
@@ -1172,7 +1172,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
     super.registerSettingsEventListeners();
 
     this.settings.onEnvironmentChanged.addListener((env) => {
-      this.changeEnvironment(new Environment(env));
+      this.changeEnvironment(env);
     });
 
     this.settings.onOverridesApplied.addListener((overrides: DisplayStyle3dSettingsProps) => {

@@ -39,6 +39,19 @@ export class Environment {
     return props ? new this(props) : this.defaults;
   }
 
+  public withDisplay(display: { sky?: boolean, ground?: boolean }): Environment {
+    const displaySky = display.sky;
+    const displayGround = display.ground;
+    if ((undefined === displaySky || displaySky === this.displaySky) && (undefined === displayGround || displayGround === this.displayGround))
+      return this;
+
+    return Environment.create({
+      ...this,
+      displaySky: displaySky ?? this.displaySky,
+      displayGround: displayGround ?? this.displayGround,
+    });
+  }
+
   public toJSON(): EnvironmentProps {
     return {
       sky: this.sky.toJSON(this.displaySky),
