@@ -7991,9 +7991,9 @@ export interface SkyBoxImageProps {
 
 // @public
 export enum SkyBoxImageType {
-    Cube = 2,
+    Cube = 3,
     // @internal
-    Cylindrical = 3,
+    Cylindrical = 2,
     // (undocumented)
     None = 0,
     Spherical = 1
