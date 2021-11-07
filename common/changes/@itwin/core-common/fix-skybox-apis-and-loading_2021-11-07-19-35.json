@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Clean up SkyBox and GroundPlane APIs.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}
