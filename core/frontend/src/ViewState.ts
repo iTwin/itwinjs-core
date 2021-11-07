@@ -45,6 +45,7 @@ import { ViewPose, ViewPose2d, ViewPose3d } from "./ViewPose";
 import { ViewStatus } from "./ViewStatus";
 import { Environment } from "@itwin/core-common";
 import { SkyBox } from "./render/RenderSystem";
+import { tryImageElementFromUrl } from "./ImageUtil";
 
 /** Describes the largest and smallest values allowed for the extents of a [[ViewState]].
  * Attempts to exceed these limits in any dimension will fail, preserving the previous extents.
@@ -1429,6 +1430,11 @@ class EnvironmentDecorations {
   private async loadSkyParams(): Promise<SkyBox.CreateParams | undefined> {
     const sky = this._environment.sky;
     if (sky instanceof SkyCube) {
+      const key = this.createCubeImageKey(sky);
+      const existingTexture = IModelApp.renderSystem.findTexture(key, this._view.iModel);
+      if (existingTexture)
+        return SkyBox.CreateParams.createForCube(existingTexture);
+
       // Some faces may use the same image. Only request each image once.
       const specs = new Set<string>([sky.images.front, sky.images.back, sky.images.left, sky.images.right, sky.images.top, sky.images.bottom]);
       const promises = [];
@@ -1447,7 +1453,7 @@ class EnvironmentDecorations {
         }
 
         // eslint-disable-next-line deprecation/deprecation
-        const params = new RenderTexture.Params(undefined, RenderTexture.Type.SkyBox);
+        const params = new RenderTexture.Params(key, RenderTexture.Type.SkyBox);
         const txImgs = [
           idToImage.get(sky.images.front)!, idToImage.get(sky.images.back)!, idToImage.get(sky.images.top)!,
           idToImage.get(sky.images.bottom)!, idToImage.get(sky.images.right)!, idToImage.get(sky.images.left)!,
@@ -1478,6 +1484,11 @@ class EnvironmentDecorations {
     }
   }
 
+  private createCubeImageKey(sky: SkyCube): string {
+    const i = sky.images;
+    return `skycube:${i.front}:${i.back}:${i.left}:${i.right}:${i.top}:${i.bottom}`;
+  }
+
   private createSkyGradientParams(): SkyBox.CreateParams {
     return SkyBox.CreateParams.createForGradient(this._environment.sky.gradient, this._view.iModel.globalOrigin.z);
   }
@@ -1486,8 +1497,7 @@ class EnvironmentDecorations {
     if (Id64.isValidId64(spec))
       return (await IModelApp.renderSystem.loadTextureImage(spec, this._view.iModel))?.image;
 
-    // ###TODO URL
-    return undefined;
+    return tryImageElementFromUrl(spec);
   }
 }
 
