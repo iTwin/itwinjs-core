@@ -124,8 +124,8 @@ export function UnitDescr(props: UnitDescrProps) {
   return (
     <>
       <Select options={unitOptions} data-testid={`unit-${currentUnit.name}`} value={`${currentUnit.name}:${currentUnit.label}`}
-        onChange={handleOnUnitChange} disabled={readonly} />
-      <Input data-testid={`unit-label-${currentUnit.name}`} value={label} onChange={handleOnLabelChange} />
+        onChange={handleOnUnitChange} disabled={readonly} size="small" />
+      <Input data-testid={`unit-label-${currentUnit.name}`} value={label} onChange={handleOnLabelChange} size="small" />
     </>
   );
 }

@@ -31,10 +31,8 @@ export enum ECDbOpenMode {
  */
 export class ECDb implements IDisposable {
   private _nativeDb?: IModelJsNative.ECDb;
-  private _concurrentQueryInitialized: boolean = false;
   private readonly _statementCache = new StatementCache<ECSqlStatement>();
   private _sqliteStatementCache = new StatementCache<SqliteStatement>();
-  private _concurrentQueryStats = { resetTimerHandle: (null as any), logTimerHandle: (null as any), lastActivityTime: Date.now(), dispose: () => { } };
 
   /** only for tests
    * @internal
@@ -92,7 +90,6 @@ export class ECDb implements IDisposable {
     this._statementCache.clear();
     this._sqliteStatementCache.clear();
     this.nativeDb.closeDb();
-    this._concurrentQueryStats.dispose();
   }
 
   /** @internal use to test statement caching */

@@ -1,13 +1,13 @@
 {
   "name": "@itwin/perf-tools",
-  "version": "3.0.0-dev.96",
+  "version": "3.0.0-dev.111",
   "description": "Tools for collecting and reporting performance data",
   "main": "lib/cjs/index.js",
   "typings": "lib/cjs/index",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/tools/perf-tools"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/tools/perf-tools"
   },
   "scripts": {
     "build": "npm run -s build:cjs",

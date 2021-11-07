@@ -174,8 +174,7 @@ export function ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResu
 export interface ColorPickerDialogProps {
     // (undocumented)
     color: ColorDef;
-    colorInputType?: "HSL" | "RGB";
-    // (undocumented)
+    colorInputType?: "hsl" | "rgb" | "hex";
     colorPresets?: ColorDef[];
     // (undocumented)
     dialogTitle: string;
@@ -185,10 +184,10 @@ export interface ColorPickerDialogProps {
     onOkResult: (selectedColor: ColorDef) => void;
 }
 
-// @public
+// @public @deprecated
 export function ColorPickerPanel({ activeColor, onColorChange, colorPresets, colorInputType }: ColorPickerPanelProps): JSX.Element;
 
-// @public
+// @public @deprecated
 export interface ColorPickerPanelProps {
     // (undocumented)
     activeColor: ColorDef;
@@ -206,7 +205,7 @@ export const ColorPickerPopup: (props: ColorPickerPopupProps) => JSX.Element | n
 export interface ColorPickerPopupProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
     captureClicks?: boolean;
     colorDefs?: ColorDef[];
-    colorInputType?: "HSL" | "RGB";
+    colorInputType?: "hsl" | "rgb" | "hex";
     disabled?: boolean;
     hideCloseButton?: boolean;
     initialColor: ColorDef;

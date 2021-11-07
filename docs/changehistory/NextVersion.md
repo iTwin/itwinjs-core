@@ -82,6 +82,48 @@ A number of packages have been renamed to use the @itwin scope rather than the @
 - Removed legacy `.eslintrc.js` file from the same package. Instead, use `@itwin/eslint-plugin` and the `imodeljs-recommended` config included in it.
 - Dropped support for ESLint 6.x.
 
+## Fresnel effect
+
+[LightSettings]($common) has been enhanced to support a non-realistic Fresnel effect. As simply explained [here](https://www.dorian-iten.com/fresnel/), the effect causes surfaces to reflect more light based on the angle between the viewer's line of sight and the vector between the viewer and a given point on the surface. Use [FresnelSettings]($common) to configure this effect.
+
+Especially when combined with ambient occlusion, this effect can produce non-realistic views suitable for plant models and architectural models.
+
+![Fresnel effect applied to an architectural model](./assets/fresnel-building.jpg)
+
+![Fresnel effect applied to a plant model](./assets/fresnel-plant.jpg)
+
+The following code applies a display style similar to those illustrated above to a [Viewport]($frontend):
+
+```
+  // Enable ambient occlusion.
+  viewport.viewFlags = viewport.viewFlags.with("ambientOcclusion", true);
+
+  // Configure the lighting.
+  viewport.displayStyle.lightSettings = LightSettings.fromJSON({
+    // A relatively bright ambient light is the only light source.
+    ambient: {
+      intensity: 0.55,
+    },
+    // Increase the brightness of surfaces that are closer to parallel with the viewer's line of sight.
+    fresnel: {
+      intensity: 0.8,
+      invert: true,
+    },
+    // Disable directional lighting.
+    solar: {
+      intensity: 0,
+    },
+  });
+```
+
+## Viewport synchronization
+
+[TwoWayViewportSync]($frontend) establishes a connection between two [Viewport]($frontend)s such that any change to one viewport is reflected in the other. This includes not only [Frustum]($common) changes, but changes to the display style, category and model selectors, and so on. Synchronizing **everything** is not always desirable; and if the viewports are viewing two different [IModelConnection]($frontend)s it is not even meaningful, as category and model Ids from one iModel will not make sense in the context of the other iModel.
+
+Now, `TwoWayViewportSync` is extensible, allowing subclasses to specify which aspects of the viewports should be synchronized by overriding [TwoWayViewportSync.connectViewports]($frontend) and [TwoWayViewportSync.syncViewports]($frontend). To establish a connection between two viewports using your subclass `MyViewportSync`, use `MyViewportSync.connect(viewport1, viewport2)`.
+
+A new subclass [TwoWayViewportFrustumSync]($frontend) is supplied that synchronizes **only** the frusta of the viewports. The viewports will view the same volume of space, but may display different contents or apply different display styles. To establish this connection, use `TwoWayViewportFrustumSync.connect(viewport1, viewport2)`.
+
 ## BentleyError constructor no longer logs
 
 In V2, the constructor of the base exception class [BentleyError]($core-bentley) accepted 5 arguments, the last 3 being optional. Arguments 3 and 4 were for logging the exception in the constructor itself. That is a bad idea, since exceptions are often handled and recovered in `catch` statements, so there is no actual "problem" to report. In that case the message in the log is either misleading or just plain wrong. Also, code in `catch` statements always has more "context" about *why* the error may have happened than the lower level code that threw (e.g. "invalid Id" vs. "invalid MyHashClass Id") so log messages from callers can be more helpful than from callees. Since every thrown exception must be caught *somewhere*, logging should be done when exceptions are caught, not when they're thrown.
@@ -1083,6 +1125,26 @@ The @itwin ui and @itwin/presentation-components packages are now dependent on R
 
 React 16 is not an officially supported version of iTwin.js app or Extension development using the iTwin.js AppUi.
 
+The component [FrameworkVersion]($appui-react) has been updated so it no longer takes a version prop. It now uses the value of `frameworkState.configurableUiState.frameworkVersion` from the redux store as the version. This value may be set using `UiFramework.setUiVersion` method and will be initialized to "2". Existing iModelApps using the 1.0 version of the user interface were not required to include the `<FrameworkVersion>` component in its component tree. It is now required that every iModelApp include the `<FrameworkVersion>` component and that the redux store entry mentioned above is specified to either "1" or "2". Below is a typical component tree for an iModeApp.
+
+```tsx
+<Provider store={MyIModelApp.store} >
+  <ThemeManager>
+    <SafeAreaContext.Provider value={SafeAreaInsets.All}>
+      <ToolbarDragInteractionContext.Provider value={false}>
+        <FrameworkVersion>
+          <UiSettingsProvider settingsStorage={uiSettingsStorage}>
+            <ConfigurableUiContent
+              appBackstage={<AppBackstageComposer />}
+            />
+          </UiSettingsProvider>
+        </FrameworkVersion>
+      </ToolbarDragInteractionContext.Provider>
+    </SafeAreaContext.Provider>
+  <ThemeManager>
+</Provider>
+```
+
 ### New options for defining Frontstages
 
 | Class/Component                                  | Description                                                                                      |
@@ -1226,6 +1288,10 @@ Developers should use equivalent components in @itwin/itwinui-react instead.
 | Deprecated in @itwin/components-react | Use from @itwin/itwinui-react instead |
 | ---------------------------------------- | ------------------------------------- |
 | Breadcrumb                               | Breadcrumbs                           |
+
+| Deprecated in @itwin/imodel-components-react | Use from @itwin/itwinui-react instead |
+| -------------------------------------------- | ------------------------------------- |
+| ColorPickerPanel                           | ColorPicker                           |
 
 #### Slider
 

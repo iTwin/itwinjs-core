@@ -16,6 +16,7 @@ const validTags = [
   "default",
   "example",
   "pattern",
+  "returns",
 
   // Following flags are added to support API-extractor (https://api-extractor.com/pages/tsdoc/syntax/#release-tags)
   "alpha",

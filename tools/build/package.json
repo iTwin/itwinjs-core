@@ -1,11 +1,11 @@
 {
   "name": "@itwin/build-tools",
-  "version": "3.0.0-dev.96",
+  "version": "3.0.0-dev.111",
   "description": "Bentley build tools",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/tools/build"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/tools/build"
   },
   "bin": {
     "betools": "bin/betools.js"

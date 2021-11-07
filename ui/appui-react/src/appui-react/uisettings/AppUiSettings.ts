@@ -8,7 +8,7 @@
 
 import { UiSetting, UiSettingsStorage } from "@itwin/core-react";
 import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
-import { UiFramework, UserSettingsProvider } from "../UiFramework";
+import { FrameworkVersionId, UiFramework, UserSettingsProvider } from "../UiFramework";
 
 // cSpell:ignore configurableui
 
@@ -18,7 +18,7 @@ import { UiFramework, UserSettingsProvider } from "../UiFramework";
 export interface InitialAppUiSettings {
   colorTheme: string;
   dragInteraction: boolean;
-  frameworkVersion: string;
+  frameworkVersion: FrameworkVersionId;
   widgetOpacity: number;
 }
 
@@ -42,7 +42,7 @@ export class AppUiSettings implements UserSettingsProvider {
 
   public colorTheme: UiSetting<string>;
   public dragInteraction: UiSetting<boolean>;
-  public frameworkVersion: UiSetting<string>;
+  public frameworkVersion: UiSetting<FrameworkVersionId>;
   public widgetOpacity: UiSetting<number>;
 
   private setColorTheme = (theme: string) => {
@@ -62,9 +62,9 @@ export class AppUiSettings implements UserSettingsProvider {
       (value: boolean) => UiFramework.setUseDragInteraction(value), defaults.dragInteraction);
     this._settings.push(this.dragInteraction);
 
-    this.frameworkVersion = new UiSetting<string>(AppUiSettings._settingNamespace, "FrameworkVersion",
+    this.frameworkVersion = new UiSetting<FrameworkVersionId>(AppUiSettings._settingNamespace, "FrameworkVersion",
       () => UiFramework.uiVersion,
-      (value: string) => UiFramework.setUiVersion(value), defaults.frameworkVersion);
+      (value: FrameworkVersionId) => UiFramework.setUiVersion(value), defaults.frameworkVersion);
     this._settings.push(this.frameworkVersion);
 
     this.widgetOpacity = new UiSetting<number>(AppUiSettings._settingNamespace, "WidgetOpacity",

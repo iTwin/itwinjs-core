@@ -10,22 +10,23 @@ import { IModelDb } from "@itwin/core-backend";
 import { Id64String } from "@itwin/core-bentley";
 import { IModelNotFoundResponse, IModelRpcProps } from "@itwin/core-common";
 import {
-  Content, ContentDescriptorRequestOptions, ContentDescriptorRpcRequestOptions, ContentRequestOptions, ContentRpcRequestOptions,
-  ContentSourcesRequestOptions, ContentSourcesRpcRequestOptions, ContentSourcesRpcResult, Descriptor, DescriptorOverrides, DiagnosticsScopeLogs,
-  DisplayLabelRequestOptions, DisplayLabelRpcRequestOptions, DisplayLabelsRequestOptions, DisplayLabelsRpcRequestOptions,
-  DistinctValuesRequestOptions, DistinctValuesRpcRequestOptions, ElementProperties, FieldDescriptor, FieldDescriptorType,
-  FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, HierarchyRpcRequestOptions, InstanceKey,
-  Item, KeySet, MultiElementPropertiesRequestOptions, MultiElementPropertiesRpcRequestOptions, Node, NodeKey, NodePathElement, Paged, PageOptions,
-  PresentationError, PresentationRpcRequestOptions, PresentationStatus, RulesetVariable, RulesetVariableJSON, SelectClassInfo,
-  SelectionScopeRequestOptions, SingleElementPropertiesRequestOptions, SingleElementPropertiesRpcRequestOptions, VariableValueTypes,
+  Content, ContentDescriptorRequestOptions, ContentDescriptorRpcRequestOptions, ContentFlags, ContentInstanceKeysRpcRequestOptions,
+  ContentRequestOptions, ContentRpcRequestOptions, ContentSourcesRequestOptions, ContentSourcesRpcRequestOptions, ContentSourcesRpcResult, Descriptor,
+  DescriptorOverrides, DiagnosticsScopeLogs, DisplayLabelRequestOptions, DisplayLabelRpcRequestOptions, DisplayLabelsRequestOptions,
+  DisplayLabelsRpcRequestOptions, DistinctValuesRequestOptions, DistinctValuesRpcRequestOptions, ElementProperties, FieldDescriptor,
+  FieldDescriptorType, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions,
+  HierarchyRpcRequestOptions, InstanceKey, Item, KeySet, MultiElementPropertiesRequestOptions, MultiElementPropertiesRpcRequestOptions, Node, NodeKey,
+  NodePathElement, Paged, PageOptions, PresentationError, PresentationRpcRequestOptions, PresentationStatus, RulesetVariable, RulesetVariableJSON,
+  SelectClassInfo, SelectionScopeRequestOptions, SingleElementPropertiesRequestOptions, SingleElementPropertiesRpcRequestOptions, VariableValueTypes,
 } from "@itwin/presentation-common";
 import {
   createRandomECInstanceKey, createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomId, createRandomLabelDefinitionJSON,
-  createRandomNodePathElement, createRandomSelectionScope, createTestContentDescriptor, createTestSelectClassInfo, ResolvablePromise,
+  createRandomNodePathElement, createRandomSelectionScope, createTestContentDescriptor, createTestECInstanceKey, createTestSelectClassInfo,
+  ResolvablePromise,
 } from "@itwin/presentation-common/lib/cjs/test";
 import { Presentation } from "../presentation-backend/Presentation";
 import { PresentationManager } from "../presentation-backend/PresentationManager";
-import { MAX_ALLOWED_PAGE_SIZE, PresentationRpcImpl } from "../presentation-backend/PresentationRpcImpl";
+import { MAX_ALLOWED_KEYS_PAGE_SIZE, MAX_ALLOWED_PAGE_SIZE, PresentationRpcImpl } from "../presentation-backend/PresentationRpcImpl";
 import { RulesetManager } from "../presentation-backend/RulesetManager";
 import { RulesetVariablesManager } from "../presentation-backend/RulesetVariablesManager";
 
@@ -1191,6 +1192,185 @@ describe("PresentationRpcImpl", () => {
         const actualResult = await impl.getElementProperties(testData.imodelToken, rpcOptions);
         presentationManagerMock.verifyAll();
         expect(actualResult.result).to.deep.eq(expectedRpcResponse);
+      });
+
+    });
+
+    describe("getContentInstanceKeys", () => {
+
+      it("calls manager", async () => {
+        const keys = new KeySet();
+        const contentItemKeys = [createTestECInstanceKey({ id: "0x123" }), createTestECInstanceKey({ id: "0x456" })];
+        const contentItem = new Item(contentItemKeys, "", "", undefined, {}, {}, [], undefined);
+        const content = new Content(createTestContentDescriptor({ fields: [] }), [contentItem]);
+        const rpcOptions: Paged<ContentInstanceKeysRpcRequestOptions> = {
+          ...defaultRpcParams,
+          rulesetOrId: testData.rulesetOrId,
+          paging: testData.pageOptions,
+          displayType: content.descriptor.displayType,
+          keys: keys.toJSON(),
+        };
+        const managerOptions: Paged<ContentRequestOptions<IModelDb, DescriptorOverrides, KeySet, RulesetVariable>> = {
+          imodel: testData.imodelMock.object,
+          rulesetOrId: testData.rulesetOrId,
+          paging: testData.pageOptions,
+          descriptor: {
+            displayType: content.descriptor.displayType,
+            contentFlags: ContentFlags.KeysOnly,
+          },
+          keys,
+        };
+        presentationManagerMock.setup(async (x) => x.getContent(managerOptions))
+          .returns(async () => content)
+          .verifiable();
+        presentationManagerMock.setup(async (x) => x.getContentSetSize(managerOptions))
+          .returns(async () => 999)
+          .verifiable();
+        const actualResult = await impl.getContentInstanceKeys(testData.imodelToken, rpcOptions);
+        presentationManagerMock.verifyAll();
+        expect(actualResult.result).to.deep.eq({
+          total: 999,
+          items: new KeySet(contentItemKeys).toJSON(),
+        });
+      });
+
+      it("handles case when manager returns no content", async () => {
+        const keys = new KeySet();
+        const rpcOptions: Paged<ContentInstanceKeysRpcRequestOptions> = {
+          ...defaultRpcParams,
+          rulesetOrId: testData.rulesetOrId,
+          paging: testData.pageOptions,
+          keys: keys.toJSON(),
+        };
+        const managerOptions: Paged<ContentRequestOptions<IModelDb, DescriptorOverrides, KeySet, RulesetVariable>> = {
+          imodel: testData.imodelMock.object,
+          rulesetOrId: testData.rulesetOrId,
+          paging: testData.pageOptions,
+          descriptor: {
+            displayType: undefined,
+            contentFlags: ContentFlags.KeysOnly,
+          },
+          keys,
+        };
+        presentationManagerMock.setup(async (x) => x.getContent(managerOptions))
+          .returns(async () => undefined)
+          .verifiable();
+        presentationManagerMock.setup(async (x) => x.getContentSetSize(managerOptions))
+          .returns(async () => 0)
+          .verifiable();
+        const actualResult = await impl.getContentInstanceKeys(testData.imodelToken, rpcOptions);
+        presentationManagerMock.verifyAll();
+        expect(actualResult.result).to.deep.eq({
+          total: 0,
+          items: new KeySet().toJSON(),
+        });
+      });
+
+      it("enforces maximum page size when requesting with larger size than allowed", async () => {
+        const keys = new KeySet();
+        const contentItemKeys = [createTestECInstanceKey()];
+        const contentItem = new Item(contentItemKeys, "", "", undefined, {}, {}, [], undefined);
+        const content = new Content(createTestContentDescriptor({ fields: [] }), [contentItem]);
+        const rpcOptions: Paged<ContentInstanceKeysRpcRequestOptions> = {
+          ...defaultRpcParams,
+          rulesetOrId: testData.rulesetOrId,
+          paging: { start: 0, size: MAX_ALLOWED_KEYS_PAGE_SIZE + 1 },
+          displayType: content.descriptor.displayType,
+          keys: keys.toJSON(),
+        };
+        const managerOptions: Paged<ContentRequestOptions<IModelDb, DescriptorOverrides, KeySet, RulesetVariable>> = {
+          imodel: testData.imodelMock.object,
+          rulesetOrId: testData.rulesetOrId,
+          paging: { start: 0, size: MAX_ALLOWED_KEYS_PAGE_SIZE },
+          descriptor: {
+            displayType: content.descriptor.displayType,
+            contentFlags: ContentFlags.KeysOnly,
+          },
+          keys,
+        };
+        presentationManagerMock.setup(async (x) => x.getContent(managerOptions))
+          .returns(async () => content)
+          .verifiable();
+        presentationManagerMock.setup(async (x) => x.getContentSetSize(managerOptions))
+          .returns(async () => 999)
+          .verifiable();
+        const actualResult = await impl.getContentInstanceKeys(testData.imodelToken, rpcOptions);
+        presentationManagerMock.verifyAll();
+        expect(actualResult.result).to.deep.eq({
+          total: 999,
+          items: new KeySet(contentItemKeys).toJSON(),
+        });
+      });
+
+      it("enforces maximum page size when requesting with undefined size", async () => {
+        const keys = new KeySet();
+        const contentItemKeys = [createTestECInstanceKey()];
+        const contentItem = new Item(contentItemKeys, "", "", undefined, {}, {}, [], undefined);
+        const content = new Content(createTestContentDescriptor({ fields: [] }), [contentItem]);
+        const rpcOptions: Paged<ContentInstanceKeysRpcRequestOptions> = {
+          ...defaultRpcParams,
+          rulesetOrId: testData.rulesetOrId,
+          paging: { start: 123 },
+          displayType: content.descriptor.displayType,
+          keys: keys.toJSON(),
+        };
+        const managerOptions: Paged<ContentRequestOptions<IModelDb, DescriptorOverrides, KeySet, RulesetVariable>> = {
+          imodel: testData.imodelMock.object,
+          rulesetOrId: testData.rulesetOrId,
+          paging: { start: 123, size: MAX_ALLOWED_KEYS_PAGE_SIZE },
+          descriptor: {
+            displayType: content.descriptor.displayType,
+            contentFlags: ContentFlags.KeysOnly,
+          },
+          keys,
+        };
+        presentationManagerMock.setup(async (x) => x.getContent(managerOptions))
+          .returns(async () => content)
+          .verifiable();
+        presentationManagerMock.setup(async (x) => x.getContentSetSize(managerOptions))
+          .returns(async () => 999)
+          .verifiable();
+        const actualResult = await impl.getContentInstanceKeys(testData.imodelToken, rpcOptions);
+        presentationManagerMock.verifyAll();
+        expect(actualResult.result).to.deep.eq({
+          total: 999,
+          items: new KeySet(contentItemKeys).toJSON(),
+        });
+      });
+
+      it("enforces maximum page size when requesting with undefined page options", async () => {
+        const keys = new KeySet();
+        const contentItemKeys = [createTestECInstanceKey()];
+        const contentItem = new Item(contentItemKeys, "", "", undefined, {}, {}, [], undefined);
+        const content = new Content(createTestContentDescriptor({ fields: [] }), [contentItem]);
+        const rpcOptions: Paged<ContentInstanceKeysRpcRequestOptions> = {
+          ...defaultRpcParams,
+          rulesetOrId: testData.rulesetOrId,
+          displayType: content.descriptor.displayType,
+          keys: keys.toJSON(),
+        };
+        const managerOptions: Paged<ContentRequestOptions<IModelDb, DescriptorOverrides, KeySet, RulesetVariable>> = {
+          imodel: testData.imodelMock.object,
+          rulesetOrId: testData.rulesetOrId,
+          paging: { size: MAX_ALLOWED_KEYS_PAGE_SIZE },
+          descriptor: {
+            displayType: content.descriptor.displayType,
+            contentFlags: ContentFlags.KeysOnly,
+          },
+          keys,
+        };
+        presentationManagerMock.setup(async (x) => x.getContent(managerOptions))
+          .returns(async () => content)
+          .verifiable();
+        presentationManagerMock.setup(async (x) => x.getContentSetSize(managerOptions))
+          .returns(async () => 999)
+          .verifiable();
+        const actualResult = await impl.getContentInstanceKeys(testData.imodelToken, rpcOptions);
+        presentationManagerMock.verifyAll();
+        expect(actualResult.result).to.deep.eq({
+          total: 999,
+          items: new KeySet(contentItemKeys).toJSON(),
+        });
       });
 
     });

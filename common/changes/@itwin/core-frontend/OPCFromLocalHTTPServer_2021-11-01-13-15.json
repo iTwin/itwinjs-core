@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Support to open OPC file from any server",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

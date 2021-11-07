@@ -42,6 +42,12 @@ export interface StandardFrontstageProps {
    * ```
    * <BackstageAppButton icon={"icon-bentley-systems"} />
    * ```
+   * Custom corner button definition
+   * ```
+   * const cornerButton = <BackstageAppButton icon={"icon-bentley-systems"}
+   *   label="Toggle Backstage display",
+   *   execute={() => BackstageManager.getBackstageToggleCommand().execute()} />;
+   * ```
    */
   cornerButton?: React.ReactNode;
   /** Set to true if default Navigation aid is not desired */

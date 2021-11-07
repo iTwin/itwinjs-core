@@ -1,6 +1,6 @@
 {
   "name": "@bentley/product-settings-client",
-  "version": "3.0.0-dev.96",
+  "version": "3.0.0-dev.111",
   "description": "iModel.js Product Settings Client",
   "main": "lib/cjs/product-settings-client.js",
   "module": "lib/esm/product-settings-client.js",
@@ -9,7 +9,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/clients/product-settings"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/clients/product-settings"
   },
   "scripts": {
     "build": "npm run -s build:cjs",
@@ -35,8 +35,8 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.96",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.96"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.111",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.111"
   },
   "devDependencies": {
     "@itwin/core-bentley": "workspace:*",

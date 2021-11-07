@@ -1,6 +1,6 @@
 {
   "name": "@itwin/components-react",
-  "version": "3.0.0-dev.96",
+  "version": "3.0.0-dev.111",
   "description": "iModel.js UI complex components",
   "main": "lib/cjs/components-react.js",
   "module": "lib/esm/components-react.js",
@@ -9,7 +9,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/ui/components-react"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/ui/components-react"
   },
   "scripts": {
     "build": "npm run -s copy:locale && npm run -s build:cjs",
@@ -38,10 +38,10 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.96",
-    "@itwin/core-i18n": "workspace:^3.0.0-dev.96",
-    "@itwin/appui-abstract": "workspace:^3.0.0-dev.96",
-    "@itwin/core-react": "workspace:^3.0.0-dev.96",
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.111",
+    "@itwin/core-i18n": "workspace:^3.0.0-dev.111",
+    "@itwin/appui-abstract": "workspace:^3.0.0-dev.111",
+    "@itwin/core-react": "workspace:^3.0.0-dev.111",
     "react": "^17.0.0",
     "react-dom": "^17.0.0"
   },
@@ -58,7 +58,7 @@
     "@itwin/appui-abstract": "workspace:*",
     "@itwin/core-react": "workspace:*",
     "@testing-library/react": "^12.0.0",
-    "@testing-library/react-hooks": "^3.2.1",
+    "@testing-library/react-hooks": "^7.0.2",
     "@testing-library/user-event": "^13.2.1",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
@@ -70,10 +70,9 @@
     "@types/linkify-it": "~2.1.0",
     "@types/lodash": "^4.14.0",
     "@types/mocha": "^8.2.2",
-    "@types/react": "^17.0.0",
+    "@types/react": "17.0.31",
     "@types/react-data-grid": "4.0.2",
     "@types/react-dom": "^17.0.0",
-    "@types/testing-library__react-hooks": "^3.1.0",
     "@types/react-highlight-words": "^0.16.1",
     "@types/react-select": "3.0.26",
     "@types/react-virtualized": "^9.21.11",
@@ -116,13 +115,13 @@
   ],
   "dependencies": {
     "@bentley/icons-generic-webfont": "^1.0.15",
-    "@itwin/itwinui-css": "^0.27.0",
-    "@itwin/itwinui-react": "^1.16.2",
+    "@itwin/itwinui-css": "^0.37.0",
+    "@itwin/itwinui-react": "^1.23.0",
     "@types/shortid": "~0.0.29",
     "callable-instance2": "1.0.0",
     "classnames": "^2.3.1",
     "eventemitter2": "^5.0.1",
-    "immer": "9.0.2",
+    "immer": "9.0.6",
     "immutable": "^3.8.2",
     "inspire-tree": "^5.0.1",
     "linkify-it": "~2.2.0",
@@ -131,7 +130,7 @@
     "react-dnd": "^11.1.3",
     "react-dnd-html5-backend": "^11.1.3",
     "react-highlight-words": "^0.17.0",
-    "react-select": "3.1.0",
+    "react-select": "3.2.0",
     "react-virtualized": "^9.21.11",
     "react-window": "^1.8.2",
     "rxjs": "^6.6.2",

@@ -261,6 +261,10 @@ export namespace WmtsCapability {
       });
       return googleMapsTms;
     }
+
+    public getEpsg4326CompatibleTileMatrixSet(): WmtsCapability.TileMatrixSet[] {
+      return this.tileMatrixSets.filter((tms) => tms.supportedCrs.includes("4326"));
+    }
   }
 
   export class Style {
@@ -293,12 +297,26 @@ export namespace WmtsCapability {
     }
   }
 
+  export class TileMatrixSetLimits {
+    public limits?: Range2d;
+    public tileMatrix?: string;
+
+    constructor(_json: any) {
+      this.tileMatrix = _json.TileMatrix;
+      if (_json.MinTileRow !== undefined && _json.MaxTileRow !== undefined && _json.MinTileCol !== undefined && _json.MaxTileCol)
+        this.limits = Range2d.createXYXY(Number(_json.MinTileCol._text), Number(_json.MinTileRow._text), Number(_json.MaxTileCol._text), Number(_json.MaxTileRow._text));
+    }
+  }
+
   export class TileMatrixSetLink {
     public readonly tileMatrixSet: string;
-    // TODO: TileMatrixSetLimits
+    public readonly tileMatrixSetLimits = new Array<TileMatrixSetLimits>();
 
     constructor(_json: any) {
       this.tileMatrixSet = (_json?.TileMatrixSet?._text ? _json.TileMatrixSet._text : "");
+      const tileMatrixLimits  = _json?.TileMatrixSetLimits?.TileMatrixLimits;
+      if (Array.isArray(tileMatrixLimits))
+        tileMatrixLimits.forEach((tml: any) => this.tileMatrixSetLimits.push(new TileMatrixSetLimits(tml)));
     }
   }
 

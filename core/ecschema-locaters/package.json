@@ -1,13 +1,13 @@
 {
   "name": "@itwin/ecschema-locaters",
-  "version": "3.0.0-dev.96",
+  "version": "3.0.0-dev.111",
   "description": "EC Schema file locaters",
   "license": "MIT",
   "main": "lib/cjs/ecschema-locaters.js",
   "typings": "lib/cjs/ecschema-locaters",
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/core/ecschema-locaters"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/core/ecschema-locaters"
   },
   "scripts": {
     "build": "npm run -s build:cjs && npm run -s copy:test-assets",
@@ -56,7 +56,7 @@
     "glob": "^7.1.2"
   },
   "peerDependencies": {
-    "@itwin/ecschema-metadata": "workspace:^3.0.0-dev.96"
+    "@itwin/ecschema-metadata": "workspace:^3.0.0-dev.111"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc",

@@ -4,7 +4,7 @@ beta;AbandonedError
 beta;AccessToken = string
 public;areEqualPossiblyUndefined
 public;asInstanceOf
-public;assert(condition: boolean, msg?: string): asserts condition
+public;assert(condition: boolean | (() => boolean), message?: string | (() => string)): asserts condition
 public;AsyncFunction = (...args: any) => Promise
 public;AsyncMethodsOf
 alpha;AsyncMutex
@@ -63,6 +63,11 @@ public;IndexedValue
 public;IndexMap
 public;isIDisposable(obj: unknown): obj is IDisposable
 public;isInstanceOf
+public;JSONSchema
+public;JSONSchemaMap
+public;JSONSchemaSnippet
+public;JSONSchemaType = string | number | boolean | object | JSONSchemaType[]
+public;JSONSchemaTypeName = "string" | "number" | "integer" | "boolean" | "null" | "array" | "object"
 public;JsonUtils
 public;Listener = (...arg: any[]) => void
 public;LogFunction = (category: string, message: string, metaData: LoggingMetaData) => void

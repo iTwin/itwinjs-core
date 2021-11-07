@@ -1516,6 +1516,7 @@ export interface PopupProps extends CommonProps {
     focusTarget?: React.RefObject<HTMLElement> | string;
     isOpen: boolean;
     isPinned?: boolean;
+    keepContentsMounted?: boolean;
     left: number;
     moveFocus?: boolean;
     offset: number;

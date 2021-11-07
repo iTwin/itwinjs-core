@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-bentley",
-  "version": "3.0.0-dev.96",
+  "version": "3.0.0-dev.111",
   "description": "Bentley JavaScript core components",
   "main": "lib/cjs/core-bentley.js",
   "module": "lib/esm/core-bentley.js",
@@ -9,7 +9,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/core/bentley"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/core/bentley"
   },
   "scripts": {
     "build": "npm run -s build:cjs",
