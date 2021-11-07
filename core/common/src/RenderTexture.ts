@@ -8,22 +8,9 @@
 
 import { Id64String, IDisposable } from "@itwin/core-bentley";
 
-/** Identifies the provenance of a [[RenderTexture]] supplied by a [TextureImageProvider]($frontend).
- * @see [[TextureImageSpec]].
- * @public
- */
-export interface ProviderTextureImageSpec {
-  readonly providerName: string;
-  readonly providerData: any;
-  readonly url?: never;
-  readonly transparency?: never;
-}
-
 export interface UrlTextureImageSpec {
   readonly url: string;
   readonly transparency?: boolean; // ###TODO TextureTransparency
-  readonly providerName?: never;
-  readonly providerData?: never;
 }
 
 /** JSON representation of the information required to obtain a [[RenderTexture]] for a given purpose - for example,
@@ -32,7 +19,7 @@ export interface UrlTextureImageSpec {
  * @see [[SkySphereImageProps.texture]] and [[SkyCubeImageProps]].
  * @public
  */
-export type TextureImageSpec = Id64String | UrlTextureImageSpec | ProviderTextureImageSpec;
+export type TextureImageSpec = Id64String | UrlTextureImageSpec;
 
 /** Represents a texture image applied to a surface during rendering.
  * A RenderTexture is typically - but not always - associated with a [[RenderMaterial]].

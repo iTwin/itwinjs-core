@@ -206,7 +206,9 @@ export type RenderGeometry = IDisposable & RenderMemory.Consumer;
  */
 export type RenderAreaPattern = IDisposable & RenderMemory.Consumer;
 
-// ###TODO rename, clean up.
+/** ###TODO rename, clean up.
+ * @internal
+ */
 export namespace SkyBox {
   /** Parameters defining a spherical [[SkyBox]].
    * @public
@@ -469,7 +471,9 @@ export abstract class RenderSystem implements IDisposable {
     return this.createBranch(branch, transform);
   }
 
-  /** Create a Graphic for a [[SkyBox]] which encompasses the entire scene, rotating with the camera. */
+  /** Create a Graphic for a [[SkyBox]] which encompasses the entire scene, rotating with the camera.
+   * @internal
+   */
   public createSkyBox(_params: SkyBox.CreateParams): RenderGraphic | undefined { return undefined; }
 
   /** Create a RenderGraphic consisting of a list of Graphics to be drawn together. */
