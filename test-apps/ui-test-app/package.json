@@ -42,7 +42,7 @@
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@axe-core/react": "^4.1.1",
+    "@axe-core/react": "4.3.1",
     "@itwin/core-webpack-tools": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
@@ -50,7 +50,7 @@
     "@bentley/react-scripts": "4.0.3",
     "@types/lorem-ipsum": "^1.0.2",
     "@types/node": "14.14.31",
-    "@types/react": "^17.0.0",
+    "@types/react": "17.0.31",
     "@types/react-dom": "^17.0.0",
     "@types/react-redux": "^7.1.18",
     "@types/react-select": "3.0.26",
@@ -99,8 +99,8 @@
     "@itwin/frontend-devtools": "workspace:*",
     "@itwin/hypermodeling-frontend": "workspace:*",
     "@itwin/imodel-components-react": "workspace:*",
-    "@itwin/itwinui-react": "^1.16.2",
-    "@itwin/itwinui-css": "^0.27.0",
+    "@itwin/itwinui-react": "^1.23.0",
+    "@itwin/itwinui-css": "^0.37.0",
     "@itwin/map-layers": "workspace:*",
     "@itwin/presentation-backend": "workspace:*",
     "@itwin/presentation-common": "workspace:*",
@@ -113,10 +113,10 @@
     "react-dom": "^17.0.0",
     "react-redux": "^7.2.2",
     "react-beautiful-dnd": "^13.0.0",
-    "react-select": "3.1.0",
+    "react-select": "3.2.0",
     "react-table": "^7.1.0",
     "react-resize-detector": "^6.7.6",
-    "redux": "^4.0.3",
+    "redux": "^4.1.0",
     "semver": "^5.5.0"
   },
   "browserslist": [

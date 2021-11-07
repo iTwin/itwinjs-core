@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as chai from "chai";
-import * as jsonpath from "jsonpath";
+import { ImsAuthorizationClient } from "@bentley/itwin-client";
 import { AccessToken, Guid, GuidString, Logger, LogLevel } from "@itwin/core-bentley";
 import { Angle, Range2d } from "@itwin/core-geometry";
-import { ImsAuthorizationClient } from "@bentley/itwin-client";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
+import * as chai from "chai";
+import * as jsonpath from "jsonpath";
 import { DefaultSupportedTypes, RealityData, RealityDataAccessClient, RealityDataRelationship } from "../../RealityDataClient";
 import { TestConfig } from "../TestConfig";
 
@@ -102,7 +102,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
   it("should be able to retrieve the azure blob url", async () => {
     const realityData: RealityData = await realityDataServiceClient.getRealityData(accessToken, iTwinId, tilesId);
 
-    const url: URL = await realityData.getBlobUrl(accessToken);
+    const url: URL = await realityData.getContainerUrl(accessToken);
 
     chai.assert(url);
   });
@@ -116,7 +116,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
 
     const realityData: RealityData = await realityDataServiceClient.getRealityData(accessToken, iTwinId, tilesId);
 
-    const url: URL = await realityData.getBlobUrl(accessToken, true);
+    const url: URL = await realityData.getContainerUrl(accessToken, true);
 
     chai.assert(url);
   });
@@ -622,14 +622,9 @@ describe("RealityServicesClient Normal (#integration)", () => {
     chai.assert(exceptionThrown);
 
     // Should succeed as we call with added root document path
-    const data2: any = await realityData.getTileContent(accessToken, rootDocPath + modelName, false);
+    const data2: any = await realityData.getTileContent(accessToken, rootDocPath + modelName);
 
     chai.assert(data2);
-
-    // Should succeed as we call with indicate that path is relative to root path
-    const data3: any = await realityData.getTileContent(accessToken, modelName, true);
-
-    chai.assert(data3);
   });
 
 });

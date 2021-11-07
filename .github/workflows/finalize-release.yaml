@@ -58,4 +58,4 @@ jobs:
         # turn off the default behavior to fail fast. The script has its own error handling
         shell: bash {0}
       - name: Push to master
-        run: git push https://$(GITHUBTOKEN)@github.com/imodeljs/imodeljs HEAD:master
+        run: git push https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core HEAD:master

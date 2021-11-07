@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "initial implementation of Workspace and Settings",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

@@ -156,7 +156,7 @@ export class TileDrawArgs {
    * Device scaling is not applied.
    */
   protected computePixelSizeInMetersAtClosestPoint(center: Point3d, radius: number): number {
-    if (this.context.viewport.view.isCameraEnabled() && this._nearFrontCenter) {
+    if (this.context.viewport.view.is3d() && this.context.viewport.isCameraOn && this._nearFrontCenter) {
       const toFront = Vector3d.createStartEnd(center, this._nearFrontCenter);
       const viewZ = this.context.viewport.rotation.rowZ();
       // If the sphere overlaps the near front plane just use near front point.  This also handles behind eye conditions.
@@ -264,7 +264,7 @@ export class TileDrawArgs {
     }
 
     this.parentsAndChildrenExclusive = parentsAndChildrenExclusive;
-    if (context.viewport.view.isCameraEnabled())
+    if (context.viewport.isCameraOn)
       this._nearFrontCenter = context.viewport.getFrustum(CoordSystem.World).frontCenter;
 
     this.pixelSizeScaleFactor = this.computePixelSizeScaleFactor();

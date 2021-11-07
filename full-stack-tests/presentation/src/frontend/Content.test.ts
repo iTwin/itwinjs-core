@@ -493,9 +493,9 @@ describe("Content", () => {
                   label: "TestClass",
                 },
                 targetClassInfo: {
-                  id: "0x41",
-                  name: "BisCore:Model",
-                  label: "Model",
+                  id: "0xb0",
+                  name: "BisCore:PhysicalModel",
+                  label: "Physical Model",
                 },
                 isPolymorphicTargetClass: true,
                 relationshipInfo: {
@@ -508,14 +508,14 @@ describe("Content", () => {
               },
               {
                 sourceClassInfo: {
-                  id: "0x41",
-                  name: "BisCore:Model",
-                  label: "Model",
+                  id: "0xb0",
+                  name: "BisCore:PhysicalModel",
+                  label: "Physical Model",
                 },
                 targetClassInfo: {
-                  id: "0x44",
-                  name: "BisCore:ISubModeledElement",
-                  label: "Modellable Element",
+                  id: "0xb4",
+                  name: "BisCore:PhysicalPartition",
+                  label: "Physical Partition",
                 },
                 isPolymorphicTargetClass: true,
                 relationshipInfo: {
@@ -528,9 +528,9 @@ describe("Content", () => {
               },
               {
                 sourceClassInfo: {
-                  id: "0x44",
-                  name: "BisCore:ISubModeledElement",
-                  label: "Modellable Element",
+                  id: "0xb4",
+                  name: "BisCore:PhysicalPartition",
+                  label: "Physical Partition",
                 },
                 targetClassInfo: {
                   id: "0xa9",
@@ -604,6 +604,59 @@ describe("Content", () => {
 
       sources = await Presentation.presentation.getContentSources({ imodel, classes: ["PCJTest:TestClass"] });
       expect(sources).to.deep.eq(expectedResult);
+    });
+
+  });
+
+  describe("Content instance keys", () => {
+
+    it("retrieves content instance keys for given input", async () => {
+      const ruleset: Ruleset = {
+        id: "model elements",
+        rules: [{
+          ruleType: RuleTypes.Content,
+          specifications: [{
+            specType: ContentSpecificationTypes.ContentRelatedInstances,
+            relationshipPaths: [{
+              relationship: { schemaName: "BisCore", className: "ModelContainsElements" },
+              direction: RelationshipDirection.Forward,
+            }],
+          }],
+        }],
+      };
+      const modelKeys = new KeySet([{ className: "BisCore:DictionaryModel", id: "0x10" }]);
+      const result = await Presentation.presentation.getContentInstanceKeys({
+        imodel,
+        rulesetOrId: ruleset,
+        keys: modelKeys,
+      });
+      expect(result.total).to.eq(7);
+
+      const resultKeys = [];
+      for await (const key of result.items())
+        resultKeys.push(key);
+      expect(resultKeys).to.deep.eq([{
+        className: "BisCore:LineStyle",
+        id: "0x1d",
+      }, {
+        className: "BisCore:LineStyle",
+        id: "0x1e",
+      }, {
+        className: "BisCore:LineStyle",
+        id: "0x1f",
+      }, {
+        className: "BisCore:LineStyle",
+        id: "0x20",
+      }, {
+        className: "BisCore:LineStyle",
+        id: "0x21",
+      }, {
+        className: "BisCore:LineStyle",
+        id: "0x22",
+      }, {
+        className: "BisCore:LineStyle",
+        id: "0x23",
+      }]);
     });
 
   });

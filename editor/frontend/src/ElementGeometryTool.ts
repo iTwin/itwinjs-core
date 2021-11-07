@@ -6,11 +6,11 @@
  * @module Editing
  */
 
-import { Id64, Id64String } from "@itwin/core-bentley";
-import { editorBuiltInCmdIds, ElementGeometryCacheFilter, ElementGeometryResultOptions, ElementGeometryResultProps, LocateSubEntityProps, OffsetFacesProps, SolidModelingCommandIpc, SubEntityFilter, SubEntityGeometryProps, SubEntityLocationProps, SubEntityProps, SubEntityType } from "@itwin/editor-common";
+import { Id64, Id64Arg, Id64Array, Id64String } from "@itwin/core-bentley";
+import { editorBuiltInCmdIds, ElementGeometryCacheFilter, ElementGeometryResultOptions, ElementGeometryResultProps, LocateSubEntityProps, SolidModelingCommandIpc, SubEntityFilter, SubEntityGeometryProps, SubEntityLocationProps, SubEntityProps, SubEntityType } from "@itwin/editor-common";
 import { FeatureAppearance, FeatureAppearanceProvider, RgbColor } from "@itwin/core-common";
-import { Geometry, Point3d, Range3d, Ray3d, Transform, Vector3d } from "@itwin/core-geometry";
-import { AccuDrawHintBuilder, BeButtonEvent, DecorateContext, DynamicsContext, ElementSetTool, EventHandled, FeatureOverrideProvider, FeatureSymbology, GraphicBranch, GraphicBranchOptions, GraphicType, HitDetail, IModelApp, IModelConnection, InputSource, LocateResponse, readElementGraphics, RenderGraphicOwner, Viewport } from "@itwin/core-frontend";
+import { Point3d, Range3d, Ray3d, Transform } from "@itwin/core-geometry";
+import { AccuDrawHintBuilder, BeButtonEvent, DecorateContext, DynamicsContext, ElementSetTool, EventHandled, FeatureOverrideProvider, FeatureSymbology, GraphicBranch, GraphicBranchOptions, GraphicType, HitDetail, IModelApp, IModelConnection, InputSource, LocateResponse, readElementGraphics, RenderGraphicOwner, SelectionMethod, SelectionSet, Viewport } from "@itwin/core-frontend";
 import { computeChordToleranceFromPoint } from "./CreateElementTool";
 import { EditTools } from "./EditTool";
 
@@ -163,7 +163,7 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
   protected _startedCmd?: string;
   protected readonly _checkedIds = new Map<Id64String, boolean>();
   protected _graphicsProvider?: ElementGeometryGraphicsProvider;
-  protected _graphicsPending?: true | undefined;
+  protected _graphicsPending?: true;
   protected _firstResult = true;
 
   protected allowView(vp: Viewport) { return vp.view.is3d(); }
@@ -207,28 +207,60 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
   }
 
   protected get geometryCacheFilter(): ElementGeometryCacheFilter | undefined { return undefined; }
+  protected onGeometryCacheFilterChanged(): void { this._checkedIds.clear(); }
+
+  protected async createElementGeometryCache(id: Id64String): Promise<boolean> {
+    // NOTE: Creates cache if it doesn't already exist then test new or existing cache against filter...
+    try {
+      this._startedCmd = await this.startCommand();
+      return await ElementGeometryCacheTool.callCommand("createElementGeometryCache", id, this.geometryCacheFilter);
+    } catch (err) {
+      return false;
+    }
+  }
+
+  protected async acceptElementForOperation(id: Id64String): Promise<boolean> {
+    if (Id64.isInvalid(id) || Id64.isTransient(id))
+      return false;
+
+    let accept = this._checkedIds.get(id);
+
+    if (undefined === accept) {
+      accept = await this.createElementGeometryCache(id);
+      this._checkedIds.set(id, accept);
+    }
+
+    return accept;
+  }
 
   protected override async isElementValidForOperation(hit: HitDetail, out?: LocateResponse): Promise<boolean> {
     if (!await super.isElementValidForOperation(hit, out))
       return false;
 
-    if (!hit.isElementHit)
-      return false;
+    return this.acceptElementForOperation(hit.sourceId);
+  }
 
-    let accept = this._checkedIds.get(hit.sourceId);
+  protected async postFilterIds(arg: Id64Arg): Promise<Id64Arg> {
+    const ids: Id64Array = [];
 
-    if (undefined === accept) {
-      try {
-        this._startedCmd = await this.startCommand();
-        accept = await ElementGeometryCacheTool.callCommand("createElementGeometryCache", hit.sourceId, this.geometryCacheFilter);
-      } catch (err) {
-        accept = false;
-      }
-
-      this._checkedIds.set(hit.sourceId, accept);
+    for (const id of Id64.iterable(arg)) {
+      if (await this.acceptElementForOperation(id))
+        ids.push(id);
     }
 
-    return accept;
+    return ids;
+  }
+
+  protected override async getGroupIds(id: Id64String): Promise<Id64Arg> {
+    return this.postFilterIds(await super.getGroupIds(id));
+  }
+
+  protected override async getSelectionSetCandidates(ss: SelectionSet): Promise<Id64Arg> {
+    return this.postFilterIds(await super.getSelectionSetCandidates(ss));
+  }
+
+  protected override async getDragSelectCandidates(vp: Viewport, origin: Point3d, corner: Point3d, method: SelectionMethod, overlap: boolean): Promise<Id64Arg> {
+    return this.postFilterIds(await super.getDragSelectCandidates(vp, origin, corner, method, overlap));
   }
 
   public override onDynamicFrame(_ev: BeButtonEvent, context: DynamicsContext): void {
@@ -314,8 +346,8 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
   protected _currentSubEntity?: SubEntityData;
   protected _acceptedSubEntity?: SubEntityLocationProps;
 
-  protected wantSubEntityType(type: SubEntityType) { return SubEntityType.Face === type; }
-  protected getMaximumSubEntityHits(type: SubEntityType) { return this.wantSubEntityType(type) ? 25 : 0; }
+  protected wantSubEntityType(type: SubEntityType): boolean { return SubEntityType.Face === type; }
+  protected getMaximumSubEntityHits(type: SubEntityType): number { return this.wantSubEntityType(type) ? 25 : 0; }
 
   protected override get wantAgendaAppearanceOverride(): boolean { return true; }
 
@@ -523,17 +555,14 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
     await this.updateSubEntityGraphic(ev);
   }
 
-  protected async applyAgendaOperation(_ev: BeButtonEvent, _isAccept: boolean): Promise<ElementGeometryResultProps | undefined> { return undefined; }
-
   protected override async getGraphicData(ev: BeButtonEvent): Promise<Uint8Array | undefined> {
     const result = await this.applyAgendaOperation(ev, false);
     return result?.graphic;
   }
 
-  public override async processAgenda(ev: BeButtonEvent): Promise<void> {
-    if (undefined === this._acceptedSubEntity)
-      return;
+  protected async applyAgendaOperation(_ev: BeButtonEvent, _isAccept: boolean): Promise<ElementGeometryResultProps | undefined> { return undefined; }
 
+  public override async processAgenda(ev: BeButtonEvent): Promise<void> {
     const result = await this.applyAgendaOperation(ev, true);
     if (result?.elementId)
       await this.saveChanges();
@@ -549,78 +578,5 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
   public override async onCleanup(): Promise<void> {
     this.clearSubEntityGraphic();
     return super.onCleanup();
-  }
-}
-
-/** @alpha Identify faces of solids and surfaces to offset. */
-export class OffsetFacesTool extends LocateSubEntityTool {
-  public static override toolId = "OffsetFaces";
-  public static override iconSpec = "icon-move"; // TODO: Need better icon...
-
-  public override requireWriteableTarget(): boolean { return false; } // TODO: Testing...
-
-  protected override get wantDynamics(): boolean { return true; }
-  protected override get wantAccuSnap(): boolean { return undefined !== this._acceptedSubEntity; }
-
-  protected override get geometryCacheFilter(): ElementGeometryCacheFilter | undefined {
-    return { minGeom: 1, maxGeom: 1, parts: true, curves: false, surfaces: true, solids: true, other: false };
-  }
-
-  protected override async applyAgendaOperation(ev: BeButtonEvent, isAccept: boolean): Promise<ElementGeometryResultProps | undefined> {
-    if (undefined === ev.viewport || this.agenda.isEmpty || undefined === this._acceptedSubEntity?.point || undefined === this._acceptedSubEntity?.normal)
-      return undefined;
-
-    const facePt = Point3d.fromJSON(this._acceptedSubEntity.point);
-    const faceNormal = Vector3d.fromJSON(this._acceptedSubEntity.normal);
-    const projPt = AccuDrawHintBuilder.projectPointToLineInView(ev.point, facePt, faceNormal, ev.viewport);
-
-    if (undefined === projPt)
-      return undefined;
-
-    const offsetDir = Vector3d.createStartEnd(facePt, projPt);
-    let offset = offsetDir.magnitude();
-
-    if (offset < Geometry.smallMetricDistance)
-      return undefined;
-
-    if (offsetDir.dotProduct(faceNormal) < 0.0)
-      offset = -offset;
-
-    try {
-      this._startedCmd = await this.startCommand();
-      const params: OffsetFacesProps = { faces: this._acceptedSubEntity.subEntity, distances: offset };
-      const opts: ElementGeometryResultOptions = {
-        wantGraphic: isAccept ? undefined : true,
-        chordTolerance: computeChordToleranceFromPoint(ev.viewport, ev.point),
-        requestId: `${this.toolId}:${this.agenda.elements[0]}`,
-        writeChanges: isAccept ? true : undefined,
-      };
-      return await ElementGeometryCacheTool.callCommand("offsetFaces", this.agenda.elements[0], params, opts);
-    } catch (err) {
-      return undefined;
-    }
-  }
-
-  protected override setupAccuDraw(): void {
-    if (undefined === this._acceptedSubEntity?.point || undefined === this._acceptedSubEntity?.normal)
-      return;
-
-    const facePt = Point3d.fromJSON(this._acceptedSubEntity.point);
-    const faceNormal = Vector3d.fromJSON(this._acceptedSubEntity.normal);
-
-    const hints = new AccuDrawHintBuilder();
-    hints.setOriginFixed = true;
-    hints.setLockY = true;
-    hints.setLockZ = true;
-    hints.setModeRectangular();
-    hints.setOrigin(facePt);
-    hints.setXAxis2(faceNormal);
-    hints.sendHints();
-  }
-
-  public async onRestartTool(): Promise<void> {
-    const tool = new OffsetFacesTool();
-    if (!await tool.run())
-      return this.exitTool();
   }
 }

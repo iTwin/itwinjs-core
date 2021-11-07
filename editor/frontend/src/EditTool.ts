@@ -9,7 +9,7 @@
 import { editorChannel } from "@itwin/editor-common";
 import { IModelApp, IpcApp } from "@itwin/core-frontend";
 import { DeleteElementsTool } from "./DeleteElementsTool";
-import { OffsetFacesTool } from "./ElementGeometryTool";
+import { CutSolidElementsTool, EmbossSolidElementsTool, HollowFacesTool, ImprintSolidElementsTool, IntersectSolidElementsTool, LoftProfilesTool, OffsetFacesTool, SewSheetElementsTool, SubtractSolidElementsTool, SweepAlongPathTool, UniteSolidElementsTool } from "./SolidModelingTools";
 import { ProjectLocationCancelTool, ProjectLocationHideTool, ProjectLocationSaveTool, ProjectLocationShowTool } from "./ProjectLocation/ProjectExtentsDecoration";
 import { ProjectGeolocationMoveTool, ProjectGeolocationNorthTool, ProjectGeolocationPointTool } from "./ProjectLocation/ProjectGeolocation";
 import { CreateArcTool, CreateBCurveTool, CreateCircleTool, CreateEllipseTool, CreateLineStringTool, CreateRectangleTool } from "./SketchTools";
@@ -123,6 +123,16 @@ export class EditTools {
     if (registerAllTools || options?.registerSolidModelingTools) {
       const tools = [
         OffsetFacesTool,
+        HollowFacesTool,
+        UniteSolidElementsTool,
+        SubtractSolidElementsTool,
+        IntersectSolidElementsTool,
+        SewSheetElementsTool,
+        CutSolidElementsTool,
+        EmbossSolidElementsTool,
+        ImprintSolidElementsTool,
+        SweepAlongPathTool,
+        LoftProfilesTool,
       ];
 
       for (const tool of tools)

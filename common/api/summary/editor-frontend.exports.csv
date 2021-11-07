@@ -2,6 +2,7 @@ sep=;
 Release Tag;API Item
 alpha;ArcMethod
 alpha;BCurveMethod
+alpha;class BooleanOperationTool 
 alpha;CircleMethod
 alpha;computeChordToleranceFromPoint(vp: Viewport, pt: Point3d, radius?: number): number
 alpha;computeChordToleranceFromRange(vp: Viewport, range: Range3d): number
@@ -14,13 +15,20 @@ alpha;CreateEllipseTool
 alpha;CreateLineStringTool 
 alpha;class CreateOrContinuePathTool 
 alpha;CreateRectangleTool 
+alpha;CutSolidElementsTool 
 alpha;DeleteElementsTool 
 alpha;DynamicGraphicsProvider
 alpha;EditorOptions
 alpha;EditTools
 alpha;class ElementGeometryCacheTool 
 alpha;ElementGeometryGraphicsProvider
+alpha;EmbossSolidElementsTool 
+alpha;HollowFacesTool 
+alpha;ImprintSolidElementsTool 
+alpha;ImprintSolidMethod
+alpha;IntersectSolidElementsTool 
 alpha;class LocateSubEntityTool 
+alpha;LoftProfilesTool 
 alpha;MoveElementsTool 
 alpha;OffsetFacesTool 
 beta;ProjectExtentsClipDecoration 
@@ -36,9 +44,13 @@ alpha;RedoTool
 alpha;RotateAbout
 alpha;RotateElementsTool 
 alpha;RotateMethod
+alpha;SewSheetElementsTool 
 alpha;SubEntityData
+alpha;SubtractSolidElementsTool 
+alpha;SweepAlongPathTool 
 alpha;class TransformElementsTool 
 alpha;TransformGraphicsData
 alpha;TransformGraphicsProvider
 alpha;UndoAllTool 
 alpha;UndoTool 
+alpha;UniteSolidElementsTool 
