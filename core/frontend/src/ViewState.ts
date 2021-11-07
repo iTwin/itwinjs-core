@@ -8,13 +8,13 @@
 
 import { assert, BeEvent, Id64, Id64Arg, Id64String, JsonUtils } from "@itwin/core-bentley";
 import {
-  Angle, AxisOrder, ClipVector, Constant, Geometry, LongitudeLatitudeNumber, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d,
+  Angle, AxisOrder, ClipVector, Constant, Geometry, IndexedPolyface, LongitudeLatitudeNumber, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d,
   Plane3dByOriginAndUnitNormal, Point2d, Point3d, PolyfaceBuilder, Range2d, Range3d, Ray3d, StrokeOptions, Transform, Vector2d, Vector3d, XAndY,
   XYAndZ, XYZ, YawPitchRollAngles,
 } from "@itwin/core-geometry";
 import {
   AnalysisStyle, AxisAlignedBox3d, Camera, Cartographic, ColorDef, FeatureAppearance, Frustum, GlobeMode, Gradient, GraphicParams, GridOrientationType,
-  ModelClipGroups, Npc, RenderMaterial, RenderSchedule, SubCategoryOverride, TextureMapping, ViewDefinition2dProps, ViewDefinition3dProps,
+  ModelClipGroups, Npc, RenderMaterial, RenderSchedule, SkyCube, SkySphere, SubCategoryOverride, TextureMapping, ViewDefinition2dProps, ViewDefinition3dProps,
   ViewDefinitionProps, ViewDetails, ViewDetails3d, ViewFlags, ViewStateProps,
 } from "@itwin/core-common";
 import { AuxCoordSystem2dState, AuxCoordSystem3dState, AuxCoordSystemState } from "./AuxCoordSys";
@@ -30,6 +30,7 @@ import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManag
 import { GraphicType } from "./render/GraphicBuilder";
 import { RenderClipVolume } from "./render/RenderClipVolume";
 import { RenderMemory } from "./render/RenderMemory";
+import { RenderGraphicOwner } from "./render/RenderGraphic";
 import { RenderScheduleState } from "./RenderScheduleState";
 import { SheetViewState } from "./SheetViewState";
 import { SpatialViewState } from "./SpatialViewState";
@@ -42,6 +43,8 @@ import { ViewingSpace } from "./ViewingSpace";
 import { Viewport } from "./Viewport";
 import { ViewPose, ViewPose2d, ViewPose3d } from "./ViewPose";
 import { ViewStatus } from "./ViewStatus";
+import { Environment } from "@itwin/core-common";
+import { SkyBox } from "./render/RenderSystem";
 
 /** Describes the largest and smallest values allowed for the extents of a [[ViewState]].
  * Attempts to exceed these limits in any dimension will fail, preserving the previous extents.
@@ -1265,6 +1268,168 @@ export abstract class ViewState extends ElementState {
    */
   public get secondaryViewports(): Iterable<Viewport> {
     return [];
+  }
+}
+
+interface GroundPlaneDecorations {
+  readonly aboveParams: GraphicParams;
+  readonly belowParams: GraphicParams;
+}
+
+interface SkyBoxDecorations {
+  graphic?: RenderGraphicOwner;
+  promise?: Promise<SkyBox.CreateParams>;
+}
+
+class EnvironmentDecorations {
+  private readonly _view: ViewState3d;
+  private readonly _onLoaded: () => void;
+  private _environment: Environment;
+  private _ground?: GroundPlaneDecorations;
+  private _sky: SkyBoxDecorations;
+
+  public constructor(view: ViewState3d, onLoaded: () => void) {
+    this._environment = view.displayStyle.environment;
+    this._view = view;
+    this._onLoaded = onLoaded;
+
+    this._sky = { };
+    this.loadSky();
+    if (this._environment.displayGround)
+      this.loadGround();
+  }
+
+  public dispose(): void {
+    this._ground = undefined;
+
+    this._sky.graphic?.disposeGraphic();
+    this._sky.promise = undefined;
+  }
+
+  public setEnvironment(env: Environment): void {
+    const prev = this._environment;
+    if (prev === env)
+      return;
+
+    // Update ground plane
+    if (!env.displayGround || env.ground !== prev.ground)
+      this._ground = undefined;
+
+    if (env.displayGround && !this._ground)
+      this.loadGround();
+
+    // Update sky box
+    if (env.sky !== prev.sky)
+      this.loadSky();
+  }
+
+  public decorate(context: DecorateContext): void {
+    const env = this._environment;
+    if (env.displaySky && this._sky.graphic)
+      context.setSkyBox(this._sky.graphic);
+
+    if (!env.displayGround || !this._ground)
+      return;
+
+    const extents = this._view.getGroundExtents(context.viewport);
+    if (extents.isNull)
+      return;
+
+    const points: Point3d[] = [extents.low.clone(), extents.low.clone(), extents.high.clone(), extents.high.clone()];
+    points[1].x = extents.high.x;
+    points[3].x = extents.low.x;
+
+    const aboveGround = this._view.isEyePointAbove(extents.low.z);
+    const params = aboveGround ? this._ground.aboveParams : this._ground.belowParams;
+    const builder = context.createGraphicBuilder(GraphicType.WorldDecoration);
+    builder.activateGraphicParams(params);
+
+    const strokeOptions = new StrokeOptions();
+    strokeOptions.needParams = true;
+    const polyfaceBuilder = PolyfaceBuilder.create(strokeOptions);
+    polyfaceBuilder.toggleReversedFacetFlag();
+    const uvParams: Point2d[] = [Point2d.create(0, 0), Point2d.create(1, 0), Point2d.create(1, 1), Point2d.create(0, 1)];
+    polyfaceBuilder.addQuadFacet(points, uvParams);
+    const polyface = polyfaceBuilder.claimPolyface(false);
+
+    builder.addPolyface(polyface, true);
+    context.addDecorationFromBuilder(builder);
+  }
+
+  private loadGround(): void {
+    assert(undefined === this._ground);
+    const aboveParams = this.createGroundParams(true);
+    const belowParams = this.createGroundParams(false);
+    if (aboveParams && belowParams)
+      this._ground = { aboveParams, belowParams };
+  }
+
+  private createGroundParams(above: boolean): GraphicParams | undefined {
+    // Create a gradient texture.
+    const ground = this._environment.ground;
+    const values = [0, 0.25, 0.5 ];
+    const color = above ? ground.aboveColor : ground.belowColor;
+    const alpha = above ? 0x80 : 0x85;
+    const groundColors = [color.withTransparency(0xff), color, color];
+    groundColors[1] = groundColors[2] = color.withTransparency(alpha);
+
+    const gradient = new Gradient.Symb();
+    gradient.mode = Gradient.Mode.Spherical;
+    gradient.keys = [{ color: groundColors[0], value: values[0] }, { color: groundColors[1], value: values[1] }, { color: groundColors[2], value: values[2] }];
+    const texture = IModelApp.renderSystem.getGradientTexture(gradient, this._view.iModel);
+    if (!texture)
+      return undefined;
+
+    // Create a material using the gradient texture
+    const matParams = new RenderMaterial.Params();
+    matParams.diffuseColor = ColorDef.white;
+    matParams.shadows = false;
+    matParams.ambient = 1;
+    matParams.diffuse = 0;
+
+    const mapParams = new TextureMapping.Params();
+    const transform = new TextureMapping.Trans2x3(0, 1, 0, 1, 0, 0);
+    mapParams.textureMatrix = transform;
+    matParams.textureMapping = new TextureMapping(texture, mapParams);
+    const material = IModelApp.renderSystem.createMaterial(matParams, this._view.iModel);
+    if (!material)
+      return undefined;
+
+    // Create GraphicParams using the material.
+    const params = new GraphicParams();
+    params.lineColor = gradient.keys[0].color;
+    params.fillColor = ColorDef.white;  // Fill should be set to opaque white for gradient texture...
+    params.material = material;
+
+    return params;
+  }
+
+  private loadSky(): void {
+    const promise = this.loadSkyParams();
+    this._sky.promise = promise;
+    promise.then((params) => {
+      if (promise === this._sky.promise) {
+        this._sky.promise = undefined;
+        const gf = IModelApp.renderSystem.createSkyBox(params);
+        this._sky.graphic = gf ? IModelApp.renderSystem.createGraphicOwner(gf) : undefined;
+        this._onLoaded();
+      }
+    });
+    promise.catch(() => {
+      if (this._sky.promise === promise) {
+        this._sky.promise = this._sky.graphic = undefined;
+        this._onLoaded();
+      }
+    });
+  }
+
+  private async loadSkyParams(): Promise<SkyBox.CreateParams> {
+    const sky = this._environment.sky;
+    // ###TODO if (sky instanceof SkyCube) {
+    // ###TODO } else if (sky instanceof SkySphere) {
+    // ###TODO } else {
+      return SkyBox.CreateParams.createForGradient(sky.gradient, this._view.iModel.globalOrigin.z);
+    // ###TODO }
   }
 }
 
