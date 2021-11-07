@@ -153,7 +153,9 @@ const unitRange2d = Range2d.createXYXY(0, 0, 1, 1);
 const scratchRange2d = Range2d.createNull();
 const scratchRange2dIntersect = Range2d.createNull();
 
-/** @internal */
+/** Arguments to [[ViewState.attachToViewport]].
+ * @internal
+ */
 export interface AttachToViewportArgs {
   invalidateDecorations: () => void;
 }
@@ -2128,6 +2130,7 @@ export abstract class ViewState3d extends ViewState {
     return this.setupFromFrustum(frustum);
   }
 
+  /** @internal */
   public override attachToViewport(args: AttachToViewportArgs): void {
     super.attachToViewport(args);
 

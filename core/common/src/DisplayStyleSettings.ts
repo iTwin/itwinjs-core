@@ -471,17 +471,17 @@ export class DisplayStyleSettings {
   public readonly onSubCategoryOverridesChanged = new BeEvent<(subCategoryId: Id64String, newOverrides: SubCategoryOverride | undefined) => void>();
   /** Event raised just before changing the appearance override for a model. */
   public readonly onModelAppearanceOverrideChanged = new BeEvent<(modelId: Id64String, newAppearance: FeatureAppearance | undefined) => void>();
-  /** Event raised just prior to assignment to the [[thematic]] property. */
+  /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.thematic]] property. */
   public readonly onThematicChanged = new BeEvent<(newThematic: ThematicDisplay) => void>();
-  /** Event raised just prior to assignment to the [[hiddenLineSettings]] property. */
+  /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.hiddenLineSettings]] property. */
   public readonly onHiddenLineSettingsChanged = new BeEvent<(newSettings: HiddenLine.Settings) => void>();
-  /** Event raised just prior to assignment to the [[ambientOcclusionSettings]] property. */
+  /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.ambientOcclusionSettings]] property. */
   public readonly onAmbientOcclusionSettingsChanged = new BeEvent<(newSettings: AmbientOcclusion.Settings) => void>();
-  /** Event raised just prior to assignment to the [[solarShadows]] property. */
+  /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.solarShadows]] property. */
   public readonly onSolarShadowsChanged = new BeEvent<(newSettings: SolarShadowSettings) => void>();
   /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.environment]] property. */
   public readonly onEnvironmentChanged = new BeEvent<(newEnv: Readonly<Environment>) => void>();
-  /** Event raised just prior to assignment to the [[lights]] property. */
+  /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.lights]] property. */
   public readonly onLightsChanged = new BeEvent<(newLights: LightSettings) => void>();
   /** Event raised just before changing the plan projection settings for a model. */
   public readonly onPlanProjectionSettingsChanged = new BeEvent<(modelId: Id64String, newSettings: PlanProjectionSettings | undefined) => void>();
@@ -1190,7 +1190,9 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
       this._json3d.solarShadows = json;
   }
 
-  /** @public */
+  /** Controls the display of a [[SkyBox]] and [[GroundPlane]].
+   * @public
+   */
   public get environment(): Environment {
     return this._environment;
   }
@@ -1202,12 +1204,18 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     }
   }
 
+  /** Toggle display of the [[environment]]'s [[SkyBox]].
+   * @param display Whether to display the skybox, or `undefined` to toggle the current display.
+   */
   public toggleSkyBox(display?: boolean): void {
     display = display ?? this.environment.displaySky;
     if (display !== this.environment.displaySky)
       this.environment = this.environment.withDisplay({ sky: display });
   }
 
+  /** Toggle display of the [[environment]]'s [[GroundPLane]].
+   * @param display Whether to display the ground plane, or `undefined` to toggle the current display.
+   */
   public toggleGroundPlane(display?: boolean): void {
     display = display ?? this.environment.displayGround;
     if (display !== this.environment.displayGround)

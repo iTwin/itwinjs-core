@@ -8,10 +8,9 @@
 
 import { Id64String, IDisposable } from "@itwin/core-bentley";
 
-/** JSON representation of the information required to obtain a [[RenderTexture]] for a given purpose - for example,
- * as part of a [[SkySphereImageProps]].
- *  - Id64String: The Id of a persistent [Texture]]($backend) element stored in an iModel.
- *  - Any other string: Url that resolves to an HTMLImageElement.
+/** Identifies an image to be used to produce a [[RenderTexture]] for a given purpose - for example,
+ * as part of a [[SkyBox]]. If the string is a valid `Id64String`, it refers to a persistent [Texture]($backend) element stored in an iModel.
+ * Otherwise, it is interpreted as a Url resolving to an HTMLImageElement.
  * @see [[SkySphereImageProps.texture]] and [[SkyCubeImageProps]].
  * @public
  */

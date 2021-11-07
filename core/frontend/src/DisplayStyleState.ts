@@ -755,19 +755,12 @@ export class DisplayStyle2dState extends DisplayStyleState {
 export class DisplayStyle3dState extends DisplayStyleState {
   /** @internal */
   public static override get className() { return "DisplayStyle3d"; }
-  // ###TODO private _skyBoxParams?: SkyBox.CreateParams;
-  // ###TODO private _skyBoxParamsLoaded?: boolean;
   private _settings: DisplayStyle3dSettings;
 
   public get settings(): DisplayStyle3dSettings { return this._settings; }
 
   public constructor(props: DisplayStyleProps, iModel: IModelConnection, source?: DisplayStyle3dState) {
     super(props, iModel, source);
-    // ###TODO if (source && source.iModel === this.iModel) {
-    // ###TODO   this._skyBoxParams = source._skyBoxParams;
-    // ###TODO   this._skyBoxParamsLoaded = source._skyBoxParamsLoaded;
-    // ###TODO }
-
     this._settings = new DisplayStyle3dSettings(this.jsonProperties, { createContextRealityModel: (modelProps) => this.createRealityModel(modelProps) });
     this.registerSettingsEventListeners();
   }
@@ -779,43 +772,8 @@ export class DisplayStyle3dState extends DisplayStyleState {
     this.settings.environment = env;
   }
 
-  // ###TODO private changeEnvironment(env: Environment): void {
-  // ###TODO   const prevEnv = this.settings.environment;
-  // ###TODO   this._environment = undefined;
-
-  // ###TODO   // Regenerate the skybox if the sky settings have changed
-  // ###TODO   if (undefined !== this._skyBoxParamsLoaded && !isSameSkyBox(env.sky, prevEnv.sky)) {
-  // ###TODO     // NB: We only reset _skyBoxParamsLoaded - keep the previous skybox (if any) to continue drawing until the new one (if any) is ready
-  // ###TODO     this._skyBoxParamsLoaded = undefined;
-  // ###TODO   }
-  // ###TODO }
-
   public get lights(): LightSettings { return this.settings.lights; }
   public set lights(lights: LightSettings) { this.settings.lights = lights; }
-
-  // ###TODO private onLoadSkyBoxParams(params?: SkyBox.CreateParams, vp?: Viewport): void {
-  // ###TODO   this._skyBoxParams = params;
-  // ###TODO   this._skyBoxParamsLoaded = true;
-  // ###TODO   if (undefined !== vp)
-  // ###TODO     vp.invalidateDecorations();
-  // ###TODO }
-
-  /** Attempts to create textures for the sky of the environment, and load it into the sky. Returns true on success, and false otherwise.
-   * @internal
-   */
-  // ###TODO public loadSkyBoxParams(system: RenderSystem, vp?: Viewport): SkyBox.CreateParams | undefined {
-  // ###TODO   if (undefined === this._skyBoxParamsLoaded) {
-  // ###TODO     const params = this.environment.sky.loadParams(system, this.iModel);
-  // ###TODO     if (undefined === params || params instanceof SkyBox.CreateParams) {
-  // ###TODO       this.onLoadSkyBoxParams(params, vp);
-  // ###TODO     } else {
-  // ###TODO       this._skyBoxParamsLoaded = false; // indicates we're currently loading them.
-  // ###TODO       params.then((result?: SkyBox.CreateParams) => this.onLoadSkyBoxParams(result, vp)).catch((_err) => this.onLoadSkyBoxParams(undefined));
-  // ###TODO     }
-  // ###TODO   }
-
-  // ###TODO   return this._skyBoxParams;
-  // ###TODO }
 
   /** The direction of the solar light. */
   public get sunDirection(): Readonly<Vector3d> {
@@ -842,10 +800,6 @@ export class DisplayStyle3dState extends DisplayStyleState {
   /** @internal */
   protected override registerSettingsEventListeners(): void {
     super.registerSettingsEventListeners();
-
-    // ###TODO this.settings.onEnvironmentChanged.addListener((env) => {
-    // ###TODO   this.changeEnvironment(env);
-    // ###TODO });
 
     this.settings.onOverridesApplied.addListener((overrides: DisplayStyle3dSettingsProps) => {
       if (overrides.thematic && this.settings.thematic.displayMode === ThematicDisplayMode.Height && undefined === overrides.thematic.range) {

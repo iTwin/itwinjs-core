@@ -10,52 +10,67 @@ import { Id64, Id64String, NonFunctionPropertiesOf } from "@itwin/core-bentley";
 import { ColorDef, ColorDefProps } from "./ColorDef";
 import { TextureImageSpec } from "./RenderTexture";
 
-/** Enumerates the supported types of [SkyBox]($frontend) images.
+/** Supported types of [[SkyBox]] images.
+ * @see [[SkyBoxImageProps]].
  * @public
  */
 export enum SkyBoxImageType {
+  /** No image, indicating a [[SkyGradient]] should be displayed. */
   None,
-  /** A single image mapped to the surface of a sphere. @see [SkySphere]($frontend) */
+  /** A single image mapped to the surface of a sphere.
+   * @see [[SkySphere]].
+   */
   Spherical,
-  /** 6 images mapped to the faces of a cube. @see [SkyCube]($frontend) */
+  /** Six images mapped to the faces of a cube.
+   * @see [[SkyCube]].
+   */
   Cube,
   /** @internal not yet supported */
   Cylindrical,
 }
 
-/** JSON representation of a set of images used by a [SkyCube]($frontend). Each property specifies the element ID of a texture associated with one face of the cube.
+/** JSON representation of the six images used by a [[SkyCube]].
+ * Each property specifies the image for a face of the cube as either an image URL, or the Id of a [Texture]($backend) element.
  * @public
  */
 export interface SkyCubeProps {
-  /** Id of a persistent texture element stored in the iModel to use for the front side of the skybox cube. */
   front: TextureImageSpec;
-  /** Id of a persistent texture element stored in the iModel to use for the back side of the skybox cube. */
   back: TextureImageSpec;
-  /** Id of a persistent texture element stored in the iModel to use for the top of the skybox cube. */
   top: TextureImageSpec;
-  /** Id of a persistent texture element stored in the iModel to use for the bottom of the skybox cube. */
   bottom: TextureImageSpec;
-  /** Id of a persistent texture element stored in the iModel to use for the right side of the skybox cube. */
   right: TextureImageSpec;
-  /** Id of a persistent texture element stored in the iModel to use for the left side of the skybox cube. */
   left: TextureImageSpec;
 }
 
+/** JSON representation of the image used for a [[SkySphere]].
+ * @see [[SkyBoxProps.image]].
+ * @public
+ */
 export interface SkySphereImageProps {
   type: SkyBoxImageType.Spherical;
   texture: TextureImageSpec;
+  /** @internal */
   textures?: never;
 }
 
+/** JSON representation of the images used for a [[SkyCube]].
+ * @see [[SkyBoxProps.image]].
+ * @public
+ */
 export interface SkyCubeImageProps {
   type: SkyBoxImageType.Cube;
   textures: SkyCubeProps;
+  /** @internal */
   texture?: never;
 }
 
+/** JSON representation of the image(s) to be mapped to the surfaces of a [[SkyBox]].
+ * @see [[SkyBoxProps.image]].
+ * @public
+ */
 export type SkyBoxImageProps = SkySphereImageProps | SkyCubeImageProps | { type?: SkyBoxImageType; texture?: never; textures?: never };
 
-/** JSON representation of a [SkyBox]($frontend) that can be drawn as the background of a [ViewState3d]($frontend).
+/** JSON representation of a [[SkyBox]] that can be drawn as the background of a [ViewState3d]($frontend).
  * An object of this type can describe one of several types of sky box:
  *  - A cube with a texture image mapped to each face; or
  *  - A sphere with a single texture image mapped to its surface; or
@@ -80,15 +95,15 @@ export interface SkyBoxProps {
    * Default: false.
    */
   display?: boolean;
-  /** For a [SkyGradient]($frontend), if true, a 2-color gradient skybox is used instead of a 4-color.
+  /** For a [[SkyGradient]], if true, a 2-color gradient skybox is used instead of a 4-color.
    * Default: false.
    */
   twoColor?: boolean;
-  /** The color of the sky at the horizon. Unused unless this is a four-color [SkyGradient]($frontend).
+  /** The color of the sky at the horizon. Unused unless this is a four-color [[SkyGradient]].
    * Default: (143, 205, 255).
    */
   skyColor?: ColorDefProps;
-  /** The color of the ground at the horizon. Unused unless this is a four-color [SkyGradient]($frontend).
+  /** The color of the ground at the horizon. Unused unless this is a four-color [[SkyGradient]].
    * Default: (120, 143, 125).
    */
   groundColor?: ColorDefProps;
@@ -100,11 +115,11 @@ export interface SkyBoxProps {
    * Default: (40, 15, 0).
    */
   nadirColor?: ColorDefProps;
-  /** For a 4-color [SkyGradient]($frontend), controls speed of change from sky color to zenith color; otherwise unused.
+  /** For a 4-color [[SkyGradient]], controls speed of change from sky color to zenith color; otherwise unused.
    * Default: 4.0.
    */
   skyExponent?: number;
-  /** For a 4-color [SkyGradient]($frontend), controls speed of change from ground color to nadir color; otherwise unused.
+  /** For a 4-color [[SkyGradient]], controls speed of change from ground color to nadir color; otherwise unused.
    * Default: 4.0.
    */
   groundExponent?: number;
@@ -124,8 +139,16 @@ function colorDefFromJson(props?: ColorDefProps): ColorDef | undefined {
   return props ? ColorDef.fromJSON(props) : undefined;
 }
 
+/** A type containing all of the properties and none of the methods of [[SkyGradient]] with `readonly` modifiers removed.
+ * @see [[SkyGradient.create]] and [[SkyGradient.clone]].
+ * @public
+ */
 export type SkyGradientProperties = NonFunctionPropertiesOf<SkyGradient>;
 
+/** Describes how to map a two- or four-color [[Gradient]] to the interior of a sphere to produce a [[SkyBox]].
+ * @see [[SkyBox.gradient]].
+ * @public
+ */
 export class SkyGradient {
   public readonly twoColor: boolean;
   public readonly skyColor: ColorDef;
@@ -145,12 +168,15 @@ export class SkyGradient {
     this.groundExponent = args.groundExponent ?? defaultExponent;
   }
 
+  /** Default settings for a four-color gradient. */
   public static readonly defaults = new SkyGradient({});
 
+  /** Create a new gradient. Any properties not specified by `props` are initialized to their default values. */
   public static create(props?: Partial<SkyGradientProperties>): SkyGradient {
     return props ? new this(props) : this.defaults;
   }
 
+  /** Create from JSON representation. */
   public static fromJSON(props?: SkyBoxProps): SkyGradient {
     if (!props)
       return this.defaults;
@@ -166,10 +192,14 @@ export class SkyGradient {
     });
   }
 
+  /** Create ea copy of this gradient, identical except for any properties explicitly specified by `changedProps`.
+   * Any properties of `changedProps` explicitly set to `undefined` will be reset to their default values.
+   */
   public clone(changedProps: SkyGradientProperties): SkyGradient {
     return new SkyGradient({ ...this, ...changedProps });
   }
 
+  /** Convert to JSON representation. */
   public toJSON(): SkyBoxProps {
     const props: SkyBoxProps = {
       skyColor: this.skyColor.toJSON(),
@@ -190,6 +220,7 @@ export class SkyGradient {
     return props;
   }
 
+  /** Returns true if this gradient is equivalent to the supplied gradient. */
   public equals(other: SkyGradient): boolean {
     if (this === other)
       return true;
@@ -199,21 +230,27 @@ export class SkyGradient {
   }
 }
 
-export type SkyBoxProperties = NonFunctionPropertiesOf<SkyBox>;
-
+/** Describes how to draw a representation of a sky, as part of an [[Environment]].
+ * @see [[SkyBoxProps]].
+ * @public
+ */
 export class SkyBox {
+  /** The gradient settings, used if no cube or sphere images are supplied, or if the images cannot be loaded. */
   public readonly gradient: SkyGradient;
 
   protected constructor(gradient: SkyGradient) {
     this.gradient = gradient;
   }
 
+  /** Default settings for a four-color gradient. */
   public static readonly defaults = new SkyBox(SkyGradient.defaults);
 
+  /** Create a skybox that displays the specified gradient, or the default gradient if none is supplied. */
   public static createGradient(gradient?: SkyGradient): SkyBox {
     return gradient ? new this(gradient) : this.defaults;
   }
 
+  /** Create from JSON representation. */
   public static fromJSON(props?: SkyBoxProps): SkyBox {
     const gradient = SkyGradient.fromJSON(props);
 
@@ -237,6 +274,9 @@ export class SkyBox {
     return this.createGradient(gradient);
   }
 
+  /** Convert to JSON representation.
+   * @param display If defined, the value to use for [[SkyBoxProps.display]]; otherwise, that property will be left undefined.
+   */
   public toJSON(display?: boolean): SkyBoxProps {
     const props = this.gradient.toJSON();
     if (undefined !== display)
@@ -251,14 +291,23 @@ export class SkyBox {
   }
 }
 
+/** Describes how to draw a representation of a sky by mapping a single image to the interior of a sphere.
+ * @public
+ */
 export class SkySphere extends SkyBox {
+  /** The image to map to the interior of the sphere. */
   public readonly image: TextureImageSpec;
 
+  /** Create a new sky sphere using the specified image.
+   * @param image The image to map to the interior of the sphere.
+   * @param gradient Optionally overrides the default gradient settings used if the image cannot be obtained.
+   */
   public constructor(image: TextureImageSpec, gradient?: SkyGradient) {
     super(gradient ?? SkyGradient.defaults);
     this.image = image;
   }
 
+  /** @internal override */
   public override toJSON(display?: boolean): SkyBoxProps {
     const props = super.toJSON(display);
     props.image = {
@@ -275,14 +324,23 @@ export class SkySphere extends SkyBox {
   }
 }
 
+/** Describes how to draw a representation of a sky by mapping images to the interior faces of a cube.
+ * @public
+ */
 export class SkyCube extends SkyBox {
+  /** The images to map to each face of the cube. */
   public readonly images: SkyCubeProps;
 
+  /** Create a new sky cube using the specified images.
+   * @param images The images to map to each face of the cube.
+   * @param Optionally overrides  the default gradient settings used if the images cannot be obtained.
+   */
   public constructor(images: SkyCubeProps, gradient?: SkyGradient) {
     super(gradient ?? SkyGradient.defaults);
     this.images = { ...images };
   }
 
+  /** @internal override */
   public override toJSON(display?: boolean): SkyBoxProps {
     const props = super.toJSON(display);
     props.image = {

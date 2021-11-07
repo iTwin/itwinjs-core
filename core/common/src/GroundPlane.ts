@@ -12,6 +12,7 @@ import { ColorDef, ColorDefProps } from "./ColorDef";
 import { Gradient } from "./Gradient";
 
 /** JSON representation of a [[GroundPlane]].
+ * @see [[EnvironmentProps.ground]].
  * @public
  */
 export interface GroundPlaneProps {
@@ -25,17 +26,25 @@ export interface GroundPlaneProps {
   belowColor?: ColorDefProps;
 }
 
+/** A type containing all of the properties and none of the methods of [[GroundPlane]], with `readonly` modifiers removed.
+ * @see [[GroundPlane.create]]>
+ * @public
+ */
 export type GroundPlaneProperties = NonFunctionPropertiesOf<GroundPlane>;
 
 const defaultAboveColor = ColorDef.fromTbgr(ColorByName.darkGreen);
 const defaultBelowColor = ColorDef.fromTbgr(ColorByName.darkBrown);
 
 /** A circle drawn at a Z elevation, whose diameter is the the XY diagonal of the project extents, used to represent the ground as a reference point within a spatial view.
+ * @see [[Environment.ground]].
  * @public
  */
 export class GroundPlane {
+  /** The Z height in meters at which to draw the plane. */
   public readonly elevation: number;
+  /** The color in which to draw the ground plane when viewed from above. */
   public readonly aboveColor: ColorDef;
+  /** The color in which to draw the ground plane when viewed from below. */
   public readonly belowColor: ColorDef;
 
   protected constructor(props: Partial<GroundPlaneProperties>) {
@@ -44,12 +53,15 @@ export class GroundPlane {
     this.belowColor = props.belowColor ?? defaultBelowColor;
   }
 
+  /** Default settings with a dark green "above" color, dark brown "below" color, and elevation of -0.01 meters. */
   public static readonly defaults = new GroundPlane({ });
 
+  /** Create a new GroundPlane. Any properties not specified by `props` will be initialized to their default values. */
   public static create(props?: GroundPlaneProperties) {
     return props ? new this(props) : this.defaults;
   }
 
+  /** Create from JSON representation. */
   public static fromJSON(props?: GroundPlaneProps): GroundPlane {
     if (!props)
       return this.defaults;
@@ -61,6 +73,9 @@ export class GroundPlane {
     });
   }
 
+  /** Convert to JSON representation.
+   * @param display If defined, the value to use for [[GroundPlaneProps.display]]; otherwise, that property will be left undefined.
+   */
   public toJSON(display?: boolean): GroundPlaneProps {
     const props: GroundPlaneProps = {
       elevation: this.elevation,
