@@ -8,18 +8,14 @@
 
 import { Id64String, IDisposable } from "@itwin/core-bentley";
 
-export interface UrlTextureImageSpec {
-  readonly url: string;
-  readonly transparency?: boolean; // ###TODO TextureTransparency
-}
-
 /** JSON representation of the information required to obtain a [[RenderTexture]] for a given purpose - for example,
  * as part of a [[SkySphereImageProps]].
  *  - Id64String: The Id of a persistent [Texture]]($backend) element stored in an iModel.
+ *  - Any other string: Url that resolves to an HTMLImageElement.
  * @see [[SkySphereImageProps.texture]] and [[SkyCubeImageProps]].
  * @public
  */
-export type TextureImageSpec = Id64String | UrlTextureImageSpec;
+export type TextureImageSpec = Id64String | string;
 
 /** Represents a texture image applied to a surface during rendering.
  * A RenderTexture is typically - but not always - associated with a [[RenderMaterial]].

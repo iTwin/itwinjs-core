@@ -14,8 +14,8 @@ import {
 } from "@itwin/core-geometry";
 import {
   AnalysisStyle, AxisAlignedBox3d, Camera, Cartographic, ColorDef, FeatureAppearance, Frustum, GlobeMode, Gradient, GraphicParams, GridOrientationType,
-  ModelClipGroups, Npc, RenderMaterial, RenderSchedule, SkyCube, SkySphere, SubCategoryOverride, TextureMapping, ViewDefinition2dProps, ViewDefinition3dProps,
-  ViewDefinitionProps, ViewDetails, ViewDetails3d, ViewFlags, ViewStateProps,
+  ModelClipGroups, Npc, RenderMaterial, RenderSchedule, RenderTexture, SkyCube, SkySphere, SubCategoryOverride, TextureImageSpec, TextureMapping,
+  ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails, ViewDetails3d, ViewFlags, ViewStateProps,
 } from "@itwin/core-common";
 import { AuxCoordSystem2dState, AuxCoordSystem3dState, AuxCoordSystemState } from "./AuxCoordSys";
 import { CategorySelectorState } from "./CategorySelectorState";
@@ -1278,7 +1278,7 @@ interface GroundPlaneDecorations {
 
 interface SkyBoxDecorations {
   graphic?: RenderGraphicOwner;
-  promise?: Promise<SkyBox.CreateParams>;
+  promise?: Promise<SkyBox.CreateParams | undefined>;
 }
 
 class EnvironmentDecorations {
@@ -1407,29 +1407,87 @@ class EnvironmentDecorations {
   private loadSky(): void {
     const promise = this.loadSkyParams();
     this._sky.promise = promise;
+
     promise.then((params) => {
-      if (promise === this._sky.promise) {
-        this._sky.promise = undefined;
-        const gf = IModelApp.renderSystem.createSkyBox(params);
-        this._sky.graphic = gf ? IModelApp.renderSystem.createGraphicOwner(gf) : undefined;
-        this._onLoaded();
-      }
+      if (promise === this._sky.promise)
+        this.setSky(params ?? this.createSkyGradientParams());
     });
+
     promise.catch(() => {
-      if (this._sky.promise === promise) {
-        this._sky.promise = this._sky.graphic = undefined;
-        this._onLoaded();
-      }
+      if (this._sky.promise === promise)
+        this.setSky(this.createSkyGradientParams());
     });
   }
 
-  private async loadSkyParams(): Promise<SkyBox.CreateParams> {
+  private setSky(params: SkyBox.CreateParams): void {
+    this._sky.promise = undefined;
+    const gf = IModelApp.renderSystem.createSkyBox(params);
+    this._sky.graphic = gf ? IModelApp.renderSystem.createGraphicOwner(gf) : undefined;
+    this._onLoaded();
+  }
+
+  private async loadSkyParams(): Promise<SkyBox.CreateParams | undefined> {
     const sky = this._environment.sky;
-    // ###TODO if (sky instanceof SkyCube) {
-    // ###TODO } else if (sky instanceof SkySphere) {
-    // ###TODO } else {
-      return SkyBox.CreateParams.createForGradient(sky.gradient, this._view.iModel.globalOrigin.z);
-    // ###TODO }
+    if (sky instanceof SkyCube) {
+      // Some faces may use the same image. Only request each image once.
+      const specs = new Set<string>([sky.images.front, sky.images.back, sky.images.left, sky.images.right, sky.images.top, sky.images.bottom]);
+      const promises = [];
+      for (const spec of specs)
+        promises.push(this.imageFromSpec(spec));
+
+      return Promise.all(promises).then((images) => {
+        const idToImage = new Map<TextureImageSpec, HTMLImageElement>();
+        let index = 0;
+        for (const spec of specs) {
+          const image = images[index++];
+          if (!image)
+            return undefined;
+          else
+            idToImage.set(spec, image);
+        }
+
+        // eslint-disable-next-line deprecation/deprecation
+        const params = new RenderTexture.Params(undefined, RenderTexture.Type.SkyBox);
+        const txImgs = [
+          idToImage.get(sky.images.front)!, idToImage.get(sky.images.back)!, idToImage.get(sky.images.top)!,
+          idToImage.get(sky.images.bottom)!, idToImage.get(sky.images.right)!, idToImage.get(sky.images.left)!,
+        ];
+
+        const texture = IModelApp.renderSystem.createTextureFromCubeImages(txImgs[0], txImgs[1], txImgs[2], txImgs[3], txImgs[4], txImgs[5], this._view.iModel, params);
+        return texture ? SkyBox.CreateParams.createForCube(texture) : undefined;
+      });
+    } else if (sky instanceof SkySphere) {
+      const rotation = 0; // ###TODO where is this supposed to come from?
+      let texture = IModelApp.renderSystem.findTexture(sky.image, this._view.iModel);
+      if (!texture) {
+        const image = await this.imageFromSpec(sky.image);
+        if (image) {
+          texture = IModelApp.renderSystem.createTexture({
+            image: { source: image },
+            ownership: { iModel: this._view.iModel, key: sky.image },
+          });
+        }
+      }
+
+      if (!texture)
+        return undefined;
+
+      return SkyBox.CreateParams.createForSphere(new SkyBox.SphereParams(texture, rotation), this._view.iModel.globalOrigin.z);
+    } else {
+      return this.createSkyGradientParams();
+    }
+  }
+
+  private createSkyGradientParams(): SkyBox.CreateParams {
+    return SkyBox.CreateParams.createForGradient(this._environment.sky.gradient, this._view.iModel.globalOrigin.z);
+  }
+
+  private async imageFromSpec(spec: TextureImageSpec): Promise<HTMLImageElement | undefined> {
+    if (Id64.isValidId64(spec))
+      return (await IModelApp.renderSystem.loadTextureImage(spec, this._view.iModel))?.image;
+
+    // ###TODO URL
+    return undefined;
   }
 }
 
