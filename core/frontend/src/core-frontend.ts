@@ -20,6 +20,7 @@ export * from "./DrawingViewState";
 export * from "./ElementLocateManager";
 export * from "./EmphasizeElements";
 export * from "./EntityState";
+export * from "./EnvironmentDecorations";
 export * from "./FeatureOverrideProvider";
 export * from "./FlashSettings";
 export * from "./FrontendLoggerCategory";

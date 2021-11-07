@@ -480,7 +480,7 @@ export class DisplayStyleSettings {
   /** Event raised just prior to assignment to the [[solarShadows]] property. */
   public readonly onSolarShadowsChanged = new BeEvent<(newSettings: SolarShadowSettings) => void>();
   /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.environment]] property. */
-  public readonly onEnvironmentChanged = new BeEvent<(newProps: Readonly<Environment>) => void>();
+  public readonly onEnvironmentChanged = new BeEvent<(newEnv: Readonly<Environment>) => void>();
   /** Event raised just prior to assignment to the [[lights]] property. */
   public readonly onLightsChanged = new BeEvent<(newLights: LightSettings) => void>();
   /** Event raised just before changing the plan projection settings for a model. */

@@ -965,7 +965,7 @@ export abstract class Viewport implements IDisposable {
   private attachToView(): void {
     this.registerDisplayStyleListeners(this.view.displayStyle);
     this.registerViewListeners();
-    this.view.attachToViewport();
+    this.view.attachToViewport(this);
     this._mapTiledGraphicsProvider = new MapTiledGraphicsProvider(this);
   }
 
