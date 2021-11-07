@@ -8025,9 +8025,9 @@ export type SkyBoxImageProps = SkySphereImageProps | SkyCubeImageProps | {
 
 // @public
 export enum SkyBoxImageType {
-    Cube = 2,
+    Cube = 3,
     // @internal
-    Cylindrical = 3,
+    Cylindrical = 2,
     None = 0,
     Spherical = 1
 }

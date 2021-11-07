@@ -16,17 +16,17 @@ import { TextureImageSpec } from "./RenderTexture";
  */
 export enum SkyBoxImageType {
   /** No image, indicating a [[SkyGradient]] should be displayed. */
-  None,
+  None = 0,
   /** A single image mapped to the surface of a sphere.
    * @see [[SkySphere]].
    */
-  Spherical,
+  Spherical = 1,
+  /** @internal not yet supported */
+  Cylindrical = 2,
   /** Six images mapped to the faces of a cube.
    * @see [[SkyCube]].
    */
-  Cube,
-  /** @internal not yet supported */
-  Cylindrical,
+  Cube = 3,
 }
 
 /** JSON representation of the six images used by a [[SkyCube]].
