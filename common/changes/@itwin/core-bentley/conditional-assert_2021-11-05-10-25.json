@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-bentley",
+      "comment": "assert accepts a function for condition and/or message, and does nothing unless NODE_ENV-development or explicitly enabled.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-bentley"
+}

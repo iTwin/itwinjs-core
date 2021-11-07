@@ -14,7 +14,8 @@ import { SelectionContextToolDefinitions } from "../selection/SelectionContextIt
 import { ToolbarComposer } from "../toolbar/ToolbarComposer";
 import { ToolbarHelper } from "../toolbar/ToolbarHelper";
 import { UiFramework, UiVisibilityEventArgs } from "../UiFramework";
-import { BackstageAppButton, ToolWidgetComposer } from "./ToolWidgetComposer";
+import { ToolWidgetComposer } from "./ToolWidgetComposer";
+import { BackstageAppButton } from "./BackstageAppButton";
 
 /** Properties that can be used to append items to the default set of toolbar items of [[ReviewToolWidget]].
  * @public
@@ -101,6 +102,7 @@ export function BasicToolWidget(props: BasicToolWidgetProps) {
   }, [props.showCategoryAndModelsContextTools, props.additionalHorizontalItems, props.additionalVerticalItems, getHorizontalToolbarItems, getVerticalToolbarItems]);
 
   const uiIsVisible = useUiVisibility();
+  // istanbul ignore next
   const className = classnames(
     !uiIsVisible && "nz-hidden",
   );

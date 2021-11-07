@@ -554,6 +554,36 @@ export class CreateRectangleTool extends CreateOrContinuePathTool {
     }
 
 // @alpha
+export class CutSolidElementsTool extends ElementGeometryCacheTool {
+    // (undocumented)
+    protected applyAgendaOperation(): Promise<ElementGeometryResultProps | undefined>;
+    // (undocumented)
+    protected buildLocateAgenda(hit: HitDetail): Promise<boolean>;
+    // (undocumented)
+    protected createElementGeometryCache(id: Id64String): Promise<boolean>;
+    // (undocumented)
+    protected get geometryCacheFilter(): ElementGeometryCacheFilter | undefined;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    protected get isProfilePhase(): boolean;
+    // (undocumented)
+    protected onAgendaModified(): Promise<void>;
+    // (undocumented)
+    onRestartTool(): Promise<void>;
+    // (undocumented)
+    processAgenda(_ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    protected get requiredElementCount(): number;
+    // (undocumented)
+    protected targetPoint?: Point3d;
+    // (undocumented)
+    static toolId: string;
+    // (undocumented)
+    protected toolPoint?: Point3d;
+}
+
+// @alpha
 export class DeleteElementsTool extends ElementSetTool {
     // (undocumented)
     protected get allowDragSelect(): boolean;
@@ -640,6 +670,8 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
     // (undocumented)
     protected clearGraphic(): void;
     // (undocumented)
+    protected createElementGeometryCache(id: Id64String): Promise<boolean>;
+    // (undocumented)
     protected createGraphic(graphicData: Uint8Array): Promise<void>;
     // (undocumented)
     protected _firstResult: boolean;
@@ -665,6 +697,8 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
     onCleanup(): Promise<void>;
     // (undocumented)
     onDynamicFrame(_ev: BeButtonEvent, context: DynamicsContext): void;
+    // (undocumented)
+    protected onGeometryCacheFilterChanged(): void;
     // (undocumented)
     onMouseMotion(ev: BeButtonEvent): Promise<void>;
     // (undocumented)
@@ -703,6 +737,32 @@ export class ElementGeometryGraphicsProvider {
 }
 
 // @alpha
+export class EmbossSolidElementsTool extends ElementGeometryCacheTool {
+    // (undocumented)
+    protected applyAgendaOperation(): Promise<ElementGeometryResultProps | undefined>;
+    // (undocumented)
+    protected buildLocateAgenda(hit: HitDetail): Promise<boolean>;
+    // (undocumented)
+    protected get geometryCacheFilter(): ElementGeometryCacheFilter | undefined;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    protected get isProfilePhase(): boolean;
+    // (undocumented)
+    protected onAgendaModified(): Promise<void>;
+    // (undocumented)
+    onRestartTool(): Promise<void>;
+    // (undocumented)
+    processAgenda(_ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    protected get requiredElementCount(): number;
+    // (undocumented)
+    protected targetPoint?: Point3d;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
 export class HollowFacesTool extends LocateSubEntityTool {
     // (undocumented)
     protected applyAgendaOperation(ev: BeButtonEvent, isAccept: boolean): Promise<ElementGeometryResultProps | undefined>;
@@ -714,6 +774,49 @@ export class HollowFacesTool extends LocateSubEntityTool {
     onRestartTool(): Promise<void>;
     // (undocumented)
     static toolId: string;
+}
+
+// @alpha
+export class ImprintSolidElementsTool extends LocateSubEntityTool {
+    // (undocumented)
+    protected applyAgendaOperation(_ev: BeButtonEvent, isAccept: boolean): Promise<ElementGeometryResultProps | undefined>;
+    // (undocumented)
+    protected gatherInput(ev: BeButtonEvent): Promise<EventHandled | undefined>;
+    // (undocumented)
+    protected get geometryCacheFilter(): ElementGeometryCacheFilter | undefined;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    protected method: ImprintSolidMethod;
+    // (undocumented)
+    protected onAgendaModified(): Promise<void>;
+    // (undocumented)
+    onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void;
+    // (undocumented)
+    onRestartTool(): Promise<void>;
+    // (undocumented)
+    protected points: Point3d[];
+    // (undocumented)
+    protected get requiredElementCount(): number;
+    // (undocumented)
+    protected setupAccuDraw(): void;
+    // (undocumented)
+    static toolId: string;
+    // (undocumented)
+    protected get wantAccuSnap(): boolean;
+    // (undocumented)
+    protected get wantAdditionalInput(): boolean;
+    // (undocumented)
+    protected get wantDynamics(): boolean;
+    // (undocumented)
+    protected wantSubEntityType(type: SubEntityType): boolean;
+}
+
+// @alpha (undocumented)
+export enum ImprintSolidMethod {
+    Edges = 1,
+    Element = 0,
+    Points = 2
 }
 
 // @alpha
@@ -753,7 +856,7 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
     // (undocumented)
     protected getLocateAperture(ev: BeButtonEvent): number;
     // (undocumented)
-    protected getMaximumSubEntityHits(type: SubEntityType): 0 | 25;
+    protected getMaximumSubEntityHits(type: SubEntityType): number;
     // (undocumented)
     protected getMaxRayDistance(ev: BeButtonEvent, aperture: number): number;
     // (undocumented)
@@ -783,6 +886,26 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
 }
 
 // @alpha
+export class LoftProfilesTool extends ElementGeometryCacheTool {
+    // (undocumented)
+    protected applyAgendaOperation(): Promise<ElementGeometryResultProps | undefined>;
+    // (undocumented)
+    protected get controlKeyContinuesSelection(): boolean;
+    // (undocumented)
+    protected get geometryCacheFilter(): ElementGeometryCacheFilter | undefined;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    onRestartTool(): Promise<void>;
+    // (undocumented)
+    processAgenda(_ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    protected get requiredElementCount(): number;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
 export class MoveElementsTool extends TransformElementsTool {
     // (undocumented)
     protected calculateTransform(ev: BeButtonEvent): Transform | undefined;
@@ -806,8 +929,6 @@ export class OffsetFacesTool extends LocateSubEntityTool {
     static iconSpec: string;
     // (undocumented)
     onRestartTool(): Promise<void>;
-    // (undocumented)
-    requireWriteableTarget(): boolean;
     // (undocumented)
     protected setupAccuDraw(): void;
     // (undocumented)
@@ -1292,6 +1413,24 @@ export class SubtractSolidElementsTool extends BooleanOperationTool {
     protected get mode(): BooleanMode;
     // (undocumented)
     onRestartTool(): Promise<void>;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
+export class SweepAlongPathTool extends ElementGeometryCacheTool {
+    // (undocumented)
+    protected applyAgendaOperation(): Promise<ElementGeometryResultProps | undefined>;
+    // (undocumented)
+    protected get geometryCacheFilter(): ElementGeometryCacheFilter | undefined;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    onRestartTool(): Promise<void>;
+    // (undocumented)
+    processAgenda(_ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    protected get requiredElementCount(): number;
     // (undocumented)
     static toolId: string;
 }
