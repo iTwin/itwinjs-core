@@ -1213,7 +1213,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
       this.environment = this.environment.withDisplay({ sky: display });
   }
 
-  /** Toggle display of the [[environment]]'s [[GroundPLane]].
+  /** Toggle display of the [[environment]]'s [[GroundPlane]].
    * @param display Whether to display the ground plane, or `undefined` to toggle the current display.
    */
   public toggleGroundPlane(display?: boolean): void {
