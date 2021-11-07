@@ -40,9 +40,9 @@ export class Environment {
   }
 
   public withDisplay(display: { sky?: boolean, ground?: boolean }): Environment {
-    const displaySky = display.sky;
-    const displayGround = display.ground;
-    if ((undefined === displaySky || displaySky === this.displaySky) && (undefined === displayGround || displayGround === this.displayGround))
+    const displaySky = display.sky ?? this.displaySky;
+    const displayGround = display.ground ?? this.displayGround;
+    if (displaySky === this.displaySky && displayGround === this.displayGround)
       return this;
 
     return Environment.create({

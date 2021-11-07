@@ -12,7 +12,7 @@ import {
   WhiteOnWhiteReversalSettings,
 } from "@itwin/core-common";
 import {
-  DisplayStyle3dState, Environment, IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport,
+  DisplayStyle3dState, IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport,
 } from "@itwin/core-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseArgs } from "./parseArgs";
@@ -134,7 +134,7 @@ export class ToggleSkyboxTool extends DisplayStyleTool {
 
   public execute(vp: Viewport): boolean {
     const style = vp.view.displayStyle as DisplayStyle3dState;
-    style.environment = new Environment({ sky: { display: !style.environment.sky.display } });
+    style.environment = style.environment.withDisplay({ sky: !style.environment.displaySky });
     return true;
   }
 }
