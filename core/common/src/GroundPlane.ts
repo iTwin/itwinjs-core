@@ -6,10 +6,9 @@
  * @module DisplayStyles
  */
 
-import { JsonUtils, NonFunctionPropertiesOf } from "@itwin/core-bentley";
+import { NonFunctionPropertiesOf } from "@itwin/core-bentley";
 import { ColorByName } from "./ColorByName";
 import { ColorDef, ColorDefProps } from "./ColorDef";
-import { Gradient } from "./Gradient";
 
 /** JSON representation of a [[GroundPlane]].
  * @see [[EnvironmentProps.ground]].

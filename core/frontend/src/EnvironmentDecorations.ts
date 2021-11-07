@@ -166,6 +166,7 @@ export class EnvironmentDecorations {
     const promise = this.loadSkyParams();
     this._sky.promise = promise;
 
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     promise.then((params) => {
       if (promise === this._sky.promise)
         this.setSky(params ?? this.createSkyGradientParams());

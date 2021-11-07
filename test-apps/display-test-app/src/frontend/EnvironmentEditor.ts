@@ -112,7 +112,7 @@ export class EnvironmentEditor {
 
     this._eeSkyColor = createColorInput({
       handler: (value: string) => this.updateEnvironment({ skyColor: ColorDef.create(value).toJSON() }),
-        value: !curGrad ? "#FFFFFF" : curGrad.skyColor.toHexString(),
+      value: !curGrad ? "#FFFFFF" : curGrad.skyColor.toHexString(),
       label: "Sky Color",
       parent: row1,
     });
@@ -120,7 +120,7 @@ export class EnvironmentEditor {
 
     this._eeZenithColor = createColorInput({
       handler: (value: string) => this.updateEnvironment({ zenithColor: ColorDef.create(value).toJSON() }),
-        value: !curGrad ? "#FFFFFF" : curGrad.zenithColor.toHexString(),
+      value: !curGrad ? "#FFFFFF" : curGrad.zenithColor.toHexString(),
       label: "Zenith Color",
       parent: row1,
     });
