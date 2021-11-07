@@ -64,6 +64,8 @@ export class EnvironmentDecorations {
     if (prev === env)
       return;
 
+    this._environment = env;
+
     // Update ground plane
     if (!env.displayGround || env.ground !== prev.ground)
       this._ground = undefined;

@@ -236,8 +236,8 @@ export class EnvironmentEditor {
     }
 
     if (this._vp.view.is3d()) {
-      this._removeEnvironmentListener = this._vp.view.displayStyle.settings.onEnvironmentChanged.addListener(() => {
-        this.updateEnvironmentEditorUI(this._vp.view);
+      this._removeEnvironmentListener = this._vp.view.displayStyle.settings.onEnvironmentChanged.addListener((env) => {
+        this.updateEnvironmentEditorUI(env);
       });
     }
   }
@@ -257,17 +257,17 @@ export class EnvironmentEditor {
     this._updatingEnvironment = false;
   }
 
-  private updateEnvironmentEditorUI(view: ViewState): void {
-    if (this._updatingEnvironment || !view.is3d())
+  private updateEnvironmentEditorUI(env: Environment): void {
+    if (this._updatingEnvironment)
       return;
 
     // Setting the values of UI controls below will trigger callbacks that call updateEnvironment().
     // We don't want to do that when we're modifying the controls ourselves.
     this._updatingEnvironment = true;
 
-    this._eeBackgroundColor.input.value = view.backgroundColor.toHexString();
+    this._eeBackgroundColor.input.value = this._vp.view.backgroundColor.toHexString();
 
-    const gradient = view.getDisplayStyle3d().environment.sky.gradient;
+    const gradient = env.sky.gradient;
 
     this._eeSkyboxType.setValue(gradient.twoColor ? "2colors" : "4colors");
     this._eeZenithColor.input.value = gradient.zenithColor.toHexString();
@@ -287,7 +287,7 @@ export class EnvironmentEditor {
 
     view.displayStyle.environment = Environment.defaults.withDisplay({ sky: true });
     this.sync();
-    this.updateEnvironmentEditorUI(this._vp.view);
+    this.updateEnvironmentEditorUI(view.displayStyle.environment);
   }
 
   private addEnvAttribute(parent: HTMLElement, label: string, which: "sky" | "ground", updateHandler?: (enabled: boolean) => void): void {
