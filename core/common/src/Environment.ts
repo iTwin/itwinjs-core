@@ -70,4 +70,11 @@ export class Environment {
       ground: props?.ground ? GroundPlane.fromJSON(props.ground) : undefined,
     });
   }
+
+  public clone(changedProps?: Partial<EnvironmentProperties>): Environment {
+    if (!changedProps)
+      return this;
+
+    return Environment.create({ ...this, ...changedProps });
+  }
 }
