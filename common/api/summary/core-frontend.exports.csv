@@ -43,6 +43,7 @@ internal;ArcGisTokenManager
 internal;ArcGisUtilities
 internal;areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): number
 internal;areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): Promise
+internal;AttachToViewportArgs
 public;AuxCoordSystem2dState 
 public;AuxCoordSystem3dState 
 public;AuxCoordSystemSpatialState 
@@ -146,7 +147,7 @@ internal;EllipsoidTerrainProvider
 public;EmphasizeElements 
 beta;EngineeringLengthDescription 
 public;EntityState 
-public;Environment
+internal;EnvironmentDecorations
 public;EventController
 public;EventHandled
 public;ExtentLimits
@@ -233,6 +234,7 @@ public;GraphicShape
 public;GraphicShape2d 
 public;GraphicSolidPrimitive
 public;GraphicType
+internal;GroundPlaneDecorations
 alpha;GroupMark
 internal;Hilites
 public;HiliteSet
@@ -495,12 +497,10 @@ public;SetupWalkCameraTool
 public;SheetModelState 
 public;SheetViewState 
 internal;ShouldAbortReadGltf = (reader: GltfReader) => boolean
-public;class SkyBox 
-public;SkyBox
-internal;SkyBoxParams = Promise
-public;SkyCube 
-public;SkyGradient 
-public;SkySphere 
+internal;SkyBox
+public;CreateParams
+public;SphereParams
+internal;SkyBoxDecorations
 public;SnapDetail 
 public;SnapHeat
 public;SnapMode

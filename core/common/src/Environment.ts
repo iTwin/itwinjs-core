@@ -30,6 +30,7 @@ export type EnvironmentProperties = NonFunctionPropertiesOf<Environment>;
 /** As part of a [[DisplayStyle3dSettings]], controls the display of a [[SkyBox]] and [[GroundPlane]] to simulate the
  * outdoor environment.
  * @see [[DisplayStyle3dSettings.environment]].
+ * @public
  */
 export class Environment {
   /** If true, the sky box will be displayed.

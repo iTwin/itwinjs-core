@@ -86,7 +86,7 @@ import { EllipsoidPatch } from '@itwin/core-geometry';
 import { EmphasizeElementsProps } from '@itwin/core-common';
 import { EntityProps } from '@itwin/core-common';
 import { EntityQueryParams } from '@itwin/core-common';
-import { EnvironmentProps } from '@itwin/core-common';
+import { Environment } from '@itwin/core-common';
 import { Feature } from '@itwin/core-common';
 import { FeatureAppearance } from '@itwin/core-common';
 import { FeatureAppearanceProvider } from '@itwin/core-common';
@@ -120,7 +120,6 @@ import { GltfDataType } from '@itwin/core-common';
 import { Gradient } from '@itwin/core-common';
 import { GraphicParams } from '@itwin/core-common';
 import { GridOrientationType } from '@itwin/core-common';
-import { GroundPlane } from '@itwin/core-common';
 import { GuidString } from '@itwin/core-bentley';
 import { HiddenLine } from '@itwin/core-common';
 import { Hilite } from '@itwin/core-common';
@@ -254,8 +253,7 @@ import { SessionProps } from '@itwin/core-common';
 import { SettingsAdmin } from '@bentley/product-settings-client';
 import { SheetProps } from '@itwin/core-common';
 import { SilhouetteEdgeArgs } from '@itwin/core-common';
-import { SkyBoxProps } from '@itwin/core-common';
-import { SkyCubeProps } from '@itwin/core-common';
+import { SkyGradient } from '@itwin/core-common';
 import { SmoothTransformBetweenFrusta } from '@itwin/core-geometry';
 import { SnapRequestProps } from '@itwin/core-common';
 import { SnapResponseProps } from '@itwin/core-common';
@@ -1227,6 +1225,12 @@ export function areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, o
 
 // @internal
 export function areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): Promise<number>;
+
+// @internal
+export interface AttachToViewportArgs {
+    // (undocumented)
+    invalidateDecorations: () => void;
+}
 
 // @public
 export class AuxCoordSystem2dState extends AuxCoordSystemState implements AuxCoordSystem2dProps {
@@ -2363,13 +2367,12 @@ export class DisplayStyle3dState extends DisplayStyleState {
     constructor(props: DisplayStyleProps, iModel: IModelConnection, source?: DisplayStyle3dState);
     // @internal (undocumented)
     static get className(): string;
+    // (undocumented)
     get environment(): Environment;
     set environment(env: Environment);
     // (undocumented)
     get lights(): LightSettings;
     set lights(lights: LightSettings);
-    // @internal
-    loadSkyBoxParams(system: RenderSystem, vp?: Viewport): SkyBox.CreateParams | undefined;
     // @internal (undocumented)
     overrideTerrainDisplay(): TerrainDisplayOverrides | undefined;
     // @internal (undocumented)
@@ -2548,7 +2551,7 @@ export class DrawingViewState extends ViewState2d {
     // @internal
     get attachmentInfo(): Object;
     // @internal (undocumented)
-    attachToViewport(): void;
+    attachToViewport(args: AttachToViewportArgs): void;
     // @internal (undocumented)
     changeViewedModel(modelId: Id64String): Promise<void>;
     // @internal (undocumented)
@@ -2954,16 +2957,16 @@ export class EntityState implements EntityProps {
     toJSON(): EntityProps;
 }
 
-// @public
-export class Environment {
-    constructor(json?: EnvironmentProps);
+// @internal (undocumented)
+export class EnvironmentDecorations {
+    constructor(view: ViewState3d, onLoaded: () => void, onDispose: () => void);
     // (undocumented)
-    readonly ground: GroundPlane;
+    decorate(context: DecorateContext): void;
     // (undocumented)
-    readonly sky: SkyBox;
+    dispose(): void;
     // (undocumented)
-    toJSON(): EnvironmentProps;
-}
+    setEnvironment(env: Environment): void;
+    }
 
 // @public
 export class EventController {
@@ -3960,6 +3963,14 @@ export enum GraphicType {
     ViewOverlay = 4,
     WorldDecoration = 2,
     WorldOverlay = 3
+}
+
+// @internal (undocumented)
+export interface GroundPlaneDecorations {
+    // (undocumented)
+    readonly aboveParams: GraphicParams;
+    // (undocumented)
+    readonly belowParams: GraphicParams;
 }
 
 // @alpha (undocumented)
@@ -5837,7 +5848,7 @@ export abstract class MapTilingScheme {
     // (undocumented)
     readonly numberOfLevelZeroTilesY: number;
     // (undocumented)
-    get rootLevel(): 0 | -1;
+    get rootLevel(): -1 | 0;
     // (undocumented)
     rowZeroAtNorthPole: boolean;
     // (undocumented)
@@ -8257,6 +8268,7 @@ export abstract class RenderSystem implements IDisposable {
     // @internal
     abstract createRenderGraphic(_geometry: RenderGeometry, instances?: InstancedGraphicParams | RenderAreaPattern): RenderGraphic | undefined;
     createScreenSpaceEffectBuilder(_params: ScreenSpaceEffectBuilderParams): ScreenSpaceEffectBuilder | undefined;
+    // @internal
     createSkyBox(_params: SkyBox.CreateParams): RenderGraphic | undefined;
     // @internal (undocumented)
     abstract createTarget(canvas: HTMLCanvasElement): RenderTarget;
@@ -9070,7 +9082,7 @@ export class SheetViewState extends ViewState2d {
     // @internal
     get attachments(): Object[] | undefined;
     // @internal (undocumented)
-    attachToViewport(): void;
+    attachToViewport(args: AttachToViewportArgs): void;
     // @internal (undocumented)
     changeViewedModel(modelId: Id64String): Promise<void>;
     // @internal (undocumented)
@@ -9118,19 +9130,9 @@ export class SheetViewState extends ViewState2d {
 // @internal
 export type ShouldAbortReadGltf = (reader: GltfReader) => boolean;
 
-// @public
-export abstract class SkyBox implements SkyBoxProps {
-    protected constructor(sky?: SkyBoxProps);
-    static createFromJSON(json?: SkyBoxProps): SkyBox;
-    display: boolean;
-    // @internal (undocumented)
-    abstract loadParams(_system: RenderSystem, _iModel: IModelConnection): SkyBoxParams;
-    // (undocumented)
-    toJSON(): SkyBoxProps;
-}
-
-// @public
+// @internal
 export namespace SkyBox {
+    // @public
     export class CreateParams {
         // (undocumented)
         static createForCube(cube: RenderTexture): CreateParams;
@@ -9147,6 +9149,7 @@ export namespace SkyBox {
         // (undocumented)
         readonly zOffset: number;
     }
+    // @public
     export class SphereParams {
         constructor(texture: RenderTexture, rotation: number);
         // (undocumented)
@@ -9156,50 +9159,12 @@ export namespace SkyBox {
     }
 }
 
-// @internal
-export type SkyBoxParams = Promise<SkyBox.CreateParams | undefined> | SkyBox.CreateParams | undefined;
-
-// @public
-export class SkyCube extends SkyBox implements SkyCubeProps {
-    readonly back: Id64String;
-    readonly bottom: Id64String;
-    static create(front: Id64String, back: Id64String, top: Id64String, bottom: Id64String, right: Id64String, left: Id64String, display?: boolean): SkyCube | undefined;
-    // @internal
-    static fromJSON(skyboxJson: SkyBoxProps): SkyCube | undefined;
-    readonly front: Id64String;
-    readonly left: Id64String;
-    // @internal (undocumented)
-    loadParams(system: RenderSystem, iModel: IModelConnection): SkyBoxParams;
-    readonly right: Id64String;
+// @internal (undocumented)
+export interface SkyBoxDecorations {
     // (undocumented)
-    toJSON(): SkyBoxProps;
-    readonly top: Id64String;
-}
-
-// @public
-export class SkyGradient extends SkyBox {
-    constructor(sky?: SkyBoxProps);
-    readonly groundColor: ColorDef;
-    readonly groundExponent: number;
-    // @internal (undocumented)
-    loadParams(_system: RenderSystem, iModel: IModelConnection): SkyBoxParams;
-    readonly nadirColor: ColorDef;
-    readonly skyColor: ColorDef;
-    readonly skyExponent: number;
+    params?: SkyBox.CreateParams | undefined;
     // (undocumented)
-    toJSON(): SkyBoxProps;
-    readonly twoColor: boolean;
-    readonly zenithColor: ColorDef;
-}
-
-// @public
-export class SkySphere extends SkyBox {
-    static fromJSON(json: SkyBoxProps): SkySphere | undefined;
-    // @internal (undocumented)
-    loadParams(system: RenderSystem, iModel: IModelConnection): SkyBoxParams;
-    textureId: Id64String;
-    // (undocumented)
-    toJSON(): SkyBoxProps;
+    promise?: Promise<SkyBox.CreateParams | undefined>;
 }
 
 // @public
@@ -9332,7 +9297,7 @@ export class SpatialViewState extends ViewState3d {
     // (undocumented)
     addViewedModel(id: Id64String): void;
     // @internal (undocumented)
-    attachToViewport(): void;
+    attachToViewport(args: AttachToViewportArgs): void;
     // @internal (undocumented)
     static get className(): string;
     // (undocumented)
@@ -12706,7 +12671,7 @@ export abstract class ViewState extends ElementState {
     abstract applyPose(props: ViewPose): this;
     get areAllTileTreesLoaded(): boolean;
     // @internal
-    attachToViewport(): void;
+    attachToViewport(_args: AttachToViewportArgs): void;
     get auxiliaryCoordinateSystem(): AuxCoordSystemState;
     get backgroundColor(): ColorDef;
     // (undocumented)
@@ -12922,6 +12887,8 @@ export abstract class ViewState3d extends ViewState {
     allow3dManipulations(): boolean;
     // @internal (undocumented)
     applyPose(val: ViewPose3d): this;
+    // @internal (undocumented)
+    attachToViewport(args: AttachToViewportArgs): void;
     calcLensAngle(): Angle;
     // (undocumented)
     protected static calculateMaxDepth(delta: Vector3d, zVec: Vector3d): number;
@@ -12941,13 +12908,11 @@ export abstract class ViewState3d extends ViewState {
     createAuxCoordSystem(acsName: string): AuxCoordSystemState;
     // (undocumented)
     decorate(context: DecorateContext): void;
+    // (undocumented)
+    detachFromViewport(): void;
     get details(): ViewDetails3d;
     get displayStyle(): DisplayStyle3dState;
     set displayStyle(style: DisplayStyle3dState);
-    // @internal (undocumented)
-    protected drawGroundPlane(context: DecorateContext): void;
-    // @internal (undocumented)
-    protected drawSkyBox(context: DecorateContext): void;
     // @internal (undocumented)
     protected enableCamera(): void;
     readonly extents: Vector3d;
