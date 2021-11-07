@@ -2142,6 +2142,7 @@ export abstract class ViewState3d extends ViewState {
   }
 
   public override detachFromViewport(): void {
+    super.detachFromViewport();
     this._environmentDecorations = dispose(this._environmentDecorations);
   }
 }
