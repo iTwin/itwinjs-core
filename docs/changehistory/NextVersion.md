@@ -20,6 +20,7 @@ The following dependencies of iTwin.js have been updated;
 ## Package name changes
 
 A number of packages have been renamed to use the @itwin scope rather than the @bentley scope, and we have modified a few package names to move towards a more consistent naming pattern. The full list of changed packages are listed in the table below.
+
 | Current                                | New                                  |
 |----------------------------------------|--------------------------------------|
 | @bentley/imodeljs-backend              | @itwin/core-backend                  |
