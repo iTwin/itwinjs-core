@@ -6,7 +6,7 @@
  * @module DisplayStyles
  */
 
-import { NonFunctionPropertiesOf } from "@itwin/core-bentley";
+import { Id64, Id64String, NonFunctionPropertiesOf } from "@itwin/core-bentley";
 import { ColorDef, ColorDefProps } from "./ColorDef";
 import { TextureImageSpec } from "./RenderTexture";
 
@@ -44,11 +44,13 @@ export interface SkyCubeProps {
 export interface SkySphereImageProps {
   type: SkyBoxImageType.Spherical;
   texture: TextureImageSpec;
+  textures?: never;
 }
 
 export interface SkyCubeImageProps {
   type: SkyBoxImageType.Cube;
   textures: SkyCubeProps;
+  texture?: never;
 }
 
 export type SkyBoxImageProps = SkySphereImageProps | SkyCubeImageProps | { type?: SkyBoxImageType; texture?: never; textures?: never };
@@ -242,6 +244,11 @@ export class SkyBox {
 
     return props;
   }
+
+  /** @internal */
+  public get textureIds(): Iterable<Id64String> {
+    return [];
+  }
 }
 
 export class SkySphere extends SkyBox {
@@ -261,6 +268,11 @@ export class SkySphere extends SkyBox {
 
     return props;
   }
+
+  /** @internal */
+  public override get textureIds(): Iterable<Id64String> {
+    return Id64.isValidId64(this.image) ? [this.image] : [];
+  }
 }
 
 export class SkyCube extends SkyBox {
@@ -279,5 +291,11 @@ export class SkyCube extends SkyBox {
     };
 
     return props;
+  }
+
+  /** @internal */
+  public override get textureIds(): Iterable<Id64String> {
+    const imgs = this.images;
+    return [imgs.front, imgs.back, imgs.top, imgs.bottom, imgs.left, imgs.right].filter((x) => Id64.isValidId64(x));
   }
 }
