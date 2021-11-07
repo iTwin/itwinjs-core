@@ -212,7 +212,7 @@ export class SkyGradient {
       props.groundExponent = this.groundExponent;
 
     if (this.skyExponent !== defaultExponent)
-      props.skyExponent = defaultExponent;
+      props.skyExponent = this.skyExponent;
 
     if (this.twoColor)
       props.twoColor = this.twoColor;
