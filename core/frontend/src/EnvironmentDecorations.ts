@@ -15,7 +15,6 @@ import { IModelApp } from "./IModelApp";
 import { ViewState3d } from "./ViewState";
 import { DecorateContext } from "./ViewContext";
 import { tryImageElementFromUrl } from "./ImageUtil";
-import { RenderGraphicOwner } from "./render/RenderGraphic";
 import { GraphicType } from "./render/GraphicBuilder";
 import { SkyBox } from "./render/RenderSystem";
 
@@ -27,7 +26,7 @@ export interface GroundPlaneDecorations {
 
 /** @internal */
 export interface SkyBoxDecorations {
-  graphic?: RenderGraphicOwner;
+  params?: SkyBox.CreateParams | undefined;
   promise?: Promise<SkyBox.CreateParams | undefined>;
 }
 
@@ -55,8 +54,7 @@ export class EnvironmentDecorations {
   public dispose(): void {
     this._ground = undefined;
 
-    this._sky.graphic?.disposeGraphic();
-    this._sky.promise = undefined;
+    this._sky.promise = this._sky.params = undefined;
 
     this._onDispose();
   }
@@ -80,8 +78,11 @@ export class EnvironmentDecorations {
 
   public decorate(context: DecorateContext): void {
     const env = this._environment;
-    if (env.displaySky && this._sky.graphic)
-      context.setSkyBox(this._sky.graphic);
+    if (env.displaySky && this._sky.params) {
+      const sky = IModelApp.renderSystem.createSkyBox(this._sky.params);
+      if (sky)
+        context.setSkyBox(sky);
+    }
 
     if (!env.displayGround || !this._ground)
       return;
@@ -176,8 +177,7 @@ export class EnvironmentDecorations {
 
   private setSky(params: SkyBox.CreateParams): void {
     this._sky.promise = undefined;
-    const gf = IModelApp.renderSystem.createSkyBox(params);
-    this._sky.graphic = gf ? IModelApp.renderSystem.createGraphicOwner(gf) : undefined;
+    this._sky.params = params;
     this._onLoaded();
   }
 

@@ -258,7 +258,7 @@ export class EnvironmentEditor {
   }
 
   private updateEnvironmentEditorUI(view: ViewState): void {
-    if (this._updatingEnvironment)
+    if (this._updatingEnvironment || !view.is3d())
       return;
 
     // Setting the values of UI controls below will trigger callbacks that call updateEnvironment().
@@ -266,8 +266,6 @@ export class EnvironmentEditor {
     this._updatingEnvironment = true;
 
     this._eeBackgroundColor.input.value = view.backgroundColor.toHexString();
-    if (!view.is3d())
-      return;
 
     const gradient = view.getDisplayStyle3d().environment.sky.gradient;
 
