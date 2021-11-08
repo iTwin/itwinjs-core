@@ -8,6 +8,9 @@ alpha;BRepEntityType
 alpha;ChamferEdgesProps
 alpha;ChamferMode
 alpha;ConnectedSubEntityProps
+alpha;CutDepthMode
+alpha;CutDirectionMode
+alpha;CutProps
 alpha;DeleteSubEntityProps
 alpha;EdgeParameterRangeProps
 alpha;EditCommandIpc
@@ -17,6 +20,8 @@ alpha;EditorIpc
 alpha;ElementGeometryCacheFilter
 alpha;ElementGeometryResultOptions
 alpha;ElementGeometryResultProps
+alpha;EmbossDirectionMode
+alpha;EmbossProps
 alpha;EvaluatedEdgeProps
 alpha;EvaluatedFaceProps
 alpha;EvaluatedVertexProps
@@ -25,10 +30,13 @@ alpha;FlatBufferGeometricElementData
 alpha;FlatBufferGeometryFilter
 alpha;FlatBufferGeometryPartData
 alpha;HollowFacesProps
+alpha;ImprintProps
 alpha;LocateSubEntityProps
+alpha;LoftProps
 alpha;OffsetEdgesProps
 alpha;OffsetFacesProps
 alpha;PointInsideResultProps
+alpha;ProfileClosure
 alpha;SewSheetProps
 alpha;SolidModelingCommandIpc 
 alpha;SpinFacesProps
@@ -39,5 +47,6 @@ alpha;SubEntityLocationProps
 alpha;SubEntityProps
 alpha;SubEntityType
 alpha;SweepFacesProps
+alpha;SweepPathProps
 alpha;ThickenSheetProps
 alpha;TransformSubEntityProps
