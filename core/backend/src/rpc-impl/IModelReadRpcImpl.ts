@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { assert, GuidString, Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
+import { GuidString, Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
 import {
   Code, CodeProps, DbBlobRequest, DbBlobResponse, DbQueryRequest, DbQueryResponse, ElementLoadOptions, ElementLoadProps, ElementProps, EntityMetaData,
   EntityQueryParams, FontMapProps, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps,
@@ -31,24 +31,20 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   public static register() { RpcManager.registerImpl(IModelReadRpcInterface, IModelReadRpcImpl); }
 
   public async getConnectionProps(tokenProps: IModelRpcOpenProps): Promise<IModelConnectionProps> {
-    assert(undefined !== RpcTrace.currentActivity);
-    return RpcBriefcaseUtility.openWithTimeout(RpcTrace.currentActivity, tokenProps, SyncMode.FixedVersion);
+    return RpcBriefcaseUtility.openWithTimeout(RpcTrace.expectCurrentActivity, tokenProps, SyncMode.FixedVersion);
   }
 
   public async queryRows(tokenProps: IModelRpcProps, request: DbQueryRequest): Promise<DbQueryResponse> {
-    assert(undefined !== RpcTrace.currentActivity);
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.currentActivity.accessToken, tokenProps);
+    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
     return ConcurrentQuery.executeQueryRequest(iModelDb.nativeDb, request);
   }
   public async queryBlob(tokenProps: IModelRpcProps, request: DbBlobRequest): Promise<DbBlobResponse> {
-    assert(undefined !== RpcTrace.currentActivity);
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.currentActivity.accessToken, tokenProps);
+    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
     return ConcurrentQuery.executeBlobRequest(iModelDb.nativeDb, request);
   }
   public async queryModelRanges(tokenProps: IModelRpcProps, modelIdsList: Id64String[]): Promise<Range3dProps[]> {
     const modelIds = new Set(modelIdsList);
-    assert(undefined !== RpcTrace.currentActivity);
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.currentActivity.accessToken, tokenProps);
+    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
     const ranges: Range3dProps[] = [];
     for (const id of modelIds) {
       try {
@@ -69,8 +65,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
 
   public async getModelProps(tokenProps: IModelRpcProps, modelIdsList: Id64String[]): Promise<ModelProps[]> {
     const modelIds = new Set(modelIdsList);
-    assert(undefined !== RpcTrace.currentActivity);
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.currentActivity.accessToken, tokenProps);
+    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
     const modelJsonArray: ModelProps[] = [];
     for (const id of modelIds) {
       try {
@@ -91,8 +86,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
 
   public async getElementProps(tokenProps: IModelRpcProps, elementIdsList: Id64String[]): Promise<ElementProps[]> {
     const elementIds = new Set(elementIdsList);
-    assert(undefined !== RpcTrace.currentActivity);
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.currentActivity.accessToken, tokenProps);
+    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
     const elementProps: ElementProps[] = [];
     for (const id of elementIds) {
       try {
@@ -116,14 +110,12 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
       props.code = Code.fromJSON(identifier);
     }
 
-    assert(undefined !== RpcTrace.currentActivity);
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.currentActivity.accessToken, tokenProps);
+    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
     return iModelDb.elements.tryGetElementProps(props);
   }
 
   public async getGeometrySummary(tokenProps: IModelRpcProps, request: GeometrySummaryRequestProps): Promise<string> {
-    assert(undefined !== RpcTrace.currentActivity);
-    const iModel = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.currentActivity.accessToken, tokenProps);
+    const iModel = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
     return generateGeometrySummaries(request, iModel);
   }
 
@@ -134,15 +126,13 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   }
 
   public async queryEntityIds(tokenProps: IModelRpcProps, params: EntityQueryParams): Promise<Id64String[]> {
-    assert(undefined !== RpcTrace.currentActivity);
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.currentActivity.accessToken, tokenProps);
+    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
     const res = iModelDb.queryEntityIds(params);
     return [...res];
   }
 
   public async getClassHierarchy(tokenProps: IModelRpcProps, classFullName: string): Promise<string[]> {
-    assert(undefined !== RpcTrace.currentActivity);
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.currentActivity.accessToken, tokenProps);
+    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
     const classArray: string[] = [];
     while (true) {
       const classMetaData: EntityMetaData = iModelDb.getMetaData(classFullName);
@@ -157,8 +147,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
 
   public async getAllCodeSpecs(tokenProps: IModelRpcProps): Promise<any[]> {
     const codeSpecs: any[] = [];
-    assert(undefined !== RpcTrace.currentActivity);
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.currentActivity.accessToken, tokenProps);
+    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
     iModelDb.withPreparedStatement("SELECT ECInstanceId AS id, name, jsonProperties FROM BisCore.CodeSpec", (statement) => {
       for (const row of statement)
         codeSpecs.push({ id: row.id, name: row.name, jsonProperties: JSON.parse(row.jsonProperties) });
@@ -167,52 +156,44 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   }
 
   public async getViewStateData(tokenProps: IModelRpcProps, viewDefinitionId: string, options?: ViewStateLoadProps): Promise<ViewStateProps> {
-    assert(undefined !== RpcTrace.currentActivity);
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.currentActivity.accessToken, tokenProps);
+    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
     return iModelDb.views.getViewStateData(viewDefinitionId, options);
   }
 
   public async readFontJson(tokenProps: IModelRpcProps): Promise<FontMapProps> {
-    assert(undefined !== RpcTrace.currentActivity);
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.currentActivity.accessToken, tokenProps);
+    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
     return iModelDb.nativeDb.readFontMap();
   }
 
   public async requestSnap(tokenProps: IModelRpcProps, sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps> {
-    assert(undefined !== RpcTrace.currentActivity);
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.currentActivity.accessToken, tokenProps);
+    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
     return iModelDb.requestSnap(sessionId, props);
   }
 
   public async cancelSnap(tokenProps: IModelRpcProps, sessionId: string): Promise<void> {
-    assert(undefined !== RpcTrace.currentActivity);
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.currentActivity.accessToken, tokenProps);
+    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
     return iModelDb.cancelSnap(sessionId);
   }
 
   public async getGeometryContainment(tokenProps: IModelRpcProps, props: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps> {
-    assert(undefined !== RpcTrace.currentActivity);
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.currentActivity.accessToken, tokenProps);
+    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
     return iModelDb.getGeometryContainment(props);
   }
 
   public async getMassProperties(tokenProps: IModelRpcProps, props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> {
-    assert(undefined !== RpcTrace.currentActivity);
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.currentActivity.accessToken, tokenProps);
+    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
     return iModelDb.getMassProperties(props);
   }
 
   public async getToolTipMessage(tokenProps: IModelRpcProps, id: string): Promise<string[]> {
-    assert(undefined !== RpcTrace.currentActivity);
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.currentActivity.accessToken, tokenProps);
+    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
     const el = iModelDb.elements.getElement(id);
     return (el === undefined) ? [] : el.getToolTipMessage();
   }
 
   /** Send a view thumbnail to the frontend. This is a binary transfer with the metadata in a 16-byte prefix header. */
   public async getViewThumbnail(tokenProps: IModelRpcProps, viewId: string): Promise<Uint8Array> {
-    assert(undefined !== RpcTrace.currentActivity);
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.currentActivity.accessToken, tokenProps);
+    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
     const thumbnail = iModelDb.views.getThumbnail(viewId);
     if (undefined === thumbnail || 0 === thumbnail.image.length)
       throw new NoContentError();
@@ -224,8 +205,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   }
 
   public async getDefaultViewId(tokenProps: IModelRpcProps): Promise<Id64String> {
-    assert(undefined !== RpcTrace.currentActivity);
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.currentActivity.accessToken, tokenProps);
+    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
     const spec = { namespace: "dgn_View", name: "DefaultView" };
     const blob = iModelDb.queryFilePropertyBlob(spec);
     if (undefined === blob || 8 !== blob.length)
@@ -235,27 +215,23 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return Id64.fromUint32Pair(view[0], view[1]);
   }
   public async getSpatialCategoryId(tokenProps: IModelRpcProps, categoryName: string): Promise<Id64String | undefined> {
-    assert(undefined !== RpcTrace.currentActivity);
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.currentActivity.accessToken, tokenProps);
+    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
     const dictionary: DictionaryModel = iModelDb.models.getModel<DictionaryModel>(IModel.dictionaryId);
     return SpatialCategory.queryCategoryIdByName(iModelDb, dictionary.id, categoryName);
   }
 
   public async getIModelCoordinatesFromGeoCoordinates(tokenProps: IModelRpcProps, props: IModelCoordinatesRequestProps): Promise<IModelCoordinatesResponseProps> {
-    assert(undefined !== RpcTrace.currentActivity);
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.currentActivity.accessToken, tokenProps);
+    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
     return iModelDb.getIModelCoordinatesFromGeoCoordinates(props);
   }
 
   public async getGeoCoordinatesFromIModelCoordinates(tokenProps: IModelRpcProps, props: GeoCoordinatesRequestProps): Promise<GeoCoordinatesResponseProps> {
-    assert(undefined !== RpcTrace.currentActivity);
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.currentActivity.accessToken, tokenProps);
+    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
     return iModelDb.getGeoCoordinatesFromIModelCoordinates(props);
   }
 
   public async queryTextureData(tokenProps: IModelRpcProps, textureLoadProps: TextureLoadProps): Promise<TextureData | undefined> {
-    assert(undefined !== RpcTrace.currentActivity);
-    const db = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.currentActivity.accessToken, tokenProps);
+    const db = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
     return db.queryTextureData(textureLoadProps);
   }
 }

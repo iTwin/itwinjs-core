@@ -190,8 +190,7 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
   public static register() { RpcManager.registerImpl(IModelTileRpcInterface, IModelTileRpcImpl); }
 
   public async requestTileTreeProps(tokenProps: IModelRpcProps, treeId: string): Promise<IModelTileTreeProps> {
-    assert(undefined !== RpcTrace.currentActivity);
-    return RequestTileTreePropsMemoizer.perform({ accessToken: RpcTrace.currentActivity.accessToken, tokenProps, treeId });
+    return RequestTileTreePropsMemoizer.perform({ accessToken: RpcTrace.expectCurrentActivity.accessToken, tokenProps, treeId });
   }
 
   public async purgeTileTrees(tokenProps: IModelRpcProps, modelIds: Id64Array | undefined): Promise<void> {
@@ -199,19 +198,16 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
     if (null === modelIds)
       modelIds = undefined;
 
-    assert(undefined !== RpcTrace.currentActivity);
-    const db = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.currentActivity.accessToken, tokenProps);
+    const db = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
     return db.nativeDb.purgeTileTrees(modelIds);
   }
 
   public async generateTileContent(tokenProps: IModelRpcProps, treeId: string, contentId: string, guid: string | undefined): Promise<TileContentSource> {
-    assert(undefined !== RpcTrace.currentActivity);
-    return RequestTileContentMemoizer.perform({ accessToken: RpcTrace.currentActivity.accessToken, tokenProps, treeId, contentId, guid });
+    return RequestTileContentMemoizer.perform({ accessToken: RpcTrace.expectCurrentActivity.accessToken, tokenProps, treeId, contentId, guid });
   }
 
   public async retrieveTileContent(tokenProps: IModelRpcProps, key: TileContentIdentifier): Promise<Uint8Array> {
-    assert(undefined !== RpcTrace.currentActivity);
-    const db = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.currentActivity.accessToken, tokenProps);
+    const db = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
     return db.tiles.getTileContent(key.treeId, key.contentId);
   }
 
@@ -237,8 +233,7 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
 
   /** @internal */
   public async requestElementGraphics(rpcProps: IModelRpcProps, request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined> {
-    assert(undefined !== RpcTrace.currentActivity);
-    const iModel = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.currentActivity.accessToken, rpcProps);
+    const iModel = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, rpcProps);
     return iModel.generateElementGraphics(request);
   }
 }
