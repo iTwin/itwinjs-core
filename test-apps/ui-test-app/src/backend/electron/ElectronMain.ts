@@ -37,10 +37,10 @@ export async function initializeElectron(opts?: IModelHostConfiguration) {
     redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
     scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
   });
+  await authClient.initialize();
   opt.iModelHost.authorizationClient = authClient;
 
   await ElectronHost.startup(opt);
-  await (IModelHost.authorizationClient as ElectronAuthorizationBackend).initialize();
   EditCommandAdmin.register(BasicManipulationCommand);
 
   // Handle custom keyboard shortcuts

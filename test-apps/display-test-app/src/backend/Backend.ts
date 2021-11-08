@@ -157,13 +157,14 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
   /** register the implementation of our RPCs. */
   RpcManager.registerImpl(DtaRpcInterface, DisplayTestAppRpc);
   if (ProcessDetector.isElectronAppBackend) {
-    opts.iModelHost.authorizationClient = new ElectronAuthorizationBackend({
+    const authClient = new ElectronAuthorizationBackend({
       clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
       redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
       scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
     });
+    await authClient.initialize();
+    opts.iModelHost.authorizationClient = authClient;
     await ElectronHost.startup(opts);
-    await (IModelHost.authorizationClient as ElectronAuthorizationBackend).initialize();
     EditCommandAdmin.registerModule(editorBuiltInCommands);
   } else if (ProcessDetector.isIOSAppBackend) {
     await IOSHost.startup(opts);

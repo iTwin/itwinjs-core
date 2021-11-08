@@ -22,13 +22,15 @@ export default async function initialize(rpcInterfaces: RpcInterfaceDefinition[]
     ipcHandlers: [SampleIpcHandler],
   };
   const iModelHost = new IModelHostConfiguration();
-  iModelHost.authorizationClient = new ElectronAuthorizationBackend({
+  const authClient = new ElectronAuthorizationBackend({
     clientId: "imodeljs-electron-test",
     redirectUri: "http://localhost:3000/signin-callback",
     scope: "openid email profile organization itwinjs",
   });
+  authClient.initialize();
+  iModelHost.authorizationClient = authClient;
+
   await ElectronHost.startup({ electronHost, iModelHost });
-  await (IModelHost.authorizationClient as ElectronAuthorizationBackend).initialize();
   await ElectronHost.openMainWindow();
 
   // __PUBLISH_EXTRACT_END__

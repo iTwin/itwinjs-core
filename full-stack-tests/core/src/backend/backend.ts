@@ -82,13 +82,14 @@ async function init() {
   iModelHost.hubAccess = new IModelHubBackend(CloudEnv.cloudEnv.imodelClient);
 
   if (ProcessDetector.isElectronAppBackend) {
-    iModelHost.authorizationClient = new ElectronAuthorizationBackend({
+    const authClient = new ElectronAuthorizationBackend({
       clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
       redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
       scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
     });
+    await authClient.initialize();
+    iModelHost.authorizationClient = authClient;
     await ElectronHost.startup({ electronHost: { rpcInterfaces }, iModelHost });
-    await (IModelHost.authorizationClient as ElectronAuthorizationBackend).initialize();
 
     EditCommandAdmin.registerModule(testCommands);
     EditCommandAdmin.register(BasicManipulationCommand);

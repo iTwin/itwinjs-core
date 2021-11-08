@@ -38,11 +38,13 @@ export async function initializeBackend() {
   if (ProcessDetector.isElectronAppBackend) {
     const rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
     const iModelHost = new IModelHostConfiguration();
-    iModelHost.authorizationClient = new ElectronAuthorizationBackend({
+    const authClient = new ElectronAuthorizationBackend({
       clientId: "imodeljs-electron-test",
       redirectUri: "http://localhost:3000/signin-callback",
       scope: "openid email profile organization itwinjs",
     });
+    await authClient.initialize();
+    iModelHost.authorizationClient = authClient;
     await ElectronHost.startup({
       electronHost: {
         webResourcesPath: path.join(__dirname, "..", "..", "build"),
@@ -50,8 +52,6 @@ export async function initializeBackend() {
       },
       iModelHost,
     });
-    await (IModelHost.authorizationClient as ElectronAuthorizationBackend).initialize();
-
   } else
     await IModelHost.startup(iModelHost);
 }
