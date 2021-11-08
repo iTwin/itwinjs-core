@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { Guid } from "@itwin/core-bentley";
-import { IModel, SkyBoxImageType, SkyBoxProps, SkyCubeProps } from "@itwin/core-common";
+import { IModel, SkyBoxImageType, SkyBoxProps } from "@itwin/core-common";
 import { DisplayStyle3d, StandaloneDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -35,10 +35,11 @@ describe("DisplayStyle", () => {
       expect(id).not.to.equal("0");
 
       const style = db.elements.getElement<DisplayStyle3d>(id);
-      expect(style.settings.environment.sky).not.to.be.undefined;
+      const sky2 = style.jsonProperties.styles.environment.sky!;
+      expect(sky2).not.to.be.undefined;
       for (const key of Object.keys(sky)) {
         const propName = key as keyof SkyBoxProps;
-        expect(style.settings.environment.sky![propName]).to.deep.equal(sky[propName]);
+        expect(sky2[propName]).to.deep.equal(sky[propName]);
       }
     }
 
@@ -58,15 +59,7 @@ describe("DisplayStyle", () => {
 
     roundTrip({ image: { type: SkyBoxImageType.None } });
 
-    function roundTripImage(type: SkyBoxImageType, texIdOrCube: string | SkyCubeProps): void {
-      if (typeof texIdOrCube === "string")
-        roundTrip({ image: { type, texture: texIdOrCube } });
-      else
-        roundTrip({ image: { type, textures: texIdOrCube } });
-    }
-
-    roundTripImage(SkyBoxImageType.Spherical, "0x123");
-    roundTripImage(SkyBoxImageType.Cylindrical, "0x123");
-    roundTripImage(SkyBoxImageType.Cube, { front: "0x1", back: "0x2", left: "0x3", right: "0x4", top: "0x5", bottom: "0x6" });
+    roundTrip({ image: { type: SkyBoxImageType.Spherical, texture: "0x123" } });
+    roundTrip({ image: { type: SkyBoxImageType.Cube, textures: { front: "0x1", back: "0x2", left: "0x3", right: "0x4", top: "0x5", bottom: "0x6" } } });
   });
 });

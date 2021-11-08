@@ -114,7 +114,16 @@ describe("InsertAndRetriangulateContext", () => {
       Point3d.create(0.3, 0.4),
       Point3d.create(1.2, 0.4),
       Point3d.create(0.5, 1.0),
-      Point3d.create(2.5, 1.0)]) {
+      Point3d.create(2.5, 1.0),
+      Point3d.create(2.2, 1.0),
+      Point3d.create(2.8, 1.0),
+      Point3d.create(2.0, 1.0),
+      Point3d.create(1.5, 1.0),
+      Point3d.create(1.0, 1.0),
+      Point3d.create(0.0, 1.0),
+      Point3d.create(6.0, 1.0),
+
+    ]) {
       y0 += yStep;
       const polyface = PolyfaceBuilder.graphToPolyface(graph);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, x0, y0);
