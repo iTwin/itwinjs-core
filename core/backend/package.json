@@ -105,9 +105,7 @@
       {
         "files": [
           "*.test.ts",
-          "*.test.tsx",
-          "**/test/**/*.ts",
-          "**/test/**/*.tsx"
+          "**/test/**/*.ts"
         ],
         "rules": {
           "@typescript-eslint/no-non-null-assertion": "off"
