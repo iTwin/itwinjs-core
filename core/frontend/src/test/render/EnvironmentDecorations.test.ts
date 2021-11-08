@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { BeDuration } from "@itwin/core-bentley";
-import { ColorDef, Environment, EnvironmentProps } from "@itwin/core-common";
+import { ColorDef, Environment, EnvironmentProps, SkyBox, SkyBoxImageType } from "@itwin/core-common";
 import { EnvironmentDecorations } from "../../EnvironmentDecorations";
 import { SpatialViewState } from "../../SpatialViewState";
 import { IModelConnection } from "../../IModelConnection";
@@ -169,9 +169,41 @@ describe.only("EnvironmentDecorations", () => {
   });
 
   it("always loads sky", async () => {
+    const dec = new Decorations(createView({ sky: { display: false } }));
+    expect(dec.sky.params).to.be.undefined;
+    expect(dec.sky.promise).not.to.be.undefined;
+
+    await dec.load();
+    expect(dec.sky.params).not.to.be.undefined;
+    expect(dec.sky.promise).to.be.undefined;
   });
 
   it("notifies when asynchronous loading completes", async () => {
+    let loaded = false;
+    const dec = new Decorations(undefined, () => loaded = true);
+    expect(loaded).to.be.false;
+    await dec.load();
+    expect(loaded).to.be.true;
+
+    loaded = false;
+    dec.setEnvironment(dec.environment.clone({ sky: SkyBox.fromJSON({ twoColor: true }) }));
+    expect(loaded).to.be.false;
+    await dec.load();
+    expect(loaded).to.be.true;
+  });
+
+  it("preserves previous skybox until new skybox loads", async () => {
+    const dec = await Decorations.create();
+    const params = dec.sky.params;
+    expect(params).not.to.be.undefined;
+
+    dec.setEnvironment(dec.environment.clone({ sky: SkyBox.fromJSON({ twoColor: true }) }));
+    expect(dec.sky.params).to.equal(params);
+    expect(dec.sky.promise).not.to.be.undefined;
+
+    await dec.load();
+    expect(dec.sky.params).not.to.equal(params);
+    expect(dec.sky.promise).to.be.undefined;
   });
 
   it("produces sky sphere", async () => {
@@ -181,11 +213,39 @@ describe.only("EnvironmentDecorations", () => {
   });
 
   it("falls back to sky gradient on error", async () => {
-  });
+    let dec = await Decorations.create(createView({
+      sky: {
+        display: true,
+        image: {
+          type: SkyBoxImageType.Spherical,
+          texture: "NotATexture",
+        },
+      },
+    }));
 
-  it("reuses cached textures", async () => {
-  });
+    expect(dec.sky.params).not.to.be.undefined;
+    expect(dec.sky.params!.gradient).not.to.be.undefined;
+    expect(dec.sky.params!.sphere).to.be.undefined;
 
-  it("only recreates sky if settings change", async () => {
+    dec = await Decorations.create(createView({
+      sky: {
+        display: true,
+        image: {
+          type: SkyBoxImageType.Cube,
+          textures: {
+            front: "front",
+            back: "back",
+            top: "top",
+            bottom: "bottom",
+            left: "left",
+            right: "right",
+          },
+        },
+      },
+    }));
+
+    expect(dec.sky.params).not.to.be.undefined;
+    expect(dec.sky.params!.gradient).not.to.be.undefined;
+    expect(dec.sky.params!.sphere).to.be.undefined;
   });
 });
