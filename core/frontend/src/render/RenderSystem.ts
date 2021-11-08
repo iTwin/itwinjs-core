@@ -206,38 +206,29 @@ export type RenderGeometry = IDisposable & RenderMemory.Consumer;
  */
 export type RenderAreaPattern = IDisposable & RenderMemory.Consumer;
 
-/** ###TODO rename, clean up.
- * @internal
- */
-export namespace SkyBox {
-  /** Parameters defining a spherical [[SkyBox]].
-   * @public
-   */
-  export class SphereParams {
-    public constructor(public readonly texture: RenderTexture, public readonly rotation: number) { }
-  }
-
-  /** Parameters used by the [[RenderSystem]] to instantiate a [[SkyBox]].
-   * @public
-   */
-  export class CreateParams {
-    public readonly gradient?: SkyGradient;
-    public readonly sphere?: SphereParams;
-    public readonly cube?: RenderTexture;
-    public readonly zOffset: number;
-
-    private constructor(zOffset: number, gradient?: SkyGradient, sphere?: SphereParams, cube?: RenderTexture) {
-      this.gradient = gradient;
-      this.sphere = sphere;
-      this.cube = cube;
-      this.zOffset = zOffset;
-    }
-
-    public static createForGradient(gradient: SkyGradient, zOffset: number) { return new CreateParams(zOffset, gradient); }
-    public static createForSphere(sphere: SphereParams, zOffset: number) { return new CreateParams(zOffset, undefined, sphere); }
-    public static createForCube(cube: RenderTexture) { return new CreateParams(0.0, undefined, undefined, cube); }
-  }
+/** @internal */
+export interface RenderSkyGradientParams {
+  type: "gradient";
+  gradient: SkyGradient;
+  zOffset: number;
 }
+
+/** @internal */
+export interface RenderSkySphereParams {
+  type: "sphere";
+  texture: RenderTexture;
+  rotation: number;
+  zOffset: number;
+}
+
+/** @internal */
+export interface RenderSkyCubeParams {
+  type: "cube";
+  texture: RenderTexture;
+}
+
+/** @internal */
+export type RenderSkyBoxParams = RenderSkyGradientParams | RenderSkySphereParams | RenderSkyCubeParams;
 
 /** A RenderSystem provides access to resources used by the internal WebGL-based rendering system.
  * An application rarely interacts directly with the RenderSystem; instead it interacts with types like [[Viewport]] which
@@ -474,7 +465,7 @@ export abstract class RenderSystem implements IDisposable {
   /** Create a Graphic for a [[SkyBox]] which encompasses the entire scene, rotating with the camera.
    * @internal
    */
-  public createSkyBox(_params: SkyBox.CreateParams): RenderGraphic | undefined { return undefined; }
+  public createSkyBox(_params: RenderSkyBoxParams): RenderGraphic | undefined { return undefined; }
 
   /** Create a RenderGraphic consisting of a list of Graphics to be drawn together. */
   public abstract createGraphicList(primitives: RenderGraphic[]): RenderGraphic;

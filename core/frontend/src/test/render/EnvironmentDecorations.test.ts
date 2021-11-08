@@ -98,16 +98,20 @@ describe("EnvironmentDecorations", () => {
     expect(dec.ground!.aboveParams.lineColor.equals(ColorDef.blue.withTransparency(0xff))).to.be.true;
     expect(dec.ground!.belowParams.lineColor.equals(ColorDef.red.withTransparency(0xff))).to.be.true;
 
-    expect(dec.sky.params).not.to.be.undefined;
-    let sky = dec.sky.params!.gradient!;
-    expect(sky).not.to.be.undefined;
-    expect(sky.twoColor).to.be.false;
-    expect(sky.nadirColor.equals(ColorDef.blue)).to.be.true;
-    expect(sky.zenithColor.equals(ColorDef.red)).to.be.true;
-    expect(sky.skyColor.equals(ColorDef.white)).to.be.true;
-    expect(sky.groundColor.equals(ColorDef.black)).to.be.true;
-    expect(sky.skyExponent).to.equal(42);
-    expect(sky.groundExponent).to.equal(24);
+    let params = dec.sky.params!;
+    expect(params).not.to.be.undefined;
+    expect(params.type).to.equal("gradient");
+    if ("gradient" === params.type) {
+      const sky = params.gradient;
+      expect(sky).not.to.be.undefined;
+      expect(sky.twoColor).to.be.false;
+      expect(sky.nadirColor.equals(ColorDef.blue)).to.be.true;
+      expect(sky.zenithColor.equals(ColorDef.red)).to.be.true;
+      expect(sky.skyColor.equals(ColorDef.white)).to.be.true;
+      expect(sky.groundColor.equals(ColorDef.black)).to.be.true;
+      expect(sky.skyExponent).to.equal(42);
+      expect(sky.groundExponent).to.equal(24);
+    }
 
     dec.setEnvironment(Environment.fromJSON({
       ground: {
@@ -130,13 +134,18 @@ describe("EnvironmentDecorations", () => {
     expect(dec.ground!.aboveParams.lineColor.equals(ColorDef.white.withTransparency(0xff))).to.be.true;
     expect(dec.ground!.belowParams.lineColor.equals(ColorDef.black.withTransparency(0xff))).to.be.true;
 
-    sky = dec.sky.params!.gradient!;
-    expect(sky.nadirColor.equals(ColorDef.white)).to.be.true;
-    expect(sky.zenithColor.equals(ColorDef.black)).to.be.true;
-    expect(sky.skyColor.equals(ColorDef.red)).to.be.true;
-    expect(sky.groundColor.equals(ColorDef.green)).to.be.true;
-    expect(sky.skyExponent).to.equal(123);
-    expect(sky.groundExponent).to.equal(456);
+    params = dec.sky.params!;
+    expect(params).not.to.be.undefined;
+    expect(params.type).to.equal("gradient");
+    if ("gradient" === params.type) {
+      const sky = params.gradient;
+      expect(sky.nadirColor.equals(ColorDef.white)).to.be.true;
+      expect(sky.zenithColor.equals(ColorDef.black)).to.be.true;
+      expect(sky.skyColor.equals(ColorDef.red)).to.be.true;
+      expect(sky.groundColor.equals(ColorDef.green)).to.be.true;
+      expect(sky.skyExponent).to.equal(123);
+      expect(sky.groundExponent).to.equal(456);
+    }
   });
 
   it("disposes", async () => {
@@ -234,8 +243,7 @@ describe("EnvironmentDecorations", () => {
       },
     }));
 
-    expect(dec.sky.params!.gradient).to.be.undefined;
-    expect(dec.sky.params!.sphere).not.to.be.undefined;
+    expect(dec.sky.params!.type).to.equal("sphere");
   });
 
   it("produces sky cube", async () => {
@@ -252,8 +260,7 @@ describe("EnvironmentDecorations", () => {
       },
     }));
 
-    expect(dec.sky.params!.gradient).to.be.undefined;
-    expect(dec.sky.params!.cube).not.to.be.undefined;
+    expect(dec.sky.params!.type).to.equal("cube");
   });
 
   it("falls back to sky gradient on error", async () => {
@@ -268,8 +275,7 @@ describe("EnvironmentDecorations", () => {
     }));
 
     expect(dec.sky.params).not.to.be.undefined;
-    expect(dec.sky.params!.gradient).not.to.be.undefined;
-    expect(dec.sky.params!.sphere).to.be.undefined;
+    expect(dec.sky.params!.type).to.equal("gradient");
 
     dec = await Decorations.create(createView({
       sky: {
@@ -289,7 +295,6 @@ describe("EnvironmentDecorations", () => {
     }));
 
     expect(dec.sky.params).not.to.be.undefined;
-    expect(dec.sky.params!.gradient).not.to.be.undefined;
-    expect(dec.sky.params!.sphere).to.be.undefined;
+    expect(dec.sky.params!.type).to.equal("gradient");
   });
 });

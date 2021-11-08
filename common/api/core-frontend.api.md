@@ -8224,6 +8224,39 @@ export class RenderScheduleState extends RenderSchedule.ScriptReference {
     getTransformNodeIds(modelId: Id64String): ReadonlyArray<number> | undefined;
 }
 
+// @internal (undocumented)
+export type RenderSkyBoxParams = RenderSkyGradientParams | RenderSkySphereParams | RenderSkyCubeParams;
+
+// @internal (undocumented)
+export interface RenderSkyCubeParams {
+    // (undocumented)
+    texture: RenderTexture;
+    // (undocumented)
+    type: "cube";
+}
+
+// @internal (undocumented)
+export interface RenderSkyGradientParams {
+    // (undocumented)
+    gradient: SkyGradient;
+    // (undocumented)
+    type: "gradient";
+    // (undocumented)
+    zOffset: number;
+}
+
+// @internal (undocumented)
+export interface RenderSkySphereParams {
+    // (undocumented)
+    rotation: number;
+    // (undocumented)
+    texture: RenderTexture;
+    // (undocumented)
+    type: "sphere";
+    // (undocumented)
+    zOffset: number;
+}
+
 // @public
 export abstract class RenderSystem implements IDisposable {
     // @internal
@@ -8281,7 +8314,7 @@ export abstract class RenderSystem implements IDisposable {
     abstract createRenderGraphic(_geometry: RenderGeometry, instances?: InstancedGraphicParams | RenderAreaPattern): RenderGraphic | undefined;
     createScreenSpaceEffectBuilder(_params: ScreenSpaceEffectBuilderParams): ScreenSpaceEffectBuilder | undefined;
     // @internal
-    createSkyBox(_params: SkyBox.CreateParams): RenderGraphic | undefined;
+    createSkyBox(_params: RenderSkyBoxParams): RenderGraphic | undefined;
     // @internal (undocumented)
     abstract createTarget(canvas: HTMLCanvasElement): RenderTarget;
     // (undocumented)
@@ -9142,41 +9175,12 @@ export class SheetViewState extends ViewState2d {
 // @internal
 export type ShouldAbortReadGltf = (reader: GltfReader) => boolean;
 
-// @internal
-export namespace SkyBox {
-    // @public
-    export class CreateParams {
-        // (undocumented)
-        static createForCube(cube: RenderTexture): CreateParams;
-        // (undocumented)
-        static createForGradient(gradient: SkyGradient, zOffset: number): CreateParams;
-        // (undocumented)
-        static createForSphere(sphere: SphereParams, zOffset: number): CreateParams;
-        // (undocumented)
-        readonly cube?: RenderTexture;
-        // (undocumented)
-        readonly gradient?: SkyGradient;
-        // (undocumented)
-        readonly sphere?: SphereParams;
-        // (undocumented)
-        readonly zOffset: number;
-    }
-    // @public
-    export class SphereParams {
-        constructor(texture: RenderTexture, rotation: number);
-        // (undocumented)
-        readonly rotation: number;
-        // (undocumented)
-        readonly texture: RenderTexture;
-    }
-}
-
 // @internal (undocumented)
 export interface SkyBoxDecorations {
     // (undocumented)
-    params?: SkyBox.CreateParams | undefined;
+    params?: RenderSkyBoxParams | undefined;
     // (undocumented)
-    promise?: Promise<SkyBox.CreateParams | undefined>;
+    promise?: Promise<RenderSkyBoxParams | undefined>;
 }
 
 // @public

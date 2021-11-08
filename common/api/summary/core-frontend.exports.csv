@@ -456,6 +456,10 @@ internal;RenderPlan
 internal;class RenderPlanarClassifier 
 internal;class RenderRealityMeshGeometry 
 internal;RenderScheduleState 
+internal;RenderSkyBoxParams = RenderSkyGradientParams | RenderSkySphereParams | RenderSkyCubeParams
+internal;RenderSkyCubeParams
+internal;RenderSkyGradientParams
+internal;RenderSkySphereParams
 public;class RenderSystem 
 public;RenderSystem
 beta;RenderSystemDebugControl
@@ -497,9 +501,6 @@ public;SetupWalkCameraTool
 public;SheetModelState 
 public;SheetViewState 
 internal;ShouldAbortReadGltf = (reader: GltfReader) => boolean
-internal;SkyBox
-public;CreateParams
-public;SphereParams
 internal;SkyBoxDecorations
 public;SnapDetail 
 public;SnapHeat

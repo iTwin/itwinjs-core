@@ -16,7 +16,7 @@ import { ViewState3d } from "./ViewState";
 import { DecorateContext } from "./ViewContext";
 import { tryImageElementFromUrl } from "./ImageUtil";
 import { GraphicType } from "./render/GraphicBuilder";
-import { SkyBox } from "./render/RenderSystem";
+import { RenderSkyBoxParams } from "./render/RenderSystem";
 
 /** @internal */
 export interface GroundPlaneDecorations {
@@ -26,8 +26,8 @@ export interface GroundPlaneDecorations {
 
 /** @internal */
 export interface SkyBoxDecorations {
-  params?: SkyBox.CreateParams | undefined;
-  promise?: Promise<SkyBox.CreateParams | undefined>;
+  params?: RenderSkyBoxParams | undefined;
+  promise?: Promise<RenderSkyBoxParams | undefined>;
 }
 
 /** @internal */
@@ -178,19 +178,19 @@ export class EnvironmentDecorations {
     });
   }
 
-  private setSky(params: SkyBox.CreateParams): void {
+  private setSky(params: RenderSkyBoxParams): void {
     this._sky.promise = undefined;
     this._sky.params = params;
     this._onLoaded();
   }
 
-  private async loadSkyParams(): Promise<SkyBox.CreateParams | undefined> {
+  private async loadSkyParams(): Promise<RenderSkyBoxParams | undefined> {
     const sky = this._environment.sky;
     if (sky instanceof SkyCube) {
       const key = this.createCubeImageKey(sky);
       const existingTexture = IModelApp.renderSystem.findTexture(key, this._view.iModel);
       if (existingTexture)
-        return SkyBox.CreateParams.createForCube(existingTexture);
+        return { type: "cube", texture: existingTexture };
 
       // Some faces may use the same image. Only request each image once.
       const specs = new Set<string>([sky.images.front, sky.images.back, sky.images.left, sky.images.right, sky.images.top, sky.images.bottom]);
@@ -217,7 +217,7 @@ export class EnvironmentDecorations {
         ];
 
         const texture = IModelApp.renderSystem.createTextureFromCubeImages(txImgs[0], txImgs[1], txImgs[2], txImgs[3], txImgs[4], txImgs[5], this._view.iModel, params);
-        return texture ? SkyBox.CreateParams.createForCube(texture) : undefined;
+        return texture ? { type: "cube", texture } : undefined;
       });
     } else if (sky instanceof SkySphere) {
       const rotation = 0; // ###TODO where is this supposed to come from?
@@ -235,7 +235,7 @@ export class EnvironmentDecorations {
       if (!texture)
         return undefined;
 
-      return SkyBox.CreateParams.createForSphere(new SkyBox.SphereParams(texture, rotation), this._view.iModel.globalOrigin.z);
+      return { type: "sphere", texture, rotation, zOffset: this._view.iModel.globalOrigin.z };
     } else {
       return this.createSkyGradientParams();
     }
@@ -246,8 +246,8 @@ export class EnvironmentDecorations {
     return `skycube:${i.front}:${i.back}:${i.left}:${i.right}:${i.top}:${i.bottom}`;
   }
 
-  private createSkyGradientParams(): SkyBox.CreateParams {
-    return SkyBox.CreateParams.createForGradient(this._environment.sky.gradient, this._view.iModel.globalOrigin.z);
+  private createSkyGradientParams(): RenderSkyBoxParams {
+    return { type: "gradient", gradient: this._environment.sky.gradient, zOffset: this._view.iModel.globalOrigin.z };
   }
 
   private async imageFromSpec(spec: TextureImageSpec): Promise<HTMLImageElement | undefined> {
