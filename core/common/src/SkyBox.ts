@@ -31,6 +31,7 @@ export enum SkyBoxImageType {
 
 /** JSON representation of the six images used by a [[SkyCube]].
  * Each property specifies the image for a face of the cube as either an image URL, or the Id of a [Texture]($backend) element.
+ * Each image must be square and have the same dimensions as all the other images.
  * @public
  */
 export interface SkyCubeProps {
@@ -325,6 +326,7 @@ export class SkySphere extends SkyBox {
 }
 
 /** Describes how to draw a representation of a sky by mapping images to the interior faces of a cube.
+ * The images are required to be *square*, and each image must have the same dimensions as the other images.
  * @public
  */
 export class SkyCube extends SkyBox {
