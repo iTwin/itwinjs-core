@@ -55,7 +55,7 @@
     "@itwin/eslint-plugin": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "@itwin/oidc-signin-tool": "workspace:*",
+    "@itwin/oidc-signin-tool": "^3.0.0-dev.109",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/projects-client": "^0.2.0",

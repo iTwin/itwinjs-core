@@ -44,7 +44,7 @@
     "@itwin/certa": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "@itwin/oidc-signin-tool": "workspace:*",
+    "@itwin/oidc-signin-tool": "^3.0.0-dev.109",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^8.2.2",
     "@types/node": "14.14.31",
