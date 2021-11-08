@@ -2965,8 +2965,20 @@ export class EnvironmentDecorations {
     // (undocumented)
     dispose(): void;
     // (undocumented)
+    protected _environment: Environment;
+    // (undocumented)
+    protected _ground?: GroundPlaneDecorations;
+    // (undocumented)
+    protected readonly _onDispose: () => void;
+    // (undocumented)
+    protected readonly _onLoaded: () => void;
+    // (undocumented)
     setEnvironment(env: Environment): void;
-    }
+    // (undocumented)
+    protected _sky: SkyBoxDecorations;
+    // (undocumented)
+    protected readonly _view: ViewState3d;
+}
 
 // @public
 export class EventController {
