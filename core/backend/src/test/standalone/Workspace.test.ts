@@ -115,14 +115,14 @@ describe("WorkspaceFile", () => {
   it("resolve workspace alias", async () => {
     const settingsFile = IModelTestUtils.resolveAssetFile("test.setting.json5");
     const defaultContainer = await makeContainer("defaults");
-    expect(defaultContainer.dbAlias).equals("v0");
+    expect(defaultContainer.versionName).equals("v0");
     defaultContainer.addString("default-settings", fs.readFileSync(settingsFile, "utf-8"));
     defaultContainer.close();
 
     const schemaFile = IModelTestUtils.resolveAssetFile("TestSettings.schema.json");
     const fontsContainer = await makeContainer("fonts-01#v23");
     expect(fontsContainer.containerId).equals("fonts-01");
-    expect(fontsContainer.dbAlias).equals("v23");
+    expect(fontsContainer.versionName).equals("v23");
 
     fontsContainer.addFile("Helvetica.ttf", schemaFile, "ttf");
     fontsContainer.close();

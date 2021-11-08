@@ -99,7 +99,7 @@ export interface WorkspaceContainer {
   /** The WorkspaceContainerId of this container. */
   readonly containerId: WorkspaceContainerId;
   /** The version alias for this container. */
-  readonly dbAlias: WorkspaceContainerVersion;
+  readonly versionName: WorkspaceContainerVersion;
   /** The Workspace that opened this WorkspaceContainer */
   readonly workspace: Workspace;
   /** the directory for extracting file resources. */
@@ -265,7 +265,7 @@ export class WorkspaceFile implements WorkspaceContainer {
   public readonly workspace: Workspace;
   public readonly containerId: WorkspaceContainerId;
   public localDbName: LocalFileName;
-  public dbAlias: WorkspaceContainerVersion;
+  public versionName: WorkspaceContainerVersion;
   public readonly onContainerClosed = new BeEvent<() => void>();
 
   public get containerFilesDir() { return join(this.workspace.filesDir, this.containerId); }
@@ -295,11 +295,11 @@ export class WorkspaceFile implements WorkspaceContainer {
   }
 
   public constructor(containerId: WorkspaceContainerId, workspace: Workspace) {
-    [containerId, this.dbAlias] = containerId.split("#", 2);
+    [containerId, this.versionName] = containerId.split("#", 2);
     WorkspaceFile.validateContainerId(containerId);
     this.workspace = workspace;
     this.containerId = containerId;
-    this.dbAlias = this.dbAlias ?? "v0";
+    this.versionName = this.versionName ?? "v0";
     this.localDbName = join(workspace.containerDir, `${this.containerId}.${containerFileExt}`);
     workspace.addContainer(this);
   }
@@ -367,6 +367,7 @@ export class WorkspaceFile implements WorkspaceContainer {
  * @beta
  */
 export class EditableWorkspaceFile extends WorkspaceFile {
+  private _isCloudOpen = false;
   private static validateResourceName(name: WorkspaceResourceName) {
     WorkspaceFile.noLeadingOrTrailingSpaces(name, "resource name");
     if (name.length > 1024)
@@ -380,8 +381,17 @@ export class EditableWorkspaceFile extends WorkspaceFile {
   }
 
   public async openCloudDb(props: CloudSqlite.AccessProps) {
-    this.localDbName = await CloudSqlite.attach(this.dbAlias, props);
+    this.localDbName = await CloudSqlite.attach(this.versionName, props);
     this.db.openDb(this.localDbName, OpenMode.ReadWrite);
+    this._isCloudOpen = true;
+  }
+
+  public override close() {
+    if (this._isCloudOpen) {
+      this.db.nativeDb.flushCloudUpload();
+      this._isCloudOpen = false;
+    }
+    super.close();
   }
 
   private getFileModifiedTime(localFileName: LocalFileName): number {

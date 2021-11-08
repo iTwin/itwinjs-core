@@ -12,6 +12,7 @@ import { DbResult } from "@itwin/core-bentley";
 import { ChildProcess } from "child_process";
 import { IModelHost } from "../IModelHost";
 import { join } from "path";
+import * as readline from "readline";
 
 /** @beta */
 export namespace CloudSqlite {
@@ -23,7 +24,7 @@ export namespace CloudSqlite {
   export type ProcessProps = DaemonProps & AccountProps & { stdoutLogger?: Logger, stderrLogger?: Logger };
   export interface DbProps {
     localDbName: LocalFileName;
-    dbAlias: DbAlias;
+    versionName: DbAlias;
   }
 }
 
@@ -63,7 +64,10 @@ export class CloudSqlite {
   }
 
   public static async attach(dbAlias: CloudSqlite.DbAlias, props: CloudSqlite.AccessProps) {
-    const args: BlobDaemonCommandArg & DaemonProps = {
+    const logger = (stream: NodeJS.ReadableStream) => {
+      readline.createInterface({ input: stream, terminal: false }).on("line", (line) => console.log(`${line}`));
+    };
+    const args: BlobDaemonCommandArg & CloudSqlite.ProcessProps = {
       log: "meh",
       maxCacheSize: "10G",
       pollTime: 600,
@@ -73,6 +77,8 @@ export class CloudSqlite {
       persistAcrossSessions: true,
       lazy: false,
       dbAlias,
+      stderrLogger: logger,
+      stdoutLogger: logger,
       ...props,
     };
 
@@ -92,7 +98,7 @@ export class CloudSqlite {
   }
 
   public static async downloadDb(wsFile: CloudSqlite.DbProps, props: CloudSqlite.AccessProps) {
-    const stat = await BlobDaemon.command("download", { localFile: wsFile.localDbName, dbAlias: wsFile.dbAlias, ...props });
+    const stat = await BlobDaemon.command("download", { localFile: wsFile.localDbName, dbAlias: wsFile.versionName, ...props });
     if (stat.result !== DbResult.BE_SQLITE_OK)
       throw new Error(`Cannot download db: ${stat.errMsg}`);
   }
@@ -104,7 +110,7 @@ export class CloudSqlite {
   }
 
   public static async uploadDb(wsFile: CloudSqlite.DbProps, props: CloudSqlite.AccessProps) {
-    const stat = await BlobDaemon.command("upload", { localFile: wsFile.localDbName, dbAlias: wsFile.dbAlias, ...props });
+    const stat = await BlobDaemon.command("upload", { localFile: wsFile.localDbName, dbAlias: wsFile.versionName, ...props });
     if (stat.result !== DbResult.BE_SQLITE_OK)
       throw new Error(`Cannot upload db: ${stat.errMsg}`);
   }

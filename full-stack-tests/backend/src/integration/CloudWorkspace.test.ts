@@ -3,12 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BaseSettings, CloudSqlite, EditableWorkspaceFile, IModelHost, IModelJsFs, ITwinWorkspace, SettingsPriority } from "@itwin/core-backend";
+import { BeDuration } from "@itwin/core-bentley";
 import { expect } from "chai";
 import { join } from "path";
 
 describe("Cloud workspace containers", () => {
 
-  it.skip("cloud containers", async () => {
+  it.only("cloud containers", async () => {
     const accountProps: CloudSqlite.AccountProps = {
       user: "devstoreaccount1",
       storageType: "azure?emulator=127.0.0.1:10000&sas=0",
@@ -42,12 +43,14 @@ describe("Cloud workspace containers", () => {
     ws1.addString("string 1", "value of string 1");
     workspace.dropContainer(ws1);
     await ws1.upload(cloudAccess);
+    await BeDuration.fromSeconds(1).wait();
 
     IModelJsFs.unlinkSync(dbName);
     let ws2 = await workspace.getContainer(testContainerName, cloudAccess);
     let val = ws2.getString("string 1");
     expect(val).equals("value of string 1");
     workspace.dropContainer(ws2);
+    await BeDuration.fromSeconds(1).wait();
 
     const newVal = "new value for string 1";
     const ws3 = new EditableWorkspaceFile(testContainerName, workspace);
