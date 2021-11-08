@@ -134,7 +134,7 @@ This includes the:
 - [SubCategoryAppearance]($common) visibility and overrides
 - Background color
 - [RenderMode]($common)
-- [Environment]($frontend)
+- [Environment]($common)
 - Other view-specific parameters
 
 They are loaded in memory in the frontend with the [DisplayStyleState]($frontend) class.

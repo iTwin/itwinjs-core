@@ -212,6 +212,8 @@ beta;EntityMetaData
 beta;EntityMetaDataProps
 public;EntityProps
 public;EntityQueryParams
+public;Environment
+public;EnvironmentProperties = NonFunctionPropertiesOf
 public;EnvironmentProps
 public;ExtantElementGeometryChange
 public;ExternalSourceAspectProps 
@@ -308,6 +310,7 @@ public;GridFileTransform
 public;GridFileTransformProps
 public;GridOrientationType
 public;GroundPlane
+public;GroundPlaneProperties = NonFunctionPropertiesOf
 public;GroundPlaneProps
 public;Helmert2DWithZOffset 
 public;Helmert2DWithZOffsetProps
@@ -624,10 +627,17 @@ beta;SheetBorderTemplateProps
 public;SheetProps 
 beta;SheetTemplateProps 
 internal;SilhouetteEdgeArgs 
-public;SkyBoxImageProps
+public;SkyBox
+public;SkyBoxImageProps = SkySphereImageProps | SkyCubeImageProps |
 public;SkyBoxImageType
 public;SkyBoxProps
+public;SkyCube 
+public;SkyCubeImageProps
 public;SkyCubeProps
+public;SkyGradient
+public;SkyGradientProperties = NonFunctionPropertiesOf
+public;SkySphere 
+public;SkySphereImageProps
 internal;SnapRequestProps
 internal;SnapResponseProps
 internal;class SnapshotIModelRpcInterface 
@@ -666,6 +676,7 @@ public;TextString
 public;TextStringPrimitive
 public;TextStringProps
 public;TextureData
+public;TextureImageSpec = Id64String | string
 public;TextureLoadProps
 public;TextureMapping
 public;TextureMapping

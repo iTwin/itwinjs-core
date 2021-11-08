@@ -8,6 +8,8 @@ import { expect } from "chai";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { Checker } from "../Checker";
 import { ClipUtilities } from "../../clipping/ClipUtils";
+import { ClipPrimitive } from "../../clipping/ClipPrimitive";
+import { ClipVector } from "../../clipping/ClipVector";
 import { ConvexClipPlaneSet, Plane3dByOriginAndUnitNormal, UnionOfConvexClipPlaneSets } from "../../core-geometry";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
@@ -169,4 +171,19 @@ function exerciseClipper(ck: Checker, allGeometry: GeometryQuery[], outerRange: 
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, loops, xy0.x, xy0.y);
     xy0.y += 1.5;
   }
+// to get coverage .. we expect that outer clip set to be the full range . . .
+  const range102 = ClipUtilities.rangeOfClipperIntersectionWithRange(outerClipSet, outerRange, false);
+  ck.testRange3d(range102, outerRange, "complement set range is full range");
+  ck.testTrue(ClipUtilities.doesClipperIntersectRange(outerClipSet, outerRange));
+
+  const innerPrimitive = ClipPrimitive.createCapture(clipper);
+  const range103 = ClipUtilities.rangeOfClipperIntersectionWithRange(innerPrimitive, outerRange, false);
+  ck.testRange3d(range103, range100, "clipper buried in ClipPrimitive");
+  ck.testTrue(ClipUtilities.doesClipperIntersectRange(innerPrimitive, outerRange));
+
+  const innerVector = ClipVector.create([innerPrimitive]);
+  const range104 = ClipUtilities.rangeOfClipperIntersectionWithRange(innerVector, outerRange, false);
+  ck.testRange3d(range104, range100, "clipper buried in ClipVector");
+  ck.testTrue(ClipUtilities.doesClipperIntersectRange(innerVector, outerRange));
+
 }
