@@ -703,12 +703,15 @@ export class Vector3d extends XYZ {
    * @param end end point for vector
    * @param result optional result
    */
-  public static createStartEnd(start: XYAndZ, end: XYAndZ, result?: Vector3d): Vector3d {
+  public static createStartEnd(start: XAndY | XYAndZ, end: XAndY | XYAndZ, result?: Vector3d): Vector3d {
+    const zStart = XYZ.accessZ(start, 0.0) as number;
+    const zEnd = XYZ.accessZ(end, 0.0) as number;
+    const dz = zEnd - zStart;
     if (result) {
-      result.set(end.x - start.x, end.y - start.y, end.z - start.z);
+      result.set(end.x - start.x, end.y - start.y, dz);
       return result;
     }
-    return new Vector3d(end.x - start.x, end.y - start.y, end.z - start.z);
+    return new Vector3d(end.x - start.x, end.y - start.y, dz);
   }
   /**
    * Return a vector (optionally in preallocated result, otherwise newly created) from [x0,y0,z0] to [x1,y1,z1]

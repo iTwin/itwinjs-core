@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Added support for EPSG:4326 in WMS imagery provider.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
