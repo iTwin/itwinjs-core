@@ -24,7 +24,7 @@
   "dependencies": {
     "@bentley/imodelhub-client": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "@itwin/browser-authorization": "^0.2.0",
+    "@itwin/browser-authorization": "^0.3.0",
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
@@ -47,7 +47,7 @@
     "@itwin/build-tools": "workspace:*",
     "@itwin/certa": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
-    "@itwin/oidc-signin-tool": "workspace:*",
+    "@itwin/oidc-signin-tool": "^3.0.0-dev.109",
     "@itwin/projects-client": "^0.2.0",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
