@@ -1497,11 +1497,11 @@ This also affects how you will import `*.scss` from the ui packages. If you were
 
 ## Simplification of CloudStorageService setup in iModelHost
 
-`IModelHostConfiguration.tileCacheCredentials` is changed to `IModelHostConfiguration.tileCacheAzureCredentials` and used for setting Azure cloud storage for tile cache.
-`IModelHost.tileCacheService` is moved to `IModelHostConfiguration.tileCacheService` and is used to supply a different implementation for any service provider by setting this property with a custom `CloudStorageService`.
+`IModelHostConfiguration.tileCacheCredentials` is changed to [IModelHostConfiguration.tileCacheAzureCredentials]($backend) and used for setting Azure cloud storage for tile cache.
+`IModelHost.tileCacheService` is moved to [IModelHostConfiguration.tileCacheService]($backend) and is used to supply a different implementation for any service provider by setting this property with a custom [CloudStorageService]($backend).
 If both `tileCacheAzureCredentials` and `tileCacheService` omitted - local cache will be used, if both set - error will be thrown.
 
-To use Azure cloud storage for tile cache set `IModelHostConfiguration.tileCacheAzureCredentials` property:
+To use Azure cloud storage for tile cache set [IModelHostConfiguration.tileCacheAzureCredentials]($backend) property:
 
 ```ts
   const config = new IModelHostConfiguration();
@@ -1518,7 +1518,7 @@ To use Azure cloud storage for tile cache set `IModelHostConfiguration.tileCache
   };
 ```
 
-To use AliCloud storage set `IModelHostConfiguration.tileCacheService` property with provided `AliCloudStorageService` implementation:
+To use AliCloud storage set [IModelHostConfiguration.tileCacheService]($backend) property with provided [AliCloudStorageService]($backend) implementation:
 
 ```ts
   import { AliCloudStorageService } from "@itwin/core-backend";
@@ -1538,7 +1538,7 @@ To use AliCloud storage set `IModelHostConfiguration.tileCacheService` property 
   });
 ```
 
-To use any other external storage set `IModelHostConfiguration.tileCacheService` with a custom `CloudStorageService` implementation:
+To use any other external storage set [IModelHostConfiguration.tileCacheService]($backend) with a custom [CloudStorageService]($backend) implementation:
 
 ```ts
   const config = new IModelHostConfiguration();
