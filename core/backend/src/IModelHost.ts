@@ -172,8 +172,10 @@ class ApplicationSettings extends BaseSettings {
   }
   private updateDefaults() {
     const defaults: SettingDictionary = {};
-    for (const [specName, val] of SettingsSpecRegistry.allSpecs)
-      defaults[specName] = val.default!;
+    for (const [specName, val] of SettingsSpecRegistry.allSpecs) {
+      if (val.default)
+        defaults[specName] = val.default;
+    }
     this.addDictionary("_default_", 0, defaults);
   }
 
@@ -244,7 +246,7 @@ export class IModelHost {
    * attempting to add them to this Workspace will fail.
    * @beta
    */
-  public static get appWorkspace(): Workspace { return this._appWorkspace!; }
+  public static get appWorkspace(): Workspace { return this._appWorkspace!; } // eslint-disable-line @typescript-eslint/no-non-null-assertion
 
   /** The optional [[FileNameResolver]] that resolves keys and partial file names for snapshot iModels. */
   public static snapshotFileNameResolver?: FileNameResolver;
@@ -522,7 +524,8 @@ export class IModelHost {
   public static get compressCachedTiles(): boolean { return false !== IModelHost.configuration?.compressCachedTiles; }
 
   private static setupTileCache() {
-    const config = IModelHost.configuration!;
+    assert(undefined !== IModelHost.configuration);
+    const config = IModelHost.configuration;
     const credentials = config.tileCacheCredentials;
     if (undefined === credentials)
       return;

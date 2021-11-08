@@ -11,6 +11,7 @@ import { UnionOfConvexClipPlaneSets } from "../../clipping/UnionOfConvexClipPlan
 import { Arc3d } from "../../curve/Arc3d";
 import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "../../curve/CurvePrimitive";
 import { GeometryQuery } from "../../curve/GeometryQuery";
+import { HalfEdgeGraph } from "../../topology/Graph";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
@@ -1202,16 +1203,21 @@ describe("PolygonClipper", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 });
-
-class OutputManager {
+/**
+ * Context for GeometryCoreTestIO calls.
+ * * Hold origin references x0,y0,z0
+ * * emit geometry in drawXXXX calls.
+ */
+export class OutputManager {
   public x0: number = 0;
   public y0: number = 0;
+  public z0: number = 0;
   public allGeometry: GeometryQuery[] = [];
   public drawArrow(pointA: Point3d, vector: Vector3d, headLengthFraction: number = 0.10, headWidthFraction: number = 0.05) {
     const pointB = pointA.plus(vector);
     const pointC = pointA.interpolatePerpendicularXY(1.0 - headLengthFraction, pointB, headWidthFraction);
     const pointD = pointA.interpolatePerpendicularXY(1.0 - headLengthFraction, pointB, -headWidthFraction);
-    GeometryCoreTestIO.captureCloneGeometry(this.allGeometry, [pointA, pointB, pointC, pointD, pointB], this.x0, this.y0);
+    GeometryCoreTestIO.captureCloneGeometry(this.allGeometry, [pointA, pointB, pointC, pointD, pointB], this.x0, this.y0, this.z0);
   }
 
   public drawPerpendicular(pointA: Point3d, vector: Vector3d, fractionAlong: number, leftFraction: number = -1.0, rightFraction: number = 1.0) {
@@ -1219,7 +1225,7 @@ class OutputManager {
       const pointB = pointA.plus(vector);
       const pointC = pointA.interpolatePerpendicularXY(fractionAlong, pointB, leftFraction);
       const pointD = pointA.interpolatePerpendicularXY(fractionAlong, pointB, rightFraction);
-      GeometryCoreTestIO.captureCloneGeometry(this.allGeometry, [pointC, pointD], this.x0, this.y0);
+      GeometryCoreTestIO.captureCloneGeometry(this.allGeometry, [pointC, pointD], this.x0, this.y0, this.z0);
 }
   }
 
@@ -1227,11 +1233,11 @@ class OutputManager {
     if (points instanceof GrowableXYZArray){
     if (forceClosure)
       points.forceClosure();
-      GeometryCoreTestIO.createAndCaptureLoop(this.allGeometry, points, this.x0, this.y0);
+      GeometryCoreTestIO.createAndCaptureLoop(this.allGeometry, points, this.x0, this.y0, this.z0);
     } else {
       if (forceClosure)
         points.push(points[0]);
-      GeometryCoreTestIO.createAndCaptureLoop(this.allGeometry, points, this.x0, this.y0);
+      GeometryCoreTestIO.createAndCaptureLoop(this.allGeometry, points, this.x0, this.y0, this.z0);
       }
   }
   public drawAxes(r: number = 10, arrowLength: number = 1, originX: number = 0, originY: number = 0) {
@@ -1243,20 +1249,29 @@ class OutputManager {
   public drawMinus(xyz: Point3d, radius: number = 0.1) {
     GeometryCoreTestIO.captureCloneGeometry(this.allGeometry,
       [xyz.plusXYZ(-radius, 0, 0), xyz.plusXYZ(radius, 0, 0)],
-      this.x0, this.y0);
+      this.x0, this.y0, this.z0);
   }
 
   public drawPlus(xyz: Point3d, radius: number = 0.1) {
     GeometryCoreTestIO.captureCloneGeometry(this.allGeometry,
       [xyz.plusXYZ(-radius, 0, 0), xyz.plusXYZ(radius, 0, 0)],
-      this.x0, this.y0);
+      this.x0, this.y0, this.z0);
       GeometryCoreTestIO.captureCloneGeometry(this.allGeometry,
         [xyz.plusXYZ(0, -radius, 0), xyz.plusXYZ(0, radius, 0)],
-        this.x0, this.y0);
+        this.x0, this.y0, this.z0);
+  }
+  public drawLines(xyz: Point3d[]){
+    GeometryCoreTestIO.captureCloneGeometry(this.allGeometry, xyz,
+      this.x0, this.y0, this.z0);
+  }
+
+  public drawCircle(xyz: Point3d, radius: number = 0.1) {
+    GeometryCoreTestIO.captureCloneGeometry(this.allGeometry,
+      Arc3d.createXY(xyz, radius));
   }
 
   public captureClone(data: GeometryQuery | undefined) {
-    GeometryCoreTestIO.captureCloneGeometry(this.allGeometry, data, this.x0, this.y0);
+    GeometryCoreTestIO.captureCloneGeometry(this.allGeometry, data, this.x0, this.y0, this.z0);
   }
 
   public saveToFile(directoryName: string, fileName: string) {
@@ -1271,7 +1286,14 @@ class OutputManager {
     this.y0 += dy;
   }
   public setX0(x0: number): number { const a = this.x0; this.x0 = x0; return a;}
-  public setY0(y0: number): number { const a = this.y0; this.y0 = y0; return a;}
+  public setY0(y0: number): number { const a = this.y0; this.y0 = y0; return a; }
+  public setZ0(z0: number): number { const a = this.z0; this.z0 = z0; return a; }
+  public drawGraph(graph: HalfEdgeGraph | undefined) {
+    if (graph)
+      GeometryCoreTestIO.captureGeometry(this.allGeometry, PolyfaceBuilder.graphToPolyface(graph),
+        this.x0, this.y0, 0);
+  }
+
 }
 /**
  * Create planes with (inward) normal computed as cross product of sweepVector edge vectors.

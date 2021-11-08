@@ -8,11 +8,11 @@
  */
 
 import {
-  DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, RenderMode, SubCategoryAppearance, SubCategoryOverride, ViewFlags, ViewFlagsProperties,
-  WhiteOnWhiteReversalSettings,
+  DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, RenderMode, SkyCube, SkySphere, SubCategoryAppearance, SubCategoryOverride,
+  ViewFlags, ViewFlagsProperties, WhiteOnWhiteReversalSettings,
 } from "@itwin/core-common";
 import {
-  DisplayStyle3dState, Environment, IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport,
+  DisplayStyle3dState, IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport,
 } from "@itwin/core-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseArgs } from "./parseArgs";
@@ -134,7 +134,104 @@ export class ToggleSkyboxTool extends DisplayStyleTool {
 
   public execute(vp: Viewport): boolean {
     const style = vp.view.displayStyle as DisplayStyle3dState;
-    style.environment = new Environment({ sky: { display: !style.environment.sky.display } });
+    style.environment = style.environment.withDisplay({ sky: !style.environment.displaySky });
+    return true;
+  }
+}
+
+/** Defines a [SkySphere]($common) to apply to the current view.
+ * @beta
+ */
+export class SkySphereTool extends DisplayStyleTool {
+  private _image?: string;
+
+  public static override toolId = "SetSkySphere";
+  public static override get minArgs() { return 1; }
+  public static override get maxArgs() { return 1; }
+
+  public override get require3d() { return true; }
+
+  public parse(args: string[]) {
+    this._image = args[0];
+    return true;
+  }
+
+  public execute(vp: Viewport): boolean {
+    if (this._image && vp.view.is3d()) {
+      vp.view.displayStyle.environment = vp.view.displayStyle.environment.clone({
+        displaySky: true,
+        sky: new SkySphere(this._image),
+      });
+    }
+
+    return true;
+  }
+}
+
+/** Defines a [SkyCube]($common) to apply to the current view.
+ * @beta
+ */
+export class SkyCubeTool extends DisplayStyleTool {
+  private _images: string[] = [];
+
+  public static override toolId = "SetSkyCube";
+  public static override get minArgs() { return 1; }
+  public static override get maxArgs() { return 6; }
+
+  public override get require3d() { return true; }
+
+  public parse(args: string[]) {
+    this._images = [...args];
+    return true;
+  }
+
+  public execute(vp: Viewport): boolean {
+    const imgs = this._images;
+    if (imgs.length === 0 || !vp.view.is3d())
+      return true;
+
+    let top, bottom, left, right, front, back;
+    switch (imgs.length) {
+      case 1:
+        top = bottom = left = right = front = back = imgs[0];
+        break;
+      case 2:
+        top = bottom = imgs[0];
+        left = right = front = back = imgs[1];
+        break;
+      case 3:
+        top = bottom = imgs[0];
+        left = right = imgs[1];
+        front = back = imgs[2];
+        break;
+      case 4:
+        top = imgs[0];
+        bottom = imgs[1];
+        left = right = imgs[2];
+        front = back = imgs[3];
+        break;
+      case 5:
+        top = bottom = imgs[0];
+        left = imgs[1];
+        right = imgs[2];
+        front = imgs[3];
+        back = imgs[4];
+        break;
+      default:
+        top = imgs[0];
+        bottom = imgs[1];
+        left = imgs[2];
+        right = imgs[3];
+        front = imgs[4];
+        back = imgs[5];
+        break;
+    }
+
+    vp.view.displayStyle.environment = vp.view.displayStyle.environment.clone({
+      displaySky: true,
+      sky: new SkyCube({ top, bottom, left, right, front, back }),
+    });
+
     return true;
   }
 }

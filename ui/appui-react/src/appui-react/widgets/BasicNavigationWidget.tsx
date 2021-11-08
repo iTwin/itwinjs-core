@@ -72,6 +72,7 @@ export function BasicNavigationWidget(props: BasicNavigationWidgetProps) {
   }, [props.additionalHorizontalItems, props.additionalVerticalItems, getHorizontalToolbarItems, getVerticalToolbarItems]);
 
   const uiIsVisible = useUiVisibility();
+  // istanbul ignore next
   const className = classnames(
     !uiIsVisible && "nz-hidden",
   );

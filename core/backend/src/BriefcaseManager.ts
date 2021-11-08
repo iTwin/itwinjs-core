@@ -345,7 +345,7 @@ export class BriefcaseManager {
     const files = IModelJsFs.readdirSync(folderPathname);
     for (const file of files) {
       const curPath = path.join(folderPathname, file);
-      const locStatus = (IModelJsFs.lstatSync(curPath)!.isDirectory) ? BriefcaseManager.deleteFolderAndContents(curPath) : BriefcaseManager.deleteFile(curPath);
+      const locStatus = (IModelJsFs.lstatSync(curPath)?.isDirectory) ? BriefcaseManager.deleteFolderAndContents(curPath) : BriefcaseManager.deleteFile(curPath);
       if (!locStatus)
         status = false;
     }
@@ -395,7 +395,7 @@ export class BriefcaseManager {
     const changesets = await IModelHost.hubAccess.downloadChangesets({
       accessToken: arg.accessToken,
       iModelId: db.iModelId,
-      range: { first: reverse ? arg.toIndex! + 1 : currentIndex + 1, end: reverse ? currentIndex : arg.toIndex },
+      range: { first: reverse ? arg.toIndex! + 1 : currentIndex + 1, end: reverse ? currentIndex : arg.toIndex }, // eslint-disable-line @typescript-eslint/no-non-null-assertion
       targetDir: BriefcaseManager.getChangeSetsPath(db.iModelId),
     });
 

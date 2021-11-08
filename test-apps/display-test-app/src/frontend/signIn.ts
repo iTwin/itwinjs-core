@@ -27,7 +27,7 @@ export async function signIn(): Promise<boolean> {
     redirectUri: "http://localhost:3000/signin-callback",
     scope: "openid email profile organization itwinjs",
     responseType: "code",
-    authority: "https://ims.bentley.com", // TODO: Double check this
+    authority: "https://ims.bentley.com"
   });
   try {
     await browserAuth.signInSilent();
