@@ -65,7 +65,7 @@ describe("EnvironmentDecorations", () => {
     const createTexture = () => { return {} as unknown as RenderTexture; };
     IModelApp.renderSystem.createTextureFromCubeImages = createTexture;
     IModelApp.renderSystem.createTexture = createTexture;
-    IModelApp.renderSystem.loadTextureImage = () => Promise.resolve(textureImage);
+    IModelApp.renderSystem.loadTextureImage = async () => Promise.resolve(textureImage);
 
     iModel = createBlankConnection();
   });

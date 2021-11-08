@@ -4039,7 +4039,8 @@ export class GroundPlane {
     protected constructor(props: Partial<GroundPlaneProperties>);
     readonly aboveColor: ColorDef;
     readonly belowColor: ColorDef;
-    static create(props?: GroundPlaneProperties): GroundPlane;
+    clone(changedProps?: Partial<GroundPlaneProperties>): GroundPlane;
+    static create(props?: Partial<GroundPlaneProperties>): GroundPlane;
     static readonly defaults: GroundPlane;
     readonly elevation: number;
     static fromJSON(props?: GroundPlaneProps): GroundPlane;
