@@ -1,0 +1,77 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "../style/themecolors.scss";
+@import "~@itwin/itwinui-css/scss/style/typography";
+
+$node-font-size: $iui-font-size;
+
+.core-tree-node {
+  /* Rules applied to the <be-tree-node> itself */
+  display: flex;
+  box-sizing: border-box;
+  width: fit-content;
+  min-width: 100%;
+  font-family: $iui-sans;
+  font-size: $node-font-size;
+  color: $buic-text-color;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  cursor: default;
+  padding: 1px 1px 0px 1px;
+
+  > .contents {
+    display: flex;
+    align-items: center;
+    width: 100%;
+
+    > .loader {
+      margin: auto 4px;
+    }
+
+    > .expansion-toggle {
+      display: inline-block;
+      margin-top: auto;
+      margin-bottom: auto;
+    }
+
+    .core-checkbox {
+      display: inline-block;
+      padding: 0;
+      margin: 0;
+      margin-right: 5px;
+      background: transparent;
+
+      > input {
+        position: relative;
+        left: 0px;
+        height: auto;
+        line-height: unset;
+      }
+    }
+  }
+
+  &-icon {
+    width: 16px;
+    height: 24px;
+    display: inline-block;
+    box-sizing: border-box;
+    padding: 5px 0;
+    margin-right: 5px;
+  }
+
+  &.is-focused, &:focus {
+    outline: 1px dotted #000;
+  }
+
+  &:not(.is-hover-disabled) {
+    &:hover{
+      background: $buic-row-hover;
+    }
+  }
+
+  &.is-selected {
+    background: $buic-row-selection;
+  }
+}

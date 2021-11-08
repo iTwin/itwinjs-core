@@ -6,7 +6,7 @@
  * @packageDocumentation
  * @module Entities
  */
-import { DbOpcode, Id64String } from "@bentley/bentleyjs-core";
+import { DbOpcode, Id64String } from "@itwin/core-bentley";
 import { AxisAlignedBox3dProps } from "./geometry/Placement";
 
 // cspell:ignore bboxes
@@ -27,10 +27,10 @@ export enum TypeOfChange {
   Hidden = 0b10000,
 }
 
-/** Changed elements found in a changeset or between a range of changesets
- * All arrays in this object will have the same number of items
+/** Changed elements found in a changeset or between a range of changesets.
+ * All arrays in this object will have the same number of items.
  * Each index for those arrays refer to the same element, e.g. to get the class Id of
- * the element given by element Id changedElements.elements[index], you can use changedElements.classIds[index]
+ * the element given by element Id changedElements.elements[index], you can use changedElements.classIds[index].
  * @public
  */
 export interface ChangedElements {
@@ -39,7 +39,7 @@ export interface ChangedElements {
   /** ECClass Ids of elements that changed */
   classIds: Id64String[];
   /** Operation that occurred on the element. Whether the element was inserted, updated or deleted.
-   * See [DbOpcode]($bentleyjs-core)
+   * See [DbOpcode]($core-bentley)
    */
   opcodes: DbOpcode[];
   /** Type of change bitflags, see [[TypeOfChange]] */

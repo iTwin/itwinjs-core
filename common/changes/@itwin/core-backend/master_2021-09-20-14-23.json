@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "throw rather than returning status from IModelDb.saveFileProperty and IModelDb.deleteFileProperty",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

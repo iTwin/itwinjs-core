@@ -6,7 +6,7 @@
 .PropertiesWidget {
   padding: 5px;
   display: grid;
-  grid-template-columns: auto 100px;
+  grid-template-columns: minmax(0, 1fr) 100px;
   grid-template-rows: 24px 36px auto;
 }
 
@@ -25,14 +25,13 @@
   margin-left: 0;
 }
 
-.PropertiesWidget > .SearchBar .core-toggle {
+.PropertiesWidget > .SearchBar .iui-toggle-switch {
   margin-right: 0;
 }
 
 .PropertiesWidget > .ContentContainer {
   flex: 1 0;
   min-height: 0;
-  margin-left: -3px;
   grid-column-start: 1;
   grid-column-end: span 2;
 }

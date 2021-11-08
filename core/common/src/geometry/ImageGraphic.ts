@@ -6,13 +6,13 @@
  * @module Geometry
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
-import { Point3d, Range3d, Transform, XYZProps } from "@bentley/geometry-core";
+import { Id64String } from "@itwin/core-bentley";
+import { Point3d, Range3d, Transform, XYZProps } from "@itwin/core-geometry";
 
 /** JSON representation of the 4 corners of an [[ImageGraphicProps]]. @see [[ImageGraphicCorners]].
  * @public
  */
-export type ImageGraphicCornersProps = [ XYZProps, XYZProps, XYZProps, XYZProps ];
+export type ImageGraphicCornersProps = [XYZProps, XYZProps, XYZProps, XYZProps];
 
 /** JSON representation of an [[ImageGraphic]].
  * @see [[GeometryStreamEntryProps]].
@@ -64,7 +64,7 @@ export class ImageGraphicCorners {
   }
 
   public toJSON(): ImageGraphicCornersProps {
-    return [ this[0].toJSON(), this[1].toJSON(), this[2].toJSON(), this[3].toJSON() ];
+    return [this[0].toJSON(), this[1].toJSON(), this[2].toJSON(), this[3].toJSON()];
   }
 }
 

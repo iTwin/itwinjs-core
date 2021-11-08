@@ -6,9 +6,9 @@
  * @module Views
  */
 
-import { Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Range1d, Transform } from "@bentley/geometry-core";
-import { RenderSchedule } from "@bentley/imodeljs-common";
+import { Id64, Id64String } from "@itwin/core-bentley";
+import { Range1d, Transform } from "@itwin/core-geometry";
+import { RenderSchedule } from "@itwin/core-common";
 import { IModelApp } from "./IModelApp";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { AnimationBranchState, AnimationBranchStates } from "./render/GraphicBranch";
@@ -47,13 +47,11 @@ export class RenderScheduleState extends RenderSchedule.ScriptReference {
     const branches = new Map<string, AnimationBranchState>();
     for (const model of this.script.modelTimelines) {
       addAnimationBranch(model.modelId, model, -1, branches, time);
-      for (let i = 0; i < model.elementTimelines.length; i++) {
-        const elem = model.elementTimelines[i];
-        const branchId = i + 1;
+      for (const elem of model.elementTimelines) {
         if (elem.getVisibility(time) <= 0)
-          branches.set(formatBranchId(model.modelId, branchId), { omit: true });
+          branches.set(formatBranchId(model.modelId, elem.batchId), { omit: true });
         else
-          addAnimationBranch(model.modelId, elem, branchId, branches, time);
+          addAnimationBranch(model.modelId, elem, elem.batchId, branches, time);
       }
     }
 

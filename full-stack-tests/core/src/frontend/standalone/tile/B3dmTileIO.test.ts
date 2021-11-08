@@ -3,10 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ByteStream } from "@bentley/bentleyjs-core";
-import { Range3d } from "@bentley/geometry-core";
-import { GltfDataType, RenderTexture } from "@bentley/imodeljs-common";
-import { B3dmReader, IModelApp, MockRender, SnapshotConnection } from "@bentley/imodeljs-frontend";
+import { ByteStream } from "@itwin/core-bentley";
+import { Range3d } from "@itwin/core-geometry";
+import { GltfDataType, RenderTexture } from "@itwin/core-common";
+import { B3dmReader, IModelApp, MockRender, SnapshotConnection } from "@itwin/core-frontend";
+import { TestUtility } from "../../TestUtility";
 
 /* eslint-disable @typescript-eslint/unbound-method */
 
@@ -282,30 +283,27 @@ describe("B3dmReader", () => {
   let imodel: SnapshotConnection;
 
   before(async () => {
-    await MockRender.App.startup();
+    await TestUtility.startFrontend(undefined, true);
     imodel = await SnapshotConnection.openFile("test.bim");
   });
 
   after(async () => {
     await imodel.close();
-    await MockRender.App.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("should locate texture for mesh", async () => {
     class Texture extends RenderTexture {
-      public constructor(params: RenderTexture.Params) {
-        super(params);
-      }
-
+      public constructor(type: RenderTexture.Type) { super(type); }
       public dispose() { }
       public get bytesUsed() { return 0; }
     }
 
     let textureCreated = false;
-    IModelApp.renderSystem.createTextureFromImage = () => {
+    IModelApp.renderSystem.createTexture = () => {
       expect(textureCreated).to.be.false;
       textureCreated = true;
-      return new Texture(RenderTexture.Params.defaults);
+      return new Texture(RenderTexture.Type.Normal);
     };
 
     let texturedMeshCreated = false;

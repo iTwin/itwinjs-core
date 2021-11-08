@@ -6,8 +6,8 @@
  * @module Entities
  */
 
-import { Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Point2d, Point3d } from "@bentley/geometry-core";
+import { Id64, Id64String } from "@itwin/core-bentley";
+import { Point2d, Point3d } from "@itwin/core-geometry";
 import { RelatedElement } from "./ElementProps";
 
 /** The properties of an [Entity]($backend) as they are read/stored from/to the iModel.

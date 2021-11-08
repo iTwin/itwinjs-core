@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/usage-logging-client",
+      "comment": "Removed config.app usage",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/usage-logging-client",
+  "email": "20171969+pbell97@users.noreply.github.com "
+}

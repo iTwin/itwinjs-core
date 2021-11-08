@@ -16,7 +16,7 @@ interface ChromeTestResults {
   coverage: any;
 }
 
-type ConsoleMethodName = keyof typeof console;
+type ConsoleMethodName = "log" | "error" | "dir";
 
 let browser: puppeteer.Browser;
 let webserverProcess: ChildProcess;

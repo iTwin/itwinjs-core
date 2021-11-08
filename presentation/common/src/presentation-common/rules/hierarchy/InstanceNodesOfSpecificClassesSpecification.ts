@@ -12,7 +12,7 @@ import { ChildNodeSpecificationBase, ChildNodeSpecificationTypes, DefaultGroupin
 /**
  * Creates nodes for all instances of specified ECClasses.
  *
- * @see [More details]($docs/learning/presentation/Hierarchies/InstanceNodesOfSpecificClasses.md)
+ * @see [More details]($docs/presentation/Hierarchies/InstanceNodesOfSpecificClasses.md)
  * @public
  */
 export interface InstanceNodesOfSpecificClassesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
@@ -32,7 +32,7 @@ export interface InstanceNodesOfSpecificClassesSpecification extends ChildNodeSp
   /**
    * Condition for filtering instances of defined classes.
    *
-   * **See:** [ECExpressions Available in InstanceFilter]($docs/learning/presentation/Hierarchies/ECExpressions.md#instance-filter).
+   * **See:** [ECExpressions Available in InstanceFilter]($docs/presentation/Hierarchies/ECExpressions.md#instance-filter).
    */
   instanceFilter?: string;
 }

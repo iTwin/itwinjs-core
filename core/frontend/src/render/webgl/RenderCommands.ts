@@ -6,9 +6,9 @@
  * @module WebGL
  */
 
-import { assert } from "@bentley/bentleyjs-core";
-import { Range3d } from "@bentley/geometry-core";
-import { Frustum, FrustumPlanes, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
+import { assert } from "@itwin/core-bentley";
+import { Range3d } from "@itwin/core-geometry";
+import { Frustum, FrustumPlanes, RenderMode, ViewFlags } from "@itwin/core-common";
 import { Decorations } from "../Decorations";
 import { SurfaceType } from "../primitives/VertexTable";
 import { GraphicList, RenderGraphic } from "../RenderGraphic";
@@ -591,13 +591,13 @@ export class RenderCommands implements Iterable<DrawCommands> {
     } else if (batch.graphic instanceof GraphicsArray) {
       const ga = batch.graphic;
       if (ga.graphics[0] instanceof MeshGraphic) {
-        const mg = ga.graphics[0] as MeshGraphic;
+        const mg = ga.graphics[0];
         if (SurfaceType.VolumeClassifier === mg.surfaceType)
           pass = RenderPass.HiliteClassification;
       } else if (ga.graphics[0] instanceof Branch) {
-        const b = ga.graphics[0] as Branch;
+        const b = ga.graphics[0];
         if (b.branch.entries.length > 0 && b.branch.entries[0] instanceof MeshGraphic) {
-          const mg = b.branch.entries[0] as MeshGraphic;
+          const mg = b.branch.entries[0];
           if (SurfaceType.VolumeClassifier === mg.surfaceType)
             pass = RenderPass.HiliteClassification;
         }

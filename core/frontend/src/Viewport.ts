@@ -8,19 +8,18 @@
 
 import {
   asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, Constructor, dispose, Id64, Id64Arg, Id64Set, Id64String, IDisposable, isInstanceOf,
-  ProcessDetector,
   StopWatch,
-} from "@bentley/bentleyjs-core";
+} from "@itwin/core-bentley";
 import {
   Angle, AngleSweep, Arc3d, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range1d,
   Range3d, Ray3d, Transform, Vector3d, XAndY, XYAndZ, XYZ,
-} from "@bentley/geometry-core";
+} from "@itwin/core-geometry";
 import {
-  AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, ClipStyle, ColorDef, DisplayStyleSettingsProps, Easing,
-  ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer, Interpolation, isPlacement2dProps, LightSettings, MapLayerSettings, Npc, NpcCenter, Placement, Placement2d,
-  Placement3d, PlacementProps, SolarShadowSettings, SubCategoryAppearance,
-  SubCategoryOverride, ViewFlags,
-} from "@bentley/imodeljs-common";
+  AnalysisStyle, BackgroundMapProps, BackgroundMapProviderProps, BackgroundMapSettings, Camera, ClipStyle, ColorDef, DisplayStyleSettingsProps, Easing,
+  ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer, Interpolation,
+  isPlacement2dProps, LightSettings, MapLayerSettings, Npc, NpcCenter, Placement, Placement2d, Placement3d, PlacementProps,
+  SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
+} from "@itwin/core-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
 import { ChangeFlag, ChangeFlags, MutableChangeFlags } from "./ChangeFlags";
@@ -46,14 +45,12 @@ import { GraphicList } from "./render/RenderGraphic";
 import { RenderMemory } from "./render/RenderMemory";
 import { createRenderPlanFromViewport } from "./render/RenderPlan";
 import { RenderTarget } from "./render/RenderTarget";
-import { SheetViewState } from "./SheetViewState";
 import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
-import { DisclosedTileTreeSet, MapLayerImageryProvider, MapTileTreeReference, TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference } from "./tile/internal";
-import { MapTiledGraphicsProvider } from "./tile/map/MapTiledGraphicsProvider";
+import { DisclosedTileTreeSet, MapLayerImageryProvider, MapTiledGraphicsProvider, MapTileTreeReference, TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference } from "./tile/internal";
 import { EventController } from "./tools/EventController";
 import { ToolSettings } from "./tools/ToolSettings";
-import { Animator, ViewAnimationOptions, ViewChangeOptions } from "./ViewAnimation";
+import { Animator, OnViewExtentsError, ViewAnimationOptions, ViewChangeOptions } from "./ViewAnimation";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { GlobalLocation } from "./ViewGlobalLocation";
 import { ViewingSpace } from "./ViewingSpace";
@@ -168,6 +165,39 @@ declare global {
   }
 }
 
+/** Payload for the [[Viewport.onFlashedIdChanged]] event indicating Ids of the currently- and/or previously-flashed objects.
+ * @public
+ */
+export type OnFlashedIdChangedEventArgs = {
+  readonly current: Id64String;
+  readonly previous: Id64String;
+} | {
+  readonly current: Id64String;
+  readonly previous: undefined;
+} | {
+  readonly previous: Id64String;
+  readonly current: undefined;
+};
+
+/** Arguments to [[Viewport.getPixelDataWorldPoint]].
+ * @public
+ */
+export interface GetPixelDataWorldPointArgs {
+  /** The buffer containing the pixel data. @see [[Viewport.readPixels]]. */
+  pixels: Pixel.Buffer;
+  /** The x coordinate of the pixel of interest, in view coordinates. */
+  x: number;
+  /** The y coordinate of the pixel of interest, in view coordinates. */
+  y: number;
+  /** If true, then the world point of a pixel associated with a model will preserve any transforms applied to the model at display time,
+   * such as those supplied by a [[ModelDisplayTransformProvider]] or [PlanProjectionSettings.elevation]($common).
+   * Otherwise, the world point will be multiplied by the inverse of any such transforms to correlate it with the model's true coordinate space.
+   */
+  preserveModelDisplayTransforms?: boolean;
+  /** If supplied, this point will be modified to store the returned point, instead of allocating a new point. */
+  out?: Point3d;
+}
+
 /** A Viewport renders the contents of one or more [GeometricModel]($backend)s onto an `HTMLCanvasElement`.
  *
  * It holds a [[ViewState]] object that defines its viewing parameters; the ViewState in turn defines the [[DisplayStyleState]],
@@ -235,6 +265,10 @@ export abstract class Viewport implements IDisposable {
   /** Event invoked after [[renderFrame]] detects that the dimensions of the viewport's [[ViewRect]] have changed.
    */
   public readonly onResized = new BeEvent<(vp: Viewport) => void>();
+  /** Event dispatched immediately after [[flashedId]] changes, supplying the Ids of the previously and/or currently-flashed objects.
+   * @note Attempting to assign to [[flashedId]] from within the event callback will produce an exception.
+   */
+  public readonly onFlashedIdChanged = new BeEvent<(vp: Viewport, args: OnFlashedIdChangedEventArgs) => void>();
 
   /** This is initialized by a call to [[changeView]] sometime shortly after the constructor is invoked.
    * During that time it can be undefined. DO NOT assign directly to this member - use `setView()`.
@@ -314,13 +348,6 @@ export abstract class Viewport implements IDisposable {
   /** @internal */
   public setValidScene() {
     this._sceneValid = true;
-  }
-
-  /** @deprecated Use requestRedraw.
-   * @internal
-   */
-  public setRedrawPending() {
-    this.requestRedraw();
   }
 
   /** Request that the Viewport redraw its contents on the next frame. This is useful when some state outside of the Viewport's control but affecting its display has changed.
@@ -442,7 +469,7 @@ export abstract class Viewport implements IDisposable {
   /** @internal */
   public get frustFraction(): number { return this._viewingSpace.frustFraction; }
 
-  /** @alpha */
+  /** @see [DisplayStyleSettings.analysisFraction]($common). */
   public get analysisFraction(): number {
     return this.displayStyle.settings.analysisFraction;
   }
@@ -511,7 +538,6 @@ export abstract class Viewport implements IDisposable {
   public get isGridOn(): boolean { return this.viewFlags.grid; }
 
   /** Flags controlling aspects of how the contents of this viewport are rendered.
-   * @note Don't modify this object directly - clone it and modify the clone, then pass the clone to the setter.
    * @see [DisplayStyleSettings.viewFlags]($common).
    */
   public get viewFlags(): ViewFlags { return this.view.viewFlags; }
@@ -641,7 +667,7 @@ export abstract class Viewport implements IDisposable {
     if (!this._sceneValid)
       return;
 
-    if (this.view.displayStyle.wantShadows || this.view instanceof SheetViewState)
+    if (this.view.displayStyle.wantShadows || this.view.isSheetView())
       this.invalidateScene();
   }
 
@@ -721,17 +747,22 @@ export abstract class Viewport implements IDisposable {
     this.displayStyle.changeBackgroundMapProps(props);
   }
 
+  /** @see [[DisplayStyleState.changeBackgroundMapProvider]] */
+  public changeBackgroundMapProvider(props: BackgroundMapProviderProps): void {
+    this.displayStyle.changeBackgroundMapProvider(props);
+  }
+
   /** @internal */
   public get backgroundMap(): MapTileTreeReference | undefined { return this._mapTiledGraphicsProvider?.backgroundMap; }
 
   /** @internal */
-  public get overlayMap(): MapTileTreeReference  | undefined { return this._mapTiledGraphicsProvider?.overlayMap; }
+  public get overlayMap(): MapTileTreeReference | undefined { return this._mapTiledGraphicsProvider?.overlayMap; }
 
   /** @internal */
   public get backgroundDrapeMap(): MapTileTreeReference | undefined { return this._mapTiledGraphicsProvider?.backgroundDrapeMap; }
 
   /** @internal */
-  public getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined  { return this._mapTiledGraphicsProvider?.getMapLayerImageryProvider(index, isOverlay); }
+  public getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined { return this._mapTiledGraphicsProvider?.getMapLayerImageryProvider(index, isOverlay); }
 
   /** Returns true if this Viewport is currently displaying the model with the specified Id. */
   public viewsModel(modelId: Id64String): boolean { return this.view.viewsModel(modelId); }
@@ -852,8 +883,6 @@ export abstract class Viewport implements IDisposable {
     }
   }
 
-  /** @internal */
-  public get analysisStyle(): AnalysisStyle | undefined { return this.view.analysisStyle; }
   /** The iModel of this Viewport */
   public get iModel(): IModelConnection { return this.view.iModel; }
   /** @internal */
@@ -974,6 +1003,12 @@ export abstract class Viewport implements IDisposable {
       removals.push(view.details.onModelClipGroupsChanged.addListener(() => {
         this.invalidateScene();
       }));
+      // If a map elevation request is required (only in cases where terrain is not geodetic)
+      // then the completion of the request will require synching with the view so that the
+      // frustum depth is recalculated correctly.  Register this for removal when the view is detached.
+      removals.push(this.iModel.onMapElevationLoaded.addListener((_iModel: IModelConnection) => {
+        this.synchWithView();
+      }));
     }
   }
 
@@ -998,13 +1033,14 @@ export abstract class Viewport implements IDisposable {
     removals.push(settings.onMonochromeModeChanged.addListener(displayStyleChanged));
     removals.push(settings.onClipStyleChanged.addListener(styleAndOverridesChanged));
     removals.push(settings.onPlanarClipMaskChanged.addListener(displayStyleChanged));
+    removals.push(settings.onWhiteOnWhiteReversalChanged.addListener(displayStyleChanged));
     removals.push(settings.contextRealityModels.onPlanarClipMaskChanged.addListener(displayStyleChanged));
     removals.push(settings.contextRealityModels.onAppearanceOverridesChanged.addListener(displayStyleChanged));
     removals.push(settings.contextRealityModels.onChanged.addListener(displayStyleChanged));
 
     removals.push(style.onOSMBuildingDisplayChanged.addListener(() => {
       displayStyleChanged();
-      this.synchWithView(false); // May change frustum depth.
+      this.synchWithView({ noSaveInUndo: true }); // May change frustum depth.
     }));
 
     const analysisChanged = () => {
@@ -1012,8 +1048,12 @@ export abstract class Viewport implements IDisposable {
       this._analysisFractionValid = false;
       IModelApp.requestNextAnimation();
     };
+    const analysisStyleChanged = () => {
+      this.invalidateRenderPlan();
+      analysisChanged();
+    };
     removals.push(settings.onAnalysisFractionChanged.addListener(analysisChanged));
-    removals.push(settings.onAnalysisStyleChanged.addListener(analysisChanged));
+    removals.push(settings.onAnalysisStyleChanged.addListener(analysisStyleChanged));
 
     const scheduleChanged = () => {
       this._timePointValid = false;
@@ -1038,10 +1078,13 @@ export abstract class Viewport implements IDisposable {
     // ###TODO reality model appearance overrides
     // ###TODO OSM Building display
 
-    removals.push(settings.onBackgroundMapChanged.addListener(() => {
+    const mapChanged = () => {
       this.invalidateController();
       this._changeFlags.setDisplayStyle();
-    }));
+    };
+
+    removals.push(settings.onBackgroundMapChanged.addListener(mapChanged));
+    removals.push(settings.onMapImageryChanged.addListener(mapChanged));
 
     removals.push(settings.onExcludedElementsChanged.addListener(() => {
       this._changeFlags.setDisplayStyle();
@@ -1100,7 +1143,7 @@ export abstract class Viewport implements IDisposable {
   /** This gives each Viewport a unique Id, which can be used for comparing and sorting Viewport objects inside collections.
    * @internal
    */
-  /** A unique integer Id for this viewport that can be used for comparing and sorting Viewport objects inside collections like [SortedArray]($bentleyjs-core)s. */
+  /** A unique integer Id for this viewport that can be used for comparing and sorting Viewport objects inside collections like [SortedArray]($core-bentley)s. */
   public get viewportId(): number {
     return this._viewportId;
   }
@@ -1242,6 +1285,15 @@ export abstract class Viewport implements IDisposable {
     return undefined;
   }
 
+  /** The list of [[FeatureOverrideProvider]]s registered with this viewport.
+   * @see [[addFeatureOverrideProvider]] to register a new provider.
+   * @see [[dropFeatureOverrideProvider]] to unregister a provider.
+   * @see [[findFeatureOverrideProvider]] or [[findFeatureOverrideProviderOfType]] to find a registered provider.
+   */
+  public get featureOverrideProviders(): Iterable<FeatureOverrideProvider> {
+    return this._featureOverrideProviders;
+  }
+
   /** Locate the first registered FeatureOverrideProvider of the specified class. For example, to locate a registered [[EmphasizeElements]] provider:
    * ```ts
    * const provider: EmphasizeElements = viewport.findFeatureOverrideProviderOfType<EmphasizeElements>(EmphasizeElements);
@@ -1257,34 +1309,6 @@ export abstract class Viewport implements IDisposable {
   public addFeatureOverrides(ovrs: FeatureSymbology.Overrides): void {
     for (const provider of this._featureOverrideProviders)
       provider.addFeatureOverrides(ovrs, this);
-  }
-
-  /** An object which can customize the appearance of [[Feature]]s within a viewport.
-   * If defined, the provider will be invoked whenever the overrides are determined to need updating.
-   * The overrides can be explicitly marked as needing a refresh by calling [[Viewport.setFeatureOverrideProviderChanged]]. This is typically called when
-   * the internal state of the provider changes such that the computed overrides must also change.
-   * @see [[FeatureSymbology.Overrides]]
-   * @see [[findFeatureOverrideProvider]] as a replacement for the deprecated getter.
-   * @see [[addFeatureOverrideProvider]] as the replacement for the deprecated setter.
-   * @note A viewport can now have any number of FeatureOverrideProviders, therefore this property is deprecated. The getter will return undefined unless exactly one provider is registered; the setter will remove any other providers and register only the new provider.
-   * @deprecated Use [[addFeatureOverrideProvider]].
-   */
-  public get featureOverrideProvider(): FeatureOverrideProvider | undefined {
-    return 1 === this._featureOverrideProviders.length ? this._featureOverrideProviders[0] : undefined;
-  }
-
-  public set featureOverrideProvider(provider: FeatureOverrideProvider | undefined) {
-    if (this.featureOverrideProvider === provider) // eslint-disable-line deprecation/deprecation
-      return;
-
-    if (undefined === provider) {
-      this._featureOverrideProviders.length = 0;
-      this.setFeatureOverrideProviderChanged();
-      return;
-    }
-
-    this._featureOverrideProviders.length = 0;
-    this.addFeatureOverrideProvider(provider);
   }
 
   /** Notifies this viewport that the internal state of its [[FeatureOverrideProvider]] has changed such that its
@@ -1399,7 +1423,9 @@ export abstract class Viewport implements IDisposable {
   public markSelectionSetDirty() { this._selectionSetDirty = true; }
 
   /** True if this is a 3d view with the camera turned on. */
-  public get isCameraOn(): boolean { return this.view.isCameraEnabled(); }
+  public get isCameraOn(): boolean {
+    return this.view.is3d() && this.view.isCameraOn;
+  }
 
   /** @internal */
   public changeDynamics(dynamics: GraphicList | undefined): void {
@@ -1407,15 +1433,42 @@ export abstract class Viewport implements IDisposable {
     this.invalidateDecorations();
   }
 
-  /** Set or clear the currently *flashed* element.
-   * @note This method is not typically invoked directly - [[ToolAdmin]] will invoke it for you when the user hovers over an element.
-   * @param id The Id of the element to flash. If undefined, remove (un-flash) the currently flashed element.
-   * @param _duration Ignored - the duration from [[Viewport.flashSettings]] is used.
+  private _assigningFlashedId = false;
+
+  /** The Id of the currently-flashed object.
+   * The "flashed" visual effect is typically applied to the object in the viewport currently under the mouse cursor, to indicate
+   * it is ready to be interacted with by a tool. [[ToolAdmin]] is responsible for updating it when the mouse cursor moves.
+   * The object is usually an [Element]($backend) but could also be a [Model]($backend) or pickable decoration produced by a [[Decorator]].
+   * The setter ignores any string that is not a well-formed [Id64String]($core-bentley). Passing [Id64.invalid]($core-bentley) to the
+   * setter is equivalent to passing `undefined` - both mean "nothing is flashed".
+   * @throws Error if an attempt is made to change this property from within an [[onFlashedIdChanged]] event callback.
+   * @see [[onFlashedIdChanged]] to be notified when the flashed object changes.
+   * @see [[flashSettings]] to customize the visual effect.
    */
-  public setFlashed(id: string | undefined, _duration?: number): void {
-    if (id !== this._flashedElem) {
-      this._lastFlashedElem = this._flashedElem;
-      this._flashedElem = id;
+  public get flashedId(): Id64String | undefined {
+    return this._flashedElem;
+  }
+  public set flashedId(id: Id64String | undefined) {
+    if (this._assigningFlashedId)
+      throw new Error("Cannot assign to Viewport.flashedId from within an onFlashedIdChanged event callback.");
+
+    if (id === Id64.invalid)
+      id = undefined;
+
+    const previous = this._flashedElem;
+    if (id === previous || (undefined !== id && !Id64.isId64(id)))
+      return;
+
+    this._lastFlashedElem = this._flashedElem;
+    this._flashedElem = id;
+
+    this._assigningFlashedId = true;
+    try {
+      // The comparison `id !== previous` above ensures the following assertion, but the compiler doesn't recognize it.
+      assert(undefined !== id || undefined !== previous);
+      this.onFlashedIdChanged.raiseEvent(this, { current: id!, previous });
+    } finally {
+      this._assigningFlashedId = false;
     }
   }
 
@@ -1588,7 +1641,7 @@ export abstract class Viewport implements IDisposable {
 
     let status;
     if (view.isCameraOn) {
-      status = view.lookAtUsingLensAngle(view.getEyePoint(), view.getTargetPoint(), view.getYVector(), lensAngle);
+      status = view.lookAt({ eyePoint: view.getEyePoint(), targetPoint: view.getTargetPoint(), upVector: view.getYVector(), lensAngle });
     } else {
       // We need to figure out a new camera target. To do that, we need to know where the geometry is in the view.
       // We use the depth of the center of the view for that.
@@ -1606,11 +1659,11 @@ export abstract class Viewport implements IDisposable {
 
       this.npcToWorldArray(corners);
 
-      const eye = corners[2].interpolate(0.5, corners[3]); // middle of closest plane
-      const target = corners[0].interpolate(0.5, corners[1]); // middle of halfway plane
-      const backDist = eye.distance(target) * 2.0;
-      const frontDist = view.minimumFrontDistance();
-      status = view.lookAtUsingLensAngle(eye, target, view.getYVector(), lensAngle, frontDist, backDist);
+      const eyePoint = corners[2].interpolate(0.5, corners[3]); // middle of closest plane
+      const targetPoint = corners[0].interpolate(0.5, corners[1]); // middle of halfway plane
+      const backDistance = eyePoint.distance(targetPoint) * 2.0;
+      const frontDistance = view.minimumFrontDistance();
+      status = view.lookAt({ eyePoint, targetPoint, upVector: view.getYVector(), lensAngle, frontDistance, backDistance });
     }
 
     if (ViewStatus.Success === status)
@@ -1658,9 +1711,8 @@ export abstract class Viewport implements IDisposable {
 
   /** Call [[setupFromView]] on this Viewport and then apply optional behavior.
    * @param options _options for behavior of view change. If undefined, all options have their default values (see [[ViewChangeOptions]] for details.)
-   * @note In previous versions, the argument was a boolean `saveInUndo`. For backwards compatibility, if `_options` is a boolean, it is interpreted as "{ noSaveInUndo: !_options }"
    */
-  public synchWithView(_options?: ViewChangeOptions | boolean): void { this.setupFromView(); }
+  public synchWithView(_options?: ViewChangeOptions): void { this.setupFromView(); }
 
   /** Convert an array of points from CoordSystem.View to CoordSystem.Npc */
   public viewToNpcArray(pts: Point3d[]): void { this._viewingSpace.viewToNpcArray(pts); }
@@ -1752,7 +1804,7 @@ export abstract class Viewport implements IDisposable {
       return;
 
     const distXYZ = new Point3d(screenDist.x, screenDist.y, 0);
-    if (view.isCameraEnabled()) {
+    if (view.is3d() && view.isCameraOn) {
       const frust = this.getFrustum(CoordSystem.View, false)!;
       frust.translate(distXYZ);
       this.viewToWorldArray(frust.points);
@@ -1773,12 +1825,12 @@ export abstract class Viewport implements IDisposable {
    * @param factor the zoom factor.
    * @param options options for behavior of view change
    */
-  public zoom(newCenter: Point3d | undefined, factor: number, options?: ViewChangeOptions): ViewStatus {
+  public zoom(newCenter: Point3d | undefined, factor: number, options?: ViewChangeOptions & OnViewExtentsError): ViewStatus {
     const view = this.view;
     if (undefined === view)
       return ViewStatus.InvalidViewport;
 
-    if (view.isCameraEnabled()) {
+    if (view.is3d() && view.isCameraOn) {
       const centerNpc = newCenter ? this.worldToNpc(newCenter) : NpcCenter.clone();
       const scaleTransform = Transform.createFixedPointAndMatrix(centerNpc, Matrix3d.createScale(factor, factor, 1.0));
 
@@ -1818,18 +1870,22 @@ export abstract class Viewport implements IDisposable {
     return ViewStatus.Success;
   }
 
-  /** Zoom the view to a show the tightest box around a given set of PlacementProps. Optionally, change view rotation.
-   * @param props array of PlacementProps. Will zoom to the union of the placements.
-   * @param options options that control how the view change works and whether to change view rotation.
-   * @note any invalid placements are ignored. If no valid placements are supplied, this function does nothing.
-   */
-  public zoomToPlacementProps(placementProps: PlacementProps[], options?: ViewChangeOptions & ZoomToOptions) {
-    const toPlacement = (props: PlacementProps): Placement => {
-      return isPlacement2dProps(props) ? Placement2d.fromJSON(props) : Placement3d.fromJSON(props);
-    };
+  /** @see [[zoomToPlacements]]. */
+  public zoomToPlacementProps(placementProps: PlacementProps[], options?: ViewChangeOptions & ZoomToOptions): void {
+    const placements = placementProps.map((props) => isPlacement2dProps(props) ? Placement2d.fromJSON(props) : Placement3d.fromJSON(props));
+    this.zoomToPlacements(placements, options);
+  }
 
-    const indexOfFirstValidPlacement = placementProps.findIndex((props) => toPlacement(props).isValid);
-    if (-1 === indexOfFirstValidPlacement)
+  /** Zoom the view in or out to a fit to the tightest volume enclosing a given set of placements, optionally also changing the view rotation.
+   * @param placements The array of placements. The view will zoom to fit the union of the placements.
+   * @param options Options controlling how the view change works and whether to change view rotation.
+   * @note any invalid placements are ignored. If no valid placements are supplied, this function does nothing.
+   * @see [[zoomToElements]] to zoom to a set of elements.
+   * @see [[IModelConnection.Elements.getPlacements]] to obtain the placements for a set of elements.
+   */
+  public zoomToPlacements(placements: Placement[], options?: ViewChangeOptions & ZoomToOptions): void {
+    placements = placements.filter((x) => x.isValid);
+    if (placements.length === 0)
       return;
 
     const view = this.view;
@@ -1837,9 +1893,8 @@ export abstract class Viewport implements IDisposable {
       if (undefined !== options.standardViewId) {
         view.setStandardRotation(options.standardViewId);
       } else if (undefined !== options.placementRelativeId) {
-        const firstPlacement = toPlacement(placementProps[indexOfFirstValidPlacement]);
         const viewRotation = StandardView.getStandardRotation(options.placementRelativeId).clone();
-        viewRotation.multiplyMatrixMatrixTranspose(firstPlacement.transform.matrix, viewRotation);
+        viewRotation.multiplyMatrixMatrixTranspose(placements[0].transform.matrix, viewRotation);
         view.setRotation(viewRotation);
       } else if (undefined !== options.viewRotation) {
         view.setRotation(options.viewRotation);
@@ -1849,16 +1904,14 @@ export abstract class Viewport implements IDisposable {
     const viewTransform = Transform.createOriginAndMatrix(undefined, view.getRotation());
     const frust = new Frustum();
     const viewRange = new Range3d();
-    for (let i = indexOfFirstValidPlacement; i < placementProps.length; i++) {
-      const placement = toPlacement(placementProps[i]);
-      if (placement.isValid)
-        viewRange.extendArray(placement.getWorldCorners(frust).points, viewTransform);
-    }
+    for (const placement of placements)
+      viewRange.extendArray(placement.getWorldCorners(frust).points, viewTransform);
 
-    const ignoreError: ViewChangeOptions = {
+    const ignoreError: ViewChangeOptions & OnViewExtentsError = {
       ...options,
       onExtentsError: () => ViewStatus.Success,
     };
+
     view.lookAtViewAlignedVolume(viewRange, this.viewRect.aspect, ignoreError);
     this.synchWithView(options);
   }
@@ -1866,16 +1919,19 @@ export abstract class Viewport implements IDisposable {
   /** Zoom the view to a show the tightest box around a given set of ElementProps. Optionally, change view rotation.
    * @param props element props. Will zoom to the union of the placements.
    * @param options options that control how the view change works and whether to change view rotation.
+   * @note Do not query for ElementProps just to zoom to their placements - [[zoomToElements]] is much more efficient because it queries only for the placement properties.
    */
-  public zoomToElementProps(elementProps: ElementProps[], options?: ViewChangeOptions & ZoomToOptions) {
+  public zoomToElementProps(elementProps: ElementProps[], options?: ViewChangeOptions & ZoomToOptions): void {
     if (elementProps.length === 0)
       return;
+
     const placementProps: PlacementProps[] = [];
     for (const props of elementProps) {
       const placement = (props as any).placement;
       if (placement !== undefined && this.view.viewsModel(props.model))
         placementProps.push(placement);
     }
+
     this.zoomToPlacementProps(placementProps, options);
   }
 
@@ -1884,7 +1940,8 @@ export abstract class Viewport implements IDisposable {
    * @param options options that control how the view change works and whether to change view rotation.
    */
   public async zoomToElements(ids: Id64Arg, options?: ViewChangeOptions & ZoomToOptions): Promise<void> {
-    this.zoomToElementProps(await this.iModel.elements.getProps(ids), options);
+    const placements = await this.iModel.elements.getPlacements(ids, { type: this.view.is3d() ? "3d" : "2d" });
+    this.zoomToPlacements(placements, options);
   }
 
   /** Zoom the view to a volume of space in world coordinates.
@@ -2010,7 +2067,7 @@ export abstract class Viewport implements IDisposable {
     const planeNormal = rMatrix.getRow(2);
 
     let eyeVec: Vector3d;
-    if (this.view.isCameraEnabled())
+    if (this.view.is3d() && this.view.isCameraOn)
       eyeVec = this.view.camera.eye.vectorTo(point);
     else
       eyeVec = this._viewingSpace.rotation.getRow(2);
@@ -2091,14 +2148,14 @@ export abstract class Viewport implements IDisposable {
   private processFlash(): boolean {
     let needsFlashUpdate = false;
 
-    if (this._flashedElem !== this._lastFlashedElem) {
+    if (this.flashedId !== this._lastFlashedElem) {
       this._flashIntensity = 0.0;
       this._flashUpdateTime = BeTimePoint.now();
-      this._lastFlashedElem = this._flashedElem; // flashing has begun; this is now the previous flash
-      needsFlashUpdate = this._flashedElem === undefined; // notify render thread that flash has been turned off (signified by undefined elem)
+      this._lastFlashedElem = this.flashedId; // flashing has begun; this is now the previous flash
+      needsFlashUpdate = this.flashedId === undefined; // notify render thread that flash has been turned off (signified by undefined elem)
     }
 
-    if (this._flashedElem !== undefined && this._flashIntensity < this.flashSettings.maxIntensity) {
+    if (this.flashedId !== undefined && this._flashIntensity < this.flashSettings.maxIntensity) {
       assert(undefined !== this._flashUpdateTime);
 
       const flashDuration = this.flashSettings.duration;
@@ -2186,12 +2243,11 @@ export abstract class Viewport implements IDisposable {
 
     if (!this._analysisFractionValid) {
       this._analysisFractionValid = isRedrawNeeded = true;
-      target.analysisFraction = this.analysisFraction;
+      target.analysisFraction = this.displayStyle.settings.analysisFraction;
     }
 
     if (!this._timePointValid) {
       isRedrawNeeded = true;
-      this._timePointValid = true;
       const scheduleScript = view.displayStyle.scheduleState;
       if (scheduleScript) {
         target.animationBranches = scheduleScript.getAnimationBranches(this.timePoint ?? scheduleScript.duration.low);
@@ -2201,6 +2257,8 @@ export abstract class Viewport implements IDisposable {
         if (scheduleScript.script.containsTransform && !this._freezeScene)
           this.invalidateScene();
       }
+
+      this._timePointValid = true;
     }
 
     if (overridesNeeded) {
@@ -2246,9 +2304,9 @@ export abstract class Viewport implements IDisposable {
 
     let requestNextAnimation = false;
     if (this.processFlash()) {
-      target.setFlashed(undefined !== this._flashedElem ? this._flashedElem : Id64.invalid, this._flashIntensity);
+      target.setFlashed(undefined !== this.flashedId ? this.flashedId : Id64.invalid, this._flashIntensity);
       isRedrawNeeded = true;
-      requestNextAnimation = undefined !== this._flashedElem;
+      requestNextAnimation = undefined !== this.flashedId;
     }
 
     this._frameStatsCollector.beginTime("onBeforeRenderTime");
@@ -2349,8 +2407,8 @@ export abstract class Viewport implements IDisposable {
     return this.target.readImageToCanvas();
   }
 
-  /** Get the point at the specified x and y location in the pixel buffer in npc coordinates
-   * @beta
+  /** Get the point at the specified x and y location in the pixel buffer in npc coordinates.
+   * @see [[getPixelDataWorldPoint]] to obtain the point in [[CoordSystem.World]].
    */
   public getPixelDataNpcPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined {
     const z = pixels.getPixel(x, y).distanceFraction;
@@ -2375,20 +2433,23 @@ export abstract class Viewport implements IDisposable {
     return result;
   }
 
-  /** Get the point at the specified x and y location in the pixel buffer in world coordinates
-   * @beta
+  /** Get the point at the specified x and y location in the pixel buffer in world coordinates.
+   * @see [[getPixelDataNpcPoint]] to obtain the point in [[CoordSystem.Npc]].
    */
-  public getPixelDataWorldPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined {
+  public getPixelDataWorldPoint(args: GetPixelDataWorldPointArgs): Point3d | undefined {
+    const { pixels, x, y, out, preserveModelDisplayTransforms } = args;
     const npc = this.getPixelDataNpcPoint(pixels, x, y, out);
     if (undefined !== npc) {
       this.npcToWorld(npc, npc);
 
       // If this is a plan projection model, invert the elevation applied to its display transform.
       // Likewise, if it is a hit on a model with a display transform, reverse the display transform.
-      const modelId = pixels.getPixel(x, y).featureTable?.modelId;
-      if (undefined !== modelId) {
-        npc.z -= this.view.getModelElevation(modelId);
-        this.view.transformPointByModelDisplayTransform(modelId, npc, true);
+      if (!preserveModelDisplayTransforms) {
+        const modelId = pixels.getPixel(x, y).featureTable?.modelId;
+        if (undefined !== modelId) {
+          npc.z -= this.view.getModelElevation(modelId);
+          this.view.transformPointByModelDisplayTransform(modelId, npc, true);
+        }
       }
     }
 
@@ -2500,6 +2561,39 @@ export abstract class Viewport implements IDisposable {
   public removeScreenSpaceEffects(): void {
     this.screenSpaceEffects = [];
   }
+
+  /** Add an event listener to be invoked whenever the [AnalysisStyle]($common) associated with this viewport changes.
+   * The analysis style may change for any of several reasons:
+   *  - When the viewport's associated [DisplayStyleSettings.analysisStyle]($common).
+   *  - When the viewport's associated [[ViewState.displayStyle]] changes.
+   *  - When the viewport's associated [[ViewState]] changes via [[changeView]].
+   * @param listener Callback accepting the new analysis style, or undefined if there is no analysis style.
+   * @returns A function that can be invoked to remove the event listener.
+   */
+  public addOnAnalysisStyleChangedListener(listener: (newStyle: AnalysisStyle | undefined) => void): () => void {
+    const addSettingsListener = (style: DisplayStyleState) => style.settings.onAnalysisStyleChanged.addListener(listener);
+    let removeSettingsListener = addSettingsListener(this.displayStyle);
+
+    const addStyleListener = (view: ViewState) => view.onDisplayStyleChanged.addListener((style) => {
+      listener(style.settings.analysisStyle);
+      removeSettingsListener();
+      removeSettingsListener = addSettingsListener(view.displayStyle);
+    });
+
+    const removeStyleListener = addStyleListener(this.view);
+
+    const removeViewListener = this.onChangeView.addListener((vp) => {
+      listener(vp.view.displayStyle.settings.analysisStyle);
+      removeStyleListener();
+      addStyleListener(vp.view);
+    });
+
+    return () => {
+      removeSettingsListener();
+      removeStyleListener();
+      removeViewListener();
+    };
+  }
 }
 
 /** An interactive Viewport that exists within an HTMLDivElement. ScreenViewports can receive HTML events.
@@ -2589,8 +2683,7 @@ export class ScreenViewport extends Viewport {
   /** The canvas to display the view contents. */
   public readonly canvas: HTMLCanvasElement;
   /** The HTMLDivElement used for HTML decorations. May be referenced from the DOM by class "overlay-decorators".
-   * @deprecated from public access, use DecorateContext.addHtmlDecoration
-   * it will be un-deprecated for internal usage only in a future release
+   * @internal
    */
   public readonly decorationDiv: HTMLDivElement;
   /** The HTMLDivElement used for toolTips. May be referenced from the DOM by class "overlay-tooltip". */
@@ -2615,13 +2708,13 @@ export class ScreenViewport extends Viewport {
   }
 
   /** @internal */
-  public dispose(): void {
+  public override dispose(): void {
     super.dispose();
     this._decorationCache.clear();
   }
 
   /** @internal */
-  public invalidateScene(): void {
+  public override invalidateScene(): void {
     super.invalidateScene();
 
     // When the scene is invalidated, so are all cached decorations - they will be regenerated.
@@ -2797,7 +2890,7 @@ export class ScreenViewport extends Viewport {
   }
 
   /** @internal */
-  public picker = new ElementPicker(); // Picker used in pickDepthPoint below so it hangs around and can be querried later.
+  public picker = new ElementPicker(); // Picker used in pickDepthPoint below so it hangs around and can be queried later.
 
   /** Find a point on geometry visible in this Viewport, within a radius of supplied pick point.
    * If no geometry is selected, return the point projected to the most appropriate reference plane.
@@ -2819,6 +2912,7 @@ export class ScreenViewport extends Viewport {
     locateOpts.allowNonLocatable = (undefined === options || !options.excludeNonLocatable);
     locateOpts.allowDecorations = (undefined === options || !options.excludeDecorations);
     locateOpts.allowExternalIModels = (undefined === options || !options.excludeExternalIModels);
+    locateOpts.preserveModelDisplayTransforms = true;
 
     if (0 !== this.picker.doPick(this, pickPoint, radius, locateOpts)) {
       const hitDetail = this.picker.getHit(0)!;
@@ -2905,14 +2999,14 @@ export class ScreenViewport extends Viewport {
   /** @internal */
   public pickCanvasDecoration(pt: XAndY) { return this.target.pickOverlayDecoration(pt); }
 
-  /** Get the ClientRect of the canvas for this Viewport. */
-  public getClientRect(): ClientRect { return this.canvas.getBoundingClientRect(); }
+  /** Get the DOMRect of the canvas for this Viewport. */
+  public getClientRect(): DOMRect { return this.canvas.getBoundingClientRect(); }
 
   /** The ViewRect for this ScreenViewport. Left and top will be 0, right will be the width, and bottom will be the height. */
   public get viewRect(): ViewRect { this._viewRange.init(0, 0, this.canvas.clientWidth, this.canvas.clientHeight); return this._viewRange; }
 
   /** @internal */
-  protected addDecorations(decorations: Decorations): void {
+  protected override addDecorations(decorations: Decorations): void {
     // SEE: decorationDiv doc comment
     // eslint-disable-next-line deprecation/deprecation
     ScreenViewport.markAllChildrenForRemoval(this.decorationDiv);
@@ -2940,10 +3034,12 @@ export class ScreenViewport extends Viewport {
     this.canvas.style.cursor = cursor;
   }
 
-  /** @internal override */
-  public synchWithView(options?: ViewChangeOptions | boolean): void {
-    options = (undefined === options) ? {} :
-      (typeof options !== "boolean") ? options : { noSaveInUndo: !options }; // for backwards compatibility, was "saveInUndo"
+  /** @internal */
+  public override synchWithView(options?: ViewChangeOptions): void {
+    options = options ?? {};
+
+    if (this.view.is3d() && options?.globalAlignment)
+      this.view.alignToGlobe(options.globalAlignment.target, options.globalAlignment.transition);
 
     super.synchWithView(options);
 
@@ -2954,7 +3050,7 @@ export class ScreenViewport extends Viewport {
   }
 
   /** @internal */
-  protected validateRenderPlan() {
+  protected override validateRenderPlan() {
     super.validateRenderPlan();
     this._lastPose = this.view.savePose();
   }
@@ -2963,14 +3059,13 @@ export class ScreenViewport extends Viewport {
    * @param view a fully loaded (see discussion at [[ViewState.load]] ) ViewState
    * @param opts options for how the view change operation should work
    */
-  public changeView(view: ViewState, opts?: ViewChangeOptions) {
+  public override changeView(view: ViewState, opts?: ViewChangeOptions) {
     if (view === this.view) // nothing to do
       return;
 
     this.setAnimator(undefined); // make sure we clear any active animators before we change views.
 
-    if (opts === undefined)
-      opts = { animationTime: ScreenViewport.animation.time.slow.milliseconds };
+    opts = opts ?? { animationTime: ScreenViewport.animation.time.slow.milliseconds };
 
     // determined whether we can animate this ViewState change
     const doAnimate = this.view && this.view.hasSameCoordinates(view) && false !== opts.animateFrustumChange;
@@ -3159,15 +3254,15 @@ export class ScreenViewport extends Viewport {
 
       this.addChildDiv(this.vpDiv, webglCanvas, 5);
 
-      /** The following workaround resolves an issue specific to iOS Safari. We really want this webgl canvas' zIndex to be
-       * lower than this.canvas, but if we do that on iOS Safari, Safari may decide to not display the canvas contents once
-       * it is re-added to the parent div after dropping other viewports. It will only display it once resizing the view.
-       * The offending element here is the 2d canvas sitting on top of the webgl canvas. We need to clear its contents
-       * immediately on iOS. Even though the 2d canvas gets cleared in OnScreenTarget.drawOverlayDecorations() in this case,
-       * it looks like iOS needs an immediate clear.
+      /** We really want this WebGL canvas' zIndex to be lower than this.canvas, but if we do that, browsers can decide to
+       * not update the WebGL canvas contents once it is re-added to the parent div after dropping other viewports.
+       * The offending element is the 2d canvas sitting on top of the WebGL canvas. We need to clear the 2d canvas' contents
+       * in order to ensure browsers allow the underlying WebGL canvas to update. If a decorator is present, the 2d canvas
+       * is cleared during the frame render process by virtue of updating the decorator. For the non-decorator case, and for
+       * iOS, we must make sure we still clear the 2d canvas, done here. iOS appears to need this clear even when decorators
+       * clear the canvas later in the frame render process.
        */
-      if (ProcessDetector.isIOSBrowser)
-        _clear2dCanvas(this.canvas);
+      _clear2dCanvas(this.canvas);
     }
 
     this.target.updateViewRect();
@@ -3218,13 +3313,13 @@ export class OffScreenViewport extends Viewport {
     return vp;
   }
 
-  /** @internal override */
-  public get isAspectRatioLocked(): boolean {
+  /** @internal */
+  public override get isAspectRatioLocked(): boolean {
     return this._isAspectRatioLocked;
   }
 
-  /** @internal override */
-  public get viewRect(): ViewRect {
+  /** @internal */
+  public override get viewRect(): ViewRect {
     return this.target.viewRect;
   }
 

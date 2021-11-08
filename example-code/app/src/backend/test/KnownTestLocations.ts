@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { join } from "path";
 import { tmpdir } from "os";
-import { ProcessDetector } from "@bentley/bentleyjs-core";
+import { ProcessDetector } from "@itwin/core-bentley";
 
 export class KnownTestLocations {
 

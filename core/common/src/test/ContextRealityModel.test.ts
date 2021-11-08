@@ -22,6 +22,7 @@ describe("ContextRealityModel", () => {
 
   it("initializes from JSON", () => {
     let m = makeModel({ tilesetUrl: "a" });
+    expect(m.rdSourceKey).to.be.undefined;
     expect(m.url).to.equal("a");
     expect(m.name).to.equal("");
     expect(m.realityDataId).to.be.undefined;
@@ -32,6 +33,9 @@ describe("ContextRealityModel", () => {
     expect(m.planarClipMaskSettings).to.be.undefined;
 
     m = makeModel({
+      rdSourceKey: {
+        provider: "ContextShare", format: "ThreeDTile", id: "dummy",
+      },
       tilesetUrl: "b",
       name: "c",
       description: "d",
@@ -43,10 +47,11 @@ describe("ContextRealityModel", () => {
         },
       }],
       orbitGtBlob: {
-        containerName: "container", blobFileName: "blob", sasToken: "token", accountName: "account",
+        rdsUrl: "rdsUrl", containerName: "container", blobFileName: "blob", sasToken: "token", accountName: "account",
       },
       planarClipMask: { mode: PlanarClipMaskMode.Priority },
     });
+    expect(m.rdSourceKey).not.to.be.undefined;
     expect(m.url).to.equal("b");
     expect(m.name).to.equal("c");
     expect(m.description).to.equal("d");
@@ -81,7 +86,7 @@ describe("ContextRealityModel", () => {
     model = makeModel(props);
     model.appearanceOverrides = FeatureAppearance.fromJSON({ weight: 5 });
     model.classifiers!.add(new SpatialClassifier("0x123", "new"));
-    model.planarClipMaskSettings = PlanarClipMaskSettings.createByPriority(123);
+    model.planarClipMaskSettings = PlanarClipMaskSettings.create({ priority: 123 });
 
     expectProps(props, {
       tilesetUrl: "a",
@@ -106,7 +111,7 @@ describe("ContextRealityModel", () => {
 
   it("normalizes JSON when cloning", () => {
     const props: ContextRealityModelProps = {
-      tilesetUrl: "a", name: "", description: undefined, realityDataId: "", appearanceOverrides: undefined,
+      rdSourceKey: undefined, tilesetUrl: "a", name: "", description: undefined, realityDataId: "", appearanceOverrides: undefined,
       classifiers: undefined, orbitGtBlob: undefined, planarClipMask: undefined,
     };
     (props as any).tilesetUrl = undefined;
@@ -117,6 +122,9 @@ describe("ContextRealityModel", () => {
 
   it("clones deeply", () => {
     const props = {
+      rdSourceKey: {
+        provider: "ContextShare", format: "ThreeDTile", id: "dummy",
+      },
       tilesetUrl: "b",
       name: "c",
       description: "d",
@@ -128,7 +136,7 @@ describe("ContextRealityModel", () => {
         },
       }],
       orbitGtBlob: {
-        containerName: "container", blobFileName: "blob", sasToken: "token", accountName: "account",
+        rdsUrl: "rdsUrl", containerName: "container", blobFileName: "blob", sasToken: "token", accountName: "account",
       },
       planarClipMask: { mode: PlanarClipMaskMode.Priority },
     };
@@ -137,6 +145,7 @@ describe("ContextRealityModel", () => {
     expect(clone).to.deep.equal(props);
     expect(clone).not.to.equal(props);
 
+    expect(clone.rdSourceKey).to.deep.equal(props.rdSourceKey);
     expect(clone.orbitGtBlob).not.to.equal(props.orbitGtBlob);
     expect(clone.planarClipMask).not.to.equal(props.planarClipMask);
 
@@ -156,7 +165,7 @@ describe("ContextRealityModel", () => {
     model.onPlanarClipMaskChanged.addListener((x, m) => { expect(m).to.equal(model); mask = x; });
     model.onAppearanceOverridesChanged.addListener((x, m) => { expect(m).to.equal(model); app = x; });
 
-    const newMask = model.planarClipMaskSettings = PlanarClipMaskSettings.createByPriority(1234);
+    const newMask = model.planarClipMaskSettings = PlanarClipMaskSettings.create({ priority: 1234 });
     expect(mask).to.equal(newMask);
     expect(model.planarClipMaskSettings).to.equal(newMask);
 
@@ -380,9 +389,9 @@ describe("ContextRealityModels", () => {
     }
 
     it("are dispatched when clip mask or appearance is changed", () => {
-      models.models[0].planarClipMaskSettings = PlanarClipMaskSettings.createByPriority(1);
+      models.models[0].planarClipMaskSettings = PlanarClipMaskSettings.create({ priority: 1 });
       models.models[1].appearanceOverrides = FeatureAppearance.fromJSON({ weight: 1 });
-      models.models[1].planarClipMaskSettings = PlanarClipMaskSettings.createByPriority(2);
+      models.models[1].planarClipMaskSettings = PlanarClipMaskSettings.create({ priority: 2 });
       models.models[0].appearanceOverrides = undefined;
 
       expectEvents([
@@ -397,9 +406,9 @@ describe("ContextRealityModels", () => {
       const m0 = models.models[0];
       const m1 = models.models[1];
 
-      m0.planarClipMaskSettings = PlanarClipMaskSettings.createByPriority(1);
+      m0.planarClipMaskSettings = PlanarClipMaskSettings.create({ priority: 1 });
       models.delete(m0);
-      m0.planarClipMaskSettings = PlanarClipMaskSettings.createByPriority(2);
+      m0.planarClipMaskSettings = PlanarClipMaskSettings.create({ priority: 2 });
 
       m1.appearanceOverrides = FeatureAppearance.fromJSON({ weight: 1 });
       models.clear();

@@ -441,6 +441,9 @@
       "Prompts": {
         "IdentifyMaskSubCategory": "Identify mask subCategory"
       }
+    },
+    "WoWIgnoreBackground": {
+      "keyin": "fdt wow ignore background"
     }
   }
 }

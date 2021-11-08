@@ -3,39 +3,41 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
-import * as os from "os";
 import * as path from "path";
-import { BackendApplicationInsightsClient } from "@bentley/backend-application-insights-client";
-import { Config, Logger, ProcessDetector } from "@bentley/bentleyjs-core";
-import { IModelHost } from "@bentley/imodeljs-backend";
-import { Presentation } from "@bentley/presentation-backend";
-import { initializeLogging, initializeWeb } from "./web/BackendServer";
+import { IModelHostConfiguration } from "@itwin/core-backend";
+import { Logger, ProcessDetector } from "@itwin/core-bentley";
+import { Presentation } from "@itwin/presentation-backend";
+import { IModelHubBackend } from "@bentley/imodelhub-client/lib/cjs/imodelhub-node";
+import { initializeLogging } from "./logging";
+import { initializeWeb } from "./web/BackendServer";
 import { initializeElectron } from "./electron/ElectronMain";
+import { loggerCategory } from "../common/TestAppConfiguration";
+import { AndroidHost, IOSHost } from "@itwin/core-mobile/lib/cjs/MobileBackend";
+import { getSupportedRpcs } from "../common/rpcs";
 
 (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
   try {
-    // Load .env file first so it's added to `Config.App` below when it parses the environment variables.
+    // Load .env file first
     if (fs.existsSync(path.join(process.cwd(), ".env"))) {
       require("dotenv-expand")( // eslint-disable-line @typescript-eslint/no-var-requires
         require("dotenv").config(), // eslint-disable-line @typescript-eslint/no-var-requires
       );
     }
 
-    if (!ProcessDetector.isElectronAppBackend) {
-      initializeLogging();
-    }
+    initializeLogging();
 
-    const iModelJsApplicationInsightsKey = Config.App.getString("imjs_telemetry_application_insights_instrumentation_key", "");
-    if (iModelJsApplicationInsightsKey) {
-      const applicationInsightsClient = new BackendApplicationInsightsClient({ applicationInsightsKey: iModelJsApplicationInsightsKey, backendMachineName: os.hostname(), backendApplicationId: IModelHost.applicationId, backendApplicationVersion: IModelHost.applicationVersion, clientAuthManager: IModelHost.clientAuthIntrospectionManager });
-      IModelHost.telemetry.addClient(applicationInsightsClient);
-    }
+    const iModelHost = new IModelHostConfiguration();
+    iModelHost.hubAccess = new IModelHubBackend();
 
     // invoke platform-specific initialization
     if (ProcessDetector.isElectronAppBackend) {
-      await initializeElectron();
+      await initializeElectron(iModelHost);
+    } else if (ProcessDetector.isIOSAppBackend) {
+      await IOSHost.startup({ mobileHost: { rpcInterfaces: getSupportedRpcs() } });
+    } else if (ProcessDetector.isAndroidAppBackend) {
+      await AndroidHost.startup({ mobileHost: { rpcInterfaces: getSupportedRpcs() } });
     } else {
-      await initializeWeb();
+      await initializeWeb(iModelHost);
     }
 
     // initialize presentation-backend
@@ -46,8 +48,8 @@ import { initializeElectron } from "./electron/ElectronMain";
       enableSchemasPreload: true,
       updatesPollInterval: 100,
     });
-  } catch (error) {
-    Logger.logError("ui-test-app", error);
+  } catch (error: any) {
+    Logger.logError(loggerCategory, error);
     process.exitCode = 1;
   }
 })();

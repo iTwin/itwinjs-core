@@ -35,7 +35,7 @@ const rushCommon = resolveRoot("common");
 
 const config = {
   $schema: "https://developer.microsoft.com/json-schemas/api-extractor/v7/api-extractor.schema.json",
-  projectFolder: "../",
+  projectFolder: "../../",
   compiler: {
     tsconfigFilePath: "<projectFolder>/tsconfig.json"
   },
@@ -98,7 +98,7 @@ if (!fs.existsSync("lib")) {
   process.exit(1);
 }
 
-const configFileName = `lib/${entryPointFileName}.json`;
+const configFileName = `lib/cjs/${entryPointFileName}.json`;
 fs.writeFileSync(configFileName, JSON.stringify(config, null, 2));
 
 const args = [

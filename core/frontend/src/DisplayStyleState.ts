@@ -5,14 +5,15 @@
 /** @packageDocumentation
  * @module Views
  */
-import { assert, BeEvent, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
-import { Angle, Range1d, Vector3d } from "@bentley/geometry-core";
+import { assert, BeEvent, Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
+import { Angle, Range1d, Vector3d } from "@itwin/core-geometry";
 import {
-  BackgroundMapProps, BackgroundMapSettings, BaseLayerSettings, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
+  BackgroundMapProps, BackgroundMapProvider, BackgroundMapProviderProps, BackgroundMapSettings,
+  BaseLayerSettings, BaseMapLayerSettings, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
   DisplayStyleProps, DisplayStyleSettings, EnvironmentProps, FeatureAppearance, GlobeMode, GroundPlane, LightSettings, MapLayerProps,
   MapLayerSettings, MapSubLayerProps, RenderSchedule, RenderTexture, RenderTimelineProps, SkyBoxImageType, SkyBoxProps,
   SkyCubeProps, SolarShadowSettings, SubCategoryOverride, SubLayerId, TerrainHeightOriginMode, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, ViewFlags,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { ApproximateTerrainHeights } from "./ApproximateTerrainHeights";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
 import { ContextRealityModelState } from "./ContextRealityModelState";
@@ -21,7 +22,7 @@ import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { AnimationBranchStates } from "./render/GraphicBranch";
-import { RenderSystem, TextureImage } from "./render/RenderSystem";
+import { RenderSystem } from "./render/RenderSystem";
 import { RenderScheduleState } from "./RenderScheduleState";
 import { getCesiumOSMBuildingsUrl, MapCartoRectangle, TileTreeReference } from "./tile/internal";
 import { viewGlobalLocation, ViewGlobalLocationConstants } from "./ViewGlobalLocation";
@@ -48,7 +49,7 @@ export interface OsmBuildingDisplayOptions {
  */
 export abstract class DisplayStyleState extends ElementState implements DisplayStyleProps {
   /** @internal */
-  public static get className() { return "DisplayStyle"; }
+  public static override get className() { return "DisplayStyle"; }
   private _scheduleState?: RenderScheduleState;
   private _ellipsoidMapGeometry: BackgroundMapGeometry | undefined;
   private _attachedRealityModelPlanarClipMasks = new Map<Id64String, PlanarClipMaskState>();
@@ -125,7 +126,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       }
 
       return (script && sourceId) ? new RenderScheduleState(sourceId, script) : undefined;
-    } catch (_) {
+    } catch {
       return undefined;
     }
   }
@@ -141,8 +142,14 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** @internal */
   public get backgroundMapLayers(): MapLayerSettings[] { return this.settings.mapImagery.backgroundLayers; }
 
-  /** @internal */
-  public get backgroundMapBase(): BaseLayerSettings | undefined { return this.settings.mapImagery.backgroundBase; }
+  /** @beta */
+  public get backgroundMapBase(): BaseLayerSettings {
+    return this.settings.mapImagery.backgroundBase;
+  }
+  public set backgroundMapBase(base: BaseLayerSettings) {
+    this.settings.mapImagery.backgroundBase = base;
+    this._synchBackgroundMapImagery();
+  }
 
   /** @internal */
   public get overlayMapLayers(): MapLayerSettings[] { return this.settings.mapImagery.overlayLayers; }
@@ -157,8 +164,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   /** Modify a subset of the background map display settings.
    * @param name props JSON representation of the properties to change. Any properties not present will retain their current values in `this.backgroundMapSettings`.
-   * @note If the style is associated with a Viewport, [[Viewport.changeBackgroundMapProps]] should be used instead to ensure the view updates immediately.
    * @see [[ViewFlags.backgroundMap]] for toggling display of the map.
+   * @see [[changeBackgroundMapProvider]] to change the type of map imagery displayed.
    *
    * Example that changes only the elevation, leaving the provider and type unchanged:
    * ``` ts
@@ -168,10 +175,21 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public changeBackgroundMapProps(props: BackgroundMapProps): void {
     const newSettings = this.backgroundMapSettings.clone(props);
     this.backgroundMapSettings = newSettings;
-    if (props.providerName !== undefined || props.providerData?.mapType !== undefined) {
-      const mapBase = MapLayerSettings.fromMapSettings(newSettings);
-      this.settings.mapImagery.backgroundBase = mapBase;
-    }
+  }
+
+  /** Change aspects of the [BackgroundMapProvider]($common) from which background map imagery is obtained.
+   * Any properties not explicitly specified by `props` will retain their current values.
+   * @public
+   */
+  public changeBackgroundMapProvider(props: BackgroundMapProviderProps): void {
+    const provider = BackgroundMapProvider.fromJSON(props);
+    const base = this.settings.mapImagery.backgroundBase;
+    if (base instanceof ColorDef)
+      this.settings.mapImagery.backgroundBase = BaseMapLayerSettings.fromProvider(provider);
+    else
+      this.settings.mapImagery.backgroundBase = base.cloneWithProvider(provider);
+
+    this._synchBackgroundMapImagery();
   }
 
   /** Call a function for each reality model attached to this display style.
@@ -284,6 +302,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       return undefined;
 
     const url = getCesiumOSMBuildingsUrl();
+    if (undefined === url)
+      return undefined;
+
     return this.contextRealityModelStates.find((x) => x.url === url);
   }
 
@@ -296,6 +317,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       return false;
 
     const url = getCesiumOSMBuildingsUrl();
+    if (undefined === url)
+      return false;
+
     let model = this.settings.contextRealityModels.models.find((x) => x.url === url);
     if (options.onOff === false) {
       const turnedOff = undefined !== model && this.settings.contextRealityModels.delete(model);
@@ -306,7 +330,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     }
 
     if (!model) {
-      const name = IModelApp.i18n.translate("iModelJs:RealityModelNames.OSMBuildings");
+      const name = IModelApp.localization.getLocalizedString("iModelJs:RealityModelNames.OSMBuildings");
       model = this.attachRealityModel({ tilesetUrl: url, name });
       this.onOSMBuildingDisplayChanged.raiseEvent(true);
     }
@@ -390,23 +414,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     return (index < 0 || index >= layers.length) ? undefined : layers[index];
   }
 
-  /** @internal */
-  public changeBaseMapProps(props: MapLayerProps | ColorDef) {
-    if (props instanceof ColorDef) {
-      const transparency = this.settings.mapImagery.backgroundBase instanceof ColorDef ? this.settings.mapImagery.backgroundBase.getTransparency() : 0;
-      this.settings.mapImagery.backgroundBase = props.withTransparency(transparency);
-    } else {
-      if (this.settings.mapImagery.backgroundBase instanceof MapLayerSettings)
-        this.settings.mapImagery.backgroundBase = this.settings.mapImagery.backgroundBase?.clone(props);
-      else {
-        const backgroundLayerSettings = MapLayerSettings.fromJSON(props);
-        if (backgroundLayerSettings)
-          this.settings.mapImagery.backgroundBase = backgroundLayerSettings;
-      }
-    }
-    this._synchBackgroundMapImagery();
-  }
-
   /** Return map base transparency as a number between 0 and 1.
    * @internal
    */
@@ -418,14 +425,14 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public changeBaseMapTransparency(transparency: number) {
     if (this.settings.mapImagery.backgroundBase instanceof ColorDef) {
       this.settings.mapImagery.backgroundBase = this.settings.mapImagery.backgroundBase.withTransparency(transparency * 255);
-      this._synchBackgroundMapImagery();
     } else {
-      this.changeBaseMapProps({ transparency });
+      this.settings.mapImagery.backgroundBase = this.settings.mapImagery.backgroundBase.clone({transparency});
     }
+    this._synchBackgroundMapImagery();
   }
 
   /** @internal */
-  public changeMapLayerProps(props: MapLayerProps, index: number, isOverlay: boolean) {
+  public changeMapLayerProps(props: Partial<MapLayerProps>, index: number, isOverlay: boolean) {
     const layers = this.getMapLayers(isOverlay);
     if (index < 0 || index >= layers.length)
       return;
@@ -441,7 +448,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     this._synchBackgroundMapImagery();
   }
 
-  public changeMapSubLayerProps(props: MapSubLayerProps, subLayerId: SubLayerId, layerIndex: number, isOverlay: boolean) {
+  public changeMapSubLayerProps(props: Partial<MapSubLayerProps>, subLayerId: SubLayerId, layerIndex: number, isOverlay: boolean) {
     const mapLayerSettings = this.mapLayerAtIndex(layerIndex, isOverlay);
     if (undefined === mapLayerSettings)
       return;
@@ -546,7 +553,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** Flags controlling various aspects of the display style.
-   * @note Don't modify this object directly - clone it and modify the clone, then pass the clone to the setter.
    * @see [DisplayStyleSettings.viewFlags]($common)
    */
   public get viewFlags(): ViewFlags { return this.settings.viewFlags; }
@@ -583,18 +589,19 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public getIsBackgroundMapVisible(): boolean {
     return undefined !== this.iModel.ecefLocation && (this.viewFlags.backgroundMap || this.anyMapLayersVisible(false));
   }
-  public get backgroundMapElevationBias(): number {
+  /** @internal */
+  public get backgroundMapElevationBias(): number | undefined {
     if (this.backgroundMapSettings.applyTerrain) {
       const terrainSettings = this.backgroundMapSettings.terrainSettings;
       switch (terrainSettings.heightOriginMode) {
         case TerrainHeightOriginMode.Ground:
-          return terrainSettings.heightOrigin + terrainSettings.exaggeration * this.iModel.backgroundMapLocation.projectCenterAltitude;
+          return (undefined === this.iModel.projectCenterAltitude) ? undefined : terrainSettings.heightOrigin + terrainSettings.exaggeration * this.iModel.projectCenterAltitude;
 
         case TerrainHeightOriginMode.Geodetic:
           return terrainSettings.heightOrigin;
 
         case TerrainHeightOriginMode.Geoid:
-          return terrainSettings.heightOrigin + this.iModel.backgroundMapLocation.geodeticToSeaLevel;
+          return (undefined === this.iModel.geodeticToSeaLevel) ? undefined : terrainSettings.heightOrigin + this.iModel.geodeticToSeaLevel;
       }
     } else {
       return this.backgroundMapSettings.groundBias;
@@ -608,6 +615,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       return undefined;
 
     const bimElevationBias = this.backgroundMapElevationBias;
+
+    if (undefined === bimElevationBias)
+      return undefined;
 
     const globeMode = this.globeMode;
     if (undefined === this._backgroundMapGeometry || this._backgroundMapGeometry.globeMode !== globeMode || this._backgroundMapGeometry.bimElevationBias !== bimElevationBias) {
@@ -724,7 +734,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
  */
 export class DisplayStyle2dState extends DisplayStyleState {
   /** @internal */
-  public static get className() { return "DisplayStyle2d"; }
+  public static override get className() { return "DisplayStyle2d"; }
   private readonly _settings: DisplayStyleSettings;
 
   public get settings(): DisplayStyleSettings { return this._settings; }
@@ -835,17 +845,17 @@ export namespace SkyBox { // eslint-disable-line no-redeclare
 export class SkyGradient extends SkyBox {
   /** If true, a 2-color gradient is used (nadir and zenith colors only); if false a 4-color gradient is used. Defaults to false. */
   public readonly twoColor: boolean = false;
-  /** @see [SkyBoxProp]($frontend). */
+  /** @see [SkyBoxProps.skyColor]($common). */
   public readonly skyColor: ColorDef;
-  /** @see [SkyBoxProp]($frontend). */
+  /** @see [SkyBoxProps.groundColor]($common). */
   public readonly groundColor: ColorDef;
-  /** @see [SkyBoxProp]($frontend). */
+  /** @see [SkyBoxProps.zenithColor]($common). */
   public readonly zenithColor: ColorDef;
-  /** @see [SkyBoxProp]($frontend). */
+  /** @see [SkyBoxProps.nadirColor]($common). */
   public readonly nadirColor: ColorDef;
-  /** @see [SkyBoxProp]($frontend). */
+  /** @see [SkyBoxProps.skyExponent]($common). */
   public readonly skyExponent: number = 4.0;
-  /** @see [SkyBoxProp]($frontend). */
+  /** @see [SkyBoxProps.groundExponent]($common). */
   public readonly groundExponent: number = 4.0;
 
   /** Construct a SkyGradient from its JSON representation. */
@@ -862,7 +872,7 @@ export class SkyGradient extends SkyBox {
     this.skyColor = (undefined !== sky.skyColor) ? ColorDef.fromJSON(sky.skyColor) : ColorDef.from(143, 205, 255);
   }
 
-  public toJSON(): SkyBoxProps {
+  public override toJSON(): SkyBoxProps {
     const val = super.toJSON();
 
     val.twoColor = this.twoColor ? true : undefined;
@@ -905,7 +915,7 @@ export class SkySphere extends SkyBox {
     return undefined !== textureId && Id64.isValid(textureId) ? new SkySphere(textureId, json.display) : undefined;
   }
 
-  public toJSON(): SkyBoxProps {
+  public override toJSON(): SkyBoxProps {
     const val = super.toJSON();
     val.image = {
       type: SkyBoxImageType.Spherical,
@@ -968,7 +978,7 @@ export class SkyCube extends SkyBox implements SkyCubeProps {
     return this.create(Id64.fromJSON(json.front), Id64.fromJSON(json.back), Id64.fromJSON(json.top), Id64.fromJSON(json.bottom), Id64.fromJSON(json.right), Id64.fromJSON(json.left), skyboxJson.display);
   }
 
-  public toJSON(): SkyBoxProps {
+  public override toJSON(): SkyBoxProps {
     const val = super.toJSON();
     val.image = {
       type: SkyBoxImageType.Cube,
@@ -1005,7 +1015,7 @@ export class SkyCube extends SkyBox implements SkyCubeProps {
   public loadParams(system: RenderSystem, iModel: IModelConnection): SkyBoxParams {
     // ###TODO: We never cache the actual texture *images* used here to create a single cubemap texture...
     const textureIds = new Set<string>([this.front, this.back, this.top, this.bottom, this.right, this.left]);
-    const promises = new Array<Promise<TextureImage | undefined>>();
+    const promises = [];
     for (const textureId of textureIds)
       promises.push(system.loadTextureImage(textureId, iModel));
 
@@ -1021,6 +1031,7 @@ export class SkyCube extends SkyBox implements SkyCubeProps {
           idToImage.set(textureId, image.image);
       }
 
+      // eslint-disable-next-line deprecation/deprecation
       const params = new RenderTexture.Params(undefined, RenderTexture.Type.SkyBox);
       const textureImages = [
         idToImage.get(this.front)!, idToImage.get(this.back)!, idToImage.get(this.top)!,
@@ -1067,7 +1078,7 @@ function isSameSkyBox(a: SkyBoxProps | undefined, b: SkyBoxProps | undefined): b
  */
 export class DisplayStyle3dState extends DisplayStyleState {
   /** @internal */
-  public static get className() { return "DisplayStyle3d"; }
+  public static override get className() { return "DisplayStyle3d"; }
   private _skyBoxParams?: SkyBox.CreateParams;
   private _skyBoxParamsLoaded?: boolean;
   private _environment?: Environment;
@@ -1157,7 +1168,7 @@ export class DisplayStyle3dState extends DisplayStyleState {
   }
 
   /** @internal */
-  protected registerSettingsEventListeners(): void {
+  protected override registerSettingsEventListeners(): void {
     super.registerSettingsEventListeners();
 
     this.settings.onEnvironmentChanged.addListener((env) => {

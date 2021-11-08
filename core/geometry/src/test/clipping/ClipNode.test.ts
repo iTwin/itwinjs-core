@@ -24,6 +24,8 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { GrowableXYZArrayCache } from "../../geometry3d/ReusableObjectCache";
 
 /* eslint-disable no-console, @typescript-eslint/naming-convention */
 /**
@@ -53,7 +55,7 @@ describe("ClipNodes", () => {
     const clipperAMinusB = BooleanClipFactory.createCaptureDifference(clipX, clipY, false);
     const clipperXOR = BooleanClipFactory.createCaptureParity([clipX, clipY], true);
     const clipperNXOR = BooleanClipFactory.createCaptureParity([clipX, clipY], false);
-    const allClippers: Clipper[] = [clipperAAndB, clipX, clipY, clipperAOrB, clipperAAndB, clipperAMinusB, clipperXOR, clipperNXOR];
+    const allClippers: Clipper[] = [clipperAMinusB, clipperAAndB, clipX, clipY, clipperAOrB, clipperAAndB, clipperAMinusB, clipperXOR, clipperNXOR];
     const clipperName = new Map<Clipper, string>();
     clipperName.set(clipY, "ClipY");
     clipperName.set(clipX, "ClipX");
@@ -63,7 +65,7 @@ describe("ClipNodes", () => {
     clipperName.set(clipperXOR, "clipperXOR");
     clipperName.set(clipperXOR, "NXOR");
     const x0 = 0;
-    const y0 = 0;
+    let y0 = 0;
     let z0 = 0;
     const points = [Point3d.create(-1, -1, 0), Point3d.create(2, -1, 0), Point3d.create(2, 2, 0), Point3d.create(-1, 2, 0), Point3d.create(-1, -1, 0)];
     const segments = [];
@@ -103,6 +105,9 @@ describe("ClipNodes", () => {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc3, x0, y0, z0);
       }
     }
+    const polygons: GrowableXYZArray[] = [];
+    polygons.push(GrowableXYZArray.create(Sample.createRectangleXY(-3, -3, 6, 6)));
+
     const vectorX = Vector3d.unitX(1);
     const vectorY = Vector3d.unitY(1);
     const vectorZ = Vector3d.unitZ(0.2);
@@ -158,6 +163,29 @@ describe("ClipNodes", () => {
       }
 
     }
+    z0 = 0;
+    y0 += 100;
+    for (const clipper of allClippers) {
+      z0 += 4;
+      for (const segment of segments) {
+        clipper.announceClippedSegmentIntervals(0, 1, segment.startPoint(), segment.endPoint(),
+          (a0: number, a1: number) => {
+            GeometryCoreTestIO.captureGeometry(allGeometry, segment.clonePartialCurve(a0, a1), x0, y0, z0 + 0.1);
+          });
+      }
+      if (clipper.appendPolygonClip) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, wallX, x0, y0, z0);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, wallY, x0, y0, z0);
+        const cache = new GrowableXYZArrayCache();
+        for (const polygon of polygons) {
+          const insideClip: GrowableXYZArray[] = [];
+          const outsideClip: GrowableXYZArray[] = [];
+          clipper.appendPolygonClip(polygon, insideClip, outsideClip, cache);
+          GeometryCoreTestIO.createAndCaptureLoops(allGeometry, insideClip, x0, y0, z0);
+          }
+        }
+    }
+
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipNode", "ClipManyBooleans");
     expect(ck.getNumErrors()).equals(0);
   });

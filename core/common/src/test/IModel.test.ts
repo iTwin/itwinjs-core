@@ -3,8 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { OpenMode } from "@bentley/bentleyjs-core";
-import { Point3d, Range3d } from "@bentley/geometry-core";
+import { Point3d, Range3d } from "@itwin/core-geometry";
 import { EcefLocation, EcefLocationProps, IModel, IModelProps, RootSubjectProps } from "../IModel";
 import { GeographicCRS } from "../geometry/CoordinateReferenceSystem";
 
@@ -18,7 +17,7 @@ class TestIModel extends IModel {
   public get isBriefcase() { return false; }
 
   public constructor(props: TestIModelProps) {
-    super(props, OpenMode.Readonly);
+    super(props);
     this.initFromProps(props);
   }
 
@@ -55,7 +54,7 @@ describe("IModel", () => {
     }
 
     function expectChange(imodel: IModel, func: () => void, expected: IModelChangedProps): void {
-      const actual: IModelChangedProps = { };
+      const actual: IModelChangedProps = {};
 
       imodel.onNameChanged.addOnce((prev) => {
         expect(actual.name).to.be.undefined;
@@ -93,7 +92,7 @@ describe("IModel", () => {
     }
 
     function expectNoChange(imodel: IModel, func: () => void): void {
-      expectChange(imodel, func, { });
+      expectChange(imodel, func, {});
     }
 
     it("are dispatched when properties change", () => {
@@ -132,7 +131,7 @@ describe("IModel", () => {
         orientation: { yaw: 5, pitch: 90, roll: -45 },
       });
       expectChange(imodel, () => imodel.setEcefLocation(newEcef), { ecef: { prev: ecef, curr: newEcef } });
-      expectChange(imodel, () => imodel.initFromProps({...imodel.getProps(), ecefLocation: undefined}), { ecef: { prev: newEcef, curr: undefined } });
+      expectChange(imodel, () => imodel.initFromProps({ ...imodel.getProps(), ecefLocation: undefined }), { ecef: { prev: newEcef, curr: undefined } });
 
       const newProps: TestIModelProps = {
         key: "",
@@ -171,23 +170,11 @@ describe("IModel", () => {
       expectNoChange(imodel, () => imodel.projectExtents = imodel.projectExtents.clone());
       expectNoChange(imodel, () => imodel.globalOrigin = imodel.globalOrigin.clone());
       expectNoChange(imodel, () => imodel.geographicCoordinateSystem = undefined);
-      expectNoChange(imodel, () => imodel.setEcefLocation({...ecefLocation}));
+      expectNoChange(imodel, () => imodel.setEcefLocation({ ...ecefLocation }));
 
-      expectNoChange(imodel, () => imodel.initFromProps({...props}));
+      expectNoChange(imodel, () => imodel.initFromProps({ ...props }));
       expectNoChange(imodel, () => imodel.initFromProps(imodel.getProps()));
     });
 
-    it("are not dispatched when members of RootSubjectProps are directly modified", () => {
-      const imodel = new TestIModel({
-        key: "",
-        name: "imodel",
-        rootSubject: { name: "subject", description: "SUBJECT" },
-        projectExtents: { low: [0, 1, 2], high: [3, 4, 5] },
-        globalOrigin: [-1, -2, -3],
-      });
-
-      expectNoChange(imodel, () => imodel.rootSubject.name = "new name");
-      expectNoChange(imodel, () => imodel.rootSubject.description = "new description");
-    });
   });
 });

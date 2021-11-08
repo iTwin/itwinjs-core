@@ -3,13 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { Guid, GuidString, Id64, IModelHubStatus } from "@bentley/bentleyjs-core";
+import { AccessToken, Guid, GuidString, Id64, IModelHubStatus } from "@itwin/core-bentley";
 import {
   AllCodesDeletedEvent, AllLocksDeletedEvent, BriefcaseDeletedEvent, ChangeSetPostPushEvent, ChangeSetPrePushEvent, CheckpointCreatedEvent, CheckpointV2CreatedEvent, CodeEvent, EventSAS,
   EventSubscription, EventType, IModelClient, IModelDeletedEvent, IModelHubEvent, IModelHubEventType, LockEvent, LockLevel, LockType, VersionEvent,
 } from "@bentley/imodelhub-client";
-import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { TestUsers } from "@bentley/oidc-signin-tool";
+import { TestUsers } from "@itwin/oidc-signin-tool";
 import { RequestType, ResponseBuilder, ScopeType } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
 import * as utils from "./TestUtils";
@@ -89,29 +88,28 @@ function mockDeleteEventSubscription(imodelId: GuidString, subscriptionId: strin
 }
 
 describe("iModelHub EventHandler", () => {
-  let contextId: string;
+  let iTwinId: string;
   let imodelId: GuidString;
   let subscription: EventSubscription;
   let briefcaseId: number;
   let sasToken: EventSAS;
   let imodelHubClient: IModelClient;
-  let requestContext: AuthorizedClientRequestContext;
+  let accessToken: AccessToken;
 
   before(async function () {
     this.timeout(0);
-    const accessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
-    requestContext = new AuthorizedClientRequestContext(accessToken);
+    accessToken = TestConfig.enableMocks ? "" : await utils.login(TestUsers.super);
 
-    contextId = await utils.getProjectId(requestContext);
-    await utils.createIModel(requestContext, utils.sharedimodelName, contextId);
-    imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, contextId);
+    iTwinId = await utils.getITwinId(accessToken);
+    await utils.createIModel(accessToken, utils.sharedimodelName, iTwinId);
+    imodelId = await utils.getIModelId(accessToken, utils.sharedimodelName, iTwinId);
     imodelHubClient = utils.getDefaultClient();
-    briefcaseId = (await utils.getBriefcases(requestContext, imodelId, 1))[0].briefcaseId!;
+    briefcaseId = (await utils.getBriefcases(accessToken, imodelId, 1))[0].briefcaseId!;
   });
 
   after(async () => {
     if (TestConfig.enableIModelBank) {
-      await utils.deleteIModelByName(requestContext, contextId, utils.sharedimodelName);
+      await utils.deleteIModelByName(accessToken, iTwinId, utils.sharedimodelName);
     }
   });
 
@@ -123,7 +121,7 @@ describe("iModelHub EventHandler", () => {
     const eventTypes: EventType[] = ["CodeEvent"];
     mockCreateEventSubscription(imodelId, eventTypes);
 
-    subscription = await imodelHubClient.events.subscriptions.create(requestContext, imodelId, eventTypes);
+    subscription = await imodelHubClient.events.subscriptions.create(accessToken, imodelId, eventTypes);
     chai.assert(subscription);
     chai.expect(subscription.eventTypes).to.be.deep.equal(eventTypes);
   });
@@ -131,9 +129,8 @@ describe("iModelHub EventHandler", () => {
   it("should fail getting SAS token with invalid accessToken (#integration)", async () => {
     let error;
     try {
-      const mockRequestContext = new AuthorizedClientRequestContext(new utils.MockAccessToken());
-      await imodelHubClient.events.getSASToken(mockRequestContext, imodelId);
-    } catch (err) {
+      await imodelHubClient.events.getSASToken("bad", imodelId);
+    } catch (err: any) {
       error = err;
     }
     chai.assert(error);
@@ -142,7 +139,7 @@ describe("iModelHub EventHandler", () => {
 
   it("should get SAS token", async () => {
     mockGetEventSASToken(imodelId);
-    sasToken = await imodelHubClient.events.getSASToken(requestContext, imodelId);
+    sasToken = await imodelHubClient.events.getSASToken(accessToken, imodelId);
     chai.assert(sasToken);
   });
 
@@ -150,8 +147,8 @@ describe("iModelHub EventHandler", () => {
     mockGetEvent(imodelId, subscription.wsgId, {}, undefined, undefined, 401);
     let error;
     try {
-      await imodelHubClient.events.getEvent(requestContext, "InvalidSASToken", sasToken.baseAddress!, subscription.wsgId);
-    } catch (err) {
+      await imodelHubClient.events.getEvent("InvalidSASToken", sasToken.baseAddress!, subscription.wsgId);
+    } catch (err: any) {
       error = err;
     }
     chai.assert(error);
@@ -162,8 +159,8 @@ describe("iModelHub EventHandler", () => {
     mockGetEvent(imodelId, "", {}, undefined, undefined, 404);
     let error;
     try {
-      await imodelHubClient.events.getEvent(requestContext, sasToken.sasToken!, sasToken.baseAddress!, "");
-    } catch (err) {
+      await imodelHubClient.events.getEvent(sasToken.sasToken!, sasToken.baseAddress!, "");
+    } catch (err: any) {
       error = err;
     }
     chai.assert(error);
@@ -172,7 +169,7 @@ describe("iModelHub EventHandler", () => {
 
   it("should return undefined when no event is available", async () => {
     mockGetEvent(imodelId, subscription.wsgId, {}, undefined, undefined, 204);
-    const result = await imodelHubClient.events.getEvent(requestContext, sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId);
+    const result = await imodelHubClient.events.getEvent(sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId);
     chai.expect(result).to.be.equal(undefined);
   });
 
@@ -180,7 +177,7 @@ describe("iModelHub EventHandler", () => {
     const timeout = !TestConfig.enableMocks ? 10 : 1;
 
     mockGetEvent(imodelId, subscription.wsgId, {}, undefined, 1, 204, 1);
-    const result = await imodelHubClient.events.getEvent(requestContext, sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId, timeout);
+    const result = await imodelHubClient.events.getEvent(sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId, timeout);
     chai.expect(result).to.be.equal(undefined);
   });
 
@@ -188,8 +185,8 @@ describe("iModelHub EventHandler", () => {
     mockGetEvent(imodelId, subscription.wsgId, {}, undefined, 1, 204, 20000);
     let error;
     try {
-      await imodelHubClient.events.getEvent(requestContext, sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId, 1);
-    } catch (err) {
+      await imodelHubClient.events.getEvent(sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId, 1);
+    } catch (err: any) {
       error = err;
     }
     chai.assert(error);
@@ -199,13 +196,13 @@ describe("iModelHub EventHandler", () => {
   it("should receive code event", async () => {
     const codes = [utils.randomCode(briefcaseId)];
     if (!TestConfig.enableMocks) {
-      await imodelHubClient.codes.update(requestContext, imodelId, codes);
+      await imodelHubClient.codes.update(accessToken, imodelId, codes);
     } else {
       const requestResponse = `{"EventTopic":"${imodelId}","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":"","BriefcaseId":1,"CodeScope":"0x100000000ff","CodeSpecId":"0xff","State":1,"Values":["TestCode"]}`;
       mockGetEvent(imodelId, subscription.wsgId, JSON.parse(requestResponse), "CodeEvent");
     }
 
-    const event = await imodelHubClient.events.getEvent(requestContext, sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId);
+    const event = await imodelHubClient.events.getEvent(sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId);
 
     chai.expect(event).to.be.instanceof(CodeEvent);
     chai.expect(event!.iModelId!).to.be.equal(imodelId);
@@ -226,16 +223,16 @@ describe("iModelHub EventHandler", () => {
     }
 
     let receivedEventsCount = 0;
-    const deleteListener = imodelHubClient.events.createListener(requestContext, async () => {
-      return TestConfig.enableMocks ? new utils.MockAccessToken() : utils.login(TestUsers.super);
+    const deleteListener = imodelHubClient.events.createListener(async () => {
+      return TestConfig.enableMocks ? "" : (await utils.login(TestUsers.super) ?? "");
     }, subscription.wsgId, imodelId, (receivedEvent: IModelHubEvent) => {
       if (receivedEvent instanceof CodeEvent)
         receivedEventsCount++;
     });
 
     if (!TestConfig.enableMocks) {
-      await imodelHubClient.codes.update(requestContext, imodelId, [codes[0]]);
-      await imodelHubClient.codes.update(requestContext, imodelId, [codes[1]]);
+      await imodelHubClient.codes.update(accessToken, imodelId, [codes[0]]);
+      await imodelHubClient.codes.update(accessToken, imodelId, [codes[1]]);
     }
 
     let timeoutCounter = 0;
@@ -253,7 +250,7 @@ describe("iModelHub EventHandler", () => {
     mockUpdateEventSubscription(imodelId, subscription.wsgId, eventTypes);
     subscription.eventTypes = eventTypes as IModelHubEventType[];
 
-    subscription = await imodelHubClient.events.subscriptions.update(requestContext, imodelId, subscription);
+    subscription = await imodelHubClient.events.subscriptions.update(accessToken, imodelId, subscription);
     chai.assert(subscription);
     chai.expect(subscription.eventTypes).to.be.deep.equal(eventTypes);
   });
@@ -265,16 +262,16 @@ describe("iModelHub EventHandler", () => {
       const eventBody = `{"EventTopic":"${imodelId}","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":"","BriefcaseId":2,"LockType":"Element","LockLevel":"Shared","ObjectIds":["0x115"],"ReleasedWithChangeSet":"1"}`;
       mockGetEvent(imodelId, subscription.wsgId, JSON.parse(eventBody), "LockEvent");
     } else {
-      await imodelHubClient.events.subscriptions.delete(requestContext, imodelId, subscription.wsgId);
+      await imodelHubClient.events.subscriptions.delete(accessToken, imodelId, subscription.wsgId);
       const eventTypes: EventType[] = ["LockEvent"];
-      subscription = await imodelHubClient.events.subscriptions.create(requestContext, imodelId, eventTypes);
+      subscription = await imodelHubClient.events.subscriptions.create(accessToken, imodelId, eventTypes);
       chai.assert(subscription);
       chai.expect(subscription.eventTypes).to.be.deep.equal(eventTypes);
 
-      await imodelHubClient.locks.update(requestContext, imodelId, [lock]);
+      await imodelHubClient.locks.update(accessToken, imodelId, [lock]);
     }
 
-    const event = await imodelHubClient.events.getEvent(requestContext, sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId);
+    const event = await imodelHubClient.events.getEvent(sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId);
     chai.expect(event).to.be.instanceof(LockEvent);
     chai.assert(!!event!.iModelId);
     const typedEvent = event as LockEvent;
@@ -290,7 +287,7 @@ describe("iModelHub EventHandler", () => {
     const eventBody = `{"EventTopic":"${imodelId}","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":"","BriefcaseId":2}`;
     mockGetEvent(imodelId, subscription.wsgId, JSON.parse(eventBody), "AllLocksDeletedEvent");
 
-    const event = await imodelHubClient.events.getEvent(requestContext, sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId);
+    const event = await imodelHubClient.events.getEvent(sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId);
     chai.expect(event).to.be.instanceof(AllLocksDeletedEvent);
     chai.assert(!!event!.iModelId);
   });
@@ -299,7 +296,7 @@ describe("iModelHub EventHandler", () => {
     const eventBody = `{"EventTopic":"${imodelId}","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":"","BriefcaseId":2,"ChangeSetId":"789","ChangeSetIndex":2}`;
     mockGetEvent(imodelId, subscription.wsgId, JSON.parse(eventBody), "ChangeSetPostPushEvent");
 
-    const event = await imodelHubClient.events.getEvent(requestContext, sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId);
+    const event = await imodelHubClient.events.getEvent(sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId);
     chai.expect(event).to.be.instanceof(ChangeSetPostPushEvent);
     chai.assert(!!event!.iModelId);
   });
@@ -308,7 +305,7 @@ describe("iModelHub EventHandler", () => {
     const eventBody = `{"EventTopic":"${imodelId}","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":""}`;
     mockGetEvent(imodelId, subscription.wsgId, JSON.parse(eventBody), "ChangeSetPrePushEvent");
 
-    const event = await imodelHubClient.events.getEvent(requestContext, sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId);
+    const event = await imodelHubClient.events.getEvent(sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId);
     chai.expect(event).to.be.instanceof(ChangeSetPrePushEvent);
     chai.assert(!!event!.iModelId);
   });
@@ -317,7 +314,7 @@ describe("iModelHub EventHandler", () => {
     const eventBody = `{"EventTopic":"${imodelId}","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":"","BriefcaseId":2}`;
     mockGetEvent(imodelId, subscription.wsgId, JSON.parse(eventBody), "AllCodesDeletedEvent");
 
-    const event = await imodelHubClient.events.getEvent(requestContext, sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId);
+    const event = await imodelHubClient.events.getEvent(sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId);
     chai.expect(event).to.be.instanceof(AllCodesDeletedEvent);
     chai.assert(!!event!.iModelId);
   });
@@ -326,7 +323,7 @@ describe("iModelHub EventHandler", () => {
     const eventBody = `{"EventTopic":"${imodelId}","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":"","BriefcaseId":2}`;
     mockGetEvent(imodelId, subscription.wsgId, JSON.parse(eventBody), "BriefcaseDeletedEvent");
 
-    const event = await imodelHubClient.events.getEvent(requestContext, sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId);
+    const event = await imodelHubClient.events.getEvent(sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId);
     chai.expect(event).to.be.instanceof(BriefcaseDeletedEvent);
     chai.assert(!!event!.iModelId);
   });
@@ -335,7 +332,7 @@ describe("iModelHub EventHandler", () => {
     const eventBody = `{"EventTopic":"${imodelId}","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":""}`;
     mockGetEvent(imodelId, subscription.wsgId, JSON.parse(eventBody), "iModelDeletedEvent");
 
-    const event = await imodelHubClient.events.getEvent(requestContext, sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId);
+    const event = await imodelHubClient.events.getEvent(sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId);
     chai.expect(event).to.be.instanceof(IModelDeletedEvent);
     chai.assert(!!event!.iModelId);
   });
@@ -345,7 +342,7 @@ describe("iModelHub EventHandler", () => {
     const eventBody = `{"EventTopic":"${imodelId}","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":"","VersionId":"${versionId}","VersionName":"ABC","ChangeSetId":"2"}`;
     mockGetEvent(imodelId, subscription.wsgId, JSON.parse(eventBody), "VersionEvent");
 
-    const event = await imodelHubClient.events.getEvent(requestContext, sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId);
+    const event = await imodelHubClient.events.getEvent(sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId);
     chai.expect(event).to.be.instanceof(VersionEvent);
     chai.assert(!!event!.iModelId);
     const typedEvent = event as VersionEvent;
@@ -358,7 +355,7 @@ describe("iModelHub EventHandler", () => {
     const eventBody = `{"EventTopic":"${imodelId}","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":"","VersionId":"${versionId}","VersionName":"ABC","ChangeSetId":""}`;
     mockGetEvent(imodelId, subscription.wsgId, JSON.parse(eventBody), "VersionEvent");
 
-    const event = await imodelHubClient.events.getEvent(requestContext, sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId);
+    const event = await imodelHubClient.events.getEvent(sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId);
     chai.expect(event).to.be.instanceof(VersionEvent);
     chai.assert(!!event!.iModelId);
     const typedEvent = event as VersionEvent;
@@ -374,7 +371,7 @@ describe("iModelHub EventHandler", () => {
     const eventBody = `{"EventTopic":"${imodelId}","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":"","VersionId":"${versionId}","ChangeSetId":"${changeSetId}","ChangeSetIndex":"${changeSetIndex}"}`;
     mockGetEvent(imodelId, subscription.wsgId, JSON.parse(eventBody), "CheckpointCreatedEvent");
 
-    const event = await imodelHubClient.events.getEvent(requestContext, sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId);
+    const event = await imodelHubClient.events.getEvent(sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId);
     chai.expect(event).to.be.instanceof(CheckpointCreatedEvent);
     chai.assert(!!event!.iModelId);
     const typedEvent = event as CheckpointCreatedEvent;
@@ -390,7 +387,7 @@ describe("iModelHub EventHandler", () => {
     const eventBody = `{"EventTopic":"${imodelId}","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":"","ChangeSetId":"${changeSetId}","ChangeSetIndex":"${changeSetIndex}"}`;
     mockGetEvent(imodelId, subscription.wsgId, JSON.parse(eventBody), "CheckpointCreatedEvent");
 
-    const event = await imodelHubClient.events.getEvent(requestContext, sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId);
+    const event = await imodelHubClient.events.getEvent(sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId);
     chai.expect(event).to.be.instanceof(CheckpointCreatedEvent);
     chai.assert(!!event!.iModelId);
     const typedEvent = event as CheckpointCreatedEvent;
@@ -407,7 +404,7 @@ describe("iModelHub EventHandler", () => {
     const eventBody = `{"EventTopic":"${imodelId}","FromEventSubscriptionId":"${Guid.createValue()}","ToEventSubscriptionId":"","VersionId":"${versionId}","ChangeSetId":"${changeSetId}","ChangeSetIndex":"${changeSetIndex}"}`;
     mockGetEvent(imodelId, subscription.wsgId, JSON.parse(eventBody), "CheckpointV2CreatedEvent");
 
-    const event = await imodelHubClient.events.getEvent(requestContext, sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId);
+    const event = await imodelHubClient.events.getEvent(sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId);
     chai.expect(event).to.be.instanceof(CheckpointV2CreatedEvent);
     chai.assert(!!event!.iModelId);
     const typedEvent = event as CheckpointV2CreatedEvent;
@@ -419,6 +416,6 @@ describe("iModelHub EventHandler", () => {
 
   it("should delete subscription", async () => {
     mockDeleteEventSubscription(imodelId, subscription.wsgId);
-    await imodelHubClient.events.subscriptions.delete(requestContext, imodelId, subscription.wsgId);
+    await imodelHubClient.events.subscriptions.delete(accessToken, imodelId, subscription.wsgId);
   });
 });

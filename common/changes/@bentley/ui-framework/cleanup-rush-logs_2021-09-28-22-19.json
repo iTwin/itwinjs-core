@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-framework",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework"
+}

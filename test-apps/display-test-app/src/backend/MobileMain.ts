@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { MobileHostOpts } from "@bentley/mobile-manager/lib/MobileBackend";
+import { MobileHostOpts } from "@itwin/core-mobile/lib/cjs/MobileBackend";
 import { getRpcInterfaces, initializeDtaBackend } from "./Backend";
 
 const dtaMobileMain = (async () => {
@@ -12,7 +12,7 @@ const dtaMobileMain = (async () => {
       authConfig: {
         clientId: "imodeljs-electron-test",
         redirectUri: "imodeljs://app/signin-callback",
-        scope: "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party imodel-extension-service-api offline_access",
+        scope: "openid email profile organization itwinjs",
       },
       rpcInterfaces: getRpcInterfaces(),
     },

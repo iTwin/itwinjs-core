@@ -8,39 +8,39 @@ import {
   BeButtonEvent, CoordinateLockOverrides, EventHandled, HitDetail, IModelApp,
   LocateFilterStatus, LocateResponse, PrimitiveTool,
   SelectionMethod, SelectionMode,
-} from "@bentley/imodeljs-frontend";
-import { Point3d } from "@bentley/geometry-core";
-import { UiFramework } from "@bentley/ui-framework";
-import { ToolbarItemUtilities } from "@bentley/ui-abstract";
+} from "@itwin/core-frontend";
+import { Point3d } from "@itwin/core-geometry";
+import { UiFramework } from "@itwin/appui-react";
+import { ToolbarItemUtilities } from "@itwin/appui-abstract";
 import genericToolSvg from "./generic-tool.svg?sprite";
 
 export class GenericTool extends PrimitiveTool {
   public userPoint: Point3d | undefined;
   public elementId: string | undefined;
   // ensure toolId is unique by add "uiTestExtension-" prefix
-  public static get toolId() { return "uiTestExtension-GenericTool"; }
+  public static override get toolId() { return "uiTestExtension-GenericTool"; }
   public static get toolStringKey() { return `uiTestExtension:tools.${GenericTool.toolId}.`; }
-  public static iconSpec = `svg:${genericToolSvg}`;
+  public static override iconSpec = `svg:${genericToolSvg}`;
   public static useDefaultPosition = false;
-  public autoLockTarget(): void { } // NOTE: For selecting elements we only care about iModel, so don't lock target model automatically.
+  public override autoLockTarget(): void { } // NOTE: For selecting elements we only care about iModel, so don't lock target model automatically.
   protected wantSelectionClearOnMiss(_ev: BeButtonEvent): boolean { return SelectionMode.Replace === this.getSelectionMode(); }
   protected wantPickableDecorations(): boolean { return false; } // Allow pickable decorations selection to be independent of manipulators...
   protected getSelectionMethod(): SelectionMethod { return SelectionMethod.Pick; }
   protected getSelectionMode(): SelectionMode { return SelectionMode.Replace; }
-  public requireWriteableTarget() { return false; }
-  public async filterHit(_hit: HitDetail, _out?: LocateResponse) { return Promise.resolve(LocateFilterStatus.Accept); }
+  public override requireWriteableTarget() { return false; }
+  public override async filterHit(_hit: HitDetail, _out?: LocateResponse) { return Promise.resolve(LocateFilterStatus.Accept); }
 
   public static getPrompt(name: string): string {
     const key = `tools.${this.toolId}.Prompts.${name}`;
-    return this.i18n.translateWithNamespace(this.namespace.name, key);
+    return IModelApp.localization.getLocalizedStringWithNamespace(this.namespace, key);
   }
 
   public async process(_elementId: string, _point?: Point3d) {
     // Exit the tool
-    this.exitTool();
+    return this.exitTool();
   }
 
-  public async onDataButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
+  public override async onDataButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
     const hit = await IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, ev.inputSource);
     if (this.elementId === undefined) {
       if (hit !== undefined) {
@@ -62,8 +62,8 @@ export class GenericTool extends PrimitiveTool {
     return EventHandled.Yes;
   }
 
-  public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
-    this.onReinitialize();
+  public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
+    await this.onReinitialize();
     return EventHandled.No;
   }
 
@@ -79,8 +79,8 @@ export class GenericTool extends PrimitiveTool {
     }
   }
 
-  public onPostInstall(): void {
-    super.onPostInstall();
+  public override async onPostInstall() {
+    await super.onPostInstall();
 
     const iModelConnection = UiFramework.getIModelConnection();
     if (!iModelConnection)
@@ -89,7 +89,7 @@ export class GenericTool extends PrimitiveTool {
     if (iModelConnection.selectionSet.size === 1) {
       // Process and exit tool
       iModelConnection.selectionSet.elements.forEach((elementId: string, _val: string, _set: Set<string>) => { this.process(elementId); }); // eslint-disable-line @typescript-eslint/no-floating-promises
-      IModelApp.toolAdmin.startDefaultTool();
+      await IModelApp.toolAdmin.startDefaultTool();
     } else {
       // Empty all before starting tool
       iModelConnection.selectionSet.emptyAll();
@@ -109,18 +109,18 @@ export class GenericTool extends PrimitiveTool {
     }
   }
 
-  public onRestartTool(): void {
-    this.exitTool();
+  public async onRestartTool() {
+    return this.exitTool();
   }
 
-  public static startTool(): boolean {
+  public static async startTool(): Promise<boolean> {
     return (new GenericTool()).run();
   }
 
   public static getActionButtonDef(itemPriority: number, groupPriority?: number) {
     const overrides = undefined !== groupPriority ? { groupPriority } : {};
     return ToolbarItemUtilities.createActionButton(GenericTool.toolId, itemPriority, GenericTool.iconSpec, GenericTool.flyover,
-      () => { IModelApp.tools.run(GenericTool.toolId, IModelApp.viewManager.selectedView, true); },
+      async () => { await IModelApp.tools.run(GenericTool.toolId, IModelApp.viewManager.selectedView, true); },
       overrides);
   }
 }

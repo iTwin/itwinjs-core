@@ -8,13 +8,15 @@
  */
 
 import {
-  DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, RenderMode, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
-} from "@bentley/imodeljs-common";
+  DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, RenderMode, SubCategoryAppearance, SubCategoryOverride, ViewFlags, ViewFlagsProperties,
+  WhiteOnWhiteReversalSettings,
+} from "@itwin/core-common";
 import {
   DisplayStyle3dState, Environment, IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseArgs } from "./parseArgs";
+import { parseToggle } from "./parseToggle";
 
 type BooleanFlagName =
   "dimensions" | "patterns" | "weights" | "styles" | "transparency" | "fill" | "textures" | "materials" | "acsTriad" | "grid" | "visibleEdges" |
@@ -38,7 +40,7 @@ export abstract class DisplayStyleTool extends Tool {
   // Return false if failed to parse.
   protected abstract parse(args: string[]): boolean;
 
-  public run(): boolean {
+  public override async run(): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== vp && (!this.require3d || vp.view.is3d()) && this.execute(vp))
       vp.displayStyle = vp.view.displayStyle;
@@ -46,7 +48,7 @@ export abstract class DisplayStyleTool extends Tool {
     return true;
   }
 
-  public parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== vp && (!this.require3d || vp.view.is3d()) && this.parse(args))
       return this.run();
@@ -64,23 +66,23 @@ export abstract class DisplayStyleTool extends Tool {
  * @beta
  */
 export class ChangeViewFlagsTool extends Tool {
-  public static toolId = "ChangeViewFlags";
-  public static get maxArgs() { return undefined; }
-  public static get minArgs() { return 1; }
+  public static override toolId = "ChangeViewFlags";
+  public static override get maxArgs() { return undefined; }
+  public static override get minArgs() { return 1; }
 
-  public run(vf: ViewFlags, vp?: Viewport): boolean {
+  public override async run(vf: ViewFlags, vp?: Viewport): Promise<boolean> {
     if (undefined !== vf && undefined !== vp)
       vp.viewFlags = vf;
 
     return true;
   }
 
-  public parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp || 0 === args.length)
       return true;
 
-    const vf = vp.viewFlags.clone();
+    const vf: Partial<ViewFlagsProperties> = { ...vp.viewFlags };
     for (const arg of args) {
       const parts = arg.split("=");
       if (2 !== parts.length)
@@ -116,7 +118,7 @@ export class ChangeViewFlagsTool extends Tool {
       }
     }
 
-    return this.run(vf, vp);
+    return this.run(new ViewFlags(vf), vp);
   }
 }
 
@@ -124,9 +126,9 @@ export class ChangeViewFlagsTool extends Tool {
  * @beta
  */
 export class ToggleSkyboxTool extends DisplayStyleTool {
-  public static toolId = "ToggleSkybox";
+  public static override toolId = "ToggleSkybox";
 
-  public get require3d() { return true; }
+  public override get require3d() { return true; }
 
   public parse(_args: string[]) { return true; } // no arguments
 
@@ -144,7 +146,7 @@ export class ToggleSkyboxTool extends DisplayStyleTool {
  * Arguments:
  *  * `all`: include all settings.
  *  * `imodel`: include iModel-specific settings.
- *  * `project`: include project-specific settings.
+ *  * `project`: include iTwin-specific (formerly known as project) settings.
  *  * `map`: include background map settings.
  *  * `drawingaids`: include drawing aid decoration settings.
  *  * `copy`: copy result to system clipboarad.
@@ -152,14 +154,14 @@ export class ToggleSkyboxTool extends DisplayStyleTool {
  * @beta
  */
 export class SaveRenderingStyleTool extends DisplayStyleTool {
-  private _options: DisplayStyleOverridesOptions = { };
+  private _options: DisplayStyleOverridesOptions = {};
   private _copyToClipboard = false;
   private _quote = false;
 
-  public static toolId = "SaveRenderingStyle";
+  public static override toolId = "SaveRenderingStyle";
 
-  public static get minArgs() { return 0; }
-  public static get maxArgs() { return 7; }
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 7; }
 
   public parse(inputArgs: string[]) {
     const args = parseArgs(inputArgs);
@@ -169,7 +171,7 @@ export class SaveRenderingStyleTool extends DisplayStyleTool {
 
     this._options.includeAll = getArg("a");
     this._options.includeIModelSpecific = getArg("i");
-    this._options.includeProjectSpecific = getArg("p");
+    this._options.includeITwinSpecific = getArg("p"); // "p" for backwards compatibility with old "project" terminology
     this._options.includeBackgroundMap = getArg("m");
     this._options.includeDrawingAids = getArg("d");
     this._copyToClipboard = true === getArg("c");
@@ -191,17 +193,17 @@ export class SaveRenderingStyleTool extends DisplayStyleTool {
   }
 }
 
-/** Given a "rendering style" as a partial DispalyStyle3dSettingsProperties JSON string, apply it to the selected viewport's display style.
+/** Given a "rendering style" as a partial DisplayStyle3dSettingsProperties JSON string, apply it to the selected viewport's display style.
  * @see [DisplayStyleSettings.applyOverrides]($common) for details.
  * @beta
  */
 export class ApplyRenderingStyleTool extends DisplayStyleTool {
   private _overrides?: DisplayStyle3dSettingsProps;
 
-  public static toolId = "ApplyRenderingStyle";
+  public static override toolId = "ApplyRenderingStyle";
 
-  public static get minArgs() { return 1; }
-  public static get maxArgs() { return 1; }
+  public static override get minArgs() { return 1; }
+  public static override get maxArgs() { return 1; }
 
   public parse(args: string[]) {
     try {
@@ -225,12 +227,12 @@ export class ApplyRenderingStyleTool extends DisplayStyleTool {
  * @beta
  */
 export class OverrideSubCategoryTool extends DisplayStyleTool {
-  private _overrideProps: SubCategoryAppearance.Props = { };
+  private _overrideProps: SubCategoryAppearance.Props = {};
   private _subcategoryIds: string[] = [];
 
-  public static toolId = "OverrideSubCategory";
-  public static get minArgs() { return 1; }
-  public static get maxArgs() { return 7; }
+  public static override toolId = "OverrideSubCategory";
+  public static override get minArgs() { return 1; }
+  public static override get maxArgs() { return 7; }
 
   public parse(inArgs: string[]): boolean {
     const args = parseArgs(inArgs);
@@ -255,6 +257,32 @@ export class OverrideSubCategoryTool extends DisplayStyleTool {
     for (const id of this._subcategoryIds)
       vp.displayStyle.overrideSubCategory(id, ovr);
 
+    return true;
+  }
+}
+
+/** Set whether background color is ignored when applying white-on-white reversal.
+ * @beta
+ */
+export class WoWIgnoreBackgroundTool extends DisplayStyleTool {
+  private _ignore?: boolean;
+
+  public static override toolId = "WoWIgnoreBackground";
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 1; }
+
+  public parse(args: string[]): boolean {
+    const ignore = parseToggle(args[0]);
+    if (typeof ignore === "string")
+      return false;
+
+    this._ignore = ignore;
+    return true;
+  }
+
+  public execute(vp: Viewport): boolean {
+    const ignoreBackgroundColor = this._ignore ?? !vp.displayStyle.settings.whiteOnWhiteReversal.ignoreBackgroundColor;
+    vp.displayStyle.settings.whiteOnWhiteReversal = WhiteOnWhiteReversalSettings.fromJSON({ ignoreBackgroundColor });
     return true;
   }
 }

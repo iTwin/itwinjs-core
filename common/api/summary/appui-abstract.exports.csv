@@ -1,0 +1,172 @@
+sep=;
+Release Tag;API Item
+public;AbstractActionItemProps 
+public;AbstractMenuItemProps 
+public;AbstractStatusBarActionItem 
+public;AbstractStatusBarCustomItem 
+public;AbstractStatusBarItem 
+public;AbstractStatusBarItemUtilities
+public;AbstractStatusBarLabelItem 
+public;AbstractToolbarProps
+public;AbstractWidgetProps 
+public;AbstractZoneLocation
+public;ActionButton 
+public;AlternateDateFormats
+public;ArrayValue 
+public;BackstageActionItem 
+public;BackstageItem = BackstageActionItem | BackstageStageLauncher
+internal;BackstageItemsChangedArgs
+internal;BackstageItemsManager
+public;BackstageItemType
+public;BackstageItemUtilities
+public;BackstageStageLauncher 
+public;BadgeType
+public;BaseDialogItem
+public;BasePropertyEditorParams
+public;BasePropertyValue
+beta;class BaseQuantityDescription 
+public;ButtonGroupEditorParams 
+internal;enum CharCode
+public;ColorEditorParams 
+public;CommandHandler
+public;CommonBackstageItem 
+public;CommonItemProps
+public;CommonStatusBarItem = AbstractStatusBarActionItem | AbstractStatusBarLabelItem | AbstractStatusBarCustomItem
+public;CommonToolbarItem = ActionButton | GroupButton | CustomButtonDefinition
+public;ConditionalBooleanValue
+public;ConditionalStringValue
+public;ContentLayoutProps 
+internal;convertSimple2RegExpPattern(pattern: string): string
+internal;createMatches(score: undefined | FuzzyScore): IMatch[]
+public;CustomButtonDefinition 
+public;CustomFormattedNumberParams 
+public;DateFormatter
+public;DialogButtonDef
+public;DialogButtonStyle
+public;DialogButtonType
+public;DialogItem 
+public;DialogItemValue
+public;class DialogLayoutDataProvider 
+public;DialogProperty
+public;DialogPropertyItem
+public;DialogPropertySyncItem 
+public;DialogProps
+public;DialogRow
+public;DisplayMessageType
+public;EditorPosition
+public;EnumerationChoice
+public;EnumerationChoicesInfo
+internal;equalsIgnoreCase(a: string, b: string): boolean
+public;FunctionKey
+internal;FuzzyScore = [number, number, number]
+internal;FuzzyScore
+internal;fuzzyScore(pattern: string, patternLow: string, patternStart: number, word: string, wordLow: string, wordStart: number, firstMatchCanBeWeak: boolean): FuzzyScore | undefined
+internal;fuzzyScoreGraceful(pattern: string, lowPattern: string, patternPos: number, word: string, lowWord: string, wordPos: number, firstMatchCanBeWeak: boolean): FuzzyScore | undefined
+internal;fuzzyScoreGracefulAggressive(pattern: string, lowPattern: string, patternPos: number, word: string, lowWord: string, wordPos: number, firstMatchCanBeWeak: boolean): FuzzyScore | undefined
+internal;FuzzyScorer = (pattern: string, lowPattern: string, patternPos: number, word: string, lowWord: string, wordPos: number, firstMatchCanBeWeak: boolean) => FuzzyScore | undefined
+public;GenericUiEvent 
+public;GenericUiEventArgs
+internal;getClassName: (obj: any) => string
+public;GroupButton 
+public;IconDefinition
+public;IconEditorParams 
+public;IconListEditorParams 
+public;IconSpecUtilities
+internal;IFilter = (word: string, wordToMatchAgainst: string) => IMatch[] | null
+public;ImageCheckBoxParams 
+public;IMatch
+public;InputEditorSizeParams 
+public;isAbstractStatusBarActionItem: (item: CommonStatusBarItem) => item is AbstractStatusBarActionItem
+public;isAbstractStatusBarCustomItem: (item: CommonStatusBarItem) => item is AbstractStatusBarCustomItem
+public;isAbstractStatusBarLabelItem: (item: CommonStatusBarItem) => item is AbstractStatusBarLabelItem
+public;isActionItem: (item: BackstageItem) => item is BackstageActionItem
+public;isArrowKey(key: string): boolean
+public;isButtonGroupEditorParams: (item: BasePropertyEditorParams) => item is ButtonGroupEditorParams
+public;isColorEditorParams: (item: BasePropertyEditorParams) => item is ColorEditorParams
+public;isCustomFormattedNumberParams: (item: BasePropertyEditorParams) => item is CustomFormattedNumberParams
+public;isIconListEditorParams: (item: BasePropertyEditorParams) => item is IconListEditorParams
+public;isInputEditorSizeParams: (item: BasePropertyEditorParams) => item is InputEditorSizeParams
+alpha;isLetter(char: string): boolean
+internal;isLowerAsciiLetter(code: number): boolean
+internal;isPatternInWord(patternLow: string, patternPos: number, patternLen: number, wordLow: string, wordPos: number, wordLen: number): boolean
+public;isStageLauncher: (item: BackstageItem) => item is BackstageStageLauncher
+public;isSuppressLabelEditorParams: (item: BasePropertyEditorParams) => item is SuppressLabelEditorParams
+internal;isUpperAsciiLetter(code: number): boolean
+public;LayoutFragmentProps
+public;LayoutHorizontalSplitProps 
+public;LayoutSplitPropsBase
+public;LayoutVerticalSplitProps 
+public;LinkElementsInfo
+internal;loggerCategory: (obj: any) => string
+internal;matchesCamelCase(word: string, camelCaseWord: string): IMatch[] | null
+internal;matchesContiguousSubString(word: string, wordToMatchAgainst: string): IMatch[] | null
+internal;matchesFuzzy(word: string, wordToMatchAgainst: string, enableSeparateSubstringMatching?: boolean): IMatch[] | null
+internal;matchesFuzzy2(pattern: string, word: string): IMatch[] | null
+internal;matchesPrefix: IFilter
+internal;matchesStrictPrefix: IFilter
+internal;matchesSubString(word: string, wordToMatchAgainst: string): IMatch[] | null
+internal;matchesWords(word: string, target: string, contiguous?: boolean): IMatch[] | null
+public;MessagePresenter
+public;MessageSeverity
+public;MultilineTextEditorParams 
+public;OnCancelFunc = () => void
+public;OnItemExecutedFunc = (item: any) => void
+public;OnNumberCommitFunc = (value: number) => void
+public;OnValueCommitFunc = (value: Primitives.Value) => void
+internal;or(...filter: IFilter[]): IFilter
+public;ParseResults
+public;PointProps
+public;Primitives
+public;PrimitiveValue 
+public;PropertyChangeResult
+public;PropertyChangeStatus
+public;PropertyConverterInfo
+public;PropertyDescription
+public;PropertyDescriptionHelper
+public;PropertyEditorInfo
+public;PropertyEditorParams = BasePropertyEditorParams
+public;PropertyEditorParamTypes
+public;PropertyRecord
+public;PropertyRendererInfo
+public;PropertyValue = PrimitiveValue | StructValue | ArrayValue
+public;PropertyValueFormat
+public;ProvidedItem
+public;RangeEditorParams 
+public;RelativePosition
+public;SliderEditorParams 
+public;SpecialKey
+public;StagePanelLocation
+public;StagePanelSection
+public;StageUsage
+public;StandardContentLayouts
+public;StandardEditorNames
+public;StandardTypeNames
+internal;startsWithIgnoreCase(str: string, candidate: string): boolean
+public;StatusBarItemId = CommonStatusBarItem["id"]
+internal;StatusBarItemsChangedArgs
+internal;StatusBarItemsManager
+public;StatusBarLabelSide
+public;StatusBarSection
+public;StringGetter = () => string
+public;StructValue 
+public;SuppressLabelEditorParams 
+public;SyncPropertiesChangeEvent 
+public;SyncPropertiesChangeEventArgs
+public;TimeDisplay
+public;ToolbarItem 
+public;ToolbarItemId = CommonToolbarItem["id"]
+internal;ToolbarItemsChangedArgs
+internal;ToolbarItemsManager
+public;ToolbarItemUtilities
+public;ToolbarOrientation
+public;ToolbarUsage
+public;UiAdmin
+public;class UiDataProvider
+public;UiError 
+public;UiFlags
+public;UiItemProviderRegisteredEventArgs
+public;UiItemsApplicationAction
+public;UiItemsManager
+public;UiItemsProvider
+public;class UiLayoutDataProvider 
+public;WidgetState

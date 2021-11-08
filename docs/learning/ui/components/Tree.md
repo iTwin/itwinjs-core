@@ -1,28 +1,28 @@
 # Tree
 
-The [Tree]($ui-components:Tree) category in the `@bentley/ui-components` package includes
+The [Tree]($components-react:Tree) category in the `@itwin/components-react` package includes
 classes and components for working with a Tree control.
 
 ## Components and Hooks
 
-The older Tree component has been deprecated and replaced by the [ControlledTree]($ui-components) component.
+The older Tree component has been deprecated and replaced by the [ControlledTree]($components-react) component.
 
 The following React components comprise the ControlledTree component.
 
-- [ControlledTree]($ui-components) - renders hierarchical data and is fully controlled from outside
-- [TreeRenderer]($ui-components) - default component for rendering the tree
-- [TreeNodeRenderer]($ui-components) - default component for rendering tree nodes
+- [ControlledTree]($components-react) - renders hierarchical data and is fully controlled from outside
+- [TreeRenderer]($components-react) - default component for rendering the tree
+- [TreeNodeRenderer]($components-react) - default component for rendering tree nodes
 
-There are also several [Tree]($ui-core:Tree) presentational  components in the `@bentley/ui-core`
+There are also several [Tree]($core-react:Tree) presentational  components in the `@itwin/core-react`
 package used for rendering.
 
 The following React hooks work in conjunction with the ControlledTree component.
 
-- [usePagedTreeNodeLoader]($ui-components) - creates a paging nodes' loader using the supplied data provider and model source. The loader pulls nodes from the data provider and puts them into the model source.
-- [useTreeModelSource]($ui-components) - creates a [TreeModelSource]($ui-components)
-- [useTreeNodeLoader]($ui-components) - creates a nodes' loader using the supplied data provider and model source. The loader pulls nodes from the data provider and puts them into the model source.
-- [useVisibleTreeNodes]($ui-components) - returns a flat list of visible nodes from given [TreeModelSource]($ui-components) and subscribes to onModelChanged event to update the list when model changes
-- [usePresentationTreeNodeLoader]($presentation-components) -  creates a [PagedTreeNodeLoader]($$ui-components) with [PresentationTreeDataProvider]($presentation-components) using supplied imodel and ruleset
+- [usePagedTreeNodeLoader]($components-react) - creates a paging nodes' loader using the supplied data provider and model source. The loader pulls nodes from the data provider and puts them into the model source.
+- [useTreeModelSource]($components-react) - creates a [TreeModelSource]($components-react)
+- [useTreeModel]($components-react) - returns an immutable [TreeModel]($components-react) from given [TreeModelSource]($components-react) and subscribes to `onModelChanged` event to update the model when it changes.
+- [useTreeNodeLoader]($components-react) - creates a nodes' loader using the supplied data provider and model source. The loader pulls nodes from the data provider and puts them into the model source.
+- [usePresentationTreeNodeLoader]($presentation-components) -  creates a [PagedTreeNodeLoader]($$components-react) with [PresentationTreeDataProvider]($presentation-components) using supplied imodel and ruleset
 - [useUnifiedSelectionTreeEventHandler]($presentation-components) - creates and disposes [UnifiedSelectionTreeEventHandler]($presentation-components)
 
 ## Tree Node Loader, Data Provider and Model
@@ -33,29 +33,29 @@ The Data Provider is a legacy provider but is still supported by the Node Loader
 
 ### Node Loader
 
-- [ITreeNodeLoader]($ui-components) - interface for the Tree node loader which is used to load tree nodes
-- [ITreeNodeLoaderWithProvider]($ui-components) - interface for Tree node loader which uses [TreeDataProvider]($ui-components) to load nodes
+- [ITreeNodeLoader]($components-react) - interface for the Tree node loader which is used to load tree nodes
+- [ITreeNodeLoaderWithProvider]($components-react) - interface for Tree node loader which uses [TreeDataProvider]($components-react) to load nodes
 
 ### Data Provider
 
-- [ITreeDataProvider]($ui-components) - legacy interface for a Tree data provider
-- [TreeDataProvider]($ui-components) - type definition for all Tree data providers
-- [TreeNodeItem]($ui-components) - information about a node item which can be displayed in a Tree
-- [EditableTreeDataProvider]($ui-components) - provides cell editing processing for the Tree
+- [ITreeDataProvider]($components-react) - legacy interface for a Tree data provider
+- [TreeDataProvider]($components-react) - type definition for all Tree data providers
+- [TreeNodeItem]($components-react) - information about a node item which can be displayed in a Tree
+- [EditableTreeDataProvider]($components-react) - provides cell editing processing for the Tree
 - [IPresentationTreeDataProvider]($presentation-components) - Presentation Rules tree data provider
 
 ### Model
 
-- [TreeModel]($ui-components) - interface that describes a tree model containing methods to get the root node and nodes by id and parent id
-- [TreeModelNode]($ui-components) - immutable data structure that describes tree node
-- [MutableTreeModelNode]($ui-components) - mutable data structure that describes tree node
-- [VisibleTreeNodes]($ui-components) - interface that describes the set of visible tree nodes as a flat list
-- [TreeModelSource]($ui-components) - controls tree model and visible tree nodes. It is used to modify model and inform when tree model changes.
-- [MutableTreeModel]($ui-components) - implementation of TreeModel that allows adding and removing tree nodes
+- [TreeModel]($components-react) - interface that describes a tree model containing methods to get the root node and nodes by id and parent id
+- [TreeModelNode]($components-react) - immutable data structure that describes tree node
+- [MutableTreeModelNode]($components-react) - mutable data structure that describes tree node
+- [VisibleTreeNodes]($components-react) - interface that describes the set of visible tree nodes as a flat list
+- [TreeModelSource]($components-react) - controls tree model and visible tree nodes. It is used to modify model and inform when tree model changes.
+- [MutableTreeModel]($components-react) - implementation of TreeModel that allows adding and removing tree nodes
 
 ## Properties
 
-The ControlledTree properties are defined in the [ControlledTreeProps]($ui-components) interface.
+The ControlledTree properties are defined in the [ControlledTreeProps]($components-react) interface.
 
 The following props are required:
 
@@ -70,17 +70,15 @@ and node highlighting props.
 
 ## Sample using Presentation Rules
 
-This React component utilizes the [ControlledTree]($ui-components) component and the
-[useVisibleTreeNodes]($ui-components),
-[usePresentationTreeNodeLoader]($presentation-components) and
-[useUnifiedSelectionTreeEventHandler]($presentation-components) hooks.
-This tree supports unified selection.
+This React component utilizes the [ControlledTree]($components-react) component and the
+[useTreeModel]($components-react), [usePresentationTreeNodeLoader]($presentation-components) and
+[useUnifiedSelectionTreeEventHandler]($presentation-components) hooks. This tree supports unified selection.
 
 ```tsx
 import * as React from "react";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { ControlledTree, useVisibleTreeNodes, SelectionMode } from "@bentley/ui-components";
-import { usePresentationTreeNodeLoader, useUnifiedSelectionTreeEventHandler } from "@bentley/presentation-components";
+import { IModelConnection } from "@itwin/core-frontend";
+import { ControlledTree, useTreeModel, SelectionMode } from "@itwin/components-react";
+import { usePresentationTreeNodeLoader, useUnifiedSelectionTreeEventHandler } from "@itwin/presentation-components";
 const RULESET_TREE = require("./Tree.ruleset.json"); // eslint-disable-line @typescript-eslint/no-var-requires
 
 /** React properties for the tree component */
@@ -95,7 +93,7 @@ export default function SimpleTreeComponent(props: Props) {
   return (
     <ControlledTree
       nodeLoader={nodeLoader}
-      visibleNodes={useVisibleTreeNodes(nodeLoader.modelSource)}
+      model={useTreeModel(nodeLoader.modelSource)}
       treeEvents={useUnifiedSelectionTreeEventHandler({ nodeLoader })}
       selectionMode={SelectionMode.Extended}
     />
@@ -105,11 +103,11 @@ export default function SimpleTreeComponent(props: Props) {
 
 ## API Reference
 
-- [Tree in @bentley/ui-components]($ui-components:Tree)
-- [Tree in @bentley/presentation-components]($presentation-components:Tree)
-- [Tree in @bentley/ui-core]($ui-core:Tree)
-- [Properties in @bentley/ui-components]($ui-components:Properties)
-- [Properties in @bentley/ui-abstract]($ui-abstract:Properties)
+- [Tree in @itwin/components-react]($components-react:Tree)
+- [Tree in @itwin/presentation-components]($presentation-components:Tree)
+- [Tree in @itwin/core-react]($core-react:Tree)
+- [Properties in @itwin/components-react]($components-react:Properties)
+- [Properties in @itwin/appui-abstract]($appui-abstract:Properties)
 
 ## Samples
 

@@ -2,28 +2,25 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
+import "@itwin/presentation-frontend/lib/cjs/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
-import { BeEvent, using } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { I18N } from "@bentley/imodeljs-i18n";
+import * as moq from "typemoq";
+import { BeEvent, using } from "@itwin/core-bentley";
+import { IModelConnection } from "@itwin/core-frontend";
+import { ITwinLocalization } from "@itwin/core-i18n";
 import {
-  ArrayTypeDescription, CategoryDescription, Content, ContentFlags, Field, Item, Property, PropertyValueFormat,
+  applyOptionalPrefix, ArrayTypeDescription, CategoryDescription, Content, ContentFlags, Field, Item, Property, PropertyValueFormat,
   RelationshipMeaning, StructFieldMemberDescription, StructTypeDescription, TypeDescription, ValuesDictionary,
-} from "@bentley/presentation-common";
+} from "@itwin/presentation-common";
 import {
-  createTestCategoryDescription, createTestContentDescriptor, createTestContentItem, createTestNestedContentField, createTestPropertiesContentField,
-  createTestSimpleContentField,
-} from "@bentley/presentation-common/lib/test/_helpers/Content";
-import { createTestECClassInfo, createTestECInstanceKey, createTestPropertyInfo } from "@bentley/presentation-common/lib/test/_helpers/EC";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { FavoritePropertiesManager, FavoritePropertiesScope, Presentation, PresentationManager } from "@bentley/presentation-frontend";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { PropertyCategory } from "@bentley/ui-components";
-import { applyOptionalPrefix } from "../../presentation-components/common/ContentBuilder";
+  createRandomId, createTestCategoryDescription, createTestContentDescriptor, createTestContentItem,
+  createTestECClassInfo, createTestECInstanceKey, createTestNestedContentField, createTestPropertiesContentField, createTestPropertyInfo, createTestSimpleContentField,
+} from "@itwin/presentation-common/lib/cjs/test";
+import { FavoritePropertiesManager, FavoritePropertiesScope, Presentation, PresentationManager } from "@itwin/presentation-frontend";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { PropertyCategory } from "@itwin/components-react";
 import { CacheInvalidationProps } from "../../presentation-components/common/ContentDataProvider";
 import { initializeLocalization } from "../../presentation-components/common/Utils";
 import { FAVORITES_CATEGORY_NAME } from "../../presentation-components/favorite-properties/DataProvider";
@@ -35,13 +32,12 @@ import { mockPresentationManager } from "../_helpers/UiComponents";
  * protected methods of TableDataProvider
  */
 class Provider extends PresentationPropertyDataProvider {
-  public invalidateCache(props: CacheInvalidationProps) { super.invalidateCache(props); }
-  public shouldConfigureContentDescriptor() { return super.shouldConfigureContentDescriptor(); }
-  public isFieldHidden(field: Field) { return super.isFieldHidden(field); }
-  public getDescriptorOverrides() { return super.getDescriptorOverrides(); }
-  public sortCategories(categories: CategoryDescription[]) { return super.sortCategories(categories); }
-  public isFieldFavorite!: (field: Field) => boolean;
-  public sortFields!: (category: CategoryDescription, fields: Field[]) => void;
+  public override invalidateCache(props: CacheInvalidationProps) { super.invalidateCache(props); }
+  public override async getDescriptorOverrides() { return super.getDescriptorOverrides(); }
+  public override sortCategories(categories: CategoryDescription[]) { return super.sortCategories(categories); }
+  public override sortFields!: (category: CategoryDescription, fields: Field[]) => void;
+  public override isFieldFavorite!: (field: Field) => boolean;
+  public override isFieldHidden(field: Field) { return super.isFieldHidden(field); }
 }
 
 describe("PropertyDataProvider", () => {
@@ -66,9 +62,11 @@ describe("PropertyDataProvider", () => {
 
     Presentation.setPresentationManager(presentationManagerMock.object);
     Presentation.setFavoritePropertiesManager(favoritePropertiesManagerMock.object);
-    Presentation.setI18nManager(new I18N("", {
+    const localize = new ITwinLocalization({
       urlTemplate: `file://${path.resolve("public/locales")}/{{lng}}/{{ns}}.json`,
-    }));
+    });
+    await localize.initialize(["iModelJS"]);
+    Presentation.setLocalization(localize);
     await initializeLocalization();
 
     provider = new Provider({ imodel: imodelMock.object, ruleset: rulesetId });
@@ -131,18 +129,11 @@ describe("PropertyDataProvider", () => {
 
   });
 
-  describe("shouldConfigureContentDescriptor", () => {
-
-    it("return false", () => {
-      expect(provider.shouldConfigureContentDescriptor()).to.be.false;
-    });
-
-  });
-
   describe("getDescriptorOverrides", () => {
 
-    it("should have `ShowLabels` and `MergeResults` flags", () => {
-      const flags = provider.getDescriptorOverrides().contentFlags!;
+    it("should have `ShowLabels` and `MergeResults` flags", async () => {
+      const overrides = await provider.getDescriptorOverrides();
+      const flags = overrides.contentFlags!;
       expect(flags & (ContentFlags.MergeResults | ContentFlags.ShowLabels)).to.not.eq(0);
     });
 
@@ -185,15 +176,14 @@ describe("PropertyDataProvider", () => {
   });
 
   describe("isFieldFavorite", () => {
-
-    let projectId: string;
+    let iTwinId: string;
     let imodelId: string;
 
     before(() => {
-      projectId = "project-id";
+      iTwinId = "itwin-id";
       imodelId = "imodel-id";
       imodelMock.setup((x) => x.iModelId).returns(() => imodelId);
-      imodelMock.setup((x) => x.contextId).returns(() => projectId);
+      imodelMock.setup((x) => x.iTwinId).returns(() => iTwinId);
 
       favoritePropertiesManagerMock.setup((x) => x.has(moq.It.isAny(), imodelMock.object, moq.It.isAny())).returns(() => false);
     });
@@ -245,7 +235,6 @@ describe("PropertyDataProvider", () => {
     const createArrayField = (props?: { name?: string, itemsType?: TypeDescription }) => {
       const property: Property = {
         property: createTestPropertyInfo(),
-        relatedClassPath: [],
       };
       const typeDescription: ArrayTypeDescription = {
         valueFormat: PropertyValueFormat.Array,
@@ -262,7 +251,6 @@ describe("PropertyDataProvider", () => {
     const createStructField = (props?: { name?: string, members?: StructFieldMemberDescription[] }) => {
       const property: Property = {
         property: createTestPropertyInfo(),
-        relatedClassPath: [],
       };
       const typeDescription: StructTypeDescription = {
         valueFormat: PropertyValueFormat.Struct,
@@ -319,6 +307,24 @@ describe("PropertyDataProvider", () => {
 
         beforeEach(() => {
           setup();
+        });
+
+        it("assigns category renderer", async () => {
+          const field = createPrimitiveField({
+            category: createTestCategoryDescription({
+              renderer: { name: "test" },
+            }),
+          });
+          const descriptor = createTestContentDescriptor({ fields: [field] });
+          const values: ValuesDictionary<any> = {
+            [field.name]: "",
+          };
+          const displayValues: ValuesDictionary<any> = {
+            [field.name]: "",
+          };
+          const record = createTestContentItem({ values, displayValues });
+          (provider as any).getContent = async () => new Content(descriptor, [record]);
+          expect(await provider.getData()).to.matchSnapshot();
         });
 
         it("handles records with no values", async () => {
@@ -1487,7 +1493,6 @@ describe("PropertyDataProvider", () => {
           const displayValues: ValuesDictionary<any> = {};
           const record = createTestContentItem({ values, displayValues });
           (provider as any).getContent = async () => new Content(descriptor, [record]);
-
           const data = await provider.getData();
           expect(data.categories.length).to.eq(0);
         });

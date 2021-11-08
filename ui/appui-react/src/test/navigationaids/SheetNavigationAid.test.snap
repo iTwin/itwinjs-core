@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SheetNavigationAid <SheetNavigationAid /> renders correctly 1`] = `
+<div
+  className="uifw-sheet-navigation"
+>
+  <div
+    className="gradient"
+  />
+  <ProgressRadial
+    indeterminate={true}
+    size="x-small"
+  />
+</div>
+`;

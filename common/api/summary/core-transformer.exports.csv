@@ -1,0 +1,10 @@
+sep=;
+Release Tag;API Item
+beta;IModelExporter
+beta;class IModelExportHandler
+beta;IModelImporter
+beta;IModelImportOptions
+beta;IModelTransformer 
+beta;IModelTransformOptions
+beta;TemplateModelCloner 
+public;TransformerLoggerCategory

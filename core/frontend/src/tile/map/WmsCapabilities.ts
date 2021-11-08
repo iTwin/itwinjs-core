@@ -2,11 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { MapSubLayerProps } from "@bentley/imodeljs-common";
+import { MapSubLayerProps } from "@itwin/core-common";
 import { request, RequestBasicCredentials, RequestOptions } from "@bentley/itwin-client";
+import WMS from "wms-capabilities";
 import { MapCartoRectangle, WmsUtilities } from "../internal";
-import WMS = require("wms-capabilities");
 
 /** @packageDocumentation
  * @module Views
@@ -17,7 +16,7 @@ import WMS = require("wms-capabilities");
  * @param url server URL to address the request
  * @internal
  */
-async function getXml(requestContext: ClientRequestContext, url: string, credentials?: RequestBasicCredentials): Promise<any> {
+async function getXml(url: string, credentials?: RequestBasicCredentials): Promise<any> {
   const options: RequestOptions = {
     method: "GET",
     responseType: "text",
@@ -25,7 +24,7 @@ async function getXml(requestContext: ClientRequestContext, url: string, credent
     retries: 2,
     auth: credentials,
   };
-  const data = await request(requestContext, url, options);
+  const data = await request(url, options);
   return data.text;
 }
 function rangeFromJSONArray(json: any): MapCartoRectangle | undefined {
@@ -139,19 +138,55 @@ export namespace WmsCapability {
 
       return subLayers;
     }
+
+    public getSubLayersCrs(layerNameFilter: string[]): Map<string, string[]> {
+      const subLayerCrs = new Map<string, string[]>();
+
+      const processSubLayer = ((subLayer: SubLayer) => {
+        if (layerNameFilter.includes(subLayer.name)) {
+          subLayerCrs.set(subLayer.name, subLayer.crs);
+        }
+        if (subLayer.children) {
+          subLayer.children.forEach((child) => {
+            processSubLayer(child);
+          });
+        }
+      });
+
+      this.subLayers.forEach((subLayer) => processSubLayer(subLayer));
+      return subLayerCrs;
+    }
   }
+
   /** @internal */
   export class SubLayer {
     public readonly name: string;
     public readonly title: string;
+    public readonly crs: string[];
+    public readonly ownCrs: string[];   // CRS specific to this layer (ie. not including inherited CRS)
     public readonly cartoRange?: MapCartoRectangle;
     public readonly children?: SubLayer[];
     public readonly queryable: boolean;
     public constructor(_json: any, public readonly parent?: SubLayer) {
+
+      const getParentCrs = (parentLayer: SubLayer, crsSet: Set<string>) => {
+        parentLayer.crs.forEach((parentCrs) => crsSet.add(parentCrs));
+        if (parentLayer.parent) {
+          getParentCrs(parentLayer.parent, crsSet);
+        }
+      };
+
       this.name = _json.Name ? _json.Name : "";
       this.title = _json.Title;
       this.queryable = _json.queryable ? true : false;
       this.cartoRange = rangeFromJSON(_json);
+      this.ownCrs = _json.CRS;
+      const crs = new Set<string>(this.ownCrs);
+      if (parent) {
+        getParentCrs(parent, crs);
+      }
+      this.crs = [...crs];
+
       if (Array.isArray(_json.Layer)) {
         this.children = new Array<SubLayer>();
         for (const childLayer of _json.Layer) {
@@ -187,7 +222,7 @@ export class WmsCapabilities {
         return cached;
     }
 
-    const xmlCapabilities = await getXml(new ClientRequestContext(""), `${WmsUtilities.getBaseUrl(url)}?request=GetCapabilities&service=WMS`, credentials);
+    const xmlCapabilities = await getXml(`${WmsUtilities.getBaseUrl(url)}?request=GetCapabilities&service=WMS`, credentials);
 
     if (!xmlCapabilities)
       return undefined;
@@ -199,5 +234,9 @@ export class WmsCapabilities {
   }
   public getSubLayers(visible = true): undefined | MapSubLayerProps[] {
     return this.layer ? this.layer.getSubLayers(visible) : undefined;
+  }
+
+  public getSubLayersCrs(subLayerNames: string[]): Map<string, string[]>|undefined {
+    return this.layer ? this.layer.getSubLayersCrs(subLayerNames) : undefined;
   }
 }

@@ -1,10 +1,10 @@
-# @bentley/frontend-devtools
+# @itwin/frontend-devtools
 
 Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md for license terms and full copyright notice.
 
 ## Description
 
-The __@bentley/frontend-devtools__ package contains various tools and widgets designed to help track information and diagnose issues related to the iTwin.js front-end display system. It is intended chiefly for use by developers.
+The __@itwin/frontend-devtools__ package contains various tools and widgets designed to help track information and diagnose issues related to the iTwin.js front-end display system. It is intended chiefly for use by developers.
 
 Because this is a developer-only package, its functionality is not expected to ever be promoted from "beta" to "public".
 
@@ -78,6 +78,7 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
 * `fdt toggle reality logging` - Toggle the logging of reality tile loading and selection diagnostics to the console.
 * `fdt toggle reality bounds` - Toggle the display of bounding boxes for reality tiles.
 * `fdt set building display` Toggle the display of the worldwide OpenStreetMap worldwide buildingslayer by attaching or displaying as a reality model in the current viewport.  The OSM buildings are aggregated and supplied from Cesium Ion <https://cesium.com/content/cesium-osm-buildings/>. The first argument is required on|off - the second optional argument is a value for transparency between 0 and 1.
+* `fdt wow ignore background` Toggle whether the background color needs to be white for white-on-white reversal to apply.
 
 ### Screen-space effect key-ins
 
@@ -187,7 +188,7 @@ Reality models can be attached to a display style to provide context when that d
 ### Planar Mask keyins
 
 This package supplies several keyins to control planar masking for background maps and reality models. These masks provide a two and a half dimensional method for masking the regions where the background map, reality models and BIM geometry overlap.
-Planar masks include an optional transparency override.  If a transparency values is specified, a value of 0 will completely mask the reality model  - the masked portion will be omitted completely, higher values will produce less masking and a semit translucent display of the masked geometry. If no transparency is included then the transparency value from the mask elements is used.
+Planar masks include an optional transparency override.  If a transparency values is specified, a value of 0 will completely mask the reality model  - the masked portion will be omitted completely, higher values will produce less masking and a semit translucent display of the masked geometry. If no transparency is included then the transparency value from the mask elements is used.  An additional argument boolean argument will invert the mask and mask the area outside the mask geometry rather than inside.
 
 #### Background map planar masks
 
@@ -195,15 +196,19 @@ These keyins control the planar masking of the background map.
 
 * `fdt set map mask by priority`  Set the background map to be masked based on priority.  Masking by priority will mask by higher priority models.  By default background map have lowest priorty (-2048) Unless their priority is overridden reality models are higher priority and BIM models are always higher priority, therefore if priority masking is selected then the background map will be masked by all reality and BIM models. A value for transparency may optionally be included.
   * `transparency`: (optional) - A value for the mask transparency override. [0...1]
-  * `priority`: (optional) - A bias to be applied to the default reality model priority.  As lower priority models are masked by higher priority ones, specifying a priority of -1 would cause the reality model to be masked by other reality models.
+  * `invert`: (optional) - If `on` or `true` then the mask sense is inverted and the area outside the mask geometry will be masked and the area inside the mask is displayed.
 * `fdt set map mask elements` Set the background map to be masked by one or more elements.  If elements are already selected they are used for the mask, otherwise the mask elements may be selected individually.
   * `transparency`: (optional) - A value for the mask transparency override. [0...1]
+  * `invert`: (optional) - If `on` or `true` then the mask sense is inverted and the area outside the mask geometry will be masked and the area inside the mask is displayed.
 * `fdt set map mask exclude elements` Set the background map to be masked by all elements except the selected (or individually picked) excluded elements.
   * `transparency`: (optional) - A value for the mask transparency override. [0...1]
+  * `invert`: (optional) - If `on` or `true` then the mask sense is inverted and the area outside the mask geometry will be masked and the area inside the mask is displayed.
 * `fdt set map mask models` Set the background map to be masked by the selected models.  The selected models can come from either the current selection set or can be picked individually.
   * `transparency`: (optional) - A value for the mask transparency override. [0...1]
+  * `invert`: (optional) - If `on` or `true` then the mask sense is inverted and the area outside the mask geometry will be masked and the area inside the mask is displayed.
 * `fdt set map mask subcategory` Set the background map to be masked by one or more picked subcategories.
   * `transparency`: (optional) - A value for the mask transparency override. [0...1]
+  * `invert`: (optional) - If `on` or `true` then the mask sense is inverted and the area outside the mask geometry will be masked and the area inside the mask is displayed.
 * `fdt unmask map`  Removes the current background map masks.
 
 #### Reality model planar masks
@@ -213,14 +218,19 @@ These keysins control the planar masking of reality models.
 * `fdt set reality model mask by priority` Set the reality model to masked based on priority.  Masking by priority will cause the masked model to be masked by all higher priority models.  By default global reality models (such as the OpenStreetMap building layer) have a priority of -1024 and standard reality models have a priority of zero.  BIM models have a priority of 1024.  Therefore with default priorities reality models are always masked by BIM model and global reality models are masked by standard reality models.  By specifying a priority bias for the when creating the masks for a reality model the masking of reality models by other reality models can be controlled.
   * `transparency`: (optional) - A value for the mask transparency override. [0...1]
   * `priority`: (optional) - A bias to be applied to the default reality model priority.  As lower priority models are masked by higher priority ones, specifying a priority of -1 would cause the reality model to be masked by other reality models.
+  * `invert`: (optional) - If `on` or `true` then the mask sense is inverted and the area outside the mask geometry will be masked and the area inside the mask is displayed.
 * `fdt set reality model mask models`
   * `transparency`: (optional)- A value for the mask transparency override.  A value of 0 (the default) will completely mask the reality model, higher values will produce less masking and more more map display [0..1]  If no transparency is included then the transparency value from the mask elements is used.
+  * `invert`: (optional) - If `on` or `true` then the mask sense is inverted and the area outside the mask geometry will be masked and the area inside the mask is displayed.
 * `fdt set reality model mask elements` Set the reality model to be masked by one or more elements.  If elements are already selected they are used for the mask, otherwise the mask elements may be selected individually.
   * `transparency`: (optional) - A value for the mask transparency override. [0...1]
+  * `invert`: (optional) - If `on` or `true` then the mask sense is inverted and the area outside the mask geometry will be masked and the area inside the mask is displayed.
 * `fdt set reality model mask exclude elements` Set a reality model to be masked by all elements except the selected (or individually picked) excluded elements.
   * `transparency`: (optional) - A value for the mask transparency override. [0...1]
+  * `invert`: (optional) - If `on` or `true` then the mask sense is inverted and the area outside the mask geometry will be masked and the area inside the mask is displayed.
 * `fdt set reality model mask subcategory` Set a reality mdel to be masked by one or more picked subcategories.
   * `transparency`: (optional) - A value for the mask transparency override. [0...1]
+  * `invert`: (optional) - If `on` or `true` then the mask sense is inverted and the area outside the mask geometry will be masked and the area inside the mask is displayed
 * `fdt unmask reality model` Removes the masks from the selected reality model.
 
 ### Other key-ins
@@ -314,11 +324,6 @@ These keysins control the planar masking of reality models.
 * `fdt sourceId from elemId` and `fdt elemId from sourceId` - Converts between the Id of an element in the iModel and the corresponding object in the source document from which it originated. Outputs the result to IModelApp.notifications.
   * * `id=`: the source aspect Id or element Id.
   * * `copy=`: (optional) 1 to copy the resultant Id to the system clipboard.
-* `fdt add extensionService <context>` - Adds a context id to be used with Extension Service. It's added to the front of loaders list, so the most recently added context will get used first. `<context>` can be one of the following:
-  * `id <id>`, where `<id>` is a Connected Context GUID.
-  * `project <projectName>`.
-  * `asset <assetName>`.
-  * `public` - loads Bentley-published public extensions.
 
 * `fdt aasamples <nSamples>` - Sets the number of antialias samples for the current viewport where nSamples is the number of samples to use; if 1 or less then antialiasing is turned off, if > 1 then antialiasing is turned on and it will attempt to use that many samples (restricted by the given hardware constraints)
 The following arguments can also be supplied:

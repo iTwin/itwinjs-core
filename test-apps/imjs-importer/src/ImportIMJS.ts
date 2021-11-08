@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
-import { Id64, Id64String } from "@bentley/bentleyjs-core";
-import { GeometryQuery, IModelJson, Point3d, Range3d, StandardViewIndex, Transform } from "@bentley/geometry-core";
+import { Id64, Id64String } from "@itwin/core-bentley";
+import { GeometryQuery, IModelJson, Point3d, Range3d, StandardViewIndex, Transform } from "@itwin/core-geometry";
 import {
   CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, SnapshotDb,
   SpatialCategory, SpatialModel,
-} from "@bentley/imodeljs-backend";
-import { AxisAlignedBox3d, Code, ColorDef, PhysicalElementProps, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
+} from "@itwin/core-backend";
+import { AxisAlignedBox3d, Code, ColorDef, PhysicalElementProps, RenderMode, ViewFlags } from "@itwin/core-common";
 /* eslint-disable no-console */
 function collectRange(g: any, rangeToExtend: Range3d) {
   if (g instanceof GeometryQuery) {
@@ -75,12 +75,10 @@ export class ImportIMJS {
 
   public constructor(db: IModelDb) {
     this.iModelDb = db;
-    this._viewFlags = new ViewFlags();
-    this._viewFlags.renderMode = RenderMode.SmoothShade;
-    this._viewFlags.lighting = true;
+    this._viewFlags = new ViewFlags({ renderMode: RenderMode.SmoothShade, lighting: true });
   }
   public static create(databasePath: string, rootSubject: string): ImportIMJS | undefined {
-    fs.unlink(databasePath, (_err: NodeJS.ErrnoException) => { });
+    fs.unlink(databasePath, (_err) => { });
     const db = SnapshotDb.createEmpty(databasePath, { rootSubject: { name: rootSubject } });
     if (db)
       return new ImportIMJS(db);

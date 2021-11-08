@@ -89,7 +89,7 @@ export class PolyfaceQuery {
 
       source.reset();
       while (source.moveToNextFacet()) {
-        s += PolygonOps.sumTriangleAreas(source.point.getPoint3dArray());
+        s += PolygonOps.areaNormal(source.point.getPoint3dArray()).magnitude();
       }
     }
     return s;
@@ -491,6 +491,26 @@ export class PolyfaceQuery {
     return polyfaces;
   }
 
+  /** Clone facets that pass an filter function
+   */
+   public static cloneFiltered(source: Polyface | PolyfaceVisitor, filter: (visitor: PolyfaceVisitor) => boolean): Polyface{
+    if (source instanceof Polyface) {
+      return this.cloneFiltered(source.createVisitor(0), filter);
+    }
+    source.setNumWrap(0);
+    const options = StrokeOptions.createForFacets();
+    options.needNormals = source.normal !== undefined;
+    options.needParams = source.param !== undefined;
+    options.needColors = source.color !== undefined;
+    options.needTwoSided = source.twoSided;
+    const builder = PolyfaceBuilder.create(options);
+    source.reset();
+    for (; source.moveToNextFacet();){
+      if (filter (source))
+      builder.addFacetFromVisitor(source);
+    }
+    return builder.claimPolyface(true);
+  }
   /** If the visitor's client is a polyface, simply return its point array length.
    * If not a polyface, visit all facets to find the largest index.
    */

@@ -6,8 +6,8 @@
  * @module UnifiedSelection
  */
 
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { KeySet } from "@bentley/presentation-common";
+import { IModelConnection } from "@itwin/core-frontend";
+import { KeySet } from "@itwin/presentation-common";
 import { SelectionChangeEvent } from "./SelectionChangeEvent";
 
 /**
@@ -20,7 +20,7 @@ export interface ISelectionProvider {
 
   /** Get the selection stored in the provider.
    * @param imodel iModel connection which the selection is associated with.
-   * @param level Level of the selection (see [Selection levels]($docs/learning/presentation/Unified-Selection/Terminology#selection-level))
+   * @param level Level of the selection (see [Selection levels]($docs/presentation/Unified-Selection/index#selection-levels))
    */
   getSelection(imodel: IModelConnection, level: number): Readonly<KeySet>;
 }

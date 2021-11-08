@@ -81,7 +81,7 @@ export class HalfEdgeGraphOps {
     }
     return range;
   }
-  /** Returns an array of a all nodes (both ends) of edges created from segments. */
+  /** Returns an array of all nodes (both ends) of edges created from segments. */
   public static segmentArrayToGraphEdges(segments: LineSegment3d[], returnGraph: HalfEdgeGraph, mask: HalfEdgeMask): HalfEdge[] {
     const result = [];
     let idxCounter = 0;
@@ -107,30 +107,6 @@ export class HalfEdgeGraphOps {
   }
 
   /**
-   * * For each face with positive area . . . add edges as needed so that each face has one definitely lower node and one definite upper node.
-   * * Hence tracing edges from the low node, there is a sequence of upward edges, reaching the upper,  then a sequence of downward edges reaching the low node.
-   * * This is an essential step for subsequent triangulation.
-   *
-   * @param graph
-   */
-  public static formMonotoneFaces(graph: HalfEdgeGraph) {
-
-    const allFaces = graph.collectFaceLoops();
-    graph.clearMask(HalfEdgeMask.VISITED);
-    // For every face, break the face down into monotone sections
-    for (const node of allFaces) {
-      if (node.isMaskSet(HalfEdgeMask.VISITED))
-        continue;
-      const area = node.signedFaceArea();
-      if (area <= 0.0) {
-        node.setMaskAroundFace(HalfEdgeMask.VISITED);
-        continue;
-      }
-
-    }
-  }
-
-  /**
    * * Visit all nodes in `graph`.
    * * invoke `pinch(node, vertexPredecessor)`
    * * this leaves the graph as isolated edges.
@@ -143,7 +119,121 @@ export class HalfEdgeGraphOps {
     }
   }
 
+  /**
+   * Compute convexity of a sector of a super-face.
+   * @param base node whose edge is to be tested for removal
+   * @param ignore edges with this mask (on either side) are ignored for the purposes of computing convexity
+   * @param barrier edges with this mask (on either side) will not be removed
+   * @return whether removing the edge at base would create a convex sector in the super-face
+   */
+  private static isSectorConvexAfterEdgeRemoval(base: HalfEdge, ignore: HalfEdgeMask, barrier: HalfEdgeMask): boolean {
+    let vs = base;
+    do { // loop ccw around vertex looking for a super-face predecessor
+      if (vs.isMaskSet(barrier) || vs.edgeMate.isMaskSet(barrier))
+        break;
+      vs = vs.vertexSuccessor;
+    } while (vs !== base && vs.isMaskSet(ignore));
+    if (vs === base)
+      return false;
+    let vp = base;
+    do { // loop cw around vertex looking for a super-face successor
+      if (vp.isMaskSet(barrier) || vp.edgeMate.isMaskSet(barrier))
+        break;
+      vp = vp.vertexPredecessor;
+    } while (vp !== base && vp.isMaskSet(ignore));
+    if (vp === base)
+      return false;
+    return HalfEdge.isSectorConvex(vs.edgeMate, base, vp.faceSuccessor);
+  }
+
+  /**
+   * Mask edges between faces if the union of the faces is convex.
+   * Uses a greedy algorithm with no regard to quality of resulting convex faces.
+   * Best results when input faces are convex.
+   * @param graph graph to examine and mark
+   * @param mark the mask used to mark (both sides of) removable edges
+   * @param barrier edges with this mask (on either side) will not be marked. Defaults to HalfEdgeMask.BOUNDARY_EDGE.
+   * @return number of edges masked (half the number of HalfEdges masked)
+   */
+  public static markRemovableEdgesToExpandConvexFaces(graph: HalfEdgeGraph, mark: HalfEdgeMask, barrier: HalfEdgeMask = HalfEdgeMask.BOUNDARY_EDGE): number {
+    if (HalfEdgeMask.NULL_MASK === mark)
+      return 0;
+    const visit = graph.grabMask(true);
+    let numMarked = 0;
+    for (const node of graph.allHalfEdges) {
+      if (!node.isMaskSet(visit)) {
+        if (!node.isMaskSet(barrier) && !node.edgeMate.isMaskSet(barrier)) {
+          if (this.isSectorConvexAfterEdgeRemoval(node, mark, barrier) && this.isSectorConvexAfterEdgeRemoval(node.edgeMate, mark, barrier)) {
+            node.setMaskAroundEdge(mark);
+            ++numMarked;
+          }
+        }
+      }
+    node.setMaskAroundEdge(visit);
+    }
+    return numMarked;
+  }
+
+  /**
+   * Collect edges between faces if the union of the faces is convex.
+   * Uses a greedy algorithm with no regard to quality of resulting convex faces.
+   * Best results when input faces are convex.
+   * @param graph graph to examine
+   * @param barrier edges with this mask (on either side) will not be collected. Defaults to HalfEdgeMask.BOUNDARY_EDGE.
+   * @return one HalfEdge per removable edge
+   */
+  public static collectRemovableEdgesToExpandConvexFaces(graph: HalfEdgeGraph, barrier: HalfEdgeMask = HalfEdgeMask.BOUNDARY_EDGE): HalfEdge[] | undefined {
+    const removable: HalfEdge[] = [];
+    const mark = graph.grabMask(true);
+    if (0 < this.markRemovableEdgesToExpandConvexFaces(graph, mark, barrier)) {
+      const visited = graph.grabMask(true);
+      for (const node of graph.allHalfEdges) {
+        if (node.isMaskSet(mark) && !node.isMaskSet(visited)) {
+          node.setMaskAroundEdge(visited);
+          removable.push(node);
+        }
+      }
+      graph.dropMask(visited);
+    }
+    graph.dropMask(mark);
+    return removable;
+  }
+
+  /**
+   * Remove edges between faces if the union of the faces is convex.
+   * Uses a greedy algorithm with no regard to quality of resulting convex faces.
+   * Best results when input faces are convex.
+   * @param graph graph to modify
+   * @param barrier edges with this mask (on either side) will not be removed. Defaults to HalfEdgeMask.BOUNDARY_EDGE.
+   * @return number of edges deleted
+   */
+  public static expandConvexFaces(graph: HalfEdgeGraph, barrier: HalfEdgeMask = HalfEdgeMask.BOUNDARY_EDGE): number {
+    const mark = graph.grabMask(true);
+    const numRemovedEdges = this.markRemovableEdgesToExpandConvexFaces(graph, mark, barrier);
+    if (numRemovedEdges > 0)
+      graph.yankAndDeleteEdges((node: HalfEdge) => node.getMask(mark));
+    graph.dropMask(mark);
+    return numRemovedEdges;
+  }
+
+  /**
+   * Test desired faces for convexity.
+   * @param graph graph to examine
+   * @param avoid faces with this mask will not be examined. Defaults to HalfEdgeMask.EXTERIOR.
+   * @return whether every face in the graph is convex
+   */
+  public static isEveryFaceConvex(graph: HalfEdgeGraph, avoid: HalfEdgeMask = HalfEdgeMask.EXTERIOR): boolean {
+    const allFaces = graph.collectFaceLoops();
+    for (const node of allFaces) {
+      if (node.isMaskedAroundFace(avoid))
+        continue;
+      if (!node.isFaceConvex())
+        return false;
+      }
+    return true;
+  }
 }
+
 /**
  * @internal
  */
@@ -267,6 +357,11 @@ export class HalfEdgeGraphMerge {
     }
     return sweepHeap;
   }
+  private static snapFractionToNode(xy: Point2d, fraction: number, node: HalfEdge, nodeFraction: number): number{
+    if (Geometry.isSameCoordinate(xy.x, node.x) && Geometry.isSameCoordinate(xy.y, node.y))
+      return nodeFraction;
+    return fraction;
+}
   private static computeIntersectionFractionsOnEdges(nodeA0: HalfEdge, nodeB0: HalfEdge, fractions: Vector2d, pointA: Point2d, pointB: Point2d): boolean {
     const nodeA1 = nodeA0.faceSuccessor;
     const ax0 = nodeA0.x;
@@ -284,6 +379,10 @@ export class HalfEdgeGraphMerge {
       pointA.y = ay0 + fractions.x * uy;
       pointB.x = bx0 + fractions.y * vx;
       pointB.y = by0 + fractions.y * vy;
+      fractions.x = this.snapFractionToNode(pointA, fractions.x, nodeA0, 0.0);
+      fractions.x = this.snapFractionToNode(pointA, fractions.x, nodeA1, 1.0);
+      fractions.y = this.snapFractionToNode(pointB, fractions.y, nodeB0, 0.0);
+      fractions.y = this.snapFractionToNode(pointB, fractions.y, nodeB1, 1.0);
       return Geometry.isIn01(fractions.x) && Geometry.isIn01(fractions.y);
     }
     return false;
@@ -304,10 +403,11 @@ export class HalfEdgeGraphMerge {
     const pointA = Point2d.create();
     const pointB = Point2d.create();
     let nodeB0;
+    const popTolerance = Geometry.smallMetricDistance;
     while (undefined !== (nodeA0 = sweepHeap.priorityQueue.pop())) {
       data.numUpEdge++;
       const n0 = sweepHeap.activeEdges.length;
-      sweepHeap.removeArrayMembersWithY1Below(nodeA0.y);
+      sweepHeap.removeArrayMembersWithY1Below(nodeA0.y - popTolerance);
       data.numPopOut += n0 - sweepHeap.activeEdges.length;
       for (i = 0; i < sweepHeap.activeEdges.length; i++) {
         nodeB0 = sweepHeap.activeEdges[i];

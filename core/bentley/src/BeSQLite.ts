@@ -181,17 +181,3 @@ export enum DbResult {
   BE_SQLITE_CONSTRAINT_VTAB = (BE_SQLITE_CONSTRAINT_BASE | (9 << 8)),
 }
 /* eslint-enable @typescript-eslint/naming-convention */
-
-/** Options that specify how to apply ChangeSets.
- * @public
- */
-export enum ChangeSetApplyOption {
-  /** ChangeSet won't be used.  */
-  None = 0,
-  /** ChangeSet will be merged into the Db */
-  Merge,
-  /** ChangeSet will be reversed from the Db */
-  Reverse,
-  /** ChangeSet will be reinstated into the Db */
-  Reinstate,
-}

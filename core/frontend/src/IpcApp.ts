@@ -6,27 +6,12 @@
  * @module NativeApp
  */
 
+import { AsyncMethodsOf, PromiseReturnType } from "@itwin/core-bentley";
 import {
   BackendError, IModelError, IModelStatus, IpcAppChannel, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketFrontend,
   iTwinChannel, RemoveFunction,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { IModelApp, IModelAppOptions } from "./IModelApp";
-
-/**
- * type check for an function that returns a Promise
- * @public
- */
-export type AsyncFunction = (...args: any) => Promise<any>;
-/**
- * a type that is the list of the asynchronous functions in an interface
- * @public
- */
-export type AsyncMethodsOf<T> = { [P in keyof T]: T[P] extends AsyncFunction ? P : never }[keyof T];
-/**
- * get the type of the promised value of an asynchronous function
- * @public
- */
-export type PromiseReturnType<T extends AsyncFunction> = T extends (...args: any) => Promise<infer R> ? R : any;
 
 /**
  * Options for [[IpcApp.startup]]

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/eslint-plugin",
+      "comment": "add required-barrel-modules feature",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/eslint-plugin",
+  "email": "MichaelBelousov@users.noreply.github.com"
+}

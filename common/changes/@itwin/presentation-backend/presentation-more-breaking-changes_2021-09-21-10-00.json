@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-backend",
+      "comment": "Restructure backend's initialization props",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-backend"
+}

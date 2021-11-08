@@ -1,0 +1,13 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+
+$no-shadow: none;
+$shadow: drop-shadow(0 1px 0 $buic-foreground-body-reverse);
+$space-after-label: 16px;
+
+$expander-arrow-thickness: 2px;
+$expander-arrow-size-val: 6;
+$space-after-expander: 10px;

@@ -2,29 +2,24 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
+import { IModelApp, Tool } from "@itwin/core-frontend";
 
 /** If an editing scope is currently in progress, end it; otherwise, begin a new one. */
 export class EditingScopeTool extends Tool {
-  public static toolId = "EditingSession";
-  public static get minArgs() { return 0; }
-  public static get maxArgs() { return 0; }
+  public static override toolId = "EditingSession";
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 0; }
 
-  public run(): boolean {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this._run();
-    return true;
-  }
-
-  private async _run(): Promise<void> {
+  public override async run(): Promise<boolean> {
     const imodel = IModelApp.viewManager.selectedView?.iModel;
     if (!imodel || !imodel.isBriefcaseConnection())
-      return;
+      return false;
 
     const scope = imodel.editingScope;
     if (scope)
       await scope.exit();
     else
       await imodel.enterEditingScope();
+    return true;
   }
 }

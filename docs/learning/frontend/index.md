@@ -17,7 +17,7 @@ An app's frontend always implements its own frontend script and resources.
 
 An app's frontend will often depend on npm packages to help implement its GUI.
 
-An app's frontend script requires the `@bentley/imodeljs-frontend` npm package.
+An app's frontend script requires the `@itwin/core-frontend` npm package.
 The [common packages](../common/index.md) will also be required.
 
 These packages provide the following functions that a frontend requires:
@@ -31,7 +31,6 @@ These packages provide the following functions that a frontend requires:
 - Displaying [Views](./Views.md) of iModels
 - Executing [ECSQL queries](./ExecutingECSQL.md) on iModels
 - Storing [Settings](./Settings.md) for Applications, Projects, and iModels.
-- Implementing [Extensions](./Extensions.md)
 - [Formatting Quantities](./QuantityFormatting.md)
 
 ## Web browser compatibility

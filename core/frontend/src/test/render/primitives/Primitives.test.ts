@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { LineString3d, Loop, Point3d, Range3d, Sample, Transform, Vector3d } from "@bentley/geometry-core";
-import { GraphicParams } from "@bentley/imodeljs-common";
+import { LineString3d, Loop, Point3d, Range3d, Sample, Transform, Vector3d } from "@itwin/core-geometry";
+import { GraphicParams } from "@itwin/core-common";
 import { DisplayParams } from "../../../render/primitives/DisplayParams";
 import { GeometryList } from "../../../render/primitives/geometry/GeometryList";
 import { Geometry } from "../../../render/primitives/geometry/GeometryPrimitives";
@@ -24,7 +24,7 @@ describe("ToleranceRatio", () => {
 
 describe("GeometryOptions", () => {
   it("GeometryOptions works as expected", () => {
-    const a = new GeometryOptions();
+    const a = new GeometryOptions(GenerateEdges.Yes);
     assert.isTrue(a.normals === NormalMode.Always, "default normals correct");
     assert.isTrue(a.surfaces === SurfacesOnly.No, "default surfaces correct");
     assert.isTrue(a.preserveOrder === PreserveOrder.No, "default preserveOrder correct");
@@ -34,7 +34,7 @@ describe("GeometryOptions", () => {
     assert.isTrue(a.wantPreserveOrder === false, "default wantPreserveOrder correct");
     assert.isTrue(a.wantEdges === true, "default wantEdges correct");
 
-    const b = new GeometryOptions(NormalMode.Never, SurfacesOnly.Yes, PreserveOrder.Yes, GenerateEdges.No);
+    const b = new GeometryOptions(GenerateEdges.No, NormalMode.Never, SurfacesOnly.Yes, PreserveOrder.Yes);
     assert.isTrue(b.normals === NormalMode.Never, "normals correct");
     assert.isTrue(b.surfaces === SurfacesOnly.Yes, "surfaces correct");
     assert.isTrue(b.preserveOrder === PreserveOrder.Yes, "preserveOrder correct");

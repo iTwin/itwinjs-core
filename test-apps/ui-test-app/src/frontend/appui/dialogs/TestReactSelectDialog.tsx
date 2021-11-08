@@ -2,9 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 import * as React from "react";
-import { Dialog, DialogButtonType, LabeledThemedSelect, ThemedSelect } from "@bentley/ui-core";
-import { ModalDialogManager } from "@bentley/ui-framework";
+import { Dialog, LabeledThemedSelect, ThemedSelect } from "@itwin/core-react";
+import { ModalDialogManager } from "@itwin/appui-react";
+import { DialogButtonType } from "@itwin/appui-abstract";
 
 enum ColorOptions {
   Red,
@@ -48,7 +50,7 @@ interface TestReactSelectDialogState {
 }
 
 export class TestReactSelectDialog extends React.Component<TestReactSelectDialogProps, TestReactSelectDialogState> {
-  public readonly state: Readonly<TestReactSelectDialogState>;
+  public override readonly state: Readonly<TestReactSelectDialogState>;
   constructor(props: TestReactSelectDialogProps) {
     super(props);
     this.state = {
@@ -58,7 +60,7 @@ export class TestReactSelectDialog extends React.Component<TestReactSelectDialog
       overlay: true,
     };
   }
-  public render(): JSX.Element {
+  public override render(): JSX.Element {
     return (<Dialog
       title={"React-Select Modal Dialog"}
       opened={this.state.opened}

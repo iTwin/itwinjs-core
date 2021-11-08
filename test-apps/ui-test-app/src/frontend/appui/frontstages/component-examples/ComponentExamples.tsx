@@ -4,9 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import "./ComponentExamples.scss";
 import * as React from "react";
-import { CommonProps, Toggle, VerticalTabs } from "@bentley/ui-core";
-import { ColorTheme, MessageManager, MessageRenderer, ModalFrontstageInfo, UiFramework } from "@bentley/ui-framework";
+import { CommonProps, VerticalTabs } from "@itwin/core-react";
+import { ColorTheme, MessageManager, ModalFrontstageInfo, StatusMessageRenderer, UiFramework } from "@itwin/appui-react";
+import { ToggleSwitch } from "@itwin/itwinui-react";
 import { ComponentExamplesProvider } from "./ComponentExamplesProvider";
+import { ITwinUIExamplesProvider } from "./ITwinUIExamplesProvider";
 
 export interface ComponentExampleCategory {
   title: string;
@@ -16,8 +18,8 @@ export interface ComponentExampleCategory {
 /** Modal frontstage displaying component examples.
  */
 export class ComponentExamplesModalFrontstage implements ModalFrontstageInfo {
-  public title: string = UiFramework.i18n.translate("SampleApp:componentExamplesStage.examples");
-  public categories: ComponentExampleCategory[] = ComponentExamplesProvider.categories;
+  public title: string = UiFramework.localization.getLocalizedString("SampleApp:componentExamplesStage.examples");
+  public categories: ComponentExampleCategory[] = [...ComponentExamplesProvider.categories, ...ITwinUIExamplesProvider.categories];
   public get content(): React.ReactNode {
     MessageManager.maxDisplayedStickyMessages = 6;
     return (<ComponentExamplesPage categories={this.categories} />);
@@ -32,8 +34,8 @@ interface ComponentExamplesPageProps {
 /** ComponentExamplesPage displaying the component examples.
  */
 export const ComponentExamplesPage: React.FC<ComponentExamplesPageProps> = (props: ComponentExamplesPageProps) => {
-  const themeTitle: string = UiFramework.i18n.translate("SampleApp:componentExamplesStage.themeTitle");
-  const themeDescription: string = UiFramework.i18n.translate("SampleApp:componentExamplesStage.themeDescription");
+  const themeTitle: string = UiFramework.localization.getLocalizedString("SampleApp:componentExamplesStage.themeTitle");
+  const themeDescription: string = UiFramework.localization.getLocalizedString("SampleApp:componentExamplesStage.themeDescription");
   const showThemeOption = !(!!props.hideThemeOption);
   const [activeIndex, setActiveIndex] = React.useState(0);
   const [colorTheme, setColorTheme] = React.useState(() => UiFramework.getColorTheme());
@@ -49,8 +51,8 @@ export const ComponentExamplesPage: React.FC<ComponentExamplesPageProps> = (prop
   };
 
   const isChecked = isLightTheme();
-  const darkLabel = UiFramework.i18n.translate("SampleApp:settingsStage.dark");
-  const lightLabel = UiFramework.i18n.translate("SampleApp:settingsStage.light");
+  const darkLabel = UiFramework.localization.getLocalizedString("SampleApp:settingsStage.dark");
+  const lightLabel = UiFramework.localization.getLocalizedString("SampleApp:settingsStage.light");
 
   const handleActivateTab = (index: number) => {
     setActiveIndex(index);
@@ -69,9 +71,9 @@ export const ComponentExamplesPage: React.FC<ComponentExamplesPageProps> = (prop
             content={
               <>
                 {darkLabel}
-              &nbsp;
-                <Toggle isOn={isChecked} showCheckmark={false} onChange={onThemeChange} />
-              &nbsp;
+                &nbsp;
+                <ToggleSwitch checked={isChecked} onChange={onThemeChange} />
+                &nbsp;
                 {lightLabel}
               </>
             }
@@ -86,7 +88,7 @@ export const ComponentExamplesPage: React.FC<ComponentExamplesPageProps> = (prop
           );
         })}
       </div>
-      <MessageRenderer />
+      <StatusMessageRenderer />
     </div>
   );
 };

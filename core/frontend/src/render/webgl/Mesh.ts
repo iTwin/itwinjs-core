@@ -6,12 +6,13 @@
  * @module WebGL
  */
 
-import { assert, dispose } from "@bentley/bentleyjs-core";
-import { Point3d } from "@bentley/geometry-core";
-import { FeatureIndexType, FillFlags, LinePixels, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
+import { assert, dispose } from "@itwin/core-bentley";
+import { Point3d, Range3d } from "@itwin/core-geometry";
+import { FeatureIndexType, FillFlags, LinePixels, RenderMode, ViewFlags } from "@itwin/core-common";
 import { InstancedGraphicParams } from "../InstancedGraphicParams";
 import { MeshParams, SegmentEdgeParams, SilhouetteParams, SurfaceType, TesselatedPolyline, VertexIndices } from "../primitives/VertexTable";
 import { RenderMemory } from "../RenderMemory";
+import { RenderGeometry } from "../RenderSystem";
 import { AttributeMap } from "./AttributeMap";
 import { CachedGeometry, LUTGeometry, PolylineBuffers } from "./CachedGeometry";
 import { ColorInfo } from "./ColorInfo";
@@ -22,7 +23,7 @@ import { FloatRgba } from "./FloatRGBA";
 import { GL } from "./GL";
 import { Graphic } from "./Graphic";
 import { BufferHandle, BufferParameters, BuffersContainer } from "./AttributeBuffers";
-import { InstanceBuffers } from "./InstancedGeometry";
+import { InstanceBuffers, PatternBuffers } from "./InstancedGeometry";
 import { createMaterialInfo, MaterialInfo } from "./Material";
 import { Primitive } from "./Primitive";
 import { RenderCommands } from "./RenderCommands";
@@ -96,7 +97,7 @@ export class MeshData implements WebGLDisposable {
 
   // Returns true if no one else owns this texture. Implies that the texture should be disposed when this object is disposed, and the texture's memory should be tracked as belonging to this object.
   private get _ownsTexture(): boolean {
-    return undefined !== this.texture && undefined === this.texture.key && !this.texture.isOwned;
+    return undefined !== this.texture && !this.texture?.hasOwner;
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
@@ -107,71 +108,117 @@ export class MeshData implements WebGLDisposable {
 }
 
 /** @internal */
+export class MeshRenderGeometry {
+  public readonly data: MeshData;
+  public readonly surface?: SurfaceGeometry;
+  public readonly segmentEdges?: EdgeGeometry;
+  public readonly silhouetteEdges?: SilhouetteEdgeGeometry;
+  public readonly polylineEdges?: PolylineEdgeGeometry;
+  public readonly range: Range3d;
+
+  private constructor(data: MeshData, params: MeshParams) {
+    this.data = data;
+    this.range = params.vertices.qparams.computeRange();
+    this.surface = SurfaceGeometry.create(data, params.surface.indices);
+    const edges = params.edges;
+    if (!edges || data.type === SurfaceType.VolumeClassifier)
+      return;
+
+    if (edges.silhouettes)
+      this.silhouetteEdges = SilhouetteEdgeGeometry.createSilhouettes(data, edges.silhouettes);
+
+    if (edges.segments)
+      this.segmentEdges = EdgeGeometry.create(data, edges.segments);
+
+    if (edges.polylines)
+      this.polylineEdges = PolylineEdgeGeometry.create(data, edges.polylines);
+  }
+
+  public static create(params: MeshParams, viewIndependentOrigin: Point3d | undefined): MeshRenderGeometry | undefined {
+    const data = MeshData.create(params, viewIndependentOrigin);
+    return data ? new this(data, params) : undefined;
+  }
+
+  public dispose() {
+    dispose(this.data);
+    dispose(this.surface);
+    dispose(this.segmentEdges);
+    dispose(this.silhouetteEdges);
+    dispose(this.polylineEdges);
+  }
+
+  public collectStatistics(stats: RenderMemory.Statistics) {
+    this.data.collectStatistics(stats);
+    this.surface?.collectStatistics(stats);
+    this.segmentEdges?.collectStatistics(stats);
+    this.silhouetteEdges?.collectStatistics(stats);
+    this.polylineEdges?.collectStatistics(stats);
+  }
+}
+
+/** @internal */
 export class MeshGraphic extends Graphic {
   public readonly meshData: MeshData;
   private readonly _primitives: Primitive[] = [];
-  private readonly _instances?: InstanceBuffers;
+  private readonly _instances?: InstanceBuffers | PatternBuffers;
 
-  public static create(params: MeshParams, instancesOrVIOrigin?: InstancedGraphicParams | Point3d): MeshGraphic | undefined {
-    const viOrigin = instancesOrVIOrigin instanceof Point3d ? instancesOrVIOrigin : undefined;
-    const instances = undefined === viOrigin ? instancesOrVIOrigin as InstancedGraphicParams : undefined;
-    const buffers = undefined !== instances ? InstanceBuffers.create(instances, true) : undefined;
-    if (undefined === buffers && undefined !== instances)
-      return undefined;
+  public static create(geometry: MeshRenderGeometry, instances?: InstancedGraphicParams | PatternBuffers): MeshGraphic | undefined {
+    let buffers;
+    if (instances) {
+      if (instances instanceof PatternBuffers) {
+        buffers = instances;
+      } else {
+        const instancesRange = instances.range ?? InstanceBuffers.computeRange(geometry.range, instances.transforms, instances.transformCenter);
+        buffers = InstanceBuffers.create(instances, instancesRange);
+        if (!buffers)
+          return undefined;
+      }
+    }
 
-    const data = MeshData.create(params, viOrigin);
-    return undefined !== data ? new MeshGraphic(data, params, buffers) : undefined;
+    return new MeshGraphic(geometry, buffers);
   }
 
-  private addPrimitive(createGeom: () => CachedGeometry | undefined, instances?: InstanceBuffers) {
-    const primitive = Primitive.createShared(createGeom, instances);
-    if (undefined !== primitive)
+  private addPrimitive(geometry: RenderGeometry | undefined) {
+    if (!geometry)
+      return;
+
+    assert(geometry instanceof CachedGeometry);
+    const primitive = Primitive.createShared(geometry, this._instances);
+    if (primitive)
       this._primitives.push(primitive);
   }
 
-  private constructor(data: MeshData, params: MeshParams, instances?: InstanceBuffers) {
+  private constructor(geometry: MeshRenderGeometry, instances?: InstanceBuffers | PatternBuffers) {
     super();
-    this.meshData = data;
+    this.meshData = geometry.data;
     this._instances = instances;
 
-    this.addPrimitive(() => SurfaceGeometry.create(this.meshData, params.surface.indices), instances);
-
-    // Classifiers are surfaces only...no edges.
-    if (this.surfaceType === SurfaceType.VolumeClassifier || undefined === params.edges)
-      return;
-
-    const edges = params.edges;
-    if (undefined !== edges.silhouettes)
-      this.addPrimitive(() => SilhouetteEdgeGeometry.createSilhouettes(this.meshData, edges.silhouettes!), instances);
-
-    if (undefined !== edges.segments)
-      this.addPrimitive(() => EdgeGeometry.create(this.meshData, edges.segments!), instances);
-
-    if (undefined !== edges.polylines)
-      this.addPrimitive(() => PolylineEdgeGeometry.create(this.meshData, edges.polylines!), instances);
+    this.addPrimitive(geometry.surface);
+    this.addPrimitive(geometry.segmentEdges);
+    this.addPrimitive(geometry.silhouetteEdges);
+    this.addPrimitive(geometry.polylineEdges);
   }
 
   public get isDisposed(): boolean { return this.meshData.isDisposed && 0 === this._primitives.length; }
+  public get isPickable() { return false; }
 
   public dispose() {
-    dispose(this.meshData);
     for (const primitive of this._primitives)
       dispose(primitive);
 
+    dispose(this.meshData);
+    dispose(this._instances);
     this._primitives.length = 0;
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
     this.meshData.collectStatistics(stats);
     this._primitives.forEach((prim) => prim.collectStatistics(stats));
-
-    // Only count the shared instance buffers once...
-    if (undefined !== this._instances)
-      this._instances.collectStatistics(stats);
+    this._instances?.collectStatistics(stats);
   }
 
   public addCommands(cmds: RenderCommands): void { this._primitives.forEach((prim) => prim.addCommands(cmds)); }
-  public addHiliteCommands(cmds: RenderCommands, pass: RenderPass): void { this._primitives.forEach((prim) => prim.addHiliteCommands(cmds, pass)); }
+  public override addHiliteCommands(cmds: RenderCommands, pass: RenderPass): void { this._primitives.forEach((prim) => prim.addHiliteCommands(cmds, pass)); }
 
   public get surfaceType(): SurfaceType { return this.meshData.type; }
 }
@@ -183,20 +230,20 @@ export abstract class MeshGeometry extends LUTGeometry {
   public readonly mesh: MeshData;
   protected readonly _numIndices: number;
 
-  public get asMesh() { return this; }
-  protected _getLineWeight(params: ShaderProgramParams): number { return this.computeEdgeWeight(params); }
+  public override get asMesh() { return this; }
+  protected override _getLineWeight(params: ShaderProgramParams): number { return this.computeEdgeWeight(params); }
 
   // Convenience accessors...
   public get edgeWidth() { return this.mesh.edgeWidth; }
   public get edgeLineCode() { return this.mesh.edgeLineCode; }
-  public get hasFeatures() { return this.mesh.hasFeatures; }
+  public override get hasFeatures() { return this.mesh.hasFeatures; }
   public get surfaceType() { return this.mesh.type; }
   public get fillFlags() { return this.mesh.fillFlags; }
   public get isPlanar() { return this.mesh.isPlanar; }
   public get colorInfo(): ColorInfo { return this.mesh.lut.colorInfo; }
   public get uniformColor(): FloatRgba | undefined { return this.colorInfo.isUniform ? this.colorInfo.uniform : undefined; }
   public get texture() { return this.mesh.texture; }
-  public get hasBakedLighting() { return this.mesh.hasBakedLighting; }
+  public override get hasBakedLighting() { return this.mesh.hasBakedLighting; }
   public get hasFixedNormals() { return this.mesh.hasFixedNormals; }
   public get lut() { return this.mesh.lut; }
   public get hasScalarAnimation() { return this.mesh.lut.hasScalarAnimation; }
@@ -238,9 +285,9 @@ export class EdgeGeometry extends MeshGeometry {
   protected readonly _endPointAndQuadIndices: BufferHandle;
 
   public get lutBuffers() { return this.buffers; }
-  public get asSurface() { return undefined; }
-  public get asEdge() { return this; }
-  public get asSilhouette(): SilhouetteEdgeGeometry | undefined { return undefined; }
+  public override get asSurface() { return undefined; }
+  public override get asEdge() { return this; }
+  public override get asSilhouette(): SilhouetteEdgeGeometry | undefined { return undefined; }
 
   public static create(mesh: MeshData, edges: SegmentEdgeParams): EdgeGeometry | undefined {
     const indexBuffer = BufferHandle.createArrayBuffer(edges.indices.data);
@@ -273,13 +320,13 @@ export class EdgeGeometry extends MeshGeometry {
   }
 
   protected _wantWoWReversal(_target: Target): boolean { return true; }
-  protected _getLineCode(params: ShaderProgramParams): number { return this.computeEdgeLineCode(params); }
+  protected override _getLineCode(params: ShaderProgramParams): number { return this.computeEdgeLineCode(params); }
   public get techniqueId(): TechniqueId { return TechniqueId.Edge; }
   public getRenderPass(target: Target): RenderPass { return this.computeEdgePass(target); }
   public get renderOrder(): RenderOrder { return this.isPlanar ? RenderOrder.PlanarEdge : RenderOrder.Edge; }
-  public getColor(target: Target): ColorInfo { return this.computeEdgeColor(target); }
+  public override getColor(target: Target): ColorInfo { return this.computeEdgeColor(target); }
   public get endPointAndQuadIndices(): BufferHandle { return this._endPointAndQuadIndices; }
-  public wantMonochrome(target: Target): boolean {
+  public override wantMonochrome(target: Target): boolean {
     return target.currentViewFlags.renderMode === RenderMode.Wireframe;
   }
 
@@ -301,7 +348,7 @@ export class EdgeGeometry extends MeshGeometry {
 export class SilhouetteEdgeGeometry extends EdgeGeometry {
   private readonly _normalPairs: BufferHandle;
 
-  public get asSilhouette() { return this; }
+  public override get asSilhouette() { return this; }
 
   public static createSilhouettes(mesh: MeshData, params: SilhouetteParams): SilhouetteEdgeGeometry | undefined {
     const indexBuffer = BufferHandle.createArrayBuffer(params.indices.data);
@@ -310,19 +357,19 @@ export class SilhouetteEdgeGeometry extends EdgeGeometry {
     return undefined !== indexBuffer && undefined !== endPointBuffer && undefined !== normalsBuffer ? new SilhouetteEdgeGeometry(indexBuffer, endPointBuffer, normalsBuffer, params.indices.length, mesh) : undefined;
   }
 
-  public get isDisposed(): boolean { return super.isDisposed && this._normalPairs.isDisposed; }
+  public override get isDisposed(): boolean { return super.isDisposed && this._normalPairs.isDisposed; }
 
-  public dispose() {
+  public override dispose() {
     super.dispose();
     dispose(this._normalPairs);
   }
 
-  public collectStatistics(stats: RenderMemory.Statistics): void {
+  public override collectStatistics(stats: RenderMemory.Statistics): void {
     stats.addSilhouetteEdges(this._indices.bytesUsed + this._endPointAndQuadIndices.bytesUsed + this._normalPairs.bytesUsed);
   }
 
-  public get techniqueId(): TechniqueId { return TechniqueId.SilhouetteEdge; }
-  public get renderOrder(): RenderOrder { return this.isPlanar ? RenderOrder.PlanarSilhouette : RenderOrder.Silhouette; }
+  public override get techniqueId(): TechniqueId { return TechniqueId.SilhouetteEdge; }
+  public override get renderOrder(): RenderOrder { return this.isPlanar ? RenderOrder.PlanarSilhouette : RenderOrder.Silhouette; }
   public get normalPairs(): BufferHandle { return this._normalPairs; }
 
   private constructor(indices: BufferHandle, endPointAndQuadsIndices: BufferHandle, normalPairs: BufferHandle, numIndices: number, mesh: MeshData) {
@@ -356,15 +403,15 @@ export class PolylineEdgeGeometry extends MeshGeometry {
   }
 
   protected _wantWoWReversal(_target: Target): boolean { return true; }
-  protected _getLineWeight(params: ShaderProgramParams): number { return this.computeEdgeWeight(params); }
-  protected _getLineCode(params: ShaderProgramParams): number { return this.computeEdgeLineCode(params); }
-  public getColor(target: Target): ColorInfo { return this.computeEdgeColor(target); }
+  protected override _getLineWeight(params: ShaderProgramParams): number { return this.computeEdgeWeight(params); }
+  protected override _getLineCode(params: ShaderProgramParams): number { return this.computeEdgeLineCode(params); }
+  public override getColor(target: Target): ColorInfo { return this.computeEdgeColor(target); }
   public get techniqueId(): TechniqueId { return TechniqueId.Polyline; }
   public getRenderPass(target: Target): RenderPass { return this.computeEdgePass(target); }
   public get renderOrder(): RenderOrder { return this.isPlanar ? RenderOrder.PlanarEdge : RenderOrder.Edge; }
-  public get polylineBuffers(): PolylineBuffers { return this._buffers; }
+  public override get polylineBuffers(): PolylineBuffers { return this._buffers; }
 
-  public wantMonochrome(target: Target): boolean {
+  public override wantMonochrome(target: Target): boolean {
     return target.currentViewFlags.renderMode === RenderMode.Wireframe;
   }
 
@@ -422,23 +469,23 @@ export class SurfaceGeometry extends MeshGeometry {
   public get isTexturedType() { return SurfaceType.Textured === this.surfaceType || SurfaceType.TexturedLit === this.surfaceType; }
   public get hasTexture() { return this.isTexturedType && undefined !== this.texture; }
   public get isGlyph() { return this.mesh.isGlyph; }
-  public get alwaysRenderTranslucent() { return this.isGlyph; }
+  public override get alwaysRenderTranslucent() { return this.isGlyph; }
   public get isTileSection() { return undefined !== this.texture && this.texture.isTileSection; }
   public get isClassifier() { return SurfaceType.VolumeClassifier === this.surfaceType; }
-  public get supportsThematicDisplay() {
+  public override get supportsThematicDisplay() {
     return !this.isGlyph;
   }
 
-  public get allowColorOverride() {
+  public override get allowColorOverride() {
     // Text background color should not be overridden by feature symbology overrides - otherwise it becomes unreadable...
     // We don't actually know if we have text.
     // We do know that text background color uses blanking fill. So do ImageGraphics, so they're also going to forbid overriding their color.
     return FillFlags.Blanking !== (this.fillFlags & FillFlags.Blanking);
   }
 
-  public get asSurface() { return this; }
-  public get asEdge() { return undefined; }
-  public get asSilhouette() { return undefined; }
+  public override get asSurface() { return this; }
+  public override get asEdge() { return undefined; }
+  public override get asSilhouette() { return undefined; }
 
   protected _draw(numInstances: number, instanceBuffersContainer?: BuffersContainer): void {
     const system = System.instance;
@@ -460,15 +507,15 @@ export class SurfaceGeometry extends MeshGeometry {
       system.context.disable(GL.POLYGON_OFFSET_FILL);
   }
 
-  public wantMixMonochromeColor(target: Target): boolean {
+  public override wantMixMonochromeColor(target: Target): boolean {
     // Text relies on white-on-white reversal.
     return !this.isGlyph && (this.isLitSurface || this.wantTextures(target, this.hasTexture));
   }
 
   public get techniqueId(): TechniqueId { return TechniqueId.Surface; }
-  public get isLitSurface() { return this.isLit; }
-  public get hasBakedLighting() { return this.mesh.hasBakedLighting; }
-  public get hasFixedNormals() { return this.mesh.hasFixedNormals; }
+  public override get isLitSurface() { return this.isLit; }
+  public override get hasBakedLighting() { return this.mesh.hasBakedLighting; }
+  public override get hasFixedNormals() { return this.mesh.hasFixedNormals; }
   public get renderOrder(): RenderOrder {
     if (FillFlags.Behind === (this.fillFlags & FillFlags.Behind))
       return RenderOrder.BlankingRegion;
@@ -480,7 +527,7 @@ export class SurfaceGeometry extends MeshGeometry {
     return order;
   }
 
-  public getColor(target: Target) {
+  public override getColor(target: Target) {
     if (FillFlags.Background === (this.fillFlags & FillFlags.Background))
       return target.uniforms.style.backgroundColorInfo;
     else
@@ -554,7 +601,7 @@ export class SurfaceGeometry extends MeshGeometry {
     return !this.wantTextures(target, this.hasTexture);
   }
 
-  public get materialInfo(): MaterialInfo | undefined { return this.mesh.materialInfo; }
+  public override get materialInfo(): MaterialInfo | undefined { return this.mesh.materialInfo; }
 
   public useTexture(params: ShaderProgramParams): boolean {
     return this.wantTextures(params.target, this.hasTexture);

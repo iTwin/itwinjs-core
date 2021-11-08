@@ -6,12 +6,12 @@
 /** @packageDocumentation
  * @module AccuDraw
  */
-import { BentleyStatus } from "@bentley/bentleyjs-core";
+import { BentleyStatus } from "@itwin/core-bentley";
 import {
   Arc3d, AxisOrder, CurveCurve, CurvePrimitive, Geometry, IModelJson as GeomJson, LineSegment3d, LineString3d, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d,
   PointString3d, Ray3d, Transform, Vector3d,
-} from "@bentley/geometry-core";
-import { ColorByName, ColorDef, GeometryStreamProps, LinePixels } from "@bentley/imodeljs-common";
+} from "@itwin/core-geometry";
+import { ColorByName, ColorDef, GeometryStreamProps, LinePixels } from "@itwin/core-common";
 import { TentativeOrAccuSnap } from "./AccuSnap";
 import { ACSDisplayOptions, AuxCoordSystemState } from "./AuxCoordSys";
 import { HitDetail, SnapDetail, SnapHeat, SnapMode } from "./HitDetail";
@@ -25,7 +25,7 @@ import { linePlaneIntersect } from "./LinePlaneIntersect";
 import { ScreenViewport, Viewport } from "./Viewport";
 import { ViewState } from "./ViewState";
 import { QuantityType } from "./quantity-formatting/QuantityFormatter";
-import { ParseError, Parser, QuantityParseResult } from "@bentley/imodeljs-quantity";
+import { ParseError, Parser, QuantityParseResult } from "@itwin/core-quantity";
 
 // cspell:ignore dont primitivetools
 
@@ -55,7 +55,7 @@ export enum AccuDrawFlags {
   SmartRotation = (1 << 24),
 }
 
-/** @internal */
+/** @alpha */
 export enum CompassMode {
   Polar = 0,
   Rectangular = 1,
@@ -938,9 +938,9 @@ export class AccuDraw {
 
   private stringToDistance(str: string): QuantityParseResult {
     const parserSpec = IModelApp.quantityFormatter.findParserSpecByQuantityType(QuantityType.Length);
-    if(parserSpec)
+    if (parserSpec)
       return parserSpec.parseToQuantityValue(str);
-    return {ok: false, error: ParseError.InvalidParserSpec};
+    return { ok: false, error: ParseError.InvalidParserSpec };
   }
 
   private stringToAngle(inString: string): QuantityParseResult {
@@ -949,7 +949,7 @@ export class AccuDraw {
     const parserSpec = IModelApp.quantityFormatter.findParserSpecByQuantityType(QuantityType.Angle);
     if (parserSpec)
       return parserSpec.parseToQuantityValue(inString);
-    return {ok: false, error: ParseError.InvalidParserSpec};
+    return { ok: false, error: ParseError.InvalidParserSpec };
   }
 
   private updateFieldValue(index: ItemField, input: string, _out: { isBearing: boolean }): BentleyStatus {
@@ -977,7 +977,7 @@ export class AccuDraw {
         return BentleyStatus.ERROR;
 
       case ItemField.ANGLE_Item:
-        parseResult =this.stringToAngle(input);
+        parseResult = this.stringToAngle(input);
         if (Parser.isParsedQuantity(parseResult)) {
           this._angle = parseResult.value;
           break;
@@ -1294,6 +1294,13 @@ export class AccuDraw {
     const rMatrix = out ? out : new Matrix3d();
     rMatrix.setFrom(ViewState.getStandardViewMatrix(nStandard));
     const useVp = vp ? vp : IModelApp.viewManager.selectedView;
+
+    if (!useACS) {
+      const globeToWorld = vp?.view.getGlobeRotation();
+      if (globeToWorld)
+        rMatrix.multiplyMatrixMatrix(globeToWorld, rMatrix);
+    }
+
     if (!useACS || !useVp)
       return rMatrix;
 
@@ -2126,6 +2133,7 @@ export class AccuDraw {
     let projectionVector = new Vector3d();
 
     if (perpendicular) {
+      // eslint-disable-next-line react-hooks/rules-of-hooks
       if (AccuDraw.useACSContextRotation(vp, true)) { // Project along ACS axis to AccuDraw plane...
         const rMatrix = vp.getAuxCoordRotation(AccuDraw._tempRot);
         const axes = ThreeAxes.createFromMatrix3d(rMatrix);
@@ -2692,6 +2700,7 @@ export class AccuDraw {
       return false; // Disallow AccuDraw being enabled for exaggerated views...
 
     // NOTE: If ACS Plane lock setup initial and base rotation to ACS...
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     if (vp && AccuDraw.useACSContextRotation(vp, false)) {
       this.setRotationMode(RotationMode.ACS);
       this.flags.baseRotation = RotationMode.ACS;
@@ -3112,9 +3121,9 @@ export class AccuDrawHintBuilder {
   public setLockDistance = false;
   /** Lock current angle value in polar mode */
   public setLockAngle = false;
-  /** Lock current x delta value in rectanglar mode */
+  /** Lock current x delta value in rectangular mode */
   public setLockX = false;
-  /** Lock current y delta value in rectanglar mode  */
+  /** Lock current y delta value in rectangular mode  */
   public setLockY = false;
   /** Lock current z delta value in 3d views */
   public setLockZ = false;

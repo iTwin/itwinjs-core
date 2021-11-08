@@ -3,16 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { Content, Item, RulesetsFactory } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import {
-  createRandomContent, createRandomDescriptor, createRandomPrimitiveField, createRandomRuleset,
-} from "@bentley/presentation-common/lib/test/_helpers/random";
-import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
-import { TypeConverter, TypeConverterManager } from "@bentley/ui-components";
+import * as moq from "typemoq";
+import { Content, Item, RulesetsFactory } from "@itwin/presentation-common";
+import { createRandomRuleset, createTestContentDescriptor, createTestSimpleContentField } from "@itwin/presentation-common/lib/cjs/test";
+import { Presentation, PresentationManager } from "@itwin/presentation-frontend";
+import "@itwin/presentation-frontend/lib/cjs/test/_helpers/MockFrontendEnvironment";
+import { TypeConverter, TypeConverterManager } from "@itwin/components-react";
 import {
   DataProvidersFactory, DataProvidersFactoryProps, IPresentationPropertyDataProvider, PresentationTableDataProvider,
 } from "../presentation-components";
@@ -52,14 +50,14 @@ describe("DataProvidersFactory", () => {
     });
 
     it("throws when content has no records", async () => {
-      const content = new Content(createRandomDescriptor(), []);
+      const content = new Content(createTestContentDescriptor({ fields: [] }), []);
       propertiesProvider.setup(async (x) => x.getContent()).returns(async () => content);
       await expect(getFactory().createSimilarInstancesTableDataProvider(propertiesProvider.object, createRandomPropertyRecord(), {})).to.eventually.be.rejected;
     });
 
     it("throws when content descriptor has no field with property record's name", async () => {
       const record = createRandomPropertyRecord();
-      const content = createRandomContent();
+      const content = new Content(createTestContentDescriptor({ fields: [] }), []);
       content.contentSet.push(new Item([], "", "", undefined, {}, {}, []));
       propertiesProvider.setup(async (x) => x.getContent()).returns(async () => content);
       await expect(getFactory().createSimilarInstancesTableDataProvider(propertiesProvider.object, record, {})).to.eventually.be.rejected;
@@ -68,8 +66,8 @@ describe("DataProvidersFactory", () => {
     it("creates a provider with similar instances ruleset", async () => {
       const ruleset = await createRandomRuleset();
 
-      const field = createRandomPrimitiveField();
-      const descriptor = createRandomDescriptor();
+      const field = createTestSimpleContentField();
+      const descriptor = createTestContentDescriptor({ fields: [] });
       descriptor.fields.push(field);
       const contentItem = new Item([], "", "", undefined, { [field.name]: "test value" }, { [field.name]: "test display value" }, []);
       propertiesProvider.setup(async (x) => x.getContent()).returns(async () => new Content(descriptor, [contentItem]));
@@ -99,8 +97,8 @@ describe("DataProvidersFactory", () => {
     it("uses record's display value for navigation properties", async () => {
       const ruleset = await createRandomRuleset();
 
-      const field = createRandomPrimitiveField();
-      const descriptor = createRandomDescriptor();
+      const field = createTestSimpleContentField();
+      const descriptor = createTestContentDescriptor({ fields: [] });
       descriptor.fields.push(field);
       const contentItem = new Item([], "", "", undefined, { [field.name]: "test value" }, { [field.name]: "test display value" }, []);
       propertiesProvider.setup(async (x) => x.getContent()).returns(async () => new Content(descriptor, [contentItem]));
@@ -126,8 +124,8 @@ describe("DataProvidersFactory", () => {
       const rawValue = 1.123;
       const displayValue = "1.12 m2";
 
-      const field = createRandomPrimitiveField();
-      const descriptor = createRandomDescriptor();
+      const field = createTestSimpleContentField();
+      const descriptor = createTestContentDescriptor({ fields: [] });
       descriptor.fields.push(field);
       const contentItem = new Item([], "", "", undefined, { [field.name]: rawValue }, { [field.name]: displayValue }, []);
       propertiesProvider.setup(async (x) => x.getContent()).returns(async () => new Content(descriptor, [contentItem]));

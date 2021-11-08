@@ -6,11 +6,11 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import sinon from "sinon";
-import { Id64 } from "@bentley/bentleyjs-core";
-import { IpcApp } from "@bentley/imodeljs-frontend";
-import { RulesetVariable, VariableValueTypes } from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
+import * as moq from "typemoq";
+import { Id64 } from "@itwin/core-bentley";
+import { IpcApp } from "@itwin/core-frontend";
+import { RulesetVariable, VariableValueTypes } from "@itwin/presentation-common";
+import { createRandomId } from "@itwin/presentation-common/lib/cjs/test";
 import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler";
 import { RulesetVariablesManagerImpl } from "../presentation-frontend/RulesetVariablesManager";
 
@@ -231,28 +231,58 @@ describe("RulesetVariablesManager", () => {
     it("sets and returns value", async () => {
       const value = [faker.random.number(), faker.random.number()];
       await vars.setInts(variableId, value);
-      expect(await vars.getInts(variableId)).to.eq(value);
+      expect(await vars.getInts(variableId)).to.deep.eq(value);
     });
 
-    it("raises onVariableChanged event when variable changes", async () => {
+    it("raises onVariableChanged event when immutable variable changes", async () => {
       const spy = sinon.spy();
       vars.onVariableChanged.addListener(spy);
 
+      await vars.setInts(variableId, [1, 2]);
+      expect(spy).to.be.calledWith(variableId, undefined, [1, 2]);
+      spy.resetHistory();
+
       await vars.setInts(variableId, [1, 2, 3]);
-      expect(spy).to.be.calledWith(variableId, undefined, [1, 2, 3]);
+      expect(spy).to.be.calledWith(variableId, [1, 2], [1, 2, 3]);
       spy.resetHistory();
 
-      const arr = [4, 5, 6];
-      await vars.setInts(variableId, arr);
-      expect(spy).to.be.calledWith(variableId, [1, 2, 3], arr);
+      await vars.setInts(variableId, [4, 5, 6]);
+      expect(spy).to.be.calledWith(variableId, [1, 2, 3], [4, 5, 6]);
       spy.resetHistory();
 
-      await vars.setInts(variableId, arr);
+      await vars.setInts(variableId, [4, 5, 6]);
       expect(spy).to.not.be.called;
       spy.resetHistory();
 
       await vars.unset(variableId);
       expect(spy).to.be.calledWith(variableId, [4, 5, 6], undefined);
+    });
+
+    it("raises onVariableChanged event when mutable variable changes", async () => {
+      const spy = sinon.spy();
+      vars.onVariableChanged.addListener(spy);
+
+      const value = [1, 2];
+      await vars.setInts(variableId, value);
+      expect(spy).to.be.calledWith(variableId, undefined, value);
+      spy.resetHistory();
+
+      value.push(3);
+      await vars.setInts(variableId, value);
+      expect(spy).to.be.calledWith(variableId, [1, 2], value);
+      spy.resetHistory();
+
+      value.splice(2, 1, 4);
+      await vars.setInts(variableId, value);
+      expect(spy).to.be.calledWith(variableId, [1, 2, 3], value);
+      spy.resetHistory();
+
+      await vars.setInts(variableId, value);
+      expect(spy).to.not.be.called;
+      spy.resetHistory();
+
+      await vars.unset(variableId);
+      expect(spy).to.be.calledWith(variableId, value, undefined);
     });
 
     it("handles type conversion", async () => {
@@ -320,10 +350,10 @@ describe("RulesetVariablesManager", () => {
     it("sets and returns value", async () => {
       const value = [createRandomId(), createRandomId()];
       await vars.setId64s(variableId, value);
-      expect(await vars.getId64s(variableId)).to.eq(value);
+      expect(await vars.getId64s(variableId)).to.deep.eq(value);
     });
 
-    it("raises onVariableChanged event when variable changes", async () => {
+    it("raises onVariableChanged event when immutable variable changes", async () => {
       const spy = sinon.spy();
       vars.onVariableChanged.addListener(spy);
 
@@ -335,12 +365,43 @@ describe("RulesetVariablesManager", () => {
       expect(spy).to.be.calledWith(variableId, ["0x123", "0x789"], ["0x456"]);
       spy.resetHistory();
 
-      await vars.setId64s(variableId, ["0x456"]);
+      await vars.setId64s(variableId, ["0x789"]);
+      expect(spy).to.be.calledWith(variableId, ["0x456"], ["0x789"]);
+      spy.resetHistory();
+
+      await vars.setId64s(variableId, ["0x789"]);
       expect(spy).to.not.be.called;
       spy.resetHistory();
 
       await vars.unset(variableId);
-      expect(spy).to.be.calledWith(variableId, ["0x456"], undefined);
+      expect(spy).to.be.calledWith(variableId, ["0x789"], undefined);
+    });
+
+    it("raises onVariableChanged event when mutable variable changes", async () => {
+      const spy = sinon.spy();
+      vars.onVariableChanged.addListener(spy);
+
+      const value = ["0x123", "0x789"];
+      await vars.setId64s(variableId, value);
+      expect(spy).to.be.calledWith(variableId, undefined, value);
+      spy.resetHistory();
+
+      value.splice(0, 2, "0x456");
+      await vars.setId64s(variableId, value);
+      expect(spy).to.be.calledWith(variableId, ["0x123", "0x789"], value);
+      spy.resetHistory();
+
+      value.splice(0, 1, "0x789");
+      await vars.setId64s(variableId, value);
+      expect(spy).to.be.calledWith(variableId, ["0x456"], value);
+      spy.resetHistory();
+
+      await vars.setId64s(variableId, value);
+      expect(spy).to.not.be.called;
+      spy.resetHistory();
+
+      await vars.unset(variableId);
+      expect(spy).to.be.calledWith(variableId, value, undefined);
     });
 
     it("handles type conversion", async () => {

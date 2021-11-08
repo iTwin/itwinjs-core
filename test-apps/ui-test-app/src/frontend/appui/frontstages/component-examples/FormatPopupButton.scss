@@ -2,11 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@bentley/ui-core/lib/ui-core/index";
+@import "~@itwin/core-react/lib/cjs/core-react/index";
+@import "~@itwin/itwinui-css/scss/style/typography";
 
 .components-quantity-format-popup-button {
   color: $buic-foreground-body;
-  font-size: $uicore-font-size;
+  font-size: $iui-font-size;
   background-color: transparent;
   height: 2.2em;
   border: none;
@@ -29,6 +30,7 @@
       fill: $buic-foreground-primary-tone;
     }
   }
+
   &:focus {
     box-shadow: $uicore-button-focus-boxshadow;
     outline: none;

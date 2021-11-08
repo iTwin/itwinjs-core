@@ -6,11 +6,11 @@
  * @module UnifiedSelection
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { Id64String } from "@itwin/core-bentley";
+import { IModelConnection } from "@itwin/core-frontend";
 import {
   Content, ContentFlags, DEFAULT_KEYS_BATCH_SIZE, DefaultContentDisplayTypes, DescriptorOverrides, Item, Key, KeySet, Ruleset,
-} from "@bentley/presentation-common";
+} from "@itwin/presentation-common";
 import { Presentation } from "../Presentation";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "./SelectionManager";
 
@@ -62,7 +62,6 @@ export class HiliteSetProvider {
     const descriptor: DescriptorOverrides = {
       displayType: DefaultContentDisplayTypes.Viewport,
       contentFlags: ContentFlags.KeysOnly,
-      hiddenFieldNames: [],
     };
     const options = {
       imodel: this._imodel,

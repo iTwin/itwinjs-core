@@ -1,0 +1,131 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+@import "../prefix";
+@import "variables";
+
+.nz-widget-tab {
+  user-select: none;
+  white-space: nowrap;
+
+  >span {
+    font-size: $nz-widget-tab-font-size;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+
+  >.nz-badge {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  &.nz-overflown {
+    cursor: pointer;
+    display: flex;
+    position: relative;
+    max-width: 18em;
+    line-height: 2em;
+    padding-left: 0.75em;
+    padding-right: 0.75em;
+
+    >span {
+      margin-right: 3em;
+    }
+
+    >.nz-badge {
+      left: 0.25em;
+    }
+
+    &.nz-active {
+      >.nz-icon {
+        position: absolute;
+        right: 0.75em;
+        border-style: solid;
+        border-color: $buic-foreground-primary;
+        border-width: 0 0.15em 0.15em 0;
+        width: 0.5em;
+        height: 1em;
+        transform: rotate(45deg);
+        margin-left: auto;
+      }
+    }
+
+    &.nz-first {
+      margin-top: 0.5em;
+    }
+
+    &.nz-last {
+      margin-bottom: 0.5em;
+    }
+
+    @media (hover: hover) {
+      &:hover {
+        color: $buic-foreground-primary;
+      }
+    }
+  }
+
+  &:not(.nz-overflown) {
+    cursor: pointer;
+    padding: 0 1em;
+    display: flex;
+    align-items: center;
+    position: relative;
+    border: 0 solid $buic-background-5;
+    max-width: 9em;
+    background: $buic-background-3;
+
+    &:not(.nz-minimized) {
+      &.nz-active {
+        background: $buic-background-2;
+        color: $buic-foreground-primary;
+        padding-bottom: 1px;
+        margin-bottom: -1px;
+
+        &:before {
+          $padding: 0.25em;
+          content: '';
+          position: absolute;
+          background: currentColor;
+          left: $padding;
+          top: 0.25em;
+          border-radius: 0.2em;
+          width: calc(100% - #{2 * $padding});
+          height: 0.15em;
+        }
+
+        &.nz-last,
+        &.nz-last-not-overflown {
+          border-right-width: 1px;
+        }
+      }
+    }
+
+    &:not(.nz-active),
+    &.nz-minimized {
+      color: $buic-foreground-muted;
+      border-right-width: 1px;
+    }
+
+    &:not(.nz-minimized) {
+      &.nz-first-inactive {
+        border-left-width: 1px;
+      }
+    }
+
+    &.nz-first {
+      border-top-left-radius: $nz-widget-tab-border-radius;
+    }
+
+    &:hover {
+      background: $buic-background-2;
+
+      &:not(.nz-active) {
+        color: $buic-foreground-body;
+      }
+    }
+  }
+}

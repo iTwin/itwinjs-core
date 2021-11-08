@@ -6,9 +6,9 @@
  * @module WebGL
  */
 
-import { assert, dispose } from "@bentley/bentleyjs-core";
-import { Transform } from "@bentley/geometry-core";
-import { ElementAlignedBox3d, FeatureAppearanceProvider, PackedFeatureTable, ThematicDisplayMode, ViewFlags } from "@bentley/imodeljs-common";
+import { assert, dispose } from "@itwin/core-bentley";
+import { Transform } from "@itwin/core-geometry";
+import { ElementAlignedBox3d, FeatureAppearanceProvider, PackedFeatureTable, ThematicDisplayMode, ViewFlags } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { GraphicBranch, GraphicBranchFrustum, GraphicBranchOptions } from "../GraphicBranch";
@@ -31,7 +31,7 @@ import { ThematicSensors } from "./ThematicSensors";
 export abstract class Graphic extends RenderGraphic implements WebGLDisposable {
   public abstract addCommands(_commands: RenderCommands): void;
   public abstract get isDisposed(): boolean;
-  public get isPickable(): boolean { return false; }
+  public abstract get isPickable(): boolean;
   public addHiliteCommands(_commands: RenderCommands, _pass: RenderPass): void { assert(false); }
   public toPrimitive(): Primitive | undefined { return undefined; }
 }
@@ -59,13 +59,13 @@ export class GraphicOwner extends Graphic {
   public addCommands(commands: RenderCommands): void {
     this._graphic.addCommands(commands);
   }
-  public get isPickable(): boolean {
+  public override get isPickable(): boolean {
     return this._graphic.isPickable;
   }
-  public addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
+  public override addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
     this._graphic.addHiliteCommands(commands, pass);
   }
-  public toPrimitive(): Primitive | undefined {
+  public override toPrimitive(): Primitive | undefined {
     return this._graphic.toPrimitive();
   }
 }
@@ -78,15 +78,125 @@ export interface BatchContext {
   iModel?: IModelConnection;
 }
 
-interface PerTargetBatchData {
-  readonly target: Target;
-  featureOverrides?: FeatureOverrides;
-  thematicSensors?: ThematicSensors;
+/** @internal exported strictly for tests. */
+export class PerTargetBatchData {
+  public readonly target: Target;
+  protected readonly _featureOverrides = new Map<FeatureSymbology.Source | undefined, FeatureOverrides>();
+  protected _thematicSensors?: ThematicSensors;
+
+  public constructor(target: Target) {
+    this.target = target;
+  }
+
+  public dispose(): void {
+    this._thematicSensors = dispose(this._thematicSensors);
+    for (const value of this._featureOverrides.values())
+      dispose(value);
+
+    this._featureOverrides.clear();
+  }
+
+  public getThematicSensors(batch: Batch): ThematicSensors {
+    if (this._thematicSensors && !this._thematicSensors.matchesTarget(this.target))
+      this._thematicSensors = dispose(this._thematicSensors);
+
+    if (!this._thematicSensors)
+      this._thematicSensors = ThematicSensors.create(this.target, batch.range);
+
+    this._thematicSensors.update(this.target.uniforms.frustum.viewMatrix);
+    return this._thematicSensors;
+  }
+
+  public getFeatureOverrides(batch: Batch): FeatureOverrides {
+    const source = this.target.currentFeatureSymbologyOverrides?.source;
+    let ovrs = this._featureOverrides.get(source);
+    if (!ovrs) {
+      const cleanup = source ? source.onSourceDisposed.addOnce(() => this.onSourceDisposed(source)) : undefined;
+      this._featureOverrides.set(source, ovrs = FeatureOverrides.createFromTarget(this.target, batch.options, cleanup));
+      ovrs.initFromMap(batch.featureTable);
+    }
+
+    ovrs.update(batch.featureTable);
+    return ovrs;
+  }
+
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    if (this._thematicSensors)
+      stats.addThematicTexture(this._thematicSensors.bytesUsed);
+
+    for (const ovrs of this._featureOverrides.values())
+      stats.addFeatureOverrides(ovrs.byteLength);
+  }
+
+  /** Exposed strictly for tests. */
+  public get featureOverrides() { return this._featureOverrides; }
+
+  private onSourceDisposed(source: FeatureSymbology.Source): void {
+    const ovrs = this._featureOverrides.get(source);
+    if (ovrs) {
+      this._featureOverrides.delete(source);
+      ovrs.dispose();
+    }
+  }
 }
 
-function disposePerTargetBatchData(ptd: PerTargetBatchData): void {
-  ptd.featureOverrides = dispose(ptd.featureOverrides);
-  ptd.thematicSensors = dispose(ptd.thematicSensors);
+/** @internal exported strictly for tests. */
+export class PerTargetData {
+  private readonly _batch: Batch;
+  private readonly _data: PerTargetBatchData[] = [];
+
+  public constructor(batch: Batch) {
+    this._batch = batch;
+  }
+
+  public dispose(): void {
+    for (const data of this._data) {
+      data.target.onBatchDisposed(this._batch);
+      data.dispose();
+    }
+
+    this._data.length = 0;
+  }
+
+  public get isDisposed(): boolean {
+    return this._data.length === 0;
+  }
+
+  /** Exposed strictly for tests. */
+  public get data(): PerTargetBatchData[] { return this._data; }
+
+  public onTargetDisposed(target: Target): void {
+    const index = this._data.findIndex((x) => x.target === target);
+    if (-1 === index)
+      return;
+
+    const data = this._data[index];
+    data.dispose();
+    this._data.splice(index, 1);
+  }
+
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    for (const data of this._data)
+      data.collectStatistics(stats);
+  }
+
+  public getThematicSensors(target: Target): ThematicSensors {
+    return this.getBatchData(target).getThematicSensors(this._batch);
+  }
+
+  public getFeatureOverrides(target: Target): FeatureOverrides {
+    return this.getBatchData(target).getFeatureOverrides(this._batch);
+  }
+
+  private getBatchData(target: Target): PerTargetBatchData {
+    let data = this._data.find((x) => x.target === target);
+    if (!data) {
+      this._data.push(data = new PerTargetBatchData(target));
+      target.addBatch(this._batch);
+    }
+
+    return data;
+  }
 }
 
 /** @internal */
@@ -95,16 +205,17 @@ export class Batch extends Graphic {
   public readonly featureTable: PackedFeatureTable;
   public readonly range: ElementAlignedBox3d;
   private readonly _context: BatchContext = { batchId: 0 };
-  private readonly _perTargetData: PerTargetBatchData[] = [];
-  private readonly _options: BatchOptions;
+  /** Public strictly for tests. */
+  public readonly perTargetData = new PerTargetData(this);
+  public readonly options: BatchOptions;
 
   // Chiefly for debugging.
   public get tileId(): string | undefined {
-    return this._options.tileId;
+    return this.options.tileId;
   }
 
   public get locateOnly(): boolean {
-    return true === this._options.locateOnly;
+    return true === this.options.locateOnly;
   }
 
   public get batchId() { return this._context.batchId; }
@@ -123,56 +234,34 @@ export class Batch extends Graphic {
     this.graphic = graphic;
     this.featureTable = features;
     this.range = range;
-    this._options = options ?? { };
+    this.options = options ?? {};
   }
 
   private _isDisposed = false;
   public get isDisposed(): boolean {
-    return this._isDisposed && 0 === this._perTargetData.length;
+    return this._isDisposed && this.perTargetData.isDisposed;
   }
 
   // Note: This does not remove FeatureOverrides from the array, but rather disposes of the WebGL resources they contain
   public dispose() {
     dispose(this.graphic);
 
-    for (const ptd of this._perTargetData) {
-      ptd.target.onBatchDisposed(this);
-      disposePerTargetBatchData(ptd);
-    }
-
-    this._perTargetData.length = 0;
+    this.perTargetData.dispose();
     this._isDisposed = true;
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
     this.graphic.collectStatistics(stats);
     stats.addFeatureTable(this.featureTable.byteLength);
-    for (const ptd of this._perTargetData) {
-      if (ptd.featureOverrides)
-        stats.addFeatureOverrides(ptd.featureOverrides.byteLength);
-
-      if (ptd.thematicSensors)
-        stats.addThematicTexture(ptd.thematicSensors.bytesUsed);
-    }
+    this.perTargetData.collectStatistics(stats);
   }
 
   public addCommands(commands: RenderCommands): void {
     commands.addBatch(this);
   }
 
-  public get isPickable(): boolean {
+  public override get isPickable(): boolean {
     return true;
-  }
-
-  private getPerTargetData(target: Target): PerTargetBatchData {
-    let ptd = this._perTargetData.find((x) => x.target === target);
-    if (!ptd) {
-      ptd = { target };
-      this._perTargetData.push(ptd);
-      target.addBatch(this);
-    }
-
-    return ptd;
   }
 
   public getThematicSensors(target: Target): ThematicSensors {
@@ -180,37 +269,15 @@ export class Batch extends Graphic {
     assert(target.plan.thematic.displayMode === ThematicDisplayMode.InverseDistanceWeightedSensors, "thematic display mode must be sensor-based");
     assert(target.plan.thematic.sensorSettings.sensors.length > 0, "must have at least one sensor to process");
 
-    const ptd = this.getPerTargetData(target);
-    if (ptd.thematicSensors && !ptd.thematicSensors.matchesTarget(target))
-      ptd.thematicSensors = dispose(ptd.thematicSensors);
-
-    if (!ptd.thematicSensors)
-      ptd.thematicSensors = ThematicSensors.create(target, this.range);
-
-    ptd.thematicSensors.update(target.uniforms.frustum.viewMatrix);
-
-    return ptd.thematicSensors;
+    return this.perTargetData.getThematicSensors(target);
   }
 
   public getOverrides(target: Target): FeatureOverrides {
-    const ptd = this.getPerTargetData(target);
-    if (!ptd.featureOverrides) {
-      ptd.featureOverrides = FeatureOverrides.createFromTarget(target, this._options);
-      ptd.featureOverrides.initFromMap(this.featureTable);
-    }
-
-    ptd.featureOverrides.update(this.featureTable);
-    return ptd.featureOverrides;
+    return this.perTargetData.getFeatureOverrides(target);
   }
 
   public onTargetDisposed(target: Target) {
-    const index = this._perTargetData.findIndex((x) => x.target === target);
-    if (-1 === index)
-      return;
-
-    const ptd = this._perTargetData[index];
-    disposePerTargetBatchData(ptd);
-    this._perTargetData.splice(index, 1);
+    this.perTargetData.onTargetDisposed(target);
   }
 }
 
@@ -259,6 +326,10 @@ export class Branch extends Graphic {
     this.branch.dispose();
   }
 
+  public override get isPickable(): boolean {
+    return this.branch.entries.some((gf) => (gf as Graphic).isPickable);
+  }
+
   public collectStatistics(stats: RenderMemory.Statistics): void {
     this.branch.collectStatistics(stats);
   }
@@ -267,7 +338,7 @@ export class Branch extends Graphic {
     commands.addBranch(this);
   }
 
-  public addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
+  public override addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
     commands.addHiliteBranch(this, pass);
   }
 }
@@ -295,6 +366,10 @@ export class GraphicsArray extends Graphic {
 
   public get isDisposed(): boolean { return 0 === this.graphics.length; }
 
+  public override get isPickable(): boolean {
+    return this.graphics.some((x) => (x as Graphic).isPickable);
+  }
+
   public dispose() {
     for (const graphic of this.graphics)
       dispose(graphic);
@@ -307,7 +382,7 @@ export class GraphicsArray extends Graphic {
     }
   }
 
-  public addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
+  public override addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
     for (const graphic of this.graphics) {
       (graphic as Graphic).addHiliteCommands(commands, pass);
     }

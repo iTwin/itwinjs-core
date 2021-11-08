@@ -6,9 +6,9 @@
  * @module Tiles
  */
 
-import { BeTimePoint } from "@bentley/bentleyjs-core";
-import { ClipVector, Geometry, Map4d, Matrix4d, Point3d, Point4d, Range1d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
-import { FeatureAppearanceProvider, FrustumPlanes, HiddenLine, ViewFlagOverrides } from "@bentley/imodeljs-common";
+import { BeTimePoint } from "@itwin/core-bentley";
+import { ClipVector, Geometry, Map4d, Matrix4d, Point3d, Point4d, Range1d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
+import { FeatureAppearanceProvider, FrustumPlanes, HiddenLine, ViewFlagOverrides } from "@itwin/core-common";
 import { FeatureSymbology } from "../render/FeatureSymbology";
 import { GraphicBranch } from "../render/GraphicBranch";
 import { RenderClipVolume } from "../render/RenderClipVolume";
@@ -156,14 +156,14 @@ export class TileDrawArgs {
    * Device scaling is not applied.
    */
   protected computePixelSizeInMetersAtClosestPoint(center: Point3d, radius: number): number {
-    if (this.context.viewport.view.isCameraEnabled() && this._nearFrontCenter) {
+    if (this.context.viewport.view.is3d() && this.context.viewport.isCameraOn && this._nearFrontCenter) {
       const toFront = Vector3d.createStartEnd(center, this._nearFrontCenter);
       const viewZ = this.context.viewport.rotation.rowZ();
       // If the sphere overlaps the near front plane just use near front point.  This also handles behind eye conditions.
       if (viewZ.dotProduct(toFront) < radius) {
         center = this._nearFrontCenter;
       } else {
-      // Find point on sphere closest to eye.
+        // Find point on sphere closest to eye.
         const toEye = center.unitVectorTo(this.context.viewport.view.camera.eye);
 
         if (toEye) {  // Only if tile is not already behind the eye.
@@ -258,13 +258,13 @@ export class TileDrawArgs {
     this.drape = context.getTextureDrapeForModel(tree.modelId);
 
     // NB: If the tile tree has its own clip, do not also apply the view's clip.
-    if (context.viewFlags.clipVolume && false !== viewFlagOverrides.clipVolumeOverride && undefined === clipVolume) {
+    if (context.viewFlags.clipVolume && false !== viewFlagOverrides.clipVolume && undefined === clipVolume) {
       const outsideClipColor = context.viewport.displayStyle.settings.clipStyle.outsideColor;
       this.viewClip = undefined === outsideClipColor ? context.viewport.view.getViewClip() : undefined;
     }
 
     this.parentsAndChildrenExclusive = parentsAndChildrenExclusive;
-    if (context.viewport.view.isCameraEnabled())
+    if (context.viewport.isCameraOn)
       this._nearFrontCenter = context.viewport.getFrustum(CoordSystem.World).frontCenter;
 
     this.pixelSizeScaleFactor = this.computePixelSizeScaleFactor();

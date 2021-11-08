@@ -6,9 +6,9 @@
  * @module Tiles
  */
 
-import { assert, ByteStream } from "@bentley/bentleyjs-core";
-import { Point3d, Transform } from "@bentley/geometry-core";
-import { BatchType, CompositeTileHeader, TileFormat, ViewFlagOverrides } from "@bentley/imodeljs-common";
+import { assert, ByteStream } from "@itwin/core-bentley";
+import { Point3d, Transform } from "@itwin/core-geometry";
+import { BatchType, CompositeTileHeader, TileFormat, ViewFlagOverrides } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { GraphicBranch } from "../render/GraphicBranch";
 import { RenderSystem } from "../render/RenderSystem";
@@ -45,6 +45,7 @@ export abstract class RealityTileLoader {
   public abstract getRequestChannel(tile: Tile): TileRequestChannel;
   public abstract requestTileContent(tile: Tile, isCanceled: () => boolean): Promise<TileRequest.Response>;
   public abstract get maxDepth(): number;
+  public abstract get minDepth(): number;
   public abstract get priority(): TileLoadPriority;
   protected get _batchType(): BatchType { return BatchType.Primary; }
   protected get _loadEdges(): boolean { return true; }
@@ -84,7 +85,7 @@ export abstract class RealityTileLoader {
           graphic = system.createBranch(transformBranch, tile.transformToRoot);
         }
 
-        return { graphic};
+        return { graphic };
 
       case TileFormat.B3dm:
         reader = B3dmReader.create(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp, tile.isLeaf, tile.center, tile.transformToRoot, isCanceled, this.getBatchIdMap());

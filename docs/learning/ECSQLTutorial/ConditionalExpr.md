@@ -77,4 +77,4 @@ SELECT IIF(Name IS NULL, DisplayLabel, Name) FROM test.Foo;
 
 ```
 
-[**< Previous**](./TypeFilter.md) &nbsp; | &nbsp; [**Next >**](./BuiltInFunctions.md)
+[**< Previous**](./ClassFilter.md) &nbsp; | &nbsp; [**Next >**](./BuiltInFunctions.md)

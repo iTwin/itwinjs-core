@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ECSchema schemaName="TestDomain" alias="testbim" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+<ECSchema schemaName="TestDomain" alias="td" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
     <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+
     <ECEntityClass typeName="IMixin" modifier="Abstract">
         <ECCustomAttributes>
             <IsMixin xmlns="CoreCustomAttributes.1.0">
@@ -15,4 +16,16 @@
         <BaseClass>IMixin</BaseClass>
         <ECProperty propertyName="TestProperty" typeName="int"/>
     </ECEntityClass>
+
+    <ECEntityClass typeName="Equipment">
+        <BaseClass>bis:PhysicalElement</BaseClass>
+    </ECEntityClass>
+
+    <ECEntityClass typeName="EquipmentType">
+        <BaseClass>bis:PhysicalType</BaseClass>
+        <ECProperty propertyName="ManufacturerName" typeName="string"/>
+        <ECProperty propertyName="ProductLineName" typeName="string"/>
+        <ECProperty propertyName="Rating" typeName="string"/>
+    </ECEntityClass>
+
 </ECSchema>

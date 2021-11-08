@@ -6,8 +6,8 @@
  * @module Views
  */
 
-import { Id64, Id64Arg, Id64String, ObservableSet } from "@bentley/bentleyjs-core";
-import { ModelSelectorProps } from "@bentley/imodeljs-common";
+import { Id64, Id64Arg, Id64String, ObservableSet } from "@itwin/core-bentley";
+import { ModelSelectorProps } from "@itwin/core-common";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
 
@@ -17,7 +17,7 @@ import { IModelConnection } from "./IModelConnection";
  */
 export class ModelSelectorState extends ElementState {
   /** @internal */
-  public static get className() { return "ModelSelector"; }
+  public static override get className() { return "ModelSelector"; }
 
   private readonly _models = new ObservableSet<string>();
 
@@ -46,7 +46,7 @@ export class ModelSelectorState extends ElementState {
   /** The name of this ModelSelector */
   public get name(): string { return this.code.value; }
 
-  public toJSON(): ModelSelectorProps {
+  public override toJSON(): ModelSelectorProps {
     const val: any = super.toJSON();
     val.models = [];
     this.models.forEach((model) => val.models.push(model));

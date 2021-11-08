@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Altered to use abstract Reality Data interface",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

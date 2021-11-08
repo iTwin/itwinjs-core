@@ -1,6 +1,6 @@
 # UiAdmin
 
-The [UiAdmin]($ui-abstract) class contains an API used to display the following:
+The [UiAdmin]($appui-abstract) class contains an API used to display the following:
 
 - Context Menu
 - Toolbar
@@ -20,7 +20,7 @@ The UiAdmin methods are callable from `IModelApp.uiAdmin` in the imodeljs-fronte
 ### showContextMenu
 
 The `showContextMenu` function shows a context menu at a particular location.
-The menu items are an array of [AbstractMenuItemProps]($ui-abstract).
+The menu items are an array of [AbstractMenuItemProps]($appui-abstract).
 
 The following example shows abstract menu item definitions. Both items and sub-menus are shown.
 
@@ -99,7 +99,7 @@ IModelApp.uiAdmin.hideMenuButton("test1");
 ### showToolbar
 
 The `showToolbar` function shows a Toolbar at a particular location.
-The toolbar items are an array of [AbstractToolbarProps]($ui-abstract).
+The toolbar items are an array of [AbstractToolbarProps]($appui-abstract).
 
 The following example shows an array of abstract toolbar items with item priorities that establish their order.
 
@@ -224,7 +224,7 @@ There are several functions to display input editors for specific types of value
 `showAngleEditor`,
 `showLengthEditor`, and
 `showHeightEditor`.
-The `showInputEditor` function can be used to display the input editor appropriate for a given [PropertyDescription]($ui-abstract).
+The `showInputEditor` function can be used to display the input editor appropriate for a given [PropertyDescription]($appui-abstract).
 
 The following are handler functions. The `_closeInputEditor` function closes the editor by calling `UiAdmin.hideInputEditor`.
 
@@ -603,4 +603,4 @@ IModelApp.uiAdmin.closeDialog("SampleApp:DynamicModal");
 
 ## API Reference
 
-- [UiAdmin]($ui-abstract)
+- [UiAdmin]($appui-abstract)

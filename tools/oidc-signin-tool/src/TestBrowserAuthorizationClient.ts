@@ -2,13 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, BeEvent, ClientRequestContext, Config } from "@bentley/bentleyjs-core";
-import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { AccessToken, UrlDiscoveryClient } from "@bentley/itwin-client";
-import { AuthorizationParameters, Client, custom, generators, Issuer, OpenIDCallbackChecks, TokenSet } from "openid-client";
+import { AccessToken, assert, BeEvent } from "@itwin/core-bentley";
+import { ImsAuthorizationClient } from "@bentley/itwin-client";
+import { AuthorizationClient } from "@itwin/core-common";
+import { AuthorizationParameters, Client, custom, generators, Issuer, OpenIDCallbackChecks } from "openid-client";
 import * as os from "os";
 import * as puppeteer from "puppeteer";
-import * as url from "url";
 import { TestBrowserAuthorizationClientConfiguration, TestUserCredentials } from "./TestUsers";
 
 /**
@@ -19,14 +18,14 @@ import { TestBrowserAuthorizationClientConfiguration, TestUserCredentials } from
  *   spawning a headless browser, and automatically filling in the supplied user credentials.
  * @alpha
  */
-export class TestBrowserAuthorizationClient implements FrontendAuthorizationClient {
+export class TestBrowserAuthorizationClient implements AuthorizationClient {
   private _client!: Client;
   private _issuer!: Issuer<Client>;
   private _imsUrl!: string;
   private readonly _config: TestBrowserAuthorizationClientConfiguration;
   private readonly _user: TestUserCredentials;
-  private _accessToken?: AccessToken;
-  private _deploymentRegion?: number;
+  private _accessToken: AccessToken = "";
+  private _expiresAt?: Date | undefined = undefined;
 
   /**
    * Constructor
@@ -38,24 +37,9 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
     this._user = user;
   }
 
-  /**
-   * Set the deployment region
-   * - For Bentley internal applications, the deployment region is automatically inferred from the "imjs_buddi_resolve_url_using_region" configuration if possible
-   * - Defaults to PROD if un-specified
-   * @internal
-   */
-  public set deploymentRegion(deploymentRegion: number) {
-    this._deploymentRegion = deploymentRegion;
-  }
-
   private async initialize() {
-    if (undefined === this._deploymentRegion)
-      this._deploymentRegion = Config.App.has("imjs_buddi_resolve_url_using_region") ? Config.App.getNumber("imjs_buddi_resolve_url_using_region") : 0; // Defaults to PROD (for 3rd party users)
-
-    const urlDiscoveryClient: UrlDiscoveryClient = new UrlDiscoveryClient();
-    this._imsUrl = await urlDiscoveryClient.discoverUrl(new ClientRequestContext(""), "IMSProfile.RP", this._deploymentRegion);
-
-    const oidcUrl = await urlDiscoveryClient.discoverUrl(new ClientRequestContext(""), "IMSOpenID", this._deploymentRegion);
+    const imsClient = new ImsAuthorizationClient();
+    this._imsUrl = await imsClient.getUrl();
 
     // Due to issues with a timeout or failed request to the authorization service increasing the standard timeout and adding retries.
     // Docs for this option here, https://github.com/panva/node-openid-client/tree/master/docs#customizing-http-requests
@@ -64,11 +48,12 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
       retry: 3,
     });
 
-    this._issuer = await Issuer.discover(url.resolve(oidcUrl, "/.well-known/openid-configuration"));
+    const imsUrl = new URL("/.well-known/openid-configuration", this._imsUrl);
+    this._issuer = await Issuer.discover(imsUrl.toString());
     this._client = new this._issuer.Client({ client_id: this._config.clientId, token_endpoint_auth_method: "none" }); // eslint-disable-line @typescript-eslint/naming-convention
   }
 
-  public readonly onUserStateChanged = new BeEvent<(token: AccessToken | undefined) => void>();
+  public readonly onAccessTokenChanged = new BeEvent<(token: AccessToken) => void>();
 
   /** Returns true if there's a current authorized user or client (in the case of agent applications).
    * Returns true if signed in and the access token has not expired, and false otherwise.
@@ -81,10 +66,9 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
   public get hasExpired(): boolean {
     if (!this._accessToken)
       return false;
-    const expiresAt = this._accessToken.getExpiresAt();
-    assert(!!expiresAt);
+    assert(!!this._expiresAt);
     // show expiry one minute before actual time to refresh
-    return ((expiresAt.getTime() - Date.now()) <= 1 * 60 * 1000);
+    return ((this._expiresAt.getTime() - Date.now()) <= 1 * 60 * 1000);
   }
 
   /** Returns true if the user has signed in, but the token has expired and requires a refresh */
@@ -97,9 +81,9 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
    * The token is refreshed if necessary and possible.
    * @throws [[BentleyError]] If the client was not used to authorize, or there was an authorization error.
    */
-  public async getAccessToken(_requestContext?: ClientRequestContext): Promise<AccessToken> {
+  public async getAccessToken(): Promise<AccessToken> {
     if (this.isAuthorized)
-      return this._accessToken!;
+      return this._accessToken;
 
     // Add retry logic to help avoid flaky issues on CI machines.
     let numRetries = 0;
@@ -118,7 +102,7 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
       break;
     }
 
-    return this._accessToken!;
+    return this._accessToken;
   }
 
   public async signIn(): Promise<void> {
@@ -183,22 +167,15 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
     await page.close();
     await browser.close();
 
-    // eslint-disable-next-line no-console
-    // console.log(`Finished OIDC signin for ${this._user.email} ...`);
-
-    const token = await this.tokenSetToAccessToken(tokenSet);
-    this._accessToken = token;
-    this.onUserStateChanged.raiseEvent(this._accessToken);
+    this._accessToken = `Bearer ${tokenSet.access_token}`;
+    if (tokenSet.expires_at)
+      this._expiresAt = new Date(tokenSet.expires_at * 1000);
+    this.onAccessTokenChanged.raiseEvent(this._accessToken);
   }
 
   public async signOut(): Promise<void> {
-    this._accessToken = undefined;
-    this.onUserStateChanged.raiseEvent(this._accessToken);
-  }
-
-  private async tokenSetToAccessToken(tokenSet: TokenSet): Promise<AccessToken> {
-    const userInfo = await this._client.userinfo(tokenSet);
-    return AccessToken.fromTokenResponseJson(tokenSet, userInfo)!;
+    this._accessToken = "";
+    this.onAccessTokenChanged.raiseEvent(this._accessToken);
   }
 
   private createAuthParams(scope: string): [AuthorizationParameters, OpenIDCallbackChecks] {
@@ -254,8 +231,8 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
   }
 
   private async handleLoginPage(page: puppeteer.Page): Promise<void> {
-    const loginUrl = url.resolve(this._imsUrl, "/IMS/Account/Login");
-    if (page.url().startsWith(loginUrl)) {
+    const loginUrl = new URL("/IMS/Account/Login", this._imsUrl);
+    if (page.url().startsWith(loginUrl.toString())) {
       await page.waitForSelector("[name=EmailAddress]");
       await page.type("[name=EmailAddress]", this._user.email);
       await page.waitForSelector("[name=Password]");
@@ -387,8 +364,8 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
   }
 
   private async handleConsentPage(page: puppeteer.Page): Promise<void> {
-    const consentUrl = url.resolve(this._issuer.issuer as string, "/consent");
-    if (page.url().startsWith(consentUrl))
+    const consentUrl = new URL("/consent", this._issuer.issuer as string);
+    if (page.url().startsWith(consentUrl.toString()))
       await page.click("button[value=yes]");
 
     // New consent page acceptance
@@ -401,6 +378,16 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
           waitUntil: "networkidle2",
         }),
         page.$eval(".allow", (button: any) => button.click()),
+      ]);
+    } else if (await page.title() === "Permissions") { // Another new consent page...
+      await page.waitForSelector("div.iui-input-bar button");
+
+      await Promise.all([
+        page.waitForNavigation({
+          timeout: 60000,
+          waitUntil: "networkidle2",
+        }),
+        page.$eval("div.iui-input-bar button span", (button: any) => button.click()),
       ]);
     }
   }
@@ -445,9 +432,7 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
  * @param deploymentRegion Deployment region. If unspecified, it's inferred from configuration, or simply defaults to "0" for PROD use
  * @alpha
  */
-export async function getTestAccessToken(config: TestBrowserAuthorizationClientConfiguration, user: TestUserCredentials, deploymentRegion?: number): Promise<AccessToken> {
+export async function getTestAccessToken(config: TestBrowserAuthorizationClientConfiguration, user: TestUserCredentials): Promise<AccessToken | undefined> {
   const client = new TestBrowserAuthorizationClient(config, user);
-  if (undefined !== deploymentRegion)
-    client.deploymentRegion = deploymentRegion;
   return client.getAccessToken();
 }

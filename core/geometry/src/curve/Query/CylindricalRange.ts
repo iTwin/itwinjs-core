@@ -47,18 +47,18 @@ export class CylindricalRangeQuery extends RecurseToCurvesGeometryHandler {
     }
   }
 
-  public handleLineSegment3d(segment0: LineSegment3d) {
+  public override handleLineSegment3d(segment0: LineSegment3d) {
     this.announcePoint(segment0.startPoint(this._worldPoint));
     this.announcePoint(segment0.endPoint(this._worldPoint));
   }
-  public handleLineString3d(ls0: LineString3d) {
+  public override handleLineString3d(ls0: LineString3d) {
     for (let i = 0; i < ls0.numPoints(); i++) {
       ls0.pointAt(i, this._worldPoint);
       this.announcePoint(this._worldPoint);
     }
   }
 
-  public handleArc3d(arc0: Arc3d): any {
+  public override handleArc3d(arc0: Arc3d): any {
     // humbug .. just stroke it ..
     // exact solution is:
     //   project the arc to the z=0 plane of the local system.
@@ -110,7 +110,7 @@ export class CylindricalRangeQuery extends RecurseToCurvesGeometryHandler {
             axis.direction.crossProduct(defaultVectorFromAxis, vectorV);
           else
             axis.direction.crossProduct(vectorU, vectorV);
-          geometry.packedDerivatives!.getVector3dAtCheckedVectorIndex(i, vectorU); // reuse vector U as curve derivative
+          geometry.packedDerivatives.getVector3dAtCheckedVectorIndex(i, vectorU); // reuse vector U as curve derivative
           vectorU.crossProduct(vectorV, vectorV);  // reuse vector V as normal!
           vectorV.normalizeInPlace();
           normals.push(vectorV);

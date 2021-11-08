@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { DbResult, OpenMode } from "@bentley/bentleyjs-core";
+import { DbResult, OpenMode } from "@itwin/core-bentley";
 import { SQLiteDb } from "../../SQLiteDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 

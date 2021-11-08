@@ -3,16 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Id64Array, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
+import { BentleyError, Id64Array, Id64String, IModelStatus } from "@itwin/core-bentley";
 import {
-  AnyGeometryQuery, Arc3d, BezierCurveBase, Box, BSplineCurve3d, Cone, CurveChainWithDistanceIndex, CurveCollection, CurvePrimitive, IModelJson,
+  AkimaCurve3d, AnyGeometryQuery, Arc3d, BezierCurveBase, Box, BSplineCurve3d, Cone, CurveChainWithDistanceIndex, CurveCollection, CurvePrimitive, IModelJson,
+  InterpolationCurve3d,
   LinearSweep, LineSegment3d, LineString3d, Loop, Path, Range3d, RotationalSweep, RuledSweep, SolidPrimitive, Sphere, TorusPipe, Transform,
   TransitionSpiral3d, UVSelect,
-} from "@bentley/geometry-core";
+} from "@itwin/core-geometry";
 import {
   BRepEntity, GeometricElement3dProps, GeometryParams, GeometryStreamIterator, GeometrySummaryRequestProps, GeometrySummaryVerbosity, ImagePrimitive,
   IModelError, TextStringPrimitive,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { Element, GeometricElement, GeometryPart } from "./Element";
 import { IModelDb } from "./IModelDb";
 
@@ -98,12 +99,7 @@ class ResponseGenerator {
       }
     } catch (err) {
       lines = lines.slice(0, 1);
-
-      let message = err.message;
-      if (undefined === message)
-        message = err.toString();
-
-      lines.push(`ERROR: ${message}`);
+      lines.push(`ERROR: ${BentleyError.getErrorMessage(err)}`);
     }
 
     return lines.filter((line) => line !== "").join("\n");
@@ -226,7 +222,7 @@ class ResponseGenerator {
       const str = JSON.stringify(json);
       return this.wantSquish ? this.squish(str) : str;
     } catch (err) {
-      return err.toString();
+      return BentleyError.getErrorMessage(err);
     }
   }
 
@@ -369,6 +365,19 @@ class ResponseGenerator {
         ' curveOrder: ${bsplineCurve.order}'
         ' controlPointsCount: ${bsplineCurve.numPoles}'
         ' curveLength: ${curve.curveLength()}`;
+        return summary;
+      case "interpolationCurve":
+        const interpolationCurve: InterpolationCurve3d = curve as InterpolationCurve3d;
+        const interpolationProps = interpolationCurve.cloneProps();
+        summary = `${summary}'
+        ' curveOrder: ${interpolationProps.order}'
+        ' controlPointsCount: ${interpolationProps.fitPoints.length}`;
+        return summary;
+      case "akimaCurve":
+        const akimaCurve: AkimaCurve3d = curve as AkimaCurve3d;
+        const akimaProps = akimaCurve.cloneProps();
+        summary = `${summary}'
+          ' controlPointsCount: ${akimaProps.fitPoints.length}`;
         return summary;
       case "bezierCurve":
         const bezierCurve: BezierCurveBase = curve as BezierCurveBase;

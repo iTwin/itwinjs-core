@@ -60,6 +60,11 @@ export class NodeXYZUV {
       return result.set(node, x, y, z, u, v);
     return new NodeXYZUV(node, x, y, z, u, v);
   }
+  /** Create a `NodeXYZUV` with explicit node, xyz, uv */
+  public static create(node: HalfEdge,
+    x: number = 0, y: number = 0, z: number = 0, u: number = 0, v: number = 0){
+    return new NodeXYZUV(node, x, y, z, u, v);
+  }
 
   /** Access the node. */
   public get node(): HalfEdge { return this._node; }

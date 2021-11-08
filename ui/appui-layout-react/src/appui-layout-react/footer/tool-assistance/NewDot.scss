@@ -1,0 +1,13 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+
+.nz-footer-toolAssistance-newDot {
+  height: 5px;
+  width: 5px;
+  background-color: $buic-foreground-success;
+  border-radius: 50%;
+  display: inline-block;
+}

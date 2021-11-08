@@ -10,8 +10,8 @@ describe("PresentationError", () => {
   describe("[get] name", () => {
 
     it("returns name of PresentationStatus when exists", () => {
-      const error = new PresentationError(PresentationStatus.UseAfterDisposal);
-      expect(error.name).to.eq("UseAfterDisposal");
+      const error = new PresentationError(PresentationStatus.InvalidArgument);
+      expect(error.name).to.eq("InvalidArgument");
     });
 
     it("returns error number when it's not in PresentationStatus enum", () => {

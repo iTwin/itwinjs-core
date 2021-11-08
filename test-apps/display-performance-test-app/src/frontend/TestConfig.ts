@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as path from "path";
-import { assert, Id64Array, Id64String } from "@bentley/bentleyjs-core";
+import { assert, Id64Array, Id64String } from "@itwin/core-bentley";
 import {
   BackgroundMapProps, ColorDef, Hilite, RenderMode, ViewFlags, ViewStateProps,
-} from "@bentley/imodeljs-common";
-import { RenderSystem, TileAdmin } from "@bentley/imodeljs-frontend";
+} from "@itwin/core-common";
+import { RenderSystem, TileAdmin } from "@itwin/core-frontend";
 
 /** Dimensions of the Viewport for a TestConfig. */
 export interface ViewSize {
@@ -115,7 +115,7 @@ export interface TestConfigProps {
    * Default: "*"
    */
   iModelName?: string;
-  /** The name of the iModelHub project from which to obtain iModels. Currently not supported.
+  /** The name of the iTwin from which to obtain iModels. Currently not supported.
    * Default: "iModel Testing"
    */
   iModelHubProject?: string;
@@ -151,10 +151,19 @@ export interface TestConfigProps {
   viewString?: ViewStateSpecProps;
   /** Specifies hypermodeling settings applied to the view. */
   hyperModeling?: HyperModelingProps;
+  /** Specifies if EXT_disjoint_timer_query extension is used to collect GPU data */
+  useDisjointTimer?: boolean;
+  /** Describes how to react to an otherwise uncaught exception during a test.
+   *  - "terminate" => log the exception and terminate immediately.
+   *  - undefined => log the exception and continue to next test.
+   * Logged exceptions will include the string "DPTA_EXCEPTION" for easy grepping.
+   */
+  onException?: "terminate";
 }
 
 export const defaultHilite = new Hilite.Settings();
 export const defaultEmphasis = new Hilite.Settings(ColorDef.black, 0, 0, Hilite.Silhouette.Thick);
+export const isWindows = window.navigator.userAgent.toLowerCase().includes("win");
 
 /** Configures how one or more tests are run. A Test belongs to a TestSet and can test multiple iModels and views thereof.
  * A single base config is supplied by the backend.
@@ -169,13 +178,14 @@ export class TestConfig {
   public readonly outputName: string;
   public readonly outputPath: string;
   public iModelName: string;
-  public readonly iModelHubProject: string;
+  public readonly iTwin: string;
   public viewName: string;
   public readonly testType: TestType;
   public readonly csvFormat: string;
   public readonly renderOptions: RenderSystem.Options;
   public readonly savedViewType: SavedViewType;
   public readonly iModelLocation: string;
+  public readonly useDisjointTimer: boolean;
 
   public readonly extViewName?: string;
   public readonly displayStyle?: string;
@@ -189,6 +199,7 @@ export class TestConfig {
   public readonly filenameOptsToIgnore?: string[] | string;
   public readonly backgroundMap?: BackgroundMapProps;
   public readonly hyperModeling?: HyperModelingProps;
+  public readonly onException?: "terminate";
 
   /** Construct a new TestConfig with properties initialized by following priority:
    *  As defined by `props`; or
@@ -200,10 +211,10 @@ export class TestConfig {
     this.numRendersToTime = props.numRendersToTime ?? prevConfig?.numRendersToTime ?? 100;
     this.numRendersToSkip = props.numRendersToSkip ?? prevConfig?.numRendersToSkip ?? 50;
     this.outputName = props.outputName ?? prevConfig?.outputName ?? "performanceResults.csv";
-    this.outputPath = prevConfig?.outputPath ?? "D:\\output\\performanceData\\";
+    this.outputPath = prevConfig?.outputPath ?? (isWindows ? "D:\\output\\performanceData\\" : "/Users/");
     this.iModelLocation = prevConfig?.iModelLocation ?? "";
     this.iModelName = props.iModelName ?? prevConfig?.iModelName ?? "*";
-    this.iModelHubProject = props.iModelHubProject ?? prevConfig?.iModelHubProject ?? "iModel Testing";
+    this.iTwin = props.iModelHubProject ?? prevConfig?.iTwin ?? "iModel Testing";
     this.csvFormat = props.csvFormat ?? prevConfig?.csvFormat ?? "original";
     this.viewName = props.viewName ?? prevConfig?.viewName ?? "*";
     this.extViewName = props.extViewName;
@@ -213,6 +224,8 @@ export class TestConfig {
     this.filenameOptsToIgnore = props.filenameOptsToIgnore ?? prevConfig?.filenameOptsToIgnore;
     this.displayStyle = props.displayStyle ?? prevConfig?.displayStyle;
     this.hyperModeling = props.hyperModeling ?? prevConfig?.hyperModeling;
+    this.useDisjointTimer = props.useDisjointTimer ?? prevConfig?.useDisjointTimer ?? true;
+    this.onException = props.onException ?? prevConfig?.onException;
 
     if (prevConfig) {
       if (prevConfig.viewStateSpec) {
@@ -331,10 +344,11 @@ function merge<T extends object>(first: T | undefined, second: T | undefined): T
 }
 
 /** Combine two file paths. e.g., combineFilePaths("images/img.png", "/usr/tmp") returns "/usr/tmp/images/img.png".
- * If additionalPath begins with a drive letter, initialPath is ignored.
+ * If isWindows & additionalPath begins with a drive letter, initialPath is ignored.
+ * If !isWindows & additionalPath begins with "/", initialPath is ignored.
  */
 function combineFilePaths(additionalPath: string, initialPath: string): string {
-  if (initialPath.length === 0 || additionalPath[1] === ":")
+  if (initialPath.length === 0 || (isWindows && additionalPath[1] === ":") || (!isWindows && additionalPath[0] === "/"))
     return additionalPath;
 
   return path.join(initialPath, additionalPath);

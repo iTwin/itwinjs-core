@@ -7,41 +7,41 @@
  */
 
 import {
-  AuthStatus, BentleyError, BentleyStatus, BriefcaseStatus, ChangeSetStatus, DbResult, GetMetaDataFunction, IModelStatus, LogFunction,
-  RepositoryStatus, RpcInterfaceStatus,
-} from "@bentley/bentleyjs-core";
+  AuthStatus, BentleyError, BentleyStatus, BriefcaseStatus, ChangeSetStatus, DbResult, GetMetaDataFunction, IModelStatus, RepositoryStatus,
+  RpcInterfaceStatus,
+} from "@itwin/core-bentley";
 
-export { BentleyStatus, BentleyError, IModelStatus, BriefcaseStatus, GetMetaDataFunction, LogFunction, DbResult, AuthStatus, RepositoryStatus, ChangeSetStatus, RpcInterfaceStatus } from "@bentley/bentleyjs-core";
+export { BentleyStatus, BentleyError, IModelStatus, BriefcaseStatus, GetMetaDataFunction, LogFunction, DbResult, AuthStatus, RepositoryStatus, ChangeSetStatus, RpcInterfaceStatus } from "@itwin/core-bentley";
 
 /** The error type thrown by this module. See [[IModelStatus]] for `errorNumber` values.
  * @public
  */
 export class IModelError extends BentleyError {
-  public constructor(errorNumber: number | IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | RepositoryStatus | ChangeSetStatus | RpcInterfaceStatus | AuthStatus, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction) {
-    super(errorNumber, message, log, category, getMetaData);
+  public constructor(errorNumber: number | IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | RepositoryStatus | ChangeSetStatus | RpcInterfaceStatus | AuthStatus, message: string, getMetaData?: GetMetaDataFunction) {
+    super(errorNumber, message, getMetaData);
   }
 }
 
 /** @public */
 export class ServerError extends IModelError {
-  public constructor(errorNumber: number, message: string, log?: LogFunction) {
-    super(errorNumber, message, log);
+  public constructor(errorNumber: number, message: string) {
+    super(errorNumber, message);
     this.name = `Server error (${errorNumber})`;
   }
 }
 
 /** @public */
 export class ServerTimeoutError extends ServerError {
-  public constructor(message: string, log?: LogFunction) {
-    super(IModelStatus.ServerTimeout, message, log);
+  public constructor(message: string) {
+    super(IModelStatus.ServerTimeout, message);
     this.name = "Server timeout error";
   }
 }
 
 /** @public */
 export class BackendError extends IModelError {
-  public constructor(errorNumber: number, name: string, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction) {
-    super(errorNumber, message, log, category, getMetaData);
+  public constructor(errorNumber: number, name: string, message: string, getMetaData?: GetMetaDataFunction) {
+    super(errorNumber, message, getMetaData);
     this.name = name;
   }
 }
@@ -51,8 +51,8 @@ export class BackendError extends IModelError {
  * @alpha
  */
 export class ChannelConstraintError extends IModelError {
-  public constructor(message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction) {
-    super(RepositoryStatus.ChannelConstraintViolation, message, log, category, getMetaData);
+  public constructor(message: string, getMetaData?: GetMetaDataFunction) {
+    super(RepositoryStatus.ChannelConstraintViolation, message, getMetaData);
   }
 }
 

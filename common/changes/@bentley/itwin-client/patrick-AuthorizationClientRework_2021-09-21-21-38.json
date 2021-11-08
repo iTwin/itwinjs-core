@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/itwin-client",
+      "comment": "Replaced accessToken object with a string type, removed isAuthorized from AuthorizationClient interface, moved userInfo to UiFramework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/itwin-client"
+}

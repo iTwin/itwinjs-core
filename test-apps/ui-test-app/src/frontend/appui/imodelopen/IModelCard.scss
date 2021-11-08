@@ -2,15 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@bentley/ui-core/lib/ui-core/style/colors";
-@import "~@bentley/ui-core/lib/ui-core/style/typography";
+@import "~@itwin/core-react/lib/cjs/core-react/style/colors";
+@import "~@itwin/itwinui-css/scss/style/typography";
 
- $iModel-card-width: 275px;
- $iModel-thumbnail-height: 200px;
- $card-background: #FCFDFD;
- $preview-background: #282B34;
- $border-color: #E8EAEB;
- $text-color: #444;
+$iModel-card-width: 275px;
+$iModel-thumbnail-height: 200px;
+$card-background: #FCFDFD;
+$preview-background: #282B34;
+$border-color: #E8EAEB;
+$text-color: #444;
 
 // imodel card
 .imodel-card {
@@ -114,8 +114,8 @@
 
 .imodel-card:hover,
 .imodel-card:focus {
-  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.25);
-  -webkit-box-shadow: 0 4px 8px 0 rgba(0,0,0,0.25);
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.25);
+  -webkit-box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.25);
 }
 
 // hover over preview
@@ -144,7 +144,7 @@
 // iModel name
 .imodel-card .imodel-card-name {
   padding: .8em 14px;
-  font-size: $uicore-font-size;
+  font-size: $iui-font-size;
   display: flex;
   align-items: center;
   box-sizing: border-box;
@@ -178,7 +178,7 @@
 .imodel-card-options-dropdown {
   margin: 0;
   padding: .5em 0;
-  font-size: $uicore-font-size;
+  font-size: $iui-font-size;
   list-style: none;
   background-color: $uicore-white;
 }
@@ -195,7 +195,7 @@
     margin-right: .5em;
   }
 
-  &:hover{
+  &:hover {
     background: #eee;
   }
 }
@@ -212,6 +212,6 @@
   white-space: wrap;
   overflow: hidden;
   box-sizing: border-box;
-  font-size: $uicore-font-size-small;
-  font-weight: $uicore-font-weight-light;
+  font-size: $iui-font-size-small;
+  font-weight: $iui-font-weight-light;
 }

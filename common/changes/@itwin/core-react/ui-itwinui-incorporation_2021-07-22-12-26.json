@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-react",
+      "comment": "Incorporating iTwinUI-CSS and iTwinUI-React into iModel.js",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-react",
+  "email": "51122937+DanEastBentley@users.noreply.github.com"
+}

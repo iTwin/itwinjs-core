@@ -12,9 +12,9 @@ import { ContentSpecification } from "./ContentSpecification";
 /**
  * Defines content that's displayed in content controls (table view,
  * property pane, etc.) and the content that's selected in
- * [unified selection]($docs/learning/presentation/unified-selection/index.md) controls
+ * [unified selection]($docs/presentation/unified-selection/index.md) controls
  *
- * @see [More details]($docs/learning/presentation/Content/ContentRule.md)
+ * @see [More details]($docs/presentation/Content/ContentRule.md)
  * @public
  */
 export interface ContentRule extends RuleBase, ConditionContainer {
@@ -23,8 +23,8 @@ export interface ContentRule extends RuleBase, ConditionContainer {
 
   /**
    * Defines a condition for the rule, which needs to be met in order to execute it. Condition
-   * is an [ECExpression]($docs/learning/presentation/ECExpressions.md), which can use
-   * a [limited set of symbols]($docs/learning/presentation/Content/ECExpressions.md#rule-condition).
+   * is an [ECExpression]($docs/presentation/Advanced/ECExpressions.md), which can use
+   * a [limited set of symbols]($docs/presentation/Content/ECExpressions.md#rule-condition).
    */
   condition?: string;
 

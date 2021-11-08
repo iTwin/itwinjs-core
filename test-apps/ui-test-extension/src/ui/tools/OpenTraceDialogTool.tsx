@@ -7,10 +7,10 @@
  */
 
 import * as React from "react";
-import {  IModelApp, Tool } from "@bentley/imodeljs-frontend";
-import { ModalDialogManager } from "@bentley/ui-framework";
+import {  IModelApp, Tool } from "@itwin/core-frontend";
+import { ModalDialogManager } from "@itwin/appui-react";
 import { SampleModalDialog } from "../dialogs/SampleModalDialog";
-import { BadgeType, ConditionalBooleanValue, IconSpecUtilities, ToolbarItemUtilities } from "@bentley/ui-abstract";
+import { BadgeType, ConditionalBooleanValue, IconSpecUtilities, ToolbarItemUtilities } from "@itwin/appui-abstract";
 import { TraceUiItemsProvider } from "../NetworkTraceUIProvider";
 import connectedIcon from "../icons/connected-query.svg?sprite";
 
@@ -21,33 +21,29 @@ import connectedIcon from "../icons/connected-query.svg?sprite";
  * @alpha
  */
 export class OpenTraceDialogTool extends Tool {
-  public static toolId = "uiTestExtension-OpenTraceDialogTool";
-  public static iconSpec = IconSpecUtilities.createSvgIconSpec(connectedIcon);
+  public static override toolId = "uiTestExtension-OpenTraceDialogTool";
+  public static override iconSpec = IconSpecUtilities.createSvgIconSpec(connectedIcon);
 
   // istanbul ignore next
-  public static get minArgs() { return 0; }
+  public static override get minArgs() { return 0; }
   // istanbul ignore next
-  public static get maxArgs() { return 0; }
+  public static override get maxArgs() { return 0; }
 
-  public run(): boolean {
+  public override async run(): Promise<boolean> {
     ModalDialogManager.openDialog(<SampleModalDialog />);
     return true;
   }
 
-  public parseAndRun(): boolean {
-    return this.run();
-  }
-
-  public static get flyover(): string {
+  public static override get flyover(): string {
     return TraceUiItemsProvider.translate("trace-tool-connected");
   }
 
   // if supporting localized key-ins return a localized string
-  public static get keyin(): string {
+  public static override get keyin(): string {
     return "trace tool connected";
   }
 
-  public static get englishKeyin(): string {
+  public static override get englishKeyin(): string {
     return "trace tool connected";
   }
 
@@ -67,7 +63,7 @@ export class OpenTraceDialogTool extends Tool {
     };
 
     return ToolbarItemUtilities.createActionButton(OpenTraceDialogTool.toolId, itemPriority, OpenTraceDialogTool.iconSpec, OpenTraceDialogTool.flyover,
-      () => { IModelApp.tools.run(OpenTraceDialogTool.toolId); },
+      async () => { await IModelApp.tools.run(OpenTraceDialogTool.toolId); },
       overrides);
   }
 }

@@ -6,8 +6,8 @@
  * @module WebGL
  */
 
-import { assert } from "@bentley/bentleyjs-core";
-import { WebGLContext } from "@bentley/webgl-compatibility";
+import { assert } from "@itwin/core-bentley";
+import { WebGLContext } from "@itwin/webgl-compatibility";
 import { AttributeDetails } from "./AttributeMap";
 import { addInstancedModelMatrixRTC } from "./glsl/Instancing";
 import { volClassOpaqueColor } from "./glsl/PlanarClassification";
@@ -471,7 +471,7 @@ export const enum ShaderBuilderFlags {
   InstancedVertexTable = VertexTable | Instanced,
 }
 
-/*
+/**
  * Represents a fragment or vertex shader under construction. The shader consists of a set of defined variables,
  * plus a set of code snippets which can be concatenated together to form the shader source.
  * @internal
@@ -678,6 +678,9 @@ export const enum VertexShaderComponent {
   // (Optional - does nothing if ComputeBaseColor not specified) Apply feature overrides to vertex color
   // vec4 applyFeatureColor(vec4 baseColor)
   ApplyFeatureColor,
+  // (Optional) Adjust base color for contrast
+  // vec4 adjustContrast(vec4 baseColor)
+  AdjustContrast,
   // (Optional) Return true if this vertex should be "discarded" (is not visible)
   // bool checkForDiscard()
   // If this returns true, gl_Position will be set to 0; presumably related vertices will also do so, resulting in a degenerate triangle.
@@ -790,6 +793,12 @@ export class VertexShaderBuilder extends ShaderBuilder {
       if (undefined !== applyFeatureColor) {
         prelude.addFunction("vec4 applyFeatureColor(vec4 baseColor)", applyFeatureColor);
         main.addline("  baseColor = applyFeatureColor(baseColor);");
+      }
+
+      const adjustContrast = this.get(VertexShaderComponent.AdjustContrast);
+      if (adjustContrast) {
+        prelude.addFunction("vec4 adjustContrast(vec4 baseColor)", adjustContrast);
+        main.addline("  baseColor = adjustContrast(baseColor);");
       }
 
       main.addline("  v_color = baseColor;");

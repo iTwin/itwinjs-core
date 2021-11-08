@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/frontend-devtools",
+      "comment": "Fix typo.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/frontend-devtools",
+  "email": "rbbentley@users.noreply.github.com"
+}

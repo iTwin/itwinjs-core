@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Update CSS used for ToolSettingEntries in grid layout.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react",
+  "email": "65047615+bsteinbk@users.noreply.github.com"
+}

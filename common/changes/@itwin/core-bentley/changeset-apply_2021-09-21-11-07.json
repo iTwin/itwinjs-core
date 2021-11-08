@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-bentley",
+      "comment": "make ChangeSetApplyOption @internal - to be removed in future",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-bentley"
+}

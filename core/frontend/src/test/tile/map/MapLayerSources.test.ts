@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { MapSubLayerSettings } from "@bentley/imodeljs-common/lib/MapLayerSettings";
+import { MapSubLayerSettings } from "@itwin/core-common";
 import { expect } from "chai";
 import { MapLayerSource } from "../../../tile/map/MapLayerSources";
 
 describe("MapLayerSources", () => {
 
   it("should create MapLayerSource with defaults", async () => {
-    const sampleSource = MapLayerSource.fromJSON({name: "testSource", url: "https://testserver/wms" });
+    const sampleSource = MapLayerSource.fromJSON({ name: "testSource", url: "https://testserver/wms" });
     expect(sampleSource).to.not.undefined;
     expect(sampleSource!.formatId).to.equals("WMS");
     expect(sampleSource!.transparentBackground).to.equals(true);
@@ -46,7 +46,7 @@ describe("MapLayerSources", () => {
 
     // We used to parse the "basemap" token in the URL to determine if baseMap flag should be turned on...
     // this should be no longer the case
-    sampleSourceJson.url = "https://testserver/basemap/wms",
+    sampleSourceJson.url = "https://testserver/basemap/wms";
     sampleSource = MapLayerSource.fromJSON(sampleSourceJson);
     expect(sampleSource).to.not.undefined;
     expect(sampleSource!.baseMap).to.equals(false);

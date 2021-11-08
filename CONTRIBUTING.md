@@ -8,13 +8,13 @@ The goal of this document is to provide a high-level overview of how you can get
 ## Asking Questions
 
 Have a question?
-Rather than opening an issue, please ask away on [the Github discussions page](https://github.com/imodeljs/imodeljs/discussions).
+Rather than opening an issue, please ask away on [the Github discussions page](https://github.com/iTwin/itwinjs-core/discussions).
 
 The community will be eager to assist you. Your well-worded question will serve as a resource to others searching for help.
 
 ## Providing Feedback
 
-Your comments and feedback are welcome. For general comments or discussion please [click here](https://github.com/imodeljs/imodeljs/labels/discussion) to contribute via GitHub issues using the `discussion` label.
+Your comments and feedback are welcome. For general comments or discussion please [click here](https://github.com/iTwin/itwinjs-core/labels/discussion) to contribute via GitHub issues using the `discussion` label.
 
 ## Reporting Issues
 
@@ -25,7 +25,7 @@ Here's how you can make reporting your issue as effective as possible.
 
 ### Look For an Existing Issue
 
-Before you create a new issue, please do a search in [open issues](https://github.com/imodeljs/imodeljs/issues) to see if the issue or feature request has already been filed.
+Before you create a new issue, please do a search in [open issues](https://github.com/iTwin/itwinjs-core/issues) to see if the issue or feature request has already been filed.
 
 If you find that your issue already exists, please add relevant comments and your [reaction](https://github.com/blog/2119-add-reactions-to-pull-requests-issues-and-comments).
 Use a reaction in place of a "+1" comment:
@@ -54,7 +54,7 @@ Please include the following with each issue:
 - Images that help explain the issue
 - Any relevant error messages, logs, or other details
 - Impact of the issue
-- Use the [`bug`](https://github.com/imodeljs/imodeljs/labels/bug) or [`enhancement`](https://github.com/imodeljs/imodeljs/labels/enhancement) label to identify the type of issue you are filing
+- Use the [`bug`](https://github.com/iTwin/itwinjs-core/labels/bug) or [`enhancement`](https://github.com/iTwin/itwinjs-core/labels/enhancement) label to identify the type of issue you are filing
 
 Don't feel bad if the developers can't reproduce the issue right away.
 They will simply ask for more information!

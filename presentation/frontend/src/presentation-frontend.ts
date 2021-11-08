@@ -29,7 +29,7 @@ export * from "./presentation-frontend/FrontendLoggerCategory";
  * @module UnifiedSelection
  *
  * @docs-group-description UnifiedSelection
- * Types related to [unified selection]($docs/learning/presentation/Unified-Selection/index.md).
+ * Types related to [unified selection]($docs/presentation/Unified-Selection/index.md).
  */
 export * from "./presentation-frontend/selection/SelectionChangeEvent";
 export * from "./presentation-frontend/selection/ISelectionProvider";

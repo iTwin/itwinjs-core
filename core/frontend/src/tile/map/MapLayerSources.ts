@@ -4,16 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
-import { compareStrings } from "@bentley/bentleyjs-core";
-import { Point2d } from "@bentley/geometry-core";
-import { BackgroundMapProps, BackgroundMapSettings, BackgroundMapType, MapLayerSettings, MapSubLayerProps } from "@bentley/imodeljs-common";
+import { BentleyError, compareStrings } from "@itwin/core-bentley";
+import { Point2d } from "@itwin/core-geometry";
+import {
+  BackgroundMapProvider, BackgroundMapType, BaseMapLayerSettings, DeprecatedBackgroundMapProps, MapLayerSettings, MapSubLayerProps,
+} from "@itwin/core-common";
 import { getJson, RequestBasicCredentials } from "@bentley/itwin-client";
-import { FrontendRequestContext } from "../../FrontendRequestContext";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
-import { ArcGisUtilities, MapCartoRectangle, MapLayerSourceValidation } from "../internal";
-import { MapLayerSettingsService } from "./MapLayerSettingsService";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationManager";
+import { ArcGisUtilities, MapCartoRectangle, MapLayerSettingsService, MapLayerSourceValidation } from "../internal";
 
 /** @internal */
 export enum MapLayerSourceStatus {
@@ -28,8 +28,7 @@ export enum MapLayerSourceStatus {
 /** JSON representation of a map layer source.
  * @internal
  */
-interface MapLayerSourceProps
-{
+interface MapLayerSourceProps {
   /** Identifies the map layers source. Defaults to 'WMS'. */
   formatId?: string;
   /** Name */
@@ -51,7 +50,7 @@ interface MapLayerSourceProps
 /** A source for map layers.  These may be catalogued for convenient use by users or applications.
  * @internal
  */
-export class MapLayerSource  {
+export class MapLayerSource {
   public formatId: string;
   public name: string;
   public url: string;
@@ -80,16 +79,17 @@ export class MapLayerSource  {
   public async validateSource(ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
     return IModelApp.mapLayerFormatRegistry.validateSource(this.formatId, this.url, this.getCredentials(), ignoreCache);
   }
-  public static fromBackgroundMapProps(props: BackgroundMapProps) {
-    const settings = BackgroundMapSettings.fromJSON(props);
-    if (undefined !== settings) {
-      const layerSettings = MapLayerSettings.fromMapSettings(settings);
-      if (undefined !== layerSettings) {
-        const source = MapLayerSource.fromJSON(layerSettings);
-        source!.baseMap = true;
+  public static fromBackgroundMapProps(props: DeprecatedBackgroundMapProps) {
+    const provider = BackgroundMapProvider.fromBackgroundMapProps(props);
+    const layerSettings = BaseMapLayerSettings.fromProvider(provider);
+    if (undefined !== layerSettings) {
+      const source = MapLayerSource.fromJSON(layerSettings);
+      if (source) {
+        source.baseMap = true;
         return source;
       }
     }
+
     return undefined;
   }
   public toJSON() {
@@ -98,7 +98,7 @@ export class MapLayerSource  {
 
   public toLayerSettings(subLayers?: MapSubLayerProps[]): MapLayerSettings | undefined {
     // When MapLayerSetting is created from a MapLayerSource, sub-layers and credentials need to be set separately.
-    const layerSettings = MapLayerSettings.fromJSON({...this, subLayers });
+    const layerSettings = MapLayerSettings.fromJSON({ ...this, subLayers });
     layerSettings?.setCredentials(this.userName, this.password);
     return layerSettings;
   }
@@ -116,7 +116,7 @@ export class MapLayerSources {
   private static _instance?: MapLayerSources;
   private constructor(private _sources: MapLayerSource[]) { }
 
-  public static getInstance() {return MapLayerSources._instance;}
+  public static getInstance() { return MapLayerSources._instance; }
 
   public findByName(name: string, baseMap: boolean = false): MapLayerSource | undefined {
     const nameTest = name.toLowerCase();
@@ -214,8 +214,7 @@ export class MapLayerSources {
     }
 
     if (queryForPublicSources) {
-      const requestContext = new FrontendRequestContext();
-      const sourcesJson = await getJson(requestContext, "assets/MapLayerSources.json");
+      const sourcesJson = await getJson("assets/MapLayerSources.json");
 
       for (const sourceJson of sourcesJson) {
         const source = MapLayerSource.fromJSON(sourceJson);
@@ -226,11 +225,11 @@ export class MapLayerSources {
       (await ArcGisUtilities.getSourcesFromQuery(sourceRange)).forEach((queriedSource) => addSource(queriedSource));
     }
 
-    if (iModel && iModel.contextId && iModel.iModelId) {
+    if (iModel && iModel.iTwinId && iModel.iModelId) {
       try {
-        (await MapLayerSettingsService.getSourcesFromSettingsService(iModel.contextId, iModel.iModelId)).forEach((source) => addSource(source));
+        (await MapLayerSettingsService.getSourcesFromSettingsService(iModel.iTwinId, iModel.iModelId)).forEach((source) => addSource(source));
       } catch (err) {
-        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.i18n.translate("mapLayers:CustomAttach.ErrorLoadingLayers"), err.toString()));
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.localization.getLocalizedString("mapLayers:CustomAttach.ErrorLoadingLayers"), BentleyError.getErrorMessage(err)));
       }
     }
 

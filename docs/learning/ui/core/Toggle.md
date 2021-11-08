@@ -1,11 +1,11 @@
 # Toggle
 
-The [Toggle]($ui-core:Toggle) category in the `@bentley/ui-core` package includes
-the [Toggle]($ui-core) and [LabeledToggle]($ui-core) components for working with a Toggle switch.
+The [Toggle]($core-react:Toggle) category in the `@itwin/core-react` package includes
+the [Toggle]($core-react) and [LabeledToggle]($core-react) components for working with a Toggle switch.
 
 ## Toggle Component
 
-The [Toggle]($ui-core) React component is used to toggle an option on and off with a single click or tap.
+The [Toggle]($core-react) React component is used to toggle an option on and off with a single click or tap.
 It should be used instead of a Checkbox for settings when the new value will be used immediately.
 The Toggle component has support for the Light and Dark themes.
 
@@ -23,7 +23,7 @@ The `rounded` prop indicates whether the Toggle should be rounded (default) or s
 
 The `showCheckmark` prop indicates whether to show a check mark icon when the toggle is "on".
 
-The [LabeledToggle]($ui-core) React component displays a label to the right of the Toggle.
+The [LabeledToggle]($core-react) React component displays a label to the right of the Toggle.
 
 ### Examples
 
@@ -44,4 +44,4 @@ The [LabeledToggle]($ui-core) React component displays a label to the right of t
 
 ## API Reference
 
-- [Toggle]($ui-core:Toggle)
+- [Toggle]($core-react:Toggle)

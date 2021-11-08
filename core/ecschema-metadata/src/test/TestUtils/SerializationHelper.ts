@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DOMParser, XMLSerializer } from "xmldom";
+import { DOMParser, XMLSerializer } from "@xmldom/xmldom";
 
 export function createEmptyXmlDocument(): Document {
   return new DOMParser().parseFromString(`<?xml version="1.0" encoding="UTF-8"?>`);

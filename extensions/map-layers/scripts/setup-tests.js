@@ -50,7 +50,7 @@ m._load = (request, parent, isMain) => {
 
 // setup enzyme (testing utils for React)
 enzyme.configure({
-  adapter: new (require("enzyme-adapter-react-16/build"))()
+  adapter: new (require("@wojtekmaj/enzyme-adapter-react-17/build"))()
 });
 chaiJestSnapshot.addSerializer(require("enzyme-to-json/serializer"));
 

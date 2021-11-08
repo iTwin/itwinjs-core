@@ -1,0 +1,36 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+@import "variables";
+@import "../variables";
+
+.nz-footer-messageCenter-message {
+  $vertical-padding: $nz-message-horizontal-padding;
+
+  min-height: 48px;
+  box-sizing: border-box;
+  margin-left: $nz-message-horizontal-padding;
+  margin-right: $nz-message-horizontal-padding;
+  padding-left: $nz-message-horizontal-padding;
+  padding-right: $nz-message-horizontal-padding;
+  padding-top: $vertical-padding;
+  padding-bottom: $vertical-padding;
+  display: grid;
+  grid-gap: 12px;
+  grid-auto-flow: column;
+  align-items: center;
+  grid-template-columns: auto 1fr;
+  line-height: 16px;
+  color: $buic-text-color;
+  font-size: $text-font-size;
+
+  &:not(:first-child) {
+    border-top: 1px solid $buic-background-4;
+  }
+
+  >.nz-icon {
+    min-width: 20px;
+  }
+}

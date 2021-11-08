@@ -1,16 +1,16 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import * as React from "react";
-import { StatusBarSection } from "@bentley/ui-abstract";
+import { StatusBarSection } from "@itwin/appui-abstract";
 import {
   FooterModeField, MessageCenterField, SectionsStatusField, SelectionInfoField,
   SelectionScopeField, StatusBarComposer, StatusBarItem,
   StatusBarItemUtilities, StatusBarWidgetControl, StatusBarWidgetControlArgs, TileLoadingIndicator, ToolAssistanceField, withMessageCenterFieldProps, withStatusFieldProps,
-} from "@bentley/ui-framework";
-import { FooterSeparator } from "@bentley/ui-ninezone";
+} from "@itwin/appui-react";
+import { FooterSeparator } from "@itwin/appui-layout-react";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 const ToolAssistance = withStatusFieldProps(ToolAssistanceField);

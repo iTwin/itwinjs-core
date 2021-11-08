@@ -5,9 +5,9 @@
 /** @packageDocumentation
  * @module Notifications
  */
-import { BeDuration } from "@bentley/bentleyjs-core";
-import { Point2d, XAndY } from "@bentley/geometry-core";
-import { RelativePosition } from "@bentley/ui-abstract";
+import { BeDuration } from "@itwin/core-bentley";
+import { Point2d, XAndY } from "@itwin/core-geometry";
+import { DisplayMessageType, MessagePresenter, MessageSeverity, RelativePosition } from "@itwin/appui-abstract";
 import { IModelApp } from "./IModelApp";
 import { ToolAssistanceInstructions } from "./tools/ToolAssistance";
 
@@ -17,10 +17,13 @@ import { ToolAssistanceInstructions } from "./tools/ToolAssistance";
  * @public
  */
 export enum OutputMessageType {
-  /** Temporary message box that displays at the bottom of the screen. */
+  /** Temporary message box displays at the top or bottom of the screen then disappears automatically. */
   Toast = 0,
+  /** Message box displays near the cursor over a Viewport and is closed by calling `closePointerMessage`. */
   Pointer = 1,
+  /** Message box displays at the top or bottom of the screen and contains a Close button. */
   Sticky = 2,
+  /** Message box displays near an input field and contains a Close button. */
   InputField = 3,
   /** Modal message box. */
   Alert = 4,
@@ -117,8 +120,8 @@ export class NotifyMessageDetails {
   /** Constructor
    * @param priority          The priority this message should be accorded by the NotificationManager.
    * @param briefMessage      A short message that conveys the simplest explanation of the issue.
-   * @param detailedMessage   A comprehensive message that explains the issue in detail and potentially offers a solution.
-   * @param msgType           The type of message.
+   * @param detailedMessage   An optional comprehensive message that explains the issue in detail and potentially offers a solution.
+   * @param msgType           The type of message. Defaults to Toast.
    * @param openAlert         Whether an alert box should be displayed or not, and if so what kind.
    */
   public constructor(public priority: OutputMessagePriority, public briefMessage: HTMLElement | string,
@@ -137,7 +140,7 @@ export class NotifyMessageDetails {
   }
 
   /** Set OutputMessageType.InputField message details.
-   * @param inputField        Input field that message pertains. The message will be shown just below this input field element.
+   * @param inputField        Input field to which the message pertains. The message will be shown just below this input field element.
    */
   public setInputFieldTypeDetails(inputField: HTMLElement) {
     this.inputField = inputField;
@@ -171,13 +174,13 @@ export class ActivityMessageDetails {
  * non-interactive sessions, these messages may be saved to a log file or simply discarded.
  * @public
  */
-export class NotificationManager {
+export class NotificationManager implements MessagePresenter {
   public readonly toolTipLocation = new Point2d();
 
-  /** Output a prompt, given an i18n key.
+  /** Output a prompt, given a localization key.
    * @param key The key of the localized string with the prompt message.
    */
-  public outputPromptByKey(key: string) { this.outputPrompt(IModelApp.i18n.translate(key)); }
+  public outputPromptByKey(key: string) { this.outputPrompt(IModelApp.localization.getLocalizedString(key)); }
 
   /** Output a localized prompt to the user. A 'prompt' indicates an action the user should take to proceed.
    * @param _prompt The localized string with the prompt message.
@@ -260,6 +263,62 @@ export class NotificationManager {
    */
   public setToolAssistance(instructions: ToolAssistanceInstructions | undefined) {
     this.outputPrompt(instructions ? instructions.mainInstruction.text : "");
+  }
+
+  /**
+   * Displays a notification message.
+   * @param severity          The severity of the message.
+   * @param briefMessage      A short message that conveys the simplest explanation of the issue.
+   * @param detailedMessage   An optional comprehensive message that explains the issue in detail and potentially offers a solution.
+   * @param messageType       The type of message. Defaults to Toast.
+   */
+  public displayMessage(severity: MessageSeverity, briefMessage: HTMLElement | string, detailedMessage?: HTMLElement | string, messageType?: DisplayMessageType): void {
+    const details = new NotifyMessageDetails(this.convertSeverityToPriority(severity), briefMessage, detailedMessage, this.convertMessageType(messageType));
+    this.outputMessage(details);
+  }
+
+  /**
+   * Displays an input field notification message.
+   * @param inputField        Input field to which the message pertains. The message will be shown just below this input field element.
+   * @param severity          The severity of the message.
+   * @param briefMessage      A short message that conveys the simplest explanation of the issue.
+   * @param detailedMessage   An optional comprehensive message that explains the issue in detail and potentially offers a solution.
+   */
+  public displayInputFieldMessage(inputField: HTMLElement, severity: MessageSeverity, briefMessage: HTMLElement | string, detailedMessage?: HTMLElement | string): void {
+    const details = new NotifyMessageDetails(this.convertSeverityToPriority(severity), briefMessage, detailedMessage);
+    details.setInputFieldTypeDetails(inputField);
+    this.outputMessage(details);
+  }
+
+  private convertSeverityToPriority(severity: MessageSeverity): OutputMessagePriority {
+    switch (severity) {
+      case MessageSeverity.Information:
+        return OutputMessagePriority.Info;
+      case MessageSeverity.Warning:
+        return OutputMessagePriority.Warning;
+      case MessageSeverity.Error:
+        return OutputMessagePriority.Error;
+      case MessageSeverity.Fatal:
+        return OutputMessagePriority.Fatal;
+      case MessageSeverity.None:
+      default:
+        return OutputMessagePriority.None;
+    }
+  }
+
+  private convertMessageType(inMessageType?: DisplayMessageType): OutputMessageType | undefined {
+    switch (inMessageType) {
+      case DisplayMessageType.Alert:
+        return OutputMessageType.Alert;
+      case DisplayMessageType.InputField:
+        return OutputMessageType.InputField;
+      case DisplayMessageType.Sticky:
+        return OutputMessageType.Sticky;
+      case DisplayMessageType.Toast:
+        return OutputMessageType.Toast;
+      default:
+        return undefined;
+    }
   }
 
 }

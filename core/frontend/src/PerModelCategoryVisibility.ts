@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { compareStrings, Id64, Id64Arg, Id64String, SortedArray } from "@bentley/bentleyjs-core";
+import { compareStrings, Id64, Id64Arg, Id64String, SortedArray } from "@itwin/core-bentley";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { Viewport } from "./Viewport";
 
@@ -146,7 +146,7 @@ class PerModelCategoryVisibilityOverrides extends SortedArray<PerModelCategoryVi
       return;
     }
 
-    for (let i = 0; i < this.length; ) {
+    for (let i = 0; i < this.length;) {
       const ovr = this._array[i];
       let removed = false;
       for (const modelId of Id64.iterable(modelIds)) {

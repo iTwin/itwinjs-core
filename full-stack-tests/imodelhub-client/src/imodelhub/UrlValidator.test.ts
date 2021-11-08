@@ -5,7 +5,7 @@
 import { assert, should } from "chai";
 import * as fs from "fs";
 import * as path from "path";
-import { Config, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Logger, LogLevel } from "@itwin/core-bentley";
 import { IModelBaseHandler } from "@bentley/imodelhub-client";
 import { ITwinClientLoggerCategory } from "@bentley/itwin-client";
 
@@ -34,15 +34,6 @@ Logger.initialize(
   (category: string, message: string): void => { logFunction("Warning", category, message); },
   (category: string, message: string): void => { logFunction("Info", category, message); },
   (category: string, message: string): void => { logFunction("Trace", category, message); });
-
-// Note: Turn this off unless really necessary - it causes Error messages on the
-// console with the existing suite of tests, and this is quite misleading,
-// especially when diagnosing CI job failures.
-const loggingConfigFile: string = Config.App.get("imjs_test_logging_config", "");
-if (!!loggingConfigFile) {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  Logger.configureLevels(require(loggingConfigFile));
-}
 
 // log all request URLs as this will be the input to the Hub URL whitelist test
 Logger.setLevel(ITwinClientLoggerCategory.Request, LogLevel.Trace);
@@ -106,7 +97,7 @@ describe.skip("Validate iModelHub URL Whitelist", () => {
     // filter out duplicate URLs by putting the lines in a set and create an array from it again
     const loggedUrls: string[] = Array.from(new Set(logFileContent.split(/\r?\n/)));
 
-    let baseUrl: string = (IModelBaseHandler as any).baseUrl; //  await new UrlDiscoveryClient().discoverUrl(new ClientRequestContext(), IModelBaseHandler.searchKey, undefined);
+    let baseUrl: string = (IModelBaseHandler as any).baseUrl;
     if (baseUrl.endsWith("/") || baseUrl.endsWith("\\"))
       baseUrl = baseUrl.substring(1, baseUrl.length - 1);
 

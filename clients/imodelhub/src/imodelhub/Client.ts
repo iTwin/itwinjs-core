@@ -13,7 +13,7 @@ import { PermissionHandler } from "./Permissions";
 
 /**
  * Class that allows access to different iModelHub class handlers. Handlers should be accessed through an instance of this class, rather than constructed directly.
- * @public
+ * @internal
  */
 export class IModelHubClient extends IModelClient {
   /**
@@ -30,7 +30,7 @@ export class IModelHubClient extends IModelClient {
    * Get the handler for permissions.
    * @internal
    */
-  public get permissions(): PermissionHandler {
+  public override get permissions(): PermissionHandler {
     return new PermissionHandler(this._handler);
   }
 }

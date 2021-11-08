@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { Matrix3, Matrix4 } from "./Matrix";
 import { SyncToken } from "./Sync";
 import { System } from "./System";

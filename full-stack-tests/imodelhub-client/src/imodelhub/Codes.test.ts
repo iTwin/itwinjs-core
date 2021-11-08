@@ -3,12 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { GuidString, Id64, IModelHubStatus } from "@bentley/bentleyjs-core";
+import { AccessToken, GuidString, Id64, IModelHubStatus } from "@itwin/core-bentley";
 import {
   AggregateResponseError, CodeQuery, CodeSequence, CodeSequenceType, CodeState, ConflictingCodesError, HubCode, IModelClient, IModelHubClientError,
 } from "@bentley/imodelhub-client";
-import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { TestUsers } from "@bentley/oidc-signin-tool";
+import { TestUsers } from "@itwin/oidc-signin-tool";
 import { ResponseBuilder } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
 import * as utils from "./TestUtils";
@@ -28,33 +27,32 @@ function containsCode(codes: HubCode[], wantCode: HubCode) {
 }
 
 describe("iModelHub CodeHandler", () => {
-  let contextId: string;
+  let iTwinId: string;
   let imodelId: GuidString;
   let iModelClient: IModelClient;
   let briefcaseId: number;
   let briefcaseId2: number;
   // eslint-disable-next-line @typescript-eslint/naming-convention
   const continueOptions = { CustomOptions: { ConflictStrategy: "Continue" } };
-  let requestContext: AuthorizedClientRequestContext;
+  let accessToken: AccessToken;
 
   before(async function () {
     this.timeout(0);
 
-    const accessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
-    requestContext = new AuthorizedClientRequestContext(accessToken);
+    accessToken = TestConfig.enableMocks ? "" : await utils.login(TestUsers.super);
 
-    contextId = await utils.getProjectId(requestContext);
-    await utils.createIModel(requestContext, utils.sharedimodelName, contextId);
-    imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, contextId);
+    iTwinId = await utils.getITwinId(accessToken);
+    await utils.createIModel(accessToken, utils.sharedimodelName, iTwinId);
+    imodelId = await utils.getIModelId(accessToken, utils.sharedimodelName, iTwinId);
     iModelClient = utils.getDefaultClient();
-    const briefcases = await utils.getBriefcases(requestContext, imodelId, 2);
+    const briefcases = await utils.getBriefcases(accessToken, imodelId, 2);
     briefcaseId = briefcases[0].briefcaseId!;
     briefcaseId2 = briefcases[1].briefcaseId!;
   });
 
   after(async () => {
     if (TestConfig.enableIModelBank)
-      await utils.deleteIModelByName(requestContext, contextId, utils.sharedimodelName);
+      await utils.deleteIModelByName(accessToken, iTwinId, utils.sharedimodelName);
   });
 
   afterEach(() => {
@@ -67,7 +65,7 @@ describe("iModelHub CodeHandler", () => {
 
     utils.mockUpdateCodes(imodelId, code1, code2);
 
-    const result = await iModelClient.codes.update(requestContext, imodelId, [code1, code2]);
+    const result = await iModelClient.codes.update(accessToken, imodelId, [code1, code2]);
     chai.assert(result);
     chai.expect(result.length).to.be.equal(2);
     result.forEach((value: HubCode) => chai.expect(value.state).to.be.equal(CodeState.Reserved));
@@ -77,11 +75,11 @@ describe("iModelHub CodeHandler", () => {
     const code = utils.randomCode(briefcaseId);
     code.value += " Dash- Asterisk* Percent%";
     utils.mockUpdateCodes(imodelId, code);
-    const createResult = await iModelClient.codes.update(requestContext, imodelId, [code]);
+    const createResult = await iModelClient.codes.update(accessToken, imodelId, [code]);
     chai.expect(createResult).to.have.lengthOf(1);
     const query = new CodeQuery().byCodes([code]);
 
-    const queryResult = await iModelClient.codes.get(requestContext, imodelId, query);
+    const queryResult = await iModelClient.codes.get(accessToken, imodelId, query);
 
     chai.expect(queryResult).to.have.lengthOf(1);
   });
@@ -94,7 +92,7 @@ describe("iModelHub CodeHandler", () => {
 
     utils.mockUpdateCodes(imodelId, code1, code2, code3);
 
-    const result = await iModelClient.codes.update(requestContext, imodelId, [code1, code2, code3]);
+    const result = await iModelClient.codes.update(accessToken, imodelId, [code1, code2, code3]);
     chai.assert(result);
     chai.expect(result.length).to.be.equal(3);
     result.forEach((value: HubCode) => chai.expect(value.state).to.be.equal(CodeState.Reserved));
@@ -109,8 +107,8 @@ describe("iModelHub CodeHandler", () => {
 
     let receivedError: Error | undefined;
     try {
-      await iModelClient.codes.update(requestContext, imodelId, [code2, code3, code4], { codesPerRequest: 1 });
-    } catch (error) {
+      await iModelClient.codes.update(accessToken, imodelId, [code2, code3, code4], { codesPerRequest: 1 });
+    } catch (error: any) {
       receivedError = error;
     }
     chai.assert(receivedError);
@@ -125,7 +123,7 @@ describe("iModelHub CodeHandler", () => {
 
     utils.mockUpdateCodes(imodelId, code1, code2, code3);
 
-    const result = await iModelClient.codes.update(requestContext, imodelId, [code1, code2, code3]);
+    const result = await iModelClient.codes.update(accessToken, imodelId, [code1, code2, code3]);
     chai.assert(result);
     chai.expect(result.length).to.be.equal(3);
     result.forEach((value: HubCode) => chai.expect(value.state).to.be.equal(CodeState.Reserved));
@@ -140,9 +138,9 @@ describe("iModelHub CodeHandler", () => {
 
     let receivedError: ConflictingCodesError | undefined;
     try {
-      await iModelClient.codes.update(requestContext, imodelId, [code2, code3, code4],
+      await iModelClient.codes.update(accessToken, imodelId, [code2, code3, code4],
         { deniedCodes: true, codesPerRequest: 1, continueOnConflict: true });
-    } catch (error) {
+    } catch (error: any) {
       chai.expect(error).to.be.instanceof(ConflictingCodesError);
       receivedError = error;
     }
@@ -156,7 +154,7 @@ describe("iModelHub CodeHandler", () => {
   it("should update code multiple times (#iModelBank)", async () => {
     let code = utils.randomCode(briefcaseId);
     utils.mockUpdateCodes(imodelId, code);
-    let result = await iModelClient.codes.update(requestContext, imodelId, [code]);
+    let result = await iModelClient.codes.update(accessToken, imodelId, [code]);
 
     chai.assert(result);
     chai.expect(result.length).to.be.equal(1);
@@ -167,7 +165,7 @@ describe("iModelHub CodeHandler", () => {
     code.briefcaseId = briefcaseId;
     code.changeState = "new";
     utils.mockUpdateCodes(imodelId, code);
-    result = await iModelClient.codes.update(requestContext, imodelId, [code]);
+    result = await iModelClient.codes.update(accessToken, imodelId, [code]);
 
     chai.assert(result);
     chai.expect(result.length).to.be.equal(1);
@@ -178,7 +176,7 @@ describe("iModelHub CodeHandler", () => {
     code.briefcaseId = briefcaseId;
     code.changeState = "new";
     utils.mockUpdateCodes(imodelId, code);
-    result = await iModelClient.codes.update(requestContext, imodelId, [code]);
+    result = await iModelClient.codes.update(accessToken, imodelId, [code]);
 
     chai.assert(result);
     chai.expect(result.length).to.be.equal(1);
@@ -188,7 +186,7 @@ describe("iModelHub CodeHandler", () => {
 
   it("should get codes (#iModelBank)", async () => {
     utils.mockGetCodes(imodelId, `?$top=${CodeQuery.defaultPageSize}`, utils.randomCode(briefcaseId), utils.randomCode(briefcaseId));
-    const codes = await iModelClient.codes.get(requestContext, imodelId);
+    const codes = await iModelClient.codes.get(accessToken, imodelId);
     chai.assert(codes);
     chai.expect(codes).length.to.be.greaterThan(0);
   });
@@ -200,23 +198,23 @@ describe("iModelHub CodeHandler", () => {
     ];
 
     utils.mockGetCodes(imodelId, `?$top=${CodeQuery.defaultPageSize}`, ...mockedCodes);
-    const codes = await iModelClient.codes.get(requestContext, imodelId, new CodeQuery());
+    const codes = await iModelClient.codes.get(accessToken, imodelId, new CodeQuery());
     chai.assert(codes);
     chai.expect(codes).length.to.be.greaterThan(0);
 
     if (codes.length > 20) {
-      const codes2 = await iModelClient.codes.get(requestContext, imodelId, new CodeQuery().pageSize(10));
+      const codes2 = await iModelClient.codes.get(accessToken, imodelId, new CodeQuery().pageSize(10));
       chai.expect(codes2.length).to.be.equal(codes.length);
     } else {
       utils.mockGetCodes(imodelId, "?$top=2", ...mockedCodes);
-      const codes2 = await iModelClient.codes.get(requestContext, imodelId, new CodeQuery().pageSize(2));
+      const codes2 = await iModelClient.codes.get(accessToken, imodelId, new CodeQuery().pageSize(2));
       chai.expect(codes2.length).to.be.equal(codes.length);
     }
   });
 
   it("should get codes only with their values (#integration)", async () => {
     const query = new CodeQuery().select("Values");
-    const codes = await iModelClient.codes.get(requestContext, imodelId, query);
+    const codes = await iModelClient.codes.get(accessToken, imodelId, query);
     codes.forEach((code) => {
       chai.assert(code.value);
       chai.assert(!code.codeScope);
@@ -231,7 +229,7 @@ describe("iModelHub CodeHandler", () => {
     utils.mockGetCodes(imodelId, filter, utils.randomCode(briefcaseId), utils.randomCode(briefcaseId));
 
     const query = new CodeQuery().byBriefcaseId(briefcaseId);
-    const codes = await iModelClient.codes.get(requestContext, imodelId, query);
+    const codes = await iModelClient.codes.get(accessToken, imodelId, query);
     chai.assert(codes);
     chai.expect(codes).length.to.be.greaterThan(0);
     codes.forEach((code) => chai.expect(code.briefcaseId).to.be.equal(briefcaseId));
@@ -243,7 +241,7 @@ describe("iModelHub CodeHandler", () => {
     utils.mockGetCodes(imodelId, filter, utils.randomCode(briefcaseId), utils.randomCode(briefcaseId));
 
     const query = new CodeQuery().byCodeSpecId(codeSpecId);
-    const codes = await iModelClient.codes.get(requestContext, imodelId, query);
+    const codes = await iModelClient.codes.get(accessToken, imodelId, query);
     chai.assert(codes);
     chai.expect(codes).length.to.be.greaterThan(0);
     codes.forEach((code) => chai.expect(code.codeSpecId!.toString().toUpperCase()).to.be.equal(codeSpecId.toString().toUpperCase()));
@@ -256,12 +254,12 @@ describe("iModelHub CodeHandler", () => {
 
     utils.mockGetCodes(imodelId, `?$filter=${filter}&$top=${CodeQuery.defaultPageSize}`, ...codes);
     const query1 = new CodeQuery().byBriefcaseId(briefcaseId).byCodeSpecId(codeSpecId);
-    const queriedCodes1 = await iModelClient.codes.get(requestContext, imodelId, query1);
+    const queriedCodes1 = await iModelClient.codes.get(accessToken, imodelId, query1);
     chai.assert(queriedCodes1);
 
     utils.mockGetCodes(imodelId, `?$filter=${filter}&$top=${CodeQuery.defaultPageSize}`, ...codes);
     const query2 = new CodeQuery().filter(filter);
-    const queriedCodes2 = await iModelClient.codes.get(requestContext, imodelId, query2);
+    const queriedCodes2 = await iModelClient.codes.get(accessToken, imodelId, query2);
     chai.assert(queriedCodes2);
 
     chai.expect(queriedCodes1).to.be.deep.equal(queriedCodes2);
@@ -273,7 +271,7 @@ describe("iModelHub CodeHandler", () => {
     utils.mockGetCodes(imodelId, `${filter}&$top=${CodeQuery.defaultPageSize}`, utils.randomCode(briefcaseId), utils.randomCode(briefcaseId));
 
     const query = new CodeQuery().byCodeScope(codeScope);
-    const codes = await iModelClient.codes.get(requestContext, imodelId, query);
+    const codes = await iModelClient.codes.get(accessToken, imodelId, query);
     chai.assert(codes);
     chai.expect(codes).length.to.be.greaterThan(0);
     codes.forEach((code) => chai.expect(code.codeScope).to.be.equal(codeScope));
@@ -283,12 +281,12 @@ describe("iModelHub CodeHandler", () => {
     const mockedCodes = [utils.randomCode(briefcaseId), utils.randomCode(briefcaseId)];
     utils.mockGetCodes(imodelId, `?$top=${CodeQuery.defaultPageSize}`, ...mockedCodes);
 
-    let existingCodes = await iModelClient.codes.get(requestContext, imodelId);
+    let existingCodes = await iModelClient.codes.get(accessToken, imodelId);
     existingCodes = existingCodes.slice(0, 2);
 
     utils.mockGetCodes(imodelId, undefined, ...mockedCodes);
     const query = new CodeQuery().byCodes(existingCodes);
-    const codes = await iModelClient.codes.get(requestContext, imodelId, query);
+    const codes = await iModelClient.codes.get(accessToken, imodelId, query);
     chai.assert(codes);
     chai.expect(codes.length).to.be.greaterThan(0);
     chai.expect(codes.length).to.be.equal(existingCodes.length);
@@ -301,14 +299,14 @@ describe("iModelHub CodeHandler", () => {
     const filter = `?$filter=BriefcaseId+eq+${briefcaseId}`;
     utils.mockGetCodes(imodelId, `${filter}&$top=${CodeQuery.defaultPageSize}`, utils.randomCode(briefcaseId), utils.randomCode(briefcaseId));
     const query = new CodeQuery().byBriefcaseId(briefcaseId);
-    let codes = await iModelClient.codes.get(requestContext, imodelId, query);
+    let codes = await iModelClient.codes.get(accessToken, imodelId, query);
     chai.expect(codes.length).to.be.greaterThan(0);
 
     utils.mockDeleteAllCodes(imodelId, briefcaseId);
-    await iModelClient.codes.deleteAll(requestContext, imodelId, briefcaseId);
+    await iModelClient.codes.deleteAll(accessToken, imodelId, briefcaseId);
 
     utils.mockGetCodes(imodelId, `${filter}&$top=${CodeQuery.defaultPageSize}`);
-    codes = await iModelClient.codes.get(requestContext, imodelId, query);
+    codes = await iModelClient.codes.get(accessToken, imodelId, query);
     chai.expect(codes.length).to.be.equal(0);
   });
 
@@ -319,7 +317,7 @@ describe("iModelHub CodeHandler", () => {
       utils.mockGetCodes(imodelId, `${filter}&$top=${CodeQuery.defaultPageSize}`, ...mockedCodes);
     }
     const query = new CodeQuery().unavailableCodes(briefcaseId);
-    const codes = await iModelClient.codes.get(requestContext, imodelId, query);
+    const codes = await iModelClient.codes.get(accessToken, imodelId, query);
     chai.assert(codes);
     chai.expect(codes.length).to.be.greaterThan(0);
     codes.forEach((code: HubCode) => {
@@ -354,7 +352,7 @@ describe("iModelHub CodeHandler", () => {
   it("should fail deleting all codes with invalid briefcase id (#iModelBank)", async () => {
     let error: IModelHubClientError | undefined;
     try {
-      await iModelClient.codes.deleteAll(requestContext, imodelId, 0);
+      await iModelClient.codes.deleteAll(accessToken, imodelId, 0);
     } catch (err) {
       if (err instanceof IModelHubClientError)
         error = err;
@@ -380,48 +378,47 @@ function createTestSequence(type: CodeSequenceType) {
 }
 
 describe("iModelHub CodeSequenceHandler (#iModelBank|#integration)", () => {
-  let contextId: string;
-  let imodelId: GuidString;
+  let iTwinId: string;
+  let iModelId: GuidString;
   let iModelClient: IModelClient;
   let briefcaseId: number;
-  let requestContext: AuthorizedClientRequestContext;
+  let accessToken: AccessToken;
 
   before(async () => {
-    const accessToken = await utils.login(TestUsers.super);
-    requestContext = new AuthorizedClientRequestContext(accessToken);
+    accessToken = await utils.login(TestUsers.super);
 
-    contextId = await utils.getProjectId(requestContext);
-    await utils.createIModel(requestContext, utils.sharedimodelName, contextId);
-    imodelId = await utils.getIModelId(requestContext, utils.sharedimodelName, contextId);
+    iTwinId = await utils.getITwinId(accessToken);
+    await utils.createIModel(accessToken, utils.sharedimodelName, iTwinId);
+    iModelId = await utils.getIModelId(accessToken, utils.sharedimodelName, iTwinId);
     iModelClient = utils.getDefaultClient();
-    const briefcases = await utils.getBriefcases(requestContext, imodelId, 1);
+    const briefcases = await utils.getBriefcases(accessToken, iModelId, 1);
     briefcaseId = briefcases[0].briefcaseId!;
   });
 
   after(async () => {
     if (TestConfig.enableIModelBank) {
-      await utils.deleteIModelByName(requestContext, contextId, utils.sharedimodelName);
+      await utils.deleteIModelByName(accessToken, iTwinId, utils.sharedimodelName);
     }
   });
 
   it("should acquire code with next available index value", async () => {
     // Get next value in sequence
     const sequence = createTestSequence(CodeSequenceType.NextAvailable);
-    const sequenceResult = await iModelClient.codes.sequences.get(requestContext, imodelId, sequence);
+    const sequenceResult = await iModelClient.codes.sequences.get(accessToken, iModelId, sequence);
     chai.assert(sequenceResult);
 
     // Try to acquire Code with this value
     const code = utils.randomCode(briefcaseId);
     code.value = formatSequenceValue(sequenceResult);
     code.state = CodeState.Used;
-    const reserveResult = await iModelClient.codes.update(requestContext, imodelId, [code]);
+    const reserveResult = await iModelClient.codes.update(accessToken, iModelId, [code]);
     chai.assert(reserveResult);
   });
 
   it("should query a code with largest used index value", async () => {
     // Get next value in sequence
     const sequence = createTestSequence(CodeSequenceType.LargestUsed);
-    const sequenceResult = await iModelClient.codes.sequences.get(requestContext, imodelId, sequence);
+    const sequenceResult = await iModelClient.codes.sequences.get(accessToken, iModelId, sequence);
     chai.assert(sequenceResult);
 
     // Try to acquire Code with this value
@@ -429,7 +426,7 @@ describe("iModelHub CodeSequenceHandler (#iModelBank|#integration)", () => {
     code.value = formatSequenceValue(sequenceResult);
     code.state = CodeState.Used;
     const query = new CodeQuery().byCodes([code]);
-    const queryResult = await iModelClient.codes.get(requestContext, imodelId, query);
+    const queryResult = await iModelClient.codes.get(accessToken, iModelId, query);
     chai.assert(queryResult);
     chai.expect(queryResult.length).to.be.gt(0);
     chai.expect(queryResult[0].value).to.be.equal(code.value);

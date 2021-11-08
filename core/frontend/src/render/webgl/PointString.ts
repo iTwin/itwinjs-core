@@ -6,9 +6,9 @@
  * @module WebGL
  */
 
-import { assert, dispose } from "@bentley/bentleyjs-core";
-import { Point3d } from "@bentley/geometry-core";
-import { FeatureIndexType, QParams3d } from "@bentley/imodeljs-common";
+import { assert, dispose } from "@itwin/core-bentley";
+import { Point3d } from "@itwin/core-geometry";
+import { FeatureIndexType, QParams3d } from "@itwin/core-common";
 import { PointStringParams } from "../primitives/VertexTable";
 import { RenderMemory } from "../RenderMemory";
 import { AttributeMap } from "./AttributeMap";
@@ -52,9 +52,9 @@ export class PointStringGeometry extends LUTGeometry {
 
   public get techniqueId(): TechniqueId { return TechniqueId.PointString; }
   public getRenderPass(_target: Target): RenderPass { return RenderPass.OpaqueLinear; }
-  public get hasFeatures() { return this._hasFeatures; }
+  public override get hasFeatures() { return this._hasFeatures; }
   public get renderOrder(): RenderOrder { return RenderOrder.PlanarLinear; }
-  protected _getLineWeight(_params: ShaderProgramParams): number { return this.weight; }
+  protected override _getLineWeight(_params: ShaderProgramParams): number { return this.weight; }
 
   protected _draw(numInstances: number, instanceBuffersContainer?: BuffersContainer): void {
     const gl = System.instance;

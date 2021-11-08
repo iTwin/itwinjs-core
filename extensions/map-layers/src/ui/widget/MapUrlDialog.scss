@@ -2,7 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@bentley/ui-core/lib/ui-core/index";
+@import "~@itwin/core-react/lib/cjs/core-react/index";
+@import "~@itwin/itwinui-css/scss/style/typography";
 
 $divider-color: $buic-background-toolbutton-stroke;
 $hovered-icon-color: $buic-foreground-primary-tone;
@@ -10,13 +11,12 @@ $hovered-icon-color: $buic-foreground-primary-tone;
 
 .map-layer-url-dialog {
   z-Index: 21000;
-
-  .core-dialog-content {
-    padding-right: 11px !important;
-    padding-left: 11px !important;
-  }
 }
 
+.map-layer-url-dialog-content {
+  padding-right: 5px;
+  padding-left: 5px;
+}
 .map-layer-source-url {
 
   height: 100%;
@@ -26,8 +26,12 @@ $hovered-icon-color: $buic-foreground-primary-tone;
   grid-column-gap: 10px;
   align-items: center;
 
-  .map-layer-source-label{
-    font-size: $uicore-font-size;
+  .map-layer-source-select, .map-layer-source-input {
+    margin-bottom: 0.5rem;
+    }
+
+  .map-layer-source-label {
+    font-size: $iui-font-size;
     color: $buic-foreground-body;
     padding-right: 6px;
     flex: initial;
@@ -35,14 +39,16 @@ $hovered-icon-color: $buic-foreground-primary-tone;
     white-space: nowrap;
   }
 
-  .map-layer-source-editor{
+  .map-layer-source-editor {
     width: 100%;
     height: 100%;
   }
-  label{
+
+  label {
     grid-column-start: 2;
   }
-  .map-layer-warning-icon{
+
+  .map-layer-warning-icon {
     margin-left: 3%;
   }
 
@@ -72,6 +78,7 @@ $hovered-icon-color: $buic-foreground-primary-tone;
     &:hover {
       color: $hovered-icon-color;
     }
+
     &:focus {
       outline: none;
       box-shadow: $uicore-button-focus-boxshadow;

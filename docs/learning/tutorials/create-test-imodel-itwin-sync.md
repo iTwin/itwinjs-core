@@ -15,7 +15,7 @@ Before you create an iModel, you must first have an iTwin project that will cont
   - Any other users will also have to have a Bentley account
 - Click Submit
 
-A iTwin project containing an empty iModel will be created for you.
+An iTwin project containing an empty iModel will be created for you.
 
 ## Download iTwin synchronizer
 
@@ -36,14 +36,14 @@ Creating a named version is required to view the iModel on iModelHub.
 
 Edit one of the source files with its native design tool, save, and sync the changes with iModelHub using the iTwin Synchronizer. Review the evolving timeline of the iModel. When you get to a point you want others to see, create a new Named Version.
 
-Build and run the [query-agent](https://github.com/imodeljs/imodeljs-samples/tree/master/agent-app/query-agent) which will listen to changesets pushed to iModelHub. Pull the changeset information, and parse useful details contained in them. Take a specific action if the changeset meets certain criteria.
+Build and run the [agent-starter](./develop-agent) which will listen to changesets pushed to iModelHub. Pull the changeset information, and parse useful details contained in them. Take a specific action if the changeset meets certain criteria.
 
 ---
 
 <br/>
 <br/>
 
-> _Note: Test iModels should not be used to host sensitive data. The uploaded data is administered by Bentley and should only be used for the purpose of testing. It is not subject to the same data privacy, security policies, and access controls that apply to Bentley’s iTwin offerings. It is subject to data size and other usage limitations, and will be purged after 90 days, if not renewed._ _If you need help or have questions, please contact us on [Github](https://github.com/imodeljs/imodeljs/issues)._
+> _Note: Test iModels should not be used to host sensitive data. The uploaded data is administered by Bentley and should only be used for the purpose of testing. It is not subject to the same data privacy, security policies, and access controls that apply to Bentley’s iTwin offerings. It is subject to data size and other usage limitations, and will be purged after 90 days, if not renewed._ _If you need help or have questions, please contact us on [Github](https://github.com/iTwin/itwinjs-core/issues)._
 
 <style>
     a#getting-started---explore-imodel {

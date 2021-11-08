@@ -9,7 +9,7 @@
 
 // import { Geometry, Angle, AngleSweep } from "../Geometry";
 
-import { AxisIndex, AxisOrder, Geometry } from "../Geometry";
+import { AxisIndex, AxisOrder, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { AngleSweep } from "../geometry3d/AngleSweep";
 import { Ellipsoid, GeodesicPathPoint } from "../geometry3d/Ellipsoid";
 import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
@@ -34,6 +34,7 @@ import { IntegratedSpiral3d } from "./spiral/IntegratedSpiral3d";
 import { Segment1d } from "../geometry3d/Segment1d";
 import { SmallSystem } from "../numerics/Polynomials";
 import { Vector2d } from "../geometry3d/Point2dVector2d";
+import { Ray3d } from "../geometry3d/Ray3d";
 
 /**
  * The `CurveFactory` class contains methods for specialized curve constructions.
@@ -530,6 +531,36 @@ export class CurveFactory {
     }
     return undefined;
   }
+  /**
+   * Return the intersection point of 3 planes.
+   * @param planeA
+   * @param planeB
+   * @param planeC
+   */
+  public static planePlaneIntersectionRay(
+    planeA: PlaneAltitudeEvaluator, planeB: PlaneAltitudeEvaluator): Ray3d | undefined {
+    const altitudeA = planeA.altitudeXYZ(0, 0, 0);
+    const altitudeB = planeB.altitudeXYZ(0, 0, 0);
+    const normalAx = planeA.normalX();
+    const normalAy = planeA.normalY();
+    const normalAz = planeA.normalZ();
+    const normalBx = planeB.normalX();
+    const normalBy = planeB.normalY();
+    const normalBz = planeB.normalZ();
+    const normalCx = Geometry.crossProductXYXY(normalAy, normalAz, normalBy, normalBz);
+    const normalCy = Geometry.crossProductXYXY(normalAz, normalAx, normalBz, normalBx);
+    const normalCz = Geometry.crossProductXYXY(normalAx, normalAy, normalBx, normalBy);
+    const rayOrigin = SmallSystem.linearSystem3d(
+      normalAx, normalAy, normalAz,
+      normalBx, normalBy, normalBz,
+      normalCx, normalCy, normalCz,
+      -altitudeA, -altitudeB, 0.0);
+    if (rayOrigin !== undefined) {
+      return Ray3d.createXYZUVW(rayOrigin.x, rayOrigin.y, rayOrigin.z, normalCx, normalCy, normalCz);
+    }
+    return undefined;
+  }
+
 }
 
 /**

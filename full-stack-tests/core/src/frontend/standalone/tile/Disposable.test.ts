@@ -3,16 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { ByteStream, IDisposable } from "@bentley/bentleyjs-core";
-import { Arc3d, Point3d, Range3d } from "@bentley/geometry-core";
-import { ColorByName, ColorDef, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderTexture } from "@bentley/imodeljs-common";
+import { ByteStream, IDisposable } from "@itwin/core-bentley";
+import { ColorByName, ColorDef, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderTexture } from "@itwin/core-common";
 import {
   Decorations, GraphicList, GraphicType, ImdlReader, IModelApp, IModelConnection, OffScreenViewport, PlanarClassifierMap, PlanarClassifierTarget,
   PlanarClipMaskState, RenderMemory, RenderPlanarClassifier, RenderTextureDrape, SceneContext, ScreenViewport, SnapshotConnection, TextureDrapeMap,
   TileTreeReference,
-} from "@bentley/imodeljs-frontend";
-import { MeshArgs } from "@bentley/imodeljs-frontend/lib/render-primitives";
-import { Batch, FrameBuffer, OnScreenTarget, Target, TextureHandle, WorldDecorations } from "@bentley/imodeljs-frontend/lib/webgl";
+} from "@itwin/core-frontend";
+import { MeshArgs } from "@itwin/core-frontend/lib/cjs/render-primitives";
+import { Batch, FrameBuffer, OnScreenTarget, Target, TextureHandle, WorldDecorations } from "@itwin/core-frontend/lib/cjs/webgl";
+import { Arc3d, Point3d, Range3d } from "@itwin/core-geometry";
+import { TestUtility } from "../../TestUtility";
 import { testViewports } from "../../TestViewport";
 import { TILE_DATA_1_1 } from "./data/TileIO.data.1.1";
 import { FakeGMState, FakeModelProps, FakeREProps } from "./TileIO.test";
@@ -129,13 +130,13 @@ function disposedCheck(disposable: any, ignoredAttribs?: string[]): boolean {
 // This test block exists on its own since disposal of System causes system to detach from an imodel's onClose event
 describe("Disposal of System", () => {
   before(async () => {
-    await IModelApp.startup({ renderSys: { doIdleWork: false } });
+    await TestUtility.startFrontend({ renderSys: { doIdleWork: false } });
     imodel0 = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {
     await imodel0.close();
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("expect rendersystem disposal to trigger disposal of textures cached in id-map", async () => {
@@ -146,12 +147,16 @@ describe("Disposal of System", () => {
     assert.isDefined(imageBuff);
 
     // Texture from image buffer
+    // eslint-disable-next-line deprecation/deprecation
     const textureParams0 = new RenderTexture.Params("-192837465");
+    // eslint-disable-next-line deprecation/deprecation
     const texture0 = system.createTextureFromImageBuffer(imageBuff, imodel0, textureParams0);
     assert.isDefined(texture0);
 
     // Texture from image source
+    // eslint-disable-next-line deprecation/deprecation
     const textureParams1 = new RenderTexture.Params("-918273645");
+    // eslint-disable-next-line deprecation/deprecation
     const texture1 = system.createTextureFromImageBuffer(imageBuff, imodel0, textureParams1);
     assert.isDefined(texture1);
 
@@ -171,7 +176,7 @@ describe("Disposal of System", () => {
 
 describe("Disposal of WebGL Resources", () => {
   before(async () => {
-    await IModelApp.startup({ renderSys: { doIdleWork: false } });
+    await TestUtility.startFrontend({ renderSys: { doIdleWork: false } });
 
     imodel0 = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     imodel1 = await SnapshotConnection.openFile("testImodel.bim"); // relative path resolved by BackendTestAssetResolver
@@ -180,7 +185,7 @@ describe("Disposal of WebGL Resources", () => {
   after(async () => {
     await imodel0.close();
     await imodel1.close();
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   // ###TODO: Update TileIO.data.ts for new tile format...
@@ -410,14 +415,16 @@ describe("Disposal of WebGL Resources", () => {
 
     const viewport = ScreenViewport.create(viewDiv, viewState);
     viewport.changeView(viewState);
-    viewport.viewFlags.grid = true;   // force a decoration to be turned on
+    viewport.viewFlags = viewport.viewFlags.with("grid", true); // force a decoration to be turned on
     viewport.renderFrame(); // force a frame to be rendered
 
     const target = viewport.target as OnScreenTarget;
     const exposedTarget = new ExposedTarget(target);
 
     // Create a graphic and a texture
+    // eslint-disable-next-line deprecation/deprecation
     const textureParams = new RenderTexture.Params("-192837465");
+    // eslint-disable-next-line deprecation/deprecation
     let texture = system.createTextureFromImageBuffer(ImageBuffer.create(getImageBufferData(), ImageBufferFormat.Rgba, 1)!, imodel0, textureParams);
     const graphicBuilder = target.renderSystem.createGraphic({ type: GraphicType.Scene, viewport });
     graphicBuilder.addArc(Arc3d.createCircularStartMiddleEnd(new Point3d(-100, 0, 0), new Point3d(0, 100, 0), new Point3d(100, 0, 0)) as Arc3d, false, false);
@@ -436,6 +443,7 @@ describe("Disposal of WebGL Resources", () => {
     assert.isTrue(isDisposed(texture));
     assert.isTrue(isDisposed(graphic));
 
+    // eslint-disable-next-line deprecation/deprecation
     texture = system.createTextureFromImageBuffer(ImageBuffer.create(getImageBufferData(), ImageBufferFormat.Rgba, 1)!, imodel0, textureParams);
     assert.isFalse(isDisposed(texture));
 

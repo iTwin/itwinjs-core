@@ -6,8 +6,8 @@
  * @module iModelHubClient
  */
 
-import { GuidString, Logger } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, ECJsonTypeMap, WsgInstance } from "@bentley/itwin-client";
+import { AccessToken, GuidString, Logger } from "@itwin/core-bentley";
+import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
 import { IModelBaseHandler } from "./BaseHandler";
 
@@ -55,14 +55,12 @@ export class PermissionHandler {
   /**
    * Get user permissions of an specified iModel.
    * Use [[PermissionHandler.getContextPermissions]] to check CONNECT context level permissions.
-   * @param requestContext The client request context.
    * @param imodelId Id of the specified iModel.
    */
-  public async getiModelPermissions(requestContext: AuthorizedClientRequestContext, imodelId: GuidString): Promise<IModelPermissions> {
-    requestContext.enter();
+  public async getiModelPermissions(accessToken: AccessToken, imodelId: GuidString): Promise<IModelPermissions> {
     Logger.logInfo(loggerCategory, "Querying permissions for iModel", () => ({ iModelId: imodelId }));
 
-    const permissions: IModelPermissions[] = await this._handler.getInstances<IModelPermissions>(requestContext, IModelPermissions, `/Repositories/iModel--${imodelId}/iModelScope/Permission`);
+    const permissions: IModelPermissions[] = await this._handler.getInstances<IModelPermissions>(accessToken, IModelPermissions, `/Repositories/iModel--${imodelId}/iModelScope/Permission`);
     return permissions[0];
   }
 }

@@ -9,4 +9,3 @@ The __@bentley/product-settings-client__ package contains client wrappers for se
 ## Documentation
 
 See the [iTwin.js](https://www.itwinjs.org) documentation for more information.
-

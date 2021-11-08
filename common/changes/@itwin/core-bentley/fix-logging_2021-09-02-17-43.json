@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-bentley",
+      "comment": "allow intercept log and filter it",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-bentley"
+}

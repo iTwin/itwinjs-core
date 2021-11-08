@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as yargs from "yargs";
 import * as path from "path";
-import { IModelHost } from "@bentley/imodeljs-backend";
+import { IModelHost } from "@itwin/core-backend";
 import { ImportIMJS } from "./ImportIMJS";
 
 /* eslint-disable no-console */

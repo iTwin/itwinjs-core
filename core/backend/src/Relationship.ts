@@ -6,23 +6,20 @@
  * @module Relationships
  */
 
-import { DbOpcode, DbResult, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
-import { IModelError, IModelStatus, RelationshipProps, SourceAndTarget } from "@bentley/imodeljs-common";
-import { BackendLoggerCategory } from "./BackendLoggerCategory";
+import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
+import { IModelError, IModelStatus, RelationshipProps, SourceAndTarget } from "@itwin/core-common";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 
-export { SourceAndTarget, RelationshipProps } from "@bentley/imodeljs-common"; // for backwards compatibility
-
-const loggerCategory = BackendLoggerCategory.Relationship;
+export type { SourceAndTarget, RelationshipProps } from "@itwin/core-common"; // for backwards compatibility
 
 /** Base class for all link table ECRelationships
  * @public
  */
 export class Relationship extends Entity implements RelationshipProps {
   /** @internal */
-  public static get className(): string { return "Relationship"; }
+  public static override get className(): string { return "Relationship"; }
   public readonly sourceId: Id64String;
   public readonly targetId: Id64String;
 
@@ -34,7 +31,7 @@ export class Relationship extends Entity implements RelationshipProps {
   }
 
   /** @internal */
-  public toJSON(): RelationshipProps {
+  public override toJSON(): RelationshipProps {
     const val = super.toJSON() as RelationshipProps;
     val.sourceId = this.sourceId;
     val.targetId = this.targetId;
@@ -66,15 +63,6 @@ export class Relationship extends Entity implements RelationshipProps {
   public delete() { this.iModel.relationships.deleteInstance(this); }
 
   public static getInstance<T extends Relationship>(iModel: IModelDb, criteria: Id64String | SourceAndTarget): T { return iModel.relationships.getInstance(this.classFullName, criteria); }
-
-  /** Add a request for the locks that would be needed to carry out the specified operation.
-   * @param opcode The operation that will be performed on the Relationship instance.
-   */
-  public buildConcurrencyControlRequest(opcode: DbOpcode): void {
-    if (this.iModel.isBriefcaseDb()) {
-      this.iModel.concurrencyControl.buildRequestForRelationship(this, opcode);
-    }
-  }
 }
 
 /** A Relationship where one Element refers to another Element
@@ -82,7 +70,7 @@ export class Relationship extends Entity implements RelationshipProps {
  */
 export class ElementRefersToElements extends Relationship {
   /** @internal */
-  public static get className(): string { return "ElementRefersToElements"; }
+  public static override get className(): string { return "ElementRefersToElements"; }
   /** Create an instance of the Relationship.
    * @param iModel The iModel that will contain the relationship
    * @param sourceId The sourceId of the relationship, that is, the driver element
@@ -109,7 +97,7 @@ export class ElementRefersToElements extends Relationship {
  */
 export class DrawingGraphicRepresentsElement extends ElementRefersToElements {
   /** @internal */
-  public static get className(): string { return "DrawingGraphicRepresentsElement"; }
+  public static override get className(): string { return "DrawingGraphicRepresentsElement"; }
 }
 
 /** Relates a [[GraphicalElement3d]] to the [[Element]] that it represents
@@ -117,7 +105,7 @@ export class DrawingGraphicRepresentsElement extends ElementRefersToElements {
  */
 export class GraphicalElement3dRepresentsElement extends ElementRefersToElements {
   /** @internal */
-  public static get className(): string { return "GraphicalElement3dRepresentsElement"; }
+  public static override get className(): string { return "GraphicalElement3dRepresentsElement"; }
 }
 
 /** Relates a [[SynchronizationConfigLink]] to N [[ExternalSource]] instances.
@@ -127,7 +115,7 @@ export class GraphicalElement3dRepresentsElement extends ElementRefersToElements
  */
 export class SynchronizationConfigProcessesSources extends ElementRefersToElements {
   /** @internal */
-  public static get className(): string { return "SynchronizationConfigProcessesSources"; }
+  public static override get className(): string { return "SynchronizationConfigProcessesSources"; }
 }
 
 /** Relates a [[SynchronizationConfigLink]] to *root* [[ExternalSource]] instances.
@@ -136,7 +124,7 @@ export class SynchronizationConfigProcessesSources extends ElementRefersToElemen
  */
 export class SynchronizationConfigSpecifiesRootSources extends SynchronizationConfigProcessesSources {
   /** @internal */
-  public static get className(): string { return "SynchronizationConfigSpecifiesRootSources"; }
+  public static override get className(): string { return "SynchronizationConfigSpecifiesRootSources"; }
 }
 
 /** Properties that are common to all types of link table ECRelationships
@@ -151,7 +139,7 @@ export interface ElementGroupsMembersProps extends RelationshipProps {
  */
 export class ElementGroupsMembers extends ElementRefersToElements {
   /** @internal */
-  public static get className(): string { return "ElementGroupsMembers"; }
+  public static override get className(): string { return "ElementGroupsMembers"; }
   public memberPriority: number;
 
   constructor(props: ElementGroupsMembersProps, iModel: IModelDb) {
@@ -159,7 +147,7 @@ export class ElementGroupsMembers extends ElementRefersToElements {
     this.memberPriority = props.memberPriority;
   }
 
-  public static create<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String, memberPriority: number = 0): T {
+  public static override create<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String, memberPriority: number = 0): T {
     const props: ElementGroupsMembersProps = { sourceId, targetId, memberPriority, classFullName: this.classFullName };
     return iModel.relationships.createInstance(props) as T;
   }
@@ -171,7 +159,7 @@ export class ElementGroupsMembers extends ElementRefersToElements {
  */
 export class DefinitionGroupGroupsDefinitions extends ElementGroupsMembers {
   /** @internal */
-  public static get className(): string { return "DefinitionGroupGroupsDefinitions"; }
+  public static override get className(): string { return "DefinitionGroupGroupsDefinitions"; }
 }
 
 /** Represents group membership where the group Element (and its properties) impart information about the member Elements above mere membership.
@@ -181,7 +169,7 @@ export class DefinitionGroupGroupsDefinitions extends ElementGroupsMembers {
  */
 export class GroupImpartsToMembers extends ElementGroupsMembers {
   /** @internal */
-  public static get className(): string { return "GroupImpartsToMembers"; }
+  public static override get className(): string { return "GroupImpartsToMembers"; }
 }
 
 /** Relates an [[ExternalSourceGroup]] to its [[ExternalSource]] members.
@@ -190,7 +178,7 @@ export class GroupImpartsToMembers extends ElementGroupsMembers {
  */
 export class ExternalSourceGroupGroupsSources extends ElementGroupsMembers {
   /** @internal */
-  public static get className(): string { return "ExternalSourceGroupGroupsSources"; }
+  public static override get className(): string { return "ExternalSourceGroupGroupsSources"; }
 }
 
 /** Properties that are common to all types of ElementDrivesElements
@@ -387,7 +375,7 @@ export interface ElementDrivesElementProps extends RelationshipProps {
  */
 export class ElementDrivesElement extends Relationship implements ElementDrivesElementProps {
   /** @internal */
-  public static get className(): string { return "ElementDrivesElement"; }
+  public static override get className(): string { return "ElementDrivesElement"; }
   /** Relationship status
    * * 0 indicates no errors. iModel.js sets this after a successful evaluation.
    * * 1 indicates that this driving relationship could not be evaluated. The callback itself can set this to indicate that it failed to process the input changes. Also, iModel.js sets this if it finds that the relationship is part of a circular dependency.
@@ -428,7 +416,7 @@ export class Relationships {
   /** Check classFullName to ensure it is a link table relationship class. */
   private checkRelationshipClass(classFullName: string) {
     if (!this._iModel.nativeDb.isLinkTableRelationship(classFullName.replace(".", ":"))) {
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, `Class '${classFullName}' must be a relationship class and it should be subclass of BisCore:ElementRefersToElements or BisCore:ElementDrivesElement.`, Logger.logWarning, loggerCategory);
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, `Class '${classFullName}' must be a relationship class and it should be subclass of BisCore:ElementRefersToElements or BisCore:ElementDrivesElement.`);
     }
   }
 
@@ -436,38 +424,22 @@ export class Relationships {
    * @param props The properties of the new relationship.
    * @returns The Id of the newly inserted relationship.
    * @note The id property of the props object is set as a side effect of this function.
-   * @throws [[IModelError]] if unable to insert the relationship instance.
    */
   public insertInstance(props: RelationshipProps): Id64String {
     this.checkRelationshipClass(props.classFullName);
-    const val = this._iModel.nativeDb.insertLinkTableRelationship(props);
-    if (val.error)
-      throw new IModelError(val.error.status, "Error inserting relationship instance", Logger.logWarning, loggerCategory);
-
-    props.id = Id64.fromJSON(val.result);
-    return props.id;
+    return props.id = this._iModel.nativeDb.insertLinkTableRelationship(props);
   }
 
-  /** Update the properties of an existing relationship instance in the iModel.The relationship provided must be subclass of BisCore:ElementRefersToElements or BisCore:ElementDrivesElement.
+  /** Update the properties of an existing relationship instance in the iModel.
    * @param props the properties of the relationship instance to update. Any properties that are not present will be left unchanged.
-   * @throws [[IModelError]] if unable to update the relationship instance.
    */
   public updateInstance(props: RelationshipProps): void {
-    this.checkRelationshipClass(props.classFullName);
-    const error = this._iModel.nativeDb.updateLinkTableRelationship(props);
-    if (error !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(error, "Error updating relationship instance", Logger.logWarning, loggerCategory);
+    this._iModel.nativeDb.updateLinkTableRelationship(props);
   }
 
-  /** Delete an Relationship instance from this iModel.The relationship provided must be subclass of BisCore:ElementRefersToElements or BisCore:ElementDrivesElement.
-   * @param id The Id of the Relationship to be deleted
-   * @throws [[IModelError]]
-   */
+  /** Delete an Relationship instance from this iModel. */
   public deleteInstance(props: RelationshipProps): void {
-    this.checkRelationshipClass(props.classFullName);
-    const error = this._iModel.nativeDb.deleteLinkTableRelationship(props);
-    if (error !== DbResult.BE_SQLITE_DONE)
-      throw new IModelError(error, "", Logger.logWarning, loggerCategory);
+    this._iModel.nativeDb.deleteLinkTableRelationship(props);
   }
 
   /** Get the props of a Relationship instance
@@ -479,7 +451,7 @@ export class Relationships {
   public getInstanceProps<T extends RelationshipProps>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T {
     const relationshipProps = this.tryGetInstanceProps<T>(relClassFullName, criteria);
     if (undefined === relationshipProps) {
-      throw new IModelError(IModelStatus.NotFound, "Relationship not found", Logger.logWarning, loggerCategory);
+      throw new IModelError(IModelStatus.NotFound, "Relationship not found");
     }
     return relationshipProps;
   }

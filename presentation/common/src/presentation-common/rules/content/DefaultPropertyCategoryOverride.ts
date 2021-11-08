@@ -15,7 +15,7 @@ import { PropertyCategorySpecification } from "./modifiers/PropertyCategorySpeci
  * The default property category is a category that gets assigned to properties
  * that otherwise have no category.
  *
- * @see [More details]($docs/learning/presentation/Content/DefaultPropertyCategoryOverride.md)
+ * @see [More details]($docs/presentation/Content/DefaultPropertyCategoryOverride.md)
  * @public
  */
 export interface DefaultPropertyCategoryOverride extends RuleBase {

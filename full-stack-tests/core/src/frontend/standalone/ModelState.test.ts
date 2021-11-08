@@ -3,18 +3,19 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { Id64 } from "@bentley/bentleyjs-core";
-import { Code, IModel, ModelSelectorProps } from "@bentley/imodeljs-common";
+import { Id64 } from "@itwin/core-bentley";
+import { Code, IModel, ModelSelectorProps } from "@itwin/core-common";
 import {
-  DrawingModelState, GeometricModelState, IModelConnection, MockRender, ModelSelectorState, SheetModelState, SnapshotConnection, SpatialModelState,
-} from "@bentley/imodeljs-frontend";
+  DrawingModelState, GeometricModelState, IModelConnection, ModelSelectorState, SheetModelState, SnapshotConnection, SpatialModelState,
+} from "@itwin/core-frontend";
+import { TestUtility } from "../TestUtility";
 
 describe("ModelState", () => {
   let imodel: IModelConnection;
   let imodel2: IModelConnection;
   let imodel3: IModelConnection;
   before(async () => {
-    await MockRender.App.startup();
+    await TestUtility.startFrontend(undefined, true);
     imodel2 = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
     imodel = await SnapshotConnection.openFile("CompatibilityTestSeed.bim"); // relative path resolved by BackendTestAssetResolver
     imodel3 = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
@@ -24,7 +25,7 @@ describe("ModelState", () => {
     if (imodel) await imodel.close();
     if (imodel2) await imodel2.close();
     if (imodel3) await imodel3.close();
-    await MockRender.App.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("ModelSelectors should hold models", () => {
@@ -48,7 +49,6 @@ describe("ModelState", () => {
 
   it("should be able to load ModelState", async () => {
     await imodel.models.load(["0x24", "0x28", "0x2c", "0x11", "0x34", "0x24", "nonsense"]);
-    // eslint-disable-next-line deprecation/deprecation
     const models = imodel.models.loaded;
     assert.equal(models.size, 5);
     assert.instanceOf(models.get("0x24"), DrawingModelState);
@@ -116,7 +116,6 @@ describe("ModelState", () => {
     assert.equal(propsCount, 1);
 
     await imodel2.models.load(["0x28", "0x1c"]);
-    // eslint-disable-next-line deprecation/deprecation
     assert.equal(imodel2.models.loaded.size, 2);
     const scalableMesh = imodel2.models.getLoaded("0x28");
     assert.instanceOf(scalableMesh, SpatialModelState, "ScalableMeshModel should be SpatialModel");

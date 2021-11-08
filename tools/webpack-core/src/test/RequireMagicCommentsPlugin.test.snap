@@ -1,0 +1,220 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`RequireMagicCommentsPlugin should transform requires with comment via custom handler 1`] = `
+"(window[\\"webpackJsonp\\"] = window[\\"webpackJsonp\\"] || []).push([[0],[
+/* 0 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__(1);
+
+
+/***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__(/*test*/2);
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports) {
+
+console.log(\\"Module bar\\");
+
+/***/ })
+],[[0,1]]]);"
+`;
+
+exports[`RequireMagicCommentsPlugin should work with copyfile comments and addCopyFileSuffix handler 1`] = `
+"(window[\\"webpackJsonp\\"] = window[\\"webpackJsonp\\"] || []).push([[0],[
+/* 0 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__(1);
+
+
+/***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__(/*webpack: copyfile*/2);
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/* WEBPACK VAR INJECTION */(function(__dirname) {module.exports = __webpack_require__(3).resolve(__dirname, __webpack_require__.p + \\"static/bar.91b123.txt\\");
+/* WEBPACK VAR INJECTION */}.call(this, \\"/\\"))
+
+/***/ }),
+/"
+`;
+
+exports[`RequireMagicCommentsPlugin should work with copyfile comments, addCopyFileSuffix, and resolve converted 1`] = `
+"(window[\\"webpackJsonp\\"] = window[\\"webpackJsonp\\"] || []).push([[0],[
+/* 0 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__(1);
+
+
+/***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__(/*webpack: copyfile*/2);
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/* WEBPACK VAR INJECTION */(function(__dirname) {module.exports = __webpack_require__(3).resolve(__dirname, __webpack_require__.p + \\"static/bar.91b123.txt\\");
+/* WEBPACK VAR INJECTION */}.call(this, \\"/\\"))
+
+/***/ }),
+/"
+`;
+
+exports[`RequireMagicCommentsPlugin should work with copyfile comments, addCopyFileSuffix, and resolve not converted 1`] = `
+"(window[\\"webpackJsonp\\"] = window[\\"webpackJsonp\\"] || []).push([[0],[
+/* 0 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__(1);
+
+
+/***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/*require.resolve*/(/*webpack: copyfile*/2);
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/* WEBPACK VAR INJECTION */(function(__dirname) {module.exports = __webpack_require__(3).resolve(__dirname, __webpack_require__.p + \\"static/bar.91b123.txt\\");
+/* WEBPACK VAR INJECTION */}.call(this, \\"/\\"))
+
+/***/ }),
+/"
+`;
+
+exports[`RequireMagicCommentsPlugin should work with external comments and addExternalPrefix handler 1`] = `
+"(window[\\"webpackJsonp\\"] = window[\\"webpackJsonp\\"] || []).push([[0],[
+/* 0 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__(1);
+
+
+/***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__(/*webpack: external*/2);
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports) {
+
+module.exports = require(\\"foo\\");
+
+/***/ })
+],[[0,1]]]);"
+`;
+
+exports[`RequireMagicCommentsPlugin should work with external comments and resolve converted 1`] = `
+"(window[\\"webpackJsonp\\"] = window[\\"webpackJsonp\\"] || []).push([[0],[
+/* 0 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__(1);
+
+
+/***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__(/*test*/2);
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports) {
+
+console.log(\\"Module bar\\");
+
+/***/ })
+],[[0,1]]]);"
+`;
+
+exports[`RequireMagicCommentsPlugin should work with external comments and resolve not converted 1`] = `
+"(window[\\"webpackJsonp\\"] = window[\\"webpackJsonp\\"] || []).push([[0],[
+/* 0 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__(1);
+
+
+/***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/*require.resolve*/(/*test*/2);
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports) {
+
+console.log(\\"Module bar\\");
+
+/***/ })
+],[[0,1]]]);"
+`;
+
+exports[`RequireMagicCommentsPlugin should work with external comments with resolve converted and addExternalPrefix handler 1`] = `
+"(window[\\"webpackJsonp\\"] = window[\\"webpackJsonp\\"] || []).push([[0],[
+/* 0 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__(1);
+
+
+/***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__(/*webpack: external*/2);
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports) {
+
+module.exports = require(\\"foo\\");
+
+/***/ })
+],[[0,1]]]);"
+`;
+
+exports[`RequireMagicCommentsPlugin should work with external comments with resolve not converted and addExternalPrefix handler 1`] = `
+"(window[\\"webpackJsonp\\"] = window[\\"webpackJsonp\\"] || []).push([[0],[
+/* 0 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__(1);
+
+
+/***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/*require.resolve*/(/*webpack: external*/2);
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports) {
+
+module.exports = require(\\"foo\\");
+
+/***/ })
+],[[0,1]]]);"
+`;

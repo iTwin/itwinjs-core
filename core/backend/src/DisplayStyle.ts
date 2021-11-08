@@ -6,11 +6,11 @@
  * @module ViewDefinitions
  */
 
-import { CompressedId64Set, Id64, Id64Array, Id64Set, Id64String, OrderedId64Iterable } from "@bentley/bentleyjs-core";
+import { CompressedId64Set, Id64, Id64Array, Id64Set, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import {
   BisCodeSpec, Code, CodeScopeProps, CodeSpec, ColorDef, DisplayStyle3dProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
   DisplayStyleProps, DisplayStyleSettings, PlanProjectionSettingsProps, RenderSchedule, SkyBoxImageProps, ViewFlags,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { DefinitionElement, RenderTimeline } from "./Element";
 import { IModelCloneContext } from "./IModelCloneContext";
 import { IModelDb } from "./IModelDb";
@@ -22,7 +22,7 @@ import { IModelDb } from "./IModelDb";
  */
 export abstract class DisplayStyle extends DefinitionElement implements DisplayStyleProps {
   /** @internal */
-  public static get className(): string { return "DisplayStyle"; }
+  public static override get className(): string { return "DisplayStyle"; }
   public abstract get settings(): DisplayStyleSettings;
 
   /** @internal */
@@ -41,7 +41,7 @@ export abstract class DisplayStyle extends DefinitionElement implements DisplayS
   }
 
   /** @alpha */
-  protected collectPredecessorIds(predecessorIds: Id64Set): void {
+  protected override collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
     for (const [id] of this.settings.subCategoryOverrides) {
       predecessorIds.add(id);
@@ -60,7 +60,7 @@ export abstract class DisplayStyle extends DefinitionElement implements DisplayS
   }
 
   /** @alpha */
-  protected static onCloned(context: IModelCloneContext, sourceElementProps: DisplayStyleProps, targetElementProps: DisplayStyleProps): void {
+  protected static override onCloned(context: IModelCloneContext, sourceElementProps: DisplayStyleProps, targetElementProps: DisplayStyleProps): void {
     super.onCloned(context, sourceElementProps, targetElementProps);
 
     if (!context.isBetweenIModels || !targetElementProps.jsonProperties?.styles)
@@ -135,7 +135,7 @@ export abstract class DisplayStyle extends DefinitionElement implements DisplayS
  */
 export class DisplayStyle2d extends DisplayStyle {
   /** @internal */
-  public static get className(): string { return "DisplayStyle2d"; }
+  public static override get className(): string { return "DisplayStyle2d"; }
   private readonly _settings: DisplayStyleSettings;
 
   public get settings(): DisplayStyleSettings { return this._settings; }
@@ -162,7 +162,7 @@ export class DisplayStyle2d extends DisplayStyle {
         styles: {
           backgroundColor: 0,
           monochromeColor: ColorDef.white.toJSON(),
-          viewflags: ViewFlags.createFrom(),
+          viewflags: ViewFlags.defaults,
         },
       },
     };
@@ -185,7 +185,7 @@ export class DisplayStyle2d extends DisplayStyle {
  * Most properties are inherited from [DisplayStyle3dSettingsProps]($common), but for backwards compatibility reasons, this interface is slightly awkward:
  * - It adds a `viewFlags` member that differs only in case and type from [DisplayStyleSettingsProps.viewflags]($common); and
  * - It extends the type of [DisplayStyleSettingsProps.backgroundColor]($common) to include [ColorDef]($common).
- * These idiosyncrasies will be addressed in a future version of imodeljs-backend.
+ * These idiosyncrasies will be addressed in a future version of core-backend.
  * @see [[DisplayStyle3d.create]].
  * @public
  */
@@ -203,7 +203,7 @@ export interface DisplayStyleCreationOptions extends Omit<DisplayStyle3dSettings
  */
 export class DisplayStyle3d extends DisplayStyle implements DisplayStyle3dProps {
   /** @internal */
-  public static get className(): string { return "DisplayStyle3d"; }
+  public static override get className(): string { return "DisplayStyle3d"; }
   private readonly _settings: DisplayStyle3dSettings;
 
   public get settings(): DisplayStyle3dSettings { return this._settings; }
@@ -215,7 +215,7 @@ export class DisplayStyle3d extends DisplayStyle implements DisplayStyle3dProps 
   }
 
   /** @alpha */
-  protected collectPredecessorIds(predecessorIds: Id64Set): void {
+  protected override collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
     const skyBoxImageProps: SkyBoxImageProps | undefined = this.settings.environment?.sky?.image;
     if (skyBoxImageProps?.texture) {
@@ -236,7 +236,7 @@ export class DisplayStyle3d extends DisplayStyle implements DisplayStyle3dProps 
     }
   }
   /** @alpha */
-  protected static onCloned(context: IModelCloneContext, sourceElementProps: DisplayStyle3dProps, targetElementProps: DisplayStyle3dProps): void {
+  protected static override onCloned(context: IModelCloneContext, sourceElementProps: DisplayStyle3dProps, targetElementProps: DisplayStyle3dProps): void {
     super.onCloned(context, sourceElementProps, targetElementProps);
     if (context.isBetweenIModels) {
       const skyBoxImageProps: SkyBoxImageProps | undefined = targetElementProps?.jsonProperties?.styles?.environment?.sky?.image;
@@ -279,7 +279,7 @@ export class DisplayStyle3d extends DisplayStyle implements DisplayStyle3dProps 
    * @throws [[IModelError]] if unable to create the element.
    */
   public static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): DisplayStyle3d {
-    options = options ?? { };
+    options = options ?? {};
     let viewflags = options.viewFlags?.toJSON();
     if (!viewflags)
       viewflags = options.viewflags ?? new ViewFlags().toJSON();

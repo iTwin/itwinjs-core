@@ -3,15 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { PropertyRecord } from "@itwin/appui-abstract";
 /** @packageDocumentation
  * @module Content
  */
-import { using } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Content, DefaultContentDisplayTypes, InstanceKey, KeySet, PageOptions, RegisteredRuleset, Ruleset } from "@bentley/presentation-common";
-import { ContentDataProvider, ContentBuilder as PresentationContentBuilder } from "@bentley/presentation-components";
-import { Presentation } from "@bentley/presentation-frontend";
-import { PropertyRecord } from "@bentley/ui-abstract";
+import { using } from "@itwin/core-bentley";
+import { QueryRowFormat } from "@itwin/core-common";
+import { IModelConnection } from "@itwin/core-frontend";
+import {
+  Content, DefaultContentDisplayTypes, InstanceKey, KeySet, PageOptions, RegisteredRuleset, Ruleset, traverseContent,
+} from "@itwin/presentation-common";
+import { ContentDataProvider, FieldHierarchyRecord, PropertyRecordsBuilder } from "@itwin/presentation-components";
+import { Presentation } from "@itwin/presentation-frontend";
 
 /**
  * Interface for a data provider, which is used by ContentBuilder.
@@ -74,24 +77,9 @@ export class ContentBuilder {
     if (!content)
       return [];
 
-    const records: PropertyRecord[] = [];
-
-    const sortedFields = content.descriptor.fields.sort((f1, f2) => {
-      if (f1.name > f2.name)
-        return -1;
-      if (f1.name < f2.name)
-        return 1;
-      return 0;
-    });
-
-    for (const field of sortedFields) {
-      for (const set of content.contentSet) {
-        const record = PresentationContentBuilder.createPropertyRecord({ field }, set).record;
-        records.push(record);
-      }
-    }
-
-    return records;
+    const accumulator = new PropertyRecordsAccumulator();
+    traverseContent(accumulator, content);
+    return accumulator.records;
   }
 
   /**
@@ -117,7 +105,7 @@ export class ContentBuilder {
       INNER JOIN meta.ECSchemaDef s ON c.Schema.id = s.ECInstanceId
       WHERE c.Modifier <> 1 AND c.Type = 0
       ORDER BY s.Name, c.Name
-    `)) {
+    `, undefined, QueryRowFormat.UseJsPropertyNames)) {
       rows.push(row);
     }
     return rows;
@@ -133,14 +121,14 @@ export class ContentBuilder {
       const instanceIds = [];
       for await (const row of this._iModel.query(`
       SELECT ECInstanceId FROM ONLY "${nameEntry.schemaName}"."${nameEntry.className}"
-      ORDER BY ECInstanceId`, undefined, limitInstances ? 1 : 4000)) {
-        instanceIds.push(row);
+      ORDER BY ECInstanceId`, undefined, QueryRowFormat.UseJsPropertyNames, {limit : {count: limitInstances ? 1 : 4000}})) {
+        instanceIds.push(row.id);
       }
 
       if (!instanceIds.length)
         continue;
 
-      const instanceKeys = instanceIds.map((idEntry) => ({ className: `${nameEntry.schemaName}:${nameEntry.className}`, id: idEntry.id } as InstanceKey));
+      const instanceKeys = instanceIds.map((idEntry) => ({ className: `${nameEntry.schemaName}:${nameEntry.className}`, id: idEntry } as InstanceKey));
 
       contents.push({
         className: `${nameEntry.schemaName}:${nameEntry.className}`,
@@ -171,5 +159,21 @@ export class ContentBuilder {
    */
   public async createContentForInstancePerClass(rulesetOrId: Ruleset | string, displayType: string = DefaultContentDisplayTypes.PropertyPane) {
     return this.createContentForClasses(rulesetOrId, true, displayType);
+  }
+}
+
+class PropertyRecordsAccumulator extends PropertyRecordsBuilder {
+  private _records: PropertyRecord[] = [];
+
+  public get records(): PropertyRecord[] {
+    return this._records;
+  }
+
+  protected createRootPropertiesAppender() {
+    return {
+      append: (record: FieldHierarchyRecord) => {
+        this._records.push(record.record);
+      },
+    };
   }
 }

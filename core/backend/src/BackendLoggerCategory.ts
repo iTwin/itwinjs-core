@@ -7,123 +7,96 @@
  */
 
 /** Logger categories used by this package
- * @note All logger categories in this package start with the `imodeljs-backend` prefix.
+ * @note All logger categories in this package start with the `core-backend` prefix.
  * @see [Logger]($bentley)
  * @public
  */
 export enum BackendLoggerCategory {
   /** The logger category used by API related to authorization */
-  Authorization = "imodeljs-backend.Authorization",
+  Authorization = "core-backend.Authorization",
 
   /** The logger category used by the following classes:
    * - [[CodeSpecs]]
    */
-  CodeSpecs = "imodeljs-backend.CodeSpecs",
-
-  /** The logger category used by the following classes:
-   * - [[ConcurrencyControl]]
-   */
-  ConcurrencyControl = "imodeljs-backend.ConcurrencyControl",
+  CodeSpecs = "core-backend.CodeSpecs",
 
   /** The logger category used by the [[DevTools]] class and related classes.
    * @internal
    */
-  DevTools = "imodeljs-backend.DevTools",
+  DevTools = "core-backend.DevTools",
 
   /** The logger category used by the following classes:
    * - [[ChangeSummaryManager]]
    * - [[ECDb]]
    * - [[ECSqlStatement]]
    */
-  ECDb = "imodeljs-backend.ECDb",
+  ECDb = "core-backend.ECDb",
 
   /** The logger category used by the following classes:
    * - [[Functional]]
    */
-  Functional = "imodeljs-backend.Functional",
+  Functional = "core-backend.Functional",
 
   /** The logger category used by the following classes:
    * - [[LinearReferencing]]
    */
-  LinearReferencing = "imodeljs-backend.LinearReferencing",
+  LinearReferencing = "core-backend.LinearReferencing",
 
   /** The logger category used by the following classes:
-   * - [[AutoPush]]
    * - BriefcaseManager
    * - [[IModelDb]]
    */
-  IModelDb = "imodeljs-backend.IModelDb",
+  IModelDb = "core-backend.IModelDb",
 
   /** The logger category used by the following classes:
    * - [[IModelHost]]
    */
-  IModelHost = "imodeljs-backend.IModelHost",
-
-  /** The logger category used by the [IModelExporter]($backend) class.
-   * @beta
-   */
-  IModelExporter = "imodeljs-backend.IModelExporter",
-
-  /** The logger category used by the [IModelImporter]($backend) class.
-   * @beta
-   */
-  IModelImporter = "imodeljs-backend.IModelImporter",
-
-  /** The logger category used by the [IModelTransformer]($backend) class.
-   * @beta
-   */
-  IModelTransformer = "imodeljs-backend.IModelTransformer",
+  IModelHost = "core-backend.IModelHost",
 
   /** The logger category used by the following classes:
    * - TileRequestMemoizer
    */
-  IModelTileRequestRpc = "imodeljs-backend.IModelTileRequestRpc",
+  IModelTileRequestRpc = "core-backend.IModelTileRequestRpc",
 
   /** The logger category used by the following classes:
    * - IModelTileRpcImpl (Tile Uploading)
    */
-  IModelTileUpload = "imodeljs-backend.IModelTileUpload",
+  IModelTileUpload = "core-backend.IModelTileUpload",
 
   /** The logger category used by the following classes:
    * - [[Relationship]]
    */
-  Relationship = "imodeljs-backend.Relationship",
+  Relationship = "core-backend.Relationship",
 
   /** The logger category used by the following classes:
    * - [[Schemas]]
    */
-  Schemas = "imodeljs-backend.Schemas",
+  Schemas = "core-backend.Schemas",
 
   /** The logger category used by the following classes:
    * - [[PromiseMemoizer]]
    */
-  PromiseMemoizer = "imodeljs-backend.PromiseMemoizer",
+  PromiseMemoizer = "core-backend.PromiseMemoizer",
   /** The logger category used by the following classes:
    * - [[EventSink]]
    */
-  EventSink = "imodeljs-backend.EventSink",
+  EventSink = "core-backend.EventSink",
 
   /** The logger category used by the following classes:
    * - [[IModelSchemaLoader]]
    * @alpha
    */
-  IModelSchemaLoader = "imodeljs-backend.IModelSchemaLoader",
+  IModelSchemaLoader = "core-backend.IModelSchemaLoader",
 
   /** The logger category used by the following classes:
    * - [[iModels]]
    * @alpha
    */
-  Editing = "imodeljs-backend.Editing",
+  Editing = "core-backend.Editing",
 
   /** The logger category used by the following classes:
    * - [[NativeHost]], [[NativeAppStorage]]
    * @internal
    */
-  NativeApp = "imodeljs-backend.NativeApp",
-
-  /** The logger category used by the following class:
-   * - [[UsageLoggingUtilities]]
-   * @internal
-   */
-  UsageLogging = "imodeljs-backend.UlasUtilities",
+  NativeApp = "core-backend.NativeApp",
 }

@@ -1,0 +1,77 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "../style/index";
+@import "~@itwin/itwinui-css/scss/style/typography";
+
+@mixin uicore-inputs-labeled-textarea {
+
+  display:                    block;
+  padding:                    0;
+  margin:                     0 0 $uicore-unbordered-padding;
+  line-height:                0;  /// A trick to remove extra padding-bottom in Chrome and FF
+  text-align:                 left;
+  cursor:                     pointer;
+  font-weight:                normal;
+
+  > .uicore-label {
+
+    padding:                0;
+    margin:                 0;
+    border:                 0 none transparent;
+    display:                block;
+    font-size:              $iui-font-size;
+    font-weight:            $iui-font-weight-semibold;
+    line-height:            $uicore-line-height;
+    text-align:             left;
+    color:                  $buic-text-color;
+  }
+
+  > .uicore-inputs-textarea {
+
+    display:                inline-block;
+    width:                  100%;
+  }
+
+  > .uicore-message {
+
+    display:                block;
+    font-size:              $iui-font-size-small;
+    line-height:            $uicore-line-height;
+    color:                  $buic-text-color-muted; // $uicore-gray;
+  }
+
+
+  /// Status colors ----------------------------------------------------------
+
+  $status-colors: (
+    success:    $buic-foreground-positive-rgb,
+    warning:    $buic-foreground-warning-rgb,
+    error:      $buic-foreground-negative-rgb
+  );
+
+  @each $status, $color in $status-colors {
+
+    &.#{$status},
+    &.#{$status} > .uicore-message {
+
+      color:                rgb($color);
+    }
+
+    &.#{$status} {
+      > textarea,
+      > .uicore-inputs-textarea {
+
+        border-color:       rgb($color);
+        box-shadow:         $buic-inputs-border 0px 1px 1px inset;
+
+        &:focus {
+
+          border-color:     rgb($color);
+          box-shadow:       rgba( $color, $uicore-opacity-boxshadow ) 0px 0px 0px 2px;
+        }
+      }
+    }
+  }
+}

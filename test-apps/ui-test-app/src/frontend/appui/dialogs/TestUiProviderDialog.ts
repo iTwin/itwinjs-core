@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
-import { IModelApp, LengthDescription, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
+import { ColorByName, ColorDef } from "@itwin/core-common";
+import { IModelApp, LengthDescription, NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
 import {
   ColorEditorParams, DialogButtonDef, DialogButtonType, DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertySyncItem, InputEditorSizeParams, PropertyDescription,
-  PropertyEditorParamTypes, SuppressLabelEditorParams,
-} from "@bentley/ui-abstract";
+  PropertyEditorParamTypes, StandardEditorNames, StandardTypeNames, SuppressLabelEditorParams,
+} from "@itwin/appui-abstract";
 
 enum ColorOptions {
   Red,
@@ -19,7 +19,7 @@ enum ColorOptions {
 
 export class TestUiProvider extends DialogLayoutDataProvider {
 
-  public supplyButtonData(): DialogButtonDef[] | undefined {
+  public override supplyButtonData(): DialogButtonDef[] | undefined {
     const buttons: DialogButtonDef[] = [];
     buttons.push({ type: DialogButtonType.OK, onClick: () => { } });
     buttons.push({ type: DialogButtonType.Cancel, onClick: () => { } });
@@ -151,9 +151,9 @@ export class TestUiProvider extends DialogLayoutDataProvider {
     return {
       name: TestUiProvider._weightName,
       displayLabel: "Weight",
-      typename: "number",
+      typename: StandardTypeNames.Number,
       editor: {
-        name: "weight-picker",
+        name: StandardEditorNames.WeightPicker,
       },
     };
   };
@@ -174,8 +174,8 @@ export class TestUiProvider extends DialogLayoutDataProvider {
     return {
       name: TestUiProvider._lockToggleName,
       displayLabel: "Lock",
-      typename: "boolean",
-      editor: { name: "toggle" },
+      typename: StandardTypeNames.Boolean,
+      editor: { name: StandardEditorNames.Toggle },
     };
   };
 
@@ -215,7 +215,7 @@ export class TestUiProvider extends DialogLayoutDataProvider {
     return {
       name: TestUiProvider._stateName,
       displayLabel: "State",
-      typename: "string",
+      typename: StandardTypeNames.String,
       editor: {
         params: [{
           type: PropertyEditorParamTypes.InputEditorSize,
@@ -237,7 +237,7 @@ export class TestUiProvider extends DialogLayoutDataProvider {
     this._stateValue.value = option;
   }
 
-  public supplyDialogItems(): DialogItem[] {
+  public override supplyDialogItems(): DialogItem[] {
     const dialogItems = new Array<DialogItem>();
     dialogItems.push({ value: this._optionsValue, property: TestUiProvider._getEnumAsPicklistDescription(), editorPosition: { rowPriority: 0, columnIndex: 2 } });
     dialogItems.push({ value: this._colorValue, property: TestUiProvider._getColorDescription(), editorPosition: { rowPriority: 0, columnIndex: 4 } });
@@ -267,7 +267,7 @@ export class TestUiProvider extends DialogLayoutDataProvider {
   }
 
   /** Used to send changes from UI */
-  public applyUiPropertyChange = (updatedValue: DialogPropertySyncItem): void => {
+  public override applyUiPropertyChange = (updatedValue: DialogPropertySyncItem): void => {
     if (updatedValue.propertyName === TestUiProvider._useLengthName) {
       this.useLength = updatedValue.value.value as boolean;
       this.showInfoFromUi(updatedValue);

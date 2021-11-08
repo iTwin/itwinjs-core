@@ -10,7 +10,7 @@ import { QuantityConstants } from "../Constants";
 import { QuantityError, QuantityStatus } from "../Exception";
 import { UnitProps, UnitsProvider } from "../Interfaces";
 import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption } from "./FormatEnums";
-import { CustomFormatProps, FormatProps, isCustomFormatProps } from "./Interfaces";
+import { CloneOptions, CustomFormatProps, FormatProps, isCustomFormatProps } from "./Interfaces";
 
 // cSpell:ignore ZERONORMALIZED, nosign, onlynegative, signalways, negativeparentheses
 // cSpell:ignore trailzeroes, keepsinglezero, zeroempty, keepdecimalpoint, applyrounding, fractiondash, showunitlabel, prependunitlabel, exponentonlynegative
@@ -45,37 +45,21 @@ export class Format {
   }
 
   public get name(): string { return this._name; }
-  public set name(val: string) { this._name = val; }
   public get roundFactor(): number { return this._roundFactor; }
-  public set roundFactor(val: number) { this._roundFactor = val; }
   public get type(): FormatType { return this._type; }
-  public set type(val: FormatType) { this._type = val; }
   public get precision(): DecimalPrecision | FractionalPrecision { return this._precision; }
-  public set precision(val: DecimalPrecision | FractionalPrecision) { this._precision = val; }
   public get minWidth(): number | undefined { return this._minWidth; }
-  public set minWidth(val: number | undefined) { this._minWidth = val; }
   public get scientificType(): ScientificType | undefined { return this._scientificType; }
-  public set scientificType(val: ScientificType | undefined) { this._scientificType = val; }
   public get showSignOption(): ShowSignOption { return this._showSignOption; }
-  public set showSignOption(val: ShowSignOption) { this._showSignOption = val; }
   public get decimalSeparator(): string { return this._decimalSeparator; }
-  public set decimalSeparator(val: string) { this._decimalSeparator = val; }
   public get thousandSeparator(): string { return this._thousandSeparator; }
-  public set thousandSeparator(val: string) { this._thousandSeparator = val; }
   public get uomSeparator(): string { return this._uomSeparator; }
-  public set uomSeparator(val: string) { this._uomSeparator = val; }
   public get stationSeparator(): string { return this._stationSeparator; }
-  public set stationSeparator(val: string) { this._stationSeparator = val; }
   public get stationOffsetSize(): number | undefined { return this._stationOffsetSize; }
-  public set stationOffsetSize(val: number | undefined) { this._stationOffsetSize = val; }
   public get formatTraits(): FormatTraits { return this._formatTraits; }
-  public set formatTraits(val: FormatTraits) { this._formatTraits = val; }
   public get spacer(): string { return this._spacer; }
-  public set spacer(val: string) { this._spacer = val; }
   public get includeZero(): boolean { return this._includeZero; }
-  public set includeZero(val: boolean) { this._includeZero = val; }
   public get units(): Array<[UnitProps, string | undefined]> | undefined { return this._units; }
-  public set units(val: Array<[UnitProps, string | undefined]> | undefined) { this._units = val; }
   public get hasUnits(): boolean { return this._units !== undefined && this._units.length > 0; }
   public get customProps(): any { return this._customProps; }
 
@@ -355,27 +339,56 @@ export class Format {
   }
 
   /**
-   *  Clone existing format
-   * @param existing Format to clone
+   *  Clone Format
    */
-  public static clone(existing: Format) {
-    const newFormat = new Format(existing.name);
-    newFormat._roundFactor = existing._roundFactor;
-    newFormat._type = existing._type;
-    newFormat._precision = existing._precision;
-    newFormat._minWidth = existing._minWidth;
-    newFormat._scientificType = existing._scientificType;
-    newFormat._showSignOption = existing._showSignOption;
-    newFormat._decimalSeparator = existing._decimalSeparator;
-    newFormat._thousandSeparator = existing._thousandSeparator;
-    newFormat._uomSeparator = existing._uomSeparator;
-    newFormat._stationSeparator = existing._stationSeparator;
-    newFormat._stationOffsetSize = existing._stationOffsetSize;
-    newFormat._formatTraits = existing._formatTraits;
-    newFormat._spacer = existing._spacer;
-    newFormat._includeZero = existing._includeZero;
-    newFormat._customProps = existing._customProps;
-    existing._units && (newFormat._units = [...existing._units]);
+  public clone(options?: CloneOptions): Format {
+    const newFormat = new Format(this.name);
+    newFormat._roundFactor = this._roundFactor;
+    newFormat._type = this._type;
+    newFormat._precision = this._precision;
+    newFormat._minWidth = this._minWidth;
+    newFormat._scientificType = this._scientificType;
+    newFormat._showSignOption = this._showSignOption;
+    newFormat._decimalSeparator = this._decimalSeparator;
+    newFormat._thousandSeparator = this._thousandSeparator;
+    newFormat._uomSeparator = this._uomSeparator;
+    newFormat._stationSeparator = this._stationSeparator;
+    newFormat._stationOffsetSize = this._stationOffsetSize;
+    newFormat._formatTraits = this._formatTraits;
+    newFormat._spacer = this._spacer;
+    newFormat._includeZero = this._includeZero;
+    newFormat._customProps = this._customProps;
+    this._units && (newFormat._units = [...this._units]);
+
+    if (newFormat._units) {
+      if (options?.showOnlyPrimaryUnit) {
+        if (newFormat._units.length > 1)
+          newFormat._units.length = 1;
+      }
+    }
+
+    if (undefined !== options?.traits)
+      newFormat._formatTraits = options?.traits;
+
+    if (undefined !== options?.type)
+      newFormat._type = options.type;
+
+    if (undefined !== options?.precision) {
+      // ensure specified precision is valid
+      const precision = Format.parsePrecision(options?.precision, "clone", newFormat._type);
+      newFormat._precision = precision;
+    }
+
+    if (undefined !== options?.primaryUnit) {
+      if (options.primaryUnit.unit) {
+        const newUnits = new Array<[UnitProps, string | undefined]>();
+        newUnits.push([options.primaryUnit.unit, options.primaryUnit.label]);
+        newFormat._units = newUnits;
+      } else if (options.primaryUnit.label && newFormat._units?.length) {
+        // update label only
+        newFormat._units[0][1] = options.primaryUnit.label;
+      }
+    }
     return newFormat;
   }
 

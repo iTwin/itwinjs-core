@@ -4,33 +4,33 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as moq from "typemoq";
-import { BeEvent, Guid } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { ExtendedHierarchyRequestOptions, LabelDefinition, Node, NodeKey, RegisteredRuleset, Ruleset } from "@bentley/presentation-common";
-import { Presentation, PresentationManager, RulesetManager, RulesetVariablesManager } from "@bentley/presentation-frontend";
-import { TreeNodeItem } from "@bentley/ui-components";
+import { BeEvent, Guid } from "@itwin/core-bentley";
+import { IModelConnection } from "@itwin/core-frontend";
+import { HierarchyRequestOptions, LabelDefinition, Node, NodeKey, RegisteredRuleset, Ruleset } from "@itwin/presentation-common";
+import { Presentation, PresentationManager, RulesetManager, RulesetVariablesManager } from "@itwin/presentation-frontend";
+import { TreeNodeItem } from "@itwin/components-react";
 import { HierarchyBuilder, NodeMappingFunc } from "../presentation-testing/HierarchyBuilder";
 
 async function getRootNodes() {
   const root: Node = {
     label: LabelDefinition.fromLabelString("Root Node"),
     hasChildren: true,
-    key: { type: "", pathFromRoot: ["root"] },
+    key: { type: "", version: 0, pathFromRoot: ["root"] },
   };
   return { nodes: [root], count: 1 };
 }
 
-async function getChildrenNodes(opts: ExtendedHierarchyRequestOptions<IModelConnection, NodeKey>) {
+async function getChildrenNodes(opts: HierarchyRequestOptions<IModelConnection, NodeKey>) {
   if (opts.parentKey?.pathFromRoot[0] !== "root" || opts?.parentKey.pathFromRoot.length !== 1)
     return { nodes: [], count: 0 };
 
   const child1: Node = {
     label: LabelDefinition.fromLabelString("Child 1"),
-    key: { type: "", pathFromRoot: ["root", "child1"] },
+    key: { type: "", version: 0, pathFromRoot: ["root", "child1"] },
   };
   const child2: Node = {
     label: LabelDefinition.fromLabelString("Child 2"),
-    key: { type: "", pathFromRoot: ["root", "child2"] },
+    key: { type: "", version: 0, pathFromRoot: ["root", "child2"] },
   };
   return { nodes: [child1, child2], count: 2 };
 }

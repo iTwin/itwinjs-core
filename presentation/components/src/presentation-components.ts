@@ -2,8 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Presentation } from "@bentley/presentation-frontend";
+import { Presentation } from "@itwin/presentation-frontend";
 import { initializeLocalization, initializePropertyValueRenderers } from "./presentation-components/common/Utils";
+import { PRESENTATION_TREE_NODE_KEY } from "./presentation-components/tree/Utils";
 
 /**
  * @module Core
@@ -31,7 +32,7 @@ export * from "./presentation-components/ComponentsLoggerCategory";
  * @module Properties
  *
  * @docs-group-description Properties
- * Presentation-specific [Properties]($ui-components:Properties).
+ * Presentation-specific [Properties]($components-react:Properties).
  */
 export * from "./presentation-components/properties/InstanceKeyValueRenderer";
 
@@ -39,10 +40,9 @@ export * from "./presentation-components/properties/InstanceKeyValueRenderer";
  * @module PropertyGrid
  *
  * @docs-group-description PropertyGrid
- * Presentation features for [PropertyGrid]($ui-components) component.
+ * Presentation features for [PropertyGrid]($components-react) component.
  */
 export * from "./presentation-components/propertygrid/DataProvider";
-export * from "./presentation-components/propertygrid/WithUnifiedSelection";
 export * from "./presentation-components/propertygrid/FavoritePropertiesDataFilterer";
 export * from "./presentation-components/propertygrid/UseUnifiedSelection";
 
@@ -50,7 +50,7 @@ export * from "./presentation-components/propertygrid/UseUnifiedSelection";
  * @module FavoriteProperties
  *
  * @docs-group-description FavoriteProperties
- * Presentation features for [Favorite properties]($ui-components:Favorite).
+ * Presentation features for [Favorite properties]($components-react:Favorite).
  */
 export * from "./presentation-components/favorite-properties/DataProvider";
 
@@ -58,7 +58,7 @@ export * from "./presentation-components/favorite-properties/DataProvider";
  * @module Table
  *
  * @docs-group-description Table
- * Presentation features for [Table]($ui-components) component.
+ * Presentation features for [Table]($components-react) component.
  */
 export * from "./presentation-components/table/DataProvider";
 export * from "./presentation-components/table/WithUnifiedSelection";
@@ -67,24 +67,21 @@ export * from "./presentation-components/table/WithUnifiedSelection";
  * @module Tree
  *
  * @docs-group-description Tree
- * Presentation features for [Tree]($ui-components:Tree) component.
+ * Presentation features for [Tree]($components-react:Tree) component.
  */
 export * from "./presentation-components/tree/DataProvider";
 export * from "./presentation-components/tree/IPresentationTreeDataProvider";
 export * from "./presentation-components/tree/FilteredDataProvider";
-export * from "./presentation-components/tree/WithUnifiedSelection";
-export * from "./presentation-components/tree/WithFilteringSupport";
 export * from "./presentation-components/tree/controlled/UseUnifiedSelection";
 export * from "./presentation-components/tree/controlled/UseControlledTreeFiltering";
-export * from "./presentation-components/tree/controlled/WithFilteringSupport";
-export * from "./presentation-components/tree/controlled/WithVisibleNodes";
 export * from "./presentation-components/tree/controlled/TreeHooks";
+export { PRESENTATION_TREE_NODE_KEY };
 
 /**
  * @module Viewport
  *
  * @docs-group-description Viewport
- * Presentation features for [ViewportComponent]($ui-components).
+ * Presentation features for [ViewportComponent]($imodel-components-react).
  */
 export * from "./presentation-components/viewport/WithUnifiedSelection";
 
@@ -100,7 +97,7 @@ export * from "./presentation-components/labels/LabelsProvider";
  * @module UnifiedSelection
  *
  * @docs-group-description UnifiedSelection
- * Utilities for working with [Unified Selection]($docs/learning/presentation/Unified-Selection/index.md) within [React](https://reactjs.org/) components.
+ * Utilities for working with [Unified Selection]($docs/presentation/Unified-Selection/index.md) within [React](https://reactjs.org/) components.
  */
 export * from "./presentation-components/unified-selection/UnifiedSelectionContext";
 

@@ -6,8 +6,8 @@
  * @module Geometry
  */
 
-import { assert } from "@bentley/bentleyjs-core";
-import { Point2d, Point3d, Range2d, Range3d, Vector2d, Vector3d } from "@bentley/geometry-core";
+import { assert } from "@itwin/core-bentley";
+import { Point2d, Point3d, Range2d, Range3d, Vector2d, Vector3d } from "@itwin/core-geometry";
 
 /**
  * Provides facilities for quantizing floating point values within a specified range into 16-bit unsigned integers.
@@ -59,7 +59,7 @@ export namespace Quantization {
 }
 
 /** Parameters used for [[Quantization]] of 2d points such that the `x` and `y` components are each quantized to 16-bit unsigned integers.
- * @see [[QPoint2d]] for the quantized representation of a [Point2d]($geometry-core).
+ * @see [[QPoint2d]] for the quantized representation of a [Point2d]($core-geometry).
  * @see [[QPoint2dList]] for a list of [[QPoint2d]]s quantized using a [[QParams2d]].
  * @public
  */
@@ -137,12 +137,12 @@ export class QParams2d {
   }
 
   /** Return true if the point point is quantizable using these parameters. */
-  public isQuantizable(point: Point2d ) {
+  public isQuantizable(point: Point2d) {
     return Quantization.isQuantizable(point.x, this.origin.x, this.scale.x) && Quantization.isQuantizable(point.y, this.origin.y, this.scale.y);
   }
 }
 
-/** Represents a [Point2d]($geometry-core) compressed such that each component `x` and `y` is quantized to the 16-bit integer range [0, 0xffff].
+/** Represents a [Point2d]($core-geometry) compressed such that each component `x` and `y` is quantized to the 16-bit integer range [0, 0xffff].
  * These are primarily used to reduce the space required for coordinates used by [RenderGraphic]($frontend)s.
  * @see [[QParams2d]] to define quantization parameters for a range of points.
  * @see [[QPoint2dList]] for a list of points all quantized to the same range.
@@ -332,7 +332,7 @@ export class QPoint2dList {
 }
 
 /** Parameters used for [[Quantization]] of 3d points such that the `x`, `y`, and `z` components are each quantized to 16-bit unsigned integers.
- * @see [[QPoint3d]] for the quantized representation of a [Point3d]($geometry-core).
+ * @see [[QPoint3d]] for the quantized representation of a [Point3d]($core-geometry).
  * @see [[QPoint3dList]] for a list of [[QPoint3d]]s quantized using a [[QParams3d]].
  * @public
  */
@@ -425,15 +425,29 @@ export class QParams3d {
   }
 
   /** @internal */
-  public get rangeDiagonal(): Vector3d { return Vector3d.createFrom({ x: this.scale.x === 0 ? 0 : Quantization.rangeScale16 / this.scale.x, y: this.scale.y === 0 ? 0 : Quantization.rangeScale16 / this.scale.y, z: this.scale.z === 0 ? 0 : Quantization.rangeScale16 / this.scale.z }); }
+  public get rangeDiagonal(): Vector3d {
+    return Vector3d.createFrom({
+      x: this.scale.x === 0 ? 0 : Quantization.rangeScale16 / this.scale.x,
+      y: this.scale.y === 0 ? 0 : Quantization.rangeScale16 / this.scale.y,
+      z: this.scale.z === 0 ? 0 : Quantization.rangeScale16 / this.scale.z,
+    });
+  }
 
   /** Return true if the point point is quantizable using these parameters. */
-  public isQuantizable(point: Point3d ) {
+  public isQuantizable(point: Point3d) {
     return Quantization.isQuantizable(point.x, this.origin.x, this.scale.x) && Quantization.isQuantizable(point.y, this.origin.y, this.scale.y) && Quantization.isQuantizable(point.z, this.origin.z, this.scale.z);
+  }
+
+  /** Compute the range to which these parameters quantize. */
+  public computeRange(out?: Range3d): Range3d {
+    const range = Range3d.createNull(out);
+    range.extendPoint(this.origin);
+    range.extendPoint(this.origin.plus(this.rangeDiagonal));
+    return range;
   }
 }
 
-/** Represents a [Point3d]($geometry-core) compressed such that each component `x`, `y`, and `z` is quantized to the 16-bit integer range [0, 0xffff].
+/** Represents a [Point3d]($core-geometry) compressed such that each component `x`, `y`, and `z` is quantized to the 16-bit integer range [0, 0xffff].
  * These are primarily used to reduce the space required for coordinates used by [RenderGraphic]($frontend)s.
  * @see [[QParams3d]] to define quantization parameters for a range of points.
  * @see [[QPoint3dList]] for a list of points all quantized to the same range.
@@ -543,7 +557,7 @@ export class QPoint3d {
    *  - Zero if this point is identical to `rhs`; or
    *  - A number less than zero if this point is ordered before `rhs`; or
    *  - A number greater than zero if this point is ordered after `rhs`.
-   * @see [OrderedComparator]($bentleyjs-core).
+   * @see [OrderedComparator]($core-bentley).
    */
   public compare(rhs: QPoint3d): number {
     let diff = this.x - rhs.x;

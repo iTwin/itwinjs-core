@@ -18,7 +18,7 @@ import { StyleOverride } from "./StyleOverride";
 
 /**
  * Customization rules allow customizing each node or content item separately.
- * Most of the rules have a `condition` property which uses [ECExpressions]($docs/learning/presentation/Customization/ECExpressions.md)
+ * Most of the rules have a `condition` property which uses [ECExpressions]($docs/presentation/Customization/ECExpressions.md)
  * for conditional rule filtering.
  *
  * **Nested customization rules:**

@@ -4,136 +4,28 @@
 
 ```ts
 
-import { BentleyError } from '@bentley/bentleyjs-core';
-import { ClientRequestContext } from '@bentley/bentleyjs-core';
-import { ClientRequestContextProps } from '@bentley/bentleyjs-core';
-import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
-import { GuidString } from '@bentley/bentleyjs-core';
+import { AccessToken } from '@itwin/core-bentley';
+import { BentleyError } from '@itwin/core-bentley';
+import { GetMetaDataFunction } from '@itwin/core-bentley';
 import * as https from 'https';
-import { HttpStatus } from '@bentley/bentleyjs-core';
-import { LogFunction } from '@bentley/bentleyjs-core';
-import { SessionProps } from '@bentley/bentleyjs-core';
-
-// @beta
-export class AccessToken {
-    constructor(tokenString?: string, startsAt?: Date, expiresAt?: Date, userInfo?: UserInfo);
-    static fromJson(jsonObj: AccessTokenProps): AccessToken;
-    // @internal
-    static fromTokenResponseJson(tokenResponse: any, userProfileResponse?: any): AccessToken;
-    static fromTokenString(tokenStr: string): AccessToken;
-    // @internal (undocumented)
-    getExpiresAt(): Date | undefined;
-    // @internal (undocumented)
-    getStartsAt(): Date | undefined;
-    // @internal (undocumented)
-    getUserInfo(): UserInfo | undefined;
-    initFromTokenString(tokenStr: string): void;
-    isExpired(buffer: number): boolean;
-    // (undocumented)
-    protected _prefix: string;
-    // (undocumented)
-    protected setPrefix(prefix: string): void;
-    // @internal (undocumented)
-    setUserInfo(userInfo: UserInfo): void;
-    // (undocumented)
-    toJSON(): AccessTokenProps;
-    // (undocumented)
-    protected _tokenString: string;
-    toTokenString(includePrefix?: IncludePrefix): string;
-    }
-
-// @beta
-export interface AccessTokenProps {
-    // (undocumented)
-    expiresAt?: string;
-    // (undocumented)
-    startsAt?: string;
-    // (undocumented)
-    tokenString: string;
-    // (undocumented)
-    userInfo?: UserInfoProps;
-}
-
-// @beta
-export class AuthenticationError extends ResponseError {
-}
-
-// @beta
-export interface AuthorizationClient {
-    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
-    readonly isAuthorized: boolean;
-}
-
-// @public
-export class AuthorizedClientRequestContext extends ClientRequestContext {
-    // @beta
-    constructor(accessToken: AccessToken, activityId?: GuidString, applicationId?: string, applicationVersion?: string, sessionId?: GuidString);
-    // @beta
-    accessToken: AccessToken;
-    // @internal (undocumented)
-    static fromJSON(json: AuthorizedClientRequestContextProps): AuthorizedClientRequestContext;
-    // @internal (undocumented)
-    toJSON(): AuthorizedClientRequestContextProps;
-}
-
-// @beta
-export interface AuthorizedClientRequestContextProps extends ClientRequestContextProps {
-    // (undocumented)
-    accessToken: AccessTokenProps;
-}
-
-// @beta (undocumented)
-export interface AuthorizedSession extends SessionProps {
-    // (undocumented)
-    accessToken?: AccessToken;
-}
-
-// @beta
-export interface AuthorizedSessionProps extends SessionProps {
-    // (undocumented)
-    accessTokenProps: AccessTokenProps;
-}
+import { HttpStatus } from '@itwin/core-bentley';
 
 // @beta
 export interface CancelRequest {
     cancel: () => boolean;
 }
 
-// @beta (undocumented)
-export type ChangeState = "new" | "modified" | "deleted" | "existing";
-
-// @beta
-export class ChunkedQueryContext {
-    static create(queryOptions: RequestQueryOptions): ChunkedQueryContext | undefined;
-    handleIteration(queryOptions: RequestQueryOptions): void;
-    get instancesLeft(): number | undefined;
-    get isQueryFinished(): boolean;
-    get skipToken(): string;
-    set skipToken(value: string);
-    }
-
-// @internal (undocumented)
-export interface ClassKeyMapInfo {
-    classKeyPropertyName?: string;
-    classPropertyName?: string;
-    schemaPropertyName?: string;
-}
-
 // @beta
 export abstract class Client {
     protected constructor();
-    protected applyUserConfiguredHttpRequestOptions(requestOptions: RequestOptions, userDefinedRequestOptions?: HttpRequestOptions): void;
     protected baseUrl?: string;
-    protected delete(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, httpRequestOptions?: HttpRequestOptions): Promise<void>;
-    getUrl(requestContext: ClientRequestContext): Promise<string>;
-    protected abstract getUrlSearchKey(): string;
+    protected delete(accessToken: AccessToken, relativeUrlPath: string): Promise<void>;
+    getUrl(): Promise<string>;
+    // @internal
     protected setupOptionDefaults(options: RequestOptions): Promise<void>;
     // (undocumented)
     protected _url?: string;
 }
-
-// @internal (undocumented)
-export type ConstructorType = new () => any;
 
 // @internal
 export class DefaultRequestOptionsProvider {
@@ -144,92 +36,48 @@ export class DefaultRequestOptionsProvider {
 }
 
 // @internal
-export class DefaultWsgRequestOptionsProvider extends DefaultRequestOptionsProvider {
-    constructor();
-}
-
-// @internal
 export class DownloadFailed extends BentleyError {
-    constructor(errorNumber: number, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
-}
-
-// @beta
-export abstract class ECInstance {
-    // (undocumented)
-    [index: string]: any;
-    // (undocumented)
-    ecId: string;
+    constructor(errorNumber: number, message: string, getMetaData?: GetMetaDataFunction);
 }
 
 // @internal
-export class ECJsonTypeMap {
-    static classToJson(applicationKey: string, classKey: string, classKeyMapInfo: ClassKeyMapInfo): (typedConstructor: ConstructorType) => void;
-    static fromJson<T extends ECInstance>(typedConstructor: new () => T, applicationKey: string, ecJsonInstance: any): T | undefined;
-    static propertyToJson(applicationKey: string, propertyAccessString: string): (object: any, propertyKey: string) => void;
-    static toJson<T extends ECInstance>(applicationKey: string, typedInstance: T): any | undefined;
-}
-
-// @beta
 export interface FileHandler {
     // (undocumented)
     agent?: https.Agent;
     basename(filePath: string): string;
-    downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, path: string, fileSize?: number, progress?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
+    downloadFile(accessToken: AccessToken, downloadUrl: string, path: string, fileSize?: number, progress?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
     exists(filePath: string): boolean;
     getFileSize(filePath: string): number;
     isDirectory(filePath: string): boolean;
     join(...paths: string[]): string;
     unlink(filePath: string): void;
-    uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, path: string, progress?: ProgressCallback): Promise<void>;
+    uploadFile(accessToken: AccessToken, uploadUrlString: string, path: string, progress?: ProgressCallback): Promise<void>;
 }
 
 // @internal
-export function getArrayBuffer(requestContext: ClientRequestContext, url: string): Promise<any>;
-
-// @internal
-export function getJson(requestContext: ClientRequestContext, url: string): Promise<any>;
-
-// @beta
-export interface HttpRequestOptions {
-    // (undocumented)
-    headers?: any;
-    // (undocumented)
-    timeout?: RequestTimeoutOptions;
-}
+export function getJson(url: string): Promise<any>;
 
 // @beta (undocumented)
 export class ImsAuthorizationClient extends Client {
     constructor();
-    protected getUrlSearchKey(): string;
     // (undocumented)
-    static readonly searchKey: string;
+    protected baseUrl: string;
+    getUrl(): Promise<string>;
 }
-
-// @beta
-export enum IncludePrefix {
-    // (undocumented)
-    No = 1,
-    // (undocumented)
-    Yes = 0
-}
-
-// @beta
-export const isAuthorizedClientRequestContext: (requestContext: ClientRequestContext) => requestContext is AuthorizedClientRequestContext;
 
 // @beta
 export enum ITwinClientLoggerCategory {
     // (undocumented)
     Authorization = "itwin-client.Authorization",
     Clients = "itwin-client.Clients",
-    ECJson = "itwin-client.ECJson",
     // (undocumented)
     Request = "itwin-client.Request"
 }
 
-// @beta (undocumented)
+// @internal (undocumented)
 export type ProgressCallback = (progress: ProgressInfo) => void;
 
-// @beta (undocumented)
+// @internal (undocumented)
 export interface ProgressInfo {
     // (undocumented)
     loaded: number;
@@ -240,9 +88,9 @@ export interface ProgressInfo {
 }
 
 // @internal
-export function request(requestContext: ClientRequestContext, url: string, options: RequestOptions): Promise<Response>;
+export function request(url: string, options: RequestOptions): Promise<Response>;
 
-// @beta (undocumented)
+// @internal (undocumented)
 export interface RequestBasicCredentials {
     // (undocumented)
     password: string;
@@ -250,9 +98,8 @@ export interface RequestBasicCredentials {
     user: string;
 }
 
-// @beta (undocumented)
+// @internal (undocumented)
 export class RequestGlobalOptions {
-    // @internal
     static createHttpsProxy: (additionalOptions?: https.AgentOptions) => https.Agent | undefined;
     // (undocumented)
     static httpsProxy?: https.Agent;
@@ -264,10 +111,10 @@ export class RequestGlobalOptions {
     static timeout: RequestTimeoutOptions;
 }
 
-// @beta (undocumented)
+// @internal (undocumented)
 export const requestIdHeaderName = "X-Correlation-Id";
 
-// @beta (undocumented)
+// @internal (undocumented)
 export interface RequestOptions {
     // (undocumented)
     accept?: string;
@@ -309,7 +156,7 @@ export interface RequestOptions {
     useCorsProxy?: boolean;
 }
 
-// @beta
+// @internal
 export interface RequestQueryOptions {
     $filter?: string;
     $orderby?: string;
@@ -319,7 +166,7 @@ export interface RequestQueryOptions {
     $top?: number;
 }
 
-// @beta (undocumented)
+// @internal (undocumented)
 export interface RequestQueryStringifyOptions {
     // (undocumented)
     delimiter?: string;
@@ -327,13 +174,13 @@ export interface RequestQueryStringifyOptions {
     encode?: boolean;
 }
 
-// @beta
+// @internal
 export interface RequestTimeoutOptions {
     deadline?: number;
     response?: number;
 }
 
-// @beta
+// @internal
 export interface Response {
     // (undocumented)
     body: any;
@@ -345,242 +192,32 @@ export interface Response {
     text: string | undefined;
 }
 
-// @beta
+// @internal
 export class ResponseError extends BentleyError {
     constructor(errorNumber: number | HttpStatus, message?: string, getMetaData?: GetMetaDataFunction);
     // (undocumented)
     protected _data?: any;
     // (undocumented)
     description?: string;
-    // @internal
     log(): void;
-    // @internal (undocumented)
+    // (undocumented)
     logMessage(): string;
-    // @internal
     static parse(response: any, log?: boolean): ResponseError;
-    // @internal (undocumented)
+    // (undocumented)
     static parseHttpStatus(statusType: number): HttpStatus;
-    // @internal
     static shouldRetry(error: any, response: any): boolean;
     // (undocumented)
     status?: number;
 }
 
-// @internal @deprecated
-export class SamlAccessToken extends SamlToken {
-    static fromJson(jsonObj: any): SamlAccessToken | undefined;
-    static fromSamlAssertion(samlAssertion: string): SamlAccessToken;
-    static fromSamlTokenString(accessTokenStr: string, includesPrefix?: IncludePrefix): SamlAccessToken;
-    static fromTokenString(tokenStr: string): SamlAccessToken;
-    toTokenString(includePrefix?: IncludePrefix): string;
-}
-
-// @internal @deprecated
-export class SamlAuthorizationToken extends SamlToken {
-    static fromSamlAssertion(samlAssertion: string): SamlAuthorizationToken;
-    toTokenString(includePrefix?: IncludePrefix): string;
-}
-
-// @internal @deprecated
-export abstract class SamlToken {
-    protected constructor();
-    // (undocumented)
-    protected _expiresAt?: Date;
-    // (undocumented)
-    getExpiresAt(): Date | undefined;
-    // (undocumented)
-    protected getSaml(): string | undefined;
-    // (undocumented)
-    getSamlAssertion(): string | undefined;
-    // (undocumented)
-    getStartsAt(): Date | undefined;
-    // (undocumented)
-    getUserInfo(): UserInfo | undefined;
-    // (undocumented)
-    protected parseSamlAssertion(): boolean;
-    // (undocumented)
-    protected _saml?: string;
-    // (undocumented)
-    protected _samlAssertion?: string;
-    // (undocumented)
-    setUserInfo(userInfo: UserInfo): void;
-    // (undocumented)
-    protected _startsAt?: Date;
-    // (undocumented)
-    protected _userInfo?: UserInfo;
-    // (undocumented)
-    protected _x509Certificate?: string;
-}
-
 // @beta
 export class SasUrlExpired extends BentleyError {
-    constructor(errorNumber: number, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
-}
-
-// @internal
-export function TokenPrefix(prefix: string): (constructor: any) => void;
-
-// @internal
-export class UrlDiscoveryClient extends Client {
-    constructor();
-    // (undocumented)
-    static readonly configResolveUrlUsingRegion = "imjs_buddi_resolve_url_using_region";
-    // (undocumented)
-    static readonly configURL = "imjs_buddi_url";
-    discoverUrl(requestContext: ClientRequestContext, searchKey: string, regionId: number | undefined): Promise<string>;
-    getUrl(): Promise<string>;
-    protected getUrlSearchKey(): string;
+    constructor(errorNumber: number, message: string, getMetaData?: GetMetaDataFunction);
 }
 
 // @internal
 export class UserCancelledError extends BentleyError {
-    constructor(errorNumber: number, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
-}
-
-// @beta
-export class UserInfo {
-    constructor(
-    id: string,
-    email?: {
-        id: string;
-        isVerified?: boolean | undefined;
-    } | undefined,
-    profile?: {
-        firstName: string;
-        lastName: string;
-        name?: string | undefined;
-        preferredUserName?: string | undefined;
-    } | undefined,
-    organization?: {
-        id: string;
-        name: string;
-    } | undefined,
-    featureTracking?: {
-        ultimateSite: string;
-        usageCountryIso: string;
-    } | undefined);
-    email?: {
-        id: string;
-        isVerified?: boolean | undefined;
-    } | undefined;
-    featureTracking?: {
-        ultimateSite: string;
-        usageCountryIso: string;
-    } | undefined;
-    static fromJson(jsonObj: UserInfoProps): UserInfo;
-    // @internal
-    static fromTokenResponseJson(jsonObj: any): UserInfo;
-    id: string;
-    organization?: {
-        id: string;
-        name: string;
-    } | undefined;
-    profile?: {
-        firstName: string;
-        lastName: string;
-        name?: string | undefined;
-        preferredUserName?: string | undefined;
-    } | undefined;
-}
-
-// @beta (undocumented)
-export interface UserInfoProps {
-    // (undocumented)
-    email?: {
-        id: string;
-        isVerified?: boolean;
-    };
-    // (undocumented)
-    featureTracking?: {
-        ultimateSite: string;
-        usageCountryIso: string;
-    };
-    // (undocumented)
-    id: string;
-    // (undocumented)
-    organization?: {
-        id: string;
-        name: string;
-    };
-    // (undocumented)
-    profile?: {
-        firstName: string;
-        lastName: string;
-        name?: string;
-        preferredUserName?: string;
-    };
-}
-
-// @beta
-export abstract class WsgClient extends Client {
-    protected constructor(apiVersion: string);
-    // (undocumented)
-    apiVersion: string;
-    // (undocumented)
-    static readonly configHostRelyingPartyUri = "imjs_default_relying_party_uri";
-    // (undocumented)
-    static readonly configUseHostRelyingPartyUriAsFallback = "imjs_use_default_relying_party_uri_as_fallback";
-    protected deleteInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, instance?: T, requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<void>;
-    protected getInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions?: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;
-    protected getInstancesChunk<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, url: string, chunkedQueryContext: ChunkedQueryContext | undefined, typedConstructor: new () => T, queryOptions?: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;
-    protected abstract getRelyingPartyUrl(): string;
-    getUrl(requestContext: ClientRequestContext, excludeApiVersion?: boolean): Promise<string>;
-    protected postInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instance: T, requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<T>;
-    protected postInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instances: T[], requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;
-    protected postQuery<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;
-    protected setupOptionDefaults(options: RequestOptions): Promise<void>;
-    // (undocumented)
-    protected _url?: string;
-}
-
-// @beta
-export class WsgError extends ResponseError {
-    constructor(errorNumber: number | HttpStatus, message?: string, getMetaData?: GetMetaDataFunction);
-    static getErrorStatus(errorId: number, httpStatusType: number): number;
-    static getWSStatusId(error: string): number;
-    log(): void;
-    static parse(response: any, log?: boolean): ResponseError;
-    static shouldRetry(error: any, response: any): boolean;
-}
-
-// @beta
-export abstract class WsgInstance extends ECInstance {
-    // (undocumented)
-    changeState?: ChangeState;
-    // (undocumented)
-    eTag?: string;
-    // (undocumented)
-    wsgId: string;
-}
-
-// @beta
-export class WsgQuery {
-    // @internal
-    protected addFilter(filter: string, operator?: "and" | "or"): void;
-    // @internal
-    protected addSelect(select: string): this;
-    filter(filter: string): this;
-    // @internal
-    getQueryOptions(): RequestQueryOptions;
-    orderBy(orderBy: string): this;
-    pageSize(n: number): this;
-    // (undocumented)
-    protected _query: RequestQueryOptions;
-    // @internal
-    resetQueryOptions(): void;
-    select(select: string): this;
-    skip(n: number): this;
-    top(n: number): this;
-}
-
-// @beta
-export interface WsgRequestOptions {
-    // (undocumented)
-    CustomOptions?: any;
-    // (undocumented)
-    RefreshInstances?: boolean;
-    // (undocumented)
-    ResponseContent?: "FullInstance" | "Empty" | "InstanceId";
+    constructor(errorNumber: number, message: string, getMetaData?: GetMetaDataFunction);
 }
 
 

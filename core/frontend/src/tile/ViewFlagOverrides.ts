@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { RenderMode, ViewFlagOverrides, ViewFlagPresence, ViewFlags } from "@bentley/imodeljs-common";
+import { RenderMode, ViewFlagOverrides, ViewFlags } from "@itwin/core-common";
 
 /** Create ViewFlagOverrides suitable for most non-iModel tile trees (reality/map tiles).
  * @param options Customize the overrides. Any properties left unspecified use the current view settings, except white-on-white reversal is always disabled.
@@ -14,7 +14,7 @@ import { RenderMode, ViewFlagOverrides, ViewFlagPresence, ViewFlags } from "@ben
  */
 export function createDefaultViewFlagOverrides(options: { clipVolume?: boolean, shadows?: boolean, lighting?: boolean, thematic?: false }): ViewFlagOverrides {
   const noLights = undefined !== options.lighting ? !options.lighting : undefined;
-  const ovrs = new ViewFlagOverrides(ViewFlags.fromJSON({
+  const viewflags = ViewFlags.fromJSON({
     renderMode: RenderMode.SmoothShade,
     noCameraLights: noLights,
     noSourceLights: noLights,
@@ -23,19 +23,20 @@ export function createDefaultViewFlagOverrides(options: { clipVolume?: boolean, 
     shadows: options.shadows,
     noWhiteOnWhiteReversal: true,
     thematicDisplay: false,
-  }));
+  });
 
+  const ovrs: ViewFlagOverrides = { ...viewflags };
   if (undefined === options.clipVolume)
-    ovrs.clearPresent(ViewFlagPresence.ClipVolume);
+    ovrs.clipVolume = undefined;
 
   if (undefined === options.shadows)
-    ovrs.clearPresent(ViewFlagPresence.Shadows);
+    ovrs.shadows = undefined;
 
   if (undefined === options.lighting)
-    ovrs.clearPresent(ViewFlagPresence.Lighting);
+    ovrs.lighting = undefined;
 
   if (undefined === options.thematic)
-    ovrs.clearPresent(ViewFlagPresence.ThematicDisplay);
+    ovrs.thematicDisplay = undefined;
 
   return ovrs;
 }
