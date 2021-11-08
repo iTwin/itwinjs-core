@@ -145,7 +145,7 @@
     "@itwin/presentation-components": "workspace:*",
     "@itwin/itwinui-css": "^0.37.0",
     "@itwin/itwinui-react": "^1.23.0",
-    "@itwin/browser-authorization": "^0.2.0",
+    "@itwin/browser-authorization": "^0.3.0",
     "classnames": "^2.3.1",
     "immer": "9.0.6",
     "lodash": "^4.17.10",

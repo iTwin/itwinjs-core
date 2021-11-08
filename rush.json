@@ -399,13 +399,6 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@itwin/oidc-signin-tool",
-      "projectFolder": "tools/oidc-signin-tool",
-      "reviewCategory": "tools",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
       "packageName": "@itwin/geonames-extension",
       "projectFolder": "extensions/geonames",
       "reviewCategory": "extensions",

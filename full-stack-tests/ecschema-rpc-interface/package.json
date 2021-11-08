@@ -37,7 +37,7 @@
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "@itwin/oidc-signin-tool": "workspace:*",
+    "@itwin/oidc-signin-tool": "^3.0.0-dev.109",
     "@itwin/presentation-common": "workspace:*",
     "@itwin/presentation-frontend": "workspace:*",
     "chai": "^4.1.2",
