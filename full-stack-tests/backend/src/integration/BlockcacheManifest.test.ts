@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { BlobDaemon, BlobDaemonCommandArg } from "@itwin/core-backend";
 import { IModelTestUtils } from "@itwin/core-backend/lib/cjs/test";
+import { BlobDaemon, BlobDaemonCommandArg } from "@bentley/imodeljs-native";
 
 // Default account and key for azurite
 const azuriteAccount = "devstoreaccount1";
