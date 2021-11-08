@@ -5,14 +5,15 @@
 
 import { expect } from "chai";
 import { BeDuration } from "@itwin/core-bentley";
-import { ColorDef, Environment, EnvironmentProps, SkyBox, SkyBoxImageType } from "@itwin/core-common";
+import { ColorDef, Environment, EnvironmentProps, ImageSource, ImageSourceFormat, RenderTexture, SkyBox, SkyBoxImageType } from "@itwin/core-common";
 import { EnvironmentDecorations } from "../../EnvironmentDecorations";
+import { imageElementFromImageSource } from "../../ImageUtil";
 import { SpatialViewState } from "../../SpatialViewState";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
 import { createBlankConnection } from "../createBlankConnection";
 
-describe.only("EnvironmentDecorations", () => {
+describe("EnvironmentDecorations", () => {
   let iModel: IModelConnection;
 
   function createView(env?: EnvironmentProps): SpatialViewState {
@@ -49,6 +50,23 @@ describe.only("EnvironmentDecorations", () => {
 
   before(async () => {
     await IModelApp.startup();
+
+    const pngData = new Uint8Array([
+      137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217, 74, 34, 232, 0, 0, 0, 1, 115, 82, 71, 66, 0, 174, 206,
+      28, 233, 0, 0, 0, 4, 103, 65, 77, 65, 0, 0, 177, 143, 11, 252, 97, 5, 0, 0, 0, 9, 112, 72, 89, 115, 0, 0, 14, 195, 0, 0, 14, 195, 1, 199, 111, 168, 100, 0, 0, 0,
+      24, 73, 68, 65, 84, 24, 87, 99, 248, 15, 4, 12, 12, 64, 4, 198, 64, 46, 132, 5, 162, 254, 51, 0, 0, 195, 90, 10, 246, 127, 175, 154, 145, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130,
+    ]);
+
+    const textureImage = {
+      image: await imageElementFromImageSource(new ImageSource(pngData, ImageSourceFormat.Png)),
+      format: ImageSourceFormat.Png,
+    };
+
+    const createTexture = () => { return {} as unknown as RenderTexture; };
+    IModelApp.renderSystem.createTextureFromCubeImages = createTexture;
+    IModelApp.renderSystem.createTexture = createTexture;
+    IModelApp.renderSystem.loadTextureImage = () => Promise.resolve(textureImage);
+
     iModel = createBlankConnection();
   });
 
@@ -207,9 +225,35 @@ describe.only("EnvironmentDecorations", () => {
   });
 
   it("produces sky sphere", async () => {
+    const dec = await Decorations.create(createView({
+      sky: {
+        image: {
+          type: SkyBoxImageType.Spherical,
+          texture: "0x123",
+        },
+      },
+    }));
+
+    expect(dec.sky.params!.gradient).to.be.undefined;
+    expect(dec.sky.params!.sphere).not.to.be.undefined;
   });
 
   it("produces sky cube", async () => {
+    const dec = await Decorations.create(createView({
+      sky: {
+        image: {
+          type: SkyBoxImageType.Cube,
+          textures: {
+            front: "0x1", back: "0x2",
+            left: "0x3", right: "0x4",
+            top: "0x5", bottom: "0x6",
+          },
+        },
+      },
+    }));
+
+    expect(dec.sky.params!.gradient).to.be.undefined;
+    expect(dec.sky.params!.cube).not.to.be.undefined;
   });
 
   it("falls back to sky gradient on error", async () => {
