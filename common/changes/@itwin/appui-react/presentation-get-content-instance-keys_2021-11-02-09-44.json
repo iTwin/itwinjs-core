@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Improve performance of determining visibility state of element and element grouping nodes.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Ensure edges are always requested if TileAdmin.alwaysRequestEdges is true.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

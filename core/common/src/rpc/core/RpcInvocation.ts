@@ -134,9 +134,11 @@ export class RpcInvocation {
   }
 
   public static sanitizeForLog(activity?: RpcActivity) {
+    /* eslint-disable @typescript-eslint/naming-convention */
     return activity ? {
-      activityId: activity.activityId, sessionId: activity.sessionId, applicationId: activity.applicationId, applicationVersion: activity.applicationVersion, rpcMethod: activity.rpcMethod,
+      ActivityId: activity.activityId, SessionId: activity.sessionId, ApplicationId: activity.applicationId, ApplicationVersion: activity.applicationVersion, rpcMethod: activity.rpcMethod,
     } : undefined;
+    /* eslint-enable @typescript-eslint/naming-convention */
   }
 
   private async resolve(): Promise<any> {
