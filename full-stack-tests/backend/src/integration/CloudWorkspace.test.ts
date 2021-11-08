@@ -27,6 +27,9 @@ describe("Cloud workspace containers", () => {
     const settings = workspace.settings;
     settings.addDictionary("containers", SettingsPriority.application, containerDict);
 
+    const daemonDir = join(workspace.containerDir, "cloud");
+    IModelJsFs.purgeDirSync(daemonDir);
+
     const testContainerName = "test-container";
     const ws1 = new EditableWorkspaceFile(testContainerName, workspace);
     const dbName = ws1.localDbName;
@@ -38,10 +41,10 @@ describe("Cloud workspace containers", () => {
     const contain1 = settings.getObject<CloudSqlite.ContainerProps>("cloudSqlite/containerProps")!;
     expect(contain1).deep.equals(containerProps);
 
-    const cloudAccess = { ...account1, ...contain1 };
+    const cloudAccess = { ...account1, ...contain1, daemonDir };
     await ws1.create(cloudAccess);
     ws1.addString("string 1", "value of string 1");
-    workspace.dropContainer(ws1);
+    ws1.close();
     await ws1.upload(cloudAccess);
     await BeDuration.fromSeconds(1).wait();
 
@@ -54,9 +57,15 @@ describe("Cloud workspace containers", () => {
 
     const newVal = "new value for string 1";
     const ws3 = new EditableWorkspaceFile(testContainerName, workspace);
-    await ws3.openCloudDb(cloudAccess);
+    // await  ws3.openCloudDb(cloudAccess);
+    ws3.open();
     ws3.updateString("string 1", newVal);
-    workspace.dropContainer(ws3);
+    ws3.db.executeSQL("VACUUM");
+    ws3.close();
+
+    await CloudSqlite.deleteDb(ws3, cloudAccess);
+    await ws3.upload(cloudAccess);
+    await BeDuration.fromSeconds(1).wait();
 
     ws2 = await workspace.getContainer(testContainerName, cloudAccess);
     val = ws2.getString("string 1");

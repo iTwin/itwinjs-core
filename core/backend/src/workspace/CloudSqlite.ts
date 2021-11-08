@@ -8,11 +8,9 @@
 
 import { BlobCacheProps, BlobContainerProps, BlobDaemon, BlobDaemonCommandArg, DaemonProps } from "@bentley/imodeljs-native";
 import { LocalFileName } from "@itwin/core-common";
-import { DbResult } from "@itwin/core-bentley";
+import { BeDuration, DbResult } from "@itwin/core-bentley";
 import { ChildProcess } from "child_process";
 import { IModelHost } from "../IModelHost";
-import { join } from "path";
-import * as readline from "readline";
 
 /** @beta */
 export namespace CloudSqlite {
@@ -30,31 +28,28 @@ export namespace CloudSqlite {
 
 /** @beta */
 export class CloudSqlite {
-  private static containerProcess?: ChildProcess;
+  private static cloudProcess?: ChildProcess;
   private static removeShutdownListener?: VoidFunction;
   private static killProcess() {
-    if (this.containerProcess) {
-      this.containerProcess.kill();
-      this.containerProcess = undefined;
+    if (this.cloudProcess) {
+      this.cloudProcess.kill();
+      this.cloudProcess = undefined;
     }
   }
 
   public static get isRunning() {
-    return undefined !== this.containerProcess;
+    return undefined !== this.cloudProcess;
   }
 
-  public static startProcess(props: CloudSqlite.ProcessProps) {
+  public static async startProcess(props: CloudSqlite.ProcessProps) {
     if (this.isRunning)
       return;
 
-    this.containerProcess = BlobDaemon.start(props);
-    props.stderrLogger?.(this.containerProcess.stderr as NodeJS.ReadableStream);
-    props.stdoutLogger?.(this.containerProcess.stdout as NodeJS.ReadableStream);
-
+    this.cloudProcess = BlobDaemon.start(props);
+    await BeDuration.fromSeconds(1).wait();
     // set up a listener to kill the containerProcess when we shut down
     this.removeShutdownListener = IModelHost.onBeforeShutdown.addOnce(() => this.killProcess());
   }
-
   public static stopProcess() {
     if (this.removeShutdownListener) {
       this.removeShutdownListener();
@@ -64,26 +59,24 @@ export class CloudSqlite {
   }
 
   public static async attach(dbAlias: CloudSqlite.DbAlias, props: CloudSqlite.AccessProps) {
-    const logger = (stream: NodeJS.ReadableStream) => {
-      readline.createInterface({ input: stream, terminal: false }).on("line", (line) => console.log(`${line}`));
-    };
     const args: BlobDaemonCommandArg & CloudSqlite.ProcessProps = {
       log: "meh",
       maxCacheSize: "10G",
       pollTime: 600,
       addr: "127.0.0.2",
       portNumber: 2030,
-      daemonDir: join(IModelHost.appWorkspace.containerDir, "cloud"),
       persistAcrossSessions: true,
       lazy: false,
       dbAlias,
-      stderrLogger: logger,
-      stdoutLogger: logger,
+      // spawnOptions: {
+      //   stdio: "inherit",
+      // },
       ...props,
     };
 
     if (!this.isRunning)
-      this.startProcess(args);
+      await this.startProcess(args);
+
     const stat = await BlobDaemon.command("attach", args);
     if (stat.result !== DbResult.BE_SQLITE_OK)
       throw new Error(`Cannot attach: ${stat.errMsg}`);
@@ -113,5 +106,11 @@ export class CloudSqlite {
     const stat = await BlobDaemon.command("upload", { localFile: wsFile.localDbName, dbAlias: wsFile.versionName, ...props });
     if (stat.result !== DbResult.BE_SQLITE_OK)
       throw new Error(`Cannot upload db: ${stat.errMsg}`);
+  }
+
+  public static async deleteDb(wsFile: CloudSqlite.DbProps, props: CloudSqlite.AccessProps) {
+    const stat = await BlobDaemon.command("delete", { dbAlias: wsFile.versionName, ...props });
+    if (stat.result !== DbResult.BE_SQLITE_OK)
+      throw new Error(`Cannot delete db: ${stat.errMsg}`);
   }
 }

@@ -235,10 +235,10 @@ export class ITwinWorkspace implements Workspace {
   public dropContainer(toDrop: WorkspaceContainer) {
     const id = toDrop.containerId;
     const container = this._containers.get(id);
-    if (container !== toDrop)
-      throw new Error(`container ${id} not open`);
-    container.close();
-    this._containers.delete(id);
+    if (container === toDrop) {
+      container.close();
+      this._containers.delete(id);
+    }
   }
 
   public resolveContainerId(props: WorkspaceContainerProps): WorkspaceContainerId {
@@ -316,6 +316,7 @@ export class WorkspaceFile implements WorkspaceContainer {
     if (this.isOpen) {
       this.onContainerClosed.raiseEvent();
       this.db.closeDb();
+      this.workspace.dropContainer(this);
     }
   }
 
@@ -384,6 +385,10 @@ export class EditableWorkspaceFile extends WorkspaceFile {
     this.localDbName = await CloudSqlite.attach(this.versionName, props);
     this.db.openDb(this.localDbName, OpenMode.ReadWrite);
     this._isCloudOpen = true;
+  }
+
+  public override open() {
+    this.db.openDb(this.localDbName, OpenMode.ReadWrite);
   }
 
   public override close() {
