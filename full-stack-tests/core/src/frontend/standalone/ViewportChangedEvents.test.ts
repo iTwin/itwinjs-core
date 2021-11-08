@@ -263,7 +263,7 @@ describe("Viewport changed events", async () => {
       expectChange(() => settings.thematic = ThematicDisplay.fromJSON(thematicProps));
 
       expectChange(() => settings.ambientOcclusionSettings = AmbientOcclusion.Settings.fromJSON({ bias: 42, maxDistance: 24 }));
-      expectChange(() => settings.environment = { ground: { display: true, elevation: 42 } });
+      expectChange(() => settings.environment = settings.environment.withDisplay({ ground: !settings.environment.displayGround }));
 
       expectChange(() => settings.setPlanProjectionSettings("0xabcdef", undefined));
       expectChange(() => settings.setPlanProjectionSettings("0xfedcba", PlanProjectionSettings.fromJSON({ elevation: 42 })));

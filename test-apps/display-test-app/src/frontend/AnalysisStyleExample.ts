@@ -6,7 +6,7 @@
 import { assert } from "@itwin/core-bentley";
 import { Angle, AuxChannel, AuxChannelData, AuxChannelDataType, IModelJson, Point3d, Polyface, PolyfaceAuxData, PolyfaceBuilder, StrokeOptions, Transform } from "@itwin/core-geometry";
 import {
-  AnalysisStyle, AnalysisStyleProps, ColorByName, ColorDef, RenderMode, ThematicGradientColorScheme, ThematicGradientMode, ThematicGradientSettingsProps,
+  AnalysisStyle, AnalysisStyleProps, ColorByName, ColorDef, RenderMode, SkyBox, ThematicGradientColorScheme, ThematicGradientMode, ThematicGradientSettingsProps,
 } from "@itwin/core-common";
 import {
   DecorateContext, GraphicType, IModelApp, RenderGraphicOwner, StandardViewId, Viewport,
@@ -284,12 +284,9 @@ export async function openAnalysisStyleExample(viewer: Viewer): Promise<void> {
 
   viewer.viewport.viewFlags = viewer.viewport.viewFlags.withRenderMode(RenderMode.SolidFill);
 
-  viewer.viewport.view.getDisplayStyle3d().settings.environment = {
-    sky: {
-      display: true,
-      twoColor: true,
-      nadirColor: 0xdfefff,
-      zenithColor: 0xffefdf,
-    },
-  };
+  const settings = viewer.viewport.view.getDisplayStyle3d().settings;
+  settings.environment = settings.environment.clone({
+    displaySky: true,
+    sky: SkyBox.fromJSON({ twoColor: true, nadirColor: 0xdfefff, zenithColor: 0xffefdf }),
+  });
 }
