@@ -26,7 +26,7 @@ export interface GroundPlaneProps {
 }
 
 /** A type containing all of the properties and none of the methods of [[GroundPlane]], with `readonly` modifiers removed.
- * @see [[GroundPlane.create]]>
+ * @see [[GroundPlane.create]] and [[GroundPlane.clone]].
  * @public
  */
 export type GroundPlaneProperties = NonFunctionPropertiesOf<GroundPlane>;
@@ -56,8 +56,18 @@ export class GroundPlane {
   public static readonly defaults = new GroundPlane({ });
 
   /** Create a new GroundPlane. Any properties not specified by `props` will be initialized to their default values. */
-  public static create(props?: GroundPlaneProperties) {
+  public static create(props?: Partial<GroundPlaneProperties>) {
     return props ? new this(props) : this.defaults;
+  }
+
+  /** Create a copy of this ground plane, identical except for any properties explicitly specified by `changedProps`.
+   * Any properties of `changedProps` explicitly set to `undefined` will be initialized to their default values.
+   */
+  public clone(changedProps?: Partial<GroundPlaneProperties>): GroundPlane {
+    if (!changedProps)
+      return this;
+
+    return GroundPlane.create({ ...this, ...changedProps });
   }
 
   /** Create from JSON representation. */

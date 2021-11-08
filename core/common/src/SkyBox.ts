@@ -136,7 +136,7 @@ const defaultSkyColor = ColorDef.from(142, 205, 255);
 const defaultExponent = 4.0;
 
 function colorDefFromJson(props?: ColorDefProps): ColorDef | undefined {
-  return props ? ColorDef.fromJSON(props) : undefined;
+  return undefined !== props ? ColorDef.fromJSON(props) : undefined;
 }
 
 /** A type containing all of the properties and none of the methods of [[SkyGradient]] with `readonly` modifiers removed.
