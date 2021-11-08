@@ -235,7 +235,7 @@ export interface FormattingUnitSystemChangedArgs {
   readonly system: UnitSystemKey;
 }
 
-/** Arguments sent to QuantityFormatsChanged event lis.
+/** Arguments sent to QuantityFormatsChanged event listeners.
  * @beta
  */
 export interface QuantityFormatsChangedArgs {
