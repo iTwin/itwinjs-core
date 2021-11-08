@@ -97,6 +97,20 @@
     "plugins": [
       "@itwin"
     ],
-    "extends": "plugin:@itwin/itwinjs-recommended"
+    "extends": "plugin:@itwin/itwinjs-recommended",
+    "rules": {
+      "@typescript-eslint/no-non-null-assertion": "error"
+    },
+    "overrides": [
+      {
+        "files": [
+          "*.test.ts",
+          "**/test/**/*.ts"
+        ],
+        "rules": {
+          "@typescript-eslint/no-non-null-assertion": "off"
+        }
+      }
+    ]
   }
 }

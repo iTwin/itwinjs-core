@@ -871,10 +871,6 @@
       "allowedCategories": [ "frontend" ]
     },
     {
-      "name": "tsconfig-paths",
-      "allowedCategories": [ "frontend", "tools" ]
-    },
-    {
       "name": "typedoc",
       "allowedCategories": [ "tools" ]
     },

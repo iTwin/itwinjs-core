@@ -3491,7 +3491,6 @@ importers:
       recursive-readdir: ^2.2.2
       rimraf: ^3.0.2
       tree-kill: ^1.2.0
-      tsconfig-paths: ^3.3.2
       typedoc: ^0.16.8
       typedoc-plugin-external-module-name: 3.0.0
       typedoc-plugin-internal-external: 2.1.1
@@ -3510,7 +3509,6 @@ importers:
       recursive-readdir: 2.2.2
       rimraf: 3.0.2
       tree-kill: 1.2.2
-      tsconfig-paths: 3.11.0
       typedoc: 0.16.11
       typedoc-plugin-external-module-name: 3.0.0_typedoc@0.16.11
       typedoc-plugin-internal-external: 2.1.1_typedoc@0.16.11
@@ -3807,7 +3805,6 @@ importers:
       sinon: ^9.0.2
       sinon-chai: ^3.2.0
       ts-node: ^7.0.1
-      tsconfig-paths: ^3.3.2
       typescript: ~4.4.0
       xmlhttprequest: ^1.8.0
     dependencies:
@@ -3842,7 +3839,6 @@ importers:
       sinon: 9.2.4
       sinon-chai: 3.7.0_chai@4.3.4+sinon@9.2.4
       ts-node: 7.0.1
-      tsconfig-paths: 3.11.0
       typescript: 4.4.4
       xmlhttprequest: 1.8.0
 
@@ -4016,7 +4012,6 @@ importers:
       sinon: ^9.0.2
       sinon-chai: ^3.2.0
       ts-node: ^7.0.1
-      tsconfig-paths: ^3.3.2
       typemoq: ^2.1.0
       typescript: ~4.4.0
       xmlhttprequest: ^1.8.0
@@ -4097,7 +4092,6 @@ importers:
       sinon: 9.2.4
       sinon-chai: 3.7.0_chai@4.3.4+sinon@9.2.4
       ts-node: 7.0.1
-      tsconfig-paths: 3.11.0
       typemoq: 2.1.0
       typescript: 4.4.4
       xmlhttprequest: 1.8.0
@@ -4180,7 +4174,6 @@ importers:
       sinon-chai: ^3.2.0
       ts-key-enum: ^2.0.0
       ts-node: ^7.0.1
-      tsconfig-paths: ^3.3.2
       typemoq: ^2.1.0
       typescript: ~4.4.0
       xmlhttprequest: ^1.8.0
@@ -4262,7 +4255,6 @@ importers:
       sinon: 9.2.4
       sinon-chai: 3.7.0_chai@4.3.4+sinon@9.2.4
       ts-node: 7.0.1
-      tsconfig-paths: 3.11.0
       typemoq: 2.1.0
       typescript: 4.4.4
       xmlhttprequest: 1.8.0
@@ -4325,7 +4317,6 @@ importers:
       sinon: ^9.0.2
       sinon-chai: ^3.2.0
       ts-node: ^7.0.1
-      tsconfig-paths: ^3.3.2
       typemoq: ^2.1.0
       typescript: ~4.4.0
       xmlhttprequest: ^1.8.0
@@ -4387,7 +4378,6 @@ importers:
       sinon: 9.2.4
       sinon-chai: 3.7.0_chai@4.3.4+sinon@9.2.4
       ts-node: 7.0.1
-      tsconfig-paths: 3.11.0
       typemoq: 2.1.0
       typescript: 4.4.4
       xmlhttprequest: 1.8.0
@@ -4454,7 +4444,6 @@ importers:
       sinon-chai: ^3.2.0
       ts-key-enum: ^2.0.0
       ts-node: ^7.0.1
-      tsconfig-paths: ^3.3.2
       typemoq: ^2.1.0
       typescript: ~4.4.0
       xmlhttprequest: ^1.8.0
@@ -4520,7 +4509,6 @@ importers:
       sinon: 9.2.4
       sinon-chai: 3.7.0_chai@4.3.4+sinon@9.2.4
       ts-node: 7.0.1
-      tsconfig-paths: 3.11.0
       typemoq: 2.1.0
       typescript: 4.4.4
       xmlhttprequest: 1.8.0
@@ -8866,8 +8854,8 @@ packages:
       json-schema-traverse: 0.4.1
       uri-js: 4.4.1
 
-  /ajv/8.6.3:
-    resolution: {integrity: sha512-SMJOdDP6LqTkD0Uq8qLi+gMwSt0imXLSV080qFVwJCpH9U6Mb+SUGHAXM0KNbcBPguytWyvFxcHgMLe2D2XSpw==}
+  /ajv/8.7.0:
+    resolution: {integrity: sha512-fX9/Yiy9YwnP/QB/4zqBpTavtL4YuXpiHlXlkE0y2itGcO++ixFIg+NFk1l0TfHjt11EDDhHAhLVe0rFgTBaGA==}
     dependencies:
       fast-deep-equal: 3.1.3
       json-schema-traverse: 1.0.0
@@ -9830,7 +9818,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001278
-      electron-to-chromium: 1.3.890
+      electron-to-chromium: 1.3.891
     dev: true
 
   /browserslist/4.14.2:
@@ -9839,7 +9827,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001278
-      electron-to-chromium: 1.3.890
+      electron-to-chromium: 1.3.891
       escalade: 3.1.1
       node-releases: 1.1.77
     dev: true
@@ -9850,7 +9838,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001278
-      electron-to-chromium: 1.3.890
+      electron-to-chromium: 1.3.891
       escalade: 3.1.1
       node-releases: 2.0.1
       picocolors: 1.0.0
@@ -11631,8 +11619,8 @@ packages:
     requiresBuild: true
     dev: true
 
-  /electron-to-chromium/1.3.890:
-    resolution: {integrity: sha512-VWlVXSkv0cA/OOehrEyqjUTHwV8YXCPTfPvbtoeU2aHR21vI4Ejh5aC4AxUwOmbLbBgb6Gd3URZahoCxtBqCYQ==}
+  /electron-to-chromium/1.3.891:
+    resolution: {integrity: sha512-3cpwR82QkIS01CN/dup/4Yr3BiOiRLlZlcAFn/5FbNCunMO9ojqDgEP9JEo1QNLflu3pEnPWve50gHOEKc7r6w==}
 
   /electron/14.2.0:
     resolution: {integrity: sha512-6CmAv1P0xcwK3FQOSA27fHI36/wctSFVgj46VODn56srXXQWeolkK1VzeAFNE613iAuuH9jJdHvE3gz+c7XkNA==}
@@ -18901,7 +18889,7 @@ packages:
   /regenerator-transform/0.14.5:
     resolution: {integrity: sha512-eOf6vka5IO151Jfsw2NO9WpGX58W6wWmefK3I1zEGr0lOD0u8rwPaNqQL1aRxUaxLeKO3ArNh3VYg1KbaD+FFw==}
     dependencies:
-      '@babel/runtime': 7.16.0
+      '@babel/runtime': 7.12.1
     dev: true
 
   /regex-cache/0.4.4:
@@ -20471,7 +20459,7 @@ packages:
     resolution: {integrity: sha512-5DkIxeA7XERBqMwJq0aHZOdMadBx4e6eDoFRuyT5VR82J0Ycg2DwM6GfA/EQAhJ+toRTaS1lIdSQCqgrmhPnlw==}
     engines: {node: '>=10.0.0'}
     dependencies:
-      ajv: 8.6.3
+      ajv: 8.7.0
       lodash.truncate: 4.4.2
       slice-ansi: 4.0.0
       string-width: 4.2.3
