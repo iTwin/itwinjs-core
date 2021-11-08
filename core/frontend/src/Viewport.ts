@@ -965,7 +965,7 @@ export abstract class Viewport implements IDisposable {
   private attachToView(): void {
     this.registerDisplayStyleListeners(this.view.displayStyle);
     this.registerViewListeners();
-    this.view.attachToViewport();
+    this.view.attachToViewport(this);
     this._mapTiledGraphicsProvider = new MapTiledGraphicsProvider(this);
   }
 
@@ -2955,7 +2955,7 @@ export class ScreenViewport extends Viewport {
       return npcPt.z < 1.0;
     };
 
-    if (this.view.getDisplayStyle3d().environment.ground.display) {
+    if (this.view.getDisplayStyle3d().environment.displayGround) {
       const groundPlane = Plane3dByOriginAndUnitNormal.create(Point3d.create(0, 0, this.view.getGroundElevation()), Vector3d.unitZ());
       if (undefined !== groundPlane && boresiteIntersect(groundPlane))
         return { plane: Plane3dByOriginAndUnitNormal.create(projectedPt, groundPlane.getNormalRef())!, source: DepthPointSource.GroundPlane };
