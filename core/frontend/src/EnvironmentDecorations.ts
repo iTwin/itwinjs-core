@@ -32,12 +32,12 @@ export interface SkyBoxDecorations {
 
 /** @internal */
 export class EnvironmentDecorations {
-  private readonly _view: ViewState3d;
-  private readonly _onLoaded: () => void;
-  private readonly _onDispose: () => void;
-  private _environment: Environment;
-  private _ground?: GroundPlaneDecorations;
-  private _sky: SkyBoxDecorations;
+  protected readonly _view: ViewState3d;
+  protected readonly _onLoaded: () => void;
+  protected readonly _onDispose: () => void;
+  protected _environment: Environment;
+  protected _ground?: GroundPlaneDecorations;
+  protected _sky: SkyBoxDecorations;
 
   public constructor(view: ViewState3d, onLoaded: () => void, onDispose: () => void) {
     this._environment = view.displayStyle.environment;
