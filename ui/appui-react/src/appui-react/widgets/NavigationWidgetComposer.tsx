@@ -105,9 +105,9 @@ export function NavigationAidHost(props: NavigationAidHostProps) {
     minHeight: props.minHeight ? /* istanbul ignore next */ props.minHeight : "64px",
   };
 
+  // istanbul ignore else
   if ("1" !== useFrameworkVersion() && UiShowHideManager.useProximityOpacity && !UiFramework.isMobile()) {
     const navigationAidOpacity = (0.30 * proximityScale) + 0.70;
-
     divStyle.opacity = `${navigationAidOpacity}`;
   }
 
