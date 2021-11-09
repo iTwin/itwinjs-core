@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Views
+ */
+
 import { MapSubLayerProps } from "@itwin/core-common";
 import { request, RequestBasicCredentials, RequestOptions } from "@bentley/itwin-client";
 import WMS from "wms-capabilities";
 import { MapCartoRectangle, WmsUtilities } from "../internal";
-
-/** @packageDocumentation
- * @module Views
- */
 
 /**
  * fetch XML from HTTP request
