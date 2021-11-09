@@ -162,7 +162,6 @@ export * from "./appui-react/stagepanels/FrameworkStagePanel";
 export * from "./appui-react/stagepanels/StagePanel";
 export * from "./appui-react/stagepanels/StagePanelDef";
 export * from "./appui-react/stagepanels/StagePanelHeader";
-export * from "./appui-react/stagepanels/StagePanelEnums";
 
 export * from "./appui-react/statusbar/StatusBar";
 export * from "./appui-react/statusbar/StatusBarWidgetControl";

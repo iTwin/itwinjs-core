@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 /** @packageDocumentation
  * @module Frontstage
  */
@@ -28,7 +29,7 @@ export enum StagePanelState {
 }
 
 /** Panel State Changed Event Args interface.
- * @public
+ * @public @deprecated
  */
 export interface PanelStateChangedEventArgs {
   panelDef: StagePanelDef;
@@ -36,7 +37,7 @@ export interface PanelStateChangedEventArgs {
 }
 
 /** Widget State Changed Event class.
- * @beta
+ * @beta @deprecated
  */
 export class PanelStateChangedEvent extends UiEvent<PanelStateChangedEventArgs> { }
 
@@ -51,7 +52,7 @@ export class PanelSizeChangedEvent extends UiEvent<PanelSizeChangedEventArgs> { 
 
 /**
  * A StagePanelDef represents each Stage Panel within a Frontstage.
- * @public
+ * @public @deprecated
  */
 export class StagePanelDef extends WidgetHost {
   private _panelState = StagePanelState.Open;

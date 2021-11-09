@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 /** @packageDocumentation
  * @module Zone
  */
@@ -26,7 +27,7 @@ import { ToolSettingsZone } from "./toolsettings/ToolSettingsZone";
 import { ZoneDef, ZoneState } from "./ZoneDef";
 
 /** Enum for [[Zone]] Location.
- * @public
+ * @public @deprecated
  */
 export enum ZoneLocation {
   TopLeft = 1,
@@ -40,7 +41,7 @@ export enum ZoneLocation {
 }
 
 /** Properties of a [[Zone]] component
- * @public
+ * @public @deprecated
  */
 export interface ZoneProps extends CommonProps {
   /** Default Zone state. Controls how the Zone is initially displayed. Defaults to ZoneState.Open. */
@@ -99,7 +100,7 @@ export function getStableWidgetProps(widgetProps: WidgetProps, stableId: string)
 
 /** Zone React component.
  * A Zone is a standard area on the screen for users to read and interact with data applicable to the current task. Each Zone has a defined purpose.
- * @public
+ * @public @deprecated
  */
 export class Zone extends React.Component<ZoneProps> {
   constructor(props: ZoneProps) {
