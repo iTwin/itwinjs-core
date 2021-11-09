@@ -280,8 +280,9 @@ export namespace EditManipulator {
      * @return color adjusted for view background color or original color if view background color isn't being used.
      */
     public static adjustForBackgroundColor(color: ColorDef, vp: Viewport): ColorDef {
-      if (vp.view.is3d() && vp.view.getDisplayStyle3d().environment.sky.display)
+      if (vp.view.is3d() && vp.view.getDisplayStyle3d().environment.displaySky)
         return color;
+
       return color.adjustedForContrast(vp.view.backgroundColor);
     }
 

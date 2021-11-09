@@ -120,7 +120,7 @@ export class ServerBasedLocks implements LockControl {
       return this.insertLock(modelId, LockState.Exclusive, LockOrigin.Discovered);
 
     // see if the parent is exclusively locked by one of its owners. If so, save that fact on parentId so future tests won't have to descend.
-    return this.ownerHoldsExclusiveLock(parentId) ? this.insertLock(parentId!, LockState.Exclusive, LockOrigin.Discovered) : false;
+    return this.ownerHoldsExclusiveLock(parentId) ? this.insertLock(parentId!, LockState.Exclusive, LockOrigin.Discovered) : false; // eslint-disable-line @typescript-eslint/no-non-null-assertion
   }
 
   /** Determine whether an the exclusive lock is already held by an element (or one of its owners) */

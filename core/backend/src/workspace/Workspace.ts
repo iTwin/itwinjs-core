@@ -244,7 +244,7 @@ export class ITwinWorkspace implements Workspace {
   public resolveContainerId(props: WorkspaceContainerProps): WorkspaceContainerId {
     if (typeof props === "object")
       return props.id;
-    return this.settings.resolveSetting(WorkspaceSetting.ContainerAlias, (val) => {
+    const id = this.settings.resolveSetting(WorkspaceSetting.ContainerAlias, (val) => {
       if (Array.isArray(val)) {
         for (const entry of val) {
           if (typeof entry === "object" && entry.name === props && typeof entry.id === "string")
@@ -252,7 +252,11 @@ export class ITwinWorkspace implements Workspace {
         }
       }
       return undefined; // keep going through all settings dictionaries
-    }, props)!;
+    }, props);
+    if (undefined === id)
+      throw new Error("Unable to resolve container id.");
+    return id;
+
   }
 }
 

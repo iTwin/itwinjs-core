@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/imodelhub-client-tests",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/imodelhub-client-tests"
+}

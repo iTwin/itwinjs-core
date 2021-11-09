@@ -15,15 +15,20 @@ alpha;CreateEllipseTool
 alpha;CreateLineStringTool 
 alpha;class CreateOrContinuePathTool 
 alpha;CreateRectangleTool 
+alpha;CutSolidElementsTool 
 alpha;DeleteElementsTool 
 alpha;DynamicGraphicsProvider
 alpha;EditorOptions
 alpha;EditTools
 alpha;class ElementGeometryCacheTool 
 alpha;ElementGeometryGraphicsProvider
+alpha;EmbossSolidElementsTool 
 alpha;HollowFacesTool 
+alpha;ImprintSolidElementsTool 
+alpha;ImprintSolidMethod
 alpha;IntersectSolidElementsTool 
 alpha;class LocateSubEntityTool 
+alpha;LoftProfilesTool 
 alpha;MoveElementsTool 
 alpha;OffsetFacesTool 
 beta;ProjectExtentsClipDecoration 
@@ -42,6 +47,7 @@ alpha;RotateMethod
 alpha;SewSheetElementsTool 
 alpha;SubEntityData
 alpha;SubtractSolidElementsTool 
+alpha;SweepAlongPathTool 
 alpha;class TransformElementsTool 
 alpha;TransformGraphicsData
 alpha;TransformGraphicsProvider

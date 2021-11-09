@@ -676,7 +676,7 @@ export class IModelApp {
   }
 
   /** Localize an error status from iModel.js
-   * @param status one of the status values from [[BentleyStatus]], [[IModelStatus]] or [[DbResult]]
+   * @param status one of the status values from [BentleyStatus]($core-bentley), [IModelStatus]($core-bentley) or [DbResult]($core-bentley)
    * @returns a localized error message
    * @beta
    */

@@ -1899,6 +1899,38 @@ export class ShowTileVolumesTool extends Tool {
     static toolId: string;
 }
 
+// @beta
+export class SkyCubeTool extends DisplayStyleTool {
+    // (undocumented)
+    execute(vp: Viewport): boolean;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parse(args: string[]): boolean;
+    // (undocumented)
+    get require3d(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class SkySphereTool extends DisplayStyleTool {
+    // (undocumented)
+    execute(vp: Viewport): boolean;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parse(args: string[]): boolean;
+    // (undocumented)
+    get require3d(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
 // @alpha (undocumented)
 export interface Slider {
     // (undocumented)
