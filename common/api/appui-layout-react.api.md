@@ -38,13 +38,13 @@ export function addTab(state: NineZoneState, id: TabState["id"], tabArgs?: Parti
 // @internal
 export function addWidgetTabToFloatingPanel(state: NineZoneState, floatingWidgetId: string, widgetTabId: string, home: FloatingWidgetHomeState, preferredSize?: SizeProps, preferredPosition?: PointProps, userSized?: boolean, isFloatingStateWindowResizable?: boolean): NineZoneState;
 
-// @internal @deprecated
+// @internal
 export class AppButton extends React.PureComponent<AppButtonProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @internal @deprecated
+// @internal
 export interface AppButtonProps extends OmitChildrenProp<ToolbarIconProps>, NoChildrenProps {
     mouseProximity?: number;
     small?: boolean;
