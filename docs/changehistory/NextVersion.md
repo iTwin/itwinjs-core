@@ -587,9 +587,9 @@ The signatures to several methods in [BriefcaseManager]($backend) and [Briefcase
 
 ## Deprecation of the Settings on iModelApp
 
-The previous `IModelApp.settings` API has been removed in favor of [IModelApp.userPreferences]($frontend). THe updates API will provide a clear distinction between the "settings" within the control of the user (user preferences) and which are within control of the admin of an iModel/iTwin (Workspaces). The separation is intended to make it clear who is capability of modifying and overriding a given setting while making the API easier to use.
+The previous `IModelApp.settings` API has been removed in favor of [IModelApp.userPreferences]($frontend). The updated API will provide a clear distinction between the "settings" within the control of the user (user preferences) and which are within control of the admin of an iModel/iTwin (Workspaces). The separation is intended to make it clear who is capability of modifying and overriding a given setting while making the API easier to use.
 
-The new [UserPreferencesAccess]($frontend) interface is a simply, easy-to-use API that can be implemented in many different ways. The `core-frontend` package does not dictate an implementation and could easily be setup using Local Storage (via [Storage APIs](https://developer.mozilla.org/en-US/docs/Web/API/Storage)) or by a cloud-hosted storage mechanism to share across user sessions.
+The new [UserPreferencesAccess]($frontend) interface is a simple, easy-to-use API that can be implemented in many different ways. The `core-frontend` package does not dictate an implementation and could easily be setup using Local Storage (via [Storage APIs](https://developer.mozilla.org/en-US/docs/Web/API/Storage)) or by a cloud-hosted storage mechanism to share across user sessions.
 
 ## `Tool.run` and `Tool.parseAndRun` are now async
 

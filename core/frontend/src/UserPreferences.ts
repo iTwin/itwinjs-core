@@ -35,10 +35,12 @@ export interface PreferenceKeyArg {
   readonly key: string;
 }
 
-/** The user preferences provides a way to get, store and delete preferences for an application at
+/** User preferences provide a way to get, store and delete preferences for an application at
  * two different levels, iTwin and iModel.
  *
- * The user preferences are separate from any settings or configuration shared across multiple users.
+ * The user preferences are separate from any iTwin or iModel configuration intended to be shared
+ * across multiple users. See [Workspace]($docs/learning/backend/Workspace.md) for more details on
+ * shared configuration.
  *
  * Note: Both the key and return type are intended to be abstract and allow any preferences to be stored.
  *     Based on this simple interface, the implementation of this interface can interpret the key as needed
