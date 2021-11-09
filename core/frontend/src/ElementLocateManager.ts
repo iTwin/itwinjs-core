@@ -62,6 +62,11 @@ export class LocateOptions {
    * @see [[HitDetail.iModel]] and [[HitDetail.isExternalIModelHit]]
    */
   public allowExternalIModels = false;
+  /** If true, then the world point of a hit on a model will preserve any transforms applied to the model at display time,
+   * such as those supplied by a [[ModelDisplayTransformProvider]] or [PlanProjectionSettings.elevation]($common).
+   * Otherwise, the world point will be multiplied by the inverse of any such transforms to correlate it with the model's true coordinate space.
+   */
+  public preserveModelDisplayTransforms = false;
 
   /** Make a copy of this LocateOptions. */
   public clone(): LocateOptions {
@@ -227,8 +232,14 @@ export class ElementPicker {
         if (undefined === pixel || undefined === pixel.elementId)
           continue;
 
-        const hitPointWorld = vp.getPixelDataWorldPoint(pixels, elmPoint.x, elmPoint.y);
-        if (undefined === hitPointWorld)
+        const hitPointWorld = vp.getPixelDataWorldPoint({
+          pixels,
+          x: elmPoint.x,
+          y: elmPoint.y,
+          preserveModelDisplayTransforms: options.preserveModelDisplayTransforms,
+        });
+
+        if (!hitPointWorld)
           continue;
 
         const modelId = undefined !== pixel.featureTable ? pixel.featureTable.modelId : undefined;

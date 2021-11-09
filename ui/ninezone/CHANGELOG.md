@@ -1,6 +1,18 @@
 # Change Log - @bentley/ui-ninezone
 
-This log was last generated on Thu, 21 Oct 2021 20:59:44 GMT and should not be manually modified.
+This log was last generated on Fri, 29 Oct 2021 16:14:22 GMT and should not be manually modified.
+
+## 2.19.20
+Fri, 29 Oct 2021 16:14:22 GMT
+
+_Version update only_
+
+## 2.19.19
+Mon, 25 Oct 2021 16:16:25 GMT
+
+### Updates
+
+- Drop unnecessary dep on @bentley/react-scripts; add a *.d.ts file for svg?sprite loader syntax
 
 ## 2.19.18
 Thu, 21 Oct 2021 20:59:44 GMT

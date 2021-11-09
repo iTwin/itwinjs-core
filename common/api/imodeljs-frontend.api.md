@@ -3553,6 +3553,15 @@ export function getImageSourceFormatForMimeType(mimeType: string): ImageSourceFo
 // @public
 export function getImageSourceMimeType(format: ImageSourceFormat): string;
 
+// @public
+export interface GetPixelDataWorldPointArgs {
+    out?: Point3d;
+    pixels: Pixel.Buffer;
+    preserveModelDisplayTransforms?: boolean;
+    x: number;
+    y: number;
+}
+
 // @beta
 export function getQuantityTypeKey(type: QuantityTypeArg): QuantityTypeKey;
 
@@ -5107,6 +5116,7 @@ export class LocateOptions {
     // (undocumented)
     init(): void;
     maxHits: number;
+    preserveModelDisplayTransforms: boolean;
     // (undocumented)
     setFrom(other: LocateOptions): void;
 }
@@ -12336,10 +12346,8 @@ export abstract class Viewport implements IDisposable {
     getFrustum(sys?: CoordSystem, adjustedBox?: boolean, box?: Frustum): Frustum;
     // @internal (undocumented)
     getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined;
-    // @beta
     getPixelDataNpcPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined;
-    // @beta
-    getPixelDataWorldPoint(pixels: Pixel.Buffer, x: number, y: number, out?: Point3d): Point3d | undefined;
+    getPixelDataWorldPoint(args: GetPixelDataWorldPointArgs): Point3d | undefined;
     getPixelSizeAtPoint(point?: Point3d): number;
     // @internal (undocumented)
     getSubCategories(categoryId: Id64String): Id64Set | undefined;
