@@ -86,7 +86,8 @@ export interface GraphicsDriverBugs {
    *
    * Affects Intel HD/UHD Graphics 620/630.
    *
-   * The workaround for this bug has minimal impact on performance and no impact on visual fidelity.
+   * The workaround for this bug is to disable [[WebGLFeature.FragDepth]], which may cause z-fighting in scenes that encompass a wide
+   * spatial volume.
    */
   fragDepthDoesNotDisableEarlyZ?: true;
 }

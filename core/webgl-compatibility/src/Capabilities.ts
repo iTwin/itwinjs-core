@@ -116,7 +116,9 @@ export class Capabilities {
   public get supportsTextureFilterAnisotropic(): boolean { return this.queryExtensionObject<EXT_texture_filter_anisotropic>("EXT_texture_filter_anisotropic") !== undefined; }
   public get supportsShaderTextureLOD(): boolean { return this._isWebGL2 || this.queryExtensionObject<EXT_shader_texture_lod>("EXT_shader_texture_lod") !== undefined; }
   public get supportsVertexArrayObjects(): boolean { return this._isWebGL2 || this.queryExtensionObject<OES_vertex_array_object>("OES_vertex_array_object") !== undefined; }
-  public get supportsFragDepth(): boolean { return this._isWebGL2 || this.queryExtensionObject<EXT_frag_depth>("EXT_frag_depth") !== undefined; }
+  public get supportsFragDepth(): boolean {
+    return !this._driverBugs.fragDepthDoesNotDisableEarlyZ && (this._isWebGL2 || this.queryExtensionObject<EXT_frag_depth>("EXT_frag_depth") !== undefined);
+  }
   public get supportsDisjointTimerQuery(): boolean { return (this._isWebGL2 && this.queryExtensionObject<any>("EXT_disjoint_timer_query_webgl2") !== undefined) || this.queryExtensionObject<any>("EXT_disjoint_timer_query") !== undefined; }
   public get supportsStandardDerivatives(): boolean { return this._isWebGL2 || this.queryExtensionObject<OES_standard_derivatives>("OES_standard_derivatives") !== undefined; }
 
@@ -275,10 +277,6 @@ export class Capabilities {
 
     this._canRenderDepthWithoutColor = this._maxDepthType === DepthType.TextureUnsignedInt24Stencil8 ? this.isDepthRenderableWithoutColor(gl) : false;
 
-    this._presentFeatures = this._gatherFeatures();
-    const missingRequiredFeatures = this._findMissingFeatures(Capabilities.requiredFeatures);
-    const missingOptionalFeatures = this._findMissingFeatures(Capabilities.optionalFeatures);
-
     const debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
     const unmaskedRenderer = debugInfo !== null ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : undefined;
     const unmaskedVendor = debugInfo !== null ? gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) : undefined;
@@ -286,6 +284,10 @@ export class Capabilities {
     this._driverBugs = { };
     if (undefined !== unmaskedRenderer && /ANGLE \(Intel\(R\) (U)?HD Graphics 6(2|3)0 Direct3D11/.test(unmaskedRenderer))
       this._driverBugs.fragDepthDoesNotDisableEarlyZ = true;
+
+    this._presentFeatures = this._gatherFeatures();
+    const missingRequiredFeatures = this._findMissingFeatures(Capabilities.requiredFeatures);
+    const missingOptionalFeatures = this._findMissingFeatures(Capabilities.optionalFeatures);
 
     return {
       status: this._getCompatibilityStatus(missingRequiredFeatures, missingOptionalFeatures),

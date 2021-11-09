@@ -203,9 +203,10 @@ describe("Render Compatibility", () => {
       const caps = new Capabilities();
       const compatibility = caps.init(context);
 
-      expect(compatibility.status).to.equal(WebGLRenderCompatibilityStatus.AllOkay);
-
       const expected = renderer[1] ? true : undefined;
+      expect(compatibility.status).to.equal(expected ? WebGLRenderCompatibilityStatus.MissingOptionalFeatures : WebGLRenderCompatibilityStatus.AllOkay);
+      expect(caps.supportsFragDepth).to.equal(!expected);
+      expect(compatibility.missingOptionalFeatures.indexOf(WebGLFeature.FragDepth)).to.equal(expected ? 0 : -1);
       expect(compatibility.driverBugs.fragDepthDoesNotDisableEarlyZ).to.equal(expected);
       expect(caps.driverBugs.fragDepthDoesNotDisableEarlyZ).to.equal(expected);
     }
