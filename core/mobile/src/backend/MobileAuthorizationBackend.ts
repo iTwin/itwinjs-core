@@ -7,15 +7,41 @@
  */
 
 import { AccessToken, assert, AuthStatus } from "@itwin/core-bentley";
-import { AuthorizationClient, IModelError, NativeAppAuthorizationConfiguration } from "@itwin/core-common";
+import { AuthorizationClient, IModelError } from "@itwin/core-common";
 import { MobileHost } from "./MobileHost";
+
+/**
+ * Client configuration to generate OIDC/OAuth tokens for mobile applications
+ * @beta
+ */
+ export interface MobileAppAuthorizationConfiguration {
+  /**
+   * The OAuth token issuer URL. Defaults to Bentley's auth URL if undefined.
+   */
+  issuerUrl?: string;
+
+  /**
+   * Upon signing in, the client application receives a response from the Bentley IMS OIDC/OAuth2 provider at this URI
+   * For mobile/desktop applications, must start with `http://localhost:${redirectPort}` or `https://localhost:${redirectPort}`
+   */
+  readonly redirectUri?: string;
+
+  /**
+   * Time in seconds that's used as a buffer to check the token for validity/expiry.
+   * The checks for authorization, and refreshing access tokens all use this buffer - i.e., the token is considered expired if the current time is within the specified
+   * time of the actual expiry.
+   * @note If unspecified this defaults to 10 minutes.
+   */
+  readonly expiryBuffer?: number;
+}
+
 
 /** Utility to provide OIDC/OAuth tokens from native ios app to frontend
    * @internal
    */
 export class MobileAuthorizationBackend implements AuthorizationClient {
   protected _accessToken?: AccessToken;
-  public config?: NativeAppAuthorizationConfiguration;
+  public config?: MobileAppAuthorizationConfiguration;
   public expireSafety = 60 * 10; // refresh token 10 minutes before real expiration time
   public issuerUrl?: string;
   public static defaultRedirectUri = "imodeljs://app/signin-callback";
@@ -23,14 +49,14 @@ export class MobileAuthorizationBackend implements AuthorizationClient {
   protected _baseUrl = "https://ims.bentley.com";
   protected _url?: string;
 
-  public constructor(config?: NativeAppAuthorizationConfiguration) {
+  public constructor(config?: MobileAppAuthorizationConfiguration) {
     this.config = config;
   }
 
   // public getClientRequestContext() { return ClientRequestContext.fromJSON(IModelHost.session); }
 
   /** Used to initialize the client - must be awaited before any other methods are called */
-  public async initialize(config?: NativeAppAuthorizationConfiguration): Promise<void> {
+  public async initialize(config?: MobileAppAuthorizationConfiguration): Promise<void> {
     this.config = config ?? this.config;
     if (!this.config)
       throw new IModelError(AuthStatus.Error, "Must specify a valid configuration when initializing authorization");
