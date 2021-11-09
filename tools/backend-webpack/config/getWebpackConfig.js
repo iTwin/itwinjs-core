@@ -35,6 +35,9 @@ function getWebpackConfig(srcFile, outDir, profile) {
       // See https://github.com/facebook/create-react-app/issues/240
       new CaseSensitivePathsPlugin(),
     ],
+    externals: {
+      "encoding": "require('encoding')",
+    },
     profile,
     node: {
       __dirname: false,
