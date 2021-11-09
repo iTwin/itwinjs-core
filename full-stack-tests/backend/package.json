@@ -34,7 +34,7 @@
     "@itwin/core-common": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
-    "@itwin/oidc-signin-tool": "workspace:*",
+    "@itwin/oidc-signin-tool": "^3.0.0-dev.109",
     "@itwin/perf-tools": "workspace:*",
     "@itwin/projects-client": "^0.2.0",
     "azurite": "^3.14.0",

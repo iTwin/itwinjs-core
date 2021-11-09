@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import {
-  BackstageAppButton, ConfigurableUiManager, ContentGroup, ContentGroupProps, ContentGroupProvider, ContentProps, FrontstageProps,
+  BackstageAppButton, BackstageManager, ConfigurableUiManager, ContentGroup, ContentGroupProps, ContentGroupProvider, ContentProps, FrontstageProps,
   IModelViewportControl, StandardContentToolsProvider, StandardFrontstageProps, StandardFrontstageProvider,
   StandardNavigationToolsProvider,
   StandardStatusbarItemsProvider,
@@ -96,7 +96,10 @@ export class FrontstageUi2 {
   }
 
   public static register() {
-    const cornerButton = FrontstageUi2.showCornerButtons ? <BackstageAppButton key="ui2-backstage" icon={"icon-bentley-systems"} /> : undefined;
+    // set up custom corner button where we specify icon, label, and action
+    const cornerButton = FrontstageUi2.showCornerButtons ?
+      <BackstageAppButton key="ui2-backstage" label="Toggle Ui2 Backstage" icon={"icon-bentley-systems"}
+        execute={() => BackstageManager.getBackstageToggleCommand().execute()} /> : undefined;
     const hideNavigationAid = !FrontstageUi2.showCornerButtons;
     const setUpCustomToolGroups = true;
     const applicationData = setUpCustomToolGroups ? {
