@@ -6,13 +6,13 @@
  * @module UiSettings
  */
 
-import { UserPreferencesAccess } from "@itwin/core-frontend";
+import { UiSettingsResult, UiSettingsStatus, UiSettingsStorage } from "./UiSettingsStorage";
 
 /**
  * Implementation of [[UiSettingsStorage]] using Window.localStorage.
  * @public
  */
-export class LocalSettingsStorage implements UserPreferencesAccess { // eslint-disable-line deprecation/deprecation
+export class LocalSettingsStorage implements UiSettingsStorage { // eslint-disable-line deprecation/deprecation
 
   constructor(public w: Window = window) { }
 
@@ -45,4 +45,12 @@ export class LocalSettingsStorage implements UserPreferencesAccess { // eslint-d
     this.w.localStorage.removeItem(name);
     return { status: UiSettingsStatus.Success };
   }
+}
+
+/** Alias for [[LocalSettingsStorage]]
+ * @beta
+ * @deprecated use [LocalSettingsStorage]($core-react) instead
+ */
+export class LocalUiSettings extends LocalSettingsStorage {
+  constructor(w: Window = window) { super(w); }
 }
