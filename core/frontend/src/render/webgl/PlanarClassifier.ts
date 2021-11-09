@@ -8,10 +8,10 @@
  */
 
 import { dispose } from "@itwin/core-bentley";
-import { Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Vector3d } from "@itwin/core-geometry";
 import {
-  ColorDef, Frustum, FrustumPlanes, RenderMode, RenderTexture, SpatialClassifier, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay,
+  ColorDef, Frustum, FrustumPlanes, RenderTexture, SpatialClassifier, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay,
 } from "@itwin/core-common";
+import { Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Vector3d } from "@itwin/core-geometry";
 import { PlanarClipMaskState } from "../../PlanarClipMaskState";
 import { GraphicsCollectorDrawArgs, SpatialClassifierTileTreeReference, TileTreeReference } from "../../tile/internal";
 import { SceneContext } from "../../ViewContext";
@@ -330,7 +330,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   private readonly _branchStack = new BranchStack();
   private readonly _batchState: BatchState;
   private _planarClipMask?: PlanarClipMaskState;
-  private _classifierTreeRef?: TileTreeReference;
+  private _classifierTreeRef?: SpatialClassifierTileTreeReference;
   private _planarClipMaskOverrides?: FeatureSymbology.Overrides;
   private _contentMode: PlanarClassifierContent = PlanarClassifierContent.None;
 
@@ -340,7 +340,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     1, 0, 0, 0,
     0, 0, 0, 1);
   private _debugFrustum?: Frustum;
-  private _doDebugFrustum = true;
+  private _doDebugFrustum = false;
   private _debugFrustumGraphic?: RenderGraphic = undefined;
   private _isClassifyingPointCloud?: boolean; // we will detect this the first time we draw
   private readonly _bgColor = ColorDef.from(0, 0, 0, 255);
@@ -509,7 +509,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   }
 
   public draw(target: Target) {
-    if (undefined === this._frustum)
+    if (undefined === this._frustum || !this._classifierTreeRef)
       return;
 
     this._contentMode = PlanarClassifierContent.None;
@@ -562,19 +562,11 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     const system = System.instance;
     const prevState = system.currentRenderState.clone(scratchPrevRenderState);
     system.context.viewport(0, 0, this._width, this._height);
+    const treeViewFlags = this._classifierTreeRef.viewFlags;
+    if (this.isClassifyingPointCloud)
+      treeViewFlags.transparency = false;       //  Point clouds do not support transparency.
 
-    const vf = target.currentViewFlags.copy({
-      renderMode: RenderMode.SmoothShade,
-      transparency: !this.isClassifyingPointCloud, // point clouds don't support transparency.
-      textures: false,
-      lighting: false,
-      shadows: false,
-      monochrome: false,
-      materials: false,
-      ambientOcclusion: false,
-      visibleEdges: false,
-      hiddenEdges: false,
-    });
+    const vf = target.currentViewFlags.copy(treeViewFlags);
 
     system.applyRenderState(this._renderState);
     const prevPlan = target.plan;
@@ -602,6 +594,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
 
       // NB: We don't strictly require the classifier geometry to be planar, and sometimes (e.g., "planar" polyface/bspsurf) we do not detect planarity.
       cmds.push(...renderCommands.getCommands(RenderPass.OpaqueGeneral));
+      cmds.push(...renderCommands.getCommands(RenderPass.OpaqueLinear));
       this._anyOpaque = cmds.length > 0;
       const transCmds = renderCommands.getCommands(RenderPass.Translucent);
       if (transCmds.length > 0) {

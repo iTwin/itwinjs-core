@@ -6,7 +6,7 @@
  * @module Tiles
  */
 import { compareStrings, compareStringsOrUndefined, Id64, Id64String } from "@itwin/core-bentley";
-import { BatchType, ClassifierTileTreeId, compareIModelTileTreeIds, iModelTileTreeIdToString, MapLayerSettings, SpatialClassifier, SpatialClassifiers } from "@itwin/core-common";
+import { BatchType, ClassifierTileTreeId, compareIModelTileTreeIds, iModelTileTreeIdToString, RenderMode, SpatialClassifier, SpatialClassifiers, ViewFlagsProperties } from "@itwin/core-common";
 import { DisplayStyleState } from "../DisplayStyleState";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -14,7 +14,7 @@ import { GeometricModelState } from "../ModelState";
 import { SceneContext } from "../ViewContext";
 import { ViewState } from "../ViewState";
 import {
-  DisclosedTileTreeSet, IModelTileTree, iModelTileTreeParamsFromJSON, MapLayerTileTreeReference, TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeReference, TileTreeSupplier,
+  DisclosedTileTreeSet, IModelTileTree, iModelTileTreeParamsFromJSON, TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeReference, TileTreeSupplier,
 } from "./internal";
 
 interface ClassifierTreeId extends ClassifierTileTreeId {
@@ -87,27 +87,7 @@ export abstract class SpatialClassifierTileTreeReference extends TileTreeReferen
   public abstract get isPlanar(): boolean;
   public abstract get activeClassifier(): SpatialClassifier | undefined;
   public get isOpaque() { return false; }   /** When referenced as a map layer reference, BIM models are never opaque. */
-}
-
-/** @internal */
-export class ClassifierMapLayerTileTreeReference extends MapLayerTileTreeReference {
-  private _id: ClassifierTreeId;
-  private _owner: TileTreeOwner;
-  public get isPlanar() { return true; }
-  public get activeClassifier() { return this._classifier; }
-  public constructor(layerSettings: MapLayerSettings, private _classifier: SpatialClassifier, layerIndex: number, iModel: IModelConnection, private _source?: DisplayStyleState) {
-    super(layerSettings, layerIndex, iModel);
-    this._id = createClassifierId(_classifier, this._source);
-    this._owner = classifierTreeSupplier.getOwner(this._id, iModel);
-  }
-  public get treeOwner(): TileTreeOwner {
-    const newId = createClassifierId(this._classifier, this._source);
-    if (0 !== compareIds(this._id, newId)) {
-      this._id = newId;
-      this._owner = classifierTreeSupplier.getOwner(this._id, this.iModel);
-    }
-    return this._owner;
-  }
+  public abstract get viewFlags(): Partial<ViewFlagsProperties>;
 }
 
 /** @internal */
@@ -157,6 +137,21 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
   }
   public get isPlanar() { return BatchType.PlanarClassifier === this._id.type; }
 
+  public get viewFlags(): Partial<ViewFlagsProperties> {
+    return {
+      renderMode: RenderMode.SmoothShade,
+      transparency: true,      // Igored for point clouds as they don't support transparency.
+      textures: false,
+      lighting: false,
+      shadows: false,
+      monochrome: false,
+      materials: false,
+      ambientOcclusion: false,
+      visibleEdges: false,
+      hiddenEdges: false,
+    };
+  }
+
   // Add volume classifiers to scene (planar classifiers are added seperately.)
   public override addToScene(context: SceneContext): void {
     if (this.isPlanar)
@@ -183,11 +178,6 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
 /** @internal */
 export function createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTreeReference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference {
   return new ClassifierTreeReference(classifiers, classifiedTree, iModel, source);
-}
-
-/** @internal */
-export function createMapLayerClassifierTileTreeReference(layerSettings: MapLayerSettings, classifier: SpatialClassifier, layerIndex: number, iModel: IModelConnection): ClassifierMapLayerTileTreeReference {
-  return new ClassifierMapLayerTileTreeReference(layerSettings, classifier, layerIndex, iModel);
 }
 
 function createClassifierId(classifier: SpatialClassifier | undefined, source: ViewState | DisplayStyleState | undefined): ClassifierTreeId {

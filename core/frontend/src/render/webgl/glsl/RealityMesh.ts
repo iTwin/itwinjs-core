@@ -122,9 +122,8 @@ function addTextures(builder: ProgramBuilder, maxTexturesPerMesh: number) {
         if (undefined !== textureParam) {
           if (textureParam.isProjected) {
             const modelToTexture = textureParam.matrix.toMatrix4d(scratchMatrix4d1);
-            const modelToEye = Matrix4d.createTransform(params.target.uniforms.frustum.viewMatrix);
-            const eyeToModel = modelToEye.createInverse(scratchMatrix4d2);
-            const eyeToTexture = modelToTexture.multiplyMatrixMatrix(eyeToModel!, scratchMatrix4d3);
+            const eyeToModel = Matrix4d.createTransform(params.target.uniforms.frustum.viewMatrix.inverse()!);
+            const eyeToTexture = modelToTexture.multiplyMatrixMatrix(eyeToModel, scratchMatrix4d3);
             uniform.setMatrix4(Matrix4.fromMatrix4d(eyeToTexture, textureParam.scratchMatrix));
 
           } else

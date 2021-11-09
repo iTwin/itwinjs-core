@@ -386,8 +386,8 @@ export class SceneContext extends RenderContext {
   public addPlanarClassifier(classifiedModelId: Id64String, classifierTree?: SpatialClassifierTileTreeReference, planarClipMask?: PlanarClipMaskState): RenderPlanarClassifier | undefined {
     // Target may have the classifier from a previous frame; if not we must create one.
     let classifier = this.viewport.target.getPlanarClassifier(classifiedModelId);
-    if (undefined === classifier)
-      classifier = this.viewport.target.createPlanarClassifier(classifierTree?.activeClassifier);
+    if (undefined === classifier && undefined !== classifierTree)
+      classifier = this.viewport.target.createPlanarClassifier(classifierTree.activeClassifier);
 
     // Either way, we need to collect the graphics to draw for this frame, and record that we did so.
     if (undefined !== classifier) {

@@ -58,12 +58,12 @@ class AttachMapLayerBaseTool extends Tool {
 
 /** Attach a map layer from URL base class. */
 export class AttachModelMapLayerTool extends Tool {
-  public static override get minArgs() { return 1; }
+  public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 1; }
   public static override toolId = "AttachModelMapLayerTool";
   constructor(protected _formatId: string) { super(); }
 
-  public override async run(name: string): Promise<boolean> {
+  public override async run(nameIn?: string): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (!vp)
       return false;
@@ -72,13 +72,16 @@ export class AttachModelMapLayerTool extends Tool {
     const elements = await iModel.elements.getProps(iModel.selectionSet.elements);
     const modelIds = new Set<Id64String>();
 
-    const expand = 0;
+    const expand = 1;
     const flags = {inside: SpatialClassifierInsideDisplay.ElementColor,  outside: SpatialClassifierOutsideDisplay.Off};
 
     for (const element of elements)
       modelIds.add(element.model);
 
     for (const modelId of modelIds) {
+      const modelProps = await iModel.models.getProps(modelId);
+      const modelName = modelProps[0].name ? modelProps[0].name : modelId;
+      const  name = nameIn ? (modelIds.size > 1 ? `${nameIn}: ${modelName}` : nameIn) : modelName;
       const classifier = { name, expand, modelId, flags };
       vp.displayStyle.attachMapLayerSettings(MapLayerSettings.fromJSON({name, classifier, url: "", formatId: "BIM"}), false);
     }
