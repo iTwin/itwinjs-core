@@ -231,8 +231,7 @@ export function ViewportComponent(props: ViewportProps) {
           currentViewState = viewState;
       } else if (viewDefinitionId && imodel) {
         try {
-          const loadedViewState = await imodel.views.load(viewDefinitionId);
-          currentViewState = loadedViewState?.clone();
+          currentViewState = await imodel.views.load(viewDefinitionId);
           // istanbul ignore next
           if (!currentViewState) {
             Logger.logError("ViewportComponent", `Viewstate failed to load`);
@@ -246,7 +245,7 @@ export function ViewportComponent(props: ViewportProps) {
       }
       // istanbul ignore else
       if (isMounted.current)
-        setInitialViewState(currentViewState);
+        setInitialViewState(currentViewState?.clone());
     }
     if (undefined === initialViewState)
       fetchInitialViewstate(); // eslint-disable-line @typescript-eslint/no-floating-promises
