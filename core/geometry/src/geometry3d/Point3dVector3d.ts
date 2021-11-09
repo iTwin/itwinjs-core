@@ -9,7 +9,7 @@
 import { Geometry } from "../Geometry";
 import { Point4d } from "../geometry4d/Point4d";
 import { Angle } from "./Angle";
-import { Ray3d } from "./Ray3d";
+import type { Ray3d } from "./Ray3d";
 import { HasZ, XAndY, XYAndZ, XYZProps } from "./XYZProps";
 
 /**
@@ -464,8 +464,8 @@ export class Point3d extends XYZ {
    * @param tangentScale scale factor to apply to the startToEnd vector
    * @param result  optional receiver.
    */
-  public interpolatePointAndTangent(fraction: number, other: Point3d, tangentScale: number, result?: Ray3d): Ray3d {
-    result = result ? result : Ray3d.createZero();
+  public interpolatePointAndTangent(fraction: number, other: Point3d, tangentScale: number, result: Ray3d): Ray3d {
+    result = result;
     const dx = other.x - this.x;
     const dy = other.y - this.y;
     const dz = other.z - this.z;

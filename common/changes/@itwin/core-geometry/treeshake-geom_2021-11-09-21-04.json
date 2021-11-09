@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "Out parameter in Point3d.interpolatePointAndTangent is no longer optional.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}
