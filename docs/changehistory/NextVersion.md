@@ -76,13 +76,6 @@ A number of packages have been renamed to use the @itwin scope rather than the @
 | @bentley/rpcinterface-full-stack-tests | @itwin/rpcinterface-full-stack-tests |
 | @bentley/imodelhub-client-tests        | @itwin/imodelhub-client-tests        |
 
-## Build tools changes
-
-- Removed `test` and `test-tsnode` scripts from `@itwin/build-tools`. Please use mocha directly instead.
-- Removed TSLint support from `@itwin/build-tools`. If you're still using it, please switch to ESLint.
-- Removed legacy `.eslintrc.js` file from the same package. Instead, use `@itwin/eslint-plugin` and the `imodeljs-recommended` config included in it.
-- Dropped support for ESLint 6.x.
-
 ## Fresnel effect
 
 [LightSettings]($common) has been enhanced to support a non-realistic Fresnel effect. As simply explained [here](https://www.dorian-iten.com/fresnel/), the effect causes surfaces to reflect more light based on the angle between the viewer's line of sight and the vector between the viewer and a given point on the surface. Use [FresnelSettings]($common) to configure this effect.
@@ -95,7 +88,7 @@ Especially when combined with ambient occlusion, this effect can produce non-rea
 
 The following code applies a display style similar to those illustrated above to a [Viewport]($frontend):
 
-```
+```ts
   // Enable ambient occlusion.
   viewport.viewFlags = viewport.viewFlags.with("ambientOcclusion", true);
 
@@ -164,6 +157,10 @@ requestContext.enter();
 you can simply delete it.
 
 This change mostly affects backend code. For backend [RPC]($docs/learning/RpcInterface.md) implementations, all *unhandled* exceptions will automatically be logged along the appropriate RPC metadata. For this reason, it often preferable to throw an exception rather than logging an error and returning a status in code that may or may not be called from RPC.
+
+## Moved utility types
+
+The [AsyncFunction]($core-bentley), [AsyncMethodsOf]($core-bentley), and [PromiseReturnType]($core-bentley) types have moved to the @itwin/core-bentley package. The ones in @itwin/core-frontend have been deprecated.
 
 ## Viewport.zoomToElements improvements
 
@@ -519,10 +516,6 @@ Likewise if you are reading a [BackgroundMapSettings]($common) directly from a p
 
 [DisplayStyleSettings.onBackgroundMapChanged]($common) will no longer be raised when changing the imagery provider. Use [DisplayStyleSettings.onMapImageryChanged]($common) instead.
 
-## Moved utility types
-
-The [AsyncFunction]($core-bentley), [AsyncMethodsOf]($core-bentley), and [PromiseReturnType]($core-bentley) types have moved to the @itwin/core-bentley package. The ones in @itwin/core-frontend have been deprecated.
-
 ## Removed default API keys
 
 Previous versions of `@itwin/core-frontend` included API keys for Bing Maps, MapBox Imagery, and Cesium ION that would be used for _all_ iTwin.js applications. These common keys are no longer supported and will soon be disabled. All applications will now need to provide their own keys.
@@ -591,6 +584,12 @@ The signatures to several methods in [BriefcaseManager]($backend) and [Briefcase
 | `BriefcaseManager.acquireNewBriefcaseId` | [IModelIdArg]($backend)                               |                                  |
 | `BriefcaseManager.downloadBriefcase`     | [RequestNewBriefcaseArg]($backend)                    |                                  |
 | `IModelDb.importSchemas`                 | `LocalFileName[]`                                     | `requestContext` removed         |
+
+## Deprecation of the Settings on iModelApp
+
+The previous `IModelApp.settings` API has been removed in favor of [IModelApp.userPreferences]($frontend). THe updates API will provide a clear distinction between the "settings" within the control of the user (user preferences) and which are within control of the admin of an iModel/iTwin (Workspaces). The separation is intended to make it clear who is capability of modifying and overriding a given setting while making the API easier to use.
+
+The new [UserPreferencesAccess]($frontend) interface is a simply, easy-to-use API that can be implemented in many different ways. The `core-frontend` package does not dictate an implementation and could easily be setup using Local Storage (via [Storage APIs](https://developer.mozilla.org/en-US/docs/Web/API/Storage)) or by a cloud-hosted storage mechanism to share across user sessions.
 
 ## `Tool.run` and `Tool.parseAndRun` are now async
 
@@ -815,15 +814,16 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | `FeatureOverrideType`                         | [FeatureOverrideType]($common)                                     |
 | `FeatureSymbology.Appearance`                 | [FeatureAppearance]($common)                                       |
 | `FeatureSymbology.AppearanceProps`            | [FeatureAppearanceProps]($common)                                  |
-| `findAvailableRealityModels`                  | `queryRealityData`                                                 |
-| `findAvailableUnattachedRealityModels`        | `queryRealityData`                                                 |
-| `IModelApp.iModelClient`                      | `IModelHubFrontend.iModelClient`                                   |
+| `findAvailableRealityModels`                  | `queryRealityData` in `@itwin/reality-data-client`                 |
+| `findAvailableUnattachedRealityModels`        | `queryRealityData` in `@itwin/reality-data-client`                 |
+| `IModelApp.iModelClient`                      | [IModelApp.hubAccess]($frontend)                                   |
+| `IModelApp.settings`                          | [IModelApp.userPreferences]($frontend)                             |
 | `IModelConnection.Models.loaded`              | use `for..of` to iterate and `getLoaded` to look up by Id          |
 | `IModelConnection.Views.saveThumbnail`        | use IPC and `IModelDb.saveThumbnail`                               |
-| `IOidcFrontendClient`                         | `FrontendAuthorizationClient`                                      |
-| `isIOidcFrontendClient`                       | `FrontendAuthorizationClient`                                      |
-| `OidcBrowserClient`                           | `BrowserAuthorizationClient`                                       |
-| `OidcFrontendClientConfiguration`             | `BrowserAuthorizationClientConfiguration`                          |
+| `IOidcFrontendClient`                         | *eliminated*                                                       |
+| `isIOidcFrontendClient`                       | *eliminated*                                                       |
+| `OidcBrowserClient`                           | `BrowserAuthorizationClient` in `@itwin/browser-authorization`     |
+| `OidcFrontendClientConfiguration`             | `BrowserAuthorizationClientConfiguration` in `@itwin/browser-authorization` |
 | `QuantityFormatter.onActiveUnitSystemChanged` | [QuantityFormatter.onActiveFormattingUnitSystemChanged]($frontend) |
 | `QuantityFormatter.useImperialFormats`        | [QuantityFormatter.setActiveUnitSystem]($frontend)                 |
 | `RemoteBriefcaseConnection`                   | `CheckpointConnection`                                             |
@@ -1360,7 +1360,7 @@ The cli tool has been deprecated due to an impending change of Extensions and th
 
 ## @bentley/config-loader
 
-The loader has been deprecated due to a preference for using the dotenv package instead. Any workflows using .env files will not be affected.
+The loader has been deprecated due to a preference for using the dotenv package instead. Any workflows using `.env` files will not be affected.
 
 ## @itwin/core-geometry
 
@@ -1502,11 +1502,7 @@ await IModelApp.startup({ localization: new ITwinLocalization(localizationOption
 
 In previous versions, the [Tool.register]($frontend) method took an optional argument to supply the localization object. Since it always existed on `IModelApp`, that argument served no purpose and is now removed. If you previously passed it, simply remove it.
 
-## Improve/Enhance particle systems
-
-Improvements were made to the performance of [ParticleCollectionBuilder]($frontend) and an optional rotationMatrix was added to [ParticleProps]($frontend) so that particles can be rotated.
-
-## Buildology
+## Buildology Updates
 
 `@itwin/build-tools` has bumped the [Typescript compilation target](https://www.typescriptlang.org/tsconfig#target) from [ES2017](https://262.ecma-international.org/8.0/) to [ES2019](https://262.ecma-international.org/10.0/).
 
@@ -1515,3 +1511,10 @@ All packages will continue to build a CommonJS variant, but will now deliver it 
 If you were previously importing directly from the `lib` directory (e.g. `import { ElectronHost } from "@itwin/core-electron/lib/ElectronBackend";`), you will need to update your code to import from the new directory, `lib/cjs`, (e.g. `import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";`).
 
 This also affects how you will import `*.scss` from the ui packages. If you were previously importing scss from the `lib` directory (e.g. `@import "~@itwin/ui-pkg/lib/ui-pkg/...";`), you will need to update your code to import from the new directory, `lib/esm`, (e.g. `@import "~@itwin/ui-pkg/lib/esm/ui-pkg/...";`).
+
+### Updates to @bentley/build-tools
+
+- Removed `test` and `test-tsnode` scripts from `@itwin/build-tools`. Please use mocha directly instead.
+- Removed TSLint support from `@itwin/build-tools`. If you're still using it, please switch to ESLint.
+- Removed legacy `.eslintrc.js` file from the same package. Instead, use `@itwin/eslint-plugin` and the `imodeljs-recommended` config included in it.
+- Dropped support for ESLint 6.x.
