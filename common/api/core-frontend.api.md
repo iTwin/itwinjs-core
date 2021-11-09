@@ -11724,6 +11724,7 @@ export interface ViewCreator3dOptions {
     skyboxOn?: boolean;
     standardViewId?: StandardViewId;
     useSeedView?: boolean;
+    useV2Stylings?: boolean;
     vpAspect?: number;
 }
 
