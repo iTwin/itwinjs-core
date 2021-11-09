@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/webgl-compatibility",
-      "comment": "Update workaround for Intel driver bug.",
+      "comment": "Update work-around for Intel driver bug.",
       "type": "none"
     }
   ],
