@@ -38,6 +38,8 @@ export interface ViewCreator3dOptions {
   useSeedView?: boolean;
   /** Aspect ratio of [[Viewport]]. Required to fit contents of the model(s) in the initial state of the view. */
   vpAspect?: number;
+  /** Use the old, dimmer stylings when generating view. */
+  useV2Stylings?: boolean;
 }
 
 /**
@@ -140,6 +142,7 @@ export class ViewCreator3d {
 
     const cameraData = new Camera();
     const cameraOn = options?.cameraOn ? options.cameraOn : false;
+    const useLighting = options?.useV2Stylings ? options.useV2Stylings : true;
     const viewDefinitionProps: ViewDefinition3dProps = {
       categorySelectorId: "",
       displayStyleId: "",
@@ -172,6 +175,13 @@ export class ViewCreator3d {
             visEdges: false,
             backgroundMap: this._imodel.isGeoLocated,
           },
+          lights: useLighting ? {
+            solar: { intensity: 0 },
+            portrait: { intensity: 0 },
+            ambient: { intensity: 0.55 },
+            fresnel: { intensity: 0.8, invert: true },
+            specularIntensity: 0,
+          } : undefined,
           environment:
             options !== undefined &&
               options.skyboxOn !== undefined &&
