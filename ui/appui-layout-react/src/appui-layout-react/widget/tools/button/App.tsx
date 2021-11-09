@@ -13,7 +13,6 @@ import { NoChildrenProps, OmitChildrenProp } from "@itwin/core-react";
 import { ToolbarIcon, ToolbarIconProps } from "./Icon";
 
 /** Properties of [[BackButton]] component.
- * @deprecated Use [BackstageAppButtonProps]($appui-react) instead
  * @internal
  */
 export interface AppButtonProps extends OmitChildrenProp<ToolbarIconProps>, NoChildrenProps {
@@ -25,7 +24,6 @@ export interface AppButtonProps extends OmitChildrenProp<ToolbarIconProps>, NoCh
 
 /** App button which displays icon. Used in [[Toolbar]] component.
  * @note See basic button: [[ToolbarButton]]
- * @deprecated Use [BackstageAppButton]($appui-react) instead
  * @internal
  */
 export class AppButton extends React.PureComponent<AppButtonProps> {
