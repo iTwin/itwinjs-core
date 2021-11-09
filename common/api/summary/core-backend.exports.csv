@@ -72,7 +72,6 @@ public;class Document
 public;DocumentListModel 
 public;DocumentPartition 
 internal;DownloadJob
-public;DownloadProgress = (loaded: number, total: number) => number
 internal;DownloadRequest
 internal;Downloads
 public;Drawing 

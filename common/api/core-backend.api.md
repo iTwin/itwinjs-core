@@ -1060,9 +1060,6 @@ export interface DownloadJob {
     request: DownloadRequest;
 }
 
-// @public
-export type DownloadProgress = (loaded: number, total: number) => number;
-
 // @internal
 export interface DownloadRequest {
     readonly aliasFiles?: ReadonlyArray<string>;
