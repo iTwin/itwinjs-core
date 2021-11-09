@@ -897,8 +897,6 @@ export const enum FragmentShaderComponent {
  * @internal
  */
 export class FragmentShaderBuilder extends ShaderBuilder {
-  public requiresEarlyZWorkaround = false;
-
   public constructor(flags: ShaderBuilderFlags) {
     super(FragmentShaderComponent.COUNT, flags);
 
@@ -1063,11 +1061,6 @@ export class FragmentShaderBuilder extends ShaderBuilder {
       main.addline("  assignFragData(baseColor);");
     }
 
-    if (this.requiresEarlyZWorkaround) {
-      // Add a conditional discard that never executes to force buggy Intel driver to skip early Z despite our fragment shader writing depth.
-      main.addline("if (v_eyeSpace.z == 9999999.0) discard;");
-    }
-
     prelude.addMain(main.source);
     return prelude.source;
   }
@@ -1078,7 +1071,6 @@ export class FragmentShaderBuilder extends ShaderBuilder {
 
   public copyFrom(src: FragmentShaderBuilder): void {
     this.copyCommon(src);
-    this.requiresEarlyZWorkaround = src.requiresEarlyZWorkaround;
   }
 }
 
