@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Support for TypeDoc v0.22.7. Fix various broken docs links.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}
