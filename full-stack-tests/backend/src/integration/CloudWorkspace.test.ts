@@ -31,7 +31,7 @@ describe("Cloud workspace containers", () => {
 
     const testContainerName = "test-container";
     const ws1 = new EditableWorkspaceFile(testContainerName, workspace);
-    const dbName = ws1.localDbName;
+    const dbName = ws1.localFile;
     if (IModelJsFs.existsSync(dbName))
       IModelJsFs.unlinkSync(dbName);
 

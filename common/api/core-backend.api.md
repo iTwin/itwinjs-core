@@ -700,10 +700,14 @@ export namespace CloudSqlite {
     // (undocumented)
     export interface DbProps {
         // (undocumented)
-        localDbName: LocalFileName;
+        dbAlias: DbAlias;
         // (undocumented)
-        versionName: DbAlias;
+        localFile: LocalFileName;
     }
+    // (undocumented)
+    export type DownloadProps = AccessProps & {
+        onProgress?: (loaded: number, total: number) => number;
+    };
     // (undocumented)
     export type Logger = (stream: NodeJS.ReadableStream) => void;
     // (undocumented)
@@ -722,9 +726,9 @@ export class CloudSqlite {
     // (undocumented)
     static create(props: CloudSqlite.AccessProps): Promise<void>;
     // (undocumented)
-    static deleteDb(wsFile: CloudSqlite.DbProps, props: CloudSqlite.AccessProps): Promise<void>;
+    static deleteDb(db: CloudSqlite.DbProps, props: CloudSqlite.AccessProps): Promise<void>;
     // (undocumented)
-    static downloadDb(wsFile: CloudSqlite.DbProps, props: CloudSqlite.AccessProps): Promise<void>;
+    static downloadDb(db: CloudSqlite.DbProps, props: CloudSqlite.DownloadProps): Promise<void>;
     // (undocumented)
     static get isRunning(): boolean;
     // (undocumented)
@@ -732,7 +736,7 @@ export class CloudSqlite {
     // (undocumented)
     static stopProcess(): void;
     // (undocumented)
-    static uploadDb(wsFile: CloudSqlite.DbProps, props: CloudSqlite.AccessProps): Promise<void>;
+    static uploadDb(db: CloudSqlite.DbProps, props: CloudSqlite.AccessProps): Promise<void>;
 }
 
 // @beta (undocumented)
@@ -1055,6 +1059,9 @@ export interface DownloadJob {
     // (undocumented)
     request: DownloadRequest;
 }
+
+// @public
+export type DownloadProgress = (loaded: number, total: number) => number;
 
 // @internal
 export interface DownloadRequest {
@@ -2741,7 +2748,7 @@ export class ITwinWorkspace implements Workspace {
     // (undocumented)
     readonly filesDir: LocalDirName;
     // (undocumented)
-    getContainer(props: WorkspaceContainerProps, cloudProps?: CloudSqlite.AccessProps): Promise<WorkspaceContainer>;
+    getContainer(props: WorkspaceContainerProps, cloudProps?: CloudSqlite.DownloadProps): Promise<WorkspaceContainer>;
     // (undocumented)
     loadSettingsDictionary(settingRsc: WorkspaceResourceProps, priority: SettingsPriority): Promise<void>;
     // (undocumented)
@@ -4437,11 +4444,11 @@ export interface Workspace {
 export interface WorkspaceContainer {
     readonly containerFilesDir: LocalDirName;
     readonly containerId: WorkspaceContainerId;
+    readonly dbAlias: WorkspaceContainerVersion;
     getBlob(rscName: WorkspaceResourceName): Uint8Array | undefined;
     getFile(rscName: WorkspaceResourceName, targetFileName?: LocalFileName): LocalFileName | undefined;
     getString(rscName: WorkspaceResourceName): string | undefined;
     readonly onContainerClosed: BeEvent<() => void>;
-    readonly versionName: WorkspaceContainerVersion;
     readonly workspace: Workspace;
 }
 
@@ -4471,6 +4478,8 @@ export class WorkspaceFile implements WorkspaceContainer {
     // (undocumented)
     protected readonly db: SQLiteDb;
     // (undocumented)
+    dbAlias: WorkspaceContainerVersion;
+    // (undocumented)
     getBlob(rscName: WorkspaceResourceName): Uint8Array | undefined;
     // (undocumented)
     getFile(rscName: WorkspaceResourceName, targetFileName?: LocalFileName): LocalFileName | undefined;
@@ -4479,7 +4488,7 @@ export class WorkspaceFile implements WorkspaceContainer {
     // (undocumented)
     get isOpen(): boolean;
     // (undocumented)
-    localDbName: LocalFileName;
+    localFile: LocalFileName;
     // (undocumented)
     protected static noLeadingOrTrailingSpaces(name: string, msg: string): void;
     // (undocumented)
@@ -4493,8 +4502,6 @@ export class WorkspaceFile implements WorkspaceContainer {
         localFileName: string;
         info: import("@bentley/imodeljs-native").IModelJsNative.EmbedFileQuery;
     } | undefined;
-    // (undocumented)
-    versionName: WorkspaceContainerVersion;
     // (undocumented)
     readonly workspace: Workspace;
 }

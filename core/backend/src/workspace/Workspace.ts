@@ -54,7 +54,7 @@ export type WorkspaceContainerName = string;
 export type WorkspaceContainerId = string;
 
 /**
- * The version name for a WorkpsaceContainer. More than one version of a Workspace may be stored in the same [[CloudSqlite]] container. This
+ * The version name for a WorkspaceContainer. More than one version of a Workspace may be stored in the same [[CloudSqlite]] container. This
  * string identifies a specific version.
  * @beta
  */
@@ -99,7 +99,7 @@ export interface WorkspaceContainer {
   /** The WorkspaceContainerId of this container. */
   readonly containerId: WorkspaceContainerId;
   /** The version alias for this container. */
-  readonly versionName: WorkspaceContainerVersion;
+  readonly dbAlias: WorkspaceContainerVersion;
   /** The Workspace that opened this WorkspaceContainer */
   readonly workspace: Workspace;
   /** the directory for extracting file resources. */
@@ -201,7 +201,7 @@ export class ITwinWorkspace implements Workspace {
     this._containers.set(container.containerId, container);
   }
 
-  public async getContainer(props: WorkspaceContainerProps, cloudProps?: CloudSqlite.AccessProps): Promise<WorkspaceContainer> {
+  public async getContainer(props: WorkspaceContainerProps, cloudProps?: CloudSqlite.DownloadProps): Promise<WorkspaceContainer> {
     const id = this.resolveContainerId(props);
     if (undefined === id)
       throw new Error(`can't resolve container name [${props}]`);
@@ -264,8 +264,8 @@ export class WorkspaceFile implements WorkspaceContainer {
   protected readonly db = new SQLiteDb(); // eslint-disable-line @typescript-eslint/naming-convention
   public readonly workspace: Workspace;
   public readonly containerId: WorkspaceContainerId;
-  public localDbName: LocalFileName;
-  public versionName: WorkspaceContainerVersion;
+  public localFile: LocalFileName;
+  public dbAlias: WorkspaceContainerVersion;
   public readonly onContainerClosed = new BeEvent<() => void>();
 
   public get containerFilesDir() { return join(this.workspace.filesDir, this.containerId); }
@@ -295,12 +295,12 @@ export class WorkspaceFile implements WorkspaceContainer {
   }
 
   public constructor(containerId: WorkspaceContainerId, workspace: Workspace) {
-    [containerId, this.versionName] = containerId.split("#", 2);
+    [containerId, this.dbAlias] = containerId.split("#", 2);
     WorkspaceFile.validateContainerId(containerId);
     this.workspace = workspace;
     this.containerId = containerId;
-    this.versionName = this.versionName ?? "v0";
-    this.localDbName = join(workspace.containerDir, `${this.containerId}.${containerFileExt}`);
+    this.dbAlias = this.dbAlias ?? "v0";
+    this.localFile = join(workspace.containerDir, `${this.containerId}.${containerFileExt}`);
     workspace.addContainer(this);
   }
 
@@ -309,7 +309,7 @@ export class WorkspaceFile implements WorkspaceContainer {
   }
 
   public open(): void {
-    this.db.openDb(this.localDbName, OpenMode.Readonly);
+    this.db.openDb(this.localFile, OpenMode.Readonly);
   }
 
   public close(): void {
@@ -382,13 +382,13 @@ export class EditableWorkspaceFile extends WorkspaceFile {
   }
 
   public async openCloudDb(props: CloudSqlite.AccessProps) {
-    this.localDbName = await CloudSqlite.attach(this.versionName, props);
-    this.db.openDb(this.localDbName, OpenMode.ReadWrite);
+    this.localFile = await CloudSqlite.attach(this.dbAlias, props);
+    this.db.openDb(this.localFile, OpenMode.ReadWrite);
     this._isCloudOpen = true;
   }
 
   public override open() {
-    this.db.openDb(this.localDbName, OpenMode.ReadWrite);
+    this.db.openDb(this.localFile, OpenMode.ReadWrite);
   }
 
   public override close() {
@@ -416,8 +416,8 @@ export class EditableWorkspaceFile extends WorkspaceFile {
 
   /** Create a new, empty, EditableWorkspaceFile for importing Workspace resources. */
   public async create(cloudProps?: CloudSqlite.AccessProps) {
-    IModelJsFs.recursiveMkDirSync(dirname(this.localDbName));
-    this.db.createDb(this.localDbName);
+    IModelJsFs.recursiveMkDirSync(dirname(this.localFile));
+    this.db.createDb(this.localFile);
     this.db.executeSQL("CREATE TABLE strings(id TEXT PRIMARY KEY NOT NULL,value TEXT)");
     this.db.executeSQL("CREATE TABLE blobs(id TEXT PRIMARY KEY NOT NULL,value BLOB)");
     this.db.saveChanges();

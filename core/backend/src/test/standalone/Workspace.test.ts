@@ -22,8 +22,8 @@ describe("WorkspaceFile", () => {
   async function makeContainer(id: WorkspaceContainerId) {
     const wsFile = new EditableWorkspaceFile(id, workspace);
     IModelJsFs.purgeDirSync(wsFile.containerFilesDir);
-    if (IModelJsFs.existsSync(wsFile.localDbName))
-      IModelJsFs.unlinkSync(wsFile.localDbName);
+    if (IModelJsFs.existsSync(wsFile.localFile))
+      IModelJsFs.unlinkSync(wsFile.localFile);
     await wsFile.create();
     return wsFile;
   }
@@ -115,14 +115,14 @@ describe("WorkspaceFile", () => {
   it("resolve workspace alias", async () => {
     const settingsFile = IModelTestUtils.resolveAssetFile("test.setting.json5");
     const defaultContainer = await makeContainer("defaults");
-    expect(defaultContainer.versionName).equals("v0");
+    expect(defaultContainer.dbAlias).equals("v0");
     defaultContainer.addString("default-settings", fs.readFileSync(settingsFile, "utf-8"));
     defaultContainer.close();
 
     const schemaFile = IModelTestUtils.resolveAssetFile("TestSettings.schema.json");
     const fontsContainer = await makeContainer("fonts-01#v23");
     expect(fontsContainer.containerId).equals("fonts-01");
-    expect(fontsContainer.versionName).equals("v23");
+    expect(fontsContainer.dbAlias).equals("v23");
 
     fontsContainer.addFile("Helvetica.ttf", schemaFile, "ttf");
     fontsContainer.close();

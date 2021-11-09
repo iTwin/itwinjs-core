@@ -7,8 +7,8 @@
  */
 
 import { BlobCacheProps, BlobContainerProps, BlobDaemon, BlobDaemonCommandArg, DaemonProps } from "@bentley/imodeljs-native";
+import { DbResult } from "@itwin/core-bentley";
 import { LocalFileName } from "@itwin/core-common";
-import { BeDuration, DbResult } from "@itwin/core-bentley";
 import { ChildProcess } from "child_process";
 import { IModelHost } from "../IModelHost";
 
@@ -18,12 +18,10 @@ export namespace CloudSqlite {
   export type AccountProps = BlobCacheProps;
   export type ContainerProps = BlobContainerProps;
   export type AccessProps = AccountProps & ContainerProps;
+  export type DownloadProps = AccessProps & { onProgress?: (loaded: number, total: number) => number };
   export type Logger = (stream: NodeJS.ReadableStream) => void;
   export type ProcessProps = DaemonProps & AccountProps & { stdoutLogger?: Logger, stderrLogger?: Logger };
-  export interface DbProps {
-    localDbName: LocalFileName;
-    versionName: DbAlias;
-  }
+  export interface DbProps { dbAlias: DbAlias, localFile: LocalFileName }
 }
 
 /** @beta */
@@ -46,7 +44,6 @@ export class CloudSqlite {
       return;
 
     this.cloudProcess = BlobDaemon.start(props);
-    await BeDuration.fromSeconds(1).wait();
     // set up a listener to kill the containerProcess when we shut down
     this.removeShutdownListener = IModelHost.onBeforeShutdown.addOnce(() => this.killProcess());
   }
@@ -90,10 +87,29 @@ export class CloudSqlite {
       throw new Error(`Cannot create container: ${stat.errMsg}`);
   }
 
-  public static async downloadDb(wsFile: CloudSqlite.DbProps, props: CloudSqlite.AccessProps) {
-    const stat = await BlobDaemon.command("download", { localFile: wsFile.localDbName, dbAlias: wsFile.versionName, ...props });
-    if (stat.result !== DbResult.BE_SQLITE_OK)
-      throw new Error(`Cannot download db: ${stat.errMsg}`);
+  public static async downloadDb(db: CloudSqlite.DbProps, props: CloudSqlite.DownloadProps) {
+    const downloader = new IModelHost.platform.DownloadV2Checkpoint({ ...db, ...props });
+
+    let timer: NodeJS.Timeout | undefined;
+    try {
+      let total = 0;
+      const onProgress = props.onProgress;
+      if (onProgress) {
+        timer = setInterval(async () => { // set an interval timer to show progress every 250ms
+          const progress = downloader.getProgress();
+          total = progress.total;
+          if (onProgress(progress.loaded, progress.total))
+            downloader.cancelDownload();
+        }, 250);
+      }
+      await downloader.downloadPromise;
+      onProgress?.(total, total); // make sure we call progress func one last time when download completes
+    } catch (err: any) {
+      throw (err.message === "cancelled") ? new Error("download cancelled") : err;
+    } finally {
+      if (timer)
+        clearInterval(timer);
+    }
   }
 
   public static async copyDb(oldVersion: string, newVersion: string, props: CloudSqlite.AccessProps) {
@@ -102,14 +118,14 @@ export class CloudSqlite {
       throw new Error(`Cannot copy db: ${stat.errMsg}`);
   }
 
-  public static async uploadDb(wsFile: CloudSqlite.DbProps, props: CloudSqlite.AccessProps) {
-    const stat = await BlobDaemon.command("upload", { localFile: wsFile.localDbName, dbAlias: wsFile.versionName, ...props });
+  public static async uploadDb(db: CloudSqlite.DbProps, props: CloudSqlite.AccessProps) {
+    const stat = await BlobDaemon.command("upload", { ...db, ...props });
     if (stat.result !== DbResult.BE_SQLITE_OK)
       throw new Error(`Cannot upload db: ${stat.errMsg}`);
   }
 
-  public static async deleteDb(wsFile: CloudSqlite.DbProps, props: CloudSqlite.AccessProps) {
-    const stat = await BlobDaemon.command("delete", { dbAlias: wsFile.versionName, ...props });
+  public static async deleteDb(db: CloudSqlite.DbProps, props: CloudSqlite.AccessProps) {
+    const stat = await BlobDaemon.command("delete", { ...db, ...props });
     if (stat.result !== DbResult.BE_SQLITE_OK)
       throw new Error(`Cannot delete db: ${stat.errMsg}`);
   }
