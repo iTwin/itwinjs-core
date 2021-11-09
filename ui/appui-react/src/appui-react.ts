@@ -360,6 +360,10 @@ export * from "./appui-react/zones/ZoneDef";
  * Classes for working with various pickers
  */
 /**
+ * @docs-group-description Popup
+ * Classes for working with popup components
+ */
+/**
  * @docs-group-description State
  * Classes for maintaining state
  */
