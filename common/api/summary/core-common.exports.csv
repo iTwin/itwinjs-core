@@ -153,6 +153,7 @@ internal;DbResponseKind
 internal;DbResponseStatus
 beta;DbRuntimeStats
 internal;DecorationGeometryProps
+beta;DefaultSupportedTypes
 internal;defaultTileOptions: TileOptions
 public;DefinitionElementProps 
 public;DeletedElementGeometryChange
@@ -522,6 +523,8 @@ beta;QueryValueType = any
 public;Rank
 internal;ReadableFormData 
 internal;readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription
+beta;RealityData
+beta;RealityDataAccess
 alpha;RealityDataFormat
 alpha;RealityDataProvider
 alpha;RealityDataSourceKey
