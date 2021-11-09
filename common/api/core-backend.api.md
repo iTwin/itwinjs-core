@@ -700,9 +700,9 @@ export namespace CloudSqlite {
     // (undocumented)
     export interface DbProps {
         // (undocumented)
-        dbAlias: DbAlias;
-        // (undocumented)
         localDbName: LocalFileName;
+        // (undocumented)
+        versionName: DbAlias;
     }
     // (undocumented)
     export type Logger = (stream: NodeJS.ReadableStream) => void;
@@ -722,11 +722,13 @@ export class CloudSqlite {
     // (undocumented)
     static create(props: CloudSqlite.AccessProps): Promise<void>;
     // (undocumented)
+    static deleteDb(wsFile: CloudSqlite.DbProps, props: CloudSqlite.AccessProps): Promise<void>;
+    // (undocumented)
     static downloadDb(wsFile: CloudSqlite.DbProps, props: CloudSqlite.AccessProps): Promise<void>;
     // (undocumented)
     static get isRunning(): boolean;
     // (undocumented)
-    static startProcess(props: CloudSqlite.ProcessProps): void;
+    static startProcess(props: CloudSqlite.ProcessProps): Promise<void>;
     // (undocumented)
     static stopProcess(): void;
     // (undocumented)
@@ -1340,7 +1342,11 @@ export class EditableWorkspaceFile extends WorkspaceFile {
     addString(rscName: WorkspaceResourceName, val: string): void;
     // (undocumented)
     static cloneVersion(oldVersion: WorkspaceContainerVersion, newVersion: WorkspaceContainerVersion, cloudProps: CloudSqlite.AccessProps): Promise<void>;
+    // (undocumented)
+    close(): void;
     create(cloudProps?: CloudSqlite.AccessProps): Promise<void>;
+    // (undocumented)
+    open(): void;
     // (undocumented)
     openCloudDb(props: CloudSqlite.AccessProps): Promise<void>;
     removeBlob(rscName: WorkspaceResourceName): void;
@@ -4431,11 +4437,11 @@ export interface Workspace {
 export interface WorkspaceContainer {
     readonly containerFilesDir: LocalDirName;
     readonly containerId: WorkspaceContainerId;
-    readonly dbAlias: WorkspaceContainerVersion;
     getBlob(rscName: WorkspaceResourceName): Uint8Array | undefined;
     getFile(rscName: WorkspaceResourceName, targetFileName?: LocalFileName): LocalFileName | undefined;
     getString(rscName: WorkspaceResourceName): string | undefined;
     readonly onContainerClosed: BeEvent<() => void>;
+    readonly versionName: WorkspaceContainerVersion;
     readonly workspace: Workspace;
 }
 
@@ -4465,8 +4471,6 @@ export class WorkspaceFile implements WorkspaceContainer {
     // (undocumented)
     protected readonly db: SQLiteDb;
     // (undocumented)
-    dbAlias: WorkspaceContainerVersion;
-    // (undocumented)
     getBlob(rscName: WorkspaceResourceName): Uint8Array | undefined;
     // (undocumented)
     getFile(rscName: WorkspaceResourceName, targetFileName?: LocalFileName): LocalFileName | undefined;
@@ -4489,6 +4493,8 @@ export class WorkspaceFile implements WorkspaceContainer {
         localFileName: string;
         info: import("@bentley/imodeljs-native").IModelJsNative.EmbedFileQuery;
     } | undefined;
+    // (undocumented)
+    versionName: WorkspaceContainerVersion;
     // (undocumented)
     readonly workspace: Workspace;
 }

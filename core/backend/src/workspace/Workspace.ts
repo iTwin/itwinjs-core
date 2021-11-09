@@ -393,7 +393,7 @@ export class EditableWorkspaceFile extends WorkspaceFile {
 
   public override close() {
     if (this._isCloudOpen) {
-      this.db.nativeDb.flushCloudUpload();
+      //  this.db.nativeDb.flushCloudUpload(); TODO: add back when available
       this._isCloudOpen = false;
     }
     super.close();
