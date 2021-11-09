@@ -7,8 +7,8 @@
  */
 
 import { BlobCacheProps, BlobContainerProps, BlobDaemon, BlobDaemonCommandArg, DaemonProps } from "@bentley/imodeljs-native";
-import { DbResult } from "@itwin/core-bentley";
-import { LocalFileName } from "@itwin/core-common";
+import { BriefcaseStatus, DbResult } from "@itwin/core-bentley";
+import { IModelError, LocalFileName } from "@itwin/core-common";
 import { ChildProcess } from "child_process";
 import { IModelHost } from "../IModelHost";
 
@@ -44,9 +44,11 @@ export class CloudSqlite {
       return;
 
     this.cloudProcess = BlobDaemon.start(props);
+
     // set up a listener to kill the containerProcess when we shut down
     this.removeShutdownListener = IModelHost.onBeforeShutdown.addOnce(() => this.killProcess());
   }
+
   public static stopProcess() {
     if (this.removeShutdownListener) {
       this.removeShutdownListener();
@@ -105,7 +107,7 @@ export class CloudSqlite {
       await downloader.downloadPromise;
       onProgress?.(total, total); // make sure we call progress func one last time when download completes
     } catch (err: any) {
-      throw (err.message === "cancelled") ? new Error("download cancelled") : err;
+      throw (err.message === "cancelled") ? new IModelError(BriefcaseStatus.DownloadCancelled, "download cancelled") : err;
     } finally {
       if (timer)
         clearInterval(timer);
