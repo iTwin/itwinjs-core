@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Added lighting to ViewCreator3d default display style",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
