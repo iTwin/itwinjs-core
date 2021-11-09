@@ -6,17 +6,15 @@
  * @module UiSettings
  */
 
-import { UiSettingsResult, UiSettingsStatus, UiSettingsStorage } from "./UiSettingsStorage";
-
 /**
  * Implementation of [[UiSettings]] using Window.sessionStorage.
  * @public
  */
-export class SessionSettingsStorage implements UiSettingsStorage { // eslint-disable-line deprecation/deprecation
+export class SessionSettingsStorage implements UiSettingsStorage {
 
   constructor(public w: Window = window) { }
 
-  public async getSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult> { // eslint-disable-line deprecation/deprecation
+  public async getSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult> {
     const setting = this.w.sessionStorage.getItem(`${settingNamespace}.${settingName}`);
     if (setting !== null)
       return { status: UiSettingsStatus.Success, setting: JSON.parse(setting) };
@@ -24,12 +22,12 @@ export class SessionSettingsStorage implements UiSettingsStorage { // eslint-dis
       return { status: UiSettingsStatus.NotFound };
   }
 
-  public async saveSetting(settingNamespace: string, settingName: string, setting: any): Promise<UiSettingsResult> { // eslint-disable-line deprecation/deprecation
+  public async saveSetting(settingNamespace: string, settingName: string, setting: any): Promise<UiSettingsResult> {
     this.w.sessionStorage.setItem(`${settingNamespace}.${settingName}`, JSON.stringify(setting));
     return { status: UiSettingsStatus.Success };
   }
 
-  public async deleteSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult> { // eslint-disable-line deprecation/deprecation
+  public async deleteSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult> {
     const name = `${settingNamespace}.${settingName}`;
     const setting = this.w.sessionStorage.getItem(name);
     if (setting === null)
@@ -46,12 +44,4 @@ export class SessionSettingsStorage implements UiSettingsStorage { // eslint-dis
     return true;
   }
 
-}
-
-/** Alias for [[SessionSettingsStorage]]
- * @beta
- * @deprecated use [SessionSettingsStorage]($core-react) instead
- */
-export class SessionUiSettings extends SessionSettingsStorage {
-  constructor(w: Window = window) { super(w); }
 }
