@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "@itwin/core-bentley";
 import { Box, Cone, Point3d, Range3d, Sphere, Transform } from "@itwin/core-geometry";
-import { ColorDef, RenderMode } from "@itwin/core-common";
+import { ColorDef, RenderMode, SkyBox } from "@itwin/core-common";
 import { DecorateContext, GraphicBranch, GraphicBuilder, GraphicType, IModelApp, IModelConnection, StandardViewId, Viewport } from "@itwin/core-frontend";
 import { Viewer } from "./Viewer";
 
@@ -90,12 +90,9 @@ export function openDecorationGeometryExample(viewer: Viewer): void {
     backgroundMap: true,
   });
 
-  viewer.viewport.view.getDisplayStyle3d().settings.environment = {
-    sky: {
-      display: true,
-      twoColor: true,
-      nadirColor: 0xdfefff,
-      zenithColor: 0xffefdf,
-    },
-  };
+  const settings = viewer.viewport.view.getDisplayStyle3d().settings;
+  settings.environment = settings.environment.clone({
+    displaySky: true,
+    sky: SkyBox.fromJSON({ twoColor: true, nadirColor: 0xdfefff, zenithColor: 0xffefdf }),
+  });
 }

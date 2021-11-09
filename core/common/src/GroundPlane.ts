@@ -6,12 +6,12 @@
  * @module DisplayStyles
  */
 
-import { JsonUtils } from "@itwin/core-bentley";
+import { NonFunctionPropertiesOf } from "@itwin/core-bentley";
 import { ColorByName } from "./ColorByName";
 import { ColorDef, ColorDefProps } from "./ColorDef";
-import { Gradient } from "./Gradient";
 
 /** JSON representation of a [[GroundPlane]].
+ * @see [[EnvironmentProps.ground]].
  * @public
  */
 export interface GroundPlaneProps {
@@ -25,64 +25,76 @@ export interface GroundPlaneProps {
   belowColor?: ColorDefProps;
 }
 
+/** A type containing all of the properties and none of the methods of [[GroundPlane]], with `readonly` modifiers removed.
+ * @see [[GroundPlane.create]] and [[GroundPlane.clone]].
+ * @public
+ */
+export type GroundPlaneProperties = NonFunctionPropertiesOf<GroundPlane>;
+
+const defaultAboveColor = ColorDef.fromTbgr(ColorByName.darkGreen);
+const defaultBelowColor = ColorDef.fromTbgr(ColorByName.darkBrown);
+
 /** A circle drawn at a Z elevation, whose diameter is the the XY diagonal of the project extents, used to represent the ground as a reference point within a spatial view.
+ * @see [[Environment.ground]].
  * @public
  */
 export class GroundPlane {
-  /** Whether the ground plane should be displayed. */
-  public display: boolean = false;
-  /** The Z height at which to draw the plane. */
-  public elevation: number = 0.0;
+  /** The Z height in meters at which to draw the plane. */
+  public readonly elevation: number;
   /** The color in which to draw the ground plane when viewed from above. */
-  public aboveColor: ColorDef;
+  public readonly aboveColor: ColorDef;
   /** The color in which to draw the ground plane when viewed from below. */
-  public belowColor: ColorDef;
-  private _aboveSymb?: Gradient.Symb;
-  private _belowSymb?: Gradient.Symb;
+  public readonly belowColor: ColorDef;
 
-  public constructor(ground?: GroundPlaneProps) {
-    ground = ground ? ground : {};
-    this.display = JsonUtils.asBool(ground.display, false);
-    this.elevation = JsonUtils.asDouble(ground.elevation, -.01);
-    this.aboveColor = (undefined !== ground.aboveColor) ? ColorDef.fromJSON(ground.aboveColor) : ColorDef.fromTbgr(ColorByName.darkGreen);
-    this.belowColor = (undefined !== ground.belowColor) ? ColorDef.fromJSON(ground.belowColor) : ColorDef.fromTbgr(ColorByName.darkBrown);
+  protected constructor(props: Partial<GroundPlaneProperties>) {
+    this.elevation = props.elevation ?? -0.01;
+    this.aboveColor = props.aboveColor ?? defaultAboveColor;
+    this.belowColor = props.belowColor ?? defaultBelowColor;
   }
 
-  public toJSON(): GroundPlaneProps {
-    return {
-      display: this.display,
+  /** Default settings with a dark green "above" color, dark brown "below" color, and elevation of -0.01 meters. */
+  public static readonly defaults = new GroundPlane({ });
+
+  /** Create a new GroundPlane. Any properties not specified by `props` will be initialized to their default values. */
+  public static create(props?: Partial<GroundPlaneProperties>) {
+    return props ? new this(props) : this.defaults;
+  }
+
+  /** Create a copy of this ground plane, identical except for any properties explicitly specified by `changedProps`.
+   * Any properties of `changedProps` explicitly set to `undefined` will be initialized to their default values.
+   */
+  public clone(changedProps?: Partial<GroundPlaneProperties>): GroundPlane {
+    if (!changedProps)
+      return this;
+
+    return GroundPlane.create({ ...this, ...changedProps });
+  }
+
+  /** Create from JSON representation. */
+  public static fromJSON(props?: GroundPlaneProps): GroundPlane {
+    if (!props)
+      return this.defaults;
+
+    return new this({
+      elevation: props.elevation,
+      aboveColor: undefined !== props.aboveColor ? ColorDef.fromJSON(props.aboveColor) : undefined,
+      belowColor: undefined !== props.belowColor ? ColorDef.fromJSON(props.belowColor) : undefined,
+    });
+  }
+
+  /** Convert to JSON representation.
+   * @param display If defined, the value to use for [[GroundPlaneProps.display]]; otherwise, that property will be left undefined.
+   */
+  public toJSON(display?: boolean): GroundPlaneProps {
+    const props: GroundPlaneProps = {
       elevation: this.elevation,
       aboveColor: this.aboveColor.toJSON(),
       belowColor: this.belowColor.toJSON(),
     };
-  }
 
-  /** Returns and locally stores gradient symbology for the ground plane texture depending on whether we are looking from above or below.
-   * Will store the ground colors used in the optional ColorDef array provided.
-   * @internal
-   */
-  public getGroundPlaneGradient(aboveGround: boolean): Gradient.Symb {
-    let gradient = aboveGround ? this._aboveSymb : this._belowSymb;
-    if (undefined !== gradient)
-      return gradient;
+    if (undefined !== display)
+      props.display = display;
 
-    const values = [0, .25, .5];   // gradient goes from edge of rectangle (0.0) to center (1.0)...
-    const color = aboveGround ? this.aboveColor : this.belowColor;
-    const alpha = aboveGround ? 0x80 : 0x85;
-    const groundColors = [color.withTransparency(0xff), color, color];
-    groundColors[1] = groundColors[2] = color.withTransparency(alpha);
-
-    // Get the possibly cached gradient from the system, specific to whether or not we want ground from above or below.
-    gradient = new Gradient.Symb();
-    gradient.mode = Gradient.Mode.Spherical;
-    gradient.keys = [{ color: groundColors[0], value: values[0] }, { color: groundColors[1], value: values[1] }, { color: groundColors[2], value: values[2] }];
-
-    // Store the gradient for possible future use
-    if (aboveGround)
-      this._aboveSymb = gradient;
-    else
-      this._belowSymb = gradient;
-
-    return gradient;
+    return props;
   }
 }

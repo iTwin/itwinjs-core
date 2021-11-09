@@ -394,16 +394,16 @@ export interface HollowFacesProps {
 
 /** @alpha */
 export interface SweepFacesProps {
-  /** The faces to be swept */
-  faces: SubEntityProps | SubEntityProps[];
+  /** Optional faces to be swept. Leave undefined to sweep a wire or sheet body. */
+  faces?: SubEntityProps | SubEntityProps[];
   /** A scaled vector to define the sweep direction and distance */
   path: XYZProps;
 }
 
 /** @alpha */
 export interface SpinFacesProps {
-  /** The faces to be spun */
-  faces: SubEntityProps | SubEntityProps[];
+  /** Optional faces to be spun. Leave undefined to spin a wire or sheet body. */
+  faces?: SubEntityProps | SubEntityProps[];
   /** The axis origin */
   origin: XYZProps;
   /** The axis direction */
@@ -465,6 +465,124 @@ export interface ChamferEdgesProps {
 }
 
 /** @alpha */
+export enum CutDirectionMode {
+  /** Remove material in direction of surface normal */
+  Forward = 0,
+  /** Remove material in opposite direction of surface normal */
+  Backward = 1,
+  /** Remove material in both directions */
+  Both = 2,
+  /** Choose forward or backward from tool and target hint points */
+  Auto = 3,
+}
+
+/** @alpha */
+export enum CutDepthMode {
+  /** Cut extends through entire solid */
+  All = 0,
+  /** Cut extends to a specified depth */
+  Blind = 1,
+}
+
+/** @alpha */
+export enum ProfileClosure {
+  /** Close by extending end tangents to point of intersection or outside range of target */
+  Natural = 0,
+  /** Whether to reverse the natural closure direction */
+  Reverse = 1,
+  /** Choose natural or reverse closure direction based on tool and target hint points */
+  Auto = 2,
+}
+
+/** @alpha */
+export interface CutProps {
+  /** The element to use as the cutting profile */
+  profile: Id64String;
+  /** Sweep direction relative to the sheet body normal of the cut profile. Default CutDirectionMode.Both */
+  direction?: CutDirectionMode;
+  /** Extend cut through the entire target body or only create a pocket of fixed depth. Default CutDepthMode.All */
+  depth?: CutDepthMode;
+  /** Depth of cut for CutDepthMode.Blind */
+  distance?: number;
+  /** Whether to remove material outside profile instead of inside */
+  outside?: true;
+  /** Whether to attempt to close open profiles according to specified closure option */
+  closeOpen?: ProfileClosure;
+  /** The normal to use when closing an open path without a well defined normal, ex. a single line segment */
+  defaultNormal?: XYZProps;
+  /** Hint point on target for auto direction and closure options. Identifies which side of profile normal to keep material for. */
+  targetPoint?: XYZProps;
+  /** Hint point on tool for auto direction and closure options. Identifies outside of profile closure to keep material for. */
+  toolPoint?: XYZProps;
+}
+
+/** @alpha */
+export enum EmbossDirectionMode {
+  /** Material is added in the direction of surface normal when creating a pad. */
+  Forward = 0,
+  /** Material is added in the opposite direction of surface normal when creating a pad. */
+  Backward = 1,
+  /** Choose forward or backward from target hint point */
+  Auto = 2,
+}
+
+/** @alpha */
+export interface EmbossProps {
+  /** The element to use as the cutting profile, must be planar region or sheet body */
+  profile: Id64String;
+  /** Emboss direction, determines which side of profile normal material is added on. Default EmbossDirectionMode.Forward */
+  direction?: EmbossDirectionMode;
+  /** Hint point on target for auto direction. */
+  targetPoint?: XYZProps;
+}
+
+/** @alpha */
+export interface ImprintProps {
+  /** The source of the geometry to imprint, can be a path, planar region, sheet, solid, or edges to offset. */
+  imprint: Id64String | SubEntityProps[] | ElementGeometryDataEntry;
+  /** Optional project direction when imprinting a curve, uses curvature if undefined. */
+  direction?: XYZProps;
+  /** The target face sub-entity to be imprinted, uses target body if undefined. Required when supplying offset edges. */
+  face?: SubEntityProps;
+  /** Offset distance when imprinting offset edges onto a face. First edge used as reference. */
+  distance?: number;
+  /* Whether to extend an open curve (or tool surface) to ensure that it splits the face. */
+  extend?: true;
+}
+
+/** @alpha */
+export interface SweepPathProps {
+  /** The element to use as the open or closed path to sweep along. */
+  path: Id64String;
+  /** true to keep profile at a fixed angle to global axis instead of path tangent (and lock direction). */
+  alignParallel?: true;
+  /** true to force a sheet body to be created from a closed profile which would normally produce a solid body. */
+  createSheet?: true;
+  /** Optionally keep profile at a fixed angle relative to the path tangent projected into a plane perpendicular to the lock direction. Only valid when alignParallel is undefined. */
+  lockDirection?: XYZProps;
+  /** Optionally spin profile as it moves along the path. */
+  twistAngle?: AngleProps;
+  /** Optionally scale profile as it moves along the path. */
+  scale?: number;
+  /** The profile point to scale about, required when applying scale. */
+  scalePoint?: XYZProps;
+}
+
+/** @alpha */
+export interface LoftProps {
+  /** The elements to use as tool profile curves. Target element is first profile curve. */
+  tools: Id64String | Id64String[];
+  /** An optional set of guide curves for controlling the loft. */
+  guides?: Id64String | Id64String[];
+  /** true if start profile is also used as end profile to create a periodic result in loft direction. */
+  periodic?: true;
+  /** true to order curves by their relative location instead of preserving input order. */
+  orderCurves?: true;
+  /** true to orient curve directions and normals. */
+  orientCurves?: true;
+}
+
+/** @alpha */
 export interface SolidModelingCommandIpc extends EditCommandIpc {
   /** Clear geometry cache for all elements */
   clearElementGeometryCache(): Promise<void>;
@@ -490,6 +608,8 @@ export interface SolidModelingCommandIpc extends EditCommandIpc {
   isSmoothVertex(id: Id64String, subEntity: SubEntityProps): Promise<boolean>;
   /** Return whether the supplied geometric primitive index is a disjoint body */
   isDisjointBody(id: Id64String, index: number): Promise<boolean>;
+  /** Return whether the supplied geometric primitive index is a planar path or region */
+  isPlanarBody(id: Id64String, index: number): Promise<boolean>;
   /** Return whether the supplied geometric primitive index is a sheet body with a single planar face */
   isSingleFacePlanarSheet(id: Id64String, index: number): Promise<boolean>;
   /** Return whether the supplied geometric primitive index is a sheet or solid entity that has all planar faces */
@@ -518,6 +638,16 @@ export interface SolidModelingCommandIpc extends EditCommandIpc {
   sewSheets(id: Id64String, params: SewSheetProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
   /** Modify sheet bodies from the supplied element by thickening to create solids bodies. */
   thickenSheets(id: Id64String, params: ThickenSheetProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+  /** Modify solid bodies from the supplied element by subtracting a cutting sheet tool body swept according to the specified cut direction and depth. */
+  cutSolid(id: Id64String, params: CutProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+  /** Modify solid and sheet bodies from the supplied element by creating a pad or pocket according to the specified emboss options. */
+  embossBody(id: Id64String, params: EmbossProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+  /** Modify solid and sheet bodies from the supplied element by imprinting new edges according to the specified imprint options. */
+  imprintBody(id: Id64String, params: ImprintProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+  /** Create a new sheet or solid body by sweeping a cross section profile along a path. */
+  sweepAlongPath(id: Id64String, params: SweepPathProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+  /** Create a new sheet or solid body by lofting through a set of profiles. */
+  loftProfiles(id: Id64String, params: LoftProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
   /** Modify solid and sheet bodies by offsetting selected faces. */
   offsetFaces(id: Id64String, params: OffsetFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
   /** Modify solid and sheet bodies by offsetting selected edges. */

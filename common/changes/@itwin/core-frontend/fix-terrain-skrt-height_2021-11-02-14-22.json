@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Tweak terrain skirt height calculation to match previous",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

@@ -138,19 +138,55 @@ export namespace WmsCapability {
 
       return subLayers;
     }
+
+    public getSubLayersCrs(layerNameFilter: string[]): Map<string, string[]> {
+      const subLayerCrs = new Map<string, string[]>();
+
+      const processSubLayer = ((subLayer: SubLayer) => {
+        if (layerNameFilter.includes(subLayer.name)) {
+          subLayerCrs.set(subLayer.name, subLayer.crs);
+        }
+        if (subLayer.children) {
+          subLayer.children.forEach((child) => {
+            processSubLayer(child);
+          });
+        }
+      });
+
+      this.subLayers.forEach((subLayer) => processSubLayer(subLayer));
+      return subLayerCrs;
+    }
   }
+
   /** @internal */
   export class SubLayer {
     public readonly name: string;
     public readonly title: string;
+    public readonly crs: string[];
+    public readonly ownCrs: string[];   // CRS specific to this layer (ie. not including inherited CRS)
     public readonly cartoRange?: MapCartoRectangle;
     public readonly children?: SubLayer[];
     public readonly queryable: boolean;
     public constructor(_json: any, public readonly parent?: SubLayer) {
+
+      const getParentCrs = (parentLayer: SubLayer, crsSet: Set<string>) => {
+        parentLayer.crs.forEach((parentCrs) => crsSet.add(parentCrs));
+        if (parentLayer.parent) {
+          getParentCrs(parentLayer.parent, crsSet);
+        }
+      };
+
       this.name = _json.Name ? _json.Name : "";
       this.title = _json.Title;
       this.queryable = _json.queryable ? true : false;
       this.cartoRange = rangeFromJSON(_json);
+      this.ownCrs = _json.CRS;
+      const crs = new Set<string>(this.ownCrs);
+      if (parent) {
+        getParentCrs(parent, crs);
+      }
+      this.crs = [...crs];
+
       if (Array.isArray(_json.Layer)) {
         this.children = new Array<SubLayer>();
         for (const childLayer of _json.Layer) {
@@ -198,5 +234,9 @@ export class WmsCapabilities {
   }
   public getSubLayers(visible = true): undefined | MapSubLayerProps[] {
     return this.layer ? this.layer.getSubLayers(visible) : undefined;
+  }
+
+  public getSubLayersCrs(subLayerNames: string[]): Map<string, string[]>|undefined {
+    return this.layer ? this.layer.getSubLayersCrs(subLayerNames) : undefined;
   }
 }
