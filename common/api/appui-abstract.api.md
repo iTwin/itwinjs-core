@@ -98,7 +98,7 @@ export interface AbstractWidgetProps extends ProvidedItem {
     readonly tooltip?: string | ConditionalStringValue;
 }
 
-// @public
+// @public @deprecated
 export enum AbstractZoneLocation {
     // (undocumented)
     BottomLeft = 7,

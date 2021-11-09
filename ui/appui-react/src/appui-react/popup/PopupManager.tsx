@@ -36,7 +36,7 @@ export interface PopupInfo {
   parentDocument: Document;
 }
 
-/** @alpha */
+/** @public */
 export interface PopupsChangedEventArgs {
   popups: ReadonlyArray<PopupInfo>;
 }
@@ -64,7 +64,7 @@ export interface ReactContent {
 }
 
 /** Type for Popup Content
- * @alpha
+ * @public
  */
 export type PopupContentType = HTMLElement | ReactContent;
 
