@@ -217,47 +217,33 @@ export class DisplayStyle3d extends DisplayStyle implements DisplayStyle3dProps 
   /** @alpha */
   protected override collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
-    const skyBoxImageProps: SkyBoxImageProps | undefined = this.settings.environment?.sky?.image;
-    if (skyBoxImageProps?.texture) {
-      predecessorIds.add(Id64.fromJSON(skyBoxImageProps.texture));
-    }
-    if (skyBoxImageProps?.textures) {
-      if (skyBoxImageProps.textures.back) { predecessorIds.add(Id64.fromJSON(skyBoxImageProps.textures.back)); }
-      if (skyBoxImageProps.textures.bottom) { predecessorIds.add(Id64.fromJSON(skyBoxImageProps.textures.bottom)); }
-      if (skyBoxImageProps.textures.front) { predecessorIds.add(Id64.fromJSON(skyBoxImageProps.textures.front)); }
-      if (skyBoxImageProps.textures.left) { predecessorIds.add(Id64.fromJSON(skyBoxImageProps.textures.left)); }
-      if (skyBoxImageProps.textures.right) { predecessorIds.add(Id64.fromJSON(skyBoxImageProps.textures.right)); }
-      if (skyBoxImageProps.textures.top) { predecessorIds.add(Id64.fromJSON(skyBoxImageProps.textures.top)); }
-    }
-    if (this.settings.planProjectionSettings) {
-      for (const planProjectionSetting of this.settings.planProjectionSettings) {
+    for (const textureId of this.settings.environment.sky.textureIds)
+      predecessorIds.add(textureId);
+
+    if (this.settings.planProjectionSettings)
+      for (const planProjectionSetting of this.settings.planProjectionSettings)
         predecessorIds.add(planProjectionSetting[0]);
-      }
-    }
   }
+
   /** @alpha */
   protected static override onCloned(context: IModelCloneContext, sourceElementProps: DisplayStyle3dProps, targetElementProps: DisplayStyle3dProps): void {
     super.onCloned(context, sourceElementProps, targetElementProps);
     if (context.isBetweenIModels) {
+      const convertTexture = (id: string) => Id64.isValidId64(id) ? context.findTargetElementId(id) : id;
+
       const skyBoxImageProps: SkyBoxImageProps | undefined = targetElementProps?.jsonProperties?.styles?.environment?.sky?.image;
-      if (skyBoxImageProps?.texture) {
-        const textureId: Id64String = context.findTargetElementId(Id64.fromJSON(skyBoxImageProps.texture));
-        skyBoxImageProps.texture = Id64.isValidId64(textureId) ? textureId : undefined;
-      }
+      if (skyBoxImageProps?.texture && Id64.isValidId64(skyBoxImageProps.texture))
+        skyBoxImageProps.texture = convertTexture(skyBoxImageProps.texture);
+
       if (skyBoxImageProps?.textures) {
-        const backTextureId: Id64String = context.findTargetElementId(Id64.fromJSON(skyBoxImageProps.textures.back));
-        skyBoxImageProps.textures.back = Id64.isValidId64(backTextureId) ? backTextureId : undefined;
-        const bottomTextureId: Id64String = context.findTargetElementId(Id64.fromJSON(skyBoxImageProps.textures.bottom));
-        skyBoxImageProps.textures.bottom = Id64.isValidId64(bottomTextureId) ? bottomTextureId : undefined;
-        const frontTextureId: Id64String = context.findTargetElementId(Id64.fromJSON(skyBoxImageProps.textures.front));
-        skyBoxImageProps.textures.front = Id64.isValidId64(frontTextureId) ? frontTextureId : undefined;
-        const leftTextureId: Id64String = context.findTargetElementId(Id64.fromJSON(skyBoxImageProps.textures.left));
-        skyBoxImageProps.textures.left = Id64.isValidId64(leftTextureId) ? leftTextureId : undefined;
-        const rightTextureId: Id64String = context.findTargetElementId(Id64.fromJSON(skyBoxImageProps.textures.right));
-        skyBoxImageProps.textures.right = Id64.isValidId64(rightTextureId) ? rightTextureId : undefined;
-        const topTextureId: Id64String = context.findTargetElementId(Id64.fromJSON(skyBoxImageProps.textures.top));
-        skyBoxImageProps.textures.top = Id64.isValidId64(topTextureId) ? topTextureId : undefined;
+        skyBoxImageProps.textures.front = convertTexture(skyBoxImageProps.textures.front);
+        skyBoxImageProps.textures.back = convertTexture(skyBoxImageProps.textures.back);
+        skyBoxImageProps.textures.left = convertTexture(skyBoxImageProps.textures.left);
+        skyBoxImageProps.textures.right = convertTexture(skyBoxImageProps.textures.right);
+        skyBoxImageProps.textures.top = convertTexture(skyBoxImageProps.textures.top);
+        skyBoxImageProps.textures.bottom = convertTexture(skyBoxImageProps.textures.bottom);
       }
+
       if (targetElementProps?.jsonProperties?.styles?.planProjections) {
         const remappedPlanProjections: { [modelId: string]: PlanProjectionSettingsProps } = {};
         for (const entry of Object.entries(targetElementProps.jsonProperties.styles.planProjections)) {

@@ -9,14 +9,13 @@
 import { createHash } from "crypto";
 import * as fs from "fs-extra";
 import { dirname, extname, join } from "path";
+import { NativeLibrary } from "@bentley/imodeljs-native";
 import { AccessToken, BeEvent, DbResult, OpenMode } from "@itwin/core-bentley";
 import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
-import { IModelDb } from "../IModelDb";
 import { IModelJsFs } from "../IModelJsFs";
 import { SQLiteDb } from "../SQLiteDb";
 import { SqliteStatement } from "../SqliteStatement";
-import { ITwinSettings, Settings, SettingsPriority } from "./Settings";
-import { NativeLibrary } from "@bentley/imodeljs-native";
+import { Settings, SettingsPriority } from "./Settings";
 
 /** The names of Settings used by Workspace
  * @beta
@@ -48,7 +47,7 @@ export type WorkspaceContainerName = string;
  *  - be blank or start or end with a space
  *  - be longer than 255 characters
  *  - contain any characters with Unicode values less than 0x20
- *  - contain characters reserved for filename, device, wildcard, or url syntax (e.g. "\.<>:"/\\"`'|?*")
+ *  - contain characters reserved for filename, device, wildcard, or url syntax (e.g. "#\.<>:"/\\"`'|?*")
  * @beta
  */
 export type WorkspaceContainerId = string;
@@ -93,8 +92,6 @@ export interface WorkspaceContainer {
   readonly containerId: WorkspaceContainerId;
   /** The Workspace that opened this WorkspaceContainer */
   readonly workspace: Workspace;
-  /** If present, IModelDb that owns this [[WorkspaceContainer]]. The lifetime of this container is paired with the iModelDb. */
-  readonly iModelOwner?: IModelDb;
   /** the directory for extracting file resources. */
   readonly containerFilesDir: LocalDirName;
   /** event raised when the container is closed. */
@@ -120,15 +117,6 @@ export interface WorkspaceContainer {
    * To edit them, you must first copy them to another location.
    */
   getFile(rscName: WorkspaceResourceName, targetFileName?: LocalFileName): LocalFileName | undefined;
-}
-
-/**
- * Options supplied when opening a WorkspaceContainer.
- * @beta
- */
-export interface WorkspaceContainerOpts {
-  /** If present, the container will be closed and removed when the iModel is closed. */
-  forIModel?: IModelDb;
 }
 
 /**
@@ -170,7 +158,7 @@ export interface Workspace {
    * If it is not  present or not up-to-date, it is downloaded first.
    * @returns a Promise that is resolved when the container is local, opened, and available for access.
    */
-  getContainer(props: WorkspaceContainerProps, opts?: WorkspaceContainerOpts): Promise<WorkspaceContainer>;
+  getContainer(props: WorkspaceContainerProps): Promise<WorkspaceContainer>;
   /** Load a WorkspaceResource of type string, parse it, and add it to the current Settings for this Workspace.
    * @note settingsRsc must specify a resource holding a stringified JSON representation of a [[SettingDictionary]]
    * @returns a Promise that is resolved when the settings resource has been loaded.
@@ -189,13 +177,13 @@ export class ITwinWorkspace implements Workspace {
   public readonly containerDir: LocalDirName;
   public readonly settings: Settings;
 
-  public constructor(opts?: WorkspaceOpts) {
-    this.settings = new ITwinSettings();
+  public constructor(settings: Settings, opts?: WorkspaceOpts) {
+    this.settings = settings;
     this.containerDir = opts?.containerDir ?? join(NativeLibrary.defaultLocalDir, "iTwin", "Workspace");
     this.filesDir = opts?.filesDir ?? join(this.containerDir, "Files");
   }
 
-  public async getContainer(props: WorkspaceContainerProps, opts?: WorkspaceContainerOpts): Promise<WorkspaceContainer> {
+  public async getContainer(props: WorkspaceContainerProps): Promise<WorkspaceContainer> {
     const id = this.resolveContainerId(props);
     if (undefined === id)
       throw new Error(`can't resolve container name [${props}]`);
@@ -203,11 +191,9 @@ export class ITwinWorkspace implements Workspace {
     if (container)
       return container;
 
-    container = new WorkspaceFile(id, this, opts);
+    container = new WorkspaceFile(id, this);
     container.open();
     this._containers.set(id, container);
-    if (opts?.forIModel)
-      opts.forIModel.onBeforeClose.addOnce(() => this.dropContainer(container!));
     return container;
   }
 
@@ -221,6 +207,7 @@ export class ITwinWorkspace implements Workspace {
   }
 
   public close() {
+    this.settings.close();
     for (const [_id, container] of this._containers)
       container.close();
     this._containers.clear();
@@ -238,7 +225,7 @@ export class ITwinWorkspace implements Workspace {
   public resolveContainerId(props: WorkspaceContainerProps): WorkspaceContainerId {
     if (typeof props === "object")
       return props.id;
-    return this.settings.resolveSetting(WorkspaceSetting.ContainerAlias, (val) => {
+    const id = this.settings.resolveSetting(WorkspaceSetting.ContainerAlias, (val) => {
       if (Array.isArray(val)) {
         for (const entry of val) {
           if (typeof entry === "object" && entry.name === props && typeof entry.id === "string")
@@ -246,7 +233,10 @@ export class ITwinWorkspace implements Workspace {
         }
       }
       return undefined; // keep going through all settings dictionaries
-    }, props)!;
+    }, props);
+    if (undefined === id)
+      throw new Error("Unable to resolve container id.");
+    return id;
 
   }
 }
@@ -260,7 +250,6 @@ export class WorkspaceFile implements WorkspaceContainer {
   public readonly workspace: Workspace;
   public readonly containerId: WorkspaceContainerId;
   public readonly localDbName: LocalDirName;
-  public readonly iModelOwner?: IModelDb;
   public readonly onContainerClosed = new BeEvent<() => void>();
 
   public get containerFilesDir() { return join(this.workspace.filesDir, this.containerId); }
@@ -284,17 +273,16 @@ export class WorkspaceFile implements WorkspaceContainer {
   }
 
   private static validateContainerId(id: WorkspaceContainerId) {
-    if (id === "" || id.length > 255 || /[\.<>:"/\\"`'|?*\u0000-\u001F]/g.test(id) || /^(con|prn|aux|nul|com\d|lpt\d)$/i.test(id))
+    if (id === "" || id.length > 255 || /[#\.<>:"/\\"`'|?*\u0000-\u001F]/g.test(id) || /^(con|prn|aux|nul|com\d|lpt\d)$/i.test(id))
       throw new Error(`invalid containerId: [${id}]`);
     this.noLeadingOrTrailingSpaces(id, "containerId");
   }
 
-  public constructor(containerId: WorkspaceContainerId, workspace: Workspace, opts?: WorkspaceContainerOpts) {
+  public constructor(containerId: WorkspaceContainerId, workspace: Workspace) {
     WorkspaceFile.validateContainerId(containerId);
     this.workspace = workspace;
     this.containerId = containerId;
     this.localDbName = join(workspace.containerDir, `${this.containerId}.${containerFileExt}`);
-    this.iModelOwner = opts?.forIModel;
   }
 
   public async attach(_token: AccessToken) {
@@ -491,6 +479,5 @@ export class EditableWorkspaceFile extends WorkspaceFile {
       fs.unlinkSync(file.localFileName);
     this.db.nativeDb.removeEmbeddedFile(rscName);
   }
-
 }
 

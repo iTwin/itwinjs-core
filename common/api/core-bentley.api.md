@@ -18,7 +18,7 @@ export function areEqualPossiblyUndefined<T, U>(t: T | undefined, u: U | undefin
 export function asInstanceOf<T>(obj: any, constructor: Constructor<T>): T | undefined;
 
 // @public
-export function assert(condition: boolean, msg?: string): asserts condition;
+export function assert(condition: boolean | (() => boolean), message?: string | (() => string)): asserts condition;
 
 // @public
 export type AsyncFunction = (...args: any) => Promise<any>;

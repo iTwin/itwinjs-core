@@ -892,23 +892,6 @@
       ]
     },
     {
-      "name": "OIDC Signin Tool Tests (Integration)",
-      "presentation": {
-        "group": "6_Misc"
-      },
-      "cwd": "${workspaceFolder}/tools/oidc-signin-tool",
-      "type": "pwa-node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run",
-        "test:integration"
-      ],
-      "outFiles": [
-        "${workspaceFolder}/{core,clients,tools}/*/lib/**/*.js"
-      ]
-    },
-    {
       "name": "synchro-schedule-importer",
       "presentation": {
         "group": "6_Misc"

@@ -367,6 +367,49 @@ export enum BackendLoggerCategory {
     Schemas = "core-backend.Schemas"
 }
 
+// @internal
+export class BaseSettings implements Settings {
+    // (undocumented)
+    addDictionary(dictionaryName: string, priority: SettingsPriority, settings: SettingDictionary): void;
+    // (undocumented)
+    addFile(fileName: LocalFileName, priority: SettingsPriority): void;
+    // (undocumented)
+    addJson(dictionaryName: string, priority: SettingsPriority, settingsJson: string): void;
+    // (undocumented)
+    close(): void;
+    // (undocumented)
+    dropDictionary(dictionaryName: DictionaryName, raiseEvent?: boolean): boolean;
+    // (undocumented)
+    getArray<T>(name: SettingName, defaultValue: Array<T>): Array<T>;
+    // (undocumented)
+    getArray<T>(name: SettingName): Array<T> | undefined;
+    // (undocumented)
+    getBoolean(name: SettingName, defaultValue: boolean): boolean;
+    // (undocumented)
+    getBoolean(name: SettingName): boolean | undefined;
+    // (undocumented)
+    getNumber(name: SettingName, defaultValue: number): number;
+    // (undocumented)
+    getNumber(name: SettingName): number | undefined;
+    // (undocumented)
+    getObject(name: SettingName, defaultValue: SettingObject): SettingObject;
+    // (undocumented)
+    getObject(name: SettingName): SettingObject | undefined;
+    // (undocumented)
+    getSetting<T extends SettingType>(name: SettingName, defaultValue?: T): T | undefined;
+    // (undocumented)
+    getString(name: SettingName, defaultValue: string): string;
+    // (undocumented)
+    getString(name: SettingName): string | undefined;
+    inspectSetting<T extends SettingType>(name: SettingName): SettingInspector<T>[];
+    // (undocumented)
+    readonly onSettingsChanged: BeEvent<() => void>;
+    // (undocumented)
+    resolveSetting<T extends SettingType>(name: SettingName, resolver: SettingResolver<T>, defaultValue?: T): T | undefined;
+    // (undocumented)
+    protected verifyPriority(_priority: SettingsPriority): void;
+}
+
 // @public
 export type BindParameter = number | string;
 
@@ -1104,6 +1147,8 @@ export class ECSchemaXmlContext {
     constructor();
     // (undocumented)
     addSchemaPath(searchPath: string): void;
+    // (undocumented)
+    get nativeContext(): IModelJsNative.ECSchemaXmlContext;
     // (undocumented)
     readSchemaFromXmlFile(filePath: string): any;
     // (undocumented)
@@ -2147,13 +2192,6 @@ export abstract class IModelDb extends IModel {
     close(): void;
     get codeSpecs(): CodeSpecs;
     computeProjectExtents(options?: ComputeProjectExtentsOptions): ComputedProjectExtents;
-    // (undocumented)
-    protected _concurrentQueryStats: {
-        resetTimerHandle: any;
-        logTimerHandle: any;
-        lastActivityTime: number;
-        dispose: () => void;
-    };
     constructEntity<T extends Entity>(props: EntityProps): T;
     containsClass(classFullName: string): boolean;
     // @alpha
@@ -2268,6 +2306,10 @@ export abstract class IModelDb extends IModel {
     withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors?: boolean): T;
     withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors?: boolean): T;
     withStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors?: boolean): T;
+    // @beta
+    get workspace(): Workspace;
+    // @internal (undocumented)
+    protected _workspace: Workspace;
 }
 
 // @public (undocumented)
@@ -2360,6 +2402,8 @@ export class IModelHost {
     static set applicationId(id: string);
     static get applicationVersion(): string;
     static set applicationVersion(version: string);
+    // @beta
+    static get appWorkspace(): Workspace;
     // (undocumented)
     static authorizationClient?: AuthorizationClient;
     // (undocumented)
@@ -2412,8 +2456,6 @@ export class IModelHost {
     static tileUploader: CloudStorageTileUploader;
     // @internal
     static get usingExternalTileCache(): boolean;
-    // @beta
-    static get workspace(): Workspace;
     }
 
 // @public
@@ -2630,49 +2672,9 @@ export interface ITwinIdArg {
     readonly iTwinId: GuidString;
 }
 
-// @internal
-export class ITwinSettings implements Settings {
-    constructor();
-    // (undocumented)
-    addDictionary(dictionaryName: string, priority: SettingsPriority, settings: SettingDictionary): void;
-    // (undocumented)
-    addFile(fileName: LocalFileName, priority: SettingsPriority): void;
-    // (undocumented)
-    addJson(dictionaryName: string, priority: SettingsPriority, settingsJson: string): void;
-    // (undocumented)
-    dropDictionary(dictionaryName: DictionaryName, raiseEvent?: boolean): boolean;
-    // (undocumented)
-    getArray<T>(name: SettingName, defaultValue: Array<T>): Array<T>;
-    // (undocumented)
-    getArray<T>(name: SettingName): Array<T> | undefined;
-    // (undocumented)
-    getBoolean(name: SettingName, defaultValue: boolean): boolean;
-    // (undocumented)
-    getBoolean(name: SettingName): boolean | undefined;
-    // (undocumented)
-    getNumber(name: SettingName, defaultValue: number): number;
-    // (undocumented)
-    getNumber(name: SettingName): number | undefined;
-    // (undocumented)
-    getObject(name: SettingName, defaultValue: SettingObject): SettingObject;
-    // (undocumented)
-    getObject(name: SettingName): SettingObject | undefined;
-    // (undocumented)
-    getSetting<T extends SettingType>(name: SettingName, defaultValue?: T): T | undefined;
-    // (undocumented)
-    getString(name: SettingName, defaultValue: string): string;
-    // (undocumented)
-    getString(name: SettingName): string | undefined;
-    inspectSetting<T extends SettingType>(name: SettingName): SettingInspector<T>[];
-    // (undocumented)
-    readonly onSettingsChanged: BeEvent<() => void>;
-    // (undocumented)
-    resolveSetting<T extends SettingType>(name: SettingName, resolver: SettingResolver<T>, defaultValue?: T): T | undefined;
-    }
-
 // @internal (undocumented)
 export class ITwinWorkspace implements Workspace {
-    constructor(opts?: WorkspaceOpts);
+    constructor(settings: Settings, opts?: WorkspaceOpts);
     // (undocumented)
     close(): void;
     // (undocumented)
@@ -2682,7 +2684,7 @@ export class ITwinWorkspace implements Workspace {
     // (undocumented)
     readonly filesDir: LocalDirName;
     // (undocumented)
-    getContainer(props: WorkspaceContainerProps, opts?: WorkspaceContainerOpts): Promise<WorkspaceContainer>;
+    getContainer(props: WorkspaceContainerProps): Promise<WorkspaceContainer>;
     // (undocumented)
     loadSettingsDictionary(settingRsc: WorkspaceResourceProps, priority: SettingsPriority): Promise<void>;
     // (undocumented)
@@ -3487,6 +3489,7 @@ export class RoleModel extends Model {
 // @public
 export class RpcTrace {
     static get currentActivity(): RpcActivity | undefined;
+    static get expectCurrentActivity(): RpcActivity;
     static run<T>(activity: RpcActivity, fn: () => Promise<T>): Promise<T>;
     }
 
@@ -3586,6 +3589,8 @@ export interface Settings {
     addDictionary(dictionaryName: DictionaryName, priority: SettingsPriority, settings: SettingDictionary): void;
     addFile(fileName: LocalFileName, priority: SettingsPriority): void;
     addJson(dictionaryName: DictionaryName, priority: SettingsPriority, settingsJson: string): void;
+    // @internal (undocumented)
+    close(): void;
     dropDictionary(dictionaryName: DictionaryName): void;
     getArray<T>(settingName: SettingName, defaultValue: Array<T>): Array<T>;
     // (undocumented)
@@ -4364,7 +4369,7 @@ export interface Workspace {
     readonly containerDir: LocalDirName;
     dropContainer(container: WorkspaceContainer): void;
     readonly filesDir: LocalDirName;
-    getContainer(props: WorkspaceContainerProps, opts?: WorkspaceContainerOpts): Promise<WorkspaceContainer>;
+    getContainer(props: WorkspaceContainerProps): Promise<WorkspaceContainer>;
     loadSettingsDictionary(settingRsc: WorkspaceResourceProps, priority: SettingsPriority): Promise<void>;
     resolveContainerId(props: WorkspaceContainerProps): WorkspaceContainerId;
     readonly settings: Settings;
@@ -4377,7 +4382,6 @@ export interface WorkspaceContainer {
     getBlob(rscName: WorkspaceResourceName): Uint8Array | undefined;
     getFile(rscName: WorkspaceResourceName, targetFileName?: LocalFileName): LocalFileName | undefined;
     getString(rscName: WorkspaceResourceName): string | undefined;
-    readonly iModelOwner?: IModelDb;
     readonly onContainerClosed: BeEvent<() => void>;
     readonly workspace: Workspace;
 }
@@ -4389,18 +4393,13 @@ export type WorkspaceContainerId = string;
 export type WorkspaceContainerName = string;
 
 // @beta
-export interface WorkspaceContainerOpts {
-    forIModel?: IModelDb;
-}
-
-// @beta
 export type WorkspaceContainerProps = WorkspaceContainerName | {
     id: WorkspaceContainerId;
 };
 
 // @beta
 export class WorkspaceFile implements WorkspaceContainer {
-    constructor(containerId: WorkspaceContainerId, workspace: Workspace, opts?: WorkspaceContainerOpts);
+    constructor(containerId: WorkspaceContainerId, workspace: Workspace);
     // (undocumented)
     attach(_token: AccessToken): Promise<void>;
     // (undocumented)
@@ -4419,8 +4418,6 @@ export class WorkspaceFile implements WorkspaceContainer {
     getFile(rscName: WorkspaceResourceName, targetFileName?: LocalFileName): LocalFileName | undefined;
     // (undocumented)
     getString(rscName: WorkspaceResourceName): string | undefined;
-    // (undocumented)
-    readonly iModelOwner?: IModelDb;
     // (undocumented)
     get isOpen(): boolean;
     // (undocumented)

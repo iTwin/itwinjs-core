@@ -29,6 +29,8 @@ import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
 import { ITwinWorkspace, Workspace, WorkspaceOpts } from "./workspace/Workspace";
+import { BaseSettings, SettingDictionary, SettingsPriority } from "./workspace/Settings";
+import { SettingsSpecRegistry } from "./workspace/SettingsSpecRegistry";
 
 const loggerCategory = BackendLoggerCategory.IModelHost;
 
@@ -154,6 +156,38 @@ export class IModelHostConfiguration {
 
 }
 
+/**
+ * Settings for the application workspace.
+ * @note this includes the default dictionary from the SettingsSpecRegistry
+ */
+class ApplicationSettings extends BaseSettings {
+  private _remove?: VoidFunction;
+  protected override verifyPriority(priority: SettingsPriority) {
+    if (priority >= SettingsPriority.iModel) // iModel settings may not appear in ApplicationSettings
+      throw new Error("Use IModelSettings");
+  }
+  private updateDefaults() {
+    const defaults: SettingDictionary = {};
+    for (const [specName, val] of SettingsSpecRegistry.allSpecs) {
+      if (val.default)
+        defaults[specName] = val.default;
+    }
+    this.addDictionary("_default_", 0, defaults);
+  }
+
+  public constructor() {
+    super();
+    this._remove = SettingsSpecRegistry.onSpecsChanged.addListener(() => this.updateDefaults());
+    this.updateDefaults();
+  }
+  public override close() {
+    if (this._remove) {
+      this._remove();
+      this._remove = undefined;
+    }
+  }
+}
+
 /** IModelHost initializes ($backend) and captures its configuration. A backend must call [[IModelHost.startup]] before using any backend classes.
  * See [the learning article]($docs/learning/backend/IModelHost.md)
  * @public
@@ -167,7 +201,7 @@ export class IModelHost {
 
   public static backendVersion = "";
   private static _cacheDir = "";
-  private static _workspace: Workspace;
+  private static _appWorkspace?: Workspace;
 
   private static _platform?: typeof IModelJsNative;
   /** @internal */
@@ -202,10 +236,13 @@ export class IModelHost {
   /** Root directory holding files that iTwin.js caches */
   public static get cacheDir(): LocalDirName { return this._cacheDir; }
 
-  /** The Workspace for this `IModelHost`
+  /** The application [[Workspace]] for this `IModelHost`
+   * @note this `Workspace` only holds [[WorkspaceContainer]]s and [[Settings]] scoped to the currently loaded application(s).
+   * All organization, iTwin, and iModel based containers or settings must be accessed through [[IModelDb.workspace]] and
+   * attempting to add them to this Workspace will fail.
    * @beta
    */
-  public static get workspace(): Workspace { return this._workspace; }
+  public static get appWorkspace(): Workspace { return this._appWorkspace!; } // eslint-disable-line @typescript-eslint/no-non-null-assertion
 
   /** The optional [[FileNameResolver]] that resolves keys and partial file names for snapshot iModels. */
   public static snapshotFileNameResolver?: FileNameResolver;
@@ -334,7 +371,7 @@ export class IModelHost {
     }
 
     this.setupHostDirs(configuration);
-    this._workspace = new ITwinWorkspace(configuration.workspace);
+    this._appWorkspace = new ITwinWorkspace(new ApplicationSettings(), configuration.workspace);
 
     BriefcaseManager.initialize(this._briefcaseCacheDir);
 
@@ -407,6 +444,8 @@ export class IModelHost {
     IModelHost._isValid = false;
     IModelHost.onBeforeShutdown.raiseEvent();
     IModelHost.configuration = undefined;
+    IModelHost.appWorkspace.close();
+    IModelHost._appWorkspace = undefined;
     process.removeListener("beforeExit", IModelHost.shutdown);
   }
 
@@ -479,7 +518,8 @@ export class IModelHost {
   public static get compressCachedTiles(): boolean { return false !== IModelHost.configuration?.compressCachedTiles; }
 
   private static setupTileCache() {
-    const config = IModelHost.configuration!;
+    assert(undefined !== IModelHost.configuration);
+    const config = IModelHost.configuration;
     const credentials = config.tileCacheCredentials;
     if (undefined === credentials)
       return;

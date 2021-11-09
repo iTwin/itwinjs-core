@@ -130,7 +130,7 @@ describe("Example Code", () => {
     // __PUBLISH_EXTRACT_END__
 
     // __PUBLISH_EXTRACT_START__ Settings.addDictionary
-    let workspace = IModelHost.workspace;
+    let workspace = IModelHost.appWorkspace;
     let settings = workspace.settings;
     settings.addDictionary("initial values", SettingsPriority.defaults, defaultsDict);
     let defaultTool = settings.getString("core/default-tool"); // returns "select"
@@ -150,7 +150,7 @@ describe("Example Code", () => {
       "app5/markerName": "arrows",
       "app5/markerIcon": "arrows.ico",
     };
-    workspace = IModelHost.workspace;
+    workspace = iModel.workspace;
     settings = workspace.settings;
     settings.addDictionary("for iTwin 555", SettingsPriority.iTwin, iTwin555);
     defaultTool = settings.getString("core/default-tool"); // returns "measure"
@@ -158,7 +158,7 @@ describe("Example Code", () => {
     expect(defaultTool).eq(iTwin555["core/default-tool"]);
 
     // __PUBLISH_EXTRACT_START__ Settings.dropITwinDictionary
-    workspace = IModelHost.workspace;
+    workspace = iModel.workspace;
     settings = workspace.settings;
     settings.dropDictionary("for iTwin 555");
     defaultTool = settings.getString("core/default-tool"); // returns "select" again
@@ -181,7 +181,7 @@ describe("Example Code", () => {
       ],
     };
 
-    workspace = IModelHost.workspace;
+    workspace = iModel.workspace;
     settings = workspace.settings;
     const fontContainerName = "default-fonts";
     settings.addDictionary("iTwin", SettingsPriority.iTwin, iTwinDict);
