@@ -51,22 +51,6 @@ interface CommandLineArgs {
   excludeCategories?: string;
 }
 
-/** allows lazy access token access, so we don't need to get it if we don't need it */
-class LazyAccessToken {
-  private _accessToken: AccessToken | undefined;
-  public async get(): Promise<AccessToken> {
-    const lazyGet = async () => {
-      assert(
-        process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID !== undefined,
-        "An online-only interaction was requested, but the required environment variables haven't been configured\n"
-        + "Please see the .env.template file on how to set up environment variables."
-      );
-      return this._accessToken ??= await IModelHubUtils.getAccessToken();
-    };
-    return lazyGet();
-  }
-}
-
 void (async () => {
   try {
     const envResult = dotenv.config({ path: path.resolve(__dirname, "../.env")});
@@ -147,8 +131,6 @@ void (async () => {
     let targetDb: IModelDb;
     const processChanges = args.sourceStartChangesetIndex || args.sourceStartChangesetId;
 
-    const lazyAccessToken = new LazyAccessToken();
-
     if (args.sourceITwinId || args.targetITwinId) {
       iTwinAccessClient = new ProjectsAccessClient();
     }
@@ -165,9 +147,9 @@ void (async () => {
       if (args.sourceStartChangesetIndex || args.sourceStartChangesetId) {
         assert(!(args.sourceStartChangesetIndex && args.sourceStartChangesetId), "Pick single way to specify starting changeset");
         if (args.sourceStartChangesetIndex) {
-          args.sourceStartChangesetId = await IModelHubUtils.queryChangesetId(await lazyAccessToken.get(), sourceIModelId, args.sourceStartChangesetIndex);
+          args.sourceStartChangesetId = await IModelHubUtils.queryChangesetId(await IModelHubUtils.getAccessToken(), sourceIModelId, args.sourceStartChangesetIndex);
         } else {
-          args.sourceStartChangesetIndex = await IModelHubUtils.queryChangesetIndex(await lazyAccessToken.get(), sourceIModelId, args.sourceStartChangesetId as ChangesetId);
+          args.sourceStartChangesetIndex = await IModelHubUtils.queryChangesetIndex(await IModelHubUtils.getAccessToken(), sourceIModelId, args.sourceStartChangesetId as ChangesetId);
         }
         Logger.logInfo(loggerCategory, `sourceStartChangesetIndex=${args.sourceStartChangesetIndex}`);
         Logger.logInfo(loggerCategory, `sourceStartChangesetId=${args.sourceStartChangesetId}`);
@@ -175,9 +157,9 @@ void (async () => {
       if (args.sourceEndChangesetIndex || args.sourceEndChangesetId) {
         assert(!(args.sourceEndChangesetIndex && args.sourceEndChangesetId), "Pick single way to specify ending changeset");
         if (args.sourceEndChangesetIndex) {
-          args.sourceEndChangesetId = await IModelHubUtils.queryChangesetId(await lazyAccessToken.get(), sourceIModelId, args.sourceEndChangesetIndex);
+          args.sourceEndChangesetId = await IModelHubUtils.queryChangesetId(await IModelHubUtils.getAccessToken(), sourceIModelId, args.sourceEndChangesetIndex);
         } else {
-          args.sourceEndChangesetIndex = await IModelHubUtils.queryChangesetIndex(await lazyAccessToken.get(), sourceIModelId, args.sourceEndChangesetId as ChangesetId);
+          args.sourceEndChangesetIndex = await IModelHubUtils.queryChangesetIndex(await IModelHubUtils.getAccessToken(), sourceIModelId, args.sourceEndChangesetId as ChangesetId);
         }
         sourceEndVersion = IModelVersion.asOfChangeSet(args.sourceEndChangesetId as ChangesetId);
         Logger.logInfo(loggerCategory, `sourceEndChangesetIndex=${args.sourceEndChangesetIndex}`);
@@ -185,19 +167,19 @@ void (async () => {
       }
 
       if (args.logChangesets) {
-        await IModelHubUtils.forEachChangeset(await lazyAccessToken.get(), sourceIModelId, (changeset: ChangesetProps) => {
+        await IModelHubUtils.forEachChangeset(await IModelHubUtils.getAccessToken(), sourceIModelId, (changeset: ChangesetProps) => {
           Logger.logInfo(loggerCategory, `sourceChangeset: index=${changeset.index}, id="${changeset.id}", description="${changeset.description}"}`);
         });
       }
 
       if (args.logNamedVersions) {
-        await IModelHubUtils.forEachNamedVersion(await lazyAccessToken.get(), sourceIModelId, (namedVersion: Version) => {
+        await IModelHubUtils.forEachNamedVersion(await IModelHubUtils.getAccessToken(), sourceIModelId, (namedVersion: Version) => {
           Logger.logInfo(loggerCategory, `sourceNamedVersion: id="${namedVersion.id}", changesetId="${namedVersion.changeSetId}", name="${namedVersion.name}"`);
         });
       }
 
       sourceDb = await IModelHubUtils.downloadAndOpenBriefcase({
-        accessToken: await lazyAccessToken.get(),
+        accessToken: await IModelHubUtils.getAccessToken(),
         iTwinId: sourceITwinId,
         iModelId: sourceIModelId,
         asOf: sourceEndVersion.toJSON(),
@@ -225,14 +207,14 @@ void (async () => {
       let targetIModelId = args.targetIModelId ? Guid.normalize(args.targetIModelId) : undefined;
       if (undefined !== args.targetIModelName) {
         assert(undefined === targetIModelId, "should not specify targetIModelId if targetIModelName is specified");
-        targetIModelId = await IModelHubUtils.queryIModelId(await lazyAccessToken.get(), targetITwinId, args.targetIModelName);
+        targetIModelId = await IModelHubUtils.queryIModelId(await IModelHubUtils.getAccessToken(), targetITwinId, args.targetIModelName);
         if ((args.clean) && (undefined !== targetIModelId)) {
-          await IModelHost.hubAccess.deleteIModel({ accessToken: await lazyAccessToken.get(), iTwinId: targetITwinId, iModelId: targetIModelId });
+          await IModelHost.hubAccess.deleteIModel({ accessToken: await IModelHubUtils.getAccessToken(), iTwinId: targetITwinId, iModelId: targetIModelId });
           targetIModelId = undefined;
         }
         if (undefined === targetIModelId) {
           // create target iModel if it doesn't yet exist or was just cleaned/deleted above
-          targetIModelId = await IModelHost.hubAccess.createNewIModel({ accessToken: await lazyAccessToken.get(), iTwinId: targetITwinId, iModelName: args.targetIModelName });
+          targetIModelId = await IModelHost.hubAccess.createNewIModel({ accessToken: await IModelHubUtils.getAccessToken(), iTwinId: targetITwinId, iModelName: args.targetIModelName });
         }
       }
       assert(undefined !== targetIModelId, "if you provide a sourceITwinId, you must provide a sourceIModelId");
@@ -240,19 +222,19 @@ void (async () => {
       Logger.logInfo(loggerCategory, `targetIModelId=${targetIModelId}`);
 
       if (args.logChangesets) {
-        await IModelHubUtils.forEachChangeset(await lazyAccessToken.get(), targetIModelId, (changeset: ChangesetProps) => {
+        await IModelHubUtils.forEachChangeset(await IModelHubUtils.getAccessToken(), targetIModelId, (changeset: ChangesetProps) => {
           Logger.logInfo(loggerCategory, `targetChangeset:  index="${changeset.index}", id="${changeset.id}", description="${changeset.description}"`);
         });
       }
 
       if (args.logNamedVersions) {
-        await IModelHubUtils.forEachNamedVersion(await lazyAccessToken.get(), targetIModelId, (namedVersion: Version) => {
+        await IModelHubUtils.forEachNamedVersion(await IModelHubUtils.getAccessToken(), targetIModelId, (namedVersion: Version) => {
           Logger.logInfo(loggerCategory, `targetNamedVersion: id="${namedVersion.id}", changesetId="${namedVersion.changeSetId}", name="${namedVersion.name}"`);
         });
       }
 
       targetDb = await IModelHubUtils.downloadAndOpenBriefcase({
-        accessToken: await lazyAccessToken.get(),
+        accessToken: await IModelHubUtils.getAccessToken(),
         iTwinId: targetITwinId,
         iModelId: targetIModelId,
       });
@@ -296,7 +278,7 @@ void (async () => {
 
     if (processChanges) {
       assert(undefined !== args.sourceStartChangesetId);
-      await Transformer.transformChanges(await lazyAccessToken.get(), sourceDb, targetDb, args.sourceStartChangesetId, transformerOptions);
+      await Transformer.transformChanges(await IModelHubUtils.getAccessToken(), sourceDb, targetDb, args.sourceStartChangesetId, transformerOptions);
     } else {
       await Transformer.transformAll(sourceDb, targetDb, transformerOptions);
     }
