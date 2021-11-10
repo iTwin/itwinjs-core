@@ -5,7 +5,7 @@
 
 import * as path from "path";
 import * as Yargs from "yargs";
-import { assert, Guid, GuidString, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
+import { AccessToken, assert, Guid, GuidString, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
 import { ProjectsAccessClient } from "@itwin/projects-client";
 import { Version } from "@bentley/imodelhub-client";
 import { IModelHubBackend } from "@bentley/imodelhub-client/lib/cjs/imodelhub-node";
@@ -15,6 +15,7 @@ import { TransformerLoggerCategory } from "@itwin/core-transformer";
 import { ElementUtils } from "./ElementUtils";
 import { IModelHubUtils } from "./IModelHubUtils";
 import { loggerCategory, Transformer, TransformerOptions } from "./Transformer";
+import * as dotenv from "dotenv";
 
 interface CommandLineArgs {
   hub?: string;
@@ -51,6 +52,8 @@ interface CommandLineArgs {
 
 void (async () => {
   try {
+    dotenv.config({ path: path.resolve(__dirname, "../.env.template")});
+
     Yargs.usage("Transform the specified source iModel into a new target iModel");
     Yargs.strict();
 
@@ -122,7 +125,11 @@ void (async () => {
     let targetDb: IModelDb;
     const processChanges = args.sourceStartChangesetIndex || args.sourceStartChangesetId;
 
-    const accessToken = await IModelHubUtils.getAccessToken();
+    let accessToken!: AccessToken;
+    const requiresLogin = args.sourceITwinId || args.targetITwinId || args.sourceIModelId || args.sourceIModelName || args.targetIModelId || args.targetIModelName;
+    if (requiresLogin)
+      accessToken = await IModelHubUtils.getAccessToken();
+
     if (args.sourceITwinId || args.targetITwinId) {
       iTwinAccessClient = new ProjectsAccessClient();
     }
