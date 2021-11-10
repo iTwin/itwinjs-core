@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ImsAuthorizationClient } from "@bentley/itwin-client";
 import { AccessToken, Guid, GuidString, Logger, LogLevel } from "@itwin/core-bentley";
 import { Angle, Range2d } from "@itwin/core-geometry";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";

@@ -46,6 +46,6 @@ export async function signIn(): Promise<boolean> {
 
 export async function signOut(): Promise<void> {
   const auth = IModelApp.authorizationClient;
-  if (auth instanceof NativeAppAuthorization || auth instanceof BrowserAuthorizationClient)
+  if (auth instanceof ElectronAppAuthorization || auth instanceof BrowserAuthorizationClient)
     return auth.signOut();
 }

@@ -25,12 +25,11 @@ export async function commonSetup(): Promise<void> {
       "itwinjs",
     ];
     const iModelHost = new IModelHostConfiguration();
-    const authClient = new ElectronAuthorizationBackend({
+    const authClient = await ElectronAuthorizationBackend.create({
       clientId: "imodeljs-spa-test",
       redirectUri: "http://localhost:3000/signin-callback",
       scope: baseOidcScopes.join(" "),
     });
-    await authClient.initialize();
     iModelHost.authorizationClient = authClient;
     await ElectronHost.startup({ electronHost: { rpcInterfaces }, iModelHost });
   } else

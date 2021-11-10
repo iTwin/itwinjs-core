@@ -46,7 +46,7 @@ const dtaElectronMain = async () => {
   // Need to load the config first to get the electron options
   loadBackendConfig();
 
-  const opts: ElectronHostOptions = {
+  const opts = {
     webResourcesPath: path.join(__dirname, "..", "..", "build"),
     iconName: "display-test-app.ico",
     rpcInterfaces: getRpcInterfaces(),

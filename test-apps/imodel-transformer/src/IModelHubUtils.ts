@@ -18,8 +18,7 @@ export namespace IModelHubUtils {
   }
 
   async function signIn(): Promise<AccessToken> {
-    const client = new ElectronAuthorizationBackend();
-    await client.initialize({
+    const client = await ElectronAuthorizationBackend.create({
       clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
       redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
       scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",

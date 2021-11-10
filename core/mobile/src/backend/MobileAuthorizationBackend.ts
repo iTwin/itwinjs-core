@@ -26,6 +26,12 @@ import { MobileHost } from "./MobileHost";
    */
   readonly redirectUri?: string;
 
+  /** Client application's identifier as registered with the OIDC/OAuth2 provider. */
+  readonly clientId: string;
+
+  /** List of space separated scopes to request access to various resources. */
+  readonly scope: string;
+
   /**
    * Time in seconds that's used as a buffer to check the token for validity/expiry.
    * The checks for authorization, and refreshing access tokens all use this buffer - i.e., the token is considered expired if the current time is within the specified

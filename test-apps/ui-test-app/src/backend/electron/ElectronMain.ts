@@ -32,12 +32,11 @@ export async function initializeElectron(opts?: IModelHostConfiguration) {
     iModelHost: opts,
   };
 
-  const authClient = new ElectronAuthorizationBackend({
+  const authClient = await ElectronAuthorizationBackend.create({
     clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
     redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
     scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
   });
-  await authClient.initialize();
   opt.iModelHost.authorizationClient = authClient;
 
   await ElectronHost.startup(opt);
