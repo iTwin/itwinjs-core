@@ -224,7 +224,7 @@ export interface AcquireNewBriefcaseIdArg extends IModelIdArg {
 
 // @beta (undocumented)
 export class AliCloudStorageService extends CloudStorageService {
-    constructor(credentials: CloudStorageServiceCredentials);
+    constructor(credentials: AliCloudStorageServiceCredentials);
     // (undocumented)
     id: CloudStorageProvider;
     // (undocumented)
@@ -233,6 +233,16 @@ export class AliCloudStorageService extends CloudStorageService {
     obtainContainerUrl(id: CloudStorageContainerDescriptor, expiry: Date, _clientIp?: string): CloudStorageContainerUrl;
     // (undocumented)
     upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions): Promise<string>;
+}
+
+// @beta (undocumented)
+export interface AliCloudStorageServiceCredentials {
+    // (undocumented)
+    accessKeyId: string;
+    // (undocumented)
+    accessKeySecret: string;
+    // (undocumented)
+    region: string;
 }
 
 // @public
@@ -291,7 +301,7 @@ export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
 
 // @beta (undocumented)
 export class AzureBlobStorage extends CloudStorageService {
-    constructor(credentials: CloudStorageServiceCredentials);
+    constructor(credentials: AzureBlobStorageCredentials);
     // (undocumented)
     ensureContainer(name: string): Promise<void>;
     // (undocumented)
@@ -300,6 +310,14 @@ export class AzureBlobStorage extends CloudStorageService {
     obtainContainerUrl(id: CloudStorageContainerDescriptor, expiry: Date, clientIp?: string): CloudStorageContainerUrl;
     // (undocumented)
     upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions, metadata?: object): Promise<string>;
+}
+
+// @beta (undocumented)
+export interface AzureBlobStorageCredentials {
+    // (undocumented)
+    accessKey: string;
+    // (undocumented)
+    account: string;
 }
 
 // @beta
@@ -703,16 +721,6 @@ export abstract class CloudStorageService {
     terminate(): void;
     // (undocumented)
     abstract upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions, metadata?: object): Promise<string>;
-}
-
-// @beta (undocumented)
-export interface CloudStorageServiceCredentials {
-    // (undocumented)
-    accessKey: string;
-    // (undocumented)
-    account: string;
-    // (undocumented)
-    service: "azure" | "alicloud" | "external";
 }
 
 // @internal (undocumented)
@@ -2446,14 +2454,14 @@ export class IModelHost {
     static startup(configuration?: IModelHostConfiguration): Promise<void>;
     // @alpha (undocumented)
     static readonly telemetry: TelemetryManager;
-    // @beta
-    static tileCacheService: CloudStorageService;
+    // @internal
+    static tileCacheService?: CloudStorageService;
     // @internal
     static get tileContentRequestTimeout(): number;
     // @internal
     static get tileTreeRequestTimeout(): number;
     // @internal (undocumented)
-    static tileUploader: CloudStorageTileUploader;
+    static tileUploader?: CloudStorageTileUploader;
     // @internal
     static get usingExternalTileCache(): boolean;
     }
@@ -2480,7 +2488,9 @@ export class IModelHostConfiguration {
     // @beta
     restrictTileUrlsByClientIp?: boolean;
     // @beta
-    tileCacheCredentials?: CloudStorageServiceCredentials;
+    tileCacheAzureCredentials?: AzureBlobStorageCredentials;
+    // @beta
+    tileCacheService?: CloudStorageService;
     // @internal
     tileContentRequestTimeout: number;
     // @internal
