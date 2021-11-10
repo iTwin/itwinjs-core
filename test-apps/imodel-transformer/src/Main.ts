@@ -50,11 +50,16 @@ interface CommandLineArgs {
   excludeCategories?: string;
 }
 
+const usage = `
+Transform the specified source iModel into a new target iModel.
+You must set up a .env file to connect to an online iModel, see the .env.template file to do so.
+`.trim();
+
 void (async () => {
   try {
     dotenv.config({ path: path.resolve(__dirname, "../.env")});
 
-    Yargs.usage("Transform the specified source iModel into a new target iModel");
+    Yargs.usage(usage);
     Yargs.strict();
 
     // iModelHub environment options
