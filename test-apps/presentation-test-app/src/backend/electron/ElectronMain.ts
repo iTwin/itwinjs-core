@@ -7,7 +7,7 @@ import { ElectronAuthorizationBackend } from "@itwin/electron-authorization/lib/
 import { ElectronHost, ElectronHostOptions } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { RpcInterfaceDefinition } from "@itwin/core-common";
 import { SampleIpcHandler } from "../SampleIpcHandler";
-import { IModelHost, IModelHostConfiguration } from "@itwin/core-backend";
+import { IModelHostConfiguration } from "@itwin/core-backend";
 
 /**
  * Initializes Electron backend

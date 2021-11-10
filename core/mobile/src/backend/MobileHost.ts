@@ -13,7 +13,7 @@ import { CancelRequest, DownloadFailed, ProgressCallback, UserCancelledError } f
 import { PresentationRpcInterface } from "@itwin/presentation-common";
 import { BatteryState, DeviceEvents, mobileAppChannel, MobileAppFunctions, Orientation } from "../common/MobileAppProps";
 import { MobileRpcManager } from "../common/MobileRpcManager";
-import { MobileAuthorizationBackend, MobileAppAuthorizationConfiguration } from "./MobileAuthorizationBackend";
+import { MobileAppAuthorizationConfiguration, MobileAuthorizationBackend } from "./MobileAuthorizationBackend";
 import { setupMobileRpc } from "./MobileRpcServer";
 
 /** @beta */

@@ -14,7 +14,7 @@ import { MobileHost } from "./MobileHost";
  * Client configuration to generate OIDC/OAuth tokens for mobile applications
  * @beta
  */
- export interface MobileAppAuthorizationConfiguration {
+export interface MobileAppAuthorizationConfiguration {
   /**
    * The OAuth token issuer URL. Defaults to Bentley's auth URL if undefined.
    */
@@ -40,7 +40,6 @@ import { MobileHost } from "./MobileHost";
    */
   readonly expiryBuffer?: number;
 }
-
 
 /** Utility to provide OIDC/OAuth tokens from native ios app to frontend
    * @internal

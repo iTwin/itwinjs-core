@@ -37,7 +37,6 @@ export async function initializeBackend() {
 
   if (ProcessDetector.isElectronAppBackend) {
     const rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
-    const iModelHost = new IModelHostConfiguration();
     const authClient = await ElectronAuthorizationBackend.create({
       clientId: "imodeljs-electron-test",
       redirectUri: "http://localhost:3000/signin-callback",

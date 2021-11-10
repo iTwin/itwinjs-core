@@ -9,7 +9,7 @@ import { ElectronAuthorizationBackend } from "@itwin/electron-authorization/lib/
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backend";
 import { getSupportedRpcs } from "../../common/rpcs";
-import { IModelHost, IModelHostConfiguration } from "@itwin/core-backend";
+import { IModelHostConfiguration } from "@itwin/core-backend";
 
 const mainWindowName = "mainWindow";
 
