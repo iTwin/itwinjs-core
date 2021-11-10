@@ -132,7 +132,7 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
     const badge = BadgeUtilities.getComponentForBadgeType(actionItem.badgeType);
 
     return (
-      <Item
+      <Item // eslint-disable-line deprecation/deprecation
         {...props}
         isActive={this.state.isActive}
         isDisabled={!this.state.isEnabled}

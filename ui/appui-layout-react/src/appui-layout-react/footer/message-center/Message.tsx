@@ -12,7 +12,7 @@ import * as React from "react";
 import { CommonProps } from "@itwin/core-react";
 
 /** Properties of [[MessageCenterMessage]] component.
- * @beta
+ * @internal
  */
 export interface MessageCenterMessageProps extends CommonProps {
   /** Message content. */
@@ -22,7 +22,7 @@ export interface MessageCenterMessageProps extends CommonProps {
 }
 
 /** Message entry in [[MessageCenterDialog]] component.
- * @beta
+ * @internal
  */
 export class MessageCenterMessage extends React.PureComponent<MessageCenterMessageProps> {
   public override render() {

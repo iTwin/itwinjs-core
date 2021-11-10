@@ -30,7 +30,7 @@ export interface WidgetTab {
 /** Properties for a Widget in a [[WidgetStack]].
  * @internal
  */
-export type WidgetTabs = { readonly [id in WidgetZoneId]: ReadonlyArray<WidgetTab> };
+export type WidgetTabs = { readonly [id in WidgetZoneId]: ReadonlyArray<WidgetTab> }; // eslint-disable-line deprecation/deprecation
 
 /** Properties for the [[WidgetStack]] React component.
  * @internal
@@ -40,15 +40,15 @@ export interface WidgetStackProps extends CommonProps {
   disabledResizeHandles: DisabledResizeHandles | undefined;
   draggedWidget: DraggedWidgetManagerProps | undefined;
   fillZone: boolean;
-  getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>;
-  horizontalAnchor: HorizontalAnchor;
+  getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>; // eslint-disable-line deprecation/deprecation
+  horizontalAnchor: HorizontalAnchor; // eslint-disable-line deprecation/deprecation
   isCollapsed: boolean;
   isFloating: boolean;
   isInStagePanel: boolean;
-  openWidgetId: WidgetZoneId | undefined;
+  openWidgetId: WidgetZoneId | undefined; // eslint-disable-line deprecation/deprecation
   verticalAnchor: VerticalAnchor;
-  widgetChangeHandler: WidgetChangeHandler;
-  widgets: ReadonlyArray<WidgetZoneId>;
+  widgetChangeHandler: WidgetChangeHandler; // eslint-disable-line deprecation/deprecation
+  widgets: ReadonlyArray<WidgetZoneId>; // eslint-disable-line deprecation/deprecation
   widgetTabs: WidgetTabs;
 }
 
@@ -105,6 +105,7 @@ export class WidgetStack extends React.PureComponent<WidgetStackProps> {
     this.props.widgetChangeHandler.handleResize(this.props.widgets[0], resizeBy, handle, filledHeightDiff);
   };
 
+  // eslint-disable-next-line deprecation/deprecation
   private _handleTabDragStart = (widgetId: WidgetZoneId, tabIndex: number, initialPosition: PointProps, firstTabBounds: RectangleProps) => {
     if (!this._widgetStack.current)
       return;
@@ -126,6 +127,7 @@ export class WidgetStack extends React.PureComponent<WidgetStackProps> {
     this.props.widgetChangeHandler.handleTabDragEnd();
   };
 
+  // eslint-disable-next-line deprecation/deprecation
   private _handleTabClick = (widgetId: WidgetZoneId, tabIndex: number) => {
     this.props.widgetChangeHandler.handleTabClick(widgetId, tabIndex);
   };
@@ -141,16 +143,17 @@ export class WidgetStack extends React.PureComponent<WidgetStackProps> {
 export interface WidgetStackTabsProps {
   activeTabIndex: number;
   draggedWidget: DraggedWidgetManagerProps | undefined;
-  horizontalAnchor: HorizontalAnchor;
+  horizontalAnchor: HorizontalAnchor; // eslint-disable-line deprecation/deprecation
   isCollapsed: boolean;
   isProtruding: boolean;
-  onTabClick: (widgetId: WidgetZoneId, tabIndex: number) => void;
+  onTabClick: (widgetId: WidgetZoneId, tabIndex: number) => void; // eslint-disable-line deprecation/deprecation
   onTabDrag: (dragged: PointProps) => void;
   onTabDragEnd: () => void;
+  // eslint-disable-next-line deprecation/deprecation
   onTabDragStart: (widgetId: WidgetZoneId, tabIndex: number, initialPosition: PointProps, firstTabBounds: RectangleProps) => void;
-  openWidgetId: WidgetZoneId | undefined;
+  openWidgetId: WidgetZoneId | undefined; // eslint-disable-line deprecation/deprecation
   verticalAnchor: VerticalAnchor;
-  widgets: ReadonlyArray<WidgetZoneId>;
+  widgets: ReadonlyArray<WidgetZoneId>; // eslint-disable-line deprecation/deprecation
   widgetTabs: WidgetTabs;
 }
 
@@ -199,18 +202,19 @@ export class WidgetStackTabs extends React.PureComponent<WidgetStackTabsProps> {
 export interface WidgetStackTabGroupProps {
   activeTabIndex: number;
   draggedWidget: DraggedWidgetManagerProps | undefined;
-  horizontalAnchor: HorizontalAnchor;
+  horizontalAnchor: HorizontalAnchor; // eslint-disable-line deprecation/deprecation
   isCollapsed: boolean;
   isProtruding: boolean;
   isStacked: boolean;
-  onTabClick: (widgetId: WidgetZoneId, tabIndex: number) => void;
+  onTabClick: (widgetId: WidgetZoneId, tabIndex: number) => void; // eslint-disable-line deprecation/deprecation
   onTabDrag: (dragged: PointProps) => void;
   onTabDragEnd: () => void;
+  // eslint-disable-next-line deprecation/deprecation
   onTabDragStart: (widgetId: WidgetZoneId, tabIndex: number, initialPosition: PointProps, firstTabBounds: RectangleProps) => void;
-  openWidgetId: WidgetZoneId | undefined;
+  openWidgetId: WidgetZoneId | undefined; // eslint-disable-line deprecation/deprecation
   tabs: ReadonlyArray<WidgetTab>;
   verticalAnchor: VerticalAnchor;
-  widgetId: WidgetZoneId;
+  widgetId: WidgetZoneId; // eslint-disable-line deprecation/deprecation
 }
 
 /** Widget tab group used in [[WidgetStackTabs]] component.
@@ -290,7 +294,7 @@ export class WidgetStackTabGroup extends React.PureComponent<WidgetStackTabGroup
  * @internal
  */
 export interface WidgetStackTabProps {
-  horizontalAnchor: HorizontalAnchor;
+  horizontalAnchor: HorizontalAnchor; // eslint-disable-line deprecation/deprecation
   iconSpec?: string | ConditionalStringValue | React.ReactNode;
   index: number;
   badgeType?: BadgeType;
