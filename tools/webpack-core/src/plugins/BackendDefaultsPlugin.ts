@@ -24,6 +24,11 @@ export class BackendDefaultsPlugin {
     // Don't bother minimizing backends...
     compiler.options.optimization!.minimize = false;
 
+    // optional dependency from node-fetch, doesn't work with IgnoreOptionalDependenciesPlugin
+    compiler.options.externals = {
+      "encoding": "require('encoding')",
+    };
+
     compiler.options = new IModelJsOptionsDefaulter().process(compiler.options);
     compiler.options.module!.rules = [
       ...(compiler.options.module!.rules || []),
