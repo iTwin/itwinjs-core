@@ -50,6 +50,7 @@ export class BackendDefaultsPlugin {
         "debug",
         "diagnostic-channel-publishers",
         "express",
+        "node-fetch",
         "got",
         "keyv",
         "ws",
@@ -68,7 +69,6 @@ export class BackendDefaultsPlugin {
       new ExternalsPlugin("commonjs", [
         handlePrefixedExternals,
         "electron",
-        "encoding",
         "@bentley/imodeljs-native",
         "@bentley/imodeljs-native/package.json",
         "dtrace-provider",
