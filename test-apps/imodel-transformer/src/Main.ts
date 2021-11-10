@@ -70,10 +70,9 @@ class LazyAccessToken {
 void (async () => {
   try {
     const envResult = dotenv.config({ path: path.resolve(__dirname, "../.env")});
-    if (envResult.error) {
-      throw envResult.error;
+    if (!envResult.error) {
+      dotenvExpand(envResult);
     }
-    dotenvExpand(envResult);
 
     Yargs.usage(usage);
     Yargs.strict();
