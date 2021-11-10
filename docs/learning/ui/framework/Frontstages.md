@@ -8,153 +8,136 @@ A **Frontstage** is a full-screen configuration designed to enable the user to a
 |**Nested** | is accessed from a primary frontstage. It may use all zones and panels, but instead of the App button, the Tool Widget contains a Back button to return to the primary frontstage.
 |**Modal** | is accessed from another frontstage or the Backstage. It may contain any content along with a Back button. It does not use zones or stage panels. It is useful for application settings and data management user interfaces.
 
-## Frontstages in UI 2.0/"App UI"
+## Frontstages in App UI
 
 With the release of the `iTwin.js 2.0`, new UI components are available that provide a new look and feel for iTwin Apps. The new look and feel was initially referred to as `UI 2.0` and now has the more formal name of a `App UI`. The two primary goals of `App UI` are to limit the amount of UI components that obscure the iModel content and to ensure that Extensions can augment the UI provided by the host IModelApp.
 
 Below is an example frontstage that shows the different areas/zones.
 
-![FrontstageUi2](./images/FrontstageUi2.png "UI 2.0/App UI Frontstage design")
+![FrontstageUi2](./images/FrontstageUi2.png "App UI Frontstage design")
 
-A frontstage is configured in a class subclassing the [FrontstageProvider]($appui-react) abstract class.
-The FrontstageProvider contains an abstract [FrontstageProvider.frontstage]($appui-react) field containing a [Frontstage]($appui-react) React component.  The Frontstage React component has props for populating the different areas of the stage as well as values for the default tool, application data, and usage.
+A frontstage is can be configured in a class subclassing the [FrontstageProvider]($appui-react) abstract class, but the recommended way is to build it using UiProviders, as in the example below .
 
 ### Example Frontstage definition
 
 The definition that produces the sample frontstage is shown below.
 
 ```tsx
-  <Frontstage id="Ui2Sample"
-    defaultTool={CoreTools.selectElementCommand}
-    contentGroup={myContentGroup}
-    defaultContentId="singleIModelView"
-    isInFooterMode={true}
-    usage={StageUsage.General}
-    applicationData={{ key: "value" }}
-    contentManipulationTools={
-      <Zone
-        widgets={[
-          <Widget isFreeform={true} element={<BasicToolWidget />} />,
-        ]}
-      />
-    }
-    viewNavigationTools={
-      <Zone
-        widgets={[
-          <Widget isFreeform={true} element={<BasicNavigationWidget />} />,
-        ]}
-      />
-    }
-    toolSettings={
-      <Zone
-        widgets={[
-          <Widget isToolSettings={true} />,
-        ]}
-      />
-    }
-    statusBar={
-      <Zone
-        widgets={[
-          <Widget isStatusBar={true} classId="SmallStatusBar" />,
-        ]}
-      />
-    }
+export class FrontstageUi2 {
+  private static _contentGroupProvider = new FrontstageUi2ContentGroupProvider();
+  private static showCornerButtons = true;
 
-    leftPanel={
-      <StagePanel
-        size={300}
-        defaultState={StagePanelState.Minimized}
-        panelZones={{
-          start: {
-            widgets: [
-              <Widget id="LeftStart1" label="Start1" defaultState={WidgetState.Open} element={<h2>Left Start1 widget</h2>} />,
-              <Widget id="LeftStart2" label="Start2" element={<h2>Left Start2 widget</h2>} />,
-            ],
-          },
-          middle: {
-            widgets: [
-              <Widget id="LeftMiddle1" label="Middle1" element={<h2>Left Middle1 widget</h2>} />,
-              <Widget id="LeftMiddle2" label="Middle2" defaultState={WidgetState.Open} element={<h2>Left Middle2 widget</h2>} />,
-            ],
-          },
-          end: {
-            widgets: [
-              <Widget id="LeftEnd1" label="End1" defaultState={WidgetState.Open} element={<h2>Left End1 widget</h2>} />,
-              <Widget id="LeftEnd2" label="End2" element={<h2>Left End2 widget</h2>} />,
-            ],
-          },
-        }}
-      />
-    }
+  public static supplyAppData(_id: string, _applicationData?: any) {
+    return {
+      viewState: UiFramework.getDefaultViewState,
+      iModelConnection: UiFramework.getIModelConnection,
+    };
+  }
 
-    topPanel={
-      <StagePanel
-        size={90}
-        defaultState={StagePanelState.Minimized}
-        panelZones={{
-          start: {
-            widgets: [
-              <Widget id="TopStart1" label="Start1" defaultState={WidgetState.Open} element={<h2>Top Start1 widget</h2>} />,
-              <Widget id="TopStart2" label="Start2" element={<h2>Top Start2 widget</h2>} />,
-            ],
-          },
-          end: {
-            widgets: [
-              <Widget id="TopEnd1" label="End1" element={<h2>Top End1 widget</h2>} />,
-              <Widget id="TopEnd2" label="End2" defaultState={WidgetState.Open} element={<h2>Top End2 widget</h2>} />,
-            ],
-          },
-        }}
-      />
-    }
+  public static register() {
+    // set up custom corner button where we specify icon, label, and action
+    const cornerButton = FrontstageUi2.showCornerButtons ?
+      <BackstageAppButton key="ui2-backstage" label="Toggle Ui2 Backstage" icon={"icon-bentley-systems"}
+        execute={() => BackstageManager.getBackstageToggleCommand().execute()} /> : undefined;
+    const hideNavigationAid = !FrontstageUi2.showCornerButtons;
+    const setUpCustomToolGroups = true;
+    const applicationData = setUpCustomToolGroups ? {
+      defaultContentTools: {
+        vertical: {
+          selectElementGroupPriority: 100,
+          measureGroupPriority: 200,
+          selectionGroupPriority: 300,
+        },
+        horizontal: {
+          clearSelectionGroupPriority: 100,
+          overridesGroupPriority: 200,
+        },
+      },
+    } : undefined;
 
-    rightPanel={
-      <StagePanel
-        defaultState={StagePanelState.Open}
-        panelZones={{
-          start: {
-            widgets: [
-              <Widget id="RightStart1" label="Start1" element={<h2>Right Start1 widget</h2>} />,
-              <Widget id="RightStart2" label="Start2" defaultState={WidgetState.Open} element={<h2>Right Start2 widget</h2>} />,
-            ],
-          },
-          middle: {
-            widgets: [
-              <Widget id="RightMiddle1" label="Middle1" defaultState={WidgetState.Open} element={<h2>Right Middle1 widget</h2>} />,
-              <Widget id="RightMiddle2" label="Middle2" element={<h2>Right Middle2 widget</h2>} />,
-            ],
-          },
-          end: {
-            widgets: [
-              <Widget id="RightEnd1" label="End1" element={<h2>Right End1 widget</h2>} />,
-              <Widget id="RightEnd2" label="End2" defaultState={WidgetState.Open} element={<h2>Right End2 widget</h2>} />,
-            ],
-          },
-        }}
-      />
-    }
+    const ui2StageProps: StandardFrontstageProps = {
+      id: "Ui2",
+      version: 1.1,
+      contentGroupProps: FrontstageUi2._contentGroupProvider,
+      hideNavigationAid,
+      cornerButton,
+      usage: StageUsage.General,
+      applicationData,
+    };
 
-    bottomPanel={
-       <StagePanel
-        size={180}
-        defaultState={StagePanelState.Minimized}
-        panelZones={{
-          start: {
-            widgets: [
-              <Widget id="BottomStart1" label="Start1" element={<h2>Bottom Start1 widget</h2>} />,
-              <Widget id="BottomStart2" label="Start2" defaultState={WidgetState.Open} element={<h2>Bottom Start2 widget</h2>} />,
-            ],
-          },
-          end: {
-            widgets: [
-              <Widget id="BottomEnd1" label="End1" defaultState={WidgetState.Open} element={<h2>Bottom End1 widget</h2>} />,
-              <Widget id="BottomEnd2" label="End2" element={<h2>Bottom End2 widget</h2>} />,
-            ],
-          },
-        }}
-      />
-    }
-  />
+    ConfigurableUiManager.addFrontstageProvider(new StandardFrontstageProvider(ui2StageProps));
+    this.registerToolProviders();
+  }
+
+  private static registerToolProviders() {
+
+    // Provides standard tools for ToolWidget in ui2.0 stage
+    StandardContentToolsProvider.register("ui2-standardContentTools", {
+      horizontal: {
+        clearSelection: true,
+        clearDisplayOverrides: true,
+        hide: "group",
+        isolate: "group",
+        emphasize: "element",
+      },
+    }, (stageId: string, _stageUsage: string, _applicationData: any) => {
+      return stageId === "Ui2";
+    });
+
+    // Provides standard tools for NavigationWidget in ui2.0 stage
+    StandardNavigationToolsProvider.register("ui2-standardNavigationTools", undefined, (stageId: string, _stageUsage: string, _applicationData: any) => {
+      return stageId === "Ui2";
+    });
+
+    // Provides standard status fields for ui2.0 stage
+    StandardStatusbarItemsProvider.register("ui2-standardStatusItems", undefined, (stageId: string, _stageUsage: string, _applicationData: any) => {
+      return stageId === "Ui2";
+    });
+
+    // Provides example widgets ui2.0 stage
+    AppUi2StageItemsProvider.register(FrontstageUi2.showCornerButtons);
+  }
+}
+
+export function MyCustomViewOverlay() {
+  const [syncIdsOfInterest] = React.useState([SampleAppUiActionId.setTestProperty]);
+  const [showOverlay, setShowOverlay] = React.useState(SampleAppIModelApp.getTestProperty() !== "HIDE");
+
+  React.useEffect(() => {
+    const handleSyncUiEvent = (args: SyncUiEventArgs) => {
+      if (0 === syncIdsOfInterest.length)
+        return;
+
+      // istanbul ignore else
+      if (syncIdsOfInterest.some((value: string): boolean => args.eventIds.has(value))) {
+        const show = SampleAppIModelApp.getTestProperty() !== "HIDE";
+        if (show !== showOverlay)
+          setShowOverlay(show);
+      }
+    };
+
+    // Note: that items with conditions have condition run when loaded into the items manager
+    SyncUiEventDispatcher.onSyncUiEvent.addListener(handleSyncUiEvent);
+    return () => {
+      SyncUiEventDispatcher.onSyncUiEvent.removeListener(handleSyncUiEvent);
+    };
+  }, [setShowOverlay, showOverlay, syncIdsOfInterest]);
+
+  return showOverlay ?
+    <div className="uifw-view-overlay">
+      <div className="my-custom-control" style={{
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100%",
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
+      }}>
+        <div>Hello World</div>
+        <div>(turn off using Hide/Show items tool in horizontal toolbar at top-left)</div>
+      </div>
+    </div> : null;
+}
 
 ```
 

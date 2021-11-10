@@ -1,6 +1,35 @@
 # Augmenting the UI of an iTwin App
 
-There are two basic ways to augment the UI of a host IModelApp. The first way is for an extension or a package to provide an entire stage definition and call `ConfigurableUiManager.addFrontstageProvider` to register it. A [UiItemsProvider]($appui-abstract) may also need to be registered if the backstage is to be used to activate the frontstage. The second way is to use a `UiItemsProvider` to provide definitions for Tool buttons, Status Bar items, and Widgets to add to an existing frontstage. In this scenario, as frontstage components are constructed at runtime, calls are made to all registered UiItemsProviders to gather item definitions to insert into the host applications UI. The item definitions are sorted and arranged by their itemPriority value.
+There are two basic ways to augment the UI of a host iTwinApp. The first way is for a package to provide an entire stage definition and call `ConfigurableUiManager.addFrontstageProvider` to register it. A [UiItemsProvider]($appui-abstract) may also need to be registered if the backstage is to be used to activate the frontstage.
+
+The *recommended* way is to use a `UiItemsProvider` to provide definitions for Tool buttons, Status Bar items, and Widgets to add to an existing frontstage. In this scenario, as frontstage components are constructed at runtime, calls are made to all registered UiItemsProviders to gather item definitions to insert into the host applications UI. The item definitions are sorted and arranged by their itemPriority value.
+
+A package must have an initialize() method that registers its UiItemsProvider, as in this example:
+
+```ts
+  private static registerUiComponents(): void {
+    SampleTool.register(MyPackage.localizationNamespace);
+    GenericTool.register(MyPackage.localizationNamespace);
+
+    ConfigurableUiManager.addFrontstageProvider(new MyFrontstage());
+    ConfigurableUiManager.registerControl("MySampleContentControl", SampleContentControl);
+
+    // register to add items to "General" usage stages"
+    UiItemsManager.register(new MyUiItemsProvider());
+  }
+
+  public static async initialize(): Promise<void> {
+    if (this._initialized)
+      return;
+
+    /** Register the localized strings for this package
+     * We'll pass the localization member to the rest of the classes in the package to allow them to translate strings in the UI they implement.
+     */
+    await IModelApp.localization.registerNamespace(MyPackage.localizationNamespace);
+    this.registerUiComponents();
+    this._initialized = true;
+  }
+```
 
 ## Adding ToolButtons, Status Bar items, and Widgets to existing application frontstage
 
