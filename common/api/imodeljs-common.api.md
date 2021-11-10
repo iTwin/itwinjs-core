@@ -3012,7 +3012,7 @@ export interface GeoCoordinatesRequestProps {
     // (undocumented)
     iModelCoords: XYZProps[];
     // (undocumented)
-    target: string;
+    targetDatum: string;
 }
 
 // @beta
@@ -4207,7 +4207,7 @@ export interface IModelCoordinatesRequestProps {
     // (undocumented)
     geoCoords: XYZProps[];
     // (undocumented)
-    source: string;
+    sourceDatum: string;
 }
 
 // @beta (undocumented)
