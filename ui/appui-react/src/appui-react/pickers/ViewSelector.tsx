@@ -109,7 +109,7 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
 
     this.state = {
       items: new Array<ListItem>(),
-      title: UiFramework.translate("savedViews.views"),
+      title: UiFramework.translate("viewTypes.views"),
       initialized: false,
       showSpatials: props.showSpatials,
       showDrawings: props.showDrawings,
@@ -150,7 +150,7 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
   private setStateContainers(views3d: ListItem[], views2d: ListItem[], sheets: ListItem[], unknown?: ListItem[]) {
     const views3dContainer: ListItem = {
       key: "views3dContainer",
-      name: UiFramework.translate("savedViews.spatialViews"),
+      name: UiFramework.translate("viewTypes.spatialViews"),
       enabled: false,
       type: ListItemType.Container,
       children: views3d,
@@ -158,7 +158,7 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
 
     const views2dContainer: ListItem = {
       key: "views2dContainer",
-      name: UiFramework.translate("savedViews.drawings"),
+      name: UiFramework.translate("viewTypes.drawings"),
       enabled: false,
       type: ListItemType.Container,
       children: views2d,
@@ -166,7 +166,7 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
 
     const sheetContainer: ListItem = {
       key: "sheetContainer",
-      name: UiFramework.translate("savedViews.sheets"),
+      name: UiFramework.translate("viewTypes.sheets"),
       enabled: false,
       type: ListItemType.Container,
       children: sheets,
@@ -179,7 +179,7 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
       // This should never show, but just in case we missed a type of view state
       const unknownContainer: ListItem = {
         key: "unknownContainer",
-        name: UiFramework.translate("savedViews.others"),
+        name: UiFramework.translate("viewTypes.others"),
         enabled: false,
         type: ListItemType.Container,
         children: unknown,
@@ -195,7 +195,7 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
 
     this.setState({
       items: containers,
-      title: UiFramework.translate("savedViews.views"),
+      title: UiFramework.translate("viewTypes.views"),
       initialized: true,
     });
   }

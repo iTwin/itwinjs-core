@@ -264,7 +264,9 @@ export function ToolbarComposer(props: ExtensibleToolbarProps) {
   const toolbarItems = React.useMemo(() => combineItems(defaultItems, addonItems), [defaultItems, addonItems]);
 
   const toolbarOrientation = orientation === ToolbarOrientation.Horizontal ? Orientation.Horizontal : Orientation.Vertical;
+  // eslint-disable-next-line deprecation/deprecation
   const expandsTo = toolbarOrientation === Orientation.Horizontal ? Direction.Bottom : usage === ToolbarUsage.ViewNavigation ? Direction.Left : Direction.Right;
+  // eslint-disable-next-line deprecation/deprecation
   const panelAlignment = (toolbarOrientation === Orientation.Horizontal && usage === ToolbarUsage.ViewNavigation) ? ToolbarPanelAlignment.End : ToolbarPanelAlignment.Start;
   const version = useFrameworkVersion();
   const isDragEnabled = React.useContext(ToolbarDragInteractionContext);
@@ -291,8 +293,8 @@ export function ToolbarComposer(props: ExtensibleToolbarProps) {
 
 interface ToolbarUi1Props {
   items: CommonToolbarItem[];
-  expandsTo: Direction;
-  panelAlignment: ToolbarPanelAlignment;
+  expandsTo: Direction; // eslint-disable-line deprecation/deprecation
+  panelAlignment: ToolbarPanelAlignment; // eslint-disable-line deprecation/deprecation
 }
 
 /** Toolbar rendered in 1.0 mode.
@@ -313,7 +315,7 @@ const ToolbarUi1 = React.memo<ToolbarUi1Props>(function ToolbarUi1({
     return createdNodes;
   };
 
-  return <Toolbar
+  return <Toolbar // eslint-disable-line deprecation/deprecation
     expandsTo={expandsTo}
     panelAlignment={panelAlignment}
     items={

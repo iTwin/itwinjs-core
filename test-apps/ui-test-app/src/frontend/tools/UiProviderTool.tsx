@@ -21,7 +21,7 @@ import {
 import { FillCentered, LocalSettingsStorage } from "@itwin/core-react";
 import {
   ActionCreatorsObject, ActionsUnion, ChildWindowLocationProps, ContentGroup, ContentLayoutManager, ContentProps, createAction,
-  FrontstageManager, ReducerRegistryInstance, SavedViewLayout, SavedViewLayoutProps, StateManager, StatusBarItemUtilities, SyncUiEventId,
+  FrontstageManager, ReducerRegistryInstance, StageContentLayout, StageContentLayoutProps, StateManager, StatusBarItemUtilities, SyncUiEventId,
   UiFramework, withStatusFieldProps,
 } from "@itwin/appui-react";
 import { ShadowField } from "../appui/statusfields/ShadowField";
@@ -237,11 +237,11 @@ export async function getSavedViewLayoutProps(activeFrontstageId: string, iModel
   const result = await localSettings.getSetting("ContentGroupLayout", getImodelSpecificKey(activeFrontstageId, iModelConnection));
 
   if (result.setting) {
-    // Parse SavedViewLayoutProps
-    const savedViewLayoutProps: SavedViewLayoutProps = result.setting;
+    // Parse StageContentLayoutProps
+    const savedViewLayoutProps: StageContentLayoutProps = result.setting;
     if (iModelConnection) {
       // Create ViewStates
-      const viewStates = await SavedViewLayout.viewStatesFromProps(iModelConnection, savedViewLayoutProps);
+      const viewStates = await StageContentLayout.viewStatesFromProps(iModelConnection, savedViewLayoutProps);
 
       // Add applicationData to the ContentProps
       savedViewLayoutProps.contentGroupProps.contents.forEach((contentProps: ContentProps, index: number) => {
@@ -312,7 +312,7 @@ export class SaveContentLayoutTool extends Tool {
       const localSettings = new LocalSettingsStorage();
 
       // Create props for the Layout, ContentGroup and ViewStates
-      const savedViewLayoutProps = SavedViewLayout.viewLayoutToProps(ContentLayoutManager.activeLayout,
+      const savedViewLayoutProps = StageContentLayout.viewLayoutToProps(ContentLayoutManager.activeLayout,
         ContentLayoutManager.activeContentGroup, true, (contentProps: ContentProps) => {
           if (contentProps.applicationData) {
             if (contentProps.applicationData.iModelConnection)
@@ -362,7 +362,7 @@ export class RestoreSavedContentLayoutTool extends Tool {
         await ContentLayoutManager.setActiveContentGroup(contentGroup);
 
         // emphasize the elements
-        SavedViewLayout.emphasizeElementsFromProps(contentGroup, savedViewLayoutProps);
+        StageContentLayout.emphasizeElementsFromProps(contentGroup, savedViewLayoutProps);
       }
     }
     return true;

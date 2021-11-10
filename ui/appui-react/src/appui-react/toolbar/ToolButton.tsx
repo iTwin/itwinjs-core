@@ -116,7 +116,7 @@ export class ToolButton extends React.Component<ToolButtonProps, BaseItemState> 
     const badge = BadgeUtilities.getComponentForBadgeType(this.props.badgeType);
 
     return (
-      <Item
+      <Item // eslint-disable-line deprecation/deprecation
         {...toolbarItemProps}
         className={this.props.className}
         style={this.props.style}
