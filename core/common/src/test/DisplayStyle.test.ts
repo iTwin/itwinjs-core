@@ -18,6 +18,8 @@ import { ThematicDisplayMode } from "../ThematicDisplay";
 import { RenderMode, ViewFlags } from "../ViewFlags";
 import { PlanarClipMaskMode, PlanarClipMaskSettings } from "../PlanarClipMask";
 import { WhiteOnWhiteReversalProps, WhiteOnWhiteReversalSettings } from "../WhiteOnWhiteReversalSettings";
+import { SkyGradient } from "../SkyBox";
+import { GroundPlane } from "../GroundPlane";
 
 describe("DisplayStyleSettings", () => {
   describe("whiteOnWhiteReversal", () => {
@@ -310,11 +312,13 @@ describe("DisplayStyleSettings overrides", () => {
     whiteOnWhiteReversal: { ignoreBackgroundColor: false },
     environment: {
       sky: {
+        ...SkyGradient.defaults.toJSON(),
         display: true,
         twoColor: true,
         skyExponent: 22,
       },
       ground: {
+        ...GroundPlane.defaults.toJSON(),
         display: false,
       },
     },
@@ -616,8 +620,8 @@ describe("DisplayStyleSettings overrides", () => {
     test({
       viewflags,
       environment: {
-        sky: { display: false },
-        ground: { display: true, elevation: 17, aboveColor: ColorByName.snow },
+        sky: { ...SkyGradient.defaults.toJSON(), display: false },
+        ground: { ...GroundPlane.defaults.toJSON(), display: true, elevation: 17, aboveColor: ColorByName.snow },
       },
     });
 

@@ -261,6 +261,14 @@ These keysins control the planar masking of reality models.
   * "copy=0|1" where `1` indicates the output should be copied to the system clipboard.
 * `fdt select elements` - given a list of element Ids separated by whitespace, replace the contents of the selection set with those Ids.
 * `fdt toggle skybox` - If the active viewport is displaying a spatial view, toggles display of the skybox.
+* `fdt sky sphere` - set the image used for the skybox as a Url or texture Id.
+* `fdt sky cube` - set the images used for the skybox, mapping each to one or more faces of the box. Each image is specified as a Url or texture Id. The images are mapped in the following orders based on how many are supplied:
+  * 1: all faces use the same image
+  * 2: top/bottom, sides
+  * 3: top/bottom, left/right, front/back
+  * 4: top, bottom, left/right, front/back
+  * 5: top/bottom, left, right, front, back
+  * 6: top, bottom, left, right, front, back
 * `fdt emphasize selection` - Emphasizes all elements in the selection set, and de-emphasizes all other elements by making them semi-transparent and grey. If the selection set is empty, clear the effects of any previous use of this key-in. Accepts one of the following arguments:
   * "none": Don't override color, don't apply silhouette.
   * "color": Override color to white.
