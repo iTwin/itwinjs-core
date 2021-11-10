@@ -220,6 +220,7 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
 
     const expiry = CloudStorageTileCache.getCache().supplyExpiryForContainerUrl(id);
     const clientIp = (IModelHost.restrictTileUrlsByClientIp && invocation.request.ip) ? invocation.request.ip : undefined;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return IModelHost.tileCacheService!.obtainContainerUrl(id, expiry, clientIp);
   }
 
