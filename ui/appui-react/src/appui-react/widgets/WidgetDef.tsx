@@ -69,8 +69,8 @@ export enum WidgetType {
  * @public
  */
 export interface ToolbarWidgetProps extends WidgetProps {
-  horizontalDirection?: Direction;
-  verticalDirection?: Direction;
+  horizontalDirection?: Direction; // eslint-disable-line deprecation/deprecation
+  verticalDirection?: Direction; // eslint-disable-line deprecation/deprecation
 
   horizontalItems?: ItemList;
   verticalItems?: ItemList;

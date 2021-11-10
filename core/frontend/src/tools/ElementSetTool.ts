@@ -854,7 +854,7 @@ export abstract class ElementSetTool extends PrimitiveTool {
 
       hints.setOriginAlways = true;
       hints.setOrigin(this.anchorPoint);
-      hints.sendHints();
+      hints.sendHints(false); // Default activation on start of dynamics...
     }
 
     if (!this.wantProcessAgenda(ev)) {

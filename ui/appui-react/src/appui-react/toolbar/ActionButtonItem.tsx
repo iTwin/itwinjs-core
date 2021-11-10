@@ -31,7 +31,7 @@ export function ActionButtonItem(props: ActionButtonProps) {
     if (props.onItemExecuted)
       props.onItemExecuted(item);
   };
-  return (<Item
+  return (<Item // eslint-disable-line deprecation/deprecation
     isActive={item.isActive}
     isDisabled={ConditionalBooleanValue.getValue(item.isDisabled)}
     title={ConditionalStringValue.getValue(item.label)}

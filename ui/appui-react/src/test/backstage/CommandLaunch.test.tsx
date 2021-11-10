@@ -33,7 +33,7 @@ describe("Backstage", () => {
         return { ...state, isEnabled: false } as BackstageItemState; // eslint-disable-line deprecation/deprecation
       };
       const wrapper = mount(
-        <CommandLaunchBackstageItem commandId="my-command-id" labelKey="UiFramework:tests.label"
+        <CommandLaunchBackstageItem commandId="my-command-id" labelKey="UiFramework:tests.label" // eslint-disable-line deprecation/deprecation
           descriptionKey="UiFramework:tests.subtitle" iconSpec="icon-placeholder" execute={spyMethod}
           stateSyncIds={[testEventId]} stateFunc={stateFunc} />,
       );
@@ -51,7 +51,7 @@ describe("Backstage", () => {
       let argsPassed = false;
       const testExecute = (args: any) => { if (args) argsPassed = true; };
       const wrapper = mount(
-        <CommandLaunchBackstageItem commandId="my-command-id" labelKey="UiFramework:tests.label"
+        <CommandLaunchBackstageItem commandId="my-command-id" labelKey="UiFramework:tests.label" // eslint-disable-line deprecation/deprecation
           descriptionKey="UiFramework:tests.subtitle" iconSpec="icon-placeholder" execute={testExecute}
           getCommandArgs={() => (["arg1", "arg2"])}
         />,
@@ -66,7 +66,7 @@ describe("Backstage", () => {
     it("CommandLaunchBackstageItem should log error when no execute function provided", () => {
       const spyMethod = sinon.spy(Logger, "logError");
       const wrapper = mount(
-        <CommandLaunchBackstageItem commandId="my-command-id" labelKey="UiFramework:tests.label"
+        <CommandLaunchBackstageItem commandId="my-command-id" labelKey="UiFramework:tests.label" // eslint-disable-line deprecation/deprecation
           iconSpec="icon-placeholder" />,
       );
 
@@ -77,6 +77,7 @@ describe("Backstage", () => {
 
     it("CommandLaunchBackstageItem renders correctly", () => {
       const commandHandler = () => { };
+      // eslint-disable-next-line deprecation/deprecation
       const wrapper = shallow(<CommandLaunchBackstageItem commandId="my-command-id" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" execute={commandHandler} />);
       wrapper.should.matchSnapshot();
     });

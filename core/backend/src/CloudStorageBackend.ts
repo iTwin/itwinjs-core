@@ -14,8 +14,7 @@ import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelHost } from "./IModelHost";
 
 /** @beta */
-export interface CloudStorageServiceCredentials {
-  service: "azure" | "alicloud" | "external";
+export interface AzureBlobStorageCredentials {
   account: string;
   accessKey: string;
 }
@@ -46,10 +45,10 @@ export class AzureBlobStorage extends CloudStorageService {
   private _service: Azure.BlobServiceClient;
   private _credential: Azure.StorageSharedKeyCredential;
 
-  public constructor(credentials: CloudStorageServiceCredentials) {
+  public constructor(credentials: AzureBlobStorageCredentials) {
     super();
 
-    if (credentials.service !== "azure" || !credentials.account || !credentials.accessKey) {
+    if (!credentials.account || !credentials.accessKey) {
       throw new IModelError(BentleyStatus.ERROR, "Invalid credentials for Azure blob storage.");
     }
 
@@ -130,7 +129,10 @@ export class AzureBlobStorage extends CloudStorageService {
       let source: Readable;
 
       if (options && options.contentEncoding === "gzip") {
-        blobOptions.blobHTTPHeaders!.blobContentEncoding = options.contentEncoding;
+        if (undefined === blobOptions.blobHTTPHeaders)
+          throw new IModelError(BentleyStatus.ERROR, "Blob HTTP headers object is undefined.");
+
+        blobOptions.blobHTTPHeaders.blobContentEncoding = options.contentEncoding;
         const compressor = zlib.createGzip();
         source = dataStream.pipe(compressor);
       } else {
@@ -170,7 +172,7 @@ export class CloudStorageTileUploader {
 
       const perfInfo = { ...id.tokenProps, treeId: id.treeId, contentId: id.contentId, size: content.byteLength, compress: IModelHost.compressCachedTiles };
       const perfLogger = new PerfLogger("Uploading tile to external tile cache", () => perfInfo);
-      await IModelHost.tileCacheService.upload(containerKey, resourceKey, content, options, metadata);
+      await IModelHost.tileCacheService?.upload(containerKey, resourceKey, content, options, metadata);
       perfLogger.dispose();
     } catch (err) {
       Logger.logError(BackendLoggerCategory.IModelTileUpload, (err instanceof Error) ? err.toString() : JSON.stringify(err));

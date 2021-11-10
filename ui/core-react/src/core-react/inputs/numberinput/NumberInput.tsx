@@ -191,7 +191,13 @@ const ForwardRefNumberInput = React.forwardRef<HTMLInputElement, NumberInputProp
       event.currentTarget.select();
     }, []);
 
-    const containerClasses = classnames("core-number-input-container", containerClassName, showTouchButtons && "core-number-buttons-for-touch");
+    const isDisabled = !!otherProps.disabled;
+    const containerClasses = classnames("core-number-input-container",
+      containerClassName,
+      showTouchButtons && "core-number-buttons-for-touch",
+      isDisabled && "core-number-input-disabled",
+    );
+
     return (
       <div className={containerClasses} style={containerStyle} >
         <Input ref={ref} value={formattedValue} onChange={handleChange} onKeyDown={handleKeyDown} onFocus={handleFocus} onBlur={handleBlur} size="small" {...otherProps} />

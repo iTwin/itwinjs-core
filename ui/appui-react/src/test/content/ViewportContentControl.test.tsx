@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
@@ -160,7 +161,7 @@ describe("ViewportContentControl", () => {
   });
 
   it("onViewClassFullNameChangedEvent should cause a NavigationAid change", async () => {
-    mount(<FrontstageComposer />);
+    mount(<FrontstageComposer />); // eslint-disable-line deprecation/deprecation
     const spyMethod = sinon.spy();
     const remove = FrontstageManager.onNavigationAidActivatedEvent.addListener(spyMethod);
 
