@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Introduce no-non-null-assertion lint rule.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

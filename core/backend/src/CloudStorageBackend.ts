@@ -130,7 +130,10 @@ export class AzureBlobStorage extends CloudStorageService {
       let source: Readable;
 
       if (options && options.contentEncoding === "gzip") {
-        blobOptions.blobHTTPHeaders!.blobContentEncoding = options.contentEncoding;
+        if (undefined === blobOptions.blobHTTPHeaders)
+          throw new IModelError(BentleyStatus.ERROR, "Blob HTTP headers object is undefined.");
+
+        blobOptions.blobHTTPHeaders.blobContentEncoding = options.contentEncoding;
         const compressor = zlib.createGzip();
         source = dataStream.pipe(compressor);
       } else {

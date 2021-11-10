@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { PassThrough, Readable } from "stream";
 import * as zlib from "zlib";
-import { CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageProvider } from "@itwin/core-common";
+import { BentleyStatus } from "@itwin/core-bentley";
+import { CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageProvider, IModelError } from "@itwin/core-common";
 import { CloudStorageService, CloudStorageServiceCredentials, CloudStorageUploadOptions } from "./CloudStorageBackend";
 
 declare class OSS {
@@ -53,11 +54,14 @@ export class AliCloudStorageService extends CloudStorageService {
 
     this._client.useBucket(id.name);
 
+    if (undefined === id.resource)
+      throw new IModelError(BentleyStatus.ERROR, "Attribute 'resource' on CloudStorageContainerDescriptor object is undefined.");
+
     const url: CloudStorageContainerUrl = {
       descriptor: this.makeDescriptor(id),
       valid: 0,
       expires: expiry.getTime(),
-      url: this._client.signatureUrl(id.resource!, policy),
+      url: this._client.signatureUrl(id.resource, policy),
       bound: true,
     };
 

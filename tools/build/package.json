@@ -1,6 +1,6 @@
 {
   "name": "@itwin/build-tools",
-  "version": "3.0.0-dev.112",
+  "version": "3.0.0-dev.113",
   "description": "Bentley build tools",
   "license": "MIT",
   "repository": {
@@ -40,10 +40,8 @@
     "recursive-readdir": "^2.2.2",
     "rimraf": "^3.0.2",
     "tree-kill": "^1.2.0",
-    "tsconfig-paths": "^3.3.2",
-    "typedoc": "^0.16.8",
-    "typedoc-plugin-external-module-name": "3.0.0",
-    "typedoc-plugin-internal-external": "2.1.1",
+    "typedoc": "^0.22.7",
+    "typedoc-plugin-merge-modules": "^3.0.2",
     "typescript": "~4.4.0",
     "wtfnode": "^0.9.1",
     "yargs": "^16.0.0"

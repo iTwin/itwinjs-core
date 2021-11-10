@@ -13,7 +13,7 @@ import { IModelBaseHandler } from "./BaseHandler";
 
 /**
  * Base class for event shared access signatures.
- * @public
+ * @internal
  */
 export abstract class BaseEventSAS extends WsgInstance {
   /** Base address for event requests. */

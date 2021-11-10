@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-react",
+      "comment": "Update disabled styling for NumberInput.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-react"
+}
