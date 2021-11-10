@@ -2215,7 +2215,7 @@ export abstract class IModelDb extends IModel {
     elementGeometryUpdate(updateProps: ElementGeometryUpdate): DbResult;
     // (undocumented)
     readonly elements: IModelDb.Elements;
-    // (undocumented)
+    // @internal (undocumented)
     embedFont(prop: FontProps): FontProps;
     exportGraphics(exportProps: ExportGraphicsOptions): DbResult;
     exportPartGraphics(exportProps: ExportPartGraphicsOptions): DbResult;
