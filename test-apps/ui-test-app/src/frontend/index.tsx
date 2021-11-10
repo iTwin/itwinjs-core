@@ -710,6 +710,7 @@ async function main() {
   Logger.setLevelDefault(LogLevel.Warning);
   Logger.setLevel(loggerCategory, LogLevel.Info);
   Logger.setLevel("ui-framework.UiFramework", LogLevel.Info);
+  Logger.setLevel("ViewportComponent", LogLevel.Info);
 
   ToolAdmin.exceptionHandler = async (err: any) => Promise.resolve(ErrorHandling.onUnexpectedError(err));
 
