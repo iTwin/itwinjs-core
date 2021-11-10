@@ -33,7 +33,7 @@ A package must have an initialize() method that registers its UiItemsProvider, a
 
 ## Adding ToolButtons, Status Bar items, and Widgets to existing application frontstage
 
-A [UiItemsProvider]($appui-abstract) is used to provide items to insert into the UI of an existing stage. When constructing the stage the UiFramework code will request item definitions from the UiItemsProvider. These calls will always include the current frontstage's Id and usage. An extension can use the info to decide which items to add. The stageId name's used by an application may not be useful unless the extension is just used in a single host app where the stage names are known. The stageUsage value is also provided, this string is typically set to one of the standard [StageUsage]($appui-abstract) enum values.
+A [UiItemsProvider]($appui-abstract) is used to provide items to insert into the UI of an existing stage. When constructing the stage the UiFramework code will request item definitions from the UiItemsProvider. These calls will always include the current frontstage's Id and usage. An package can use the info to decide which items to add. The stageId name's used by an application may not be useful unless the package is just used in a single host app where the stage names are known. The stageUsage value is also provided, this string is typically set to one of the standard [StageUsage]($appui-abstract) enum values.
 
 ### Adding a ToolButton
 
@@ -85,7 +85,7 @@ export class MyUiItemProvider {
   }
 
   public provideBackstageItems(): BackstageItem[] {
-    const label = MyUiItemProvider._i18n.translate("myExtension:backstage.myFrontstageName");
+    const label = MyUiItemProvider._i18n.translate("myPackage:backstage.myFrontstageName");
 
     return [
       BackstageItemUtilities.createStageLauncher(MyFrontstageProvider.id, 100, 10, label, undefined, undefined),
@@ -102,12 +102,12 @@ UiItemsManager.register(new MyUiItemProvider(IModelApp.i18n));
 
 ## StateManager and ReducerRegistry
 
-The example below shows the call that adds a Reducer to the store managed by the StateManager. This registration should be made by the extension when it loads or by a package when it is initialized.
+The example below shows the call that adds a Reducer to the store managed by the StateManager. This registration should be made by the package when it loads or by a package when it is initialized.
 
 ```ts
 ReducerRegistryInstance.registerReducer(
-  ExtensionStateManager._reducerName,
-  ExtensionStateManager.reducer,
+  PackageStateManager._reducerName,
+  PackageStateManager.reducer,
 );
 ```
 
