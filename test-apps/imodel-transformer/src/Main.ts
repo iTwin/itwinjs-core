@@ -51,16 +51,16 @@ interface CommandLineArgs {
   excludeCategories?: string;
 }
 
-const usage = `
-Transform the specified source iModel into a new target iModel.
-You must set up a .env file to connect to an online iModel, see the .env.template file to do so.
-`.trim();
-
 /** allows lazy access token access, so we don't need to get it if we don't need it */
 class LazyAccessToken {
   private _accessToken: AccessToken | undefined;
   public async get(): Promise<AccessToken> {
     const lazyGet = async () => {
+      assert(
+        process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID !== undefined,
+        "An online-only interaction was requested, but the required environment variables haven't been configured\n"
+        + "Please see the .env.template file on how to set up environment variables."
+      );
       return this._accessToken ??= await IModelHubUtils.getAccessToken();
     };
     return lazyGet();
@@ -74,7 +74,9 @@ void (async () => {
       dotenvExpand(envResult);
     }
 
-    Yargs.usage(usage);
+    Yargs.usage("Transform the specified source iModel into a new target iModel.\n"
+              + "You must set up a .env file to connect to an online iModel, see the .env.template file to do so.");
+
     Yargs.strict();
 
     // iModelHub environment options
