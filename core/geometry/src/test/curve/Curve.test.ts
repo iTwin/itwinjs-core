@@ -326,11 +326,10 @@ class ExerciseCurve {
     }
   }
 
-  public static exerciseClosestPoint(ck: Checker, curve: CurvePrimitive, fractionA: number): boolean {
-    const pointA = curve.fractionToPoint(fractionA);
-    let detail = curve.closestPoint(pointA, false);
-    if (ck.testPointer(detail)) {
+  public static exerciseClosestPointDetail(ck: Checker, detail: CurveLocationDetail | undefined, curve: CurvePrimitive, fractionA: number, pointA: Point3d | undefined) {
+    if (ck.testPointer(detail) && ck.testPointer(pointA)) {
       if (detail.curve === curve) {
+        // START HERE: revise test to avoid error if tunnelling. Can detect before check?
         if (!ck.testCoordinate(fractionA, detail.fraction, "fraction round trip")
           || !ck.testPoint3d(pointA, detail.point, "round trip point")) {
           const pointB = curve.fractionToPoint(fractionA);
@@ -342,6 +341,26 @@ class ExerciseCurve {
             detail = curve.closestPoint(pointA, false);
           }
         }
+      }
+    }
+  }
+
+  public static exerciseClosestPoint(ck: Checker, curve: CurvePrimitive, fractionA: number): boolean {
+    // test point on curve projects to itself
+    const pointA = curve.fractionToPoint(fractionA);
+    let detail = curve.closestPoint(pointA, false);
+    this.exerciseClosestPointDetail(ck, detail, curve, fractionA, pointA);
+    // project a short perp distance away from pointA on both sides of curve (still expect pointA)
+    const plane = curve.fractionToPointAnd2Derivatives(fractionA);
+    if (plane) {
+      const offset = plane.vectorV.scaleToLength(0.05);
+      if (offset) {
+        let testPt = pointA.plus(offset);
+        detail = curve.closestPoint(testPt, false);
+        this.exerciseClosestPointDetail(ck, detail, curve, fractionA, pointA);
+        testPt = pointA.minus(offset);
+        detail = curve.closestPoint(testPt, false);
+        this.exerciseClosestPointDetail(ck, detail, curve, fractionA, pointA);
       }
     }
     return true;
@@ -552,7 +571,6 @@ describe("Curves", () => {
       const q = p.clone()!;
       ck.testTrue(p.isAlmostEqual(q), "clone is same curve");
       GeometryCoreTestIO.captureGeometry(allGeometry, q, dx, 0.0);
-      dx += p.range()!.xLength() + dxGap;
       ExerciseCurve.exerciseFractionToPoint(ck, p, true, false);
       ExerciseCurve.exerciseStroke(ck, p);
       ExerciseCurve.exerciseClosestPoint(ck, p, 0.1);
@@ -572,7 +590,6 @@ describe("Curves", () => {
       const ray1 = p.fractionToPointAndUnitTangent(1.0);
       const p0 = ray0.fractionToPoint(-e);
       const p1 = ray1.fractionToPoint(e);
-
       const c0 = p.closestPoint(p0, false);
       const c1 = p.closestPoint(p1, false);
       const error0 = ck.getNumErrors();
@@ -598,7 +615,7 @@ describe("Curves", () => {
           ck.testLT(p1.distance(c1x.point), proximityFactor * e, "small distance from curve");
         p.closestPoint(p1, CurveExtendMode.OnCurve);
       }
-
+      dx += p.range()!.xLength() + dxGap;
       if (ck.getNumErrors() > error0)
         console.log("  With this curve", prettyPrint(IModelJson.Writer.toIModelJson(p.path)));
     }
