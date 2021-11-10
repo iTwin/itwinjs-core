@@ -133,7 +133,7 @@ export class FrontstageDef {
       return;
     this._nineZoneState = state;
     // istanbul ignore else
-    if ((!(this._isStageClosing || this._isApplicationClosing)) && this._isReady) {
+    if (!(this._isStageClosing || this._isApplicationClosing)) {
       FrontstageManager.onFrontstageNineZoneStateChangedEvent.emit({
         frontstageDef: this,
         state,
@@ -690,6 +690,10 @@ export class FrontstageDef {
 
   public get isApplicationClosing() {
     return this._isApplicationClosing;
+  }
+
+  public get isReady() {
+    return this._isReady;
   }
 
   /** @internal */
