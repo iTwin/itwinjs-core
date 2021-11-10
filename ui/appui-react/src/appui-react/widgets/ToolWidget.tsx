@@ -20,7 +20,7 @@ import { UiFramework } from "../UiFramework";
  * @public
  * @deprecated use [ToolWidgetComposer]($appui-react) instead
  */
-export class ToolWidgetDef extends ToolbarWidgetDefBase {
+export class ToolWidgetDef extends ToolbarWidgetDefBase { // eslint-disable-line deprecation/deprecation
   private _appButton: CommandItemDef | undefined;
   private _reactNode: React.ReactNode;
   private _backstageLabel = UiFramework.translate("buttons.openBackstageMenu");
@@ -31,7 +31,7 @@ export class ToolWidgetDef extends ToolbarWidgetDefBase {
     this._appButton = props.appButton;
 
     this.widgetType = WidgetType.Tool;
-    this.verticalDirection = (props.verticalDirection !== undefined) ? props.verticalDirection : Direction.Right;
+    this.verticalDirection = (props.verticalDirection !== undefined) ? props.verticalDirection : Direction.Right; // eslint-disable-line deprecation/deprecation
 
     const activeStageName = FrontstageManager.activeFrontstageDef ? FrontstageManager.activeFrontstageDef.id : /* istanbul ignore next */"";
     this.widgetBaseName = `[${activeStageName}]ToolWidget`;
@@ -48,7 +48,7 @@ export class ToolWidgetDef extends ToolbarWidgetDefBase {
   public renderCornerItem(): React.ReactNode | undefined {
     if (this._appButton) {
       return (
-        <AppButton
+        <AppButton // eslint-disable-line deprecation/deprecation
           onClick={this._appButton.execute}
           icon={
             <Icon iconSpec={this._appButton.iconSpec} />

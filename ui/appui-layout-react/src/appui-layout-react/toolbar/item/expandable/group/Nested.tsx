@@ -16,7 +16,7 @@ import { Panel } from "./Panel";
 import { Title } from "./Title";
 
 /** Properties of [[NestedGroup]] component.
- * @alpha
+ * @internal
  */
 export interface NestedGroupProps extends GroupProps {
   /** Function called when the back arrow is clicked. */
@@ -26,7 +26,8 @@ export interface NestedGroupProps extends GroupProps {
 }
 
 /** Nested tool group component. Used in [[ExpandableItem]] component.
- * @alpha
+ * @deprecated Use [GroupItemDef]($appui-react) instead
+ * @internal
  */
 export class NestedGroup extends React.PureComponent<NestedGroupProps> {
   public override render() {

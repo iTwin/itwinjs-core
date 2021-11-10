@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodelhub-client",
-  "version": "3.0.0-dev.109",
+  "version": "3.0.0-dev.114",
   "description": "iModel.js iModelHub Client",
   "main": "lib/cjs/imodelhub-client.js",
   "modules": "lib/esm/imodelhub-client.js",
@@ -18,7 +18,7 @@
     "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "extract-api": "betools extract-api --entry=imodelhub-client",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/clients/imodelhub-client/file.json --tsIndexFile=imodelhub-client.ts --onlyJson",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/clients/imodelhub-client/file.json --excludes=@types --tsIndexFile=imodelhub-client.ts --onlyJson",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "mocha",
     "cover": ""
@@ -46,8 +46,8 @@
     "semver": "^5.5.0"
   },
   "peerDependencies": {
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.109",
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.109"
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.114",
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.114"
   },
   "devDependencies": {
     "@bentley/itwin-client": "workspace:*",

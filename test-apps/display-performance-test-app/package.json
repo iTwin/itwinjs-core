@@ -50,7 +50,7 @@
     "@itwin/appui-abstract": "workspace:*",
     "@itwin/reality-data-client" : "^3.0.0-dev.80",
     "@itwin/hypermodeling-frontend": "workspace:*",
-    "@itwin/browser-authorization": "^0.2.0",
+    "@itwin/browser-authorization": "^0.3.0",
     "body-parser": "^1.18.2"
   },
   "devDependencies": {

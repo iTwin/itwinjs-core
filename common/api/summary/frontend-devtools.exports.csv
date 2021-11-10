@@ -167,6 +167,8 @@ beta;SetRealityModelTransparencyTool
 beta;SharpenEffect 
 beta;SharpnessEffect 
 beta;ShowTileVolumesTool 
+beta;SkyCubeTool 
+beta;SkySphereTool 
 alpha;Slider
 alpha;SliderHandler = (slider: HTMLInputElement) => void
 alpha;SliderProps

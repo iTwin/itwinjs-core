@@ -1085,17 +1085,7 @@ export interface ViewIdChangedEventArgs {
 }
 
 // @public
-export class ViewportComponent extends React.Component<ViewportProps, ViewportState> {
-    constructor(props: ViewportProps);
-    // (undocumented)
-    componentDidMount(): Promise<void>;
-    // (undocumented)
-    componentDidUpdate(prevProps: ViewportProps): Promise<void>;
-    // (undocumented)
-    componentWillUnmount(): void;
-    // (undocumented)
-    render(): JSX.Element;
-    }
+export function ViewportComponent(props: ViewportProps): JSX.Element;
 
 // @public
 export class ViewportComponentEvents {
