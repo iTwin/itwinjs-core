@@ -3158,6 +3158,7 @@ importers:
       '@types/node': 14.14.31
       '@types/yargs': ^12.0.5
       dotenv: ^10.0.0
+      dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       fs-extra: ^8.1.0
       internal-tools: workspace:*
@@ -3175,6 +3176,7 @@ importers:
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-transformer': link:../../core/transformer
       dotenv: 10.0.0
+      dotenv-expand: 5.1.0
       fs-extra: 8.1.0
       yargs: 16.2.0
     devDependencies:

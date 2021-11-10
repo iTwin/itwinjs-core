@@ -16,6 +16,7 @@ import { ElementUtils } from "./ElementUtils";
 import { IModelHubUtils } from "./IModelHubUtils";
 import { loggerCategory, Transformer, TransformerOptions } from "./Transformer";
 import * as dotenv from "dotenv";
+import * as dotenvExpand from "dotenv-expand";
 
 interface CommandLineArgs {
   hub?: string;
@@ -57,7 +58,11 @@ You must set up a .env file to connect to an online iModel, see the .env.templat
 
 void (async () => {
   try {
-    dotenv.config({ path: path.resolve(__dirname, "../.env")});
+    const envResult = dotenv.config({ path: path.resolve(__dirname, "../.env")});
+    if (envResult.error) {
+      throw envResult.error;
+    }
+    dotenvExpand(envResult);
 
     Yargs.usage(usage);
     Yargs.strict();
