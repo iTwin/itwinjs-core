@@ -52,7 +52,7 @@ interface CommandLineArgs {
 
 void (async () => {
   try {
-    dotenv.config({ path: path.resolve(__dirname, "../.env.template")});
+    dotenv.config({ path: path.resolve(__dirname, "../.env")});
 
     Yargs.usage("Transform the specified source iModel into a new target iModel");
     Yargs.strict();
