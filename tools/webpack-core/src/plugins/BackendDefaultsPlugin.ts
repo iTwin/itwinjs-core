@@ -50,6 +50,7 @@ export class BackendDefaultsPlugin {
         "debug",
         "diagnostic-channel-publishers",
         "express",
+        "node-fetch",
         "got",
         "keyv",
         "ws",
