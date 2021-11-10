@@ -1,11 +1,11 @@
 {
   "name": "@itwin/backend-webpack-tools",
-  "version": "3.0.0-dev.96",
+  "version": "3.0.0-dev.111",
   "description": "Configuration and scripts for iModel.js agents and backends.",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/tools/backend-webpack"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/tools/backend-webpack"
   },
   "author": {
     "name": "Bentley Systems, Inc.",

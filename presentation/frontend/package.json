@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-frontend",
-  "version": "3.0.0-dev.96",
+  "version": "3.0.0-dev.111",
   "description": "Frontend of iModel.js Presentation library",
   "main": "lib/cjs/presentation-frontend.js",
   "module": "lib/esm/presentation-frontend.js",
@@ -9,7 +9,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/presentation/frontend"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/presentation/frontend"
   },
   "keywords": [
     "Bentley",
@@ -42,11 +42,11 @@
     "test:watch": "npm -s test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.96",
-    "@itwin/core-common": "workspace:^3.0.0-dev.96",
-    "@itwin/core-frontend": "workspace:^3.0.0-dev.96",
-    "@itwin/core-quantity": "workspace:^3.0.0-dev.96",
-    "@itwin/presentation-common": "workspace:^3.0.0-dev.96"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.111",
+    "@itwin/core-common": "workspace:^3.0.0-dev.111",
+    "@itwin/core-frontend": "workspace:^3.0.0-dev.111",
+    "@itwin/core-quantity": "workspace:^3.0.0-dev.111",
+    "@itwin/presentation-common": "workspace:^3.0.0-dev.111"
   },
   "devDependencies": {
     "@itwin/core-bentley": "workspace:*",

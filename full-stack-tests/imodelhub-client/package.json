@@ -1,12 +1,12 @@
 {
   "name": "@itwin/imodelhub-client-tests",
-  "version": "3.0.0-dev.96",
+  "version": "3.0.0-dev.111",
   "main": "lib/imodelhub-client-tests.js",
   "description": "Tests the iModelHub client",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/full-stack-tests/imodelhub-client"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/full-stack-tests/imodelhub-client"
   },
   "scripts": {
     "build": "tsc 1>&2",

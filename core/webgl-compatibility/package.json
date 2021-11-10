@@ -1,6 +1,6 @@
 {
   "name": "@itwin/webgl-compatibility",
-  "version": "3.0.0-dev.96",
+  "version": "3.0.0-dev.111",
   "description": "APIs for determining the level of compatibility of a browser+device with the iModel.js rendering system.",
   "license": "MIT",
   "main": "lib/cjs/webgl-compatibility.js",
@@ -22,7 +22,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/core/webgl-compatibility"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/core/webgl-compatibility"
   },
   "keywords": [
     "Bentley",
@@ -37,7 +37,7 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.96"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.111"
   },
   "devDependencies": {
     "@itwin/core-bentley": "workspace:*",

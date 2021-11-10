@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-abstract",
+      "comment": "Add onUnregister function to UiItemsProviderInterface to allow provider to do cleanup.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-abstract"
+}

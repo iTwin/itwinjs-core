@@ -39,6 +39,7 @@ beta;BaseLayerSettings
 beta;BaseMapLayerProps 
 beta;BaseMapLayerSettings 
 public;BaseReaderOptions
+public;BasicPlanarClipMaskArgs
 public;BatchType
 internal;class BentleyCloudRpcConfiguration 
 internal;BentleyCloudRpcManager 
@@ -152,6 +153,7 @@ internal;DbResponseKind
 internal;DbResponseStatus
 beta;DbRuntimeStats
 internal;DecorationGeometryProps
+beta;DefaultSupportedTypes
 internal;defaultTileOptions: TileOptions
 public;DefinitionElementProps 
 public;DeletedElementGeometryChange
@@ -200,6 +202,7 @@ public;ElementGraphicsRequestProps = PersistentGraphicsRequestProps | DynamicGra
 public;ElementIdsAndRangesProps
 public;ElementLoadOptions
 public;ElementLoadProps 
+public;ElementPlanarClipMaskArgs 
 public;ElementProps 
 public;EmphasizeElementsProps
 public;EmptyLocalization 
@@ -209,6 +212,8 @@ beta;EntityMetaData
 beta;EntityMetaDataProps
 public;EntityProps
 public;EntityQueryParams
+public;Environment
+public;EnvironmentProperties = NonFunctionPropertiesOf
 public;EnvironmentProps
 public;ExtantElementGeometryChange
 public;ExternalSourceAspectProps 
@@ -237,6 +242,8 @@ public;FontMapProps
 public;FontProps
 public;FontType
 internal;FormDataCommon
+public;FresnelSettings
+public;FresnelSettingsProps
 public;Frustum
 internal;FrustumPlanes
 internal;FrustumPlanes
@@ -303,6 +310,7 @@ public;GridFileTransform
 public;GridFileTransformProps
 public;GridOrientationType
 public;GroundPlane
+public;GroundPlaneProperties = NonFunctionPropertiesOf
 public;GroundPlaneProps
 public;Helmert2DWithZOffset 
 public;Helmert2DWithZOffsetProps
@@ -415,6 +423,7 @@ public;ModelGeometryChanges
 public;ModelGeometryChangesProps
 public;ModelIdAndGeometryGuid
 public;ModelLoadProps
+public;ModelPlanarClipMaskArgs 
 public;ModelProps 
 public;ModelQueryParams 
 public;ModelSelectorProps 
@@ -486,6 +495,7 @@ public;PositionalVectorTransform
 public;PositionalVectorTransformProps
 internal;PrimaryTileTreeId
 beta;PrimitiveTypeCode
+public;PriorityPlanarClipMaskArgs 
 beta;ProfileOptions
 public;Projection 
 public;ProjectionMethod = "None" | "TransverseMercator" | "SouthOrientedTransverseMercator" | "TransverseMercatorWisconsin" | "TransverseMercatorMinnesota" | "TransverseMercatorAffine" | "MercatorStandardParallel" | "Mercator" | "UniversalTransverseMercator" | "LambertConformalConicTwoParallels" | "LambertConformalConicBelgium" | "LambertConformalConicAffine" | "LambertConformalConicWisconsin" | "LambertConformalConicMinnesota" | "LambertConformalConicMichigan" | "LambertConformalConicOneParallel" | "AlbersEqualArea" | "NewZealandNationalGrid" | "ObliqueMercator1" | "ObliqueMercator2" | "TransverseMercatorOSTN97" | "TransverseMercatorOSTN02" | "TransverseMercatorOSTN15" | "Krovak" | "KrovakModified" | "ObliqueCylindricalSwiss" | "TransverseMercatorDenmarkSystem34" | "TransverseMercatorDenmarkSystem3499" | "TransverseMercatorDenmarkSystem3401" | "Cassini" | "Sinusoidal" | "VanDerGrinten" | "Bonne" | "Mollweide" | "EckertIV" | "EckertVI" | "GoodeHomolosine" | "Robinson" | "PlateCarree" | "MillerCylindrical" | "WinkelTripel" | "AzimuthalEqualArea" | "ObliqueStereographic" | "RectifiedSkewOrthomorphicCentered" | "RectifiedSkewOrthomorphicOrigin" | "ObliqueCylindricalHungary" | "Orthographic" | "AmericanPolyconic" | "LambertEquidistantAzimuthal" | "ObliqueMercatorMinnesota"
@@ -516,6 +526,8 @@ beta;QueryValueType = any
 public;Rank
 internal;ReadableFormData 
 internal;readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription
+beta;RealityData
+beta;RealityDataAccess
 alpha;RealityDataFormat
 alpha;RealityDataProvider
 alpha;RealityDataSourceKey
@@ -615,10 +627,17 @@ beta;SheetBorderTemplateProps
 public;SheetProps 
 beta;SheetTemplateProps 
 internal;SilhouetteEdgeArgs 
-public;SkyBoxImageProps
+public;SkyBox
+public;SkyBoxImageProps = SkySphereImageProps | SkyCubeImageProps |
 public;SkyBoxImageType
 public;SkyBoxProps
+public;SkyCube 
+public;SkyCubeImageProps
 public;SkyCubeProps
+public;SkyGradient
+public;SkyGradientProperties = NonFunctionPropertiesOf
+public;SkySphere 
+public;SkySphereImageProps
 internal;SnapRequestProps
 internal;SnapResponseProps
 internal;class SnapshotIModelRpcInterface 
@@ -642,6 +661,7 @@ beta;StorageValue = string | number | boolean | undefined | Uint8Array
 public;SubCategoryAppearance
 public;SubCategoryAppearance
 public;SubCategoryOverride
+public;SubCategoryPlanarClipMaskArgs 
 public;SubCategoryProps 
 public;SubjectProps 
 beta;SubLayerId = string | number
@@ -656,6 +676,7 @@ public;TextString
 public;TextStringPrimitive
 public;TextStringProps
 public;TextureData
+public;TextureImageSpec = Id64String | string
 public;TextureLoadProps
 public;TextureMapping
 public;TextureMapping

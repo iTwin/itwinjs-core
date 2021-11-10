@@ -1,11 +1,11 @@
 {
   "name": "@itwin/core-webpack-tools",
-  "version": "3.0.0-dev.96",
+  "version": "3.0.0-dev.111",
   "description": "Set of Webpack Plugins and Loaders used for building iModel.js applications",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/tools/webpack-core"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/tools/webpack-core"
   },
   "author": {
     "name": "Bentley Systems, Inc.",

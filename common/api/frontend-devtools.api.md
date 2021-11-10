@@ -1370,6 +1370,8 @@ export abstract class PlanarMaskBaseTool extends PrimitiveTool {
     // (undocumented)
     filterHit(hit: HitDetail, _out?: LocateResponse): Promise<LocateFilterStatus>;
     // (undocumented)
+    protected _invert: boolean;
+    // (undocumented)
     onCleanup(): Promise<void>;
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
@@ -1392,7 +1394,7 @@ export abstract class PlanarMaskBaseTool extends PrimitiveTool {
     // (undocumented)
     protected targetModelRequired(): boolean;
     // (undocumented)
-    protected _transparency?: number;
+    protected _transparency: number;
     // (undocumented)
     protected _useSelection: boolean;
 }
@@ -1702,7 +1704,7 @@ export class SetMapHigherPriorityMasking extends Tool {
     // (undocumented)
     parseAndRun(...args: string[]): Promise<boolean>;
     // (undocumented)
-    run(transparency?: number): Promise<boolean>;
+    run(transparency: number, invert: boolean): Promise<boolean>;
     // (undocumented)
     static toolId: string;
 }
@@ -1893,6 +1895,38 @@ export class ShowTileVolumesTool extends Tool {
     parseAndRun(...args: string[]): Promise<boolean>;
     // (undocumented)
     run(boxes?: TileBoundingBoxes): Promise<boolean>;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class SkyCubeTool extends DisplayStyleTool {
+    // (undocumented)
+    execute(vp: Viewport): boolean;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parse(args: string[]): boolean;
+    // (undocumented)
+    get require3d(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class SkySphereTool extends DisplayStyleTool {
+    // (undocumented)
+    execute(vp: Viewport): boolean;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parse(args: string[]): boolean;
+    // (undocumented)
+    get require3d(): boolean;
     // (undocumented)
     static toolId: string;
 }

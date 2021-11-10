@@ -1,12 +1,12 @@
 {
   "name": "@itwin/certa",
-  "version": "3.0.0-dev.96",
+  "version": "3.0.0-dev.111",
   "description": "A mocha-based integration test runner",
   "license": "MIT",
   "main": "bin/certa.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/tools/certa"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/tools/certa"
   },
   "bin": {
     "certa": "./bin/certa.js"

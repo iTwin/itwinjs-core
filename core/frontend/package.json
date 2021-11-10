@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-frontend",
-  "version": "3.0.0-dev.96",
+  "version": "3.0.0-dev.111",
   "description": "iTwin.js frontend components",
   "main": "lib/cjs/core-frontend.js",
   "module": "lib/esm/core-frontend.js",
@@ -25,7 +25,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/core/frontend"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/core/frontend"
   },
   "keywords": [
     "Bentley",
@@ -39,15 +39,15 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.96",
-    "@itwin/core-geometry": "workspace:^3.0.0-dev.96",
-    "@itwin/core-common": "workspace:^3.0.0-dev.96",
-    "@itwin/core-quantity": "workspace:^3.0.0-dev.96",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.96",
-    "@itwin/core-orbitgt": "workspace:^3.0.0-dev.96",
-    "@bentley/product-settings-client": "workspace:^3.0.0-dev.96",
-    "@itwin/appui-abstract": "workspace:^3.0.0-dev.96",
-    "@itwin/webgl-compatibility": "workspace:^3.0.0-dev.96"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.111",
+    "@itwin/core-geometry": "workspace:^3.0.0-dev.111",
+    "@itwin/core-common": "workspace:^3.0.0-dev.111",
+    "@itwin/core-quantity": "workspace:^3.0.0-dev.111",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.111",
+    "@itwin/core-orbitgt": "workspace:^3.0.0-dev.111",
+    "@bentley/product-settings-client": "workspace:^3.0.0-dev.111",
+    "@itwin/appui-abstract": "workspace:^3.0.0-dev.111",
+    "@itwin/webgl-compatibility": "workspace:^3.0.0-dev.111"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",

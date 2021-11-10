@@ -360,7 +360,11 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     params[0] = this.insideDisplay;
     params[1] = this.outsideDisplay;
     params[2] = this._contentMode;
+    if (this._planarClipMask?.settings.invert)   // If the mask sense is inverted, negate the contentMode to indicate this to the shader.
+      params[2] = - params[2];
+
     params[3] = (this._planarClipMask?.settings.transparency === undefined) ? -1 : this._planarClipMask.settings.transparency;
+
   }
 
   public get hiliteTexture(): Texture | undefined { return undefined !== this._classifierBuffers ? this._classifierBuffers.textures.hilite : undefined; }

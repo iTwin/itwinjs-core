@@ -1,6 +1,6 @@
 {
   "name": "@itwin/appui-abstract",
-  "version": "3.0.0-dev.96",
+  "version": "3.0.0-dev.111",
   "description": "iModel.js UI abstractions",
   "main": "lib/cjs/appui-abstract.js",
   "module": "lib/esm/appui-abstract.js",
@@ -9,7 +9,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/ui/appui-abstract"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/ui/appui-abstract"
   },
   "scripts": {
     "build": "npm run -s build:cjs",
@@ -36,7 +36,7 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.96"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.111"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",

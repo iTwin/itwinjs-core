@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-i18n",
-  "version": "3.0.0-dev.96",
+  "version": "3.0.0-dev.111",
   "description": "iModel.js localization code",
   "main": "lib/cjs/core-i18n.js",
   "module": "lib/esm/core-i18n.js",
@@ -9,7 +9,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/core/i18n"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/core/i18n"
   },
   "scripts": {
     "build": "npm run -s build:cjs",
@@ -33,7 +33,7 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.96"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.111"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
