@@ -1,8 +1,10 @@
 # Augmenting the UI of an iTwin App
 
-There are two basic ways to augment the UI of a host iTwinApp. The first way is for a package to provide an entire stage definition and call `ConfigurableUiManager.addFrontstageProvider` to register it. A [UiItemsProvider]($appui-abstract) may also need to be registered if the backstage is to be used to activate the frontstage.
+There are two basic ways to augment the UI of a host iTwinApp.
 
-The *recommended* way is to use a `UiItemsProvider` to provide definitions for Tool buttons, Status Bar items, and Widgets to add to an existing frontstage. In this scenario, as frontstage components are constructed at runtime, calls are made to all registered UiItemsProviders to gather item definitions to insert into the host applications UI. The item definitions are sorted and arranged by their itemPriority value.
+The simplest way is to use a `UiItemsProvider` to provide definitions for Tool buttons, Status Bar items, and Widgets to add to an existing frontstage. In this scenario, as frontstage components are constructed at runtime, calls are made to all registered UiItemsProviders to gather item definitions to insert into the host applications UI. The item definitions are sorted and arranged by their itemPriority value.
+
+ The second way is for a package to provide an entire stage definition. It is recommended that this be done using the [StandardFrontstageProvider]($appui-react), which will provide an empty stage that can then be populated via UiItemsProviders.
 
 A package must have an initialize() method that registers its UiItemsProvider, as in this example:
 
@@ -10,9 +12,6 @@ A package must have an initialize() method that registers its UiItemsProvider, a
   private static registerUiComponents(): void {
     SampleTool.register(MyPackage.localizationNamespace);
     GenericTool.register(MyPackage.localizationNamespace);
-
-    ConfigurableUiManager.addFrontstageProvider(new MyFrontstage());
-    ConfigurableUiManager.registerControl("MySampleContentControl", SampleContentControl);
 
     // register to add items to "General" usage stages"
     UiItemsManager.register(new MyUiItemsProvider());
@@ -67,37 +66,75 @@ To see a more complete example of adding ToolButtons, Status Bar items, and Widg
 
 ## Adding a Frontstage
 
-Register [FrontstageProvider]($appui-react)
+ The follow example shows how to define a new stage and register it with the `ConfigurableUiManager`. This stage defines the content to show and leaves all the tool and status bar item specifications to standard providers. This stage could then be registered in the package's initialize method by calling `MyFrontstage.register()`.
 
-```ts
-ConfigurableUiManager.addFrontstageProvider(new MyFrontstageProvider());
-```
-
-Create [UiItemsProvider]($appui-abstract) to provide the backstage entry.
-
-```ts
-export class MyUiItemProvider {
-  /** id of provider */
-  public readonly id = "MyUiItemProvider";
-  private static _i18n: I18N;
-  constructor(i18n: I18N) {
-    MyUiItemProvider.i18n = i18n;
-  }
-
-  public provideBackstageItems(): BackstageItem[] {
-    const label = MyUiItemProvider._i18n.translate("myPackage:backstage.myFrontstageName");
-
-    return [
-      BackstageItemUtilities.createStageLauncher(MyFrontstageProvider.id, 100, 10, label, undefined, undefined),
-    ];
+``` ts
+export class MyStageContentGroupProvider extends ContentGroupProvider {
+  public async provideContentGroup(props: FrontstageProps): Promise<ContentGroup> {
+    return new ContentGroup({
+      id: "myPackage:my-stage-content",
+      layout: StandardContentLayouts.singleView,
+      contents: [
+        {
+          id: "primaryContent",
+          classId: IModelViewportControl.id,
+          applicationData: {
+            isPrimaryView: true,
+            supports: ["viewIdSelection", "3dModels", "2dModels"],
+            viewState: UiFramework.getDefaultViewState,
+            iModelConnection: UiFramework.getIModelConnection,
+          },
+        },
+      ],
+    });
   }
 }
-```
 
-Register the UiItemsProvider.
+export class MyFrontstage {
+  public static stageId = "myPackage:MyStageId";
+  private static _contentGroupProvider = new MyStageContentGroupProvider();
+  public static register() {
+    const cornerButton = <BackstageAppButton icon={"icon-bentley-systems"} />;
+    const myStageProps: StandardFrontstageProps = {
+      id: NetworkTracingFrontstage.stageId,
+      version: 1.0,  // stage version used when save stage's state
+      contentGroupProps: MyFrontstage._contentGroupProvider,
+      hideNavigationAid: false,
+      cornerButton,
+      usage: StageUsage.Private,
+      applicationData: undefined,
+    };
 
-```ts
-UiItemsManager.register(new MyUiItemProvider(IModelApp.i18n));
+    ConfigurableUiManager.addFrontstageProvider(new StandardFrontstageProvider(myStageProps));
+    MyFrontstage.registerToolProviders();
+  }
+
+  private static registerToolProviders() {
+    // Provides standard tools for ToolWidget in ui2.0 stage
+    StandardContentToolsProvider.register({
+      horizontal: {
+        clearSelection: true,
+        clearDisplayOverrides: true,
+        hide: "group",
+        isolate: "group",
+        emphasize: "element",
+      },
+    }, (stageId: string, _stageUsage: string, _applicationData: any) => {
+      return stageId === MyFrontstage.stageId;
+    });
+
+    // Provides standard tools for NavigationWidget in ui2.0 stage
+    StandardNavigationToolsProvider.register(undefined, (stageId: string, _stageUsage: string, _applicationData: any) => {
+      return stageId === MyFrontstage.stageId;
+    });
+
+    // Provides standard status fields for ui2.0 stage
+    StandardStatusbarItemsProvider.register(undefined, (stageId: string, _stageUsage: string, _applicationData: any) => {
+      return stageId === MyFrontstage.stageId;
+    });
+  }
+}
+
 ```
 
 ## StateManager and ReducerRegistry
