@@ -202,14 +202,6 @@ export * from "./RealityDataSource";
  * Logger categories used by this package
  */
 /**
- * @docs-group-description SpatialClassification
- * Classes for spatial classification.
- */
-/**
- * @docs-group-description Features
- * Classes for Feature Tracking classification.
- */
-/**
  * @docs-group-description QuantityFormatting
  * Classes for formatting and parsing quantity values.
  */
@@ -218,18 +210,11 @@ export * from "./RealityDataSource";
  * Classes representing graphics as [hierarchical 3d tiles](https://github.com/CesiumGS/3d-tiles).
  */
 /**
- * @docs-group-description Authentication
- * Classes for managing authentication.
- */
-/**
- * @docs-group-description MapLayerFormatRegistry
- * Class for working with supported map layer formats.
- */
-/**
  * @docs-group-description HubAccess
  * APIs for working with IModelHub
  */
 /**
- * @docs-group-description RealityData
- * APIs for working with ProjectWise Context Share
+ * @docs-group-description UserPreferences
+ * APIs for working with user preferences in an iModelApp.
+ * See [the learning articles]($docs/learning/frontend/preferences.md).
  */

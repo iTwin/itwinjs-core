@@ -3,6 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+/** @packageDocumentation
+ * @module UserPreferences
+ */
+
 import { AccessToken, GuidString } from "@itwin/core-bentley";
 
 /** Argument for methods that can supply an iTwinId and iModelId.
