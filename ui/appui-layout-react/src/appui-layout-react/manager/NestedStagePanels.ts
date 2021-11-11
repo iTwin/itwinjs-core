@@ -13,14 +13,14 @@ import { WidgetZoneId } from "../zones/manager/Zones";
 import { NineZoneStagePanelsManager, NineZoneStagePanelsManagerProps } from "./StagePanels";
 
 /** Properties used by [[NineZoneNestedStagePanelsManager]].
- * @alpha
+ * @internal
  */
 export interface NineZoneNestedStagePanelsManagerProps extends NestedStagePanelsManagerProps {
   readonly panels: { readonly [id: string]: NineZoneStagePanelsManagerProps };
 }
 
 /** Class used to manage [[NineZoneNestedStagePanelsManagerProps]].
- * @alpha
+ * @internal
  */
 export class NineZoneNestedStagePanelsManager extends NestedStagePanelsManager {
   private _nzManagers?: Map<string | number, NineZoneStagePanelsManager>;

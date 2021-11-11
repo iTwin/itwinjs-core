@@ -9,16 +9,16 @@
 import { IModelConnection, ViewState } from "@itwin/core-frontend";
 import { ContentCallback, ContentGroup, ContentGroupProps } from "./ContentGroup";
 import { ContentLayoutDef } from "./ContentLayout";
-import { SavedView, SavedViewProps } from "./SavedView";
+import { ViewStateHelper, ViewStateHelperProps } from "./ViewStateHelper";
 import { ContentLayoutProps } from "@itwin/appui-abstract";
 
-/** SavedViewLayoutProps interface for sharing view layout information.
+/** StageContentLayoutProps interface for sharing view layout information.
  * @public
  */
-export interface SavedViewLayoutProps {
+export interface StageContentLayoutProps {
   contentLayoutProps?: ContentLayoutProps;
   contentGroupProps: ContentGroupProps;
-  savedViews: SavedViewProps[];
+  viewStateProps: ViewStateHelperProps[];
 }
 
 /** ViewLayout interface for sharing view layout information.
@@ -30,41 +30,41 @@ export interface ViewLayout {
   viewStates: Array<ViewState | undefined>;
 }
 
-/** SavedViewLayout class. Used to serialize/deserialize a View Layout with Saved Views.
+/** StageContentLayout class. Used to serialize/deserialize a View Layout with Saved Views.
  * @public
  */
-export class SavedViewLayout {
+export class StageContentLayout {
   /** Create props for a View Layout */
-  public static viewLayoutToProps(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup, emphasizeElements: boolean = false, contentCallback?: ContentCallback): SavedViewLayoutProps {
+  public static viewLayoutToProps(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup, emphasizeElements: boolean = false, contentCallback?: ContentCallback): StageContentLayoutProps {
     const contentLayoutProps = contentLayoutDef.toJSON();
     // update layout in contentGroup to contain latest values from contentLayoutDef this way we don't need to save both.
     const contentGroupProps = { ...contentGroup.toJSON(contentCallback), layout: contentLayoutProps };
-    const savedViews = new Array<SavedViewProps>();
+    const viewStateProps = new Array<ViewStateHelperProps>();
     const viewports = contentGroup.getViewports();
     for (const viewport of viewports) {
       // istanbul ignore else
       if (viewport) {
-        const savedViewProps = SavedView.viewStateToProps(viewport.view);
+        const savedViewProps = ViewStateHelper.viewStateToProps(viewport.view);
         if (emphasizeElements)
-          SavedView.emphasizeElementsToProps(viewport, savedViewProps);
-        savedViews.push(savedViewProps);
+          ViewStateHelper.emphasizeElementsToProps(viewport, savedViewProps);
+        viewStateProps.push(savedViewProps);
       }
     }
 
-    const savedViewLayoutProps: SavedViewLayoutProps = {
+    const savedViewLayoutProps: StageContentLayoutProps = {
       contentGroupProps,
-      savedViews,
+      viewStateProps,
     };
 
     return savedViewLayoutProps;
   }
 
-  /** Create an array of ViewStates from the SavedViewLayout */
-  public static async viewStatesFromProps(iModelConnection: IModelConnection, savedProps: SavedViewLayoutProps): Promise<Array<ViewState | undefined>> {
+  /** Create an array of ViewStates from the StageContentLayout */
+  public static async viewStatesFromProps(iModelConnection: IModelConnection, savedProps: StageContentLayoutProps): Promise<Array<ViewState | undefined>> {
     const viewStates = new Array<ViewState | undefined>();
 
-    for (const savedViewProps of savedProps.savedViews) {
-      const viewState = await SavedView.viewStateFromProps(iModelConnection, savedViewProps);
+    for (const savedViewProps of savedProps.viewStateProps) {
+      const viewState = await ViewStateHelper.viewStateFromProps(iModelConnection, savedViewProps);
       viewStates.push(viewState);
     }
 
@@ -72,16 +72,16 @@ export class SavedViewLayout {
   }
 
   /** Apply EmphasizeElements from the SavedView */
-  public static emphasizeElementsFromProps(contentGroup: ContentGroup, savedProps: SavedViewLayoutProps): boolean {
+  public static emphasizeElementsFromProps(contentGroup: ContentGroup, savedProps: StageContentLayoutProps): boolean {
     const changedList = new Array<boolean>();
     const viewports = contentGroup.getViewports();
 
     let index = 0;
-    for (const savedViewProps of savedProps.savedViews) {
+    for (const savedViewProps of savedProps.viewStateProps) {
       const viewport = viewports[index];
       // istanbul ignore else
       if (viewport) {
-        const changed = SavedView.emphasizeElementsFromProps(viewport, savedViewProps);
+        const changed = ViewStateHelper.emphasizeElementsFromProps(viewport, savedViewProps);
         changedList.push(changed);
       }
       index++;

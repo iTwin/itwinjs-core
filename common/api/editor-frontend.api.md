@@ -15,6 +15,7 @@ import { CanvasDecoration } from '@itwin/core-frontend';
 import { Cartographic } from '@itwin/core-common';
 import { ClipShape } from '@itwin/core-geometry';
 import { ClipVector } from '@itwin/core-geometry';
+import { CoordinateLockOverrides } from '@itwin/core-frontend';
 import { CurvePrimitive } from '@itwin/core-geometry';
 import { DecorateContext } from '@itwin/core-frontend';
 import { DialogItem } from '@itwin/appui-abstract';
@@ -74,6 +75,7 @@ import { Vector3d } from '@itwin/core-geometry';
 import { ViewClipControlArrow } from '@itwin/core-frontend';
 import { Viewport } from '@itwin/core-frontend';
 import { XYAndZ } from '@itwin/core-geometry';
+import { XYZProps } from '@itwin/core-geometry';
 
 // @alpha (undocumented)
 export enum ArcMethod {
@@ -762,6 +764,17 @@ export class EmbossSolidElementsTool extends ElementGeometryCacheTool {
     static toolId: string;
 }
 
+// @alpha (undocumented)
+export class FaceLocationData {
+    constructor(point: Point3d, normal: Vector3d);
+    // (undocumented)
+    static create(pointProps: XYZProps, normalProps: XYZProps): FaceLocationData;
+    // (undocumented)
+    normal: Vector3d;
+    // (undocumented)
+    point: Point3d;
+}
+
 // @alpha
 export class HollowFacesTool extends LocateSubEntityTool {
     // (undocumented)
@@ -779,13 +792,19 @@ export class HollowFacesTool extends LocateSubEntityTool {
 // @alpha
 export class ImprintSolidElementsTool extends LocateSubEntityTool {
     // (undocumented)
+    protected get allowSubEntityControlSelect(): boolean;
+    // (undocumented)
     protected applyAgendaOperation(_ev: BeButtonEvent, isAccept: boolean): Promise<ElementGeometryResultProps | undefined>;
+    // (undocumented)
+    protected createSubEntityData(id: Id64String, hit: SubEntityLocationProps): Promise<SubEntityData>;
     // (undocumented)
     protected gatherInput(ev: BeButtonEvent): Promise<EventHandled | undefined>;
     // (undocumented)
     protected get geometryCacheFilter(): ElementGeometryCacheFilter | undefined;
     // (undocumented)
     static iconSpec: string;
+    // (undocumented)
+    protected get inhibitSubEntityDisplay(): boolean;
     // (undocumented)
     protected method: ImprintSolidMethod;
     // (undocumented)
@@ -831,26 +850,56 @@ export class IntersectSolidElementsTool extends BooleanOperationTool {
     static toolId: string;
 }
 
+// @alpha (undocumented)
+export function isSameSubEntity(a: SubEntityProps, b: SubEntityProps): boolean;
+
 // @alpha
 export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
     // (undocumented)
-    protected _acceptedSubEntity?: SubEntityLocationProps;
+    protected _acceptedSubEntities: SubEntityData[];
+    // (undocumented)
+    protected get allowSubEntityControlDeselect(): boolean;
+    // (undocumented)
+    protected get allowSubEntityControlSelect(): boolean;
+    // (undocumented)
+    protected get allowSubEntitySelectNext(): boolean;
     // (undocumented)
     protected applyAgendaOperation(_ev: BeButtonEvent, _isAccept: boolean): Promise<ElementGeometryResultProps | undefined>;
     // (undocumented)
+    protected changeCurrentSubEntity(id?: Id64String, current?: SubEntityLocationProps, chordTolerance?: number): Promise<boolean>;
+    // (undocumented)
+    changeLocateState(enableLocate: boolean, enableSnap?: boolean, cursor?: string, coordLockOvr?: CoordinateLockOverrides): void;
+    // (undocumented)
     protected chooseNextHit(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
-    protected clearSubEntityGraphic(): void;
+    protected clearCurrentSubEntity(): void;
+    // (undocumented)
+    protected clearSubEntityGraphics(): void;
+    // (undocumented)
+    protected createSubEntityData(id: Id64String, hit: SubEntityLocationProps): Promise<SubEntityData>;
+    // (undocumented)
+    protected createSubEntityGraphic(id: Id64String, data: SubEntityData, chordTolerance?: number): Promise<boolean>;
     // (undocumented)
     protected _currentSubEntity?: SubEntityData;
     // (undocumented)
     decorate(context: DecorateContext): void;
     // (undocumented)
+    decorateSuspended(context: DecorateContext): void;
     protected doLocateSubEntity(ev: BeButtonEvent, newSearch: boolean): Promise<boolean>;
     // (undocumented)
     protected doPickSubEntities(id: Id64String, ev: BeButtonEvent): Promise<SubEntityLocationProps[] | undefined>;
     // (undocumented)
+    protected drawAcceptedSubEntities(context: DecorateContext): void;
+    // (undocumented)
+    protected drawSubEntity(context: DecorateContext, subEntity: SubEntityData, accepted: boolean): void;
+    // (undocumented)
     protected gatherInput(ev: BeButtonEvent): Promise<EventHandled | undefined>;
+    // (undocumented)
+    protected getAcceptedSubEntities(): SubEntityProps[];
+    // (undocumented)
+    protected getAcceptedSubEntityData(index?: number): SubEntityData | undefined;
+    // (undocumented)
+    protected getCurrentElement(): Id64String | undefined;
     // (undocumented)
     protected getGraphicData(ev: BeButtonEvent): Promise<Uint8Array | undefined>;
     // (undocumented)
@@ -860,25 +909,39 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
     // (undocumented)
     protected getMaxRayDistance(ev: BeButtonEvent, aperture: number): number;
     // (undocumented)
+    protected getRayOrigin(ev: BeButtonEvent): Point3d;
+    // (undocumented)
     protected getSubEntityFilter(): SubEntityFilter | undefined;
     // (undocumented)
+    protected get haveAcceptedSubEntities(): boolean;
+    // (undocumented)
+    protected get inhibitSubEntityDisplay(): boolean;
+    // (undocumented)
+    protected _locatedSubEntities?: SubEntityLocationProps[];
+    // (undocumented)
     onCleanup(): Promise<void>;
+    // (undocumented)
+    onModifierKeyTransition(wentDown: boolean, modifier: BeModifierKeys, event: KeyboardEvent): Promise<EventHandled>;
     // (undocumented)
     protected pickSubEntities(id: Id64String, boresite: Ray3d, maxFace: number, maxEdge: number, maxVertex: number, maxDistance: number, hiddenEdgesVisible: boolean, filter?: SubEntityFilter): Promise<SubEntityLocationProps[] | undefined>;
     // (undocumented)
     processAgenda(ev: BeButtonEvent): Promise<void>;
     // (undocumented)
-    protected setCurrentSubEntity(id?: Id64String, current?: SubEntityLocationProps, chordTolerance?: number): Promise<boolean>;
+    protected get requiredSubEntityCount(): number;
+    // (undocumented)
+    protected setCurrentSubEntity(id: Id64String, hit: SubEntityLocationProps, chordTolerance?: number): Promise<boolean>;
     // (undocumented)
     protected setupAccuDraw(): void;
     // (undocumented)
     protected setupAndPromptForNextAction(): void;
     // (undocumented)
+    protected get shouldEnableSnap(): boolean;
+    // (undocumented)
+    protected updateCurrentSubEntity(ev: BeButtonEvent): Promise<boolean>;
+    // (undocumented)
     protected updateGraphic(ev: BeButtonEvent, isDynamics: boolean): Promise<void>;
     // (undocumented)
-    protected updateSubEntityGraphic(ev: BeButtonEvent): Promise<boolean>;
-    // (undocumented)
-    protected get wantAdditionalInput(): boolean;
+    protected get wantAdditionalSubEntities(): boolean;
     // (undocumented)
     protected get wantAgendaAppearanceOverride(): boolean;
     // (undocumented)
@@ -923,6 +986,10 @@ export class MoveElementsTool extends TransformElementsTool {
 export class OffsetFacesTool extends LocateSubEntityTool {
     // (undocumented)
     protected applyAgendaOperation(ev: BeButtonEvent, isAccept: boolean): Promise<ElementGeometryResultProps | undefined>;
+    // (undocumented)
+    protected createSubEntityData(id: Id64String, hit: SubEntityLocationProps): Promise<SubEntityData>;
+    // (undocumented)
+    protected drawAcceptedSubEntities(context: DecorateContext): void;
     // (undocumented)
     protected get geometryCacheFilter(): ElementGeometryCacheFilter | undefined;
     // (undocumented)
@@ -1385,6 +1452,7 @@ export class SewSheetElementsTool extends ElementGeometryCacheTool {
 
 // @alpha (undocumented)
 export class SubEntityData {
+    constructor(props: SubEntityProps);
     // (undocumented)
     cleanupGraphic(): void;
     // (undocumented)
@@ -1392,17 +1460,19 @@ export class SubEntityData {
     // (undocumented)
     display(context: DecorateContext, accepted: boolean): void;
     // (undocumented)
-    geom?: SubEntityGeometryProps;
+    get geometry(): SubEntityGeometryProps | undefined;
+    set geometry(value: SubEntityGeometryProps | undefined);
     // (undocumented)
     getAppearance(vp: Viewport, accepted: boolean): FeatureAppearance;
     // (undocumented)
-    protected _graphicsProvider?: ElementGeometryGraphicsProvider;
-    // (undocumented)
     get hasGraphic(): boolean;
     // (undocumented)
-    info?: SubEntityProps;
-    // (undocumented)
     isSame(other: SubEntityProps): boolean;
+    // (undocumented)
+    get props(): SubEntityProps;
+    set props(value: SubEntityProps);
+    // (undocumented)
+    toolData?: any;
 }
 
 // @alpha

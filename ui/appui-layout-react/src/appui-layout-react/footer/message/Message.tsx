@@ -13,7 +13,7 @@ import { CommonProps } from "@itwin/core-react";
 import { Status, StatusHelpers } from "./Status";
 
 /** Properties of [[Message]] component.
- * @beta
+ * @internal
  */
 export interface StatusMessageProps extends CommonProps {
   /** Footer message content. I.e. [[MessageLayout]] */
@@ -25,7 +25,8 @@ export interface StatusMessageProps extends CommonProps {
 }
 
 /** Component used to define toast, sticky and activity message.
- * @beta
+ * @deprecated Use [ActivityMessage]($appui-react), [StickyMessage]($appui-react) or [ToastMessage]($appui-react) instead
+ * @internal
  */
 export class Message extends React.PureComponent<StatusMessageProps> {
   public override render() {
