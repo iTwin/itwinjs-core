@@ -36,14 +36,19 @@ export interface FeatureAppearanceProps {
   weight?: number;
   /** The transparency in the range [0.0, 1.0] where 0 indicates fully opaque and 1 indicates fully transparent. */
   transparency?: number;
+  /** If true, then [[transparency]] only applies if [[ViewFlags.transparency]] is enabled and the current [[RenderMode]] supports transparency.
+   * Default: false, meaning the transparency is applied regardless of view flags or render mode.
+   * This property has no effect if [[transparency]] is `undefined`.
+   */
+  viewDependentTransparency?: true;
   /** The pixel pattern used to draw lines. */
   linePixels?: LinePixels;
   /** If true, ignore the [[RenderMaterial]] associated with surfaces. */
-  ignoresMaterial?: true | undefined;
+  ignoresMaterial?: true;
   /** If true, the associated [[Feature]] will not be drawn when using [Viewport.readPixels]($frontend). */
-  nonLocatable?: true | undefined;
+  nonLocatable?: true;
   /** If true, the associated [[Feature]] will be emphasized. Emphasized features are rendered using the [[Hilite.Settings]] defined by [Viewport.emphasisSettings]($frontend). */
-  emphasized?: true | undefined;
+  emphasized?: true;
 }
 
 /** Defines overrides for selected aspects of a [[Feature]]'s symbology.
@@ -51,14 +56,15 @@ export interface FeatureAppearanceProps {
  * @see [[FeatureOverrides]] to customize the appearance of multiple features.
  * @public
  */
-export class FeatureAppearance implements FeatureAppearanceProps {
+export class FeatureAppearance {
   public readonly rgb?: RgbColor;
   public readonly weight?: number;
   public readonly transparency?: number;
   public readonly linePixels?: LinePixels;
-  public readonly ignoresMaterial?: true | undefined;
-  public readonly nonLocatable?: true | undefined;
-  public readonly emphasized?: true | undefined;
+  public readonly ignoresMaterial?: true;
+  public readonly nonLocatable?: true;
+  public readonly emphasized?: true;
+  public readonly viewDependentTransparency?: true;
 
   /** An appearance that overrides nothing. */
   public static readonly defaults = new FeatureAppearance({});
@@ -80,24 +86,30 @@ export class FeatureAppearance implements FeatureAppearanceProps {
   /** Create a FeatureAppearance that overrides the RGB and transparency.
    * The appearance's transparency is derived from the transparency component of the ColorDef.
    */
-  public static fromRgba(color: ColorDef): FeatureAppearance {
+  public static fromRgba(color: ColorDef, viewDependentTransparency = false): FeatureAppearance {
     return this.fromJSON({
       rgb: RgbColor.fromColorDef(color),
       transparency: color.colors.t / 255,
+      viewDependentTransparency: viewDependentTransparency ? true : undefined,
     });
   }
   /** Create a FeatureAppearance that overrides only the transparency */
-  public static fromTransparency(transparencyValue: number): FeatureAppearance {
-    return this.fromJSON({ transparency: transparencyValue });
+  public static fromTransparency(transparencyValue: number, viewDependent = false): FeatureAppearance {
+    return this.fromJSON({
+      transparency: transparencyValue,
+      viewDependentTransparency: viewDependent ? true : undefined,
+    });
   }
 
-  /** Create a FeatureAppearance with overrides corresponding to those defined by the supplied SubCategoryOverride. */
+  /** Create a FeatureAppearance with overrides corresponding to those defined by the supplied SubCategoryOverride.
+   * @note Subcategory overrides set [[viewDependentTransparency]] to `true`.
+   */
   public static fromSubCategoryOverride(ovr: SubCategoryOverride): FeatureAppearance {
     const rgb = undefined !== ovr.color ? RgbColor.fromColorDef(ovr.color) : undefined;
     const transparency = ovr.transparency;
     const weight = ovr.weight;
     const ignoresMaterial = undefined !== ovr.material && Id64.isValid(ovr.material) ? true : undefined;
-    return this.fromJSON({ rgb, transparency, weight, ignoresMaterial });
+    return this.fromJSON({ rgb, transparency, weight, ignoresMaterial, viewDependentTransparency: true });
   }
 
   /** Returns true if this appearance does not override any aspects of symbology. */
@@ -128,7 +140,8 @@ export class FeatureAppearance implements FeatureAppearanceProps {
       && this.linePixels === other.linePixels
       && this.ignoresMaterial === other.ignoresMaterial
       && this.nonLocatable === other.nonLocatable
-      && this.emphasized === other.emphasized;
+      && this.emphasized === other.emphasized
+      && this.viewDependentTransparency === other.viewDependentTransparency;
   }
 
   public toJSON(): FeatureAppearanceProps {
@@ -139,8 +152,11 @@ export class FeatureAppearance implements FeatureAppearanceProps {
     if (undefined !== this.weight)
       props.weight = this.weight;
 
-    if (undefined !== this.transparency)
+    if (undefined !== this.transparency) {
       props.transparency = this.transparency;
+      if (this.viewDependentTransparency)
+        props.viewDependentTransparency = true;
+    }
 
     if (undefined !== this.linePixels)
       props.linePixels = this.linePixels;
@@ -198,6 +214,9 @@ export class FeatureAppearance implements FeatureAppearanceProps {
     if (undefined === props.nonLocatable && this.nonLocatable) props.nonLocatable = true;
     if (undefined === props.emphasized && this.emphasized) props.emphasized = true;
 
+    if (undefined !== props.transparency && this.viewDependentTransparency)
+      props.viewDependentTransparency = true;
+
     return FeatureAppearance.fromJSON(props);
   }
 
@@ -214,6 +233,9 @@ export class FeatureAppearance implements FeatureAppearanceProps {
       this.weight = Math.max(1, Math.min(this.weight, 32));
 
     if (undefined !== this.transparency) {
+      if (props.viewDependentTransparency)
+        this.viewDependentTransparency = true;
+
       this.transparency = Math.max(0, Math.min(this.transparency, 1));
 
       // Fix up rounding errors...
