@@ -378,7 +378,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
     return (
       <>
         <div ref={this._handleTargetRef}>
-          <ToolAssistance
+          <ToolAssistance // eslint-disable-line deprecation/deprecation
             icons={
               <>
                 {toolIcon}

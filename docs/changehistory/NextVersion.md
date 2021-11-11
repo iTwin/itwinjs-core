@@ -933,7 +933,11 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `reactElement` in ToolWidgetDef            | `ToolWidgetDef.reactNode`                                                                                                     |
 | `reactElement` in WidgetControl            | `WidgetControl.reactNode`                                                                                                     |
 | `reactElement` in WidgetDef                | `WidgetDef.reactNode`                                                                                                         |
-| `ReactMessage`                             | `ReactMessage` in @itwin/core-react                                                                                        |
+| `ReactMessage`                             | `ReactMessage` in @itwin/core-react                                                                                           |
+| `SavedView`                                | `ViewStateHelper`                                                                                                             |
+| `SavedViewProps`                           | `ViewStateHelperProps`                                                                                                        |
+| `SavedViewLayout`                          | `StageContentLayout`                                                                                                          |
+| `SavedViewLayoutProps`                     | `StageContentLayoutProps`                                                                                                     |
 | `SpecialKey`                               | `SpecialKey` in @itwin/appui-abstract                                                                                         |
 | `WidgetState`                              | `WidgetState` in @itwin/appui-abstract                                                                                        |
 | `UserProfileBackstageItem`                 | *eliminated*                                                                                                                  |
@@ -1515,3 +1519,61 @@ All packages will continue to build a CommonJS variant, but will now deliver it 
 If you were previously importing directly from the `lib` directory (e.g. `import { ElectronHost } from "@itwin/core-electron/lib/ElectronBackend";`), you will need to update your code to import from the new directory, `lib/cjs`, (e.g. `import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";`).
 
 This also affects how you will import `*.scss` from the ui packages. If you were previously importing scss from the `lib` directory (e.g. `@import "~@itwin/ui-pkg/lib/ui-pkg/...";`), you will need to update your code to import from the new directory, `lib/esm`, (e.g. `@import "~@itwin/ui-pkg/lib/esm/ui-pkg/...";`).
+
+## Simplification of CloudStorageService setup in iModelHost
+
+`IModelHostConfiguration.tileCacheCredentials` is changed to [IModelHostConfiguration.tileCacheAzureCredentials]($backend) and used for setting Azure cloud storage for tile cache.
+`IModelHost.tileCacheService` is moved to [IModelHostConfiguration.tileCacheService]($backend) and is used to supply a different implementation for any service provider by setting this property with a custom [CloudStorageService]($backend).
+If both `tileCacheAzureCredentials` and `tileCacheService` omitted - local cache will be used, if both set - error will be thrown.
+
+To use Azure cloud storage for tile cache set [IModelHostConfiguration.tileCacheAzureCredentials]($backend) property:
+
+```ts
+  const config = new IModelHostConfiguration();
+  // Replace this:
+  config.tileCacheCredentials = {
+    service: "azure",
+    account: "account",
+    accessKey: "accessKey",
+  };
+  // With this:
+  config.tileCacheAzureCredentials = {
+    account: "account",
+    accessKey: "accessKey",
+  };
+```
+
+To use AliCloud storage set [IModelHostConfiguration.tileCacheService]($backend) property with provided [AliCloudStorageService]($backend) implementation:
+
+```ts
+  import { AliCloudStorageService } from "@itwin/core-backend";
+
+  const config = new IModelHostConfiguration();
+  // Replace this:
+  config.tileCacheCredentials = {
+    service: "alicloud",
+    account: "account",
+    accessKey: "accessKey",
+  };
+  // With this:
+  config.tileCacheService = new AliCloudStorageService({
+    region: "region",
+    accessKeyId: "accessKeyId",
+    accessKeySecret: "accessKeySecret",
+  });
+```
+
+To use any other external storage set [IModelHostConfiguration.tileCacheService]($backend) with a custom [CloudStorageService]($backend) implementation:
+
+```ts
+  const config = new IModelHostConfiguration();
+  // Replace this:
+  config.tileCacheCredentials = {
+    service: "external",
+    account: "",
+    accessKey: "",
+  };
+  IModelHost.tileCacheService = new CustomCloudStorageService();
+  // With this:
+  config.tileCacheService = new CustomCloudStorageService();
+```

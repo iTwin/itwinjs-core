@@ -7,12 +7,12 @@
  */
 
 import { Id64Array, Id64String } from "@itwin/core-bentley";
-import { BooleanMode, BooleanOperationProps, CutDepthMode, CutDirectionMode, CutProps, ElementGeometryCacheFilter, ElementGeometryResultOptions, ElementGeometryResultProps, EmbossDirectionMode, EmbossProps, HollowFacesProps, ImprintProps, LoftProps, OffsetFacesProps, ProfileClosure, SewSheetProps, SubEntityType, SweepPathProps } from "@itwin/editor-common";
+import { BooleanMode, BooleanOperationProps, CutDepthMode, CutDirectionMode, CutProps, ElementGeometryCacheFilter, ElementGeometryResultOptions, ElementGeometryResultProps, EmbossDirectionMode, EmbossProps, HollowFacesProps, ImprintProps, LoftProps, OffsetFacesProps, ProfileClosure, SewSheetProps, SubEntityLocationProps, SubEntityType, SweepPathProps } from "@itwin/editor-common";
 import { ColorDef, ElementGeometry } from "@itwin/core-common";
-import { Geometry, LineString3d, Point3d, Vector3d } from "@itwin/core-geometry";
-import { AccuDrawHintBuilder, BeButtonEvent, DynamicsContext, EventHandled, GraphicType, HitDetail } from "@itwin/core-frontend";
+import { Geometry, LineString3d, Point3d, Vector3d, XYZProps } from "@itwin/core-geometry";
+import { AccuDrawHintBuilder, BeButtonEvent, DecorateContext, DynamicsContext, EventHandled, GraphicType, HitDetail } from "@itwin/core-frontend";
 import { computeChordToleranceFromPoint } from "./CreateElementTool";
-import { ElementGeometryCacheTool, LocateSubEntityTool } from "./ElementGeometryTool";
+import { ElementGeometryCacheTool, LocateSubEntityTool, SubEntityData } from "./ElementGeometryTool";
 
 /** @alpha Base class for tools that perform boolean operations on a set of elements. */
 export abstract class BooleanOperationTool extends ElementGeometryCacheTool {
@@ -359,41 +359,84 @@ export class LoftProfilesTool extends ElementGeometryCacheTool {
   }
 }
 
+/** @alpha */
+export class FaceLocationData {
+  public point: Point3d;
+  public normal: Vector3d;
+
+  constructor(point: Point3d, normal: Vector3d) {
+    this.point = point;
+    this.normal = normal;
+  }
+
+  public static create(pointProps: XYZProps, normalProps: XYZProps) {
+    const point = Point3d.fromJSON(pointProps);
+    const normal = Vector3d.fromJSON(normalProps);
+    return new FaceLocationData(point, normal);
+  }
+}
+
 /** @alpha Identify faces of solids and surfaces to offset. */
 export class OffsetFacesTool extends LocateSubEntityTool {
   public static override toolId = "OffsetFaces";
   public static override iconSpec = "icon-move"; // TODO: Need better icon...
 
   protected override get wantDynamics(): boolean { return true; }
-  protected override get wantAccuSnap(): boolean { return undefined !== this._acceptedSubEntity; }
+  protected override get wantAccuSnap(): boolean { return this.isDynamicsStarted; }
 
   protected override get geometryCacheFilter(): ElementGeometryCacheFilter | undefined {
     return { parts: true, curves: false, surfaces: true, solids: true, other: false };
   }
 
+  protected override async createSubEntityData(id: Id64String, hit: SubEntityLocationProps): Promise<SubEntityData> {
+    const data = await super.createSubEntityData(id, hit);
+
+    if (undefined !== hit.point && undefined !== hit.normal)
+      data.toolData = FaceLocationData.create(hit.point, hit.normal);
+
+    return data;
+  }
+
+  protected override drawAcceptedSubEntities(context: DecorateContext): void {
+    super.drawAcceptedSubEntities(context);
+
+    // Show pick point on last identified face, offset direction/distance will be computed from this location...
+    const faceData = this.getAcceptedSubEntityData()?.toolData as FaceLocationData;
+    if (undefined === faceData)
+      return;
+
+    const builder = context.createGraphic({ type: GraphicType.WorldOverlay });
+    builder.setSymbology(context.viewport.getContrastToBackgroundColor(), ColorDef.black, 10);
+    builder.addPointString([faceData.point]);
+
+    context.addDecorationFromBuilder(builder);
+  }
+
   protected override async applyAgendaOperation(ev: BeButtonEvent, isAccept: boolean): Promise<ElementGeometryResultProps | undefined> {
-    if (undefined === ev.viewport || this.agenda.isEmpty || undefined === this._acceptedSubEntity?.point || undefined === this._acceptedSubEntity?.normal)
+    if (undefined === ev.viewport || this.agenda.isEmpty || !this.haveAcceptedSubEntities)
       return undefined;
 
-    const facePt = Point3d.fromJSON(this._acceptedSubEntity.point);
-    const faceNormal = Vector3d.fromJSON(this._acceptedSubEntity.normal);
-    const projPt = AccuDrawHintBuilder.projectPointToLineInView(ev.point, facePt, faceNormal, ev.viewport);
+    const faceData = this.getAcceptedSubEntityData()?.toolData as FaceLocationData;
+    if (undefined === faceData)
+      return undefined;
+
+    const projPt = AccuDrawHintBuilder.projectPointToLineInView(ev.point, faceData.point, faceData.normal, ev.viewport);
 
     if (undefined === projPt)
       return undefined;
 
-    const offsetDir = Vector3d.createStartEnd(facePt, projPt);
+    const offsetDir = Vector3d.createStartEnd(faceData.point, projPt);
     let offset = offsetDir.magnitude();
 
     if (offset < Geometry.smallMetricDistance)
       return undefined;
 
-    if (offsetDir.dotProduct(faceNormal) < 0.0)
+    if (offsetDir.dotProduct(faceData.normal) < 0.0)
       offset = -offset;
 
     try {
       this._startedCmd = await this.startCommand();
-      const params: OffsetFacesProps = { faces: this._acceptedSubEntity.subEntity, distances: offset };
+      const params: OffsetFacesProps = { faces: this.getAcceptedSubEntities(), distances: offset };
       const opts: ElementGeometryResultOptions = {
         wantGraphic: isAccept ? undefined : true,
         chordTolerance: computeChordToleranceFromPoint(ev.viewport, ev.point),
@@ -407,20 +450,21 @@ export class OffsetFacesTool extends LocateSubEntityTool {
   }
 
   protected override setupAccuDraw(): void {
-    if (undefined === this._acceptedSubEntity?.point || undefined === this._acceptedSubEntity?.normal)
+    if (!this.haveAcceptedSubEntities)
       return;
 
-    const facePt = Point3d.fromJSON(this._acceptedSubEntity.point);
-    const faceNormal = Vector3d.fromJSON(this._acceptedSubEntity.normal);
+    const faceData = this.getAcceptedSubEntityData()?.toolData as FaceLocationData;
+    if (undefined === faceData)
+      return;
 
     const hints = new AccuDrawHintBuilder();
     hints.setOriginFixed = true;
     hints.setLockY = true;
     hints.setLockZ = true;
     hints.setModeRectangular();
-    hints.setOrigin(facePt);
-    hints.setXAxis2(faceNormal);
-    hints.sendHints();
+    hints.setOrigin(faceData.point);
+    hints.setXAxis2(faceData.normal);
+    hints.sendHints(false);
   }
 
   public async onRestartTool(): Promise<void> {
@@ -440,7 +484,7 @@ export class HollowFacesTool extends LocateSubEntityTool {
   }
 
   protected override async applyAgendaOperation(ev: BeButtonEvent, isAccept: boolean): Promise<ElementGeometryResultProps | undefined> {
-    if (undefined === ev.viewport || this.agenda.isEmpty || undefined === this._acceptedSubEntity)
+    if (undefined === ev.viewport || this.agenda.isEmpty || !this.haveAcceptedSubEntities)
       return undefined;
 
     // TODO: Tool settings for shell thickness and face thickness...
@@ -449,7 +493,7 @@ export class HollowFacesTool extends LocateSubEntityTool {
 
     try {
       this._startedCmd = await this.startCommand();
-      const params: HollowFacesProps = { faces: this._acceptedSubEntity.subEntity, distances: faceThickness, defaultDistance: shellThickness };
+      const params: HollowFacesProps = { faces: this.getAcceptedSubEntities(), distances: faceThickness, defaultDistance: shellThickness };
       const opts: ElementGeometryResultOptions = {
         wantGraphic: isAccept ? undefined : true,
         chordTolerance: computeChordToleranceFromPoint(ev.viewport, ev.point),
@@ -488,6 +532,8 @@ export class ImprintSolidElementsTool extends LocateSubEntityTool {
   protected points: Point3d[] = [];
 
   protected override get requiredElementCount(): number { return ImprintSolidMethod.Element === this.method ? 2 : 1; }
+  protected override get allowSubEntityControlSelect(): boolean { return ImprintSolidMethod.Edges === this.method; }
+  protected override get inhibitSubEntityDisplay(): boolean { return ImprintSolidMethod.Points === this.method ? false : super.inhibitSubEntityDisplay; }
 
   protected override wantSubEntityType(type: SubEntityType): boolean {
     switch (type) {
@@ -500,8 +546,8 @@ export class ImprintSolidElementsTool extends LocateSubEntityTool {
     }
   }
 
-  protected override get wantAccuSnap(): boolean { return ImprintSolidMethod.Points === this.method && undefined !== this._acceptedSubEntity; }
-  protected override get wantDynamics(): boolean { return ImprintSolidMethod.Points === this.method && undefined !== this._acceptedSubEntity; }
+  protected override get wantDynamics(): boolean { return ImprintSolidMethod.Points === this.method; }
+  protected override get wantAccuSnap(): boolean { return ImprintSolidMethod.Points === this.method && this.isDynamicsStarted; }
 
   protected override get geometryCacheFilter(): ElementGeometryCacheFilter | undefined {
     return { parts: true, curves: !this.agenda.isEmpty, surfaces: true, solids: true, other: false };
@@ -511,6 +557,15 @@ export class ImprintSolidElementsTool extends LocateSubEntityTool {
     // Filter changes to allow imprinting an open path, invalidate cached accept status...
     if (ImprintSolidMethod.Element === this.method && (this.agenda.isEmpty || 1 === this.agenda.length))
       this.onGeometryCacheFilterChanged();
+  }
+
+  protected override async createSubEntityData(id: Id64String, hit: SubEntityLocationProps): Promise<SubEntityData> {
+    const data = await super.createSubEntityData(id, hit);
+
+    if (undefined !== hit.point && undefined !== hit.normal)
+      data.toolData = FaceLocationData.create(hit.point, hit.normal);
+
+    return data;
   }
 
   protected override async applyAgendaOperation(_ev: BeButtonEvent, isAccept: boolean): Promise<ElementGeometryResultProps | undefined> {
@@ -527,24 +582,29 @@ export class ImprintSolidElementsTool extends LocateSubEntityTool {
 
       let params: ImprintProps;
       if (ImprintSolidMethod.Points === this.method) {
-        if (undefined === this._acceptedSubEntity)
+        if (!this.haveAcceptedSubEntities)
           return undefined;
 
         const geom = ElementGeometry.fromGeometryQuery(LineString3d.create(this.points));
         if (undefined === geom)
           return undefined;
 
-        params = { imprint : geom, face: this._acceptedSubEntity.subEntity, extend };
+        params = { imprint : geom, face: this.getAcceptedSubEntityData(0)?.props, extend };
       } else if (ImprintSolidMethod.Edges === this.method) {
-        if (undefined === this._acceptedSubEntity)
+        if (!this.haveAcceptedSubEntities)
           return undefined;
 
-        const edgeFaces = await ElementGeometryCacheTool.callCommand("getConnectedSubEntities", id, this._acceptedSubEntity.subEntity, SubEntityType.Face );
+        // TODO: Include all accepted edges...
+        const edge = this.getAcceptedSubEntityData(0)?.props;
+        if (undefined === edge)
+          return undefined;
+
+        const edgeFaces = await ElementGeometryCacheTool.callCommand("getConnectedSubEntities", id, edge, SubEntityType.Face );
         if (undefined === edgeFaces || 0 === edgeFaces.length)
           return undefined;
 
         // TODO: Check planar face...get preferred face from cursor location in dynamics, etc.
-        const edgeLoop = await ElementGeometryCacheTool.callCommand("getConnectedSubEntities", id, this._acceptedSubEntity.subEntity, SubEntityType.Edge, { loopFace: edgeFaces[0] } );
+        const edgeLoop = await ElementGeometryCacheTool.callCommand("getConnectedSubEntities", id, edge, SubEntityType.Edge, { loopFace: edgeFaces[0] } );
         if (undefined === edgeLoop || 0 === edgeLoop.length)
           return undefined;
 
@@ -568,7 +628,7 @@ export class ImprintSolidElementsTool extends LocateSubEntityTool {
     pts.push(ev.point.clone());
 
     const builder = context.createGraphic({ type: GraphicType.WorldOverlay });
-    builder.setSymbology(context.viewport.getContrastToBackgroundColor(), ColorDef.black, 2);
+    builder.setSymbology(context.viewport.getContrastToBackgroundColor(), ColorDef.black, 3);
     builder.addLineString(pts);
 
     context.addGraphic(builder.finish());
@@ -577,7 +637,7 @@ export class ImprintSolidElementsTool extends LocateSubEntityTool {
   protected override async gatherInput(ev: BeButtonEvent): Promise<EventHandled | undefined> {
     switch (this.method) {
       case ImprintSolidMethod.Points: {
-        if (undefined === this._acceptedSubEntity)
+        if (!this.haveAcceptedSubEntities)
           break;
 
         this.points.push(ev.point.clone());
@@ -611,17 +671,18 @@ export class ImprintSolidElementsTool extends LocateSubEntityTool {
     if (ImprintSolidMethod.Points !== this.method || 0 !== this.points.length)
       return;
 
-    if (undefined === this._acceptedSubEntity?.point || undefined === this._acceptedSubEntity?.normal)
+    if (!this.haveAcceptedSubEntities)
       return;
 
-    const facePt = Point3d.fromJSON(this._acceptedSubEntity.point);
-    const faceNormal = Vector3d.fromJSON(this._acceptedSubEntity.normal);
+    const faceData = this.getAcceptedSubEntityData()?.toolData as FaceLocationData;
+    if (undefined === faceData)
+      return;
 
     const hints = new AccuDrawHintBuilder();
     hints.setModeRectangular();
-    hints.setOrigin(facePt);
-    hints.setNormal(faceNormal);
-    hints.sendHints();
+    hints.setOrigin(faceData.point);
+    hints.setNormal(faceData.normal);
+    hints.sendHints(false);
   }
 
   public async onRestartTool(): Promise<void> {

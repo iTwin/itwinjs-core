@@ -14,7 +14,7 @@ import { CommonProps, Point, Rectangle, RectangleProps } from "@itwin/core-react
 import { PointerCaptor } from "../../base/PointerCaptor";
 
 /** Available resize directions of resize grip.
- * @alpha
+ * @internal
  */
 export enum ResizeDirection {
   EastWest,
@@ -24,7 +24,7 @@ export enum ResizeDirection {
 }
 
 /** Helpers for [[ResizeDirection]].
- * @alpha
+ * @internal
  */
 export class ResizeDirectionHelpers {
   /** Class name of [[ResizeDirection.EastWest]] */
@@ -52,7 +52,7 @@ export class ResizeDirectionHelpers {
 }
 
 /** Arguments used in resize actions of [[ResizeGrip]] component.
- * @alpha
+ * @internal
  */
 export interface ResizeGripResizeArgs {
   /** Pointer position. */
@@ -62,7 +62,7 @@ export interface ResizeGripResizeArgs {
 }
 
 /** Properties of [[ResizeGrip]] component.
- * @alpha
+ * @internal
  */
 export interface ResizeGripProps extends CommonProps {
   /** Function called when grip is clicked. */
@@ -82,7 +82,7 @@ interface ResizeGripState {
 }
 
 /** Resize grip used by [[Stacked]] component.
- * @alpha
+ * @internal
  */
 export class ResizeGrip extends React.PureComponent<ResizeGripProps, ResizeGripState> {
   private _grip = React.createRef<HTMLDivElement>();
