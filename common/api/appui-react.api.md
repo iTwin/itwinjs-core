@@ -2549,6 +2549,8 @@ export class FrontstageDef {
     // (undocumented)
     isPopoutWidget(widgetId: string): boolean;
     // (undocumented)
+    get isReady(): boolean;
+    // (undocumented)
     get isStageClosing(): boolean;
     // @beta (undocumented)
     get leftPanel(): StagePanelDef | undefined;
