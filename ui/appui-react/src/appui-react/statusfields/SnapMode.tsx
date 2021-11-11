@@ -87,7 +87,7 @@ class SnapModeFieldComponent extends React.Component<SnapModeFieldProps, SnapMod
           style={this.props.style}
           title={this._title}
         >
-          <NZ_SnapMode
+          <NZ_SnapMode // eslint-disable-line deprecation/deprecation
             icon={
               <i className={`icon icon-${this.getSnapModeIconNameFromMode(this.props.snapMode)}`} />
             }

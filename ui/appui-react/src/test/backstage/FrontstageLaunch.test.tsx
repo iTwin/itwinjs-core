@@ -58,6 +58,7 @@ describe("Backstage", () => {
 
       const spy = sinon.spy(FrontstageManager.onFrontstageActivatedEvent, "emit");
       const wrapper = mount(
+        // eslint-disable-next-line deprecation/deprecation
         <FrontstageLaunchBackstageItem frontstageId={Frontstage1.stageId} labelKey="UiFramework:tests.label" iconSpec="icon-placeholder"
           isEnabled={true} isActive={false}
           stateSyncIds={[testEventId]} stateFunc={stateFunc} />,
@@ -80,6 +81,7 @@ describe("Backstage", () => {
     it("FrontstageLaunchBackstageItem should log error when invalid frontstageId is provided", async () => {
       const spyMethod = sinon.spy(Logger, "logError");
       const wrapper = mount(
+        // eslint-disable-next-line deprecation/deprecation
         <FrontstageLaunchBackstageItem frontstageId="BadTest" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />,
       );
 
@@ -93,6 +95,7 @@ describe("Backstage", () => {
 
     it("FrontstageLaunchBackstageItem renders correctly when inactive", async () => {
       await FrontstageManager.setActiveFrontstageDef(undefined);
+      // eslint-disable-next-line deprecation/deprecation
       const wrapper = shallow(<FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />);
       wrapper.should.matchSnapshot();
     });
@@ -103,6 +106,7 @@ describe("Backstage", () => {
 
       if (frontstageDef) {
         await FrontstageManager.setActiveFrontstageDef(frontstageDef);
+        // eslint-disable-next-line deprecation/deprecation
         const wrapper = shallow(<FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />);
         wrapper.should.matchSnapshot();
       }
@@ -110,6 +114,7 @@ describe("Backstage", () => {
 
     it("FrontstageLaunchBackstageItem updates on frontstage activation", async () => {
       await FrontstageManager.setActiveFrontstageDef(undefined);
+      // eslint-disable-next-line deprecation/deprecation
       const wrapper = mount(<FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />);
       expect(wrapper.find("li.nz-active").length).to.eq(0);
 
@@ -122,6 +127,7 @@ describe("Backstage", () => {
     });
 
     it("FrontstageLaunchBackstageItem updates on property change", async () => {
+      // eslint-disable-next-line deprecation/deprecation
       const wrapper = mount(<FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" isEnabled={false} />);
       expect(wrapper.find("li.nz-disabled").length).to.eq(1);
 

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/components-react",
+      "comment": "Update CustomNumberEditor to use size='small' itwinUi style.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/components-react"
+}
