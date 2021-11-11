@@ -26,28 +26,25 @@ function copyIdSetToUint32Set(dst: Id64.Uint32Set, src: Iterable<string>): void 
 
 // cspell:ignore subcat subcats
 
-/** Properties used to initialize a [[FeatureAppearance]].
+/** JSON representation of a [[FeatureAppearance]].
  * @public
  */
 export interface FeatureAppearanceProps {
-  /** The color of the Feature */
+  /** @see [[FeatureAppearance.rgb]]. */
   rgb?: RgbColorProps;
-  /** The line weight in pixels as an integer in [1, 31] */
+  /** @see [[FeatureAppearance.weight]]. */
   weight?: number;
-  /** The transparency in the range [0.0, 1.0] where 0 indicates fully opaque and 1 indicates fully transparent. */
+  /** @see [[FeatureAppearance.transparency]]. */
   transparency?: number;
-  /** If true, then [[transparency]] only applies if [[ViewFlags.transparency]] is enabled and the current [[RenderMode]] supports transparency.
-   * Default: false, meaning the transparency is applied regardless of view flags or render mode.
-   * This property has no effect if [[transparency]] is `undefined`.
-   */
+  /** @see [[FeatureAppearance.viewDependentTransparency]]. */
   viewDependentTransparency?: true;
-  /** The pixel pattern used to draw lines. */
+  /** @see [[FeatureAppearance.linePixels]]. */
   linePixels?: LinePixels;
-  /** If true, ignore the [[RenderMaterial]] associated with surfaces. */
+  /** @see [[FeatureAppearance.ignoresMaterial]]. */
   ignoresMaterial?: true;
-  /** If true, the associated [[Feature]] will not be drawn when using [Viewport.readPixels]($frontend). */
+  /** @see [[FeatureAppearance.nonLocatable]]. */
   nonLocatable?: true;
-  /** If true, the associated [[Feature]] will be emphasized. Emphasized features are rendered using the [[Hilite.Settings]] defined by [Viewport.emphasisSettings]($frontend). */
+  /** @see [[FeatureAppearance.emphasized]]. */
   emphasized?: true;
 }
 
@@ -57,13 +54,26 @@ export interface FeatureAppearanceProps {
  * @public
  */
 export class FeatureAppearance {
+  /** Overrides the feature's color. */
   public readonly rgb?: RgbColor;
+  /** The width of lines and edges in pixels as an integer in [1, 31]. */
   public readonly weight?: number;
+  /** The transparency in the range [0, 1] where 0 indicates fully opaque and 1 indicates fully transparent.
+   * @see [[viewDependentTransparency]] for details on how this override interacts with the [DisplayStyle]($backend).
+   */
   public readonly transparency?: number;
+  /** The pixel pattern applied to lines and edges. */
   public readonly linePixels?: LinePixels;
+  /** If true, don't apply the [[RenderMaterial]] to the feature's surfaces. */
   public readonly ignoresMaterial?: true;
+  /** If true, the feature will not be drawn when using [Viewport.readPixels]($frontend), meaning [Tool]($frontend)s will not be able to interact with it. */
   public readonly nonLocatable?: true;
+  /** If true, the feature will be rendered using the [[Hilite.Settings]] defined by [Viewport.emphasisSettings]($frontend) to make it stand out. */
   public readonly emphasized?: true;
+  /** If true, then [[transparency]] will only be applied if [[ViewFlags.transparency]] is enabled and the current [[RenderMode]] supports transparency.
+   * Default: false, meaning the transparency will be applied regardless of view flags or render mode.
+   * This property has no effect if [[transparency]] is `undefined`.
+   */
   public readonly viewDependentTransparency?: true;
 
   /** An appearance that overrides nothing. */
