@@ -163,8 +163,8 @@ const checkVertexDiscard = `
     discardFlags = discardFlags - 4;
 
   bool isOpaquePass = (kRenderPass_OpaqueLinear <= u_renderPass && kRenderPass_OpaqueGeneral >= u_renderPass);
-  bool discardTranslucentDuringOpaquePass = 1 == discardFlags || 3 == discardFlags;
-  if (isOpaquePass && !discardTranslucentDuringOpaquePass && !discardViewIndependentDuringOpaque)
+  bool discardTranslucentDuringOpaquePass = 1 == discardFlags || 3 == discardFlags || (feature_viewIndependentTransparency && discardViewIndependentDuringOpaque);
+  if (isOpaquePass && !discardTranslucentDuringOpaquePass)
     return false;
 
   bool isTranslucentPass = kRenderPass_Translucent == u_renderPass;
@@ -648,7 +648,7 @@ const computeFeatureOverrides = `
 
     if (alphaOverridden) {
       feature_alpha = rgba.a;
-      feature_viewIndependentTransparency = nthFeatureBitSet(flags, kOvrBit_ViewIndependentTransparency);
+      feature_viewIndependentTransparency = nthFeatureBitSet(emphFlags, kOvrBit_ViewIndependentTransparency);
     }
   }
 
