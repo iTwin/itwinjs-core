@@ -65,10 +65,10 @@ export class ExtensionUiItemsProvider implements UiItemsProvider {
     const statusBarItems: CommonStatusBarItem[] = [];
     if (stageUsage === StageUsage.General) {
       statusBarItems.push(
-        AbstractStatusBarItemUtilities.createActionItem("UiTestExtension:UnitsStatusBarItem", StatusBarSection.Center, 100, unitsIcon, IModelApp.localization.getLocalizedString("uiTestExtension:StatusBar.UnitsFlyover"),
+        AbstractStatusBarItemUtilities.createActionItem("UiItemsProvidersTest:UnitsStatusBarItem", StatusBarSection.Center, 100, unitsIcon, IModelApp.localization.getLocalizedString("uiItemsProvidersTest:StatusBar.UnitsFlyover"),
           () => {
-            IModelApp.uiAdmin.openDialog(new UnitsPopupUiDataProvider(IModelApp.localization), IModelApp.localization.getLocalizedString("uiTestExtension:StatusBar.Units"),
-              true, "uiTestExtension:units-popup", { movable: true, width: 280, minWidth: 280 });
+            IModelApp.uiAdmin.openDialog(new UnitsPopupUiDataProvider(IModelApp.localization), IModelApp.localization.getLocalizedString("uiItemsProvidersTest:StatusBar.Units"),
+              true, "uiItemsProvidersTest:units-popup", { movable: true, width: 280, minWidth: 280 });
           }
         ));
     }

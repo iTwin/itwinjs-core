@@ -7,14 +7,14 @@ import * as React from "react";
 import { ModalDialogManager } from "@itwin/appui-react";
 import { Dialog } from "@itwin/core-react";
 import { DialogButtonType } from "@itwin/appui-abstract";
-import { UiTestExtension } from "../../ui-test-extension";
+import { UiItemsProvidersTest } from "../../ui-items-providers-test";
 
 /**
  *  This is an example of how to create a React-based modal dialog that can be opened via a toolbutton or a key-in.
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function SampleModalDialog() {
-  const title = React.useRef(UiTestExtension.translate("Dialogs.SampleModal.title"));
+  const title = React.useRef(UiItemsProvidersTest.translate("Dialogs.SampleModal.title"));
 
   const closeDialog = React.useCallback(() => {
     ModalDialogManager.closeDialog();

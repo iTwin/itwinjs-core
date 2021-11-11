@@ -13,7 +13,7 @@ import { SampleModalDialog } from "../ui/dialogs/SampleModalDialog";
 import { BadgeType, ConditionalBooleanValue, IconSpecUtilities, ToolbarItemUtilities } from "@itwin/appui-abstract";
 import { NetworkTraceUiProvider } from "../ui/providers/NetworkTraceUiProvider";
 import connectedIcon from "../ui/icons/connected-query.svg?sprite";
-import { UiTestExtension } from "../ui-test-extension";
+import { UiItemsProvidersTest } from "../ui-items-providers-test";
 
 /**
  * Immediate tool that will open an example modal dialog.The tool is created and register to allow the user
@@ -22,7 +22,7 @@ import { UiTestExtension } from "../ui-test-extension";
  * @alpha
  */
 export class OpenTraceDialogTool extends Tool {
-  public static override toolId = "uiTestExtension-OpenTraceDialogTool";
+  public static override toolId = "uiItemsProvidersTest-OpenTraceDialogTool";
   public static override iconSpec = IconSpecUtilities.createSvgIconSpec(connectedIcon);
 
   // istanbul ignore next
@@ -36,7 +36,7 @@ export class OpenTraceDialogTool extends Tool {
   }
 
   public static override get flyover(): string {
-    return UiTestExtension.translate("trace-tool-connected");
+    return UiItemsProvidersTest.translate("trace-tool-connected");
   }
 
   // if supporting localized key-ins return a localized string

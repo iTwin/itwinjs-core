@@ -1,4 +1,4 @@
-# ui-test-extension
+# ui-items-providers-test
 
 Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md for license terms and full copyright notice.
 
@@ -31,7 +31,7 @@ in the main design frontstage. See <http://itwinjs.org> for comprehensive docume
 
 6. Open a web browser (e.g., Chrome or Edge), and browse to localhost:3000.
 
-7. Use key-in palette to load the activate/initialize the ui-test-extension.
+7. Use key-in palette to load the activate/initialize the ui-items-providers-test.
 
 - press `Ctrl+F2`
 - enter `load test extension`

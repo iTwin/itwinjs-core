@@ -23,7 +23,7 @@ import { ColorByName, ColorDef } from "@itwin/core-common";
 import { FormatterSpec } from "@itwin/core-quantity";
 import { CursorInformation, MenuItemProps, UiFramework } from "@itwin/appui-react";
 import sampleToolSvg from "./SampleTool.svg?sprite";
-import { UiTestExtension } from "../ui-test-extension";
+import { UiItemsProvidersTest } from "../ui-items-providers-test";
 
 enum ToolOptions {
   Red,
@@ -35,8 +35,8 @@ enum ToolOptions {
 }
 
 export class SampleTool extends PrimitiveTool {
-  // ensure toolId is unique by adding "uiTestExtension-" prefix
-  public static override toolId = "uiTestExtension-SampleTool";
+  // ensure toolId is unique by adding "uiItemsProvidersTest-" prefix
+  public static override toolId = "uiItemsProvidersTest-SampleTool";
   public static override iconSpec = `svg:${sampleToolSvg}`;
   public readonly points: Point3d[] = [];
   private _showCoordinatesOnPointerMove = false;
@@ -50,12 +50,12 @@ export class SampleTool extends PrimitiveTool {
 
   public static getPrompt(name: string): string {
     const key = `tools.${this.toolId}.Prompts.${name}`;
-    return UiTestExtension.translate(key);
+    return UiItemsProvidersTest.translate(key);
   }
 
   public static getOptionString(name: string): string {
     const key = `tools.${this.toolId}.Options.${name}`;
-    return UiTestExtension.translate(key);
+    return UiItemsProvidersTest.translate(key);
   }
 
   // Tool Setting Properties

@@ -17,9 +17,9 @@ import genericToolSvg from "./generic-tool.svg?sprite";
 export class GenericTool extends PrimitiveTool {
   public userPoint: Point3d | undefined;
   public elementId: string | undefined;
-  // ensure toolId is unique by add "uiTestExtension-" prefix
-  public static override get toolId() { return "uiTestExtension-GenericTool"; }
-  public static get toolStringKey() { return `uiTestExtension:tools.${GenericTool.toolId}.`; }
+  // ensure toolId is unique by add "uiItemsProvidersTest-" prefix
+  public static override get toolId() { return "uiItemsProvidersTest-GenericTool"; }
+  public static get toolStringKey() { return `uiItemsProvidersTest:tools.${GenericTool.toolId}.`; }
   public static override iconSpec = `svg:${genericToolSvg}`;
   public static useDefaultPosition = false;
   public override autoLockTarget(): void { } // NOTE: For selecting elements we only care about iModel, so don't lock target model automatically.

@@ -40,14 +40,14 @@ export class UnitsPopupUiDataProvider extends DialogLayoutDataProvider {
   private static _getEnumAsPicklistDescription = (): PropertyDescription => {
     return {
       name: UnitsPopupUiDataProvider._optionsName,
-      displayLabel: UnitsPopupUiDataProvider.localization.getLocalizedString("uiTestExtension:StatusBar.Units"),
+      displayLabel: UnitsPopupUiDataProvider.localization.getLocalizedString("uiItemsProvidersTest:StatusBar.Units"),
       typename: "enum",
       enum: {
         choices: [
-          { label: UnitsPopupUiDataProvider.localization.getLocalizedString("uiTestExtension:StatusBar.Metric"), value: "metric" },
-          { label: UnitsPopupUiDataProvider.localization.getLocalizedString("uiTestExtension:StatusBar.Imperial"), value: "imperial" },
-          { label: UnitsPopupUiDataProvider.localization.getLocalizedString("uiTestExtension:StatusBar.UsSurvey"), value: "usSurvey" },
-          { label: UnitsPopupUiDataProvider.localization.getLocalizedString("uiTestExtension:StatusBar.UsCustomary"), value: "usCustomary" },
+          { label: UnitsPopupUiDataProvider.localization.getLocalizedString("uiItemsProvidersTest:StatusBar.Metric"), value: "metric" },
+          { label: UnitsPopupUiDataProvider.localization.getLocalizedString("uiItemsProvidersTest:StatusBar.Imperial"), value: "imperial" },
+          { label: UnitsPopupUiDataProvider.localization.getLocalizedString("uiItemsProvidersTest:StatusBar.UsSurvey"), value: "usSurvey" },
+          { label: UnitsPopupUiDataProvider.localization.getLocalizedString("uiItemsProvidersTest:StatusBar.UsCustomary"), value: "usCustomary" },
         ],
       },
     };

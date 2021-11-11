@@ -10,7 +10,7 @@
 
 import * as React from "react";
 import { IModelApp, IModelConnection, Tool } from "@itwin/core-frontend";
-import { UiTestExtension } from "@itwin/ui-test-extension";
+import { UiItemsProvidersTest } from "@itwin/ui-items-providers-test";
 
 import {
   AbstractStatusBarItemUtilities, AbstractWidgetProps, BadgeType, CommonStatusBarItem, CommonToolbarItem, ConditionalBooleanValue,
@@ -38,187 +38,21 @@ import { ComponentExamplesPage } from "../appui/frontstages/component-examples/C
 import { ComponentExamplesProvider } from "../appui/frontstages/component-examples/ComponentExamplesProvider";
 import { ITwinUIExamplesProvider } from "../appui/frontstages/component-examples/ITwinUIExamplesProvider";
 
-// Simulate redux state being added via a extension
-interface SampleExtensionState {
-  extensionUiVisible?: boolean;
-}
-class SampleExtensionStateManager {
-  public static extensionStateManagerLoaded = false;
+export class TestExtensionUiProviderTool extends Tool {
+  public static testExtensionLoaded = "";
 
-  private static _initialState: SampleExtensionState = {
-    extensionUiVisible: false,
-  };
-
-  private static _reducerName = "sampleExtensionState";
-
-  public static SET_EXTENSION_UI_VISIBLE = SampleExtensionStateManager.createActionName("SET_EXTENSION_UI_VISIBLE");
-
-  private static _extensionActions: ActionCreatorsObject = {
-    setDialogVisible: (extensionUiVisible: boolean) =>
-      createAction(SampleExtensionStateManager.SET_EXTENSION_UI_VISIBLE, extensionUiVisible),
-  };
-
-  private static createActionName(name: string) {
-    // convert to lower case so it can serve as a sync event when called via UiFramework.dispatchActionToStore
-    return `${SampleExtensionStateManager._reducerName}:${name}`.toLowerCase();
+  public static override toolId = "TestExtensionUiProvider";
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 0; }
+  public static override get keyin(): string {
+    return "load test provider";
   }
-
-  // reducer
-  public static extensionReducer(
-    state: SampleExtensionState = SampleExtensionStateManager._initialState,
-    action: any,
-  ): SampleExtensionState {
-    type ExtensionActionsUnion = ActionsUnion<typeof SampleExtensionStateManager._extensionActions>;
-
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-    const extensionActionsParam = action as ExtensionActionsUnion;
-
-    switch (extensionActionsParam.type) {
-      case SampleExtensionStateManager.SET_EXTENSION_UI_VISIBLE:
-        return { ...state, extensionUiVisible: action.payload };
-      default:
-        return state;
-    }
+  public static override get englishKeyin(): string {
+    return this.keyin;
   }
-
-  public static initialize() {
-    ReducerRegistryInstance.registerReducer(
-      SampleExtensionStateManager._reducerName,
-      SampleExtensionStateManager.extensionReducer,
-    );
-    SampleExtensionStateManager.extensionStateManagerLoaded = true;
-  }
-
-  public static get isExtensionUiVisible(): boolean {
-    if (StateManager.isInitialized()) {
-      return StateManager.store.getState().sampleExtensionState.extensionUiVisible;
-    } else {
-      return false;
-    }
-  }
-
-  public static set isExtensionUiVisible(visible: boolean) {
-    UiFramework.dispatchActionToStore(SampleExtensionStateManager.SET_EXTENSION_UI_VISIBLE, visible, true);
-  }
-}
-
-/** test code */
-class TestUiProvider implements UiItemsProvider {
-  public readonly id = "TestUiProvider";
-
-  public provideToolbarButtonItems(_stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[] {
-
-    if (stageUsage === StageUsage.General && toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Horizontal) {
-      const simpleActionSpec = ToolbarItemUtilities.createActionButton("simple-test-action-tool", 200, "icon-developer", "simple-test-action-tool",
-        (): void => {
-          // eslint-disable-next-line no-console
-          console.log("Got Here!");
-        });
-
-      const isHiddenCondition = new ConditionalBooleanValue((): boolean => SampleAppIModelApp.getTestProperty() === "HIDE", [SampleAppUiActionId.setTestProperty]);
-      const childActionSpec = ToolbarItemUtilities.createActionButton("child-test-action-tool", 210, "icon-developer", "child-test-action-tool",
-        (): void => {
-          // eslint-disable-next-line no-console
-          console.log("Got Here!");
-        }, { isHidden: isHiddenCondition });
-
-      const nestedActionSpec = ToolbarItemUtilities.createActionButton("nested-test-action-tool", 220, "icon-developer", "test action tool (nested)",
-        (): void => {
-          // eslint-disable-next-line no-console
-          console.log("Got Here!");
-        });
-      const groupSpec = ToolbarItemUtilities.createGroupButton("test-tool-group", 230, "icon-developer", "test group", [childActionSpec, simpleActionSpec], { badgeType: BadgeType.TechnicalPreview, parentToolGroupId: "tool-formatting-setting" });
-
-      const isClearMeasureHiddenCondition = new ConditionalBooleanValue((): boolean => !IModelApp.toolAdmin.currentTool?.toolId.startsWith("Measure."), [SyncUiEventId.ToolActivated]);
-      const clearMeasureActionSpec = ToolbarItemUtilities.createActionButton("clear-measure-tool", 100, "icon-paintbrush", "Clear Measure Decorations",
-        (): void => {
-          IModelApp.toolAdmin.currentTool?.onReinitialize();
-        }, { isHidden: isClearMeasureHiddenCondition });
-
-      return [clearMeasureActionSpec, simpleActionSpec, nestedActionSpec, groupSpec];
-    }
-    return [];
-  }
-
-  public provideStatusBarItems(_stageId: string, stageUsage: string): CommonStatusBarItem[] {
-    const statusBarItems: CommonStatusBarItem[] = [];
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    const ShadowToggle = withStatusFieldProps(ShadowField);
-
-    if (stageUsage === StageUsage.General) {
-      statusBarItems.push(
-        AbstractStatusBarItemUtilities.createActionItem("ExtensionTest:StatusBarItem1", StatusBarSection.Center, 100, "icon-developer", "test status bar from extension",
-          () => {
-            // eslint-disable-next-line no-console
-            console.log("Got Here!");
-          }));
-
-      const isHidden = new ConditionalBooleanValue(() => !SampleExtensionStateManager.isExtensionUiVisible, [SampleExtensionStateManager.SET_EXTENSION_UI_VISIBLE]);
-      const statusBarItem = AbstractStatusBarItemUtilities.createLabelItem("ExtensionTest:StatusBarLabel1", StatusBarSection.Center, 100, "icon-hand-2", "Hello", undefined, { isHidden });
-      statusBarItems.push(statusBarItem);
-
-      const labelCondition = new ConditionalStringValue(() => SampleExtensionStateManager.isExtensionUiVisible ? "Click to Hide" : "Click to Show", [SampleExtensionStateManager.SET_EXTENSION_UI_VISIBLE]);
-      const iconCondition = new ConditionalStringValue(() => SampleExtensionStateManager.isExtensionUiVisible ? "icon-visibility-hide-2" : "icon-visibility", [SampleExtensionStateManager.SET_EXTENSION_UI_VISIBLE]);
-
-      statusBarItems.push(
-        AbstractStatusBarItemUtilities.createActionItem("ExtensionTest:StatusBarItem2", StatusBarSection.Center, 110, iconCondition, labelCondition,
-          () => {
-            SampleExtensionStateManager.isExtensionUiVisible = !SampleExtensionStateManager.isExtensionUiVisible;
-          }));
-
-      statusBarItems.push(AbstractStatusBarItemUtilities.createLabelItem("ExtensionTest:StatusBarLabel1", StatusBarSection.Center, 111, iconCondition, labelCondition));
-
-      // add entry that supplies react component
-      statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("ShadowToggle", StatusBarSection.Right, 5, <ShadowToggle />));
-    }
-    return statusBarItems;
-  }
-
-  public provideWidgets(stageId: string, _stageUsage: string, location: StagePanelLocation, section?: StagePanelSection | undefined): ReadonlyArray<AbstractWidgetProps> {
-    const widgets: AbstractWidgetProps[] = [];
-    const allowedStages = ["ViewsFrontstage", "Ui2"];
-    // Section parameter is ignored. The widget will be added once to the top section of a right panel.
-    if (allowedStages.includes(stageId) && location === StagePanelLocation.Right && section === StagePanelSection.Start) {
-      widgets.push({
-        id: "addonWidget",
-        label: "Add On 1",
-        getWidgetContent: () => <FillCentered>Addon Widget  (id: addonWidget)</FillCentered>, // eslint-disable-line react/display-name
-        defaultState: WidgetState.Floating,
-        floatingContainerId: "floating-addonWidget-container",
-        isFloatingStateSupported: true,
-      });
-      widgets.push({
-        label: "Add On 2",
-        id: "addonWidget2",
-        getWidgetContent: () => <FillCentered>Addon Widget 2 (id: addonWidget2)</FillCentered>, // eslint-disable-line react/display-name
-        defaultState: WidgetState.Floating,
-        floatingContainerId: "floating-addonWidget-container",
-        isFloatingStateSupported: true,
-      });
-    }
-
-    if (allowedStages.includes(stageId) && location === StagePanelLocation.Right && section === StagePanelSection.Middle) {
-      widgets.push({
-        label: "Add On 3",
-        id: "addonWidgetMiddle",
-        // eslint-disable-next-line react/display-name
-        getWidgetContent: () => {
-          return (<FillCentered>
-            <div style={{ margin: "5px", display: "flex", flexDirection: "column", alignItems: "center" }}>
-              Widget id: addonWidgetMiddle
-              <div>
-                (Not Resizable)
-              </div>
-            </div>
-          </FillCentered>);
-        },
-        defaultState: WidgetState.Floating,
-        isFloatingStateSupported: true,
-        defaultFloatingPosition: { x: 200, y: 200 },
-        isFloatingStateWindowResizable: false,
-      });
-    }
-    return widgets;
+  public override async run(_args: any[]): Promise<boolean> {
+    await UiItemsProvidersTest.initialize();
+    return true;
   }
 }
 
@@ -251,47 +85,6 @@ export async function getSavedViewLayoutProps(activeFrontstageId: string, iModel
     return savedViewLayoutProps;
   }
   return undefined;
-}
-
-/** An Immediate Tool that toggles the test ui provider defined above. */
-export class UiProviderTool extends Tool {
-  public static testExtensionLoaded = "";
-
-  public static override toolId = "TestUiProvider";
-  public override async run(_args: any[]): Promise<boolean> {
-    // load state before ui provide so state is available when rendering on load occurs.
-    if (!SampleExtensionStateManager.extensionStateManagerLoaded)
-      SampleExtensionStateManager.initialize();
-
-    if (UiProviderTool.testExtensionLoaded.length > 0) {
-      UiItemsManager.unregister(UiProviderTool.testExtensionLoaded);
-      UiProviderTool.testExtensionLoaded = "";
-    } else {
-      const testUiProvider = new TestUiProvider();
-      UiItemsManager.register(testUiProvider);
-      UiProviderTool.testExtensionLoaded = testUiProvider.id;
-    }
-
-    return true;
-  }
-}
-
-export class TestExtensionUiProviderTool extends Tool {
-  public static testExtensionLoaded = "";
-
-  public static override toolId = "TestExtensionUiProvider";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 0; }
-  public static override get keyin(): string {
-    return "load test extension";
-  }
-  public static override get englishKeyin(): string {
-    return this.keyin;
-  }
-  public override async run(_args: any[]): Promise<boolean> {
-    await UiTestExtension.initialize();
-    return true;
-  }
 }
 
 export class SaveContentLayoutTool extends Tool {

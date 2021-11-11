@@ -9,7 +9,7 @@
 import { IModelApp, Tool } from "@itwin/core-frontend";
 import { TestUiProvider } from "../ui/dialogs/TestUiProviderDialog";
 import { ToolbarItemUtilities } from "@itwin/appui-abstract";
-import { UiTestExtension } from "../ui-test-extension";
+import { UiItemsProvidersTest } from "../ui-items-providers-test";
 
 /**
  * Immediate tool that will open an example modal dialog.The tool is created and register to allow the user
@@ -18,7 +18,7 @@ import { UiTestExtension } from "../ui-test-extension";
  * @alpha
  */
 export class OpenAbstractDialogTool extends Tool {
-  public static override toolId = "uiTestExtension-OpenAbstractModalDialogTool";
+  public static override toolId = "uiItemsProvidersTest-OpenAbstractModalDialogTool";
   public static override iconSpec = "icon-lightbulb-2";
 
   // istanbul ignore next
@@ -35,7 +35,7 @@ export class OpenAbstractDialogTool extends Tool {
   }
 
   public static override get flyover(): string {
-    return UiTestExtension.translate("open-abstract-dialog");
+    return UiItemsProvidersTest.translate("open-abstract-dialog");
   }
 
   // if supporting localized key-ins return a localized string

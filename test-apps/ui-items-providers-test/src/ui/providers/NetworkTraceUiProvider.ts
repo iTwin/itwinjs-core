@@ -25,7 +25,7 @@ import { OpenTraceDialogTool } from "../../tools/OpenTraceDialogTool";
 import { NetworkTracingFrontstage } from "../frontstages/NetworkTracing";
 import { getTestProviderState, setIsTraceAvailable } from "../../store";
 import { OpenAbstractDialogTool } from "../../tools/OpenAbstractModalDialogTool";
-import { UiTestExtension } from "../../ui-test-extension";
+import { UiItemsProvidersTest } from "../../ui-items-providers-test";
 
 export class NetworkTraceUiProvider implements UiItemsProvider {
   public static providerId = "comms:NetworkTraceUiProvider";
@@ -81,7 +81,7 @@ export class NetworkTraceUiProvider implements UiItemsProvider {
         "trace-tool-downstream",
         15, /* order within group button */
         IconSpecUtilities.createSvgIconSpec(downstreamIcon),
-        UiTestExtension.translate("trace-tool-downstream"),
+        UiItemsProvidersTest.translate("trace-tool-downstream"),
         (): void => {
           // test only - testing enable/disable;
         },
@@ -95,7 +95,7 @@ export class NetworkTraceUiProvider implements UiItemsProvider {
         "trace-tool-upstream",
         20, /* order within group button */
         IconSpecUtilities.createSvgIconSpec(upstreamIcon),
-        UiTestExtension.translate("trace-tool-upstream"),
+        UiItemsProvidersTest.translate("trace-tool-upstream"),
         (): void => {
           // test only - testing enable/disable;
         },
@@ -109,7 +109,7 @@ export class NetworkTraceUiProvider implements UiItemsProvider {
         "trace-tool-group",
         230,
         IconSpecUtilities.createSvgIconSpec(traceIcon),
-        UiTestExtension.translate("trace-tool-group"),
+        UiItemsProvidersTest.translate("trace-tool-group"),
         [getConnectedButton, getDownstreamButton, getUpstreamButton],
         {
           badgeType: BadgeType.TechnicalPreview,
@@ -146,7 +146,7 @@ export class NetworkTraceUiProvider implements UiItemsProvider {
   }
 
   public provideBackstageItems(): BackstageItem[] {
-    const label = UiTestExtension.translate("backstage.networkTracingFrontstageLabel");
+    const label = UiItemsProvidersTest.translate("backstage.networkTracingFrontstageLabel");
     return [
       BackstageItemUtilities.createStageLauncher(NetworkTracingFrontstage.stageId, 100, 20, label),
     ];
