@@ -88,15 +88,41 @@ describe("FeatureAppearance", () => {
     test({ transp: 1.0 }, { transparency: 1.0 });
   });
 
-  describe("view-dependent transparency", () => {
-    it("is ignored unless transparency is overridden", () => {
-      expect(FeatureAppearance.fromSubCategoryOverride(SubCategoryOverride.fromJSON({ transp: undefined })).viewDependentTransparency).to.be.undefined;
-      expect(FeatureAppearance.fromSubCategoryOverride(SubCategoryOverride.fromJSON({ color: ColorDef.blue.toJSON() })).viewDependentTransparency).to.be.undefined;
+  it("view-dependent transparency", () => {
+    it("to and from JSON", () => {
+      function test(appProps: FeatureAppearanceProps, expectViewDependent: boolean): void {
+        const expected = expectViewDependent ? true : undefined;
+        const app = FeatureAppearance.fromJSON(appProps);
+        expect(app.viewDependentTransparency).to.equal(expected);
+        expect(app.toJSON().viewDependentTransparency).to.equal(expected);
+      }
+
+      test({ }, false);
+      test({ transparency: undefined }, false);
+      test({ transparency: 1 }, false);
+      test({ transparency: 0 }, false );
+
+      test({ transparency: 1, viewDependentTransparency: true }, true);
+      test({ transparency: 0, viewDependentTransparency: true }, true);
+
+      test({ viewDependentTransparency: true }, false);
+      test({ transparency: undefined, viewDependentTransparency: true }, false);
     });
 
-    it("is set by default only for subcategory overrides", () => {
-      expect(FeatureAppearance.fromSubCategoryOverride(SubCategoryOverride.fromJSON({ transp: 0.5 })).viewDependentTransparency).to.be.true;
-      expect(FeatureAppearance.fromSubCategoryOverride(SubCategoryOverride.fromJSON({ transp: 0 })).viewDependentTransparency).to.be.true;
+    it("from subcategory override", () => {
+      function test(ovrProps: SubCategoryAppearance.Props, expectViewDependent: boolean): void {
+        const expected = expectViewDependent ? true : undefined;
+        const ovr = SubCategoryOverride.fromJSON(ovrProps);
+        const app = FeatureAppearance.fromSubCategoryOverride(ovr);
+        expect(app.viewDependentTransparency).to.equal(expected);
+        expect(app.toJSON().viewDependentTransparency).to.equal(expected);
+      }
+
+      test({ transp: 0.5 }, true);
+      test({ transp: 0 }, true);
+      test({ transp: undefined }, false);
+      test({ }, false);
+      test({ color: ColorDef.blue.toJSON() }, false);
     });
   });
 });

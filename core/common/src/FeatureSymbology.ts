@@ -109,7 +109,7 @@ export class FeatureAppearance {
     const transparency = ovr.transparency;
     const weight = ovr.weight;
     const ignoresMaterial = undefined !== ovr.material && Id64.isValid(ovr.material) ? true : undefined;
-    return this.fromJSON({ rgb, transparency, weight, ignoresMaterial, viewDependentTransparency: undefined !== transparency ? true : undefined });
+    return this.fromJSON({ rgb, transparency, weight, ignoresMaterial, viewDependentTransparency: true });
   }
 
   /** Returns true if this appearance does not override any aspects of symbology. */
