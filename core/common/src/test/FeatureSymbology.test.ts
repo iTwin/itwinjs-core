@@ -87,6 +87,18 @@ describe("FeatureAppearance", () => {
     test({ transp: 0.5 }, { transparency: 0.5 });
     test({ transp: 1.0 }, { transparency: 1.0 });
   });
+
+  describe("view-dependent transparency", () => {
+    it("is ignored unless transparency is overridden", () => {
+      expect(FeatureAppearance.fromSubCategoryOverride(SubCategoryOverride.fromJSON({ transp: undefined })).viewDependentTransparency).to.be.undefined;
+      expect(FeatureAppearance.fromSubCategoryOverride(SubCategoryOverride.fromJSON({ color: ColorDef.blue.toJSON() })).viewDependentTransparency).to.be.undefined;
+    });
+
+    it("is set by default only for subcategory overrides", () => {
+      expect(FeatureAppearance.fromSubCategoryOverride(SubCategoryOverride.fromJSON({ transp: 0.5 })).viewDependentTransparency).to.be.true;
+      expect(FeatureAppearance.fromSubCategoryOverride(SubCategoryOverride.fromJSON({ transp: 0 })).viewDependentTransparency).to.be.true;
+    });
+  });
 });
 
 describe("FeatureOverrides", () => {
