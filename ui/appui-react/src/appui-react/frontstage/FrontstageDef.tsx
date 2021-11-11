@@ -59,6 +59,7 @@ export class FrontstageDef {
   private _defaultContentId: string = "";
   private _isInFooterMode: boolean = true;
   private _isStageClosing = false;
+  private _isReady = false;
   private _isApplicationClosing = false;
   private _applicationData?: any;
   private _usage?: string;
@@ -213,6 +214,7 @@ export class FrontstageDef {
 
   /** Returns once the contained widgets and content controls are ready to use */
   public async waitUntilReady(): Promise<void> {
+    this._isReady = false;
     // create an array of control-ready promises
     const controlReadyPromises = new Array<Promise<void>>();
     this._widgetControls.forEach((control: WidgetControl) => {
@@ -231,6 +233,7 @@ export class FrontstageDef {
 
     await Promise.all(controlReadyPromises);
     // Frontstage ready
+    this._isReady = true;
   }
 
   /** Handles when the Frontstage becomes active */
@@ -688,6 +691,10 @@ export class FrontstageDef {
 
   public get isApplicationClosing() {
     return this._isApplicationClosing;
+  }
+
+  public get isReady() {
+    return this._isReady;
   }
 
   /** @internal */
