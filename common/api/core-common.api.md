@@ -1911,7 +1911,7 @@ export interface DbQueryResponse extends DbResponse {
 // @internal (undocumented)
 export interface DbRequest extends BaseReaderOptions {
     // (undocumented)
-    kind: DbRequestKind;
+    kind?: DbRequestKind;
 }
 
 // @internal (undocumented)
@@ -1957,13 +1957,25 @@ export enum DbResponseStatus {
     // (undocumented)
     Done = 1,
     // (undocumented)
-    Error = 0,
+    Error = 100,
+    // (undocumented)
+    Error_BlobIO_OpenFailed = 105,
+    // (undocumented)
+    Error_BlobIO_OutOfRange = 106,
+    // (undocumented)
+    Error_ECSql_BindingFailed = 104,
+    // (undocumented)
+    Error_ECSql_PreparedFailed = 101,
+    // (undocumented)
+    Error_ECSql_RowToJsonFailed = 103,
+    // (undocumented)
+    Error_ECSql_StepFailed = 102,
     // (undocumented)
     Partial = 3,
     // (undocumented)
     QueueFull = 5,
     // (undocumented)
-    TimeOut = 4
+    Timeout = 4
 }
 
 export { DbResult }
@@ -2401,7 +2413,7 @@ export class ECSqlReader {
     // (undocumented)
     formatCurrentRow(format: QueryRowFormat): any[] | object;
     // (undocumented)
-    getMetaData(): QueryPropertyMetaData[];
+    getMetaData(): Promise<QueryPropertyMetaData[]>;
     // (undocumented)
     getRowInternal(): any[];
     // (undocumented)
@@ -2412,6 +2424,8 @@ export class ECSqlReader {
     resetBindings(): void;
     // (undocumented)
     setParams(param: QueryBinder): void;
+    // (undocumented)
+    get stats(): QueryStats;
     // (undocumented)
     step(): Promise<boolean>;
     // (undocumented)
@@ -6594,6 +6608,22 @@ export interface QueryRowProxy {
     toJsRow(): any;
     // (undocumented)
     toRow(): any;
+}
+
+// @beta (undocumented)
+export interface QueryStats {
+    // (undocumented)
+    backendCpuTime: number;
+    // (undocumented)
+    backendMemUsed: number;
+    // (undocumented)
+    backendRowsReturned: number;
+    // (undocumented)
+    backendTotalTime: number;
+    // (undocumented)
+    retryCount: number;
+    // (undocumented)
+    totalTime: number;
 }
 
 // @beta (undocumented)
