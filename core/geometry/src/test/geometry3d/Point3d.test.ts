@@ -128,7 +128,7 @@ describe("Point3d", () => {
           ck.testCoordinate(unitIJV.dotProduct(vectorIJV), vectorI.distance(vectorJ));
         }
         for (const f of [0.1, 0.5, 0.9, 1.1]) {
-          const ray = pointI.interpolatePointAndTangent(f, pointJ, 1.0, Ray3d.createZero());
+          const ray = Ray3d.interpolatePointAndTangent(pointI, f, pointJ, 1.0);
           const point = pointI.interpolate(f, pointJ);
           ck.testPoint3d(point, ray.origin);
           ck.testVector3d(vectorIJ, ray.direction);

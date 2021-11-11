@@ -9,7 +9,6 @@
 import { Geometry } from "../Geometry";
 import { Point4d } from "../geometry4d/Point4d";
 import { Angle } from "./Angle";
-import type { Ray3d } from "./Ray3d";
 import { HasZ, XAndY, XYAndZ, XYZProps } from "./XYZProps";
 
 /**
@@ -455,28 +454,6 @@ export class Point3d extends XYZ {
       return Point3d.create(this.x + fraction * (other.x - this.x), this.y + fraction * (other.y - this.y), this.z + fraction * (other.z - this.z), result);
     const t: number = fraction - 1.0;
     return Point3d.create(other.x + t * (other.x - this.x), other.y + t * (other.y - this.y), other.z + t * (other.z - this.z), result);
-  }
-  /**
-   * Return a ray whose ray.origin is interpolated, and ray.direction is the vector between points with a
-   * scale factor applied.
-   * @param fraction fractional position between points.
-   * @param other endpoint of interpolation
-   * @param tangentScale scale factor to apply to the startToEnd vector
-   * @param result  optional receiver.
-   */
-  public interpolatePointAndTangent(fraction: number, other: Point3d, tangentScale: number, result: Ray3d): Ray3d {
-    result = result;
-    const dx = other.x - this.x;
-    const dy = other.y - this.y;
-    const dz = other.z - this.z;
-    result.direction.set(tangentScale * dx, tangentScale * dy, tangentScale * dz);
-    if (fraction <= 0.5)
-      result.origin.set(this.x + fraction * dx, this.y + fraction * dy, this.z + fraction * dz);
-    else {
-      const t: number = fraction - 1.0;
-      result.origin.set(other.x + t * dx, other.y + t * dy, other.z + t * dz);
-    }
-    return result;
   }
   /** Return a point with independent x,y,z fractional interpolation. */
   public interpolateXYZ(fractionX: number, fractionY: number, fractionZ: number, other: Point3d, result?: Point3d): Point3d {

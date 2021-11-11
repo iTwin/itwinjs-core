@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-geometry",
-      "comment": "Out parameter in Point3d.interpolatePointAndTangent is no longer optional.",
+      "comment": "Moved Point3d.interpolatePointAndTangent to Ray3d.interpolatePointAndTangent.",
       "type": "none"
     }
   ],
