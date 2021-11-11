@@ -42,7 +42,7 @@ steps:
     inputs:
       buildType: specific
       project: 2c48216e-e72f-48b4-a4eb-40ff1c04e8e4
-      pipeline: 1633
+      pipeline: 6075
       buildVersionToDownload: latest
       artifactName: Bis Docs
     condition: and(succeeded(), eq('${{ parameters.downloadCurrentBuildArtifacts }}', false))
@@ -53,7 +53,7 @@ steps:
     inputs:
       buildType: current
       project: 2c48216e-e72f-48b4-a4eb-40ff1c04e8e4
-      pipeline: 1633
+      pipeline: 6075
       artifactName: Bis Docs
     condition: and(succeeded(), eq('${{ parameters.downloadCurrentBuildArtifacts }}', true))
 
