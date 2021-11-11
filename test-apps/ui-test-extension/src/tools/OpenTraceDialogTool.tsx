@@ -7,12 +7,13 @@
  */
 
 import * as React from "react";
-import {  IModelApp, Tool } from "@itwin/core-frontend";
+import { IModelApp, Tool } from "@itwin/core-frontend";
 import { ModalDialogManager } from "@itwin/appui-react";
-import { SampleModalDialog } from "../dialogs/SampleModalDialog";
+import { SampleModalDialog } from "../ui/dialogs/SampleModalDialog";
 import { BadgeType, ConditionalBooleanValue, IconSpecUtilities, ToolbarItemUtilities } from "@itwin/appui-abstract";
-import { TraceUiItemsProvider } from "../NetworkTraceUIProvider";
-import connectedIcon from "../icons/connected-query.svg?sprite";
+import { NetworkTraceUiProvider } from "../ui/providers/NetworkTraceUiProvider";
+import connectedIcon from "../ui/icons/connected-query.svg?sprite";
+import { UiTestExtension } from "../ui-test-extension";
 
 /**
  * Immediate tool that will open an example modal dialog.The tool is created and register to allow the user
@@ -35,25 +36,25 @@ export class OpenTraceDialogTool extends Tool {
   }
 
   public static override get flyover(): string {
-    return TraceUiItemsProvider.translate("trace-tool-connected");
+    return UiTestExtension.translate("trace-tool-connected");
   }
 
   // if supporting localized key-ins return a localized string
   public static override get keyin(): string {
-    return "trace tool connected";
+    return this.englishKeyin;
   }
 
   public static override get englishKeyin(): string {
-    return "trace tool connected";
+    return "comms trace tool connected";
   }
 
   public static getActionButtonDef(itemPriority: number, groupPriority?: number) {
     const isDisabledCondition = new ConditionalBooleanValue(
       (): boolean => {
-        return !TraceUiItemsProvider.isTraceAvailable;
+        return !NetworkTraceUiProvider.isTraceAvailable;
       },
-      [TraceUiItemsProvider.syncEventIdTraceAvailable],
-      !TraceUiItemsProvider.isTraceAvailable
+      [NetworkTraceUiProvider.syncEventIdTraceAvailable],
+      !NetworkTraceUiProvider.isTraceAvailable
     );
 
     const overrides = {

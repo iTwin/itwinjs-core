@@ -23,6 +23,7 @@ import { ColorByName, ColorDef } from "@itwin/core-common";
 import { FormatterSpec } from "@itwin/core-quantity";
 import { CursorInformation, MenuItemProps, UiFramework } from "@itwin/appui-react";
 import sampleToolSvg from "./SampleTool.svg?sprite";
+import { UiTestExtension } from "../ui-test-extension";
 
 enum ToolOptions {
   Red,
@@ -49,12 +50,12 @@ export class SampleTool extends PrimitiveTool {
 
   public static getPrompt(name: string): string {
     const key = `tools.${this.toolId}.Prompts.${name}`;
-    return IModelApp.localization.getLocalizedStringWithNamespace(this.namespace, key);
+    return UiTestExtension.translate(key);
   }
 
   public static getOptionString(name: string): string {
     const key = `tools.${this.toolId}.Options.${name}`;
-    return IModelApp.localization.getLocalizedStringWithNamespace(this.namespace, key);
+    return UiTestExtension.translate(key);
   }
 
   // Tool Setting Properties

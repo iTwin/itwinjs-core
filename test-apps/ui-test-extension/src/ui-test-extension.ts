@@ -3,16 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ExtensionUiItemsProvider } from "./ui/ExtensionUiItemsProvider";
-import { TraceUiItemsProvider } from "./ui/NetworkTraceUIProvider";
 import { UiItemsManager } from "@itwin/appui-abstract";
-import { SampleTool } from "./ui/tools/SampleTool";
-import { ConfigurableUiManager } from "@itwin/appui-react";
-import { ExtensionFrontstage } from "./ui/Frontstage";
+import { SampleTool } from "./tools/SampleTool";
+import { ConfigurableUiManager, ReducerRegistryInstance } from "@itwin/appui-react";
 import { SampleContentControl } from "./ui/content/SampleContentControl";
-import { GenericTool } from "./ui/tools/GenericTool";
-import { OpenTraceDialogTool } from "./ui/tools/OpenTraceDialogTool";
+import { GenericTool } from "./tools/GenericTool";
+import { OpenTraceDialogTool } from "./tools/OpenTraceDialogTool";
 import { IModelApp } from "@itwin/core-frontend";
+import { providerSlice, TestProviderSliceName } from "./store";
+import { ExtensionUiItemsProvider } from "./ui/providers/ExtensionUiItemsProvider";
+import { OpenAbstractDialogTool } from "./tools/OpenAbstractModalDialogTool";
+import { NetworkTracingFrontstage } from "./ui/frontstages/NetworkTracing";
 
 /** UiTestExtension is an iModel.js Extension that adds some user interface to the iModel.js app into which its loaded.
  * Included in the sample are: 1) a Sample Tool (SampleTool.ts), showing how implement a tool with a variety to tool settings items.
@@ -25,21 +26,31 @@ import { IModelApp } from "@itwin/core-frontend";
  */
 export class UiTestExtension {
   private static _initialized = false;
-
   /** We'll register the uiTestExtension.json as the Extension's namespace/ */
   public static readonly localizationNamespace = "uiTestExtension";
+
+  /** convenience method for getting localized strings from keys */
+  public static translate(key: string) {
+    return IModelApp.localization.getLocalizedString(
+      `${UiTestExtension.localizationNamespace}:${key}`
+    );
+  }
+
   /** The uiProvider will add a tool to the Toolbar and an item to the StatusBar in the host app */
   private static registerUiComponents(): void {
     SampleTool.register(UiTestExtension.localizationNamespace);
     GenericTool.register(UiTestExtension.localizationNamespace);
     OpenTraceDialogTool.register(UiTestExtension.localizationNamespace);
+    OpenAbstractDialogTool.register(UiTestExtension.localizationNamespace);
 
-    ConfigurableUiManager.addFrontstageProvider(new ExtensionFrontstage());
+    // register new front stage and it's stage specific items provider
+    NetworkTracingFrontstage.register();
+
     ConfigurableUiManager.registerControl("SampleExtensionContentControl", SampleContentControl);
 
     // register to add items to "General" usage stages"
     UiItemsManager.register(new ExtensionUiItemsProvider());
-    UiItemsManager.register(new TraceUiItemsProvider());
+    // UiItemsManager.register(new NetworkTraceUiProvider());
   }
 
   public static async initialize(): Promise<void> {
@@ -52,5 +63,7 @@ export class UiTestExtension {
     await IModelApp.localization.registerNamespace(UiTestExtension.localizationNamespace);
     this.registerUiComponents();
     this._initialized = true;
+
+    ReducerRegistryInstance.registerReducer(TestProviderSliceName, providerSlice.reducer);
   }
 }
