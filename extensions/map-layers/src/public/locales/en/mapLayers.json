@@ -81,7 +81,7 @@
     "ZoomToLayer": "Zoom to layer"
   },
   "Settings": {
-    "ElevationOffset": "Elevation Offset (m)",
+    "ElevationOffset": "Elevation Offset",
     "ElevationTypeGeodetic": "None",
     "ElevationTypeGeoid": "Geoid Separation",
     "ElevationTypeGround": "Terrain Elevation",
@@ -91,7 +91,9 @@
     "InvalidElevationError": "Invalid Elevation",
     "InvalidElevationDetails": "Please enter a valid number for elevation.",
     "Mask": "Mask by Models",
-    "ModelHeight": "Model Height (m)",
+    "MaskTransparency": "Mask Transparency",
+    "ModelHeight": "Model Height",
+    "OverrideMaskTransparency": "Override Mask Transparency",
     "Settings": "Settings",
     "ShowMapLayers": "Show Map Layers",
     "Terrain": "Terrain",

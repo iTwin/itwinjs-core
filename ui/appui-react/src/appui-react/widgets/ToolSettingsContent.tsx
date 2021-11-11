@@ -14,7 +14,7 @@ import { HorizontalAnchor, ToolSettingsWidgetMode, WidgetContent } from "@itwin/
 
 /** @internal */
 interface ToolSettingsContentProps {
-  anchor: HorizontalAnchor;
+  anchor: HorizontalAnchor; // eslint-disable-line deprecation/deprecation
   mode: ToolSettingsWidgetMode;
 }
 
@@ -39,7 +39,7 @@ export class ToolSettingsContent extends React.PureComponent<ToolSettingsContent
     );
 
     return (
-      <WidgetContent
+      <WidgetContent // eslint-disable-line deprecation/deprecation
         anchor={this.props.anchor}
         className={className}
         containerRef={this._container}

@@ -183,9 +183,9 @@ It may be desirable for an application to set up an "empty" stage that is popula
     ConfigurableUiManager.addFrontstageProvider(new StandardFrontstageProvider(ui2StageProps));
 
     // Use standard provider to provide basic tool and statusbar items
-    StandardContentToolsProvider.register();
-    StandardNavigationToolsProvider.register();
-    StandardStatusbarItemsProvider.register();
+    StandardContentToolsProvider.register("ui2-standardContentTools");
+    StandardNavigationToolsProvider.register("ui2-standardNavigationTools");
+    StandardStatusbarItemsProvider.register("ui2-standardStatusbarItems");
 
 ```
 

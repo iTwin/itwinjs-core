@@ -1,7 +1,7 @@
 sep=;
 Release Tag;API Item
 internal;BrowserLocalFavoritePropertiesStorage 
-internal;buildPagedResponse: 
+internal;buildPagedArrayResponse: 
 alpha;consoleDiagnosticsHandler(scopeLogs: DiagnosticsScopeLogs[]): void
 alpha;createCombinedDiagnosticsHandler(handlers: DiagnosticsHandler[]): (scopeLogs: DiagnosticsScopeLogs[]) => void
 public;createFavoritePropertiesStorage(type: DefaultFavoritePropertiesStorageTypes): IFavoritePropertiesStorage

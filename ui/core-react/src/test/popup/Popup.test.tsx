@@ -64,6 +64,11 @@ describe("<Popup />", () => {
     sandbox.restore();
   });
 
+  it("should render popup if closed and keepContentsMounted", () => {
+    const component = render(<Popup keepContentsMounted top={30} left={70} />);
+    expect(component.getByTestId("core-popup")).to.exist;
+  });
+
   it("renders correctly", () => {
     const component = render(<Popup isOpen top={30} left={70} />);
     expect(component.getByTestId("core-popup")).to.exist;

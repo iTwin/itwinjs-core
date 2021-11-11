@@ -69,19 +69,6 @@ describe("ColorMap", () => {
     a.insert(0x00000000);
     assert.isFalse(a.hasTransparency);
   });
-  it("test hasTransparency function 5", () => {
-    const a = new ColorMap();
-    a.insert(0x00FFFFFF);
-    assert.isFalse(a.hasTransparency);
-    let inserted = false;
-    try { // try to insert a translucent color into a table which does not have transparency.
-      a.insert(0x0F000000);
-      inserted = true;
-    } catch (err) {
-      expect(err).is.not.undefined;
-    }
-    expect(inserted).to.be.false;
-  });
 
   /** Test isUniform function */
   it("test isUniform function", () => {

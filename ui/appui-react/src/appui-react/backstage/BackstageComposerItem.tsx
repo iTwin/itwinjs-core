@@ -76,7 +76,7 @@ export function BackstageComposerStageLauncher({ item }: BackstageComposerStageL
 }
 
 /** Props of [[BackstageComposerItem]] component.
- * @beta
+ * @internal
  */
 export interface BackstageComposerItemProps {
   /** Backstage item to render */
@@ -84,7 +84,7 @@ export interface BackstageComposerItemProps {
 }
 
 /** Item of [[BackstageComposer]].
- * @beta
+ * @internal
  */
 export function BackstageComposerItem({ item }: BackstageComposerItemProps) {
   if (isStageLauncher(item)) {

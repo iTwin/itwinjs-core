@@ -147,7 +147,9 @@ public;HighlightingComponentProps
 public;HighlightingEngine
 alpha;IconEditor 
 alpha;IconPickerButton 
+deprecated;IconPickerButton 
 alpha;IconPickerProps 
+deprecated;IconPickerProps 
 alpha;IconPropertyEditor 
 public;IImageLoader
 public;Image = LoadedImage | LoadedBinaryImage

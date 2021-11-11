@@ -167,7 +167,7 @@ const ForwardRefAccuDrawInput = React.forwardRef<HTMLInputElement, AccuDrawInput
         </label>
         <Input {...inputProps} ref={refs} id={id} value={stringValue}
           className={inputClassNames} style={style} autoComplete="off"
-          onChange={handleChange} onKeyDown={handleKeyDown} />
+          onChange={handleChange} onKeyDown={handleKeyDown} size="small" />
         <span className="uifw-accudraw-lock" >
           {isLocked && <Icon iconSpec="icon-lock" />}
         </span>

@@ -14,7 +14,7 @@ Either takes in a list of modelIds, or displays all 3D models by default.
 
 import { Id64Array, Id64String } from "@itwin/core-bentley";
 import {
-  Camera, CategorySelectorProps, Code, DisplayStyle3dProps, IModel, IModelReadRpcInterface, ModelSelectorProps, QueryRowFormat,
+  Camera, CategorySelectorProps, Code, DisplayStyle3dProps, Environment, IModel, IModelReadRpcInterface, ModelSelectorProps, QueryRowFormat,
   RenderMode, ViewDefinition3dProps, ViewQueryParams, ViewStateProps,
 } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
@@ -22,7 +22,6 @@ import { StandardViewId } from "./StandardView";
 import { IModelConnection } from "./IModelConnection";
 import { ViewState } from "./ViewState";
 import { SpatialViewState } from "./SpatialViewState";
-import { Environment } from "./DisplayStyleState";
 
 /** Options for creating a [[ViewState3d]] via [[ViewCreator3d]].
  *  @public
@@ -176,7 +175,7 @@ export class ViewCreator3d {
             options !== undefined &&
               options.skyboxOn !== undefined &&
               options.skyboxOn
-              ? new Environment({ sky: { display: true } }).toJSON()
+              ? Environment.defaults.withDisplay({ sky: true }).toJSON()
               : undefined,
         },
       },

@@ -13,7 +13,7 @@ import { CommonProps } from "@itwin/core-react";
 import { SafeAreaInsets, SafeAreaInsetsHelpers } from "../utilities/SafeAreaInsets";
 
 /** Properties of [[BackstageItem]] component.
- * @beta
+ * @internal
  */
 export interface BackstageItemProps extends CommonProps {
   /** Backstage item label. */
@@ -35,7 +35,7 @@ export interface BackstageItemProps extends CommonProps {
 }
 
 /** Item in the [[Backstage]].
- * @beta
+* @internal
  */
 export class BackstageItem extends React.PureComponent<BackstageItemProps> {
   public override render() {

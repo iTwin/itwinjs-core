@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 @import "~@itwin/core-react/lib/cjs/core-react/expandable/list";
 @import "~@itwin/core-react/lib/cjs/core-react/scrollbar";
-@import "~@itwin/core-react/lib/cjs/core-react/style/itwinui-overrides";
 
 .components-property-grid-loader {
   position: relative;
@@ -28,8 +27,6 @@
 
   user-select: none;
   color: $buic-foreground-body;
-
-  @include small-itwinui-expandable-block;
 }
 
 .components-property-grid-wrapper {

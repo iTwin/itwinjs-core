@@ -114,6 +114,26 @@
       "keyin": "editor sew sheets",
       "flyover": "Sew selected sheets"
     },
+    "CutSolids": {
+      "keyin": "editor cut solids",
+      "flyover": "Cut solids by open path or planar region"
+    },
+    "EmbossSolids": {
+      "keyin": "editor emboss solids",
+      "flyover": "Emboss to create pad or pocket on solid or sheet"
+    },
+    "ImprintSolids": {
+      "keyin": "editor imprint solids",
+      "flyover": "Imprint offset edges or another element on a solid"
+    },
+    "SweepAlongPath": {
+      "keyin": "editor sweep path",
+      "flyover": "Create solid or sheet by sweeping a profile along a path"
+    },
+    "LoftProfiles": {
+      "keyin": "editor loft profiles",
+      "flyover": "Create solid or sheet by lofting through a set of profiles"
+    },
     "OffsetFaces": {
       "keyin": "editor offset faces",
       "flyover": "Offset faces of surfaces and solids"

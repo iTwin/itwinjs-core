@@ -12,6 +12,7 @@ import { BackstageItemProps } from "./BackstageItemProps";
 
 /** Separator Backstage item.
  * @public
+ * @deprecated
  */
 export class SeparatorBackstageItem extends React.PureComponent<BackstageItemProps> { // eslint-disable-line deprecation/deprecation
   private static _sSeparatorBackstageItemKey: number;
@@ -20,8 +21,8 @@ export class SeparatorBackstageItem extends React.PureComponent<BackstageItemPro
   constructor(separatorBackstageItemDef: BackstageItemProps) { // eslint-disable-line deprecation/deprecation
     super(separatorBackstageItemDef);
 
-    SeparatorBackstageItem._sSeparatorBackstageItemKey++;
-    this._key = SeparatorBackstageItem._sSeparatorBackstageItemKey;
+    SeparatorBackstageItem._sSeparatorBackstageItemKey++; // eslint-disable-line deprecation/deprecation
+    this._key = SeparatorBackstageItem._sSeparatorBackstageItemKey; // eslint-disable-line deprecation/deprecation
   }
 
   public override render(): React.ReactNode {

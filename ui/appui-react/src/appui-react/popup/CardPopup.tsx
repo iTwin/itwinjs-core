@@ -18,7 +18,8 @@ import { PositionPopup } from "./PositionPopup";
 import { MessageDiv } from "../messages/MessageSpan";
 import { Direction, PropertyValueRendererManager, ToolbarOpacitySetting, ToolbarPanelAlignment, ToolbarWithOverflow } from "@itwin/components-react";
 
-/** @alpha */
+/** Props for defining a CardPopup editor
+ * @beta */
 export interface CardPopupProps extends PopupPropsBase {
   content: PopupContentType;
   title: string | PropertyRecord | undefined;
@@ -35,7 +36,7 @@ interface CardPopupState {
 }
 
 /** Popup component for Input Editor
- * @alpha
+ * @beta
  */
 export class CardPopup extends React.PureComponent<CardPopupProps, CardPopupState> {
   /** @internal */
@@ -86,7 +87,8 @@ export class CardPopup extends React.PureComponent<CardPopupProps, CardPopupStat
   }
 }
 
-/** @alpha */
+/** Props defining a Card component
+ * @beta */
 export interface CardProps {
   content: PopupContentType;
   title: string | PropertyRecord | undefined;
@@ -94,7 +96,8 @@ export interface CardProps {
   onItemExecuted: OnItemExecutedFunc;
 }
 
-/** @alpha */
+/** Card component
+ * @beta */
 export function Card(props: CardProps) {
   let titleNode: React.ReactNode;
   // istanbul ignore else

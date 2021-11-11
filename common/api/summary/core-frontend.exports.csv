@@ -35,6 +35,7 @@ public;Animator
 internal;ArcGisErrorCode
 internal;ArcGisGenerateTokenOptions
 internal;ArcGISMapLayerImageryProvider 
+internal;ArcGISTileMap
 internal;ArcGisToken
 internal;ArcGisTokenClientType
 internal;ArcGisTokenGenerator
@@ -42,6 +43,7 @@ internal;ArcGisTokenManager
 internal;ArcGisUtilities
 internal;areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): number
 internal;areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): Promise
+internal;AttachToViewportArgs
 public;AuxCoordSystem2dState 
 public;AuxCoordSystem3dState 
 public;AuxCoordSystemSpatialState 
@@ -77,6 +79,7 @@ public;CanvasDecorationList = CanvasDecoration[]
 public;canvasToImageBuffer(canvas: HTMLCanvasElement, format?: ImageBufferFormat): ImageBuffer | undefined
 public;canvasToResizedCanvasWithBars(canvasIn: HTMLCanvasElement, targetSize: Point2d, barSize?: Point2d, barStyle?: string): HTMLCanvasElement
 public;CategorySelectorState 
+internal;CesiumIonAssetProvider
 internal;ChangeFlag
 public;ChangeFlags
 public;ChangeViewedModel2dOptions
@@ -89,6 +92,7 @@ public;ComputeChordToleranceArgs
 internal;ContextMode
 public;ContextRealityModelState 
 public;ContextRotationId
+internal;ContextShareProvider
 public;CoordinateLockOverrides
 public;CoordSource
 public;CoordSystem
@@ -143,7 +147,7 @@ internal;EllipsoidTerrainProvider
 public;EmphasizeElements 
 beta;EngineeringLengthDescription 
 public;EntityState 
-public;Environment
+internal;EnvironmentDecorations
 public;EventController
 public;EventHandled
 public;ExtentLimits
@@ -192,6 +196,7 @@ internal;getFrustumPlaneIntersectionDepthRange(frustum: Frustum, plane: Plane3dB
 internal;getGcsConverterAvailable(iModel: IModelConnection): Promise
 public;getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined
 public;getImageSourceMimeType(format: ImageSourceFormat): string
+public;GetPixelDataWorldPointArgs
 beta;getQuantityTypeKey(type: QuantityTypeArg): QuantityTypeKey
 public;GlobalAlignmentOptions
 public;GlobalLocation
@@ -229,6 +234,7 @@ public;GraphicShape
 public;GraphicShape2d 
 public;GraphicSolidPrimitive
 public;GraphicType
+internal;GroundPlaneDecorations
 alpha;GroupMark
 internal;Hilites
 public;HiliteSet
@@ -424,12 +430,10 @@ beta;QueryVisibleFeaturesOptions = QueryScreenFeaturesOptions | QueryTileFeature
 internal;rangeToCartographicArea(view3d: ViewState3d, range: Range3d): GlobalLocationArea | undefined
 public;readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean, options?: BatchOptions | false): Promise
 internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined
-internal;RealityDataConnection
-internal;RealityDataConnection
 alpha;RealityDataSource
-alpha;realityDataSourceKeyToString(rdSourceKey: RealityDataSourceKey): string
+alpha;RealityDataSource
+internal;fromKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise
 internal;RealityModelSource = ViewState | DisplayStyleState
-internal;RealityModelTileClient
 internal;RealityModelTileTree 
 internal;RealityModelTileTree
 internal;RealityModelTileUtils
@@ -452,6 +456,10 @@ internal;RenderPlan
 internal;class RenderPlanarClassifier 
 internal;class RenderRealityMeshGeometry 
 internal;RenderScheduleState 
+internal;RenderSkyBoxParams = RenderSkyGradientParams | RenderSkySphereParams | RenderSkyCubeParams
+internal;RenderSkyCubeParams
+internal;RenderSkyGradientParams
+internal;RenderSkySphereParams
 public;class RenderSystem 
 public;RenderSystem
 beta;RenderSystemDebugControl
@@ -493,12 +501,7 @@ public;SetupWalkCameraTool
 public;SheetModelState 
 public;SheetViewState 
 internal;ShouldAbortReadGltf = (reader: GltfReader) => boolean
-public;class SkyBox 
-public;SkyBox
-internal;SkyBoxParams = Promise
-public;SkyCube 
-public;SkyGradient 
-public;SkySphere 
+internal;SkyBoxDecorations
 public;SnapDetail 
 public;SnapHeat
 public;SnapMode
@@ -596,6 +599,7 @@ internal;TraversalChildrenDetails
 internal;TraversalDetails
 internal;TraversalSelectionContext
 public;tryImageElementFromUrl(url: string): Promise
+public;TwoWayViewportFrustumSync 
 public;TwoWayViewportSync
 public;Uniform
 public;UniformArrayParams 
@@ -662,6 +666,7 @@ internal;WheelEventProcessor
 public;WindowAreaTool 
 internal;WmsCapabilities
 internal;WmsCapability
+internal;WmsCrsSupport
 internal;WmsMapLayerImageryProvider 
 internal;WmsUtilities
 internal;WmtsCapabilities

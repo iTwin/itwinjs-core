@@ -387,8 +387,8 @@ export class TransformerExtensiveTestScenario {
     assert.equal(displayStyle3d.settings.subCategoryOverrides.size, 1);
     assert.exists(displayStyle3d.settings.getSubCategoryOverride(subCategoryId), "Expect subCategoryOverrides to have been remapped");
     assert.isTrue(new Set<string>(displayStyle3d.settings.excludedElementIds).has(physicalObjectId1), "Expect excludedElements to be remapped");
-    assert.equal(displayStyle3d.settings.environment.sky?.image?.type, SkyBoxImageType.Spherical);
-    assert.equal(displayStyle3d.settings.environment.sky?.image?.texture, textureId);
+    assert.equal(displayStyle3d.settings.environment.sky.toJSON()?.image?.type, SkyBoxImageType.Spherical);
+    assert.equal(displayStyle3d.settings.environment.sky.toJSON()?.image?.texture, textureId);
     assert.equal(displayStyle3d.settings.getPlanProjectionSettings(spatialLocationModelId)?.elevation, 10.0);
     // ViewDefinition
     const viewId = targetDb.elements.queryElementIdByCode(OrthographicViewDefinition.createCode(targetDb, definitionModelId, "Orthographic View"))!;

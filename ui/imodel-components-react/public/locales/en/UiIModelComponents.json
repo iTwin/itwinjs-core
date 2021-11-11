@@ -37,8 +37,10 @@
     "rotateStyle": "Toggle background-rotate"
   },
   "color": {
+    "close": "Close",
     "hue": "Hue",
     "saturation": "Saturation",
+    "toggleColorPopup": "Toggle Color Picker Popup",
     "transparency": "Transparency"
   },
   "QuantityInput": {

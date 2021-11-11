@@ -20,6 +20,7 @@ export * from "./DrawingViewState";
 export * from "./ElementLocateManager";
 export * from "./EmphasizeElements";
 export * from "./EntityState";
+export * from "./EnvironmentDecorations";
 export * from "./FeatureOverrideProvider";
 export * from "./FlashSettings";
 export * from "./FrontendLoggerCategory";
@@ -119,7 +120,6 @@ export * from "./ViewCreator2d";
 export * from "./ViewCreator3d";
 export * from "./LocalhostIpcApp";
 export * from "./RealityDataSource";
-export * from "./RealityDataConnection";
 
 /** @docs-package-description
  * The core-frontend package always runs in a web browser. It contains classes for [querying iModels and showing views]($docs/learning/frontend/index.md).
