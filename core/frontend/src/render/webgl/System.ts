@@ -12,7 +12,6 @@ import {
   ColorDef, ElementAlignedBox3d, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSourceFormat, IModelError, PackedFeatureTable, RenderMaterial, RenderTexture,
 } from "@itwin/core-common";
 import { Capabilities, DepthType, WebGLContext } from "@itwin/webgl-compatibility";
-import { SkyBox } from "../../DisplayStyleState";
 import { imageElementFromImageSource } from "../../ImageUtil";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
@@ -31,7 +30,8 @@ import { RenderGraphic, RenderGraphicOwner } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
 import { CreateTextureArgs, CreateTextureFromSourceArgs, TextureCacheKey, TextureTransparency } from "../RenderTexture";
 import {
-  DebugShaderFile, GLTimerResultCallback, PlanarGridProps, RenderAreaPattern, RenderDiagnostics, RenderGeometry, RenderSystem, RenderSystemDebugControl, TerrainTexture,
+  DebugShaderFile, GLTimerResultCallback, PlanarGridProps, RenderAreaPattern, RenderDiagnostics, RenderGeometry, RenderSkyBoxParams,
+  RenderSystem, RenderSystemDebugControl, TerrainTexture,
 } from "../RenderSystem";
 import { RenderTarget } from "../RenderTarget";
 import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "../ScreenSpaceEffectBuilder";
@@ -575,11 +575,10 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return new LayerContainer(graphic as Graphic, drawAsOverlay, transparency, elevation);
   }
 
-  public override createSkyBox(params: SkyBox.CreateParams): RenderGraphic | undefined {
-    if (undefined !== params.cube)
-      return SkyCubePrimitive.create(SkyBoxQuadsGeometry.create(params.cube));
+  public override createSkyBox(params: RenderSkyBoxParams): RenderGraphic | undefined {
+    if ("cube" === params.type)
+      return SkyCubePrimitive.create(SkyBoxQuadsGeometry.create(params.texture));
 
-    assert(undefined !== params.sphere || undefined !== params.gradient);
     return SkySpherePrimitive.create(SkySphereViewportQuadGeometry.createGeometry(params));
   }
 

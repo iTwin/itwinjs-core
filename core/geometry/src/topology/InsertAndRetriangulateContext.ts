@@ -169,10 +169,10 @@ export class InsertAndRetriangulateContext {
       if (movingPosition.isUnclassified)
         return false;
     }
-
+    let trap = 0;
     // double tol = vu_getMergeTol (pGraph);
     const ray = Ray3d.createXAxis();
-    for (; movingPosition.getITag() === 0;) {
+    for (; movingPosition.getITag() === 0 && trap < 2;) {
       if (announcer !== undefined) {
         const continueSearch = announcer(movingPosition);
         if (!continueSearch)
@@ -211,6 +211,13 @@ export class InsertAndRetriangulateContext {
             break;
           }
           case RayClassification.RC_TargetAfter: {
+            if (movingPosition.node === lastBefore.node
+              && movingPosition.isFace
+              && (lastBefore.isEdge || lastBefore.isVertex)){
+              trap++;
+            } else {
+              trap = 0;
+            }
             movingPosition.setFrom(lastBefore);
             break;
           }
@@ -225,9 +232,26 @@ export class InsertAndRetriangulateContext {
           break;
       }
     }
-
-    return movingPosition.isAtXY(xyz.x, xyz.y);
+    if (movingPosition.isAtXY(xyz.x, xyz.y))
+      return true;
+    if (trap > 1) {
+      // Ugh.  We exited the loop by repeatedly hitting the same node
+      // with edge or vertex type in lastBefore.
+      // This happens only when the target point is exterior.
+      // (Heavy triangulation use cases start with a convex hull and only do interior intersections,
+      //     so case only happens in contrived unit tests.... so far ...)
+      // What to mark?
+      // Leave it as is, but mark as exterior target
+      //
+      if (movingPosition.node !== undefined) {
+          movingPosition.setIsExteriorTarget(true);
+      }
+      return false;
+    }
+    // Murky here ...  should never be hit.  Has never been hit in unit tests.
+    return false;
   }
+
 }
 // Create a VuPositionDetail for specified fraction along any unmasked edge.
 function moveToAnyUnmaskedEdge(graph: HalfEdgeGraph, position: HalfEdgePositionDetail, edgeFraction: number, skipMask: HalfEdgeMask): boolean {

@@ -2,14 +2,17 @@ sep=;
 Release Tag;API Item
 public;AcquireNewBriefcaseIdArg 
 beta;AliCloudStorageService 
+beta;AliCloudStorageServiceCredentials
 public;AnnotationElement2d 
 public;class AuxCoordSystem 
 public;AuxCoordSystem2d 
 public;AuxCoordSystem3d 
 public;AuxCoordSystemSpatial 
 beta;AzureBlobStorage 
+beta;AzureBlobStorageCredentials
 beta;BackendHubAccess
 public;BackendLoggerCategory
+internal;BaseSettings 
 public;BindParameter = number | string
 public;BisCoreSchema 
 public;BriefcaseDb 
@@ -34,8 +37,9 @@ internal;CheckpointArg = DownloadRequest
 internal;CheckpointManager
 public;CheckpointProps 
 public;ClassRegistry
+beta;CloudSqlite
+beta;CloudSqlite
 beta;class CloudStorageService
-beta;CloudStorageServiceCredentials
 internal;CloudStorageTileUploader
 beta;CloudStorageUploadOptions
 public;CodeSpecs
@@ -201,7 +205,6 @@ public;class IpcHandler
 public;IpcHost
 public;IpcHostOpts
 public;ITwinIdArg
-internal;ITwinSettings 
 internal;ITwinWorkspace 
 public;KnownLocations
 internal;LightLocation 
@@ -354,8 +357,8 @@ beta;Workspace
 beta;WorkspaceContainer
 beta;WorkspaceContainerId = string
 beta;WorkspaceContainerName = string
-beta;WorkspaceContainerOpts
 beta;WorkspaceContainerProps = WorkspaceContainerName |
+beta;WorkspaceContainerVersion = string
 beta;WorkspaceFile 
 beta;WorkspaceOpts
 beta;WorkspaceResourceName = string

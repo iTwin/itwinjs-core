@@ -12,7 +12,7 @@ import * as React from "react";
 import { CommonProps, useTargeted } from "@itwin/core-react";
 
 /** Properties of [[GroupTool]] component.
- * @alpha
+ * @internal
  */
 export interface GroupToolProps extends CommonProps {
   /** Additional content, besides icon and label. */
@@ -72,7 +72,7 @@ function GroupToolComponent(props: GroupToolProps) {
 }
 
 /** Tool entry of tool group panel. Used in [[GroupColumn]].
- * @alpha
+ * @internal
  */
 export class GroupTool extends React.PureComponent<GroupToolProps> {
   public override render() {

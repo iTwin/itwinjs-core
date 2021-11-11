@@ -9,7 +9,6 @@
 import * as fs from "fs-extra";
 import { parse } from "json5";
 import { BeEvent, JSONSchemaType } from "@itwin/core-bentley";
-import { SettingsSpecRegistry } from "./SettingsSpecRegistry";
 import { LocalFileName } from "@itwin/core-common";
 
 /** The type of a Setting, according to its schema
@@ -82,6 +81,9 @@ export enum SettingsPriority {
  * @beta
  */
 export interface Settings {
+  /** @internal */
+  close(): void;
+
   /** Event raised whenever a SettingsDictionary is added or removed. */
   readonly onSettingsChanged: BeEvent<() => void>;
 
@@ -157,15 +159,15 @@ export interface Settings {
   * @param settingName The name of the setting
   * @param defaultValue value returned if settingName is not present in any SettingDictionary, or if the highest priority setting is not an object.
   */
-  getObject(settingName: SettingName, defaultValue: SettingObject): SettingObject;
-  getObject(settingName: SettingName): SettingObject | undefined;
+  getObject<T extends object>(settingName: SettingName, defaultValue: T): T;
+  getObject<T extends object>(settingName: SettingName): T | undefined;
 
   /** Get an array setting by SettingName.
   * @param settingName The name of the setting
   * @param defaultValue value returned if settingName is not present in any SettingDictionary, or if the highest priority setting is not an array.
   */
-  getArray<T>(settingName: SettingName, defaultValue: Array<T>): Array<T>;
-  getArray<T>(settingName: SettingName): Array<T> | undefined;
+  getArray<T extends SettingType>(settingName: SettingName, defaultValue: Array<T>): Array<T>;
+  getArray<T extends SettingType>(settingName: SettingName): Array<T> | undefined;
 
   /** Get an array of [[SettingInspector] objects, sorted in priority order, for all Settings that match a SettingName.
    * @note this method is mainly for debugging and diagnostics.
@@ -201,22 +203,11 @@ class SettingsDictionary {
  * Internal implementation of Settings interface.
  * @internal
  */
-export class ITwinSettings implements Settings {
+export class BaseSettings implements Settings {
   private _dictionaries: SettingsDictionary[] = [];
+  protected verifyPriority(_priority: SettingsPriority) { }
+  public close() { }
   public readonly onSettingsChanged = new BeEvent<() => void>();
-
-  private updateDefaults() {
-    const defaults: SettingDictionary = {};
-    for (const [specName, val] of SettingsSpecRegistry.allSpecs)
-      defaults[specName] = val.default!;
-    this.addDictionary("_default_", 0, defaults);
-  }
-
-  public constructor() {
-    SettingsSpecRegistry.onSpecsChanged.addListener(() => this.updateDefaults());
-    this._dictionaries = [];
-    this.updateDefaults();
-  }
 
   public addFile(fileName: LocalFileName, priority: SettingsPriority) {
     this.addJson(fileName, priority, fs.readFileSync(fileName, "utf-8"));
@@ -227,15 +218,19 @@ export class ITwinSettings implements Settings {
   }
 
   public addDictionary(dictionaryName: string, priority: SettingsPriority, settings: SettingDictionary) {
+    this.verifyPriority(priority);
     this.dropDictionary(dictionaryName, false); // make sure we don't have the same dictionary twice
     const file = new SettingsDictionary(dictionaryName, priority, settings);
-    for (let i = 0; i < this._dictionaries.length; ++i) {
-      if (this._dictionaries[i].priority <= file.priority) {
-        this._dictionaries.splice(i, 0, file);
-        return;
+    const doAdd = () => {
+      for (let i = 0; i < this._dictionaries.length; ++i) {
+        if (this._dictionaries[i].priority <= file.priority) {
+          this._dictionaries.splice(i, 0, file);
+          return;
+        }
       }
-    }
-    this._dictionaries.push(file);
+      this._dictionaries.push(file);
+    };
+    doAdd();
     this.onSettingsChanged.raiseEvent();
   }
 
@@ -292,15 +287,15 @@ export class ITwinSettings implements Settings {
     const out = this.getSetting<number>(name);
     return typeof out === "number" ? out : defaultValue;
   }
-  public getObject(name: SettingName, defaultValue: SettingObject): SettingObject;
-  public getObject(name: SettingName): SettingObject | undefined;
-  public getObject(name: SettingName, defaultValue?: SettingObject): SettingObject | undefined {
+  public getObject<T extends object>(name: SettingName, defaultValue: T): T;
+  public getObject<T extends object>(name: SettingName): T | undefined;
+  public getObject<T extends object>(name: SettingName, defaultValue?: T): T | undefined {
     const out = this.getSetting<SettingObject>(name);
-    return typeof out === "object" ? out : defaultValue;
+    return typeof out === "object" ? out as T : defaultValue;
   }
-  public getArray<T>(name: SettingName, defaultValue: Array<T>): Array<T>;
-  public getArray<T>(name: SettingName): Array<T> | undefined;
-  public getArray<T>(name: SettingName, defaultValue?: Array<T>): Array<T> | undefined {
+  public getArray<T extends SettingType>(name: SettingName, defaultValue: Array<T>): Array<T>;
+  public getArray<T extends SettingType>(name: SettingName): Array<T> | undefined;
+  public getArray<T extends SettingType>(name: SettingName, defaultValue?: Array<T>): Array<T> | undefined {
     const out = this.getSetting<Array<T>>(name);
     return Array.isArray(out) ? out : defaultValue;
   }

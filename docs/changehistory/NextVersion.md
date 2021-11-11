@@ -20,6 +20,7 @@ The following dependencies of iTwin.js have been updated;
 ## Package name changes
 
 A number of packages have been renamed to use the @itwin scope rather than the @bentley scope, and we have modified a few package names to move towards a more consistent naming pattern. The full list of changed packages are listed in the table below.
+
 | Current                                | New                                  |
 |----------------------------------------|--------------------------------------|
 | @bentley/imodeljs-backend              | @itwin/core-backend                  |
@@ -123,6 +124,22 @@ The following code applies a display style similar to those illustrated above to
 Now, `TwoWayViewportSync` is extensible, allowing subclasses to specify which aspects of the viewports should be synchronized by overriding [TwoWayViewportSync.connectViewports]($frontend) and [TwoWayViewportSync.syncViewports]($frontend). To establish a connection between two viewports using your subclass `MyViewportSync`, use `MyViewportSync.connect(viewport1, viewport2)`.
 
 A new subclass [TwoWayViewportFrustumSync]($frontend) is supplied that synchronizes **only** the frusta of the viewports. The viewports will view the same volume of space, but may display different contents or apply different display styles. To establish this connection, use `TwoWayViewportFrustumSync.connect(viewport1, viewport2)`.
+
+## Environment decorations
+
+A [DisplayStyle3dSettings]($common) can specify a [SkyBox]($common) and [GroundPlane]($common) to be drawn as environmental decorations. Previously, [DisplayStyle3dSettings.environment]($common) was a mutable JSON [EnvironmentProps]($common), while [DisplayStyle3dState.environment]($frontend) was a mutable [Environment]($common) object, formerly defined in the core-frontend package. This made the API quite awkward and led to bugs in synchronizing the [Viewport]($frontend)'s decorations with changes to the environment settings.
+
+Now, [DisplayStyle3dSettings.environment]($common) is an immutable [Environment]($common) object consisting of a [GroundPlane]($common), [SkyBox]($common), and flags controlling the display of each. These changes require adjustment to existing code that toggles the display of either. For example:
+
+```ts
+// Replace this:
+style.environment.sky.display = true;
+style.environment.ground.display = false;
+// With this:
+style.environment = style.environment.withDisplay({ sky: true, ground: false });
+```
+
+Additionally, until now the images used by a [SkySphere]($common) or [SkyBox]($common) were required to be hosted by persistent [Texture]($backend) elements stored in the iModel. Now, they can also be specified as a URL resolving to an HTMLImageElement, allowing custom skyboxes to be created without modifying the iModel.
 
 ## BentleyError constructor no longer logs
 
@@ -916,7 +933,11 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `reactElement` in ToolWidgetDef            | `ToolWidgetDef.reactNode`                                                                                                     |
 | `reactElement` in WidgetControl            | `WidgetControl.reactNode`                                                                                                     |
 | `reactElement` in WidgetDef                | `WidgetDef.reactNode`                                                                                                         |
-| `ReactMessage`                             | `ReactMessage` in @itwin/core-react                                                                                        |
+| `ReactMessage`                             | `ReactMessage` in @itwin/core-react                                                                                           |
+| `SavedView`                                | `ViewStateHelper`                                                                                                             |
+| `SavedViewProps`                           | `ViewStateHelperProps`                                                                                                        |
+| `SavedViewLayout`                          | `StageContentLayout`                                                                                                          |
+| `SavedViewLayoutProps`                     | `StageContentLayoutProps`                                                                                                     |
 | `SpecialKey`                               | `SpecialKey` in @itwin/appui-abstract                                                                                         |
 | `WidgetState`                              | `WidgetState` in @itwin/appui-abstract                                                                                        |
 | `UserProfileBackstageItem`                 | *eliminated*                                                                                                                  |
@@ -1451,6 +1472,10 @@ The behavior of this method has not changed, but the parameters must be provided
 
 The `ninezone-test-app` was used to test and demonstrate the now deprecated "ninezone" UI layout. The current `AppUi` layout is shown and exercised in `ui-test-app`.
 
+## Removed oidc-signin-tool
+
+The `oidc-signin-tool` contained various authorization testing tools. It has been relocated to the [@itwin/auth-clients](https://github.com/iTwin/auth-clients) repository.
+
 ## Localization Changes
 
 ### IModelApp.startup
@@ -1494,3 +1519,61 @@ All packages will continue to build a CommonJS variant, but will now deliver it 
 If you were previously importing directly from the `lib` directory (e.g. `import { ElectronHost } from "@itwin/core-electron/lib/ElectronBackend";`), you will need to update your code to import from the new directory, `lib/cjs`, (e.g. `import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";`).
 
 This also affects how you will import `*.scss` from the ui packages. If you were previously importing scss from the `lib` directory (e.g. `@import "~@itwin/ui-pkg/lib/ui-pkg/...";`), you will need to update your code to import from the new directory, `lib/esm`, (e.g. `@import "~@itwin/ui-pkg/lib/esm/ui-pkg/...";`).
+
+## Simplification of CloudStorageService setup in iModelHost
+
+`IModelHostConfiguration.tileCacheCredentials` is changed to [IModelHostConfiguration.tileCacheAzureCredentials]($backend) and used for setting Azure cloud storage for tile cache.
+`IModelHost.tileCacheService` is moved to [IModelHostConfiguration.tileCacheService]($backend) and is used to supply a different implementation for any service provider by setting this property with a custom [CloudStorageService]($backend).
+If both `tileCacheAzureCredentials` and `tileCacheService` omitted - local cache will be used, if both set - error will be thrown.
+
+To use Azure cloud storage for tile cache set [IModelHostConfiguration.tileCacheAzureCredentials]($backend) property:
+
+```ts
+  const config = new IModelHostConfiguration();
+  // Replace this:
+  config.tileCacheCredentials = {
+    service: "azure",
+    account: "account",
+    accessKey: "accessKey",
+  };
+  // With this:
+  config.tileCacheAzureCredentials = {
+    account: "account",
+    accessKey: "accessKey",
+  };
+```
+
+To use AliCloud storage set [IModelHostConfiguration.tileCacheService]($backend) property with provided [AliCloudStorageService]($backend) implementation:
+
+```ts
+  import { AliCloudStorageService } from "@itwin/core-backend";
+
+  const config = new IModelHostConfiguration();
+  // Replace this:
+  config.tileCacheCredentials = {
+    service: "alicloud",
+    account: "account",
+    accessKey: "accessKey",
+  };
+  // With this:
+  config.tileCacheService = new AliCloudStorageService({
+    region: "region",
+    accessKeyId: "accessKeyId",
+    accessKeySecret: "accessKeySecret",
+  });
+```
+
+To use any other external storage set [IModelHostConfiguration.tileCacheService]($backend) with a custom [CloudStorageService]($backend) implementation:
+
+```ts
+  const config = new IModelHostConfiguration();
+  // Replace this:
+  config.tileCacheCredentials = {
+    service: "external",
+    account: "",
+    accessKey: "",
+  };
+  IModelHost.tileCacheService = new CustomCloudStorageService();
+  // With this:
+  config.tileCacheService = new CustomCloudStorageService();
+```

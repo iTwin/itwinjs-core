@@ -13,18 +13,18 @@ import { IModelJsFs } from "../../IModelJsFs";
 import { EditableWorkspaceFile, ITwinWorkspace, WorkspaceContainerId, WorkspaceFile } from "../../workspace/Workspace";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { SettingDictionary, SettingsPriority } from "../../workspace/Settings";
+import { BaseSettings, SettingDictionary, SettingsPriority } from "../../workspace/Settings";
 
 describe("WorkspaceFile", () => {
 
-  const workspace = new ITwinWorkspace({ containerDir: join(KnownTestLocations.outputDir, "TestWorkspaces") });
+  const workspace = new ITwinWorkspace(new BaseSettings(), { containerDir: join(KnownTestLocations.outputDir, "TestWorkspaces") });
 
-  function makeContainer(id: WorkspaceContainerId) {
+  async function makeContainer(id: WorkspaceContainerId) {
     const wsFile = new EditableWorkspaceFile(id, workspace);
     IModelJsFs.purgeDirSync(wsFile.containerFilesDir);
-    if (IModelJsFs.existsSync(wsFile.localDbName))
-      IModelJsFs.unlinkSync(wsFile.localDbName);
-    wsFile.create();
+    if (IModelJsFs.existsSync(wsFile.localFile))
+      IModelJsFs.unlinkSync(wsFile.localFile);
+    await wsFile.create();
     return wsFile;
   }
 
@@ -62,8 +62,8 @@ describe("WorkspaceFile", () => {
     new WorkspaceFile(Guid.createValue(), workspace); // guids should be valid
   });
 
-  it("create new WorkspaceFile", () => {
-    const wsFile = makeContainer("Acme Engineering Inc");
+  it("create new WorkspaceFile", async () => {
+    const wsFile = await makeContainer("Acme Engineering Inc");
     const inFile = IModelTestUtils.resolveAssetFile("test.setting.json5");
     const testRange = new Range3d(1.2, 2.3, 3.4, 4.5, 5.6, 6.7);
     let blobVal = new Uint8Array(testRange.toFloat64Array().buffer);
@@ -114,12 +114,16 @@ describe("WorkspaceFile", () => {
 
   it("resolve workspace alias", async () => {
     const settingsFile = IModelTestUtils.resolveAssetFile("test.setting.json5");
-    const defaultContainer = makeContainer("defaults");
+    const defaultContainer = await makeContainer("defaults");
+    expect(defaultContainer.dbAlias).equals("v0");
     defaultContainer.addString("default-settings", fs.readFileSync(settingsFile, "utf-8"));
     defaultContainer.close();
 
     const schemaFile = IModelTestUtils.resolveAssetFile("TestSettings.schema.json");
-    const fontsContainer = makeContainer("fonts-01");
+    const fontsContainer = await makeContainer("fonts-01#v23");
+    expect(fontsContainer.containerId).equals("fonts-01");
+    expect(fontsContainer.dbAlias).equals("v23");
+
     fontsContainer.addFile("Helvetica.ttf", schemaFile, "ttf");
     fontsContainer.close();
 
@@ -153,4 +157,5 @@ describe("WorkspaceFile", () => {
     settings.dropDictionary("imodel-02");
     expect(workspace.resolveContainerId(fontContainerName)).equals("fonts-01");
   });
+
 });

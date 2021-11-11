@@ -202,7 +202,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     const streamBuffer = new ByteStream(blob.buffer);
     const center = nextPoint3d64FromByteStream(streamBuffer);
     const quadId = QuadId.createFromContentId(tile.contentId);
-    const skirtHeight = this.getLevelMaximumGeometricError(quadId.level) * 10.0;
+    const skirtHeight = this.getLevelMaximumGeometricError(quadId.level + 1) * 10.0;  // Add 1 to level to restore height calculation to before the quadId level was from root. (4326 unification)
     const minHeight = this._exaggeration * streamBuffer.nextFloat32;
     const maxHeight = this._exaggeration * streamBuffer.nextFloat32;
     const boundCenter = nextPoint3d64FromByteStream(streamBuffer);

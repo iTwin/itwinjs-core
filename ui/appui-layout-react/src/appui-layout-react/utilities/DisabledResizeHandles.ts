@@ -7,7 +7,7 @@
  */
 
 /** Describes disabled resize handles.
- * @beta
+ * @internal
  */
 export enum DisabledResizeHandles {
   None = 0,

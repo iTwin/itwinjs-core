@@ -11,18 +11,23 @@ import { SnapshotDb } from "../IModelDb";
 import { IModelHost, IModelHostConfiguration, KnownLocations } from "../IModelHost";
 import { Schemas } from "../Schema";
 import { IModelTestUtils, TestUtils } from "./index";
+import { AzureBlobStorage } from "../CloudStorageBackend";
 
 describe("IModelHost", () => {
 
+  beforeEach(async () => {
+    await TestUtils.shutdownBackend();
+  });
+
   afterEach(async () => {
     sinon.restore();
-    // Restore the backend to the initial state.
-    await TestUtils.shutdownBackend();
+  });
+
+  after(async () => {
     await TestUtils.startBackend();
   });
 
   it("valid default configuration", async () => {
-    await TestUtils.shutdownBackend();
     await IModelHost.startup();
 
     // Valid registered implemented RPCs
@@ -39,8 +44,6 @@ describe("IModelHost", () => {
   });
 
   it("should raise onAfterStartup events", async () => {
-    await TestUtils.shutdownBackend();
-
     const eventHandler = sinon.spy();
     IModelHost.onAfterStartup.addOnce(eventHandler);
     await IModelHost.startup();
@@ -48,9 +51,17 @@ describe("IModelHost", () => {
   });
 
   it("should raise onBeforeShutdown events", async () => {
+    await TestUtils.startBackend();
     const eventHandler = sinon.spy();
     IModelHost.onBeforeShutdown.addOnce(eventHandler);
     const filename = IModelTestUtils.resolveAssetFile("GetSetAutoHandledStructProperties.bim");
+
+    const workspaceClose = sinon.spy((IModelHost.appWorkspace as any), "close");
+    const saveSettings = IModelHost.appWorkspace.settings as any;
+    const settingClose = sinon.spy(saveSettings, "close");
+    expect(workspaceClose.callCount).eq(0);
+    expect(settingClose.callCount).eq(0);
+    expect(saveSettings._remove).to.not.be.undefined;
 
     // shutdown should close any opened iModels. Make sure that happens
     const imodel1 = SnapshotDb.openFile(filename, { key: "imodel1" });
@@ -68,9 +79,13 @@ describe("IModelHost", () => {
     assert.isFalse(imodel1.isOpen, "shutdown should close iModel1");
     assert.isFalse(imodel2.isOpen, "shutdown should close iModel2");
     assert.isFalse(imodel3.isOpen, "shutdown should close iModel3");
+    expect(workspaceClose.callCount).eq(1);
+    expect(settingClose.callCount).eq(1);
+    expect(saveSettings._remove).to.be.undefined;
   });
 
   it("should auto-shutdown on process beforeExit event", async () => {
+    await TestUtils.startBackend();
     expect(IModelHost.isValid).to.be.true;
     const eventHandler = sinon.spy();
     IModelHost.onBeforeShutdown.addOnce(eventHandler);
@@ -81,9 +96,6 @@ describe("IModelHost", () => {
   });
 
   it("should set the briefcase cache directory to expected locations", async () => {
-    // Shutdown IModelHost to allow this test to use it.
-    await TestUtils.shutdownBackend();
-
     const config = new IModelHostConfiguration();
     const cacheSubDir = "imodels";
 
@@ -99,6 +111,80 @@ describe("IModelHost", () => {
     await IModelHost.startup(config);
     expectedDir = path.join(KnownLocations.tmpdir, cacheSubDir);
     assert.strictEqual(expectedDir, BriefcaseManager.cacheDir);
+  });
+
+  it("should set Azure cloud storage provider for tile cache", async () => {
+    const config = new IModelHostConfiguration();
+    config.tileCacheAzureCredentials = {
+      account: "testAccount",
+      accessKey: "testAccessKey",
+    };
+
+    const setUseTileCacheStub = sinon.stub();
+    sinon.stub(IModelHost, "platform").get(() => ({
+      setUseTileCache: setUseTileCacheStub,
+    }));
+
+    await IModelHost.startup(config);
+
+    assert.isTrue(IModelHost.tileCacheService instanceof AzureBlobStorage);
+    const credential = (IModelHost.tileCacheService as any)._credential;
+    assert.equal(credential.accountName, "testAccount");
+    assert.isTrue(setUseTileCacheStub.calledOnceWithExactly(false));
+  });
+
+  it("should set custom cloud storage provider for tile cache", async () => {
+    const config = new IModelHostConfiguration();
+    config.tileCacheService = {} as AzureBlobStorage;
+
+    const setUseTileCacheStub = sinon.stub();
+    sinon.stub(IModelHost, "platform").get(() => ({
+      setUseTileCache: setUseTileCacheStub,
+    }));
+
+    await IModelHost.startup(config);
+
+    assert.equal(IModelHost.tileCacheService, config.tileCacheService);
+    assert.isTrue(setUseTileCacheStub.calledOnceWithExactly(false));
+  });
+
+  it("should throw if both tileCacheService and tileCacheAzureCredentials are set", async () => {
+    const config = new IModelHostConfiguration();
+    config.tileCacheAzureCredentials = {
+      account: "testAccount",
+      accessKey: "testAccessKey",
+    };
+    config.tileCacheService = {} as AzureBlobStorage;
+
+    await expect(IModelHost.startup(config)).to.be.rejectedWith("Cannot use both Azure and custom cloud storage providers for tile cache.");
+  });
+
+  it("should use local cache if cloud storage provider for tile cache is not set", async () => {
+    const setUseTileCacheStub = sinon.stub();
+    sinon.stub(IModelHost, "platform").get(() => ({
+      setUseTileCache: setUseTileCacheStub,
+    }));
+
+    await IModelHost.startup();
+
+    assert.isUndefined(IModelHost.tileCacheService);
+    assert.isUndefined(IModelHost.tileUploader);
+    assert.isTrue(setUseTileCacheStub.calledOnceWithExactly(true));
+  });
+
+  it("should cleanup tileCacheService and tileUploader on shutdown", async () => {
+    const config = new IModelHostConfiguration();
+    config.tileCacheService = {} as AzureBlobStorage;
+
+    await IModelHost.startup(config);
+
+    assert.equal(IModelHost.tileCacheService, config.tileCacheService);
+    assert.isDefined(IModelHost.tileUploader);
+
+    await IModelHost.shutdown();
+
+    assert.isUndefined(IModelHost.tileCacheService);
+    assert.isUndefined(IModelHost.tileUploader);
   });
 
   // TODO:

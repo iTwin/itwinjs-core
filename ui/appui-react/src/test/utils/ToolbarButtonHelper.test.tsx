@@ -37,8 +37,8 @@ describe("Locate Toolbar items", () => {
 
     // Set in the before() after UiFramework.i18n is initialized
     horizontalToolbar =
-      <Toolbar
-        expandsTo={Direction.Bottom}
+      <Toolbar // eslint-disable-line deprecation/deprecation
+        expandsTo={Direction.Bottom} // eslint-disable-line deprecation/deprecation
         items={
           <>
             <ToolButton toolId="tool1" iconSpec="icon-placeholder" label="SampleApp:buttons.tool1" />
@@ -47,8 +47,8 @@ describe("Locate Toolbar items", () => {
       />;
 
     verticalToolbar =
-      <Toolbar
-        expandsTo={Direction.Right}
+      <Toolbar // eslint-disable-line deprecation/deprecation
+        expandsTo={Direction.Right} // eslint-disable-line deprecation/deprecation
         items={
           <>
             <ToolButton toolId="tool2" iconSpec="icon-placeholder" label="SampleApp:buttons.tool2" />
