@@ -12,7 +12,7 @@ import { BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient } from 
 import { IModelHubClient, IModelHubFrontend, IModelQuery } from "@bentley/imodelhub-client";
 import { ProgressInfo } from "@bentley/itwin-client";
 import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
-import { RealityDataAccessClient } from "@bentley/reality-data-client";
+import { RealityDataAccessClient } from "@itwin/reality-data-client";
 import { getClassName } from "@itwin/appui-abstract";
 import { SafeAreaInsets } from "@itwin/appui-layout-react";
 import {
