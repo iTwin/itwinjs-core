@@ -37,8 +37,8 @@ export interface ViewCreator3dOptions {
   useSeedView?: boolean;
   /** Aspect ratio of [[Viewport]]. Required to fit contents of the model(s) in the initial state of the view. */
   vpAspect?: number;
-  /** Use the old, dimmer stylings when generating view. */
-  useV2Stylings?: boolean;
+  /** When set to true, the ViewCreator will use the ViewState's default lighting.  By default or when set to false, the ViewCreator3d will use a slightly brighter lighting. */
+  useDefaultLighting?: boolean;
 }
 
 /**
@@ -141,7 +141,7 @@ export class ViewCreator3d {
 
     const cameraData = new Camera();
     const cameraOn = options?.cameraOn ? options.cameraOn : false;
-    const useLighting = options?.useV2Stylings ? options.useV2Stylings : true;
+    const useLighting = options?.useDefaultLighting ? options.useDefaultLighting : true;
     const viewDefinitionProps: ViewDefinition3dProps = {
       categorySelectorId: "",
       displayStyleId: "",
