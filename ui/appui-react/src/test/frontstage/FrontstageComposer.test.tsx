@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
@@ -49,7 +50,7 @@ describe("FrontstageComposer", () => {
 
   it("FrontstageComposer support of ModalFrontstage", async () => {
     await FrontstageManager.setActiveFrontstageDef(undefined);
-    const wrapper = mount(<FrontstageComposer />);
+    const wrapper = mount(<FrontstageComposer />); // eslint-disable-line deprecation/deprecation
 
     const modalFrontstage = new TestModalFrontstage();
     FrontstageManager.openModalFrontstage(modalFrontstage);
@@ -64,7 +65,7 @@ describe("FrontstageComposer", () => {
   });
 
   it("should handle tab click", async () => {
-    const wrapper = mount<FrontstageComposer>(<FrontstageComposer />);
+    const wrapper = mount<FrontstageComposer>(<FrontstageComposer />); // eslint-disable-line deprecation/deprecation
     const frontstageProvider = new TestFrontstage();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
     const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
@@ -92,7 +93,7 @@ describe("FrontstageComposer", () => {
   });
 
   it("should update widget state when tab is opened", async () => {
-    const wrapper = mount<FrontstageComposer>(<FrontstageComposer />);
+    const wrapper = mount<FrontstageComposer>(<FrontstageComposer />); // eslint-disable-line deprecation/deprecation
     const frontstageProvider = new TestFrontstage();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
     const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
@@ -112,7 +113,7 @@ describe("FrontstageComposer", () => {
   });
 
   it("should not update state of unloaded widgets", async () => {
-    const wrapper = mount<FrontstageComposer>(<FrontstageComposer />);
+    const wrapper = mount<FrontstageComposer>(<FrontstageComposer />); // eslint-disable-line deprecation/deprecation
     const frontstageProvider = new TestFrontstage();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
     const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
@@ -129,7 +130,7 @@ describe("FrontstageComposer", () => {
   });
 
   it("should not update widget state if zone is not found", async () => {
-    const wrapper = mount<FrontstageComposer>(<FrontstageComposer />);
+    const wrapper = mount<FrontstageComposer>(<FrontstageComposer />); // eslint-disable-line deprecation/deprecation
     const frontstageProvider = new TestFrontstage();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
     const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
@@ -174,7 +175,7 @@ describe("FrontstageComposer", () => {
 
   it("should log error if FrontstageComposer.getZoneDef called with no active frontstageDef", async () => {
     await FrontstageManager.setActiveFrontstageDef(undefined);
-    const wrapper = mount<FrontstageComposer>(<FrontstageComposer />);
+    const wrapper = mount<FrontstageComposer>(<FrontstageComposer />); // eslint-disable-line deprecation/deprecation
     const spyMethod = sinon.spy(Logger, "logError");
 
     const instance = wrapper.instance();
@@ -185,7 +186,7 @@ describe("FrontstageComposer", () => {
   });
 
   it("should handle panel collapse", async () => {
-    const wrapper = mount<FrontstageComposer>(<FrontstageComposer />);
+    const wrapper = mount<FrontstageComposer>(<FrontstageComposer />); // eslint-disable-line deprecation/deprecation
     const frontstageProvider = new TestFrontstage();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
     const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
@@ -205,7 +206,7 @@ describe("FrontstageComposer", () => {
   });
 
   it("should update state when panel state changes", async () => {
-    const wrapper = mount<FrontstageComposer>(<FrontstageComposer />);
+    const wrapper = mount<FrontstageComposer>(<FrontstageComposer />); // eslint-disable-line deprecation/deprecation
     const panelDef = new StagePanelDef();
     FrontstageManager.onPanelStateChangedEvent.emit({ panelDef, panelState: StagePanelState.Minimized });
     const panelKey = getNestedStagePanelKey(panelDef.location);
@@ -215,7 +216,7 @@ describe("FrontstageComposer", () => {
   });
 
   it("should hide tool settings widget", async () => {
-    mount<FrontstageComposer>(<FrontstageComposer />);
+    mount<FrontstageComposer>(<FrontstageComposer />); // eslint-disable-line deprecation/deprecation
 
     sinon.stub(FrontstageManager, "activeToolSettingsProvider").get(() => undefined);
     const hideWidgetSpy = sinon.spy(FrontstageManager.NineZoneManager, "hideWidget");
@@ -226,7 +227,7 @@ describe("FrontstageComposer", () => {
   });
 
   it("should disallow pointer up selection on pointer down", async () => {
-    const sut = mount<FrontstageComposer>(<FrontstageComposer />);
+    const sut = mount<FrontstageComposer>(<FrontstageComposer />); // eslint-disable-line deprecation/deprecation
     sut.setState({ allowPointerUpSelection: true });
 
     const composer = sut.find("#uifw-frontstage-composer");
@@ -236,7 +237,7 @@ describe("FrontstageComposer", () => {
   });
 
   it("should disallow pointer up selection on pointer up", async () => {
-    const sut = mount<FrontstageComposer>(<FrontstageComposer />);
+    const sut = mount<FrontstageComposer>(<FrontstageComposer />); // eslint-disable-line deprecation/deprecation
     sut.setState({ allowPointerUpSelection: true });
 
     const composer = sut.find("#uifw-frontstage-composer");
@@ -248,7 +249,7 @@ describe("FrontstageComposer", () => {
   it("should set zone width based on initialWidth of the zone", async () => {
     const nineZoneManager = FrontstageManager.NineZoneManager;
     sinon.stub(FrontstageManager, "NineZoneManager").returns(nineZoneManager);
-    const sut = mount<FrontstageComposer>(<FrontstageComposer />);
+    const sut = mount<FrontstageComposer>(<FrontstageComposer />); // eslint-disable-line deprecation/deprecation
     const frontstageProvider = new TestFrontstage();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
     const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-react",
+      "comment": "Deprecate obsolete APIs. Publish beta APIs from last release.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-react"
+}

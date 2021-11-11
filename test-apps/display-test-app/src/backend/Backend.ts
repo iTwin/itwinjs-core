@@ -9,7 +9,7 @@ import { ElectronAuthorizationBackend } from "@itwin/electron-authorization/lib/
 import { ElectronHost, ElectronHostOptions } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { IModelBankClient } from "@bentley/imodelhub-client";
 import { IModelHubBackend, UrlFileHandler } from "@bentley/imodelhub-client/lib/cjs/imodelhub-node";
-import { IModelHost, IModelHostConfiguration, LocalhostIpcHost } from "@itwin/core-backend";
+import { IModelHostConfiguration, LocalhostIpcHost } from "@itwin/core-backend";
 import {
   IModelReadRpcInterface, IModelTileRpcInterface, RpcInterfaceDefinition, RpcManager,
   SnapshotIModelRpcInterface,
@@ -136,7 +136,7 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
   iModelHost.hubAccess = new IModelHubBackend(hubClient);
 
   if (dtaConfig.useFakeCloudStorageTileCache)
-    iModelHost.tileCacheCredentials = { service: "external", account: "", accessKey: "" };
+    iModelHost.tileCacheService = new FakeTileCacheService(path.normalize(path.join(__dirname, "tiles")), "http://localhost:3001"); // puts the cache in "./lib/backend/tiles" and serves them from "http://localhost:3001/tiles"
 
   let logLevel = LogLevel.None;
   if (undefined !== dtaConfig.logLevel)
@@ -178,7 +178,4 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
   Logger.initializeToConsole();
   Logger.setLevelDefault(logLevel);
   Logger.setLevel("SVT", LogLevel.Trace);
-
-  if (dtaConfig.useFakeCloudStorageTileCache)
-    IModelHost.tileCacheService = new FakeTileCacheService(path.normalize(path.join(__dirname, "tiles")), "http://localhost:3001"); // puts the cache in "./lib/backend/tiles" and serves them from "http://localhost:3001/tiles"
 };

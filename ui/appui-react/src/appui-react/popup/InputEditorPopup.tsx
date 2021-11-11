@@ -13,7 +13,7 @@ import { DivWithOutsideClick, Size, SizeProps } from "@itwin/core-react";
 import { PopupManager, PopupPropsBase } from "./PopupManager";
 import { PositionPopup, PositionPopupContent } from "./PositionPopup";
 
-/** @alpha */
+/** @beta */
 export class InputEditorCommitHandler {
   constructor(
     public readonly onCommit: OnValueCommitFunc,
@@ -29,7 +29,8 @@ export class InputEditorCommitHandler {
   };
 }
 
-/** @alpha */
+/** Props for popup editor
+ * @beta */
 export interface InputEditorPopupProps extends PopupPropsBase {
   record: PropertyRecord;
   onCancel: OnCancelFunc;

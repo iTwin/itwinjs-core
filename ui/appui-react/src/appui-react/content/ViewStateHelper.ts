@@ -15,7 +15,7 @@ import { ViewUtilities } from "../utils/ViewUtilities";
 /** SavedViewProps interface for sharing ViewState and EmphasizeElements information.
  * @public
  */
-export interface SavedViewProps extends ViewStateProps {
+export interface ViewStateHelperProps extends ViewStateProps {
   bisBaseClass: string;
   emphasizeElementsProps?: EmphasizeElementsProps;
 }
@@ -23,9 +23,9 @@ export interface SavedViewProps extends ViewStateProps {
 /** SavedView class. Used to serialize/deserialize a ViewState.
  * @public
  */
-export class SavedView {
+export class ViewStateHelper {
   /** Create a ViewState from the SavedView */
-  public static async viewStateFromProps(iModelConnection: IModelConnection, savedViewProps: SavedViewProps): Promise<ViewState | undefined> {
+  public static async viewStateFromProps(iModelConnection: IModelConnection, savedViewProps: ViewStateHelperProps): Promise<ViewState | undefined> {
     const className = savedViewProps.viewDefinitionProps.classFullName;
     const ctor = await iModelConnection.findClassFor<typeof EntityState>(className, undefined) as typeof ViewState | undefined;
 
@@ -40,7 +40,7 @@ export class SavedView {
   }
 
   /** Apply EmphasizeElements from the SavedView */
-  public static emphasizeElementsFromProps(vp: ScreenViewport, savedViewProps: SavedViewProps): boolean {
+  public static emphasizeElementsFromProps(vp: ScreenViewport, savedViewProps: ViewStateHelperProps): boolean {
     let changed = false;
     if (savedViewProps.emphasizeElementsProps) {
       const emphasizeElements = new EmphasizeElements();
@@ -50,14 +50,14 @@ export class SavedView {
   }
 
   /** Create props for a ViewState */
-  public static viewStateToProps(viewState: ViewState): SavedViewProps {
-    const savedViewProps = viewState.toProps() as SavedViewProps;
+  public static viewStateToProps(viewState: ViewState): ViewStateHelperProps {
+    const savedViewProps = viewState.toProps() as ViewStateHelperProps;
     savedViewProps.bisBaseClass = ViewUtilities.getBisBaseClass(viewState.classFullName);
     return savedViewProps;
   }
 
   /** Create props for an EmphasizeElements and store in SavedViewProps */
-  public static emphasizeElementsToProps(vp: ScreenViewport, savedViewProps: SavedViewProps): void {
+  public static emphasizeElementsToProps(vp: ScreenViewport, savedViewProps: ViewStateHelperProps): void {
     const ee = EmphasizeElements.get(vp);
     const emphasizeElementsProps = ee ? ee.toJSON(vp) : undefined;
     savedViewProps.emphasizeElementsProps = emphasizeElementsProps;

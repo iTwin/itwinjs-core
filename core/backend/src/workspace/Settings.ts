@@ -159,15 +159,15 @@ export interface Settings {
   * @param settingName The name of the setting
   * @param defaultValue value returned if settingName is not present in any SettingDictionary, or if the highest priority setting is not an object.
   */
-  getObject(settingName: SettingName, defaultValue: SettingObject): SettingObject;
-  getObject(settingName: SettingName): SettingObject | undefined;
+  getObject<T extends object>(settingName: SettingName, defaultValue: T): T;
+  getObject<T extends object>(settingName: SettingName): T | undefined;
 
   /** Get an array setting by SettingName.
   * @param settingName The name of the setting
   * @param defaultValue value returned if settingName is not present in any SettingDictionary, or if the highest priority setting is not an array.
   */
-  getArray<T>(settingName: SettingName, defaultValue: Array<T>): Array<T>;
-  getArray<T>(settingName: SettingName): Array<T> | undefined;
+  getArray<T extends SettingType>(settingName: SettingName, defaultValue: Array<T>): Array<T>;
+  getArray<T extends SettingType>(settingName: SettingName): Array<T> | undefined;
 
   /** Get an array of [[SettingInspector] objects, sorted in priority order, for all Settings that match a SettingName.
    * @note this method is mainly for debugging and diagnostics.
@@ -287,15 +287,15 @@ export class BaseSettings implements Settings {
     const out = this.getSetting<number>(name);
     return typeof out === "number" ? out : defaultValue;
   }
-  public getObject(name: SettingName, defaultValue: SettingObject): SettingObject;
-  public getObject(name: SettingName): SettingObject | undefined;
-  public getObject(name: SettingName, defaultValue?: SettingObject): SettingObject | undefined {
+  public getObject<T extends object>(name: SettingName, defaultValue: T): T;
+  public getObject<T extends object>(name: SettingName): T | undefined;
+  public getObject<T extends object>(name: SettingName, defaultValue?: T): T | undefined {
     const out = this.getSetting<SettingObject>(name);
-    return typeof out === "object" ? out : defaultValue;
+    return typeof out === "object" ? out as T : defaultValue;
   }
-  public getArray<T>(name: SettingName, defaultValue: Array<T>): Array<T>;
-  public getArray<T>(name: SettingName): Array<T> | undefined;
-  public getArray<T>(name: SettingName, defaultValue?: Array<T>): Array<T> | undefined {
+  public getArray<T extends SettingType>(name: SettingName, defaultValue: Array<T>): Array<T>;
+  public getArray<T extends SettingType>(name: SettingName): Array<T> | undefined;
+  public getArray<T extends SettingType>(name: SettingName, defaultValue?: Array<T>): Array<T> | undefined {
     const out = this.getSetting<Array<T>>(name);
     return Array.isArray(out) ? out : defaultValue;
   }
