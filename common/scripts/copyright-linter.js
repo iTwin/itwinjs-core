@@ -6,34 +6,42 @@ const fs = require("fs");
 const path = require("path");
 const child_process = require("child_process");
 
-// Get all arguments after the positional argument indicator, "--"
-const filePaths = process.argv.reduce((acc, cur) => {
-  if (acc) {
-    acc.push(cur);
-    return acc;
-  } else if (cur === "--") {
-    return [];
-  } else if (cur === "--fix") {
-    // Support manually updating to fix changes made before the linter was fixed.
-    return child_process.execSync("git diff --name-only master")
-      .toString()
-      .split("\n")
-      .map(f => path.join(__dirname, "../..", f))
-      .filter(f => /\.(js|ts|tsx|scss|css)$/.test(f));
-  }
-}, false);
+function getFileNames(lintBranch) {
+  // Get name of every file changed between current branch and master,
+  // otherwise get name of every file changed in last commit and currently
+  const diffCommand = "git diff --name-only " + (lintBranch ? "main" : "HEAD~1");
+
+  return child_process.execSync(diffCommand)
+    .toString()
+    .split("\n")
+    // Append path name, accidentally "double counts" directory names between this file and root
+    .map(f => path.join(__dirname, "../..", f))
+    .filter(f => /\.(js|ts|tsx|scss|css)$/.test(f));
+}
 
 function getCopyrightBanner(useCRLF) {
   const eol = (useCRLF) ? "\r\n" : "\n";
   return `/*---------------------------------------------------------------------------------------------${eol}* Copyright (c) Bentley Systems, Incorporated. All rights reserved.${eol}* See LICENSE.md in the project root for license terms and full copyright notice.${eol}*--------------------------------------------------------------------------------------------*/${eol}`;
 }
 
-const longCopyright = "/?/[*](.|\n|\r\n)*?Copyright(.|\n|\r\n)*?[*]/(\n|\r\n)";
-const shortCopyright = "//\\s*Copyright.*\n";
+/* Regex breakdown: select block comments if they contain the word Copyright
+* /?/[*] : finds either //* or /*
+* (?:(?![*]/)(\\s|\\S))* : match all symbols (\s whitespace, \S non-whitespace) that are not comment block closers * /
+* Copyright(\\s|\\S)*? : match Copyright and all symbols until the next comment block closer * /
+* [*]/.*(\n|\r\n) : match from the comment block closer * / to the next newline
+*/
+const longCopyright = "/?/[*](?:(?![*]/)(\\s|\\S))*Copyright(\\s|\\S)*?[*]/.*(\n|\r\n)";
+// Regex breakdown: select comments that contain the word Copyright
+const shortCopyright = "//\\s*Copyright.*(\n|\r\n)";
+
 const oldCopyrightBanner = RegExp(
   `^(${longCopyright})|(${shortCopyright})`,
-  "m"
+  "m" // Lack of 'g' means only select the first match in each file
 );
+
+// If '--branch' is passed-in all files changed since main/master will be linted
+// otherwise only files changed last commit and currently will be linted
+const filePaths = getFileNames(process.argv.includes("--branch"))
 
 if (filePaths) {
   filePaths.forEach((filePath) => {
@@ -41,6 +49,7 @@ if (filePaths) {
     const lastNewlineIdx = fileContent.lastIndexOf("\n");
     const copyrightBanner = getCopyrightBanner(lastNewlineIdx > 0 && fileContent[lastNewlineIdx - 1] === "\r");
 
+    // up-to-date
     if (fileContent.startsWith(copyrightBanner))
       return;
 

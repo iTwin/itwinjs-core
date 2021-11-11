@@ -1,0 +1,32 @@
+#!/bin/sh
+#
+# Called by "git commit" with no arguments. The hook cannot alter
+# the outcome of the commit that invoked it.
+
+# Verify that all recently committed files have the correct copyright header
+# if not, then the correct header will be added or replace the old
+
+unstagedChanges=$(git diff)
+
+# stash all unstaged changes, including untracked files
+if [ "$unstagedChanges" != "" ]; then
+git stash -u
+fi
+
+if [ "$(node ./common/scripts/copyright-linter.js)" ]; then
+  if [ "$(git diff --name-only HEAD)" != "" ]; then
+  # the linter succeeded and changes were made, add them to the previous commit
+  # may be empty if all previous changes were to the linter headers
+  git commit -a --amend --allow-empty
+  fi
+else
+  linterFailed=1
+fi
+
+# apply unstaged changes regardless of linter success
+if [ "$unstagedChanges" != "" ]; then
+# may merge conflict if unstaged changes altered copyright headers
+git stash pop
+fi
+
+exit $? || $linterFailed
