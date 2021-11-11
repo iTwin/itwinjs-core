@@ -8,6 +8,7 @@ import { QueryBinder, QueryRowFormat } from "@itwin/core-common";
 import { IModelDb, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { SequentialLogMatcher } from "../SequentialLogMatcher";
+import { read } from "fs";
 
 // cspell:ignore mirukuru ibim
 
@@ -123,7 +124,70 @@ describe("ECSql Query", () => {
     assert.isAtLeast(successful, 1);
     assert.isAtLeast(rowCount, 1);
   });
-
+  it("concurrent query use primary connection", async () => {
+    const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element", undefined, { usePrimaryConn: true });
+    let props = await reader.getMetaData();
+    assert.equal(props.length, 11);
+    let rows = 0;
+    while (await reader.step()) {
+      rows++;
+    }
+    assert.equal(rows, 46);
+    props = await reader.getMetaData();
+    assert.equal(props.length, 11);
+    assert.equal(reader.stats.backendRowsReturned, 46);
+    assert.isTrue(reader.stats.backendCpuTime > 0);
+    assert.isTrue(reader.stats.backendMemUsed > 1000);
+    assert.isTrue(reader.stats.totalTime > 0);
+  });
+  it("concurrent query use idset", async () => {
+    const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element WHERE InVirtualSet(?, ECInstanceId)", QueryBinder.from([["0x3b", "0x39", "0x3a"]]), { usePrimaryConn: true });
+    let props = await reader.getMetaData();
+    assert.equal(props.length, 11);
+    let rows = 0;
+    while (await reader.step()) {
+      rows++;
+      console.log(JSON.stringify(reader.current.toRow(), undefined, 2));
+      console.log(JSON.stringify(reader.current.toJsRow(), undefined, 2));
+    }
+    assert.equal(rows, 3);
+    props = await reader.getMetaData();
+    assert.equal(props.length, 11);
+    assert.equal(reader.stats.backendRowsReturned, 3);
+    assert.isTrue(reader.stats.backendCpuTime > 0);
+    assert.isTrue(reader.stats.backendMemUsed > 100);
+    assert.isTrue(reader.stats.totalTime > 0);
+  });
+  it("concurrent query get meta data", async () => {
+    const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element");
+    let props = await reader.getMetaData();
+    assert.equal(props.length, 11);
+    let rows = 0;
+    while (await reader.step()) {
+      rows++;
+    }
+    assert.equal(rows, 46);
+    props = await reader.getMetaData();
+    assert.equal(props.length, 11);
+    assert.equal(reader.stats.backendRowsReturned, 46);
+    assert.isTrue(reader.stats.backendCpuTime > 0);
+    assert.isTrue(reader.stats.backendMemUsed > 1000);
+    assert.isTrue(reader.stats.totalTime > 0);
+  });
+  it("concurrent query quota", async () => {
+    let reader = imodel1.createQueryReader("SELECT * FROM BisCore.element", undefined, { limit: { count: 4 } });
+    let rows = 0;
+    while (await reader.step()) {
+      rows++;
+    }
+    assert.equal(rows, 4);
+    reader = imodel1.createQueryReader("SELECT * FROM BisCore.element", undefined, { limit: { offset: 4, count: 4 } });
+    rows = 0;
+    while (await reader.step()) {
+      rows++;
+    }
+    assert.equal(rows, 4);
+  });
   it("paging results", async () => {
     const getRowPerPage = (nPageSize: number, nRowCount: number) => {
       const nRowPerPage = nRowCount / nPageSize;

@@ -46,7 +46,7 @@
         "test"
       ],
       "outFiles": [
-        "${workspaceFolder}/core/backend/lib/**/*.js"
+        "${workspaceFolder}/core/{backend,common}/lib/**/*.js"
       ]
     },
     {

@@ -77,6 +77,37 @@ describe("ECSqlStatement", () => {
       assert.equal(r.id, "0x1");
     });
   });
+
+  it("concurrent query get meta data", async () => {
+    await using(ECDbTestHelper.createECDb(outDir, "asyncmethodtest.ecdb",
+      `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECEntityClass typeName="Foo" modifier="Sealed">
+          <ECProperty propertyName="n" typeName="int"/>
+          <ECProperty propertyName="dt" typeName="dateTime"/>
+          <ECProperty propertyName="fooId" typeName="long" extendedTypeName="Id"/>
+        </ECEntityClass>
+      </ECSchema>`), async (ecdb: ECDb) => {
+      assert.isTrue(ecdb.isOpen);
+
+      await ecdb.withStatement("INSERT INTO ts.Foo(n,dt,fooId) VALUES(20,TIMESTAMP '2018-10-18T12:00:00Z',20)", async (stmt: ECSqlStatement) => {
+        stmt.stepForInsert();
+      });
+      await ecdb.withStatement("INSERT INTO ts.Foo(n,dt,fooId) VALUES(30,TIMESTAMP '2019-10-18T12:00:00Z',30)", async (stmt: ECSqlStatement) => {
+        stmt.stepForInsert();
+      });
+      ecdb.saveChanges();
+      const reader = ecdb.createQueryReader("SELECT * FROM ts.Foo");
+      let props = await reader.getMetaData();
+      assert.equal(props.length, 5);
+      let rows = 0;
+      while (await reader.step()) {
+        rows++;
+      }
+      assert.equal(rows, 2);
+      props = await reader.getMetaData();
+      assert.equal(props.length, 5);
+    });
+  });
   it("null string accessor", async () => {
     await using(ECDbTestHelper.createECDb(outDir, "nullstring.ecdb"), async (ecdb: ECDb) => {
       assert.isTrue(ecdb.isOpen);

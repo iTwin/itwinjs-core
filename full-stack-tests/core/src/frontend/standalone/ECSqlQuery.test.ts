@@ -32,7 +32,7 @@ describe("ECSql Query", () => {
     if (imodel5) await imodel5.close();
     await TestUtility.shutdownFrontend();
   });
-  it.skip("Restart query", async () => {
+  it("Restart query", async () => {
     let cancelled = 0;
     let successful = 0;
     let rowCount = 0;
@@ -51,7 +51,7 @@ describe("ECSql Query", () => {
             cancelled++;
             resolve();
           } else {
-            reject();
+            reject(err);
           }
         }
       });
@@ -66,6 +66,45 @@ describe("ECSql Query", () => {
     assert.isAtLeast(cancelled, 1);
     assert.isAtLeast(successful, 1);
     assert.isAtLeast(rowCount, 1);
+  });
+  it("concurrent query use primary connection", async () => {
+    const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element", undefined, { usePrimaryConn: true });
+    let props = await reader.getMetaData();
+    assert.equal(props.length, 11);
+    let rows = 0;
+    while (await reader.step()) {
+      rows++;
+    }
+    assert.equal(rows, 46);
+    props = await reader.getMetaData();
+    assert.equal(props.length, 11);
+    console.log(JSON.stringify(reader.stats));
+  });
+  it("concurrent query get meta data", async () => {
+    const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element");
+    let props = await reader.getMetaData();
+    assert.equal(props.length, 11);
+    let rows = 0;
+    while (await reader.step()) {
+      rows++;
+    }
+    assert.equal(rows, 46);
+    props = await reader.getMetaData();
+    assert.equal(props.length, 11);
+  });
+  it("concurrent query quota", async () => {
+    let reader = imodel1.createQueryReader("SELECT * FROM BisCore.element", undefined, { limit: { count: 4 } });
+    let rows = 0;
+    while (await reader.step()) {
+      rows++;
+    }
+    assert.equal(rows, 4);
+    reader = imodel1.createQueryReader("SELECT * FROM BisCore.element", undefined, { limit: { offset: 4, count: 4 } });
+    rows = 0;
+    while (await reader.step()) {
+      rows++;
+    }
+    assert.equal(rows, 4);
   });
   it("Paging Results", async () => {
     const getRowPerPage = (nPageSize: number, nRowCount: number) => {

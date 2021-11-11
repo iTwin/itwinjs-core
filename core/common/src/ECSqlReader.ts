@@ -65,8 +65,20 @@ export interface QueryRowProxy {
   [propertyName: string]: QueryValueType;
   [propertyIndex: number]: QueryValueType;
 }
+
+/** @beta */
+export interface QueryStats {
+  backendCpuTime: number; // Time spent running the query. It exclude query time in queue. Time is in microseconds.
+  backendTotalTime: number; // backend total time spent running the query. Time is in milliseconds.
+  backendMemUsed: number; // Estimated m emory used for query. Time is in milliseconds.
+  backendRowsReturned: number; // Total rows returned by backend.
+  totalTime: number; // Round trip time from client perspective.Time is in milliseconds.
+  retryCount: number;
+}
+
 /** @beta */
 export class ECSqlReader {
+  private static readonly _maxRetryCount = 10;
   private _localRows: any[] = [];
   private _localOffset: number = 0;
   private _globalOffset: number = -1;
@@ -76,6 +88,7 @@ export class ECSqlReader {
   private _props = new PropertyMetaDataMap([]);
   private _param = new QueryBinder().serialize();
   private _lockArgs: boolean = false;
+  private _stats = { backendCpuTime: 0, backendTotalTime: 0, backendMemUsed: 0, backendRowsReturned: 0, totalTime: 0, retryCount: 0 };
   private _rowProxy = new Proxy<ECSqlReader>(this, {
     get: (target: ECSqlReader, key: string | Symbol) => {
       if (typeof key === "string") {
@@ -160,16 +173,20 @@ export class ECSqlReader {
     this._done = false;
   }
   public get current(): QueryRowProxy { return (this._rowProxy as any); }
+  // clear all bindings
   public resetBindings() {
     this._param = new QueryBinder().serialize();
     this._lockArgs = false;
   }
+  // return if there is any more rows available
   public get done(): boolean { return this._done; }
   public getRowInternal(): any[] {
     if (this._localRows.length <= this._localOffset)
       throw new Error("no current row");
     return this._localRows[this._localOffset] as any[];
   }
+  // return performance related statistics for current query.
+  public get stats(): QueryStats { return this._stats; }
   private async readRows(): Promise<any[]> {
     if (this._globalDone) {
       return [];
@@ -199,16 +216,33 @@ export class ECSqlReader {
     return resp.data;
   }
   private async runWithRetry(request: DbQueryRequest) {
-    let resp = await this._executor.execute(request);
-    let retry = 10;
-    DbQueryError.throwIfError(resp, request);
-    while (--retry > 0 && resp.data.length === 0 && (resp.status === DbResponseStatus.Partial || resp.status === DbResponseStatus.QueueFull || resp.status === DbResponseStatus.TimeOut)) {
-      // add timeout
-      resp = await this._executor.execute(request);
+    const needRetry = (resp: DbQueryResponse) => (resp.status === DbResponseStatus.Partial || resp.status === DbResponseStatus.QueueFull || resp.status === DbResponseStatus.Timeout) && (resp.data.length === 0);
+    const updateStats = (resp: DbQueryResponse) => {
+      this._stats.backendCpuTime += resp.stats.cpuTime;
+      this._stats.backendTotalTime += resp.stats.totalTime;
+      this._stats.backendMemUsed += resp.stats.memUsed;
+      this._stats.backendRowsReturned += resp.data.length;
     }
-    if (retry === 0 && resp.data.length === 0 && (resp.status === DbResponseStatus.Partial || resp.status === DbResponseStatus.QueueFull || resp.status === DbResponseStatus.TimeOut)) {
+    const execQuery = async (request: DbQueryRequest) => {
+      const startTime = Date.now()
+      const rs = await this._executor.execute(request);
+      this.stats.totalTime += (Date.now() - startTime);
+      return rs
+    }
+    let retry = ECSqlReader._maxRetryCount;
+    let resp = await execQuery(request);
+    DbQueryError.throwIfError(resp, request);
+    while (--retry > 0 && needRetry(resp)) {
+      resp = await execQuery(request);
+      this._stats.retryCount += 1;
+      if (needRetry(resp)) {
+        updateStats(resp);
+      }
+    }
+    if (retry === 0 && needRetry(resp)) {
       throw new Error("query too long to execute or server is too busy");
     }
+    updateStats(resp);
     return resp;
   }
   public formatCurrentRow(format: QueryRowFormat): any[] | object {
@@ -218,7 +252,15 @@ export class ECSqlReader {
     const formattedRow = {};
     for (const prop of this._props) {
       const propName = format === QueryRowFormat.UseJsPropertyNames ? prop.jsonName : prop.name;
-      const val = this.getRowInternal()[prop.index];
+      let val = this.getRowInternal()[prop.index];
+      
+      if (format === QueryRowFormat.UseJsPropertyNames) {
+        if (prop.typeName === "navigation") {
+          if (typeof val.relClassName !== "undefined") {
+            val = {Id: val.id, RelClassId: val.relClassName}
+          }
+        }
+      }
       if (typeof val !== "undefined" && val !== null) {
         Object.defineProperty(formattedRow, propName, {
           value: val,
@@ -228,7 +270,19 @@ export class ECSqlReader {
     }
     return formattedRow;
   }
-  public getMetaData(): QueryPropertyMetaData[] { return this._props.properties; }
+  public async getMetaData(): Promise<QueryPropertyMetaData[]> {
+    if (this._props.length === 0) {
+      await this.fetchRows();
+    }
+    return this._props.properties;
+  }
+  private async fetchRows() {
+    this._localOffset = -1;
+    this._localRows = await this.readRows();
+    if (this._localRows.length === 0) {
+      this._done = true;
+    }
+  }
   public async step(): Promise<boolean> {
     if (this._done) {
       return false;
@@ -237,12 +291,9 @@ export class ECSqlReader {
     if (this._localOffset < cachedRows - 1) {
       ++this._localOffset;
     } else {
-      this._localRows = await this.readRows();
+      await this.fetchRows();
       this._localOffset = 0;
-      if (this._localRows.length === 0) {
-        this._done = true;
-        return false;
-      }
+      return !this._done;
     }
     return true;
   }
