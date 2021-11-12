@@ -14,7 +14,7 @@ import { XYZProps } from "@itwin/core-geometry";
  *  Reference System or a geodetic datum.
  * @public */
 export enum GeoCoordStatus {
-  /** This value indicates a success of coordinate transformation */
+  /** This value indicates a success of coordinate conversion */
   Success = 0,
   /** Indicates that the source or target of the conversion is not defined, usually the iModel Geographic Coordinate Reference System.*/
   NoGCSDefined = 100,
