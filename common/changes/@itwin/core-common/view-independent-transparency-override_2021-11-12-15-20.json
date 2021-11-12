@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-common",
-      "comment": "FeatureAppearance transparency by default ignores render mode and transparency view flag.",
+      "comment": "FeatureAppearance transparency override by default ignores render mode and transparency view flag.",
       "type": "none"
     }
   ],
