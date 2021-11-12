@@ -85,7 +85,7 @@ export class NetworkTracingContentGroupProvider extends ContentGroupProvider {
     }
 
     return new ContentGroup({
-      id: "comms:network-tracing-stage-content",
+      id: "ui-item-provider-test:network-tracing-stage-content",
       layout: StandardContentLayouts.singleView,
       contents: [
         {
@@ -104,10 +104,10 @@ export class NetworkTracingContentGroupProvider extends ContentGroupProvider {
 }
 
 export class NetworkTracingFrontstage {
-  public static stageId = "comms:NetworkTracing";
+  public static stageId = "ui-item-provider-test:NetworkTracing";
   private static _contentGroupProvider = new NetworkTracingContentGroupProvider();
   public static register() {
-    const cornerButton = <BackstageAppButton key="comms-backstage" icon={"icon-bentley-systems"} />;
+    const cornerButton = <BackstageAppButton icon={"icon-bentley-systems"} />;
     const networkTracingStageProps: StandardFrontstageProps = {
       id: NetworkTracingFrontstage.stageId,
       version: 1.1,

@@ -28,7 +28,7 @@ import { OpenAbstractDialogTool } from "../../tools/OpenAbstractModalDialogTool"
 import { UiItemsProvidersTest } from "../../ui-items-providers-test";
 
 export class NetworkTraceUiProvider implements UiItemsProvider {
-  public static providerId = "comms:NetworkTraceUiProvider";
+  public static providerId = "ui-item-provider-test:NetworkTraceUiProvider";
   public readonly id = NetworkTraceUiProvider.providerId;
   public static syncEventIdTraceAvailable = "ui-test:trace-available-changed";
 
@@ -130,7 +130,7 @@ export class NetworkTraceUiProvider implements UiItemsProvider {
         "trace-tool-standalone",
         232,
         "icon-symbol",
-        "trace-tool-standalone",
+        UiItemsProvidersTest.translate("tools.trace-tool-standalone"),
         (): void => {
           IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "trace-tool-standalone activated", undefined, OutputMessageType.Toast));
         },

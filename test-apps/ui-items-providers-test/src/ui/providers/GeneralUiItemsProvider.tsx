@@ -16,15 +16,17 @@ import { SampleTool } from "../../tools/SampleTool";
 import statusBarButtonSvg from "../icons/StatusField.svg?sprite";
 import { UnitsPopupUiDataProvider } from "../dialogs/UnitsPopup";
 import { IModelApp } from "@itwin/core-frontend";
+import { UiItemsProvidersTest } from "../../ui-items-providers-test";
 
-export class ExtensionUiItemsProvider implements UiItemsProvider {
-  public readonly id = "ExtensionUiItemsProvider";
+export class GeneralUiItemsProvider implements UiItemsProvider {
+  public readonly id = "GeneralUiItemsProvider";
 
+  // eslint-disable-next-line deprecation/deprecation
   public provideWidgets(stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection, _zoneLocation?: AbstractZoneLocation): ReadonlyArray<AbstractWidgetProps> {
     const widgets: AbstractWidgetProps[] = [];
     if (stageId === "DefaultFrontstage" && location === StagePanelLocation.Right && section === StagePanelSection.Start) {
       const widget: AbstractWidgetProps = {
-        id: "comms:fibersListWidget",
+        id: "ui-item-provider-test:fibersListWidget",
         label: "Fibers",
         defaultState: WidgetState.Hidden,
         isFloatingStateSupported: true,
@@ -65,9 +67,9 @@ export class ExtensionUiItemsProvider implements UiItemsProvider {
     const statusBarItems: CommonStatusBarItem[] = [];
     if (stageUsage === StageUsage.General) {
       statusBarItems.push(
-        AbstractStatusBarItemUtilities.createActionItem("UiItemsProvidersTest:UnitsStatusBarItem", StatusBarSection.Center, 100, unitsIcon, IModelApp.localization.getLocalizedString("uiItemsProvidersTest:StatusBar.UnitsFlyover"),
+        AbstractStatusBarItemUtilities.createActionItem("UiItemsProvidersTest:UnitsStatusBarItem", StatusBarSection.Center, 100, unitsIcon, UiItemsProvidersTest.translate("StatusBar.UnitsFlyover"),
           () => {
-            IModelApp.uiAdmin.openDialog(new UnitsPopupUiDataProvider(IModelApp.localization), IModelApp.localization.getLocalizedString("uiItemsProvidersTest:StatusBar.Units"),
+            IModelApp.uiAdmin.openDialog(new UnitsPopupUiDataProvider(IModelApp.localization), UiItemsProvidersTest.translate("StatusBar.Units"),
               true, "uiItemsProvidersTest:units-popup", { movable: true, width: 280, minWidth: 280 });
           }
         ));

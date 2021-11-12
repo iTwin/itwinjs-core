@@ -11,13 +11,13 @@ import { GenericTool } from "./tools/GenericTool";
 import { OpenTraceDialogTool } from "./tools/OpenTraceDialogTool";
 import { IModelApp } from "@itwin/core-frontend";
 import { providerSlice, TestProviderSliceName } from "./store";
-import { ExtensionUiItemsProvider } from "./ui/providers/ExtensionUiItemsProvider";
+import { GeneralUiItemsProvider } from "./ui/providers/GeneralUiItemsProvider";
 import { OpenAbstractDialogTool } from "./tools/OpenAbstractModalDialogTool";
 import { NetworkTracingFrontstage } from "./ui/frontstages/NetworkTracing";
 
 /** UiItemsProvidersTest is an iModel.js Extension that adds some user interface to the iModel.js app into which its loaded.
  * Included in the sample are: 1) a Sample Tool (SampleTool.ts), showing how implement a tool with a variety to tool settings items.
- *                             2) a StatusBarItem (created in ExtensionUiItemsProvider.provideStatusBarItems()) that opens a modal dialog when clicked.
+ *                             2) a StatusBarItem (created in GeneralUiItemsProvider.provideStatusBarItems()) that opens a modal dialog when clicked.
  *
  * Both the SampleTool and the modal dialog opened from the StatusBarItem (UnitsPopup.tsx) use the UiLayoutDataProvider to generate
  * react code from an array of DialogItem interfaces.
@@ -49,7 +49,7 @@ export class UiItemsProvidersTest {
     ConfigurableUiManager.registerControl("SampleExtensionContentControl", SampleContentControl);
 
     // register to add items to "General" usage stages"
-    UiItemsManager.register(new ExtensionUiItemsProvider());
+    UiItemsManager.register(new GeneralUiItemsProvider());
     // UiItemsManager.register(new NetworkTraceUiProvider());
   }
 

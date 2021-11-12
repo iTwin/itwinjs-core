@@ -27,7 +27,7 @@ export class OpenAbstractDialogTool extends Tool {
   public static override get maxArgs() { return 0; }
 
   public override async run(): Promise<boolean> {
-    IModelApp.uiAdmin.openDialog(new TestUiProvider(), "Test Abstract Dialog", true, "comms:AbstractDialog", {
+    IModelApp.uiAdmin.openDialog(new TestUiProvider(), "Test Abstract Dialog", true, "ui-item-provider-test:AbstractDialog", {
       movable: true,
       width: "auto",
     });
@@ -35,7 +35,7 @@ export class OpenAbstractDialogTool extends Tool {
   }
 
   public static override get flyover(): string {
-    return UiItemsProvidersTest.translate("open-abstract-dialog");
+    return UiItemsProvidersTest.translate("tools.open-abstract-dialog");
   }
 
   // if supporting localized key-ins return a localized string
@@ -44,7 +44,7 @@ export class OpenAbstractDialogTool extends Tool {
   }
 
   public static override get englishKeyin(): string {
-    return "comms open abstract dialog";
+    return "open abstract dialog";
   }
 
   public static getActionButtonDef(itemPriority: number, groupPriority?: number) {

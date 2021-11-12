@@ -19,6 +19,7 @@ const initialState = {
   isTraceAvailable: false,
 } as TestProviderState;
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const TestProviderSliceName = "testProviderState";
 
 /** the TestProvider "slice" of Redux state" */

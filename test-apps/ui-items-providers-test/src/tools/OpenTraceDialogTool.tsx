@@ -45,7 +45,7 @@ export class OpenTraceDialogTool extends Tool {
   }
 
   public static override get englishKeyin(): string {
-    return "comms trace tool connected";
+    return "trace tool connected";
   }
 
   public static getActionButtonDef(itemPriority: number, groupPriority?: number) {

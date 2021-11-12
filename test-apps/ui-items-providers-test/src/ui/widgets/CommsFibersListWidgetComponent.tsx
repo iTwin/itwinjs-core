@@ -48,7 +48,7 @@ export function useSelectedFiber() {
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function CommsFibersListWidgetComponent() {
   const idList = useSelectedFiber();
-  const widgetDef = useWidgetDef("comms:fibersListWidget");
+  const widgetDef = useWidgetDef("ui-item-provider-test:fibersListWidget");
 
   React.useEffect(() => {
     // using setImmediate to give time for frontstage to load before calling setWidgetState
