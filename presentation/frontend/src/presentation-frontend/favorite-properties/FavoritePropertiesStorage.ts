@@ -13,10 +13,14 @@ import { PresentationError, PresentationStatus } from "@itwin/presentation-commo
 import { ConnectivityInformationProvider, IConnectivityInformationProvider } from "../ConnectivityInformationProvider";
 import { FavoritePropertiesOrderInfo, PropertyFullName } from "./FavoritePropertiesManager";
 
-const IMODELJS_PRESENTATION_SETTING_NAMESPACE = "imodeljs.presentation";
-const DEPRECATED_PROPERTIES_SETTING_NAMESPACE = "Properties";
-const FAVORITE_PROPERTIES_SETTING_NAME = "FavoriteProperties";
-const FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME = "FavoritePropertiesOrderInfo";
+/** @internal */
+export const IMODELJS_PRESENTATION_SETTING_NAMESPACE = "imodeljs.presentation";
+/** @internal */
+export const DEPRECATED_PROPERTIES_SETTING_NAMESPACE = "Properties";
+/** @internal */
+export const FAVORITE_PROPERTIES_SETTING_NAME = "FavoriteProperties";
+/** @internal */
+export const FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME = "FavoritePropertiesOrderInfo";
 
 /**
  * Stores user settings for favorite properties.
@@ -95,7 +99,8 @@ export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesSt
       accessToken,
       iTwinId,
       iModelId: imodelId,
-      key: `${IMODELJS_PRESENTATION_SETTING_NAMESPACE}.${FAVORITE_PROPERTIES_SETTING_NAME}`,
+      namespace: IMODELJS_PRESENTATION_SETTING_NAMESPACE,
+      key: FAVORITE_PROPERTIES_SETTING_NAME,
     });
 
     if (setting !== undefined)
@@ -106,7 +111,8 @@ export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesSt
       accessToken,
       iTwinId,
       iModelId: imodelId,
-      key: `${DEPRECATED_PROPERTIES_SETTING_NAMESPACE}.${FAVORITE_PROPERTIES_SETTING_NAME}`,
+      namespace: DEPRECATED_PROPERTIES_SETTING_NAMESPACE,
+      key: FAVORITE_PROPERTIES_SETTING_NAME,
     });
 
     if (setting !== undefined && setting.hasOwnProperty("nestedContentInfos") && setting.hasOwnProperty("propertyInfos") && setting.hasOwnProperty("baseFieldInfos"))
@@ -124,7 +130,8 @@ export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesSt
       accessToken,
       iTwinId,
       iModelId: imodelId,
-      key: `${IMODELJS_PRESENTATION_SETTING_NAMESPACE}.${FAVORITE_PROPERTIES_SETTING_NAME}`,
+      namespace: IMODELJS_PRESENTATION_SETTING_NAMESPACE,
+      key: FAVORITE_PROPERTIES_SETTING_NAME,
       content: Array.from(properties),
     });
   }
@@ -138,7 +145,8 @@ export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesSt
       accessToken,
       iTwinId,
       iModelId: imodelId,
-      key: `${IMODELJS_PRESENTATION_SETTING_NAMESPACE}.${FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME}`,
+      namespace: IMODELJS_PRESENTATION_SETTING_NAMESPACE,
+      key: FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME,
     });
     return setting as FavoritePropertiesOrderInfo[];
   }
@@ -152,7 +160,8 @@ export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesSt
       accessToken,
       iTwinId,
       iModelId: imodelId,
-      key: `${IMODELJS_PRESENTATION_SETTING_NAMESPACE}.${FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME}`,
+      namespace: IMODELJS_PRESENTATION_SETTING_NAMESPACE,
+      key: FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME,
       content: orderInfos,
     });
   }

@@ -12,8 +12,9 @@ import { ResolvablePromise } from "@itwin/presentation-common/lib/cjs/test";
 import { IConnectivityInformationProvider } from "../../presentation-frontend/ConnectivityInformationProvider";
 import { FavoritePropertiesOrderInfo, PropertyFullName } from "../../presentation-frontend/favorite-properties/FavoritePropertiesManager";
 import {
-  BrowserLocalFavoritePropertiesStorage, createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, IModelAppFavoritePropertiesStorage,
-  NoopFavoritePropertiesStorage, OfflineCachingFavoritePropertiesStorage,
+  BrowserLocalFavoritePropertiesStorage, createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes,
+  DEPRECATED_PROPERTIES_SETTING_NAMESPACE, FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME, FAVORITE_PROPERTIES_SETTING_NAME,
+  IModelAppFavoritePropertiesStorage, IMODELJS_PRESENTATION_SETTING_NAMESPACE, NoopFavoritePropertiesStorage, OfflineCachingFavoritePropertiesStorage,
 } from "../../presentation-frontend/favorite-properties/FavoritePropertiesStorage";
 
 describe("IModelAppFavoritePropertiesStorage", () => {
@@ -41,7 +42,7 @@ describe("IModelAppFavoritePropertiesStorage", () => {
   describe("loadProperties", () => {
 
     it("returns favorite properties", async () => {
-      settingsAdminMock.setup(async (x) => x.get(moq.It.isObjectWith({ key: "imodeljs.presentation.FavoriteProperties" }))).returns(async () => []);
+      settingsAdminMock.setup(async (x) => x.get(moq.It.isObjectWith({ namespace: IMODELJS_PRESENTATION_SETTING_NAMESPACE, key: FAVORITE_PROPERTIES_SETTING_NAME }))).returns(async () => []);
 
       const properties = await storage.loadProperties();
       expect(properties).to.be.not.undefined;
@@ -49,7 +50,7 @@ describe("IModelAppFavoritePropertiesStorage", () => {
     });
 
     it("is backwards compatible", async () => {
-      settingsAdminMock.setup(async (x) => x.get(moq.It.isObjectWith({ key: "Properties.FavoriteProperties" }))).returns(async () => ({
+      settingsAdminMock.setup(async (x) => x.get(moq.It.isObjectWith({ namespace: DEPRECATED_PROPERTIES_SETTING_NAMESPACE, key: FAVORITE_PROPERTIES_SETTING_NAME }))).returns(async () => ({
         nestedContentInfos: new Set<string>(["nestedContentInfo"]),
         propertyInfos: new Set<string>(["propertyInfo"]),
         baseFieldInfos: new Set<string>(["baseFieldInfo"]),
@@ -61,7 +62,7 @@ describe("IModelAppFavoritePropertiesStorage", () => {
     });
 
     it("returns undefined", async () => {
-      settingsAdminMock.setup(async (x) => x.get(moq.It.isObjectWith({ key: "imodeljs.presentation.FavoriteProperties" }))).returns(async () => undefined);
+      settingsAdminMock.setup(async (x) => x.get(moq.It.isObjectWith({ namespace: IMODELJS_PRESENTATION_SETTING_NAMESPACE, key: FAVORITE_PROPERTIES_SETTING_NAME }))).returns(async () => undefined);
       const properties = await storage.loadProperties();
       expect(properties).to.be.undefined;
     });
@@ -85,7 +86,7 @@ describe("IModelAppFavoritePropertiesStorage", () => {
   describe("saveProperties", () => {
 
     it("saves favorite properties", async () => {
-      settingsAdminMock.setup(async (x) => x.save(moq.It.isObjectWith({ key: "imodeljs.presentation.FavoriteProperties" }))).returns(async () => { });
+      settingsAdminMock.setup(async (x) => x.save(moq.It.isObjectWith({ namespace: IMODELJS_PRESENTATION_SETTING_NAMESPACE, key: FAVORITE_PROPERTIES_SETTING_NAME }))).returns(async () => { });
 
       const properties = new Set<PropertyFullName>(["propertyInfo1", "propertyInfo2"]);
       await storage.saveProperties(properties);
@@ -117,7 +118,7 @@ describe("IModelAppFavoritePropertiesStorage", () => {
         priority: 5,
         orderedTimestamp: new Date(),
       };
-      settingsAdminMock.setup(async (x) => x.get(moq.It.isObjectWith({ key: "imodeljs.presentation.FavoritePropertiesOrderInfo" }))).returns(async () => [orderInfo]);
+      settingsAdminMock.setup(async (x) => x.get(moq.It.isObjectWith({ namespace: IMODELJS_PRESENTATION_SETTING_NAMESPACE, key: FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME }))).returns(async () => [orderInfo]);
 
       const properties = await storage.loadPropertiesOrder("iTwinId", "imodelId");
       expect(properties).to.be.not.undefined;
@@ -126,7 +127,7 @@ describe("IModelAppFavoritePropertiesStorage", () => {
     });
 
     it("returns undefined", async () => {
-      settingsAdminMock.setup(async (x) => x.get(moq.It.isObjectWith({ key: "imodeljs.presentation.FavoritePropertiesOrderInfo" }))).returns(async () => undefined);
+      settingsAdminMock.setup(async (x) => x.get(moq.It.isObjectWith({ namespace: IMODELJS_PRESENTATION_SETTING_NAMESPACE, key: FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME }))).returns(async () => undefined);
       sinon.stub(IModelApp, "userPreferences").get(() => settingsAdminMock.object);
 
       const properties = await storage.loadPropertiesOrder("iTwinId", "imodelId");
@@ -163,7 +164,8 @@ describe("IModelAppFavoritePropertiesStorage", () => {
         .setup(async (x) => x.save(moq.It.isObjectWith({
           iTwinId: "iTwinId",
           iModelId: "imodelId",
-          key: "imodeljs.presentation.FavoritePropertiesOrderInfo",
+          namespace: IMODELJS_PRESENTATION_SETTING_NAMESPACE,
+          key: FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME,
           content: [orderInfo],
         })))
         .returns(async () => { })
