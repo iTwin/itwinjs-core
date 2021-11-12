@@ -1,7 +1,5 @@
 # This template handles gathering all of the raw docs artifacts into a single staging directory
 # to allow them to be processed for publication.
-#
-# Note: This step has a dependency on the
 
 parameters:
   - name: workingDir
@@ -64,9 +62,11 @@ steps:
       TargetFolder: ${{ parameters.stagingDir }}/bis/domains/
 
   # The .updated.json is cached in order to let BeMetalsmith know what needs to be re-built.
-  # - task: DownloadPipelineArtifact@2
-  #   displayName: Download Pipeline Artifact - .updated.json
-  #   inputs:
-  #     runVersion: latestFromBranch
-  #     artifactName: .updated.json
-  #     targetPath: ${{ parameters.stagingDir }}/config/
+  - task: DownloadPipelineArtifact@2
+    displayName: Download Pipeline Artifact - .updated.json
+    inputs:
+      source: current
+      runBranch: 'refs/heads/master'
+      runVersion: latestFromBranch
+      artifactName: .updated.json
+      targetPath: ${{ parameters.stagingDir }}/config/
