@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Sky cube primitive buffers must be bound when attempting to draw a sky cube.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
