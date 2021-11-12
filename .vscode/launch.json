@@ -358,49 +358,6 @@
         "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
       ]
     },
-    // CLIENTS TESTS
-    { /* PARTIAL */
-      "name": "[NODE] Certa Test Runner for Clients Tests",
-      "presentation": {
-        "hidden": true
-      },
-      "cwd": "${workspaceFolder}/clients/${input:client-lib}",
-      "type": "pwa-node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run",
-        "test:integration:${input:integrationTestEnvironment}",
-        "--",
-        "--debug"
-      ],
-      "outFiles": [
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
-        "${workspaceFolder}/tools/certa/lib/**/*.js"
-      ],
-      "outputCapture": "std",
-      "attachSimplePort": 5858, // NB: This must match ports.debugging in full-stack-tests/core/certa.json
-      "cascadeTerminateToConfigurations": [
-        "[BROWSER] Clients Tests"
-      ]
-    },
-    { /* PARTIAL */
-      "name": "[BROWSER] Clients Tests",
-      "presentation": {
-        "hidden": true
-      },
-      "type": "pwa-chrome",
-      "request": "attach",
-      "port": 9223, // NB: This must match ports.frontendDebugging in core/frontend/certa.json
-      "timeout": 20000,
-      "outFiles": [
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
-        "${workspaceFolder}/tools/certa/lib/**/*.js"
-      ],
-      "cascadeTerminateToConfigurations": [
-        "[NODE] Certa Test Runner for Clients Tests"
-      ]
-    },
     {
       "name": "iModelHub Client Tests (iModelBank)",
       "presentation": {
