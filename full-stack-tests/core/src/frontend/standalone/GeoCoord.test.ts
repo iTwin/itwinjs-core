@@ -168,7 +168,7 @@ describe("GeoCoord", () => {
       horizontalCRS: {
         id: "JGD2K.CS-I-MOCK",
         description: "Mock GCS",
-        source: "Test",
+        sourceDatum: "Test",
         deprecated: false,
         datumId: "JGD2000",
         unit: "Meter",

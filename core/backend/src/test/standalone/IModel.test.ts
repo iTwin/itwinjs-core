@@ -1709,7 +1709,7 @@ describe("iModel", () => {
       horizontalCRS: {
         id: "10TM115-27",
         description: "",
-        source: "Mentor Software Client",
+        sourceDatum: "Mentor Software Client",
         deprecated: false,
         datumId: "NAD27",
         unit: "Meter",
@@ -1816,7 +1816,7 @@ describe("iModel", () => {
 
       const testPoint1: XYZProps[] = [];
       testPoint1.push(inputCoord);
-      const requestProps1: GeoCoordinatesRequestProps = { target: datumOrGCS, iModelCoords: testPoint1 };
+      const requestProps1: GeoCoordinatesRequestProps = { targetDatum: datumOrGCS, iModelCoords: testPoint1 };
       const response1 = await iModel.getGeoCoordinatesFromIModelCoordinates(requestContext, JSON.stringify(requestProps1));
 
       const expectedPt1 = Point3d.fromJSON(outputCoord.p);
@@ -1828,7 +1828,7 @@ describe("iModel", () => {
 
       const testPoint2: XYZProps[] = [];
       testPoint2.push(outputCoord.p);
-      const requestProps2: IModelCoordinatesRequestProps = { source: datumOrGCS, geoCoords: testPoint2 };
+      const requestProps2: IModelCoordinatesRequestProps = { sourceDatum: datumOrGCS, geoCoords: testPoint2 };
       const response2 = await iModel.getIModelCoordinatesFromGeoCoordinates(requestContext, JSON.stringify(requestProps2));
 
       const expectedPt2 = Point3d.fromJSON(inputCoord);
@@ -1844,20 +1844,20 @@ describe("iModel", () => {
       horizontalCRS: {
         id: "EPSG:27700",
         description: "OSGB 1936 / British National Grid",
-        source: "EPSG V6 [Large and medium scale topographic mapping and engin]",
+        sourceDatum: "EPSG V6 [Large and medium scale topographic mapping and engin]",
         datumId: "EPSG:6277",
         datum: {
           id: "EPSG:6277",
           description: "OSGB36 - Use OSGB-7P-2. Consider OSGB/OSTN15 instead",
           deprecated: true,
-          source: "EPSG V6.12 operation EPSG:1314 [EPSG]",
+          sourceDatum: "EPSG V6.12 operation EPSG:1314 [EPSG]",
           ellipsoidId: "EPSG:7001",
           ellipsoid: {
             equatorialRadius: 6377563.396,
             polarRadius: 6356256.909237,
             id: "EPSG:7001",
             description: "Airy 1830",
-            source: "EPSG, Version 6 [EPSG]"},
+            sourceDatum: "EPSG, Version 6 [EPSG]"},
           transforms: [
             {
               method: "PositionalVector",
@@ -1934,7 +1934,7 @@ describe("iModel", () => {
         horizontalCRS: {
           id: "HS2-MOCK",
           description: "USES CUSTOM DATUM",
-          source: "Test",
+          sourceDatum: "Test",
           deprecated: false,
           datumId: "HS2SD_2015",
           unit: "Meter",
@@ -1960,7 +1960,7 @@ describe("iModel", () => {
         horizontalCRS: {
           id: "California2",
           description: "USES CUSTOM DATUM",
-          source: "Test",
+          sourceDatum: "Test",
           deprecated: false,
           datumId: "NAD83",
           unit: "Meter",
@@ -2035,7 +2035,7 @@ describe("iModel", () => {
       horizontalCRS: {
         id: "10TM115-27",
         description: "",
-        source: "Mentor Software Client",
+        sourceDatum: "Mentor Software Client",
         deprecated: false,
         datumId: "NAD27",
         unit: "Meter",
