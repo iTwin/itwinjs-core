@@ -4,7 +4,7 @@
 
 ## SyncUi Dispatcher
 
-The [SyncUiEventDispatcher]($appui-react) is called to dispatch syncEventIds to register listeners.  The caller can choose to dispatch the syncEventId immediately ([SyncUiEventDispatcher.dispatchImmediateSyncUiEvent]($appui-react)) or the default way ([SyncUiEventDispatcher.dispatchSyncUiEvent]($appui-react)), which uses a timer. Most of the time using the timer version is preferable so multiple refreshes of the same component can be avoided. The timer version of dispatching will attempt to wait until no new syncEventIds have been dispatched before calling the registered listeners.
+The [SyncUiEventDispatcher]($appui-react) is called to dispatch syncEventIds to register listeners.  The caller can choose to dispatch the syncEventId immediately ([SyncUiEventDispatcher.dispatchImmediateSyncUiEvent]($appui-react)) or the default way ([SyncUiEventDispatcher.dispatchSyncUiEvent]($appui-react)), which uses a timer. Usually, the timer version is preferable so multiple refreshes of the same component can be avoided. Dispatching with the timer will attempt to wait until no new syncEventIds have been dispatched before calling the registered listeners.
 
 ## Sync EventId
 
