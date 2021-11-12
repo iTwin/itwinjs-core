@@ -13,7 +13,7 @@ if [ "$unstagedChanges" != "" ]; then
 git stash -u
 fi
 
-if [ "$(node ./common/scripts/copyright-linter.js)" ]; then
+if $(node ./common/scripts/copyright-linter.js) ; then
   if [ "$(git diff --name-only HEAD)" != "" ]; then
   # the linter succeeded and changes were made, add them to the previous commit
   # may be empty if all previous changes were to the linter headers
