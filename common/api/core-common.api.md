@@ -2920,7 +2920,6 @@ export class FeatureAppearance {
     clone(changedProps: FeatureAppearanceProps): FeatureAppearance;
     cloneProps(changedProps: FeatureAppearanceProps): FeatureAppearanceProps;
     static readonly defaults: FeatureAppearance;
-    // (undocumented)
     readonly emphasized?: true;
     // (undocumented)
     equals(other: FeatureAppearance): boolean;
@@ -2931,14 +2930,11 @@ export class FeatureAppearance {
     static fromRgba(color: ColorDef, viewDependentTransparency?: boolean): FeatureAppearance;
     static fromSubCategoryOverride(ovr: SubCategoryOverride): FeatureAppearance;
     static fromTransparency(transparencyValue: number, viewDependent?: boolean): FeatureAppearance;
-    // (undocumented)
     readonly ignoresMaterial?: true;
     // (undocumented)
     get isFullyTransparent(): boolean;
-    // (undocumented)
     readonly linePixels?: LinePixels;
     get matchesDefaults(): boolean;
-    // (undocumented)
     readonly nonLocatable?: true;
     // (undocumented)
     get overridesLinePixels(): boolean;
@@ -2952,15 +2948,11 @@ export class FeatureAppearance {
     get overridesTransparency(): boolean;
     // (undocumented)
     get overridesWeight(): boolean;
-    // (undocumented)
     readonly rgb?: RgbColor;
     // (undocumented)
     toJSON(): FeatureAppearanceProps;
-    // (undocumented)
     readonly transparency?: number;
-    // (undocumented)
     readonly viewDependentTransparency?: true;
-    // (undocumented)
     readonly weight?: number;
 }
 
