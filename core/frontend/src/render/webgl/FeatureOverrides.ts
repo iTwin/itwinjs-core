@@ -74,6 +74,7 @@ export class FeatureOverrides implements WebGLDisposable {
   private _anyOverridden = true;
   private _allHidden = true;
   private _anyTranslucent = true;
+  private _anyViewIndependentTranslucent = true;
   private _anyOpaque = true;
   private _anyHilited = true;
   private _lutParams = new Float32Array(2);
@@ -83,6 +84,7 @@ export class FeatureOverrides implements WebGLDisposable {
   public get anyOverridden() { return this._anyOverridden; }
   public get allHidden() { return this._allHidden; }
   public get anyTranslucent() { return this._anyTranslucent; }
+  public get anyViewIndependentTranslucent() { return this._anyViewIndependentTranslucent; }
   public get anyOpaque() { return this._anyOpaque; }
   public get anyHilited() { return this._anyHilited; }
 
@@ -148,7 +150,7 @@ export class FeatureOverrides implements WebGLDisposable {
     const modelIdParts = Id64.getUint32Pair(map.modelId);
     const isModelHilited = allowHilite && hilites.models.has(modelIdParts.lower, modelIdParts.upper);
 
-    this._anyOpaque = this._anyTranslucent = this._anyHilited = false;
+    this._anyOpaque = this._anyTranslucent = this._anyViewIndependentTranslucent = this._anyHilited = false;
 
     let nHidden = 0;
     let nOverridden = 0;
@@ -213,10 +215,15 @@ export class FeatureOverrides implements WebGLDisposable {
           alpha = 0xff;
 
         data.setByteAtIndex(dataIndex + 7, alpha);
-        if (0xff === alpha)
+        if (0xff === alpha) {
           this._anyOpaque = true;
-        else
+        } else {
           this._anyTranslucent = true;
+          if (!app.viewDependentTransparency) {
+            flags |= OvrFlags.ViewIndependentTransparency;
+            this._anyViewIndependentTranslucent = true;
+          }
+        }
       }
 
       if (app.overridesWeight && app.weight) {
