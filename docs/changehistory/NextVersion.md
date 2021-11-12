@@ -803,7 +803,7 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | `ViewFlags.noGeometryMap`                             | _eliminated_                                                   |
 | `ViewFlags.noSolarLight`                              | [ViewFlags.lighting]($common)                                  |
 | `ViewFlags.noSourceLights`                            | [ViewFlags.lighting]($common)                                  |
-| `NativeAppAuthorizationConfiguration`                 | [MobileAppAuthorizationConfiguration]($core-mobile)            |
+| `NativeAppAuthorizationConfiguration`                 | `MobileAppAuthorizationConfiguration` in @itwin/core-mobile    |
 
 ### @itwin/core-frontend
 
