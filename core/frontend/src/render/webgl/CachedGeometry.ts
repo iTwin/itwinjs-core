@@ -422,7 +422,9 @@ export class SkyBoxQuadsGeometry extends CachedGeometry {
   public get renderOrder() { return RenderOrder.UnlitSurface; }
 
   public draw(): void {
+    this._params.buffers.bind();
     System.instance.context.drawArrays(GL.PrimitiveType.Triangles, 0, 36);
+    this._params.buffers.unbind();
   }
 
   public get qOrigin() { return this._params.positions.origin; }
