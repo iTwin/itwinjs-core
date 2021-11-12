@@ -231,6 +231,10 @@
       "allowedCategories": [ "common", "integration-testing", "internal" ]
     },
     {
+      "name": "@itwin/reality-data-client",
+      "allowedCategories": [ "common", "integration-testing", "internal" ]
+    },
+    {
       "name": "@itwin/service-authorization",
       "allowedCategories": [ "integration-testing", "internal" ]
     },
