@@ -9,28 +9,29 @@
 import { GeoServiceStatus } from "@itwin/core-bentley";
 import { XYZProps } from "@itwin/core-geometry";
 
-/** This enumeration lists all possible status as returned from a coordinate conversion
- *  to or from a Geographic Coordinate Reference System and either another Geographic Coordinate
- *  Reference System or a geodetic datum.
- * @public */
+/** This enumeration lists all possible status as returned from a coordinate conversion to or from a 
+ * [[GeographicCRS]] and either another [[GeographicCRS]] or a [[GeodeticDatum]].
+ * @see the [[PointWithStatus]] included in an [[IModelCoordinatesResponseProps]] or [[GeoCoordinatesResponseProps]].
+ * @public
+ */
 export enum GeoCoordStatus {
-  /** This value indicates a success of coordinate conversion */
+  /** Indicates successful coordinate conversion. */
   Success = 0,
   /** Indicates that the source or target of the conversion is not defined, usually the iModel Geographic Coordinate Reference System.*/
   NoGCSDefined = 100,
-  /** This value indicates that the conversion was performed out the normal use of application of either Geographic Coordinate Reference Systems.
-   *  This return value can often be treated as a warning in specific cases. For example, global imagery extent spawns the whole globe and
-   *  may far extend pass the normal area of the iModel project extent and the extent of normal use of its Geographic Coordinate Reference System.
-   *  In such case this value can be considered a warning as accuracy and precision is not expected in this specific case and approximate localization
+  /** This value indicates that the conversion was performed outside of the normal use of application of either Geographic Coordinate Reference Systems.
+   *  This return value can often be treated as a warning in specific cases. For example, global imagery extent spans the whole globe and
+   *  may extend far beyond the normal area of the iModel project extents and the extent of normal use of its Geographic Coordinate Reference System.
+   *  In such cases this value can be considered a warning as accuracy and precision is not expected in this specific case and approximate localization
    *  of global imagery or other low accuracy context data is not essential far from the project.
    *  If this status is returned for high accuracy data then it indicates that either Geographic Coordinate Reference Systems were inappropriately selected
-   *  for iModel or other geolocated data. If this is the case the status should be somehow reported so action
+   *  for the iModel or other geolocated data. If this is the case the status should be somehow reported so action
    *  can be performed to verify used geolocation parameters.
    *  In either case the returned coordinates are to be considered valid though they may be inaccurate or result in some unexpected distortion of graphical
    *  elements.
    */
   OutOfUsefulRange = 1,
-  /** Indicates a hard error where conversions were requested out of the area out of the mathematical capacity of the conversion process for either
+  /** Indicates a hard error where conversions were requested outside of the area of the mathematical capacity of the conversion process for either
    *  Geographic Coordinate Reference Systems involved. An example could be to attempt a conversion involving a Transverse Mercator more than 60 degrees
    *  East or West of the projection central meridian.
    *  The values returned may or may not be valid and should be discarded.
@@ -42,7 +43,7 @@ export enum GeoCoordStatus {
    *  This error can be ignored for low accuracy data but should be somehow reported so actions can be performed to provide the missing files.
    */
   NoDatumConverter = 25,
-  /** Indicates that a problem occurred during vertical datum conversion. This may the result of the incapacity to access the
+  /** Indicates that a problem occurred during vertical datum conversion. This may the result of the inability to access the
    *  Geoid separation data or vertical datum differential data (such as used by NGVD29 to NAVD88 conversion).
    *  The horizontal coordinates returned are valid but the elevation ordinate will be returned unchanged or partially changed.
    *  This status should be somehow reported so actions can be performed to provide the missing information.
