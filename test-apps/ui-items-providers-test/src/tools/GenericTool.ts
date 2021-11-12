@@ -13,13 +13,15 @@ import { Point3d } from "@itwin/core-geometry";
 import { UiFramework } from "@itwin/appui-react";
 import { ToolbarItemUtilities } from "@itwin/appui-abstract";
 import genericToolSvg from "./generic-tool.svg?sprite";
+import { UiItemsProvidersTest } from "../ui-items-providers-test";
 
+/** Sample Primitive tool where user selects an element for processing */
 export class GenericTool extends PrimitiveTool {
   public userPoint: Point3d | undefined;
   public elementId: string | undefined;
   // ensure toolId is unique by add "uiItemsProvidersTest-" prefix
   public static override get toolId() { return "uiItemsProvidersTest-GenericTool"; }
-  public static get toolStringKey() { return `uiItemsProvidersTest:tools.${GenericTool.toolId}.`; }
+  public static get toolStringKey() { return `tools.${GenericTool.toolId}.`; }
   public static override iconSpec = `svg:${genericToolSvg}`;
   public static useDefaultPosition = false;
   public override autoLockTarget(): void { } // NOTE: For selecting elements we only care about iModel, so don't lock target model automatically.
@@ -32,7 +34,7 @@ export class GenericTool extends PrimitiveTool {
 
   public static getPrompt(name: string): string {
     const key = `tools.${this.toolId}.Prompts.${name}`;
-    return IModelApp.localization.getLocalizedStringWithNamespace(this.namespace, key);
+    return UiItemsProvidersTest.translate(key);
   }
 
   public async process(_elementId: string, _point?: Point3d) {

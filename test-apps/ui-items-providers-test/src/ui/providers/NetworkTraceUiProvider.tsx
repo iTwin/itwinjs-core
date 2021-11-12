@@ -2,21 +2,31 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
+import * as React from "react";
 import {
+  AbstractWidgetProps,
+  AbstractZoneLocation,
   BackstageItem,
   BackstageItemUtilities,
   BadgeType,
   CommonToolbarItem,
   ConditionalBooleanValue,
   IconSpecUtilities,
+  StagePanelLocation,
+  StagePanelSection,
+  StageUsage,
   ToolbarItemUtilities,
   ToolbarOrientation,
   ToolbarUsage,
   UiItemsManager,
   UiItemsProvider,
+  WidgetState,
 } from "@itwin/appui-abstract";
 import { StateManager, SyncUiEventDispatcher } from "@itwin/appui-react";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
+
+import { PresentationPropertyGridWidget, PresentationPropertyGridWidgetControl } from "../widgets/PresentationPropertyGridWidget";
 
 import upstreamIcon from "../icons/upstream-query.svg?sprite";
 import downstreamIcon from "../icons/downstream-query.svg?sprite";
@@ -24,8 +34,8 @@ import traceIcon from "../icons/query-multi.svg?sprite";
 import { OpenTraceDialogTool } from "../../tools/OpenTraceDialogTool";
 import { NetworkTracingFrontstage } from "../frontstages/NetworkTracing";
 import { getTestProviderState, setIsTraceAvailable } from "../../store";
-import { OpenAbstractDialogTool } from "../../tools/OpenAbstractModalDialogTool";
 import { UiItemsProvidersTest } from "../../ui-items-providers-test";
+import { CommsFibersListWidgetComponent } from "../widgets/CommsFibersListWidgetComponent";
 
 export class NetworkTraceUiProvider implements UiItemsProvider {
   public static providerId = "ui-item-provider-test:NetworkTraceUiProvider";
@@ -75,7 +85,6 @@ export class NetworkTraceUiProvider implements UiItemsProvider {
         );
 
       const getConnectedButton = OpenTraceDialogTool.getActionButtonDef(10);
-      const abstractDialogButton = OpenAbstractDialogTool.getActionButtonDef(240);
 
       const getDownstreamButton = ToolbarItemUtilities.createActionButton(
         "trace-tool-downstream",
@@ -106,10 +115,8 @@ export class NetworkTraceUiProvider implements UiItemsProvider {
       );
 
       const groupSpec = ToolbarItemUtilities.createGroupButton(
-        "trace-tool-group",
-        230,
-        IconSpecUtilities.createSvgIconSpec(traceIcon),
-        UiItemsProvidersTest.translate("trace-tool-group"),
+        "trace-tool-group", 230,
+        IconSpecUtilities.createSvgIconSpec(traceIcon), UiItemsProvidersTest.translate("trace-tool-group"),
         [getConnectedButton, getDownstreamButton, getUpstreamButton],
         {
           badgeType: BadgeType.TechnicalPreview,
@@ -117,20 +124,14 @@ export class NetworkTraceUiProvider implements UiItemsProvider {
       );
 
       const toggleTracingSpec = ToolbarItemUtilities.createActionButton(
-        "trace-tool-toggle",
-        235,
-        "icon-activity",
-        "Toggle isTraceAvailable",
+        "trace-tool-toggle", 235, "icon-activity", "Toggle isTraceAvailable",
         (): void => {
           NetworkTraceUiProvider.toggleTraceTool();
         },
       );
 
       const getStandaloneButton = ToolbarItemUtilities.createActionButton(
-        "trace-tool-standalone",
-        232,
-        "icon-symbol",
-        UiItemsProvidersTest.translate("tools.trace-tool-standalone"),
+        "trace-tool-standalone", 232, "icon-symbol",  UiItemsProvidersTest.translate("tools.trace-tool-standalone"),
         (): void => {
           IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "trace-tool-standalone activated", undefined, OutputMessageType.Toast));
         },
@@ -140,9 +141,48 @@ export class NetworkTraceUiProvider implements UiItemsProvider {
         }
       );
 
-      return [groupSpec, getStandaloneButton, toggleTracingSpec, abstractDialogButton];
+      return [groupSpec, getStandaloneButton, toggleTracingSpec];
     }
+
     return [];
+  }
+
+  // eslint-disable-next-line deprecation/deprecation
+  public provideWidgets(stageId: string, stageUsage: string, location: StagePanelLocation,
+    // eslint-disable-next-line deprecation/deprecation
+    section?: StagePanelSection, _zoneLocation?: AbstractZoneLocation): ReadonlyArray<AbstractWidgetProps> {
+    const widgets: AbstractWidgetProps[] = [];
+    if (stageId === "DefaultFrontstage" && location === StagePanelLocation.Right && section === StagePanelSection.Start) {
+      const widget: AbstractWidgetProps = {
+        id: "ui-item-provider-test:fibersListWidget",
+        label: "Fibers",
+        defaultState: WidgetState.Hidden,
+        isFloatingStateSupported: true,
+        // eslint-disable-next-line react/display-name
+        getWidgetContent: () => {
+          return <CommsFibersListWidgetComponent />;
+        },
+      };
+      widgets.push(widget);
+    }
+
+    if ((stageUsage === StageUsage.General || stageId === NetworkTracingFrontstage.stageId) &&
+      (location === StagePanelLocation.Right && section === StagePanelSection.End)) {
+      const widget: AbstractWidgetProps = {
+        id: PresentationPropertyGridWidgetControl.id,
+        label: PresentationPropertyGridWidgetControl.label,
+        defaultState: WidgetState.Open,
+        isFloatingStateSupported: true,
+        // eslint-disable-next-line react/display-name
+        getWidgetContent: () => {
+          return <PresentationPropertyGridWidget />;
+        },
+        canPopout: true,
+      };
+
+      widgets.push(widget);
+    }
+    return widgets;
   }
 
   public provideBackstageItems(): BackstageItem[] {

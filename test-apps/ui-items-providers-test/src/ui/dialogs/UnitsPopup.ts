@@ -10,16 +10,14 @@ import { Presentation } from "@itwin/presentation-frontend";
 import {
   DialogButtonDef, DialogButtonType, DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertySyncItem, PropertyDescription,
 } from "@itwin/appui-abstract";
+import { UiItemsProvidersTest } from "../../ui-items-providers-test";
 
 /** UnitsPopup is a modal dialog with only one DialogItem. It is intended to be a very basic example of using DialogItem interfaces and the DialogLayoutDataProvider to create React UI
  * in an iModel.js app and to apply changes only when the user hits the OK button.
  */
 export class UnitsPopupUiDataProvider extends DialogLayoutDataProvider {
-  public static localization: Localization;
-
-  constructor(localization: Localization) {
+  constructor() {
     super();
-    UnitsPopupUiDataProvider.localization = localization;
   }
 
   private _handleOK = async () => {
@@ -40,14 +38,14 @@ export class UnitsPopupUiDataProvider extends DialogLayoutDataProvider {
   private static _getEnumAsPicklistDescription = (): PropertyDescription => {
     return {
       name: UnitsPopupUiDataProvider._optionsName,
-      displayLabel: UnitsPopupUiDataProvider.localization.getLocalizedString("uiItemsProvidersTest:StatusBar.Units"),
+      displayLabel: UiItemsProvidersTest.translate("StatusBar.Units"),
       typename: "enum",
       enum: {
         choices: [
-          { label: UnitsPopupUiDataProvider.localization.getLocalizedString("uiItemsProvidersTest:StatusBar.Metric"), value: "metric" },
-          { label: UnitsPopupUiDataProvider.localization.getLocalizedString("uiItemsProvidersTest:StatusBar.Imperial"), value: "imperial" },
-          { label: UnitsPopupUiDataProvider.localization.getLocalizedString("uiItemsProvidersTest:StatusBar.UsSurvey"), value: "usSurvey" },
-          { label: UnitsPopupUiDataProvider.localization.getLocalizedString("uiItemsProvidersTest:StatusBar.UsCustomary"), value: "usCustomary" },
+          { label: UiItemsProvidersTest.translate("StatusBar.Metric"), value: "metric" },
+          { label: UiItemsProvidersTest.translate("StatusBar.Imperial"), value: "imperial" },
+          { label: UiItemsProvidersTest.translate("StatusBar.UsSurvey"), value: "usSurvey" },
+          { label: UiItemsProvidersTest.translate("StatusBar.UsCustomary"), value: "usCustomary" },
         ],
       },
     };
