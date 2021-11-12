@@ -34,14 +34,11 @@ export function useWidgetDef(): WidgetDef | undefined {
   React.useEffect(() => {
     const listener = (args: FrontstageNineZoneStateChangedEventArgs) => {
       // istanbul ignore next
-      if (args.frontstageDef !== frontstage || !frontstage || frontstage.isStageClosing || frontstage.isApplicationClosing)
+      if (args.frontstageDef !== frontstage || !frontstage || frontstage.isStageClosing || frontstage.isApplicationClosing|| !frontstage.isReady)
         return;
       setWidgetDef(frontstage.findWidgetDef(tabId));
     };
-    FrontstageManager.onFrontstageNineZoneStateChangedEvent.addListener(listener);
-    return () => {
-      FrontstageManager.onFrontstageNineZoneStateChangedEvent.removeListener(listener);
-    };
+    return FrontstageManager.onFrontstageNineZoneStateChangedEvent.addListener(listener);
   }, [frontstage, tabId]);
 
   React.useEffect(() => {
