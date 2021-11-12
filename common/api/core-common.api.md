@@ -3362,7 +3362,6 @@ export enum GeoCoordStatus {
     NoGCSDefined = 100,
     OutOfMathematicalDomain = 2,
     OutOfUsefulRange = 1,
-    // (undocumented)
     Pending = -41556,
     Success = 0,
     VerticalDatumConvertError = 26
