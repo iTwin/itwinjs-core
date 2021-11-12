@@ -35,7 +35,7 @@ export interface ViewCreator3dOptions {
   standardViewId?: StandardViewId;
   /** Merge in props from the seed view (default spatial view) of the iModel.  */
   useSeedView?: boolean;
-  /** Aspect ratio of [[Viewport]]. Required to fit contents of the model(s) in the initial state of the view. */
+  /** Aspect ratio of [[Viewport]]. Required to fit contents of the model(s) in the initial state of the view. This option will be ignored if the iModel connection is blank. */
   vpAspect?: number;
   /** When set to true, the ViewCreator will use the ViewState's default lighting.  By default or when set to false, the ViewCreator3d will use a slightly brighter lighting. */
   useDefaultLighting?: boolean;
@@ -65,7 +65,7 @@ export class ViewCreator3d {
    * @throws [IModelError]($common) If no 3d models are found in the iModel.
    */
   public async createDefaultView(options?: ViewCreator3dOptions, modelIds?: Id64String[]): Promise<ViewState> {
-    const models = modelIds ?? await this._getAllModels();
+    const models = this._imodel.isBlank ? [] : modelIds ?? await this._getAllModels();
     const props = await this._createViewStateProps(models, options);
     const viewState = SpatialViewState.createFromProps(props, this._imodel);
     try {
@@ -90,7 +90,7 @@ export class ViewCreator3d {
   private async _createViewStateProps(models: Id64String[], options?: ViewCreator3dOptions): Promise<ViewStateProps> {
     // Use dictionary model in all props
     const dictionaryId = IModel.dictionaryId;
-    const categories: Id64Array = await this._getAllCategories();
+    const categories: Id64Array = this._imodel.isBlank ? [] : await this._getAllCategories();
 
     // model extents
     const modelExtents = new Range3d();
@@ -173,6 +173,7 @@ export class ViewCreator3d {
             noTransp: false,
             visEdges: false,
             backgroundMap: this._imodel.isGeoLocated,
+            ambientOcclusion: useLighting,
           },
           lights: useLighting ? {
             solar: { intensity: 0 },
@@ -207,6 +208,8 @@ export class ViewCreator3d {
    * @param viewStateProps Input view props to be merged
    */
   private async _mergeSeedView(viewStateProps: ViewStateProps): Promise<ViewStateProps> {
+    if (this._imodel.isBlank)
+      return viewStateProps;
     const viewId = await this._getDefaultViewId();
     // Handle iModels without any default view id
     if (viewId === undefined)
