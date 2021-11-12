@@ -61,7 +61,7 @@ steps:
       SourceFolder: "$(System.ArtifactsDirectory)/Bis Docs"
       TargetFolder: ${{ parameters.stagingDir }}/bis/domains/
 
-  # The .updated.json is cached in order to let BeMetalsmith know what needs to be re-built.
+  # The .updated.json is cached and contains data for updating "Last Updated" on each page.
   - task: DownloadPipelineArtifact@2
     displayName: Download Pipeline Artifact - .updated.json
     enabled: false
