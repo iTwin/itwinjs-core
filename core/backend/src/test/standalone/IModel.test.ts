@@ -1709,7 +1709,7 @@ describe("iModel", () => {
       horizontalCRS: {
         id: "10TM115-27",
         description: "",
-        sourceDatum: "Mentor Software Client",
+        source: "Mentor Software Client",
         deprecated: false,
         datumId: "NAD27",
         unit: "Meter",
@@ -1844,20 +1844,20 @@ describe("iModel", () => {
       horizontalCRS: {
         id: "EPSG:27700",
         description: "OSGB 1936 / British National Grid",
-        sourceDatum: "EPSG V6 [Large and medium scale topographic mapping and engin]",
+        source: "EPSG V6 [Large and medium scale topographic mapping and engin]",
         datumId: "EPSG:6277",
         datum: {
           id: "EPSG:6277",
           description: "OSGB36 - Use OSGB-7P-2. Consider OSGB/OSTN15 instead",
           deprecated: true,
-          sourceDatum: "EPSG V6.12 operation EPSG:1314 [EPSG]",
+          source: "EPSG V6.12 operation EPSG:1314 [EPSG]",
           ellipsoidId: "EPSG:7001",
           ellipsoid: {
             equatorialRadius: 6377563.396,
             polarRadius: 6356256.909237,
             id: "EPSG:7001",
             description: "Airy 1830",
-            sourceDatum: "EPSG, Version 6 [EPSG]"},
+            source: "EPSG, Version 6 [EPSG]"},
           transforms: [
             {
               method: "PositionalVector",
@@ -1934,7 +1934,7 @@ describe("iModel", () => {
         horizontalCRS: {
           id: "HS2-MOCK",
           description: "USES CUSTOM DATUM",
-          sourceDatum: "Test",
+          source: "Test",
           deprecated: false,
           datumId: "HS2SD_2015",
           unit: "Meter",
@@ -1960,7 +1960,7 @@ describe("iModel", () => {
         horizontalCRS: {
           id: "California2",
           description: "USES CUSTOM DATUM",
-          sourceDatum: "Test",
+          source: "Test",
           deprecated: false,
           datumId: "NAD83",
           unit: "Meter",
@@ -2035,7 +2035,7 @@ describe("iModel", () => {
       horizontalCRS: {
         id: "10TM115-27",
         description: "",
-        sourceDatum: "Mentor Software Client",
+        source: "Mentor Software Client",
         deprecated: false,
         datumId: "NAD27",
         unit: "Meter",
