@@ -7,7 +7,6 @@
 import { AsyncMethodsOf } from '@itwin/core-bentley';
 import { BrowserWindow } from 'electron';
 import { BrowserWindowConstructorOptions } from 'electron';
-import { ElectronAuthorizationBackend } from '@itwin/electron-authorization/lib/cjs/ElectronBackend';
 import { IpcHandler } from '@itwin/core-backend';
 import { NativeAppOpts } from '@itwin/core-frontend';
 import { NativeHostOpts } from '@itwin/core-backend';
@@ -37,7 +36,7 @@ export class ElectronHost {
     // (undocumented)
     static appIconPath: string;
     // @internal (undocumented)
-    static get authorization(): ElectronAuthorizationBackend;
+    static get authorization(): import("@itwin/core-common").AuthorizationClient | undefined;
     // (undocumented)
     static get electron(): typeof Electron;
     // (undocumented)

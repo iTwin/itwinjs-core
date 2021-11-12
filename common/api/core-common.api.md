@@ -5477,15 +5477,6 @@ export enum MonochromeMode {
     Scaled = 1
 }
 
-// @beta
-export interface NativeAppAuthorizationConfiguration {
-    readonly clientId: string;
-    readonly expiryBuffer?: number;
-    issuerUrl?: string;
-    readonly redirectUri?: string;
-    readonly scope: string;
-}
-
 // @internal (undocumented)
 export const nativeAppChannel = "nativeApp";
 
