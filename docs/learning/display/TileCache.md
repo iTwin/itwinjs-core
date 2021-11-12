@@ -16,3 +16,5 @@ A cached tile remains valid as long as the following conditions hold:
   - The format version is incremented conservatively, primarily for bug fixes, performance optimizations, and bug fixes. If a change to the tile generation code can be made without incrementing the format version, we avoid doing so.
 
 A tile generation agent may be employed to prepopulate portions of a cloud-based cache, for example, by generating content for the first N levels of each tile tree when a new revision of the iModel is produced. A tile *regeneration* agent may be deployed when a new version of the tile format is deployed to production; it locates all extant tiles in the cache and generates new tiles using the new version of the tile format. This minimizes the impact on users when large numbers of tiles become invalidated at once.
+
+// ###TODO how to configure cloud storage tile cache

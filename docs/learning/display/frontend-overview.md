@@ -18,6 +18,13 @@ The renderer is the frontend component of the [iTwin.js display system](./overvi
 - [Element graphics](./ElementGraphics.md)
 - [Multi-sample anti-aliasing](https://en.wikipedia.org/wiki/Multisample_anti-aliasing)
 
+## Configuration
+
+The renderer's responsibilities are divided between two objects:
+
+- The [TileAdmin]($frontend) coordinates requests for [TileTree]($frontend)s and [Tile]($frontend) contents and manages their lifetimes to limit memory consumption. It can be accessed via [IModelApp.tileAdmin]($frontend) and configured at startup via [IModelAppOptions.tileAdmin]($frontend).
+- The [RenderSystem]($frontend) communicates with the graphics hardware via [WebGL](https://ww.khronos.org/webgl/) to allocate resources like [RenderGraphic]($frontend)s and [RenderTexture]($frontend)s and to draw the contents of [Viewport]($frontend)s onto the screen. It can be accessed via [IModelApp.renderSystem]($frontend) and configured at startup via [IModelAppOptions.renderSys]($frontend).
+
 ## WebGL
 
 Because the renderer runs in a browser environment, it uses [WebGL](https://www.khronos.org/webgl/) under the hood to communicate with graphics hardware. However, the WebGL context is not exposed for use by applications. Instead, abstractions like @[GraphicBuilder]($frontend) and @[RenderSystem]($frontend) provide higher-level APIs for working indirectly with WebGL resources.
