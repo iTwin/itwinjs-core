@@ -50,6 +50,10 @@ export enum GeoCoordStatus {
   VerticalDatumConvertError = 26,
   /** General inner conversion engine error. Coordinates returned are invalid and should be discarded */
   CSMapError = 4096,
+  /** This temporary status is used to mark coordinates for which the conversion has not yet been processed by the backend
+   *  as opposed to other coordinate conversions that may have been resolved otherwise (typically a cache).
+   *  At the completion of the conversion promise no coordinates should have this status.
+   */
   Pending = -41556,
 }
 
