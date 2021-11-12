@@ -816,7 +816,7 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | `FeatureSymbology.AppearanceProps`            | [FeatureAppearanceProps]($common)                                  |
 | `findAvailableRealityModels`                  | `queryRealityData` in `@itwin/reality-data-client`                 |
 | `findAvailableUnattachedRealityModels`        | `queryRealityData` in `@itwin/reality-data-client`                 |
-| `IModelApp.iModelClient`                      | [IModelApp.hubAccess]($frontend)                                   |
+| `IModelApp.iModelClient`                      | `IModelApp.hubAccess`                                              |
 | `IModelApp.settings`                          | [IModelApp.userPreferences]($frontend)                             |
 | `IModelConnection.Models.loaded`              | use `for..of` to iterate and `getLoaded` to look up by Id          |
 | `IModelConnection.Views.saveThumbnail`        | use IPC and `IModelDb.saveThumbnail`                               |
