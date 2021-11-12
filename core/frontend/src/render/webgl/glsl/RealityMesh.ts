@@ -36,32 +36,45 @@ const computeNormal = `
 `;
 
 const applyTexture = `
-bool applyTexture(inout vec4 col, sampler2D sampler, mat4 params) {
+bool applyTexture(inout vec4 col, sampler2D sampler, mat4 params, mat4 matrix) {
   vec2 uv;
   float layerAlpha;
-  if (params[3][3] != 0.0) {
+  bool isClassified = params[0][0] != 0.0;
+  float imageCount = params[0][1];
+
+  if (isClassified) {
     vec4  eye4 = vec4(v_eyeSpace, 1.0);
-    vec4  classPos4 = params * eye4;
-    uv.x = classPos4.x / classPos4.w;
-    uv.y = (classPos4.y / classPos4.w) / 2.0;
+    vec4  classPos4 = matrix * eye4;
+    vec2 classPos = classPos4.xy / classPos4.w;
+    uv.x = classPos.x;
+    uv.y = classPos.y / imageCount;
     layerAlpha = 1.0;
     if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0)
       return false;
+
+    vec4 featureTexel = TEXTURE(sampler, vec2(uv.x, (1.0 + classPos.y) / imageCount));
+    classifierId = addUInt32s(params[1], featureTexel * 255.0) / 255.0;
   } else {
-    vec4 texTransform = params[0].xyzw;
-    vec4 texClip = params[1].xyzw;
-    layerAlpha = params[2].x;
+    vec4 texTransform = matrix[0].xyzw;
+    vec4 texClip = matrix[1].xyzw;
+    layerAlpha = matrix[2].x;
     uv = vec2(texTransform[0] + texTransform[2] * v_texCoord.x, texTransform[1] + texTransform[3] * v_texCoord.y);
     if (uv.x < texClip[0] || uv.x > texClip[2] || uv.y < texClip[1] || uv.y > texClip[3])
       return false;
     uv.y = 1.0 - uv.y;
-  }
+    featureIncrement = matrix[2].y;
+    }
  vec4 texCol = TEXTURE(sampler, uv);
  float alpha = layerAlpha * texCol.a;
  if (alpha > 0.05) {
   col.rgb = (1.0 - alpha) * col.rgb + alpha * texCol.rgb;
-  if (texCol.a > 0.1)
-    featureIncrement = params[2].y;
+  if (!isClassified) {
+    featureIncrement = matrix[2].y;
+    classifierId = vec4(0);
+  } /* else  {
+    col.rgb = (vec4(0.0) == classifierId) ? vec3(0.0, 1.0, 0.0) : vec3 (1.0, 0.0, 0.0);
+  } */
+
 
   if (alpha > col.a)
     col.a = alpha;
@@ -73,10 +86,12 @@ return false;
 `;
 
 const computeTexCoord = "return unquantize2d(a_uvParam, u_qTexCoordParams);";
-const overrideFeatureId = "return addUInt32s(feature_id * 255.0, vec4(featureIncrement, 0.0, 0.0, 0.0)) / 255.0;";
 const scratchMatrix4d1 = Matrix4d.createIdentity();
-const scratchMatrix4d2 = Matrix4d.createIdentity();
 const scratchMatrix4d3 = Matrix4d.createIdentity();
+const scratchMatrix = new Matrix4();
+
+// const overrideFeatureId = "return addUInt32s(feature_id * 255.0, vec4(featureIncrement, 0.0, 0.0, 0.0)) / 255.0;";
+const overrideFeatureId = `return (classifierId == vec4(0)) ? (addUInt32s(feature_id * 255.0, vec4(featureIncrement, 0.0, 0.0, 0.0)) / 255.0) : classifierId;`;
 
 function addTextures(builder: ProgramBuilder, maxTexturesPerMesh: number) {
   builder.vert.addFunction(unquantize2d);
@@ -113,9 +128,9 @@ function addTextures(builder: ProgramBuilder, maxTexturesPerMesh: number) {
         }
       });
     });
-    const paramsLabel = `u_texTransform${i}`;
-    builder.frag.addUniform(paramsLabel, VariableType.Mat4, (prog) => {
-      prog.addGraphicUniform(paramsLabel, (uniform, params) => {
+    const paramsLabel = `u_texParams${i}`, matrixLabel =  `u_texMatrix${i}`;
+    builder.frag.addUniform(matrixLabel, VariableType.Mat4, (prog) => {
+      prog.addGraphicUniform(matrixLabel, (uniform, params) => {
         const realityMesh = params.geometry.asRealityMesh!;
         const textureParam = realityMesh.textureParams?.params[i];
         assert(undefined !== textureParam);
@@ -124,10 +139,20 @@ function addTextures(builder: ProgramBuilder, maxTexturesPerMesh: number) {
             const modelToTexture = textureParam.matrix.toMatrix4d(scratchMatrix4d1);
             const eyeToModel = Matrix4d.createTransform(params.target.uniforms.frustum.viewMatrix.inverse()!);
             const eyeToTexture = modelToTexture.multiplyMatrixMatrix(eyeToModel, scratchMatrix4d3);
-            uniform.setMatrix4(Matrix4.fromMatrix4d(eyeToTexture, textureParam.scratchMatrix));
+            uniform.setMatrix4(Matrix4.fromMatrix4d(eyeToTexture, scratchMatrix));
 
           } else
             uniform.setMatrix4(textureParam.matrix);
+        }
+      });
+    });
+    builder.frag.addUniform(paramsLabel, VariableType.Mat4, (prog) => {
+      prog.addGraphicUniform(paramsLabel, (uniform, params) => {
+        const realityMesh = params.geometry.asRealityMesh!;
+        const textureParam = realityMesh.textureParams?.params[i];
+        assert(undefined !== textureParam);
+        if (undefined !== textureParam) {
+          uniform.setMatrix4(textureParam.params);
         }
       });
     });
@@ -137,7 +162,7 @@ function baseColorFromTextures(textureCount: number, applyFeatureColor: string) 
   const applyTextureStrings = [];
 
   for (let i = 0; i < textureCount; i++)
-    applyTextureStrings.push(`if (applyTexture(col, s_texture${i}, u_texTransform${i})) doDiscard = false; `);
+    applyTextureStrings.push(`if (applyTexture(col, s_texture${i}, u_texParams${i}, u_texMatrix${i})) doDiscard = false; `);
 
   return `
   if (!u_texturesPresent)
@@ -226,6 +251,7 @@ export default function createRealityMeshBuilder(flags: TechniqueFlags): Program
 
   const frag = builder.frag;
   frag.addGlobal("featureIncrement", VariableType.Float, "0.0");
+  frag.addGlobal("classifierId", VariableType.Vec4);
   frag.set(FragmentShaderComponent.OverrideFeatureId, overrideFeatureId);
   let textureCount = System.instance.maxRealityImageryLayers;
   let gradientTextureUnit = TextureUnit.RealityMeshThematicGradient;
@@ -254,9 +280,9 @@ export default function createRealityMeshBuilder(flags: TechniqueFlags): Program
   }
   const computeFragmentBaseColor = baseColorFromTextures(textureCount, applyFragmentFeatureColor);
 
+  frag.addFunction(addUInt32s);
   frag.addFunction(applyTexture);
   frag.set(FragmentShaderComponent.ComputeBaseColor, computeFragmentBaseColor);
-  frag.addFunction(addUInt32s);
   builder.frag.addUniform("u_baseColor", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_baseColor", (uniform, params) => {
       const realityMesh = params.geometry.asRealityMesh!;

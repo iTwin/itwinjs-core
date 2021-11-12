@@ -314,6 +314,9 @@ export class TileDrawArgs {
   public produceGraphics(): RenderGraphic | undefined {
     return this._produceGraphicBranch(this.graphics);
   }
+  public get secondaryClassifiers(): Map<number, RenderPlanarClassifier>| undefined {
+    return undefined;
+  }
 
   /** @internal */
   private _produceGraphicBranch(graphics: GraphicBranch): RenderGraphic | undefined {
@@ -326,6 +329,7 @@ export class TileDrawArgs {
       classifierOrDrape: this.planarClassifier ?? this.drape,
       appearanceProvider: this.appearanceProvider,
       hline: this.hiddenLineSettings,
+      secondaryClassifiers: this.secondaryClassifiers,
     };
 
     return this.context.createGraphicBranch(graphics, this.location, opts);

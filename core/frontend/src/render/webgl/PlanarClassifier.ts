@@ -355,6 +355,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     this._batchState = new BatchState(this._branchStack);
     this._renderCommands = new RenderCommands(target, this._branchStack, this._batchState);
   }
+  public get textureImageCount(): number { return this._contentMode; }
 
   public getParams(params: Float32Array): void {
     params[0] = this.insideDisplay;

@@ -24,4 +24,4 @@ export abstract class RenderPlanarClassifier implements IDisposable {
 }
 
 /** @internal */
-export type PlanarClassifierMap = Map<String, RenderPlanarClassifier>;
+export type PlanarClassifierMap = Map<string, RenderPlanarClassifier>;

@@ -121,6 +121,8 @@ export interface GraphicBranchOptions {
   frustum?: GraphicBranchFrustum;
   /** Supplements the view's [[FeatureSymbology.Overrides]] for graphics in the branch. */
   appearanceProvider?: FeatureAppearanceProvider;
+  /** Secondary planar classifiers (map layers) */
+  secondaryClassifiers?: Map<number, RenderPlanarClassifier>;
 }
 
 /** Clip/Transform for a branch that are varied over time.

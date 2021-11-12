@@ -357,6 +357,9 @@ export class RenderCommands implements Iterable<DrawCommands> {
     if (branch.planarClassifier)
       branch.planarClassifier.pushBatchState(this._batchState);
 
+    if (branch.secondaryClassifiers)
+      branch.secondaryClassifiers.forEach((classifier) => classifier.pushBatchState(this._batchState));
+
     const cmds = this.getCommands(pass);
     const clip = animState?.clip as ClipVolume | undefined;
     const pushClip = undefined !== clip ? new PushClipCommand(clip) : undefined;
@@ -448,6 +451,9 @@ export class RenderCommands implements Iterable<DrawCommands> {
     this._stack.pushBranch(branch);
     if (branch.planarClassifier)
       branch.planarClassifier.pushBatchState(this._batchState);
+
+    if (branch.secondaryClassifiers)
+      branch.secondaryClassifiers.forEach((classifier) => classifier.pushBatchState(this._batchState));
 
     this.pushAndPop(new PushBranchCommand(branch), PopBranchCommand.instance, func);
 
