@@ -20,7 +20,10 @@ steps:
   displayName: rush install
   workingDirectory: ${{ parameters.workingDir }}
 
-- script: node common/scripts/install-run-rush.js build -v
+- script: |
+    node common/scripts/install-run-rush.js build -v --to-version-policy prerelease-monorepo-lockStep
+    node common/scripts/install-run-rush.js build -v --to example-code-snippets
+    node common/scripts/install-run-rush.js build -v --to example-code-app
   displayName: rush build
   workingDirectory: ${{ parameters.workingDir }}
 
