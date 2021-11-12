@@ -9,7 +9,7 @@
 import { GeoServiceStatus } from "@itwin/core-bentley";
 import { XYZProps } from "@itwin/core-geometry";
 
-/** This enumeration lists all possible status as returned from a coordinate conversion to or from a 
+/** This enumeration lists all possible status as returned from a coordinate conversion to or from a
  * [[GeographicCRS]] and either another [[GeographicCRS]] or a [[GeodeticDatum]].
  * @see the [[PointWithStatus]] included in an [[IModelCoordinatesResponseProps]] or [[GeoCoordinatesResponseProps]].
  * @public
