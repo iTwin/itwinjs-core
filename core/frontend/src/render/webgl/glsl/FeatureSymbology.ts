@@ -822,5 +822,7 @@ export function addUniformFeatureSymbology(builder: ProgramBuilder, addFeatureCo
     });
   });
 
+  builder.vert.addGlobal("feature_viewIndependentTransparency", VariableType.Boolean, "false");
+
   addApplyFlash(builder.frag);
 }
