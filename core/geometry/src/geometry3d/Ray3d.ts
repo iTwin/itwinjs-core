@@ -338,4 +338,28 @@ export class Ray3d implements BeJSONFunctions {
     pair.approachType = pairType;
     return pair;
   }
+
+  /**
+   * Return a ray whose ray.origin is interpolated, and ray.direction is the vector between points with a
+   * scale factor applied.
+   * @param pt1 start point of interpolation
+   * @param fraction fractional position between points.
+   * @param pt2 endpoint of interpolation
+   * @param tangentScale scale factor to apply to the startToEnd vector
+   * @param result optional receiver.
+   */
+  public static interpolatePointAndTangent(pt1: XYAndZ, fraction: number, pt2: XYAndZ, tangentScale: number, result?: Ray3d): Ray3d {
+    result = result ?? Ray3d.createZero();
+    const dx = pt2.x - pt1.x;
+    const dy = pt2.y - pt1.y;
+    const dz = pt2.z - pt1.z;
+    result.direction.set(tangentScale * dx, tangentScale * dy, tangentScale * dz);
+    if (fraction <= 0.5)
+      result.origin.set(pt1.x + fraction * dx, pt1.y + fraction * dy, pt1.z + fraction * dz);
+    else {
+      const t: number = fraction - 1.0;
+      result.origin.set(pt2.x + t * dx, pt2.y + t * dy, pt2.z + t * dz);
+    }
+    return result;
+  }
 }
