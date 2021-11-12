@@ -4,12 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { LightSettings } from "@itwin/core-common";
+import { ColorDef, LightSettings } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { BlankConnection } from "../IModelConnection";
 import { ViewCreator3d, ViewCreator3dOptions } from "../ViewCreator3d";
-import { ViewState3d } from "../ViewState";
+import { ViewState2d, ViewState3d } from "../ViewState";
 import { createBlankConnection } from "./createBlankConnection";
+import { ViewCreator2d, ViewCreator2dOptions } from "../ViewCreator2d";
 
 describe.only("ViewCreator", () => {
   let iModel: BlankConnection;
@@ -28,10 +29,10 @@ describe.only("ViewCreator", () => {
 
     async function test3dOption(options: ViewCreator3dOptions, testOptionAffect: (view: ViewState3d) => boolean) {
       let view = await creator.createDefaultView();
-      expect(testOptionAffect(view as ViewState3d) === false, "Unexpected affect of option found.");
+      expect(testOptionAffect(view as ViewState3d), "Unexpected affect of option found.").to.be.false;
 
       view = await creator.createDefaultView(options);
-      expect(testOptionAffect(view as ViewState3d), "Expected option's affect, but was not found.");
+      expect(testOptionAffect(view as ViewState3d), "Expected option's affect, but was not found.").to.be.true;
     }
 
     before(() => creator = new ViewCreator3d(iModel));
@@ -56,9 +57,25 @@ describe.only("ViewCreator", () => {
       const options: ViewCreator3dOptions = { useDefaultLighting: true };
       await test3dOption(options, test);
     });
-
   });
   describe("2d options", () => {
+    let creator: ViewCreator2d;
 
+    async function test2dOption(options: ViewCreator2dOptions, testOptionAffect: (view: ViewState2d) => boolean) {
+      let view = await creator.createViewForModel("", options);
+      expect(testOptionAffect(view as ViewState2d), "Unexpected affect of option found.").to.be.false;
+
+      view = await creator.createViewForModel("", options);
+      expect(testOptionAffect(view as ViewState2d), "Expected option's affect, but was not found.").to.be.true;
+    }
+
+    before(() => creator = new ViewCreator2d(iModel));
+
+    it.skip("'bgColor' should control the background color in the created view.", async () => {
+      const bgColor = ColorDef.red;
+      const test = (view: ViewState2d): boolean => view.backgroundColor.equals(bgColor);
+      const options: ViewCreator2dOptions = { bgColor };
+      await test2dOption(options, test);
+    });
   });
 });
