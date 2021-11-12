@@ -22,13 +22,6 @@ steps:
        ## The master branch is the only one that should get the 'nightly' release tag
        mainBranch = "master"
 
-       # Branch that is the current set of releases, will be given the 'latest' dist tag
-       currentReleaseBranch = "release/2."
-
-       # Branches that used to hold the current releases but will no longer now not be given the 'latest' dist tag
-       # Note: This should probably be an array in the future.
-       oldReleaseBranch = "release/1."
-
        distTag = None
        if len(sys.argv) == 4:
          branchName = sys.argv[3]
