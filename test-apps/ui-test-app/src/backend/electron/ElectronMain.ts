@@ -37,7 +37,8 @@ export async function initializeElectron(opts?: IModelHostConfiguration) {
     redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
     scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
   });
-  opt.iModelHost.authorizationClient = authClient;
+  if (opt.iModelHost?.authorizationClient)
+    opt.iModelHost.authorizationClient = authClient;
 
   await ElectronHost.startup(opt);
   EditCommandAdmin.register(BasicManipulationCommand);
