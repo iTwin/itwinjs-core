@@ -148,4 +148,4 @@ ReducerRegistryInstance.registerReducer(
 );
 ```
 
-See complete [example](./framework/state/#example-of-defining-dynamic-reducer-needed-by-a-plugin).
+See complete [example](./framework/state/#example-of-defining-dynamic-reducer-needed-by-a-package).
