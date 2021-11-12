@@ -20,8 +20,8 @@ steps:
   displayName: rush install
   workingDirectory: ${{ parameters.workingDir }}
 
-- script: node common/scripts/install-run-rush.js build:ci
-  displayName: rush compile
+- script: node common/scripts/install-run-rush.js build -v
+  displayName: rush build
   workingDirectory: ${{ parameters.workingDir }}
 
 - script: node common/scripts/install-run-rush.js docs
