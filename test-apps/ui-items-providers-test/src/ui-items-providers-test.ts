@@ -5,9 +5,9 @@
 
 import { UiItemsManager } from "@itwin/appui-abstract";
 import { SampleTool } from "./tools/SampleTool";
-import { ConfigurableUiManager, ReducerRegistryInstance } from "@itwin/appui-react";
-import { SampleContentControl } from "./ui/content/SampleContentControl";
-import { GenericTool } from "./tools/GenericTool";
+import { ReducerRegistryInstance } from "@itwin/appui-react";
+// import { SampleContentControl } from "./ui/content/SampleContentControl";
+import { GenericLocateTool } from "./tools/GenericLocateTool";
 import { OpenTraceDialogTool } from "./tools/OpenTraceDialogTool";
 import { IModelApp } from "@itwin/core-frontend";
 import { providerSlice, TestProviderSliceName } from "./store";
@@ -15,14 +15,16 @@ import { GeneralUiItemsProvider } from "./ui/providers/GeneralUiItemsProvider";
 import { OpenAbstractDialogTool } from "./tools/OpenAbstractModalDialogTool";
 import { NetworkTracingFrontstage } from "./ui/frontstages/NetworkTracing";
 
-/** UiItemsProvidersTest is an iModel.js Extension that adds some user interface to the iModel.js app into which its loaded.
- * Included in the sample are: 1) a Sample Tool (SampleTool.ts), showing how implement a tool with a variety to tool settings items.
- *                             2) a StatusBarItem (created in GeneralUiItemsProvider.provideStatusBarItems()) that opens a modal dialog when clicked.
+/** UiItemsProvidersTest is a package that adds some user interface to the iModelApp when its initialize method is called.
+ * Included in the sample are:
+ *   1) `SampleTool` showing how implement a tool with a variety to tool settings items.
+ *   2) `GenericLocateTool` that shows how implement a tool that requires user to first locate an element.
+ *   3) `OpenAbstractDialogTool` that shows how to generate a dialog without creating "react" components.
+ *   4) `GeneralUiItemsProvider` that provide tool buttons and a status bar item to stages set usage set to "StageUsage.General"
+ *   5) `NetworkTracingFrontstage` that defines a new stage to add to iModelApp.
+ *   6) `NetworkTracingUiItemsProvider` that provide tool buttons and widgets to NetworkTracingFrontstage.
+ *   7) `TestProviderState` that define package specific state properties to add to the apps Redux store.
  *
- * Both the SampleTool and the modal dialog opened from the StatusBarItem (UnitsPopup.tsx) use the UiLayoutDataProvider to generate
- * react code from an array of DialogItem interfaces.
- *
- * For more information about Extensions, see Extension in the iModel.js documentation. *
  */
 export class UiItemsProvidersTest {
   private static _initialized = false;
@@ -39,18 +41,18 @@ export class UiItemsProvidersTest {
   /** The uiProvider will add a tool to the Toolbar and an item to the StatusBar in the host app */
   private static registerUiComponents(): void {
     SampleTool.register(UiItemsProvidersTest.localizationNamespace);
-    GenericTool.register(UiItemsProvidersTest.localizationNamespace);
+    GenericLocateTool.register(UiItemsProvidersTest.localizationNamespace);
     OpenTraceDialogTool.register(UiItemsProvidersTest.localizationNamespace);
     OpenAbstractDialogTool.register(UiItemsProvidersTest.localizationNamespace);
 
     // register new front stage and it's stage specific items provider
     NetworkTracingFrontstage.register();
 
-    ConfigurableUiManager.registerControl("SampleExtensionContentControl", SampleContentControl);
+    // TODO add use of providing own content
+    // ConfigurableUiManager.registerControl("SampleExtensionContentControl", SampleContentControl);
 
     // register to add items to "General" usage stages"
     UiItemsManager.register(new GeneralUiItemsProvider());
-    // UiItemsManager.register(new NetworkTraceUiProvider());
   }
 
   public static async initialize(): Promise<void> {

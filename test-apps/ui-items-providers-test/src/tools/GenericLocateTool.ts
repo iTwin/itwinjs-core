@@ -16,12 +16,11 @@ import genericToolSvg from "./generic-tool.svg?sprite";
 import { UiItemsProvidersTest } from "../ui-items-providers-test";
 
 /** Sample Primitive tool where user selects an element for processing */
-export class GenericTool extends PrimitiveTool {
+export class GenericLocateTool extends PrimitiveTool {
   public userPoint: Point3d | undefined;
   public elementId: string | undefined;
-  // ensure toolId is unique by add "uiItemsProvidersTest-" prefix
-  public static override get toolId() { return "uiItemsProvidersTest-GenericTool"; }
-  public static get toolStringKey() { return `tools.${GenericTool.toolId}.`; }
+  public static override get toolId() { return "uiItemsProvidersTest-GenericLocateTool"; }
+  public static get toolStringKey() { return `tools.${GenericLocateTool.toolId}.`; }
   public static override iconSpec = `svg:${genericToolSvg}`;
   public static useDefaultPosition = false;
   public override autoLockTarget(): void { } // NOTE: For selecting elements we only care about iModel, so don't lock target model automatically.
@@ -48,12 +47,12 @@ export class GenericTool extends PrimitiveTool {
       if (hit !== undefined) {
         this.elementId = hit.sourceId;
         // Process right away if user wants default position
-        if (GenericTool.useDefaultPosition)
+        if (GenericLocateTool.useDefaultPosition)
           await this.process(hit.sourceId);
         else
           this.setupAndPromptForNextAction();
       }
-    } else if (!GenericTool.useDefaultPosition) {
+    } else if (!GenericLocateTool.useDefaultPosition) {
       this.userPoint = ev.point;
       if (hit !== undefined)
         this.userPoint = hit.hitPoint;
@@ -69,12 +68,12 @@ export class GenericTool extends PrimitiveTool {
     return EventHandled.No;
   }
 
-  protected outputMarkupPrompt(msg: string) { IModelApp.notifications.outputPrompt(GenericTool.getPrompt(msg)); }
+  protected outputMarkupPrompt(msg: string) { IModelApp.notifications.outputPrompt(GenericLocateTool.getPrompt(msg)); }
 
   public setupAndPromptForNextAction() {
     if (!this.elementId) {
       this.outputMarkupPrompt("identifyElement");
-    } else if (!GenericTool.useDefaultPosition) {
+    } else if (!GenericLocateTool.useDefaultPosition) {
       this.outputMarkupPrompt("identifyPosition");
       // Enable snapping for accurate positions
       IModelApp.accuSnap.enableSnap(true);
@@ -116,13 +115,13 @@ export class GenericTool extends PrimitiveTool {
   }
 
   public static async startTool(): Promise<boolean> {
-    return (new GenericTool()).run();
+    return (new GenericLocateTool()).run();
   }
 
   public static getActionButtonDef(itemPriority: number, groupPriority?: number) {
     const overrides = undefined !== groupPriority ? { groupPriority } : {};
-    return ToolbarItemUtilities.createActionButton(GenericTool.toolId, itemPriority, GenericTool.iconSpec, GenericTool.flyover,
-      async () => { await IModelApp.tools.run(GenericTool.toolId, IModelApp.viewManager.selectedView, true); },
+    return ToolbarItemUtilities.createActionButton(GenericLocateTool.toolId, itemPriority, GenericLocateTool.iconSpec, GenericLocateTool.flyover,
+      async () => { await IModelApp.tools.run(GenericLocateTool.toolId, IModelApp.viewManager.selectedView, true); },
       overrides);
   }
 }

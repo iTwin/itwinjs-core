@@ -5,61 +5,51 @@
 
 import * as React from "react";
 import {
-  AbstractWidgetProps,
-  AbstractZoneLocation,
-  BackstageItem,
-  BackstageItemUtilities,
-  BadgeType,
-  CommonToolbarItem,
-  ConditionalBooleanValue,
-  IconSpecUtilities,
-  StagePanelLocation,
-  StagePanelSection,
-  StageUsage,
-  ToolbarItemUtilities,
-  ToolbarOrientation,
-  ToolbarUsage,
-  UiItemsManager,
-  UiItemsProvider,
-  WidgetState,
+  AbstractWidgetProps, AbstractZoneLocation, BackstageItem,
+  BackstageItemUtilities, BadgeType,
+  CommonToolbarItem, ConditionalBooleanValue, IconSpecUtilities,
+  StagePanelLocation, StagePanelSection, StageUsage,
+  ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage,
+  UiItemsManager, UiItemsProvider, WidgetState,
 } from "@itwin/appui-abstract";
 import { StateManager, SyncUiEventDispatcher } from "@itwin/appui-react";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
-
 import { PresentationPropertyGridWidget, PresentationPropertyGridWidgetControl } from "../widgets/PresentationPropertyGridWidget";
-
-import upstreamIcon from "../icons/upstream-query.svg?sprite";
-import downstreamIcon from "../icons/downstream-query.svg?sprite";
-import traceIcon from "../icons/query-multi.svg?sprite";
 import { OpenTraceDialogTool } from "../../tools/OpenTraceDialogTool";
 import { NetworkTracingFrontstage } from "../frontstages/NetworkTracing";
 import { getTestProviderState, setIsTraceAvailable } from "../../store";
 import { UiItemsProvidersTest } from "../../ui-items-providers-test";
-import { CommsFibersListWidgetComponent } from "../widgets/CommsFibersListWidgetComponent";
+import { SelectedElementDataWidgetComponent } from "../widgets/SelectedElementDataWidget";
 
-export class NetworkTraceUiProvider implements UiItemsProvider {
-  public static providerId = "ui-item-provider-test:NetworkTraceUiProvider";
-  public readonly id = NetworkTraceUiProvider.providerId;
+/** the following will import svgs into DOM and generate SymbolId that is used to locate the svg image. This
+ * processing is done via the 'magic' webpack plugin and requires the use or the Bentley build scripts. */
+import upstreamIcon from "../icons/upstream-query.svg?sprite";
+import downstreamIcon from "../icons/downstream-query.svg?sprite";
+import traceIcon from "../icons/query-multi.svg?sprite";
+
+/**
+ * Test UiItemsProvider that provide buttons, widgets, and backstage item to NetworkTracing stage.
+ */
+export class NetworkTracingUiProvider implements UiItemsProvider {
+  public static providerId = "ui-item-provider-test:NetworkTracingUiProvider";
+  public readonly id = NetworkTracingUiProvider.providerId;
   public static syncEventIdTraceAvailable = "ui-test:trace-available-changed";
 
   public static register() {
-    UiItemsManager.register(new NetworkTraceUiProvider());
+    UiItemsManager.register(new NetworkTracingUiProvider());
   }
 
   public static unregister() {
-    UiItemsManager.unregister(NetworkTraceUiProvider.providerId);
+    UiItemsManager.unregister(NetworkTracingUiProvider.providerId);
   }
 
-  public static get isTraceAvailable(): boolean {
-    return getTestProviderState().isTraceAvailable;
-  }
-
+  /** static method that updates the value in redux store and dispatches a sync event so items are refreshed. */
   public static toggleTraceTool() {
     StateManager.store.dispatch(setIsTraceAvailable(!getTestProviderState().isTraceAvailable));
 
     // tell the toolbar to reevaluate state of any item with this event Id
     SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(
-      NetworkTraceUiProvider.syncEventIdTraceAvailable
+      NetworkTracingUiProvider.syncEventIdTraceAvailable
     );
   }
 
@@ -74,46 +64,56 @@ export class NetworkTraceUiProvider implements UiItemsProvider {
       toolbarUsage === ToolbarUsage.ContentManipulation &&
       toolbarOrientation === ToolbarOrientation.Horizontal
     ) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const isDisabledCondition =
+      /** The following ConditionalBooleanValue is used to determine the display state of some of the buttons
+       * provided by this UiItemsProvider.
+       */
+      const isTracingNotAvailableCondition =
         new ConditionalBooleanValue(
           (): boolean => {
-            return !NetworkTraceUiProvider.isTraceAvailable;
+            return !getTestProviderState().isTraceAvailable;
           },
-          [NetworkTraceUiProvider.syncEventIdTraceAvailable],
-          !NetworkTraceUiProvider.isTraceAvailable
+          [NetworkTracingUiProvider.syncEventIdTraceAvailable],
+          !getTestProviderState().isTraceAvailable
         );
 
+      /** This is an example of where the tool generates the action button definition allowing user to pass item and group
+       * priority to control ordering of buttons in toolbox. */
       const getConnectedButton = OpenTraceDialogTool.getActionButtonDef(10);
 
+      /** Sample group entry that hides if isTraceAvailable is set to false  */
       const getDownstreamButton = ToolbarItemUtilities.createActionButton(
         "trace-tool-downstream",
         15, /* order within group button */
         IconSpecUtilities.createSvgIconSpec(downstreamIcon),
         UiItemsProvidersTest.translate("trace-tool-downstream"),
         (): void => {
-          // test only - testing enable/disable;
+          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "trace-tool-downstream activated", undefined, OutputMessageType.Toast));
         },
         {
-          isDisabled: isDisabledCondition,
+          isHidden: isTracingNotAvailableCondition,
           badgeType: BadgeType.TechnicalPreview,
         }
       );
 
+      /** Sample group entry that disables if isTraceAvailable is set to false  */
       const getUpstreamButton = ToolbarItemUtilities.createActionButton(
         "trace-tool-upstream",
         20, /* order within group button */
         IconSpecUtilities.createSvgIconSpec(upstreamIcon),
         UiItemsProvidersTest.translate("trace-tool-upstream"),
         (): void => {
-          // test only - testing enable/disable;
+          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "trace-tool-upstream activated", undefined, OutputMessageType.Toast));
         },
         {
-          isDisabled: isDisabledCondition,
+          isDisabled: isTracingNotAvailableCondition,
           badgeType: BadgeType.TechnicalPreview,
         }
       );
 
+      /** The following defines a group button that contains tree actions buttons. Only the first entry produces a
+       * result as it opens a sample dialog. The other two entries are used to show that the display state of
+       * group button entries can be maintained by conditional values.
+       */
       const groupSpec = ToolbarItemUtilities.createGroupButton(
         "trace-tool-group", 230,
         IconSpecUtilities.createSvgIconSpec(traceIcon), UiItemsProvidersTest.translate("trace-tool-group"),
@@ -123,50 +123,49 @@ export class NetworkTraceUiProvider implements UiItemsProvider {
         }
       );
 
+      /** The following test tool toggles the value Redux store and dispatches sync event that triggers tool refresh */
       const toggleTracingSpec = ToolbarItemUtilities.createActionButton(
         "trace-tool-toggle", 235, "icon-activity", "Toggle isTraceAvailable",
         (): void => {
-          NetworkTraceUiProvider.toggleTraceTool();
+          NetworkTracingUiProvider.toggleTraceTool();
         },
       );
 
+      /** The following test tool hides/shows based on value in Redux store via `isTraceAvailableCondition` */
       const getStandaloneButton = ToolbarItemUtilities.createActionButton(
         "trace-tool-standalone", 232, "icon-symbol",  UiItemsProvidersTest.translate("tools.trace-tool-standalone"),
         (): void => {
           IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "trace-tool-standalone activated", undefined, OutputMessageType.Toast));
         },
         {
-          isDisabled: isDisabledCondition,
+          isHidden: isTracingNotAvailableCondition,
           badgeType: BadgeType.TechnicalPreview,
         }
       );
-
       return [groupSpec, getStandaloneButton, toggleTracingSpec];
     }
-
     return [];
   }
 
-  // eslint-disable-next-line deprecation/deprecation
-  public provideWidgets(stageId: string, stageUsage: string, location: StagePanelLocation,
-    // eslint-disable-next-line deprecation/deprecation
-    section?: StagePanelSection, _zoneLocation?: AbstractZoneLocation): ReadonlyArray<AbstractWidgetProps> {
+  public provideWidgets(stageId: string, _stageUsage: string, location: StagePanelLocation,
+    section?: StagePanelSection): ReadonlyArray<AbstractWidgetProps> {
     const widgets: AbstractWidgetProps[] = [];
-    if (stageId === "DefaultFrontstage" && location === StagePanelLocation.Right && section === StagePanelSection.Start) {
+    if (stageId === NetworkTracingFrontstage.stageId && location === StagePanelLocation.Right && section === StagePanelSection.Start) {
+      /** This widget when only be displayed when there is an element selected. */
       const widget: AbstractWidgetProps = {
-        id: "ui-item-provider-test:fibersListWidget",
-        label: "Fibers",
+        id: "ui-item-provider-test:elementDataListWidget",
+        label: "Data",
         defaultState: WidgetState.Hidden,
         isFloatingStateSupported: true,
         // eslint-disable-next-line react/display-name
         getWidgetContent: () => {
-          return <CommsFibersListWidgetComponent />;
+          return <SelectedElementDataWidgetComponent />;
         },
       };
       widgets.push(widget);
     }
 
-    if ((stageUsage === StageUsage.General || stageId === NetworkTracingFrontstage.stageId) &&
+    if (stageId === NetworkTracingFrontstage.stageId &&
       (location === StagePanelLocation.Right && section === StagePanelSection.End)) {
       const widget: AbstractWidgetProps = {
         id: PresentationPropertyGridWidgetControl.id,
@@ -188,7 +187,8 @@ export class NetworkTraceUiProvider implements UiItemsProvider {
   public provideBackstageItems(): BackstageItem[] {
     const label = UiItemsProvidersTest.translate("backstage.networkTracingFrontstageLabel");
     return [
-      BackstageItemUtilities.createStageLauncher(NetworkTracingFrontstage.stageId, 100, 20, label),
+      // use 200 to group it with secondary stages in ui-test-app
+      BackstageItemUtilities.createStageLauncher(NetworkTracingFrontstage.stageId, 200, 20, label),
     ];
   }
 }

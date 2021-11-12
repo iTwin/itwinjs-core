@@ -11,7 +11,7 @@ import {
   UiFramework,
 } from "@itwin/appui-react";
 import { StageUsage, StandardContentLayouts } from "@itwin/appui-abstract";
-import { NetworkTraceUiProvider } from "../providers/NetworkTraceUiProvider";
+import { NetworkTracingUiProvider } from "../providers/NetworkTracingUiProvider";
 import { LocalSettingsStorage } from "@itwin/core-react";
 import { IModelConnection } from "@itwin/core-frontend";
 
@@ -103,6 +103,10 @@ export class NetworkTracingContentGroupProvider extends ContentGroupProvider {
   }
 }
 
+/**
+ * This class is used to register a new frontstage that is called 'NetworkTracing' but it provides no real tools to do that work,
+ * it is simply used as a test defining a stage and providing its UI components via an UiItemsProvider.
+ */
 export class NetworkTracingFrontstage {
   public static stageId = "ui-item-provider-test:NetworkTracing";
   private static _contentGroupProvider = new NetworkTracingContentGroupProvider();
@@ -118,13 +122,16 @@ export class NetworkTracingFrontstage {
       applicationData: undefined,
     };
 
-    ConfigurableUiManager.addFrontstageProvider(new StandardFrontstageProvider(networkTracingStageProps));
     NetworkTracingFrontstage.registerToolProviders();
+    ConfigurableUiManager.addFrontstageProvider(new StandardFrontstageProvider(networkTracingStageProps));
   }
 
   private static registerToolProviders() {
     // Provides standard tools for ToolWidget in ui2.0 stage
     StandardContentToolsProvider.register("networkContentTools", {
+      vertical: {
+        selectElement: true,
+      },
       horizontal: {
         clearSelection: true,
         clearDisplayOverrides: true,
@@ -136,18 +143,18 @@ export class NetworkTracingFrontstage {
       return stageId === NetworkTracingFrontstage.stageId;
     });
 
-    // Provides standard tools for NavigationWidget in ui2.0 stage
+    /** Provides standard tools for NavigationWidget */
     StandardNavigationToolsProvider.register("networkNavigationTools", undefined, (stageId: string, _stageUsage: string, _applicationData: any) => {
       return stageId === NetworkTracingFrontstage.stageId;
     });
 
-    // Provides standard status fields for ui2.0 stage
+    /** Provides standard status fields */
     StandardStatusbarItemsProvider.register("networkStatusFields", undefined, (stageId: string, _stageUsage: string, _applicationData: any) => {
       return stageId === NetworkTracingFrontstage.stageId;
     });
 
     // register stage specific items provider
-    NetworkTraceUiProvider.register();
+    NetworkTracingUiProvider.register();
   }
 }
 

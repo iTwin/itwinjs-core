@@ -6,16 +6,26 @@
 import { StateManager } from "@itwin/appui-react";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-// Example use:
-// StateManager.store.dispatch(setIsTraceAvailable(true));
+/**
+ * This file sets up the state that can be used by the tools and items within this provider. The package
+ * `@reduxjs/toolkit` is used to simplify the set up of this package's 'slice' of the Redux store. See the
+ * call to `ReducerRegistryInstance.registerReducer` in the initialize method for the package.
+ * @example
+ * Setting value
+ * ```ts
+ * StateManager.store.dispatch(setIsTraceAvailable(true));
+ * ```
+ * Getting value
+ * ```ts
+ * const isAvailable = getTestProviderState().isTraceAvailable;
+ * ```
+ */
 
 interface TestProviderState {
-  selectedFiberId: string;
   isTraceAvailable: boolean;
 }
 
 const initialState = {
-  selectedFiberId: "",
   isTraceAvailable: false,
 } as TestProviderState;
 
@@ -27,18 +37,12 @@ export const providerSlice = createSlice({
   name: TestProviderSliceName,
   initialState,
   reducers: {
-    setSelectedFiber: (state: TestProviderState, action: PayloadAction<string>) => {
-      state.selectedFiberId = action.payload;
-    },
-    clearSelectedFiber: (state: TestProviderState) => {
-      state.selectedFiberId = "";
-    },
     setIsTraceAvailable: (state: TestProviderState, action: PayloadAction<boolean>) => {
       state.isTraceAvailable = action.payload;
     },
   },
 });
-export const { setSelectedFiber, clearSelectedFiber, setIsTraceAvailable } = providerSlice.actions;
+export const { setIsTraceAvailable } = providerSlice.actions;
 
 /** Get the slice of the redux state that is specific to this UI provider */
 export function getTestProviderState(): TestProviderState {

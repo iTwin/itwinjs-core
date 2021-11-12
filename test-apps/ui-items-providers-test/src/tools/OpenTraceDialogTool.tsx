@@ -10,16 +10,17 @@ import * as React from "react";
 import { IModelApp, Tool } from "@itwin/core-frontend";
 import { ModalDialogManager } from "@itwin/appui-react";
 import { SampleModalDialog } from "../ui/dialogs/SampleModalDialog";
-import { BadgeType, ConditionalBooleanValue, IconSpecUtilities, ToolbarItemUtilities } from "@itwin/appui-abstract";
-import { NetworkTraceUiProvider } from "../ui/providers/NetworkTraceUiProvider";
-import connectedIcon from "../ui/icons/connected-query.svg?sprite";
+import { IconSpecUtilities, ToolbarItemUtilities } from "@itwin/appui-abstract";
 import { UiItemsProvidersTest } from "../ui-items-providers-test";
+
+/** the following will import svgs into DOM and generate SymbolId that is used to locate the svg image. This
+ * processing is done via the 'magic' webpack plugin and requires the use or the Bentley build scripts. */
+import connectedIcon from "../ui/icons/connected-query.svg?sprite";
 
 /**
  * Immediate tool that will open an example modal dialog.The tool is created and register to allow the user
  * to activate the tool via the key-in palette using the tools keyin property (which must be unique across
  * all registered application and extension tools).
- * @alpha
  */
 export class OpenTraceDialogTool extends Tool {
   public static override toolId = "uiItemsProvidersTest-OpenTraceDialogTool";
@@ -49,20 +50,9 @@ export class OpenTraceDialogTool extends Tool {
   }
 
   public static getActionButtonDef(itemPriority: number, groupPriority?: number) {
-    const isDisabledCondition = new ConditionalBooleanValue(
-      (): boolean => {
-        return !NetworkTraceUiProvider.isTraceAvailable;
-      },
-      [NetworkTraceUiProvider.syncEventIdTraceAvailable],
-      !NetworkTraceUiProvider.isTraceAvailable
-    );
-
     const overrides = {
-      isDisabled: isDisabledCondition,
-      badgeType: BadgeType.TechnicalPreview,
       groupPriority,
     };
-
     return ToolbarItemUtilities.createActionButton(OpenTraceDialogTool.toolId, itemPriority, OpenTraceDialogTool.iconSpec, OpenTraceDialogTool.flyover,
       async () => { await IModelApp.tools.run(OpenTraceDialogTool.toolId); },
       overrides);

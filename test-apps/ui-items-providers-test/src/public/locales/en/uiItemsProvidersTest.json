@@ -49,7 +49,7 @@
         "Pink": "Pink"
       }
     },
-    "uiItemsProvidersTest-GenericTool": {
+    "uiItemsProvidersTest-GenericLocateTool": {
       "keyin": "state generic tool",
       "description": "Generic Tool from Provider",
       "flyover": "Generic Tool",

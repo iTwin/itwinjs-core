@@ -14,7 +14,7 @@ export function useWidgetDef(id: string) {
   return frontstageDef?.findWidgetDef(id);
 }
 
-/** Hook used to return fibers from selected element */
+/** Hook used to return ids from selected element */
 export function useIdOfSelectedElements(className?: string) {
   const [locatedIds, setLocatedIds] = React.useState<string[]>([]);
 
@@ -39,16 +39,10 @@ export function useIdOfSelectedElements(className?: string) {
   return locatedIds;
 }
 
-/** Hook used to return fibers from selected element */
-export function useSelectedFiber() {
-  const locatedIds = useIdOfSelectedElements();
-  return locatedIds;
-}
-
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function CommsFibersListWidgetComponent() {
-  const idList = useSelectedFiber();
-  const widgetDef = useWidgetDef("ui-item-provider-test:fibersListWidget");
+export function SelectedElementDataWidgetComponent() {
+  const idList = useIdOfSelectedElements();
+  const widgetDef = useWidgetDef("ui-item-provider-test:elementDataListWidget");
 
   React.useEffect(() => {
     // using setImmediate to give time for frontstage to load before calling setWidgetState
