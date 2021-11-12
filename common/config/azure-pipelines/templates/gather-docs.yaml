@@ -64,6 +64,7 @@ steps:
   # The .updated.json is cached in order to let BeMetalsmith know what needs to be re-built.
   - task: DownloadPipelineArtifact@2
     displayName: Download Pipeline Artifact - .updated.json
+    enabled: false
     inputs:
       source: current
       runBranch: 'refs/heads/master'
