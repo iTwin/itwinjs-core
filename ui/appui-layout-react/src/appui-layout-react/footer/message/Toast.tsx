@@ -13,7 +13,7 @@ import { CommonProps, NoChildrenProps, Rectangle, Timer } from "@itwin/core-reac
 import { Css } from "../../utilities/Css";
 
 /** Properties of [[Toast]] component.
- * @alpha Review naming of: animateOutTo, content, onAnimatedOut
+ * @internal
  */
 export interface ToastProps extends CommonProps, NoChildrenProps {
   /** Element to which the toast will animate out to. */
@@ -27,7 +27,7 @@ export interface ToastProps extends CommonProps, NoChildrenProps {
 }
 
 /** Default properties of [[Toast]] component.
- * @alpha
+ * @internal
  */
 export type ToastDefaultProps = Pick<ToastProps, "timeout">;
 
@@ -63,12 +63,13 @@ interface ToastState {
 }
 
 /** Toast style.
- * @alpha
+ * @internal
  */
 export type ToastStyle = Pick<React.CSSProperties, "width" | "height">;
 
 /** Footer message that animates out to specified element after some timeout. Used in [[Footer]] component.
- * @alpha
+ * @deprecated Use [ToastMessage]($appui-react) instead
+ * @internal
  */
 export class Toast extends React.PureComponent<ToastProps, ToastState> {
   public static readonly defaultProps: ToastDefaultProps = {

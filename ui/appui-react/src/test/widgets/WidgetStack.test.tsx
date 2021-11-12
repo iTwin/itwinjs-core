@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 import { expect } from "chai";
 import { render } from "@testing-library/react";
 import { shallow } from "enzyme";
@@ -107,7 +108,7 @@ describe("WidgetStack", () => {
     draggedWidget: undefined,
     fillZone: false,
     getWidgetContentRef: getWidgetContentRef.object,
-    horizontalAnchor: HorizontalAnchor.Left,
+    horizontalAnchor: HorizontalAnchor.Left, // eslint-disable-line deprecation/deprecation
     isCollapsed: false,
     isFloating: false,
     isInStagePanel: false,
@@ -125,7 +126,7 @@ describe("WidgetStack", () => {
 
   it("should produce a WidgetStack with 2 widgets", async () => {
     await FrontstageManager.setActiveFrontstageDef(undefined);
-    const wrapper = render(<FrontstageComposer />);
+    const wrapper = render(<FrontstageComposer />); // eslint-disable-line deprecation/deprecation
 
     const frontstageDef = await FrontstageManager.getFrontstageDef(Frontstage1.stageId);
     expect(frontstageDef).to.not.be.undefined;
@@ -293,7 +294,7 @@ describe("WidgetStackTabs", () => {
     const sut = shallow(<WidgetStackTabs
       activeTabIndex={0}
       draggedWidget={undefined}
-      horizontalAnchor={HorizontalAnchor.Left}
+      horizontalAnchor={HorizontalAnchor.Left} // eslint-disable-line deprecation/deprecation
       isCollapsed={false}
       isProtruding={false}
       onTabClick={sinon.spy()}
@@ -316,7 +317,7 @@ describe("WidgetStackTabGroup", () => {
   const props = {
     activeTabIndex: 0,
     draggedWidget: undefined,
-    horizontalAnchor: HorizontalAnchor.Left,
+    horizontalAnchor: HorizontalAnchor.Left, // eslint-disable-line deprecation/deprecation
     isCollapsed: false,
     isProtruding: false,
     isStacked: false,
@@ -459,7 +460,7 @@ describe("WidgetStackTabGroup", () => {
 describe("WidgetStackTab", () => {
   it("should render with beta badge", () => {
     shallow(<WidgetStackTab
-      horizontalAnchor={HorizontalAnchor.Left}
+      horizontalAnchor={HorizontalAnchor.Left} // eslint-disable-line deprecation/deprecation
       index={0}
       badgeType={BadgeType.TechnicalPreview}
       isCollapsed={false}
@@ -478,7 +479,7 @@ describe("WidgetStackTab", () => {
   it("should invoke onDragStart with index", () => {
     const spy = sinon.spy();
     const sut = shallow(<WidgetStackTab
-      horizontalAnchor={HorizontalAnchor.Left}
+      horizontalAnchor={HorizontalAnchor.Left} // eslint-disable-line deprecation/deprecation
       index={0}
       badgeType={BadgeType.TechnicalPreview}
       isCollapsed={false}
@@ -501,7 +502,7 @@ describe("WidgetStackTab", () => {
   it("should invoke onClick with index", () => {
     const spy = sinon.spy();
     const sut = shallow(<WidgetStackTab
-      horizontalAnchor={HorizontalAnchor.Left}
+      horizontalAnchor={HorizontalAnchor.Left} // eslint-disable-line deprecation/deprecation
       index={5}
       badgeType={BadgeType.TechnicalPreview}
       isCollapsed={false}

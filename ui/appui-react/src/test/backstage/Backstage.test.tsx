@@ -55,10 +55,12 @@ describe("Backstage", () => {
       shallow(
         // eslint-disable-next-line deprecation/deprecation
         <Backstage isVisible={true}>
+          { /* eslint-disable-next-line deprecation/deprecation */ }
           <CommandLaunchBackstageItem commandId="my-command-id" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" execute={commandHandler} />
-          <SeparatorBackstageItem />
+          <SeparatorBackstageItem /> { /* eslint-disable-line deprecation/deprecation */ }
+          { /* eslint-disable-next-line deprecation/deprecation */ }
           <FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />
-          <SeparatorBackstageItem />
+          <SeparatorBackstageItem /> { /* eslint-disable-line deprecation/deprecation */ }
           {/* eslint-disable-next-line deprecation/deprecation */}
           <TaskLaunchBackstageItem taskId="Task1" workflowId="ExampleWorkflow" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />
         </Backstage>, // eslint-disable-line deprecation/deprecation

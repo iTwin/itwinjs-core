@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "Moved Point3d.interpolatePointAndTangent to Ray3d.interpolatePointAndTangent.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}

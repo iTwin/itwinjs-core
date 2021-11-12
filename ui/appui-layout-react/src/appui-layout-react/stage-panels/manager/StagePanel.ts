@@ -7,7 +7,7 @@
  */
 
 /** Properties used by [[StagePanelManager]].
- * @beta
+ * @internal
  */
 export interface StagePanelManagerProps {
   readonly size: number | undefined;
@@ -15,7 +15,7 @@ export interface StagePanelManagerProps {
 }
 
 /** Returns default [[StagePanelManagerProps]] object.
- * @beta
+ * @internal
  */
 export const getDefaultStagePanelManagerProps = (): StagePanelManagerProps => ({
   isCollapsed: false,
@@ -23,7 +23,7 @@ export const getDefaultStagePanelManagerProps = (): StagePanelManagerProps => ({
 });
 
 /** Class used to manage [[StagePanelManagerProps]].
- * @beta
+ * @internal
  */
 export class StagePanelManager {
   private _minSize = 200;

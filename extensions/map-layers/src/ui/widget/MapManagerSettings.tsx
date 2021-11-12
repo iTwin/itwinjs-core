@@ -6,12 +6,13 @@
 
 import * as React from "react";
 import { NumberInput, Toggle } from "@itwin/core-react";
-import { ViewState3d } from "@itwin/core-frontend";
+import {  QuantityType, ViewState3d } from "@itwin/core-frontend";
 import { BackgroundMapProps, BackgroundMapSettings, PlanarClipMaskMode, PlanarClipMaskPriority, TerrainHeightOriginMode, TerrainProps } from "@itwin/core-common";
 import { useSourceMapContext } from "./MapLayerManager";
 import "./MapManagerSettings.scss";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import { Select, SelectOption, Slider } from "@itwin/itwinui-react";
+import { QuantityNumberInput } from "@itwin/imodel-components-react";
 
 /* eslint-disable deprecation/deprecation */
 
@@ -119,7 +120,7 @@ export function MapManagerSettings() {
     setOverrideMaskTransparency(checked);
   }, [activeViewport, getNormalizedMaskTransparency]);
 
-  const handleElevationChange = React.useCallback((value: number | undefined, _stringValue: string) => {
+  const handleElevationChange = React.useCallback((value: number) => {
     if (value !== undefined) {
       updateBackgroundMap({ groundBias: value });
       setGroundBias(value);
@@ -157,7 +158,8 @@ export function MapManagerSettings() {
   }, [updateTerrainSettings]);
 
   const [terrainOrigin, setTerrainOrigin] = React.useState(() => terrainSettings.heightOrigin);
-  const handleHeightOriginChange = React.useCallback((value: number | undefined, _stringValue: string) => {
+
+  const handleHeightOriginChange = React.useCallback((value: number) => {
     if (undefined !== value) {
       updateTerrainSettings({ heightOrigin: value });
       setTerrainOrigin(value);
@@ -218,7 +220,7 @@ export function MapManagerSettings() {
 
         <>
           <span className="map-manager-settings-label">{elevationOffsetLabel}</span>
-          <NumberInput disabled={applyTerrain} value={groundBias} onChange={handleElevationChange} onKeyDown={onKeyDown} />
+          <QuantityNumberInput disabled={applyTerrain} persistenceValue={groundBias} step={1} snap quantityType={QuantityType.LengthEngineering} onChange={handleElevationChange} onKeyDown={onKeyDown}/>
 
           <span className="map-manager-settings-label">{useDepthBufferLabel}</span>
           {/* eslint-disable-next-line deprecation/deprecation */}
@@ -237,7 +239,7 @@ export function MapManagerSettings() {
             <Toggle onChange={onToggleTerrain} isOn={applyTerrain} />
 
             <span className="map-manager-settings-label">{modelHeightLabel}</span>
-            <NumberInput value={terrainOrigin} disabled={!applyTerrain} onChange={handleHeightOriginChange} onKeyDown={onKeyDown} />
+            <QuantityNumberInput disabled={!applyTerrain} persistenceValue={terrainOrigin} snap quantityType={QuantityType.LengthEngineering} onChange={handleHeightOriginChange} onKeyDown={onKeyDown}/>
 
             <span className="map-manager-settings-label">{heightOriginLabel}</span>
             <Select options={terrainHeightOptions.current} disabled={!applyTerrain} value={heightOriginMode} onChange={handleElevationTypeSelected} size="small" />

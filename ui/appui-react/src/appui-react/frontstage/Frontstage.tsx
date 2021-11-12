@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 /** @packageDocumentation
  * @module Frontstage
  */
@@ -111,7 +112,7 @@ export interface FrontstageProps extends CommonProps {
 
 interface FrontstageState {
   isUiVisible: boolean;
-  widgetIdToContent: Partial<{ [id in WidgetZoneId]: HTMLDivElement | undefined }>;
+  widgetIdToContent: Partial<{ [id in WidgetZoneId]: HTMLDivElement | undefined }>; // eslint-disable-line deprecation/deprecation
 }
 
 /** Frontstage React component.
@@ -119,8 +120,8 @@ interface FrontstageState {
  * @public
  */
 export class Frontstage extends React.Component<FrontstageProps, FrontstageState> {
-  private static _zoneIds: ReadonlyArray<WidgetZoneId> = widgetZoneIds.filter((z) => z !== 8);
-  private _contentRefs = new Map<WidgetZoneId, React.Ref<HTMLDivElement>>();
+  private static _zoneIds: ReadonlyArray<WidgetZoneId> = widgetZoneIds.filter((z) => z !== 8); // eslint-disable-line deprecation/deprecation
+  private _contentRefs = new Map<WidgetZoneId, React.Ref<HTMLDivElement>>(); // eslint-disable-line deprecation/deprecation
   private _zonesMeasurer = React.createRef<HTMLDivElement>();
   private _floatingZonesMeasurer = React.createRef<HTMLDivElement>();
   private _zonesStyle: React.CSSProperties = {
@@ -214,7 +215,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
     return undefined;
   }
 
-  private static getZoneElement(zoneId: WidgetZoneId, props: FrontstageProps): React.ReactElement<ZoneProps> | undefined {
+  private static getZoneElement(zoneId: WidgetZoneId, props: FrontstageProps): React.ReactElement<ZoneProps> | undefined { // eslint-disable-line deprecation/deprecation
     switch (zoneId) {
       case ZoneLocation.TopLeft:
         return props.contentManipulationTools ? props.contentManipulationTools : props.topLeft;   // eslint-disable-line deprecation/deprecation
@@ -281,7 +282,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
     return panelElement;
   }
 
-  private _getContentRef = (widget: WidgetZoneId) => {
+  private _getContentRef = (widget: WidgetZoneId) => { // eslint-disable-line deprecation/deprecation
     const ref = this._contentRefs.get(widget);
     if (ref)
       return ref;
@@ -358,8 +359,9 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
     return null;
   }
 
+  // eslint-disable-next-line deprecation/deprecation
   private cloneZoneElements(zoneIds: ReadonlyArray<WidgetZoneId>, runtimeProps: FrontstageRuntimeProps): React.ReactNode[] {
-    return zoneIds.map((zoneId: WidgetZoneId) => {
+    return zoneIds.map((zoneId: WidgetZoneId) => { // eslint-disable-line deprecation/deprecation
       const zoneElement = Frontstage.getZoneElement(zoneId, this.props);
       if (!zoneElement || !React.isValidElement(zoneElement))
         return null;
@@ -411,7 +413,9 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
     });
   }
 
+  // eslint-disable-next-line deprecation/deprecation
   private cloneWidgetContentElements(zones: ReadonlyArray<WidgetZoneId>, runtimeProps: FrontstageRuntimeProps): React.ReactNode[] {
+    // eslint-disable-next-line deprecation/deprecation
     const widgets = zones.reduce<Array<{ id: WidgetZoneId, def: WidgetDef, tabIndex: number }>>((prev, zoneId) => {
       const zoneDef = runtimeProps.zoneDefProvider.getZoneDef(zoneId);
 
@@ -511,7 +515,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
 }
 
 interface WidgetContentRendererProps {
-  anchor: HorizontalAnchor;
+  anchor: HorizontalAnchor; // eslint-disable-line deprecation/deprecation
   isHidden: boolean;
   renderTo: HTMLDivElement | undefined;
   toolSettingsMode: ToolSettingsWidgetMode | undefined;
@@ -605,10 +609,11 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
 }
 
 /** @internal */
+// eslint-disable-next-line deprecation/deprecation
 export const getExtendedZone = (zoneId: WidgetZoneId, zones: ZonesManagerProps, defProvider: ZoneDefProvider): ZoneManagerProps => {
   const zone = zones.zones[zoneId];
   if (zoneId === 1 || zoneId === 3) {
-    let extendOverId: WidgetZoneId = zoneId;
+    let extendOverId: WidgetZoneId = zoneId; // eslint-disable-line deprecation/deprecation
     const zonesManager = FrontstageManager.NineZoneManager.getZonesManager();
     let bottomZoneId = zonesManager.bottomZones.getInitial(extendOverId);
     while (bottomZoneId !== undefined) {
