@@ -363,7 +363,7 @@ const computeAnimatedNormal = `
 ${computeNormal}`;
 
 const applyBackgroundColor = `
-  return u_surfaceFlags[kSurfaceBitIndex_BackgroundFill] ? vec4(u_bgColor.rgb, 1.0) : baseColor;
+  return u_surfaceFlags[kSurfaceBitIndex_BackgroundFill] ? vec4(u_bgColor.rgb, baseColor.a) : baseColor;
 `;
 
 const computeTexCoord = `
