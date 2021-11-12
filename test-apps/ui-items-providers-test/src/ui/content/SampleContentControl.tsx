@@ -11,7 +11,7 @@ export class SampleContentControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
     this.reactNode = (
-      <div className="ninezone-plugin-content-container">
+      <div className="test-content-container">
         Hello World!
       </div>
     );

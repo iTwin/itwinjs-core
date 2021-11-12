@@ -188,7 +188,7 @@ export class NetworkTracingUiProvider implements UiItemsProvider {
     const label = UiItemsProvidersTest.translate("backstage.networkTracingFrontstageLabel");
     return [
       // use 200 to group it with secondary stages in ui-test-app
-      BackstageItemUtilities.createStageLauncher(NetworkTracingFrontstage.stageId, 200, 20, label),
+      BackstageItemUtilities.createStageLauncher(NetworkTracingFrontstage.stageId, 200, 1, label, "from provider", "icon-draw"),
     ];
   }
 }

@@ -10,7 +10,8 @@
     }
   },
   "backstage": {
-    "networkTracingFrontstageLabel": "Network Stage"
+    "networkTracingFrontstageLabel": "Networking",
+    "customContentFrontstageLabel": "Custom"
   },
   "StatusBar": {
     "Units": "Units",

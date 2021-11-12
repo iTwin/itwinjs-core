@@ -14,6 +14,7 @@ import { providerSlice, TestProviderSliceName } from "./store";
 import { GeneralUiItemsProvider } from "./ui/providers/GeneralUiItemsProvider";
 import { OpenAbstractDialogTool } from "./tools/OpenAbstractModalDialogTool";
 import { NetworkTracingFrontstage } from "./ui/frontstages/NetworkTracing";
+import { CustomFrontstage } from "./ui/frontstages/CustomContent";
 
 /** UiItemsProvidersTest is a package that adds some user interface to the iModelApp when its initialize method is called.
  * Included in the sample are:
@@ -24,6 +25,7 @@ import { NetworkTracingFrontstage } from "./ui/frontstages/NetworkTracing";
  *   5) `NetworkTracingFrontstage` that defines a new stage to add to iModelApp.
  *   6) `NetworkTracingUiItemsProvider` that provide tool buttons and widgets to NetworkTracingFrontstage.
  *   7) `TestProviderState` that define package specific state properties to add to the apps Redux store.
+ *   8) `CustomFrontstage` that define a frontstage the show an imodel view and a custom content view populated via `SampleCustomContent`
  *
  */
 export class UiItemsProvidersTest {
@@ -45,11 +47,9 @@ export class UiItemsProvidersTest {
     OpenTraceDialogTool.register(UiItemsProvidersTest.localizationNamespace);
     OpenAbstractDialogTool.register(UiItemsProvidersTest.localizationNamespace);
 
-    // register new front stage and it's stage specific items provider
+    // register new frontstages and it's stage specific items provider
     NetworkTracingFrontstage.register();
-
-    // TODO add use of providing own content
-    // ConfigurableUiManager.registerControl("SampleExtensionContentControl", SampleContentControl);
+    CustomFrontstage.register();
 
     // register to add items to "General" usage stages"
     UiItemsManager.register(new GeneralUiItemsProvider());
