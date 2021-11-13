@@ -13,19 +13,12 @@ import { IModelApp, IModelConnection, Tool } from "@itwin/core-frontend";
 import { UiItemsProvidersTest } from "@itwin/ui-items-providers-test";
 
 import {
-  AbstractStatusBarItemUtilities, AbstractWidgetProps, BadgeType, CommonStatusBarItem, CommonToolbarItem, ConditionalBooleanValue,
-  ConditionalStringValue, IconSpecUtilities, StagePanelLocation, StagePanelSection, StageUsage, StatusBarSection,
-  ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage,
-  UiItemsManager, UiItemsProvider, WidgetState,
+  IconSpecUtilities, ToolbarItemUtilities,
 } from "@itwin/appui-abstract";
-import { FillCentered, LocalSettingsStorage } from "@itwin/core-react";
+import { LocalSettingsStorage } from "@itwin/core-react";
 import {
-  ActionCreatorsObject, ActionsUnion, ChildWindowLocationProps, ContentGroup, ContentLayoutManager, ContentProps, createAction,
-  FrontstageManager, ReducerRegistryInstance, StageContentLayout, StageContentLayoutProps, StateManager, StatusBarItemUtilities, SyncUiEventId,
-  UiFramework, withStatusFieldProps,
+  ChildWindowLocationProps, ContentGroup, ContentLayoutManager, ContentProps, FrontstageManager, StageContentLayout, StageContentLayoutProps, UiFramework,
 } from "@itwin/appui-react";
-import { ShadowField } from "../appui/statusfields/ShadowField";
-import { SampleAppIModelApp, SampleAppUiActionId } from "../index";
 import toolIconSvg from "@bentley/icons-generic/icons/window-add.svg?sprite";
 import tool2IconSvg from "@bentley/icons-generic/icons/window-maximize.svg?sprite";
 import tool3IconSvg from "@bentley/icons-generic/icons/3d-render.svg?sprite";

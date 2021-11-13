@@ -5,10 +5,10 @@
 
 import * as React from "react";
 import {
-  AbstractWidgetProps, AbstractZoneLocation, BackstageItem,
+  AbstractWidgetProps, BackstageItem,
   BackstageItemUtilities, BadgeType,
   CommonToolbarItem, ConditionalBooleanValue, IconSpecUtilities,
-  StagePanelLocation, StagePanelSection, StageUsage,
+  StagePanelLocation, StagePanelSection,
   ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage,
   UiItemsManager, UiItemsProvider, WidgetState,
 } from "@itwin/appui-abstract";
