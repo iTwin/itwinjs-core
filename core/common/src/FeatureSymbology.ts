@@ -26,24 +26,26 @@ function copyIdSetToUint32Set(dst: Id64.Uint32Set, src: Iterable<string>): void 
 
 // cspell:ignore subcat subcats
 
-/** Properties used to initialize a [[FeatureAppearance]].
+/** JSON representation of a [[FeatureAppearance]].
  * @public
  */
 export interface FeatureAppearanceProps {
-  /** The color of the Feature */
+  /** @see [[FeatureAppearance.rgb]]. */
   rgb?: RgbColorProps;
-  /** The line weight in pixels as an integer in [1, 31] */
+  /** @see [[FeatureAppearance.weight]]. */
   weight?: number;
-  /** The transparency in the range [0.0, 1.0] where 0 indicates fully opaque and 1 indicates fully transparent. */
+  /** @see [[FeatureAppearance.transparency]]. */
   transparency?: number;
-  /** The pixel pattern used to draw lines. */
+  /** @see [[FeatureAppearance.viewDependentTransparency]]. */
+  viewDependentTransparency?: true;
+  /** @see [[FeatureAppearance.linePixels]]. */
   linePixels?: LinePixels;
-  /** If true, ignore the [[RenderMaterial]] associated with surfaces. */
-  ignoresMaterial?: true | undefined;
-  /** If true, the associated [[Feature]] will not be drawn when using [Viewport.readPixels]($frontend). */
-  nonLocatable?: true | undefined;
-  /** If true, the associated [[Feature]] will be emphasized. Emphasized features are rendered using the [[Hilite.Settings]] defined by [Viewport.emphasisSettings]($frontend). */
-  emphasized?: true | undefined;
+  /** @see [[FeatureAppearance.ignoresMaterial]]. */
+  ignoresMaterial?: true;
+  /** @see [[FeatureAppearance.nonLocatable]]. */
+  nonLocatable?: true;
+  /** @see [[FeatureAppearance.emphasized]]. */
+  emphasized?: true;
 }
 
 /** Defines overrides for selected aspects of a [[Feature]]'s symbology.
@@ -51,14 +53,28 @@ export interface FeatureAppearanceProps {
  * @see [[FeatureOverrides]] to customize the appearance of multiple features.
  * @public
  */
-export class FeatureAppearance implements FeatureAppearanceProps {
+export class FeatureAppearance {
+  /** Overrides the feature's color. */
   public readonly rgb?: RgbColor;
+  /** The width of lines and edges in pixels as an integer in [1, 31]. */
   public readonly weight?: number;
+  /** The transparency in the range [0, 1] where 0 indicates fully opaque and 1 indicates fully transparent.
+   * @see [[viewDependentTransparency]] for details on how this override interacts with the [DisplayStyle]($backend).
+   */
   public readonly transparency?: number;
+  /** The pixel pattern applied to lines and edges. */
   public readonly linePixels?: LinePixels;
-  public readonly ignoresMaterial?: true | undefined;
-  public readonly nonLocatable?: true | undefined;
-  public readonly emphasized?: true | undefined;
+  /** If true, don't apply the [[RenderMaterial]] to the feature's surfaces. */
+  public readonly ignoresMaterial?: true;
+  /** If true, the feature will not be drawn when using [Viewport.readPixels]($frontend), meaning [Tool]($frontend)s will not be able to interact with it. */
+  public readonly nonLocatable?: true;
+  /** If true, the feature will be rendered using the [[Hilite.Settings]] defined by [Viewport.emphasisSettings]($frontend) to make it stand out. */
+  public readonly emphasized?: true;
+  /** If true, then [[transparency]] will only be applied if [[ViewFlags.transparency]] is enabled and the current [[RenderMode]] supports transparency.
+   * Default: false, meaning the transparency will be applied regardless of view flags or render mode.
+   * This property has no effect if [[transparency]] is `undefined`.
+   */
+  public readonly viewDependentTransparency?: true;
 
   /** An appearance that overrides nothing. */
   public static readonly defaults = new FeatureAppearance({});
@@ -80,24 +96,30 @@ export class FeatureAppearance implements FeatureAppearanceProps {
   /** Create a FeatureAppearance that overrides the RGB and transparency.
    * The appearance's transparency is derived from the transparency component of the ColorDef.
    */
-  public static fromRgba(color: ColorDef): FeatureAppearance {
+  public static fromRgba(color: ColorDef, viewDependentTransparency = false): FeatureAppearance {
     return this.fromJSON({
       rgb: RgbColor.fromColorDef(color),
       transparency: color.colors.t / 255,
+      viewDependentTransparency: viewDependentTransparency ? true : undefined,
     });
   }
   /** Create a FeatureAppearance that overrides only the transparency */
-  public static fromTransparency(transparencyValue: number): FeatureAppearance {
-    return this.fromJSON({ transparency: transparencyValue });
+  public static fromTransparency(transparencyValue: number, viewDependent = false): FeatureAppearance {
+    return this.fromJSON({
+      transparency: transparencyValue,
+      viewDependentTransparency: viewDependent ? true : undefined,
+    });
   }
 
-  /** Create a FeatureAppearance with overrides corresponding to those defined by the supplied SubCategoryOverride. */
+  /** Create a FeatureAppearance with overrides corresponding to those defined by the supplied SubCategoryOverride.
+   * @note Subcategory overrides set [[viewDependentTransparency]] to `true`.
+   */
   public static fromSubCategoryOverride(ovr: SubCategoryOverride): FeatureAppearance {
     const rgb = undefined !== ovr.color ? RgbColor.fromColorDef(ovr.color) : undefined;
     const transparency = ovr.transparency;
     const weight = ovr.weight;
     const ignoresMaterial = undefined !== ovr.material && Id64.isValid(ovr.material) ? true : undefined;
-    return this.fromJSON({ rgb, transparency, weight, ignoresMaterial });
+    return this.fromJSON({ rgb, transparency, weight, ignoresMaterial, viewDependentTransparency: true });
   }
 
   /** Returns true if this appearance does not override any aspects of symbology. */
@@ -128,7 +150,8 @@ export class FeatureAppearance implements FeatureAppearanceProps {
       && this.linePixels === other.linePixels
       && this.ignoresMaterial === other.ignoresMaterial
       && this.nonLocatable === other.nonLocatable
-      && this.emphasized === other.emphasized;
+      && this.emphasized === other.emphasized
+      && this.viewDependentTransparency === other.viewDependentTransparency;
   }
 
   public toJSON(): FeatureAppearanceProps {
@@ -139,8 +162,11 @@ export class FeatureAppearance implements FeatureAppearanceProps {
     if (undefined !== this.weight)
       props.weight = this.weight;
 
-    if (undefined !== this.transparency)
+    if (undefined !== this.transparency) {
       props.transparency = this.transparency;
+      if (this.viewDependentTransparency)
+        props.viewDependentTransparency = true;
+    }
 
     if (undefined !== this.linePixels)
       props.linePixels = this.linePixels;
@@ -198,6 +224,9 @@ export class FeatureAppearance implements FeatureAppearanceProps {
     if (undefined === props.nonLocatable && this.nonLocatable) props.nonLocatable = true;
     if (undefined === props.emphasized && this.emphasized) props.emphasized = true;
 
+    if (undefined !== props.transparency && this.viewDependentTransparency)
+      props.viewDependentTransparency = true;
+
     return FeatureAppearance.fromJSON(props);
   }
 
@@ -214,6 +243,9 @@ export class FeatureAppearance implements FeatureAppearanceProps {
       this.weight = Math.max(1, Math.min(this.weight, 32));
 
     if (undefined !== this.transparency) {
+      if (props.viewDependentTransparency)
+        this.viewDependentTransparency = true;
+
       this.transparency = Math.max(0, Math.min(this.transparency, 1));
 
       // Fix up rounding errors...

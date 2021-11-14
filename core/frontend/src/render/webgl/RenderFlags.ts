@@ -191,6 +191,7 @@ export const enum OvrFlags {
   Weight = 1 << 7,
   Hilited = 1 << 8,
   Emphasized = 1 << 9, // rendered with "emphasis" hilite settings (silhouette etc).
+  ViewIndependentTransparency = 1 << 10,
 
   Rgba = Rgb | Alpha,
 }
