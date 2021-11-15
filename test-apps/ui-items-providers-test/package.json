@@ -1,7 +1,7 @@
 {
   "name": "@itwin/ui-items-providers-test",
   "version": "2.5.0-dev.2",
-  "description": "Example extension to exercise adding UI components and stages",
+  "description": "Package used to exercise adding UI components and stages",
   "main": "lib/ui-items-providers-test.js",
   "typings": "lib/ui-items-providers-test",
   "scripts": {
@@ -21,7 +21,7 @@
     "iModel",
     "BIM",
     "maps",
-    "extension"
+    "UiItemsProvider"
   ],
   "author": {
     "name": "Bentley Systems, Inc.",

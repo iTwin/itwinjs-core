@@ -20,7 +20,7 @@ import connectedIcon from "../ui/icons/connected-query.svg?sprite";
 /**
  * Immediate tool that will open an example modal dialog.The tool is created and register to allow the user
  * to activate the tool via the key-in palette using the tools keyin property (which must be unique across
- * all registered application and extension tools).
+ * all registered tools).
  */
 export class OpenTraceDialogTool extends Tool {
   public static override toolId = "uiItemsProvidersTest-OpenTraceDialogTool";

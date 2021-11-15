@@ -16,21 +16,11 @@ import { OpenAbstractDialogTool } from "./tools/OpenAbstractModalDialogTool";
 import { NetworkTracingFrontstage } from "./ui/frontstages/NetworkTracing";
 import { CustomFrontstage } from "./ui/frontstages/CustomContent";
 
-/** UiItemsProvidersTest is a package that adds some user interface to the iModelApp when its initialize method is called.
- * Included in the sample are:
- *   1) `SampleTool` showing how implement a tool with a variety to tool settings items.
- *   2) `GenericLocateTool` that shows how implement a tool that requires user to first locate an element.
- *   3) `OpenAbstractDialogTool` that shows how to generate a dialog without creating "react" components.
- *   4) `GeneralUiItemsProvider` that provide tool buttons and a status bar item to stages set usage set to "StageUsage.General"
- *   5) `NetworkTracingFrontstage` that defines a new stage to add to iModelApp.
- *   6) `NetworkTracingUiItemsProvider` that provide tool buttons and widgets to NetworkTracingFrontstage.
- *   7) `TestProviderState` that define package specific state properties to add to the apps Redux store.
- *   8) `CustomFrontstage` that define a frontstage the show an imodel view and a custom content view populated via `SampleCustomContent`
- *
- */
+/** UiItemsProvidersTest is a package that adds some user interface to the iModelApp when its initialize method is called. */
 export class UiItemsProvidersTest {
   private static _initialized = false;
-  /** We'll register the uiItemsProvidersTest.json as the Extension's namespace/ */
+  /** We'll register the `uiItemsProvidersTest` as the package's namespace. The matching file `uiItemsProvidersTest.json`
+   * found in `src/public/locales/en` with contain the keys and matching localized string for English.  */
   public static readonly localizationNamespace = "uiItemsProvidersTest";
 
   /** convenience method for getting localized strings from keys */
@@ -59,13 +49,12 @@ export class UiItemsProvidersTest {
     if (this._initialized)
       return;
 
-    /** Register the localized strings for this extension
-     * We'll pass the localization member to the rest of the classes in the Extension to allow them to translate strings in the UI they implement.
-     */
+    /** Register the localized strings namespace. See `translate` method above. */
     await IModelApp.localization.registerNamespace(UiItemsProvidersTest.localizationNamespace);
     this.registerUiComponents();
     this._initialized = true;
 
+    /** Register a slice of state into the iModelApp Redux store. */
     ReducerRegistryInstance.registerReducer(TestProviderSliceName, providerSlice.reducer);
   }
 }

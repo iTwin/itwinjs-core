@@ -1,5 +1,5 @@
 {
-  "Name": "Network Topology Extension",
+  "Name": "Network Tracing",
   "trace-tool-connected": "Connected",
   "trace-tool-downstream": "Downstream",
   "trace-tool-group": "Network Trace",
