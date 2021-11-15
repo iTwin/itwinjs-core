@@ -353,7 +353,7 @@ describe("FeatureOverrides", () => {
 
     const reset = () => ovrs.elementOverrides.clear();
 
-    const test = (appearance: FeatureAppearance, onConflict: "extend" | "replace" | "skip" = "extend", expected: FeatureAppearance | undefined) => {
+    const test = (appearance: FeatureAppearance, onConflict: "subsume" | "extend" | "replace" | "skip" = "extend", expected: FeatureAppearance | undefined) => {
       ovrs.override({ elementId, appearance, onConflict });
       const actual = ovrs.getElementOverridesById(elementId);
       if (!expected) {
@@ -368,7 +368,7 @@ describe("FeatureOverrides", () => {
     for (const onConflict of ["extend", "replace", "skip", undefined]) {
       reset();
       expect(ovrs.getElementOverridesById(elementId)).to.be.undefined;
-      test(green, onConflict as "extend" | "replace" | "skip" | undefined, green);
+      test(green, onConflict as "subsume" | "extend" | "replace" | "skip" | undefined, green);
     }
 
     test(FeatureAppearance.fromTransparency(0.5), "skip", green);
@@ -378,6 +378,9 @@ describe("FeatureOverrides", () => {
     test(blue, "replace", blue);
     test(FeatureAppearance.fromRgba(ColorDef.red.withTransparency(0x7f)), "skip", blue);
     test(FeatureAppearance.fromRgba(ColorDef.red.withTransparency(0x7f)), "extend", FeatureAppearance.fromRgba(ColorDef.blue.withTransparency(0x7f)));
+
+    test(FeatureAppearance.fromTransparency(0.25), "subsume", FeatureAppearance.fromRgba(ColorDef.blue.withTransparency(0x3f)));
+    test(FeatureAppearance.fromRgb(ColorDef.red), "subsume", FeatureAppearance.fromRgba(ColorDef.red.withTransparency(0x3f)));
   });
 });
 

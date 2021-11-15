@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { Id64, Id64String } from "@itwin/core-bentley";
+import { assert, Id64, Id64String } from "@itwin/core-bentley";
 import { BatchType, Feature } from "./FeatureTable";
 import { ColorDef } from "./ColorDef";
 import { GeometryClass } from "./GeometryParams";
@@ -146,7 +146,7 @@ export class FeatureAppearance {
 
     return this.rgbIsEqual(other.rgb)
       && this.weight === other.weight
-      && this.transparency === other.transparency
+      && this.transparencyIsEqual(other.transparency)
       && this.linePixels === other.linePixels
       && this.ignoresMaterial === other.ignoresMaterial
       && this.nonLocatable === other.nonLocatable
@@ -258,7 +258,21 @@ export class FeatureAppearance {
   }
 
   private rgbIsEqual(rgb?: RgbColor): boolean {
-    return undefined === this.rgb ? undefined === rgb ? true : false : undefined === rgb ? false : this.rgb.equals(rgb);
+    if (undefined === this.rgb)
+      return undefined === rgb;
+    else if (undefined === rgb)
+      return false;
+    else
+      return this.rgb.equals(rgb);
+  }
+
+  private transparencyIsEqual(transp?: number): boolean {
+    if (undefined === this.transparency)
+      return undefined === transp;
+    else if (undefined === transp)
+      return false;
+    else
+      return Math.floor(this.transparency * 0xff) === Math.floor(transp * 0xff);
   }
 }
 
@@ -294,10 +308,14 @@ export interface OverrideFeatureAppearanceOptions {
   /** Specifies what to do if a [[FeatureAppearance]] has already been configured for the specified element, model, or subcategory by a previous call to [[FeatureOverrides.override]].
    *  - "extend" (default): Merge the two appearances using the logic described by [[FeatureAppearance.extendAppearance]] such that any aspect overridden by [[appearance]] will only
    *    apply if that aspect is not already overridden by a previous appearance.
+   *    - The resulting appearance is computed as `newAppearance.extendAppearance(existingAppearance)`.
+   *  - "subsume": Merge the two appearances using the logic described by [[FeatureAppearance.extendAppearance]] such that any aspect overridden by the existing appearance will be overwritten
+   *    if also overridden by [[appearance]].
+   *    - The resulting appearance is computed as `existingAppearance.extend(newAppearance)`.
    *  - "replace": Completely replace the existing appearance with [[appearance]].
    *  - "skip": Keep the existing appearance.
    */
-  onConflict?: "extend" | "replace" | "skip";
+  onConflict?: "extend" | "subsume" | "replace" | "skip";
 }
 
 /** Options for using [[FeatureOverrides.override]] to override the appearance of a [GeometricModel]($backend).
@@ -610,10 +628,17 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     const replace = "replace" === args.onConflict;
     const existing = replace ? undefined : map.get(idLo, idHi);
     if (existing) {
-      if ("skip" === args.onConflict)
-        return;
-
-      app = app.extendAppearance(existing);
+      assert("replace" !== args.onConflict);
+      switch (args.onConflict) {
+        case "skip":
+          return;
+        case "subsume":
+          app = existing.extendAppearance(app);
+          break;
+        default:
+          app = app.extendAppearance(existing);
+          break;
+      }
     }
 
     map.set(idLo, idHi, app);

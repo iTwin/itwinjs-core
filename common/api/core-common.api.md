@@ -5824,7 +5824,7 @@ export type OverrideFeatureAppearanceArgs = OverrideElementAppearanceOptions | O
 // @public
 export interface OverrideFeatureAppearanceOptions {
     appearance: FeatureAppearance;
-    onConflict?: "extend" | "replace" | "skip";
+    onConflict?: "extend" | "subsume" | "replace" | "skip";
 }
 
 // @public

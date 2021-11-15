@@ -150,8 +150,9 @@ A new [FeatureOverrides.override]($common) method has been introduced to support
 - "replace": The existing appearance overrides are replaced by the caller's own overrides, equivalent to the default `replaceExisting=true` for methods like `overrideElement`;
 - "skip": The existing appearance overrides are retained and the caller's own overrides are ignored, equivalent to `replaceExisting=false` for methods like `overrideElement`; or
 - "extend" (the default): Merge the new appearance with the existing appearance such that any aspect of the appearance **not** overridden by the existing appearance can be overridden by the new appearance.
+- "subsume": Merge the new appearance with the existing appearance such that any aspects of the appearance overridden by the existing appearance are preserved only if the new appearance does not also override them.
 
-For example, if one provider overrides an element's color and transparency, and a second provider attempts to override its transparency and line width, using the "extend" option means the second provider will only override the line width, leaving the existing color and transparency overrides intact.
+For example, if one provider overrides an element's color and transparency, and a second provider attempts to override its transparency and line width, using the "extend" option means the second provider will only override the line width, leaving the existing color and transparency overrides intact. Using the "subsume" option, the second provider will override the transparency and line width, leaving the existing color override intact.
 
 Because the previous default behavior is generally not desirable, `overrideElement`, `overrideModel`, and `overrideSubCategory` have been deprecated in favor of the new `override` method. Existing code can be updated as follows:
 
