@@ -141,7 +141,7 @@ export class ViewCreator3d {
 
     const cameraData = new Camera();
     const cameraOn = options?.cameraOn ? options.cameraOn : false;
-    const useLighting = options?.useDefaultLighting ? options.useDefaultLighting : true;
+    const useDefaultLighting = options?.useDefaultLighting ? options.useDefaultLighting : false;
     const viewDefinitionProps: ViewDefinition3dProps = {
       categorySelectorId: "",
       displayStyleId: "",
@@ -173,15 +173,15 @@ export class ViewCreator3d {
             noTransp: false,
             visEdges: false,
             backgroundMap: this._imodel.isGeoLocated,
-            ambientOcclusion: useLighting,
+            ambientOcclusion: !useDefaultLighting,
           },
-          lights: useLighting ? {
+          lights: useDefaultLighting ? undefined : {
             solar: { intensity: 0 },
             portrait: { intensity: 0 },
             ambient: { intensity: 0.55 },
             fresnel: { intensity: 0.8, invert: true },
             specularIntensity: 0,
-          } : undefined,
+          },
           environment:
             options !== undefined &&
               options.skyboxOn !== undefined &&
