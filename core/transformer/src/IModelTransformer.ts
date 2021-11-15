@@ -398,7 +398,18 @@ export class IModelTransformer extends IModelExportHandler {
           // a valid Id indicates that the predecessor has already been remapped
           sourcePredecessorIds.delete(sourcePredecessorId);
         } else {
+          //const sourcePredecessor = this.sourceDb.elements.tryGetElement(sourcePredecessorId);
           const sourcePredecessor = this.sourceDb.elements.getElement(sourcePredecessorId);
+          // TODO: add a special option to enable this dangerous behavior...
+          /*
+          if (sourcePredecessor === undefined) {
+            // it is possible for a connector or other editor to improperly delete elements without fixing predecessors.
+            // to make sure it is still possible to transform such iModels, we ignore the missing predecessors in this case, but it is a corrupt iModel
+            // and is extremely likely to cause errors if propagated
+            Logger.logWarning(loggerCategory, `Source element (${sourceElement.id}) "${sourceElement.getDisplayLabel()}" has a missing predecessor (${sourcePredecessorId})`);
+            return;
+          }
+          */
           if (!this.exporter.shouldExportElement(sourcePredecessor)) {
             // any predecessor that has been explicitly excluded is not considered missing
             sourcePredecessorIds.delete(sourcePredecessorId);

@@ -1384,4 +1384,41 @@ describe("IModelTransformer", () => {
     sourceDb.close();
     targetDb.close();
   });
+
+  it.only("predecessor deletion is considered invalid", async () => {
+    const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "PredecessorCleanupSource.bim");
+    const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "PredecessorCleanup" } });
+
+    const sourceCategoryId = SpatialCategory.insert(sourceDb, IModel.dictionaryId, "SpatialCategory", { color: ColorDef.green.toJSON() });
+    const sourceModelId = PhysicalModel.insert(sourceDb, IModel.rootSubjectId, "Physical");
+    const [physObj1, physObj2, physObj3] = [1, 2, 3].map((x) => {
+      const physicalObjectProps: PhysicalElementProps = {
+        classFullName: PhysicalObject.classFullName,
+        model: sourceModelId,
+        category: sourceCategoryId,
+        code: Code.createEmpty(),
+        userLabel: `PhysicalObject(${x})`,
+        geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1)),
+        placement: Placement3d.fromJSON({ origin: { x }, angles: {} }),
+      };
+      const physicalObjectId = sourceDb.elements.insertElement(physicalObjectProps);
+      return physicalObjectId;
+    });
+    const _myDisplayStyleId = DisplayStyle3d.insert(sourceDb, IModel.dictionaryId, "MyDisplayStyle", {excludedElements: [physObj1, physObj2, physObj3]});
+    sourceDb.elements.deleteElement(physObj3);
+
+    sourceDb.saveChanges();
+
+    // this seed has an old biscore, so we know that transforming an empty source (which starts with a fresh, updated biscore)
+    // will cause an update to the old biscore in this target
+    const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "PredecessorCleanupTarget.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: { name: "PredecessorCleanup" } });
+
+    const transformer = new IModelTransformer(sourceDb, targetDb);
+    await transformer.processAll();
+    targetDb.saveChanges();
+
+    sourceDb.close();
+    targetDb.close();
+  });
 });
