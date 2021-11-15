@@ -655,7 +655,7 @@ describe("Frontstage local storage wrapper", () => {
       it("should initialize nineZoneState", async () => {
         const setting = createFrontstageState();
         const uiSettings = new UiSettingsStub();
-        sinon.stub(uiSettings, "getSetting").returns(Promise.resolve<UiSettingsResult>({
+        sinon.stub(uiSettings, "getSetting").returns(Promise.resolve<UiSettingsResult>({ // eslint-disable-line deprecation/deprecation
           status: UiSettingsStatus.Success,
           setting,
         }));
