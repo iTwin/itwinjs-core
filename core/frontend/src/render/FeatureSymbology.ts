@@ -167,13 +167,8 @@ export namespace FeatureSymbology {
         return;
 
       for (const [modelId, projSettings] of planProjectionSettings) {
-        if (undefined !== projSettings.transparency) {
-          this.override({
-            modelId,
-            appearance: FeatureAppearance.fromJSON({ transparency: projSettings.transparency }),
-            onConflict: "subsume",
-          });
-        }
+        if (undefined !== projSettings.transparency)
+          this.override({ modelId, appearance: FeatureAppearance.fromJSON({ transparency: projSettings.transparency }) });
       }
     }
 

@@ -306,12 +306,12 @@ export interface OverrideFeatureAppearanceOptions {
   /** Specifies the aspects of the [[Feature]]'s appearance to be overridden. */
   appearance: FeatureAppearance;
   /** Specifies what to do if a [[FeatureAppearance]] has already been configured for the specified element, model, or subcategory by a previous call to [[FeatureOverrides.override]].
-   *  - "extend" (default): Merge the two appearances using the logic described by [[FeatureAppearance.extendAppearance]] such that any aspect overridden by [[appearance]] will only
-   *    apply if that aspect is not already overridden by a previous appearance.
-   *    - The resulting appearance is computed as `newAppearance.extendAppearance(existingAppearance)`.
-   *  - "subsume": Merge the two appearances using the logic described by [[FeatureAppearance.extendAppearance]] such that any aspect overridden by the existing appearance will be overwritten
+   *  - "subsume" (the default): Merge the two appearances using the logic described by [[FeatureAppearance.extendAppearance]] such that any aspect overridden by the existing appearance will be overwritten
    *    if also overridden by [[appearance]].
    *    - The resulting appearance is computed as `existingAppearance.extend(newAppearance)`.
+   *  - "extend": Merge the two appearances using the logic described by [[FeatureAppearance.extendAppearance]] such that any aspect overridden by [[appearance]] will only
+   *    apply if that aspect is not already overridden by a previous appearance.
+   *    - The resulting appearance is computed as `newAppearance.extendAppearance(existingAppearance)`.
    *  - "replace": Completely replace the existing appearance with [[appearance]].
    *  - "skip": Keep the existing appearance.
    */
@@ -632,11 +632,11 @@ export class FeatureOverrides implements FeatureAppearanceSource {
       switch (args.onConflict) {
         case "skip":
           return;
-        case "subsume":
-          app = existing.extendAppearance(app);
+        case "extend":
+          app = app.extendAppearance(existing);
           break;
         default:
-          app = app.extendAppearance(existing);
+          app = existing.extendAppearance(app);
           break;
       }
     }

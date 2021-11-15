@@ -721,7 +721,6 @@ export class MapTileTreeReference extends TileTreeReference {
       this._symbologyOverrides.override({
         modelId: tree.modelId,
         appearance: FeatureAppearance.fromJSON({ transparency, nonLocatable }),
-        onConflict: "subsume",
       });
     }
 
