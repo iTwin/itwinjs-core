@@ -4,7 +4,7 @@ The following topics provide information to help ensure the host iModelApp is pr
 
 ## StateManager and ReducerRegistry
 
-Redux is a common package used for maintaining state data in front-end web applications. To allow packages to also use [Redux](https://redux.js.org/) the appui-react package provides the [StateManager]($appui-react) and [ReducerRegistry]($appui-react).  The host app should not create the store itself using the function [createStore](https://redux.js.org/api/createstore) from Redux, but should instead instantiate a StateManager object passing in the set of reducers needed for its own state.  It should not typically include reducers from packages or other library packages. The StateManager instance will register with the ReducerRegistry to be informed when a Reducer is added to the registry and it will do the work of combining all Reducers into a single Redux store.
+Redux is a common package used for maintaining state data in front-end web applications. To allow packages to also use [Redux](https://redux.js.org/) the appui-react package provides the [StateManager]($appui-react) and [ReducerRegistry]($appui-react).  The host app should not create the store itself using the function [createStore](https://redux.js.org/api/createstore) from Redux, but should instead instantiate a StateManager object passing in the set of reducers needed for its own state.  It should not typically include reducers from packages. The StateManager instance will register with the ReducerRegistry to be informed when a Reducer is added to the registry and it will do the work of combining all Reducers into a single Redux store.
 
 See example [StateManager](./framework/State.md/#example-of-defining-initial-set-of-reducers)
 
@@ -70,7 +70,7 @@ The isHidden property above is specified as a [ConditionalBooleanValue]($appui-a
 
 ## StatusBar
 
-To ensure that Packages can add items to the status bar the [StatusBarWidgetControl]($appui-react) must return the
+To ensure that packages can add items to the status bar the [StatusBarWidgetControl]($appui-react) must return the
 [StatusBarComposer]($appui-react) from the getReactNode method. Here is an [example](./framework/statusbar/) of defining a status bar.  Each status bar item definition specifies its position in the status bar using item priority and StatusBarSection.
 
 ## Backstage
