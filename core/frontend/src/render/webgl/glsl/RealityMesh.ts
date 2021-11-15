@@ -41,20 +41,18 @@ bool applyTexture(inout vec4 col, sampler2D sampler, mat4 params, mat4 matrix) {
   float layerAlpha;
   bool isClassified = params[0][0] != 0.0;
   float imageCount = params[0][1];
+  vec2 classPos;
 
   if (isClassified) {
     vec4  eye4 = vec4(v_eyeSpace, 1.0);
     vec4  classPos4 = matrix * eye4;
-    vec2 classPos = classPos4.xy / classPos4.w;
+    classPos = classPos4.xy / classPos4.w;
     uv.x = classPos.x;
     uv.y = classPos.y / imageCount;
     layerAlpha = 1.0;
     if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0)
       return false;
-
-    vec4 featureTexel = TEXTURE(sampler, vec2(uv.x, (1.0 + classPos.y) / imageCount));
-    classifierId = addUInt32s(params[1], featureTexel * 255.0) / 255.0;
-  } else {
+    } else {
     vec4 texTransform = matrix[0].xyzw;
     vec4 texClip = matrix[1].xyzw;
     layerAlpha = matrix[2].x;
@@ -62,20 +60,18 @@ bool applyTexture(inout vec4 col, sampler2D sampler, mat4 params, mat4 matrix) {
     if (uv.x < texClip[0] || uv.x > texClip[2] || uv.y < texClip[1] || uv.y > texClip[3])
       return false;
     uv.y = 1.0 - uv.y;
-    featureIncrement = matrix[2].y;
     }
  vec4 texCol = TEXTURE(sampler, uv);
  float alpha = layerAlpha * texCol.a;
  if (alpha > 0.05) {
   col.rgb = (1.0 - alpha) * col.rgb + alpha * texCol.rgb;
-  if (!isClassified) {
+  if (isClassified) {
+    vec4 featureTexel = TEXTURE(sampler, vec2(uv.x, (1.0 + classPos.y) / imageCount));
+    classifierId = addUInt32s(params[1], featureTexel * 255.0) / 255.0;
+    } else {
     featureIncrement = matrix[2].y;
     classifierId = vec4(0);
-  } /* else  {
-    col.rgb = (vec4(0.0) == classifierId) ? vec3(0.0, 1.0, 0.0) : vec3 (1.0, 0.0, 0.0);
-  } */
-
-
+    }
   if (alpha > col.a)
     col.a = alpha;
 
@@ -90,7 +86,6 @@ const scratchMatrix4d1 = Matrix4d.createIdentity();
 const scratchMatrix4d3 = Matrix4d.createIdentity();
 const scratchMatrix = new Matrix4();
 
-// const overrideFeatureId = "return addUInt32s(feature_id * 255.0, vec4(featureIncrement, 0.0, 0.0, 0.0)) / 255.0;";
 const overrideFeatureId = `return (classifierId == vec4(0)) ? (addUInt32s(feature_id * 255.0, vec4(featureIncrement, 0.0, 0.0, 0.0)) / 255.0) : classifierId;`;
 
 function addTextures(builder: ProgramBuilder, maxTexturesPerMesh: number) {
