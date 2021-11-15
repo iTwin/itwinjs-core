@@ -35,7 +35,7 @@ A common technique is for a package to have an initialize() method that register
 A [UiItemsProvider]($appui-abstract) is used to provide items to insert into the UI of an existing stage. When an App UI is constructing the stage, item definitions are request from all UiItemsProviders. These calls will always include the current frontstage's Id and usage. A package can use this info to determine which, if any, items to add to the stage. The stageId name's used by an application may not be useful unless the package is just used in a single host app where the stage names are known. The stageUsage value is also provided, this string is typically set to one of the standard [StageUsage]($appui-abstract) enum values. Also passed to each provider is the stage's applicationData. This allows the frontstage to specify a list of features that it is
 intended to support.
 
-One important note. When specifying an item via a UiItemsProvider please ensure that its Id is uniquely specified across all applications that may use items from the provider. One way to do this is to prefix the id with a string that represents the package. A common pattern is
+One important note. When specifying an item via a UiItemsProvider please ensure that its Id is uniquely specified across all applications that may use items from the provider. One way to do this is to prefix the id with a string that represents the package. A common pattern is `package-name:item-id`,
 
 ### Adding a ToolButton
 
