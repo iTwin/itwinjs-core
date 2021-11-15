@@ -1589,13 +1589,13 @@ Specification of the GeographicCRS can be complete or incomplete. Although fully
 
 Here are examples of typical GeographicCRS:
 
-```json
+```ts
 { horizontalCRS: { id: "CA83-II" }, verticalCRS: { id: "NAVD88" } }
 ```
 
 or
 
-```json
+```ts
 { horizontalCRS: { epsg: 26942 }, verticalCRS: { id: "NAVD88" } },
 ```
 
@@ -1603,7 +1603,7 @@ These identifiers refer to either the key-name of a Geographic CRS in the list o
 
 More complex Geographic CRS can also be used such as the following user-defined:
 
-```json
+```ts
       {
         horizontalCRS: {
           id: "UserDef-On-NAD83/2011",
