@@ -26,7 +26,7 @@ export class IModelTransformerTestAppHost {
    * If we didn't do it lazily, we'd have to sign in conditionally ahead of time which makes
    * it difficult for typescript to reason about whether the accessToken is valid or not
    */
-  public static async getAccessToken(): Promise<AccessToken> {
+  public static async acquireAccessToken(): Promise<AccessToken> {
     if (!this._authClient) {
       assert(
         process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID !== undefined,
