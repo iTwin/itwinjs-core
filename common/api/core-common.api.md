@@ -3081,9 +3081,13 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     protected readonly _neverDrawn: Id64.Uint32Set;
     // @internal
     readonly neverDrawnAnimationNodes: Set<number>;
+    override(args: OverrideFeatureAppearanceArgs): void;
     overrideAnimationNode(id: number, app: FeatureAppearance): void;
+    // @deprecated
     overrideElement(id: Id64String, app: FeatureAppearance, replaceExisting?: boolean): void;
+    // @deprecated
     overrideModel(id: Id64String, app: FeatureAppearance, replaceExisting?: boolean): void;
+    // @deprecated
     overrideSubCategory(id: Id64String, app: FeatureAppearance, replaceExisting?: boolean): void;
     // @internal
     protected _patterns: boolean;
@@ -5803,6 +5807,42 @@ export enum OverriddenBy {
     Browser = 0,
     // (undocumented)
     User = 1
+}
+
+// @public
+export interface OverrideElementAppearanceOptions extends OverrideFeatureAppearanceOptions {
+    elementId: Id64String;
+    // @internal (undocumented)
+    modelId?: never;
+    // @internal (undocumented)
+    subCategoryId?: never;
+}
+
+// @public
+export type OverrideFeatureAppearanceArgs = OverrideElementAppearanceOptions | OverrideModelAppearanceOptions | OverrideSubCategoryAppearanceOptions;
+
+// @public
+export interface OverrideFeatureAppearanceOptions {
+    appearance: FeatureAppearance;
+    onConflict?: "extend" | "replace" | "skip";
+}
+
+// @public
+export interface OverrideModelAppearanceOptions extends OverrideFeatureAppearanceOptions {
+    // @internal (undocumented)
+    elementId?: never;
+    modelId: Id64String;
+    // @internal (undocumented)
+    subCategoryId?: never;
+}
+
+// @public
+export interface OverrideSubCategoryAppearanceOptions extends OverrideFeatureAppearanceOptions {
+    // @internal (undocumented)
+    elementId?: never;
+    // @internal (undocumented)
+    modelId?: never;
+    subCategoryId: Id64String;
 }
 
 // @internal (undocumented)
