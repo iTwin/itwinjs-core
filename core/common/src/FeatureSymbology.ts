@@ -285,6 +285,62 @@ export interface FeatureAppearanceSource {
   getAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined;
 }
 
+/** Common options for [[FeatureOverrides.override]].
+ * @public
+ */
+export interface OverrideFeatureAppearanceOptions {
+  /** Specifies the aspects of the [[Feature]]'s appearance to be overridden. */
+  appearance: FeatureAppearance;
+  /** Specifies what to do if a [[FeatureAppearance]] has already been configured for the specified element, model, or subcategory by a previous call to [[FeatureOverrides.override]].
+   *  - "extend" (default): Merge the two appearances using the logic described by [[FeatureAppearance.extendAppearance]] such that any aspect overridden by [[appearance]] will only
+   *    apply if that aspect is not already overridden by a previous appearance.
+   *  - "replace": Completely replace the existing appearance with [[appearance]].
+   *  - "skip": Keep the existing appearance.
+   */
+  onConflict?: "extend" | "replace" | "skip";
+}
+
+/** Options for using [[FeatureOverrides.override]] to override the appearance of a [GeometricModel]($backend).
+ * @public
+ */
+export interface OverrideModelAppearanceOptions extends OverrideFeatureAppearanceOptions {
+  /** The Id of the model whose appearance is to be overridden. */
+  modelId: Id64String;
+  /** @internal */
+  elementId?: never;
+  /** @internal */
+  subCategoryId?: never;
+}
+
+/** Options for using [[FeatureOverrides.override]] to override the appearance of a [GeometricElement]($backend).
+ * @public
+ */
+export interface OverrideElementAppearanceOptions extends OverrideFeatureAppearanceOptions {
+  /** The Id of the element whose appearance is to be overridden. */
+  elementId: Id64String;
+  /** @internal */
+  modelId?: never;
+  /** @internal */
+  subCategoryId?: never;
+}
+
+/** Options for using [[FeatureOverrides.override]] to override the appearance of a [SubCategory]($backend).
+ * @public
+ */
+export interface OverrideSubCategoryAppearanceOptions extends OverrideFeatureAppearanceOptions {
+  /** The Id of the subcategory whose appearance is to be overridden. */
+  subCategoryId: Id64String;
+  /** @internal */
+  modelId?: never;
+  /** @internal */
+  elementId?: never;
+}
+
+/** Arguments supplied to [[FeatureOverrides.override]].
+ * @public
+ */
+export type OverrideFeatureAppearanceArgs = OverrideElementAppearanceOptions | OverrideModelAppearanceOptions | OverrideSubCategoryAppearanceOptions;
+
 /** Specifies how to customize the appearance of individual [[Feature]]s, typically within the context of a [Viewport]($frontend).
  * Individual aspects of a feature's appearance - like visibility, color, and transparency - are overridden by supplying a [[FeatureAppearance]].
  * Those overrides can be specified on the basis of the feature's model, element, and/or subcategory. A default set of overrides can also be specified to
@@ -529,18 +585,46 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     }
   }
 
+  /** Specify overrides for all elements belonging to a specified [GeometricModel]($backend), or all geometry belonging to a specified [GeometricElement]($backend) or [SubCategory]($backend). */
+  public override(args: OverrideFeatureAppearanceArgs): void {
+    let id: Id64String;
+    let map: Id64.Uint32Map<FeatureAppearance>;
+    if (undefined !== args.elementId) {
+      id = args.elementId;
+      map = this._elementOverrides;
+    } else if (undefined !== args.modelId) {
+      id = args.modelId;
+      map = this._modelOverrides;
+    } else {
+      id = args.subCategoryId;
+      map = this._subCategoryOverrides;
+    }
+
+    let app = args.appearance;
+    const idLo = Id64.getLowerUint32(id);
+    const idHi = Id64.getUpperUint32(id);
+    const replace = "replace" === args.onConflict;
+    const existing = replace ? undefined : map.get(idLo, idHi);
+    if (existing) {
+      if ("skip" === args.onConflict)
+        return;
+
+      app = app.extendAppearance(existing);
+    }
+
+    map.set(idLo, idHi, app);
+  }
+
   /** Specify overrides for all elements within the specified model.
    * @param id The Id of the model.
    * @param app The symbology overrides.
    * @param replaceExisting Specifies whether to replace a pre-existing override for the same model.
    * @note These overrides take priority over all other overrides.
    * @note If [[defaultOverrides]] are defined, they will not apply to any element within this model, even if the supplied appearance overrides nothing.
+   * @deprecated Use [[FeatureOverrides.override]].
    */
   public overrideModel(id: Id64String, app: FeatureAppearance, replaceExisting: boolean = true): void {
-    const idLo = Id64.getLowerUint32(id);
-    const idHi = Id64.getUpperUint32(id);
-    if (replaceExisting || undefined === this.getModelOverrides(idLo, idHi))
-      this._modelOverrides.set(idLo, idHi, app);
+    this.override({ modelId: id, appearance: app, onConflict: replaceExisting ? "replace" : "skip" });
   }
 
   /** Specify overrides for all geometry belonging to the specified [SubCategory]($backend).
@@ -549,15 +633,10 @@ export class FeatureOverrides implements FeatureAppearanceSource {
    * @param replaceExisting Specifies whether to replace a pre-existing override for the same subcategory.
    * @note These overrides have lower priority than element and model overrides.
    * @note If [[defaultOverrides]] are defined, they will not apply to any geometry within this subcategory, even if the supplied appearance overrides nothing.
+   * @deprecated Use [[FeatureOverrides.override]].
    */
   public overrideSubCategory(id: Id64String, app: FeatureAppearance, replaceExisting: boolean = true): void {
-    // NB: We used to do nothing if this.isSubCategoryVisible() => false but now models can turn invisible subcategories visible in their own context.
-    const idLo = Id64.getLowerUint32(id);
-    const idHi = Id64.getUpperUint32(id);
-
-    // NB: Appearance may specify no overridden symbology - this means "don't apply the default overrides to this subcategory"
-    if (replaceExisting || undefined === this.getSubCategoryOverrides(idLo, idHi))
-      this._subCategoryOverrides.set(idLo, idHi, app);
+    this.override({ subCategoryId: id, appearance: app, onConflict: replaceExisting ? "replace" : "skip" });
   }
 
   /** Specify overrides for all geometry originating from the specified element.
@@ -566,16 +645,10 @@ export class FeatureOverrides implements FeatureAppearanceSource {
    * @param replaceExisting Specifies whether to replace a pre-existing override for the same element.
    * @note These overrides take precedence over subcategory overrides, but not over model overrides.
    * @note If [[defaultOverrides]] are defined, they will not apply to this element, even if the supplied appearance overrides nothing.
+   * @deprecated Use [[FeatureOverrides.override]].
    */
   public overrideElement(id: Id64String, app: FeatureAppearance, replaceExisting: boolean = true): void {
-    const idLo = Id64.getLowerUint32(id);
-    const idHi = Id64.getUpperUint32(id);
-    if (this.isNeverDrawn(idLo, idHi, 0))
-      return;
-
-    // NB: Appearance may specify no overridden symbology - this means "don't apply the default overrides to this element"
-    if (replaceExisting || undefined === this.getElementOverrides(idLo, idHi, 0))
-      this._elementOverrides.set(idLo, idHi, app);
+    this.override({ elementId: id, appearance: app, onConflict: replaceExisting ? "replace" : "skip" });
   }
 
   /** Specify overrides for all geometry originating from the specified animation node.
@@ -583,7 +656,9 @@ export class FeatureOverrides implements FeatureAppearanceSource {
    * @param app The symbology overrides.
    * @note These overrides do not take precedence over element overrides.
    */
-  public overrideAnimationNode(id: number, app: FeatureAppearance): void { this.animationNodeOverrides.set(id, app); }
+  public overrideAnimationNode(id: number, app: FeatureAppearance): void {
+    this.animationNodeOverrides.set(id, app);
+  }
 
   /** Defines a default appearance to be applied to any [[Feature]] *not* explicitly overridden.
    * @param appearance The symbology overrides.
