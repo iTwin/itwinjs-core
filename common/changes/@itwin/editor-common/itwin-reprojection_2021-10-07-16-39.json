@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/editor-common",
+      "comment": "Added ability to convert iModel coordinates to or from any Geographic CRS",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/editor-common"
+}
