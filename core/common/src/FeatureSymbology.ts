@@ -308,7 +308,7 @@ export interface OverrideFeatureAppearanceOptions {
   /** Specifies what to do if a [[FeatureAppearance]] has already been configured for the specified element, model, or subcategory by a previous call to [[FeatureOverrides.override]].
    *  - "subsume" (the default): Merge the two appearances using the logic described by [[FeatureAppearance.extendAppearance]] such that any aspect overridden by the existing appearance will be overwritten
    *    if also overridden by [[appearance]].
-   *    - The resulting appearance is computed as `existingAppearance.extend(newAppearance)`.
+   *    - The resulting appearance is computed as `existingAppearance.extendAppearance(newAppearance)`.
    *  - "extend": Merge the two appearances using the logic described by [[FeatureAppearance.extendAppearance]] such that any aspect overridden by [[appearance]] will only
    *    apply if that aspect is not already overridden by a previous appearance.
    *    - The resulting appearance is computed as `newAppearance.extendAppearance(existingAppearance)`.
