@@ -170,16 +170,16 @@ describe("FeatureOverrides", () => {
     const props2 = { ...props1, transparency: 200 / 255 } as FeatureAppearanceProps;
     const modelApp1 = FeatureAppearance.fromJSON(props1);
     const modelApp2 = FeatureAppearance.fromJSON(props2);
-    overrides.overrideModel(id, modelApp1);
+    overrides.overrideModel(id, modelApp1); // eslint-disable-line deprecation/deprecation
     assert.exists(overrides.getModelOverridesById(id));
 
-    overrides.overrideModel(id, modelApp2);
+    overrides.overrideModel(id, modelApp2); // eslint-disable-line deprecation/deprecation
     assert.isTrue(overrides.getModelOverridesById(id)!.equals(modelApp2), "overrideModel will override prexisting model associated with given id if replaceExisting is not set to false explicitly");
 
-    overrides.overrideModel(id, modelApp1, false);
+    overrides.overrideModel(id, modelApp1, false); // eslint-disable-line deprecation/deprecation
     assert.isTrue(overrides.getModelOverridesById(id)!.equals(modelApp2), "overrides will not replace model if replace existing is set to false");
 
-    overrides.overrideModel(id, modelApp1);
+    overrides.overrideModel(id, modelApp1); // eslint-disable-line deprecation/deprecation
     assert.isTrue(overrides.getModelOverridesById(id)!.equals(modelApp1), "overrides will replace model if replace existing isn't set to false (test 2)");
   });
 
@@ -194,17 +194,17 @@ describe("FeatureOverrides", () => {
     // Even though the subcategory is invisible, it's possible a model will override it to be visible.
     // So overrideSubCategory() will record the appearance override anyway.
     expect(overrides.getSubCategoryOverridesById(id)).to.be.undefined;
-    overrides.overrideSubCategory(id, subCatApp1);
+    overrides.overrideSubCategory(id, subCatApp1); // eslint-disable-line deprecation/deprecation
     expect(overrides.getSubCategoryOverridesById(id)).not.to.be.undefined;
 
     overrides.setVisibleSubCategory(id);
-    overrides.overrideSubCategory(id, subCatApp2);
+    overrides.overrideSubCategory(id, subCatApp2); // eslint-disable-line deprecation/deprecation
     assert.exists(overrides.getSubCategoryOverridesById(id), "if subCategoryId is in subCategoryVisible set, then subCategoryApp set");
 
-    overrides.overrideSubCategory(id, subCatApp1, false);
+    overrides.overrideSubCategory(id, subCatApp1, false); // eslint-disable-line deprecation/deprecation
     assert.isTrue(overrides.getSubCategoryOverridesById(id)!.equals(subCatApp2), "overrides will not replace subCatApp if replace existing is set to false");
 
-    overrides.overrideSubCategory(id, subCatApp1);
+    overrides.overrideSubCategory(id, subCatApp1); // eslint-disable-line deprecation/deprecation
     assert.isTrue(overrides.getSubCategoryOverridesById(id)!.equals(subCatApp1), "overrides will replace subCatApp if replace existing isn't set to false");
   });
 
@@ -217,17 +217,17 @@ describe("FeatureOverrides", () => {
     const elemApp2 = FeatureAppearance.fromJSON(props2);
 
     overrides.setNeverDrawn(id);
-    overrides.overrideElement(id, elemApp1);
+    overrides.overrideElement(id, elemApp1); // eslint-disable-line deprecation/deprecation
     assert.isUndefined(overrides.getElementOverridesById(id), "if elementId is in never drawn set, then nothing is set");
 
     overrides = new Overrides();
-    overrides.overrideElement(id, elemApp1);
+    overrides.overrideElement(id, elemApp1); // eslint-disable-line deprecation/deprecation
     assert.exists(overrides.getElementOverridesById(id), "if elementId is not in never drawn set, then elemApp is set");
 
-    overrides.overrideElement(id, elemApp2, false);
+    overrides.overrideElement(id, elemApp2, false); // eslint-disable-line deprecation/deprecation
     assert.isTrue(overrides.getElementOverridesById(id)!.equals(elemApp1), "overrides will not replace elemApp if replace existing is set to false");
 
-    overrides.overrideElement(id, elemApp2);
+    overrides.overrideElement(id, elemApp2); // eslint-disable-line deprecation/deprecation
     assert.isTrue(overrides.getElementOverridesById(id)!.equals(elemApp2), "overrides will replace elemApp if replace existing isn't set to false");
   });
 
@@ -259,12 +259,12 @@ describe("FeatureOverrides", () => {
     const defApp = FeatureAppearance.fromRgb(ColorDef.red);
     ovrs.setDefaultOverrides(defApp);
 
-    ovrs.overrideElement(el1, app);
-    ovrs.overrideModel(mod1, app);
-    ovrs.overrideSubCategory(cat1, app);
-    ovrs.overrideElement(el2, noApp);
-    ovrs.overrideModel(mod2, noApp);
-    ovrs.overrideSubCategory(cat2, noApp);
+    ovrs.overrideElement(el1, app); // eslint-disable-line deprecation/deprecation
+    ovrs.overrideModel(mod1, app); // eslint-disable-line deprecation/deprecation
+    ovrs.overrideSubCategory(cat1, app); // eslint-disable-line deprecation/deprecation
+    ovrs.overrideElement(el2, noApp); // eslint-disable-line deprecation/deprecation
+    ovrs.overrideModel(mod2, noApp); // eslint-disable-line deprecation/deprecation
+    ovrs.overrideSubCategory(cat2, noApp); // eslint-disable-line deprecation/deprecation
 
     const expectAppearance = (elem: Id64String, model: Id64String, subcat: Id64String, expectedAppearance: FeatureAppearance) => {
       const feature = new Feature(elem, subcat, GeometryClass.Primary);
