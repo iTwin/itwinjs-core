@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { ColorDef, LightSettings } from "@itwin/core-common";
+import { ColorDef, LightSettings, ModelProps } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { BlankConnection } from "../IModelConnection";
 import { ViewCreator3d, ViewCreator3dOptions } from "../ViewCreator3d";
@@ -27,12 +27,12 @@ describe.only("ViewCreator", () => {
   describe("3d option", () => {
     let creator: ViewCreator3d;
 
-    async function test3dOption(options: ViewCreator3dOptions, testOptionAffect: (view: ViewState3d) => boolean) {
+    async function test3dOption(options: ViewCreator3dOptions, returnTrueOnOptionEffect: (view: ViewState3d) => boolean) {
       let view = await creator.createDefaultView();
-      expect(testOptionAffect(view as ViewState3d), "Unexpected affect of option found.").to.be.false;
+      expect(returnTrueOnOptionEffect(view as ViewState3d), "Unexpected effect of option found.").to.be.false;
 
       view = await creator.createDefaultView(options);
-      expect(testOptionAffect(view as ViewState3d), "Expected option's affect, but was not found.").to.be.true;
+      expect(returnTrueOnOptionEffect(view as ViewState3d), "Expected option's effect, but was not found.").to.be.true;
     }
 
     before(() => creator = new ViewCreator3d(iModel));
@@ -52,7 +52,7 @@ describe.only("ViewCreator", () => {
         // Test if the lighting is equivalent to the core default lighting.
         const defaultLighting = LightSettings.fromJSON();
         const viewLighting = view.displayStyle.lights;
-        return !viewLighting.equals(defaultLighting);
+        return viewLighting.equals(defaultLighting);
       };
       const options: ViewCreator3dOptions = { useDefaultLighting: true };
       await test3dOption(options, test);
@@ -61,17 +61,17 @@ describe.only("ViewCreator", () => {
   describe("2d options", () => {
     let creator: ViewCreator2d;
 
-    async function test2dOption(options: ViewCreator2dOptions, testOptionAffect: (view: ViewState2d) => boolean) {
-      let view = await creator.createViewForModel("", options);
-      expect(testOptionAffect(view as ViewState2d), "Unexpected affect of option found.").to.be.false;
+    async function test2dOption(options: ViewCreator2dOptions, returnTrueOnOptionEffect: (view: ViewState2d) => boolean) {
+      let view = await creator.createViewForModel("");
+      expect(returnTrueOnOptionEffect(view as ViewState2d), "Unexpected effect of option found.").to.be.false;
 
       view = await creator.createViewForModel("", options);
-      expect(testOptionAffect(view as ViewState2d), "Expected option's affect, but was not found.").to.be.true;
+      expect(returnTrueOnOptionEffect(view as ViewState2d), "Expected option's effect, but was not found.").to.be.true;
     }
 
     before(() => creator = new ViewCreator2d(iModel));
 
-    it.skip("'bgColor' should control the background color in the created view.", async () => {
+    it("'bgColor' should control the background color in the created view.", async () => {
       const bgColor = ColorDef.red;
       const test = (view: ViewState2d): boolean => view.backgroundColor.equals(bgColor);
       const options: ViewCreator2dOptions = { bgColor };
