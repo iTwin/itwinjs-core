@@ -159,7 +159,7 @@ export class SampleAppIModelApp {
   public static testAppConfiguration: TestAppConfiguration | undefined;
   private static _appStateManager: StateManager | undefined;
   private static _localUiSettings = new LocalSettingsStorage();
-  private static _UserUiSettingsStorage = new UserSettingsStorage();
+  private static _UserUiSettingsStorage = new UserSettingsStorage(); // eslint-disable-line deprecation/deprecation
 
   // Favorite Properties Support
   private static _selectionSetListener = new ElementSelectionListener(true);
@@ -264,7 +264,7 @@ export class SampleAppIModelApp {
       favorites: {
         storage: createFavoritePropertiesStorage(SampleAppIModelApp.testAppConfiguration?.useLocalSettings
           ? DefaultFavoritePropertiesStorageTypes.BrowserLocalStorage
-          : DefaultFavoritePropertiesStorageTypes.UserSettingsServiceStorage),
+          : DefaultFavoritePropertiesStorageTypes.UserPreferencesStorage),
       },
     });
     Presentation.selection.scopes.activeScope = "top-assembly";
