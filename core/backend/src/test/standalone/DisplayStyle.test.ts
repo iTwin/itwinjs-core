@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Guid } from "@itwin/core-bentley";
-import { IModel, SkyBoxImageType, SkyBoxProps, SkyCubeProps } from "@itwin/core-common";
-import { DisplayStyle3d, StandaloneDb } from "../../core-backend";
+import { Guid } from "@bentley/bentleyjs-core";
+import { IModel, SkyBoxImageType, SkyBoxProps, SkyCubeProps } from "@bentley/imodeljs-common";
+import { DisplayStyle3d, StandaloneDb } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("DisplayStyle", () => {
