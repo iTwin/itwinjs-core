@@ -116,7 +116,6 @@ import { SafeAreaInsets } from '@itwin/appui-layout-react';
 import { ScreenViewport } from '@itwin/core-frontend';
 import { SelectionMode } from '@itwin/components-react';
 import { SettingsManager } from '@itwin/core-react';
-import { SettingsStatus } from '@bentley/product-settings-client';
 import { SettingsTabEntry } from '@itwin/core-react';
 import { Size } from '@itwin/core-react';
 import { SizeProps } from '@itwin/core-react';
@@ -3060,10 +3059,6 @@ export interface HTMLElementPopupProps extends PopupPropsBase {
 }
 
 // @beta @deprecated
-export class IModelAppUiSettings extends UserSettingsStorage {
-}
-
-// @beta @deprecated
 export const IModelConnectedNavigationWidget: import("react-redux").ConnectedComponent<typeof DefaultNavigationWidget, any>;
 
 // @public
@@ -4815,9 +4810,6 @@ export class SettingsModalFrontstage implements ModalFrontstageInfo {
     // (undocumented)
     title: string;
 }
-
-// @internal (undocumented)
-export function settingsStatusToUiSettingsStatus(status: SettingsStatus): UiSettingsStatus;
 
 // @internal (undocumented)
 export const setWidgetLabel: (base: {
@@ -6791,7 +6783,7 @@ export interface UserSettingsProvider {
     providerId: string;
 }
 
-// @public
+// @public @deprecated
 export class UserSettingsStorage implements UiSettingsStorage {
     // (undocumented)
     deleteSetting(namespace: string, name: string): Promise<UiSettingsResult>;

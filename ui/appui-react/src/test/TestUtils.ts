@@ -20,6 +20,8 @@ import {
 } from "../appui-react";
 import { TestContentControl } from "./frontstage/FrontstageTestUtils";
 
+/* eslint-disable deprecation/deprecation */
+
 interface SampleAppState {
   placeHolder?: boolean;
 }
