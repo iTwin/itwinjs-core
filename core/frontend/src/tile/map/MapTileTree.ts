@@ -717,9 +717,13 @@ export class MapTileTreeReference extends TileTreeReference {
     const nonLocatable = this.settings.locatable ? undefined : true;
     const transparency = this.settings.transparency ? this.settings.transparency : undefined;
     this._symbologyOverrides = new FeatureSymbology.Overrides();
-    if (nonLocatable || transparency)
-
-      this._symbologyOverrides.overrideModel(tree.modelId, FeatureAppearance.fromJSON({ transparency, nonLocatable }));
+    if (nonLocatable || transparency) {
+      this._symbologyOverrides.override({
+        modelId: tree.modelId,
+        appearance: FeatureAppearance.fromJSON({ transparency, nonLocatable }),
+        onConflict: "subsume",
+      });
+    }
 
     const args = this.createDrawArgs(context);
     if (undefined !== args)

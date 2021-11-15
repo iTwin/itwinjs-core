@@ -32,8 +32,9 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     const emphasizedElements = this.getEmphasizedElements(vp);
     if (undefined !== emphasizedElements) {
       overrides.setDefaultOverrides(this._defaultAppearance!);
-      const app = this.wantEmphasis ? this._emphasizedAppearance : FeatureAppearance.defaults;
-      emphasizedElements.forEach((id) => { overrides.overrideElement(id, app); });
+      const appearance = this.wantEmphasis ? this._emphasizedAppearance : FeatureAppearance.defaults;
+      for (const elementId of emphasizedElements)
+        overrides.override({ elementId, appearance });
     }
 
     const overriddenElements = this.getOverriddenElements();
@@ -41,8 +42,9 @@ export class EmphasizeElements implements FeatureOverrideProvider {
       if (undefined !== this._defaultAppearance)
         overrides.setDefaultOverrides(this._defaultAppearance);
       for (const [key, ids] of overriddenElements) {
-        const ovrApp = this.createAppearanceFromKey(key);
-        ids.forEach((id) => { overrides.overrideElement(id, ovrApp); });
+        const appearance = this.createAppearanceFromKey(key);
+        for (const elementId of ids)
+          overrides.override({ elementId, appearance });
       }
     }
 
