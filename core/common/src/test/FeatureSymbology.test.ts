@@ -346,6 +346,39 @@ describe("FeatureOverrides", () => {
     expectAppearance(2, FeatureAppearance.defaults);
     expectAppearance(0, green);
   });
+
+  it("applies conflict strategy", () => {
+    const elementId = "0x1";
+    const ovrs = new Overrides();
+
+    const reset = () => ovrs.elementOverrides.clear();
+
+    const test = (appearance: FeatureAppearance, onConflict: "extend" | "replace" | "skip" = "extend", expected: FeatureAppearance | undefined) => {
+      ovrs.override({ elementId, appearance, onConflict });
+      const actual = ovrs.getElementOverridesById(elementId);
+      if (!expected) {
+        expect(actual).to.be.undefined;
+      } else {
+        expect(actual).not.to.be.undefined;
+        expect(actual!.equals(expected)).to.be.true;
+      }
+    };
+
+    const green = FeatureAppearance.fromRgb(ColorDef.green);
+    for (const onConflict of ["extend", "replace", "skip", undefined]) {
+      reset();
+      expect(ovrs.getElementOverridesById(elementId)).to.be.undefined;
+      test(green, onConflict as "extend" | "replace" | "skip" | undefined, green);
+    }
+
+    test(FeatureAppearance.fromTransparency(0.5), "skip", green);
+    test(FeatureAppearance.fromRgb(ColorDef.blue), "extend", green);
+
+    const blue = FeatureAppearance.fromRgb(ColorDef.blue);
+    test(blue, "replace", blue);
+    test(FeatureAppearance.fromRgba(ColorDef.red.withTransparency(0x7f)), "skip", blue);
+    test(FeatureAppearance.fromRgba(ColorDef.red.withTransparency(0x7f)), "extend", FeatureAppearance.fromRgba(ColorDef.blue.withTransparency(0x7f)));
+  });
 });
 
 describe("FeatureAppearanceProvider", () => {
