@@ -48,7 +48,6 @@ interface MapLayerSourceProps {
 }
 
 /** A source for map layers.  These may be catalogued for convenient use by users or applications.
- * @see [[MapLayerPreferences]]
  * @internal
  */
 export class MapLayerSource {

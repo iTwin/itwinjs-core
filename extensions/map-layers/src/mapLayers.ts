@@ -30,7 +30,7 @@ export class MapLayersUI {
    *   iconSpec={MapLayersWidgetControl.iconSpec} />,
    *   ```
    *
-   * If an iTwinConfig is provided, it will be used y
+   * If an iTwinConfig is provided, it will be used to load the MapLayerSources that are stored.
    */
   public static async initialize(registerItemsProvider = true, iTwinConfig?: UserPreferencesAccess): Promise<void> {
     MapLayersUI._iTwinConfig = iTwinConfig;
