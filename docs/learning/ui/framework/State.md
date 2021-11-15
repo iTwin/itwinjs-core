@@ -12,7 +12,7 @@ The [StateManager]($appui-react) manages a collection of Reducers. There is a de
 
 ## Example of Defining Initial Set of Reducers
 
-The following is an example of a application initializing the StateManager. If the FrameworkReducer is not specified when the StateManager is constructed it will be automatically added. If specified the name of the FrameworkReducer must be `frameworkState`.
+The following is an example of an application initializing the StateManager. If the FrameworkReducer is not specified when the StateManager is constructed it will be automatically added. If specified the name of the FrameworkReducer must be `frameworkState`.
 
 ```ts
 export class MyIModelApp {

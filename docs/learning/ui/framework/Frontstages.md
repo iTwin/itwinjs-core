@@ -16,7 +16,7 @@ Below is an example frontstage that shows the different areas/zones.
 
 ![FrontstageUi2](./images/FrontstageUi2.png "App UI Frontstage design")
 
-A frontstage is can be configured in a class subclassing the [FrontstageProvider]($appui-react) abstract class, but the recommended way is to build it using UiProviders, as in the example below .
+A frontstage can be configured in a class subclassing the [FrontstageProvider]($appui-react) abstract class, but the recommended way is to build it using UiProviders, as in the example below.
 
 ### Example Frontstage definition
 
