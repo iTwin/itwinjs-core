@@ -454,7 +454,7 @@ export class ClassifierMapLayerTileTreeReference extends MapLayerTileTreeReferen
   }
   public get viewFlags(): Partial<ViewFlagsProperties> {
     return {
-      renderMode: RenderMode.Wireframe,
+      renderMode: RenderMode.SmoothShade,
       transparency: true,      // Igored for point clouds as they don't support transparency.
       textures: true,
       lighting: false,
@@ -462,8 +462,9 @@ export class ClassifierMapLayerTileTreeReference extends MapLayerTileTreeReferen
       monochrome: false,
       materials: false,
       ambientOcclusion: false,
-      visibleEdges: false,
+      visibleEdges: true,
       hiddenEdges: false,
+      fill: true,
     };
   }
 }
