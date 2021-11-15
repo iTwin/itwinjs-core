@@ -6,7 +6,6 @@
 import { UiItemsManager } from "@itwin/appui-abstract";
 import { SampleTool } from "./tools/SampleTool";
 import { ReducerRegistryInstance } from "@itwin/appui-react";
-// import { SampleContentControl } from "./ui/content/SampleContentControl";
 import { GenericLocateTool } from "./tools/GenericLocateTool";
 import { OpenTraceDialogTool } from "./tools/OpenTraceDialogTool";
 import { IModelApp } from "@itwin/core-frontend";
@@ -16,7 +15,9 @@ import { OpenAbstractDialogTool } from "./tools/OpenAbstractModalDialogTool";
 import { NetworkTracingFrontstage } from "./ui/frontstages/NetworkTracing";
 import { CustomFrontstage } from "./ui/frontstages/CustomContent";
 
-/** UiItemsProvidersTest is a package that adds some user interface to the iModelApp when its initialize method is called. */
+/** UiItemsProvidersTest is a package that augments the user interface components for an iModelApp. When the package's
+ * initialize method is called tools, frontstages and UiItemProviders are registered.
+ */
 export class UiItemsProvidersTest {
   private static _initialized = false;
   /** We'll register the `uiItemsProvidersTest` as the package's namespace. The matching file `uiItemsProvidersTest.json`
