@@ -13,6 +13,7 @@ import { getAccessTokenFromBackend, TestUserCredentials } from "@itwin/oidc-sign
 import { IModelHubUserMgr } from "../common/IModelHubUserMgr";
 import { rpcInterfaces, TestRpcInterface } from "../common/RpcInterfaces";
 import { ITwinPlatformAbstraction, ITwinPlatformCloudEnv, ITwinStackCloudEnv } from "./hub/ITwinPlatformEnv";
+import { setBackendAccessToken } from "../certa/certaCommon";
 
 export class TestUtility {
   public static testITwinName = "iModelJsIntegrationTest";
@@ -66,13 +67,18 @@ export class TestUtility {
     if (NativeApp.isValid) {
       authorizationClient = new ElectronAppAuthorization ();
       IModelApp.authorizationClient = authorizationClient;
-      const accessToken = await getAccessTokenFromBackend(user);
+      const accessToken = await setBackendAccessToken(user, {
+        clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
+        redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
+        scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
+      });
       if ("" === accessToken)
         throw new Error("no access token");
+
     } else {
       authorizationClient = new IModelHubUserMgr(user);
       IModelApp.authorizationClient = authorizationClient;
-      await (authorizationClient as ElectronAppAuthorization).signIn();
+      await (authorizationClient as IModelHubUserMgr).signIn();
     }
 
     const cloudParams = await TestRpcInterface.getClient().getCloudEnv();

@@ -22,6 +22,8 @@ import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIp
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
 import * as testCommands from "./TestEditCommands";
+import { registerBackendCallback } from "../../../../tools/certa/lib/utils/CallbackUtils";
+import { exposeBackendCallbacks } from "../certa/certaBackend";
 
 /* eslint-disable no-console */
 
@@ -82,6 +84,7 @@ async function init() {
   iModelHost.hubAccess = new IModelHubBackend(CloudEnv.cloudEnv.imodelClient);
 
   if (ProcessDetector.isElectronAppBackend) {
+    exposeBackendCallbacks();
     const authClient = await ElectronAuthorizationBackend.create({
       clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
       redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
