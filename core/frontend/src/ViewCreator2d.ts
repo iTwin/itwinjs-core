@@ -33,7 +33,7 @@ export interface ViewCreator2dOptions {
   vpAspect?: number;
   /** Background color of the view (default is white). */
   bgColor?: ColorDef;
-  /** Checks to see if there already is a [[ViewDefinition2d]] for the given modelId. If so, use it as the seed view, and merge its props into the final view created. */
+  /** Checks to see if there already is a [[ViewDefinition2d]] for the given modelId. If so, use it as the seed view, and merge its props into the final view created. This option will be ignored if the iModel connection is blank. */
   useSeedView?: boolean;
 }
 
@@ -62,7 +62,7 @@ export class ViewCreator2d {
 
   /**
    * Creates and returns view for the 2D model id passed in.
-   * @param modelId Id of the 2D model for the view.
+   * @param modelId Id of the 2D model for the view.  Id is ignored when using a blank iModel connection.
    * @param [options] Options for creating the view.
    * @throws [IModelError]($common) If modelType is not supported.
    */
@@ -84,7 +84,8 @@ export class ViewCreator2d {
    * @throws [IModelError]($common) if modelId is invalid.
    */
   private async _getModelBaseClassName(modelId: Id64String): Promise<typeof EntityState> {
-
+    if (this._imodel.isBlank)
+      return DrawingModelState;
     let baseClassName;
 
     const modelProps = await this._imodel.models.getProps(modelId);
@@ -102,7 +103,7 @@ export class ViewCreator2d {
 
   /**
    * Creates view from any 2D model type (Drawing/SectionDrawing/Sheet)
-   * @param modelId of target model.
+   * @param modelId of target model.  Will be ignored if the iModel connection is blank.
    * @param modelType classFullName of target 2D model.
    * @param options for view creation.
    * @throws [IModelError]($common) if modelType is not supported.
@@ -158,8 +159,13 @@ export class ViewCreator2d {
     const bgColor: ColorDef = options?.bgColor ? options.bgColor : ColorDef.white;
 
     // model extents
-    const modelProps = await this._imodel.models.queryModelRanges(modelId);
-    const modelExtents = Range3d.fromJSON(modelProps[0]);
+    let modelExtents: Range3d;
+    if (this._imodel.isBlank) {
+      modelExtents = this._imodel.projectExtents;
+    } else {
+      const modelProps = await this._imodel.models.queryModelRanges(modelId);
+      modelExtents = Range3d.fromJSON(modelProps[0]);
+    }
     let originX = modelExtents.low.x;
     let originY = modelExtents.low.y;
     let deltaX = modelExtents.xLength();
@@ -262,6 +268,8 @@ export class ViewCreator2d {
     * @param props Input view props to be merged
     */
   private async _mergeSeedView(modelId: Id64String, props: ViewStateProps): Promise<ViewStateProps> {
+    if (this._imodel.isBlank)
+      return props;
     const viewDefinitionId = await this._getViewDefinitionsIdForModel(modelId);
     // Return incase no viewDefinition found.
     if (viewDefinitionId === undefined)
@@ -300,7 +308,8 @@ export class ViewCreator2d {
    * Get all drawing categories
    */
   private async _getAllCategories(): Promise<Id64Array> {
-
+    if (this._imodel.isBlank)
+      return [];
     const query = "SELECT ECInstanceId from BisCore.DrawingCategory";
     const categories = await this._executeQuery(query);
 

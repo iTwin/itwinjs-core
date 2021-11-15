@@ -90,7 +90,7 @@ export class ViewCreator3d {
   private async _createViewStateProps(models: Id64String[], options?: ViewCreator3dOptions): Promise<ViewStateProps> {
     // Use dictionary model in all props
     const dictionaryId = IModel.dictionaryId;
-    const categories: Id64Array = this._imodel.isBlank ? [] : await this._getAllCategories();
+    const categories = await this._getAllCategories();
 
     // model extents
     const modelExtents = new Range3d();
@@ -264,6 +264,8 @@ export class ViewCreator3d {
    * Get all categories containing elements
    */
   private async _getAllCategories(): Promise<Id64Array> {
+    if (this._imodel.isBlank)
+      return [];
     // Only use categories with elements in them
     const query = `SELECT DISTINCT Category.Id AS id FROM BisCore.GeometricElement3d WHERE Category.Id IN (SELECT ECInstanceId FROM BisCore.SpatialCategory)`;
     const categories: Id64Array = await this._executeQuery(query);
