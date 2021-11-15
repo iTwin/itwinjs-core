@@ -603,6 +603,10 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     let app = args.appearance;
     const idLo = Id64.getLowerUint32(id);
     const idHi = Id64.getUpperUint32(id);
+
+    if (undefined !== args.elementId && this.isNeverDrawn(idLo, idHi, 0))
+      return;
+
     const replace = "replace" === args.onConflict;
     const existing = replace ? undefined : map.get(idLo, idHi);
     if (existing) {
