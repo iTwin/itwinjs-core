@@ -178,6 +178,7 @@ export abstract class GeometricModelState extends ModelState implements Geometri
         modelId: this.id,
         tilesetToDbTransform: this.jsonProperties.tilesetToDbTransform,
         classifiers: undefined !== spatialModel ? spatialModel.classifiers : undefined,
+        scalablemeshProps: undefined !== spatialModel ? spatialModel.scalablemeshProps : undefined,
       });
     }
 
@@ -268,6 +269,7 @@ export class SheetModelState extends GeometricModel2dState {
 export class SpatialModelState extends GeometricModel3dState {
   /** If this is a reality model, provides access to a list of available spatial classifiers that can be applied to it. */
   public readonly classifiers?: SpatialClassifiers;
+  public readonly scalablemeshProps?: any;
 
   /** @internal */
   public static override get className() { return "SpatialModel"; }
@@ -276,9 +278,12 @@ export class SpatialModelState extends GeometricModel3dState {
 
   public constructor(props: ModelProps, iModel: IModelConnection, state?: SpatialModelState) {
     super(props, iModel, state);
-    if (this.isRealityModel)
+    if (this.isRealityModel) {
       this.classifiers = new SpatialClassifiers(this.jsonProperties);
+      this.scalablemeshProps = this.jsonProperties["scalablemesh"];
+    }
   }
+
   /** Return true if this is a reality model (represented by a 3d tile set). */
   public get isRealityModel(): boolean {
     return undefined !== this.jsonProperties.tilesetUrl;
