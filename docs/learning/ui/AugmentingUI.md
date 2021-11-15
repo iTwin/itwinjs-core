@@ -1,12 +1,12 @@
 # Augmenting the UI of an iTwin App
 
-There are two basic ways to augment the UI of a host iTwinApp.
+There are two basic ways to augment the UI of a host iModelApp.
 
-The simplest way is to use a `UiItemsProvider` to provide definitions for Tool buttons, Status Bar items, and Widgets to add to an existing frontstage. In this scenario, as frontstage components are constructed at runtime, calls are made to all registered UiItemsProviders to gather item definitions to insert into the host applications UI. The item definitions are sorted and arranged by their itemPriority value.
+The simplest way is to use one or more `UiItemsProvider` to provide definitions for Tool buttons, Status Bar items, Backstage items, and Widgets.  In this scenario, as frontstage components are constructed at runtime, calls are made to all registered UiItemsProviders to gather item definitions to insert into the host iModelApp.
 
- The second way is for a package to provide an entire stage definition. It is recommended that this be done using the [StandardFrontstageProvider]($appui-react), which will provide an empty stage that can then be populated via UiItemsProviders.
+The second way is for a package to provide an entire stage definition. It is recommended that this be done using the [StandardFrontstageProvider]($appui-react), which will provide an empty stage that can then be populated via UiItemsProviders.
 
-A package must have an initialize() method that registers its UiItemsProvider, as in this example:
+A common technique is for a package to have an initialize() method that registers its Tools and UiItemsProvider. See this approach in example below.
 
 ```ts
   private static registerUiComponents(): void {
@@ -32,11 +32,16 @@ A package must have an initialize() method that registers its UiItemsProvider, a
 
 ## Adding ToolButtons, Status Bar items, and Widgets to existing application frontstage
 
-A [UiItemsProvider]($appui-abstract) is used to provide items to insert into the UI of an existing stage. When constructing the stage the UiFramework code will request item definitions from the UiItemsProvider. These calls will always include the current frontstage's Id and usage. A package can use the info to decide which items to add. The stageId name's used by an application may not be useful unless the package is just used in a single host app where the stage names are known. The stageUsage value is also provided, this string is typically set to one of the standard [StageUsage]($appui-abstract) enum values.
+A [UiItemsProvider]($appui-abstract) is used to provide items to insert into the UI of an existing stage. When an App UI is constructing the stage, item definitions are request from all UiItemsProviders. These calls will always include the current frontstage's Id and usage. A package can use this info to determine which, if any, items to add to the stage. The stageId name's used by an application may not be useful unless the package is just used in a single host app where the stage names are known. The stageUsage value is also provided, this string is typically set to one of the standard [StageUsage]($appui-abstract) enum values. Also passed to each provider is the stage's applicationData. This allows the frontstage to specify a list of features that it is
+intended to support.
+
+One important note. When specifying an item via a UiItemsProvider please ensure that its Id is uniquely specified across all applications that may use items from the provider. One way to do this is to prefix the id with a string that represents the package. A common pattern is
 
 ### Adding a ToolButton
 
-Below is the UiItemsProvider function called when appui-react is populating toolbars.  The [ToolbarUsage]($appui-abstract) will indicate if the toolbar is on the left (content manipulation) or right (view navigation) of the application window. The [ToolbarOrientation]($appui-abstract) specifies if the toolbar is horizontal or vertical.
+A UiItemsProvider can return an array of [CommonToolbarItem]($appui-abstract) that are used when populating the four different toolbars supported by App UI. The [ToolbarUsage]($appui-abstract) will indicate if the toolbar is on the left (content manipulation) or right (view navigation) of the application window. The [ToolbarOrientation]($appui-abstract) specifies if the toolbar is horizontal or vertical. The item priority determines the order of the tool button items within a group. A group priority can optionally be defined for the tools. If the group priority is defined, tools are placed into groups with a separator displayed when the group priority changes. The default value for group priority is zero.
+
+Below is the UiItemsProvider function called when appui-react is populating toolbars.
 
 ```ts
 public provideToolbarButtonItems(stageId: string, stageUsage: string,
@@ -45,7 +50,7 @@ public provideToolbarButtonItems(stageId: string, stageUsage: string,
 
 ### Status Bar Item
 
-Below is the UiItemsProvider function called when appui-react is populating the status bar footer.
+A UiItemsProvider can return an array of [CommonStatusBarItem]($appui-abstract) to insert into the Statubar. The item will define what section to be placed in and its item priority which defines its order within the section. Below is the UiItemsProvider function called when appui-react is populating the status bar footer.
 
 ```ts
 public provideStatusBarItems(stageId: string, stageUsage: string): CommonStatusBarItem[]
@@ -53,7 +58,7 @@ public provideStatusBarItems(stageId: string, stageUsage: string): CommonStatusB
 
 ### Widget Item
 
-Below is the UiItemsProvider function called when appui-react is populating StagePanels. The [StagePanelLocation]($appui-abstract) will be the default location for the widget. The [StagePanelSection]($appui-abstract) will specify what zone/area in the panel should contain the widget. Since widgets can be moved by the user, the locations specified are only the default locations.
+Below is the UiItemsProvider function called when appui-react is populating StagePanels. The [StagePanelLocation]($appui-abstract) will be the default location for the widget. The [StagePanelSection]($appui-abstract) will specify what section of the panel should contain the widget. Since widgets can be moved by the user, the locations specified are only the default locations.
 
 Starting in version 2.17 Widgets can specify if they support being "popped-out" to a child window by setting the AbstractWidgetProps property `canPopout` to true. This option must be explicitly set because the method `getWidgetContent` must return React components that works properly in a child window. At minimum  components should typically not use the `window` or `document` property to register listeners as these listener will be registered for events in the main window and not in the child window. Components will need to use the `ownerDocument` and `ownerDocument.defaultView` properties to retrieve `document` and `window` properties for the child window.
 
