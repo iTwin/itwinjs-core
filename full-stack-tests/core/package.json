@@ -32,7 +32,7 @@
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-markup": "workspace:*",
     "@itwin/browser-authorization": "^0.3.0",
-    "@itwin/electron-authorization": "^0.3.0",
+    "@itwin/electron-authorization": "^0.3.1",
     "@itwin/editor-backend": "workspace:*",
     "@itwin/editor-common": "workspace:*",
     "@itwin/editor-frontend": "workspace:*",
