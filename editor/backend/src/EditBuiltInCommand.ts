@@ -579,6 +579,7 @@ export class SolidModelingCommand extends BasicManipulationCommand implements So
       type: "3d",
       placement: { origin: Point3d.createZero(), angles: YawPitchRollAngles.createDegrees(0, 0, 0) },
       categoryId: geometryProps.category,
+      elementId: id,
       geometry: { format: "flatbuffer", data: [geometryProps.geometry] },
     };
 
@@ -821,6 +822,7 @@ export class SolidModelingCommand extends BasicManipulationCommand implements So
       type: "3d",
       placement,
       categoryId: info.categoryId,
+      elementId: id,
       geometry: { format: "flatbuffer", data: info.entryArray },
     };
 
