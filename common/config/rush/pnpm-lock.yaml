@@ -3107,8 +3107,11 @@ importers:
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
       '@types/yargs': ^12.0.5
+      dotenv: ^10.0.0
+      dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       fs-extra: ^8.1.0
+      internal-tools: workspace:*
       mocha: ^8.3.2
       rimraf: ^3.0.2
       typescript: ~4.4.0
@@ -3122,6 +3125,8 @@ importers:
       '@itwin/core-electron': link:../../core/electron
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-transformer': link:../../core/transformer
+      dotenv: 10.0.0
+      dotenv-expand: 5.1.0
       fs-extra: 8.1.0
       yargs: 16.2.0
     devDependencies:
@@ -3135,6 +3140,7 @@ importers:
       '@types/node': 14.14.31
       '@types/yargs': 12.0.20
       eslint: 7.32.0
+      internal-tools: link:../../tools/internal
       mocha: 8.4.0
       rimraf: 3.0.2
       typescript: 4.4.4
