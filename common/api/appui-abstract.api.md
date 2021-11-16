@@ -98,7 +98,7 @@ export interface AbstractWidgetProps extends ProvidedItem {
     readonly tooltip?: string | ConditionalStringValue;
 }
 
-// @public
+// @public @deprecated
 export enum AbstractZoneLocation {
     // (undocumented)
     BottomLeft = 7,
@@ -2067,6 +2067,7 @@ export interface UiItemsProvider {
     onBackstageItemArbiterChange?: (item: BackstageItem, action: UiItemsApplicationAction) => void;
     onStatusBarItemArbiterChange?: (item: CommonStatusBarItem, action: UiItemsApplicationAction) => void;
     onToolbarButtonItemArbiterChange?: (item: CommonToolbarItem, action: UiItemsApplicationAction) => void;
+    onUnregister?: () => void;
     onWidgetArbiterChange?: (widget: AbstractWidgetProps, action: UiItemsApplicationAction) => void;
     provideBackstageItems?: () => BackstageItem[];
     provideStatusBarItems?: (stageId: string, stageUsage: string, stageAppData?: any) => CommonStatusBarItem[];

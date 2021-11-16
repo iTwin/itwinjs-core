@@ -9,7 +9,6 @@
 import { Geometry } from "../Geometry";
 import { Point4d } from "../geometry4d/Point4d";
 import { Angle } from "./Angle";
-import { Ray3d } from "./Ray3d";
 import { HasZ, XAndY, XYAndZ, XYZProps } from "./XYZProps";
 
 /**
@@ -456,28 +455,6 @@ export class Point3d extends XYZ {
     const t: number = fraction - 1.0;
     return Point3d.create(other.x + t * (other.x - this.x), other.y + t * (other.y - this.y), other.z + t * (other.z - this.z), result);
   }
-  /**
-   * Return a ray whose ray.origin is interpolated, and ray.direction is the vector between points with a
-   * scale factor applied.
-   * @param fraction fractional position between points.
-   * @param other endpoint of interpolation
-   * @param tangentScale scale factor to apply to the startToEnd vector
-   * @param result  optional receiver.
-   */
-  public interpolatePointAndTangent(fraction: number, other: Point3d, tangentScale: number, result?: Ray3d): Ray3d {
-    result = result ? result : Ray3d.createZero();
-    const dx = other.x - this.x;
-    const dy = other.y - this.y;
-    const dz = other.z - this.z;
-    result.direction.set(tangentScale * dx, tangentScale * dy, tangentScale * dz);
-    if (fraction <= 0.5)
-      result.origin.set(this.x + fraction * dx, this.y + fraction * dy, this.z + fraction * dz);
-    else {
-      const t: number = fraction - 1.0;
-      result.origin.set(other.x + t * dx, other.y + t * dy, other.z + t * dz);
-    }
-    return result;
-  }
   /** Return a point with independent x,y,z fractional interpolation. */
   public interpolateXYZ(fractionX: number, fractionY: number, fractionZ: number, other: Point3d, result?: Point3d): Point3d {
     return Point3d.create(Geometry.interpolate(this.x, fractionX, other.x), Geometry.interpolate(this.y, fractionY, other.y), Geometry.interpolate(this.z, fractionZ, other.z), result);
@@ -703,12 +680,15 @@ export class Vector3d extends XYZ {
    * @param end end point for vector
    * @param result optional result
    */
-  public static createStartEnd(start: XYAndZ, end: XYAndZ, result?: Vector3d): Vector3d {
+  public static createStartEnd(start: XAndY | XYAndZ, end: XAndY | XYAndZ, result?: Vector3d): Vector3d {
+    const zStart = XYZ.accessZ(start, 0.0) as number;
+    const zEnd = XYZ.accessZ(end, 0.0) as number;
+    const dz = zEnd - zStart;
     if (result) {
-      result.set(end.x - start.x, end.y - start.y, end.z - start.z);
+      result.set(end.x - start.x, end.y - start.y, dz);
       return result;
     }
-    return new Vector3d(end.x - start.x, end.y - start.y, end.z - start.z);
+    return new Vector3d(end.x - start.x, end.y - start.y, dz);
   }
   /**
    * Return a vector (optionally in preallocated result, otherwise newly created) from [x0,y0,z0] to [x1,y1,z1]

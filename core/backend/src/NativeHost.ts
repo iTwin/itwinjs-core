@@ -7,7 +7,7 @@
  */
 
 import { join } from "path";
-import { AccessToken, AuthStatus, BeEvent, GuidString } from "@itwin/core-bentley";
+import { AccessToken, assert, AuthStatus, BeEvent, GuidString } from "@itwin/core-bentley";
 import {
   AuthorizationClient, BriefcaseProps, IModelError, InternetConnectivityStatus, LocalBriefcaseProps, NativeAppAuthorizationConfiguration, nativeAppChannel,
   NativeAppFunctions, NativeAppNotifications, nativeAppNotify, OverriddenBy, RequestNewBriefcaseProps, SessionProps, StorageValue,
@@ -116,7 +116,8 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
 
     const downloadPromise = BriefcaseManager.downloadBriefcase(args);
     const checkAbort = () => {
-      const job = Downloads.isInProgress(args.fileName!);
+      assert(undefined !== args.fileName);
+      const job = Downloads.isInProgress(args.fileName);
       return (job && (job.request as any).abort === 1) ? 1 : 0;
     };
     return downloadPromise;

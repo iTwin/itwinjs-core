@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
@@ -600,6 +601,7 @@ describe("Frontstage local storage wrapper", () => {
 
       it("should return updated nineZoneState", () => {
         const frontstageDef = new FrontstageDef();
+        sinon.stub(frontstageDef, "isReady").get(() => true);
         const nineZoneState = createNineZoneState();
         const newNineZoneState = createNineZoneState();
         frontstageDef.nineZoneState = nineZoneState;
@@ -653,7 +655,7 @@ describe("Frontstage local storage wrapper", () => {
       it("should initialize nineZoneState", async () => {
         const setting = createFrontstageState();
         const uiSettings = new UiSettingsStub();
-        sinon.stub(uiSettings, "getSetting").returns(Promise.resolve<UiSettingsResult>({
+        sinon.stub(uiSettings, "getSetting").returns(Promise.resolve<UiSettingsResult>({ // eslint-disable-line deprecation/deprecation
           status: UiSettingsStatus.Success,
           setting,
         }));
@@ -869,6 +871,7 @@ describe("Frontstage local storage wrapper", () => {
     describe("useSyncDefinitions", () => {
       it("should set panel widget state to Open", () => {
         const frontstageDef = new FrontstageDef();
+        sinon.stub(frontstageDef, "isReady").get(() => true);
         const zoneDef = new ZoneDef();
         sinon.stub(frontstageDef, "centerRight").get(() => zoneDef);
         const widgetDef = new WidgetDef({});
@@ -889,6 +892,7 @@ describe("Frontstage local storage wrapper", () => {
         const frontstageDef = new FrontstageDef();
         const zoneDef = new ZoneDef();
         sinon.stub(frontstageDef, "centerRight").get(() => zoneDef);
+        sinon.stub(frontstageDef, "isReady").get(() => true);
         const widgetDef = new WidgetDef({});
         sinon.stub(widgetDef, "id").get(() => "t1");
         const spy = sinon.spy(widgetDef, "setWidgetState");
@@ -908,6 +912,7 @@ describe("Frontstage local storage wrapper", () => {
         const frontstageDef = new FrontstageDef();
         const rightPanel = new StagePanelDef();
         sinon.stub(frontstageDef, "rightPanel").get(() => rightPanel);
+        sinon.stub(frontstageDef, "isReady").get(() => true);
         const spy = sinon.spy(rightPanel, "size", ["set"]);
         renderHook(() => useSyncDefinitions(frontstageDef));
         act(() => {
@@ -922,6 +927,7 @@ describe("Frontstage local storage wrapper", () => {
 
       it("should set StagePanelState.Off", () => {
         const frontstageDef = new FrontstageDef();
+        sinon.stub(frontstageDef, "isReady").get(() => true);
         const rightPanel = new StagePanelDef();
         const spy = sinon.spy();
         sinon.stub(rightPanel, "panelState").get(() => StagePanelState.Off).set(spy);
@@ -939,6 +945,7 @@ describe("Frontstage local storage wrapper", () => {
 
       it("should set floating widget state to Open", () => {
         const frontstageDef = new FrontstageDef();
+        sinon.stub(frontstageDef, "isReady").get(() => true);
         const zoneDef = new ZoneDef();
         sinon.stub(frontstageDef, "centerRight").get(() => zoneDef);
         const widgetDef = new WidgetDef({});
@@ -957,6 +964,7 @@ describe("Frontstage local storage wrapper", () => {
 
       it("should set floating widget state to Closed", () => {
         const frontstageDef = new FrontstageDef();
+        sinon.stub(frontstageDef, "isReady").get(() => true);
         const zoneDef = new ZoneDef();
         sinon.stub(frontstageDef, "centerRight").get(() => zoneDef);
         const widgetDef = new WidgetDef({});

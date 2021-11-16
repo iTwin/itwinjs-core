@@ -176,25 +176,25 @@ export class AnalysisAnimationToolSettings extends React.Component<Props, Animat
                 className="toolSettings-sliderStretch" id="animationSlider" onChange={this._handleSliderChange} />
             </div>
             <div className={className}>
-              <Toolbar
-                expandsTo={Direction.Bottom}
+              <Toolbar // eslint-disable-line deprecation/deprecation
+                expandsTo={Direction.Bottom} // eslint-disable-line deprecation/deprecation
                 items={
                   <>
-                    <Item
+                    <Item // eslint-disable-line deprecation/deprecation
                       isActive={this.state.isAnimating && !this.state.isAnimationPaused}
                       title={IModelApp.localization.getLocalizedString("SampleApp:tools.AnalysisAnimation.ToolSettings.play")}
                       key="animationPlay"
                       onClick={this._startAnimation}
                       icon={<Icon iconSpec="icon-media-controls-circular-play" />}
                     />
-                    <Item
+                    <Item // eslint-disable-line deprecation/deprecation
                       isActive={this.state.isAnimationPaused}
                       title={IModelApp.localization.getLocalizedString("SampleApp:tools.AnalysisAnimation.ToolSettings.pause")}
                       key="animationPause"
                       onClick={this._pauseAnimation}
                       icon={<Icon iconSpec="icon-media-controls-circular-pause" />}
                     />
-                    <Item
+                    <Item // eslint-disable-line deprecation/deprecation
                       isActive={!this.state.isAnimating}
                       title={IModelApp.localization.getLocalizedString("SampleApp:tools.AnalysisAnimation.ToolSettings.stop")}
                       key="animationStop"

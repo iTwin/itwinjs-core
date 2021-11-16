@@ -43,8 +43,8 @@ export * from "./appui-react/content/ContentGroup";
 export * from "./appui-react/content/ContentLayout";
 export * from "./appui-react/content/ContentLayoutManager";
 export * from "./appui-react/content/ContentViewManager";
-export * from "./appui-react/content/SavedView";
-export * from "./appui-react/content/SavedViewLayout";
+export * from "./appui-react/content/ViewStateHelper";
+export * from "./appui-react/content/StageContentLayout";
 export * from "./appui-react/content/ViewportContentControl";
 export * from "./appui-react/content/IModelViewport";
 export * from "./appui-react/content/DefaultViewOverlay";
@@ -162,7 +162,6 @@ export * from "./appui-react/stagepanels/FrameworkStagePanel";
 export * from "./appui-react/stagepanels/StagePanel";
 export * from "./appui-react/stagepanels/StagePanelDef";
 export * from "./appui-react/stagepanels/StagePanelHeader";
-export * from "./appui-react/stagepanels/StagePanelEnums";
 
 export * from "./appui-react/statusbar/StatusBar";
 export * from "./appui-react/statusbar/StatusBarWidgetControl";
@@ -247,6 +246,7 @@ export * from "./appui-react/widget-panels/Toolbars";
 export * from "./appui-react/widget-panels/ToolSettings";
 export * from "./appui-react/widget-panels/useWidgetDirection";
 
+export * from "./appui-react/widgets/BackstageAppButton";
 export * from "./appui-react/widgets/BasicNavigationWidget";
 export * from "./appui-react/widgets/BasicToolWidget";
 export * from "./appui-react/widgets/DefaultNavigationWidget";
@@ -358,6 +358,10 @@ export * from "./appui-react/zones/ZoneDef";
 /**
  * @docs-group-description Picker
  * Classes for working with various pickers
+ */
+/**
+ * @docs-group-description Popup
+ * Classes for working with popup components
  */
 /**
  * @docs-group-description State

@@ -13,6 +13,7 @@ import { CommonProps, NoChildrenProps } from "@itwin/core-react";
 import { HorizontalAnchor, HorizontalAnchorHelpers } from "../Stacked";
 
 /** Properties of [[WidgetContent]] component.
+ * @deprecated
  * @alpha
  */
 export interface WidgetContentProps extends CommonProps, NoChildrenProps { // eslint-disable-line @typescript-eslint/naming-convention
@@ -25,6 +26,7 @@ export interface WidgetContentProps extends CommonProps, NoChildrenProps { // es
 }
 
 /** Scrollable widget content. Used by [[Stacked]] component.
+ * @deprecated
  * @alpha
  */
 export class WidgetContent extends React.PureComponent<WidgetContentProps> {

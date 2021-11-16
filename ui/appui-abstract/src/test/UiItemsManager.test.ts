@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 import { expect } from "chai";
 import * as sinon from "sinon";
 import {
@@ -67,6 +68,16 @@ class TestUiItemsProvider implements UiItemsProvider {
   }
 }
 
+class TestUnregisterUiItemsProvider implements UiItemsProvider {
+  public readonly id = "TestUnregisterUiItemsProvider";
+  constructor(private _onUregisterFunc: () => void) {
+
+  }
+  public onUnregister() {
+    this._onUregisterFunc();
+  }
+}
+
 describe("UiItemsManager", () => {
   afterEach(() => sinon.restore());
 
@@ -104,6 +115,17 @@ describe("UiItemsManager", () => {
     UiItemsManager.onUiProviderRegisteredEvent.removeListener(spy);
     UiItemsManager.unregister(testUiProvider.id);
     expect(UiItemsManager.hasRegisteredProviders).to.be.false;
+  });
+
+  it("register UiProvider should trigger callback", () => {
+    const spy = sinon.spy();
+    const testUiProvider = new TestUnregisterUiItemsProvider(spy);
+    UiItemsManager.register(testUiProvider);
+    spy.calledOnce.should.false;
+    expect(UiItemsManager.hasRegisteredProviders).to.be.true;
+    UiItemsManager.unregister(testUiProvider.id);
+    expect(UiItemsManager.hasRegisteredProviders).to.be.false;
+    spy.calledOnce.should.true;
   });
 
   it("don't register UiProvider with same id more than once", () => {

@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 /** @packageDocumentation
  * @module Frontstage
  */
@@ -41,6 +42,12 @@ export interface StandardFrontstageProps {
   /** Specify button to use to open backstage. Leave undefined for no backstage button.
    * ```
    * <BackstageAppButton icon={"icon-bentley-systems"} />
+   * ```
+   * Custom corner button definition
+   * ```
+   * const cornerButton = <BackstageAppButton icon={"icon-bentley-systems"}
+   *   label="Toggle Backstage display",
+   *   execute={() => BackstageManager.getBackstageToggleCommand().execute()} />;
    * ```
    */
   cornerButton?: React.ReactNode;

@@ -84,7 +84,8 @@ abstract class TileRequestMemoizer<Result, Props extends TileRequestProps> exten
 
     if (tileQP.isFulfilled) {
       this.log("completed", props);
-      return tileQP.result!;
+      assert(undefined !== tileQP.result);
+      return tileQP.result;
     }
 
     assert(tileQP.isRejected);
@@ -137,7 +138,7 @@ async function getTileContent(props: TileContentRequestProps): Promise<TileConte
 
   // ###TODO: Verify the guid supplied by the front-end matches the guid stored in the model?
   if (IModelHost.usingExternalTileCache) {
-    await IModelHost.tileUploader.cacheTile(props.tokenProps, props.treeId, props.contentId, tile.content, props.guid, {
+    await IModelHost.tileUploader?.cacheTile(props.tokenProps, props.treeId, props.contentId, tile.content, props.guid, {
       backendName: IModelHost.applicationId,
       tileGenerationTime: tile.elapsedSeconds.toString(),
       tileSize: tile.content.byteLength.toString(),
@@ -189,7 +190,7 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
   public static register() { RpcManager.registerImpl(IModelTileRpcInterface, IModelTileRpcImpl); }
 
   public async requestTileTreeProps(tokenProps: IModelRpcProps, treeId: string): Promise<IModelTileTreeProps> {
-    return RequestTileTreePropsMemoizer.perform({ accessToken: RpcTrace.currentActivity!.accessToken, tokenProps, treeId });
+    return RequestTileTreePropsMemoizer.perform({ accessToken: RpcTrace.expectCurrentActivity.accessToken, tokenProps, treeId });
   }
 
   public async purgeTileTrees(tokenProps: IModelRpcProps, modelIds: Id64Array | undefined): Promise<void> {
@@ -197,16 +198,16 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
     if (null === modelIds)
       modelIds = undefined;
 
-    const db = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.currentActivity!.accessToken, tokenProps);
+    const db = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
     return db.nativeDb.purgeTileTrees(modelIds);
   }
 
   public async generateTileContent(tokenProps: IModelRpcProps, treeId: string, contentId: string, guid: string | undefined): Promise<TileContentSource> {
-    return RequestTileContentMemoizer.perform({ accessToken: RpcTrace.currentActivity!.accessToken, tokenProps, treeId, contentId, guid });
+    return RequestTileContentMemoizer.perform({ accessToken: RpcTrace.expectCurrentActivity.accessToken, tokenProps, treeId, contentId, guid });
   }
 
   public async retrieveTileContent(tokenProps: IModelRpcProps, key: TileContentIdentifier): Promise<Uint8Array> {
-    const db = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.currentActivity!.accessToken, tokenProps);
+    const db = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
     return db.tiles.getTileContent(key.treeId, key.contentId);
   }
 
@@ -219,7 +220,8 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
 
     const expiry = CloudStorageTileCache.getCache().supplyExpiryForContainerUrl(id);
     const clientIp = (IModelHost.restrictTileUrlsByClientIp && invocation.request.ip) ? invocation.request.ip : undefined;
-    return IModelHost.tileCacheService.obtainContainerUrl(id, expiry, clientIp);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    return IModelHost.tileCacheService!.obtainContainerUrl(id, expiry, clientIp);
   }
 
   public async isUsingExternalTileCache(): Promise<boolean> { // eslint-disable-line @itwin/prefer-get
@@ -232,7 +234,7 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
 
   /** @internal */
   public async requestElementGraphics(rpcProps: IModelRpcProps, request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined> {
-    const iModel = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.currentActivity!.accessToken, rpcProps);
+    const iModel = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, rpcProps);
     return iModel.generateElementGraphics(request);
   }
 }
