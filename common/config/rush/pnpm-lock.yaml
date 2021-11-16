@@ -137,48 +137,6 @@ importers:
       typescript: 4.4.4
       webpack: 4.42.0
 
-  ../../clients/product-settings:
-    specifiers:
-      '@bentley/itwin-client': workspace:*
-      '@itwin/build-tools': workspace:*
-      '@itwin/certa': workspace:*
-      '@itwin/core-bentley': workspace:*
-      '@itwin/eslint-plugin': workspace:*
-      '@itwin/oidc-signin-tool': ^3.0.0-dev.109
-      '@types/chai': ^4.1.4
-      '@types/mocha': ^8.2.2
-      '@types/node': 14.14.31
-      chai: ^4.1.2
-      dotenv: ^10.0.0
-      dotenv-expand: ^5.1.0
-      eslint: ^7.11.0
-      internal-tools: workspace:*
-      mocha: ^8.3.2
-      rimraf: ^3.0.2
-      source-map-loader: ^1.0.0
-      typescript: ~4.4.0
-      webpack: 4.42.0
-    devDependencies:
-      '@bentley/itwin-client': link:../itwin
-      '@itwin/build-tools': link:../../tools/build
-      '@itwin/certa': link:../../tools/certa
-      '@itwin/core-bentley': link:../../core/bentley
-      '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@itwin/oidc-signin-tool': 3.0.0-dev.109
-      '@types/chai': 4.2.22
-      '@types/mocha': 8.2.3
-      '@types/node': 14.14.31
-      chai: 4.3.4
-      dotenv: 10.0.0
-      dotenv-expand: 5.1.0
-      eslint: 7.32.0
-      internal-tools: link:../../tools/internal
-      mocha: 8.4.0
-      rimraf: 3.0.2
-      source-map-loader: 1.1.3_webpack@4.42.0
-      typescript: 4.4.4
-      webpack: 4.42.0
-
   ../../clients/reality-data:
     specifiers:
       '@bentley/itwin-client': workspace:*
@@ -727,7 +685,6 @@ importers:
   ../../core/frontend:
     specifiers:
       '@bentley/itwin-client': workspace:*
-      '@bentley/product-settings-client': workspace:*
       '@bentley/telemetry-client': workspace:*
       '@itwin/appui-abstract': workspace:*
       '@itwin/build-tools': workspace:*
@@ -771,7 +728,6 @@ importers:
       xml-js: 1.6.11
     devDependencies:
       '@bentley/itwin-client': link:../../clients/itwin
-      '@bentley/product-settings-client': link:../../clients/product-settings
       '@itwin/appui-abstract': link:../../ui/appui-abstract
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
@@ -1846,7 +1802,6 @@ importers:
     specifiers:
       '@bentley/imodelhub-client': workspace:*
       '@bentley/itwin-client': workspace:*
-      '@bentley/product-settings-client': workspace:*
       '@itwin/browser-authorization': ^0.3.0
       '@itwin/build-tools': workspace:*
       '@itwin/certa': workspace:*
@@ -1912,7 +1867,6 @@ importers:
       electron: 14.2.1
       fs-extra: 8.1.0
     devDependencies:
-      '@bentley/product-settings-client': link:../../clients/product-settings
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
@@ -2084,7 +2038,6 @@ importers:
   ../../full-stack-tests/presentation:
     specifiers:
       '@bentley/itwin-client': workspace:*
-      '@bentley/product-settings-client': workspace:*
       '@itwin/appui-abstract': workspace:*
       '@itwin/build-tools': workspace:*
       '@itwin/components-react': workspace:*
@@ -2145,7 +2098,6 @@ importers:
       typescript: ~4.4.0
     dependencies:
       '@bentley/itwin-client': link:../../clients/itwin
-      '@bentley/product-settings-client': link:../../clients/product-settings
       '@itwin/appui-abstract': link:../../ui/appui-abstract
       '@itwin/components-react': link:../../ui/components-react
       '@itwin/core-backend': link:../../core/backend
@@ -2625,7 +2577,6 @@ importers:
   ../../presentation/frontend:
     specifiers:
       '@bentley/itwin-client': workspace:*
-      '@bentley/product-settings-client': workspace:*
       '@itwin/build-tools': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
@@ -2663,7 +2614,6 @@ importers:
       typescript: ~4.4.0
     devDependencies:
       '@bentley/itwin-client': link:../../clients/itwin
-      '@bentley/product-settings-client': link:../../clients/product-settings
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
@@ -3165,8 +3115,11 @@ importers:
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
       '@types/yargs': ^12.0.5
+      dotenv: ^10.0.0
+      dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       fs-extra: ^8.1.0
+      internal-tools: workspace:*
       mocha: ^8.3.2
       rimraf: ^3.0.2
       typescript: ~4.4.0
@@ -3180,6 +3133,8 @@ importers:
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-transformer': link:../../core/transformer
       '@itwin/electron-authorization': 0.3.1
+      dotenv: 10.0.0
+      dotenv-expand: 5.1.0
       fs-extra: 8.1.0
       yargs: 16.2.0
     devDependencies:
@@ -3193,6 +3148,7 @@ importers:
       '@types/node': 14.14.31
       '@types/yargs': 12.0.20
       eslint: 7.32.0
+      internal-tools: link:../../tools/internal
       mocha: 8.4.0
       rimraf: 3.0.2
       typescript: 4.4.4
@@ -4000,7 +3956,6 @@ importers:
       '@bentley/icons-generic': ^1.0.15
       '@bentley/icons-generic-webfont': ^1.0.15
       '@bentley/itwin-client': workspace:*
-      '@bentley/product-settings-client': workspace:*
       '@bentley/telemetry-client': workspace:*
       '@itwin/appui-abstract': workspace:*
       '@itwin/appui-layout-react': workspace:*
@@ -4093,7 +4048,6 @@ importers:
       rxjs: 6.6.7
     devDependencies:
       '@bentley/itwin-client': link:../../clients/itwin
-      '@bentley/product-settings-client': link:../../clients/product-settings
       '@itwin/appui-abstract': link:../appui-abstract
       '@itwin/appui-layout-react': link:../appui-layout-react
       '@itwin/build-tools': link:../../tools/build
@@ -6304,12 +6258,12 @@ packages:
     requiresBuild: true
     dev: false
 
-  /@bentley/itwin-client/3.0.0-dev.119_493e91039ef15c02644b56f5b81b37e5:
-    resolution: {integrity: sha512-O/+SULivyJ0ZlfmfePCobYZjIwC0z3kE5L3368JzVRJcmz5r9Zz5Pte83QjTyCJLxYoaqMAnBhwXlsq9ezgqgQ==}
+  /@bentley/itwin-client/3.0.0-dev.120_78ed418714272b3d3113444cddc22cb4:
+    resolution: {integrity: sha512-CGZxrfLApz8hShtKB25gP6mYOYIZwzAfLVZLkvjUGadPGJbN8dNnrludH+xYegvZXetFFSiy44PEjFatPQs8XQ==}
     peerDependencies:
-      '@itwin/core-bentley': ^3.0.0-dev.119
+      '@itwin/core-bentley': ^3.0.0-dev.120
     dependencies:
-      '@itwin/core-bentley': 3.0.0-dev.119
+      '@itwin/core-bentley': 3.0.0-dev.120
       deep-assign: 2.0.0
       js-base64: 3.7.2
       lodash: 4.17.21
@@ -6762,6 +6716,9 @@ packages:
       '@itwin/core-bentley': 3.0.0-extension.1
       '@itwin/core-common': 3.0.0-extension.1_f2c3418fbeb77077b236020c30c9aae4
       oidc-client: 1.11.5
+    transitivePeerDependencies:
+      - '@bentley/itwin-client'
+      - '@itwin/core-geometry'
     dev: false
 
   /@itwin/certa/3.0.0-extension.1:
@@ -6812,8 +6769,8 @@ packages:
       - utf-8-validate
     dev: true
 
-  /@itwin/core-bentley/3.0.0-dev.119:
-    resolution: {integrity: sha512-IvV4FX6rSVaA2QH9PHgjxu6qund8vFj7gOZyYnEbztgvfIw8Bb/QPlUV7x9B22sbVcZYjV0gNiam/MZq7RDRaA==}
+  /@itwin/core-bentley/3.0.0-dev.120:
+    resolution: {integrity: sha512-J7m6NdITEJVUSbsySsqrDrf8Z47tyuWE8bxn+5vhqGCzKraEYFwmX2ggIE9o0pSLptROeqMqdgjzAtkdtIai2Q==}
     dev: false
 
   /@itwin/core-bentley/3.0.0-extension.1:
@@ -6836,8 +6793,8 @@ packages:
   /@itwin/electron-authorization/0.3.1:
     resolution: {integrity: sha512-uSiIvQOVlBizwRzjsDb6ctNp2EPLsPO6CSHgh5J31XzKDPbzpZjo6SgB5s44qILLKlqImSdwd+l8Mj/HlgJdwA==}
     dependencies:
-      '@bentley/itwin-client': 3.0.0-dev.119_493e91039ef15c02644b56f5b81b37e5
-      '@itwin/core-bentley': 3.0.0-dev.119
+      '@bentley/itwin-client': 3.0.0-dev.120_78ed418714272b3d3113444cddc22cb4
+      '@itwin/core-bentley': 3.0.0-dev.120
       '@openid/appauth': 1.3.1
       keytar: 7.7.0
       open: 8.4.0
@@ -6981,6 +6938,9 @@ packages:
       '@itwin/core-bentley': 3.0.0-extension.1
       '@itwin/core-common': 3.0.0-extension.1_f2c3418fbeb77077b236020c30c9aae4
       openid-client: 4.9.1
+    transitivePeerDependencies:
+      - '@bentley/itwin-client'
+      - '@itwin/core-geometry'
     dev: false
 
   /@jest/console/26.6.2:

@@ -36,7 +36,6 @@
     "@itwin/presentation-frontend": "workspace:*",
     "@itwin/presentation-components": "workspace:*",
     "@itwin/presentation-testing": "workspace:*",
-    "@bentley/product-settings-client": "workspace:*",
     "@itwin/core-react": "workspace:*",
     "@itwin/components-react": "workspace:*",
     "@itwin/appui-abstract": "workspace:*",

@@ -130,8 +130,8 @@ class OverrideProvider {
     if (this._defaultOvrs)
       ovrs.setDefaultOverrides(this._defaultOvrs);
 
-    for (const [key, value] of this._elementOvrs)
-      ovrs.overrideElement(key, value);
+    for (const [elementId, appearance] of this._elementOvrs)
+      ovrs.override({ elementId, appearance });
   }
 }
 
