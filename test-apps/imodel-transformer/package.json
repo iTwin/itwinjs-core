@@ -3,6 +3,7 @@
   "//private": "NOTE: this is a private package that is never published",
   "private": true,
   "license": "MIT",
+  "version": "0.1.0",
   "scripts": {
     "build": "tsc 1>&2",
     "build:ci": "npm run -s build",
@@ -11,7 +12,8 @@
     "docs": "",
     "lint": "eslint --max-warnings 0 \"./src/**/*.ts\" 1>&2",
     "start": "node ./lib/Main.js",
-    "test": "mocha"
+    "test": "mocha",
+    "copy:config": "internal-tools copy-config"
   },
   "repository": {},
   "dependencies": {
@@ -24,7 +26,9 @@
     "@itwin/core-transformer": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "fs-extra": "^8.1.0",
-    "yargs": "^16.0.0"
+    "yargs": "^16.0.0",
+    "dotenv": "^10.0.0",
+    "dotenv-expand": "^5.1.0"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -37,6 +41,7 @@
     "@types/node": "14.14.31",
     "@types/yargs": "^12.0.5",
     "eslint": "^7.11.0",
+    "internal-tools": "workspace:*",
     "mocha": "^8.3.2",
     "rimraf": "^3.0.2",
     "typescript": "~4.4.0"
