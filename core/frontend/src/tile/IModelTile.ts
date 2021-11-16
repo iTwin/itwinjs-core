@@ -70,7 +70,7 @@ export class IModelTile extends Tile {
     super(params, tree);
     this._sizeMultiplier = params.sizeMultiplier;
 
-    if (!this.isLeaf && this.tree.is3d) { // ###TODO: Want to know specifically if tree is *spatial*.
+    if (!this.isLeaf && this.tree.is3d && !this.isReady) { // ###TODO: Want to know specifically if tree is *spatial*.
       // Do not sub-divide such that chord tolerance would be below specified minimum, if minimum defined.
       const minTolerance = IModelApp.tileAdmin.minimumSpatialTolerance;
       if (minTolerance > 0 && computeTileChordTolerance(this, this.tree.is3d) <= minTolerance)
