@@ -11723,8 +11723,8 @@ export interface ViewCreator3dOptions {
     cameraOn?: boolean;
     skyboxOn?: boolean;
     standardViewId?: StandardViewId;
+    useDefaultLighting?: boolean;
     useSeedView?: boolean;
-    useV2Stylings?: boolean;
     vpAspect?: number;
 }
 
