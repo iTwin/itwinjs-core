@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Add TwoWayViewportFrustumSync to synchronize only the frusta of two viewports.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

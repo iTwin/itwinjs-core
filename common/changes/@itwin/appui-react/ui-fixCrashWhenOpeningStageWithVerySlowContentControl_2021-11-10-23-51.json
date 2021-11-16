@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Ensure nineZoneState is not set in FrontstageDef until 'isReady' is set.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}

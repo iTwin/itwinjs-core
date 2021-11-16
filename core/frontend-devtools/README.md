@@ -188,7 +188,7 @@ Reality models can be attached to a display style to provide context when that d
 ### Planar Mask keyins
 
 This package supplies several keyins to control planar masking for background maps and reality models. These masks provide a two and a half dimensional method for masking the regions where the background map, reality models and BIM geometry overlap.
-Planar masks include an optional transparency override.  If a transparency values is specified, a value of 0 will completely mask the reality model  - the masked portion will be omitted completely, higher values will produce less masking and a semit translucent display of the masked geometry. If no transparency is included then the transparency value from the mask elements is used.
+Planar masks include an optional transparency override.  If a transparency values is specified, a value of 0 will completely mask the reality model  - the masked portion will be omitted completely, higher values will produce less masking and a semit translucent display of the masked geometry. If no transparency is included then the transparency value from the mask elements is used.  An additional argument boolean argument will invert the mask and mask the area outside the mask geometry rather than inside.
 
 #### Background map planar masks
 
@@ -196,15 +196,19 @@ These keyins control the planar masking of the background map.
 
 * `fdt set map mask by priority`  Set the background map to be masked based on priority.  Masking by priority will mask by higher priority models.  By default background map have lowest priorty (-2048) Unless their priority is overridden reality models are higher priority and BIM models are always higher priority, therefore if priority masking is selected then the background map will be masked by all reality and BIM models. A value for transparency may optionally be included.
   * `transparency`: (optional) - A value for the mask transparency override. [0...1]
-  * `priority`: (optional) - A bias to be applied to the default reality model priority.  As lower priority models are masked by higher priority ones, specifying a priority of -1 would cause the reality model to be masked by other reality models.
+  * `invert`: (optional) - If `on` or `true` then the mask sense is inverted and the area outside the mask geometry will be masked and the area inside the mask is displayed.
 * `fdt set map mask elements` Set the background map to be masked by one or more elements.  If elements are already selected they are used for the mask, otherwise the mask elements may be selected individually.
   * `transparency`: (optional) - A value for the mask transparency override. [0...1]
+  * `invert`: (optional) - If `on` or `true` then the mask sense is inverted and the area outside the mask geometry will be masked and the area inside the mask is displayed.
 * `fdt set map mask exclude elements` Set the background map to be masked by all elements except the selected (or individually picked) excluded elements.
   * `transparency`: (optional) - A value for the mask transparency override. [0...1]
+  * `invert`: (optional) - If `on` or `true` then the mask sense is inverted and the area outside the mask geometry will be masked and the area inside the mask is displayed.
 * `fdt set map mask models` Set the background map to be masked by the selected models.  The selected models can come from either the current selection set or can be picked individually.
   * `transparency`: (optional) - A value for the mask transparency override. [0...1]
+  * `invert`: (optional) - If `on` or `true` then the mask sense is inverted and the area outside the mask geometry will be masked and the area inside the mask is displayed.
 * `fdt set map mask subcategory` Set the background map to be masked by one or more picked subcategories.
   * `transparency`: (optional) - A value for the mask transparency override. [0...1]
+  * `invert`: (optional) - If `on` or `true` then the mask sense is inverted and the area outside the mask geometry will be masked and the area inside the mask is displayed.
 * `fdt unmask map`  Removes the current background map masks.
 
 #### Reality model planar masks
@@ -214,14 +218,19 @@ These keysins control the planar masking of reality models.
 * `fdt set reality model mask by priority` Set the reality model to masked based on priority.  Masking by priority will cause the masked model to be masked by all higher priority models.  By default global reality models (such as the OpenStreetMap building layer) have a priority of -1024 and standard reality models have a priority of zero.  BIM models have a priority of 1024.  Therefore with default priorities reality models are always masked by BIM model and global reality models are masked by standard reality models.  By specifying a priority bias for the when creating the masks for a reality model the masking of reality models by other reality models can be controlled.
   * `transparency`: (optional) - A value for the mask transparency override. [0...1]
   * `priority`: (optional) - A bias to be applied to the default reality model priority.  As lower priority models are masked by higher priority ones, specifying a priority of -1 would cause the reality model to be masked by other reality models.
+  * `invert`: (optional) - If `on` or `true` then the mask sense is inverted and the area outside the mask geometry will be masked and the area inside the mask is displayed.
 * `fdt set reality model mask models`
   * `transparency`: (optional)- A value for the mask transparency override.  A value of 0 (the default) will completely mask the reality model, higher values will produce less masking and more more map display [0..1]  If no transparency is included then the transparency value from the mask elements is used.
+  * `invert`: (optional) - If `on` or `true` then the mask sense is inverted and the area outside the mask geometry will be masked and the area inside the mask is displayed.
 * `fdt set reality model mask elements` Set the reality model to be masked by one or more elements.  If elements are already selected they are used for the mask, otherwise the mask elements may be selected individually.
   * `transparency`: (optional) - A value for the mask transparency override. [0...1]
+  * `invert`: (optional) - If `on` or `true` then the mask sense is inverted and the area outside the mask geometry will be masked and the area inside the mask is displayed.
 * `fdt set reality model mask exclude elements` Set a reality model to be masked by all elements except the selected (or individually picked) excluded elements.
   * `transparency`: (optional) - A value for the mask transparency override. [0...1]
+  * `invert`: (optional) - If `on` or `true` then the mask sense is inverted and the area outside the mask geometry will be masked and the area inside the mask is displayed.
 * `fdt set reality model mask subcategory` Set a reality mdel to be masked by one or more picked subcategories.
   * `transparency`: (optional) - A value for the mask transparency override. [0...1]
+  * `invert`: (optional) - If `on` or `true` then the mask sense is inverted and the area outside the mask geometry will be masked and the area inside the mask is displayed
 * `fdt unmask reality model` Removes the masks from the selected reality model.
 
 ### Other key-ins
@@ -252,6 +261,14 @@ These keysins control the planar masking of reality models.
   * "copy=0|1" where `1` indicates the output should be copied to the system clipboard.
 * `fdt select elements` - given a list of element Ids separated by whitespace, replace the contents of the selection set with those Ids.
 * `fdt toggle skybox` - If the active viewport is displaying a spatial view, toggles display of the skybox.
+* `fdt sky sphere` - set the image used for the skybox as a Url or texture Id.
+* `fdt sky cube` - set the images used for the skybox, mapping each to one or more faces of the box. Each image is specified as a Url or texture Id. The images are mapped in the following orders based on how many are supplied:
+  * 1: all faces use the same image
+  * 2: top/bottom, sides
+  * 3: top/bottom, left/right, front/back
+  * 4: top, bottom, left/right, front/back
+  * 5: top/bottom, left, right, front, back
+  * 6: top, bottom, left, right, front, back
 * `fdt emphasize selection` - Emphasizes all elements in the selection set, and de-emphasizes all other elements by making them semi-transparent and grey. If the selection set is empty, clear the effects of any previous use of this key-in. Accepts one of the following arguments:
   * "none": Don't override color, don't apply silhouette.
   * "color": Override color to white.

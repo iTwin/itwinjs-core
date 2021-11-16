@@ -55,8 +55,8 @@ function DualColorPickers() {
 
   return (
     <div style={{ display: "flex", gap: "4px" }}>
-      <ColorPickerPopup initialColor={colorDef} onClose={onPopupClose} colorInputType="RGB" />
-      <ColorPickerPopup initialColor={colorDef} onClose={onPopupClose} colorInputType="HSL" showCaret />
+      <ColorPickerPopup initialColor={colorDef} onClose={onPopupClose} colorInputType="rgb" />
+      <ColorPickerPopup initialColor={colorDef} onClose={onPopupClose} colorInputType="hsl" showCaret />
     </div>
   );
 }
@@ -427,7 +427,7 @@ export function ColorPickerToggle() {
     e.preventDefault();
     ModalDialogManager.openDialog(<ColorPickerDialog dialogTitle={colorDialogTitle} color={newColor} colorPresets={presetColors.current}
       onOkResult={handleBackgroundColorDialogOk} onCancelResult={handleBackgroundColorDialogCancel}
-      colorInputType="RGB" />);
+      colorInputType="rgb" />);
   }, [presetColors, handleBackgroundColorDialogOk, colorDialogTitle, handleBackgroundColorDialogCancel]);
 
   return (
@@ -670,25 +670,25 @@ export class ComponentExamplesProvider {
           </ExpandableList>),
         createComponentExample("ExpandableList w/ singleExpandOnly", "ExpandableList with singleExpandOnly prop",
           <ExpandableList className="uicore-full-width" singleExpandOnly={true} defaultActiveBlock={0}>
-            <ExpandableBlock title="Test1" isExpanded={false} >
+            <ExpandableBlock title="Test1" isExpanded={false} size='small' >
               Hello World 1
             </ExpandableBlock>
-            <ExpandableBlock title="Test2" isExpanded={false} >
+            <ExpandableBlock title="Test2" isExpanded={false} size='small' >
               Hello World 2
             </ExpandableBlock>
-            <ExpandableBlock title="Test3" isExpanded={false} >
+            <ExpandableBlock title="Test3" isExpanded={false} size='small' >
               Hello World 3
             </ExpandableBlock>
           </ExpandableList>),
         createComponentExample("ExpandableList w/ singleIsCollapsible", "ExpandableList with singleIsCollapsible prop",
           <ExpandableList className="uicore-full-width" singleExpandOnly={true} singleIsCollapsible={true} defaultActiveBlock={0}>
-            <ExpandableBlock title="Test1" isExpanded={false} >
+            <ExpandableBlock title="Test1" isExpanded={false} size='small' >
               Hello World 1
             </ExpandableBlock>
-            <ExpandableBlock title="Test2" isExpanded={false} >
+            <ExpandableBlock title="Test2" isExpanded={false} size='small' >
               Hello World 2
             </ExpandableBlock>
-            <ExpandableBlock title="Test3" isExpanded={false} >
+            <ExpandableBlock title="Test3" isExpanded={false} size='small' >
               Hello World 3
             </ExpandableBlock>
           </ExpandableList>),
@@ -794,6 +794,7 @@ export class ComponentExamplesProvider {
         createComponentExample("Disabled Textarea", "Textarea with disabled prop", <Textarea placeholder="Disabled Textarea" disabled />),
 
         createComponentExample("Number Input .25 step", "New Numeric Input component", <NumberInput value={10.5} precision={2} step={0.25} containerClassName="uicore-full-width" />),
+        createComponentExample("Disabled Number Input .25 step", "New Numeric Input component", <NumberInput value={10.5} precision={2} step={0.25} containerClassName="uicore-full-width" disabled />),
         createComponentExample("Number Input .25 step w/snap", "New Numeric Input component", <NumberInput value={10.5} precision={2} step={0.25} snap containerClassName="uicore-full-width" />),
         createComponentExample("Number Input .25 step w/snap custom format and parser", "New Numeric Input component", <NumberInput value={10.5} format={formatDollar} parse={parseDollar} precision={2} step={0.25} snap containerClassName="uicore-full-width" />),
         createComponentExample("Number Input w/touch buttons", "New Numeric Input component", <NumberInput value={10.5} precision={2} step={.5} snap showTouchButtons containerClassName="uicore-full-width" />),
@@ -984,6 +985,8 @@ export class ComponentExamplesProvider {
           <QuantityNumberInput style={{ width: "140px" }} persistenceValue={initialLength} step={0.25} snap quantityType={QuantityType.Length} onChange={onLengthChange} />),
         createComponentExample("Quantity Number Input", "QuantityType.LengthEngineering",
           <QuantityNumberInput style={{ width: "140px" }} placeholder={"Specify Length"} step={0.25} snap quantityType={QuantityType.LengthEngineering} onChange={onLengthChange} />),
+        createComponentExample("Quantity Number Input", "Disabled QuantityType.LengthEngineering",
+          <QuantityNumberInput style={{ width: "140px" }} placeholder={"Specify Length"} step={0.25} snap quantityType={QuantityType.LengthEngineering} onChange={onLengthChange} disabled />),
         createComponentExample("Quantity Number Input", "QuantityType.Angle",
           <QuantityNumberInput style={{ width: "140px" }} persistenceValue={initialAngle} step={0.5} snap quantityType={QuantityType.Angle} onChange={onAngleChange} />),
         createComponentExample("Quantity Number Input", "QuantityType.Volume",

@@ -13,6 +13,7 @@ import TestUtils, { mount } from "../TestUtils";
 describe("ZoneTargets", () => {
   const spyMethod = sinon.spy();
   const handler = {
+    // eslint-disable-next-line deprecation/deprecation
     handleTargetChanged: (_zoneId: WidgetZoneId, _type: ZoneTargetType, _isTargeted: boolean): void => {
       spyMethod();
     },
@@ -28,15 +29,18 @@ describe("ZoneTargets", () => {
 
   describe("DropTarget.Merge", () => {
     it("should render", () => {
+      // eslint-disable-next-line deprecation/deprecation
       mount(<ZoneTargets zoneId={1} dropTarget={ZoneTargetType.Merge} targetChangeHandler={handler} />);
     });
 
     it("renders correctly", () => {
+      // eslint-disable-next-line deprecation/deprecation
       shallow(<ZoneTargets zoneId={1} dropTarget={ZoneTargetType.Merge} targetChangeHandler={handler} />).should.matchSnapshot();
     });
 
     it("should call onTargetChanged", () => {
       spyMethod.resetHistory();
+      // eslint-disable-next-line deprecation/deprecation
       const wrapper = mount(<ZoneTargets zoneId={1} dropTarget={ZoneTargetType.Merge} targetChangeHandler={handler} />);
       const target = wrapper.find(MergeTarget);
       target.prop("onTargetChanged")!(true);
@@ -48,15 +52,18 @@ describe("ZoneTargets", () => {
 
   describe("DropTarget.Back", () => {
     it("should render", () => {
+      // eslint-disable-next-line deprecation/deprecation
       mount(<ZoneTargets zoneId={1} dropTarget={ZoneTargetType.Back} targetChangeHandler={handler} />);
     });
 
     it("renders correctly", () => {
+      // eslint-disable-next-line deprecation/deprecation
       shallow(<ZoneTargets zoneId={1} dropTarget={ZoneTargetType.Back} targetChangeHandler={handler} />).should.matchSnapshot();
     });
 
     it("should call onTargetChanged", () => {
       spyMethod.resetHistory();
+      // eslint-disable-next-line deprecation/deprecation
       const wrapper = mount(<ZoneTargets zoneId={1} dropTarget={ZoneTargetType.Back} targetChangeHandler={handler} />);
       const target = wrapper.find(BackTarget);
       target.prop("onTargetChanged")!(true);

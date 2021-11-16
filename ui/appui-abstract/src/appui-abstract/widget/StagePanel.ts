@@ -7,7 +7,7 @@
  */
 
 /** Enum for AppUi 1 `Zone` locations that can have widgets added to them at run-time via [[UiItemsProvider]].
- * @public
+ * @public @deprecated
  */
 export enum AbstractZoneLocation {
   CenterLeft = 4,

@@ -10,7 +10,9 @@ beta;ColorPickerButton: (props: ColorPickerProps) => JSX.Element | null
 beta;ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResult, colorPresets, colorInputType }: ColorPickerDialogProps): JSX.Element
 beta;ColorPickerDialogProps
 public;ColorPickerPanel({ activeColor, onColorChange, colorPresets, colorInputType }: ColorPickerPanelProps): JSX.Element
+deprecated;ColorPickerPanel({ activeColor, onColorChange, colorPresets, colorInputType }: ColorPickerPanelProps): JSX.Element
 public;ColorPickerPanelProps
+deprecated;ColorPickerPanelProps
 public;ColorPickerPopup: (props: ColorPickerPopupProps) => JSX.Element | null
 public;ColorPickerPopupProps 
 beta;ColorPickerProps 
@@ -118,7 +120,7 @@ public;ViewClassFullNameChangedEvent
 public;ViewClassFullNameChangedEventArgs
 public;ViewIdChangedEvent 
 public;ViewIdChangedEventArgs
-public;ViewportComponent 
+public;ViewportComponent(props: ViewportProps): JSX.Element
 public;ViewportComponentEvents
 public;ViewportProps 
 public;ViewRotationChangeEvent 

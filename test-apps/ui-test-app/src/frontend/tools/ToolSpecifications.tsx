@@ -16,10 +16,10 @@ import {
 import { UnitSystemKey } from "@itwin/core-quantity";
 import { Presentation } from "@itwin/presentation-frontend";
 import {
-  BackstageItem, BackstageItemUtilities, CommonStatusBarItem, ConditionalBooleanValue, ConditionalStringValue, DialogButtonType,
-  MessageSeverity, StandardContentLayouts, StatusBarSection, UiItemsManager, UiItemsProvider, WidgetState,
+  AbstractWidgetProps, BackstageItem, BackstageItemUtilities, CommonStatusBarItem, ConditionalBooleanValue, ConditionalStringValue, DialogButtonType,
+  MessageSeverity, StagePanelLocation, StagePanelSection, StandardContentLayouts, StatusBarSection, UiItemsManager, UiItemsProvider, WidgetState,
 } from "@itwin/appui-abstract";
-import { Dialog, ReactMessage, SvgPath, SvgSprite, UnderlinedButton } from "@itwin/core-react";
+import { Dialog, FillCentered, ReactMessage, SvgPath, SvgSprite, UnderlinedButton } from "@itwin/core-react";
 import {
   Backstage, CommandItemDef, ContentGroup, ContentGroupProps, ContentLayoutManager, ContentProps, ContentViewManager,
   FrontstageManager, IModelViewportControl, MessageManager, ModalDialogManager, ReactNotifyMessageDetails,
@@ -36,7 +36,7 @@ import { Tool2 } from "../tools/Tool2";
 import { ToolWithSettings } from "./ToolWithSettings";
 import { Radio } from "@itwin/itwinui-react";
 import { BeDuration } from "@itwin/core-bentley";
-import { RestoreSavedContentLayoutTool, SaveContentLayoutTool } from "./UiProviderTool";
+import { RestoreSavedContentLayoutTool, SaveContentLayoutTool } from "./ImmediateTools";
 
 // cSpell:ignore appui appuiprovider
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -134,6 +134,23 @@ class AppItemsProvider implements UiItemsProvider {
     return [
       BackstageItemUtilities.createActionItem(AppItemsProvider.sampleBackstageItem, 500, 50, () => { }, "Dynamic Action", undefined, undefined, { isHidden: backstageItemHidden }),
     ];
+  }
+
+  public provideWidgets(stageId: string, _stageUsage: string, location: StagePanelLocation, section?: StagePanelSection | undefined): ReadonlyArray<AbstractWidgetProps> {
+    const widgets: AbstractWidgetProps[] = [];
+    const allowedStages = ["ViewsFrontstage"];
+    // Section parameter is ignored. The widget will be added once to the top section of a right panel.
+    if (allowedStages.includes(stageId) && location === StagePanelLocation.Right && section === StagePanelSection.Start) {
+      widgets.push({
+        id: "uitestapp-test-wd3",
+        icon: "icon-placeholder",
+        label: "Dynamic Widget 3",
+        getWidgetContent: () => <FillCentered>Dynamic Widget 3 (id: uitestapp-test-wd3)</FillCentered>, // eslint-disable-line react/display-name
+        defaultState: WidgetState.Hidden,
+      });
+    }
+
+    return widgets;
   }
 }
 

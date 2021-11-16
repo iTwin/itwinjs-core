@@ -220,7 +220,7 @@ export class PointSearchContext {
       data0.setFrom(data1);
       node0 = node0.faceSuccessor;
     } while (node0 !== faceNode);
-
+// Returned to start node !!!
     const afterTag = firstAfter.getITag();
     firstAfter.setITag(0);
     lastBefore.setITag(0);

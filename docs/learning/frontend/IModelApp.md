@@ -8,7 +8,6 @@ An instance of [IModelApp]($frontend) provides the services needed by the [front
 * Access to iModelHub using [IModelClient]($imodelhub-client)
 * [Notifications]($frontend:Notifications)
 * [Localization support](./Localization.md)
-* User settings using [Settings](./Settings.md)
 
 ## IModelApp Specializations
 

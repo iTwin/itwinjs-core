@@ -164,7 +164,7 @@ class ChangedEntitiesProc {
         ? "SELECT ElementId, ChangeType, ECClassId FROM temp.txn_Elements"
         : "SELECT ModelId, ChangeType, ECClassId FROM temp.txn_Models";
       iModel.withPreparedSqliteStatement(select, (sql: SqliteStatement) => {
-        const stmt = sql.stmt!;
+        const stmt = sql.stmt!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
         while (sql.step() === DbResult.BE_SQLITE_ROW) {
           const id = stmt.getValueId(0);
           const classId = stmt.getValueId(2);

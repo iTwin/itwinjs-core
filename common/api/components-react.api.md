@@ -664,9 +664,9 @@ export class CustomNumberPropertyEditor extends PropertyEditorBase {
 
 // @public
 export interface CustomToolbarItem extends CustomButtonDefinition {
-    // (undocumented)
+    // @deprecated
     buttonNode?: React.ReactNode;
-    // (undocumented)
+    keepContentsLoaded?: boolean;
     panelContentNode?: React.ReactNode;
 }
 
@@ -1368,7 +1368,7 @@ export class IconEditor extends React.PureComponent<PropertyEditorProps, IconEdi
     render(): JSX.Element;
     }
 
-// @alpha
+// @alpha @deprecated
 export class IconPickerButton extends React.PureComponent<IconPickerProps, IconPickerState> {
     // @internal
     constructor(props: IconPickerProps);
@@ -1378,7 +1378,7 @@ export class IconPickerButton extends React.PureComponent<IconPickerProps, IconP
     render(): JSX.Element;
     }
 
-// @alpha
+// @alpha @deprecated
 export interface IconPickerProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
     disabled?: boolean;
     dropDownTitle?: string;
@@ -2246,6 +2246,7 @@ export function PopupItemPopup(props: PopupItemPopupProps): JSX.Element;
 // @public
 export interface PopupItemProps extends ToolbarButtonItemProps {
     hideIndicator?: boolean;
+    keepContentsMounted?: boolean;
     panel?: React.ReactNode;
 }
 

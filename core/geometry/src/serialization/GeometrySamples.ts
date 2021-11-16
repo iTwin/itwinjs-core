@@ -2492,4 +2492,5 @@ export class Sample {
       point0.push(point0[0].clone());
     return point0;
   }
+
 }

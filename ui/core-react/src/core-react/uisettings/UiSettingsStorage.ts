@@ -6,8 +6,10 @@
  * @module UiSettings
  */
 
+/* eslint-disable deprecation/deprecation */
+
 /** Interface for getting, saving and deleting settings.
- * @public
+ * @public @deprecated
  */
 export interface UiSettingsStorage {
   getSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
@@ -32,7 +34,7 @@ export enum UiSettingsStatus {
 }
 
 /** Interface for result of accessing setting in [[UiSettingsStorage]].
- * @public
+ * @public @deprecated
  */
 export interface UiSettingsResult {
   status: UiSettingsStatus;

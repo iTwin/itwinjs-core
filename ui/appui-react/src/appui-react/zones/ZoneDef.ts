@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 /** @packageDocumentation
  * @module Zone
  */
@@ -11,7 +12,7 @@ import { WidgetHost } from "../widgets/WidgetHost";
 import { ZoneLocation, ZoneProps } from "./Zone";
 
 /** Zone State enum.
- * @public
+ * @public @deprecated
  */
 export enum ZoneState {
   Off,
@@ -23,7 +24,7 @@ export enum ZoneState {
 
 /**
  * A ZoneDef represents each zone within a Frontstage.
- * @public
+ * @public @deprecated
  */
 export class ZoneDef extends WidgetHost {
   private _initialWidth: number | undefined = undefined;

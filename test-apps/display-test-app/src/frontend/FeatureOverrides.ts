@@ -19,7 +19,7 @@ export class Provider implements FeatureOverrideProvider {
   private constructor(vp: Viewport) { this._vp = vp; }
 
   public addFeatureOverrides(ovrs: FeatureSymbology.Overrides, _vp: Viewport): void {
-    this._elementOvrs.forEach((value, key) => ovrs.overrideElement(key, value));
+    this._elementOvrs.forEach((appearance, elementId) => ovrs.override({ elementId, appearance }));
     if (undefined !== this._defaultOvrs)
       ovrs.setDefaultOverrides(this._defaultOvrs);
   }
@@ -137,6 +137,13 @@ export class Settings implements IDisposable {
       handler: (cb) => this.updateAppearance("emphasized", cb.checked ? true : undefined),
     });
 
+    createCheckBox({
+      parent: this._element,
+      name: "View-dependent transparency",
+      id: "ovr_viewDep",
+      handler: (cb) => this.updateAppearance("viewDependentTransparency", cb.checked ? true : undefined),
+    });
+
     const buttonDiv = document.createElement("div");
     buttonDiv.style.textAlign = "center";
     createButton({
@@ -175,7 +182,7 @@ export class Settings implements IDisposable {
 
   // private reset() { this._appearance = FeatureSymbology.Appearance.defaults; }
 
-  private updateAppearance(field: "rgb" | "transparency" | "linePixels" | "weight" | "ignoresMaterial" | "nonLocatable" | "emphasized", value: any): void {
+  private updateAppearance(field: "rgb" | "transparency" | "linePixels" | "weight" | "ignoresMaterial" | "nonLocatable" | "emphasized" | "viewDependentTransparency", value: any): void {
     const props = this._appearance.toJSON();
     props[field] = value;
     this._appearance = FeatureAppearance.fromJSON(props);

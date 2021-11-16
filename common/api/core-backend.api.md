@@ -14,6 +14,8 @@ import { AxisAlignedBox3d } from '@itwin/core-common';
 import { Base64EncodedString } from '@itwin/core-common';
 import { BeDuration } from '@itwin/core-bentley';
 import { BeEvent } from '@itwin/core-bentley';
+import { BlobCacheProps } from '@bentley/imodeljs-native';
+import { BlobContainerProps } from '@bentley/imodeljs-native';
 import { BRepGeometryCreate } from '@itwin/core-common';
 import { BriefcaseId } from '@itwin/core-common';
 import { BriefcaseProps } from '@itwin/core-common';
@@ -46,6 +48,7 @@ import { ColorDef } from '@itwin/core-common';
 import { CreateEmptySnapshotIModelProps } from '@itwin/core-common';
 import { CreateEmptyStandaloneIModelProps } from '@itwin/core-common';
 import { CreateSnapshotIModelProps } from '@itwin/core-common';
+import { DaemonProps } from '@bentley/imodeljs-native';
 import { DbResult } from '@itwin/core-bentley';
 import { DefinitionElementProps } from '@itwin/core-common';
 import { DisplayStyle3dProps } from '@itwin/core-common';
@@ -112,6 +115,9 @@ import { InternetConnectivityStatus } from '@itwin/core-common';
 import { IpcAppNotifications } from '@itwin/core-common';
 import { IpcListener } from '@itwin/core-common';
 import { IpcSocketBackend } from '@itwin/core-common';
+import { JSONSchema } from '@itwin/core-bentley';
+import { JSONSchemaType } from '@itwin/core-bentley';
+import { JSONSchemaTypeName } from '@itwin/core-bentley';
 import { LightLocationProps } from '@itwin/core-common';
 import { LinePixels } from '@itwin/core-common';
 import { LineStyleProps } from '@itwin/core-common';
@@ -221,7 +227,7 @@ export interface AcquireNewBriefcaseIdArg extends IModelIdArg {
 
 // @beta (undocumented)
 export class AliCloudStorageService extends CloudStorageService {
-    constructor(credentials: CloudStorageServiceCredentials);
+    constructor(credentials: AliCloudStorageServiceCredentials);
     // (undocumented)
     id: CloudStorageProvider;
     // (undocumented)
@@ -230,6 +236,16 @@ export class AliCloudStorageService extends CloudStorageService {
     obtainContainerUrl(id: CloudStorageContainerDescriptor, expiry: Date, _clientIp?: string): CloudStorageContainerUrl;
     // (undocumented)
     upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions): Promise<string>;
+}
+
+// @beta (undocumented)
+export interface AliCloudStorageServiceCredentials {
+    // (undocumented)
+    accessKeyId: string;
+    // (undocumented)
+    accessKeySecret: string;
+    // (undocumented)
+    region: string;
 }
 
 // @public
@@ -288,7 +304,7 @@ export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
 
 // @beta (undocumented)
 export class AzureBlobStorage extends CloudStorageService {
-    constructor(credentials: CloudStorageServiceCredentials);
+    constructor(credentials: AzureBlobStorageCredentials);
     // (undocumented)
     ensureContainer(name: string): Promise<void>;
     // (undocumented)
@@ -297,6 +313,14 @@ export class AzureBlobStorage extends CloudStorageService {
     obtainContainerUrl(id: CloudStorageContainerDescriptor, expiry: Date, clientIp?: string): CloudStorageContainerUrl;
     // (undocumented)
     upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions, metadata?: object): Promise<string>;
+}
+
+// @beta (undocumented)
+export interface AzureBlobStorageCredentials {
+    // (undocumented)
+    accessKey: string;
+    // (undocumented)
+    account: string;
 }
 
 // @beta
@@ -362,6 +386,49 @@ export enum BackendLoggerCategory {
     PromiseMemoizer = "core-backend.PromiseMemoizer",
     Relationship = "core-backend.Relationship",
     Schemas = "core-backend.Schemas"
+}
+
+// @internal
+export class BaseSettings implements Settings {
+    // (undocumented)
+    addDictionary(dictionaryName: string, priority: SettingsPriority, settings: SettingDictionary): void;
+    // (undocumented)
+    addFile(fileName: LocalFileName, priority: SettingsPriority): void;
+    // (undocumented)
+    addJson(dictionaryName: string, priority: SettingsPriority, settingsJson: string): void;
+    // (undocumented)
+    close(): void;
+    // (undocumented)
+    dropDictionary(dictionaryName: DictionaryName, raiseEvent?: boolean): boolean;
+    // (undocumented)
+    getArray<T extends SettingType>(name: SettingName, defaultValue: Array<T>): Array<T>;
+    // (undocumented)
+    getArray<T extends SettingType>(name: SettingName): Array<T> | undefined;
+    // (undocumented)
+    getBoolean(name: SettingName, defaultValue: boolean): boolean;
+    // (undocumented)
+    getBoolean(name: SettingName): boolean | undefined;
+    // (undocumented)
+    getNumber(name: SettingName, defaultValue: number): number;
+    // (undocumented)
+    getNumber(name: SettingName): number | undefined;
+    // (undocumented)
+    getObject<T extends object>(name: SettingName, defaultValue: T): T;
+    // (undocumented)
+    getObject<T extends object>(name: SettingName): T | undefined;
+    // (undocumented)
+    getSetting<T extends SettingType>(name: SettingName, defaultValue?: T): T | undefined;
+    // (undocumented)
+    getString(name: SettingName, defaultValue: string): string;
+    // (undocumented)
+    getString(name: SettingName): string | undefined;
+    inspectSetting<T extends SettingType>(name: SettingName): SettingInspector<T>[];
+    // (undocumented)
+    readonly onSettingsChanged: BeEvent<() => void>;
+    // (undocumented)
+    resolveSetting<T extends SettingType>(name: SettingName, resolver: SettingResolver<T>, defaultValue?: T): T | undefined;
+    // (undocumented)
+    protected verifyPriority(_priority: SettingsPriority): void;
 }
 
 // @public
@@ -639,6 +706,58 @@ export class ClassRegistry {
 }
 
 // @beta (undocumented)
+export namespace CloudSqlite {
+    // (undocumented)
+    export type AccessProps = AccountProps & ContainerProps;
+    // (undocumented)
+    export type AccountProps = BlobCacheProps;
+    // (undocumented)
+    export type ContainerProps = BlobContainerProps;
+    // (undocumented)
+    export type DbAlias = string;
+    // (undocumented)
+    export interface DbProps {
+        // (undocumented)
+        dbAlias: DbAlias;
+        // (undocumented)
+        localFile: LocalFileName;
+    }
+    // (undocumented)
+    export type DownloadProps = AccessProps & {
+        onProgress?: (loaded: number, total: number) => number;
+    };
+    // (undocumented)
+    export type Logger = (stream: NodeJS.ReadableStream) => void;
+    // (undocumented)
+    export type ProcessProps = DaemonProps & AccountProps & {
+        stdoutLogger?: Logger;
+        stderrLogger?: Logger;
+    };
+}
+
+// @beta (undocumented)
+export class CloudSqlite {
+    // (undocumented)
+    static attach(dbAlias: CloudSqlite.DbAlias, props: CloudSqlite.AccessProps): Promise<string>;
+    // (undocumented)
+    static copyDb(oldVersion: string, newVersion: string, props: CloudSqlite.AccessProps): Promise<void>;
+    // (undocumented)
+    static create(props: CloudSqlite.AccessProps): Promise<void>;
+    // (undocumented)
+    static deleteDb(db: CloudSqlite.DbProps, props: CloudSqlite.AccessProps): Promise<void>;
+    // (undocumented)
+    static downloadDb(db: CloudSqlite.DbProps, props: CloudSqlite.DownloadProps): Promise<void>;
+    // (undocumented)
+    static get isRunning(): boolean;
+    // (undocumented)
+    static startProcess(props: CloudSqlite.ProcessProps): Promise<void>;
+    // (undocumented)
+    static stopProcess(): void;
+    // (undocumented)
+    static uploadDb(db: CloudSqlite.DbProps, props: CloudSqlite.AccessProps): Promise<void>;
+}
+
+// @beta (undocumented)
 export abstract class CloudStorageService {
     // (undocumented)
     download(_name: string): Promise<Readable | undefined>;
@@ -657,16 +776,6 @@ export abstract class CloudStorageService {
     terminate(): void;
     // (undocumented)
     abstract upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions, metadata?: object): Promise<string>;
-}
-
-// @beta (undocumented)
-export interface CloudStorageServiceCredentials {
-    // (undocumented)
-    accessKey: string;
-    // (undocumented)
-    account: string;
-    // (undocumented)
-    service: "azure" | "alicloud" | "external";
 }
 
 // @internal (undocumented)
@@ -874,6 +983,9 @@ export class DictionaryModel extends DefinitionModel {
     // @internal (undocumented)
     static get className(): string;
 }
+
+// @beta
+export type DictionaryName = string;
 
 // @public
 export abstract class DisplayStyle extends DefinitionElement implements DisplayStyleProps {
@@ -1099,6 +1211,8 @@ export class ECSchemaXmlContext {
     // (undocumented)
     addSchemaPath(searchPath: string): void;
     // (undocumented)
+    get nativeContext(): IModelJsNative.ECSchemaXmlContext;
+    // (undocumented)
     readSchemaFromXmlFile(filePath: string): any;
     // (undocumented)
     setFirstSchemaLocater(locater: IModelJsNative.ECSchemaXmlContext.SchemaLocaterCallback): void;
@@ -1234,6 +1348,30 @@ export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
     // (undocumented)
     next(): IteratorResult<ECSqlValue>;
 }
+
+// @beta
+export class EditableWorkspaceFile extends WorkspaceFile {
+    addBlob(rscName: WorkspaceResourceName, val: Uint8Array): void;
+    addFile(rscName: WorkspaceResourceName, localFileName: LocalFileName, fileExt?: string): void;
+    addString(rscName: WorkspaceResourceName, val: string): void;
+    // (undocumented)
+    static cloneVersion(oldVersion: WorkspaceContainerVersion, newVersion: WorkspaceContainerVersion, cloudProps: CloudSqlite.AccessProps): Promise<void>;
+    // (undocumented)
+    close(): void;
+    create(cloudProps?: CloudSqlite.AccessProps): Promise<void>;
+    // (undocumented)
+    open(): void;
+    // (undocumented)
+    openCloudDb(props: CloudSqlite.AccessProps): Promise<void>;
+    removeBlob(rscName: WorkspaceResourceName): void;
+    removeFile(rscName: WorkspaceResourceName): void;
+    removeString(rscName: WorkspaceResourceName): void;
+    updateBlob(rscName: WorkspaceResourceName, val: Uint8Array): void;
+    updateFile(rscName: WorkspaceResourceName, localFileName: LocalFileName): void;
+    updateString(rscName: WorkspaceResourceName, val: string): void;
+    // (undocumented)
+    upload(cloudProps: CloudSqlite.AccessProps): Promise<void>;
+    }
 
 // @public
 export class Element extends Entity implements ElementProps {
@@ -2123,13 +2261,6 @@ export abstract class IModelDb extends IModel {
     close(): void;
     get codeSpecs(): CodeSpecs;
     computeProjectExtents(options?: ComputeProjectExtentsOptions): ComputedProjectExtents;
-    // (undocumented)
-    protected _concurrentQueryStats: {
-        resetTimerHandle: any;
-        logTimerHandle: any;
-        lastActivityTime: number;
-        dispose: () => void;
-    };
     constructEntity<T extends Entity>(props: EntityProps): T;
     containsClass(classFullName: string): boolean;
     // @alpha
@@ -2145,7 +2276,7 @@ export abstract class IModelDb extends IModel {
     elementGeometryUpdate(updateProps: ElementGeometryUpdate): DbResult;
     // (undocumented)
     readonly elements: IModelDb.Elements;
-    // (undocumented)
+    // @internal (undocumented)
     embedFont(prop: FontProps): FontProps;
     exportGraphics(exportProps: ExportGraphicsOptions): DbResult;
     exportPartGraphics(exportProps: ExportPartGraphicsOptions): DbResult;
@@ -2244,6 +2375,10 @@ export abstract class IModelDb extends IModel {
     withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors?: boolean): T;
     withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors?: boolean): T;
     withStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors?: boolean): T;
+    // @beta
+    get workspace(): Workspace;
+    // @internal (undocumented)
+    protected _workspace: Workspace;
 }
 
 // @public (undocumented)
@@ -2336,11 +2471,13 @@ export class IModelHost {
     static set applicationId(id: string);
     static get applicationVersion(): string;
     static set applicationVersion(version: string);
+    // @beta
+    static get appWorkspace(): Workspace;
     // (undocumented)
     static authorizationClient?: AuthorizationClient;
     // (undocumented)
     static backendVersion: string;
-    static get cacheDir(): string;
+    static get cacheDir(): LocalDirName;
     // @internal
     static get compressCachedTiles(): boolean;
     // (undocumented)
@@ -2378,22 +2515,22 @@ export class IModelHost {
     static startup(configuration?: IModelHostConfiguration): Promise<void>;
     // @alpha (undocumented)
     static readonly telemetry: TelemetryManager;
-    // @beta
-    static tileCacheService: CloudStorageService;
+    // @internal
+    static tileCacheService?: CloudStorageService;
     // @internal
     static get tileContentRequestTimeout(): number;
     // @internal
     static get tileTreeRequestTimeout(): number;
     // @internal (undocumented)
-    static tileUploader: CloudStorageTileUploader;
+    static tileUploader?: CloudStorageTileUploader;
     // @internal
     static get usingExternalTileCache(): boolean;
     }
 
 // @public
 export class IModelHostConfiguration {
-    appAssetsDir?: string;
-    cacheDir?: string;
+    appAssetsDir?: LocalDirName;
+    cacheDir?: LocalDirName;
     compressCachedTiles?: boolean;
     // @alpha
     crashReportingConfig?: CrashReportingConfig;
@@ -2412,11 +2549,15 @@ export class IModelHostConfiguration {
     // @beta
     restrictTileUrlsByClientIp?: boolean;
     // @beta
-    tileCacheCredentials?: CloudStorageServiceCredentials;
+    tileCacheAzureCredentials?: AzureBlobStorageCredentials;
+    // @beta
+    tileCacheService?: CloudStorageService;
     // @internal
     tileContentRequestTimeout: number;
     // @internal
     tileTreeRequestTimeout: number;
+    // @beta
+    workspace?: WorkspaceOpts;
 }
 
 // @public
@@ -2600,6 +2741,29 @@ export interface IpcHostOpts {
 export interface ITwinIdArg {
     // (undocumented)
     readonly iTwinId: GuidString;
+}
+
+// @internal (undocumented)
+export class ITwinWorkspace implements Workspace {
+    constructor(settings: Settings, opts?: WorkspaceOpts);
+    // (undocumented)
+    addContainer(container: WorkspaceFile): void;
+    // (undocumented)
+    close(): void;
+    // (undocumented)
+    readonly containerDir: LocalDirName;
+    // (undocumented)
+    dropContainer(toDrop: WorkspaceContainer): void;
+    // (undocumented)
+    readonly filesDir: LocalDirName;
+    // (undocumented)
+    getContainer(props: WorkspaceContainerProps, cloudProps?: CloudSqlite.DownloadProps): Promise<WorkspaceContainer>;
+    // (undocumented)
+    loadSettingsDictionary(settingRsc: WorkspaceResourceProps, priority: SettingsPriority): Promise<void>;
+    // (undocumented)
+    resolveContainerId(props: WorkspaceContainerProps): WorkspaceContainerId;
+    // (undocumented)
+    readonly settings: Settings;
 }
 
 // @public
@@ -3398,6 +3562,7 @@ export class RoleModel extends Model {
 // @public
 export class RpcTrace {
     static get currentActivity(): RpcActivity | undefined;
+    static get expectCurrentActivity(): RpcActivity;
     static run<T>(activity: RpcActivity, fn: () => Promise<T>): Promise<T>;
     }
 
@@ -3466,6 +3631,112 @@ export class SectionDrawingModel extends DrawingModel {
 
 // @internal
 export function setMaxEntitiesPerEvent(max: number): number;
+
+// @beta
+export type SettingDictionary = SettingObject;
+
+// @beta
+export interface SettingInspector<T> {
+    // (undocumented)
+    dictionary: DictionaryName;
+    // (undocumented)
+    priority: number;
+    // (undocumented)
+    value: T;
+}
+
+// @beta
+export type SettingName = string;
+
+// @beta
+export interface SettingObject {
+    // (undocumented)
+    [name: string]: SettingType;
+}
+
+// @beta
+export type SettingResolver<T> = (val: T, dict: DictionaryName, priority: SettingsPriority) => T | undefined;
+
+// @beta
+export interface Settings {
+    addDictionary(dictionaryName: DictionaryName, priority: SettingsPriority, settings: SettingDictionary): void;
+    addFile(fileName: LocalFileName, priority: SettingsPriority): void;
+    addJson(dictionaryName: DictionaryName, priority: SettingsPriority, settingsJson: string): void;
+    // @internal (undocumented)
+    close(): void;
+    dropDictionary(dictionaryName: DictionaryName): void;
+    getArray<T extends SettingType>(settingName: SettingName, defaultValue: Array<T>): Array<T>;
+    // (undocumented)
+    getArray<T extends SettingType>(settingName: SettingName): Array<T> | undefined;
+    getBoolean(settingName: SettingName, defaultValue: boolean): boolean;
+    // (undocumented)
+    getBoolean(settingName: SettingName, defaultValue?: boolean): boolean | undefined;
+    getNumber(settingName: SettingName, defaultValue: number): number;
+    // (undocumented)
+    getNumber(settingName: SettingName): number | undefined;
+    getObject<T extends object>(settingName: SettingName, defaultValue: T): T;
+    // (undocumented)
+    getObject<T extends object>(settingName: SettingName): T | undefined;
+    getSetting<T extends SettingType>(settingName: SettingName, defaultValue?: T): T | undefined;
+    getString(settingName: SettingName, defaultValue: string): string;
+    // (undocumented)
+    getString(settingName: SettingName, defaultValue?: string): string | undefined;
+    inspectSetting<T extends SettingType>(name: SettingName): SettingInspector<T>[];
+    readonly onSettingsChanged: BeEvent<() => void>;
+    resolveSetting<T extends SettingType>(settingName: SettingName, resolver: SettingResolver<T>, defaultValue?: T): T | undefined;
+    // (undocumented)
+    resolveSetting<T extends SettingType>(settingName: SettingName, resolver: SettingResolver<T>, defaultValue: T): T;
+}
+
+// @beta
+export interface SettingsGroupSpec {
+    // (undocumented)
+    readonly description?: string;
+    // (undocumented)
+    readonly extensionId?: string;
+    // (undocumented)
+    readonly groupName: string;
+    // (undocumented)
+    readonly order?: number;
+    // (undocumented)
+    readonly properties: {
+        [name: string]: SettingSpec;
+    };
+    // (undocumented)
+    readonly title?: string;
+}
+
+// @beta
+export interface SettingSpec extends Readonly<JSONSchema> {
+    readonly enumItemLabels?: string[];
+    readonly multilineEdit?: true;
+    // (undocumented)
+    type: JSONSchemaTypeName | JSONSchemaTypeName[];
+}
+
+// @beta
+export enum SettingsPriority {
+    application = 200,
+    defaults = 100,
+    iModel = 500,
+    iTwin = 400,
+    organization = 300
+}
+
+// @beta
+export class SettingsSpecRegistry {
+    static addFile(fileName: string): string[];
+    static addGroup(settingsGroup: SettingsGroupSpec | SettingsGroupSpec[]): string[];
+    static addJson(settingSpecJson: string): string[];
+    static readonly allSpecs: Map<string, SettingSpec>;
+    static readonly onSpecsChanged: BeEvent<() => void>;
+    static removeGroup(groupName: string): void;
+    // @internal
+    static reset(): void;
+    }
+
+// @beta
+export type SettingType = JSONSchemaType;
 
 // @public
 export class Sheet extends Document implements SheetProps {
@@ -4163,6 +4434,101 @@ export class VolumeElement extends SpatialLocationElement {
 export class WebMercatorModel extends SpatialModel {
     // @internal (undocumented)
     static get className(): string;
+}
+
+// @beta
+export interface Workspace {
+    // @internal (undocumented)
+    addContainer(container: WorkspaceFile): void;
+    close(): void;
+    readonly containerDir: LocalDirName;
+    dropContainer(container: WorkspaceContainer): void;
+    readonly filesDir: LocalDirName;
+    getContainer(props: WorkspaceContainerProps, cloudProps?: CloudSqlite.AccessProps): Promise<WorkspaceContainer>;
+    loadSettingsDictionary(settingRsc: WorkspaceResourceProps, priority: SettingsPriority): Promise<void>;
+    resolveContainerId(props: WorkspaceContainerProps): WorkspaceContainerId;
+    readonly settings: Settings;
+}
+
+// @beta
+export interface WorkspaceContainer {
+    readonly containerFilesDir: LocalDirName;
+    readonly containerId: WorkspaceContainerId;
+    readonly dbAlias: WorkspaceContainerVersion;
+    getBlob(rscName: WorkspaceResourceName): Uint8Array | undefined;
+    getFile(rscName: WorkspaceResourceName, targetFileName?: LocalFileName): LocalFileName | undefined;
+    getString(rscName: WorkspaceResourceName): string | undefined;
+    readonly onContainerClosed: BeEvent<() => void>;
+    readonly workspace: Workspace;
+}
+
+// @beta
+export type WorkspaceContainerId = string;
+
+// @beta
+export type WorkspaceContainerName = string;
+
+// @beta
+export type WorkspaceContainerProps = WorkspaceContainerName | {
+    id: WorkspaceContainerId;
+};
+
+// @beta
+export type WorkspaceContainerVersion = string;
+
+// @beta
+export class WorkspaceFile implements WorkspaceContainer {
+    constructor(containerId: WorkspaceContainerId, workspace: Workspace);
+    // (undocumented)
+    close(): void;
+    // (undocumented)
+    get containerFilesDir(): string;
+    // (undocumented)
+    readonly containerId: WorkspaceContainerId;
+    // (undocumented)
+    protected readonly db: SQLiteDb;
+    // (undocumented)
+    dbAlias: WorkspaceContainerVersion;
+    // (undocumented)
+    getBlob(rscName: WorkspaceResourceName): Uint8Array | undefined;
+    // (undocumented)
+    getFile(rscName: WorkspaceResourceName, targetFileName?: LocalFileName): LocalFileName | undefined;
+    // (undocumented)
+    getString(rscName: WorkspaceResourceName): string | undefined;
+    // (undocumented)
+    get isOpen(): boolean;
+    // (undocumented)
+    localFile: LocalFileName;
+    // (undocumented)
+    protected static noLeadingOrTrailingSpaces(name: string, msg: string): void;
+    // (undocumented)
+    readonly onContainerClosed: BeEvent<() => void>;
+    // (undocumented)
+    open(): void;
+    // (undocumented)
+    purgeContainerFiles(): void;
+    // (undocumented)
+    protected queryFileResource(rscName: WorkspaceResourceName): {
+        localFileName: string;
+        info: import("@bentley/imodeljs-native").IModelJsNative.EmbedFileQuery;
+    } | undefined;
+    // (undocumented)
+    readonly workspace: Workspace;
+}
+
+// @beta
+export interface WorkspaceOpts {
+    containerDir?: LocalDirName;
+    filesDir?: LocalDirName;
+}
+
+// @beta
+export type WorkspaceResourceName = string;
+
+// @beta
+export interface WorkspaceResourceProps {
+    container: WorkspaceContainerProps;
+    rscName: WorkspaceResourceName;
 }
 
 

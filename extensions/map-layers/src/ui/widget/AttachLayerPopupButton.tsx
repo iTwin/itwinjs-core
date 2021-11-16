@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { IModelApp, MapLayerSettingsService, MapLayerSource, MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
+import { IModelApp, MapLayerSource, MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
 import { RelativePosition } from "@itwin/appui-abstract";
 import * as UiCore from "@itwin/core-react";
 import { ModalDialogManager } from "@itwin/appui-react";
@@ -12,6 +12,7 @@ import { MapUrlDialog } from "./MapUrlDialog";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import { ConfirmMessageDialog } from "./ConfirmMessageDialog";
 import { Button, Input } from "@itwin/itwinui-react";
+import { MapLayerPreferences } from "../../MapLayerPreferences";
 
 // cSpell:ignore droppable Sublayer
 
@@ -195,13 +196,13 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
   }, []);
 
   const handleYesConfirmation = React.useCallback(async (source: MapLayerSource) => {
-
     const layerName = source.name;
     if (!!iTwinId && !!iModelId) {
-      if (await MapLayerSettingsService.deleteSharedSettings(source, iTwinId, iModelId)) {
+      try {
+        await MapLayerPreferences.deleteByName(source, iTwinId, iModelId);
         const msg = MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:CustomAttach.RemoveLayerDefSuccess", { layerName });
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
-      } else {
+      } catch (err: any) {
         const msg = MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:CustomAttach.RemoveLayerDefError", { layerName });
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
       }
@@ -261,7 +262,8 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
         <Input type="text" className="map-manager-source-list-filter"
           placeholder={placeholderLabel}
           value={sourceFilterString}
-          onChange={handleFilterTextChanged} />
+          onChange={handleFilterTextChanged}
+          size="small" />
         <Button className="map-manager-add-source-button" title={addCustomLayerToolTip} onClick={handleAddNewMapSource}>
           {addCustomLayerLabel}</Button>
       </div>

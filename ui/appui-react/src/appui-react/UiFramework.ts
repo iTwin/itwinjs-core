@@ -50,7 +50,7 @@ export interface UserSettingsProvider {
   /** Unique provider Id */
   providerId: string;
   /** Function to load settings from settings storage */
-  loadUserSettings(storage: UiSettingsStorage): Promise<void>;
+  loadUserSettings(storage: UiSettingsStorage): Promise<void>; // eslint-disable-line deprecation/deprecation
 }
 
 /** UiVisibility Event Args interface.
@@ -99,7 +99,8 @@ export class UiFramework {
   private static _widgetManager?: WidgetManager;
   private static _uiVersion: FrameworkVersionId = "2";
   private static _hideIsolateEmphasizeActionHandler?: HideIsolateEmphasizeActionHandler;
-  private static _uiSettingsStorage: UiSettingsStorage = new LocalSettingsStorage(); // this provides a default storage location for settings
+  /** this provides a default storage location for settings */
+  private static _uiSettingsStorage: UiSettingsStorage = new LocalSettingsStorage();  // eslint-disable-line deprecation/deprecation
   private static _settingsManager?: SettingsManager;
   private static _uiSettingsProviderRegistry: Map<string, UserSettingsProvider> = new Map<string, UserSettingsProvider>();
   private static _PopupWindowManager = new ChildWindowManager();
@@ -391,7 +392,7 @@ export class UiFramework {
   }
 
   /** @public */
-  public static async setUiSettingsStorage(storage: UiSettingsStorage, immediateSync = false) {
+  public static async setUiSettingsStorage(storage: UiSettingsStorage, immediateSync = false) { // eslint-disable-line deprecation/deprecation
     if (UiFramework._uiSettingsStorage === storage)
       return;
 
@@ -411,7 +412,7 @@ export class UiFramework {
   }
 
   /** @public */
-  public static getUiSettingsStorage(): UiSettingsStorage {
+  public static getUiSettingsStorage(): UiSettingsStorage { // eslint-disable-line deprecation/deprecation
     return UiFramework._uiSettingsStorage;
   }
 
