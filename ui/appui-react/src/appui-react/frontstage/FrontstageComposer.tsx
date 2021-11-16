@@ -187,6 +187,9 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
   }
 
   private initializeZoneBounds() {
+    if (!this._isMounted)
+      return;
+
     this.setState((prevState) => {
       const frontstageDef = this._frontstageDef;
       if (!frontstageDef)
@@ -605,6 +608,10 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
   }
 
   public handleFloatingZonesBoundsChange(bounds: RectangleProps) {
+    // istanbul ignore next
+    if (!this._isMounted)
+      return;
+
     this.setState((prevState) => {
       const zones = FrontstageManager.NineZoneManager.getZonesManager().setFloatingZonesBounds(bounds, prevState.nineZone.zones);
       if (zones === prevState.nineZone.zones)
