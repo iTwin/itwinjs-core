@@ -235,7 +235,7 @@
       "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
-      "name": "@itwin/ui-test-extension",
+      "name": "@itwin/ui-items-providers-test",
       "allowedCategories": [ "internal" ]
     },
     {
@@ -249,6 +249,10 @@
     {
       "name": "@openid/appauth",
       "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "@reduxjs/toolkit",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@svgdotjs/svg.js",

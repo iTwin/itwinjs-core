@@ -22,7 +22,7 @@ import { IModelViewPicker } from "../imodelopen/IModelViewPicker";
 import { LocalFileSupport } from "../LocalFileSupport";
 import { Button, Headline } from "@itwin/itwinui-react";
 import { StageUsage, StandardContentLayouts } from "@itwin/appui-abstract";
-import { hasSavedViewLayoutProps } from "../../tools/UiProviderTool";
+import { hasSavedViewLayoutProps } from "../../tools/ImmediateTools";
 import { ViewsFrontstage } from "./ViewsFrontstage";
 
 class LocalFileOpenControl extends ContentControl {
