@@ -292,8 +292,6 @@ public;class HideIsolateEmphasizeActionHandler
 public;HideIsolateEmphasizeManager 
 alpha;HTMLElementPopup 
 alpha;HTMLElementPopupProps 
-beta;IModelAppUiSettings 
-deprecated;IModelAppUiSettings 
 beta;IModelConnectedNavigationWidget: import("react-redux").ConnectedComponent
 deprecated;IModelConnectedNavigationWidget: import("react-redux").ConnectedComponent
 public;IModelConnectedViewport: import("react-redux").ConnectedComponent
@@ -488,7 +486,6 @@ beta;sessionStateMapDispatchToProps:
 public;SessionStateReducer(state: SessionState | undefined, action: SessionStateActionsUnion): DeepReadonly
 internal;setPanelSize: (base:
 beta;SettingsModalFrontstage 
-internal;settingsStatusToUiSettingsStatus(status: SettingsStatus): UiSettingsStatus
 internal;setWidgetLabel: (base:
 internal;setWidgetState: (base:
 alpha;SheetCard 
@@ -685,6 +682,7 @@ internal;useNineZoneState(frontstageDef: FrontstageDef): NineZoneState | undefin
 public;UserInfo
 public;UserSettingsProvider
 public;UserSettingsStorage 
+deprecated;UserSettingsStorage 
 internal;useSavedFrontstageState(frontstageDef: FrontstageDef): void
 internal;useSaveFrontstageSettings(frontstageDef: FrontstageDef): void
 public;useScheduleAnimationDataProvider(viewport: ScreenViewport | undefined): ScheduleAnimationTimelineDataProvider | undefined

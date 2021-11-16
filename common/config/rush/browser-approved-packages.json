@@ -31,10 +31,6 @@
       "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
-      "name": "@bentley/product-settings-client",
-      "allowedCategories": [ "frontend", "internal" ]
-    },
-    {
       "name": "@bentley/react-scripts",
       "allowedCategories": [ "extensions", "internal" ]
     },
@@ -76,7 +72,7 @@
     },
     {
       "name": "@itwin/certa",
-      "allowedCategories": [ "common", "edit", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "common", "edit", "frontend", "integration-testing", "internal" ]
     },
     {
       "name": "@itwin/components-react",
@@ -416,11 +412,11 @@
     },
     {
       "name": "dotenv",
-      "allowedCategories": [ "backend", "common", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
     },
     {
       "name": "dotenv-expand",
-      "allowedCategories": [ "backend", "common", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
     },
     {
       "name": "electron",
@@ -576,7 +572,7 @@
     },
     {
       "name": "internal-tools",
-      "allowedCategories": [ "backend", "common", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
     },
     {
       "name": "istanbul-instrumenter-loader",
@@ -684,7 +680,7 @@
     },
     {
       "name": "openid-client",
-      "allowedCategories": [ "integration-testing", "tools" ]
+      "allowedCategories": [ "integration-testing" ]
     },
     {
       "name": "postcss-flexbugs-fixes",

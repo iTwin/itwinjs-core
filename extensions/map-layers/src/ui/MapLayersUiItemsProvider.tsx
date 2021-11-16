@@ -30,7 +30,7 @@ export class MapLayersUiItemsProvider implements UiItemsProvider {
     if (stageUsage === StageUsage.General && location === StagePanelLocation.Right && section === StagePanelSection.Start) {
       widgets.push({
         id: "map-layers:mapLayersWidget",
-        label: MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Widget.Label"),
+        label: IModelApp.localization.getLocalizedString("mapLayers:Widget.Label"),
         icon: "icon-map",
         getWidgetContent: () => <MapLayersWidget mapLayerOptions={mapLayerOptions} />, // eslint-disable-line react/display-name
       });

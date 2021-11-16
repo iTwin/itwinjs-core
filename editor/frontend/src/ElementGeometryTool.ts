@@ -197,8 +197,8 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
     if (this.agenda.isEmpty)
       return;
 
-    const app = this.agendaAppearance;
-    this.agenda.elements.forEach((id) => { overrides.overrideElement(id, app); });
+    const appearance = this.agendaAppearance;
+    this.agenda.elements.forEach((elementId) => { overrides.override({ elementId, appearance }); });
   }
 
   protected updateAgendaAppearanceProvider(drop?: true): void {

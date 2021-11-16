@@ -578,7 +578,7 @@ export function addPanelWidgets(
 }
 
 /** @internal */
-export function isFrontstageStateSettingResult(settingsResult: UiSettingsResult): settingsResult is {
+export function isFrontstageStateSettingResult(settingsResult: UiSettingsResult): settingsResult is { // eslint-disable-line deprecation/deprecation
   status: UiSettingsStatus.Success;
   setting: WidgetPanelsFrontstageState;
 } {
