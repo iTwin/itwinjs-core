@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-metadata",
-  "version": "3.0.0-dev.96",
+  "version": "3.0.0-dev.111",
   "description": "ECObjects core concepts in typescript",
   "license": "MIT",
   "main": "lib/cjs/ecschema-metadata.js",
@@ -8,7 +8,7 @@
   "imodeljsSharedLibrary": true,
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/core/ecschema-metadata"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/core/ecschema-metadata"
   },
   "scripts": {
     "build": "npm run -s build:cjs",
@@ -59,7 +59,7 @@
     "xmlhttprequest": "^1.8.0"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.96"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.111"
   },
   "dependencies": {
     "almost-equal": "^1.1.0"

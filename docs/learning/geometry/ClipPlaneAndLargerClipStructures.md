@@ -94,26 +94,51 @@ The snip below shows
 
   ![>](./figs/ClipStructures/DisplayClipping.png)
 
-  The display subsystem uses clipping that is a somewhat restricted tree of boolean operations:
+  The display subsystem uses clipping that is a limit tree of boolean operations:
 
   * The overall clipper (root of boolean tree) is a `ClipVector` instance.
   * The root `ClipVector` is an array of `ClipPrimitive`.
     * The boolean in the root `ClipVector` is an _intersection_ among the `ClipPrimitives` in the array
-  * Each `ClipPrimitive` is (just) one `UnionOfConvexClipPlaneSets`.
+  * Each `ClipPrimitive` has (just) one `UnionOfConvexCipPlaneSets`. A `ClipVector` requests the
+          `UnionOfCovexClipPlaneSets` from the `ClipPrimitive`.
     * The clipping abilities of each `ClipPrimitive` are thus no more complex than its `UnionOfComplexClipPlaneSets`.
-      * Some `ClipPrimitives` are "nothing but"
-    * However, a `ClipPrimitive` is t
+      * Some `ClipPrimitives` are "nothing but" carriers for their `UnionOfComplexClipPlaneSets`
+      * A `ClipShape` carries a defining polygon to be swept and optionally capped by front and back planes.
 
 (As noted in a previous paragraph, the ConvexClipPlaneSets cannot be directly "drawn".   The displayed shapes are the result of using the clipper to clip a larger polygon.)
 
-## Interfaces for clip methods
+## `Clipper` interfaces for clip requests
 
-Interfaces `Clipper` and `PolygonClipper` define methods for clip operations.   Note that these are fairly low-level.  The are expected to be called by intermediate API methods that fit their detail operations into larger scale API.
+The `Clipper` interface defines methods for clip operations.   Note that these are fairly low-level.  The are expected to be called by intermediate API methods that fit their detail operations into larger scale API.
+
+The _point_, _line_, and _arc_ methods are required.
+
+The _polygon_ method is optional.  This allows a curved-surface clipper (e.g. an ellipsoid) to implement point and curve clipping but not polygon clipping (which cannot produce exact match clip curves as polygonal output).
 
 | Interface | method | Remarks |
 |---|---|---|
 | Clipper |  `isPointOnOrInside(point: Point3d, tolerance?: number): boolean;` | Test if _point_ is inside or on |
 | Clipper |   `announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber): boolean;` | compare a line segment to the clipper.  Issue function calls with fractional intervals that are "in" |
 | Clipper |   `announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;` | compare an arc to the clipper.  Announce intervals that are in. |
-| PolygonClipper |   `appendPolygonClip(xyz: GrowableXYZArray,  insideFragments: GrowableXYZArray[], outsideFragments: GrowableXYZArray[],  arrayCache: GrowableXYZArrayCache): void;` | Clip a single polygon, emitting inside and outside pieces into indicated arrays. |
+| PolygonClipper (Optional in Clipper) |   `appendPolygonClip(xyz: GrowableXYZArray,  insideFragments: GrowableXYZArray[], outsideFragments: GrowableXYZArray[],  arrayCache: GrowableXYZArrayCache): void;` | Clip a single polygon, emitting inside and outside pieces into indicated arrays. |
+
+# `BooleanClipNode`
+
+A `BooleanClipNode` contains an array of objects that implement the `Clipper` interface, and implements the `Clipper` interface itself.   Hence arbitrary trees of booleans can be described.
+
+This allows completely general boolean trees to be constructed (strictly within typescript, apart from the limited display system clipping) with instances of the abstract class `BooleanClipNode` as interior nodes.
+
+The tree structure is created by statics in the `BoolanClipFactory` class:
+| method | boolean expression |
+|---|---|
+| createCaptureUnion (children) | union over (array of) children |
+| createCaptureIntersection (children) | intersection among (array of) children  |
+| createCaptureParity (children)| parity among (array of) children |
+| createCaptureDifference (primary, secondary) | inside primary and outside secondary |
+| createCaptureOutside (clipper) | negation of clipper |
+
+There are 3 concrete classes:
+ * BooleanClipNodeUnion -- union (boolean OR) operation among its members, with optional inversion of the result (boolean NOR)
+ * BooleanClipNodeIntersection -- intersection (boolean AND) operation among its members, with optional inversin of the result (boolean NAND)
+ * BooleanClipNodeParity -- parity (boolean XOR) among its members, with optional inversion of the result.
 

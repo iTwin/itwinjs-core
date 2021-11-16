@@ -1,6 +1,6 @@
 {
   "name": "@itwin/rpcinterface-full-stack-tests",
-  "version": "3.0.0-dev.96",
+  "version": "3.0.0-dev.111",
   "description": "Test the full iModel.js stack (frontend and backend) using standard RPC interfaces",
   "license": "MIT",
   "scripts": {
@@ -20,7 +20,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/full-stack-tests/rpc-interface"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/full-stack-tests/rpc-interface"
   },
   "keywords": [
     "Bentley",

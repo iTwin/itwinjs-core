@@ -20,6 +20,7 @@ The following dependencies of iTwin.js have been updated;
 ## Package name changes
 
 A number of packages have been renamed to use the @itwin scope rather than the @bentley scope, and we have modified a few package names to move towards a more consistent naming pattern. The full list of changed packages are listed in the table below.
+
 | Current                                | New                                  |
 |----------------------------------------|--------------------------------------|
 | @bentley/imodeljs-backend              | @itwin/core-backend                  |
@@ -81,6 +82,64 @@ A number of packages have been renamed to use the @itwin scope rather than the @
 - Removed TSLint support from `@itwin/build-tools`. If you're still using it, please switch to ESLint.
 - Removed legacy `.eslintrc.js` file from the same package. Instead, use `@itwin/eslint-plugin` and the `imodeljs-recommended` config included in it.
 - Dropped support for ESLint 6.x.
+
+## Fresnel effect
+
+[LightSettings]($common) has been enhanced to support a non-realistic Fresnel effect. As simply explained [here](https://www.dorian-iten.com/fresnel/), the effect causes surfaces to reflect more light based on the angle between the viewer's line of sight and the vector between the viewer and a given point on the surface. Use [FresnelSettings]($common) to configure this effect.
+
+Especially when combined with ambient occlusion, this effect can produce non-realistic views suitable for plant models and architectural models.
+
+![Fresnel effect applied to an architectural model](./assets/fresnel-building.jpg)
+
+![Fresnel effect applied to a plant model](./assets/fresnel-plant.jpg)
+
+The following code applies a display style similar to those illustrated above to a [Viewport]($frontend):
+
+```
+  // Enable ambient occlusion.
+  viewport.viewFlags = viewport.viewFlags.with("ambientOcclusion", true);
+
+  // Configure the lighting.
+  viewport.displayStyle.lightSettings = LightSettings.fromJSON({
+    // A relatively bright ambient light is the only light source.
+    ambient: {
+      intensity: 0.55,
+    },
+    // Increase the brightness of surfaces that are closer to parallel with the viewer's line of sight.
+    fresnel: {
+      intensity: 0.8,
+      invert: true,
+    },
+    // Disable directional lighting.
+    solar: {
+      intensity: 0,
+    },
+  });
+```
+
+## Viewport synchronization
+
+[TwoWayViewportSync]($frontend) establishes a connection between two [Viewport]($frontend)s such that any change to one viewport is reflected in the other. This includes not only [Frustum]($common) changes, but changes to the display style, category and model selectors, and so on. Synchronizing **everything** is not always desirable; and if the viewports are viewing two different [IModelConnection]($frontend)s it is not even meaningful, as category and model Ids from one iModel will not make sense in the context of the other iModel.
+
+Now, `TwoWayViewportSync` is extensible, allowing subclasses to specify which aspects of the viewports should be synchronized by overriding [TwoWayViewportSync.connectViewports]($frontend) and [TwoWayViewportSync.syncViewports]($frontend). To establish a connection between two viewports using your subclass `MyViewportSync`, use `MyViewportSync.connect(viewport1, viewport2)`.
+
+A new subclass [TwoWayViewportFrustumSync]($frontend) is supplied that synchronizes **only** the frusta of the viewports. The viewports will view the same volume of space, but may display different contents or apply different display styles. To establish this connection, use `TwoWayViewportFrustumSync.connect(viewport1, viewport2)`.
+
+## Environment decorations
+
+A [DisplayStyle3dSettings]($common) can specify a [SkyBox]($common) and [GroundPlane]($common) to be drawn as environmental decorations. Previously, [DisplayStyle3dSettings.environment]($common) was a mutable JSON [EnvironmentProps]($common), while [DisplayStyle3dState.environment]($frontend) was a mutable [Environment]($common) object, formerly defined in the core-frontend package. This made the API quite awkward and led to bugs in synchronizing the [Viewport]($frontend)'s decorations with changes to the environment settings.
+
+Now, [DisplayStyle3dSettings.environment]($common) is an immutable [Environment]($common) object consisting of a [GroundPlane]($common), [SkyBox]($common), and flags controlling the display of each. These changes require adjustment to existing code that toggles the display of either. For example:
+
+```ts
+// Replace this:
+style.environment.sky.display = true;
+style.environment.ground.display = false;
+// With this:
+style.environment = style.environment.withDisplay({ sky: true, ground: false });
+```
+
+Additionally, until now the images used by a [SkySphere]($common) or [SkyBox]($common) were required to be hosted by persistent [Texture]($backend) elements stored in the iModel. Now, they can also be specified as a URL resolving to an HTMLImageElement, allowing custom skyboxes to be created without modifying the iModel.
 
 ## BentleyError constructor no longer logs
 
@@ -1083,6 +1142,26 @@ The @itwin ui and @itwin/presentation-components packages are now dependent on R
 
 React 16 is not an officially supported version of iTwin.js app or Extension development using the iTwin.js AppUi.
 
+The component [FrameworkVersion]($appui-react) has been updated so it no longer takes a version prop. It now uses the value of `frameworkState.configurableUiState.frameworkVersion` from the redux store as the version. This value may be set using `UiFramework.setUiVersion` method and will be initialized to "2". Existing iModelApps using the 1.0 version of the user interface were not required to include the `<FrameworkVersion>` component in its component tree. It is now required that every iModelApp include the `<FrameworkVersion>` component and that the redux store entry mentioned above is specified to either "1" or "2". Below is a typical component tree for an iModeApp.
+
+```tsx
+<Provider store={MyIModelApp.store} >
+  <ThemeManager>
+    <SafeAreaContext.Provider value={SafeAreaInsets.All}>
+      <ToolbarDragInteractionContext.Provider value={false}>
+        <FrameworkVersion>
+          <UiSettingsProvider settingsStorage={uiSettingsStorage}>
+            <ConfigurableUiContent
+              appBackstage={<AppBackstageComposer />}
+            />
+          </UiSettingsProvider>
+        </FrameworkVersion>
+      </ToolbarDragInteractionContext.Provider>
+    </SafeAreaContext.Provider>
+  <ThemeManager>
+</Provider>
+```
+
 ### New options for defining Frontstages
 
 | Class/Component                                  | Description                                                                                      |
@@ -1226,6 +1305,10 @@ Developers should use equivalent components in @itwin/itwinui-react instead.
 | Deprecated in @itwin/components-react | Use from @itwin/itwinui-react instead |
 | ---------------------------------------- | ------------------------------------- |
 | Breadcrumb                               | Breadcrumbs                           |
+
+| Deprecated in @itwin/imodel-components-react | Use from @itwin/itwinui-react instead |
+| -------------------------------------------- | ------------------------------------- |
+| ColorPickerPanel                           | ColorPicker                           |
 
 #### Slider
 

@@ -1,13 +1,13 @@
 {
   "name": "@itwin/ecschema-rpcinterface-impl",
-  "version": "3.0.0-dev.96",
+  "version": "3.0.0-dev.111",
   "description": "Schema RPC Interface backend implementation",
   "main": "lib/cjs/ecschema-rpc-impl.js",
   "typings": "lib/cjs/ecschema-rpc-impl",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/core/ecschema-rpc/impl"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/core/ecschema-rpc/impl"
   },
   "scripts": {
     "build": "npm run -s build:cjs",

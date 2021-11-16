@@ -41,10 +41,7 @@ export class BlankConnectionExample {
     style.backgroundColor = ColorDef.white;
 
     // turn on the ground and skybox in the environment
-    const env = style.environment;
-    env.ground.display = true;
-    env.sky.display = true;
-    style.environment = env; // call to accessor to get the json properties to reflect the changes
+    style.environment = style.environment.withDisplay({ sky: true, ground: true });
 
     return blankView;
   }

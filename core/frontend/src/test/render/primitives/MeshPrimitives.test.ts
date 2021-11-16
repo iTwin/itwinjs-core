@@ -62,11 +62,6 @@ describe("MeshPrimitive Tests", () => {
     m.addPolyline(mp);
     expect(m.polylines!.length).to.equal(1);
 
-    // throws error if type isn't polyline
-    type = Mesh.PrimitiveType.Mesh;
-    m = Mesh.create({ displayParams, type, range, is2d, isPlanar });
-    expect(() => m.addPolyline(mp)).to.throw("Programmer Error");
-
     // doesn't add polyline if meshpolyline indices has a length less that 2
     type = Mesh.PrimitiveType.Polyline;
     m = Mesh.create({ displayParams, type, range, is2d, isPlanar });
@@ -78,22 +73,17 @@ describe("MeshPrimitive Tests", () => {
 
   it("addTriangle", () => {
     const displayParams = new FakeDisplayParams();
-    let type = Mesh.PrimitiveType.Mesh;
+    const type = Mesh.PrimitiveType.Mesh;
     const range = Range3d.createNull();
     const is2d = false;
     const isPlanar = true;
 
-    let m = Mesh.create({ displayParams, type, range, is2d, isPlanar });
+    const m = Mesh.create({ displayParams, type, range, is2d, isPlanar });
 
     expect(m.triangles!.length).to.equal(0);
     const t = new Triangle();
     m.addTriangle(t);
     expect(m.triangles!.length).to.equal(1);
-
-    // throws error if type isn't mesh
-    type = Mesh.PrimitiveType.Polyline;
-    m = Mesh.create({ displayParams, type, range, is2d, isPlanar });
-    expect(() => m.addTriangle(t)).to.throw("Programmer Error");
   });
 
   it("addVertex", () => {

@@ -22,6 +22,7 @@ import { desync, sync } from "./Sync";
  *  12 float portrait intensity
  *  13 float specular intensity
  *  14 float num cels
+ *  15 fresnel intensity (negative if fresnel is to be inverted)
  * Note solar direction is handled separately in TargetUniforms.
  * @internal
  */
@@ -33,7 +34,7 @@ export class LightingUniforms {
   private _initialized = false;
 
   // GPU state.
-  private readonly _data = new Float32Array(15);
+  private readonly _data = new Float32Array(16);
 
   // Working state
   private readonly _rgb = new FloatRgb();
@@ -66,6 +67,9 @@ export class LightingUniforms {
     data[12] = settings.portraitIntensity;
     data[13] = settings.specularIntensity;
     data[14] = settings.numCels;
+
+    const fresnel = settings.fresnel.intensity;
+    data[15] = settings.fresnel.invert ? -fresnel : fresnel;
   }
 
   public bind(uniform: UniformHandle): void {

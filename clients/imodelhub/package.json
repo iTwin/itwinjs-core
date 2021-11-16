@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodelhub-client",
-  "version": "3.0.0-dev.96",
+  "version": "3.0.0-dev.111",
   "description": "iModel.js iModelHub Client",
   "main": "lib/cjs/imodelhub-client.js",
   "modules": "lib/esm/imodelhub-client.js",
@@ -9,7 +9,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/clients/imodelhub"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/clients/imodelhub"
   },
   "scripts": {
     "build": "npm run -s build:cjs",
@@ -46,8 +46,8 @@
     "semver": "^5.5.0"
   },
   "peerDependencies": {
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.96",
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.96"
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.111",
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.111"
   },
   "devDependencies": {
     "@bentley/itwin-client": "workspace:*",

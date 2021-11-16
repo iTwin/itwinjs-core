@@ -1,6 +1,6 @@
 {
   "name": "@itwin/map-layers",
-  "version": "3.0.0-dev.96",
+  "version": "3.0.0-dev.111",
   "description": "Extension that adds a Map Layers Widget",
   "main": "lib/cjs/map-layers.js",
   "module": "lib/esm/map-layers.js",
@@ -23,7 +23,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/core/map-layers"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/core/map-layers"
   },
   "keywords": [
     "iModel",
@@ -52,17 +52,16 @@
     "@itwin/imodel-components-react": "workspace:*",
     "@itwin/appui-react": "workspace:*",
     "@itwin/appui-layout-react": "workspace:*",
-    "@itwin/itwinui-css": "^0.27.0",
-    "@itwin/itwinui-react": "^1.16.2",
+    "@itwin/itwinui-css": "^0.37.0",
+    "@itwin/itwinui-react": "^1.23.0",
     "@testing-library/react": "^12.0.0",
-    "@testing-library/react-hooks": "^3.2.1",
+    "@testing-library/react-hooks": "^7.0.2",
     "@types/chai": "^4.1.4",
     "@types/enzyme": "3.9.3",
     "@types/mocha": "^8.2.2",
     "@types/node": "14.14.31",
-    "@types/react": "^17.0.0",
+    "@types/react": "17.0.31",
     "@types/react-beautiful-dnd": "^12.1.2",
-    "@types/testing-library__react-hooks": "^3.1.0",
     "@types/react-select": "3.0.26",
     "@types/sinon": "^9.0.0",
     "@types/sinon-chai": "^3.2.0",
@@ -89,7 +88,7 @@
   "dependencies": {
     "classnames": "^2.3.1",
     "react-beautiful-dnd": "^13.0.0",
-    "react-select": "3.1.0",
+    "react-select": "3.2.0",
     "react-resize-detector": "^6.7.6"
   },
   "peerDependencies": {

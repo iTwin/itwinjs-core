@@ -1,12 +1,12 @@
 {
   "name": "@itwin/presentation-common",
-  "version": "3.0.0-dev.96",
+  "version": "3.0.0-dev.111",
   "description": "Common pieces for iModel.js presentation packages",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/presentation/common"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/presentation/common"
   },
   "keywords": [
     "Bentley",
@@ -47,9 +47,9 @@
     "test:watch": "npm -s test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.96",
-    "@itwin/core-common": "workspace:^3.0.0-dev.96",
-    "@itwin/core-quantity": "workspace:^3.0.0-dev.96"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.111",
+    "@itwin/core-common": "workspace:^3.0.0-dev.111",
+    "@itwin/core-quantity": "workspace:^3.0.0-dev.111"
   },
   "devDependencies": {
     "@itwin/core-bentley": "workspace:*",

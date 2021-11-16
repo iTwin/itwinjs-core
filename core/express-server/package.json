@@ -1,6 +1,6 @@
 {
   "name": "@itwin/express-server",
-  "version": "3.0.0-dev.96",
+  "version": "3.0.0-dev.111",
   "description": "iModel.js express utilities",
   "main": "lib/cjs/ExpressServer.js",
   "typings": "lib/cjs/ExpressServer",
@@ -21,7 +21,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/core/express-server"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/core/express-server"
   },
   "keywords": [
     "Bentley",

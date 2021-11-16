@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-markup",
-  "version": "3.0.0-dev.96",
+  "version": "3.0.0-dev.111",
   "description": "iModel.js markup package",
   "main": "lib/cjs/core-markup.js",
   "module": "lib/esm/core-markup.js",
@@ -25,7 +25,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/core/markup"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/core/markup"
   },
   "keywords": [
     "Bentley",
@@ -43,10 +43,10 @@
     "@svgdotjs/svg.js": "3.0.13"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.96",
-    "@itwin/core-geometry": "workspace:^3.0.0-dev.96",
-    "@itwin/core-common": "workspace:^3.0.0-dev.96",
-    "@itwin/core-frontend": "workspace:^3.0.0-dev.96"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.111",
+    "@itwin/core-geometry": "workspace:^3.0.0-dev.111",
+    "@itwin/core-common": "workspace:^3.0.0-dev.111",
+    "@itwin/core-frontend": "workspace:^3.0.0-dev.111"
   },
   "devDependencies": {
     "@itwin/core-bentley": "workspace:*",

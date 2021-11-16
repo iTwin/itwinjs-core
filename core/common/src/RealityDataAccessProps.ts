@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 /** @packageDocumentation
  * @module RealityData
  */
-
 import { AccessToken } from "@itwin/core-bentley";
 
 /**
- * All of the currently supported ProjectWise ContextShare reality data types
+ * All of the currently supported Reality Data types
  * @beta
  */
 export enum DefaultSupportedTypes {
@@ -21,7 +21,7 @@ export enum DefaultSupportedTypes {
 }
 
 /** RealityData
- * This class implements a Reality Data stored in ProjectWise Context Share (Reality Data Service)
+ * This class implements a Reality Data stored in the Reality Data API
  * Data is accessed directly through methods of the reality data instance.
  * Access to the data required a properly entitled token though the access to the blob is controlled through
  * an Azure blob URL, the token may be required to obtain this Azure blob URL or refresh it.
@@ -35,14 +35,12 @@ export interface RealityData {
   rootDocument?: string;
   type?: string;
 
-  getBlobUrl: (accessToken: AccessToken) => Promise<URL>;
-  getTileContent: (accessToken: AccessToken, name: string) => Promise<any>;
-  getTileJson: (accessToken: AccessToken, name: string) => Promise<any>;
+  getBlobUrl(accessToken: AccessToken, blobPath: string): Promise<URL>;
 }
 
 /**
  * Client wrapper to Reality Data Service.
- * An instance of this class is used to extract reality data from the ProjectWise Context Share (Reality Data Service)
+ * An instance of this class is used to extract reality data from the Reality Data API
  * This class implements obtaining a specific reality data and extraction of the Azure blob address.
  * @beta
  */

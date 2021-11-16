@@ -24,7 +24,7 @@
     },
     {
       "name": "@bentley/imodeljs-native",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "@bentley/itwin-client",
@@ -593,6 +593,10 @@
     {
       "name": "json-schema-faker",
       "allowedCategories": [ "common" ]
+    },
+    {
+      "name": "json5",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "jsonc-parser",

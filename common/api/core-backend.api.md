@@ -14,6 +14,8 @@ import { AxisAlignedBox3d } from '@itwin/core-common';
 import { Base64EncodedString } from '@itwin/core-common';
 import { BeDuration } from '@itwin/core-bentley';
 import { BeEvent } from '@itwin/core-bentley';
+import { BlobDaemon } from '@bentley/imodeljs-native';
+import { BlobDaemonCommandArg } from '@bentley/imodeljs-native';
 import { BRepGeometryCreate } from '@itwin/core-common';
 import { BriefcaseId } from '@itwin/core-common';
 import { BriefcaseProps } from '@itwin/core-common';
@@ -112,6 +114,9 @@ import { InternetConnectivityStatus } from '@itwin/core-common';
 import { IpcAppNotifications } from '@itwin/core-common';
 import { IpcListener } from '@itwin/core-common';
 import { IpcSocketBackend } from '@itwin/core-common';
+import { JSONSchema } from '@itwin/core-bentley';
+import { JSONSchemaType } from '@itwin/core-bentley';
+import { JSONSchemaTypeName } from '@itwin/core-bentley';
 import { LightLocationProps } from '@itwin/core-common';
 import { LinePixels } from '@itwin/core-common';
 import { LineStyleProps } from '@itwin/core-common';
@@ -364,6 +369,49 @@ export enum BackendLoggerCategory {
     Schemas = "core-backend.Schemas"
 }
 
+// @internal
+export class BaseSettings implements Settings {
+    // (undocumented)
+    addDictionary(dictionaryName: string, priority: SettingsPriority, settings: SettingDictionary): void;
+    // (undocumented)
+    addFile(fileName: LocalFileName, priority: SettingsPriority): void;
+    // (undocumented)
+    addJson(dictionaryName: string, priority: SettingsPriority, settingsJson: string): void;
+    // (undocumented)
+    close(): void;
+    // (undocumented)
+    dropDictionary(dictionaryName: DictionaryName, raiseEvent?: boolean): boolean;
+    // (undocumented)
+    getArray<T>(name: SettingName, defaultValue: Array<T>): Array<T>;
+    // (undocumented)
+    getArray<T>(name: SettingName): Array<T> | undefined;
+    // (undocumented)
+    getBoolean(name: SettingName, defaultValue: boolean): boolean;
+    // (undocumented)
+    getBoolean(name: SettingName): boolean | undefined;
+    // (undocumented)
+    getNumber(name: SettingName, defaultValue: number): number;
+    // (undocumented)
+    getNumber(name: SettingName): number | undefined;
+    // (undocumented)
+    getObject(name: SettingName, defaultValue: SettingObject): SettingObject;
+    // (undocumented)
+    getObject(name: SettingName): SettingObject | undefined;
+    // (undocumented)
+    getSetting<T extends SettingType>(name: SettingName, defaultValue?: T): T | undefined;
+    // (undocumented)
+    getString(name: SettingName, defaultValue: string): string;
+    // (undocumented)
+    getString(name: SettingName): string | undefined;
+    inspectSetting<T extends SettingType>(name: SettingName): SettingInspector<T>[];
+    // (undocumented)
+    readonly onSettingsChanged: BeEvent<() => void>;
+    // (undocumented)
+    resolveSetting<T extends SettingType>(name: SettingName, resolver: SettingResolver<T>, defaultValue?: T): T | undefined;
+    // (undocumented)
+    protected verifyPriority(_priority: SettingsPriority): void;
+}
+
 // @public
 export type BindParameter = number | string;
 
@@ -376,6 +424,10 @@ export class BisCoreSchema extends Schema {
     // (undocumented)
     static get schemaName(): string;
 }
+
+export { BlobDaemon }
+
+export { BlobDaemonCommandArg }
 
 // @public
 export class BriefcaseDb extends IModelDb {
@@ -875,6 +927,9 @@ export class DictionaryModel extends DefinitionModel {
     static get className(): string;
 }
 
+// @beta
+export type DictionaryName = string;
+
 // @public
 export abstract class DisplayStyle extends DefinitionElement implements DisplayStyleProps {
     // @internal
@@ -1234,6 +1289,24 @@ export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
     // (undocumented)
     next(): IteratorResult<ECSqlValue>;
 }
+
+// @beta
+export class EditableWorkspaceFile extends WorkspaceFile {
+    addBlob(rscName: WorkspaceResourceName, val: Uint8Array): void;
+    addFile(rscName: WorkspaceResourceName, localFileName: LocalFileName, fileExt?: string): void;
+    addString(rscName: WorkspaceResourceName, val: string): void;
+    create(): void;
+    // (undocumented)
+    lockContainer(): Promise<void>;
+    removeBlob(rscName: WorkspaceResourceName): void;
+    removeFile(rscName: WorkspaceResourceName): void;
+    removeString(rscName: WorkspaceResourceName): void;
+    updateBlob(rscName: WorkspaceResourceName, val: Uint8Array): void;
+    updateFile(rscName: WorkspaceResourceName, localFileName: LocalFileName): void;
+    updateString(rscName: WorkspaceResourceName, val: string): void;
+    // (undocumented)
+    upload(): Promise<void>;
+    }
 
 // @public
 export class Element extends Entity implements ElementProps {
@@ -2123,13 +2196,6 @@ export abstract class IModelDb extends IModel {
     close(): void;
     get codeSpecs(): CodeSpecs;
     computeProjectExtents(options?: ComputeProjectExtentsOptions): ComputedProjectExtents;
-    // (undocumented)
-    protected _concurrentQueryStats: {
-        resetTimerHandle: any;
-        logTimerHandle: any;
-        lastActivityTime: number;
-        dispose: () => void;
-    };
     constructEntity<T extends Entity>(props: EntityProps): T;
     containsClass(classFullName: string): boolean;
     // @alpha
@@ -2244,6 +2310,10 @@ export abstract class IModelDb extends IModel {
     withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors?: boolean): T;
     withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors?: boolean): T;
     withStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors?: boolean): T;
+    // @beta
+    get workspace(): Workspace;
+    // @internal (undocumented)
+    protected _workspace: Workspace;
 }
 
 // @public (undocumented)
@@ -2336,11 +2406,13 @@ export class IModelHost {
     static set applicationId(id: string);
     static get applicationVersion(): string;
     static set applicationVersion(version: string);
+    // @beta
+    static get appWorkspace(): Workspace;
     // (undocumented)
     static authorizationClient?: AuthorizationClient;
     // (undocumented)
     static backendVersion: string;
-    static get cacheDir(): string;
+    static get cacheDir(): LocalDirName;
     // @internal
     static get compressCachedTiles(): boolean;
     // (undocumented)
@@ -2392,8 +2464,8 @@ export class IModelHost {
 
 // @public
 export class IModelHostConfiguration {
-    appAssetsDir?: string;
-    cacheDir?: string;
+    appAssetsDir?: LocalDirName;
+    cacheDir?: LocalDirName;
     compressCachedTiles?: boolean;
     // @alpha
     crashReportingConfig?: CrashReportingConfig;
@@ -2417,6 +2489,8 @@ export class IModelHostConfiguration {
     tileContentRequestTimeout: number;
     // @internal
     tileTreeRequestTimeout: number;
+    // @beta
+    workspace?: WorkspaceOpts;
 }
 
 // @public
@@ -2600,6 +2674,27 @@ export interface IpcHostOpts {
 export interface ITwinIdArg {
     // (undocumented)
     readonly iTwinId: GuidString;
+}
+
+// @internal (undocumented)
+export class ITwinWorkspace implements Workspace {
+    constructor(settings: Settings, opts?: WorkspaceOpts);
+    // (undocumented)
+    close(): void;
+    // (undocumented)
+    readonly containerDir: LocalDirName;
+    // (undocumented)
+    dropContainer(toDrop: WorkspaceContainer): void;
+    // (undocumented)
+    readonly filesDir: LocalDirName;
+    // (undocumented)
+    getContainer(props: WorkspaceContainerProps): Promise<WorkspaceContainer>;
+    // (undocumented)
+    loadSettingsDictionary(settingRsc: WorkspaceResourceProps, priority: SettingsPriority): Promise<void>;
+    // (undocumented)
+    resolveContainerId(props: WorkspaceContainerProps): WorkspaceContainerId;
+    // (undocumented)
+    readonly settings: Settings;
 }
 
 // @public
@@ -3467,6 +3562,112 @@ export class SectionDrawingModel extends DrawingModel {
 // @internal
 export function setMaxEntitiesPerEvent(max: number): number;
 
+// @beta
+export type SettingDictionary = SettingObject;
+
+// @beta
+export interface SettingInspector<T> {
+    // (undocumented)
+    dictionary: DictionaryName;
+    // (undocumented)
+    priority: number;
+    // (undocumented)
+    value: T;
+}
+
+// @beta
+export type SettingName = string;
+
+// @beta
+export interface SettingObject {
+    // (undocumented)
+    [name: string]: SettingType;
+}
+
+// @beta
+export type SettingResolver<T> = (val: T, dict: DictionaryName, priority: SettingsPriority) => T | undefined;
+
+// @beta
+export interface Settings {
+    addDictionary(dictionaryName: DictionaryName, priority: SettingsPriority, settings: SettingDictionary): void;
+    addFile(fileName: LocalFileName, priority: SettingsPriority): void;
+    addJson(dictionaryName: DictionaryName, priority: SettingsPriority, settingsJson: string): void;
+    // @internal (undocumented)
+    close(): void;
+    dropDictionary(dictionaryName: DictionaryName): void;
+    getArray<T>(settingName: SettingName, defaultValue: Array<T>): Array<T>;
+    // (undocumented)
+    getArray<T>(settingName: SettingName): Array<T> | undefined;
+    getBoolean(settingName: SettingName, defaultValue: boolean): boolean;
+    // (undocumented)
+    getBoolean(settingName: SettingName, defaultValue?: boolean): boolean | undefined;
+    getNumber(settingName: SettingName, defaultValue: number): number;
+    // (undocumented)
+    getNumber(settingName: SettingName): number | undefined;
+    getObject(settingName: SettingName, defaultValue: SettingObject): SettingObject;
+    // (undocumented)
+    getObject(settingName: SettingName): SettingObject | undefined;
+    getSetting<T extends SettingType>(settingName: SettingName, defaultValue?: T): T | undefined;
+    getString(settingName: SettingName, defaultValue: string): string;
+    // (undocumented)
+    getString(settingName: SettingName, defaultValue?: string): string | undefined;
+    inspectSetting<T extends SettingType>(name: SettingName): SettingInspector<T>[];
+    readonly onSettingsChanged: BeEvent<() => void>;
+    resolveSetting<T extends SettingType>(settingName: SettingName, resolver: SettingResolver<T>, defaultValue?: T): T | undefined;
+    // (undocumented)
+    resolveSetting<T extends SettingType>(settingName: SettingName, resolver: SettingResolver<T>, defaultValue: T): T;
+}
+
+// @beta
+export interface SettingsGroupSpec {
+    // (undocumented)
+    readonly description?: string;
+    // (undocumented)
+    readonly extensionId?: string;
+    // (undocumented)
+    readonly groupName: string;
+    // (undocumented)
+    readonly order?: number;
+    // (undocumented)
+    readonly properties: {
+        [name: string]: SettingSpec;
+    };
+    // (undocumented)
+    readonly title?: string;
+}
+
+// @beta
+export interface SettingSpec extends Readonly<JSONSchema> {
+    readonly enumItemLabels?: string[];
+    readonly multilineEdit?: true;
+    // (undocumented)
+    type: JSONSchemaTypeName | JSONSchemaTypeName[];
+}
+
+// @beta
+export enum SettingsPriority {
+    application = 200,
+    defaults = 100,
+    iModel = 500,
+    iTwin = 400,
+    organization = 300
+}
+
+// @beta
+export class SettingsSpecRegistry {
+    static addFile(fileName: string): string[];
+    static addGroup(settingsGroup: SettingsGroupSpec | SettingsGroupSpec[]): string[];
+    static addJson(settingSpecJson: string): string[];
+    static readonly allSpecs: Map<string, SettingSpec>;
+    static readonly onSpecsChanged: BeEvent<() => void>;
+    static removeGroup(groupName: string): void;
+    // @internal
+    static reset(): void;
+    }
+
+// @beta
+export type SettingType = JSONSchemaType;
+
 // @public
 export class Sheet extends Document implements SheetProps {
     // @internal
@@ -4163,6 +4364,97 @@ export class VolumeElement extends SpatialLocationElement {
 export class WebMercatorModel extends SpatialModel {
     // @internal (undocumented)
     static get className(): string;
+}
+
+// @beta
+export interface Workspace {
+    close(): void;
+    readonly containerDir: LocalDirName;
+    dropContainer(container: WorkspaceContainer): void;
+    readonly filesDir: LocalDirName;
+    getContainer(props: WorkspaceContainerProps): Promise<WorkspaceContainer>;
+    loadSettingsDictionary(settingRsc: WorkspaceResourceProps, priority: SettingsPriority): Promise<void>;
+    resolveContainerId(props: WorkspaceContainerProps): WorkspaceContainerId;
+    readonly settings: Settings;
+}
+
+// @beta
+export interface WorkspaceContainer {
+    readonly containerFilesDir: LocalDirName;
+    readonly containerId: WorkspaceContainerId;
+    getBlob(rscName: WorkspaceResourceName): Uint8Array | undefined;
+    getFile(rscName: WorkspaceResourceName, targetFileName?: LocalFileName): LocalFileName | undefined;
+    getString(rscName: WorkspaceResourceName): string | undefined;
+    readonly onContainerClosed: BeEvent<() => void>;
+    readonly workspace: Workspace;
+}
+
+// @beta
+export type WorkspaceContainerId = string;
+
+// @beta
+export type WorkspaceContainerName = string;
+
+// @beta
+export type WorkspaceContainerProps = WorkspaceContainerName | {
+    id: WorkspaceContainerId;
+};
+
+// @beta
+export class WorkspaceFile implements WorkspaceContainer {
+    constructor(containerId: WorkspaceContainerId, workspace: Workspace);
+    // (undocumented)
+    attach(_token: AccessToken): Promise<void>;
+    // (undocumented)
+    close(): void;
+    // (undocumented)
+    get containerFilesDir(): string;
+    // (undocumented)
+    readonly containerId: WorkspaceContainerId;
+    // (undocumented)
+    protected readonly db: SQLiteDb;
+    // (undocumented)
+    download(): Promise<void>;
+    // (undocumented)
+    getBlob(rscName: WorkspaceResourceName): Uint8Array | undefined;
+    // (undocumented)
+    getFile(rscName: WorkspaceResourceName, targetFileName?: LocalFileName): LocalFileName | undefined;
+    // (undocumented)
+    getString(rscName: WorkspaceResourceName): string | undefined;
+    // (undocumented)
+    get isOpen(): boolean;
+    // (undocumented)
+    readonly localDbName: LocalDirName;
+    // (undocumented)
+    protected static noLeadingOrTrailingSpaces(name: string, msg: string): void;
+    // (undocumented)
+    readonly onContainerClosed: BeEvent<() => void>;
+    // (undocumented)
+    open(): void;
+    // (undocumented)
+    purgeContainerFiles(): void;
+    // (undocumented)
+    protected queryFileResource(rscName: WorkspaceResourceName): {
+        localFileName: string;
+        info: import("@bentley/imodeljs-native").IModelJsNative.EmbedFileQuery;
+    } | undefined;
+    // (undocumented)
+    readonly workspace: Workspace;
+}
+
+// @beta
+export interface WorkspaceOpts {
+    containerDir?: LocalDirName;
+    filesDir?: LocalDirName;
+}
+
+// @beta
+export type WorkspaceResourceName = string;
+
+// @beta
+export interface WorkspaceResourceProps {
+    container: WorkspaceContainerProps;
+    rscName: WorkspaceResourceName;
 }
 
 

@@ -514,6 +514,12 @@ export interface BaseReaderOptions {
 }
 
 // @public
+export interface BasicPlanarClipMaskArgs {
+    invert?: boolean;
+    transparency?: number;
+}
+
+// @public
 export enum BatchType {
     PlanarClassifier = 2,
     Primary = 0,
@@ -1984,6 +1990,20 @@ export interface DecorationGeometryProps {
     readonly id: Id64String;
 }
 
+// @beta
+export enum DefaultSupportedTypes {
+    // (undocumented)
+    Cesium3dTiles = "Cesium3DTiles",
+    // (undocumented)
+    OMR = "OMR",
+    // (undocumented)
+    OPC = "OPC",
+    // (undocumented)
+    RealityMesh3dTiles = "RealityMesh3DTiles",
+    // (undocumented)
+    Terrain3dTiles = "Terrain3DTiles"
+}
+
 // @internal (undocumented)
 export const defaultTileOptions: TileOptions;
 
@@ -2048,9 +2068,8 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     // @internal
     applyOverrides(overrides: DisplayStyle3dSettingsProps): void;
     clearSunTime(): void;
-    // @internal (undocumented)
-    get environment(): EnvironmentProps;
-    set environment(environment: EnvironmentProps);
+    get environment(): Environment;
+    set environment(environment: Environment);
     getPlanProjectionSettings(modelId: Id64String): PlanProjectionSettings | undefined;
     get hiddenLineSettings(): HiddenLine.Settings;
     set hiddenLineSettings(hline: HiddenLine.Settings);
@@ -2067,6 +2086,8 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     get sunTime(): number | undefined;
     get thematic(): ThematicDisplay;
     set thematic(thematic: ThematicDisplay);
+    toggleGroundPlane(display?: boolean): void;
+    toggleSkyBox(display?: boolean): void;
     // @internal (undocumented)
     toJSON(): DisplayStyle3dSettingsProps;
     // @internal (undocumented)
@@ -2173,7 +2194,7 @@ export class DisplayStyleSettings {
     readonly onBackgroundColorChanged: BeEvent<(newColor: ColorDef) => void>;
     readonly onBackgroundMapChanged: BeEvent<(newMap: BackgroundMapSettings) => void>;
     readonly onClipStyleChanged: BeEvent<(newStyle: ClipStyle) => void>;
-    readonly onEnvironmentChanged: BeEvent<(newProps: Readonly<EnvironmentProps>) => void>;
+    readonly onEnvironmentChanged: BeEvent<(newEnv: Readonly<Environment>) => void>;
     readonly onExcludedElementsChanged: BeEvent<() => void>;
     readonly onHiddenLineSettingsChanged: BeEvent<(newSettings: HiddenLine.Settings) => void>;
     readonly onLightsChanged: BeEvent<(newLights: LightSettings) => void>;
@@ -2677,6 +2698,17 @@ export interface ElementLoadProps extends ElementLoadOptions {
 }
 
 // @public
+export interface ElementPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
+    elementIds: Iterable<Id64String>;
+    exclude?: boolean;
+    modelIds?: Iterable<Id64String>;
+    // @internal (undocumented)
+    priority?: never;
+    // @internal (undocumented)
+    subCategoryIds?: never;
+}
+
+// @public
 export interface ElementProps extends EntityProps {
     code: CodeProps;
     federationGuid?: GuidString;
@@ -2786,10 +2818,29 @@ export interface EntityQueryParams {
 }
 
 // @public
+export class Environment {
+    protected constructor(props?: Partial<EnvironmentProperties>);
+    clone(changedProps?: Partial<EnvironmentProperties>): Environment;
+    static create(props?: Partial<EnvironmentProperties>): Environment;
+    static readonly defaults: Environment;
+    readonly displayGround: boolean;
+    readonly displaySky: boolean;
+    static fromJSON(props?: EnvironmentProps): Environment;
+    readonly ground: GroundPlane;
+    readonly sky: SkyBox;
+    toJSON(): EnvironmentProps;
+    withDisplay(display: {
+        sky?: boolean;
+        ground?: boolean;
+    }): Environment;
+}
+
+// @public
+export type EnvironmentProperties = NonFunctionPropertiesOf<Environment>;
+
+// @public
 export interface EnvironmentProps {
-    // (undocumented)
     ground?: GroundPlaneProps;
-    // (undocumented)
     sky?: SkyBoxProps;
 }
 
@@ -3176,6 +3227,23 @@ export enum FontType {
 export interface FormDataCommon {
     // (undocumented)
     append(name: string, value: string | Blob | Buffer, fileName?: string): void;
+}
+
+// @public
+export class FresnelSettings {
+    clone(changedProps?: FresnelSettingsProps): FresnelSettings;
+    static create(intensity?: number, invert?: boolean): FresnelSettings;
+    equals(rhs: FresnelSettings): boolean;
+    static fromJSON(props?: FresnelSettingsProps): FresnelSettings;
+    readonly intensity: number;
+    readonly invert: boolean;
+    toJSON(): FresnelSettingsProps | undefined;
+}
+
+// @public
+export interface FresnelSettingsProps {
+    intensity?: number;
+    invert?: boolean;
 }
 
 // @public
@@ -3968,16 +4036,19 @@ export enum GridOrientationType {
 
 // @public
 export class GroundPlane {
-    constructor(ground?: GroundPlaneProps);
-    aboveColor: ColorDef;
-    belowColor: ColorDef;
-    display: boolean;
-    elevation: number;
-    // @internal
-    getGroundPlaneGradient(aboveGround: boolean): Gradient.Symb;
-    // (undocumented)
-    toJSON(): GroundPlaneProps;
+    protected constructor(props: Partial<GroundPlaneProperties>);
+    readonly aboveColor: ColorDef;
+    readonly belowColor: ColorDef;
+    clone(changedProps?: Partial<GroundPlaneProperties>): GroundPlane;
+    static create(props?: Partial<GroundPlaneProperties>): GroundPlane;
+    static readonly defaults: GroundPlane;
+    readonly elevation: number;
+    static fromJSON(props?: GroundPlaneProps): GroundPlane;
+    toJSON(display?: boolean): GroundPlaneProps;
 }
+
+// @public
+export type GroundPlaneProperties = NonFunctionPropertiesOf<GroundPlane>;
 
 // @public
 export interface GroundPlaneProps {
@@ -4902,12 +4973,12 @@ export class LightSettings {
     // (undocumented)
     equals(rhs: LightSettings): boolean;
     // (undocumented)
+    readonly fresnel: FresnelSettings;
+    // (undocumented)
     static fromJSON(props?: LightSettingsProps): LightSettings;
     // (undocumented)
     readonly hemisphere: HemisphereLights;
-    // (undocumented)
     readonly numCels: number;
-    // (undocumented)
     readonly portraitIntensity: number;
     // (undocumented)
     readonly solar: SolarLight;
@@ -4920,6 +4991,7 @@ export class LightSettings {
 // @public
 export interface LightSettingsProps {
     ambient?: AmbientLightProps;
+    fresnel?: FresnelSettingsProps;
     hemisphere?: HemisphereLightsProps;
     numCels?: number;
     portrait?: {
@@ -5354,6 +5426,19 @@ export interface ModelLoadProps {
     code?: CodeProps;
     // (undocumented)
     id?: Id64String;
+}
+
+// @public
+export interface ModelPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
+    // @internal (undocumented)
+    elementIds?: never;
+    // @internal (undocumented)
+    exclude?: never;
+    modelIds?: Iterable<Id64String>;
+    // @internal (undocumented)
+    priority?: never;
+    // @internal (undocumented)
+    subCategoryIds?: never;
 }
 
 // @public
@@ -5907,6 +5992,7 @@ export enum PlanarClipMaskPriority {
 
 // @public
 export interface PlanarClipMaskProps {
+    invert?: boolean;
     mode: PlanarClipMaskMode;
     modelIds?: CompressedId64Set;
     priority?: number;
@@ -5918,13 +6004,12 @@ export interface PlanarClipMaskProps {
 export class PlanarClipMaskSettings {
     clone(changedProps?: PlanarClipMaskProps): PlanarClipMaskSettings;
     get compressedModelIds(): CompressedId64Set | undefined;
-    static createByPriority(priority: number, transparency?: number): PlanarClipMaskSettings;
-    static createForElementsOrSubCategories(mode: PlanarClipMaskMode.IncludeElements | PlanarClipMaskMode.ExcludeElements | PlanarClipMaskMode.IncludeSubCategories, elementOrSubCategoryIds: Iterable<Id64String>, modelIds?: Iterable<Id64String>, transparency?: number): PlanarClipMaskSettings;
-    static createForModels(modelIds: Iterable<Id64String> | undefined, transparency?: number): PlanarClipMaskSettings;
+    static create(args: ModelPlanarClipMaskArgs | ElementPlanarClipMaskArgs | SubCategoryPlanarClipMaskArgs | PriorityPlanarClipMaskArgs): PlanarClipMaskSettings;
     static defaults: PlanarClipMaskSettings;
     // (undocumented)
     equals(other: PlanarClipMaskSettings): boolean;
     static fromJSON(json?: PlanarClipMaskProps): PlanarClipMaskSettings;
+    readonly invert: boolean;
     get isValid(): boolean;
     readonly mode: PlanarClipMaskMode;
     readonly modelIds?: OrderedId64Iterable;
@@ -6109,6 +6194,17 @@ export enum PrimitiveTypeCode {
     String = 2305,
     // (undocumented)
     Uninitialized = 0
+}
+
+// @public
+export interface PriorityPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
+    // @internal (undocumented)
+    elementIds?: never;
+    // @internal (undocumented)
+    exclude?: never;
+    // @internal (undocumented)
+    modelIds?: never;
+    priority: number;
 }
 
 // @beta
@@ -6544,6 +6640,26 @@ export interface ReadableFormData extends Readable {
 
 // @internal
 export function readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription;
+
+// @beta
+export interface RealityData {
+    // (undocumented)
+    getBlobUrl(accessToken: AccessToken, blobPath: string): Promise<URL>;
+    // (undocumented)
+    id?: string;
+    // (undocumented)
+    rootDocument?: string;
+    // (undocumented)
+    type?: string;
+}
+
+// @beta
+export interface RealityDataAccess {
+    // (undocumented)
+    getRealityData: (accessToken: AccessToken, iTwinId: string | undefined, realityDataId: string) => Promise<RealityData>;
+    // (undocumented)
+    getRealityDataUrl: (iTwinId: string | undefined, realityDataId: string) => Promise<string>;
+}
 
 // @alpha
 export enum RealityDataFormat {
@@ -7262,10 +7378,10 @@ export class RpcInvocation {
     static runActivity: RpcActivityRun;
     // (undocumented)
     static sanitizeForLog(activity?: RpcActivity): {
-        activityId: string;
-        sessionId: string;
-        applicationId: string;
-        applicationVersion: string;
+        ActivityId: string;
+        SessionId: string;
+        ApplicationId: string;
+        ApplicationVersion: string;
         rpcMethod: string | undefined;
     } | undefined;
     get status(): RpcRequestStatus;
@@ -7890,18 +8006,29 @@ export class SilhouetteEdgeArgs extends EdgeArgs {
 }
 
 // @public
-export interface SkyBoxImageProps {
-    texture?: Id64String;
-    textures?: SkyCubeProps;
-    type?: SkyBoxImageType;
+export class SkyBox {
+    protected constructor(gradient: SkyGradient);
+    static createGradient(gradient?: SkyGradient): SkyBox;
+    static readonly defaults: SkyBox;
+    static fromJSON(props?: SkyBoxProps): SkyBox;
+    readonly gradient: SkyGradient;
+    // @internal (undocumented)
+    get textureIds(): Iterable<Id64String>;
+    toJSON(display?: boolean): SkyBoxProps;
 }
 
 // @public
+export type SkyBoxImageProps = SkySphereImageProps | SkyCubeImageProps | {
+    type?: SkyBoxImageType;
+    texture?: never;
+    textures?: never;
+};
+
+// @public
 export enum SkyBoxImageType {
-    Cube = 2,
+    Cube = 3,
     // @internal
-    Cylindrical = 3,
-    // (undocumented)
+    Cylindrical = 2,
     None = 0,
     Spherical = 1
 }
@@ -7920,13 +8047,86 @@ export interface SkyBoxProps {
 }
 
 // @public
+export class SkyCube extends SkyBox {
+    constructor(images: SkyCubeProps, gradient?: SkyGradient);
+    readonly images: SkyCubeProps;
+    // @internal (undocumented)
+    get textureIds(): Iterable<Id64String>;
+    // @internal
+    toJSON(display?: boolean): SkyBoxProps;
+}
+
+// @public
+export interface SkyCubeImageProps {
+    // @internal (undocumented)
+    texture?: never;
+    // (undocumented)
+    textures: SkyCubeProps;
+    // (undocumented)
+    type: SkyBoxImageType.Cube;
+}
+
+// @public
 export interface SkyCubeProps {
-    back?: Id64String;
-    bottom?: Id64String;
-    front?: Id64String;
-    left?: Id64String;
-    right?: Id64String;
-    top?: Id64String;
+    // (undocumented)
+    back: TextureImageSpec;
+    // (undocumented)
+    bottom: TextureImageSpec;
+    // (undocumented)
+    front: TextureImageSpec;
+    // (undocumented)
+    left: TextureImageSpec;
+    // (undocumented)
+    right: TextureImageSpec;
+    // (undocumented)
+    top: TextureImageSpec;
+}
+
+// @public
+export class SkyGradient {
+    clone(changedProps: SkyGradientProperties): SkyGradient;
+    static create(props?: Partial<SkyGradientProperties>): SkyGradient;
+    static readonly defaults: SkyGradient;
+    equals(other: SkyGradient): boolean;
+    static fromJSON(props?: SkyBoxProps): SkyGradient;
+    // (undocumented)
+    readonly groundColor: ColorDef;
+    // (undocumented)
+    readonly groundExponent: number;
+    // (undocumented)
+    readonly nadirColor: ColorDef;
+    // (undocumented)
+    readonly skyColor: ColorDef;
+    // (undocumented)
+    readonly skyExponent: number;
+    toJSON(): SkyBoxProps;
+    // (undocumented)
+    readonly twoColor: boolean;
+    // (undocumented)
+    readonly zenithColor: ColorDef;
+}
+
+// @public
+export type SkyGradientProperties = NonFunctionPropertiesOf<SkyGradient>;
+
+// @public
+export class SkySphere extends SkyBox {
+    constructor(image: TextureImageSpec, gradient?: SkyGradient);
+    readonly image: TextureImageSpec;
+    // @internal (undocumented)
+    get textureIds(): Iterable<Id64String>;
+    // @internal
+    toJSON(display?: boolean): SkyBoxProps;
+}
+
+// @public
+export interface SkySphereImageProps {
+    // (undocumented)
+    texture: TextureImageSpec;
+    // @internal (undocumented)
+    textures?: never;
+    // (undocumented)
+    type: SkyBoxImageType.Spherical;
 }
 
 // @internal
@@ -8225,6 +8425,18 @@ export class SubCategoryOverride {
 }
 
 // @public
+export interface SubCategoryPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
+    // @internal (undocumented)
+    elementIds?: never;
+    // @internal (undocumented)
+    exclude?: never;
+    modelIds?: Iterable<Id64String>;
+    // @internal (undocumented)
+    priority?: never;
+    subCategoryIds: Iterable<Id64String>;
+}
+
+// @public
 export interface SubCategoryProps extends DefinitionElementProps {
     // (undocumented)
     appearance?: SubCategoryAppearance.Props;
@@ -8353,6 +8565,9 @@ export interface TextureData {
     height: number;
     width: number;
 }
+
+// @public
+export type TextureImageSpec = Id64String | string;
 
 // @public
 export interface TextureLoadProps {
@@ -8952,13 +9167,13 @@ export class VerticalCRS implements VerticalCRSProps {
     constructor(data?: VerticalCRSProps);
     equals(other: VerticalCRS): boolean;
     static fromJSON(data: VerticalCRSProps): VerticalCRS;
-    readonly id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88";
+    readonly id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88" | "LOCAL_ELLIPSOID";
     toJSON(): VerticalCRSProps;
 }
 
 // @public
 export interface VerticalCRSProps {
-    id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88";
+    id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88" | "LOCAL_ELLIPSOID";
 }
 
 // @public (undocumented)

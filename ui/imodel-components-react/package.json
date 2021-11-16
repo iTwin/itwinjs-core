@@ -1,6 +1,6 @@
 {
   "name": "@itwin/imodel-components-react",
-  "version": "3.0.0-dev.96",
+  "version": "3.0.0-dev.111",
   "description": "iModel.js UI IModel Components",
   "main": "lib/cjs/imodel-components-react.js",
   "module": "lib/esm/imodel-components-react.js",
@@ -9,7 +9,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/ui/imodel-components-react"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/ui/imodel-components-react"
   },
   "scripts": {
     "build": "npm run -s copy:locale && npm run -s build:cjs",
@@ -38,15 +38,15 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.96",
-    "@itwin/core-geometry": "workspace:^3.0.0-dev.96",
-    "@itwin/core-common": "workspace:^3.0.0-dev.96",
-    "@itwin/core-frontend": "workspace:^3.0.0-dev.96",
-    "@itwin/core-i18n": "workspace:^3.0.0-dev.96",
-    "@itwin/core-quantity": "workspace:^3.0.0-dev.96",
-    "@itwin/appui-abstract": "workspace:^3.0.0-dev.96",
-    "@itwin/core-react": "workspace:^3.0.0-dev.96",
-    "@itwin/components-react": "workspace:^3.0.0-dev.96",
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.111",
+    "@itwin/core-geometry": "workspace:^3.0.0-dev.111",
+    "@itwin/core-common": "workspace:^3.0.0-dev.111",
+    "@itwin/core-frontend": "workspace:^3.0.0-dev.111",
+    "@itwin/core-i18n": "workspace:^3.0.0-dev.111",
+    "@itwin/core-quantity": "workspace:^3.0.0-dev.111",
+    "@itwin/appui-abstract": "workspace:^3.0.0-dev.111",
+    "@itwin/core-react": "workspace:^3.0.0-dev.111",
+    "@itwin/components-react": "workspace:^3.0.0-dev.111",
     "react": "^17.0.0",
     "react-dom": "^17.0.0"
   },
@@ -67,7 +67,7 @@
     "@itwin/core-react": "workspace:*",
     "@itwin/components-react": "workspace:*",
     "@testing-library/react": "^12.0.0",
-    "@testing-library/react-hooks": "^3.2.1",
+    "@testing-library/react-hooks": "^7.0.2",
     "@testing-library/user-event": "^13.2.1",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
@@ -78,7 +78,7 @@
     "@types/faker": "^4.1.0",
     "@types/lodash": "^4.14.0",
     "@types/mocha": "^8.2.2",
-    "@types/react": "^17.0.0",
+    "@types/react": "17.0.31",
     "@types/react-dom": "^17.0.0",
     "@types/sinon": "^9.0.0",
     "@types/sinon-chai": "^3.2.0",
@@ -117,12 +117,12 @@
   ],
   "dependencies": {
     "@bentley/icons-generic-webfont": "^1.0.15",
-    "@itwin/itwinui-css": "^0.27.0",
-    "@itwin/itwinui-react": "^1.16.2",
+    "@itwin/itwinui-css": "^0.37.0",
+    "@itwin/itwinui-react": "^1.23.0",
     "callable-instance2": "1.0.0",
     "classnames": "^2.3.1",
     "eventemitter2": "^5.0.1",
-    "immer": "9.0.2",
+    "immer": "9.0.6",
     "immutable": "^3.8.2",
     "ts-key-enum": "^2.0.0"
   },

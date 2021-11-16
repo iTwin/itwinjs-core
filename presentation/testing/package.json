@@ -1,11 +1,11 @@
 {
   "name": "@itwin/presentation-testing",
-  "version": "3.0.0-dev.96",
+  "version": "3.0.0-dev.111",
   "description": "",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/presentation/testing"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/presentation/testing"
   },
   "keywords": [
     "Bentley",

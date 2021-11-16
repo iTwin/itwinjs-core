@@ -10,6 +10,7 @@ public;AuxCoordSystemSpatial
 beta;AzureBlobStorage 
 beta;BackendHubAccess
 public;BackendLoggerCategory
+internal;BaseSettings 
 public;BindParameter = number | string
 public;BisCoreSchema 
 public;BriefcaseDb 
@@ -60,6 +61,7 @@ internal;DevToolsProcessStats
 internal;DevToolsStats
 internal;DevToolsStatsFormatter
 public;DictionaryModel 
+beta;DictionaryName = string
 public;class DisplayStyle 
 public;DisplayStyle2d 
 public;DisplayStyle3d 
@@ -88,6 +90,7 @@ public;ECSqlInsertResult
 public;ECSqlStatement 
 public;ECSqlValue
 public;ECSqlValueIterator 
+beta;EditableWorkspaceFile 
 public;Element 
 public;ElementAspect 
 beta;ElementDrivesElement 
@@ -199,6 +202,7 @@ public;class IpcHandler
 public;IpcHost
 public;IpcHostOpts
 public;ITwinIdArg
+internal;ITwinWorkspace 
 public;KnownLocations
 internal;LightLocation 
 public;LineStyle 
@@ -277,6 +281,17 @@ public;SectionDrawing
 public;SectionDrawingLocation 
 public;SectionDrawingModel 
 internal;setMaxEntitiesPerEvent(max: number): number
+beta;SettingDictionary = SettingObject
+beta;SettingInspector
+beta;SettingName = string
+beta;SettingObject
+beta;SettingResolver
+beta;Settings
+beta;SettingsGroupSpec
+beta;SettingSpec 
+beta;SettingsPriority
+beta;SettingsSpecRegistry
+beta;SettingType = JSONSchemaType
 public;Sheet 
 public;SheetBorderTemplate 
 public;SheetModel 
@@ -335,3 +350,12 @@ public;ViewDefinition2d
 public;class ViewDefinition3d 
 public;VolumeElement 
 public;WebMercatorModel 
+beta;Workspace
+beta;WorkspaceContainer
+beta;WorkspaceContainerId = string
+beta;WorkspaceContainerName = string
+beta;WorkspaceContainerProps = WorkspaceContainerName |
+beta;WorkspaceFile 
+beta;WorkspaceOpts
+beta;WorkspaceResourceName = string
+beta;WorkspaceResourceProps

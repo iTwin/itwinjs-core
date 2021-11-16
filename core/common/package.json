@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-common",
-  "version": "3.0.0-dev.96",
+  "version": "3.0.0-dev.111",
   "description": "iTwin.js components common to frontend and backend",
   "main": "lib/cjs/core-common.js",
   "module": "lib/esm/core-common.js",
@@ -21,7 +21,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/core/common"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/core/common"
   },
   "keywords": [
     "Bentley",
@@ -41,9 +41,9 @@
     "js-base64": "^3.6.1"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.96",
-    "@itwin/core-geometry": "workspace:^3.0.0-dev.96",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.96"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.111",
+    "@itwin/core-geometry": "workspace:^3.0.0-dev.111",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.111"
   },
   "devDependencies": {
     "@itwin/core-bentley": "workspace:*",

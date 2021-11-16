@@ -11,6 +11,7 @@ import { BRepEntityType } from '@itwin/editor-common';
 import { ChamferEdgesProps } from '@itwin/editor-common';
 import { CompressedId64Set } from '@itwin/core-bentley';
 import { ConnectedSubEntityProps } from '@itwin/editor-common';
+import { CutProps } from '@itwin/editor-common';
 import { DeleteSubEntityProps } from '@itwin/editor-common';
 import { EcefLocationProps } from '@itwin/core-common';
 import { EdgeParameterRangeProps } from '@itwin/editor-common';
@@ -19,6 +20,7 @@ import { ElementGeometryCacheFilter } from '@itwin/editor-common';
 import { ElementGeometryInfo } from '@itwin/core-common';
 import { ElementGeometryResultOptions } from '@itwin/editor-common';
 import { ElementGeometryResultProps } from '@itwin/editor-common';
+import { EmbossProps } from '@itwin/editor-common';
 import { EvaluatedEdgeProps } from '@itwin/editor-common';
 import { EvaluatedFaceProps } from '@itwin/editor-common';
 import { EvaluatedVertexProps } from '@itwin/editor-common';
@@ -32,7 +34,9 @@ import { HollowFacesProps } from '@itwin/editor-common';
 import { Id64String } from '@itwin/core-bentley';
 import { IModelDb } from '@itwin/core-backend';
 import { IModelStatus } from '@itwin/core-bentley';
+import { ImprintProps } from '@itwin/editor-common';
 import { LocateSubEntityProps } from '@itwin/editor-common';
+import { LoftProps } from '@itwin/editor-common';
 import { Matrix3dProps } from '@itwin/core-geometry';
 import { OffsetEdgesProps } from '@itwin/editor-common';
 import { OffsetFacesProps } from '@itwin/editor-common';
@@ -46,6 +50,7 @@ import { SubEntityLocationProps } from '@itwin/editor-common';
 import { SubEntityProps } from '@itwin/editor-common';
 import { SubEntityType } from '@itwin/editor-common';
 import { SweepFacesProps } from '@itwin/editor-common';
+import { SweepPathProps } from '@itwin/editor-common';
 import { ThickenSheetProps } from '@itwin/editor-common';
 import { TransformProps } from '@itwin/core-geometry';
 import { TransformSubEntityProps } from '@itwin/editor-common';
@@ -132,7 +137,11 @@ export class SolidModelingCommand extends BasicManipulationCommand implements So
     // (undocumented)
     createElementGeometryCache(id: Id64String, filter?: ElementGeometryCacheFilter): Promise<boolean>;
     // (undocumented)
+    cutSolid(id: Id64String, params: CutProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+    // (undocumented)
     deleteSubEntities(id: Id64String, params: DeleteSubEntityProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+    // (undocumented)
+    embossBody(id: Id64String, params: EmbossProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
     // (undocumented)
     evaluateSubEntity(id: Id64String, subEntity: SubEntityProps, uParam?: number, vParam?: number): Promise<EvaluatedFaceProps | EvaluatedEdgeProps | EvaluatedVertexProps | undefined>;
     // (undocumented)
@@ -156,11 +165,15 @@ export class SolidModelingCommand extends BasicManipulationCommand implements So
     // (undocumented)
     hollowFaces(id: Id64String, params: HollowFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
     // (undocumented)
+    imprintBody(id: Id64String, params: ImprintProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+    // (undocumented)
     isDisjointBody(id: Id64String, index: number): Promise<boolean>;
     // (undocumented)
     isLaminarEdge(id: Id64String, subEntity: SubEntityProps): Promise<boolean>;
     // (undocumented)
     isLinearEdge(id: Id64String, subEntity: SubEntityProps): Promise<boolean>;
+    // (undocumented)
+    isPlanarBody(id: Id64String, index: number): Promise<boolean>;
     // (undocumented)
     isPlanarFace(id: Id64String, subEntity: SubEntityProps): Promise<boolean>;
     // (undocumented)
@@ -176,6 +189,8 @@ export class SolidModelingCommand extends BasicManipulationCommand implements So
     // (undocumented)
     locateSubEntities(id: Id64String, point: XYZProps, direction: XYZProps, options: LocateSubEntityProps): Promise<SubEntityLocationProps[] | undefined>;
     // (undocumented)
+    loftProfiles(id: Id64String, params: LoftProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+    // (undocumented)
     offsetEdges(id: Id64String, params: OffsetEdgesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
     // (undocumented)
     offsetFaces(id: Id64String, params: OffsetFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
@@ -185,6 +200,8 @@ export class SolidModelingCommand extends BasicManipulationCommand implements So
     spinFaces(id: Id64String, params: SpinFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
     // (undocumented)
     summarizeElementGeometryCache(id: Id64String): Promise<BRepEntityType[] | undefined>;
+    // (undocumented)
+    sweepAlongPath(id: Id64String, params: SweepPathProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
     // (undocumented)
     sweepFaces(id: Id64String, params: SweepFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
     // (undocumented)

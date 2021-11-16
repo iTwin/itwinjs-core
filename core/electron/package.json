@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-electron",
-  "version": "3.0.0-dev.96",
+  "version": "3.0.0-dev.111",
   "description": "iTwin.js ElectronHost and ElectronApp",
   "license": "MIT",
   "engines": {
@@ -19,7 +19,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/core/core-electron"
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/core/core-electron"
   },
   "keywords": [
     "Bentley",
@@ -31,12 +31,12 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.96",
-    "@itwin/core-backend": "workspace:^3.0.0-dev.96",
-    "@itwin/core-common": "workspace:^3.0.0-dev.96",
-    "@itwin/core-frontend": "workspace:^3.0.0-dev.96",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.96",
-    "@itwin/presentation-common": "workspace:^3.0.0-dev.96",
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.111",
+    "@itwin/core-backend": "workspace:^3.0.0-dev.111",
+    "@itwin/core-common": "workspace:^3.0.0-dev.111",
+    "@itwin/core-frontend": "workspace:^3.0.0-dev.111",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.111",
+    "@itwin/presentation-common": "workspace:^3.0.0-dev.111",
     "electron": "^14.0.0"
   },
   "devDependencies": {

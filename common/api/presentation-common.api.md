@@ -274,6 +274,15 @@ export enum ContentFlags {
     ShowLabels = 4
 }
 
+// @alpha
+export interface ContentInstanceKeysRequestOptions<TIModel, TKeySet, TRulesetVariable = RulesetVariable> extends Paged<RequestOptionsWithRuleset<TIModel, TRulesetVariable>> {
+    displayType?: string;
+    keys: TKeySet;
+}
+
+// @alpha
+export type ContentInstanceKeysRpcRequestOptions = PresentationRpcRequestOptions<ContentInstanceKeysRequestOptions<never, KeySetJSON, RulesetVariableJSON>>;
+
 // @public
 export interface ContentInstancesOfSpecificClassesSpecification extends ContentSpecificationBase {
     classes: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
@@ -1878,6 +1887,11 @@ export class PresentationRpcInterface extends RpcInterface {
     computeSelection(_token: IModelRpcProps, _options: SelectionScopeRpcRequestOptions, _ids: Id64String[], _scopeId: string): PresentationRpcResponse<KeySetJSON>;
     // (undocumented)
     getContentDescriptor(_token: IModelRpcProps, _options: ContentDescriptorRpcRequestOptions): PresentationRpcResponse<DescriptorJSON | undefined>;
+    // @alpha (undocumented)
+    getContentInstanceKeys(_token: IModelRpcProps, _options: ContentInstanceKeysRpcRequestOptions): PresentationRpcResponse<{
+        total: number;
+        items: KeySetJSON;
+    }>;
     // (undocumented)
     getContentSetSize(_token: IModelRpcProps, _options: ContentRpcRequestOptions): PresentationRpcResponse<number>;
     // @beta (undocumented)
@@ -2410,6 +2424,11 @@ export class RpcRequestsHandler implements IDisposable {
     dispose(): void;
     // (undocumented)
     getContentDescriptor(options: ContentDescriptorRequestOptions<IModelRpcProps, KeySetJSON, RulesetVariableJSON>): Promise<DescriptorJSON | undefined>;
+    // (undocumented)
+    getContentInstanceKeys(options: ContentInstanceKeysRequestOptions<IModelRpcProps, KeySetJSON, RulesetVariableJSON>): Promise<{
+        total: number;
+        items: KeySetJSON;
+    }>;
     // (undocumented)
     getContentSetSize(options: ContentRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON>): Promise<number>;
     // (undocumented)
