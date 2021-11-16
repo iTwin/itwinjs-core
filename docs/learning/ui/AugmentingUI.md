@@ -6,7 +6,7 @@ The simplest way is to use one or more `UiItemsProvider` to provide definitions 
 
 The second way is for a package to provide an entire stage definition. It is recommended that this be done using the [StandardFrontstageProvider]($appui-react), which will provide an empty stage that can then be populated via UiItemsProviders.
 
-A common technique is for a package to have an initialize() method that registers its Tools and UiItemsProvider. See this approach in example below.
+A recommended technique is for a package to have an initialize() method that registers its Tools and UiItemsProvider. See this approach in example below.
 
 ```ts
   private static registerUiComponents(): void {
@@ -32,8 +32,7 @@ A common technique is for a package to have an initialize() method that register
 
 ## Adding ToolButtons, Status Bar items, and Widgets to existing application frontstage
 
-A [UiItemsProvider]($appui-abstract) is used to provide items to insert into the UI of an existing stage. When an App UI is constructing the stage, item definitions are request from all UiItemsProviders. These calls will always include the current frontstage's Id and usage. A package can use this info to determine which, if any, items to add to the stage. The stageId name's used by an application may not be useful unless the package is just used in a single host app where the stage names are known. The stageUsage value is also provided, this string is typically set to one of the standard [StageUsage]($appui-abstract) enum values. Also passed to each provider is the stage's applicationData. This allows the frontstage to specify a list of features that it is
-intended to support.
+A [UiItemsProvider]($appui-abstract) is used to provide items to insert into the UI of an existing stage. When App UI is constructing the stage, item definitions are requested from all UiItemsProviders. These calls will always include the current frontstage's Id and usage. A package can use this info to determine which, if any, items to add to the stage. An application's stageId names may not be useful unless the stage names are already known to the UiItemsProvider. The stageUsage value is also provided. This string is typically set to one of the standard [StageUsage]($appui-abstract) enum values. Each provider also receives the stage's applicationData. This allows the frontstage to specify a list of features that it is intended to support.
 
 One important note. When specifying an item via a UiItemsProvider please ensure that its Id is uniquely specified across all applications that may use items from the provider. One way to do this is to prefix the id with a string that represents the package. A common pattern is `package-name:item-id`.
 
@@ -50,7 +49,7 @@ public provideToolbarButtonItems(stageId: string, stageUsage: string,
 
 ### Status Bar Item
 
-A UiItemsProvider can return an array of [CommonStatusBarItem]($appui-abstract) to insert into the Statubar. The item will define what section to be placed in and its item priority which defines its order within the section. Below is the UiItemsProvider function called when appui-react is populating the status bar footer.
+A UiItemsProvider can return an array of [CommonStatusBarItem]($appui-abstract) to insert into the StatusBar. The item's definition includes the StatusBar section to be placed in and a priority defining its order within the section. Below is the UiItemsProvider function called when appui-react is populating the status bar footer.
 
 ```ts
 public provideStatusBarItems(stageId: string, stageUsage: string): CommonStatusBarItem[]
@@ -58,14 +57,14 @@ public provideStatusBarItems(stageId: string, stageUsage: string): CommonStatusB
 
 ### Widget Item
 
-Below is the UiItemsProvider function called when appui-react is populating StagePanels. The [StagePanelLocation]($appui-abstract) will be the default location for the widget. The [StagePanelSection]($appui-abstract) will specify what section of the panel should contain the widget. Since widgets can be moved by the user, the locations specified are only the default locations.
-
-Starting in version 2.17 Widgets can specify if they support being "popped-out" to a child window by setting the AbstractWidgetProps property `canPopout` to true. This option must be explicitly set because the method `getWidgetContent` must return React components that works properly in a child window. At minimum  components should typically not use the `window` or `document` property to register listeners as these listener will be registered for events in the main window and not in the child window. Components will need to use the `ownerDocument` and `ownerDocument.defaultView` properties to retrieve `document` and `window` properties for the child window.
+The UiItemsProvider function called when appui-react is populating StagePanels is detailed below. The [StagePanelLocation]($appui-abstract) will be the default location for the widget. The [StagePanelSection]($appui-abstract) will specify what section of the panel should contain the widget. Since widgets can be moved by the user, the locations specified are only the default locations.
 
 ```ts
 public provideWidgets(stageId: string, _stageUsage: string, location: StagePanelLocation,
   _section?: StagePanelSection | undefined): ReadonlyArray<AbstractWidgetProps>
 ```
+
+Starting in version 2.17 Widgets can support being "popped-out" to a child window by setting the AbstractWidgetProps property `canPopout` to true. This option must be explicitly set because the method `getWidgetContent` must return React components that works properly in a child window. At minimum  components should typically not use the `window` or `document` property to register listeners as these listener will be registered for events in the main window and not in the child window. Components will need to use the `ownerDocument` and `ownerDocument.defaultView` properties to retrieve `document` and `window` properties for the child window.
 
 To see a more complete example of adding ToolButtons, Status Bar items, and Widgets see the [UiItemsProvider example](./abstract/uiitemsprovider/#uiitemsprovider-example).
 
