@@ -86,7 +86,7 @@ describe("MapManagerSettings", () => {
     backgroundMapSettingsMock.setup((bgMapSettings) => bgMapSettings.applyTerrain).returns(() => false);
     backgroundMapSettingsMock.setup((bgMapSettings) => bgMapSettings.terrainSettings).returns(() => terrainSettingsMock.object);
     backgroundMapSettingsMock.setup((bgMapSettings) => bgMapSettings.useDepthBuffer).returns(() => false);
-    backgroundMapSettingsMock.setup((bgMapSettings) => bgMapSettings.useDepthBuffer).returns(() => true);
+    backgroundMapSettingsMock.setup((bgMapSettings) => bgMapSettings.locatable).returns(() => true);
     displayStyleSettingsMock.reset();
     displayStyleSettingsMock.setup((styleSettings) => styleSettings.backgroundMap).returns(() => backgroundMapSettingsMock.object);
     displayStyleMock.reset();
@@ -233,7 +233,6 @@ describe("MapManagerSettings", () => {
     const toggles = component.find(ToggleSwitch);
 
     viewportMock.verify((x) => x.changeBackgroundMapProps(moq.It.isAny()), moq.Times.never());
-    console.log(toggles.at(getToggleIndex("mask")).html());
     toggles.at(getToggleIndex("mask")).find("input").simulate("change", {target: { checked: true }});
     component.update();
 
