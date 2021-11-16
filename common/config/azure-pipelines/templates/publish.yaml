@@ -33,15 +33,20 @@ steps:
            distTag = "nightly"
          elif "release/" in branchName:
            print ("On a release branch")
+
            currentDevVer = -1
+           latestDevVer = -1
            if ("-" in currentVer):
              currentVer, currentDevVer = currentVer.split("-")
              currentDevVer = int(currentDevVer.split(".")[1])
+           if ("-" in latestVer):
+             latestVer, latestDevVer = latestVer.split("-")
+             latestDevVer = int(latestDevVer.split(".")[1])
 
            currentMajorVer, currentMinorVer, currentPatchVer = currentVer.split(".")
            latestMajorVer, latestMinorVer, latestPatchVer = latestVer.split(".")
+           previousMajorVer, previousMinorVer, previousPatchVer = previousVer.split(".")
            currentMajorVer, currentMinorVer, currentPatchVer = int(currentMajorVer), int(currentMinorVer), int(currentPatchVer)
-           latestMajorVer, latestMinorVer, latestPatchVer = int(latestMajorVer), int(latestMinorVer), int(latestPatchVer)
 
            if (currentDevVer != -1):
              distTag = "rc"
@@ -51,11 +56,17 @@ steps:
              elif currentMajorVer < latestMajorVer:
                distTag = "previous"
              else:
-               if currentMinorVer < latestMinorVer:
-                 distTag = "previous"
-               else:
-                 # Not a dev version and minor version is >= latest so it must be a new patch or minor release
+               # If current minor version < latest, don't add dist tag
+               if currentMinorVer > latestMinorVer:
                  distTag = "latest"
+               elif currentMinorVer == latestMinorVer:
+                 # Major/Minor versions are equal, give latest tag if new patch or first release
+                 if currentPatchVer > latestPatchVer:
+                   # Give latest tag if new patch
+                   distTag = "latest"
+                 elif currentPatchVer == latestPatchVer and latestDevVer != -1:
+                   # Give latest tag if first non rc release of package
+                   distTag = "latest"
 
        if distTag is None:
          return
