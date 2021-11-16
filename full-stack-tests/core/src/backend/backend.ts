@@ -22,7 +22,6 @@ import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIp
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
 import * as testCommands from "./TestEditCommands";
-import { registerBackendCallback } from "../../../../tools/certa/lib/utils/CallbackUtils";
 import { exposeBackendCallbacks } from "../certa/certaBackend";
 
 /* eslint-disable no-console */
