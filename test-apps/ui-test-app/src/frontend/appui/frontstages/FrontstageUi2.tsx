@@ -15,7 +15,7 @@ import { StageUsage, StandardContentLayouts } from "@itwin/appui-abstract";
 import { ScreenViewport } from "@itwin/core-frontend";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../..";
 import { AppUi2StageItemsProvider } from "../../tools/AppUi2StageItemsProvider";
-import { getSavedViewLayoutProps } from "../../tools/UiProviderTool";
+import { getSavedViewLayoutProps } from "../../tools/ImmediateTools";
 
 export class FrontstageUi2ContentGroupProvider extends ContentGroupProvider {
   /* eslint-disable react/jsx-key */
