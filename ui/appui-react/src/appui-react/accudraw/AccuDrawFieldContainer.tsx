@@ -29,7 +29,7 @@ export interface AccuDrawFieldContainerProps extends CommonProps {
   /** Orientation of the fields */
   orientation: Orientation;
   /** Optional parameter for persistent UI settings. Defaults to LocalSettingsStorage. */
-  uiSettingsStorage?: UiSettingsStorage;
+  uiSettingsStorage?: UiSettingsStorage; // eslint-disable-line deprecation/deprecation
   /** @internal */
   showZOverride?: boolean;
 }

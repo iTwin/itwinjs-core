@@ -6,6 +6,8 @@
  * @module UiSettings
  */
 
+/* eslint-disable deprecation/deprecation */
+
 import { UiSettingsResult, UiSettingsStatus, UiSettingsStorage } from "./UiSettingsStorage";
 
 /** A Ui Setting with namespace and setting name.

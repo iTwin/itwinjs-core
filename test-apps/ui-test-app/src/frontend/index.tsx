@@ -61,8 +61,8 @@ import { ToolWithDynamicSettings } from "./tools/ToolWithDynamicSettings";
 import { ToolWithSettings } from "./tools/ToolWithSettings";
 import {
   OpenComponentExamplesPopoutTool, OpenCustomPopoutTool, OpenViewPopoutTool, RemoveSavedContentLayoutTool, RestoreSavedContentLayoutTool,
-  SaveContentLayoutTool, TestExtensionUiProviderTool, UiProviderTool,
-} from "./tools/UiProviderTool";
+  SaveContentLayoutTool, TestExtensionUiProviderTool,
+} from "./tools/ImmediateTools";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -159,7 +159,7 @@ export class SampleAppIModelApp {
   public static testAppConfiguration: TestAppConfiguration | undefined;
   private static _appStateManager: StateManager | undefined;
   private static _localUiSettings = new LocalSettingsStorage();
-  private static _UserUiSettingsStorage = new UserSettingsStorage();
+  private static _UserUiSettingsStorage = new UserSettingsStorage(); // eslint-disable-line deprecation/deprecation
 
   // Favorite Properties Support
   private static _selectionSetListener = new ElementSelectionListener(true);
@@ -264,7 +264,7 @@ export class SampleAppIModelApp {
       favorites: {
         storage: createFavoritePropertiesStorage(SampleAppIModelApp.testAppConfiguration?.useLocalSettings
           ? DefaultFavoritePropertiesStorageTypes.BrowserLocalStorage
-          : DefaultFavoritePropertiesStorageTypes.UserSettingsServiceStorage),
+          : DefaultFavoritePropertiesStorageTypes.UserPreferencesStorage),
       },
     });
     Presentation.selection.scopes.activeScope = "top-assembly";
@@ -274,7 +274,6 @@ export class SampleAppIModelApp {
     Tool2.register(this.sampleAppNamespace);
     ToolWithSettings.register(this.sampleAppNamespace);
     AnalysisAnimationTool.register(this.sampleAppNamespace);
-    UiProviderTool.register(this.sampleAppNamespace);
     TestExtensionUiProviderTool.register(this.sampleAppNamespace);
     ToolWithDynamicSettings.register(this.sampleAppNamespace);
     OpenComponentExamplesPopoutTool.register(this.sampleAppNamespace);
