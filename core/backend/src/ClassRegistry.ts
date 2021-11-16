@@ -6,7 +6,7 @@
  * @module Schema
  */
 
-import { IModelStatus, Logger } from "@itwin/core-bentley";
+import { DbResult, IModelStatus, Logger } from "@itwin/core-bentley";
 import { EntityMetaData, IModelError } from "@itwin/core-common";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
@@ -37,7 +37,17 @@ export class ClassRegistry {
 
   /** Generate a proxy Schema for a domain that has not been registered. */
   private static generateProxySchema(domain: string, iModel: IModelDb): typeof Schema {
-    const hasBehavior = undefined !== new IModelSchemaLoader(iModel).getSchema(domain).customAttributes?.get("BisCore.SchemaHasBehavior");
+    const hasBehavior = iModel.withPreparedSqliteStatement(`
+      SELECT NULL FROM [ec_CustomAttribute] [c]
+        JOIN [ec_schema] [s] ON [s].[Id] = [c].[ContainerId]
+        JOIN [ec_class] [e] ON [e].[Id] = [c].[ClassId]
+        JOIN [ec_schema] [b] ON [e].[SchemaId] = [b].[Id]
+      WHERE [c].[ContainerType] = 1 AND [s].[Name] = ? AND [b].[Name] || '.' || [e].[name] = ?`, (stmt) => {
+      stmt.bindString(1, domain);
+      stmt.bindString(2, "BisCore.SchemaHasBehavior");
+      return stmt.step() === DbResult.BE_SQLITE_ROW;
+    });
+
     const schemaClass = class extends Schema {
       public static override get schemaName() { return domain; }
       public static override get missingRequiredBehavior() { return hasBehavior; }
