@@ -58,7 +58,7 @@ export interface ToolAssistanceFieldProps extends StatusFieldProps {
   includePromptAtCursor: boolean;
   /** Optional parameter for persistent UI settings. Defaults to UiSettingsContext.
    */
-  uiSettings?: UiSettingsStorage;
+  uiSettings?: UiSettingsStorage; // eslint-disable-line deprecation/deprecation
   /** Cursor Prompt Timeout period. Defaults to 5000. */
   cursorPromptTimeout: number;
   /** Fade Out the Cursor Prompt when closed. */
@@ -106,7 +106,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   private _indicator = React.createRef<HTMLDivElement>();
   private _cursorPrompt: CursorPrompt;
   private _isMounted = false;
-  private _uiSettingsStorage: UiSettingsStorage;
+  private _uiSettingsStorage: UiSettingsStorage; // eslint-disable-line deprecation/deprecation
 
   /** @internal */
   public static readonly defaultProps: ToolAssistanceFieldDefaultProps = {
@@ -169,7 +169,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   }
 
   private async restoreSettings() {
-    let getShowPromptAtCursor: Promise<UiSettingsResult> | undefined;
+    let getShowPromptAtCursor: Promise<UiSettingsResult> | undefined; // eslint-disable-line deprecation/deprecation
     // istanbul ignore else
     if (this.props.includePromptAtCursor) {
       getShowPromptAtCursor = this._showPromptAtCursorSetting.getSetting(this._uiSettingsStorage);

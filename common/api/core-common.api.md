@@ -2914,32 +2914,28 @@ export class Feature {
 }
 
 // @public
-export class FeatureAppearance implements FeatureAppearanceProps {
+export class FeatureAppearance {
     protected constructor(props: FeatureAppearanceProps);
     get anyOverridden(): boolean;
     clone(changedProps: FeatureAppearanceProps): FeatureAppearance;
     cloneProps(changedProps: FeatureAppearanceProps): FeatureAppearanceProps;
     static readonly defaults: FeatureAppearance;
-    // (undocumented)
-    readonly emphasized?: true | undefined;
+    readonly emphasized?: true;
     // (undocumented)
     equals(other: FeatureAppearance): boolean;
     extendAppearance(base: FeatureAppearance): FeatureAppearance;
     // (undocumented)
     static fromJSON(props?: FeatureAppearanceProps): FeatureAppearance;
     static fromRgb(color: ColorDef): FeatureAppearance;
-    static fromRgba(color: ColorDef): FeatureAppearance;
+    static fromRgba(color: ColorDef, viewDependentTransparency?: boolean): FeatureAppearance;
     static fromSubCategoryOverride(ovr: SubCategoryOverride): FeatureAppearance;
-    static fromTransparency(transparencyValue: number): FeatureAppearance;
-    // (undocumented)
-    readonly ignoresMaterial?: true | undefined;
+    static fromTransparency(transparencyValue: number, viewDependent?: boolean): FeatureAppearance;
+    readonly ignoresMaterial?: true;
     // (undocumented)
     get isFullyTransparent(): boolean;
-    // (undocumented)
     readonly linePixels?: LinePixels;
     get matchesDefaults(): boolean;
-    // (undocumented)
-    readonly nonLocatable?: true | undefined;
+    readonly nonLocatable?: true;
     // (undocumented)
     get overridesLinePixels(): boolean;
     // (undocumented)
@@ -2952,24 +2948,23 @@ export class FeatureAppearance implements FeatureAppearanceProps {
     get overridesTransparency(): boolean;
     // (undocumented)
     get overridesWeight(): boolean;
-    // (undocumented)
     readonly rgb?: RgbColor;
     // (undocumented)
     toJSON(): FeatureAppearanceProps;
-    // (undocumented)
     readonly transparency?: number;
-    // (undocumented)
+    readonly viewDependentTransparency?: true;
     readonly weight?: number;
 }
 
 // @public
 export interface FeatureAppearanceProps {
-    emphasized?: true | undefined;
-    ignoresMaterial?: true | undefined;
+    emphasized?: true;
+    ignoresMaterial?: true;
     linePixels?: LinePixels;
-    nonLocatable?: true | undefined;
+    nonLocatable?: true;
     rgb?: RgbColorProps;
     transparency?: number;
+    viewDependentTransparency?: true;
     weight?: number;
 }
 
@@ -3086,9 +3081,13 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     protected readonly _neverDrawn: Id64.Uint32Set;
     // @internal
     readonly neverDrawnAnimationNodes: Set<number>;
+    override(args: OverrideFeatureAppearanceArgs): void;
     overrideAnimationNode(id: number, app: FeatureAppearance): void;
+    // @deprecated
     overrideElement(id: Id64String, app: FeatureAppearance, replaceExisting?: boolean): void;
+    // @deprecated
     overrideModel(id: Id64String, app: FeatureAppearance, replaceExisting?: boolean): void;
+    // @deprecated
     overrideSubCategory(id: Id64String, app: FeatureAppearance, replaceExisting?: boolean): void;
     // @internal
     protected _patterns: boolean;
@@ -3355,23 +3354,15 @@ export interface GeoCoordinatesResponseProps {
     geoCoords: PointWithStatus[];
 }
 
-// @public (undocumented)
+// @public
 export enum GeoCoordStatus {
-    // (undocumented)
     CSMapError = 4096,
-    // (undocumented)
     NoDatumConverter = 25,
-    // (undocumented)
     NoGCSDefined = 100,
-    // (undocumented)
     OutOfMathematicalDomain = 2,
-    // (undocumented)
     OutOfUsefulRange = 1,
-    // (undocumented)
     Pending = -41556,
-    // (undocumented)
     Success = 0,
-    // (undocumented)
     VerticalDatumConvertError = 26
 }
 
@@ -5816,6 +5807,42 @@ export enum OverriddenBy {
     Browser = 0,
     // (undocumented)
     User = 1
+}
+
+// @public
+export interface OverrideElementAppearanceOptions extends OverrideFeatureAppearanceOptions {
+    elementId: Id64String;
+    // @internal (undocumented)
+    modelId?: never;
+    // @internal (undocumented)
+    subCategoryId?: never;
+}
+
+// @public
+export type OverrideFeatureAppearanceArgs = OverrideElementAppearanceOptions | OverrideModelAppearanceOptions | OverrideSubCategoryAppearanceOptions;
+
+// @public
+export interface OverrideFeatureAppearanceOptions {
+    appearance: FeatureAppearance;
+    onConflict?: "extend" | "subsume" | "replace" | "skip";
+}
+
+// @public
+export interface OverrideModelAppearanceOptions extends OverrideFeatureAppearanceOptions {
+    // @internal (undocumented)
+    elementId?: never;
+    modelId: Id64String;
+    // @internal (undocumented)
+    subCategoryId?: never;
+}
+
+// @public
+export interface OverrideSubCategoryAppearanceOptions extends OverrideFeatureAppearanceOptions {
+    // @internal (undocumented)
+    elementId?: never;
+    // @internal (undocumented)
+    modelId?: never;
+    subCategoryId: Id64String;
 }
 
 // @internal (undocumented)

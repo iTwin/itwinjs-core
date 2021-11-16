@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "FeatureAppearance transparency by default ignores render mode and transparency view flag.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
