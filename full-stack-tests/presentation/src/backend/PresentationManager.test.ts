@@ -8,7 +8,7 @@ import { Guid, using } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import { PresentationManager, UnitSystemFormat } from "@itwin/presentation-backend";
 import {
-  ContentSpecificationTypes, DisplayValue, DisplayValuesArray, DisplayValuesMap, KeySet, Ruleset, RuleTypes,
+  ContentSpecificationTypes, DisplayValue, DisplayValuesArray, DisplayValuesMap, ElementProperties, KeySet, Ruleset, RuleTypes,
 } from "@itwin/presentation-common";
 import { initialize, terminate } from "../IntegrationTests";
 import { getFieldByLabel } from "../Utils";
@@ -103,6 +103,20 @@ describe("PresentationManager", () => {
         return ((displayValues[0] as DisplayValuesMap).displayValues as DisplayValuesMap)[field.name]!;
       });
     }
+  });
+
+  describe("getElementProperties", () => {
+
+    it("returns properties for some elements of class 'PhysicalObject", async () => {
+      await using(new PresentationManager(), async (manager) => {
+        const properties: ElementProperties[] = [];
+        for await (const entry of await manager.getElementProperties({ imodel, elementClasses: ["Generic:PhysicalObject"] })) {
+          properties.push(...entry.items);
+        }
+        expect(properties).to.matchSnapshot();
+      });
+    });
+
   });
 
 });

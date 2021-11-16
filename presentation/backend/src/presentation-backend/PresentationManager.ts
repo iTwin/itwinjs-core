@@ -21,7 +21,7 @@ import {
   SingleElementPropertiesRequestOptions,
 } from "@itwin/presentation-common";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "./Constants";
-import { buildElementsProperties, getElementIdsByClass, getElementsCount } from "./ElementPropertiesHelper";
+import { buildElementsProperties, getElementsCount, iterateElementIds } from "./ElementPropertiesHelper";
 import {
   createDefaultNativePlatform, NativePlatformDefinition, NativePlatformRequestTypes, NativePresentationDefaultUnitFormats,
   NativePresentationKeySetJSON, NativePresentationUnitSystem,
@@ -622,8 +622,8 @@ export class PresentationManager {
    * or all element.
    * @alpha
    */
-  public async getElementProperties(requestOptions: Prioritized<MultiElementPropertiesRequestOptions<IModelDb>>): Promise<PagedResponse<ElementProperties>>;
-  public async getElementProperties(requestOptions: Prioritized<ElementPropertiesRequestOptions<IModelDb>>): Promise<ElementProperties | undefined | PagedResponse<ElementProperties>> {
+  public async getElementProperties(requestOptions: Prioritized<MultiElementPropertiesRequestOptions<IModelDb>>): Promise<AsyncIterableIterator<PagedResponse<ElementProperties>>>;
+  public async getElementProperties(requestOptions: Prioritized<ElementPropertiesRequestOptions<IModelDb>>): Promise<ElementProperties | undefined | AsyncIterableIterator<PagedResponse<ElementProperties>>> {
     if (isSingleElementPropertiesRequestOptions(requestOptions)) {
       const { elementId, ...optionsNoElementId } = requestOptions;
       const content = await this.getContent({
@@ -642,14 +642,14 @@ export class PresentationManager {
     return this.getMultipleElementProperties(requestOptions);
   }
 
-  private async getMultipleElementProperties(requestOptions: Prioritized<MultiElementPropertiesRequestOptions<IModelDb>>) {
-    const { elementClasses, paging, ...optionsNoElementClasses } = requestOptions;
+  private async * getMultipleElementProperties(requestOptions: Prioritized<MultiElementPropertiesRequestOptions<IModelDb>>): AsyncIterableIterator<PagedResponse<ElementProperties>> {
+    const ELEMENT_PROPERTIES_CONTENT_BATCH_SIZE = 100;
+    const { elementClasses, ...optionsNoElementClasses } = requestOptions;
     const elementsCount = getElementsCount(requestOptions.imodel, requestOptions.elementClasses);
-    const elementIds = getElementIdsByClass(requestOptions.imodel, elementClasses, paging);
 
-    const elementProperties: ElementProperties[] = [];
-    for (const entry of elementIds) {
-      const properties = await buildElementsPropertiesInPages(entry[0], entry[1], async (keys) => {
+    for (const idsByClass of iterateElementIds(requestOptions.imodel, elementClasses, ELEMENT_PROPERTIES_CONTENT_BATCH_SIZE)) {
+      for (const entry of idsByClass) {
+        const keys = new KeySet(entry[1].map((id) => ({ id, className: entry[0] })));
         const content = await this.getContent({
           ...optionsNoElementClasses,
           descriptor: {
@@ -659,12 +659,9 @@ export class PresentationManager {
           rulesetOrId: "ElementProperties",
           keys,
         });
-        return buildElementsProperties(content);
-      });
-      elementProperties.push(...properties);
+        yield { total: elementsCount, items: buildElementsProperties(content) };
+      }
     }
-
-    return { total: elementsCount, items: elementProperties };
   }
 
   /**
@@ -917,15 +914,3 @@ const getPresentationCommonAssetsRoot = (ovr?: string | { common: string }) => {
     return ovr.common;
   return PRESENTATION_COMMON_ASSETS_ROOT;
 };
-
-const ELEMENT_PROPERTIES_CONTENT_BATCH_SIZE = 100;
-async function buildElementsPropertiesInPages(className: string, ids: string[], getter: (keys: KeySet) => Promise<ElementProperties[]>) {
-  const elementProperties: ElementProperties[] = [];
-  const elementIds = [...ids];
-  while (elementIds.length > 0) {
-    const idsPage = elementIds.splice(0, ELEMENT_PROPERTIES_CONTENT_BATCH_SIZE);
-    const keys = new KeySet(idsPage.map((id) => ({ id, className })));
-    elementProperties.push(...(await getter(keys)));
-  }
-  return elementProperties;
-}
