@@ -5,14 +5,15 @@
 import * as fs from "fs";
 import * as path from "path";
 import { expect } from "chai";
-import { SchemaContext, Unit } from "../../ecschema-metadata";
+import { SchemaContext } from "../../ecschema-metadata";
 import { deserializeXmlSync } from "../TestUtils/DeserializationHelpers";
-import { UnitProvider } from "../../UnitProvider/UnitProvider";
+import { SchemaUnitProvider } from "../../UnitProvider/SchemaUnitProvider";
 import { UNIT_EXTRA_DATA } from "./UnitData";
+import { UnitProps } from "@itwin/core-quantity";
 
 describe("Unit Provider tests", () => {
   const context = new SchemaContext();
-  let provider: UnitProvider;
+  let provider: SchemaUnitProvider;
 
   before(() => {
     const schemaFile = path.join(__dirname, "..", "..", "..", "..", "node_modules", "@bentley", "units-schema", "Units.ecschema.xml");
@@ -31,24 +32,24 @@ describe("Unit Provider tests", () => {
     const usSchemaXml = fs.readFileSync(usSchemaFile, "utf-8");
     deserializeXmlSync(usSchemaXml, context);
 
-    provider = new UnitProvider(context, UNIT_EXTRA_DATA);
+    provider = new SchemaUnitProvider(context, UNIT_EXTRA_DATA);
   });
 
   // Tests for findUnitByName
   it("should find units by unit names in Units schema", async () => {
     const unit1 = await provider.findUnitByName("Units.KM");
-    expect(unit1.fullName === "Units.KM", `Unit name should be Units.KM and not ${unit1.fullName}`).to.be.true;
+    expect(unit1.name === "Units.KM", `Unit name should be Units.KM and not ${unit1.name}`).to.be.true;
 
     const unit2 = await provider.findUnitByName("Units.KM_PER_HR");
-    expect(unit2.fullName === "Units.KM_PER_HR", `Unit name should be Units.KM_PER_HR and not ${unit2.fullName}`).to.be.true;
+    expect(unit2.name === "Units.KM_PER_HR", `Unit name should be Units.KM_PER_HR and not ${unit2.name}`).to.be.true;
   });
 
   it("should find units by unit names in MetricUnits schema", async () => {
     const unit1 = await provider.findUnitByName("MetricUnits.KM");
-    expect(unit1.fullName === "MetricUnits.KM", `Unit name should be MetricUnits.KM and not ${unit1.fullName}`).to.be.true;
+    expect(unit1.name === "MetricUnits.KM", `Unit name should be MetricUnits.KM and not ${unit1.name}`).to.be.true;
 
     const unit2 = await provider.findUnitByName("MetricUnits.M_PER_KM");
-    expect(unit2.fullName === "MetricUnits.M_PER_KM", `Unit name should be MetricUnits.M_PER_KM and not ${unit2.fullName}`).to.be.true;
+    expect(unit2.name === "MetricUnits.M_PER_KM", `Unit name should be MetricUnits.M_PER_KM and not ${unit2.name}`).to.be.true;
   });
 
   it("should throw when schema is not found", async () => {
@@ -71,38 +72,38 @@ describe("Unit Provider tests", () => {
 
   // Tests for findUnitsByPhenomenon
   it("should find units that belong to Units.LENGTH phenomenon", async () => {
-    const filteredUnits: Unit[] = await provider.findUnitsByPhenomenon("Units.LENGTH");
+    const filteredUnits: UnitProps[] = await provider.getUnitsByFamily("Units.LENGTH");
     for (const unit of filteredUnits) {
-      expect(unit.phenomenon?.fullName === "Units.LENGTH", `Phenomenon name should be Units.LENGTH and not ${unit.phenomenon?.fullName}`).to.be.true;
+      expect(unit.phenomenon === "Units.LENGTH", `Phenomenon name should be Units.LENGTH and not ${unit.phenomenon}`).to.be.true;
     }
   });
 
   it("should find units that belong to Units.VELOCITY phenomenon", async () => {
-    const filteredUnits: Unit[] = await provider.findUnitsByPhenomenon("Units.VELOCITY");
+    const filteredUnits: UnitProps[] = await provider.getUnitsByFamily("Units.VELOCITY");
     for (const unit of filteredUnits) {
-      expect(unit.phenomenon?.fullName === "Units.VELOCITY", `Phenomenon name should be Units.LENGTH and not ${unit.phenomenon?.fullName}`).to.be.true;
+      expect(unit.phenomenon === "Units.VELOCITY", `Phenomenon name should be Units.LENGTH and not ${unit.phenomenon}`).to.be.true;
     }
   });
 
   it("should find units that belong to SIUnits.LENGTH phenomenon across multiple schemas", async () => {
-    const filteredUnits: Unit[] = await provider.findUnitsByPhenomenon("SIUnits.LENGTH");
+    const filteredUnits: UnitProps[] = await provider.getUnitsByFamily("SIUnits.LENGTH");
     for (const unit of filteredUnits) {
-      expect(unit.phenomenon?.fullName === "SIUnits.LENGTH", `Phenomenon name should be SIUnits.LENGTH and not ${unit.phenomenon?.fullName}`).to.be.true;
+      expect(unit.phenomenon === "SIUnits.LENGTH", `Phenomenon name should be SIUnits.LENGTH and not ${unit.phenomenon}`).to.be.true;
     }
     expect(filteredUnits).to.have.lengthOf(19);
   });
 
   it("should find units that belong to SIUnits.SLOPE phenomenon across multiple schemas", async () => {
-    const filteredUnits: Unit[] = await provider.findUnitsByPhenomenon("SIUnits.SLOPE");
+    const filteredUnits: UnitProps[] = await provider.getUnitsByFamily("SIUnits.SLOPE");
     for (const unit of filteredUnits) {
-      expect(unit.phenomenon?.fullName === "SIUnits.SLOPE", `Phenomenon name should be SIUnits.SLOPE and not ${unit.phenomenon?.fullName}`).to.be.true;
+      expect(unit.phenomenon === "SIUnits.SLOPE", `Phenomenon name should be SIUnits.SLOPE and not ${unit.phenomenon}`).to.be.true;
     }
     expect(filteredUnits).to.have.lengthOf(9);
   });
 
   it("should throw when schema is not found", async () => {
     try {
-      await provider.findUnitsByPhenomenon("MockSchema.VELOCITY");
+      await provider.getUnitsByFamily("MockSchema.VELOCITY");
     } catch (err: any) {
       expect(err).to.be.an("error");
       expect(err.message).to.equal("Cannot find schema for phenomenon");
@@ -111,7 +112,7 @@ describe("Unit Provider tests", () => {
 
   it("should throw when phenomenon is not found", async () => {
     try {
-      await provider.findUnitsByPhenomenon("SIUnits.VELOCITY");
+      await provider.getUnitsByFamily("SIUnits.VELOCITY");
     } catch (err: any) {
       expect(err).to.be.an("error");
       expect(err.message).to.equal("Cannot find schema item/phenomenon");
@@ -143,81 +144,81 @@ describe("Unit Provider tests", () => {
   // Tests for findUnitsByDisplayLabel of findUnit
   it("should find Units.DELTA_RANKINE with display label 'Δ°R'", async () => {
     const unit = await provider.findUnit("Δ°R");
-    expect(unit.fullName === "Units.DELTA_RANKINE", `Unit name should be Units.DELTA_RANKINE and not ${unit.fullName}`).to.be.true;
+    expect(unit.name === "Units.DELTA_RANKINE", `Unit name should be Units.DELTA_RANKINE and not ${unit.name}`).to.be.true;
   });
 
   it("should find Units.MICROMOL_PER_CUB_DM with display label 'µmol/dm³'", async () => {
     const unit = await provider.findUnit("µmol/dm³");
-    expect(unit.fullName === "Units.MICROMOL_PER_CUB_DM", `Unit name should be Units.MICROMOL_PER_CUB_DM and not ${unit.fullName}`).to.be.true;
+    expect(unit.name === "Units.MICROMOL_PER_CUB_DM", `Unit name should be Units.MICROMOL_PER_CUB_DM and not ${unit.name}`).to.be.true;
   });
 
   it("should find Units.FT with display label 'ft'", async () => {
     const unit = await provider.findUnit("ft");
-    expect(unit.fullName === "Units.FT", `Unit name should be Units.FT and not ${unit.fullName}`).to.be.true;
+    expect(unit.name === "Units.FT", `Unit name should be Units.FT and not ${unit.name}`).to.be.true;
   });
 
   it("should find USUnits.FT with display label 'ft' with schemaName 'USUnits'",async () => {
     const unit = await provider.findUnit("ft", "USUnits");
-    expect(unit.fullName === "USUnits.FT",  `Unit name should be USUnits.FT and not ${unit.fullName}`).to.be.true;
+    expect(unit.name === "USUnits.FT",  `Unit name should be USUnits.FT and not ${unit.name}`).to.be.true;
   });
 
   it("should find USUnits.FT with display label 'ft' and SIUnits.LENGTH phenomena", async () => {
     const unit = await provider.findUnit("ft", undefined, "SIUnits.LENGTH");
-    expect(unit.fullName === "USUnits.FT", `Unit name should be USUnits.FT and not ${unit.fullName}`).to.be.true;
+    expect(unit.name === "USUnits.FT", `Unit name should be USUnits.FT and not ${unit.name}`).to.be.true;
   });
 
   it("should find Units.FT with display label 'ft' and Units.LENGTH phenomena", async () => {
     const unit = await provider.findUnit("ft", undefined, "Units.LENGTH");
-    expect(unit.fullName === "Units.FT",  `Unit name should be Units.FT and not ${unit.fullName}`).to.be.true;
+    expect(unit.name === "Units.FT",  `Unit name should be Units.FT and not ${unit.name}`).to.be.true;
   });
 
   it("should only find USUnits.FT for USUnits.USCUSTOM unitSystem", async () => {
     const unit = await provider.findUnit("ft", undefined, undefined, "USUnits.USCUSTOM");
-    expect(unit.fullName === "USUnits.FT", `Unit name should be USUnits.FT and not ${unit.fullName}`).to.be.true;
+    expect(unit.name === "USUnits.FT", `Unit name should be USUnits.FT and not ${unit.name}`).to.be.true;
   });
 
   it("should only find Units.FT with display label 'ft' for Units.USCUSTOM unitSystem", async () => {
     const unit = await provider.findUnit("ft", undefined, undefined, "Units.USCUSTOM");
-    expect(unit.fullName === "Units.FT", `Unit name should be Units.FT and not ${unit.fullName}`).to.be.true;
+    expect(unit.name === "Units.FT", `Unit name should be Units.FT and not ${unit.name}`).to.be.true;
   });
 
   // Tests for findUnitsByAltDisplayLabel of findUnit
   it("should find Units.YRD by corresponding alternate display labels", async () => {
     const unit1 = await provider.findUnit("YRD");
-    expect(unit1.fullName === "Units.YRD", `Unit name should be Units.YRD and not ${unit1.fullName}`).to.be.true;
+    expect(unit1.name === "Units.YRD", `Unit name should be Units.YRD and not ${unit1.name}`).to.be.true;
 
     const unit2 = await provider.findUnit("yrd");
-    expect(unit2.fullName === "Units.YRD", `Unit name should be Units.YRD and not ${unit2.fullName}`).to.be.true;
+    expect(unit2.name === "Units.YRD", `Unit name should be Units.YRD and not ${unit2.name}`).to.be.true;
   });
 
   it("should find Units.ARC_SECOND with alternate display label 'sec'", async () => {
     const unit = await provider.findUnit("sec");
-    expect(unit.fullName === "Units.ARC_SECOND", `Unit name should be Units.ARC_SECOND and not ${unit.fullName}`).to.be.true;
+    expect(unit.name === "Units.ARC_SECOND", `Unit name should be Units.ARC_SECOND and not ${unit.name}`).to.be.true;
   });
 
   it("should find Units.S with alternate display label 'sec' and phenomenon Units.TIME", async () => {
     const unit = await provider.findUnit("sec", undefined, "Units.TIME");
-    expect(unit.fullName === "Units.S", `Unit name should be Units.S and not ${unit.fullName}`).to.be.true;
+    expect(unit.name === "Units.S", `Unit name should be Units.S and not ${unit.name}`).to.be.true;
   });
 
   it("should find Units.S with alternate display label 'sec' and unitSystem Units.SI", async () => {
     const unit = await provider.findUnit("sec", undefined, undefined, "Units.SI");
-    expect(unit.fullName === "Units.S", `Unit name should be Units.S and not ${unit.fullName}`).to.be.true;
+    expect(unit.name === "Units.S", `Unit name should be Units.S and not ${unit.name}`).to.be.true;
   });
 
   it("should find Units.ARC_MINUTE with display label ''' ", async () => {
     const unit = await provider.findUnit("'");
-    expect(unit.fullName === "Units.ARC_MINUTE", `Unit name should be Units.ARC_MINUTE and not ${unit.fullName}`).to.be.true;
+    expect(unit.name === "Units.ARC_MINUTE", `Unit name should be Units.ARC_MINUTE and not ${unit.name}`).to.be.true;
   });
 
   it("should find Units.FT with alternate display label ''' and phenomenon Units.LENGTH", async () => {
     const unit = await provider.findUnit("'", undefined, "Units.LENGTH");
-    expect(unit.fullName === "Units.FT", `Unit name should be Units.FT and not ${unit.fullName}`).to.be.true;
+    expect(unit.name === "Units.FT", `Unit name should be Units.FT and not ${unit.name}`).to.be.true;
   });
 
   it("should find Units.FT with alternate display label ''' and unitSystem Units.USCUSTOM", async () => {
     const unit = await provider.findUnit("'", undefined, undefined, "Units.USCUSTOM");
-    expect(unit.fullName === "Units.FT", `Unit name should be Units.FT and not ${unit.fullName}`).to.be.true;
+    expect(unit.name === "Units.FT", `Unit name should be Units.FT and not ${unit.name}`).to.be.true;
   });
 
   // Tests for invalid cases

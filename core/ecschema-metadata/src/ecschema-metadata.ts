@@ -40,7 +40,7 @@ export * from "./PropertyTypes";
 export * from "./SchemaKey";
 export * from "./UnitConversion/UnitConversion";
 export * from "./UnitConversion/UnitConverter";
-export * from "./UnitProvider/UnitProvider";
+export * from "./UnitProvider/SchemaUnitProvider";
 export * from "./Validation/SchemaWalker";
 export * from "./SchemaPartVisitorDelegate";
 export { CustomAttribute, CustomAttributeContainerProps} from "./Metadata/CustomAttribute";

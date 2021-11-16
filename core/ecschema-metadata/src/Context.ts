@@ -125,7 +125,7 @@ export class SchemaCache implements ISchemaLocater {
   /**
    * Generator function that can iterate through each schema in _schema SchemaMap and items for each Schema
    */
-   public* getSchemaItems(): IterableIterator<SchemaItem> {
+  public* getSchemaItems(): IterableIterator<SchemaItem> {
     for (const schema of this._schema) {
       for (const schemaItem of schema.getItems()) {
         yield schemaItem;
