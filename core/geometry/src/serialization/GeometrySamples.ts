@@ -1972,6 +1972,16 @@ export class Sample {
         Arc3d.createXY(Point3d.create(15, 0), 5, AngleSweep.createStartEndDegrees(180, 360)),
         Arc3d.createXY(Point3d.create(25, 0), 5, AngleSweep.createStartEndDegrees(180, 0))))!);
     result.push(CurveChainWithDistanceIndex.createCapture(
+      Path.create( // 2-pt Interpolation Curve
+        InterpolationCurve3d.createCapture(
+          InterpolationCurve3dOptions.create({
+            fitPoints: [pointsA[0], pointsA[1]]}))!))!);
+    result.push(CurveChainWithDistanceIndex.createCapture(
+      Path.create( // 3-pt Interpolation Curve
+        InterpolationCurve3d.createCapture(
+          InterpolationCurve3dOptions.create({
+            fitPoints: [pointsA[0], pointsA[1], pointsA[2]]}))!))!);
+    result.push(CurveChainWithDistanceIndex.createCapture(
       Path.create(
         InterpolationCurve3d.createCapture(
           InterpolationCurve3dOptions.create({
@@ -1991,7 +2001,7 @@ export class Sample {
         DirectSpiral3d.createDirectHalfCosine(
           Transform.createOriginAndMatrix(Point3d.createZero(), Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(110))),
           50, 350,
-          Segment1d.create(0.05, 0.85))!))!);
+          Segment1d.create(0, 1))!))!);
     return result;
   }
   /**

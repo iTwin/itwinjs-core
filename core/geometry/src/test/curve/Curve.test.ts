@@ -284,7 +284,7 @@ class ExerciseCurve {
           "approximate derivative", derivativeRay.direction, approximateDerivative, curve, fraction);
         if (plane1) { //  curve instanceof TransitionSpiral3d
           ck.testPoint3d(derivativeRay.origin, plane1.origin, "points with derivatives");
-          if (!(curve instanceof TransitionSpiral3d)) {
+          if (!(curve instanceof TransitionSpiral3d) && !plane1.vectorV.isAlmostZero) {
             // TransitionSpiral has weird derivative behavior?
             // if (!ck.testTrue(approximateDerivative2.distance(plane1.vectorV) < derivative2Tolerance * (1 + plane1.vectorV.magnitude())))
             //  curve.fractionToPointAnd2Derivatives(fraction);
@@ -311,7 +311,7 @@ class ExerciseCurve {
     // evaluate near endpoints to trigger end conditions
     const point0A = curve.startPoint();
     const point1A = curve.endPoint();
-    ck.testLE(point0A.distance(point1A), curve.quickLength(), "start end distance LE curve quick length");
+    ck.testLE(point0A.distance(point1A), curve.quickLength() + Geometry.smallMetricDistanceSquared, "start end distance LE curve quick length");
 
     for (const f of [0.01, 0.48343, 0.992]) {
       const xyzA = Point3d.create();
@@ -329,15 +329,13 @@ class ExerciseCurve {
   public static exerciseClosestPointDetail(ck: Checker, detail: CurveLocationDetail | undefined, curve: CurvePrimitive, fractionA: number, pointA: Point3d | undefined) {
     if (ck.testPointer(detail) && ck.testPointer(pointA)) {
       if (detail.curve === curve) {
-        // START HERE: revise test to avoid error if tunnelling. Can detect before check?
         if (!ck.testCoordinate(fractionA, detail.fraction, "fraction round trip")
           || !ck.testPoint3d(pointA, detail.point, "round trip point")) {
           const pointB = curve.fractionToPoint(fractionA);
           detail = curve.closestPoint(pointB, false);
         } else {
           // The search tunneled into a contained curve.   Only verify the point.
-          if (!ck.testPoint3d(pointA, detail.point, "round trip point")
-            || !ck.testPoint3d(pointA, detail.curve.fractionToPoint(detail.fraction))) {
+          if (!ck.testPoint3d(pointA, detail.curve.fractionToPoint(detail.fraction))) {
             detail = curve.closestPoint(pointA, false);
           }
         }
@@ -353,7 +351,9 @@ class ExerciseCurve {
     // project a short perp distance away from pointA on both sides of curve (still expect pointA)
     const plane = curve.fractionToPointAnd2Derivatives(fractionA);
     if (plane) {
-      const offset = plane.vectorV.scaleToLength(0.05);
+      if (plane.unitNormal())
+        ck.testVector3d(plane.vectorV.normalize()!, plane.unitNormal()!.crossProduct(plane.vectorU).normalize()!, "test derivative direction");
+      const offset = plane.vectorV.scaleToLength(0.001);
       if (offset) {
         let testPt = pointA.plus(offset);
         detail = curve.closestPoint(testPt, false);
@@ -385,7 +385,7 @@ class ExerciseCurve {
     ck.testTrue(directRange.containsRange(strokeRange), "range from curve contains range of strokes");
     ck.testTrue(extendRange.containsRange(strokeRange), "range from curve by extend contains range of strokes");
 
-    ck.testLE(strokeLength, curveLength, "strokeLength cannot exceed curveLength");
+    ck.testLE(strokeLength, curveLength + Geometry.smallMetricDistanceSquared, "strokeLength cannot exceed curveLength");
     if (!ck.testLE(chordFraction * curveLength, strokeLength, "strokes appear accurate")
       || Checker.noisy.stroke) {
       console.log(" CURVE", curve);
