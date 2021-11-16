@@ -11,7 +11,6 @@ import { EntityMetaData, IModelError } from "@itwin/core-common";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { Schema, Schemas } from "./Schema";
-import { IModelSchemaLoader } from "./IModelSchemaLoader";
 
 /** The mapping between a BIS class name (in the form "schema:class") and its JavaScript constructor function
  * @public
