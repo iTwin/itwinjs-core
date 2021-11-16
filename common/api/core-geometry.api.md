@@ -5531,6 +5531,7 @@ export class Transform implements BeJSONFunctions {
     multiplyTransformTransform(other: Transform, result?: Transform): Transform;
     multiplyTransposeXYZW(x: number, y: number, z: number, w: number, result?: Point4d): Point4d;
     multiplyVector(vector: Vector3d, result?: Vector3d): Vector3d;
+    multiplyVectorInPlace(vector: Vector3d): void;
     multiplyVectorXYZ(x: number, y: number, z: number, result?: Vector3d): Vector3d;
     multiplyXYAndZInPlace(point: XYAndZ): void;
     multiplyXYZ(x: number, y: number, z?: number, result?: Point3d): Point3d;
