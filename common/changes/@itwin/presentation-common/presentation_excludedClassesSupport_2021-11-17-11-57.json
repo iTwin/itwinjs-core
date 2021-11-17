@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-common",
+      "comment": "Added excluded classes property for (ContentInstances/InstanceNodes)OfSpecificClassesSpecification",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-common"
+}
