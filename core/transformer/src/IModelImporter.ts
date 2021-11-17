@@ -135,11 +135,12 @@ export class IModelImporter implements Required<IModelImportOptions> {
 
   /** Import the specified ElementProps (either as an insert or an update) into the target iModel. */
   public importElement(elementProps: ElementProps): Id64String {
-    if (undefined !== elementProps.id) {
-      if (this.doNotUpdateElementIds.has(elementProps.id)) {
-        Logger.logInfo(loggerCategory, `Do not update target element ${elementProps.id}`);
-        return elementProps.id;
-      }
+    if (undefined !== elementProps.id && this.doNotUpdateElementIds.has(elementProps.id)) {
+      Logger.logInfo(loggerCategory, `Do not update target element ${elementProps.id}`);
+      return elementProps.id;
+    }
+    const providedIdIsForUpdate = !this.preserveIdsInFilterTransform;
+    if (undefined !== elementProps.id && providedIdIsForUpdate) {
       this.onUpdateElement(elementProps);
     } else {
       this.onInsertElement(elementProps); // targetElementProps.id assigned by insertElement
@@ -158,7 +159,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
       if (this.preserveIdsInFilterTransform) {
         const hasId = (a: ElementProps): a is ElementProps & {id: Id64String} => typeof a.id === "string";
         if (!hasId(elementProps))
-          throw new IModelError(IModelStatus.BadArg, "");
+          throw new IModelError(IModelStatus.BadArg, "element tried to be an inserted without an id during an id-preserving filter");
         elementId = this.targetDb.elements.insertElementForceUseId(elementProps);
       } else {
         elementId = this.targetDb.elements.insertElement(elementProps);

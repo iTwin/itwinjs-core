@@ -18,15 +18,15 @@ import {
 } from "@itwin/core-backend";
 import { ExtensiveTestScenario, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import {
-  AxisAlignedBox3d, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorDef, CreateIModelProps, DefinitionElementProps, ExternalSourceAspectProps,
-  IModel, IModelError, PhysicalElementProps, Placement3d,
+  AxisAlignedBox3d, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorDef, CreateIModelProps, DefinitionElementProps, ElementProps,
+  ExternalSourceAspectProps, IModel, IModelError, PhysicalElementProps, Placement3d,
 } from "@itwin/core-common";
 import { IModelExporter, IModelExportHandler, IModelTransformer, TransformerLoggerCategory } from "../../core-transformer";
 import {
   ClassCounter, FilterByViewTransformer, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerTestUtils, PhysicalModelConsolidator,
   RecordingIModelImporter, TestIModelTransformer, TransformerExtensiveTestScenario,
 } from "../IModelTransformerUtils";
-import { deepStrictEqual } from "assert";
+import { QueryRowFormat } from "@itwin/core-common";
 
 describe("IModelTransformer", () => {
   const outputDir: string = path.join(KnownTestLocations.outputDir, "IModelTransformer");
@@ -1180,9 +1180,7 @@ describe("IModelTransformer", () => {
   });
 
   it.only("filter preserves Ids", async () => {
-    // const seedDb = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
     const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "PreserveIdSource.bim");
-    // const sourceDb = SnapshotDb.createFrom(seedDb, sourceDbPath);
     const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "PreserveId" } });
     const spatialCateg1Id  = SpatialCategory.insert(sourceDb, IModelDb.dictionaryId, "spatial-category1", { color: ColorDef.blue.toJSON() });
     const spatialCateg2Id = SpatialCategory.insert(sourceDb, IModelDb.dictionaryId, "spatial-category2", { color: ColorDef.red.toJSON() });
@@ -1214,19 +1212,25 @@ describe("IModelTransformer", () => {
     }
 
     const transformer = new FilterCategoryTransformer(sourceDb, targetDb, { preserveIdsInFilterTransform: true });
-    await transformer.processSchemas();
+    await transformer.processAll();
     targetDb.saveChanges();
 
-    async function getAllElements(db: IModelDb) {
-      const result = [];
-      for await (const row of db.query("SELECT * FROM bis.Element"))
-        result.push(row);
+    async function getAllElementsInvariants(db: IModelDb, filter?: (props: Partial<ElementProps>) => boolean) {
+      const result: Record<Id64String, Partial<ElementProps>> = {};
+      for await (const row of db.query("SELECT * FROM bis.Element", undefined, QueryRowFormat.UseECSqlPropertyNames)) {
+        if (filter && !filter(row))
+          continue;
+        /* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/naming-convention */
+        const { LastMod, ...invariantPortion } = row;
+        /* eslint-enable @typescript-eslint/no-unused-vars, @typescript-eslint/naming-convention  */
+        result[row.ECInstanceId] = invariantPortion;
+      }
       return result;
     }
 
-    expect(
-      (await getAllElements(sourceDb)).filter((elem) => ![spatialCateg2Id, _physObj2Id].includes(elem.id))
-    ).to.deep.equal(await getAllElements(targetDb));
+    const sourceContent = await getAllElementsInvariants(sourceDb, (elem) => elem.id ? ![spatialCateg2Id, _physObj2Id].includes(elem.id) : true);
+    const targetContent = await getAllElementsInvariants(targetDb);
+    expect(targetContent).to.deep.equal(sourceContent);
 
     sourceDb.close();
     targetDb.close();

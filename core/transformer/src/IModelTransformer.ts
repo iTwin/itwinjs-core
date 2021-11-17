@@ -125,6 +125,8 @@ export class IModelTransformer extends IModelExportHandler {
   private readonly _isReverseSynchronization: boolean;
   /** Set if it can be determined whether this is the first source --> target synchronization. */
   private _isFirstSynchronization?: boolean;
+  /** @see [[IModelTransformOptions.preserveIdsInFilterTransform]] */
+  private readonly _preserveIdsInFilterTransform: boolean;
 
   /** Construct a new IModelTransformer
    * @param source Specifies the source IModelExporter or the source IModelDb that will be used to construct the source IModelExporter.
@@ -141,6 +143,7 @@ export class IModelTransformer extends IModelExportHandler {
     this._wasSourceIModelCopiedToTarget = options?.wasSourceIModelCopiedToTarget ?? false;
     this._isReverseSynchronization = options?.isReverseSynchronization ?? false;
     this._isFirstSynchronization = this._wasSourceIModelCopiedToTarget ? true : undefined;
+    this._preserveIdsInFilterTransform = options?.preserveIdsInFilterTransform ?? false;
     // initialize exporter and sourceDb
     if (source instanceof IModelDb) {
       this.exporter = new IModelExporter(source);
@@ -166,7 +169,7 @@ export class IModelTransformer extends IModelExportHandler {
       this.importer = target;
     }
     this.targetDb = this.importer.targetDb;
-    this.importer.preserveIdsInFilterTransform = options?.preserveIdsInFilterTransform ?? false;
+    this.importer.preserveIdsInFilterTransform = this._preserveIdsInFilterTransform;
     // initialize the IModelCloneContext
     this.context = new IModelCloneContext(this.sourceDb, this.targetDb);
   }
@@ -439,7 +442,10 @@ export class IModelTransformer extends IModelExportHandler {
   protected override onExportElement(sourceElement: Element): void {
     let targetElementId: Id64String | undefined;
     let targetElementProps: ElementProps;
-    if (this._wasSourceIModelCopiedToTarget) {
+    if (this._preserveIdsInFilterTransform) {
+      targetElementId = sourceElement.id;
+      targetElementProps = this.onTransformElement(sourceElement);
+    } else if (this._wasSourceIModelCopiedToTarget) {
       targetElementId = sourceElement.id;
       targetElementProps = this.targetDb.elements.getElementProps(targetElementId);
     } else {
