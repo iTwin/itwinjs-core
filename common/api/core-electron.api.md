@@ -35,8 +35,6 @@ export class ElectronHost {
     static get app(): Electron.App;
     // (undocumented)
     static appIconPath: string;
-    // @internal (undocumented)
-    static get authorization(): import("@itwin/core-common").AuthorizationClient | undefined;
     // (undocumented)
     static get electron(): typeof Electron;
     // (undocumented)
