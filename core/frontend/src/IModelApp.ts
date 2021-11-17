@@ -20,6 +20,7 @@ import { AccuDraw } from "./AccuDraw";
 import { AccuSnap } from "./AccuSnap";
 import * as auxCoordState from "./AuxCoordSys";
 import * as categorySelectorState from "./CategorySelectorState";
+import { ExtensionAdmin } from "./extension/ExtensionAdmin";
 import * as displayStyleState from "./DisplayStyleState";
 import * as drawingViewState from "./DrawingViewState";
 import { ElementLocateManager } from "./ElementLocateManager";
@@ -195,6 +196,11 @@ export class IModelApp {
   /** Event raised just before the frontend IModelApp is to be shut down */
   public static readonly onBeforeShutdown = new BeEvent<() => void>();
 
+  /** Event raised after IModelApp is finished starting up.
+   * @internal
+   */
+  public static readonly onBeforeStartup = new BeEvent<() => void>();
+
   /** Provides authorization information for various frontend APIs */
   public static authorizationClient?: AuthorizationClient;
   /** The [[ToolRegistry]] for this session. */
@@ -226,7 +232,6 @@ export class IModelApp {
   public static get accuDraw(): AccuDraw { return this._accuDraw; }
   /** The [[AccuSnap]] for this session. */
   public static get accuSnap(): AccuSnap { return this._accuSnap; }
-  /** @internal */
   public static get locateManager(): ElementLocateManager { return this._locateManager; }
   /** @internal */
   public static get tentativePoint(): TentativePoint { return this._tentativePoint; }
@@ -262,6 +267,9 @@ export class IModelApp {
    * @internal
    */
   public static readonly telemetry: TelemetryManager = new TelemetryManager();
+
+  /** */
+  public static readonly extensionAdmin = new ExtensionAdmin();
 
   /** Map of classFullName to EntityState class */
   private static _entityClasses = new Map<string, typeof EntityState>();
@@ -386,7 +394,8 @@ export class IModelApp {
       this.uiAdmin,
     ].forEach((sys) => sys.onInitialized());
 
-    return this.quantityFormatter.onInitialized();
+    await this.quantityFormatter.onInitialized();
+    this.onBeforeStartup.raiseEvent();
   }
 
   /** Must be called before the application exits to release any held resources. */
@@ -409,6 +418,7 @@ export class IModelApp {
     this._entityClasses.clear();
     this.authorizationClient = undefined;
     this._initialized = false;
+    this.onBeforeStartup.clear();
   }
 
   /** Controls how frequently the application polls for changes that may require a new animation frame to be requested.
