@@ -212,7 +212,6 @@ export class SampleAppIModelApp {
         redirectUri,
         scope: process.env.IMJS_OIDC_BROWSER_TEST_SCOPES ?? "",
         responseType: "code",
-        authority: "https://ims.bentley.com",
       });
       try {
         await auth.signInSilent();
