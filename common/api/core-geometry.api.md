@@ -882,6 +882,7 @@ export class BSplineCurveOps {
 export namespace BSplineCurveOps {
     export class C2CubicFit {
         static constructFitParameters(options: InterpolationCurve3dOptions): boolean;
+        static constructFitParametersFromPoints(fitPoints: Point3d[], isChordLength: number | undefined, closed: boolean | undefined): number[] | undefined;
         static constructPoles(options: InterpolationCurve3dOptions): Point3d[] | Float64Array | undefined;
         static convertCubicKnotVectorToFitParams(knots: number[] | undefined, numFitPoints: number, normalize?: boolean): number[] | undefined;
         static convertFitParamsToCubicKnotVector(params: number[] | undefined, closed?: boolean, legacy?: boolean): number[] | undefined;
@@ -5981,6 +5982,7 @@ export class XYZ implements XYAndZ {
     indexOfMaxAbs(): number;
     isAlmostEqual(other: XYAndZ, tol?: number): boolean;
     isAlmostEqualMetric(other: XYAndZ): boolean;
+    isAlmostEqualWithToleranceFactor(other: XYAndZ, toleranceFactor: number): boolean;
     isAlmostEqualXY(other: XAndY, tol?: number): boolean;
     isAlmostEqualXYZ(x: number, y: number, z: number, tol?: number): boolean;
     get isAlmostZero(): boolean;

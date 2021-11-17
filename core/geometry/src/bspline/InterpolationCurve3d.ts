@@ -208,8 +208,13 @@ export class InterpolationCurve3dOptions {
         if (dataA.knots === undefined && dataB.knots === undefined)
           return true;
         /* alas .. need to allow tricky mismatch of end replication */
-        const knotsA = BSplineCurveOps.C2CubicFit.convertCubicKnotVectorToFitParams(dataA.knots, dataA.fitPoints.length, false);
-        const knotsB = BSplineCurveOps.C2CubicFit.convertCubicKnotVectorToFitParams(dataB.knots, dataB.fitPoints.length, false);
+        let knotsA = dataA.knots, knotsB = dataB.knots;
+        if (dataA.knots === undefined)  // construct undefined knots to compare against defined knots
+          knotsA = BSplineCurveOps.C2CubicFit.constructFitParametersFromPoints(dataA.fitPoints, dataA.isChordLenKnots, dataA.closed);
+        else if (dataB.knots === undefined)
+          knotsB = BSplineCurveOps.C2CubicFit.constructFitParametersFromPoints(dataB.fitPoints, dataB.isChordLenKnots, dataB.closed);
+        knotsA = BSplineCurveOps.C2CubicFit.convertCubicKnotVectorToFitParams(knotsA, dataA.fitPoints.length, false);
+        knotsB = BSplineCurveOps.C2CubicFit.convertCubicKnotVectorToFitParams(knotsB, dataB.fitPoints.length, false);
         return Geometry.almostEqualNumberArrays(knotsA, knotsB, (a: number, b: number) => Geometry.isAlmostEqualNumber(a, b));
       }
     }

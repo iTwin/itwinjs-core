@@ -145,6 +145,14 @@ export class XYZ implements XYAndZ {
       && Geometry.isSameCoordinate(this.y, other.y, tol)
       && Geometry.isSameCoordinate(this.z, other.z, tol);
   }
+
+  /** Returns true if this and other have equal x,y,z parts within toleranceFactor * Geometry.smallMetricDistance. */
+  public isAlmostEqualWithToleranceFactor(other: XYAndZ, toleranceFactor: number): boolean {
+    return Geometry.isSameCoordinateWithToleranceFactor(this.x, other.x, toleranceFactor)
+      && Geometry.isSameCoordinateWithToleranceFactor(this.y, other.y, toleranceFactor)
+      && Geometry.isSameCoordinateWithToleranceFactor(this.z, other.z, toleranceFactor);
+  }
+
   /** Return true if this and other have equal x,y,z parts within Geometry.smallMetricDistance. */
   public isAlmostEqualXYZ(x: number, y: number, z: number, tol?: number): boolean {
     return Geometry.isSameCoordinate(this.x, x, tol)

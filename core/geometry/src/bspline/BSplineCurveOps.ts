@@ -184,8 +184,13 @@ export namespace BSplineCurveOps {
       return true;
     }
 
-    /** Construct fit parameters for the c2 cubic fit algorithm */
-     private static constructFitParameters2(fitPoints: Point3d[], isChordLength: number | undefined, closed: boolean | undefined): number[] | undefined {
+    /** Construct fit parameters for the c2 cubic fit algorithm.
+     * @param fitPoints validated fit points (should not contain duplicates)
+     * @param isChordLength whether knots are computed using distances between successive fit points
+     * @param closed whether curve is periodically defined
+     * @return fit parameters, one per fit point
+    */
+     public static constructFitParametersFromPoints(fitPoints: Point3d[], isChordLength: number | undefined, closed: boolean | undefined): number[] | undefined {
       let params: number[] | undefined;
       if (isChordLength || !closed)
         params = this.constructChordLengthParameters(fitPoints);
@@ -200,7 +205,7 @@ export namespace BSplineCurveOps {
      */
      public static constructFitParameters(options: InterpolationCurve3dOptions): boolean {
       if (undefined === options.knots)
-        options.knots = this.constructFitParameters2(options.fitPoints, options.isChordLenKnots, options.closed);
+        options.knots = this.constructFitParametersFromPoints(options.fitPoints, options.isChordLenKnots, options.closed);
       return options.knots?.length === options.fitPoints.length;
     }
 
@@ -812,7 +817,7 @@ export namespace BSplineCurveOps {
         props.knots = this.convertCubicKnotVectorToFitParams(props.knots, props.fitPoints.length, false);
         props.knots = this.convertFitParamsToCubicKnotVector(props.knots, props.closed, true);
       } else {
-        props.knots = this.constructFitParameters2(Point3dArray.clonePoint3dArray(props.fitPoints), props.isChordLenKnots, props.closed);
+        props.knots = this.constructFitParametersFromPoints(Point3dArray.clonePoint3dArray(props.fitPoints), props.isChordLenKnots, props.closed);
         props.knots = this.convertFitParamsToCubicKnotVector(props.knots, props.closed, true);
       }
     }
