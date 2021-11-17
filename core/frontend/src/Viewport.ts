@@ -8,7 +8,6 @@
 
 import {
   asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, Constructor, dispose, Id64, Id64Arg, Id64Set, Id64String, IDisposable, isInstanceOf,
-  ProcessDetector,
   StopWatch,
 } from "@itwin/core-bentley";
 import {
@@ -966,7 +965,7 @@ export abstract class Viewport implements IDisposable {
   private attachToView(): void {
     this.registerDisplayStyleListeners(this.view.displayStyle);
     this.registerViewListeners();
-    this.view.attachToViewport();
+    this.view.attachToViewport(this);
     this._mapTiledGraphicsProvider = new MapTiledGraphicsProvider(this);
   }
 
@@ -2956,7 +2955,7 @@ export class ScreenViewport extends Viewport {
       return npcPt.z < 1.0;
     };
 
-    if (this.view.getDisplayStyle3d().environment.ground.display) {
+    if (this.view.getDisplayStyle3d().environment.displayGround) {
       const groundPlane = Plane3dByOriginAndUnitNormal.create(Point3d.create(0, 0, this.view.getGroundElevation()), Vector3d.unitZ());
       if (undefined !== groundPlane && boresiteIntersect(groundPlane))
         return { plane: Plane3dByOriginAndUnitNormal.create(projectedPt, groundPlane.getNormalRef())!, source: DepthPointSource.GroundPlane };
@@ -3255,15 +3254,15 @@ export class ScreenViewport extends Viewport {
 
       this.addChildDiv(this.vpDiv, webglCanvas, 5);
 
-      /** The following workaround resolves an issue specific to iOS Safari. We really want this webgl canvas' zIndex to be
-       * lower than this.canvas, but if we do that on iOS Safari, Safari may decide to not display the canvas contents once
-       * it is re-added to the parent div after dropping other viewports. It will only display it once resizing the view.
-       * The offending element here is the 2d canvas sitting on top of the webgl canvas. We need to clear its contents
-       * immediately on iOS. Even though the 2d canvas gets cleared in OnScreenTarget.drawOverlayDecorations() in this case,
-       * it looks like iOS needs an immediate clear.
+      /** We really want this WebGL canvas' zIndex to be lower than this.canvas, but if we do that, browsers can decide to
+       * not update the WebGL canvas contents once it is re-added to the parent div after dropping other viewports.
+       * The offending element is the 2d canvas sitting on top of the WebGL canvas. We need to clear the 2d canvas' contents
+       * in order to ensure browsers allow the underlying WebGL canvas to update. If a decorator is present, the 2d canvas
+       * is cleared during the frame render process by virtue of updating the decorator. For the non-decorator case, and for
+       * iOS, we must make sure we still clear the 2d canvas, done here. iOS appears to need this clear even when decorators
+       * clear the canvas later in the frame render process.
        */
-      if (ProcessDetector.isIOSBrowser)
-        _clear2dCanvas(this.canvas);
+      _clear2dCanvas(this.canvas);
     }
 
     this.target.updateViewRect();

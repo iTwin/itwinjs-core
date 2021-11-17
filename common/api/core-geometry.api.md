@@ -1039,6 +1039,9 @@ export class ClipPlane implements Clipper, PlaneAltitudeEvaluator, PolygonClippe
     isPointOnOrInside(spacePoint: Point3d, tolerance?: number): boolean;
     multiplyPlaneByMatrix4d(matrix: Matrix4d, invert?: boolean, transpose?: boolean): boolean;
     negateInPlace(): void;
+    normalX(): number;
+    normalY(): number;
+    normalZ(): number;
     offsetDistance(offset: number): void;
     setFlags(invisible: boolean, interior: boolean): void;
     setInvisible(invisible: boolean): void;
@@ -1179,6 +1182,7 @@ export class ClipUtilities {
     static clipSegmentToCCWTriangleXY(pointA: XAndY, pointB: XAndY, pointC: XAndY, segment0: XAndY, segment1: XAndY, interval: Range1d, absoluteTolerance?: number): void;
     static clipSegmentToLLeftOfLineXY(linePointA: XAndY, linePointB: XAndY, segmentPoint0: XAndY, segmentPoint1: XAndY, interval: Range1d, absoluteTolerance?: number): void;
     static collectClippedCurves(curve: CurvePrimitive, clipper: Clipper): CurvePrimitive[];
+    static createComplementaryClips(clipper: ConvexClipPlaneSet): UnionOfConvexClipPlaneSets;
     // @alpha
     static createXYOffsetClipFromLineString(points: Point3d[] | IndexedXYZCollection, leftOffset: number, rightOffset: number, z0: number, z1: number): UnionOfConvexClipPlaneSets;
     static doesClipperIntersectRange(clipper: ConvexClipPlaneSet | UnionOfConvexClipPlaneSets | ClipPrimitive | ClipVector | undefined, range: Range3d, observeInvisibleFlag?: boolean): boolean;
@@ -1376,7 +1380,7 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
     static createXYPolyLine(points: Point3d[], interior: boolean[] | undefined, leftIsInside: boolean, result?: ConvexClipPlaneSet): ConvexClipPlaneSet;
     static createXYPolyLineInsideLeft(points: Point3d[], result?: ConvexClipPlaneSet): ConvexClipPlaneSet;
     static fromJSON(json: ConvexClipPlaneSetProps | undefined, result?: ConvexClipPlaneSet): ConvexClipPlaneSet;
-    hasIntersectionWithRay(ray: Ray3d, result?: Range1d): boolean;
+    hasIntersectionWithRay(ray: Ray3d, result?: Range1d, tolerance?: number): boolean;
     static readonly hugeVal = 1e+37;
     isAlmostEqual(other: ConvexClipPlaneSet): boolean;
     isPointInside(point: Point3d): boolean;
@@ -1592,6 +1596,7 @@ export class CurveFactory {
     static createMiteredPipeSections(centerline: IndexedXYZCollection, radius: number): Arc3d[];
     static createPipeSegments(centerline: CurvePrimitive | CurveChain, pipeRadius: number): GeometryQuery | GeometryQuery[] | undefined;
     static createRectangleXY(x0: number, y0: number, x1: number, y1: number, z?: number, filletRadius?: number): Loop;
+    static planePlaneIntersectionRay(planeA: PlaneAltitudeEvaluator, planeB: PlaneAltitudeEvaluator): Ray3d | undefined;
 }
 
 // @public
@@ -3875,6 +3880,9 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions, PlaneAltit
     getProjectionToPlane(): Transform;
     isAlmostEqual(other: Plane3dByOriginAndUnitNormal): boolean;
     isPointInPlane(spacePoint: Point3d): boolean;
+    normalX(): number;
+    normalY(): number;
+    normalZ(): number;
     projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d;
     set(origin: Point3d, normal: Vector3d): void;
     setFrom(source: Plane3dByOriginAndUnitNormal): void;
@@ -3918,6 +3926,9 @@ export class Plane3dByOriginAndVectors implements BeJSONFunctions {
 export interface PlaneAltitudeEvaluator {
     altitude(point: Point3d): number;
     altitudeXYZ(x: number, y: number, z: number): number;
+    normalX(): number;
+    normalY(): number;
+    normalZ(): number;
     velocity(vector: Vector3d): number;
     velocityXYZ(x: number, y: number, z: number): number;
     weightedAltitude(point: Point4d): number;
@@ -4005,7 +4016,6 @@ export class Point3d extends XYZ {
     static fromJSON(json?: XYZProps): Point3d;
     interpolate(fraction: number, other: XYAndZ, result?: Point3d): Point3d;
     interpolatePerpendicularXY(fraction: number, pointB: Point3d, fractionXYPerp: number, result?: Point3d): Point3d;
-    interpolatePointAndTangent(fraction: number, other: Point3d, tangentScale: number, result?: Ray3d): Ray3d;
     interpolateXYZ(fractionX: number, fractionY: number, fractionZ: number, other: Point3d, result?: Point3d): Point3d;
     minus(vector: XYAndZ, result?: Point3d): Point3d;
     plus(vector: XYAndZ, result?: Point3d): Point3d;
@@ -4130,6 +4140,9 @@ export class Point4d implements BeJSONFunctions {
     normalizeQuaternion(): number;
     normalizeWeight(result?: Point4d): Point4d | undefined;
     normalizeXYZW(result?: Point4d): Point4d | undefined;
+    normalX(): number;
+    normalY(): number;
+    normalZ(): number;
     static perpendicularPoint4dPlane(pointA: Point4d, pointB: Point4d, pointC: Point4d): Point4d;
     plus(other: Point4d, result?: Point4d): Point4d;
     plus2Scaled(vectorA: Point4d, scalarA: number, vectorB: Point4d, scalarB: number, result?: Point4d): Point4d;
@@ -4831,6 +4844,7 @@ export class Ray3d implements BeJSONFunctions {
     static fromJSON(json?: any): Ray3d;
     getDirectionRef(): Vector3d;
     getOriginRef(): Point3d;
+    static interpolatePointAndTangent(pt1: XYAndZ, fraction: number, pt2: XYAndZ, tangentScale: number, result?: Ray3d): Ray3d;
     intersectionWithPlane(plane: Plane3dByOriginAndUnitNormal, result?: Point3d): number | undefined;
     intersectionWithRange3d(range: Range3d, result?: Range1d): Range1d;
     isAlmostEqual(other: Ray3d): boolean;
@@ -5804,7 +5818,7 @@ export class Vector3d extends XYZ {
     static createPolar(r: number, theta: Angle, z?: number): Vector3d;
     static createRotateVectorAroundVector(vector: Vector3d, axis: Vector3d, angle?: Angle): Vector3d | undefined;
     static createSpherical(r: number, theta: Angle, phi: Angle): Vector3d;
-    static createStartEnd(start: XYAndZ, end: XYAndZ, result?: Vector3d): Vector3d;
+    static createStartEnd(start: XAndY | XYAndZ, end: XAndY | XYAndZ, result?: Vector3d): Vector3d;
     static createStartEndXYZXYZ(x0: number, y0: number, z0: number, x1: number, y1: number, z1: number, result?: Vector3d): Vector3d;
     static createZero(result?: Vector3d): Vector3d;
     crossProduct(vectorB: Vector3d, result?: Vector3d): Vector3d;

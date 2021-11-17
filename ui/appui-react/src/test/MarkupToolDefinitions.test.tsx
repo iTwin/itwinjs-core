@@ -19,8 +19,8 @@ describe("MarkupToolDefinitions", () => {
 
     // Set in the before() after UiFramework.i18n is initialized
     horizontalToolbar =
-      <Toolbar
-        expandsTo={Direction.Bottom}
+      <Toolbar // eslint-disable-line deprecation/deprecation
+        expandsTo={Direction.Bottom} // eslint-disable-line deprecation/deprecation
         items={
           <>
             <ActionItemButton actionItem={MarkupTools.selectToolDef} />

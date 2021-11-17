@@ -51,6 +51,12 @@ if (u_pClassColorParams.x > kClassifierDisplay_Element) { // texture/terrain dra
   return vec4(rgb, baseColor.a);
 }
 float imageCount = u_pClassColorParams.z;
+// If imageCount is less than zero - the mask sense is inverted - inside rather than outside.  (masks only)
+bool doInvert = false;
+if (imageCount < 0.0) {
+  imageCount = - imageCount;
+  doInvert = true;
+}
 
 vec4 colorTexel = vec4(0);
 vec4 maskTexel = vec4(0);
@@ -77,7 +83,10 @@ if (!isOutside) {
   }
 }
 if (doMask) {
-  if (!isOutside && (maskTexel.r + maskTexel.g + maskTexel.b + maskTexel.a > 0.0)) {
+  bool masked = !isOutside && (maskTexel.r + maskTexel.g + maskTexel.b + maskTexel.a) > 0.0;
+  if (doInvert)
+    masked = !masked;
+  if (masked) {
     float   maskTransparency = u_pClassColorParams.w < 0.0 ? (1.0 - maskTexel.a) : u_pClassColorParams.w;
     if (maskTransparency <= 0.0) {
       discard;

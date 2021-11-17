@@ -167,6 +167,7 @@ export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEdi
           {...inputProps}
           ref={this._inputElement}
           data-testid="components-text-editor"
+          size="small"
         />
       );
     }

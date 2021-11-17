@@ -2,14 +2,17 @@ sep=;
 Release Tag;API Item
 public;AcquireNewBriefcaseIdArg 
 beta;AliCloudStorageService 
+beta;AliCloudStorageServiceCredentials
 public;AnnotationElement2d 
 public;class AuxCoordSystem 
 public;AuxCoordSystem2d 
 public;AuxCoordSystem3d 
 public;AuxCoordSystemSpatial 
 beta;AzureBlobStorage 
+beta;AzureBlobStorageCredentials
 beta;BackendHubAccess
 public;BackendLoggerCategory
+internal;BaseSettings 
 public;BindParameter = number | string
 public;BisCoreSchema 
 public;BriefcaseDb 
@@ -34,8 +37,9 @@ internal;CheckpointArg = DownloadRequest
 internal;CheckpointManager
 public;CheckpointProps 
 public;ClassRegistry
+beta;CloudSqlite
+beta;CloudSqlite
 beta;class CloudStorageService
-beta;CloudStorageServiceCredentials
 internal;CloudStorageTileUploader
 beta;CloudStorageUploadOptions
 public;CodeSpecs
@@ -60,6 +64,7 @@ internal;DevToolsProcessStats
 internal;DevToolsStats
 internal;DevToolsStatsFormatter
 public;DictionaryModel 
+beta;DictionaryName = string
 public;class DisplayStyle 
 public;DisplayStyle2d 
 public;DisplayStyle3d 
@@ -88,6 +93,7 @@ public;ECSqlInsertResult
 public;ECSqlStatement 
 public;ECSqlValue
 public;ECSqlValueIterator 
+beta;EditableWorkspaceFile 
 public;Element 
 public;ElementAspect 
 beta;ElementDrivesElement 
@@ -199,6 +205,7 @@ public;class IpcHandler
 public;IpcHost
 public;IpcHostOpts
 public;ITwinIdArg
+internal;ITwinWorkspace 
 public;KnownLocations
 internal;LightLocation 
 public;LineStyle 
@@ -277,6 +284,17 @@ public;SectionDrawing
 public;SectionDrawingLocation 
 public;SectionDrawingModel 
 internal;setMaxEntitiesPerEvent(max: number): number
+beta;SettingDictionary = SettingObject
+beta;SettingInspector
+beta;SettingName = string
+beta;SettingObject
+beta;SettingResolver
+beta;Settings
+beta;SettingsGroupSpec
+beta;SettingSpec 
+beta;SettingsPriority
+beta;SettingsSpecRegistry
+beta;SettingType = JSONSchemaType
 public;Sheet 
 public;SheetBorderTemplate 
 public;SheetModel 
@@ -335,3 +353,13 @@ public;ViewDefinition2d
 public;class ViewDefinition3d 
 public;VolumeElement 
 public;WebMercatorModel 
+beta;Workspace
+beta;WorkspaceContainer
+beta;WorkspaceContainerId = string
+beta;WorkspaceContainerName = string
+beta;WorkspaceContainerProps = WorkspaceContainerName |
+beta;WorkspaceContainerVersion = string
+beta;WorkspaceFile 
+beta;WorkspaceOpts
+beta;WorkspaceResourceName = string
+beta;WorkspaceResourceProps

@@ -6,7 +6,7 @@
  * @module ECSQL
  */
 
-import { DbResult, GuidString, Id64String, IDisposable, StatusCodeWithMessage } from "@itwin/core-bentley";
+import { assert, DbResult, GuidString, Id64String, IDisposable, StatusCodeWithMessage } from "@itwin/core-bentley";
 import { LowAndHighXYZ, Range3d, XAndY, XYAndZ, XYZ } from "@itwin/core-geometry";
 import { ECJsNames, ECSqlValueType, IModelError, NavigationBindingValue, NavigationValue } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
@@ -55,7 +55,8 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   private _stmt: IModelJsNative.ECSqlStatement | undefined;
   private _sql: string | undefined;
 
-  public get sql() { return this._sql!; }
+  public get sql() { return this._sql!; } // eslint-disable-line @typescript-eslint/no-non-null-assertion
+
   /** Check if this statement has been prepared successfully or not */
   public get isPrepared(): boolean { return !!this._stmt; }
 
@@ -91,14 +92,16 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
 
   /** Reset this statement so that the next call to step will return the first row, if any. */
   public reset(): void {
-    this._stmt!.reset();
+    assert(undefined !== this._stmt);
+    this._stmt.reset();
   }
 
   /** Get the Native SQL statement
    * @internal
    */
   public getNativeSql(): string {
-    return this._stmt!.getNativeSql();
+    assert(undefined !== this._stmt);
+    return this._stmt.getNativeSql();
   }
 
   /** Call this function when finished with this statement. This releases the native resources held by the statement.
@@ -216,7 +219,10 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * > or [ECSqlStatement.bindValues]($backend).
    * @param parameter Index (1-based) or name of the parameter
    */
-  public getBinder(parameter: string | number): ECSqlBinder { return new ECSqlBinder(this._stmt!.getBinder(parameter)); }
+  public getBinder(parameter: string | number): ECSqlBinder {
+    assert(undefined !== this._stmt);
+    return new ECSqlBinder(this._stmt.getBinder(parameter));
+  }
 
   /** Bind values to all parameters in the statement.
    * @param values The values to bind to the parameters.
@@ -278,12 +284,12 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    *
    * See also: [Code Samples]($docs/learning/backend/ECSQLCodeExamples)
    */
-  public step(): DbResult { return this._stmt!.step(); }
+  public step(): DbResult { return this._stmt!.step(); } // eslint-disable-line @typescript-eslint/no-non-null-assertion
 
   /** @internal added this back in for testing purposes */
   public async stepAsync(): Promise<DbResult> {
     return new Promise((resolve, _reject) => {
-      this._stmt!.stepAsync(resolve);
+      this._stmt!.stepAsync(resolve); // eslint-disable-line @typescript-eslint/no-non-null-assertion
     });
   }
 
@@ -296,7 +302,8 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * call. In case of error, the respective error code is returned.
    */
   public stepForInsert(): ECSqlInsertResult {
-    const r: { status: DbResult, id: string } = this._stmt!.stepForInsert();
+    assert(undefined !== this._stmt);
+    const r: { status: DbResult, id: string } = this._stmt.stepForInsert();
     if (r.status === DbResult.BE_SQLITE_DONE)
       return new ECSqlInsertResult(r.status, r.id);
 
@@ -304,7 +311,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   }
 
   /** Get the query result's column count (only for ECSQL SELECT statements). */
-  public getColumnCount(): number { return this._stmt!.getColumnCount(); }
+  public getColumnCount(): number { return this._stmt!.getColumnCount(); } // eslint-disable-line @typescript-eslint/no-non-null-assertion
 
   /** Get the current row.
    * The returned row is formatted as JavaScript object where every SELECT clause item becomes a property in the JavaScript object.
@@ -372,7 +379,10 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    *
    * See also: [Code Samples]($docs/learning/backend/ECSQLCodeExamples#working-with-the-query-result)
    */
-  public getValue(columnIx: number): ECSqlValue { return new ECSqlValue(this._stmt!.getValue(columnIx)); }
+  public getValue(columnIx: number): ECSqlValue {
+    assert(undefined !== this._stmt);
+    return new ECSqlValue(this._stmt.getValue(columnIx));
+  }
 }
 
 /** Binds a value to an ECSQL parameter.

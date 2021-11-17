@@ -110,7 +110,7 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
           id: "RightStart2",
           label: "Start2",
           canPopout: true,
-          defaultState: WidgetState.Open,
+          defaultState: WidgetState.Hidden,
           getWidgetContent: () => <h2>Right Start2 widget</h2>,
           isFloatingStateSupported: true,
         }

@@ -7,10 +7,12 @@
  */
 
 import { base64StringToUint8Array, Id64String, IDisposable } from "@itwin/core-bentley";
+import {
+  ColorDef, ElementAlignedBox3d, FeatureIndexType, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat,
+  isValidImageSourceFormat, PackedFeatureTable, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, SkyGradient, TextureProps,
+} from "@itwin/core-common";
 import { ClipVector, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform, Vector2d, XAndY } from "@itwin/core-geometry";
-import { ColorDef, ElementAlignedBox3d, FeatureIndexType, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, isValidImageSourceFormat, PackedFeatureTable, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, TextureProps } from "@itwin/core-common";
 import { WebGLExtensionName } from "@itwin/webgl-compatibility";
-import { SkyBox } from "../DisplayStyleState";
 import { imageElementFromImageSource } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -30,10 +32,10 @@ import { MeshParams, PointStringParams, PolylineParams } from "./primitives/Vert
 import { RenderClipVolume } from "./RenderClipVolume";
 import { RenderGraphic, RenderGraphicOwner } from "./RenderGraphic";
 import { RenderMemory } from "./RenderMemory";
-import { RenderTarget } from "./RenderTarget";
-import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "./ScreenSpaceEffectBuilder";
-import { CreateTextureArgs, CreateTextureFromSourceArgs, TextureCacheKey, TextureTransparency } from "./RenderTexture";
 import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
+import { RenderTarget } from "./RenderTarget";
+import { CreateTextureArgs, CreateTextureFromSourceArgs, TextureCacheKey, TextureTransparency } from "./RenderTexture";
+import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "./ScreenSpaceEffectBuilder";
 
 /* eslint-disable no-restricted-syntax */
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh
@@ -207,6 +209,30 @@ export type RenderGeometry = IDisposable & RenderMemory.Consumer;
  * @internal
  */
 export type RenderAreaPattern = IDisposable & RenderMemory.Consumer;
+
+/** @internal */
+export interface RenderSkyGradientParams {
+  type: "gradient";
+  gradient: SkyGradient;
+  zOffset: number;
+}
+
+/** @internal */
+export interface RenderSkySphereParams {
+  type: "sphere";
+  texture: RenderTexture;
+  rotation: number;
+  zOffset: number;
+}
+
+/** @internal */
+export interface RenderSkyCubeParams {
+  type: "cube";
+  texture: RenderTexture;
+}
+
+/** @internal */
+export type RenderSkyBoxParams = RenderSkyGradientParams | RenderSkySphereParams | RenderSkyCubeParams;
 
 /** A RenderSystem provides access to resources used by the internal WebGL-based rendering system.
  * An application rarely interacts directly with the RenderSystem; instead it interacts with types like [[Viewport]] which
@@ -440,8 +466,10 @@ export abstract class RenderSystem implements IDisposable {
     return this.createBranch(branch, transform);
   }
 
-  /** Create a Graphic for a [[SkyBox]] which encompasses the entire scene, rotating with the camera. */
-  public createSkyBox(_params: SkyBox.CreateParams): RenderGraphic | undefined { return undefined; }
+  /** Create a Graphic for a [[SkyBox]] which encompasses the entire scene, rotating with the camera.
+   * @internal
+   */
+  public createSkyBox(_params: RenderSkyBoxParams): RenderGraphic | undefined { return undefined; }
 
   /** Create a RenderGraphic consisting of a list of Graphics to be drawn together. */
   public abstract createGraphicList(primitives: RenderGraphic[]): RenderGraphic;

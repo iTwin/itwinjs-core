@@ -16,6 +16,9 @@ To get usage help run:
 
 `npm start -- --help`
 
+If you want to connect to an online iModel (e.g. using the `--sourceIModelId` argument),
+you will need to setup a .env file, see the `.env.template` file for an example and link to a setup guide.
+
 ## imodel-transformer as a sample application
 
 This application demonstrates the following:

@@ -48,9 +48,9 @@
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "@itwin/appui-abstract": "workspace:*",
+    "@itwin/reality-data-client" : "^3.0.0-dev.80",
     "@itwin/hypermodeling-frontend": "workspace:*",
-    "@bentley/reality-data-client": "workspace:*",
-    "@itwin/browser-authorization": "^0.2.0",
+    "@itwin/browser-authorization": "^0.3.0",
     "body-parser": "^1.18.2"
   },
   "devDependencies": {

@@ -7,12 +7,11 @@
  */
 
 import { assert, BentleyStatus, Dictionary, dispose, Id64, Id64String } from "@itwin/core-bentley";
-import { ClipVector, Point3d, Transform } from "@itwin/core-geometry";
 import {
   ColorDef, ElementAlignedBox3d, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSourceFormat, IModelError, PackedFeatureTable, RenderMaterial, RenderTexture,
 } from "@itwin/core-common";
+import { ClipVector, Point3d, Transform } from "@itwin/core-geometry";
 import { Capabilities, DepthType, WebGLContext } from "@itwin/webgl-compatibility";
-import { SkyBox } from "../../DisplayStyleState";
 import { imageElementFromImageSource } from "../../ImageUtil";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
@@ -29,40 +28,40 @@ import { MeshParams, PointStringParams, PolylineParams } from "../primitives/Ver
 import { RenderClipVolume } from "../RenderClipVolume";
 import { RenderGraphic, RenderGraphicOwner } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
-import { CreateTextureArgs, CreateTextureFromSourceArgs, TextureCacheKey, TextureTransparency } from "../RenderTexture";
 import {
-  DebugShaderFile, GLTimerResultCallback, MapLayerClassifiers, PlanarGridProps, RenderAreaPattern, RenderDiagnostics, RenderGeometry, RenderSystem, RenderSystemDebugControl, TerrainTexture,
+  DebugShaderFile, GLTimerResultCallback, MapLayerClassifiers, PlanarGridProps, RenderAreaPattern, RenderDiagnostics, RenderGeometry, RenderSkyBoxParams, RenderSystem, RenderSystemDebugControl, TerrainTexture,
 } from "../RenderSystem";
 import { RenderTarget } from "../RenderTarget";
+import { CreateTextureArgs, CreateTextureFromSourceArgs, TextureCacheKey, TextureTransparency } from "../RenderTexture";
 import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "../ScreenSpaceEffectBuilder";
 import { BackgroundMapDrape } from "./BackgroundMapDrape";
 import { SkyBoxQuadsGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
 import { ClipVolume } from "./ClipVolume";
-import { isInstancedGraphicParams, PatternBuffers } from "./InstancedGeometry";
 import { Debug } from "./Diagnostics";
 import { WebGLDisposable } from "./Disposable";
 import { DepthBuffer, FrameBufferStack } from "./FrameBuffer";
 import { GL } from "./GL";
 import { GLTimer } from "./GLTimer";
 import { Batch, Branch, Graphic, GraphicOwner, GraphicsArray } from "./Graphic";
+import { isInstancedGraphicParams, PatternBuffers } from "./InstancedGeometry";
 import { Layer, LayerContainer } from "./Layer";
 import { LineCode } from "./LineCode";
 import { Material } from "./Material";
 import { MeshGraphic, MeshRenderGeometry } from "./Mesh";
+import { PlanarGridGeometry } from "./PlanarGrid";
 import { PointCloudGeometry } from "./PointCloud";
 import { PointStringGeometry } from "./PointString";
 import { PolylineGeometry } from "./Polyline";
 import { Primitive, SkyCubePrimitive, SkySpherePrimitive } from "./Primitive";
+import { RealityMeshGeometry } from "./RealityMesh";
 import { RenderBuffer, RenderBufferMultiSample } from "./RenderBuffer";
 import { TextureUnit } from "./RenderFlags";
 import { RenderState } from "./RenderState";
 import { createScreenSpaceEffectBuilder, ScreenSpaceEffects } from "./ScreenSpaceEffect";
 import { OffScreenTarget, OnScreenTarget } from "./Target";
 import { Techniques } from "./Technique";
-import { RealityMeshGeometry } from "./RealityMesh";
 import { ExternalTextureLoader, Texture, TextureHandle } from "./Texture";
 import { UniformHandle } from "./UniformHandle";
-import { PlanarGridGeometry } from "./PlanarGrid";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -575,11 +574,10 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return new LayerContainer(graphic as Graphic, drawAsOverlay, transparency, elevation);
   }
 
-  public override createSkyBox(params: SkyBox.CreateParams): RenderGraphic | undefined {
-    if (undefined !== params.cube)
-      return SkyCubePrimitive.create(SkyBoxQuadsGeometry.create(params.cube));
+  public override createSkyBox(params: RenderSkyBoxParams): RenderGraphic | undefined {
+    if ("cube" === params.type)
+      return SkyCubePrimitive.create(SkyBoxQuadsGeometry.create(params.texture));
 
-    assert(undefined !== params.sphere || undefined !== params.gradient);
     return SkySpherePrimitive.create(SkySphereViewportQuadGeometry.createGeometry(params));
   }
 

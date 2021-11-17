@@ -133,14 +133,14 @@ class VerticalPropertyGridWidget extends React.Component {
 ConfigurableUiManager.registerControl("VerticalPropertyGridDemoWidget", VerticalPropertyGridWidgetControl);
 
 export class HorizontalPropertyGridWidgetControl extends WidgetControl {
-  private _ref = React.createRef<WidgetContent>();
+  private _ref = React.createRef<WidgetContent>(); // eslint-disable-line deprecation/deprecation
 
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
     this.reactNode = (
-      <WidgetContent
-        anchor={HorizontalAnchor.Right}
+      <WidgetContent // eslint-disable-line deprecation/deprecation
+        anchor={HorizontalAnchor.Right} // eslint-disable-line deprecation/deprecation
         content={
           <HorizontalPropertyGridWidget style={{ overflow: "unset" }} />
         }

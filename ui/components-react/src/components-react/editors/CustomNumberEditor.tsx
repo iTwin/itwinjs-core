@@ -16,7 +16,9 @@ import {
   CustomFormattedNumberParams, IconEditorParams, InputEditorSizeParams, MessageSeverity, PrimitiveValue, PropertyEditorParams, PropertyEditorParamTypes,
   PropertyRecord, PropertyValue, PropertyValueFormat, SpecialKey, StandardEditorNames, StandardTypeNames, UiAdmin,
 } from "@itwin/appui-abstract";
-import { Icon, IconInput, Input, InputProps } from "@itwin/core-react";
+import { Icon, IconInput } from "@itwin/core-react";
+import { Input, InputProps } from "@itwin/itwinui-react";
+
 import { UiComponents } from "../UiComponents";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
@@ -289,11 +291,11 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
     } else {
       // NEEDSWORK: still using core-react Input component because of `nativeKeyHandler` prop
       reactNode = (
-        // eslint-disable-next-line deprecation/deprecation
         <Input
           {...inputProps}
           ref={this._inputElement}
           data-testid="components-customnumber-editor"
+          size="small"
         />
       );
     }

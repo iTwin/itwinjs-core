@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelJsNative } from "@bentley/imodeljs-native";
 /** @packageDocumentation
  * @module ECDb
  */
-import { DbResult, IDisposable, Logger, OpenMode } from "@itwin/core-bentley";
+import { assert, DbResult, IDisposable, Logger, OpenMode } from "@itwin/core-bentley";
+import { IModelJsNative } from "@bentley/imodeljs-native";
 import { DbQueryRequest, ECSqlReader, IModelError, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ConcurrentQuery } from "./ConcurrentQuery";
@@ -31,10 +31,8 @@ export enum ECDbOpenMode {
  */
 export class ECDb implements IDisposable {
   private _nativeDb?: IModelJsNative.ECDb;
-  private _concurrentQueryInitialized: boolean = false;
   private readonly _statementCache = new StatementCache<ECSqlStatement>();
   private _sqliteStatementCache = new StatementCache<SqliteStatement>();
-  private _concurrentQueryStats = { resetTimerHandle: (null as any), logTimerHandle: (null as any), lastActivityTime: Date.now(), dispose: () => { } };
 
   /** only for tests
    * @internal
@@ -92,7 +90,6 @@ export class ECDb implements IDisposable {
     this._statementCache.clear();
     this._sqliteStatementCache.clear();
     this.nativeDb.closeDb();
-    this._concurrentQueryStats.dispose();
   }
 
   /** @internal use to test statement caching */
@@ -278,7 +275,8 @@ export class ECDb implements IDisposable {
 
   /** @internal */
   public get nativeDb(): IModelJsNative.ECDb {
-    return this._nativeDb!;
+    assert(undefined !== this._nativeDb);
+    return this._nativeDb;
   }
 
   /** Allow to execute query and read results along with meta data. The result are streamed.
@@ -293,7 +291,7 @@ export class ECDb implements IDisposable {
     }
     const executor = {
       execute: async (request: DbQueryRequest) => {
-        return ConcurrentQuery.executeQueryRequest(this._nativeDb!, request);
+        return ConcurrentQuery.executeQueryRequest(this.nativeDb, request);
       },
     };
     return new ECSqlReader(executor, ecsql, params, config);

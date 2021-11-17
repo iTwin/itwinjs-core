@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 import { expect } from "chai";
 import { shallow } from "enzyme";
 import * as React from "react";
@@ -60,7 +61,7 @@ describe("Frontstage", () => {
   });
 
   it("FrontstageProvider supplies Frontstage to FrontstageComposer", async () => {
-    const wrapper = mount(<FrontstageComposer />);
+    const wrapper = mount(<FrontstageComposer />); // eslint-disable-line deprecation/deprecation
 
     const frontstageProvider = new TestFrontstage();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
@@ -85,7 +86,7 @@ describe("Frontstage", () => {
   });
 
   it("should change DOM parent of widget content", async () => {
-    const wrapper = mount<FrontstageComposer>(<FrontstageComposer />);
+    const wrapper = mount<FrontstageComposer>(<FrontstageComposer />); // eslint-disable-line deprecation/deprecation
     const frontstageProvider = new TestFrontstage();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
     const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
@@ -114,7 +115,7 @@ describe("Frontstage", () => {
   });
 
   it("should remount widget if widget control is not provided", async () => {
-    const wrapper = mount<FrontstageComposer>(<FrontstageComposer />);
+    const wrapper = mount<FrontstageComposer>(<FrontstageComposer />); // eslint-disable-line deprecation/deprecation
     const frontstageProvider = new TestFrontstage();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
     await FrontstageManager.setActiveFrontstage(frontstageProvider.id);
@@ -149,7 +150,7 @@ describe("Frontstage", () => {
   });
 
   it("should remount widget if widget control did not handle state restoration", async () => {
-    const wrapper = mount<FrontstageComposer>(<FrontstageComposer />);
+    const wrapper = mount<FrontstageComposer>(<FrontstageComposer />); // eslint-disable-line deprecation/deprecation
     const frontstageProvider = new TestFrontstage();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
     const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
@@ -186,7 +187,7 @@ describe("Frontstage", () => {
   });
 
   it("should not remount widget if widget control handled state restoration", async () => {
-    const wrapper = mount<FrontstageComposer>(<FrontstageComposer />);
+    const wrapper = mount<FrontstageComposer>(<FrontstageComposer />); // eslint-disable-line deprecation/deprecation
     const frontstageProvider = new TestFrontstage();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
     const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
@@ -222,7 +223,7 @@ describe("Frontstage", () => {
   });
 
   it("should update when widget state changes", async () => {
-    const wrapper = mount(<FrontstageComposer />);
+    const wrapper = mount(<FrontstageComposer />); // eslint-disable-line deprecation/deprecation
     const frontstageProvider = new TestFrontstage();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
     const frontstageDef = await FrontstageManager.getFrontstageDef(TestFrontstage.stageId);
@@ -255,7 +256,7 @@ describe("Frontstage", () => {
     const widgetDef = new WidgetDef({ id: widgetId });
     UiFramework.widgetManager.addWidgetDef(widgetDef, TestFrontstage.stageId, undefined, ZoneLocation.CenterLeft);
 
-    const wrapper = mount(<FrontstageComposer />);
+    const wrapper = mount(<FrontstageComposer />); // eslint-disable-line deprecation/deprecation
     const frontstageProvider = new TestFrontstage();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
     const frontstageDef = await FrontstageManager.getFrontstageDef(TestFrontstage.stageId);
@@ -272,7 +273,7 @@ describe("Frontstage", () => {
   });
 
   it("WidgetManager should add dynamic WidgetDef to Frontstage after activation", async () => {
-    const wrapper = mount(<FrontstageComposer />);
+    const wrapper = mount(<FrontstageComposer />); // eslint-disable-line deprecation/deprecation
     const frontstageProvider = new TestFrontstage();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
     const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
