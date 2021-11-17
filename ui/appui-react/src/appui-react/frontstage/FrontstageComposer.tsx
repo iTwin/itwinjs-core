@@ -187,6 +187,10 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
   }
 
   private initializeZoneBounds() {
+    // istanbul ignore next
+    if (!this._isMounted)
+      return;
+
     this.setState((prevState) => {
       const frontstageDef = this._frontstageDef;
       if (!frontstageDef)
@@ -198,9 +202,11 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
         const zoneDef = frontstageDef.getZoneDef(zoneId);
         if (!zoneDef)
           continue;
+        // istanbul ignore next
         if (zoneDef.initialWidth)
           zones = zonesManager.setZoneWidth(zoneId, zoneDef.initialWidth, zones);
       }
+      // istanbul ignore else
       if (zones === prevState.nineZone.zones)
         return null;
       return {
@@ -237,7 +243,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
   }
 
   private _handleFrontstageActivatedEvent = (args: FrontstageActivatedEventArgs) => {
-    // Save the nineZoneProps into the former FrontstageDef
+    // istanbul ignore next - Save the nineZoneProps into the former FrontstageDef
     if (this._frontstageDef)
       this._frontstageDef.nineZone = { ...this.state.nineZone };
 
@@ -335,6 +341,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
 
   public override render(): React.ReactNode {
     let content: React.ReactNode;
+    // istanbul ignore else
     if (this._frontstageDef) {
       if (this._frontstageDef.frontstageProvider) {
         const frontstageRuntimeProps: FrontstageRuntimeProps = {
@@ -605,6 +612,10 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
   }
 
   public handleFloatingZonesBoundsChange(bounds: RectangleProps) {
+    // istanbul ignore next
+    if (!this._isMounted)
+      return;
+
     this.setState((prevState) => {
       const zones = FrontstageManager.NineZoneManager.getZonesManager().setFloatingZonesBounds(bounds, prevState.nineZone.zones);
       if (zones === prevState.nineZone.zones)
