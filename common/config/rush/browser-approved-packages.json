@@ -95,6 +95,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "@itwin/core-extension",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@itwin/core-frontend",
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
@@ -319,6 +323,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "buffer",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "cache-require-paths",
       "allowedCategories": [ "internal" ]
     },
@@ -435,6 +443,10 @@
       "allowedCategories": [ "extensions", "frontend" ]
     },
     {
+      "name": "esbuild",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "eslint",
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
@@ -488,6 +500,10 @@
     },
     {
       "name": "express-ws",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "extension-prototype",
       "allowedCategories": [ "internal" ]
     },
     {
@@ -905,6 +921,10 @@
     {
       "name": "typescript-json-schema",
       "allowedCategories": [ "common" ]
+    },
+    {
+      "name": "url",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "username",
