@@ -623,11 +623,15 @@ The format of [KeySetJSON]($presentation-common) has been changed to reduce its 
 
 ### Changes to presentation rule specifications
 
-- [MultiSchemaClassesSpecification]($presentation-common) now contains [MultiSchemaClassesSpecification.arePolymorphic]($presentation-common) optional field to indicate if the specified classes should be handled polymorphically.
-- [ContentInstancesOfSpecificClassesSpecification.handleInstancesPolymorphically]($presentation-common) and [InstanceNodesOfSpecificClassesSpecification.arePolymorphic]($presentation-common) have been deprecated.
-- New fields [ContentInstancesOfSpecificClassesSpecification.excludedClasses]($presentation-common) and [InstanceNodesOfSpecificClassesSpecification.excludedClasses]($presentation-common) are now used to specify excluded instance classes.
-- [ContentInstancesOfSpecificClassesSpecification.handleInstancesPolymorphically]($presentation-common) is now used as default polymorphism value for [ContentInstancesOfSpecificClassesSpecification.classes]($presentation-common) and [ContentInstancesOfSpecificClassesSpecification.excludedClasses]($presentation-common).
-- [InstanceNodesOfSpecificClassesSpecification.arePolymorphic]($presentation-common) is now used as default polymorphism value for [InstanceNodesOfSpecificClassesSpecification.classes]($presentation-common) and [InstanceNodesOfSpecificClassesSpecification.excludedClasses]($presentation-common).
+- Added ability to specify polymorphism at class level rather than specification level. 
+  
+  Previously polymorphism was specified at specification level using [ContentInstancesOfSpecificClassesSpecification.handleInstancesPolymorphically]($presentation-common) and [InstanceNodesOfSpecificClassesSpecification.arePolymorphic]($presentation-common) flags. They're now deprecated in favor of the new [MultiSchemaClassesSpecification.arePolymorphic]($presentation-common) attribute and act as default values if the new attribute is not specified.
+
+  The change allows [ContentInstancesOfSpecificClassesSpecification]($presentation-common) and [InstanceNodesOfSpecificClassesSpecification]($presentation-common) specify multiple classes with different polymorphism, if necessary.
+
+- Added ability to exclude some classes when creating content and hierarchies.
+
+  New optional attributes [ContentInstancesOfSpecificClassesSpecification.excludedClasses]($presentation-common) and [InstanceNodesOfSpecificClassesSpecification.excludedClasses]($presentation-common) have been added to specify classes that could be excluded. This provides a convenient way describe what class instances should be excluded from content or hierarchy, e.g. `give me all bis.Element instances except bis.GeometricElement`.
 
 ## Changes to `Presentation` initialization in `@itwin/presentation-backend`
 
