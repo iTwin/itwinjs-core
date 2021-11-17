@@ -1432,11 +1432,10 @@
           "type": "boolean"
         },
         "classNames": {
-          "description": "List of ECClass names.\n\nEach class name may be prefixed with:\n- `E:` to exclude class from results\n- `PE:` to exclude class and all its subclasses from results\nSo generally the list may contain `[\"base_class_name\", \"PE:derived_class_name\"]` to\ninclude all instances of `base_class_name` except all polymorphic instances of\n`derived_class_name`.",
+          "description": "List of ECClass names.",
           "items": {
             "type": "string"
           },
-          "pattern": "^(E:|PE:)?[\\w\\d]+$",
           "type": "array"
         },
         "schemaName": {
