@@ -221,7 +221,7 @@ beta;ExternalSourceAttachmentProps
 beta;ExternalSourceAttachmentRole
 beta;ExternalSourceProps 
 public;Feature
-public;FeatureAppearance 
+public;FeatureAppearance
 public;FeatureAppearanceProps
 public;FeatureAppearanceProvider
 public;FeatureAppearanceProvider
@@ -463,6 +463,11 @@ public;OpenDbKey
 internal;OPERATION: unique symbol
 alpha;OrbitGtBlobProps
 beta;OverriddenBy
+public;OverrideElementAppearanceOptions 
+public;OverrideFeatureAppearanceArgs = OverrideElementAppearanceOptions | OverrideModelAppearanceOptions | OverrideSubCategoryAppearanceOptions
+public;OverrideFeatureAppearanceOptions
+public;OverrideModelAppearanceOptions 
+public;OverrideSubCategoryAppearanceOptions 
 internal;PackedFeature
 internal;PackedFeatureTable
 internal;parseTileTreeIdAndContentId(treeId: string, contentId: string):

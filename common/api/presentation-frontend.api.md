@@ -94,8 +94,17 @@ export const createFieldOrderInfos: (field: Field) => FavoritePropertiesOrderInf
 export enum DefaultFavoritePropertiesStorageTypes {
     BrowserLocalStorage = 1,
     Noop = 0,
-    UserSettingsServiceStorage = 2
+    UserPreferencesStorage = 2
 }
+
+// @internal (undocumented)
+export const DEPRECATED_PROPERTIES_SETTING_NAMESPACE = "Properties";
+
+// @internal (undocumented)
+export const FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME = "FavoritePropertiesOrderInfo";
+
+// @internal (undocumented)
+export const FAVORITE_PROPERTIES_SETTING_NAME = "FavoriteProperties";
 
 // @public
 export class FavoritePropertiesManager implements IDisposable {
@@ -205,6 +214,9 @@ export interface IModelHierarchyChangeEventArgs {
     rulesetId: string;
     updateInfo: HierarchyUpdateInfo;
 }
+
+// @internal (undocumented)
+export const IMODELJS_PRESENTATION_SETTING_NAMESPACE = "imodeljs.presentation";
 
 // @public
 export interface ISelectionProvider {

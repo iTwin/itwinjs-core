@@ -43,7 +43,6 @@
     "electron": "^14.0.0"
   },
   "devDependencies": {
-    "@bentley/product-settings-client": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/certa": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",

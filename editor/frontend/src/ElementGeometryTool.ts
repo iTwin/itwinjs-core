@@ -89,6 +89,7 @@ export function isSameSubEntity(a: SubEntityProps, b: SubEntityProps): boolean {
 /** @alpha */
 export class SubEntityData {
   public toolData?: any;
+  public chordTolerance?: number;
 
   private _props: SubEntityProps;
   private _geometry?: SubEntityGeometryProps;
@@ -107,7 +108,7 @@ export class SubEntityData {
   public getAppearance(vp: Viewport, accepted: boolean): FeatureAppearance {
     const color = vp.hilite.color;
     const rgb = RgbColor.fromColorDef(accepted ? color.inverse() : color);
-    const transparency = accepted ? 0.35 : 0.25;
+    const transparency = 0.25;
     const emphasized = true; // Necessary for obscured sub-entities w/SceneGraphic...
     let weight;
 
@@ -115,11 +116,11 @@ export class SubEntityData {
       case SubEntityType.Face:
         break;
       case SubEntityType.Edge:
-        const edgeWeight = accepted ? 5 : 3;
+        const edgeWeight = accepted ? 1 : 3;
         weight = this._geometry?.appearance?.weight ? Math.min(this._geometry.appearance.weight + edgeWeight, 31) : edgeWeight;
         break;
       case SubEntityType.Vertex:
-        const vertexWeight = accepted ? 12 : 10;
+        const vertexWeight = accepted ? 8 : 10;
         weight = this._geometry?.appearance?.weight ? Math.min(this._geometry.appearance.weight + vertexWeight, 31) : vertexWeight;
         break;
     }
@@ -152,19 +153,17 @@ export class SubEntityData {
     if (undefined === this._graphicsProvider?.graphic)
       return;
 
-    const appearanceProvider = FeatureAppearanceProvider.supplement((app: FeatureAppearance) => {
-      return app.extendAppearance(this.getAppearance(context.viewport, accepted));
-    });
-
-    const opts: GraphicBranchOptions = { appearanceProvider };
-
     const range = (this._geometry?.range ? Range3d.fromJSON(this._geometry.range) : undefined);
     const pixelSize = context.viewport.getPixelSizeAtPoint(range ? range.center : undefined);
     const offsetDir = context.viewport.view.getZVector();
     offsetDir.scaleToLength(3 * pixelSize, offsetDir);
     const offsetTrans = Transform.createTranslation(offsetDir);
 
-    this._graphicsProvider.addDecoration(context, GraphicType.Scene, offsetTrans, opts);
+    const appearanceProvider = FeatureAppearanceProvider.supplement((app: FeatureAppearance) => {
+      return app.extendAppearance(this.getAppearance(context.viewport, accepted));
+    });
+
+    this._graphicsProvider.addDecoration(context, GraphicType.Scene, offsetTrans, { appearanceProvider });
   }
 }
 
@@ -175,6 +174,8 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
   protected _graphicsProvider?: ElementGeometryGraphicsProvider;
   protected _graphicsPending?: true;
   protected _firstResult = true;
+  protected _agendaAppearanceDefault?: FeatureAppearance;
+  protected _agendaAppearanceDynamic?: FeatureAppearance;
 
   protected allowView(vp: Viewport) { return vp.view.is3d(); }
   public override isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && this.allowView(vp)); }
@@ -189,16 +190,28 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
     return EditTools.callCommand(method, ...args) as ReturnType<SolidModelingCommandIpc[T]>;
   }
 
-  // TODO: This looks nice as long as ViewFlags.transparency is on...
-  protected get agendaAppearance(): FeatureAppearance { return FeatureAppearance.fromTransparency(0.90); }
+  protected agendaAppearance(isDynamics: boolean): FeatureAppearance {
+    if (isDynamics) {
+      if (undefined === this._agendaAppearanceDynamic)
+        this._agendaAppearanceDynamic = FeatureAppearance.fromTransparency(0.0);
+
+      return this._agendaAppearanceDynamic;
+    }
+
+    if (undefined === this._agendaAppearanceDefault)
+      this._agendaAppearanceDefault = FeatureAppearance.fromTransparency(0.9);
+
+    return this._agendaAppearanceDefault;
+  }
+
   protected get wantAgendaAppearanceOverride(): boolean { return false; }
 
   public addFeatureOverrides(overrides: FeatureSymbology.Overrides, _vp: Viewport): void {
     if (this.agenda.isEmpty)
       return;
 
-    const app = this.agendaAppearance;
-    this.agenda.elements.forEach((id) => { overrides.overrideElement(id, app); });
+    const appearance = this.agendaAppearance(false);
+    this.agenda.elements.forEach((elementId) => { overrides.override({ elementId, appearance }); });
   }
 
   protected updateAgendaAppearanceProvider(drop?: true): void {
@@ -274,8 +287,17 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
   }
 
   public override onDynamicFrame(_ev: BeButtonEvent, context: DynamicsContext): void {
-    if (undefined !== this._graphicsProvider)
-      this._graphicsProvider.addGraphic(context);
+    if (undefined === this._graphicsProvider)
+      return;
+
+    if (!this.wantAgendaAppearanceOverride)
+      return this._graphicsProvider.addGraphic(context);
+
+    const appearanceProvider = FeatureAppearanceProvider.supplement((app: FeatureAppearance) => {
+      return app.extendAppearance(this.agendaAppearance(true));
+    });
+
+    this._graphicsProvider.addGraphic(context, undefined, { appearanceProvider });
   }
 
   public override async onMouseMotion(ev: BeButtonEvent): Promise<void> {
@@ -522,13 +544,24 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
 
   protected async createSubEntityData(id: Id64String, hit: SubEntityLocationProps): Promise<SubEntityData> {
     const data = new SubEntityData(hit.subEntity);
+    const chordTolerance = (this.targetView ? computeChordToleranceFromPoint(this.targetView, Point3d.fromJSON(hit.point)) : undefined);
 
-    try {
-      const chordTolerance = this.targetView ? computeChordToleranceFromPoint(this.targetView, Point3d.fromJSON(hit.point)) : 0.0;
-      await this.createSubEntityGraphic(id, data, chordTolerance);
-    } catch (err) {}
+    await this.createSubEntityGraphic(id, data, chordTolerance);
 
     return data;
+  }
+
+  /** Append specified sub-entity to accepted array. */
+  protected async addSubEntity(id: Id64String, props: SubEntityLocationProps): Promise<void> {
+    this._acceptedSubEntities.push(await this.createSubEntityData(id, props));
+  }
+
+  /** Remove specified sub-entity from accepted array, or pop last sub-entity if undefined. */
+  protected async removeSubEntity(_id: Id64String, props?: SubEntityLocationProps): Promise<void> {
+    if (undefined !== props)
+      this._acceptedSubEntities = this._acceptedSubEntities.filter((entry) => !isSameSubEntity(entry.props, props.subEntity));
+    else
+      this._acceptedSubEntities.pop();
   }
 
   /** Locate sub-entities for the most recently added (last) agenda entry. Tool sub-classes that wish to identity
@@ -545,15 +578,15 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
       if (undefined === this._locatedSubEntities || 0 === this._locatedSubEntities.length)
         return false;
     } else {
-      this._acceptedSubEntities.pop();
+      await this.removeSubEntity(id);
     }
 
     const hit = this._locatedSubEntities?.shift();
     if (undefined !== hit) {
       if (undefined === this._acceptedSubEntities.find((entry) => isSameSubEntity(entry.props, hit.subEntity)))
-        this._acceptedSubEntities.push(await this.createSubEntityData(id, hit));
+        await this.addSubEntity(id, hit);
       else if (this.allowSubEntityControlDeselect)
-        this._acceptedSubEntities = this._acceptedSubEntities.filter((entry) => !isSameSubEntity(entry.props, hit.subEntity));
+        await this.removeSubEntity(id, hit);
     }
 
     IModelApp.viewManager.invalidateDecorationsAllViews();
@@ -649,16 +682,21 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
   }
 
   protected async createSubEntityGraphic(id: Id64String, data: SubEntityData, chordTolerance?: number): Promise<boolean> {
-    const opts: ElementGeometryResultOptions = {
-      wantGraphic: true,
-      wantRange: true,
-      wantAppearance: true,
-      chordTolerance,
-    };
+    try {
+      const opts: ElementGeometryResultOptions = {
+        wantGraphic: true,
+        wantRange: true,
+        wantAppearance: true,
+        chordTolerance,
+      };
 
-    data.geometry = await ElementGeometryCacheTool.callCommand("getSubEntityGeometry", id, data.props, opts);
+      data.chordTolerance = chordTolerance;
+      data.geometry = await ElementGeometryCacheTool.callCommand("getSubEntityGeometry", id, data.props, opts);
 
-    return data.createGraphic(this.iModel);
+      return await data.createGraphic(this.iModel);
+    } catch (err) {
+      return false;
+    }
   }
 
   protected override async updateGraphic(ev: BeButtonEvent, isDynamics: boolean): Promise<void> {

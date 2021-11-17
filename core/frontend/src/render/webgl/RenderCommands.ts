@@ -641,7 +641,7 @@ export class RenderCommands implements Iterable<DrawCommands> {
     this._batchState.push(batch, true);
 
     this.pushAndPop(new PushBatchCommand(batch), PopBatchCommand.instance, () => {
-      if (this.currentViewFlags.transparency) {
+      if (this.currentViewFlags.transparency || overrides.anyViewIndependentTranslucent) {
         this._opaqueOverrides = overrides.anyOpaque;
         this._translucentOverrides = overrides.anyTranslucent;
 
