@@ -26,6 +26,7 @@ import {
   ClassCounter, FilterByViewTransformer, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerTestUtils, PhysicalModelConsolidator,
   RecordingIModelImporter, TestIModelTransformer, TransformerExtensiveTestScenario,
 } from "../IModelTransformerUtils";
+import { deepStrictEqual } from "assert";
 
 describe("IModelTransformer", () => {
   const outputDir: string = path.join(KnownTestLocations.outputDir, "IModelTransformer");
@@ -1178,38 +1179,54 @@ describe("IModelTransformer", () => {
     targetDb.close();
   });
 
-  it("filter preserves Ids", async () => {
+  it.only("filter preserves Ids", async () => {
+    // const seedDb = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
+    const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "PreserveIdSource.bim");
+    // const sourceDb = SnapshotDb.createFrom(seedDb, sourceDbPath);
+    const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "PreserveId" } });
+    const spatialCateg1Id  = SpatialCategory.insert(sourceDb, IModelDb.dictionaryId, "spatial-category1", { color: ColorDef.blue.toJSON() });
+    const spatialCateg2Id = SpatialCategory.insert(sourceDb, IModelDb.dictionaryId, "spatial-category2", { color: ColorDef.red.toJSON() });
+    const myPhysModelId = PhysicalModel.insert(sourceDb, IModelDb.rootSubjectId, "myPhysicalModel");
+    const [_physObj1Id, _physObj2Id] = ([[1, spatialCateg1Id],[2, spatialCateg2Id]] as const).map(([x, categoryId]) => {
+      const physicalObjectProps: PhysicalElementProps = {
+        classFullName: PhysicalObject.classFullName,
+        model: myPhysModelId,
+        category: categoryId,
+        code: Code.createEmpty(),
+        userLabel: `PhysicalObject(${x})`,
+        geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1)),
+        placement: Placement3d.fromJSON({ origin: { x }, angles: {} }),
+      };
+      const physicalObjectId = sourceDb.elements.insertElement(physicalObjectProps);
+      return physicalObjectId;
+    });
+    sourceDb.saveChanges();
 
-    const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "BisCoreUpdateSource.bim");
-    const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "BisCoreUpdate" } });
+    const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "PreserveIdTarget.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: { name: "PreserveId" } });
 
-    // this seed has an old biscore, so we know that transforming an empty source (which starts with a fresh, updated biscore)
-    // will cause an update to the old biscore in this target
-    const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "BisCoreUpdateTarget.bim");
-    const seedDb = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
-    const targetDbTestCopy = SnapshotDb.createFrom(seedDb, targetDbPath);
-    targetDbTestCopy.close();
-    seedDb.close();
-    setToStandalone(targetDbPath);
-    const targetDb = StandaloneDb.openFile(targetDbPath);
+    class FilterCategoryTransformer extends IModelTransformer {
+      public override shouldExportElement(elem: Element): boolean {
+        if (elem.id === spatialCateg2Id)
+          return false;
+        return super.shouldExportElement(elem);
+      }
+    }
 
-    assert(
-      Semver.lt(
-        Schema.toSemverString(targetDb.querySchemaVersion("BisCore")!),
-        Schema.toSemverString(sourceDb.querySchemaVersion("BisCore")!)),
-      "The targetDb must have a less up-to-date version of the BisCore schema than the source"
-    );
-
-    const transformer = new IModelTransformer(sourceDb, targetDb);
+    const transformer = new FilterCategoryTransformer(sourceDb, targetDb, { preserveIdsInFilterTransform: true });
     await transformer.processSchemas();
     targetDb.saveChanges();
 
-    assert(
-      Semver.eq(
-        Schema.toSemverString(targetDb.querySchemaVersion("BisCore")!),
-        Schema.toSemverString(sourceDb.querySchemaVersion("BisCore")!)),
-      "The targetDb must now have an equivalent BisCore schema because it was updated"
-    );
+    async function getAllElements(db: IModelDb) {
+      const result = [];
+      for await (const row of db.query("SELECT * FROM bis.Element"))
+        result.push(row);
+      return result;
+    }
+
+    expect(
+      (await getAllElements(sourceDb)).filter((elem) => ![spatialCateg2Id, _physObj2Id].includes(elem.id))
+    ).to.deep.equal(await getAllElements(targetDb));
 
     sourceDb.close();
     targetDb.close();

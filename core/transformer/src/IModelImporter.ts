@@ -45,7 +45,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
    */
   public autoExtendProjectExtents: boolean | { excludeOutliers: boolean };
   /** @see [IModelTransformOptions]($transformer) */
-  preserveIdsInFilterTransform: boolean;
+  public preserveIdsInFilterTransform: boolean;
   /** If `true`, simplify the element geometry for visualization purposes. For example, convert b-reps into meshes.
    * @note `false` is the default
    */
@@ -154,8 +154,15 @@ export class IModelImporter implements Required<IModelImportOptions> {
   protected onInsertElement(elementProps: ElementProps): Id64String {
     // XXXXXXXXXXX: need to update the default subcategory after inserting any [spatial?] category
     try {
-      const insertionMethod = this.preserveIdsInFilterTransform ? "insertElementForceUseId" : "insertElement";
-      const elementId: Id64String = this.targetDb.elements[insertionMethod](elementProps);
+      let elementId: Id64String;
+      if (this.preserveIdsInFilterTransform) {
+        const hasId = (a: ElementProps): a is ElementProps & {id: Id64String} => typeof a.id === "string";
+        if (!hasId(elementProps))
+          throw new IModelError(IModelStatus.BadArg, "");
+        elementId = this.targetDb.elements.insertElementForceUseId(elementProps);
+      } else {
+        elementId = this.targetDb.elements.insertElement(elementProps);
+      }
       Logger.logInfo(loggerCategory, `Inserted ${this.formatElementForLogger(elementProps)}`);
       this.trackProgress();
       if (this.simplifyElementGeometry) {
