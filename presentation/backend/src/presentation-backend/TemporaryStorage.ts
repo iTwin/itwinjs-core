@@ -19,7 +19,7 @@ export interface TemporaryStorageProps<T> {
   /** A method that's called for every value before it's removed from storage */
   cleanupHandler?: (value: T) => void;
 
-  onCreated?: (id: string) => void;
+  onCreated?: (id: string, value: T, onValueUsed: () => void) => void;
   onDisposedSingle?: (id: string) => void;
   onDisposedAll?: () => void;
 
@@ -120,8 +120,9 @@ export class TemporaryStorage<T> implements IDisposable {
     }
 
     const value = this.props.factory(id);
-    this._values.set(id, { value, lastUsed: new Date() });
-    this.props.onCreated && this.props.onCreated(id);
+    const tempValue = { value, lastUsed: new Date() };
+    this._values.set(id, tempValue);
+    this.props.onCreated && this.props.onCreated(id, value, /* istanbul ignore next */() => tempValue.lastUsed = new Date());
     return value;
   }
 

@@ -495,6 +495,29 @@ describe("PresentationManager", () => {
 
   });
 
+  describe("onManagerUsed", () => {
+
+    it("invokes when making presentation requests", async () => {
+      const addonMock = moq.Mock.ofType<NativePlatformDefinition>();
+      const imodelMock = moq.Mock.ofType<IModelDb>();
+      const manager = new PresentationManager({ addon: addonMock.object });
+      const managerUsedSpy = sinon.spy();
+
+      addonMock.setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString()))
+        .returns(async () => ({ result: "[]" }));
+
+      addonMock.setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString()))
+        .returns(async () => ({ result: "{}" }));
+
+      manager.onManagerUsed = managerUsedSpy;
+      await manager.getNodes({ imodel: imodelMock.object, rulesetOrId: "RulesetId" });
+      expect(managerUsedSpy).to.be.calledOnce;
+      await manager.getContent({ imodel: imodelMock.object, rulesetOrId: "RulesetId", keys: new KeySet([]), descriptor: {} });
+      expect(managerUsedSpy).to.be.calledTwice;
+    });
+
+  });
+
   describe("vars", () => {
 
     const addon = moq.Mock.ofType<NativePlatformDefinition>();
