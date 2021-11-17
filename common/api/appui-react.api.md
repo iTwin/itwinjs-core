@@ -941,7 +941,7 @@ export interface CardSelectedEventArgs {
     index: number;
 }
 
-// @alpha
+// @internal
 export interface Category {
     // (undocumented)
     children?: string[];
@@ -968,7 +968,7 @@ export interface CategoryTreeProps {
     width: number;
 }
 
-// @alpha (undocumented)
+// @internal (undocumented)
 export class CategoryVisibilityHandler implements IVisibilityHandler {
     constructor(params: CategoryVisibilityHandlerParams);
     // (undocumented)
@@ -991,7 +991,7 @@ export class CategoryVisibilityHandler implements IVisibilityHandler {
     onVisibilityChange: BeEvent<VisibilityChangeListener>;
     }
 
-// @alpha (undocumented)
+// @internal (undocumented)
 export interface CategoryVisibilityHandlerParams {
     // (undocumented)
     activeView?: Viewport;
@@ -3614,7 +3614,7 @@ export interface ListPickerPropsExtended extends ListPickerProps {
     invertFunc?: () => void;
 }
 
-// @alpha (undocumented)
+// @internal (undocumented)
 export function loadCategoriesFromViewport(iModel?: IModelConnection, vp?: Viewport): Promise<Category[]>;
 
 // @public
@@ -3943,7 +3943,7 @@ export interface ModelsTreeProps {
     filterInfo?: VisibilityTreeFilterInfo;
     height: number;
     iModel: IModelConnection;
-    // @alpha
+    // @internal
     modelsVisibilityHandler?: ModelsVisibilityHandler;
     onFilterApplied?: (filteredDataProvider: IPresentationTreeDataProvider, matchesCount: number) => void;
     rootElementRef?: React.Ref<HTMLDivElement>;
@@ -3956,7 +3956,7 @@ export interface ModelsTreeProps {
 // @beta
 export type ModelsTreeSelectionPredicate = (key: NodeKey, type: ModelsTreeNodeType) => boolean;
 
-// @alpha
+// @internal
 export class ModelsVisibilityHandler implements IVisibilityHandler {
     constructor(props: ModelsVisibilityHandlerProps);
     // (undocumented)
@@ -4000,7 +4000,7 @@ export class ModelsVisibilityHandler implements IVisibilityHandler {
     setFilteredDataProvider(provider: IFilteredPresentationTreeDataProvider | undefined): void;
     }
 
-// @alpha
+// @internal
 export interface ModelsVisibilityHandlerProps {
     // (undocumented)
     hierarchyAutoUpdateEnabled?: boolean;
@@ -4579,7 +4579,7 @@ export enum SelectionScope {
 }
 
 // @public
-export const SelectionScopeField: import("react-redux").ConnectedComponent<typeof SelectionScopeFieldComponent, import("react-redux").Omit<React.ClassAttributes<SelectionScopeFieldComponent> & SelectionScopeFieldProps, "availableSelectionScopes" | "activeSelectionScope">>;
+export const SelectionScopeField: import("react-redux").ConnectedComponent<typeof SelectionScopeFieldComponent, import("react-redux").Omit<React.ClassAttributes<SelectionScopeFieldComponent> & SelectionScopeFieldProps, "activeSelectionScope" | "availableSelectionScopes">>;
 
 // @public @deprecated
 export class SeparatorBackstageItem extends React.PureComponent<BackstageItemProps> {
@@ -6746,7 +6746,7 @@ export function useAvailableUiItemsProviders(): readonly string[];
 // @public
 export const useBackstageManager: () => BackstageManager;
 
-// @alpha
+// @internal
 export function useCategories(viewManager: ViewManager, imodel: IModelConnection, view?: Viewport): Category[];
 
 // @internal
@@ -7547,7 +7547,7 @@ export enum WidgetType {
 }
 
 // @public
-export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: React.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "openWidget" | "onOpenWidget" | "targetRef">>) => JSX.Element;
+export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: React.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "onOpenWidget" | "openWidget" | "targetRef">>) => JSX.Element;
 
 // @public
 export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: React.JSXElementConstructor<P> & C) => {
@@ -7605,7 +7605,7 @@ export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: R
 };
 
 // @public
-export const withStatusFieldProps: <P extends StatusFieldProps, C>(Component: React.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "openWidget" | "onOpenWidget">>) => JSX.Element;
+export const withStatusFieldProps: <P extends StatusFieldProps, C>(Component: React.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "onOpenWidget" | "openWidget">>) => JSX.Element;
 
 // @internal @deprecated
 export class Workflow extends ItemDefBase {

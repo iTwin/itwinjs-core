@@ -17,7 +17,7 @@ const EMPTY_CATEGORIES_ARRAY: Category[] = [];
 
 /**
  * Loads categories from viewport or uses provided list of categories.
- * @alpha
+ * @internal
  */
 export function useCategories(viewManager: ViewManager, imodel: IModelConnection, view?: Viewport) {
   const currentView = view || viewManager.getFirstOpenView();
@@ -25,7 +25,7 @@ export function useCategories(viewManager: ViewManager, imodel: IModelConnection
   return useAsyncValue(categoriesPromise) ?? EMPTY_CATEGORIES_ARRAY;
 }
 
-/** @alpha */
+/** @internal */
 export async function loadCategoriesFromViewport(iModel?: IModelConnection, vp?: Viewport) {
   if (!vp)
     return EMPTY_CATEGORIES_ARRAY;
@@ -53,14 +53,14 @@ export async function loadCategoriesFromViewport(iModel?: IModelConnection, vp?:
 
 /**
  * Data structure that describes category.
- * @alpha
+ * @internal
  */
 export interface Category {
   key: string;
   children?: string[];
 }
 
-/** @alpha */
+/** @internal */
 export interface CategoryVisibilityHandlerParams {
   viewManager: ViewManager;
   imodel: IModelConnection;
@@ -69,7 +69,7 @@ export interface CategoryVisibilityHandlerParams {
   allViewports?: boolean;
 }
 
-/** @alpha */
+/** @internal */
 export class CategoryVisibilityHandler implements IVisibilityHandler {
   private _viewManager: ViewManager;
   private _imodel: IModelConnection;

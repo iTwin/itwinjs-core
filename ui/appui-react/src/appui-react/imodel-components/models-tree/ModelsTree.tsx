@@ -92,7 +92,7 @@ export interface ModelsTreeProps {
   enableHierarchyAutoUpdate?: boolean;
   /**
    * Custom visibility handler.
-   * @alpha
+   * @internal
    */
   modelsVisibilityHandler?: ModelsVisibilityHandler;
 }
