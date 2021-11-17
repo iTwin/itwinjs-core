@@ -24,6 +24,7 @@
   "dependencies": {
     "@bentley/imodelhub-client": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
+    "@itwin/browser-authorization": "^0.3.0",
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
@@ -31,7 +32,6 @@
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-markup": "workspace:*",
-    "@itwin/browser-authorization": "^0.3.0",
     "@itwin/electron-authorization": "^0.3.2",
     "@itwin/editor-backend": "workspace:*",
     "@itwin/editor-common": "workspace:*",

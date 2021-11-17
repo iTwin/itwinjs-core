@@ -98,9 +98,6 @@ export class ElectronHost {
   public static get app() { return this._electron.app; }
   public static get electron() { return this._electron; }
 
-  /** @internal */
-  public static get authorization() { return IModelHost.authorizationClient; }
-
   private constructor() { }
 
   /**
