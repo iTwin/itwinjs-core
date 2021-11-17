@@ -32,7 +32,11 @@ export interface ContentInstancesOfSpecificClassesSpecification extends ContentS
    */
   excludedClasses?: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
 
-  /** Whether to get content from instances of derived `classes`. */
+  /**
+   * Whether to get content from instances of derived `classes`.
+   * Acts as default value for [[classes.arePolymorphic]] and [[excludedClasses.arePolymorphic]].
+   * @deprecated Specify polymorphism value inside [[classes.arePolymorphic]] or [[excludedClasses.arePolymorphic]].
+   */
   handleInstancesPolymorphically?: boolean;
 
   /**

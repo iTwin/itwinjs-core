@@ -30,7 +30,9 @@ export interface InstanceNodesOfSpecificClassesSpecification extends ChildNodeSp
   excludedClasses?: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
 
   /**
-   * Should all [[classes]] be handled polymorphically.
+   * Whether to get instances from derived `classes`.
+   * Acts as default value for [[classes.arePolymorphic]] and [[excludedClasses.arePolymorphic]].
+   * @deprecated Specify polymorphism value inside [[classes.arePolymorphic]] or [[excludedClasses.arePolymorphic]].
    */
   arePolymorphic?: boolean;
 

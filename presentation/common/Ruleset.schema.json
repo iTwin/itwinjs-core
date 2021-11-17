@@ -251,7 +251,7 @@
           "description": "List of ECClass specifications whose ECInstances should be excluded."
         },
         "handleInstancesPolymorphically": {
-          "description": "Whether to get content from instances of derived `classes`.",
+          "description": "Whether to get content from instances of derived `classes`.\nActs as default value for `classes.arePolymorphic` and `excludedClasses.arePolymorphic`.",
           "type": "boolean"
         },
         "handlePropertiesPolymorphically": {
@@ -1273,7 +1273,7 @@
       "description": "Creates nodes for all instances of specified ECClasses.",
       "properties": {
         "arePolymorphic": {
-          "description": "Should all `classes` be handled polymorphically.",
+          "description": "Whether to get instances from derived `classes`.\nActs as default value for `classes.arePolymorphic` and `excludedClasses.arePolymorphic`.",
           "type": "boolean"
         },
         "classes": {
@@ -1428,7 +1428,7 @@
       "description": "Specification for multiple ECClasses that belong to\nthe same ECSchema.",
       "properties": {
         "arePolymorphic": {
-          "description": "Should all `classes` be handled polymorphically.",
+          "description": "Should all classes specified in `classNames` array be handled polymorphically.",
           "type": "boolean"
         },
         "classNames": {

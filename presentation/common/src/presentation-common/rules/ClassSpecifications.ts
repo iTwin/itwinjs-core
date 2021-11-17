@@ -46,7 +46,7 @@ export interface MultiSchemaClassesSpecification {
   classNames: string[];
 
   /**
-   * Should all [[classes]] be handled polymorphically.
+   * Should all classes specified in [[classNames]] array be handled polymorphically.
    */
   arePolymorphic?: boolean;
 }
