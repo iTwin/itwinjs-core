@@ -7271,8 +7271,8 @@ export abstract class PrimitiveTool extends InteractiveTool {
     isValidLocation(ev: BeButtonEvent, isButtonEvent: boolean): boolean;
     onRedoPreviousStep(): Promise<boolean>;
     onReinitialize(): Promise<void>;
-    abstract onRestartTool(): void;
-    onSelectedViewportChanged(_previous: Viewport | undefined, current: Viewport | undefined): void;
+    abstract onRestartTool(): Promise<void>;
+    onSelectedViewportChanged(_previous: Viewport | undefined, current: Viewport | undefined): Promise<void>;
     onUndoPreviousStep(): Promise<boolean>;
     // @internal (undocumented)
     redoPreviousStep(): Promise<boolean>;

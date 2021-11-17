@@ -17,7 +17,7 @@ export class UndoAllTool extends Tool {
 
     // ### TODO Restart of primitive tool should be handled by Txn event listener...needs to happen even if not the active tool...
     if (undefined !== IModelApp.toolAdmin.primitiveTool)
-      IModelApp.toolAdmin.primitiveTool.onRestartTool();
+      await IModelApp.toolAdmin.primitiveTool.onRestartTool();
     return true;
   }
 }
