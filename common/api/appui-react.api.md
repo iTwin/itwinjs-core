@@ -7624,7 +7624,7 @@ export interface WorkflowPropsList {
     workflows: WorkflowProps[];
 }
 
-// @public @deprecated
+// @public
 export class Zone extends React.Component<ZoneProps> {
     constructor(props: ZoneProps);
     // (undocumented)
@@ -7683,7 +7683,7 @@ export enum ZoneLocation {
     TopRight = 3
 }
 
-// @public @deprecated
+// @public
 export interface ZoneProps extends CommonProps {
     allowsMerging?: boolean;
     applicationData?: any;
