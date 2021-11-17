@@ -1,6 +1,13 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Wed, 10 Nov 2021 10:58:24 GMT and should not be manually modified.
+This log was last generated on Wed, 17 Nov 2021 01:23:26 GMT and should not be manually modified.
+
+## 2.19.22
+Wed, 17 Nov 2021 01:23:26 GMT
+
+### Updates
+
+- Avoid unnecessarily loading schemas that in extreme cases may exhaust JavaScript heap.
 
 ## 2.19.21
 Wed, 10 Nov 2021 10:58:24 GMT
