@@ -13,6 +13,7 @@ import { BooleanMode } from '@itwin/editor-common';
 import { BriefcaseConnection } from '@itwin/core-frontend';
 import { CanvasDecoration } from '@itwin/core-frontend';
 import { Cartographic } from '@itwin/core-common';
+import { ChamferMode } from '@itwin/editor-common';
 import { ClipShape } from '@itwin/core-geometry';
 import { ClipVector } from '@itwin/core-geometry';
 import { CoordinateLockOverrides } from '@itwin/core-frontend';
@@ -98,6 +99,30 @@ export enum BCurveMethod {
 }
 
 // @alpha
+export abstract class BlendEdgesTool extends LocateSubEntityTool {
+    // (undocumented)
+    protected addSubEntity(id: Id64String, props: SubEntityLocationProps): Promise<void>;
+    // (undocumented)
+    protected addTangentEdges(id: Id64String, edge?: SubEntityProps, chordTolerance?: number): Promise<void>;
+    // (undocumented)
+    protected get geometryCacheFilter(): ElementGeometryCacheFilter | undefined;
+    // (undocumented)
+    protected getAcceptedSubEntities(): SubEntityProps[];
+    // (undocumented)
+    protected getSubEntityFilter(): SubEntityFilter | undefined;
+    // (undocumented)
+    protected getTangentEdges(id: Id64String, edge: SubEntityProps): Promise<SubEntityProps[] | undefined>;
+    // (undocumented)
+    protected propagateSmooth: boolean;
+    // (undocumented)
+    protected removeSubEntity(id: Id64String, props?: SubEntityLocationProps): Promise<void>;
+    // (undocumented)
+    protected removeTangentEdges(_id: Id64String, edge?: SubEntityProps): Promise<void>;
+    // (undocumented)
+    protected wantSubEntityType(type: SubEntityType): boolean;
+}
+
+// @alpha
 export abstract class BooleanOperationTool extends ElementGeometryCacheTool {
     // (undocumented)
     protected get allowDragSelect(): boolean;
@@ -117,6 +142,22 @@ export abstract class BooleanOperationTool extends ElementGeometryCacheTool {
     processAgenda(_ev: BeButtonEvent): Promise<void>;
     // (undocumented)
     protected get requiredElementCount(): number;
+}
+
+// @alpha
+export class ChamferEdgesTool extends BlendEdgesTool {
+    // (undocumented)
+    protected applyAgendaOperation(ev: BeButtonEvent, isAccept: boolean): Promise<ElementGeometryResultProps | undefined>;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    protected length: number;
+    // (undocumented)
+    protected mode: ChamferMode;
+    // (undocumented)
+    onRestartTool(): Promise<void>;
+    // (undocumented)
+    static toolId: string;
 }
 
 // @alpha (undocumented)
@@ -560,9 +601,13 @@ export class CutSolidElementsTool extends ElementGeometryCacheTool {
     // (undocumented)
     protected applyAgendaOperation(): Promise<ElementGeometryResultProps | undefined>;
     // (undocumented)
+    protected bothDirections: boolean;
+    // (undocumented)
     protected buildLocateAgenda(hit: HitDetail): Promise<boolean>;
     // (undocumented)
     protected createElementGeometryCache(id: Id64String): Promise<boolean>;
+    // (undocumented)
+    protected distance: number;
     // (undocumented)
     protected get geometryCacheFilter(): ElementGeometryCacheFilter | undefined;
     // (undocumented)
@@ -573,6 +618,8 @@ export class CutSolidElementsTool extends ElementGeometryCacheTool {
     protected onAgendaModified(): Promise<void>;
     // (undocumented)
     onRestartTool(): Promise<void>;
+    // (undocumented)
+    protected outside: undefined;
     // (undocumented)
     processAgenda(_ev: BeButtonEvent): Promise<void>;
     // (undocumented)
@@ -660,7 +707,11 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
     // (undocumented)
     addFeatureOverrides(overrides: FeatureSymbology.Overrides, _vp: Viewport): void;
     // (undocumented)
-    protected get agendaAppearance(): FeatureAppearance;
+    protected agendaAppearance(isDynamics: boolean): FeatureAppearance;
+    // (undocumented)
+    protected _agendaAppearanceDefault?: FeatureAppearance;
+    // (undocumented)
+    protected _agendaAppearanceDynamic?: FeatureAppearance;
     // (undocumented)
     protected allowView(vp: Viewport): boolean;
     // (undocumented)
@@ -780,11 +831,15 @@ export class HollowFacesTool extends LocateSubEntityTool {
     // (undocumented)
     protected applyAgendaOperation(ev: BeButtonEvent, isAccept: boolean): Promise<ElementGeometryResultProps | undefined>;
     // (undocumented)
+    protected faceThickness: number;
+    // (undocumented)
     protected get geometryCacheFilter(): ElementGeometryCacheFilter | undefined;
     // (undocumented)
     static iconSpec: string;
     // (undocumented)
     onRestartTool(): Promise<void>;
+    // (undocumented)
+    protected shellThickness: number;
     // (undocumented)
     static toolId: string;
 }
@@ -797,6 +852,10 @@ export class ImprintSolidElementsTool extends LocateSubEntityTool {
     protected applyAgendaOperation(_ev: BeButtonEvent, isAccept: boolean): Promise<ElementGeometryResultProps | undefined>;
     // (undocumented)
     protected createSubEntityData(id: Id64String, hit: SubEntityLocationProps): Promise<SubEntityData>;
+    // (undocumented)
+    protected distance: number;
+    // (undocumented)
+    protected extend: boolean;
     // (undocumented)
     protected gatherInput(ev: BeButtonEvent): Promise<EventHandled | undefined>;
     // (undocumented)
@@ -857,6 +916,7 @@ export function isSameSubEntity(a: SubEntityProps, b: SubEntityProps): boolean;
 export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
     // (undocumented)
     protected _acceptedSubEntities: SubEntityData[];
+    protected addSubEntity(id: Id64String, props: SubEntityLocationProps): Promise<void>;
     // (undocumented)
     protected get allowSubEntityControlDeselect(): boolean;
     // (undocumented)
@@ -926,6 +986,7 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
     protected pickSubEntities(id: Id64String, boresite: Ray3d, maxFace: number, maxEdge: number, maxVertex: number, maxDistance: number, hiddenEdgesVisible: boolean, filter?: SubEntityFilter): Promise<SubEntityLocationProps[] | undefined>;
     // (undocumented)
     processAgenda(ev: BeButtonEvent): Promise<void>;
+    protected removeSubEntity(_id: Id64String, props?: SubEntityLocationProps): Promise<void>;
     // (undocumented)
     protected get requiredSubEntityCount(): number;
     // (undocumented)
@@ -1427,6 +1488,20 @@ export enum RotateMethod {
 }
 
 // @alpha
+export class RoundEdgesTool extends BlendEdgesTool {
+    // (undocumented)
+    protected applyAgendaOperation(ev: BeButtonEvent, isAccept: boolean): Promise<ElementGeometryResultProps | undefined>;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    onRestartTool(): Promise<void>;
+    // (undocumented)
+    protected radius: number;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
 export class SewSheetElementsTool extends ElementGeometryCacheTool {
     // (undocumented)
     protected get allowDragSelect(): boolean;
@@ -1453,6 +1528,8 @@ export class SewSheetElementsTool extends ElementGeometryCacheTool {
 // @alpha (undocumented)
 export class SubEntityData {
     constructor(props: SubEntityProps);
+    // (undocumented)
+    chordTolerance?: number;
     // (undocumented)
     cleanupGraphic(): void;
     // (undocumented)
@@ -1501,6 +1578,26 @@ export class SweepAlongPathTool extends ElementGeometryCacheTool {
     processAgenda(_ev: BeButtonEvent): Promise<void>;
     // (undocumented)
     protected get requiredElementCount(): number;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
+export class ThickenSheetElementsTool extends ElementGeometryCacheTool {
+    // (undocumented)
+    protected applyAgendaOperation(): Promise<ElementGeometryResultProps | undefined>;
+    // (undocumented)
+    protected backDistance: number;
+    // (undocumented)
+    protected frontDistance: number;
+    // (undocumented)
+    protected get geometryCacheFilter(): ElementGeometryCacheFilter | undefined;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    onRestartTool(): Promise<void>;
+    // (undocumented)
+    processAgenda(_ev: BeButtonEvent): Promise<void>;
     // (undocumented)
     static toolId: string;
 }
