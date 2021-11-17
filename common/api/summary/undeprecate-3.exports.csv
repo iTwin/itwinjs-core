@@ -1,4 +1,3 @@
-sep=;
 Release Tag;API Item
 public;ContentBuilder
 public;ContentBuilderProps
@@ -6,7 +5,7 @@ public;ContentBuilderResult
 public;defaultNodeMappingFunc: NodeMappingFunc
 public;HierarchyBuilder
 public;HierarchyBuilderProps
-public;HierarchyNode 
+public;HierarchyNode
 public;IContentBuilderDataProvider
 public;initialize: (props?: PresentationTestingInitProps | undefined) => Promise
 public;MappedNode
