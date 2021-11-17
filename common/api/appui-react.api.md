@@ -3887,8 +3887,6 @@ export interface ModelsTreeProps {
     enableElementsClassGrouping?: ClassGroupingOption;
     // @alpha
     enableHierarchyAutoUpdate?: boolean;
-    // @deprecated
-    enablePreloading?: boolean;
     // @alpha
     filteredElementIds?: Id64Array;
     // @alpha
