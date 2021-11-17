@@ -75,7 +75,7 @@ export function useNineZoneState(frontstageDef: FrontstageDef) {
   }, [frontstageDef]);
   React.useEffect(() => {
     const listener = (args: FrontstageNineZoneStateChangedEventArgs) => {
-      if (args.frontstageDef !== frontstageDef || frontstageDef.isStageClosing || frontstageDef.isApplicationClosing|| !frontstageDef.isReady)
+      if (args.frontstageDef !== frontstageDef || frontstageDef.isStageClosing || frontstageDef.isApplicationClosing)
         return;
       setNineZone(args.state);
     };
