@@ -7,18 +7,17 @@
  */
 
 import { assert, dispose } from "@itwin/core-bentley";
+import { FrustumPlanes, GlobeMode, PackedFeatureTable, RenderTexture } from "@itwin/core-common";
 import { AxisOrder, BilinearPatch, ClipPlane, ClipPrimitive, ClipShape, ClipVector, Constant, ConvexClipPlaneSet, EllipsoidPatch, LongitudeLatitudeNumber, Matrix3d, Point3d, PolygonOps, Range1d, Range2d, Range3d, Ray3d, Transform, Vector2d, Vector3d } from "@itwin/core-geometry";
-import { ColorByName, ColorDef, FrustumPlanes, GlobeMode, PackedFeatureTable, RenderTexture } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
-import { GraphicBuilder } from "../../render/GraphicBuilder";
 import { TerrainMeshPrimitive } from "../../render/primitives/mesh/TerrainMeshPrimitive";
 import { RenderGraphic } from "../../render/RenderGraphic";
 import { RenderMemory } from "../../render/RenderMemory";
 import { RenderRealityMeshGeometry, RenderSystem, TerrainTexture } from "../../render/RenderSystem";
 import { ViewingSpace } from "../../ViewingSpace";
 import {
-  ImageryMapTile, MapCartoRectangle, MapTileLoader, MapTileTree, QuadId, RealityTile, Tile, TileContent, TileDrawArgs, TileGraphicType,
-  TileLoadStatus, TileParams, TileTreeLoadStatus, TraversalSelectionContext,
+  ImageryMapTile, MapCartoRectangle, MapTileLoader, MapTileTree, QuadId, RealityTile, RealityTileParams, Tile, TileContent, TileDrawArgs, TileGraphicType,
+  TileLoadStatus, TileTreeLoadStatus, TraversalSelectionContext,
 } from "../internal";
 
 /** @internal */
@@ -129,7 +128,7 @@ export class MapTile extends RealityTile {
   public get imageryTiles(): ImageryMapTile[] | undefined { return this._imageryTiles; }
 
   public getRangeCorners(result: Point3d[]): Point3d[] { return this._patch instanceof PlanarTilePatch ? this._patch.getRangeCorners(this.heightRange!, result) : this.range.corners(result); }
-  constructor(params: TileParams, public readonly mapTree: MapTileTree, public quadId: QuadId, private _patch: TilePatch, public readonly rectangle: MapCartoRectangle, heightRange: Range1d | undefined, protected _cornerRays: Ray3d[] | undefined) {
+  constructor(params: RealityTileParams, public readonly mapTree: MapTileTree, public quadId: QuadId, private _patch: TilePatch, public readonly rectangle: MapCartoRectangle, heightRange: Range1d | undefined, protected _cornerRays: Ray3d[] | undefined) {
     super(params, mapTree);
     this._heightRange = heightRange ? heightRange.clone() : undefined;
   }
@@ -336,8 +335,9 @@ export class MapTile extends RealityTile {
           const heightRange = this.mapTree.getChildHeightRange(quadId, rectangle, this);
           const diagonal = Math.max(corners[0].distance(corners[3]), corners[1].distance(corners[2])) / 2.0;
           const chordHeight = globeMode === GlobeMode.Ellipsoid ? Math.sqrt(diagonal * diagonal + Constant.earthRadiusWGS84.equator * Constant.earthRadiusWGS84.equator) - Constant.earthRadiusWGS84.equator : 0.0;
-          const range = Range3d.createArray(MapTile.computeRangeCorners(corners, normal, chordHeight, scratchCorners, heightRange));
-          children.push(this.mapTree.createPlanarChild({ contentId: quadId.contentId, maximumSize: 512, range, parent: this, isLeaf: childrenAreLeaves }, quadId, corners, normal, rectangle, chordHeight, heightRange));
+          const rangeCorners = MapTile.computeRangeCorners(corners, normal, chordHeight, undefined, heightRange);
+          const range = Range3d.createArray(rangeCorners);
+          children.push(this.mapTree.createPlanarChild({ contentId: quadId.contentId, maximumSize: 512, range, parent: this, isLeaf: childrenAreLeaves, rangeCorners }, quadId, corners, normal, rectangle, chordHeight, heightRange));
         }
       }
       resolveChildren(children);
@@ -371,7 +371,7 @@ export class MapTile extends RealityTile {
     return children;
   }
 
-  public static computeRangeCorners(corners: Point3d[], normal: Vector3d, chordHeight: number, result: Point3d[], heightRange?: Range1d) {
+  public static computeRangeCorners(corners: Point3d[], normal: Vector3d, chordHeight: number, result?: Point3d[], heightRange?: Range1d) {
     if (result === undefined) {
       result = [];
       for (let i = 0; i < 8; i++)
@@ -476,6 +476,8 @@ export class MapTile extends RealityTile {
       this._heightRange.low = Math.max(this.heightRange!.low, minHeight);
       this._heightRange.high = Math.min(this.heightRange!.high, maxHeight);
     }
+    if (this.rangeCorners &&  this._patch instanceof PlanarTilePatch)
+      this._patch.getRangeCorners(this.heightRange!, this.rangeCorners);
   }
   public getProjection(heightRange?: Range1d): MapTileProjection {
     return this._patch instanceof PlanarTilePatch ? new PlanarProjection(this._patch, heightRange) : new EllipsoidProjection(this._patch, heightRange);

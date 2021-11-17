@@ -8,12 +8,12 @@
 
 import { assert, compareBooleans, compareNumbers, compareStrings, compareStringsOrUndefined, CompressedId64Set, Id64String } from "@itwin/core-bentley";
 import {
-  Angle, AngleSweep, Constant, Ellipsoid, EllipsoidPatch, Point3d, Range1d, Range3d, Ray3d, Transform, Vector3d, XYZProps,
-} from "@itwin/core-geometry";
-import {
   BackgroundMapSettings, BaseLayerSettings, Cartographic, ColorDef, FeatureAppearance, GeoCoordStatus, GlobeMode, MapLayerSettings, PlanarClipMaskPriority, TerrainHeightOriginMode,
   TerrainProviderName,
 } from "@itwin/core-common";
+import {
+  Angle, AngleSweep, Constant, Ellipsoid, EllipsoidPatch, Point3d, Range1d, Range3d, Ray3d, Transform, Vector3d, XYZProps,
+} from "@itwin/core-geometry";
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
 import { TerrainDisplayOverrides } from "../../DisplayStyleState";
 import { HitDetail } from "../../HitDetail";
@@ -38,6 +38,7 @@ import {
   PlanarTilePatch,
   QuadId,
   RealityTileDrawArgs,
+  RealityTileParams,
   RealityTileTree,
   RealityTileTreeParams,
   Tile,
@@ -145,7 +146,7 @@ export class MapTileTree extends RealityTileTree {
 
     return maxDepth;
   }
-  public createPlanarChild(params: TileParams, quadId: QuadId, corners: Point3d[], normal: Vector3d, rectangle: MapCartoRectangle, chordHeight: number, heightRange?: Range1d): MapTile {
+  public createPlanarChild(params: RealityTileParams, quadId: QuadId, corners: Point3d[], normal: Vector3d, rectangle: MapCartoRectangle, chordHeight: number, heightRange?: Range1d): MapTile {
     const patch = new PlanarTilePatch(corners, normal, chordHeight);
     const cornerNormals = this.getCornerRays(rectangle);
     const ctor = this.mapLoader.isTileAvailable(quadId) ? MapTile : UpsampledMapTile;
