@@ -282,7 +282,7 @@ export class SpatialModelState extends GeometricModel3dState {
     super(props, iModel, state);
     if (this.isRealityModel) {
       this.classifiers = new SpatialClassifiers(this.jsonProperties);
-      this.realityDataDisplayStyle = new RealityDataDisplayStyle(this.jsonProperties.scalablemesh);
+      this.realityDataDisplayStyle = RealityDataDisplayStyle.fromJSON(this.jsonProperties.scalablemesh);
     }
   }
 
