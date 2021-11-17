@@ -58,15 +58,15 @@ export class DisplayPerfTestApp {
 }
 
 async function createOidcClient(): Promise<ElectronAppAuthorization | BrowserAuthorizationClient> {
-  const scope = "openid email profile organization itwinjs";
-
   if (ProcessDetector.isElectronAppFrontend) {
     const desktopClient = new ElectronAppAuthorization();
     return desktopClient;
   } else {
-    const clientId = "imodeljs-spa-test";
-    const redirectUri = "http://localhost:3000/signin-callback";
-    const oidcConfiguration: BrowserAuthorizationClientConfiguration = { clientId, redirectUri, scope: `${scope} imodeljs-router`, responseType: "code" };
+    const oidcConfiguration: BrowserAuthorizationClientConfiguration = {
+      clientId: process.env.IMJS_OIDC_BROWSER_TEST_CLIENT_ID ?? "",
+      redirectUri: process.env.IMJS_OIDC_BROWSER_TEST_REDIRECT_URI ?? "",
+      scope: process.env.IMJS_OIDC_BROWSER_TEST_SCOPES ?? "",
+    };
     const browserClient = new BrowserAuthorizationClient(oidcConfiguration);
     return browserClient;
   }

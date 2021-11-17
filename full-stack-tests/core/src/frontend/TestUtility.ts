@@ -67,11 +67,7 @@ export class TestUtility {
     if (NativeApp.isValid) {
       authorizationClient = new ElectronAppAuthorization ();
       IModelApp.authorizationClient = authorizationClient;
-      const accessToken = await setBackendAccessToken(user, {
-        clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
-        redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
-        scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
-      });
+      const accessToken = await setBackendAccessToken(user);
       if ("" === accessToken)
         throw new Error("no access token");
 
