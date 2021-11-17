@@ -15,6 +15,7 @@ import { EntityState } from "./EntityState";
 import { HitDetail } from "./HitDetail";
 import { IModelConnection } from "./IModelConnection";
 import { RealityDataSource } from "./RealityDataSource";
+import { RealityDataDisplayStyle } from "./RealityDataDisplayStyle";
 import { createOrbitGtTileTreeReference, createPrimaryTileTreeReference, createRealityTileTreeReference, TileTreeReference } from "./tile/internal";
 import { ViewState } from "./ViewState";
 
@@ -128,6 +129,7 @@ export abstract class GeometricModelState extends ModelState implements Geometri
           modelId: this.id,
           // url: tilesetUrl, // If rdSourceKey is defined, url is not used
           classifiers: undefined !== spatialModel ? spatialModel.classifiers : undefined,
+          realityDataDisplayStyle: undefined !== spatialModel ? spatialModel.realityDataDisplayStyle : undefined,
         }) :
         createOrbitGtTileTreeReference({
           rdSourceKey,
@@ -178,7 +180,7 @@ export abstract class GeometricModelState extends ModelState implements Geometri
         modelId: this.id,
         tilesetToDbTransform: this.jsonProperties.tilesetToDbTransform,
         classifiers: undefined !== spatialModel ? spatialModel.classifiers : undefined,
-        scalablemeshProps: undefined !== spatialModel ? spatialModel.scalablemeshProps : undefined,
+        realityDataDisplayStyle: undefined !== spatialModel ? spatialModel.realityDataDisplayStyle : undefined,
       });
     }
 
@@ -269,7 +271,7 @@ export class SheetModelState extends GeometricModel2dState {
 export class SpatialModelState extends GeometricModel3dState {
   /** If this is a reality model, provides access to a list of available spatial classifiers that can be applied to it. */
   public readonly classifiers?: SpatialClassifiers;
-  public readonly scalablemeshProps?: any;
+  public readonly realityDataDisplayStyle?: RealityDataDisplayStyle;
 
   /** @internal */
   public static override get className() { return "SpatialModel"; }
@@ -280,7 +282,7 @@ export class SpatialModelState extends GeometricModel3dState {
     super(props, iModel, state);
     if (this.isRealityModel) {
       this.classifiers = new SpatialClassifiers(this.jsonProperties);
-      this.scalablemeshProps = this.jsonProperties["scalablemesh"];
+      this.realityDataDisplayStyle = new RealityDataDisplayStyle(this.jsonProperties.scalablemesh);
     }
   }
 

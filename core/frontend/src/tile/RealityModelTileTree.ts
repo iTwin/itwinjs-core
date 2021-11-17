@@ -23,6 +23,7 @@ import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { PlanarClipMaskState } from "../PlanarClipMaskState";
 import { RealityDataSource } from "../RealityDataSource";
+import { RealityDataDisplayStyle } from "../RealityDataDisplayStyle";
 import { RenderMemory } from "../render/RenderMemory";
 import { SceneContext } from "../ViewContext";
 import { ScreenViewport } from "../Viewport";
@@ -510,7 +511,7 @@ export namespace RealityModelTileTree {
     name?: string;
     classifiers?: SpatialClassifiers;
     planarClipMask?: PlanarClipMaskSettings;
-    scalablemeshProps?: any;
+    realityDataDisplayStyle?: RealityDataDisplayStyle;
   }
   export interface ReferenceProps extends ReferenceBaseProps {
     url?: string;
@@ -563,8 +564,8 @@ export namespace RealityModelTileTree {
       if (undefined !== props.classifiers)
         this._classifier = createClassifierTileTreeReference(props.classifiers, this, props.iModel, props.source);
 
-      if (undefined !== props.scalablemeshProps) {
-        this._clips = ClipVector.fromJSON(props.scalablemeshProps.clip);
+      if (undefined !== props.realityDataDisplayStyle) {
+        this._clips = props.realityDataDisplayStyle.clips;
       }
 
       if (undefined !== props.modelId) {
