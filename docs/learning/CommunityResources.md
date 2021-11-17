@@ -26,4 +26,3 @@ We frequently post helpful iTwin.js videos and articles:
 ### Notifications and Updates
 
 We post status updates and release announcements on the iTwin.js [Twitter feed](https://twitter.com/imodeljs).
-
