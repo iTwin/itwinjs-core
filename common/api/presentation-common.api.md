@@ -286,6 +286,7 @@ export type ContentInstanceKeysRpcRequestOptions = PresentationRpcRequestOptions
 // @public
 export interface ContentInstancesOfSpecificClassesSpecification extends ContentSpecificationBase {
     classes: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
+    excludedClasses?: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
     handleInstancesPolymorphically?: boolean;
     handlePropertiesPolymorphically?: boolean;
     instanceFilter?: string;
@@ -1264,6 +1265,7 @@ export enum InstanceLabelOverrideValueSpecificationType {
 export interface InstanceNodesOfSpecificClassesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
     arePolymorphic?: boolean;
     classes: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
+    excludedClasses?: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
     instanceFilter?: string;
     specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses;
 }
@@ -1497,6 +1499,7 @@ export type MultiElementPropertiesRpcRequestOptions = PresentationRpcRequestOpti
 
 // @public
 export interface MultiSchemaClassesSpecification {
+    arePolymorphic?: boolean;
     classNames: string[];
     schemaName: string;
 }
