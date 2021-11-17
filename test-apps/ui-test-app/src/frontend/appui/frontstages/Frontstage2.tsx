@@ -141,16 +141,16 @@ class FrontstageToolWidget extends React.Component {
       stateSyncIds: getSelectionContextSyncEventIds(), /* only used when in ui 1.0 mode */
       stateFunc: selectionContextStateFunc,  /* only used when in ui 1.0 mode */
       isHidden: getIsHiddenIfSelectionNotActive(),  /* only used when in ui 2.0 mode */
-      execute: () => {
+      execute: async () => {
         const iModelConnection = UiFramework.getIModelConnection();
         if (iModelConnection) {
           iModelConnection.selectionSet.emptyAll();
         }
         const tool = IModelApp.toolAdmin.primitiveTool;
         if (tool)
-          tool.onRestartTool();
+          await tool.onRestartTool();
         else
-          void IModelApp.toolAdmin.startDefaultTool();
+          await IModelApp.toolAdmin.startDefaultTool();
       },
     });
   }
