@@ -7,7 +7,7 @@
  */
 
 import {
-  assert, ByteStream, compareNumbers, compareStringsOrUndefined, CompressedId64Set, Id64String, Logger,
+  assert, compareNumbers, compareStringsOrUndefined, CompressedId64Set, Id64String,
 } from "@itwin/core-bentley";
 import {
   Cartographic, DefaultSupportedTypes, GeoCoordStatus, PlanarClipMaskPriority, PlanarClipMaskSettings,
@@ -15,7 +15,7 @@ import {
   RealityDataSourceKey,
   SpatialClassifiers, ViewFlagOverrides,
 } from "@itwin/core-common";
-import { Angle, ClipPlane, ClipPrimitive, ClipShape, ClipUtilities, ClipVector, Constant, ConvexClipPlaneSet, Ellipsoid, LineString3d, Matrix3d, Plane3dByOriginAndUnitNormal, Point3d, Range3d, Ray3d, Transform, TransformProps, UnionOfConvexClipPlaneSets, Vector3d, XYZ } from "@itwin/core-geometry";
+import { Angle, ClipVector, Constant, Ellipsoid, Matrix3d, Point3d, Range3d, Ray3d, Transform, TransformProps, Vector3d, XYZ } from "@itwin/core-geometry";
 import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
 import { DisplayStyleState } from "../DisplayStyleState";
 import { HitDetail } from "../HitDetail";
@@ -28,7 +28,6 @@ import { RenderMemory } from "../render/RenderMemory";
 import { SceneContext } from "../ViewContext";
 import { ScreenViewport } from "../Viewport";
 import { ViewState } from "../ViewState";
-import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 import {
   BatchedTileIdMap, CesiumIonAssetProvider, createClassifierTileTreeReference, createDefaultViewFlagOverrides, DisclosedTileTreeSet, getCesiumOSMBuildingsUrl, getGcsConverterAvailable, RealityTile, RealityTileLoader, RealityTileParams,
   RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile, TileDrawArgs, TileLoadPriority, TileRequest, TileTree,
@@ -567,112 +566,11 @@ export namespace RealityModelTileTree {
       if (undefined !== props.realityDataDisplayStyle) {
         this._clips = props.realityDataDisplayStyle.clips;
       }
-
-      if (undefined !== props.modelId) {
-        const clipEcsql = `SELECT SmModelClips FROM ScalableMesh.ScalableMeshModel WHERE ECInstanceId=${props.modelId}`;
-
-        // Query clips stored in the iModel for this reality data.
-        this._iModel.query(clipEcsql).next().then((row) => this.parseAndAddClips(row, "LineString")).catch(() => {
-          const errMsg = `Error querying or parsing line string clips for Model Id=${props.modelId}`;
-          Logger.logError(FrontendLoggerCategory.RealityData, errMsg);
-        });
-
-        const clipVectorEcsql = `SELECT SmModelClipVectors FROM ScalableMesh.ScalableMeshModel WHERE ECInstanceId=${props.modelId}`;
-
-        // Query clips stored in the iModel for this reality data.
-        this._iModel.query(clipVectorEcsql).next().then((row) => this.parseAndAddClips(row, "Vector")).catch(() => {
-          const errMsg = `Error querying or parsing vector clips for Model Id=${props.modelId}`;
-          Logger.logError(FrontendLoggerCategory.RealityData, errMsg);
-        });
-      }
-    }
-
-    private parseAndAddClips(dbRow: IteratorResult<any,any> | undefined, clipType: String): void {
-      if (undefined === dbRow) {
-        // Skip models with no clips
-        return;
-      }
-
-      for (const value of dbRow.value) {
-        if (value !== undefined) {
-          const stream = new ByteStream(value.buffer);
-          while (stream.curPos !== stream.length) {
-            /* const clipId =*/ stream.nextId64;
-            if (clipType === "LineString") {
-              this._clips?.appendClone(this.createClipPrimitiveFromLineString(stream));
-            } else if (clipType === "Vector") {
-              /* const type =*/ stream.nextInt32;
-              /* const isActive =*/ stream.nextUint8;
-              /* const geomType =*/ stream.nextUint32;
-              const nbPrimitives = stream.nextUint32;
-              for (let i = 0; i < nbPrimitives; i++) {
-                this._clips?.appendClone(this.createClipPrimitiveFromVector(stream));
-              }
-            } else {
-              throw new Error("Unknown clip type");
-            }
-          }
-        }
-      }
-    }
-
-    private createClipPrimitiveFromLineString(stream: ByteStream): ClipPrimitive {
-      const nbClipShapePoints = stream.nextInt32;
-      /* const upper =*/ stream.nextInt32;
-      const points: Point3d[] = [];
-      for (let i = 0; i < nbClipShapePoints; i++) {
-        points.push(new Point3d(stream.nextFloat64, stream.nextFloat64, stream.nextFloat64));
-      }
-      const type = stream.nextInt32;
-      const isActive = stream.nextUint8;
-      /* const geomType =*/ stream.nextUint32;
-
-      const lineString = LineString3d.create(points);
-      const clipTransform = lineString.fractionToFrenetFrame(0.0);
-      clipTransform.multiplyInversePoint3dArrayInPlace(points);
-      const shape = ClipShape.createShape(points, undefined, undefined, clipTransform, type === 0, isActive === 0);
-      return ClipPrimitive.createCapture(shape?.fetchClipPlanesRef());
-    }
-
-    private createClipPrimitiveFromVector(stream: ByteStream): ClipPrimitive {
-      const nbConvexPlaneSets = stream.nextUint32;
-      let unionOfConvexClipPlaneSet = UnionOfConvexClipPlaneSets.createEmpty();
-      for (let j = 0; j < nbConvexPlaneSets; j++) {
-        const nbPlanes = stream.nextUint32;
-        const convexPlanes = ConvexClipPlaneSet.createEmpty();
-        for (let k = 0; k < nbPlanes; k++) {
-          const origin = new Point3d(stream.nextFloat64, stream.nextFloat64, stream.nextFloat64);
-          const normal = new Vector3d(stream.nextFloat64, stream.nextFloat64, stream.nextFloat64);
-          const newPlane = Plane3dByOriginAndUnitNormal.create(origin, normal);
-          if (newPlane !== undefined)
-            convexPlanes.addPlaneToConvexSet(ClipPlane.createPlane(newPlane, undefined, undefined, undefined));
-        }
-        unionOfConvexClipPlaneSet.addConvexSet(convexPlanes);
-      }
-      const isMask = stream.nextUint8 === 1 ? true : false;
-      const isInvisible = stream.nextUint8 === 1 ? true : false;
-      if (isMask === true) {
-        const origConvexCPS = unionOfConvexClipPlaneSet.clone();
-        unionOfConvexClipPlaneSet = UnionOfConvexClipPlaneSets.createEmpty();
-        for (const convexSet of origConvexCPS.convexSets) {
-          const complimentarySet = ClipUtilities.createComplementaryClips(convexSet);
-          for (const complimentaryConvexSet of complimentarySet.convexSets) {
-            unionOfConvexClipPlaneSet.addConvexSet(complimentaryConvexSet);
-          }
-        }
-      }
-
-      unionOfConvexClipPlaneSet.setInvisible(isInvisible);
-      const hasZClip = stream.nextUint8 === 1 ? true : false;
-      if (hasZClip) {
-        const zLow = stream.nextFloat64;
-        const zHigh = stream.nextFloat64;
-        unionOfConvexClipPlaneSet.addOutsideZClipSets(isMask, zLow, zHigh);
-      }
-      return ClipPrimitive.createCapture(unionOfConvexClipPlaneSet);
     }
 
     public get planarClassifierTreeRef() { return this._classifier && this._classifier.activeClassifier && this._classifier.isPlanar ? this._classifier : undefined; }
+
+    public get clips() { return this._clips;}
 
     public override unionFitRange(union: Range3d): void {
       const contentRange = this.computeWorldContentRange();
