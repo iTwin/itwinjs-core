@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-react",
-  "version": "3.0.0-dev.116",
+  "version": "3.0.0-dev.121",
   "description": "iModel.js UI core components",
   "main": "lib/cjs/core-react.js",
   "module": "lib/esm/core-react.js",
@@ -40,9 +40,9 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.116",
-    "@itwin/core-i18n": "workspace:^3.0.0-dev.116",
-    "@itwin/appui-abstract": "workspace:^3.0.0-dev.116",
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.121",
+    "@itwin/core-i18n": "workspace:^3.0.0-dev.121",
+    "@itwin/appui-abstract": "workspace:^3.0.0-dev.121",
     "react": "^17.0.0",
     "react-dom": "^17.0.0"
   },

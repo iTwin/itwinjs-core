@@ -1,6 +1,6 @@
 {
   "name": "@itwin/analytical-backend",
-  "version": "3.0.0-dev.116",
+  "version": "3.0.0-dev.121",
   "main": "lib/cjs/analytical-backend.js",
   "typings": "lib/cjs/analytical-backend",
   "license": "MIT",
@@ -32,9 +32,9 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.116",
-    "@itwin/core-backend": "workspace:^3.0.0-dev.116",
-    "@itwin/core-common": "workspace:^3.0.0-dev.116"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.121",
+    "@itwin/core-backend": "workspace:^3.0.0-dev.121",
+    "@itwin/core-common": "workspace:^3.0.0-dev.121"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",

@@ -75,7 +75,7 @@ export function useNineZoneState(frontstageDef: FrontstageDef) {
   }, [frontstageDef]);
   React.useEffect(() => {
     const listener = (args: FrontstageNineZoneStateChangedEventArgs) => {
-      if (args.frontstageDef !== frontstageDef || frontstageDef.isStageClosing || frontstageDef.isApplicationClosing|| !frontstageDef.isReady)
+      if (args.frontstageDef !== frontstageDef || frontstageDef.isStageClosing || frontstageDef.isApplicationClosing)
         return;
       setNineZone(args.state);
     };
@@ -578,7 +578,7 @@ export function addPanelWidgets(
 }
 
 /** @internal */
-export function isFrontstageStateSettingResult(settingsResult: UiSettingsResult): settingsResult is {
+export function isFrontstageStateSettingResult(settingsResult: UiSettingsResult): settingsResult is { // eslint-disable-line deprecation/deprecation
   status: UiSettingsStatus.Success;
   setting: WidgetPanelsFrontstageState;
 } {
