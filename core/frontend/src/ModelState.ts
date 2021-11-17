@@ -191,7 +191,7 @@ export abstract class GeometricModelState extends ModelState implements Geometri
     }
 
     // Try to query clips from the iModel
-    if (undefined !== this.id) {
+    if (undefined !== this.id && Id64.isValidId64(this.id) && !Id64.isTransient(this.id)) {
       const clipEcsql = `SELECT SmModelClips FROM ScalableMesh.ScalableMeshModel WHERE ECInstanceId=${this.id}`;
 
       // Query clips stored in the iModel for this reality data.
