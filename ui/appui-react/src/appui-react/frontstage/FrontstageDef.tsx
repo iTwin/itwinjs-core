@@ -133,7 +133,7 @@ export class FrontstageDef {
     if (this._nineZoneState === state)
       return;
     this._nineZoneState = state;
-    // istanbul ignore else - don't trigger any side effects until stage "isReady"
+    // istanbul ignore next - don't trigger any side effects until stage "isReady"
     if (!(this._isStageClosing || this._isApplicationClosing) || this.isReady) {
       FrontstageManager.onFrontstageNineZoneStateChangedEvent.emit({
         frontstageDef: this,
