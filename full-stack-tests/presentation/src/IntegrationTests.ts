@@ -5,7 +5,7 @@
 import "@itwin/presentation-frontend/lib/cjs/test/_helpers/MockFrontendEnvironment";
 import * as chai from "chai";
 import chaiSubset from "chai-subset";
-import * as cpx from "cpx";
+import * as cpx from "cpx2";
 import * as fs from "fs";
 import * as path from "path";
 import sinonChai from "sinon-chai";
