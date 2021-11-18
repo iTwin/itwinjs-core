@@ -264,7 +264,7 @@ importers:
       '@types/ws': ^6.0.4
       chai: ^4.1.2
       chai-as-promised: ^7
-      cpx: ^1.5.0
+      cpx2: ^3.0.0
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       eslint: ^7.11.0
@@ -311,7 +311,7 @@ importers:
       '@types/ws': 6.0.4
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
-      cpx: 1.5.0
+      cpx2: 3.0.2
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
       eslint: 7.32.0
@@ -417,7 +417,7 @@ importers:
       benchmark: ^2.1.4
       chai: ^4.1.2
       chai-as-promised: ^7
-      cpx: ^1.5.0
+      cpx2: ^3.0.0
       eslint: ^7.11.0
       mocha: ^8.3.2
       nyc: ^15.1.0
@@ -444,7 +444,7 @@ importers:
       benchmark: 2.1.4
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
-      cpx: 1.5.0
+      cpx2: 3.0.2
       eslint: 7.32.0
       mocha: 8.4.0
       nyc: 15.1.0
@@ -466,7 +466,7 @@ importers:
       '@xmldom/xmldom': ^0.7.0
       chai: ^4.1.2
       chai-as-promised: ^7
-      cpx: ^1.5.0
+      cpx2: ^3.0.0
       eslint: ^7.11.0
       glob: ^7.1.2
       mocha: ^8.3.2
@@ -488,7 +488,7 @@ importers:
       '@xmldom/xmldom': 0.7.5
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
-      cpx: 1.5.0
+      cpx2: 3.0.2
       eslint: 7.32.0
       mocha: 8.4.0
       nyc: 15.1.0
@@ -513,7 +513,7 @@ importers:
       benchmark: ^2.1.4
       chai: ^4.1.2
       chai-as-promised: ^7
-      cpx: ^1.5.0
+      cpx2: ^3.0.0
       eslint: ^7.11.0
       mocha: ^8.3.2
       nyc: ^15.1.0
@@ -539,7 +539,7 @@ importers:
       benchmark: 2.1.4
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
-      cpx: 1.5.0
+      cpx2: 3.0.2
       eslint: 7.32.0
       mocha: 8.4.0
       nyc: 15.1.0
@@ -705,7 +705,7 @@ importers:
       '@types/sinon': ^9.0.0
       chai: ^4.1.2
       chai-as-promised: ^7
-      cpx: ^1.5.0
+      cpx2: ^3.0.0
       eslint: ^7.11.0
       fuse.js: ^3.3.0
       glob: ^7.1.2
@@ -746,7 +746,7 @@ importers:
       '@types/sinon': 9.0.11
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
-      cpx: 1.5.0
+      cpx2: 3.0.2
       eslint: 7.32.0
       glob: 7.2.0
       mocha: 8.4.0
@@ -768,7 +768,7 @@ importers:
       '@itwin/eslint-plugin': workspace:*
       '@types/file-saver': ^2.0.1
       '@types/node': 14.14.31
-      cpx: ^1.5.0
+      cpx2: ^3.0.0
       eslint: ^7.11.0
       file-saver: ^2.0.2
       rimraf: ^3.0.2
@@ -785,7 +785,7 @@ importers:
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@types/file-saver': 2.0.3
       '@types/node': 14.14.31
-      cpx: 1.5.0
+      cpx2: 3.0.2
       eslint: 7.32.0
       rimraf: 3.0.2
       typescript: 4.4.4
@@ -841,7 +841,7 @@ importers:
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
       chai: ^4.1.2
-      cpx: ^1.5.0
+      cpx2: ^3.0.0
       eslint: ^7.11.0
       glob: ^7.1.2
       mocha: ^8.3.2
@@ -863,7 +863,7 @@ importers:
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
       chai: 4.3.4
-      cpx: 1.5.0
+      cpx2: 3.0.2
       eslint: 7.32.0
       glob: 7.2.0
       mocha: 8.4.0
@@ -920,7 +920,7 @@ importers:
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
       chai: ^4.1.2
-      cpx: ^1.5.0
+      cpx2: ^3.0.0
       eslint: ^7.11.0
       glob: ^7.1.2
       mocha: ^8.3.2
@@ -943,7 +943,7 @@ importers:
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
       chai: 4.3.4
-      cpx: 1.5.0
+      cpx2: 3.0.2
       eslint: 7.32.0
       glob: 7.2.0
       mocha: 8.4.0
@@ -970,7 +970,6 @@ importers:
       '@types/ws': ^6.0.4
       chai: ^4.1.2
       chai-as-promised: ^7
-      cpx: ^1.5.0
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       eslint: ^7.11.0
@@ -995,7 +994,6 @@ importers:
       '@types/ws': 6.0.4
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
-      cpx: 1.5.0
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
       eslint: 7.32.0
@@ -1014,7 +1012,7 @@ importers:
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
       chai: ^4.1.2
-      cpx: ^1.5.0
+      cpx2: ^3.0.0
       debug: ^2.6.9
       eslint: ^7.11.0
       mocha: ^8.3.2
@@ -1030,7 +1028,7 @@ importers:
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
       chai: 4.3.4
-      cpx: 1.5.0
+      cpx2: 3.0.2
       debug: 2.6.9
       eslint: 7.32.0
       mocha: 8.4.0
@@ -1095,7 +1093,7 @@ importers:
       '@types/sinon': ^9.0.0
       chai: ^4.1.2
       chai-as-promised: ^7
-      cpx: ^1.5.0
+      cpx2: ^3.0.0
       eslint: ^7.11.0
       mocha: ^8.3.2
       npm-run-all: ^4.1.5
@@ -1123,7 +1121,7 @@ importers:
       '@types/sinon': 9.0.11
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
-      cpx: 1.5.0
+      cpx2: 3.0.2
       eslint: 7.32.0
       mocha: 8.4.0
       npm-run-all: 4.1.5
@@ -1179,7 +1177,7 @@ importers:
       '@types/node': 14.14.31
       '@types/semver': ^5.5.0
       chai: ^4.1.2
-      cpx: ^1.5.0
+      cpx2: ^3.0.0
       eslint: ^7.11.0
       mocha: ^8.3.2
       nyc: ^15.1.0
@@ -1200,7 +1198,7 @@ importers:
       '@types/node': 14.14.31
       '@types/semver': 5.5.0
       chai: 4.3.4
-      cpx: 1.5.0
+      cpx2: 3.0.2
       eslint: 7.32.0
       mocha: 8.4.0
       nyc: 15.1.0
@@ -1220,7 +1218,7 @@ importers:
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
       chai: ^4.1.2
-      cpx: ^1.5.0
+      cpx2: ^3.0.0
       eslint: ^7.11.0
       mocha: ^8.3.2
       nyc: ^15.1.0
@@ -1238,7 +1236,7 @@ importers:
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
       chai: 4.3.4
-      cpx: 1.5.0
+      cpx2: 3.0.2
       eslint: 7.32.0
       mocha: 8.4.0
       nyc: 15.1.0
@@ -1255,7 +1253,6 @@ importers:
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
       chai: ^4.1.2
-      cpx: ^1.5.0
       eslint: ^7.11.0
       mocha: ^8.3.2
       nyc: ^15.1.0
@@ -1270,7 +1267,6 @@ importers:
       '@types/fs-extra': 4.0.12
       '@types/mocha': 8.2.3
       chai: 4.3.4
-      cpx: 1.5.0
       eslint: 7.32.0
       mocha: 8.4.0
       nyc: 15.1.0
@@ -1289,7 +1285,6 @@ importers:
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
       chai: ^4.1.2
-      cpx: ^1.5.0
       eslint: ^7.11.0
       mocha: ^8.3.2
       nyc: ^15.1.0
@@ -1306,7 +1301,6 @@ importers:
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
       chai: 4.3.4
-      cpx: 1.5.0
       eslint: 7.32.0
       mocha: 8.4.0
       nyc: 15.1.0
@@ -1330,7 +1324,6 @@ importers:
       '@types/semver': ^5.5.0
       chai: ^4.1.2
       chai-as-promised: ^7
-      cpx: ^1.5.0
       electron: ^14.0.0
       eslint: ^7.11.0
       mocha: ^8.3.2
@@ -1356,7 +1349,6 @@ importers:
       '@types/semver': 5.5.0
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
-      cpx: 1.5.0
       electron: 14.2.1
       eslint: 7.32.0
       mocha: 8.4.0
@@ -1414,7 +1406,7 @@ importers:
       '@types/node': 14.14.31
       '@types/semver': ^5.5.0
       chai: ^4.1.2
-      cpx: ^1.5.0
+      cpx2: ^3.0.0
       electron: ^14.0.0
       eslint: ^7.11.0
       glob: ^7.1.2
@@ -1438,7 +1430,7 @@ importers:
       '@types/node': 14.14.31
       '@types/semver': 5.5.0
       chai: 4.3.4
-      cpx: 1.5.0
+      cpx2: 3.0.2
       electron: 14.2.1
       eslint: 7.32.0
       glob: 7.2.0
@@ -1469,7 +1461,7 @@ importers:
       '@types/node': 14.14.31
       body-parser: ^1.18.2
       chai: ^4.1.2
-      cpx: ^1.5.0
+      cpx2: ^3.0.0
       electron: ^14.0.0
       eslint: ^7.11.0
       express: ^4.16.3
@@ -1508,7 +1500,7 @@ importers:
       '@types/fs-extra': 4.0.12
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
-      cpx: 1.5.0
+      cpx2: 3.0.2
       eslint: 7.32.0
       mocha: 8.4.0
       rimraf: 3.0.2
@@ -1539,7 +1531,7 @@ importers:
       body-parser: ^1.18.2
       chai: ^4.1.2
       chai-as-promised: ^7
-      cpx: ^1.5.0
+      cpx2: ^3.0.0
       electron: ^14.0.0
       eslint: ^7.11.0
       express: ^4.16.3
@@ -1583,7 +1575,7 @@ importers:
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
       chai-as-promised: 7.1.1_chai@4.3.4
-      cpx: 1.5.0
+      cpx2: 3.0.2
       eslint: 7.32.0
       mocha: 8.4.0
       rimraf: 3.0.2
@@ -1600,7 +1592,7 @@ importers:
       '@itwin/core-quantity': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@types/node': 14.14.31
-      cpx: ^1.5.0
+      cpx2: ^3.0.0
       eslint: ^7.11.0
       rimraf: ^3.0.2
       typescript: ~4.4.0
@@ -1615,7 +1607,7 @@ importers:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@types/node': 14.14.31
-      cpx: 1.5.0
+      cpx2: 3.0.2
       eslint: 7.32.0
       rimraf: 3.0.2
       typescript: 4.4.4
@@ -1657,7 +1649,7 @@ importers:
       chai-jest-snapshot: ^2.0.0
       chai-spies: 1.0.0
       classnames: ^2.3.1
-      cpx: ^1.5.0
+      cpx2: ^3.0.0
       enzyme: ^3.4.0
       enzyme-to-json: ^3.3.4
       eslint: ^7.11.0
@@ -1714,7 +1706,7 @@ importers:
       chai-as-promised: 7.1.1_chai@4.3.4
       chai-jest-snapshot: 2.0.0_chai@4.3.4
       chai-spies: 1.0.0_chai@4.3.4
-      cpx: 1.5.0
+      cpx2: 3.0.2
       enzyme: 3.11.0
       enzyme-to-json: 3.6.2_enzyme@3.11.0
       eslint: 7.32.0
@@ -1751,7 +1743,7 @@ importers:
       azurite: ^3.14.0
       chai: ^4.1.2
       chai-as-promised: ^7
-      cpx: ^1.5.0
+      cpx2: ^3.0.0
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       eslint: ^7.11.0
@@ -1778,7 +1770,7 @@ importers:
       azurite: 3.14.3
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
-      cpx: 1.5.0
+      cpx2: 3.0.2
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
       eslint: 7.32.0
@@ -1920,7 +1912,7 @@ importers:
       '@types/puppeteer': 2.0.1
       chai: ^4.1.2
       chai-as-promised: ^7
-      cpx: ^1.5.0
+      cpx2: ^3.0.0
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       eslint: ^7.11.0
@@ -1967,7 +1959,7 @@ importers:
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
       '@types/puppeteer': 2.0.1
-      cpx: 1.5.0
+      cpx2: 3.0.2
       eslint: 7.32.0
       internal-tools: link:../../tools/internal
       npm-run-all: 4.1.5
@@ -1993,7 +1985,7 @@ importers:
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
       chai: ^4.1.2
-      cpx: ^1.5.0
+      cpx2: ^3.0.0
       deep-assign: ^2.0.0
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
@@ -2026,7 +2018,7 @@ importers:
       '@types/deep-assign': 0.1.1
       '@types/fs-extra': 4.0.12
       '@types/mocha': 8.2.3
-      cpx: 1.5.0
+      cpx2: 3.0.2
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
       eslint: 7.32.0
@@ -2061,7 +2053,7 @@ importers:
       '@types/chai-as-promised': ^7
       '@types/chai-jest-snapshot': ^1.3.0
       '@types/chai-subset': 1.3.1
-      '@types/cpx': '1.5'
+      '@types/cpx2': npm:@types/cpx@1.5.0
       '@types/deep-equal': ^1
       '@types/faker': ^4.1.0
       '@types/mocha': ^8.2.2
@@ -2076,7 +2068,7 @@ importers:
       chai-as-promised: ^7
       chai-jest-snapshot: ^2.0.0
       chai-subset: 1.6.0
-      cpx: ^1.5.0
+      cpx2: ^3.0.0
       cross-env: ^5.1.4
       deep-equal: ^1
       dotenv: ^10.0.0
@@ -2119,7 +2111,7 @@ importers:
       '@types/chai-as-promised': 7.1.4
       '@types/chai-jest-snapshot': 1.3.6
       '@types/chai-subset': 1.3.1
-      '@types/cpx': 1.5.2
+      '@types/cpx2': /@types/cpx/1.5.0
       '@types/deep-equal': 1.0.1
       '@types/faker': 4.1.12
       '@types/mocha': 8.2.3
@@ -2131,7 +2123,7 @@ importers:
       chai-as-promised: 7.1.1_chai@4.3.4
       chai-jest-snapshot: 2.0.0_chai@4.3.4
       chai-subset: 1.6.0
-      cpx: 1.5.0
+      cpx2: 3.0.2
       deep-equal: 1.1.1
       faker: 4.1.0
       immer: 9.0.6
@@ -2249,7 +2241,7 @@ importers:
       '@types/puppeteer': 2.0.1
       chai: ^4.1.2
       chai-as-promised: ^7
-      cpx: ^1.5.0
+      cpx2: ^3.0.0
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       eslint: ^7.11.0
@@ -2295,7 +2287,7 @@ importers:
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
       '@types/puppeteer': 2.0.1
-      cpx: 1.5.0
+      cpx2: 3.0.2
       eslint: 7.32.0
       internal-tools: link:../../tools/internal
       npm-run-all: 4.1.5
@@ -2332,7 +2324,7 @@ importers:
       chai-as-promised: ^7
       chai-jest-snapshot: ^2.0.0
       chai-subset: 1.6.0
-      cpx: ^1.5.0
+      cpx2: ^3.0.0
       cross-env: ^5.1.4
       deep-equal: ^1
       eslint: ^7.11.0
@@ -2375,7 +2367,7 @@ importers:
       chai-as-promised: 7.1.1_chai@4.3.4
       chai-jest-snapshot: 2.0.0_chai@4.3.4
       chai-subset: 1.6.0
-      cpx: 1.5.0
+      cpx2: 3.0.2
       cross-env: 5.2.1
       deep-equal: 1.1.1
       eslint: 7.32.0
@@ -2410,7 +2402,7 @@ importers:
       chai-as-promised: ^7
       chai-jest-snapshot: ^2.0.0
       chai-subset: 1.6.0
-      cpx: ^1.5.0
+      cpx2: ^3.0.0
       cross-env: ^5.1.4
       deep-equal: ^1
       eslint: ^7.11.0
@@ -2445,7 +2437,7 @@ importers:
       chai-as-promised: 7.1.1_chai@4.3.4
       chai-jest-snapshot: 2.0.0_chai@4.3.4
       chai-subset: 1.6.0
-      cpx: 1.5.0
+      cpx2: 3.0.2
       cross-env: 5.2.1
       deep-equal: 1.1.1
       eslint: 7.32.0
@@ -2493,7 +2485,7 @@ importers:
       chai-as-promised: ^7
       chai-jest-snapshot: ^2.0.0
       chai-subset: 1.6.0
-      cpx: ^1.5.0
+      cpx2: ^3.0.0
       cross-env: ^5.1.4
       enzyme: ^3.4.0
       enzyme-to-json: ^3.3.4
@@ -2552,7 +2544,7 @@ importers:
       chai-as-promised: 7.1.1_chai@4.3.4
       chai-jest-snapshot: 2.0.0_chai@4.3.4
       chai-subset: 1.6.0
-      cpx: 1.5.0
+      cpx2: 3.0.2
       cross-env: 5.2.1
       enzyme: 3.11.0
       enzyme-to-json: 3.6.2_enzyme@3.11.0
@@ -2595,7 +2587,7 @@ importers:
       chai: ^4.1.2
       chai-as-promised: ^7
       chai-jest-snapshot: ^2.0.0
-      cpx: ^1.5.0
+      cpx2: ^3.0.0
       cross-env: ^5.1.4
       deep-equal: ^1
       eslint: ^7.11.0
@@ -2632,7 +2624,7 @@ importers:
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
       chai-jest-snapshot: 2.0.0_chai@4.3.4
-      cpx: 1.5.0
+      cpx2: 3.0.2
       cross-env: 5.2.1
       deep-equal: 1.1.1
       eslint: 7.32.0
@@ -2675,7 +2667,7 @@ importers:
       chai: ^4.1.2
       chai-as-promised: ^7
       chai-jest-snapshot: ^2.0.0
-      cpx: ^1.5.0
+      cpx2: ^3.0.0
       cross-env: ^5.1.4
       eslint: ^7.11.0
       faker: ^4.1.0
@@ -2729,7 +2721,7 @@ importers:
       typemoq: 2.1.0
       typescript: 4.4.4
     devDependencies:
-      cpx: 1.5.0
+      cpx2: 3.0.2
 
   ../../test-apps/display-performance-test-app:
     specifiers:
@@ -2758,7 +2750,7 @@ importers:
       body-parser: ^1.18.2
       child_process: ^1.0.2
       chrome-launcher: ^0.10.5
-      cpx: ^1.5.0
+      cpx2: ^3.0.0
       cross-env: ^5.1.4
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
@@ -2798,7 +2790,7 @@ importers:
       '@types/node': 14.14.31
       child_process: 1.0.2
       chrome-launcher: 0.10.7
-      cpx: 1.5.0
+      cpx2: 3.0.2
       cross-env: 5.2.1
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
@@ -2847,7 +2839,7 @@ importers:
       '@types/fs-extra': ^4.0.7
       body-parser: ^1.18.2
       child_process: ^1.0.2
-      cpx: ^1.5.0
+      cpx2: ^3.0.0
       cross-env: ^5.1.4
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
@@ -2898,7 +2890,7 @@ importers:
       '@types/express-ws': 3.0.1
       '@types/fs-extra': 4.0.12
       child_process: 1.0.2
-      cpx: 1.5.0
+      cpx2: 3.0.2
       cross-env: 5.2.1
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
@@ -3181,7 +3173,7 @@ importers:
       '@types/react-dom': ^17.0.0
       '@types/react-select': 3.0.26
       autoprefixer: ^8.6.5
-      cpx: ^1.5.0
+      cpx2: ^3.0.0
       cross-env: ^5.1.4
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
@@ -3234,7 +3226,7 @@ importers:
       '@types/react-dom': 17.0.11
       '@types/react-select': 3.0.26
       autoprefixer: 8.6.5
-      cpx: 1.5.0
+      cpx2: 3.0.2
       cross-env: 5.2.1
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
@@ -3271,7 +3263,7 @@ importers:
       '@types/react': 17.0.31
       '@types/react-select': 3.0.26
       classnames: ^2.3.1
-      cpx: ^1.5.0
+      cpx2: ^3.0.0
       eslint: ^7.11.0
       react: ^17.0.0
       react-dom: ^17.0.0
@@ -3306,7 +3298,7 @@ importers:
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@types/react': 17.0.31
       '@types/react-select': 3.0.26
-      cpx: 1.5.0
+      cpx2: 3.0.2
       eslint: 7.32.0
       rimraf: 3.0.2
       typescript: 4.4.4
@@ -3364,7 +3356,7 @@ importers:
       '@types/react-table': ^7.0.18
       '@types/semver': ^5.5.0
       classnames: ^2.3.1
-      cpx: ^1.5.0
+      cpx2: ^3.0.0
       cross-env: ^5.1.4
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
@@ -3450,7 +3442,7 @@ importers:
       '@types/react-select': 3.0.26
       '@types/react-table': 7.7.8
       '@types/semver': 5.5.0
-      cpx: 1.5.0
+      cpx2: 3.0.2
       cross-env: 5.2.1
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
@@ -3503,7 +3495,7 @@ importers:
       '@microsoft/api-extractor': 7.7.3
       '@types/node': 14.14.31
       chalk: ^3.0.0
-      cpx: ^1.5.0
+      cpx2: ^3.0.0
       cross-spawn: ^7.0.1
       eslint: ^7.11.0
       fs-extra: ^8.1.0
@@ -3521,7 +3513,7 @@ importers:
     dependencies:
       '@microsoft/api-extractor': 7.7.3
       chalk: 3.0.0
-      cpx: 1.5.0
+      cpx2: 3.0.2
       cross-spawn: 7.0.3
       fs-extra: 8.1.0
       glob: 7.2.0
@@ -3615,7 +3607,7 @@ importers:
       chai-string: ^1.5.0
       chalk: ^3.0.0
       commander: ^2.14.1
-      cpx: ^1.5.0
+      cpx2: ^3.0.0
       eslint: ^7.11.0
       fs-extra: ^8.1.0
       mocha: ^8.3.2
@@ -3644,7 +3636,7 @@ importers:
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
       chai: 4.3.4
-      cpx: 1.5.0
+      cpx2: 3.0.2
       eslint: 7.32.0
       mocha: 8.4.0
       nyc: 15.1.0
@@ -3740,7 +3732,7 @@ importers:
       chai-jest-snapshot: ^2.0.0
       chalk: ^3.0.0
       copy-webpack-plugin: ^6.2.1
-      cpx: ^1.5.0
+      cpx2: ^3.0.0
       eslint: ^7.11.0
       file-loader: ^4.2.0
       findup: 0.1.5
@@ -3784,7 +3776,7 @@ importers:
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
       chai-jest-snapshot: 2.0.0_chai@4.3.4
-      cpx: 1.5.0
+      cpx2: 3.0.2
       eslint: 7.32.0
       memfs: 3.3.0
       mocha: 8.4.0
@@ -3813,7 +3805,7 @@ importers:
       chai-as-promised: ^7
       chai-jest-snapshot: ^2.0.0
       chai-spies: 1.0.0
-      cpx: ^1.5.0
+      cpx2: ^3.0.0
       eslint: ^7.11.0
       ignore-styles: ^5.0.1
       jsdom: ^17.0.0
@@ -3847,7 +3839,7 @@ importers:
       chai-as-promised: 7.1.1_chai@4.3.4
       chai-jest-snapshot: 2.0.0_chai@4.3.4
       chai-spies: 1.0.0_chai@4.3.4
-      cpx: 1.5.0
+      cpx2: 3.0.2
       eslint: 7.32.0
       ignore-styles: 5.0.1
       jsdom: 17.0.0
@@ -3889,7 +3881,7 @@ importers:
       chai-jest-snapshot: ^2.0.0
       chai-spies: 1.0.0
       classnames: ^2.3.1
-      cpx: ^1.5.0
+      cpx2: ^3.0.0
       enzyme: ^3.4.0
       enzyme-to-json: ^3.3.4
       eslint: ^7.11.0
@@ -3937,7 +3929,7 @@ importers:
       chai-as-promised: 7.1.1_chai@4.3.4
       chai-jest-snapshot: 2.0.0_chai@4.3.4
       chai-spies: 1.0.0_chai@4.3.4
-      cpx: 1.5.0
+      cpx2: 3.0.2
       enzyme: 3.11.0
       enzyme-to-json: 3.6.2_enzyme@3.11.0
       eslint: 7.32.0
@@ -4005,7 +3997,7 @@ importers:
       chai-jest-snapshot: ^2.0.0
       chai-spies: 1.0.0
       classnames: ^2.3.1
-      cpx: ^1.5.0
+      cpx2: ^3.0.0
       enzyme: ^3.4.0
       enzyme-to-json: ^3.3.4
       eslint: ^7.11.0
@@ -4091,7 +4083,7 @@ importers:
       chai-as-promised: 7.1.1_chai@4.3.4
       chai-jest-snapshot: 2.0.0_chai@4.3.4
       chai-spies: 1.0.0_chai@4.3.4
-      cpx: 1.5.0
+      cpx2: 3.0.2
       enzyme: 3.11.0
       enzyme-to-json: 3.6.2_enzyme@3.11.0
       eslint: 7.32.0
@@ -4159,7 +4151,7 @@ importers:
       chai-spies: 1.0.0
       chai-string: ^1.5.0
       classnames: ^2.3.1
-      cpx: ^1.5.0
+      cpx2: ^3.0.0
       enzyme: ^3.4.0
       enzyme-to-json: ^3.3.4
       eslint: ^7.11.0
@@ -4256,7 +4248,7 @@ importers:
       chai-jest-snapshot: 2.0.0_chai@4.3.4
       chai-spies: 1.0.0_chai@4.3.4
       chai-string: 1.5.0_chai@4.3.4
-      cpx: 1.5.0
+      cpx2: 3.0.2
       enzyme: 3.11.0
       enzyme-to-json: 3.6.2_enzyme@3.11.0
       eslint: 7.32.0
@@ -4314,7 +4306,7 @@ importers:
       chai-jest-snapshot: ^2.0.0
       chai-spies: 1.0.0
       classnames: ^2.3.1
-      cpx: ^1.5.0
+      cpx2: ^3.0.0
       dompurify: ^2.0.12
       enzyme: ^3.4.0
       enzyme-to-json: ^3.3.4
@@ -4380,7 +4372,7 @@ importers:
       chai-as-promised: 7.1.1_chai@4.3.4
       chai-jest-snapshot: 2.0.0_chai@4.3.4
       chai-spies: 1.0.0_chai@4.3.4
-      cpx: 1.5.0
+      cpx2: 3.0.2
       enzyme: 3.11.0
       enzyme-to-json: 3.6.2_enzyme@3.11.0
       eslint: 7.32.0
@@ -4442,7 +4434,7 @@ importers:
       chai-spies: 1.0.0
       chai-string: ^1.5.0
       classnames: ^2.3.1
-      cpx: ^1.5.0
+      cpx2: ^3.0.0
       enzyme: ^3.4.0
       enzyme-to-json: ^3.3.4
       eslint: ^7.11.0
@@ -4511,7 +4503,7 @@ importers:
       chai-jest-snapshot: 2.0.0_chai@4.3.4
       chai-spies: 1.0.0_chai@4.3.4
       chai-string: 1.5.0_chai@4.3.4
-      cpx: 1.5.0
+      cpx2: 3.0.2
       enzyme: 3.11.0
       enzyme-to-json: 3.6.2_enzyme@3.11.0
       eslint: 7.32.0
@@ -6998,12 +6990,12 @@ packages:
     requiresBuild: true
     dev: false
 
-  /@bentley/itwin-client/3.0.0-dev.121_14d63520b213076e9a3b173c9cfdcc49:
-    resolution: {integrity: sha512-aouej/AkSufPi7D0ljQCRe8gdYLEOluR/0qN5vVFUVRiey9x0jgvD002qltPFWRiJvGksjcvj4kPA3Ii3XMrtg==}
+  /@bentley/itwin-client/3.0.0-dev.122_b95d462cc5492455e91586a77fe2d807:
+    resolution: {integrity: sha512-3E2cBYYpQ+BkBdfjZoQjC8Ggahr6hX18g87IjapHiLmQ9kzKBFTp3qqr+D86FXeoXele5Bg9ovrjNYXtUtT7Qg==}
     peerDependencies:
-      '@itwin/core-bentley': ^3.0.0-dev.121
+      '@itwin/core-bentley': ^3.0.0-dev.122
     dependencies:
-      '@itwin/core-bentley': 3.0.0-dev.121
+      '@itwin/core-bentley': 3.0.0-dev.122
       deep-assign: 2.0.0
       js-base64: 3.7.2
       lodash: 4.17.21
@@ -7506,8 +7498,8 @@ packages:
       - utf-8-validate
     dev: true
 
-  /@itwin/core-bentley/3.0.0-dev.121:
-    resolution: {integrity: sha512-mst/izvW0vRp86iCjNorDm0UUFC0JEv0X0GURDdkniU3Kxw1eQdmW67Z2dRwPBgsQG0KAtQcgTbZsYPz/6ZJjg==}
+  /@itwin/core-bentley/3.0.0-dev.122:
+    resolution: {integrity: sha512-j+gM/9dSkF13KLlgnFrNspwCSbhfrB35vos4sAB7Z5s8tWrETdvvt6RDzq5c6xE20XdmpJVPQVLbTWvZOmbjHw==}
     dev: false
 
   /@itwin/core-bentley/3.0.0-extension.1:
@@ -7530,8 +7522,8 @@ packages:
   /@itwin/electron-authorization/0.3.2:
     resolution: {integrity: sha512-lb1R6TOOh0u1c/nw6RWiXtJ2A6Is3NrPSwHvZ+Z23rZ7Ww5C0qutM4PYtVpf20Onmy2Lq6sQk8mHkHwP7B8j1w==}
     dependencies:
-      '@bentley/itwin-client': 3.0.0-dev.121_14d63520b213076e9a3b173c9cfdcc49
-      '@itwin/core-bentley': 3.0.0-dev.121
+      '@bentley/itwin-client': 3.0.0-dev.122_b95d462cc5492455e91586a77fe2d807
+      '@itwin/core-bentley': 3.0.0-dev.122
       '@openid/appauth': 1.3.1
       keytar: 7.7.0
       open: 8.4.0
@@ -8498,8 +8490,8 @@ packages:
     resolution: {integrity: sha512-t73xJJrvdTjXrn4jLS9VSGRbz0nUY3cl2DMGDU48lKl+HR9dbbjW2A9r3g40VA++mQpy6uuHg33gy7du2BKpog==}
     dev: true
 
-  /@types/cpx/1.5.2:
-    resolution: {integrity: sha512-CL9DbTAdf5NYcbYpBTli6JxVIpCAhJp1FeQiXd9SNjbC4o9k6McnHkU0FHgj9UYoN7TVX3poaaBrwFabTY7Skw==}
+  /@types/cpx/1.5.0:
+    resolution: {integrity: sha512-kuGK3lZqEvHTSDbJcaA6tcPoEXV4/e88YrltZMcQUewZhzYQwNSTMGIiPBqeeFd4LCBo1CX5U6CV6LaHG3wXSg==}
     dependencies:
       '@types/node': 14.14.31
     dev: false
@@ -9761,12 +9753,6 @@ packages:
     resolution: {integrity: sha1-q8av7tzqUugJzcA3au0845Y10X8=}
     dev: false
 
-  /anymatch/1.3.2:
-    resolution: {integrity: sha512-0XNayC8lTHQ2OI8aljNCN3sSx6hsr/1+rlcDAotXJR7C1oZZHCNsfpbKwMjRA3Uqb5tF1Rae2oloTr4xpq+WjA==}
-    dependencies:
-      micromatch: 2.3.11
-      normalize-path: 2.1.1
-
   /anymatch/2.0.0:
     resolution: {integrity: sha512-5teOsQWABXHHBFP9y3skS5P3d/WfWXpv3FUpy+LorMrNYaT9pI4oLMQX7jzQ2KklNpGpWHzdCXTDT2Y3XGlZBw==}
     dependencies:
@@ -9833,12 +9819,6 @@ packages:
     resolution: {integrity: sha1-2edrEXM+CFacCEeuezmyhgswt0U=}
     dev: true
 
-  /arr-diff/2.0.0:
-    resolution: {integrity: sha1-jzuCf5Vai9ZpaX5KQlasPOrjVs8=}
-    engines: {node: '>=0.10.0'}
-    dependencies:
-      arr-flatten: 1.1.0
-
   /arr-diff/4.0.0:
     resolution: {integrity: sha1-1kYQdP6/7HHn4VI1dhoyml3HxSA=}
     engines: {node: '>=0.10.0'}
@@ -9883,10 +9863,6 @@ packages:
     resolution: {integrity: sha1-r2rId6Jcx/dOBYiUdThY39sk/bY=}
     engines: {node: '>=0.10.0'}
     dev: true
-
-  /array-unique/0.2.1:
-    resolution: {integrity: sha1-odl8yvy8JiXMcPrc6zalDFiwGlM=}
-    engines: {node: '>=0.10.0'}
 
   /array-unique/0.3.2:
     resolution: {integrity: sha1-qJS3XUvE9s1nnvMkSp/Y9Gri1Cg=}
@@ -10393,6 +10369,7 @@ packages:
     dependencies:
       core-js: 2.6.12
       regenerator-runtime: 0.11.1
+    dev: true
 
   /babel-template/6.26.0:
     resolution: {integrity: sha1-3gPi0WOWsGn0bdn/+FIfsaDjXgI=}
@@ -10583,14 +10560,6 @@ packages:
     dependencies:
       balanced-match: 1.0.2
       concat-map: 0.0.1
-
-  /braces/1.8.5:
-    resolution: {integrity: sha1-uneWLhLf+WnWt2cR6RS3N4V79qc=}
-    engines: {node: '>=0.10.0'}
-    dependencies:
-      expand-range: 1.8.2
-      preserve: 0.2.0
-      repeat-element: 1.1.4
 
   /braces/2.3.2:
     resolution: {integrity: sha512-aNdbnj9P8PjdXU4ybaWLK2IF3jc/EoDYbC7AazW6to3TRsfXxscC9UXOB5iDiEQrkyIbWp2SLQda4+QAa7nc3w==}
@@ -11082,21 +11051,6 @@ packages:
     resolution: {integrity: sha1-sffn/HPSXn/R1FWtyU4UODAYK1o=}
     dev: true
 
-  /chokidar/1.7.0:
-    resolution: {integrity: sha1-eY5ol3gVHIB2tLNg5e3SjNortGg=}
-    deprecated: Chokidar 2 will break on node v14+. Upgrade to chokidar 3 with 15x less dependencies.
-    dependencies:
-      anymatch: 1.3.2
-      async-each: 1.0.3
-      glob-parent: 2.0.0
-      inherits: 2.0.4
-      is-binary-path: 1.0.1
-      is-glob: 2.0.1
-      path-is-absolute: 1.0.1
-      readdirp: 2.2.1
-    optionalDependencies:
-      fsevents: 1.2.13
-
   /chokidar/2.1.8:
     resolution: {integrity: sha512-ZmZUazfOzf0Nve7duiCKD23PFSCs4JPoYyccjUFF3aQkQadqBhfzhjkwBH2mNOG9cTBwhamM37EIsIkZw3nRgg==}
     deprecated: Chokidar 2 will break on node v14+. Upgrade to chokidar 3 with 15x less dependencies.
@@ -11255,7 +11209,6 @@ packages:
   /co/4.6.0:
     resolution: {integrity: sha1-bqa989hTrlTMuOR7+gvz+QMfsYQ=}
     engines: {iojs: '>= 1.0.0', node: '>= 0.12.0'}
-    dev: true
 
   /coa/2.0.2:
     resolution: {integrity: sha512-q5/jG+YQnSy4nRTV4F7lPepBJZ8qBNJJDBuJdoejDyLXgmL7IEo+Le2JDZudFTFt7mrCqIRaSjws4ygRCTCAXA==}
@@ -11575,6 +11528,7 @@ packages:
     resolution: {integrity: sha512-Kb2wC0fvsWfQrgk8HU5lW6U/Lcs8+9aaYcy4ZFc6DDlo4nZ7n70dEgE5rtR0oG6ufKDUnrwfWL1mXR5ljDatrQ==}
     deprecated: core-js@<3.3 is no longer maintained and not recommended for usage due to the number of issues. Because of the V8 engine whims, feature detection in old core-js versions could cause a slowdown up to 100x even if nothing is polyfilled. Please, upgrade your dependencies to the actual version of core-js.
     requiresBuild: true
+    dev: true
 
   /core-js/3.19.1:
     resolution: {integrity: sha512-Tnc7E9iKd/b/ff7GFbhwPVzJzPztGrChB8X8GLqoYGdEOG8IpLnK1xPyo3ZoO3HsK6TodJS58VGPOxA+hLHQMg==}
@@ -11614,21 +11568,25 @@ packages:
       yaml: 1.10.2
     dev: true
 
-  /cpx/1.5.0:
-    resolution: {integrity: sha1-GFvgGFEdhycN7czCkxceN2VauI8=}
+  /cpx2/3.0.2:
+    resolution: {integrity: sha512-xVmdulZJVGSV+c8KkZ9IQY+RgyL9sGeVqScI2e7NtsEY9SVKcQXM4v0/9OLU0W0YtL9nmmqrtWjs5rpvgHn9Hg==}
+    engines: {node: '>=6.5'}
     hasBin: true
     dependencies:
-      babel-runtime: 6.26.0
-      chokidar: 1.7.0
+      co: 4.6.0
+      debounce: 1.2.1
+      debug: 4.3.2
       duplexer: 0.1.2
+      fs-extra: 10.0.0
       glob: 7.2.0
       glob2base: 0.0.12
       minimatch: 3.0.4
-      mkdirp: 0.5.5
       resolve: 1.19.0
       safe-buffer: 5.2.1
       shell-quote: 1.7.3
       subarg: 1.0.0
+    transitivePeerDependencies:
+      - supports-color
 
   /create-ecdh/4.0.4:
     resolution: {integrity: sha512-mf+TCx8wWc9VpuxfP2ht0iSISLZnt0JgWlrOKZiNqyUZWnjIaCIVNQArMHnCZKfEYRg6IM7A+NeJoN8gf/Ws0A==}
@@ -11992,6 +11950,9 @@ packages:
   /date-fns/1.30.1:
     resolution: {integrity: sha512-hBSVCvSmWC+QypYObzwGOd9wqdDpOt+0wl0KbU+R+uuZBS1jN8VsD1ss3irQDknRj5NvxiTF6oj/nDRnN/UQNw==}
     dev: false
+
+  /debounce/1.2.1:
+    resolution: {integrity: sha512-XRRe6Glud4rd/ZGQfiV1ruXSfbvfJedlV9Y6zOlP+2K04vBYiJEte6stfFkCP03aMnY5tsipamumUjL14fofug==}
 
   /debug/2.6.9:
     resolution: {integrity: sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==}
@@ -13209,12 +13170,6 @@ packages:
     engines: {node: '>= 0.8.0'}
     dev: true
 
-  /expand-brackets/0.1.5:
-    resolution: {integrity: sha1-3wcoTjQqgHzXM6xa9yQR5YHRF3s=}
-    engines: {node: '>=0.10.0'}
-    dependencies:
-      is-posix-bracket: 0.1.1
-
   /expand-brackets/2.1.4:
     resolution: {integrity: sha1-t3c14xXOMPa27/D4OwQVGiJEliI=}
     engines: {node: '>=0.10.0'}
@@ -13226,12 +13181,6 @@ packages:
       regex-not: 1.0.2
       snapdragon: 0.8.2
       to-regex: 3.0.2
-
-  /expand-range/1.8.2:
-    resolution: {integrity: sha1-opnv/TNf4nIeuujiV+x5ZE/IUzc=}
-    engines: {node: '>=0.10.0'}
-    dependencies:
-      fill-range: 2.2.4
 
   /expand-template/2.0.3:
     resolution: {integrity: sha512-XYfuKMvj4O35f/pOXLObndIRvyQ+/+6AhODh+OKWj9S9498pHHn/IMszH+gt0fBCRWMNfk1ZSp5x3AifmnI2vg==}
@@ -13327,12 +13276,6 @@ packages:
   /extend/3.0.2:
     resolution: {integrity: sha512-fjquC59cD7CyW6urNXK0FBufkZcoiGG80wTuPujX590cB5Ttln20E2UB4S/WARVqhXffZl2LNgS+gQdPIIim/g==}
     dev: true
-
-  /extglob/0.3.2:
-    resolution: {integrity: sha1-Lhj/PS9JqydlzskCPwEdqo2DSaE=}
-    engines: {node: '>=0.10.0'}
-    dependencies:
-      is-extglob: 1.0.0
 
   /extglob/2.0.4:
     resolution: {integrity: sha512-Nmb6QXkELsuBr24CJSkilo6UHHgbekK5UiZgfE6UHD3Eb27YC6oD+bhcT+tJ6cl8dmsgdQxnWlcry8ksBIBLpw==}
@@ -13499,24 +13442,10 @@ packages:
     resolution: {integrity: sha512-0Zt+s3L7Vf1biwWZ29aARiVYLx7iMGnEUl9x33fbB/j3jR81u/O2LbqK+Bm1CDSNDKVtJ/YjwY7TUd5SkeLQLw==}
     optional: true
 
-  /filename-regex/2.0.1:
-    resolution: {integrity: sha1-wcS5vuPglyXdsQa3XB4wH+LxiyY=}
-    engines: {node: '>=0.10.0'}
-
   /filesize/6.1.0:
     resolution: {integrity: sha512-LpCHtPQ3sFx67z+uh2HnSyWSLLu5Jxo21795uRDuar/EOuYWXib5EmPaGIBuSnRqH2IODiKA2k5re/K9OnN/Yg==}
     engines: {node: '>= 0.4.0'}
     dev: true
-
-  /fill-range/2.2.4:
-    resolution: {integrity: sha512-cnrcCbj01+j2gTG921VZPnHbjmdAf8oQV/iGeV2kZxGSyfYjjTyY79ErsK1WJWMpw6DaApEX72binqJE+/d+5Q==}
-    engines: {node: '>=0.10.0'}
-    dependencies:
-      is-number: 2.1.0
-      isobject: 2.1.0
-      randomatic: 3.1.1
-      repeat-element: 1.1.4
-      repeat-string: 1.6.1
 
   /fill-range/4.0.0:
     resolution: {integrity: sha1-1USBHUKPmOsGpj3EAtJAPDKMOPc=}
@@ -13660,12 +13589,6 @@ packages:
     resolution: {integrity: sha1-gQaNKVqBQuwKxybG4iAMMPttXoA=}
     engines: {node: '>=0.10.0'}
 
-  /for-own/0.1.5:
-    resolution: {integrity: sha1-UmXGgaTylNq78XyVCbZ2OqhFEM4=}
-    engines: {node: '>=0.10.0'}
-    dependencies:
-      for-in: 1.0.2
-
   /foreground-child/2.0.0:
     resolution: {integrity: sha512-dCIq9FpEcyQyXKCkyzmlPTFNgrCzPudOe+mhvJU5zAtlBnGVy2yKxtfsxK2tQBThwq225jcvBjpw1Gr40uzZCA==}
     engines: {node: '>=8.0.0'}
@@ -13747,6 +13670,14 @@ packages:
 
   /fs-constants/1.0.0:
     resolution: {integrity: sha512-y6OAwoSIf7FyjMIv94u+b5rdheZEjzR63GTyZJm5qh4Bi+2YgwLCcI/fPFZkL5PSixOt6ZNKm+w+Hfp/Bciwow==}
+
+  /fs-extra/10.0.0:
+    resolution: {integrity: sha512-C5owb14u9eJwizKGdchcDUQeFtlSHHthBk8pbX9Vc1PFZrLombudjDnNns88aYslCyF6IY5SUw3Roz6xShcEIQ==}
+    engines: {node: '>=12'}
+    dependencies:
+      graceful-fs: 4.2.8
+      jsonfile: 6.1.0
+      universalify: 2.0.0
 
   /fs-extra/3.0.1:
     resolution: {integrity: sha1-N5TzeMWLNC6n27sjCVEJxLO2IpE=}
@@ -13916,18 +13847,6 @@ packages:
   /github-from-package/0.0.0:
     resolution: {integrity: sha1-l/tdlr/eiXMxPyDoKI75oWf6ZM4=}
     dev: false
-
-  /glob-base/0.3.0:
-    resolution: {integrity: sha1-27Fk9iIbHAscz4Kuoyi0l98Oo8Q=}
-    engines: {node: '>=0.10.0'}
-    dependencies:
-      glob-parent: 2.0.0
-      is-glob: 2.0.1
-
-  /glob-parent/2.0.0:
-    resolution: {integrity: sha1-gTg9ctsFT8zPUzbaqQLxgvbtuyg=}
-    dependencies:
-      is-glob: 2.0.1
 
   /glob-parent/3.1.0:
     resolution: {integrity: sha1-nmr2KZ2NO9K9QEMIMr0RPfkGxa4=}
@@ -14901,16 +14820,6 @@ packages:
     engines: {node: '>=8'}
     hasBin: true
 
-  /is-dotfile/1.0.3:
-    resolution: {integrity: sha1-pqLzL/0t+wT1yiXs0Pa4PPeYoeE=}
-    engines: {node: '>=0.10.0'}
-
-  /is-equal-shallow/0.1.3:
-    resolution: {integrity: sha1-IjgJj8Ih3gvPpdnqxMRdY4qhxTQ=}
-    engines: {node: '>=0.10.0'}
-    dependencies:
-      is-primitive: 2.0.0
-
   /is-extendable/0.1.1:
     resolution: {integrity: sha1-YrEQ4omkcUGOPsNqYX1HLjAd/Ik=}
     engines: {node: '>=0.10.0'}
@@ -14920,10 +14829,6 @@ packages:
     engines: {node: '>=0.10.0'}
     dependencies:
       is-plain-object: 2.0.4
-
-  /is-extglob/1.0.0:
-    resolution: {integrity: sha1-rEaBd8SUNAWgkvyPKXYMb/xiBsA=}
-    engines: {node: '>=0.10.0'}
 
   /is-extglob/2.1.1:
     resolution: {integrity: sha1-qIwCU1eR8C7TfHahueqXc8gz+MI=}
@@ -14953,12 +14858,6 @@ packages:
     resolution: {integrity: sha512-cTIB4yPYL/Grw0EaSzASzg6bBy9gqCofvWN8okThAYIxKJZC+udlRAmGbM0XLeniEJSs8uEgHPGuHSe1XsOLSQ==}
     engines: {node: '>=6'}
     dev: true
-
-  /is-glob/2.0.1:
-    resolution: {integrity: sha1-0Jb5JqPe1WAPP9/ZEZjLCIjC2GM=}
-    engines: {node: '>=0.10.0'}
-    dependencies:
-      is-extglob: 1.0.0
 
   /is-glob/3.1.0:
     resolution: {integrity: sha1-e6WuJCF4BKxwcHuWkiVnSGzD6Eo=}
@@ -14999,21 +14898,11 @@ packages:
     dependencies:
       has-tostringtag: 1.0.0
 
-  /is-number/2.1.0:
-    resolution: {integrity: sha1-Afy7s5NGOlSPL0ZszhbezknbkI8=}
-    engines: {node: '>=0.10.0'}
-    dependencies:
-      kind-of: 3.2.2
-
   /is-number/3.0.0:
     resolution: {integrity: sha1-JP1iAaR4LPUFYcgQJ2r8fRLXEZU=}
     engines: {node: '>=0.10.0'}
     dependencies:
       kind-of: 3.2.2
-
-  /is-number/4.0.0:
-    resolution: {integrity: sha512-rSklcAIlf1OmFdyAqbnWTLVelsQ58uvZ66S/ZyawjWqIviTWCjg2PzVGw8WUA+nNuPTqb4wgA+NszrJ+08LlgQ==}
-    engines: {node: '>=0.10.0'}
 
   /is-number/7.0.0:
     resolution: {integrity: sha512-41Cifkg6e8TylSpdtTpeLVMqvSBEVzTttHvERD741+pnZ8ANv0004MRL43QKPDlK9cGvNp6NZWZUBlbGXYxxng==}
@@ -15066,17 +14955,9 @@ packages:
     dependencies:
       isobject: 3.0.1
 
-  /is-posix-bracket/0.1.1:
-    resolution: {integrity: sha1-MzTceXdDaOkvAW5vvAqI9c1ua8Q=}
-    engines: {node: '>=0.10.0'}
-
   /is-potential-custom-element-name/1.0.1:
     resolution: {integrity: sha512-bCYeRA2rVibKZd+s2625gGnGF/t7DSqDs4dP7CrLA1m7jKWz6pps0LpYLJN8Q64HtmPKJ1hrN3nzPNKFEKOUiQ==}
     dev: true
-
-  /is-primitive/2.0.0:
-    resolution: {integrity: sha1-IHurkWOEmcB7Kt8kCkGochADRXU=}
-    engines: {node: '>=0.10.0'}
 
   /is-property/1.0.2:
     resolution: {integrity: sha1-V/4cTkhHTt1lsJkR8msc1Ald2oQ=}
@@ -16083,7 +15964,6 @@ packages:
       universalify: 2.0.0
     optionalDependencies:
       graceful-fs: 4.2.8
-    dev: true
 
   /jsonify/0.0.0:
     resolution: {integrity: sha1-LHS27kHZPKUbe1qu6PUDYx0lKnM=}
@@ -16611,9 +16491,6 @@ packages:
       escape-string-regexp: 4.0.0
     optional: true
 
-  /math-random/1.0.4:
-    resolution: {integrity: sha512-rUxjysqif/BZQH2yhd5Aaq7vXMSx9NdEsQcyA07uEzIvxgI7zIr33gGsh+RU0/XjmQpCW7RsVof1vlkvQVCK5A==}
-
   /md5.js/1.3.5:
     resolution: {integrity: sha512-xitP+WxNPcTTOgnTJcrhM0xvdPepipPSf3I8EIpGKeFLjt3PlJLIDG3u8EX53ZIubkb+5U2+3rELYpEhHhzdkg==}
     dependencies:
@@ -16712,24 +16589,6 @@ packages:
   /microevent.ts/0.1.1:
     resolution: {integrity: sha512-jo1OfR4TaEwd5HOrt5+tAZ9mqT4jmpNAusXtyfNzqVm9uiSYFZlKM1wYL4oU7azZW/PxQW53wM0S6OR1JHNa2g==}
     dev: true
-
-  /micromatch/2.3.11:
-    resolution: {integrity: sha1-hmd8l9FyCzY0MdBNDRUpO9OMFWU=}
-    engines: {node: '>=0.10.0'}
-    dependencies:
-      arr-diff: 2.0.0
-      array-unique: 0.2.1
-      braces: 1.8.5
-      expand-brackets: 0.1.5
-      extglob: 0.3.2
-      filename-regex: 2.0.1
-      is-extglob: 1.0.0
-      is-glob: 2.0.1
-      kind-of: 3.2.2
-      normalize-path: 2.1.1
-      object.omit: 2.0.1
-      parse-glob: 3.0.4
-      regex-cache: 0.4.4
 
   /micromatch/3.1.0:
     resolution: {integrity: sha512-3StSelAE+hnRvMs8IdVW7Uhk8CVed5tp+kLLGlBP6WiRAXS21GPGu/Nat4WNPXj2Eoc24B02SaeoyozPMfj0/g==}
@@ -17551,13 +17410,6 @@ packages:
       es-abstract: 1.19.1
     dev: true
 
-  /object.omit/2.0.1:
-    resolution: {integrity: sha1-Gpx0SCnznbuFjHbKNXmuKlTr0fo=}
-    engines: {node: '>=0.10.0'}
-    dependencies:
-      for-own: 0.1.5
-      is-extendable: 0.1.1
-
   /object.pick/1.3.0:
     resolution: {integrity: sha1-h6EKxMFpS9Lhy/U1kaZhQftd10c=}
     engines: {node: '>=0.10.0'}
@@ -17873,15 +17725,6 @@ packages:
       evp_bytestokey: 1.0.3
       pbkdf2: 3.1.2
       safe-buffer: 5.2.1
-
-  /parse-glob/3.0.4:
-    resolution: {integrity: sha1-ssN2z7EfNVE7rdFz7wu246OIORw=}
-    engines: {node: '>=0.10.0'}
-    dependencies:
-      glob-base: 0.3.0
-      is-dotfile: 1.0.3
-      is-extglob: 1.0.0
-      is-glob: 2.0.1
 
   /parse-json/4.0.0:
     resolution: {integrity: sha1-vjX1Qlvh9/bHRxhPmKeIy5lHfuA=}
@@ -18882,10 +18725,6 @@ packages:
     resolution: {integrity: sha1-6SQ0v6XqjBn0HN/UAddBo8gZ2Jc=}
     engines: {node: '>=4'}
 
-  /preserve/0.2.0:
-    resolution: {integrity: sha1-gV7R9uvGWSb4ZbMQwHE7yzMVzks=}
-    engines: {node: '>=0.10.0'}
-
   /pretty-bytes/5.6.0:
     resolution: {integrity: sha512-FFw039TmrBqFK8ma/7OL3sDz/VytdtJr044/QUJtH0wK9lb9jLq9tJyIxUwtQJHwar2BqtiA4iCWSwo9JLkzFg==}
     engines: {node: '>=6'}
@@ -19155,14 +18994,6 @@ packages:
     resolution: {integrity: sha1-T2ih3Arli9P7lYSMMDJNt11kNgs=}
     engines: {node: '>= 0.8'}
     dev: false
-
-  /randomatic/3.1.1:
-    resolution: {integrity: sha512-TuDE5KxZ0J461RVjrJZCJc+J+zCkTb1MbH9AQUq68sMhOMcy9jLcb3BrZKgp9q9Ncltdg4QVqWrH02W2EFFVYw==}
-    engines: {node: '>= 0.10.0'}
-    dependencies:
-      is-number: 4.0.0
-      kind-of: 6.0.3
-      math-random: 1.0.4
 
   /randombytes/2.1.0:
     resolution: {integrity: sha512-vYl3iOX+4CKUWuxGi9Ukhie6fsqXqS9FE2Zaic4tNFD2N2QQaXOMFbuKK4QmDHC0JO6B1Zp41J0LpT0oR68amQ==}
@@ -19735,6 +19566,7 @@ packages:
 
   /regenerator-runtime/0.11.1:
     resolution: {integrity: sha512-MguG95oij0fC3QV3URf4V2SDYGJhJnJGqvIIgdECeODCT98wSWDAJ94SSuVpYQUoTcGUIL6L4yNB7j1DFFHSBg==}
+    dev: true
 
   /regenerator-runtime/0.13.9:
     resolution: {integrity: sha512-p3VT+cOEgxFsRRA9X4lkI1E+k2/CtnKtU4gcxyaCUreilL/vqI6CdZ3wxVUx3UOUg+gnUOQQcRI7BmSI656MYA==}
@@ -19744,12 +19576,6 @@ packages:
     dependencies:
       '@babel/runtime': 7.16.3
     dev: true
-
-  /regex-cache/0.4.4:
-    resolution: {integrity: sha512-nVIZwtCjkC9YgvWkpM55B5rBhBYRZhAaJbgcFYXXsHnbZ9UZI9nnVWYZpBlCqv9ho2eZryPnWrZGsOdPwVWXWQ==}
-    engines: {node: '>=0.10.0'}
-    dependencies:
-      is-equal-shallow: 0.1.3
 
   /regex-not/1.0.2:
     resolution: {integrity: sha512-J6SDjUgDxQj5NusnOtdFxDwN/+HWykR8GELwctJ7mdqhcyy1xEc4SRFHUXvxTp661YaVKAjfRLZ9cCqS6tn32A==}
@@ -21979,7 +21805,6 @@ packages:
   /universalify/2.0.0:
     resolution: {integrity: sha512-hAZsKq7Yy11Zu1DE0OzWjw7nnLZmJZYTDZZyEFHZdUhV8FkH5MCfoU1XMaxXovpyW5nq5scPqq0ZDP9Zyl04oQ==}
     engines: {node: '>= 10.0.0'}
-    dev: true
 
   /unpipe/1.0.0:
     resolution: {integrity: sha1-sr9O6FFKrmFltIF4KdIbLvSZBOw=}

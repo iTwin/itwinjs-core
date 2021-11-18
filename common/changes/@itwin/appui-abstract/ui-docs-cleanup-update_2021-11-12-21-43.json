@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-abstract",
+      "comment": "Deprecate UI 1.0 props",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-abstract"
+}
