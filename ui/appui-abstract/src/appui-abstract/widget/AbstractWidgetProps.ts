@@ -29,7 +29,7 @@ export interface AbstractWidgetProps extends ProvidedItem {
   readonly label?: string | ConditionalStringValue;
   /** used to explicitly set the tooltip shown by a component. */
   readonly tooltip?: string | ConditionalStringValue;
-  /** Indicates whether the Widget is free-form or rectangular. Defaults to false for rectangular. The default is false. */
+  /** Indicates whether the Widget is free-form or rectangular. Defaults to false for rectangular. The default is false. @deprecated */
   readonly isFreeform?: boolean;
   /** Application data attached to the Widget. */
   readonly applicationData?: any;
