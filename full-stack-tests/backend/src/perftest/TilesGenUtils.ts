@@ -17,6 +17,7 @@ interface TileTreeInfo {
   modelId: Id64String;
   is2d: boolean;
   guid?: GuidString;
+  tileScreenSize: number;
 }
 
 export interface TileGenParams {
@@ -49,6 +50,7 @@ export interface Stats {
 
 const kEmptyTileSize = 332; // bytes
 const loggerCategory = "TileGenerationPerformance";
+const tileScreenSize = 512;
 
 export class BackendTileGenerator {
   private readonly _iModel: IModelDb;
@@ -97,7 +99,7 @@ export class BackendTileGenerator {
       try {
         const model = this._iModel.models.getModel<SpatialModel>(modelId);
         const treeId = iModelTileTreeIdToString(modelId, { type: BatchType.Primary, edgesRequired: false }, this._options);
-        models.push({ treeId, modelId, guid: model.geometryGuid, is2d: false, treeType: BatchType.Primary });
+        models.push({ treeId, modelId, guid: model.geometryGuid, is2d: false, treeType: BatchType.Primary, tileScreenSize });
       } catch (err) {
         Logger.logError(loggerCategory, `Failed to load model "${modelId}": ${err}`);
       }
