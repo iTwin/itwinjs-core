@@ -3094,6 +3094,7 @@ importers:
       '@itwin/core-backend': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
+      '@itwin/core-electron': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/core-transformer': workspace:*
       '@itwin/electron-authorization': ^0.3.2
@@ -3105,8 +3106,10 @@ importers:
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
       '@types/yargs': ^12.0.5
+      cross-env: ^5.1.4
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
+      electron: ^14.0.0
       eslint: ^7.11.0
       fs-extra: ^8.1.0
       internal-tools: workspace:*
@@ -3120,6 +3123,7 @@ importers:
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
+      '@itwin/core-electron': link:../../core/electron
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-transformer': link:../../core/transformer
       '@itwin/electron-authorization': 0.3.2
@@ -3137,6 +3141,8 @@ importers:
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
       '@types/yargs': 12.0.20
+      cross-env: 5.2.1
+      electron: 14.2.1
       eslint: 7.32.0
       internal-tools: link:../../tools/internal
       mocha: 8.4.0
