@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Make onRestartTool explicitly async",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

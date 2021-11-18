@@ -51,10 +51,23 @@ function useBackstageItemSyncEffect(itemsManager: BackstageItemsManager, syncIds
 /** local function to combine items from Stage and from Extensions */
 function combineItems(stageItems: ReadonlyArray<BackstageItem>, addonItems: ReadonlyArray<BackstageItem>) {
   const items: BackstageItem[] = [];
-  if (stageItems.length)
-    items.push(...stageItems);
-  if (addonItems.length)
-    items.push(...addonItems);
+  if (stageItems.length) {
+    // Walk through each and ensure no duplicate ids are added.
+    stageItems.forEach((srcItem) => {
+      if (-1 === items.findIndex((item) => item.id === srcItem.id)) {
+        items.push(srcItem);
+      }
+    });
+  }
+  if (addonItems.length) {
+    // Walk through each and ensure no duplicate ids are added.
+    addonItems.forEach((srcItem) => {
+      if (-1 === items.findIndex((item) => item.id === srcItem.id)) {
+        items.push(srcItem);
+      }
+    });
+  }
+
   return items;
 }
 

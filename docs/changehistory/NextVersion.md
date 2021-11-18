@@ -987,6 +987,7 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `VisibilityWidget`                         | `TreeWidgetControl` in @bentley/tree-widget-react                                                                             |
 | `ContentLayoutProps`                       | `ContentLayoutProps` in @itwin/appui-abstract                                                                                 |
 | All drag & drop related APIs               | Third party components. E.g. see this [example](https://www.itwinjs.org/sample-showcase/?group=UI+Trees&sample=drag-and-drop) |
+| `ModelsTreeProps.enablePreloading`         | *eliminated*                                                                                                                  |
 
 ### @itwin/core-bentley
 

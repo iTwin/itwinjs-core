@@ -1,6 +1,6 @@
 {
   "name": "@itwin/map-layers",
-  "version": "3.0.0-dev.121",
+  "version": "3.0.0-dev.122",
   "description": "Extension that adds a Map Layers Widget",
   "main": "lib/cjs/map-layers.js",
   "module": "lib/esm/map-layers.js",
@@ -70,7 +70,7 @@
     "chai-as-promised": "^7",
     "chai-jest-snapshot": "^2.0.0",
     "chai-spies": "1.0.0",
-    "cpx": "^1.5.0",
+    "cpx2": "^3.0.0",
     "enzyme": "^3.4.0",
     "enzyme-to-json": "^3.3.4",
     "eslint": "^7.11.0",
