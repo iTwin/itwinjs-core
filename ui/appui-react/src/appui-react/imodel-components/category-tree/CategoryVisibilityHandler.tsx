@@ -53,14 +53,14 @@ export async function loadCategoriesFromViewport(iModel?: IModelConnection, vp?:
 
 /**
  * Data structure that describes category.
- * @internal
+ * @alpha
  */
 export interface Category {
   key: string;
   children?: string[];
 }
 
-/** @internal */
+/** @alpha */
 export interface CategoryVisibilityHandlerParams {
   viewManager: ViewManager;
   imodel: IModelConnection;
@@ -69,7 +69,7 @@ export interface CategoryVisibilityHandlerParams {
   allViewports?: boolean;
 }
 
-/** @internal */
+/** @alpha */
 export class CategoryVisibilityHandler implements IVisibilityHandler {
   private _viewManager: ViewManager;
   private _imodel: IModelConnection;
