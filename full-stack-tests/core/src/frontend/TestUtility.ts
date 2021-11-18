@@ -12,7 +12,6 @@ import { getAccessTokenFromBackend, TestUserCredentials } from "@itwin/oidc-sign
 import { IModelHubUserMgr } from "../common/IModelHubUserMgr";
 import { rpcInterfaces, TestRpcInterface } from "../common/RpcInterfaces";
 import { ITwinPlatformAbstraction, ITwinPlatformCloudEnv, ITwinStackCloudEnv } from "./hub/ITwinPlatformEnv";
-import { url } from "inspector";
 
 export class TestUtility {
   public static testITwinName = "iModelJsIntegrationTest";
