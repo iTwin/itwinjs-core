@@ -1204,8 +1204,8 @@ describe("IModelTransformer", () => {
     const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: { name: "PreserveId" } });
 
     function filterCategoryPredicate(elem: Element): boolean {
-      // if (elem instanceof GeometricElement && elem.category === spatialCateg2Id)
-      //   return false;
+      if (elem instanceof GeometricElement && elem.category === spatialCateg2Id)
+        return false;
       if (elem.id === spatialCateg2Id)
         return false;
       return true;
@@ -1219,7 +1219,7 @@ describe("IModelTransformer", () => {
       }
     }
 
-    const transformer = new FilterCategoryTransformer(sourceDb, targetDb, { /* preserveIdsInFilterTransform: true*/ });
+    const transformer = new FilterCategoryTransformer(sourceDb, targetDb, { preserveIdsInFilterTransform: true });
     await transformer.processAll();
     targetDb.saveChanges();
 
@@ -1238,14 +1238,6 @@ describe("IModelTransformer", () => {
       }
       return result;
     }
-
-    /*
-    the issue is that when we export the definition model, while filtering the category
-    so how does the default transformer filter out elements related to the filtered category?
-
-    regular transformer actually fails to filter it out since it is a predecessor, it just scoops up the spatial category later...
-    you need to filter them all out to actually lose it. I should have this behavior too
-    */
 
     const sourceContent = await getAllElementsInvariants(sourceDb, filterCategoryPredicate);
     const targetContent = await getAllElementsInvariants(targetDb);
