@@ -12,21 +12,21 @@ import { Point3d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } fr
 import {
   CategorySelector, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingModel, ECSqlStatement, Element,
   ElementMultiAspect, ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, GenericPhysicalMaterial,
+  GeometricElement,
   IModelCloneContext, IModelDb, IModelHost, IModelJsFs, IModelSchemaLoader, InformationRecordModel, InformationRecordPartition, LinkElement, Model,
   ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, Relationship, RepositoryLink, Schema,
   SnapshotDb, SpatialCategory, StandaloneDb, Subject,
 } from "@itwin/core-backend";
 import { ExtensiveTestScenario, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import {
-  AxisAlignedBox3d, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorDef, CreateIModelProps, DefinitionElementProps, ElementProps,
-  ExternalSourceAspectProps, IModel, IModelError, PhysicalElementProps, Placement3d,
+  AxisAlignedBox3d, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorDef, CreateIModelProps, DefinitionElementProps,
+  ExternalSourceAspectProps, IModel, IModelError, PhysicalElementProps, Placement3d, QueryRowFormat,
 } from "@itwin/core-common";
 import { IModelExporter, IModelExportHandler, IModelTransformer, TransformerLoggerCategory } from "../../core-transformer";
 import {
   ClassCounter, FilterByViewTransformer, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerTestUtils, PhysicalModelConsolidator,
   RecordingIModelImporter, TestIModelTransformer, TransformerExtensiveTestScenario,
 } from "../IModelTransformerUtils";
-import { QueryRowFormat } from "@itwin/core-common";
 
 describe("IModelTransformer", () => {
   const outputDir: string = path.join(KnownTestLocations.outputDir, "IModelTransformer");
@@ -1203,32 +1203,51 @@ describe("IModelTransformer", () => {
     const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "PreserveIdTarget.bim");
     const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: { name: "PreserveId" } });
 
+    function filterCategoryPredicate(elem: Element): boolean {
+      // if (elem instanceof GeometricElement && elem.category === spatialCateg2Id)
+      //   return false;
+      if (elem.id === spatialCateg2Id)
+        return false;
+      return true;
+    }
+
     class FilterCategoryTransformer extends IModelTransformer {
       public override shouldExportElement(elem: Element): boolean {
-        if (elem.id === spatialCateg2Id)
+        if (!filterCategoryPredicate(elem))
           return false;
         return super.shouldExportElement(elem);
       }
     }
 
-    const transformer = new FilterCategoryTransformer(sourceDb, targetDb, { preserveIdsInFilterTransform: true });
+    const transformer = new FilterCategoryTransformer(sourceDb, targetDb, { /* preserveIdsInFilterTransform: true*/ });
     await transformer.processAll();
     targetDb.saveChanges();
 
-    async function getAllElementsInvariants(db: IModelDb, filter?: (props: Partial<ElementProps>) => boolean) {
-      const result: Record<Id64String, Partial<ElementProps>> = {};
+    async function getAllElementsInvariants(db: IModelDb, filterPredicate?: (element: Element) => boolean) {
+      const result: Record<Id64String, any> = {};
       for await (const row of db.query("SELECT * FROM bis.Element", undefined, QueryRowFormat.UseECSqlPropertyNames)) {
-        if (filter && !filter(row))
+        if (filterPredicate && !filterPredicate(db.elements.getElement(row.ECInstanceId)))
           continue;
-        /* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/naming-convention */
-        const { LastMod, ...invariantPortion } = row;
-        /* eslint-enable @typescript-eslint/no-unused-vars, @typescript-eslint/naming-convention  */
+        const {
+          /* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/naming-convention */
+          LastMod,
+          /* eslint-enable @typescript-eslint/no-unused-vars, @typescript-eslint/naming-convention */
+          ...invariantPortion
+        } = row;
         result[row.ECInstanceId] = invariantPortion;
       }
       return result;
     }
 
-    const sourceContent = await getAllElementsInvariants(sourceDb, (elem) => elem.id ? ![spatialCateg2Id, _physObj2Id].includes(elem.id) : true);
+    /*
+    the issue is that when we export the definition model, while filtering the category
+    so how does the default transformer filter out elements related to the filtered category?
+
+    regular transformer actually fails to filter it out since it is a predecessor, it just scoops up the spatial category later...
+    you need to filter them all out to actually lose it. I should have this behavior too
+    */
+
+    const sourceContent = await getAllElementsInvariants(sourceDb, filterCategoryPredicate);
     const targetContent = await getAllElementsInvariants(targetDb);
     expect(targetContent).to.deep.equal(sourceContent);
 
