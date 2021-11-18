@@ -134,10 +134,10 @@ export abstract class PrimitiveTool extends InteractiveTool {
    * @param _previous The previously active view.
    * @param current The new active view.
    */
-  public override onSelectedViewportChanged(_previous: Viewport | undefined, current: Viewport | undefined): void {
+  public override async onSelectedViewportChanged(_previous: Viewport | undefined, current: Viewport | undefined): Promise<void> {
     if (this.isCompatibleViewport(current, true))
       return;
-    this.onRestartTool();
+    return this.onRestartTool();
   }
 
   /**
@@ -146,11 +146,11 @@ export abstract class PrimitiveTool extends InteractiveTool {
    * The active tool is expected to call installTool with a new instance, or exitTool to start the default tool.
    * ```ts
    *   const tool = new MyPrimitiveTool();
-   *   if (!tool.run())
-   *     this.exitTool(); // Don't leave current instance active if new instance rejects install...
+   *   if (!await tool.run())
+   *     return this.exitTool(); // Don't leave current instance active if new instance rejects install...
    * ```
    */
-  public abstract onRestartTool(): void;
+  public abstract onRestartTool(): Promise<void>;
 
   /**
    * Called to reset tool to initial state. PrimitiveTool implements this method to call onRestartTool.
