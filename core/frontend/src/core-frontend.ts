@@ -210,6 +210,10 @@ export * from "./RealityDataSource";
  * Classes representing graphics as [hierarchical 3d tiles](https://github.com/CesiumGS/3d-tiles).
  */
 /**
+ * @docs-group-description RealityDataDisplayStyle
+ * Class representing a container and methods to specify display properties or actions on reality data.
+ */
+/**
  * @docs-group-description HubAccess
  * APIs for working with IModelHub
  */
