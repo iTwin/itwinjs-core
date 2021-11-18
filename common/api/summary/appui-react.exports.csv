@@ -103,11 +103,11 @@ alpha;CardContainerProps
 alpha;CardInfo
 alpha;CardSelectedEvent 
 alpha;CardSelectedEventArgs
-internal;Category
+alpha;Category
 public;CategoryTree(props: CategoryTreeProps): JSX.Element
 public;CategoryTreeProps
-internal;CategoryVisibilityHandler 
-internal;CategoryVisibilityHandlerParams
+alpha;CategoryVisibilityHandler 
+alpha;CategoryVisibilityHandlerParams
 public;ChildWindowLocationProps
 public;ChildWindowManager
 beta;ClassGroupingOption
@@ -390,8 +390,8 @@ public;ModelsTree(props: ModelsTreeProps): JSX.Element
 beta;ModelsTreeNodeType
 public;ModelsTreeProps
 beta;ModelsTreeSelectionPredicate = (key: NodeKey, type: ModelsTreeNodeType) => boolean
-internal;ModelsVisibilityHandler 
-internal;ModelsVisibilityHandlerProps
+alpha;ModelsVisibilityHandler 
+alpha;ModelsVisibilityHandlerProps
 public;MouseDownChangedEvent 
 public;MouseDownChangedEventArgs
 public;NameToReducerMap
@@ -782,14 +782,12 @@ deprecated;WorkflowProps
 internal;WorkflowPropsList
 deprecated;WorkflowPropsList
 public;Zone 
-deprecated;Zone 
 public;ZoneDef 
 deprecated;ZoneDef 
 public;ZoneDefProvider
 public;ZoneLocation
 deprecated;ZoneLocation
 public;ZoneProps 
-deprecated;ZoneProps 
 internal;ZoneRuntimeProps
 public;ZoneState
 deprecated;ZoneState
