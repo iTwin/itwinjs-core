@@ -28,7 +28,7 @@ import { BentleyCloudRpcManager, BentleyCloudRpcParams, IModelVersion, RpcConfig
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import {
   AccuSnap, BriefcaseConnection, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeApp, NativeAppAuthorization, NativeAppLogger,
-  NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool,
+  NativeAppOpts, QuantityFormatter, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool,
 } from "@itwin/core-frontend";
 import { MarkupApp } from "@itwin/core-markup";
 import { AndroidApp, IOSApp } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
@@ -37,6 +37,7 @@ import { EditTools } from "@itwin/editor-frontend";
 import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
 import { MapLayersUI } from "@itwin/map-layers";
+import { SchemaContext, SchemaUnitProvider } from "@itwin/ecschema-metadata";
 import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, Presentation } from "@itwin/presentation-frontend";
 import { getSupportedRpcs } from "../common/rpcs";
 import { loggerCategory, TestAppConfiguration } from "../common/TestAppConfiguration";
@@ -63,6 +64,7 @@ import {
   OpenComponentExamplesPopoutTool, OpenCustomPopoutTool, OpenViewPopoutTool, RemoveSavedContentLayoutTool, RestoreSavedContentLayoutTool,
   SaveContentLayoutTool, TestExtensionUiProviderTool, UiProviderTool,
 } from "./tools/UiProviderTool";
+import { ECSchemaRpcInterface, ECSchemaRpcLocater } from "@itwin/ecschema-rpcinterface-common";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -384,6 +386,12 @@ export class SampleAppIModelApp {
     let stageId: string;
     const defaultFrontstage = this.allowWrite ? EditFrontstage.stageId : ViewsFrontstage.stageId;
 
+    // Reset QuantityFormatter UnitsProvider with new iModelConnection
+    const schemaLocater = new ECSchemaRpcLocater(iModelConnection);
+    const context = new SchemaContext();
+    context.addLocater(schemaLocater);
+    IModelApp.quantityFormatter.unitsProvider = new SchemaUnitProvider(context);
+
     // store the IModelConnection in the sample app store - this may trigger redux connected components
     UiFramework.setIModelConnection(iModelConnection, true);
     if (viewIdsSelected.length) {
@@ -460,6 +468,12 @@ export class SampleAppIModelApp {
       }
 
       SampleAppIModelApp.setIsIModelLocal(!!iModelConnection?.isBriefcaseConnection, true);
+
+      // Reset QuantityFormatter UnitsProvider with new iModelConnection
+      const schemaLocater = new ECSchemaRpcLocater(iModelConnection);
+      const context = new SchemaContext();
+      context.addLocater(schemaLocater);
+      IModelApp.quantityFormatter.unitsProvider = new SchemaUnitProvider(context);
 
       // store the IModelConnection in the sample app store
       UiFramework.setIModelConnection(iModelConnection, true);
@@ -725,6 +739,9 @@ async function main() {
   SampleAppIModelApp.testAppConfiguration.useLocalSettings = SampleAppIModelApp.isEnvVarOn("IMJS_UITESTAPP_USE_LOCAL_SETTINGS");
   Logger.logInfo("Configuration", JSON.stringify(SampleAppIModelApp.testAppConfiguration)); // eslint-disable-line no-console
 
+  // An EC SchemaContext used by the QuantityFormatter.
+  const schemaContext = new SchemaContext();
+
   const mapLayerOpts = {
     BingMaps: SampleAppIModelApp.testAppConfiguration.bingMapsKey ? { key: "key", value: SampleAppIModelApp.testAppConfiguration.bingMapsKey } : undefined,
     Mapbox: SampleAppIModelApp.testAppConfiguration.mapBoxKey ? { key: "key", value: SampleAppIModelApp.testAppConfiguration.mapBoxKey } : undefined,
@@ -742,6 +759,7 @@ async function main() {
       rpcInterfaces: getSupportedRpcs(),
       hubAccess: new IModelHubFrontend(),
       mapLayerOptions: mapLayerOpts,
+      quantityFormatter: new QuantityFormatter(new SchemaUnitProvider(schemaContext)),
       tileAdmin: { cesiumIonKey: SampleAppIModelApp.testAppConfiguration.cesiumIonKey },
     },
   };

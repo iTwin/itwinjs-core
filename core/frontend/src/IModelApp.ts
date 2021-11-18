@@ -29,6 +29,7 @@ import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import * as modelselector from "./ModelSelectorState";
 import * as modelState from "./ModelState";
 import { NotificationManager } from "./NotificationManager";
+import { BasicUnitsProvider } from "./quantity-formatting/BasicUnitsProvider";
 import { QuantityFormatter } from "./quantity-formatting/QuantityFormatter";
 import { RenderSystem } from "./render/RenderSystem";
 import { System } from "./render/webgl/System";
@@ -370,7 +371,7 @@ export class IModelApp {
     this._accuSnap = opts.accuSnap ?? new AccuSnap();
     this._locateManager = opts.locateManager ?? new ElementLocateManager();
     this._tentativePoint = opts.tentativePoint ?? new TentativePoint();
-    this._quantityFormatter = opts.quantityFormatter ?? new QuantityFormatter();
+    this._quantityFormatter = opts.quantityFormatter ?? new QuantityFormatter(new BasicUnitsProvider());
     this._uiAdmin = opts.uiAdmin ?? new UiAdmin();
     this._mapLayerFormatRegistry = new MapLayerFormatRegistry(opts.mapLayerOptions);
     this._realityDataAccess = opts.realityDataAccess;

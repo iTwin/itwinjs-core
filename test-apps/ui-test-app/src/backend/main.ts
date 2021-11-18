@@ -14,6 +14,9 @@ import { initializeElectron } from "./electron/ElectronMain";
 import { loggerCategory } from "../common/TestAppConfiguration";
 import { AndroidHost, IOSHost } from "@itwin/core-mobile/lib/cjs/MobileBackend";
 import { getSupportedRpcs } from "../common/rpcs";
+import { RpcManager } from "@itwin/core-common";
+import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common";
+import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
 
 (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
   try {
@@ -48,6 +51,10 @@ import { getSupportedRpcs } from "../common/rpcs";
       enableSchemasPreload: true,
       updatesPollInterval: 100,
     });
+
+    // ECSchemaRpcInterface allows schema retrieval for the UnitProvider implementation.
+    RpcManager.registerImpl(ECSchemaRpcInterface, ECSchemaRpcImpl);
+
   } catch (error: any) {
     Logger.logError(loggerCategory, error);
     process.exitCode = 1;
