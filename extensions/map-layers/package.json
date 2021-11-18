@@ -36,7 +36,6 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/react-scripts": "4.0.3",
     "@itwin/appui-abstract": "workspace:*",
     "@itwin/appui-layout-react": "workspace:*",
     "@itwin/appui-react": "workspace:*",

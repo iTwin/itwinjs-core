@@ -1513,7 +1513,6 @@ importers:
 
   ../../extensions/map-layers:
     specifiers:
-      '@bentley/react-scripts': 4.0.3
       '@itwin/appui-abstract': workspace:*
       '@itwin/appui-layout-react': workspace:*
       '@itwin/appui-react': workspace:*
@@ -1570,7 +1569,6 @@ importers:
       react-resize-detector: 6.7.6_react@17.0.2
       react-select: 3.2.0_react@17.0.2
     devDependencies:
-      '@bentley/react-scripts': 4.0.3_react@17.0.2+typescript@4.4.4
       '@itwin/appui-abstract': link:../../ui/appui-abstract
       '@itwin/appui-layout-react': link:../../ui/appui-layout-react
       '@itwin/appui-react': link:../../ui/appui-react
