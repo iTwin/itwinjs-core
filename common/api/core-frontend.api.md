@@ -4979,6 +4979,8 @@ export function linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: V
 // @internal
 export class LocalhostIpcApp {
     // (undocumented)
+    static buildUrlForSocket(base: URL, path?: string): URL;
+    // (undocumented)
     static startup(opts: LocalHostIpcAppOpts): Promise<void>;
 }
 
@@ -4989,7 +4991,7 @@ export interface LocalHostIpcAppOpts {
     // (undocumented)
     localhostIpcApp?: {
         socketPort?: number;
-        socketPath?: string;
+        socketUrl?: URL;
     };
 }
 
