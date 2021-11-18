@@ -1,7 +1,6 @@
 {
-  "name": "imodel-transformer",
-  "//private": "NOTE: this is a private package that is never published",
-  "private": true,
+  "name": "@itwin/workspace-editor",
+  "private": false,
   "license": "MIT",
   "scripts": {
     "build": "tsc 1>&2",
@@ -15,25 +14,14 @@
   },
   "repository": {},
   "dependencies": {
-    "@itwin/core-bentley": "workspace:*",
-    "@itwin/core-electron": "workspace:*",
-    "@itwin/core-geometry": "workspace:*",
-    "@bentley/imodelhub-client": "workspace:*",
-    "@itwin/core-common": "workspace:*",
     "@itwin/core-backend": "workspace:*",
-    "@itwin/core-transformer": "workspace:*",
-    "@bentley/itwin-client": "workspace:*",
-    "fs-extra": "^8.1.0",
     "yargs": "^16.0.0"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
-    "@itwin/projects-client": "^0.2.0",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^8.2.2",
-    "@types/fs-extra": "^4.0.7",
-    "@types/node": "14.14.31",
     "@types/yargs": "^12.0.5",
     "eslint": "^7.11.0",
     "mocha": "^8.3.2",
