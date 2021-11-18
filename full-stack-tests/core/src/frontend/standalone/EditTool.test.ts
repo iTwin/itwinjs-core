@@ -34,11 +34,11 @@ class TestEditTool1 extends PrimitiveTool {
   }
 }
 
-if (ProcessDetector.isElectronAppFrontend) {
+if (!ProcessDetector.isMobileAppFrontend) {
   describe("EditTools", () => {
 
     before(async () => {
-      await TestUtility.startFrontend();
+      await TestUtility.startFrontend(undefined, undefined, true);
       const namespace = "TestApp";
       await IModelApp.localization.registerNamespace(namespace);
       IModelApp.tools.register(TestEditTool1, namespace);
