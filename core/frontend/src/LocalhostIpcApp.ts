@@ -16,7 +16,7 @@ export interface LocalHostIpcAppOpts {
 
   localhostIpcApp?: {
     socketPort?: number;
-    socketPath?: string;
+    socketUrl?: URL;
   };
 }
 
@@ -27,12 +27,12 @@ class LocalTransport extends IpcWebSocketTransport {
   public constructor(opts: LocalHostIpcAppOpts) {
     super();
 
-    let url = "";
-    if (opts?.localhostIpcApp?.socketPath) {
-      url = opts?.localhostIpcApp?.socketPath;
+    let url: URL;
+    if (opts?.localhostIpcApp?.socketUrl) {
+      url = opts?.localhostIpcApp?.socketUrl;
     } else {
       const port = opts?.localhostIpcApp?.socketPort ?? 3002;
-      url = `ws://localhost:${port}/`;
+      url = new URL(`ws://localhost:${port}/`);
     }
 
     this._client = new WebSocket(url);
@@ -59,6 +59,13 @@ class LocalTransport extends IpcWebSocketTransport {
  *  @internal
  */
 export class LocalhostIpcApp {
+  public static buildUrlForSocket(base: URL, path = "ipc"): URL {
+    const url = new URL(base);
+    url.protocol = "ws";
+    url.pathname = [...url.pathname.split("/"), path].filter((v) => v).join("/");
+    return url;
+  }
+
   public static async startup(opts: LocalHostIpcAppOpts) {
     IpcWebSocket.transport = new LocalTransport(opts);
     const ipc = new IpcWebSocketFrontend();

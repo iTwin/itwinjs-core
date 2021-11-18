@@ -9,14 +9,14 @@ import * as fs from "fs";
 import * as path from "path";
 import { IModelHubBackend } from "@bentley/imodelhub-client/lib/cjs/imodelhub-node";
 import {
-  FileNameResolver, IModelDb, IModelHost, IModelHostConfiguration, IpcHandler, PhysicalModel, PhysicalPartition, SpatialCategory,
+  FileNameResolver, IModelDb, IModelHost, IModelHostConfiguration, IpcHandler, LocalhostIpcHost, PhysicalModel, PhysicalPartition, SpatialCategory,
   SubjectOwnsPartitionElements,
 } from "@itwin/core-backend";
 import { Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { BentleyCloudRpcManager, CodeProps, ElementProps, IModel, RelatedElement, RpcConfiguration, SubCategoryAppearance } from "@itwin/core-common";
 import { ElectronAuthorizationBackend, ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backend";
-import { IModelJsExpressServer } from "@itwin/express-server";
+import { WebEditServer } from "@itwin/express-server";
 import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIpc";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
@@ -97,11 +97,15 @@ async function init() {
 
     // create a basic express web server
     const port = Number(process.env.CERTA_PORT || 3011) + 2000;
-    const server = new IModelJsExpressServer(rpcConfig.protocol);
+    const server = new WebEditServer(rpcConfig.protocol);
     await server.initialize(port);
     console.log(`Web backend for full-stack-tests listening on port ${port}`);
 
-    await IModelHost.startup(iModelHost);
+    await LocalhostIpcHost.startup({ iModelHost, localhostIpcHost: { noServer: true } });
+
+    EditCommandAdmin.registerModule(testCommands);
+    EditCommandAdmin.register(BasicManipulationCommand);
+    FullStackTestIpcHandler.register();
   }
 
   IModelHost.snapshotFileNameResolver = new BackendTestAssetResolver();

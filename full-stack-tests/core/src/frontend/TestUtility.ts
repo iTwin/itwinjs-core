@@ -7,11 +7,12 @@ import { AccessToken, GuidString, Logger, ProcessDetector } from "@itwin/core-be
 import { Project as ITwin } from "@itwin/projects-client";
 import { AuthorizationClient } from "@itwin/core-common";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
-import { IModelApp, IModelAppOptions, MockRender, NativeApp, NativeAppAuthorization } from "@itwin/core-frontend";
+import { IModelApp, IModelAppOptions, LocalhostIpcApp, MockRender, NativeApp, NativeAppAuthorization } from "@itwin/core-frontend";
 import { getAccessTokenFromBackend, TestUserCredentials } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { IModelHubUserMgr } from "../common/IModelHubUserMgr";
 import { rpcInterfaces, TestRpcInterface } from "../common/RpcInterfaces";
 import { ITwinPlatformAbstraction, ITwinPlatformCloudEnv, ITwinStackCloudEnv } from "./hub/ITwinPlatformEnv";
+import { url } from "inspector";
 
 export class TestUtility {
   public static testITwinName = "iModelJsIntegrationTest";
@@ -134,13 +135,22 @@ export class TestUtility {
    *
    * Otherwise, IModelApp.startup is used directly.
    */
-  public static async startFrontend(opts?: IModelAppOptions, mockRender?: boolean): Promise<void> {
+  public static async startFrontend(opts?: IModelAppOptions, mockRender?: boolean, enableWebEdit?: boolean): Promise<void> {
     opts = opts ? opts : TestUtility.iModelAppOptions;
     if (mockRender)
       opts.renderSys = this.systemFactory();
     if (ProcessDetector.isElectronAppFrontend)
       return ElectronApp.startup({ iModelApp: opts });
-    return IModelApp.startup(opts);
+
+    if (enableWebEdit) {
+      let socketUrl = new URL(window.location.toString());
+      socketUrl.port = (parseInt(socketUrl.port, 10) + 2000).toString();
+      socketUrl = LocalhostIpcApp.buildUrlForSocket(socketUrl);
+
+      return LocalhostIpcApp.startup({ iModelApp: opts, localhostIpcApp: { socketUrl } });
+    } else {
+      return IModelApp.startup(opts);
+    }
   }
 
   /** Helper around the different shutdown workflows for different app types.
