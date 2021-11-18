@@ -6,7 +6,7 @@ Feedback and questions about iTwin.js are welcome and encouraged.
 
 The iTwin.js development team closely monitors our GitHub:
 
-- [Discussion Forums](https://github.com/imodeljs/imodeljs/labels/discussion)
+- [Discussion Forums](https://github.com/iTwin/itwinjs-core/discussions)
 - [Enhancement Requests](https://github.com/imodeljs/imodeljs/labels/enhancement)
 - [Bug Reports](https://github.com/imodeljs/imodeljs/labels/bug)
 
