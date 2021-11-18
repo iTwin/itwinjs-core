@@ -44,18 +44,18 @@
   },
   "peerDependencies": {
     "@itwin/core-bentley": "workspace:^3.0.0-dev.122",
-    "@itwin/core-geometry": "workspace:^3.0.0-dev.122",
     "@itwin/core-common": "workspace:^3.0.0-dev.122",
-    "@itwin/core-frontend": "workspace:^3.0.0-dev.122"
+    "@itwin/core-frontend": "workspace:^3.0.0-dev.122",
+    "@itwin/core-geometry": "workspace:^3.0.0-dev.122"
   },
   "devDependencies": {
-    "@itwin/core-bentley": "workspace:*",
     "@itwin/build-tools": "workspace:*",
-    "@itwin/certa": "workspace:*",
-    "@itwin/eslint-plugin": "workspace:*",
-    "@itwin/core-geometry": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
+    "@itwin/certa": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^8.2.2",
     "@types/node": "14.14.31",

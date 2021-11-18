@@ -17,13 +17,14 @@
   },
   "repository": {},
   "dependencies": {
+    "@bentley/imodelhub-client": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
-    "@itwin/core-geometry": "workspace:*",
-    "@bentley/imodelhub-client": "workspace:*",
-    "@itwin/core-transformer": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
+    "@itwin/core-transformer": "workspace:*",
+    "@itwin/projects-client": "^0.2.0",
     "@itwin/service-authorization": "^0.3.0",
     "fs-extra": "^8.1.0"
   },
