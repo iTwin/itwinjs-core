@@ -7,6 +7,8 @@ import { expect } from "chai";
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
+import { render } from "@testing-library/react";
+
 import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
 import { WidgetState } from "@itwin/appui-abstract";
 import { getDefaultZonesManagerProps } from "@itwin/appui-layout-react";
@@ -62,7 +64,6 @@ describe("Frontstage", () => {
 
   it("FrontstageProvider supplies Frontstage to FrontstageComposer", async () => {
     const wrapper = mount(<FrontstageComposer />); // eslint-disable-line deprecation/deprecation
-
     const frontstageProvider = new TestFrontstage();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
     const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
@@ -91,27 +92,25 @@ describe("Frontstage", () => {
     FrontstageManager.addFrontstageProvider(frontstageProvider);
     const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
     await FrontstageManager.setActiveFrontstageDef(frontstageDef);
-    setImmediate(async () => {
-      await TestUtils.flushAsyncOperations();
-      wrapper.update();
-      const widget = FrontstageManager.findWidget("widget3");
-      const saveTransientStateSpy = sinon.spy(widget!.widgetControl!, "saveTransientState");
-      const restoreTransientStateSpy = sinon.spy(widget!.widgetControl!, "restoreTransientState");
+    await TestUtils.flushAsyncOperations();
+    wrapper.update();
+    const widget = FrontstageManager.findWidget("widget3");
+    const saveTransientStateSpy = sinon.spy(widget!.widgetControl!, "saveTransientState");
+    const restoreTransientStateSpy = sinon.spy(widget!.widgetControl!, "restoreTransientState");
 
-      let zones = FrontstageManager.NineZoneManager.getZonesManager().mergeZone(4, 7, wrapper.state("nineZone").zones);
-      zones = FrontstageManager.NineZoneManager.getZonesManager().setWidgetTabIndex(4, 0, zones);
-      zones = FrontstageManager.NineZoneManager.getZonesManager().setWidgetTabIndex(7, -1, zones);
-      wrapper.setState({
-        nineZone: {
-          ...wrapper.state().nineZone,
-          zones,
-        },
-      });
-      wrapper.update();
-
-      expect(saveTransientStateSpy.calledOnce).true;
-      expect(restoreTransientStateSpy.calledOnce).true;
+    let zones = FrontstageManager.NineZoneManager.getZonesManager().mergeZone(4, 7, wrapper.state("nineZone").zones);
+    zones = FrontstageManager.NineZoneManager.getZonesManager().setWidgetTabIndex(4, 0, zones);
+    zones = FrontstageManager.NineZoneManager.getZonesManager().setWidgetTabIndex(7, -1, zones);
+    wrapper.setState({
+      nineZone: {
+        ...wrapper.state().nineZone,
+        zones,
+      },
     });
+    wrapper.update();
+
+    expect(saveTransientStateSpy.calledOnce).true;
+    expect(restoreTransientStateSpy.calledOnce).true;
   });
 
   it("should remount widget if widget control is not provided", async () => {
@@ -119,34 +118,31 @@ describe("Frontstage", () => {
     const frontstageProvider = new TestFrontstage();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
     await FrontstageManager.setActiveFrontstage(frontstageProvider.id);
-    setImmediate(async () => {
-      await TestUtils.flushAsyncOperations();
-      wrapper.update();
+    await TestUtils.flushAsyncOperations();
+    wrapper.update();
 
-      const contentRenderer = wrapper.find("WidgetContentRenderer").at(2);
-      const widgetElement = contentRenderer.find(TestWidgetElement);
-      const widget = FrontstageManager.findWidget("widget3");
-      sinon.stub(widget!, "widgetControl").get(() => undefined);
-      const componentWillUnmountSpy = sinon.spy(widgetElement.instance(), "componentWillUnmount");
-      const widgetElementComponentDidMountSpy = sinon.spy(TestWidgetElement.prototype, "componentDidMount");
+    const contentRenderer = wrapper.find("WidgetContentRenderer").at(2);
+    const widgetElement = contentRenderer.find(TestWidgetElement);
+    const widget = FrontstageManager.findWidget("widget3");
+    sinon.stub(widget!, "widgetControl").get(() => undefined);
+    const componentWillUnmountSpy = sinon.spy(widgetElement.instance(), "componentWillUnmount");
+    const widgetElementComponentDidMountSpy = sinon.spy(TestWidgetElement.prototype, "componentDidMount");
+    await TestUtils.flushAsyncOperations();
+    wrapper.update();
 
-      expect(contentRenderer.state().widgetKey).eq(2);
-
-      let zones = FrontstageManager.NineZoneManager.getZonesManager().mergeZone(4, 7, wrapper.state("nineZone").zones);
-      zones = FrontstageManager.NineZoneManager.getZonesManager().setWidgetTabIndex(4, 0, zones);
-      zones = FrontstageManager.NineZoneManager.getZonesManager().setWidgetTabIndex(7, -1, zones);
-      wrapper.setState({
-        nineZone: {
-          ...wrapper.state().nineZone,
-          zones,
-        },
-      });
-      wrapper.update();
-
-      expect(contentRenderer.state().widgetKey).eq(3);
-      expect(componentWillUnmountSpy.calledOnce).true;
-      expect(widgetElementComponentDidMountSpy.calledOnce).true;
+    let zones = FrontstageManager.NineZoneManager.getZonesManager().mergeZone(4, 7, wrapper.state("nineZone").zones);
+    zones = FrontstageManager.NineZoneManager.getZonesManager().setWidgetTabIndex(4, 0, zones);
+    zones = FrontstageManager.NineZoneManager.getZonesManager().setWidgetTabIndex(7, -1, zones);
+    wrapper.setState({
+      nineZone: {
+        ...wrapper.state().nineZone,
+        zones,
+      },
     });
+    wrapper.update();
+
+    expect(componentWillUnmountSpy.calledOnce).true;
+    expect(widgetElementComponentDidMountSpy.calledOnce).true;
   });
 
   it("should remount widget if widget control did not handle state restoration", async () => {
@@ -155,34 +151,30 @@ describe("Frontstage", () => {
     FrontstageManager.addFrontstageProvider(frontstageProvider);
     const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
     await FrontstageManager.setActiveFrontstageDef(frontstageDef);
-    setImmediate(async () => {
-      await TestUtils.flushAsyncOperations();
-      wrapper.update();
+    await TestUtils.flushAsyncOperations();
+    wrapper.update();
 
-      const contentRenderer = wrapper.find("WidgetContentRenderer").at(2);
-      const widgetElement = contentRenderer.find(TestWidgetElement);
-      const widget = FrontstageManager.findWidget("widget3");
-      sinon.stub(widget!.widgetControl!, "restoreTransientState").returns(false);
-      const componentWillUnmountSpy = sinon.spy(widgetElement.instance(), "componentWillUnmount");
-      const widgetElementComponentDidMountSpy = sinon.spy(TestWidgetElement.prototype, "componentDidMount");
+    const contentRenderer = wrapper.find("WidgetContentRenderer").at(2);
+    const widgetElement = contentRenderer.find(TestWidgetElement);
+    const widget = FrontstageManager.findWidget("widget3");
+    sinon.stub(widget!.widgetControl!, "restoreTransientState").returns(false);
+    const componentWillUnmountSpy = sinon.spy(widgetElement.instance(), "componentWillUnmount");
+    const widgetElementComponentDidMountSpy = sinon.spy(TestWidgetElement.prototype, "componentDidMount");
 
-      expect(contentRenderer.state().widgetKey).eq(2);
-
-      let zones = FrontstageManager.NineZoneManager.getZonesManager().mergeZone(4, 7, wrapper.state("nineZone").zones);
-      zones = FrontstageManager.NineZoneManager.getZonesManager().setWidgetTabIndex(4, 0, zones);
-      zones = FrontstageManager.NineZoneManager.getZonesManager().setWidgetTabIndex(7, -1, zones);
-      wrapper.setState({
-        nineZone: {
-          ...wrapper.state().nineZone,
-          zones,
-        },
-      });
-      wrapper.update();
-
-      expect(contentRenderer.state().widgetKey).eq(3);
-      expect(componentWillUnmountSpy.calledOnce).true;
-      expect(widgetElementComponentDidMountSpy.calledOnce).true;
+    let zones = FrontstageManager.NineZoneManager.getZonesManager().mergeZone(4, 7, wrapper.state("nineZone").zones);
+    zones = FrontstageManager.NineZoneManager.getZonesManager().setWidgetTabIndex(4, 0, zones);
+    zones = FrontstageManager.NineZoneManager.getZonesManager().setWidgetTabIndex(7, -1, zones);
+    wrapper.setState({
+      nineZone: {
+        ...wrapper.state().nineZone,
+        zones,
+      },
     });
+    wrapper.update();
+    await TestUtils.flushAsyncOperations();
+
+    expect(componentWillUnmountSpy.calledOnce).true;
+    expect(widgetElementComponentDidMountSpy.calledOnce).true;
 
   });
 
@@ -192,63 +184,53 @@ describe("Frontstage", () => {
     FrontstageManager.addFrontstageProvider(frontstageProvider);
     const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
     await FrontstageManager.setActiveFrontstageDef(frontstageDef);
-    setImmediate(async () => {
-      await TestUtils.flushAsyncOperations();
-      wrapper.update();
+    await TestUtils.flushAsyncOperations();
+    wrapper.update();
 
-      const contentRenderer = wrapper.find("WidgetContentRenderer").at(2);
-      const widgetElement = contentRenderer.find(TestWidgetElement);
-      const widget = FrontstageManager.findWidget("widget3");
-      sinon.stub(widget!.widgetControl!, "restoreTransientState").returns(true);
-      const componentWillUnmountSpy = sinon.spy(widgetElement.instance(), "componentWillUnmount");
-      const widgetElementComponentDidMountSpy = sinon.spy(TestWidgetElement.prototype, "componentDidMount");
+    const contentRenderer = wrapper.find("WidgetContentRenderer").at(2);
+    const widgetElement = contentRenderer.find(TestWidgetElement);
+    const widget = FrontstageManager.findWidget("widget3");
+    sinon.stub(widget!.widgetControl!, "restoreTransientState").returns(true);
+    const componentWillUnmountSpy = sinon.spy(widgetElement.instance(), "componentWillUnmount");
+    const widgetElementComponentDidMountSpy = sinon.spy(TestWidgetElement.prototype, "componentDidMount");
 
-      expect(contentRenderer.state().widgetKey).eq(2);
-
-      let zones = FrontstageManager.NineZoneManager.getZonesManager().mergeZone(4, 7, wrapper.state("nineZone").zones);
-      zones = FrontstageManager.NineZoneManager.getZonesManager().setWidgetTabIndex(4, 0, zones);
-      zones = FrontstageManager.NineZoneManager.getZonesManager().setWidgetTabIndex(7, -1, zones);
-      wrapper.setState({
-        nineZone: {
-          ...wrapper.state().nineZone,
-          zones,
-        },
-      });
-      wrapper.update();
-
-      expect(contentRenderer.state().widgetKey).eq(2);
-      expect(componentWillUnmountSpy.calledOnce).false;
-      expect(widgetElementComponentDidMountSpy.calledOnce).false;
+    let zones = FrontstageManager.NineZoneManager.getZonesManager().mergeZone(4, 7, wrapper.state("nineZone").zones);
+    zones = FrontstageManager.NineZoneManager.getZonesManager().setWidgetTabIndex(4, 0, zones);
+    zones = FrontstageManager.NineZoneManager.getZonesManager().setWidgetTabIndex(7, -1, zones);
+    wrapper.setState({
+      nineZone: {
+        ...wrapper.state().nineZone,
+        zones,
+      },
     });
+    wrapper.update();
+    await TestUtils.flushAsyncOperations();
+
+    // expect(contentRenderer.state().widgetKey).eq(2);
+    expect(componentWillUnmountSpy.calledOnce).false;
+    expect(widgetElementComponentDidMountSpy.calledOnce).false;
   });
 
   it("should update when widget state changes", async () => {
-    const wrapper = mount(<FrontstageComposer />); // eslint-disable-line deprecation/deprecation
+    render(<FrontstageComposer />); // eslint-disable-line deprecation/deprecation
     const frontstageProvider = new TestFrontstage();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
     const frontstageDef = await FrontstageManager.getFrontstageDef(TestFrontstage.stageId);
     await FrontstageManager.setActiveFrontstageDef(frontstageDef);
-    setImmediate(async () => {
-      await TestUtils.flushAsyncOperations();
-      wrapper.update();
-
-      const contentRenderer = wrapper.find("WidgetContentRenderer").at(2);
-      const forceUpdateSpy = sinon.spy(contentRenderer.instance(), "forceUpdate");
-
-      const widgetDef = FrontstageManager.findWidget("widget3")!;
-      const widgetState = WidgetState.Open;
-      FrontstageManager.onWidgetStateChangedEvent.emit({
-        widgetDef,
-        widgetState,
-      });
-
-      expect(forceUpdateSpy.calledOnce).true;
-
-      widgetDef.setWidgetState(WidgetState.Closed);
-      expect(forceUpdateSpy.calledTwice).true;
-      expect(widgetDef.activeState).to.eq(WidgetState.Closed);
-      expect(widgetDef.stateChanged).true;
+    await TestUtils.flushAsyncOperations();
+    const widgetDef = FrontstageManager.findWidget("widget3")!;
+    const widgetState = WidgetState.Open;
+    FrontstageManager.onWidgetStateChangedEvent.emit({
+      widgetDef,
+      widgetState,
     });
+    await TestUtils.flushAsyncOperations();
+
+    widgetDef.setWidgetState(WidgetState.Closed);
+    await TestUtils.flushAsyncOperations();
+
+    expect(widgetDef.activeState).to.eq(WidgetState.Closed);
+    expect(widgetDef.stateChanged).true;
   });
 
   it("WidgetManager should add dynamic WidgetDef to Frontstage on activation", async () => {
@@ -256,41 +238,37 @@ describe("Frontstage", () => {
     const widgetDef = new WidgetDef({ id: widgetId });
     UiFramework.widgetManager.addWidgetDef(widgetDef, TestFrontstage.stageId, undefined, ZoneLocation.CenterLeft);
 
-    const wrapper = mount(<FrontstageComposer />); // eslint-disable-line deprecation/deprecation
+    render(<FrontstageComposer />); // eslint-disable-line deprecation/deprecation
     const frontstageProvider = new TestFrontstage();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
     const frontstageDef = await FrontstageManager.getFrontstageDef(TestFrontstage.stageId);
     await FrontstageManager.setActiveFrontstageDef(frontstageDef);
-    setImmediate(async () => {
-      await TestUtils.flushAsyncOperations();
-      wrapper.update();
-
-      if (frontstageDef) {
-        const foundWidgetDef = frontstageDef.findWidgetDef(widgetId);
-        expect(foundWidgetDef).to.not.be.undefined;
-      }
-    });
+    await TestUtils.flushAsyncOperations();
+    await TestUtils.flushAsyncOperations();
+    if (frontstageDef) {
+      const foundWidgetDef = frontstageDef.findWidgetDef(widgetId);
+      expect(foundWidgetDef).to.not.be.undefined;
+    }
+    await TestUtils.flushAsyncOperations();
   });
 
   it("WidgetManager should add dynamic WidgetDef to Frontstage after activation", async () => {
-    const wrapper = mount(<FrontstageComposer />); // eslint-disable-line deprecation/deprecation
+    render(<FrontstageComposer />); // eslint-disable-line deprecation/deprecation
     const frontstageProvider = new TestFrontstage();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
     const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
     await FrontstageManager.setActiveFrontstageDef(frontstageDef);
-    setImmediate(async () => {
-      await TestUtils.flushAsyncOperations();
-      wrapper.update();
+    await TestUtils.flushAsyncOperations();
 
-      const widgetId = "DynamicTest";
-      const widgetDef = new WidgetDef({ id: widgetId });
-      UiFramework.widgetManager.addWidgetDef(widgetDef, TestFrontstage.stageId, undefined, ZoneLocation.CenterLeft);
+    const widgetId = "DynamicTest";
+    const widgetDef = new WidgetDef({ id: widgetId });
+    UiFramework.widgetManager.addWidgetDef(widgetDef, TestFrontstage.stageId, undefined, ZoneLocation.CenterLeft);
+    await TestUtils.flushAsyncOperations();
 
-      if (frontstageDef) {
-        const foundWidgetDef = frontstageDef.findWidgetDef(widgetId);
-        expect(foundWidgetDef).to.not.be.undefined;
-      }
-    });
+    if (frontstageDef) {
+      const foundWidgetDef = frontstageDef.findWidgetDef(widgetId);
+      expect(foundWidgetDef).to.not.be.undefined;
+    }
   });
 });
 

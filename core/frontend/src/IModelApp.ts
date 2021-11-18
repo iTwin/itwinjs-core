@@ -645,13 +645,13 @@ export class IModelApp {
     const noticeCell = IModelApp.makeHTMLElement("td", { parent: card, className: "logo-card-message" });
     if (undefined !== opts.heading) {
       if (typeof opts.heading === "string")
-        IModelApp.makeHTMLElement("h2", { parent: noticeCell, innerHTML: opts.heading });
+        IModelApp.makeHTMLElement("h2", { parent: noticeCell, innerHTML: opts.heading,  className:"logo-card-header" });
       else
         noticeCell.appendChild(opts.heading);
     }
     if (undefined !== opts.notice) {
       if (typeof opts.notice === "string")
-        IModelApp.makeHTMLElement("p", { parent: noticeCell, innerHTML: opts.notice });
+        IModelApp.makeHTMLElement("p", { parent: noticeCell, innerHTML: opts.notice, className: "logo-cards" });
       else
         noticeCell.appendChild(opts.notice);
     }

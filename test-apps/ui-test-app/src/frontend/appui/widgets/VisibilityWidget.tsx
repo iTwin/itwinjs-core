@@ -22,7 +22,7 @@ import filterIconSvg from "../icons/filter.svg?sprite";
 export class VisibilityWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
-    this.reactNode = <VisibilityTreeComponent imodel={options.iModelConnection} activeView={IModelApp.viewManager.selectedView} enablePreloading={options.enablePreloading}
+    this.reactNode = <VisibilityTreeComponent imodel={options.iModelConnection} activeView={IModelApp.viewManager.selectedView}
       config={options.config} />;
   }
 }
@@ -30,7 +30,6 @@ export class VisibilityWidgetControl extends WidgetControl {
 interface VisibilityTreeComponentProps {
   imodel: IModelConnection;
   activeView?: Viewport;
-  enablePreloading?: boolean;
   config?: {
     modelsTree: {
       selectionMode?: SelectionMode;
@@ -43,7 +42,7 @@ interface VisibilityTreeComponentProps {
 }
 
 function VisibilityTreeComponent(props: VisibilityTreeComponentProps) {
-  const { imodel, activeView, enablePreloading } = props;
+  const { imodel, activeView } = props;
   const modelsTreeProps = props.config?.modelsTree;
   const categoriesTreeProps = props.config?.categoriesTree;
   const selectLabel = IModelApp.localization.getLocalizedString("UiFramework:visibilityWidget.options");
@@ -55,16 +54,16 @@ function VisibilityTreeComponent(props: VisibilityTreeComponentProps) {
           id: "models-tree",
           label: IModelApp.localization.getLocalizedString("UiFramework:visibilityWidget.modeltree"),
           render: React.useCallback(
-            () => <ModelsTreeComponent iModel={imodel} activeView={activeView} enablePreloading={enablePreloading} {...modelsTreeProps} filteredElementIds={filteredElementIds} />,
-            [imodel, activeView, enablePreloading, modelsTreeProps, filteredElementIds],
+            () => <ModelsTreeComponent iModel={imodel} activeView={activeView} {...modelsTreeProps} filteredElementIds={filteredElementIds} />,
+            [imodel, activeView, modelsTreeProps, filteredElementIds],
           ),
         },
         {
           id: "categories-tree",
           label: IModelApp.localization.getLocalizedString("UiFramework:visibilityWidget.categories"),
           render: React.useCallback(
-            () => <CategoriesTreeComponent iModel={imodel} activeView={activeView} enablePreloading={enablePreloading} {...categoriesTreeProps} />,
-            [imodel, activeView, enablePreloading, categoriesTreeProps],
+            () => <CategoriesTreeComponent iModel={imodel} activeView={activeView} {...categoriesTreeProps} />,
+            [imodel, activeView, categoriesTreeProps],
           ),
         }]}
       </SelectableContent>
@@ -76,7 +75,6 @@ interface ModelsTreeComponentProps {
   iModel: IModelConnection;
   selectionMode?: SelectionMode;
   selectionPredicate?: ModelsTreeSelectionPredicate;
-  enablePreloading?: boolean;
   activeView?: Viewport;
   filteredElementIds?: Id64Array;
 }
@@ -127,7 +125,6 @@ interface CategoriesTreeComponentProps {
   iModel: IModelConnection;
   allViewports?: boolean;
   activeView?: Viewport;
-  enablePreloading?: boolean;
 }
 
 function CategoriesTreeComponent(props: CategoriesTreeComponentProps) {
