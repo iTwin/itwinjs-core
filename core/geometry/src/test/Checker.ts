@@ -115,13 +115,6 @@ export class Checker {
     return false;
   }
 
-  public testPoint3dWithToleranceFactor(dataA: Point3d, dataB: Point3d, toleranceFactor: number, ...params: any[]): boolean {
-    if (dataA.isAlmostEqualWithToleranceFactor(dataB, toleranceFactor))
-      return this.announceOK();
-    this.announceError("expect same Point3d", dataA, dataB, params);
-    return false;
-  }
-
   /** test if `transformAToB * dataA` matches pointB */
   public testTransformedPoint3d(transformAToB: Transform, dataA: Point3d, dataB: Point3d, ...params: any[]): boolean {
     const dataA1 = transformAToB.multiplyPoint3d(dataA);

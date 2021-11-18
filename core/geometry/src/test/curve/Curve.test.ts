@@ -326,39 +326,43 @@ class ExerciseCurve {
     }
   }
 
-  public static exerciseClosestPointDetail(ck: Checker, detail: CurveLocationDetail | undefined, curve: CurvePrimitive, fractionA: number, pointA: Point3d | undefined, toleranceFactor: number = 1) {
-    if (ck.testPointer(detail) && ck.testPointer(pointA)) {
+  public static exerciseClosestPointDetail(ck: Checker, detail: CurveLocationDetail | undefined, curve: CurvePrimitive, resultPt: Point3d, testPt: Point3d, testFraction: number) {
+    if (ck.testPointer(detail) && ck.testPointer(detail.curve)) {
       if (detail.curve === curve) {
-        if (!ck.testCoordinateWithToleranceFactor(fractionA, detail.fraction, toleranceFactor, "fraction round trip")
-          || !ck.testPoint3dWithToleranceFactor(pointA, detail.point, toleranceFactor, "round trip point")) {
-          const pointB = curve.fractionToPoint(fractionA);
-          detail = curve.closestPoint(pointB, false);
-        } else {
-          // The search tunneled into a contained curve.   Only verify the point.
-          if (!ck.testPoint3dWithToleranceFactor(pointA, detail.curve.fractionToPoint(detail.fraction), toleranceFactor, "round trip detail point")) {
-            detail = curve.closestPoint(pointA, false);
-          }
+        if (!ck.testCoordinate(testFraction, detail.fraction, "fraction round trip", curve)
+          || !ck.testPoint3d(resultPt, detail.point, "round trip point")) {
+          detail = curve.closestPoint(testPt, false);
         }
+      } else { // The search tunneled into a contained curve. Only verify the point.
+        if (!ck.testPoint3d(resultPt, detail.curve.fractionToPoint(detail.fraction), "round trip contained curve point"))
+          detail = curve.closestPoint(testPt, false);
       }
     }
   }
 
-  public static exerciseClosestPoint(ck: Checker, curve: CurvePrimitive, fractionA: number, toleranceFactor: number = 1): boolean {
+  public static exerciseClosestPoint(ck: Checker, curve: CurvePrimitive, fractionA: number, allGeometry?: GeometryQuery[], x0: number=0, y0: number=0, z0: number=0): boolean {
     // test point on curve projects to itself
     const pointA = curve.fractionToPoint(fractionA);
     let detail = curve.closestPoint(pointA, false);
-    this.exerciseClosestPointDetail(ck, detail, curve, fractionA, pointA);
+    this.exerciseClosestPointDetail(ck, detail, curve, pointA, pointA, fractionA);
     // project a short perp distance away from pointA on both sides of curve (still expect pointA, but be generous)
-    const plane = curve.fractionToPointAnd2Derivatives(fractionA);
-    if (plane && !plane.vectorV.isAlmostZero) {
-      const offset = plane.vectorV.scaleToLength(0.0001);
+    const frame = curve.fractionToFrenetFrame(fractionA);
+    if (frame) {
+      const offset = frame.matrix.columnY().scaleToLength(0.01);
       if (offset) {
         let testPt = pointA.plus(offset);
         detail = curve.closestPoint(testPt, false);
-        this.exerciseClosestPointDetail(ck, detail, curve, fractionA, pointA, toleranceFactor);
+        this.exerciseClosestPointDetail(ck, detail, curve, pointA, testPt, fractionA);
+        if (undefined !== allGeometry) {
+          GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, testPt, 0.002, x0, y0, z0);
+          if (undefined !== detail) {
+            GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, pointA, 0.001, x0, y0, z0);
+            GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, detail.point, 0.0005, x0, y0, z0);
+          }
+        }
         testPt = pointA.minus(offset);
         detail = curve.closestPoint(testPt, false);
-        this.exerciseClosestPointDetail(ck, detail, curve, fractionA, pointA, toleranceFactor);
+        this.exerciseClosestPointDetail(ck, detail, curve, pointA, testPt, fractionA);
       }
     }
     return true;
@@ -393,7 +397,9 @@ class ExerciseCurve {
     }
   }
   public static testManyCurves(ck: Checker) {
-
+    const allGeometry: GeometryQuery[] = [];
+    let dx = 0.0;
+    const dxGap = 1.0;
     {
       const segment = LineSegment3d.create(Point3d.create(1, 2, 3), Point3d.create(4, 5, 10));
       ExerciseCurve.exerciseFractionToPoint(ck, segment, true, true);
@@ -401,7 +407,10 @@ class ExerciseCurve {
       ExerciseCurve.exerciseStroke(ck, segment);
       ExerciseCurve.exerciseClosestPoint(ck, segment, 0.1);
       ExerciseCurve.exerciseCloneAndTransform(ck, segment);
+      GeometryCoreTestIO.captureGeometry(allGeometry, segment, dx);
+      dx += segment.range().xLength() + dxGap;
     }
+
     { // a circular arc . . .
       const arc = Arc3d.create(Point3d.create(1, 2, 3),
         Vector3d.create(2, 0, 0),
@@ -413,6 +422,8 @@ class ExerciseCurve {
         ExerciseCurve.exerciseClosestPoint(ck, arc, 0.1);
         ExerciseCurve.exerciseStroke(ck, arc);
         ExerciseCurve.exerciseCloneAndTransform(ck, arc);
+        GeometryCoreTestIO.captureGeometry(allGeometry, arc, dx);
+        dx += arc.range().xLength() + dxGap;
       }
     }
 
@@ -424,10 +435,12 @@ class ExerciseCurve {
       if (arc) {
         ExerciseCurve.exerciseFractionToPoint(ck, arc, false, false);
         ExerciseCurve.exerciseMoveSignedDistance(ck, arc);
-        ExerciseCurve.exerciseClosestPoint(ck, arc, 0.1, 100);
+        ExerciseCurve.exerciseClosestPoint(ck, arc, 0.1);
         ExerciseCurve.exerciseStroke(ck, arc);
         ExerciseCurve.exerciseCloneAndTransform(ck, arc);
-      }
+        GeometryCoreTestIO.captureGeometry(allGeometry, arc, dx);
+        dx += arc.range().xLength() + dxGap;
+        }
     }
 
     {
@@ -439,7 +452,10 @@ class ExerciseCurve {
       ExerciseCurve.exerciseMoveSignedDistance(ck, linestring);
       ExerciseCurve.exerciseStroke(ck, linestring);
       ExerciseCurve.exerciseCloneAndTransform(ck, linestring);
+      GeometryCoreTestIO.captureGeometry(allGeometry, linestring, dx);
+      dx += linestring.range().xLength() + dxGap;
     }
+
     {
       const linestring = LineString3d.create(
         Point3d.create(0, 0, 0),
@@ -449,116 +465,140 @@ class ExerciseCurve {
       ExerciseCurve.exerciseMoveSignedDistance(ck, linestring);
       ExerciseCurve.exerciseStroke(ck, linestring);
       ExerciseCurve.exerciseCloneAndTransform(ck, linestring);
+      GeometryCoreTestIO.captureGeometry(allGeometry, linestring, dx);
+      dx += linestring.range().xLength() + dxGap;
     }
 
     {
       const linestring = LineString3d.create();
       ck.testExactNumber(0, linestring.points.length);
     }
-    const bcurve = BSplineCurve3d.createUniformKnots(
-      [Point3d.create(0, 0, 0), Point3d.create(5, 0, 0), Point3d.create(10, 4, 0)],
-      3);
-    if (ck.testPointer(bcurve)) {
-      ExerciseCurve.exerciseFractionToPoint(ck, bcurve, false, false);
-      ExerciseCurve.exerciseStroke(ck, bcurve);
-      ExerciseCurve.exerciseClosestPoint(ck, bcurve, 0.1, 10);
-    }
-    // with weights, but all weights 1.0
-    const bcurveH1 = BSplineCurve3dH.createUniformKnots(
-      [Point4d.create(0, 0, 0, 1), Point4d.create(5, 0, 0, 1), Point4d.create(10, 4, 0, 1)],
-      3);
-    if (ck.testPointer(bcurveH1)) {
-      ExerciseCurve.exerciseFractionToPoint(ck, bcurveH1, false, false);
-      ExerciseCurve.exerciseStroke(ck, bcurveH1);
-      ExerciseCurve.exerciseClosestPoint(ck, bcurveH1, 0.1, 10);
-    }
 
-    const poles4d = [
-      Point4d.create(0, 0, 0, 1),
-      Point4d.create(5, 0, 0, 0.8),
-      Point4d.create(10, 4, 0, 1),
-      Point4d.create(15, 4, 0, 1),
-      Point4d.create(20, 0, 0, 1)];
-
-    for (let order = 3; order <= poles4d.length; order++) {
-      const bcurveH = BSplineCurve3dH.createUniformKnots(poles4d, order);
-      if (ck.testPointer(bcurveH)) {
-        ExerciseCurve.exerciseFractionToPoint(ck, bcurveH, false, false);
-        ExerciseCurve.exerciseStroke(ck, bcurveH);
-        ExerciseCurve.exerciseMoveSignedDistance(ck, bcurveH);
-        ExerciseCurve.exerciseClosestPoint(ck, bcurveH, 0.1, 1000);
-        ExerciseCurve.exerciseClosestPoint(ck, bcurveH, 0.48, 1000);
-        ExerciseCurve.exerciseClosestPoint(ck, bcurveH, 0.82, 100);
+    {
+      const bcurve = BSplineCurve3d.createUniformKnots([Point3d.create(0, 0, 0), Point3d.create(5, 0, 0), Point3d.create(10, 4, 0)], 3);
+      if (ck.testPointer(bcurve)) {
+        ExerciseCurve.exerciseFractionToPoint(ck, bcurve, false, false);
+        ExerciseCurve.exerciseStroke(ck, bcurve);
+        ExerciseCurve.exerciseClosestPoint(ck, bcurve, 0.1);
+        GeometryCoreTestIO.captureGeometry(allGeometry, bcurve, dx);
+        dx += bcurve.range().xLength() + dxGap;
       }
     }
 
-    for (const points of [
-            Sample.createArcStrokes(4, Point3d.create(0, 0, 0), 2.0, Angle.createDegrees(0), Angle.createDegrees(225))]) {
-      const interpolationCurve = InterpolationCurve3d.create(
-        {
-          fitPoints: points,
-        });
-
-      if (ck.testPointer(interpolationCurve)) {
-        ExerciseCurve.exerciseFractionToPoint(ck, interpolationCurve, false, false);
-        ExerciseCurve.exerciseStroke(ck, interpolationCurve);
-        ExerciseCurve.exerciseMoveSignedDistance(ck, interpolationCurve);
-        ExerciseCurve.exerciseClosestPoint(ck, interpolationCurve, 0.1);
-        ExerciseCurve.exerciseClosestPoint(ck, interpolationCurve, 0.48);
-        ExerciseCurve.exerciseClosestPoint(ck, interpolationCurve, 0.82);
-      }
+    { // with weights, but all weights 1.0
+      const bcurveH1 = BSplineCurve3dH.createUniformKnots([Point4d.create(0, 0, 0, 1), Point4d.create(5, 0, 0, 1), Point4d.create(10, 4, 0, 1)], 3);
+      if (ck.testPointer(bcurveH1)) {
+        ExerciseCurve.exerciseFractionToPoint(ck, bcurveH1, false, false);
+        ExerciseCurve.exerciseStroke(ck, bcurveH1);
+        ExerciseCurve.exerciseClosestPoint(ck, bcurveH1, 0.1);
+        GeometryCoreTestIO.captureGeometry(allGeometry, bcurveH1, dx);
+        dx += bcurveH1.range().xLength() + dxGap;
+        }
     }
 
-    const bezierCurve0 = BezierCurve3d.create([
-      Point2d.create(0, 0), Point2d.create(0.5, 0.0), Point2d.create(1, 1)])!;
-    ExerciseCurve.exerciseFractionToPoint(ck, bezierCurve0, false, false);
-    ExerciseCurve.exerciseMoveSignedDistance(ck, bezierCurve0);
-    ExerciseCurve.exerciseStroke(ck, bezierCurve0);
-    ExerciseCurve.exerciseClosestPoint(ck, bezierCurve0, 0.1, 100);
-
-    const bezierCurve = BezierCurve3dH.create([
-      Point2d.create(0, 0), Point2d.create(0.5, 0.0), Point2d.create(1, 1)])!;
-    ExerciseCurve.exerciseMoveSignedDistance(ck, bezierCurve);
-    ExerciseCurve.exerciseFractionToPoint(ck, bezierCurve, false, false);
-    ExerciseCurve.exerciseStroke(ck, bezierCurve);
-    ExerciseCurve.exerciseClosestPoint(ck, bezierCurve, 0.1, 100);
-
-    const bezierCurve3d = BezierCurve3dH.create([
-      Point3d.create(0, 0), Point3d.create(0.5, 0.0), Point3d.create(1, 1), Point3d.create(2, 1, 1)])!;
-    ExerciseCurve.exerciseFractionToPoint(ck, bezierCurve, false, false);
-    ExerciseCurve.exerciseMoveSignedDistance(ck, bezierCurve3d);
-    ExerciseCurve.exerciseStroke(ck, bezierCurve3d);
-    ExerciseCurve.exerciseClosestPoint(ck, bezierCurve3d, 0.1, 100);
-
-    if (Checker.noisy.testTransitionSpiral) {
-      for (const spiral of [
-        DirectSpiral3d.createDirectHalfCosine(Transform.createIdentity(), 100, 300, undefined),
-        DirectSpiral3d.createJapaneseCubic(Transform.createIdentity(), 100, 300, undefined),
-        DirectSpiral3d.createArema(Transform.createIdentity(), 100, 300, undefined),
-        IntegratedSpiral3d.createRadiusRadiusBearingBearing(
-          Segment1d.create(0, 1000),
-          AngleSweep.createStartEndDegrees(0, 10),
-          Segment1d.create(0, 1),
-          Transform.createIdentity())]) {
-        if (ck.testPointer(spiral)) {
-          ExerciseCurve.exerciseCurvePlaneIntersections(ck, spiral);
-          ExerciseCurve.exerciseFractionToPoint(ck, spiral, (spiral instanceof IntegratedSpiral3d), false);
-          ExerciseCurve.exerciseStroke(ck, spiral);
-          ExerciseCurve.exerciseClosestPoint(ck, spiral, 0.3, 10);
+    {
+      const poles4d = [
+        Point4d.create(0, 0, 0, 1),
+        Point4d.create(5, 0, 0, 0.8),
+        Point4d.create(10, 4, 0, 1),
+        Point4d.create(15, 4, 0, 1),
+        Point4d.create(20, 0, 0, 1)];
+      for (let order = 3; order <= poles4d.length; order++) {
+        const bcurveH = BSplineCurve3dH.createUniformKnots(poles4d, order);
+        if (ck.testPointer(bcurveH)) {
+          ExerciseCurve.exerciseFractionToPoint(ck, bcurveH, false, false);
+          ExerciseCurve.exerciseStroke(ck, bcurveH);
+          ExerciseCurve.exerciseMoveSignedDistance(ck, bcurveH);
+          ExerciseCurve.exerciseClosestPoint(ck, bcurveH, 0.1, allGeometry, dx);
+          ExerciseCurve.exerciseClosestPoint(ck, bcurveH, 0.48, allGeometry, dx);
+          ExerciseCurve.exerciseClosestPoint(ck, bcurveH, 0.82, allGeometry, dx);
+          GeometryCoreTestIO.captureGeometry(allGeometry, bcurveH, dx);
+          dx += bcurveH.range().xLength() + dxGap;
         }
       }
-
     }
+
+    {
+      for (const points of [Sample.createArcStrokes(4, Point3d.create(0, 0, 0), 2.0, Angle.createDegrees(0), Angle.createDegrees(225))]) {
+        const interpolationCurve = InterpolationCurve3d.create({fitPoints: points});
+        if (ck.testPointer(interpolationCurve)) {
+          ExerciseCurve.exerciseFractionToPoint(ck, interpolationCurve, false, false);
+          ExerciseCurve.exerciseStroke(ck, interpolationCurve);
+          ExerciseCurve.exerciseMoveSignedDistance(ck, interpolationCurve);
+          ExerciseCurve.exerciseClosestPoint(ck, interpolationCurve, 0.1);
+          ExerciseCurve.exerciseClosestPoint(ck, interpolationCurve, 0.48);
+          ExerciseCurve.exerciseClosestPoint(ck, interpolationCurve, 0.82);
+          GeometryCoreTestIO.captureGeometry(allGeometry, interpolationCurve, dx);
+          dx += interpolationCurve.range().xLength() + dxGap;
+        }
+      }
+    }
+
+    {
+      const bezierCurve0 = BezierCurve3d.create([Point2d.create(0, 0), Point2d.create(0.5, 0.0), Point2d.create(1, 1)])!;
+      ExerciseCurve.exerciseFractionToPoint(ck, bezierCurve0, false, false);
+      ExerciseCurve.exerciseMoveSignedDistance(ck, bezierCurve0);
+      ExerciseCurve.exerciseStroke(ck, bezierCurve0);
+      ExerciseCurve.exerciseClosestPoint(ck, bezierCurve0, 0.1);
+      GeometryCoreTestIO.captureGeometry(allGeometry, bezierCurve0, dx);
+      dx += bezierCurve0.range().xLength() + dxGap;
+    }
+
+    {
+      const bezierCurve = BezierCurve3dH.create([Point2d.create(0, 0), Point2d.create(0.5, 0.0), Point2d.create(1, 1)])!;
+      ExerciseCurve.exerciseMoveSignedDistance(ck, bezierCurve);
+      ExerciseCurve.exerciseFractionToPoint(ck, bezierCurve, false, false);
+      ExerciseCurve.exerciseStroke(ck, bezierCurve);
+      ExerciseCurve.exerciseClosestPoint(ck, bezierCurve, 0.1);
+      GeometryCoreTestIO.captureGeometry(allGeometry, bezierCurve, dx);
+      dx += bezierCurve.range().xLength() + dxGap;
+    }
+
+    {
+      const bezierCurve3d = BezierCurve3dH.create([
+        Point3d.create(0, 0), Point3d.create(0.5, 0.0), Point3d.create(1, 1), Point3d.create(2, 1, 1)])!;
+      ExerciseCurve.exerciseFractionToPoint(ck, bezierCurve3d, false, false);
+      ExerciseCurve.exerciseMoveSignedDistance(ck, bezierCurve3d);
+      ExerciseCurve.exerciseStroke(ck, bezierCurve3d);
+      ExerciseCurve.exerciseClosestPoint(ck, bezierCurve3d, 0.1);
+      GeometryCoreTestIO.captureGeometry(allGeometry, bezierCurve3d, dx);
+      dx += bezierCurve3d.range().xLength() + dxGap;
+    }
+
+    {
+      if (Checker.noisy.testTransitionSpiral) {
+        for (const spiral of [
+          DirectSpiral3d.createDirectHalfCosine(Transform.createIdentity(), 100, 300, undefined),
+          DirectSpiral3d.createJapaneseCubic(Transform.createIdentity(), 100, 300, undefined),
+          DirectSpiral3d.createArema(Transform.createIdentity(), 100, 300, undefined),
+          IntegratedSpiral3d.createRadiusRadiusBearingBearing(
+            Segment1d.create(0, 1000),
+            AngleSweep.createStartEndDegrees(0, 10),
+            Segment1d.create(0, 1),
+            Transform.createIdentity())]) {
+          if (ck.testPointer(spiral)) {
+            ExerciseCurve.exerciseCurvePlaneIntersections(ck, spiral);
+            ExerciseCurve.exerciseFractionToPoint(ck, spiral, (spiral instanceof IntegratedSpiral3d), false);
+            ExerciseCurve.exerciseStroke(ck, spiral);
+            ExerciseCurve.exerciseClosestPoint(ck, spiral, 0.3);
+            GeometryCoreTestIO.captureGeometry(allGeometry, spiral, dx);
+            dx += spiral.range().xLength() + dxGap;
+          }
+        }
+      }
+    }
+  GeometryCoreTestIO.saveGeometry(allGeometry, "CurvePrimitive", "Evaluations");
   }
 }
 
-describe("Curves", () => {
+describe.only("Curves", () => {
   it("Exercise", () => {
     const ck = new Checker();
     ExerciseCurve.testManyCurves(ck);
     ck.checkpoint("End CurvePrimitive.Evaluations");
     expect(ck.getNumErrors()).equals(0);
   });
+
   it("Create and exercise distanceIndex", () => {
     const ck = new Checker();
     const paths = Sample.createCurveChainWithDistanceIndex();
@@ -620,9 +660,9 @@ describe("Curves", () => {
 
     ck.checkpoint("CurvePrimitive.Create and exercise distanceIndex");
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurvePrimitive", "CurveChainWithDistanceIndex");
-
     expect(ck.getNumErrors()).equals(0);
   });
+
   it("DistanceIndexMismatches", () => {
     const ck = new Checker();
     const pathA = Sample.createSquareWavePath(4, 1, 1, 0, 1, 0);   // 4 waves as one linestring
