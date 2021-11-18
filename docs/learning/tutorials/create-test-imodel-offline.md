@@ -6,7 +6,7 @@ Get started with iTwin.js in your local environment. It is free, with no iTwin s
 
 ## Download iTwin Snapshot
 
-Download and familiarize yourself with the [iTwin Snapshot]($docs/learning/tutorials/itwin-snapshot-app.md), a free tool for creating snapshots.
+Download and familiarize yourself with the [iTwin Snapshot](./itwin-snapshot-app.md), a free tool for creating snapshots.
 
 ## Create a snapshot iModel
 
@@ -21,7 +21,7 @@ Download and familiarize yourself with the [iTwin Snapshot]($docs/learning/tutor
 
 The iTwin Snapshot will download and extract the needed connectors, run the connectors on the selected files, and generate the snapshot to the chosen location.
 
-Next, follow the ["Developing a desktop viewer"]($docs/learning/tutorials/develop-desktop-viewer.md) tutorial to view the snapshot.
+Next, follow the ["Developing a desktop viewer"](./develop-desktop-viewer.md) tutorial to view the snapshot.
 
 ---
 <style>
