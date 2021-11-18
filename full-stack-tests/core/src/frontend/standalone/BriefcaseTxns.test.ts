@@ -10,7 +10,7 @@ import { BriefcaseConnection } from "@itwin/core-frontend";
 import { callFullStackTestIpc, deleteElements, initializeEditTools, insertLineElement, makeModelCode, transformElements } from "../Editing";
 import { TestUtility } from "../TestUtility";
 
-describe.skip("BriefcaseTxns", () => {
+describe("BriefcaseTxns", () => {
   if (ProcessDetector.isElectronAppFrontend) {
     let imodel: BriefcaseConnection;
 
