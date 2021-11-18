@@ -164,7 +164,7 @@ type RootTileState = StaticState | InteractiveState | DynamicState | DisposedSta
 /** The root tile for an [[IModelTileTree]].
  * @internal
  */
-export type RootIModelTile = Tile & { tileScreenSize: number; updateDynamicRange: (childTile: Tile) => void; };
+export type RootIModelTile = Tile & { tileScreenSize: number, updateDynamicRange: (childTile: Tile) => void };
 
 /** Represents the root [[Tile]] of an [[IModelTileTree]]. The root tile has one or two direct child tiles which represent different branches of the tree:
  *  - The static branch, containing tiles that represent the state of the model's geometry as of the beginning of the current [[GraphicalEditingScope]].
