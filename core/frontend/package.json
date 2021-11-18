@@ -88,8 +88,8 @@
     "NOTE: core-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
-    "@bentley/telemetry-client": "workspace:*",
     "@itwin/core-i18n": "workspace:*",
+    "@itwin/core-telemetry": "workspace:*",
     "fuse.js": "^3.3.0",
     "semver": "^5.5.0",
     "wms-capabilities": "0.4.0",
