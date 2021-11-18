@@ -1545,7 +1545,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       try {
         return elProps.id = this._iModel.nativeDb.insertElementForceUseId(elProps instanceof Element ? elProps.toJSON() : elProps);
       } catch (err: any) {
-        throw new IModelError(err.errorNumber, `insertElement with class=${elProps.classFullName}: ${err.message}`,);
+        throw new IModelError(err.errorNumber, `insertElement with class=${elProps.classFullName}: ${err.message}`);
       }
     }
 

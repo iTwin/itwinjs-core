@@ -8,10 +8,10 @@
 import { Id64, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, Base64EncodedString, ElementAspectProps, ElementProps, EntityProps, IModel, IModelError, ModelProps, PrimitiveTypeCode,
-  PropertyMetaData, RelatedElement,
+  PropertyMetaData, RelatedElement, SubCategoryProps,
 } from "@itwin/core-common";
 import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
-import { ElementAspect, ElementMultiAspect, Entity, IModelDb, Model, Relationship, RelationshipProps, SourceAndTarget } from "@itwin/core-backend";
+import { ElementAspect, ElementMultiAspect, Entity, IModelDb, Model, Relationship, RelationshipProps, SourceAndTarget, SubCategory } from "@itwin/core-backend";
 
 const loggerCategory: string = TransformerLoggerCategory.IModelImporter;
 
@@ -139,11 +139,21 @@ export class IModelImporter implements Required<IModelImportOptions> {
       Logger.logInfo(loggerCategory, `Do not update target element ${elementProps.id}`);
       return elementProps.id;
     }
-    const providedIdIsForUpdate = !this.preserveIdsInFilterTransform;
-    if (undefined !== elementProps.id && providedIdIsForUpdate) {
-      this.onUpdateElement(elementProps);
+    if (this.preserveIdsInFilterTransform) {
+      // categories are the only element that onInserted will immediately insert a new element (their default subcategory)
+      // since default subcategories always exist and always will be inserted after their categories, we treat them as an update
+      // to prevent duplicate inserts
+      if (isSubCategory(elementProps) && isDefaultSubCategory(elementProps)) {
+        this.onUpdateElement(elementProps);
+      } else {
+        this.onInsertElement(elementProps);
+      }
     } else {
-      this.onInsertElement(elementProps); // targetElementProps.id assigned by insertElement
+      if (undefined !== elementProps.id) {
+        this.onUpdateElement(elementProps);
+      } else {
+        this.onInsertElement(elementProps); // targetElementProps.id assigned by insertElement
+      }
     }
     return elementProps.id!;
   }
@@ -490,4 +500,16 @@ function hasNavigationValueChanged(navigationProperty1: any, navigationProperty2
 /** Returns true if the specified navigation property values are different. */
 function hasValueChanged(property1: any, property2: any): boolean {
   return JSON.stringify(property1) !== JSON.stringify(property2);
+}
+
+/** check if element props are a subcategory */
+function isSubCategory(props: ElementProps): props is SubCategoryProps {
+  return props.classFullName === SubCategory.classFullName;
+}
+
+/** check if element props are a subcategory without loading the element */
+function isDefaultSubCategory(props: SubCategoryProps): boolean {
+  if (props.parent?.id === undefined)
+    throw new IModelError(IModelStatus.BadElement, "subcategory had no parent");
+  return props.id === IModelDb.getDefaultSubCategoryId(props.parent?.id);
 }
