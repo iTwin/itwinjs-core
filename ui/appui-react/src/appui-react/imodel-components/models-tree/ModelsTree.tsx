@@ -54,11 +54,6 @@ export interface ModelsTreeProps {
    */
   selectionPredicate?: ModelsTreeSelectionPredicate;
   /**
-   * Start loading hierarchy as soon as the component is created
-   * @deprecated Going to be removed due to too high pressure on the backend
-   */
-  enablePreloading?: boolean;
-  /**
    * Active view used to determine and control visibility
    */
   activeView?: Viewport;

@@ -448,8 +448,8 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@itwin/ui-test-extension",
-      "projectFolder": "test-apps/ui-test-extension",
+      "packageName": "@itwin/ui-items-providers-test",
+      "projectFolder": "test-apps/ui-items-providers-test",
       "reviewCategory": "internal",
       "shouldPublish": false
     },

@@ -120,6 +120,7 @@ interface FrontstageState {
  * @public
  */
 export class Frontstage extends React.Component<FrontstageProps, FrontstageState> {
+  private _isMounted = false;
   private static _zoneIds: ReadonlyArray<WidgetZoneId> = widgetZoneIds.filter((z) => z !== 8); // eslint-disable-line deprecation/deprecation
   private _contentRefs = new Map<WidgetZoneId, React.Ref<HTMLDivElement>>(); // eslint-disable-line deprecation/deprecation
   private _zonesMeasurer = React.createRef<HTMLDivElement>();
@@ -147,6 +148,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
    * @internal
    */
   public override async componentDidMount() {
+    this._isMounted = true;
     UiFramework.onUiVisibilityChanged.addListener(this._uiVisibilityChanged);
     UiFramework.widgetManager.onWidgetsChanged.addListener(this._handleWidgetsChanged);
     UiItemsManager.onUiProviderRegisteredEvent.addListener(this._handleUiProviderRegisteredEvent);
@@ -167,12 +169,14 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
    * @internal
    */
   public override componentWillUnmount() {
+    this._isMounted = false;
     UiFramework.onUiVisibilityChanged.removeListener(this._uiVisibilityChanged);
     UiItemsManager.onUiProviderRegisteredEvent.removeListener(this._handleUiProviderRegisteredEvent);
   }
 
   private _uiVisibilityChanged = (args: UiVisibilityEventArgs): void => {
-    this.setState({ isUiVisible: args.visible });
+    if (this._isMounted)
+      this.setState({ isUiVisible: args.visible });
   };
 
   private _handleWidgetsChanged = (_args: WidgetsChangedEventArgs): void => {
@@ -193,7 +197,8 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
       const frontstageDef = this.props.runtimeProps.frontstageDef;
       frontstageDef.updateWidgetDefs();
       FrontstageManager.onWidgetDefsUpdatedEvent.emit();
-      this.forceUpdate();
+      if (this._isMounted)
+        this.forceUpdate();
     }
   }
 
@@ -287,12 +292,14 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
     if (ref)
       return ref;
     const newRef = (el: HTMLDivElement | null) => {
-      this.setState((prevState) => ({
-        widgetIdToContent: {
-          ...prevState.widgetIdToContent,
-          [widget]: el === null ? undefined : el,
-        },
-      }));
+      if (this._isMounted) {
+        this.setState((prevState) => ({
+          widgetIdToContent: {
+            ...prevState.widgetIdToContent,
+            [widget]: el === null ? undefined : el,
+          },
+        }));
+      }
     };
     this._contentRefs.set(widget, newRef);
     return newRef;
@@ -527,6 +534,7 @@ interface WidgetContentRendererState {
 }
 
 class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererProps, WidgetContentRendererState> {
+  private _isMounted = false;
   private _content = document.createElement("span");
   public constructor(props: WidgetContentRendererProps) {
     super(props);
@@ -537,6 +545,7 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
   }
 
   public override componentDidMount() {
+    this._isMounted = true;
     FrontstageManager.onWidgetStateChangedEvent.addListener(this._handleWidgetStateChangedEvent);
     FrontstageManager.onToolActivatedEvent.addListener(this._handleToolActivatedEvent);
 
@@ -549,6 +558,8 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
   }
 
   public override componentDidUpdate(prevProps: WidgetContentRendererProps) {
+    if (!this._isMounted)
+      return;
     if (this.props.isHidden !== prevProps.isHidden) {
       this._content.style.display = this.props.isHidden ? "none" : "flex";
     }
@@ -565,6 +576,7 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
   }
 
   public override componentWillUnmount() {
+    this._isMounted = false;
     this._content.parentNode && this._content.parentNode.removeChild(this._content);
     FrontstageManager.onWidgetStateChangedEvent.removeListener(this._handleWidgetStateChangedEvent);
     FrontstageManager.onToolActivatedEvent.removeListener(this._handleToolActivatedEvent);
@@ -595,13 +607,13 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
   }
 
   private _handleWidgetStateChangedEvent = (args: WidgetStateChangedEventArgs) => {
-    if (this.props.widgetDef !== args.widgetDef)
+    if (this.props.widgetDef !== args.widgetDef || !this._isMounted)
       return;
     this.forceUpdate();
   };
 
   private _handleToolActivatedEvent = () => {
-    if (this.props.toolSettingsMode === undefined)
+    if (this.props.toolSettingsMode === undefined || !this._isMounted )
       return;
     // force update when tool is activated
     this.setState((prevState) => ({ widgetKey: prevState.widgetKey + 1 }));

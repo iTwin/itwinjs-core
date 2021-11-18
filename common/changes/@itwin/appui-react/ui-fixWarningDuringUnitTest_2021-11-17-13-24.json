@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Fix warning shown in unit test by ensuring setState is only processed if state component is mounted.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}
