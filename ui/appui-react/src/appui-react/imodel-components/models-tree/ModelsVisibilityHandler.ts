@@ -37,7 +37,7 @@ export type ModelsTreeSelectionPredicate = (key: NodeKey, type: ModelsTreeNodeTy
 
 /**
  * Props for [[ModelsVisibilityHandler]]
- * @internal
+ * @alpha
  */
 export interface ModelsVisibilityHandlerProps {
   rulesetId: string;
@@ -47,7 +47,7 @@ export interface ModelsVisibilityHandlerProps {
 
 /**
  * Visibility handler used by [[ModelsTree]] to control visibility of the tree items.
- * @internal
+ * @alpha
  */
 export class ModelsVisibilityHandler implements IVisibilityHandler {
   private _props: ModelsVisibilityHandlerProps;

@@ -941,14 +941,6 @@ export interface CardSelectedEventArgs {
     index: number;
 }
 
-// @internal
-export interface Category {
-    // (undocumented)
-    children?: string[];
-    // (undocumented)
-    key: string;
-}
-
 // @public
 export function CategoryTree(props: CategoryTreeProps): JSX.Element;
 
@@ -966,43 +958,6 @@ export interface CategoryTreeProps {
     // @internal
     viewManager?: ViewManager;
     width: number;
-}
-
-// @internal (undocumented)
-export class CategoryVisibilityHandler implements IVisibilityHandler {
-    constructor(params: CategoryVisibilityHandlerParams);
-    // (undocumented)
-    changeVisibility(node: TreeNodeItem, nodeKey: NodeKey, shouldDisplay: boolean): Promise<void>;
-    // (undocumented)
-    dispose(): void;
-    static enableCategory(viewManager: ViewManager, imodel: IModelConnection, ids: string[], enabled: boolean, forAllViewports: boolean, enableAllSubCategories?: boolean): void;
-    static enableSubCategory(viewManager: ViewManager, key: string, enabled: boolean, forAllViewports?: boolean): void;
-    // (undocumented)
-    getCategoryVisibility(id: string): "hidden" | "visible";
-    // (undocumented)
-    static getInstanceIdFromTreeNodeKey(nodeKey: NodeKey): string;
-    // (undocumented)
-    getParent(key: string): Category | undefined;
-    // (undocumented)
-    getSubCategoryVisibility(id: string): "hidden" | "visible";
-    // (undocumented)
-    getVisibilityStatus(node: TreeNodeItem, nodeKey: NodeKey): VisibilityStatus;
-    // (undocumented)
-    onVisibilityChange: BeEvent<VisibilityChangeListener>;
-    }
-
-// @internal (undocumented)
-export interface CategoryVisibilityHandlerParams {
-    // (undocumented)
-    activeView?: Viewport;
-    // (undocumented)
-    allViewports?: boolean;
-    // (undocumented)
-    categories: Category[];
-    // (undocumented)
-    imodel: IModelConnection;
-    // (undocumented)
-    viewManager: ViewManager;
 }
 
 // @public (undocumented)
@@ -3614,9 +3569,6 @@ export interface ListPickerPropsExtended extends ListPickerProps {
     invertFunc?: () => void;
 }
 
-// @internal (undocumented)
-export function loadCategoriesFromViewport(iModel?: IModelConnection, vp?: Viewport): Promise<Category[]>;
-
 // @public
 export class MarkupTools {
     // (undocumented)
@@ -3935,15 +3887,13 @@ export interface ModelsTreeProps {
     enableElementsClassGrouping?: ClassGroupingOption;
     // @alpha
     enableHierarchyAutoUpdate?: boolean;
-    // @deprecated
-    enablePreloading?: boolean;
     // @alpha
     filteredElementIds?: Id64Array;
     // @alpha
     filterInfo?: VisibilityTreeFilterInfo;
     height: number;
     iModel: IModelConnection;
-    // @internal
+    // @alpha
     modelsVisibilityHandler?: ModelsVisibilityHandler;
     onFilterApplied?: (filteredDataProvider: IPresentationTreeDataProvider, matchesCount: number) => void;
     rootElementRef?: React.Ref<HTMLDivElement>;
@@ -3956,7 +3906,7 @@ export interface ModelsTreeProps {
 // @beta
 export type ModelsTreeSelectionPredicate = (key: NodeKey, type: ModelsTreeNodeType) => boolean;
 
-// @internal
+// @alpha
 export class ModelsVisibilityHandler implements IVisibilityHandler {
     constructor(props: ModelsVisibilityHandlerProps);
     // (undocumented)
@@ -4000,7 +3950,7 @@ export class ModelsVisibilityHandler implements IVisibilityHandler {
     setFilteredDataProvider(provider: IFilteredPresentationTreeDataProvider | undefined): void;
     }
 
-// @internal
+// @alpha
 export interface ModelsVisibilityHandlerProps {
     // (undocumented)
     hierarchyAutoUpdateEnabled?: boolean;
@@ -4579,7 +4529,7 @@ export enum SelectionScope {
 }
 
 // @public
-export const SelectionScopeField: import("react-redux").ConnectedComponent<typeof SelectionScopeFieldComponent, import("react-redux").Omit<React.ClassAttributes<SelectionScopeFieldComponent> & SelectionScopeFieldProps, "activeSelectionScope" | "availableSelectionScopes">>;
+export const SelectionScopeField: import("react-redux").ConnectedComponent<typeof SelectionScopeFieldComponent, import("react-redux").Omit<React.ClassAttributes<SelectionScopeFieldComponent> & SelectionScopeFieldProps, "availableSelectionScopes" | "activeSelectionScope">>;
 
 // @public @deprecated
 export class SeparatorBackstageItem extends React.PureComponent<BackstageItemProps> {
@@ -6304,7 +6254,7 @@ export class ToolInformation {
 // @public
 export class ToolItemDef extends ActionButtonItemDef {
     constructor(toolItemProps: ToolItemProps, onItemExecuted?: OnItemExecutedFunc);
-    static getItemDefForTool(tool: typeof Tool, iconSpec?: string, args?: any[]): ToolItemDef;
+    static getItemDefForTool(tool: typeof Tool, iconSpec?: string, ...args: any[]): ToolItemDef;
     // (undocumented)
     get id(): string;
     // (undocumented)
@@ -6745,9 +6695,6 @@ export function useAvailableUiItemsProviders(): readonly string[];
 
 // @public
 export const useBackstageManager: () => BackstageManager;
-
-// @internal
-export function useCategories(viewManager: ViewManager, imodel: IModelConnection, view?: Viewport): Category[];
 
 // @internal
 export const useDefaultBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem[];
@@ -7547,7 +7494,7 @@ export enum WidgetType {
 }
 
 // @public
-export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: React.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "onOpenWidget" | "openWidget" | "targetRef">>) => JSX.Element;
+export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: React.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "openWidget" | "onOpenWidget" | "targetRef">>) => JSX.Element;
 
 // @public
 export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: React.JSXElementConstructor<P> & C) => {
@@ -7605,7 +7552,7 @@ export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: R
 };
 
 // @public
-export const withStatusFieldProps: <P extends StatusFieldProps, C>(Component: React.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "onOpenWidget" | "openWidget">>) => JSX.Element;
+export const withStatusFieldProps: <P extends StatusFieldProps, C>(Component: React.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "openWidget" | "onOpenWidget">>) => JSX.Element;
 
 // @internal @deprecated
 export class Workflow extends ItemDefBase {
@@ -7677,7 +7624,7 @@ export interface WorkflowPropsList {
     workflows: WorkflowProps[];
 }
 
-// @public @deprecated
+// @public
 export class Zone extends React.Component<ZoneProps> {
     constructor(props: ZoneProps);
     // (undocumented)
@@ -7736,7 +7683,7 @@ export enum ZoneLocation {
     TopRight = 3
 }
 
-// @public @deprecated
+// @public
 export interface ZoneProps extends CommonProps {
     allowsMerging?: boolean;
     applicationData?: any;
