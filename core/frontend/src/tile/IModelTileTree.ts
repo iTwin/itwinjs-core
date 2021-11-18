@@ -42,6 +42,7 @@ export interface IModelTileTreeParams extends TileTreeParams {
   geometryGuid?: GuidString;
   maxInitialTilesToSkip?: number;
   formatVersion?: number;
+  tileScreenSize: number;
   options: IModelTileTreeOptions;
 }
 
@@ -49,13 +50,28 @@ export interface IModelTileTreeParams extends TileTreeParams {
 export function iModelTileTreeParamsFromJSON(props: IModelTileTreeProps, iModel: IModelConnection, modelId: Id64String, options: IModelTileTreeOptions): IModelTileTreeParams {
   const location = Transform.fromJSON(props.location);
   const { formatVersion, id, rootTile, contentIdQualifier, maxInitialTilesToSkip, geometryGuid } = props;
+  const tileScreenSize = props.tileScreenSize ?? 512;
 
   let contentRange;
   if (undefined !== props.contentRange)
     contentRange = Range3d.fromJSON<ElementAlignedBox3d>(props.contentRange);
 
   const priority = BatchType.Primary === options.batchType ? TileLoadPriority.Primary : TileLoadPriority.Classifier;
-  return { formatVersion, id, rootTile, iModel, location, modelId, contentRange, geometryGuid, contentIdQualifier, maxInitialTilesToSkip, priority, options };
+  return {
+    formatVersion,
+    id,
+    rootTile,
+    iModel,
+    location,
+    modelId,
+    contentRange,
+    geometryGuid,
+    contentIdQualifier,
+    maxInitialTilesToSkip,
+    priority,
+    options,
+    tileScreenSize,
+  };
 }
 
 function findElementChangesForModel(changes: Iterable<ModelGeometryChanges>, modelId: Id64String): Iterable<ElementGeometryChange> | undefined {
@@ -148,7 +164,7 @@ type RootTileState = StaticState | InteractiveState | DynamicState | DisposedSta
 /** The root tile for an [[IModelTileTree]].
  * @internal
  */
-export type RootIModelTile = Tile & { updateDynamicRange: (childTile: Tile) => void };
+export type RootIModelTile = Tile & { tileScreenSize: number; updateDynamicRange: (childTile: Tile) => void; };
 
 /** Represents the root [[Tile]] of an [[IModelTileTree]]. The root tile has one or two direct child tiles which represent different branches of the tree:
  *  - The static branch, containing tiles that represent the state of the model's geometry as of the beginning of the current [[GraphicalEditingScope]].
@@ -291,6 +307,10 @@ class RootTile extends Tile {
 
   }
 
+  public get tileScreenSize(): number {
+    return this.staticBranch.iModelTree.tileScreenSize;
+  }
+
   public updateDynamicRange(tile: Tile): void {
     this.resetRange();
     if (this._staticTreeContentRange && this.tree.contentRange && !tile.contentRange.isNull)
@@ -317,6 +337,7 @@ export class IModelTileTree extends TileTree {
   public readonly maxInitialTilesToSkip: number;
   public readonly contentIdProvider: ContentIdProvider;
   public readonly stringifiedSectionClip?: string;
+  public readonly tileScreenSize: number;
   /** Strictly for debugging/testing - forces tile selection to halt at the specified depth. */
   public debugMaxDepth?: number;
   /** A little hacky...we must not override selectTiles(), but draw() needs to distinguish between static and dynamic tiles.
@@ -329,6 +350,7 @@ export class IModelTileTree extends TileTree {
     super(params);
     this.contentIdQualifier = params.contentIdQualifier;
     this.geometryGuid = params.geometryGuid;
+    this.tileScreenSize = params.tileScreenSize;
 
     if (BatchType.Primary === treeId.type)
       this.stringifiedSectionClip = treeId.sectionCut;
