@@ -19,7 +19,7 @@ import { IModelConnection } from "../IModelConnection";
 import { Viewport } from "../Viewport";
 import { ReadonlyViewportSet, UniqueViewportSets } from "../ViewportSet";
 import {
-  DisclosedTileTreeSet, IModelTile, IModelTileTree, LRUTileList, Tile, TileLoadStatus, TileRequest, TileRequestChannels, TileTree, TileTreeOwner, TileUsageMarker,
+  DisclosedTileTreeSet, IModelTileTree, LRUTileList, Tile, TileLoadStatus, TileRequest, TileRequestChannels, TileTree, TileTreeOwner, TileUsageMarker,
 } from "./internal";
 
 /** Details about any tiles not handled by [[TileAdmin]]. At this time, that means OrbitGT point cloud tiles.
