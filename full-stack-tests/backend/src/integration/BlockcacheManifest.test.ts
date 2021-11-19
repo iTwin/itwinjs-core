@@ -5,6 +5,7 @@
 import { assert } from "chai";
 import { IModelTestUtils } from "@itwin/core-backend/lib/cjs/test";
 import { BlobDaemon, BlobDaemonCommandArg } from "@bentley/imodeljs-native";
+import { BeDuration, Guid } from "@itwin/core-bentley";
 
 // Default account and key for azurite
 const azuriteAccount = "devstoreaccount1";
@@ -13,10 +14,10 @@ const commandArgs: BlobDaemonCommandArg = {
   dbAlias: "test1.bim",
   user: azuriteAccount,
   auth: accessKey,
-  container: "testcontainer",
+  container: `testcontainer-${Guid.createValue()}`,
   storageType: "azure?emulator=127.0.0.1:10000&sas=0",
 };
-describe("Manifest", async () => {
+describe.skip("Manifest", async () => {
   it("should get etag from manifest", async () => {
     const dbPath = IModelTestUtils.prepareOutputFile("IModel", "mirukuru.ibim");
     IModelTestUtils.createSnapshotFromSeed(dbPath, IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
