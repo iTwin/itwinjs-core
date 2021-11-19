@@ -365,7 +365,7 @@ export class EditableWorkspaceFile extends WorkspaceFile {
   public async upload() {
   }
 
-  public async lockContainer() {
+  public override open(): void {
     this.db.openDb(this.localDbName, OpenMode.ReadWrite);
   }
 

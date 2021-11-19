@@ -4,8 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as Yargs from "yargs";
-import { BaseSettings, EditableWorkspaceFile, IModelHost, ITwinWorkspace, WorkspaceFile, IModelJsFs } from "@itwin/core-backend";
+import { BaseSettings, EditableWorkspaceFile, IModelHost, IModelJsFs, ITwinWorkspace, WorkspaceFile } from "@itwin/core-backend";
 import { parse } from "path";
+import { DbResult } from "@itwin/core-bentley";
 
 /* eslint-disable id-blacklist,no-console */
 
@@ -28,7 +29,6 @@ interface ListOptions extends WorkspaceOpts {
 
 const workspace = new ITwinWorkspace(new BaseSettings());
 
-
 function listWorkspace(args: ListOptions) {
   if (!args.strings && !args.blobs && !args.files)
     args.blobs = args.files = args.strings = true;
@@ -38,20 +38,25 @@ function listWorkspace(args: ListOptions) {
   if (args.strings) {
     console.log("strings:");
     file.db.withSqliteStatement("SELECT id,value FROM strings", (stmt) => {
-      console.log(`name=[${stmt.getValueString(0)}], size=${stmt.getValueString(1).length}`);
+      if (DbResult.BE_SQLITE_ROW === stmt.step())
+        console.log(`name=[${stmt.getValueString(0)}], size=${stmt.getValueString(1).length}`);
     });
   }
   if (args.blobs) {
     console.log("blob:");
     file.db.withSqliteStatement("SELECT id,value FROM blobs", (stmt) => {
-      console.log(`name=[${stmt.getValueString(0)}], size=${stmt.getValueBlob(1).length}`);
+      if (DbResult.BE_SQLITE_ROW === stmt.step())
+        console.log(`name=[${stmt.getValueString(0)}], size=${stmt.getValueBlob(1).length}`);
     });
   }
   if (args.files) {
     console.log("files:");
     file.db.withSqliteStatement("SELECT name,size,type,lastModified,size FROM be_EmbedFile", (stmt) => {
-      const date = new Date(stmt.getValueDouble(3));
-      console.log(`name=[${stmt.getValueString(0)}], size=${stmt.getValueBlob(1).length}, ext="${stmt.getValueString(2)}", date=${date.toString()}`);
+      if (DbResult.BE_SQLITE_ROW === stmt.step()) {
+        file.queryFileResource
+        const date = new Date(stmt.getValueInteger(3));
+        console.log(`name=[${stmt.getValueString(0)}], size=${stmt.getValueInteger(1)}, ext="${stmt.getValueString(2)}", date=${date.toString()}`);
+      }
     });
   }
 }
@@ -89,11 +94,11 @@ function dropFromWorkspace(argv: any) {
 function runCommand(cmd: (args: any) => void) {
   return (args: any) => {
     try {
-      cmd(args)
+      cmd(args);
     } catch (e: any) {
       console.error(e.message);
     }
-  }
+  };
 }
 
 async function main() {

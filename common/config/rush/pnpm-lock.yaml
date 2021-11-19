@@ -4630,6 +4630,8 @@ importers:
     specifiers:
       '@itwin/build-tools': workspace:*
       '@itwin/core-backend': workspace:*
+      '@itwin/core-bentley': workspace:*
+      '@itwin/core-common': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@types/chai': ^4.1.4
       '@types/mocha': ^8.2.2
@@ -4641,6 +4643,8 @@ importers:
       yargs: ^16.0.0
     dependencies:
       '@itwin/core-backend': link:../../core/backend
+      '@itwin/core-bentley': link:../../core/bentley
+      '@itwin/core-common': link:../../core/common
       yargs: 16.2.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
