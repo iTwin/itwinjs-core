@@ -2,6 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Extensions
+ */
+
 import { IModelApp } from "../IModelApp";
 import type { ToolAdmin } from "../tools/ToolAdmin";
 import type { AccuSnap } from "../AccuSnap";
