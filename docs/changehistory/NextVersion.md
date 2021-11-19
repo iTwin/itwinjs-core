@@ -4,11 +4,15 @@ publish: false
 
 # NextVersion
 
+## Update guide
+
+We have built a [codemod tool](https://github.com/iTwin/codemods) using the [jscodeshift](https://github.com/facebook/jscodeshift) toolkit which should serve as a starting point for updating your project to use the new 3.0 packages of itwinjs-core. Please see the included [readme.md](https://github.com/iTwin/codemods#readme) for instructions on running the tool against your project.
+
 ## Updated minimum requirements
 
 Support for Node 10 has been dropped. The new minimum Node version is 12.22.0. The recommended version is the latest LTS version of Node. Please visit our [Supported Platforms](../learning/supportedplatforms) documentation for a full breakdown of compatibility.
 
-## Dependency Updates
+## Dependency updates
 
 The following dependencies of iTwin.js have been updated;
 
