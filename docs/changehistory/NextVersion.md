@@ -12,7 +12,7 @@ We have built a [codemod tool](https://github.com/iTwin/codemods) using the [jsc
 
 Support for Node 10 has been dropped. The new minimum Node version is 12.22.0. The recommended version is the latest LTS version of Node. Please visit our [Supported Platforms](../learning/supportedplatforms) documentation for a full breakdown of compatibility.
 
-## Dependency updates
+## Dependency Updates
 
 The following dependencies of iTwin.js have been updated;
 
