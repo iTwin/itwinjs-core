@@ -49,19 +49,19 @@ export class TestExtensionUiProviderTool extends Tool {
   }
 }
 
-function getImodelSpecificKey(inKey: string, iModelConnection: IModelConnection | undefined) {
+function getIModelSpecificKey(inKey: string, iModelConnection: IModelConnection | undefined) {
   const imodelId = iModelConnection?.iModelId ?? "unknownImodel";
   return `[${imodelId}]${inKey}`;
 }
 
 export async function hasSavedViewLayoutProps(activeFrontstageId: string, iModelConnection: IModelConnection | undefined) {
   const localSettings = new LocalSettingsStorage();
-  return localSettings.hasSetting("ContentGroupLayout", getImodelSpecificKey(activeFrontstageId, iModelConnection));
+  return localSettings.hasSetting("ContentGroupLayout", getIModelSpecificKey(activeFrontstageId, iModelConnection));
 }
 
 export async function getSavedViewLayoutProps(activeFrontstageId: string, iModelConnection: IModelConnection | undefined) {
   const localSettings = new LocalSettingsStorage();
-  const result = await localSettings.getSetting("ContentGroupLayout", getImodelSpecificKey(activeFrontstageId, iModelConnection));
+  const result = await localSettings.getSetting("ContentGroupLayout", getIModelSpecificKey(activeFrontstageId, iModelConnection));
 
   if (result.setting) {
     // Parse StageContentLayoutProps
@@ -115,7 +115,7 @@ export class SaveContentLayoutTool extends Tool {
         savedViewLayoutProps.contentGroupProps = FrontstageManager.activeFrontstageDef.contentGroupProvider.prepareToSaveProps(savedViewLayoutProps.contentGroupProps);
 
       await localSettings.saveSetting("ContentGroupLayout",
-        getImodelSpecificKey(FrontstageManager.activeFrontstageDef.id, UiFramework.getIModelConnection()),
+        getIModelSpecificKey(FrontstageManager.activeFrontstageDef.id, UiFramework.getIModelConnection()),
         savedViewLayoutProps);
     }
     return true;
@@ -172,7 +172,7 @@ export class RemoveSavedContentLayoutTool extends Tool {
       const localSettings = new LocalSettingsStorage();
 
       await localSettings.deleteSetting("ContentGroupLayout",
-        getImodelSpecificKey(FrontstageManager.activeFrontstageDef.id, UiFramework.getIModelConnection()));
+        getIModelSpecificKey(FrontstageManager.activeFrontstageDef.id, UiFramework.getIModelConnection()));
     }
     return true;
   }

@@ -9,7 +9,7 @@
 /* eslint-disable deprecation/deprecation */
 
 /** Interface for getting, saving and deleting settings.
- * @public @deprecated
+ * @public @deprecated The UiSettings APIs are deprecated in favor of the [IModelApp.userPreferences]($frontend) API.
  */
 export interface UiSettingsStorage {
   getSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
@@ -18,12 +18,12 @@ export interface UiSettingsStorage {
 }
 
 /** Alias for [[UiSettingsStorage]]
- * @public
+ * @public @deprecated The UiSettings APIs are deprecated in favor of the [IModelApp.userPreferences]($frontend) API.
  */
 export type UiSettings = UiSettingsStorage;
 
 /** Enum for [[UiSettingsStorage]] status.
- * @public
+ * @public @deprecated The UiSettings APIs are deprecated in favor of the [IModelApp.userPreferences]($frontend) API.
  */
 export enum UiSettingsStatus {
   Success = 0,
@@ -34,7 +34,7 @@ export enum UiSettingsStatus {
 }
 
 /** Interface for result of accessing setting in [[UiSettingsStorage]].
- * @public @deprecated
+ * @public @deprecated The UiSettings APIs are deprecated in favor of the [IModelApp.userPreferences]($frontend) API.
  */
 export interface UiSettingsResult {
   status: UiSettingsStatus;

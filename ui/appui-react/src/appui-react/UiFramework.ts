@@ -38,7 +38,7 @@ import { FrontstageManager } from "./frontstage/FrontstageManager";
 
 // cSpell:ignore Mobi
 
-/** Defined that available Ui Versions. It is recommended to always use the latest version available.
+/** Defined that available UI Versions. It is recommended to always use the latest version available.
  * @public
  */
 export type FrameworkVersionId = "1" | "2";
@@ -216,7 +216,8 @@ export class UiFramework {
   public static get initialized(): boolean { return UiFramework._initialized; }
 
   /** Property that returns the SettingManager used by AppUI-based applications.
-   *  @public */
+   * @public
+   */
   public static get settingsManager() {
     if (undefined === UiFramework._settingsManager)
       UiFramework._settingsManager = new SettingsManager();
@@ -391,7 +392,7 @@ export class UiFramework {
     return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.iModelConnection : /* istanbul ignore next */  undefined;
   }
 
-  /** @public */
+  /** @public @deprecated */
   public static async setUiSettingsStorage(storage: UiSettingsStorage, immediateSync = false) { // eslint-disable-line deprecation/deprecation
     if (UiFramework._uiSettingsStorage === storage)
       return;
@@ -411,7 +412,11 @@ export class UiFramework {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.UiSettingsChanged);
   }
 
-  /** @public */
+  /** The UI Settings Storage is a convenient wrapper around Local Storage to assist in caching state information across user sessions.
+   * It was previously used to conflate both the state information across session and the information driven directly from user explicit action,
+   * which are now handled with user preferences.
+   * @public @deprecated
+   */
   public static getUiSettingsStorage(): UiSettingsStorage { // eslint-disable-line deprecation/deprecation
     return UiFramework._uiSettingsStorage;
   }

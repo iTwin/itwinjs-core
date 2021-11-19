@@ -1366,8 +1366,8 @@ Some have replacements within the @itwin/core-react package.
 | DialogButtonDef in @itwin/core-react   | DialogButtonDef in @itwin/appui-abstract       |
 | DialogButtonStyle in @itwin/core-react | DialogButtonStyle in @itwin/appui-abstract     |
 | DialogButtonType in @itwin/core-react  | DialogButtonType in @itwin/appui-abstract      |
-| LocalUiSettings in @itwin/core-react   | LocalSettingsStorage in @itwin/core-react   |
-| SessionUiSettings in @itwin/core-react | SessionSettingsStorage in @itwin/core-react |
+| LocalUiSettings in @itwin/core-react   | LocalSettingsStorage in @itwin/core-react      |
+| SessionUiSettings in @itwin/core-react | *eliminated*                                   |
 
 ### New @itwin/imodel-components-react package
 

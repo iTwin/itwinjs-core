@@ -302,7 +302,7 @@ export class QuantityFormatter implements UnitsProvider {
   protected _overrideFormatPropsByUnitSystem = new Map<UnitSystemKey, Map<QuantityTypeKey, FormatProps>>();
   protected _unitFormattingSettingsProvider: UnitFormattingSettingsProvider | undefined;
 
-  /** set the settings provider and if not imodel specific initialize setting for user. */
+  /** Set the settings provider and if not iModel specific initialize setting for user. */
   public async setUnitFormattingSettingsProvider(provider: UnitFormattingSettingsProvider) {
     this._unitFormattingSettingsProvider = provider;
     if (!provider.maintainOverridesPerIModel)

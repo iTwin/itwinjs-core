@@ -11,7 +11,7 @@
 import { UiSettingsResult, UiSettingsStatus, UiSettingsStorage } from "./UiSettingsStorage";
 
 /** A Ui Setting with namespace and setting name.
- * @public
+ * @public @deprecated The UiSettings APIs are deprecated in favor of the [IModelApp.userPreferences]($frontend) API.
  */
 export class UiSetting<T> {
   /** Constructor

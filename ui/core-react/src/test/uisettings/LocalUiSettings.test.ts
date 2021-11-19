@@ -4,17 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { LocalSettingsStorage, LocalUiSettings, UiSettingsStatus } from "../../core-react";
+import { LocalSettingsStorage, UiSettingsStatus } from "../../core-react";
 
 import { storageMock } from "../TestUtils";
 
-describe("LocalUiSettings", () => {
-  it("default constructor executes successfully", () => {
-    const initialLocalUiSettings = new LocalUiSettings(); // eslint-disable-line deprecation/deprecation
-    expect(initialLocalUiSettings).to.not.be.undefined;
-  });
+describe("LocalSettingsStorage", () => {
   it("default LocalSettingsStorage constructor executes successfully", () => {
-    const initialLocalUiSettings = new LocalSettingsStorage(); // eslint-disable-line deprecation/deprecation
+    const initialLocalUiSettings = new LocalSettingsStorage();
     expect(initialLocalUiSettings).to.not.be.undefined;
   });
   describe("saveSetting", () => {

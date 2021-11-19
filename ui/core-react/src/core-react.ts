@@ -155,7 +155,6 @@ export { TreeNodePlaceholder, TreeNodePlaceholderProps } from "./core-react/tree
 export * from "./core-react/uisettings/UiSetting";
 export * from "./core-react/uisettings/UiSettingsStorage";
 export * from "./core-react/uisettings/LocalSettingsStorage";
-export * from "./core-react/uisettings/SessionSettingsStorage";
 
 export * from "./core-react/utils/IconHelper";
 export * from "./core-react/utils/Point";
