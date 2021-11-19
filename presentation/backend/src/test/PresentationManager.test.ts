@@ -1775,8 +1775,7 @@ describe("PresentationManager", () => {
 
       function setupIModelForElementIds(imodel: moq.IMock<IModelDb>, idsByClass: Map<string, string[]>, idsCount: number) {
         imodel.setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())).returns(() => idsCount);
-        imodel.setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())).returns(() => ({ ids: idsByClass, lastElementId: "0x1" }));
-        imodel.setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())).returns(() => ({ ids: new Map<string, string[]>(), lastElementId: undefined }));
+        imodel.setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())).returns(() => ({ ids: idsByClass, lastElementId: undefined }));
       }
 
       it("returns multiple elements properties", async () => {
