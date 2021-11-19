@@ -51,6 +51,7 @@ import { CodeProps } from '@itwin/core-common';
 import { CodeSpec } from '@itwin/core-common';
 import { ColorDef } from '@itwin/core-common';
 import { ColorIndex } from '@itwin/core-common';
+import { CommonToolbarItem } from '@itwin/appui-abstract';
 import { CompressedId64Set } from '@itwin/core-bentley';
 import { Constructor } from '@itwin/core-bentley';
 import { ContentIdProvider } from '@itwin/core-common';
@@ -285,12 +286,15 @@ import { ThumbnailProps } from '@itwin/core-common';
 import { TileProps } from '@itwin/core-common';
 import { TileReadStatus } from '@itwin/core-common';
 import { TileVersionInfo } from '@itwin/core-common';
+import { ToolbarOrientation } from '@itwin/appui-abstract';
+import { ToolbarUsage } from '@itwin/appui-abstract';
 import { Transform } from '@itwin/core-geometry';
 import { TransformProps } from '@itwin/core-geometry';
 import { TransientIdSequence } from '@itwin/core-bentley';
 import { Tweens } from '@itwin/core-common';
 import { TxnNotifications } from '@itwin/core-common';
 import { UiAdmin } from '@itwin/appui-abstract';
+import { UiItemsProvider } from '@itwin/appui-abstract';
 import { UnitConversion } from '@itwin/core-quantity';
 import { UnitProps } from '@itwin/core-quantity';
 import { UnitsProvider } from '@itwin/core-quantity';
@@ -1723,6 +1727,19 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     reverseTxns(numOperations: number): Promise<IModelStatus>;
 }
 
+// @alpha (undocumented)
+export interface BuildExtensionManifest extends ExtensionManifest {
+    readonly module?: string;
+}
+
+// @alpha (undocumented)
+export interface BuiltInExtensionLoaderProps {
+    // (undocumented)
+    loader: (() => Promise<any>);
+    // (undocumented)
+    manifest: Promise<any>;
+}
+
 // @internal (undocumented)
 export type CachedDecoration = {
     type: "graphic";
@@ -2994,6 +3011,74 @@ export enum EventHandled {
     No = 0,
     // (undocumented)
     Yes = 1
+}
+
+// @alpha
+export class ExtensionAdmin {
+    constructor();
+    addBuildExtension(manifestPromise: Promise<any>, mainFunc?: ResolveFunc_2): Promise<void>;
+    addExtensionLoader(extensionLoader: ExtensionLoader): void;
+    addExtensionLoaderFront(extensionLoader: ExtensionLoader): void;
+    onStartup: () => Promise<void>;
+    }
+
+// @beta
+export class ExtensionHost {
+    protected constructor();
+    // (undocumented)
+    static get accuSnap(): AccuSnap;
+    // (undocumented)
+    static get localization(): Localization;
+    // (undocumented)
+    static get locateManager(): ElementLocateManager;
+    // (undocumented)
+    static get notifications(): NotificationManager;
+    // (undocumented)
+    static get renderSystem(): RenderSystem;
+    // (undocumented)
+    static get toolAdmin(): ToolAdmin;
+    // (undocumented)
+    static get viewManager(): ViewManager;
+}
+
+// @alpha (undocumented)
+export class ExtensionImpl {
+    constructor(_id: string);
+    // (undocumented)
+    registerTool(tool: ToolType, onRegistered?: () => any): Promise<void>;
+}
+
+// @alpha
+export interface ExtensionLoader {
+    downloadExtension(arg: ExtensionLoaderProps): Promise<LocalExtensionProps>;
+    getManifest(arg: ExtensionLoaderProps): Promise<ExtensionManifest>;
+}
+
+// @alpha
+export interface ExtensionLoaderProps {
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    version: string;
+}
+
+// @alpha
+export interface ExtensionManifest {
+    readonly activationEvents?: string[];
+    // (undocumented)
+    readonly description?: string;
+    // (undocumented)
+    readonly displayName?: string;
+    // (undocumented)
+    readonly enableProposedApi?: boolean;
+    readonly engines?: {
+        itwinjs: string;
+    };
+    readonly main?: string;
+    // (undocumented)
+    readonly name: string;
+    // (undocumented)
+    readonly version: string;
 }
 
 // @public
@@ -4365,6 +4450,8 @@ export class IModelApp {
     static authorizationClient?: AuthorizationClient;
     // @internal (undocumented)
     static createRenderSys(opts?: RenderSystem.Options): RenderSystem;
+    // @alpha (undocumented)
+    static readonly extensionAdmin: ExtensionAdmin;
     // @alpha
     static formatElementToolTip(msg: string[]): HTMLElement;
     static getAccessToken(): Promise<AccessToken>;
@@ -4375,7 +4462,7 @@ export class IModelApp {
     // @internal (undocumented)
     static get initialized(): boolean;
     static get localization(): Localization;
-    // @internal (undocumented)
+    // (undocumented)
     static get locateManager(): ElementLocateManager;
     // @internal (undocumented)
     static lookupEntityClass(classFullName: string): typeof EntityState | undefined;
@@ -4402,6 +4489,8 @@ export class IModelApp {
     static get mapLayerFormatRegistry(): MapLayerFormatRegistry;
     static get notifications(): NotificationManager;
     static readonly onBeforeShutdown: BeEvent<() => void>;
+    // @internal
+    static readonly onBeforeStartup: BeEvent<() => void>;
     // @alpha
     static get quantityFormatter(): QuantityFormatter;
     static queryRenderCompatibility(): WebGLRenderCompatibilityInfo;
@@ -4975,6 +5064,14 @@ export class LengthDescription extends FormattedQuantityDescription {
 
 // @internal (undocumented)
 export function linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void;
+
+// @alpha
+export interface LocalExtensionProps {
+    // (undocumented)
+    readonly mainFunc?: ResolveFunc;
+    // (undocumented)
+    readonly manifest: ExtensionManifest;
+}
 
 // @internal
 export class LocalhostIpcApp {
@@ -10989,6 +11086,15 @@ export interface ToolAssistanceSection {
 
 // @public (undocumented)
 export type ToolList = ToolType[];
+
+// @alpha (undocumented)
+export class ToolProvider implements UiItemsProvider {
+    constructor(tool: ToolType);
+    // (undocumented)
+    readonly id: string;
+    // (undocumented)
+    provideToolbarButtonItems(_stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[];
+    }
 
 // @public
 export class ToolRegistry {

@@ -5,12 +5,15 @@
 
 import { ExtensionManifest, LocalExtensionProps } from "./Extension";
 
-/** THe minimum information required to download an Extension */
+/** The minimum information required to download an Extension
+ * @alpha
+*/
 export interface ExtensionLoaderProps {
   name: string;
   version: string;
 }
 
+/** @alpha */
 export interface BuiltInExtensionLoaderProps {
   manifest: Promise<any>;
   loader: (() => Promise<any>);

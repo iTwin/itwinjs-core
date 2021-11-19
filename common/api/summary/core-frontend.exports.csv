@@ -71,6 +71,8 @@ public;BlankConnectionProps
 public;BriefcaseConnection 
 public;class BriefcaseNotificationHandler 
 public;BriefcaseTxns 
+alpha;BuildExtensionManifest 
+alpha;BuiltInExtensionLoaderProps
 internal;CachedDecoration =
 internal;CachedIModelCoordinatesResponseProps
 public;calculateEcefToDbTransformAtLocation(originIn: Point3d, iModel: IModelConnection): Promise
@@ -150,6 +152,12 @@ public;EntityState
 internal;EnvironmentDecorations
 public;EventController
 public;EventHandled
+alpha;ExtensionAdmin
+beta;ExtensionHost
+alpha;ExtensionImpl
+alpha;ExtensionLoader
+alpha;ExtensionLoaderProps
+alpha;ExtensionManifest
 public;ExtentLimits
 internal;ExternalTileStatistics
 public;extractImageSourceDimensions(source: ImageSource): Promise
@@ -295,6 +303,7 @@ public;KeyinParseError
 internal;KeyinStatus
 beta;LengthDescription 
 internal;linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void
+alpha;LocalExtensionProps
 internal;LocalhostIpcApp
 internal;LocalHostIpcAppOpts
 beta;LocalUnitFormatProvider 
@@ -588,6 +597,7 @@ public;ToolAssistanceInstructions
 public;ToolAssistanceKeyboardInfo
 public;ToolAssistanceSection
 public;ToolList = ToolType[]
+alpha;ToolProvider 
 public;ToolRegistry
 public;ToolSettings
 internal;ToolSettingsState
