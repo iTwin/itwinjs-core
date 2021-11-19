@@ -138,6 +138,9 @@
     },
     "SyncFrusta": {
       "keyin": "dta frustum sync"
+    },
+    "GenerateTileContent": {
+      "keyin": "dta gen tile"
     }
   }
 }
