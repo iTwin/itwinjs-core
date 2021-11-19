@@ -648,24 +648,28 @@ export class PresentationManager {
   }
 
   private async * getMultipleElementProperties(requestOptions: Prioritized<MultiElementPropertiesRequestOptions<IModelDb>>): AsyncIterableIterator<PagedResponse<ElementProperties>> {
-    const ELEMENT_PROPERTIES_CONTENT_BATCH_SIZE = 100;
+    const ELEMENT_IDS_BATCH_SIZE = 1000;
     const { elementClasses, ...optionsNoElementClasses } = requestOptions;
     const elementsCount = getElementsCount(requestOptions.imodel, requestOptions.elementClasses);
 
-    for (const idsByClass of iterateElementIds(requestOptions.imodel, elementClasses, ELEMENT_PROPERTIES_CONTENT_BATCH_SIZE)) {
+    for (const idsByClass of iterateElementIds(requestOptions.imodel, elementClasses, ELEMENT_IDS_BATCH_SIZE)) {
+      const propertiesPage: ElementProperties[] = [];
       for (const entry of idsByClass) {
-        const keys = new KeySet(entry[1].map((id) => ({ id, className: entry[0] })));
-        const content = await this.getContent({
-          ...optionsNoElementClasses,
-          descriptor: {
-            displayType: DefaultContentDisplayTypes.PropertyPane,
-            contentFlags: ContentFlags.ShowLabels,
-          },
-          rulesetOrId: "ElementProperties",
-          keys,
+        const props = await buildElementsPropertiesInPages(entry[0], entry[1], async (keys) => {
+          const content = await this.getContent({
+            ...optionsNoElementClasses,
+            descriptor: {
+              displayType: DefaultContentDisplayTypes.PropertyPane,
+              contentFlags: ContentFlags.ShowLabels,
+            },
+            rulesetOrId: "ElementProperties",
+            keys,
+          });
+          return buildElementsProperties(content);
         });
-        yield { total: elementsCount, items: buildElementsProperties(content) };
+        propertiesPage.push(...props);
       }
+      yield { total: elementsCount, items: propertiesPage };
     }
   }
 
@@ -921,3 +925,15 @@ const getPresentationCommonAssetsRoot = (ovr?: string | { common: string }) => {
     return ovr.common;
   return PRESENTATION_COMMON_ASSETS_ROOT;
 };
+
+const ELEMENT_PROPERTIES_CONTENT_BATCH_SIZE = 100;
+async function buildElementsPropertiesInPages(className: string, ids: string[], getter: (keys: KeySet) => Promise<ElementProperties[]>) {
+  const elementProperties: ElementProperties[] = [];
+  const elementIds = [...ids];
+  while (elementIds.length > 0) {
+    const idsPage = elementIds.splice(0, ELEMENT_PROPERTIES_CONTENT_BATCH_SIZE);
+    const keys = new KeySet(idsPage.map((id) => ({ id, className })));
+    elementProperties.push(...(await getter(keys)));
+  }
+  return elementProperties;
+}
