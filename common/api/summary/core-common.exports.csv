@@ -120,7 +120,7 @@ public;CommonLoggerCategory
 internal;compareIModelTileTreeIds(lhs: IModelTileTreeId, rhs: IModelTileTreeId): number
 internal;CompositeTileHeader 
 internal;computeChildTileProps(parent: TileMetadata, idProvider: ContentIdProvider, root: TileTreeMetadata):
-internal;computeTileChordTolerance(tile: TileMetadata, is3d: boolean): number
+internal;computeTileChordTolerance(tile: TileMetadata, is3d: boolean, tileScreenSize: number): number
 alpha;ContentFlags
 internal;class ContentIdProvider
 public;ContextRealityModel
@@ -153,6 +153,7 @@ internal;DbResponseKind
 internal;DbResponseStatus
 beta;DbRuntimeStats
 internal;DecorationGeometryProps
+beta;DefaultSupportedTypes
 internal;defaultTileOptions: TileOptions
 public;DefinitionElementProps 
 public;DeletedElementGeometryChange
@@ -211,6 +212,8 @@ beta;EntityMetaData
 beta;EntityMetaDataProps
 public;EntityProps
 public;EntityQueryParams
+public;Environment
+public;EnvironmentProperties = NonFunctionPropertiesOf
 public;EnvironmentProps
 public;ExtantElementGeometryChange
 public;ExternalSourceAspectProps 
@@ -218,7 +221,7 @@ beta;ExternalSourceAttachmentProps
 beta;ExternalSourceAttachmentRole
 beta;ExternalSourceProps 
 public;Feature
-public;FeatureAppearance 
+public;FeatureAppearance
 public;FeatureAppearanceProps
 public;FeatureAppearanceProvider
 public;FeatureAppearanceProvider
@@ -307,6 +310,7 @@ public;GridFileTransform
 public;GridFileTransformProps
 public;GridOrientationType
 public;GroundPlane
+public;GroundPlaneProperties = NonFunctionPropertiesOf
 public;GroundPlaneProps
 public;Helmert2DWithZOffset 
 public;Helmert2DWithZOffsetProps
@@ -459,6 +463,11 @@ public;OpenDbKey
 internal;OPERATION: unique symbol
 alpha;OrbitGtBlobProps
 beta;OverriddenBy
+public;OverrideElementAppearanceOptions 
+public;OverrideFeatureAppearanceArgs = OverrideElementAppearanceOptions | OverrideModelAppearanceOptions | OverrideSubCategoryAppearanceOptions
+public;OverrideFeatureAppearanceOptions
+public;OverrideModelAppearanceOptions 
+public;OverrideSubCategoryAppearanceOptions 
 internal;PackedFeature
 internal;PackedFeatureTable
 internal;parseTileTreeIdAndContentId(treeId: string, contentId: string):
@@ -522,6 +531,8 @@ beta;QueryValueType = any
 public;Rank
 internal;ReadableFormData 
 internal;readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription
+beta;RealityData
+beta;RealityDataAccess
 alpha;RealityDataFormat
 alpha;RealityDataProvider
 alpha;RealityDataSourceKey
@@ -621,10 +632,17 @@ beta;SheetBorderTemplateProps
 public;SheetProps 
 beta;SheetTemplateProps 
 internal;SilhouetteEdgeArgs 
-public;SkyBoxImageProps
+public;SkyBox
+public;SkyBoxImageProps = SkySphereImageProps | SkyCubeImageProps |
 public;SkyBoxImageType
 public;SkyBoxProps
+public;SkyCube 
+public;SkyCubeImageProps
 public;SkyCubeProps
+public;SkyGradient
+public;SkyGradientProperties = NonFunctionPropertiesOf
+public;SkySphere 
+public;SkySphereImageProps
 internal;SnapRequestProps
 internal;SnapResponseProps
 internal;class SnapshotIModelRpcInterface 
@@ -663,6 +681,7 @@ public;TextString
 public;TextStringPrimitive
 public;TextStringProps
 public;TextureData
+public;TextureImageSpec = Id64String | string
 public;TextureLoadProps
 public;TextureMapping
 public;TextureMapping

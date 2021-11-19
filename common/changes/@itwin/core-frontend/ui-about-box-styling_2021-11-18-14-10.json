@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Protect logoCard styling from app's CSS and make sure the logoCard opens in the correct window for pop-out viewports.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

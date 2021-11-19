@@ -104,7 +104,7 @@ export class MessageCenterField extends React.Component<MessageCenterFieldProps,
           title={tooltip}
           ref={this._handleTargetRef}
         >
-          <MessageCenter
+          <MessageCenter // eslint-disable-line deprecation/deprecation
             indicatorRef={this._indicator}
             isInFooterMode={this.props.isInFooterMode}
             label={this.props.isInFooterMode ? this._title : undefined}

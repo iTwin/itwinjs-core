@@ -15,7 +15,7 @@ import { MergeTargetProps } from "./Merge";
 import { WidgetTarget } from "./Target";
 
 /** Properties of [[StagePanel]] component.
- * @beta
+ * @internal
  */
 export interface StagePanelTargetProps extends MergeTargetProps {
   /** Describes respected safe area insets. */
@@ -25,7 +25,7 @@ export interface StagePanelTargetProps extends MergeTargetProps {
 }
 
 /** Zone target used to merge widgets to stage panels.
- * @beta
+ * @internal
  */
 export class StagePanelTarget extends React.PureComponent<StagePanelTargetProps> {
   public override render() {

@@ -12,11 +12,11 @@ import { UiSettingsResult, UiSettingsStatus, UiSettingsStorage } from "./UiSetti
  * Implementation of [[UiSettingsStorage]] using Window.localStorage.
  * @public
  */
-export class LocalSettingsStorage implements UiSettingsStorage {
+export class LocalSettingsStorage implements UiSettingsStorage { // eslint-disable-line deprecation/deprecation
 
   constructor(public w: Window = window) { }
 
-  public async getSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult> {
+  public async getSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult> { // eslint-disable-line deprecation/deprecation
     const setting = this.w.localStorage.getItem(`${settingNamespace}.${settingName}`);
     if (setting !== null)
       return { status: UiSettingsStatus.Success, setting: JSON.parse(setting) };
@@ -24,7 +24,7 @@ export class LocalSettingsStorage implements UiSettingsStorage {
       return { status: UiSettingsStatus.NotFound };
   }
 
-  public async saveSetting(settingNamespace: string, settingName: string, setting: any): Promise<UiSettingsResult> {
+  public async saveSetting(settingNamespace: string, settingName: string, setting: any): Promise<UiSettingsResult> { // eslint-disable-line deprecation/deprecation
     this.w.localStorage.setItem(`${settingNamespace}.${settingName}`, JSON.stringify(setting));
     return { status: UiSettingsStatus.Success };
   }
@@ -37,7 +37,7 @@ export class LocalSettingsStorage implements UiSettingsStorage {
     return true;
   }
 
-  public async deleteSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult> {
+  public async deleteSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult> { // eslint-disable-line deprecation/deprecation
     const name = `${settingNamespace}.${settingName}`;
     const setting = this.w.localStorage.getItem(name);
     if (setting === null)
@@ -54,4 +54,3 @@ export class LocalSettingsStorage implements UiSettingsStorage {
 export class LocalUiSettings extends LocalSettingsStorage {
   constructor(w: Window = window) { super(w); }
 }
-

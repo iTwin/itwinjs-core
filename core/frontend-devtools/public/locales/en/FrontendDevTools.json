@@ -450,6 +450,12 @@
     },
    "WoWIgnoreBackground": {
       "keyin": "fdt wow ignore background"
+    },
+    "SetSkySphere": {
+      "keyin": "fdt sky sphere"
+    },
+    "SetSkyCube": {
+      "keyin": "fdt sky cube"
     }
   }
 }

@@ -188,6 +188,10 @@ describe("Render Compatibility", () => {
       [ "Intel(R) UHD Graphics 610", false ],
 
       [ "ANGLE (NVIDIA GeForce GTX 970 Direct3D11 vs_5_0 ps_5_0)", false ],
+
+      // Around October 2021 slightly different unmasked renderer strings began showing up, containing "Intel, Intel(R)" instead of just "Intel(R)".
+      [ "ANGLE (Intel, Intel(R) HD Graphics 620 Direct3D11 vs_5_0 ps_5_0, D3D11-27.20.100.8681)", true ],
+      [ "ANGLE (Intel, Intel(R) UHD Graphics 630 Direct3D11", true ],
     ];
 
     for (const renderer of renderers) {

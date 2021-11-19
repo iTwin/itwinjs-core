@@ -1,12 +1,13 @@
 {
   "name": "@itwin/core-geometry",
-  "version": "3.0.0-dev.109",
+  "version": "3.0.0-dev.123",
   "description": "iTwin.js Core Geometry library",
   "main": "lib/cjs/core-geometry.js",
   "module": "lib/esm/core-geometry.js",
   "typings": "lib/cjs/core-geometry",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
+  "sideEffects": false,
   "scripts": {
     "build": "npm run -s build:cjs",
     "build:ci": "npm run -s build && npm run -s build:esm",
@@ -34,7 +35,7 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.109"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.123"
   },
   "devDependencies": {
     "@itwin/core-bentley": "workspace:*",

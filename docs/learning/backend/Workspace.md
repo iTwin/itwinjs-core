@@ -8,21 +8,22 @@ Whenever an application opens an iModel using the [IModelDb]($backend) class, it
 
 When combined, the `IModelHost.appWorkspace` and the `IModelDb.workspace` customize the session according to the:
 
- 1. application's defaults
- 2. organization of the user
- 3. current iTwin
- 4. current iModel
+1. application's defaults
+2. organization of the user
+3. current iTwin
+4. current iModel
 
 In the list above, later entries tend to change more frequently and, in the case of conflicting choices, later entries override earlier ones.
 
 [Workspace]($backend)s expresses the current state of the session in two forms:
+
   1. [Settings](#settings)
   2. [WorkspaceContainers](#workspacecontainers)
 
 `Settings` are *named parameters* that an application defines and whose values are supplied at runtime. `WorkspaceContainers` hold *named resources* (i.e. data) that the application uses. `Settings` and `WorkspaceContainers` are often related in application logic, e.g.:
 
- - a Setting may contain the "formula" to find a resource
- - a `WorkspaceContainer` may hold a resource that defines a group of Settings
+- a Setting may contain the "formula" to find a resource
+- a `WorkspaceContainer` may hold a resource that defines a group of Settings
 
 This means that there must be some way to initialize the process. That should be some external (e.g. outside of WorkspaceContainer) service that supplies the initial Settings values.
 
@@ -41,27 +42,27 @@ Applications can define groups of related "settings specifications" in the form 
 A [SettingName]($backend) is defined by an application in a [SettingSpec]($backend). A `SettingName` must be unique across all applications, so it should be formed as a "path", with the parts separated by a "/". The first entry in the path is the "application id", and all Settings for an application should start with the same value. Groups of related settings for an application should have the same path prefix. The settings editor will split the path parts of a `SettingName` (using the "/" delimiter) as "tabs" for editing.
 
 For example:
+
 ```ts
-  "energyAnalysis/formats/totalWork"
-  "energyAnalysis/formats/generationUnits"
-  "iot-scan-visualization/ports/cameras"
-  "vibration-map/filters/scope"
-  "vibration-map/filters/prefabricated"
+"energyAnalysis/formats/totalWork"
+"energyAnalysis/formats/generationUnits"
+"iot-scan-visualization/ports/cameras"
+"vibration-map/filters/scope"
+"vibration-map/filters/prefabricated"
 ```
 
 #### SettingTypes
 
 A [SettingSpec]($backend) defines the *type* of a Setting as one of:
 
-  - string
-  - number
-  - integer
-  - boolean
-  - array
-  - object
+- string
+- number
+- integer
+- boolean
+- array
+- object
 
 The Settings Editor will enforce that the values supplied for a Setting is the correct type.
-
 
 #### Example SettingGroupSec
 
@@ -172,6 +173,7 @@ E.g.:
 ```ts
 [[include:Settings.addDictionaryDefine]]
 ```
+
 > Note: The types of the properties should match the `SettingType` declared in the SettingGroupSec.
 
 Then, the dictionary can be given a [DictionaryName]($backend), and a [SettingsPriority]($backend) and be added to the current [Settings]($backend):
@@ -183,6 +185,7 @@ Then, the dictionary can be given a [DictionaryName]($backend), and a [SettingsP
 Values in `SettingDictionary`s with a higher `SettingsPriority` override values in dictionaries with a lower priority.
 
 E.g.:
+
 ```ts
 [[include:Settings.addITwinDictionary]]
 ```
@@ -190,6 +193,7 @@ E.g.:
 then
 
 E.g.:
+
 ```ts
 [[include:Settings.dropITwinDictionary]]
 ```
@@ -202,9 +206,9 @@ Of course `SettingDictionary`s wouldn't be very useful if you could only define 
 
 [WorkspaceContainer]($backend)s are named containers of a group of [workspace resources](#workspace-resources). There is no limit on the number of `WorkspaceContainers` accessed during a session, nor is there a limit on the number of resources held within a `WorkspaceContainer`. However, keep in mind:
 
- - Access rights are per-`WorkspaceContainer`. That is, if a user has permission to access a `WorkspaceContainer`, they will have access to all resources within it.
- - For offline access, `WorkspaceContainer`s are saved as files on local computers, and must be initially downloaded and re-downloaded whenever they are updated. Multi-gigabyte downloads can be time consuming.
- - WorkspaceContainers are versioned as a whole. There is no versioning of individual resources within a WorkspaceContainer.
+- Access rights are per-`WorkspaceContainer`. That is, if a user has permission to access a `WorkspaceContainer`, they will have access to all resources within it.
+- For offline access, `WorkspaceContainer`s are saved as files on local computers, and must be initially downloaded and re-downloaded whenever they are updated. Multi-gigabyte downloads can be time consuming.
+- WorkspaceContainers are versioned as a whole. There is no versioning of individual resources within a WorkspaceContainer.
 
 Generally, it is expected that a single `WorkspaceContainer` will hold a related set of resources for a single "scope" (e.g. organization, discipline, iTwin, iModel, etc.) for an appropriate set of users.
 
@@ -243,7 +247,6 @@ with entries whose `name` property matches the `WorkspaceContainerName` value. T
 
 For example:
 
-
 ```ts
 [[include:Settings.containerAlias]]
 ```
@@ -270,16 +273,15 @@ To modify the cloud version of `WorkspaceContainer`s, the `CloudContainer` proce
 
 ### WorkspaceContainer Versioning
 
-
 ## Workspace Resources
 
 A `WorkspaceContainer` holds a set of resources, each with a [WorkspaceResourceName]($backend) and a resource type.
 
 Possible resource types are:
 
- - `string` resources that hold strings. They may be loaded with [WorkspaceContainer.getString]($backend).
- - `blob` resources that hold `Uint8Array`s. They may be loaded with [WorkspaceContainer.getBlob]($backend).
- - `file` resources that hold arbitrary files. They may be extracted to local files with [WorkspaceContainer.getFile]($backend)
+- `string` resources that hold strings. They may be loaded with [WorkspaceContainer.getString]($backend).
+- `blob` resources that hold `Uint8Array`s. They may be loaded with [WorkspaceContainer.getBlob]($backend).
+- `file` resources that hold arbitrary files. They may be extracted to local files with [WorkspaceContainer.getFile]($backend)
 
 > Note: files are zipped as they are stored in `WorkspaceContainer`s.
 

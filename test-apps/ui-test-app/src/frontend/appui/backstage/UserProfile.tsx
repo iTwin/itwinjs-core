@@ -50,7 +50,7 @@ export class UserProfileBackstageItem extends React.PureComponent<UserProfileBac
       content = (
         <SafeAreaContext.Consumer>
           {(safeAreaInsets) => (
-            <NZ_UserProfile
+            <NZ_UserProfile // eslint-disable-line deprecation/deprecation
               color={getUserColor(emailId)}
               initials={this._getInitials(firstName, lastName)}
               onClick={this._onOpenSignOut}

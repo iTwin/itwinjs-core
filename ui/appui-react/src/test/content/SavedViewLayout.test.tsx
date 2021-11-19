@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 import { Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   CategorySelectorProps, DisplayStyleProps, EcefLocation, ModelSelectorProps, SheetProps, SpatialViewDefinitionProps, ViewStateProps,
@@ -13,13 +14,13 @@ import * as React from "react";
 import * as moq from "typemoq";
 import {
   ConfigurableCreateInfo, ConfigurableUiManager, ContentGroup, ContentLayoutDef, ContentLayoutManager, ContentProps, CoreTools, Frontstage,
-  FrontstageManager, FrontstageProps, FrontstageProvider, NavigationWidget, SavedViewLayout, SavedViewLayoutProps, ViewportContentControl, Widget,
+  FrontstageManager, FrontstageProps, FrontstageProvider, NavigationWidget, StageContentLayout, StageContentLayoutProps, ViewportContentControl, Widget,
   Zone,
 } from "../../appui-react";
 import { ViewUtilities } from "../../appui-react/utils/ViewUtilities";
 import TestUtils from "../TestUtils";
 
-describe("SavedViewLayout", () => {
+describe("StageContentLayout", () => {
 
   const extents = Vector3d.create(400, 400);
   const origin = Point3d.createZero();
@@ -123,7 +124,7 @@ describe("SavedViewLayout", () => {
     await TestUtils.initializeUiFramework();
     await MockRender.App.startup();
 
-    // Required for SavedViewLayout
+    // Required for StageContentLayout
     ConfigurableUiManager.registerControl("TestViewport", TestViewportContentControl);
   });
 
@@ -211,7 +212,7 @@ describe("SavedViewLayout", () => {
 
     if (frontstageDef) {
       if (ContentLayoutManager.activeLayout && ContentLayoutManager.activeContentGroup) {
-        const savedViewLayoutProps = SavedViewLayout.viewLayoutToProps(ContentLayoutManager.activeLayout, ContentLayoutManager.activeContentGroup);
+        const savedViewLayoutProps = StageContentLayout.viewLayoutToProps(ContentLayoutManager.activeLayout, ContentLayoutManager.activeContentGroup);
         const serialized = JSON.stringify(savedViewLayoutProps);
 
         serializedSavedViewLayoutProps = serialized;
@@ -221,12 +222,12 @@ describe("SavedViewLayout", () => {
     const iModelConnection = imodelMock.object;
     if (serializedSavedViewLayoutProps && iModelConnection) {
 
-      // Parse SavedViewLayoutProps
-      const savedViewLayoutProps: SavedViewLayoutProps = JSON.parse(serializedSavedViewLayoutProps);
+      // Parse StageContentLayoutProps
+      const savedViewLayoutProps: StageContentLayoutProps = JSON.parse(serializedSavedViewLayoutProps);
       // Create ContentLayoutDef
       const contentLayoutDef = new ContentLayoutDef(savedViewLayoutProps.contentLayoutProps ?? savedViewLayoutProps.contentGroupProps.layout);
       // Create ViewStates
-      const viewStates = await SavedViewLayout.viewStatesFromProps(iModelConnection, savedViewLayoutProps);
+      const viewStates = await StageContentLayout.viewStatesFromProps(iModelConnection, savedViewLayoutProps);
 
       expect(contentLayoutDef.description).to.eq("Single Content View");
       expect(viewStates.length).to.eq(1);
@@ -239,7 +240,7 @@ describe("SavedViewLayout", () => {
 
       // attempting to emphasize the elements should return false because it wasn't saved
       const contentGroup = new ContentGroup(savedViewLayoutProps.contentGroupProps);
-      expect(SavedViewLayout.emphasizeElementsFromProps(contentGroup, savedViewLayoutProps)).to.be.false;
+      expect(StageContentLayout.emphasizeElementsFromProps(contentGroup, savedViewLayoutProps)).to.be.false;
     }
   });
 
@@ -269,7 +270,7 @@ describe("SavedViewLayout", () => {
         const getEmphasizeElements = EmphasizeElements.get;
         EmphasizeElements.get = () => emphasizeElements;
 
-        const savedViewLayoutProps = SavedViewLayout.viewLayoutToProps(ContentLayoutManager.activeLayout, ContentLayoutManager.activeContentGroup, true,
+        const savedViewLayoutProps = StageContentLayout.viewLayoutToProps(ContentLayoutManager.activeLayout, ContentLayoutManager.activeContentGroup, true,
           (contentProps: ContentProps) => {
             if (contentProps.applicationData)
               delete contentProps.applicationData;
@@ -283,12 +284,12 @@ describe("SavedViewLayout", () => {
 
     const iModelConnection = imodelMock.object;
     if (serializedSavedViewLayoutProps && iModelConnection) {
-      // Parse SavedViewLayoutProps
-      const savedViewLayoutProps: SavedViewLayoutProps = JSON.parse(serializedSavedViewLayoutProps);
+      // Parse StageContentLayoutProps
+      const savedViewLayoutProps: StageContentLayoutProps = JSON.parse(serializedSavedViewLayoutProps);
       // Create ContentLayoutDef
       const contentLayoutDef = new ContentLayoutDef(savedViewLayoutProps.contentLayoutProps ?? savedViewLayoutProps.contentGroupProps.layout);
       // Create ViewStates
-      const viewStates = await SavedViewLayout.viewStatesFromProps(iModelConnection, savedViewLayoutProps);
+      const viewStates = await StageContentLayout.viewStatesFromProps(iModelConnection, savedViewLayoutProps);
 
       expect(contentLayoutDef.description).to.eq("Single Content View");
       expect(viewStates.length).to.eq(1);
@@ -306,7 +307,7 @@ describe("SavedViewLayout", () => {
       await ContentLayoutManager.setActiveLayout(contentLayoutDef, contentGroup);
 
       // emphasize the elements
-      expect(SavedViewLayout.emphasizeElementsFromProps(contentGroup, savedViewLayoutProps)).to.be.true;
+      expect(StageContentLayout.emphasizeElementsFromProps(contentGroup, savedViewLayoutProps)).to.be.true;
     }
   });
 
@@ -328,7 +329,7 @@ describe("SavedViewLayout", () => {
 
     if (frontstageDef) {
       if (ContentLayoutManager.activeLayout && ContentLayoutManager.activeContentGroup) {
-        const savedViewLayoutProps = SavedViewLayout.viewLayoutToProps(ContentLayoutManager.activeLayout, ContentLayoutManager.activeContentGroup, true,
+        const savedViewLayoutProps = StageContentLayout.viewLayoutToProps(ContentLayoutManager.activeLayout, ContentLayoutManager.activeContentGroup, true,
           (contentProps: ContentProps) => {
             if (contentProps.applicationData)
               delete contentProps.applicationData;
@@ -341,12 +342,12 @@ describe("SavedViewLayout", () => {
 
     const iModelConnection = imodelMock.object;
     if (serializedSavedViewLayoutProps && iModelConnection) {
-      // Parse SavedViewLayoutProps
-      const savedViewLayoutProps: SavedViewLayoutProps = JSON.parse(serializedSavedViewLayoutProps);
+      // Parse StageContentLayoutProps
+      const savedViewLayoutProps: StageContentLayoutProps = JSON.parse(serializedSavedViewLayoutProps);
       // Create ContentLayoutDef
       const contentLayoutDef = new ContentLayoutDef(savedViewLayoutProps.contentLayoutProps ?? savedViewLayoutProps.contentGroupProps.layout);
       // Create ViewStates
-      const viewStates = await SavedViewLayout.viewStatesFromProps(iModelConnection, savedViewLayoutProps);
+      const viewStates = await StageContentLayout.viewStatesFromProps(iModelConnection, savedViewLayoutProps);
 
       expect(contentLayoutDef.description).to.eq("Single Content View");
       expect(viewStates.length).to.eq(1);

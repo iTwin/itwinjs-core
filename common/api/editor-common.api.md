@@ -93,6 +93,33 @@ export interface ConnectedSubEntityProps {
 }
 
 // @alpha (undocumented)
+export enum CutDepthMode {
+    All = 0,
+    Blind = 1
+}
+
+// @alpha (undocumented)
+export enum CutDirectionMode {
+    Auto = 3,
+    Backward = 1,
+    Both = 2,
+    Forward = 0
+}
+
+// @alpha (undocumented)
+export interface CutProps {
+    closeOpen?: ProfileClosure;
+    defaultNormal?: XYZProps;
+    depth?: CutDepthMode;
+    direction?: CutDirectionMode;
+    distance?: number;
+    outside?: true;
+    profile: Id64String;
+    targetPoint?: XYZProps;
+    toolPoint?: XYZProps;
+}
+
+// @alpha (undocumented)
 export interface DeleteSubEntityProps {
     subEntities: SubEntityProps | SubEntityProps[];
 }
@@ -162,6 +189,20 @@ export interface ElementGeometryResultProps {
 }
 
 // @alpha (undocumented)
+export enum EmbossDirectionMode {
+    Auto = 2,
+    Backward = 1,
+    Forward = 0
+}
+
+// @alpha (undocumented)
+export interface EmbossProps {
+    direction?: EmbossDirectionMode;
+    profile: Id64String;
+    targetPoint?: XYZProps;
+}
+
+// @alpha (undocumented)
 export interface EvaluatedEdgeProps {
     point: XYZProps;
     uDir: XYZProps;
@@ -219,6 +260,16 @@ export interface HollowFacesProps {
 }
 
 // @alpha (undocumented)
+export interface ImprintProps {
+    direction?: XYZProps;
+    distance?: number;
+    // (undocumented)
+    extend?: true;
+    face?: SubEntityProps;
+    imprint: Id64String | SubEntityProps[] | ElementGeometryDataEntry;
+}
+
+// @alpha (undocumented)
 export interface LocateSubEntityProps {
     filter?: SubEntityFilter;
     hiddenEdgesVisible: boolean;
@@ -226,6 +277,15 @@ export interface LocateSubEntityProps {
     maxEdge: number;
     maxFace: number;
     maxVertex: number;
+}
+
+// @alpha (undocumented)
+export interface LoftProps {
+    guides?: Id64String | Id64String[];
+    orderCurves?: true;
+    orientCurves?: true;
+    periodic?: true;
+    tools: Id64String | Id64String[];
 }
 
 // @alpha (undocumented)
@@ -250,6 +310,13 @@ export interface PointInsideResultProps {
 }
 
 // @alpha (undocumented)
+export enum ProfileClosure {
+    Auto = 2,
+    Natural = 0,
+    Reverse = 1
+}
+
+// @alpha (undocumented)
 export interface SewSheetProps {
     tools: Id64String | Id64String[];
 }
@@ -261,7 +328,9 @@ export interface SolidModelingCommandIpc extends EditCommandIpc {
     chamferEdges(id: Id64String, params: ChamferEdgesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
     clearElementGeometryCache(): Promise<void>;
     createElementGeometryCache(id: Id64String, filter?: ElementGeometryCacheFilter): Promise<boolean>;
+    cutSolid(id: Id64String, params: CutProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
     deleteSubEntities(id: Id64String, params: DeleteSubEntityProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+    embossBody(id: Id64String, params: EmbossProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
     evaluateSubEntity(id: Id64String, subEntity: SubEntityProps, uParam?: number, vParam?: number): Promise<EvaluatedFaceProps | EvaluatedEdgeProps | EvaluatedVertexProps | undefined>;
     getBodySubEntities(id: Id64String, type: SubEntityType, firstOnly?: true): Promise<SubEntityProps[] | undefined>;
     getClosestFace(id: Id64String, testPoint: XYZProps, preferredDirection?: XYZProps): Promise<SubEntityLocationProps | undefined>;
@@ -273,9 +342,11 @@ export interface SolidModelingCommandIpc extends EditCommandIpc {
     hasCurvedFaceOrEdge(id: Id64String, index: number): Promise<boolean>;
     hasOnlyPlanarFaces(id: Id64String, index: number): Promise<boolean>;
     hollowFaces(id: Id64String, params: HollowFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
+    imprintBody(id: Id64String, params: ImprintProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
     isDisjointBody(id: Id64String, index: number): Promise<boolean>;
     isLaminarEdge(id: Id64String, subEntity: SubEntityProps): Promise<boolean>;
     isLinearEdge(id: Id64String, subEntity: SubEntityProps): Promise<boolean>;
+    isPlanarBody(id: Id64String, index: number): Promise<boolean>;
     isPlanarFace(id: Id64String, subEntity: SubEntityProps): Promise<boolean>;
     isPointInside(id: Id64String, point: XYZProps): Promise<PointInsideResultProps[] | undefined>;
     isSingleFacePlanarSheet(id: Id64String, index: number): Promise<boolean>;
@@ -283,11 +354,13 @@ export interface SolidModelingCommandIpc extends EditCommandIpc {
     isSmoothVertex(id: Id64String, subEntity: SubEntityProps): Promise<boolean>;
     locateFace(id: Id64String, subEntity: SubEntityProps, point: XYZProps, direction: XYZProps): Promise<SubEntityLocationProps[] | undefined>;
     locateSubEntities(id: Id64String, spacePoint: XYZProps, direction: XYZProps, opts: LocateSubEntityProps): Promise<SubEntityLocationProps[] | undefined>;
+    loftProfiles(id: Id64String, params: LoftProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
     offsetEdges(id: Id64String, params: OffsetEdgesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
     offsetFaces(id: Id64String, params: OffsetFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
     sewSheets(id: Id64String, params: SewSheetProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
     spinFaces(id: Id64String, params: SpinFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
     summarizeElementGeometryCache(id: Id64String): Promise<BRepEntityType[] | undefined>;
+    sweepAlongPath(id: Id64String, params: SweepPathProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
     sweepFaces(id: Id64String, params: SweepFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
     thickenSheets(id: Id64String, params: ThickenSheetProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
     transformSubEntities(id: Id64String, params: TransformSubEntityProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
@@ -297,7 +370,7 @@ export interface SolidModelingCommandIpc extends EditCommandIpc {
 export interface SpinFacesProps {
     angle?: AngleProps;
     direction: XYZProps;
-    faces: SubEntityProps | SubEntityProps[];
+    faces?: SubEntityProps | SubEntityProps[];
     origin: XYZProps;
 }
 
@@ -353,8 +426,19 @@ export enum SubEntityType {
 
 // @alpha (undocumented)
 export interface SweepFacesProps {
-    faces: SubEntityProps | SubEntityProps[];
+    faces?: SubEntityProps | SubEntityProps[];
     path: XYZProps;
+}
+
+// @alpha (undocumented)
+export interface SweepPathProps {
+    alignParallel?: true;
+    createSheet?: true;
+    lockDirection?: XYZProps;
+    path: Id64String;
+    scale?: number;
+    scalePoint?: XYZProps;
+    twistAngle?: AngleProps;
 }
 
 // @alpha (undocumented)
