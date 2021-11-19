@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Import and apply ScalableMesh clips from backend.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
