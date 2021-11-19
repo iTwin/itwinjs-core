@@ -1,6 +1,6 @@
 {
   "name": "@itwin/imodelhub-client-tests",
-  "version": "3.0.0-dev.122",
+  "version": "3.0.0-dev.123",
   "main": "lib/imodelhub-client-tests.js",
   "description": "Tests the iModelHub client",
   "license": "MIT",
@@ -55,7 +55,7 @@
     "@types/deep-assign": "^0.1.0",
     "@types/fs-extra": "^4.0.7",
     "@types/mocha": "^8.2.2",
-    "cpx": "^1.5.0",
+    "cpx2": "^3.0.0",
     "dotenv": "^10.0.0",
     "dotenv-expand": "^5.1.0",
     "eslint": "^7.11.0",

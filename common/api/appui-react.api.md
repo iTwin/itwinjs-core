@@ -629,6 +629,7 @@ export interface BackstageComposerItemProps {
 // @public
 export interface BackstageComposerProps extends CommonProps {
     readonly header?: React.ReactNode;
+    readonly hideSoloStageEntry?: boolean;
     readonly items: BackstageItem[];
     readonly showOverlay?: boolean;
 }
@@ -6254,7 +6255,7 @@ export class ToolInformation {
 // @public
 export class ToolItemDef extends ActionButtonItemDef {
     constructor(toolItemProps: ToolItemProps, onItemExecuted?: OnItemExecutedFunc);
-    static getItemDefForTool(tool: typeof Tool, iconSpec?: string, args?: any[]): ToolItemDef;
+    static getItemDefForTool(tool: typeof Tool, iconSpec?: string, ...args: any[]): ToolItemDef;
     // (undocumented)
     get id(): string;
     // (undocumented)
