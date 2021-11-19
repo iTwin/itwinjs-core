@@ -1,7 +1,8 @@
 # Tool Settings
 
-'Tool Settings' refers to the UI widget that is shown in top center zone of the application window and the UI components displayed there. When using the iTwin.js 2.0 UI, a.k.a. "App UI", the tool settings display in a bar across the top of the window.
-These UI components allow users to control settings/properties used by the "active" tool. Tools have two options for populating the Tool Settings widget. The tool can register their own React-based ToolUiProvider to display the UI components for its settings. An alternate approach is for the tool to publish information about the properties it uses for settings and allow the 'DefaultToolSettings' provider to generate the necessary UI components.
+'Tool Settings' refers to the App UI widget containing settings for the active tool. By default, the Tool Settings display in a bar at the top of the application window, but the widget can also be a floating dialog or docked into the left or right panel.
+
+Tools have two options for populating the Tool Settings widget. The tool can register their own React-based ToolUiProvider to display the UI components for its settings. An alternate approach is for the tool to publish information about the properties it uses for settings and allow the 'DefaultToolSettings' provider to generate the necessary UI components.
 
 ## Default ToolSettings Provider
 
@@ -76,7 +77,7 @@ export class SampleToolWithSetting extends PrimitiveTool {
 
 ### Informing Tool of property changes
 
-When a user interacts with any of the generated type editors, in the Tool Settings Widget, the changes are sent back to the active tool by calling its `applyToolSettingPropertyChange` method and passing it the name of the property that changed and the new value of the property.
+When a user interacts with any of the generated type editors in the Tool Settings Widget, the changes are sent back to the active tool by calling its `applyToolSettingPropertyChange` method, passing in the name of the changed property and the property's new value.
 
 ### Informing the UI of property changes made by the Tool
 

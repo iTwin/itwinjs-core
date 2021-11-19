@@ -410,7 +410,7 @@ $npm install  --save-dev @itwin/eslint-plugin
 $npm install  --save-dev @itwin/oidc-signin-tool
 
 $npm install  --save-dev chai
-$npm install  --save-dev cpx
+$npm install  --save-dev cpx2
 $npm install  --save-dev eslint
 $npm install  --save-dev mocha
 $npm install  --save-dev nyc

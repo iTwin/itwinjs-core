@@ -629,6 +629,7 @@ export interface BackstageComposerItemProps {
 // @public
 export interface BackstageComposerProps extends CommonProps {
     readonly header?: React.ReactNode;
+    readonly hideSoloStageEntry?: boolean;
     readonly items: BackstageItem[];
     readonly showOverlay?: boolean;
 }
@@ -3887,8 +3888,6 @@ export interface ModelsTreeProps {
     enableElementsClassGrouping?: ClassGroupingOption;
     // @alpha
     enableHierarchyAutoUpdate?: boolean;
-    // @deprecated
-    enablePreloading?: boolean;
     // @alpha
     filteredElementIds?: Id64Array;
     // @alpha
@@ -6256,7 +6255,7 @@ export class ToolInformation {
 // @public
 export class ToolItemDef extends ActionButtonItemDef {
     constructor(toolItemProps: ToolItemProps, onItemExecuted?: OnItemExecutedFunc);
-    static getItemDefForTool(tool: typeof Tool, iconSpec?: string, args?: any[]): ToolItemDef;
+    static getItemDefForTool(tool: typeof Tool, iconSpec?: string, ...args: any[]): ToolItemDef;
     // (undocumented)
     get id(): string;
     // (undocumented)
@@ -7626,7 +7625,7 @@ export interface WorkflowPropsList {
     workflows: WorkflowProps[];
 }
 
-// @public @deprecated
+// @public
 export class Zone extends React.Component<ZoneProps> {
     constructor(props: ZoneProps);
     // (undocumented)
@@ -7685,7 +7684,7 @@ export enum ZoneLocation {
     TopRight = 3
 }
 
-// @public @deprecated
+// @public
 export interface ZoneProps extends CommonProps {
     allowsMerging?: boolean;
     applicationData?: any;
