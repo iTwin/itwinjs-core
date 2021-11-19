@@ -851,6 +851,24 @@
       ]
     },
     {
+      "name": "workspace-editor",
+      "presentation": {
+        "group": "6_Misc"
+      },
+      "cwd": "${workspaceFolder}/utils/workspace-editor",
+      "type": "pwa-node",
+      "request": "launch",
+      "program": "${workspaceFolder}/utils/workspace-editor/lib/WorkspaceEditor.js",
+      "args": [
+        "add",
+        "test1",
+        "-f=package.json"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/utils/workspace-editor/lib/**/*.js"
+      ]
+    },
+    {
       "name": "imodel-transformer (app)",
       "presentation": {
         "group": "6_Misc"

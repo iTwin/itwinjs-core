@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as Yargs from "yargs";
-import { BaseSettings, IModelHost, ITwinWorkspace, WorkspaceFile } from "@itwin/core-backend";
+import { BaseSettings, EditableWorkspaceFile, IModelHost, ITwinWorkspace, WorkspaceFile, IModelJsFs } from "@itwin/core-backend";
+import { parse } from "path";
 
 /* eslint-disable id-blacklist,no-console */
 
@@ -25,32 +26,74 @@ interface ListOptions extends WorkspaceOpts {
   blobs?: boolean;
 }
 
+const workspace = new ITwinWorkspace(new BaseSettings());
+
+
 function listWorkspace(args: ListOptions) {
   if (!args.strings && !args.blobs && !args.files)
     args.blobs = args.files = args.strings = true;
 
-  try {
-    const file = new WorkspaceFile(args.workspaceFile, new ITwinWorkspace(new BaseSettings()));
-    file.open();
-  } catch (e: any) {
-    console.error(e.message);
-    return;
+  const file = new WorkspaceFile(args.workspaceFile, workspace);
+  file.open();
+  if (args.strings) {
+    console.log("strings:");
+    file.db.withSqliteStatement("SELECT id,value FROM strings", (stmt) => {
+      console.log(`name=[${stmt.getValueString(0)}], size=${stmt.getValueString(1).length}`);
+    });
+  }
+  if (args.blobs) {
+    console.log("blob:");
+    file.db.withSqliteStatement("SELECT id,value FROM blobs", (stmt) => {
+      console.log(`name=[${stmt.getValueString(0)}], size=${stmt.getValueBlob(1).length}`);
+    });
+  }
+  if (args.files) {
+    console.log("files:");
+    file.db.withSqliteStatement("SELECT name,size,type,lastModified,size FROM be_EmbedFile", (stmt) => {
+      const date = new Date(stmt.getValueDouble(3));
+      console.log(`name=[${stmt.getValueString(0)}], size=${stmt.getValueBlob(1).length}, ext="${stmt.getValueString(2)}", date=${date.toString()}`);
+    });
   }
 }
 
-function createWorkspace(argv: any) {
-  console.log(argv);
+function createWorkspace(args: WorkspaceOpts) {
+  const wsFile = new EditableWorkspaceFile(args.workspaceFile, workspace);
+  wsFile.create();
+  console.log(`created workspace file ${wsFile.db.nativeDb.getFilePath()}`);
+  wsFile.close();
 }
 
 function addToWorkspace(args: AddOptions) {
   if (!args.directory && !args.file)
-    return console.error("please supply either directory or file to add");
+    return console.error("supply either directory or file to add");
 
-  console.log(args);
+  const wsFile = new EditableWorkspaceFile(args.workspaceFile, workspace);
+  wsFile.open();
+  try {
+
+    if (args.file) {
+      if (!IModelJsFs.existsSync(args.file))
+        throw new Error(`file [${args.file}] does not exist`);
+      const parsed = parse(args.file);
+      wsFile.addFile(parsed.base, args.file);
+    }
+  } finally {
+    wsFile.close();
+  }
 }
 
 function dropFromWorkspace(argv: any) {
   console.log(argv);
+}
+
+function runCommand(cmd: (args: any) => void) {
+  return (args: any) => {
+    try {
+      cmd(args)
+    } catch (e: any) {
+      console.error(e.message);
+    }
+  }
 }
 
 async function main() {
@@ -68,12 +111,12 @@ async function main() {
         blobs: { alias: "b", describe: "list blob resources", boolean: true, default: false },
         files: { alias: "f", describe: "list file resources", boolean: true, default: false },
       },
-      handler: listWorkspace,
+      handler: runCommand(listWorkspace),
     })
     .command({
       command: "create <workspaceFile>",
       describe: "create a new workspace container file",
-      handler: createWorkspace,
+      handler: runCommand(createWorkspace),
     })
     .command({
       command: "add <workspaceFile>",
@@ -85,12 +128,12 @@ async function main() {
         subdirectories: { alias: "s", boolean: true, describe: "include subdirectories", default: false },
         file: { alias: "f", string: true },
       },
-      handler: addToWorkspace,
+      handler: runCommand(addToWorkspace),
     })
     .command({
       command: "drop <workspaceFile>",
       describe: "drop resources from a workspace container",
-      handler: dropFromWorkspace,
+      handler: runCommand(dropFromWorkspace),
     })
     .demandCommand()
     .help()

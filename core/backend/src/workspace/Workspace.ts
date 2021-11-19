@@ -242,7 +242,7 @@ export class ITwinWorkspace implements Workspace {
  * @beta
  */
 export class WorkspaceFile implements WorkspaceContainer {
-  protected readonly db = new SQLiteDb(); // eslint-disable-line @typescript-eslint/naming-convention
+  public readonly db = new SQLiteDb(); // eslint-disable-line @typescript-eslint/naming-convention
   public readonly workspace: Workspace;
   public readonly containerId: WorkspaceContainerId;
   public readonly localDbName: LocalDirName;
