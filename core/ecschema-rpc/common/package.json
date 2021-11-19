@@ -2,6 +2,7 @@
   "name": "@itwin/ecschema-rpcinterface-common",
   "version": "3.0.0-dev.120",
   "description": "Schema RPC Interface common interface",
+  "imodeljsSharedLibrary": true,
   "main": "lib/cjs/ecschema-rpc-interface.js",
   "typings": "lib/cjs/ecschema-rpc-interface",
   "license": "MIT",

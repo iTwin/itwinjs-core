@@ -24,11 +24,11 @@ import {
 } from "@itwin/appui-react";
 import { BeDragDropContext } from "@itwin/components-react";
 import { Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
-import { BentleyCloudRpcManager, BentleyCloudRpcParams, IModelVersion, RpcConfiguration, SyncMode } from "@itwin/core-common";
+import { BentleyCloudRpcManager, BentleyCloudRpcParams, IModelVersion, RpcConfiguration, RpcManager, SyncMode } from "@itwin/core-common";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import {
   AccuSnap, BriefcaseConnection, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeApp, NativeAppAuthorization, NativeAppLogger,
-  NativeAppOpts, QuantityFormatter, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool,
+  NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool,
 } from "@itwin/core-frontend";
 import { MarkupApp } from "@itwin/core-markup";
 import { AndroidApp, IOSApp } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
@@ -65,6 +65,7 @@ import {
   SaveContentLayoutTool, TestExtensionUiProviderTool, UiProviderTool,
 } from "./tools/UiProviderTool";
 import { ECSchemaRpcInterface, ECSchemaRpcLocater } from "@itwin/ecschema-rpcinterface-common";
+import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -271,6 +272,9 @@ export class SampleAppIModelApp {
     });
     Presentation.selection.scopes.activeScope = "top-assembly";
 
+    // ECSchemaRpcInterface allows schema retrieval for the UnitProvider implementation.
+    RpcManager.registerImpl(ECSchemaRpcInterface, ECSchemaRpcImpl);
+
     // Register tools.
     Tool1.register(this.sampleAppNamespace);
     Tool2.register(this.sampleAppNamespace);
@@ -391,6 +395,7 @@ export class SampleAppIModelApp {
     const context = new SchemaContext();
     context.addLocater(schemaLocater);
     IModelApp.quantityFormatter.unitsProvider = new SchemaUnitProvider(context);
+    await IModelApp.quantityFormatter.onInitialized();
 
     // store the IModelConnection in the sample app store - this may trigger redux connected components
     UiFramework.setIModelConnection(iModelConnection, true);
@@ -468,12 +473,6 @@ export class SampleAppIModelApp {
       }
 
       SampleAppIModelApp.setIsIModelLocal(!!iModelConnection?.isBriefcaseConnection, true);
-
-      // Reset QuantityFormatter UnitsProvider with new iModelConnection
-      const schemaLocater = new ECSchemaRpcLocater(iModelConnection);
-      const context = new SchemaContext();
-      context.addLocater(schemaLocater);
-      IModelApp.quantityFormatter.unitsProvider = new SchemaUnitProvider(context);
 
       // store the IModelConnection in the sample app store
       UiFramework.setIModelConnection(iModelConnection, true);
@@ -739,9 +738,6 @@ async function main() {
   SampleAppIModelApp.testAppConfiguration.useLocalSettings = SampleAppIModelApp.isEnvVarOn("IMJS_UITESTAPP_USE_LOCAL_SETTINGS");
   Logger.logInfo("Configuration", JSON.stringify(SampleAppIModelApp.testAppConfiguration)); // eslint-disable-line no-console
 
-  // An EC SchemaContext used by the QuantityFormatter.
-  const schemaContext = new SchemaContext();
-
   const mapLayerOpts = {
     BingMaps: SampleAppIModelApp.testAppConfiguration.bingMapsKey ? { key: "key", value: SampleAppIModelApp.testAppConfiguration.bingMapsKey } : undefined,
     Mapbox: SampleAppIModelApp.testAppConfiguration.mapBoxKey ? { key: "key", value: SampleAppIModelApp.testAppConfiguration.mapBoxKey } : undefined,
@@ -759,7 +755,6 @@ async function main() {
       rpcInterfaces: getSupportedRpcs(),
       hubAccess: new IModelHubFrontend(),
       mapLayerOptions: mapLayerOpts,
-      quantityFormatter: new QuantityFormatter(new SchemaUnitProvider(schemaContext)),
       tileAdmin: { cesiumIonKey: SampleAppIModelApp.testAppConfiguration.cesiumIonKey },
     },
   };
