@@ -10,13 +10,24 @@ import { Version } from "@bentley/imodelhub-client";
 import { IModelHubBackend } from "@bentley/imodelhub-client/lib/cjs/imodelhub-node";
 import { BriefcaseDb, BriefcaseManager, IModelHost, IModelHostConfiguration, RequestNewBriefcaseArg } from "@itwin/core-backend";
 import { BriefcaseIdValue, ChangesetId, ChangesetIndex, ChangesetProps } from "@itwin/core-common";
+import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 
 export class IModelTransformerTestAppHost {
   public static async startup(): Promise<void> {
     const iModelHost = new IModelHostConfiguration();
     iModelHost.hubAccess = new IModelHubBackend();
 
-    await IModelHost.startup(iModelHost);
+    const opt = {
+      electronHost: {
+        developmentServer: process.env.NODE_ENV === "development",
+      },
+      nativeHost: {
+        applicationName: "imodel-transformer-test-app",
+      },
+      iModelHost,
+    };
+
+    await ElectronHost.startup(opt);
   }
 
   private static _authClient: ElectronAuthorizationBackend | undefined;

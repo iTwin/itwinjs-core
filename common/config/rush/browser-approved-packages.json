@@ -159,10 +159,6 @@
       "allowedCategories": [ "internal" ]
     },
     {
-      "name": "@itwin/electron-authorization",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "@itwin/eslint-plugin",
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
@@ -232,7 +228,7 @@
     },
     {
       "name": "@itwin/reality-data-client",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "common", "integration-testing", "internal" ]
     },
     {
       "name": "@itwin/service-authorization",
@@ -884,6 +880,14 @@
     },
     {
       "name": "typedoc",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "typedoc-plugin-external-module-name",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "typedoc-plugin-internal-external",
       "allowedCategories": [ "tools" ]
     },
     {

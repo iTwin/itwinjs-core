@@ -145,7 +145,7 @@ export class MobileAuthorizationBackend implements AuthorizationClient {
    * Note that for consistency sake, the URL is stripped of any trailing "/".
    * @returns URL for the service
    */
-  public getUrl(): string {
+  private getUrl(): string {
     if (this._url)
       return this._url;
 

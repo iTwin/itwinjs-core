@@ -41,7 +41,7 @@ export enum ZoneLocation {
 }
 
 /** Properties of a [[Zone]] component
- * @public @deprecated
+ * @public
  */
 export interface ZoneProps extends CommonProps {
   /** Default Zone state. Controls how the Zone is initially displayed. Defaults to ZoneState.Open. */
@@ -100,7 +100,7 @@ export function getStableWidgetProps(widgetProps: WidgetProps, stableId: string)
 
 /** Zone React component.
  * A Zone is a standard area on the screen for users to read and interact with data applicable to the current task. Each Zone has a defined purpose.
- * @public @deprecated
+ * @public
  */
 export class Zone extends React.Component<ZoneProps> {
   constructor(props: ZoneProps) {
