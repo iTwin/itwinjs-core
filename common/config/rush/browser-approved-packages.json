@@ -228,7 +228,7 @@
     },
     {
       "name": "@itwin/reality-data-client",
-      "allowedCategories": [ "common", "integration-testing", "internal" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@itwin/service-authorization",
@@ -880,14 +880,6 @@
     },
     {
       "name": "typedoc",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "typedoc-plugin-external-module-name",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "typedoc-plugin-internal-external",
       "allowedCategories": [ "tools" ]
     },
     {
