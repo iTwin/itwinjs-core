@@ -49,6 +49,7 @@ export class IModelTransformerTestAppHost {
         redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
         scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
       });
+      await client.signIn();
       this._authClient = client;
     }
     return this._authClient.getAccessToken();
