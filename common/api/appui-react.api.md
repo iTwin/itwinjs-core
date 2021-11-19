@@ -942,6 +942,14 @@ export interface CardSelectedEventArgs {
     index: number;
 }
 
+// @alpha
+export interface Category {
+    // (undocumented)
+    children?: string[];
+    // (undocumented)
+    key: string;
+}
+
 // @public
 export function CategoryTree(props: CategoryTreeProps): JSX.Element;
 
@@ -959,6 +967,43 @@ export interface CategoryTreeProps {
     // @internal
     viewManager?: ViewManager;
     width: number;
+}
+
+// @alpha (undocumented)
+export class CategoryVisibilityHandler implements IVisibilityHandler {
+    constructor(params: CategoryVisibilityHandlerParams);
+    // (undocumented)
+    changeVisibility(node: TreeNodeItem, nodeKey: NodeKey, shouldDisplay: boolean): Promise<void>;
+    // (undocumented)
+    dispose(): void;
+    static enableCategory(viewManager: ViewManager, imodel: IModelConnection, ids: string[], enabled: boolean, forAllViewports: boolean, enableAllSubCategories?: boolean): void;
+    static enableSubCategory(viewManager: ViewManager, key: string, enabled: boolean, forAllViewports?: boolean): void;
+    // (undocumented)
+    getCategoryVisibility(id: string): "hidden" | "visible";
+    // (undocumented)
+    static getInstanceIdFromTreeNodeKey(nodeKey: NodeKey): string;
+    // (undocumented)
+    getParent(key: string): Category | undefined;
+    // (undocumented)
+    getSubCategoryVisibility(id: string): "hidden" | "visible";
+    // (undocumented)
+    getVisibilityStatus(node: TreeNodeItem, nodeKey: NodeKey): VisibilityStatus;
+    // (undocumented)
+    onVisibilityChange: BeEvent<VisibilityChangeListener>;
+    }
+
+// @alpha (undocumented)
+export interface CategoryVisibilityHandlerParams {
+    // (undocumented)
+    activeView?: Viewport;
+    // (undocumented)
+    allViewports?: boolean;
+    // (undocumented)
+    categories: Category[];
+    // (undocumented)
+    imodel: IModelConnection;
+    // (undocumented)
+    viewManager: ViewManager;
 }
 
 // @public (undocumented)
@@ -3569,6 +3614,9 @@ export interface ListPickerPropsExtended extends ListPickerProps {
     // (undocumented)
     invertFunc?: () => void;
 }
+
+// @internal (undocumented)
+export function loadCategoriesFromViewport(iModel?: IModelConnection, vp?: Viewport): Promise<Category[]>;
 
 // @public
 export class MarkupTools {
@@ -6696,6 +6744,9 @@ export function useAvailableUiItemsProviders(): readonly string[];
 
 // @public
 export const useBackstageManager: () => BackstageManager;
+
+// @internal
+export function useCategories(viewManager: ViewManager, imodel: IModelConnection, view?: Viewport): Category[];
 
 // @internal
 export const useDefaultBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem[];
