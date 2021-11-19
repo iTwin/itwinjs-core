@@ -9,21 +9,21 @@ exports[`ViewSelector should render correctly 1`] = `
         "children": Array [],
         "enabled": false,
         "key": "views3dContainer",
-        "name": "savedViews.spatialViews",
+        "name": "viewTypes.spatialViews",
         "type": 2,
       },
       Object {
         "children": Array [],
         "enabled": false,
         "key": "views2dContainer",
-        "name": "savedViews.drawings",
+        "name": "viewTypes.drawings",
         "type": 2,
       },
       Object {
         "children": Array [],
         "enabled": false,
         "key": "sheetContainer",
-        "name": "savedViews.sheets",
+        "name": "viewTypes.sheets",
         "type": 2,
       },
     ]
@@ -34,6 +34,6 @@ exports[`ViewSelector should render correctly 1`] = `
   showSheets={true}
   showSpatials={true}
   showUnknown={true}
-  title="savedViews.views"
+  title="viewTypes.views"
 />
 `;

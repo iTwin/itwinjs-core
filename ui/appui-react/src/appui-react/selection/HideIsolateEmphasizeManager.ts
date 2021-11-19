@@ -62,9 +62,9 @@ class ModelOverrideProvider implements FeatureOverrideProvider {
   public addFeatureOverrides(overrides: FeatureSymbology.Overrides, _viewport: Viewport): void {
     overrides.setDefaultOverrides(this.defaultAppearance, true);
     // Override with nothing so that we keep the model looking normal and override the default appearance of everything else
-    const emptyAppearance = FeatureAppearance.fromJSON({});
+    const appearance = FeatureAppearance.fromJSON({});
     this.modelIds.forEach((modelId: string) => {
-      overrides.overrideModel(modelId, emptyAppearance, true);
+      overrides.override({ modelId, appearance, onConflict: "replace" });
     });
   }
 }
@@ -79,9 +79,9 @@ class SubCategoryOverrideProvider implements FeatureOverrideProvider {
   public addFeatureOverrides(overrides: FeatureSymbology.Overrides, _viewport: Viewport): void {
     overrides.setDefaultOverrides(this.defaultAppearance, true);
     // Override with nothing so that we keep the category looking normal and override the default appearance of everything else
-    const emptyAppearance = FeatureAppearance.fromJSON({});
-    this.subCategoryIds.forEach((id: string) => {
-      overrides.overrideSubCategory(id, emptyAppearance, true);
+    const appearance = FeatureAppearance.fromJSON({});
+    this.subCategoryIds.forEach((subCategoryId: string) => {
+      overrides.override({ subCategoryId, appearance, onConflict: "replace" });
     });
   }
 }

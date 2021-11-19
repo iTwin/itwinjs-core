@@ -114,6 +114,10 @@
       "keyin": "editor sew sheets",
       "flyover": "Sew selected sheets"
     },
+    "ThickenSheets": {
+      "keyin": "editor thicken sheets",
+      "flyover": "Thicken selected sheets into solids"
+    },
     "CutSolids": {
       "keyin": "editor cut solids",
       "flyover": "Cut solids by open path or planar region"
@@ -141,6 +145,14 @@
     "HollowFaces": {
       "keyin": "editor hollow faces",
       "flyover": "Hollow solids by offsetting faces"
+    },
+    "RoundEdges": {
+      "keyin": "editor round edges",
+      "flyover": "Round edges of solids and surfaces"
+    },
+    "ChamferEdges": {
+      "keyin": "editor chamfer edges",
+      "flyover": "Chamfer edges of solids and surfaces"
     },
     "UndoAll": {
       "keyin": "editor undo all",

@@ -36,7 +36,7 @@ import { Tool2 } from "../tools/Tool2";
 import { ToolWithSettings } from "./ToolWithSettings";
 import { Radio } from "@itwin/itwinui-react";
 import { BeDuration } from "@itwin/core-bentley";
-import { RestoreSavedContentLayoutTool, SaveContentLayoutTool } from "./UiProviderTool";
+import { RestoreSavedContentLayoutTool, SaveContentLayoutTool } from "./ImmediateTools";
 
 // cSpell:ignore appui appuiprovider
 // eslint-disable-next-line @typescript-eslint/naming-convention

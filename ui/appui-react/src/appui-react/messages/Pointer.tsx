@@ -135,7 +135,7 @@ export class PointerMessage extends React.Component<PointerMessageProps, Pointer
     const severity = MessageManager.getSeverity(this.state.messageDetails!);
 
     return (
-      <Tooltip
+      <Tooltip // eslint-disable-line deprecation/deprecation
         className={className}
         onSizeChanged={this._handleSizeChanged}
         position={this.state.position}

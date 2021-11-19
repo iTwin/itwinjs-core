@@ -12,7 +12,7 @@ import * as React from "react";
 import { CommonProps } from "@itwin/core-react";
 
 /** Properties of [[ToolAssistanceItem]] component.
- * @beta
+ * @internal
  */
 export interface ToolAssistanceItemProps extends CommonProps {
   /** Assistance instructions or components */
@@ -20,7 +20,7 @@ export interface ToolAssistanceItemProps extends CommonProps {
 }
 
 /** Tool assistance item used in [[ToolAssistanceDialog]] component.
- * @beta
+ * @internal
  */
 export class ToolAssistanceItem extends React.PureComponent<ToolAssistanceItemProps> {
   public override render() {

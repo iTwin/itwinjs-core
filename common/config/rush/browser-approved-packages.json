@@ -31,10 +31,6 @@
       "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
-      "name": "@bentley/product-settings-client",
-      "allowedCategories": [ "frontend", "internal" ]
-    },
-    {
       "name": "@bentley/react-scripts",
       "allowedCategories": [ "extensions", "internal" ]
     },
@@ -76,7 +72,7 @@
     },
     {
       "name": "@itwin/certa",
-      "allowedCategories": [ "common", "edit", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "common", "edit", "frontend", "integration-testing", "internal" ]
     },
     {
       "name": "@itwin/components-react",
@@ -231,11 +227,15 @@
       "allowedCategories": [ "common", "integration-testing", "internal" ]
     },
     {
+      "name": "@itwin/reality-data-client",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@itwin/service-authorization",
       "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
-      "name": "@itwin/ui-test-extension",
+      "name": "@itwin/ui-items-providers-test",
       "allowedCategories": [ "internal" ]
     },
     {
@@ -249,6 +249,10 @@
     {
       "name": "@openid/appauth",
       "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "@reduxjs/toolkit",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@svgdotjs/svg.js",
@@ -379,7 +383,7 @@
       "allowedCategories": [ "tools" ]
     },
     {
-      "name": "cpx",
+      "name": "cpx2",
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
@@ -412,11 +416,11 @@
     },
     {
       "name": "dotenv",
-      "allowedCategories": [ "backend", "common", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
     },
     {
       "name": "dotenv-expand",
-      "allowedCategories": [ "backend", "common", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
     },
     {
       "name": "electron",
@@ -572,7 +576,7 @@
     },
     {
       "name": "internal-tools",
-      "allowedCategories": [ "backend", "common", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
     },
     {
       "name": "istanbul-instrumenter-loader",
@@ -680,7 +684,7 @@
     },
     {
       "name": "openid-client",
-      "allowedCategories": [ "integration-testing", "tools" ]
+      "allowedCategories": [ "integration-testing" ]
     },
     {
       "name": "postcss-flexbugs-fixes",
@@ -875,19 +879,11 @@
       "allowedCategories": [ "frontend" ]
     },
     {
-      "name": "tsconfig-paths",
-      "allowedCategories": [ "frontend", "tools" ]
-    },
-    {
       "name": "typedoc",
       "allowedCategories": [ "tools" ]
     },
     {
-      "name": "typedoc-plugin-external-module-name",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "typedoc-plugin-internal-external",
+      "name": "typedoc-plugin-merge-modules",
       "allowedCategories": [ "tools" ]
     },
     {

@@ -479,7 +479,7 @@ export class SchemaComparer {
       const unitNameA = koqA.persistenceUnit ? koqA.persistenceUnit.fullName : undefined;
       const unitNameB = unitB ? unitB.fullName : undefined;
       if (unitNameA !== unitNameB) {
-        promises.push(this._reporter.reportKoqDelta(koqA, "persistenceUnit", await koqA.persistenceUnit, await unitB, this._compareDirection));
+        promises.push(this._reporter.reportKoqDelta(koqA, "persistenceUnit", unitNameA, unitNameB, this._compareDirection));
       }
     }
 

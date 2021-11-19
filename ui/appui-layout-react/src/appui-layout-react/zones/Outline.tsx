@@ -13,7 +13,7 @@ import { CommonProps, RectangleProps } from "@itwin/core-react";
 import { CssProperties } from "../utilities/Css";
 
 /** Properties of [[OutlineProps]] component.
- * @beta
+ * @internal
  */
 export interface OutlineProps extends CommonProps {
   /** Outline bounds. */
@@ -21,7 +21,7 @@ export interface OutlineProps extends CommonProps {
 }
 
 /** Zone outline displayed when merging/unmerging zones.
- * @beta
+ * @internal
  */
 export class Outline extends React.PureComponent<OutlineProps> {
   public override render() {

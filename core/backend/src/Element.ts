@@ -164,7 +164,7 @@ export class Element extends Entity implements ElementProps {
    * @beta
    */
   protected static onUpdate(arg: OnElementPropsArg): void {
-    arg.iModel.locks.checkExclusiveLock(arg.props.id!, "element", "update");
+    arg.iModel.locks.checkExclusiveLock(arg.props.id!, "element", "update"); // eslint-disable-line @typescript-eslint/no-non-null-assertion
   }
 
   /** Called after an Element was updated.
