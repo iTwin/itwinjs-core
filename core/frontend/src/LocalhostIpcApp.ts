@@ -6,7 +6,7 @@
  * @module IModelApp
  */
 
-import { IpcWebSocket, IpcWebSocketFrontend, IpcWebSocketMessage, IpcWebSocketTransport } from "@itwin/core-common";
+import { IpcWebSocket, IpcWebSocketFrontend, IpcWebSocketMessage, IpcWebSocketMessageType, IpcWebSocketTransport } from "@itwin/core-common";
 import { IpcApp } from "./IpcApp";
 import { IModelAppOptions } from "./IModelApp";
 
@@ -44,13 +44,24 @@ class LocalTransport extends IpcWebSocketTransport {
     });
 
     this._client.addEventListener("message", async (event) => {
+      const message = await this.notifyIncoming(event.data);
+      if (message.type === IpcWebSocketMessageType.Internal) {
+        return;
+      }
+
       for (const listener of IpcWebSocket.receivers)
-        listener({} as Event, JSON.parse(event.data as string));
+        listener({} as Event, message);
     });
   }
 
   public send(message: IpcWebSocketMessage): void {
-    this._pending?.push(message) || this._client.send(JSON.stringify(message));
+    if (this._pending) {
+      this._pending.push(message);
+      return;
+    }
+
+    const parts = this.serialize(message);
+    parts.forEach((part) => this._client.send(part));
   }
 }
 

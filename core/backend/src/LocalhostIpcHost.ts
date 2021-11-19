@@ -7,7 +7,7 @@
  */
 
 import * as ws from "ws";
-import { IpcWebSocket, IpcWebSocketBackend, IpcWebSocketMessage, IpcWebSocketTransport } from "@itwin/core-common";
+import { IpcWebSocket, IpcWebSocketBackend, IpcWebSocketMessage, IpcWebSocketMessageType, IpcWebSocketTransport } from "@itwin/core-common";
 import { IpcHost } from "./IpcHost";
 import { IModelHostConfiguration } from "./IModelHost";
 
@@ -31,15 +31,23 @@ class LocalTransport extends IpcWebSocketTransport {
   }
 
   public send(message: IpcWebSocketMessage): void {
-    this._connections.forEach((connection) => connection.send(JSON.stringify(message)));
+    this._connections.forEach((connection) => {
+      const parts = this.serialize(message);
+      parts.forEach((part) => connection.send(part));
+    });
   }
 
   public connect(connection: ws) {
     this._connections.add(connection);
 
-    connection.on("message", (data) => {
+    connection.on("message", async (data) => {
+      const message = await this.notifyIncoming(data);
+      if (message.type === IpcWebSocketMessageType.Internal) {
+        return;
+      }
+
       for (const listener of IpcWebSocket.receivers) {
-        listener({} as Event, JSON.parse(data as string));
+        listener({} as Event, message);
       }
     });
 

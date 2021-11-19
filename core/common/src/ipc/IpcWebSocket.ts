@@ -7,18 +7,15 @@
  */
 
 import { IpcListener, IpcSocket, IpcSocketBackend, IpcSocketFrontend, RemoveFunction } from "./IpcSocket";
-
-/** @internal */
-export abstract class IpcWebSocketTransport {
-  public abstract send(message: IpcWebSocketMessage): void;
-}
+import { IpcWebSocketTransport } from "./IpcWebSocketTransport";
 
 /** @internal */
 export enum IpcWebSocketMessageType {
   Send,
   Push,
   Invoke,
-  Response
+  Response,
+  Internal
 }
 
 /** @internal */
@@ -29,6 +26,13 @@ export interface IpcWebSocketMessage {
   channel: string;
   method?: string;
   data?: any[];
+}
+
+/** @internal */
+export namespace IpcWebSocketMessage {
+  export function internal(): IpcWebSocketMessage {
+    return { type: IpcWebSocketMessageType.Internal, channel: "" }
+  }
 }
 
 /** @internal */
