@@ -171,7 +171,8 @@ export class SampleAppIModelApp {
 
   public static getUiSettingsStorage(): UiSettings {
     const authorized = !!IModelApp.authorizationClient;
-    if (SampleAppIModelApp.testAppConfiguration?.useLocalSettings || !authorized) {
+    type authClient = ElectronAppAuthorization | BrowserAuthorizationClient;
+    if (SampleAppIModelApp.testAppConfiguration?.useLocalSettings || !authorized || !(IModelApp.authorizationClient as authClient).hasSignedIn) {
       return SampleAppIModelApp._localUiSettings;
     }
     return SampleAppIModelApp._UserUiSettingsStorage;

@@ -44,13 +44,23 @@ export class IModelTransformerTestAppHost {
         "An online-only interaction was requested, but the required environment variables haven't been configured\n"
         + "Please see the .env.template file on how to set up environment variables."
       );
-      const client = await ElectronAuthorizationBackend.create({
-        clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
-        redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
-        scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
+      return new Promise<AccessToken>(async (resolve, reject) => {
+        const client = await ElectronAuthorizationBackend.create({
+          clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
+          redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
+          scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
+        });
+        this._authClient = client;
+
+        ElectronAuthorizationBackend.onUserStateChanged.addOnce((token) => {
+          if (token !== "") {
+            resolve(token);
+          } else {
+            reject(new Error("Failed to sign in"));
+          }
+        });
+        this._authClient.signIn().catch((err) => reject(err));
       });
-      await client.signIn();
-      this._authClient = client;
     }
     return this._authClient.getAccessToken();
   }
