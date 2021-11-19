@@ -17,6 +17,8 @@ const commandArgs: BlobDaemonCommandArg = {
   container: `testcontainer-${Guid.createValue()}`,
   storageType: "azure?emulator=127.0.0.1:10000&sas=0",
 };
+
+// ###TODO re-enable this test after updates from SQLite team - currently we have no way of knowing when the "upload" command has completed.
 describe.skip("Manifest", async () => {
   it("should get etag from manifest", async () => {
     const dbPath = IModelTestUtils.prepareOutputFile("IModel", "mirukuru.ibim");
