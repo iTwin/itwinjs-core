@@ -14,6 +14,8 @@ import { AxisAlignedBox3d } from '@itwin/core-common';
 import { Base64EncodedString } from '@itwin/core-common';
 import { BeDuration } from '@itwin/core-bentley';
 import { BeEvent } from '@itwin/core-bentley';
+import { BlobCacheProps } from '@bentley/imodeljs-native';
+import { BlobContainerProps } from '@bentley/imodeljs-native';
 import { BRepGeometryCreate } from '@itwin/core-common';
 import { BriefcaseId } from '@itwin/core-common';
 import { BriefcaseProps } from '@itwin/core-common';
@@ -441,10 +443,6 @@ export class BisCoreSchema extends Schema {
     // (undocumented)
     static get schemaName(): string;
 }
-
-export { BlobDaemon }
-
-export { BlobDaemonCommandArg }
 
 // @public
 export class BriefcaseDb extends IModelDb {
