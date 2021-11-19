@@ -1686,7 +1686,7 @@ export function computeChildTileRanges(tile: TileMetadata, root: TileTreeMetadat
 }>;
 
 // @internal
-export function computeTileChordTolerance(tile: TileMetadata, is3d: boolean): number;
+export function computeTileChordTolerance(tile: TileMetadata, is3d: boolean, tileScreenSize: number): number;
 
 // @alpha
 export enum ContentFlags {
@@ -4682,6 +4682,7 @@ export interface IModelTileTreeProps extends TileTreeProps {
     formatVersion?: number;
     geometryGuid?: GuidString;
     maxInitialTilesToSkip?: number;
+    tileScreenSize?: number;
 }
 
 // @public
@@ -8914,6 +8915,8 @@ export interface TileOptions {
     // (undocumented)
     readonly optimizeBRepProcessing: boolean;
     // (undocumented)
+    readonly useLargerTiles: boolean;
+    // (undocumented)
     readonly useProjectExtents: boolean;
 }
 
@@ -8975,6 +8978,8 @@ export interface TileTreeMetadata {
     readonly is2d: boolean;
     // (undocumented)
     readonly modelId: Id64String;
+    // (undocumented)
+    readonly tileScreenSize: number;
 }
 
 // @internal
@@ -8999,6 +9004,8 @@ export enum TreeFlags {
     None = 0,
     // (undocumented)
     OptimizeBRepProcessing = 4,
+    // (undocumented)
+    UseLargerTiles = 8,
     // (undocumented)
     UseProjectExtents = 1
 }

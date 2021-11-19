@@ -27,7 +27,16 @@ export interface ContentInstancesOfSpecificClassesSpecification extends ContentS
    */
   classes: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
 
-  /** Whether to get content from instances of derived `classes`. */
+  /**
+   * List of ECClass specifications whose ECInstances should be excluded.
+   */
+  excludedClasses?: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
+
+  /**
+   * Whether to get content from instances of derived `classes`.
+   * Acts as default value for [[classes.arePolymorphic]] and [[excludedClasses.arePolymorphic]].
+   * @deprecated Specify polymorphism value inside [[classes.arePolymorphic]] or [[excludedClasses.arePolymorphic]].
+   */
   handleInstancesPolymorphically?: boolean;
 
   /**
