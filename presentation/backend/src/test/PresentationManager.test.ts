@@ -495,7 +495,7 @@ describe("PresentationManager", () => {
 
   });
 
-  describe("onManagerUsed", () => {
+  describe("setOnManagerUsedHandler", () => {
 
     it("invokes when making presentation requests", async () => {
       const addonMock = moq.Mock.ofType<NativePlatformDefinition>();
@@ -509,7 +509,7 @@ describe("PresentationManager", () => {
       addonMock.setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString()))
         .returns(async () => ({ result: "{}" }));
 
-      manager.onManagerUsed = managerUsedSpy;
+      manager.setOnManagerUsedHandler(managerUsedSpy);
       await manager.getNodes({ imodel: imodelMock.object, rulesetOrId: "RulesetId" });
       expect(managerUsedSpy).to.be.calledOnce;
       await manager.getContent({ imodel: imodelMock.object, rulesetOrId: "RulesetId", keys: new KeySet([]), descriptor: {} });

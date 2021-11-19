@@ -131,7 +131,7 @@ export class Presentation {
         // add some logging
         onCreated: /* istanbul ignore next */(id: string, value: ClientStoreItem, onValueUsed: () => void) => {
           Logger.logInfo(PresentationBackendLoggerCategory.PresentationManager, `Created a PresentationManager instance with ID: ${id}. Total instances: ${this._clientsStorage?.values.length}.`);
-          value.manager.onManagerUsed = onValueUsed;
+          value.manager.setOnManagerUsedHandler(onValueUsed);
         },
         onDisposedSingle: /* istanbul ignore next */(id: string) => Logger.logInfo(PresentationBackendLoggerCategory.PresentationManager, `Disposed PresentationManager instance with ID: ${id}. Total instances: ${this._clientsStorage?.values.length}.`),
         onDisposedAll: /* istanbul ignore next */() => Logger.logInfo(PresentationBackendLoggerCategory.PresentationManager, `Disposed all PresentationManager instances.`),

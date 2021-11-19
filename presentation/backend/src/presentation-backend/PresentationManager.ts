@@ -380,7 +380,7 @@ export class PresentationManager {
     this._isDisposed = true;
   }
 
-  public set onManagerUsed(handler: () => void) {
+  public setOnManagerUsedHandler(handler: () => void) {
     this._onMangerUsed = handler;
   }
 
