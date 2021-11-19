@@ -402,16 +402,16 @@ export class CoreTools {
       stateSyncIds: getSelectionContextSyncEventIds(),
       stateFunc: selectionContextStateFunc,
       isHidden: getIsHiddenIfSelectionNotActive(),
-      execute: () => {
+      execute: async () => {
         const iModelConnection = UiFramework.getIModelConnection();
         if (iModelConnection) {
           iModelConnection.selectionSet.emptyAll();
         }
         const tool = IModelApp.toolAdmin.primitiveTool;
         if (tool)
-          tool.onRestartTool();
+          await tool.onRestartTool();
         else
-          IModelApp.toolAdmin.startDefaultTool();// eslint-disable-line @typescript-eslint/no-floating-promises
+          await IModelApp.toolAdmin.startDefaultTool();
       },
     });
   }

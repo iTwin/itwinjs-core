@@ -17,7 +17,6 @@ The following constructs are defined using these components and classes:
 - [Status Bar and Fields](./StatusBar.md)
 - [Navigation Aids](./NavigationAids.md)
 - [Tool Settings](./ToolSettings.md)
-- [Stage Panels](./StagePanels.md)
 - [Backstage](./Backstage.md)
 - [Notifications and Messages](./Notifications.md)
 - [Dialogs](./Dialogs.md)
@@ -28,5 +27,4 @@ The following constructs are defined using these components and classes:
 ## Other Topics
 
 - [SyncUi](./SyncUi.md)
-- [Hooks](./Hooks.md)
 - [State](./State.md)
