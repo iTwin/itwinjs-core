@@ -19,7 +19,7 @@ import { IModelConnection } from "../IModelConnection";
 import { Viewport } from "../Viewport";
 import { ReadonlyViewportSet, UniqueViewportSets } from "../ViewportSet";
 import {
-  DisclosedTileTreeSet, IModelTile, LRUTileList, Tile, TileLoadStatus, TileRequest, TileRequestChannels, TileTree, TileTreeOwner, TileUsageMarker,
+  DisclosedTileTreeSet, IModelTile, IModelTileTree, LRUTileList, Tile, TileLoadStatus, TileRequest, TileRequestChannels, TileTree, TileTreeOwner, TileUsageMarker,
 } from "./internal";
 
 /** Details about any tiles not handled by [[TileAdmin]]. At this time, that means OrbitGT point cloud tiles.
@@ -583,12 +583,12 @@ export class TileAdmin {
   }
 
   /** @internal */
-  public async requestCachedTileContent(tile: IModelTile): Promise<Uint8Array | undefined> {
+  public async requestCachedTileContent(tile: { iModelTree: IModelTileTree, contentId: string }): Promise<Uint8Array | undefined> {
     return CloudStorageTileCache.getCache().retrieve(this.getTileRequestProps(tile));
   }
 
   /** @internal */
-  public async generateTileContent(tile: IModelTile): Promise<Uint8Array> {
+  public async generateTileContent(tile: { iModelTree: IModelTileTree, contentId: string, request?: { isCanceled: boolean } }): Promise<Uint8Array> {
     this.initializeRpc();
     const props = this.getTileRequestProps(tile);
     const retrieveMethod = await IModelTileRpcInterface.getClient().generateTileContent(props.tokenProps, props.treeId, props.contentId, props.guid);
@@ -609,7 +609,7 @@ export class TileAdmin {
   }
 
   /** @internal */
-  private getTileRequestProps(tile: IModelTile) {
+  public getTileRequestProps(tile: { iModelTree: IModelTileTree, contentId: string }) {
     const tree = tile.iModelTree;
     const tokenProps = tree.iModel.getRpcProps();
     let guid = tree.geometryGuid || tokenProps.changeset?.id || "first";
