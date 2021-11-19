@@ -4751,6 +4751,8 @@ export class IModelTileTree extends TileTree {
     get staticBranch(): IModelTile;
     // (undocumented)
     readonly stringifiedSectionClip?: string;
+    // (undocumented)
+    readonly tileScreenSize: number;
     get tileState(): "static" | "dynamic" | "interactive" | "disposed";
     // (undocumented)
     get viewFlagOverrides(): {};
@@ -4782,6 +4784,8 @@ export interface IModelTileTreeParams extends TileTreeParams {
     options: IModelTileTreeOptions;
     // (undocumented)
     rootTile: TileProps;
+    // (undocumented)
+    tileScreenSize: number;
 }
 
 // @internal (undocumented)
@@ -8527,6 +8531,7 @@ export type RequestTileTreePropsFunc = (iModel: IModelConnection, treeId: string
 
 // @internal
 export type RootIModelTile = Tile & {
+    tileScreenSize: number;
     updateDynamicRange: (childTile: Tile) => void;
 };
 
@@ -10192,6 +10197,8 @@ export class TileAdmin {
     // @alpha
     get unselectedLoadedTiles(): Iterable<Tile>;
     // @internal (undocumented)
+    readonly useLargerTiles: boolean;
+    // @internal (undocumented)
     readonly useProjectExtents: boolean;
     // @alpha
     get viewports(): Iterable<Viewport>;
@@ -10233,6 +10240,7 @@ export namespace TileAdmin {
         retryInterval?: number;
         tileExpirationTime?: number;
         tileTreeExpirationTime?: number;
+        useLargerTiles?: boolean;
         // @internal
         useProjectExtents?: boolean;
     }
