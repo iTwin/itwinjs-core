@@ -890,7 +890,7 @@ importers:
       rimraf: ^3.0.2
       typescript: ~4.4.0
     dependencies:
-      i18next: 21.5.2
+      i18next: 21.4.0
       i18next-browser-languagedetector: 6.1.2
       i18next-http-backend: 1.3.1
       i18next-xhr-backend: 3.2.2
@@ -1688,7 +1688,7 @@ importers:
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@itwin/imodel-components-react': link:../../ui/imodel-components-react
       '@itwin/itwinui-css': 0.37.2
-      '@itwin/itwinui-react': 1.25.0_react@17.0.2
+      '@itwin/itwinui-react': 1.23.2_react@17.0.2
       '@itwin/presentation-common': link:../../presentation/common
       '@testing-library/react': 12.1.2_react@17.0.2
       '@testing-library/react-hooks': 7.0.2_react@17.0.2
@@ -1725,6 +1725,7 @@ importers:
     specifiers:
       '@azure/storage-blob': ^12.7.0
       '@bentley/imodelhub-client': workspace:*
+      '@bentley/imodeljs-native': 3.0.17
       '@bentley/itwin-client': workspace:*
       '@itwin/build-tools': workspace:*
       '@itwin/core-backend': workspace:*
@@ -1758,6 +1759,7 @@ importers:
     dependencies:
       '@azure/storage-blob': 12.8.0
       '@bentley/imodelhub-client': link:../../clients/imodelhub
+      '@bentley/imodeljs-native': 3.0.17
       '@bentley/itwin-client': link:../../clients/itwin
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
@@ -3198,7 +3200,7 @@ importers:
       '@itwin/express-server': link:../../core/express-server
       '@itwin/imodel-components-react': link:../../ui/imodel-components-react
       '@itwin/itwinui-css': 0.37.2
-      '@itwin/itwinui-react': 1.25.0_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.23.2_react-dom@17.0.2+react@17.0.2
       '@itwin/presentation-backend': link:../../presentation/backend
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-components': link:../../presentation/components
@@ -3396,7 +3398,7 @@ importers:
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
       '@itwin/imodel-components-react': link:../../ui/imodel-components-react
       '@itwin/itwinui-css': 0.37.2
-      '@itwin/itwinui-react': 1.25.0_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.23.2_react-dom@17.0.2+react@17.0.2
       '@itwin/map-layers': link:../../extensions/map-layers
       '@itwin/presentation-backend': link:../../presentation/backend
       '@itwin/presentation-common': link:../../presentation/common
@@ -3890,7 +3892,7 @@ importers:
       uuid: ^7.0.3
     dependencies:
       '@itwin/itwinui-css': 0.37.2
-      '@itwin/itwinui-react': 1.25.0_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.23.2_react-dom@17.0.2+react@17.0.2
       classnames: 2.3.1
       immer: 9.0.6
       uuid: 7.0.3
@@ -4021,7 +4023,7 @@ importers:
       '@bentley/telemetry-client': link:../../clients/telemetry
       '@itwin/browser-authorization': 0.3.0
       '@itwin/itwinui-css': 0.37.2
-      '@itwin/itwinui-react': 1.25.0_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.23.2_react-dom@17.0.2+react@17.0.2
       '@itwin/presentation-components': link:../../presentation/components
       classnames: 2.3.1
       immer: 9.0.6
@@ -4180,7 +4182,7 @@ importers:
     dependencies:
       '@bentley/icons-generic-webfont': 1.0.34
       '@itwin/itwinui-css': 0.37.2
-      '@itwin/itwinui-react': 1.25.0_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.23.2_react-dom@17.0.2+react@17.0.2
       '@types/shortid': 0.0.29
       callable-instance2: 1.0.0
       classnames: 2.3.1
@@ -4323,7 +4325,7 @@ importers:
     dependencies:
       '@bentley/icons-generic-webfont': 1.0.34
       '@itwin/itwinui-css': 0.37.2
-      '@itwin/itwinui-react': 1.25.0_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.23.2_react-dom@17.0.2+react@17.0.2
       classnames: 2.3.1
       dompurify: 2.3.3
       lodash: 4.17.21
@@ -4450,7 +4452,7 @@ importers:
     dependencies:
       '@bentley/icons-generic-webfont': 1.0.34
       '@itwin/itwinui-css': 0.37.2
-      '@itwin/itwinui-react': 1.25.0_react-dom@17.0.2+react@17.0.2
+      '@itwin/itwinui-react': 1.23.2_react-dom@17.0.2+react@17.0.2
       callable-instance2: 1.0.0
       classnames: 2.3.1
       eventemitter2: 5.0.1
@@ -4753,7 +4755,7 @@ packages:
       '@babel/generator': 7.16.0
       '@babel/helper-module-transforms': 7.16.0
       '@babel/helpers': 7.16.3
-      '@babel/parser': 7.16.4
+      '@babel/parser': 7.16.2
       '@babel/template': 7.16.0
       '@babel/traverse': 7.16.3
       '@babel/types': 7.16.0
@@ -4778,7 +4780,7 @@ packages:
       '@babel/helper-compilation-targets': 7.16.3_@babel+core@7.16.0
       '@babel/helper-module-transforms': 7.16.0
       '@babel/helpers': 7.16.3
-      '@babel/parser': 7.16.4
+      '@babel/parser': 7.16.2
       '@babel/template': 7.16.0
       '@babel/traverse': 7.16.3
       '@babel/types': 7.16.0
@@ -5029,8 +5031,8 @@ packages:
       chalk: 2.4.2
       js-tokens: 4.0.0
 
-  /@babel/parser/7.16.4:
-    resolution: {integrity: sha512-6V0qdPUaiVHH3RtZeLIsc+6pDhbYzHR8ogA8w+f+Wc77DuXto19g2QUwveINoS34Uw+W8/hQDGJCx+i4n7xcng==}
+  /@babel/parser/7.16.2:
+    resolution: {integrity: sha512-RUVpT0G2h6rOZwqLDTrKk7ksNv7YpAilTnYe1/Q+eDjxEceRMKVWbCsX7t8h6C1qCFi/1Y8WZjcEPBAFG27GPw==}
     engines: {node: '>=6.0.0'}
     hasBin: true
 
@@ -6199,7 +6201,7 @@ packages:
     engines: {node: '>=6.9.0'}
     dependencies:
       '@babel/code-frame': 7.16.0
-      '@babel/parser': 7.16.4
+      '@babel/parser': 7.16.2
       '@babel/types': 7.16.0
 
   /@babel/traverse/7.16.3:
@@ -6211,7 +6213,7 @@ packages:
       '@babel/helper-function-name': 7.16.0
       '@babel/helper-hoist-variables': 7.16.0
       '@babel/helper-split-export-declaration': 7.16.0
-      '@babel/parser': 7.16.4
+      '@babel/parser': 7.16.2
       '@babel/types': 7.16.0
       debug: 4.3.2
       globals: 11.12.0
@@ -6800,8 +6802,8 @@ packages:
       react: 17.0.2
     dev: true
 
-  /@itwin/itwinui-react/1.25.0_react-dom@17.0.2+react@17.0.2:
-    resolution: {integrity: sha512-BLtFAQuj0AMNvYotS9qcLvBDGBeyd+PiB3umyStoty/1dlztTbriuGD7GustwzWE3UsvrNh7Ck1j0iVPFWFAig==}
+  /@itwin/itwinui-react/1.23.2_react-dom@17.0.2+react@17.0.2:
+    resolution: {integrity: sha512-eKjeme31hPmvjSjV6RqsTtwg9xyvoGf7zQGz8ldMM5aouYhI4ArsXwPXgMT2ONR9arstPFL9f8wi4U/LjZ3/uA==}
     peerDependencies:
       react: ^16.8.6 || ^17.0.0
       react-dom: ^16.8.6 || ^17.0.0
@@ -6818,8 +6820,8 @@ packages:
       react-transition-group: 4.4.2_react-dom@17.0.2+react@17.0.2
     dev: false
 
-  /@itwin/itwinui-react/1.25.0_react@17.0.2:
-    resolution: {integrity: sha512-BLtFAQuj0AMNvYotS9qcLvBDGBeyd+PiB3umyStoty/1dlztTbriuGD7GustwzWE3UsvrNh7Ck1j0iVPFWFAig==}
+  /@itwin/itwinui-react/1.23.2_react@17.0.2:
+    resolution: {integrity: sha512-eKjeme31hPmvjSjV6RqsTtwg9xyvoGf7zQGz8ldMM5aouYhI4ArsXwPXgMT2ONR9arstPFL9f8wi4U/LjZ3/uA==}
     peerDependencies:
       react: ^16.8.6 || ^17.0.0
       react-dom: ^16.8.6 || ^17.0.0
@@ -7614,7 +7616,7 @@ packages:
   /@types/babel__core/7.1.16:
     resolution: {integrity: sha512-EAEHtisTMM+KaKwfWdC3oyllIqswlznXCIVCt7/oRNrh+DhgT4UEBNC/jlADNjvw7UnfbcdkGQcPVZ1xYiLcrQ==}
     dependencies:
-      '@babel/parser': 7.16.4
+      '@babel/parser': 7.16.2
       '@babel/types': 7.16.0
       '@types/babel__generator': 7.6.3
       '@types/babel__template': 7.4.1
@@ -7630,7 +7632,7 @@ packages:
   /@types/babel__template/7.4.1:
     resolution: {integrity: sha512-azBFKemX6kMg5Io+/rdGT0dkGreboUVR0Cdm3fz9QJWpaQGJRQXl7C+6hOTCZcMll7KFyEQpgbYI2lHdsS4U7g==}
     dependencies:
-      '@babel/parser': 7.16.4
+      '@babel/parser': 7.16.2
       '@babel/types': 7.16.0
     dev: true
 
@@ -8888,8 +8890,8 @@ packages:
       json-schema-traverse: 0.4.1
       uri-js: 4.4.1
 
-  /ajv/8.8.1:
-    resolution: {integrity: sha512-6CiMNDrzv0ZR916u2T+iRunnD60uWmNn8SkdB44/6stVORUg0aAkWO7PkOhpCmjmW8f2I/G/xnowD66fxGyQJg==}
+  /ajv/8.6.3:
+    resolution: {integrity: sha512-SMJOdDP6LqTkD0Uq8qLi+gMwSt0imXLSV080qFVwJCpH9U6Mb+SUGHAXM0KNbcBPguytWyvFxcHgMLe2D2XSpw==}
     dependencies:
       fast-deep-equal: 3.1.3
       json-schema-traverse: 1.0.0
@@ -9198,7 +9200,7 @@ packages:
     hasBin: true
     dependencies:
       browserslist: 3.2.8
-      caniuse-lite: 1.0.30001280
+      caniuse-lite: 1.0.30001278
       normalize-range: 0.1.2
       num2fraction: 1.2.2
       postcss: 6.0.23
@@ -9210,7 +9212,7 @@ packages:
     hasBin: true
     dependencies:
       browserslist: 4.18.1
-      caniuse-lite: 1.0.30001280
+      caniuse-lite: 1.0.30001278
       normalize-range: 0.1.2
       num2fraction: 1.2.2
       picocolors: 0.2.1
@@ -9295,7 +9297,7 @@ packages:
       eslint: '>= 4.12.1'
     dependencies:
       '@babel/code-frame': 7.16.0
-      '@babel/parser': 7.16.4
+      '@babel/parser': 7.16.2
       '@babel/traverse': 7.16.3
       '@babel/types': 7.16.0
       eslint: 7.32.0
@@ -9822,8 +9824,8 @@ packages:
     resolution: {integrity: sha512-WHVocJYavUwVgVViC0ORikPHQquXwVh939TaelZ4WDqpWgTX/FsGhl/+P4qBUAGcRvtOgDgC+xftNWWp2RUTAQ==}
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001280
-      electron-to-chromium: 1.3.899
+      caniuse-lite: 1.0.30001278
+      electron-to-chromium: 1.3.889
     dev: true
 
   /browserslist/4.14.2:
@@ -9831,8 +9833,8 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001280
-      electron-to-chromium: 1.3.899
+      caniuse-lite: 1.0.30001278
+      electron-to-chromium: 1.3.889
       escalade: 3.1.1
       node-releases: 1.1.77
     dev: true
@@ -9842,8 +9844,8 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001280
-      electron-to-chromium: 1.3.899
+      caniuse-lite: 1.0.30001278
+      electron-to-chromium: 1.3.889
       escalade: 3.1.1
       node-releases: 2.0.1
       picocolors: 1.0.0
@@ -10080,13 +10082,13 @@ packages:
     resolution: {integrity: sha512-bsTwuIg/BZZK/vreVTYYbSWoe2F+71P7K5QGEX+pT250DZbfU1MQ5prOKpPR+LL6uWKK3KMwMCAS74QB3Um1uw==}
     dependencies:
       browserslist: 4.18.1
-      caniuse-lite: 1.0.30001280
+      caniuse-lite: 1.0.30001278
       lodash.memoize: 4.1.2
       lodash.uniq: 4.5.0
     dev: true
 
-  /caniuse-lite/1.0.30001280:
-    resolution: {integrity: sha512-kFXwYvHe5rix25uwueBxC569o53J6TpnGu0BEEn+6Lhl2vsnAumRFWEBhDft1fwyo6m1r4i+RqA4+163FpeFcA==}
+  /caniuse-lite/1.0.30001278:
+    resolution: {integrity: sha512-mpF9KeH8u5cMoEmIic/cr7PNS+F5LWBk0t2ekGT60lFf0Wq+n9LspAj0g3P+o7DQhD3sUdlMln4YFAWhFYn9jg==}
 
   /capture-exit/2.0.0:
     resolution: {integrity: sha512-PiT/hQmTonHhl/HFGN+Lx3JJUznrVYJ3+AQsnthneZbvW7x+f08Tk7yLJTLEOUvBTbduLeeBkxEaYXUOUrRq6g==}
@@ -11616,8 +11618,8 @@ packages:
     requiresBuild: true
     dev: true
 
-  /electron-to-chromium/1.3.899:
-    resolution: {integrity: sha512-w16Dtd2zl7VZ4N4Db+FIa7n36sgPGCKjrKvUUmp5ialsikvcQLjcJR9RWnlYNxIyEHLdHaoIZEqKsPxU9MdyBg==}
+  /electron-to-chromium/1.3.889:
+    resolution: {integrity: sha512-suEUoPTD1mExjL9TdmH7cvEiWJVM2oEiAi+Y1p0QKxI2HcRlT44qDTP2c1aZmVwRemIPYOpxmV7CxQCOWcm4XQ==}
 
   /electron/14.2.1:
     resolution: {integrity: sha512-20cLOVpmjIgYMgsDLpI36VQhv0bIy54sSBAP3rLFtrs/kVVHLu0educMVZkkMm5GJPd2vvU4mcK7f43JgVRcNg==}
@@ -13653,8 +13655,8 @@ packages:
       '@babel/runtime': 7.16.3
     dev: false
 
-  /i18next/21.5.2:
-    resolution: {integrity: sha512-Iuztr2+7CPCh5SYQV0utw2HXMx1za18xfznrw/PmgX+98oIpm84bhIM7VUPODjLycwIZ299oP7sEVQ9oCgmzfg==}
+  /i18next/21.4.0:
+    resolution: {integrity: sha512-H8QwhJXxnPWDvRlLn3nqDvbry7PM7i3UYa0+5EHWvlVkvNNy5WJVTzZe2tZH+HnaGVAE5MaujasyOca8mbQN+w==}
     dependencies:
       '@babel/runtime': 7.16.3
     dev: false
@@ -14293,7 +14295,7 @@ packages:
     engines: {node: '>=8'}
     dependencies:
       '@babel/core': 7.12.3
-      '@babel/parser': 7.16.4
+      '@babel/parser': 7.16.2
       '@istanbuljs/schema': 0.1.3
       istanbul-lib-coverage: 3.2.0
       semver: 6.3.0
@@ -17629,7 +17631,7 @@ packages:
     dependencies:
       autoprefixer: 9.8.8
       browserslist: 4.18.1
-      caniuse-lite: 1.0.30001280
+      caniuse-lite: 1.0.30001278
       css-blank-pseudo: 0.1.4
       css-has-pseudo: 0.10.0
       css-prefers-color-scheme: 3.1.1
@@ -18755,7 +18757,7 @@ packages:
   /regenerator-transform/0.14.5:
     resolution: {integrity: sha512-eOf6vka5IO151Jfsw2NO9WpGX58W6wWmefK3I1zEGr0lOD0u8rwPaNqQL1aRxUaxLeKO3ArNh3VYg1KbaD+FFw==}
     dependencies:
-      '@babel/runtime': 7.16.3
+      '@babel/runtime': 7.16.0
     dev: true
 
   /regex-not/1.0.2:
@@ -20321,7 +20323,7 @@ packages:
     resolution: {integrity: sha512-5DkIxeA7XERBqMwJq0aHZOdMadBx4e6eDoFRuyT5VR82J0Ycg2DwM6GfA/EQAhJ+toRTaS1lIdSQCqgrmhPnlw==}
     engines: {node: '>=10.0.0'}
     dependencies:
-      ajv: 8.8.1
+      ajv: 8.6.3
       lodash.truncate: 4.4.2
       slice-ansi: 4.0.0
       string-width: 4.2.3

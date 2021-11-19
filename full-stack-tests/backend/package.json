@@ -30,6 +30,7 @@
     "@bentley/imodelhub-client": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "@itwin/core-backend": "workspace:*",
+    "@bentley/imodeljs-native": "3.0.17",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-geometry": "workspace:*",

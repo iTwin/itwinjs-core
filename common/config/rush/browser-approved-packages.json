@@ -24,7 +24,7 @@
     },
     {
       "name": "@bentley/imodeljs-native",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "@bentley/itwin-client",

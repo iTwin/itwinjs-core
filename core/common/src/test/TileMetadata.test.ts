@@ -25,8 +25,9 @@ describe("TileMetadata", () => {
       };
 
       const epsilon = 0.00001;
-      const actualTolerance = computeTileChordTolerance(metadata, is3d);
+      const actualTolerance = computeTileChordTolerance(metadata, is3d, 512);
       expect(Math.abs(expectedTolerance - actualTolerance)).most(epsilon);
+      expect(actualTolerance).least(computeTileChordTolerance(metadata, is3d, 2048));
     };
 
     const toleranceFromDiagonal = (diagonal: number) => diagonal / 1024;
@@ -85,6 +86,7 @@ describe("TileMetadata", () => {
       id: IModelTileTreeId;
       ignoreProjectExtents?: true;
       noOptimizeBReps?: true;
+      useSmallerTiles?: true;
       maxVersion?: number;
       // expected
       baseId: string;
@@ -95,7 +97,8 @@ describe("TileMetadata", () => {
     const kExtents = TreeFlags.UseProjectExtents;
     const kBReps = TreeFlags.OptimizeBRepProcessing;
     const kPriority = TreeFlags.EnforceDisplayPriority;
-    const kDefaults = kExtents | kBReps;
+    const kLarger = TreeFlags.UseLargerTiles;
+    const kDefaults = kExtents | kBReps | kLarger;
     const kAll = kDefaults | kPriority;
 
     const testCases: TestCase[] = [
@@ -113,32 +116,53 @@ describe("TileMetadata", () => {
         id: primaryId(true),
         ignoreProjectExtents: true,
         baseId: "",
-        flags: kBReps,
+        flags: kBReps | kLarger,
       },
       {
         id: primaryId(true),
+        noOptimizeBReps: true,
+        baseId: "",
+        flags: kExtents | kLarger,
+      },
+      {
+        id: primaryId(true),
+        noOptimizeBReps: true,
+        ignoreProjectExtents: true,
+        baseId: "",
+        flags: kLarger,
+      },
+      {
+        id: primaryId(true),
+        noOptimizeBReps: true,
+        ignoreProjectExtents: true,
+        useSmallerTiles: true,
+        baseId: "",
+        flags: kNone,
+      },
+      {
+        id: primaryId(true),
+        useSmallerTiles: true,
+        baseId: "",
+        flags: kExtents | kBReps,
+      },
+      {
+        id: primaryId(true),
+        useSmallerTiles: true,
         noOptimizeBReps: true,
         baseId: "",
         flags: kExtents,
       },
       {
-        id: primaryId(true),
-        noOptimizeBReps: true,
-        ignoreProjectExtents: true,
-        baseId: "",
-        flags: kNone,
-      },
-      {
         id: primaryId(false),
         ignoreProjectExtents: true,
         baseId: "E:0_",
-        flags: kBReps,
+        flags: kBReps | kLarger,
       },
       {
         id: primaryId(false, true),
         ignoreProjectExtents: true,
         baseId: "E:0_",
-        flags: kPriority | kBReps,
+        flags: kPriority | kBReps | kLarger,
       },
       {
         id: primaryId(true, true),
@@ -164,7 +188,7 @@ describe("TileMetadata", () => {
         id: primaryId(false, false, undefined, { id: "0xfde" }),
         ignoreProjectExtents: true,
         baseId: "A:0xfde_#ffffffff_E:0_",
-        flags: kBReps,
+        flags: kBReps | kLarger,
       },
       {
         id: primaryId(false, false, "clippy", { id: "0x5c", node: 32 }),
@@ -213,7 +237,7 @@ describe("TileMetadata", () => {
         id: classifierId(),
         ignoreProjectExtents: true,
         baseId: "CP:1.000000_",
-        flags: kBReps,
+        flags: kBReps | kLarger,
       },
       // Volume classifiers always use project extents.
       {
@@ -228,6 +252,7 @@ describe("TileMetadata", () => {
       const options = {
         ...defaultTileOptions,
         useProjectExtents: true !== test.ignoreProjectExtents,
+        useLargerTiles: true !== test.useSmallerTiles,
         optimizeBRepProcessing: true !== test.noOptimizeBReps,
       };
 
@@ -250,6 +275,8 @@ describe("TileMetadata", () => {
       noPatterns?: boolean;
       externalTextures?: boolean;
       projectExtents?: boolean;
+      optimizeBReps?: boolean;
+      useLargerTiles?: boolean;
     }
 
     function test(treeId: string, contentId: string, expected: Options | "content" | "tree"): void {
@@ -263,9 +290,10 @@ describe("TileMetadata", () => {
           ignoreAreaPatterns: true === expected.noPatterns,
           enableExternalTextures: true === expected.externalTextures,
           useProjectExtents: true === expected.projectExtents,
+          useLargerTiles: true === expected.useLargerTiles,
+          optimizeBRepProcessing: true === expected.optimizeBReps,
           disableMagnification: false,
           alwaysSubdivideIncompleteTiles: false,
-          optimizeBRepProcessing: false,
         };
 
         expect(TileOptions.fromTreeIdAndContentId(treeId, contentId)).to.deep.equal(options);
@@ -285,6 +313,8 @@ describe("TileMetadata", () => {
     test("Ad_1", "-0-0", { version: 0xad, projectExtents: true });
     test("f_2", "-0-0", { version: 15 });
     test("f_3", "-0-0", { version: 15, projectExtents: true });
+    test("f_4", "-0-0", { version: 15, optimizeBReps: true });
+    test("f_8", "-0-0", { version: 15, useLargerTiles: true });
 
     test("4_0", "-3-0", { version: 4, elision: true, instancing: true });
     test("4_0", "-c-5", { version: 4, noPatterns: true, externalTextures: true });
@@ -345,6 +375,7 @@ describe("TileMetadata", () => {
         externalTextures?: boolean;
         projectExtents?: boolean;
         optimizeBReps?: boolean;
+        largerTiles?: boolean;
       };
     }
 
@@ -362,6 +393,7 @@ describe("TileMetadata", () => {
           disableMagnification: false,
           alwaysSubdivideIncompleteTiles: false,
           optimizeBRepProcessing: true === expected.tileOptions.optimizeBReps,
+          useLargerTiles: true === expected.tileOptions.largerTiles,
         };
         const parsed = parseTileTreeIdAndContentId(treeId, contentId);
 
@@ -383,7 +415,7 @@ describe("TileMetadata", () => {
     test("4_0-0x1c", "-0-1-2-3", "content");
     test("4_0-0x1c", "0-1-2-3-4", "content");
 
-    test("19_5-S010_1_0_-5_30_0_-1_5e-11____s0x1d", "-b-14-32-4-1-1", {
+    test("19_d-S010_1_0_-5_30_0_-1_5e-11____s0x1d", "-b-14-32-4-1-1", {
       tileOptions: {
         elision: true,
         instancing: true,
@@ -392,6 +424,7 @@ describe("TileMetadata", () => {
         projectExtents: true,
         externalTextures: true,
         optimizeBReps: true,
+        largerTiles: true,
       },
       modelId: "0x1d",
       treeId: {

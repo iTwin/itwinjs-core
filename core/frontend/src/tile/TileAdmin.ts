@@ -133,6 +133,8 @@ export class TileAdmin {
   /** @internal */
   public readonly optimizeBRepProcessing: boolean;
   /** @internal */
+  public readonly useLargerTiles: boolean;
+  /** @internal */
   public readonly maximumLevelsToSkip: number;
   /** @internal */
   public readonly mobileRealityTileMinToleranceRatio: number;
@@ -219,6 +221,7 @@ export class TileAdmin {
     this.maximumMajorTileFormatVersion = options.maximumMajorTileFormatVersion ?? defaultTileOptions.maximumMajorTileFormatVersion;
     this.useProjectExtents = options.useProjectExtents ?? defaultTileOptions.useProjectExtents;
     this.optimizeBRepProcessing = options.optimizeBRepProcessing ?? defaultTileOptions.optimizeBRepProcessing;
+    this.useLargerTiles = options.useLargerTiles ?? defaultTileOptions.useLargerTiles;
     this.mobileRealityTileMinToleranceRatio = Math.max(options.mobileRealityTileMinToleranceRatio ?? 3.0, 1.0);
     this.cesiumIonKey = options.cesiumIonKey;
 
@@ -969,6 +972,12 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
      * @internal
      */
     optimizeBRepProcessing?: boolean;
+
+    /** Produce tiles that are larger in screen pixels to reduce the number of tiles requested and drawn by the scene.
+     * Default value: true
+     * @public
+     */
+    useLargerTiles?: boolean;
 
     /** Specifies that metadata about each [[IModelTile]] loaded during the session should be cached until the corresponding [[IModelConnection]] is closed; and
      * that the graphics for cached tiles should never be reloaded when the tile is re-requested after having been discarded. This fulfills a niche scenario in
