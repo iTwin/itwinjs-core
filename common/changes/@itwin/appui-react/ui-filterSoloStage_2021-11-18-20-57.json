@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Add ability to remove stage launcher entry from backstage if only one stage is available.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}
