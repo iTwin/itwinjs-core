@@ -9,7 +9,7 @@
 
 import { CompressedId64Set } from "@itwin/core-bentley";
 import {
-  DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, ElementLoadOptions, RenderMode, RenderSchedule, RenderTimelineProps, SkyCube, SkySphere
+  DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, ElementLoadOptions, RenderMode, RenderSchedule, RenderTimelineProps, SkyCube, SkySphere,
   SubCategoryAppearance, SubCategoryOverride, ViewFlags, ViewFlagsProperties, WhiteOnWhiteReversalSettings,
 } from "@itwin/core-common";
 import {
@@ -152,7 +152,7 @@ export class SkySphereTool extends DisplayStyleTool {
 
   public override get require3d() { return true; }
 
-  public parse(args: string[]) {
+  public async parse(args: string[]) {
     this._image = args[0];
     return true;
   }
@@ -181,7 +181,7 @@ export class SkyCubeTool extends DisplayStyleTool {
 
   public override get require3d() { return true; }
 
-  public parse(args: string[]) {
+  public async parse(args: string[]) {
     this._images = [...args];
     return true;
   }
