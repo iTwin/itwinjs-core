@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/perf-tools",
+      "comment": "Handle undefined info property",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/perf-tools"
+}
