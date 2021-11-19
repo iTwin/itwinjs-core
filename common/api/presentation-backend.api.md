@@ -180,7 +180,7 @@ export class PresentationManager {
     // @beta
     getElementProperties(requestOptions: Prioritized<SingleElementPropertiesRequestOptions<IModelDb>>): Promise<ElementProperties | undefined>;
     // @alpha
-    getElementProperties(requestOptions: Prioritized<MultiElementPropertiesRequestOptions<IModelDb>>): Promise<PagedResponse<ElementProperties>>;
+    getElementProperties(requestOptions: Prioritized<MultiElementPropertiesRequestOptions<IModelDb>>): Promise<AsyncIterableIterator<PagedResponse<ElementProperties>>>;
     getFilteredNodePaths(requestOptions: Prioritized<FilterByTextHierarchyRequestOptions<IModelDb>>): Promise<NodePathElement[]>;
     // @internal (undocumented)
     getNativePlatform: () => NativePlatformDefinition;
@@ -193,6 +193,8 @@ export class PresentationManager {
     getSelectionScopes(_requestOptions: SelectionScopeRequestOptions<IModelDb>): Promise<SelectionScope[]>;
     get props(): PresentationManagerProps;
     rulesets(): RulesetManager;
+    // @internal (undocumented)
+    setOnManagerUsedHandler(handler: () => void): void;
     vars(rulesetId: string): RulesetVariablesManager;
 }
 
