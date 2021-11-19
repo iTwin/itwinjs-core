@@ -777,14 +777,12 @@ deprecated;WorkflowProps
 internal;WorkflowPropsList
 deprecated;WorkflowPropsList
 public;Zone 
-deprecated;Zone 
 public;ZoneDef 
 deprecated;ZoneDef 
 public;ZoneDefProvider
 public;ZoneLocation
 deprecated;ZoneLocation
 public;ZoneProps 
-deprecated;ZoneProps 
 internal;ZoneRuntimeProps
 public;ZoneState
 deprecated;ZoneState

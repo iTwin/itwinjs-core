@@ -6494,7 +6494,7 @@ export class UiFramework {
     static getIModelConnection(): IModelConnection | undefined;
     // (undocumented)
     static getIsUiVisible(): boolean;
-    // (undocumented)
+    // @deprecated
     static getUiSettingsStorage(): UiSettingsStorage;
     // (undocumented)
     static getUserInfo(): UserInfo | undefined;
@@ -6547,7 +6547,7 @@ export class UiFramework {
     // (undocumented)
     static setIsUiVisible(visible: boolean): void;
     static get settingsManager(): SettingsManager;
-    // (undocumented)
+    // @deprecated (undocumented)
     static setUiSettingsStorage(storage: UiSettingsStorage, immediateSync?: boolean): Promise<void>;
     // (undocumented)
     static setUiVersion(version: FrameworkVersionId): void;

@@ -1233,7 +1233,7 @@ export interface LoadingStatusProps extends CommonProps {
     percent: number;
 }
 
-// @public
+// @public @deprecated
 export class LocalSettingsStorage implements UiSettingsStorage {
     constructor(w?: Window);
     // (undocumented)
@@ -1246,11 +1246,6 @@ export class LocalSettingsStorage implements UiSettingsStorage {
     saveSetting(settingNamespace: string, settingName: string, setting: any): Promise<UiSettingsResult>;
     // (undocumented)
     w: Window;
-}
-
-// @beta @deprecated
-export class LocalUiSettings extends LocalSettingsStorage {
-    constructor(w?: Window);
 }
 
 // @public
@@ -1800,26 +1795,6 @@ export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElemen
     };
     ref?: React.Ref<HTMLSelectElement>;
     setFocus?: boolean;
-}
-
-// @public
-export class SessionSettingsStorage implements UiSettingsStorage {
-    constructor(w?: Window);
-    // (undocumented)
-    deleteSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
-    // (undocumented)
-    getSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
-    // (undocumented)
-    hasSetting(settingNamespace: string, settingName: string): Promise<boolean>;
-    // (undocumented)
-    saveSetting(settingNamespace: string, settingName: string, setting: any): Promise<UiSettingsResult>;
-    // (undocumented)
-    w: Window;
-}
-
-// @beta @deprecated
-export class SessionUiSettings extends SessionSettingsStorage {
-    constructor(w?: Window);
 }
 
 // @public
@@ -2404,7 +2379,7 @@ export class UiGeometry {
     static hypotenuseXY(x: number, y: number): number;
 }
 
-// @public
+// @public @deprecated
 export class UiSetting<T> {
     constructor(settingNamespace: string, settingName: string, getValue: () => T, applyValue?: ((v: T) => void) | undefined, defaultValue?: T | undefined);
     // (undocumented)
@@ -2423,7 +2398,7 @@ export class UiSetting<T> {
     settingNamespace: string;
 }
 
-// @public
+// @public @deprecated
 export type UiSettings = UiSettingsStorage;
 
 // @public @deprecated
@@ -2434,7 +2409,7 @@ export interface UiSettingsResult {
     status: UiSettingsStatus;
 }
 
-// @public
+// @public @deprecated
 export enum UiSettingsStatus {
     // (undocumented)
     AuthorizationError = 4,
