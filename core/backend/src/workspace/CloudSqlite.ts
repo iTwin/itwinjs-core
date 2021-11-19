@@ -90,7 +90,7 @@ export class CloudSqlite {
   }
 
   public static async downloadDb(db: CloudSqlite.DbProps, props: CloudSqlite.DownloadProps) {
-    const downloader = new IModelHost.platform.CloudDbTransfer({ direction: "download", ...db, ...props, });
+    const downloader = new IModelHost.platform.CloudDbTransfer({ direction: "download", ...db, ...props });
 
     let timer: NodeJS.Timeout | undefined;
     try {
