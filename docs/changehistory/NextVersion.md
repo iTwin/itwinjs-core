@@ -913,6 +913,10 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `LoadingPromptProps.isDeterministic` | `LoadingPromptProps.isDeterminate` in @itwin/core-react |
 | `NumericInput` component             | `NumberInput` component in @itwin/core-react            |
 | `TabsProps.onClickLabel`             | `TabsProps.onActivateTab` in @itwin/core-react          |
+| `LocalSettingsStorage`               | `LocalStateStorage`                                     |
+| `UiSettingsResult`                   | `UiStateStorageResult`                                  |
+| `UiSetting`                          | `UiStateEntry`                                          |
+| `UiSettings`                         | `UiStateStorage`                                        |
 
 ### @itwin/components-react
 
@@ -983,6 +987,8 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `IModelConnectedModelsTree`                | *eliminated*                                                                                                                  |
 | `IModelConnectedSpatialContainmentTree`    | *eliminated*                                                                                                                  |
 | `CategoryTreeWithSearchBox`                | *eliminated*                                                                                                                  |
+| `UiSettingsProvider`                       | `UiStateStorageHandler`                                                                                                       |
+| `useUiSettingsStorageContext`              | `useUiStateStorageHandler`                                                                                                       |
 | `VisibilityComponent`                      | `TreeWidgetComponent` in @bentley/tree-widget-react                                                                           |
 | `VisibilityWidget`                         | `TreeWidgetControl` in @bentley/tree-widget-react                                                                             |
 | `ContentLayoutProps`                       | `ContentLayoutProps` in @itwin/appui-abstract                                                                                 |
@@ -1183,6 +1189,8 @@ The @itwin ui and @itwin/presentation-components packages are now dependent on R
 
 React 16 is not an officially supported version of iTwin.js app or Extension development using the iTwin.js AppUi.
 
+The component `UiSettingsProvider` has been renamed to [UiStateStorageHandler]($appui-react) and updated so it no longer takes a prop. Internally it now uses the value from `UiFrameWork.getUiStateStorage` and listens for changes to that value. This rename was to avoid confusion between UI State and User Preferences.
+
 The component [FrameworkVersion]($appui-react) has been updated so it no longer takes a version prop. It now uses the value of `frameworkState.configurableUiState.frameworkVersion` from the redux store as the version. This value may be set using `UiFramework.setUiVersion` method and will be initialized to "2". Existing iModelApps using the 1.0 version of the user interface were not required to include the `<FrameworkVersion>` component in its component tree. It is now required that every iModelApp include the `<FrameworkVersion>` component and that the redux store entry mentioned above is specified to either "1" or "2". Below is a typical component tree for an iModeApp.
 
 ```tsx
@@ -1191,11 +1199,11 @@ The component [FrameworkVersion]($appui-react) has been updated so it no longer 
     <SafeAreaContext.Provider value={SafeAreaInsets.All}>
       <ToolbarDragInteractionContext.Provider value={false}>
         <FrameworkVersion>
-          <UiSettingsProvider settingsStorage={uiSettingsStorage}>
+          <UiStateStorageHandler>
             <ConfigurableUiContent
               appBackstage={<AppBackstageComposer />}
             />
-          </UiSettingsProvider>
+          </UiStateStorageHandler>
         </FrameworkVersion>
       </ToolbarDragInteractionContext.Provider>
     </SafeAreaContext.Provider>
@@ -1366,7 +1374,7 @@ Some have replacements within the @itwin/core-react package.
 | DialogButtonDef in @itwin/core-react   | DialogButtonDef in @itwin/appui-abstract       |
 | DialogButtonStyle in @itwin/core-react | DialogButtonStyle in @itwin/appui-abstract     |
 | DialogButtonType in @itwin/core-react  | DialogButtonType in @itwin/appui-abstract      |
-| LocalUiSettings in @itwin/core-react   | LocalSettingsStorage in @itwin/core-react      |
+| LocalUiSettings in @itwin/core-react   | LocalStateStorage in @itwin/core-react      |
 | SessionUiSettings in @itwin/core-react | *eliminated*                                   |
 
 ### New @itwin/imodel-components-react package

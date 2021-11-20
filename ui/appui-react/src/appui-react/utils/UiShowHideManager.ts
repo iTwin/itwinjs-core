@@ -6,7 +6,7 @@
  * @module Utilities
  */
 
-import { UiSettings, UiSettingsStatus } from "@itwin/core-react";
+import { UiStateStorage, UiStateStorageStatus } from "@itwin/core-react";
 import { SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework, UserSettingsProvider } from "../UiFramework";
 
@@ -24,30 +24,30 @@ export class UiShowHideSettingsProvider implements UserSettingsProvider {
     UiFramework.registerUserSettingsProvider(new UiShowHideSettingsProvider());
   }
 
-  public async loadUserSettings(storage: UiSettings): Promise<void> {
+  public async loadUserSettings(storage: UiStateStorage): Promise<void> {
     let result = await storage.getSetting(UiShowHideSettingsProvider._settingsNamespace, UiShowHideSettingsProvider._autoHideUiKey);
-    if (result.status === UiSettingsStatus.Success)
+    if (result.status === UiStateStorageStatus.Success)
       UiShowHideManager.setAutoHideUi(result.setting);
 
     result = await storage.getSetting(UiShowHideSettingsProvider._settingsNamespace, UiShowHideSettingsProvider._useProximityOpacityKey);
-    if (result.status === UiSettingsStatus.Success)
+    if (result.status === UiStateStorageStatus.Success)
       UiShowHideManager.setUseProximityOpacity(result.setting);
 
     result = await storage.getSetting(UiShowHideSettingsProvider._settingsNamespace, UiShowHideSettingsProvider._snapWidgetOpacityKey);
-    if (result.status === UiSettingsStatus.Success)
+    if (result.status === UiStateStorageStatus.Success)
       UiShowHideManager.setSnapWidgetOpacity(result.setting);
   }
 
-  public static async storeAutoHideUi(v: boolean, storage?: UiSettings) {
-    void (storage ?? UiFramework.getUiSettingsStorage()).saveSetting(this._settingsNamespace, this._autoHideUiKey, v);
+  public static async storeAutoHideUi(v: boolean, storage?: UiStateStorage) {
+    void (storage ?? UiFramework.getUiStateStorage()).saveSetting(this._settingsNamespace, this._autoHideUiKey, v);
   }
 
-  public static async storeUseProximityOpacity(v: boolean, storage?: UiSettings) {
-    void (storage ?? UiFramework.getUiSettingsStorage()).saveSetting(this._settingsNamespace, this._useProximityOpacityKey, v);
+  public static async storeUseProximityOpacity(v: boolean, storage?: UiStateStorage) {
+    void (storage ?? UiFramework.getUiStateStorage()).saveSetting(this._settingsNamespace, this._useProximityOpacityKey, v);
   }
 
-  public static async storeSnapWidgetOpacity(v: boolean, storage?: UiSettings) {
-    void (storage ?? UiFramework.getUiSettingsStorage()).saveSetting(this._settingsNamespace, this._snapWidgetOpacityKey, v);
+  public static async storeSnapWidgetOpacity(v: boolean, storage?: UiStateStorage) {
+    void (storage ?? UiFramework.getUiStateStorage()).saveSetting(this._settingsNamespace, this._snapWidgetOpacityKey, v);
   }
 }
 

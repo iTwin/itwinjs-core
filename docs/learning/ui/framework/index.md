@@ -20,7 +20,7 @@ The following constructs are defined using these components and classes:
 - [Backstage](./Backstage.md)
 - [Notifications and Messages](./Notifications.md)
 - [Dialogs](./Dialogs.md)
-- [UI Settings](./UiSettings.md)
+- [UI Settings](./UiStateStorage.md)
 - [AccuDraw UI](./AccuDraw.md)
 - [KeyboardShortcuts]($appui-react:KeyboardShortcut) - A keystroke or combination of keystrokes used to launch a command or tool.
 

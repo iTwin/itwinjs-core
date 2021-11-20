@@ -15,7 +15,7 @@ import produce, { castDraft, Draft } from "immer";
 import * as React from "react";
 import { assert, Logger, ProcessDetector } from "@itwin/core-bentley";
 import { StagePanelLocation, UiItemsManager, WidgetState } from "@itwin/appui-abstract";
-import { Size, SizeProps, UiSettingsResult, UiSettingsStatus } from "@itwin/core-react";
+import { Size, SizeProps, UiStateStorageResult, UiStateStorageStatus } from "@itwin/core-react";
 import {
   addPanelWidget, addTab, addWidgetTabToFloatingPanel, convertAllPopupWidgetContainersToFloating, createNineZoneState, createTabsState, createTabState,
   createWidgetState, findTab, findWidget, floatingWidgetBringToFront, FloatingWidgetHomeState, FloatingWidgets, getUniqueId, isFloatingLocation,
@@ -28,7 +28,7 @@ import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { StagePanelMaxSizeSpec } from "../stagepanels/StagePanel";
 import { StagePanelState, StagePanelZoneDefKeys } from "../stagepanels/StagePanelDef";
 import { UiFramework } from "../UiFramework";
-import { useUiSettingsStorageContext } from "../uisettings/useUiSettings";
+import { useUiStateStorageHandler } from "../uistate/useUiStateStorage";
 import { WidgetDef, WidgetEventArgs, WidgetStateChangedEventArgs } from "../widgets/WidgetDef";
 import { ZoneState } from "../zones/ZoneDef";
 import { WidgetContent } from "./Content";
@@ -578,11 +578,11 @@ export function addPanelWidgets(
 }
 
 /** @internal */
-export function isFrontstageStateSettingResult(settingsResult: UiSettingsResult): settingsResult is { // eslint-disable-line deprecation/deprecation
-  status: UiSettingsStatus.Success;
+export function isFrontstageStateSettingResult(settingsResult: UiStateStorageResult): settingsResult is { // eslint-disable-line deprecation/deprecation
+  status: UiStateStorageStatus.Success;
   setting: WidgetPanelsFrontstageState;
 } {
-  if (settingsResult.status === UiSettingsStatus.Success)
+  if (settingsResult.status === UiStateStorageStatus.Success)
     return true;
   return false;
 }
@@ -741,7 +741,7 @@ export function isPanelCollapsed(zoneStates: ReadonlyArray<ZoneState | undefined
   return !openZone && !openPanel;
 }
 
-/** FrontstageState is saved in UiSettings.
+/** FrontstageState is saved in UiStateStorage.
  * @internal
  */
 export interface WidgetPanelsFrontstageState {
@@ -911,16 +911,16 @@ export const setWidgetLabel = produce((nineZone: Draft<NineZoneState>, id: TabSt
 
 /** @internal */
 export function useSavedFrontstageState(frontstageDef: FrontstageDef) {
-  const uiSettingsStorage = useUiSettingsStorageContext();
-  const uiSettingsRef = React.useRef(uiSettingsStorage);
+  const uiStateStorage = useUiStateStorageHandler();
+  const uiStateStorageRef = React.useRef(uiStateStorage);
   const isMountedRef = React.useRef(false);
   React.useEffect(() => {
     isMountedRef.current = true;
     return () => { isMountedRef.current = false; };
   }, []);
   React.useEffect(() => {
-    uiSettingsRef.current = uiSettingsStorage;
-  }, [uiSettingsStorage]);
+    uiStateStorageRef.current = uiStateStorage;
+  }, [uiStateStorage]);
   React.useEffect(() => {
     async function fetchFrontstageState() {
       if (frontstageDef.nineZoneState) {
@@ -929,11 +929,11 @@ export function useSavedFrontstageState(frontstageDef: FrontstageDef) {
       }
       const id = frontstageDef.id;
       const version = frontstageDef.version;
-      const settingsResult = await uiSettingsRef.current.getSetting(FRONTSTAGE_SETTINGS_NAMESPACE, getFrontstageStateSettingName(id));
-      if (isMountedRef.current){
+      const settingsResult = await uiStateStorageRef.current.getSetting(FRONTSTAGE_SETTINGS_NAMESPACE, getFrontstageStateSettingName(id));
+      if (isMountedRef.current) {
         if (isFrontstageStateSettingResult(settingsResult) &&
-        settingsResult.setting.version >= version &&
-        settingsResult.setting.stateVersion >= stateVersion
+          settingsResult.setting.version >= version &&
+          settingsResult.setting.stateVersion >= stateVersion
         ) {
           const restored = restoreNineZoneState(frontstageDef, settingsResult.setting.nineZone);
           let state = addMissingWidgets(frontstageDef, restored);
@@ -952,7 +952,7 @@ export function useSavedFrontstageState(frontstageDef: FrontstageDef) {
 /** @internal */
 export function useSaveFrontstageSettings(frontstageDef: FrontstageDef) {
   const nineZone = useNineZoneState(frontstageDef);
-  const uiSettingsStorage = useUiSettingsStorageContext();
+  const uiSettingsStorage = useUiStateStorageHandler();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const saveSetting = React.useCallback(debounce(async (id: string, version: number, state: NineZoneState) => {
     const setting: WidgetPanelsFrontstageState = {
@@ -1042,7 +1042,7 @@ export function useFrontstageManager(frontstageDef: FrontstageDef) {
       FrontstageManager.onWidgetExpandEvent.removeListener(listener);
     };
   }, [frontstageDef]);
-  const uiSettingsStorage = useUiSettingsStorageContext();
+  const uiSettingsStorage = useUiStateStorageHandler();
   React.useEffect(() => {
     const listener = (args: FrontstageEventArgs) => {
       // TODO: track restoring frontstages to support workflows:  i.e. prevent loading frontstage OR saving layout when delete is pending
@@ -1187,7 +1187,7 @@ export async function saveFrontstagePopoutWidgetSizeAndPosition(state: NineZoneS
       stateVersion,
       version: stageVersion,
     };
-    await UiFramework.getUiSettingsStorage().saveSetting(FRONTSTAGE_SETTINGS_NAMESPACE, getFrontstageStateSettingName(stageId), setting);
+    await UiFramework.getUiStateStorage().saveSetting(FRONTSTAGE_SETTINGS_NAMESPACE, getFrontstageStateSettingName(stageId), setting);
     return newState;
   }
   // istanbul ignore next
