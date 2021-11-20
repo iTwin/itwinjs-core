@@ -251,7 +251,7 @@ export class WorkspaceFile implements WorkspaceContainer {
   public get containerFilesDir() { return join(this.workspace.filesDir, this.containerId); }
   public get isOpen() { return this.db.isOpen; }
 
-  protected queryFileResource(rscName: WorkspaceResourceName) {
+  public queryFileResource(rscName: WorkspaceResourceName) {
     const info = this.db.nativeDb.queryEmbeddedFile(rscName);
     if (undefined === info)
       return undefined;

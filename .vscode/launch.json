@@ -860,9 +860,11 @@
       "request": "launch",
       "program": "${workspaceFolder}/utils/workspace-editor/lib/WorkspaceEditor.js",
       "args": [
-        "add",
-        "test1",
-        "-f=package.json"
+        "addDir",
+        "usa",
+        "D:\\imodeljs\\core\\backend\\node_modules\\@bentley\\imodeljs-native\\imodeljs-win32-x64\\Assets\\DgnGeoCoord\\Usa",
+        "-b=Usa",
+        "-s"
       ],
       "outFiles": [
         "${workspaceFolder}/utils/workspace-editor/lib/**/*.js"

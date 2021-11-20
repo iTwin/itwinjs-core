@@ -3,10 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { join, parse } from "path";
 import * as Yargs from "yargs";
-import { BaseSettings, EditableWorkspaceFile, IModelHost, IModelJsFs, ITwinWorkspace, WorkspaceFile } from "@itwin/core-backend";
-import { parse } from "path";
+import * as fs from "fs";
+import { EditableWorkspaceFile, IModelHost, IModelJsFs, WorkspaceFile, WorkspaceResourceName } from "@itwin/core-backend";
 import { DbResult } from "@itwin/core-bentley";
+import { LocalDirName, LocalFileName } from "@itwin/core-common";
 
 /* eslint-disable id-blacklist,no-console */
 
@@ -14,77 +16,126 @@ interface WorkspaceOpts {
   workspaceFile: string;
 }
 
-interface AddOptions extends WorkspaceOpts {
-  directory?: string;
-  subdirectories?: boolean;
-  file?: string;
-  resourceName?: string;
-  type: "blob" | "string" | "file";
+type RscType = "blob" | "string" | "file";
+
+interface AddResourceOption extends WorkspaceOpts {
+  resourceName?: WorkspaceResourceName;
+  type: RscType;
+
 }
+interface AddDirOptions extends AddResourceOption {
+  directory: LocalDirName;
+  baseName?: string;
+  subdirectories?: boolean;
+}
+
+interface AddFileOptions extends AddResourceOption {
+  file: LocalFileName;
+}
+
 interface ListOptions extends WorkspaceOpts {
   strings?: boolean;
   files?: boolean;
   blobs?: boolean;
 }
 
-const workspace = new ITwinWorkspace(new BaseSettings());
-
 function listWorkspace(args: ListOptions) {
   if (!args.strings && !args.blobs && !args.files)
     args.blobs = args.files = args.strings = true;
 
-  const file = new WorkspaceFile(args.workspaceFile, workspace);
+  const file = new WorkspaceFile(args.workspaceFile, IModelHost.appWorkspace);
   file.open();
+  console.log(`Resources in [${file.db.nativeDb.getFilePath()}]:`);
   if (args.strings) {
-    console.log("strings:");
+    console.log(" strings:");
     file.db.withSqliteStatement("SELECT id,value FROM strings", (stmt) => {
-      if (DbResult.BE_SQLITE_ROW === stmt.step())
-        console.log(`name=[${stmt.getValueString(0)}], size=${stmt.getValueString(1).length}`);
+      while (DbResult.BE_SQLITE_ROW === stmt.step())
+        console.log(`  name=[${stmt.getValueString(0)}], size=${stmt.getValueString(1).length}`);
     });
   }
   if (args.blobs) {
-    console.log("blob:");
+    console.log(" blob:");
     file.db.withSqliteStatement("SELECT id,value FROM blobs", (stmt) => {
-      if (DbResult.BE_SQLITE_ROW === stmt.step())
-        console.log(`name=[${stmt.getValueString(0)}], size=${stmt.getValueBlob(1).length}`);
+      while (DbResult.BE_SQLITE_ROW === stmt.step())
+        console.log(`  name=[${stmt.getValueString(0)}], size=${stmt.getValueBlob(1).length}`);
     });
   }
   if (args.files) {
-    console.log("files:");
-    file.db.withSqliteStatement("SELECT name,size,type,lastModified,size FROM be_EmbedFile", (stmt) => {
-      if (DbResult.BE_SQLITE_ROW === stmt.step()) {
-        file.queryFileResource
-        const date = new Date(stmt.getValueInteger(3));
-        console.log(`name=[${stmt.getValueString(0)}], size=${stmt.getValueInteger(1)}, ext="${stmt.getValueString(2)}", date=${date.toString()}`);
+    console.log(" files:");
+    file.db.withSqliteStatement("SELECT name FROM be_EmbedFile", (stmt) => {
+      while (DbResult.BE_SQLITE_ROW === stmt.step()) {
+        const embed = file.queryFileResource(stmt.getValueString(0));
+        if (embed) {
+          const info = embed.info;
+          const date = new Date(info.date);
+          console.log(`  name=[${stmt.getValueString(0)}], size=${info.size}, ext="${info.fileExt}", date=${date.toString()}`);
+        }
       }
     });
   }
 }
 
+function addFile(arg: AddFileOptions & { wsFile: EditableWorkspaceFile, resourceName: WorkspaceResourceName }) {
+  if (arg.type === "string") {
+    const val = fs.readFileSync(arg.file, "utf-8");
+    arg.wsFile.addString(arg.resourceName, val);
+  } else if (arg.type === "blob") {
+    const val = fs.readFileSync(arg.file);
+    arg.wsFile.addBlob(arg.resourceName, val);
+  } else {
+    arg.wsFile.addFile(arg.resourceName, arg.file);
+  }
+  console.log(`added [${arg.file}] as ${arg.type} resource [${arg.resourceName}]`);
+}
+
 function createWorkspace(args: WorkspaceOpts) {
-  const wsFile = new EditableWorkspaceFile(args.workspaceFile, workspace);
+  const wsFile = new EditableWorkspaceFile(args.workspaceFile, IModelHost.appWorkspace);
   wsFile.create();
   console.log(`created workspace file ${wsFile.db.nativeDb.getFilePath()}`);
   wsFile.close();
 }
 
-function addToWorkspace(args: AddOptions) {
-  if (!args.directory && !args.file)
-    return console.error("supply either directory or file to add");
-
-  const wsFile = new EditableWorkspaceFile(args.workspaceFile, workspace);
-  wsFile.open();
-  try {
-
-    if (args.file) {
-      if (!IModelJsFs.existsSync(args.file))
-        throw new Error(`file [${args.file}] does not exist`);
-      const parsed = parse(args.file);
-      wsFile.addFile(parsed.base, args.file);
+function embedDir(wsFile: EditableWorkspaceFile, dir: LocalDirName, baseName: string, opts: AddDirOptions) {
+  for (const childPath of IModelJsFs.readdirSync(dir)) {
+    const file = join(dir, childPath);
+    const isDir = IModelJsFs.lstatSync(file)?.isDirectory;
+    if (isDir) {
+      if (true === opts.subdirectories)
+        embedDir(wsFile, file, `${baseName}/${childPath}`, opts);
+    } else {
+      const parsed = parse(file);
+      let resourceName = `${baseName}/${parsed.base}`;
+      if (resourceName[0] === "/")
+        resourceName = resourceName.slice(1);
+      addFile({ wsFile, resourceName, file, ...opts });
     }
+  }
+}
+
+function addToWorkspace<T extends WorkspaceOpts>(args: T, fn: (ws: EditableWorkspaceFile, args: T) => void) {
+  const wsFile = new EditableWorkspaceFile(args.workspaceFile, IModelHost.appWorkspace);
+  wsFile.open();
+  console.log(`adding to workspace container [${wsFile.db.nativeDb.getFilePath()}]`);
+  try {
+    fn(wsFile, args);
   } finally {
+    wsFile.db.saveChanges();
     wsFile.close();
   }
+}
+
+function addDirToWorkspace(args: AddDirOptions) {
+  addToWorkspace(args, (wsFile, args) => embedDir(wsFile, args.directory, args.baseName ?? "", args));
+}
+
+function addFileToWorkspace(args: AddFileOptions) {
+  addToWorkspace(args, (wsFile, args) => {
+    if (!IModelJsFs.existsSync(args.file))
+      throw new Error(`file [${args.file}] does not exist`);
+    const parsed = parse(args.file);
+    const resourceName = args.resourceName ?? parsed.base;
+    addFile({ ...args, resourceName, wsFile });
+  });
 }
 
 function dropFromWorkspace(argv: any) {
@@ -124,16 +175,23 @@ async function main() {
       handler: runCommand(createWorkspace),
     })
     .command({
-      command: "add <workspaceFile>",
-      describe: "add files to a workspace container",
+      command: "addFile <workspaceFile> <file>",
+      describe: "add a file to a workspace container",
       builder: {
         resourceName: { alias: "r", describe: "resource name for file", string: true },
         type: { alias: "t", describe: "the type of resource to add", choices: ["blob", "string", "file"], default: "file" },
-        directory: { alias: "d", describe: "directory to add", string: true },
-        subdirectories: { alias: "s", boolean: true, describe: "include subdirectories", default: false },
-        file: { alias: "f", string: true },
       },
-      handler: runCommand(addToWorkspace),
+      handler: runCommand(addFileToWorkspace),
+    })
+    .command({
+      command: "addDir <workspaceFile> <directory>",
+      describe: "add directory to a workspace container",
+      builder: {
+        type: { alias: "t", describe: "the type of resource to add", choices: ["blob", "string", "file"], default: "file" },
+        subdirectories: { alias: "s", boolean: true, describe: "include subdirectories", default: false },
+        baseName: { alias: "b", string: true, describe: "base to prepend to resource name" },
+      },
+      handler: runCommand(addDirToWorkspace),
     })
     .command({
       command: "drop <workspaceFile>",
