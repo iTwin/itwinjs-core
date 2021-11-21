@@ -18,18 +18,23 @@ interface WorkspaceOpts {
 
 type RscType = "blob" | "string" | "file";
 
-interface AddResourceOption extends WorkspaceOpts {
+interface ResourceOption extends WorkspaceOpts {
   resourceName?: WorkspaceResourceName;
   type: RscType;
 
 }
-interface AddDirOptions extends AddResourceOption {
+
+interface DropResourceOpts extends ResourceOption {
+  resourceName: WorkspaceResourceName;
+}
+
+interface AddDirOptions extends ResourceOption {
   directory: LocalDirName;
   baseName?: string;
   subdirectories?: boolean;
 }
 
-interface AddFileOptions extends AddResourceOption {
+interface AddFileOptions extends ResourceOption {
   file: LocalFileName;
 }
 
@@ -54,7 +59,7 @@ function listWorkspace(args: ListOptions) {
     });
   }
   if (args.blobs) {
-    console.log(" blob:");
+    console.log(" blobs:");
     file.db.withSqliteStatement("SELECT id,value FROM blobs", (stmt) => {
       while (DbResult.BE_SQLITE_ROW === stmt.step())
         console.log(`  name=[${stmt.getValueString(0)}], size=${stmt.getValueBlob(1).length}`);
@@ -75,6 +80,13 @@ function listWorkspace(args: ListOptions) {
   }
 }
 
+function createWorkspace(args: WorkspaceOpts) {
+  const wsFile = new EditableWorkspaceFile(args.workspaceFile, IModelHost.appWorkspace);
+  wsFile.create();
+  console.log(`created workspace file ${wsFile.db.nativeDb.getFilePath()}`);
+  wsFile.close();
+}
+
 function addFile(arg: AddFileOptions & { wsFile: EditableWorkspaceFile, resourceName: WorkspaceResourceName }) {
   if (arg.type === "string") {
     const val = fs.readFileSync(arg.file, "utf-8");
@@ -86,13 +98,6 @@ function addFile(arg: AddFileOptions & { wsFile: EditableWorkspaceFile, resource
     arg.wsFile.addFile(arg.resourceName, arg.file);
   }
   console.log(`added [${arg.file}] as ${arg.type} resource [${arg.resourceName}]`);
-}
-
-function createWorkspace(args: WorkspaceOpts) {
-  const wsFile = new EditableWorkspaceFile(args.workspaceFile, IModelHost.appWorkspace);
-  wsFile.create();
-  console.log(`created workspace file ${wsFile.db.nativeDb.getFilePath()}`);
-  wsFile.close();
 }
 
 function embedDir(wsFile: EditableWorkspaceFile, dir: LocalDirName, baseName: string, opts: AddDirOptions) {
@@ -112,10 +117,10 @@ function embedDir(wsFile: EditableWorkspaceFile, dir: LocalDirName, baseName: st
   }
 }
 
-function addToWorkspace<T extends WorkspaceOpts>(args: T, fn: (ws: EditableWorkspaceFile, args: T) => void) {
+function editWorkspace<T extends WorkspaceOpts>(args: T, fn: (ws: EditableWorkspaceFile, args: T) => void) {
   const wsFile = new EditableWorkspaceFile(args.workspaceFile, IModelHost.appWorkspace);
   wsFile.open();
-  console.log(`adding to workspace container [${wsFile.db.nativeDb.getFilePath()}]`);
+  console.log(`Workspace container [${wsFile.db.nativeDb.getFilePath()}]`);
   try {
     fn(wsFile, args);
   } finally {
@@ -125,11 +130,11 @@ function addToWorkspace<T extends WorkspaceOpts>(args: T, fn: (ws: EditableWorks
 }
 
 function addDirToWorkspace(args: AddDirOptions) {
-  addToWorkspace(args, (wsFile, args) => embedDir(wsFile, args.directory, args.baseName ?? "", args));
+  editWorkspace(args, (wsFile, args) => embedDir(wsFile, args.directory, args.baseName ?? "", args));
 }
 
 function addFileToWorkspace(args: AddFileOptions) {
-  addToWorkspace(args, (wsFile, args) => {
+  editWorkspace(args, (wsFile, args) => {
     if (!IModelJsFs.existsSync(args.file))
       throw new Error(`file [${args.file}] does not exist`);
     const parsed = parse(args.file);
@@ -138,8 +143,16 @@ function addFileToWorkspace(args: AddFileOptions) {
   });
 }
 
-function dropFromWorkspace(argv: any) {
-  console.log(argv);
+function dropFromWorkspace(args: DropResourceOpts) {
+  editWorkspace(args, (wsFile, args) => {
+    if (args.type === "string")
+      wsFile.removeString(args.resourceName);
+    else if (args.type === "blob")
+      wsFile.removeBlob(args.resourceName);
+    else
+      wsFile.removeFile(args.resourceName);
+    console.log(`dropping ${args.type} resource [${args.resourceName}]`);
+  });
 }
 
 function runCommand(cmd: (args: any) => void) {
@@ -155,6 +168,7 @@ function runCommand(cmd: (args: any) => void) {
 async function main() {
   await IModelHost.startup();
 
+  const typeOpt = { alias: "t", describe: "the type of resource to add", choices: ["blob", "string", "file"], default: "file" };
   Yargs.usage("Edits or lists contents of a workspace container")
     .wrap(Math.min(120, Yargs.terminalWidth()))
     .strict()
@@ -179,7 +193,7 @@ async function main() {
       describe: "add a file to a workspace container",
       builder: {
         resourceName: { alias: "r", describe: "resource name for file", string: true },
-        type: { alias: "t", describe: "the type of resource to add", choices: ["blob", "string", "file"], default: "file" },
+        type: typeOpt,
       },
       handler: runCommand(addFileToWorkspace),
     })
@@ -187,15 +201,18 @@ async function main() {
       command: "addDir <workspaceFile> <directory>",
       describe: "add directory to a workspace container",
       builder: {
-        type: { alias: "t", describe: "the type of resource to add", choices: ["blob", "string", "file"], default: "file" },
+        type: typeOpt,
         subdirectories: { alias: "s", boolean: true, describe: "include subdirectories", default: false },
         baseName: { alias: "b", string: true, describe: "base to prepend to resource name" },
       },
       handler: runCommand(addDirToWorkspace),
     })
     .command({
-      command: "drop <workspaceFile>",
+      command: "drop <workspaceFile> <resourceName>",
       describe: "drop resources from a workspace container",
+      builder: {
+        type: typeOpt,
+      },
       handler: runCommand(dropFromWorkspace),
     })
     .demandCommand()
