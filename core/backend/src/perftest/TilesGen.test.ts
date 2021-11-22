@@ -220,10 +220,11 @@ describe("TilesGenerationPerformance", () => {
     }
   });
 
-  imodels.forEach(async (configData: ConfigData) =>
-    it(`Tile generation ${configData.iModelName}`, async () => {
+  it("Tile generation", async () => {
+    for (const configData of imodels) {
       const result = await generateIModelDbTiles(requestContext, configData);
       if (result)
         await generateResultFiles(result, configData, csvResultPath);
-    }));
+    }
+  });
 });
