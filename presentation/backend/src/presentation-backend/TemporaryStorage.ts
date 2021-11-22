@@ -120,9 +120,9 @@ export class TemporaryStorage<T> implements IDisposable {
     }
 
     const value = this.props.factory(id);
-    const tempValue = { value, lastUsed: new Date() };
-    this._values.set(id, tempValue);
-    this.props.onCreated && this.props.onCreated(id, value, /* istanbul ignore next */() => tempValue.lastUsed = new Date());
+    const entry = { value, lastUsed: new Date() };
+    this._values.set(id, entry);
+    this.props.onCreated && this.props.onCreated(id, value, () => entry.lastUsed = new Date());
     return value;
   }
 
