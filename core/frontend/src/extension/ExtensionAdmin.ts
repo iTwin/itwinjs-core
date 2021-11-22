@@ -17,7 +17,7 @@ import { ExtensionLoader } from "./ExtensionLoader";
  *      2. Load the the main module when necessary
  *   2. Download the needed files from
  *
- * 3 ways to load an Extension into the system:
+ * 2 ways to load an Extension into the system:
  *
  *  1. At build-time provide the function to load both the Extension Manifest and import the main module of the extension.
  *     The main module must contain the activate() function.

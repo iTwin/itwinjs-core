@@ -3427,7 +3427,6 @@ importers:
       dotenv-expand: ^5.1.0
       electron: ^14.0.0
       eslint: ^7.11.0
-      extension-prototype: workspace:*
       fs-extra: ^8.1.0
       internal-tools: workspace:*
       lorem-ipsum: ^2.0.3
@@ -3482,7 +3481,6 @@ importers:
       '@itwin/reality-data-client': 3.0.0-dev.80
       '@itwin/ui-items-providers-test': link:../ui-items-providers-test
       classnames: 2.3.1
-      extension-prototype: link:../../extensions/test-extension
       lorem-ipsum: 2.0.4
       react: 17.0.2
       react-beautiful-dnd: 13.1.0_react-dom@17.0.2+react@17.0.2
