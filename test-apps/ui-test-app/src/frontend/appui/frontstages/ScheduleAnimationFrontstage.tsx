@@ -7,8 +7,10 @@ import { ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvide
 import { StandardContentLayouts } from "@itwin/appui-abstract";
 
 export class ScheduleAnimationFrontstage extends FrontstageProvider {
+  public static stageId = "ui-test-app:ScheduleAnimationFrontstage";
+
   public get id(): string {
-    return "ScheduleAnimationFrontstage";
+    return ScheduleAnimationFrontstage.stageId;
   }
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
