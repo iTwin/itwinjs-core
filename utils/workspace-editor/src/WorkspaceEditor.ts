@@ -10,6 +10,7 @@ import * as Yargs from "yargs";
 import { EditableWorkspaceFile, IModelHost, IModelJsFs, WorkspaceFile, WorkspaceResourceName } from "@itwin/core-backend";
 import { DbResult } from "@itwin/core-bentley";
 import { LocalFileName } from "@itwin/core-common";
+import { string } from "yargs";
 
 /* eslint-disable id-blacklist,no-console */
 
@@ -29,6 +30,11 @@ interface DropResourceOpts extends ResourceOption {
   name: WorkspaceResourceName;
 }
 
+interface ExtractResourceOpts extends ResourceOption {
+  name: WorkspaceResourceName;
+  fileName: LocalFileName;
+}
+
 interface AddFileOptions extends ResourceOption {
   file: LocalFileName;
   root?: string;
@@ -40,42 +46,6 @@ interface ListOptions extends WorkspaceOpts {
   blobs?: boolean;
 }
 
-function listWorkspace(args: ListOptions) {
-  if (!args.strings && !args.blobs && !args.files)
-    args.blobs = args.files = args.strings = true;
-
-  const file = new WorkspaceFile(args.workspaceFile, IModelHost.appWorkspace);
-  file.open();
-  console.log(`Resources in [${file.db.nativeDb.getFilePath()}]:`);
-  if (args.strings) {
-    console.log(" strings:");
-    file.db.withSqliteStatement("SELECT id,value FROM strings", (stmt) => {
-      while (DbResult.BE_SQLITE_ROW === stmt.step())
-        console.log(`  name=[${stmt.getValueString(0)}], size=${stmt.getValueString(1).length}`);
-    });
-  }
-  if (args.blobs) {
-    console.log(" blobs:");
-    file.db.withSqliteStatement("SELECT id,value FROM blobs", (stmt) => {
-      while (DbResult.BE_SQLITE_ROW === stmt.step())
-        console.log(`  name=[${stmt.getValueString(0)}], size=${stmt.getValueBlob(1).length}`);
-    });
-  }
-  if (args.files) {
-    console.log(" files:");
-    file.db.withSqliteStatement("SELECT name FROM be_EmbedFile", (stmt) => {
-      while (DbResult.BE_SQLITE_ROW === stmt.step()) {
-        const embed = file.queryFileResource(stmt.getValueString(0));
-        if (embed) {
-          const info = embed.info;
-          const date = new Date(info.date);
-          console.log(`  name=[${stmt.getValueString(0)}], size=${info.size}, ext="${info.fileExt}", date=${date.toString()}`);
-        }
-      }
-    });
-  }
-}
-
 function createWorkspace(args: WorkspaceOpts) {
   const wsFile = new EditableWorkspaceFile(args.workspaceFile, IModelHost.appWorkspace);
   wsFile.create();
@@ -83,29 +53,58 @@ function createWorkspace(args: WorkspaceOpts) {
   wsFile.close();
 }
 
-function addFile(arg: AddFileOptions & { wsFile: EditableWorkspaceFile, name: WorkspaceResourceName }) {
-  if (arg.type === "string") {
-    const val = fs.readFileSync(arg.file, "utf-8");
-    arg.wsFile[arg.update ? "updateString" : "addString"](arg.name, val);
-  } else if (arg.type === "blob") {
-    const val = fs.readFileSync(arg.file);
-    arg.wsFile[arg.update ? "updateBlob" : "addBlob"](arg.name, val);
-  } else {
-    arg.wsFile[arg.update ? "updateFile" : "addFile"](arg.name, arg.file);
+function processWorkspace<W extends WorkspaceFile, T extends WorkspaceOpts>(args: T, ws: W, fn: (ws: W, args: T) => void) {
+  ws.open();
+  console.log(`Workspace container [${ws.db.nativeDb.getFilePath()}]`);
+  try {
+    fn(ws, args);
+  } finally {
+    ws.close();
   }
-  console.log(` ${arg.update ? "updated" : "added"} [${arg.file}] as ${arg.type} resource "${arg.name}"`);
 }
 
 function editWorkspace<T extends WorkspaceOpts>(args: T, fn: (ws: EditableWorkspaceFile, args: T) => void) {
-  const wsFile = new EditableWorkspaceFile(args.workspaceFile, IModelHost.appWorkspace);
-  wsFile.open();
-  console.log(`Workspace container [${wsFile.db.nativeDb.getFilePath()}]`);
-  try {
-    fn(wsFile, args);
-  } finally {
-    wsFile.db.saveChanges();
-    wsFile.close();
-  }
+  processWorkspace(args, new EditableWorkspaceFile(args.workspaceFile, IModelHost.appWorkspace), fn);
+}
+
+function readWorkspace<T extends WorkspaceOpts>(args: T, fn: (ws: WorkspaceFile, args: T) => void) {
+  processWorkspace(args, new WorkspaceFile(args.workspaceFile, IModelHost.appWorkspace), fn);
+}
+
+function listWorkspace(args: ListOptions) {
+  readWorkspace(args, (file, args) => {
+    if (!args.strings && !args.blobs && !args.files)
+      args.blobs = args.files = args.strings = true;
+
+    console.log(`Resources in [${file.db.nativeDb.getFilePath()}]:`);
+    if (args.strings) {
+      console.log(" strings:");
+      file.db.withSqliteStatement("SELECT id,value FROM strings", (stmt) => {
+        while (DbResult.BE_SQLITE_ROW === stmt.step())
+          console.log(`  name=[${stmt.getValueString(0)}], size=${stmt.getValueString(1).length}`);
+      });
+    }
+    if (args.blobs) {
+      console.log(" blobs:");
+      file.db.withSqliteStatement("SELECT id,value FROM blobs", (stmt) => {
+        while (DbResult.BE_SQLITE_ROW === stmt.step())
+          console.log(`  name=[${stmt.getValueString(0)}], size=${stmt.getValueBlob(1).length}`);
+      });
+    }
+    if (args.files) {
+      console.log(" files:");
+      file.db.withSqliteStatement("SELECT name FROM be_EmbedFile", (stmt) => {
+        while (DbResult.BE_SQLITE_ROW === stmt.step()) {
+          const embed = file.queryFileResource(stmt.getValueString(0));
+          if (embed) {
+            const info = embed.info;
+            const date = new Date(info.date);
+            console.log(`  name=[${stmt.getValueString(0)}], size=${info.size}, ext="${info.fileExt}", date=${date.toString()}`);
+          }
+        }
+      });
+    }
+  });
 }
 
 function addFileToWorkspace(args: AddFileOptions) {
@@ -116,11 +115,39 @@ function addFileToWorkspace(args: AddFileOptions) {
         throw new Error(`file [${file}] does not exist`);
       const name = args.name ?? filePath;
       try {
-        addFile({ ...args, file, name, wsFile });
+        if (args.type === "string") {
+          const val = fs.readFileSync(file, "utf-8");
+          wsFile[args.update ? "updateString" : "addString"](name, val);
+        } else if (args.type === "blob") {
+          const val = fs.readFileSync(file);
+          wsFile[args.update ? "updateBlob" : "addBlob"](name, val);
+        } else {
+          wsFile[args.update ? "updateFile" : "addFile"](name, file);
+        }
+        console.log(` ${args.update ? "updated" : "added"} [${file}] as ${args.type} resource "${name}"`);
       } catch (e: any) {
         console.error(e.message);
       }
     });
+  });
+}
+
+function extractFromWorkspace(args: ExtractResourceOpts) {
+  readWorkspace(args, (file, args) => {
+    const testVal = <T>(val: T | undefined): T => {
+      if (val === undefined)
+        throw new Error(` ${args.type} resource "${args.name}" does not exist`);
+      return val;
+    };
+
+    if (args.type === "string") {
+      fs.writeFileSync(args.fileName, testVal(file.getString(args.name)), { flag: "w" });
+    } else if (args.type === "blob") {
+      fs.writeFileSync(args.fileName, testVal(file.getBlob(args.name)), { flag: "w" });
+    } else {
+      testVal(file.getFile(args.name, args.fileName));
+    }
+    console.log(` ${args.type} resource [${args.name}] extracted to "${args.fileName}"`);
   });
 }
 
@@ -149,7 +176,7 @@ function runCommand(cmd: (args: any) => void) {
 async function main() {
   await IModelHost.startup();
 
-  const type = { alias: "t", describe: "the type of resource to add", choices: ["blob", "string", "file"], default: "file" };
+  const type = { alias: "t", describe: "the type of resource", choices: ["blob", "string", "file"], default: "file" };
   const update = { alias: "u", describe: "update (i.e. replace) rather than add the files", boolean: true, default: false };
   Yargs.usage("Edits or lists contents of a workspace container")
     .wrap(Math.min(120, Yargs.terminalWidth()))
@@ -180,6 +207,12 @@ async function main() {
         type,
       },
       handler: runCommand(addFileToWorkspace),
+    })
+    .command({
+      command: "extract <workspaceFile> <name> <fileName>",
+      describe: "extract a resource from a workspace container into a local file",
+      builder: { type },
+      handler: runCommand(extractFromWorkspace),
     })
     .command({
       command: "drop <workspaceFile> <name>",
