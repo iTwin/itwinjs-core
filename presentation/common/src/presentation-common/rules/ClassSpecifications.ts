@@ -42,15 +42,11 @@ export interface MultiSchemaClassesSpecification {
 
   /**
    * List of ECClass names.
-   *
-   * Each class name may be prefixed with:
-   * - `E:` to exclude class from results
-   * - `PE:` to exclude class and all its sublasses from results
-   * So generally the list may contain `["base_class_name", "PE:derived_class_name"]` to
-   * include all instances of `base_class_name` except all polymorphic instances of
-   * `derived_class_name`.
-   *
-   * @pattern ^(E:|PE:)?[\w\d]+$
    */
   classNames: string[];
+
+  /**
+   * Should all classes specified in [[classNames]] array be handled polymorphically.
+   */
+  arePolymorphic?: boolean;
 }

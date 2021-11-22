@@ -40,8 +40,9 @@ class SignInControl extends ContentControl {
 }
 
 export class SignInFrontstage extends FrontstageProvider {
+  public static stageId = "ui-test-app:SignIn";
   public get id(): string {
-    return "SignIn";
+    return SignInFrontstage.stageId;
   }
 
   public get frontstage(): React.ReactElement<FrontstageProps> {

@@ -63,6 +63,9 @@ import {
   OpenComponentExamplesPopoutTool, OpenCustomPopoutTool, OpenViewPopoutTool, RemoveSavedContentLayoutTool, RestoreSavedContentLayoutTool,
   SaveContentLayoutTool, TestExtensionUiProviderTool,
 } from "./tools/ImmediateTools";
+import { IModelOpenFrontstage } from "./appui/frontstages/IModelOpenFrontstage";
+import { IModelIndexFrontstage } from "./appui/frontstages/IModelIndexFrontstage";
+import { SignInFrontstage } from "./appui/frontstages/SignInFrontstage";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -464,15 +467,15 @@ export class SampleAppIModelApp {
       UiFramework.setIModelConnection(iModelConnection, true);
     }
 
-    await SampleAppIModelApp.showFrontstage("IModelIndex");
+    await SampleAppIModelApp.showFrontstage(IModelIndexFrontstage.stageId);
   }
 
   public static async showIModelOpen() {
-    await SampleAppIModelApp.showFrontstage("IModelOpen");
+    await SampleAppIModelApp.showFrontstage(IModelOpenFrontstage.stageId);
   }
 
   public static async showSignInPage() {
-    await SampleAppIModelApp.showFrontstage("SignIn");
+    await SampleAppIModelApp.showFrontstage(SignInFrontstage.stageId);
   }
 
   // called after the user has signed in (or access token is still valid)

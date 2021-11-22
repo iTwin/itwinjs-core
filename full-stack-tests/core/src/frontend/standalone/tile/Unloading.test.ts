@@ -22,6 +22,7 @@ describe("Tile unloading", async () => {
     tileTreeExpirationTime: expirationSeconds,
     disableMagnification: true,
     useProjectExtents: false,
+    useLargerTiles: false,
   };
 
   before(async () => {

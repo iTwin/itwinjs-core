@@ -1,6 +1,6 @@
 {
   "name": "@itwin/rpcinterface-full-stack-tests",
-  "version": "3.0.0-dev.121",
+  "version": "3.0.0-dev.126",
   "description": "Test the full iModel.js stack (frontend and backend) using standard RPC interfaces",
   "license": "MIT",
   "scripts": {
@@ -64,7 +64,7 @@
     "@types/mocha": "^8.2.2",
     "@types/node": "14.14.31",
     "@types/puppeteer": "2.0.1",
-    "cpx": "^1.5.0",
+    "cpx2": "^3.0.0",
     "eslint": "^7.11.0",
     "internal-tools": "workspace:*",
     "npm-run-all": "^4.1.5",
