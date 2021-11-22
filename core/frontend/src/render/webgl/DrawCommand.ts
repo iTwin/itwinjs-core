@@ -7,7 +7,6 @@
  */
 
 import { assert, Id64, Id64String } from "@itwin/core-bentley";
-import { ViewFlagOverrides } from "@itwin/core-common";
 import { BranchState } from "./BranchState";
 import { CachedGeometry } from "./CachedGeometry";
 import { ClipVolume } from "./ClipVolume";

@@ -32,7 +32,7 @@ export class DumpPlanProjectionSettingsTool extends DisplayStyleTool {
     return true;
   }
 
-  protected execute(vp: Viewport): boolean {
+  protected async execute(vp: Viewport) {
     const settings = (vp.displayStyle as DisplayStyle3dState).settings.planProjectionSettings;
     if (undefined === settings) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "No plan projection settings defined"));
@@ -65,7 +65,7 @@ export abstract class OverrideSubCategoryPriorityTool extends DisplayStyleTool {
   private readonly _subcatIds = new Set<string>();
   private _priority?: number;
 
-  protected execute(vp: Viewport): boolean {
+  protected async execute(vp: Viewport) {
     const style = vp.displayStyle;
     for (const id of this._subcatIds) {
       const ovr = style.getSubCategoryOverride(id);
@@ -107,7 +107,7 @@ export abstract class ChangePlanProjectionSettingsTool extends DisplayStyleTool 
 
   protected override get require3d() { return true; }
 
-  protected execute(vp: Viewport): boolean {
+  protected async execute(vp: Viewport) {
     const settings = (vp.displayStyle as DisplayStyle3dState).settings;
     for (const modelId of this._modelIds)
       settings.setPlanProjectionSettings(modelId, this._settings);

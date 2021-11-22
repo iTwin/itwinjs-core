@@ -1905,7 +1905,7 @@ export abstract class Viewport implements IDisposable {
     const frust = new Frustum();
     const viewRange = new Range3d();
     for (const placement of placements)
-        viewRange.extendArray(placement.getWorldCorners(frust).points, viewTransform);
+      viewRange.extendArray(placement.getWorldCorners(frust).points, viewTransform);
 
     const ignoreError: ViewChangeOptions & OnViewExtentsError = {
       ...options,
@@ -2445,12 +2445,12 @@ export abstract class Viewport implements IDisposable {
       // If this is a plan projection model, invert the elevation applied to its display transform.
       // Likewise, if it is a hit on a model with a display transform, reverse the display transform.
       if (!preserveModelDisplayTransforms) {
-      const modelId = pixels.getPixel(x, y).featureTable?.modelId;
-      if (undefined !== modelId) {
-        npc.z -= this.view.getModelElevation(modelId);
-        this.view.transformPointByModelDisplayTransform(modelId, npc, true);
+        const modelId = pixels.getPixel(x, y).featureTable?.modelId;
+        if (undefined !== modelId) {
+          npc.z -= this.view.getModelElevation(modelId);
+          this.view.transformPointByModelDisplayTransform(modelId, npc, true);
+        }
       }
-    }
     }
 
     return npc;
@@ -3262,7 +3262,7 @@ export class ScreenViewport extends Viewport {
        * iOS, we must make sure we still clear the 2d canvas, done here. iOS appears to need this clear even when decorators
        * clear the canvas later in the frame render process.
        */
-        _clear2dCanvas(this.canvas);
+      _clear2dCanvas(this.canvas);
     }
 
     this.target.updateViewRect();

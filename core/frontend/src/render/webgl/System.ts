@@ -687,7 +687,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
       info.idMap.addTexture(texture);
 
     return texture;
-    }
+  }
 
   public override async createTextureFromSource(args: CreateTextureFromSourceArgs): Promise<RenderTexture | undefined> {
     if (typeof args.ownership !== "object")

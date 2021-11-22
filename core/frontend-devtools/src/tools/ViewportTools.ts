@@ -154,7 +154,6 @@ export class ToggleTileTreeReferencesTool extends Tool {
     if (!vp || !this._which || !vp.view.isSpatialView())
       return false;
 
-
     vp.view.setTileTreeReferencesDeactivated(this._modelIds, this._deactivate, this._which);
     vp.invalidateScene();
     return true;

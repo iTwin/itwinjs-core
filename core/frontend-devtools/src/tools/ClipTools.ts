@@ -142,7 +142,7 @@ export class TestClipStyleTool extends DisplayStyleTool {
     return true;
   }
 
-  protected execute(vp: Viewport): boolean {
+  protected async execute(vp: Viewport) {
     const props: ClipStyleProps = { produceCutGeometry: true };
     if (this._useStyle) {
       props.cutStyle = {

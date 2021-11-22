@@ -107,7 +107,7 @@ export class TileDrawArgs {
   /** If defined, tiles will be culled if they do not intersect this clip. */
   public intersectionClip?: ClipVector;
   /** If defined, a bounding range in tile tree coordinates outside of which tiles should not be selected. */
-  boundingRange?: Range3d;
+  public boundingRange?: Range3d;
   /** @internal */
   public readonly pixelSizeScaleFactor;
   /** @internal */

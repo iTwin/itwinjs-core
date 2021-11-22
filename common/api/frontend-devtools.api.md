@@ -78,7 +78,7 @@ export function appendDataListEntries(dl: DataList, entries: DataListEntry[]): v
 // @beta
 export class ApplyRenderingStyleTool extends DisplayStyleTool {
     // (undocumented)
-    execute(vp: Viewport): boolean;
+    execute(vp: Viewport): Promise<boolean>;
     // (undocumented)
     static get maxArgs(): number;
     // (undocumented)
@@ -286,7 +286,7 @@ export abstract class ChangeHiliteTool extends Tool {
 // @beta
 export abstract class ChangePlanProjectionSettingsTool extends DisplayStyleTool {
     // (undocumented)
-    protected execute(vp: Viewport): boolean;
+    protected execute(vp: Viewport): Promise<boolean>;
     // (undocumented)
     static get maxArgs(): number;
     // (undocumented)
@@ -673,7 +673,7 @@ export interface DiagnosticsPanelProps {
 // @beta
 export abstract class DisplayStyleTool extends Tool {
     // (undocumented)
-    protected abstract execute(vp: Viewport): boolean;
+    protected abstract execute(vp: Viewport): Promise<boolean>;
     // (undocumented)
     protected abstract parse(args: string[], vp: Viewport): Promise<boolean>;
     // (undocumented)
@@ -687,7 +687,7 @@ export abstract class DisplayStyleTool extends Tool {
 // @beta
 export class DumpPlanProjectionSettingsTool extends DisplayStyleTool {
     // (undocumented)
-    protected execute(vp: Viewport): boolean;
+    protected execute(vp: Viewport): Promise<boolean>;
     // (undocumented)
     static get maxArgs(): number;
     // (undocumented)
@@ -1310,7 +1310,7 @@ export interface NumericInputProps {
 // @beta
 export abstract class OverrideSubCategoryPriorityTool extends DisplayStyleTool {
     // (undocumented)
-    protected execute(vp: Viewport): boolean;
+    protected execute(vp: Viewport): Promise<boolean>;
     // (undocumented)
     static get maxArgs(): number;
     // (undocumented)
@@ -1324,7 +1324,7 @@ export abstract class OverrideSubCategoryPriorityTool extends DisplayStyleTool {
 // @beta
 export class OverrideSubCategoryTool extends DisplayStyleTool {
     // (undocumented)
-    execute(vp: Viewport): boolean;
+    execute(vp: Viewport): Promise<boolean>;
     // (undocumented)
     static get maxArgs(): number;
     // (undocumented)
@@ -1421,7 +1421,7 @@ export class ProjectExtentsDecoration {
 // @beta
 export class QueryScheduleScriptTool extends DisplayStyleTool {
     // (undocumented)
-    execute(vp: Viewport): boolean;
+    execute(vp: Viewport): Promise<boolean>;
     // (undocumented)
     static get maxArgs(): number;
     // (undocumented)
@@ -1598,7 +1598,7 @@ export class SaveRealityModelTool extends Tool {
 // @beta
 export class SaveRenderingStyleTool extends DisplayStyleTool {
     // (undocumented)
-    execute(vp: Viewport): boolean;
+    execute(vp: Viewport): Promise<boolean>;
     // (undocumented)
     static get maxArgs(): number;
     // (undocumented)
@@ -1917,7 +1917,7 @@ export class ShowTileVolumesTool extends Tool {
 // @beta
 export class SkyCubeTool extends DisplayStyleTool {
     // (undocumented)
-    execute(vp: Viewport): boolean;
+    execute(vp: Viewport): Promise<boolean>;
     // (undocumented)
     static get maxArgs(): number;
     // (undocumented)
@@ -1933,7 +1933,7 @@ export class SkyCubeTool extends DisplayStyleTool {
 // @beta
 export class SkySphereTool extends DisplayStyleTool {
     // (undocumented)
-    execute(vp: Viewport): boolean;
+    execute(vp: Viewport): Promise<boolean>;
     // (undocumented)
     static get maxArgs(): number;
     // (undocumented)
@@ -2044,7 +2044,7 @@ export abstract class SourceAspectIdTool extends Tool {
 // @beta
 export class TestClipStyleTool extends DisplayStyleTool {
     // (undocumented)
-    protected execute(vp: Viewport): boolean;
+    protected execute(vp: Viewport): Promise<boolean>;
     // (undocumented)
     static get maxArgs(): number;
     // (undocumented)
@@ -2294,7 +2294,7 @@ export class ToggleShadowFrustumTool extends Tool {
 // @beta
 export class ToggleSkyboxTool extends DisplayStyleTool {
     // (undocumented)
-    execute(vp: Viewport): boolean;
+    execute(vp: Viewport): Promise<boolean>;
     // (undocumented)
     parse(_args: string[]): Promise<boolean>;
     // (undocumented)
@@ -2539,7 +2539,7 @@ export class VignetteEffect extends AddEffectTool {
 // @beta
 export class WoWIgnoreBackgroundTool extends DisplayStyleTool {
     // (undocumented)
-    execute(vp: Viewport): boolean;
+    execute(vp: Viewport): Promise<boolean>;
     // (undocumented)
     static get maxArgs(): number;
     // (undocumented)

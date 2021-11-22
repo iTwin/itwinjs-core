@@ -37,13 +37,13 @@ const lowercaseBooleanFlagNames = booleanFlagNames.map((name) => name.toLowerCas
 export abstract class DisplayStyleTool extends Tool {
   protected get require3d() { return false; }
   // Return true if the display style was modified - we will invalidate the viewport's render plan.
-  protected abstract execute(vp: Viewport): boolean;
+  protected abstract execute(vp: Viewport): Promise<boolean>;
   // Return false if failed to parse.
   protected abstract parse(args: string[], vp: Viewport): Promise<boolean>;
 
   public override async run(): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
-    if (undefined !== vp && (!this.require3d || vp.view.is3d()) && this.execute(vp))
+    if (undefined !== vp && (!this.require3d || vp.view.is3d()) && await this.execute(vp))
       vp.displayStyle = vp.view.displayStyle;
 
     return true;
@@ -51,7 +51,7 @@ export abstract class DisplayStyleTool extends Tool {
 
   public override async parseAndRun(...args: string[]): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
-    if (undefined !== vp && (!this.require3d || vp.view.is3d()) && this.parse(args, vp))
+    if (undefined !== vp && (!this.require3d || vp.view.is3d()) && await this.parse(args, vp))
       return this.run();
     else
       return false;
@@ -133,7 +133,7 @@ export class ToggleSkyboxTool extends DisplayStyleTool {
 
   public async parse(_args: string[]): Promise<boolean> { return true; } // no arguments
 
-  public execute(vp: Viewport): boolean {
+  public async execute(vp: Viewport) {
     const style = vp.view.displayStyle as DisplayStyle3dState;
     style.environment = style.environment.withDisplay({ sky: !style.environment.displaySky });
     return true;
@@ -157,7 +157,7 @@ export class SkySphereTool extends DisplayStyleTool {
     return true;
   }
 
-  public execute(vp: Viewport): boolean {
+  public async execute(vp: Viewport) {
     if (this._image && vp.view.is3d()) {
       vp.view.displayStyle.environment = vp.view.displayStyle.environment.clone({
         displaySky: true,
@@ -186,7 +186,7 @@ export class SkyCubeTool extends DisplayStyleTool {
     return true;
   }
 
-  public execute(vp: Viewport): boolean {
+  public async execute(vp: Viewport) {
     const imgs = this._images;
     if (imgs.length === 0 || !vp.view.is3d())
       return true;
@@ -278,7 +278,7 @@ export class SaveRenderingStyleTool extends DisplayStyleTool {
     return true;
   }
 
-  public execute(vp: Viewport): boolean {
+  public async execute(vp: Viewport) {
     let json = JSON.stringify(vp.displayStyle.settings.toOverrides(this._options));
     if (this._quote)
       json = `"${json.replace(/"/g, '""')}"`;
@@ -313,7 +313,7 @@ export class ApplyRenderingStyleTool extends DisplayStyleTool {
     }
   }
 
-  public execute(vp: Viewport): boolean {
+  public async execute(vp: Viewport) {
     if (this._overrides)
       vp.overrideDisplayStyle(this._overrides);
 
@@ -350,7 +350,7 @@ export class OverrideSubCategoryTool extends DisplayStyleTool {
     return true;
   }
 
-  public execute(vp: Viewport): boolean {
+  public async execute(vp: Viewport) {
     const ovr = SubCategoryOverride.fromJSON(this._overrideProps);
     for (const id of this._subcategoryIds)
       vp.displayStyle.overrideSubCategory(id, ovr);
@@ -395,35 +395,30 @@ export class QueryScheduleScriptTool extends DisplayStyleTool {
         case "e":
           this._includeElementIds = this._expandElementIds = true;
           break;
-        }
+      }
     }
 
     return true;
   }
 
-  public execute(vp: Viewport): boolean {
+  public async execute(vp: Viewport) {
     if (!this._sourceId || !this._action)
       return false;
 
-    this._execute(vp);
-    return true;
-  }
-
-  private async _execute(vp: Viewport): Promise<void> {
     const opts: ElementLoadOptions = {
       displayStyle: { omitScheduleScriptElementIds: !this._includeElementIds },
       renderTimeline: { omitScriptElementIds: !this._includeElementIds },
     };
 
     let script;
-    const props = await vp.iModel.elements.loadProps(this._sourceId!, opts) as any;
+    const props = await vp.iModel.elements.loadProps(this._sourceId, opts) as any;
     if (props.script)
       script = JSON.parse((props.script as RenderTimelineProps).script) as RenderSchedule.ScriptProps;
     else if (props.jsonProperties?.styles?.scheduleScript)
       script = props.jsonProperties.styles.scheduleScript as RenderSchedule.ScriptProps;
 
     if (!script)
-      return;
+      return false;
 
     if (this._countElementIds || this._expandElementIds) {
       for (const model of script) {
@@ -438,9 +433,11 @@ export class QueryScheduleScriptTool extends DisplayStyleTool {
     }
 
     if (this._action === "break")
-      debugger;
+      debugger; // eslint-disable-line no-debugger
     else
       copyStringToClipboard(JSON.stringify(script, null, 2));
+
+    return true;
   }
 }
 
@@ -463,7 +460,7 @@ export class WoWIgnoreBackgroundTool extends DisplayStyleTool {
     return true;
   }
 
-  public execute(vp: Viewport): boolean {
+  public async execute(vp: Viewport) {
     const ignoreBackgroundColor = this._ignore ?? !vp.displayStyle.settings.whiteOnWhiteReversal.ignoreBackgroundColor;
     vp.displayStyle.settings.whiteOnWhiteReversal = WhiteOnWhiteReversalSettings.fromJSON({ ignoreBackgroundColor });
     return true;
