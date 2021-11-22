@@ -151,14 +151,14 @@ Array [
       "className": "BisCore:DefinitionModel",
       "groupedInstancesCount": 1,
       "pathFromRoot": Array [
-        "3d1db70c6b7c8c78d98a5c282adf9e66",
+        "eb6880726b26fb0b8f2b59e078fd660d",
       ],
       "type": "ECClassGroupingNode",
       "version": 2,
     },
     "description": "A container for persisting definition elements.",
     "hasChildren": true,
-    "id": "3d1db70c6b7c8c78d98a5c282adf9e66",
+    "id": "eb6880726b26fb0b8f2b59e078fd660d",
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -191,14 +191,14 @@ Array [
       "className": "BisCore:DictionaryModel",
       "groupedInstancesCount": 1,
       "pathFromRoot": Array [
-        "a6bd24cb2440ab4d99027d34d997d9d4",
+        "a7993be2bef1dbf325c55516aecb4e57",
       ],
       "type": "ECClassGroupingNode",
       "version": 2,
     },
     "description": "The singleton container for repository-specific definition elements.",
     "hasChildren": true,
-    "id": "a6bd24cb2440ab4d99027d34d997d9d4",
+    "id": "a7993be2bef1dbf325c55516aecb4e57",
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -231,14 +231,14 @@ Array [
       "className": "BisCore:DocumentListModel",
       "groupedInstancesCount": 2,
       "pathFromRoot": Array [
-        "c96df45736573276c564ed4e7b1f04e6",
+        "c0a2b573d856d783743e815f8955575e",
       ],
       "type": "ECClassGroupingNode",
       "version": 2,
     },
     "description": "Contains a list of document elements.",
     "hasChildren": true,
-    "id": "c96df45736573276c564ed4e7b1f04e6",
+    "id": "c0a2b573d856d783743e815f8955575e",
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -271,13 +271,13 @@ Array [
       "className": "Generic:GroupModel",
       "groupedInstancesCount": 1,
       "pathFromRoot": Array [
-        "06cabae2852b0dfaa70d978d8f827b55",
+        "8c23be83ea7e73ec45e333422288a6dd",
       ],
       "type": "ECClassGroupingNode",
       "version": 2,
     },
     "hasChildren": true,
-    "id": "06cabae2852b0dfaa70d978d8f827b55",
+    "id": "8c23be83ea7e73ec45e333422288a6dd",
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -310,14 +310,14 @@ Array [
       "className": "BisCore:LinkModel",
       "groupedInstancesCount": 1,
       "pathFromRoot": Array [
-        "eefa3d5c80967e174f4f7769fe07615e",
+        "24c7c8fa938be6596bb29a320c2f9d53",
       ],
       "type": "ECClassGroupingNode",
       "version": 2,
     },
     "description": "A container for persisting link elements.",
     "hasChildren": true,
-    "id": "eefa3d5c80967e174f4f7769fe07615e",
+    "id": "24c7c8fa938be6596bb29a320c2f9d53",
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -350,14 +350,14 @@ Array [
       "className": "BisCore:PhysicalModel",
       "groupedInstancesCount": 1,
       "pathFromRoot": Array [
-        "b6c1d1e960b872311238c910c99c6b9b",
+        "42e0a71f59b8b9087a3fa81ed5569da3",
       ],
       "type": "ECClassGroupingNode",
       "version": 2,
     },
     "description": "A container for persisting physical elements that model physical space.",
     "hasChildren": true,
-    "id": "b6c1d1e960b872311238c910c99c6b9b",
+    "id": "42e0a71f59b8b9087a3fa81ed5569da3",
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -390,14 +390,14 @@ Array [
       "className": "BisCore:RepositoryModel",
       "groupedInstancesCount": 1,
       "pathFromRoot": Array [
-        "29dd582b91c6d4f7bd88de3e0b502d0a",
+        "2ce9bbc061104dbbf14e8319322f0db4",
       ],
       "type": "ECClassGroupingNode",
       "version": 2,
     },
     "description": "The singleton container of repository-related information elements.",
     "hasChildren": true,
-    "id": "29dd582b91c6d4f7bd88de3e0b502d0a",
+    "id": "2ce9bbc061104dbbf14e8319322f0db4",
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",

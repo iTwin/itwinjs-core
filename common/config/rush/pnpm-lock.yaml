@@ -244,7 +244,7 @@ importers:
   ../../core/backend:
     specifiers:
       '@azure/storage-blob': ^12.7.0
-      '@bentley/imodeljs-native': 3.0.17
+      '@bentley/imodeljs-native': 3.0.18
       '@bentley/itwin-client': workspace:*
       '@bentley/telemetry-client': workspace:*
       '@itwin/build-tools': workspace:*
@@ -283,7 +283,7 @@ importers:
       ws: ^7.5.3
     dependencies:
       '@azure/storage-blob': 12.8.0
-      '@bentley/imodeljs-native': 3.0.17
+      '@bentley/imodeljs-native': 3.0.18
       '@bentley/telemetry-client': link:../../clients/telemetry
       form-data: 2.5.1
       fs-extra: 8.1.0
@@ -1620,6 +1620,7 @@ importers:
     specifiers:
       '@azure/storage-blob': ^12.7.0
       '@bentley/imodelhub-client': workspace:*
+      '@bentley/imodeljs-native': 3.0.18
       '@bentley/itwin-client': workspace:*
       '@itwin/build-tools': workspace:*
       '@itwin/core-backend': workspace:*
@@ -1653,6 +1654,7 @@ importers:
     dependencies:
       '@azure/storage-blob': 12.8.0
       '@bentley/imodelhub-client': link:../../clients/imodelhub
+      '@bentley/imodeljs-native': 3.0.18
       '@bentley/itwin-client': link:../../clients/itwin
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
@@ -6132,8 +6134,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/3.0.17:
-    resolution: {integrity: sha512-WdP0G63gBa7CSGZD2kle0LGjnvZHSIxvtUQZYOFS1ta3Vns+85XeXglnhluh0ZAZvQRATsFV0MmS/66RHVi7Uw==}
+  /@bentley/imodeljs-native/3.0.18:
+    resolution: {integrity: sha512-h9i+hqqXJOiSKotEm7xqVYb8t+IxrjwtMt2ZMncIX8MzItLvQueJVMA1ooVYvpMM/s8wx0twcSx4S/4VwQzMRA==}
     requiresBuild: true
     dev: false
 
@@ -6581,6 +6583,9 @@ packages:
       '@itwin/core-bentley': 3.0.0-extension.1
       '@itwin/core-common': 3.0.0-extension.1_f2c3418fbeb77077b236020c30c9aae4
       oidc-client: 1.11.5
+    transitivePeerDependencies:
+      - '@bentley/itwin-client'
+      - '@itwin/core-geometry'
     dev: false
 
   /@itwin/certa/3.0.0-extension.1:
@@ -6784,6 +6789,7 @@ packages:
       openid-client: 4.9.1
     transitivePeerDependencies:
       - '@bentley/itwin-client'
+      - '@itwin/core-geometry'
     dev: false
 
   /@jest/console/26.6.2:
