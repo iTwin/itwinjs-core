@@ -10,8 +10,10 @@ import {
 import { StandardContentLayouts } from "@itwin/appui-abstract";
 
 export class NestedAnimationStage extends FrontstageProvider {
+  public static stageId = "ui-test-app:NestedAnimationStage";
+
   public get id(): string {
-    return "NestedAnimationStage";
+    return NestedAnimationStage.stageId;
   }
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
