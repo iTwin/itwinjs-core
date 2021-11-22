@@ -100,17 +100,18 @@ function addFile(arg: AddFileOptions & { wsFile: EditableWorkspaceFile, resource
   console.log(`added [${arg.file}] as ${arg.type} resource [${arg.resourceName}]`);
 }
 
+const embedPathSep = "\\";
 function embedDir(wsFile: EditableWorkspaceFile, dir: LocalDirName, baseName: string, opts: AddDirOptions) {
   for (const childPath of IModelJsFs.readdirSync(dir)) {
     const file = join(dir, childPath);
     const isDir = IModelJsFs.lstatSync(file)?.isDirectory;
     if (isDir) {
       if (true === opts.subdirectories)
-        embedDir(wsFile, file, `${baseName}/${childPath}`, opts);
+        embedDir(wsFile, file, `${baseName}${embedPathSep}${childPath}`, opts);
     } else {
       const parsed = parse(file);
-      let resourceName = `${baseName}/${parsed.base}`;
-      if (resourceName[0] === "/")
+      let resourceName = `${baseName}${embedPathSep}${parsed.base}`;
+      if (resourceName[0] === embedPathSep)
         resourceName = resourceName.slice(1);
       addFile({ wsFile, resourceName, file, ...opts });
     }
