@@ -124,7 +124,7 @@ function listWorkspace(args: ListOptions) {
   });
 }
 
-/** Add or Update files into a Workspace. */
+/** Add or Update files into a WorkspaceFile. */
 function addFilesToWorkspace(args: AddFileOptions) {
   editWorkspace(args, (wsFile, args) => {
     glob.sync(args.file, { cwd: args.root ?? process.cwd(), nodir: true }).forEach((filePath) => {
@@ -150,6 +150,7 @@ function addFilesToWorkspace(args: AddFileOptions) {
   });
 }
 
+/** Extract a single resource from a WorkspaceFile into a local file */
 function extractFromWorkspace(args: ExtractResourceOpts) {
   readWorkspace(args, (file, args) => {
     const testVal = <T>(val: T | undefined): T => {
@@ -159,9 +160,9 @@ function extractFromWorkspace(args: ExtractResourceOpts) {
     };
 
     if (args.type === "string") {
-      fs.writeFileSync(args.fileName, testVal(file.getString(args.name)), { flag: "w" });
+      fs.writeFileSync(args.fileName, testVal(file.getString(args.name)));
     } else if (args.type === "blob") {
-      fs.writeFileSync(args.fileName, testVal(file.getBlob(args.name)), { flag: "w" });
+      fs.writeFileSync(args.fileName, testVal(file.getBlob(args.name)));
     } else {
       testVal(file.getFile(args.name, args.fileName));
     }
@@ -169,6 +170,7 @@ function extractFromWorkspace(args: ExtractResourceOpts) {
   });
 }
 
+/** Drop a single resource from a WorkspaceFile */
 function dropFromWorkspace(args: DropResourceOpts) {
   editWorkspace(args, (wsFile, args) => {
     if (args.type === "string")
@@ -181,6 +183,7 @@ function dropFromWorkspace(args: DropResourceOpts) {
   });
 }
 
+/** Start `IModelHost`, then run a WorkspaceEditor command. Errors are logged to console. */
 function runCommand<T extends EditorOpts>(cmd: (args: T) => void) {
   return async (args: T) => {
     try {
@@ -195,8 +198,8 @@ function runCommand<T extends EditorOpts>(cmd: (args: T) => void) {
   };
 }
 
+/** Parse and execute WorkspaceEditor commands */
 async function main() {
-
   const type = { alias: "t", describe: "the type of resource", choices: ["blob", "string", "file"], default: "file" };
   const update = { alias: "u", describe: "update (i.e. replace) rather than add the files", boolean: true, default: false };
   Yargs.usage("Edits or lists contents of a workspace container")
