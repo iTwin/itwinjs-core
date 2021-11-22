@@ -57,13 +57,11 @@ export function iModelTileTreeParamsFromJSON(props: IModelTileTreeProps, iModel:
   if (undefined !== props.contentRange)
     contentRange = Range3d.fromJSON<ElementAlignedBox3d>(props.contentRange);
 
-  let transformNodeRanges: Map<number, Range3d> | undefined;
+  let transformNodeRanges;
   if (props.transformNodeRanges) {
     transformNodeRanges = new Map<number, Range3d>();
-    props.transformNodeRanges.forEach((rangeProps, nodeIndex) => {
-      if (rangeProps)
-        transformNodeRanges!.set(nodeIndex, Range3d.fromJSON(rangeProps));
-    });
+    for (const entry of props.transformNodeRanges)
+      transformNodeRanges.set(entry.id, Range3d.fromJSON(entry));
   }
 
   const priority = BatchType.Primary === options.batchType ? TileLoadPriority.Primary : TileLoadPriority.Classifier;
@@ -81,6 +79,7 @@ export function iModelTileTreeParamsFromJSON(props: IModelTileTreeProps, iModel:
     priority,
     options,
     tileScreenSize,
+    transformNodeRanges,
   };
 }
 
