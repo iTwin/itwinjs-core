@@ -57,6 +57,10 @@ export interface IModelTileTreeProps extends TileTreeProps {
   formatVersion?: number;
   /** Size of each tile in pixels. Defaults to 512. Will be 2048 if TileAdmin.useLargerTiles is true. */
   tileScreenSize?: number;
+  /** For a tile tree produced for a [[RenderTimeline.Script]], the bounding ranges for each transform node in the script.
+   * @note This is a potentially sparse array. The indices correspond to the transform node Id.
+   */
+  transformNodeRanges?: Array<Range3dProps | null | undefined>;
 }
 
 /** Metadata describing the version/format of the tiles supplied by the backend.
