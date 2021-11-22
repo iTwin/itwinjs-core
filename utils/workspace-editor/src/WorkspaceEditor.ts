@@ -3,12 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { join, parse } from "path";
-import * as Yargs from "yargs";
 import * as fs from "fs";
+import * as glob from "glob";
+import { join } from "path";
+import * as Yargs from "yargs";
 import { EditableWorkspaceFile, IModelHost, IModelJsFs, WorkspaceFile, WorkspaceResourceName } from "@itwin/core-backend";
 import { DbResult } from "@itwin/core-bentley";
-import { LocalDirName, LocalFileName } from "@itwin/core-common";
+import { LocalFileName } from "@itwin/core-common";
 
 /* eslint-disable id-blacklist,no-console */
 
@@ -19,23 +20,18 @@ interface WorkspaceOpts {
 type RscType = "blob" | "string" | "file";
 
 interface ResourceOption extends WorkspaceOpts {
-  resourceName?: WorkspaceResourceName;
+  name?: WorkspaceResourceName;
+  update: boolean;
   type: RscType;
-
 }
 
 interface DropResourceOpts extends ResourceOption {
-  resourceName: WorkspaceResourceName;
-}
-
-interface AddDirOptions extends ResourceOption {
-  directory: LocalDirName;
-  baseName?: string;
-  subdirectories?: boolean;
+  name: WorkspaceResourceName;
 }
 
 interface AddFileOptions extends ResourceOption {
   file: LocalFileName;
+  root?: string;
 }
 
 interface ListOptions extends WorkspaceOpts {
@@ -87,35 +83,17 @@ function createWorkspace(args: WorkspaceOpts) {
   wsFile.close();
 }
 
-function addFile(arg: AddFileOptions & { wsFile: EditableWorkspaceFile, resourceName: WorkspaceResourceName }) {
+function addFile(arg: AddFileOptions & { wsFile: EditableWorkspaceFile, name: WorkspaceResourceName }) {
   if (arg.type === "string") {
     const val = fs.readFileSync(arg.file, "utf-8");
-    arg.wsFile.addString(arg.resourceName, val);
+    arg.wsFile[arg.update ? "updateString" : "addString"](arg.name, val);
   } else if (arg.type === "blob") {
     const val = fs.readFileSync(arg.file);
-    arg.wsFile.addBlob(arg.resourceName, val);
+    arg.wsFile[arg.update ? "updateBlob" : "addBlob"](arg.name, val);
   } else {
-    arg.wsFile.addFile(arg.resourceName, arg.file);
+    arg.wsFile[arg.update ? "updateFile" : "addFile"](arg.name, arg.file);
   }
-  console.log(`added [${arg.file}] as ${arg.type} resource [${arg.resourceName}]`);
-}
-
-const embedPathSep = "\\";
-function embedDir(wsFile: EditableWorkspaceFile, dir: LocalDirName, baseName: string, opts: AddDirOptions) {
-  for (const childPath of IModelJsFs.readdirSync(dir)) {
-    const file = join(dir, childPath);
-    const isDir = IModelJsFs.lstatSync(file)?.isDirectory;
-    if (isDir) {
-      if (true === opts.subdirectories)
-        embedDir(wsFile, file, `${baseName}${embedPathSep}${childPath}`, opts);
-    } else {
-      const parsed = parse(file);
-      let resourceName = `${baseName}${embedPathSep}${parsed.base}`;
-      if (resourceName[0] === embedPathSep)
-        resourceName = resourceName.slice(1);
-      addFile({ wsFile, resourceName, file, ...opts });
-    }
-  }
+  console.log(` ${arg.update ? "updated" : "added"} [${arg.file}] as ${arg.type} resource "${arg.name}"`);
 }
 
 function editWorkspace<T extends WorkspaceOpts>(args: T, fn: (ws: EditableWorkspaceFile, args: T) => void) {
@@ -130,29 +108,31 @@ function editWorkspace<T extends WorkspaceOpts>(args: T, fn: (ws: EditableWorksp
   }
 }
 
-function addDirToWorkspace(args: AddDirOptions) {
-  editWorkspace(args, (wsFile, args) => embedDir(wsFile, args.directory, args.baseName ?? "", args));
-}
-
 function addFileToWorkspace(args: AddFileOptions) {
   editWorkspace(args, (wsFile, args) => {
-    if (!IModelJsFs.existsSync(args.file))
-      throw new Error(`file [${args.file}] does not exist`);
-    const parsed = parse(args.file);
-    const resourceName = args.resourceName ?? parsed.base;
-    addFile({ ...args, resourceName, wsFile });
+    glob.sync(args.file, { cwd: args.root ?? process.cwd(), nodir: true }).forEach((filePath) => {
+      const file = args.root ? join(args.root, filePath) : filePath;
+      if (!IModelJsFs.existsSync(file))
+        throw new Error(`file [${file}] does not exist`);
+      const name = args.name ?? filePath;
+      try {
+        addFile({ ...args, file, name, wsFile });
+      } catch (e: any) {
+        console.error(e.message);
+      }
+    });
   });
 }
 
 function dropFromWorkspace(args: DropResourceOpts) {
   editWorkspace(args, (wsFile, args) => {
     if (args.type === "string")
-      wsFile.removeString(args.resourceName);
+      wsFile.removeString(args.name);
     else if (args.type === "blob")
-      wsFile.removeBlob(args.resourceName);
+      wsFile.removeBlob(args.name);
     else
-      wsFile.removeFile(args.resourceName);
-    console.log(`dropping ${args.type} resource [${args.resourceName}]`);
+      wsFile.removeFile(args.name);
+    console.log(` dropping ${args.type} resource "${args.name}"`);
   });
 }
 
@@ -169,7 +149,8 @@ function runCommand(cmd: (args: any) => void) {
 async function main() {
   await IModelHost.startup();
 
-  const typeOpt = { alias: "t", describe: "the type of resource to add", choices: ["blob", "string", "file"], default: "file" };
+  const type = { alias: "t", describe: "the type of resource to add", choices: ["blob", "string", "file"], default: "file" };
+  const update = { alias: "u", describe: "update (i.e. replace) rather than add the files", boolean: true, default: false };
   Yargs.usage("Edits or lists contents of a workspace container")
     .wrap(Math.min(120, Yargs.terminalWidth()))
     .strict()
@@ -190,30 +171,20 @@ async function main() {
       handler: runCommand(createWorkspace),
     })
     .command({
-      command: "addFile <workspaceFile> <file>",
-      describe: "add a file to a workspace container",
+      command: "add <workspaceFile> <file>",
+      describe: "add or update files into a workspace container",
       builder: {
-        resourceName: { alias: "r", describe: "resource name for file", string: true },
-        type: typeOpt,
+        name: { alias: "n", describe: "resource name for file", string: true },
+        root: { alias: "r", describe: "root directory. Path parts after this will be saved in resource name", string: true },
+        update,
+        type,
       },
       handler: runCommand(addFileToWorkspace),
     })
     .command({
-      command: "addDir <workspaceFile> <directory>",
-      describe: "add directory to a workspace container",
-      builder: {
-        type: typeOpt,
-        subdirectories: { alias: "s", boolean: true, describe: "include subdirectories", default: false },
-        baseName: { alias: "b", string: true, describe: "base to prepend to resource name" },
-      },
-      handler: runCommand(addDirToWorkspace),
-    })
-    .command({
-      command: "drop <workspaceFile> <resourceName>",
+      command: "drop <workspaceFile> <name>",
       describe: "drop resources from a workspace container",
-      builder: {
-        type: typeOpt,
-      },
+      builder: { type },
       handler: runCommand(dropFromWorkspace),
     })
     .demandCommand()

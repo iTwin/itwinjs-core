@@ -17,6 +17,7 @@
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-backend": "workspace:*",
+    "glob": "^7.1.2",
     "yargs": "^16.0.0"
   },
   "devDependencies": {
@@ -25,6 +26,7 @@
     "@types/chai": "^4.1.4",
     "@types/mocha": "^8.2.2",
     "@types/yargs": "^12.0.5",
+    "@types/glob": "^5.0.35",
     "eslint": "^7.11.0",
     "mocha": "^8.3.2",
     "rimraf": "^3.0.2",
