@@ -110,8 +110,9 @@ describe("PresentationManager", () => {
     it("returns properties for some elements of class 'PhysicalObject", async () => {
       await using(new PresentationManager(), async (manager) => {
         const properties: ElementProperties[] = [];
-        for await (const entry of await manager.getElementProperties({ imodel, elementClasses: ["Generic:PhysicalObject"] })) {
-          properties.push(...entry.items);
+        const { iterator } = await manager.getElementProperties({ imodel, elementClasses: ["Generic:PhysicalObject"] });
+        for await (const items of iterator()) {
+          properties.push(...items);
         }
         expect(properties).to.matchSnapshot();
       });

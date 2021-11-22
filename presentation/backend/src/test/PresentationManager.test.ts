@@ -1839,46 +1839,46 @@ describe("PresentationManager", () => {
           imodel: imodelMock.object,
           elementClasses: ["TestSchema:TestClass"],
         };
-        const expectedResponse = {
-          total: 2,
-          items: [
-            {
-              class: "Test Class",
-              id: "0x123",
-              label: "test label 1",
-              items: {
-                ["Test Category"]: {
-                  type: "category",
-                  items: {
-                    ["Test Field"]: {
-                      type: "primitive",
-                      value: "test display value 1",
-                    },
+        const expectedResponse = [
+          {
+            class: "Test Class",
+            id: "0x123",
+            label: "test label 1",
+            items: {
+              ["Test Category"]: {
+                type: "category",
+                items: {
+                  ["Test Field"]: {
+                    type: "primitive",
+                    value: "test display value 1",
                   },
                 },
               },
             },
-            {
-              class: "Test Class",
-              id: "0x124",
-              label: "test label 2",
-              items: {
-                ["Test Category"]: {
-                  type: "category",
-                  items: {
-                    ["Test Field"]: {
-                      type: "primitive",
-                      value: "test display value 2",
-                    },
+          },
+          {
+            class: "Test Class",
+            id: "0x124",
+            label: "test label 2",
+            items: {
+              ["Test Category"]: {
+                type: "category",
+                items: {
+                  ["Test Field"]: {
+                    type: "primitive",
+                    value: "test display value 2",
                   },
                 },
               },
             },
-          ],
-        };
-        for await (const result of await manager.getElementProperties(options)) {
+          },
+        ];
+        const { total, iterator } = await manager.getElementProperties(options);
+
+        expect(total).to.be.eq(2);
+        for await (const items of iterator()) {
           verifyMockRequest(expectedContentParams);
-          expect(result).to.deep.eq(expectedResponse);
+          expect(items).to.deep.eq(expectedResponse);
         }
       });
 

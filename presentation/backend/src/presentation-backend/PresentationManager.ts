@@ -150,6 +150,15 @@ export interface UnitSystemFormat {
 }
 
 /**
+ * Data structure for multiple element properties request response.
+ * @alpha
+ */
+export interface MultiElementPropertiesResponse {
+  total: number;
+  iterator: () => AsyncGenerator<ElementProperties[]>;
+}
+
+/**
  * Properties that can be used to configure [[PresentationManager]]
  * @public
  */
@@ -624,12 +633,12 @@ export class PresentationManager {
    */
   public async getElementProperties(requestOptions: Prioritized<SingleElementPropertiesRequestOptions<IModelDb>>): Promise<ElementProperties | undefined>;
   /**
-   * Retrieves property data in simplified format for multiple elements specified by class
-   * or all element.
+   * Retrieves property data in simplified format for multiple elements specified by class or all element.
+   * @return An object that contains element count and AsyncGenerator to iterate over properties of those elements in batches of undefined size.
    * @alpha
    */
-  public async getElementProperties(requestOptions: Prioritized<MultiElementPropertiesRequestOptions<IModelDb>>): Promise<AsyncIterableIterator<PagedResponse<ElementProperties>>>;
-  public async getElementProperties(requestOptions: Prioritized<ElementPropertiesRequestOptions<IModelDb>>): Promise<ElementProperties | undefined | AsyncIterableIterator<PagedResponse<ElementProperties>>> {
+  public async getElementProperties(requestOptions: Prioritized<MultiElementPropertiesRequestOptions<IModelDb>>): Promise<MultiElementPropertiesResponse>;
+  public async getElementProperties(requestOptions: Prioritized<ElementPropertiesRequestOptions<IModelDb>>): Promise<ElementProperties | undefined | MultiElementPropertiesResponse> {
     if (isSingleElementPropertiesRequestOptions(requestOptions)) {
       const { elementId, ...optionsNoElementId } = requestOptions;
       const content = await this.getContent({
@@ -648,30 +657,36 @@ export class PresentationManager {
     return this.getMultipleElementProperties(requestOptions);
   }
 
-  private async * getMultipleElementProperties(requestOptions: Prioritized<MultiElementPropertiesRequestOptions<IModelDb>>): AsyncIterableIterator<PagedResponse<ElementProperties>> {
-    const ELEMENT_IDS_BATCH_SIZE = 1000;
+  private async getMultipleElementProperties(requestOptions: Prioritized<MultiElementPropertiesRequestOptions<IModelDb>>): Promise<MultiElementPropertiesResponse> {
     const { elementClasses, ...optionsNoElementClasses } = requestOptions;
     const elementsCount = getElementsCount(requestOptions.imodel, requestOptions.elementClasses);
 
-    for (const idsByClass of iterateElementIds(requestOptions.imodel, elementClasses, ELEMENT_IDS_BATCH_SIZE)) {
-      const propertiesPage: ElementProperties[] = [];
-      for (const entry of idsByClass) {
-        const props = await buildElementsPropertiesInPages(entry[0], entry[1], async (keys) => {
-          const content = await this.getContent({
-            ...optionsNoElementClasses,
-            descriptor: {
-              displayType: DefaultContentDisplayTypes.PropertyPane,
-              contentFlags: ContentFlags.ShowLabels,
-            },
-            rulesetOrId: "ElementProperties",
-            keys,
-          });
-          return buildElementsProperties(content);
-        });
-        propertiesPage.push(...props);
-      }
-      yield { total: elementsCount, items: propertiesPage };
-    }
+    const propertiesGetter = async (className: string, ids: string[]) => buildElementsPropertiesInPages(className, ids, async (keys) => {
+      const content = await this.getContent({
+        ...optionsNoElementClasses,
+        descriptor: {
+          displayType: DefaultContentDisplayTypes.PropertyPane,
+          contentFlags: ContentFlags.ShowLabels,
+        },
+        rulesetOrId: "ElementProperties",
+        keys,
+      });
+      return buildElementsProperties(content);
+    });
+
+    const ELEMENT_IDS_BATCH_SIZE = 1000;
+    return {
+      total: elementsCount,
+      async *iterator() {
+        for (const idsByClass of iterateElementIds(requestOptions.imodel, elementClasses, ELEMENT_IDS_BATCH_SIZE)) {
+          const propertiesPage: ElementProperties[] = [];
+          for (const entry of idsByClass) {
+            propertiesPage.push(...(await propertiesGetter(entry[0], entry[1])));
+          }
+          yield propertiesPage;
+        }
+      },
+    };
   }
 
   /**
