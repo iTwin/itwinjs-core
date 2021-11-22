@@ -153,7 +153,7 @@ internal;EnvironmentDecorations
 public;EventController
 public;EventHandled
 alpha;ExtensionAdmin
-beta;ExtensionHost
+alpha;ExtensionHost
 alpha;ExtensionImpl
 alpha;ExtensionLoader
 alpha;ExtensionLoaderProps

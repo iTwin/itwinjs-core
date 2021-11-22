@@ -3022,7 +3022,7 @@ export class ExtensionAdmin {
     onStartup: () => Promise<void>;
     }
 
-// @beta
+// @alpha
 export class ExtensionHost {
     protected constructor();
     // (undocumented)
