@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
@@ -324,8 +325,7 @@ export class TestFrontstageUi1 extends FrontstageProvider {
   }
 }
 
-/** @internal */
-export class TestUi2Provider implements UiItemsProvider {
+class TestUi2Provider implements UiItemsProvider {
   public static stageId = "TestUi2Provider";
   public get id(): string {
     return TestUi2Provider.stageId;
@@ -344,6 +344,35 @@ export class TestUi2Provider implements UiItemsProvider {
         label: "TestUi2Provider RM1",
         getWidgetContent: () => "TestUi2Provider RM1 widget",
       });
+    return widgets;
+  }
+}
+
+class TestDuplicateWidgetProvider implements UiItemsProvider {
+  public static stageId = "TestUi2Provider";
+  public get id(): string {
+    return TestDuplicateWidgetProvider.stageId;
+  }
+
+  public provideWidgets(_stageId: string, _stageUsage: string, location: StagePanelLocation, section?: StagePanelSection) {
+    const widgets: Array<AbstractWidgetProps> = [];
+    widgets.push({ // should only be added once to Left Start pane
+      id: "TestUi3ProviderW1",
+      label: "TestUi3Provider W1",
+      getWidgetContent: () => "TestUi3Provider W1 widget",
+    });
+    if (location === StagePanelLocation.Right && section === StagePanelSection.Middle)
+      widgets.push({
+        id: "TestUi2ProviderRM1",
+        label: "TestUi2Provider RM1",
+        getWidgetContent: () => "TestUi2Provider RM1 widget",
+      });
+    widgets.push({
+      id: "LeftStart1",
+      label: "Provider LeftStart1",
+      getWidgetContent: () => "Provider LeftStart1",
+    });
+
     return widgets;
   }
 }
@@ -600,6 +629,7 @@ describe("Frontstage local storage wrapper", () => {
 
       it("should return updated nineZoneState", () => {
         const frontstageDef = new FrontstageDef();
+        sinon.stub(frontstageDef, "isReady").get(() => true);
         const nineZoneState = createNineZoneState();
         const newNineZoneState = createNineZoneState();
         frontstageDef.nineZoneState = nineZoneState;
@@ -653,7 +683,7 @@ describe("Frontstage local storage wrapper", () => {
       it("should initialize nineZoneState", async () => {
         const setting = createFrontstageState();
         const uiSettings = new UiSettingsStub();
-        sinon.stub(uiSettings, "getSetting").returns(Promise.resolve<UiSettingsResult>({
+        sinon.stub(uiSettings, "getSetting").returns(Promise.resolve<UiSettingsResult>({ // eslint-disable-line deprecation/deprecation
           status: UiSettingsStatus.Success,
           setting,
         }));
@@ -870,6 +900,7 @@ describe("Frontstage local storage wrapper", () => {
     describe("useSyncDefinitions", () => {
       it("should set panel widget state to Open", () => {
         const frontstageDef = new FrontstageDef();
+        sinon.stub(frontstageDef, "isReady").get(() => true);
         const zoneDef = new ZoneDef();
         sinon.stub(frontstageDef, "centerRight").get(() => zoneDef);
         const widgetDef = new WidgetDef({});
@@ -890,6 +921,7 @@ describe("Frontstage local storage wrapper", () => {
         const frontstageDef = new FrontstageDef();
         const zoneDef = new ZoneDef();
         sinon.stub(frontstageDef, "centerRight").get(() => zoneDef);
+        sinon.stub(frontstageDef, "isReady").get(() => true);
         const widgetDef = new WidgetDef({});
         sinon.stub(widgetDef, "id").get(() => "t1");
         const spy = sinon.spy(widgetDef, "setWidgetState");
@@ -909,6 +941,7 @@ describe("Frontstage local storage wrapper", () => {
         const frontstageDef = new FrontstageDef();
         const rightPanel = new StagePanelDef();
         sinon.stub(frontstageDef, "rightPanel").get(() => rightPanel);
+        sinon.stub(frontstageDef, "isReady").get(() => true);
         const spy = sinon.spy(rightPanel, "size", ["set"]);
         renderHook(() => useSyncDefinitions(frontstageDef));
         act(() => {
@@ -923,6 +956,7 @@ describe("Frontstage local storage wrapper", () => {
 
       it("should set StagePanelState.Off", () => {
         const frontstageDef = new FrontstageDef();
+        sinon.stub(frontstageDef, "isReady").get(() => true);
         const rightPanel = new StagePanelDef();
         const spy = sinon.spy();
         sinon.stub(rightPanel, "panelState").get(() => StagePanelState.Off).set(spy);
@@ -940,6 +974,7 @@ describe("Frontstage local storage wrapper", () => {
 
       it("should set floating widget state to Open", () => {
         const frontstageDef = new FrontstageDef();
+        sinon.stub(frontstageDef, "isReady").get(() => true);
         const zoneDef = new ZoneDef();
         sinon.stub(frontstageDef, "centerRight").get(() => zoneDef);
         const widgetDef = new WidgetDef({});
@@ -958,6 +993,7 @@ describe("Frontstage local storage wrapper", () => {
 
       it("should set floating widget state to Closed", () => {
         const frontstageDef = new FrontstageDef();
+        sinon.stub(frontstageDef, "isReady").get(() => true);
         const zoneDef = new ZoneDef();
         sinon.stub(frontstageDef, "centerRight").get(() => zoneDef);
         const widgetDef = new WidgetDef({});
@@ -1860,7 +1896,7 @@ describe("Frontstage local storage wrapper", () => {
         IModelApp.shutdown();
       });
 
-      it("should render pre-loaded extension widgets when state is initialized", async () => {
+      it("should render pre-loaded provider widgets when state is initialized", async () => {
         UiItemsManager.register(new TestUi2Provider());
 
         const frontstageProvider = new TestFrontstageUi2();
@@ -1871,6 +1907,22 @@ describe("Frontstage local storage wrapper", () => {
         await findByText("Left Start 1");
         await findByText("TestUi2Provider RM1");
         await findByText("TestUi2Provider W1");
+      });
+
+      it("should render pre-loaded provider widgets when state is initialized with no Duplicates", async () => {
+        UiItemsManager.register(new TestUi2Provider());
+        UiItemsManager.register(new TestDuplicateWidgetProvider());
+
+        const frontstageProvider = new TestFrontstageUi2();
+        FrontstageManager.addFrontstageProvider(frontstageProvider);
+        const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+        await FrontstageManager.setActiveFrontstageDef(frontstageDef);
+        const wrapper = render(<WidgetPanelsFrontstage />);
+        await wrapper.findByText("Left Start 1");
+        await wrapper.findByText("TestUi2Provider RM1");
+        await wrapper.findByText("TestUi2Provider W1");
+        expect(wrapper.queryAllByText("Left Start 1").length).to.equal(1);
+        expect(wrapper.queryAllByText("TestUi2Provider RM1").length).to.equal(1);
       });
 
       it("should listen for window close event", async () => {

@@ -1,4 +1,4 @@
-# Getting started (offline quick start)
+# Getting Started
 
 ## 1. Get the tools
 
@@ -18,7 +18,7 @@ Writing an iTwin.js application requires the following software:
 
 ## Next Steps
 
-### [Follow tutorials to dive deeper into iTwin.js]($docs/learning/tutorials/index.md)
+### [Follow tutorials to dive deeper into iTwin.js](../learning/tutorials/index.md)
 
 ### [iTwin.js Blog](https://medium.com/itwinjs)
 

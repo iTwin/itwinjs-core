@@ -10,7 +10,7 @@ import sinon from "sinon";
 import * as moq from "typemoq";
 import { PropertyRecord, PropertyValueFormat } from "@itwin/appui-abstract";
 import { Orientation, ResizableContainerObserver } from "@itwin/core-react";
-import { fireEvent, render } from "@testing-library/react";
+import { act, fireEvent, render } from "@testing-library/react";
 import { PropertyCategoryBlock } from "../../../components-react/propertygrid/component/PropertyCategoryBlock";
 import { PropertyGrid } from "../../../components-react/propertygrid/component/PropertyGrid";
 import { PropertyGridCommons } from "../../../components-react/propertygrid/component/PropertyGridCommons";
@@ -170,30 +170,38 @@ describe("PropertyGrid", () => {
         }),
       };
 
-      const wrapper = mount<PropertyGrid>(<PropertyGrid orientation={Orientation.Horizontal} dataProvider={dataProvider} />);
-      await TestUtils.flushAsyncOperations();
-      wrapper.update();
+      const { container, findByText } = render(
+        <PropertyGrid orientation={Orientation.Horizontal} dataProvider={dataProvider} />,
+      );
+      const rootCategoryBlock1 = await findByText("Root1");
+      const childCategoryBlock = await findByText("Child");
+      const rootCategoryBlock2 = await findByText("Root2");
 
-      const rootCategoryBlock1 = wrapper.find(PropertyCategoryBlock).at(0);
-      const childCategoryBlock = wrapper.find(PropertyCategoryBlock).at(1);
-      const rootCategoryBlock2 = wrapper.find(PropertyCategoryBlock).at(2);
+      fireEvent.click(childCategoryBlock);
+      const childCategoryHeader = container.getElementsByClassName("iui-header")[1];
+      expect(childCategoryHeader.textContent).to.be.equal("Child");
+      expect(childCategoryHeader.getAttribute("aria-expanded")).to.be.equal("true");
 
-      rootCategoryBlock1.find(".iui-header").first().simulate("click");
-      // NEEDSWORK: This is causing the `Warning: Can't perform a React state update on an unmounted component.` in ExpandableBlock
-      childCategoryBlock.find(".iui-header").simulate("click");
-      rootCategoryBlock2.find(".iui-header").simulate("click");
+      fireEvent.click(rootCategoryBlock1);
+      const root1CategoryHeader = container.getElementsByClassName("iui-header")[0];
+      expect(root1CategoryHeader.textContent).to.be.equal("Root1");
+      expect(root1CategoryHeader.getAttribute("aria-expanded")).to.be.equal("false");
 
-      expect(wrapper.state().categories[0].category.expand, "First root category did not get collapsed").to.be.false;
-      expect(wrapper.state().categories[0].children[0].category.expand, "Child category did not get expanded").to.be.true;
-      expect(wrapper.state().categories[1].category.expand, "Second root category did not get expanded").to.be.true;
+      fireEvent.click(rootCategoryBlock2);
+      const root2CategoryHeader = container.getElementsByClassName("iui-header")[1];
+      expect(root2CategoryHeader.textContent).to.be.equal("Root2");
+      expect(root2CategoryHeader.getAttribute("aria-expanded")).to.be.equal("true");
 
       // Refresh PropertyGrid data.
-      dataProvider.onDataChanged.raiseEvent();
-      await TestUtils.flushAsyncOperations();
+      act(() => { dataProvider.onDataChanged.raiseEvent(); });
+      await findByText("Root1");
 
-      expect(wrapper.state().categories[0].category.expand, "First root category did not stay collapsed").to.be.false;
-      expect(wrapper.state().categories[0].children[0].category.expand, "Child category did not stay expanded").to.be.true;
-      expect(wrapper.state().categories[1].category.expand, "Second root category did not stay expanded").to.be.true;
+      const categoryHeaders = container.getElementsByClassName("iui-header");
+      expect(categoryHeaders.length).to.be.equal(2);
+      expect(categoryHeaders[0].textContent).to.be.equal("Root1");
+      expect(categoryHeaders[0].getAttribute("aria-expanded")).to.be.equal("false");
+      expect(categoryHeaders[1].textContent).to.be.equal("Root2");
+      expect(categoryHeaders[1].getAttribute("aria-expanded")).to.be.equal("true");
     });
 
     it("rerenders if data in the provider changes", async () => {

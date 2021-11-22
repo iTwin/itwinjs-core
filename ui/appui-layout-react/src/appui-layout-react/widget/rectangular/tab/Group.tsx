@@ -13,7 +13,7 @@ import { CommonProps } from "@itwin/core-react";
 import { HorizontalAnchor, HorizontalAnchorHelpers, VerticalAnchor, VerticalAnchorHelpers } from "../../Stacked";
 
 /** Available handle modes.
- * @alpha
+ * @internal
  */
 export enum HandleMode {
   Hovered,
@@ -22,7 +22,7 @@ export enum HandleMode {
 }
 
 /** Helpers for [[HandleMode]].
- * @alpha
+ * @internal
  */
 export class HandleModeHelpers {
   /** Class name of [[HandleMode.Hovered]] */
@@ -46,7 +46,7 @@ export class HandleModeHelpers {
 }
 
 /** Properties of [[TabGroup]] component.
- * @alpha
+ * @internal
  */
 export interface TabGroupProps extends CommonProps {
   /** Actual tabs. See: [[Tab]], [[TabSeparator]] */
@@ -62,7 +62,7 @@ export interface TabGroupProps extends CommonProps {
 }
 
 /** Tab group component for stacked widget.
- * @alpha
+ * @internal
  */
 export class TabGroup extends React.PureComponent<TabGroupProps> {
   public override render() {

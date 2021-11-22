@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/editor-frontend",
+      "comment": "Dynamics should honor appearance overrides appliled to original element. Added blend tools.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/editor-frontend"
+}

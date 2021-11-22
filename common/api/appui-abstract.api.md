@@ -85,6 +85,7 @@ export interface AbstractWidgetProps extends ProvidedItem {
     readonly internalData?: Map<string, any>;
     readonly isFloatingStateSupported?: boolean;
     readonly isFloatingStateWindowResizable?: boolean;
+    // @deprecated
     readonly isFreeform?: boolean;
     readonly isStatusBar?: boolean;
     readonly isToolSettings?: boolean;
@@ -98,7 +99,7 @@ export interface AbstractWidgetProps extends ProvidedItem {
     readonly tooltip?: string | ConditionalStringValue;
 }
 
-// @public
+// @public @deprecated
 export enum AbstractZoneLocation {
     // (undocumented)
     BottomLeft = 7,

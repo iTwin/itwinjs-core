@@ -252,6 +252,7 @@ export abstract class IModelDb extends IModel {
   }
 
   public get fontMap(): FontMap { return this._fontMap ?? (this._fontMap = new FontMap(this.nativeDb.readFontMap())); }
+  /** @internal */
   public embedFont(prop: FontProps): FontProps { this._fontMap = undefined; return this.nativeDb.embedFont(prop); }
 
   /** Check if this iModel has been opened read-only or not. */
@@ -1972,7 +1973,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       if (undefined !== ret.error) {
         reject(new IModelError(ret.error.status, `TreeId=${treeId} TileId=${tileId}`));
       } else if (typeof ret.result !== "number") { // if type is not a number, it's the TileContent interface
-        const res = ret.result as IModelJsNative.TileContent;
+        const res = ret.result;
         const iModelId = this._iModel.iModelId;
 
         const tileSizeThreshold = IModelHost.logTileSizeThreshold;

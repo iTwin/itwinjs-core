@@ -12,19 +12,20 @@ import {
 } from "@itwin/appui-abstract";
 import { fireEvent, render } from "@testing-library/react";
 import {
-  ActivityCenterField, ConfigurableCreateInfo, ConfigurableUiControlType, MessageCenterField, StatusBar, StatusBarComposer, StatusBarItem,
+  ActivityCenterField, ConfigurableCreateInfo, ConfigurableUiControlType, CoreTools, FrontstageDef, FrontstageManager, FrontstageProps, MessageCenterField, StatusBar, StatusBarComposer, StatusBarItem,
   StatusBarItemUtilities, StatusBarWidgetControl, SyncUiEventDispatcher, WidgetDef, withMessageCenterFieldProps, withStatusFieldProps,
 } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
 describe("StatusBarComposer", () => {
+
   class TestUiProvider implements UiItemsProvider {
     public readonly id = "TestUiProvider-statusbar";
 
     public static statusBarItemIsVisible = true;
     public static uiSyncEventId = "appuiprovider:statusbar-item-visibility-changed";
 
-    constructor() {
+    constructor(public addDuplicate = false) {
       TestUiProvider.statusBarItemIsVisible = true;
     }
 
@@ -34,7 +35,6 @@ describe("StatusBarComposer", () => {
     };
 
     public provideStatusBarItems(_stageId: string, stageUsage: string): CommonStatusBarItem[] {
-
       const statusBarItems: CommonStatusBarItem[] = [];
       const hiddenCondition = new ConditionalBooleanValue(() => !TestUiProvider.statusBarItemIsVisible, [TestUiProvider.uiSyncEventId]);
       const labelCondition = new ConditionalStringValue(() => TestUiProvider.statusBarItemIsVisible ? "visible" : "hidden", [TestUiProvider.uiSyncEventId]);
@@ -48,6 +48,10 @@ describe("StatusBarComposer", () => {
           AbstractStatusBarItemUtilities.createLabelItem("ExtensionTest:StatusBarLabel2", StatusBarSection.Center, 120, "icon-hand-2", labelCondition, StatusBarLabelSide.Left));
         statusBarItems.push(
           AbstractStatusBarItemUtilities.createActionItem("ExtensionTest:StatusBarItem2", StatusBarSection.Center, 110, "icon-visibility-hide-2", labelCondition, () => { }));
+        if (this.addDuplicate) {
+          statusBarItems.push(
+            AbstractStatusBarItemUtilities.createActionItem("ExtensionTest:StatusBarItem2", StatusBarSection.Center, 110, "icon-visibility-hide-2", labelCondition, () => { }));
+        }
       }
       return statusBarItems;
     }
@@ -73,26 +77,25 @@ describe("StatusBarComposer", () => {
 
   let widgetControl: StatusBarWidgetControl | undefined;
 
+  before(async () => {
+    await TestUtils.initializeUiFramework();
+    await NoRenderApp.startup();
+
+    const statusBarWidgetDef = new WidgetDef({
+      classId: AppStatusBarWidgetControl,
+      defaultState: WidgetState.Open,
+      isFreeform: false,
+      isStatusBar: true,
+    });
+    widgetControl = statusBarWidgetDef.getWidgetControl(ConfigurableUiControlType.StatusBarWidget) as StatusBarWidgetControl;
+  });
+
+  after(async () => {
+    TestUtils.terminateUiFramework();
+    await IModelApp.shutdown();
+  });
+
   describe("StatusBarComposer Enzyme-Testing", () => {
-
-    before(async () => {
-      await TestUtils.initializeUiFramework();
-      await NoRenderApp.startup();
-
-      const statusBarWidgetDef = new WidgetDef({
-        classId: AppStatusBarWidgetControl,
-        defaultState: WidgetState.Open,
-        isFreeform: false,
-        isStatusBar: true,
-      });
-      widgetControl = statusBarWidgetDef.getWidgetControl(ConfigurableUiControlType.StatusBarWidget) as StatusBarWidgetControl;
-    });
-
-    after(async () => {
-      TestUtils.terminateUiFramework();
-      await IModelApp.shutdown();
-    });
-
     it("StatusBarComposer should be instantiated", () => {
       expect(widgetControl).to.not.be.undefined;
       if (widgetControl)
@@ -225,6 +228,12 @@ describe("StatusBarComposer", () => {
     });
 
     it("StatusBarComposer should support extension items", async () => {
+      // useUiItemsProviderStatusBarItems will only supply items if there is an "activeFrontstageDef" so set up dummy below
+      const dummy: FrontstageProps = { id: "status-bar-1", usage: StageUsage.General, defaultTool: CoreTools.selectElementCommand, contentGroup: TestUtils.TestContentGroup2 };
+      const frontstageDef = new FrontstageDef();
+      await frontstageDef.initializeFromProps(dummy);
+      sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef);
+
       const items: StatusBarItem[] = [
         StatusBarItemUtilities.createStatusBarItem("test1", StatusBarSection.Left, 10, <AppStatusBarComponent />),
         StatusBarItemUtilities.createStatusBarItem("test2", StatusBarSection.Left, 5, <AppStatusBarComponent />, { isHidden: true }),
@@ -260,6 +269,12 @@ describe("StatusBarComposer", () => {
     });
 
     it("StatusBarComposer should support addon items loaded before component", async () => {
+      // useUiItemsProviderStatusBarItems will only supply items if there is an "activeFrontstageDef" so set up dummy below
+      const dummy: FrontstageProps = { id: "status-bar-2", usage: StageUsage.General, defaultTool: CoreTools.selectElementCommand, contentGroup: TestUtils.TestContentGroup2 };
+      const frontstageDef = new FrontstageDef();
+      await frontstageDef.initializeFromProps(dummy);
+      sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef);
+
       const items: StatusBarItem[] = [
         StatusBarItemUtilities.createStatusBarItem("test1", StatusBarSection.Left, 10, <AppStatusBarComponent />),
         StatusBarItemUtilities.createStatusBarItem("test2", StatusBarSection.Left, 5, <AppStatusBarComponent />, { isHidden: true }),
@@ -330,25 +345,13 @@ describe("StatusBarComposer", () => {
   });
 
   describe("StatusBarComposer React-Testing", () => {
-    before(async () => {
-      await TestUtils.initializeUiFramework();
-      await NoRenderApp.startup();
-
-      const statusBarWidgetDef = new WidgetDef({
-        classId: AppStatusBarWidgetControl,
-        defaultState: WidgetState.Open,
-        isFreeform: false,
-        isStatusBar: true,
-      });
-      widgetControl = statusBarWidgetDef.getWidgetControl(ConfigurableUiControlType.StatusBarWidget) as StatusBarWidgetControl;
-    });
-
-    after(async () => {
-      TestUtils.terminateUiFramework();
-      await IModelApp.shutdown();
-    });
-
     it("StatusBarComposer should support extension items", async () => {
+      // useUiItemsProviderStatusBarItems will only supply items if there is an "activeFrontstageDef" so set up dummy below
+      const dummy: FrontstageProps = { id: "oldstatus-bar-3", usage: StageUsage.General, defaultTool: CoreTools.selectElementCommand, contentGroup: TestUtils.TestContentGroup2 };
+      const frontstageDef = new FrontstageDef();
+      await frontstageDef.initializeFromProps(dummy);
+      sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef);
+
       // make sure we have enough size to render without overflow
       sinon.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
         if (this.classList.contains("uifw-statusbar-docked")) {
@@ -382,6 +385,50 @@ describe("StatusBarComposer", () => {
       UiItemsManager.unregister(uiProvider.id);
       await TestUtils.flushAsyncOperations();
       expect(wrapper.container.querySelectorAll(".uifw-statusbar-item-container").length).to.be.eql(1); // 1 visible
+      wrapper.unmount();
+    });
+
+    it("StatusBarComposer should filter duplicate items", async () => {
+      // useUiItemsProviderStatusBarItems will only supply items if there is an "activeFrontstageDef" so set up dummy below
+      const dummy: FrontstageProps = { id: "oldstatus-bar-4", usage: StageUsage.General, defaultTool: CoreTools.selectElementCommand, contentGroup: TestUtils.TestContentGroup2 };
+      const frontstageDef = new FrontstageDef();
+      await frontstageDef.initializeFromProps(dummy);
+      sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef);
+
+      // make sure we have enough size to render without overflow
+      sinon.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
+        if (this.classList.contains("uifw-statusbar-docked")) {
+          return DOMRect.fromRect({ width: 1600 });
+        } else if (this.classList.contains("uifw-statusbar-item-container")) {
+          return DOMRect.fromRect({ width: 40 });
+        } else if (this.classList.contains("uifw-statusbar-overflow")) {
+          return DOMRect.fromRect({ width: 40 });
+        }
+
+        return new DOMRect();
+      });
+
+      const items: StatusBarItem[] = [
+        StatusBarItemUtilities.createStatusBarItem("test1", StatusBarSection.Left, 10, <AppStatusBarComponent />),
+        StatusBarItemUtilities.createStatusBarItem("test1", StatusBarSection.Left, 10, <AppStatusBarComponent />),
+        StatusBarItemUtilities.createStatusBarItem("test2", StatusBarSection.Left, 5, <AppStatusBarComponent />, { isHidden: true }),
+      ];
+
+      const uiProvider = new TestUiProvider(true);
+      const wrapper = render(<StatusBarComposer items={items} />);
+      expect(wrapper.container.querySelectorAll(".uifw-statusbar-item-container").length).to.be.eql(1); // 1 visible
+      UiItemsManager.register(uiProvider);
+      await TestUtils.flushAsyncOperations();
+      expect(wrapper.container.querySelectorAll(".uifw-statusbar-item-container").length).to.be.eql(5);
+      // ensure the ConditionalStringValue for label has been evaluated
+      expect(wrapper.container.querySelector("span.nz-icon-padding-right")?.textContent).to.be.eql("visible");
+      TestUiProvider.triggerSyncRefresh();
+      await TestUtils.flushAsyncOperations();
+      expect(wrapper.container.querySelector("span.nz-icon-padding-right")?.textContent).to.be.eql("hidden");
+      UiItemsManager.unregister(uiProvider.id);
+      await TestUtils.flushAsyncOperations();
+      expect(wrapper.container.querySelectorAll(".uifw-statusbar-item-container").length).to.be.eql(1); // 1 visible
+      wrapper.unmount();
     });
 
     it("will render 4 items without overflow", () => {

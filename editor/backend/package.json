@@ -1,6 +1,6 @@
 {
   "name": "@itwin/editor-backend",
-  "version": "3.0.0-dev.113",
+  "version": "3.0.0-dev.126",
   "description": "iModel.js editor backend",
   "main": "lib/cjs/editor-backend.js",
   "typings": "lib/cjs/editor-backend",
@@ -35,10 +35,10 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.113",
-    "@itwin/core-geometry": "workspace:^3.0.0-dev.113",
-    "@itwin/core-backend": "workspace:^3.0.0-dev.113",
-    "@itwin/core-common": "workspace:^3.0.0-dev.113"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.126",
+    "@itwin/core-geometry": "workspace:^3.0.0-dev.126",
+    "@itwin/core-backend": "workspace:^3.0.0-dev.126",
+    "@itwin/core-common": "workspace:^3.0.0-dev.126"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -59,7 +59,6 @@
     "@types/semver": "^5.5.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
-    "cpx": "^1.5.0",
     "electron": "^14.0.0",
     "eslint": "^7.11.0",
     "mocha": "^8.3.2",

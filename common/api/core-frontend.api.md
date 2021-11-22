@@ -250,7 +250,6 @@ import { RpcInterfaceDefinition } from '@itwin/core-common';
 import { RpcRoutingToken } from '@itwin/core-common';
 import { SectionDrawingViewProps } from '@itwin/core-common';
 import { SessionProps } from '@itwin/core-common';
-import { SettingsAdmin } from '@bentley/product-settings-client';
 import { SheetProps } from '@itwin/core-common';
 import { SilhouetteEdgeArgs } from '@itwin/core-common';
 import { SkyGradient } from '@itwin/core-common';
@@ -4417,7 +4416,6 @@ export class IModelApp {
     static requestNextAnimation(): void;
     static get securityOptions(): FrontendSecurityOptions;
     static sessionId: GuidString;
-    static get settings(): SettingsAdmin;
     static shutdown(): Promise<void>;
     // @internal (undocumented)
     static startEventLoop(): void;
@@ -4434,6 +4432,8 @@ export class IModelApp {
     // @beta
     static translateStatus(status: number): string;
     static get uiAdmin(): UiAdmin;
+    // @beta
+    static get userPreferences(): UserPreferencesAccess | undefined;
     static get viewManager(): ViewManager;
     }
 
@@ -4463,12 +4463,13 @@ export interface IModelAppOptions {
     security?: FrontendSecurityOptions;
     // @internal (undocumented)
     sessionId?: GuidString;
-    settings?: SettingsAdmin;
     // @internal (undocumented)
     tentativePoint?: TentativePoint;
     tileAdmin?: TileAdmin.Props;
     toolAdmin?: ToolAdmin;
     uiAdmin?: UiAdmin;
+    // @beta
+    userPreferences?: UserPreferencesAccess;
     viewManager?: ViewManager;
 }
 
@@ -4751,6 +4752,8 @@ export class IModelTileTree extends TileTree {
     get staticBranch(): IModelTile;
     // (undocumented)
     readonly stringifiedSectionClip?: string;
+    // (undocumented)
+    readonly tileScreenSize: number;
     get tileState(): "static" | "dynamic" | "interactive" | "disposed";
     // (undocumented)
     get viewFlagOverrides(): {};
@@ -4782,6 +4785,8 @@ export interface IModelTileTreeParams extends TileTreeParams {
     options: IModelTileTreeOptions;
     // (undocumented)
     rootTile: TileProps;
+    // (undocumented)
+    tileScreenSize: number;
 }
 
 // @internal (undocumented)
@@ -4935,6 +4940,14 @@ export enum ItemField {
     Y_Item = 3,
     // (undocumented)
     Z_Item = 4
+}
+
+// @beta
+export interface ITwinIdArg {
+    // (undocumented)
+    readonly iModelId?: GuidString;
+    // (undocumented)
+    readonly iTwinId?: GuidString;
 }
 
 // @public
@@ -5386,34 +5399,6 @@ export interface MapLayerOptions {
     MapBoxImagery?: MapLayerKey;
 }
 
-// @internal (undocumented)
-export interface MapLayerSetting {
-    // (undocumented)
-    formatId: string;
-    // (undocumented)
-    name: string;
-    // (undocumented)
-    transparentBackground: boolean | undefined;
-    // (undocumented)
-    url: string;
-}
-
-// @internal (undocumented)
-export class MapLayerSettingsService {
-    // (undocumented)
-    static deleteSharedSettings(source: MapLayerSource, iTwinId: GuidString, iModelId: GuidString): Promise<boolean>;
-    // (undocumented)
-    static getSettingFromUrl(accessToken: AccessToken, url: string, iTwinId: string, iModelId?: string): Promise<MapLayerSetting | undefined>;
-    static getSourcesFromSettingsService(iTwinId: GuidString, iModelId: GuidString): Promise<MapLayerSource[]>;
-    // (undocumented)
-    static readonly onLayerSourceChanged: BeEvent<(changeType: MapLayerSourceChangeType, oldSource?: MapLayerSource | undefined, newSource?: MapLayerSource | undefined) => void>;
-    // (undocumented)
-    static replaceSourceInSettingsService(oldSource: MapLayerSource, newSource: MapLayerSource, iTwinId: GuidString, iModelId: GuidString): Promise<boolean>;
-    // (undocumented)
-    static get SourceNamespace(): string;
-    static storeSourceInSettingsService(source: MapLayerSource, storeOnIModel: boolean, iTwinId: GuidString, iModelId: GuidString): Promise<boolean>;
-}
-
 // @internal
 export class MapLayerSource {
     // (undocumented)
@@ -5445,16 +5430,6 @@ export class MapLayerSource {
     userName?: string;
     // (undocumented)
     validateSource(ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
-}
-
-// @internal (undocumented)
-export enum MapLayerSourceChangeType {
-    // (undocumented)
-    Added = 0,
-    // (undocumented)
-    Removed = 1,
-    // (undocumented)
-    Replaced = 2
 }
 
 // @internal
@@ -7275,6 +7250,20 @@ export class PlanarTilePatch {
     normal: Vector3d;
 }
 
+// @beta
+export interface PreferenceArg extends PreferenceKeyArg {
+    // (undocumented)
+    readonly content?: any;
+}
+
+// @beta
+export interface PreferenceKeyArg {
+    // (undocumented)
+    readonly key: string;
+    // (undocumented)
+    readonly namespace?: string;
+}
+
 // @public
 export abstract class PrimitiveTool extends InteractiveTool {
     autoLockTarget(): void;
@@ -7286,8 +7275,8 @@ export abstract class PrimitiveTool extends InteractiveTool {
     isValidLocation(ev: BeButtonEvent, isButtonEvent: boolean): boolean;
     onRedoPreviousStep(): Promise<boolean>;
     onReinitialize(): Promise<void>;
-    abstract onRestartTool(): void;
-    onSelectedViewportChanged(_previous: Viewport | undefined, current: Viewport | undefined): void;
+    abstract onRestartTool(): Promise<void>;
+    onSelectedViewportChanged(_previous: Viewport | undefined, current: Viewport | undefined): Promise<void>;
     onUndoPreviousStep(): Promise<boolean>;
     // @internal (undocumented)
     redoPreviousStep(): Promise<boolean>;
@@ -8527,6 +8516,7 @@ export type RequestTileTreePropsFunc = (iModel: IModelConnection, treeId: string
 
 // @internal
 export type RootIModelTile = Tile & {
+    tileScreenSize: number;
     updateDynamicRange: (childTile: Tile) => void;
 };
 
@@ -10123,11 +10113,27 @@ export class TileAdmin {
     // @internal
     freeMemory(): void;
     // @internal (undocumented)
-    generateTileContent(tile: IModelTile): Promise<Uint8Array>;
+    generateTileContent(tile: {
+        iModelTree: IModelTileTree;
+        contentId: string;
+        request?: {
+            isCanceled: boolean;
+        };
+    }): Promise<Uint8Array>;
     getMaximumMajorTileFormatVersion(formatVersion?: number): number;
     getNumRequestsForViewport(vp: Viewport): number;
     // @internal
     getRequestsForViewport(vp: Viewport): Set<Tile> | undefined;
+    // @internal (undocumented)
+    getTileRequestProps(tile: {
+        iModelTree: IModelTileTree;
+        contentId: string;
+    }): {
+        tokenProps: import("@itwin/core-common").IModelRpcProps;
+        treeId: string;
+        contentId: string;
+        guid: string;
+    };
     // @internal
     getTilesForViewport(vp: Viewport): SelectedAndReadyTiles | undefined;
     // @internal
@@ -10172,7 +10178,10 @@ export class TileAdmin {
     // @internal
     registerViewport(vp: Viewport): void;
     // @internal (undocumented)
-    requestCachedTileContent(tile: IModelTile): Promise<Uint8Array | undefined>;
+    requestCachedTileContent(tile: {
+        iModelTree: IModelTileTree;
+        contentId: string;
+    }): Promise<Uint8Array | undefined>;
     requestElementGraphics(iModel: IModelConnection, requestProps: ElementGraphicsRequestProps): Promise<Uint8Array | undefined>;
     // @internal
     requestTiles(vp: Viewport, tiles: Set<Tile>): void;
@@ -10191,6 +10200,8 @@ export class TileAdmin {
     get totalTileContentBytes(): number;
     // @alpha
     get unselectedLoadedTiles(): Iterable<Tile>;
+    // @internal (undocumented)
+    readonly useLargerTiles: boolean;
     // @internal (undocumented)
     readonly useProjectExtents: boolean;
     // @alpha
@@ -10233,6 +10244,7 @@ export namespace TileAdmin {
         retryInterval?: number;
         tileExpirationTime?: number;
         tileTreeExpirationTime?: number;
+        useLargerTiles?: boolean;
         // @internal
         useProjectExtents?: boolean;
     }
@@ -10550,7 +10562,16 @@ export class TileRequestChannelStatistics {
 }
 
 // @public
-export class Tiles {
+export class Tiles implements Iterable<{
+    supplier: TileTreeSupplier;
+    id: any;
+    owner: TileTreeOwner;
+}> {
+    [Symbol.iterator](): Iterator<{
+        supplier: TileTreeSupplier;
+        id: any;
+        owner: TileTreeOwner;
+    }>;
     // @internal
     constructor(iModel: IModelConnection);
     // @internal (undocumented)
@@ -10724,6 +10745,12 @@ export enum TileVisibility {
     OutsideFrustum = 0,
     TooCoarse = 1,
     Visible = 2
+}
+
+// @beta
+export interface TokenArg {
+    // (undocumented)
+    accessToken?: AccessToken;
 }
 
 // @public
@@ -11275,6 +11302,13 @@ export class UpsampledMapTile extends MapTile {
     get loadableTile(): RealityTile;
     // (undocumented)
     markUsed(args: TileDrawArgs): void;
+}
+
+// @beta
+export interface UserPreferencesAccess {
+    delete: (arg: PreferenceKeyArg & ITwinIdArg & TokenArg) => Promise<void>;
+    get: (arg: PreferenceKeyArg & ITwinIdArg & TokenArg) => Promise<any>;
+    save: (arg: PreferenceArg & ITwinIdArg & TokenArg) => Promise<void>;
 }
 
 // @public

@@ -26,9 +26,9 @@ Use rimraf as a cross-platform way to remove output folders (For example: rimraf
 
 Suggested Package:
 
-- [cpx](https://www.npmjs.com/package/cpx)
+- [cpx2](https://www.npmjs.com/package/cpx2)
 
-cpx is a cross-platform copy utility for copying globs of files from a source to a destination directory. Useful for copying around files such as test files or assets.
+cpx2 is a cross-platform copy utility for copying globs of files from a source to a destination directory. Useful for copying around files such as test files or assets.
 
 ## Testing
 

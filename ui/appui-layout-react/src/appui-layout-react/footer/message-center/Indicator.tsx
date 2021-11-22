@@ -12,7 +12,7 @@ import * as React from "react";
 import { FooterIndicator, FooterIndicatorProps } from "../Indicator";
 
 /** Properties of [[MessageCenter]] component.
- * @beta
+ * @internal
  */
 export interface MessageCenterProps extends FooterIndicatorProps {
   /** Message center balloon content. */
@@ -29,7 +29,8 @@ export interface MessageCenterProps extends FooterIndicatorProps {
 
 /** Message center indicator used in [[Footer]] component.
  * @note Used with [[MessageCenterDialog]] component.
- * @beta
+ * @deprecated Use [MessageCenterField]($appui-react) instead
+ * @internal
  */
 export class MessageCenter extends React.PureComponent<MessageCenterProps> {
   public override render() {

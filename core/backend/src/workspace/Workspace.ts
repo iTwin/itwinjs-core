@@ -10,12 +10,13 @@ import { createHash } from "crypto";
 import * as fs from "fs-extra";
 import { dirname, extname, join } from "path";
 import { NativeLibrary } from "@bentley/imodeljs-native";
-import { AccessToken, BeEvent, DbResult, OpenMode } from "@itwin/core-bentley";
+import { BeEvent, DbResult, OpenMode } from "@itwin/core-bentley";
 import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
 import { IModelJsFs } from "../IModelJsFs";
 import { SQLiteDb } from "../SQLiteDb";
 import { SqliteStatement } from "../SqliteStatement";
 import { Settings, SettingsPriority } from "./Settings";
+import { CloudSqlite } from "./CloudSqlite";
 
 /** The names of Settings used by Workspace
  * @beta
@@ -51,6 +52,13 @@ export type WorkspaceContainerName = string;
  * @beta
  */
 export type WorkspaceContainerId = string;
+
+/**
+ * The version name for a WorkspaceContainer. More than one version of a Workspace may be stored in the same [[CloudSqlite]] container. This
+ * string identifies a specific version.
+ * @beta
+ */
+export type WorkspaceContainerVersion = string;
 
 /**
  * The name for identifying WorkspaceResources in a [[WorkspaceContainer]].
@@ -90,6 +98,8 @@ export interface WorkspaceResourceProps {
 export interface WorkspaceContainer {
   /** The WorkspaceContainerId of this container. */
   readonly containerId: WorkspaceContainerId;
+  /** The version alias for this container. */
+  readonly dbAlias: WorkspaceContainerVersion;
   /** The Workspace that opened this WorkspaceContainer */
   readonly workspace: Workspace;
   /** the directory for extracting file resources. */
@@ -155,15 +165,17 @@ export interface Workspace {
   resolveContainerId(props: WorkspaceContainerProps): WorkspaceContainerId;
   /**
    * Get an open [[WorkspaceContainer]]. If the container is present but not open, it is opened first.
-   * If it is not  present or not up-to-date, it is downloaded first.
+   * If `cloudProps` are supplied, and if container is not  present or not up-to-date, it is downloaded first.
    * @returns a Promise that is resolved when the container is local, opened, and available for access.
    */
-  getContainer(props: WorkspaceContainerProps): Promise<WorkspaceContainer>;
+  getContainer(props: WorkspaceContainerProps, cloudProps?: CloudSqlite.AccessProps): Promise<WorkspaceContainer>;
   /** Load a WorkspaceResource of type string, parse it, and add it to the current Settings for this Workspace.
    * @note settingsRsc must specify a resource holding a stringified JSON representation of a [[SettingDictionary]]
    * @returns a Promise that is resolved when the settings resource has been loaded.
    */
   loadSettingsDictionary(settingRsc: WorkspaceResourceProps, priority: SettingsPriority): Promise<void>;
+  /** @internal */
+  addContainer(container: WorkspaceFile): void;
   /** Close and remove a currently opened [[WorkspaceContainer]] from this Workspace. */
   dropContainer(container: WorkspaceContainer): void;
   /** Close this Workspace. All currently opened WorkspaceContainers are dropped. */
@@ -182,18 +194,25 @@ export class ITwinWorkspace implements Workspace {
     this.containerDir = opts?.containerDir ?? join(NativeLibrary.defaultLocalDir, "iTwin", "Workspace");
     this.filesDir = opts?.filesDir ?? join(this.containerDir, "Files");
   }
+  public addContainer(container: WorkspaceFile) {
+    if (undefined !== this._containers.get(container.containerId))
+      throw new Error("container id already exists in workspace");
 
-  public async getContainer(props: WorkspaceContainerProps): Promise<WorkspaceContainer> {
+    this._containers.set(container.containerId, container);
+  }
+
+  public async getContainer(props: WorkspaceContainerProps, cloudProps?: CloudSqlite.DownloadProps): Promise<WorkspaceContainer> {
     const id = this.resolveContainerId(props);
     if (undefined === id)
       throw new Error(`can't resolve container name [${props}]`);
-    let container = this._containers.get(id);
-    if (container)
-      return container;
 
-    container = new WorkspaceFile(id, this);
-    container.open();
-    this._containers.set(id, container);
+    const container = this._containers.get(id) ?? new WorkspaceFile(id, this);
+    if (!container.isOpen) {
+      if (cloudProps)
+        await CloudSqlite.downloadDb(container, cloudProps);
+      container.open();
+    }
+
     return container;
   }
 
@@ -216,10 +235,10 @@ export class ITwinWorkspace implements Workspace {
   public dropContainer(toDrop: WorkspaceContainer) {
     const id = toDrop.containerId;
     const container = this._containers.get(id);
-    if (container !== toDrop)
-      throw new Error(`container ${id} not open`);
-    container.close();
-    this._containers.delete(id);
+    if (container === toDrop) {
+      container.close();
+      this._containers.delete(id);
+    }
   }
 
   public resolveContainerId(props: WorkspaceContainerProps): WorkspaceContainerId {
@@ -249,7 +268,8 @@ export class WorkspaceFile implements WorkspaceContainer {
   protected readonly db = new SQLiteDb(); // eslint-disable-line @typescript-eslint/naming-convention
   public readonly workspace: Workspace;
   public readonly containerId: WorkspaceContainerId;
-  public readonly localDbName: LocalDirName;
+  public localFile: LocalFileName;
+  public dbAlias: WorkspaceContainerVersion;
   public readonly onContainerClosed = new BeEvent<() => void>();
 
   public get containerFilesDir() { return join(this.workspace.filesDir, this.containerId); }
@@ -279,16 +299,13 @@ export class WorkspaceFile implements WorkspaceContainer {
   }
 
   public constructor(containerId: WorkspaceContainerId, workspace: Workspace) {
+    [containerId, this.dbAlias] = containerId.split("#", 2);
     WorkspaceFile.validateContainerId(containerId);
     this.workspace = workspace;
     this.containerId = containerId;
-    this.localDbName = join(workspace.containerDir, `${this.containerId}.${containerFileExt}`);
-  }
-
-  public async attach(_token: AccessToken) {
-  }
-
-  public async download() {
+    this.dbAlias = this.dbAlias ?? "v0";
+    this.localFile = join(workspace.containerDir, `${this.containerId}.${containerFileExt}`);
+    workspace.addContainer(this);
   }
 
   public purgeContainerFiles() {
@@ -296,13 +313,14 @@ export class WorkspaceFile implements WorkspaceContainer {
   }
 
   public open(): void {
-    this.db.openDb(this.localDbName, OpenMode.Readonly);
+    this.db.openDb(this.localFile, OpenMode.Readonly);
   }
 
   public close(): void {
     if (this.isOpen) {
       this.onContainerClosed.raiseEvent();
       this.db.closeDb();
+      this.workspace.dropContainer(this);
     }
   }
 
@@ -354,6 +372,7 @@ export class WorkspaceFile implements WorkspaceContainer {
  * @beta
  */
 export class EditableWorkspaceFile extends WorkspaceFile {
+  private _isCloudOpen = false;
   private static validateResourceName(name: WorkspaceResourceName) {
     WorkspaceFile.noLeadingOrTrailingSpaces(name, "resource name");
     if (name.length > 1024)
@@ -366,11 +385,22 @@ export class EditableWorkspaceFile extends WorkspaceFile {
       throw new Error("value is too large");
   }
 
-  public async upload() {
+  public async openCloudDb(props: CloudSqlite.AccessProps) {
+    this.localFile = await CloudSqlite.attach(this.dbAlias, props);
+    this.db.openDb(this.localFile, OpenMode.ReadWrite);
+    this._isCloudOpen = true;
   }
 
-  public async lockContainer() {
-    this.db.openDb(this.localDbName, OpenMode.ReadWrite);
+  public override open() {
+    this.db.openDb(this.localFile, OpenMode.ReadWrite);
+  }
+
+  public override close() {
+    if (this._isCloudOpen) {
+      //  this.db.nativeDb.flushCloudUpload(); TODO: add back when available
+      this._isCloudOpen = false;
+    }
+    super.close();
   }
 
   private getFileModifiedTime(localFileName: LocalFileName): number {
@@ -389,12 +419,22 @@ export class EditableWorkspaceFile extends WorkspaceFile {
   }
 
   /** Create a new, empty, EditableWorkspaceFile for importing Workspace resources. */
-  public create() {
-    IModelJsFs.recursiveMkDirSync(dirname(this.localDbName));
-    this.db.createDb(this.localDbName);
+  public async create(cloudProps?: CloudSqlite.AccessProps) {
+    IModelJsFs.recursiveMkDirSync(dirname(this.localFile));
+    this.db.createDb(this.localFile);
     this.db.executeSQL("CREATE TABLE strings(id TEXT PRIMARY KEY NOT NULL,value TEXT)");
     this.db.executeSQL("CREATE TABLE blobs(id TEXT PRIMARY KEY NOT NULL,value BLOB)");
     this.db.saveChanges();
+    if (cloudProps)
+      await CloudSqlite.create(cloudProps);
+  }
+
+  public static async cloneVersion(oldVersion: WorkspaceContainerVersion, newVersion: WorkspaceContainerVersion, cloudProps: CloudSqlite.AccessProps) {
+    return CloudSqlite.copyDb(oldVersion, newVersion, cloudProps);
+  }
+
+  public async upload(cloudProps: CloudSqlite.AccessProps) {
+    return CloudSqlite.uploadDb(this, cloudProps);
   }
 
   /** Add a new string resource to this WorkspaceFile.
