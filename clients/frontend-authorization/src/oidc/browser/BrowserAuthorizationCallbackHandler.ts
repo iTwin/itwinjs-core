@@ -9,9 +9,9 @@
 
 import { AuthStatus, BentleyError, Logger } from "@bentley/bentleyjs-core";
 import { UserManager, UserManagerSettings, WebStorageStateStore } from "oidc-client";
+import { FrontendAuthorizationClientLoggerCategory } from "../../FrontendAuthorizationClientLoggerCategory";
 import { BrowserAuthorizationBase } from "./BrowserAuthorizationBase";
 import { BrowserAuthorizationClientRedirectState } from "./BrowserAuthorizationClientRedirectState";
-import { FrontendAuthorizationClientLoggerCategory } from "./BrowserAuthorizationLogger";
 
 /**
  * @beta
