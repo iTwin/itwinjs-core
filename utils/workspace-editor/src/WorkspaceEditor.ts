@@ -45,7 +45,7 @@ interface ExtractResourceOpts extends ResourceOption {
   fileName: LocalFileName;
 }
 
-/** Options for adding or updating resources from a workspace container file */
+/** Options for adding or updating local files as resources into a workspace container file */
 interface AddFileOptions extends ResourceOption {
   file: LocalFileName;
   root?: LocalDirName;
@@ -153,18 +153,18 @@ function addFilesToWorkspace(args: AddFileOptions) {
 /** Extract a single resource from a WorkspaceFile into a local file */
 function extractFromWorkspace(args: ExtractResourceOpts) {
   readWorkspace(args, (file, args) => {
-    const testVal = <T>(val: T | undefined): T => {
+    const verify = <T>(val: T | undefined): T => {
       if (val === undefined)
         throw new Error(` ${args.type} resource "${args.name}" does not exist`);
       return val;
     };
 
     if (args.type === "string") {
-      fs.writeFileSync(args.fileName, testVal(file.getString(args.name)));
+      fs.writeFileSync(args.fileName, verify(file.getString(args.name)));
     } else if (args.type === "blob") {
-      fs.writeFileSync(args.fileName, testVal(file.getBlob(args.name)));
+      fs.writeFileSync(args.fileName, verify(file.getBlob(args.name)));
     } else {
-      testVal(file.getFile(args.name, args.fileName));
+      verify(file.getFile(args.name, args.fileName));
     }
     console.log(` ${args.type} resource [${args.name}] extracted to "${args.fileName}"`);
   });
