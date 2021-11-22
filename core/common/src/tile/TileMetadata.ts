@@ -231,11 +231,6 @@ function parseAnimation(idx: number, treeId: string, animationId: string | undef
     if (!Id64.isId64(animationId) || idx === treeId.length)
       throw new Error("Invalid tree Id");
     idx++; // _
-
-    if (idx === treeId.length || treeId[idx] !== "#")
-      throw new Error("Invalid tree Id");
-    idx++; // #
-
   }
 
   return { idx, animationId };
