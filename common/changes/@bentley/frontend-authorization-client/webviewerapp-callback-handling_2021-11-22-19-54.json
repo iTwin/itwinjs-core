@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/frontend-authorization-client",
+      "comment": "suppress browser callback handling errors for static helper",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/frontend-authorization-client",
+  "email": "54330647+evelynpreslar-bentley@users.noreply.github.com"
+}
