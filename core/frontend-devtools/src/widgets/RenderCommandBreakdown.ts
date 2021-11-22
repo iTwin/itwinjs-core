@@ -6,7 +6,7 @@
  * @module Widgets
  */
 
-import { IModelApp } from "@bentley/imodeljs-frontend";
+import { IModelApp } from "@itwin/core-frontend";
 import { createCheckBox } from "../ui/CheckBox";
 
 export class RenderCommandBreakdown {
