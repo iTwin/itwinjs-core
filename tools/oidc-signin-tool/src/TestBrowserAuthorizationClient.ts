@@ -133,7 +133,7 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
     const authorizationUrl = this._client.authorizationUrl(authParams);
 
     // Launch puppeteer with no sandbox only on linux
-    let launchOptions: puppeteer.LaunchOptions = { dumpio: true }; // , headless: false, slowMo: 500 };
+    let launchOptions: puppeteer.LaunchOptions = { dumpio: true }; // , headless: false, slowMo: 100 };
     if (os.platform() === "linux") {
       launchOptions = {
         args: ["--no-sandbox"], // , "--disable-setuid-sandbox"],
@@ -404,14 +404,16 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
         page.$eval(".allow", (button: any) => button.click()),
       ]);
     } else if (await page.title() === "Permissions") { // Another new consent page...
-      await page.waitForSelector("div.iui-input-bar button");
+      await page.waitForXPath("(//button/span[text()='Accept'] | //div[contains(@class, 'ping-buttons')]/a[text()='Accept'])[1]");
+
+      const acceptButton = await page.$x("(//button/span[text()='Accept'] | //div[contains(@class, 'ping-buttons')]/a[text()='Accept'])[1]");
 
       await Promise.all([
         page.waitForNavigation({
           timeout: 60000,
           waitUntil: "networkidle2",
         }),
-        page.$eval("div.iui-input-bar button span", (button: any) => button.click()),
+        acceptButton[0].click(),
       ]);
     }
   }
