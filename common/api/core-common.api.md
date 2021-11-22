@@ -1068,8 +1068,6 @@ export interface ClassifierTileTreeId {
     // (undocumented)
     animationId?: Id64String;
     // (undocumented)
-    animationTransformNodeId?: number;
-    // (undocumented)
     expansion: number;
     // (undocumented)
     type: BatchType.VolumeClassifier | BatchType.PlanarClassifier;
@@ -3291,7 +3289,7 @@ export class FrustumPlanes {
     // (undocumented)
     init(frustum: Frustum): void;
     // (undocumented)
-    intersectsFrustum(box: Frustum): boolean;
+    intersectsFrustum(box: Frustum, sphere?: BoundingSphere): boolean;
     // (undocumented)
     intersectsRay(origin: Point3d, direction: Vector3d): boolean;
     // (undocumented)
@@ -4683,6 +4681,9 @@ export interface IModelTileTreeProps extends TileTreeProps {
     geometryGuid?: GuidString;
     maxInitialTilesToSkip?: number;
     tileScreenSize?: number;
+    transformNodeRanges?: Array<Range3dProps & {
+        id: number;
+    }>;
 }
 
 // @public
@@ -6193,7 +6194,6 @@ export interface PositionalVectorTransformProps {
 // @internal
 export interface PrimaryTileTreeId {
     animationId?: Id64String;
-    animationTransformNodeId?: number;
     edgesRequired: boolean;
     enforceDisplayPriority?: boolean;
     sectionCut?: string;
@@ -6957,6 +6957,8 @@ export namespace RenderSchedule {
         readonly requiresBatching: boolean;
         // (undocumented)
         toJSON(): ScriptProps;
+        // @internal
+        readonly transformBatchIds: ReadonlySet<number>;
     }
     export class ScriptBuilder {
         addModelTimeline(modelId: Id64String): ModelTimelineBuilder;
@@ -9381,6 +9383,8 @@ export class ViewFlags {
     readonly hiddenEdges: boolean;
     // @internal (undocumented)
     hiddenEdgesVisible(): boolean;
+    // @internal (undocumented)
+    static readonly keys: string[];
     readonly lighting: boolean;
     readonly materials: boolean;
     readonly monochrome: boolean;

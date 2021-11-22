@@ -359,6 +359,9 @@ export class OverrideSubCategoryTool extends DisplayStyleTool {
   }
 }
 
+/** Query the schedule script JSON from an element.
+ * @beta
+ */
 export class QueryScheduleScriptTool extends DisplayStyleTool {
   private _sourceId?: string;
   private _action: "copy" | "break" = "copy";
