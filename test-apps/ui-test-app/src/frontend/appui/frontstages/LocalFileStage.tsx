@@ -44,8 +44,10 @@ class LocalFileOpenControl extends ContentControl {
 
 /** LocalFileOpenFrontstage displays the file picker and view picker. */
 export class LocalFileOpenFrontstage extends FrontstageProvider {
+  public static stageId = "ui-test-app:LocalFileOpen";
+
   public get id(): string {
-    return "LocalFileOpen";
+    return LocalFileOpenFrontstage.stageId;
   }
 
   public static async open() {
