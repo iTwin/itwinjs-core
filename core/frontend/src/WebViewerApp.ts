@@ -51,12 +51,8 @@ export class WebViewerApp {
       const redirectUrl = opts.webViewerApp.authConfig.redirectUri;
       const urlObj = new URL(redirectUrl);
       if (urlObj.pathname === window.location.pathname) {
-        try {
-          await BrowserAuthorizationCallbackHandler.handleSigninCallback(redirectUrl);
-          return;
-        } catch (err) {
-          Logger.logTrace(loggerCategory, "Unable to handle signin callback", () => ({ message: err.toString() }));
-        }
+        await BrowserAuthorizationCallbackHandler.handleSigninCallback(redirectUrl);
+        return;
       }
     }
 
