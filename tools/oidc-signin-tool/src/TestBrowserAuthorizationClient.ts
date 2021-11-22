@@ -133,7 +133,7 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
     const authorizationUrl = this._client.authorizationUrl(authParams);
 
     // Launch puppeteer with no sandbox only on linux
-    let launchOptions: puppeteer.LaunchOptions = { dumpio: true, headless: false, slowMo: 100 };
+    let launchOptions: puppeteer.LaunchOptions = { dumpio: true }; // , headless: false, slowMo: 100 };
     if (os.platform() === "linux") {
       launchOptions = {
         args: ["--no-sandbox"], // , "--disable-setuid-sandbox"],
