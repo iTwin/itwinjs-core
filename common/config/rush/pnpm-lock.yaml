@@ -147,7 +147,7 @@ importers:
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@itwin/oidc-signin-tool': ^3.0.0-dev.109
+      '@itwin/oidc-signin-tool': ^3.0.0-dev.110
       '@itwin/projects-client': ^0.2.0
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
@@ -182,7 +182,7 @@ importers:
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@itwin/oidc-signin-tool': 3.0.0-dev.109
+      '@itwin/oidc-signin-tool': 3.0.0-dev.110
       '@itwin/projects-client': 0.2.0
       '@types/chai': 4.2.22
       '@types/chai-as-promised': 7.1.4
@@ -1451,7 +1451,7 @@ importers:
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@itwin/oidc-signin-tool': ^3.0.0-dev.109
+      '@itwin/oidc-signin-tool': ^3.0.0-dev.110
       '@itwin/projects-client': ^0.2.0
       '@types/body-parser': ^1.17.0
       '@types/chai': ^4.1.4
@@ -1492,7 +1492,7 @@ importers:
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@itwin/oidc-signin-tool': 3.0.0-dev.109_electron@14.2.1
+      '@itwin/oidc-signin-tool': 3.0.0-dev.110_electron@14.2.1
       '@itwin/projects-client': 0.2.0
       '@types/body-parser': 1.19.1
       '@types/chai': 4.2.22
@@ -1518,7 +1518,7 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/core-transformer': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@itwin/oidc-signin-tool': ^3.0.0-dev.109
+      '@itwin/oidc-signin-tool': ^3.0.0-dev.110
       '@itwin/projects-client': ^0.2.0
       '@itwin/service-authorization': ^0.3.0
       '@types/body-parser': ^1.17.0
@@ -1565,7 +1565,7 @@ importers:
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@itwin/oidc-signin-tool': 3.0.0-dev.109_electron@14.2.1
+      '@itwin/oidc-signin-tool': 3.0.0-dev.110_electron@14.2.1
       '@itwin/projects-client': 0.2.0
       '@types/body-parser': 1.19.1
       '@types/chai': 4.2.22
@@ -1734,7 +1734,7 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/ecschema-metadata': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@itwin/oidc-signin-tool': ^3.0.0-dev.109
+      '@itwin/oidc-signin-tool': ^3.0.0-dev.110
       '@itwin/perf-tools': workspace:*
       '@itwin/projects-client': ^0.2.0
       '@types/chai': ^4.1.4
@@ -1766,7 +1766,7 @@ importers:
       '@itwin/core-common': link:../../core/common
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
-      '@itwin/oidc-signin-tool': 3.0.0-dev.109
+      '@itwin/oidc-signin-tool': 3.0.0-dev.110
       '@itwin/perf-tools': link:../../tools/perf-tools
       '@itwin/projects-client': 0.2.0
       azurite: 3.14.3
@@ -1813,7 +1813,7 @@ importers:
       '@itwin/eslint-plugin': workspace:*
       '@itwin/express-server': workspace:*
       '@itwin/hypermodeling-frontend': workspace:*
-      '@itwin/oidc-signin-tool': ^3.0.0-dev.109
+      '@itwin/oidc-signin-tool': ^3.0.0-dev.110
       '@itwin/projects-client': ^0.2.0
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
@@ -1864,7 +1864,7 @@ importers:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@itwin/oidc-signin-tool': 3.0.0-dev.109_electron@14.2.1
+      '@itwin/oidc-signin-tool': 3.0.0-dev.110_electron@14.2.1
       '@itwin/projects-client': 0.2.0
       '@types/chai': 4.2.22
       '@types/chai-as-promised': 7.1.4
@@ -1903,7 +1903,7 @@ importers:
       '@itwin/ecschema-rpcinterface-common': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@itwin/express-server': workspace:*
-      '@itwin/oidc-signin-tool': ^3.0.0-dev.109
+      '@itwin/oidc-signin-tool': ^3.0.0-dev.110
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-frontend': workspace:*
       '@itwin/projects-client': ^0.2.0
@@ -1941,7 +1941,7 @@ importers:
       '@itwin/core-quantity': link:../../core/quantity
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
       '@itwin/ecschema-rpcinterface-common': link:../../core/ecschema-rpc/common
-      '@itwin/oidc-signin-tool': 3.0.0-dev.109
+      '@itwin/oidc-signin-tool': 3.0.0-dev.110
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-frontend': link:../../presentation/frontend
       chai: 4.3.4
@@ -1980,7 +1980,7 @@ importers:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@itwin/oidc-signin-tool': ^3.0.0-dev.109
+      '@itwin/oidc-signin-tool': ^3.0.0-dev.110
       '@itwin/projects-client': ^0.2.0
       '@types/chai': ^4.1.4
       '@types/deep-assign': ^0.1.0
@@ -2014,7 +2014,7 @@ importers:
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@itwin/oidc-signin-tool': 3.0.0-dev.109
+      '@itwin/oidc-signin-tool': 3.0.0-dev.110
       '@itwin/projects-client': 0.2.0
       '@types/chai': 4.2.22
       '@types/deep-assign': 0.1.1
@@ -2044,7 +2044,7 @@ importers:
       '@itwin/core-quantity': workspace:*
       '@itwin/core-react': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@itwin/oidc-signin-tool': ^3.0.0-dev.109
+      '@itwin/oidc-signin-tool': ^3.0.0-dev.110
       '@itwin/presentation-backend': workspace:*
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-components': workspace:*
@@ -2102,7 +2102,7 @@ importers:
       '@itwin/core-i18n': link:../../core/i18n
       '@itwin/core-quantity': link:../../core/quantity
       '@itwin/core-react': link:../../ui/core-react
-      '@itwin/oidc-signin-tool': 3.0.0-dev.109
+      '@itwin/oidc-signin-tool': 3.0.0-dev.110
       '@itwin/presentation-backend': link:../../presentation/backend
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-components': link:../../presentation/components
@@ -2230,7 +2230,7 @@ importers:
       '@itwin/core-quantity': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@itwin/express-server': workspace:*
-      '@itwin/oidc-signin-tool': ^3.0.0-dev.109
+      '@itwin/oidc-signin-tool': ^3.0.0-dev.110
       '@itwin/presentation-backend': workspace:*
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-frontend': workspace:*
@@ -2268,7 +2268,7 @@ importers:
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-quantity': link:../../core/quantity
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@itwin/oidc-signin-tool': 3.0.0-dev.109
+      '@itwin/oidc-signin-tool': 3.0.0-dev.110
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-frontend': link:../../presentation/frontend
       '@itwin/service-authorization': 0.3.0
@@ -6998,12 +6998,12 @@ packages:
     requiresBuild: true
     dev: false
 
-  /@bentley/itwin-client/3.0.0-dev.123_21229e0ccbe09288c0cf7e848ae2bb3b:
-    resolution: {integrity: sha512-YleIiggrSWsg7ItTih/1nolhh0ke4Cp77lS7LFOSnwjKRd1G6SIE9EF2tR439UMo7J6Q3qoh3HZzTp5z8NSKzQ==}
+  /@bentley/itwin-client/3.0.0-dev.126_fae49953d2e037e60f4814a844cc644a:
+    resolution: {integrity: sha512-4sh4CKbDwhyRuA7+YNigbZsuxnyddYQ9sWCtp3bOa5TEJ+5bivnCmXFs+II9GRy6BrQTKv2YiwWit9/0VtCjow==}
     peerDependencies:
-      '@itwin/core-bentley': ^3.0.0-dev.123
+      '@itwin/core-bentley': ^3.0.0-dev.126
     dependencies:
-      '@itwin/core-bentley': 3.0.0-dev.123
+      '@itwin/core-bentley': 3.0.0-dev.126
       deep-assign: 2.0.0
       js-base64: 3.7.2
       lodash: 4.17.21
@@ -7456,10 +7456,13 @@ packages:
       '@itwin/core-bentley': 3.0.0-extension.1
       '@itwin/core-common': 3.0.0-extension.1_f2c3418fbeb77077b236020c30c9aae4
       oidc-client: 1.11.5
+    transitivePeerDependencies:
+      - '@bentley/itwin-client'
+      - '@itwin/core-geometry'
     dev: false
 
-  /@itwin/certa/3.0.0-extension.1:
-    resolution: {integrity: sha512-XQuXqErpFLKtLfQL/LOjIrwNHpx+hq/YprOnXfZYJg6qqtFHKGj0CxOCfh4x4HY+OJ6G4hzC132Ddj/iu1OHrw==}
+  /@itwin/certa/3.0.0-dev.126:
+    resolution: {integrity: sha512-dg8tVm8mABu+DgUGQ3EUUxFIUXY7SxyHFJBE6FPbXQvM2RdmP3RlEhV9m83xd50VCZecIie356BMKK+hCq2rOw==}
     hasBin: true
     peerDependencies:
       electron: ^14.0.0
@@ -7481,8 +7484,8 @@ packages:
       - supports-color
       - utf-8-validate
 
-  /@itwin/certa/3.0.0-extension.1_electron@14.2.1:
-    resolution: {integrity: sha512-XQuXqErpFLKtLfQL/LOjIrwNHpx+hq/YprOnXfZYJg6qqtFHKGj0CxOCfh4x4HY+OJ6G4hzC132Ddj/iu1OHrw==}
+  /@itwin/certa/3.0.0-dev.126_electron@14.2.1:
+    resolution: {integrity: sha512-dg8tVm8mABu+DgUGQ3EUUxFIUXY7SxyHFJBE6FPbXQvM2RdmP3RlEhV9m83xd50VCZecIie356BMKK+hCq2rOw==}
     hasBin: true
     peerDependencies:
       electron: ^14.0.0
@@ -7506,9 +7509,8 @@ packages:
       - utf-8-validate
     dev: true
 
-  /@itwin/core-bentley/3.0.0-dev.123:
-    resolution: {integrity: sha512-NWistRV4rHU+ME3S9O3YgSD7W447N6ukdRbWp/DfCevz/A7leOaDaLsrY3oQUj3GunasK7DWYuDbdgDkIE6C7A==}
-    dev: false
+  /@itwin/core-bentley/3.0.0-dev.126:
+    resolution: {integrity: sha512-BIE3rurMdqLuChLOBvWT4MJbYFFj2plqQuTRUEi3xYC+5b8gPrsjUJC53ki2qtaaEKpfPiYIb2QLQoBFFMZWSg==}
 
   /@itwin/core-bentley/3.0.0-extension.1:
     resolution: {integrity: sha512-3r1aRoZp694aqP2E0M9dZiaPSAC0E/E2VTvvN9K73NnlTvO4jpaIdt520oHp7tkGYx24VS9Q8+ED1Z0CH9+RkA==}
@@ -7530,8 +7532,8 @@ packages:
   /@itwin/electron-authorization/0.3.2:
     resolution: {integrity: sha512-lb1R6TOOh0u1c/nw6RWiXtJ2A6Is3NrPSwHvZ+Z23rZ7Ww5C0qutM4PYtVpf20Onmy2Lq6sQk8mHkHwP7B8j1w==}
     dependencies:
-      '@bentley/itwin-client': 3.0.0-dev.123_21229e0ccbe09288c0cf7e848ae2bb3b
-      '@itwin/core-bentley': 3.0.0-dev.123
+      '@bentley/itwin-client': 3.0.0-dev.126_fae49953d2e037e60f4814a844cc644a
+      '@itwin/core-bentley': 3.0.0-dev.126
       '@openid/appauth': 1.3.1
       keytar: 7.7.0
       open: 8.4.0
@@ -7620,11 +7622,11 @@ packages:
       react-transition-group: 4.4.2_react@17.0.2
     dev: true
 
-  /@itwin/oidc-signin-tool/3.0.0-dev.109:
-    resolution: {integrity: sha512-FSvKHYag335iizMsyIECkpGO4TwJ002RTZwnl+vI3RwW8JcZZTNedlfZrBuLOeU8RWzZtHp937QppwQr/wI4vw==}
+  /@itwin/oidc-signin-tool/3.0.0-dev.110:
+    resolution: {integrity: sha512-uoTmMBqnEueiBQSzP6JjaTQu96fJa8JBqTESZZT/6Ub43jP1jYUcI+t0bk0lq3V4GF1GVWisTmcBaW6VK7kHsw==}
     dependencies:
-      '@itwin/certa': 3.0.0-extension.1
-      '@itwin/core-bentley': 3.0.0-extension.1
+      '@itwin/certa': 3.0.0-dev.126
+      '@itwin/core-bentley': 3.0.0-dev.126
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
       openid-client: 4.9.1
@@ -7635,11 +7637,11 @@ packages:
       - supports-color
       - utf-8-validate
 
-  /@itwin/oidc-signin-tool/3.0.0-dev.109_electron@14.2.1:
-    resolution: {integrity: sha512-FSvKHYag335iizMsyIECkpGO4TwJ002RTZwnl+vI3RwW8JcZZTNedlfZrBuLOeU8RWzZtHp937QppwQr/wI4vw==}
+  /@itwin/oidc-signin-tool/3.0.0-dev.110_electron@14.2.1:
+    resolution: {integrity: sha512-uoTmMBqnEueiBQSzP6JjaTQu96fJa8JBqTESZZT/6Ub43jP1jYUcI+t0bk0lq3V4GF1GVWisTmcBaW6VK7kHsw==}
     dependencies:
-      '@itwin/certa': 3.0.0-extension.1_electron@14.2.1
-      '@itwin/core-bentley': 3.0.0-extension.1
+      '@itwin/certa': 3.0.0-dev.126_electron@14.2.1
+      '@itwin/core-bentley': 3.0.0-dev.126
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
       openid-client: 4.9.1
@@ -7675,6 +7677,9 @@ packages:
       '@itwin/core-bentley': 3.0.0-extension.1
       '@itwin/core-common': 3.0.0-extension.1_f2c3418fbeb77077b236020c30c9aae4
       openid-client: 4.9.1
+    transitivePeerDependencies:
+      - '@bentley/itwin-client'
+      - '@itwin/core-geometry'
     dev: false
 
   /@jest/console/26.6.2:
