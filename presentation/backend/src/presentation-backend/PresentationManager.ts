@@ -305,7 +305,7 @@ export class PresentationManager {
   private _isDisposed: boolean;
   private _disposeIModelOpenedListener?: () => void;
   private _updatesTracker?: UpdatesTracker;
-  private _onMangerUsed?: () => void;
+  private _onManagerUsed?: () => void;
 
   /** Get / set active locale used for localizing presentation data */
   public activeLocale: string | undefined;
@@ -382,7 +382,7 @@ export class PresentationManager {
 
   /** @internal */
   public setOnManagerUsedHandler(handler: () => void) {
-    this._onMangerUsed = handler;
+    this._onManagerUsed = handler;
   }
 
   /** Properties used to initialize the manager */
@@ -734,8 +734,8 @@ export class PresentationManager {
 
   private async request<TParams extends { diagnostics?: DiagnosticsOptionsWithHandler, requestId: string, imodel: IModelDb, locale?: string, unitSystem?: UnitSystemKey }, TResult>(params: TParams, reviver?: (key: string, value: any) => any): Promise<TResult> {
     const { requestId, imodel, locale, unitSystem, diagnostics, ...strippedParams } = params;
-    if (this._onMangerUsed)
-      this._onMangerUsed();
+    if (this._onManagerUsed)
+      this._onManagerUsed();
     const imodelAddon = this.getNativePlatform().getImodelAddon(imodel);
     const nativeRequestParams: any = {
       requestId,
