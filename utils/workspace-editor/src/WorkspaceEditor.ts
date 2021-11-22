@@ -7,53 +7,67 @@ import * as fs from "fs";
 import * as glob from "glob";
 import { join } from "path";
 import * as Yargs from "yargs";
-import { EditableWorkspaceFile, IModelHost, IModelJsFs, WorkspaceFile, WorkspaceResourceName } from "@itwin/core-backend";
+import { EditableWorkspaceFile, IModelHost, IModelHostConfiguration, IModelJsFs, WorkspaceContainerId, WorkspaceFile, WorkspaceResourceName } from "@itwin/core-backend";
 import { DbResult } from "@itwin/core-bentley";
-import { LocalFileName } from "@itwin/core-common";
-import { string } from "yargs";
+import { LocalDirName, LocalFileName } from "@itwin/core-common";
 
 /* eslint-disable id-blacklist,no-console */
 
-interface WorkspaceOpts {
-  workspaceFile: string;
+/** Allows overriding the location of workspace container files. If not present, defaults to `${homedir}/iTwin/Workspace` */
+interface EditorOpts {
+  /** Directory for workspace containers */
+  containerDir?: LocalDirName;
 }
 
+/** Id of workspace file for operation */
+interface WorkspaceId extends EditorOpts {
+  workspaceId: WorkspaceContainerId;
+}
+
+/** resource type names */
 type RscType = "blob" | "string" | "file";
 
-interface ResourceOption extends WorkspaceOpts {
+/** Options for adding, updating, extracting, or dropping resources from a workspace container file */
+interface ResourceOption extends WorkspaceId {
   name?: WorkspaceResourceName;
   update: boolean;
   type: RscType;
 }
 
+/** Options for dropping resources from a workspace container file */
 interface DropResourceOpts extends ResourceOption {
   name: WorkspaceResourceName;
 }
 
+/** Options for extracting resources from a workspace container file */
 interface ExtractResourceOpts extends ResourceOption {
   name: WorkspaceResourceName;
   fileName: LocalFileName;
 }
 
+/** Options for adding or updating resources from a workspace container file */
 interface AddFileOptions extends ResourceOption {
   file: LocalFileName;
-  root?: string;
+  root?: LocalDirName;
 }
 
-interface ListOptions extends WorkspaceOpts {
+/** Options for listing the resources in a workspace container file */
+interface ListOptions extends WorkspaceId {
   strings?: boolean;
   files?: boolean;
   blobs?: boolean;
 }
 
-function createWorkspace(args: WorkspaceOpts) {
-  const wsFile = new EditableWorkspaceFile(args.workspaceFile, IModelHost.appWorkspace);
+/** Create a new empty Workspace container file  */
+function createWorkspace(args: WorkspaceId) {
+  const wsFile = new EditableWorkspaceFile(args.workspaceId, IModelHost.appWorkspace);
   wsFile.create();
   console.log(`created workspace file ${wsFile.db.nativeDb.getFilePath()}`);
   wsFile.close();
 }
 
-function processWorkspace<W extends WorkspaceFile, T extends WorkspaceOpts>(args: T, ws: W, fn: (ws: W, args: T) => void) {
+/** open, call a function to process, then close a WorkspaceFile */
+function processWorkspace<W extends WorkspaceFile, T>(args: T, ws: W, fn: (ws: W, args: T) => void) {
   ws.open();
   console.log(`Workspace container [${ws.db.nativeDb.getFilePath()}]`);
   try {
@@ -63,14 +77,17 @@ function processWorkspace<W extends WorkspaceFile, T extends WorkspaceOpts>(args
   }
 }
 
-function editWorkspace<T extends WorkspaceOpts>(args: T, fn: (ws: EditableWorkspaceFile, args: T) => void) {
-  processWorkspace(args, new EditableWorkspaceFile(args.workspaceFile, IModelHost.appWorkspace), fn);
+/** Open for write, call a function to process, then close a WorkspaceFile */
+function editWorkspace<T extends WorkspaceId>(args: T, fn: (ws: EditableWorkspaceFile, args: T) => void) {
+  processWorkspace(args, new EditableWorkspaceFile(args.workspaceId, IModelHost.appWorkspace), fn);
 }
 
-function readWorkspace<T extends WorkspaceOpts>(args: T, fn: (ws: WorkspaceFile, args: T) => void) {
-  processWorkspace(args, new WorkspaceFile(args.workspaceFile, IModelHost.appWorkspace), fn);
+/** Open for read, call a function to process, then close a WorkspaceFile */
+function readWorkspace<T extends WorkspaceId>(args: T, fn: (ws: WorkspaceFile, args: T) => void) {
+  processWorkspace(args, new WorkspaceFile(args.workspaceId, IModelHost.appWorkspace), fn);
 }
 
+/** List the contents of a WorkspaceFile */
 function listWorkspace(args: ListOptions) {
   readWorkspace(args, (file, args) => {
     if (!args.strings && !args.blobs && !args.files)
@@ -107,7 +124,8 @@ function listWorkspace(args: ListOptions) {
   });
 }
 
-function addFileToWorkspace(args: AddFileOptions) {
+/** Add or Update files into a Workspace. */
+function addFilesToWorkspace(args: AddFileOptions) {
   editWorkspace(args, (wsFile, args) => {
     glob.sync(args.file, { cwd: args.root ?? process.cwd(), nodir: true }).forEach((filePath) => {
       const file = args.root ? join(args.root, filePath) : filePath;
@@ -163,9 +181,13 @@ function dropFromWorkspace(args: DropResourceOpts) {
   });
 }
 
-function runCommand(cmd: (args: any) => void) {
-  return (args: any) => {
+function runCommand<T extends EditorOpts>(cmd: (args: T) => void) {
+  return async (args: T) => {
     try {
+      const config = new IModelHostConfiguration();
+      if (args.containerDir)
+        config.workspace = { containerDir: args.containerDir };
+      await IModelHost.startup(config);
       cmd(args);
     } catch (e: any) {
       console.error(e.message);
@@ -174,7 +196,6 @@ function runCommand(cmd: (args: any) => void) {
 }
 
 async function main() {
-  await IModelHost.startup();
 
   const type = { alias: "t", describe: "the type of resource", choices: ["blob", "string", "file"], default: "file" };
   const update = { alias: "u", describe: "update (i.e. replace) rather than add the files", boolean: true, default: false };
@@ -182,8 +203,9 @@ async function main() {
     .wrap(Math.min(120, Yargs.terminalWidth()))
     .strict()
     .version("V1.0")
+    .option("containerDir", { alias: "c", describe: "directory to use for workspace containers", string: true })
     .command({
-      command: "list <workspaceFile>",
+      command: "list <workspaceId>",
       describe: "list the contents of a workspace container file",
       builder: {
         strings: { alias: "s", describe: "list string resources", boolean: true, default: false },
@@ -193,12 +215,12 @@ async function main() {
       handler: runCommand(listWorkspace),
     })
     .command({
-      command: "create <workspaceFile>",
+      command: "create <workspaceId>",
       describe: "create a new workspace container file",
       handler: runCommand(createWorkspace),
     })
     .command({
-      command: "add <workspaceFile> <file>",
+      command: "add <workspaceId> <file>",
       describe: "add or update files into a workspace container",
       builder: {
         name: { alias: "n", describe: "resource name for file", string: true },
@@ -206,16 +228,16 @@ async function main() {
         update,
         type,
       },
-      handler: runCommand(addFileToWorkspace),
+      handler: runCommand(addFilesToWorkspace),
     })
     .command({
-      command: "extract <workspaceFile> <name> <fileName>",
+      command: "extract <workspaceId> <name> <fileName>",
       describe: "extract a resource from a workspace container into a local file",
       builder: { type },
       handler: runCommand(extractFromWorkspace),
     })
     .command({
-      command: "drop <workspaceFile> <name>",
+      command: "drop <workspaceId> <name>",
       describe: "drop resources from a workspace container",
       builder: { type },
       handler: runCommand(dropFromWorkspace),
