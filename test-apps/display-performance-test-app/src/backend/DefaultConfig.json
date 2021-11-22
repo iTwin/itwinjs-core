@@ -19,24 +19,24 @@
       "iModelName": "LinesTest.bim",
       "tests": [
         {
-          "viewName": "200"
+          "viewName": "100"
         },
         {
-          "viewName": "200",
+          "viewName": "100",
           "viewFlags": {
             "weights": false,
             "styles": true
           }
         },
         {
-          "viewName": "200",
+          "viewName": "100",
           "viewFlags": {
             "weights": true,
             "styles": false
           }
         },
         {
-          "viewName": "200",
+          "viewName": "100",
           "viewFlags": {
             "weights": false,
             "styles": false
