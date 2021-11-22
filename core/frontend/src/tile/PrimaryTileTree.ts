@@ -305,7 +305,13 @@ export class AnimatedTreeReference extends PrimaryTreeReference {
     if (animBranch && animBranch.omit)
       return undefined;
 
-    return super.createDrawArgs(context);
+    const args = super.createDrawArgs(context);
+    if (args?.tree && undefined !== this._animationTransformNodeId) {
+      assert(args.tree instanceof IModelTileTree);
+      args.boundingRange = args.tree.getTransformNodeRange(this._animationTransformNodeId);
+    }
+
+    return args;
   }
 }
 

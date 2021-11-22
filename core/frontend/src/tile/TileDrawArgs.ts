@@ -58,6 +58,8 @@ export interface TileDrawArgParams {
    * @internal
    */
   animationTransformNodeId?: number;
+  /** If defined, a bounding range in tile tree coordinates outside of which tiles should not be selected. */
+  boundingRange?: Range3d;
 }
 /**
  * Provides context used when selecting and drawing [[Tile]]s.
@@ -104,6 +106,8 @@ export class TileDrawArgs {
   public get symbologyOverrides(): FeatureSymbology.Overrides | undefined { return this.graphics.symbologyOverrides; }
   /** If defined, tiles will be culled if they do not intersect this clip. */
   public intersectionClip?: ClipVector;
+  /** If defined, a bounding range in tile tree coordinates outside of which tiles should not be selected. */
+  boundingRange?: Range3d;
   /** @internal */
   public readonly pixelSizeScaleFactor;
   /** @internal */
@@ -250,6 +254,7 @@ export class TileDrawArgs {
     this._appearanceProvider = params.appearanceProvider;
     this.hiddenLineSettings = params.hiddenLineSettings;
     this.animationTransformNodeId = params.animationTransformNodeId;
+    this.boundingRange = params.boundingRange;
 
     // Do not cull tiles based on clip volume if tiles outside clip are supposed to be drawn but in a different color.
     if (undefined !== clipVolume && !context.viewport.view.displayStyle.settings.clipStyle.outsideColor)
