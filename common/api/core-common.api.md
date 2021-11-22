@@ -9383,8 +9383,6 @@ export class ViewFlags {
     readonly hiddenEdges: boolean;
     // @internal (undocumented)
     hiddenEdgesVisible(): boolean;
-    // @internal (undocumented)
-    static readonly keys: string[];
     readonly lighting: boolean;
     readonly materials: boolean;
     readonly monochrome: boolean;

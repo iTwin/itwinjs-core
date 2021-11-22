@@ -423,9 +423,6 @@ export class ViewFlags {
   /** A ViewFlags object with all properties initialized to their default values. */
   public static readonly defaults = new ViewFlags();
 
-  /** @internal */
-  public static readonly keys = Object.keys(ViewFlags.defaults);
-
   /** Create a ViewFlags.
    * @param flags The properties to initialize. Any properties not specified are initialized to their default values.
    */
