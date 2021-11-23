@@ -187,14 +187,16 @@ async function generateIModelDbTiles(requestContext: AuthorizedClientRequestCont
 }
 
 describe("TilesGenerationPerformance", () => {
-  // eslint-disable-next-line deprecation/deprecation
-  const config = require(Config.App.getString("imjs_tile_perf_config")); // eslint-disable-line @typescript-eslint/no-var-requires
-  const imodels: ConfigData[] = config.iModels;
+  let config: any;
+  let imodels: ConfigData[] = [];
 
   let requestContext: AuthorizedClientRequestContext;
   let csvResultPath: string;
 
   before(async () => {
+    config = require(Config.App.getString("imjs_tile_perf_config")); // eslint-disable-line @typescript-eslint/no-var-requires, deprecation/deprecation
+    imodels = config.iModels;
+
     assert.isDefined(config.regionId, "No Region defined");
     assert.isDefined(config.contextId, "No ContextId defined");
     imodels.forEach((element) => element.contextId = config.contextId);
@@ -217,10 +219,11 @@ describe("TilesGenerationPerformance", () => {
     }
   });
 
-  imodels.forEach(async (configData: ConfigData) =>
-    it(`Tile generation ${configData.iModelName}`, async () => {
+  it("Tile generation", async () => {
+    for (const configData of imodels) {
       const result = await generateIModelDbTiles(requestContext, configData);
       if (result)
         await generateResultFiles(result, configData, csvResultPath);
-    }));
+    }
+  });
 });
