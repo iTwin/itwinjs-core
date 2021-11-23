@@ -221,7 +221,6 @@ import { QPoint3dList } from '@itwin/core-common';
 import { QuantityParseResult } from '@itwin/core-quantity';
 import { QueryBinder } from '@itwin/core-common';
 import { QueryOptions } from '@itwin/core-common';
-import { QueryRowFormat } from '@itwin/core-common';
 import { Range1d } from '@itwin/core-geometry';
 import { Range1dProps } from '@itwin/core-geometry';
 import { Range2d } from '@itwin/core-geometry';
@@ -4529,13 +4528,13 @@ export abstract class IModelConnection extends IModel {
     static readonly onOpen: BeEvent<(_imodel: IModelConnection) => void>;
     // @internal
     get projectCenterAltitude(): number | undefined;
-    query(ecsql: string, params?: QueryBinder, rowFormat?: QueryRowFormat, options?: QueryOptions): AsyncIterableIterator<any>;
+    query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
     queryEntityIds(params: EntityQueryParams): Promise<Id64Set>;
     queryRowCount(ecsql: string, params?: QueryBinder): Promise<number>;
     queryTextureData(textureLoadProps: TextureLoadProps): Promise<TextureData | undefined>;
     // @internal
     requestSnap(props: SnapRequestProps): Promise<SnapResponseProps>;
-    restartQuery(token: string, ecsql: string, params?: QueryBinder, rowFormat?: QueryRowFormat, options?: QueryOptions): AsyncIterableIterator<any>;
+    restartQuery(token: string, ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
     routingContext: IModelRoutingContext;
     readonly selectionSet: SelectionSet;
     spatialToCartographic(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic>;

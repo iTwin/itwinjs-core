@@ -1896,6 +1896,8 @@ export interface DbQueryRequest extends DbRequest, QueryOptions {
     args?: object;
     // (undocumented)
     query: string;
+    // (undocumented)
+    valueFormat?: DbValueFormat;
 }
 
 // @internal (undocumented)
@@ -1992,6 +1994,14 @@ export interface DbRuntimeStats {
     timeLimit: number;
     // (undocumented)
     totalTime: number;
+}
+
+// @internal (undocumented)
+export enum DbValueFormat {
+    // (undocumented)
+    ECSqlNames = 0,
+    // (undocumented)
+    JsNames = 1
 }
 
 // @internal
@@ -2412,7 +2422,7 @@ export class ECSqlReader {
     // (undocumented)
     get done(): boolean;
     // (undocumented)
-    formatCurrentRow(format: QueryRowFormat): any[] | object;
+    formatCurrentRow(onlyReturnObject?: boolean): any[] | object;
     // (undocumented)
     getMetaData(): Promise<QueryPropertyMetaData[]>;
     // (undocumented)
@@ -2430,7 +2440,7 @@ export class ECSqlReader {
     // (undocumented)
     step(): Promise<boolean>;
     // (undocumented)
-    toArray(format: QueryRowFormat): Promise<any[]>;
+    toArray(): Promise<any[]>;
 }
 
 // @public
@@ -6588,6 +6598,7 @@ export interface QueryOptions extends BaseReaderOptions {
     convertClassIdsToClassNames?: boolean;
     includeMetaData?: boolean;
     limit?: QueryLimit;
+    rowFormat?: QueryRowFormat;
     suppressLogErrors?: boolean;
 }
 
@@ -6609,6 +6620,8 @@ export class QueryOptionsBuilder {
     // (undocumented)
     setRestartToken(val: string): this;
     // (undocumented)
+    setRowFormat(val: QueryRowFormat): this;
+    // (undocumented)
     setSuppressLogErrors(val: boolean): this;
     // (undocumented)
     setUsePrimaryConnection(val: boolean): this;
@@ -6619,6 +6632,8 @@ export interface QueryPropertyMetaData {
     // (undocumented)
     className: string;
     // (undocumented)
+    extendType: string;
+    // (undocumented)
     generated: boolean;
     // (undocumented)
     index: number;
@@ -6626,8 +6641,6 @@ export interface QueryPropertyMetaData {
     jsonName: string;
     // (undocumented)
     name: string;
-    // (undocumented)
-    system: boolean;
     // (undocumented)
     typeName: string;
 }
@@ -6640,9 +6653,9 @@ export interface QueryQuota {
 
 // @public
 export enum QueryRowFormat {
-    UseECSqlPropertyIndexes = 2,
+    UseECSqlPropertyIndexes = 1,
     UseECSqlPropertyNames = 0,
-    UseJsPropertyNames = 1
+    UseJsPropertyNames = 2
 }
 
 // @beta (undocumented)
@@ -6655,8 +6668,6 @@ export interface QueryRowProxy {
     getMetaData(): QueryPropertyMetaData[];
     // (undocumented)
     toArray(): QueryValueType[];
-    // (undocumented)
-    toJsRow(): any;
     // (undocumented)
     toRow(): any;
 }

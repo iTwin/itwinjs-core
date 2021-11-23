@@ -155,7 +155,6 @@ import { PolyfaceVisitor } from '@itwin/core-geometry';
 import { PropertyCallback } from '@itwin/core-common';
 import { QueryBinder } from '@itwin/core-common';
 import { QueryOptions } from '@itwin/core-common';
-import { QueryRowFormat } from '@itwin/core-common';
 import { Range2d } from '@itwin/core-geometry';
 import { Range3d } from '@itwin/core-geometry';
 import { Rank } from '@itwin/core-common';
@@ -1172,11 +1171,11 @@ export class ECDb implements IDisposable {
     // @internal
     prepareSqliteStatement(sql: string, logErrors?: boolean): SqliteStatement;
     prepareStatement(ecsql: string, logErrors?: boolean): ECSqlStatement;
-    query(ecsql: string, params?: QueryBinder, rowFormat?: QueryRowFormat, options?: QueryOptions): AsyncIterableIterator<any>;
+    query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
     queryRowCount(ecsql: string, params?: QueryBinder): Promise<number>;
     // @internal
     resetSqliteCache(size: number): void;
-    restartQuery(token: string, ecsql: string, params?: QueryBinder, rowFormat?: QueryRowFormat, options?: QueryOptions): AsyncIterableIterator<any>;
+    restartQuery(token: string, ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
     saveChanges(changesetName?: string): void;
     withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors?: boolean): T;
     withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors?: boolean): T;
@@ -2338,7 +2337,7 @@ export abstract class IModelDb extends IModel {
     // @internal
     prepareSqliteStatement(sql: string, logErrors?: boolean): SqliteStatement;
     prepareStatement(sql: string, logErrors?: boolean): ECSqlStatement;
-    query(ecsql: string, params?: QueryBinder, rowFormat?: QueryRowFormat, options?: QueryOptions): AsyncIterableIterator<any>;
+    query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
     queryEntityIds(params: EntityQueryParams): Id64Set;
     queryFilePropertyBlob(prop: FilePropertyProps): Uint8Array | undefined;
     queryFilePropertyString(prop: FilePropertyProps): string | undefined;
@@ -2354,7 +2353,7 @@ export abstract class IModelDb extends IModel {
     get relationships(): Relationships;
     // @internal (undocumented)
     requestSnap(sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps>;
-    restartQuery(token: string, ecsql: string, params?: QueryBinder, rowFormat?: QueryRowFormat, options?: QueryOptions): AsyncIterableIterator<any>;
+    restartQuery(token: string, ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
     // @internal (undocumented)
     restartTxnSession(): void;
     // @internal (undocumented)
