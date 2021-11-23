@@ -19,15 +19,15 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "",
     "test": "",
-    "extract-api": "betools extract-api --entry=telemetry-client",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/clients/telemetry-client/file.json --tsIndexFile=telemetry-client.ts --onlyJson",
+    "extract-api": "betools extract-api --entry=core-telemetry",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/telemetry/file.json --tsIndexFile=core-telemetry.ts --onlyJson",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2"
   },
   "keywords": [
     "Bentley",
     "BIM",
     "iModel",
-    "Telemetry Client"
+    "Telemetry"
   ],
   "author": {
     "name": "Bentley Systems, Inc.",
