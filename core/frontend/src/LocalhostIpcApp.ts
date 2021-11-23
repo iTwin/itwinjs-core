@@ -6,7 +6,7 @@
  * @module IModelApp
  */
 
-import { IpcWebSocket, IpcWebSocketFrontend, IpcWebSocketMessage, IpcWebSocketMessageType, IpcWebSocketTransport } from "@itwin/core-common";
+import { IpcWebSocket, IpcWebSocketFrontend, IpcWebSocketMessage, IpcWebSocketTransport } from "@itwin/core-common";
 import { IpcApp } from "./IpcApp";
 import { IModelAppOptions } from "./IModelApp";
 
@@ -45,7 +45,7 @@ class LocalTransport extends IpcWebSocketTransport {
 
     this._client.addEventListener("message", async (event) => {
       const message = await this.notifyIncoming(event.data);
-      if (message.type === IpcWebSocketMessageType.Internal) {
+      if (IpcWebSocketMessage.skip(message)) {
         return;
       }
 

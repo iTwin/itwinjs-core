@@ -24,27 +24,29 @@ export abstract class IpcWebSocketTransport {
 
   protected async notifyIncoming(data: any): Promise<IpcWebSocketMessage> {
     if (this._partial) {
-      this._received.push(await this.unwrap(data));
+      this._received.push(data);
       --this._outstanding;
 
       if (this._outstanding === 0) {
+        await Promise.all(this._received.map(async (v, i, a) => a[i] = await this.unwrap(v)));
         parts = this._received;
         const message: IpcWebSocketMessage = JSON.parse(this._partial, reviver);
         this._partial = undefined;
         parts.length = 0;
-        return message;
+        return InSentOrder.deliver(message);
       } else {
         return IpcWebSocketMessage.internal();
       }
     } else {
       const [serialized, followers] = JSON.parse(data);
+
       if (followers) {
         this._partial = serialized;
         this._outstanding = followers;
         return IpcWebSocketMessage.internal();
       } else {
         const message: IpcWebSocketMessage = JSON.parse(serialized, reviver);
-        return message;
+        return InSentOrder.deliver(message);
       }
     }
   }
@@ -94,4 +96,62 @@ function reviveBinary(value: Marker): ArrayBufferView {
   const constructor = lookup(value);
   const part = parts[value.index];
   return new constructor(part);
+}
+
+function makePromise<T>() {
+  let resolve: (value: T | PromiseLike<T>) => void;
+  let reject: (reason?: any) => void;
+  const promise = new Promise<T>((res, rej) => { resolve = res; reject = rej; });
+  //@ts-ignore use before assigned for resolve, reject
+  return { promise, resolve, reject };
+}
+
+/* Reconstructing the sequence in which messages were sent is necessary since
+   the binary data for a message has to be awaited in IpcWebSocketTransport.unwrap. */
+class InSentOrder {
+  private static _queue: InSentOrder[] = [];
+  private static _last = -1;
+  private static get _next() { return this._last + 1; }
+
+  public static deliver(message: IpcWebSocketMessage): Promise<IpcWebSocketMessage> {
+    const entry = new InSentOrder(message);
+    this._queue.push(entry);
+    this._queue.sort((a, b) => a.sequence - b.sequence);
+
+    while (this._queue.length !== 0) {
+      const next = this._queue[0];
+      const duplicate = next.sequence <= this._last;
+      const match = next.sequence === this._next;
+
+      if (duplicate) {
+        next.duplicate = true;
+      } else if (match) {
+        ++this._last;
+      }
+
+      if (duplicate || match) {
+        this._queue.shift();
+        next.release();
+      }
+    }
+
+    return entry.message;
+  }
+
+  public release = () => { };
+  public sequence: number;
+  public duplicate = false;
+  public message: Promise<IpcWebSocketMessage>;
+
+  private constructor(message: IpcWebSocketMessage) {
+    this.sequence = message.sequence;
+
+    const { promise, resolve } = makePromise<IpcWebSocketMessage>();
+    this.message = promise;
+
+    this.release = () => {
+      const value = this.duplicate ? IpcWebSocketMessage.duplicate() : message;
+      resolve(value);
+    };
+  }
 }

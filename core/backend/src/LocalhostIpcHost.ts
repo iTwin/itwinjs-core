@@ -7,7 +7,7 @@
  */
 
 import * as ws from "ws";
-import { IpcWebSocket, IpcWebSocketBackend, IpcWebSocketMessage, IpcWebSocketMessageType, IpcWebSocketTransport } from "@itwin/core-common";
+import { IpcWebSocket, IpcWebSocketBackend, IpcWebSocketMessage, IpcWebSocketTransport } from "@itwin/core-common";
 import { IpcHost } from "./IpcHost";
 import { IModelHostConfiguration } from "./IModelHost";
 
@@ -42,7 +42,7 @@ class LocalTransport extends IpcWebSocketTransport {
 
     connection.on("message", async (data) => {
       const message = await this.notifyIncoming(data);
-      if (message.type === IpcWebSocketMessageType.Internal) {
+      if (IpcWebSocketMessage.skip(message)) {
         return;
       }
 
