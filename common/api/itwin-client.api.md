@@ -57,14 +57,6 @@ export interface FileHandler {
 // @internal
 export function getJson(url: string): Promise<any>;
 
-// @beta (undocumented)
-export class ImsAuthorizationClient extends Client {
-    constructor();
-    // (undocumented)
-    protected baseUrl: string;
-    getUrl(): Promise<string>;
-}
-
 // @beta
 export enum ITwinClientLoggerCategory {
     // (undocumented)

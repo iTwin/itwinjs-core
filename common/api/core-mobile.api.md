@@ -6,11 +6,10 @@
 
 import { AccessToken } from '@itwin/core-bentley';
 import { AsyncMethodsOf } from '@itwin/core-bentley';
+import { AuthorizationClient } from '@itwin/core-common';
 import { BeEvent } from '@itwin/core-bentley';
 import { CancelRequest } from '@bentley/itwin-client';
 import { IModelAppOptions } from '@itwin/core-frontend';
-import { NativeAppAuthorizationBackend } from '@itwin/core-backend';
-import { NativeAppAuthorizationConfiguration } from '@itwin/core-common';
 import { NativeAppOpts } from '@itwin/core-frontend';
 import { NativeHostOpts } from '@itwin/core-backend';
 import { ProgressCallback } from '@bentley/itwin-client';
@@ -120,7 +119,7 @@ export abstract class MobileDevice {
     // (undocumented)
     abstract authGetAccessToken(callback: (accessToken?: string, err?: string) => void): void;
     // (undocumented)
-    authInit(_config: NativeAppAuthorizationConfiguration, callback: (err?: string) => void): void;
+    authInit(_config: MobileAppAuthorizationConfiguration, callback: (err?: string) => void): void;
     // (undocumented)
     abstract authSignIn(callback: (err?: string) => void): void;
     // (undocumented)
@@ -180,7 +179,7 @@ export interface MobileHostOpts extends NativeHostOpts {
     mobileHost?: {
         device?: MobileDevice;
         rpcInterfaces?: RpcInterfaceDefinition[];
-        authConfig?: NativeAppAuthorizationConfiguration;
+        authConfig?: MobileAppAuthorizationConfiguration;
         noInitializeAuthClient?: boolean;
     };
 }
