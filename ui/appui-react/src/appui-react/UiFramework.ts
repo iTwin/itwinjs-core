@@ -13,7 +13,7 @@ import { GuidString, Logger, ProcessDetector } from "@itwin/core-bentley";
 import { Localization, RpcActivity } from "@itwin/core-common";
 import { IModelApp, IModelConnection, SnapMode, ViewState } from "@itwin/core-frontend";
 import { Presentation } from "@itwin/presentation-frontend";
-import { TelemetryEvent } from "@bentley/telemetry-client";
+import { TelemetryEvent } from "@itwin/core-telemetry";
 import { getClassName, UiAdmin, UiError } from "@itwin/appui-abstract";
 import { LocalSettingsStorage, SettingsManager, UiEvent, UiSettingsStorage } from "@itwin/core-react";
 import { UiIModelComponents } from "@itwin/imodel-components-react";

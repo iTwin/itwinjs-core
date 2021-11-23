@@ -81,7 +81,7 @@
   "dependencies": {
     "@azure/storage-blob": "^12.7.0",
     "@bentley/imodeljs-native": "3.0.18",
-    "@bentley/telemetry-client": "workspace:*",
+    "@itwin/core-telemetry": "workspace:*",
     "form-data": "^2.3.2",
     "fs-extra": "^8.1.0",
     "json5": "^2.2.0",

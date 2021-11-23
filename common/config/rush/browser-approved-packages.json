@@ -127,6 +127,10 @@
       "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
+      "name": "@itwin/core-telemetry",
+      "allowedCategories": [ "backend", "frontend" ]
+    },
+    {
       "name": "@itwin/core-transformer",
       "allowedCategories": [ "internal" ]
     },
