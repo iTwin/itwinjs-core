@@ -60,9 +60,9 @@ export abstract class IpcWebSocketTransport {
   }
 }
 
-interface Marker { ipc: "binary", type: number; index: number }
+interface Marker { ipc: "binary", type: number, index: number }
 const types = [Uint8Array, Int8Array, Uint8ClampedArray, Int16Array, Uint16Array, Int32Array, Uint32Array, Float32Array, Float64Array, DataView];
-function identify(value: any) { return Buffer.isBuffer(value) ? 0 : types.indexOf((value as any).constructor); }
+function identify(value: any) { return Buffer.isBuffer(value) ? 0 : types.indexOf(value.constructor); }
 function lookup(value: Marker) { return types[value.type]; }
 
 function replacer(this: any, _key: string, value: any) {
@@ -99,10 +99,9 @@ function reviveBinary(value: Marker): ArrayBufferView {
 }
 
 function makePromise<T>() {
-  let resolve: (value: T | PromiseLike<T>) => void;
-  let reject: (reason?: any) => void;
+  let resolve: (value: T | PromiseLike<T>) => void = () => { };
+  let reject: (reason?: any) => void = () => { };
   const promise = new Promise<T>((res, rej) => { resolve = res; reject = rej; });
-  //@ts-ignore use before assigned for resolve, reject
   return { promise, resolve, reject };
 }
 
@@ -113,7 +112,7 @@ class InSentOrder {
   private static _last = -1;
   private static get _next() { return this._last + 1; }
 
-  public static deliver(message: IpcWebSocketMessage): Promise<IpcWebSocketMessage> {
+  public static async deliver(message: IpcWebSocketMessage): Promise<IpcWebSocketMessage> {
     const entry = new InSentOrder(message);
     this._queue.push(entry);
     this._queue.sort((a, b) => a.sequence - b.sequence);

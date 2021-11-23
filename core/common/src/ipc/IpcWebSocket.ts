@@ -39,11 +39,11 @@ export namespace IpcWebSocketMessage {
   }
 
   export function internal(): IpcWebSocketMessage {
-    return { type: IpcWebSocketMessageType.Internal, channel: "", sequence: Number.MIN_SAFE_INTEGER }
+    return { type: IpcWebSocketMessageType.Internal, channel: "", sequence: Number.MIN_SAFE_INTEGER };
   }
 
   export function duplicate(): IpcWebSocketMessage {
-    return { type: IpcWebSocketMessageType.Duplicate, channel: "", sequence: Number.MIN_SAFE_INTEGER }
+    return { type: IpcWebSocketMessageType.Duplicate, channel: "", sequence: Number.MIN_SAFE_INTEGER };
   }
 
   export function skip(message: IpcWebSocketMessage): boolean {
