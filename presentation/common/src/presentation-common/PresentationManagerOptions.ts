@@ -151,7 +151,7 @@ export interface SingleElementPropertiesRequestOptions<TIModel> extends RequestO
  * Request type for multiple elements properties requests.
  * @beta
  */
-export interface MultiElementPropertiesRequestOptions<TIModel> extends Paged<RequestOptions<TIModel>> {
+export interface MultiElementPropertiesRequestOptions<TIModel> extends RequestOptions<TIModel> {
   /** Classes of the elements to get properties for. If `elementClasses` is undefined all classes
    * are used. Classes should be specified in one of these formats: "<schema name or alias>.<class_name>",
    * "<schema name or alias>:<class_name>".

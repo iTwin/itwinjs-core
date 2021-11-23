@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-common",
+      "comment": "Remove ability to get multiple element properties over RPC.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-common"
+}
