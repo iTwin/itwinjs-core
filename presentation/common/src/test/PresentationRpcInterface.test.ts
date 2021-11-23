@@ -15,7 +15,7 @@ import {
 import { FieldDescriptorType } from "../presentation-common/content/Fields";
 import {
   ContentInstanceKeysRpcRequestOptions, FilterByInstancePathsHierarchyRpcRequestOptions, FilterByTextHierarchyRpcRequestOptions,
-  MultiElementPropertiesRpcRequestOptions, SingleElementPropertiesRpcRequestOptions,
+  SingleElementPropertiesRpcRequestOptions,
 } from "../presentation-common/PresentationRpcInterface";
 import { createTestContentDescriptor } from "./_helpers/Content";
 import { createRandomECInstanceKey, createRandomECInstancesNodeKey, createRandomECInstancesNodeKeyJSON } from "./_helpers/random";
@@ -171,17 +171,9 @@ describe("PresentationRpcInterface", () => {
       expect(spy).to.be.calledOnceWith(toArguments(token, options));
     });
 
-    it("forwards getElementProperties call with single element options", async () => {
+    it("forwards getElementProperties call", async () => {
       const options: SingleElementPropertiesRpcRequestOptions = {
         elementId: "0x1",
-      };
-      await rpcInterface.getElementProperties(token, options);
-      expect(spy).to.be.calledOnceWith(toArguments(token, options));
-    });
-
-    it("forwards getElementProperties call with multi element options", async () => {
-      const options: MultiElementPropertiesRpcRequestOptions = {
-        elementClasses: ["TestSchema:TestClass"],
       };
       await rpcInterface.getElementProperties(token, options);
       expect(spy).to.be.calledOnceWith(toArguments(token, options));
