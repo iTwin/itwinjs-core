@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { assert } from "@itwin/core-bentley";
-import { ElectronHost, ElectronHostOptions } from "@itwin/core-electron/lib/cjs/ElectronBackend";
+import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
 import { getRpcInterfaces, initializeDtaBackend, loadBackendConfig } from "./Backend";
 import { IpcHandler } from "@itwin/core-backend";
@@ -46,17 +46,12 @@ const dtaElectronMain = async () => {
   // Need to load the config first to get the electron options
   loadBackendConfig();
 
-  const opts: ElectronHostOptions = {
+  const opts = {
     webResourcesPath: path.join(__dirname, "..", "..", "build"),
     iconName: "display-test-app.ico",
     rpcInterfaces: getRpcInterfaces(),
     ipcHandlers: [DtaHandler],
     developmentServer: process.env.NODE_ENV === "development",
-    authConfig: {
-      clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
-      redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
-      scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
-    },
   };
 
   await initializeDtaBackend(opts);

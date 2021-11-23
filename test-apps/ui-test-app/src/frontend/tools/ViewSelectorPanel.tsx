@@ -111,6 +111,9 @@ export function ViewSelectorPanel() {
       setViewContainers(newContainers ?? []);
       setActiveViewId(vp.view.id);
     };
+    if (activeViewport)
+      setActiveViewId(activeViewport.view.id);
+
     return activeViewport?.onChangeView.addListener(handleViewChanged);
   }, [activeViewId, activeViewport, viewContainers]);
 

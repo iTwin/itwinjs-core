@@ -10,7 +10,7 @@ import * as os from "os";
 import * as path from "path";
 import * as semver from "semver";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
-import { TelemetryManager } from "@bentley/telemetry-client";
+import { TelemetryManager } from "@itwin/core-telemetry";
 import { AccessToken, assert, BeEvent, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, ProcessDetector } from "@itwin/core-bentley";
 import { AuthorizationClient, BentleyStatus, IModelError, LocalDirName, SessionProps } from "@itwin/core-common";
 import { BackendHubAccess } from "./BackendHubAccess";
@@ -160,6 +160,10 @@ export class IModelHostConfiguration {
    */
   public crashReportingConfig?: CrashReportingConfig;
 
+  /** The AuthorizationClient used to get accessTokens
+   * @beta
+   */
+  public authorizationClient?: AuthorizationClient;
 }
 
 /**
@@ -335,6 +339,8 @@ export class IModelHost {
 
     if (IModelHost.sessionId === "")
       IModelHost.sessionId = Guid.createValue();
+
+    this.authorizationClient = configuration.authorizationClient;
 
     this.logStartup();
 
