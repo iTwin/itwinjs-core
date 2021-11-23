@@ -283,8 +283,13 @@ export class ElectronHost {
 
     const authorizationBackend = new ElectronAuthorizationBackend(opts.electronHost?.authConfig);
     const connectivityStatus = NativeHost.checkInternetConnectivity();
-    if (opts.electronHost?.authConfig && true !== opts.electronHost?.noInitializeAuthClient && connectivityStatus === InternetConnectivityStatus.Online)
-      await authorizationBackend.initialize(opts.electronHost?.authConfig);
+    if (opts.electronHost?.authConfig && true !== opts.electronHost?.noInitializeAuthClient && connectivityStatus === InternetConnectivityStatus.Online) {
+      try {
+        await authorizationBackend.initialize(opts.electronHost?.authConfig);
+      } catch (_) {
+        // Presumably a non-mobile device disconnected from internet
+      }
+    }
 
     IModelHost.authorizationClient = authorizationBackend;
   }

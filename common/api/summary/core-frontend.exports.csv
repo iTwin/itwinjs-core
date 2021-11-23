@@ -30,7 +30,8 @@ internal;addRangeGraphic(builder: GraphicBuilder, range: Range3d, is2d: boolean)
 beta;AngleDescription 
 internal;AnimatedTreeReference 
 internal;AnimationBranchState
-internal;AnimationBranchStates = Map
+internal;AnimationBranchStates
+internal;AnimationNodeId
 public;Animator
 internal;ArcGisErrorCode
 internal;ArcGisGenerateTokenOptions
@@ -102,7 +103,7 @@ internal;createDefaultViewFlagOverrides(options:
 internal;createEmptyRenderPlan(): RenderPlan
 internal;createMaskTreeReference(view: ViewState, model: GeometricModelState): TileTreeReference
 internal;createOrbitGtTileTreeReference(props: OrbitGtTileTree.ReferenceProps): RealityModelTileTree.Reference
-internal;createPrimaryTileTreeReference(view: ViewState, model: GeometricModelState): TileTreeReference
+internal;createPrimaryTileTreeReference(view: ViewState, model: GeometricModelState): PrimaryTreeReference
 internal;createRealityTileTreeReference(props: RealityModelTileTree.ReferenceProps): RealityModelTileTree.Reference
 internal;createRenderPlanFromViewport(vp: Viewport): RenderPlan
 public;CreateTextureArgs
@@ -164,6 +165,7 @@ public;FlashMode
 public;FlashSettings
 public;FlashSettingsOptions = Mutable
 public;FlyViewTool 
+internal;formatAnimationBranchId(modelId: Id64String, branchId: number): string
 beta;class FormattedQuantityDescription 
 beta;FormatterParserSpecsProvider
 beta;FormattingUnitSystemChangedArgs
@@ -564,7 +566,6 @@ public;TileRequest
 public;TileRequestChannel
 public;TileRequestChannels
 public;TileRequestChannelStatistics
-public;Tiles
 public;class TileTree
 public;TileTreeDiscloser
 public;TileTreeLoadStatus
