@@ -55,6 +55,8 @@ export interface IModelTileTreeProps extends TileTreeProps {
   maxInitialTilesToSkip?: number;
   /** Optionally specifies the maximum tile format version supported. */
   formatVersion?: number;
+  /** Size of each tile in pixels. Defaults to 512. Will be 2048 if TileAdmin.useLargerTiles is true. */
+  tileScreenSize?: number;
 }
 
 /** Metadata describing the version/format of the tiles supplied by the backend.

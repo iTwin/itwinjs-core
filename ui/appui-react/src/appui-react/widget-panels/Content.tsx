@@ -38,10 +38,7 @@ export function useWidgetDef(): WidgetDef | undefined {
         return;
       setWidgetDef(frontstage.findWidgetDef(tabId));
     };
-    FrontstageManager.onFrontstageNineZoneStateChangedEvent.addListener(listener);
-    return () => {
-      FrontstageManager.onFrontstageNineZoneStateChangedEvent.removeListener(listener);
-    };
+    return FrontstageManager.onFrontstageNineZoneStateChangedEvent.addListener(listener);
   }, [frontstage, tabId]);
 
   React.useEffect(() => {

@@ -13,6 +13,8 @@ The application may be run as an Electron app, Mobile app or within a browser. T
     > If you intend to use the ui-test-app offline with a snapshot iModel, you can safely ignore these instructions. When prompted to sign-in click the "Work offline" button.
 3. Optionally, set other environment variables to configure the application prior to startup. The full list of supported variable are [below](#environment-variables).
 
+Note: Before running `ui-test-app` for the first time, use the command `npm run build:ci` from the `ui-test-app` directory to ensure all assets are properly displayed when running locally.
+
 * To start the application in Electron, navigate to the root of ui-test-app, and use the command:
 
   ```cmd

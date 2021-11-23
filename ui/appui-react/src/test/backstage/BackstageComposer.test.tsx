@@ -13,7 +13,7 @@ import { Backstage as NZ_Backstage } from "@itwin/appui-layout-react";
 import { BackstageComposer, BackstageComposerActionItem, BackstageComposerStageLauncher, BackstageManager, SyncUiEventDispatcher, UiFramework, useGroupedItems } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 import { getActionItem, getStageLauncherItem } from "./BackstageComposerItem.test";
-import { act } from "@testing-library/react";
+import { act, render } from "@testing-library/react";
 
 const uiSyncEventId = "appuiprovider:backstage-item-visibility-changed";
 
@@ -26,14 +26,16 @@ class TestUiItemsProvider implements UiItemsProvider {
   public readonly id = "BackstageComposer-TestUiProvider";
   public static sampleStatusVisible = true;
 
+  constructor(public testWithDuplicate = false) { }
+
   public provideBackstageItems(): BackstageItem[] {
     const isHiddenItem = new ConditionalBooleanValue(() => !TestUiItemsProvider.sampleStatusVisible, [uiSyncEventId]);
-
-    return [
-      BackstageItemUtilities.createActionItem("UiItemsProviderTest:backstage1", 500, 50, () => { }, "Dynamic Action", undefined, "icon-addon"),
-      BackstageItemUtilities.createActionItem("UiItemsProviderTest:backstage2", 600, 50, () => { }, "Dynamic Action", undefined, "icon-addon2", { isHidden: isHiddenItem }),
-      BackstageItemUtilities.createActionItem("UiItemsProviderTest:backstage3", 600, 30, () => { }, "Dynamic Action", undefined, "icon-addon3"),
-    ];
+    const items: BackstageItem[] = [];
+    items.push(BackstageItemUtilities.createActionItem("UiItemsProviderTest:backstage1", 500, 50, () => { }, "Dynamic Action", undefined, "icon-addon"));
+    items.push(BackstageItemUtilities.createActionItem("UiItemsProviderTest:backstage2", 600, 50, () => { }, "Dynamic Action", undefined, "icon-addon2", { isHidden: isHiddenItem }));
+    items.push(BackstageItemUtilities.createActionItem("UiItemsProviderTest:backstage3", 600, 30, () => { }, "Dynamic Action", undefined, "icon-addon3"));
+    this.testWithDuplicate && items.push(BackstageItemUtilities.createActionItem("UiItemsProviderTest:backstage3", 600, 30, () => { }, "Dynamic Action", undefined, "icon-addon3"));
+    return items;
   }
 }
 
@@ -68,6 +70,17 @@ describe("BackstageComposer", () => {
       getStageLauncherItem(),
     ];
     shallow(<BackstageComposer items={items} />).should.matchSnapshot();
+  });
+
+  it("should render single action item with hideSoloStageEntry set", async () => {
+    const items: BackstageItem[] = [
+      getActionItem({ groupPriority: 200 }),
+      getStageLauncherItem(),
+    ];
+    const wrapper = render(<BackstageComposer hideSoloStageEntry items={items} />);
+    expect(wrapper.container.querySelectorAll(".nz-backstage-item").length).equals(1);
+    wrapper.rerender(<BackstageComposer items={items} />);
+    expect(wrapper.container.querySelectorAll(".nz-backstage-item").length).equals(2);
   });
 
   it("should honor prop updates", async () => {
@@ -126,6 +139,41 @@ describe("BackstageComposer", () => {
     await TestUtils.flushAsyncOperations();
     wrapper.update();
 
+    addonItem = wrapper.find("i.icon-addon");
+    expect(addonItem.exists()).to.be.false;
+  });
+
+  it("should filter out duplicate items", async () => {
+    const items: BackstageItem[] = [
+      getActionItem({ groupPriority: 200 }),
+      getStageLauncherItem(),
+      getStageLauncherItem(),
+    ];
+
+    const uiProvider = new TestUiItemsProvider(true);
+    const wrapper = mount(<BackstageComposer items={items} />);
+    expect(wrapper.find("li[data-item-type='backstage-item']")).to.have.lengthOf(2);
+
+    let addonItem = wrapper.find("i.icon-addon");
+    expect(addonItem.exists()).to.be.false;
+
+    act(() => UiItemsManager.register(uiProvider));
+    await TestUtils.flushAsyncOperations();
+    wrapper.update();
+    addonItem = wrapper.find("i.icon-addon");
+    expect(addonItem.exists()).to.be.true;
+    let addonItem2 = wrapper.find("i.icon-addon2");
+    expect(addonItem.exists()).to.be.true;
+    expect(wrapper.find("li[data-item-type='backstage-item']")).to.have.lengthOf(4);
+
+    act(() => triggerSyncRefresh());
+    await TestUtils.flushAsyncOperations();
+    wrapper.update();
+    addonItem2 = wrapper.find("i.icon-addon2");
+    expect(addonItem2.exists()).to.be.false;
+    act(() => UiItemsManager.unregister(uiProvider.id));
+    await TestUtils.flushAsyncOperations();
+    wrapper.update();
     addonItem = wrapper.find("i.icon-addon");
     expect(addonItem.exists()).to.be.false;
   });

@@ -1,6 +1,6 @@
 {
   "name": "@itwin/appui-layout-react",
-  "version": "3.0.0-dev.115",
+  "version": "3.0.0-dev.127",
   "description": "iModel.js Nine-zone React UI components",
   "main": "lib/cjs/appui-layout-react.js",
   "module": "lib/esm/appui-layout-react.js",
@@ -37,9 +37,9 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.115",
-    "@itwin/appui-abstract": "workspace:^3.0.0-dev.115",
-    "@itwin/core-react": "workspace:^3.0.0-dev.115",
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.127",
+    "@itwin/appui-abstract": "workspace:^3.0.0-dev.127",
+    "@itwin/core-react": "workspace:^3.0.0-dev.127",
     "react": "^17.0.0",
     "react-dom": "^17.0.0"
   },
@@ -69,7 +69,7 @@
     "chai-as-promised": "^7",
     "chai-jest-snapshot": "^2.0.0",
     "chai-spies": "1.0.0",
-    "cpx": "^1.5.0",
+    "cpx2": "^3.0.0",
     "enzyme": "^3.4.0",
     "@wojtekmaj/enzyme-adapter-react-17": "^0.6.3",
     "enzyme-to-json": "^3.3.4",

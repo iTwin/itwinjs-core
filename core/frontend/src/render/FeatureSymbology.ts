@@ -148,10 +148,11 @@ export namespace FeatureSymbology {
         }
       }
       const style = view.displayStyle;
-      style.settings.modelAppearanceOverrides.forEach((override, modelId) => this.overrideModel(modelId, override, false));
+      style.settings.modelAppearanceOverrides.forEach((appearance, modelId) => this.override({ modelId, appearance, onConflict: "skip" }));
+
       style.forEachRealityModel((realityModel) => {
         if (realityModel.appearanceOverrides && realityModel.modelId)
-          this.overrideModel(realityModel.modelId, realityModel.appearanceOverrides);
+          this.override({ modelId: realityModel.modelId, appearance: realityModel.appearanceOverrides });
       });
 
       const script = style.scheduleState;
@@ -167,7 +168,7 @@ export namespace FeatureSymbology {
 
       for (const [modelId, projSettings] of planProjectionSettings) {
         if (undefined !== projSettings.transparency)
-          this.overrideModel(modelId, FeatureAppearance.fromJSON({ transparency: projSettings.transparency }));
+          this.override({ modelId, appearance: FeatureAppearance.fromJSON({ transparency: projSettings.transparency }) });
       }
     }
 
