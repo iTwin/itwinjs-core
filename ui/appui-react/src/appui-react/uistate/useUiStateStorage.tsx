@@ -11,15 +11,13 @@ import { LocalStateStorage, UiStateStorage } from "@itwin/core-react";
 import { UiFramework } from "../UiFramework";
 import { SyncUiEventArgs, SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 
-/** eslint-disable deprecation/deprecation */
-
 /** @public */
-export function useUiStateStorageHandler(): UiStateStorage { // eslint-disable-line deprecation/deprecation
+export function useUiStateStorageHandler(): UiStateStorage {
   return React.useContext(UiStateStorageContext);
 }
 
 /** @internal */
-export const UiStateStorageContext = React.createContext<UiStateStorage>(new LocalStateStorage()); // eslint-disable-line @typescript-eslint/naming-convention, deprecation/deprecation
+export const UiStateStorageContext = React.createContext<UiStateStorage>(new LocalStateStorage()); // eslint-disable-line @typescript-eslint/naming-convention
 UiStateStorageContext.displayName = "uifw:UiStateStorageContext";
 
 /** Properties for the [[UiStateStorageHandler]] component.

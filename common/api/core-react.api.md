@@ -2379,7 +2379,7 @@ export class UiGeometry {
     static hypotenuseXY(x: number, y: number): number;
 }
 
-// @public @deprecated
+// @public
 export class UiStateEntry<T> {
     constructor(settingNamespace: string, settingName: string, getValue: () => T, applyValue?: ((v: T) => void) | undefined, defaultValue?: T | undefined);
     // (undocumented)

@@ -12,8 +12,6 @@ import { FrameworkVersionId, UiFramework, UserSettingsProvider } from "../UiFram
 
 // cSpell:ignore configurableui
 
-/* eslint-disable deprecation/deprecation */
-
 /** Default values that may be specified for [[AppUiSettings]].
  * @public
  */

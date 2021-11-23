@@ -12,7 +12,6 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { copyStyles } from "./CopyStyles";
 import { Provider } from "react-redux";
-import { UiFramework } from "../UiFramework";
 import { StateManager } from "../redux/StateManager";
 import { UiStateStorageHandler } from "../uistate/useUiStateStorage";
 import { PopupRenderer } from "../popup/PopupManager";

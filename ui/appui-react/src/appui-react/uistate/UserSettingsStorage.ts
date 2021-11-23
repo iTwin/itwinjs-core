@@ -6,8 +6,6 @@
  * @module UiStateStorage
  */
 
-/* eslint-disable deprecation/deprecation */
-
 import { IModelApp } from "@itwin/core-frontend";
 import { UiStateStorage, UiStateStorageResult, UiStateStorageStatus } from "@itwin/core-react";
 
