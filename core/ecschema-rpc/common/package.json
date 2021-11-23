@@ -31,20 +31,20 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
+    "@bentley/itwin-client": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
-    "@itwin/ecschema-metadata": "workspace:*",
-    "@itwin/core-geometry": "workspace:*",
     "@itwin/core-common": "workspace:*",
-    "@bentley/itwin-client": "workspace:*"
+    "@itwin/core-geometry": "workspace:*",
+    "@itwin/ecschema-metadata": "workspace:*"
   },
   "devDependencies": {
-    "@itwin/core-bentley": "workspace:*",
+    "@bentley/itwin-client": "workspace:*",
     "@itwin/build-tools": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
-    "@itwin/core-geometry": "workspace:*",
-    "@itwin/core-common": "workspace:*",
-    "@bentley/itwin-client": "workspace:*",
     "eslint": "^7.11.0",
     "rimraf": "^3.0.2",
     "typescript": "~4.4.0"

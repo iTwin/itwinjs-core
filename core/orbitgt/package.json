@@ -32,8 +32,8 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@itwin/core-bentley": "workspace:*",
     "@itwin/build-tools": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^8.2.2",
