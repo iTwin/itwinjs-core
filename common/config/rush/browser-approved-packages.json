@@ -32,7 +32,7 @@
     },
     {
       "name": "@bentley/react-scripts",
-      "allowedCategories": [ "extensions", "internal" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@bentley/reality-data-client",
@@ -308,7 +308,7 @@
     },
     {
       "name": "almost-equal",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "autoprefixer",
@@ -344,7 +344,7 @@
     },
     {
       "name": "chai-as-promised",
-      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "chai-jest-snapshot",
@@ -432,7 +432,7 @@
     },
     {
       "name": "electron",
-      "allowedCategories": [ "backend", "edit", "internal", "tools" ]
+      "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
       "name": "enzyme",
@@ -540,11 +540,11 @@
     },
     {
       "name": "fuse.js",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "glob",
-      "allowedCategories": [ "backend", "edit", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "frontend", "internal", "tools" ]
     },
     {
       "name": "got",
@@ -592,7 +592,7 @@
     },
     {
       "name": "js-base64",
-      "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "common", "integration-testing" ]
     },
     {
       "name": "jsdom",
@@ -831,10 +831,6 @@
       "allowedCategories": [ "frontend" ]
     },
     {
-      "name": "save",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "semver",
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
@@ -844,7 +840,7 @@
     },
     {
       "name": "sinon",
-      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal", "tools" ]
     },
     {
       "name": "sinon-chai",
@@ -852,11 +848,11 @@
     },
     {
       "name": "source-map-loader",
-      "allowedCategories": [ "common", "edit", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "common", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "source-map-support",
-      "allowedCategories": [ "backend", "edit", "frontend", "tools" ]
+      "allowedCategories": [ "frontend", "tools" ]
     },
     {
       "name": "spdy",
@@ -952,7 +948,7 @@
     },
     {
       "name": "xmlhttprequest",
-      "allowedCategories": [ "common", "frontend" ]
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "xpath",
