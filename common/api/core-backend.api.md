@@ -108,7 +108,6 @@ import { IModelRpcProps } from '@itwin/core-common';
 import { IModelStatus } from '@itwin/core-bentley';
 import { IModelTileTreeProps } from '@itwin/core-common';
 import { IModelVersion } from '@itwin/core-common';
-import { ImsAuthorizationClient } from '@bentley/itwin-client';
 import { IndexedPolyface } from '@itwin/core-geometry';
 import { InformationPartitionElementProps } from '@itwin/core-common';
 import { InternetConnectivityStatus } from '@itwin/core-common';
@@ -134,7 +133,6 @@ import { ModelLoadProps } from '@itwin/core-common';
 import { ModelProps } from '@itwin/core-common';
 import { ModelSelectorProps } from '@itwin/core-common';
 import { Mutable } from '@itwin/core-bentley';
-import { NativeAppAuthorizationConfiguration } from '@itwin/core-common';
 import { NativeAppNotifications } from '@itwin/core-common';
 import { NativeLoggerCategory } from '@bentley/imodeljs-native';
 import { NavigationBindingValue } from '@itwin/core-common';
@@ -2530,6 +2528,8 @@ export class IModelHost {
 // @public
 export class IModelHostConfiguration {
     appAssetsDir?: LocalDirName;
+    // @beta
+    authorizationClient?: AuthorizationClient;
     cacheDir?: LocalDirName;
     compressCachedTiles?: boolean;
     // @alpha
@@ -3108,31 +3108,6 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
     toJSON(): ModelSelectorProps;
 }
 
-// @internal (undocumented)
-export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClient implements AuthorizationClient {
-    protected constructor(config?: NativeAppAuthorizationConfiguration);
-    // (undocumented)
-    protected _accessToken: AccessToken;
-    // (undocumented)
-    config?: NativeAppAuthorizationConfiguration;
-    // (undocumented)
-    expireSafety: number;
-    // (undocumented)
-    getAccessToken(): Promise<AccessToken>;
-    // (undocumented)
-    initialize(config?: NativeAppAuthorizationConfiguration): Promise<void>;
-    // (undocumented)
-    issuerUrl?: string;
-    // (undocumented)
-    protected abstract refreshToken(): Promise<AccessToken>;
-    // (undocumented)
-    setAccessToken(token: AccessToken): void;
-    // (undocumented)
-    abstract signIn(): Promise<void>;
-    // (undocumented)
-    abstract signOut(): Promise<void>;
-}
-
 // @public
 export class NativeAppStorage {
     close(deleteFile?: boolean): void;
@@ -3162,13 +3137,10 @@ export class NativeHost {
     // (undocumented)
     static get applicationName(): string;
     static get appSettingsCacheDir(): string;
-    // @internal (undocumented)
-    static get authorization(): NativeAppAuthorizationBackend;
     static checkInternetConnectivity(): InternetConnectivityStatus;
     // (undocumented)
     static get isValid(): boolean;
     static notifyNativeFrontend<T extends keyof NativeAppNotifications>(methodName: T, ...args: Parameters<NativeAppNotifications[T]>): void;
-    static readonly onAccessTokenChanged: BeEvent<(token: AccessToken) => void>;
     static readonly onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void>;
     // @internal
     static overrideInternetConnectivity(_overridenBy: OverriddenBy, status: InternetConnectivityStatus): void;

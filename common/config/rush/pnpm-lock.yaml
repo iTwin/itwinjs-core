@@ -147,7 +147,7 @@ importers:
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@itwin/oidc-signin-tool': ^3.0.0-dev.109
+      '@itwin/oidc-signin-tool': ^3.0.0-dev.110
       '@itwin/projects-client': ^0.2.0
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
@@ -182,7 +182,7 @@ importers:
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@itwin/oidc-signin-tool': 3.0.0-dev.109
+      '@itwin/oidc-signin-tool': 3.0.0-dev.110
       '@itwin/projects-client': 0.2.0
       '@types/chai': 4.2.22
       '@types/chai-as-promised': 7.1.4
@@ -1394,7 +1394,7 @@ importers:
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@itwin/oidc-signin-tool': ^3.0.0-dev.109
+      '@itwin/oidc-signin-tool': ^3.0.0-dev.110
       '@types/chai': ^4.1.4
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
@@ -1416,7 +1416,7 @@ importers:
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@itwin/oidc-signin-tool': 3.0.0-dev.109_electron@14.2.1
+      '@itwin/oidc-signin-tool': 3.0.0-dev.110_electron@14.2.1
       '@types/chai': 4.2.22
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
@@ -1438,7 +1438,7 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/core-transformer': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@itwin/oidc-signin-tool': ^3.0.0-dev.109
+      '@itwin/oidc-signin-tool': ^3.0.0-dev.110
       '@itwin/projects-client': ^0.2.0
       '@itwin/service-authorization': ^0.3.0
       '@types/chai': ^4.1.4
@@ -1468,7 +1468,7 @@ importers:
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@itwin/oidc-signin-tool': 3.0.0-dev.109
+      '@itwin/oidc-signin-tool': 3.0.0-dev.110
       '@types/chai': 4.2.22
       '@types/chai-as-promised': 7.1.4
       '@types/fs-extra': 4.0.12
@@ -1629,7 +1629,7 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/ecschema-metadata': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@itwin/oidc-signin-tool': ^3.0.0-dev.109
+      '@itwin/oidc-signin-tool': ^3.0.0-dev.110
       '@itwin/perf-tools': workspace:*
       '@itwin/projects-client': ^0.2.0
       '@types/chai': ^4.1.4
@@ -1661,7 +1661,7 @@ importers:
       '@itwin/core-common': link:../../core/common
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
-      '@itwin/oidc-signin-tool': 3.0.0-dev.109
+      '@itwin/oidc-signin-tool': 3.0.0-dev.110
       '@itwin/perf-tools': link:../../tools/perf-tools
       '@itwin/projects-client': 0.2.0
       azurite: 3.14.3
@@ -1704,10 +1704,11 @@ importers:
       '@itwin/editor-backend': workspace:*
       '@itwin/editor-common': workspace:*
       '@itwin/editor-frontend': workspace:*
+      '@itwin/electron-authorization': ^0.3.2
       '@itwin/eslint-plugin': workspace:*
       '@itwin/express-server': workspace:*
       '@itwin/hypermodeling-frontend': workspace:*
-      '@itwin/oidc-signin-tool': ^3.0.0-dev.109
+      '@itwin/oidc-signin-tool': ^3.0.0-dev.110
       '@itwin/projects-client': ^0.2.0
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
@@ -1747,6 +1748,7 @@ importers:
       '@itwin/editor-backend': link:../../editor/backend
       '@itwin/editor-common': link:../../editor/common
       '@itwin/editor-frontend': link:../../editor/frontend
+      '@itwin/electron-authorization': 0.3.2
       '@itwin/express-server': link:../../core/express-server
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
       chai: 4.3.4
@@ -1757,7 +1759,7 @@ importers:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@itwin/oidc-signin-tool': 3.0.0-dev.109_electron@14.2.1
+      '@itwin/oidc-signin-tool': 3.0.0-dev.110_electron@14.2.1
       '@itwin/projects-client': 0.2.0
       '@types/chai': 4.2.22
       '@types/chai-as-promised': 7.1.4
@@ -1796,7 +1798,7 @@ importers:
       '@itwin/ecschema-rpcinterface-common': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@itwin/express-server': workspace:*
-      '@itwin/oidc-signin-tool': ^3.0.0-dev.109
+      '@itwin/oidc-signin-tool': ^3.0.0-dev.110
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-frontend': workspace:*
       '@itwin/projects-client': ^0.2.0
@@ -1834,7 +1836,7 @@ importers:
       '@itwin/core-quantity': link:../../core/quantity
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
       '@itwin/ecschema-rpcinterface-common': link:../../core/ecschema-rpc/common
-      '@itwin/oidc-signin-tool': 3.0.0-dev.109
+      '@itwin/oidc-signin-tool': 3.0.0-dev.110
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-frontend': link:../../presentation/frontend
       chai: 4.3.4
@@ -1873,7 +1875,7 @@ importers:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@itwin/oidc-signin-tool': ^3.0.0-dev.109
+      '@itwin/oidc-signin-tool': ^3.0.0-dev.110
       '@itwin/projects-client': ^0.2.0
       '@types/chai': ^4.1.4
       '@types/deep-assign': ^0.1.0
@@ -1907,7 +1909,7 @@ importers:
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@itwin/oidc-signin-tool': 3.0.0-dev.109
+      '@itwin/oidc-signin-tool': 3.0.0-dev.110
       '@itwin/projects-client': 0.2.0
       '@types/chai': 4.2.22
       '@types/deep-assign': 0.1.1
@@ -1937,7 +1939,7 @@ importers:
       '@itwin/core-quantity': workspace:*
       '@itwin/core-react': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@itwin/oidc-signin-tool': ^3.0.0-dev.109
+      '@itwin/oidc-signin-tool': ^3.0.0-dev.110
       '@itwin/presentation-backend': workspace:*
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-components': workspace:*
@@ -1995,7 +1997,7 @@ importers:
       '@itwin/core-i18n': link:../../core/i18n
       '@itwin/core-quantity': link:../../core/quantity
       '@itwin/core-react': link:../../ui/core-react
-      '@itwin/oidc-signin-tool': 3.0.0-dev.109
+      '@itwin/oidc-signin-tool': 3.0.0-dev.110
       '@itwin/presentation-backend': link:../../presentation/backend
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-components': link:../../presentation/components
@@ -2086,7 +2088,6 @@ importers:
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-mobile': link:../../core/mobile
       '@itwin/express-server': link:../../core/express-server
-      chai: 4.3.4
       electron: 14.2.1
       express: 4.17.1
       semver: 5.7.1
@@ -2101,6 +2102,7 @@ importers:
       '@types/node': 14.14.31
       '@types/semver': 5.5.0
       '@types/spdy': 3.4.5
+      chai: 4.3.4
       eslint: 7.32.0
       glob: 7.2.0
       null-loader: 0.1.1
@@ -2123,7 +2125,7 @@ importers:
       '@itwin/core-quantity': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@itwin/express-server': workspace:*
-      '@itwin/oidc-signin-tool': ^3.0.0-dev.109
+      '@itwin/oidc-signin-tool': ^3.0.0-dev.110
       '@itwin/presentation-backend': workspace:*
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-frontend': workspace:*
@@ -2161,7 +2163,7 @@ importers:
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-quantity': link:../../core/quantity
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@itwin/oidc-signin-tool': 3.0.0-dev.109
+      '@itwin/oidc-signin-tool': 3.0.0-dev.110
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-frontend': link:../../presentation/frontend
       '@itwin/service-authorization': 0.3.0
@@ -2634,6 +2636,7 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/core-mobile': workspace:*
       '@itwin/core-quantity': workspace:*
+      '@itwin/electron-authorization': ^0.3.2
       '@itwin/eslint-plugin': workspace:*
       '@itwin/hypermodeling-frontend': workspace:*
       '@itwin/perf-tools': workspace:*
@@ -2670,6 +2673,7 @@ importers:
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-mobile': link:../../core/mobile
       '@itwin/core-quantity': link:../../core/quantity
+      '@itwin/electron-authorization': 0.3.2
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
       '@itwin/reality-data-client': 3.0.0-dev.80
       body-parser: 1.19.0
@@ -2722,6 +2726,7 @@ importers:
       '@itwin/editor-backend': workspace:*
       '@itwin/editor-common': workspace:*
       '@itwin/editor-frontend': workspace:*
+      '@itwin/electron-authorization': ^0.3.2
       '@itwin/eslint-plugin': workspace:*
       '@itwin/frontend-devtools': workspace:*
       '@itwin/hypermodeling-frontend': workspace:*
@@ -2767,6 +2772,7 @@ importers:
       '@itwin/editor-backend': link:../../editor/backend
       '@itwin/editor-common': link:../../editor/common
       '@itwin/editor-frontend': link:../../editor/frontend
+      '@itwin/electron-authorization': 0.3.2
       '@itwin/frontend-devtools': link:../../core/frontend-devtools
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
       '@itwin/webgl-compatibility': link:../../core/webgl-compatibility
@@ -2988,6 +2994,7 @@ importers:
       '@itwin/core-electron': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/core-transformer': workspace:*
+      '@itwin/electron-authorization': ^0.3.2
       '@itwin/eslint-plugin': workspace:*
       '@itwin/projects-client': ^0.2.0
       '@types/chai': ^4.1.4
@@ -2996,8 +3003,10 @@ importers:
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
       '@types/yargs': ^12.0.5
+      cross-env: ^5.1.4
       dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
+      electron: ^14.0.0
       eslint: ^7.11.0
       fs-extra: ^8.1.0
       internal-tools: workspace:*
@@ -3014,6 +3023,7 @@ importers:
       '@itwin/core-electron': link:../../core/electron
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-transformer': link:../../core/transformer
+      '@itwin/electron-authorization': 0.3.2
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
       fs-extra: 8.1.0
@@ -3028,6 +3038,8 @@ importers:
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
       '@types/yargs': 12.0.20
+      cross-env: 5.2.1
+      electron: 14.2.1
       eslint: 7.32.0
       internal-tools: link:../../tools/internal
       mocha: 8.4.0
@@ -3049,6 +3061,7 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/core-quantity': workspace:*
       '@itwin/core-react': workspace:*
+      '@itwin/electron-authorization': ^0.3.2
       '@itwin/eslint-plugin': workspace:*
       '@itwin/express-server': workspace:*
       '@itwin/imodel-components-react': workspace:*
@@ -3069,6 +3082,7 @@ importers:
       dotenv-expand: ^5.1.0
       electron: ^14.0.0
       eslint: ^7.11.0
+      internal-tools: workspace:*
       npm-run-all: ^4.1.5
       postcss-flexbugs-fixes: 4.1.0
       postcss-loader: 3.0.0
@@ -3092,6 +3106,7 @@ importers:
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-quantity': link:../../core/quantity
       '@itwin/core-react': link:../../ui/core-react
+      '@itwin/electron-authorization': 0.3.2
       '@itwin/express-server': link:../../core/express-server
       '@itwin/imodel-components-react': link:../../ui/imodel-components-react
       '@itwin/itwinui-css': 0.37.2
@@ -3120,6 +3135,7 @@ importers:
       dotenv-expand: 5.1.0
       electron: 14.2.1
       eslint: 7.32.0
+      internal-tools: link:../../tools/internal
       npm-run-all: 4.1.5
       postcss-flexbugs-fixes: 4.1.0
       postcss-loader: 3.0.0
@@ -3218,6 +3234,7 @@ importers:
       '@itwin/editor-backend': workspace:*
       '@itwin/editor-common': workspace:*
       '@itwin/editor-frontend': workspace:*
+      '@itwin/electron-authorization': ^0.3.2
       '@itwin/eslint-plugin': workspace:*
       '@itwin/express-server': workspace:*
       '@itwin/frontend-devtools': workspace:*
@@ -3288,6 +3305,7 @@ importers:
       '@itwin/editor-backend': link:../../editor/backend
       '@itwin/editor-common': link:../../editor/common
       '@itwin/editor-frontend': link:../../editor/frontend
+      '@itwin/electron-authorization': 0.3.2
       '@itwin/express-server': link:../../core/express-server
       '@itwin/frontend-devtools': link:../../core/frontend-devtools
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
@@ -6139,6 +6157,22 @@ packages:
     requiresBuild: true
     dev: false
 
+  /@bentley/itwin-client/3.0.0-dev.127_7fdb6ffd00c0a40cffa93dcb4b2e0c86:
+    resolution: {integrity: sha512-zL1g0GutuuHS6UtJqskdY15EA26mGQurW15uf70b+XKq3X4vFDpc9a9geJ/7Lg0KzrdUpfgJJdHyzaV8PClXpw==}
+    peerDependencies:
+      '@itwin/core-bentley': ^3.0.0-dev.127
+    dependencies:
+      '@itwin/core-bentley': 3.0.0-dev.127
+      deep-assign: 2.0.0
+      js-base64: 3.7.2
+      lodash: 4.17.21
+      qs: 6.10.1
+      superagent: 5.3.1
+      xpath: 0.0.27
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
   /@bentley/itwin-client/3.0.0-extension.1_f2c3418fbeb77077b236020c30c9aae4:
     resolution: {integrity: sha512-TdC8vNcDN5Xy7x/TBFzh+/To6ibdcPK12hodO9fTvJpVEIAQGZEO1EDLE/jA1S4RqA3nWk2trU9bjqqmh1KgoQ==}
     peerDependencies:
@@ -6588,8 +6622,8 @@ packages:
       - '@itwin/core-geometry'
     dev: false
 
-  /@itwin/certa/3.0.0-extension.1:
-    resolution: {integrity: sha512-XQuXqErpFLKtLfQL/LOjIrwNHpx+hq/YprOnXfZYJg6qqtFHKGj0CxOCfh4x4HY+OJ6G4hzC132Ddj/iu1OHrw==}
+  /@itwin/certa/3.0.0-dev.127:
+    resolution: {integrity: sha512-+IFgkWPPJVk1rNWfPQQ9z8lJ0SEtlGrcolwcqwbyK7lX0Iqwtsa2MCmi8mEcwfDFGXzqamCMnDpJj9Vonm1hEw==}
     hasBin: true
     peerDependencies:
       electron: ^14.0.0
@@ -6611,8 +6645,8 @@ packages:
       - supports-color
       - utf-8-validate
 
-  /@itwin/certa/3.0.0-extension.1_electron@14.2.1:
-    resolution: {integrity: sha512-XQuXqErpFLKtLfQL/LOjIrwNHpx+hq/YprOnXfZYJg6qqtFHKGj0CxOCfh4x4HY+OJ6G4hzC132Ddj/iu1OHrw==}
+  /@itwin/certa/3.0.0-dev.127_electron@14.2.1:
+    resolution: {integrity: sha512-+IFgkWPPJVk1rNWfPQQ9z8lJ0SEtlGrcolwcqwbyK7lX0Iqwtsa2MCmi8mEcwfDFGXzqamCMnDpJj9Vonm1hEw==}
     hasBin: true
     peerDependencies:
       electron: ^14.0.0
@@ -6636,6 +6670,9 @@ packages:
       - utf-8-validate
     dev: true
 
+  /@itwin/core-bentley/3.0.0-dev.127:
+    resolution: {integrity: sha512-8C0GGQVQqCoHJxyyYF1tfo4CzgvRm3zeZCTlsOKh1czaPAFZW+yxh2HK/xJmUWuZTCs91c5lH0RYBT0vjPWGlQ==}
+
   /@itwin/core-bentley/3.0.0-extension.1:
     resolution: {integrity: sha512-3r1aRoZp694aqP2E0M9dZiaPSAC0E/E2VTvvN9K73NnlTvO4jpaIdt520oHp7tkGYx24VS9Q8+ED1Z0CH9+RkA==}
 
@@ -6651,6 +6688,20 @@ packages:
       flatbuffers: 1.12.0
       js-base64: 3.7.2
       semver: 5.7.1
+    dev: false
+
+  /@itwin/electron-authorization/0.3.2:
+    resolution: {integrity: sha512-lb1R6TOOh0u1c/nw6RWiXtJ2A6Is3NrPSwHvZ+Z23rZ7Ww5C0qutM4PYtVpf20Onmy2Lq6sQk8mHkHwP7B8j1w==}
+    dependencies:
+      '@bentley/itwin-client': 3.0.0-dev.127_7fdb6ffd00c0a40cffa93dcb4b2e0c86
+      '@itwin/core-bentley': 3.0.0-dev.127
+      '@openid/appauth': 1.3.1
+      keytar: 7.7.0
+      open: 8.4.0
+      username: 5.1.0
+    transitivePeerDependencies:
+      - debug
+      - supports-color
     dev: false
 
   /@itwin/itwinui-css/0.37.2:
@@ -6732,11 +6783,11 @@ packages:
       react-transition-group: 4.4.2_react@17.0.2
     dev: true
 
-  /@itwin/oidc-signin-tool/3.0.0-dev.109:
-    resolution: {integrity: sha512-FSvKHYag335iizMsyIECkpGO4TwJ002RTZwnl+vI3RwW8JcZZTNedlfZrBuLOeU8RWzZtHp937QppwQr/wI4vw==}
+  /@itwin/oidc-signin-tool/3.0.0-dev.110:
+    resolution: {integrity: sha512-uoTmMBqnEueiBQSzP6JjaTQu96fJa8JBqTESZZT/6Ub43jP1jYUcI+t0bk0lq3V4GF1GVWisTmcBaW6VK7kHsw==}
     dependencies:
-      '@itwin/certa': 3.0.0-extension.1
-      '@itwin/core-bentley': 3.0.0-extension.1
+      '@itwin/certa': 3.0.0-dev.127
+      '@itwin/core-bentley': 3.0.0-dev.127
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
       openid-client: 4.9.1
@@ -6747,11 +6798,11 @@ packages:
       - supports-color
       - utf-8-validate
 
-  /@itwin/oidc-signin-tool/3.0.0-dev.109_electron@14.2.1:
-    resolution: {integrity: sha512-FSvKHYag335iizMsyIECkpGO4TwJ002RTZwnl+vI3RwW8JcZZTNedlfZrBuLOeU8RWzZtHp937QppwQr/wI4vw==}
+  /@itwin/oidc-signin-tool/3.0.0-dev.110_electron@14.2.1:
+    resolution: {integrity: sha512-uoTmMBqnEueiBQSzP6JjaTQu96fJa8JBqTESZZT/6Ub43jP1jYUcI+t0bk0lq3V4GF1GVWisTmcBaW6VK7kHsw==}
     dependencies:
-      '@itwin/certa': 3.0.0-extension.1_electron@14.2.1
-      '@itwin/core-bentley': 3.0.0-extension.1
+      '@itwin/certa': 3.0.0-dev.127_electron@14.2.1
+      '@itwin/core-bentley': 3.0.0-dev.127
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
       openid-client: 4.9.1
@@ -8907,7 +8958,6 @@ packages:
       delegates: 1.0.0
       readable-stream: 2.3.7
     dev: false
-    optional: true
 
   /argparse/1.0.10:
     resolution: {integrity: sha512-o5Roy6tNG4SL/FOkCAN6RzjiakZS25RLYFrcMttJqbdd8BWrnA+fGz57iN5Pb06pvBGvl5gQ0B48dJlslXvoTg==}
@@ -10298,7 +10348,6 @@ packages:
     resolution: {integrity: sha1-DQcLTQQ6W+ozovGkDi7bPZpMz3c=}
     engines: {node: '>=0.10.0'}
     dev: false
-    optional: true
 
   /collect-v8-coverage/1.0.1:
     resolution: {integrity: sha512-iBPtljfCNcTKNAto0KEtDfZ3qzjJvqE3aTGZsbhjSBlorqpXJlaWWtPO35D+ZImoC3KWejX64o+yPGxhWSTzfg==}
@@ -10496,7 +10545,6 @@ packages:
   /console-control-strings/1.1.0:
     resolution: {integrity: sha1-PXz0Rk22RG6mRL9LOVB/mFEAjo4=}
     dev: false
-    optional: true
 
   /constants-browserify/1.0.0:
     resolution: {integrity: sha1-wguW2MYXdIqvHBYCF2DNJ/y4y3U=}
@@ -11105,7 +11153,6 @@ packages:
     dependencies:
       mimic-response: 2.1.0
     dev: false
-    optional: true
 
   /decompress-response/6.0.0:
     resolution: {integrity: sha512-aW35yZM6Bb/4oJlZncMH2LCoZtJXTRxES17vE3hoRiowU2kWHaJKFkSBDnDR+cm9J+9QhXmREyIfv0pji9ejCQ==}
@@ -11178,6 +11225,11 @@ packages:
     resolution: {integrity: sha512-4tvttepXG1VaYGrRibk5EwJd1t4udunSOVMdLSAL6mId1ix438oPwPZMALY41FCijukO1L0twNcGsdzS7dHgDg==}
     engines: {node: '>=10'}
 
+  /define-lazy-prop/2.0.0:
+    resolution: {integrity: sha512-Ds09qNh8yw3khSjiJjiUInaGX9xlqZDY7JVryGxdxV7NPeuqQfplOpQ66yJFZut3jLa5zOwkXw1g9EI2uKh4Og==}
+    engines: {node: '>=8'}
+    dev: false
+
   /define-properties/1.1.3:
     resolution: {integrity: sha512-3MqfYKj2lLzdMSf8ZIZE/V+Zuy+BgD6f164e8K2w7dgnpKArBDerGYpM46IYYcjnkdPNMjPk9A6VFB8+3SKlXQ==}
     engines: {node: '>= 0.4'}
@@ -11223,7 +11275,6 @@ packages:
   /delegates/1.0.0:
     resolution: {integrity: sha1-hMbhWbgZBP3KWaDvRM2HDTElD5o=}
     dev: false
-    optional: true
 
   /denque/2.0.1:
     resolution: {integrity: sha512-tfiWc6BQLXNLpNiR5iGd0Ocu3P3VpxfzFiqubLgMfhfOw9WyvgJBd46CClNn9k3qfbjvT//0cf7AlYRX/OslMQ==}
@@ -11265,7 +11316,6 @@ packages:
     engines: {node: '>=0.10'}
     hasBin: true
     dev: false
-    optional: true
 
   /detect-newline/3.1.0:
     resolution: {integrity: sha512-TLz+x/vEXm/Y7P7wn1EJFNLxYpUD4TgMosxY6fAVJUnJMbupHBOncxyWUG9OpTaH9EBD7uFI5LfEgmMOc54DsA==}
@@ -12249,7 +12299,6 @@ packages:
     resolution: {integrity: sha512-XYfuKMvj4O35f/pOXLObndIRvyQ+/+6AhODh+OKWj9S9498pHHn/IMszH+gt0fBCRWMNfk1ZSp5x3AifmnI2vg==}
     engines: {node: '>=6'}
     dev: false
-    optional: true
 
   /expand-tilde/2.0.2:
     resolution: {integrity: sha1-l+gBqgUt8CRU3kawK/YhZCzchQI=}
@@ -12848,7 +12897,6 @@ packages:
       strip-ansi: 3.0.1
       wide-align: 1.1.5
     dev: false
-    optional: true
 
   /generate-function/2.3.1:
     resolution: {integrity: sha512-eeB5GfMNeevm/GRYq20ShmsaGcmI81kIX2K9XQx5miC8KdHaC6Jm0qQ8ZNeGOi7wYB8OsdxKs+Y2oVuTFuVwKQ==}
@@ -12908,7 +12956,6 @@ packages:
   /github-from-package/0.0.0:
     resolution: {integrity: sha1-l/tdlr/eiXMxPyDoKI75oWf6ZM4=}
     dev: false
-    optional: true
 
   /glob-parent/3.1.0:
     resolution: {integrity: sha1-nmr2KZ2NO9K9QEMIMr0RPfkGxa4=}
@@ -13173,7 +13220,6 @@ packages:
   /has-unicode/2.0.1:
     resolution: {integrity: sha1-4Ob+aijPUROIVeCG0Wkedx3iqLk=}
     dev: false
-    optional: true
 
   /has-value/0.3.1:
     resolution: {integrity: sha1-ex9YutpiyoJ+wKIHgCVlSEWZXh8=}
@@ -13908,7 +13954,6 @@ packages:
     dependencies:
       number-is-nan: 1.0.1
     dev: false
-    optional: true
 
   /is-fullwidth-code-point/2.0.0:
     resolution: {integrity: sha1-o7MKXE8ZkYMWeqq5O+764937ZU8=}
@@ -15104,7 +15149,6 @@ packages:
       node-addon-api: 3.2.1
       prebuild-install: 6.1.4
     dev: false
-    optional: true
 
   /keyv/3.1.0:
     resolution: {integrity: sha512-9ykJ/46SN/9KPM/sichzQ7OvXyGDYKGTaDlKMGCAlg2UK8KRy4jb0d8sFc+0Tt0YYnThq8X2RZgCg74RPxgcVA==}
@@ -15730,7 +15774,6 @@ packages:
     resolution: {integrity: sha512-wXqjST+SLt7R009ySCglWBCFpjUygmCIfD790/kVbiGmUgfYGuB14PiTd5DwVxSV4NcYHjzMkoj5LjQZwTQLEA==}
     engines: {node: '>=8'}
     dev: false
-    optional: true
 
   /mimic-response/3.1.0:
     resolution: {integrity: sha512-z0yWI+4FDrrweS8Zmt4Ej5HdJmky15+L2e6Wgn3+iK5fWzb6T3fhNFq2+MeTRb064c6Wr4N/wv0DzQTjNzHNGQ==}
@@ -16036,7 +16079,6 @@ packages:
   /napi-build-utils/1.0.2:
     resolution: {integrity: sha512-ONmRUqK7zj7DWX0D9ADe03wbwOBZxNAfF20PlGfCWQcD3+/MakShIHrMqx9YwPTfxDdF1zLeL+RGZiR9kGMLdg==}
     dev: false
-    optional: true
 
   /native-duplexpair/1.0.0:
     resolution: {integrity: sha1-eJkHjmS/PIo9cyYBs9QP8F21j6A=}
@@ -16113,7 +16155,6 @@ packages:
     dependencies:
       semver: 5.7.1
     dev: false
-    optional: true
 
   /node-abort-controller/3.0.1:
     resolution: {integrity: sha512-/ujIVxthRs+7q6hsdjHMaj8hRG9NuWmwrz+JdRwZ14jdFoKSkm+vDsCbF9PLpnSqjaWQJuTmVtcWHNLr+vrOFw==}
@@ -16122,7 +16163,6 @@ packages:
   /node-addon-api/3.2.1:
     resolution: {integrity: sha512-mmcei9JghVNDYydghQmeDX8KoAm0FAiYyIcUt/N4nhyAipB17pllZQDOJD2fotxABnt4Mdz+dKTO7eftLg4d0A==}
     dev: false
-    optional: true
 
   /node-fetch/2.6.1:
     resolution: {integrity: sha512-V4aYg89jEoVRxRb2fJdAg8FHvI7cEyYdVAh94HH0UIK8oJxUfkjlDQN9RbMx+bEjP7+ggMiFRprSti032Oipxw==}
@@ -16318,7 +16358,6 @@ packages:
       gauge: 2.7.4
       set-blocking: 2.0.0
     dev: false
-    optional: true
 
   /nth-check/1.0.2:
     resolution: {integrity: sha512-WeBOdju8SnzPN5vTUJYxYUxLeXpCaVP5i5e0LF8fg7WORF2Wd7wFX/pk0tYZk7s8T+J7VLy0Da6J1+wCT0AtHg==}
@@ -16343,7 +16382,6 @@ packages:
     resolution: {integrity: sha1-CXtgK1NCKlIsGvuHkDGDNpQaAR0=}
     engines: {node: '>=0.10.0'}
     dev: false
-    optional: true
 
   /nwsapi/2.2.0:
     resolution: {integrity: sha512-h2AatdwYH+JHiZpv7pt/gSX1XoRGb7L/qSIeuqA6GwYoF9w1vP1cw42TO0aI2pNyshRK5893hNSl+1//vHK7hQ==}
@@ -16546,6 +16584,15 @@ packages:
     dependencies:
       is-docker: 2.2.1
       is-wsl: 2.2.0
+
+  /open/8.4.0:
+    resolution: {integrity: sha512-XgFPPM+B28FtCCgSb9I+s9szOC1vZRSwgWsRUA5ylIxRTgKozqjOCrVOqGsYABPYK5qnfqClxZTFBa8PKt2v6Q==}
+    engines: {node: '>=12'}
+    dependencies:
+      define-lazy-prop: 2.0.0
+      is-docker: 2.2.1
+      is-wsl: 2.2.0
+    dev: false
 
   /opener/1.5.2:
     resolution: {integrity: sha512-ur5UIdyw5Y7yEj9wLzhqXiy6GZ3Mwx0yGI+5sMn2r0N0v3cKJvUmFH5yPP+WXh9e0xfyzyJX95D8l088DNFj7A==}
@@ -17754,7 +17801,6 @@ packages:
       tar-fs: 2.1.1
       tunnel-agent: 0.6.0
     dev: false
-    optional: true
 
   /prelude-ls/1.1.2:
     resolution: {integrity: sha1-IZMqVJ9eUv/ZqCf1cOBL5iqX2lQ=}
@@ -19397,7 +19443,6 @@ packages:
   /simple-concat/1.0.1:
     resolution: {integrity: sha512-cSFtAPtRhljv69IK0hTVZQ+OfE9nePi/rtJmw5UjHeVyVroEqJXP1sFztKUy1qU+xvz3u/sfYJLa947b7nAN2Q==}
     dev: false
-    optional: true
 
   /simple-get/3.1.0:
     resolution: {integrity: sha512-bCR6cP+aTdScaQCnQKbPKtJOKDp/hj9EDLJo3Nw4y1QksqaovlW/bnptB6/c1e+qmNIDHRK+oXFDdEqBT8WzUA==}
@@ -19406,7 +19451,6 @@ packages:
       once: 1.4.0
       simple-concat: 1.0.1
     dev: false
-    optional: true
 
   /simple-swizzle/0.2.2:
     resolution: {integrity: sha1-pNprY1/8zMoz9w0Xy5JZLeleVXo=}
@@ -19797,7 +19841,6 @@ packages:
       is-fullwidth-code-point: 1.0.0
       strip-ansi: 3.0.1
     dev: false
-    optional: true
 
   /string-width/2.1.1:
     resolution: {integrity: sha512-nOqH59deCq9SRHlxq1Aw85Jnt4w6KvLKqWVik6oA9ZklXLNIOlqg4F2yrT1MVaTjAqvVwdfeZ7w7aCvJD7ugkw==}
@@ -20589,7 +20632,6 @@ packages:
     dependencies:
       safe-buffer: 5.2.1
     dev: false
-    optional: true
 
   /tunnel/0.0.6:
     resolution: {integrity: sha512-1h/Lnq9yajKY2PEbBadPXj3VxsDDu844OnaAo52UVmIzIvwwtBPIuNvkjuzBlTWpfJyUbG3ez0KSBibQkj4ojg==}
@@ -21404,9 +21446,8 @@ packages:
   /wide-align/1.1.5:
     resolution: {integrity: sha512-eDMORYaPNZ4sQIuuYPDHdQvf4gyCF9rEEV/yPxGfwPkRodwEgiMUUXTx/dex+Me0wxx53S+NgUHaP7y3MGlDmg==}
     dependencies:
-      string-width: 1.0.2
+      string-width: 4.2.3
     dev: false
-    optional: true
 
   /widest-line/3.1.0:
     resolution: {integrity: sha512-NsmoXalsWVDMGupxZ5R08ka9flZjjiLvHVAWYOKtiKM8ujtZWr9cRffak+uSE48+Ob8ObalXpwyeUiyDD6QFgg==}

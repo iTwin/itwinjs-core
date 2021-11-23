@@ -790,31 +790,34 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 
 ### @itwin/core-backend
 
-| Removed                                                      | Replacement                                    |
-| ------------------------------------------------------------ | ---------------------------------------------- |
-| `AutoPush`                                                   | _eliminated_                                   |
-| `BriefcaseDb.reinstateChanges`                               | `BriefcaseDb.pullChanges`                      |
-| `BriefcaseDb.reverseChanges`                                 | `BriefcaseDb.pullChanges`                      |
-| `BriefcaseIdValue`                                           | `BriefcaseIdValue` in @itwin/core-common       |
-| `BriefcaseManager.getCompatibilityFileName`                  | _eliminated_                                   |
-| `BriefcaseManager.getCompatibilityPath`                      | _eliminated_                                   |
-| `BriefcaseManager.isStandaloneBriefcaseId`                   | use `id === BriefcaseIdValue.Unassigned`       |
-| `compatibilityDir` argument of `BriefcaseManager.initialize` | _eliminated_                                   |
-| `DocumentCarrier`                                            | _eliminated_                                   |
-| `IModelDb.clearSqliteStatementCache`                         | `IModelDb.clearCaches`                         |
-| `IModelDb.clearStatementCache`                               | `IModelDb.clearCaches`                         |
-| `IModelHost.iModelClient`                                    | `IModelHubBackend.iModelClient`                |
-| `IModelHostConfiguration.briefcaseCacheDir`                  | `IModelHostConfiguration.cacheDir`             |
-| `InformationCarrierElement`                                  | _eliminated_                                   |
-| `Platform.isDesktop`                                         | `ProcessDetector.isElectronAppBackend`         |
-| `Platform.isElectron`                                        | `ProcessDetector.isElectronAppBackend`         |
-| `Platform.isMobile`                                          | `ProcessDetector.isMobileAppBackend`           |
-| `Platform.isNodeJs`                                          | `ProcessDetector.isNodeProcess`                |
-| `SnapshotDb.filePath`                                        | `SnapshotDb.pathName`                          |
-| `StandaloneDb.filePath`                                      | `StandaloneDb.pathName`                        |
-| `Texture.width, height, flags`                               | _eliminated_                                   |
-| `TxnAction`                                                  | `TxnAction` in @itwin/core-common              |
-| `TxnChangedEntities.inserted, deleted, updated`              | `TxnChangedEntities.inserts, deletes, updates` |
+| Removed                                                      | Replacement                                                        |
+| ------------------------------------------------------------ | -------------------------------------------------------------------|
+| `AutoPush`                                                   | _eliminated_                                                       |
+| `BriefcaseDb.reinstateChanges`                               | `BriefcaseDb.pullChanges`                                          |
+| `BriefcaseDb.reverseChanges`                                 | `BriefcaseDb.pullChanges`                                          |
+| `BriefcaseIdValue`                                           | `BriefcaseIdValue` in @itwin/core-common                           |
+| `BriefcaseManager.getCompatibilityFileName`                  | _eliminated_                                                       |
+| `BriefcaseManager.getCompatibilityPath`                      | _eliminated_                                                       |
+| `BriefcaseManager.isStandaloneBriefcaseId`                   | use `id === BriefcaseIdValue.Unassigned`                           |
+| `compatibilityDir` argument of `BriefcaseManager.initialize` | _eliminated_                                                       |
+| `DocumentCarrier`                                            | _eliminated_                                                       |
+| `IModelDb.clearSqliteStatementCache`                         | `IModelDb.clearCaches`                                             |
+| `IModelDb.clearStatementCache`                               | `IModelDb.clearCaches`                                             |
+| `IModelHost.iModelClient`                                    | `IModelHubBackend.iModelClient`                                    |
+| `IModelHostConfiguration.briefcaseCacheDir`                  | `IModelHostConfiguration.cacheDir`                                 |
+| `InformationCarrierElement`                                  | _eliminated_                                                       |
+| `Platform.isDesktop`                                         | `ProcessDetector.isElectronAppBackend`                             |
+| `Platform.isElectron`                                        | `ProcessDetector.isElectronAppBackend`                             |
+| `Platform.isMobile`                                          | `ProcessDetector.isMobileAppBackend`                               |
+| `Platform.isNodeJs`                                          | `ProcessDetector.isNodeProcess`                                    |
+| `SnapshotDb.filePath`                                        | `SnapshotDb.pathName`                                              |
+| `StandaloneDb.filePath`                                      | `StandaloneDb.pathName`                                            |
+| `Texture.width, height, flags`                               | _eliminated_                                                       |
+| `TxnAction`                                                  | `TxnAction` in @itwin/core-common                                  |
+| `TxnChangedEntities.inserted, deleted, updated`              | `TxnChangedEntities.inserts, deletes, updates`                     |
+| `NativeAppAuthorizationBackend`                              | Moved to @iTwin/auth-clients repo as `ElectronAuthorizationBackend`|
+| `ElectronAuthorizationEvents`                                | Moved to @iTwin/auth-clients repo                                  |
+| `ElectronAuthorizationRequestHandler`                        | Moved to @iTwin/auth-clients repo                                  |
 
 ### @itwin/core-common
 
@@ -849,6 +852,7 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | `ViewFlags.noGeometryMap`                             | _eliminated_                                                   |
 | `ViewFlags.noSolarLight`                              | [ViewFlags.lighting]($common)                                  |
 | `ViewFlags.noSourceLights`                            | [ViewFlags.lighting]($common)                                  |
+| `NativeAppAuthorizationConfiguration`                 | `MobileAppAuthorizationConfiguration` in @itwin/core-mobile    |
 
 ### @itwin/core-frontend
 
@@ -887,6 +891,7 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | `Viewport.setFlashed`                         | [Viewport.flashedId]($frontend)                                    |
 | `Viewport.setRedrawPending`                   | [Viewport.requestRedraw]($frontend)                                |
 | `WebAppViewer`                                | *eliminated*                                                       |
+| `NativeAppAuthorization`                      | Moved to @iTwin/auth-clients repo as `ElectronAppAuthorization`    |
 
 ### @itwin/core-geometry
 
@@ -911,6 +916,7 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `AgentAuthorizationClient`          | Moved to @iTwin/auth-clients as SerivceAuthorizationClient  |
 | `DelegationAuthorizationClient`     | *removed*                                                   |
 | `IntrospectionClient`               | Moved to @iTwin/auth-clients                                |
+| `ImsAuthorizationClient`           | *removed*                                                    |
 
 ### @itwin/appui-abstract
 

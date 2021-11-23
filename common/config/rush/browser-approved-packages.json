@@ -159,6 +159,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "@itwin/electron-authorization",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@itwin/eslint-plugin",
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
