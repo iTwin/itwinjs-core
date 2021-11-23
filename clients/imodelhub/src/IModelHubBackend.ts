@@ -361,7 +361,8 @@ export class IModelHubBackend implements BackendHubAccess {
     if (!containerAccessKeyContainer || !containerAccessKeySAS || !containerAccessKeyAccount || !containerAccessKeyDbName)
       throw new IModelError(IModelStatus.NotFound, "invalid V2 checkpoint");
 
-    const downloader = new IModelHost.platform.DownloadV2Checkpoint({
+    const transfer = new IModelHost.platform.CloudDbTransfer({
+      direction: "download",
       container: containerAccessKeyContainer,
       auth: containerAccessKeySAS,
       storageType: "azure?sas=1",
@@ -377,13 +378,13 @@ export class IModelHubBackend implements BackendHubAccess {
       const onProgress = arg.onProgress;
       if (onProgress) {
         timer = setInterval(async () => { // set an interval timer to show progress every 250ms
-          const progress = downloader.getProgress();
+          const progress = transfer.getProgress();
           total = progress.total;
           if (onProgress(progress.loaded, progress.total))
-            downloader.cancelDownload();
+            transfer.cancelTransfer();
         }, 250);
       }
-      await downloader.downloadPromise;
+      await transfer.promise;
       onProgress?.(total, total); // make sure we call progress func one last time when download completes
     } catch (err: any) {
       throw (err.message === "cancelled") ? new UserCancelledError(BriefcaseStatus.DownloadCancelled, "download cancelled") : err;

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { AsyncMethodsOf, GuidString, ProcessDetector } from "@itwin/core-bentley";
-import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
+import { ElectronApp, ElectronAppOpts } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { BrowserAuthorizationCallbackHandler } from "@itwin/browser-authorization";
 import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
@@ -13,7 +13,7 @@ import {
 } from "@itwin/core-common";
 import { EditTools } from "@itwin/editor-frontend";
 import {
-  AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, IModelApp, IpcApp, LocalhostIpcApp, RenderSystem, SelectionTool, SnapMode, TileAdmin, Tool,
+  AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, IModelApp, IpcApp, LocalhostIpcApp, LocalHostIpcAppOpts, RenderSystem, SelectionTool, SnapMode, TileAdmin, Tool,
   ToolAdmin,
 } from "@itwin/core-frontend";
 import { AndroidApp, IOSApp } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
@@ -24,6 +24,7 @@ import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { ToggleAspectRatioSkewDecoratorTool } from "./AspectRatioSkewDecorator";
 import { ApplyModelDisplayScaleTool } from "./DisplayScale";
 import { ApplyModelTransformTool } from "./DisplayTransform";
+import { GenerateTileContentTool } from "./TileContentTool";
 import { DrawingAidTestTool } from "./DrawingAidTestTool";
 import { EditingScopeTool, PlaceLineStringTool } from "./EditingTools";
 import { FenceClassifySelectedTool } from "./Fence";
@@ -45,6 +46,7 @@ import { SyncViewportFrustaTool, SyncViewportsTool } from "./SyncViewportsTool";
 import { TimePointComparisonTool } from "./TimePointComparison";
 import { UiManager } from "./UiManager";
 import { MarkupTool, ModelClipTool, SaveImageTool, ZoomToSelectedElementsTool } from "./Viewer";
+import { ElectronAppAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronFrontend";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -199,7 +201,7 @@ export class DisplayTestApp {
     let socketUrl = new URL(configuration.customOrchestratorUri || "http://localhost:3001");
     socketUrl = LocalhostIpcApp.buildUrlForSocket(socketUrl);
 
-    const opts = {
+    const opts: ElectronAppOpts | LocalHostIpcAppOpts = {
       iModelApp: {
         accuSnap: new DisplayTestAppAccuSnap(),
         notifications: new Notifications(),
@@ -229,6 +231,9 @@ export class DisplayTestApp {
     this._iTwinId = configuration.iTwinId;
 
     if (ProcessDetector.isElectronAppFrontend) {
+      const authClient: ElectronAppAuthorization = new ElectronAppAuthorization();
+      if (opts.iModelApp)
+        opts.iModelApp.authorizationClient = authClient;
       await ElectronApp.startup(opts);
     } else if (ProcessDetector.isIOSAppFrontend) {
       await IOSApp.startup(opts);
@@ -242,7 +247,8 @@ export class DisplayTestApp {
       }
 
       const rpcParams: BentleyCloudRpcParams = { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: configuration.customOrchestratorUri || "http://localhost:3001" };
-      BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp.rpcInterfaces);
+      if (opts.iModelApp?.rpcInterfaces)
+        BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp.rpcInterfaces);
       await LocalhostIpcApp.startup(opts);
     }
 
@@ -265,6 +271,7 @@ export class DisplayTestApp {
       FenceClassifySelectedTool,
       FocusWindowTool,
       FrameStatsTool,
+      GenerateTileContentTool,
       IncidentMarkerDemoTool,
       PathDecorationTestTool,
       MarkupSelectTestTool,

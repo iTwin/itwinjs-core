@@ -164,7 +164,6 @@ export * from "./appui-layout-react/zones/target/StagePanel";
 
 /** @docs-package-description
  * The appui-layout-react package contains React components for application user interface layouts following the Bentley 9-Zone pattern.
- * For more information, see [learning about appui-layout-react]($docs/learning/ui/ninezone/index.md).
  */
 /**
  * @docs-group-description Backstage

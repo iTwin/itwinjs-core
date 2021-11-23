@@ -267,6 +267,7 @@ describe("GraphicalEditingScope", () => {
           priority: TileLoadPriority.Primary,
           formatVersion: 14,
           contentRange: modelRange.clone(),
+          tileScreenSize: 512,
           options: {
             allowInstancing: true,
             edgesRequired: false,
