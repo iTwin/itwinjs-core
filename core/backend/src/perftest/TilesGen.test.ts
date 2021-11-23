@@ -187,7 +187,6 @@ async function generateIModelDbTiles(requestContext: AuthorizedClientRequestCont
 }
 
 describe("TilesGenerationPerformance", () => {
-  // eslint-disable-next-line deprecation/deprecation
   let config: any;
   let imodels: ConfigData[] = [];
 
@@ -195,7 +194,7 @@ describe("TilesGenerationPerformance", () => {
   let csvResultPath: string;
 
   before(async () => {
-    config = require(Config.App.getString("imjs_tile_perf_config")); // eslint-disable-line @typescript-eslint/no-var-requires
+    config = require(Config.App.getString("imjs_tile_perf_config")); // eslint-disable-line @typescript-eslint/no-var-requires, deprecation/deprecation
     imodels = config.iModels;
 
     assert.isDefined(config.regionId, "No Region defined");
