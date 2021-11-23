@@ -19,7 +19,7 @@ import { IModelConnection } from "../IModelConnection";
 import { Viewport } from "../Viewport";
 import { ReadonlyViewportSet, UniqueViewportSets } from "../ViewportSet";
 import {
-  DisclosedTileTreeSet, IModelTile, LRUTileList, Tile, TileLoadStatus, TileRequest, TileRequestChannels, TileTree, TileTreeOwner, TileUsageMarker,
+  DisclosedTileTreeSet, IModelTileTree, LRUTileList, Tile, TileLoadStatus, TileRequest, TileRequestChannels, TileTree, TileTreeOwner, TileUsageMarker,
 } from "./internal";
 
 /** Details about any tiles not handled by [[TileAdmin]]. At this time, that means OrbitGT point cloud tiles.
@@ -133,6 +133,8 @@ export class TileAdmin {
   /** @internal */
   public readonly optimizeBRepProcessing: boolean;
   /** @internal */
+  public readonly useLargerTiles: boolean;
+  /** @internal */
   public readonly maximumLevelsToSkip: number;
   /** @internal */
   public readonly mobileRealityTileMinToleranceRatio: number;
@@ -219,6 +221,7 @@ export class TileAdmin {
     this.maximumMajorTileFormatVersion = options.maximumMajorTileFormatVersion ?? defaultTileOptions.maximumMajorTileFormatVersion;
     this.useProjectExtents = options.useProjectExtents ?? defaultTileOptions.useProjectExtents;
     this.optimizeBRepProcessing = options.optimizeBRepProcessing ?? defaultTileOptions.optimizeBRepProcessing;
+    this.useLargerTiles = options.useLargerTiles ?? defaultTileOptions.useLargerTiles;
     this.mobileRealityTileMinToleranceRatio = Math.max(options.mobileRealityTileMinToleranceRatio ?? 3.0, 1.0);
     this.cesiumIonKey = options.cesiumIonKey;
 
@@ -583,12 +586,12 @@ export class TileAdmin {
   }
 
   /** @internal */
-  public async requestCachedTileContent(tile: IModelTile): Promise<Uint8Array | undefined> {
+  public async requestCachedTileContent(tile: { iModelTree: IModelTileTree, contentId: string }): Promise<Uint8Array | undefined> {
     return CloudStorageTileCache.getCache().retrieve(this.getTileRequestProps(tile));
   }
 
   /** @internal */
-  public async generateTileContent(tile: IModelTile): Promise<Uint8Array> {
+  public async generateTileContent(tile: { iModelTree: IModelTileTree, contentId: string, request?: { isCanceled: boolean } }): Promise<Uint8Array> {
     this.initializeRpc();
     const props = this.getTileRequestProps(tile);
     const retrieveMethod = await IModelTileRpcInterface.getClient().generateTileContent(props.tokenProps, props.treeId, props.contentId, props.guid);
@@ -609,7 +612,7 @@ export class TileAdmin {
   }
 
   /** @internal */
-  private getTileRequestProps(tile: IModelTile) {
+  public getTileRequestProps(tile: { iModelTree: IModelTileTree, contentId: string }) {
     const tree = tile.iModelTree;
     const tokenProps = tree.iModel.getRpcProps();
     let guid = tree.geometryGuid || tokenProps.changeset?.id || "first";
@@ -969,6 +972,12 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
      * @internal
      */
     optimizeBRepProcessing?: boolean;
+
+    /** Produce tiles that are larger in screen pixels to reduce the number of tiles requested and drawn by the scene.
+     * Default value: true
+     * @public
+     */
+    useLargerTiles?: boolean;
 
     /** Specifies that metadata about each [[IModelTile]] loaded during the session should be cached until the corresponding [[IModelConnection]] is closed; and
      * that the graphics for cached tiles should never be reloaded when the tile is re-requested after having been discarded. This fulfills a niche scenario in

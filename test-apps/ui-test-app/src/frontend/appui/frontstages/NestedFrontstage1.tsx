@@ -19,8 +19,10 @@ import { AppUi } from "../AppUi";
 /* eslint-disable react/jsx-key */
 
 export class NestedFrontstage1 extends FrontstageProvider {
+  public static stageId = "ui-test-app:NestedFrontstage1";
+
   public get id(): string {
-    return "NestedFrontstage1";
+    return NestedFrontstage1.stageId;
   }
 
   public get frontstage(): React.ReactElement<FrontstageProps> {

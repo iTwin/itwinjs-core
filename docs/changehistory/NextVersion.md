@@ -134,6 +134,42 @@ style.environment = style.environment.withDisplay({ sky: true, ground: false });
 
 Additionally, until now the images used by a [SkySphere]($common) or [SkyBox]($common) were required to be hosted by persistent [Texture]($backend) elements stored in the iModel. Now, they can also be specified as a URL resolving to an HTMLImageElement, allowing custom skyboxes to be created without modifying the iModel.
 
+## Merging appearance overrides
+
+A [Viewport]($frontend) can have any number of [FeatureOverrideProvider]($frontend)s, each of which can specify how to override the appearances of elements, models, and/or subcategories. Sometimes, multiple providers want to override aspects of the appearance of the same objects, which produces conflicts. The existing methods for defining overrides - [FeatureOverrides.overrideElement]($common), [FeatureOverrides.overrideModel]($common), and [FeatureOverrides.overrideSubCategory]($common) - each take a boolean `replaceExisting` argument that defaults to `true`. This means that if one provider overrides the line width of an element and another wants to override the same element's transparency, the caller's only choice is to either replace the existing override, resulting in only transparency being overridden; or keep the existing override, resulting in only line width being overridden. But in most cases, the better result would be to **merge** the two sets of overrides such that both transparency and line width are overridden.
+
+A new [FeatureOverrides.override]($common) method has been introduced to support merging appearance overrides. The caller can specify one of four strategies for dealing with conflicts, or accept the default:
+
+- "replace": The existing appearance overrides are replaced by the caller's own overrides, equivalent to the default `replaceExisting=true` for methods like `overrideElement`;
+- "skip": The existing appearance overrides are retained and the caller's own overrides are ignored, equivalent to `replaceExisting=false` for methods like `overrideElement`; or
+- "extend": Merge the new appearance with the existing appearance such that any aspect of the appearance **not** overridden by the existing appearance can be overridden by the new appearance.
+- "subsume" (the default): Merge the new appearance with the existing appearance such that any aspects of the appearance overridden by the existing appearance are preserved only if the new appearance does not also override them.
+
+For example, if one provider overrides an element's color and transparency, and a second provider attempts to override its transparency and line width, using the "extend" option means the second provider will only override the line width, leaving the existing color and transparency overrides intact. Using the "subsume" option, the second provider will override the transparency and line width, leaving the existing color override intact.
+
+Because the previous default behavior is generally not desirable, `overrideElement`, `overrideModel`, and `overrideSubCategory` have been deprecated in favor of the new `override` method. Existing code can be updated as follows:
+
+```ts
+// To use the new default "extend" behavior, replace these:
+ovrs.overrideElement("0x123", appearance);
+ovrs.overrideModel("0x456", appearance);
+ovrs.overrideSubCategory("0x789", appearance);
+// With these:
+ovrs.override({ elementId: "0x123", appearance });
+ovrs.override({ modelId: "0x456", appearance });
+ovrs.override({ subCategoryId:" 0x789", appearance });
+
+// To use the previous default "replace" behavior, replace this:
+ovrs.overrideElement("0x123", appearance, true); // third argument is optional - defaults to true
+// With this:
+ovrs.override({ elementId: "0x123", appearance, onConflict: "replace" });
+
+// To use the `replaceExisting=false` behavior, replace this:
+ovrs.overrideModel("0x456", appearance, false);
+// With this:
+ovrs.override({ modelId: "0x456", appearance, onConflict: "skip" });
+```
+
 ## BentleyError constructor no longer logs
 
 In V2, the constructor of the base exception class [BentleyError]($core-bentley) accepted 5 arguments, the last 3 being optional. Arguments 3 and 4 were for logging the exception in the constructor itself. That is a bad idea, since exceptions are often handled and recovered in `catch` statements, so there is no actual "problem" to report. In that case the message in the log is either misleading or just plain wrong. Also, code in `catch` statements always has more "context" about *why* the error may have happened than the lower level code that threw (e.g. "invalid Id" vs. "invalid MyHashClass Id") so log messages from callers can be more helpful than from callees. Since every thrown exception must be caught *somewhere*, logging should be done when exceptions are caught, not when they're thrown.
@@ -608,15 +644,29 @@ These methods were previously synchronous and are now async:
 - [InteractiveTool.onSuspend]($frontend)
 - [InteractiveTool.onUnsuspend]($frontend)
 
-## `NodeKey` in `@itwin/presentation-common`
+## Changes to `@itwin/presentation-common`
+
+### `NodeKey`
 
 The [NodeKey]($presentation-common) object contains a `pathFromRoot` attribute which can be used to uniquely identify a node in a hierarchy. In addition, the attribute is stable - the value for the same node is the same even when being created by different backends, which allows it to be persisted and later be used to identify specific nodes.
 
 In `3.0` changes have been made that changed the way this attribute is calculated, which means the same node produced by pre-3.0 and 3.x versions of `imodeljs` will have keys with different `pathFromRoot` value. To help identify the version of `NodeKey` a new `version` attribute has been added, with `undefined` or `1` being assigned to keys produced by pre-3.0 and `2` being assigned to keys produced by `3.x` versions of imodeljs. In addition, a new [NodeKey.equals]($presentation-common) function has been added to help with the equality checking of node keys, taking their version into account.
 
-## `KeySetJSON` in `@itwin/presentation-common`
+### `KeySetJSON`
 
 The format of [KeySetJSON]($presentation-common) has been changed to reduce its size. Instead of containing an array of instance IDs it now contains a single compressed IDs string. See [CompressedId64Set]($core-bentley) for more details about compressing IDs.
+
+### Changes to presentation rule specifications
+
+- Added ability to specify polymorphism at class level rather than specification level. 
+  
+  Previously polymorphism was specified at specification level using [ContentInstancesOfSpecificClassesSpecification.handleInstancesPolymorphically]($presentation-common) and [InstanceNodesOfSpecificClassesSpecification.arePolymorphic]($presentation-common) flags. They're now deprecated in favor of the new [MultiSchemaClassesSpecification.arePolymorphic]($presentation-common) attribute and act as default values if the new attribute is not specified.
+
+  The change allows [ContentInstancesOfSpecificClassesSpecification]($presentation-common) and [InstanceNodesOfSpecificClassesSpecification]($presentation-common) specify multiple classes with different polymorphism, if necessary.
+
+- Added ability to exclude some classes when creating content and hierarchies.
+
+  New optional attributes [ContentInstancesOfSpecificClassesSpecification.excludedClasses]($presentation-common) and [InstanceNodesOfSpecificClassesSpecification.excludedClasses]($presentation-common) have been added to specify classes that could be excluded. This provides a convenient way to describe what class instances should be excluded from content or hierarchy, e.g. `give me all bis.Element instances except bis.GeometricElement`.
 
 ## Changes to `Presentation` initialization in `@itwin/presentation-backend`
 
@@ -951,6 +1001,7 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `VisibilityWidget`                         | `TreeWidgetControl` in @bentley/tree-widget-react                                                                             |
 | `ContentLayoutProps`                       | `ContentLayoutProps` in @itwin/appui-abstract                                                                                 |
 | All drag & drop related APIs               | Third party components. E.g. see this [example](https://www.itwinjs.org/sample-showcase/?group=UI+Trees&sample=drag-and-drop) |
+| `ModelsTreeProps.enablePreloading`         | *eliminated*                                                                                                                  |
 
 ### @itwin/core-bentley
 

@@ -34,7 +34,7 @@ export function useWidgetDef(): WidgetDef | undefined {
   React.useEffect(() => {
     const listener = (args: FrontstageNineZoneStateChangedEventArgs) => {
       // istanbul ignore next
-      if (args.frontstageDef !== frontstage || !frontstage || frontstage.isStageClosing || frontstage.isApplicationClosing|| !frontstage.isReady)
+      if (args.frontstageDef !== frontstage || !frontstage || frontstage.isStageClosing || frontstage.isApplicationClosing)
         return;
       setWidgetDef(frontstage.findWidgetDef(tabId));
     };

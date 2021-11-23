@@ -292,7 +292,7 @@ describe("RenderTarget", () => {
       expect(pixels.length).to.equal(1);
 
       // Specify element is nonLocatable
-      ovrProvider.ovrFunc = (ovrs, _) => ovrs.overrideElement(elemId, FeatureAppearance.fromJSON({ nonLocatable: true }));
+      ovrProvider.ovrFunc = (ovrs) => ovrs.override({ elementId: elemId, appearance: FeatureAppearance.fromJSON({ nonLocatable: true }) });
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
       pixels = vp.readUniquePixelData(undefined, true); // Exclude non-locatable elements
@@ -303,7 +303,7 @@ describe("RenderTarget", () => {
       expect(pixels.containsElement(elemId)).to.be.true;
 
       // Specify element is drawn blue
-      ovrProvider.ovrFunc = (ovrs, _) => ovrs.overrideElement(elemId, FeatureAppearance.fromRgb(ColorDef.blue));
+      ovrProvider.ovrFunc = (ovrs, _) => ovrs.override({ elementId: elemId, appearance: FeatureAppearance.fromRgb(ColorDef.blue) });
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
       colors = vp.readUniqueColors();
@@ -321,7 +321,7 @@ describe("RenderTarget", () => {
       // Specify default overrides, but also override element color
       ovrProvider.ovrFunc = (ovrs, _) => {
         ovrs.setDefaultOverrides(FeatureAppearance.fromRgb(ColorDef.green));
-        ovrs.overrideElement(elemId, FeatureAppearance.fromRgb(ColorDef.create(0x7f0000))); // blue = 0x7f...
+        ovrs.override({ elementId: elemId, appearance: FeatureAppearance.fromRgb(ColorDef.create(0x7f0000)) }); // blue = 0x7f...
       };
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
@@ -331,7 +331,7 @@ describe("RenderTarget", () => {
       expect(colors.contains(Color.fromRgba(0xff, 0, 0, 0xff))).to.be.false;
 
       // Override by subcategory
-      ovrProvider.ovrFunc = (ovrs, _) => ovrs.overrideSubCategory(subcatId, FeatureAppearance.fromRgb(ColorDef.red));
+      ovrProvider.ovrFunc = (ovrs, _) => ovrs.override({ subCategoryId: subcatId, appearance: FeatureAppearance.fromRgb(ColorDef.red) });
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
       colors = vp.readUniqueColors();
@@ -339,8 +339,8 @@ describe("RenderTarget", () => {
 
       // Override color for element and subcategory - element wins
       ovrProvider.ovrFunc = (ovrs, _) => {
-        ovrs.overrideSubCategory(subcatId, FeatureAppearance.fromRgb(ColorDef.blue));
-        ovrs.overrideElement(elemId, FeatureAppearance.fromRgb(ColorDef.red));
+        ovrs.override({ subCategoryId: subcatId, appearance: FeatureAppearance.fromRgb(ColorDef.blue) });
+        ovrs.override({ elementId: elemId, appearance: FeatureAppearance.fromRgb(ColorDef.red) });
       };
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
@@ -348,7 +348,7 @@ describe("RenderTarget", () => {
       expect(colors.contains(Color.fromRgba(0xff, 0, 0, 0xff))).to.be.true;
 
       // Override to be fully transparent - element should not draw at all
-      ovrProvider.ovrFunc = (ovrs, _) => ovrs.overrideElement(elemId, FeatureAppearance.fromTransparency(1.0));
+      ovrProvider.ovrFunc = (ovrs, _) => ovrs.override({ elementId: elemId, appearance: FeatureAppearance.fromTransparency(1.0) });
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
       colors = vp.readUniqueColors();
@@ -362,7 +362,7 @@ describe("RenderTarget", () => {
       // Set bg color to red, elem color to 50% transparent blue => expect blending
       vp.view.displayStyle.backgroundColor = ColorDef.red;
       vp.invalidateRenderPlan();
-      ovrProvider.ovrFunc = (ovrs, _) => ovrs.overrideElement(elemId, FeatureAppearance.fromJSON({ rgb: new RgbColor(0, 0, 0xff), transparency: 0.5 }));
+      ovrProvider.ovrFunc = (ovrs, _) => ovrs.override({ elementId: elemId, appearance: FeatureAppearance.fromJSON({ rgb: new RgbColor(0, 0, 0xff), transparency: 0.5 }) });
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
       colors = vp.readUniqueColors();

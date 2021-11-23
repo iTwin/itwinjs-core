@@ -4752,6 +4752,8 @@ export class IModelTileTree extends TileTree {
     get staticBranch(): IModelTile;
     // (undocumented)
     readonly stringifiedSectionClip?: string;
+    // (undocumented)
+    readonly tileScreenSize: number;
     get tileState(): "static" | "dynamic" | "interactive" | "disposed";
     // (undocumented)
     get viewFlagOverrides(): {};
@@ -4783,6 +4785,8 @@ export interface IModelTileTreeParams extends TileTreeParams {
     options: IModelTileTreeOptions;
     // (undocumented)
     rootTile: TileProps;
+    // (undocumented)
+    tileScreenSize: number;
 }
 
 // @internal (undocumented)
@@ -7271,8 +7275,8 @@ export abstract class PrimitiveTool extends InteractiveTool {
     isValidLocation(ev: BeButtonEvent, isButtonEvent: boolean): boolean;
     onRedoPreviousStep(): Promise<boolean>;
     onReinitialize(): Promise<void>;
-    abstract onRestartTool(): void;
-    onSelectedViewportChanged(_previous: Viewport | undefined, current: Viewport | undefined): void;
+    abstract onRestartTool(): Promise<void>;
+    onSelectedViewportChanged(_previous: Viewport | undefined, current: Viewport | undefined): Promise<void>;
     onUndoPreviousStep(): Promise<boolean>;
     // @internal (undocumented)
     redoPreviousStep(): Promise<boolean>;
@@ -8518,6 +8522,7 @@ export type RequestTileTreePropsFunc = (iModel: IModelConnection, treeId: string
 
 // @internal
 export type RootIModelTile = Tile & {
+    tileScreenSize: number;
     updateDynamicRange: (childTile: Tile) => void;
 };
 
@@ -10116,11 +10121,27 @@ export class TileAdmin {
     // @internal
     freeMemory(): void;
     // @internal (undocumented)
-    generateTileContent(tile: IModelTile): Promise<Uint8Array>;
+    generateTileContent(tile: {
+        iModelTree: IModelTileTree;
+        contentId: string;
+        request?: {
+            isCanceled: boolean;
+        };
+    }): Promise<Uint8Array>;
     getMaximumMajorTileFormatVersion(formatVersion?: number): number;
     getNumRequestsForViewport(vp: Viewport): number;
     // @internal
     getRequestsForViewport(vp: Viewport): Set<Tile> | undefined;
+    // @internal (undocumented)
+    getTileRequestProps(tile: {
+        iModelTree: IModelTileTree;
+        contentId: string;
+    }): {
+        tokenProps: import("@itwin/core-common").IModelRpcProps;
+        treeId: string;
+        contentId: string;
+        guid: string;
+    };
     // @internal
     getTilesForViewport(vp: Viewport): SelectedAndReadyTiles | undefined;
     // @internal
@@ -10165,7 +10186,10 @@ export class TileAdmin {
     // @internal
     registerViewport(vp: Viewport): void;
     // @internal (undocumented)
-    requestCachedTileContent(tile: IModelTile): Promise<Uint8Array | undefined>;
+    requestCachedTileContent(tile: {
+        iModelTree: IModelTileTree;
+        contentId: string;
+    }): Promise<Uint8Array | undefined>;
     requestElementGraphics(iModel: IModelConnection, requestProps: ElementGraphicsRequestProps): Promise<Uint8Array | undefined>;
     // @internal
     requestTiles(vp: Viewport, tiles: Set<Tile>): void;
@@ -10184,6 +10208,8 @@ export class TileAdmin {
     get totalTileContentBytes(): number;
     // @alpha
     get unselectedLoadedTiles(): Iterable<Tile>;
+    // @internal (undocumented)
+    readonly useLargerTiles: boolean;
     // @internal (undocumented)
     readonly useProjectExtents: boolean;
     // @alpha
@@ -10226,6 +10252,7 @@ export namespace TileAdmin {
         retryInterval?: number;
         tileExpirationTime?: number;
         tileTreeExpirationTime?: number;
+        useLargerTiles?: boolean;
         // @internal
         useProjectExtents?: boolean;
     }
@@ -10543,7 +10570,16 @@ export class TileRequestChannelStatistics {
 }
 
 // @public
-export class Tiles {
+export class Tiles implements Iterable<{
+    supplier: TileTreeSupplier;
+    id: any;
+    owner: TileTreeOwner;
+}> {
+    [Symbol.iterator](): Iterator<{
+        supplier: TileTreeSupplier;
+        id: any;
+        owner: TileTreeOwner;
+    }>;
     // @internal
     constructor(iModel: IModelConnection);
     // @internal (undocumented)

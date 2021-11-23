@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Removed two unit tests for reproj and added one",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

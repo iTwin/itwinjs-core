@@ -24,7 +24,7 @@
     },
     {
       "name": "@bentley/imodeljs-native",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "@bentley/itwin-client",
@@ -228,14 +228,14 @@
     },
     {
       "name": "@itwin/reality-data-client",
-      "allowedCategories": [ "common", "integration-testing", "internal" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@itwin/service-authorization",
       "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
-      "name": "@itwin/ui-test-extension",
+      "name": "@itwin/ui-items-providers-test",
       "allowedCategories": [ "internal" ]
     },
     {
@@ -249,6 +249,10 @@
     {
       "name": "@openid/appauth",
       "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "@reduxjs/toolkit",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@svgdotjs/svg.js",
@@ -379,7 +383,7 @@
       "allowedCategories": [ "tools" ]
     },
     {
-      "name": "cpx",
+      "name": "cpx2",
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
@@ -876,14 +880,6 @@
     },
     {
       "name": "typedoc",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "typedoc-plugin-external-module-name",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "typedoc-plugin-internal-external",
       "allowedCategories": [ "tools" ]
     },
     {
