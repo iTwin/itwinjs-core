@@ -658,8 +658,8 @@ The format of [KeySetJSON]($presentation-common) has been changed to reduce its 
 
 ### Changes to presentation rule specifications
 
-- Added ability to specify polymorphism at class level rather than specification level. 
-  
+- Added ability to specify polymorphism at class level rather than specification level.
+
   Previously polymorphism was specified at specification level using [ContentInstancesOfSpecificClassesSpecification.handleInstancesPolymorphically]($presentation-common) and [InstanceNodesOfSpecificClassesSpecification.arePolymorphic]($presentation-common) flags. They're now deprecated in favor of the new [MultiSchemaClassesSpecification.arePolymorphic]($presentation-common) attribute and act as default values if the new attribute is not specified.
 
   The change allows [ContentInstancesOfSpecificClassesSpecification]($presentation-common) and [InstanceNodesOfSpecificClassesSpecification]($presentation-common) specify multiple classes with different polymorphism, if necessary.
@@ -1488,7 +1488,7 @@ Now, you can bind a set of Ids as a parameter for the `IN` clause. The Ids will 
 The signature of the method has changed to:
 
 ```ts
-query(ecsql: string, params?: QueryBinder, rowFormat = QueryRowFormat.UseArrayIndexes, config?: QueryOptions): AsyncIterableIterator<any>;
+query(ecsql: string, params?: QueryBinder, rowFormat = QueryRowFormat.UseECSqlPropertyIndexes, config?: QueryOptions): AsyncIterableIterator<any>;
 ```
 
 The `rowFormat` parameter defaults to `QueryRowFormat.Array`. That format is more efficient so its use is preferred, but it differs from the previous row format. You can upgrade existing code to use the old format with minimal changes. For example, if your existing code passes query parameters as an array, change it as follows:
@@ -1497,7 +1497,7 @@ The `rowFormat` parameter defaults to `QueryRowFormat.Array`. That format is mor
   // Replace this:
   db.query("SELECT * FROM bis.Element WHERE ECInstanceId=?", ["0x1"]);
   // With this:
-  db.query("SELECT * FROM bis.Element WHERE ECInstanceId=?", QueryBinder.from(["0x1"]), QueryRowFormat.UseJsPropertyNames);
+  db.query("SELECT * FROM bis.Element WHERE ECInstanceId=?", QueryBinder.from(["0x1"]), { rowFormat: QueryRowFormat.UseJsPropertyNames });
   // The code that accesses the properties of each row can remain unchanged.
 ```
 
@@ -1507,7 +1507,7 @@ Similarly, if your existing code passes an object instead of an array as the que
   // Replace this:
   db.query("SELECT * FROM bis.Element WHERE ECInstanceId = :id", {id: "0x1"});
   // With this:
-  db.query("SELECT * FROM bis.Element WHERE ECInstanceId=?", QueryBinder.from({id: "0x1"}), QueryRowFormat.UseJsPropertyNames);
+  db.query("SELECT * FROM bis.Element WHERE ECInstanceId=?", QueryBinder.from({id: "0x1"}), { rowFormat: QueryRowFormat.UseJsPropertyNames });
   // The code that accesses the properties of each row can remain unchanged.
 ```
 

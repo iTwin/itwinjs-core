@@ -6640,7 +6640,7 @@ export interface QueryQuota {
 
 // @public
 export enum QueryRowFormat {
-    UseArrayIndexes = 2,
+    UseECSqlPropertyIndexes = 2,
     UseECSqlPropertyNames = 0,
     UseJsPropertyNames = 1
 }

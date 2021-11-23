@@ -34,7 +34,7 @@ describe.skip("Properties loading", () => {
       }
     };
     for (let i = 0; i < 246000; ++i) {
-      for await (const _row of imodel.query(JSON.stringify(ping), undefined, QueryRowFormat.UseJsPropertyNames, { usePrimaryConn: true })) {
+      for await (const _row of imodel.query(JSON.stringify(ping), undefined, {rowFormat: QueryRowFormat.UseJsPropertyNames, usePrimaryConn: true })) {
         ++rowCount
       }
     }
@@ -84,8 +84,9 @@ class PropertyReaderStressTest {
   public async queryAll(ecsql: string, params?: QueryBinder) {
     const builder = new QueryOptionsBuilder({ usePrimaryConn: true, abbreviateBlobs: true });
     builder.setConvertClassIdsToNames(true);
+    builder.setRowFormat(QueryRowFormat.UseJsPropertyNames);
     const reader = this.imodel.createQueryReader(ecsql, params, builder.getOptions());
-    const rows = await reader.toArray(QueryRowFormat.UseJsPropertyNames);
+    const rows = await reader.toArray();
     const curStats = { ...reader.stats, execs: 1 };
     if (this.queryTimes.has(ecsql)) {
       const stats = this.queryTimes.get(ecsql)!;

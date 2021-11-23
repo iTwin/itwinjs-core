@@ -7,7 +7,7 @@
  */
 import { Base64EncodedString } from "./Base64EncodedString";
 import {
-  DbQueryError, DbQueryRequest, DbQueryResponse, DbRequestExecutor, DbRequestKind, DbResponseStatus, QueryBinder, QueryOptions, QueryOptionsBuilder,
+  DbQueryError, DbQueryRequest, DbQueryResponse, DbRequestExecutor, DbRequestKind, DbResponseStatus, DbValueFormat, QueryBinder, QueryOptions, QueryOptionsBuilder,
   QueryPropertyMetaData, QueryRowFormat,
 } from "./ConcurrentQuery";
 
@@ -58,7 +58,6 @@ export type QueryValueType = any;
 
 /** @beta */
 export interface QueryRowProxy {
-  toJsRow(): any;
   toRow(): any;
   toArray(): QueryValueType[];
   getMetaData(): QueryPropertyMetaData[];
@@ -104,10 +103,7 @@ export class ECSqlReader {
           return () => target._props.properties;
         }
         if (key === "toRow") {
-          return () => target.formatCurrentRow(QueryRowFormat.UseECSqlPropertyNames);
-        }
-        if (key === "toJsRow") {
-          return () => target.formatCurrentRow(QueryRowFormat.UseJsPropertyNames);
+          return () => target.formatCurrentRow(true);
         }
         if (key === "getArray" || key === "toJSON") {
           return () => this.getRowInternal();
@@ -164,6 +160,8 @@ export class ECSqlReader {
     this._globalDone = false;
     this._globalOffset = 0;
     this._globalCount = -1;
+    if (typeof this._options.rowFormat === "undefined")
+      this._options.rowFormat = QueryRowFormat.UseECSqlPropertyIndexes;
     if (this._options.limit) {
       if (typeof this._options.limit.offset === "number" && this._options.limit.offset > 0)
         this._globalOffset = this._options.limit.offset;
@@ -197,11 +195,13 @@ export class ECSqlReader {
     if (this._globalCount === 0) {
       return [];
     }
+    const valueFormat = this._options.rowFormat === QueryRowFormat.UseJsPropertyNames? DbValueFormat.JsNames :DbValueFormat.ECSqlNames;
     const request: DbQueryRequest = {
+      ... this._options,
       kind: DbRequestKind.ECSql,
+      valueFormat,
       query: this.query,
       args: this._param,
-      ... this._options,
     };
     request.includeMetaData = this._props.length > 0 ? false : true;
     request.limit = { offset: this._globalOffset, count: this._globalCount < 1 ? -1 : this._globalCount };
@@ -216,19 +216,19 @@ export class ECSqlReader {
     return resp.data;
   }
   private async runWithRetry(request: DbQueryRequest) {
-    const needRetry = (resp: DbQueryResponse) => (resp.status === DbResponseStatus.Partial || resp.status === DbResponseStatus.QueueFull || resp.status === DbResponseStatus.Timeout) && (resp.data.length === 0);
-    const updateStats = (resp: DbQueryResponse) => {
-      this._stats.backendCpuTime += resp.stats.cpuTime;
-      this._stats.backendTotalTime += resp.stats.totalTime;
-      this._stats.backendMemUsed += resp.stats.memUsed;
-      this._stats.backendRowsReturned += resp.data.length;
-    }
-    const execQuery = async (request: DbQueryRequest) => {
-      const startTime = Date.now()
-      const rs = await this._executor.execute(request);
+    const needRetry = (rs: DbQueryResponse) => (rs.status === DbResponseStatus.Partial || rs.status === DbResponseStatus.QueueFull || rs.status === DbResponseStatus.Timeout) && (rs.data.length === 0);
+    const updateStats = (rs: DbQueryResponse) => {
+      this._stats.backendCpuTime += rs.stats.cpuTime;
+      this._stats.backendTotalTime += rs.stats.totalTime;
+      this._stats.backendMemUsed += rs.stats.memUsed;
+      this._stats.backendRowsReturned += rs.data.length;
+    };
+    const execQuery = async (req: DbQueryRequest) => {
+      const startTime = Date.now();
+      const rs = await this._executor.execute(req);
       this.stats.totalTime += (Date.now() - startTime);
-      return rs
-    }
+      return rs;
+    };
     let retry = ECSqlReader._maxRetryCount;
     let resp = await execQuery(request);
     DbQueryError.throwIfError(resp, request);
@@ -245,22 +245,14 @@ export class ECSqlReader {
     updateStats(resp);
     return resp;
   }
-  public formatCurrentRow(format: QueryRowFormat): any[] | object {
-    if (format === QueryRowFormat.UseArrayIndexes) {
+  public formatCurrentRow(onlyReturnObject: boolean = false): any[] | object {
+    if (!onlyReturnObject && this._options.rowFormat === QueryRowFormat.UseECSqlPropertyIndexes) {
       return this.getRowInternal();
     }
     const formattedRow = {};
     for (const prop of this._props) {
-      const propName = format === QueryRowFormat.UseJsPropertyNames ? prop.jsonName : prop.name;
-      let val = this.getRowInternal()[prop.index];
-      
-      if (format === QueryRowFormat.UseJsPropertyNames) {
-        if (prop.typeName === "navigation") {
-          if (typeof val.relClassName !== "undefined") {
-            val = {Id: val.id, RelClassId: val.relClassName}
-          }
-        }
-      }
+      const propName = this._options.rowFormat === QueryRowFormat.UseJsPropertyNames ? prop.jsonName : prop.name;
+      const val = this.getRowInternal()[prop.index];
       if (typeof val !== "undefined" && val !== null) {
         Object.defineProperty(formattedRow, propName, {
           value: val,
@@ -297,10 +289,10 @@ export class ECSqlReader {
     }
     return true;
   }
-  public async toArray(format: QueryRowFormat): Promise<any[]> {
+  public async toArray(): Promise<any[]> {
     const rows = [];
     while (await this.step()) {
-      rows.push(this.formatCurrentRow(format));
+      rows.push(this.formatCurrentRow());
     }
     return rows;
   }

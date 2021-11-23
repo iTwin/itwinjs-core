@@ -78,7 +78,6 @@ describe("ECSql Query", () => {
     assert.equal(rows, 46);
     props = await reader.getMetaData();
     assert.equal(props.length, 11);
-    console.log(JSON.stringify(reader.stats));
   });
   it("concurrent query get meta data", async () => {
     const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element");
@@ -137,7 +136,7 @@ describe("ECSql Query", () => {
       const i = dbs.indexOf(db);
       const rowPerPage = getRowPerPage(pageSize, expected[i]);
       for (let k = 0; k < rowPerPage.length; k++) {
-        const result = await db.createQueryReader(query, undefined, { limit: { count: pageSize, offset: k * pageSize } }).toArray(QueryRowFormat.UseArrayIndexes);
+        const result = await db.createQueryReader(query, undefined, { limit: { count: pageSize, offset: k * pageSize } }).toArray();
         assert.equal(result.length, rowPerPage[k]);
       }
     }
@@ -145,7 +144,7 @@ describe("ECSql Query", () => {
     // verify async iterator
     for (const db of dbs) {
       const resultSet = [];
-      for await (const row of db.query(query, undefined, QueryRowFormat.UseJsPropertyNames)) {
+      for await (const row of db.query(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         resultSet.push(row);
         assert.isTrue(Reflect.has(row, "id"));
         if (Reflect.ownKeys(row).length > 1) {
@@ -167,14 +166,14 @@ describe("ECSql Query", () => {
     let row1: any;
     let row2: any;
     let row3: any;
-    for await (const row of imodel2.query(query1, undefined, QueryRowFormat.UseJsPropertyNames))
+    for await (const row of imodel2.query(query1, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }))
       row1 = row;
     assert.isNotEmpty(row1.geometryStream);
-    for await (const row of imodel2.query(query2, QueryBinder.from([row1.id]), QueryRowFormat.UseJsPropertyNames, { abbreviateBlobs: false }))
+    for await (const row of imodel2.query(query2, QueryBinder.from([row1.id]), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs: false }))
       row2 = row;
     assert.isNotEmpty(row2.geometryStream);
     assert.deepEqual(row2.geometryStream, row1.geometryStream);
-    for await (const row of imodel2.query(query2, QueryBinder.from([row1.id]), QueryRowFormat.UseJsPropertyNames, { abbreviateBlobs: true }))
+    for await (const row of imodel2.query(query2, QueryBinder.from([row1.id]), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs: true }))
       row3 = row;
     assert.equal(row3.id, row1.id);
     assert.include(row1.geometryStream, row3.geometryStream);

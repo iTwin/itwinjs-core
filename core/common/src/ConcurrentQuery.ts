@@ -19,14 +19,14 @@ export enum QueryRowFormat {
    * Null values are omitted.
    */
   UseECSqlPropertyNames,
+  /** Each row is an array of values accessed by an index corresponding to the property's position in the ECSql SELECT statement.
+   * Null values are included if they are followed by a non-null column, but trailing null values at the end of the array are omitted.
+   */
+  UseECSqlPropertyIndexes,
   /** Each row is an object in which each non-null column value can be accessed by a [remapped property name]($docs/learning/ECSqlRowFormat.md).
    * This format is backwards-compatible with the format produced by iModel.js version 2.x. Null values are omitted.
    */
   UseJsPropertyNames,
-  /** Each row is an array of values accessed by an index corresponding to the property's position in the ECSql SELECT statement.
-   * Null values are included if they are followed by a non-null column, but trailing null values at the end of the array are omitted.
-   */
-  UseArrayIndexes,
 }
 /**
  * Specify limit or range of rows to return
@@ -45,7 +45,7 @@ export interface QueryPropertyMetaData {
   index: number;
   jsonName: string;
   name: string;
-  system: boolean;
+  extendType: string;
   typeName: string;
 }
 /** @beta */
@@ -106,6 +106,10 @@ export interface QueryOptions extends BaseReaderOptions {
    * When true, XXXXClassId property will be returned as className.
    * */
   convertClassIdsToClassNames?: boolean;
+  /**
+   * Determine row format.
+   */
+  rowFormat?: QueryRowFormat;
 }
 /** @beta */
 export type BlobRange = QueryLimit;
@@ -127,6 +131,7 @@ export class QueryOptionsBuilder {
   public setSuppressLogErrors(val: boolean) { this._options.suppressLogErrors = val; return this; }
   public setConvertClassIdsToNames(val: boolean) { this._options.convertClassIdsToClassNames = val; return this; }
   public setLimit(val: QueryLimit) { this._options.limit = val; return this; }
+  public setRowFormat(val: QueryRowFormat){ this._options.rowFormat = val; return this; }
 }
 /** @beta */
 export class BlobOptionsBuilder {
@@ -374,11 +379,17 @@ export enum DbResponseStatus {
   Error_BlobIO_OutOfRange = Error + 6, /*  range specified is invalid based on size of blob.*/
 }
 /** @internal */
+export enum DbValueFormat {
+  ECSqlNames = 0,
+  JsNames = 1
+}
+/** @internal */
 export interface DbRequest extends BaseReaderOptions {
   kind?: DbRequestKind;
 }
 /** @internal */
 export interface DbQueryRequest extends DbRequest, QueryOptions {
+  valueFormat?: DbValueFormat;
   query: string;
   args?: object;
 }
