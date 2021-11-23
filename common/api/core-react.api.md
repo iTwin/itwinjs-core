@@ -1233,17 +1233,17 @@ export interface LoadingStatusProps extends CommonProps {
     percent: number;
 }
 
-// @public @deprecated
-export class LocalSettingsStorage implements UiSettingsStorage {
+// @public
+export class LocalStateStorage implements UiStateStorage {
     constructor(w?: Window);
     // (undocumented)
-    deleteSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
+    deleteSetting(settingNamespace: string, settingName: string): Promise<UiStateStorageResult>;
     // (undocumented)
-    getSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
+    getSetting(settingNamespace: string, settingName: string): Promise<UiStateStorageResult>;
     // (undocumented)
     hasSetting(settingNamespace: string, settingName: string): Promise<boolean>;
     // (undocumented)
-    saveSetting(settingNamespace: string, settingName: string, setting: any): Promise<UiSettingsResult>;
+    saveSetting(settingNamespace: string, settingName: string, setting: any): Promise<UiStateStorageResult>;
     // (undocumented)
     w: Window;
 }
@@ -2379,38 +2379,45 @@ export class UiGeometry {
     static hypotenuseXY(x: number, y: number): number;
 }
 
-// @public @deprecated
-export class UiSetting<T> {
+// @public
+export class UiStateEntry<T> {
     constructor(settingNamespace: string, settingName: string, getValue: () => T, applyValue?: ((v: T) => void) | undefined, defaultValue?: T | undefined);
     // (undocumented)
     applyValue?: ((v: T) => void) | undefined;
     // (undocumented)
     defaultValue?: T | undefined;
-    deleteSetting(storage: UiSettingsStorage): Promise<UiSettingsResult>;
-    getSetting(storage: UiSettingsStorage): Promise<UiSettingsResult>;
-    getSettingAndApplyValue(storage: UiSettingsStorage): Promise<UiSettingsResult>;
+    deleteSetting(storage: UiStateStorage): Promise<UiStateStorageResult>;
+    getSetting(storage: UiStateStorage): Promise<UiStateStorageResult>;
+    getSettingAndApplyValue(storage: UiStateStorage): Promise<UiStateStorageResult>;
     // (undocumented)
     getValue: () => T;
-    saveSetting(storage: UiSettingsStorage): Promise<UiSettingsResult>;
+    saveSetting(storage: UiStateStorage): Promise<UiStateStorageResult>;
     // (undocumented)
     settingName: string;
     // (undocumented)
     settingNamespace: string;
 }
 
-// @public @deprecated
-export type UiSettings = UiSettingsStorage;
+// @public
+export interface UiStateStorage {
+    // (undocumented)
+    deleteSetting(settingNamespace: string, settingName: string): Promise<UiStateStorageResult>;
+    // (undocumented)
+    getSetting(settingNamespace: string, settingName: string): Promise<UiStateStorageResult>;
+    // (undocumented)
+    saveSetting(settingNamespace: string, settingName: string, setting: any): Promise<UiStateStorageResult>;
+}
 
-// @public @deprecated
-export interface UiSettingsResult {
+// @public
+export interface UiStateStorageResult {
     // (undocumented)
     setting?: any;
     // (undocumented)
-    status: UiSettingsStatus;
+    status: UiStateStorageStatus;
 }
 
-// @public @deprecated
-export enum UiSettingsStatus {
+// @public
+export enum UiStateStorageStatus {
     // (undocumented)
     AuthorizationError = 4,
     // (undocumented)
@@ -2421,16 +2428,6 @@ export enum UiSettingsStatus {
     Uninitialized = 3,
     // (undocumented)
     UnknownError = 2
-}
-
-// @public @deprecated
-export interface UiSettingsStorage {
-    // (undocumented)
-    deleteSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
-    // (undocumented)
-    getSetting(settingNamespace: string, settingName: string): Promise<UiSettingsResult>;
-    // (undocumented)
-    saveSetting(settingNamespace: string, settingName: string, setting: any): Promise<UiSettingsResult>;
 }
 
 // @public

@@ -181,8 +181,7 @@ public;LoadingSpinner
 public;LoadingSpinnerProps 
 public;LoadingStatus 
 public;LoadingStatusProps 
-public;LocalSettingsStorage 
-deprecated;LocalSettingsStorage 
+public;LocalStateStorage 
 public;MainTabsProps 
 internal;mergeRefs
 public;MessageBox 
@@ -351,16 +350,10 @@ public;TreeProps
 public;UiCore
 public;UiEvent
 internal;UiGeometry
-public;UiSetting
-deprecated;UiSetting
-public;UiSettings = UiSettingsStorage
-deprecated;UiSettings = UiSettingsStorage
-public;UiSettingsResult
-deprecated;UiSettingsResult
-public;UiSettingsStatus
-deprecated;UiSettingsStatus
-public;UiSettingsStorage
-deprecated;UiSettingsStorage
+public;UiStateEntry
+public;UiStateStorage
+public;UiStateStorageResult
+public;UiStateStorageStatus
 public;UnderlinedButton(props: UnderlinedButtonProps): JSX.Element
 public;UnderlinedButtonProps
 public;useDisposable
