@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Skip full schema load that cause OOM error on node backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

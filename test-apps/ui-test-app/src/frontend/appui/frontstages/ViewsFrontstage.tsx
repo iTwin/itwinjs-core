@@ -32,7 +32,7 @@ import { SampleAppIModelApp, SampleAppUiActionId } from "../../../frontend/index
 import { AccuDrawPopupTools } from "../../tools/AccuDrawPopupTools";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { ToolWithDynamicSettings } from "../../tools/ToolWithDynamicSettings";
-import { getSavedViewLayoutProps, OpenComponentExamplesPopoutTool, OpenCustomPopoutTool, OpenViewPopoutTool } from "../../tools/UiProviderTool";
+import { getSavedViewLayoutProps, OpenComponentExamplesPopoutTool, OpenCustomPopoutTool, OpenViewPopoutTool } from "../../tools/ImmediateTools";
 import { AppUi } from "../AppUi";
 // cSpell:Ignore contentviews statusbars uitestapp
 import { IModelViewportControl } from "../contentviews/IModelViewport";
@@ -755,8 +755,8 @@ class AdditionalTools {
       iconSpec: "icon-arrow-down",
       label: "Popup Test",
       badgeType: BadgeType.New,
-      popupPanelNode: <MyLoremIpsumPanel />,
-    });
+      popupPanelNode: <MyLoremIpsumPanel />, // Note: popupPanelNode populates the panelContentNode when converted to a CustomToolbarItem
+    });                                      //       which can be supplied by an UiItemsProvider
   }
 
   public formatGroupItemsItem = (): CommonToolbarItem => {

@@ -286,6 +286,8 @@ export type ContentInstanceKeysRpcRequestOptions = PresentationRpcRequestOptions
 // @public
 export interface ContentInstancesOfSpecificClassesSpecification extends ContentSpecificationBase {
     classes: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
+    excludedClasses?: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
+    // @deprecated
     handleInstancesPolymorphically?: boolean;
     handlePropertiesPolymorphically?: boolean;
     instanceFilter?: string;
@@ -1256,8 +1258,10 @@ export enum InstanceLabelOverrideValueSpecificationType {
 
 // @public
 export interface InstanceNodesOfSpecificClassesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
+    // @deprecated
     arePolymorphic?: boolean;
     classes: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
+    excludedClasses?: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
     instanceFilter?: string;
     specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses;
 }
@@ -1488,6 +1492,7 @@ export interface MultiElementPropertiesRequestOptions<TIModel> extends RequestOp
 
 // @public
 export interface MultiSchemaClassesSpecification {
+    arePolymorphic?: boolean;
     classNames: string[];
     schemaName: string;
 }
