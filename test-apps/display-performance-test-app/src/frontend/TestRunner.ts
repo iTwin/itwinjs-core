@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { RealityDataAccessClient } from "@bentley/reality-data-client";
+import { RealityDataAccessClient } from "@itwin/reality-data-client";
 import {
   assert, BeDuration, Dictionary, Id64, Id64Array, Id64String, ProcessDetector, SortedArray, StopWatch,
 } from "@itwin/core-bentley";
@@ -130,8 +130,8 @@ class OverrideProvider {
     if (this._defaultOvrs)
       ovrs.setDefaultOverrides(this._defaultOvrs);
 
-    for (const [key, value] of this._elementOvrs)
-      ovrs.overrideElement(key, value);
+    for (const [elementId, appearance] of this._elementOvrs)
+      ovrs.override({ elementId, appearance });
   }
 }
 

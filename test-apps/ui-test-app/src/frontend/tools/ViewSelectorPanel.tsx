@@ -56,7 +56,7 @@ export function ViewSelectorPanel() {
             id: "views3dContainer",
             key: "views3dContainer",
             name:
-              IModelApp.localization.getLocalizedStringWithNamespace(UiFramework.localizationNamespace, "savedViews.spatialViews"),
+              IModelApp.localization.getLocalizedStringWithNamespace(UiFramework.localizationNamespace, "viewTypes.spatialViews"),
             enabled: false,
             type: ListItemType.Container,
             children: views3d,
@@ -69,7 +69,7 @@ export function ViewSelectorPanel() {
             key: "views2dContainer",
             id: "views2dContainer",
             name:
-              IModelApp.localization.getLocalizedStringWithNamespace(UiFramework.localizationNamespace, "savedViews.drawings"),
+              IModelApp.localization.getLocalizedStringWithNamespace(UiFramework.localizationNamespace, "viewTypes.drawings"),
             enabled: false,
             type: ListItemType.Container,
             children: views2d,
@@ -82,7 +82,7 @@ export function ViewSelectorPanel() {
             key: "sheetContainer",
             id: "sheetContainer",
             name:
-              IModelApp.localization.getLocalizedStringWithNamespace(UiFramework.localizationNamespace, "savedViews.sheets"),
+              IModelApp.localization.getLocalizedStringWithNamespace(UiFramework.localizationNamespace, "viewTypes.sheets"),
             enabled: false,
             type: ListItemType.Container,
             children: sheets,

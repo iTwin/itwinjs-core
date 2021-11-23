@@ -7,7 +7,7 @@
  */
 
 /** Available status types of status message.
- * @beta
+ * @internal
  */
 export enum Status {
   Information,

@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelJsNative } from "@bentley/imodeljs-native";
 /** @packageDocumentation
  * @module ECDb
  */
-import { DbResult, IDisposable, Logger, OpenMode } from "@itwin/core-bentley";
+import { assert, DbResult, IDisposable, Logger, OpenMode } from "@itwin/core-bentley";
+import { IModelJsNative } from "@bentley/imodeljs-native";
 import { DbQueryRequest, ECSqlReader, IModelError, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ConcurrentQuery } from "./ConcurrentQuery";
@@ -275,7 +275,8 @@ export class ECDb implements IDisposable {
 
   /** @internal */
   public get nativeDb(): IModelJsNative.ECDb {
-    return this._nativeDb!;
+    assert(undefined !== this._nativeDb);
+    return this._nativeDb;
   }
 
   /** Allow to execute query and read results along with meta data. The result are streamed.
@@ -290,7 +291,7 @@ export class ECDb implements IDisposable {
     }
     const executor = {
       execute: async (request: DbQueryRequest) => {
-        return ConcurrentQuery.executeQueryRequest(this._nativeDb!, request);
+        return ConcurrentQuery.executeQueryRequest(this.nativeDb, request);
       },
     };
     return new ECSqlReader(executor, ecsql, params, config);

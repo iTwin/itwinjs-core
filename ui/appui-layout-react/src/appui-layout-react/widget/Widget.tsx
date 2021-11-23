@@ -135,7 +135,7 @@ export const Widget = React.memo( // eslint-disable-line react/display-name, @ty
           >
             {props.children}
           </div>
-        </WidgetContext.Provider>
+        </WidgetContext.Provider >
       );
     }),
 );

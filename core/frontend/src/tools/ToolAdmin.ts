@@ -1330,7 +1330,7 @@ export class ToolAdmin {
 
     // ### TODO Restart of primitive tool should be handled by Txn event listener...needs to happen even if not the active tool...
     if (undefined !== this._primitiveTool)
-      this._primitiveTool.onRestartTool();
+      await this._primitiveTool.onRestartTool();
 
     return true;
   }
@@ -1353,7 +1353,7 @@ export class ToolAdmin {
 
     // ### TODO Restart of primitive tool should be handled by Txn event listener...needs to happen even if not the active tool...
     if (undefined !== this._primitiveTool)
-      this._primitiveTool.onRestartTool();
+      await this._primitiveTool.onRestartTool();
 
     return true;
   }
@@ -1738,7 +1738,7 @@ export class ToolAdmin {
       this._inputCollector.onSelectedViewportChanged(previous, current);
 
     if (undefined !== this._primitiveTool)
-      this._primitiveTool.onSelectedViewportChanged(previous, current);
+      await this._primitiveTool.onSelectedViewportChanged(previous, current);
   }
 
   public setLocateCircleOn(locateOn: boolean): void {

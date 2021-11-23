@@ -1686,7 +1686,7 @@ export function computeChildTileRanges(tile: TileMetadata, root: TileTreeMetadat
 }>;
 
 // @internal
-export function computeTileChordTolerance(tile: TileMetadata, is3d: boolean): number;
+export function computeTileChordTolerance(tile: TileMetadata, is3d: boolean, tileScreenSize: number): number;
 
 // @alpha
 export enum ContentFlags {
@@ -2080,9 +2080,8 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     // @internal
     applyOverrides(overrides: DisplayStyle3dSettingsProps): void;
     clearSunTime(): void;
-    // @internal (undocumented)
-    get environment(): EnvironmentProps;
-    set environment(environment: EnvironmentProps);
+    get environment(): Environment;
+    set environment(environment: Environment);
     getPlanProjectionSettings(modelId: Id64String): PlanProjectionSettings | undefined;
     get hiddenLineSettings(): HiddenLine.Settings;
     set hiddenLineSettings(hline: HiddenLine.Settings);
@@ -2099,6 +2098,8 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     get sunTime(): number | undefined;
     get thematic(): ThematicDisplay;
     set thematic(thematic: ThematicDisplay);
+    toggleGroundPlane(display?: boolean): void;
+    toggleSkyBox(display?: boolean): void;
     // @internal (undocumented)
     toJSON(): DisplayStyle3dSettingsProps;
     // @internal (undocumented)
@@ -2205,7 +2206,7 @@ export class DisplayStyleSettings {
     readonly onBackgroundColorChanged: BeEvent<(newColor: ColorDef) => void>;
     readonly onBackgroundMapChanged: BeEvent<(newMap: BackgroundMapSettings) => void>;
     readonly onClipStyleChanged: BeEvent<(newStyle: ClipStyle) => void>;
-    readonly onEnvironmentChanged: BeEvent<(newProps: Readonly<EnvironmentProps>) => void>;
+    readonly onEnvironmentChanged: BeEvent<(newEnv: Readonly<Environment>) => void>;
     readonly onExcludedElementsChanged: BeEvent<() => void>;
     readonly onHiddenLineSettingsChanged: BeEvent<(newSettings: HiddenLine.Settings) => void>;
     readonly onLightsChanged: BeEvent<(newLights: LightSettings) => void>;
@@ -2831,10 +2832,29 @@ export interface EntityQueryParams {
 }
 
 // @public
+export class Environment {
+    protected constructor(props?: Partial<EnvironmentProperties>);
+    clone(changedProps?: Partial<EnvironmentProperties>): Environment;
+    static create(props?: Partial<EnvironmentProperties>): Environment;
+    static readonly defaults: Environment;
+    readonly displayGround: boolean;
+    readonly displaySky: boolean;
+    static fromJSON(props?: EnvironmentProps): Environment;
+    readonly ground: GroundPlane;
+    readonly sky: SkyBox;
+    toJSON(): EnvironmentProps;
+    withDisplay(display: {
+        sky?: boolean;
+        ground?: boolean;
+    }): Environment;
+}
+
+// @public
+export type EnvironmentProperties = NonFunctionPropertiesOf<Environment>;
+
+// @public
 export interface EnvironmentProps {
-    // (undocumented)
     ground?: GroundPlaneProps;
-    // (undocumented)
     sky?: SkyBoxProps;
 }
 
@@ -2908,32 +2928,28 @@ export class Feature {
 }
 
 // @public
-export class FeatureAppearance implements FeatureAppearanceProps {
+export class FeatureAppearance {
     protected constructor(props: FeatureAppearanceProps);
     get anyOverridden(): boolean;
     clone(changedProps: FeatureAppearanceProps): FeatureAppearance;
     cloneProps(changedProps: FeatureAppearanceProps): FeatureAppearanceProps;
     static readonly defaults: FeatureAppearance;
-    // (undocumented)
-    readonly emphasized?: true | undefined;
+    readonly emphasized?: true;
     // (undocumented)
     equals(other: FeatureAppearance): boolean;
     extendAppearance(base: FeatureAppearance): FeatureAppearance;
     // (undocumented)
     static fromJSON(props?: FeatureAppearanceProps): FeatureAppearance;
     static fromRgb(color: ColorDef): FeatureAppearance;
-    static fromRgba(color: ColorDef): FeatureAppearance;
+    static fromRgba(color: ColorDef, viewDependentTransparency?: boolean): FeatureAppearance;
     static fromSubCategoryOverride(ovr: SubCategoryOverride): FeatureAppearance;
-    static fromTransparency(transparencyValue: number): FeatureAppearance;
-    // (undocumented)
-    readonly ignoresMaterial?: true | undefined;
+    static fromTransparency(transparencyValue: number, viewDependent?: boolean): FeatureAppearance;
+    readonly ignoresMaterial?: true;
     // (undocumented)
     get isFullyTransparent(): boolean;
-    // (undocumented)
     readonly linePixels?: LinePixels;
     get matchesDefaults(): boolean;
-    // (undocumented)
-    readonly nonLocatable?: true | undefined;
+    readonly nonLocatable?: true;
     // (undocumented)
     get overridesLinePixels(): boolean;
     // (undocumented)
@@ -2946,24 +2962,23 @@ export class FeatureAppearance implements FeatureAppearanceProps {
     get overridesTransparency(): boolean;
     // (undocumented)
     get overridesWeight(): boolean;
-    // (undocumented)
     readonly rgb?: RgbColor;
     // (undocumented)
     toJSON(): FeatureAppearanceProps;
-    // (undocumented)
     readonly transparency?: number;
-    // (undocumented)
+    readonly viewDependentTransparency?: true;
     readonly weight?: number;
 }
 
 // @public
 export interface FeatureAppearanceProps {
-    emphasized?: true | undefined;
-    ignoresMaterial?: true | undefined;
+    emphasized?: true;
+    ignoresMaterial?: true;
     linePixels?: LinePixels;
-    nonLocatable?: true | undefined;
+    nonLocatable?: true;
     rgb?: RgbColorProps;
     transparency?: number;
+    viewDependentTransparency?: true;
     weight?: number;
 }
 
@@ -3080,9 +3095,13 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     protected readonly _neverDrawn: Id64.Uint32Set;
     // @internal
     readonly neverDrawnAnimationNodes: Set<number>;
+    override(args: OverrideFeatureAppearanceArgs): void;
     overrideAnimationNode(id: number, app: FeatureAppearance): void;
+    // @deprecated
     overrideElement(id: Id64String, app: FeatureAppearance, replaceExisting?: boolean): void;
+    // @deprecated
     overrideModel(id: Id64String, app: FeatureAppearance, replaceExisting?: boolean): void;
+    // @deprecated
     overrideSubCategory(id: Id64String, app: FeatureAppearance, replaceExisting?: boolean): void;
     // @internal
     protected _patterns: boolean;
@@ -3349,23 +3368,15 @@ export interface GeoCoordinatesResponseProps {
     geoCoords: PointWithStatus[];
 }
 
-// @public (undocumented)
+// @public
 export enum GeoCoordStatus {
-    // (undocumented)
     CSMapError = 4096,
-    // (undocumented)
     NoDatumConverter = 25,
-    // (undocumented)
     NoGCSDefined = 100,
-    // (undocumented)
     OutOfMathematicalDomain = 2,
-    // (undocumented)
     OutOfUsefulRange = 1,
-    // (undocumented)
     Pending = -41556,
-    // (undocumented)
     Success = 0,
-    // (undocumented)
     VerticalDatumConvertError = 26
 }
 
@@ -4030,16 +4041,19 @@ export enum GridOrientationType {
 
 // @public
 export class GroundPlane {
-    constructor(ground?: GroundPlaneProps);
-    aboveColor: ColorDef;
-    belowColor: ColorDef;
-    display: boolean;
-    elevation: number;
-    // @internal
-    getGroundPlaneGradient(aboveGround: boolean): Gradient.Symb;
-    // (undocumented)
-    toJSON(): GroundPlaneProps;
+    protected constructor(props: Partial<GroundPlaneProperties>);
+    readonly aboveColor: ColorDef;
+    readonly belowColor: ColorDef;
+    clone(changedProps?: Partial<GroundPlaneProperties>): GroundPlane;
+    static create(props?: Partial<GroundPlaneProperties>): GroundPlane;
+    static readonly defaults: GroundPlane;
+    readonly elevation: number;
+    static fromJSON(props?: GroundPlaneProps): GroundPlane;
+    toJSON(display?: boolean): GroundPlaneProps;
 }
+
+// @public
+export type GroundPlaneProperties = NonFunctionPropertiesOf<GroundPlane>;
 
 // @public
 export interface GroundPlaneProps {
@@ -4682,6 +4696,7 @@ export interface IModelTileTreeProps extends TileTreeProps {
     formatVersion?: number;
     geometryGuid?: GuidString;
     maxInitialTilesToSkip?: number;
+    tileScreenSize?: number;
 }
 
 // @public
@@ -5807,6 +5822,42 @@ export enum OverriddenBy {
     Browser = 0,
     // (undocumented)
     User = 1
+}
+
+// @public
+export interface OverrideElementAppearanceOptions extends OverrideFeatureAppearanceOptions {
+    elementId: Id64String;
+    // @internal (undocumented)
+    modelId?: never;
+    // @internal (undocumented)
+    subCategoryId?: never;
+}
+
+// @public
+export type OverrideFeatureAppearanceArgs = OverrideElementAppearanceOptions | OverrideModelAppearanceOptions | OverrideSubCategoryAppearanceOptions;
+
+// @public
+export interface OverrideFeatureAppearanceOptions {
+    appearance: FeatureAppearance;
+    onConflict?: "extend" | "subsume" | "replace" | "skip";
+}
+
+// @public
+export interface OverrideModelAppearanceOptions extends OverrideFeatureAppearanceOptions {
+    // @internal (undocumented)
+    elementId?: never;
+    modelId: Id64String;
+    // @internal (undocumented)
+    subCategoryId?: never;
+}
+
+// @public
+export interface OverrideSubCategoryAppearanceOptions extends OverrideFeatureAppearanceOptions {
+    // @internal (undocumented)
+    elementId?: never;
+    // @internal (undocumented)
+    modelId?: never;
+    subCategoryId: Id64String;
 }
 
 // @internal (undocumented)
@@ -8013,18 +8064,29 @@ export class SilhouetteEdgeArgs extends EdgeArgs {
 }
 
 // @public
-export interface SkyBoxImageProps {
-    texture?: Id64String;
-    textures?: SkyCubeProps;
-    type?: SkyBoxImageType;
+export class SkyBox {
+    protected constructor(gradient: SkyGradient);
+    static createGradient(gradient?: SkyGradient): SkyBox;
+    static readonly defaults: SkyBox;
+    static fromJSON(props?: SkyBoxProps): SkyBox;
+    readonly gradient: SkyGradient;
+    // @internal (undocumented)
+    get textureIds(): Iterable<Id64String>;
+    toJSON(display?: boolean): SkyBoxProps;
 }
+
+// @public
+export type SkyBoxImageProps = SkySphereImageProps | SkyCubeImageProps | {
+    type?: SkyBoxImageType;
+    texture?: never;
+    textures?: never;
+};
 
 // @public
 export enum SkyBoxImageType {
     Cube = 3,
     // @internal
     Cylindrical = 2,
-    // (undocumented)
     None = 0,
     Spherical = 1
 }
@@ -8043,13 +8105,86 @@ export interface SkyBoxProps {
 }
 
 // @public
+export class SkyCube extends SkyBox {
+    constructor(images: SkyCubeProps, gradient?: SkyGradient);
+    readonly images: SkyCubeProps;
+    // @internal (undocumented)
+    get textureIds(): Iterable<Id64String>;
+    // @internal
+    toJSON(display?: boolean): SkyBoxProps;
+}
+
+// @public
+export interface SkyCubeImageProps {
+    // @internal (undocumented)
+    texture?: never;
+    // (undocumented)
+    textures: SkyCubeProps;
+    // (undocumented)
+    type: SkyBoxImageType.Cube;
+}
+
+// @public
 export interface SkyCubeProps {
-    back?: Id64String;
-    bottom?: Id64String;
-    front?: Id64String;
-    left?: Id64String;
-    right?: Id64String;
-    top?: Id64String;
+    // (undocumented)
+    back: TextureImageSpec;
+    // (undocumented)
+    bottom: TextureImageSpec;
+    // (undocumented)
+    front: TextureImageSpec;
+    // (undocumented)
+    left: TextureImageSpec;
+    // (undocumented)
+    right: TextureImageSpec;
+    // (undocumented)
+    top: TextureImageSpec;
+}
+
+// @public
+export class SkyGradient {
+    clone(changedProps: SkyGradientProperties): SkyGradient;
+    static create(props?: Partial<SkyGradientProperties>): SkyGradient;
+    static readonly defaults: SkyGradient;
+    equals(other: SkyGradient): boolean;
+    static fromJSON(props?: SkyBoxProps): SkyGradient;
+    // (undocumented)
+    readonly groundColor: ColorDef;
+    // (undocumented)
+    readonly groundExponent: number;
+    // (undocumented)
+    readonly nadirColor: ColorDef;
+    // (undocumented)
+    readonly skyColor: ColorDef;
+    // (undocumented)
+    readonly skyExponent: number;
+    toJSON(): SkyBoxProps;
+    // (undocumented)
+    readonly twoColor: boolean;
+    // (undocumented)
+    readonly zenithColor: ColorDef;
+}
+
+// @public
+export type SkyGradientProperties = NonFunctionPropertiesOf<SkyGradient>;
+
+// @public
+export class SkySphere extends SkyBox {
+    constructor(image: TextureImageSpec, gradient?: SkyGradient);
+    readonly image: TextureImageSpec;
+    // @internal (undocumented)
+    get textureIds(): Iterable<Id64String>;
+    // @internal
+    toJSON(display?: boolean): SkyBoxProps;
+}
+
+// @public
+export interface SkySphereImageProps {
+    // (undocumented)
+    texture: TextureImageSpec;
+    // @internal (undocumented)
+    textures?: never;
+    // (undocumented)
+    type: SkyBoxImageType.Spherical;
 }
 
 // @internal
@@ -8490,6 +8625,9 @@ export interface TextureData {
 }
 
 // @public
+export type TextureImageSpec = Id64String | string;
+
+// @public
 export interface TextureLoadProps {
     maxTextureSize?: number;
     name: Id64String;
@@ -8824,6 +8962,8 @@ export interface TileOptions {
     // (undocumented)
     readonly optimizeBRepProcessing: boolean;
     // (undocumented)
+    readonly useLargerTiles: boolean;
+    // (undocumented)
     readonly useProjectExtents: boolean;
 }
 
@@ -8885,6 +9025,8 @@ export interface TileTreeMetadata {
     readonly is2d: boolean;
     // (undocumented)
     readonly modelId: Id64String;
+    // (undocumented)
+    readonly tileScreenSize: number;
 }
 
 // @internal
@@ -8909,6 +9051,8 @@ export enum TreeFlags {
     None = 0,
     // (undocumented)
     OptimizeBRepProcessing = 4,
+    // (undocumented)
+    UseLargerTiles = 8,
     // (undocumented)
     UseProjectExtents = 1
 }

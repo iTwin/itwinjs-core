@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/map-layers",
+      "comment": "Migrated from Toggle to ToggleSwitch component in map-layers widget",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/map-layers"
+}

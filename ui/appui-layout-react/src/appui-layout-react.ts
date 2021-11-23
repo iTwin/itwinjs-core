@@ -135,9 +135,6 @@ export * from "./appui-layout-react/widget/rectangular/tab/Group";
 export * from "./appui-layout-react/widget/rectangular/tab/Separator";
 export * from "./appui-layout-react/widget/rectangular/tab/Tab";
 
-export * from "./appui-layout-react/widget/tool-settings/Nested";
-export * from "./appui-layout-react/widget/tool-settings/Popup";
-export * from "./appui-layout-react/widget/tool-settings/Scrollable";
 export * from "./appui-layout-react/widget/tool-settings/Tab";
 
 export * from "./appui-layout-react/widget-panels/AppContent";
@@ -167,7 +164,6 @@ export * from "./appui-layout-react/zones/target/StagePanel";
 
 /** @docs-package-description
  * The appui-layout-react package contains React components for application user interface layouts following the Bentley 9-Zone pattern.
- * For more information, see [learning about appui-layout-react]($docs/learning/ui/ninezone/index.md).
  */
 /**
  * @docs-group-description Backstage

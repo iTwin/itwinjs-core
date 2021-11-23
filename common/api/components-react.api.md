@@ -1368,7 +1368,7 @@ export class IconEditor extends React.PureComponent<PropertyEditorProps, IconEdi
     render(): JSX.Element;
     }
 
-// @alpha
+// @alpha @deprecated
 export class IconPickerButton extends React.PureComponent<IconPickerProps, IconPickerState> {
     // @internal
     constructor(props: IconPickerProps);
@@ -1378,7 +1378,7 @@ export class IconPickerButton extends React.PureComponent<IconPickerProps, IconP
     render(): JSX.Element;
     }
 
-// @alpha
+// @alpha @deprecated
 export interface IconPickerProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
     disabled?: boolean;
     dropDownTitle?: string;

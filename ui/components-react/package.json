@@ -1,6 +1,6 @@
 {
   "name": "@itwin/components-react",
-  "version": "3.0.0-dev.111",
+  "version": "3.0.0-dev.123",
   "description": "iModel.js UI complex components",
   "main": "lib/cjs/components-react.js",
   "module": "lib/esm/components-react.js",
@@ -38,10 +38,10 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.111",
-    "@itwin/core-i18n": "workspace:^3.0.0-dev.111",
-    "@itwin/appui-abstract": "workspace:^3.0.0-dev.111",
-    "@itwin/core-react": "workspace:^3.0.0-dev.111",
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.123",
+    "@itwin/core-i18n": "workspace:^3.0.0-dev.123",
+    "@itwin/appui-abstract": "workspace:^3.0.0-dev.123",
+    "@itwin/core-react": "workspace:^3.0.0-dev.123",
     "react": "^17.0.0",
     "react-dom": "^17.0.0"
   },
@@ -84,7 +84,7 @@
     "chai-jest-snapshot": "^2.0.0",
     "chai-spies": "1.0.0",
     "chai-string": "^1.5.0",
-    "cpx": "^1.5.0",
+    "cpx2": "^3.0.0",
     "enzyme": "^3.4.0",
     "@wojtekmaj/enzyme-adapter-react-17": "^0.6.3",
     "enzyme-to-json": "^3.3.4",
@@ -104,7 +104,6 @@
     "sinon": "^9.0.2",
     "sinon-chai": "^3.2.0",
     "ts-node": "^7.0.1",
-    "tsconfig-paths": "^3.3.2",
     "typemoq": "^2.1.0",
     "typescript": "~4.4.0",
     "xmlhttprequest": "^1.8.0"

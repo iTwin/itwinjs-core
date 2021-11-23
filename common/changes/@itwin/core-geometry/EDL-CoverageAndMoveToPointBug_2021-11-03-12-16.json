@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "Various code coverage.   Fix infinitie loop in \"out of graph\" case in InsertAndRetriangulateContext",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}

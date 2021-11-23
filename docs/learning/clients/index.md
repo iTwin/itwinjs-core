@@ -9,5 +9,3 @@ The current iTwin Service client APIs are available in the following npm package
   - ($imodelhub-client)
 - [@bentley/itwin-client](https://www.npmjs.com/package/@bentley/itwin-client)
   - ($itwin-client)
-- [@bentley/product-settings-client](https://www.npmjs.com/package/@bentley/product-settings-client)
-  - ($product-settings-client)
