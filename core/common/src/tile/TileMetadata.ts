@@ -19,9 +19,7 @@ import { TileReadError, TileReadStatus } from "./TileIO";
 
 // NB: These constants correspond to those defined in Tile.cpp.
 namespace Constants {
-  export const tileScreenSize = 512;
   export const minToleranceRatioMultiplier = 2;
-  export const minToleranceRatio = tileScreenSize * minToleranceRatioMultiplier;
   export const untransformedNodeValue = 0xffffffff;
 }
 
@@ -32,6 +30,7 @@ export interface TileTreeMetadata {
   readonly modelId: Id64String;
   readonly is2d: boolean;
   readonly contentRange?: Range3d;
+  readonly tileScreenSize: number;
 }
 
 /** Describes the contents of an iModel tile.
@@ -61,6 +60,7 @@ export interface TileOptions {
   readonly enableExternalTextures: boolean;
   readonly useProjectExtents: boolean;
   readonly optimizeBRepProcessing: boolean;
+  readonly useLargerTiles: boolean;
   readonly disableMagnification: boolean;
   readonly alwaysSubdivideIncompleteTiles: boolean;
 }
@@ -85,6 +85,7 @@ export namespace TileOptions {
       enableExternalTextures: 0 !== (contentFlags & ContentFlags.ExternalTextures),
       useProjectExtents: 0 !== (tree.flags & TreeFlags.UseProjectExtents),
       optimizeBRepProcessing: 0 !== (tree.flags & TreeFlags.OptimizeBRepProcessing),
+      useLargerTiles: 0 !== (tree.flags & TreeFlags.UseLargerTiles),
       disableMagnification: false,
       alwaysSubdivideIncompleteTiles: false,
     };
@@ -265,6 +266,7 @@ export const defaultTileOptions: TileOptions = Object.freeze({
   enableExternalTextures: true,
   useProjectExtents: true,
   optimizeBRepProcessing: true,
+  useLargerTiles: true,
   disableMagnification: false,
   alwaysSubdivideIncompleteTiles: false,
 });
@@ -329,6 +331,7 @@ export enum TreeFlags {
   UseProjectExtents = 1 << 0, // Use project extents as the basis of the tile tree's range.
   EnforceDisplayPriority = 1 << 1, // For 3d plan projection models, group graphics into layers based on subcategory.
   OptimizeBRepProcessing = 1 << 2, // Use an optimized pipeline for producing facets from BRep entities.
+  UseLargerTiles = 1 << 3, // Produce tiles of larger size in screen pixels.
 }
 
 /** Describes a tile tree used to draw the contents of a model, possibly with embedded animation.
@@ -384,6 +387,9 @@ export function iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTile
   let flags = options.useProjectExtents ? TreeFlags.UseProjectExtents : TreeFlags.None;
   if (options.optimizeBRepProcessing)
     flags |= TreeFlags.OptimizeBRepProcessing;
+
+  if (options.useLargerTiles)
+    flags |= TreeFlags.UseLargerTiles;
 
   if (BatchType.Primary === treeId.type) {
     if (undefined !== treeId.animationId)
@@ -678,7 +684,7 @@ export function computeChildTileProps(parent: TileMetadata, idProvider: ContentI
       contentRange: parent.contentRange,
       sizeMultiplier,
       isLeaf: false,
-      maximumSize: Constants.tileScreenSize,
+      maximumSize: root.tileScreenSize,
     });
 
     return { children, numEmpty };
@@ -730,7 +736,7 @@ export function computeChildTileProps(parent: TileMetadata, idProvider: ContentI
         childSpec.k = parentSpec.k * 2 + k;
 
         const childId = idProvider.idFromSpec(childSpec);
-        children.push({ contentId: childId, range, maximumSize: Constants.tileScreenSize });
+        children.push({ contentId: childId, range, maximumSize: root.tileScreenSize });
       }
     }
   }
@@ -807,7 +813,7 @@ const scratchRangeDiagonal = new Vector3d();
 /** Compute the chord tolerance for the specified tile of the given range with the specified size multiplier.
  * @internal
  */
-export function computeTileChordTolerance(tile: TileMetadata, is3d: boolean): number {
+export function computeTileChordTolerance(tile: TileMetadata, is3d: boolean, tileScreenSize: number): number {
   if (tile.range.isNull)
     return 0;
 
@@ -815,7 +821,7 @@ export function computeTileChordTolerance(tile: TileMetadata, is3d: boolean): nu
   const diagDist = is3d ? diagonal.magnitude() : diagonal.magnitudeXY();
 
   const mult = Math.max(tile.sizeMultiplier ?? 1, 1);
-  return diagDist / (Constants.minToleranceRatio * Math.max(1, mult));
+  return diagDist / (tileScreenSize * Constants.minToleranceRatioMultiplier * Math.max(1, mult));
 }
 
 /** Deserializes tile metadata.

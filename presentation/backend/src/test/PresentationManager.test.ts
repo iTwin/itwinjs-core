@@ -495,6 +495,29 @@ describe("PresentationManager", () => {
 
   });
 
+  describe("setOnManagerUsedHandler", () => {
+
+    it("invokes when making presentation requests", async () => {
+      const addonMock = moq.Mock.ofType<NativePlatformDefinition>();
+      const imodelMock = moq.Mock.ofType<IModelDb>();
+      const manager = new PresentationManager({ addon: addonMock.object });
+      const managerUsedSpy = sinon.spy();
+
+      addonMock.setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString()))
+        .returns(async () => ({ result: "[]" }));
+
+      addonMock.setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString()))
+        .returns(async () => ({ result: "{}" }));
+
+      manager.setOnManagerUsedHandler(managerUsedSpy);
+      await manager.getNodes({ imodel: imodelMock.object, rulesetOrId: "RulesetId" });
+      expect(managerUsedSpy).to.be.calledOnce;
+      await manager.getContent({ imodel: imodelMock.object, rulesetOrId: "RulesetId", keys: new KeySet([]), descriptor: {} });
+      expect(managerUsedSpy).to.be.calledTwice;
+    });
+
+  });
+
   describe("vars", () => {
 
     const addon = moq.Mock.ofType<NativePlatformDefinition>();
@@ -1752,7 +1775,7 @@ describe("PresentationManager", () => {
 
       function setupIModelForElementIds(imodel: moq.IMock<IModelDb>, idsByClass: Map<string, string[]>, idsCount: number) {
         imodel.setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())).returns(() => idsCount);
-        imodel.setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())).returns(() => idsByClass);
+        imodel.setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())).returns(() => ({ ids: idsByClass, lastElementId: undefined }));
       }
 
       it("returns multiple elements properties", async () => {
@@ -1816,46 +1839,47 @@ describe("PresentationManager", () => {
           imodel: imodelMock.object,
           elementClasses: ["TestSchema:TestClass"],
         };
-        const expectedResponse = {
-          total: 2,
-          items: [
-            {
-              class: "Test Class",
-              id: "0x123",
-              label: "test label 1",
-              items: {
-                ["Test Category"]: {
-                  type: "category",
-                  items: {
-                    ["Test Field"]: {
-                      type: "primitive",
-                      value: "test display value 1",
-                    },
+        const expectedResponse = [
+          {
+            class: "Test Class",
+            id: "0x123",
+            label: "test label 1",
+            items: {
+              ["Test Category"]: {
+                type: "category",
+                items: {
+                  ["Test Field"]: {
+                    type: "primitive",
+                    value: "test display value 1",
                   },
                 },
               },
             },
-            {
-              class: "Test Class",
-              id: "0x124",
-              label: "test label 2",
-              items: {
-                ["Test Category"]: {
-                  type: "category",
-                  items: {
-                    ["Test Field"]: {
-                      type: "primitive",
-                      value: "test display value 2",
-                    },
+          },
+          {
+            class: "Test Class",
+            id: "0x124",
+            label: "test label 2",
+            items: {
+              ["Test Category"]: {
+                type: "category",
+                items: {
+                  ["Test Field"]: {
+                    type: "primitive",
+                    value: "test display value 2",
                   },
                 },
               },
             },
-          ],
-        };
-        const result = await manager.getElementProperties(options);
-        verifyMockRequest(expectedContentParams);
-        expect(result).to.deep.eq(expectedResponse);
+          },
+        ];
+        const { total, iterator } = await manager.getElementProperties(options);
+
+        expect(total).to.be.eq(2);
+        for await (const items of iterator()) {
+          verifyMockRequest(expectedContentParams);
+          expect(items).to.deep.eq(expectedResponse);
+        }
       });
 
     });

@@ -644,15 +644,29 @@ These methods were previously synchronous and are now async:
 - [InteractiveTool.onSuspend]($frontend)
 - [InteractiveTool.onUnsuspend]($frontend)
 
-## `NodeKey` in `@itwin/presentation-common`
+## Changes to `@itwin/presentation-common`
+
+### `NodeKey`
 
 The [NodeKey]($presentation-common) object contains a `pathFromRoot` attribute which can be used to uniquely identify a node in a hierarchy. In addition, the attribute is stable - the value for the same node is the same even when being created by different backends, which allows it to be persisted and later be used to identify specific nodes.
 
 In `3.0` changes have been made that changed the way this attribute is calculated, which means the same node produced by pre-3.0 and 3.x versions of `imodeljs` will have keys with different `pathFromRoot` value. To help identify the version of `NodeKey` a new `version` attribute has been added, with `undefined` or `1` being assigned to keys produced by pre-3.0 and `2` being assigned to keys produced by `3.x` versions of imodeljs. In addition, a new [NodeKey.equals]($presentation-common) function has been added to help with the equality checking of node keys, taking their version into account.
 
-## `KeySetJSON` in `@itwin/presentation-common`
+### `KeySetJSON`
 
 The format of [KeySetJSON]($presentation-common) has been changed to reduce its size. Instead of containing an array of instance IDs it now contains a single compressed IDs string. See [CompressedId64Set]($core-bentley) for more details about compressing IDs.
+
+### Changes to presentation rule specifications
+
+- Added ability to specify polymorphism at class level rather than specification level. 
+  
+  Previously polymorphism was specified at specification level using [ContentInstancesOfSpecificClassesSpecification.handleInstancesPolymorphically]($presentation-common) and [InstanceNodesOfSpecificClassesSpecification.arePolymorphic]($presentation-common) flags. They're now deprecated in favor of the new [MultiSchemaClassesSpecification.arePolymorphic]($presentation-common) attribute and act as default values if the new attribute is not specified.
+
+  The change allows [ContentInstancesOfSpecificClassesSpecification]($presentation-common) and [InstanceNodesOfSpecificClassesSpecification]($presentation-common) specify multiple classes with different polymorphism, if necessary.
+
+- Added ability to exclude some classes when creating content and hierarchies.
+
+  New optional attributes [ContentInstancesOfSpecificClassesSpecification.excludedClasses]($presentation-common) and [InstanceNodesOfSpecificClassesSpecification.excludedClasses]($presentation-common) have been added to specify classes that could be excluded. This provides a convenient way to describe what class instances should be excluded from content or hierarchy, e.g. `give me all bis.Element instances except bis.GeometricElement`.
 
 ## Changes to `Presentation` initialization in `@itwin/presentation-backend`
 
@@ -776,31 +790,34 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 
 ### @itwin/core-backend
 
-| Removed                                                      | Replacement                                    |
-| ------------------------------------------------------------ | ---------------------------------------------- |
-| `AutoPush`                                                   | _eliminated_                                   |
-| `BriefcaseDb.reinstateChanges`                               | `BriefcaseDb.pullChanges`                      |
-| `BriefcaseDb.reverseChanges`                                 | `BriefcaseDb.pullChanges`                      |
-| `BriefcaseIdValue`                                           | `BriefcaseIdValue` in @itwin/core-common       |
-| `BriefcaseManager.getCompatibilityFileName`                  | _eliminated_                                   |
-| `BriefcaseManager.getCompatibilityPath`                      | _eliminated_                                   |
-| `BriefcaseManager.isStandaloneBriefcaseId`                   | use `id === BriefcaseIdValue.Unassigned`       |
-| `compatibilityDir` argument of `BriefcaseManager.initialize` | _eliminated_                                   |
-| `DocumentCarrier`                                            | _eliminated_                                   |
-| `IModelDb.clearSqliteStatementCache`                         | `IModelDb.clearCaches`                         |
-| `IModelDb.clearStatementCache`                               | `IModelDb.clearCaches`                         |
-| `IModelHost.iModelClient`                                    | `IModelHubBackend.iModelClient`                |
-| `IModelHostConfiguration.briefcaseCacheDir`                  | `IModelHostConfiguration.cacheDir`             |
-| `InformationCarrierElement`                                  | _eliminated_                                   |
-| `Platform.isDesktop`                                         | `ProcessDetector.isElectronAppBackend`         |
-| `Platform.isElectron`                                        | `ProcessDetector.isElectronAppBackend`         |
-| `Platform.isMobile`                                          | `ProcessDetector.isMobileAppBackend`           |
-| `Platform.isNodeJs`                                          | `ProcessDetector.isNodeProcess`                |
-| `SnapshotDb.filePath`                                        | `SnapshotDb.pathName`                          |
-| `StandaloneDb.filePath`                                      | `StandaloneDb.pathName`                        |
-| `Texture.width, height, flags`                               | _eliminated_                                   |
-| `TxnAction`                                                  | `TxnAction` in @itwin/core-common              |
-| `TxnChangedEntities.inserted, deleted, updated`              | `TxnChangedEntities.inserts, deletes, updates` |
+| Removed                                                      | Replacement                                                        |
+| ------------------------------------------------------------ | -------------------------------------------------------------------|
+| `AutoPush`                                                   | _eliminated_                                                       |
+| `BriefcaseDb.reinstateChanges`                               | `BriefcaseDb.pullChanges`                                          |
+| `BriefcaseDb.reverseChanges`                                 | `BriefcaseDb.pullChanges`                                          |
+| `BriefcaseIdValue`                                           | `BriefcaseIdValue` in @itwin/core-common                           |
+| `BriefcaseManager.getCompatibilityFileName`                  | _eliminated_                                                       |
+| `BriefcaseManager.getCompatibilityPath`                      | _eliminated_                                                       |
+| `BriefcaseManager.isStandaloneBriefcaseId`                   | use `id === BriefcaseIdValue.Unassigned`                           |
+| `compatibilityDir` argument of `BriefcaseManager.initialize` | _eliminated_                                                       |
+| `DocumentCarrier`                                            | _eliminated_                                                       |
+| `IModelDb.clearSqliteStatementCache`                         | `IModelDb.clearCaches`                                             |
+| `IModelDb.clearStatementCache`                               | `IModelDb.clearCaches`                                             |
+| `IModelHost.iModelClient`                                    | `IModelHubBackend.iModelClient`                                    |
+| `IModelHostConfiguration.briefcaseCacheDir`                  | `IModelHostConfiguration.cacheDir`                                 |
+| `InformationCarrierElement`                                  | _eliminated_                                                       |
+| `Platform.isDesktop`                                         | `ProcessDetector.isElectronAppBackend`                             |
+| `Platform.isElectron`                                        | `ProcessDetector.isElectronAppBackend`                             |
+| `Platform.isMobile`                                          | `ProcessDetector.isMobileAppBackend`                               |
+| `Platform.isNodeJs`                                          | `ProcessDetector.isNodeProcess`                                    |
+| `SnapshotDb.filePath`                                        | `SnapshotDb.pathName`                                              |
+| `StandaloneDb.filePath`                                      | `StandaloneDb.pathName`                                            |
+| `Texture.width, height, flags`                               | _eliminated_                                                       |
+| `TxnAction`                                                  | `TxnAction` in @itwin/core-common                                  |
+| `TxnChangedEntities.inserted, deleted, updated`              | `TxnChangedEntities.inserts, deletes, updates`                     |
+| `NativeAppAuthorizationBackend`                              | Moved to @iTwin/auth-clients repo as `ElectronAuthorizationBackend`|
+| `ElectronAuthorizationEvents`                                | Moved to @iTwin/auth-clients repo                                  |
+| `ElectronAuthorizationRequestHandler`                        | Moved to @iTwin/auth-clients repo                                  |
 
 ### @itwin/core-common
 
@@ -835,6 +852,7 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | `ViewFlags.noGeometryMap`                             | _eliminated_                                                   |
 | `ViewFlags.noSolarLight`                              | [ViewFlags.lighting]($common)                                  |
 | `ViewFlags.noSourceLights`                            | [ViewFlags.lighting]($common)                                  |
+| `NativeAppAuthorizationConfiguration`                 | `MobileAppAuthorizationConfiguration` in @itwin/core-mobile    |
 
 ### @itwin/core-frontend
 
@@ -873,6 +891,7 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | `Viewport.setFlashed`                         | [Viewport.flashedId]($frontend)                                    |
 | `Viewport.setRedrawPending`                   | [Viewport.requestRedraw]($frontend)                                |
 | `WebAppViewer`                                | *eliminated*                                                       |
+| `NativeAppAuthorization`                      | Moved to @iTwin/auth-clients repo as `ElectronAppAuthorization`    |
 
 ### @itwin/core-geometry
 
@@ -897,6 +916,7 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `AgentAuthorizationClient`          | Moved to @iTwin/auth-clients as SerivceAuthorizationClient  |
 | `DelegationAuthorizationClient`     | *removed*                                                   |
 | `IntrospectionClient`               | Moved to @iTwin/auth-clients                                |
+| `ImsAuthorizationClient`           | *removed*                                                    |
 
 ### @itwin/appui-abstract
 

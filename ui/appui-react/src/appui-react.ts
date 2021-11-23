@@ -86,6 +86,7 @@ export * from "./appui-react/hooks/useSolarDataProvider";
 
 export * from "./appui-react/imodel-components/spatial-tree/SpatialContainmentTree";
 export * from "./appui-react/imodel-components/category-tree/CategoriesTree";
+export * from "./appui-react/imodel-components/category-tree/CategoryVisibilityHandler";
 export * from "./appui-react/imodel-components/models-tree/ModelsTree";
 export * from "./appui-react/imodel-components/models-tree/ModelsVisibilityHandler";
 export * from "./appui-react/imodel-components/Common";
