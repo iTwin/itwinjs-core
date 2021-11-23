@@ -77,8 +77,10 @@ function SampleTimelineComponent() {
 }
 
 export class Frontstage1 extends FrontstageProvider {
+  public static stageId = "ui-test-app:Test1";
+
   public get id(): string {
-    return "Test1";
+    return Frontstage1.stageId;
   }
 
   private _topMostPanel = {
