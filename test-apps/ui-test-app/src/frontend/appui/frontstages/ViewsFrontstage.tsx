@@ -755,8 +755,8 @@ class AdditionalTools {
       iconSpec: "icon-arrow-down",
       label: "Popup Test",
       badgeType: BadgeType.New,
-      popupPanelNode: <MyLoremIpsumPanel />,
-    });
+      popupPanelNode: <MyLoremIpsumPanel />, // Note: popupPanelNode populates the panelContentNode when converted to a CustomToolbarItem
+    });                                      //       which can be supplied by an UiItemsProvider
   }
 
   public formatGroupItemsItem = (): CommonToolbarItem => {

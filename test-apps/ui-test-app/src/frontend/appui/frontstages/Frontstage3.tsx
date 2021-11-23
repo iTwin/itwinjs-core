@@ -20,8 +20,10 @@ import { ReactTableDemoContentControl } from "../table-demo/ReactTableDemo";
 /* eslint-disable react/jsx-key, deprecation/deprecation */
 
 export class Frontstage3 extends FrontstageProvider {
+  public static stageId = "ui-test-app:Test3";
+
   public get id(): string {
-    return "Test3";
+    return Frontstage3.stageId;
   }
 
   private getDefaultViewState = () => {

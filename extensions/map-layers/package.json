@@ -1,6 +1,6 @@
 {
   "name": "@itwin/map-layers",
-  "version": "3.0.0-dev.122",
+  "version": "3.0.0-dev.127",
   "description": "Extension that adds a Map Layers Widget",
   "main": "lib/cjs/map-layers.js",
   "module": "lib/esm/map-layers.js",
@@ -36,7 +36,6 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/react-scripts": "4.0.3",
     "@itwin/appui-abstract": "workspace:*",
     "@itwin/appui-layout-react": "workspace:*",
     "@itwin/appui-react": "workspace:*",

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "export CategoryVisibilityHandler",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}

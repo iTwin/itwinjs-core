@@ -13,7 +13,7 @@ import { Backstage as NZ_Backstage } from "@itwin/appui-layout-react";
 import { BackstageComposer, BackstageComposerActionItem, BackstageComposerStageLauncher, BackstageManager, SyncUiEventDispatcher, UiFramework, useGroupedItems } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 import { getActionItem, getStageLauncherItem } from "./BackstageComposerItem.test";
-import { act } from "@testing-library/react";
+import { act, render } from "@testing-library/react";
 
 const uiSyncEventId = "appuiprovider:backstage-item-visibility-changed";
 
@@ -26,14 +26,14 @@ class TestUiItemsProvider implements UiItemsProvider {
   public readonly id = "BackstageComposer-TestUiProvider";
   public static sampleStatusVisible = true;
 
-  constructor(public testWithDuplicate=false) {}
+  constructor(public testWithDuplicate = false) { }
 
   public provideBackstageItems(): BackstageItem[] {
     const isHiddenItem = new ConditionalBooleanValue(() => !TestUiItemsProvider.sampleStatusVisible, [uiSyncEventId]);
     const items: BackstageItem[] = [];
     items.push(BackstageItemUtilities.createActionItem("UiItemsProviderTest:backstage1", 500, 50, () => { }, "Dynamic Action", undefined, "icon-addon"));
-    items.push(  BackstageItemUtilities.createActionItem("UiItemsProviderTest:backstage2", 600, 50, () => { }, "Dynamic Action", undefined, "icon-addon2", { isHidden: isHiddenItem }));
-    items.push(  BackstageItemUtilities.createActionItem("UiItemsProviderTest:backstage3", 600, 30, () => { }, "Dynamic Action", undefined, "icon-addon3"));
+    items.push(BackstageItemUtilities.createActionItem("UiItemsProviderTest:backstage2", 600, 50, () => { }, "Dynamic Action", undefined, "icon-addon2", { isHidden: isHiddenItem }));
+    items.push(BackstageItemUtilities.createActionItem("UiItemsProviderTest:backstage3", 600, 30, () => { }, "Dynamic Action", undefined, "icon-addon3"));
     this.testWithDuplicate && items.push(BackstageItemUtilities.createActionItem("UiItemsProviderTest:backstage3", 600, 30, () => { }, "Dynamic Action", undefined, "icon-addon3"));
     return items;
   }
@@ -70,6 +70,17 @@ describe("BackstageComposer", () => {
       getStageLauncherItem(),
     ];
     shallow(<BackstageComposer items={items} />).should.matchSnapshot();
+  });
+
+  it("should render single action item with hideSoloStageEntry set", async () => {
+    const items: BackstageItem[] = [
+      getActionItem({ groupPriority: 200 }),
+      getStageLauncherItem(),
+    ];
+    const wrapper = render(<BackstageComposer hideSoloStageEntry items={items} />);
+    expect(wrapper.container.querySelectorAll(".nz-backstage-item").length).equals(1);
+    wrapper.rerender(<BackstageComposer items={items} />);
+    expect(wrapper.container.querySelectorAll(".nz-backstage-item").length).equals(2);
   });
 
   it("should honor prop updates", async () => {
