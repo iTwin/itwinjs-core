@@ -145,7 +145,7 @@ export function BasemapPanel() {
   return (
     <>
       <div className="map-manager-base-item" >
-        <button className="map-manager-item-visibility" title={toggleVisibility} onClick={handleVisibilityChange}>
+        <button className="map-manager-base-item-visibility" title={toggleVisibility} onClick={handleVisibilityChange}>
           <WebFontIcon iconName={baseMapVisible ? "icon-visibility" : "icon-visibility-hide-2"} />
         </button>
         <span className="map-manager-base-label">{baseLayerLabel}</span>
