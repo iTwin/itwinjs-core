@@ -7,7 +7,7 @@
  */
 
 import {
-  AlternateUnitLabelsProvider, BadUnit, BasicUnit, UnitConversion, UnitProps, UnitsProvider,
+  BadUnit, BasicUnit, UnitConversion, UnitProps, UnitsProvider,
 } from "@itwin/core-quantity";
 import { UnitNameKey } from "./QuantityFormatter";
 
