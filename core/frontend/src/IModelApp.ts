@@ -155,11 +155,11 @@ interface IModelAppForDebugger {
 }
 
 /**
- * Global singleton that connects the user interface with the iModel.js services. There can be only one IModelApp active in a session. All
+ * Global singleton that connects the user interface with the iTwin.js services. There can be only one IModelApp active in a session. All
  * members of IModelApp are static, and it serves as a singleton object for gaining access to session information.
  *
  * Before any interactive operations may be performed by the `@itwin/core-frontend package`, [[IModelApp.startup]] must be called and awaited.
- * Applications may customize the frontend behavior of iModel.js by supplying options to [[IModelApp.startup]].
+ * Applications may customize the frontend behavior of iTwin.js by supplying options to [[IModelApp.startup]].
  *
  * @public
  */
@@ -327,7 +327,7 @@ export class IModelApp {
     (window as IModelAppForDebugger).iModelAppForDebugger = this;
 
     this.sessionId = opts.sessionId ?? Guid.createValue();
-    this._applicationId = opts.applicationId ?? "2686";  // Default to product id of iModel.js
+    this._applicationId = opts.applicationId ?? "2686";  // Default to product id of iTwin.js
     this._applicationVersion = opts.applicationVersion ?? "1.0.0";
     this.authorizationClient = opts.authorizationClient;
     this._hubAccess = opts.hubAccess;
@@ -658,13 +658,13 @@ export class IModelApp {
     return card;
   }
 
-  /** Make the logo card for the iModel.js library itself. This card gets placed at the top of the stack.
+  /** Make the logo card for the library itself. This card gets placed at the top of the stack.
    *  @internal
    */
   public static makeIModelJsLogoCard() {
     return this.makeLogoCard({
       iconSrc: "images/about-imodeljs.svg",
-      heading: `<span style="font-weight:normal">${this.localization.getLocalizedString("Notices.PoweredBy")}</span>&nbsp;iModel.js`,
+      heading: `<span style="font-weight:normal">${this.localization.getLocalizedString("Notices.PoweredBy")}</span>&nbsp;iTwin.js`,
       notice: `${require("../../package.json").version}<br>${copyrightNotice}`, // eslint-disable-line @typescript-eslint/no-var-requires
     });
   }
@@ -680,7 +680,7 @@ export class IModelApp {
     return div;
   }
 
-  /** Localize an error status from iModel.js
+  /** Localize an error status
    * @param status one of the status values from [BentleyStatus]($core-bentley), [IModelStatus]($core-bentley) or [DbResult]($core-bentley)
    * @returns a localized error message
    * @beta

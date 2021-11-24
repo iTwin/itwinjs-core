@@ -13,14 +13,14 @@ import { Point2d, Point3d } from "@itwin/core-geometry";
  * [IModelConnection]($frontend), [IModelDb]($backend), and [ECDb]($backend).
  *
  * @public
- * */
+ */
 export enum QueryRowFormat {
   /** Each row is an object in which each non-null column value can be accessed by its name as defined in the ECSql.
    * Null values are omitted.
    */
   UseECSqlPropertyNames,
   /** Each row is an object in which each non-null column value can be accessed by a [remapped property name]($docs/learning/ECSqlRowFormat.md).
-   * This format is backwards-compatible with the format produced by iModel.js version 2.x. Null values are omitted.
+   * This format is backwards-compatible with the format produced by version 2.x. Null values are omitted.
    */
   UseJsPropertyNames,
   /** Each row is an array of values accessed by an index corresponding to the property's position in the ECSql SELECT statement.

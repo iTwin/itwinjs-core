@@ -484,7 +484,7 @@ export abstract class IModelDb extends IModel {
    *
    * @param ecsql The ECSQL statement to execute
    * @param params The values to bind to the parameters (if the ECSQL has any).
-   * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
+   * See "[iTwin.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
    * @returns Return row count.
    * @throws [IModelError]($common) If the statement is invalid
    */
@@ -1142,7 +1142,7 @@ export abstract class IModelDb extends IModel {
    * that list.
    *  * The results of changing [ExportPartGraphicsOptions]($core-backend) during the
    *    [ExportPartGraphicsOptions.onPartGraphics]($core-backend) callback are not defined.
-   *  * See export-gltf under test-apps in the iModel.js monorepo for a working reference.
+   *  * See export-gltf under test-apps in the iTwin.js monorepo for a working reference.
    * @returns 0 is successful, status otherwise
    * @public
    */

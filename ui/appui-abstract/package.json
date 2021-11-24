@@ -1,7 +1,7 @@
 {
   "name": "@itwin/appui-abstract",
   "version": "3.0.0-dev.128",
-  "description": "iModel.js UI abstractions",
+  "description": "iTwin.js UI abstractions",
   "main": "lib/cjs/appui-abstract.js",
   "module": "lib/esm/appui-abstract.js",
   "typings": "lib/cjs/appui-abstract",
@@ -29,7 +29,8 @@
   "keywords": [
     "Bentley",
     "BIM",
-    "iModel"
+    "iModel",
+    "iTwin.js"
   ],
   "author": {
     "name": "Bentley Systems, Inc.",
