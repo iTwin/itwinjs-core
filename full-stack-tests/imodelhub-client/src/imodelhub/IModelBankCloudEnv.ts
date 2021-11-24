@@ -18,7 +18,6 @@ import { TestIModelHubOidcAuthorizationClient } from "../TestIModelHubOidcAuthor
 import { AuthorizationClient } from "@itwin/core-common";
 
 // To run tests with imodel-bank integration:
-// set NODE_EXTRA_CA_CERTS=D:\dev\imodeljs\full-stack-tests\rpc\local_dev_server.crt
 // set IMJS_TEST_IMODEL_BANK to true to run tests with imodel-bank. Then either:
 // set IMJS_TEST_IMODEL_BANK_URL to specify the url to locally deployed orchestrator
 // or set the following so the tests would deploy a local orchestrator themselves:

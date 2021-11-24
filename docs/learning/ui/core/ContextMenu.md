@@ -13,7 +13,7 @@ The [PopupContextMenu]($core-react) React component displays a ContextMenu withi
 These lower level components can be used to display a context menu.
 However, there is an easier API to use: IModelApp.uiAdmin.showContextMenu.
 UiAdmin.showContextMenu will show a context menu at a particular location.
-[UiAdmin]($appui-abstract) controls various UI components and is callable from IModelApp.uiAdmin in the imodeljs-frontend package.
+[UiAdmin]($appui-abstract) controls various UI components and is callable from `IModelApp.uiAdmin` in the `@itwin/core-frontend` package.
 UiAdmin.showContextMenu uses the [ContextMenu]($core-react:ContextMenu) components to display the context menu.
 
 ### Menu Items
