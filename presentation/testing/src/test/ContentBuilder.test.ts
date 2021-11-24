@@ -14,7 +14,6 @@ import {
 } from "@itwin/presentation-common";
 import { Presentation, PresentationManager, RulesetManager } from "@itwin/presentation-frontend";
 import { ContentBuilder, IContentBuilderDataProvider } from "../presentation-testing/ContentBuilder";
-import { QueryRowFormat } from "@itwin/core-common";
 
 use(ChaiAsPromised);
 

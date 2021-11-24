@@ -434,15 +434,11 @@ describe("ECSqlStatement", () => {
           assert.equal(row.className, "ECDbFileInfo.ExternalFileInfo");
           assert.equal(row.name, `${Id64.getLocalId(expectedECInstanceId).toString()}.txt`);
         });
-        assert.equal(await query(ecdb, "SELECT ECInstanceId, ECClassId, Name FROM ecdbf.ExternalFileInfo WHERE ECInstanceId=?",
-          new QueryBinder().bindString(1, expectedId),
-          new QueryOptionsBuilder()
-            .setLimit({ count: 1, offset: -1 })
-            .getOptions(), (row) => {
-              assert.equal(row.id, expectedECInstanceId);
-              assert.equal(row.className, "ECDbFileInfo.ExternalFileInfo");
-              assert.equal(row.name, `${Id64.getLocalId(expectedECInstanceId).toString()}.txt`);
-            }), 1);
+        assert.equal(await query(ecdb, "SELECT ECInstanceId, ECClassId, Name FROM ecdbf.ExternalFileInfo WHERE ECInstanceId=?", new QueryBinder().bindString(1, expectedId), new QueryOptionsBuilder().setLimit({ count: 1, offset: -1 }).getOptions(), (row) => {
+          assert.equal(row.id, expectedECInstanceId);
+          assert.equal(row.className, "ECDbFileInfo.ExternalFileInfo");
+          assert.equal(row.name, `${Id64.getLocalId(expectedECInstanceId).toString()}.txt`);
+        }), 1);
       };
 
       let expectedId = Id64.fromLocalAndBriefcaseIds(4444, 0);

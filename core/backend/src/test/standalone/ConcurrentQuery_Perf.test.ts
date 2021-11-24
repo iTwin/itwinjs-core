@@ -9,6 +9,7 @@ import { IModelDb, SnapshotDb } from "../../IModelDb";
 import { IModelHost } from "../../IModelHost";
 import { IModelJsFs } from "../../IModelJsFs";
 
+/* eslint-disable no-console */
 describe.skip("Properties loading", () => {
   let imodel: SnapshotDb;
   before(async () => {
@@ -21,21 +22,22 @@ describe.skip("Properties loading", () => {
     const testIModelName: string = "D:/temp/test-file.bim";
     imodel = SnapshotDb.openFile(testIModelName);
     expect(imodel).is.not.null;
-  });
+  }); 291;
   it.skip(`concurrent query ping test`, async function () {
     this.timeout(0);
+    // eslint-disable-next-line no-console
     console.log("Round trip time");
     const startTime = new Date().getTime();
     let rowCount = 0;
     const ping = {
       ping: {
         resultSize: 0,
-        sleepTime: 0
-      }
+        sleepTime: 0,
+      },
     };
     for (let i = 0; i < 246000; ++i) {
-      for await (const _row of imodel.query(JSON.stringify(ping), undefined, {rowFormat: QueryRowFormat.UseJsPropertyNames, usePrimaryConn: true })) {
-        ++rowCount
+      for await (const _row of imodel.query(JSON.stringify(ping), undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames, usePrimaryConn: true })) {
+        ++rowCount;
       }
     }
     console.log(`Loaded - ${rowCount} in ${new Date().getTime() - startTime} ms`);
@@ -50,15 +52,15 @@ describe.skip("Properties loading", () => {
 
 });
 interface TestQueryStats extends QueryStats {
-  execs: number
+  execs: number;
 }
 enum QueryMethod {
   WithPreparedStatement,
   WithConcurrentQuery
 }
 class PropertyReaderStressTest {
-  private queryTimes = new Map<string, TestQueryStats>();
-  public constructor(private imodel: IModelDb, private method: QueryMethod) {
+  private _queryTimes = new Map<string, TestQueryStats>();
+  public constructor(private _imodel: IModelDb, private _method: QueryMethod) {
 
   }
   public printTime(fileName: string) {
@@ -66,14 +68,14 @@ class PropertyReaderStressTest {
     let doc: string;
     const headerLine = `nativeCpuTime,nativeMemUsed,nativeRowReturned,nativeTotalTime,totalTime,retryCount,execs,ecsql\r\n`;
     doc = headerLine;
-    this.queryTimes.forEach((stats: TestQueryStats, ecsql: string) => {
+    this._queryTimes.forEach((stats: TestQueryStats, ecsql: string) => {
       allStats.backendCpuTime += stats.backendCpuTime;
       allStats.backendMemUsed += stats.backendMemUsed;
       allStats.backendRowsReturned += stats.backendRowsReturned;
       allStats.backendTotalTime += stats.backendTotalTime;
       allStats.totalTime += stats.totalTime;
       allStats.retryCount += stats.retryCount;
-      allStats.execs += stats.execs
+      allStats.execs += stats.execs;
       const textLine = `${stats.backendCpuTime},${stats.backendMemUsed},${stats.backendRowsReturned},${stats.backendTotalTime},${stats.totalTime},${stats.retryCount},${stats.execs},"${ecsql.replace(/\n/g, " ").replace(/\r/g, " ").replace(/\s+/g, " ")}"\r\n`;
       doc += textLine;
     });
@@ -85,11 +87,11 @@ class PropertyReaderStressTest {
     const builder = new QueryOptionsBuilder({ usePrimaryConn: true, abbreviateBlobs: true });
     builder.setConvertClassIdsToNames(true);
     builder.setRowFormat(QueryRowFormat.UseJsPropertyNames);
-    const reader = this.imodel.createQueryReader(ecsql, params, builder.getOptions());
+    const reader = this._imodel.createQueryReader(ecsql, params, builder.getOptions());
     const rows = await reader.toArray();
     const curStats = { ...reader.stats, execs: 1 };
-    if (this.queryTimes.has(ecsql)) {
-      const stats = this.queryTimes.get(ecsql)!;
+    if (this._queryTimes.has(ecsql)) {
+      const stats = this._queryTimes.get(ecsql)!;
       stats.backendCpuTime += curStats.backendCpuTime;
       stats.backendMemUsed += curStats.backendMemUsed;
       stats.backendRowsReturned += curStats.backendRowsReturned;
@@ -97,7 +99,7 @@ class PropertyReaderStressTest {
       stats.totalTime += curStats.totalTime;
       stats.execs++;
     } else {
-      this.queryTimes.set(ecsql, curStats);
+      this._queryTimes.set(ecsql, curStats);
     }
     return rows;
   }
@@ -288,10 +290,10 @@ class PropertyReaderStressTest {
     return this.queryRelatedClasses(db, query, QueryBinder.from({ id: elementId }));
   }
   private async queryRelatedClasses(db: IModelDb, query: string, bindings: object) {
-    if (this.method == QueryMethod.WithConcurrentQuery) {
-      return await this.queryRelatedClassesWithConcurrentQuery(query, bindings);
+    if (this._method === QueryMethod.WithConcurrentQuery) {
+      return this.queryRelatedClassesWithConcurrentQuery(query, bindings);
     }
-    return await this.queryRelatedClassesWithECSqlStatement(db, query, bindings);
+    return this.queryRelatedClassesWithECSqlStatement(db, query, bindings);
   }
   private async queryRelatedClassesWithConcurrentQuery(query: string, bindings: object) {
     const relatedClasses = new Map<string, string[]>();
@@ -323,11 +325,11 @@ class PropertyReaderStressTest {
       return relatedClasses;
     });
   }
-  private excludedProperties = new Set<string>(["element", "jsonProperties", "geometryStream"]);
+  private _excludedProperties = new Set<string>(["element", "jsonProperties", "geometryStream"]);
   private collectProperties(row: any) {
     const element: any = {};
     for (const prop in row) {
-      if (this.excludedProperties.has(prop))
+      if (this._excludedProperties.has(prop))
         continue;
       element[prop] = row[prop];
     }
