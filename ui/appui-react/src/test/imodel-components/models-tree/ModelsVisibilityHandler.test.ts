@@ -97,14 +97,14 @@ describe("ModelsVisibilityHandler", () => {
   }
 
   const mockSubjectModelIds = (props: SubjectModelIdsMockProps) => {
-    props.imodelMock.setup((x) => x.query(moq.It.is((q: string) => (-1 !== q.indexOf("FROM bis.Subject"))), undefined, QueryRowFormat.UseJsPropertyNames))
+    props.imodelMock.setup((x) => x.query(moq.It.is((q: string) => (-1 !== q.indexOf("FROM bis.Subject"))), undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }))
       .returns(async function* () {
         const list = new Array<{ id: Id64String, parentId: Id64String }>();
         props.subjectsHierarchy.forEach((ids, parentId) => ids.forEach((id) => list.push({ id, parentId })));
         while (list.length)
           yield list.shift();
       });
-    props.imodelMock.setup((x) => x.query(moq.It.is((q: string) => (-1 !== q.indexOf("FROM bis.InformationPartitionElement"))), undefined, QueryRowFormat.UseJsPropertyNames))
+    props.imodelMock.setup((x) => x.query(moq.It.is((q: string) => (-1 !== q.indexOf("FROM bis.InformationPartitionElement"))), undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }))
       .returns(async function* () {
         const list = new Array<{ id: Id64String, subjectId: Id64String, content?: string }>();
         props.subjectModels.forEach((modelInfos, subjectId) => modelInfos.forEach((modelInfo) => list.push({ id: modelInfo.id, subjectId, content: modelInfo.content })));
@@ -298,7 +298,7 @@ describe("ModelsVisibilityHandler", () => {
         await using(createHandler({ viewport: vpMock.object }), async (handler) => {
           await Promise.all([handler.getVisibilityStatus(node, node.__key), handler.getVisibilityStatus(node, node.__key)]);
           // expect the `query` to be called only twice (once for subjects and once for models)
-          imodelMock.verify((x) => x.query(moq.It.isAnyString(), undefined, QueryRowFormat.UseJsPropertyNames), moq.Times.exactly(2));
+          imodelMock.verify((x) => x.query(moq.It.isAnyString(), undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }), moq.Times.exactly(2));
         });
       });
 

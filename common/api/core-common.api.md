@@ -1894,6 +1894,8 @@ export interface DbQueryRequest extends DbRequest, QueryOptions {
     args?: object;
     // (undocumented)
     query: string;
+    // (undocumented)
+    valueFormat?: DbValueFormat;
 }
 
 // @internal (undocumented)
@@ -1909,7 +1911,7 @@ export interface DbQueryResponse extends DbResponse {
 // @internal (undocumented)
 export interface DbRequest extends BaseReaderOptions {
     // (undocumented)
-    kind: DbRequestKind;
+    kind?: DbRequestKind;
 }
 
 // @internal (undocumented)
@@ -1955,13 +1957,25 @@ export enum DbResponseStatus {
     // (undocumented)
     Done = 1,
     // (undocumented)
-    Error = 0,
+    Error = 100,
+    // (undocumented)
+    Error_BlobIO_OpenFailed = 105,
+    // (undocumented)
+    Error_BlobIO_OutOfRange = 106,
+    // (undocumented)
+    Error_ECSql_BindingFailed = 104,
+    // (undocumented)
+    Error_ECSql_PreparedFailed = 101,
+    // (undocumented)
+    Error_ECSql_RowToJsonFailed = 103,
+    // (undocumented)
+    Error_ECSql_StepFailed = 102,
     // (undocumented)
     Partial = 3,
     // (undocumented)
     QueueFull = 5,
     // (undocumented)
-    TimeOut = 4
+    Timeout = 4
 }
 
 export { DbResult }
@@ -1978,6 +1992,14 @@ export interface DbRuntimeStats {
     timeLimit: number;
     // (undocumented)
     totalTime: number;
+}
+
+// @internal (undocumented)
+export enum DbValueFormat {
+    // (undocumented)
+    ECSqlNames = 0,
+    // (undocumented)
+    JsNames = 1
 }
 
 // @internal
@@ -2398,9 +2420,9 @@ export class ECSqlReader {
     // (undocumented)
     get done(): boolean;
     // (undocumented)
-    formatCurrentRow(format: QueryRowFormat): any[] | object;
+    formatCurrentRow(onlyReturnObject?: boolean): any[] | object;
     // (undocumented)
-    getMetaData(): QueryPropertyMetaData[];
+    getMetaData(): Promise<QueryPropertyMetaData[]>;
     // (undocumented)
     getRowInternal(): any[];
     // (undocumented)
@@ -2412,9 +2434,11 @@ export class ECSqlReader {
     // (undocumented)
     setParams(param: QueryBinder): void;
     // (undocumented)
+    get stats(): QueryStats;
+    // (undocumented)
     step(): Promise<boolean>;
     // (undocumented)
-    toArray(format: QueryRowFormat): Promise<any[]>;
+    toArray(): Promise<any[]>;
 }
 
 // @public
@@ -6557,6 +6581,7 @@ export interface QueryOptions extends BaseReaderOptions {
     convertClassIdsToClassNames?: boolean;
     includeMetaData?: boolean;
     limit?: QueryLimit;
+    rowFormat?: QueryRowFormat;
     suppressLogErrors?: boolean;
 }
 
@@ -6578,6 +6603,8 @@ export class QueryOptionsBuilder {
     // (undocumented)
     setRestartToken(val: string): this;
     // (undocumented)
+    setRowFormat(val: QueryRowFormat): this;
+    // (undocumented)
     setSuppressLogErrors(val: boolean): this;
     // (undocumented)
     setUsePrimaryConnection(val: boolean): this;
@@ -6588,6 +6615,8 @@ export interface QueryPropertyMetaData {
     // (undocumented)
     className: string;
     // (undocumented)
+    extendType: string;
+    // (undocumented)
     generated: boolean;
     // (undocumented)
     index: number;
@@ -6595,8 +6624,6 @@ export interface QueryPropertyMetaData {
     jsonName: string;
     // (undocumented)
     name: string;
-    // (undocumented)
-    system: boolean;
     // (undocumented)
     typeName: string;
 }
@@ -6609,9 +6636,9 @@ export interface QueryQuota {
 
 // @public
 export enum QueryRowFormat {
-    UseArrayIndexes = 2,
+    UseECSqlPropertyIndexes = 1,
     UseECSqlPropertyNames = 0,
-    UseJsPropertyNames = 1
+    UseJsPropertyNames = 2
 }
 
 // @beta (undocumented)
@@ -6625,9 +6652,23 @@ export interface QueryRowProxy {
     // (undocumented)
     toArray(): QueryValueType[];
     // (undocumented)
-    toJsRow(): any;
-    // (undocumented)
     toRow(): any;
+}
+
+// @beta (undocumented)
+export interface QueryStats {
+    // (undocumented)
+    backendCpuTime: number;
+    // (undocumented)
+    backendMemUsed: number;
+    // (undocumented)
+    backendRowsReturned: number;
+    // (undocumented)
+    backendTotalTime: number;
+    // (undocumented)
+    retryCount: number;
+    // (undocumented)
+    totalTime: number;
 }
 
 // @beta (undocumented)
