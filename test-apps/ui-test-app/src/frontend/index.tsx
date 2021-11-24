@@ -33,7 +33,6 @@ import {
 } from "@itwin/core-frontend";
 import { MarkupApp } from "@itwin/core-markup";
 import { AndroidApp, IOSApp } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
-import { LocalStateStorage, UiStateStorage } from "@itwin/core-react";
 import { EditTools } from "@itwin/editor-frontend";
 import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
@@ -162,17 +161,12 @@ export class SampleAppIModelApp {
   public static iModelParams: SampleIModelParams | undefined;
   public static testAppConfiguration: TestAppConfiguration | undefined;
   private static _appStateManager: StateManager | undefined;
-  private static _localStateStorage = new LocalStateStorage();
 
   // Favorite Properties Support
   private static _selectionSetListener = new ElementSelectionListener(true);
 
   public static get store(): Store<RootState> {
     return StateManager.store as Store<RootState>;
-  }
-
-  public static get uiStateStorage(): UiStateStorage {
-    return SampleAppIModelApp._localStateStorage;
   }
 
   public static async startup(opts: NativeAppOpts): Promise<void> {
@@ -326,9 +320,6 @@ export class SampleAppIModelApp {
 
     // initialize any settings providers that may need to have defaults set by iModelApp
     UiFramework.registerUserSettingsProvider(new AppUiSettings(defaults));
-
-    // go ahead and initialize settings before login or in case login is by-passed
-    await UiFramework.setUiStateStorage(SampleAppIModelApp.uiStateStorage);
 
     UiFramework.useDefaultPopoutUrl = true;
 
