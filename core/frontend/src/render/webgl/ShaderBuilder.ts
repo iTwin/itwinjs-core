@@ -884,6 +884,9 @@ export const enum FragmentShaderComponent {
   // (Optional) Apply solar shadow map.
   // vec4 applySolarShadowMap(vec4)
   ApplySolarShadowMap,
+  // (Optional) Apply wiremesh to edges of triangles
+  // vec4 applyWiremesh(vec4 baseColor)
+  ApplyWiremesh,
   // (Optional) Apply a debug color
   // vec4 applyDebugColor(vec4 baseColor)
   ApplyDebugColor,
@@ -1057,6 +1060,12 @@ export class FragmentShaderBuilder extends ShaderBuilder {
     if (undefined !== applyFlash) {
       prelude.addFunction("vec4 applyFlash(vec4 baseColor)", applyFlash);
       main.addline("  baseColor = applyFlash(baseColor);");
+    }
+
+    const applyWiremesh = this.get(FragmentShaderComponent.ApplyWiremesh);
+    if (applyWiremesh) {
+      prelude.addFunction("vec4 applyWiremesh(vec4 baseColor)", applyWiremesh);
+      main.addline("  baseColor = applyWiremesh(baseColor);");
     }
 
     const applyDebug = this.get(FragmentShaderComponent.ApplyDebugColor);
