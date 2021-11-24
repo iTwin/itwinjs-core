@@ -6,7 +6,7 @@ import { assert } from "chai";
 import { AccessToken, GuidString, Logger, ProcessDetector } from "@itwin/core-bentley";
 import { Project as ITwin } from "@itwin/projects-client";
 import { AuthorizationClient } from "@itwin/core-common";
-import { ElectronAppAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronFrontend";
+import { ElectronAuthorizationRenderer } from "@itwin/electron-authorization/lib/cjs/ElectronFrontend";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { IModelApp, IModelAppOptions, MockRender, NativeApp } from "@itwin/core-frontend";
 import { getAccessTokenFromBackend, TestUserCredentials } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
@@ -65,7 +65,7 @@ export class TestUtility {
 
     let authorizationClient: AuthorizationClient | undefined;
     if (NativeApp.isValid) {
-      authorizationClient = new ElectronAppAuthorization ();
+      authorizationClient = new ElectronAuthorizationRenderer ();
       IModelApp.authorizationClient = authorizationClient;
       const accessToken = await setBackendAccessToken(user);
       if ("" === accessToken)

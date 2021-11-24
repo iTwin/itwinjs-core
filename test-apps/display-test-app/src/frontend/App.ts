@@ -46,7 +46,7 @@ import { SyncViewportFrustaTool, SyncViewportsTool } from "./SyncViewportsTool";
 import { TimePointComparisonTool } from "./TimePointComparison";
 import { UiManager } from "./UiManager";
 import { MarkupTool, ModelClipTool, SaveImageTool, ZoomToSelectedElementsTool } from "./Viewer";
-import { ElectronAppAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronFrontend";
+import { ElectronAuthorizationRenderer } from "@itwin/electron-authorization/lib/cjs/ElectronFrontend";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -232,7 +232,7 @@ export class DisplayTestApp {
     this._iTwinId = configuration.iTwinId;
 
     if (ProcessDetector.isElectronAppFrontend) {
-      const authClient: ElectronAppAuthorization = new ElectronAppAuthorization();
+      const authClient: ElectronAuthorizationRenderer = new ElectronAuthorizationRenderer();
       if (opts.iModelApp)
         opts.iModelApp.authorizationClient = authClient;
       await ElectronApp.startup(opts);

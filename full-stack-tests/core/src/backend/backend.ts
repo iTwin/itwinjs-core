@@ -7,7 +7,7 @@ import "./RpcImpl";
 import "@itwin/oidc-signin-tool/lib/cjs/certa/certaBackend";
 import * as fs from "fs";
 import * as path from "path";
-import { ElectronAuthorizationBackend } from "@itwin/electron-authorization/lib/cjs/ElectronBackend";
+import { ElectronAuthorizationMain } from "@itwin/electron-authorization/lib/cjs/ElectronBackend";
 import { IModelJsExpressServer } from "@itwin/express-server";
 import { IModelHubBackend } from "@bentley/imodelhub-client/lib/cjs/imodelhub-node";
 import {
@@ -84,7 +84,7 @@ async function init() {
 
   if (ProcessDetector.isElectronAppBackend) {
     exposeBackendCallbacks();
-    const authClient = await ElectronAuthorizationBackend.create({
+    const authClient = await ElectronAuthorizationMain.create({
       clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
       redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
       scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",

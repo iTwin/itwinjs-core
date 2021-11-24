@@ -5,7 +5,7 @@
 import { TestRunner, TestSetsProps } from "./TestRunner";
 import { ProcessDetector } from "@itwin/core-bentley";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
-import { ElectronAppAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronFrontend";
+import { ElectronAuthorizationRenderer } from "@itwin/electron-authorization/lib/cjs/ElectronFrontend";
 import {
   BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, RpcConfiguration, SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
@@ -57,9 +57,9 @@ export class DisplayPerfTestApp {
   }
 }
 
-async function createOidcClient(): Promise<ElectronAppAuthorization | BrowserAuthorizationClient> {
+async function createOidcClient(): Promise<ElectronAuthorizationRenderer | BrowserAuthorizationClient> {
   if (ProcessDetector.isElectronAppFrontend) {
-    const desktopClient = new ElectronAppAuthorization();
+    const desktopClient = new ElectronAuthorizationRenderer();
     return desktopClient;
   } else {
     const oidcConfiguration: BrowserAuthorizationClientConfiguration = {
