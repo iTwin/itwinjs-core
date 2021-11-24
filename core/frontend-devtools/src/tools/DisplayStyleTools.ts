@@ -21,12 +21,14 @@ import { parseToggle } from "./parseToggle";
 
 type BooleanFlagName =
   "dimensions" | "patterns" | "weights" | "styles" | "transparency" | "fill" | "textures" | "materials" | "acsTriad" | "grid" | "visibleEdges" |
-  "hiddenEdges" | "lighting" | "shadows" | "clipVolume" | "constructions" | "monochrome" | "backgroundMap" | "ambientOcclusion" | "forceSurfaceDiscard";
+  "hiddenEdges" | "lighting" | "shadows" | "clipVolume" | "constructions" | "monochrome" | "backgroundMap" | "ambientOcclusion" | "forceSurfaceDiscard"
+  | "wiremesh";
 
 // Compiler has the info to construct this array for us, but we have no access to it...
 const booleanFlagNames: BooleanFlagName[] = [
   "dimensions", "patterns", "weights", "styles", "transparency", "fill", "textures", "materials", "acsTriad", "grid", "visibleEdges",
   "hiddenEdges", "lighting", "shadows", "clipVolume", "constructions", "monochrome", "backgroundMap", "ambientOcclusion", "forceSurfaceDiscard",
+  "wiremesh",
 ];
 
 const lowercaseBooleanFlagNames = booleanFlagNames.map((name) => name.toLowerCase());
