@@ -162,12 +162,17 @@ export class SampleAppIModelApp {
   public static iModelParams: SampleIModelParams | undefined;
   public static testAppConfiguration: TestAppConfiguration | undefined;
   private static _appStateManager: StateManager | undefined;
+  private static _localStateStorage = new LocalStateStorage();
 
   // Favorite Properties Support
   private static _selectionSetListener = new ElementSelectionListener(true);
 
   public static get store(): Store<RootState> {
     return StateManager.store as Store<RootState>;
+  }
+
+  public static get uiStateStorage(): UiStateStorage {
+    return SampleAppIModelApp._localStateStorage;
   }
 
   public static async startup(opts: NativeAppOpts): Promise<void> {
@@ -323,7 +328,7 @@ export class SampleAppIModelApp {
     UiFramework.registerUserSettingsProvider(new AppUiSettings(defaults));
 
     // go ahead and initialize settings before login or in case login is by-passed
-    await UiFramework.setUiStateStorage(SampleAppIModelApp.getUiStateStorage());
+    await UiFramework.setUiStateStorage(SampleAppIModelApp.uiStateStorage);
 
     UiFramework.useDefaultPopoutUrl = true;
 
@@ -621,7 +626,6 @@ const AppFrameworkVersion = connect(mapFrameworkVersionStateToProps)(AppFramewor
 
 const SampleAppViewer2 = () => {
   const [isAuthorized, setIsAuthorized] = React.useState<boolean>(false);
-  const [uiSettingsStorage, setUISettingStore] = React.useState(SampleAppIModelApp.getUiStateStorage());
 
   React.useEffect(() => {
     AppUi.initialize();
@@ -632,16 +636,9 @@ const SampleAppViewer2 = () => {
   }, []);
 
   React.useEffect(() => {
-    // Update the UiStateStorage based on if you're signed in or out.
-    setUISettingStore(SampleAppIModelApp.getUiStateStorage());
-
     // Load the correct Frontstage based on whether or not you're authorized.
     isAuthorized ? SampleAppIModelApp.showSignedIn() : SampleAppIModelApp.showSignInPage(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }, [isAuthorized]);
-
-  React.useEffect(() => {
-    UiFramework.setUiStateStorage(uiSettingsStorage); // eslint-disable-line @typescript-eslint/no-floating-promises
-  }, [uiSettingsStorage]);
 
   const _onAccessTokenChanged = () => {
     if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof ElectronAppAuthorization) {
