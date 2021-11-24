@@ -26,8 +26,9 @@ import { BeDragDropContext } from "@itwin/components-react";
 import { Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { BentleyCloudRpcManager, BentleyCloudRpcParams, IModelVersion, RpcConfiguration, SyncMode } from "@itwin/core-common";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
+import { ElectronAppAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronFrontend";
 import {
-  AccuSnap, BriefcaseConnection, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeApp, NativeAppAuthorization, NativeAppLogger,
+  AccuSnap, BriefcaseConnection, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeApp, NativeAppLogger,
   NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool,
 } from "@itwin/core-frontend";
 import { MarkupApp } from "@itwin/core-markup";
@@ -63,6 +64,9 @@ import {
   OpenComponentExamplesPopoutTool, OpenCustomPopoutTool, OpenViewPopoutTool, RemoveSavedContentLayoutTool, RestoreSavedContentLayoutTool,
   SaveContentLayoutTool, TestExtensionUiProviderTool,
 } from "./tools/ImmediateTools";
+import { IModelOpenFrontstage } from "./appui/frontstages/IModelOpenFrontstage";
+import { IModelIndexFrontstage } from "./appui/frontstages/IModelIndexFrontstage";
+import { SignInFrontstage } from "./appui/frontstages/SignInFrontstage";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -170,7 +174,8 @@ export class SampleAppIModelApp {
 
   public static getUiSettingsStorage(): UiSettings {
     const authorized = !!IModelApp.authorizationClient;
-    if (SampleAppIModelApp.testAppConfiguration?.useLocalSettings || !authorized) {
+    type authClient = ElectronAppAuthorization | BrowserAuthorizationClient;
+    if (SampleAppIModelApp.testAppConfiguration?.useLocalSettings || !authorized || !(IModelApp.authorizationClient as authClient).hasSignedIn) {
       return SampleAppIModelApp._localUiSettings;
     }
     return SampleAppIModelApp._UserUiSettingsStorage;
@@ -183,6 +188,8 @@ export class SampleAppIModelApp {
     };
 
     if (ProcessDetector.isElectronAppFrontend) {
+      const authClient: ElectronAppAuthorization = new ElectronAppAuthorization();
+      iModelAppOpts.authorizationClient = authClient;
       await ElectronApp.startup({ ...opts, iModelApp: iModelAppOpts });
       NativeAppLogger.initialize();
     } else if (ProcessDetector.isIOSAppFrontend) {
@@ -464,15 +471,15 @@ export class SampleAppIModelApp {
       UiFramework.setIModelConnection(iModelConnection, true);
     }
 
-    await SampleAppIModelApp.showFrontstage("IModelIndex");
+    await SampleAppIModelApp.showFrontstage(IModelIndexFrontstage.stageId);
   }
 
   public static async showIModelOpen() {
-    await SampleAppIModelApp.showFrontstage("IModelOpen");
+    await SampleAppIModelApp.showFrontstage(IModelOpenFrontstage.stageId);
   }
 
   public static async showSignInPage() {
-    await SampleAppIModelApp.showFrontstage("SignIn");
+    await SampleAppIModelApp.showFrontstage(SignInFrontstage.stageId);
   }
 
   // called after the user has signed in (or access token is still valid)
@@ -630,7 +637,7 @@ const SampleAppViewer2 = () => {
   React.useEffect(() => {
     AppUi.initialize();
 
-    if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof NativeAppAuthorization) {
+    if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof ElectronAppAuthorization) {
       setIsAuthorized(IModelApp.authorizationClient.isAuthorized);
     }
   }, []);
@@ -648,7 +655,7 @@ const SampleAppViewer2 = () => {
   }, [uiSettingsStorage]);
 
   const _onAccessTokenChanged = () => {
-    if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof NativeAppAuthorization) {
+    if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof ElectronAppAuthorization) {
       setIsAuthorized(IModelApp.authorizationClient.isAuthorized); // forces the effect above to re-run and check the actual client...
     }
   };
@@ -662,12 +669,12 @@ const SampleAppViewer2 = () => {
   };
 
   React.useEffect(() => {
-    if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof NativeAppAuthorization)
+    if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof ElectronAppAuthorization)
       IModelApp.authorizationClient.onAccessTokenChanged.addListener(_onAccessTokenChanged);
     FrontstageManager.onFrontstageDeactivatedEvent.addListener(_handleFrontstageDeactivatedEvent);
     FrontstageManager.onModalFrontstageClosedEvent.addListener(_handleModalFrontstageClosedEvent);
     return () => {
-      if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof NativeAppAuthorization)
+      if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof ElectronAppAuthorization)
         IModelApp.authorizationClient.onAccessTokenChanged.removeListener(_onAccessTokenChanged);
       FrontstageManager.onFrontstageDeactivatedEvent.removeListener(_handleFrontstageDeactivatedEvent);
       FrontstageManager.onModalFrontstageClosedEvent.removeListener(_handleModalFrontstageClosedEvent);
