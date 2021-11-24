@@ -5,7 +5,6 @@
   "main": "lib/cjs/itwin-client.js",
   "module": "lib/esm/itwin-client.js",
   "typings": "lib/cjs/itwin-client",
-  "imodeljsSharedLibrary": true,
   "license": "MIT",
   "scripts": {
     "build": "npm run -s build:cjs",
