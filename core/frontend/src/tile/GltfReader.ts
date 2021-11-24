@@ -158,6 +158,7 @@ export abstract class GltfReader {
   protected readonly _returnToCenter: number[] | undefined;
   protected readonly _yAxisUp: boolean;
   protected readonly _type: BatchType;
+  protected readonly _deduplicateVertices: boolean;
   private readonly _canceled?: ShouldAbortReadGltf;
 
   /* -----------------------------------
@@ -388,7 +389,7 @@ export abstract class GltfReader {
   public readBufferData8(json: any, accessorName: string): GltfBufferData | undefined { return this.readBufferData(json, accessorName, GltfDataType.UnsignedByte); }
   public readBufferDataFloat(json: any, accessorName: string): GltfBufferData | undefined { return this.readBufferData(json, accessorName, GltfDataType.Float); }
 
-  protected constructor(props: GltfReaderProps, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem, type: BatchType = BatchType.Primary, isCanceled?: ShouldAbortReadGltf) {
+  protected constructor(props: GltfReaderProps, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem, type: BatchType = BatchType.Primary, isCanceled?: ShouldAbortReadGltf, deduplicateVertices=false) {
     this._buffer = props.buffer;
     this._scene = props.scene;
     this._binaryData = props.binaryData;
@@ -414,6 +415,7 @@ export abstract class GltfReader {
     this._system = system;
     this._type = type;
     this._canceled = isCanceled;
+    this._deduplicateVertices = deduplicateVertices;
   }
 
   protected readBufferData(json: any, accessorName: string, type: GltfDataType): GltfBufferData | undefined {
@@ -584,7 +586,7 @@ export abstract class GltfReader {
         if (!mesh.uvs)
           this.readUVParams(mesh, primitive.attributes, "TEXCOORD_0");
 
-        if (!this.adjustMeshForWireframe(mesh))
+        if (this._deduplicateVertices && !this.deduplicateVertices(mesh))
           return undefined;
 
         break;
@@ -617,7 +619,7 @@ export abstract class GltfReader {
     return mesh;
   }
 
-  private adjustMeshForWireframe(mesh: GltfMeshData): boolean {
+  private deduplicateVertices(mesh: GltfMeshData): boolean {
     if (!mesh.points || !mesh.indices)
       return false;
 
