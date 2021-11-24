@@ -787,7 +787,7 @@ class ECClassHierarchy {
     const derivedClassHierarchy = new Map();
 
     const query = "SELECT SourceECInstanceId AS ClassId, TargetECInstanceId AS BaseClassId FROM meta.ClassHasBaseClasses";
-    for await (const row of imodel.query(query, undefined, QueryRowFormat.UseJsPropertyNames)) {
+    for await (const row of imodel.query(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       const { classId, baseClassId } = row;
 
       const baseClasses = baseClassHierarchy.get(classId);
@@ -821,7 +821,7 @@ class ECClassHierarchy {
   }
   public async getClassInfo(schemaName: string, className: string) {
     const classQuery = `SELECT c.ECInstanceId FROM meta.ECClassDef c JOIN meta.ECSchemaDef s ON s.ECInstanceId = c.Schema.Id WHERE c.Name = ? AND s.Name = ?`;
-    const result = await this._imodel.createQueryReader(classQuery, QueryBinder.from([className, schemaName])).toArray(QueryRowFormat.UseJsPropertyNames);
+    const result = await this._imodel.createQueryReader(classQuery, QueryBinder.from([className, schemaName]), { rowFormat: QueryRowFormat.UseJsPropertyNames }).toArray();
     const { id } = result[0];
     return {
       id,

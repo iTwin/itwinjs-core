@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-rpcinterface-tests",
-  "version": "3.0.0-dev.127",
+  "version": "3.0.0-dev.129",
   "description": "Integration tests for the Schema RPC Interface",
   "author": {
     "name": "Bentley Systems, Inc.",
@@ -26,17 +26,17 @@
     "webpack:frontend": "webpack --config webpack.config.js 1>&2"
   },
   "dependencies": {
-    "@itwin/core-bentley": "workspace:*",
+    "@bentley/imodelhub-client": "workspace:*",
+    "@bentley/itwin-client": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/certa": "workspace:*",
-    "@itwin/ecschema-metadata": "workspace:*",
-    "@itwin/ecschema-rpcinterface-common": "workspace:*",
-    "@itwin/core-geometry": "workspace:*",
-    "@bentley/imodelhub-client": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
-    "@bentley/itwin-client": "workspace:*",
+    "@itwin/ecschema-metadata": "workspace:*",
+    "@itwin/ecschema-rpcinterface-common": "workspace:*",
     "@itwin/oidc-signin-tool": "^3.0.0-dev.110",
     "@itwin/presentation-common": "workspace:*",
     "@itwin/presentation-frontend": "workspace:*",
@@ -49,9 +49,9 @@
     "puppeteer": "chrome-86"
   },
   "devDependencies": {
+    "@itwin/core-backend": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
     "@itwin/express-server": "workspace:*",
-    "@itwin/core-backend": "workspace:*",
     "@itwin/projects-client": "^0.2.0",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",

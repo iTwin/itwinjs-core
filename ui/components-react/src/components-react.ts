@@ -183,10 +183,6 @@ export * from "./components-react/tree/controlled/internal/SparseTree";
  * Classes, interfaces, and components for showing and setting date and time.
  */
 /**
- * @docs-group-description DateTimeTypeConverter
- * Convert Date to string and string to Date.
- */
-/**
  * @docs-group-description DragDrop
  * Classes and Higher Order Components for working with the DragDrop API.
  */
@@ -201,10 +197,6 @@ export * from "./components-react/tree/controlled/internal/SparseTree";
 /**
  * @docs-group-description Inputs
  * Input Components that format and parse input.
- */
-/**
- * @docs-group-description OIDC
- * Components for working with OIDC and Sign-in.
  */
 /**
  * @docs-group-description SelectableContent

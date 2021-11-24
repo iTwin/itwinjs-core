@@ -137,12 +137,12 @@ export class TestClipStyleTool extends DisplayStyleTool {
 
   protected override get require3d() { return true; }
 
-  protected parse(args: string[]): boolean {
+  protected async parse(args: string[]): Promise<boolean> {
     this._useStyle = parseBoolean(args[0]) ?? false;
     return true;
   }
 
-  protected execute(vp: Viewport): boolean {
+  protected async execute(vp: Viewport) {
     const props: ClipStyleProps = { produceCutGeometry: true };
     if (this._useStyle) {
       props.cutStyle = {

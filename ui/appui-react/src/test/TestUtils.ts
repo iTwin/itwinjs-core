@@ -8,8 +8,6 @@ import * as sinon from "sinon";
 import { fireEvent } from "@testing-library/react";
 import { expect } from "chai";
 
-import { Localization } from "@itwin/core-common";
-import { ITwinLocalization } from "@itwin/core-i18n";
 import { UserInfo } from "../appui-react/UserInfo";
 import { ContentLayoutProps, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyRecord, PropertyValueFormat, StandardContentLayouts, StandardTypeNames } from "@itwin/appui-abstract";
 import { UiSettings, UiSettingsResult, UiSettingsStatus } from "@itwin/core-react";
@@ -30,7 +28,7 @@ const initialState: SampleAppState = {
   placeHolder: false,
 };
 
-/** @internal */
+/** */
 export interface RootState {
   sampleAppState: SampleAppState;
   testDifferentFrameworkKey?: FrameworkState;
@@ -57,20 +55,13 @@ function SampleAppReducer(state: SampleAppState = initialState, action: SampleAp
 
 /** @internal */
 export class TestUtils {
-  private static _localization?: Localization;
   private static _uiFrameworkInitialized = false;
   public static store: Store<RootState>;
 
   private static _rootReducer: any;
 
-  public static get localization(): Localization {
-    return TestUtils._localization!;
-  }
-
   public static async initializeUiFramework(testAlternateKey = false) {
     if (!TestUtils._uiFrameworkInitialized) {
-      TestUtils._localization = new ITwinLocalization();
-      await TestUtils._localization.initialize(["IModelJs"]);
       if (testAlternateKey) {
         // this is the rootReducer for the test application.
         this._rootReducer = combineReducers({
@@ -105,9 +96,7 @@ export class TestUtils {
     TestUtils._uiFrameworkInitialized = false;
   }
 
-  /** Define Content Layouts referenced by Frontstages.
-   */
-
+  /** Define Content Layouts referenced by Frontstages. */
   public static fourQuadrants: ContentLayoutProps = {
     id: "FourQuadrants",
     description: "SampleApp:ContentLayoutDef.FourQuadrants",
@@ -119,8 +108,7 @@ export class TestUtils {
     },
   };
 
-  /** Define Content Groups referenced by Frontstages.
-   */
+  /** Define Content Groups referenced by Frontstages. */
   public static TestContentGroup1 = new ContentGroup({
     id: "TestContentGroup1",
     layout: StandardContentLayouts.fourQuadrants,
