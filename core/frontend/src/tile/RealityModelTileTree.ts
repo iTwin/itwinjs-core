@@ -24,6 +24,7 @@ import { IModelConnection } from "../IModelConnection";
 import { PlanarClipMaskState } from "../PlanarClipMaskState";
 import { RealityDataSource } from "../RealityDataSource";
 import { RealityDataDisplayStyle } from "../RealityDataDisplayStyle";
+import { RenderClipVolume } from "../render/RenderClipVolume";
 import { RenderMemory } from "../render/RenderMemory";
 import { SceneContext } from "../ViewContext";
 import { ScreenViewport } from "../Viewport";
@@ -527,6 +528,7 @@ export namespace RealityModelTileTree {
     protected _planarClipMask?: PlanarClipMaskState;
     protected _classifier?: SpatialClassifierTileTreeReference;
     protected _clips?: ClipVector;
+    protected _renderClipVolume?: RenderClipVolume | undefined;
     protected _mapDrapeTree?: TileTreeReference;
     public get modelId() { return this._modelId; }
     public get classifiers(): SpatialClassifiers | undefined { return undefined !== this._classifier ? this._classifier.classifiers : undefined; }
@@ -565,12 +567,26 @@ export namespace RealityModelTileTree {
 
       if (undefined !== props.realityDataDisplayStyle) {
         this._clips = props.realityDataDisplayStyle.clips;
+        if (undefined !== this._clips) {
+          this._renderClipVolume = IModelApp.renderSystem.createClipVolume(this._clips);
+        }
       }
     }
 
     public get planarClassifierTreeRef() { return this._classifier && this._classifier.activeClassifier && this._classifier.isPlanar ? this._classifier : undefined; }
 
     public get clips() { return this._clips;}
+    public set clips(clips: ClipVector | undefined) {
+      this._clips = clips;
+      // Clips have changed, update the render clip volume.
+      this.updateRenderClipVolume();
+    }
+
+    public updateRenderClipVolume() {
+      if (undefined !== this._clips) {
+        this._renderClipVolume = IModelApp.renderSystem.createClipVolume(this._clips);
+      }
+    }
 
     public override unionFitRange(union: Range3d): void {
       const contentRange = this.computeWorldContentRange();
@@ -740,8 +756,8 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
         drawArgs.location.origin.z -= elevationBias;
     }
 
-    if (undefined !== drawArgs && undefined !== this._clips)
-      drawArgs.clipVolume = IModelApp.renderSystem.createClipVolume(this._clips);
+    if (undefined !== drawArgs && undefined !== this._renderClipVolume)
+      drawArgs.clipVolume = this._renderClipVolume;
 
     return drawArgs;
   }

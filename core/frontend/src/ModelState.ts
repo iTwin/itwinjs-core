@@ -192,19 +192,11 @@ export abstract class GeometricModelState extends ModelState implements Geometri
 
     // Try to query clips from the iModel
     if (undefined !== this.id && Id64.isValidId64(this.id) && !Id64.isTransient(this.id)) {
-      const clipEcsql = `SELECT SmModelClips FROM ScalableMesh.ScalableMeshModel WHERE ECInstanceId=${this.id}`;
+      const clipEcsql = `SELECT SmModelClips, SmModelClipVectors FROM ScalableMesh.ScalableMeshModel WHERE ECInstanceId=${this.id}`;
 
       // Query clips stored in the iModel for this reality data.
-      this.iModel.query(clipEcsql).next().then((row) => this.parseAndAddClips(tileTreeReference as RealityModelTileTree.Reference, row, "LineString")).catch(() => {
+      this.iModel.query(clipEcsql).next().then((row) => this.parseAndAddClips(tileTreeReference as RealityModelTileTree.Reference, row)).catch(() => {
         const errMsg = `Error querying or parsing line string clips for Model Id=${this.id}`;
-        Logger.logError(FrontendLoggerCategory.RealityData, errMsg);
-      });
-
-      const clipVectorEcsql = `SELECT SmModelClipVectors FROM ScalableMesh.ScalableMeshModel WHERE ECInstanceId=${this.id}`;
-
-      // Query clips stored in the iModel for this reality data.
-      this.iModel.query(clipVectorEcsql).next().then((row) => this.parseAndAddClips(tileTreeReference as RealityModelTileTree.Reference, row, "Vector")).catch(() => {
-        const errMsg = `Error querying or parsing vector clips for Model Id=${this.id}`;
         Logger.logError(FrontendLoggerCategory.RealityData, errMsg);
       });
     }
@@ -213,32 +205,41 @@ export abstract class GeometricModelState extends ModelState implements Geometri
   }
 
   /** @internal */
-  private parseAndAddClips(tileTreeReference: RealityModelTileTree.Reference, dbRow: IteratorResult<any,any> | undefined, clipType: String): void {
+  private parseAndAddClips(tileTreeReference: RealityModelTileTree.Reference, dbRow: IteratorResult<any,any> | undefined): void {
     if (undefined === dbRow) {
       // Skip models with no clips
       return;
     }
-
-    for (const value of dbRow.value) {
-      if (value !== undefined) {
-        const stream = new ByteStream(value.buffer);
-        while (stream.curPos !== stream.length) {
-          /* const clipId =*/ stream.nextId64;
-          if (clipType === "LineString") {
-            tileTreeReference.clips?.appendClone(this.createClipPrimitiveFromLineString(stream));
-          } else if (clipType === "Vector") {
-            /* const type =*/ stream.nextInt32;
-            /* const isActive =*/ stream.nextUint8;
-            /* const geomType =*/ stream.nextUint32;
-            const nbPrimitives = stream.nextUint32;
-            for (let i = 0; i < nbPrimitives; i++) {
-              tileTreeReference.clips?.appendClone(this.createClipPrimitiveFromVector(stream));
-            }
-          } else {
-            throw new Error("Unknown clip type");
-          }
-        }
+    let clipsAdded = false;
+    const linestringsBlob = dbRow.value[0]; // SmModelClips => linestrings type
+    const vectorsBlob = dbRow.value[1];     // SmModelClipVectors => ClipVectors type
+    if (linestringsBlob !== null) {
+      const stream = new ByteStream(linestringsBlob.buffer);
+      while (stream.curPos !== stream.length) {
+      /* const clipId =*/ stream.nextId64;
+        tileTreeReference.clips?.appendClone(this.createClipPrimitiveFromLineString(stream));
+        clipsAdded = true;
       }
+    }
+    if (vectorsBlob !== null) {
+      const stream = new ByteStream(vectorsBlob.buffer);
+      while (stream.curPos !== stream.length) {
+        /* const clipId =*/ stream.nextId64;
+        /* const type =*/ stream.nextInt32;
+        /* const isActive =*/ stream.nextUint8;
+        /* const geomType =*/ stream.nextUint32;
+        const nbPrimitives = stream.nextUint32;
+        for (let i = 0; i < nbPrimitives; i++) {
+          tileTreeReference.clips?.appendClone(this.createClipPrimitiveFromVector(stream));
+        }
+        clipsAdded = true;
+      }
+    }
+    if (!clipsAdded && linestringsBlob === null && vectorsBlob === null) {
+      throw new Error("Unknown clip type");
+    }
+    if (clipsAdded) {
+      tileTreeReference.updateRenderClipVolume();
     }
   }
 
