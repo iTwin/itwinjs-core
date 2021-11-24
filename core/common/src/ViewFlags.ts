@@ -265,16 +265,31 @@ export class ViewFlags {
    * @see [[copy]] to have `undefined` properties reset to their default values.
    */
   public override(overrides: Partial<ViewFlagsProperties>): ViewFlags {
-    // Create a copy of the input with all undefined ViewFlags properties removed.
-    // Note we use the keys of `ViewFlags.defaults` instead of those of the input to avoid processing additional unrelated properties that may be present on input.
-    overrides = { ...overrides };
-    for (const propName of Object.keys(ViewFlags.defaults)) {
+    // This method can get called very frequently when a RenderTimeline script is applied to the view. Often `overrides` will be an empty object.
+    // To optimize:
+    //  - Bail as quickly as possible if nothing is actually overridden, without allocating a new ViewFlags.
+    //  - Only make a copy of the input if at least one property is explicitly `undefined`.
+    let copied = false;
+    let anyOverridden = false;
+
+    for (const propName of Object.keys(overrides)) {
       const key = propName as keyof Partial<ViewFlagsProperties>;
-      if (undefined === overrides[key])
+      const overrideValue = overrides[key];
+      if (undefined === overrideValue) {
+        if (!copied) {
+          // Don't modify input...
+          overrides = { ...overrides };
+          copied = true;
+        }
+
+        // `undefined` means "retain existing value".
         delete overrides[key];
+      } else if (overrideValue !== this[key]) {
+        anyOverridden = true;
+      }
     }
 
-    return this.copy(overrides);
+    return anyOverridden ? this.copy(overrides) : this;
   }
 
   /** Produce a copy of these ViewFlags with a single boolean property changed.
