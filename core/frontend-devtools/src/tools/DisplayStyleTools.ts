@@ -468,3 +468,29 @@ export class WoWIgnoreBackgroundTool extends DisplayStyleTool {
     return true;
   }
 }
+
+/** Toggle whether surfaces display with overlaid wiremesh in the active viewport.
+ * @see [ViewFlags.wiremesh]($common).
+ * @beta
+ */
+export class ToggleWiremeshTool extends DisplayStyleTool {
+  private _enable?: boolean;
+
+  public static override toolId = "ToggleWiremesh";
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 1; }
+
+  public async parse(args: string[]) {
+    const enable = parseToggle(args[0]);
+    if (typeof enable === "string")
+      return false;
+
+    this._enable = enable;
+    return true;
+  }
+
+  public async execute(vp: Viewport) {
+    vp.viewFlags = vp.viewFlags.with("wiremesh", this._enable ?? !vp.viewFlags.wiremesh);
+    return true;
+  }
+}
