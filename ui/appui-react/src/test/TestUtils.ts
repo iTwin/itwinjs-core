@@ -28,9 +28,7 @@ const initialState: SampleAppState = {
   placeHolder: false,
 };
 
-/**
- *
- */
+/** */
 export interface RootState {
   sampleAppState: SampleAppState;
   testDifferentFrameworkKey?: FrameworkState;
