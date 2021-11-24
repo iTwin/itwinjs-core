@@ -22,7 +22,7 @@ Examples of iModel Connectors include:
 
 ## Connector execution
 
-Connectors be invoked either on the cloud using the iTwin Synchronizer Portal or from the desktop using the iTwin Synchronzier Client. This Bentley Communities article, [Ways to sync your data to an iTwin](https://communities.bentley.com/products/digital-twin-cloud-services/itwin-services/w/synchronization-wiki/47596/ways-to-sync-your-data-to-an-itwin) provides a detailed description of both of these options as well as the benefits and limitations of each.
+Connectors can be invoked either on the cloud using the iTwin Synchronizer Portal or from the desktop using the iTwin Synchronzier Client. This Bentley Communities article, [Ways to sync your data to an iTwin](https://communities.bentley.com/products/digital-twin-cloud-services/itwin-services/w/synchronization-wiki/47596/ways-to-sync-your-data-to-an-itwin) provides a detailed description of both of these options as well as the benefits and limitations of each.
 The application source file and destination iModel are identified in _mapping_.
 A _connector-job_ is the combination of _connection_ and _mapping_ and may be run on a pre-determined schedule.
 

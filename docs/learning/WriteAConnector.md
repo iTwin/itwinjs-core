@@ -93,7 +93,7 @@ See [Section on iTwin Synchronization](#ways-to-sync-data-to-an-itwin) for more 
 
 However, in some instances, where a specific format is not covered, one can start to develop a new Connector using the [iTwin.js SDK](https://github.com/iTwin/itwinjs-core)
 
-The ConnectorFramework package provided separately from the iTwin.js SDK makes it easier to write an iTwin Connector backend that brings custom data into a digital twin. To run this environment with the iTwin.js library that this package depends on requires a JavaScript engine with es2017 support.
+The ConnectorFramework package provided as part of the iTwin.js SDK makes it easier to write an iTwin Connector backend that brings custom data into a digital twin. To run this environment with the iTwin.js library that this package depends on requires a JavaScript engine with es2017 support.
 
 Note: Please keep in mind iModelBridge is sometimes used as a synonym for iTwin Connector since it bridges the gap between input data and a digital twin. When discussing the classes, methods and properties of the SDK and especially in the code examples and snippets provided, this documentation will adhere to the actual names that are published to ensure it is working code. In 3.x and future versions of the SDK, classes and methods have been renamed from "Bridge" to "Connector" to reflect the latest terminology. This documentation has been updated to match the new names.
 
