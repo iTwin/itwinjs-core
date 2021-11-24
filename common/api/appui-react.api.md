@@ -3618,7 +3618,7 @@ export interface ListPickerPropsExtended extends ListPickerProps {
 // @internal (undocumented)
 export function loadCategoriesFromViewport(iModel?: IModelConnection, vp?: Viewport): Promise<Category[]>;
 
-// @public
+// @public @deprecated
 export class MarkupTools {
     // (undocumented)
     static get arrowToolDef(): ToolItemDef;
