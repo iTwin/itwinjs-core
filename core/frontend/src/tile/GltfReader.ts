@@ -583,6 +583,10 @@ export abstract class GltfReader {
 
         if (!mesh.uvs)
           this.readUVParams(mesh, primitive.attributes, "TEXCOORD_0");
+
+        if (!this.adjustMeshForWireframe(mesh))
+          return undefined;
+
         break;
       }
 
@@ -611,6 +615,40 @@ export abstract class GltfReader {
     }
 
     return mesh;
+  }
+
+  private adjustMeshForWireframe(mesh: GltfMeshData): boolean {
+    if (!mesh.points || !mesh.indices)
+      return false;
+
+    const numIndices = mesh.indices.length;
+    assert(0 === numIndices % 3);
+    const points = new Uint16Array(3 * numIndices);
+    const normals = mesh.normals ? new Uint16Array(numIndices) : undefined;
+    const uvs = mesh.uvs ? new Uint16Array(2 * numIndices) : undefined;
+
+    for (let i = 0; i < mesh.indices.length; i++) {
+      const index = mesh.indices[i];
+      mesh.indices[i] = i;
+
+      points[i * 3 + 0] = mesh.points[index * 3 + 0];
+      points[i * 3 + 1] = mesh.points[index * 3 + 1];
+      points[i * 3 + 2] = mesh.points[index * 3 + 2];
+
+      if (normals)
+        normals[i] = mesh.normals![index];
+
+      if (uvs) {
+        uvs[i * 2 + 0] = mesh.uvs![index * 2 + 0];
+        uvs[i * 2 + 1] = mesh.uvs![index * 2 + 1];
+      }
+    }
+
+    mesh.points = points;
+    mesh.normals = normals;
+    mesh.uvs = uvs;
+
+    return true;
   }
 
   /**

@@ -1169,7 +1169,7 @@ export class ProgramBuilder {
   public buildProgram(gl: WebGLContext): ShaderProgram {
     const vertSource = this.vert.buildSource(this._attrMap);
     const fragSource = this.frag.buildSource(); // NB: frag has no need to specify attributes, only vertex does.
-    const checkMaxVarying = true;
+    const checkMaxVarying = false; // ###TODO...gl_VertexID exceeds WebGL 1 limit, but only used in WebGL 2.
     if (checkMaxVarying && this.vert.exceedsMaxVaryingVectors(fragSource))
       assert(false, "GL_MAX_VARYING_VECTORS exceeded");
 
