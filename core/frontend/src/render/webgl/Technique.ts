@@ -47,7 +47,7 @@ import { CompileStatus, ShaderProgram, ShaderProgramExecutor } from "./ShaderPro
 import { System } from "./System";
 import { Target } from "./Target";
 import {
-  FeatureMode, IsAnimated, IsClassified, IsEdgeTestNeeded, IsInstanced, IsShadowable, IsThematic, TechniqueFlags,
+  FeatureMode, IsAnimated, IsClassified, IsEdgeTestNeeded, IsInstanced, IsShadowable, IsThematic, IsWiremesh, TechniqueFlags,
 } from "./TechniqueFlags";
 import { computeCompositeTechniqueId, TechniqueId } from "./TechniqueId";
 
@@ -263,11 +263,14 @@ class SurfaceTechnique extends VariedTechnique {
   private static readonly _kTranslucent = 1;
   private static readonly _kInstanced = 2;
   private static readonly _kAnimated = 4;
-  private static readonly _kShadowable = 8;
-  private static readonly _kThematic = 16;
-  private static readonly _kFeature = 24;
+  private static readonly _kWiremesh = 8;
+  private static readonly _kShadowable = 16;
+  private static readonly _kThematic = 32;
+  private static readonly _kFeature = 48;
+
   private static readonly _kEdgeTestNeeded = SurfaceTechnique._kFeature * 3; // only when hasFeatures
   private static readonly _kHilite = SurfaceTechnique._kEdgeTestNeeded + SurfaceTechnique._kFeature * 2;
+
   // Classifiers are never animated or instanced. They do support shadows, thematic display, and translucency.
   // There are 3 base variations - 1 per feature mode - each with translucent/shadowed/thematic variants; plus 1 for hilite.
   private static readonly _kClassified = SurfaceTechnique._kHilite + numHiliteVariants;
@@ -322,21 +325,24 @@ class SurfaceTechnique extends VariedTechnique {
       this.addHiliteShader(gl, instanced, IsClassified.No, createSurfaceHiliter);
       for (let iAnimate = IsAnimated.No; iAnimate <= IsAnimated.Yes; iAnimate++) {
         for (let shadowable = IsShadowable.No; shadowable <= IsShadowable.Yes; shadowable++) {
-          for (let thematic = IsThematic.No; thematic <= IsThematic.Yes; thematic++) {
-            for (let edgeTestNeeded = IsEdgeTestNeeded.No; edgeTestNeeded <= IsEdgeTestNeeded.Yes; edgeTestNeeded++) {
-              for (const featureMode of featureModes) {
-                for (let iTranslucent = 0; iTranslucent <= 1; iTranslucent++) {
-                  if (FeatureMode.None !== featureMode || IsEdgeTestNeeded.No === edgeTestNeeded) {
-                    if (IsThematic.Yes === thematic && IsShadowable.Yes === shadowable)
-                      continue; // currently this combination is disallowed.
+          for (let wiremesh = IsWiremesh.No; wiremesh <= IsWiremesh.Yes; wiremesh++) {
+            for (let thematic = IsThematic.No; thematic <= IsThematic.Yes; thematic++) {
+              for (let edgeTestNeeded = IsEdgeTestNeeded.No; edgeTestNeeded <= IsEdgeTestNeeded.Yes; edgeTestNeeded++) {
+                for (const featureMode of featureModes) {
+                  for (let iTranslucent = 0; iTranslucent <= 1; iTranslucent++) {
+                    if (FeatureMode.None !== featureMode || IsEdgeTestNeeded.No === edgeTestNeeded) {
+                      if (IsThematic.Yes === thematic && IsShadowable.Yes === shadowable)
+                        continue; // currently this combination is disallowed.
 
-                    flags.reset(featureMode, instanced, shadowable, thematic);
-                    flags.isAnimated = iAnimate;
-                    flags.isEdgeTestNeeded = edgeTestNeeded;
-                    flags.isTranslucent = 1 === iTranslucent;
+                      flags.reset(featureMode, instanced, shadowable, thematic);
+                      flags.isAnimated = iAnimate;
+                      flags.isEdgeTestNeeded = edgeTestNeeded;
+                      flags.isTranslucent = 1 === iTranslucent;
+                      flags.isWiremesh = wiremesh;
 
-                    const builder = createSurfaceBuilder(flags);
-                    this.addShader(builder, flags, gl);
+                      const builder = createSurfaceBuilder(flags);
+                      this.addShader(builder, flags, gl);
+                    }
                   }
                 }
               }
@@ -408,6 +414,7 @@ class SurfaceTechnique extends VariedTechnique {
     index += SurfaceTechnique._kAnimated * flags.isAnimated;
     index += SurfaceTechnique._kShadowable * flags.isShadowable;
     index += SurfaceTechnique._kThematic * flags.isThematic;
+    index += SurfaceTechnique._kWiremesh * flags.isWiremesh;
 
     if (flags.isEdgeTestNeeded)
       index += SurfaceTechnique._kEdgeTestNeeded + (flags.featureMode - 1) * SurfaceTechnique._kFeature;

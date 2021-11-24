@@ -25,6 +25,7 @@ import { addSolarShadowMap } from "./SolarShadowMapping";
 import { addClassificationTranslucencyDiscard, octDecodeNormal } from "./Surface";
 import { addThematicDisplay, getComputeThematicIndex } from "./Thematic";
 import { addModelViewProjectionMatrix, addNormalMatrix } from "./Vertex";
+import { addWiremesh } from "./Wiremesh";
 
 const computePosition = "gl_PointSize = 1.0; return MAT_MVP * rawPos;";
 const computeNormal = `
@@ -257,6 +258,9 @@ export default function createRealityMeshBuilder(flags: TechniqueFlags): Program
 
   if (IsThematic.Yes === flags.isThematic)
     addThematicToRealityMesh(builder, gradientTextureUnit);
+
+  if (flags.isWiremesh)
+    addWiremesh(builder);
 
   return builder;
 }

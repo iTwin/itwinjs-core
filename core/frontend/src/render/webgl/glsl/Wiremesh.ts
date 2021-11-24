@@ -6,6 +6,7 @@
  * @module WebGL
  */
 
+import { System } from "../System";
 import { FragmentShaderComponent, ProgramBuilder, VariableType } from "../ShaderBuilder";
 
 // Vertex shader produces barycentric coordinate for corner of triangle to be smoothly interpolated over face of triangle.
@@ -18,7 +19,7 @@ const computeBarycentric = `
 `;
 
 // Fragment shader draws in the line color for fragments close to the edge of the triangle.
-// Requires GL_OES_standard_derivatives extension.
+// Vertex shader requires WebGL 2 which includes the functionality of the GL_OES_standard_derivatives extension.
 const applyWiremesh = `
   const float lineWidth = 2.0;
   const vec3 lineColor = vec3(0.0);
@@ -31,8 +32,9 @@ const applyWiremesh = `
  * @internal
  */
 export function addWiremesh(builder: ProgramBuilder): void {
-  builder.addInlineComputedVarying("v_barycentric", VariableType.Vec3, computeBarycentric);
-
-  builder.frag.addExtension("GL_OES_standard_derivatives");
-  builder.frag.set(FragmentShaderComponent.ApplyWiremesh, applyWiremesh);
+  // ###TODO Don't create these shader variations if not supported (but as of iOS 15 we no longer really encounter WebGL 1 clients).
+  if (System.instance.isWebGL2) {
+    builder.addInlineComputedVarying("v_barycentric", VariableType.Vec3, computeBarycentric);
+    builder.frag.set(FragmentShaderComponent.ApplyWiremesh, applyWiremesh);
+  }
 }
