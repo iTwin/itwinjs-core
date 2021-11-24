@@ -360,7 +360,6 @@ public;ModelState
 alpha;ModifyElementSource
 internal;MutableChangeFlags 
 public;NativeApp
-public;NativeAppAuthorization 
 internal;NativeAppLogger
 public;NativeAppOpts 
 internal;NoRenderApp
@@ -564,7 +563,6 @@ public;TileRequest
 public;TileRequestChannel
 public;TileRequestChannels
 public;TileRequestChannelStatistics
-public;Tiles
 public;class TileTree
 public;TileTreeDiscloser
 public;TileTreeLoadStatus

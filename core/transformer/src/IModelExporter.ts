@@ -732,7 +732,7 @@ class ChangedInstanceIds {
         throw new IModelError(statusOrResult.error.status, "Error processing changeset");
       }
       if ("" !== statusOrResult.result) {
-        const result: IModelJsNative.ChangedInstanceIdsProps = JSON.parse(statusOrResult.result!);
+        const result: IModelJsNative.ChangedInstanceIdsProps = JSON.parse(statusOrResult.result);
         changedInstanceIds.codeSpec.addFromJson(result.codeSpec);
         changedInstanceIds.model.addFromJson(result.model);
         changedInstanceIds.element.addFromJson(result.element);

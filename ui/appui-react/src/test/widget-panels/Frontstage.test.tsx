@@ -325,8 +325,7 @@ export class TestFrontstageUi1 extends FrontstageProvider {
   }
 }
 
-/** @internal */
-export class TestUi2Provider implements UiItemsProvider {
+class TestUi2Provider implements UiItemsProvider {
   public static stageId = "TestUi2Provider";
   public get id(): string {
     return TestUi2Provider.stageId;
@@ -345,6 +344,35 @@ export class TestUi2Provider implements UiItemsProvider {
         label: "TestUi2Provider RM1",
         getWidgetContent: () => "TestUi2Provider RM1 widget",
       });
+    return widgets;
+  }
+}
+
+class TestDuplicateWidgetProvider implements UiItemsProvider {
+  public static stageId = "TestUi2Provider";
+  public get id(): string {
+    return TestDuplicateWidgetProvider.stageId;
+  }
+
+  public provideWidgets(_stageId: string, _stageUsage: string, location: StagePanelLocation, section?: StagePanelSection) {
+    const widgets: Array<AbstractWidgetProps> = [];
+    widgets.push({ // should only be added once to Left Start pane
+      id: "TestUi3ProviderW1",
+      label: "TestUi3Provider W1",
+      getWidgetContent: () => "TestUi3Provider W1 widget",
+    });
+    if (location === StagePanelLocation.Right && section === StagePanelSection.Middle)
+      widgets.push({
+        id: "TestUi2ProviderRM1",
+        label: "TestUi2Provider RM1",
+        getWidgetContent: () => "TestUi2Provider RM1 widget",
+      });
+    widgets.push({
+      id: "LeftStart1",
+      label: "Provider LeftStart1",
+      getWidgetContent: () => "Provider LeftStart1",
+    });
+
     return widgets;
   }
 }
@@ -1867,7 +1895,7 @@ describe("Frontstage local storage wrapper", () => {
         IModelApp.shutdown();
       });
 
-      it("should render pre-loaded extension widgets when state is initialized", async () => {
+      it("should render pre-loaded provider widgets when state is initialized", async () => {
         UiItemsManager.register(new TestUi2Provider());
 
         const frontstageProvider = new TestFrontstageUi2();
@@ -1878,6 +1906,22 @@ describe("Frontstage local storage wrapper", () => {
         await findByText("Left Start 1");
         await findByText("TestUi2Provider RM1");
         await findByText("TestUi2Provider W1");
+      });
+
+      it("should render pre-loaded provider widgets when state is initialized with no Duplicates", async () => {
+        UiItemsManager.register(new TestUi2Provider());
+        UiItemsManager.register(new TestDuplicateWidgetProvider());
+
+        const frontstageProvider = new TestFrontstageUi2();
+        FrontstageManager.addFrontstageProvider(frontstageProvider);
+        const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+        await FrontstageManager.setActiveFrontstageDef(frontstageDef);
+        const wrapper = render(<WidgetPanelsFrontstage />);
+        await wrapper.findByText("Left Start 1");
+        await wrapper.findByText("TestUi2Provider RM1");
+        await wrapper.findByText("TestUi2Provider W1");
+        expect(wrapper.queryAllByText("Left Start 1").length).to.equal(1);
+        expect(wrapper.queryAllByText("TestUi2Provider RM1").length).to.equal(1);
       });
 
       it("should listen for window close event", async () => {

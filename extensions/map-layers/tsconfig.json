@@ -7,8 +7,7 @@
     "jsx": "react",
     "types": [
       "sinon-chai",
-      "mocha",
-      "@bentley/react-scripts"
+      "mocha"
     ]
   },
   "include": [
