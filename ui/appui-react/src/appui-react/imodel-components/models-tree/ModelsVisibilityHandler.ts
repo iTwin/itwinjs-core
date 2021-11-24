@@ -422,7 +422,7 @@ class SubjectModelIdsCache {
   private async initSubjectsHierarchy() {
     this._subjectsHierarchy = new Map();
     const ecsql = `SELECT ECInstanceId id, Parent.Id parentId FROM bis.Subject WHERE Parent IS NOT NULL`;
-    const result = this._imodel.query(ecsql, undefined, QueryRowFormat.UseJsPropertyNames);
+    const result = this._imodel.query(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
     for await (const row of result) {
       let list = this._subjectsHierarchy.get(row.parentId);
       if (!list) {
@@ -441,7 +441,7 @@ class SubjectModelIdsCache {
       INNER JOIN bis.GeometricModel3d m ON m.ModeledElement.Id = p.ECInstanceId
       INNER JOIN bis.Subject s ON (s.ECInstanceId = p.Parent.Id OR json_extract(s.JsonProperties, '$.Subject.Model.TargetPartition') = printf('0x%x', p.ECInstanceId))
       WHERE NOT m.IsPrivate`;
-    const result = this._imodel.query(ecsql, undefined, QueryRowFormat.UseJsPropertyNames);
+    const result = this._imodel.query(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
     for await (const row of result) {
       let list = this._subjectModels.get(row.subjectId);
       if (!list) {
@@ -561,7 +561,7 @@ async function createGroupedElementsInfo(imodel: IModelConnection, rulesetId: st
 
   let modelId, categoryId;
   const query = `SELECT Model.Id AS modelId, Category.Id AS categoryId FROM bis.GeometricElement3d WHERE ECInstanceId = ? LIMIT 1`;
-  for await (const modelAndCategoryIds of imodel.query(query, QueryBinder.from([elementId.value]), QueryRowFormat.UseJsPropertyNames)) {
+  for await (const modelAndCategoryIds of imodel.query(query, QueryBinder.from([elementId.value]), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
     modelId = modelAndCategoryIds.modelId;
     categoryId = modelAndCategoryIds.categoryId;
     break;

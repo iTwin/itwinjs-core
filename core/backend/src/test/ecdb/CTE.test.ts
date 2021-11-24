@@ -12,7 +12,7 @@ import { SequentialLogMatcher } from "../SequentialLogMatcher";
 
 async function executeQuery(iModel: IModelDb, ecsql: string, bindings?: any[] | object, abbreviateBlobs?: boolean): Promise<any[]> {
   const rows: any[] = [];
-  for await (const row of iModel.query(ecsql, QueryBinder.from(bindings), QueryRowFormat.UseJsPropertyNames, { abbreviateBlobs })) {
+  for await (const row of iModel.query(ecsql, QueryBinder.from(bindings), {rowFormat:QueryRowFormat.UseJsPropertyNames, abbreviateBlobs })) {
     rows.push(row);
   }
   return rows;
