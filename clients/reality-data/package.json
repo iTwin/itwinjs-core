@@ -5,7 +5,6 @@
   "main": "lib/cjs/reality-data-client.js",
   "module": "lib/esm/reality-data-client.js",
   "typings": "lib/cjs/reality-data-client",
-  "imodeljsSharedLibrary": true,
   "license": "MIT",
   "repository": {
     "type": "git",

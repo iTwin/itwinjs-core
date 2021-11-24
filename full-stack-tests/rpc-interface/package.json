@@ -33,15 +33,15 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@itwin/core-bentley": "workspace:*",
-    "@itwin/build-tools": "workspace:*",
-    "@itwin/certa": "workspace:*",
-    "@itwin/eslint-plugin": "workspace:*",
-    "@itwin/core-geometry": "workspace:*",
     "@bentley/imodelhub-client": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
+    "@itwin/certa": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@itwin/oidc-signin-tool": "^3.0.0-dev.110",
     "@itwin/presentation-common": "workspace:*",
     "@itwin/presentation-frontend": "workspace:*",
@@ -55,8 +55,8 @@
     "puppeteer": "chrome-86"
   },
   "devDependencies": {
-    "@itwin/express-server": "workspace:*",
     "@itwin/core-backend": "workspace:*",
+    "@itwin/express-server": "workspace:*",
     "@itwin/presentation-backend": "workspace:*",
     "@itwin/projects-client": "^0.2.0",
     "@types/chai": "^4.1.4",

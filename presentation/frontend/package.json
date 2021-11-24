@@ -49,14 +49,14 @@
     "@itwin/presentation-common": "workspace:^3.0.0-dev.128"
   },
   "devDependencies": {
-    "@itwin/core-bentley": "workspace:*",
+    "@bentley/itwin-client": "workspace:*",
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-i18n": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
-    "@bentley/itwin-client": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@itwin/presentation-common": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
