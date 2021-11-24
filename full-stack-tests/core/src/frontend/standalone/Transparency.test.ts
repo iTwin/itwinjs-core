@@ -42,8 +42,8 @@ class TransparencyDecorator {
   }
 
   public addFeatureOverrides(overrides: FeatureSymbology.Overrides): void {
-    for (const [id, app] of this._symbologyOverrides)
-      overrides.overrideElement(id, app);
+    for (const [elementId, appearance] of this._symbologyOverrides)
+      overrides.override({ elementId, appearance });
   }
 
   public overrideTransparency(id: string, transparency: number, viewDependent?: boolean): void {
