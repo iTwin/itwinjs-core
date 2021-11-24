@@ -6,7 +6,9 @@
  * @module Quantity
  */
 
-/** This interface allows a provider to be specified that will define an array of alternate labels for a specific unit. */
+/** This interface allows a provider to be specified that will define an array of alternate labels for a specific unit.
+ * @beta
+ */
 export interface AlternateUnitLabelsProvider {
   getAlternateUnitLabels: (unit: UnitProps) => string[] | undefined;
 }

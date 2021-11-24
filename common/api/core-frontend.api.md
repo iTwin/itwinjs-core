@@ -5,6 +5,7 @@
 ```ts
 
 import { AccessToken } from '@itwin/core-bentley';
+import { AlternateUnitLabelsProvider } from '@itwin/core-quantity';
 import { AmbientOcclusion } from '@itwin/core-common';
 import { AnalysisStyle } from '@itwin/core-common';
 import { AnalysisStyleDisplacement } from '@itwin/core-common';
@@ -1040,6 +1041,15 @@ export enum ActivityMessageEndReason {
 
 // @internal (undocumented)
 export function addRangeGraphic(builder: GraphicBuilder, range: Range3d, is2d: boolean): void;
+
+// @internal
+export class AlternateUnitLabelsRegistry implements AlternateUnitLabelsProvider {
+    constructor(defaultAlternates?: Map<UnitNameKey, Set<string>>);
+    // (undocumented)
+    addAlternateLabels(key: UnitNameKey, ...labels: string[]): void;
+    // (undocumented)
+    getAlternateUnitLabels(unit: UnitProps): string[] | undefined;
+}
 
 // @beta
 export class AngleDescription extends FormattedQuantityDescription {
@@ -7358,6 +7368,9 @@ export class QuantityFormatter implements UnitsProvider {
     get activeUnitSystem(): UnitSystemKey;
     // (undocumented)
     protected _activeUnitSystem: UnitSystemKey;
+    addAlternateLabels(key: UnitNameKey, ...labels: string[]): void;
+    // (undocumented)
+    get alternateUnitLabelsProvider(): AlternateUnitLabelsProvider;
     // (undocumented)
     clearAllOverrideFormats(): Promise<void>;
     // (undocumented)
@@ -7449,7 +7462,7 @@ export type QuantityTypeArg = QuantityType | string;
 export interface QuantityTypeDefinition {
     description: string;
     generateFormatterSpec: (formatProps: FormatProps, unitsProvider: UnitsProvider) => Promise<FormatterSpec>;
-    generateParserSpec: (formatProps: FormatProps, unitsProvider: UnitsProvider) => Promise<ParserSpec>;
+    generateParserSpec: (formatProps: FormatProps, unitsProvider: UnitsProvider, alternateUnitLabelsProvider?: AlternateUnitLabelsProvider) => Promise<ParserSpec>;
     // (undocumented)
     getDefaultFormatPropsBySystem: (requestedSystem: UnitSystemKey) => FormatProps;
     readonly key: QuantityTypeKey;
@@ -11281,6 +11294,9 @@ export interface UnitFormattingSettingsProvider {
     storeUnitSystemKey(unitSystemKey: UnitSystemKey): Promise<boolean>;
     storeUnitSystemSetting(args: FormattingUnitSystemChangedArgs): Promise<void>;
 }
+
+// @beta
+export type UnitNameKey = string;
 
 // @internal (undocumented)
 export class UpsampledMapTile extends MapTile {
