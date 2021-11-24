@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-frontend",
-  "version": "3.0.0-dev.123",
+  "version": "3.0.0-dev.128",
   "description": "iTwin.js frontend components",
   "main": "lib/cjs/core-frontend.js",
   "module": "lib/esm/core-frontend.js",
@@ -39,30 +39,30 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.123",
-    "@itwin/core-geometry": "workspace:^3.0.0-dev.123",
-    "@itwin/core-common": "workspace:^3.0.0-dev.123",
-    "@itwin/core-quantity": "workspace:^3.0.0-dev.123",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.123",
-    "@itwin/core-orbitgt": "workspace:^3.0.0-dev.123",
-    "@itwin/appui-abstract": "workspace:^3.0.0-dev.123",
-    "@itwin/webgl-compatibility": "workspace:^3.0.0-dev.123"
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.128",
+    "@itwin/appui-abstract": "workspace:^3.0.0-dev.128",
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.128",
+    "@itwin/core-common": "workspace:^3.0.0-dev.128",
+    "@itwin/core-geometry": "workspace:^3.0.0-dev.128",
+    "@itwin/core-orbitgt": "workspace:^3.0.0-dev.128",
+    "@itwin/core-quantity": "workspace:^3.0.0-dev.128",
+    "@itwin/webgl-compatibility": "workspace:^3.0.0-dev.128"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@itwin/core-bentley": "workspace:*",
+    "@bentley/itwin-client": "workspace:*",
+    "@itwin/appui-abstract": "workspace:*",
     "@itwin/build-tools": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
+    "@itwin/core-orbitgt": "workspace:*",
+    "@itwin/core-quantity": "workspace:*",
     "@itwin/certa": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
-    "@itwin/core-geometry": "workspace:*",
-    "@itwin/core-common": "workspace:*",
-    "@itwin/core-quantity": "workspace:*",
-    "@bentley/itwin-client": "workspace:*",
-    "@itwin/core-orbitgt": "workspace:*",
-    "@itwin/appui-abstract": "workspace:*",
     "@itwin/webgl-compatibility": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
@@ -88,8 +88,8 @@
     "NOTE: core-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
-    "@bentley/telemetry-client": "workspace:*",
     "@itwin/core-i18n": "workspace:*",
+    "@itwin/core-telemetry": "workspace:*",
     "fuse.js": "^3.3.0",
     "semver": "^5.5.0",
     "wms-capabilities": "0.4.0",

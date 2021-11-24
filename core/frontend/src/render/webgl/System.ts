@@ -44,7 +44,7 @@ import { WebGLDisposable } from "./Disposable";
 import { DepthBuffer, FrameBufferStack } from "./FrameBuffer";
 import { GL } from "./GL";
 import { GLTimer } from "./GLTimer";
-import { Batch, Branch, Graphic, GraphicOwner, GraphicsArray } from "./Graphic";
+import { AnimationTransformBranch, Batch, Branch, Graphic, GraphicOwner, GraphicsArray } from "./Graphic";
 import { Layer, LayerContainer } from "./Layer";
 import { LineCode } from "./LineCode";
 import { Material } from "./Material";
@@ -557,6 +557,10 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
 
   public createGraphicBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions): RenderGraphic {
     return new Branch(branch, transform, undefined, options);
+  }
+
+  public override createAnimationTransformNode(graphic: RenderGraphic, nodeId: number): RenderGraphic {
+    return new AnimationTransformBranch(graphic, nodeId);
   }
 
   public createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions): RenderGraphic {

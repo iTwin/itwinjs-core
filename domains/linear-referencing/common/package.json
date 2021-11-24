@@ -1,6 +1,6 @@
 {
   "name": "@itwin/linear-referencing-common",
-  "version": "3.0.0-dev.123",
+  "version": "3.0.0-dev.128",
   "main": "lib/cjs/linear-referencing-common.js",
   "typings": "lib/cjs/linear-referencing-common",
   "license": "MIT",
@@ -32,18 +32,18 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.123",
-    "@itwin/core-common": "workspace:^3.0.0-dev.123"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.128",
+    "@itwin/core-common": "workspace:^3.0.0-dev.128"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@itwin/core-bentley": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
     "@itwin/core-common": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/fs-extra": "^4.0.7",
     "@types/mocha": "^8.2.2",

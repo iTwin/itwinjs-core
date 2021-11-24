@@ -1068,8 +1068,6 @@ export interface ClassifierTileTreeId {
     // (undocumented)
     animationId?: Id64String;
     // (undocumented)
-    animationTransformNodeId?: number;
-    // (undocumented)
     expansion: number;
     // (undocumented)
     type: BatchType.VolumeClassifier | BatchType.PlanarClassifier;
@@ -3315,7 +3313,7 @@ export class FrustumPlanes {
     // (undocumented)
     init(frustum: Frustum): void;
     // (undocumented)
-    intersectsFrustum(box: Frustum): boolean;
+    intersectsFrustum(box: Frustum, sphere?: BoundingSphere): boolean;
     // (undocumented)
     intersectsRay(origin: Point3d, direction: Vector3d): boolean;
     // (undocumented)
@@ -4707,6 +4705,9 @@ export interface IModelTileTreeProps extends TileTreeProps {
     geometryGuid?: GuidString;
     maxInitialTilesToSkip?: number;
     tileScreenSize?: number;
+    transformNodeRanges?: Array<Range3dProps & {
+        id: number;
+    }>;
 }
 
 // @public
@@ -5493,15 +5494,6 @@ export enum MonochromeMode {
     Scaled = 1
 }
 
-// @beta
-export interface NativeAppAuthorizationConfiguration {
-    readonly clientId: string;
-    readonly expiryBuffer?: number;
-    issuerUrl?: string;
-    readonly redirectUri?: string;
-    readonly scope: string;
-}
-
 // @internal (undocumented)
 export const nativeAppChannel = "nativeApp";
 
@@ -5511,17 +5503,11 @@ export interface NativeAppFunctions {
     checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
     deleteBriefcaseFiles(_fileName: string): Promise<void>;
     downloadBriefcase(_requestProps: RequestNewBriefcaseProps, _reportProgress: boolean, _interval?: number): Promise<LocalBriefcaseProps>;
-    // (undocumented)
-    getAccessToken: () => Promise<AccessToken>;
+    getAccessToken: () => Promise<AccessToken | undefined>;
     getBriefcaseFileName(_props: BriefcaseProps): Promise<string>;
     getCachedBriefcases(_iModelId?: GuidString): Promise<LocalBriefcaseProps[]>;
-    initializeAuth(props: SessionProps, config?: NativeAppAuthorizationConfiguration): Promise<number>;
     overrideInternetConnectivity(_overriddenBy: OverriddenBy, _status: InternetConnectivityStatus): Promise<void>;
     requestCancelDownloadBriefcase(_fileName: string): Promise<boolean>;
-    // (undocumented)
-    setAccessToken(token: AccessToken): Promise<void>;
-    signIn(): Promise<void>;
-    signOut(): Promise<void>;
     storageGet(_storageId: string, _key: string): Promise<StorageValue | undefined>;
     storageGetValueType(_storageId: string, _key: string): Promise<"number" | "string" | "boolean" | "Uint8Array" | "null" | undefined>;
     storageKeys(_storageId: string): Promise<string[]>;
@@ -5535,8 +5521,6 @@ export interface NativeAppFunctions {
 
 // @internal
 export interface NativeAppNotifications {
-    // (undocumented)
-    notifyAccessTokenChanged(accessToken: AccessToken): void;
     // (undocumented)
     notifyInternetConnectivityChanged(status: InternetConnectivityStatus): void;
 }
@@ -6217,7 +6201,6 @@ export interface PositionalVectorTransformProps {
 // @internal
 export interface PrimaryTileTreeId {
     animationId?: Id64String;
-    animationTransformNodeId?: number;
     edgesRequired: boolean;
     enforceDisplayPriority?: boolean;
     sectionCut?: string;
@@ -6998,6 +6981,8 @@ export namespace RenderSchedule {
         readonly requiresBatching: boolean;
         // (undocumented)
         toJSON(): ScriptProps;
+        // @internal
+        readonly transformBatchIds: ReadonlySet<number>;
     }
     export class ScriptBuilder {
         addModelTimeline(modelId: Id64String): ModelTimelineBuilder;

@@ -124,6 +124,7 @@ beta;parseBoolean(arg: string | undefined): boolean | undefined
 beta;parseToggle(arg: string | undefined): string | boolean | undefined
 beta;class PlanarMaskBaseTool 
 beta;ProjectExtentsDecoration
+beta;QueryScheduleScriptTool 
 alpha;RadioBox
 alpha;RadioBoxEntry
 alpha;RadioBoxHandler = (value: string, form: HTMLFormElement) => void
@@ -207,6 +208,7 @@ beta;ToggleSkyboxTool
 beta;ToggleTerrainTool 
 beta;ToggleTileRequestDecorationTool 
 beta;ToggleTileTreeBoundsDecorationTool 
+beta;ToggleTileTreeReferencesTool 
 beta;ToggleToolTipsTool 
 beta;ToggleViewAttachmentBoundariesTool 
 beta;ToggleViewAttachmentClipShapesTool 
