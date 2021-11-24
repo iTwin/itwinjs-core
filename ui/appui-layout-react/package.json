@@ -1,6 +1,6 @@
 {
   "name": "@itwin/appui-layout-react",
-  "version": "3.0.0-dev.128",
+  "version": "3.0.0-dev.129",
   "description": "iModel.js Nine-zone React UI components",
   "main": "lib/cjs/appui-layout-react.js",
   "module": "lib/esm/appui-layout-react.js",
@@ -37,9 +37,9 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.128",
-    "@itwin/appui-abstract": "workspace:^3.0.0-dev.128",
-    "@itwin/core-react": "workspace:^3.0.0-dev.128",
+    "@itwin/appui-abstract": "workspace:^3.0.0-dev.129",
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.129",
+    "@itwin/core-react": "workspace:^3.0.0-dev.129",
     "react": "^17.0.0",
     "react-dom": "^17.0.0"
   },
@@ -48,11 +48,11 @@
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@itwin/core-bentley": "workspace:*",
-    "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "workspace:*",
     "@itwin/appui-abstract": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
     "@itwin/core-react": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@testing-library/react": "^12.0.0",
     "@testing-library/react-hooks": "^7.0.2",
     "@types/chai": "^4.1.4",
