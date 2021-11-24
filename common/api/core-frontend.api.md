@@ -7554,6 +7554,7 @@ export namespace RealityModelTileTree {
         get classifiers(): SpatialClassifiers | undefined;
         // (undocumented)
         get clips(): ClipVector | undefined;
+        set clips(clips: ClipVector | undefined);
         // (undocumented)
         protected _clips?: ClipVector;
         // (undocumented)
@@ -7582,9 +7583,13 @@ export namespace RealityModelTileTree {
         // (undocumented)
         get planarClipMaskPriority(): number;
         // (undocumented)
+        protected _renderClipVolume?: RenderClipVolume | undefined;
+        // (undocumented)
         protected _transform?: Transform;
         // (undocumented)
         unionFitRange(union: Range3d): void;
+        // (undocumented)
+        updateRenderClipVolume(): void;
     }
     // (undocumented)
     export interface ReferenceBaseProps {
