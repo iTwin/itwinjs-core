@@ -874,7 +874,7 @@ export class ImdlReader extends GltfReader {
       // If more than one node exists, then we need to create a branch for Node_Root so that elements not associated with
       // any node in the schedule script can be grouped together.
       const nodeKeys = Object.keys(this._nodes);
-      const needBranchForRootNode = nodeKeys.length > 0;
+      const needBranchForRootNode = nodeKeys.length > 1;
 
       for (const nodeKey of nodeKeys) {
         const meshValue = this._meshes[this._nodes[nodeKey]] as ImdlMesh | undefined;

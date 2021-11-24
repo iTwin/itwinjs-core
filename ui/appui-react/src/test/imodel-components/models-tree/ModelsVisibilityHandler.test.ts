@@ -24,9 +24,7 @@ describe("ModelsVisibilityHandler", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    await NoRenderApp.startup({
-      localization: TestUtils.localization,
-    });
+    await NoRenderApp.startup();
   });
 
   after(async () => {
