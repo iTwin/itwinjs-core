@@ -396,6 +396,9 @@ class RealityModelTileLoader extends RealityTileLoader {
     // Display edges if they are present (Cesium outline extension) and enabled for view.
     this._viewFlagOverrides.visibleEdges = undefined;
     this._viewFlagOverrides.hiddenEdges = undefined;
+
+    // Allow wiremesh display. ###TODO maybe not for OSM Buildings though?
+    this._viewFlagOverrides.wiremesh = undefined;
   }
 
   public get doDrapeBackgroundMap(): boolean { return this.tree.doDrapeBackgroundMap; }

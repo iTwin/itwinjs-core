@@ -654,7 +654,7 @@ class PointCloudTechnique extends VariedTechnique {
 }
 
 class RealityMeshTechnique extends VariedTechnique {
-  private static readonly _numVariants = 50;
+  private static readonly _numVariants = 98;
 
   public constructor(gl: WebGLRenderingContext) {
     super(RealityMeshTechnique._numVariants);
@@ -668,20 +668,23 @@ class RealityMeshTechnique extends VariedTechnique {
       for (let iTranslucent = 0; iTranslucent <= 1; iTranslucent++) {
         for (let shadowable = IsShadowable.No; shadowable <= IsShadowable.Yes; shadowable++) {
           for (let thematic = IsThematic.No; thematic <= IsThematic.Yes; thematic++) {
-            const flags = scratchTechniqueFlags;
-            for (const featureMode of featureModes) {
-              flags.reset(featureMode, IsInstanced.No, shadowable, thematic);
-              flags.isClassified = iClassified;
-              flags.isTranslucent = 1 === iTranslucent;
-              const builder = createRealityMeshBuilder(flags);
+            for (let wiremesh = IsWiremesh.No; wiremesh <= IsWiremesh.Yes; wiremesh++) {
+              const flags = scratchTechniqueFlags;
+              for (const featureMode of featureModes) {
+                flags.reset(featureMode, IsInstanced.No, shadowable, thematic);
+                flags.isClassified = iClassified;
+                flags.isWiremesh = wiremesh;
+                flags.isTranslucent = 1 === iTranslucent;
+                const builder = createRealityMeshBuilder(flags);
 
-              if (flags.isTranslucent) {
-                addShaderFlags(builder);
-                addTranslucency(builder);
-              } else
-                this.addFeatureId(builder, featureMode);
+                if (flags.isTranslucent) {
+                  addShaderFlags(builder);
+                  addTranslucency(builder);
+                } else
+                  this.addFeatureId(builder, featureMode);
 
-              this.addShader(builder, flags, gl);
+                this.addShader(builder, flags, gl);
+              }
             }
           }
         }
@@ -706,6 +709,8 @@ class RealityMeshTechnique extends VariedTechnique {
     ndx += 8 * flags.featureMode;
     if (flags.isThematic)
       ndx += 24;
+    if (flags.isWiremesh)
+      ndx += 48;
     return ndx;
   }
 }
