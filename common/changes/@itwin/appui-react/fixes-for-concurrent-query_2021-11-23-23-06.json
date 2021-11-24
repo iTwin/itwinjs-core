@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Fix ecsql row format",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}
