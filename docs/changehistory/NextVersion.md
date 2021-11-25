@@ -593,7 +593,7 @@ The previous implementation of `ConcurrencyControl` for locking elements has bee
 
 `ConcurrencyControl` relied on detecting a list of changed elements and deferring the acquisition of locks until the application called the asynchronous `request` method to acquire locks, after the fact, but before calling [BriefcaseDb.saveChanges]($backend). The new approach is to require applications to call the asynchronous [LockControl.acquireExclusiveLock]($backend) on elements before update or delete, and to call [LockControl.acquireSharedLock]($backend) on parents and models before insert. If an attempt is made to modify or insert without the required locks, an exception is thrown when the change is attempted. This will require tools to make the necessary lock calls.
 
-Previously the concurrency "mode" was determined by applications when opening a briefcase. It is now established as a property of an iModel when it is first created (and "revision0" is uploaded.) By default, iModels use pessimistic (i.e. locks) mode, so all previously created iModels will require locks. If you pass `noLocks: true` as an argument to [BackendHubAccess.createNewIModel]($backend), a briefcase-local value is saved in rev0.bim before it is uploaded. Thereafter, all briefcases of that iModel will use use optimistic (i.e. no locks, change merging) mode, since everyone will use briefcases derived from rev0.bim. The value is inspected in the `BriefcaseDb.useLockServer` method called by [BriefcaseDb.open]($backend).
+Previously the concurrency "mode" was determined by applications when opening a briefcase. It is now established as a property of an iModel when it is first created (and "version0" is uploaded.) By default, iModels use pessimistic (i.e. locks) mode, so all previously created iModels will require locks. If you pass `noLocks: true` as an argument to [BackendHubAccess.createNewIModel]($backend), a briefcase-local value is saved in rev0.bim before it is uploaded. Thereafter, all briefcases of that iModel will use use optimistic (i.e. no locks, change merging) mode, since everyone will use briefcases derived from rev0.bim. The value is inspected in the `BriefcaseDb.useLockServer` method called by [BriefcaseDb.open]($backend).
 
 Locks apply to Elements only. The "schema lock" is acquired by exclusively locking element id 0x1 (the root subject id). Models are locked via their modeled element (which has the same id as the model)
 
@@ -1453,7 +1453,7 @@ Several changes to the APIs for executing ECSql statements have been made to imp
 - The `query` and `restartQuery` methods used to take multiple arguments indicating a limit on the number of rows to return, a priority, a quota, and so on. These have been combined into a single [QueryOptions]($common) parameter.
 
 - Previously there was no way to control the format of each row returned by the `query` and `restartQuery` methods, and the default format was verbose and inefficient. Now, these methods accept a [QueryRowFormat]($common) as part of their [QueryOptions]($common) parameter describing the desired format. The default format returns each row as an array instead of an object.
-- 
+-
 - The `query`, `restartQuery`, and `queryRowCount` methods used to accept the statement bindings as type `any[] | object`. The bindings are now specified instead as the more type-safe type [QueryBinder]($common).
 
 ### Binding parameters using QueryBinder
