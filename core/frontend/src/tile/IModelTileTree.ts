@@ -429,4 +429,8 @@ export class IModelTileTree extends TileTree {
   public getTransformNodeRange(nodeId: number): Range3d | undefined {
     return this._transformNodeRanges?.get(nodeId);
   }
+
+  public get containsTransformNodes(): boolean {
+    return undefined !== this._transformNodeRanges;
+  }
 }
