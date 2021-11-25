@@ -172,6 +172,7 @@ export class PlanarTextureProjection {
 
     const viewFlags = target.currentViewFlags.copy({
       renderMode: RenderMode.SmoothShade,
+      wiremesh: false,
       transparency: false,
       textures: false,
       lighting: false,
