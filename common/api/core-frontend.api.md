@@ -220,7 +220,6 @@ import { QPoint3dList } from '@itwin/core-common';
 import { QuantityParseResult } from '@itwin/core-quantity';
 import { QueryBinder } from '@itwin/core-common';
 import { QueryOptions } from '@itwin/core-common';
-import { QueryRowFormat } from '@itwin/core-common';
 import { Range1d } from '@itwin/core-geometry';
 import { Range1dProps } from '@itwin/core-geometry';
 import { Range2d } from '@itwin/core-geometry';
@@ -4346,7 +4345,7 @@ export interface ImageryTileContent extends TileContent {
 export class ImdlReader extends GltfReader {
     // (undocumented)
     protected colorDefFromMaterialJson(json: any): ColorDef | undefined;
-    static create(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem, type?: BatchType, loadEdges?: boolean, isCanceled?: ShouldAbortReadGltf, sizeMultiplier?: number, options?: BatchOptions | false): ImdlReader | undefined;
+    static create(args: ImdlReaderCreateArgs): ImdlReader | undefined;
     // (undocumented)
     protected createDisplayParams(json: any): DisplayParams | undefined;
     // (undocumented)
@@ -4357,6 +4356,32 @@ export class ImdlReader extends GltfReader {
     // (undocumented)
     protected readFeatureTable(startPos: number): PackedFeatureTable | undefined;
     }
+
+// @internal
+export interface ImdlReaderCreateArgs {
+    // (undocumented)
+    containsTransformNodes?: boolean;
+    // (undocumented)
+    iModel: IModelConnection;
+    // (undocumented)
+    is3d: boolean;
+    // (undocumented)
+    isCanceled?: ShouldAbortReadGltf;
+    // (undocumented)
+    loadEdges?: boolean;
+    // (undocumented)
+    modelId: Id64String;
+    // (undocumented)
+    options?: BatchOptions | false;
+    // (undocumented)
+    sizeMultiplier?: number;
+    // (undocumented)
+    stream: ByteStream;
+    // (undocumented)
+    system: RenderSystem;
+    // (undocumented)
+    type?: BatchType;
+}
 
 // @internal (undocumented)
 export interface ImdlReaderResult extends IModelTileContent {
@@ -4544,13 +4569,13 @@ export abstract class IModelConnection extends IModel {
     static readonly onOpen: BeEvent<(_imodel: IModelConnection) => void>;
     // @internal
     get projectCenterAltitude(): number | undefined;
-    query(ecsql: string, params?: QueryBinder, rowFormat?: QueryRowFormat, options?: QueryOptions): AsyncIterableIterator<any>;
+    query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
     queryEntityIds(params: EntityQueryParams): Promise<Id64Set>;
     queryRowCount(ecsql: string, params?: QueryBinder): Promise<number>;
     queryTextureData(textureLoadProps: TextureLoadProps): Promise<TextureData | undefined>;
     // @internal
     requestSnap(props: SnapRequestProps): Promise<SnapResponseProps>;
-    restartQuery(token: string, ecsql: string, params?: QueryBinder, rowFormat?: QueryRowFormat, options?: QueryOptions): AsyncIterableIterator<any>;
+    restartQuery(token: string, ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
     routingContext: IModelRoutingContext;
     readonly selectionSet: SelectionSet;
     spatialToCartographic(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic>;
@@ -4734,6 +4759,8 @@ export class IModelTileTree extends TileTree {
     constructor(params: IModelTileTreeParams, treeId: IModelTileTreeId);
     // (undocumented)
     get batchType(): BatchType;
+    // (undocumented)
+    get containsTransformNodes(): boolean;
     // (undocumented)
     readonly contentIdProvider: ContentIdProvider;
     // (undocumented)

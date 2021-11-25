@@ -262,6 +262,7 @@ internal;ImageryMapTile
 internal;ImageryMapTileTree 
 internal;ImageryTileContent 
 internal;ImdlReader 
+internal;ImdlReaderCreateArgs
 internal;ImdlReaderResult 
 public;IModelApp
 public;IModelAppOptions
