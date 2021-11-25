@@ -9343,6 +9343,8 @@ export interface ViewFlagProps {
     shadows?: boolean;
     thematicDisplay?: boolean;
     visEdges?: boolean;
+    // @beta
+    wiremesh?: boolean;
 }
 
 // @public
@@ -9385,6 +9387,8 @@ export class ViewFlags {
     readonly visibleEdges: boolean;
     readonly weights: boolean;
     readonly whiteOnWhiteReversal: boolean;
+    // @beta
+    readonly wiremesh: boolean;
     with(flag: keyof Omit<ViewFlagsProperties, "renderMode">, value: boolean): ViewFlags;
     withRenderMode(renderMode: RenderMode): ViewFlags;
 }

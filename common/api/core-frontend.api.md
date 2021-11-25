@@ -1337,7 +1337,7 @@ export class AzureMapsLayerImageryProvider extends MapLayerImageryProvider {
 // @internal
 export class B3dmReader extends GltfReader {
     // (undocumented)
-    static create(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem, yAxisUp: boolean, isLeaf: boolean, tileCenter: Point3d, transformToRoot?: Transform, isCanceled?: ShouldAbortReadGltf, idMap?: BatchedTileIdMap): B3dmReader | undefined;
+    static create(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem, yAxisUp: boolean, isLeaf: boolean, tileCenter: Point3d, transformToRoot?: Transform, isCanceled?: ShouldAbortReadGltf, idMap?: BatchedTileIdMap, deduplicateVertices?: boolean): B3dmReader | undefined;
     // (undocumented)
     read(): Promise<GltfReaderResult>;
     // (undocumented)
@@ -3572,7 +3572,7 @@ export class GltfMeshData {
 
 // @internal
 export abstract class GltfReader {
-    protected constructor(props: GltfReaderProps, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem, type?: BatchType, isCanceled?: ShouldAbortReadGltf);
+    protected constructor(props: GltfReaderProps, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem, type?: BatchType, isCanceled?: ShouldAbortReadGltf, deduplicateVertices?: boolean);
     // (undocumented)
     protected readonly _accessors: any;
     // (undocumented)
@@ -3585,6 +3585,8 @@ export abstract class GltfReader {
     protected readonly _bufferViews: any;
     // (undocumented)
     protected createDisplayParams(materialJson: any, hasBakedLighting: boolean): DisplayParams | undefined;
+    // (undocumented)
+    protected readonly _deduplicateVertices: boolean;
     // (undocumented)
     protected readonly _extensions: any;
     // (undocumented)
@@ -4200,7 +4202,7 @@ export enum HitSource {
 // @internal
 export class I3dmReader extends GltfReader {
     // (undocumented)
-    static create(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem, yAxisUp: boolean, isLeaf: boolean, isCanceled?: ShouldAbortReadGltf, idMap?: BatchedTileIdMap): I3dmReader | undefined;
+    static create(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem, yAxisUp: boolean, isLeaf: boolean, isCanceled?: ShouldAbortReadGltf, idMap?: BatchedTileIdMap, deduplicateVertices?: boolean): I3dmReader | undefined;
     // (undocumented)
     read(): Promise<GltfReaderResult>;
     // (undocumented)
@@ -7544,7 +7546,7 @@ export class RealityModelTileTree extends RealityTileTree {
 // @internal (undocumented)
 export namespace RealityModelTileTree {
     // (undocumented)
-    export function createRealityModelTileTree(rdSourceKey: RealityDataSourceKey, iModel: IModelConnection, modelId: Id64String, tilesetToDb: Transform | undefined): Promise<TileTree | undefined>;
+    export function createRealityModelTileTree(rdSourceKey: RealityDataSourceKey, iModel: IModelConnection, modelId: Id64String, tilesetToDb: Transform | undefined, deduplicateVertices: boolean): Promise<TileTree | undefined>;
     // (undocumented)
     export abstract class Reference extends TileTreeReference {
         constructor(props: RealityModelTileTree.ReferenceBaseProps);
@@ -7581,6 +7583,8 @@ export namespace RealityModelTileTree {
         protected _planarClipMask?: PlanarClipMaskState;
         // (undocumented)
         get planarClipMaskPriority(): number;
+        // (undocumented)
+        protected readonly _source: RealityModelSource;
         // (undocumented)
         protected _transform?: Transform;
         // (undocumented)
@@ -7775,6 +7779,8 @@ export abstract class RealityTileLoader {
     abstract requestTileContent(tile: Tile, isCanceled: () => boolean): Promise<TileRequest.Response>;
     // (undocumented)
     get viewFlagOverrides(): ViewFlagOverrides;
+    // (undocumented)
+    get wantDeduplicatedVertices(): boolean;
 }
 
 // @internal (undocumented)
@@ -8398,7 +8404,6 @@ export interface RenderSystemDebugControl {
     debugShaderFiles?: DebugShaderFile[];
     // @internal
     dpiAwareLOD: boolean;
-    drawSurfacesAsWiremesh: boolean;
     // @internal
     readonly isGLTimerSupported: boolean;
     loseContext(): boolean;
