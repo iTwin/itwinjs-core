@@ -189,7 +189,7 @@ interface ImdlAreaPatternSymbol {
   readonly primitives: AnyImdlPrimitive[];
 }
 
-/** Arguments supplied to [[ImdlReader.create]].
+/** Arguments supplied to [[ImdlReader.create]]
  * @internal
  */
 export interface ImdlReaderCreateArgs {
