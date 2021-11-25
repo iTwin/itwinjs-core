@@ -358,16 +358,16 @@ export class ShaderVariables {
     }
   }
 
-  // Return true if GL_MAX_VARYING_VECTORS has been exceeded for the minimum guaranteed value of 8.
-  public exceedsMaxVaryingVectors(fragSource: string): boolean {
-    // Varyings go into a matrix of 4 columns and GL_MAX_VARYING_VECTORS rows of floats.
-    // The packing rules are defined by the standard. Specifically each row can contain one of:
-    //  vec4
-    //  vec3 (+ float)
-    //  vec2 (+ vec2)
-    //  vec2 (+ float (+ float))
-    //  float (+ float (+ float (+ float)))
-    // Varyings are packed in order of size from largest to smallest
+  // Return the number of varying vectors used by the shader.
+  // Varyings go into a matrix of 4 columns and GL_MAX_VARYING_VECTORS rows of floats.
+  // The packing rules are defined by the standard. Specifically each row can contain one of:
+  //  vec4
+  //  vec3 (+ float)
+  //  vec2 (+ vec2)
+  //  vec2 (+ float (+ float))
+  //  float (+ float (+ float (+ float)))
+  // Varyings are packed in order of size from largest to smallest
+  public computeNumVaryingVectors(fragSource: string): number {
     const loopSize = 64;
     const registers = Array(loopSize + 1).fill(0);
 
@@ -414,7 +414,7 @@ export class ShaderVariables {
     }
 
     const slotsUsed = registers.indexOf(0);
-    return slotsUsed > 8;
+    return slotsUsed;
   }
 }
 
@@ -1169,9 +1169,6 @@ export class ProgramBuilder {
   public buildProgram(gl: WebGLContext): ShaderProgram {
     const vertSource = this.vert.buildSource(this._attrMap);
     const fragSource = this.frag.buildSource(); // NB: frag has no need to specify attributes, only vertex does.
-    const checkMaxVarying = false; // ###TODO...gl_VertexID exceeds WebGL 1 limit, but only used in WebGL 2.
-    if (checkMaxVarying && this.vert.exceedsMaxVaryingVectors(fragSource))
-      assert(false, "GL_MAX_VARYING_VECTORS exceeded");
 
     // Debug output
     const debugVaryings = false;
