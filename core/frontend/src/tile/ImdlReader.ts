@@ -46,7 +46,11 @@ export interface ImdlReaderResult extends IModelTileContent {
  */
 export async function readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean, options?: BatchOptions | false): Promise<RenderGraphic | undefined> {
   const stream = new ByteStream(bytes.buffer);
-  const reader = ImdlReader.create(stream, iModel, modelId, is3d, IModelApp.renderSystem, undefined, undefined, undefined, undefined, options);
+  const reader = ImdlReader.create({
+    stream, iModel, modelId, is3d, options,
+    system: IModelApp.renderSystem,
+  });
+
   if (!reader)
     return undefined;
 
@@ -185,6 +189,20 @@ interface ImdlAreaPatternSymbol {
   readonly primitives: AnyImdlPrimitive[];
 }
 
+export interface ImdlReaderCreateArgs {
+  stream: ByteStream;
+  iModel: IModelConnection;
+  modelId: Id64String;
+  is3d: boolean;
+  system: RenderSystem;
+  type?: BatchType; // default Primary
+  loadEdges?: boolean; // default true
+  isCanceled?: ShouldAbortReadGltf;
+  sizeMultiplier?: number
+  options?: BatchOptions | false;
+  containsTransformNodes?: boolean; // default false
+}
+
 /** Deserializes tile content in iMdl format. These tiles contain element geometry encoded into a format optimized for the imodeljs webgl renderer.
  * @internal
  */
@@ -194,22 +212,21 @@ export class ImdlReader extends GltfReader {
   private readonly _options: BatchOptions | false;
   private readonly _patternSymbols: { [key: string]: ImdlAreaPatternSymbol | undefined };
   private readonly _patternGeometry = new Map<string, RenderGeometry[]>();
+  private readonly _containsTransformNodes: boolean;
 
   /** Attempt to initialize an ImdlReader to deserialize iModel tile data beginning at the stream's current position. */
-  public static create(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem,
-    type: BatchType = BatchType.Primary, loadEdges: boolean = true, isCanceled?: ShouldAbortReadGltf, sizeMultiplier?: number,
-    options?: BatchOptions | false): ImdlReader | undefined {
-    const header = new ImdlHeader(stream);
+  public static create(args: ImdlReaderCreateArgs): ImdlReader | undefined {
+    const header = new ImdlHeader(args.stream);
     if (!header.isValid || !header.isReadableVersion)
       return undefined;
 
     // The feature table follows the iMdl header
-    if (!this.skipFeatureTable(stream))
+    if (!this.skipFeatureTable(args.stream))
       return undefined;
 
     // A glTF header follows the feature table
-    const props = GltfReaderProps.create(stream, false);
-    return undefined !== props ? new ImdlReader(props, iModel, modelId, is3d, system, type, loadEdges, isCanceled, sizeMultiplier, options) : undefined;
+    const props = GltfReaderProps.create(args.stream, false);
+    return undefined !== props ? new ImdlReader(props, args) : undefined;
   }
 
   /** Attempt to deserialize the tile data */
@@ -461,12 +478,12 @@ export class ImdlReader extends GltfReader {
     return new PackedFeatureTable(packedFeatureArray, this._modelId, header.count, header.maxFeatures, this._type, animNodesArray);
   }
 
-  private constructor(props: GltfReaderProps, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem,
-    type: BatchType, loadEdges: boolean, isCanceled?: ShouldAbortReadGltf, sizeMultiplier?: number, options?: BatchOptions | false) {
-    super(props, iModel, modelId, is3d, system, type, isCanceled);
-    this._sizeMultiplier = sizeMultiplier;
-    this._loadEdges = loadEdges;
-    this._options = options ?? {};
+  private constructor(props: GltfReaderProps, args: ImdlReaderCreateArgs) {
+    super(props, args.iModel, args.modelId, args.is3d, args.system, args.type, args.isCanceled);
+    this._sizeMultiplier = args.sizeMultiplier;
+    this._loadEdges = args.loadEdges ?? true;
+    this._options = args.options ?? {};
+    this._containsTransformNodes = args.containsTransformNodes ?? false;
     this._patternSymbols = props.scene.patternSymbols ?? {};
   }
 
@@ -871,12 +888,7 @@ export class ImdlReader extends GltfReader {
           graphics.push(this._system.createBranch(branch, Transform.createIdentity()));
       };
 
-      // If more than one node exists, then we need to create a branch for Node_Root so that elements not associated with
-      // any node in the schedule script can be grouped together.
-      const nodeKeys = Object.keys(this._nodes);
-      const needBranchForRootNode = nodeKeys.length > 1;
-
-      for (const nodeKey of nodeKeys) {
+      for (const nodeKey of Object.keys(this._nodes)) {
         const meshValue = this._meshes[this._nodes[nodeKey]] as ImdlMesh | undefined;
         const primitives = meshValue?.primitives;
         if (!primitives || !meshValue)
@@ -884,7 +896,9 @@ export class ImdlReader extends GltfReader {
 
         const layerId = meshValue.layer;
         if ("Node_Root" === nodeKey) {
-          if (needBranchForRootNode) {
+          // If transform nodes exist in the tile tree, then we need to create a branch for Node_Root so that elements not associated with
+          // any node in the schedule script can be grouped together.
+          if (this._containsTransformNodes) {
             readBranch(primitives, AnimationNodeId.Untransformed, undefined);
           } else {
             for (const primitive of primitives) {
