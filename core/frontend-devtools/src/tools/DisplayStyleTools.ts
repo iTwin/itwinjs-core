@@ -21,12 +21,14 @@ import { parseToggle } from "./parseToggle";
 
 type BooleanFlagName =
   "dimensions" | "patterns" | "weights" | "styles" | "transparency" | "fill" | "textures" | "materials" | "acsTriad" | "grid" | "visibleEdges" |
-  "hiddenEdges" | "lighting" | "shadows" | "clipVolume" | "constructions" | "monochrome" | "backgroundMap" | "ambientOcclusion" | "forceSurfaceDiscard";
+  "hiddenEdges" | "lighting" | "shadows" | "clipVolume" | "constructions" | "monochrome" | "backgroundMap" | "ambientOcclusion" | "forceSurfaceDiscard"
+  | "wiremesh";
 
 // Compiler has the info to construct this array for us, but we have no access to it...
 const booleanFlagNames: BooleanFlagName[] = [
   "dimensions", "patterns", "weights", "styles", "transparency", "fill", "textures", "materials", "acsTriad", "grid", "visibleEdges",
   "hiddenEdges", "lighting", "shadows", "clipVolume", "constructions", "monochrome", "backgroundMap", "ambientOcclusion", "forceSurfaceDiscard",
+  "wiremesh",
 ];
 
 const lowercaseBooleanFlagNames = booleanFlagNames.map((name) => name.toLowerCase());
@@ -463,6 +465,32 @@ export class WoWIgnoreBackgroundTool extends DisplayStyleTool {
   public async execute(vp: Viewport) {
     const ignoreBackgroundColor = this._ignore ?? !vp.displayStyle.settings.whiteOnWhiteReversal.ignoreBackgroundColor;
     vp.displayStyle.settings.whiteOnWhiteReversal = WhiteOnWhiteReversalSettings.fromJSON({ ignoreBackgroundColor });
+    return true;
+  }
+}
+
+/** Toggle whether surfaces display with overlaid wiremesh in the active viewport.
+ * @see [ViewFlags.wiremesh]($common).
+ * @beta
+ */
+export class ToggleWiremeshTool extends DisplayStyleTool {
+  private _enable?: boolean;
+
+  public static override toolId = "ToggleWiremesh";
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 1; }
+
+  public async parse(args: string[]) {
+    const enable = parseToggle(args[0]);
+    if (typeof enable === "string")
+      return false;
+
+    this._enable = enable;
+    return true;
+  }
+
+  public async execute(vp: Viewport) {
+    vp.viewFlags = vp.viewFlags.with("wiremesh", this._enable ?? !vp.viewFlags.wiremesh);
     return true;
   }
 }
