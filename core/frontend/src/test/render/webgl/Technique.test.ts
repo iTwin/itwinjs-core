@@ -185,7 +185,7 @@ describe("Techniques", () => {
       });
 
       describe("Number of varying vectors", () => {
-        const buildProgram = ProgramBuilder.prototype.buildProgram;
+        const buildProgram = ProgramBuilder.prototype.buildProgram; // eslint-disable-line @typescript-eslint/unbound-method
         after(() => ProgramBuilder.prototype.buildProgram = buildProgram);
 
         it("does not exceed minimum guaranteed", () => {
@@ -196,7 +196,7 @@ describe("Techniques", () => {
 
           let numBuilt = 0;
           let maxNumVaryings = 0;
-          ProgramBuilder.prototype.buildProgram = function(gl) {
+          ProgramBuilder.prototype.buildProgram = function (gl) {
             ++numBuilt;
             const numVaryings = this.vert.computeNumVaryingVectors(this.frag.buildSource());
             expect(numVaryings).most(minGuaranteed);

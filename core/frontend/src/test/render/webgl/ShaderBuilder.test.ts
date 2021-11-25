@@ -5,9 +5,9 @@
 
 import { assert, expect } from "chai";
 import { IModelApp } from "../../../IModelApp";
-import { CompileStatus, ShaderProgram } from "../../../render/webgl/ShaderProgram";
+import { ShaderProgram } from "../../../render/webgl/ShaderProgram";
 import {
-  FragmentShaderComponent, ProgramBuilder, ShaderVariable, ShaderVariables, VariablePrecision, VariableScope, VariableType, VertexShaderComponent,
+  ShaderVariable, ShaderVariables, VariablePrecision, VariableScope, VariableType,
 } from "../../../render/webgl/ShaderBuilder";
 import { System } from "../../../render/webgl/System";
 

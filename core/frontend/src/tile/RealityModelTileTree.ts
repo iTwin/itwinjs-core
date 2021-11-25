@@ -724,13 +724,13 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
       transform: this._transform,
       modelId: this.modelId,
       maskModelIds: this.maskModelIds,
-      deduplicateVertices: this.wantWiremesh,
+      deduplicateVertices: this._wantWiremesh,
     };
 
     return realityTreeSupplier.getOwner(treeId, this._iModel);
   }
 
-  private get wantWiremesh(): boolean {
+  private get _wantWiremesh(): boolean {
     return this._source.viewFlags.wiremesh;
   }
 

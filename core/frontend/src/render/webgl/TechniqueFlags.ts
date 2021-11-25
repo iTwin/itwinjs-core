@@ -40,7 +40,7 @@ export const enum IsShadowable { No, Yes }
 export const enum IsThematic { No, Yes }
 
 /** @internal */
-export const enum IsWiremesh { No, Yes };
+export const enum IsWiremesh { No, Yes }
 
 /** Flags used to control which shader program is used by a rendering Technique.
  * @internal
