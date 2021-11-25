@@ -167,8 +167,8 @@ export class TechniqueFlags {
     if (this.hasClip) parts.push("Clip");
     if (this.isShadowable) parts.push("Shadowable");
     if (this.isThematic) parts.push("Thematic");
-    if (this.isWiremesh) parts.push("Wiremesh");
     if (this.hasFeatures) parts.push(FeatureMode.Pick === this.featureMode ? "Pick" : "Overrides");
+    if (this.isWiremesh) parts.push("Wiremesh");
     return parts.join("-");
   }
 
