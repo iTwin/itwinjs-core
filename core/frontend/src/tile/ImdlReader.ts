@@ -189,6 +189,9 @@ interface ImdlAreaPatternSymbol {
   readonly primitives: AnyImdlPrimitive[];
 }
 
+/** Arguments supplied to [[ImdlReader.create]].
+ * @internal
+ */
 export interface ImdlReaderCreateArgs {
   stream: ByteStream;
   iModel: IModelConnection;
@@ -198,7 +201,7 @@ export interface ImdlReaderCreateArgs {
   type?: BatchType; // default Primary
   loadEdges?: boolean; // default true
   isCanceled?: ShouldAbortReadGltf;
-  sizeMultiplier?: number
+  sizeMultiplier?: number;
   options?: BatchOptions | false;
   containsTransformNodes?: boolean; // default false
 }
