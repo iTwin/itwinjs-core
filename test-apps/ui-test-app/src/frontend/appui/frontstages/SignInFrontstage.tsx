@@ -6,7 +6,8 @@ import * as React from "react";
 import { BrowserAuthorizationClient } from "@itwin/browser-authorization";
 import { StageUsage, StandardContentLayouts } from "@itwin/appui-abstract";
 import { ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider } from "@itwin/appui-react";
-import { IModelApp, NativeAppAuthorization } from "@itwin/core-frontend";
+import { IModelApp } from "@itwin/core-frontend";
+import { ElectronAppAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronFrontend";
 import { Centered } from "@itwin/core-react";
 import { SampleAppIModelApp } from "../../index";
 import { SignIn } from "../oidc/SignIn";
@@ -29,7 +30,7 @@ class SignInControl extends ContentControl {
   };
 
   private _onSignIn = () => {
-    if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof NativeAppAuthorization) {
+    if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof ElectronAppAuthorization) {
       IModelApp.authorizationClient.signIn(); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
   };

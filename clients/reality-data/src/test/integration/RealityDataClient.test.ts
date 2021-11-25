@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ImsAuthorizationClient } from "@bentley/itwin-client";
 import { AccessToken, Guid, GuidString, Logger, LogLevel } from "@itwin/core-bentley";
 import { Angle, Range2d } from "@itwin/core-geometry";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
@@ -20,8 +19,6 @@ Logger.setLevel(LOG_CATEGORY, LogLevel.Info);
 
 describe("RealityServicesClient Normal (#integration)", () => {
   const realityDataServiceClient: RealityDataAccessClient = new RealityDataAccessClient();
-  const imsClient: ImsAuthorizationClient = new ImsAuthorizationClient();
-
   let iTwinId: GuidString;
 
   const tilesId: string = "593eff78-b757-4c07-84b2-a8fe31c19927";
@@ -110,7 +107,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
   it("should be able to retrieve the azure blob url (write access)", async function () {
     // Skip this test if the issuing authority is not imsoidc.
     // The iTwin Platform currently does not support the reality-data:write scope.
-    const imsUrl = await imsClient.getUrl();
+    const imsUrl = getUrl();
     if (-1 === imsUrl.indexOf("imsoidc"))
       this.skip();
 
@@ -154,7 +151,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
   it("should be able to create a reality data (without specific identifier) and delete it", async function () {
     // Skip this test if the issuing authority is not imsoidc.
     // The iTwin Platform currently does not support the reality-data:write scope.
-    const imsUrl = await imsClient.getUrl();
+    const imsUrl = getUrl();
     if (-1 === imsUrl.indexOf("imsoidc"))
       this.skip();
 
@@ -230,7 +227,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
   it("should be able to create a reality data (with fixed specific identifier) and delete it", async function () {
     // Skip this test if the issuing authority is not imsoidc.
     // The iTwin Platform currently does not support the reality-data:write scope.
-    const imsUrl = await imsClient.getUrl();
+    const imsUrl = getUrl();
     if (-1 === imsUrl.indexOf("imsoidc"))
       this.skip();
 
@@ -311,7 +308,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
   it("should be able to duplicate a reality data and delete it", async function () {
     // Skip this test if the issuing authority is not imsoidc.
     // The iTwin Platform currently does not support the reality-data:write scope.
-    const imsUrl = await imsClient.getUrl();
+    const imsUrl = getUrl();
     if (-1 === imsUrl.indexOf("imsoidc"))
       this.skip();
 
@@ -456,7 +453,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
   it("should be able to create a reality data then modify it then delete it", async function () {
     // Skip this test if the issuing authority is not imsoidc.
     // The iTwin Platform currently does not support the reality-data:write scope.
-    const imsUrl = await imsClient.getUrl();
+    const imsUrl = getUrl();
     if (-1 === imsUrl.indexOf("imsoidc"))
       this.skip();
 
@@ -631,7 +628,6 @@ describe("RealityServicesClient Normal (#integration)", () => {
 
 describe("RealityServicesClient Admin (#integration)", () => {
   const realityDataServiceClient: RealityDataAccessClient = new RealityDataAccessClient();
-  const imsClient: ImsAuthorizationClient = new ImsAuthorizationClient();
   let accessToken: AccessToken;
 
   before(async () => {
@@ -641,7 +637,7 @@ describe("RealityServicesClient Admin (#integration)", () => {
   it("should be able to create a reality data as an admin (without specific iTwin and admin) and delete it", async function () {
     // Skip this test if the issuing authority is not imsoidc.
     // The iTwin Platform currently does not support the reality-data:write scope.
-    const imsUrl = await imsClient.getUrl();
+    const imsUrl = getUrl();
     if (-1 === imsUrl.indexOf("imsoidc"))
       this.skip();
 
@@ -716,3 +712,16 @@ describe("RealityServicesClient Admin (#integration)", () => {
   });
 
 });
+
+function getUrl(): string {
+  const baseUrl = "https://ims.bentley.com";
+
+  const prefix = process.env.IMJS_URL_PREFIX;
+  const authority = new URL(baseUrl);
+
+  if (prefix)
+    authority.hostname = prefix + authority.hostname;
+  const url = authority.href.replace(/\/$/, "");
+
+  return url;
+}

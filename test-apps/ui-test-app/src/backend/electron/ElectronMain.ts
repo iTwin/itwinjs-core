@@ -5,6 +5,7 @@
 
 import { join } from "path";
 import { assert } from "@itwin/core-bentley";
+import { ElectronAuthorizationBackend } from "@itwin/electron-authorization/lib/cjs/ElectronBackend";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backend";
 import { getSupportedRpcs } from "../../common/rpcs";
@@ -19,17 +20,20 @@ export async function initializeElectron(opts?: IModelHostConfiguration) {
       webResourcesPath: join(__dirname, "..", "..", "..", "build"),
       developmentServer: process.env.NODE_ENV === "development",
       rpcInterfaces: getSupportedRpcs(),
-      authConfig: {
-        clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
-        redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
-        scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
-      },
     },
     nativeHost: {
       applicationName: "ui-test-app",
     },
     iModelHost: opts,
   };
+
+  const authClient = await ElectronAuthorizationBackend.create({
+    clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
+    redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
+    scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
+  });
+  if (opt.iModelHost?.authorizationClient)
+    opt.iModelHost.authorizationClient = authClient;
 
   await ElectronHost.startup(opt);
   EditCommandAdmin.register(BasicManipulationCommand);

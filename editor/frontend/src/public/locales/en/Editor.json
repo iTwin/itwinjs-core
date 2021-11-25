@@ -146,6 +146,14 @@
       "keyin": "editor hollow faces",
       "flyover": "Hollow solids by offsetting faces"
     },
+    "SweepFaces": {
+      "keyin": "editor sweep faces",
+      "flyover": "Sweep planar curves, surfaces, or faces of solids"
+    },
+    "SpinFaces": {
+      "keyin": "editor spin faces",
+      "flyover": "Spin planar curves, surfaces, or faces of solids"
+    },
     "RoundEdges": {
       "keyin": "editor round edges",
       "flyover": "Round edges of solids and surfaces"
@@ -153,6 +161,10 @@
     "ChamferEdges": {
       "keyin": "editor chamfer edges",
       "flyover": "Chamfer edges of solids and surfaces"
+    },
+    "DeleteSubEntities": {
+      "keyin": "editor delete subentities",
+      "flyover": "Delete faces and edges of solids and surfaces"
     },
     "UndoAll": {
       "keyin": "editor undo all",

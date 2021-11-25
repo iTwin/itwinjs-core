@@ -179,6 +179,8 @@ export class SolidModelingCommand extends BasicManipulationCommand implements So
     // (undocumented)
     isPointInside(id: Id64String, point: XYZProps): Promise<PointInsideResultProps[] | undefined>;
     // (undocumented)
+    isRedundantEdge(id: Id64String, subEntity: SubEntityProps): Promise<boolean>;
+    // (undocumented)
     isSingleFacePlanarSheet(id: Id64String, index: number): Promise<boolean>;
     // (undocumented)
     isSmoothEdge(id: Id64String, subEntity: SubEntityProps): Promise<boolean>;
