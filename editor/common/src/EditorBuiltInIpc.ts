@@ -422,8 +422,8 @@ export interface DeleteSubEntityProps {
 export interface TransformSubEntityProps {
   /** The sub-entities to transform. All sub-entities should be of the same [[SubEntityType]]. */
   subEntities: SubEntityProps | SubEntityProps[];
-  /** The transform to apply to all sub-entities, or the transform for each sub-entity */
-  transforms: TransformProps | TransformProps[];
+  /** The transform to apply to all sub-entities, or the transforms for each sub-entity */
+  transforms: TransformProps[];
 }
 
 /** @alpha */
@@ -604,6 +604,8 @@ export interface SolidModelingCommandIpc extends EditCommandIpc {
   isLaminarEdge(id: Id64String, subEntity: SubEntityProps): Promise<boolean>;
   /** Return whether the supplied sub-entity is a linear edge */
   isLinearEdge(id: Id64String, subEntity: SubEntityProps): Promise<boolean>;
+  /** Return whether the supplied sub-entity is a redundant edge (containing faces share surface) */
+  isRedundantEdge(id: Id64String, subEntity: SubEntityProps): Promise<boolean>;
   /** Return whether the angle between the normals of the supplied vertices's edges never exceeds the internal smooth angle tolerance along the length of the edge */
   isSmoothVertex(id: Id64String, subEntity: SubEntityProps): Promise<boolean>;
   /** Return whether the supplied geometric primitive index is a disjoint body */
@@ -654,7 +656,7 @@ export interface SolidModelingCommandIpc extends EditCommandIpc {
   offsetEdges(id: Id64String, params: OffsetEdgesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
   /** Modify solid bodies by hollowing selected faces. */
   hollowFaces(id: Id64String, params: HollowFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
-  /** Modify solid and sheet bodies by sweeping selected faces along a path vector. */
+  /** Modify solid and sheet bodies by sweeping selected faces along a path vector. Sweep of sheet faces does not create a solid, specifying all faces of a body is invalid. */
   sweepFaces(id: Id64String, params: SweepFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
   /** Modify solid and sheet bodies by spinning selected faces along an arc specified by a revolve axis and sweep angle. */
   spinFaces(id: Id64String, params: SpinFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
