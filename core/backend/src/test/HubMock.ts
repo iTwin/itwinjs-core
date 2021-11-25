@@ -43,7 +43,7 @@ import { LocalHub } from "./LocalHub";
  * test against a "real" IModelHub, you can simply comment off the call [[startup]], though in that case you should make sure the name of your
  * iModel is unique so your test won't collide with other tests (iModel name uniqueness is not necessary for mocked tests.)
  *
- * Mocked tests must always start by creating a new iModel via [[IModelHost.hubAccess.createNewIModel]] with a `revision0` iModel.
+ * Mocked tests must always start by creating a new iModel via [[IModelHost.hubAccess.createNewIModel]] with a `version0` iModel.
  * They use mock (aka "bogus") credentials for `AccessTokens`, which is fine since [[HubMock]] never accesses resources outside the current
  * computer.
  *
