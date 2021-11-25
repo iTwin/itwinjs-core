@@ -406,7 +406,7 @@ class RealityModelTileLoader extends RealityTileLoader {
     this._viewFlagOverrides.visibleEdges = undefined;
     this._viewFlagOverrides.hiddenEdges = undefined;
 
-    // Allow wiremesh display. ###TODO maybe not for OSM Buildings though?
+    // Allow wiremesh display.
     this._viewFlagOverrides.wiremesh = undefined;
   }
 

@@ -33,7 +33,6 @@ const applyWiremesh = `
  * @internal
  */
 export function addWiremesh(builder: ProgramBuilder): void {
-  // ###TODO Don't create these shader variations if not supported (but as of iOS 15 we no longer really encounter WebGL 1 clients).
   if (System.instance.isWebGL2) {
     builder.addInlineComputedVarying("v_barycentric", VariableType.Vec3, computeBarycentric);
     builder.frag.set(FragmentShaderComponent.ApplyWiremesh, applyWiremesh);
