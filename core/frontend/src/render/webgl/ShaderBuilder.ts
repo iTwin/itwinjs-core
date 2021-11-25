@@ -358,8 +358,8 @@ export class ShaderVariables {
     }
   }
 
-  // Return true if the number of varying vectors exceeds `maxVaryingVectors`.
-  public exceedsMaxVaryingVectors(fragSource: string, maxVaryingVectors: number): boolean {
+  // Return true if GL_MAX_VARYING_VECTORS has been exceeded for the minimum guaranteed value of 8.
+  public exceedsMaxVaryingVectors(fragSource: string): boolean {
     // Varyings go into a matrix of 4 columns and GL_MAX_VARYING_VECTORS rows of floats.
     // The packing rules are defined by the standard. Specifically each row can contain one of:
     //  vec4
@@ -414,7 +414,7 @@ export class ShaderVariables {
     }
 
     const slotsUsed = registers.indexOf(0);
-    return slotsUsed > maxVaryingVectors;
+    return slotsUsed > 8;
   }
 }
 
@@ -1115,9 +1115,6 @@ export const enum ShaderType {
 export class ProgramBuilder {
   public readonly vert: VertexShaderBuilder;
   public readonly frag: FragmentShaderBuilder;
-  // True if this shader uses a feature only available in WebGL 2.
-  // Currently, only our wiremesh shaders are limited to WebGL 2 due to usage of gl_VertexID.
-  public requiresWebGL2 = true;
   private readonly _flags: ShaderBuilderFlags;
   private readonly _attrMap?: Map<string, AttributeDetails>;
 
@@ -1172,12 +1169,8 @@ export class ProgramBuilder {
   public buildProgram(gl: WebGLContext): ShaderProgram {
     const vertSource = this.vert.buildSource(this._attrMap);
     const fragSource = this.frag.buildSource(); // NB: frag has no need to specify attributes, only vertex does.
-
-    // GL_MAX_VARYING_VECTORS is guaranteed to be at least 8 for WebGL 1 and 15 for WebGL 2.
-    // iOS provides only the minimum 8 for WebGL 1.
-    const checkMaxVarying = true;
-    const maxVaryingVectors = this.requiresWebGL2 ? 15 : 8;
-    if (checkMaxVarying && this.vert.exceedsMaxVaryingVectors(fragSource, maxVaryingVectors))
+    const checkMaxVarying = false; // ###TODO...gl_VertexID exceeds WebGL 1 limit, but only used in WebGL 2.
+    if (checkMaxVarying && this.vert.exceedsMaxVaryingVectors(fragSource))
       assert(false, "GL_MAX_VARYING_VECTORS exceeded");
 
     // Debug output
