@@ -623,14 +623,19 @@ export abstract class GltfReader {
     if (!mesh.points || !mesh.indices)
       return false;
 
-    const numIndices = mesh.indices.length;
-    assert(0 === numIndices % 3);
-    const points = new Uint16Array(3 * numIndices);
-    const normals = mesh.normals ? new Uint16Array(numIndices) : undefined;
-    const uvs = mesh.uvs ? new Uint16Array(2 * numIndices) : undefined;
+    const numPoints = mesh.indices.length;
+    assert(0 === numPoints % 3);
 
-    for (let i = 0; i < mesh.indices.length; i++) {
-      const index = mesh.indices[i];
+    const indices = mesh.indices;
+    if (indices instanceof Uint16Array && numPoints > 0xffff)
+      mesh.indices = new Uint32Array(numPoints);
+
+    const points = new Uint16Array(3 * numPoints);
+    const normals = mesh.normals ? new Uint16Array(numPoints) : undefined;
+    const uvs = mesh.uvs ? new Uint16Array(2 * numPoints) : undefined;
+
+    for (let i = 0; i < numPoints; i++) {
+      const index = indices[i];
       mesh.indices[i] = i;
 
       points[i * 3 + 0] = mesh.points[index * 3 + 0];
