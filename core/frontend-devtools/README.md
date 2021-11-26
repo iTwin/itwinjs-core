@@ -248,6 +248,7 @@ These keysins control the planar masking of reality models.
   * `copy`: copy result to system clipboard.
   * `quote`: format the result so it can be directly parsed by `fdt apply rendering style` as a single quoted string argument.
 * `fdt apply rendering style` - Given a rendering style as a JSON string (see `fdt save rendering style`), applies it to the active viewport's display style. See `DisplayStyleSettings.applyOverrides`. Takes a single required argument: the JSON string.
+* `fdt bgcolor` - change the background color for the active viewport. It requires a single argument - the string representation of the color. See ColorDef.fromString for supported formats.
 * `fdt change viewflags` - Changes any number of ViewFlags for the active viewport. Each argument is of the format "flag=value". For boolean flags, the value is `0` for `false` or `1` for `true`. Flag names are case-insensitive.
   * Boolean flags: "dimensions", "patterns", "weights", "styles", "transparency", "fill", "textures", "materials", "acsTriad", "grid", "visibleEdges", "hiddenEdges", "lighting", "shadows", "clipVolume", "constructions", "monochrome", "backgroundMap", "ambientOcclusion", "forceSurfaceDiscard"
   * "renderMode": 0 = wireframe, 3 = hidden line, 4 = solid fill, 6 = smooth shade (numeric values of RenderMode enum).
