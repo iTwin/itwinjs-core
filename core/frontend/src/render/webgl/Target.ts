@@ -986,7 +986,15 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       }
     }
 
-    return image;
+    // The alpha channel is useless, potentially containing a mix of pre-multiplied and unmultiplied alpha.
+    const data = new Uint8Array(image.data.length * 0.75);
+    for (let i = 0, j = 0; i < image.data.length; i += 4, j+= 3) {
+      data[j + 0] = image.data[i + 0];
+      data[j + 1] = image.data[i + 1];
+      data[j + 2] = image.data[i + 2];
+    }
+
+    return ImageBuffer.create(data, ImageBufferFormat.Rgb, image.width);
   }
 
   public copyImageToCanvas(): HTMLCanvasElement {

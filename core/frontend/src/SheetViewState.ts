@@ -849,8 +849,8 @@ class RasterAttachment {
     view.setAspectRatioSkew(skew);
 
     if (true !== props.jsonProperties?.displayOptions?.preserveBackground) {
-      // Make background color 100% transparent so that Viewport.readImage() will discard transparent pixels.
-      const bgColor = sheetView.displayStyle.backgroundColor.withAlpha(0);
+      // Use the sheet view's background color.
+      const bgColor = sheetView.displayStyle.backgroundColor;
       view.displayStyle.backgroundColor = bgColor;
     }
 
