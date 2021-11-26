@@ -966,7 +966,7 @@ export abstract class IModelDb extends IModel {
     if (val.error)
       throw new IModelError(val.error.status, `Error getting class meta data for: ${classFullName}`);
 
-    const metaData = new EntityMetaData(JSON.parse(val.result!));
+    const metaData = new EntityMetaData(JSON.parse(val.result));
     this.classMetaDataRegistry.add(classFullName, metaData);
 
     // Recursive, to make sure that base classes are cached.
@@ -2007,7 +2007,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         throw new IModelError(ret.error.status, `TreeId=${treeId} TileId=${tileId}`);
       }
 
-      return ret.result!;
+      return ret.result;
     }
   }
 }

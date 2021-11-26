@@ -132,7 +132,7 @@ export interface ChangesetIndexArg extends IModelIdArg {
   readonly changeset: ChangesetIdWithIndex;
 }
 
-/** Argument for methods that must supply an IModelId and a range of ChangesetIds.
+/** Argument for methods that must supply an IModelId and a range of Changesets.
  * @public
  */
 export interface ChangesetRangeArg extends IModelIdArg {

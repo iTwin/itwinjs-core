@@ -9,13 +9,15 @@
 import { createHash } from "crypto";
 import * as fs from "fs-extra";
 import { dirname, extname, join } from "path";
-import { NativeLibrary } from "@bentley/imodeljs-native";
+import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
 import { AccessToken, BeEvent, DbResult, OpenMode } from "@itwin/core-bentley";
 import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
 import { IModelJsFs } from "../IModelJsFs";
 import { SQLiteDb } from "../SQLiteDb";
 import { SqliteStatement } from "../SqliteStatement";
 import { Settings, SettingsPriority } from "./Settings";
+
+// cspell:ignore rowid
 
 /** The names of Settings used by Workspace
  * @beta
@@ -96,11 +98,15 @@ export interface WorkspaceContainer {
   readonly containerFilesDir: LocalDirName;
   /** event raised when the container is closed. */
   readonly onContainerClosed: BeEvent<() => void>;
+  /** The name of the local file for holding this container. */
+  readonly localDbName: LocalDirName;
   /** Get a string resource from this container, if present. */
   getString(rscName: WorkspaceResourceName): string | undefined;
 
   /** Get a blob resource from this container, if present. */
   getBlob(rscName: WorkspaceResourceName): Uint8Array | undefined;
+  /** @internal */
+  getBlobReader(rscName: WorkspaceResourceName): IModelJsNative.BlobIO;
 
   /** Extract a local copy of a file resource from this container, if present.
    * @param rscName The name of the file resource in the WorkspaceContainer
@@ -250,7 +256,6 @@ export class WorkspaceFile implements WorkspaceContainer {
 
   public get containerFilesDir() { return join(this.workspace.filesDir, this.containerId); }
   public get isOpen() { return this.db.isOpen; }
-
   public queryFileResource(rscName: WorkspaceResourceName) {
     const info = this.db.nativeDb.queryEmbeddedFile(rscName);
     if (undefined === info)
@@ -306,6 +311,19 @@ export class WorkspaceFile implements WorkspaceContainer {
     return this.db.withSqliteStatement("SELECT value from strings WHERE id=?", (stmt) => {
       stmt.bindString(1, rscName);
       return DbResult.BE_SQLITE_ROW === stmt.step() ? stmt.getValueString(0) : undefined;
+    });
+  }
+
+  /** Get a BlobIO reader for a blob WorkspaceResource.
+   * @note caller must call `dispose` on the returned value.
+   * @internal
+   */
+  public getBlobReader(rscName: WorkspaceResourceName): IModelJsNative.BlobIO {
+    return this.db.withSqliteStatement("SELECT rowid from blobs WHERE id=?", (stmt) => {
+      stmt.bindString(1, rscName);
+      const blobReader = new IModelJsNative.BlobIO();
+      blobReader.open(this.db.nativeDb, { tableName: "blobs", columnName: "value", row: stmt.getValueInteger(0) });
+      return blobReader;
     });
   }
 
@@ -370,7 +388,8 @@ export class EditableWorkspaceFile extends WorkspaceFile {
   }
 
   private getFileModifiedTime(localFileName: LocalFileName): number {
-    return Math.round(fs.statSync(localFileName).mtimeMs);
+    const stat = fs.statSync(localFileName);
+    return Math.round(stat.mtimeMs);
   }
 
   private performWriteSql(rscName: WorkspaceResourceName, sql: string, bind?: (stmt: SqliteStatement) => void) {
@@ -438,6 +457,19 @@ export class EditableWorkspaceFile extends WorkspaceFile {
     this.performWriteSql(rscName, "UPDATE blobs SET value=?2 WHERE id=?1", (stmt) => stmt.bindBlob(2, val));
   }
 
+  /** Get a BlobIO writer for a previously-added blob WorkspaceResource.
+   * @note  after writing is complete, caller must call `dispose` on the returned value and must call `saveChanges` on the `db`.
+   * @internal
+   */
+  public getBlobWriter(rscName: WorkspaceResourceName): IModelJsNative.BlobIO {
+    return this.db.withSqliteStatement("SELECT rowid from blobs WHERE id=?", (stmt) => {
+      stmt.bindString(1, rscName);
+      const blobWriter = new IModelJsNative.BlobIO();
+      blobWriter.open(this.db.nativeDb, { tableName: "blobs", columnName: "value", row: stmt.getValueInteger(0), writeable: true });
+      return blobWriter;
+    });
+  }
+
   /** Remove a blob resource. */
   public removeBlob(rscName: WorkspaceResourceName): void {
     this.performWriteSql(rscName, "DELETE FROM blobs WHERE id=?");
@@ -471,6 +503,8 @@ export class EditableWorkspaceFile extends WorkspaceFile {
   /** Remove a file resource. */
   public removeFile(rscName: WorkspaceResourceName): void {
     const file = this.queryFileResource(rscName);
+    if (undefined === file)
+      throw new Error(`file resource "${rscName}" does not exist`);
     if (file && fs.existsSync(file.localFileName))
       fs.unlinkSync(file.localFileName);
     this.db.nativeDb.removeEmbeddedFile(rscName);

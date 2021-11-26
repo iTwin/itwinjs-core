@@ -1685,6 +1685,20 @@ describe("iModel", () => {
   });
 
   it.only("should be able to reproject with iModel coordinates to or from any other GeographicCRS", async () => {
+    const addGcsWs = async (id: string) => {
+      try {
+        const ws = await IModelHost.appWorkspace.getContainer({ id });
+        const fileName = ws.localDbName;
+        IModelHost.appWorkspace.dropContainer(ws);
+        expect(IModelHost.platform.addGcsWorkspace(fileName)).to.be.true;
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.log(`cannot load GCS Workspace: ${id}`);
+      }
+    };
+
+    await addGcsWs("usa");
+    await addGcsWs("uk");
 
     const convertTest = async (fileName: string, fileGCS: GeographicCRSProps, datum: string | GeographicCRSProps, inputCoord: XYZProps, outputCoord: PointWithStatus) => {
 
@@ -1697,7 +1711,7 @@ describe("iModel", () => {
       };
 
       let datumOrGCS: string;
-      if (typeof (datum) === "object")
+      if (typeof datum === "object")
         datumOrGCS = JSON.stringify(datum);
       else
         datumOrGCS = datum;
