@@ -7,16 +7,12 @@ import { IModelDb, IModelHost, SnapshotDb } from "@itwin/core-backend";
 import { Presentation } from "@itwin/presentation-backend";
 import { DbResult, QueryRowFormat } from "@itwin/core-common";
 
-/* eslint-disable no-console */
-const PAGE_SIZE = 1000;
-
-describe("Properties loading", () => {
+describe("#performance Properties loading", () => {
   let imodel: SnapshotDb;
 
   before(async () => {
     await IModelHost.startup();
     Presentation.initialize({
-      requestTimeout: 0,
       useMmap: true,
     });
   });
@@ -32,57 +28,46 @@ describe("Properties loading", () => {
     expect(imodel).is.not.null;
   });
 
-  it("load properties using getElementProperties", async function () {
+  it("load properties using 'getElementProperties'", async function () {
     this.timeout(0);
-    console.log("Starting to load properties");
     const startTime = (new Date()).getTime();
     let propertiesCount = 0;
-    while (true) {
-      const pagingOptions = { start: propertiesCount, size: PAGE_SIZE };
-      const response = await Presentation.getManager().getElementProperties({ imodel, paging: pagingOptions });
-      propertiesCount += response.items.length;
-      if (response.items.length === 0 && propertiesCount !== response.total) {
-        throw Error("0 items returned while total count is not reached");
-      }
-      if (response.items.length < pagingOptions.size && propertiesCount !== response.total) {
-        throw Error(`Some properties were missed in page (${pagingOptions.start}, ${pagingOptions.start + pagingOptions.size}]`);
-      }
-      console.log(`Loaded ${propertiesCount}/${response.total} properties`);
-      if (propertiesCount === response.total)
-        break;
+    const { total, iterator } = await Presentation.getManager().getElementProperties({ imodel });
+    process.stdout.write(`Loading properties for ${total} elements.`);
+    for await (const items of iterator()) {
+      propertiesCount += items.length;
+      process.stdout.write(".");
     }
-    const elapsedTime = (new Date()).getTime() - startTime;
-    console.log(`Loaded ${propertiesCount} elements properties in ${elapsedTime} ms`);
-
+    process.stdout.write(`\nLoaded ${propertiesCount} elements properties in ${(new Date()).getTime() - startTime} ms`);
   });
 
-  it.only("load properties using ECSQL", async function () {
+  it("load properties using ECSQL", async function () {
     this.timeout(0);
-    console.log("Starting to load properties using ECSQL");
     const startTime = new Date().getTime();
-    const propertiesCount = await getElementsPropertiesECSQL(imodel);
-    console.log(`Loaded - ${propertiesCount} in ${new Date().getTime() - startTime} ms`);
+    process.stdout.write(`Loading properties.`);
+    let propertiesCount = 0;
+    for await (const _properties of getElementsPropertiesECSQL(imodel)) {
+      propertiesCount++;
+      if (propertiesCount % 1000 === 0)
+        process.stdout.write(".");
+    }
+    process.stdout.write(`\nLoaded ${propertiesCount} elements properties in ${(new Date()).getTime() - startTime} ms`);
   });
 
 });
 
-async function getElementsPropertiesECSQL(db: IModelDb) {
+async function* getElementsPropertiesECSQL(db: IModelDb) {
   const query = `
     SELECT el.ECInstanceId id,  '[' || schemaDef.Name || '].[' || classDef.Name || ']' className
     FROM bis.Element el
     JOIN meta.ECClassDef classDef ON classDef.ECInstanceId = el.ECClassId
     JOIN meta.ECSchemaDef schemaDef ON schemaDef.ECInstanceId = classDef.Schema.Id`;
 
-  let propertiesCount = 0;
-  for await (const row of db.query(query, undefined, QueryRowFormat.UseJsPropertyNames)) {
+  for await (const row of db.query(query, undefined, QueryRowFormat.UseJsPropertyNames, { abbreviateBlobs: true })) {
     const properties = loadElementProperties(db, row.className, row.id);
     expect(properties.id).to.be.eq(row.id);
-    propertiesCount++;
-    if (propertiesCount % 1000 === 0)
-      console.log(`Loaded - ${propertiesCount} properties`);
+    yield properties;
   }
-
-  return propertiesCount;
 }
 
 function loadElementProperties(db: IModelDb, className: string, elementId: string) {
