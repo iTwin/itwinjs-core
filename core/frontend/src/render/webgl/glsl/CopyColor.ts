@@ -17,7 +17,13 @@ import { createViewportQuadBuilder } from "./ViewportQuad";
 
 const computeColor = "return TEXTURE(u_color, v_texCoord);";
 
-const computeColorNoAlpha = "return vec4(TEXTURE(u_color, v_texCoord).rgb, 1.0);";
+const computeColorNoAlpha = `
+  vec4 color = TEXTURE(u_color, v_texCoord);
+  if (color.a > color.r || color.a > color.g || color.a > color.b)
+    return vec4(color.rgb * color.a, color.a);
+  else
+    return vec4(color.rgb, 1.0);
+`;
 
 /** @internal */
 export function createCopyColorProgram(context: WebGLContext, copyAlpha: boolean = true): ShaderProgram {

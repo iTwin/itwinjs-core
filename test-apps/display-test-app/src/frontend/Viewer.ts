@@ -198,6 +198,8 @@ export class Viewer extends Window {
 
   private constructor(surface: Surface, view: ViewState, views: ViewList, props: ViewerProps) {
     super(surface, { scrollbars: true });
+    this.contentDiv.style.backgroundColor = "transparent";
+    this.container.style.backgroundColor = "transparent";
     surface.element.appendChild(this.container);
 
     this.disableEdges = true === props.disableEdges;
