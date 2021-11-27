@@ -6,8 +6,11 @@
  * @module iModels
  */
 
+// cspell:ignore NGVD, NAVD
+
 import { GeoServiceStatus } from "@itwin/core-bentley";
 import { XYZProps } from "@itwin/core-geometry";
+import { GeographicCRSProps } from "./geometry/CoordinateReferenceSystem";
 
 /** This enumeration lists all possible status as returned from a coordinate conversion to or from a
  * [[GeographicCRS]] and either another [[GeographicCRS]] or a [[GeodeticDatum]].
@@ -112,4 +115,21 @@ export interface GeoCoordinatesRequestProps {
 export interface GeoCoordinatesResponseProps {
   geoCoords: PointWithStatus[];
   fromCache: number;    // the number that were read from the cache rather than calculated.
+}
+
+/** Information required to interpret or complete a Geographic CRS in the specified format.
+ *  The only currently supported formats are JSON (for completion) and WKT (OGC Well Known Text)
+ * @beta
+ */
+export interface GeographicCRSInterpretRequestProps {
+  format: "WKT" | "JSON";
+  geographicCRSDef: string;
+}
+
+/** Information returned from a request to interpret or complete a Geographic CRS
+ * @beta
+ */
+export interface GeographicCRSInterpretResponseProps {
+  status: number;
+  geographicCRS: GeographicCRSProps;
 }
