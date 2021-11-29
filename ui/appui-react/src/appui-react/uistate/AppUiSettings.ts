@@ -6,13 +6,11 @@
  * @module Settings
  */
 
-import { UiSetting, UiSettingsStorage } from "@itwin/core-react";
+import { UiStateEntry, UiStateStorage } from "@itwin/core-react";
 import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { FrameworkVersionId, UiFramework, UserSettingsProvider } from "../UiFramework";
 
 // cSpell:ignore configurableui
-
-/* eslint-disable deprecation/deprecation */
 
 /** Default values that may be specified for [[AppUiSettings]].
  * @public
@@ -39,13 +37,13 @@ export class AppUiSettings implements UserSettingsProvider {
   public readonly providerId = "AppUiSettingsProvider";
 
   private static _settingNamespace = "AppUiSettings";
-  private _settings: Array<UiSetting<any>> = [];
+  private _settings: Array<UiStateEntry<any>> = [];
   private _applyingLocalSettings = false;
 
-  public colorTheme: UiSetting<string>;
-  public dragInteraction: UiSetting<boolean>;
-  public frameworkVersion: UiSetting<FrameworkVersionId>;
-  public widgetOpacity: UiSetting<number>;
+  public colorTheme: UiStateEntry<string>;
+  public dragInteraction: UiStateEntry<boolean>;
+  public frameworkVersion: UiStateEntry<FrameworkVersionId>;
+  public widgetOpacity: UiStateEntry<number>;
 
   private setColorTheme = (theme: string) => {
     UiFramework.setColorTheme(theme);
@@ -56,20 +54,20 @@ export class AppUiSettings implements UserSettingsProvider {
   constructor(defaults: Partial<InitialAppUiSettings>) {
     this._settings = [];
 
-    this.colorTheme = new UiSetting<string>(AppUiSettings._settingNamespace, "ColorTheme", UiFramework.getColorTheme, this.setColorTheme, defaults.colorTheme);
+    this.colorTheme = new UiStateEntry<string>(AppUiSettings._settingNamespace, "ColorTheme", UiFramework.getColorTheme, this.setColorTheme, defaults.colorTheme);
     this._settings.push(this.colorTheme);
 
-    this.dragInteraction = new UiSetting<boolean>(AppUiSettings._settingNamespace, "DragInteraction",
+    this.dragInteraction = new UiStateEntry<boolean>(AppUiSettings._settingNamespace, "DragInteraction",
       () => UiFramework.useDragInteraction,
       (value: boolean) => UiFramework.setUseDragInteraction(value), defaults.dragInteraction);
     this._settings.push(this.dragInteraction);
 
-    this.frameworkVersion = new UiSetting<FrameworkVersionId>(AppUiSettings._settingNamespace, "FrameworkVersion",
+    this.frameworkVersion = new UiStateEntry<FrameworkVersionId>(AppUiSettings._settingNamespace, "FrameworkVersion",
       () => UiFramework.uiVersion,
       (value: FrameworkVersionId) => UiFramework.setUiVersion(value), defaults.frameworkVersion);
     this._settings.push(this.frameworkVersion);
 
-    this.widgetOpacity = new UiSetting<number>(AppUiSettings._settingNamespace, "WidgetOpacity",
+    this.widgetOpacity = new UiStateEntry<number>(AppUiSettings._settingNamespace, "WidgetOpacity",
       () => UiFramework.getWidgetOpacity(), (value: number) => UiFramework.setWidgetOpacity(value), defaults.widgetOpacity);
     this._settings.push(this.widgetOpacity);
 
@@ -81,22 +79,22 @@ export class AppUiSettings implements UserSettingsProvider {
       return;
 
     if (args.eventIds.has("configurableui:set_theme")) {
-      await this.colorTheme.saveSetting(UiFramework.getUiSettingsStorage());
+      await this.colorTheme.saveSetting(UiFramework.getUiStateStorage());
       // always store as default theme in local storage to avoid flicker during startup if user is not yet logged-in
       window.localStorage.setItem("uifw:defaultTheme", UiFramework.getColorTheme());
     }
 
     if (args.eventIds.has("configurableui:set-drag-interaction"))
-      await this.dragInteraction.saveSetting(UiFramework.getUiSettingsStorage());
+      await this.dragInteraction.saveSetting(UiFramework.getUiStateStorage());
 
     if (args.eventIds.has("configurableui:set-framework-version"))
-      await this.frameworkVersion.saveSetting(UiFramework.getUiSettingsStorage());
+      await this.frameworkVersion.saveSetting(UiFramework.getUiStateStorage());
 
     if (args.eventIds.has("configurableui:set_widget_opacity"))
-      await this.widgetOpacity.saveSetting(UiFramework.getUiSettingsStorage());
+      await this.widgetOpacity.saveSetting(UiFramework.getUiStateStorage());
   };
 
-  public async apply(storage: UiSettingsStorage): Promise<void> {
+  public async apply(storage: UiStateStorage): Promise<void> {
     this._applyingLocalSettings = true;
     for await (const setting of this._settings) {
       await setting.getSettingAndApplyValue(storage);
@@ -104,7 +102,7 @@ export class AppUiSettings implements UserSettingsProvider {
     this._applyingLocalSettings = false;
   }
 
-  public async loadUserSettings(storage: UiSettingsStorage): Promise<void> {
+  public async loadUserSettings(storage: UiStateStorage): Promise<void> {
     await this.apply(storage);
   }
 }
