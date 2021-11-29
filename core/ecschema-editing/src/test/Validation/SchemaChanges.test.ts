@@ -522,7 +522,7 @@ describe("SchemaChanges tests", () => {
   });
 
   describe("KindOfQuantityChanges", () => {
-    it("KoqDelta, correct change created", async () => {
+    it("KoqDelta, relativeError change, correct change created", async () => {
       const testClass = new KindOfQuantity(schema, "TestClass");
       const diag = new SchemaCompareDiagnostics.KoqDelta(testClass, ["relativeError", 1, 2]);
       const changes = new SchemaChanges(schema);
@@ -540,6 +540,26 @@ describe("SchemaChanges tests", () => {
       expect(propChanges[0].changeType).to.equal(ChangeType.Delta);
       const text = propChanges[0].toString();
       expect(text).to.equal("RelativeError: 1 -> 2");
+    });
+
+    it("KoqDelta, persistenceUnit change, correct change created", async () => {
+      const testClass = new KindOfQuantity(schema, "TestClass");
+      const diag = new SchemaCompareDiagnostics.KoqDelta(testClass, ["persistenceUnit", "SchemaA.UnitA", "SchemaB.UnitB"]);
+      const changes = new SchemaChanges(schema);
+
+      changes.addDiagnostic(diag);
+
+      expect(changes.kindOfQuantityChanges.has(testClass.name)).to.be.true;
+      const schemaItemChange = changes.kindOfQuantityChanges.get(testClass.name);
+      expect(schemaItemChange!.schemaItemType).to.equal(SchemaItemType.KindOfQuantity);
+      const propChanges = schemaItemChange!.propertyValueChanges;
+      expect(propChanges.length).to.equal(1);
+
+      expect(propChanges[0].topLevelSchemaItem).to.equal(testClass);
+      expect(propChanges[0].diagnostic).to.equal(diag);
+      expect(propChanges[0].changeType).to.equal(ChangeType.Delta);
+      const text = propChanges[0].toString();
+      expect(text).to.equal("PersistenceUnit: SchemaA.UnitA -> SchemaB.UnitB");
     });
 
     it("PresentationUnitMissing, correct change created", async () => {

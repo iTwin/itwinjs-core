@@ -188,20 +188,18 @@ Create iModels from data from external BIM/CAD/GIS/etc. applications.
 
 [iModel Connectors](.\imodel-connectors.md) read data from external formats and *connect* it into an iModel. They create ChangeSets that are sent to iModelHub.
 
-## Application and User Settings
+## User Preferences
 
-Use the [Settings API](./frontend/settings.md) to save information outside of an iModel.
+Use the [User Preference API](./frontend/preferences.md) to save information outside of an iModel.
 
-- ✔️️ User
 - ✔️️ Application
-- ✔️️ Project
+- ✔️️ iTwin
 - ✔️️ iModel
 
 Examples:
 
 - ✔️️ Saved Views
 - ✔️️ Section Definitions
-- ✔️️ User Preferences and Persistent State
 
 ## User Interface
 

@@ -18,7 +18,7 @@ export interface GroupItemProps extends ItemProps {
   defaultActiveItemId?: string;
   groupId?: string;
   items: AnyItemDef[];
-  direction?: Direction;
+  direction?: Direction; // eslint-disable-line deprecation/deprecation
   itemsInColumn?: number;
   /** if set, it is used to explicitly set a label at top of open group component. */
   panelLabel?: string | StringGetter;

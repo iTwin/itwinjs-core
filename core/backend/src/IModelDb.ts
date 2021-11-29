@@ -9,8 +9,8 @@
 import { join } from "path";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import {
-  AccessToken, BeEvent, BentleyStatus, ChangeSetStatus, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus,
-  JsonUtils, Logger, OpenMode, UnexpectedErrors,
+  AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus,
+  JsonUtils, Logger, OpenMode,
 } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
@@ -20,7 +20,7 @@ import {
   GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesRequestProps,
   IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName, MassPropertiesRequestProps,
   MassPropertiesResponseProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryBinder,
-  QueryOptions, QueryOptionsBuilder, QueryRowFormat, RpcActivity, SchemaState, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions,
+  QueryOptions, QueryOptionsBuilder, RpcActivity, SchemaState, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions,
   SpatialViewDefinitionProps, StandaloneOpenOptions, TextureData, TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinitionProps,
   ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "@itwin/core-common";
@@ -223,7 +223,7 @@ export abstract class IModelDb extends IModel {
    * Get the [[LockControl]] for this iModel.
    * @beta
    */
-  public get locks(): LockControl { return this._locks!; }
+  public get locks(): LockControl { return this._locks!; } // eslint-disable-line @typescript-eslint/no-non-null-assertion
 
   /**
    * Get the [[Workspace]] for this iModel.
@@ -252,17 +252,21 @@ export abstract class IModelDb extends IModel {
   }
 
   public get fontMap(): FontMap { return this._fontMap ?? (this._fontMap = new FontMap(this.nativeDb.readFontMap())); }
+  /** @internal */
   public embedFont(prop: FontProps): FontProps { this._fontMap = undefined; return this.nativeDb.embedFont(prop); }
 
   /** Check if this iModel has been opened read-only or not. */
   public get isReadonly(): boolean { return this.openMode === OpenMode.Readonly; }
 
   /** The Guid that identifies this iModel. */
-  public override get iModelId(): GuidString { return super.iModelId!; } // GuidString | undefined for the IModel superclass, but required for all IModelDb subclasses
+  public override get iModelId(): GuidString {
+    assert(undefined !== super.iModelId);
+    return super.iModelId;
+  } // GuidString | undefined for the IModel superclass, but required for all IModelDb subclasses
 
   private _nativeDb?: IModelJsNative.DgnDb;
   /** @internal*/
-  public get nativeDb(): IModelJsNative.DgnDb { return this._nativeDb!; }
+  public get nativeDb(): IModelJsNative.DgnDb { return this._nativeDb!; } // eslint-disable-line @typescript-eslint/no-non-null-assertion
 
   /** Get the full path fileName of this iModelDb
    * @note this member is only valid while the iModel is opened.
@@ -442,7 +446,7 @@ export abstract class IModelDb extends IModel {
     }
     const executor = {
       execute: async (request: DbQueryRequest) => {
-        return ConcurrentQuery.executeQueryRequest(this._nativeDb!, request);
+        return ConcurrentQuery.executeQueryRequest(this.nativeDb, request);
       },
     };
     return new ECSqlReader(executor, ecsql, params, config);
@@ -457,20 +461,17 @@ export abstract class IModelDb extends IModel {
    *
    * @param ecsql The ECSQL statement to execute
    * @param params The values to bind to the parameters (if the ECSQL has any).
-   * @param rowFormat Specify what format the row will be returned. It default to Array format though to make it compilable with previous version use *QueryRowFormat.UseJsPropertyNames*
    * @param options Allow to specify certain flags which control how query is executed.
    * @returns Returns the query result as an *AsyncIterableIterator<any>*  which lazy load result as needed. The row format is determined by *rowFormat* parameter.
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
    * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
    */
-  public async * query(ecsql: string, params?: QueryBinder, rowFormat = QueryRowFormat.UseArrayIndexes, options?: QueryOptions): AsyncIterableIterator<any> {
+  public async * query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any> {
     const builder = new QueryOptionsBuilder(options);
-    if (rowFormat === QueryRowFormat.UseJsPropertyNames) {
-      builder.setConvertClassIdsToNames(true);
-    }
     const reader = this.createQueryReader(ecsql, params, builder.getOptions());
     while (await reader.step())
-      yield reader.formatCurrentRow(rowFormat);
+      yield reader.formatCurrentRow();
+
   }
 
   /** Compute number of rows that would be returned by the ECSQL.
@@ -504,14 +505,13 @@ export abstract class IModelDb extends IModel {
    * @param token None empty restart token. The previous query with same token would be cancelled. This would cause
    * exception which user code must handle.
    * @param params The values to bind to the parameters (if the ECSQL has any).
-   * @param rowFormat Specify what format the row will be returned. It default to Array format though to make it compilable with previous version use *QueryRowFormat.UseJsPropertyNames*
    * @param options Allow to specify certain flags which control how query is executed.
    * @returns Returns the query result as an *AsyncIterableIterator<any>*  which lazy load result as needed. The row format is determined by *rowFormat* parameter.
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
    * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
    */
-  public async * restartQuery(token: string, ecsql: string, params?: QueryBinder, rowFormat = QueryRowFormat.UseArrayIndexes, options?: QueryOptions): AsyncIterableIterator<any> {
-    for await (const row of this.query(ecsql, params, rowFormat, new QueryOptionsBuilder(options).setRestartToken(token).getOptions())) {
+  public async * restartQuery(token: string, ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any> {
+    for await (const row of this.query(ecsql, params, new QueryOptionsBuilder(options).setRestartToken(token).getOptions())) {
       yield row;
     }
   }
@@ -967,6 +967,7 @@ export abstract class IModelDb extends IModel {
     if (val.error)
       throw new IModelError(val.error.status, `Error getting class meta data for: ${classFullName}`);
 
+    assert(undefined !== val.result);
     const metaData = new EntityMetaData(JSON.parse(val.result));
     this.classMetaDataRegistry.add(classFullName, metaData);
 
@@ -1322,9 +1323,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      */
     public getSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code, modelClass?: EntityClassType<Model>): T {
       const modeledElementProps = this._iModel.elements.getElementProps<ElementProps>(modeledElementId);
-      if (modeledElementProps.id === IModel.rootSubjectId)
+      if (undefined === modeledElementProps.id || modeledElementProps.id === IModel.rootSubjectId)
         throw new IModelError(IModelStatus.NotFound, "Root subject does not have a sub-model");
-      return this.getModel<T>(modeledElementProps.id!, modelClass);
+      return this.getModel<T>(modeledElementProps.id, modelClass);
     }
 
     /** Get the sub-model of the specified Element.
@@ -1336,10 +1337,10 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      */
     public tryGetSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code, modelClass?: EntityClassType<Model>): T | undefined {
       const modeledElementProps = this._iModel.elements.tryGetElementProps(modeledElementId);
-      if ((undefined === modeledElementProps) || (IModel.rootSubjectId === modeledElementProps.id))
+      if (undefined === modeledElementProps?.id || (IModel.rootSubjectId === modeledElementProps.id))
         return undefined;
 
-      return this.tryGetModel<T>(modeledElementProps.id!, modelClass);
+      return this.tryGetModel<T>(modeledElementProps.id, modelClass);
     }
 
     /** Create a new model in memory.
@@ -2035,6 +2036,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         throw new IModelError(ret.error.status, `TreeId=${treeId} TileId=${tileId}`);
       }
 
+      assert(undefined !== ret.result);
       return ret.result;
     }
   }
@@ -2100,8 +2102,11 @@ export class BriefcaseDb extends IModelDb {
     return db?.isBriefcaseDb() ? db : undefined;
   }
 
-  /** The Guid that identifies the *context* that owns this iModel. */
-  public override get iTwinId(): GuidString { return super.iTwinId!; } // GuidString | undefined for the superclass, but required for BriefcaseDb
+  /**
+   * The Guid that identifies the *context* that owns this iModel.
+   * GuidString | undefined for the superclass, but required for BriefcaseDb
+   * */
+  public override get iTwinId(): GuidString { return super.iTwinId!; } // eslint-disable-line @typescript-eslint/no-non-null-assertion
 
   /**
    * Determine whether this BriefcaseDb should use a lock server.
@@ -2237,7 +2242,8 @@ class DaemonReattach {
     Logger.logInfo(BackendLoggerCategory.Authorization, "attempting to reattach checkpoint");
     try {
       // this exchanges the supplied user accessToken for an expiring blob-store token to read the checkpoint.
-      const response = await V2CheckpointManager.attach({ accessToken, iTwinId: iModel.iTwinId!, iModelId: iModel.iModelId, changeset: iModel.changeset });
+      assert(undefined !== iModel.iTwinId);
+      const response = await V2CheckpointManager.attach({ accessToken, iTwinId: iModel.iTwinId, iModelId: iModel.iModelId, changeset: iModel.changeset });
       Logger.logInfo(BackendLoggerCategory.Authorization, "reattached checkpoint successfully");
       this.setTimestamp(response.expiryTimestamp);
     } finally {
@@ -2349,7 +2355,8 @@ export class SnapshotDb extends IModelDb {
   public static openForApplyChangesets(path: LocalFileName, props?: SnapshotOpenOptions): SnapshotDb {
     const file = { path, key: props?.key };
     const nativeDb = this.openDgnDb(file, OpenMode.ReadWrite, undefined, props);
-    return new SnapshotDb(nativeDb, file.key!);
+    assert(undefined !== file.key);
+    return new SnapshotDb(nativeDb, file.key);
   }
 
   /** Open a read-only iModel *snapshot*.
@@ -2361,7 +2368,8 @@ export class SnapshotDb extends IModelDb {
   public static openFile(path: LocalFileName, opts?: SnapshotOpenOptions): SnapshotDb {
     const file = { path, key: opts?.key };
     const nativeDb = this.openDgnDb(file, OpenMode.Readonly, undefined, opts);
-    return new SnapshotDb(nativeDb, file.key!);
+    assert(undefined !== file.key);
+    return new SnapshotDb(nativeDb, file.key);
   }
 
   /** Open a previously downloaded V1 checkpoint file.
@@ -2496,8 +2504,8 @@ export class StandaloneDb extends BriefcaseDb {
       const iTwinId = nativeDb.getITwinId();
       if (iTwinId !== Guid.empty) // a "standalone" iModel means it is not associated with an iTwin
         throw new IModelError(IModelStatus.WrongIModel, `${filePath} is not a Standalone iModel. iTwinId=${iTwinId}`);
-
-      return new StandaloneDb({ nativeDb, key: file.key!, openMode, briefcaseId: BriefcaseIdValue.Unassigned });
+      assert(undefined !== file.key);
+      return new StandaloneDb({ nativeDb, key: file.key, openMode, briefcaseId: BriefcaseIdValue.Unassigned });
     } catch (error) {
       nativeDb.closeIModel();
       throw error;

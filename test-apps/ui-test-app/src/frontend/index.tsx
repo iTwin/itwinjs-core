@@ -10,9 +10,9 @@ import { Store } from "redux"; // createStore,
 import reactAxe from "@axe-core/react";
 import { BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient } from "@itwin/browser-authorization";
 import { IModelHubClient, IModelHubFrontend, IModelQuery } from "@bentley/imodelhub-client";
-import { ImsAuthorizationClient, ProgressInfo } from "@bentley/itwin-client";
+import { ProgressInfo } from "@bentley/itwin-client";
 import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
-import { RealityDataAccessClient } from "@bentley/reality-data-client";
+import { RealityDataAccessClient } from "@itwin/reality-data-client";
 import { getClassName } from "@itwin/appui-abstract";
 import { SafeAreaInsets } from "@itwin/appui-layout-react";
 import {
@@ -26,8 +26,9 @@ import { BeDragDropContext } from "@itwin/components-react";
 import { Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { BentleyCloudRpcManager, BentleyCloudRpcParams, IModelVersion, RpcConfiguration, SyncMode } from "@itwin/core-common";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
+import { ElectronAppAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronFrontend";
 import {
-  AccuSnap, BriefcaseConnection, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeApp, NativeAppAuthorization, NativeAppLogger,
+  AccuSnap, BriefcaseConnection, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeApp, NativeAppLogger,
   NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool,
 } from "@itwin/core-frontend";
 import { MarkupApp } from "@itwin/core-markup";
@@ -61,8 +62,11 @@ import { ToolWithDynamicSettings } from "./tools/ToolWithDynamicSettings";
 import { ToolWithSettings } from "./tools/ToolWithSettings";
 import {
   OpenComponentExamplesPopoutTool, OpenCustomPopoutTool, OpenViewPopoutTool, RemoveSavedContentLayoutTool, RestoreSavedContentLayoutTool,
-  SaveContentLayoutTool, TestExtensionUiProviderTool, UiProviderTool,
-} from "./tools/UiProviderTool";
+  SaveContentLayoutTool, TestExtensionUiProviderTool,
+} from "./tools/ImmediateTools";
+import { IModelOpenFrontstage } from "./appui/frontstages/IModelOpenFrontstage";
+import { IModelIndexFrontstage } from "./appui/frontstages/IModelIndexFrontstage";
+import { SignInFrontstage } from "./appui/frontstages/SignInFrontstage";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -159,7 +163,7 @@ export class SampleAppIModelApp {
   public static testAppConfiguration: TestAppConfiguration | undefined;
   private static _appStateManager: StateManager | undefined;
   private static _localUiSettings = new LocalSettingsStorage();
-  private static _UserUiSettingsStorage = new UserSettingsStorage();
+  private static _UserUiSettingsStorage = new UserSettingsStorage(); // eslint-disable-line deprecation/deprecation
 
   // Favorite Properties Support
   private static _selectionSetListener = new ElementSelectionListener(true);
@@ -170,7 +174,8 @@ export class SampleAppIModelApp {
 
   public static getUiSettingsStorage(): UiSettings {
     const authorized = !!IModelApp.authorizationClient;
-    if (SampleAppIModelApp.testAppConfiguration?.useLocalSettings || !authorized) {
+    type authClient = ElectronAppAuthorization | BrowserAuthorizationClient;
+    if (SampleAppIModelApp.testAppConfiguration?.useLocalSettings || !authorized || !(IModelApp.authorizationClient as authClient).hasSignedIn) {
       return SampleAppIModelApp._localUiSettings;
     }
     return SampleAppIModelApp._UserUiSettingsStorage;
@@ -183,6 +188,8 @@ export class SampleAppIModelApp {
     };
 
     if (ProcessDetector.isElectronAppFrontend) {
+      const authClient: ElectronAppAuthorization = new ElectronAppAuthorization();
+      iModelAppOpts.authorizationClient = authClient;
       await ElectronApp.startup({ ...opts, iModelApp: iModelAppOpts });
       NativeAppLogger.initialize();
     } else if (ProcessDetector.isIOSAppFrontend) {
@@ -209,7 +216,6 @@ export class SampleAppIModelApp {
         redirectUri,
         scope: process.env.IMJS_OIDC_BROWSER_TEST_SCOPES ?? "",
         responseType: "code",
-        authority: await new ImsAuthorizationClient().getUrl(),
       });
       try {
         await auth.signInSilent();
@@ -265,7 +271,7 @@ export class SampleAppIModelApp {
       favorites: {
         storage: createFavoritePropertiesStorage(SampleAppIModelApp.testAppConfiguration?.useLocalSettings
           ? DefaultFavoritePropertiesStorageTypes.BrowserLocalStorage
-          : DefaultFavoritePropertiesStorageTypes.UserSettingsServiceStorage),
+          : DefaultFavoritePropertiesStorageTypes.UserPreferencesStorage),
       },
     });
     Presentation.selection.scopes.activeScope = "top-assembly";
@@ -275,7 +281,6 @@ export class SampleAppIModelApp {
     Tool2.register(this.sampleAppNamespace);
     ToolWithSettings.register(this.sampleAppNamespace);
     AnalysisAnimationTool.register(this.sampleAppNamespace);
-    UiProviderTool.register(this.sampleAppNamespace);
     TestExtensionUiProviderTool.register(this.sampleAppNamespace);
     ToolWithDynamicSettings.register(this.sampleAppNamespace);
     OpenComponentExamplesPopoutTool.register(this.sampleAppNamespace);
@@ -466,15 +471,15 @@ export class SampleAppIModelApp {
       UiFramework.setIModelConnection(iModelConnection, true);
     }
 
-    await SampleAppIModelApp.showFrontstage("IModelIndex");
+    await SampleAppIModelApp.showFrontstage(IModelIndexFrontstage.stageId);
   }
 
   public static async showIModelOpen() {
-    await SampleAppIModelApp.showFrontstage("IModelOpen");
+    await SampleAppIModelApp.showFrontstage(IModelOpenFrontstage.stageId);
   }
 
   public static async showSignInPage() {
-    await SampleAppIModelApp.showFrontstage("SignIn");
+    await SampleAppIModelApp.showFrontstage(SignInFrontstage.stageId);
   }
 
   // called after the user has signed in (or access token is still valid)
@@ -632,7 +637,7 @@ const SampleAppViewer2 = () => {
   React.useEffect(() => {
     AppUi.initialize();
 
-    if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof NativeAppAuthorization) {
+    if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof ElectronAppAuthorization) {
       setIsAuthorized(IModelApp.authorizationClient.isAuthorized);
     }
   }, []);
@@ -650,7 +655,7 @@ const SampleAppViewer2 = () => {
   }, [uiSettingsStorage]);
 
   const _onAccessTokenChanged = () => {
-    if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof NativeAppAuthorization) {
+    if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof ElectronAppAuthorization) {
       setIsAuthorized(IModelApp.authorizationClient.isAuthorized); // forces the effect above to re-run and check the actual client...
     }
   };
@@ -664,12 +669,12 @@ const SampleAppViewer2 = () => {
   };
 
   React.useEffect(() => {
-    if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof NativeAppAuthorization)
+    if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof ElectronAppAuthorization)
       IModelApp.authorizationClient.onAccessTokenChanged.addListener(_onAccessTokenChanged);
     FrontstageManager.onFrontstageDeactivatedEvent.addListener(_handleFrontstageDeactivatedEvent);
     FrontstageManager.onModalFrontstageClosedEvent.addListener(_handleModalFrontstageClosedEvent);
     return () => {
-      if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof NativeAppAuthorization)
+      if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof ElectronAppAuthorization)
         IModelApp.authorizationClient.onAccessTokenChanged.removeListener(_onAccessTokenChanged);
       FrontstageManager.onFrontstageDeactivatedEvent.removeListener(_handleFrontstageDeactivatedEvent);
       FrontstageManager.onModalFrontstageClosedEvent.removeListener(_handleModalFrontstageClosedEvent);
@@ -711,6 +716,7 @@ async function main() {
   Logger.setLevelDefault(LogLevel.Warning);
   Logger.setLevel(loggerCategory, LogLevel.Info);
   Logger.setLevel("ui-framework.UiFramework", LogLevel.Info);
+  Logger.setLevel("ViewportComponent", LogLevel.Info);
 
   ToolAdmin.exceptionHandler = async (err: any) => Promise.resolve(ErrorHandling.onUnexpectedError(err));
 

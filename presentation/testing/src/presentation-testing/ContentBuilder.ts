@@ -105,7 +105,7 @@ export class ContentBuilder {
       INNER JOIN meta.ECSchemaDef s ON c.Schema.id = s.ECInstanceId
       WHERE c.Modifier <> 1 AND c.Type = 0
       ORDER BY s.Name, c.Name
-    `, undefined, QueryRowFormat.UseJsPropertyNames)) {
+    `, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       rows.push(row);
     }
     return rows;
@@ -121,7 +121,7 @@ export class ContentBuilder {
       const instanceIds = [];
       for await (const row of this._iModel.query(`
       SELECT ECInstanceId FROM ONLY "${nameEntry.schemaName}"."${nameEntry.className}"
-      ORDER BY ECInstanceId`, undefined, QueryRowFormat.UseJsPropertyNames, {limit : {count: limitInstances ? 1 : 4000}})) {
+      ORDER BY ECInstanceId`, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames, limit: { count: limitInstances ? 1 : 4000 } })) {
         instanceIds.push(row.id);
       }
 

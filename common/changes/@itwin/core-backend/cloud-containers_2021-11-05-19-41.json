@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "initial support for cloud-based WorkspaceContainers",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

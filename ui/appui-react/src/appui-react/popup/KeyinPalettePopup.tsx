@@ -13,7 +13,8 @@ import { PositionPopup } from "./PositionPopup";
 import { KeyinPalettePanel } from "./KeyinPalettePanel";
 import { KeyinEntry } from "../uiadmin/FrameworkUiAdmin";
 
-/** @alpha */
+/** Props defining KeyinPalettePopup component
+ * @public */
 export interface KeyinPalettePopupProps {
   id: string;
   el: HTMLElement;
@@ -23,7 +24,7 @@ export interface KeyinPalettePopupProps {
 }
 
 /** Keyin Palette Popup Component
- * @alpha
+ * @public
  */
 export function KeyinPalettePopup({ el, id, keyins, onCancel, onItemExecuted }: KeyinPalettePopupProps) {
   const [popupSize, setPopupSize] = React.useState(new Size(-1, -1));

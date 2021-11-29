@@ -11,7 +11,7 @@ import { RECTANGULAR_DEFAULT_MIN_HEIGHT, RECTANGULAR_DEFAULT_MIN_WIDTH } from ".
 import { getZoneCell, WidgetZoneId } from "./Zones";
 
 /** Zone properties used in [[ZonesManagerProps]].
- * @beta
+ * @internal
  */
 export interface ZoneManagerProps {
   readonly allowsMerging: boolean;
@@ -23,7 +23,7 @@ export interface ZoneManagerProps {
 }
 
 /** Floating zone properties used in [[ZoneManagerProps]].
- * @beta
+ * @internal
  */
 export interface ZoneManagerFloatingProps {
   readonly bounds: RectangleProps;

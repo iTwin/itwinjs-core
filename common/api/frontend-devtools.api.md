@@ -78,13 +78,13 @@ export function appendDataListEntries(dl: DataList, entries: DataListEntry[]): v
 // @beta
 export class ApplyRenderingStyleTool extends DisplayStyleTool {
     // (undocumented)
-    execute(vp: Viewport): boolean;
+    execute(vp: Viewport): Promise<boolean>;
     // (undocumented)
     static get maxArgs(): number;
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parse(args: string[]): boolean;
+    parse(args: string[]): Promise<boolean>;
     // (undocumented)
     static toolId: string;
 }
@@ -286,13 +286,13 @@ export abstract class ChangeHiliteTool extends Tool {
 // @beta
 export abstract class ChangePlanProjectionSettingsTool extends DisplayStyleTool {
     // (undocumented)
-    protected execute(vp: Viewport): boolean;
+    protected execute(vp: Viewport): Promise<boolean>;
     // (undocumented)
     static get maxArgs(): number;
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    protected parse(inputArgs: string[]): boolean;
+    protected parse(inputArgs: string[]): Promise<boolean>;
     // (undocumented)
     protected get require3d(): boolean;
     // (undocumented)
@@ -664,6 +664,7 @@ export interface DiagnosticsPanelProps {
         tileStats?: boolean;
         memory?: boolean;
         tileMemoryBreakdown?: boolean;
+        renderCommands?: boolean;
         gpuProfiler?: boolean;
         toolSettings?: boolean;
     };
@@ -672,9 +673,9 @@ export interface DiagnosticsPanelProps {
 // @beta
 export abstract class DisplayStyleTool extends Tool {
     // (undocumented)
-    protected abstract execute(vp: Viewport): boolean;
+    protected abstract execute(vp: Viewport): Promise<boolean>;
     // (undocumented)
-    protected abstract parse(args: string[]): boolean;
+    protected abstract parse(args: string[], vp: Viewport): Promise<boolean>;
     // (undocumented)
     parseAndRun(...args: string[]): Promise<boolean>;
     // (undocumented)
@@ -686,13 +687,13 @@ export abstract class DisplayStyleTool extends Tool {
 // @beta
 export class DumpPlanProjectionSettingsTool extends DisplayStyleTool {
     // (undocumented)
-    protected execute(vp: Viewport): boolean;
+    protected execute(vp: Viewport): Promise<boolean>;
     // (undocumented)
     static get maxArgs(): number;
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    protected parse(args: string[]): boolean;
+    protected parse(args: string[]): Promise<boolean>;
     // (undocumented)
     protected get require3d(): boolean;
     // (undocumented)
@@ -1309,13 +1310,13 @@ export interface NumericInputProps {
 // @beta
 export abstract class OverrideSubCategoryPriorityTool extends DisplayStyleTool {
     // (undocumented)
-    protected execute(vp: Viewport): boolean;
+    protected execute(vp: Viewport): Promise<boolean>;
     // (undocumented)
     static get maxArgs(): number;
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    protected parse(args: string[]): boolean;
+    protected parse(args: string[]): Promise<boolean>;
     // (undocumented)
     static toolId: string;
 }
@@ -1323,13 +1324,13 @@ export abstract class OverrideSubCategoryPriorityTool extends DisplayStyleTool {
 // @beta
 export class OverrideSubCategoryTool extends DisplayStyleTool {
     // (undocumented)
-    execute(vp: Viewport): boolean;
+    execute(vp: Viewport): Promise<boolean>;
     // (undocumented)
     static get maxArgs(): number;
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parse(inArgs: string[]): boolean;
+    parse(inArgs: string[]): Promise<boolean>;
     // (undocumented)
     static toolId: string;
 }
@@ -1415,6 +1416,20 @@ export class ProjectExtentsDecoration {
     // (undocumented)
     protected updateDecorationListener(add: boolean): void;
     readonly useCachedDecorations = true;
+}
+
+// @beta
+export class QueryScheduleScriptTool extends DisplayStyleTool {
+    // (undocumented)
+    execute(vp: Viewport): Promise<boolean>;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parse(input: string[], vp: Viewport): Promise<boolean>;
+    // (undocumented)
+    static toolId: string;
 }
 
 // @alpha (undocumented)
@@ -1583,13 +1598,13 @@ export class SaveRealityModelTool extends Tool {
 // @beta
 export class SaveRenderingStyleTool extends DisplayStyleTool {
     // (undocumented)
-    execute(vp: Viewport): boolean;
+    execute(vp: Viewport): Promise<boolean>;
     // (undocumented)
     static get maxArgs(): number;
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parse(inputArgs: string[]): boolean;
+    parse(inputArgs: string[]): Promise<boolean>;
     // (undocumented)
     static toolId: string;
 }
@@ -1902,13 +1917,13 @@ export class ShowTileVolumesTool extends Tool {
 // @beta
 export class SkyCubeTool extends DisplayStyleTool {
     // (undocumented)
-    execute(vp: Viewport): boolean;
+    execute(vp: Viewport): Promise<boolean>;
     // (undocumented)
     static get maxArgs(): number;
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parse(args: string[]): boolean;
+    parse(args: string[]): Promise<boolean>;
     // (undocumented)
     get require3d(): boolean;
     // (undocumented)
@@ -1918,13 +1933,13 @@ export class SkyCubeTool extends DisplayStyleTool {
 // @beta
 export class SkySphereTool extends DisplayStyleTool {
     // (undocumented)
-    execute(vp: Viewport): boolean;
+    execute(vp: Viewport): Promise<boolean>;
     // (undocumented)
     static get maxArgs(): number;
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parse(args: string[]): boolean;
+    parse(args: string[]): Promise<boolean>;
     // (undocumented)
     get require3d(): boolean;
     // (undocumented)
@@ -2029,13 +2044,13 @@ export abstract class SourceAspectIdTool extends Tool {
 // @beta
 export class TestClipStyleTool extends DisplayStyleTool {
     // (undocumented)
-    protected execute(vp: Viewport): boolean;
+    protected execute(vp: Viewport): Promise<boolean>;
     // (undocumented)
     static get maxArgs(): number;
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    protected parse(args: string[]): boolean;
+    protected parse(args: string[]): Promise<boolean>;
     // (undocumented)
     protected get require3d(): boolean;
     // (undocumented)
@@ -2279,9 +2294,9 @@ export class ToggleShadowFrustumTool extends Tool {
 // @beta
 export class ToggleSkyboxTool extends DisplayStyleTool {
     // (undocumented)
-    execute(vp: Viewport): boolean;
+    execute(vp: Viewport): Promise<boolean>;
     // (undocumented)
-    parse(_args: string[]): boolean;
+    parse(_args: string[]): Promise<boolean>;
     // (undocumented)
     get require3d(): boolean;
     // (undocumented)
@@ -2327,6 +2342,20 @@ export class ToggleTileTreeBoundsDecorationTool extends Tool {
     // (undocumented)
     static toolId: string;
 }
+
+// @beta
+export class ToggleTileTreeReferencesTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): Promise<boolean>;
+    // (undocumented)
+    run(): Promise<boolean>;
+    // (undocumented)
+    static toolId: string;
+    }
 
 // @beta
 export class ToggleToolTipsTool extends Tool {
@@ -2375,9 +2404,15 @@ export class ToggleVolClassIntersect extends RenderTargetDebugControlToggleTool 
 }
 
 // @beta
-export class ToggleWiremeshTool extends RenderSystemDebugControlTool {
+export class ToggleWiremeshTool extends DisplayStyleTool {
     // (undocumented)
-    execute(control: RenderSystemDebugControl): void;
+    execute(vp: Viewport): Promise<boolean>;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parse(args: string[]): Promise<boolean>;
     // (undocumented)
     static toolId: string;
 }
@@ -2510,13 +2545,13 @@ export class VignetteEffect extends AddEffectTool {
 // @beta
 export class WoWIgnoreBackgroundTool extends DisplayStyleTool {
     // (undocumented)
-    execute(vp: Viewport): boolean;
+    execute(vp: Viewport): Promise<boolean>;
     // (undocumented)
     static get maxArgs(): number;
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
-    parse(args: string[]): boolean;
+    parse(args: string[]): Promise<boolean>;
     // (undocumented)
     static toolId: string;
 }

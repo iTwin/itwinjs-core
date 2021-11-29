@@ -107,7 +107,7 @@ function docsCommand(options) {
   const baseUrlOpt = options.baseUrl ? ["--baseUrl", options.baseUrl] : [];
   const includesOpt = options.includes ? ["--includes", options.includes] : [];
   const excludesOpt = options.excludes ? ["--excludes", options.excludes] : [];
-  const excludesGlobOpt = options.excludes ? ["--excludeGlob", options.excludeGlob] : [];
+  const excludesGlobOpt = options.excludeGlob ? ["--excludeGlob", options.excludeGlob] : [];
   const indexFileOpt = options.tsIndexFile ? ["--tsIndexFile", options.tsIndexFile] : [];
   const onlyJsonOpt = options.onlyJson ? ["--onlyJson"] : [];
   exec(["node", path.resolve(__dirname, "../scripts/docs.js"),
