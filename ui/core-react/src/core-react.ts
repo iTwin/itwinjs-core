@@ -152,10 +152,9 @@ export { TreeNode, TreeNodeProps, NodeCheckboxProps, NodeCheckboxRenderer, NodeC
 export { Tree, TreeProps } from "./core-react/tree/Tree";
 export { TreeNodePlaceholder, TreeNodePlaceholderProps } from "./core-react/tree/Placeholder";
 
-export * from "./core-react/uisettings/UiSetting";
-export * from "./core-react/uisettings/UiSettingsStorage";
-export * from "./core-react/uisettings/LocalSettingsStorage";
-export * from "./core-react/uisettings/SessionSettingsStorage";
+export * from "./core-react/uistate/UiStateEntry";
+export * from "./core-react/uistate/UiStateStorage";
+export * from "./core-react/uistate/LocalStateStorage";
 
 export * from "./core-react/utils/IconHelper";
 export * from "./core-react/utils/Point";
@@ -310,7 +309,7 @@ export * from "./core-react/utils/hooks/useWidgetOpacityContext";
  * Presentation React components for working with a Tree.
  */
 /**
- * @docs-group-description UiSettings
+ * @docs-group-description UiStateStorage
  * Interfaces and classes for working with persistent UI settings.
  */
 /**

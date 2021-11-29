@@ -10,12 +10,12 @@
 
 import * as React from "react";
 import "./KeyinPalettePanel.scss";
-import { FilteredText, Listbox, ListboxItem, UiSettingsStatus } from "@itwin/core-react";
+import { FilteredText, Listbox, ListboxItem, UiStateStorageStatus } from "@itwin/core-react";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType, ParseAndRunResult } from "@itwin/core-frontend";
 import { UiFramework } from "../UiFramework";
 import { matchesWords, OnItemExecutedFunc, SpecialKey } from "@itwin/appui-abstract";
 import { ClearKeyinPaletteHistoryTool } from "../tools/KeyinPaletteTools";
-import { useUiSettingsStorageContext } from "../uisettings/useUiSettings";
+import { useUiStateStorageHandler } from "../uistate/useUiStateStorage";
 import { KeyinEntry } from "../uiadmin/FrameworkUiAdmin";
 import { Input } from "@itwin/itwinui-react";
 
@@ -24,7 +24,7 @@ const KEYIN_HISTORY_KEY = "historyArray";
 
 /** @internal */
 export function clearKeyinPaletteHistory() {
-  const uiSettingsStorage = UiFramework.getUiSettingsStorage();
+  const uiSettingsStorage = UiFramework.getUiStateStorage();
   // istanbul ignore else
   if (uiSettingsStorage) {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -47,13 +47,13 @@ export function KeyinPalettePanel({ keyins, onKeyinExecuted, historyLength: allo
   const inputRef = React.useRef<HTMLInputElement>(null);
   const keyinSeparator = "--#--";
   const [historyKeyins, setHistoryKeyins] = React.useState<string[]>([]);
-  const uiSettingsStorage = useUiSettingsStorageContext();
+  const uiSettingsStorage = useUiStateStorageHandler();
 
   React.useEffect(() => {
     async function fetchState() {
       const settingsResult = await uiSettingsStorage.getSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY);
       // istanbul ignore else
-      if (UiSettingsStatus.Success === settingsResult.status) {
+      if (UiStateStorageStatus.Success === settingsResult.status) {
         const filteredHistory = (settingsResult.setting as string[]).filter((keyin) => {
           const result = IModelApp.tools.parseKeyin(keyin);
           return result.ok;
@@ -71,7 +71,7 @@ export function KeyinPalettePanel({ keyins, onKeyinExecuted, historyLength: allo
   const storeHistoryKeyins = React.useCallback(async (value: string[]) => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     const result = await uiSettingsStorage.saveSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY, value);
-    if (result.status !== UiSettingsStatus.Success) {
+    if (result.status !== UiStateStorageStatus.Success) {
       const briefMessage = UiFramework.translate("keyinbrowser.couldNotSaveHistory");
       const errorDetails = new NotifyMessageDetails(OutputMessagePriority.Error, briefMessage);
       IModelApp.notifications.outputMessage(errorDetails);
