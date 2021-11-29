@@ -281,7 +281,7 @@ export abstract class IModelDb extends IModel {
     this.initializeIModelDb();
     IModelDb._openDbs.set(this._fileKey, this);
     this._workspace = new ITwinWorkspace(new IModelSettings(), IModelHost.appWorkspace);
-    this.loadSettingsDictionaries();
+    this.loadSettingDictionaries();
 
     if (undefined === IModelDb._shutdownListener) { // the first time we create an IModelDb, add a listener to close any orphan files at shutdown.
       IModelDb._shutdownListener = IModelHost.onBeforeShutdown.addListener(() => {
@@ -1181,8 +1181,14 @@ export abstract class IModelDb extends IModel {
   }
 
   private static _settingPropNamespace = "settings";
+
+  /** Save a `SettingDictionary` in this iModel that will be loaded into [[workspace.settings]] every time this iModel is opened in future sessions.
+   * @param name The name for the SettingDictionary. If a dictionary by that name already exists in the iModel, its value is replaced.
+   * @param dict The SettingDictionary object to stringify and save.
+   * @note All saved `SettingDictionary`s are loaded into [[workspace.settings]] every time an iModel is opened.
+   */
   public saveSettingDictionary(name: string, dict: SettingDictionary) {
-    this.withSqliteStatement(`REPLACE INTO be_Prop(id,SubId,TxnMode,Namespace,Name,strData) VALUES(0,0,0,?,?,?)`, (stmt) => {
+    this.withSqliteStatement("REPLACE INTO be_Prop(id,SubId,TxnMode,Namespace,Name,strData) VALUES(0,0,0,?,?,?)", (stmt) => {
       stmt.bindString(1, IModelDb._settingPropNamespace);
       stmt.bindString(2, name);
       stmt.bindString(3, JSON.stringify(dict));
@@ -1190,14 +1196,29 @@ export abstract class IModelDb extends IModel {
       if (rc !== DbResult.BE_SQLITE_DONE)
         throw new IModelError(rc, "cannot save setting");
     });
-    this.saveChanges("settings");
+    this.saveChanges("add settings");
   }
 
-  private loadSettingsDictionaries() {
+  /** Delete a SettingDictionary, previously added with [[saveSettingDictionary]], from this iModel.
+   * @param name The name of the dictionary to delete.
+   */
+  public deleteSettingDictionary(name: string) {
+    this.withSqliteStatement("DELETE FROM be_Prop WHERE Namespace=? AND Name=?", (stmt) => {
+      stmt.bindString(1, IModelDb._settingPropNamespace);
+      stmt.bindString(2, name);
+      const rc = stmt.step();
+      if (rc !== DbResult.BE_SQLITE_DONE)
+        throw new IModelError(rc, "cannot delete setting");
+    });
+    this.saveChanges("delete settings");
+  }
+
+  /** Load all setting dictionaries in this iModel into `this.workspace.settings` */
+  private loadSettingDictionaries() {
     if (!this.nativeDb.isOpen())
       return;
 
-    this.withSqliteStatement(`SELECT Name,StrData FROM be_Prop WHERE Namespace=?`, (stmt) => {
+    this.withSqliteStatement("SELECT Name,StrData FROM be_Prop WHERE Namespace=?", (stmt) => {
       stmt.bindString(1, IModelDb._settingPropNamespace);
       while (stmt.step() === DbResult.BE_SQLITE_ROW) {
         try {
@@ -1245,7 +1266,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @internal
      */
     public queryLastModifiedTime(modelId: Id64String): string {
-      const sql = `SELECT LastMod FROM ${Model.classFullName} WHERE ECInstanceId=:modelId`;
+      const sql = `SELECT LastMod FROM ${Model.classFullName} WHERE ECInstanceId =: modelId`;
       return this._iModel.withPreparedStatement(sql, (statement) => {
         statement.bindId("modelId", modelId);
         if (DbResult.BE_SQLITE_ROW === statement.step()) {

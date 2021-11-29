@@ -185,7 +185,7 @@ describe("Settings", () => {
     appSettings.dropDictionary(settingFileName);
   });
 
-  it("IModel persistent settings ", () => {
+  it.only("IModel persistent settings ", () => {
     const iModelName = IModelTestUtils.prepareOutputFile("IModel", "test.bim");
     const iModel2 = IModelTestUtils.createSnapshotFromSeed(iModelName, IModelTestUtils.resolveAssetFile("test.bim"));
 
@@ -210,6 +210,12 @@ describe("Settings", () => {
     iModel3 = StandaloneDb.openFile(iModelName);
     expect(iModel3.workspace.settings.getObject("workspace/container/alias")).to.deep.equal(setting2["workspace/container/alias"]);
     expect(iModel3.workspace.settings.getString("app1/sub1")).equal("imodel2 value");
+    iModel3.deleteSettingDictionary("test2");
+    iModel3.close();
+
+    iModel3 = StandaloneDb.openFile(iModelName);
+    expect(iModel3.workspace.settings.getObject("workspace/container/alias")).to.deep.equal(setting2["workspace/container/alias"]);
+    expect(iModel3.workspace.settings.getString("app1/sub1")).to.be.undefined;
     iModel3.close();
   });
 

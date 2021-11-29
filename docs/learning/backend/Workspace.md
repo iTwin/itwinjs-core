@@ -1,5 +1,7 @@
 # Workspaces in iTwin.js
 
+> Note: Workspaces and Settings are both backend-only concepts.
+
 When an iTwin.js backend starts, [IModelHost.startup]($backend) creates an instance of a [Workspace]($backend), in [IModelHost.appWorkspace]($backend).
 
 `IModelHost.appWorkspace` customizes the session according to the choices of the host application(s), including the default values for its settings.
@@ -13,7 +15,7 @@ When combined, the `IModelHost.appWorkspace` and the `IModelDb.workspace` custom
 3. current iTwin
 4. current iModel
 
-In the list above, later entries tend to change more frequently and, in the case of conflicting choices, later entries override earlier ones.
+In the list above, later entries tend to change more frequently and, in the case of duplicate values, later entries override earlier ones.
 
 [Workspace]($backend)s expresses the current state of the session in two forms:
 
@@ -25,7 +27,7 @@ In the list above, later entries tend to change more frequently and, in the case
 - a Setting may contain the "formula" to find a resource
 - a `WorkspaceContainer` may hold a resource that defines a group of Settings
 
-This means that there must be some way to initialize the process. That should be some external (e.g. outside of WorkspaceContainer) service that supplies the initial Settings values.
+This means that there must be some way to initialize the process. That can either be in the form of [Settings stored inside an iModel](#imodel-settings) and automatically loaded when it opens, or some external (e.g. outside of WorkspaceContainer) service that supplies the initial Settings values.
 
 ## Settings
 
@@ -201,6 +203,8 @@ E.g.:
 Of course `SettingDictionary`s wouldn't be very useful if you could only define them in JavaScript. Their real value comes from storing them externally, in JSON. That can be either stringified JSON (via [JSON.stringify](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify)) stored in a `WorkspaceContainer`, or in a `.json` file.
 
 > Hint: iTwin.js supports [JSON5](https://json5.org/) format to permit comments in settings files. [VSCode](https://code.visualstudio.com/) recognizes the `.json5` extension to edit JSON5 content with comments.
+
+### iModel Settings
 
 ## WorkspaceContainers
 

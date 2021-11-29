@@ -10,13 +10,13 @@ import { createHash } from "crypto";
 import * as fs from "fs-extra";
 import { dirname, extname, join } from "path";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
-import { AccessToken, BeEvent, DbResult, OpenMode } from "@itwin/core-bentley";
+import { BeEvent, DbResult, OpenMode } from "@itwin/core-bentley";
 import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
 import { IModelJsFs } from "../IModelJsFs";
 import { SQLiteDb } from "../SQLiteDb";
 import { SqliteStatement } from "../SqliteStatement";
-import { Settings, SettingsPriority } from "./Settings";
 import { CloudSqlite } from "./CloudSqlite";
+import { Settings, SettingsPriority } from "./Settings";
 
 // cspell:ignore rowid
 

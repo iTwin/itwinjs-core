@@ -91,7 +91,7 @@ function readWorkspace<T extends WorkspaceId>(args: T, fn: (ws: WorkspaceFile, a
 }
 
 /** List the contents of a WorkspaceFile */
-function listWorkspaceFile(args: ListOptions) {
+async function listWorkspaceFile(args: ListOptions) {
   readWorkspace(args, (file, args) => {
     if (!args.strings && !args.blobs && !args.files)
       args.blobs = args.files = args.strings = true;
@@ -128,7 +128,7 @@ function listWorkspaceFile(args: ListOptions) {
 }
 
 /** Add or Update files into a WorkspaceFile. */
-function addToWorkspaceFile(args: AddFileOptions) {
+async function addToWorkspaceFile(args: AddFileOptions) {
   editWorkspace(args, (wsFile, args) => {
     glob.sync(args.files, { cwd: args.root ?? process.cwd(), nodir: true }).forEach((filePath) => {
       const file = args.root ? join(args.root, filePath) : filePath;
@@ -154,7 +154,7 @@ function addToWorkspaceFile(args: AddFileOptions) {
 }
 
 /** Extract a single resource from a WorkspaceFile into a local file */
-function extractFromWorkspaceFile(args: ExtractResourceOpts) {
+async function extractFromWorkspaceFile(args: ExtractResourceOpts) {
   readWorkspace(args, (file, args) => {
     const verify = <T>(val: T | undefined): T => {
       if (val === undefined)
@@ -174,7 +174,7 @@ function extractFromWorkspaceFile(args: ExtractResourceOpts) {
 }
 
 /** Delete a single resource from a WorkspaceFile */
-function deleteFromWorkspaceFile(args: DeleteResourceOpts) {
+async function deleteFromWorkspaceFile(args: DeleteResourceOpts) {
   editWorkspace(args, (wsFile, args) => {
     if (args.type === "string")
       wsFile.removeString(args.name);
@@ -186,21 +186,21 @@ function deleteFromWorkspaceFile(args: DeleteResourceOpts) {
   });
 }
 
-function vacuumWorkspaceFile(args: WorkspaceId) {
+async function vacuumWorkspaceFile(args: WorkspaceId) {
   const ws = new WorkspaceFile(args.workspaceId, IModelHost.appWorkspace);
   IModelHost.platform.DgnDb.vacuum(ws.localFile);
   console.log(`${ws.localFile} vacuumed`);
 }
 
 /** Start `IModelHost`, then run a WorkspaceEditor command. Errors are logged to console. */
-function runCommand<T extends EditorOpts>(cmd: (args: T) => void) {
+function runCommand<T extends EditorOpts>(cmd: (args: T) => Promise<void>) {
   return async (args: T) => {
     try {
       const config = new IModelHostConfiguration();
       if (args.directory)
         config.workspace = { containerDir: args.directory };
       await IModelHost.startup(config);
-      cmd(args);
+      await cmd(args);
     } catch (e: any) {
       console.error(e.message);
     }
