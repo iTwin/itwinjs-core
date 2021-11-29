@@ -104,9 +104,6 @@ export interface RenderSystemDebugControl {
   /** Destroy this system's webgl context. Returns false if this behavior is not supported. */
   loseContext(): boolean;
 
-  /** Draw surfaces as "pseudo-wiremesh", using GL_LINES instead of GL_TRIANGLES. Useful for visualizing faces of a mesh. Not suitable for real wiremesh display. */
-  drawSurfacesAsWiremesh: boolean;
-
   /** Overrides [[RenderSystem.dpiAwareLOD]].
    * @internal
    */

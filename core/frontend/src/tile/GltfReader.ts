@@ -158,6 +158,7 @@ export abstract class GltfReader {
   protected readonly _returnToCenter: number[] | undefined;
   protected readonly _yAxisUp: boolean;
   protected readonly _type: BatchType;
+  protected readonly _deduplicateVertices: boolean;
   private readonly _canceled?: ShouldAbortReadGltf;
 
   /* -----------------------------------
@@ -388,7 +389,7 @@ export abstract class GltfReader {
   public readBufferData8(json: any, accessorName: string): GltfBufferData | undefined { return this.readBufferData(json, accessorName, GltfDataType.UnsignedByte); }
   public readBufferDataFloat(json: any, accessorName: string): GltfBufferData | undefined { return this.readBufferData(json, accessorName, GltfDataType.Float); }
 
-  protected constructor(props: GltfReaderProps, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem, type: BatchType = BatchType.Primary, isCanceled?: ShouldAbortReadGltf) {
+  protected constructor(props: GltfReaderProps, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem, type: BatchType = BatchType.Primary, isCanceled?: ShouldAbortReadGltf, deduplicateVertices=false) {
     this._buffer = props.buffer;
     this._scene = props.scene;
     this._binaryData = props.binaryData;
@@ -414,6 +415,7 @@ export abstract class GltfReader {
     this._system = system;
     this._type = type;
     this._canceled = isCanceled;
+    this._deduplicateVertices = deduplicateVertices;
   }
 
   protected readBufferData(json: any, accessorName: string, type: GltfDataType): GltfBufferData | undefined {
@@ -583,6 +585,10 @@ export abstract class GltfReader {
 
         if (!mesh.uvs)
           this.readUVParams(mesh, primitive.attributes, "TEXCOORD_0");
+
+        if (this._deduplicateVertices && !this.deduplicateVertices(mesh))
+          return undefined;
+
         break;
       }
 
@@ -611,6 +617,45 @@ export abstract class GltfReader {
     }
 
     return mesh;
+  }
+
+  private deduplicateVertices(mesh: GltfMeshData): boolean {
+    if (!mesh.points || !mesh.indices)
+      return false;
+
+    const numPoints = mesh.indices.length;
+    assert(0 === numPoints % 3);
+
+    const indices = mesh.indices;
+    if (indices instanceof Uint16Array && numPoints > 0xffff)
+      mesh.indices = new Uint32Array(numPoints);
+
+    const points = new Uint16Array(3 * numPoints);
+    const normals = mesh.normals ? new Uint16Array(numPoints) : undefined;
+    const uvs = mesh.uvs ? new Uint16Array(2 * numPoints) : undefined;
+
+    for (let i = 0; i < numPoints; i++) {
+      const index = indices[i];
+      mesh.indices[i] = i;
+
+      points[i * 3 + 0] = mesh.points[index * 3 + 0];
+      points[i * 3 + 1] = mesh.points[index * 3 + 1];
+      points[i * 3 + 2] = mesh.points[index * 3 + 2];
+
+      if (normals)
+        normals[i] = mesh.normals![index];
+
+      if (uvs) {
+        uvs[i * 2 + 0] = mesh.uvs![index * 2 + 0];
+        uvs[i * 2 + 1] = mesh.uvs![index * 2 + 1];
+      }
+    }
+
+    mesh.points = points;
+    mesh.normals = normals;
+    mesh.uvs = uvs;
+
+    return true;
   }
 
   /**

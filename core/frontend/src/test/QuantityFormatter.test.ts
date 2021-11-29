@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Parser } from "@itwin/core-quantity";
+import { Parser, UnitProps } from "@itwin/core-quantity";
 import { assert } from "chai";
 import { LocalUnitFormatProvider } from "../quantity-formatting/LocalUnitFormatProvider";
 
@@ -175,19 +175,29 @@ describe("Quantity formatter", async () => {
     const overrideImperialFormatSpec = await quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length, true);
     const overrideImperialFormattedValue = quantityFormatter.formatQuantity(1.5, overrideImperialFormatSpec);
     assert.equal(overrideImperialFormattedValue, "59.0551 in");
-
+    quantityFormatter.addAlternateLabels("Units.FT", "shoe", "sock");
+    const alternateLabels = quantityFormatter.alternateUnitLabelsProvider.getAlternateUnitLabels({ name: "Units.FT" } as UnitProps);
+    assert(!!alternateLabels);
+    assert(alternateLabels!.includes("shoe"));
+    assert(alternateLabels!.includes("sock"));
     const overrideImperialParserSpec = await quantityFormatter.getParserSpecByQuantityType(QuantityType.Length, true);
     const overrideValueInMeters1 = quantityFormatter.parseToQuantityValue(`48"`, overrideImperialParserSpec);
     const overrideValueInMeters2 = quantityFormatter.parseToQuantityValue(`48 in`, overrideImperialParserSpec);
     const overrideValueInMeters3 = quantityFormatter.parseToQuantityValue(`4 ft`, overrideImperialParserSpec);
+    const overrideValueInMeters4 = quantityFormatter.parseToQuantityValue(`4 shoe`, overrideImperialParserSpec);
+    const overrideValueInMeters5 = quantityFormatter.parseToQuantityValue(`4 sock`, overrideImperialParserSpec);
     assert(Parser.isParsedQuantity(overrideValueInMeters1));
     assert(Parser.isParsedQuantity(overrideValueInMeters2));
     assert(Parser.isParsedQuantity(overrideValueInMeters3));
+    assert(Parser.isParsedQuantity(overrideValueInMeters4));
+    assert(Parser.isParsedQuantity(overrideValueInMeters5));
     if (Parser.isParsedQuantity(overrideValueInMeters1) && Parser.isParsedQuantity(overrideValueInMeters2) &&
-      Parser.isParsedQuantity(overrideValueInMeters3)) {
+      Parser.isParsedQuantity(overrideValueInMeters3) && Parser.isParsedQuantity(overrideValueInMeters4)
+      && Parser.isParsedQuantity(overrideValueInMeters5)) {
       assert(withinTolerance(overrideValueInMeters1.value, 1.2192));
       assert(withinTolerance(overrideValueInMeters1.value, overrideValueInMeters2.value));
       assert(withinTolerance(overrideValueInMeters3.value, overrideValueInMeters2.value));
+      assert(withinTolerance(overrideValueInMeters4.value, overrideValueInMeters5.value));
     }
   });
 

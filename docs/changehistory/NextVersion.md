@@ -110,6 +110,20 @@ The following code applies a display style similar to those illustrated above to
   });
 ```
 
+## Wiremesh display
+
+The graphics displayed by an iTwin.js [Viewport]($frontend) consist primarily of triangulated meshes. It can sometimes be useful to visualize the triangulation of these meshes. A new view flag - [ViewFlags.wiremesh]($common) - now enables wiremesh display. When wiremesh display is enabled, the edges of each triangle are overlaid on top of the mesh as anti-aliased black lines approximately 1 pixel wide.
+
+To enable wiremesh display for a viewport:
+
+```ts
+  viewport.viewFlags = viewport.viewFlags.with("wiremesh", true);
+```
+
+![Wiremesh applied to a plant model](./assets/wiremesh-plant.jpg)
+
+![Wiremesh applied to a reality model](./assets/wiremesh-reality.jpg)
+
 ## Viewport synchronization
 
 [TwoWayViewportSync]($frontend) establishes a connection between two [Viewport]($frontend)s such that any change to one viewport is reflected in the other. This includes not only [Frustum]($common) changes, but changes to the display style, category and model selectors, and so on. Synchronizing **everything** is not always desirable; and if the viewports are viewing two different [IModelConnection]($frontend)s it is not even meaningful, as category and model Ids from one iModel will not make sense in the context of the other iModel.
@@ -783,6 +797,14 @@ await IModelApp.startup({
 ## Signature change to backend Geocoordinate methods
 
 The two methods [IModelDb.getIModelCoordinatesFromGeoCoordinates]($backend) and [IModelDb.getGeoCoordinatesFromIModelCoordinates]($backend) used to take a string argument that was a stringified [IModelCoordinatesRequestProps]($common) and [GeoCoordinatesRequestProps]($common) respectively. Those arguments were changed to accept the interfaces directly. You should remove `JSON.stringify` from your code if you get compile errors.
+
+## Changes to UnitProps
+
+The `altDisplayLabels` property in [UnitProps]($quantity) has been removed. AlternateLabels are now provided via a [AlternateUnitLabelsProvider]($quantity). The [QuantityFormatter]($frontend) now provides one for use when parsing string to quantities. To add custom labels use [QuantityFormatter.addAlternateLabels]($frontend) see example below.
+
+  ```ts
+  IModelApp.quantityFormatter.addAlternateLabels("Units.FT", "feet", "foot");
+  ```
 
 ## Removal of previously deprecated APIs
 
@@ -1461,7 +1483,6 @@ Several changes to the APIs for executing ECSql statements have been made to imp
 - The `query` and `restartQuery` methods used to take multiple arguments indicating a limit on the number of rows to return, a priority, a quota, and so on. These have been combined into a single [QueryOptions]($common) parameter.
 
 - Previously there was no way to control the format of each row returned by the `query` and `restartQuery` methods, and the default format was verbose and inefficient. Now, these methods accept a [QueryRowFormat]($common) as part of their [QueryOptions]($common) parameter describing the desired format. The default format returns each row as an array instead of an object.
--
 - The `query`, `restartQuery`, and `queryRowCount` methods used to accept the statement bindings as type `any[] | object`. The bindings are now specified instead as the more type-safe type [QueryBinder]($common).
 
 ### Binding parameters using QueryBinder
