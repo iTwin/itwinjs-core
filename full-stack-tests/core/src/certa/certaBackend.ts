@@ -7,7 +7,7 @@ import { registerBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
 import { getTokenCallbackName } from "./certaCommon";
 import { IModelHost } from "@itwin/core-backend";
 import { TestUtility } from "@itwin/oidc-signin-tool/lib/cjs/";
-import { ElectronAuthorizationMain } from "@itwin/electron-authorization/lib/cjs/ElectronBackend";
+import { ElectronMainAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronMain";
 import { AccessToken } from "@itwin/core-bentley";
 
 // A backend to use within Certa's `backendInitModule` to setup OIDC sign-in
@@ -20,7 +20,7 @@ export function exposeBackendCallbacks(){
       scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
     });
     const accessToken = await testAuthClient.getAccessToken();
-    (IModelHost.authorizationClient as ElectronAuthorizationMain).setAccessToken(accessToken);
+    (IModelHost.authorizationClient as ElectronMainAuthorization).setAccessToken(accessToken);
     return accessToken;
   });
 }
