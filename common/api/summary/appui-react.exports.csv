@@ -315,7 +315,7 @@ public;InputFieldMessageEventArgs
 public;InputFieldMessageRemovedEvent 
 alpha;InputStatus
 internal;isCollapsedToPanelState: (isCollapsed: boolean) => StagePanelState.Minimized | StagePanelState.Open
-internal;isFrontstageStateSettingResult(settingsResult: UiSettingsResult): settingsResult is
+internal;isFrontstageStateSettingResult(settingsResult: UiStateStorageResult): settingsResult is
 beta;isNoSelectionActive(): boolean
 internal;isPanelCollapsed(zoneStates: ReadonlyArray
 internal;isReactContent: (content: PopupContentType) => content is ReactContent
@@ -653,12 +653,12 @@ public;UiDataProvidedDialogProps
 public;UiFramework
 internal;UiIntervalEvent 
 internal;UiIntervalEventArgs
-internal;UiSettingsContext: React.Context
 beta;UiSettingsPage({ allowSettingUiFrameworkVersion }:
-public;UiSettingsProvider(props: UiSettingsProviderProps): JSX.Element
 public;UiSettingsProviderProps
 public;UiShowHideManager
 internal;UiShowHideSettingsProvider 
+internal;UiStateStorageContext: React.Context
+public;UiStateStorageHandler(props: UiSettingsProviderProps): JSX.Element
 public;UiVisibilityChangedEvent 
 public;UiVisibilityEventArgs
 alpha;UnitSystemSelector(props: UnitSystemSelectorProps): JSX.Element
@@ -699,7 +699,7 @@ internal;useToolSettingsNode(): string | number | boolean | {} | React.ReactElem
 public;useUiItemsProviderBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem[]
 public;useUiItemsProviderStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[]
 public;useUiItemsProviderToolbarItems: (manager: ToolbarItemsManager, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => readonly CommonToolbarItem[]
-public;useUiSettingsStorageContext(): UiSettingsStorage
+public;useUiStateStorageHandler(): UiStateStorage
 internal;useUiVisibility(): boolean
 internal;useUpdateNineZoneSize(frontstageDef: FrontstageDef): void
 alpha;useVisibilityTreeFiltering: (nodeLoader: AbstractTreeNodeLoaderWithProvider

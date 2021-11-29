@@ -226,9 +226,9 @@ export * from "./appui-react/ui-items-provider/StandardNavigationToolsProvider";
 export * from "./appui-react/ui-items-provider/StandardStatusbarItemsProvider";
 export * from "./appui-react/uiprovider/DefaultDialogGridContainer";
 
-export * from "./appui-react/uisettings/AppUiSettings";
-export * from "./appui-react/uisettings/UserSettingsStorage";
-export * from "./appui-react/uisettings/useUiSettings";
+export * from "./appui-react/uistate/AppUiSettings";
+export * from "./appui-react/uistate/UserSettingsStorage";
+export * from "./appui-react/uistate/useUiStateStorage";
 
 export * from "./appui-react/UserInfo";
 
@@ -396,7 +396,7 @@ export * from "./appui-react/zones/ZoneDef";
  * Interfaces and classes for specifying UI items to be inserted at runtime.
  */
 /**
- * @docs-group-description UiSettings
+ * @docs-group-description UiStateStorage
  * Interfaces and classes for persisting UI settings.
  */
 /**

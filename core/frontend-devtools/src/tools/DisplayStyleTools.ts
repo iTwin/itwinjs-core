@@ -249,7 +249,7 @@ export class SkyCubeTool extends DisplayStyleTool {
  *  * `project`: include iTwin-specific (formerly known as project) settings.
  *  * `map`: include background map settings.
  *  * `drawingaids`: include drawing aid decoration settings.
- *  * `copy`: copy result to system clipboarad.
+ *  * `copy`: copy result to system clipboard.
  *  * `quote`: format the JSON so it can be parsed directly by [ApplyRenderingStyleTool].
  * @beta
  */

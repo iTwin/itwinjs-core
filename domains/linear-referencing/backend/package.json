@@ -1,6 +1,6 @@
 {
   "name": "@itwin/linear-referencing-backend",
-  "version": "3.0.0-dev.129",
+  "version": "3.0.0-dev.135",
   "main": "lib/cjs/linear-referencing-backend.js",
   "typings": "lib/cjs/linear-referencing-backend",
   "license": "MIT",
@@ -32,10 +32,10 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-backend": "workspace:^3.0.0-dev.129",
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.129",
-    "@itwin/core-common": "workspace:^3.0.0-dev.129",
-    "@itwin/linear-referencing-common": "workspace:^3.0.0-dev.129"
+    "@itwin/core-backend": "workspace:^3.0.0-dev.135",
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.135",
+    "@itwin/core-common": "workspace:^3.0.0-dev.135",
+    "@itwin/linear-referencing-common": "workspace:^3.0.0-dev.135"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",

@@ -1,6 +1,6 @@
 {
   "name": "@itwin/imodel-components-react",
-  "version": "3.0.0-dev.129",
+  "version": "3.0.0-dev.135",
   "description": "iTwin.js UI IModel Components",
   "main": "lib/cjs/imodel-components-react.js",
   "module": "lib/esm/imodel-components-react.js",
@@ -38,14 +38,14 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/appui-abstract": "workspace:^3.0.0-dev.129",
-    "@itwin/components-react": "workspace:^3.0.0-dev.129",
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.129",
-    "@itwin/core-common": "workspace:^3.0.0-dev.129",
-    "@itwin/core-frontend": "workspace:^3.0.0-dev.129",
-    "@itwin/core-geometry": "workspace:^3.0.0-dev.129",
-    "@itwin/core-quantity": "workspace:^3.0.0-dev.129",
-    "@itwin/core-react": "workspace:^3.0.0-dev.129",
+    "@itwin/appui-abstract": "workspace:^3.0.0-dev.135",
+    "@itwin/components-react": "workspace:^3.0.0-dev.135",
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.135",
+    "@itwin/core-common": "workspace:^3.0.0-dev.135",
+    "@itwin/core-frontend": "workspace:^3.0.0-dev.135",
+    "@itwin/core-geometry": "workspace:^3.0.0-dev.135",
+    "@itwin/core-quantity": "workspace:^3.0.0-dev.135",
+    "@itwin/core-react": "workspace:^3.0.0-dev.135",
     "react": "^17.0.0",
     "react-dom": "^17.0.0"
   },

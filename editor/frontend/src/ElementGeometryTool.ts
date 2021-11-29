@@ -10,7 +10,7 @@ import { Id64, Id64Arg, Id64Array, Id64String } from "@itwin/core-bentley";
 import { editorBuiltInCmdIds, ElementGeometryCacheFilter, ElementGeometryResultOptions, ElementGeometryResultProps, LocateSubEntityProps, SolidModelingCommandIpc, SubEntityFilter, SubEntityGeometryProps, SubEntityLocationProps, SubEntityProps, SubEntityType } from "@itwin/editor-common";
 import { FeatureAppearance, FeatureAppearanceProvider, RgbColor } from "@itwin/core-common";
 import { Point3d, Range3d, Ray3d, Transform } from "@itwin/core-geometry";
-import { AccuDrawHintBuilder, BeButtonEvent, BeModifierKeys, CoordinateLockOverrides, DecorateContext, DynamicsContext, ElementSetTool, EventHandled, FeatureOverrideProvider, FeatureSymbology, GraphicBranch, GraphicBranchOptions, GraphicType, HitDetail, IModelApp, IModelConnection, InputSource, LocateResponse, readElementGraphics, RenderGraphicOwner, SelectionMethod, SelectionSet, Viewport } from "@itwin/core-frontend";
+import { AccuDrawHintBuilder, BeButtonEvent, BeModifierKeys, CoordinateLockOverrides, CoordSource, DecorateContext, DynamicsContext, ElementSetTool, EventHandled, FeatureOverrideProvider, FeatureSymbology, GraphicBranch, GraphicBranchOptions, GraphicType, HitDetail, IModelApp, IModelConnection, InputSource, LocateResponse, readElementGraphics, RenderGraphicOwner, SelectionMethod, SelectionSet, Viewport } from "@itwin/core-frontend";
 import { computeChordToleranceFromPoint } from "./CreateElementTool";
 import { EditTools } from "./EditTool";
 
@@ -472,6 +472,10 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
     return spacePoint;
   }
 
+  protected wantHiddenEdges(vp: Viewport): boolean {
+    return vp.viewFlags.hiddenEdgesVisible();
+  }
+
   protected getSubEntityFilter(): SubEntityFilter | undefined { return undefined; }
 
   protected async pickSubEntities(id: Id64String, boresite: Ray3d, maxFace: number, maxEdge: number, maxVertex: number, maxDistance: number, hiddenEdgesVisible: boolean, filter?: SubEntityFilter): Promise<SubEntityLocationProps[] | undefined> {
@@ -507,7 +511,7 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
     const maxDistance = this.getMaxRayDistance(ev, aperture);
     const spacePoint = this.getRayOrigin(ev);
     const boresite = AccuDrawHintBuilder.getBoresite(spacePoint, vp);
-    const hiddenEdgesVisible = vp.viewFlags.hiddenEdgesVisible();
+    const hiddenEdgesVisible = this.wantHiddenEdges(vp);
     const filter = this.getSubEntityFilter();
 
     let hits = await this.pickSubEntities(id, boresite, maxFace, maxEdge, maxVertex, maxDistance, hiddenEdgesVisible, filter);
@@ -577,6 +581,14 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
       this._locatedSubEntities = await this.doPickSubEntities(id, ev);
       if (undefined === this._locatedSubEntities || 0 === this._locatedSubEntities.length)
         return false;
+
+      /** NOTE: Set last button location to point on sub-entity when not snapping.
+        * If dynamics are enabled on this event, onDynamicFrame is called with this location.
+        */
+      if (CoordSource.ElemSnap !== ev.coordsFrom) {
+        ev.point.setFrom(Point3d.fromJSON(this._locatedSubEntities[0].point));
+        IModelApp.toolAdmin.setAdjustedDataPoint(ev);
+      }
     } else {
       await this.removeSubEntity(id);
     }
