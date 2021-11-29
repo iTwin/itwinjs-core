@@ -8,7 +8,7 @@ import * as glob from "glob";
 import { join } from "path";
 import * as Yargs from "yargs";
 import {
-  EditableWorkspaceFile, IModelHost, IModelHostConfiguration, IModelJsFs, IModelJsNative, WorkspaceContainerId, WorkspaceFile, WorkspaceResourceName,
+  EditableWorkspaceFile, IModelHost, IModelHostConfiguration, IModelJsFs, WorkspaceContainerId, WorkspaceFile, WorkspaceResourceName,
 } from "@itwin/core-backend";
 import { DbResult } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
@@ -62,7 +62,7 @@ interface ListOptions extends WorkspaceId {
 }
 
 /** Create a new empty WorkspaceFile  */
-function createWorkspace(args: WorkspaceId) {
+function createWorkspaceFile(args: WorkspaceId) {
   const wsFile = new EditableWorkspaceFile(args.workspaceId, IModelHost.appWorkspace);
   wsFile.create();
   console.log(`created WorkspaceFile ${wsFile.db.nativeDb.getFilePath()}`);
@@ -91,7 +91,7 @@ function readWorkspace<T extends WorkspaceId>(args: T, fn: (ws: WorkspaceFile, a
 }
 
 /** List the contents of a WorkspaceFile */
-function listWorkspace(args: ListOptions) {
+function listWorkspaceFile(args: ListOptions) {
   readWorkspace(args, (file, args) => {
     if (!args.strings && !args.blobs && !args.files)
       args.blobs = args.files = args.strings = true;
@@ -128,7 +128,7 @@ function listWorkspace(args: ListOptions) {
 }
 
 /** Add or Update files into a WorkspaceFile. */
-function addFilesToWorkspace(args: AddFileOptions) {
+function addToWorkspaceFile(args: AddFileOptions) {
   editWorkspace(args, (wsFile, args) => {
     glob.sync(args.files, { cwd: args.root ?? process.cwd(), nodir: true }).forEach((filePath) => {
       const file = args.root ? join(args.root, filePath) : filePath;
@@ -154,7 +154,7 @@ function addFilesToWorkspace(args: AddFileOptions) {
 }
 
 /** Extract a single resource from a WorkspaceFile into a local file */
-function extractFromWorkspace(args: ExtractResourceOpts) {
+function extractFromWorkspaceFile(args: ExtractResourceOpts) {
   readWorkspace(args, (file, args) => {
     const verify = <T>(val: T | undefined): T => {
       if (val === undefined)
@@ -174,7 +174,7 @@ function extractFromWorkspace(args: ExtractResourceOpts) {
 }
 
 /** Delete a single resource from a WorkspaceFile */
-function deleteFromWorkspace(args: DeleteResourceOpts) {
+function deleteFromWorkspaceFile(args: DeleteResourceOpts) {
   editWorkspace(args, (wsFile, args) => {
     if (args.type === "string")
       wsFile.removeString(args.name);
@@ -186,10 +186,10 @@ function deleteFromWorkspace(args: DeleteResourceOpts) {
   });
 }
 
-function vacuumWorkspace(args: WorkspaceId) {
+function vacuumWorkspaceFile(args: WorkspaceId) {
   const ws = new WorkspaceFile(args.workspaceId, IModelHost.appWorkspace);
-  IModelHost.platform.DgnDb.vacuum(ws.localDbName);
-  console.log(`${ws.localDbName} vacuumed`);
+  IModelHost.platform.DgnDb.vacuum(ws.localFile);
+  console.log(`${ws.localFile} vacuumed`);
 }
 
 /** Start `IModelHost`, then run a WorkspaceEditor command. Errors are logged to console. */
@@ -219,7 +219,7 @@ async function main() {
     .command({
       command: "create <workspaceId>",
       describe: "create a new WorkspaceFile",
-      handler: runCommand(createWorkspace),
+      handler: runCommand(createWorkspaceFile),
     })
     .command({
       command: "list <workspaceId>",
@@ -229,7 +229,7 @@ async function main() {
         blobs: { alias: "b", describe: "list blob resources", boolean: true, default: false },
         files: { alias: "f", describe: "list file resources", boolean: true, default: false },
       },
-      handler: runCommand(listWorkspace),
+      handler: runCommand(listWorkspaceFile),
     })
     .command({
       command: "add <workspaceId> <files>",
@@ -240,25 +240,25 @@ async function main() {
         update,
         type,
       },
-      handler: runCommand(addFilesToWorkspace),
+      handler: runCommand(addToWorkspaceFile),
     })
     .command({
       command: "extract <workspaceId> <name> <fileName>",
       describe: "extract a resource from a WorkspaceFile into a local file",
       builder: { type },
-      handler: runCommand(extractFromWorkspace),
+      handler: runCommand(extractFromWorkspaceFile),
     })
     .command({
       command: "delete <workspaceId> <name>",
       describe: "delete resources from a WorkspaceFile",
       builder: { type },
-      handler: runCommand(deleteFromWorkspace),
+      handler: runCommand(deleteFromWorkspaceFile),
     })
     .command({
       command: "vacuum <workspaceId>>",
       describe: "vacuum a WorkspaceFile",
       builder: { type },
-      handler: runCommand(vacuumWorkspace),
+      handler: runCommand(vacuumWorkspaceFile),
     })
     .demandCommand()
     .help()

@@ -74,7 +74,7 @@ describe("WorkspaceFile", () => {
 
     expect(() => wsFile.addFile(fileRscName, "bad file name")).to.throw("no such file");
     expect(() => wsFile.updateFile(fileRscName, inFile)).to.throw("error replacing");
-    expect(() => wsFile.removeFile(fileRscName)).to.throw("error removing");
+    expect(() => wsFile.removeFile(fileRscName)).to.throw("does not exist");
 
     wsFile.addBlob(blobRscName, blobVal);
     wsFile.addString(strRscName, strVal);

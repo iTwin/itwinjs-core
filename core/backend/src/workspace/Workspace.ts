@@ -109,7 +109,7 @@ export interface WorkspaceContainer {
   /** event raised when the container is closed. */
   readonly onContainerClosed: BeEvent<() => void>;
   /** The name of the local file for holding this container. */
-  readonly localDbName: LocalDirName;
+  readonly localFile: LocalDirName;
   /** Get a string resource from this container, if present. */
   getString(rscName: WorkspaceResourceName): string | undefined;
 
@@ -408,13 +408,20 @@ export class EditableWorkspaceFile extends WorkspaceFile {
     this._isCloudOpen = true;
   }
 
-  public override open(): void {
-    this.db.openDb(this.localDbName, OpenMode.ReadWrite);
+  public override open() {
+    this.db.openDb(this.localFile, OpenMode.ReadWrite);
+  }
+
+  public override close() {
+    if (this._isCloudOpen) {
+      //  this.db.nativeDb.flushCloudUpload(); TODO: add back when available
+      this._isCloudOpen = false;
+    }
+    super.close();
   }
 
   private getFileModifiedTime(localFileName: LocalFileName): number {
-    const stat = fs.statSync(localFileName);
-    return Math.round(stat.mtimeMs);
+    return Math.round(fs.statSync(localFileName).mtimeMs);
   }
 
   private performWriteSql(rscName: WorkspaceResourceName, sql: string, bind?: (stmt: SqliteStatement) => void) {

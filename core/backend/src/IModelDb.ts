@@ -9,8 +9,8 @@
 import { join } from "path";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import {
-  AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus,
-  JsonUtils, Logger, OpenMode,
+  AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
+  IModelStatus, JsonUtils, Logger, OpenMode, UnexpectedErrors,
 } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
@@ -1194,6 +1194,9 @@ export abstract class IModelDb extends IModel {
   }
 
   private loadSettingsDictionaries() {
+    if (!this.nativeDb.isOpen())
+      return;
+
     this.withSqliteStatement(`SELECT Name,StrData FROM be_Prop WHERE Namespace=?`, (stmt) => {
       stmt.bindString(1, IModelDb._settingPropNamespace);
       while (stmt.step() === DbResult.BE_SQLITE_ROW) {

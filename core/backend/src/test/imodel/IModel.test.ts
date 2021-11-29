@@ -1688,7 +1688,7 @@ describe("iModel", () => {
     const addGcsWs = async (id: string) => {
       try {
         const ws = await IModelHost.appWorkspace.getContainer({ id });
-        const fileName = ws.localDbName;
+        const fileName = ws.localFile;
         IModelHost.appWorkspace.dropContainer(ws);
         expect(IModelHost.platform.addGcsWorkspace(fileName)).to.be.true;
       } catch (e) {
