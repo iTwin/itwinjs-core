@@ -9,7 +9,7 @@
 
 import { CompressedId64Set } from "@itwin/core-bentley";
 import {
-  DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, ElementLoadOptions, RenderMode, RenderSchedule, RenderTimelineProps, SkyCube, SkySphere,
+  ColorDef, DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, ElementLoadOptions, RenderMode, RenderSchedule, RenderTimelineProps, SkyCube, SkySphere,
   SubCategoryAppearance, SubCategoryOverride, ViewFlags, ViewFlagsProperties, WhiteOnWhiteReversalSettings,
 } from "@itwin/core-common";
 import {
@@ -21,12 +21,14 @@ import { parseToggle } from "./parseToggle";
 
 type BooleanFlagName =
   "dimensions" | "patterns" | "weights" | "styles" | "transparency" | "fill" | "textures" | "materials" | "acsTriad" | "grid" | "visibleEdges" |
-  "hiddenEdges" | "lighting" | "shadows" | "clipVolume" | "constructions" | "monochrome" | "backgroundMap" | "ambientOcclusion" | "forceSurfaceDiscard";
+  "hiddenEdges" | "lighting" | "shadows" | "clipVolume" | "constructions" | "monochrome" | "backgroundMap" | "ambientOcclusion" | "forceSurfaceDiscard"
+  | "wiremesh";
 
 // Compiler has the info to construct this array for us, but we have no access to it...
 const booleanFlagNames: BooleanFlagName[] = [
   "dimensions", "patterns", "weights", "styles", "transparency", "fill", "textures", "materials", "acsTriad", "grid", "visibleEdges",
   "hiddenEdges", "lighting", "shadows", "clipVolume", "constructions", "monochrome", "backgroundMap", "ambientOcclusion", "forceSurfaceDiscard",
+  "wiremesh",
 ];
 
 const lowercaseBooleanFlagNames = booleanFlagNames.map((name) => name.toLowerCase());
@@ -247,7 +249,7 @@ export class SkyCubeTool extends DisplayStyleTool {
  *  * `project`: include iTwin-specific (formerly known as project) settings.
  *  * `map`: include background map settings.
  *  * `drawingaids`: include drawing aid decoration settings.
- *  * `copy`: copy result to system clipboarad.
+ *  * `copy`: copy result to system clipboard.
  *  * `quote`: format the JSON so it can be parsed directly by [ApplyRenderingStyleTool].
  * @beta
  */
@@ -463,6 +465,56 @@ export class WoWIgnoreBackgroundTool extends DisplayStyleTool {
   public async execute(vp: Viewport) {
     const ignoreBackgroundColor = this._ignore ?? !vp.displayStyle.settings.whiteOnWhiteReversal.ignoreBackgroundColor;
     vp.displayStyle.settings.whiteOnWhiteReversal = WhiteOnWhiteReversalSettings.fromJSON({ ignoreBackgroundColor });
+    return true;
+  }
+}
+
+/** Toggle whether surfaces display with overlaid wiremesh in the active viewport.
+ * @see [ViewFlags.wiremesh]($common).
+ * @beta
+ */
+export class ToggleWiremeshTool extends DisplayStyleTool {
+  private _enable?: boolean;
+
+  public static override toolId = "ToggleWiremesh";
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 1; }
+
+  public async parse(args: string[]) {
+    const enable = parseToggle(args[0]);
+    if (typeof enable === "string")
+      return false;
+
+    this._enable = enable;
+    return true;
+  }
+
+  public async execute(vp: Viewport) {
+    vp.viewFlags = vp.viewFlags.with("wiremesh", this._enable ?? !vp.viewFlags.wiremesh);
+    return true;
+  }
+}
+
+/** Change the background color of the active viewport and optionally its transparency.
+ * @beta
+ */
+export class ChangeBackgroundColorTool extends DisplayStyleTool {
+  private _color?: ColorDef;
+
+  public static override toolId = "ChangeBackgroundColor";
+  public static override get minArgs() { return 1; }
+  public static override get maxArgs() { return 1; }
+
+  public async parse(args: string[]) {
+    this._color = ColorDef.fromString(args[0]);
+    return true;
+  }
+
+  public async execute(vp: Viewport) {
+    if (!this._color)
+      return false;
+
+    vp.displayStyle.backgroundColor = this._color;
     return true;
   }
 }

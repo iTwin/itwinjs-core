@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Add support for wiremesh display of design models and reality models.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

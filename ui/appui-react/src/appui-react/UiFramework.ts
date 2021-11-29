@@ -15,7 +15,7 @@ import { IModelApp, IModelConnection, SnapMode, ViewState } from "@itwin/core-fr
 import { Presentation } from "@itwin/presentation-frontend";
 import { TelemetryEvent } from "@itwin/core-telemetry";
 import { getClassName, UiAdmin, UiError } from "@itwin/appui-abstract";
-import { LocalSettingsStorage, SettingsManager, UiEvent, UiSettingsStorage } from "@itwin/core-react";
+import { LocalStateStorage, SettingsManager, UiEvent, UiStateStorage } from "@itwin/core-react";
 import { UiIModelComponents } from "@itwin/imodel-components-react";
 import { BackstageManager } from "./backstage/BackstageManager";
 import { ChildWindowManager } from "./childwindow/ChildWindowManager";
@@ -38,19 +38,19 @@ import { FrontstageManager } from "./frontstage/FrontstageManager";
 
 // cSpell:ignore Mobi
 
-/** Defined that available Ui Versions. It is recommended to always use the latest version available.
+/** Defined that available UI Versions. It is recommended to always use the latest version available.
  * @public
  */
 export type FrameworkVersionId = "1" | "2";
 
-/** Interface to be implemented but any classes that wants to load their user settings when the UiSetting storage class is set.
+/** Interface to be implemented but any classes that wants to load their user settings when the UiStateEntry storage class is set.
  * @public
  */
 export interface UserSettingsProvider {
   /** Unique provider Id */
   providerId: string;
   /** Function to load settings from settings storage */
-  loadUserSettings(storage: UiSettingsStorage): Promise<void>; // eslint-disable-line deprecation/deprecation
+  loadUserSettings(storage: UiStateStorage): Promise<void>;
 }
 
 /** UiVisibility Event Args interface.
@@ -99,8 +99,8 @@ export class UiFramework {
   private static _widgetManager?: WidgetManager;
   private static _uiVersion: FrameworkVersionId = "2";
   private static _hideIsolateEmphasizeActionHandler?: HideIsolateEmphasizeActionHandler;
-  /** this provides a default storage location for settings */
-  private static _uiSettingsStorage: UiSettingsStorage = new LocalSettingsStorage();  // eslint-disable-line deprecation/deprecation
+  /** this provides a default state storage handler */
+  private static _uiStateStorage: UiStateStorage = new LocalStateStorage();
   private static _settingsManager?: SettingsManager;
   private static _uiSettingsProviderRegistry: Map<string, UserSettingsProvider> = new Map<string, UserSettingsProvider>();
   private static _PopupWindowManager = new ChildWindowManager();
@@ -216,7 +216,8 @@ export class UiFramework {
   public static get initialized(): boolean { return UiFramework._initialized; }
 
   /** Property that returns the SettingManager used by AppUI-based applications.
-   *  @public */
+   * @public
+   */
   public static get settingsManager() {
     if (undefined === UiFramework._settingsManager)
       UiFramework._settingsManager = new SettingsManager();
@@ -392,11 +393,11 @@ export class UiFramework {
   }
 
   /** @public */
-  public static async setUiSettingsStorage(storage: UiSettingsStorage, immediateSync = false) { // eslint-disable-line deprecation/deprecation
-    if (UiFramework._uiSettingsStorage === storage)
+  public static async setUiStateStorage(storage: UiStateStorage, immediateSync = false) {
+    if (UiFramework._uiStateStorage === storage)
       return;
 
-    UiFramework._uiSettingsStorage = storage;
+    UiFramework._uiStateStorage = storage;
 
     // let any registered providers to load values from the new storage location
     const providerKeys = [...this._uiSettingsProviderRegistry.keys()];
@@ -406,14 +407,18 @@ export class UiFramework {
 
     // istanbul ignore next
     if (immediateSync)
-      SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(SyncUiEventId.UiSettingsChanged);
+      SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(SyncUiEventId.UiStateStorageChanged);
     else
-      SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.UiSettingsChanged);
+      SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.UiStateStorageChanged);
   }
 
-  /** @public */
-  public static getUiSettingsStorage(): UiSettingsStorage { // eslint-disable-line deprecation/deprecation
-    return UiFramework._uiSettingsStorage;
+  /** The UI Settings Storage is a convenient wrapper around Local Storage to assist in caching state information across user sessions.
+   * It was previously used to conflate both the state information across session and the information driven directly from user explicit action,
+   * which are now handled with user preferences.
+   * @public
+   */
+  public static getUiStateStorage(): UiStateStorage {
+    return UiFramework._uiStateStorage;
   }
 
   /** @public */

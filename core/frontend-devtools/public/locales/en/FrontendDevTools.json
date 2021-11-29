@@ -4,7 +4,7 @@
       "keyin": "fdt webgl lose context"
     },
     "ToggleWiremesh": {
-      "keyin": "fdt toggle wiremesh"
+      "keyin": "fdt wiremesh"
     },
     "ToggleDPIForLOD": {
       "keyin": "fdt dpi lod"
@@ -456,6 +456,9 @@
     },
     "SetSkyCube": {
       "keyin": "fdt sky cube"
+    },
+    "ChangeBackgroundColor": {
+      "keyin": "fdt bgcolor"
     }
   }
 }

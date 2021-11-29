@@ -16,7 +16,7 @@ import {
 } from "@itwin/core-frontend";
 import { IconSpecUtilities } from "@itwin/appui-abstract";
 import {
-  FillCentered, Icon, LocalSettingsStorage, SvgSprite, UiCore, UiSetting, UiSettingsResult, UiSettingsStatus, UiSettingsStorage,
+  FillCentered, Icon, LocalStateStorage, SvgSprite, UiCore, UiStateEntry, UiStateStorage, UiStateStorageResult, UiStateStorageStatus,
 } from "@itwin/core-react";
 import {
   FooterPopup, ToolAssistanceInstruction as NZ_ToolAssistanceInstruction, TitleBarButton, ToolAssistance, ToolAssistanceDialog, ToolAssistanceItem,
@@ -29,7 +29,7 @@ import { MessageManager, ToolAssistanceChangedEventArgs } from "../../messages/M
 import { StatusBarFieldId } from "../../statusbar/StatusBarWidgetControl";
 import { UiFramework } from "../../UiFramework";
 import { StatusFieldProps } from "../StatusFieldProps";
-import { UiSettingsContext } from "../../uisettings/useUiSettings";
+import { UiStateStorageContext } from "../../uistate/useUiStateStorage";
 
 import acceptPointIcon from "./accept-point.svg?sprite";
 import cursorClickIcon from "./cursor-click.svg?sprite";
@@ -56,9 +56,9 @@ import touchCursorTapIcon from "./touch-cursor-point.svg?sprite";
 export interface ToolAssistanceFieldProps extends StatusFieldProps {
   /** Indicates whether to include promptAtCursor Checkbox. Defaults to true. */
   includePromptAtCursor: boolean;
-  /** Optional parameter for persistent UI settings. Defaults to UiSettingsContext.
+  /** Optional parameter for persistent UI settings. Defaults to UiStateStorageContext.
    */
-  uiSettings?: UiSettingsStorage; // eslint-disable-line deprecation/deprecation
+  uiStateStorage?: UiStateStorage; // eslint-disable-line deprecation/deprecation
   /** Cursor Prompt Timeout period. Defaults to 5000. */
   cursorPromptTimeout: number;
   /** Fade Out the Cursor Prompt when closed. */
@@ -71,7 +71,7 @@ export interface ToolAssistanceFieldProps extends StatusFieldProps {
  * @internal
  */
 export type ToolAssistanceFieldDefaultProps =
-  Pick<ToolAssistanceFieldProps, "includePromptAtCursor" | "uiSettings" | "cursorPromptTimeout" | "fadeOutCursorPrompt" | "defaultPromptAtCursor">;
+  Pick<ToolAssistanceFieldProps, "includePromptAtCursor" | "uiStateStorage" | "cursorPromptTimeout" | "fadeOutCursorPrompt" | "defaultPromptAtCursor">;
 
 /** @internal */
 interface ToolAssistanceFieldState {
@@ -92,21 +92,21 @@ interface ToolAssistanceFieldState {
  */
 export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProps, ToolAssistanceFieldState> {
   /** @internal */
-  public static override contextType = UiSettingsContext;
+  public static override contextType = UiStateStorageContext;
   /** @internal */
-  public declare context: React.ContextType<typeof UiSettingsContext>;
+  public declare context: React.ContextType<typeof UiStateStorageContext>;
 
   private static _toolAssistanceKey = "ToolAssistance";
   private static _showPromptAtCursorKey = "showPromptAtCursor";
   private static _mouseTouchTabIndexKey = "mouseTouchTabIndex";
-  private _showPromptAtCursorSetting: UiSetting<boolean>;
-  private _mouseTouchTabIndexSetting: UiSetting<number>;
+  private _showPromptAtCursorSetting: UiStateEntry<boolean>;
+  private _mouseTouchTabIndexSetting: UiStateEntry<number>;
   private _target: HTMLElement | null = null;
   private _className: string;
   private _indicator = React.createRef<HTMLDivElement>();
   private _cursorPrompt: CursorPrompt;
   private _isMounted = false;
-  private _uiSettingsStorage: UiSettingsStorage; // eslint-disable-line deprecation/deprecation
+  private _uiSettingsStorage: UiStateStorage; // eslint-disable-line deprecation/deprecation
 
   /** @internal */
   public static readonly defaultProps: ToolAssistanceFieldDefaultProps = {
@@ -138,11 +138,11 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
       isPinned: false,
     };
 
-    this._uiSettingsStorage = new LocalSettingsStorage();
+    this._uiSettingsStorage = new LocalStateStorage();
     this._cursorPrompt = new CursorPrompt(this.props.cursorPromptTimeout, this.props.fadeOutCursorPrompt);
-    this._showPromptAtCursorSetting = new UiSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._showPromptAtCursorKey,
+    this._showPromptAtCursorSetting = new UiStateEntry(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._showPromptAtCursorKey,
       () => this.state.showPromptAtCursor);
-    this._mouseTouchTabIndexSetting = new UiSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._mouseTouchTabIndexKey,
+    this._mouseTouchTabIndexSetting = new UiStateEntry(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._mouseTouchTabIndexKey,
       () => this.state.mouseTouchTabIndex);
   }
 
@@ -153,8 +153,8 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
     FrontstageManager.onToolIconChangedEvent.addListener(this._handleToolIconChangedEvent);
 
     // istanbul ignore else
-    if (this.props.uiSettings)
-      this._uiSettingsStorage = this.props.uiSettings;
+    if (this.props.uiStateStorage)
+      this._uiSettingsStorage = this.props.uiStateStorage;
     else if (this.context)
       this._uiSettingsStorage = this.context;
 
@@ -169,7 +169,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   }
 
   private async restoreSettings() {
-    let getShowPromptAtCursor: Promise<UiSettingsResult> | undefined; // eslint-disable-line deprecation/deprecation
+    let getShowPromptAtCursor: Promise<UiStateStorageResult> | undefined; // eslint-disable-line deprecation/deprecation
     // istanbul ignore else
     if (this.props.includePromptAtCursor) {
       getShowPromptAtCursor = this._showPromptAtCursorSetting.getSetting(this._uiSettingsStorage);
@@ -181,14 +181,14 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
     ]);
 
     // istanbul ignore else
-    if (showPromptAtCursorResult !== undefined && showPromptAtCursorResult.status === UiSettingsStatus.Success) {
+    if (showPromptAtCursorResult !== undefined && showPromptAtCursorResult.status === UiStateStorageStatus.Success) {
       // istanbul ignore else
       if (this._isMounted)
         this.setState({ showPromptAtCursor: showPromptAtCursorResult.setting });
     }
 
     // istanbul ignore else
-    if (mouseTouchTabIndexResult.status === UiSettingsStatus.Success) {
+    if (mouseTouchTabIndexResult.status === UiStateStorageStatus.Success) {
       // istanbul ignore else
       if (this._isMounted)
         this.setState({ mouseTouchTabIndex: mouseTouchTabIndexResult.setting });

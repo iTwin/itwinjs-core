@@ -13,7 +13,7 @@ import { fireEvent, render } from "@testing-library/react";
 import * as moq from "typemoq";
 import { BeDuration } from "@itwin/core-bentley";
 import { PrimitiveValue, PropertyConverterInfo, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, SpecialKey } from "@itwin/appui-abstract";
-import { HorizontalAlignment, LocalSettingsStorage } from "@itwin/core-react";
+import { HorizontalAlignment, LocalStateStorage } from "@itwin/core-react";
 import {
   CellItem, ColumnDescription, PropertyUpdatedArgs, PropertyValueRendererManager, RowItem, SelectionMode, Table, TableDataChangeEvent,
   TableDataChangesListener, TableDataProvider, TableProps, TableSelectionTarget,
@@ -1508,7 +1508,7 @@ describe("Table", () => {
         reorderableColumns={true}
         ref={ref}
         settingsIdentifier="test"
-        settingsStorage={new LocalSettingsStorage({ localStorage: storageMock() } as Window)}
+        settingsStorage={new LocalStateStorage({ localStorage: storageMock() } as Window)}
       />);
       await waitForSpy(onRowsLoaded);
       table.update();
@@ -1531,7 +1531,7 @@ describe("Table", () => {
         onRowsLoaded={onRowsLoaded}
         settingsIdentifier="test"
         showHideColumns={true}
-        settingsStorage={new LocalSettingsStorage({ localStorage: storageMock() } as Window)}
+        settingsStorage={new LocalStateStorage({ localStorage: storageMock() } as Window)}
       />);
       await waitForSpy(onRowsLoaded);
       table.update();
