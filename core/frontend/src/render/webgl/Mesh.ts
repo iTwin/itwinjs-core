@@ -499,8 +499,7 @@ export class SurfaceGeometry extends MeshGeometry {
 
     const bufs = instanceBuffersContainer !== undefined ? instanceBuffersContainer : this._buffers;
     bufs.bind();
-    const primType = system.drawSurfacesAsWiremesh ? GL.PrimitiveType.Lines : GL.PrimitiveType.Triangles;
-    system.drawArrays(primType, 0, this._numIndices, numInstances);
+    system.drawArrays(GL.PrimitiveType.Triangles, 0, this._numIndices, numInstances);
     bufs.unbind();
 
     if (offset)

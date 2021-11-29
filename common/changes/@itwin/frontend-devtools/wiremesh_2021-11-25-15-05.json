@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/frontend-devtools",
+      "comment": "Replace `fdt toggle wiremesh` keyin with `fdt wiremesh` that produces real wiremesh.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/frontend-devtools"
+}

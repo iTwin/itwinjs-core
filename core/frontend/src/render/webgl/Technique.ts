@@ -47,7 +47,7 @@ import { CompileStatus, ShaderProgram, ShaderProgramExecutor } from "./ShaderPro
 import { System } from "./System";
 import { Target } from "./Target";
 import {
-  FeatureMode, IsAnimated, IsClassified, IsEdgeTestNeeded, IsInstanced, IsShadowable, IsThematic, TechniqueFlags,
+  FeatureMode, IsAnimated, IsClassified, IsEdgeTestNeeded, IsInstanced, IsShadowable, IsThematic, IsWiremesh, TechniqueFlags,
 } from "./TechniqueFlags";
 import { computeCompositeTechniqueId, TechniqueId } from "./TechniqueId";
 
@@ -263,11 +263,14 @@ class SurfaceTechnique extends VariedTechnique {
   private static readonly _kTranslucent = 1;
   private static readonly _kInstanced = 2;
   private static readonly _kAnimated = 4;
-  private static readonly _kShadowable = 8;
-  private static readonly _kThematic = 16;
-  private static readonly _kFeature = 24;
+  private static readonly _kWiremesh = 8;
+  private static readonly _kShadowable = 16;
+  private static readonly _kThematic = 32;
+  private static readonly _kFeature = 48;
+
   private static readonly _kEdgeTestNeeded = SurfaceTechnique._kFeature * 3; // only when hasFeatures
   private static readonly _kHilite = SurfaceTechnique._kEdgeTestNeeded + SurfaceTechnique._kFeature * 2;
+
   // Classifiers are never animated or instanced. They do support shadows, thematic display, and translucency.
   // There are 3 base variations - 1 per feature mode - each with translucent/shadowed/thematic variants; plus 1 for hilite.
   private static readonly _kClassified = SurfaceTechnique._kHilite + numHiliteVariants;
@@ -315,6 +318,42 @@ class SurfaceTechnique extends VariedTechnique {
       TechniqueFlags.fromDescription("Translucent-Shadowable"),
       TechniqueFlags.fromDescription("Translucent-Shadowable-Overrides"),
       TechniqueFlags.fromDescription("Translucent-Shadowable-Pick"),
+
+      TechniqueFlags.fromDescription("Opaque-Wiremesh"),
+      TechniqueFlags.fromDescription("Opaque-Animated-Wiremesh"),
+      TechniqueFlags.fromDescription("Opaque-Animated-Shadowable-Wiremesh"),
+      TechniqueFlags.fromDescription("Opaque-Hilite-Classified-Wiremesh"),
+      TechniqueFlags.fromDescription("Opaque-Hilite-Overrides-Wiremesh"),
+      TechniqueFlags.fromDescription("Opaque-Instanced-Wiremesh"),
+      TechniqueFlags.fromDescription("Opaque-Instanced-Animated-Wiremesh"),
+      TechniqueFlags.fromDescription("Opaque-Instanced-Animated-Shadowable-Wiremesh"),
+      TechniqueFlags.fromDescription("Opaque-Instanced-Hilite-Overrides-Wiremesh"),
+      TechniqueFlags.fromDescription("Opaque-Instanced-Shadowable-Wiremesh"),
+      TechniqueFlags.fromDescription("Opaque-Shadowable-Wiremesh"),
+      TechniqueFlags.fromDescription("Translucent-Wiremesh"),
+      TechniqueFlags.fromDescription("Translucent-Animated-Wiremesh"),
+      TechniqueFlags.fromDescription("Translucent-Animated-Overrides-Wiremesh"),
+      TechniqueFlags.fromDescription("Translucent-Animated-Pick-Wiremesh"),
+      TechniqueFlags.fromDescription("Translucent-Animated-Shadowable-Wiremesh"),
+      TechniqueFlags.fromDescription("Translucent-Animated-Shadowable-Overrides-Wiremesh"),
+      TechniqueFlags.fromDescription("Translucent-Animated-Shadowable-Pick-Wiremesh"),
+      TechniqueFlags.fromDescription("Translucent-Instanced-Wiremesh"),
+      TechniqueFlags.fromDescription("Translucent-Instanced-Animated-Wiremesh"),
+      TechniqueFlags.fromDescription("Translucent-Instanced-Animated-Overrides-Wiremesh"),
+      TechniqueFlags.fromDescription("Translucent-Instanced-Animated-Pick-Wiremesh"),
+      TechniqueFlags.fromDescription("Translucent-Instanced-Animated-Shadowable-Wiremesh"),
+      TechniqueFlags.fromDescription("Translucent-Instanced-Animated-Shadowable-Overrides-Wiremesh"),
+      TechniqueFlags.fromDescription("Translucent-Instanced-Animated-Shadowable-Pick-Wiremesh"),
+      TechniqueFlags.fromDescription("Translucent-Instanced-Overrides-Wiremesh"),
+      TechniqueFlags.fromDescription("Translucent-Instanced-Pick-Wiremesh"),
+      TechniqueFlags.fromDescription("Translucent-Instanced-Shadowable-Wiremesh"),
+      TechniqueFlags.fromDescription("Translucent-Instanced-Shadowable-Overrides-Wiremesh"),
+      TechniqueFlags.fromDescription("Translucent-Instanced-Shadowable-Pick-Wiremesh"),
+      TechniqueFlags.fromDescription("Translucent-Overrides-Wiremesh"),
+      TechniqueFlags.fromDescription("Translucent-Pick-Wiremesh"),
+      TechniqueFlags.fromDescription("Translucent-Shadowable-Wiremesh"),
+      TechniqueFlags.fromDescription("Translucent-Shadowable-Overrides-Wiremesh"),
+      TechniqueFlags.fromDescription("Translucent-Shadowable-Pick-Wiremesh"),
     ];
 
     const flags = scratchTechniqueFlags;
@@ -322,21 +361,24 @@ class SurfaceTechnique extends VariedTechnique {
       this.addHiliteShader(gl, instanced, IsClassified.No, createSurfaceHiliter);
       for (let iAnimate = IsAnimated.No; iAnimate <= IsAnimated.Yes; iAnimate++) {
         for (let shadowable = IsShadowable.No; shadowable <= IsShadowable.Yes; shadowable++) {
-          for (let thematic = IsThematic.No; thematic <= IsThematic.Yes; thematic++) {
-            for (let edgeTestNeeded = IsEdgeTestNeeded.No; edgeTestNeeded <= IsEdgeTestNeeded.Yes; edgeTestNeeded++) {
-              for (const featureMode of featureModes) {
-                for (let iTranslucent = 0; iTranslucent <= 1; iTranslucent++) {
-                  if (FeatureMode.None !== featureMode || IsEdgeTestNeeded.No === edgeTestNeeded) {
-                    if (IsThematic.Yes === thematic && IsShadowable.Yes === shadowable)
-                      continue; // currently this combination is disallowed.
+          for (let wiremesh = IsWiremesh.No; wiremesh <= IsWiremesh.Yes; wiremesh++) {
+            for (let thematic = IsThematic.No; thematic <= IsThematic.Yes; thematic++) {
+              for (let edgeTestNeeded = IsEdgeTestNeeded.No; edgeTestNeeded <= IsEdgeTestNeeded.Yes; edgeTestNeeded++) {
+                for (const featureMode of featureModes) {
+                  for (let iTranslucent = 0; iTranslucent <= 1; iTranslucent++) {
+                    if (FeatureMode.None !== featureMode || IsEdgeTestNeeded.No === edgeTestNeeded) {
+                      if (IsThematic.Yes === thematic && IsShadowable.Yes === shadowable)
+                        continue; // currently this combination is disallowed.
 
-                    flags.reset(featureMode, instanced, shadowable, thematic);
-                    flags.isAnimated = iAnimate;
-                    flags.isEdgeTestNeeded = edgeTestNeeded;
-                    flags.isTranslucent = 1 === iTranslucent;
+                      flags.reset(featureMode, instanced, shadowable, thematic);
+                      flags.isAnimated = iAnimate;
+                      flags.isEdgeTestNeeded = edgeTestNeeded;
+                      flags.isTranslucent = 1 === iTranslucent;
+                      flags.isWiremesh = wiremesh;
 
-                    const builder = createSurfaceBuilder(flags);
-                    this.addShader(builder, flags, gl);
+                      const builder = createSurfaceBuilder(flags);
+                      this.addShader(builder, flags, gl);
+                    }
                   }
                 }
               }
@@ -408,6 +450,7 @@ class SurfaceTechnique extends VariedTechnique {
     index += SurfaceTechnique._kAnimated * flags.isAnimated;
     index += SurfaceTechnique._kShadowable * flags.isShadowable;
     index += SurfaceTechnique._kThematic * flags.isThematic;
+    index += SurfaceTechnique._kWiremesh * flags.isWiremesh;
 
     if (flags.isEdgeTestNeeded)
       index += SurfaceTechnique._kEdgeTestNeeded + (flags.featureMode - 1) * SurfaceTechnique._kFeature;
@@ -647,7 +690,7 @@ class PointCloudTechnique extends VariedTechnique {
 }
 
 class RealityMeshTechnique extends VariedTechnique {
-  private static readonly _numVariants = 50;
+  private static readonly _numVariants = 98;
 
   public constructor(gl: WebGLRenderingContext) {
     super(RealityMeshTechnique._numVariants);
@@ -661,20 +704,23 @@ class RealityMeshTechnique extends VariedTechnique {
       for (let iTranslucent = 0; iTranslucent <= 1; iTranslucent++) {
         for (let shadowable = IsShadowable.No; shadowable <= IsShadowable.Yes; shadowable++) {
           for (let thematic = IsThematic.No; thematic <= IsThematic.Yes; thematic++) {
-            const flags = scratchTechniqueFlags;
-            for (const featureMode of featureModes) {
-              flags.reset(featureMode, IsInstanced.No, shadowable, thematic);
-              flags.isClassified = iClassified;
-              flags.isTranslucent = 1 === iTranslucent;
-              const builder = createRealityMeshBuilder(flags);
+            for (let wiremesh = IsWiremesh.No; wiremesh <= IsWiremesh.Yes; wiremesh++) {
+              const flags = scratchTechniqueFlags;
+              for (const featureMode of featureModes) {
+                flags.reset(featureMode, IsInstanced.No, shadowable, thematic);
+                flags.isClassified = iClassified;
+                flags.isWiremesh = wiremesh;
+                flags.isTranslucent = 1 === iTranslucent;
+                const builder = createRealityMeshBuilder(flags);
 
-              if (flags.isTranslucent) {
-                addShaderFlags(builder);
-                addTranslucency(builder);
-              } else
-                this.addFeatureId(builder, featureMode);
+                if (flags.isTranslucent) {
+                  addShaderFlags(builder);
+                  addTranslucency(builder);
+                } else
+                  this.addFeatureId(builder, featureMode);
 
-              this.addShader(builder, flags, gl);
+                this.addShader(builder, flags, gl);
+              }
             }
           }
         }
@@ -699,6 +745,8 @@ class RealityMeshTechnique extends VariedTechnique {
     ndx += 8 * flags.featureMode;
     if (flags.isThematic)
       ndx += 24;
+    if (flags.isWiremesh)
+      ndx += 48;
     return ndx;
   }
 }
