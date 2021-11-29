@@ -81,14 +81,16 @@ export class StagePanelDef extends WidgetHost {
 
   /** Default size of the panel */
   public get size() {
+    // istanbul ignore next
     if ("1" === UiFramework.uiVersion)
       return this._size;
 
+    // istanbul ignore else
     if (FrontstageManager.activeFrontstageDef) {
-      const [_, size] = FrontstageManager.activeFrontstageDef?.getPanelCurrentState(this);
+      const [_, size] = FrontstageManager.activeFrontstageDef.getPanelCurrentState(this);
       return size;
     }
-
+    // istanbul ignore next
     return this._defaultSize;
   }
 
@@ -133,10 +135,12 @@ export class StagePanelDef extends WidgetHost {
     if ("1" === UiFramework.uiVersion)
       return this._panelState;
 
+    // istanbul ignore else
     if (FrontstageManager.activeFrontstageDef) {
       const [state] = FrontstageManager.activeFrontstageDef?.getPanelCurrentState(this);
       return state;
     }
+    // istanbul ignore next
     return this.defaultState;
   }
 

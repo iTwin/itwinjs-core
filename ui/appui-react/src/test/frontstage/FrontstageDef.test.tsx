@@ -180,6 +180,7 @@ describe("FrontstageDef", () => {
       const frontstageProvider = new EmptyFrontstageProvider();
       FrontstageManager.addFrontstageProvider(frontstageProvider);
       const frontstageDef = await FrontstageManager.getFrontstageDef(EmptyFrontstageProvider.stageId);
+      expect(!!frontstageDef?.isReady).to.be.false;
       await FrontstageManager.setActiveFrontstageDef(frontstageDef);
       const sut = FrontstageManager.activeFrontstageDef!;
       sut.rightPanel!.panelZones.start.widgetDefs.map((w) => w.id).should.eql(["WidgetsProviderR1"]);
@@ -279,7 +280,7 @@ describe("float and dock widget", () => {
   it("panel widget should popout", async () => {
     let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
     state = addPanelWidget(state, "right", "rightStart", ["t1"], { minimized: true });
-    state = addPanelWidget(state, "right", "rightMiddle", ["t2"]);
+    state = addPanelWidget(state, "right", "rightMiddle", ["t2", "t4"], { activeTabId: "t2" });
     state = addPanelWidget(state, "right", "rightEnd", ["t3"]);
     state = addTab(state, "t1", { preferredPopoutWidgetSize: { width: 99, height: 99, x: 99, y: 99 } });
     state = addTab(state, "t2");
@@ -299,10 +300,18 @@ describe("float and dock widget", () => {
       defaultState: WidgetState.Open,
     });
 
+    const t4 = new WidgetDef({
+      id: "t4",
+      defaultState: WidgetState.Closed,
+    });
+
     const findWidgetDefGetter = sinon.stub(frontstageDef, "findWidgetDef");
     findWidgetDefGetter
       .onFirstCall().returns(t1);
     findWidgetDefGetter.returns(t2);
+
+    expect(frontstageDef.getWidgetCurrentState(t2)).to.eql(WidgetState.Open);
+    expect(frontstageDef.getWidgetCurrentState(t4)).to.eql(WidgetState.Closed);
 
     const openStub = sinon.stub();
     sinon.stub(window, "open").callsFake(openStub);
@@ -524,4 +533,3 @@ describe("float and dock widget", () => {
   });
 
 });
-

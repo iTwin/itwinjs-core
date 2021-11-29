@@ -165,9 +165,9 @@ export class FrontstageDef {
         }
       }
     }
+    // istanbul ignore next
     for (const widgetId of nineZone.floatingWidgets.allIds) {
       const widget = nineZone.widgets[widgetId];
-      // istanbul ignore else
       if (widget) {
         for (const tabId of widget.tabs) {
           const widgetDef = this.findWidgetDef(tabId);
@@ -183,14 +183,14 @@ export class FrontstageDef {
   }
 
   private triggerStateChangeEventForWidgetsAndPanels(state: NineZoneState | undefined) {
+    // istanbul ignore else
     if (!(this._isStageClosing || this._isApplicationClosing)) {
       if (state) {
         const originalPanelStateMap = new Map<StagePanelDef, StagePanelState>();
         const originalWidgetStateMap = new Map<WidgetDef, WidgetState>();
         const newPanelStateMap = new Map<StagePanelDef, StagePanelState>();
         const newWidgetStateMap = new Map<WidgetDef, WidgetState>();
-        if (this._nineZoneState)
-          this.populateStateMaps(this._nineZoneState, originalPanelStateMap, originalWidgetStateMap);
+        this._nineZoneState && this.populateStateMaps(this._nineZoneState, originalPanelStateMap, originalWidgetStateMap);
         this.populateStateMaps(state, newPanelStateMap, newWidgetStateMap);
 
         // set internal state value before triggering events
@@ -666,11 +666,12 @@ export class FrontstageDef {
     // istanbul ignore else
     if (this.nineZoneState) {
       const location = findTab(this.nineZoneState, widgetDef.id);
+      // istanbul ignore next
       if (!location)
         return WidgetState.Hidden;
 
       const widgetContainer = this.nineZoneState.widgets[location.widgetId];
-      if (widgetDef.id !== widgetContainer.activeTabId)
+      if (widgetDef.id === widgetContainer.activeTabId)
         return WidgetState.Open;
       else
         return WidgetState.Closed;
