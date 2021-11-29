@@ -798,31 +798,34 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 
 ### @itwin/core-backend
 
-| Removed                                                      | Replacement                                    |
-| ------------------------------------------------------------ | ---------------------------------------------- |
-| `AutoPush`                                                   | _eliminated_                                   |
-| `BriefcaseDb.reinstateChanges`                               | `BriefcaseDb.pullChanges`                      |
-| `BriefcaseDb.reverseChanges`                                 | `BriefcaseDb.pullChanges`                      |
-| `BriefcaseIdValue`                                           | `BriefcaseIdValue` in @itwin/core-common       |
-| `BriefcaseManager.getCompatibilityFileName`                  | _eliminated_                                   |
-| `BriefcaseManager.getCompatibilityPath`                      | _eliminated_                                   |
-| `BriefcaseManager.isStandaloneBriefcaseId`                   | use `id === BriefcaseIdValue.Unassigned`       |
-| `compatibilityDir` argument of `BriefcaseManager.initialize` | _eliminated_                                   |
-| `DocumentCarrier`                                            | _eliminated_                                   |
-| `IModelDb.clearSqliteStatementCache`                         | `IModelDb.clearCaches`                         |
-| `IModelDb.clearStatementCache`                               | `IModelDb.clearCaches`                         |
-| `IModelHost.iModelClient`                                    | `IModelHubBackend.iModelClient`                |
-| `IModelHostConfiguration.briefcaseCacheDir`                  | `IModelHostConfiguration.cacheDir`             |
-| `InformationCarrierElement`                                  | _eliminated_                                   |
-| `Platform.isDesktop`                                         | `ProcessDetector.isElectronAppBackend`         |
-| `Platform.isElectron`                                        | `ProcessDetector.isElectronAppBackend`         |
-| `Platform.isMobile`                                          | `ProcessDetector.isMobileAppBackend`           |
-| `Platform.isNodeJs`                                          | `ProcessDetector.isNodeProcess`                |
-| `SnapshotDb.filePath`                                        | `SnapshotDb.pathName`                          |
-| `StandaloneDb.filePath`                                      | `StandaloneDb.pathName`                        |
-| `Texture.width, height, flags`                               | _eliminated_                                   |
-| `TxnAction`                                                  | `TxnAction` in @itwin/core-common              |
-| `TxnChangedEntities.inserted, deleted, updated`              | `TxnChangedEntities.inserts, deletes, updates` |
+| Removed                                                      | Replacement                                                        |
+| ------------------------------------------------------------ | -------------------------------------------------------------------|
+| `AutoPush`                                                   | _eliminated_                                                       |
+| `BriefcaseDb.reinstateChanges`                               | `BriefcaseDb.pullChanges`                                          |
+| `BriefcaseDb.reverseChanges`                                 | `BriefcaseDb.pullChanges`                                          |
+| `BriefcaseIdValue`                                           | `BriefcaseIdValue` in @itwin/core-common                           |
+| `BriefcaseManager.getCompatibilityFileName`                  | _eliminated_                                                       |
+| `BriefcaseManager.getCompatibilityPath`                      | _eliminated_                                                       |
+| `BriefcaseManager.isStandaloneBriefcaseId`                   | use `id === BriefcaseIdValue.Unassigned`                           |
+| `compatibilityDir` argument of `BriefcaseManager.initialize` | _eliminated_                                                       |
+| `DocumentCarrier`                                            | _eliminated_                                                       |
+| `IModelDb.clearSqliteStatementCache`                         | `IModelDb.clearCaches`                                             |
+| `IModelDb.clearStatementCache`                               | `IModelDb.clearCaches`                                             |
+| `IModelHost.iModelClient`                                    | `IModelHubBackend.iModelClient`                                    |
+| `IModelHostConfiguration.briefcaseCacheDir`                  | `IModelHostConfiguration.cacheDir`                                 |
+| `InformationCarrierElement`                                  | _eliminated_                                                       |
+| `Platform.isDesktop`                                         | `ProcessDetector.isElectronAppBackend`                             |
+| `Platform.isElectron`                                        | `ProcessDetector.isElectronAppBackend`                             |
+| `Platform.isMobile`                                          | `ProcessDetector.isMobileAppBackend`                               |
+| `Platform.isNodeJs`                                          | `ProcessDetector.isNodeProcess`                                    |
+| `SnapshotDb.filePath`                                        | `SnapshotDb.pathName`                                              |
+| `StandaloneDb.filePath`                                      | `StandaloneDb.pathName`                                            |
+| `Texture.width, height, flags`                               | _eliminated_                                                       |
+| `TxnAction`                                                  | `TxnAction` in @itwin/core-common                                  |
+| `TxnChangedEntities.inserted, deleted, updated`              | `TxnChangedEntities.inserts, deletes, updates`                     |
+| `NativeAppAuthorizationBackend`                              | Moved to @iTwin/auth-clients repo as `ElectronAuthorizationBackend`|
+| `ElectronAuthorizationEvents`                                | Moved to @iTwin/auth-clients repo                                  |
+| `ElectronAuthorizationRequestHandler`                        | Moved to @iTwin/auth-clients repo                                  |
 
 ### @itwin/core-common
 
@@ -857,6 +860,7 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | `ViewFlags.noGeometryMap`                             | _eliminated_                                                   |
 | `ViewFlags.noSolarLight`                              | [ViewFlags.lighting]($common)                                  |
 | `ViewFlags.noSourceLights`                            | [ViewFlags.lighting]($common)                                  |
+| `NativeAppAuthorizationConfiguration`                 | `MobileAppAuthorizationConfiguration` in @itwin/core-mobile    |
 
 ### @itwin/core-frontend
 
@@ -895,6 +899,7 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | `Viewport.setFlashed`                         | [Viewport.flashedId]($frontend)                                    |
 | `Viewport.setRedrawPending`                   | [Viewport.requestRedraw]($frontend)                                |
 | `WebAppViewer`                                | *eliminated*                                                       |
+| `NativeAppAuthorization`                      | Moved to @iTwin/auth-clients repo as `ElectronAppAuthorization`    |
 
 ### @itwin/core-geometry
 
@@ -919,6 +924,7 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `AgentAuthorizationClient`          | Moved to @iTwin/auth-clients as SerivceAuthorizationClient  |
 | `DelegationAuthorizationClient`     | *removed*                                                   |
 | `IntrospectionClient`               | Moved to @iTwin/auth-clients                                |
+| `ImsAuthorizationClient`           | *removed*                                                    |
 
 ### @itwin/appui-abstract
 
@@ -1452,10 +1458,10 @@ Improvements were made to the performance of [ParticleCollectionBuilder]($fronte
 
 Several changes to the APIs for executing ECSql statements have been made to improve performance and flexibility. This involved breaking changes to the `query`, `queryRowCount`, and `restartQuery` methods of [IModelConnection]($frontend), [IModelDb]($backend), and [ECDb]($backend).
 
-- Previously there was no way to control the format of each row returned by the `query` and `restartQuery` methods, and the default format was verbose and inefficient. Now, these methods accept a [QueryRowFormat]($common) parameter describing the desired format. The default format returns each row as an array instead of an object.
-
 - The `query` and `restartQuery` methods used to take multiple arguments indicating a limit on the number of rows to return, a priority, a quota, and so on. These have been combined into a single [QueryOptions]($common) parameter.
 
+- Previously there was no way to control the format of each row returned by the `query` and `restartQuery` methods, and the default format was verbose and inefficient. Now, these methods accept a [QueryRowFormat]($common) as part of their [QueryOptions]($common) parameter describing the desired format. The default format returns each row as an array instead of an object.
+- 
 - The `query`, `restartQuery`, and `queryRowCount` methods used to accept the statement bindings as type `any[] | object`. The bindings are now specified instead as the more type-safe type [QueryBinder]($common).
 
 ### Binding parameters using QueryBinder
@@ -1496,16 +1502,16 @@ Now, you can bind a set of Ids as a parameter for the `IN` clause. The Ids will 
 The signature of the method has changed to:
 
 ```ts
-query(ecsql: string, params?: QueryBinder, rowFormat = QueryRowFormat.UseArrayIndexes, config?: QueryOptions): AsyncIterableIterator<any>;
+query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
 ```
 
-The `rowFormat` parameter defaults to `QueryRowFormat.Array`. That format is more efficient so its use is preferred, but it differs from the previous row format. You can upgrade existing code to use the old format with minimal changes. For example, if your existing code passes query parameters as an array, change it as follows:
+The `rowFormat` property of the `options` parameter defaults to `QueryRowFormat.UseECSqlPropertyIndexes`. That format is more efficient so its use is preferred, but it differs from the previous row format. You can upgrade existing code to use the old format with minimal changes. For example, if your existing code passes query parameters as an array, change it as follows:
 
 ```ts
   // Replace this:
   db.query("SELECT * FROM bis.Element WHERE ECInstanceId=?", ["0x1"]);
   // With this:
-  db.query("SELECT * FROM bis.Element WHERE ECInstanceId=?", QueryBinder.from(["0x1"]), QueryRowFormat.UseJsPropertyNames);
+  db.query("SELECT * FROM bis.Element WHERE ECInstanceId=?", QueryBinder.from(["0x1"]), { rowFormat: QueryRowFormat.UseJsPropertyNames });
   // The code that accesses the properties of each row can remain unchanged.
 ```
 
@@ -1515,7 +1521,7 @@ Similarly, if your existing code passes an object instead of an array as the que
   // Replace this:
   db.query("SELECT * FROM bis.Element WHERE ECInstanceId = :id", {id: "0x1"});
   // With this:
-  db.query("SELECT * FROM bis.Element WHERE ECInstanceId=?", QueryBinder.from({id: "0x1"}), QueryRowFormat.UseJsPropertyNames);
+  db.query("SELECT * FROM bis.Element WHERE ECInstanceId=?", QueryBinder.from({id: "0x1"}), { rowFormat: QueryRowFormat.UseJsPropertyNames });
   // The code that accesses the properties of each row can remain unchanged.
 ```
 
@@ -1639,3 +1645,54 @@ To use any other external storage set [IModelHostConfiguration.tileCacheService]
   // With this:
   config.tileCacheService = new CustomCloudStorageService();
 ```
+
+## Coordinate Conversion between iModel GeographicCRS and any other GeographicCRS
+
+Coordinate conversions is now possible between the iModel Geographic Coordinate Reference System and any other Geographic Coordinate Reference System.
+Prior to this version, coordinate conversions were limited to those between the iModel Geographic Coordinate Reference System and latitude/longitude of a specified datum, usually WGS84.
+
+To use, in the backend create either a [IModelCoordinatesRequestProps]($common) or a [GeoCoordinatesRequestProps]($common) depending on the direction coordinates are to be converted. Set the [IModelCoordinatesRequestProps.source]($common) or the [GeoCoordinatesRequestProps.target]($common) property to a string containing either the name of a datum (typically WGS84) or an empty string to specify the iModel Geographic CRS native datum or a stringified version of a [GeographicCRSProps]($common) containing the definition of the source or target of the coordinate conversion. The request can be added coordinates to be converted and fed in methods iModel.getGeoCoordinatesFromIModelCoordinates or iModel.getIModelCoordinatesFromGeoCoordinates.
+
+Specification of the GeographicCRS can be complete or incomplete. Although fully-defined custom Geographic CRS are supported, most of the time simply specifying the id or the epsg code of the GeographicCRS is sufficient.
+
+Here are examples of typical GeographicCRS:
+
+```ts
+{ horizontalCRS: { id: "CA83-II" }, verticalCRS: { id: "NAVD88" } }
+```
+
+or
+
+```ts
+{ horizontalCRS: { epsg: 26942 }, verticalCRS: { id: "NAVD88" } },
+```
+
+These identifiers refer to either the key-name of a Geographic CRS in the list of the dictionary or a known EPSG code.
+
+More complex Geographic CRS can also be used such as the following user-defined:
+
+```ts
+      {
+        horizontalCRS: {
+          id: "UserDef-On-NAD83/2011",
+          description: "User Defined",
+          datumId: "NAD83/2011",
+          unit: "Meter",
+          projection: {
+            method: "TransverseMercator",
+            centralMeridian: -1.5,
+            latitudeOfOrigin: 52.30,
+            scaleFactor: 1.0,
+            falseEasting: 198873.0046,
+            falseNorthing: 375064.3871,
+          },
+        },
+        verticalCRS: {
+          id: "GEOID",
+        },
+      }
+```
+
+On the frontend the [GeoConverter]($frontend) class has been modified to accept either a string containing the datum or a [GeographicCRSProps]($common) of a similar format retaining cache capability as before for either format.
+
+**NOTE**: The [IModelCoordinatesRequestProps.source]($common) and the [GeoCoordinatesRequestProps.target]($common) were renamed from previous version that used the sourceDatum and targetDatum properties.

@@ -316,10 +316,6 @@ export * from "./appui-react/zones/ZoneDef";
  * Classes for working with a dialog
  */
 /**
- * @docs-group-description DragDrop
- * Classes for managing DragDrop API drag layers
- */
-/**
  * @docs-group-description Frontstage
  * Classes for working with a Frontstage
  */
@@ -346,11 +342,6 @@ export * from "./appui-react/zones/ZoneDef";
 /**
  * @docs-group-description Notification
  * Classes for working with a Notification or Message
- */
-
-/**
- * @docs-group-description ChildWindow
- * Classes for working with child windows.
  */
 /**
  * @docs-group-description ChildWindowManager

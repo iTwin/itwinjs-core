@@ -7,10 +7,10 @@
  */
 
 import { ECSqlStatement, IModelDb } from "@itwin/core-backend";
-import { assert, DbResult, Id64 } from "@itwin/core-bentley";
+import { assert, DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import {
   CategoryDescription, Content, ElementProperties, ElementPropertiesItem, ElementPropertiesPrimitiveArrayPropertyItem, ElementPropertiesPropertyItem,
-  ElementPropertiesStructArrayPropertyItem, IContentVisitor, Item, PageOptions, PresentationError, PresentationStatus, ProcessFieldHierarchiesProps, ProcessMergedValueProps,
+  ElementPropertiesStructArrayPropertyItem, IContentVisitor, Item, PresentationError, PresentationStatus, ProcessFieldHierarchiesProps, ProcessMergedValueProps,
   ProcessPrimitiveValueProps, PropertyValueFormat, StartArrayProps, StartCategoryProps, StartContentProps, StartFieldProps, StartItemProps,
   StartStructProps, traverseContent,
 } from "@itwin/presentation-common";
@@ -27,10 +27,11 @@ export const buildElementsProperties = (content: Content | undefined): ElementPr
 
 /** @internal */
 export function getElementsCount(db: IModelDb, classNames?: string[]) {
+  const filter = createElementsFilter("e", classNames);
   const query = `
     SELECT COUNT(e.ECInstanceId)
     FROM bis.Element e
-    ${createElementsFilterClause("e", classNames)}
+    ${filter ? `WHERE ${filter}` : ""}
   `;
 
   return db.withPreparedStatement(query, (stmt: ECSqlStatement) => {
@@ -39,21 +40,45 @@ export function getElementsCount(db: IModelDb, classNames?: string[]) {
 }
 
 /** @internal */
-export function getElementIdsByClass(db: IModelDb, classNames?: string[], pageOptions?: PageOptions) {
+export function* iterateElementIds(db: IModelDb, classNames?: string[], limit?: number) {
+  let lastElementId;
+  while (true) {
+    const result = queryElementIds(db, classNames, limit, lastElementId);
+    yield result.ids;
+    lastElementId = result.lastElementId;
+    if (!lastElementId)
+      break;
+  }
+}
+
+function queryElementIds(db: IModelDb, classNames?: string[], limit?: number, lastElementId?: Id64String) {
+  function createWhereClause() {
+    const classFilter = createElementsFilter("e", classNames);
+    const elementFilter = lastElementId ? `e.ECInstanceId > ?` : undefined;
+    if (!classFilter && !elementFilter)
+      return "";
+    if (classFilter && elementFilter)
+      return `WHERE ${classFilter} AND ${elementFilter}`;
+    return `WHERE ${classFilter ?? ""} ${elementFilter ?? ""}`;
+  }
+
   const query = `
     SELECT e.ECInstanceId elId, eSchemaDef.Name || ':' || eClassDef.Name elClassName
     FROM bis.Element e
     LEFT JOIN meta.ECClassDef eClassDef ON eClassDef.ECInstanceId = e.ECClassId
     LEFT JOIN meta.ECSchemaDef eSchemaDef ON eSchemaDef.ECInstanceId = eClassDef.Schema.Id
-    ${createElementsFilterClause("e", classNames)}
-    ORDER BY e.ECClassId, e.ECInstanceId
-    ${createElementsLimitClause(pageOptions)}
+    ${createWhereClause()}
+    ORDER BY e.ECInstanceId ASC
   `;
 
   return db.withPreparedStatement(query, (stmt: ECSqlStatement) => {
+    if (lastElementId)
+      stmt.bindId(1, lastElementId);
+
     const ids = new Map<string, string[]>();
     let currentClassName = "";
     let currentIds: string[] = [];
+    let loadedIds = 0;
     while (stmt.step() === DbResult.BE_SQLITE_ROW) {
       const row = stmt.getRow();
       if (!row.elId || !row.elClassName)
@@ -70,21 +95,17 @@ export function getElementIdsByClass(db: IModelDb, classNames?: string[], pageOp
         }
       }
       currentIds.push(row.elId);
+      loadedIds++;
+      if (limit && loadedIds >= limit)
+        return { ids, lastElementId: row.elId };
     }
-    return ids;
+    return { ids, lastElementId: undefined };
   });
 }
 
-function createElementsLimitClause(pageOptions?: PageOptions) {
-  if (pageOptions === undefined || (pageOptions.size === undefined && pageOptions.start === undefined))
-    return "";
-
-  return `LIMIT ${pageOptions.size ?? -1} OFFSET ${pageOptions.start ?? 0}`;
-}
-
-function createElementsFilterClause(elementAlias: string, classNames?: string[]) {
+function createElementsFilter(elementAlias: string, classNames?: string[]) {
   if (classNames === undefined || classNames.length === 0)
-    return "";
+    return undefined;
 
   // check if list contains only valid class names
   const classNameRegExp = new RegExp(/^[\w]+[.:][\w]+$/);
@@ -94,7 +115,7 @@ function createElementsFilterClause(elementAlias: string, classNames?: string[])
       Valid class name formats: "<schema name or alias>.<class name>", "<schema name or alias>:<class name>"`);
   }
 
-  return `WHERE ${elementAlias}.ECClassId IS (${classNames.join(",")})`;
+  return `${elementAlias}.ECClassId IS (${classNames.join(",")})`;
 }
 
 interface IPropertiesAppender {

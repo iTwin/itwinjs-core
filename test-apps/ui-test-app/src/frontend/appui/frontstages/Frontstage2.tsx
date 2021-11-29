@@ -24,8 +24,10 @@ import { ConditionalBooleanValue, StandardContentLayouts, WidgetState } from "@i
 /* eslint-disable react/jsx-key, deprecation/deprecation */
 
 export class Frontstage2 extends FrontstageProvider {
+  public static stageId = "ui-test-app:Test2";
+
   public get id(): string {
-    return "Test2";
+    return Frontstage2.stageId;
   }
 
   public get frontstage(): React.ReactElement<FrontstageProps> {

@@ -31,8 +31,9 @@ class IModelOpenControl extends ContentControl {
 }
 
 export class IModelOpenFrontstage extends FrontstageProvider {
+  public static stageId = "ui-test-app:IModelOpen";
   public get id(): string {
-    return "IModelOpen";
+    return IModelOpenFrontstage.stageId;
   }
 
   public get frontstage(): React.ReactElement<FrontstageProps> {

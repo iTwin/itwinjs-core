@@ -22,12 +22,12 @@ import { KeySetJSON } from "./KeySet";
 import { LabelDefinitionJSON } from "./LabelDefinition";
 import {
   ContentDescriptorRequestOptions, ContentInstanceKeysRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, DisplayLabelRequestOptions,
-  DisplayLabelsRequestOptions, DistinctValuesRequestOptions, ElementPropertiesRequestOptions, FilterByInstancePathsHierarchyRequestOptions,
-  FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, MultiElementPropertiesRequestOptions, Paged, RequestOptions,
+  DisplayLabelsRequestOptions, DistinctValuesRequestOptions, FilterByInstancePathsHierarchyRequestOptions,
+  FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, Paged, RequestOptions,
   SelectionScopeRequestOptions, SingleElementPropertiesRequestOptions,
 } from "./PresentationManagerOptions";
 import {
-  ContentSourcesRpcResult, ElementPropertiesRpcResult, PresentationRpcInterface, PresentationRpcRequestOptions, PresentationRpcResponse,
+  ContentSourcesRpcResult, PresentationRpcInterface, PresentationRpcRequestOptions, PresentationRpcResponse,
 } from "./PresentationRpcInterface";
 import { RulesetVariableJSON } from "./RulesetVariables";
 import { SelectionScope } from "./selection/SelectionScope";
@@ -173,10 +173,8 @@ export class RpcRequestsHandler implements IDisposable {
       this.rpcClient.getPagedDistinctValues.bind(this.rpcClient), options);
   }
 
-  public async getElementProperties(options: SingleElementPropertiesRequestOptions<IModelRpcProps>): Promise<ElementProperties | undefined>;
-  public async getElementProperties(options: MultiElementPropertiesRequestOptions<IModelRpcProps>): Promise<PagedResponse<ElementProperties>>;
-  public async getElementProperties(options: ElementPropertiesRequestOptions<IModelRpcProps>): Promise<ElementPropertiesRpcResult> {
-    return this.request<ElementPropertiesRpcResult, ElementPropertiesRequestOptions<IModelRpcProps>>(
+  public async getElementProperties(options: SingleElementPropertiesRequestOptions<IModelRpcProps>): Promise<ElementProperties | undefined> {
+    return this.request<ElementProperties | undefined, SingleElementPropertiesRequestOptions<IModelRpcProps>>(
       this.rpcClient.getElementProperties.bind(this.rpcClient), options);
   }
 

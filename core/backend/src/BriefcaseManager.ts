@@ -16,7 +16,7 @@ import {
   BriefcaseId, BriefcaseIdValue, BriefcaseProps, ChangesetFileProps, ChangesetIndex, ChangesetType, IModelError, IModelVersion, LocalBriefcaseProps,
   LocalDirName, LocalFileName, RequestNewBriefcaseProps, RpcActivity,
 } from "@itwin/core-common";
-import { TelemetryEvent } from "@bentley/telemetry-client";
+import { TelemetryEvent } from "@itwin/core-telemetry";
 import { AcquireNewBriefcaseIdArg } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { CheckpointManager, CheckpointProps, ProgressFunction } from "./CheckpointManager";

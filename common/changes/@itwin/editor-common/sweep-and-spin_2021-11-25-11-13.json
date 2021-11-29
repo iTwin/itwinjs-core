@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/editor-common",
+      "comment": "New tools to sweep/spin faces and delete faces/imprinted edges.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/editor-common"
+}
