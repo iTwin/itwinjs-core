@@ -6,17 +6,20 @@
  * @module ModelState
  */
 
-import { Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
+import { ByteStream, Id64, Id64String, JsonUtils, Logger } from "@itwin/core-bentley";
 import {
   GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, ModelProps, RealityDataFormat, RealityDataSourceKey, RelatedElement, SpatialClassifiers,
 } from "@itwin/core-common";
-import { Point2d, Range3d } from "@itwin/core-geometry";
+import { ClipPlane, ClipPrimitive, ClipShape, ClipUtilities, ConvexClipPlaneSet, LineString3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Range3d, UnionOfConvexClipPlaneSets, Vector3d,
+} from "@itwin/core-geometry";
 import { EntityState } from "./EntityState";
 import { HitDetail } from "./HitDetail";
 import { IModelConnection } from "./IModelConnection";
 import { RealityDataSource } from "./RealityDataSource";
-import { createOrbitGtTileTreeReference, createPrimaryTileTreeReference, createRealityTileTreeReference, TileTreeReference } from "./tile/internal";
+import { RealityDataDisplayStyle } from "./RealityDataDisplayStyle";
+import { createOrbitGtTileTreeReference, createPrimaryTileTreeReference, createRealityTileTreeReference, RealityModelTileTree, TileTreeReference } from "./tile/internal";
 import { ViewState } from "./ViewState";
+import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 
 /** Represents the front-end state of a [Model]($backend).
  * @public
@@ -117,10 +120,11 @@ export abstract class GeometricModelState extends ModelState implements Geometri
 
     const spatialModel = this.asSpatialModel;
     const rdSourceKey = this.jsonProperties.rdSourceKey;
+    let tileTreeReference: TileTreeReference | undefined;
 
     if (rdSourceKey) {
       const useOrbitGtTileTreeReference = rdSourceKey.format === RealityDataFormat.OPC;
-      const treeRef = (!useOrbitGtTileTreeReference) ?
+      tileTreeReference = (!useOrbitGtTileTreeReference) ?
         createRealityTileTreeReference({
           rdSourceKey,
           iModel: this.iModel,
@@ -128,6 +132,7 @@ export abstract class GeometricModelState extends ModelState implements Geometri
           modelId: this.id,
           // url: tilesetUrl, // If rdSourceKey is defined, url is not used
           classifiers: undefined !== spatialModel ? spatialModel.classifiers : undefined,
+          realityDataDisplayStyle: undefined !== spatialModel ? spatialModel.realityDataDisplayStyle : undefined,
         }) :
         createOrbitGtTileTreeReference({
           rdSourceKey,
@@ -137,7 +142,6 @@ export abstract class GeometricModelState extends ModelState implements Geometri
           // orbitGtBlob: props.orbitGtBlob!, // If rdSourceKey is defined, orbitGtBlob is not used
           classifiers: undefined !== spatialModel ? spatialModel.classifiers : undefined,
         });
-      return treeRef;
     }
 
     const orbitGtBlob = this.jsonProperties.orbitGtBlob;
@@ -154,7 +158,7 @@ export abstract class GeometricModelState extends ModelState implements Geometri
       // Create rdSourceKey if not provided
       const rdSourceKeyOGT: RealityDataSourceKey = RealityDataSource.createKeyFromOrbitGtBlobProps(orbitGtBlob);
 
-      return createOrbitGtTileTreeReference({
+      tileTreeReference =  createOrbitGtTileTreeReference({
         rdSourceKey: rdSourceKeyOGT,
         iModel: this.iModel,
         source: view,
@@ -170,7 +174,7 @@ export abstract class GeometricModelState extends ModelState implements Geometri
 
     if(tilesetUrl) {
       const rdSourceKeyCS = RealityDataSource.createKeyFromUrl(tilesetUrl);
-      return createRealityTileTreeReference({
+      tileTreeReference = createRealityTileTreeReference({
         rdSourceKey: rdSourceKeyCS,
         url : tilesetUrl,
         iModel: this.iModel,
@@ -178,10 +182,123 @@ export abstract class GeometricModelState extends ModelState implements Geometri
         modelId: this.id,
         tilesetToDbTransform: this.jsonProperties.tilesetToDbTransform,
         classifiers: undefined !== spatialModel ? spatialModel.classifiers : undefined,
+        realityDataDisplayStyle: undefined !== spatialModel ? spatialModel.realityDataDisplayStyle : undefined,
       });
     }
 
-    return createPrimaryTileTreeReference(view, this);
+    if (tileTreeReference === undefined) {
+      return createPrimaryTileTreeReference(view, this);
+    }
+
+    // Try to query clips from the iModel
+    if (undefined !== this.id && Id64.isValidId64(this.id) && !Id64.isTransient(this.id)) {
+      const clipEcsql = `SELECT SmModelClips, SmModelClipVectors FROM ScalableMesh.ScalableMeshModel WHERE ECInstanceId=${this.id}`;
+
+      // Query clips stored in the iModel for this reality data.
+      this.iModel.query(clipEcsql).next().then((row) => this.parseAndAddClips(tileTreeReference as RealityModelTileTree.Reference, row)).catch(() => {
+        const errMsg = `Error querying or parsing line string clips for Model Id=${this.id}`;
+        Logger.logError(FrontendLoggerCategory.RealityData, errMsg);
+      });
+    }
+
+    return tileTreeReference;
+  }
+
+  /** @internal */
+  private parseAndAddClips(tileTreeReference: RealityModelTileTree.Reference, dbRow: IteratorResult<any,any> | undefined): void {
+    if (undefined === dbRow) {
+      // Skip models with no clips
+      return;
+    }
+    let clipsAdded = false;
+    const linestringsBlob = dbRow.value[0]; // SmModelClips => linestrings type
+    const vectorsBlob = dbRow.value[1];     // SmModelClipVectors => ClipVectors type
+    if (linestringsBlob !== null) {
+      const stream = new ByteStream(linestringsBlob.buffer);
+      while (stream.curPos !== stream.length) {
+      /* const clipId =*/ stream.nextId64;
+        tileTreeReference.clips?.appendClone(this.createClipPrimitiveFromLineString(stream));
+        clipsAdded = true;
+      }
+    }
+    if (vectorsBlob !== null) {
+      const stream = new ByteStream(vectorsBlob.buffer);
+      while (stream.curPos !== stream.length) {
+        /* const clipId =*/ stream.nextId64;
+        /* const type =*/ stream.nextInt32;
+        /* const isActive =*/ stream.nextUint8;
+        /* const geomType =*/ stream.nextUint32;
+        const nbPrimitives = stream.nextUint32;
+        for (let i = 0; i < nbPrimitives; i++) {
+          tileTreeReference.clips?.appendClone(this.createClipPrimitiveFromVector(stream));
+        }
+        clipsAdded = true;
+      }
+    }
+    if (!clipsAdded && linestringsBlob === null && vectorsBlob === null) {
+      throw new Error("Unknown clip type");
+    }
+    if (clipsAdded) {
+      tileTreeReference.updateRenderClipVolume();
+    }
+  }
+
+  /** @internal */
+  private createClipPrimitiveFromLineString(stream: ByteStream): ClipPrimitive {
+    const nbClipShapePoints = stream.nextInt32;
+    /* const upper =*/ stream.nextInt32;
+    const points: Point3d[] = [];
+    for (let i = 0; i < nbClipShapePoints; i++) {
+      points.push(new Point3d(stream.nextFloat64, stream.nextFloat64, stream.nextFloat64));
+    }
+    const type = stream.nextInt32;
+    const isActive = stream.nextUint8;
+    /* const geomType =*/ stream.nextUint32;
+
+    const lineString = LineString3d.create(points);
+    const clipTransform = lineString.fractionToFrenetFrame(0.0);
+    clipTransform.multiplyInversePoint3dArrayInPlace(points);
+    const shape = ClipShape.createShape(points, undefined, undefined, clipTransform, type === 0, isActive === 0);
+    return ClipPrimitive.createCapture(shape?.fetchClipPlanesRef());
+  }
+
+  /** @internal */
+  private createClipPrimitiveFromVector(stream: ByteStream): ClipPrimitive {
+    const nbConvexPlaneSets = stream.nextUint32;
+    let unionOfConvexClipPlaneSet = UnionOfConvexClipPlaneSets.createEmpty();
+    for (let j = 0; j < nbConvexPlaneSets; j++) {
+      const nbPlanes = stream.nextUint32;
+      const convexPlanes = ConvexClipPlaneSet.createEmpty();
+      for (let k = 0; k < nbPlanes; k++) {
+        const origin = new Point3d(stream.nextFloat64, stream.nextFloat64, stream.nextFloat64);
+        const normal = new Vector3d(stream.nextFloat64, stream.nextFloat64, stream.nextFloat64);
+        const newPlane = Plane3dByOriginAndUnitNormal.create(origin, normal);
+        if (newPlane !== undefined)
+          convexPlanes.addPlaneToConvexSet(ClipPlane.createPlane(newPlane, undefined, undefined, undefined));
+      }
+      unionOfConvexClipPlaneSet.addConvexSet(convexPlanes);
+    }
+    const isMask = stream.nextUint8 === 1 ? true : false;
+    const isInvisible = stream.nextUint8 === 1 ? true : false;
+    if (isMask === true) {
+      const origConvexCPS = unionOfConvexClipPlaneSet.clone();
+      unionOfConvexClipPlaneSet = UnionOfConvexClipPlaneSets.createEmpty();
+      for (const convexSet of origConvexCPS.convexSets) {
+        const complimentarySet = ClipUtilities.createComplementaryClips(convexSet);
+        for (const complimentaryConvexSet of complimentarySet.convexSets) {
+          unionOfConvexClipPlaneSet.addConvexSet(complimentaryConvexSet);
+        }
+      }
+    }
+
+    unionOfConvexClipPlaneSet.setInvisible(isInvisible);
+    const hasZClip = stream.nextUint8 === 1 ? true : false;
+    if (hasZClip) {
+      const zLow = stream.nextFloat64;
+      const zHigh = stream.nextFloat64;
+      unionOfConvexClipPlaneSet.addOutsideZClipSets(isMask, zLow, zHigh);
+    }
+    return ClipPrimitive.createCapture(unionOfConvexClipPlaneSet);
   }
 }
 /** Represents the front-end state of a [GeometricModel2d]($backend).
@@ -268,6 +385,7 @@ export class SheetModelState extends GeometricModel2dState {
 export class SpatialModelState extends GeometricModel3dState {
   /** If this is a reality model, provides access to a list of available spatial classifiers that can be applied to it. */
   public readonly classifiers?: SpatialClassifiers;
+  public readonly realityDataDisplayStyle?: RealityDataDisplayStyle;
 
   /** @internal */
   public static override get className() { return "SpatialModel"; }
@@ -276,9 +394,12 @@ export class SpatialModelState extends GeometricModel3dState {
 
   public constructor(props: ModelProps, iModel: IModelConnection, state?: SpatialModelState) {
     super(props, iModel, state);
-    if (this.isRealityModel)
+    if (this.isRealityModel) {
       this.classifiers = new SpatialClassifiers(this.jsonProperties);
+      this.realityDataDisplayStyle = RealityDataDisplayStyle.fromJSON(this.jsonProperties.scalablemesh);
+    }
   }
+
   /** Return true if this is a reality model (represented by a 3d tile set). */
   public get isRealityModel(): boolean {
     return undefined !== this.jsonProperties.tilesetUrl;

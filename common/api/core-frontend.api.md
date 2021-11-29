@@ -7597,6 +7597,11 @@ export namespace RealityModelTileTree {
         // (undocumented)
         get classifiers(): SpatialClassifiers | undefined;
         // (undocumented)
+        get clips(): ClipVector | undefined;
+        set clips(clips: ClipVector | undefined);
+        // (undocumented)
+        protected _clips?: ClipVector;
+        // (undocumented)
         collectStatistics(stats: RenderMemory.Statistics): void;
         // (undocumented)
         discloseTileTrees(trees: DisclosedTileTreeSet): void;
@@ -7622,9 +7627,13 @@ export namespace RealityModelTileTree {
         // (undocumented)
         get planarClipMaskPriority(): number;
         // (undocumented)
+        protected _renderClipVolume?: RenderClipVolume | undefined;
+        // (undocumented)
         protected _transform?: Transform;
         // (undocumented)
         unionFitRange(union: Range3d): void;
+        // (undocumented)
+        updateRenderClipVolume(): void;
     }
     // (undocumented)
     export interface ReferenceBaseProps {
@@ -7640,6 +7649,8 @@ export namespace RealityModelTileTree {
         planarClipMask?: PlanarClipMaskSettings;
         // (undocumented)
         rdSourceKey: RealityDataSourceKey;
+        // (undocumented)
+        realityDataDisplayStyle?: RealityDataDisplayStyle;
         // (undocumented)
         source: RealityModelSource;
         // (undocumented)
@@ -9331,6 +9342,8 @@ export class SpatialModelState extends GeometricModel3dState {
     // @internal (undocumented)
     static get className(): string;
     get isRealityModel(): boolean;
+    // (undocumented)
+    readonly realityDataDisplayStyle?: RealityDataDisplayStyle;
 }
 
 // @internal

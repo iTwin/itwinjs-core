@@ -15,7 +15,7 @@ import {
   RealityDataSourceKey,
   SpatialClassifiers, ViewFlagOverrides,
 } from "@itwin/core-common";
-import { Angle, Constant, Ellipsoid, Matrix3d, Point3d, Range3d, Ray3d, Transform, TransformProps, Vector3d, XYZ } from "@itwin/core-geometry";
+import { Angle, ClipVector, Constant, Ellipsoid, Matrix3d, Point3d, Range3d, Ray3d, Transform, TransformProps, Vector3d, XYZ } from "@itwin/core-geometry";
 import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
 import { DisplayStyleState } from "../DisplayStyleState";
 import { HitDetail } from "../HitDetail";
@@ -23,6 +23,8 @@ import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { PlanarClipMaskState } from "../PlanarClipMaskState";
 import { RealityDataSource } from "../RealityDataSource";
+import { RealityDataDisplayStyle } from "../RealityDataDisplayStyle";
+import { RenderClipVolume } from "../render/RenderClipVolume";
 import { RenderMemory } from "../render/RenderMemory";
 import { SceneContext } from "../ViewContext";
 import { ScreenViewport } from "../Viewport";
@@ -32,7 +34,6 @@ import {
   RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile, TileDrawArgs, TileLoadPriority, TileRequest, TileTree,
   TileTreeOwner, TileTreeReference, TileTreeSupplier,
 } from "./internal";
-
 function getUrl(content: any) {
   return content ? (content.url ? content.url : content.uri) : undefined;
 }
@@ -510,6 +511,7 @@ export namespace RealityModelTileTree {
     name?: string;
     classifiers?: SpatialClassifiers;
     planarClipMask?: PlanarClipMaskSettings;
+    realityDataDisplayStyle?: RealityDataDisplayStyle;
   }
   export interface ReferenceProps extends ReferenceBaseProps {
     url?: string;
@@ -525,6 +527,8 @@ export namespace RealityModelTileTree {
     private _isGlobal?: boolean;
     protected _planarClipMask?: PlanarClipMaskState;
     protected _classifier?: SpatialClassifierTileTreeReference;
+    protected _clips?: ClipVector;
+    protected _renderClipVolume?: RenderClipVolume | undefined;
     protected _mapDrapeTree?: TileTreeReference;
     public get modelId() { return this._modelId; }
     public get classifiers(): SpatialClassifiers | undefined { return undefined !== this._classifier ? this._classifier.classifiers : undefined; }
@@ -560,9 +564,29 @@ export namespace RealityModelTileTree {
 
       if (undefined !== props.classifiers)
         this._classifier = createClassifierTileTreeReference(props.classifiers, this, props.iModel, props.source);
+
+      if (undefined !== props.realityDataDisplayStyle) {
+        this._clips = props.realityDataDisplayStyle.clips;
+        if (undefined !== this._clips) {
+          this._renderClipVolume = IModelApp.renderSystem.createClipVolume(this._clips);
+        }
+      }
     }
 
     public get planarClassifierTreeRef() { return this._classifier && this._classifier.activeClassifier && this._classifier.isPlanar ? this._classifier : undefined; }
+
+    public get clips() { return this._clips;}
+    public set clips(clips: ClipVector | undefined) {
+      this._clips = clips;
+      // Clips have changed, update the render clip volume.
+      this.updateRenderClipVolume();
+    }
+
+    public updateRenderClipVolume() {
+      if (undefined !== this._clips) {
+        this._renderClipVolume = IModelApp.renderSystem.createClipVolume(this._clips);
+      }
+    }
 
     public override unionFitRange(union: Range3d): void {
       const contentRange = this.computeWorldContentRange();
@@ -731,6 +755,9 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
       if (undefined !== elevationBias)
         drawArgs.location.origin.z -= elevationBias;
     }
+
+    if (undefined !== drawArgs && undefined !== this._renderClipVolume)
+      drawArgs.clipVolume = this._renderClipVolume;
 
     return drawArgs;
   }
