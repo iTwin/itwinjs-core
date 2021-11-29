@@ -62,9 +62,9 @@ interface ListOptions extends WorkspaceId {
 }
 
 /** Create a new empty WorkspaceFile  */
-function createWorkspaceFile(args: WorkspaceId) {
+async function createWorkspaceFile(args: WorkspaceId) {
   const wsFile = new EditableWorkspaceFile(args.workspaceId, IModelHost.appWorkspace);
-  wsFile.create();
+  await wsFile.create();
   console.log(`created WorkspaceFile ${wsFile.db.nativeDb.getFilePath()}`);
   wsFile.close();
 }
