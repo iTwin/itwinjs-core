@@ -20,7 +20,7 @@ import {
   FrameworkRootState, FrameworkToolAdmin, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs, FrontstageDef, FrontstageManager,
   InitialAppUiSettings,
   ModalFrontstageClosedEventArgs, SafeAreaContext, StateManager, SyncUiEventDispatcher, SYSTEM_PREFERRED_COLOR_THEME, ThemeManager,
-  ToolbarDragInteractionContext, UiFramework, UiSettingsProvider, UserSettingsStorage,
+  ToolbarDragInteractionContext, UiFramework, UiStateStorageHandler,
 } from "@itwin/appui-react";
 import { BeDragDropContext } from "@itwin/components-react";
 import { Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
@@ -33,7 +33,6 @@ import {
 } from "@itwin/core-frontend";
 import { MarkupApp } from "@itwin/core-markup";
 import { AndroidApp, IOSApp } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
-import { LocalSettingsStorage, UiSettings } from "@itwin/core-react";
 import { EditTools } from "@itwin/editor-frontend";
 import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
@@ -162,23 +161,12 @@ export class SampleAppIModelApp {
   public static iModelParams: SampleIModelParams | undefined;
   public static testAppConfiguration: TestAppConfiguration | undefined;
   private static _appStateManager: StateManager | undefined;
-  private static _localUiSettings = new LocalSettingsStorage();
-  private static _UserUiSettingsStorage = new UserSettingsStorage(); // eslint-disable-line deprecation/deprecation
 
   // Favorite Properties Support
   private static _selectionSetListener = new ElementSelectionListener(true);
 
   public static get store(): Store<RootState> {
     return StateManager.store as Store<RootState>;
-  }
-
-  public static getUiSettingsStorage(): UiSettings {
-    const authorized = !!IModelApp.authorizationClient;
-    type authClient = ElectronAppAuthorization | BrowserAuthorizationClient;
-    if (SampleAppIModelApp.testAppConfiguration?.useLocalSettings || !authorized || !(IModelApp.authorizationClient as authClient).hasSignedIn) {
-      return SampleAppIModelApp._localUiSettings;
-    }
-    return SampleAppIModelApp._UserUiSettingsStorage;
   }
 
   public static async startup(opts: NativeAppOpts): Promise<void> {
@@ -332,9 +320,6 @@ export class SampleAppIModelApp {
 
     // initialize any settings providers that may need to have defaults set by iModelApp
     UiFramework.registerUserSettingsProvider(new AppUiSettings(defaults));
-
-    // go ahead and initialize settings before login or in case login is by-passed
-    await UiFramework.setUiSettingsStorage(SampleAppIModelApp.getUiSettingsStorage());
 
     UiFramework.useDefaultPopoutUrl = true;
 
@@ -632,7 +617,6 @@ const AppFrameworkVersion = connect(mapFrameworkVersionStateToProps)(AppFramewor
 
 const SampleAppViewer2 = () => {
   const [isAuthorized, setIsAuthorized] = React.useState<boolean>(false);
-  const [uiSettingsStorage, setUISettingStore] = React.useState(SampleAppIModelApp.getUiSettingsStorage());
 
   React.useEffect(() => {
     AppUi.initialize();
@@ -643,16 +627,9 @@ const SampleAppViewer2 = () => {
   }, []);
 
   React.useEffect(() => {
-    // Update the UiSettingsStorage based on if you're signed in or out.
-    setUISettingStore(SampleAppIModelApp.getUiSettingsStorage());
-
     // Load the correct Frontstage based on whether or not you're authorized.
     isAuthorized ? SampleAppIModelApp.showSignedIn() : SampleAppIModelApp.showSignInPage(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }, [isAuthorized]);
-
-  React.useEffect(() => {
-    UiFramework.setUiSettingsStorage(uiSettingsStorage); // eslint-disable-line @typescript-eslint/no-floating-promises
-  }, [uiSettingsStorage]);
 
   const _onAccessTokenChanged = () => {
     if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof ElectronAppAuthorization) {
@@ -689,12 +666,11 @@ const SampleAppViewer2 = () => {
           <SafeAreaContext.Provider value={SafeAreaInsets.All}>
             <AppDragInteraction>
               <AppFrameworkVersion>
-                {/** UiSettingsProvider is optional. By default LocalUiSettings is used to store UI settings. */}
-                <UiSettingsProvider settingsStorage={uiSettingsStorage}>
+                <UiStateStorageHandler>
                   <ConfigurableUiContent
                     appBackstage={<AppBackstageComposer />}
                   />
-                </UiSettingsProvider>
+                </UiStateStorageHandler>
               </AppFrameworkVersion>
             </AppDragInteraction>
           </SafeAreaContext.Provider>

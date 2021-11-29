@@ -24,7 +24,7 @@ export class B3dmReader extends GltfReader {
 
   public static create(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, is3d: boolean, range: ElementAlignedBox3d,
     system: RenderSystem, yAxisUp: boolean, isLeaf: boolean, tileCenter: Point3d, transformToRoot?: Transform,
-    isCanceled?: ShouldAbortReadGltf, idMap?: BatchedTileIdMap): B3dmReader | undefined {
+    isCanceled?: ShouldAbortReadGltf, idMap?: BatchedTileIdMap, deduplicateVertices=false): B3dmReader | undefined {
     const header = new B3dmHeader(stream);
     if (!header.isValid)
       return undefined;
@@ -51,13 +51,13 @@ export class B3dmReader extends GltfReader {
     const batchTableLength = header.featureTableJson ? JsonUtils.asInt(header.featureTableJson.BATCH_LENGTH, 0) : 0;
 
     return undefined !== props ? new B3dmReader(props, iModel, modelId, is3d, system, range, isLeaf, batchTableLength,
-      transformToRoot, header.batchTableJson, isCanceled, idMap, pseudoRtcBias) : undefined;
+      transformToRoot, header.batchTableJson, isCanceled, idMap, pseudoRtcBias, deduplicateVertices) : undefined;
   }
 
   private constructor(props: GltfReaderProps, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem,
     private _range: ElementAlignedBox3d, private _isLeaf: boolean, private _batchTableLength: number, private _transformToRoot?: Transform, private _batchTableJson?: any
-    , isCanceled?: ShouldAbortReadGltf, private _idMap?: BatchedTileIdMap, private _pseudoRtcBias?: Vector3d) {
-    super(props, iModel, modelId, is3d, system, BatchType.Primary, isCanceled);
+    , isCanceled?: ShouldAbortReadGltf, private _idMap?: BatchedTileIdMap, private _pseudoRtcBias?: Vector3d, deduplicateVertices=false) {
+    super(props, iModel, modelId, is3d, system, BatchType.Primary, isCanceled, deduplicateVertices);
   }
 
   public async read(): Promise<GltfReaderResult> {

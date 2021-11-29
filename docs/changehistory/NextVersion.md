@@ -110,6 +110,20 @@ The following code applies a display style similar to those illustrated above to
   });
 ```
 
+## Wiremesh display
+
+The graphics displayed by an iTwin.js [Viewport]($frontend) consist primarily of triangulated meshes. It can sometimes be useful to visualize the triangulation of these meshes. A new view flag - [ViewFlags.wiremesh]($common) - now enables wiremesh display. When wiremesh display is enabled, the edges of each triangle are overlaid on top of the mesh as anti-aliased black lines approximately 1 pixel wide.
+
+To enable wiremesh display for a viewport:
+
+```ts
+  viewport.viewFlags = viewport.viewFlags.with("wiremesh", true);
+```
+
+![Wiremesh applied to a plant model](./assets/wiremesh-plant.jpg)
+
+![Wiremesh applied to a reality model](./assets/wiremesh-reality.jpg)
+
 ## Viewport synchronization
 
 [TwoWayViewportSync]($frontend) establishes a connection between two [Viewport]($frontend)s such that any change to one viewport is reflected in the other. This includes not only [Frustum]($common) changes, but changes to the display style, category and model selectors, and so on. Synchronizing **everything** is not always desirable; and if the viewports are viewing two different [IModelConnection]($frontend)s it is not even meaningful, as category and model Ids from one iModel will not make sense in the context of the other iModel.
@@ -658,8 +672,8 @@ The format of [KeySetJSON]($presentation-common) has been changed to reduce its 
 
 ### Changes to presentation rule specifications
 
-- Added ability to specify polymorphism at class level rather than specification level. 
-  
+- Added ability to specify polymorphism at class level rather than specification level.
+
   Previously polymorphism was specified at specification level using [ContentInstancesOfSpecificClassesSpecification.handleInstancesPolymorphically]($presentation-common) and [InstanceNodesOfSpecificClassesSpecification.arePolymorphic]($presentation-common) flags. They're now deprecated in favor of the new [MultiSchemaClassesSpecification.arePolymorphic]($presentation-common) attribute and act as default values if the new attribute is not specified.
 
   The change allows [ContentInstancesOfSpecificClassesSpecification]($presentation-common) and [InstanceNodesOfSpecificClassesSpecification]($presentation-common) specify multiple classes with different polymorphism, if necessary.
@@ -783,6 +797,14 @@ await IModelApp.startup({
 ## Signature change to backend Geocoordinate methods
 
 The two methods [IModelDb.getIModelCoordinatesFromGeoCoordinates]($backend) and [IModelDb.getGeoCoordinatesFromIModelCoordinates]($backend) used to take a string argument that was a stringified [IModelCoordinatesRequestProps]($common) and [GeoCoordinatesRequestProps]($common) respectively. Those arguments were changed to accept the interfaces directly. You should remove `JSON.stringify` from your code if you get compile errors.
+
+## Changes to UnitProps
+
+The `altDisplayLabels` property in [UnitProps]($quantity) has been removed. AlternateLabels are now provided via a [AlternateUnitLabelsProvider]($quantity). The [QuantityFormatter]($frontend) now provides one for use when parsing string to quantities. To add custom labels use [QuantityFormatter.addAlternateLabels]($frontend) see example below.
+
+  ```ts
+  IModelApp.quantityFormatter.addAlternateLabels("Units.FT", "feet", "foot");
+  ```
 
 ## Removal of previously deprecated APIs
 
@@ -933,6 +955,10 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `LoadingPromptProps.isDeterministic` | `LoadingPromptProps.isDeterminate` in @itwin/core-react |
 | `NumericInput` component             | `NumberInput` component in @itwin/core-react            |
 | `TabsProps.onClickLabel`             | `TabsProps.onActivateTab` in @itwin/core-react          |
+| `LocalSettingsStorage`               | `LocalStateStorage`                                     |
+| `UiSettingsResult`                   | `UiStateStorageResult`                                  |
+| `UiSetting`                          | `UiStateEntry`                                          |
+| `UiSettings`                         | `UiStateStorage`                                        |
 
 ### @itwin/components-react
 
@@ -1003,6 +1029,8 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `IModelConnectedModelsTree`                | *eliminated*                                                                                                                  |
 | `IModelConnectedSpatialContainmentTree`    | *eliminated*                                                                                                                  |
 | `CategoryTreeWithSearchBox`                | *eliminated*                                                                                                                  |
+| `UiSettingsProvider`                       | `UiStateStorageHandler`                                                                                                       |
+| `useUiSettingsStorageContext`              | `useUiStateStorageHandler`                                                                                                       |
 | `VisibilityComponent`                      | `TreeWidgetComponent` in @bentley/tree-widget-react                                                                           |
 | `VisibilityWidget`                         | `TreeWidgetControl` in @bentley/tree-widget-react                                                                             |
 | `ContentLayoutProps`                       | `ContentLayoutProps` in @itwin/appui-abstract                                                                                 |
@@ -1203,6 +1231,8 @@ The @itwin ui and @itwin/presentation-components packages are now dependent on R
 
 React 16 is not an officially supported version of iTwin.js app or Extension development using the iTwin.js AppUi.
 
+The component `UiSettingsProvider` has been renamed to [UiStateStorageHandler]($appui-react) and updated so it no longer takes a prop. Internally it now uses the value from `UiFrameWork.getUiStateStorage` and listens for changes to that value. This rename was to avoid confusion between UI State and User Preferences.
+
 The component [FrameworkVersion]($appui-react) has been updated so it no longer takes a version prop. It now uses the value of `frameworkState.configurableUiState.frameworkVersion` from the redux store as the version. This value may be set using `UiFramework.setUiVersion` method and will be initialized to "2". Existing iModelApps using the 1.0 version of the user interface were not required to include the `<FrameworkVersion>` component in its component tree. It is now required that every iModelApp include the `<FrameworkVersion>` component and that the redux store entry mentioned above is specified to either "1" or "2". Below is a typical component tree for an iModeApp.
 
 ```tsx
@@ -1211,11 +1241,11 @@ The component [FrameworkVersion]($appui-react) has been updated so it no longer 
     <SafeAreaContext.Provider value={SafeAreaInsets.All}>
       <ToolbarDragInteractionContext.Provider value={false}>
         <FrameworkVersion>
-          <UiSettingsProvider settingsStorage={uiSettingsStorage}>
+          <UiStateStorageHandler>
             <ConfigurableUiContent
               appBackstage={<AppBackstageComposer />}
             />
-          </UiSettingsProvider>
+          </UiStateStorageHandler>
         </FrameworkVersion>
       </ToolbarDragInteractionContext.Provider>
     </SafeAreaContext.Provider>
@@ -1386,8 +1416,8 @@ Some have replacements within the @itwin/core-react package.
 | DialogButtonDef in @itwin/core-react   | DialogButtonDef in @itwin/appui-abstract       |
 | DialogButtonStyle in @itwin/core-react | DialogButtonStyle in @itwin/appui-abstract     |
 | DialogButtonType in @itwin/core-react  | DialogButtonType in @itwin/appui-abstract      |
-| LocalUiSettings in @itwin/core-react   | LocalSettingsStorage in @itwin/core-react   |
-| SessionUiSettings in @itwin/core-react | SessionSettingsStorage in @itwin/core-react |
+| LocalUiSettings in @itwin/core-react   | LocalStateStorage in @itwin/core-react      |
+| SessionUiSettings in @itwin/core-react | *eliminated*                                   |
 
 ### New @itwin/imodel-components-react package
 
@@ -1450,9 +1480,9 @@ Improvements were made to the performance of [ParticleCollectionBuilder]($fronte
 
 Several changes to the APIs for executing ECSql statements have been made to improve performance and flexibility. This involved breaking changes to the `query`, `queryRowCount`, and `restartQuery` methods of [IModelConnection]($frontend), [IModelDb]($backend), and [ECDb]($backend).
 
-- Previously there was no way to control the format of each row returned by the `query` and `restartQuery` methods, and the default format was verbose and inefficient. Now, these methods accept a [QueryRowFormat]($common) parameter describing the desired format. The default format returns each row as an array instead of an object.
-
 - The `query` and `restartQuery` methods used to take multiple arguments indicating a limit on the number of rows to return, a priority, a quota, and so on. These have been combined into a single [QueryOptions]($common) parameter.
+
+- Previously there was no way to control the format of each row returned by the `query` and `restartQuery` methods, and the default format was verbose and inefficient. Now, these methods accept a [QueryRowFormat]($common) as part of their [QueryOptions]($common) parameter describing the desired format. The default format returns each row as an array instead of an object.
 
 - The `query`, `restartQuery`, and `queryRowCount` methods used to accept the statement bindings as type `any[] | object`. The bindings are now specified instead as the more type-safe type [QueryBinder]($common).
 
@@ -1494,16 +1524,16 @@ Now, you can bind a set of Ids as a parameter for the `IN` clause. The Ids will 
 The signature of the method has changed to:
 
 ```ts
-query(ecsql: string, params?: QueryBinder, rowFormat = QueryRowFormat.UseArrayIndexes, config?: QueryOptions): AsyncIterableIterator<any>;
+query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
 ```
 
-The `rowFormat` parameter defaults to `QueryRowFormat.Array`. That format is more efficient so its use is preferred, but it differs from the previous row format. You can upgrade existing code to use the old format with minimal changes. For example, if your existing code passes query parameters as an array, change it as follows:
+The `rowFormat` property of the `options` parameter defaults to `QueryRowFormat.UseECSqlPropertyIndexes`. That format is more efficient so its use is preferred, but it differs from the previous row format. You can upgrade existing code to use the old format with minimal changes. For example, if your existing code passes query parameters as an array, change it as follows:
 
 ```ts
   // Replace this:
   db.query("SELECT * FROM bis.Element WHERE ECInstanceId=?", ["0x1"]);
   // With this:
-  db.query("SELECT * FROM bis.Element WHERE ECInstanceId=?", QueryBinder.from(["0x1"]), QueryRowFormat.UseJsPropertyNames);
+  db.query("SELECT * FROM bis.Element WHERE ECInstanceId=?", QueryBinder.from(["0x1"]), { rowFormat: QueryRowFormat.UseJsPropertyNames });
   // The code that accesses the properties of each row can remain unchanged.
 ```
 
@@ -1513,7 +1543,7 @@ Similarly, if your existing code passes an object instead of an array as the que
   // Replace this:
   db.query("SELECT * FROM bis.Element WHERE ECInstanceId = :id", {id: "0x1"});
   // With this:
-  db.query("SELECT * FROM bis.Element WHERE ECInstanceId=?", QueryBinder.from({id: "0x1"}), QueryRowFormat.UseJsPropertyNames);
+  db.query("SELECT * FROM bis.Element WHERE ECInstanceId=?", QueryBinder.from({id: "0x1"}), { rowFormat: QueryRowFormat.UseJsPropertyNames });
   // The code that accesses the properties of each row can remain unchanged.
 ```
 
@@ -1637,3 +1667,54 @@ To use any other external storage set [IModelHostConfiguration.tileCacheService]
   // With this:
   config.tileCacheService = new CustomCloudStorageService();
 ```
+
+## Coordinate Conversion between iModel GeographicCRS and any other GeographicCRS
+
+Coordinate conversions is now possible between the iModel Geographic Coordinate Reference System and any other Geographic Coordinate Reference System.
+Prior to this version, coordinate conversions were limited to those between the iModel Geographic Coordinate Reference System and latitude/longitude of a specified datum, usually WGS84.
+
+To use, in the backend create either a [IModelCoordinatesRequestProps]($common) or a [GeoCoordinatesRequestProps]($common) depending on the direction coordinates are to be converted. Set the [IModelCoordinatesRequestProps.source]($common) or the [GeoCoordinatesRequestProps.target]($common) property to a string containing either the name of a datum (typically WGS84) or an empty string to specify the iModel Geographic CRS native datum or a stringified version of a [GeographicCRSProps]($common) containing the definition of the source or target of the coordinate conversion. The request can be added coordinates to be converted and fed in methods iModel.getGeoCoordinatesFromIModelCoordinates or iModel.getIModelCoordinatesFromGeoCoordinates.
+
+Specification of the GeographicCRS can be complete or incomplete. Although fully-defined custom Geographic CRS are supported, most of the time simply specifying the id or the epsg code of the GeographicCRS is sufficient.
+
+Here are examples of typical GeographicCRS:
+
+```ts
+{ horizontalCRS: { id: "CA83-II" }, verticalCRS: { id: "NAVD88" } }
+```
+
+or
+
+```ts
+{ horizontalCRS: { epsg: 26942 }, verticalCRS: { id: "NAVD88" } },
+```
+
+These identifiers refer to either the key-name of a Geographic CRS in the list of the dictionary or a known EPSG code.
+
+More complex Geographic CRS can also be used such as the following user-defined:
+
+```ts
+      {
+        horizontalCRS: {
+          id: "UserDef-On-NAD83/2011",
+          description: "User Defined",
+          datumId: "NAD83/2011",
+          unit: "Meter",
+          projection: {
+            method: "TransverseMercator",
+            centralMeridian: -1.5,
+            latitudeOfOrigin: 52.30,
+            scaleFactor: 1.0,
+            falseEasting: 198873.0046,
+            falseNorthing: 375064.3871,
+          },
+        },
+        verticalCRS: {
+          id: "GEOID",
+        },
+      }
+```
+
+On the frontend the [GeoConverter]($frontend) class has been modified to accept either a string containing the datum or a [GeographicCRSProps]($common) of a similar format retaining cache capability as before for either format.
+
+**NOTE**: The [IModelCoordinatesRequestProps.source]($common) and the [GeoCoordinatesRequestProps.target]($common) were renamed from previous version that used the sourceDatum and targetDatum properties.
