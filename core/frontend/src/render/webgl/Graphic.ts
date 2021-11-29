@@ -334,12 +334,60 @@ export class Branch extends Graphic {
     this.branch.collectStatistics(stats);
   }
 
+  private shouldAddCommands(commands: RenderCommands): boolean {
+    const nodeId = commands.target.getAnimationTransformNodeId(this.branch.animationNodeId);
+    return undefined === nodeId || nodeId === commands.target.currentAnimationTransformNodeId;
+  }
+
   public addCommands(commands: RenderCommands): void {
-    commands.addBranch(this);
+    if (this.shouldAddCommands(commands))
+      commands.addBranch(this);
   }
 
   public override addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
-    commands.addHiliteBranch(this, pass);
+    if (this.shouldAddCommands(commands))
+      commands.addHiliteBranch(this, pass);
+  }
+}
+
+/** @internal */
+export class AnimationTransformBranch extends Graphic {
+  public readonly nodeId: number;
+  public readonly graphic: Graphic;
+
+  public constructor(graphic: RenderGraphic, nodeId: number) {
+    super();
+    assert(graphic instanceof Graphic);
+    this.graphic = graphic;
+    this.nodeId = nodeId;
+  }
+
+  public override dispose() {
+    this.graphic.dispose();
+  }
+
+  public override get isDisposed() {
+    return this.graphic.isDisposed;
+  }
+
+  public override get isPickable() {
+    return this.graphic.isPickable;
+  }
+
+  public override collectStatistics(stats: RenderMemory.Statistics) {
+    this.graphic.collectStatistics(stats);
+  }
+
+  public override addCommands(commands: RenderCommands) {
+    commands.target.currentAnimationTransformNodeId = this.nodeId;
+    this.graphic.addCommands(commands);
+    commands.target.currentAnimationTransformNodeId = undefined;
+  }
+
+  public override addHiliteCommands(commands: RenderCommands, pass: RenderPass) {
+    commands.target.currentAnimationTransformNodeId = this.nodeId;
+    this.graphic.addHiliteCommands(commands, pass);
+    commands.target.currentAnimationTransformNodeId = undefined;
   }
 }
 

@@ -20,7 +20,7 @@ import { IModelConnection } from "../../IModelConnection";
 import { CanvasDecoration } from "../CanvasDecoration";
 import { Decorations } from "../Decorations";
 import { FeatureSymbology } from "../FeatureSymbology";
-import { AnimationBranchStates } from "../GraphicBranch";
+import { AnimationBranchStates, AnimationNodeId } from "../GraphicBranch";
 import { Pixel } from "../Pixel";
 import { GraphicList } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
@@ -127,6 +127,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public activeVolumeClassifierTexture?: WebGLTexture;
   public activeVolumeClassifierProps?: SpatialClassifier;
   public activeVolumeClassifierModelId?: Id64String;
+  private _currentAnimationTransformNodeId?: number;
 
   // RenderTargetDebugControl
   public vcSupportIntersectingVolumes: boolean = false;
@@ -1046,6 +1047,24 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return { viewport: this._viewport };
   }
 
+  public get currentAnimationTransformNodeId(): number | undefined {
+    return this._currentAnimationTransformNodeId;
+  }
+  public set currentAnimationTransformNodeId(id: number | undefined) {
+    assert(undefined === this._currentAnimationTransformNodeId || undefined === id);
+    this._currentAnimationTransformNodeId = id;
+  }
+
+  /** Given GraphicBranch.animationId identifying *any* node in the scene's schedule script, return the transform node Id
+   * that should be used to filter the branch's graphics for display, or undefined if no filtering should be applied.
+   */
+  public getAnimationTransformNodeId(animationNodeId: number | undefined): number | undefined {
+    if (undefined === this.animationBranches || undefined === this.currentAnimationTransformNodeId || undefined === animationNodeId)
+      return undefined;
+
+    return this.animationBranches.transformNodeIds.has(animationNodeId) ? animationNodeId : AnimationNodeId.Untransformed;
+  }
+
   protected abstract _assignDC(): boolean;
   protected abstract _beginPaint(fbo: FrameBuffer): void;
   protected abstract _endPaint(): void;
@@ -1069,6 +1088,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       Math.floor(rect.top * ratio),
       Math.floor(rect.right * ratio),
       Math.floor(rect.bottom * ratio));
+  }
+
+  public getRenderCommands(): Array<{ name: string, count: number }> {
+    return this._renderCommands.dump();
   }
 }
 
