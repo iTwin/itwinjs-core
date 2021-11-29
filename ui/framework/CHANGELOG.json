@@ -2,6 +2,12 @@
   "name": "@bentley/ui-framework",
   "entries": [
     {
+      "version": "2.19.24",
+      "tag": "@bentley/ui-framework_v2.19.24",
+      "date": "Mon, 29 Nov 2021 18:44:31 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.19.23",
       "tag": "@bentley/ui-framework_v2.19.23",
       "date": "Mon, 22 Nov 2021 20:41:40 GMT",

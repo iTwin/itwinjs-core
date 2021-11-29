@@ -1,6 +1,13 @@
 # Change Log - @bentley/map-layers
 
-This log was last generated on Mon, 22 Nov 2021 20:41:40 GMT and should not be manually modified.
+This log was last generated on Mon, 29 Nov 2021 18:44:31 GMT and should not be manually modified.
+
+## 2.19.24
+Mon, 29 Nov 2021 18:44:31 GMT
+
+### Updates
+
+- Fixed UI spacing issues in map-layers widget.
 
 ## 2.19.23
 Mon, 22 Nov 2021 20:41:40 GMT
