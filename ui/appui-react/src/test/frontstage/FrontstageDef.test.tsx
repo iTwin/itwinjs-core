@@ -11,7 +11,7 @@ import { CoreTools, Frontstage, FRONTSTAGE_SETTINGS_NAMESPACE, FrontstageDef, Fr
 import TestUtils, { storageMock } from "../TestUtils";
 import { AbstractWidgetProps, StagePanelLocation, StagePanelSection, UiItemsManager, UiItemsProvider, WidgetState } from "@itwin/appui-abstract";
 import { addFloatingWidget, addPanelWidget, addPopoutWidget, addTab, createNineZoneState, NineZoneState } from "@itwin/appui-layout-react";
-import { UiSettingsStatus } from "@itwin/core-react";
+import { UiStateStorageStatus } from "@itwin/core-react";
 import { ProcessDetector } from "@itwin/core-bentley";
 
 describe("FrontstageDef", () => {
@@ -209,10 +209,10 @@ describe("FrontstageDef", () => {
 
     await frontstageDef.saveChildWindowSizeAndPosition("fw1", window);
 
-    const uiSettingsStorage = UiFramework.getUiSettingsStorage();
+    const uiSettingsStorage = UiFramework.getUiStateStorage();
     if (uiSettingsStorage) {
       const settingsResult = await uiSettingsStorage.getSetting(FRONTSTAGE_SETTINGS_NAMESPACE, getFrontstageStateSettingName(frontstageDef.id));
-      expect(UiSettingsStatus.Success === settingsResult.status);
+      expect(UiStateStorageStatus.Success === settingsResult.status);
       const newState = settingsResult.setting.nineZone as NineZoneState;
       expect(newState.tabs.t1.preferredPopoutWidgetSize?.height).to.eql(999);
       expect(newState.tabs.t1.preferredPopoutWidgetSize?.x).to.eql(99);
@@ -242,10 +242,10 @@ describe("FrontstageDef", () => {
     await frontstageDef.saveChildWindowSizeAndPosition("fw1", window);
     sinon.stub(ProcessDetector, "isElectronAppFrontend").get(() => false);
 
-    const uiSettingsStorage = UiFramework.getUiSettingsStorage();
+    const uiSettingsStorage = UiFramework.getUiStateStorage();
     if (uiSettingsStorage) {
       const settingsResult = await uiSettingsStorage.getSetting(FRONTSTAGE_SETTINGS_NAMESPACE, getFrontstageStateSettingName(frontstageDef.id));
-      expect(UiSettingsStatus.Success === settingsResult.status);
+      expect(UiStateStorageStatus.Success === settingsResult.status);
       const newState = settingsResult.setting.nineZone as NineZoneState;
       expect(newState.tabs.t1.preferredPopoutWidgetSize?.height).to.eql(999 + 39);
       expect(newState.tabs.t1.preferredPopoutWidgetSize?.width).to.eql(999 + 16);

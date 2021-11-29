@@ -28,7 +28,7 @@
   "dependencies": {
     "@azure/storage-blob": "^12.7.0",
     "@bentley/imodelhub-client": "workspace:*",
-    "@bentley/imodeljs-native": "3.0.20",
+    "@bentley/imodeljs-native": "3.0.21",
     "@bentley/itwin-client": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-bentley": "workspace:*",

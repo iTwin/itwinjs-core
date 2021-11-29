@@ -55,6 +55,7 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
 
 * `fdt project extents` - Toggles display of a decoration illustrating the iModel's project extents.
 * `fdt freeze scene` - Toggles scene freeze for the active viewport. While scene freeze is enabled, the same set of tiles will continue to be displayed until the scene is unfrozen - no new tiles will be loaded. Useful for zooming in or out to inspect geometry inside specific tiles.
+* `fdt wiremesh` - Toggles the display of wiremesh overlay on surfaces in the selected viewport.
 * `fdt section cut` - Specify whether a clip volume applied to the view should produce cut geometry at intersections with the design models. This controls `ViewState.details.clipStyle.produceCutGeometry`.
 * `fdt particle snow` - Toggle a particle effect simulating snowfall for the active viewport.
 * `fdt frustum selected` - Toggles a decoration representing the current frustum of the selected viewport. The decoration is displayed in any *other* open viewports - so if no other viewports are open, this key-in has no effect.
@@ -281,7 +282,6 @@ These keysins control the planar masking of reality models.
 * `fdt clear emphasized` - Undo the effects of `fdt emphasize selection` or `fdt emphasize visible`.
 * `fdt isolate selection` - Causes all elements except those currently in the selection set to stop drawing.
 * `fdt clear isolate` - Reverse the effects of `fdt isolate selection`.
-* `fdt toggle wiremesh` - Toggles "pseudo-wiremesh" display. This causes surfaces to be rendered using `GL_LINES` instead of `GL_TRIANGLES`. Useful for visualizing the triangles of a mesh - but not suitable for "real" wiremesh display.
 * `fdt test clip style ON|OFF` - Toggles a ClipStyle for the active viewport with hard-coded symbology overrides.
 * `fdt tile bounds` - Sets the type of bounding volume decorations that will be displayed for each tile displayed in the view. Accepts at most one argument; if none is specified, it defaults to "volume", unless tile bounds are already displayed, in which it toggles them back off.
   * "none": Don't display bounding volumes.

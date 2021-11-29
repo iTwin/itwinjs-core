@@ -114,6 +114,7 @@ The following code applies a display style similar to those illustrated above to
   });
 ```
 
+
 ## Transparent viewport background
 
 In some applications it is useful to be able to see HTML content underneath a [Viewport]($frontend). This can now be achieved by setting [DisplayStyleSettings.backgroundColor]($common) to a color with a transparency value greater than zero. HTML content behind the viewport will blend with the viewport's background color.
@@ -121,6 +122,20 @@ In some applications it is useful to be able to see HTML content underneath a [V
 Three overlapping viewports with transparent background colors:
 
 ![Three overlapping viewports with transparent background colors](./assets/transparent-viewport.jpg)
+
+## Wiremesh display
+
+The graphics displayed by an iTwin.js [Viewport]($frontend) consist primarily of triangulated meshes. It can sometimes be useful to visualize the triangulation of these meshes. A new view flag - [ViewFlags.wiremesh]($common) - now enables wiremesh display. When wiremesh display is enabled, the edges of each triangle are overlaid on top of the mesh as anti-aliased black lines approximately 1 pixel wide.
+
+To enable wiremesh display for a viewport:
+
+```ts
+  viewport.viewFlags = viewport.viewFlags.with("wiremesh", true);
+```
+
+![Wiremesh applied to a plant model](./assets/wiremesh-plant.jpg)
+
+![Wiremesh applied to a reality model](./assets/wiremesh-reality.jpg)
 
 ## Viewport synchronization
 
@@ -796,6 +811,14 @@ await IModelApp.startup({
 
 The two methods [IModelDb.getIModelCoordinatesFromGeoCoordinates]($backend) and [IModelDb.getGeoCoordinatesFromIModelCoordinates]($backend) used to take a string argument that was a stringified [IModelCoordinatesRequestProps]($common) and [GeoCoordinatesRequestProps]($common) respectively. Those arguments were changed to accept the interfaces directly. You should remove `JSON.stringify` from your code if you get compile errors.
 
+## Changes to UnitProps
+
+The `altDisplayLabels` property in [UnitProps]($quantity) has been removed. AlternateLabels are now provided via a [AlternateUnitLabelsProvider]($quantity). The [QuantityFormatter]($frontend) now provides one for use when parsing string to quantities. To add custom labels use [QuantityFormatter.addAlternateLabels]($frontend) see example below.
+
+  ```ts
+  IModelApp.quantityFormatter.addAlternateLabels("Units.FT", "feet", "foot");
+  ```
+
 ## Removal of previously deprecated APIs
 
 In this 3.0 major release, we have removed several APIs that were previously marked as deprecated in 2.x. Generally, the reason for the deprecation as well as the alternative suggestions can be found in the 2.x release notes. They are summarized here for quick reference.
@@ -945,6 +968,10 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `LoadingPromptProps.isDeterministic` | `LoadingPromptProps.isDeterminate` in @itwin/core-react |
 | `NumericInput` component             | `NumberInput` component in @itwin/core-react            |
 | `TabsProps.onClickLabel`             | `TabsProps.onActivateTab` in @itwin/core-react          |
+| `LocalSettingsStorage`               | `LocalStateStorage`                                     |
+| `UiSettingsResult`                   | `UiStateStorageResult`                                  |
+| `UiSetting`                          | `UiStateEntry`                                          |
+| `UiSettings`                         | `UiStateStorage`                                        |
 
 ### @itwin/components-react
 
@@ -1015,6 +1042,8 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `IModelConnectedModelsTree`                | *eliminated*                                                                                                                  |
 | `IModelConnectedSpatialContainmentTree`    | *eliminated*                                                                                                                  |
 | `CategoryTreeWithSearchBox`                | *eliminated*                                                                                                                  |
+| `UiSettingsProvider`                       | `UiStateStorageHandler`                                                                                                       |
+| `useUiSettingsStorageContext`              | `useUiStateStorageHandler`                                                                                                       |
 | `VisibilityComponent`                      | `TreeWidgetComponent` in @bentley/tree-widget-react                                                                           |
 | `VisibilityWidget`                         | `TreeWidgetControl` in @bentley/tree-widget-react                                                                             |
 | `ContentLayoutProps`                       | `ContentLayoutProps` in @itwin/appui-abstract                                                                                 |
@@ -1215,6 +1244,8 @@ The @itwin ui and @itwin/presentation-components packages are now dependent on R
 
 React 16 is not an officially supported version of iTwin.js app or Extension development using the iTwin.js AppUi.
 
+The component `UiSettingsProvider` has been renamed to [UiStateStorageHandler]($appui-react) and updated so it no longer takes a prop. Internally it now uses the value from `UiFrameWork.getUiStateStorage` and listens for changes to that value. This rename was to avoid confusion between UI State and User Preferences.
+
 The component [FrameworkVersion]($appui-react) has been updated so it no longer takes a version prop. It now uses the value of `frameworkState.configurableUiState.frameworkVersion` from the redux store as the version. This value may be set using `UiFramework.setUiVersion` method and will be initialized to "2". Existing iModelApps using the 1.0 version of the user interface were not required to include the `<FrameworkVersion>` component in its component tree. It is now required that every iModelApp include the `<FrameworkVersion>` component and that the redux store entry mentioned above is specified to either "1" or "2". Below is a typical component tree for an iModeApp.
 
 ```tsx
@@ -1223,11 +1254,11 @@ The component [FrameworkVersion]($appui-react) has been updated so it no longer 
     <SafeAreaContext.Provider value={SafeAreaInsets.All}>
       <ToolbarDragInteractionContext.Provider value={false}>
         <FrameworkVersion>
-          <UiSettingsProvider settingsStorage={uiSettingsStorage}>
+          <UiStateStorageHandler>
             <ConfigurableUiContent
               appBackstage={<AppBackstageComposer />}
             />
-          </UiSettingsProvider>
+          </UiStateStorageHandler>
         </FrameworkVersion>
       </ToolbarDragInteractionContext.Provider>
     </SafeAreaContext.Provider>
@@ -1398,8 +1429,8 @@ Some have replacements within the @itwin/core-react package.
 | DialogButtonDef in @itwin/core-react   | DialogButtonDef in @itwin/appui-abstract       |
 | DialogButtonStyle in @itwin/core-react | DialogButtonStyle in @itwin/appui-abstract     |
 | DialogButtonType in @itwin/core-react  | DialogButtonType in @itwin/appui-abstract      |
-| LocalUiSettings in @itwin/core-react   | LocalSettingsStorage in @itwin/core-react   |
-| SessionUiSettings in @itwin/core-react | SessionSettingsStorage in @itwin/core-react |
+| LocalUiSettings in @itwin/core-react   | LocalStateStorage in @itwin/core-react      |
+| SessionUiSettings in @itwin/core-react | *eliminated*                                   |
 
 ### New @itwin/imodel-components-react package
 
@@ -1465,7 +1496,7 @@ Several changes to the APIs for executing ECSql statements have been made to imp
 - The `query` and `restartQuery` methods used to take multiple arguments indicating a limit on the number of rows to return, a priority, a quota, and so on. These have been combined into a single [QueryOptions]($common) parameter.
 
 - Previously there was no way to control the format of each row returned by the `query` and `restartQuery` methods, and the default format was verbose and inefficient. Now, these methods accept a [QueryRowFormat]($common) as part of their [QueryOptions]($common) parameter describing the desired format. The default format returns each row as an array instead of an object.
--
+
 - The `query`, `restartQuery`, and `queryRowCount` methods used to accept the statement bindings as type `any[] | object`. The bindings are now specified instead as the more type-safe type [QueryBinder]($common).
 
 ### Binding parameters using QueryBinder

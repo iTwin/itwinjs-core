@@ -2418,9 +2418,15 @@ export class ToggleVolClassIntersect extends RenderTargetDebugControlToggleTool 
 }
 
 // @beta
-export class ToggleWiremeshTool extends RenderSystemDebugControlTool {
+export class ToggleWiremeshTool extends DisplayStyleTool {
     // (undocumented)
-    execute(control: RenderSystemDebugControl): void;
+    execute(vp: Viewport): Promise<boolean>;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parse(args: string[]): Promise<boolean>;
     // (undocumented)
     static toolId: string;
 }
