@@ -73,7 +73,7 @@ export class AttachModelMapLayerTool extends Tool {
     const modelIds = new Set<Id64String>();
 
     const expand = 1;
-    const flags = {inside: SpatialClassifierInsideDisplay.ElementColor,  outside: SpatialClassifierOutsideDisplay.Off};
+    const flags = { inside: SpatialClassifierInsideDisplay.Off, outside: SpatialClassifierOutsideDisplay.Off };
 
     for (const element of elements)
       modelIds.add(element.model);
@@ -81,9 +81,9 @@ export class AttachModelMapLayerTool extends Tool {
     for (const modelId of modelIds) {
       const modelProps = await iModel.models.getProps(modelId);
       const modelName = modelProps[0].name ? modelProps[0].name : modelId;
-      const  name = nameIn ? (modelIds.size > 1 ? `${nameIn}: ${modelName}` : nameIn) : modelName;
+      const name = nameIn ? (modelIds.size > 1 ? `${nameIn}: ${modelName}` : nameIn) : modelName;
       const classifier = { name, expand, modelId, flags };
-      vp.displayStyle.attachMapLayerSettings(MapLayerSettings.fromJSON({name, classifier, url: "", formatId: "BIM"}), false);
+      vp.displayStyle.attachMapLayerSettings(MapLayerSettings.fromJSON({ name, classifier, url: "", formatId: "BIM" }), false);
     }
 
     return true;

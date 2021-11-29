@@ -147,7 +147,7 @@ function addTextures(builder: ProgramBuilder, maxTexturesPerMesh: number) {
         const textureParam = realityMesh.textureParams?.params[i];
         assert(undefined !== textureParam);
         if (undefined !== textureParam) {
-          uniform.setMatrix4(textureParam.params);
+          uniform.setMatrix4(textureParam.getParams(scratchMatrix));
         }
       });
     });
