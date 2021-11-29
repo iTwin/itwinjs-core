@@ -17,6 +17,8 @@ import { createViewportQuadBuilder } from "./ViewportQuad";
 
 const computeColor = "return TEXTURE(u_color, v_texCoord);";
 
+// Transparent background color will not have premultiplied alpha - multiply it when copying.
+// Set all other pixels opaque.
 const computeColorNoAlpha = `
   vec4 color = TEXTURE(u_color, v_texCoord);
   if (color == u_bgColor)
