@@ -213,6 +213,8 @@ export class FrontstageDef {
             });
           }
         });
+      } else {
+        this._nineZoneState = state;
       }
     }
   }
@@ -223,7 +225,7 @@ export class FrontstageDef {
     if (this._nineZoneState === state)
       return;
 
-    if ("1" === UiFramework.uiVersion) {
+    if ("1" === UiFramework.uiVersion || !this._nineZoneState) {
       this._nineZoneState = state;
     } else {
       this.triggerStateChangeEventForWidgetsAndPanels(state);

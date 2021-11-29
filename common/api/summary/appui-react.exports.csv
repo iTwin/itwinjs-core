@@ -419,7 +419,6 @@ internal;packNineZoneState(state: NineZoneState): SavedNineZoneState
 internal;PanelSizeChangedEvent 
 internal;PanelSizeChangedEventArgs
 beta;PanelStateChangedEvent 
-deprecated;PanelStateChangedEvent 
 public;PanelStateChangedEventArgs
 deprecated;PanelStateChangedEventArgs
 internal;panelStateToIsCollapsed: (panelState: StagePanelState) => boolean
@@ -511,7 +510,6 @@ public;StageContentLayoutProps
 public;StagePanel 
 public;StagePanelChangeHandler
 public;StagePanelDef 
-deprecated;StagePanelDef 
 public;StagePanelDefaultProps = Pick
 alpha;StagePanelHeader 
 deprecated;StagePanelHeader 
@@ -782,7 +780,6 @@ internal;WorkflowPropsList
 deprecated;WorkflowPropsList
 public;Zone 
 public;ZoneDef 
-deprecated;ZoneDef 
 public;ZoneDefProvider
 public;ZoneLocation
 deprecated;ZoneLocation

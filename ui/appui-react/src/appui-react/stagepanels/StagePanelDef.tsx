@@ -36,8 +36,8 @@ export interface PanelStateChangedEventArgs {
   panelState: StagePanelState;
 }
 
-/** Widget State Changed Event class.
- * @beta @deprecated
+/** Panel State Changed Event class.
+ * @beta
  */
 export class PanelStateChangedEvent extends UiEvent<PanelStateChangedEventArgs> { }
 
@@ -52,7 +52,7 @@ export class PanelSizeChangedEvent extends UiEvent<PanelSizeChangedEventArgs> { 
 
 /**
  * A StagePanelDef represents each Stage Panel within a Frontstage.
- * @public @deprecated
+ * @public
  */
 export class StagePanelDef extends WidgetHost {
   private _panelState = StagePanelState.Open;
