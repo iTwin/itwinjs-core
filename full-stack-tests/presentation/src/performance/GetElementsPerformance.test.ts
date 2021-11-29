@@ -41,7 +41,7 @@ describe("#performance Properties loading", () => {
     process.stdout.write(`\nLoaded ${propertiesCount} elements properties in ${(new Date()).getTime() - startTime} ms`);
   });
 
-  it.only("load properties using ECSQL", async function () {
+  it("load properties using ECSQL", async function () {
     this.timeout(0);
     const startTime = new Date().getTime();
     process.stdout.write(`Loading properties.`);
@@ -71,18 +71,18 @@ async function* getElementsPropertiesECSQL(db: IModelDb) {
 }
 
 function loadElementProperties(db: IModelDb, className: string, elementId: string) {
-  const elementProperties = loadProperties(db, className, [elementId], false);
+  const elementProperties = loadProperties(db, className, [elementId], true);
   return {
     ...elementProperties[0],
-    // ...(loadRelatedProperties(db, () => queryGeometricElement3dTypeDefinitions(db, elementId), true)),
-    // ...(loadRelatedProperties(db, () => queryGeometricElement2dTypeDefinitions(db, elementId), true)),
-    // ...(loadRelatedProperties(db, () => queryElementLinks(db, elementId), false)),
-    // ...(loadRelatedProperties(db, () => queryGroupElementLinks(db, elementId), false)),
-    // ...(loadRelatedProperties(db, () => queryModelLinks(db, elementId), false)),
-    // ...(loadRelatedProperties(db, () => queryDrawingGraphicElements(db, elementId), false)),
-    // ...(loadRelatedProperties(db, () => queryGraphicalElement3dElements(db, elementId), false)),
-    // ...(loadRelatedProperties(db, () => queryExternalSourceRepositories(db, elementId), false)),
-    // ...(loadRelatedProperties(db, () => queryExternalSourceGroupRepositories(db, elementId), false)),
+    ...(loadRelatedProperties(db, () => queryGeometricElement3dTypeDefinitions(db, elementId), true)),
+    ...(loadRelatedProperties(db, () => queryGeometricElement2dTypeDefinitions(db, elementId), true)),
+    ...(loadRelatedProperties(db, () => queryElementLinks(db, elementId), false)),
+    ...(loadRelatedProperties(db, () => queryGroupElementLinks(db, elementId), false)),
+    ...(loadRelatedProperties(db, () => queryModelLinks(db, elementId), false)),
+    ...(loadRelatedProperties(db, () => queryDrawingGraphicElements(db, elementId), false)),
+    ...(loadRelatedProperties(db, () => queryGraphicalElement3dElements(db, elementId), false)),
+    ...(loadRelatedProperties(db, () => queryExternalSourceRepositories(db, elementId), false)),
+    ...(loadRelatedProperties(db, () => queryExternalSourceGroupRepositories(db, elementId), false)),
   };
 }
 
