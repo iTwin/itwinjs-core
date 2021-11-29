@@ -39,10 +39,6 @@
       "allowedCategories": [ "internal" ]
     },
     {
-      "name": "@bentley/telemetry-client",
-      "allowedCategories": [ "backend", "frontend" ]
-    },
-    {
       "name": "@bentley/units-schema",
       "allowedCategories": [ "backend", "common" ]
     },

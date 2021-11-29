@@ -27,6 +27,14 @@ import { RenderMemory } from "./RenderMemory";
 import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
 import { RenderTextureDrape } from "./RenderSystem";
 
+/** Special values of [[GraphicBranch.animationNodeId]].
+ * All other values refer to an [ElementTimeline.batchId]($common) that applies a transform to the graphics in the branch.
+ * @internal
+ */
+export enum AnimationNodeId {
+  Untransformed = 0xffffffff,
+}
+
 /**
  * A node in a scene graph. The branch itself is not renderable. Instead it contains a list of RenderGraphics,
  * and a transform, symbology overrides, and clip volume which are to be applied when rendering them.
@@ -45,10 +53,14 @@ export class GraphicBranch implements IDisposable /* , RenderMemory.Consumer */ 
   public viewFlagOverrides: ViewFlagOverrides = {};
   /** Optional symbology overrides to be applied to all graphics in this branch */
   public symbologyOverrides?: FeatureSymbology.Overrides;
-  /** Optional animation branch Id.
+  /** Optional animation branch Id that incorporates the model Id and, for element timelines, the batch Id.
    * @internal
    */
   public animationId?: string;
+  /** Identifies the node in the [RenderSchedule.Script]($backend) with which this branch is associated.
+   * @internal
+   */
+  public animationNodeId?: AnimationNodeId | number;
 
   /** Constructor
    * @param ownsEntries If true, when this branch is [[dispose]]d, all of the [[RenderGraphic]]s it contains will also be disposed.
@@ -134,4 +146,9 @@ export interface AnimationBranchState {
 /** Mapping from node/branch IDs to animation branch state
  * @internal
  */
-export type AnimationBranchStates = Map<string, AnimationBranchState>;
+export interface AnimationBranchStates {
+  /** Maps node Id to branch state. */
+  readonly branchStates: Map<string, AnimationBranchState>;
+  /** Ids of nodes that apply a transform. */
+  readonly transformNodeIds: ReadonlySet<number>;
+}

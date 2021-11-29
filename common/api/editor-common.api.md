@@ -349,6 +349,7 @@ export interface SolidModelingCommandIpc extends EditCommandIpc {
     isPlanarBody(id: Id64String, index: number): Promise<boolean>;
     isPlanarFace(id: Id64String, subEntity: SubEntityProps): Promise<boolean>;
     isPointInside(id: Id64String, point: XYZProps): Promise<PointInsideResultProps[] | undefined>;
+    isRedundantEdge(id: Id64String, subEntity: SubEntityProps): Promise<boolean>;
     isSingleFacePlanarSheet(id: Id64String, index: number): Promise<boolean>;
     isSmoothEdge(id: Id64String, subEntity: SubEntityProps): Promise<boolean>;
     isSmoothVertex(id: Id64String, subEntity: SubEntityProps): Promise<boolean>;
@@ -450,7 +451,7 @@ export interface ThickenSheetProps {
 // @alpha (undocumented)
 export interface TransformSubEntityProps {
     subEntities: SubEntityProps | SubEntityProps[];
-    transforms: TransformProps | TransformProps[];
+    transforms: TransformProps[];
 }
 
 

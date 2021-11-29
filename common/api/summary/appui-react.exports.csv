@@ -355,6 +355,7 @@ beta;ListPickerProps
 beta;ListPickerPropsExtended 
 internal;loadCategoriesFromViewport(iModel?: IModelConnection, vp?: Viewport): Promise
 public;MarkupTools
+deprecated;MarkupTools
 alpha;MenuButton 
 alpha;MenuButtonPopup 
 alpha;MenuButtonPopupProps 
