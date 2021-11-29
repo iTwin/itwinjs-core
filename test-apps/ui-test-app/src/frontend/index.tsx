@@ -26,7 +26,7 @@ import { BeDragDropContext } from "@itwin/components-react";
 import { Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { BentleyCloudRpcManager, BentleyCloudRpcParams, IModelVersion, RpcConfiguration, SyncMode } from "@itwin/core-common";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
-import { ElectronAppAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronFrontend";
+import { ElectronAuthorizationRenderer } from "@itwin/electron-authorization/lib/cjs/ElectronFrontend";
 import {
   AccuSnap, BriefcaseConnection, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeApp, NativeAppLogger,
   NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool,
@@ -174,7 +174,7 @@ export class SampleAppIModelApp {
 
   public static getUiSettingsStorage(): UiSettings {
     const authorized = !!IModelApp.authorizationClient;
-    type authClient = ElectronAppAuthorization | BrowserAuthorizationClient;
+    type authClient = ElectronAuthorizationRenderer | BrowserAuthorizationClient;
     if (SampleAppIModelApp.testAppConfiguration?.useLocalSettings || !authorized || !(IModelApp.authorizationClient as authClient).hasSignedIn) {
       return SampleAppIModelApp._localUiSettings;
     }
@@ -188,7 +188,7 @@ export class SampleAppIModelApp {
     };
 
     if (ProcessDetector.isElectronAppFrontend) {
-      const authClient: ElectronAppAuthorization = new ElectronAppAuthorization();
+      const authClient: ElectronAuthorizationRenderer = new ElectronAuthorizationRenderer();
       iModelAppOpts.authorizationClient = authClient;
       await ElectronApp.startup({ ...opts, iModelApp: iModelAppOpts });
       NativeAppLogger.initialize();
@@ -637,7 +637,7 @@ const SampleAppViewer2 = () => {
   React.useEffect(() => {
     AppUi.initialize();
 
-    if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof ElectronAppAuthorization) {
+    if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof ElectronAuthorizationRenderer) {
       setIsAuthorized(IModelApp.authorizationClient.isAuthorized);
     }
   }, []);
@@ -655,7 +655,7 @@ const SampleAppViewer2 = () => {
   }, [uiSettingsStorage]);
 
   const _onAccessTokenChanged = () => {
-    if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof ElectronAppAuthorization) {
+    if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof ElectronAuthorizationRenderer) {
       setIsAuthorized(IModelApp.authorizationClient.isAuthorized); // forces the effect above to re-run and check the actual client...
     }
   };
@@ -669,12 +669,12 @@ const SampleAppViewer2 = () => {
   };
 
   React.useEffect(() => {
-    if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof ElectronAppAuthorization)
+    if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof ElectronAuthorizationRenderer)
       IModelApp.authorizationClient.onAccessTokenChanged.addListener(_onAccessTokenChanged);
     FrontstageManager.onFrontstageDeactivatedEvent.addListener(_handleFrontstageDeactivatedEvent);
     FrontstageManager.onModalFrontstageClosedEvent.addListener(_handleModalFrontstageClosedEvent);
     return () => {
-      if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof ElectronAppAuthorization)
+      if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof ElectronAuthorizationRenderer)
         IModelApp.authorizationClient.onAccessTokenChanged.removeListener(_onAccessTokenChanged);
       FrontstageManager.onFrontstageDeactivatedEvent.removeListener(_handleFrontstageDeactivatedEvent);
       FrontstageManager.onModalFrontstageClosedEvent.removeListener(_handleModalFrontstageClosedEvent);

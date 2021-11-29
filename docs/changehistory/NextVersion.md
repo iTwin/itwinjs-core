@@ -891,7 +891,7 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | `Viewport.setFlashed`                         | [Viewport.flashedId]($frontend)                                    |
 | `Viewport.setRedrawPending`                   | [Viewport.requestRedraw]($frontend)                                |
 | `WebAppViewer`                                | *eliminated*                                                       |
-| `NativeAppAuthorization`                      | Moved to @iTwin/auth-clients repo as `ElectronAppAuthorization`    |
+| `NativeAppAuthorization`                      | Moved to @iTwin/auth-clients repo as `ElectronAuthorizationRenderer`    |
 
 ### @itwin/core-geometry
 
