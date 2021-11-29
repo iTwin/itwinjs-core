@@ -41,11 +41,13 @@ export function createCopyColorProgram(context: WebGLContext, copyAlpha: boolean
     });
   });
 
-  frag.addUniform("u_bgColor", VariableType.Vec4, (prog) => {
-    prog.addProgramUniform("u_bgColor", (uniform, params) => {
-      params.target.uniforms.style.bindBackgroundRgba(uniform);
+  if (!copyAlpha) {
+    frag.addUniform("u_bgColor", VariableType.Vec4, (prog) => {
+      prog.addProgramUniform("u_bgColor", (uniform, params) => {
+        params.target.uniforms.style.bindBackgroundRgba(uniform);
+      });
     });
-  });
+  }
 
   const flagString = (copyAlpha ? "-CopyAlpha" : "-NoAlpha");
   builder.vert.headerComment = `//!V! CopyColor${flagString}`;
