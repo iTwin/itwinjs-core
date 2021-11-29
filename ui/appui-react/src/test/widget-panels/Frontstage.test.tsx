@@ -25,7 +25,7 @@ import TestUtils, { mount, storageMock, stubRaf, UiStateStorageStub } from "../T
 import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
 import { expect, should } from "chai";
 
-/* eslint-disable @typescript-eslint/no-floating-promises, react/display-name */
+/* eslint-disable @typescript-eslint/no-floating-promises, react/display-name, deprecation/deprecation */
 
 function createSavedNineZoneState(args?: Partial<NineZoneState>) {
   return {
