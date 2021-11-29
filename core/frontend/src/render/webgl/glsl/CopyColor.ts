@@ -19,7 +19,7 @@ const computeColor = "return TEXTURE(u_color, v_texCoord);";
 
 const computeColorNoAlpha = `
   vec4 color = TEXTURE(u_color, v_texCoord);
-  if (color.a < color.r || color.a < color.g || color.a < color.b)
+  if (color == u_bgColor)
     return vec4(color.rgb * color.a, color.a);
   else
     return vec4(color.rgb, 1.0);
@@ -36,6 +36,12 @@ export function createCopyColorProgram(context: WebGLContext, copyAlpha: boolean
     prog.addGraphicUniform("u_color", (uniform, params) => {
       const geom = params.geometry as SingleTexturedViewportQuadGeometry;
       Texture2DHandle.bindSampler(uniform, geom.texture, TextureUnit.Zero);
+    });
+  });
+
+  frag.addUniform("u_bgColor", VariableType.Vec4, (prog) => {
+    prog.addProgramUniform("u_bgColor", (uniform, params) => {
+      params.target.uniforms.style.bindBackgroundRgba(uniform);
     });
   });
 

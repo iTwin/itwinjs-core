@@ -955,7 +955,26 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       targetSize.y = wantRect.height;
     }
 
-    if (targetSize.x !== wantRect.width && targetSize.y !== wantRect.height) {
+    if (targetSize.x === wantRect.width && targetSize.y === wantRect.height) {
+      // No need to scale image.
+      // Some callers want background pixels to be treated as fully-transparent
+      // They indicate this by supplying a background color with full transparency
+      // Any other pixels are treated as fully-opaque as alpha has already been blended
+      // ###TODO: This introduces a defect in that we are not preserving alpha of translucent pixels, and therefore the returned image cannot be blended
+      const preserveBGAlpha = 0.0 === this.uniforms.style.backgroundAlpha;
+
+      // Optimization for view attachments: if image consists entirely of background pixels, return an undefined
+      let isEmptyImage = true;
+      for (let i = 3; i < image.data.length; i += 4) {
+        const a = image.data[i];
+        if (!preserveBGAlpha || 0 < a) {
+          image.data[i] = 0xff;
+          isEmptyImage = false;
+        }
+      }
+      if (isEmptyImage)
+        return undefined;
+    } else {
       // Need to scale image.
       const canvas = imageBufferToCanvas(image, false); // retrieve a canvas of the image we read, throwing away alpha channel.
       if (undefined === canvas)
@@ -986,15 +1005,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       }
     }
 
-    // The alpha channel is useless, potentially containing a mix of pre-multiplied and unmultiplied alpha.
-    const data = new Uint8Array(image.data.length * 0.75);
-    for (let i = 0, j = 0; i < image.data.length; i += 4, j+= 3) {
-      data[j + 0] = image.data[i + 0];
-      data[j + 1] = image.data[i + 1];
-      data[j + 2] = image.data[i + 2];
-    }
-
-    return ImageBuffer.create(data, ImageBufferFormat.Rgb, image.width);
+    return image;
   }
 
   public copyImageToCanvas(): HTMLCanvasElement {
