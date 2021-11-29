@@ -306,6 +306,13 @@ These keysins control the planar masking of reality models.
 * `fdt webgl lose context` - Force a webgl context loss.
 * `fdt compile shaders` - Compile all un-compiled registered shader programs and report whether any errors occurred. Useful for testing/debugging platform-specific shader issues.
 * `fdt animation interval` - Changes the `IModelApp.animationInterval` settings. Specify milliseconds in non-negative milliseconds; or anything not parseable as an integer to disable the interval callback entirely.
+* `fdt query schedule script` - Queries the schedule script associated with the RenderTimeline or DisplayStyle element specified by Id. All arguments are optional:
+  - "id=<Id>": The Id of the element hosting the script. If omitted, obtains the Id from the schedule script applied to the active viewport.
+  - "action=<break|copy>": Specifies what to do after obtaining the script. "break" causes execution to pause in the debugger. "copy" (the default) copies the script JSON to the clipboard.
+  - "elementIds=<include|count|expand>": Specifies what to do with the list of element Ids in the script. By default, they are omitted.
+    * "include": Include the Ids as they are stored in the script - possibly in compressed format.
+    * "expand": Include the Ids, decompressing them if they are in compressed format.
+    * "count": Replace each list of Ids with the number of Ids in that list.
 * `fdt visibility` - Controls whether instanced, un-instanced (batched), or all geometry is displayed in the active viewport. Accepts at most one argument; defaults to "all" if none is specified:
   * "instanced": Display only instanced geometry.
   * "batched": Display only un-instanced (batched) geometry.
