@@ -98,7 +98,14 @@ function processHeader(data: TileTestData, test: TileTestCase, numElements: numb
 function createReader(imodel: IModelConnection, data: TileTestData, test: TileTestCase): ImdlReader | undefined {
   const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
   const stream = new ByteStream(test.bytes.buffer);
-  const reader = ImdlReader.create(stream, imodel, model.id, model.is3d, IModelApp.renderSystem);
+  const reader = ImdlReader.create({
+    stream,
+    iModel: imodel,
+    modelId: model.id,
+    is3d: model.is3d,
+    system: IModelApp.renderSystem,
+  });
+
   expect(undefined === reader).to.equal(!!data.unreadable);
   return reader;
 }
@@ -441,7 +448,17 @@ describe("TileIO (mock render)", () => {
     if (IModelApp.initialized) {
       const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
       const stream = new ByteStream(currentTestCase.rectangle.bytes.buffer);
-      const reader = ImdlReader.create(stream, model.iModel, model.id, model.is3d, IModelApp.renderSystem, BatchType.Primary, true, (_) => true);
+      const reader = ImdlReader.create({
+        stream,
+        iModel: model.iModel,
+        modelId: model.id,
+        is3d: model.is3d,
+        system: IModelApp.renderSystem,
+        type: BatchType.Primary,
+        loadEdges: true,
+        isCanceled: (_) => true,
+      });
+
       expect(reader).not.to.be.undefined;
 
       const result = await reader!.read();
@@ -799,7 +816,14 @@ describe.skip("TileAdmin", () => {
         expect(response).instanceof(Uint8Array);
 
         const stream = new ByteStream(response.buffer);
-        const reader = ImdlReader.create(stream, imodel, "0x1c", true, IModelApp.renderSystem)!;
+        const reader = ImdlReader.create({
+          stream,
+          iModel: imodel,
+          modelId: "0x1c",
+          is3d: true,
+          system: IModelApp.renderSystem,
+        });
+
         expect(reader).not.to.be.undefined;
 
         const meshes = (reader as any)._meshes;

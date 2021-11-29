@@ -15,13 +15,20 @@ import { LensDistortionConfig, LensDistortionEffect } from "./effects/LensDistor
 import { SaturationConfig, SaturationEffect } from "./effects/Saturation";
 import { SnowEffect } from "./effects/Snow";
 import { VignetteConfig, VignetteEffect } from "./effects/Vignette";
-import { MaskBackgroundMapByElementTool, MaskBackgroundMapByExcludedElementTool, MaskBackgroundMapByModelTool, MaskBackgroundMapBySubCategoryTool, MaskRealityModelByElementTool, MaskRealityModelByExcludedElementTool, MaskRealityModelByModelTool, MaskRealityModelBySubCategoryTool, SetHigherPriorityRealityModelMasking, SetMapHigherPriorityMasking, UnmaskMapTool, UnmaskRealityModelTool } from "./tools/PlanarMaskTools";
-import { ChangeCameraTool, ChangeEmphasisSettingsTool, ChangeFlashSettingsTool, ChangeHiliteSettingsTool, DefaultTileSizeModifierTool, FadeOutTool, FreezeSceneTool, SetAspectRatioSkewTool, ShowTileVolumesTool, Toggle3dManipulationsTool, ToggleDrawingGraphicsTool, ToggleSectionDrawingSpatialViewTool, ToggleViewAttachmentBoundariesTool, ToggleViewAttachmentClipShapesTool, ToggleViewAttachmentsTool, ViewportAddRealityModel, ViewportTileSizeModifierTool } from "./tools/ViewportTools";
+import {
+  MaskBackgroundMapByElementTool, MaskBackgroundMapByExcludedElementTool, MaskBackgroundMapByModelTool, MaskBackgroundMapBySubCategoryTool, MaskRealityModelByElementTool, MaskRealityModelByExcludedElementTool,
+  MaskRealityModelByModelTool, MaskRealityModelBySubCategoryTool, SetHigherPriorityRealityModelMasking, SetMapHigherPriorityMasking, UnmaskMapTool, UnmaskRealityModelTool,
+} from "./tools/PlanarMaskTools";
+import {
+  ChangeCameraTool, ChangeEmphasisSettingsTool, ChangeFlashSettingsTool, ChangeHiliteSettingsTool, DefaultTileSizeModifierTool, FadeOutTool, FreezeSceneTool, SetAspectRatioSkewTool, ShowTileVolumesTool,
+  Toggle3dManipulationsTool, ToggleDrawingGraphicsTool, ToggleSectionDrawingSpatialViewTool, ToggleTileTreeReferencesTool, ToggleViewAttachmentBoundariesTool, ToggleViewAttachmentClipShapesTool,
+  ToggleViewAttachmentsTool, ViewportAddRealityModel, ViewportTileSizeModifierTool,
+} from "./tools/ViewportTools";
 import { AnimationIntervalTool } from "./tools/AnimationIntervalTool";
 import { ChangeUnitsTool } from "./tools/ChangeUnitsTool";
 import { ClipColorTool, TestClipStyleTool, ToggleSectionCutTool } from "./tools/ClipTools";
 import {
-  ApplyRenderingStyleTool, ChangeViewFlagsTool, OverrideSubCategoryTool, SaveRenderingStyleTool, SkyCubeTool, SkySphereTool, ToggleSkyboxTool, WoWIgnoreBackgroundTool,
+  ApplyRenderingStyleTool, ChangeViewFlagsTool, OverrideSubCategoryTool, QueryScheduleScriptTool, SaveRenderingStyleTool, SkyCubeTool, SkySphereTool, ToggleSkyboxTool, WoWIgnoreBackgroundTool,
 } from "./tools/DisplayStyleTools";
 import {
   ClearEmphasizedElementsTool, ClearIsolatedElementsTool, EmphasizeSelectedElementsTool, EmphasizeVisibleElementsTool, IsolateSelectedElementsTool,
@@ -133,6 +140,7 @@ export class FrontendDevTools {
       MeasureTileLoadTimeTool,
       OverrideSubCategoryTool,
       OverrideSubCategoryPriorityTool,
+      QueryScheduleScriptTool,
       RealityTransitionTool,
       ReorderMapLayers,
       ReportWebGLCompatibilityTool,
@@ -167,6 +175,7 @@ export class FrontendDevTools {
       ToggleSkyboxTool,
       ToggleTileRequestDecorationTool,
       ToggleTileTreeBoundsDecorationTool,
+      ToggleTileTreeReferencesTool,
       ToggleToolTipsTool,
       ToggleViewAttachmentBoundariesTool,
       ToggleViewAttachmentClipShapesTool,

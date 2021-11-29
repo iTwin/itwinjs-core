@@ -656,6 +656,26 @@ export class DeleteElementsTool extends ElementSetTool {
     static toolId: string;
 }
 
+// @alpha
+export class DeleteSubEntitiesTool extends LocateSubEntityTool {
+    // (undocumented)
+    protected applyAgendaOperation(ev: BeButtonEvent, isAccept: boolean): Promise<ElementGeometryResultProps | undefined>;
+    // (undocumented)
+    protected doPickSubEntities(id: Id64String, ev: BeButtonEvent): Promise<SubEntityLocationProps[] | undefined>;
+    // (undocumented)
+    protected get geometryCacheFilter(): ElementGeometryCacheFilter | undefined;
+    // (undocumented)
+    protected getMaximumSubEntityHits(type: SubEntityType): number;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    onRestartTool(): Promise<void>;
+    // (undocumented)
+    static toolId: string;
+    // (undocumented)
+    protected wantSubEntityType(type: SubEntityType): boolean;
+}
+
 // @alpha (undocumented)
 export class DynamicGraphicsProvider {
     constructor(iModel: IModelConnection, prefix: string);
@@ -1006,6 +1026,8 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
     // (undocumented)
     protected get wantAgendaAppearanceOverride(): boolean;
     // (undocumented)
+    protected wantHiddenEdges(vp: Viewport): boolean;
+    // (undocumented)
     protected wantSubEntityType(type: SubEntityType): boolean;
 }
 
@@ -1046,6 +1068,8 @@ export class MoveElementsTool extends TransformElementsTool {
 // @alpha
 export class OffsetFacesTool extends LocateSubEntityTool {
     // (undocumented)
+    protected addSmoothFaces: boolean;
+    // (undocumented)
     protected applyAgendaOperation(ev: BeButtonEvent, isAccept: boolean): Promise<ElementGeometryResultProps | undefined>;
     // (undocumented)
     protected createSubEntityData(id: Id64String, hit: SubEntityLocationProps): Promise<SubEntityData>;
@@ -1054,13 +1078,19 @@ export class OffsetFacesTool extends LocateSubEntityTool {
     // (undocumented)
     protected get geometryCacheFilter(): ElementGeometryCacheFilter | undefined;
     // (undocumented)
+    protected getSmoothFaces(id: Id64String, face: SubEntityProps): Promise<SubEntityProps[] | undefined>;
+    // (undocumented)
     static iconSpec: string;
+    // (undocumented)
+    protected offset: number;
     // (undocumented)
     onRestartTool(): Promise<void>;
     // (undocumented)
     protected setupAccuDraw(): void;
     // (undocumented)
     static toolId: string;
+    // (undocumented)
+    protected useOffset: boolean;
     // (undocumented)
     protected get wantAccuSnap(): boolean;
     // (undocumented)
@@ -1525,6 +1555,40 @@ export class SewSheetElementsTool extends ElementGeometryCacheTool {
     static toolId: string;
 }
 
+// @alpha
+export class SpinFacesTool extends LocateSubEntityTool {
+    // (undocumented)
+    protected applyAgendaOperation(ev: BeButtonEvent, isAccept: boolean): Promise<ElementGeometryResultProps | undefined>;
+    // (undocumented)
+    protected createSubEntityData(id: Id64String, hit: SubEntityLocationProps): Promise<SubEntityData>;
+    // (undocumented)
+    protected gatherInput(ev: BeButtonEvent): Promise<EventHandled | undefined>;
+    // (undocumented)
+    protected get geometryCacheFilter(): ElementGeometryCacheFilter | undefined;
+    // (undocumented)
+    protected getSubEntityFilter(): SubEntityFilter | undefined;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void;
+    // (undocumented)
+    onRestartTool(): Promise<void>;
+    // (undocumented)
+    protected points: Point3d[];
+    // (undocumented)
+    protected setupAccuDraw(): void;
+    // (undocumented)
+    protected sweep: number;
+    // (undocumented)
+    static toolId: string;
+    // (undocumented)
+    protected get wantAccuSnap(): boolean;
+    // (undocumented)
+    protected get wantAdditionalInput(): boolean;
+    // (undocumented)
+    protected get wantDynamics(): boolean;
+}
+
 // @alpha (undocumented)
 export class SubEntityData {
     constructor(props: SubEntityProps);
@@ -1580,6 +1644,38 @@ export class SweepAlongPathTool extends ElementGeometryCacheTool {
     protected get requiredElementCount(): number;
     // (undocumented)
     static toolId: string;
+}
+
+// @alpha
+export class SweepFacesTool extends LocateSubEntityTool {
+    // (undocumented)
+    protected addSmoothFaces: boolean;
+    // (undocumented)
+    protected applyAgendaOperation(ev: BeButtonEvent, isAccept: boolean): Promise<ElementGeometryResultProps | undefined>;
+    // (undocumented)
+    protected createSubEntityData(id: Id64String, hit: SubEntityLocationProps): Promise<SubEntityData>;
+    // (undocumented)
+    protected distance: number;
+    // (undocumented)
+    protected drawAcceptedSubEntities(context: DecorateContext): void;
+    // (undocumented)
+    protected get geometryCacheFilter(): ElementGeometryCacheFilter | undefined;
+    // (undocumented)
+    protected getSmoothFaces(id: Id64String, face: SubEntityProps): Promise<SubEntityProps[] | undefined>;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    onRestartTool(): Promise<void>;
+    // (undocumented)
+    protected setupAccuDraw(): void;
+    // (undocumented)
+    static toolId: string;
+    // (undocumented)
+    protected useDistance: boolean;
+    // (undocumented)
+    protected get wantAccuSnap(): boolean;
+    // (undocumented)
+    protected get wantDynamics(): boolean;
 }
 
 // @alpha

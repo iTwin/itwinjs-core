@@ -53,6 +53,13 @@ export interface TileDrawArgParams {
   hiddenLineSettings?: HiddenLine.Settings;
   /** If defined, tiles should be culled if they do not intersect this clip. */
   intersectionClip?: ClipVector;
+  /** If defined, the Id of a node in the scene's [RenderSchedule.Script]($common) that applies a transform to the graphics;
+   * or "0xffffffff" for any node that does *not* apply a transform.
+   * @internal
+   */
+  animationTransformNodeId?: number;
+  /** If defined, a bounding range in tile tree coordinates outside of which tiles should not be selected. */
+  boundingRange?: Range3d;
 }
 /**
  * Provides context used when selecting and drawing [[Tile]]s.
@@ -99,8 +106,12 @@ export class TileDrawArgs {
   public get symbologyOverrides(): FeatureSymbology.Overrides | undefined { return this.graphics.symbologyOverrides; }
   /** If defined, tiles will be culled if they do not intersect this clip. */
   public intersectionClip?: ClipVector;
+  /** If defined, a bounding range in tile tree coordinates outside of which tiles should not be selected. */
+  public boundingRange?: Range3d;
   /** @internal */
   public readonly pixelSizeScaleFactor;
+  /** @internal */
+  public readonly animationTransformNodeId?: number;
 
   /** Compute the size in pixels of the specified tile at the point on its bounding sphere closest to the camera. */
   public getPixelSize(tile: Tile): number {
@@ -163,7 +174,7 @@ export class TileDrawArgs {
       if (viewZ.dotProduct(toFront) < radius) {
         center = this._nearFrontCenter;
       } else {
-        // Find point on sphere closest to eye.
+      // Find point on sphere closest to eye.
         const toEye = center.unitVectorTo(this.context.viewport.view.camera.eye);
 
         if (toEye) {  // Only if tile is not already behind the eye.
@@ -242,6 +253,8 @@ export class TileDrawArgs {
     this.now = now;
     this._appearanceProvider = params.appearanceProvider;
     this.hiddenLineSettings = params.hiddenLineSettings;
+    this.animationTransformNodeId = params.animationTransformNodeId;
+    this.boundingRange = params.boundingRange;
 
     // Do not cull tiles based on clip volume if tiles outside clip are supposed to be drawn but in a different color.
     if (undefined !== clipVolume && !context.viewport.view.displayStyle.settings.clipStyle.outsideColor)
@@ -328,7 +341,11 @@ export class TileDrawArgs {
       hline: this.hiddenLineSettings,
     };
 
-    return this.context.createGraphicBranch(graphics, this.location, opts);
+    let graphic = this.context.createGraphicBranch(graphics, this.location, opts);
+    if (undefined !== this.animationTransformNodeId)
+      graphic = this.context.renderSystem.createAnimationTransformNode(graphic, this.animationTransformNodeId);
+
+    return graphic;
   }
 
   /** Output graphics for all accumulated tiles. */
