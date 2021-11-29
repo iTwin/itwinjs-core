@@ -18,7 +18,7 @@ import { RenderOrder, RenderPass } from "./RenderFlags";
 import { ShaderProgramExecutor } from "./ShaderProgram";
 import { System } from "./System";
 import { Hilites, Target } from "./Target";
-import { IsAnimated, IsClassified, IsInstanced, IsShadowable, IsThematic, TechniqueFlags } from "./TechniqueFlags";
+import { IsAnimated, IsClassified, IsInstanced, IsShadowable, IsThematic, IsWiremesh, TechniqueFlags } from "./TechniqueFlags";
 import { TechniqueId } from "./TechniqueId";
 
 /* eslint-disable no-restricted-syntax */
@@ -201,8 +201,10 @@ export class PrimitiveCommand {
     if (isThematic && (undefined !== this.primitive.cachedGeometry.asPointCloud) && (target.uniforms.thematic.wantSlopeMode || target.uniforms.thematic.wantHillShadeMode))
       isThematic = IsThematic.No;
 
+    const wiremesh = target.currentViewFlags.wiremesh && System.instance.isWebGL2 && (techniqueId === TechniqueId.Surface || techniqueId === TechniqueId.RealityMesh);
+    const isWiremesh = wiremesh ? IsWiremesh.Yes : IsWiremesh.No;
     const flags = PrimitiveCommand._scratchTechniqueFlags;
-    flags.init(target, exec.renderPass, isInstanced, isAnimated, isClassified, isShadowable, isThematic);
+    flags.init(target, exec.renderPass, isInstanced, isAnimated, isClassified, isShadowable, isThematic, isWiremesh);
 
     const technique = target.techniques.getTechnique(techniqueId);
     const program = technique.getShader(flags);
