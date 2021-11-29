@@ -254,9 +254,9 @@ For example:
 
 `WorkspaceContainer`s are meant to be the distribution system for application resources, so users need to be sure they're always using the correct version of resources - which may or may not be the newest version, depending on their workflow. That may be accomplished either by *brute force* (e.g. copying files around), or much better, by using a cloud *workspace service*. The `Workspace` API is virtually the same either way.
 
-When using a cloud workspace service, every call to [Workspace.getContainer]($backend) first checks whether the local copy of the `WorkspaceContainer` is up-to-date with the cloud version, and synchronizes it if not. When using the "offline" mode, the `WorkspaceContainer` is fully downloaded to a local file in the [Workspace.containerDir]($backend) directory, with the name `${containerId}.itwin-workspace-container`.
+When using a cloud workspace service, every call to [Workspace.getContainer]($backend) first checks whether the local copy of the `WorkspaceContainer` is up-to-date with the cloud version, and synchronizes it if not. When using the "offline" mode, the `WorkspaceContainer` is fully downloaded to a local file in the [Workspace.containerDir]($backend) directory, with the name `${containerId}.itwin-workspace`.
 
-When using brute force, `Workspace.containerDir` may be a directory on a shared file server, or the `.itwin-workspace-container` files may be copied around some other way.
+When using brute force, `Workspace.containerDir` may be a directory on a shared file server, or the `.itwin-workspace` files may be copied around some other way.
 
 ### Creating WorkspaceContainers
 

@@ -26,7 +26,7 @@ enum WorkspaceSetting {
   ContainerAlias = "workspace/container/alias",
 }
 
-const containerFileExt = "itwin-workspace-container";
+const containerFileExt = "itwin-workspace";
 
 /**
  * The name of a workspace container. This is the user-supplied name of a container, used to specify its *purpose* within a workspace.
@@ -131,7 +131,7 @@ export interface WorkspaceContainer {
  */
 export interface WorkspaceOpts {
   /** The local directory for the WorkspaceContainer files. The [[Workspace]] will (only) look in this directory
-   * for files named `${this.containerId}.itwin-workspace-container`.
+   * for files named `${this.containerId}.itwin-workspace`.
    * @note if not supplied, defaults to `iTwin/Workspace` in the user-local folder.
    */
   containerDir?: LocalDirName;
@@ -147,7 +147,7 @@ export interface WorkspaceOpts {
  * @beta
  */
 export interface Workspace {
-  /** The local directory for the WorkspaceContainer files with the name `${containerId}.itwin-workspace-container`. */
+  /** The local directory for the WorkspaceContainer files with the name `${containerId}.itwin-workspace`. */
   readonly containerDir: LocalDirName;
   /** the local directory where this Workspace will store temporary files extracted for file-resources. */
   readonly filesDir: LocalDirName;
@@ -315,8 +315,7 @@ export class WorkspaceFile implements WorkspaceContainer {
   }
 
   /** Get a BlobIO reader for a blob WorkspaceResource.
-   * @note caller must call `dispose` on the returned value.
-   * @internal
+   * @note when finished, caller must call `close` on the BlobIO.
    */
   public getBlobReader(rscName: WorkspaceResourceName): IModelJsNative.BlobIO {
     return this.db.withSqliteStatement("SELECT rowid from blobs WHERE id=?", (stmt) => {
@@ -458,8 +457,7 @@ export class EditableWorkspaceFile extends WorkspaceFile {
   }
 
   /** Get a BlobIO writer for a previously-added blob WorkspaceResource.
-   * @note  after writing is complete, caller must call `dispose` on the returned value and must call `saveChanges` on the `db`.
-   * @internal
+   * @note after writing is complete, caller must call `close` on the BlobIO and must call `saveChanges` on the `db`.
    */
   public getBlobWriter(rscName: WorkspaceResourceName): IModelJsNative.BlobIO {
     return this.db.withSqliteStatement("SELECT rowid from blobs WHERE id=?", (stmt) => {

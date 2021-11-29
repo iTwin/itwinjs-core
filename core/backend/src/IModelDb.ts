@@ -10,7 +10,7 @@ import { join } from "path";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import {
   AccessToken, BeEvent, BentleyStatus, ChangeSetStatus, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus,
-  JsonUtils, Logger, OpenMode,
+  JsonUtils, Logger, OpenMode, UnexpectedErrors,
 } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
@@ -46,7 +46,7 @@ import { ServerBasedLocks } from "./ServerBasedLocks";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
-import { BaseSettings, SettingName, SettingResolver, SettingsPriority, SettingType } from "./workspace/Settings";
+import { BaseSettings, SettingDictionary, SettingName, SettingResolver, SettingsPriority, SettingType } from "./workspace/Settings";
 import { ITwinWorkspace, Workspace } from "./workspace/Workspace";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
@@ -277,6 +277,7 @@ export abstract class IModelDb extends IModel {
     this.initializeIModelDb();
     IModelDb._openDbs.set(this._fileKey, this);
     this._workspace = new ITwinWorkspace(new IModelSettings(), IModelHost.appWorkspace);
+    this.loadSettingsDictionaries();
 
     if (undefined === IModelDb._shutdownListener) { // the first time we create an IModelDb, add a listener to close any orphan files at shutdown.
       IModelDb._shutdownListener = IModelHost.onBeforeShutdown.addListener(() => {
@@ -1177,6 +1178,33 @@ export abstract class IModelDb extends IModel {
   public async generateElementGraphics(request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined> {
     return generateElementGraphics(request, this);
   }
+
+  private static _settingPropNamespace = "settings";
+  public saveSettingDictionary(name: string, dict: SettingDictionary) {
+    this.withSqliteStatement(`REPLACE INTO be_Prop(id,SubId,TxnMode,Namespace,Name,strData) VALUES(0,0,0,?,?,?)`, (stmt) => {
+      stmt.bindString(1, IModelDb._settingPropNamespace);
+      stmt.bindString(2, name);
+      stmt.bindString(3, JSON.stringify(dict));
+      const rc = stmt.step();
+      if (rc !== DbResult.BE_SQLITE_DONE)
+        throw new IModelError(rc, "cannot save setting");
+    });
+    this.saveChanges("settings");
+  }
+
+  private loadSettingsDictionaries() {
+    this.withSqliteStatement(`SELECT Name,StrData FROM be_Prop WHERE Namespace=?`, (stmt) => {
+      stmt.bindString(1, IModelDb._settingPropNamespace);
+      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+        try {
+          const dict = JSON.parse(stmt.getValueString(1));
+          this.workspace.settings.addDictionary(stmt.getValueString(0), SettingsPriority.iModel, dict);
+        } catch (e) {
+          UnexpectedErrors.handle(e);
+        }
+      }
+    });
+  }
 }
 
 /** @public */
@@ -1968,7 +1996,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       if (undefined !== ret.error) {
         reject(new IModelError(ret.error.status, `TreeId=${treeId} TileId=${tileId}`));
       } else if (typeof ret.result !== "number") { // if type is not a number, it's the TileContent interface
-        const res = ret.result as IModelJsNative.TileContent;
+        const res = ret.result;
         const iModelId = this._iModel.iModelId;
 
         const tileSizeThreshold = IModelHost.logTileSizeThreshold;

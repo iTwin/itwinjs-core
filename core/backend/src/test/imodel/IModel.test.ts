@@ -1684,7 +1684,7 @@ describe("iModel", () => {
     iModel2.close();
   });
 
-  it.only("should be able to reproject with iModel coordinates to or from any other GeographicCRS", async () => {
+  it("should be able to reproject with iModel coordinates to or from any other GeographicCRS", async () => {
     const addGcsWs = async (id: string) => {
       try {
         const ws = await IModelHost.appWorkspace.getContainer({ id });
