@@ -82,7 +82,11 @@ A number of packages have been renamed to use the @itwin scope rather than the @
 
 Especially when combined with ambient occlusion, this effect can produce non-realistic views suitable for plant models and architectural models.
 
+Fresnel effect applied to an architectural model:
+
 ![Fresnel effect applied to an architectural model](./assets/fresnel-building.jpg)
+
+Fresnel effect applied to a plant model:
 
 ![Fresnel effect applied to a plant model](./assets/fresnel-plant.jpg)
 
@@ -109,6 +113,15 @@ The following code applies a display style similar to those illustrated above to
     },
   });
 ```
+
+
+## Transparent viewport background
+
+In some applications it is useful to be able to see HTML content underneath a [Viewport]($frontend). This can now be achieved by setting [DisplayStyleSettings.backgroundColor]($common) to a color with a transparency value greater than zero. HTML content behind the viewport will blend with the viewport's background color.
+
+Three overlapping viewports with transparent background colors:
+
+![Three overlapping viewports with transparent background colors](./assets/transparent-viewport.jpg)
 
 ## Wiremesh display
 
