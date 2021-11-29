@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { UnitConversion, UnitProps, UnitsProvider } from "../../Interfaces";
+import { AlternateUnitLabelsProvider, UnitConversion, UnitProps, UnitsProvider } from "../../Interfaces";
 import { BadUnit, BasicUnit } from "../../Unit";
 
 interface ConversionDef {
@@ -76,7 +76,7 @@ export class ConversionData implements UnitConversion {
   public offset: number = 0.0;
 }
 
-export class TestUnitsProvider implements UnitsProvider {
+export class TestUnitsProvider implements UnitsProvider, AlternateUnitLabelsProvider {
   /** Find a unit given the unitLabel. */
   public async findUnit(unitLabel: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps> {
     const labelToFind = unitLabel.toLowerCase();
@@ -94,13 +94,13 @@ export class TestUnitsProvider implements UnitsProvider {
       }
 
       if (entry.displayLabel.toLowerCase() === labelToFind || entry.name.toLowerCase() === labelToFind) {
-        const unitProps = new BasicUnit(entry.name, entry.displayLabel, entry.phenomenon, entry.altDisplayLabels, entry.system);
+        const unitProps = new BasicUnit(entry.name, entry.displayLabel, entry.phenomenon, entry.system);
         return unitProps;
       }
 
       if (entry.altDisplayLabels && entry.altDisplayLabels.length > 0) {
         if (entry.altDisplayLabels.findIndex((ref) => ref.toLowerCase() === labelToFind) !== -1) {
-          const unitProps = new BasicUnit(entry.name, entry.displayLabel, entry.phenomenon, entry.altDisplayLabels, entry.system);
+          const unitProps = new BasicUnit(entry.name, entry.displayLabel, entry.phenomenon, entry.system);
           return unitProps;
         }
       }
@@ -115,7 +115,7 @@ export class TestUnitsProvider implements UnitsProvider {
     for (const entry of unitData) {
       if (entry.phenomenon !== phenomenon)
         continue;
-      units.push(new BasicUnit(entry.name, entry.displayLabel, entry.phenomenon, entry.altDisplayLabels, entry.system));
+      units.push(new BasicUnit(entry.name, entry.displayLabel, entry.phenomenon, entry.system));
     }
     return units;
   }
@@ -133,7 +133,7 @@ export class TestUnitsProvider implements UnitsProvider {
   public async findUnitByName(unitName: string): Promise<UnitProps> {
     const unitDataEntry = this.findUnitDefinition(unitName);
     if (unitDataEntry) {
-      return new BasicUnit(unitDataEntry.name, unitDataEntry.displayLabel, unitDataEntry.phenomenon, unitDataEntry.altDisplayLabels, unitDataEntry.system);
+      return new BasicUnit(unitDataEntry.name, unitDataEntry.displayLabel, unitDataEntry.phenomenon, unitDataEntry.system);
     }
     return new BadUnit();
   }
@@ -156,4 +156,10 @@ export class TestUnitsProvider implements UnitsProvider {
 
     return new ConversionData();
   }
+
+  public getAlternateUnitLabels(unit: UnitProps): string[] | undefined {
+    const unitDefinition = this.findUnitDefinition(unit.name);
+    return unitDefinition?.altDisplayLabels;
+  }
+
 }

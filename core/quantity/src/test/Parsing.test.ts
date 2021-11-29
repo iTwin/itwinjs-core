@@ -397,13 +397,13 @@ describe("Parsing tests:", () => {
       { value: "1000'", magnitude: 304.8 },  // "'" is only valid for Units.FT so convert based on feet
     ];
 
-    const unitsProvider = new TestUnitsProvider();
+    const unitsAndAltLabelsProvider = new TestUnitsProvider();
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsAndAltLabelsProvider, formatData).catch(() => { });
     assert.isTrue(format.hasUnits);
 
-    const persistenceUnit = await unitsProvider.findUnitByName("Units.M");
-    const unitConversions = await Parser.createUnitConversionSpecsForUnit(unitsProvider, persistenceUnit);
+    const persistenceUnit = await unitsAndAltLabelsProvider.findUnitByName("Units.M");
+    const unitConversions = await Parser.createUnitConversionSpecsForUnit(unitsAndAltLabelsProvider, persistenceUnit, unitsAndAltLabelsProvider);
 
     for (const testEntry of testData) {
       const result = Parser.parseToQuantityValue(testEntry.value, format, unitConversions);
@@ -462,7 +462,7 @@ describe("Synchronous Parsing tests:", async () => {
     { unitName: "Units.IN" },
     { unitName: "Units.FT", altLabels: ["foot", "feet"] },
     { unitName: "Units.YRD", altLabels: ["yd", "yds"] },
-  ]);
+  ], unitsProvider);
 
   const formatData = {
     composite: {
@@ -479,7 +479,7 @@ describe("Synchronous Parsing tests:", async () => {
   const format = new Format("test");
   await format.fromJSON(unitsProvider, formatData).catch(() => { });
 
-  const parserSpec = await ParserSpec.create(format, unitsProvider, outUnit);
+  const parserSpec = await ParserSpec.create(format, unitsProvider, outUnit, unitsProvider);
   const formatSpec = await FormatterSpec.create("test", format, unitsProvider, outUnit);
 
   const angleFormatData = {
@@ -510,7 +510,7 @@ describe("Synchronous Parsing tests:", async () => {
   const angleFormat = new Format("testAngle");
   await angleFormat.fromJSON(unitsProvider, angleFormatData).catch(() => { });
   const outAngleUnit = await unitsProvider.findUnitByName("Units.ARC_DEG");
-  const angleParserSpec = await ParserSpec.create(angleFormat, unitsProvider, outAngleUnit);
+  const angleParserSpec = await ParserSpec.create(angleFormat, unitsProvider, outAngleUnit, unitsProvider);
   const angleFormatSpec = await FormatterSpec.create("test", angleFormat, unitsProvider, outAngleUnit);
 
   it("Parse into length values using custom parse labels", () => {
@@ -556,7 +556,7 @@ describe("Synchronous Parsing tests:", async () => {
       }
       assert.isTrue(Parser.isParsedQuantity(parseResult));
       if (Parser.isParsedQuantity(parseResult))
-        assert.isTrue(Math.abs(parseResult.value - testEntry.magnitude) < 0.0001);
+        expect(parseResult.value).closeTo(testEntry.magnitude, 0.0001);
     }
   });
 
@@ -601,7 +601,7 @@ describe("Synchronous Parsing tests:", async () => {
           // eslint-disable-next-line no-console
           console.log(`input=${testEntry.value} output=${parseResult.value}`);
         }
-        assert.isTrue(Math.abs(parseResult.value - testEntry.magnitude) < 0.0001);
+        expect(parseResult.value).closeTo(testEntry.magnitude, 0.0001);
         const formattedValue = Formatter.formatQuantity(parseResult.value, formatSpec);
 
         if (logTestOutput) {
@@ -634,7 +634,7 @@ describe("Synchronous Parsing tests:", async () => {
           // eslint-disable-next-line no-console
           console.log(`input=${testEntry.value} output=${parseResult.value}`);
         }
-        assert.isTrue(Math.abs(parseResult.value - testEntry.magnitude) < 0.0001);
+        expect(parseResult.value).closeTo(testEntry.magnitude, 0.0001);
         const formattedValue = Formatter.formatQuantity(parseResult.value, angleFormatSpec);
 
         if (logTestOutput) {
