@@ -220,6 +220,20 @@ export interface ButtonProps {
 }
 
 // @beta
+export class ChangeBackgroundColorTool extends DisplayStyleTool {
+    // (undocumented)
+    execute(vp: Viewport): Promise<boolean>;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parse(args: string[]): Promise<boolean>;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
 export class ChangeCameraTool extends Tool {
     // (undocumented)
     static get maxArgs(): number;
