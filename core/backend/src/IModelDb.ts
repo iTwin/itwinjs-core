@@ -1266,7 +1266,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @internal
      */
     public queryLastModifiedTime(modelId: Id64String): string {
-      const sql = `SELECT LastMod FROM ${Model.classFullName} WHERE ECInstanceId =: modelId`;
+      const sql = `SELECT LastMod FROM ${Model.classFullName} WHERE ECInstanceId=:modelId`;
       return this._iModel.withPreparedStatement(sql, (statement) => {
         statement.bindId("modelId", modelId);
         if (DbResult.BE_SQLITE_ROW === statement.step()) {
