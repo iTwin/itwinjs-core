@@ -181,9 +181,7 @@ public;LoadingSpinner
 public;LoadingSpinnerProps 
 public;LoadingStatus 
 public;LoadingStatusProps 
-public;LocalSettingsStorage 
-beta;LocalUiSettings 
-deprecated;LocalUiSettings 
+public;LocalStateStorage 
 public;MainTabsProps 
 internal;mergeRefs
 public;MessageBox 
@@ -265,9 +263,6 @@ public;SelectOption
 deprecated;SelectOption
 public;SelectProps 
 deprecated;SelectProps 
-public;SessionSettingsStorage 
-beta;SessionUiSettings 
-deprecated;SessionUiSettings 
 public;SettingsContainer: ({ tabs, onSettingsTabSelected, currentSettingsTab, settingsManager, showHeader }: SettingsContainerProps) => JSX.Element
 public;SettingsContainerProps
 public;SettingsManager
@@ -355,13 +350,10 @@ public;TreeProps
 public;UiCore
 public;UiEvent
 internal;UiGeometry
-public;UiSetting
-public;UiSettings = UiSettingsStorage
-public;UiSettingsResult
-deprecated;UiSettingsResult
-public;UiSettingsStatus
-public;UiSettingsStorage
-deprecated;UiSettingsStorage
+public;UiStateEntry
+public;UiStateStorage
+public;UiStateStorageResult
+public;UiStateStorageStatus
 public;UnderlinedButton(props: UnderlinedButtonProps): JSX.Element
 public;UnderlinedButtonProps
 public;useDisposable
