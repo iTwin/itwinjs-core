@@ -185,7 +185,7 @@ describe("Settings", () => {
     appSettings.dropDictionary(settingFileName);
   });
 
-  it.only("IModel persistent settings ", () => {
+  it("IModel persistent settings ", () => {
     const iModelName = IModelTestUtils.prepareOutputFile("IModel", "test.bim");
     const iModel2 = IModelTestUtils.createSnapshotFromSeed(iModelName, IModelTestUtils.resolveAssetFile("test.bim"));
 
