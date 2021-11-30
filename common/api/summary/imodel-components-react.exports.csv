@@ -120,7 +120,7 @@ public;ViewClassFullNameChangedEvent
 public;ViewClassFullNameChangedEventArgs
 public;ViewIdChangedEvent 
 public;ViewIdChangedEventArgs
-public;ViewportComponent 
+public;ViewportComponent(props: ViewportProps): JSX.Element
 public;ViewportComponentEvents
 public;ViewportProps 
 public;ViewRotationChangeEvent 

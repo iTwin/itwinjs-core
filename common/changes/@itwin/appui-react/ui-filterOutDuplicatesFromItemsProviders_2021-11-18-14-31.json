@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Ensure duplicate items provided via UiItemProviders are filtered out and only one item per Id is used. ",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}

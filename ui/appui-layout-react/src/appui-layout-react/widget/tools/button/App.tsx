@@ -13,7 +13,7 @@ import { NoChildrenProps, OmitChildrenProp } from "@itwin/core-react";
 import { ToolbarIcon, ToolbarIconProps } from "./Icon";
 
 /** Properties of [[BackButton]] component.
- * @alpha
+ * @internal
  */
 export interface AppButtonProps extends OmitChildrenProp<ToolbarIconProps>, NoChildrenProps {
   /** Indicates whether to use a small App button */
@@ -24,7 +24,7 @@ export interface AppButtonProps extends OmitChildrenProp<ToolbarIconProps>, NoCh
 
 /** App button which displays icon. Used in [[Toolbar]] component.
  * @note See basic button: [[ToolbarButton]]
- * @alpha
+ * @internal
  */
 export class AppButton extends React.PureComponent<AppButtonProps> {
   public override render() {

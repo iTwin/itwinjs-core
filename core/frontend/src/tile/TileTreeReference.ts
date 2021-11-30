@@ -133,7 +133,13 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
       symbologyOverrides: this.getSymbologyOverrides(tree),
       appearanceProvider: this.getAppearanceProvider(tree),
       hiddenLineSettings: this.getHiddenLineSettings(tree),
+      animationTransformNodeId: this.getAnimationTransformNodeId(tree),
     });
+  }
+
+  /** @internal */
+  protected getAnimationTransformNodeId(_tree: TileTree): number | undefined {
+    return undefined;
   }
 
   /** Supply transform from this tile tree reference's location to iModel coordinate space.

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/hypermodeling-frontend",
+      "comment": "fix ecsql row format",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/hypermodeling-frontend"
+}

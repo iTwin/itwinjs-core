@@ -4016,7 +4016,6 @@ export class Point3d extends XYZ {
     static fromJSON(json?: XYZProps): Point3d;
     interpolate(fraction: number, other: XYAndZ, result?: Point3d): Point3d;
     interpolatePerpendicularXY(fraction: number, pointB: Point3d, fractionXYPerp: number, result?: Point3d): Point3d;
-    interpolatePointAndTangent(fraction: number, other: Point3d, tangentScale: number, result?: Ray3d): Ray3d;
     interpolateXYZ(fractionX: number, fractionY: number, fractionZ: number, other: Point3d, result?: Point3d): Point3d;
     minus(vector: XYAndZ, result?: Point3d): Point3d;
     plus(vector: XYAndZ, result?: Point3d): Point3d;
@@ -4845,6 +4844,7 @@ export class Ray3d implements BeJSONFunctions {
     static fromJSON(json?: any): Ray3d;
     getDirectionRef(): Vector3d;
     getOriginRef(): Point3d;
+    static interpolatePointAndTangent(pt1: XYAndZ, fraction: number, pt2: XYAndZ, tangentScale: number, result?: Ray3d): Ray3d;
     intersectionWithPlane(plane: Plane3dByOriginAndUnitNormal, result?: Point3d): number | undefined;
     intersectionWithRange3d(range: Range3d, result?: Range1d): Range1d;
     isAlmostEqual(other: Ray3d): boolean;
@@ -5818,7 +5818,7 @@ export class Vector3d extends XYZ {
     static createPolar(r: number, theta: Angle, z?: number): Vector3d;
     static createRotateVectorAroundVector(vector: Vector3d, axis: Vector3d, angle?: Angle): Vector3d | undefined;
     static createSpherical(r: number, theta: Angle, phi: Angle): Vector3d;
-    static createStartEnd(start: XYAndZ, end: XYAndZ, result?: Vector3d): Vector3d;
+    static createStartEnd(start: XAndY | XYAndZ, end: XAndY | XYAndZ, result?: Vector3d): Vector3d;
     static createStartEndXYZXYZ(x0: number, y0: number, z0: number, x1: number, y1: number, z1: number, result?: Vector3d): Vector3d;
     static createZero(result?: Vector3d): Vector3d;
     crossProduct(vectorB: Vector3d, result?: Vector3d): Vector3d;

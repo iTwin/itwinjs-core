@@ -43,7 +43,7 @@ const group1 = new GroupItemDef({
   label: "Group 1",
   iconSpec: "icon-placeholder",
   items: [tool1, tool2],
-  direction: Direction.Bottom,
+  direction: Direction.Bottom, // eslint-disable-line deprecation/deprecation
   itemsInColumn: 7,
   stateSyncIds: [groupItemEventId],
   stateFunc: groupItemStateFunc,
@@ -65,7 +65,7 @@ describe("GroupItem", () => {
           labelKey="UiFramework:tests.label"
           iconSpec="icon-placeholder"
           items={[tool1, tool2]}
-          direction={Direction.Bottom}
+          direction={Direction.Bottom} // eslint-disable-line deprecation/deprecation
           itemsInColumn={4}
         />,
       );
@@ -77,7 +77,7 @@ describe("GroupItem", () => {
           labelKey="UiFramework:tests.label"
           iconSpec="icon-placeholder"
           items={[tool1, tool2]}
-          direction={Direction.Bottom}
+          direction={Direction.Bottom} // eslint-disable-line deprecation/deprecation
           itemsInColumn={4}
           isVisible={false}
         />,
@@ -90,7 +90,7 @@ describe("GroupItem", () => {
           labelKey="UiFramework:tests.label"
           iconSpec="icon-placeholder"
           items={[tool1, tool2]}
-          direction={Direction.Bottom}
+          direction={Direction.Bottom} // eslint-disable-line deprecation/deprecation
           itemsInColumn={4}
         />,
       ).should.matchSnapshot();
@@ -102,7 +102,7 @@ describe("GroupItem", () => {
           labelKey="UiFramework:tests.label"
           iconSpec="icon-placeholder"
           items={[tool1, tool2]}
-          direction={Direction.Bottom}
+          direction={Direction.Bottom} // eslint-disable-line deprecation/deprecation
           itemsInColumn={4}
         />,
       );
@@ -120,7 +120,7 @@ describe("GroupItem", () => {
           labelKey="UiFramework:tests.label"
           iconSpec="icon-placeholder"
           items={[tool1, tool2]}
-          direction={Direction.Bottom}
+          direction={Direction.Bottom} // eslint-disable-line deprecation/deprecation
           itemsInColumn={4}
           stateSyncIds={[testEventId]}
           stateFunc={testStateFunc}
@@ -144,7 +144,7 @@ describe("GroupItem", () => {
           labelKey="UiFramework:tests.label"
           iconSpec="icon-placeholder"
           items={[tool1, tool2]}
-          direction={Direction.Bottom}
+          direction={Direction.Bottom} // eslint-disable-line deprecation/deprecation
           itemsInColumn={4}
         />,
       );
@@ -365,7 +365,7 @@ describe("GroupItem", () => {
           trayId: "tray-2",
           backTrays: ["tray-1"],
         });
-        const nestedGroup = sut.find(NestedGroup);
+        const nestedGroup = sut.find(NestedGroup); // eslint-disable-line deprecation/deprecation
         nestedGroup.prop("onBackPointerUp")!();
 
         expect(groupItem.state().trayId).to.eq("tray-1");
@@ -404,7 +404,7 @@ describe("GroupItem", () => {
       groupItemDef.overflow = true;
       groupItemDef.resolveItems();
       const sut = mount<GroupItem>(<GroupItem groupItemDef={groupItemDef} />);
-      const item = sut.find(Item);
+      const item = sut.find(Item); // eslint-disable-line deprecation/deprecation
 
       item.prop("onClick")!();
       expect(sut.state().isPressed).to.be.true;
@@ -496,7 +496,7 @@ describe("GroupItem", () => {
         trayId: "tray-2",
         backTrays: ["tray-1"],
       });
-      const nestedGroup = sut.find(NestedGroup);
+      const nestedGroup = sut.find(NestedGroup); // eslint-disable-line deprecation/deprecation
       nestedGroup.prop("onBack")!();
       nestedGroup.prop("onBack")!();
 
@@ -531,7 +531,7 @@ describe("GroupItem", () => {
         panelLabel: "panel-label",
         iconSpec: "icon-placeholder",
         items: [tool1, tool2],
-        direction: Direction.Bottom,
+        direction: Direction.Bottom, // eslint-disable-line deprecation/deprecation
         itemsInColumn: 7,
       });
 

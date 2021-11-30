@@ -13,7 +13,7 @@ import { MergeTargetProps } from "./Merge";
 import { WidgetTarget } from "./Target";
 
 /** Properties of [[SplitterTarget]] component.
- * @beta
+ * @internal
  */
 export interface SplitterTargetProps extends MergeTargetProps {
   /** Describes if the splitter target is used in a vertical splitter. */
@@ -23,7 +23,7 @@ export interface SplitterTargetProps extends MergeTargetProps {
 }
 
 /** Visual target component used to add widgets to a splitter.
- * @beta
+ * @internal
  */
 export class SplitterTarget extends React.PureComponent<SplitterTargetProps> {
   public override render() {

@@ -1068,8 +1068,6 @@ export interface ClassifierTileTreeId {
     // (undocumented)
     animationId?: Id64String;
     // (undocumented)
-    animationTransformNodeId?: number;
-    // (undocumented)
     expansion: number;
     // (undocumented)
     type: BatchType.VolumeClassifier | BatchType.PlanarClassifier;
@@ -1686,7 +1684,7 @@ export function computeChildTileRanges(tile: TileMetadata, root: TileTreeMetadat
 }>;
 
 // @internal
-export function computeTileChordTolerance(tile: TileMetadata, is3d: boolean): number;
+export function computeTileChordTolerance(tile: TileMetadata, is3d: boolean, tileScreenSize: number): number;
 
 // @alpha
 export enum ContentFlags {
@@ -1896,6 +1894,8 @@ export interface DbQueryRequest extends DbRequest, QueryOptions {
     args?: object;
     // (undocumented)
     query: string;
+    // (undocumented)
+    valueFormat?: DbValueFormat;
 }
 
 // @internal (undocumented)
@@ -1911,7 +1911,7 @@ export interface DbQueryResponse extends DbResponse {
 // @internal (undocumented)
 export interface DbRequest extends BaseReaderOptions {
     // (undocumented)
-    kind: DbRequestKind;
+    kind?: DbRequestKind;
 }
 
 // @internal (undocumented)
@@ -1957,13 +1957,25 @@ export enum DbResponseStatus {
     // (undocumented)
     Done = 1,
     // (undocumented)
-    Error = 0,
+    Error = 100,
+    // (undocumented)
+    Error_BlobIO_OpenFailed = 105,
+    // (undocumented)
+    Error_BlobIO_OutOfRange = 106,
+    // (undocumented)
+    Error_ECSql_BindingFailed = 104,
+    // (undocumented)
+    Error_ECSql_PreparedFailed = 101,
+    // (undocumented)
+    Error_ECSql_RowToJsonFailed = 103,
+    // (undocumented)
+    Error_ECSql_StepFailed = 102,
     // (undocumented)
     Partial = 3,
     // (undocumented)
     QueueFull = 5,
     // (undocumented)
-    TimeOut = 4
+    Timeout = 4
 }
 
 export { DbResult }
@@ -1980,6 +1992,14 @@ export interface DbRuntimeStats {
     timeLimit: number;
     // (undocumented)
     totalTime: number;
+}
+
+// @internal (undocumented)
+export enum DbValueFormat {
+    // (undocumented)
+    ECSqlNames = 0,
+    // (undocumented)
+    JsNames = 1
 }
 
 // @internal
@@ -2400,9 +2420,9 @@ export class ECSqlReader {
     // (undocumented)
     get done(): boolean;
     // (undocumented)
-    formatCurrentRow(format: QueryRowFormat): any[] | object;
+    formatCurrentRow(onlyReturnObject?: boolean): any[] | object;
     // (undocumented)
-    getMetaData(): QueryPropertyMetaData[];
+    getMetaData(): Promise<QueryPropertyMetaData[]>;
     // (undocumented)
     getRowInternal(): any[];
     // (undocumented)
@@ -2414,9 +2434,11 @@ export class ECSqlReader {
     // (undocumented)
     setParams(param: QueryBinder): void;
     // (undocumented)
+    get stats(): QueryStats;
+    // (undocumented)
     step(): Promise<boolean>;
     // (undocumented)
-    toArray(format: QueryRowFormat): Promise<any[]>;
+    toArray(): Promise<any[]>;
 }
 
 // @public
@@ -2914,32 +2936,28 @@ export class Feature {
 }
 
 // @public
-export class FeatureAppearance implements FeatureAppearanceProps {
+export class FeatureAppearance {
     protected constructor(props: FeatureAppearanceProps);
     get anyOverridden(): boolean;
     clone(changedProps: FeatureAppearanceProps): FeatureAppearance;
     cloneProps(changedProps: FeatureAppearanceProps): FeatureAppearanceProps;
     static readonly defaults: FeatureAppearance;
-    // (undocumented)
-    readonly emphasized?: true | undefined;
+    readonly emphasized?: true;
     // (undocumented)
     equals(other: FeatureAppearance): boolean;
     extendAppearance(base: FeatureAppearance): FeatureAppearance;
     // (undocumented)
     static fromJSON(props?: FeatureAppearanceProps): FeatureAppearance;
     static fromRgb(color: ColorDef): FeatureAppearance;
-    static fromRgba(color: ColorDef): FeatureAppearance;
+    static fromRgba(color: ColorDef, viewDependentTransparency?: boolean): FeatureAppearance;
     static fromSubCategoryOverride(ovr: SubCategoryOverride): FeatureAppearance;
-    static fromTransparency(transparencyValue: number): FeatureAppearance;
-    // (undocumented)
-    readonly ignoresMaterial?: true | undefined;
+    static fromTransparency(transparencyValue: number, viewDependent?: boolean): FeatureAppearance;
+    readonly ignoresMaterial?: true;
     // (undocumented)
     get isFullyTransparent(): boolean;
-    // (undocumented)
     readonly linePixels?: LinePixels;
     get matchesDefaults(): boolean;
-    // (undocumented)
-    readonly nonLocatable?: true | undefined;
+    readonly nonLocatable?: true;
     // (undocumented)
     get overridesLinePixels(): boolean;
     // (undocumented)
@@ -2952,24 +2970,23 @@ export class FeatureAppearance implements FeatureAppearanceProps {
     get overridesTransparency(): boolean;
     // (undocumented)
     get overridesWeight(): boolean;
-    // (undocumented)
     readonly rgb?: RgbColor;
     // (undocumented)
     toJSON(): FeatureAppearanceProps;
-    // (undocumented)
     readonly transparency?: number;
-    // (undocumented)
+    readonly viewDependentTransparency?: true;
     readonly weight?: number;
 }
 
 // @public
 export interface FeatureAppearanceProps {
-    emphasized?: true | undefined;
-    ignoresMaterial?: true | undefined;
+    emphasized?: true;
+    ignoresMaterial?: true;
     linePixels?: LinePixels;
-    nonLocatable?: true | undefined;
+    nonLocatable?: true;
     rgb?: RgbColorProps;
     transparency?: number;
+    viewDependentTransparency?: true;
     weight?: number;
 }
 
@@ -3086,9 +3103,13 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     protected readonly _neverDrawn: Id64.Uint32Set;
     // @internal
     readonly neverDrawnAnimationNodes: Set<number>;
+    override(args: OverrideFeatureAppearanceArgs): void;
     overrideAnimationNode(id: number, app: FeatureAppearance): void;
+    // @deprecated
     overrideElement(id: Id64String, app: FeatureAppearance, replaceExisting?: boolean): void;
+    // @deprecated
     overrideModel(id: Id64String, app: FeatureAppearance, replaceExisting?: boolean): void;
+    // @deprecated
     overrideSubCategory(id: Id64String, app: FeatureAppearance, replaceExisting?: boolean): void;
     // @internal
     protected _patterns: boolean;
@@ -3292,7 +3313,7 @@ export class FrustumPlanes {
     // (undocumented)
     init(frustum: Frustum): void;
     // (undocumented)
-    intersectsFrustum(box: Frustum): boolean;
+    intersectsFrustum(box: Frustum, sphere?: BoundingSphere): boolean;
     // (undocumented)
     intersectsRay(origin: Point3d, direction: Vector3d): boolean;
     // (undocumented)
@@ -3355,23 +3376,15 @@ export interface GeoCoordinatesResponseProps {
     geoCoords: PointWithStatus[];
 }
 
-// @public (undocumented)
+// @public
 export enum GeoCoordStatus {
-    // (undocumented)
     CSMapError = 4096,
-    // (undocumented)
     NoDatumConverter = 25,
-    // (undocumented)
     NoGCSDefined = 100,
-    // (undocumented)
     OutOfMathematicalDomain = 2,
-    // (undocumented)
     OutOfUsefulRange = 1,
-    // (undocumented)
     Pending = -41556,
-    // (undocumented)
     Success = 0,
-    // (undocumented)
     VerticalDatumConvertError = 26
 }
 
@@ -4691,6 +4704,10 @@ export interface IModelTileTreeProps extends TileTreeProps {
     formatVersion?: number;
     geometryGuid?: GuidString;
     maxInitialTilesToSkip?: number;
+    tileScreenSize?: number;
+    transformNodeRanges?: Array<Range3dProps & {
+        id: number;
+    }>;
 }
 
 // @public
@@ -5477,15 +5494,6 @@ export enum MonochromeMode {
     Scaled = 1
 }
 
-// @beta
-export interface NativeAppAuthorizationConfiguration {
-    readonly clientId: string;
-    readonly expiryBuffer?: number;
-    issuerUrl?: string;
-    readonly redirectUri?: string;
-    readonly scope: string;
-}
-
 // @internal (undocumented)
 export const nativeAppChannel = "nativeApp";
 
@@ -5495,17 +5503,11 @@ export interface NativeAppFunctions {
     checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
     deleteBriefcaseFiles(_fileName: string): Promise<void>;
     downloadBriefcase(_requestProps: RequestNewBriefcaseProps, _reportProgress: boolean, _interval?: number): Promise<LocalBriefcaseProps>;
-    // (undocumented)
-    getAccessToken: () => Promise<AccessToken>;
+    getAccessToken: () => Promise<AccessToken | undefined>;
     getBriefcaseFileName(_props: BriefcaseProps): Promise<string>;
     getCachedBriefcases(_iModelId?: GuidString): Promise<LocalBriefcaseProps[]>;
-    initializeAuth(props: SessionProps, config?: NativeAppAuthorizationConfiguration): Promise<number>;
     overrideInternetConnectivity(_overriddenBy: OverriddenBy, _status: InternetConnectivityStatus): Promise<void>;
     requestCancelDownloadBriefcase(_fileName: string): Promise<boolean>;
-    // (undocumented)
-    setAccessToken(token: AccessToken): Promise<void>;
-    signIn(): Promise<void>;
-    signOut(): Promise<void>;
     storageGet(_storageId: string, _key: string): Promise<StorageValue | undefined>;
     storageGetValueType(_storageId: string, _key: string): Promise<"number" | "string" | "boolean" | "Uint8Array" | "null" | undefined>;
     storageKeys(_storageId: string): Promise<string[]>;
@@ -5519,8 +5521,6 @@ export interface NativeAppFunctions {
 
 // @internal
 export interface NativeAppNotifications {
-    // (undocumented)
-    notifyAccessTokenChanged(accessToken: AccessToken): void;
     // (undocumented)
     notifyInternetConnectivityChanged(status: InternetConnectivityStatus): void;
 }
@@ -5816,6 +5816,42 @@ export enum OverriddenBy {
     Browser = 0,
     // (undocumented)
     User = 1
+}
+
+// @public
+export interface OverrideElementAppearanceOptions extends OverrideFeatureAppearanceOptions {
+    elementId: Id64String;
+    // @internal (undocumented)
+    modelId?: never;
+    // @internal (undocumented)
+    subCategoryId?: never;
+}
+
+// @public
+export type OverrideFeatureAppearanceArgs = OverrideElementAppearanceOptions | OverrideModelAppearanceOptions | OverrideSubCategoryAppearanceOptions;
+
+// @public
+export interface OverrideFeatureAppearanceOptions {
+    appearance: FeatureAppearance;
+    onConflict?: "extend" | "subsume" | "replace" | "skip";
+}
+
+// @public
+export interface OverrideModelAppearanceOptions extends OverrideFeatureAppearanceOptions {
+    // @internal (undocumented)
+    elementId?: never;
+    modelId: Id64String;
+    // @internal (undocumented)
+    subCategoryId?: never;
+}
+
+// @public
+export interface OverrideSubCategoryAppearanceOptions extends OverrideFeatureAppearanceOptions {
+    // @internal (undocumented)
+    elementId?: never;
+    // @internal (undocumented)
+    modelId?: never;
+    subCategoryId: Id64String;
 }
 
 // @internal (undocumented)
@@ -6165,7 +6201,6 @@ export interface PositionalVectorTransformProps {
 // @internal
 export interface PrimaryTileTreeId {
     animationId?: Id64String;
-    animationTransformNodeId?: number;
     edgesRequired: boolean;
     enforceDisplayPriority?: boolean;
     sectionCut?: string;
@@ -6546,6 +6581,7 @@ export interface QueryOptions extends BaseReaderOptions {
     convertClassIdsToClassNames?: boolean;
     includeMetaData?: boolean;
     limit?: QueryLimit;
+    rowFormat?: QueryRowFormat;
     suppressLogErrors?: boolean;
 }
 
@@ -6567,6 +6603,8 @@ export class QueryOptionsBuilder {
     // (undocumented)
     setRestartToken(val: string): this;
     // (undocumented)
+    setRowFormat(val: QueryRowFormat): this;
+    // (undocumented)
     setSuppressLogErrors(val: boolean): this;
     // (undocumented)
     setUsePrimaryConnection(val: boolean): this;
@@ -6577,6 +6615,8 @@ export interface QueryPropertyMetaData {
     // (undocumented)
     className: string;
     // (undocumented)
+    extendType: string;
+    // (undocumented)
     generated: boolean;
     // (undocumented)
     index: number;
@@ -6584,8 +6624,6 @@ export interface QueryPropertyMetaData {
     jsonName: string;
     // (undocumented)
     name: string;
-    // (undocumented)
-    system: boolean;
     // (undocumented)
     typeName: string;
 }
@@ -6598,9 +6636,9 @@ export interface QueryQuota {
 
 // @public
 export enum QueryRowFormat {
-    UseArrayIndexes = 2,
+    UseECSqlPropertyIndexes = 1,
     UseECSqlPropertyNames = 0,
-    UseJsPropertyNames = 1
+    UseJsPropertyNames = 2
 }
 
 // @beta (undocumented)
@@ -6614,9 +6652,23 @@ export interface QueryRowProxy {
     // (undocumented)
     toArray(): QueryValueType[];
     // (undocumented)
-    toJsRow(): any;
-    // (undocumented)
     toRow(): any;
+}
+
+// @beta (undocumented)
+export interface QueryStats {
+    // (undocumented)
+    backendCpuTime: number;
+    // (undocumented)
+    backendMemUsed: number;
+    // (undocumented)
+    backendRowsReturned: number;
+    // (undocumented)
+    backendTotalTime: number;
+    // (undocumented)
+    retryCount: number;
+    // (undocumented)
+    totalTime: number;
 }
 
 // @beta (undocumented)
@@ -6929,6 +6981,8 @@ export namespace RenderSchedule {
         readonly requiresBatching: boolean;
         // (undocumented)
         toJSON(): ScriptProps;
+        // @internal
+        readonly transformBatchIds: ReadonlySet<number>;
     }
     export class ScriptBuilder {
         addModelTimeline(modelId: Id64String): ModelTimelineBuilder;
@@ -8904,6 +8958,8 @@ export interface TileOptions {
     // (undocumented)
     readonly optimizeBRepProcessing: boolean;
     // (undocumented)
+    readonly useLargerTiles: boolean;
+    // (undocumented)
     readonly useProjectExtents: boolean;
 }
 
@@ -8965,6 +9021,8 @@ export interface TileTreeMetadata {
     readonly is2d: boolean;
     // (undocumented)
     readonly modelId: Id64String;
+    // (undocumented)
+    readonly tileScreenSize: number;
 }
 
 // @internal
@@ -8989,6 +9047,8 @@ export enum TreeFlags {
     None = 0,
     // (undocumented)
     OptimizeBRepProcessing = 4,
+    // (undocumented)
+    UseLargerTiles = 8,
     // (undocumented)
     UseProjectExtents = 1
 }
@@ -9324,6 +9384,8 @@ export interface ViewFlagProps {
     shadows?: boolean;
     thematicDisplay?: boolean;
     visEdges?: boolean;
+    // @beta
+    wiremesh?: boolean;
 }
 
 // @public
@@ -9366,6 +9428,8 @@ export class ViewFlags {
     readonly visibleEdges: boolean;
     readonly weights: boolean;
     readonly whiteOnWhiteReversal: boolean;
+    // @beta
+    readonly wiremesh: boolean;
     with(flag: keyof Omit<ViewFlagsProperties, "renderMode">, value: boolean): ViewFlags;
     withRenderMode(renderMode: RenderMode): ViewFlags;
 }

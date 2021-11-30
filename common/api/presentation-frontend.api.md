@@ -36,7 +36,6 @@ import { Keys } from '@itwin/presentation-common';
 import { KeySet } from '@itwin/presentation-common';
 import { LabelDefinition } from '@itwin/presentation-common';
 import { Localization } from '@itwin/core-common';
-import { MultiElementPropertiesRequestOptions } from '@itwin/presentation-common';
 import { Node } from '@itwin/presentation-common';
 import { NodeKey } from '@itwin/presentation-common';
 import { NodePathElement } from '@itwin/presentation-common';
@@ -94,8 +93,17 @@ export const createFieldOrderInfos: (field: Field) => FavoritePropertiesOrderInf
 export enum DefaultFavoritePropertiesStorageTypes {
     BrowserLocalStorage = 1,
     Noop = 0,
-    UserSettingsServiceStorage = 2
+    UserPreferencesStorage = 2
 }
+
+// @internal (undocumented)
+export const DEPRECATED_PROPERTIES_SETTING_NAMESPACE = "Properties";
+
+// @internal (undocumented)
+export const FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME = "FavoritePropertiesOrderInfo";
+
+// @internal (undocumented)
+export const FAVORITE_PROPERTIES_SETTING_NAME = "FavoriteProperties";
 
 // @public
 export class FavoritePropertiesManager implements IDisposable {
@@ -206,6 +214,9 @@ export interface IModelHierarchyChangeEventArgs {
     updateInfo: HierarchyUpdateInfo;
 }
 
+// @internal (undocumented)
+export const IMODELJS_PRESENTATION_SETTING_NAMESPACE = "imodeljs.presentation";
+
 // @public
 export interface ISelectionProvider {
     getSelection(imodel: IModelConnection, level: number): Readonly<KeySet>;
@@ -308,8 +319,6 @@ export class PresentationManager implements IDisposable {
     getDisplayLabelDefinitions(requestOptions: DisplayLabelsRequestOptions<IModelConnection, InstanceKey>): Promise<LabelDefinition[]>;
     // @beta
     getElementProperties(requestOptions: SingleElementPropertiesRequestOptions<IModelConnection>): Promise<ElementProperties | undefined>;
-    // @alpha
-    getElementProperties(requestOptions: MultiElementPropertiesRequestOptions<IModelConnection>): Promise<PagedResponse<ElementProperties>>;
     getFilteredNodePaths(requestOptions: FilterByTextHierarchyRequestOptions<IModelConnection, RulesetVariable>): Promise<NodePathElement[]>;
     getNodePaths(requestOptions: FilterByInstancePathsHierarchyRequestOptions<IModelConnection, RulesetVariable>): Promise<NodePathElement[]>;
     getNodes(requestOptions: Paged<HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>>): Promise<Node[]>;

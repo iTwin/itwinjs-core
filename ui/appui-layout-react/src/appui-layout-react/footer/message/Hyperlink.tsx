@@ -12,7 +12,7 @@ import * as React from "react";
 import { CommonProps } from "@itwin/core-react";
 
 /** Properties of [[MessageHyperlink]] component.
- * @beta
+ * @internal
  */
 export interface MessageHyperlinkProps extends CommonProps {
   /** Hyperlink text. */
@@ -22,7 +22,7 @@ export interface MessageHyperlinkProps extends CommonProps {
 }
 
 /** Hyperlink component used in [[Message]] component.
- * @beta
+ * @internal
  */
 export class MessageHyperlink extends React.PureComponent<MessageHyperlinkProps> {
   public override render() {

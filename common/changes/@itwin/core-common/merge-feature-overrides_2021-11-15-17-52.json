@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "FeatureOverrides now merge by default in case of conflicts.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

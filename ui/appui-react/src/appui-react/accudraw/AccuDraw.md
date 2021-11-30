@@ -119,7 +119,7 @@ The AccuDrawFieldContainer component displays an AccuDrawInputField component fo
 - Determines if the Z field should be shown based on the ViewState.is3d result
 - Processes user value changes in the Input components by calling `FrameworkAccuDraw.setFieldValueFromUi`, which indirectly calls `processFieldInput` in the AccuDraw class to notify the AccuDraw core of a value update
 - Processes Esc key presses by calling `KeyboardShortcutManager.setFocusToHome`
-- Listens for AccuDrawUiSettingsChangedEvent, which is emitted when the `FrameworkAccuDraw.uiSettings` property is updated. Settings for each field include CSS styles, colors, labels & icons. Currently, these settings would only come from the application, not the user.
+- Listens for AccuDrawUiSettingsChangedEvent, which is emitted when the `FrameworkAccuDraw.uiStateStorage` property is updated. Settings for each field include CSS styles, colors, labels & icons. Currently, these settings would only come from the application, not the user.
 
 ### AccuDrawInputField React Component
 
