@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodelhub-client",
+      "comment": "Renamed all occurrences of the term revision0 to version0.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodelhub-client"
+}
