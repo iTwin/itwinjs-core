@@ -1,21 +1,21 @@
 # AppUi
 ## Overview
 
-AppUi refers to an API and a set of components built to enable iTwin.js apps to implement iTwin UI's App UI design. This design organizes the information about the data in an [iModel](../../iModels) into various components on the screen. Graphical data is usually displayed in a [Viewport](../imodel-components/Viewport), while information such as element properties and data hierarchies are displayed in [Widgets](../Widgets). An app using the App UI design will have a look similar to this:
+AppUi refers to an API and a set of components that enable iTwin.js apps to implement iTwin UI's App UI design. This design organizes the information  [iModel](../../iModels) data into various components on the screen. Graphical data is usually displayed in a [Viewport](../imodel-components/Viewport), while information such as element properties and data hierarchies are displayed in [Widgets](../Widgets). An app using the App UI design will have a look similar to this:
 
 ![AppUi](./images/AppUiDarkTheme.png)
 
-The layout of an iTwin app using AppUi has the following features:
+The layout of an AppUi app has the following features:
 
 [Tool Settings](./appui-react/ToolSettings): a container for any components that change the operational settings of the currently executing [Tool](../frontend/Tools). These settings are,by default, displayed in a bar at the top of the window:
 
 ![ToolSettings](./images/ToolSettings.png)
 
-[Status Bar](./appui-react/StatusBar): a container that displays notifications, messages from the app as well as any feedback from the currently executing Tool. The Status Bar displays as a footer at the bottom of the window:
+[Status Bar](./appui-react/StatusBar): a container that displays notifications, messages from the app, and any feedback from the currently executing Tool. The Status Bar displays as a footer at the bottom of the window:
 
 ![StatusBar](./images/StatusBar.png)
 
-[Widgets](./appui-react/Widgets) are containers of relevant feedback and content for the app's user. They can float or be docked into one of the panels surrounding the content area. Here, we see a "Converstions" widget floating, while "Properties", "Categories" and others are docked into the right-hand panel:
+[Widgets](./appui-react/Widgets) are containers of relevant feedback and content for the app's user. They can float or be docked into one of the panels surrounding the content area. Here, we see a "Converstions" widget floating, while "Properties," "Categories" and others are docked into the right-hand panel:
 
 ![Widgets](./images/AppUiLightTheme.png)
 
