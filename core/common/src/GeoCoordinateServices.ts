@@ -6,7 +6,7 @@
  * @module iModels
  */
 
-// cspell:ignore NGVD, NAVD
+// cspell:ignore NGVD, NAVD, COMPD_CS, PROJCS, GEOGCS
 
 import { GeoServiceStatus } from "@itwin/core-bentley";
 import { XYZProps } from "@itwin/core-geometry";
@@ -122,7 +122,14 @@ export interface GeoCoordinatesResponseProps {
  * @beta
  */
 export interface GeographicCRSInterpretRequestProps {
+  /** The format of the geographic CRS definition provided in the geographicCRSDef property. */
   format: "WKT" | "JSON";
+  /** The geographic CRS definition in the format specified in the format property.
+   *  Note that when the WKT is used the WKT fragment provided can start with a COMPD_CS clause
+   *  which should then contain both the horizontal CRS definition as well as the vertical CRS specification.
+   *  WKT fragments starting with PROJCS or GEOGCS are also supported but the vertical CRS will be assigned a
+   *  default value.
+  */
   geographicCRSDef: string;
 }
 
@@ -130,6 +137,11 @@ export interface GeographicCRSInterpretRequestProps {
  * @beta
  */
 export interface GeographicCRSInterpretResponseProps {
+  /** The result status of the interpret operation. A value of zero indicates successful interpretation.
+   *  Any value other than zero is to be considered a hard error and no valid result will
+   *  be returned in the geographicCRS property.
+  */
   status: number;
+  /** The property that receives the interpreted geographic CRS if the process was successful. */
   geographicCRS: GeographicCRSProps;
 }
