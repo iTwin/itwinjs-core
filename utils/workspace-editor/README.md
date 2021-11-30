@@ -77,7 +77,7 @@ WorkspaceFile [C:\Users\Jane.Jones\AppData\Local\iTwin\Workspace\templates.itwin
 
 List the contents of a `WorkspaceFile`. By default it will show all 3 resource types. To limit the output to specific types, supply the `--strings`, `--blobs`, or `--files` options.
 
-Example:
+Examples:
 
 ```sh
 > WorkspaceEditor list templates
@@ -97,6 +97,15 @@ WorkspaceFile [C:\Users\Jane.Jones\AppData\Local\iTwin\Workspace\templates.itwin
   name=[vendor.json], size=139984, ext="json", date=Thu Mar 22 2015 03:32:21 GMT-0400 (Eastern Daylight Time)
 ```
 
+```sh
+> WorkspaceEditor list templates --strings
+WorkspaceFile [C:\Users\Jane.Jones\AppData\Local\iTwin\Workspace\templates.itwin-workspace]
+ strings:
+  name=[startup-settings], size=1205
+```
+
 ### Extract
+
 ### Delete
+
 ### Vacuum
