@@ -31,6 +31,13 @@ export interface IModelJsExpressServerConfig {
     uploadLimit: string;
 }
 
+// @alpha (undocumented)
+export class WebEditServer extends IModelJsExpressServer {
+    constructor(protocol: WebAppRpcProtocol, config?: IModelJsExpressServerConfig);
+    // (undocumented)
+    protected _configureRoutes(): void;
+}
+
 
 // (No @packageDocumentation comment for this package)
 
