@@ -222,7 +222,7 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
       for (const primaryTexture of primaryLayer) {
         const targetRectangle = (primaryTexture instanceof TerrainTexture) ? primaryTexture.targetRectangle : fullCartoRectangle;
         const overlapMinimum = 1.0E-5 * (targetRectangle.high.x - targetRectangle.low.x) * (targetRectangle.high.y - targetRectangle.low.y);
-        const layerTextures = [primaryTexture];
+        let layerTextures = [primaryTexture];
         for (const secondaryLayer of layers) {
           if (!secondaryLayer)
             continue;
@@ -243,7 +243,10 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
             }
           }
         }
-        layerTextures.length = Math.min(layerTextures.length, texturesPerMesh);
+        while (layerTextures.length > texturesPerMesh) {
+          meshes.push(new RealityMeshGeometry(realityMesh._realityMeshParams, RealityTextureParams.create(layerTextures.slice(0, texturesPerMesh)), realityMesh._transform, baseColor, baseTransparent, realityMesh._isTerrain));
+          layerTextures = layerTextures.slice(texturesPerMesh);
+        }
         meshes.push(new RealityMeshGeometry(realityMesh._realityMeshParams, RealityTextureParams.create(layerTextures), realityMesh._transform, baseColor, baseTransparent, realityMesh._isTerrain));
       }
     }
