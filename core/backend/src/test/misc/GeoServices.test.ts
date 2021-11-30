@@ -23,39 +23,42 @@ describe("GeoServices", () => {
 
       assert.isTrue(response.status === 0);
 
-      assert.isTrue(response.geographicCRS.horizontalCRS !== undefined && completeCRS.horizontalCRS !== undefined);
-      assert.isTrue(response.geographicCRS.horizontalCRS!.id === completeCRS.horizontalCRS!.id);
-      assert.isTrue(response.geographicCRS.horizontalCRS!.projection !== undefined && completeCRS.horizontalCRS!.projection !== undefined);
-      assert.isTrue(response.geographicCRS.horizontalCRS!.projection!.method === completeCRS.horizontalCRS!.projection!.method);
-      if (completeCRS.horizontalCRS!.projection!.falseEasting !== undefined) {
-        assert.isTrue(response.geographicCRS.horizontalCRS!.projection!.falseEasting !== undefined);
-        assert.isTrue(Math.abs(response.geographicCRS.horizontalCRS!.projection!.falseEasting! - completeCRS.horizontalCRS!.projection!.falseEasting) < Geometry.smallMetricDistance);
+      assert.isTrue(response.geographicCRS !== undefined);
+      if (response.geographicCRS !== undefined) {
+        assert.isTrue(response.geographicCRS.horizontalCRS !== undefined && completeCRS.horizontalCRS !== undefined);
+        assert.isTrue(response.geographicCRS.horizontalCRS!.id === completeCRS.horizontalCRS!.id);
+        assert.isTrue(response.geographicCRS.horizontalCRS!.projection !== undefined && completeCRS.horizontalCRS!.projection !== undefined);
+        assert.isTrue(response.geographicCRS.horizontalCRS!.projection!.method === completeCRS.horizontalCRS!.projection!.method);
+        if (completeCRS.horizontalCRS!.projection!.falseEasting !== undefined) {
+          assert.isTrue(response.geographicCRS.horizontalCRS!.projection!.falseEasting !== undefined);
+          assert.isTrue(Math.abs(response.geographicCRS.horizontalCRS!.projection!.falseEasting! - completeCRS.horizontalCRS!.projection!.falseEasting) < Geometry.smallMetricDistance);
+        }
+        if (completeCRS.horizontalCRS!.projection!.falseNorthing !== undefined) {
+          assert.isTrue(response.geographicCRS.horizontalCRS!.projection!.falseNorthing !== undefined);
+          assert.isTrue(Math.abs(response.geographicCRS.horizontalCRS!.projection!.falseNorthing! - completeCRS.horizontalCRS!.projection!.falseNorthing) < Geometry.smallMetricDistance);
+        }
+
+        assert.isTrue(response.geographicCRS.horizontalCRS!.datum !== undefined && completeCRS.horizontalCRS!.datum !== undefined);
+        assert.isTrue(response.geographicCRS.horizontalCRS!.datum!.id === completeCRS.horizontalCRS!.datum!.id);
+
+        assert.isTrue(response.geographicCRS.horizontalCRS!.datum!.ellipsoid !== undefined && completeCRS.horizontalCRS!.datum!.ellipsoid !== undefined);
+        assert.isTrue(response.geographicCRS.horizontalCRS!.datum!.ellipsoid!.id === completeCRS.horizontalCRS!.datum!.ellipsoid!.id);
+
+        if (response.geographicCRS.additionalTransform !== undefined) {
+          assert.isTrue(completeCRS.additionalTransform !== undefined);
+          assert.isTrue(response.geographicCRS.additionalTransform.helmert2DWithZOffset !== undefined);
+          assert.isTrue(completeCRS.additionalTransform!.helmert2DWithZOffset !== undefined);
+
+          assert.isTrue(Math.abs(response.geographicCRS.additionalTransform.helmert2DWithZOffset!.rotDeg - completeCRS.additionalTransform!.helmert2DWithZOffset!.rotDeg) < Geometry.smallAngleDegrees);
+          assert.isTrue(Math.abs(response.geographicCRS.additionalTransform.helmert2DWithZOffset!.translationX - completeCRS.additionalTransform!.helmert2DWithZOffset!.translationX) < Geometry.smallMetricDistance);
+          assert.isTrue(Math.abs(response.geographicCRS.additionalTransform.helmert2DWithZOffset!.translationY - completeCRS.additionalTransform!.helmert2DWithZOffset!.translationY) < Geometry.smallMetricDistance);
+          assert.isTrue(Math.abs(response.geographicCRS.additionalTransform.helmert2DWithZOffset!.translationZ - completeCRS.additionalTransform!.helmert2DWithZOffset!.translationZ) < Geometry.smallMetricDistance);
+          assert.isTrue(Math.abs(response.geographicCRS.additionalTransform.helmert2DWithZOffset!.scale - completeCRS.additionalTransform!.helmert2DWithZOffset!.scale) < Geometry.smallFraction);
+        }
+
+        assert.isTrue(response.geographicCRS.verticalCRS !== undefined && completeCRS.verticalCRS !== undefined);
+        assert.isTrue(response.geographicCRS.verticalCRS!.id === completeCRS.verticalCRS!.id);
       }
-      if (completeCRS.horizontalCRS!.projection!.falseNorthing !== undefined) {
-        assert.isTrue(response.geographicCRS.horizontalCRS!.projection!.falseNorthing !== undefined);
-        assert.isTrue(Math.abs(response.geographicCRS.horizontalCRS!.projection!.falseNorthing! - completeCRS.horizontalCRS!.projection!.falseNorthing) < Geometry.smallMetricDistance);
-      }
-
-      assert.isTrue(response.geographicCRS.horizontalCRS!.datum !== undefined && completeCRS.horizontalCRS!.datum !== undefined);
-      assert.isTrue(response.geographicCRS.horizontalCRS!.datum!.id === completeCRS.horizontalCRS!.datum!.id);
-
-      assert.isTrue(response.geographicCRS.horizontalCRS!.datum!.ellipsoid !== undefined && completeCRS.horizontalCRS!.datum!.ellipsoid !== undefined);
-      assert.isTrue(response.geographicCRS.horizontalCRS!.datum!.ellipsoid!.id === completeCRS.horizontalCRS!.datum!.ellipsoid!.id);
-
-      if (response.geographicCRS.additionalTransform !== undefined) {
-        assert.isTrue(completeCRS.additionalTransform !== undefined);
-        assert.isTrue(response.geographicCRS.additionalTransform.helmert2DWithZOffset !== undefined);
-        assert.isTrue(completeCRS.additionalTransform!.helmert2DWithZOffset !== undefined);
-
-        assert.isTrue(Math.abs(response.geographicCRS.additionalTransform.helmert2DWithZOffset!.rotDeg - completeCRS.additionalTransform!.helmert2DWithZOffset!.rotDeg) < Geometry.smallAngleDegrees);
-        assert.isTrue(Math.abs(response.geographicCRS.additionalTransform.helmert2DWithZOffset!.translationX - completeCRS.additionalTransform!.helmert2DWithZOffset!.translationX) < Geometry.smallMetricDistance);
-        assert.isTrue(Math.abs(response.geographicCRS.additionalTransform.helmert2DWithZOffset!.translationY - completeCRS.additionalTransform!.helmert2DWithZOffset!.translationY) < Geometry.smallMetricDistance);
-        assert.isTrue(Math.abs(response.geographicCRS.additionalTransform.helmert2DWithZOffset!.translationZ - completeCRS.additionalTransform!.helmert2DWithZOffset!.translationZ) < Geometry.smallMetricDistance);
-        assert.isTrue(Math.abs(response.geographicCRS.additionalTransform.helmert2DWithZOffset!.scale - completeCRS.additionalTransform!.helmert2DWithZOffset!.scale) < Geometry.smallFraction);
-      }
-
-      assert.isTrue(response.geographicCRS.verticalCRS !== undefined && completeCRS.verticalCRS !== undefined);
-      assert.isTrue(response.geographicCRS.verticalCRS!.id === completeCRS.verticalCRS!.id);
     };
 
     const britishNationalGridOld: GeographicCRSProps =
@@ -374,30 +377,33 @@ describe("GeoServices", () => {
 
       assert.isTrue(response.status === 0);
 
-      assert.isTrue(response.geographicCRS.horizontalCRS !== undefined && completeCRS.horizontalCRS !== undefined);
-      assert.isTrue(response.geographicCRS.horizontalCRS!.id === completeCRS.horizontalCRS!.id);
-      assert.isTrue(response.geographicCRS.horizontalCRS!.projection !== undefined && completeCRS.horizontalCRS!.projection !== undefined);
-      assert.isTrue(response.geographicCRS.horizontalCRS!.projection!.method === completeCRS.horizontalCRS!.projection!.method);
-      if (completeCRS.horizontalCRS!.projection!.falseEasting !== undefined) {
-        assert.isTrue(response.geographicCRS.horizontalCRS!.projection!.falseEasting !== undefined);
-        assert.isTrue(Math.abs(response.geographicCRS.horizontalCRS!.projection!.falseEasting! - completeCRS.horizontalCRS!.projection!.falseEasting) < Geometry.smallMetricDistance);
+      assert.isTrue(response.geographicCRS !== undefined);
+      if (response.geographicCRS !== undefined) {
+        assert.isTrue(response.geographicCRS.horizontalCRS !== undefined && completeCRS.horizontalCRS !== undefined);
+        assert.isTrue(response.geographicCRS.horizontalCRS!.id === completeCRS.horizontalCRS!.id);
+        assert.isTrue(response.geographicCRS.horizontalCRS!.projection !== undefined && completeCRS.horizontalCRS!.projection !== undefined);
+        assert.isTrue(response.geographicCRS.horizontalCRS!.projection!.method === completeCRS.horizontalCRS!.projection!.method);
+        if (completeCRS.horizontalCRS!.projection!.falseEasting !== undefined) {
+          assert.isTrue(response.geographicCRS.horizontalCRS!.projection!.falseEasting !== undefined);
+          assert.isTrue(Math.abs(response.geographicCRS.horizontalCRS!.projection!.falseEasting! - completeCRS.horizontalCRS!.projection!.falseEasting) < Geometry.smallMetricDistance);
+        }
+        if (completeCRS.horizontalCRS!.projection!.falseNorthing !== undefined) {
+          assert.isTrue(response.geographicCRS.horizontalCRS!.projection!.falseNorthing !== undefined);
+          assert.isTrue(Math.abs(response.geographicCRS.horizontalCRS!.projection!.falseNorthing! - completeCRS.horizontalCRS!.projection!.falseNorthing) < Geometry.smallMetricDistance);
+        }
+
+        assert.isTrue(response.geographicCRS.horizontalCRS!.datum !== undefined && completeCRS.horizontalCRS!.datum !== undefined);
+        assert.isTrue(response.geographicCRS.horizontalCRS!.datum!.id === completeCRS.horizontalCRS!.datum!.id);
+
+        assert.isTrue(response.geographicCRS.horizontalCRS!.datum!.ellipsoid !== undefined && completeCRS.horizontalCRS!.datum!.ellipsoid !== undefined);
+        assert.isTrue(response.geographicCRS.horizontalCRS!.datum!.ellipsoid!.id === completeCRS.horizontalCRS!.datum!.ellipsoid!.id);
+
+        assert.isTrue(response.geographicCRS.verticalCRS !== undefined && completeCRS.verticalCRS !== undefined);
+        assert.isTrue(response.geographicCRS.verticalCRS!.id === completeCRS.verticalCRS!.id);
+
+        // WKTs cannot define an additional transform
+        assert.isTrue(response.geographicCRS.additionalTransform === undefined);
       }
-      if (completeCRS.horizontalCRS!.projection!.falseNorthing !== undefined) {
-        assert.isTrue(response.geographicCRS.horizontalCRS!.projection!.falseNorthing !== undefined);
-        assert.isTrue(Math.abs(response.geographicCRS.horizontalCRS!.projection!.falseNorthing! - completeCRS.horizontalCRS!.projection!.falseNorthing) < Geometry.smallMetricDistance);
-      }
-
-      assert.isTrue(response.geographicCRS.horizontalCRS!.datum !== undefined && completeCRS.horizontalCRS!.datum !== undefined);
-      assert.isTrue(response.geographicCRS.horizontalCRS!.datum!.id === completeCRS.horizontalCRS!.datum!.id);
-
-      assert.isTrue(response.geographicCRS.horizontalCRS!.datum!.ellipsoid !== undefined && completeCRS.horizontalCRS!.datum!.ellipsoid !== undefined);
-      assert.isTrue(response.geographicCRS.horizontalCRS!.datum!.ellipsoid!.id === completeCRS.horizontalCRS!.datum!.ellipsoid!.id);
-
-      assert.isTrue(response.geographicCRS.verticalCRS !== undefined && completeCRS.verticalCRS !== undefined);
-      assert.isTrue(response.geographicCRS.verticalCRS!.id === completeCRS.verticalCRS!.id);
-
-      // WKTs cannot define an additional transform
-      assert.isTrue(response.geographicCRS.additionalTransform === undefined);
     };
 
     const airportGrid2007: GeographicCRSProps =

@@ -143,5 +143,5 @@ export interface GeographicCRSInterpretResponseProps {
   */
   status: number;
   /** The property that receives the interpreted geographic CRS if the process was successful. */
-  geographicCRS: GeographicCRSProps;
+  geographicCRS?: GeographicCRSProps;
 }

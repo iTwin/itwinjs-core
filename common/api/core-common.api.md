@@ -3482,17 +3482,13 @@ export class GeographicCRS implements GeographicCRSProps {
 
 // @beta
 export interface GeographicCRSInterpretRequestProps {
-    // (undocumented)
     format: "WKT" | "JSON";
-    // (undocumented)
     geographicCRSDef: string;
 }
 
 // @beta
 export interface GeographicCRSInterpretResponseProps {
-    // (undocumented)
-    geographicCRS: GeographicCRSProps;
-    // (undocumented)
+    geographicCRS?: GeographicCRSProps;
     status: number;
 }
 
