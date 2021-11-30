@@ -129,7 +129,7 @@ export class RulesetEmbedder {
       SELECT ECInstanceId, JsonProperties
       FROM ${RulesetElements.Ruleset.schema.name}.${RulesetElements.Ruleset.className}
       WHERE json_extract(JsonProperties, '$.jsonProperties.id') = :rulesetId`;
-    for await (const row of this._imodel.query(query, QueryBinder.from({ rulesetId: ruleset.id }), QueryRowFormat.UseJsPropertyNames)) {
+    for await (const row of this._imodel.query(query, QueryBinder.from({ rulesetId: ruleset.id }), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       const existingRulesetElementId: Id64String = row.id;
       const existingRuleset: Ruleset = JSON.parse(row.jsonProperties).jsonProperties;
       rulesetsWithSameId.push({

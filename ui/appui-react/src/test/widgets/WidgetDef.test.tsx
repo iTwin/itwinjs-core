@@ -7,7 +7,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { BadgeType, WidgetState } from "@itwin/appui-abstract";
 import {
-  ConfigurableCreateInfo, ConfigurableUiControlType, ConfigurableUiManager, FrontstageManager, SyncUiEventDispatcher, SyncUiEventId, WidgetChangedEventArgs,
+  ConfigurableCreateInfo, ConfigurableUiControlType, ConfigurableUiManager, FrontstageManager, SyncUiEventDispatcher, SyncUiEventId, UiFramework, WidgetChangedEventArgs,
   WidgetControl, WidgetDef, WidgetProps,
 } from "../../appui-react";
 import TestUtils from "../TestUtils";
@@ -25,6 +25,8 @@ describe("WidgetDef", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
+    // need to set to UI 1 so widget state is independent of NineZoneState.
+    UiFramework.setUiVersion("1");
     ConfigurableUiManager.registerControl("WidgetDefTest", TestWidget);
   });
 

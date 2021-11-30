@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { GuidString, Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
+import { GuidString, Id64, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
 import {
   Code, CodeProps, DbBlobRequest, DbBlobResponse, DbQueryRequest, DbQueryResponse, ElementLoadOptions, ElementLoadProps, ElementProps, EntityMetaData,
   EntityQueryParams, FontMapProps, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps,
@@ -22,6 +22,7 @@ import { generateGeometrySummaries } from "../GeometrySummary";
 import { DictionaryModel } from "../Model";
 import { RpcBriefcaseUtility } from "./RpcBriefcaseUtility";
 import { RpcTrace } from "../RpcBackend";
+import { BackendLoggerCategory } from "../BackendLoggerCategory";
 
 /** The backend implementation of IModelReadRpcInterface.
  * @internal
@@ -36,10 +37,18 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
 
   public async queryRows(tokenProps: IModelRpcProps, request: DbQueryRequest): Promise<DbQueryResponse> {
     const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
+    if (iModelDb.isReadonly && request.usePrimaryConn === true) {
+      Logger.logWarning(BackendLoggerCategory.IModelDb, "usePrimaryConn is only supported on imodel that is opened in read/write mode. The option will be ignored.", request);
+      request.usePrimaryConn = false;
+    }
     return ConcurrentQuery.executeQueryRequest(iModelDb.nativeDb, request);
   }
   public async queryBlob(tokenProps: IModelRpcProps, request: DbBlobRequest): Promise<DbBlobResponse> {
     const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
+    if (iModelDb.isReadonly && request.usePrimaryConn === true) {
+      Logger.logWarning(BackendLoggerCategory.IModelDb, "usePrimaryConn is only supported on imodel that is opened in read/write mode. The option will be ignored.", request);
+      request.usePrimaryConn = false;
+    }
     return ConcurrentQuery.executeBlobRequest(iModelDb.nativeDb, request);
   }
   public async queryModelRanges(tokenProps: IModelRpcProps, modelIdsList: Id64String[]): Promise<Range3dProps[]> {

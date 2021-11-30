@@ -138,7 +138,7 @@ export class HubWrappers {
     }
 
     // Upload a new iModel
-    return IModelHost.hubAccess.createNewIModel({ accessToken, iTwinId, iModelName: locIModelName, revision0: pathname });
+    return IModelHost.hubAccess.createNewIModel({ accessToken, iTwinId, iModelName: locIModelName, version0: pathname });
   }
 
   /** Helper to open a briefcase db directly with the BriefcaseManager API */

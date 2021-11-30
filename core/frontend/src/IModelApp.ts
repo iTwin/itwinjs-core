@@ -8,7 +8,7 @@
 
 const copyrightNotice = 'Copyright © 2017-2021 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
 
-import { TelemetryManager } from "@bentley/telemetry-client";
+import { TelemetryManager } from "@itwin/core-telemetry";
 import { UiAdmin } from "@itwin/appui-abstract";
 import { AccessToken, BeDuration, BeEvent, BentleyStatus, DbResult, dispose, Guid, GuidString, Logger } from "@itwin/core-bentley";
 import {
@@ -646,7 +646,7 @@ export class IModelApp {
     const noticeCell = IModelApp.makeHTMLElement("td", { parent: card, className: "logo-card-message" });
     if (undefined !== opts.heading) {
       if (typeof opts.heading === "string")
-        IModelApp.makeHTMLElement("h2", { parent: noticeCell, innerHTML: opts.heading,  className:"logo-card-header" });
+        IModelApp.makeHTMLElement("h2", { parent: noticeCell, innerHTML: opts.heading, className: "logo-card-header" });
       else
         noticeCell.appendChild(opts.heading);
     }

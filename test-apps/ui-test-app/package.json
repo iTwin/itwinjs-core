@@ -107,6 +107,7 @@
     "@itwin/presentation-components": "workspace:*",
     "@itwin/presentation-frontend": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
+    "@itwin/electron-authorization": "^0.5.0",
     "@itwin/ui-items-providers-test": "workspace:*",
     "@itwin/ecschema-rpcinterface-common": "workspace:*",
     "@itwin/ecschema-rpcinterface-impl": "workspace:*",

@@ -96,6 +96,14 @@ export interface MemoryHierarchyCacheConfig extends HierarchyCacheConfigBase {
     mode: HierarchyCacheMode.Memory;
 }
 
+// @alpha
+export interface MultiElementPropertiesResponse {
+    // (undocumented)
+    iterator: () => AsyncGenerator<ElementProperties[]>;
+    // (undocumented)
+    total: number;
+}
+
 // @public
 export interface MultiManagerPresentationProps extends PresentationManagerProps {
     // @internal
@@ -180,7 +188,7 @@ export class PresentationManager {
     // @beta
     getElementProperties(requestOptions: Prioritized<SingleElementPropertiesRequestOptions<IModelDb>>): Promise<ElementProperties | undefined>;
     // @alpha
-    getElementProperties(requestOptions: Prioritized<MultiElementPropertiesRequestOptions<IModelDb>>): Promise<PagedResponse<ElementProperties>>;
+    getElementProperties(requestOptions: Prioritized<MultiElementPropertiesRequestOptions<IModelDb>>): Promise<MultiElementPropertiesResponse>;
     getFilteredNodePaths(requestOptions: Prioritized<FilterByTextHierarchyRequestOptions<IModelDb>>): Promise<NodePathElement[]>;
     // @internal (undocumented)
     getNativePlatform: () => NativePlatformDefinition;
@@ -193,6 +201,8 @@ export class PresentationManager {
     getSelectionScopes(_requestOptions: SelectionScopeRequestOptions<IModelDb>): Promise<SelectionScope[]>;
     get props(): PresentationManagerProps;
     rulesets(): RulesetManager;
+    // @internal (undocumented)
+    setOnManagerUsedHandler(handler: () => void): void;
     vars(rulesetId: string): RulesetVariablesManager;
 }
 

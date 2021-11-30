@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { useSelector } from "react-redux";
-import { RootState } from "../../test/TestUtils";
+import { FrameworkRootState } from "../redux/StateManager";
 import { FrameworkVersionId, UiFramework } from "../UiFramework";
 
 /** @public */
@@ -31,7 +31,7 @@ export interface FrameworkVersionProps {
  * @public
  */
 export function FrameworkVersion(props: FrameworkVersionProps) { // eslint-disable-line @typescript-eslint/no-redeclare
-  const uiVersion = useSelector((state: RootState) => {
+  const uiVersion = useSelector((state: FrameworkRootState) => {
     const frameworkState = (state as any)[UiFramework.frameworkStateKey];
     return frameworkState ? frameworkState.configurableUiState.frameworkVersion as FrameworkVersionId : "2";
   });

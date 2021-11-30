@@ -137,8 +137,10 @@ class DynamicModalUiDataProvider extends DialogLayoutDataProvider {
 }
 
 export class Frontstage4 extends FrontstageProvider {
+  public static stageId = "ui-test-app:Test4";
+
   public get id(): string {
-    return "Test4";
+    return Frontstage4.stageId;
   }
 
   public get frontstage(): React.ReactElement<FrontstageProps> {

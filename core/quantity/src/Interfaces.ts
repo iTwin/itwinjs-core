@@ -6,6 +6,13 @@
  * @module Quantity
  */
 
+/** This interface allows a provider to be specified that will define an array of alternate labels for a specific unit.
+ * @beta
+ */
+export interface AlternateUnitLabelsProvider {
+  getAlternateUnitLabels: (unit: UnitProps) => string[] | undefined;
+}
+
 /** This interface provides basic information about a Unit that is return from a UnitProvider. This info
  * uniquely identifies a unit by its name.
  * @beta
@@ -19,8 +26,6 @@ export interface UnitProps {
   readonly phenomenon: string;
   /** This is set to true if the Unit is known by the UnitsProvider. */
   readonly isValid: boolean;
-  /** Optionally defined set of unit labels that can be used to represent the unit. This is helpful when parsing quantity value strings */
-  readonly alternateLabels?: string[];
   /** Unique system name. Example "Units.USCUSTOM"," Units.METRIC", "Units.USSURVEY", "Units.IMPERIAL" */
   readonly system: string;
 }
