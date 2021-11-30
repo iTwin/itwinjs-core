@@ -739,8 +739,6 @@ export class MapTileTreeReference extends TileTreeReference {
     if (this._planarClipMask && this._planarClipMask.settings.isValid)
       context.addPlanarClassifier(tree.modelId, undefined, this._planarClipMask);
 
-    // context.setSecondaryClassifiers(this.layerCl)
-
     const nonLocatable = this.settings.locatable ? undefined : true;
     const transparency = this.settings.transparency ? this.settings.transparency : undefined;
     this._symbologyOverrides = new FeatureSymbology.Overrides();
