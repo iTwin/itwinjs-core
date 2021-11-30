@@ -35,7 +35,6 @@
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-common": "workspace:*",
-    "@itwin/core-backend": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
     "@types/body-parser": "^1.17.0",
     "@types/chai": "^4.1.4",
@@ -53,6 +52,9 @@
     "sinon": "^9.0.2",
     "supertest": "^3.0.0",
     "typescript": "~4.4.0"
+  },
+  "peerDependencies": {
+    "@itwin/core-backend": "workspace:*"
   },
   "dependencies": {
     "express": "^4.16.3",

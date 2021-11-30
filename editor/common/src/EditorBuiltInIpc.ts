@@ -656,9 +656,9 @@ export interface SolidModelingCommandIpc extends EditCommandIpc {
   offsetEdges(id: Id64String, params: OffsetEdgesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
   /** Modify solid bodies by hollowing selected faces. */
   hollowFaces(id: Id64String, params: HollowFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
-  /** Modify solid and sheet bodies by sweeping selected faces along a path vector. Sweep of sheet faces does not create a solid, specifying all faces of a body is invalid. */
+  /** Modify solid and sheet bodies by sweeping selected faces along a path vector. */
   sweepFaces(id: Id64String, params: SweepFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
-  /** Modify solid and sheet bodies by spinning selected faces along an arc specified by a revolve axis and sweep angle. */
+  /** Modify solid and sheet bodies by spinning selected faces along an arc specified by axis of revolution and sweep angle. */
   spinFaces(id: Id64String, params: SpinFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
   /** Modify the target solid or sheet body by removing selected faces oe edges. */
   deleteSubEntities(id: Id64String, params: DeleteSubEntityProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;

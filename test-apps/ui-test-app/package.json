@@ -106,7 +106,7 @@
     "@itwin/presentation-common": "workspace:*",
     "@itwin/presentation-components": "workspace:*",
     "@itwin/presentation-frontend": "workspace:*",
-    "@itwin/electron-authorization": "^0.3.2",
+    "@itwin/electron-authorization": "^0.5.0",
     "@itwin/ui-items-providers-test": "workspace:*",
     "classnames": "^2.3.1",
     "lorem-ipsum": "^2.0.3",

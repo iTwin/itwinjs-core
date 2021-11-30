@@ -7,10 +7,10 @@
  */
 
 import { Id64Array, Id64String } from "@itwin/core-bentley";
-import { BlendEdgesProps, BooleanMode, BooleanOperationProps, ChamferEdgesProps, ChamferMode, CutDepthMode, CutDirectionMode, CutProps, DeleteSubEntityProps, ElementGeometryCacheFilter, ElementGeometryResultOptions, ElementGeometryResultProps, EmbossDirectionMode, EmbossProps, HollowFacesProps, ImprintProps, LoftProps, OffsetFacesProps, ProfileClosure, SewSheetProps, SpinFacesProps, SubEntityFilter, SubEntityLocationProps, SubEntityProps, SubEntityType, SweepFacesProps, SweepPathProps, ThickenSheetProps } from "@itwin/editor-common";
+import { BlendEdgesProps, BooleanMode, BooleanOperationProps, BRepEntityType, ChamferEdgesProps, ChamferMode, CutDepthMode, CutDirectionMode, CutProps, DeleteSubEntityProps, ElementGeometryCacheFilter, ElementGeometryResultOptions, ElementGeometryResultProps, EmbossDirectionMode, EmbossProps, HollowFacesProps, ImprintProps, LoftProps, OffsetFacesProps, ProfileClosure, SewSheetProps, SpinFacesProps, SubEntityFilter, SubEntityLocationProps, SubEntityProps, SubEntityType, SweepFacesProps, SweepPathProps, ThickenSheetProps } from "@itwin/editor-common";
 import { ColorDef, ElementGeometry } from "@itwin/core-common";
-import { Angle, Geometry, LineString3d, Point3d, Vector3d, XYZProps } from "@itwin/core-geometry";
-import { AccuDrawHintBuilder, BeButtonEvent, DecorateContext, DynamicsContext, EventHandled, GraphicType, HitDetail } from "@itwin/core-frontend";
+import { Angle, Geometry, LineString3d, Matrix3d, Point3d, Vector3d, XYZProps } from "@itwin/core-geometry";
+import { AccuDraw, AccuDrawHintBuilder, BeButtonEvent, DecorateContext, DynamicsContext, EventHandled, GraphicType, HitDetail, TentativeOrAccuSnap } from "@itwin/core-frontend";
 import { computeChordToleranceFromPoint } from "./CreateElementTool";
 import { ElementGeometryCacheTool, isSameSubEntity, LocateSubEntityTool, SubEntityData } from "./ElementGeometryTool";
 
@@ -801,6 +801,7 @@ export class ImprintSolidElementsTool extends LocateSubEntityTool {
         if (!ev.isControlKey)
           break;
 
+        this.setupAndPromptForNextAction();
         return EventHandled.No;
       }
 
@@ -849,7 +850,7 @@ export class ImprintSolidElementsTool extends LocateSubEntityTool {
   }
 }
 
-/** @alpha Identify edges of solids and surfaces to apply blend to. */
+/** @alpha Base class for tools to identify edges of solids and surfaces and apply blends. */
 export abstract class BlendEdgesTool extends LocateSubEntityTool {
   // TODO: Tool settings for tangent edge propagation...
   protected propagateSmooth = true;
@@ -1012,47 +1013,100 @@ export class ChamferEdgesTool extends BlendEdgesTool {
   }
 }
 
-/** @alpha Identify faces of solids and surfaces to translate. */
-export class SweepFacesTool extends LocateSubEntityTool {
-  public static override toolId = "SweepFaces";
-  public static override iconSpec = "icon-move"; // TODO: Need better icon...
+/** @alpha */
+export class ProfileLocationData {
+  public point: Point3d;
+  public orientation: Vector3d | Matrix3d;
 
-  // TODO: Tool settings for sweep distance...
-  protected useDistance = false;
-  protected distance = 0.1;
-  protected addSmoothFaces = false;
+  constructor(point: Point3d, orientation: Vector3d | Matrix3d) {
+    this.point = point;
+    this.orientation = orientation;
+  }
+}
 
-  protected override get wantDynamics(): boolean { return true; }
-  protected override get wantAccuSnap(): boolean { return this.isDynamicsStarted; }
+/** @alpha Base class for picking profiles (open paths and regions) or faces of solids. */
+export abstract class LocateFaceOrProfileTool extends LocateSubEntityTool {
+  protected override get wantGeometrySummary(): boolean { return true; }
 
-  // TODO: Sweep open path to surface, sweep surface to solid...
+  protected override wantSubEntityType(type: SubEntityType): boolean {
+    switch (type) {
+      case SubEntityType.Face:
+      case SubEntityType.Edge:
+        // Choose all faces or all edges...
+        return (0 === this._acceptedSubEntities.length || this._acceptedSubEntities[0].props.type === type);
+      default:
+        return false;
+    }
+  }
+
   protected override get geometryCacheFilter(): ElementGeometryCacheFilter | undefined {
-    return { parts: true, curves: false, surfaces: true, solids: true, other: false };
+    return { parts: true, curves: true, surfaces: true, solids: true, other: false };
+  }
+
+  protected override async doPickSubEntities(id: Id64String, ev: BeButtonEvent): Promise<SubEntityLocationProps[] | undefined> {
+    const hits = await super.doPickSubEntities(id, ev);
+
+    if (undefined === hits)
+      return hits;
+
+    // Only want edges from wire bodies...
+    const accept = (BRepEntityType.Wire === this.getBRepEntityTypeForSubEntity(id, hits[0].subEntity) ? SubEntityType.Edge : SubEntityType.Face);
+    return hits.filter((hit) => { return accept === hit.subEntity.type; });
   }
 
   protected override async createSubEntityData(id: Id64String, hit: SubEntityLocationProps): Promise<SubEntityData> {
     const data = await super.createSubEntityData(id, hit);
 
-    if (undefined !== hit.point && undefined !== hit.normal)
-      data.toolData = FaceLocationData.create(hit.point, hit.normal);
+    // Prefer orientation from snap to take entire path curve as well as placement z into account...
+    const snap = TentativeOrAccuSnap.getCurrentSnap(false);
+    const point = (id === snap?.sourceId && snap.isHot ? snap.snapPoint : Point3d.fromJSON(hit.point));
+    const matrix = (id === snap?.sourceId ? AccuDraw.getSnapRotation(snap, undefined) : undefined);
+    const invMatrix = matrix?.inverse(); // getSnapRotation returns row matrix...
+
+    if (undefined !== invMatrix)
+      data.toolData = new ProfileLocationData(point, invMatrix);
+    else
+      data.toolData = new ProfileLocationData(point, undefined !== hit.normal ? Vector3d.fromJSON(hit.normal) : Vector3d.unitZ());
 
     return data;
+  }
+
+  protected override drawSubEntity(context: DecorateContext, subEntity: SubEntityData, accepted: boolean): void {
+    const id = this.getCurrentElement();
+    if (undefined !== id && BRepEntityType.Solid !== this.getBRepEntityTypeForSubEntity(id, subEntity.props))
+      return; // Operation will be applied to wire or sheet body, don't display sub-entity...
+    super.drawSubEntity(context, subEntity, accepted);
   }
 
   protected override drawAcceptedSubEntities(context: DecorateContext): void {
     super.drawAcceptedSubEntities(context);
 
-    // Show pick point on last identified face, offset direction/distance will be computed from this location...
-    const faceData = this.getAcceptedSubEntityData()?.toolData as FaceLocationData;
-    if (undefined === faceData)
+    // Show pick point on last identified face...
+    const profileData = this.getAcceptedSubEntityData()?.toolData as ProfileLocationData;
+    if (undefined === profileData)
       return;
 
     const builder = context.createGraphic({ type: GraphicType.WorldOverlay });
     builder.setSymbology(context.viewport.getContrastToBackgroundColor(), ColorDef.black, 10);
-    builder.addPointString([faceData.point]);
+    builder.addPointString([profileData.point]);
 
     context.addDecorationFromBuilder(builder);
   }
+}
+
+/** @alpha Identify faces of solids and surfaces to translate. */
+export class SweepFacesTool extends LocateFaceOrProfileTool {
+  public static override toolId = "SweepFaces";
+  public static override iconSpec = "icon-move"; // TODO: Need better icon...
+
+  protected override get wantDynamics(): boolean { return true; }
+  protected override get wantAccuSnap(): boolean { return true; }
+  protected override get wantSubEntitySnap(): boolean { return true; }
+
+  // TODO: Tool settings for sweep distance...
+  protected useDistance = false;
+  protected distance = 0.1;
+  protected addSmoothFaces = false;
 
   protected async getSmoothFaces(id: Id64String, face: SubEntityProps): Promise<SubEntityProps[] | undefined> {
     try {
@@ -1067,11 +1121,11 @@ export class SweepFacesTool extends LocateSubEntityTool {
     if (undefined === ev.viewport || this.agenda.isEmpty || !this.haveAcceptedSubEntities)
       return undefined;
 
-    const faceData = this.getAcceptedSubEntityData()?.toolData as FaceLocationData;
-    if (undefined === faceData)
+    const profileData = this.getAcceptedSubEntityData()?.toolData as ProfileLocationData;
+    if (undefined === profileData)
       return undefined;
 
-    const path = Vector3d.createStartEnd(faceData.point, ev.point);
+    const path = Vector3d.createStartEnd(profileData.point, ev.point);
 
     if (this.useDistance && undefined === path.scaleToLength(this.distance, path))
       return undefined;
@@ -1090,24 +1144,29 @@ export class SweepFacesTool extends LocateSubEntityTool {
         writeChanges: isAccept ? true : undefined,
       };
 
-      const faces = this.getAcceptedSubEntities();
+      const subEntities = this.getAcceptedSubEntities();
+      const params: SweepFacesProps = { path };
+
+      if (SubEntityType.Edge === subEntities[0].type || BRepEntityType.Solid !== this.getBRepEntityTypeForSubEntity(id, subEntities[0])) {
+        return await ElementGeometryCacheTool.callCommand("sweepFaces", id, params, opts);
+      }
 
       if (this.addSmoothFaces) {
         const allSmoothFaces: SubEntityProps[] = [];
 
-        for (const face of faces) {
+        for (const face of subEntities) {
           const smoothFaces = await this.getSmoothFaces(id, face);
           if (undefined !== smoothFaces)
             allSmoothFaces.push(...smoothFaces);
         }
 
         for (const smooth of allSmoothFaces) {
-          if (undefined === faces.find((selected) => isSameSubEntity(selected, smooth)))
-            faces.unshift(smooth); // Preserve last selected entry as reference face...
+          if (undefined === subEntities.find((selected) => isSameSubEntity(selected, smooth)))
+            subEntities.unshift(smooth); // Preserve last selected entry as reference face...
         }
       }
 
-      const params: SweepFacesProps = { faces, path };
+      params.faces = subEntities;
       return await ElementGeometryCacheTool.callCommand("sweepFaces", id, params, opts);
     } catch (err) {
       return undefined;
@@ -1118,8 +1177,8 @@ export class SweepFacesTool extends LocateSubEntityTool {
     if (!this.haveAcceptedSubEntities)
       return;
 
-    const faceData = this.getAcceptedSubEntityData()?.toolData as FaceLocationData;
-    if (undefined === faceData)
+    const profileData = this.getAcceptedSubEntityData()?.toolData as ProfileLocationData;
+    if (undefined === profileData)
       return;
 
     const hints = new AccuDrawHintBuilder();
@@ -1127,8 +1186,8 @@ export class SweepFacesTool extends LocateSubEntityTool {
     hints.setLockY = true;
     hints.setLockZ = true;
     hints.setModeRectangular();
-    hints.setOrigin(faceData.point);
-    hints.setXAxis2(faceData.normal);
+    hints.setOrigin(profileData.point);
+    hints.setXAxis2(profileData.orientation instanceof Matrix3d ? profileData.orientation.getColumn(2) : profileData.orientation);
     hints.sendHints(false);
   }
 
@@ -1140,35 +1199,17 @@ export class SweepFacesTool extends LocateSubEntityTool {
 }
 
 /** @alpha Identify faces of solids and surfaces to revolve. */
-export class SpinFacesTool extends LocateSubEntityTool {
+export class SpinFacesTool extends LocateFaceOrProfileTool {
   public static override toolId = "SpinFaces";
   public static override iconSpec = "icon-move"; // TODO: Need better icon...
 
-  protected points: Point3d[] = [];
-
   // TODO: Tool settings for sweep angle...
   protected sweep = Angle.piOver2Radians;
+  protected points: Point3d[] = [];
 
   protected override get wantDynamics(): boolean { return true; }
-  protected override get wantAccuSnap(): boolean { return this.isDynamicsStarted || (this.haveAcceptedSubEntities && !this.isControlDown); }
-
-  // TODO: Spin open path to surface, spin surface to solid...
-  protected override get geometryCacheFilter(): ElementGeometryCacheFilter | undefined {
-    return { parts: true, curves: false, surfaces: true, solids: true, other: false };
-  }
-
-  protected override getSubEntityFilter(): SubEntityFilter | undefined {
-    return { nonPlanarFaces: true };
-  }
-
-  protected override async createSubEntityData(id: Id64String, hit: SubEntityLocationProps): Promise<SubEntityData> {
-    const data = await super.createSubEntityData(id, hit);
-
-    if (undefined !== hit.point && undefined !== hit.normal)
-      data.toolData = FaceLocationData.create(hit.point, hit.normal);
-
-    return data;
-  }
+  protected override get wantAccuSnap(): boolean { return true; }
+  protected override get wantSubEntitySnap(): boolean { return true; }
 
   protected override async applyAgendaOperation(ev: BeButtonEvent, isAccept: boolean): Promise<ElementGeometryResultProps | undefined> {
     if (undefined === ev.viewport || this.agenda.isEmpty || !this.haveAcceptedSubEntities || this.points.length < (isAccept ? 2 : 1))
@@ -1192,9 +1233,14 @@ export class SpinFacesTool extends LocateSubEntityTool {
         writeChanges: isAccept ? true : undefined,
       };
 
-      const faces = this.getAcceptedSubEntities();
-      const params: SpinFacesProps = { faces, origin, direction, angle };
+      const subEntities = this.getAcceptedSubEntities();
+      const params: SpinFacesProps = { origin, direction, angle };
 
+      if (SubEntityType.Edge === subEntities[0].type || BRepEntityType.Solid !== this.getBRepEntityTypeForSubEntity(id, subEntities[0])) {
+        return await ElementGeometryCacheTool.callCommand("spinFaces", id, params, opts);
+      }
+
+      params.faces = subEntities;
       let result = await ElementGeometryCacheTool.callCommand("spinFaces", id, params, opts);
 
       // Spun face can be used to create a pocket...retry with negative sweep...
@@ -1226,7 +1272,7 @@ export class SpinFacesTool extends LocateSubEntityTool {
   }
 
   protected override async gatherInput(ev: BeButtonEvent): Promise<EventHandled | undefined> {
-    if (this.haveAcceptedSubEntities)
+    if (!this.wantAdditionalSubEntities)
       this.points.push(ev.point.clone());
 
     return super.gatherInput(ev);
@@ -1240,14 +1286,20 @@ export class SpinFacesTool extends LocateSubEntityTool {
     if (!this.haveAcceptedSubEntities || 0 !== this.points.length)
       return;
 
-    const faceData = this.getAcceptedSubEntityData()?.toolData as FaceLocationData;
-    if (undefined === faceData)
+    const profileData = this.getAcceptedSubEntityData()?.toolData as ProfileLocationData;
+    if (undefined === profileData)
       return;
 
     const hints = new AccuDrawHintBuilder();
+
     hints.setModeRectangular();
-    hints.setOrigin(faceData.point);
-    hints.setNormal(faceData.normal);
+    hints.setOrigin(profileData.point);
+
+    if (profileData.orientation instanceof Matrix3d)
+      hints.setMatrix(profileData.orientation);
+    else
+      hints.setNormal(profileData.orientation);
+
     hints.sendHints(false);
   }
 
