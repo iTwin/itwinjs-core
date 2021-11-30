@@ -3480,6 +3480,18 @@ export class GeographicCRS implements GeographicCRSProps {
     readonly verticalCRS?: VerticalCRS;
 }
 
+// @beta
+export interface GeographicCRSInterpretRequestProps {
+    format: "WKT" | "JSON";
+    geographicCRSDef: string;
+}
+
+// @beta
+export interface GeographicCRSInterpretResponseProps {
+    geographicCRS?: GeographicCRSProps;
+    status: number;
+}
+
 // @public
 export interface GeographicCRSProps {
     additionalTransform?: AdditionalTransformProps;
