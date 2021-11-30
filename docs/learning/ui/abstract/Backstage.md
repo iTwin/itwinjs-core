@@ -1,11 +1,10 @@
 # Backstage
 
-The [Backstage]($appui-abstract:Backstage) category in the `@itwin/appui-abstract` package includes abstractions used by the `@itwin/appui-react` package to create and manage the display of Backstage menu items.
-The Backstage is a menu used to open frontstages and launch tasks and commands. It can also open full-screen overlays, or modal stages, presenting application settings and data management to the user.
+The [Backstage]($appui-abstract:Backstage) is a menu used to open frontstages, launch tasks, and execute commands. It can also open full-screen overlays, called modal stages, presenting application settings and data management to the user. The [Backstage]($appui-abstract:Backstage) category in the `@itwin/appui-abstract` package contains abstractions used by the `@itwin/appui-react` package to create and manage the display of Backstage menu items.
 
 ## Backstage Item Utilities
 
-[BackstageItemUtilities]($appui-abstract) is a utility class for creating abstract Backstage item definitions used to create entries in the Backstage menu.
+[BackstageItemUtilities]($appui-abstract) is a utility class to create abstract Backstage item definitions that define entries in the Backstage menu.
 
 The following shows an example of defining an item to create an item that opens a primary stage.
 
