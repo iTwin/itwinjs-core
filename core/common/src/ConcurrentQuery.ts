@@ -24,7 +24,7 @@ export enum QueryRowFormat {
    */
   UseECSqlPropertyIndexes,
   /** Each row is an object in which each non-null column value can be accessed by a [remapped property name]($docs/learning/ECSqlRowFormat.md).
-   * This format is backwards-compatible with the format produced by version 2.x. Null values are omitted.
+   * This format is backwards-compatible with the format produced by iTwin.js 2.x. Null values are omitted.
    */
   UseJsPropertyNames,
 }
