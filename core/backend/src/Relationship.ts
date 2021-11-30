@@ -253,7 +253,7 @@ export interface ElementDrivesElementProps extends RelationshipProps {
  * * Outputs - The targets of all edges that point out of the element. This includes all downstream elements.
  *
  * # Subgraph Processing
- * When changes are made, only the part of the overall graph that is affected will is processed. So, for example,
+ * When changes are made, only the part of the overall graph that is affected will be processed. So, for example,
  * suppose we have this graph:
  * ```
  * e1 --> e2 --> e3
@@ -291,7 +291,7 @@ export interface ElementDrivesElementProps extends RelationshipProps {
  *           e31
  * ```
  * # Callbacks
- * Once the affected subgraph to process are found, it propagates changes through it by making callbacks.
+ * Once the affected subgraph to process is found, it propagates changes through it by making callbacks.
  * Classes for both elements (nodes) and ElementDrivesElements relationships (edges) can receive callbacks.
  *
  * ## ElementDrivesElement Callbacks

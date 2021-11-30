@@ -2822,7 +2822,6 @@ export class ScreenViewport extends Viewport {
     this.target.updateViewRect();
 
     // SEE: decorationDiv doc comment
-    // eslint-disable-next-line deprecation/deprecation
     this.decorationDiv = this.addNewDiv("overlay-decorators", true, 30);
     this.toolTipDiv = this.addNewDiv("overlay-tooltip", true, 40);
     this.setCursor();
