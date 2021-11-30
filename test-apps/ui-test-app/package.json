@@ -106,7 +106,6 @@
     "@itwin/presentation-common": "workspace:*",
     "@itwin/presentation-components": "workspace:*",
     "@itwin/presentation-frontend": "workspace:*",
-    "@itwin/ui-test-extension": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/ui-items-providers-test": "workspace:*",
     "@itwin/ecschema-rpcinterface-common": "workspace:*",

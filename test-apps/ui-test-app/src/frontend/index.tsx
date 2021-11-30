@@ -24,7 +24,7 @@ import {
 } from "@itwin/appui-react";
 import { BeDragDropContext } from "@itwin/components-react";
 import { Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
-import { BentleyCloudRpcManager, BentleyCloudRpcParams, IModelVersion, RpcConfiguration, RpcManager, SyncMode } from "@itwin/core-common";
+import { BentleyCloudRpcManager, BentleyCloudRpcParams, IModelVersion, RpcConfiguration, SyncMode } from "@itwin/core-common";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import {
   AccuSnap, BriefcaseConnection, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeApp, NativeAppAuthorization, NativeAppLogger,
@@ -64,8 +64,7 @@ import {
   OpenComponentExamplesPopoutTool, OpenCustomPopoutTool, OpenViewPopoutTool, RemoveSavedContentLayoutTool, RestoreSavedContentLayoutTool,
   SaveContentLayoutTool, TestExtensionUiProviderTool,
 } from "./tools/ImmediateTools";
-import { ECSchemaRpcInterface, ECSchemaRpcLocater } from "@itwin/ecschema-rpcinterface-common";
-import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
+import { ECSchemaRpcLocater } from "@itwin/ecschema-rpcinterface-common";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -271,9 +270,6 @@ export class SampleAppIModelApp {
       },
     });
     Presentation.selection.scopes.activeScope = "top-assembly";
-
-    // ECSchemaRpcInterface allows schema retrieval for the UnitProvider implementation.
-    RpcManager.registerImpl(ECSchemaRpcInterface, ECSchemaRpcImpl);
 
     // Register tools.
     Tool1.register(this.sampleAppNamespace);
