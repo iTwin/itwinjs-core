@@ -35,6 +35,7 @@
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-common": "workspace:*",
+    "@itwin/core-backend": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
     "@types/body-parser": "^1.17.0",
     "@types/chai": "^4.1.4",

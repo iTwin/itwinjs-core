@@ -592,6 +592,7 @@ importers:
   ../../core/express-server:
     specifiers:
       '@itwin/build-tools': workspace:*
+      '@itwin/core-backend': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@types/body-parser': ^1.17.0
@@ -617,6 +618,7 @@ importers:
       express-ws: 5.0.2_express@4.17.1
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
+      '@itwin/core-backend': link:../backend
       '@itwin/core-common': link:../common
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@types/body-parser': 1.19.2
