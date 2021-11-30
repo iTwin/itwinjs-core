@@ -2788,7 +2788,7 @@ export class ScreenViewport extends Viewport {
   /** @internal */
   protected addLogo() {
     const logo = this._logo = IModelApp.makeHTMLElement("img", { parent: this.vpDiv, className: "imodeljs-icon" });
-    logo.src = "images/imodeljs-icon.svg";
+    logo.src = `${IModelApp.assetsPath}images/imodeljs-icon.svg`;
     logo.alt = "";
 
     const showLogos = (ev: Event) => {

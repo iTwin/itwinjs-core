@@ -72,7 +72,7 @@ export class MarkupApp {
       /** The attributes of box that provides the move cursor. */
       move: { "cursor": "move", "opacity": 0, "stroke-width": 10, "stroke": "white" },
       /** The attributes of handles on the vertices of lines. */
-      vertex: { "cursor": "url(cursors/crosshair.cur), crosshair", "fill-opacity": .85, "stroke": "black", "fill": "white" },
+      vertex: { "cursor": `url(${IModelApp.assetsPath}cursors/crosshair.cur), crosshair`, "fill-opacity": .85, "stroke": "black", "fill": "white" },
     },
     /** properties for providing feedback about selected elements. */
     hilite: {

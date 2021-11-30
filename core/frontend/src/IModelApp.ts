@@ -121,6 +121,7 @@ export interface IModelAppOptions {
   rpcInterfaces?: RpcInterfaceDefinition[];
   /** @beta */
   realityDataAccess?: RealityDataAccess;
+  assetsPath?: string;
 }
 
 /** Options for [[IModelApp.makeModalDiv]]
@@ -188,6 +189,7 @@ export class IModelApp {
   private static _mapLayerFormatRegistry: MapLayerFormatRegistry;
   private static _hubAccess?: FrontendHubAccess;
   private static _realityDataAccess?: RealityDataAccess;
+  private static _assetsPath: string;
 
   // No instances of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
   protected constructor() { }
@@ -258,6 +260,7 @@ export class IModelApp {
   public static get uiAdmin() { return this._uiAdmin; }
   /** The requested security options for the frontend. */
   public static get securityOptions() { return this._securityOptions; }
+  public static get assetsPath() { return this._assetsPath; }
   /** The [[TelemetryManager]] for this session
    * @internal
    */
@@ -374,6 +377,7 @@ export class IModelApp {
     this._uiAdmin = opts.uiAdmin ?? new UiAdmin();
     this._mapLayerFormatRegistry = new MapLayerFormatRegistry(opts.mapLayerOptions);
     this._realityDataAccess = opts.realityDataAccess;
+    this._assetsPath = opts.assetsPath ?? "";
 
     [
       this.renderSystem,
@@ -663,7 +667,7 @@ export class IModelApp {
    */
   public static makeIModelJsLogoCard() {
     return this.makeLogoCard({
-      iconSrc: "images/about-imodeljs.svg",
+      iconSrc: `${this.assetsPath}images/about-imodeljs.svg`,
       heading: `<span style="font-weight:normal">${this.localization.getLocalizedString("Notices.PoweredBy")}</span>&nbsp;iModel.js`,
       notice: `${require("../../package.json").version}<br>${copyrightNotice}`, // eslint-disable-line @typescript-eslint/no-var-requires
     });

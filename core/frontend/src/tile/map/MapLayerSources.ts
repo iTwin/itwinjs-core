@@ -189,7 +189,7 @@ export class MapLayerSources {
     }
 
     if (queryForPublicSources) {
-      const sourcesJson = await getJson("assets/MapLayerSources.json");
+      const sourcesJson = await getJson(`${IModelApp.assetsPath}assets/MapLayerSources.json`);
 
       for (const sourceJson of sourcesJson) {
         const source = MapLayerSource.fromJSON(sourceJson);
