@@ -2537,6 +2537,8 @@ export namespace IModelJson {
         topY?: number;
     }
     export interface BSplineSurfaceProps {
+        closedU?: boolean;
+        closedV?: boolean;
         orderU: number;
         orderV: number;
         points: [[[number]]];
