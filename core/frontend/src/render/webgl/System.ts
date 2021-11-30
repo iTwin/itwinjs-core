@@ -867,9 +867,6 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
 
   // RenderSystemDebugControl
   public override get debugControl(): RenderSystemDebugControl { return this; }
-  private _drawSurfacesAsWiremesh = false;
-  public get drawSurfacesAsWiremesh() { return this._drawSurfacesAsWiremesh; }
-  public set drawSurfacesAsWiremesh(asWiremesh: boolean) { this._drawSurfacesAsWiremesh = asWiremesh; }
 
   private _dpiAwareLOD?: boolean;
   public override get dpiAwareLOD(): boolean { return this._dpiAwareLOD ?? super.dpiAwareLOD; }

@@ -23,7 +23,7 @@ export const FAVORITE_PROPERTIES_SETTING_NAME = "FavoriteProperties";
 export const FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME = "FavoritePropertiesOrderInfo";
 
 /**
- * Stores user settings for favorite properties.
+ * Stores user preferences for favorite properties.
  * @public
  */
 export interface IFavoritePropertiesStorage {

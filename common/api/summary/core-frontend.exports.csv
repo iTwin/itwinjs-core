@@ -27,6 +27,7 @@ public;ACSType
 public;ActivityMessageDetails
 public;ActivityMessageEndReason
 internal;addRangeGraphic(builder: GraphicBuilder, range: Range3d, is2d: boolean): void
+internal;AlternateUnitLabelsRegistry 
 beta;AngleDescription 
 internal;AnimatedTreeReference 
 internal;AnimationBranchState
@@ -262,6 +263,7 @@ internal;ImageryMapTile
 internal;ImageryMapTileTree 
 internal;ImageryTileContent 
 internal;ImdlReader 
+internal;ImdlReaderCreateArgs
 internal;ImdlReaderResult 
 public;IModelApp
 public;IModelAppOptions
@@ -608,6 +610,7 @@ public;UniformContext
 public;UniformParams
 public;UniformType
 beta;UnitFormattingSettingsProvider
+beta;UnitNameKey = string
 internal;UpsampledMapTile 
 beta;UserPreferencesAccess
 public;VaryingType
