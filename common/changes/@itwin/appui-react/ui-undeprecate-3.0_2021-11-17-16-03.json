@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Undeprecate necessary UI 1.0 classes/interfaces",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}

@@ -7,7 +7,7 @@
  */
 
 import { Transform, XAndY } from "@itwin/core-geometry";
-import { AbstractToolbarProps } from "@itwin/appui-abstract";
+import type { AbstractToolbarProps } from "@itwin/appui-abstract";
 import {
   ChangeFlags, DecorateContext, Decorator, IModelApp, IModelConnection, ScreenViewport, SpatialViewState, TiledGraphicsProvider, ViewClipTool,
 } from "@itwin/core-frontend";

@@ -8,8 +8,7 @@
 
 const copyrightNotice = 'Copyright © 2017-2021 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
 
-import { ConnectSettingsClient, SettingsAdmin } from "@bentley/product-settings-client";
-import { TelemetryManager } from "@bentley/telemetry-client";
+import { TelemetryManager } from "@itwin/core-telemetry";
 import { UiAdmin } from "@itwin/appui-abstract";
 import { AccessToken, BeDuration, BeEvent, BentleyStatus, DbResult, dispose, Guid, GuidString, Logger } from "@itwin/core-bentley";
 import {
@@ -45,6 +44,7 @@ import * as selectTool from "./tools/SelectTool";
 import { ToolRegistry } from "./tools/Tool";
 import { ToolAdmin } from "./tools/ToolAdmin";
 import * as viewTool from "./tools/ViewTool";
+import { UserPreferencesAccess } from "./UserPreferences";
 import { ViewManager } from "./ViewManager";
 import * as viewState from "./ViewState";
 
@@ -78,8 +78,10 @@ export interface IModelAppOptions {
   applicationId?: string;
   /** If present, supplies the version of this application. Must be set for usage logging. */
   applicationVersion?: string;
-  /** If present, supplies the [[SettingsAdmin]] for this session. */
-  settings?: SettingsAdmin;
+  /** If present, supplies the [[UserPreferencesAccess]] for this session.
+   * @beta
+   */
+  userPreferences?: UserPreferencesAccess;
   /** If present, supplies the [[ViewManager]] for this session. */
   viewManager?: ViewManager;
   /** If present, supplies Map Layer Options for this session such as Azure Access Keys
@@ -172,7 +174,7 @@ export class IModelApp {
   private static _notifications: NotificationManager;
   private static _quantityFormatter: QuantityFormatter;
   private static _renderSystem?: RenderSystem;
-  private static _settings: SettingsAdmin;
+  private static _userPreferences?: UserPreferencesAccess;
   private static _tentativePoint: TentativePoint;
   private static _tileAdmin: TileAdmin;
   private static _toolAdmin: ToolAdmin;
@@ -230,8 +232,10 @@ export class IModelApp {
   public static get tentativePoint(): TentativePoint { return this._tentativePoint; }
   /** The [[Localization]] for this session. */
   public static get localization(): Localization { return this._localization; }
-  /** The [[SettingsAdmin]] for this session. */
-  public static get settings(): SettingsAdmin { return this._settings; }
+  /** The [[UserPreferencesAccess]] for this session.
+   * @beta
+   */
+  public static get userPreferences(): UserPreferencesAccess | undefined { return this._userPreferences; }
   /** The Id of this application. Applications must set this to the Global Product Registry ID (GPRID) for usage logging. */
   public static get applicationId(): string { return this._applicationId; }
   /** The version of this application. Must be set for usage logging. */
@@ -356,7 +360,8 @@ export class IModelApp {
     ].forEach((module) => this.registerModuleEntities(module));
 
     this._renderSystem = (opts.renderSys instanceof RenderSystem) ? opts.renderSys : this.createRenderSys(opts.renderSys);
-    this._settings = opts.settings ?? new ConnectSettingsClient(this.applicationId);
+    if (opts.userPreferences)
+      this._userPreferences = opts.userPreferences;
     this._viewManager = opts.viewManager ?? new ViewManager();
     this._tileAdmin = await TileAdmin.create(opts.tileAdmin);
     this._notifications = opts.notifications ?? new NotificationManager();
@@ -640,13 +645,13 @@ export class IModelApp {
     const noticeCell = IModelApp.makeHTMLElement("td", { parent: card, className: "logo-card-message" });
     if (undefined !== opts.heading) {
       if (typeof opts.heading === "string")
-        IModelApp.makeHTMLElement("h2", { parent: noticeCell, innerHTML: opts.heading });
+        IModelApp.makeHTMLElement("h2", { parent: noticeCell, innerHTML: opts.heading, className: "logo-card-header" });
       else
         noticeCell.appendChild(opts.heading);
     }
     if (undefined !== opts.notice) {
       if (typeof opts.notice === "string")
-        IModelApp.makeHTMLElement("p", { parent: noticeCell, innerHTML: opts.notice });
+        IModelApp.makeHTMLElement("p", { parent: noticeCell, innerHTML: opts.notice, className: "logo-cards" });
       else
         noticeCell.appendChild(opts.notice);
     }

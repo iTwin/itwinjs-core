@@ -63,13 +63,6 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/product-settings-client",
-      "projectFolder": "clients/product-settings",
-      "reviewCategory": "common",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
       "packageName": "@bentley/reality-data-client",
       "projectFolder": "clients/reality-data",
       "reviewCategory": "common",
@@ -77,8 +70,8 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/telemetry-client",
-      "projectFolder": "clients/telemetry",
+      "packageName": "@itwin/core-telemetry",
+      "projectFolder": "core/telemetry",
       "reviewCategory": "common",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
@@ -455,8 +448,8 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@itwin/ui-test-extension",
-      "projectFolder": "test-apps/ui-test-extension",
+      "packageName": "@itwin/ui-items-providers-test",
+      "projectFolder": "test-apps/ui-items-providers-test",
       "reviewCategory": "internal",
       "shouldPublish": false
     },

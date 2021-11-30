@@ -286,6 +286,8 @@ export type ContentInstanceKeysRpcRequestOptions = PresentationRpcRequestOptions
 // @public
 export interface ContentInstancesOfSpecificClassesSpecification extends ContentSpecificationBase {
     classes: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
+    excludedClasses?: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
+    // @deprecated
     handleInstancesPolymorphically?: boolean;
     handlePropertiesPolymorphically?: boolean;
     instanceFilter?: string;
@@ -773,12 +775,6 @@ export type ElementPropertiesPropertyValueType = "primitive" | "array" | "struct
 export type ElementPropertiesRequestOptions<TIModel> = SingleElementPropertiesRequestOptions<TIModel> | MultiElementPropertiesRequestOptions<TIModel>;
 
 // @beta
-export type ElementPropertiesRpcRequestOptions = PresentationRpcRequestOptions<ElementPropertiesRequestOptions<never>>;
-
-// @beta
-export type ElementPropertiesRpcResult = ElementProperties | PagedResponse<ElementProperties> | undefined;
-
-// @beta
 export interface ElementPropertiesStructArrayPropertyItem extends ElementPropertiesArrayPropertyItemBase {
     values: Array<{
         [memberLabel: string]: ElementPropertiesPropertyItem;
@@ -1262,8 +1258,10 @@ export enum InstanceLabelOverrideValueSpecificationType {
 
 // @public
 export interface InstanceNodesOfSpecificClassesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
+    // @deprecated
     arePolymorphic?: boolean;
     classes: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
+    excludedClasses?: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
     instanceFilter?: string;
     specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses;
 }
@@ -1488,15 +1486,13 @@ export type LabelRawValue = string | number | boolean | LabelCompositeValue;
 export type LabelRawValueJSON = string | number | boolean | LabelCompositeValueJSON;
 
 // @beta
-export interface MultiElementPropertiesRequestOptions<TIModel> extends Paged<RequestOptions<TIModel>> {
+export interface MultiElementPropertiesRequestOptions<TIModel> extends RequestOptions<TIModel> {
     elementClasses?: string[];
 }
 
-// @beta
-export type MultiElementPropertiesRpcRequestOptions = PresentationRpcRequestOptions<MultiElementPropertiesRequestOptions<never>>;
-
 // @public
 export interface MultiSchemaClassesSpecification {
+    arePolymorphic?: boolean;
     classNames: string[];
     schemaName: string;
 }
@@ -1900,8 +1896,6 @@ export class PresentationRpcInterface extends RpcInterface {
     getDisplayLabelDefinition(_token: IModelRpcProps, _options: DisplayLabelRpcRequestOptions): PresentationRpcResponse<LabelDefinitionJSON>;
     // @beta (undocumented)
     getElementProperties(_token: IModelRpcProps, _options: SingleElementPropertiesRpcRequestOptions): PresentationRpcResponse<ElementProperties | undefined>;
-    // @alpha (undocumented)
-    getElementProperties(_token: IModelRpcProps, _options: MultiElementPropertiesRpcRequestOptions): PresentationRpcResponse<PagedResponse<ElementProperties>>;
     // (undocumented)
     getFilteredNodePaths(_token: IModelRpcProps, _options: FilterByTextHierarchyRpcRequestOptions): PresentationRpcResponse<NodePathElementJSON[]>;
     // (undocumented)
@@ -2437,8 +2431,6 @@ export class RpcRequestsHandler implements IDisposable {
     getDisplayLabelDefinition(options: DisplayLabelRequestOptions<IModelRpcProps, InstanceKeyJSON>): Promise<LabelDefinitionJSON>;
     // (undocumented)
     getElementProperties(options: SingleElementPropertiesRequestOptions<IModelRpcProps>): Promise<ElementProperties | undefined>;
-    // (undocumented)
-    getElementProperties(options: MultiElementPropertiesRequestOptions<IModelRpcProps>): Promise<PagedResponse<ElementProperties>>;
     // (undocumented)
     getFilteredNodePaths(options: FilterByTextHierarchyRequestOptions<IModelRpcProps, RulesetVariableJSON>): Promise<NodePathElementJSON[]>;
     // (undocumented)

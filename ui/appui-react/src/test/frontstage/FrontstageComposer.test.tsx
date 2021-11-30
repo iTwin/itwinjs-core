@@ -14,7 +14,7 @@ import {
 } from "@itwin/appui-layout-react";
 import {
   FrontstageComposer, FrontstageManager, getNestedStagePanelKey, isCollapsedToPanelState,
-  ModalFrontstageInfo, StagePanelDef, StagePanelState,
+  ModalFrontstageInfo, StagePanelDef, StagePanelState, UiFramework,
 } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 import { TestFrontstage } from "./FrontstageTestUtils";
@@ -38,6 +38,7 @@ class TestModalFrontstage implements ModalFrontstageInfo {
 describe("FrontstageComposer", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
+    UiFramework.setUiVersion("1");
   });
 
   after(() => {

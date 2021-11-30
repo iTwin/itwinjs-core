@@ -11,6 +11,9 @@ import { ClipPlane, Point3d, Vector3d } from "@itwin/core-geometry";
 import { Frustum } from "../Frustum";
 import { BoundingSphere } from "./BoundingSphere";
 
+// Scratch variable used by FrustumPlanes.computeContainment.
+const planesContainingSphere = [false, false, false, false, false, false];
+
 /** Represents a frustum as 6 planes and provides containment and intersection testing
  * @internal
  */
@@ -43,37 +46,53 @@ export class FrustumPlanes {
     FrustumPlanes.addPlaneFromPoints(this._planes, frustum.points, 4, 5, 6);  // front
   }
 
-  public computeFrustumContainment(box: Frustum, sphere?: BoundingSphere): FrustumPlanes.Containment { return this.computeContainment(box.points, sphere); }
-  public intersectsFrustum(box: Frustum): boolean { return FrustumPlanes.Containment.Outside !== this.computeFrustumContainment(box); }
-  public containsPoint(point: Point3d, tolerance: number = 1.0e-8): boolean { return FrustumPlanes.Containment.Outside !== this.computeContainment([point], undefined, tolerance); }
+  public computeFrustumContainment(box: Frustum, sphere?: BoundingSphere): FrustumPlanes.Containment {
+    return this.computeContainment(box.points, sphere);
+  }
+
+  public intersectsFrustum(box: Frustum, sphere?: BoundingSphere): boolean {
+    return FrustumPlanes.Containment.Outside !== this.computeFrustumContainment(box, sphere);
+  }
+
+  public containsPoint(point: Point3d, tolerance: number = 1.0e-8): boolean {
+    return FrustumPlanes.Containment.Outside !== this.computeContainment([point], undefined, tolerance);
+  }
 
   public computeContainment(points: Point3d[], sphere?: BoundingSphere, tolerance: number = 1.0e-8): FrustumPlanes.Containment {
     assert(this.isValid);
-    if (undefined === this._planes) {
+    if (undefined === this._planes)
       return FrustumPlanes.Containment.Outside;
-    }
 
-    let allInside = true;
-    for (const plane of this._planes) {
-      if (sphere) { // if sphere provide detect total inside and outside without using corners.
+    // Do the cheap test against bounding sphere first.
+    if (sphere) {
+      for (let i = 0; i < this._planes.length; i++) {
+        const plane = this._planes[i];
         const centerDistance = plane.altitude(sphere.center);
         const tolerancePlusRadius = tolerance + sphere.radius;
         if (centerDistance < -tolerancePlusRadius)
           return FrustumPlanes.Containment.Outside;
-        if (centerDistance > tolerancePlusRadius)
-          continue;
+
+        planesContainingSphere[i] = centerDistance > tolerancePlusRadius;
       }
+    }
+
+    // Test against points.
+    let allInside = true;
+    for (let i = 0; i < this._planes.length; i++) {
+      if (sphere && planesContainingSphere[i])
+        continue;
+
+      const plane = this._planes[i];
       let nOutside = 0;
       for (const point of points) {
-        if (plane.altitude(point) + tolerance < 0.0) {
+        if (plane.altitude(point) + tolerance < 0) {
           ++nOutside;
           allInside = false;
         }
       }
 
-      if (nOutside === points.length) {
+      if (nOutside === points.length)
         return FrustumPlanes.Containment.Outside;
-      }
     }
 
     return allInside ? FrustumPlanes.Containment.Inside : FrustumPlanes.Containment.Partial;

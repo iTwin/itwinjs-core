@@ -19,7 +19,7 @@ import { HubMock } from "../HubMock";
 import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils";
 
 describe("Server-based locks", () => {
-  const createRev0 = async () => {
+  const createVersion0 = async () => {
     const dbName = IModelTestUtils.prepareOutputFile("ServerBasedLocks", "ServerBasedLocks.bim");
     const sourceDb = SnapshotDb.createEmpty(dbName, { rootSubject: { name: "server lock test" } });
     assert.isFalse(sourceDb.locks.isServerBased);
@@ -42,7 +42,7 @@ describe("Server-based locks", () => {
     const iModelProps = {
       iModelName: "server locks test",
       iTwinId: Guid.createValue(),
-      revision0: await createRev0(),
+      version0: await createVersion0(),
     };
 
     iModelId = await IModelHost.hubAccess.createNewIModel(iModelProps);

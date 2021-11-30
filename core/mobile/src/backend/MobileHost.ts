@@ -6,14 +6,14 @@
 import { BeEvent, BriefcaseStatus } from "@itwin/core-bentley";
 import { IModelHost, IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-backend";
 import {
-  IModelReadRpcInterface, IModelTileRpcInterface, InternetConnectivityStatus, NativeAppAuthorizationConfiguration, RpcInterfaceDefinition,
+  IModelReadRpcInterface, IModelTileRpcInterface, InternetConnectivityStatus, RpcInterfaceDefinition,
   SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
 import { CancelRequest, DownloadFailed, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
 import { PresentationRpcInterface } from "@itwin/presentation-common";
 import { BatteryState, DeviceEvents, mobileAppChannel, MobileAppFunctions, Orientation } from "../common/MobileAppProps";
 import { MobileRpcManager } from "../common/MobileRpcManager";
-import { MobileAuthorizationBackend } from "./MobileAuthorizationBackend";
+import { MobileAppAuthorizationConfiguration, MobileAuthorizationBackend } from "./MobileAuthorizationBackend";
 import { setupMobileRpc } from "./MobileRpcServer";
 
 /** @beta */
@@ -67,7 +67,7 @@ export abstract class MobileDevice {
   public abstract authSignIn(callback: (err?: string) => void): void;
   public abstract authSignOut(callback: (err?: string) => void): void;
   public abstract authGetAccessToken(callback: (accessToken?: string, err?: string) => void): void;
-  public authInit(_config: NativeAppAuthorizationConfiguration, callback: (err?: string) => void): void { callback(); }
+  public authInit(_config: MobileAppAuthorizationConfiguration, callback: (err?: string) => void): void { callback(); }
   public abstract authStateChanged(accessToken?: string, err?: string): void;
 }
 
@@ -84,8 +84,8 @@ export interface MobileHostOpts extends NativeHostOpts {
     device?: MobileDevice;
     /** list of RPC interface definitions to register */
     rpcInterfaces?: RpcInterfaceDefinition[];
-    /** if present, [[NativeHost.authorizationClient]] will be set to an instance of NativeAppAuthorizationBackend and will be initialized. */
-    authConfig?: NativeAppAuthorizationConfiguration;
+    /** if present, [[NativeHost.authorizationClient]] will be set to an instance of MobileAppAuthorizationConfiguration and will be initialized. */
+    authConfig?: MobileAppAuthorizationConfiguration;
     /** if true, do not attempt to initialize AuthorizationClient on startup */
     noInitializeAuthClient?: boolean;
   };

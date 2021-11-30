@@ -24,7 +24,7 @@ It also contains various input components, such as Input, Radio, Checkbox, Numbe
 - [Radio](./Radio.md) - Component is a wrapper for the `<input type="radio">` HTML element.
 - [SearchBox](./SearchBox.md) - Components for working with a SearchBox.
 - [Select](./Select.md) - Components that display a value and a drop-down showing possible values the user can choose.
-- [Settings](./Settings.md) -  Manager and UI Components that allow users to modify settings for registered settings providers.
+- [Settings](./Settings.md) -  Manager and UI Components that allow users to modify preferences for registered settings providers.
 - [Slider](./Slider.md) - Component for displaying a range slider.
 - [SplitButton](./SplitButton.md) - Component that displays a button with two parts:
 an action button on the left and an arrow button on the right that opens a context menu.
@@ -35,5 +35,5 @@ an action button on the left and an arrow button on the right that opens a conte
 - [Toggle](./Toggle.md) - Component for working with a Toggle switch.
 - [Tooltip](./Tooltip.md) - Component displays tooltip popup for a specified target element.
 - [Tree](./Tree.md) - Presentation React components for working with a Tree.
-- [UiSettings](./UiSettings.md) - Interfaces and classes for working with persistent UI settings.
+- [UiStateStorage](./UiStateStorage.md) - Interfaces and classes for working with persistent UI settings.
 - [Utilities](./Utilities.md) - Various utility classes, functions and React hooks for working with a UI.
