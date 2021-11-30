@@ -27,6 +27,7 @@ public;ACSType
 public;ActivityMessageDetails
 public;ActivityMessageEndReason
 internal;addRangeGraphic(builder: GraphicBuilder, range: Range3d, is2d: boolean): void
+internal;AlternateUnitLabelsRegistry 
 beta;AngleDescription 
 internal;AnimatedTreeReference 
 internal;AnimationBranchState
@@ -609,6 +610,7 @@ public;UniformContext
 public;UniformParams
 public;UniformType
 beta;UnitFormattingSettingsProvider
+beta;UnitNameKey = string
 internal;UpsampledMapTile 
 beta;UserPreferencesAccess
 public;VaryingType

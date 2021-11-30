@@ -39,6 +39,9 @@ export const enum IsShadowable { No, Yes }
 /** @internal */
 export const enum IsThematic { No, Yes }
 
+/** @internal */
+export const enum IsWiremesh { No, Yes }
+
 /** Flags used to control which shader program is used by a rendering Technique.
  * @internal
  */
@@ -52,6 +55,7 @@ export class TechniqueFlags {
   public isClassified: IsClassified = IsClassified.No;
   public isShadowable: IsShadowable = IsShadowable.No;
   public isThematic: IsThematic = IsThematic.No;
+  public isWiremesh: IsWiremesh = IsWiremesh.No;
   private _isHilite = false;
 
   public constructor(translucent: boolean = false) {
@@ -62,7 +66,7 @@ export class TechniqueFlags {
     return this.numClipPlanes > 0;
   }
 
-  public init(target: Target, pass: RenderPass, instanced: IsInstanced, animated: IsAnimated = IsAnimated.No, classified = IsClassified.No, shadowable = IsShadowable.No, thematic = IsThematic.No): void {
+  public init(target: Target, pass: RenderPass, instanced: IsInstanced, animated: IsAnimated = IsAnimated.No, classified = IsClassified.No, shadowable = IsShadowable.No, thematic = IsThematic.No, wiremesh = IsWiremesh.No): void {
     const clipStack = target.uniforms.branch.clipStack;
     const numClipPlanes = clipStack.hasClip ? clipStack.textureHeight : 0;
     if (RenderPass.Hilite === pass || RenderPass.HiliteClassification === pass || RenderPass.HilitePlanarClassification === pass) {
@@ -77,6 +81,7 @@ export class TechniqueFlags {
       this.isClassified = classified;
       this.isShadowable = shadowable;
       this.isThematic = thematic;
+      this.isWiremesh = wiremesh;
       this.featureMode = target.uniforms.batch.featureMode;
 
       // Determine if we should use the shaders which support discarding surfaces in favor of their edges (and discarding non-planar surfaces in favor of coincident planar surfaces).
@@ -114,6 +119,7 @@ export class TechniqueFlags {
     this.isInstanced = instanced;
     this.isShadowable = shadowable;
     this.isThematic = thematic;
+    this.isWiremesh = IsWiremesh.No;
     this.numClipPlanes = 0;
   }
 
@@ -147,6 +153,7 @@ export class TechniqueFlags {
       && this.isClassified === other.isClassified
       && this.isShadowable === other.isShadowable
       && this.isThematic === other.isThematic
+      && this.isWiremesh === other.isWiremesh
       && this.isHilite === other.isHilite;
   }
 
@@ -161,6 +168,7 @@ export class TechniqueFlags {
     if (this.isShadowable) parts.push("Shadowable");
     if (this.isThematic) parts.push("Thematic");
     if (this.hasFeatures) parts.push(FeatureMode.Pick === this.featureMode ? "Pick" : "Overrides");
+    if (this.isWiremesh) parts.push("Wiremesh");
     return parts.join("-");
   }
 
@@ -195,6 +203,9 @@ export class TechniqueFlags {
           break;
         case "Thematic":
           flags.isThematic = IsThematic.Yes;
+          break;
+        case "Wiremesh":
+          flags.isWiremesh = IsWiremesh.Yes;
           break;
         case "Pick":
           flags.featureMode = FeatureMode.Pick;

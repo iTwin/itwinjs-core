@@ -12,7 +12,7 @@ import * as React from "react";
 import { ColorDef } from "@itwin/core-common";
 import { CompassMode, IModelApp, ItemField, ScreenViewport, SelectedViewportChangedArgs } from "@itwin/core-frontend";
 import { IconSpecUtilities } from "@itwin/appui-abstract";
-import { CommonProps, IconSpec, Orientation, UiSettingsStorage } from "@itwin/core-react";
+import { CommonProps, IconSpec, Orientation, UiStateStorage } from "@itwin/core-react";
 import { getCSSColorFromDef } from "@itwin/imodel-components-react";
 
 import { AccuDrawInputField } from "./AccuDrawInputField";
@@ -28,8 +28,8 @@ import distanceIconSvg from "./distance.svg?sprite";
 export interface AccuDrawFieldContainerProps extends CommonProps {
   /** Orientation of the fields */
   orientation: Orientation;
-  /** Optional parameter for persistent UI settings. Defaults to LocalSettingsStorage. */
-  uiSettingsStorage?: UiSettingsStorage; // eslint-disable-line deprecation/deprecation
+  /** Optional parameter for persistent UI settings. Defaults to LocalStateStorage. */
+  uiSettingsStorage?: UiStateStorage;
   /** @internal */
   showZOverride?: boolean;
 }
@@ -231,12 +231,12 @@ export function AccuDrawFieldContainer(props: AccuDrawFieldContainerProps) {
       setDistanceIcon(settings && settings.distanceIcon !== undefined ? settings.distanceIcon : defaultDistanceIcon);
     };
 
-    if (FrameworkAccuDraw.uiSettings)
-      processAccuDrawUiSettings(FrameworkAccuDraw.uiSettings);
+    if (FrameworkAccuDraw.uiStateStorage)
+      processAccuDrawUiSettings(FrameworkAccuDraw.uiStateStorage);
 
     // istanbul ignore next
     const handleAccuDrawUiSettingsChanged = () => {
-      processAccuDrawUiSettings(FrameworkAccuDraw.uiSettings);
+      processAccuDrawUiSettings(FrameworkAccuDraw.uiStateStorage);
     };
 
     return FrameworkAccuDraw.onAccuDrawUiSettingsChangedEvent.addListener(handleAccuDrawUiSettingsChanged);

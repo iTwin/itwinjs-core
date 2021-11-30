@@ -263,3 +263,11 @@ display-test-app has access to all key-ins defined in the imodeljs-editor-fronte
 * `dta place line string` - start placing a line string. Each data point defines another point in the string; a reset (right mouse button) finishes. The element is placed into the first spatial model and spatial category in the viewport's model and category selectors.
 * `dta push` - push local changes to iModelHub. A description of the changes must be supplied. It should be enclosed in double quotes if it contains whitespace characters.
 * `dta pull` - pull and merge changes from iModelHub into the local briefcase. You must be signed in.
+
+## Running in iOS
+
+The steps to run the display test app in an iOS app:
+
+1. Run `npm run build:ios`
+2. Open `test-apps/display-test-app/ios/imodeljs-test-app/imodeljs-test-app.xcodeproj`
+3. Start the XCode Project to an iPad
