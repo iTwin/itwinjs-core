@@ -9,7 +9,7 @@
 
 import { dispose } from "@itwin/core-bentley";
 import {
-  ColorDef, Frustum, FrustumPlanes, RenderTexture, SpatialClassifier, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay,
+  ColorDef, Frustum, FrustumPlanes, RenderMode, RenderTexture, SpatialClassifier, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay,
 } from "@itwin/core-common";
 import { Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Vector3d } from "@itwin/core-geometry";
 import { PlanarClipMaskState } from "../../PlanarClipMaskState";
@@ -514,7 +514,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   }
 
   public draw(target: Target) {
-    if (undefined === this._frustum || !this._classifierTreeRef)
+    if (undefined === this._frustum)
       return;
 
     this._contentMode = PlanarClassifierContent.None;
@@ -565,13 +565,21 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
 
     // Temporarily override the Target's state.
     const system = System.instance;
+    const maskViewFlags = {
+      renderMode: RenderMode.SmoothShade,
+      transparency: !this.isClassifyingPointCloud, // point clouds don't support transparency.
+      textures: false,
+      lighting: false,
+      shadows: false,
+      monochrome: false,
+      materials: false,
+      ambientOcclusion: false,
+      visibleEdges: false,
+      hiddenEdges: false,
+    };
     const prevState = system.currentRenderState.clone(scratchPrevRenderState);
     system.context.viewport(0, 0, this._width, this._height);
-    const treeViewFlags = this._classifierTreeRef.viewFlags;
-    if (this.isClassifyingPointCloud)
-      treeViewFlags.transparency = false;       //  Point clouds do not support transparency.
-
-    const vf = target.currentViewFlags.copy(treeViewFlags);
+    const vf = target.currentViewFlags.copy(this._classifierTreeRef ? this._classifierTreeRef.viewFlags : maskViewFlags);
 
     system.applyRenderState(this._renderState);
     const prevPlan = target.plan;
