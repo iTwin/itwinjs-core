@@ -16,10 +16,9 @@ import { addFloatingWidget, addPanelWidget, addTab, createDraggedTabState, creat
 import {
   ActiveFrontstageDefProvider, addMissingWidgets, addPanelWidgets, addWidgets, CoreTools, expandWidget, Frontstage, FrontstageDef,
   FrontstageManager, FrontstageProvider, getWidgetId, initializeNineZoneState, initializePanel, isFrontstageStateSettingResult, ModalFrontstageComposer,
-  packNineZoneState, restoreNineZoneState, setWidgetState, showWidget, StagePanel, StagePanelDef, StagePanelState, StagePanelZoneDef, StagePanelZonesDef,
-  UiFramework,
-  UiStateStorageHandler, useActiveModalFrontstageInfo, useFrontstageManager, useNineZoneDispatch, useNineZoneState, useSavedFrontstageState,
-  useSaveFrontstageSettings, useSyncDefinitions, useUpdateNineZoneSize, Widget, WidgetDef, WidgetPanelsFrontstage, WidgetPanelsFrontstageState, Zone, ZoneDef,
+  packNineZoneState, restoreNineZoneState, setWidgetState, showWidget, StagePanel, StagePanelDef, StagePanelZoneDef, StagePanelZonesDef,
+  UiFramework, UiStateStorageHandler, useActiveModalFrontstageInfo, useFrontstageManager, useNineZoneDispatch, useNineZoneState, useSavedFrontstageState,
+  useSaveFrontstageSettings, useUpdateNineZoneSize, Widget, WidgetDef, WidgetPanelsFrontstage, WidgetPanelsFrontstageState, Zone, ZoneDef,
 } from "../../appui-react";
 import TestUtils, { mount, storageMock, stubRaf, UiStateStorageStub } from "../TestUtils";
 import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
@@ -640,6 +639,48 @@ describe("Frontstage local storage wrapper", () => {
         newNineZoneState?.should.eq(result.current);
       });
 
+      it("should handle trigger onWidgetStateChangedEvent", () => {
+        const frontstageDef = new FrontstageDef();
+        sinon.stub(frontstageDef, "isReady").get(() => true);
+
+        let nineZoneState = createNineZoneState();
+        // need to have two panel sections if we want to close a tab/minimize panel section.
+        nineZoneState = addPanelWidget(nineZoneState, "left", "start", ["t1", "t2"], { activeTabId: "t1" });
+        nineZoneState = addPanelWidget(nineZoneState, "left", "end", ["t3", "t4"], { activeTabId: "t3" });
+        nineZoneState = addTab(nineZoneState, "t1");
+        frontstageDef.nineZoneState = nineZoneState;
+        const widgetDef = new WidgetDef({
+          id: "t1",
+          defaultState: WidgetState.Open,
+        });
+
+        const leftPanel = new StagePanelDef();
+        leftPanel.initializeFromProps({
+          resizable: true,
+          widgets: [
+            <Widget
+              key="start"
+              id="start"
+            />,
+            <Widget
+              key="end"
+              id="end"
+            />,
+          ],
+        }, StagePanelLocation.Left);
+        sinon.stub(frontstageDef, "leftPanel").get(() => leftPanel);
+
+        sinon.stub(frontstageDef, "getStagePanelDef").withArgs(StagePanelLocation.Left).returns(leftPanel);
+        sinon.stub(frontstageDef, "findWidgetDef").withArgs("t1").returns(widgetDef);
+        const spy = sinon.stub(widgetDef, "onWidgetStateChanged");
+
+        // const spy = sinon.spy(FrontstageManager, "onWidgetStateChangedEvent");
+        const newState = setWidgetState(frontstageDef.nineZoneState, widgetDef, WidgetState.Closed);
+        frontstageDef.nineZoneState = newState;
+
+        spy.called.should.true;
+      });
+
       it("should ignore nineZoneState changes of other frontstages", () => {
         const frontstageDef = new FrontstageDef();
         const nineZoneState = createNineZoneState();
@@ -917,120 +958,6 @@ describe("Frontstage local storage wrapper", () => {
             FrontstageManager.onWidgetLabelChangedEvent.emit({ widgetDef });
           }).should.not.throw();
         });
-      });
-    });
-
-    describe("useSyncDefinitions", () => {
-      it("should set panel widget state to Open", () => {
-        const frontstageDef = new FrontstageDef();
-        sinon.stub(frontstageDef, "isReady").get(() => true);
-        const zoneDef = new ZoneDef();
-        sinon.stub(frontstageDef, "centerRight").get(() => zoneDef);
-        const widgetDef = new WidgetDef({});
-        sinon.stub(widgetDef, "id").get(() => "t1");
-        const spy = sinon.spy(widgetDef, "setWidgetState");
-        zoneDef.addWidgetDef(widgetDef);
-        renderHook(() => useSyncDefinitions(frontstageDef));
-        act(() => {
-          let nineZone = createNineZoneState();
-          nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
-          nineZone = addTab(nineZone, "t1");
-          frontstageDef.nineZoneState = nineZone;
-        });
-        spy.calledOnceWithExactly(WidgetState.Open).should.true;
-      });
-
-      it("should set panel widget state to Closed", () => {
-        const frontstageDef = new FrontstageDef();
-        const zoneDef = new ZoneDef();
-        sinon.stub(frontstageDef, "centerRight").get(() => zoneDef);
-        sinon.stub(frontstageDef, "isReady").get(() => true);
-        const widgetDef = new WidgetDef({});
-        sinon.stub(widgetDef, "id").get(() => "t1");
-        const spy = sinon.spy(widgetDef, "setWidgetState");
-        zoneDef.addWidgetDef(widgetDef);
-        renderHook(() => useSyncDefinitions(frontstageDef));
-        act(() => {
-          let nineZone = createNineZoneState();
-          nineZone = addPanelWidget(nineZone, "left", "w1", ["t1", "t2"], { activeTabId: "t2" });
-          nineZone = addTab(nineZone, "t1");
-          nineZone = addTab(nineZone, "t2");
-          frontstageDef.nineZoneState = nineZone;
-        });
-        spy.calledOnceWithExactly(WidgetState.Closed).should.true;
-      });
-
-      it("should set StagePanelDef size", () => {
-        const frontstageDef = new FrontstageDef();
-        const rightPanel = new StagePanelDef();
-        sinon.stub(frontstageDef, "rightPanel").get(() => rightPanel);
-        sinon.stub(frontstageDef, "isReady").get(() => true);
-        const spy = sinon.spy(rightPanel, "size", ["set"]);
-        renderHook(() => useSyncDefinitions(frontstageDef));
-        act(() => {
-          let nineZone = createNineZoneState();
-          nineZone = produce(nineZone, (draft) => {
-            draft.panels.right.size = 234;
-          });
-          frontstageDef.nineZoneState = nineZone;
-        });
-        sinon.assert.calledOnceWithExactly(spy.set, 234);
-      });
-
-      it("should set StagePanelState.Off", () => {
-        const frontstageDef = new FrontstageDef();
-        sinon.stub(frontstageDef, "isReady").get(() => true);
-        const rightPanel = new StagePanelDef();
-        const spy = sinon.spy();
-        sinon.stub(rightPanel, "panelState").get(() => StagePanelState.Off).set(spy);
-        sinon.stub(frontstageDef, "rightPanel").get(() => rightPanel);
-        renderHook(() => useSyncDefinitions(frontstageDef));
-        act(() => {
-          let nineZone = createNineZoneState();
-          nineZone = produce(nineZone, (draft) => {
-            draft.panels.right.collapsed = true;
-          });
-          frontstageDef.nineZoneState = nineZone;
-        });
-        sinon.assert.calledOnceWithExactly(spy, StagePanelState.Off);
-      });
-
-      it("should set floating widget state to Open", () => {
-        const frontstageDef = new FrontstageDef();
-        sinon.stub(frontstageDef, "isReady").get(() => true);
-        const zoneDef = new ZoneDef();
-        sinon.stub(frontstageDef, "centerRight").get(() => zoneDef);
-        const widgetDef = new WidgetDef({});
-        sinon.stub(widgetDef, "id").get(() => "t1");
-        const spy = sinon.spy(widgetDef, "setWidgetState");
-        zoneDef.addWidgetDef(widgetDef);
-        renderHook(() => useSyncDefinitions(frontstageDef));
-        act(() => {
-          let nineZone = createNineZoneState();
-          nineZone = addFloatingWidget(nineZone, "w1", ["t1"]);
-          nineZone = addTab(nineZone, "t1");
-          frontstageDef.nineZoneState = nineZone;
-        });
-        spy.calledOnceWithExactly(WidgetState.Open).should.true;
-      });
-
-      it("should set floating widget state to Closed", () => {
-        const frontstageDef = new FrontstageDef();
-        sinon.stub(frontstageDef, "isReady").get(() => true);
-        const zoneDef = new ZoneDef();
-        sinon.stub(frontstageDef, "centerRight").get(() => zoneDef);
-        const widgetDef = new WidgetDef({});
-        sinon.stub(widgetDef, "id").get(() => "t1");
-        const spy = sinon.spy(widgetDef, "setWidgetState");
-        zoneDef.addWidgetDef(widgetDef);
-        renderHook(() => useSyncDefinitions(frontstageDef));
-        act(() => {
-          let nineZone = createNineZoneState();
-          nineZone = addFloatingWidget(nineZone, "w1", ["t1", "t2"], undefined, { activeTabId: "t2" });
-          nineZone = addTab(nineZone, "t1");
-          frontstageDef.nineZoneState = nineZone;
-        });
-        spy.calledOnceWithExactly(WidgetState.Closed).should.true;
       });
     });
 
