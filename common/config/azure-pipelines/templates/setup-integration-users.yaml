@@ -11,14 +11,9 @@ steps:
     echo "##vso[task.setvariable variable=imjs_test_regular_user_password;]$test_reg_password"
     echo "##vso[task.setvariable variable=USER_WITH_ACCESS_PASSWORD;]$test_reg_password"
     echo "##vso[task.setvariable variable=imjs_test_super_user_password;]$test_super_password"
-    echo "##vso[task.setvariable variable=imjs_test_super_manager_user_password;]$test_super_manager_password"
     echo "##vso[task.setvariable variable=imjs_test_manager_user_password;]$test_manager_password"
     echo "##vso[task.setvariable variable=CLIENT_WITH_ACCESS_SECRET;]$agent_client_secret"
     echo "##vso[task.setvariable variable=imjs_agent_test_client_secret;]$agent_client_secret"
-    echo "##vso[task.setvariable variable=imjs_agent_v1_test_client_secret;]$agent_v1_client_secret"
-    echo "##vso[task.setvariable variable=imjs_agent_v1_test_service_user_password;]$agent_v1_service_user_password"
-    echo "##vso[task.setvariable variable=imjs_delegation_test_client_secret;]$delegation_test_client_secret"
-    echo "##vso[task.setvariable variable=imjs_qa_seq_api_key;]$qa_seq_api_key"
     echo "##vso[task.setvariable variable=imjs_test_imodelhub_user_password;]$test_hub_password"
     echo "##vso[task.setvariable variable=test_bing_maps_key;]$bing_key"
     echo "##vso[task.setvariable variable=test_mapbox_key;]$mapbox_key"
@@ -27,12 +22,7 @@ steps:
     test_reg_password: $(imjs_regular_user_password)
     test_manager_password: $(imjs_manager_user_password)
     test_super_password: $(imjs_super_user_password)
-    test_super_manager_password: $(imjs_super_manager_user_password)
     test_hub_password: $(imjs_imodelhub_user_password)
-    agent_v1_client_secret: $(imjs_agent_v1_client_secret)
-    agent_v1_service_user_password: $(imjs_agent_v1_service_user_password)
     agent_client_secret: $(imjs_agent_client_secret)
-    delegation_test_client_secret: $(imjs_delegation_client_secret)
-    qa_seq_api_key: $(imjs_qa_seq_key)
     bing_key: $(bing_maps_key)
     mapbox_key: $(mapbox_key)

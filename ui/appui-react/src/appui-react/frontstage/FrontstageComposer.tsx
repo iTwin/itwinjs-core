@@ -343,6 +343,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     let content: React.ReactNode;
     // istanbul ignore else
     if (this._frontstageDef) {
+      // istanbul ignore else
       if (this._frontstageDef.frontstageProvider) {
         const frontstageRuntimeProps: FrontstageRuntimeProps = {
           frontstageDef: this._frontstageDef,

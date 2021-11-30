@@ -7,6 +7,12 @@
 import { BentleyError } from '@itwin/core-bentley';
 
 // @beta
+export interface AlternateUnitLabelsProvider {
+    // (undocumented)
+    getAlternateUnitLabels: (unit: UnitProps) => string[] | undefined;
+}
+
+// @beta
 export class BadUnit implements UnitProps {
     // (undocumented)
     isValid: boolean;
@@ -22,9 +28,7 @@ export class BadUnit implements UnitProps {
 
 // @beta
 export class BasicUnit implements UnitProps {
-    constructor(name: string, label: string, phenomenon: string, alternateLabels?: string[], system?: string);
-    // (undocumented)
-    alternateLabels?: string[];
+    constructor(name: string, label: string, phenomenon: string, system?: string);
     // (undocumented)
     isValid: boolean;
     // (undocumented)
@@ -326,13 +330,13 @@ export interface ParseQuantityError {
 
 // @beta
 export class Parser {
-    static createUnitConversionSpecs(unitsProvider: UnitsProvider, outUnitName: string, potentialParseUnits: PotentialParseUnit[]): Promise<UnitConversionSpec[]>;
-    static createUnitConversionSpecsForUnit(unitsProvider: UnitsProvider, outUnit: UnitProps): Promise<UnitConversionSpec[]>;
+    static createUnitConversionSpecs(unitsProvider: UnitsProvider, outUnitName: string, potentialParseUnits: PotentialParseUnit[], altUnitLabelsProvider?: AlternateUnitLabelsProvider): Promise<UnitConversionSpec[]>;
+    static createUnitConversionSpecsForUnit(unitsProvider: UnitsProvider, outUnit: UnitProps, altUnitLabelsProvider?: AlternateUnitLabelsProvider): Promise<UnitConversionSpec[]>;
     // (undocumented)
     static isParsedQuantity(item: QuantityParseResult): item is ParsedQuantity;
     // (undocumented)
     static isParseError(item: QuantityParseResult): item is ParseQuantityError;
-    static parseIntoQuantity(inString: string, format: Format, unitsProvider: UnitsProvider): Promise<QuantityProps>;
+    static parseIntoQuantity(inString: string, format: Format, unitsProvider: UnitsProvider, altUnitLabelsProvider?: AlternateUnitLabelsProvider): Promise<QuantityProps>;
     static parseQuantitySpecification(quantitySpecification: string, format: Format): ParseToken[];
     static parseQuantityString(inString: string, parserSpec: ParserSpec): QuantityParseResult;
     static parseToQuantityValue(inString: string, format: Format, unitsConversions: UnitConversionSpec[]): QuantityParseResult;
@@ -341,7 +345,7 @@ export class Parser {
 // @beta
 export class ParserSpec {
     constructor(outUnit: UnitProps, format: Format, conversions: UnitConversionSpec[]);
-    static create(format: Format, unitsProvider: UnitsProvider, outUnit: UnitProps): Promise<ParserSpec>;
+    static create(format: Format, unitsProvider: UnitsProvider, outUnit: UnitProps, altUnitLabelsProvider?: AlternateUnitLabelsProvider): Promise<ParserSpec>;
     // (undocumented)
     get format(): Format;
     // (undocumented)
@@ -489,7 +493,6 @@ export interface UnitConversionSpec {
 
 // @beta
 export interface UnitProps {
-    readonly alternateLabels?: string[];
     readonly isValid: boolean;
     readonly label: string;
     readonly name: string;

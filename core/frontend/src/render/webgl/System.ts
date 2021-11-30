@@ -44,7 +44,7 @@ import { WebGLDisposable } from "./Disposable";
 import { DepthBuffer, FrameBufferStack } from "./FrameBuffer";
 import { GL } from "./GL";
 import { GLTimer } from "./GLTimer";
-import { Batch, Branch, Graphic, GraphicOwner, GraphicsArray } from "./Graphic";
+import { AnimationTransformBranch, Batch, Branch, Graphic, GraphicOwner, GraphicsArray } from "./Graphic";
 import { Layer, LayerContainer } from "./Layer";
 import { LineCode } from "./LineCode";
 import { Material } from "./Material";
@@ -559,6 +559,10 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return new Branch(branch, transform, undefined, options);
   }
 
+  public override createAnimationTransformNode(graphic: RenderGraphic, nodeId: number): RenderGraphic {
+    return new AnimationTransformBranch(graphic, nodeId);
+  }
+
   public createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions): RenderGraphic {
     return new Batch(graphic, features, range, options);
   }
@@ -863,9 +867,6 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
 
   // RenderSystemDebugControl
   public override get debugControl(): RenderSystemDebugControl { return this; }
-  private _drawSurfacesAsWiremesh = false;
-  public get drawSurfacesAsWiremesh() { return this._drawSurfacesAsWiremesh; }
-  public set drawSurfacesAsWiremesh(asWiremesh: boolean) { this._drawSurfacesAsWiremesh = asWiremesh; }
 
   private _dpiAwareLOD?: boolean;
   public override get dpiAwareLOD(): boolean { return this._dpiAwareLOD ?? super.dpiAwareLOD; }

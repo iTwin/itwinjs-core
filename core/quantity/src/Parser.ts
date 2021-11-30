@@ -9,7 +9,7 @@
 import { QuantityConstants } from "./Constants";
 import { Format } from "./Formatter/Format";
 import { FormatTraits, FormatType } from "./Formatter/FormatEnums";
-import { PotentialParseUnit, QuantityProps, UnitConversion, UnitConversionSpec, UnitProps, UnitsProvider } from "./Interfaces";
+import { AlternateUnitLabelsProvider, PotentialParseUnit, QuantityProps, UnitConversion, UnitConversionSpec, UnitProps, UnitsProvider } from "./Interfaces";
 import { ParserSpec } from "./ParserSpec";
 import { Quantity } from "./Quantity";
 
@@ -311,17 +311,20 @@ export class Parser {
     return tokens;
   }
 
-  private static async lookupUnitByLabel(unitLabel: string, format: Format, unitsProvider: UnitsProvider) {
+  private static async lookupUnitByLabel(unitLabel: string, format: Format, unitsProvider: UnitsProvider, altUnitLabelsProvider?: AlternateUnitLabelsProvider) {
     const defaultUnit = format.units && format.units.length > 0 ? format.units[0][0] : undefined;
 
     const labelToFind = unitLabel.toLowerCase();
     // First look in format for a label and matches
     if (format.units && format.units.length > 0) {
-      const formatUnit = format.units.find(([unit, label])=>{
+      const formatUnit = format.units.find(([unit, label]) => {
         if (label && label.toLowerCase() === labelToFind)
           return true;
-        if (unit.alternateLabels && unit.alternateLabels.find((lbl)=>lbl.toLowerCase() === labelToFind ))
+        const alternateLabels = altUnitLabelsProvider?.getAlternateUnitLabels(unit);
+        // check any alternate labels that may be defined for the Unit
+        if (alternateLabels && alternateLabels.find((lbl) => lbl.toLowerCase() === labelToFind))
           return true;
+
         return false;
       });
       if (formatUnit)
@@ -337,7 +340,7 @@ export class Parser {
     return foundUnit;
   }
 
-  private static async createQuantityFromParseTokens(tokens: ParseToken[], format: Format, unitsProvider: UnitsProvider): Promise<QuantityProps> {
+  private static async createQuantityFromParseTokens(tokens: ParseToken[], format: Format, unitsProvider: UnitsProvider, altUnitLabelsProvider?: AlternateUnitLabelsProvider): Promise<QuantityProps> {
     let defaultUnit = format.units && format.units.length > 0 ? format.units[0][0] : undefined;
 
     // common case where single value is supplied
@@ -345,7 +348,7 @@ export class Parser {
       if (tokens[0].isNumber) {
         return new Quantity(defaultUnit, tokens[0].value as number);
       } else {
-        const unit = await this.lookupUnitByLabel(tokens[0].value as string, format, unitsProvider);
+        const unit = await this.lookupUnitByLabel(tokens[0].value as string, format, unitsProvider, altUnitLabelsProvider);
         return new Quantity(unit);
       }
     }
@@ -353,10 +356,10 @@ export class Parser {
     // common case where single value and single label are supplied
     if (tokens.length === 2) {
       if (tokens[0].isNumber && tokens[1].isString) {
-        const unit = await this.lookupUnitByLabel(tokens[1].value as string, format, unitsProvider);
+        const unit = await this.lookupUnitByLabel(tokens[1].value as string, format, unitsProvider, altUnitLabelsProvider);
         if (undefined === defaultUnit)
           defaultUnit = unit;
-        if (defaultUnit && defaultUnit.name === unit.name){
+        if (defaultUnit && defaultUnit.name === unit.name) {
           return new Quantity(defaultUnit, tokens[0].value as number);
         } else if (defaultUnit) {
           const conversion = await unitsProvider.getConversion(unit, defaultUnit);
@@ -365,10 +368,10 @@ export class Parser {
         }
       } else {  // unit specification comes before value (like currency)
         if (tokens[1].isNumber && tokens[0].isString) {
-          const unit = await this.lookupUnitByLabel(tokens[0].value as string, format, unitsProvider);
+          const unit = await this.lookupUnitByLabel(tokens[0].value as string, format, unitsProvider, altUnitLabelsProvider);
           if (undefined === defaultUnit)
             defaultUnit = unit;
-          if (defaultUnit && defaultUnit.name === unit.name){
+          if (defaultUnit && defaultUnit.name === unit.name) {
             return new Quantity(defaultUnit, tokens[1].value as number);
           } else if (defaultUnit) {
             const conversion = await unitsProvider.getConversion(unit, defaultUnit);
@@ -385,13 +388,13 @@ export class Parser {
       for (let i = 0; i < tokens.length; i = i + 2) {
         if (tokens[i].isNumber && tokens[i + 1].isString) {
           const value = tokens[i].value as number;
-          const unit = await this.lookupUnitByLabel(tokens[i + 1].value as string, format, unitsProvider);
+          const unit = await this.lookupUnitByLabel(tokens[i + 1].value as string, format, unitsProvider, altUnitLabelsProvider);
           if (undefined === defaultUnit)
             defaultUnit = unit;
           if (0 === i) {
             if (defaultUnit.name === unit.name)
               mag = value;
-            else{
+            else {
               const conversion = await unitsProvider.getConversion(unit, defaultUnit);
               mag = ((value * conversion.factor)) + conversion.offset;
             }
@@ -417,12 +420,12 @@ export class Parser {
    *  @param format   Defines the likely format of inString.
    *  @param unitsProvider required to look up units that may be specified in inString
    */
-  public static async parseIntoQuantity(inString: string, format: Format, unitsProvider: UnitsProvider): Promise<QuantityProps> {
+  public static async parseIntoQuantity(inString: string, format: Format, unitsProvider: UnitsProvider, altUnitLabelsProvider?: AlternateUnitLabelsProvider): Promise<QuantityProps> {
     const tokens: ParseToken[] = Parser.parseQuantitySpecification(inString, format);
     if (tokens.length === 0)
       return new Quantity();
 
-    return Parser.createQuantityFromParseTokens(tokens, format, unitsProvider);
+    return Parser.createQuantityFromParseTokens(tokens, format, unitsProvider, altUnitLabelsProvider);
   }
 
   /** method to get the Unit Conversion given a unit label */
@@ -553,11 +556,11 @@ export class Parser {
   public static parseToQuantityValue(inString: string, format: Format, unitsConversions: UnitConversionSpec[]): QuantityParseResult {
     // ensure any labels defined in composite unit definition are specified in unitConversions
     if (format.units) {
-      format.units.forEach (([unit, label]) => {
+      format.units.forEach(([unit, label]) => {
         if (label) {
-          if (unit.label !== label){ // if default unit label does not match composite label ensure the label is in the list of parse labels for the conversion
-            const unitConversion = unitsConversions.find((conversion)=>conversion.name === unit.name);
-            if (unitConversion && unitConversion.parseLabels && !unitConversion.parseLabels.find((entry)=> entry===label))
+          if (unit.label !== label) { // if default unit label does not match composite label ensure the label is in the list of parse labels for the conversion
+            const unitConversion = unitsConversions.find((conversion) => conversion.name === unit.name);
+            if (unitConversion && unitConversion.parseLabels && !unitConversion.parseLabels.find((entry) => entry === label))
               unitConversion.parseLabels.push(label);
           }
         }
@@ -582,16 +585,17 @@ export class Parser {
   }
 
   /** Async Method used to create an array of UnitConversionSpec entries that can be used in synchronous calls to parse units. */
-  public static async createUnitConversionSpecsForUnit(unitsProvider: UnitsProvider, outUnit: UnitProps): Promise<UnitConversionSpec[]> {
+  public static async createUnitConversionSpecsForUnit(unitsProvider: UnitsProvider, outUnit: UnitProps, altUnitLabelsProvider?: AlternateUnitLabelsProvider): Promise<UnitConversionSpec[]> {
     const unitConversionSpecs: UnitConversionSpec[] = [];
 
     const familyUnits = await unitsProvider.getUnitsByFamily(outUnit.phenomenon);
     for (const unit of familyUnits) {
       const conversion = await unitsProvider.getConversion(unit, outUnit);
       const parseLabels: string[] = [unit.label.toLocaleLowerCase()];
-      // add any alternate labels that may be define by the UnitProp
-      if (unit.alternateLabels) {
-        unit.alternateLabels.forEach((label: string) => {
+      const alternateLabels = altUnitLabelsProvider?.getAlternateUnitLabels(unit);
+      // add any alternate labels that may be defined for the Unit
+      if (alternateLabels) {
+        alternateLabels.forEach((label: string) => {
           const potentialLabel = label.toLocaleLowerCase();
           if (-1 === parseLabels.findIndex((lbl) => lbl === potentialLabel))
             parseLabels.push(label.toLocaleLowerCase());
@@ -610,7 +614,7 @@ export class Parser {
   }
 
   /** Async Method used to create an array of UnitConversionSpec entries that can be used in synchronous calls to parse units. */
-  public static async createUnitConversionSpecs(unitsProvider: UnitsProvider, outUnitName: string, potentialParseUnits: PotentialParseUnit[]): Promise<UnitConversionSpec[]> {
+  public static async createUnitConversionSpecs(unitsProvider: UnitsProvider, outUnitName: string, potentialParseUnits: PotentialParseUnit[], altUnitLabelsProvider?: AlternateUnitLabelsProvider): Promise<UnitConversionSpec[]> {
     const unitConversionSpecs: UnitConversionSpec[] = [];
 
     const outUnit = await unitsProvider.findUnitByName(outUnitName);
@@ -630,15 +634,17 @@ export class Parser {
 
       const conversion = await unitsProvider.getConversion(unit, outUnit);
       const parseLabels: string[] = [unit.label.toLocaleLowerCase()];
-      // add any alternate labels that may be defined by the UnitProp
-      if (unit.alternateLabels) {
-        unit.alternateLabels.forEach((label: string) => {
+      const alternateLabels = altUnitLabelsProvider?.getAlternateUnitLabels(unit);
+      // add any alternate labels that may be defined for the Unit
+      if (alternateLabels) {
+        alternateLabels.forEach((label: string) => {
           const potentialLabel = label.toLocaleLowerCase();
           if (-1 === parseLabels.findIndex((lbl) => lbl === potentialLabel))
             parseLabels.push(label.toLocaleLowerCase());
         });
       }
 
+      // add any alternate labels that where provided by caller
       if (potentialParseUnit.altLabels) {
         potentialParseUnit.altLabels.forEach((label: string) => {
           const potentialLabel = label.toLocaleLowerCase();
