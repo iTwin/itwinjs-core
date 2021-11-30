@@ -2,6 +2,11 @@
   "name": "@itwin/workspace-editor",
   "private": false,
   "license": "MIT",
+  "main": "lib/WorkspaceEditor.js",
+  "version": "3.0.0-dev.129",
+  "bin": {
+    "WorkspaceEditor": "./lib/WorkspaceEditor.js"
+  },
   "scripts": {
     "build": "tsc 1>&2",
     "build:ci": "npm run -s build",
