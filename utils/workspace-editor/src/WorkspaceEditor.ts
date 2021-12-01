@@ -96,7 +96,6 @@ async function listWorkspaceFile(args: ListOptions) {
     if (!args.strings && !args.blobs && !args.files)
       args.blobs = args.files = args.strings = true;
 
-    console.log(`Resources in [${file.db.nativeDb.getFilePath()}]:`);
     if (args.strings) {
       console.log(" strings:");
       file.db.withSqliteStatement("SELECT id,value FROM strings", (stmt) => {
@@ -145,7 +144,7 @@ async function addToWorkspaceFile(args: AddFileOptions) {
         } else {
           wsFile[args.update ? "updateFile" : "addFile"](name, file);
         }
-        console.log(` ${args.update ? "updated" : "added"} [${file}] as ${args.type} resource "${name}"`);
+        console.log(` ${args.update ? "updated" : "added"} "${file}" as ${args.type} resource [${name}]`);
       } catch (e: any) {
         console.error(e.message);
       }
@@ -182,7 +181,7 @@ async function deleteFromWorkspaceFile(args: DeleteResourceOpts) {
       wsFile.removeBlob(args.name);
     else
       wsFile.removeFile(args.name);
-    console.log(` deleted ${args.type} resource "${args.name}"`);
+    console.log(` deleted ${args.type} resource [${args.name}]`);
   });
 }
 
@@ -250,7 +249,7 @@ async function main() {
     })
     .command({
       command: "delete <workspaceId> <name>",
-      describe: "delete resources from a WorkspaceFile",
+      describe: "delete a resource from a WorkspaceFile",
       builder: { type },
       handler: runCommand(deleteFromWorkspaceFile),
     })

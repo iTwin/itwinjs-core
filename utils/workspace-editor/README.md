@@ -19,7 +19,7 @@ WorkspaceEditor commands accept a `--type` argument to specify which `WorkspaceR
 
 ## WorkspaceId
 
-The WorkspaceEditor commands all take a `WorkspaceId` option to specify the `WorkspaceFile` on which to operate. `WorkspaceId` become the resolved name of the `WorkspaceContainerName` from the Workspace api. `WorkspaceIds` must be less than 255 characters, may not have leading or trailing whitespace, and may not use any reserved path specification characters (see documentation for `WorkspaceContainerId` for details.) The `WorkspaceFile` filename is formed from the `WorkspaceContainerDir` plus the `WorkspaceId` with `.itwin-workspace` file extension.
+The WorkspaceEditor commands all take a `WorkspaceId` option to specify the `WorkspaceFile` on which to operate. `WorkspaceId` become the resolved name of the `WorkspaceContainerName` from the Workspace api. `WorkspaceIds` must be less than 255 characters, may not have leading or trailing whitespace, and may not use any reserved path specification characters (see documentation for `WorkspaceContainerId` for details.) The `WorkspaceFile` filename is formed from the `WorkspaceContainerDir` plus the `WorkspaceId` plus the `.itwin-workspace` file extension.
 
 ## WorkspaceEditor Commands
 
@@ -31,8 +31,8 @@ Create a new empty `WorkspaceFile`.
 
 Example:
 ```sh
-> WorkspaceEdit create templates
-created WorkspaceFile C:\Users\Jane.Jones\AppData\Local\iTwin\Workspace\templates.itwin-workspace
+> WorkspaceEdit create proj112
+created WorkspaceFile C:\Users\User.Name\AppData\Local\iTwin\Workspace\proj112.itwin-workspace
 ```
 
 ### Add
@@ -44,33 +44,32 @@ Add one or more local files into a `WorkspaceFile`.
 `--root` specifies a root directory when adding multiple files. The parts of the path after the root are saved in the resource name (see example below.)
 `--update` indicates that an existing resource should be updated (i.e. replaced.)
 
-
 > Note: `--name`  is only applicable when adding a single file.
 
 Examples:
 ```sh
-> WorkspaceEditor add templates -t string -n startup-settings config.settings
-WorkspaceFile [C:\Users\Jane.Jones\AppData\Local\iTwin\Workspace\templates.itwin-workspace]
- added [config.settings] as string resource "startup-settings"
+> WorkspaceEditor add proj112 -n equipment-data D:\data\equip.dat
+WorkspaceFile [C:\Users\User.Name\AppData\Local\iTwin\Workspace\proj112.itwin-workspace]
+ added "D:\data\equip.dat" as file resource [equipment-data]
 ```
 
 ```sh
-> WorkspaceEditor add templates *.json
-WorkspaceFile [C:\Users\Jane.Jones\AppData\Local\iTwin\Workspace\templates.itwin-workspace]
- added [specs.json] as file resource "specs.json"
- added [vendor.json] as file resource "vendor.json"
+> WorkspaceEditor add proj112 -string *.json
+WorkspaceFile [C:\Users\User.Name\AppData\Local\iTwin\Workspace\proj112.itwin-workspace]
+ added "specs.json" as string resource [specs.json]
+ added "vendor.json" as string resource [vendor.json]
  ```
 
- ```sh
- > WorkspaceEditor add templates -t blob -r d:\templates\proj112 **\*.map
-WorkspaceFile [C:\Users\Jane.Jones\AppData\Local\iTwin\Workspace\templates.itwin-workspace]
- added [d:\templates\proj112\Masterschanged\SO4814.map] as blob resource "Masterschanged/SO4814.map"
- added [d:\templates\proj112\Masterschanged\SO4815.map] as blob resource "Masterschanged/SO4815.map"
- added [d:\templates\proj112\Mastersorig\SO4814.map] as blob resource "Mastersorig/SO4814.map"
- added [d:\templates\proj112\Mastersorig\SO4815.map] as blob resource "Mastersorig/SO4815.map"
- added [d:\templates\proj112\Sparks\SO4814.map] as blob resource "Sparks/SO4814.map"
- added [d:\templates\proj112\Sparks\SO4815.map] as blob resource "Sparks/SO4815.map"
- added [d:\templates\proj112\Sparks\SO4816.map] as blob resource "Sparks/SO4816.map"
+```sh
+ > WorkspaceEditor add proj112 -t blob -r d:\projData\112\ **\*.dict
+WorkspaceFile [C:\Users\User.Name\AppData\Local\iTwin\Workspace\proj112.itwin-workspace]
+ added "d:\projData\112\\TernKit\KDEO5814.dict" as blob resource [TernKit/KDEO5814.dict]
+ added "d:\projData\112\\TernKit\KDEO5815.dict" as blob resource [TernKit/KDEO5815.dict]
+ added "d:\projData\112\\UniSpace\KDEO5814.dict" as blob resource [UniSpace/KDEO5814.dict]
+ added "d:\projData\112\\UniSpace\KDEO5815.dict" as blob resource [UniSpace/KDEO5815.dict]
+ added "d:\projData\112\\Sparks\KDEO5814.dict" as blob resource [Sparks/KDEO5814.dict]
+ added "d:\projData\112\\Sparks\KDEO5815.dict" as blob resource [Sparks/KDEO5815.dict]
+ added "d:\projData\112\\Sparks\KDEO5816.dict" as blob resource [Sparks/KDEO5816.dict]
  ```
 
 ### List
@@ -80,32 +79,59 @@ List the contents of a `WorkspaceFile`. By default it will show all 3 resource t
 Examples:
 
 ```sh
-> WorkspaceEditor list templates
-WorkspaceFile [C:\Users\Jane.Jones\AppData\Local\iTwin\Workspace\templates.itwin-workspace]
+> WorkspaceEditor list proj112
+WorkspaceFile [C:\Users\User.Name\AppData\Local\iTwin\Workspace\proj112.itwin-workspace]
  strings:
-  name=[startup-settings], size=1205
+  name=[specs.json], size=12050
+  name=[vendor.json], size=31335
  blobs:
-  name=[Masterschanged/SO4814.map], size=144384
-  name=[Masterschanged/SO4815.map], size=89600
-  name=[Mastersorig/SO4814.map], size=144384
-  name=[Mastersorig/SO4815.map], size=89600
-  name=[Sparks/SO4814.map], size=144384
-  name=[Sparks/SO4815.map], size=109056
-  name=[Sparks/SO4816.map], size=70144
+  name=[TernKit/KDEO5814.dict], size=144221
+  name=[TernKit/KDEO5815.dict], size=89600
+  name=[UniSpace/KDEO5814.dict], size=144384
+  name=[UniSpace/KDEO5815.dict], size=89600
+  name=[Sparks/KDEO5814.dict], size=144384
+  name=[Sparks/KDEO5815.dict], size=109056
+  name=[Sparks/KDEO5816.dict], size=70144
  files:
-  name=[specs.json], size=14484, ext="json", date=Thu Mar 12 2015 13:52:51 GMT-0400 (Eastern Daylight Time)
-  name=[vendor.json], size=139984, ext="json", date=Thu Mar 22 2015 03:32:21 GMT-0400 (Eastern Daylight Time)
+  name=[equipment-data], size=14484, ext="dat", date=Thu Mar 12 2015 13:52:51 GMT-0400
 ```
 
 ```sh
-> WorkspaceEditor list templates --strings
-WorkspaceFile [C:\Users\Jane.Jones\AppData\Local\iTwin\Workspace\templates.itwin-workspace]
+> WorkspaceEditor list proj112 --strings
+WorkspaceFile [C:\Users\User.Name\AppData\Local\iTwin\Workspace\proj112.itwin-workspace]
  strings:
-  name=[startup-settings], size=1205
+  name=[specs.json], size=12050
+  name=[vendor.json], size=31335
 ```
 
 ### Extract
 
+Extract a `WorkspaceResource` from a `WorkspaceFile` into a local file.
+
+Example:
+```sh
+> WorkspaceEditor extract proj112 -t blob UniSpace/KDEO5815.dict d:\temp\kd.dict
+WorkspaceFile [C:\Users\User.Name\AppData\Local\iTwin\Workspace\proj112.itwin-workspace]
+ blob resource [UniSpace/KDEO5815.dict] extracted to "d:\temp\kd.dict"
+```
+
 ### Delete
 
+Delete an existing `WorkspaceResource` from a `WorkspaceFile`.
+
+Example:
+```sh
+> WorkspaceEditor delete proj112 -t blob UniSpace/KDEO5815.dict
+WorkspaceFile [C:\Users\User.Name\AppData\Local\iTwin\Workspace\proj112.itwin-workspace]
+ deleted blob resource [UniSpace/KDEO5815.dict]
+```
+
 ### Vacuum
+
+[Vacuum](https://www.sqlite.org/lang_vacuum.html) a `WorkspaceFile`. This can make a `WorkspaceFile` smaller and more efficient to access.
+
+Example:
+```sh
+> WorkspaceEditor vacuum proj112
+WorkspaceFile [C:\Users\User.Name\AppData\Local\iTwin\Workspace\proj112.itwin-workspace] vacuumed
+```
