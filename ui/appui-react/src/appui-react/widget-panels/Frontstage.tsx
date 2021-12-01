@@ -206,7 +206,6 @@ export function ActiveFrontstageDefProvider({ frontstageDef }: { frontstageDef: 
   useSaveFrontstageSettings(frontstageDef);
   useFrontstageManager(frontstageDef);
   useItemsManager(frontstageDef);
-  useSyncDefinitions(frontstageDef);
   const labels = useLabels();
   const handleKeyDown = useEscapeSetFocusToHome();
   return (
@@ -1111,56 +1110,6 @@ function tabShownInCurrentWidget(def: WidgetDef, state: NineZoneState) {
 function determineNewWidgets(defs: readonly WidgetDef[] | undefined, state: NineZoneState) {
   // if tab for widget.id is not found or the label does not match widget label (label is set to "undefined" when widgetDef is not initially available)
   return (defs || []).filter((def) => !(def.id in state.tabs) || !tabShownInCurrentWidget(def, state));
-}
-
-/** @internal */
-export function useSyncDefinitions(frontstageDef: FrontstageDef) {
-  const nineZone = useNineZoneState(frontstageDef);
-  React.useEffect(() => {
-    if (!nineZone)
-      return;
-    if (frontstageDef.nineZoneState !== nineZone)
-      return;
-
-    for (const panelSide of panelSides) {
-      const panel = nineZone.panels[panelSide];
-      const location = toStagePanelLocation(panelSide);
-      const panelDef = frontstageDef.getStagePanelDef(location);
-      if (panelDef) {
-        panelDef.size = panel.size;
-        let newState = panel.collapsed ? StagePanelState.Minimized : StagePanelState.Open;
-        if (panelDef.panelState === StagePanelState.Off && newState === StagePanelState.Minimized)
-          newState = StagePanelState.Off;
-        panelDef.panelState = newState;
-      }
-      for (const widgetId of panel.widgets) {
-        const widget = nineZone.widgets[widgetId];
-        // istanbul ignore else
-        if (widget) {
-          for (const tabId of widget.tabs) {
-            const widgetDef = frontstageDef.findWidgetDef(tabId);
-            let widgetState = WidgetState.Open;
-            if (widget.minimized || tabId !== widget.activeTabId)
-              widgetState = WidgetState.Closed;
-            widgetDef && widgetDef.setWidgetState(widgetState);
-          }
-        }
-      }
-    }
-    for (const widgetId of nineZone.floatingWidgets.allIds) {
-      const widget = nineZone.widgets[widgetId];
-      // istanbul ignore else
-      if (widget) {
-        for (const tabId of widget.tabs) {
-          const widgetDef = frontstageDef.findWidgetDef(tabId);
-          let widgetState = WidgetState.Open;
-          if (widget.minimized || tabId !== widget.activeTabId)
-            widgetState = WidgetState.Closed;
-          widgetDef && widgetDef.setWidgetState(widgetState);
-        }
-      }
-    }
-  }, [nineZone, frontstageDef]);
 }
 
 /** @internal */

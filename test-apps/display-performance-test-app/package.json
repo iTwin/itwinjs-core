@@ -51,7 +51,7 @@
     "@itwin/reality-data-client": "^3.0.0-dev.80",
     "@itwin/hypermodeling-frontend": "workspace:*",
     "@itwin/browser-authorization": "^0.3.0",
-    "@itwin/electron-authorization": "^0.3.2",
+    "@itwin/electron-authorization": "^0.5.0",
     "body-parser": "^1.18.2"
   },
   "devDependencies": {

@@ -97,7 +97,7 @@ export class ToolButton extends React.Component<ToolButtonProps, BaseItemState> 
       this.props.execute();
     } else {
       const thisTool: typeof Tool | undefined = IModelApp.tools.find(this.props.toolId);
-      // istanbul ignore else
+      // istanbul ignore next
       if (thisTool)
         await (new thisTool()).run();
     }
