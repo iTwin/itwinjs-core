@@ -1,7 +1,7 @@
 #!/bin/sh
 #
 # Called by "git commit" with no arguments. The hook cannot alter
-# the outcome of the commit that invoked it.
+# the success of the commit that invoked it.
 
 # Verify that all recently committed files have the correct copyright header
 # if not, then the correct header will be added or replace the old
