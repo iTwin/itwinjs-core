@@ -509,7 +509,7 @@ class ExerciseCurve {
           ExerciseCurve.exerciseFractionToPoint(ck, bcurveH, false, false);
           ExerciseCurve.exerciseStroke(ck, bcurveH);
           ExerciseCurve.exerciseMoveSignedDistance(ck, bcurveH);
-          ExerciseCurve.exerciseClosestPoint(ck, bcurveH, 0.1, allGeometry, dx);
+          ExerciseCurve.exerciseClosestPoint(ck, bcurveH, 0.1, allGeometry, dx);    // first failure
           ExerciseCurve.exerciseClosestPoint(ck, bcurveH, 0.48, allGeometry, dx);
           ExerciseCurve.exerciseClosestPoint(ck, bcurveH, 0.82, allGeometry, dx);
           GeometryCoreTestIO.captureGeometry(allGeometry, bcurveH, dx);
@@ -519,18 +519,18 @@ class ExerciseCurve {
     }
 
     {
-      for (const points of [Sample.createArcStrokes(4, Point3d.create(0, 0, 0), 2.0, Angle.createDegrees(0), Angle.createDegrees(225))]) {
-        const interpolationCurve = InterpolationCurve3d.create({fitPoints: points});
-        if (ck.testPointer(interpolationCurve)) {
-          ExerciseCurve.exerciseFractionToPoint(ck, interpolationCurve, false, false);
-          ExerciseCurve.exerciseStroke(ck, interpolationCurve);
-          ExerciseCurve.exerciseMoveSignedDistance(ck, interpolationCurve);
-          ExerciseCurve.exerciseClosestPoint(ck, interpolationCurve, 0.1);
-          ExerciseCurve.exerciseClosestPoint(ck, interpolationCurve, 0.48);
-          ExerciseCurve.exerciseClosestPoint(ck, interpolationCurve, 0.82);
-          GeometryCoreTestIO.captureGeometry(allGeometry, interpolationCurve, dx);
-          dx += interpolationCurve.range().xLength() + dxGap;
-        }
+      const radius = 2;
+      const points = Sample.createArcStrokes(4, Point3d.create(radius, 0, 0), radius, Angle.createDegrees(0), Angle.createDegrees(225), false);
+      const interpolationCurve = InterpolationCurve3d.create({fitPoints: points});
+      if (ck.testPointer(interpolationCurve)) {
+        ExerciseCurve.exerciseFractionToPoint(ck, interpolationCurve, false, false);
+        ExerciseCurve.exerciseStroke(ck, interpolationCurve);
+        ExerciseCurve.exerciseMoveSignedDistance(ck, interpolationCurve);
+        ExerciseCurve.exerciseClosestPoint(ck, interpolationCurve, 0.1);
+        ExerciseCurve.exerciseClosestPoint(ck, interpolationCurve, 0.48);
+        ExerciseCurve.exerciseClosestPoint(ck, interpolationCurve, 0.82);
+        GeometryCoreTestIO.captureGeometry(allGeometry, interpolationCurve, dx);
+        dx += interpolationCurve.range().xLength() + dxGap;
       }
     }
 
@@ -549,7 +549,19 @@ class ExerciseCurve {
       ExerciseCurve.exerciseMoveSignedDistance(ck, bezierCurve);
       ExerciseCurve.exerciseFractionToPoint(ck, bezierCurve, false, false);
       ExerciseCurve.exerciseStroke(ck, bezierCurve);
-      ExerciseCurve.exerciseClosestPoint(ck, bezierCurve, 0.1);
+      ExerciseCurve.exerciseClosestPoint(ck, bezierCurve, 0.1, allGeometry, dx);
+      GeometryCoreTestIO.captureGeometry(allGeometry, bezierCurve, dx);
+      dx += bezierCurve.range().xLength() + dxGap;
+    }
+
+    {
+      const bezierCurve = BezierCurve3dH.create([Point4d.create(0, 0, 0, 1), Point4d.create(0.5, 0, 0, 0.3), Point4d.create(1, 1, 0, 1)])!;
+      ExerciseCurve.exerciseMoveSignedDistance(ck, bezierCurve);
+      ExerciseCurve.exerciseFractionToPoint(ck, bezierCurve, false, false);
+      ExerciseCurve.exerciseStroke(ck, bezierCurve);
+      ExerciseCurve.exerciseClosestPoint(ck, bezierCurve, 0.1, allGeometry, dx);
+      ExerciseCurve.exerciseClosestPoint(ck, bezierCurve, 0.48, allGeometry, dx);
+      ExerciseCurve.exerciseClosestPoint(ck, bezierCurve, 0.82, allGeometry, dx);
       GeometryCoreTestIO.captureGeometry(allGeometry, bezierCurve, dx);
       dx += bezierCurve.range().xLength() + dxGap;
     }
@@ -571,7 +583,7 @@ class ExerciseCurve {
           DirectSpiral3d.createDirectHalfCosine(Transform.createIdentity(), 100, 300, undefined),
           DirectSpiral3d.createJapaneseCubic(Transform.createIdentity(), 100, 300, undefined),
           DirectSpiral3d.createArema(Transform.createIdentity(), 100, 300, undefined),
-          IntegratedSpiral3d.createRadiusRadiusBearingBearing(
+          IntegratedSpiral3d.createRadiusRadiusBearingBearing( // clothoid
             Segment1d.create(0, 1000),
             AngleSweep.createStartEndDegrees(0, 10),
             Segment1d.create(0, 1),
