@@ -1,6 +1,6 @@
 {
   "name": "@itwin/map-layers",
-  "version": "3.0.0-dev.128",
+  "version": "3.0.0-dev.137",
   "description": "Extension that adds a Map Layers Widget",
   "main": "lib/cjs/map-layers.js",
   "module": "lib/esm/map-layers.js",
@@ -36,6 +36,7 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
+    "@bentley/itwin-client": "workspace:*",
     "@itwin/appui-abstract": "workspace:*",
     "@itwin/appui-layout-react": "workspace:*",
     "@itwin/appui-react": "workspace:*",
@@ -90,12 +91,12 @@
     "react-resize-detector": "^6.7.6"
   },
   "peerDependencies": {
+    "@bentley/itwin-client": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
-    "@bentley/itwin-client": "workspace:*",
     "@itwin/appui-abstract": "workspace:*",
     "@itwin/components-react": "workspace:*",
     "@itwin/core-react": "workspace:*",

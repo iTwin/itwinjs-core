@@ -1233,6 +1233,7 @@ const viewFlagsPropsStrings = {
   grid: "+grid",
   whiteOnWhiteReversal: "+wow",
   acsTriad: "+acsTriad",
+  wiremesh: "+wm",
 };
 
 function getViewFlagsString(test: TestCase): string {
