@@ -555,14 +555,14 @@ export class ViewManager implements Iterable<ScreenViewport> {
     return undefined;
   }
 
-  public get crossHairCursor(): string { return `url(${IModelApp.assetsPath}cursors/crosshair.cur), crosshair`; }
-  public get dynamicsCursor(): string { return `url(${IModelApp.assetsPath}cursors/dynamics.cur), move`; }
-  public get grabCursor(): string { return `url(${IModelApp.assetsPath}cursors/openHand.cur), auto`; }
-  public get grabbingCursor(): string { return `url(${IModelApp.assetsPath}cursors/closedHand.cur), auto`; }
-  public get walkCursor(): string { return `url(${IModelApp.assetsPath}cursors/walk.cur), auto`; }
-  public get rotateCursor(): string { return `url(${IModelApp.assetsPath}cursors/rotate.cur), auto`; }
-  public get lookCursor(): string { return `url(${IModelApp.assetsPath}cursors/look.cur), auto`; }
-  public get zoomCursor(): string { return `url(${IModelApp.assetsPath}cursors/zoom.cur), auto`; }
+  public get crossHairCursor(): string { return `url(${IModelApp.publicPath}cursors/crosshair.cur), crosshair`; }
+  public get dynamicsCursor(): string { return `url(${IModelApp.publicPath}cursors/dynamics.cur), move`; }
+  public get grabCursor(): string { return `url(${IModelApp.publicPath}cursors/openHand.cur), auto`; }
+  public get grabbingCursor(): string { return `url(${IModelApp.publicPath}cursors/closedHand.cur), auto`; }
+  public get walkCursor(): string { return `url(${IModelApp.publicPath}cursors/walk.cur), auto`; }
+  public get rotateCursor(): string { return `url(${IModelApp.publicPath}cursors/rotate.cur), auto`; }
+  public get lookCursor(): string { return `url(${IModelApp.publicPath}cursors/look.cur), auto`; }
+  public get zoomCursor(): string { return `url(${IModelApp.publicPath}cursors/zoom.cur), auto`; }
 
   /** Change the cursor shown in all Viewports.
    * @param cursor The new cursor to display. If undefined, the default cursor is used.

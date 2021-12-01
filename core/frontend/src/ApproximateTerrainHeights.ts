@@ -40,7 +40,7 @@ export class ApproximateTerrainHeights {
    */
   public async initialize(): Promise<void> {
     if (undefined === this._terrainHeights) {
-      this._terrainHeights = await getJson(`${IModelApp.assetsPath}assets/approximateTerrainHeights.json`);
+      this._terrainHeights = await getJson(`${IModelApp.publicPath}assets/approximateTerrainHeights.json`);
     }
   }
 
