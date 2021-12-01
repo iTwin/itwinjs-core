@@ -66,7 +66,7 @@ export class MarkupApp {
       /** The attributes of the line that connects the top-center stretch handle to the rotate handle. */
       rotateLine: { "stroke": "grey", "fill-opacity": .85 },
       /** The attributes of the rotate handle. */
-      rotate: { "cursor": "url(Markup/rotate.png) 12 12, auto", "fill-opacity": .85, "stroke": "black", "fill": "lightBlue" },
+      rotate: { "cursor": `url(${IModelApp.assetsPath}Markup/rotate.png) 12 12, auto`, "fill-opacity": .85, "stroke": "black", "fill": "lightBlue" },
       /** The attributes of box around the element. */
       moveOutline: { "cursor": "move", "stroke-dasharray": "6,6", "fill": "none", "stroke-opacity": .85, "stroke": "white" },
       /** The attributes of box that provides the move cursor. */
