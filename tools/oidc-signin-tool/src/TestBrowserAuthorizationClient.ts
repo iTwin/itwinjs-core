@@ -36,6 +36,8 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
   public constructor(config: TestBrowserAuthorizationClientConfiguration, user: TestUserCredentials) {
     this._config = config;
     this._user = user;
+    if (this._config.authority)
+      this._imsUrl;
   }
 
   /**
@@ -53,10 +55,10 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
       // eslint-disable-next-line deprecation/deprecation
       this._deploymentRegion = Config.App.has("imjs_buddi_resolve_url_using_region") ? Config.App.getNumber("imjs_buddi_resolve_url_using_region") : 0; // Defaults to PROD (for 3rd party users)
 
-    const urlDiscoveryClient: UrlDiscoveryClient = new UrlDiscoveryClient();
-    this._imsUrl = await urlDiscoveryClient.discoverUrl(new ClientRequestContext(""), "IMSProfile.RP", this._deploymentRegion);
-
-    const oidcUrl = await urlDiscoveryClient.discoverUrl(new ClientRequestContext(""), "IMSOpenID", this._deploymentRegion);
+    if (!this._config.authority) {
+      const urlDiscoveryClient: UrlDiscoveryClient = new UrlDiscoveryClient();
+      this._imsUrl = await urlDiscoveryClient.discoverUrl(new ClientRequestContext(""), "IMSProfile.RP", this._deploymentRegion);
+    }
 
     // Due to issues with a timeout or failed request to the authorization service increasing the standard timeout and adding retries.
     // Docs for this option here, https://github.com/panva/node-openid-client/tree/master/docs#customizing-http-requests
@@ -65,7 +67,7 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
       retry: 3,
     });
 
-    this._issuer = await Issuer.discover(url.resolve(oidcUrl, "/.well-known/openid-configuration"));
+    this._issuer = await Issuer.discover(url.resolve(this._imsUrl, "/.well-known/openid-configuration"));
     this._client = new this._issuer.Client({ client_id: this._config.clientId, token_endpoint_auth_method: "none" }); // eslint-disable-line @typescript-eslint/naming-convention
   }
 

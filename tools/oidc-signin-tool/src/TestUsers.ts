@@ -26,6 +26,7 @@ export interface TestBrowserAuthorizationClientConfiguration {
   clientId: string;
   redirectUri: string;
   scope: string;
+  authority?: string;
 }
 
 /**
