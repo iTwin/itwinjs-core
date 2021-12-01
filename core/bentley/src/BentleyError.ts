@@ -291,7 +291,6 @@ export enum IModelHubStatus {
   FailedToGetAssetPermissions = IMODELHUBERROR_BASE + 45,
   FailedToGetAssetMembers = IMODELHUBERROR_BASE + 46,
   ITwinDoesNotExist = IMODELHUBERROR_BASE + 47,
-  FailedToGetProductSettings = IMODELHUBERROR_BASE + 48,
 
   LockChunkDoesNotExist = IMODELHUBERROR_BASE + 49,
 
@@ -648,7 +647,6 @@ export class BentleyError extends Error {
       case IModelHubStatus.JobSchedulingFailed: return "Failed to schedule a background job";
       case IModelHubStatus.ConflictsAggregate: return "Codes or locks are owned by another briefcase";
       case IModelHubStatus.FailedToGetITwinById: return "Failed to query iTwin by its id";
-      case IModelHubStatus.FailedToGetProductSettings: return "Failed to get product settings";
       case IModelHubStatus.DatabaseOperationFailed: return "Database operation has failed";
       case IModelHubStatus.ITwinDoesNotExist: return "ITwin does not exist";
       case IModelHubStatus.UndefinedArgumentError: return "Undefined argument";

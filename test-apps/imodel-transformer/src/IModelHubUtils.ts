@@ -4,22 +4,33 @@
 *--------------------------------------------------------------------------------------------*/
 // cspell:words buddi urlps
 
+import { AccessToken, assert, GuidString } from "@itwin/core-bentley";
+import { ElectronMainAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronMain";
 import { Version } from "@bentley/imodelhub-client";
 import { IModelHubBackend } from "@bentley/imodelhub-client/lib/cjs/imodelhub-node";
 import { BriefcaseDb, BriefcaseManager, IModelHost, IModelHostConfiguration, RequestNewBriefcaseArg } from "@itwin/core-backend";
-import { AccessToken, assert, GuidString } from "@itwin/core-bentley";
 import { BriefcaseIdValue, ChangesetId, ChangesetIndex, ChangesetProps } from "@itwin/core-common";
-import { ElectronAuthorizationBackend } from "@itwin/core-electron/lib/cjs/ElectronBackend";
+import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 
 export class IModelTransformerTestAppHost {
   public static async startup(): Promise<void> {
     const iModelHost = new IModelHostConfiguration();
     iModelHost.hubAccess = new IModelHubBackend();
 
-    await IModelHost.startup(iModelHost);
+    const opt = {
+      electronHost: {
+        developmentServer: process.env.NODE_ENV === "development",
+      },
+      nativeHost: {
+        applicationName: "imodel-transformer-test-app",
+      },
+      iModelHost,
+    };
+
+    await ElectronHost.startup(opt);
   }
 
-  private static _authClient: ElectronAuthorizationBackend | undefined;
+  private static _authClient: ElectronMainAuthorization | undefined;
 
   /** Similar to get `IModelHost.authorizationClient.getAccessToken()` but lazily
    * initializes auth, so users aren't prompted to sign in unless a hub-accessing feature is used.
@@ -33,13 +44,23 @@ export class IModelTransformerTestAppHost {
         "An online-only interaction was requested, but the required environment variables haven't been configured\n"
         + "Please see the .env.template file on how to set up environment variables."
       );
-      this._authClient = new ElectronAuthorizationBackend();
-      await this._authClient.initialize({
-        clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
-        redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
-        scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
+      return new Promise<AccessToken>(async (resolve, reject) => {
+        const client = await ElectronMainAuthorization.create({
+          clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
+          redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
+          scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
+        });
+        this._authClient = client;
+
+        ElectronMainAuthorization.onUserStateChanged.addOnce((token) => {
+          if (token !== "") {
+            resolve(token);
+          } else {
+            reject(new Error("Failed to sign in"));
+          }
+        });
+        this._authClient.signIn().catch((err) => reject(err));
       });
-      return this._authClient.signInComplete();
     }
     return this._authClient.getAccessToken();
   }

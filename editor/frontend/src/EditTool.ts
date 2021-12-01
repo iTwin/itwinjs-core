@@ -9,7 +9,7 @@
 import { editorChannel } from "@itwin/editor-common";
 import { IModelApp, IpcApp } from "@itwin/core-frontend";
 import { DeleteElementsTool } from "./DeleteElementsTool";
-import { ChamferEdgesTool, CutSolidElementsTool, EmbossSolidElementsTool, HollowFacesTool, ImprintSolidElementsTool, IntersectSolidElementsTool, LoftProfilesTool, OffsetFacesTool, RoundEdgesTool, SewSheetElementsTool, SubtractSolidElementsTool, SweepAlongPathTool, ThickenSheetElementsTool, UniteSolidElementsTool } from "./SolidModelingTools";
+import { ChamferEdgesTool, CutSolidElementsTool, DeleteSubEntitiesTool, EmbossSolidElementsTool, HollowFacesTool, ImprintSolidElementsTool, IntersectSolidElementsTool, LoftProfilesTool, OffsetFacesTool, RoundEdgesTool, SewSheetElementsTool, SpinFacesTool, SubtractSolidElementsTool, SweepAlongPathTool, SweepFacesTool, ThickenSheetElementsTool, UniteSolidElementsTool } from "./SolidModelingTools";
 import { ProjectLocationCancelTool, ProjectLocationHideTool, ProjectLocationSaveTool, ProjectLocationShowTool } from "./ProjectLocation/ProjectExtentsDecoration";
 import { ProjectGeolocationMoveTool, ProjectGeolocationNorthTool, ProjectGeolocationPointTool } from "./ProjectLocation/ProjectGeolocation";
 import { CreateArcTool, CreateBCurveTool, CreateCircleTool, CreateEllipseTool, CreateLineStringTool, CreateRectangleTool } from "./SketchTools";
@@ -134,8 +134,11 @@ export class EditTools {
         LoftProfilesTool,
         OffsetFacesTool,
         HollowFacesTool,
+        SweepFacesTool,
+        SpinFacesTool,
         RoundEdgesTool,
         ChamferEdgesTool,
+        DeleteSubEntitiesTool,
       ];
 
       for (const tool of tools)

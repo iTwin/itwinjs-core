@@ -51,7 +51,7 @@ export class Reporter {
       finalReport += "TestSuite,TestName,ValueDescription,Value,Date,Info\n";
     }
     for (const entry of this._entries) {
-      let info = JSON.stringify(entry.info);
+      let info = JSON.stringify(entry.info) ?? "";
       info = info.replace(/\"/g, '""');
       info = `"${info}"`;
       finalReport += `${entry.testSuite},${entry.testName},${entry.valueDescription},${entry.value},${entry.date},${info}\n`;

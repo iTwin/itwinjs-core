@@ -105,6 +105,61 @@ export class ShowTileVolumesTool extends Tool {
   }
 }
 
+/** Sets or unsets or flips the deactivated state of one or more tile tree references within the selected viewport.
+ * Deactivated tile tree references are omitted from the scene.
+ * This is useful for isolating particular tile trees or tiles for debugging.
+ * @beta
+ */
+export class ToggleTileTreeReferencesTool extends Tool {
+  public static override toolId = "ToggleTileTreeReferences";
+  public static override get minArgs() { return 1; }
+  public static override get maxArgs() { return 3; }
+
+  private _modelIds?: string | string[];
+  private _which?: "all" | "animated" | "primary" | "section" | number[];
+  private _deactivate?: boolean;
+
+  public override async parseAndRun(...args: string[]) {
+    const which = args[0].toLowerCase();
+    switch (which) {
+      case "all":
+      case "animated":
+      case "primary":
+      case "section":
+        this._which = which;
+        break;
+      default:
+        this._which = which.split(",").map((x) => Number.parseInt(x, 10)).filter((x) => !Number.isNaN(x));
+    }
+
+    let modelIds = args[2];
+    let deactivate = parseToggle(args[1]);
+    if (typeof deactivate !== "string") {
+      if (typeof deactivate === "boolean")
+        deactivate = !deactivate;
+
+      this._deactivate = deactivate;
+    } else {
+      modelIds = args[1];
+    }
+
+    if (modelIds)
+      this._modelIds = modelIds.toLowerCase().split(",");
+
+    return this.run();
+  }
+
+  public override async run(): Promise<boolean> {
+    const vp = IModelApp.viewManager.selectedView;
+    if (!vp || !this._which || !vp.view.isSpatialView())
+      return false;
+
+    vp.view.setTileTreeReferencesDeactivated(this._modelIds, this._deactivate, this._which);
+    vp.invalidateScene();
+    return true;
+  }
+}
+
 /** This tool sets the aspect ratio skew for the selected viewport.
  * @beta
  */

@@ -498,7 +498,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     // verify via concurrent query
     let rowCount = 0;
-    for await (const row of imodel.query("SELECT * FROM ts.TestElement", undefined, QueryRowFormat.UseJsPropertyNames)) {
+    for await (const row of imodel.query("SELECT * FROM ts.TestElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       verifyTestElement(row as TestElement, expectedValue);
       rowCount++;
     }
@@ -529,7 +529,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     // verify via concurrent query
     rowCount = 0;
-    for await (const row of imodel.query("SELECT * FROM ts.TestElement", undefined, QueryRowFormat.UseJsPropertyNames)) {
+    for await (const row of imodel.query("SELECT * FROM ts.TestElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       verifyTestElement(row as TestElement, actualValue);
       rowCount++;
     }
@@ -577,7 +577,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     // verify via concurrent query
     let rowCount = 0;
-    for await (const row of imodel.query("SELECT * FROM ts.TestElementAspect", undefined, QueryRowFormat.UseJsPropertyNames)) {
+    for await (const row of imodel.query("SELECT * FROM ts.TestElementAspect", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       verifyTestElementAspect(row as TestElementAspect, expectedAspectValue);
       rowCount++;
     }
@@ -609,7 +609,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     // verify via concurrent query
     rowCount = 0;
-    for await (const row of imodel.query("SELECT * FROM ts.TestElementAspect", undefined, QueryRowFormat.UseJsPropertyNames)) {
+    for await (const row of imodel.query("SELECT * FROM ts.TestElementAspect", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       verifyTestElementAspect(row as TestElementAspect, actualAspectValue[0]);
       rowCount++;
     }
@@ -669,7 +669,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     // verify via concurrent query
     let rowCount = 0;
-    for await (const row of imodel.query("SELECT * FROM ts.TestElementRefersToElements", undefined, QueryRowFormat.UseJsPropertyNames)) {
+    for await (const row of imodel.query("SELECT * FROM ts.TestElementRefersToElements", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       const val = row as TestElementRefersToElements;
       verifyTestElementRefersToElements(val, expectedRelationshipValue);
       rowCount++;
@@ -702,7 +702,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     // verify via concurrent query
     rowCount = 0;
-    for await (const row of imodel.query("SELECT * FROM ts.TestElementRefersToElements", undefined, QueryRowFormat.UseJsPropertyNames)) {
+    for await (const row of imodel.query("SELECT * FROM ts.TestElementRefersToElements", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       verifyTestElementRefersToElements(row as TestElementRefersToElements, updatedExpectedValue);
       rowCount++;
     }

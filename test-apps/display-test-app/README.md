@@ -240,6 +240,7 @@ display-test-app has access to all key-ins defined in the imodeljs-frontend and 
 * `dta model transform` - Apply a display transform to all models currently displayed in the selected viewport. Origin is specified like `x=1 y=2 z=3`; pitch and roll as `p=45 r=90` in degrees. Any argument can be omitted. Omitting all arguments clears the display transform. Snapping intentionally does not take the display transform into account.
 * `dta viewport sync *viewportId1* *viewportId2*` - Synchronize the contents of two viewports, specifying them by integer Id displayed in their title bars. Omit the Ids to disconnect two previously synchronized viewports.
 * `dta frustum sync *viewportId1* *viewportId2*` - Like `dta viewport sync but synchronizes only the frusta of the viewports.
+* `dta gen tile *modelId=<modelId>* *contentId=<contentId>*` - Trigger a request to obtain tile content for the specified tile. This is chiefly useful for breaking in the debugger during that process to diagnose issues.
 
 ## Editing
 
@@ -262,3 +263,11 @@ display-test-app has access to all key-ins defined in the imodeljs-editor-fronte
 * `dta place line string` - start placing a line string. Each data point defines another point in the string; a reset (right mouse button) finishes. The element is placed into the first spatial model and spatial category in the viewport's model and category selectors.
 * `dta push` - push local changes to iModelHub. A description of the changes must be supplied. It should be enclosed in double quotes if it contains whitespace characters.
 * `dta pull` - pull and merge changes from iModelHub into the local briefcase. You must be signed in.
+
+## Running in iOS
+
+The steps to run the display test app in an iOS app:
+
+1. Run `npm run build:ios`
+2. Open `test-apps/display-test-app/ios/imodeljs-test-app/imodeljs-test-app.xcodeproj`
+3. Start the XCode Project to an iPad

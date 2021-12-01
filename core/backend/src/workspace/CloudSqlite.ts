@@ -90,7 +90,7 @@ export class CloudSqlite {
   }
 
   public static async downloadDb(db: CloudSqlite.DbProps, props: CloudSqlite.DownloadProps) {
-    const downloader = new IModelHost.platform.DownloadV2Checkpoint({ ...db, ...props });
+    const downloader = new IModelHost.platform.CloudDbTransfer({ direction: "download", ...db, ...props });
 
     let timer: NodeJS.Timeout | undefined;
     try {
@@ -101,10 +101,10 @@ export class CloudSqlite {
           const progress = downloader.getProgress();
           total = progress.total;
           if (onProgress(progress.loaded, progress.total))
-            downloader.cancelDownload();
+            downloader.cancelTransfer();
         }, 250);
       }
-      await downloader.downloadPromise;
+      await downloader.promise;
       onProgress?.(total, total); // make sure we call progress func one last time when download completes
     } catch (err: any) {
       throw (err.message === "cancelled") ? new IModelError(BriefcaseStatus.DownloadCancelled, "download cancelled") : err;
