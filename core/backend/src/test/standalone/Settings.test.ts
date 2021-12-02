@@ -10,7 +10,6 @@ import { IModelHost } from "../../IModelHost";
 import { SettingDictionary, SettingsPriority } from "../../workspace/Settings";
 import { SettingsGroupSpec, SettingSpec, SettingsSpecRegistry } from "../../workspace/SettingsSpecRegistry";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { equal } from "assert";
 
 describe("Settings", () => {
   let iModel: SnapshotDb;
@@ -186,9 +185,15 @@ describe("Settings", () => {
   });
 
   it("IModel persistent settings ", () => {
-    const iModelName = IModelTestUtils.prepareOutputFile("IModel", "test.bim");
+    const iModelName = IModelTestUtils.prepareOutputFile("IModelSetting", "test.bim");
     const iModel2 = IModelTestUtils.createSnapshotFromSeed(iModelName, IModelTestUtils.resolveAssetFile("test.bim"));
 
+    const setting1: SettingDictionary = {
+      "imodel/setting1": "this is from setting1",
+    };
+    const setting1changed: SettingDictionary = {
+      "imodel/setting1": "this is changed setting1",
+    };
     const setting2: SettingDictionary = {
       "workspace/container/alias": [
         { name: "default-icons", id: "icons-01" },
@@ -198,24 +203,24 @@ describe("Settings", () => {
       ],
     };
     iModel2.saveSettingDictionary("testSetting", setting2);
-    iModel2.saveSettingDictionary("test2", imodel1Settings);
+    iModel2.saveSettingDictionary("test1", setting1);
     iModel2.close();
 
     let iModel3 = StandaloneDb.openFile(iModelName, OpenMode.ReadWrite);
     expect(iModel3.workspace.settings.getObject("workspace/container/alias")).to.deep.equal(setting2["workspace/container/alias"]);
-    expect(iModel3.workspace.settings.getString("app1/sub1")).equal("imodel1 value");
+    expect(iModel3.workspace.settings.getString("imodel/setting1")).equal(setting1["imodel/setting1"]);
 
-    iModel3.saveSettingDictionary("test2", imodel2Settings);
+    iModel3.saveSettingDictionary("test1", setting1changed);
     iModel3.close();
     iModel3 = StandaloneDb.openFile(iModelName);
     expect(iModel3.workspace.settings.getObject("workspace/container/alias")).to.deep.equal(setting2["workspace/container/alias"]);
-    expect(iModel3.workspace.settings.getString("app1/sub1")).equal("imodel2 value");
-    iModel3.deleteSettingDictionary("test2");
+    expect(iModel3.workspace.settings.getString("imodel/setting1")).equal(setting1changed["imodel/setting1"]);
+    iModel3.deleteSettingDictionary("test1");
     iModel3.close();
 
     iModel3 = StandaloneDb.openFile(iModelName);
     expect(iModel3.workspace.settings.getObject("workspace/container/alias")).to.deep.equal(setting2["workspace/container/alias"]);
-    expect(iModel3.workspace.settings.getString("app1/sub1")).to.be.undefined;
+    expect(iModel3.workspace.settings.getString("imodel/setting1")).to.be.undefined;
     iModel3.close();
   });
 

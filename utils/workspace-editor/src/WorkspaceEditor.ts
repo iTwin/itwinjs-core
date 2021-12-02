@@ -208,7 +208,7 @@ function runCommand<T extends EditorOpts>(cmd: (args: T) => Promise<void>) {
 
 /** Parse and execute WorkspaceEditor commands */
 async function main() {
-  const type = { alias: "t", describe: "the type of resource", choices: ["blob", "string", "file"], default: "file" };
+  const type = { alias: "t", describe: "the type of resource", choices: ["blob", "string", "file"], required: true };
   const update = { alias: "u", describe: "update (i.e. replace) rather than add the files", boolean: true, default: false };
   Yargs.usage("Edits or lists contents of a WorkspaceFile")
     .wrap(Math.min(130, Yargs.terminalWidth()))

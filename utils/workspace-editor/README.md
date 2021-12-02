@@ -11,11 +11,11 @@ There are 3 `WorkspaceResourceType`s that may be accessed by `@itwin-backend` ap
  2. `blob`  binary data accessed via the `getBlob` method
  3. `file`  extracted to a local file via the `getFile` method
 
-WorkspaceEditor commands accept a `--type` argument to specify which `WorkspaceResourceType` to use. The default is `file`.
+Several `WorkspaceEditor` commands require a `--type` argument to specify which `WorkspaceResourceType` to use.
 
 ## The WorkspaceFile Directory
 
-`WorkspaceFile`s are located in iTwin.js in the `WorkspaceContainerDir` directory. It is specified as a directory name in the `workspace.containerDir` member on the `configuration` argument of  `IModelHost.startup`. The default value is `%localappdata%\iTwin\Workspace`. WorkspaceEditor will normally create and edit `WorkspaceFiles` in the default directory, but if you wish to use a different directory, use the `--directory` option to specify a different `WorkspaceContainerDir` location.
+`WorkspaceFile`s are located in iTwin.js in the `WorkspaceContainerDir` directory. It is specified as a directory name in the `workspace.containerDir` member on the `configuration` argument of  `IModelHost.startup`. The default value is `%localappdata%\iTwin\Workspace`. WorkspaceEditor will normally create and edit `WorkspaceFiles` in the default directory, but if you wish to use a different directory, supply the `--directory` option to specify a different `WorkspaceContainerDir` location.
 
 ## WorkspaceId
 
@@ -39,7 +39,7 @@ created WorkspaceFile C:\Users\User.Name\AppData\Local\iTwin\Workspace\proj112.i
 
 Add one or more local files into a `WorkspaceFile`.
 
-`--type` specifies the type of resource(s) to add.
+`--type` specifies the type of resource(s) to add. Required
 `--name` specifies the name of the resource. Defaults to the name of the local file.
 `--root` specifies a root directory when adding multiple files. The parts of the path after the root are saved in the resource name (see example below.)
 `--update` indicates that an existing resource should be updated (i.e. replaced.)
@@ -63,13 +63,13 @@ WorkspaceFile [C:\Users\User.Name\AppData\Local\iTwin\Workspace\proj112.itwin-wo
 ```sh
  > WorkspaceEditor add proj112 -t blob -r d:\projData\112\ **\*.dict
 WorkspaceFile [C:\Users\User.Name\AppData\Local\iTwin\Workspace\proj112.itwin-workspace]
- added "d:\projData\112\\TernKit\KDEO5814.dict" as blob resource [TernKit/KDEO5814.dict]
- added "d:\projData\112\\TernKit\KDEO5815.dict" as blob resource [TernKit/KDEO5815.dict]
- added "d:\projData\112\\UniSpace\KDEO5814.dict" as blob resource [UniSpace/KDEO5814.dict]
- added "d:\projData\112\\UniSpace\KDEO5815.dict" as blob resource [UniSpace/KDEO5815.dict]
- added "d:\projData\112\\Sparks\KDEO5814.dict" as blob resource [Sparks/KDEO5814.dict]
- added "d:\projData\112\\Sparks\KDEO5815.dict" as blob resource [Sparks/KDEO5815.dict]
- added "d:\projData\112\\Sparks\KDEO5816.dict" as blob resource [Sparks/KDEO5816.dict]
+ added "d:\projData\112\TernKit\KDEO5814.dict" as blob resource [TernKit/KDEO5814.dict]
+ added "d:\projData\112\TernKit\KDEO5815.dict" as blob resource [TernKit/KDEO5815.dict]
+ added "d:\projData\112\UniSpace\KDEO5814.dict" as blob resource [UniSpace/KDEO5814.dict]
+ added "d:\projData\112\UniSpace\KDEO5815.dict" as blob resource [UniSpace/KDEO5815.dict]
+ added "d:\projData\112\Sparks\KDEO5814.dict" as blob resource [Sparks/KDEO5814.dict]
+ added "d:\projData\112\Sparks\KDEO5815.dict" as blob resource [Sparks/KDEO5815.dict]
+ added "d:\projData\112\Sparks\KDEO5816.dict" as blob resource [Sparks/KDEO5816.dict]
  ```
 
 ### List
