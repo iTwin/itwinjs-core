@@ -1,7 +1,7 @@
 {
   "name": "@itwin/components-react",
   "version": "3.0.0-dev.138",
-  "description": "iModel.js UI complex components",
+  "description": "iTwin.js UI complex components",
   "main": "lib/cjs/components-react.js",
   "module": "lib/esm/components-react.js",
   "typings": "lib/cjs/components-react",

@@ -57,7 +57,7 @@ export class TestContext {
     // Print out the configuration
     console.log(this.settings.toString());
 
-    // Configure iModel.js frontend logging to go to the console
+    // Configure iTwin.js frontend logging to go to the console
     Logger.initializeToConsole();
     Logger.setLevelDefault(this.settings.logLevel === undefined ? LogLevel.Warning : this.settings.logLevel);
 

@@ -7,7 +7,7 @@
     "eslint",
     "eslintplugin",
     "eslint-plugin",
-    "imodeljs"
+    "iTwin.js"
   ],
   "main": "dist/index.js",
   "repository": {

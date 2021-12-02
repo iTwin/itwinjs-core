@@ -1,7 +1,7 @@
 {
   "name": "@itwin/core-react",
   "version": "3.0.0-dev.138",
-  "description": "iModel.js UI core components",
+  "description": "iTwin.js UI core components",
   "main": "lib/cjs/core-react.js",
   "module": "lib/esm/core-react.js",
   "typings": "lib/cjs/core-react",

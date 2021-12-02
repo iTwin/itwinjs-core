@@ -1,7 +1,7 @@
 {
   "name": "@itwin/presentation-backend",
   "version": "3.0.0-dev.138",
-  "description": "Backend of iModel.js Presentation library",
+  "description": "Backend of iTwin.js Presentation library",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -11,7 +11,8 @@
     "Bentley",
     "EC",
     "Presentation",
-    "iModelJS",
+    "iTwin",
+    "iTwin.js",
     "Backend"
   ],
   "author": {

@@ -1,7 +1,7 @@
 {
   "name": "@itwin/editor-backend",
   "version": "3.0.0-dev.138",
-  "description": "iModel.js editor backend",
+  "description": "iTwin.js editor backend",
   "main": "lib/cjs/editor-backend.js",
   "typings": "lib/cjs/editor-backend",
   "license": "MIT",

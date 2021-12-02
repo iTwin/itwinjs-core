@@ -35,16 +35,6 @@ import BackButton from "@itwin/appui-layout-react";
   * Close
 * ...
 
-### Local Demo
-
-```shell
-cd imodeljs
-rush install
-rush build
-cd ui/ninezone
-npm start
-```
-
 ### Coding Guidelines
 
 Look at the existing code and try to keep your code similar.

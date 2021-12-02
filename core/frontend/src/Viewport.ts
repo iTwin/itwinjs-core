@@ -2780,7 +2780,7 @@ export class ScreenViewport extends Viewport {
     return div;
   }
 
-  /** The HTMLImageElement of the iModel.js logo displayed in this ScreenViewport
+  /** The HTMLImageElement of the iTwin.js logo displayed in this ScreenViewport
    * @beta
    */
   public get logo() { return this._logo; }

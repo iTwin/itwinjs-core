@@ -14,7 +14,7 @@ import { UiError } from "@itwin/appui-abstract";
 import { FrameworkReducer, FrameworkState } from "./FrameworkState";
 import { NameToReducerMap, ReducerRegistryInstance } from "./ReducerRegistry";
 
-/** Generic 'root' state for the appui-react package. Since this state contains common values needed by many iModel.js applications
+/** Generic 'root' state for the appui-react package. Since this state contains common values needed by many applications
  * it is automatically added to the Redux store when using [[StateManager]].
  * @beta
  */

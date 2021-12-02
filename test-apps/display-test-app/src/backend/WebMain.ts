@@ -65,7 +65,7 @@ const dtaWebMain = (async () => {
     fallthrough: false,
     index: false,
   }));
-  app.use("*", (_req: any, res: any) => { res.send("<h1>IModelJs RPC Server</h1>"); });
+  app.use("*", (_req: any, res: any) => { res.send("<h1>iTwin.js RPC Server</h1>"); });
 
   // ---------------------------------------------
   // Run the server...

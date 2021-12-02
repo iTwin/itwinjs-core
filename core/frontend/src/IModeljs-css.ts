@@ -143,7 +143,7 @@ let iModelJsCss: string | undefined = `
 }
 `;
 
-// add the iModel.js frontend .css styles into DOM head when we load
+// add the iTwin.js frontend .css styles into DOM head when we load
 (() => {
   // Skip adding the css to document if document does not exist.
   if ("undefined" === typeof document)

@@ -1,7 +1,7 @@
 {
   "name": "@itwin/editor-frontend",
   "version": "3.0.0-dev.138",
-  "description": "iModel.js frontend components",
+  "description": "iTwin.js frontend components",
   "main": "lib/cjs/editor-frontend.js",
   "module": "lib/esm/editor-frontend.js",
   "typings": "lib/cjs/editor-frontend",

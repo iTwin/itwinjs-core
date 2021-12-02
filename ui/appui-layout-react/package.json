@@ -1,7 +1,7 @@
 {
   "name": "@itwin/appui-layout-react",
   "version": "3.0.0-dev.138",
-  "description": "iModel.js Nine-zone React UI components",
+  "description": "iTwin.js Nine-zone React UI components",
   "main": "lib/cjs/appui-layout-react.js",
   "module": "lib/esm/appui-layout-react.js",
   "typings": "lib/cjs/appui-layout-react",
