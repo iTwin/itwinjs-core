@@ -9,6 +9,19 @@
 import { assert } from "@itwin/core-bentley";
 import { BackgroundMapProvider, BackgroundMapProviderProps, BackgroundMapType } from "./BackgroundMapProvider";
 import { DeprecatedBackgroundMapProps } from "./BackgroundMapSettings";
+import { Cartographic } from "./geometry/Cartographic";
+
+export interface MapLayerFeatureInfo {
+  layerName: string;
+  subLayerInfo?: MapSubLayerFeatureInfo[];
+  hitPoint: Cartographic;
+}
+export interface MapSubLayerFeatureInfo {
+  subLayerName: string;
+  displayFieldName?: string;
+  attributes?: any;
+
+}
 
 /** @beta */
 export type SubLayerId = string | number;

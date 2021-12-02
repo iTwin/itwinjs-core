@@ -8,7 +8,7 @@
 
 import { assert, compareBooleans, compareNumbers, compareStrings, compareStringsOrUndefined, dispose } from "@itwin/core-bentley";
 import { Angle, Range3d, Transform } from "@itwin/core-geometry";
-import { Cartographic, ImageSource, MapLayerSettings, RenderTexture, ViewFlagOverrides } from "@itwin/core-common";
+import { Cartographic, ImageSource, MapLayerFeatureInfo, MapLayerSettings, RenderTexture, ViewFlagOverrides } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { RenderMemory } from "../../render/RenderMemory";
@@ -182,6 +182,11 @@ class ImageryTileLoader extends RealityTileLoader {
   public get maximumScreenSize(): number { return this._imageryProvider.maximumScreenSize; }
   public get imageryProvider(): MapLayerImageryProvider { return this._imageryProvider; }
   public async getToolTip(strings: string[], quadId: QuadId, carto: Cartographic, tree: ImageryMapTileTree): Promise<void> { await this._imageryProvider.getToolTip(strings, quadId, carto, tree); }
+
+  public async getFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, tree: ImageryMapTileTree): Promise<void> {
+    await this._imageryProvider.getFeatureInfo(featureInfos, quadId, carto, tree);
+  }
+
   public generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void) { return this._imageryProvider.generateChildIds(tile, resolveChildren); }
 
   /** Load this tile's children, possibly asynchronously. Pass them to `resolve`, or an error to `reject`. */

@@ -7,7 +7,7 @@
  */
 
 import { BeEvent } from "@itwin/core-bentley";
-import { Cartographic, ImageSource, ImageSourceFormat, MapLayerSettings } from "@itwin/core-common";
+import { Cartographic, ImageSource, ImageSourceFormat, MapLayerFeatureInfo, MapLayerSettings } from "@itwin/core-common";
 import { getJson, request, RequestBasicCredentials, RequestOptions, Response } from "@bentley/itwin-client";
 import { IModelApp } from "../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationManager";
@@ -83,6 +83,9 @@ export abstract class MapLayerImageryProvider {
       const range = quadId.getLatLongRange(tree.tilingScheme);
       strings.push(`QuadId: ${quadId.debugString}, Lat: ${range.low.x} - ${range.high.x} Long: ${range.low.y} - ${range.high.y}`);
     }
+  }
+
+  public async getFeatureInfo(_featureInfos: MapLayerFeatureInfo[] , _quadId: QuadId, _carto: Cartographic, _tree: ImageryMapTileTree): Promise<void> {
   }
 
   protected getRequestAuthorization(): RequestBasicCredentials | undefined {

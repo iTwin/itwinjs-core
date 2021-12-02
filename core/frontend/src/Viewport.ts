@@ -17,7 +17,7 @@ import {
 import {
   AnalysisStyle, BackgroundMapProps, BackgroundMapProviderProps, BackgroundMapSettings, Camera, ClipStyle, ColorDef, DisplayStyleSettingsProps, Easing,
   ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer, Interpolation,
-  isPlacement2dProps, LightSettings, MapLayerSettings, Npc, NpcCenter, Placement, Placement2d, Placement3d, PlacementProps,
+  isPlacement2dProps, LightSettings, MapLayerFeatureInfo, MapLayerSettings, Npc, NpcCenter, Placement, Placement2d, Placement3d, PlacementProps,
   SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
 } from "@itwin/core-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
@@ -919,6 +919,27 @@ export abstract class Viewport implements IDisposable {
         return result;
 
     return "";
+  }
+
+  /** @internal */
+  public async getFeatureInfo(hit: HitDetail): Promise<MapLayerFeatureInfo[] | undefined> {
+    const promises = new Array<Promise<MapLayerFeatureInfo[]  | undefined>>();
+
+    /* Reality models
+    if (this.displayStyle) {
+      this.displayStyle.forEachTileTreeRef(async (tree) => {
+        promises.push(tree.getFeatureInfo(hit));
+      });
+    }
+    */
+    this.forEachMapTreeRef(async (tree) => promises.push(tree.getFeatureInfo(hit)));
+
+    const results = await Promise.all(promises);
+    for (const result of results)
+      if (result !== undefined)
+        return result;
+
+    return undefined;
   }
 
   /** If this event has one or more listeners, collection of timing statistics related to rendering frames is enabled. Frame statistics will be received by the listeners whenever a frame is finished rendering.

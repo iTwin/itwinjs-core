@@ -8,7 +8,7 @@
 
 import { BeTimePoint } from "@itwin/core-bentley";
 import { Matrix4d, Range1d, Range3d, Transform } from "@itwin/core-geometry";
-import { ElementAlignedBox3d, FeatureAppearanceProvider, FrustumPlanes, HiddenLine, PlanarClipMaskPriority, ViewFlagOverrides } from "@itwin/core-common";
+import { ElementAlignedBox3d, FeatureAppearanceProvider, FrustumPlanes, HiddenLine, MapLayerFeatureInfo, PlanarClipMaskPriority, ViewFlagOverrides } from "@itwin/core-common";
 import { HitDetail } from "../HitDetail";
 import { FeatureSymbology } from "../render/FeatureSymbology";
 import { RenderClipVolume } from "../render/RenderClipVolume";
@@ -67,6 +67,8 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
 
   /** Optionally return a tooltip describing the hit. */
   public async getToolTip(_hit: HitDetail): Promise<HTMLElement | string | undefined> { return undefined; }
+
+  public async getFeatureInfo(_hit: HitDetail): Promise<MapLayerFeatureInfo[] | undefined>  { return undefined; }
 
   /** Optionally add any decorations specific to this reference. For example, map tile trees may add a logo image and/or copyright attributions.
    * @note This is currently only invoked for background maps and TiledGraphicsProviders - others have no decorations, but if they did implement this it would not be called.

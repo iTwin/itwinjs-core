@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { Cartographic, ImageSource, IModelStatus, MapLayerSettings, ServerError } from "@itwin/core-common";
+import { Cartographic, ImageSource, IModelStatus, MapLayerFeatureInfo, MapLayerSettings, ServerError } from "@itwin/core-common";
 import { getJson, request, RequestOptions, Response } from "@bentley/itwin-client";
 import { IModelApp } from "../../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../../NotificationManager";
@@ -228,6 +228,61 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
       }
     }
   }
+
+  public  override async getFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, _tree: ImageryMapTileTree): Promise<void> {
+
+    if (!this._querySupported)
+      return;
+
+    const bboxString = this.getEPSG3857ExtentString(quadId.row, quadId.column, quadId.level);
+    const x = this.getEPSG3857X(carto.longitudeDegrees);
+    const y = this.getEPSG3857Y(carto.latitudeDegrees);
+    const tmpUrl = `${this._settings.url}/identify?f=json&tolerance=1&returnGeometry=false&sr=3857&imageDisplay=${this.tileSize},${this.tileSize},96&layers=${this.getLayerString("visible")}&geometry=${x},${y}&geometryType=esriGeometryPoint&mapExtent=${bboxString}`;
+    const url = await this.appendSecurityToken(tmpUrl);
+
+    let json = await getJson(url);
+    if (json?.error?.code === ArcGisErrorCode.TokenRequired || json?.error?.code === ArcGisErrorCode.InvalidToken) {
+      // Token might have expired, make a second attempt by forcing new token.
+      if (this._settings.userName && this._settings.userName.length > 0) {
+        ArcGisTokenManager.invalidateToken(this._settings.url, this._settings.userName);
+        json = await getJson(url);
+      }
+
+      // OK at this point, if response still contain a token error, we assume end-user will
+      // have to provide credentials again.  Change the layer status so we
+      // don't make additional invalid requests..
+      if (json?.error?.code === ArcGisErrorCode.TokenRequired || json?.error?.code === ArcGisErrorCode.InvalidToken) {
+        // Check again layer status, it might have change during await.
+        if (this.status === MapLayerImageryProviderStatus.Valid) {
+          this.status = MapLayerImageryProviderStatus.RequireAuth;
+          const msg = IModelApp.localization.getLocalizedString("iModelJs:MapLayers.Messages.FetchTooltipTokenError", { layerName: this._settings.name });
+          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg));
+        }
+
+        return;
+      }
+    }
+
+    if (json && Array.isArray(json.results)) {
+      const info: MapLayerFeatureInfo = {
+        layerName: this._settings.name,
+        subLayerInfo: [],
+        hitPoint:carto,
+      };
+
+      for (const result of json.results) {
+        info.subLayerInfo?.push({
+          subLayerName: result.layerName ?? "",
+          displayFieldName: result.displayFieldName,
+          attributes: result.attributes,
+        }
+        );
+      }
+      featureInfos.push(info);
+    }
+
+  }
+
   protected getLayerString(prefix = "show"): string {
     const layers = new Array<string>();
     this._settings.subLayers.forEach((subLayer) => { if (this._settings.isSubLayerVisible(subLayer)) layers.push(subLayer.idString); });

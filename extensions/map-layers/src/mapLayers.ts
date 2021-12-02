@@ -2,11 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelApp, UserPreferencesAccess } from "@itwin/core-frontend";
-import { MapLayersUiItemsProvider, MapLayersWidgetControl } from "./ui/MapLayersUiItemsProvider";
+import { HitDetail, IModelApp, UserPreferencesAccess } from "@itwin/core-frontend";
+import { FeatureInfoWidgetControl, MapLayersUiItemsProvider, MapLayersWidgetControl } from "./ui/MapLayersUiItemsProvider";
 import { UiItemsManager } from "@itwin/appui-abstract";
 import { ConfigurableUiManager } from "@itwin/appui-react";
+import { BeEvent } from "@itwin/core-bentley";
 
+export type IdentifyHitEvent = BeEvent<(hit: HitDetail) => void>;
 /** MapLayersUI is use when the package is used as a dependency to another app.
  * '''ts
  *  await MapLayersUI.initialize(registerItemsProvider);
@@ -18,7 +20,10 @@ export class MapLayersUI {
   private static _uiItemsProvider: MapLayersUiItemsProvider;
 
   private static _iTwinConfig?: UserPreferencesAccess;
+  private static _onIdentifyHit?: IdentifyHitEvent;
+
   public static get iTwinConfig(): UserPreferencesAccess | undefined { return this._iTwinConfig; }
+  public static get onIdentifyHit(): IdentifyHitEvent | undefined { return this._onIdentifyHit; }
 
   /** Used to initialize the Map Layers.
    *
@@ -32,8 +37,9 @@ export class MapLayersUI {
    *
    * If an iTwinConfig is provided, it will be used to load the MapLayerSources that are stored.
    */
-  public static async initialize(registerItemsProvider = true, iTwinConfig?: UserPreferencesAccess): Promise<void> {
+  public static async initialize(registerItemsProvider = true, iTwinConfig?: UserPreferencesAccess, onIdentifyHit?: IdentifyHitEvent): Promise<void> {
     MapLayersUI._iTwinConfig = iTwinConfig;
+    MapLayersUI._onIdentifyHit = onIdentifyHit;
 
     // register namespace containing localized strings for this package
     await IModelApp.localization.registerNamespace(this.localizationNamespace);
@@ -44,6 +50,8 @@ export class MapLayersUI {
       UiItemsManager.register(MapLayersUI._uiItemsProvider);
     else
       ConfigurableUiManager.registerControl(MapLayersWidgetControl.id, MapLayersWidgetControl);
+
+    ConfigurableUiManager.registerControl(FeatureInfoWidgetControl.id, FeatureInfoWidgetControl);
   }
 
   /** Unregisters the GeoTools internationalization service namespace */

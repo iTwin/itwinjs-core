@@ -10,6 +10,7 @@ import { MapLayersWidget } from "./widget/MapLayersWidget";
 import { ConfigurableCreateInfo, WidgetControl } from "@itwin/appui-react";
 import { IModelApp } from "@itwin/core-frontend";
 import { MapLayerOptions } from "./Interfaces";
+import { FeatureInfoWidget } from "./widget/FeatureInfoWidget";
 
 export class MapLayersUiItemsProvider implements UiItemsProvider {
   public readonly id = "MapLayersUiItemsProvider";
@@ -58,5 +59,16 @@ export class MapLayersWidgetControl extends WidgetControl {
     super(info, mapLayerOptions);
 
     this.reactNode = <MapLayersWidget mapLayerOptions={mapLayerOptions} />;
+  }
+}
+
+export class FeatureInfoWidgetControl extends WidgetControl {
+  public static id = "FeatureInfoWidget";
+  public static iconSpec = "icon-map";
+  public static label = "FeatureInfoWidgetControl";
+  constructor(info: ConfigurableCreateInfo, options: any) {
+    super(info, options);
+
+    super.reactNode = <FeatureInfoWidget />;
   }
 }

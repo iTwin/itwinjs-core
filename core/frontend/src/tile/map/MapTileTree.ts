@@ -11,7 +11,7 @@ import {
   Angle, AngleSweep, Constant, Ellipsoid, EllipsoidPatch, Point3d, Range1d, Range3d, Ray3d, Transform, Vector3d, XYZProps,
 } from "@itwin/core-geometry";
 import {
-  BackgroundMapSettings, BaseLayerSettings, Cartographic, ColorDef, FeatureAppearance, GeoCoordStatus, GlobeMode, MapLayerSettings, PlanarClipMaskPriority, TerrainHeightOriginMode,
+  BackgroundMapSettings, BaseLayerSettings, Cartographic, ColorDef, FeatureAppearance, GeoCoordStatus, GlobeMode, MapLayerFeatureInfo, MapLayerSettings, PlanarClipMaskPriority, TerrainHeightOriginMode,
   TerrainProviderName,
 } from "@itwin/core-common";
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
@@ -809,6 +809,41 @@ export class MapTileTreeReference extends TileTreeReference {
     const div = document.createElement("div");
     div.innerHTML = strings.join("<br>");
     return div;
+  }
+
+  public override async getFeatureInfo(hit: HitDetail): Promise<MapLayerFeatureInfo[] | undefined> {
+    const tree = this.treeOwner.tileTree as MapTileTree;
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    if (undefined === tree || hit.iModel !== tree.iModel || tree.modelId !== hit.modelId || !hit.viewport || !hit.viewport.view.is3d)
+      return undefined;
+
+    const backgroundMapGeometry = hit.viewport.displayStyle.getBackgroundMapGeometry();
+    if (undefined === backgroundMapGeometry)
+      return undefined;
+
+    const worldPoint = hit.hitPoint.clone();
+    const cartoGraphic = await backgroundMapGeometry.dbToCartographicFromGcs(worldPoint);
+    const strings = [];
+    const info: MapLayerFeatureInfo[] = [];
+
+    const imageryTreeRef = this.imageryTreeFromTreeModelIds(hit.modelId, hit.sourceId);
+    if (imageryTreeRef !== undefined) {
+      strings.push(`Imagery Layer: ${imageryTreeRef.layerSettings.name}`);
+      if (hit.tileId !== undefined) {
+        const terrainQuadId = QuadId.createFromContentId(hit.tileId);
+        const terrainTile = tree.tileFromQuadId(terrainQuadId);
+        if (terrainTile && terrainTile.imageryTiles) {
+          const imageryTree = imageryTreeRef.treeOwner.tileTree as ImageryMapTileTree;
+          if (imageryTree) {
+            for (const imageryTile of terrainTile.imageryTiles) {
+              if (imageryTree === imageryTile.imageryTree && imageryTile.rectangle.containsCartographic(cartoGraphic))
+                await imageryTree.imageryLoader.getFeatureInfo(info, imageryTile.quadId, cartoGraphic, imageryTree);
+            }
+          }
+        }
+      }
+    }
+    return info;
   }
 
   /** Add logo cards to logo div. */
