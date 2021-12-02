@@ -60,6 +60,7 @@ export class TestContext {
         clientId: this.settings.oidcClientId,
         redirectUri: this.settings.oidcRedirect,
         scope: this.settings.oidcScopes,
+        authority: this.settings.oidcAuthority,
       } as TestBrowserAuthorizationClientConfiguration);
     }
 
