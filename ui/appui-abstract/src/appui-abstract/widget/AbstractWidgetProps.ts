@@ -68,4 +68,6 @@ export interface AbstractWidgetProps extends ProvidedItem {
    * @note Return true if the state is restored or the Widget will remount.
    */
   readonly restoreTransientState?: () => boolean;
+  /** attach to DOM callback. */
+  readonly attachToDom?: (container: HTMLElement) => void;
 }

@@ -144,6 +144,7 @@ export class WidgetDef {
   private _canPopout?: boolean;
   private _floatingContainerId?: string;
   private _defaultFloatingPosition: PointProps | undefined;
+  public attachToDom: ((container: HTMLElement) => void) | undefined;
 
   private _tabLocation: TabLocation = {
     side: "left",
@@ -257,6 +258,8 @@ export class WidgetDef {
 
     if (widgetProps.element !== undefined)
       me._widgetReactNode = widgetProps.element;
+
+    me.attachToDom = widgetProps.attachToDom;
 
     if (widgetProps.iconSpec !== undefined)
       me._iconSpec = widgetProps.iconSpec;

@@ -5,7 +5,8 @@
 
 import {
   AbstractStatusBarItemUtilities,
-  CommonStatusBarItem, CommonToolbarItem, StageUsage, StatusBarSection, ToolbarOrientation, ToolbarUsage, UiItemsProvider,
+  AbstractWidgetProps,
+  CommonStatusBarItem, CommonToolbarItem, StagePanelLocation, StagePanelSection, StageUsage, StatusBarSection, ToolbarOrientation, ToolbarUsage, UiItemsProvider, WidgetState,
 } from "@itwin/appui-abstract";
 import { SampleTool } from "../../tools/SampleTool";
 import statusBarButtonSvg from "../icons/StatusField.svg?sprite";
@@ -13,6 +14,7 @@ import { UnitsPopupUiDataProvider } from "../dialogs/UnitsPopup";
 import { IModelApp } from "@itwin/core-frontend";
 import { UiItemsProvidersTest } from "../../ui-items-providers-test";
 import { OpenAbstractDialogTool } from "../../tools/OpenAbstractModalDialogTool";
+import { GenericWidget } from "../widgets/generic/GenericWidget";
 
 /**
  * The GeneralUiItemsProvider provides additional items to any frontstage that has a usage value of StageUsage.General.
@@ -20,6 +22,7 @@ import { OpenAbstractDialogTool } from "../../tools/OpenAbstractModalDialogTool"
  */
 export class GeneralUiItemsProvider implements UiItemsProvider {
   public readonly id = "GeneralUiItemsProvider";
+  private _genericWidget = new GenericWidget();
 
   public provideToolbarButtonItems(_stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[] {
     /** Add a tool that displays tool settings  */
@@ -51,4 +54,21 @@ export class GeneralUiItemsProvider implements UiItemsProvider {
     return statusBarItems;
   }
 
+  public provideWidgets(_stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection | undefined): ReadonlyArray<AbstractWidgetProps> {
+    const widgets: AbstractWidgetProps[] = [];
+    if (stageUsage === StageUsage.General &&
+      location === StagePanelLocation.Right &&
+      section === StagePanelSection.End) {
+      widgets.push({
+        id: "uiItemsProvidersTest:generic-widget",
+        label: "Generic",
+        canPopout: true,
+        defaultState: WidgetState.Open,
+        getWidgetContent: () => null,
+        attachToDom: this._genericWidget.attachToDom,
+        isFloatingStateSupported: true,
+      });
+    }
+    return widgets;
+  }
 }

@@ -12,15 +12,37 @@ import { useActiveFrontstageDef } from "../frontstage/Frontstage";
 import { WidgetDef } from "../widgets/WidgetDef";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { FrontstageNineZoneStateChangedEventArgs } from "../frontstage/FrontstageDef";
+import { useRefState } from "@itwin/core-react";
+
+function ExternalContentHost(props: { attachToDom: ((container: HTMLElement) => void) | undefined }) {
+  const { attachToDom } = props;
+  const [containerRef, container] = useRefState<HTMLDivElement>();
+  React.useEffect(() => {
+    if (container && attachToDom)
+      attachToDom(container);
+  }, [attachToDom, container]);
+
+  return <div ref={containerRef} />;
+}
 
 /** @internal */
 export function WidgetContent() {
   const widget = useWidgetDef();
+  const reactNode = widget?.reactNode;
+  const attachToDom = widget?.attachToDom;
+
   // istanbul ignore next
   const itemId = widget?.id ?? widget?.label ?? "unknown";
+  const children = React.useMemo(() => {
+    if (null === reactNode && attachToDom) {
+      return <ExternalContentHost attachToDom={attachToDom} />;
+    } else {
+      return reactNode;
+    }
+  }, [reactNode, attachToDom]);
   return (
     <ScrollableWidgetContent itemId={itemId}>
-      {widget?.reactNode}
+      {children}
     </ScrollableWidgetContent>
   );
 }

@@ -11,7 +11,8 @@ import { UiItemsProvidersTest } from "../../ui-items-providers-test";
 import { CustomFrontstage } from "../frontstages/CustomContent";
 
 /**
- * Test UiItemsProvider that provide buttons, widgets, and backstage item to NetworkTracing stage.
+ * This provider only provides a backstage item used to open a registered frontstage that displays
+ * two viewports one with custom rendered content.
  */
 export class CustomContentUiProvider implements UiItemsProvider {
   public static providerId = "ui-item-provider-test:CustomContentUiProvider";
