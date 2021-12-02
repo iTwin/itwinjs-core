@@ -225,8 +225,7 @@ export class InterpolationCurve3dOptions {
     this.fitPoints.reverse();
     if (this.knots)
       this.knots.reverse();
-    // Swap pointers to tangents.
-    // NEEDS WORK: Do the vector coordinates need to be negated?
+    // Swap pointers to tangents. They don't need to be negated because they point into the curve.
     const oldStart = this._startTangent;
     this._startTangent = this.endTangent;
     this._endTangent = oldStart;
