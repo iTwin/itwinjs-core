@@ -6557,6 +6557,7 @@ export class UiFramework {
     static get initialized(): boolean;
     // @internal
     static initializeEx(store: Store<any> | undefined, frameworkStateKey?: string): Promise<void>;
+    static initializeStateFromUserSettingsProviders(immediateSync?: boolean): Promise<void>;
     // @alpha
     static get isContextMenuOpen(): boolean;
     // (undocumented)
