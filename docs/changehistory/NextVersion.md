@@ -6,7 +6,7 @@ publish: false
 
 ## Update guide
 
-We have built a [codemod tool](https://github.com/iTwin/codemods) using the [jscodeshift](https://github.com/facebook/jscodeshift) toolkit which should serve as a starting point for updating your project to use the new 3.0 packages of itwinjs-core. Please see the included [readme.md](https://github.com/iTwin/codemods#readme) for instructions on running the tool against your project.
+To aid in the update from iModel.js 2.x, a [codemod tool](https://github.com/iTwin/codemods) using [JSCodeshift](https://github.com/facebook/jscodeshift) has been released which should serve as a starting point for updating your project to iTwin.js 3.0. Please see the included [readme.md](https://github.com/iTwin/codemods#readme) for instructions on running the tool against your project.
 
 ## Updated minimum requirements
 
@@ -662,8 +662,8 @@ The format of [KeySetJSON]($presentation-common) has been changed to reduce its 
 
 ### Changes to presentation rule specifications
 
-- Added ability to specify polymorphism at class level rather than specification level. 
-  
+- Added ability to specify polymorphism at class level rather than specification level.
+
   Previously polymorphism was specified at specification level using [ContentInstancesOfSpecificClassesSpecification.handleInstancesPolymorphically]($presentation-common) and [InstanceNodesOfSpecificClassesSpecification.arePolymorphic]($presentation-common) flags. They're now deprecated in favor of the new [MultiSchemaClassesSpecification.arePolymorphic]($presentation-common) attribute and act as default values if the new attribute is not specified.
 
   The change allows [ContentInstancesOfSpecificClassesSpecification]($presentation-common) and [InstanceNodesOfSpecificClassesSpecification]($presentation-common) specify multiple classes with different polymorphism, if necessary.
