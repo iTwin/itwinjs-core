@@ -1182,10 +1182,11 @@ describe("IModelTransformer", () => {
   it.only("filter preserves Ids", async () => {
     const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "PreserveIdSource.bim");
     const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "PreserveId" } });
+
     const spatialCateg1Id  = SpatialCategory.insert(sourceDb, IModelDb.dictionaryId, "spatial-category1", { color: ColorDef.blue.toJSON() });
     const spatialCateg2Id = SpatialCategory.insert(sourceDb, IModelDb.dictionaryId, "spatial-category2", { color: ColorDef.red.toJSON() });
     const myPhysModelId = PhysicalModel.insert(sourceDb, IModelDb.rootSubjectId, "myPhysicalModel");
-    const [_physObj1Id, _physObj2Id] = ([[1, spatialCateg1Id],[2, spatialCateg2Id]] as const).map(([x, categoryId]) => {
+    const physicalObjectIds = [spatialCateg1Id, spatialCateg2Id, spatialCateg2Id, spatialCateg2Id, spatialCateg2Id].map((categoryId, x) => {
       const physicalObjectProps: PhysicalElementProps = {
         classFullName: PhysicalObject.classFullName,
         model: myPhysModelId,
@@ -1198,6 +1199,15 @@ describe("IModelTransformer", () => {
       const physicalObjectId = sourceDb.elements.insertElement(physicalObjectProps);
       return physicalObjectId;
     });
+    // these link table relationships are examples of a non-element entities
+    const nonElementEntityIds = [
+      ElementRefersToElements.create(sourceDb, physicalObjectIds[0], physicalObjectIds[2]).insert(),
+      ElementRefersToElements.create(sourceDb, physicalObjectIds[0], physicalObjectIds[3]).insert(),
+      ElementRefersToElements.create(sourceDb, physicalObjectIds[1], physicalObjectIds[2]).insert(),
+      ElementRefersToElements.create(sourceDb, physicalObjectIds[1], physicalObjectIds[4]).insert(),
+      ElementRefersToElements.create(sourceDb, physicalObjectIds[2], physicalObjectIds[3]).insert(),
+      ElementRefersToElements.create(sourceDb, physicalObjectIds[2], physicalObjectIds[4]).insert(),
+    ];
     sourceDb.saveChanges();
 
     const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "PreserveIdTarget.bim");
@@ -1212,6 +1222,13 @@ describe("IModelTransformer", () => {
       if (elem instanceof GeometricElement && elem.category === spatialCateg2Id)
         return false;
       if (elem.id === spatialCateg2Id)
+        return false;
+      return true;
+    }
+
+    /** filter the category and all related elements from the source for transformation */
+    function filterRelationshipsToChangeIds(relationship: {id: Id64String}): boolean {
+      if (relationship.id === nonElementEntityIds[2])
         return false;
       return true;
     }
@@ -1235,7 +1252,7 @@ describe("IModelTransformer", () => {
       }
     }
 
-    const transformer = new FilterCategoryTransformer(sourceDb, targetDb, { preserveIdsInFilterTransform: true });
+    const transformer = new FilterCategoryTransformer(sourceDb, targetDb, { preserveElementIdsForFiltering: true });
     await transformer.processAll();
     targetDb.saveChanges();
 
@@ -1259,19 +1276,47 @@ describe("IModelTransformer", () => {
     const targetContent = await getAllElementsInvariants(targetDb);
     expect(targetContent).to.deep.equal(sourceContent);
 
-    // now try inserting both an element and a relationship into the target to check the two id sequences are fine
+    function getInvariantRelationsContent(db: IModelDb) {
+      return nonElementEntityIds
+        .filter((id) => filterRelationshipsToChangeIds({id}))
+        .map((id) => db.relationships.getInstanceProps(ElementRefersToElements.classFullName, id))
+        // remove id since that will be different, order should still be correct in this case
+        .map((props) => {delete props.id; return props;});
+    }
+
+    expect(
+      getInvariantRelationsContent(sourceDb)
+    ).to.deep.equal(
+      getInvariantRelationsContent(targetDb)
+    );
+
+    // now try inserting both an element and a relationship into the target to check the two entity id sequences are fine
+    const spatialCateg3CodeValue = "spatial-category3";
     const spatialCateg3Id = SpatialCategory.insert(
       targetDb,
       IModelDb.dictionaryId,
-      "spatial-category3",
+      spatialCateg3CodeValue,
       { color: ColorDef.black.toJSON() }
     );
-    const _spatialCateg3Subcateg1Id = SubCategory.insert(
+    const spatialCateg3SubCateg1CodeValue = "spatial-categ-subcateg-1";
+    const spatialCateg3Subcateg1Id = SubCategory.insert(
       targetDb,
       spatialCateg3Id,
-      "spatial-categ-subcateg-1",
+      spatialCateg3SubCateg1CodeValue ,
       { color: ColorDef.white.toJSON() }
     );
+    ElementRefersToElements.create(targetDb, spatialCateg3Id, spatialCateg3Subcateg1Id).insert();
+
+    expect(
+      targetDb.elements.getElement<SpatialCategory>(spatialCateg3Id, SpatialCategory).code.value
+    ).to.equal(spatialCateg3CodeValue);
+    const spatialCateg3Subcateg1 = targetDb.elements.getElement<SubCategory>(spatialCateg3Subcateg1Id, SubCategory);
+    expect(spatialCateg3Subcateg1.code.value).to.equal(spatialCateg3SubCateg1CodeValue);
+    const subcategRelation = targetDb.relationships.getInstance(ElementRefersToElements.classFullName, {
+      sourceId: spatialCateg3Id,
+      targetId: spatialCateg3Subcateg1Id,
+    });
+    expect(subcategRelation).is.not.undefined;
 
     sourceDb.close();
     targetDb.close();

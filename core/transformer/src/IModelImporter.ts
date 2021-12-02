@@ -26,7 +26,7 @@ export interface IModelImportOptions {
    */
   autoExtendProjectExtents?: boolean | { excludeOutliers: boolean };
   /** @see [IModelTransformOptions]($transformer) */
-  preserveIdsInFilterTransform?: boolean;
+  preserveElementIdsForFiltering?: boolean;
 }
 
 /** Base class for importing data into an iModel.
@@ -44,8 +44,8 @@ export class IModelImporter implements Required<IModelImportOptions> {
    * @see [IModelImporter Options]($docs/learning/transformer/index.md#IModelImporter)
    */
   public autoExtendProjectExtents: boolean | { excludeOutliers: boolean };
-  /** @see [IModelTransformOptions]($transformer) */
-  public preserveIdsInFilterTransform: boolean;
+  /** @see [IModelTransformOptions.preserveElementIdsForFiltering]($transformer) */
+  public preserveElementIdsForFiltering: boolean;
   /** If `true`, simplify the element geometry for visualization purposes. For example, convert b-reps into meshes.
    * @note `false` is the default
    */
@@ -68,7 +68,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
   public constructor(targetDb: IModelDb, options?: IModelImportOptions) {
     this.targetDb = targetDb;
     this.autoExtendProjectExtents = options?.autoExtendProjectExtents ?? true;
-    this.preserveIdsInFilterTransform  = options?.preserveIdsInFilterTransform ?? false;
+    this.preserveElementIdsForFiltering = options?.preserveElementIdsForFiltering ?? false;
     // Add in the elements that are always present (even in an "empty" iModel) and therefore do not need to be updated
     this.doNotUpdateElementIds.add(IModel.rootSubjectId);
     this.doNotUpdateElementIds.add(IModel.dictionaryId);
@@ -139,7 +139,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
       Logger.logInfo(loggerCategory, `Do not update target element ${elementProps.id}`);
       return elementProps.id;
     }
-    if (this.preserveIdsInFilterTransform) {
+    if (this.preserveElementIdsForFiltering) {
       // categories are the only element that onInserted will immediately insert a new element (their default subcategory)
       // since default subcategories always exist and always will be inserted after their categories, we treat them as an update
       // to prevent duplicate inserts
@@ -166,7 +166,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
     // XXXXXXXXXXX: need to update the default subcategory after inserting any [spatial?] category
     try {
       let elementId: Id64String;
-      if (this.preserveIdsInFilterTransform) {
+      if (this.preserveElementIdsForFiltering) {
         const hasId = (a: ElementProps): a is ElementProps & {id: Id64String} => typeof a.id === "string";
         if (!hasId(elementProps))
           throw new IModelError(IModelStatus.BadArg, "element tried to be inserted without an id during an id-preserving filter");

@@ -77,18 +77,16 @@ export interface IModelTransformOptions {
    */
   cloneUsingBinaryGeometry?: boolean;
 
-  // TODO: throw on different briefcase ids
-  /** Flag that indicates that the transform will be a filter transform.
-   * The transformer will delete the target's contents, and only allow insertions of elements from the source into the target.
-   * It will also preserve the ids from the source in the target. Attempts to insert anything that isn't in the source
-   * will fail, although updates can be made.
-   * Setting this option to `true` is the only way to do a filter transform, which preserves ids and
-   * cannot insert additional elements.
-   * @note the briefcase Ids used must be the same or this will assert, since the briefcase Id is the top 24 bits of elementIds
+  /** Flag that indicates that ids should be preserved while copying elements to the target
+   * Intended only for pure-filter transforms, so you can keep parts of the source, while deleting others,
+   * and element ids are guaranteed to be the same, (other entity ids are not, however)
+   * @note the target must be empty
+   * @note it is invalid to insert elements during the transformation, do not use this with transformers that try to
+   * @note this does not preserve the ids of non-element entities such as link table relationships, or aspects, etc
    * @default false
    * @beta
    */
-  preserveIdsInFilterTransform?: boolean;
+  preserveElementIdsForFiltering?: boolean;
 }
 
 /** Base class used to transform a source iModel into a different target iModel.
@@ -125,8 +123,8 @@ export class IModelTransformer extends IModelExportHandler {
   private readonly _isReverseSynchronization: boolean;
   /** Set if it can be determined whether this is the first source --> target synchronization. */
   private _isFirstSynchronization?: boolean;
-  /** @see [[IModelTransformOptions.preserveIdsInFilterTransform]] */
-  private readonly _preserveIdsInFilterTransform: boolean;
+  /** @see [[IModelTransformOptions.preserveElementIdsForFiltering]] */
+  private readonly _preserveElementIdsForFiltering: boolean;
 
   /** Construct a new IModelTransformer
    * @param source Specifies the source IModelExporter or the source IModelDb that will be used to construct the source IModelExporter.
@@ -143,7 +141,7 @@ export class IModelTransformer extends IModelExportHandler {
     this._wasSourceIModelCopiedToTarget = options?.wasSourceIModelCopiedToTarget ?? false;
     this._isReverseSynchronization = options?.isReverseSynchronization ?? false;
     this._isFirstSynchronization = this._wasSourceIModelCopiedToTarget ? true : undefined;
-    this._preserveIdsInFilterTransform = options?.preserveIdsInFilterTransform ?? false;
+    this._preserveElementIdsForFiltering = options?.preserveElementIdsForFiltering ?? false;
     // initialize exporter and sourceDb
     if (source instanceof IModelDb) {
       this.exporter = new IModelExporter(source);
@@ -169,7 +167,7 @@ export class IModelTransformer extends IModelExportHandler {
       this.importer = target;
     }
     this.targetDb = this.importer.targetDb;
-    this.importer.preserveIdsInFilterTransform = this._preserveIdsInFilterTransform;
+    this.importer.preserveElementIdsForFiltering = this._preserveElementIdsForFiltering;
     // initialize the IModelCloneContext
     this.context = new IModelCloneContext(this.sourceDb, this.targetDb);
   }
@@ -442,7 +440,7 @@ export class IModelTransformer extends IModelExportHandler {
   protected override onExportElement(sourceElement: Element): void {
     let targetElementId: Id64String | undefined;
     let targetElementProps: ElementProps;
-    if (this._preserveIdsInFilterTransform) {
+    if (this._preserveElementIdsForFiltering) {
       targetElementId = sourceElement.id;
       targetElementProps = this.onTransformElement(sourceElement);
     } else if (this._wasSourceIModelCopiedToTarget) {
@@ -866,7 +864,7 @@ export class IModelTransformer extends IModelExportHandler {
       await this.detectElementDeletes();
       await this.detectRelationshipDeletes();
     }
-    this.importer.computeProjectExtents();
+    this.finishProcessing();
   }
 
   /** Export changes from the source iModel and import the transformed entities into the target iModel.
@@ -883,7 +881,15 @@ export class IModelTransformer extends IModelExportHandler {
     this.initFromExternalSourceAspects();
     await this.exporter.exportChanges(accessToken, startChangesetId);
     await this.processDeferredElements();
+    this.finishProcessing();
+  }
+
+  /** final steps of processing, regardless of whether it's processing all of the iModel or just changes  */
+  private finishProcessing() {
     this.importer.computeProjectExtents();
+    if (this._preserveElementIdsForFiltering) {
+      this.targetDb.nativeDb.resetElementIdSequence(); // we used insertElementForceUseId so we must call this now
+    }
   }
 }
 
