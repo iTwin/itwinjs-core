@@ -592,11 +592,13 @@ importers:
   ../../core/express-server:
     specifiers:
       '@itwin/build-tools': workspace:*
+      '@itwin/core-backend': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@types/body-parser': ^1.17.0
       '@types/chai': ^4.1.4
       '@types/express': ^4.16.1
+      '@types/express-ws': ^3.0.1
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
       '@types/sinon': ^9.0.0
@@ -604,6 +606,7 @@ importers:
       chai: ^4.1.2
       eslint: ^7.11.0
       express: ^4.16.3
+      express-ws: ^5.0.2
       mocha: ^8.3.2
       nyc: ^15.1.0
       rimraf: ^3.0.2
@@ -612,13 +615,16 @@ importers:
       typescript: ~4.4.0
     dependencies:
       express: 4.17.1
+      express-ws: 5.0.2_express@4.17.1
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
+      '@itwin/core-backend': link:../backend
       '@itwin/core-common': link:../common
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@types/body-parser': 1.19.2
       '@types/chai': 4.2.22
       '@types/express': 4.17.13
+      '@types/express-ws': 3.0.1
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
       '@types/sinon': 9.0.11
@@ -6149,12 +6155,12 @@ packages:
     requiresBuild: true
     dev: false
 
-  /@bentley/itwin-client/3.0.0-dev.135_2a526bb54deb5ab443bbedfaf1d28158:
-    resolution: {integrity: sha512-facpvfpiOsyvNxrOUP47Qn1T/9uUp2pxF9EweNg18HpcgdRZvfQtqGAdYoiR4qdvCVZJEqpoCz7p6t1DFFjAuA==}
+  /@bentley/itwin-client/3.0.0-dev.136_8264537c3090aecc81c8b892c7f72712:
+    resolution: {integrity: sha512-I4mBlIDr1QRdku0WIZz6erzGsda8FvICcCdQAiouDjQyq0CWeavQADJyMUsv3qJHPr8WhTLgXhp3UxgdKfvXjA==}
     peerDependencies:
-      '@itwin/core-bentley': ^3.0.0-dev.135
+      '@itwin/core-bentley': ^3.0.0-dev.136
     dependencies:
-      '@itwin/core-bentley': 3.0.0-dev.135
+      '@itwin/core-bentley': 3.0.0-dev.136
       deep-assign: 2.0.0
       js-base64: 3.7.2
       lodash: 4.17.21
@@ -6611,8 +6617,8 @@ packages:
       oidc-client: 1.11.5
     dev: false
 
-  /@itwin/certa/3.0.0-dev.135:
-    resolution: {integrity: sha512-/HUGCRk2+6Q+67ayrXP3FAuM1vFwrbf3lOR9ZSNUgJwbTihkVuhYVxLKPhK7ZnOgViYBoNWILULT/F6DfBmNUQ==}
+  /@itwin/certa/3.0.0-dev.136:
+    resolution: {integrity: sha512-E/pkirDdopg/0OhT2jBKhbW7JGMWbEnWxuxfqKGGdEatiJFbuYFbwvpCA9mSPTL15kwscPhIuuRmFbpryMg/Gg==}
     hasBin: true
     peerDependencies:
       electron: ^14.0.0
@@ -6634,8 +6640,8 @@ packages:
       - supports-color
       - utf-8-validate
 
-  /@itwin/certa/3.0.0-dev.135_electron@14.2.1:
-    resolution: {integrity: sha512-/HUGCRk2+6Q+67ayrXP3FAuM1vFwrbf3lOR9ZSNUgJwbTihkVuhYVxLKPhK7ZnOgViYBoNWILULT/F6DfBmNUQ==}
+  /@itwin/certa/3.0.0-dev.136_electron@14.2.1:
+    resolution: {integrity: sha512-E/pkirDdopg/0OhT2jBKhbW7JGMWbEnWxuxfqKGGdEatiJFbuYFbwvpCA9mSPTL15kwscPhIuuRmFbpryMg/Gg==}
     hasBin: true
     peerDependencies:
       electron: ^14.0.0
@@ -6659,8 +6665,8 @@ packages:
       - utf-8-validate
     dev: true
 
-  /@itwin/core-bentley/3.0.0-dev.135:
-    resolution: {integrity: sha512-a2ksxttsEX+dNzI/y3V+kiVdjwvw3FFPwoL7PVJzIjfvFevCMNPj0b6jQ+j4TjQysj7+aw+C73WAZVdeMeupVQ==}
+  /@itwin/core-bentley/3.0.0-dev.136:
+    resolution: {integrity: sha512-hFEzVH/6mzFOBeat8lAXPHaLdy/8ylUAJC0Ow8M4m+F9XwnA2B0emde44AKtJsH0ZG6tzpNkKqlcXFuQc+xCKg==}
 
   /@itwin/core-bentley/3.0.0-extension.1:
     resolution: {integrity: sha512-3r1aRoZp694aqP2E0M9dZiaPSAC0E/E2VTvvN9K73NnlTvO4jpaIdt520oHp7tkGYx24VS9Q8+ED1Z0CH9+RkA==}
@@ -6682,8 +6688,8 @@ packages:
   /@itwin/electron-authorization/0.5.0:
     resolution: {integrity: sha512-RGaIYXy0AoxBbTMSJTYzQgrwnr8kV/OJurhirv39VC3LnREu/6ZILYVP2eSoF7+F2f220rWvwzvQp29xhoDYHA==}
     dependencies:
-      '@bentley/itwin-client': 3.0.0-dev.135_2a526bb54deb5ab443bbedfaf1d28158
-      '@itwin/core-bentley': 3.0.0-dev.135
+      '@bentley/itwin-client': 3.0.0-dev.136_8264537c3090aecc81c8b892c7f72712
+      '@itwin/core-bentley': 3.0.0-dev.136
       '@openid/appauth': 1.3.1
       keytar: 7.7.0
       open: 8.4.0
@@ -6775,8 +6781,8 @@ packages:
   /@itwin/oidc-signin-tool/3.0.0-dev.110:
     resolution: {integrity: sha512-uoTmMBqnEueiBQSzP6JjaTQu96fJa8JBqTESZZT/6Ub43jP1jYUcI+t0bk0lq3V4GF1GVWisTmcBaW6VK7kHsw==}
     dependencies:
-      '@itwin/certa': 3.0.0-dev.135
-      '@itwin/core-bentley': 3.0.0-dev.135
+      '@itwin/certa': 3.0.0-dev.136
+      '@itwin/core-bentley': 3.0.0-dev.136
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
       openid-client: 4.9.1
@@ -6790,8 +6796,8 @@ packages:
   /@itwin/oidc-signin-tool/3.0.0-dev.110_electron@14.2.1:
     resolution: {integrity: sha512-uoTmMBqnEueiBQSzP6JjaTQu96fJa8JBqTESZZT/6Ub43jP1jYUcI+t0bk0lq3V4GF1GVWisTmcBaW6VK7kHsw==}
     dependencies:
-      '@itwin/certa': 3.0.0-dev.135_electron@14.2.1
-      '@itwin/core-bentley': 3.0.0-dev.135
+      '@itwin/certa': 3.0.0-dev.136_electron@14.2.1
+      '@itwin/core-bentley': 3.0.0-dev.136
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
       openid-client: 4.9.1
@@ -12318,7 +12324,6 @@ packages:
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
-    dev: true
 
   /express/4.17.1:
     resolution: {integrity: sha512-mHJ9O79RqluphRrcw2X/GTh3k9tVv8YcoyY4Kkh4WDMUYKRZUq0h1o0w2rrrxBqM7VoeUVqgb27xlEMXTnYt4g==}
