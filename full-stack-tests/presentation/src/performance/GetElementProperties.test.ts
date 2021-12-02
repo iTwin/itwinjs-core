@@ -29,7 +29,6 @@ describe("#performance Element properties loading", () => {
   });
 
   it("load properties using 'getElementProperties'", async function () {
-    this.timeout(0);
     const startTime = (new Date()).getTime();
     let propertiesCount = 0;
     const { total, iterator } = await Presentation.getManager().getElementProperties({ imodel });
@@ -42,7 +41,6 @@ describe("#performance Element properties loading", () => {
   });
 
   it("load properties using ECSQL", async function () {
-    this.timeout(0);
     const startTime = new Date().getTime();
     process.stdout.write(`Loading properties.`);
     let propertiesCount = 0;

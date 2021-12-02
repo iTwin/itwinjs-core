@@ -18,7 +18,7 @@
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "cross-env NODE_ENV=development mocha --no-config --grep \"#with-services|#performance\" --invert",
     "test:integration": "mocha --no-config --grep \"#with-services\"",
-    "test:performance": "mocha --no-config --grep \"#performance\"",
+    "test:performance": "mocha --no-config --grep \"#performance\" --no-timeouts",
     "copy:config": "internal-tools copy-config",
     "cover": "npm run -s test"
   },
