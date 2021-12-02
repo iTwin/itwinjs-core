@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelDb, IModelHost, SnapshotDb } from "@itwin/core-backend";
-import { Presentation } from "@itwin/presentation-backend";
 import { DbResult, QueryRowFormat } from "@itwin/core-common";
+import { Presentation } from "@itwin/presentation-backend";
 
-describe("#performance Properties loading", () => {
+describe("#performance Element properties loading", () => {
   let imodel: SnapshotDb;
 
   before(async () => {
