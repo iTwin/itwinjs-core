@@ -86,7 +86,7 @@ export interface IModelAppOptions {
   viewManager?: ViewManager;
   /** If present, supplies Map Layer Options for this session such as Azure Access Keys
    * @beta
-  */
+   */
   mapLayerOptions?: MapLayerOptions;
   /** If present, supplies the properties with which to initialize the [[TileAdmin]] for this session. */
   tileAdmin?: TileAdmin.Props;
@@ -121,8 +121,8 @@ export interface IModelAppOptions {
   rpcInterfaces?: RpcInterfaceDefinition[];
   /** @beta */
   realityDataAccess?: RealityDataAccess;
-  /** If present, supplies the publicURL.
-   * URLs targetting content under the /public/ folder should prepend this.
+  /** If present, overrides where public assets are fetched. The default is to fetch assets relative to the current URL.
+   * The path should always end with a trailing `/`.
    */
   publicPath?: string;
 }
