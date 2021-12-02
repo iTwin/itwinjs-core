@@ -169,7 +169,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
       if (this.preserveIdsInFilterTransform) {
         const hasId = (a: ElementProps): a is ElementProps & {id: Id64String} => typeof a.id === "string";
         if (!hasId(elementProps))
-          throw new IModelError(IModelStatus.BadArg, "element tried to be an inserted without an id during an id-preserving filter");
+          throw new IModelError(IModelStatus.BadArg, "element tried to be inserted without an id during an id-preserving filter");
         elementId = this.targetDb.elements.insertElementForceUseId(elementProps);
       } else {
         elementId = this.targetDb.elements.insertElement(elementProps);
@@ -451,11 +451,6 @@ export class IModelImporter implements Required<IModelImportOptions> {
       }
     }
   }
-
-  /** called after all other importing work.
-   * a subclass may perform arbitrary work after all other importing is done by overriding this method
-   */
-  public async onFinalizeImport(): Promise<void> {}
 }
 
 /** Returns true if a change within an Entity is detected.

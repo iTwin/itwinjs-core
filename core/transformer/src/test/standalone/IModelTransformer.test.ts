@@ -1203,10 +1203,15 @@ describe("IModelTransformer", () => {
     const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "PreserveIdTarget.bim");
     const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: { name: "PreserveId" } });
 
+    const spatialCateg2 = sourceDb.elements.getElement<SpatialCategory>(spatialCateg2Id);
+
     function filterCategoryPredicate(elem: Element): boolean {
       if (elem instanceof GeometricElement && elem.category === spatialCateg2Id)
         return false;
       if (elem.id === spatialCateg2Id)
+        return false;
+      // we don't actually need this for filtering during the transform, but for filtering the sourceContent
+      if (elem.id === spatialCateg2.myDefaultSubCategoryId())
         return false;
       return true;
     }
