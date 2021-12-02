@@ -4927,11 +4927,29 @@ export interface IpcWebSocketMessage {
     // (undocumented)
     response?: number;
     // (undocumented)
+    sequence: number;
+    // (undocumented)
     type: IpcWebSocketMessageType;
 }
 
 // @internal (undocumented)
+export namespace IpcWebSocketMessage {
+    // (undocumented)
+    export function duplicate(): IpcWebSocketMessage;
+    // (undocumented)
+    export function internal(): IpcWebSocketMessage;
+    // (undocumented)
+    export function next(): number;
+    // (undocumented)
+    export function skip(message: IpcWebSocketMessage): boolean;
+}
+
+// @internal (undocumented)
 export enum IpcWebSocketMessageType {
+    // (undocumented)
+    Duplicate = 5,
+    // (undocumented)
+    Internal = 4,
     // (undocumented)
     Invoke = 2,
     // (undocumented)
@@ -4945,7 +4963,13 @@ export enum IpcWebSocketMessageType {
 // @internal (undocumented)
 export abstract class IpcWebSocketTransport {
     // (undocumented)
+    protected notifyIncoming(data: any): Promise<IpcWebSocketMessage>;
+    // (undocumented)
     abstract send(message: IpcWebSocketMessage): void;
+    // (undocumented)
+    protected serialize(data: IpcWebSocketMessage): any[];
+    // (undocumented)
+    protected unwrap(data: any): any;
 }
 
 // @internal

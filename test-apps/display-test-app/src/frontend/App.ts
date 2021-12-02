@@ -46,7 +46,7 @@ import { SyncViewportFrustaTool, SyncViewportsTool } from "./SyncViewportsTool";
 import { TimePointComparisonTool } from "./TimePointComparison";
 import { UiManager } from "./UiManager";
 import { MarkupTool, ModelClipTool, SaveImageTool, ZoomToSelectedElementsTool } from "./Viewer";
-import { ElectronAppAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronFrontend";
+import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -198,9 +198,8 @@ export class DisplayTestApp {
   public static get iTwinId(): GuidString | undefined { return this._iTwinId; }
 
   public static async startup(configuration: DtaConfiguration, renderSys: RenderSystem.Options, tileAdmin: TileAdmin.Props): Promise<void> {
-    const socketUrl = new URL(configuration.customOrchestratorUri || "http://localhost:3001");
-    socketUrl.protocol = "ws";
-    socketUrl.pathname = [...socketUrl.pathname.split("/"), "ipc"].filter((v) => v).join("/");
+    let socketUrl = new URL(configuration.customOrchestratorUri || "http://localhost:3001");
+    socketUrl = LocalhostIpcApp.buildUrlForSocket(socketUrl);
 
     const opts: ElectronAppOpts | LocalHostIpcAppOpts = {
       iModelApp: {
@@ -225,14 +224,14 @@ export class DisplayTestApp {
         /* eslint-enable @typescript-eslint/naming-convention */
       },
       localhostIpcApp: {
-        socketPath: socketUrl.toString(),
+        socketUrl,
       },
     };
 
     this._iTwinId = configuration.iTwinId;
 
     if (ProcessDetector.isElectronAppFrontend) {
-      const authClient: ElectronAppAuthorization = new ElectronAppAuthorization();
+      const authClient: ElectronRendererAuthorization = new ElectronRendererAuthorization();
       if (opts.iModelApp)
         opts.iModelApp.authorizationClient = authClient;
       await ElectronApp.startup(opts);

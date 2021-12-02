@@ -57,7 +57,7 @@ describe("IModelTransformerHub", () => {
     sourceSeedDb.saveChanges();
     sourceSeedDb.close();
 
-    const sourceIModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: sourceIModelName, description: "source", revision0: sourceSeedFileName, noLocks: true });
+    const sourceIModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: sourceIModelName, description: "source", version0: sourceSeedFileName, noLocks: true });
 
     // Create and push seed of target IModel
     const targetIModelName = "TransformerTarget";
@@ -71,7 +71,7 @@ describe("IModelTransformerHub", () => {
     assert.isTrue(targetSeedDb.codeSpecs.hasName("TargetCodeSpec")); // inserted by prepareTargetDb
     targetSeedDb.saveChanges();
     targetSeedDb.close();
-    const targetIModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: targetIModelName, description: "target", revision0: targetSeedFileName, noLocks: true });
+    const targetIModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: targetIModelName, description: "target", version0: targetSeedFileName, noLocks: true });
 
     try {
       const sourceDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: sourceIModelId });
@@ -344,7 +344,7 @@ describe("IModelTransformerHub", () => {
     masterSeedDb.nativeDb.setITwinId(iTwinId); // WIP: attempting a workaround for "ContextId was not properly setup in the checkpoint" issue
     masterSeedDb.saveChanges();
     masterSeedDb.close();
-    const masterIModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: masterIModelName, description: "master", revision0: masterSeedFileName, noLocks: true });
+    const masterIModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: masterIModelName, description: "master", version0: masterSeedFileName, noLocks: true });
     assert.isTrue(Guid.isGuid(masterIModelId));
     IModelJsFs.removeSync(masterSeedFileName); // now that iModel is pushed, can delete local copy of the seed
     const masterDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: masterIModelId });
@@ -356,7 +356,7 @@ describe("IModelTransformerHub", () => {
 
     // create Branch1 iModel using Master as a template
     const branchIModelName1 = "Branch1";
-    const branchIModelId1 = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: branchIModelName1, description: `Branch1 of ${masterIModelName}`, revision0: masterDb.pathName, noLocks: true });
+    const branchIModelId1 = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: branchIModelName1, description: `Branch1 of ${masterIModelName}`, version0: masterDb.pathName, noLocks: true });
 
     const branchDb1 = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: branchIModelId1 });
     assert.isTrue(branchDb1.isBriefcaseDb());
@@ -366,7 +366,7 @@ describe("IModelTransformerHub", () => {
 
     // create Branch2 iModel using Master as a template
     const branchIModelName2 = "Branch2";
-    const branchIModelId2 = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: branchIModelName2, description: `Branch2 of ${masterIModelName}`, revision0: masterDb.pathName, noLocks: true });
+    const branchIModelId2 = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: branchIModelName2, description: `Branch2 of ${masterIModelName}`, version0: masterDb.pathName, noLocks: true });
     const branchDb2 = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: branchIModelId2 });
     assert.isTrue(branchDb2.isBriefcaseDb());
     assert.equal(branchDb2.iTwinId, iTwinId);

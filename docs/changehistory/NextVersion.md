@@ -4,6 +4,10 @@ publish: false
 
 # NextVersion
 
+## Update guide
+
+To aid in the update from iModel.js 2.x, a [codemod tool](https://github.com/iTwin/codemods) using [JSCodeshift](https://github.com/facebook/jscodeshift) has been released which should serve as a starting point for updating your project to iTwin.js 3.0. Please see the included [readme.md](https://github.com/iTwin/codemods#readme) for instructions on running the tool against your project.
+
 ## Updated minimum requirements
 
 Support for Node 10 has been dropped. The new minimum Node version is 12.22.0. The recommended version is the latest LTS version of Node. Please visit our [Supported Platforms](../learning/supportedplatforms) documentation for a full breakdown of compatibility.
@@ -82,7 +86,11 @@ A number of packages have been renamed to use the @itwin scope rather than the @
 
 Especially when combined with ambient occlusion, this effect can produce non-realistic views suitable for plant models and architectural models.
 
+Fresnel effect applied to an architectural model:
+
 ![Fresnel effect applied to an architectural model](./assets/fresnel-building.jpg)
+
+Fresnel effect applied to a plant model:
 
 ![Fresnel effect applied to a plant model](./assets/fresnel-plant.jpg)
 
@@ -109,6 +117,15 @@ The following code applies a display style similar to those illustrated above to
     },
   });
 ```
+
+
+## Transparent viewport background
+
+In some applications it is useful to be able to see HTML content underneath a [Viewport]($frontend). This can now be achieved by setting [DisplayStyleSettings.backgroundColor]($common) to a color with a transparency value greater than zero. HTML content behind the viewport will blend with the viewport's background color.
+
+Three overlapping viewports with transparent background colors:
+
+![Three overlapping viewports with transparent background colors](./assets/transparent-viewport.jpg)
 
 ## Wiremesh display
 
@@ -221,7 +238,7 @@ The [AsyncFunction]($core-bentley), [AsyncMethodsOf]($core-bentley), and [Promis
 
 ## Continued transition to `ChangesetIndex`
 
-Every Changeset has both an Id (a string hash of its content and parent changeset) and an Index (a small integer representing its relative position on the iModel's timeline.) Either value can be used to uniquely identify a changeset. However, it is often necessary to compare two changeset identifiers to determine relative order, or to supply a range of changesets of interest. In this case, Id is not useful and must be converted to an index via a round-trip to an iModelHub server. Unfortunately, much of the iModel.js api uses only [ChangesetId]($common) to identify a changeset. That was unfortunate, since [ChangesetIndex]($common) is frequently needed and `ChangesetId` is rarely useful. For this reason we are migrating the api to prefer `ChangesetIndex` over several releases.
+Every Changeset has both an Id (a string hash of its content and parent changeset) and an Index (a small integer representing its relative position on the iModel's timeline.) Either value can be used to uniquely identify a changeset. However, it is often necessary to compare two changeset identifiers to determine relative order, or to supply a range of changesets of interest. In this case, Id is not useful and must be converted to an index via a round-trip to an iModelHub server. Unfortunately, much of the iTwin.js API uses only [ChangesetId]($common) to identify a changeset. That was unfortunate, since [ChangesetIndex]($common) is frequently needed and `ChangesetId` is rarely useful. For this reason we are migrating the API to prefer `ChangesetIndex` over several releases.
 
 In version 2.19, we introduced the type [ChangesetIdWithIndex]($common) to begin that migration. However, for 2.x compatibility we could not use it several places where it would have been helpful:
 
@@ -607,7 +624,7 @@ The previous implementation of `ConcurrencyControl` for locking elements has bee
 
 `ConcurrencyControl` relied on detecting a list of changed elements and deferring the acquisition of locks until the application called the asynchronous `request` method to acquire locks, after the fact, but before calling [BriefcaseDb.saveChanges]($backend). The new approach is to require applications to call the asynchronous [LockControl.acquireExclusiveLock]($backend) on elements before update or delete, and to call [LockControl.acquireSharedLock]($backend) on parents and models before insert. If an attempt is made to modify or insert without the required locks, an exception is thrown when the change is attempted. This will require tools to make the necessary lock calls.
 
-Previously the concurrency "mode" was determined by applications when opening a briefcase. It is now established as a property of an iModel when it is first created (and "revision0" is uploaded.) By default, iModels use pessimistic (i.e. locks) mode, so all previously created iModels will require locks. If you pass `noLocks: true` as an argument to [BackendHubAccess.createNewIModel]($backend), a briefcase-local value is saved in rev0.bim before it is uploaded. Thereafter, all briefcases of that iModel will use use optimistic (i.e. no locks, change merging) mode, since everyone will use briefcases derived from rev0.bim. The value is inspected in the `BriefcaseDb.useLockServer` method called by [BriefcaseDb.open]($backend).
+Previously the concurrency "mode" was determined by applications when opening a briefcase. It is now established as a property of an iModel when it is first created (and "version0" is uploaded.) By default, iModels use pessimistic (i.e. locks) mode, so all previously created iModels will require locks. If you pass `noLocks: true` as an argument to [BackendHubAccess.createNewIModel]($backend), a briefcase-local value is saved in rev0.bim before it is uploaded. Thereafter, all briefcases of that iModel will use use optimistic (i.e. no locks, change merging) mode, since everyone will use briefcases derived from rev0.bim. The value is inspected in the `BriefcaseDb.useLockServer` method called by [BriefcaseDb.open]($backend).
 
 Locks apply to Elements only. The "schema lock" is acquired by exclusively locking element id 0x1 (the root subject id). Models are locked via their modeled element (which has the same id as the model)
 
@@ -913,7 +930,7 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | `Viewport.setFlashed`                         | [Viewport.flashedId]($frontend)                                    |
 | `Viewport.setRedrawPending`                   | [Viewport.requestRedraw]($frontend)                                |
 | `WebAppViewer`                                | *eliminated*                                                       |
-| `NativeAppAuthorization`                      | Moved to @iTwin/auth-clients repo as `ElectronAppAuthorization`    |
+| `NativeAppAuthorization`                      | Moved to @iTwin/auth-clients repo as `ElectronRendererAuthorization`    |
 
 ### @itwin/core-geometry
 
@@ -1483,7 +1500,6 @@ Several changes to the APIs for executing ECSql statements have been made to imp
 - The `query` and `restartQuery` methods used to take multiple arguments indicating a limit on the number of rows to return, a priority, a quota, and so on. These have been combined into a single [QueryOptions]($common) parameter.
 
 - Previously there was no way to control the format of each row returned by the `query` and `restartQuery` methods, and the default format was verbose and inefficient. Now, these methods accept a [QueryRowFormat]($common) as part of their [QueryOptions]($common) parameter describing the desired format. The default format returns each row as an array instead of an object.
-
 - The `query`, `restartQuery`, and `queryRowCount` methods used to accept the statement bindings as type `any[] | object`. The bindings are now specified instead as the more type-safe type [QueryBinder]($common).
 
 ### Binding parameters using QueryBinder
