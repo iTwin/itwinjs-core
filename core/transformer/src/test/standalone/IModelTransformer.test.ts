@@ -1205,12 +1205,23 @@ describe("IModelTransformer", () => {
 
     const spatialCateg2 = sourceDb.elements.getElement<SpatialCategory>(spatialCateg2Id);
 
-    function filterCategoryPredicate(elem: Element): boolean {
+    /** filter the category and all related elements from the source for transformation */
+    function filterCategoryTransformationPredicate(elem: Element): boolean {
+      // if we don't filter out the elements, the transformer will see that the category is a predecessor
+      // and re-add it to the transformation.
       if (elem instanceof GeometricElement && elem.category === spatialCateg2Id)
         return false;
       if (elem.id === spatialCateg2Id)
         return false;
-      // we don't actually need this for filtering during the transform, but for filtering the sourceContent
+      return true;
+    }
+
+    /** filter the category and all related and child elements from the source for comparison, not transformation */
+    function filterCategoryContentsPredicate(elem: Element): boolean {
+      if (elem instanceof GeometricElement && elem.category === spatialCateg2Id)
+        return false;
+      if (elem.id === spatialCateg2Id)
+        return false;
       if (elem.id === spatialCateg2.myDefaultSubCategoryId())
         return false;
       return true;
@@ -1218,7 +1229,7 @@ describe("IModelTransformer", () => {
 
     class FilterCategoryTransformer extends IModelTransformer {
       public override shouldExportElement(elem: Element): boolean {
-        if (!filterCategoryPredicate(elem))
+        if (!filterCategoryTransformationPredicate(elem))
           return false;
         return super.shouldExportElement(elem);
       }
@@ -1244,7 +1255,7 @@ describe("IModelTransformer", () => {
       return result;
     }
 
-    const sourceContent = await getAllElementsInvariants(sourceDb, filterCategoryPredicate);
+    const sourceContent = await getAllElementsInvariants(sourceDb, filterCategoryContentsPredicate);
     const targetContent = await getAllElementsInvariants(targetDb);
     expect(targetContent).to.deep.equal(sourceContent);
 
