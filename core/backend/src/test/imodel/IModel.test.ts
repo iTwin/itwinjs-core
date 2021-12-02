@@ -1685,20 +1685,22 @@ describe("iModel", () => {
   });
 
   it("should be able to reproject with iModel coordinates to or from any other GeographicCRS", async () => {
-    const addGcsWs = async (id: string) => {
-      try {
-        const ws = await IModelHost.appWorkspace.getContainer({ id });
-        const fileName = ws.localFile;
-        IModelHost.appWorkspace.dropContainer(ws);
-        expect(IModelHost.platform.addGcsWorkspace(fileName)).to.be.true;
-      } catch (e) {
-        // eslint-disable-next-line no-console
-        console.log(`cannot load GCS Workspace: ${id}`);
-      }
-    };
+    // this commented-out code allows gcs workspace files. This test should be moved to an integration test when
+    // the gcs data is no longer delivered with the backend.
+    // const addGcsWs = async (id: string) => {
+    //   try {
+    //     const ws = await IModelHost.appWorkspace.getContainer({ id });
+    //     const fileName = ws.localFile;
+    //     IModelHost.appWorkspace.dropContainer(ws);
+    //     expect(IModelHost.platform.addGcsWorkspace(fileName)).to.be.true;
+    //   } catch (e) {
+    //     // eslint-disable-next-line no-console
+    //     console.log(`cannot load GCS Workspace: ${id}`);
+    //   }
+    // };
 
-    await addGcsWs("usa");
-    await addGcsWs("uk");
+    // await addGcsWs("usa");
+    // await addGcsWs("uk");
 
     const convertTest = async (fileName: string, fileGCS: GeographicCRSProps, datum: string | GeographicCRSProps, inputCoord: XYZProps, outputCoord: PointWithStatus) => {
 
