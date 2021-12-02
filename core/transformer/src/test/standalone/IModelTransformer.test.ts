@@ -13,20 +13,21 @@ import {
   CategorySelector, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingModel, ECSqlStatement, Element,
   ElementMultiAspect, ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, GenericPhysicalMaterial,
   GeometricElement,
-  IModelCloneContext, IModelDb, IModelHost, IModelJsFs, IModelSchemaLoader, InformationRecordModel, InformationRecordPartition, LinkElement, Model,
+  IModelCloneContext, IModelDb, IModelHost, IModelJsFs, IModelSchemaLoader, InformationPartitionElement, InformationRecordModel, InformationRecordPartition, LinkElement, Model,
   ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, Relationship, RepositoryLink, Schema,
   SnapshotDb, SpatialCategory, StandaloneDb, SubCategory, Subject,
 } from "@itwin/core-backend";
 import { ExtensiveTestScenario, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import {
   AxisAlignedBox3d, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorDef, CreateIModelProps, DefinitionElementProps,
-  ExternalSourceAspectProps, IModel, IModelError, PhysicalElementProps, Placement3d, QueryRowFormat,
+  ExternalSourceAspectProps, IModel, IModelError, InformationPartitionElementProps, PhysicalElementProps, Placement3d, QueryRowFormat,
 } from "@itwin/core-common";
 import { IModelExporter, IModelExportHandler, IModelTransformer, TransformerLoggerCategory } from "../../core-transformer";
 import {
   ClassCounter, FilterByViewTransformer, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerTestUtils, PhysicalModelConsolidator,
   RecordingIModelImporter, TestIModelTransformer, TransformerExtensiveTestScenario,
 } from "../IModelTransformerUtils";
+import { RelationshipConstraint } from "@itwin/ecschema-metadata";
 
 describe("IModelTransformer", () => {
   const outputDir: string = path.join(KnownTestLocations.outputDir, "IModelTransformer");
@@ -1199,15 +1200,59 @@ describe("IModelTransformer", () => {
       const physicalObjectId = sourceDb.elements.insertElement(physicalObjectProps);
       return physicalObjectId;
     });
-    // these link table relationships are examples of a non-element entities
+
+    // these link table relationships (ElementRefersToElements > PartitionOriginatesFromRepository) are examples of non-element entities
+    const physicalPartitions = new Array(3).fill(null).map((_, index) =>
+      new PhysicalPartition({
+        classFullName: PhysicalPartition.classFullName,
+        model: IModelDb.rootSubjectId,
+        parent: { id: IModelDb.rootSubjectId },
+        code: PhysicalPartition.createCode(sourceDb, IModelDb.rootSubjectId, `physical-partition-${index}`),
+      }, sourceDb),
+    ).map((partition) => {
+      const partitionId = partition.insert();
+      const model = new PhysicalModel({
+        classFullName: PhysicalPartition.classFullName,
+        modeledElement: { id: partitionId },
+      }, sourceDb);
+      const modelId = model.insert();
+      return { modelId, partitionId }; // these are the same id because of submodeling
+    });
+
+    const linksIds = new Array(2).fill(null).map((_, index) => {
+      const link = new RepositoryLink({
+        classFullName: RepositoryLink.classFullName,
+        code: RepositoryLink.createCode(sourceDb, IModelDb.rootSubjectId, `repo-link-${index}`),
+        model: IModelDb.rootSubjectId,
+        repositoryGuid: `2fd0e5ed-a4d7-40cd-be8a-57552f5736b${index}`, // random, doesn't matter, works for up to 10 of course
+        format: "my-format",
+      }, sourceDb);
+      const linkId = link.insert();
+      return linkId;
+    });
+
     const nonElementEntityIds = [
-      ElementRefersToElements.create(sourceDb, physicalObjectIds[0], physicalObjectIds[2]).insert(),
-      ElementRefersToElements.create(sourceDb, physicalObjectIds[0], physicalObjectIds[3]).insert(),
-      ElementRefersToElements.create(sourceDb, physicalObjectIds[1], physicalObjectIds[2]).insert(),
-      ElementRefersToElements.create(sourceDb, physicalObjectIds[1], physicalObjectIds[4]).insert(),
-      ElementRefersToElements.create(sourceDb, physicalObjectIds[2], physicalObjectIds[3]).insert(),
-      ElementRefersToElements.create(sourceDb, physicalObjectIds[2], physicalObjectIds[4]).insert(),
-    ];
+      new Relationship({
+        classFullName: "BisCore:PartitionOriginatesFromRepository",
+        sourceId: physicalPartitions[1].partitionId,
+        targetId: linksIds[1],
+      }, sourceDb),
+      new Relationship({
+        classFullName: "BisCore:PartitionOriginatesFromRepository",
+        sourceId: physicalPartitions[1].partitionId,
+        targetId: linksIds[2],
+      }, sourceDb),
+      new Relationship({
+        classFullName: "BisCore:PartitionOriginatesFromRepository",
+        sourceId: physicalPartitions[2].partitionId,
+        targetId: linksIds[1],
+      }, sourceDb),
+      new Relationship({
+        classFullName: "BisCore:PartitionOriginatesFromRepository",
+        sourceId: physicalPartitions[2].partitionId,
+        targetId: linksIds[2],
+      }, sourceDb),
+    ].map((relationship) => relationship.insert());
     sourceDb.saveChanges();
 
     const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "PreserveIdTarget.bim");
@@ -1228,7 +1273,7 @@ describe("IModelTransformer", () => {
 
     /** filter the category and all related elements from the source for transformation */
     function filterRelationshipsToChangeIds(relationship: {id: Id64String}): boolean {
-      if (relationship.id === nonElementEntityIds[2])
+      if (relationship.id === nonElementEntityIds[0])
         return false;
       return true;
     }
