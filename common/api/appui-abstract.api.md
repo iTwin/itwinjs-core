@@ -70,6 +70,7 @@ export interface AbstractToolbarProps {
 // @public
 export interface AbstractWidgetProps extends ProvidedItem {
     readonly applicationData?: any;
+    readonly attachToDom?: (container: HTMLElement) => void;
     readonly badgeType?: BadgeType;
     readonly canPopout?: boolean;
     readonly defaultFloatingPosition?: {

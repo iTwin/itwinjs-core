@@ -7158,6 +7158,8 @@ export class WidgetDef {
     // (undocumented)
     get applicationData(): any | undefined;
     // (undocumented)
+    attachToDom: ((container: HTMLElement) => void) | undefined;
+    // (undocumented)
     get badgeType(): BadgeType | undefined;
     // (undocumented)
     canOpen(): boolean;
