@@ -1,7 +1,7 @@
 {
   "name": "@itwin/express-server",
-  "version": "3.0.0-dev.137",
-  "description": "iModel.js express utilities",
+  "version": "3.0.0-dev.138",
+  "description": "iTwin.js express utilities",
   "main": "lib/cjs/ExpressServer.js",
   "typings": "lib/cjs/ExpressServer",
   "license": "MIT",
@@ -26,7 +26,9 @@
   "keywords": [
     "Bentley",
     "BIM",
-    "iModel"
+    "iModel",
+    "iTwin",
+    "iTwin.js"
   ],
   "author": {
     "name": "Bentley Systems, Inc.",
