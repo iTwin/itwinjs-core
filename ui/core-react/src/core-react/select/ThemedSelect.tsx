@@ -205,7 +205,7 @@ const ThemedMenu = (props: MenuProps<any>) => { // eslint-disable-line @typescri
     </div>
   );
 };
-/** ThemedSelect is a wrapper for react-select with iModel.js UI theming applied
+/** ThemedSelect is a wrapper for react-select with iTwin.js UI theming applied
  * @beta
  * @deprecated use Select from @itwin/itwinui-react
  */
