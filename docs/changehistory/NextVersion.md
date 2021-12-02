@@ -4,6 +4,10 @@ publish: false
 
 # NextVersion
 
+## Update guide
+
+To aid in the update from iModel.js 2.x, a [codemod tool](https://github.com/iTwin/codemods) using [JSCodeshift](https://github.com/facebook/jscodeshift) has been released which should serve as a starting point for updating your project to iTwin.js 3.0. Please see the included [readme.md](https://github.com/iTwin/codemods#readme) for instructions on running the tool against your project.
+
 ## Updated minimum requirements
 
 Support for Node 10 has been dropped. The new minimum Node version is 12.22.0. The recommended version is the latest LTS version of Node. Please visit our [Supported Platforms](../learning/supportedplatforms) documentation for a full breakdown of compatibility.
