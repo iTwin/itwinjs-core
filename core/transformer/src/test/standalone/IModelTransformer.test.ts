@@ -15,7 +15,7 @@ import {
   GeometricElement,
   IModelCloneContext, IModelDb, IModelHost, IModelJsFs, IModelSchemaLoader, InformationRecordModel, InformationRecordPartition, LinkElement, Model,
   ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, Relationship, RepositoryLink, Schema,
-  SnapshotDb, SpatialCategory, StandaloneDb, Subject,
+  SnapshotDb, SpatialCategory, StandaloneDb, SubCategory, Subject,
 } from "@itwin/core-backend";
 import { ExtensiveTestScenario, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import {
@@ -1258,6 +1258,20 @@ describe("IModelTransformer", () => {
     const sourceContent = await getAllElementsInvariants(sourceDb, filterCategoryContentsPredicate);
     const targetContent = await getAllElementsInvariants(targetDb);
     expect(targetContent).to.deep.equal(sourceContent);
+
+    // now try inserting both an element and a relationship into the target to check the two id sequences are fine
+    const spatialCateg3Id = SpatialCategory.insert(
+      targetDb,
+      IModelDb.dictionaryId,
+      "spatial-category3",
+      { color: ColorDef.black.toJSON() }
+    );
+    const _spatialCateg3Subcateg1Id = SubCategory.insert(
+      targetDb,
+      spatialCateg3Id,
+      "spatial-categ-subcateg-1",
+      { color: ColorDef.white.toJSON() }
+    );
 
     sourceDb.close();
     targetDb.close();
