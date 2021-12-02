@@ -22,7 +22,7 @@ function ExternalContentHost(props: { attachToDom: ((container: HTMLElement) => 
       attachToDom(container);
   }, [attachToDom, container]);
 
-  return <div ref={containerRef} />;
+  return <div data-item-id="widget-attachment-node" ref={containerRef} />;
 }
 
 /** @internal */
@@ -34,7 +34,7 @@ export function WidgetContent() {
   // istanbul ignore next
   const itemId = widget?.id ?? widget?.label ?? "unknown";
   const children = React.useMemo(() => {
-    if (null === reactNode && attachToDom) {
+    if (attachToDom) {
       return <ExternalContentHost attachToDom={attachToDom} />;
     } else {
       return reactNode;
