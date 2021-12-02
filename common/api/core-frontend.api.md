@@ -4452,6 +4452,7 @@ export class IModelApp {
     static get mapLayerFormatRegistry(): MapLayerFormatRegistry;
     static get notifications(): NotificationManager;
     static readonly onBeforeShutdown: BeEvent<() => void>;
+    // @beta
     static get publicPath(): string;
     // @alpha
     static get quantityFormatter(): QuantityFormatter;
@@ -4503,6 +4504,7 @@ export interface IModelAppOptions {
     // @beta
     mapLayerOptions?: MapLayerOptions;
     notifications?: NotificationManager;
+    // @beta
     publicPath?: string;
     // @internal (undocumented)
     quantityFormatter?: QuantityFormatter;
