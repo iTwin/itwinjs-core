@@ -1,7 +1,7 @@
 {
   "name": "@itwin/presentation-backend",
-  "version": "3.0.0-dev.135",
-  "description": "Backend of iModel.js Presentation library",
+  "version": "3.0.0-dev.138",
+  "description": "Backend of iTwin.js Presentation library",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -11,7 +11,8 @@
     "Bentley",
     "EC",
     "Presentation",
-    "iModelJS",
+    "iTwin",
+    "iTwin.js",
     "Backend"
   ],
   "author": {
@@ -38,11 +39,11 @@
     "test:watch": "npm -s test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {
-    "@itwin/core-backend": "workspace:^3.0.0-dev.135",
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.135",
-    "@itwin/core-common": "workspace:^3.0.0-dev.135",
-    "@itwin/core-quantity": "workspace:^3.0.0-dev.135",
-    "@itwin/presentation-common": "workspace:^3.0.0-dev.135"
+    "@itwin/core-backend": "workspace:^3.0.0-dev.138",
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.138",
+    "@itwin/core-common": "workspace:^3.0.0-dev.138",
+    "@itwin/core-quantity": "workspace:^3.0.0-dev.138",
+    "@itwin/presentation-common": "workspace:^3.0.0-dev.138"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
