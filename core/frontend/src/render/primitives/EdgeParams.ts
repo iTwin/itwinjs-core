@@ -11,20 +11,6 @@ import { MeshArgs } from "./mesh/MeshPrimitives";
 import { VertexIndices } from "./VertexTable";
 import { TesselatedPolyline, wantJointTriangles } from "./PolylineParams";
 
-// export interface EdgeTable {
-//   readonly data: Uint8Array;
-//   readonly width: number;
-//   readonly height: number;
-// }
-// 
-// export interface IndexedEdgeParams {
-//   readonly indices: VertexIndices;
-//   readonly edges: EdgeTable;
-// }
-// 
-// export namespace IndexedEdgeParams {
-// }
-// 
 /**
  * Describes a set of line segments representing edges of a mesh.
  * Each segment is expanded into a quad defined by two triangles.
