@@ -6,7 +6,6 @@
  * @module WebGL
  */
 
-import { MeshData, MeshGeometry } from "./Mesh";
 import { assert, dispose } from "@itwin/core-bentley";
 import { FillFlags, RenderMode, ViewFlags } from "@itwin/core-common";
 import { SurfaceType } from "../primitives/SurfaceParams";
@@ -21,6 +20,8 @@ import { RenderOrder, RenderPass, SurfaceBitIndex } from "./RenderFlags";
 import { System } from "./System";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
+import { MeshData } from "./MeshData";
+import { MeshGeometry } from "./MeshGeometry";
 
 /** @internal */
 export function wantMaterials(vf: ViewFlags): boolean {

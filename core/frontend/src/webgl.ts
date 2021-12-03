@@ -31,6 +31,8 @@ export * from "./render/webgl/Graphic";
 export * from "./render/webgl/LineCode";
 export * from "./render/webgl/Matrix";
 export * from "./render/webgl/Mesh";
+export * from "./render/webgl/MeshData";
+export * from "./render/webgl/MeshGeometry";
 export * from "./render/webgl/PlanarClassifier";
 export * from "./render/webgl/PlanarGrid";
 export * from "./render/webgl/PointString";
