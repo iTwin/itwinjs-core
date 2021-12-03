@@ -51,6 +51,10 @@ export class VertexIndices {
     bytes[byteIndex + 2] = (index & 0x00ff0000) >> 16;
   }
 
+  public setNthIndex(n: number, value: number): void {
+    VertexIndices.encodeIndex(value, this.data, n * 3);
+  }
+
   public decodeIndex(index: number): number {
     assert(index < this.length);
     const byteIndex = index * 3;
