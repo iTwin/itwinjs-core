@@ -9,7 +9,8 @@
 import { MeshData, MeshGeometry } from "./Mesh";
 import { assert, dispose } from "@itwin/core-bentley";
 import { FillFlags, RenderMode, ViewFlags } from "@itwin/core-common";
-import { SurfaceType, VertexIndices } from "../primitives/VertexTable";
+import { SurfaceType } from "../primitives/SurfaceParams";
+import { VertexIndices } from "../primitives/VertexTable";
 import { RenderMemory } from "../RenderMemory";
 import { AttributeMap } from "./AttributeMap";
 import { ShaderProgramParams } from "./DrawCommand";
