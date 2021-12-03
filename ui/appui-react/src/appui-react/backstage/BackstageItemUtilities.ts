@@ -12,7 +12,7 @@ import { BackstageItemProps, BackstageItemState } from "./BackstageItemProps";
 
 /** Used to specify the item type added to the backstage menu.
  * @beta
- * @deprecated Use [BackstageItemType]($appui-abstract) in bentley/appui-abstract instead
+ * @deprecated Use [BackstageItemType]($appui-abstract) instead
  */
 export enum BackstageItemType {
   /** Item that executes an action function */
@@ -23,7 +23,7 @@ export enum BackstageItemType {
 
 /** Describes the data needed to insert an action button into the backstage menu.
  * @beta
- * @deprecated Use [BackstageActionItem]($appui-abstract) in bentley/appui-abstract instead
+ * @deprecated Use [BackstageActionItem]($appui-abstract) instead
  */
 export interface BackstageActionItem extends UIA_BackstageActionItem {
   readonly type: BackstageItemType.ActionItem; // eslint-disable-line deprecation/deprecation
@@ -31,7 +31,7 @@ export interface BackstageActionItem extends UIA_BackstageActionItem {
 
 /** Describes the data needed to insert an action button into the backstage menu.
  * @beta
- * @deprecated Use [BackstageStageLauncher]($appui-abstract) in bentley/appui-abstract instead
+ * @deprecated Use [BackstageStageLauncher]($appui-abstract) instead
  */
 export interface BackstageStageLauncher extends UIA_BackstageStageLauncher {
   readonly type: BackstageItemType.StageLauncher; // eslint-disable-line deprecation/deprecation
@@ -43,7 +43,7 @@ export interface BackstageStageLauncher extends UIA_BackstageStageLauncher {
 export class BackstageItemUtilities {
   /** Creates a stage launcher backstage item
    * @beta
-   * @deprecated Use BackstageItemUtilities.createStageLauncher in bentley/appui-abstract instead
+   * @deprecated Use [BackstageItemUtilities.createStageLauncher]($appui-abstract) instead
    */
   public static createStageLauncher = (frontstageId: string, groupPriority: number, itemPriority: number, label: string, subtitle?: string, iconSpec?: string, overrides?: Partial<BackstageStageLauncher>): BackstageStageLauncher => ({ // eslint-disable-line deprecation/deprecation
     groupPriority,
@@ -59,7 +59,7 @@ export class BackstageItemUtilities {
 
   /** Creates an action backstage item
    * @beta
-   * @deprecated Use BackstageItemUtilities.createActionItem in bentley/appui-abstract instead
+   * @deprecated Use [BackstageItemUtilities.createActionItem]($appui-abstract) instead
    */
   public static createActionItem = (itemId: string, groupPriority: number, itemPriority: number, execute: () => void, label: string, subtitle?: string, iconSpec?: string, overrides?: Partial<BackstageActionItem>): BackstageActionItem => ({ // eslint-disable-line deprecation/deprecation
     execute,

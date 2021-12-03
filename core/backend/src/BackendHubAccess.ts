@@ -149,7 +149,7 @@ export type CheckpointArg = DownloadRequest;
  */
 export interface CreateNewIModelProps extends IModelNameArg {
   readonly description?: string;
-  readonly revision0?: LocalFileName;
+  readonly version0?: LocalFileName;
   readonly noLocks?: true;
 }
 

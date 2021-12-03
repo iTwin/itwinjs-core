@@ -73,8 +73,8 @@ export enum SyncUiEventId {
   SettingsProvidersChanged = "settingsproviderschanged",
   /** The current view state has changed (used by view undo/redo toolbar buttons). */
   ViewStateChanged = "viewstatechanged",
-  /** The current object the reads and write UI Settings has changed. */
-  UiSettingsChanged = "uisettingschanged",
+  /** The current object the reads and write UI State has changed. */
+  UiStateStorageChanged = "uistatestoragechanged",
   ShowHideManagerSettingChange = "show-hide-setting-change",
 }
 

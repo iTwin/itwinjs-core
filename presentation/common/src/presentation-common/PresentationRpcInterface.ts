@@ -22,8 +22,8 @@ import { KeySetJSON } from "./KeySet";
 import { LabelDefinitionJSON } from "./LabelDefinition";
 import {
   ContentDescriptorRequestOptions, ContentInstanceKeysRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, DisplayLabelRequestOptions,
-  DisplayLabelsRequestOptions, DistinctValuesRequestOptions, ElementPropertiesRequestOptions, FilterByInstancePathsHierarchyRequestOptions,
-  FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, MultiElementPropertiesRequestOptions, Paged, SelectionScopeRequestOptions,
+  DisplayLabelsRequestOptions, DistinctValuesRequestOptions, FilterByInstancePathsHierarchyRequestOptions,
+  FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, Paged, SelectionScopeRequestOptions,
   SingleElementPropertiesRequestOptions,
 } from "./PresentationManagerOptions";
 import { RulesetVariableJSON } from "./RulesetVariables";
@@ -103,28 +103,10 @@ export type ContentDescriptorRpcRequestOptions = PresentationRpcRequestOptions<C
 export type ContentRpcRequestOptions = PresentationRpcRequestOptions<ContentRequestOptions<never, DescriptorOverrides, KeySetJSON, RulesetVariableJSON>>;
 
 /**
- * Type definitions for element properties RPC response.
- * @beta
- */
-export type ElementPropertiesRpcResult = ElementProperties | PagedResponse<ElementProperties> | undefined;
-
-/**
- * Data structure for element properties RPC request options.
- * @beta
- */
-export type ElementPropertiesRpcRequestOptions = PresentationRpcRequestOptions<ElementPropertiesRequestOptions<never>>;
-
-/**
  * Data structure for single element properties RPC request options.
  * @beta
  */
 export type SingleElementPropertiesRpcRequestOptions = PresentationRpcRequestOptions<SingleElementPropertiesRequestOptions<never>>;
-
-/**
- * Data structure for multiple elements properties RPC request options.
- * @beta
- */
-export type MultiElementPropertiesRpcRequestOptions = PresentationRpcRequestOptions<MultiElementPropertiesRequestOptions<never>>;
 
 /**
  * Data structure for distinct values' request options.
@@ -189,10 +171,7 @@ export class PresentationRpcInterface extends RpcInterface {
   public async getPagedContentSet(_token: IModelRpcProps, _options: Paged<ContentRpcRequestOptions>): PresentationRpcResponse<PagedResponse<ItemJSON>> { return this.forward(arguments); }
 
   /** @beta */
-  public async getElementProperties(_token: IModelRpcProps, _options: SingleElementPropertiesRpcRequestOptions): PresentationRpcResponse<ElementProperties | undefined>;
-  /** @alpha */
-  public async getElementProperties(_token: IModelRpcProps, _options: MultiElementPropertiesRpcRequestOptions): PresentationRpcResponse<PagedResponse<ElementProperties>>;
-  public async getElementProperties(_token: IModelRpcProps, _options: ElementPropertiesRpcRequestOptions): PresentationRpcResponse<ElementPropertiesRpcResult> { return this.forward(arguments); }
+  public async getElementProperties(_token: IModelRpcProps, _options: SingleElementPropertiesRpcRequestOptions): PresentationRpcResponse<ElementProperties | undefined> { return this.forward(arguments); }
 
   public async getPagedDistinctValues(_token: IModelRpcProps, _options: DistinctValuesRpcRequestOptions): PresentationRpcResponse<PagedResponse<DisplayValueGroupJSON>> { return this.forward(arguments); }
 

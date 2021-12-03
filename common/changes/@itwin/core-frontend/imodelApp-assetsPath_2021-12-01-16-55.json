@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Add IModelApp.publicPath for users to override where core public assets are fetched from",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

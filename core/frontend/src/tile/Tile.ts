@@ -414,9 +414,15 @@ export abstract class Tile {
 
   /** Determine the visibility of this tile according to the specified args. */
   public computeVisibility(args: TileDrawArgs): TileVisibility {
+    if (this.isEmpty)
+      return TileVisibility.OutsideFrustum;
+
+    if (args.boundingRange && !args.boundingRange.intersectsRange(this.range))
+      return TileVisibility.OutsideFrustum;
+
     // NB: We test for region culling before isDisplayable - otherwise we will never unload children of undisplayed tiles when
     // they are outside frustum
-    if (this.isEmpty || this.isRegionCulled(args))
+    if (this.isRegionCulled(args))
       return TileVisibility.OutsideFrustum;
 
     // some nodes are merely for structure and don't have any geometry

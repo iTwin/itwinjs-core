@@ -151,7 +151,7 @@ export namespace SubCategoriesCache { // eslint-disable-line no-redeclare
 
       try {
         const ecsql = this._ecsql[this._curECSqlIndex];
-        for await (const row of this._imodel.query(ecsql, undefined, QueryRowFormat.UseJsPropertyNames)) {
+        for await (const row of this._imodel.query(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
           this._result.push(row as ResultRow);
           if (this.wasCanceled)
             return undefined;

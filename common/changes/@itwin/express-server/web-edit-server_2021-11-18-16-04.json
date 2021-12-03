@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/express-server",
+      "comment": "Adding WebEditServer (test scenarios only for now).",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/express-server"
+}

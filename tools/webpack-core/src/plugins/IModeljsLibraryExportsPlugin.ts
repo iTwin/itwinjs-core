@@ -9,7 +9,7 @@ import * as utils from "./IModeljsLibraryUtils";
 
 /** The plugin adds any module that contains the `imodeljsSharedLibrary` field within its package.json to the global scope.
  *
- * The reason for adding it to the global scope is in support of iModel.js Extensions.
+ * The reason for adding it to the global scope is in support of iTwin.js Extensions.
  */
 export class IModeljsLibraryExportsPlugin {
   constructor() { }

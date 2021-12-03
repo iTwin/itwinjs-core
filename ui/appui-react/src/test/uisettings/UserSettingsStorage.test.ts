@@ -5,8 +5,8 @@
 import * as sinon from "sinon";
 import { assert, expect } from "chai";
 import { IModelApp, ITwinIdArg, MockRender, PreferenceArg, PreferenceKeyArg, TokenArg } from "@itwin/core-frontend";
-import { UiSettingsStatus } from "@itwin/core-react";
-import { UserSettingsStorage } from "../../appui-react/uisettings/UserSettingsStorage";
+import { UiStateStorageStatus } from "@itwin/core-react";
+import { UserSettingsStorage } from "../../appui-react/uistate/UserSettingsStorage";
 import { TestUtils } from "../TestUtils";
 
 /* eslint-disable deprecation/deprecation */
@@ -40,7 +40,7 @@ describe("UserSettingsStorage", () => {
     const testValue = "testvalue";
     await sut.saveSetting("TESTNAMESPACE", "TESTNAME", testValue);
     const result = await sut.getSetting("TESTNAMESPACE", "TESTNAME");
-    assert.equal(result.status, UiSettingsStatus.Success);
+    assert.equal(result.status, UiStateStorageStatus.Success);
     assert.isDefined(result.setting);
   });
 
@@ -49,7 +49,7 @@ describe("UserSettingsStorage", () => {
     const sut = new UserSettingsStorage();
     await sut.deleteSetting("TESTNAMESPACE", "TESTNAME");
     const result = await sut.getSetting("TESTNAMESPACE", "TESTNAME");
-    assert.equal(result.status, UiSettingsStatus.Success);
+    assert.equal(result.status, UiStateStorageStatus.Success);
     assert.isUndefined(result.setting);
   });
 
@@ -65,39 +65,39 @@ describe("UserSettingsStorage", () => {
     sinon.stub(IModelApp, "authorizationClient").get(() => ({ getAccessToken: async () => { return undefined; } }));
     const sut = new UserSettingsStorage();
     const result = await sut.saveSetting("TESTNAMESPACE", "TESTNAME", "testvalue");
-    expect(result.status).to.eq(UiSettingsStatus.AuthorizationError);
+    expect(result.status).to.eq(UiStateStorageStatus.AuthorizationError);
   });
 
   it("should fail to delete setting when invalid token is returned", async () => {
     sinon.stub(IModelApp, "authorizationClient").get(() => ({ getAccessToken: async () => { return undefined; } }));
     const sut = new UserSettingsStorage();
     const result = await sut.deleteSetting("TESTNAMESPACE", "TESTNAME");
-    expect(result.status).to.eq(UiSettingsStatus.AuthorizationError);
+    expect(result.status).to.eq(UiStateStorageStatus.AuthorizationError);
   });
 
   it("should fail to get setting when invalid token is returned", async () => {
     sinon.stub(IModelApp, "authorizationClient").get(() => ({ getAccessToken: async () => { return undefined; } }));
     const sut = new UserSettingsStorage();
     const result = await sut.getSetting("TESTNAMESPACE", "TESTNAME");
-    expect(result.status).to.eq(UiSettingsStatus.AuthorizationError);
+    expect(result.status).to.eq(UiStateStorageStatus.AuthorizationError);
   });
 
   it("should fail to save setting when authorization is not defined", async () => {
     const sut = new UserSettingsStorage();
     const result = await sut.saveSetting("TESTNAMESPACE", "TESTNAME", "testvalue");
-    expect(result.status).to.eq(UiSettingsStatus.AuthorizationError);
+    expect(result.status).to.eq(UiStateStorageStatus.AuthorizationError);
   });
 
   it("should fail to delete setting when authorization is not defined", async () => {
     const sut = new UserSettingsStorage();
     const result = await sut.deleteSetting("TESTNAMESPACE", "TESTNAME");
-    expect(result.status).to.eq(UiSettingsStatus.AuthorizationError);
+    expect(result.status).to.eq(UiStateStorageStatus.AuthorizationError);
   });
 
   it("should fail to get setting when authorization is not defined", async () => {
     const sut = new UserSettingsStorage();
     const result = await sut.getSetting("TESTNAMESPACE", "TESTNAME");
-    expect(result.status).to.eq(UiSettingsStatus.AuthorizationError);
+    expect(result.status).to.eq(UiStateStorageStatus.AuthorizationError);
   });
 
 });

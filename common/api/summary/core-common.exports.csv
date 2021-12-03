@@ -152,6 +152,7 @@ internal;DbResponse
 internal;DbResponseKind
 internal;DbResponseStatus
 beta;DbRuntimeStats
+internal;DbValueFormat
 internal;DecorationGeometryProps
 beta;DefaultSupportedTypes
 internal;defaultTileOptions: TileOptions
@@ -428,7 +429,6 @@ public;ModelProps
 public;ModelQueryParams 
 public;ModelSelectorProps 
 public;MonochromeMode
-beta;NativeAppAuthorizationConfiguration
 internal;nativeAppChannel = "nativeApp"
 internal;NativeAppFunctions
 internal;NativeAppNotifications
@@ -527,6 +527,7 @@ beta;QueryPropertyMetaData
 public;QueryQuota
 public;QueryRowFormat
 beta;QueryRowProxy
+beta;QueryStats
 beta;QueryValueType = any
 public;Rank
 internal;ReadableFormData 

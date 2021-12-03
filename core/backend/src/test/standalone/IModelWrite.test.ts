@@ -485,7 +485,7 @@ describe("IModelWriteTest", () => {
     assert.equal(rows.length, 10);
     assert.equal(rows.map((r) => r.s).filter((v) => v).length, 10);
     rows = [];
-    for await (const row of rwIModel.query("SELECT * FROM TestDomain.Test2dElement", undefined, QueryRowFormat.UseJsPropertyNames)) {
+    for await (const row of rwIModel.query("SELECT * FROM TestDomain.Test2dElement", undefined, {rowFormat: QueryRowFormat.UseJsPropertyNames})) {
       rows.push(row);
     }
     assert.equal(rows.length, 10);
@@ -503,7 +503,7 @@ describe("IModelWriteTest", () => {
       assert.equal(rows.length, 10);
       assert.equal(rows.map((r) => r.s).filter((v) => v).length, 10);
       rows = [];
-      for await (const row of rwIModel2.query("SELECT * FROM TestDomain.Test2dElement", undefined, QueryRowFormat.UseJsPropertyNames)) {
+      for await (const row of rwIModel2.query("SELECT * FROM TestDomain.Test2dElement", undefined, {rowFormat: QueryRowFormat.UseJsPropertyNames})) {
         rows.push(row);
       }
       assert.equal(rows.length, 10);
@@ -593,7 +593,7 @@ describe("IModelWriteTest", () => {
     assert.equal(rows.map((r) => r.s).filter((v) => v).length, 30);
     assert.equal(rows.map((r) => r.v).filter((v) => v).length, 10);
     rows = [];
-    for await (const row of rwIModel.query("SELECT * FROM TestDomain.Test2dElement", undefined, QueryRowFormat.UseJsPropertyNames)) {
+    for await (const row of rwIModel.query("SELECT * FROM TestDomain.Test2dElement", undefined, {rowFormat: QueryRowFormat.UseJsPropertyNames})) {
       rows.push(row);
     }
     assert.equal(rows.length, 30);
@@ -610,7 +610,7 @@ describe("IModelWriteTest", () => {
     assert.equal(rows.map((r) => r.t).filter((v) => v).length, 10);
     assert.equal(rows.map((r) => r.r).filter((v) => v).length, 10);
     rows = [];
-    for await (const row of rwIModel.query("SELECT * FROM TestDomain.Test2dElement2nd", undefined, QueryRowFormat.UseJsPropertyNames)) {
+    for await (const row of rwIModel.query("SELECT * FROM TestDomain.Test2dElement2nd", undefined, {rowFormat: QueryRowFormat.UseJsPropertyNames})) {
       rows.push(row);
     }
     assert.equal(rows.length, 10);
@@ -633,7 +633,7 @@ describe("IModelWriteTest", () => {
       assert.equal(rows.map((r) => r.v).filter((v) => v).length, 10);
       rows = [];
       // Following fail without native side fix where we clear concurrent query cache on schema changeset apply
-      for await (const row of rwIModel2.query("SELECT * FROM TestDomain.Test2dElement", undefined, QueryRowFormat.UseJsPropertyNames)) {
+      for await (const row of rwIModel2.query("SELECT * FROM TestDomain.Test2dElement", undefined, {rowFormat: QueryRowFormat.UseJsPropertyNames})) {
         rows.push(row);
       }
       assert.equal(rows.length, 30);
@@ -677,7 +677,7 @@ describe("IModelWriteTest", () => {
         }
       }
       rows = [];
-      for await (const row of rwIModel2.query("SELECT * FROM TestDomain.Test2dElement2nd", undefined, QueryRowFormat.UseJsPropertyNames)) {
+      for await (const row of rwIModel2.query("SELECT * FROM TestDomain.Test2dElement2nd", undefined, {rowFormat: QueryRowFormat.UseJsPropertyNames})) {
         rows.push(row);
       }
       assert.equal(rows.length, 10);

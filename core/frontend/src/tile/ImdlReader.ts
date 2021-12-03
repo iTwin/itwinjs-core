@@ -15,7 +15,7 @@ import {
 } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { GraphicBranch } from "../render/GraphicBranch";
+import { AnimationNodeId, GraphicBranch } from "../render/GraphicBranch";
 import { InstancedGraphicParams } from "../render/InstancedGraphicParams";
 import { AuxChannelTable, AuxChannelTableProps } from "../render/primitives/AuxChannelTable";
 import { DisplayParams } from "../render/primitives/DisplayParams";
@@ -46,12 +46,28 @@ export interface ImdlReaderResult extends IModelTileContent {
  */
 export async function readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean, options?: BatchOptions | false): Promise<RenderGraphic | undefined> {
   const stream = new ByteStream(bytes.buffer);
-  const reader = ImdlReader.create(stream, iModel, modelId, is3d, IModelApp.renderSystem, undefined, undefined, undefined, undefined, options);
+  const reader = ImdlReader.create({
+    stream, iModel, modelId, is3d, options,
+    system: IModelApp.renderSystem,
+  });
+
   if (!reader)
     return undefined;
 
   const result = await reader.read();
   return result.graphic;
+}
+
+const nodeIdRegex = /Node_(.*)/;
+function extractNodeId(nodeName: string): number {
+  const match = nodeName.match(nodeIdRegex);
+  assert(!!match && match.length === 2);
+  if (!match || match.length !== 2)
+    return 0;
+
+  const nodeId = Number.parseInt(match[1], 10);
+  assert(!Number.isNaN(nodeId));
+  return Number.isNaN(nodeId) ? 0 : nodeId;
 }
 
 interface ImdlMaterialAtlas {
@@ -173,6 +189,23 @@ interface ImdlAreaPatternSymbol {
   readonly primitives: AnyImdlPrimitive[];
 }
 
+/** Arguments supplied to [[ImdlReader.create]]
+ * @internal
+ */
+export interface ImdlReaderCreateArgs {
+  stream: ByteStream;
+  iModel: IModelConnection;
+  modelId: Id64String;
+  is3d: boolean;
+  system: RenderSystem;
+  type?: BatchType; // default Primary
+  loadEdges?: boolean; // default true
+  isCanceled?: ShouldAbortReadGltf;
+  sizeMultiplier?: number;
+  options?: BatchOptions | false;
+  containsTransformNodes?: boolean; // default false
+}
+
 /** Deserializes tile content in iMdl format. These tiles contain element geometry encoded into a format optimized for the imodeljs webgl renderer.
  * @internal
  */
@@ -182,22 +215,21 @@ export class ImdlReader extends GltfReader {
   private readonly _options: BatchOptions | false;
   private readonly _patternSymbols: { [key: string]: ImdlAreaPatternSymbol | undefined };
   private readonly _patternGeometry = new Map<string, RenderGeometry[]>();
+  private readonly _containsTransformNodes: boolean;
 
   /** Attempt to initialize an ImdlReader to deserialize iModel tile data beginning at the stream's current position. */
-  public static create(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem,
-    type: BatchType = BatchType.Primary, loadEdges: boolean = true, isCanceled?: ShouldAbortReadGltf, sizeMultiplier?: number,
-    options?: BatchOptions | false): ImdlReader | undefined {
-    const header = new ImdlHeader(stream);
+  public static create(args: ImdlReaderCreateArgs): ImdlReader | undefined {
+    const header = new ImdlHeader(args.stream);
     if (!header.isValid || !header.isReadableVersion)
       return undefined;
 
     // The feature table follows the iMdl header
-    if (!this.skipFeatureTable(stream))
+    if (!this.skipFeatureTable(args.stream))
       return undefined;
 
     // A glTF header follows the feature table
-    const props = GltfReaderProps.create(stream, false);
-    return undefined !== props ? new ImdlReader(props, iModel, modelId, is3d, system, type, loadEdges, isCanceled, sizeMultiplier, options) : undefined;
+    const props = GltfReaderProps.create(args.stream, false);
+    return undefined !== props ? new ImdlReader(props, args) : undefined;
   }
 
   /** Attempt to deserialize the tile data */
@@ -449,12 +481,12 @@ export class ImdlReader extends GltfReader {
     return new PackedFeatureTable(packedFeatureArray, this._modelId, header.count, header.maxFeatures, this._type, animNodesArray);
   }
 
-  private constructor(props: GltfReaderProps, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem,
-    type: BatchType, loadEdges: boolean, isCanceled?: ShouldAbortReadGltf, sizeMultiplier?: number, options?: BatchOptions | false) {
-    super(props, iModel, modelId, is3d, system, type, isCanceled);
-    this._sizeMultiplier = sizeMultiplier;
-    this._loadEdges = loadEdges;
-    this._options = options ?? {};
+  private constructor(props: GltfReaderProps, args: ImdlReaderCreateArgs) {
+    super(props, args.iModel, args.modelId, args.is3d, args.system, args.type, args.isCanceled);
+    this._sizeMultiplier = args.sizeMultiplier;
+    this._loadEdges = args.loadEdges ?? true;
+    this._options = args.options ?? {};
+    this._containsTransformNodes = args.containsTransformNodes ?? false;
     this._patternSymbols = props.scene.patternSymbols ?? {};
   }
 
@@ -844,6 +876,21 @@ export class ImdlReader extends GltfReader {
         }
       }
     } else {
+      const readBranch = (primitives: any[], nodeId: number, animationId: string | undefined) => {
+        const branch = new GraphicBranch(true);
+        branch.animationId = animationId;
+        branch.animationNodeId = nodeId;
+
+        for (const primitive of primitives) {
+          const graphic = this.readMeshGraphic(primitive);
+          if (graphic)
+            branch.add(graphic);
+        }
+
+        if (!branch.isEmpty)
+          graphics.push(this._system.createBranch(branch, Transform.createIdentity()));
+      };
+
       for (const nodeKey of Object.keys(this._nodes)) {
         const meshValue = this._meshes[this._nodes[nodeKey]] as ImdlMesh | undefined;
         const primitives = meshValue?.primitives;
@@ -852,22 +899,19 @@ export class ImdlReader extends GltfReader {
 
         const layerId = meshValue.layer;
         if ("Node_Root" === nodeKey) {
-          for (const primitive of primitives) {
-            const graphic = this.readMeshGraphic(primitive);
-            if (undefined !== graphic)
-              graphics.push(graphic);
+          // If transform nodes exist in the tile tree, then we need to create a branch for Node_Root so that elements not associated with
+          // any node in the schedule script can be grouped together.
+          if (this._containsTransformNodes) {
+            readBranch(primitives, AnimationNodeId.Untransformed, undefined);
+          } else {
+            for (const primitive of primitives) {
+              const graphic = this.readMeshGraphic(primitive);
+              if (undefined !== graphic)
+                graphics.push(graphic);
+            }
           }
         } else if (undefined === layerId) {
-          const branch = new GraphicBranch(true);
-          branch.animationId = `${this._modelId}_${nodeKey}`;
-          for (const primitive of primitives) {
-            const graphic = this.readMeshGraphic(primitive);
-            if (undefined !== graphic)
-              branch.add(graphic);
-          }
-
-          if (!branch.isEmpty)
-            graphics.push(this._system.createBranch(branch, Transform.createIdentity()));
+          readBranch(primitives, extractNodeId(nodeKey), `${this._modelId}_${nodeKey}`);
         } else {
           const layerGraphics: RenderGraphic[] = [];
           for (const primitive of primitives) {
