@@ -11,23 +11,22 @@ import { DbResult, Guid, Id64, Id64String, Logger, LogLevel, OpenMode } from "@i
 import { Point3d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   CategorySelector, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingModel, ECSqlStatement, Element,
-  ElementMultiAspect, ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, GenericPhysicalMaterial,
+  ElementMultiAspect, ElementOwnsChildElements, ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, GenericPhysicalMaterial,
   GeometricElement,
-  IModelCloneContext, IModelDb, IModelHost, IModelJsFs, IModelSchemaLoader, InformationPartitionElement, InformationRecordModel, InformationRecordPartition, LinkElement, Model,
+  IModelCloneContext, IModelDb, IModelHost, IModelJsFs, IModelSchemaLoader, InformationRecordModel, InformationRecordPartition, LinkElement, Model,
   ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, Relationship, RepositoryLink, Schema,
   SnapshotDb, SpatialCategory, StandaloneDb, SubCategory, Subject,
 } from "@itwin/core-backend";
 import { ExtensiveTestScenario, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import {
   AxisAlignedBox3d, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorDef, CreateIModelProps, DefinitionElementProps,
-  ExternalSourceAspectProps, IModel, IModelError, InformationPartitionElementProps, PhysicalElementProps, Placement3d, QueryRowFormat,
+  ExternalSourceAspectProps, IModel, IModelError, PhysicalElementProps, Placement3d, QueryRowFormat,
 } from "@itwin/core-common";
 import { IModelExporter, IModelExportHandler, IModelTransformer, TransformerLoggerCategory } from "../../core-transformer";
 import {
   ClassCounter, FilterByViewTransformer, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerTestUtils, PhysicalModelConsolidator,
   RecordingIModelImporter, TestIModelTransformer, TransformerExtensiveTestScenario,
 } from "../IModelTransformerUtils";
-import { RelationshipConstraint } from "@itwin/ecschema-metadata";
 
 describe("IModelTransformer", () => {
   const outputDir: string = path.join(KnownTestLocations.outputDir, "IModelTransformer");
@@ -1187,7 +1186,7 @@ describe("IModelTransformer", () => {
     const spatialCateg1Id  = SpatialCategory.insert(sourceDb, IModelDb.dictionaryId, "spatial-category1", { color: ColorDef.blue.toJSON() });
     const spatialCateg2Id = SpatialCategory.insert(sourceDb, IModelDb.dictionaryId, "spatial-category2", { color: ColorDef.red.toJSON() });
     const myPhysModelId = PhysicalModel.insert(sourceDb, IModelDb.rootSubjectId, "myPhysicalModel");
-    const physicalObjectIds = [spatialCateg1Id, spatialCateg2Id, spatialCateg2Id, spatialCateg2Id, spatialCateg2Id].map((categoryId, x) => {
+    const _physicalObjectIds = [spatialCateg1Id, spatialCateg2Id, spatialCateg2Id, spatialCateg2Id, spatialCateg2Id].map((categoryId, x) => {
       const physicalObjectProps: PhysicalElementProps = {
         classFullName: PhysicalObject.classFullName,
         model: myPhysModelId,
@@ -1206,7 +1205,10 @@ describe("IModelTransformer", () => {
       new PhysicalPartition({
         classFullName: PhysicalPartition.classFullName,
         model: IModelDb.rootSubjectId,
-        parent: { id: IModelDb.rootSubjectId },
+        parent: {
+          id: IModelDb.rootSubjectId,
+          relClassName: ElementOwnsChildElements.classFullName,
+        },
         code: PhysicalPartition.createCode(sourceDb, IModelDb.rootSubjectId, `physical-partition-${index}`),
       }, sourceDb),
     ).map((partition) => {
@@ -1231,28 +1233,18 @@ describe("IModelTransformer", () => {
       return linkId;
     });
 
-    const nonElementEntityIds = [
-      new Relationship({
+    const _nonElementEntityIds = [
+      [physicalPartitions[1].partitionId, linksIds[0]],
+      [physicalPartitions[1].partitionId, linksIds[1]],
+      [physicalPartitions[2].partitionId, linksIds[0]],
+      [physicalPartitions[2].partitionId, linksIds[1]],
+    ].map(([sourceId, targetId]) =>
+      sourceDb.relationships.insertInstance({
         classFullName: "BisCore:PartitionOriginatesFromRepository",
-        sourceId: physicalPartitions[1].partitionId,
-        targetId: linksIds[1],
-      }, sourceDb),
-      new Relationship({
-        classFullName: "BisCore:PartitionOriginatesFromRepository",
-        sourceId: physicalPartitions[1].partitionId,
-        targetId: linksIds[2],
-      }, sourceDb),
-      new Relationship({
-        classFullName: "BisCore:PartitionOriginatesFromRepository",
-        sourceId: physicalPartitions[2].partitionId,
-        targetId: linksIds[1],
-      }, sourceDb),
-      new Relationship({
-        classFullName: "BisCore:PartitionOriginatesFromRepository",
-        sourceId: physicalPartitions[2].partitionId,
-        targetId: linksIds[2],
-      }, sourceDb),
-    ].map((relationship) => relationship.insert());
+        sourceId,
+        targetId,
+      }));
+
     sourceDb.saveChanges();
 
     const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "PreserveIdTarget.bim");
@@ -1272,8 +1264,9 @@ describe("IModelTransformer", () => {
     }
 
     /** filter the category and all related elements from the source for transformation */
-    function filterRelationshipsToChangeIds(relationship: {id: Id64String}): boolean {
-      if (relationship.id === nonElementEntityIds[0])
+    function filterRelationshipsToChangeIds({sourceId, targetId}: {sourceId: Id64String, targetId: Id64String}): boolean {
+      // matches _nonElementEntityIds[0]
+      if (sourceId === physicalPartitions[1].partitionId && targetId ===  linksIds[0])
         return false;
       return true;
     }
@@ -1294,6 +1287,11 @@ describe("IModelTransformer", () => {
         if (!filterCategoryTransformationPredicate(elem))
           return false;
         return super.shouldExportElement(elem);
+      }
+      public override shouldExportRelationship(rel: Relationship): boolean {
+        if (!filterRelationshipsToChangeIds(rel))
+          return false;
+        return super.shouldExportRelationship(rel);
       }
     }
 
@@ -1321,47 +1319,45 @@ describe("IModelTransformer", () => {
     const targetContent = await getAllElementsInvariants(targetDb);
     expect(targetContent).to.deep.equal(sourceContent);
 
-    function getInvariantRelationsContent(db: IModelDb) {
-      return nonElementEntityIds
-        .filter((id) => filterRelationshipsToChangeIds({id}))
-        .map((id) => db.relationships.getInstanceProps(ElementRefersToElements.classFullName, id))
-        // remove id since that will be different, order should still be correct in this case
-        .map((props) => {delete props.id; return props;});
+    /** gets the ordered list of the relationships we inserted earlier */
+    async function getInvariantRelationsContent(
+      db: IModelDb,
+      filterPredicate?: (rel: {sourceId: string, targetId: string}) => boolean
+    ) {
+      const result = [];
+      for await (const row of db.query("SELECT * FROM bis.PartitionOriginatesFromRepository", undefined, QueryRowFormat.UseJsPropertyNames)) {
+        if (!filterPredicate || filterPredicate(row))
+          // the ids will NOT be the same, since these entities are not elements
+          result.push({sourceId: row.sourceId, targetId: row.targetId});
+      }
+      return result;
     }
 
-    expect(
-      getInvariantRelationsContent(sourceDb)
-    ).to.deep.equal(
-      getInvariantRelationsContent(targetDb)
-    );
+    const sourceRelations = await getInvariantRelationsContent(sourceDb, filterRelationshipsToChangeIds);
+    const targetRelations = await getInvariantRelationsContent(targetDb);
+    expect(sourceRelations).to.deep.equal(targetRelations);
 
     // now try inserting both an element and a relationship into the target to check the two entity id sequences are fine
-    const spatialCateg3CodeValue = "spatial-category3";
     const spatialCateg3Id = SpatialCategory.insert(
       targetDb,
       IModelDb.dictionaryId,
-      spatialCateg3CodeValue,
+      "spatial-category3",
       { color: ColorDef.black.toJSON() }
     );
-    const spatialCateg3SubCateg1CodeValue = "spatial-categ-subcateg-1";
+    expect(Id64.isValid(spatialCateg3Id)).to.be.true;
     const spatialCateg3Subcateg1Id = SubCategory.insert(
       targetDb,
       spatialCateg3Id,
-      spatialCateg3SubCateg1CodeValue ,
+      "spatial-categ-subcateg-1",
       { color: ColorDef.white.toJSON() }
     );
-    ElementRefersToElements.create(targetDb, spatialCateg3Id, spatialCateg3Subcateg1Id).insert();
-
-    expect(
-      targetDb.elements.getElement<SpatialCategory>(spatialCateg3Id, SpatialCategory).code.value
-    ).to.equal(spatialCateg3CodeValue);
-    const spatialCateg3Subcateg1 = targetDb.elements.getElement<SubCategory>(spatialCateg3Subcateg1Id, SubCategory);
-    expect(spatialCateg3Subcateg1.code.value).to.equal(spatialCateg3SubCateg1CodeValue);
-    const subcategRelation = targetDb.relationships.getInstance(ElementRefersToElements.classFullName, {
-      sourceId: spatialCateg3Id,
-      targetId: spatialCateg3Subcateg1Id,
+    expect(Id64.isValid(spatialCateg3Subcateg1Id)).to.be.true;
+    const insertedInstance = targetDb.relationships.insertInstance({
+      classFullName: "BisCore:PartitionOriginatesFromRepository",
+      sourceId: physicalPartitions[1].partitionId,
+      targetId: linksIds[0],
     });
-    expect(subcategRelation).is.not.undefined;
+    expect(Id64.isValid(insertedInstance)).to.be.true;
 
     sourceDb.close();
     targetDb.close();
