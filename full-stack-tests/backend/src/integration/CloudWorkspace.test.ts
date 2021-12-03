@@ -40,7 +40,7 @@ describe("Cloud workspace containers", () => {
     const contain1 = settings.getObject<CloudSqlite.ContainerProps>("cloudSqlite/containerProps")!;
     expect(contain1).deep.equals(containerProps);
 
-    const cloudAccess: CloudSqlite.AccessProps = { ...account1, ...contain1, daemonDir };
+    const cloudAccess = { ...account1, ...contain1, daemonDir };
     await ws1.create(cloudAccess);
     ws1.addString("string 1", "value of string 1");
     ws1.close();

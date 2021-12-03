@@ -8,6 +8,7 @@ import * as glob from "glob";
 import { join } from "path";
 import * as Yargs from "yargs";
 import {
+  CloudSqlite,
   EditableWorkspaceFile, IModelHost, IModelHostConfiguration, IModelJsFs, WorkspaceContainerId, WorkspaceFile, WorkspaceResourceName,
 } from "@itwin/core-backend";
 import { DbResult } from "@itwin/core-bentley";
@@ -59,6 +60,13 @@ interface ListOptions extends WorkspaceId {
   strings?: boolean;
   files?: boolean;
   blobs?: boolean;
+}
+
+/** Options for listing the resources in a WorkspaceFile */
+interface UploadOptions extends WorkspaceId {
+  create: boolean;
+  auth: string;
+  user: string;
 }
 
 /** Create a new empty WorkspaceFile  */
@@ -191,6 +199,20 @@ async function vacuumWorkspaceFile(args: WorkspaceId) {
   console.log(`${ws.localFile} vacuumed`);
 }
 
+async function uploadWorkspaceFile(args: UploadOptions) {
+  const containerProps = {
+    auth: args.auth,
+    container: args.workspaceId,
+    storageType: "azure?sas=1",
+    user: args.user,
+  };
+  if (args.create)
+    await CloudSqlite.create(containerProps);
+
+  const ws = new WorkspaceFile(args.workspaceId, IModelHost.appWorkspace);
+  await CloudSqlite.uploadDb({ dbAlias: args.workspaceId, localFile: ws.localFile }, containerProps);
+}
+
 /** Start `IModelHost`, then run a WorkspaceEditor command. Errors are logged to console. */
 function runCommand<T extends EditorOpts>(cmd: (args: T) => Promise<void>) {
   return async (args: T) => {
@@ -254,9 +276,18 @@ async function main() {
       handler: runCommand(deleteFromWorkspaceFile),
     })
     .command({
-      command: "vacuum <workspaceId>>",
+      command: "upload <workspaceId>",
+      describe: "upload a WorkspaceFile to cloud storage",
+      builder: {
+        create: { alias: "c", describe: "create container", boolean: true, default: false },
+        auth: { alias: "a", describe: "authorization token", string: true },
+        user: { alias: "u", describe: "user account name", string: true },
+      },
+      handler: runCommand(uploadWorkspaceFile),
+    })
+    .command({
+      command: "vacuum <workspaceId>",
       describe: "vacuum a WorkspaceFile",
-      builder: { type },
       handler: runCommand(vacuumWorkspaceFile),
     })
     .demandCommand()

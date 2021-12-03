@@ -6,17 +6,27 @@
  * @module Workspace
  */
 
-import { BlobCacheProps, BlobContainerProps, BlobDaemon, BlobDaemonCommandArg, DaemonProps } from "@bentley/imodeljs-native";
+import { ChildProcess } from "child_process";
+import { BlobDaemon, BlobDaemonCommandArg, DaemonProps } from "@bentley/imodeljs-native";
 import { BriefcaseStatus, DbResult } from "@itwin/core-bentley";
 import { IModelError, LocalFileName } from "@itwin/core-common";
-import { ChildProcess } from "child_process";
 import { IModelHost } from "../IModelHost";
 
 /** @beta */
 export namespace CloudSqlite {
   export type DbAlias = string;
-  export type AccountProps = BlobCacheProps;
-  export type ContainerProps = BlobContainerProps;
+  export interface AccountProps {
+    /** blob storage module: e.g. "azure", "google", "aws". May also include URI style parameters. */
+    storageType: string;
+    /** blob store account name. */
+    user: string;
+  }
+  export interface ContainerProps {
+    /** the name of the container. */
+    container: string;
+    /** SAS key that grants access to the container. */
+    auth: string;
+  }
   export type AccessProps = AccountProps & ContainerProps;
   export type DownloadProps = AccessProps & { onProgress?: (loaded: number, total: number) => number };
   export type Logger = (stream: NodeJS.ReadableStream) => void;
