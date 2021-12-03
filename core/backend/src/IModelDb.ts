@@ -1541,7 +1541,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @returns The passed in element properties Id.
      * @throws [[IModelError]] if unable to insert the element.
      */
-    public insertElementForceUseId(elProps: ElementProps & {id: Id64String}): Id64String {
+    public insertElementForceUseId(elProps: ElementProps): Id64String {
       try {
         return elProps.id = this._iModel.nativeDb.insertElementForceUseId(elProps instanceof Element ? elProps.toJSON() : elProps);
       } catch (err: any) {

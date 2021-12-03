@@ -163,13 +163,9 @@ export class IModelImporter implements Required<IModelImportOptions> {
    * @note A subclass may override this method to customize insert behavior but should call `super.onInsertElement`.
    */
   protected onInsertElement(elementProps: ElementProps): Id64String {
-    // XXXXXXXXXXX: need to update the default subcategory after inserting any [spatial?] category
     try {
       let elementId: Id64String;
       if (this.preserveElementIdsForFiltering) {
-        const hasId = (a: ElementProps): a is ElementProps & {id: Id64String} => typeof a.id === "string";
-        if (!hasId(elementProps))
-          throw new IModelError(IModelStatus.BadArg, "element tried to be inserted without an id during an id-preserving filter");
         elementId = this.targetDb.elements.insertElementForceUseId(elementProps);
       } else {
         elementId = this.targetDb.elements.insertElement(elementProps);
