@@ -218,6 +218,7 @@ beta;ExpandableSection
 beta;ExpandableSectionProps 
 internal;expandWidget: (base:
 public;ExtensibleToolbarProps
+internal;ExternalContentHost(props:
 beta;featureOverridesActiveStateFunc(state: Readonly
 alpha;FocusToolSettings 
 public;FooterModeField 

@@ -2172,6 +2172,12 @@ export interface ExtensibleToolbarProps {
     usage: ToolbarUsage;
 }
 
+// @internal (undocumented)
+export function ExternalContentHost(props: {
+    widgetContainerId: string;
+    attachToDom: ((container: HTMLElement) => void) | undefined;
+}): JSX.Element;
+
 // @beta
 export function featureOverridesActiveStateFunc(state: Readonly<BaseItemState>): BaseItemState;
 
