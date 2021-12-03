@@ -86,7 +86,7 @@ export interface IModelAppOptions {
   viewManager?: ViewManager;
   /** If present, supplies Map Layer Options for this session such as Azure Access Keys
    * @beta
-  */
+   */
   mapLayerOptions?: MapLayerOptions;
   /** If present, supplies the properties with which to initialize the [[TileAdmin]] for this session. */
   tileAdmin?: TileAdmin.Props;
@@ -121,6 +121,11 @@ export interface IModelAppOptions {
   rpcInterfaces?: RpcInterfaceDefinition[];
   /** @beta */
   realityDataAccess?: RealityDataAccess;
+  /** If present, overrides where public assets are fetched. The default is to fetch assets relative to the current URL.
+   * The path should always end with a trailing `/`.
+   * @beta
+   */
+  publicPath?: string;
 }
 
 /** Options for [[IModelApp.makeModalDiv]]
@@ -188,6 +193,7 @@ export class IModelApp {
   private static _mapLayerFormatRegistry: MapLayerFormatRegistry;
   private static _hubAccess?: FrontendHubAccess;
   private static _realityDataAccess?: RealityDataAccess;
+  private static _publicPath: string;
 
   // No instances of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
   protected constructor() { }
@@ -258,6 +264,10 @@ export class IModelApp {
   public static get uiAdmin() { return this._uiAdmin; }
   /** The requested security options for the frontend. */
   public static get securityOptions() { return this._securityOptions; }
+  /** The root URL for the assets 'public' folder.
+   * @beta
+   */
+  public static get publicPath() { return this._publicPath; }
   /** The [[TelemetryManager]] for this session
    * @internal
    */
@@ -374,6 +384,7 @@ export class IModelApp {
     this._uiAdmin = opts.uiAdmin ?? new UiAdmin();
     this._mapLayerFormatRegistry = new MapLayerFormatRegistry(opts.mapLayerOptions);
     this._realityDataAccess = opts.realityDataAccess;
+    this._publicPath = opts.publicPath ?? "";
 
     [
       this.renderSystem,
@@ -663,7 +674,7 @@ export class IModelApp {
    */
   public static makeIModelJsLogoCard() {
     return this.makeLogoCard({
-      iconSrc: "images/about-imodeljs.svg",
+      iconSrc: `${this.publicPath}images/about-imodeljs.svg`,
       heading: `<span style="font-weight:normal">${this.localization.getLocalizedString("Notices.PoweredBy")}</span>&nbsp;iTwin.js`,
       notice: `${require("../../package.json").version}<br>${copyrightNotice}`, // eslint-disable-line @typescript-eslint/no-var-requires
     });

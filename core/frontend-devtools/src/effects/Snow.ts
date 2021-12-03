@@ -225,7 +225,7 @@ export class SnowDecorator implements Decorator {
     else if (undefined === decorator && enable) {
       // Create a texture to use for the particles.
       // Note: the decorator takes ownership of the texture, and disposes of it when the decorator is disposed.
-      const image = await imageElementFromUrl("./sprites/particle_snow.png");
+      const image = await imageElementFromUrl(`${IModelApp.publicPath}sprites/particle_snow.png`);
       const texture = IModelApp.renderSystem.createTexture({
         ownership: "external",
         image: { source: image, transparency: TextureTransparency.Mixed },
