@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { Cartographic, ImageSource, IModelStatus, MapLayerFeatureInfo, MapLayerSettings, ServerError } from "@itwin/core-common";
+import { Cartographic, FeatureInfoPropertyValueFormat, ImageSource, IModelStatus, MapFeatureInfoRecord, MapLayerFeatureInfo, MapLayerSettings, MapSubLayerFeatureInfo, ServerError } from "@itwin/core-common";
 import { getJson, request, RequestOptions, Response } from "@bentley/itwin-client";
 import { IModelApp } from "../../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../../NotificationManager";
@@ -264,21 +264,34 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     }
 
     if (json && Array.isArray(json.results)) {
-      const info: MapLayerFeatureInfo = {
-        layerName: this._settings.name,
-        subLayerInfo: [],
-        hitPoint:carto,
-      };
+      const layerInfo: MapLayerFeatureInfo = {layerName: this._settings.name};
 
       for (const result of json.results) {
-        info.subLayerInfo?.push({
+
+        const subLayerInfo: MapSubLayerFeatureInfo = {
           subLayerName: result.layerName ?? "",
           displayFieldName: result.displayFieldName,
-          attributes: result.attributes,
+          records : [],
+        };
+        for (const [key, value] of Object.entries(result.attributes)) {
+          const strValue = String(value);
+          subLayerInfo.records?.push(new MapFeatureInfoRecord (
+            {valueFormat:FeatureInfoPropertyValueFormat.Primitive, rawValue: value, stringValue: strValue},
+            {name: key, displayLabel: key, typename:"string"}
+          ));
         }
-        );
+
+        if (layerInfo.info === undefined) {
+          layerInfo.info = [];
+        }
+
+        if (!(layerInfo.info instanceof HTMLElement)) {
+          layerInfo.info.push(subLayerInfo);
+        }
+
       }
-      featureInfos.push(info);
+
+      featureInfos.push(layerInfo);
     }
 
   }

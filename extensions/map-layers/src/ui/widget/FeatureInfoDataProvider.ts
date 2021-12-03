@@ -52,22 +52,24 @@ export class FeatureInfoDataProvider implements IPropertyDataProvider, PropertyD
     if (identifyHit?.isMapHit) {
       this.records = {};
       this.categories = [];
-      const info = await identifyHit.viewport.getFeatureInfo(identifyHit);
-      if (info !== undefined ) {
-        for (const curInfo of info) {
-          const layerCategory: PropertyCategory = {name:curInfo.layerName, label:curInfo.layerName, expand:true, childCategories:[]};
-          if (curInfo.subLayerInfo) {
+      const mapInfo = await identifyHit.viewport.getMapFeatureInfo(identifyHit);
+      if (mapInfo.layerInfo !== undefined ) {
+        for (const curLayerInfo of mapInfo.layerInfo) {
+          const layerCategory: PropertyCategory = {name:curLayerInfo.layerName, label:curLayerInfo.layerName, expand:true, childCategories:[]};
+          if (curLayerInfo.info && !(curLayerInfo.info instanceof HTMLElement)) {
 
-            for (const infoResult of curInfo.subLayerInfo) {
+            for (const infoResult of curLayerInfo.info) {
               const catIdx = this.findCategoryIndexByName(infoResult.subLayerName);
               if (catIdx === -1) {
                 const subLayerCategory = {name:infoResult.subLayerName, label:infoResult.subLayerName, expand:true};
                 this.addSubCategory(subLayerCategory.name);
                 layerCategory.childCategories?.push(subLayerCategory);
 
-                if (infoResult.attributes) {
-                  for (const [key, value] of Object.entries(infoResult.attributes)) {
-                    this.addProperty(new FeatureInfoRecord(key, value), subLayerCategory.name);
+                if (infoResult.records) {
+                  for (const record of infoResult.records) {
+                    // Always use the string value for now
+                    this.addProperty(new FeatureInfoRecord(record.property.displayLabel, record.value.stringValue),
+                      subLayerCategory.name);
                   }
                 }
               }

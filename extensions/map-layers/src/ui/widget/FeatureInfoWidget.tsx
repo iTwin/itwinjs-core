@@ -25,4 +25,3 @@ export class FeatureInfoWidget extends React.Component {
   }
 }
 
-// ConfigurableUiManager.registerControl("VerticalPropertyGridDemoWidget", VerticalPropertyGridWidgetControl);

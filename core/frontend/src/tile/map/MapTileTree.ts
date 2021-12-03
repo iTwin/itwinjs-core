@@ -811,7 +811,7 @@ export class MapTileTreeReference extends TileTreeReference {
     return div;
   }
 
-  public override async getFeatureInfo(hit: HitDetail): Promise<MapLayerFeatureInfo[] | undefined> {
+  public override async getMapFeatureInfo(hit: HitDetail): Promise<MapLayerFeatureInfo[] | undefined> {
     const tree = this.treeOwner.tileTree as MapTileTree;
     // eslint-disable-next-line @typescript-eslint/unbound-method
     if (undefined === tree || hit.iModel !== tree.iModel || tree.modelId !== hit.modelId || !hit.viewport || !hit.viewport.view.is3d)
@@ -837,7 +837,7 @@ export class MapTileTreeReference extends TileTreeReference {
           if (imageryTree) {
             for (const imageryTile of terrainTile.imageryTiles) {
               if (imageryTree === imageryTile.imageryTree && imageryTile.rectangle.containsCartographic(cartoGraphic))
-                await imageryTree.imageryLoader.getFeatureInfo(info, imageryTile.quadId, cartoGraphic, imageryTree);
+                await imageryTree.imageryLoader.getMapFeatureInfo(info, imageryTile.quadId, cartoGraphic, imageryTree);
             }
           }
         }
