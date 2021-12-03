@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-locaters",
-  "version": "3.0.0-dev.138",
+  "version": "3.0.0-dev.139",
   "description": "EC Schema file locaters",
   "license": "MIT",
   "main": "lib/cjs/ecschema-locaters.js",
@@ -25,7 +25,7 @@
   "keywords": [
     "Bentley",
     "iModel",
-    "iModel.js",
+    "iTwin.js",
     "EC"
   ],
   "author": {
@@ -56,7 +56,7 @@
     "glob": "^7.1.2"
   },
   "peerDependencies": {
-    "@itwin/ecschema-metadata": "workspace:^3.0.0-dev.138"
+    "@itwin/ecschema-metadata": "workspace:^3.0.0-dev.139"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc",

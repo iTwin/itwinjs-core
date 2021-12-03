@@ -186,7 +186,7 @@ class ParticleSystem {
 
   public static async addDecorator(iModel: IModelConnection): Promise<void> {
     // Note: The decorator takes ownership of the texture, and disposes of it when the decorator is disposed.
-    const image = await imageElementFromUrl("./sprites/particle_explosion.png");
+    const image = await imageElementFromUrl(`${IModelApp.publicPath}sprites/particle_explosion.png`);
     const texture = IModelApp.renderSystem.createTexture({
       ownership: "external",
       image: { source: image, transparency: TextureTransparency.Mixed },

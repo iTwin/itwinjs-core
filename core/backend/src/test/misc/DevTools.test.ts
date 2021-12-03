@@ -81,7 +81,7 @@ describe("DevTools", () => {
   it("Get the backend versions", () => {
     const versions = DevTools.versions();
     assert.isDefined(versions.application);
-    assert.isDefined(versions.iModelJs);
+    assert.isDefined(versions.iTwinJs);
   });
 }
 );
