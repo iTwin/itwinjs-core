@@ -1,6 +1,11 @@
 # Change Log - @bentley/ui-abstract
 
-This log was last generated on Mon, 29 Nov 2021 18:44:31 GMT and should not be manually modified.
+This log was last generated on Fri, 03 Dec 2021 20:05:49 GMT and should not be manually modified.
+
+## 2.19.25
+Fri, 03 Dec 2021 20:05:49 GMT
+
+_Version update only_
 
 ## 2.19.24
 Mon, 29 Nov 2021 18:44:31 GMT
