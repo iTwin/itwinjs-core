@@ -1179,6 +1179,33 @@ describe("IModelTransformer", () => {
     targetDb.close();
   });
 
+  /** gets a mapping of element ids to their invariant content */
+  async function getAllElementsInvariants(db: IModelDb, filterPredicate?: (element: Element) => boolean) {
+    const result: Record<Id64String, any> = {};
+    for await (const row of db.query("SELECT * FROM bis.Element", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      if (!filterPredicate || filterPredicate(db.elements.getElement(row.ECInstanceId))) {
+        const { lastMod: _lastMod, ...invariantPortion } = row;
+        result[row.ECInstanceId] = invariantPortion;
+      }
+    }
+    return result;
+  }
+
+  /** gets the ordered list of the relationships inserted earlier */
+  async function getInvariantRelationsContent(
+    db: IModelDb,
+    filterPredicate?: (rel: {sourceId: string, targetId: string}) => boolean
+  ): Promise<{ sourceId: Id64String, targetId: Id64String }[]> {
+    const result = [];
+    for await (const row of db.query("SELECT * FROM bis.ElementRefersToElements", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      if (!filterPredicate || filterPredicate(row)) {
+        const { id: _id, ...invariantPortion } = row;
+        result.push(invariantPortion);
+      }
+    }
+    return result;
+  }
+
   it.only("preserveId option preserves element ids, not other entity ids", async () => {
     const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "PreserveIdSource.bim");
     const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "PreserveId" } });
@@ -1265,7 +1292,7 @@ describe("IModelTransformer", () => {
 
     /** filter the category and all related elements from the source for transformation */
     function filterRelationshipsToChangeIds({sourceId, targetId}: {sourceId: Id64String, targetId: Id64String}): boolean {
-      // matches _nonElementEntityIds[0]
+      // matches source+target of _nonElementEntityIds[0]
       if (sourceId === physicalPartitions[1].partitionId && targetId ===  linksIds[0])
         return false;
       return true;
@@ -1299,39 +1326,9 @@ describe("IModelTransformer", () => {
     await transformer.processAll();
     targetDb.saveChanges();
 
-    async function getAllElementsInvariants(db: IModelDb, filterPredicate?: (element: Element) => boolean) {
-      const result: Record<Id64String, any> = {};
-      for await (const row of db.query("SELECT * FROM bis.Element", undefined, QueryRowFormat.UseECSqlPropertyNames)) {
-        if (filterPredicate && !filterPredicate(db.elements.getElement(row.ECInstanceId)))
-          continue;
-        const {
-          /* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/naming-convention */
-          LastMod,
-          /* eslint-enable @typescript-eslint/no-unused-vars, @typescript-eslint/naming-convention */
-          ...invariantPortion
-        } = row;
-        result[row.ECInstanceId] = invariantPortion;
-      }
-      return result;
-    }
-
     const sourceContent = await getAllElementsInvariants(sourceDb, filterCategoryContentsPredicate);
     const targetContent = await getAllElementsInvariants(targetDb);
     expect(targetContent).to.deep.equal(sourceContent);
-
-    /** gets the ordered list of the relationships we inserted earlier */
-    async function getInvariantRelationsContent(
-      db: IModelDb,
-      filterPredicate?: (rel: {sourceId: string, targetId: string}) => boolean
-    ) {
-      const result = [];
-      for await (const row of db.query("SELECT * FROM bis.PartitionOriginatesFromRepository", undefined, QueryRowFormat.UseJsPropertyNames)) {
-        if (!filterPredicate || filterPredicate(row))
-          // the ids will NOT be the same, since these entities are not elements
-          result.push({sourceId: row.sourceId, targetId: row.targetId});
-      }
-      return result;
-    }
 
     const sourceRelations = await getInvariantRelationsContent(sourceDb, filterRelationshipsToChangeIds);
     const targetRelations = await getInvariantRelationsContent(targetDb);
@@ -1358,6 +1355,25 @@ describe("IModelTransformer", () => {
       targetId: linksIds[0],
     });
     expect(Id64.isValid(insertedInstance)).to.be.true;
+
+    sourceDb.close();
+    targetDb.close();
+  });
+
+  it.only("preserveId on test model", async () => {
+    const seedDb = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
+    const sourceDbFile = IModelTestUtils.prepareOutputFile("IModelTransformer", "PreserveIdOnTestModel-Source.bim");
+    const sourceDb = SnapshotDb.createFrom(seedDb, sourceDbFile);
+
+    const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "PreserveIdOnTestModel-Target.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
+
+    const transformer = new IModelTransformer(sourceDb, targetDb, { preserveElementIdsForFiltering: true });
+    await transformer.processAll();
+
+    const sourceContent = await getAllElementsInvariants(sourceDb);
+    const targetContent = await getAllElementsInvariants(targetDb);
+    expect(targetContent).to.deep.equal(sourceContent);
 
     sourceDb.close();
     targetDb.close();
