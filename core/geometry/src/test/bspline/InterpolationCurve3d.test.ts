@@ -70,7 +70,6 @@ describe("InterpolationCurve3d", () => {
 
   it("BrienCurve", () => {
     const ck = new Checker();
-    Checker.noisy.flatBuffer = true;
     const allGeometry: GeometryQuery[] = [];
     const points = [
       Point3d.create(53.44488806143417, -26.616949756940954, 1.0000000000000036),
