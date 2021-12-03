@@ -30,7 +30,7 @@ import { Lock, LockLevel, LockQuery, LockType } from "./imodelhub/Locks";
 import { VersionQuery } from "./imodelhub/Versions";
 import { AzureFileHandler } from "./itwin-client/AzureFileHandler";
 
-const changeSet0 = { id: "", changesType: 0, description: "revision0", parentId: "", briefcaseId: 0, pushDate: "", userCreated: "", index: 0 };
+const changeSet0 = { id: "", changesType: 0, description: "version0", parentId: "", briefcaseId: 0, pushDate: "", userCreated: "", index: 0 };
 
 /** @internal */
 export class IModelHubBackend implements BackendHubAccess {
@@ -91,17 +91,17 @@ export class IModelHubBackend implements BackendHubAccess {
     if (this.isUsingIModelBankClient)
       throw new IModelError(IModelStatus.BadRequest, "This is a iModelHub only operation");
 
-    const revision0 = join(IModelHost.cacheDir, "temp-revision0.bim");
-    IModelJsFs.removeSync(revision0);
-    if (!arg.revision0) { // if they didn't supply a revision0 file, create a blank one.
-      const blank = SnapshotDb.createEmpty(revision0, { rootSubject: { name: arg.description ?? arg.iModelName } });
+    const version0 = join(IModelHost.cacheDir, "temp-version0.bim");
+    IModelJsFs.removeSync(version0);
+    if (!arg.version0) { // if they didn't supply a version0 file, create a blank one.
+      const blank = SnapshotDb.createEmpty(version0, { rootSubject: { name: arg.description ?? arg.iModelName } });
       blank.saveChanges();
       blank.close();
     } else {
-      IModelJsFs.copySync(arg.revision0, revision0);
+      IModelJsFs.copySync(arg.version0, version0);
     }
 
-    const nativeDb = IModelDb.openDgnDb({ path: revision0 }, OpenMode.ReadWrite);
+    const nativeDb = IModelDb.openDgnDb({ path: version0 }, OpenMode.ReadWrite);
     try {
       nativeDb.setITwinId(arg.iTwinId);
       // nativeDb.setDbGuid(this.iModelId); NEEDS_WORK - iModelHub should accept this value, not create it.
@@ -115,8 +115,8 @@ export class IModelHubBackend implements BackendHubAccess {
     }
 
     const accessToken = await this.getAccessToken(arg);
-    const hubIModel = await this.iModelClient.iModels.create(accessToken, arg.iTwinId, arg.iModelName, { path: revision0, description: arg.description });
-    IModelJsFs.removeSync(revision0);
+    const hubIModel = await this.iModelClient.iModels.create(accessToken, arg.iTwinId, arg.iModelName, { path: version0, description: arg.description });
+    IModelJsFs.removeSync(version0);
     return hubIModel.wsgId;
   }
 
@@ -361,7 +361,8 @@ export class IModelHubBackend implements BackendHubAccess {
     if (!containerAccessKeyContainer || !containerAccessKeySAS || !containerAccessKeyAccount || !containerAccessKeyDbName)
       throw new IModelError(IModelStatus.NotFound, "invalid V2 checkpoint");
 
-    const downloader = new IModelHost.platform.DownloadV2Checkpoint({
+    const transfer = new IModelHost.platform.CloudDbTransfer({
+      direction: "download",
       container: containerAccessKeyContainer,
       auth: containerAccessKeySAS,
       storageType: "azure?sas=1",
@@ -377,13 +378,13 @@ export class IModelHubBackend implements BackendHubAccess {
       const onProgress = arg.onProgress;
       if (onProgress) {
         timer = setInterval(async () => { // set an interval timer to show progress every 250ms
-          const progress = downloader.getProgress();
+          const progress = transfer.getProgress();
           total = progress.total;
           if (onProgress(progress.loaded, progress.total))
-            downloader.cancelDownload();
+            transfer.cancelTransfer();
         }, 250);
       }
-      await downloader.downloadPromise;
+      await transfer.promise;
       onProgress?.(total, total); // make sure we call progress func one last time when download completes
     } catch (err: any) {
       throw (err.message === "cancelled") ? new UserCancelledError(BriefcaseStatus.DownloadCancelled, "download cancelled") : err;

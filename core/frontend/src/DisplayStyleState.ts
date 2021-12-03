@@ -21,7 +21,6 @@ import { ElementState } from "./EntityState";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { PlanarClipMaskState } from "./PlanarClipMaskState";
-import { AnimationBranchStates } from "./render/GraphicBranch";
 import { RenderScheduleState } from "./RenderScheduleState";
 import { getCesiumOSMBuildingsUrl, MapCartoRectangle, TileTreeReference } from "./tile/internal";
 import { viewGlobalLocation, ViewGlobalLocationConstants } from "./ViewGlobalLocation";
@@ -267,11 +266,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
     // eslint-disable-next-line deprecation/deprecation
     this.settings.scheduleScriptProps = state?.script.toJSON();
-  }
-
-  /** @internal */
-  public getAnimationBranches(scheduleTime: number): AnimationBranchStates | undefined {
-    return this.scheduleState?.getAnimationBranches(scheduleTime);
   }
 
   /** Attach a [ContextRealityModel]($common) to this display style.

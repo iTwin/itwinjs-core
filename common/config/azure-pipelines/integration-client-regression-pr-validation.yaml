@@ -1,4 +1,4 @@
-# iModel.js Integration Client Regression PR Validation Build
+# iTwin.js Core Integration Client Regression PR Validation Build
 #
 # This integration test job uses the older internal 'imsoidcui' IMS authority and
 # OIDC clients to make sure that workflow is still supported.

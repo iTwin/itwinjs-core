@@ -8,7 +8,7 @@
 
 const copyrightNotice = 'Copyright © 2017-2021 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
 
-import { TelemetryManager } from "@bentley/telemetry-client";
+import { TelemetryManager } from "@itwin/core-telemetry";
 import { UiAdmin } from "@itwin/appui-abstract";
 import { AccessToken, BeDuration, BeEvent, BentleyStatus, DbResult, dispose, Guid, GuidString, Logger } from "@itwin/core-bentley";
 import {
@@ -86,7 +86,7 @@ export interface IModelAppOptions {
   viewManager?: ViewManager;
   /** If present, supplies Map Layer Options for this session such as Azure Access Keys
    * @beta
-  */
+   */
   mapLayerOptions?: MapLayerOptions;
   /** If present, supplies the properties with which to initialize the [[TileAdmin]] for this session. */
   tileAdmin?: TileAdmin.Props;
@@ -121,6 +121,11 @@ export interface IModelAppOptions {
   rpcInterfaces?: RpcInterfaceDefinition[];
   /** @beta */
   realityDataAccess?: RealityDataAccess;
+  /** If present, overrides where public assets are fetched. The default is to fetch assets relative to the current URL.
+   * The path should always end with a trailing `/`.
+   * @beta
+   */
+  publicPath?: string;
 }
 
 /** Options for [[IModelApp.makeModalDiv]]
@@ -155,11 +160,11 @@ interface IModelAppForDebugger {
 }
 
 /**
- * Global singleton that connects the user interface with the iModel.js services. There can be only one IModelApp active in a session. All
+ * Global singleton that connects the user interface with the iTwin.js services. There can be only one IModelApp active in a session. All
  * members of IModelApp are static, and it serves as a singleton object for gaining access to session information.
  *
  * Before any interactive operations may be performed by the `@itwin/core-frontend package`, [[IModelApp.startup]] must be called and awaited.
- * Applications may customize the frontend behavior of iModel.js by supplying options to [[IModelApp.startup]].
+ * Applications may customize the frontend behavior of iTwin.js by supplying options to [[IModelApp.startup]].
  *
  * @public
  */
@@ -188,6 +193,7 @@ export class IModelApp {
   private static _mapLayerFormatRegistry: MapLayerFormatRegistry;
   private static _hubAccess?: FrontendHubAccess;
   private static _realityDataAccess?: RealityDataAccess;
+  private static _publicPath: string;
 
   // No instances of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
   protected constructor() { }
@@ -258,6 +264,10 @@ export class IModelApp {
   public static get uiAdmin() { return this._uiAdmin; }
   /** The requested security options for the frontend. */
   public static get securityOptions() { return this._securityOptions; }
+  /** The root URL for the assets 'public' folder.
+   * @beta
+   */
+  public static get publicPath() { return this._publicPath; }
   /** The [[TelemetryManager]] for this session
    * @internal
    */
@@ -327,7 +337,7 @@ export class IModelApp {
     (window as IModelAppForDebugger).iModelAppForDebugger = this;
 
     this.sessionId = opts.sessionId ?? Guid.createValue();
-    this._applicationId = opts.applicationId ?? "2686";  // Default to product id of iModel.js
+    this._applicationId = opts.applicationId ?? "2686";  // Default to product id of iTwin.js
     this._applicationVersion = opts.applicationVersion ?? "1.0.0";
     this.authorizationClient = opts.authorizationClient;
     this._hubAccess = opts.hubAccess;
@@ -374,6 +384,7 @@ export class IModelApp {
     this._uiAdmin = opts.uiAdmin ?? new UiAdmin();
     this._mapLayerFormatRegistry = new MapLayerFormatRegistry(opts.mapLayerOptions);
     this._realityDataAccess = opts.realityDataAccess;
+    this._publicPath = opts.publicPath ?? "";
 
     [
       this.renderSystem,
@@ -645,26 +656,26 @@ export class IModelApp {
     const noticeCell = IModelApp.makeHTMLElement("td", { parent: card, className: "logo-card-message" });
     if (undefined !== opts.heading) {
       if (typeof opts.heading === "string")
-        IModelApp.makeHTMLElement("h2", { parent: noticeCell, innerHTML: opts.heading });
+        IModelApp.makeHTMLElement("h2", { parent: noticeCell, innerHTML: opts.heading, className: "logo-card-header" });
       else
         noticeCell.appendChild(opts.heading);
     }
     if (undefined !== opts.notice) {
       if (typeof opts.notice === "string")
-        IModelApp.makeHTMLElement("p", { parent: noticeCell, innerHTML: opts.notice });
+        IModelApp.makeHTMLElement("p", { parent: noticeCell, innerHTML: opts.notice, className: "logo-cards" });
       else
         noticeCell.appendChild(opts.notice);
     }
     return card;
   }
 
-  /** Make the logo card for the iModel.js library itself. This card gets placed at the top of the stack.
+  /** Make the logo card for the library itself. This card gets placed at the top of the stack.
    *  @internal
    */
   public static makeIModelJsLogoCard() {
     return this.makeLogoCard({
-      iconSrc: "images/about-imodeljs.svg",
-      heading: `<span style="font-weight:normal">${this.localization.getLocalizedString("Notices.PoweredBy")}</span>&nbsp;iModel.js`,
+      iconSrc: `${this.publicPath}images/about-imodeljs.svg`,
+      heading: `<span style="font-weight:normal">${this.localization.getLocalizedString("Notices.PoweredBy")}</span>&nbsp;iTwin.js`,
       notice: `${require("../../package.json").version}<br>${copyrightNotice}`, // eslint-disable-line @typescript-eslint/no-var-requires
     });
   }
@@ -680,7 +691,7 @@ export class IModelApp {
     return div;
   }
 
-  /** Localize an error status from iModel.js
+  /** Localize an error status
    * @param status one of the status values from [BentleyStatus]($core-bentley), [IModelStatus]($core-bentley) or [DbResult]($core-bentley)
    * @returns a localized error message
    * @beta

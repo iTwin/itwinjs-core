@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Removed 'ModelsTreeProps.enablePreloading' flag",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}

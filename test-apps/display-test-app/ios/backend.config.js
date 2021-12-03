@@ -46,6 +46,10 @@ function getConfig(env) {
         {
           test: /AzCopyFileHandler\.js/g,
           use: 'null-loader'
+        },
+        {
+          test: /ElectronBackend\.js/g,
+          use: 'null-loader'
         }
       ]
     },

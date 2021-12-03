@@ -9,6 +9,7 @@
 import {
   BadUnit, BasicUnit, UnitConversion, UnitProps, UnitsProvider,
 } from "@itwin/core-quantity";
+import { UnitNameKey } from "./QuantityFormatter";
 
 // cSpell:ignore ussurvey USCUSTOM
 
@@ -16,11 +17,12 @@ import {
  * @internal
  */
 export class BasicUnitsProvider implements UnitsProvider {
+
   /** Find a unit given the unitLabel. */
   public async findUnit(unitLabel: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps> {
     const labelToFind = unitLabel.toLowerCase();
-    const unitFamilyToFind = phenomenon ? phenomenon.toLowerCase():undefined;
-    const unitSystemToFind = unitSystem ? unitSystem.toLowerCase():undefined;
+    const unitFamilyToFind = phenomenon ? phenomenon.toLowerCase() : undefined;
+    const unitSystemToFind = unitSystem ? unitSystem.toLowerCase() : undefined;
 
     for (const entry of UNIT_DATA) {
       if (phenomenon && entry.phenomenon.toLowerCase() !== unitFamilyToFind)
@@ -30,13 +32,13 @@ export class BasicUnitsProvider implements UnitsProvider {
         continue;
 
       if (entry.displayLabel.toLowerCase() === labelToFind || entry.name.toLowerCase() === labelToFind) {
-        const unitProps = new BasicUnit(entry.name, entry.displayLabel, entry.phenomenon, entry.altDisplayLabels, entry.system);
+        const unitProps = new BasicUnit(entry.name, entry.displayLabel, entry.phenomenon, entry.system);
         return unitProps;
       }
 
       if (entry.altDisplayLabels && entry.altDisplayLabels.length > 0) {
         if (entry.altDisplayLabels.findIndex((ref) => ref.toLowerCase() === labelToFind) !== -1) {
-          const unitProps = new BasicUnit(entry.name, entry.displayLabel, entry.phenomenon, entry.altDisplayLabels, entry.system);
+          const unitProps = new BasicUnit(entry.name, entry.displayLabel, entry.phenomenon, entry.system);
           return unitProps;
         }
       }
@@ -51,7 +53,7 @@ export class BasicUnitsProvider implements UnitsProvider {
     for (const entry of UNIT_DATA) {
       if (entry.phenomenon !== phenomenon)
         continue;
-      units.push(new BasicUnit(entry.name, entry.displayLabel, entry.phenomenon, entry.altDisplayLabels, entry.system));
+      units.push(new BasicUnit(entry.name, entry.displayLabel, entry.phenomenon, entry.system));
     }
     return units;
   }
@@ -69,7 +71,7 @@ export class BasicUnitsProvider implements UnitsProvider {
   public async findUnitByName(unitName: string): Promise<UnitProps> {
     const unitDataEntry = this.findUnitDefinition(unitName);
     if (unitDataEntry) {
-      return new BasicUnit(unitDataEntry.name, unitDataEntry.displayLabel, unitDataEntry.phenomenon, unitDataEntry.altDisplayLabels, unitDataEntry.system);
+      return new BasicUnit(unitDataEntry.name, unitDataEntry.displayLabel, unitDataEntry.phenomenon, unitDataEntry.system);
     }
     return new BadUnit();
   }
@@ -114,9 +116,24 @@ interface UnitDefinition {
   readonly name: string;
   readonly phenomenon: string;
   readonly displayLabel: string;
-  readonly altDisplayLabels: string[];
+  readonly altDisplayLabels?: string[];
   readonly conversion: ConversionDef;
   readonly system: string;
+}
+
+/** Function to generate default set of alternate unit labels
+ *  @internal
+ */
+export function getDefaultAlternateUnitLabels() {
+  const altDisplayLabelsMap = new Map<UnitNameKey, Set<string>>();
+  for (const entry of UNIT_DATA) {
+    if (entry.altDisplayLabels && entry.altDisplayLabels.length > 0) {
+      altDisplayLabelsMap.set(entry.name, new Set<string>(entry.altDisplayLabels));
+    }
+  }
+  if (altDisplayLabelsMap.size)
+    return altDisplayLabelsMap;
+  return undefined;
 }
 
 // ========================================================================================================================================

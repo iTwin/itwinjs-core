@@ -129,9 +129,12 @@ export class Presentation {
         // by default, manager is disposed after 1 hour of being unused
         valueLifetime: this._initProps.unusedClientLifetime ?? 60 * 60 * 1000,
         // add some logging
-        onCreated: /* istanbul ignore next */ (id: string) => Logger.logInfo(PresentationBackendLoggerCategory.PresentationManager, `Created a PresentationManager instance with ID: ${id}. Total instances: ${this._clientsStorage?.values.length}.`),
-        onDisposedSingle: /* istanbul ignore next */ (id: string) => Logger.logInfo(PresentationBackendLoggerCategory.PresentationManager, `Disposed PresentationManager instance with ID: ${id}. Total instances: ${this._clientsStorage?.values.length}.`),
-        onDisposedAll: /* istanbul ignore next */ () => Logger.logInfo(PresentationBackendLoggerCategory.PresentationManager, `Disposed all PresentationManager instances.`),
+        onCreated: /* istanbul ignore next */(id: string, value: ClientStoreItem, onValueUsed: () => void) => {
+          Logger.logInfo(PresentationBackendLoggerCategory.PresentationManager, `Created a PresentationManager instance with ID: ${id}. Total instances: ${this._clientsStorage?.values.length}.`);
+          value.manager.setOnManagerUsedHandler(onValueUsed);
+        },
+        onDisposedSingle: /* istanbul ignore next */(id: string) => Logger.logInfo(PresentationBackendLoggerCategory.PresentationManager, `Disposed PresentationManager instance with ID: ${id}. Total instances: ${this._clientsStorage?.values.length}.`),
+        onDisposedAll: /* istanbul ignore next */() => Logger.logInfo(PresentationBackendLoggerCategory.PresentationManager, `Disposed all PresentationManager instances.`),
       });
     }
   }

@@ -35,5 +35,5 @@ an action button on the left and an arrow button on the right that opens a conte
 - [Toggle](./Toggle.md) - Component for working with a Toggle switch.
 - [Tooltip](./Tooltip.md) - Component displays tooltip popup for a specified target element.
 - [Tree](./Tree.md) - Presentation React components for working with a Tree.
-- [UiSettings](./UiSettings.md) - Interfaces and classes for working with persistent UI settings.
+- [UiStateStorage](./UiStateStorage.md) - Interfaces and classes for working with persistent UI settings.
 - [Utilities](./Utilities.md) - Various utility classes, functions and React hooks for working with a UI.

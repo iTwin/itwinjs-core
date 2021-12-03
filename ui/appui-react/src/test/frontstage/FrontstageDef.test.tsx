@@ -11,7 +11,7 @@ import { CoreTools, Frontstage, FRONTSTAGE_SETTINGS_NAMESPACE, FrontstageDef, Fr
 import TestUtils, { storageMock } from "../TestUtils";
 import { AbstractWidgetProps, StagePanelLocation, StagePanelSection, UiItemsManager, UiItemsProvider, WidgetState } from "@itwin/appui-abstract";
 import { addFloatingWidget, addPanelWidget, addPopoutWidget, addTab, createNineZoneState, NineZoneState } from "@itwin/appui-layout-react";
-import { UiSettingsStatus } from "@itwin/core-react";
+import { UiStateStorageStatus } from "@itwin/core-react";
 import { ProcessDetector } from "@itwin/core-bentley";
 
 describe("FrontstageDef", () => {
@@ -180,6 +180,7 @@ describe("FrontstageDef", () => {
       const frontstageProvider = new EmptyFrontstageProvider();
       FrontstageManager.addFrontstageProvider(frontstageProvider);
       const frontstageDef = await FrontstageManager.getFrontstageDef(EmptyFrontstageProvider.stageId);
+      expect(!!frontstageDef?.isReady).to.be.false;
       await FrontstageManager.setActiveFrontstageDef(frontstageDef);
       const sut = FrontstageManager.activeFrontstageDef!;
       sut.rightPanel!.panelZones.start.widgetDefs.map((w) => w.id).should.eql(["WidgetsProviderR1"]);
@@ -209,10 +210,10 @@ describe("FrontstageDef", () => {
 
     await frontstageDef.saveChildWindowSizeAndPosition("fw1", window);
 
-    const uiSettingsStorage = UiFramework.getUiSettingsStorage();
+    const uiSettingsStorage = UiFramework.getUiStateStorage();
     if (uiSettingsStorage) {
       const settingsResult = await uiSettingsStorage.getSetting(FRONTSTAGE_SETTINGS_NAMESPACE, getFrontstageStateSettingName(frontstageDef.id));
-      expect(UiSettingsStatus.Success === settingsResult.status);
+      expect(UiStateStorageStatus.Success === settingsResult.status);
       const newState = settingsResult.setting.nineZone as NineZoneState;
       expect(newState.tabs.t1.preferredPopoutWidgetSize?.height).to.eql(999);
       expect(newState.tabs.t1.preferredPopoutWidgetSize?.x).to.eql(99);
@@ -242,10 +243,10 @@ describe("FrontstageDef", () => {
     await frontstageDef.saveChildWindowSizeAndPosition("fw1", window);
     sinon.stub(ProcessDetector, "isElectronAppFrontend").get(() => false);
 
-    const uiSettingsStorage = UiFramework.getUiSettingsStorage();
+    const uiSettingsStorage = UiFramework.getUiStateStorage();
     if (uiSettingsStorage) {
       const settingsResult = await uiSettingsStorage.getSetting(FRONTSTAGE_SETTINGS_NAMESPACE, getFrontstageStateSettingName(frontstageDef.id));
-      expect(UiSettingsStatus.Success === settingsResult.status);
+      expect(UiStateStorageStatus.Success === settingsResult.status);
       const newState = settingsResult.setting.nineZone as NineZoneState;
       expect(newState.tabs.t1.preferredPopoutWidgetSize?.height).to.eql(999 + 39);
       expect(newState.tabs.t1.preferredPopoutWidgetSize?.width).to.eql(999 + 16);
@@ -279,7 +280,7 @@ describe("float and dock widget", () => {
   it("panel widget should popout", async () => {
     let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
     state = addPanelWidget(state, "right", "rightStart", ["t1"], { minimized: true });
-    state = addPanelWidget(state, "right", "rightMiddle", ["t2"]);
+    state = addPanelWidget(state, "right", "rightMiddle", ["t2", "t4"], { activeTabId: "t2" });
     state = addPanelWidget(state, "right", "rightEnd", ["t3"]);
     state = addTab(state, "t1", { preferredPopoutWidgetSize: { width: 99, height: 99, x: 99, y: 99 } });
     state = addTab(state, "t2");
@@ -299,10 +300,18 @@ describe("float and dock widget", () => {
       defaultState: WidgetState.Open,
     });
 
+    const t4 = new WidgetDef({
+      id: "t4",
+      defaultState: WidgetState.Closed,
+    });
+
     const findWidgetDefGetter = sinon.stub(frontstageDef, "findWidgetDef");
     findWidgetDefGetter
       .onFirstCall().returns(t1);
     findWidgetDefGetter.returns(t2);
+
+    expect(frontstageDef.getWidgetCurrentState(t2)).to.eql(WidgetState.Open);
+    expect(frontstageDef.getWidgetCurrentState(t4)).to.eql(WidgetState.Closed);
 
     const openStub = sinon.stub();
     sinon.stub(window, "open").callsFake(openStub);
@@ -524,4 +533,3 @@ describe("float and dock widget", () => {
   });
 
 });
-

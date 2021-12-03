@@ -33,20 +33,12 @@ export * from "./Time";
 export * from "./UnexpectedErrors";
 export * from "./UtilityTypes";
 
-/** @packageDocumentation
- * @module Utils
- */
-
 /** @docs-package-description
  * The core-bentley package contains classes to solve problems that are common for both client and server use cases.
  */
 /**
  * @docs-group-description BeSQLite
  * Classes for working with SQLite databases. SQLite underlies IModelDb and ECDb - see [Executing ECSQL]($docs/learning/ECSQL.md)
- */
-/**
- * @docs-group-description Configuration
- * Class for easily managing configuration variables for an iModel.js application.
  */
 /**
  * @docs-group-description Errors
