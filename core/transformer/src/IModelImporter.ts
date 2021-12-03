@@ -164,12 +164,10 @@ export class IModelImporter implements Required<IModelImportOptions> {
    */
   protected onInsertElement(elementProps: ElementProps): Id64String {
     try {
-      let elementId: Id64String;
-      if (this.preserveElementIdsForFiltering) {
-        elementId = this.targetDb.elements.insertElementForceUseId(elementProps);
-      } else {
-        elementId = this.targetDb.elements.insertElement(elementProps);
-      }
+      const elementId = this.targetDb.nativeDb.insertElement(
+        elementProps,
+        { forceUseId: this.preserveElementIdsForFiltering },
+      );
       Logger.logInfo(loggerCategory, `Inserted ${this.formatElementForLogger(elementProps)}`);
       this.trackProgress();
       if (this.simplifyElementGeometry) {

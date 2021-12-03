@@ -1536,19 +1536,6 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       }
     }
 
-    /** Insert a new element into the iModel, with an id of `elProps.id`
-     * @param elProps The properties of the new element.
-     * @returns The passed in element properties Id.
-     * @throws [[IModelError]] if unable to insert the element.
-     */
-    public insertElementForceUseId(elProps: ElementProps): Id64String {
-      try {
-        return elProps.id = this._iModel.nativeDb.insertElementForceUseId(elProps instanceof Element ? elProps.toJSON() : elProps);
-      } catch (err: any) {
-        throw new IModelError(err.errorNumber, `insertElement with class=${elProps.classFullName}: ${err.message}`);
-      }
-    }
-
     /** Update some properties of an existing element.
      * To support clearing a property value, every property name that is present in the `elProps` object will be updated even if the value is `undefined`.
      * To keep an individual element property unchanged, it should either be excluded from the `elProps` parameter or set to its current value.
