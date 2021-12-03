@@ -109,7 +109,7 @@ export class BackgroundMapSettings {
   public readonly useDepthBuffer: boolean;
   /** If true, terrain heights will be applied to the map; otherwise the map will be rendered as a plane. */
   public readonly applyTerrain: boolean;
-  /**  Settings associated with terrain display. */
+  /** Settings associated with terrain display. */
   public readonly terrainSettings: TerrainSettings;
   /** Globe display mode. */
   public readonly globeMode: GlobeMode;

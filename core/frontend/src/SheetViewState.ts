@@ -980,6 +980,9 @@ class RasterAttachment {
     // Wrap the polyface in a GraphicBranch.
     const branch = new GraphicBranch(true);
     const vfOvrs = createDefaultViewFlagOverrides({ clipVolume: true, shadows: false, lighting: false, thematic: false });
+
+    // Disable transparency - background pixels are 100% transparent so they will be discarded anyway. Other pixels are 100% opaque.
+    vfOvrs.transparency = false;
     branch.setViewFlagOverrides(vfOvrs);
     branch.symbologyOverrides = new FeatureSymbology.Overrides();
     branch.entries.push(graphic);

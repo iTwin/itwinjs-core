@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Get WidgetState and PanelState from NinzoneState when running in UI 2 mode - single source of truth.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-quantity",
+      "comment": "Remove alternateLabels from UnitProps and require them to be provided via AlternateUnitLabelsProvider",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-quantity"
+}

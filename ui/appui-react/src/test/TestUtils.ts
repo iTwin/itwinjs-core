@@ -10,7 +10,7 @@ import { expect } from "chai";
 
 import { UserInfo } from "../appui-react/UserInfo";
 import { ContentLayoutProps, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyRecord, PropertyValueFormat, StandardContentLayouts, StandardTypeNames } from "@itwin/appui-abstract";
-import { UiSettings, UiSettingsResult, UiSettingsStatus } from "@itwin/core-react";
+import { UiStateStorage, UiStateStorageResult, UiStateStorageStatus } from "@itwin/core-react";
 
 import {
   ActionsUnion, combineReducers, ContentGroup, createAction, DeepReadonly, FrameworkReducer,
@@ -218,24 +218,24 @@ export const storageMock = () => {
 };
 
 /** @internal */
-export class UiSettingsStub implements UiSettings {
-  public async deleteSetting(): Promise<UiSettingsResult> {
+export class UiStateStorageStub implements UiStateStorage {
+  public async deleteSetting(): Promise<UiStateStorageResult> {
     return {
-      status: UiSettingsStatus.Success,
+      status: UiStateStorageStatus.Success,
       setting: {},
     };
   }
 
-  public async getSetting(): Promise<UiSettingsResult> {
+  public async getSetting(): Promise<UiStateStorageResult> {
     return {
-      status: UiSettingsStatus.NotFound,
+      status: UiStateStorageStatus.NotFound,
       setting: {},
     };
   }
 
-  public async saveSetting(): Promise<UiSettingsResult> {
+  public async saveSetting(): Promise<UiStateStorageResult> {
     return {
-      status: UiSettingsStatus.Success,
+      status: UiStateStorageStatus.Success,
       setting: {},
     };
   }

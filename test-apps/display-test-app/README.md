@@ -13,7 +13,7 @@ The application contained within this directory provides a test environment for 
   * Assets (images, icons, fonts)
 * frontend/
   * The main application body of code that runs on initialization of the Electron app, as well setting up event handlers for parts of the UI
-  * Extended API functionality build on top of the imodeljs-core frontend dependency
+  * Extended API functionality build on top of the `@itwin/core-frontend` dependency
 * backend/
   * Specifications for initializing the Electron application, as well as event handlers for Electron events.
 
@@ -105,8 +105,8 @@ For the backend, restart the debugger config to pick up the changes.
 ## Dependencies
 
 * Installed dependencies for display-test-app may be found in the generated node_modules directory. Since display-test-app is but a part of a larger monorepo, the dependencies here are provided as symlinks into a master node_modules directory managed by the build tool Rush.
-* Any changes made to imodeljs-core files outside of this directory will not immediately be reflected in display-test-app. The entire imodeljs-core monorepo must be rebuilt in order for changes to take effect.
-* If dependencies have changed after pulling the most recent version of imodeljs-core, it is often necessary to do a clean reinstall of all dependencies in order to avoid build errors.
+* Any changes made to itwinjs-core files outside of this directory will not immediately be reflected in display-test-app. The entire monorepo must be rebuilt in order for changes to take effect.
+* If dependencies have changed after pulling the most recent version of the repo, it is often necessary to do a clean reinstall of all dependencies in order to avoid build errors.
 
 ```cmd
 rush install -c
@@ -193,7 +193,7 @@ You can use these environment variables to alter the default behavior of various
 
 ## Key-ins
 
-display-test-app has access to all key-ins defined in the imodeljs-frontend and frontend-devtools packages. It also provides the following additional key-ins. The windowId of a viewport is an integer shown inside brackets in the viewport's title bar.
+display-test-app has access to all key-ins defined in the `@itwin/core-frontend` and `@itwin/frontend-devtools` packages. It also provides the following additional key-ins. The windowId of a viewport is an integer shown inside brackets in the viewport's title bar.
 
 * `win resize` width height *windowId* - resize the content area of the specified of focused window to specified width and height.
 * `win focus` windowId - give focus to the specified window.
@@ -257,9 +257,17 @@ Using an editing scope is optional, but outside of a scope, the viewport's graph
 
 ### Editing key-ins
 
-display-test-app has access to all key-ins defined in the imodeljs-editor-frontend package. It also provides the following additional key-ins.
+display-test-app has access to all key-ins defined in the `@itwin/editor-frontend` package. It also provides the following additional key-ins.
 
 * `dta edit` - begin a new editing scope, or end the current editing scope. The title of the window or browser tab will update to reflect the current state: "[R/W]" indicating no current editing scope, or "[EDIT]" indicating an active editing scope.
 * `dta place line string` - start placing a line string. Each data point defines another point in the string; a reset (right mouse button) finishes. The element is placed into the first spatial model and spatial category in the viewport's model and category selectors.
 * `dta push` - push local changes to iModelHub. A description of the changes must be supplied. It should be enclosed in double quotes if it contains whitespace characters.
 * `dta pull` - pull and merge changes from iModelHub into the local briefcase. You must be signed in.
+
+## Running in iOS
+
+The steps to run the display test app in an iOS app:
+
+1. Run `npm run build:ios`
+2. Open `test-apps/display-test-app/ios/imodeljs-test-app/imodeljs-test-app.xcodeproj`
+3. Start the XCode Project to an iPad
