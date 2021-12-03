@@ -864,7 +864,7 @@ export class IModelTransformer extends IModelExportHandler {
       await this.detectElementDeletes();
       await this.detectRelationshipDeletes();
     }
-    this.finishProcessing();
+    this.importer.computeProjectExtents();
   }
 
   /** Export changes from the source iModel and import the transformed entities into the target iModel.
@@ -881,15 +881,7 @@ export class IModelTransformer extends IModelExportHandler {
     this.initFromExternalSourceAspects();
     await this.exporter.exportChanges(accessToken, startChangesetId);
     await this.processDeferredElements();
-    this.finishProcessing();
-  }
-
-  /** final steps of processing, regardless of whether it's processing all of the iModel or just changes  */
-  private finishProcessing() {
     this.importer.computeProjectExtents();
-    if (this._preserveElementIdsForFiltering) {
-      this.targetDb.nativeDb.resetElementIdSequence(); // we used insertElementForceUseId so we must call this now
-    }
   }
 }
 
