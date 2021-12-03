@@ -393,7 +393,7 @@ class ExerciseCurve {
     const strokeRange = strokes.range();
     ck.testTrue(directRange.containsRange(strokeRange), "range from curve contains range of strokes");
     ck.testTrue(extendRange.containsRange(strokeRange), "range from curve by extend contains range of strokes");
-    // add slop to pass CurveChainWithDistanceIndex with 2-pt InterpolationCurve3d inside, for which curveLength is smaller by 9.0e-16
+    // add slop to pass CurveChainWithDistanceIndex with 2-pt InterpolationCurve3d inside, for which quickLength is smaller by 9.0e-16
     ck.testLE(strokeLength, curveLength + Geometry.smallMetricDistanceSquared, "strokeLength cannot exceed curveLength");
     if (!ck.testLE(chordFraction * curveLength, strokeLength, "strokes appear accurate")
       || Checker.noisy.stroke) {
