@@ -9,7 +9,6 @@ export type {
   BeButtonEventProps,
   BeTouchEventProps,
   BeWheelEventProps,
-  BlankConnectionProps,
   CanvasDecoration,
   ChangeViewedModel2dOptions,
   ComputeChordToleranceArgs,
@@ -21,7 +20,6 @@ export type {
   DepthRangeNpc,
   ExtentLimits,
   FeatureOverrideProvider,
-  FrontendHubAccess,
   FrontendSecurityOptions,
   FuzzySearchResult,
   GlobalAlignmentOptions,
@@ -44,11 +42,8 @@ export type {
   GraphicShape2d,
   GraphicSolidPrimitive,
   HitListHolder,
-  IModelAppOptions,
   IModelIdArg,
-  IpcAppOptions,
   MarginOptions,
-  NativeAppOpts,
   OffScreenViewportOptions,
   OnViewExtentsError,
   OsmBuildingDisplayOptions,
@@ -98,8 +93,6 @@ export type {
 // Types
 export type {
   CanvasDecorationList,
-  DownloadBriefcaseId,
-  DownloadBriefcaseOptions,
   FlashSettingsOptions,
   GpuMemoryLimit,
   GraphicList,
@@ -133,7 +126,6 @@ export {
   DepthPointSource,
   EventHandled,
   FlashMode,
-  FrontendLoggerCategory,
   GraphicType,
   HitDetailType,
   HitGeomType,
@@ -179,7 +171,6 @@ export {
 // Abstract Classes
 export type {
   AuxCoordSystemState,
-  BriefcaseNotificationHandler,
   DisplayStyleState,
   GeometricModelState,
   GraphicBuilder,
@@ -194,7 +185,6 @@ export type {
   RenderGraphic,
   RenderGraphicOwner,
   RenderSystem,
-  SkyBox,
   Tile,
   TileTree,
   TileTreeReference,
@@ -221,12 +211,8 @@ export type {
   BeWheelEvent,
   BingElevationProvider,
   BingLocationProvider,
-  BlankConnection,
-  BriefcaseConnection,
-  BriefcaseTxns,
   CategorySelectorState,
   ChangeFlags,
-  CheckpointConnection,
   Cluster,
   ContextRealityModelState,
   DecorateContext,
@@ -242,18 +228,14 @@ export type {
   ElementState,
   // EmphasizeElements, @REAL
   EntityState,
-  Environment,
   EventController,
   // FitViewTool, @TOOL-IMPL
   FlashSettings,
   // FlyViewTool, @TOOL-IMPL
   FrustumAnimator,
-  FuzzySearch,
-  FuzzySearchResults,
   GeometricModel2dState,
   GeometricModel3dState,
   GlobeAnimator,
-  GraphicalEditingScope,
   // GraphicBranch, @REAL
   HiliteSet,
   HitDetail,
@@ -261,7 +243,6 @@ export type {
   IconSprites,
   // IdleTool, @TOOL-IMPL
   // IModelApp, @BANNED
-  IModelRoutingContext,
   IntersectDetail,
   // IpcApp, @BANNED
   LocateOptions,
@@ -278,8 +259,6 @@ export type {
   // MeasureVolumeTool, @TOOL-IMPL
   ModelSelectorState,
   ModelState,
-  NativeApp,
-  NativeAppAuthorization,
   NotificationManager,
   NotifyMessageDetails,
   OffScreenViewport,
@@ -299,19 +278,13 @@ export type {
   // SetupWalkCameraTool, @TOOL-IMPL
   SheetModelState,
   SheetViewState,
-  SkyCube,
-  SkyGradient,
-  SkySphere,
   SnapDetail,
-  SnapshotConnection,
   SpatialLocationModelState,
   SpatialModelState,
   SpatialViewState,
   Sprite,
   SpriteLocation,
-  StandardView,
   // StandardViewTool, @TOOL-IMPL
-  Storage,
   TentativePoint,
   TileAdmin,
   TileDrawArgs,
@@ -324,15 +297,12 @@ export type {
   // Tool, @REAL
   ToolAdmin,
   // ToolAssistance, @REAL
-  ToolRegistry,
   ToolSettings,
-  TwoWayViewportSync,
   // ViewClipByElementTool, @TOOL-IMPL
   // ViewClipByPlaneTool, @TOOL-IMPL
   // ViewClipByRangeTool, @TOOL-IMPL
   // ViewClipByShapeTool, @TOOL-IMPL
   // ViewClipClearTool, @TOOL-IMPL
-  ViewClipDecorationProvider,
   // ViewClipTool, @TOOL-IMPL
   ViewCreator2d,
   ViewCreator3d,
@@ -355,7 +325,6 @@ export type {
 export type {
   // EditManipulator, @REAL
   // FeatureSymbology, @REAL
-  Frustum2d,
   PerModelCategoryVisibility,
   // Pixel @REAL
 } from "@itwin/core-frontend";
