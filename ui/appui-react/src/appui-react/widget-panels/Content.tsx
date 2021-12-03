@@ -14,15 +14,16 @@ import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { FrontstageNineZoneStateChangedEventArgs } from "../frontstage/FrontstageDef";
 import { useRefState } from "@itwin/core-react";
 
-function ExternalContentHost(props: { attachToDom: ((container: HTMLElement) => void) | undefined }) {
-  const { attachToDom } = props;
+/** @internal */
+export function ExternalContentHost(props: { widgetContainerId: string, attachToDom: ((container: HTMLElement) => void) | undefined }) {
+  const { attachToDom, widgetContainerId } = props;
   const [containerRef, container] = useRefState<HTMLDivElement>();
   React.useEffect(() => {
     if (container && attachToDom)
       attachToDom(container);
   }, [attachToDom, container]);
 
-  return <div data-item-id="widget-attachment-node" ref={containerRef} />;
+  return <div data-item-id={widgetContainerId} ref={containerRef} />;
 }
 
 /** @internal */
@@ -35,11 +36,11 @@ export function WidgetContent() {
   const itemId = widget?.id ?? widget?.label ?? "unknown";
   const children = React.useMemo(() => {
     if (attachToDom) {
-      return <ExternalContentHost attachToDom={attachToDom} />;
+      return <ExternalContentHost widgetContainerId={itemId} attachToDom={attachToDom} />;
     } else {
       return reactNode;
     }
-  }, [reactNode, attachToDom]);
+  }, [attachToDom, itemId, reactNode]);
   return (
     <ScrollableWidgetContent itemId={itemId}>
       {children}
