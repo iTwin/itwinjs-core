@@ -308,11 +308,14 @@ class ExerciseCurve {
     ExerciseCurve.exerciseCloneAndTransform(ck, curve);
     ExerciseCurve.exerciseCloneAndTransform(ck, curve);
     ExerciseCurve.exerciseStrokeData(ck, curve);
-    // evaluate near endpoints to trigger end conditions
+
     const point0A = curve.startPoint();
     const point1A = curve.endPoint();
-    ck.testLE(point0A.distance(point1A), curve.quickLength() + Geometry.smallMetricDistanceSquared, "start end distance LE curve quick length");
+    // add slop to pass CurveChainWithDistanceIndex with 2-pt InterpolationCurve3d inside, for which quickLength is smaller by 9.0e-16
+    if (!ck.testLE(point0A.distance(point1A), curve.quickLength() + Geometry.smallMetricDistanceSquared, "start end distance LE curve quick length"))
+      curve.quickLength();
 
+    // evaluate near endpoints to trigger end conditions
     for (const f of [0.01, 0.48343, 0.992]) {
       const xyzA = Point3d.create();
       const xyzB = curve.fractionToPoint(f);

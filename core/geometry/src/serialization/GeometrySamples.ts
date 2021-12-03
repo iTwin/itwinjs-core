@@ -1937,9 +1937,11 @@ export class Sample {
    * * alternating lines and arcs
    * * arc spline with corners
    * * arc spline with smooth joins
-   * * interpolation curve
-   * * integrated spiral
-   * * direct spiral
+   * * interpolation curve 2 pts
+   * * interpolation curve 3 pts
+   * * interpolation curve >3 pts
+   * * integrated spiral (bloss)
+   * * direct spiral (half-cosine)
    */
   public static createCurveChainWithDistanceIndex(): CurveChainWithDistanceIndex[] {
     const pointsA = [Point3d.create(0, 0, 0), Point3d.create(1, 3, 0), Point3d.create(2, 4, 0), Point3d.create(3, 3, 0), Point3d.create(4, 0, 0)];
