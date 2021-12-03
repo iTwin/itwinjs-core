@@ -1179,7 +1179,7 @@ describe("IModelTransformer", () => {
     targetDb.close();
   });
 
-  it.only("filter preserves Ids", async () => {
+  it.only("preserveId option preserves element ids, not other entity ids", async () => {
     const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "PreserveIdSource.bim");
     const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "PreserveId" } });
 
