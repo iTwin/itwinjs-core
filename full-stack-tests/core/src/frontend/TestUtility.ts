@@ -6,9 +6,9 @@ import { assert } from "chai";
 import { AccessToken, GuidString, Logger, ProcessDetector } from "@itwin/core-bentley";
 import { Project as ITwin } from "@itwin/projects-client";
 import { AuthorizationClient } from "@itwin/core-common";
-import { ElectronAppAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronFrontend";
+import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
-import { IModelApp, IModelAppOptions, MockRender, NativeApp } from "@itwin/core-frontend";
+import { IModelApp, IModelAppOptions, LocalhostIpcApp, MockRender, NativeApp } from "@itwin/core-frontend";
 import { getAccessTokenFromBackend, TestUserCredentials } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { IModelHubUserMgr } from "../common/IModelHubUserMgr";
 import { rpcInterfaces, TestRpcInterface } from "../common/RpcInterfaces";
@@ -65,7 +65,7 @@ export class TestUtility {
 
     let authorizationClient: AuthorizationClient | undefined;
     if (NativeApp.isValid) {
-      authorizationClient = new ElectronAppAuthorization ();
+      authorizationClient = new ElectronRendererAuthorization ();
       IModelApp.authorizationClient = authorizationClient;
       const accessToken = await setBackendAccessToken(user);
       if ("" === accessToken)
@@ -135,13 +135,22 @@ export class TestUtility {
    *
    * Otherwise, IModelApp.startup is used directly.
    */
-  public static async startFrontend(opts?: IModelAppOptions, mockRender?: boolean): Promise<void> {
+  public static async startFrontend(opts?: IModelAppOptions, mockRender?: boolean, enableWebEdit?: boolean): Promise<void> {
     opts = opts ? opts : TestUtility.iModelAppOptions;
     if (mockRender)
       opts.renderSys = this.systemFactory();
     if (ProcessDetector.isElectronAppFrontend)
       return ElectronApp.startup({ iModelApp: opts });
-    return IModelApp.startup(opts);
+
+    if (enableWebEdit) {
+      let socketUrl = new URL(window.location.toString());
+      socketUrl.port = (parseInt(socketUrl.port, 10) + 2000).toString();
+      socketUrl = LocalhostIpcApp.buildUrlForSocket(socketUrl);
+
+      return LocalhostIpcApp.startup({ iModelApp: opts, localhostIpcApp: { socketUrl } });
+    } else {
+      return IModelApp.startup(opts);
+    }
   }
 
   /** Helper around the different shutdown workflows for different app types.

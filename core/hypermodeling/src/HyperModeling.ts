@@ -93,10 +93,10 @@ export class HyperModeling {
     await IModelApp.localization.registerNamespace(namespace);
 
     const loadImages = [
-      tryImageElementFromUrl("section-marker.svg"),
-      tryImageElementFromUrl("detail-marker.svg"),
-      tryImageElementFromUrl("elevation-marker.svg"),
-      tryImageElementFromUrl("plan-marker.svg"),
+      tryImageElementFromUrl(`${IModelApp.publicPath}section-marker.svg`),
+      tryImageElementFromUrl(`${IModelApp.publicPath}detail-marker.svg`),
+      tryImageElementFromUrl(`${IModelApp.publicPath}elevation-marker.svg`),
+      tryImageElementFromUrl(`${IModelApp.publicPath}plan-marker.svg`),
     ];
 
     const images = await Promise.all(loadImages);

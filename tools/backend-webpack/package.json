@@ -1,7 +1,7 @@
 {
   "name": "@itwin/backend-webpack-tools",
-  "version": "3.0.0-dev.135",
-  "description": "Configuration and scripts for iModel.js agents and backends.",
+  "version": "3.0.0-dev.138",
+  "description": "Configuration and scripts for iTwin.js agents and backends.",
   "license": "MIT",
   "repository": {
     "type": "git",

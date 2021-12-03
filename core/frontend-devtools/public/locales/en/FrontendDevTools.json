@@ -456,6 +456,9 @@
     },
     "SetSkyCube": {
       "keyin": "fdt sky cube"
+    },
+    "ChangeBackgroundColor": {
+      "keyin": "fdt bgcolor"
     }
   }
 }
