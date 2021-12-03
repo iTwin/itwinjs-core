@@ -5982,7 +5982,6 @@ export class XYZ implements XYAndZ {
     indexOfMaxAbs(): number;
     isAlmostEqual(other: XYAndZ, tol?: number): boolean;
     isAlmostEqualMetric(other: XYAndZ): boolean;
-    isAlmostEqualWithToleranceFactor(other: XYAndZ, toleranceFactor: number): boolean;
     isAlmostEqualXY(other: XAndY, tol?: number): boolean;
     isAlmostEqualXYZ(x: number, y: number, z: number, tol?: number): boolean;
     get isAlmostZero(): boolean;
