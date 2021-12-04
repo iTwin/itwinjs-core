@@ -3,9 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-// THIS FILE EXISTS ONLY FOR DOCUMENTATION GENERATION.
-// It imports both frontend and backend code, which is not legal anywhere.
-// Do not import it in real code!
-
-export * from "./MobileBackend";
-export * from "./MobileFrontend";
+/** @internal */
+export const mobileAppChannel = "mobileApp";
+/** @internal */
+export const mobileAppNotify = "mobileApp-notify";

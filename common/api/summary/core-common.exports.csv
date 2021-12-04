@@ -377,6 +377,7 @@ internal;class IpcWebSocket
 internal;IpcWebSocketBackend 
 internal;IpcWebSocketFrontend 
 internal;IpcWebSocketMessage
+internal;IpcWebSocketMessage
 internal;IpcWebSocketMessageType
 internal;class IpcWebSocketTransport
 internal;isKnownTileFormat(format: number): boolean
