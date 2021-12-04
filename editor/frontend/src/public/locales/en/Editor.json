@@ -55,7 +55,8 @@
       "flyover": "Create B-spline Curve",
       "Label": {
         "Method": "Method",
-        "Order": "Order"
+        "Order": "Order",
+        "Tangents": "Define Tangents"
       },
       "Method": {
         "ControlPoints": "Control Points",

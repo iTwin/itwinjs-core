@@ -9,6 +9,7 @@
 
 // import { Point2d } from "./Geometry2d";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
+import { InterpolationCurve3d } from "../bspline/InterpolationCurve3d";
 import { Arc3d } from "../curve/Arc3d";
 import { CurveCollection } from "../curve/CurveCollection";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
@@ -177,6 +178,14 @@ export class FrameBuilder {
           if (data.getPolePoint3d(i, point) instanceof Point3d)
             this.announcePoint(point);
           else break;
+        }
+      } else if (data instanceof InterpolationCurve3d) {
+        const point = Point3d.create();
+        for (let i = 0; this.savedVectorCount() < 2; i++) {
+          if (i < data.options.fitPoints.length-1) {
+            point.setFrom(data.options.fitPoints[i]);
+            this.announcePoint(point);
+          } else break;
         }
       }
       // TODO: unknown curve type.  Stroke? FrenetFrame?
