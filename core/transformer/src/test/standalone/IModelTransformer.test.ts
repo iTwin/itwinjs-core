@@ -1206,7 +1206,7 @@ describe("IModelTransformer", () => {
     return result;
   }
 
-  it.only("preserveId option preserves element ids, not other entity ids", async () => {
+  it("preserveId option preserves element ids, not other entity ids", async () => {
     const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "PreserveIdSource.bim");
     const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "PreserveId" } });
 
@@ -1360,7 +1360,7 @@ describe("IModelTransformer", () => {
     targetDb.close();
   });
 
-  it.only("preserveId on test model", async () => {
+  it("preserveId on test model", async () => {
     const seedDb = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
     const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "PreserveIdOnTestModel-Source.bim");
     // transforming the seed to an empty will update it to the latest bis from the new target
