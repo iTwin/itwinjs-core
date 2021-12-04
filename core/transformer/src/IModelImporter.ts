@@ -168,6 +168,8 @@ export class IModelImporter implements Required<IModelImportOptions> {
         elementProps,
         { forceUseId: this.preserveElementIdsForFiltering },
       );
+      // set the id like [IModelDb.insertElement]($backend), does, the raw nativeDb method does not
+      elementProps.id = elementId;
       Logger.logInfo(loggerCategory, `Inserted ${this.formatElementForLogger(elementProps)}`);
       this.trackProgress();
       if (this.simplifyElementGeometry) {

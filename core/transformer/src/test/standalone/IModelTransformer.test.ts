@@ -1183,9 +1183,9 @@ describe("IModelTransformer", () => {
   async function getAllElementsInvariants(db: IModelDb, filterPredicate?: (element: Element) => boolean) {
     const result: Record<Id64String, any> = {};
     for await (const row of db.query("SELECT * FROM bis.Element", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
-      if (!filterPredicate || filterPredicate(db.elements.getElement(row.ECInstanceId))) {
+      if (!filterPredicate || filterPredicate(db.elements.getElement(row.id))) {
         const { lastMod: _lastMod, ...invariantPortion } = row;
-        result[row.ECInstanceId] = invariantPortion;
+        result[row.id] = invariantPortion;
       }
     }
     return result;
@@ -1362,14 +1362,20 @@ describe("IModelTransformer", () => {
 
   it.only("preserveId on test model", async () => {
     const seedDb = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
-    const sourceDbFile = IModelTestUtils.prepareOutputFile("IModelTransformer", "PreserveIdOnTestModel-Source.bim");
-    const sourceDb = SnapshotDb.createFrom(seedDb, sourceDbFile);
+    const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "PreserveIdOnTestModel-Source.bim");
+    // transforming the seed to an empty will update it to the latest bis from the new target
+    // which minimizes differences we'd otherwise need to filter later
+    const sourceDb  = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: seedDb.rootSubject });
+    const seedTransformer = new IModelTransformer(seedDb, sourceDb);
+    await seedTransformer.processAll();
+    sourceDb.saveChanges();
 
     const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "PreserveIdOnTestModel-Target.bim");
     const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
 
     const transformer = new IModelTransformer(sourceDb, targetDb, { preserveElementIdsForFiltering: true });
     await transformer.processAll();
+    targetDb.saveChanges();
 
     const sourceContent = await getAllElementsInvariants(sourceDb);
     const targetContent = await getAllElementsInvariants(targetDb);
