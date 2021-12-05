@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Fixed a test for GCS interpretation",
+      "comment": "",
       "type": "none"
     }
   ],
