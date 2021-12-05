@@ -9,7 +9,7 @@
 import { dispose } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
 import { FeatureIndexType, PolylineTypeFlags, QParams3d, RenderMode } from "@itwin/core-common";
-import { PolylineParams } from "../primitives/VertexTable";
+import { PolylineParams } from "../primitives/PolylineParams";
 import { RenderMemory } from "../RenderMemory";
 import { LUTGeometry, PolylineBuffers } from "./CachedGeometry";
 import { ColorInfo } from "./ColorInfo";
