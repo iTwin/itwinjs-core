@@ -15,7 +15,7 @@ import { Geometry } from "@itwin/core-geometry";
 describe("GeoServices", () => {
 
   // ###TODO AlainRobertAtBentley fix tests.
-  it.skip("should be able to interpret to completion an incomplete GeographicCRS", async () => {
+  it("should be able to interpret to completion an incomplete GeographicCRS", async () => {
 
     const completionTest = async (incompleteGCS: GeographicCRSProps, completeCRS: GeographicCRSProps) => {
 
