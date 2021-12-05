@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Fixed a test for GCS interpretation",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
