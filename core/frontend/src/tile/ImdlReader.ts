@@ -20,10 +20,11 @@ import { InstancedGraphicParams } from "../render/InstancedGraphicParams";
 import { AuxChannelTable, AuxChannelTableProps } from "../render/primitives/AuxChannelTable";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
-import {
-  createSurfaceMaterial, EdgeParams, isValidSurfaceType, MeshParams, PointStringParams, PolylineParams, SegmentEdgeParams, SilhouetteParams,
-  SurfaceMaterial, SurfaceParams, SurfaceType, TesselatedPolyline, VertexIndices, VertexTable,
-} from "../render/primitives/VertexTable";
+import { createSurfaceMaterial, isValidSurfaceType, SurfaceMaterial, SurfaceParams, SurfaceType } from "../render/primitives/SurfaceParams";
+import { EdgeParams, SegmentEdgeParams, SilhouetteParams } from "../render/primitives/EdgeParams";
+import { MeshParams, VertexIndices, VertexTable } from "../render/primitives/VertexTable";
+import { PointStringParams } from "../render/primitives/PointStringParams";
+import { PolylineParams, TesselatedPolyline } from "../render/primitives/PolylineParams";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderGeometry, RenderSystem } from "../render/RenderSystem";
 import { BatchOptions } from "../render/GraphicBuilder";
