@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Added additional documentation for ecefLocation iniModel",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

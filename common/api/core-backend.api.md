@@ -853,7 +853,7 @@ export interface CreateNewIModelProps extends IModelNameArg {
     // (undocumented)
     readonly noLocks?: true;
     // (undocumented)
-    readonly revision0?: LocalFileName;
+    readonly version0?: LocalFileName;
 }
 
 // @public
@@ -928,7 +928,7 @@ export class DevTools {
     static stats(): DevToolsStats;
     static versions(): {
         application: string;
-        iModelJs: any;
+        iTwinJs: any;
     };
 }
 

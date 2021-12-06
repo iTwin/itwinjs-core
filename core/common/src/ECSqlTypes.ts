@@ -107,13 +107,13 @@ export enum ECSqlSystemProperty {
   PointZ,
 }
 
-/** Utility to format ECProperty names according to the iModel.js formatting rules.
+/** Utility to format ECProperty names according to the iTwin.js formatting rules.
  * See also [ECSQL Row Format]($docs/learning/ECSQLRowFormat).
  * @public
  */
 export class ECJsNames {
 
-  /** Formats the specified ECProperty name according to the iModel.js formatting rules.
+  /** Formats the specified ECProperty name according to the iTwin.js formatting rules.
    *
    *  See [ECSQL Row Format]($docs/learning/ECSQLRowFormat) which describes the formatting rules.
    *
@@ -190,7 +190,7 @@ export class ECJsNames {
   }
 
   /** Returns the name of the specified ECSQL system property according to the
-   *  iModel.js formatting rules.
+   *  iTwin.js formatting rules.
    *
    *  See [ECSQL Row Format]($docs/learning/ECSQLRowFormat) which describes the formatting rules.
    * @param systemPropertyType System property type

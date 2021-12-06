@@ -1,7 +1,7 @@
 {
   "name": "@itwin/webgl-compatibility",
-  "version": "3.0.0-dev.135",
-  "description": "APIs for determining the level of compatibility of a browser+device with the iModel.js rendering system.",
+  "version": "3.0.0-dev.142",
+  "description": "APIs for determining the level of compatibility of a browser+device with the iTwin.js rendering system.",
   "license": "MIT",
   "main": "lib/cjs/webgl-compatibility.js",
   "module": "lib/esm/webgl-compatibility.js",

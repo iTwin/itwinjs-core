@@ -19,7 +19,7 @@ export interface UiItemsProvider {
 
 ### UiItemsProvider Example
 
-The code excerpt below is an example taken from `imodeljs\test-apps\ui-test-app` that shows a class that implements the UiItemsProvider interface.
+The code excerpt below is an example taken from `test-apps\ui-test-app` that shows a class that implements the UiItemsProvider interface.
 
 ```tsx
 class TestUiProvider implements UiItemsProvider {

@@ -4452,6 +4452,8 @@ export class IModelApp {
     static get mapLayerFormatRegistry(): MapLayerFormatRegistry;
     static get notifications(): NotificationManager;
     static readonly onBeforeShutdown: BeEvent<() => void>;
+    // @beta
+    static get publicPath(): string;
     // @alpha
     static get quantityFormatter(): QuantityFormatter;
     static queryRenderCompatibility(): WebGLRenderCompatibilityInfo;
@@ -4502,6 +4504,8 @@ export interface IModelAppOptions {
     // @beta
     mapLayerOptions?: MapLayerOptions;
     notifications?: NotificationManager;
+    // @beta
+    publicPath?: string;
     // @internal (undocumented)
     quantityFormatter?: QuantityFormatter;
     // @beta (undocumented)
@@ -5039,6 +5043,8 @@ export function linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: V
 // @internal
 export class LocalhostIpcApp {
     // (undocumented)
+    static buildUrlForSocket(base: URL, path?: string): URL;
+    // (undocumented)
     static startup(opts: LocalHostIpcAppOpts): Promise<void>;
 }
 
@@ -5049,7 +5055,7 @@ export interface LocalHostIpcAppOpts {
     // (undocumented)
     localhostIpcApp?: {
         socketPort?: number;
-        socketPath?: string;
+        socketUrl?: URL;
     };
 }
 

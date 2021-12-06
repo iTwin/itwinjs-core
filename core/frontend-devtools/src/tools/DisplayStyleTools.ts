@@ -9,7 +9,7 @@
 
 import { CompressedId64Set } from "@itwin/core-bentley";
 import {
-  DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, ElementLoadOptions, RenderMode, RenderSchedule, RenderTimelineProps, SkyCube, SkySphere,
+  ColorDef, DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, ElementLoadOptions, RenderMode, RenderSchedule, RenderTimelineProps, SkyCube, SkySphere,
   SubCategoryAppearance, SubCategoryOverride, ViewFlags, ViewFlagsProperties, WhiteOnWhiteReversalSettings,
 } from "@itwin/core-common";
 import {
@@ -491,6 +491,30 @@ export class ToggleWiremeshTool extends DisplayStyleTool {
 
   public async execute(vp: Viewport) {
     vp.viewFlags = vp.viewFlags.with("wiremesh", this._enable ?? !vp.viewFlags.wiremesh);
+    return true;
+  }
+}
+
+/** Change the background color of the active viewport and optionally its transparency.
+ * @beta
+ */
+export class ChangeBackgroundColorTool extends DisplayStyleTool {
+  private _color?: ColorDef;
+
+  public static override toolId = "ChangeBackgroundColor";
+  public static override get minArgs() { return 1; }
+  public static override get maxArgs() { return 1; }
+
+  public async parse(args: string[]) {
+    this._color = ColorDef.fromString(args[0]);
+    return true;
+  }
+
+  public async execute(vp: Viewport) {
+    if (!this._color)
+      return false;
+
+    vp.displayStyle.backgroundColor = this._color;
     return true;
   }
 }
