@@ -39,10 +39,4 @@ export interface SelectedNodeInstancesSpecification extends ContentSpecification
    * classes are accepted as well.
    */
   acceptablePolymorphically?: boolean;
-
-  /**
-   * Identifies whether we should ignore this specification if there is already an existing specification
-   * with higher `priority` that already provides content.
-   */
-  onlyIfNotHandled?: boolean;
 }
