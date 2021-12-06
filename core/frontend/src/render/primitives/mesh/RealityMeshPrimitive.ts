@@ -6,9 +6,10 @@
  * @module Rendering
  */
 
-import { QParams2d, QParams3d, RenderTexture } from "@itwin/core-common";
-import { GltfMeshData } from "../../../tile/internal";
+import { ColorDef, PackedFeatureTable, QParams2d, QParams3d, RenderTexture } from "@itwin/core-common";
+import { GltfMeshData, MapCartoRectangle, MapTileProjection } from "../../../tile/internal";
 import { RenderMemory } from "../../RenderMemory";
+import { MapLayerClassifiers, RenderRealityMeshGeometry, TerrainTexture } from "../../RenderSystem";
 import { Mesh } from "./MeshPrimitives";
 
 export interface RealityMeshProps {
@@ -20,6 +21,19 @@ export interface RealityMeshProps {
   readonly uvs: Uint16Array;
   readonly featureID: number;
   readonly texture?: RenderTexture;
+}
+
+/** @internal */
+export interface RealityMeshGraphicParams {
+  readonly realityMesh: RenderRealityMeshGeometry;
+  readonly projection: MapTileProjection;
+  readonly tileRectangle: MapCartoRectangle;
+  readonly featureTable: PackedFeatureTable;
+  readonly tileId: string | undefined;
+  readonly baseColor: ColorDef | undefined;
+  readonly baseTransparent: boolean;
+  readonly textures?: TerrainTexture[];
+  readonly layerClassifiers?: MapLayerClassifiers;
 }
 
 /** @internal */

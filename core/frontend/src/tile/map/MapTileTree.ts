@@ -17,7 +17,6 @@ import {
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
 import { TerrainDisplayOverrides } from "../../DisplayStyleState";
 import { HitDetail } from "../../HitDetail";
-import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { PlanarClipMaskState } from "../../PlanarClipMaskState";
 import { FeatureSymbology } from "../../render/FeatureSymbology";
@@ -126,17 +125,15 @@ export class MapTileTree extends RealityTileTree {
 
   public imageryTrees: ImageryMapTileTree[] = [];
   private _layerSettings = new Map<Id64String, MapLayerSettings>();
+  private _modelIdToIndex = new Map<Id64String, number>();
   public layerClassifiers = new Map<number, RenderPlanarClassifier>();
 
-  public  addImageryLayer(tree: ImageryMapTileTree, settings: MapLayerSettings) {
-    const maxLayers = IModelApp.renderSystem.maxRealityImageryLayers;
-    if (this.imageryTrees.length < maxLayers) {
-      this.imageryTrees.push(tree);
-      this._layerSettings.set(tree.modelId, settings);
-    } else {
-      // TBD -- Notify user that layers is being ignored?
-    }
+  public  addImageryLayer(tree: ImageryMapTileTree, settings: MapLayerSettings, index: number) {
+    this.imageryTrees.push(tree);
+    this._layerSettings.set(tree.modelId, settings);
+    this._modelIdToIndex.set(tree.modelId, index);
   }
+
   public addClassifierLayer(layerTreeRef: ClassifierMapLayerTileTreeReference, context: SceneContext) {
     const classifier = context.addPlanarClassifier(`MapLayer ${this.modelId}-${layerTreeRef.layerIndex}`, layerTreeRef);
     if (classifier)
@@ -156,6 +153,7 @@ export class MapTileTree extends RealityTileTree {
   public clearImageryTreesAndClassifiers() {
     this.imageryTrees.length = 0;
     this._layerSettings.clear();
+    this._modelIdToIndex.clear();
     this.layerClassifiers.clear();
   }
 
@@ -373,11 +371,8 @@ export class MapTileTree extends RealityTileTree {
     return this.sourceTilingScheme.tileXYToRectangle(quadId.column, quadId.row, quadId.level);
   }
   public getLayerIndex(imageryTreeId: Id64String) {
-    for (let index = 0; index < this.imageryTrees.length; index++)
-      if (imageryTreeId === this.imageryTrees[index].modelId)
-        return index;
-
-    return -1;
+    const index = this._modelIdToIndex.get(imageryTreeId);
+    return index === undefined ? -1 : index;
   }
 
   public getLayerTransparency(imageryTreeId: Id64String): number {
@@ -718,9 +713,9 @@ export class MapTileTreeReference extends TileTreeReference {
         const layerTree = layerTreeRef.treeOwner.load();
         if (undefined === layerTree)
           return false; // Not loaded yet.
-        if (layerTree instanceof ImageryMapTileTree)
-          tree.addImageryLayer(layerTree, layerTreeRef.layerSettings);
-        else if (layerTreeRef instanceof ClassifierMapLayerTileTreeReference)
+        if (layerTree instanceof ImageryMapTileTree) {
+          tree.addImageryLayer(layerTree, layerTreeRef.layerSettings, treeIndex);
+        } else if (layerTreeRef instanceof ClassifierMapLayerTileTreeReference)
           tree.addClassifierLayer(layerTreeRef, context);
       }
     }

@@ -35,6 +35,14 @@ const computeNormal = `
   return normalize(u_worldToViewN * normal);
 `;
 
+const testInside = `
+bool testInside(float x0, float y0, float x1, float y1, float x, float y) {
+  vec2 perp = vec2(y0 - y1, x1 - x0), test = vec2(x - x0, y - y0);
+
+  return (test.x * perp.x + test.y * perp.y) >= 0.0;
+}
+`;
+
 const applyTexture = `
 bool applyTexture(inout vec4 col, sampler2D sampler, mat4 params, mat4 matrix) {
   vec2 uv;
@@ -47,11 +55,19 @@ bool applyTexture(inout vec4 col, sampler2D sampler, mat4 params, mat4 matrix) {
     vec4  eye4 = vec4(v_eyeSpace, 1.0);
     vec4  classPos4 = matrix * eye4;
     classPos = classPos4.xy / classPos4.w;
+
+    if (!testInside(params[2].x, params[2].y, params[2].z, params[2].w, classPos.x, classPos.y) ||
+        !testInside(params[2].z, params[2].w, params[3].x, params[3].y, classPos.x, classPos.y) ||
+        !testInside(params[3].x, params[3].y, params[3].z, params[3].w, classPos.x, classPos.y) ||
+        !testInside(params[3].z, params[3].w, params[2].x, params[2].y, classPos.x, classPos.y))
+        return false;
+
     uv.x = classPos.x;
     uv.y = classPos.y / imageCount;
     layerAlpha = 1.0;
     if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0)
       return false;
+
     } else {
     vec4 texTransform = matrix[0].xyzw;
     vec4 texClip = matrix[1].xyzw;
@@ -135,7 +151,6 @@ function addTextures(builder: ProgramBuilder, maxTexturesPerMesh: number) {
             const eyeToModel = Matrix4d.createTransform(params.target.uniforms.frustum.viewMatrix.inverse()!);
             const eyeToTexture = modelToTexture.multiplyMatrixMatrix(eyeToModel, scratchMatrix4d3);
             uniform.setMatrix4(Matrix4.fromMatrix4d(eyeToTexture, scratchMatrix));
-
           } else
             uniform.setMatrix4(textureParam.matrix);
         }
@@ -276,6 +291,7 @@ export default function createRealityMeshBuilder(flags: TechniqueFlags): Program
   const computeFragmentBaseColor = baseColorFromTextures(textureCount, applyFragmentFeatureColor);
 
   frag.addFunction(addUInt32s);
+  frag.addFunction(testInside);
   frag.addFunction(applyTexture);
   frag.set(FragmentShaderComponent.ComputeBaseColor, computeFragmentBaseColor);
   builder.frag.addUniform("u_baseColor", VariableType.Vec4, (prog) => {

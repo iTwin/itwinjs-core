@@ -50,6 +50,10 @@ export abstract class MapTileProjection {
   abstract get transformFromLocal(): Transform;
   public abstract getPoint(u: number, v: number, height: number, result?: Point3d): Point3d;
   public get ellipsoidPatch(): EllipsoidPatch | undefined { return undefined; }
+  public getGlobalPoint(u: number, v: number, z: number, result?: Point3d): Point3d {
+    const point = this.getPoint(u, v, z, result);
+    return this.transformFromLocal.multiplyPoint3d(point, point);
+  }
 }
 
 /** @internal */
@@ -329,7 +333,6 @@ export class MapTile extends RealityTile {
           const quadId = new QuadId(level, column + i, row + j);
           const corners = childCorners[j * columnCount + i];
           const rectangle = mapTree.getTileRectangle(quadId);
-
           const normal = PolygonOps.areaNormal([corners[0], corners[1], corners[3], corners[2]]);
           normal.normalizeInPlace();
 
@@ -424,7 +427,8 @@ export class MapTile extends RealityTile {
       return undefined;
 
     const textures = this.getDrapeTextures();
-    const graphic = IModelApp.renderSystem.createRealityMeshGraphic(geometry, PackedFeatureTable.pack(this.mapLoader.featureTable), this.contentId, this.mapTree.baseColor, this.mapTree.baseTransparent, textures, this.mapTree.layerClassifiers);
+    const { baseColor, baseTransparent, layerClassifiers } = this.mapTree;
+    const graphic = IModelApp.renderSystem.createRealityMeshGraphic({ realityMesh: geometry, projection: this.getProjection(), tileRectangle: this.rectangle, featureTable: PackedFeatureTable.pack(this.mapLoader.featureTable), tileId: this.contentId, baseColor, baseTransparent, textures, layerClassifiers });
 
     // If there are no layer classifiers then we can save this graphic for re-use.  If layer classifiers exist they are regenerated based on view and we must collate them with the imagery.
     if (this.imageryIsReady && 0 === this.mapTree.layerClassifiers.size)
