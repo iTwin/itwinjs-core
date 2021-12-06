@@ -12,9 +12,9 @@
 
 Unit Test
 
-- source: imodeljs\core\geometry\src\test\clipping\PolyfaceClip.test.ts
+- source: core\geometry\src\test\clipping\PolyfaceClip.test.ts
 - test name: "CutFill"
-- output: imodeljs\core\geometry\src\test\output\PolyfaceClip\CutFill.imjs
+- output: core\geometry\src\test\output\PolyfaceClip\CutFill.imjs
 
 ## Section Cut
 
@@ -29,9 +29,9 @@ Unit Test
 
 Unit Test:
 
-- source: imodeljs\core\geometry\src\test\clipping\PolyfaceClip.test.ts
+- source: core\geometry\src\test\clipping\PolyfaceClip.test.ts
 - test name: "ClosedSection"
-- output: imodeljs\core\geometry\src\test\output\PolyfaceClip\ClosedSection.imjs
+- output: core\geometry\src\test\output\PolyfaceClip\ClosedSection.imjs
 
 ## Clipping with ConvexClipPlaneSet or UnionOfConvexClipPlaneSet
 
@@ -47,6 +47,6 @@ Unit Test:
 
 Unit Test:
 
-- source: imodeljs\core\geometry\src\test\clipping\PolyfaceClip.test.ts
+- source: core\geometry\src\test\clipping\PolyfaceClip.test.ts
 - test name: "BoxClosureNonConvex"
-- output: imodeljs\core\geometry\src\test\output\PolyfaceClip\BoxClosureNonConvex.imjs
+- output: core\geometry\src\test\output\PolyfaceClip\BoxClosureNonConvex.imjs

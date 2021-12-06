@@ -2577,8 +2577,12 @@ export class FrontstageDef {
     getFloatingWidgetContainerIdByWidgetId(widgetId: string): string | undefined;
     // (undocumented)
     getFloatingWidgetContainerIds(): string[];
+    // @internal
+    getPanelCurrentState(panelDef: StagePanelDef): [StagePanelState, number];
     // @beta
     getStagePanelDef(location: StagePanelLocation): StagePanelDef | undefined;
+    // @internal
+    getWidgetCurrentState(widgetDef: WidgetDef): WidgetState | undefined;
     getZoneDef(zoneId: number): ZoneDef | undefined;
     // (undocumented)
     get id(): string;
@@ -4152,7 +4156,7 @@ export interface PanelSizeChangedEventArgs {
     size: number | undefined;
 }
 
-// @beta @deprecated
+// @beta
 export class PanelStateChangedEvent extends UiEvent<PanelStateChangedEventArgs> {
 }
 
@@ -5453,7 +5457,7 @@ export interface StagePanelChangeHandler {
     handleTogglePanelCollapse(panelLocation: StagePanelLocation): void;
 }
 
-// @public @deprecated
+// @public
 export class StagePanelDef extends WidgetHost {
     constructor();
     get applicationData(): any | undefined;
@@ -6553,6 +6557,7 @@ export class UiFramework {
     static get initialized(): boolean;
     // @internal
     static initializeEx(store: Store<any> | undefined, frameworkStateKey?: string): Promise<void>;
+    static initializeStateFromUserSettingsProviders(immediateSync?: boolean): Promise<void>;
     // @alpha
     static get isContextMenuOpen(): boolean;
     // (undocumented)
@@ -6853,9 +6858,6 @@ export function useSolarDataProvider(viewport: ScreenViewport | undefined): Sola
 
 // @internal (undocumented)
 export function useStatusBarEntry(): DockedStatusBarEntryContextArg;
-
-// @internal (undocumented)
-export function useSyncDefinitions(frontstageDef: FrontstageDef): void;
 
 // @internal (undocumented)
 export function useToolSettingsNode(): string | number | boolean | {} | React.ReactElement<any, string | React.JSXElementConstructor<any>> | React.ReactNodeArray | React.ReactPortal | null | undefined;
@@ -7685,9 +7687,10 @@ export class Zone extends React.Component<ZoneProps> {
     render(): React.ReactNode;
 }
 
-// @public @deprecated
+// @public
 export class ZoneDef extends WidgetHost {
     constructor();
+    // @deprecated
     get allowsMerging(): boolean;
     get applicationData(): any | undefined;
     // @internal (undocumented)
@@ -7695,6 +7698,7 @@ export class ZoneDef extends WidgetHost {
     get initialWidth(): number | undefined;
     get isStatusBar(): boolean;
     get isToolSettings(): boolean;
+    // @deprecated
     get mergeWithZone(): ZoneLocation | undefined;
     // @internal (undocumented)
     setInitialWidth(width: number | undefined): void;
@@ -7702,6 +7706,7 @@ export class ZoneDef extends WidgetHost {
     // @internal
     get zoneLocation(): ZoneLocation;
     set zoneLocation(zoneLocation: ZoneLocation);
+    // @deprecated
     get zoneState(): ZoneState;
     }
 

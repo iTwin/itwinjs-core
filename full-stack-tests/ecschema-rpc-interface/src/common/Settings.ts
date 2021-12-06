@@ -38,7 +38,7 @@ export class Settings {
   public oidcClientId!: string;
   public oidcScopes!: string;
   public oidcRedirect!: string;
-  public imsUrl!: string;
+  public oidcAuthority?: string;
   public discovery!: string;
   public gprid?: string;
   public logLevel?: number;
@@ -91,6 +91,9 @@ export class Settings {
     if (undefined === process.env.OIDC_SCOPES)
       throw new Error("Missing the 'OIDC_SCOPES' setting");
     this.oidcScopes = process.env.OIDC_SCOPES;
+
+    if (process.env.OIDC_AUTHORITY)
+      this.oidcAuthority = process.env.OIDC_AUTHORITY;
 
     this.oidcRedirect = (undefined === process.env.OIDC_REDIRECT) ? "http://localhost:5000" : process.env.OIDC_REDIRECT;
 

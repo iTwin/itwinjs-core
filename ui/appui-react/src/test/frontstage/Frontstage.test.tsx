@@ -23,6 +23,7 @@ describe("Frontstage", () => {
   before(async () => {
     await NoRenderApp.startup();
     await TestUtils.initializeUiFramework();
+    UiFramework.setUiVersion("1");
     FrontstageManager.clearFrontstageDefs();
   });
 

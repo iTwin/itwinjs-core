@@ -420,7 +420,6 @@ internal;packNineZoneState(state: NineZoneState): SavedNineZoneState
 internal;PanelSizeChangedEvent 
 internal;PanelSizeChangedEventArgs
 beta;PanelStateChangedEvent 
-deprecated;PanelStateChangedEvent 
 public;PanelStateChangedEventArgs
 deprecated;PanelStateChangedEventArgs
 internal;panelStateToIsCollapsed: (panelState: StagePanelState) => boolean
@@ -512,7 +511,6 @@ public;StageContentLayoutProps
 public;StagePanel 
 public;StagePanelChangeHandler
 public;StagePanelDef 
-deprecated;StagePanelDef 
 public;StagePanelDefaultProps = Pick
 alpha;StagePanelHeader 
 deprecated;StagePanelHeader 
@@ -694,7 +692,6 @@ internal;useSaveFrontstageSettings(frontstageDef: FrontstageDef): void
 public;useScheduleAnimationDataProvider(viewport: ScreenViewport | undefined): ScheduleAnimationTimelineDataProvider | undefined
 beta;useSolarDataProvider(viewport: ScreenViewport | undefined): SolarDataProvider | undefined
 internal;useStatusBarEntry(): DockedStatusBarEntryContextArg
-internal;useSyncDefinitions(frontstageDef: FrontstageDef): void
 internal;useToolSettingsNode(): string | number | boolean | {} | React.ReactElement
 public;useUiItemsProviderBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem[]
 public;useUiItemsProviderStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[]
@@ -784,7 +781,6 @@ internal;WorkflowPropsList
 deprecated;WorkflowPropsList
 public;Zone 
 public;ZoneDef 
-deprecated;ZoneDef 
 public;ZoneDefProvider
 public;ZoneLocation
 deprecated;ZoneLocation

@@ -33,6 +33,7 @@ describe("StagePanel", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
+    UiFramework.setUiVersion("1");
   });
 
   after(() => {

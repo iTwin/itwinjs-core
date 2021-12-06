@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Renamed all occurrences of the term revision0 to version0.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

@@ -1,4 +1,4 @@
-# This defines the core steps for building and validating iModel.js
+# This defines the core steps for building and validating iTwin.js Core
 
 parameters:
   - name: workingDir
