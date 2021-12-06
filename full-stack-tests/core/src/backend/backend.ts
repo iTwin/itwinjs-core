@@ -81,6 +81,7 @@ async function init() {
 
   const iModelHost = new IModelHostConfiguration();
   iModelHost.hubAccess = new IModelHubBackend(CloudEnv.cloudEnv.imodelClient);
+  iModelHost.cacheDir = path.join(__dirname, ".cache");  // Set local cache dir
 
   if (ProcessDetector.isElectronAppBackend) {
     exposeBackendCallbacks();
