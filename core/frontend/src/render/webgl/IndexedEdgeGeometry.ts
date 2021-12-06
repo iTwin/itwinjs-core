@@ -6,11 +6,22 @@
  * @module WebGL
  */
 
-import { dispose } from "@itwin/core-bentley";
-import { EdgeTable } from "../primitives/EdgeParams";
+import { assert, dispose } from "@itwin/core-bentley";
+import { RenderMode } from "@itwin/core-common";
+import { EdgeTable, IndexedEdgeParams } from "../primitives/EdgeParams";
+import { RenderMemory } from "../RenderMemory";
 import { TextureHandle } from "./Texture";
-import { BufferHandle, BuffersContainer } from "./AttributeBuffers";
+import { BufferHandle, BuffersContainer, BufferParameters } from "./AttributeBuffers";
 import { WebGLDisposable } from "./Disposable";
+import { MeshData } from "./MeshData";
+import { MeshGeometry } from "./MeshGeometry";
+import { AttributeMap } from "./AttributeMap";
+import { TechniqueId } from "./TechniqueId";
+import { GL } from "./GL";
+import { System } from "./System";
+import { Target } from "./Target";
+import { ShaderProgramParams } from "./DrawCommand";
+import { RenderOrder } from "./RenderFlags";
 
 export class EdgeLUT implements WebGLDisposable {
   public readonly texture: TextureHandle;
@@ -38,10 +49,56 @@ export class EdgeLUT implements WebGLDisposable {
   }
 }
 
-// export class IndexedEdgeGeometry extends MeshGeometry {
-//   private readonly _vertexTableBuffers: BuffersContainer;
-//   private readonly _indices: BufferHandle;
-// 
-//   public get lutBuffers() { return this._buffers; }
-// 
-//   public static create(mesh: MeshData, params:
+export class IndexedEdgeGeometry extends MeshGeometry {
+  private readonly _buffers: BuffersContainer;
+  private readonly _indices: BufferHandle;
+  private readonly _edgeLut: EdgeLUT;
+
+  public get lutBuffers() { return this._buffers; }
+
+  private constructor(mesh: MeshData, indices: BufferHandle, numIndices: number, lut: EdgeLUT) {
+    super(mesh, numIndices);
+    this._edgeLut = lut;
+    this._buffers = BuffersContainer.create();
+    const attrPos = AttributeMap.findAttribute("a_pos", TechniqueId.IndexedEdge, false);
+    assert(undefined !== attrPos);
+    this._buffers.addBuffer(indices, [BufferParameters.create(attrPos.location, 3, GL.DataType.UnsignedByte, false, 0, 0, false)]);
+    this._indices = indices;
+  }
+
+  public dispose(): void {
+    dispose(this._buffers);
+    dispose(this._indices);
+    dispose(this._edgeLut);
+  }
+
+  public get isDisposed(): boolean {
+    return this._buffers.isDisposed && this._indices.isDisposed && this._edgeLut.isDisposed;
+  }
+
+  public static create(mesh: MeshData, params: IndexedEdgeParams): IndexedEdgeGeometry | undefined {
+    const indexBuffer = BufferHandle.createArrayBuffer(params.indices.data);
+    const lut = EdgeLUT.create(params.edges);
+    return indexBuffer && lut ? new IndexedEdgeGeometry(mesh, indexBuffer, params.indices.length, lut) : undefined;
+  }
+
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    stats.addVisibleEdges(this._indices.bytesUsed + this._edgeLut.bytesUsed); // ###TODO: addIndexedEdges
+  }
+
+  protected _draw(numInstances: number, instances?: BuffersContainer): void {
+    const bufs = instances ?? this._buffers;
+    bufs.bind();
+    System.instance.drawArrays(GL.PrimitiveType.Triangles, 0, this._numIndices, numInstances);
+    bufs.unbind();
+  }
+
+  protected _wantWoWReversal(): boolean { return true; }
+  protected override _getLineCode(params: ShaderProgramParams): number { return this.computeEdgeLineCode(params); }
+
+  public get techniqueId() { return TechniqueId.IndexedEdge; }
+  public getRenderPass(target: Target) { return this.computeEdgePass(target); }
+  public get renderOrder() { return this.isPlanar ? RenderOrder.PlanarEdge : RenderOrder.Edge; }
+  public override getColor(target: Target) { return this.computeEdgeColor(target); }
+  public override wantMonochrome(target: Target) { return target.currentViewFlags.renderMode === RenderMode.Wireframe; }
+}

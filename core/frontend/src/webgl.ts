@@ -28,6 +28,7 @@ export * from "./render/webgl/FrameBuffer";
 export * from "./render/webgl/FrustumUniforms";
 export * from "./render/webgl/GL";
 export * from "./render/webgl/Graphic";
+export * from "./render/webgl/IndexedEdgeGeometry";
 export * from "./render/webgl/LineCode";
 export * from "./render/webgl/Matrix";
 export * from "./render/webgl/Mesh";
