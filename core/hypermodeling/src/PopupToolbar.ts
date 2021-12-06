@@ -7,7 +7,7 @@
  */
 
 import { XAndY } from "@itwin/core-geometry";
-import { AbstractToolbarProps } from "@itwin/appui-abstract";
+import type { AbstractToolbarProps } from "@itwin/appui-abstract";
 import { IModelApp } from "@itwin/core-frontend";
 
 /** @internal */

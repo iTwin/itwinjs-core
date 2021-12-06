@@ -75,10 +75,6 @@ export * from "./appui-abstract/widget/WidgetState";
  * Abstractions used by appui-react package to create and manage the display Backstage menu items.
  */
 /**
- * @docs-group-description Common
- * Common enums and functions used throughout the UI packages.
- */
-/**
  * @docs-group-description ContentView
  * Classes and interfaces used with Content Layouts.
  */
@@ -105,10 +101,6 @@ export * from "./appui-abstract/widget/WidgetState";
 /**
  * @docs-group-description Toolbar
  * Classes for creating and managing items in a toolbar.
- */
-/**
- * @docs-group-description StandardContentLayouts
- * Class that contains standard layout definitions for frontstage content/views.
  */
 /**
  * @docs-group-description UiAdmin

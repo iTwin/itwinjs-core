@@ -16,6 +16,7 @@ import { BandedSystem } from "../numerics/BandedSystem";
 import { BSplineCurve3d } from "./BSplineCurve";
 import { BSplineWrapMode, KnotVector } from "./KnotVector";
 import { InterpolationCurve3dOptions, InterpolationCurve3dProps } from "./InterpolationCurve3d";
+import { Point3dArray } from "../geometry3d/PointHelpers";
 
 /**
  * A class with static methods for creating B-spline curves.
@@ -183,17 +184,28 @@ export namespace BSplineCurveOps {
       return true;
     }
 
+    /** Construct fit parameters for the c2 cubic fit algorithm.
+     * @param fitPoints validated fit points (should not contain duplicates)
+     * @param isChordLength whether knots are computed using distances between successive fit points
+     * @param closed whether curve is periodically defined
+     * @return fit parameters, one per fit point
+    */
+     public static constructFitParametersFromPoints(fitPoints: Point3d[], isChordLength: number | undefined, closed: boolean | undefined): number[] | undefined {
+      let params: number[] | undefined;
+      if (isChordLength || !closed)
+        params = this.constructChordLengthParameters(fitPoints);
+      if (undefined === params)
+        params = this.constructUniformParameters(fitPoints.length);
+      return params;
+    }
+
     /** Construct fit parameters for the c2 cubic fit algorithm, if they are missing.
      * @param options validated as per validateOptions, possibly modified
      * @return whether fit parameters are valid
      */
      public static constructFitParameters(options: InterpolationCurve3dOptions): boolean {
-      if (undefined === options.knots) {
-        if (options.isChordLenKnots || !options.closed)
-          options.knots = this.constructChordLengthParameters(options.fitPoints);
-        if (undefined === options.knots)
-          options.knots = this.constructUniformParameters(options.fitPoints.length);
-      }
+      if (undefined === options.knots)
+        options.knots = this.constructFitParametersFromPoints(options.fitPoints, options.isChordLenKnots, options.closed);
       return options.knots?.length === options.fitPoints.length;
     }
 
@@ -803,6 +815,9 @@ export namespace BSplineCurveOps {
     public static convertToJsonKnots(props: InterpolationCurve3dProps) {
       if (undefined !== props.knots) {
         props.knots = this.convertCubicKnotVectorToFitParams(props.knots, props.fitPoints.length, false);
+        props.knots = this.convertFitParamsToCubicKnotVector(props.knots, props.closed, true);
+      } else {
+        props.knots = this.constructFitParametersFromPoints(Point3dArray.clonePoint3dArray(props.fitPoints), props.isChordLenKnots, props.closed);
         props.knots = this.convertFitParamsToCubicKnotVector(props.knots, props.closed, true);
       }
     }

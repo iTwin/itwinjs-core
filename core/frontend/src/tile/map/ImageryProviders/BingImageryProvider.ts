@@ -160,7 +160,7 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
         copyrightMsg += "<br>";
       copyrightMsg += copyrights[i];
     }
-    return IModelApp.makeLogoCard({ iconSrc: "images/bing.svg", heading: "Microsoft Bing", notice: copyrightMsg });
+    return IModelApp.makeLogoCard({ iconSrc: `${IModelApp.publicPath}images/bing.svg`, heading: "Microsoft Bing", notice: copyrightMsg });
   }
 
   // initializes the BingImageryProvider by reading the templateUrl, logo image, and attribution list.

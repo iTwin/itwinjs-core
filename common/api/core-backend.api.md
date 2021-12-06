@@ -108,7 +108,6 @@ import { IModelRpcProps } from '@itwin/core-common';
 import { IModelStatus } from '@itwin/core-bentley';
 import { IModelTileTreeProps } from '@itwin/core-common';
 import { IModelVersion } from '@itwin/core-common';
-import { ImsAuthorizationClient } from '@bentley/itwin-client';
 import { IndexedPolyface } from '@itwin/core-geometry';
 import { InformationPartitionElementProps } from '@itwin/core-common';
 import { InternetConnectivityStatus } from '@itwin/core-common';
@@ -134,7 +133,6 @@ import { ModelLoadProps } from '@itwin/core-common';
 import { ModelProps } from '@itwin/core-common';
 import { ModelSelectorProps } from '@itwin/core-common';
 import { Mutable } from '@itwin/core-bentley';
-import { NativeAppAuthorizationConfiguration } from '@itwin/core-common';
 import { NativeAppNotifications } from '@itwin/core-common';
 import { NativeLoggerCategory } from '@bentley/imodeljs-native';
 import { NavigationBindingValue } from '@itwin/core-common';
@@ -155,7 +153,6 @@ import { PolyfaceVisitor } from '@itwin/core-geometry';
 import { PropertyCallback } from '@itwin/core-common';
 import { QueryBinder } from '@itwin/core-common';
 import { QueryOptions } from '@itwin/core-common';
-import { QueryRowFormat } from '@itwin/core-common';
 import { Range2d } from '@itwin/core-geometry';
 import { Range3d } from '@itwin/core-geometry';
 import { Rank } from '@itwin/core-common';
@@ -191,7 +188,7 @@ import { SubCategoryAppearance } from '@itwin/core-common';
 import { SubCategoryProps } from '@itwin/core-common';
 import { SubjectProps } from '@itwin/core-common';
 import { SynchronizationConfigLinkProps } from '@itwin/core-common';
-import { TelemetryManager } from '@bentley/telemetry-client';
+import { TelemetryManager } from '@itwin/core-telemetry';
 import { TextureData } from '@itwin/core-common';
 import { TextureLoadProps } from '@itwin/core-common';
 import { TextureMapProps } from '@itwin/core-common';
@@ -856,7 +853,7 @@ export interface CreateNewIModelProps extends IModelNameArg {
     // (undocumented)
     readonly noLocks?: true;
     // (undocumented)
-    readonly revision0?: LocalFileName;
+    readonly version0?: LocalFileName;
 }
 
 // @public
@@ -931,7 +928,7 @@ export class DevTools {
     static stats(): DevToolsStats;
     static versions(): {
         application: string;
-        iModelJs: any;
+        iTwinJs: any;
     };
 }
 
@@ -1172,11 +1169,11 @@ export class ECDb implements IDisposable {
     // @internal
     prepareSqliteStatement(sql: string, logErrors?: boolean): SqliteStatement;
     prepareStatement(ecsql: string, logErrors?: boolean): ECSqlStatement;
-    query(ecsql: string, params?: QueryBinder, rowFormat?: QueryRowFormat, options?: QueryOptions): AsyncIterableIterator<any>;
+    query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
     queryRowCount(ecsql: string, params?: QueryBinder): Promise<number>;
     // @internal
     resetSqliteCache(size: number): void;
-    restartQuery(token: string, ecsql: string, params?: QueryBinder, rowFormat?: QueryRowFormat, options?: QueryOptions): AsyncIterableIterator<any>;
+    restartQuery(token: string, ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
     saveChanges(changesetName?: string): void;
     withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors?: boolean): T;
     withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors?: boolean): T;
@@ -2338,7 +2335,7 @@ export abstract class IModelDb extends IModel {
     // @internal
     prepareSqliteStatement(sql: string, logErrors?: boolean): SqliteStatement;
     prepareStatement(sql: string, logErrors?: boolean): ECSqlStatement;
-    query(ecsql: string, params?: QueryBinder, rowFormat?: QueryRowFormat, options?: QueryOptions): AsyncIterableIterator<any>;
+    query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
     queryEntityIds(params: EntityQueryParams): Id64Set;
     queryFilePropertyBlob(prop: FilePropertyProps): Uint8Array | undefined;
     queryFilePropertyString(prop: FilePropertyProps): string | undefined;
@@ -2354,7 +2351,7 @@ export abstract class IModelDb extends IModel {
     get relationships(): Relationships;
     // @internal (undocumented)
     requestSnap(sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps>;
-    restartQuery(token: string, ecsql: string, params?: QueryBinder, rowFormat?: QueryRowFormat, options?: QueryOptions): AsyncIterableIterator<any>;
+    restartQuery(token: string, ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
     // @internal (undocumented)
     restartTxnSession(): void;
     // @internal (undocumented)
@@ -2530,6 +2527,8 @@ export class IModelHost {
 // @public
 export class IModelHostConfiguration {
     appAssetsDir?: LocalDirName;
+    // @beta
+    authorizationClient?: AuthorizationClient;
     cacheDir?: LocalDirName;
     compressCachedTiles?: boolean;
     // @alpha
@@ -3108,31 +3107,6 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
     toJSON(): ModelSelectorProps;
 }
 
-// @internal (undocumented)
-export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClient implements AuthorizationClient {
-    protected constructor(config?: NativeAppAuthorizationConfiguration);
-    // (undocumented)
-    protected _accessToken: AccessToken;
-    // (undocumented)
-    config?: NativeAppAuthorizationConfiguration;
-    // (undocumented)
-    expireSafety: number;
-    // (undocumented)
-    getAccessToken(): Promise<AccessToken>;
-    // (undocumented)
-    initialize(config?: NativeAppAuthorizationConfiguration): Promise<void>;
-    // (undocumented)
-    issuerUrl?: string;
-    // (undocumented)
-    protected abstract refreshToken(): Promise<AccessToken>;
-    // (undocumented)
-    setAccessToken(token: AccessToken): void;
-    // (undocumented)
-    abstract signIn(): Promise<void>;
-    // (undocumented)
-    abstract signOut(): Promise<void>;
-}
-
 // @public
 export class NativeAppStorage {
     close(deleteFile?: boolean): void;
@@ -3162,13 +3136,10 @@ export class NativeHost {
     // (undocumented)
     static get applicationName(): string;
     static get appSettingsCacheDir(): string;
-    // @internal (undocumented)
-    static get authorization(): NativeAppAuthorizationBackend;
     static checkInternetConnectivity(): InternetConnectivityStatus;
     // (undocumented)
     static get isValid(): boolean;
     static notifyNativeFrontend<T extends keyof NativeAppNotifications>(methodName: T, ...args: Parameters<NativeAppNotifications[T]>): void;
-    static readonly onAccessTokenChanged: BeEvent<(token: AccessToken) => void>;
     static readonly onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void>;
     // @internal
     static overrideInternetConnectivity(_overridenBy: OverriddenBy, status: InternetConnectivityStatus): void;

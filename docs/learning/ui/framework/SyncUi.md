@@ -4,7 +4,7 @@
 
 ## SyncUi Dispatcher
 
-The [SyncUiEventDispatcher]($appui-react) is called to dispatch syncEventIds to register listeners.  The caller can choose to dispatch the syncEventId immediately ([SyncUiEventDispatcher.dispatchImmediateSyncUiEvent]($appui-react)) or the default way ([SyncUiEventDispatcher.dispatchSyncUiEvent]($appui-react)), which uses a timer. Most of the time using the timer version is preferable so multiple refreshes of the same component can be avoided. The timer version of dispatching will attempt to wait until no new syncEventIds have been dispatched before calling the registered listeners.
+The [SyncUiEventDispatcher]($appui-react) is called to dispatch syncEventIds to register listeners.  The caller can choose to dispatch the syncEventId immediately ([SyncUiEventDispatcher.dispatchImmediateSyncUiEvent]($appui-react)) or the default way ([SyncUiEventDispatcher.dispatchSyncUiEvent]($appui-react)), which uses a timer. Usually, the timer version is preferable so multiple refreshes of the same component can be avoided. Dispatching with the timer will attempt to wait until no new syncEventIds have been dispatched before calling the registered listeners.
 
 ## Sync EventId
 
@@ -17,38 +17,3 @@ A listener may be registered by adding a listener to [SyncUiEventDispatcher.onSy
 ## Redux and SyncUi
 
 The method `UiFramework.dispatchActionToStore` is available to both dispatch an action on the Redux store and to call `dispatchSyncUiEvent` with the same action string. This allows the Redux store to be updated allowing the SyncUiEvent listener to query the new value from it. To be consistent with the SyncUiEventIds, the action strings should be lower-cased.
-
-## Example of Opening or Closing a Widget
-
-The following is an example of a Widget that is open or closed when the selection set changes.
-In this example, the bottom-right zone in a frontstage contains a Widget component with a `syncEventIds` prop containing `SyncUiEventId.SelectionSetChanged` and a `stateFunc` that references the `_determineWidgetStateForSelectionSet` function listed below.
-
-```tsx
-bottomRight={
-  <Zone defaultState={ZoneState.Open} allowsMerging={true}
-    widgets={[
-      <Widget id="Properties" control={PropertyGridWidget} defaultState={WidgetState.Closed} fillZone={true}
-        iconSpec="icon-properties-list" labelKey="NineZoneSample:components.properties"
-        applicationData={{
-          iModelConnection: NineZoneSampleApp.store.getState().sampleAppState!.currentIModelConnection,
-          rulesetId: this._rulesetId,
-        }}
-        syncEventIds={[SyncUiEventId.SelectionSetChanged]}
-        stateFunc={this._determineWidgetStateForSelectionSet}
-      />,
-    ]}
-  />
-}
-```
-
-The `_determineWidgetStateForSelectionSet` function checks the selection set and returns `WidgetState.Open` when there is a selection set or `WidgetState.Closed` when there is none. This effectively opens or closes the widget based on the selection set.
-
-```ts
-/** Determine the WidgetState based on the Selection Set */
-private _determineWidgetStateForSelectionSet = (): WidgetState => {
-  const activeContentControl = ContentViewManager.getActiveContentControl();
-  if (activeContentControl && activeContentControl.viewport && (activeContentControl.viewport.view.iModel.selectionSet.size > 0))
-    return WidgetState.Open;
-  return WidgetState.Closed;
-}
-```

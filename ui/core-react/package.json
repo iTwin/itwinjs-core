@@ -1,7 +1,7 @@
 {
   "name": "@itwin/core-react",
-  "version": "3.0.0-dev.120",
-  "description": "iModel.js UI core components",
+  "version": "3.0.0-dev.142",
+  "description": "iTwin.js UI core components",
   "main": "lib/cjs/core-react.js",
   "module": "lib/esm/core-react.js",
   "typings": "lib/cjs/core-react",
@@ -40,9 +40,8 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.120",
-    "@itwin/core-i18n": "workspace:^3.0.0-dev.120",
-    "@itwin/appui-abstract": "workspace:^3.0.0-dev.120",
+    "@itwin/appui-abstract": "workspace:^3.0.0-dev.142",
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.142",
     "react": "^17.0.0",
     "react-dom": "^17.0.0"
   },
@@ -51,12 +50,12 @@
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
+    "@itwin/appui-abstract": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
-    "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "workspace:*",
     "@itwin/core-i18n": "workspace:*",
-    "@itwin/appui-abstract": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@testing-library/react": "^12.0.0",
     "@testing-library/react-hooks": "^7.0.2",
     "@testing-library/user-event": "^13.2.1",
@@ -80,7 +79,7 @@
     "chai-as-promised": "^7",
     "chai-jest-snapshot": "^2.0.0",
     "chai-spies": "1.0.0",
-    "cpx": "^1.5.0",
+    "cpx2": "^3.0.0",
     "enzyme": "^3.4.0",
     "enzyme-to-json": "^3.3.4",
     "eslint": "^7.11.0",

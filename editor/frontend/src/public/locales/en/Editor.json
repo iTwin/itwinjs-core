@@ -55,7 +55,8 @@
       "flyover": "Create B-spline Curve",
       "Label": {
         "Method": "Method",
-        "Order": "Order"
+        "Order": "Order",
+        "Tangents": "Define Tangents"
       },
       "Method": {
         "ControlPoints": "Control Points",
@@ -114,6 +115,10 @@
       "keyin": "editor sew sheets",
       "flyover": "Sew selected sheets"
     },
+    "ThickenSheets": {
+      "keyin": "editor thicken sheets",
+      "flyover": "Thicken selected sheets into solids"
+    },
     "CutSolids": {
       "keyin": "editor cut solids",
       "flyover": "Cut solids by open path or planar region"
@@ -141,6 +146,26 @@
     "HollowFaces": {
       "keyin": "editor hollow faces",
       "flyover": "Hollow solids by offsetting faces"
+    },
+    "SweepFaces": {
+      "keyin": "editor sweep faces",
+      "flyover": "Sweep planar curves, surfaces, or faces of solids"
+    },
+    "SpinFaces": {
+      "keyin": "editor spin faces",
+      "flyover": "Spin planar curves, surfaces, or faces of solids"
+    },
+    "RoundEdges": {
+      "keyin": "editor round edges",
+      "flyover": "Round edges of solids and surfaces"
+    },
+    "ChamferEdges": {
+      "keyin": "editor chamfer edges",
+      "flyover": "Chamfer edges of solids and surfaces"
+    },
+    "DeleteSubEntities": {
+      "keyin": "editor delete subentities",
+      "flyover": "Delete faces and edges of solids and surfaces"
     },
     "UndoAll": {
       "keyin": "editor undo all",

@@ -252,8 +252,8 @@ export interface ElementDrivesElementProps extends RelationshipProps {
  * * Inputs - The sources of all edges that point to the element. This includes all upstream elements that flow into the element.
  * * Outputs - The targets of all edges that point out of the element. This includes all downstream elements.
  *
- * #Subgraph Processing
- * When changes are made, iModel.js finds and processes only the part of the overall graph that is affected. So, for example,
+ * # Subgraph Processing
+ * When changes are made, only the part of the overall graph that is affected will be processed. So, for example,
  * suppose we have this graph:
  * ```
  * e1 --> e2 --> e3
@@ -291,7 +291,7 @@ export interface ElementDrivesElementProps extends RelationshipProps {
  *           e31
  * ```
  * # Callbacks
- * Once iModel.js has found the affected subgraph to process, it propagates changes through it by making callbacks.
+ * Once the affected subgraph to process is found, it propagates changes through it by making callbacks.
  * Classes for both elements (nodes) and ElementDrivesElements relationships (edges) can receive callbacks.
  *
  * ## ElementDrivesElement Callbacks
@@ -367,7 +367,7 @@ export interface ElementDrivesElementProps extends RelationshipProps {
  * involved in a cycle will have their status set to 1, indicating a failure.
  *
  * A callback may call txnManager.reportError to reject an invalid change. It can classify the error as fatal or just a warning.
- * A callback make set the status value of an ElementDrivesElement instance to 1 to indicate a processing falure in that edge.
+ * A callback make set the status value of an ElementDrivesElement instance to 1 to indicate a processing failure in that edge.
  *
  * After BriefcaseDb.saveChanges is called, an app should check db.txns.validationErrors and db.txns.hasFatalError to find out if graph-evaluation failed.
  *
@@ -377,9 +377,9 @@ export class ElementDrivesElement extends Relationship implements ElementDrivesE
   /** @internal */
   public static override get className(): string { return "ElementDrivesElement"; }
   /** Relationship status
-   * * 0 indicates no errors. iModel.js sets this after a successful evaluation.
-   * * 1 indicates that this driving relationship could not be evaluated. The callback itself can set this to indicate that it failed to process the input changes. Also, iModel.js sets this if it finds that the relationship is part of a circular dependency.
-   * * 0x80 The app or callback can set this to tell iModel.js not propagate changes through this relationship.
+   * * 0 indicates no errors. Set after a successful evaluation.
+   * * 1 indicates that this driving relationship could not be evaluated. The callback itself can set this to indicate that it failed to process the input changes. Also, it is set if the relationship is part of a circular dependency.
+   * * 0x80 The app or callback can set this to indicate to not propagate changes through this relationship.
    */
   public status: number;
   /** Affects the order in which relationships are processed in the case where two relationships have the same output. */

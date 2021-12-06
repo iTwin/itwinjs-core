@@ -342,11 +342,11 @@ Desktop and Mobile device Web browsers.
 
 ## Further Resources
 
-- [GitHub](https://github.com/iTwin/itwinjs-core): the imodeljs repository along with samples.
+- [GitHub](https://github.com/iTwin/itwinjs-core): the iTwin.js Core repository.
 - [Documentation](https://www.itwinjs.org/learning/):
   - Learning articles: explaining the iTwin.js library structure and architecture.
   - BIS docs: for understanding BIS schemas and the ECSql data query language.
-  - API reference: can be used in conjunction with the imodeljs repository above to find code samples for API calls. Function/Class names can be searched within the repository to find relevant samples.
+  - API reference: can be used in conjunction with the iTwin.js Core repository above to find code samples for API calls. Function/Class names can be searched within the repository to find relevant samples.
 - [Stack Overflow](https://stackoverflow.com/questions/tagged/imodeljs): don't forget to add the **imodeljs** tag to your question. This will make it easier for us to respond.
 - [YouTube Channel](https://www.youtube.com/channel/UCs4HxiWI4o4bzayG5QnxaIA): Informational videos for guidance and training.
 - Sample Apps: can be used as a starting point for your app.

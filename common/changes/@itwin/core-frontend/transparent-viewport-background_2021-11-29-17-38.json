@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Add support for blending transparent viewport background with HTML elements beneath the viewport.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

@@ -20,19 +20,19 @@ import {
   FrameworkRootState, FrameworkToolAdmin, FrameworkUiAdmin, FrameworkVersion, FrontstageDeactivatedEventArgs, FrontstageDef, FrontstageManager,
   InitialAppUiSettings,
   ModalFrontstageClosedEventArgs, SafeAreaContext, StateManager, SyncUiEventDispatcher, SYSTEM_PREFERRED_COLOR_THEME, ThemeManager,
-  ToolbarDragInteractionContext, UiFramework, UiSettingsProvider, UserSettingsStorage,
+  ToolbarDragInteractionContext, UiFramework, UiStateStorageHandler,
 } from "@itwin/appui-react";
 import { BeDragDropContext } from "@itwin/components-react";
 import { Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { BentleyCloudRpcManager, BentleyCloudRpcParams, IModelVersion, RpcConfiguration, SyncMode } from "@itwin/core-common";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
+import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
 import {
-  AccuSnap, BriefcaseConnection, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeApp, NativeAppAuthorization, NativeAppLogger,
+  AccuSnap, BriefcaseConnection, IModelApp, IModelConnection, LocalUnitFormatProvider, NativeApp, NativeAppLogger,
   NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool,
 } from "@itwin/core-frontend";
 import { MarkupApp } from "@itwin/core-markup";
 import { AndroidApp, IOSApp } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
-import { LocalSettingsStorage, UiSettings } from "@itwin/core-react";
 import { EditTools } from "@itwin/editor-frontend";
 import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
@@ -61,8 +61,11 @@ import { ToolWithDynamicSettings } from "./tools/ToolWithDynamicSettings";
 import { ToolWithSettings } from "./tools/ToolWithSettings";
 import {
   OpenComponentExamplesPopoutTool, OpenCustomPopoutTool, OpenViewPopoutTool, RemoveSavedContentLayoutTool, RestoreSavedContentLayoutTool,
-  SaveContentLayoutTool, TestExtensionUiProviderTool, UiProviderTool,
-} from "./tools/UiProviderTool";
+  SaveContentLayoutTool, TestExtensionUiProviderTool,
+} from "./tools/ImmediateTools";
+import { IModelOpenFrontstage } from "./appui/frontstages/IModelOpenFrontstage";
+import { IModelIndexFrontstage } from "./appui/frontstages/IModelIndexFrontstage";
+import { SignInFrontstage } from "./appui/frontstages/SignInFrontstage";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -158,22 +161,12 @@ export class SampleAppIModelApp {
   public static iModelParams: SampleIModelParams | undefined;
   public static testAppConfiguration: TestAppConfiguration | undefined;
   private static _appStateManager: StateManager | undefined;
-  private static _localUiSettings = new LocalSettingsStorage();
-  private static _UserUiSettingsStorage = new UserSettingsStorage(); // eslint-disable-line deprecation/deprecation
 
   // Favorite Properties Support
   private static _selectionSetListener = new ElementSelectionListener(true);
 
   public static get store(): Store<RootState> {
     return StateManager.store as Store<RootState>;
-  }
-
-  public static getUiSettingsStorage(): UiSettings {
-    const authorized = !!IModelApp.authorizationClient;
-    if (SampleAppIModelApp.testAppConfiguration?.useLocalSettings || !authorized) {
-      return SampleAppIModelApp._localUiSettings;
-    }
-    return SampleAppIModelApp._UserUiSettingsStorage;
   }
 
   public static async startup(opts: NativeAppOpts): Promise<void> {
@@ -183,6 +176,8 @@ export class SampleAppIModelApp {
     };
 
     if (ProcessDetector.isElectronAppFrontend) {
+      const authClient: ElectronRendererAuthorization = new ElectronRendererAuthorization();
+      iModelAppOpts.authorizationClient = authClient;
       await ElectronApp.startup({ ...opts, iModelApp: iModelAppOpts });
       NativeAppLogger.initialize();
     } else if (ProcessDetector.isIOSAppFrontend) {
@@ -274,7 +269,6 @@ export class SampleAppIModelApp {
     Tool2.register(this.sampleAppNamespace);
     ToolWithSettings.register(this.sampleAppNamespace);
     AnalysisAnimationTool.register(this.sampleAppNamespace);
-    UiProviderTool.register(this.sampleAppNamespace);
     TestExtensionUiProviderTool.register(this.sampleAppNamespace);
     ToolWithDynamicSettings.register(this.sampleAppNamespace);
     OpenComponentExamplesPopoutTool.register(this.sampleAppNamespace);
@@ -327,10 +321,10 @@ export class SampleAppIModelApp {
     // initialize any settings providers that may need to have defaults set by iModelApp
     UiFramework.registerUserSettingsProvider(new AppUiSettings(defaults));
 
-    // go ahead and initialize settings before login or in case login is by-passed
-    await UiFramework.setUiSettingsStorage(SampleAppIModelApp.getUiSettingsStorage());
-
     UiFramework.useDefaultPopoutUrl = true;
+
+    // initialize state from all registered UserSettingsProviders
+    await UiFramework.initializeStateFromUserSettingsProviders();
 
     // try starting up event loop if not yet started so key-in palette can be opened
     IModelApp.startEventLoop();
@@ -465,15 +459,15 @@ export class SampleAppIModelApp {
       UiFramework.setIModelConnection(iModelConnection, true);
     }
 
-    await SampleAppIModelApp.showFrontstage("IModelIndex");
+    await SampleAppIModelApp.showFrontstage(IModelIndexFrontstage.stageId);
   }
 
   public static async showIModelOpen() {
-    await SampleAppIModelApp.showFrontstage("IModelOpen");
+    await SampleAppIModelApp.showFrontstage(IModelOpenFrontstage.stageId);
   }
 
   public static async showSignInPage() {
-    await SampleAppIModelApp.showFrontstage("SignIn");
+    await SampleAppIModelApp.showFrontstage(SignInFrontstage.stageId);
   }
 
   // called after the user has signed in (or access token is still valid)
@@ -626,30 +620,22 @@ const AppFrameworkVersion = connect(mapFrameworkVersionStateToProps)(AppFramewor
 
 const SampleAppViewer2 = () => {
   const [isAuthorized, setIsAuthorized] = React.useState<boolean>(false);
-  const [uiSettingsStorage, setUISettingStore] = React.useState(SampleAppIModelApp.getUiSettingsStorage());
 
   React.useEffect(() => {
     AppUi.initialize();
 
-    if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof NativeAppAuthorization) {
+    if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof ElectronRendererAuthorization) {
       setIsAuthorized(IModelApp.authorizationClient.isAuthorized);
     }
   }, []);
 
   React.useEffect(() => {
-    // Update the UiSettingsStorage based on if you're signed in or out.
-    setUISettingStore(SampleAppIModelApp.getUiSettingsStorage());
-
     // Load the correct Frontstage based on whether or not you're authorized.
     isAuthorized ? SampleAppIModelApp.showSignedIn() : SampleAppIModelApp.showSignInPage(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }, [isAuthorized]);
 
-  React.useEffect(() => {
-    UiFramework.setUiSettingsStorage(uiSettingsStorage); // eslint-disable-line @typescript-eslint/no-floating-promises
-  }, [uiSettingsStorage]);
-
   const _onAccessTokenChanged = () => {
-    if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof NativeAppAuthorization) {
+    if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof ElectronRendererAuthorization) {
       setIsAuthorized(IModelApp.authorizationClient.isAuthorized); // forces the effect above to re-run and check the actual client...
     }
   };
@@ -663,12 +649,12 @@ const SampleAppViewer2 = () => {
   };
 
   React.useEffect(() => {
-    if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof NativeAppAuthorization)
+    if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof ElectronRendererAuthorization)
       IModelApp.authorizationClient.onAccessTokenChanged.addListener(_onAccessTokenChanged);
     FrontstageManager.onFrontstageDeactivatedEvent.addListener(_handleFrontstageDeactivatedEvent);
     FrontstageManager.onModalFrontstageClosedEvent.addListener(_handleModalFrontstageClosedEvent);
     return () => {
-      if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof NativeAppAuthorization)
+      if (IModelApp.authorizationClient instanceof BrowserAuthorizationClient || IModelApp.authorizationClient instanceof ElectronRendererAuthorization)
         IModelApp.authorizationClient.onAccessTokenChanged.removeListener(_onAccessTokenChanged);
       FrontstageManager.onFrontstageDeactivatedEvent.removeListener(_handleFrontstageDeactivatedEvent);
       FrontstageManager.onModalFrontstageClosedEvent.removeListener(_handleModalFrontstageClosedEvent);
@@ -683,12 +669,11 @@ const SampleAppViewer2 = () => {
           <SafeAreaContext.Provider value={SafeAreaInsets.All}>
             <AppDragInteraction>
               <AppFrameworkVersion>
-                {/** UiSettingsProvider is optional. By default LocalUiSettings is used to store UI settings. */}
-                <UiSettingsProvider settingsStorage={uiSettingsStorage}>
+                <UiStateStorageHandler>
                   <ConfigurableUiContent
                     appBackstage={<AppBackstageComposer />}
                   />
-                </UiSettingsProvider>
+                </UiStateStorageHandler>
               </AppFrameworkVersion>
             </AppDragInteraction>
           </SafeAreaContext.Provider>

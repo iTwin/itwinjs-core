@@ -2780,7 +2780,7 @@ export class ScreenViewport extends Viewport {
     return div;
   }
 
-  /** The HTMLImageElement of the iModel.js logo displayed in this ScreenViewport
+  /** The HTMLImageElement of the iTwin.js logo displayed in this ScreenViewport
    * @beta
    */
   public get logo() { return this._logo; }
@@ -2788,11 +2788,11 @@ export class ScreenViewport extends Viewport {
   /** @internal */
   protected addLogo() {
     const logo = this._logo = IModelApp.makeHTMLElement("img", { parent: this.vpDiv, className: "imodeljs-icon" });
-    logo.src = "images/imodeljs-icon.svg";
+    logo.src = `${IModelApp.publicPath}images/imodeljs-icon.svg`;
     logo.alt = "";
 
     const showLogos = (ev: Event) => {
-      const aboutBox = IModelApp.makeModalDiv({ autoClose: true, width: 460, closeBox: true }).modal;
+      const aboutBox = IModelApp.makeModalDiv({ autoClose: true, width: 460, closeBox: true, rootDiv: this.vpDiv.ownerDocument.body }).modal;
       aboutBox.className += " imodeljs-about"; // only added so the CSS knows this is the about dialog
       const logos = IModelApp.makeHTMLElement("table", { parent: aboutBox, className: "logo-cards" });
       if (undefined !== IModelApp.applicationLogoCard)
