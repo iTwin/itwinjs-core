@@ -220,14 +220,8 @@ export interface EdgeParams {
 export namespace EdgeParams {
   export function fromMeshArgs(meshArgs: MeshArgs): EdgeParams | undefined {
     const args = meshArgs.edges;
-    if (undefined === args)
-      return undefined;
-
-    let polylines: TesselatedPolyline | undefined;
     const doJoints = wantJointTriangles(args.width, meshArgs.is2d);
-    const polylineEdges = doJoints ? undefined : args.polylines;
-    if (doJoints)
-      polylines = TesselatedPolyline.fromMesh(meshArgs);
+    const polylines = doJoints ? TesselatedPolyline.fromMesh(meshArgs) : undefined;
 
     let segments: SegmentEdgeParams | undefined;
     let silhouettes: SilhouetteParams | undefined;
@@ -241,7 +235,7 @@ export namespace EdgeParams {
       silhouettes = args.silhouettes.edges && args.silhouettes.normals ? convertSilhouettes(args.silhouettes.edges, args.silhouettes.normals) : undefined;
     }
 
-    if (!segments && !silhouettes && !polylines)
+    if (!segments && !silhouettes && !polylines && !indexed)
       return undefined;
 
     return {
