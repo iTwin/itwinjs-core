@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "getChangesetIdFromLatestNamedVersion",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
