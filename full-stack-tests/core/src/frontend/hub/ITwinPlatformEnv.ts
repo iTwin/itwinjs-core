@@ -65,7 +65,7 @@ export class IModelBankFrontend implements TestFrontendHubAccess {
   public async getChangesetIdFromLatestNamedVersion(arg: IModelIdArg): Promise<ChangesetId> {
     const versions = await this._hubClient.versions.get(arg.accessToken, arg.iModelId, new VersionQuery().top(1));
     if (!versions[0] || !versions[0].changeSetId)
-      throw new BentleyError(BentleyStatus.ERROR, `No named version found`);
+      throw new BentleyError(BentleyStatus.ERROR, "No named version found");
     return versions[0].changeSetId;
   }
 
