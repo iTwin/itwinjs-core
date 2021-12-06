@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { CheckpointConnection } from "@itwin/core-frontend";
-import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
+import { iModelsClient, iModelsApiUrlFormatter, Constants as iModelConstants } from "@itwin/imodels-client-management";
 import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
 import { IModelData } from "../../common/Settings";
 import { AccessToken } from "@itwin/core-bentley";
@@ -48,7 +48,15 @@ export class IModelSession {
       contextId = iModelData.iTwinId!;
 
     if (iModelData.useName) {
-      const imodelClient = new IModelHubClient();
+      const imodelClient = new iModelsClient();
+
+      const hubUrl = new iModelsApiUrlFormatter(iModelConstants.api.baseUrl);
+      hubUrl.getiModelListUrl({
+        urlParams: {
+          name: iModelData.name,
+        },
+      });
+
       const imodels = await imodelClient.iModels.get(requestContext, contextId, new IModelQuery().byName(iModelData.name!));
       if (undefined === imodels || imodels.length === 0)
         throw new Error(`The iModel ${iModelData.name} does not exist in project ${contextId}.`);

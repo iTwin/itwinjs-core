@@ -15,8 +15,8 @@ import { BriefcaseManager, DictionaryModel, Element, IModelDb, IModelHost, IMode
 import { HubWrappers, IModelTestUtils, KnownTestLocations, RevisionUtility } from "@itwin/core-backend/lib/cjs/test/index";
 import { HubUtility } from "../HubUtility";
 import { PerfTestUtility } from "./PerfTestUtils";
-import { ChangeSet, ChangeSetQuery, ChangesType, CheckpointQuery, IModelHubClient, VersionQuery } from "@bentley/imodelhub-client";
-import { IModelHubBackend } from "@bentley/imodelhub-client/lib/cjs/imodelhub-node";
+import { ChangeSetQuery, ChangesType, CheckpointQuery, IModelHubClient, VersionQuery } from "@bentley/imodelhub-client";
+import { BackendiModelsAccess } from "@itwin/imodels-access-backend";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -320,7 +320,7 @@ describe("ImodelChangesetPerformance big datasets", () => {
   // TODO: Update config to use iTwin terminology
   const configData = require(path.join(__dirname, "CSPerfConfig.json")); // eslint-disable-line @typescript-eslint/no-var-requires
   const csvPath = path.join(KnownTestLocations.outputDir, "ApplyCSLocalPerf.csv");
-  const hubBackend = new IModelHubBackend();
+  const hubBackend = new BackendiModelsAccess();
 
   before(async () => {
     iModelRootDir = configData.rootDir;
@@ -345,25 +345,6 @@ describe("ImodelChangesetPerformance big datasets", () => {
     return csSummary;
   }
 
-  async function downloadChangesets(accessToken: AccessToken, imodelId: string, changesets: ChangesetProps[], downloadDir: string) {
-    if (fs.existsSync(downloadDir))
-      fs.removeSync(downloadDir);
-    // get first changeset as betweenChangeSets skips the first entry
-    const csQuery1 = new ChangeSetQuery();
-    csQuery1.byId(changesets[0].id);
-    await hubBackend.iModelClient.changeSets.download(accessToken, imodelId, csQuery1, downloadDir);
-    const incr: number = 100;
-    for (let j = 0; j <= changesets.length; j = j + incr) {
-      const csQuery = new ChangeSetQuery();
-      if ((j + incr) < changesets.length)
-        csQuery.betweenChangeSets(changesets[j].id, changesets[j + incr].id);
-      else
-        csQuery.betweenChangeSets(changesets[j].id, changesets[changesets.length - 1].id);
-      csQuery.selectDownloadUrl();
-
-      await hubBackend.iModelClient.changeSets.download(accessToken, imodelId, csQuery, downloadDir);
-    }
-  }
   async function setupIModel(iModelInfo: any) {
     const downloadDir: string = path.join(iModelRootDir, iModelInfo.modelName);
     // if folder exists, we'll just use the local copy
@@ -411,12 +392,25 @@ describe("ImodelChangesetPerformance big datasets", () => {
     // now download the seed file, if not there
     const seedPathname = path.join(downloadDir, "seed", iModelInfo.modelName!.concat(".bim"));
     if (!fs.existsSync(seedPathname))
-      await hubBackend.iModelClient.iModels.download(accessToken, iModelInfo.modelId, seedPathname);
+      await hubBackend.downloadV1Checkpoint({
+        localFile: seedPathname,
+        checkpoint: {
+          iModelId: iModelInfo.modelId,
+          iTwinId: iModelInfo.iTwinId,
+          changeset: 0,
+        },
+      });
 
     // now download changesets. first check if there are some, then download only newer ones
     const csDir = path.join(downloadDir, "changeSets");
     if (!fs.existsSync(csDir)) {
-      await downloadChangesets(accessToken, iModelInfo.modelId, changesets, csDir);
+      await hubBackend.downloadChangeset({
+        accessToken,
+        targetDir: csDir,
+        arg: {
+          iModelId: iModelInfo.modelId,
+        },
+      });
     } else {
       // delete the temp files
       const tempFiles = fs.readdirSync(csDir).filter((fileName) => !fileName.endsWith(".cs"));
@@ -432,13 +426,23 @@ describe("ImodelChangesetPerformance big datasets", () => {
           return !csFiles.find((obj) => obj === el.id);
         });
         for (const cs of missingChangesets) {
-          const csQuery = new ChangeSetQuery();
-          csQuery.byId(cs.id);
-          await hubBackend.iModelClient.changeSets.download(accessToken, iModelInfo.modelId, csQuery, csDir);
+          await hubBackend.downloadChangeset({
+            accessToken,
+            targetDir: csDir,
+            arg: {
+              changeset: cs.id,
+              iModelId: iModelInfo.modelId,
+            },
+          });
         }
       } else {
-        // download all again
-        await downloadChangesets(accessToken, iModelInfo.modelId, changesets, csDir);
+        await hubBackend.downloadChangeset({
+          accessToken,
+          targetDir: csDir,
+          arg: {
+            iModelId: iModelInfo.modelId,
+          },
+        });
       }
     }
   }
@@ -489,7 +493,7 @@ describe("ImodelChangesetPerformance big datasets", () => {
       const iModelDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: imodelId, asOf: IModelVersion.asOfChangeSet(firstChangeSetId).toJSON() });
 
       for (let j = startNum; j < endNum; ++j) {
-        const cs: ChangeSet = changeSets[j];
+        const cs: ChangesetProps = changeSets[j];
         let apply: boolean = false;
         if (ds.csType === "All") {
           apply = true;
@@ -508,8 +512,8 @@ describe("ImodelChangesetPerformance big datasets", () => {
           const elapsedTime = (endTime - startTime) / 1000.0;
 
           const csInfo = {
-            GUID: cs.wsgId,
-            fileSize: cs.fileSize,
+            GUID: cs.id,
+            fileSize: cs.size,
             type: cs.changesType,
             desc: cs.description,
           };
@@ -617,9 +621,7 @@ describe("ImodelChangesetPerformance own data", () => {
 
   before(async () => {
     Logger.initializeToConsole();
-    // Logger.setLevelDefault(LogLevel.Error);
     Logger.setLevel("HubUtility", LogLevel.Info);
-    // Logger.setLevel("Performance", LogLevel.Info);
 
     if (!fs.existsSync(KnownTestLocations.outputDir))
       fs.mkdirSync(KnownTestLocations.outputDir);
@@ -627,7 +629,7 @@ describe("ImodelChangesetPerformance own data", () => {
       fs.mkdirSync(outDir);
 
     accessToken = await TestUtility.getAccessToken(TestUsers.regular);
-    const hubBackend = new IModelHubBackend();
+    const hubBackend = new BackendiModelsAccess();
     for (const opSize of opSizes) {
       for (const baseName of baseNames) {
         const iModelName = `${iModelNameBase + baseName}_${opSize.toString()}`;

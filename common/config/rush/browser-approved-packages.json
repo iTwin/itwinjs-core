@@ -19,10 +19,6 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
-      "name": "@bentley/imodelhub-client",
-      "allowedCategories": [ "integration-testing", "internal" ]
-    },
-    {
       "name": "@bentley/imodeljs-native",
       "allowedCategories": [ "backend", "internal" ]
     },
@@ -76,7 +72,7 @@
     },
     {
       "name": "@itwin/core-backend",
-      "allowedCategories": [ "backend", "common", "edit", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "edit", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "@itwin/core-bentley",
@@ -181,6 +177,18 @@
     {
       "name": "@itwin/imodel-components-react",
       "allowedCategories": [ "extensions", "frontend", "internal" ]
+    },
+    {
+      "name": "@itwin/imodels-access-backend",
+      "allowedCategories": [ "integration-testing", "internal" ]
+    },
+    {
+      "name": "@itwin/imodels-access-frontend",
+      "allowedCategories": [ "integration-testing", "internal" ]
+    },
+    {
+      "name": "@itwin/imodels-client-management",
+      "allowedCategories": [ "integration-testing" ]
     },
     {
       "name": "@itwin/itwinui-css",
@@ -299,10 +307,6 @@
       "allowedCategories": [ "backend", "common", "tools" ]
     },
     {
-      "name": "agentkeepalive",
-      "allowedCategories": [ "common" ]
-    },
-    {
       "name": "almost-equal",
       "allowedCategories": [ "common" ]
     },
@@ -404,7 +408,7 @@
     },
     {
       "name": "deep-assign",
-      "allowedCategories": [ "common", "integration-testing" ]
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "deep-equal",
@@ -528,11 +532,7 @@
     },
     {
       "name": "fs-extra",
-      "allowedCategories": [ "backend", "common", "integration-testing", "internal", "tools" ]
-    },
-    {
-      "name": "fs-write-stream-atomic",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
       "name": "fuse.js",
@@ -541,10 +541,6 @@
     {
       "name": "glob",
       "allowedCategories": [ "backend", "frontend", "internal", "tools" ]
-    },
-    {
-      "name": "got",
-      "allowedCategories": [ "common" ]
     },
     {
       "name": "i18next",
@@ -588,7 +584,7 @@
     },
     {
       "name": "js-base64",
-      "allowedCategories": [ "backend", "common", "integration-testing" ]
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "jsdom",
@@ -660,7 +656,7 @@
     },
     {
       "name": "nock",
-      "allowedCategories": [ "common", "integration-testing", "internal" ]
+      "allowedCategories": [ "common", "internal" ]
     },
     {
       "name": "nodemon",
@@ -676,7 +672,7 @@
     },
     {
       "name": "nyc",
-      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal", "tools" ]
     },
     {
       "name": "object-hash",
@@ -697,10 +693,6 @@
     {
       "name": "postcss-loader",
       "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "proper-lockfile",
-      "allowedCategories": [ "common" ]
     },
     {
       "name": "puppeteer",

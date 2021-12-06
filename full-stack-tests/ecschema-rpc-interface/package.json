@@ -26,7 +26,6 @@
     "webpack:frontend": "webpack --config webpack.config.js 1>&2"
   },
   "dependencies": {
-    "@bentley/imodelhub-client": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/certa": "workspace:*",
@@ -37,6 +36,9 @@
     "@itwin/core-quantity": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/ecschema-rpcinterface-common": "workspace:*",
+    "@itwin/imodels-access-backend": "0.1.0-dev.1",
+    "@itwin/imodels-access-frontend": "0.1.0-dev.1",
+    "@itwin/imodels-client-management": "0.1.0-dev.1",
     "@itwin/oidc-signin-tool": "3.0.0-dev.110",
     "@itwin/presentation-common": "workspace:*",
     "@itwin/presentation-frontend": "workspace:*",

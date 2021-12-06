@@ -8,7 +8,8 @@ import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { ElectronMainAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronMain";
 import { ElectronHost, ElectronHostOptions } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { IModelBankClient } from "@bentley/imodelhub-client";
-import { IModelHubBackend, UrlFileHandler } from "@bentley/imodelhub-client/lib/cjs/imodelhub-node";
+import { BackendiModelsAccess } from "@itwin/imodels-access-backend";
+import { UrlFileHandler } from "@bentley/imodelhub-client/lib/cjs/imodelhub-node";
 import { IModelHostConfiguration, LocalhostIpcHost } from "@itwin/core-backend";
 import {
   IModelReadRpcInterface, IModelTileRpcInterface, RpcInterfaceDefinition, RpcManager,
@@ -133,7 +134,7 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
   if (dtaConfig.customOrchestratorUri)
     hubClient = new IModelBankClient(dtaConfig.customOrchestratorUri, new UrlFileHandler());
 
-  iModelHost.hubAccess = new IModelHubBackend(hubClient);
+  iModelHost.hubAccess = new BackendiModelsAccess(hubClient);
 
   if (dtaConfig.useFakeCloudStorageTileCache)
     iModelHost.tileCacheService = new FakeTileCacheService(path.normalize(path.join(__dirname, "tiles")), "http://localhost:3001"); // puts the cache in "./lib/backend/tiles" and serves them from "http://localhost:3001/tiles"
