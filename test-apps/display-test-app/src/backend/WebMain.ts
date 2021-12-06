@@ -11,6 +11,7 @@ import { Logger } from "@itwin/core-bentley";
 import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager } from "@itwin/core-common";
 import { getRpcInterfaces, initializeDtaBackend } from "./Backend";
 import { LocalhostIpcHost } from "@itwin/core-backend";
+import { DtaRpcInterface } from "../common/DtaRpcInterface";
 
 /* eslint-disable no-console */
 
@@ -75,9 +76,9 @@ const dtaWebMain = (async () => {
   const announce = () => console.log(`***** display-test-app listening on ${serverConfig.baseUrl}:${app.get("port")}`);
 
   if (serverOptions === undefined) {
-    app.listen(app.get("port"), announce);
+    DtaRpcInterface.backendServer = app.listen(app.get("port"), announce);
   } else {
-    https.createServer(serverOptions, app).listen(app.get("port"), announce);
+    DtaRpcInterface.backendServer = https.createServer(serverOptions, app).listen(app.get("port"), announce);
   }
 });
 

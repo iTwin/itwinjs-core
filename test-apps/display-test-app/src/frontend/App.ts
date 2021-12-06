@@ -47,6 +47,7 @@ import { TimePointComparisonTool } from "./TimePointComparison";
 import { UiManager } from "./UiManager";
 import { MarkupTool, ModelClipTool, SaveImageTool, ZoomToSelectedElementsTool } from "./Viewer";
 import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
+import { MacroTool } from "./MacroTools";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -190,6 +191,15 @@ class ShutDownTool extends Tool {
   }
 }
 
+class ExitTool extends Tool {
+  public static override toolId = "Exit";
+
+  public override async run(_args: any[]): Promise<boolean> {
+    await DtaRpcInterface.getClient().terminate();
+    return true;
+  }
+}
+
 export class DisplayTestApp {
   private static _surface?: Surface;
   public static get surface() { return this._surface!; }
@@ -268,12 +278,14 @@ export class DisplayTestApp {
       DockWindowTool,
       DrawingAidTestTool,
       EditingScopeTool,
+      ExitTool,
       FenceClassifySelectedTool,
       FocusWindowTool,
       FrameStatsTool,
       GenerateTileContentTool,
       IncidentMarkerDemoTool,
       PathDecorationTestTool,
+      MacroTool,
       MarkupSelectTestTool,
       MarkupTool,
       MaximizeWindowTool,

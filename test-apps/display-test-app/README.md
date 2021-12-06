@@ -124,6 +124,8 @@ You can use these environment variables to alter the default behavior of various
   * The name of a view to open by default within an iModel.
 * IMJS_STANDALONE_SIGNIN
   * If defined (value does not matter), the user will be required to sign in at startup. This enables access to content stored on the reality data service. As a side effect, you may observe a harmless "failed to fetch" dialog on startup, which can be safely dismissed.
+* IMJS_NO_STARTUP_MACRO
+  * If defined, run macro from specified path. If file extension not specified, .txt is assumed.
 * IMJS_NO_MAXIMIZE_WINDOW
   * If defined, don't maximize the electron window on startup
 * IMJS_NO_DEV_TOOLS
@@ -210,6 +212,7 @@ display-test-app has access to all key-ins defined in the imodeljs-frontend and 
 * `dta path decoration` - toggle drawing a small path decoration in the selected viewport for testing purposes.
 * `dta markup` - toggle markup on the selected viewport.
 * `dta signin` - sign in to use Bentley services like iModelHub and reality data.
+* `dta macro` - runs the macro file specified in the argument.  If file extension not specified, .txt is assumed.  Each line in the file is executed as a keyin command and run sequentially.
 * `dta output shaders` - output debug information for compiled shaders. Requires IMJS_DEBUG_SHADERS to have been set. Accepts 0-2 arguments:
   * `d=output\directory\` - directory into which to put the output files.
   * filter string: a combination of the following characters to filter the output (e.g., `gu` outputs all used glsl shaders, both fragment and vertex):
@@ -218,6 +221,7 @@ display-test-app has access to all key-ins defined in the imodeljs-frontend and 
     * `u` or `n`: output only used or not-used shaders, respectively.
 * `dta drawing aid points` - start tool for testing AccuSnap.
 * `dta refresh tiles` *modelId* - reload tile trees for the specified model, or all models if no modelId is specified.
+* `dta exit` - Shuts down the backend server and exits the app.
 * `dta shutdown` - Closes all open viewports and iModels, invokes IModelApp.shutdown(), and finally breaks in the debugger (if debugger is open). Useful for diagnosing memory leaks.
 * `dta shadow tiles` - Display in all but the selected viewport the tiles that are selected for generating the shadow map for the selected viewport. Updates each time the shadow map is regenerated. Argument: "toggle", "on", or "off"; defaults to "toggle" if not supplied.
 * `dta detach views` - If the selected viewport is displaying a sheet view, remove all view attachments from it.
