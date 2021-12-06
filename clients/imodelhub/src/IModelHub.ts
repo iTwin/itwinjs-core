@@ -60,6 +60,13 @@ export class IModelHubFrontend implements FrontendHubAccess {
     return versions[0].changeSetId;
   }
 
+  public async getChangesetIdFromLatestNamedVersion(arg: IModelIdArg): Promise<ChangesetId> {
+    const versions = await this.hubClient.versions.get(arg.accessToken, arg.iModelId, new VersionQuery().top(1));
+    if (!versions[0] || !versions[0].changeSetId)
+      throw new BentleyError(BentleyStatus.ERROR, `No named version found`);
+    return versions[0].changeSetId;
+  }
+
   /** Get the iModelId of an iModel by name. Undefined if no iModel with that name exists.  */
   public async queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined> {
     const iModels = await this.hubClient.iModels.get(arg.accessToken, arg.iTwinId, new IModelQuery().byName(arg.iModelName));

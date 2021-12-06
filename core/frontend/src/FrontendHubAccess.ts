@@ -20,4 +20,5 @@ export interface FrontendHubAccess {
   getLatestChangesetId(arg: IModelIdArg): Promise<ChangesetId>;
   getChangesetIdFromVersion(arg: IModelIdArg & { version: IModelVersion }): Promise<ChangesetId>;
   getChangesetIdFromNamedVersion(arg: IModelIdArg & { versionName: string }): Promise<ChangesetId>;
+  getChangesetIdFromLatestNamedVersion(arg: IModelIdArg): Promise<ChangesetId>;
 }
