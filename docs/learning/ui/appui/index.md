@@ -15,11 +15,11 @@ The layout of an AppUi app has the following features:
 
 ![StatusBar](./images/StatusBar.png)
 
-[Widgets](./appui-react/Widgets) are containers of relevant feedback and content for the app's user. They can float or be docked into one of the panels surrounding the content area. Here, we see a "Converstions" widget floating, while "Properties," "Categories" and others are docked into the right-hand panel:
+[Widgets](./appui-react/Widgets) are containers of relevant feedback and content for the app's user. They can float or be docked into one of the panels surrounding the content area. Here, we see a "Conversations" widget floating, while "Properties," "Categories" and others are docked into the right-hand panel:
 
 ![Widgets](./images/AppUiLightTheme.png)
 
-There are two special Widgets that float on top of the Content Area in the upper right and left corners. The [Tool Widget](./appui-react/Widgets##ToolWidget) in the upper left contains buttons used to launch [iTwin.js Tools](../../frontend/Tools) or functions. The [View Navigation Widget](./appui-react/Widgets##NavigationWidget) contains buttons to launch tools that manipulate the active graphic view, such as zoom, pan, and rotate.
+There are two special Widgets that float on top of the Content Area in the upper right and left corners. The [Tool Widget](./appui-react/Widgets.md#ToolWidget) in the upper left contains buttons used to launch [iTwin.js Tools](../../frontend/Tools) or functions. The [View Navigation Widget](./appui-react/Widgets.md#NavigationWidget) contains buttons to launch tools that manipulate the active graphic view, such as zoom, pan, and rotate.
 
 ## AppUi Components
 
