@@ -9,7 +9,7 @@
 import { base64StringToUint8Array, Id64String, IDisposable } from "@itwin/core-bentley";
 import {
   ColorDef, ElementAlignedBox3d, FeatureIndexType, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat,
-  isValidImageSourceFormat, PackedFeatureTable, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, SkyGradient, TextureProps
+  isValidImageSourceFormat, PackedFeatureTable, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, SkyGradient, TextureProps,
 } from "@itwin/core-common";
 import { ClipVector, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform, Vector2d, XAndY } from "@itwin/core-geometry";
 import { WebGLExtensionName } from "@itwin/webgl-compatibility";

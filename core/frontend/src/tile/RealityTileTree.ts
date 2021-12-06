@@ -17,6 +17,8 @@ import { GraphicBuilder } from "../render/GraphicBuilder";
 import { SceneContext } from "../ViewContext";
 import { GraphicsCollectorDrawArgs, MapTile, RealityTile, RealityTileDrawArgs, RealityTileLoader, RealityTileParams, Tile, TileDrawArgs, TileGraphicType, TileParams, TileTree, TileTreeParams } from "./internal";
 
+// eslint-disable-next-line prefer-const
+let skipPreload = true;
 /** @internal */
 export class TraversalDetails {
   public queuedChildren = new Array<Tile>();
@@ -369,7 +371,7 @@ export class RealityTileTree extends TileTree {
 
     const baseDepth = this.getBaseRealityDepth(args.context);
 
-    if (!args.context.target.renderSystem.isMobile && 0 === context.missing.length) { // We skip preloading on mobile devices.
+    if (!args.context.target.renderSystem.isMobile && 0 === context.missing.length && !skipPreload) { // We skip preloading on mobile devices.
       if (baseDepth > 0)        // Maps may force loading of low level globe tiles.
         rootTile.preloadRealityTilesAtDepth(baseDepth, context, args);
 
