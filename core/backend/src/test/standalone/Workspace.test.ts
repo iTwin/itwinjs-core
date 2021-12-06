@@ -10,7 +10,7 @@ import * as sinon from "sinon";
 import { Guid } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import { IModelJsFs } from "../../IModelJsFs";
-import { EditableWorkspaceFile, ITwinWorkspace, WorkspaceContainerId, WorkspaceFile } from "../../workspace/Workspace";
+import { EditableWorkspaceFile, ITwinWorkspace, WorkspaceFileId, ITwinWorkspaceFile } from "../../workspace/Workspace";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { BaseSettings, SettingDictionary, SettingsPriority } from "../../workspace/Settings";
@@ -19,9 +19,9 @@ describe("WorkspaceFile", () => {
 
   const workspace = new ITwinWorkspace(new BaseSettings(), { containerDir: join(KnownTestLocations.outputDir, "TestWorkspaces") });
 
-  async function makeContainer(id: WorkspaceContainerId) {
+  async function makeContainer(id: WorkspaceFileId) {
     const wsFile = new EditableWorkspaceFile(id, workspace);
-    IModelJsFs.purgeDirSync(wsFile.containerFilesDir);
+    IModelJsFs.purgeDirSync(wsFile.filesDir);
     if (IModelJsFs.existsSync(wsFile.localFile))
       IModelJsFs.unlinkSync(wsFile.localFile);
     await wsFile.create();
@@ -36,7 +36,7 @@ describe("WorkspaceFile", () => {
   it("WorkspaceContainer names", () => {
     const expectBadName = (names: string[]) => {
       names.forEach((name) => {
-        expect(() => new WorkspaceFile(name, workspace), name).to.throw("containerId");
+        expect(() => new ITwinWorkspaceFile(name, workspace), name).to.throw("containerId");
       });
     };
 
@@ -59,7 +59,7 @@ describe("WorkspaceFile", () => {
       " leading space",
       "trailing space "]);
 
-    new WorkspaceFile(Guid.createValue(), workspace); // guids should be valid
+    new ITwinWorkspaceFile(Guid.createValue(), workspace); // guids should be valid
   });
 
   it("create new WorkspaceFile", async () => {
@@ -121,25 +121,25 @@ describe("WorkspaceFile", () => {
 
     const schemaFile = IModelTestUtils.resolveAssetFile("TestSettings.schema.json");
     const fontsContainer = await makeContainer("fonts-01#v23");
-    expect(fontsContainer.containerId).equals("fonts-01");
+    expect(fontsContainer.fileId).equals("fonts-01");
     expect(fontsContainer.dbAlias).equals("v23");
 
     fontsContainer.addFile("Helvetica.ttf", schemaFile, "ttf");
     fontsContainer.close();
 
     const settings = workspace.settings;
-    await workspace.loadSettingsDictionary({ rscName: "default-settings", container: "defaults" }, SettingsPriority.defaults);
+    await workspace.loadSettingsDictionary({ rscName: "default-settings", db: "defaults" }, SettingsPriority.defaults);
     expect(settings.getSetting("editor/renderWhitespace")).equals("selection");
 
     interface FontEntry { fontName: string, container: string }
     const fontList = settings.getArray<FontEntry>("workspace/fontList")!;
     const fontContainerName = fontList[0].container;
-    const fonts = await workspace.getContainer(fontContainerName);
+    const fonts = await workspace.getWorkspaceDb(fontContainerName);
     expect(fonts).to.not.be.undefined;
     const fontFile = fonts.getFile(fontList[0].fontName)!;
     expect(fontFile).contains(".ttf");
     compareFiles(fontFile, schemaFile);
-    workspace.dropContainer(fonts);
+    workspace.dropWorkspaceDb(fonts);
 
     const setting2: SettingDictionary = {
       "workspace/container/alias": [
@@ -150,12 +150,12 @@ describe("WorkspaceFile", () => {
       ],
     };
     settings.addDictionary("imodel-02", SettingsPriority.iModel, setting2);
-    expect(workspace.resolveContainerId(fontContainerName)).equals("fonts-02");
-    expect(workspace.resolveContainerId({ id: "fonts-01" })).equals("fonts-01");
-    await expect(workspace.getContainer(fontContainerName)).to.be.rejectedWith("not found");
+    expect(workspace.resolveWorkspaceDbId(fontContainerName)).equals("fonts-02");
+    expect(workspace.resolveWorkspaceDbId({ id: "fonts-01" })).equals("fonts-01");
+    await expect(workspace.getWorkspaceDb(fontContainerName)).to.be.rejectedWith("not found");
 
     settings.dropDictionary("imodel-02");
-    expect(workspace.resolveContainerId(fontContainerName)).equals("fonts-01");
+    expect(workspace.resolveWorkspaceDbId(fontContainerName)).equals("fonts-01");
   });
 
 });

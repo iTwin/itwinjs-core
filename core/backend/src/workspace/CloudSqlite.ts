@@ -15,20 +15,21 @@ import { IModelHost } from "../IModelHost";
 /** @beta */
 export namespace CloudSqlite {
   export type DbAlias = string;
+
   export interface AccountProps {
     /** blob storage module: e.g. "azure", "google", "aws". May also include URI style parameters. */
     storageType: string;
     /** blob store account name. */
-    user: string;
+    accountName: string;
   }
   export interface ContainerProps {
     /** the name of the container. */
-    container: string;
-    /** SAS key that grants access to the container. */
-    auth: string;
+    containerName: string;
+    /** SAS token that grants access to the container. */
+    sasToken: string;
   }
-  export type AccessProps = AccountProps & ContainerProps;
-  export type DownloadProps = AccessProps & { onProgress?: (loaded: number, total: number) => number };
+  export type ContainerAccessProps = AccountProps & ContainerProps;
+  export type DownloadProps = ContainerAccessProps & { onProgress?: (loaded: number, total: number) => number };
   export type Logger = (stream: NodeJS.ReadableStream) => void;
   export type ProcessProps = DaemonProps & AccountProps & { stdoutLogger?: Logger, stderrLogger?: Logger };
   export interface DbProps { dbAlias: DbAlias, localFile: LocalFileName }
@@ -53,7 +54,7 @@ export class CloudSqlite {
     if (this.isRunning)
       return;
 
-    this.cloudProcess = BlobDaemon.start(props);
+    this.cloudProcess = BlobDaemon.start(this.toBlobAccountProps(props));
 
     // set up a listener to kill the containerProcess when we shut down
     this.removeShutdownListener = IModelHost.onBeforeShutdown.addOnce(() => this.killProcess());
@@ -67,7 +68,20 @@ export class CloudSqlite {
     this.killProcess();
   }
 
-  public static async attach(dbAlias: CloudSqlite.DbAlias, props: CloudSqlite.AccessProps) {
+  private static toBlobAccountProps(props: CloudSqlite.AccountProps) {
+    return {
+      user: props.accountName,
+      ...props,
+    };
+  }
+  private static toBlobAccessProps(props: CloudSqlite.ContainerAccessProps) {
+    return {
+      container: props.containerName,
+      auth: props.sasToken,
+      ...this.toBlobAccountProps(props),
+    };
+  }
+  public static async attach(dbAlias: CloudSqlite.DbAlias, props: CloudSqlite.ContainerAccessProps) {
     const args: BlobDaemonCommandArg & CloudSqlite.ProcessProps = {
       log: "meh",
       maxCacheSize: "10G",
@@ -80,7 +94,7 @@ export class CloudSqlite {
       // spawnOptions: {
       //   stdio: "inherit",
       // },
-      ...props,
+      ...this.toBlobAccessProps(props),
     };
 
     if (!this.isRunning)
@@ -93,14 +107,14 @@ export class CloudSqlite {
     return BlobDaemon.getDbFileName(args);
   }
 
-  public static async create(props: CloudSqlite.AccessProps) {
-    const stat = await BlobDaemon.command("create", { ...props, dbAlias: "" });
+  public static async initializeContainer(props: CloudSqlite.ContainerAccessProps) {
+    const stat = await BlobDaemon.command("create", { ...this.toBlobAccessProps(props), dbAlias: "" });
     if (stat.result !== DbResult.BE_SQLITE_OK)
-      throw new Error(`Cannot create container: ${stat.errMsg}`);
+      throw new Error(`Cannot initialize container: ${stat.errMsg}`);
   }
 
   public static async downloadDb(db: CloudSqlite.DbProps, props: CloudSqlite.DownloadProps) {
-    const downloader = new IModelHost.platform.CloudDbTransfer({ direction: "download", ...db, ...props });
+    const downloader = new IModelHost.platform.CloudDbTransfer({ direction: "download", ...db, ...this.toBlobAccessProps(props) });
 
     let timer: NodeJS.Timeout | undefined;
     try {
@@ -124,20 +138,20 @@ export class CloudSqlite {
     }
   }
 
-  public static async copyDb(oldVersion: string, newVersion: string, props: CloudSqlite.AccessProps) {
-    const stat = await BlobDaemon.command("copy", { dbAlias: oldVersion, toAlias: newVersion, ...props });
+  public static async copyDb(oldVersion: string, newVersion: string, props: CloudSqlite.ContainerAccessProps) {
+    const stat = await BlobDaemon.command("copy", { dbAlias: oldVersion, toAlias: newVersion, ...this.toBlobAccessProps(props) });
     if (stat.result !== DbResult.BE_SQLITE_OK)
       throw new Error(`Cannot copy db: ${stat.errMsg}`);
   }
 
-  public static async uploadDb(db: CloudSqlite.DbProps, props: CloudSqlite.AccessProps) {
-    const stat = await BlobDaemon.command("upload", { ...db, ...props });
+  public static async uploadDb(db: CloudSqlite.DbProps, props: CloudSqlite.ContainerAccessProps) {
+    const stat = await BlobDaemon.command("upload", { ...db, ...this.toBlobAccessProps(props) });
     if (stat.result !== DbResult.BE_SQLITE_OK)
       throw new Error(`Cannot upload db: ${stat.errMsg}`);
   }
 
-  public static async deleteDb(db: CloudSqlite.DbProps, props: CloudSqlite.AccessProps) {
-    const stat = await BlobDaemon.command("delete", { ...db, ...props });
+  public static async deleteDb(db: CloudSqlite.DbProps, props: CloudSqlite.ContainerAccessProps) {
+    const stat = await BlobDaemon.command("delete", { ...db, ...this.toBlobAccessProps(props) });
     if (stat.result !== DbResult.BE_SQLITE_OK)
       throw new Error(`Cannot delete db: ${stat.errMsg}`);
   }

@@ -9,7 +9,7 @@ import { join } from "path";
 import * as Yargs from "yargs";
 import {
   CloudSqlite,
-  EditableWorkspaceFile, IModelHost, IModelHostConfiguration, IModelJsFs, WorkspaceContainerId, WorkspaceFile, WorkspaceResourceName,
+  EditableWorkspaceDb, IModelHost, IModelHostConfiguration, IModelJsFs, WorkspaceDbId, WorkspaceDb, WorkspaceResourceName,
 } from "@itwin/core-backend";
 import { DbResult } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
@@ -17,70 +17,70 @@ import { LocalDirName, LocalFileName } from "@itwin/core-common";
 // cspell:ignore nodir
 /* eslint-disable id-blacklist,no-console */
 
-/** Allows overriding the location of WorkspaceFiles. If not present, defaults to `${homedir}/iTwin/Workspace` */
+/** Allows overriding the location of WorkspaceDbs. If not present, defaults to `${homedir}/iTwin/Workspace` */
 interface EditorOpts {
-  /** Directory for WorkspaceFiles */
+  /** Directory for WorkspaceDbs */
   directory?: LocalDirName;
 }
 
-/** Id of WorkspaceFile for operation */
-interface WorkspaceId extends EditorOpts {
-  workspaceId: WorkspaceContainerId;
+/** Id of WorkspaceDb for operation */
+interface WorkspaceDbOpt extends EditorOpts {
+  workspaceId: WorkspaceDbId;
 }
 
 /** Resource type names */
 type RscType = "blob" | "string" | "file";
 
-/** Options for adding, updating, extracting, or deleting resources from a WorkspaceFile */
-interface ResourceOption extends WorkspaceId {
+/** Options for adding, updating, extracting, or deleting resources from a WorkspaceDb */
+interface ResourceOption extends WorkspaceDbOpt {
   name?: WorkspaceResourceName;
   update: boolean;
   type: RscType;
 }
 
-/** Options for deleting resources from a WorkspaceFile */
+/** Options for deleting resources from a WorkspaceDb */
 interface DeleteResourceOpts extends ResourceOption {
   name: WorkspaceResourceName;
 }
 
-/** Options for extracting resources from a WorkspaceFile */
+/** Options for extracting resources from a WorkspaceDb */
 interface ExtractResourceOpts extends ResourceOption {
   name: WorkspaceResourceName;
   fileName: LocalFileName;
 }
 
-/** Options for adding or updating local files as resources into a WorkspaceFile */
+/** Options for adding or updating local files as resources into a WorkspaceDb */
 interface AddFileOptions extends ResourceOption {
   files: LocalFileName;
   root?: LocalDirName;
 }
 
-/** Options for listing the resources in a WorkspaceFile */
-interface ListOptions extends WorkspaceId {
+/** Options for listing the resources in a WorkspaceDb */
+interface ListOptions extends WorkspaceDbOpt {
   strings?: boolean;
   files?: boolean;
   blobs?: boolean;
 }
 
-/** Options for listing the resources in a WorkspaceFile */
-interface UploadOptions extends WorkspaceId {
+/** Options for listing the resources in a WorkspaceDb */
+interface UploadOptions extends WorkspaceDbOpt {
   create: boolean;
   auth: string;
   user: string;
 }
 
-/** Create a new empty WorkspaceFile  */
-async function createWorkspaceFile(args: WorkspaceId) {
-  const wsFile = new EditableWorkspaceFile(args.workspaceId, IModelHost.appWorkspace);
+/** Create a new empty WorkspaceDb  */
+async function createWorkspaceDb(args: WorkspaceDbOpt) {
+  const wsFile = new EditableWorkspaceDb(args.workspaceId, IModelHost.appWorkspace);
   await wsFile.create();
-  console.log(`created WorkspaceFile ${wsFile.db.nativeDb.getFilePath()}`);
+  console.log(`created WorkspaceDb ${wsFile.db.nativeDb.getFilePath()}`);
   wsFile.close();
 }
 
-/** open, call a function to process, then close a WorkspaceFile */
-function processWorkspace<W extends WorkspaceFile, T>(args: T, ws: W, fn: (ws: W, args: T) => void) {
+/** open, call a function to process, then close a WorkspaceDb */
+function processWorkspace<W extends WorkspaceDb, T>(args: T, ws: W, fn: (ws: W, args: T) => void) {
   ws.open();
-  console.log(`WorkspaceFile [${ws.db.nativeDb.getFilePath()}]`);
+  console.log(`WorkspaceDb [${ws.db.nativeDb.getFilePath()}]`);
   try {
     fn(ws, args);
   } finally {
@@ -88,18 +88,18 @@ function processWorkspace<W extends WorkspaceFile, T>(args: T, ws: W, fn: (ws: W
   }
 }
 
-/** Open for write, call a function to process, then close a WorkspaceFile */
-function editWorkspace<T extends WorkspaceId>(args: T, fn: (ws: EditableWorkspaceFile, args: T) => void) {
-  processWorkspace(args, new EditableWorkspaceFile(args.workspaceId, IModelHost.appWorkspace), fn);
+/** Open for write, call a function to process, then close a WorkspaceDb */
+function editWorkspace<T extends WorkspaceDbOpt>(args: T, fn: (ws: EditableWorkspaceDb, args: T) => void) {
+  processWorkspace(args, new EditableWorkspaceDb(args.workspaceId, IModelHost.appWorkspace), fn);
 }
 
-/** Open for read, call a function to process, then close a WorkspaceFile */
-function readWorkspace<T extends WorkspaceId>(args: T, fn: (ws: WorkspaceFile, args: T) => void) {
-  processWorkspace(args, new WorkspaceFile(args.workspaceId, IModelHost.appWorkspace), fn);
+/** Open for read, call a function to process, then close a WorkspaceDb */
+function readWorkspace<T extends WorkspaceDbOpt>(args: T, fn: (ws: WorkspaceDb, args: T) => void) {
+  processWorkspace(args, new WorkspaceDb(args.workspaceId, IModelHost.appWorkspace), fn);
 }
 
-/** List the contents of a WorkspaceFile */
-async function listWorkspaceFile(args: ListOptions) {
+/** List the contents of a WorkspaceDb */
+async function listWorkspaceDb(args: ListOptions) {
   readWorkspace(args, (file, args) => {
     if (!args.strings && !args.blobs && !args.files)
       args.blobs = args.files = args.strings = true;
@@ -134,8 +134,8 @@ async function listWorkspaceFile(args: ListOptions) {
   });
 }
 
-/** Add or Update files into a WorkspaceFile. */
-async function addToWorkspaceFile(args: AddFileOptions) {
+/** Add or Update files into a WorkspaceDb. */
+async function addToWorkspaceDb(args: AddFileOptions) {
   editWorkspace(args, (wsFile, args) => {
     glob.sync(args.files, { cwd: args.root ?? process.cwd(), nodir: true }).forEach((filePath) => {
       const file = args.root ? join(args.root, filePath) : filePath;
@@ -160,8 +160,8 @@ async function addToWorkspaceFile(args: AddFileOptions) {
   });
 }
 
-/** Extract a single resource from a WorkspaceFile into a local file */
-async function extractFromWorkspaceFile(args: ExtractResourceOpts) {
+/** Extract a single resource from a WorkspaceDb into a local file */
+async function extractFromWorkspaceDb(args: ExtractResourceOpts) {
   readWorkspace(args, (file, args) => {
     const verify = <T>(val: T | undefined): T => {
       if (val === undefined)
@@ -180,8 +180,8 @@ async function extractFromWorkspaceFile(args: ExtractResourceOpts) {
   });
 }
 
-/** Delete a single resource from a WorkspaceFile */
-async function deleteFromWorkspaceFile(args: DeleteResourceOpts) {
+/** Delete a single resource from a WorkspaceDb */
+async function deleteFromWorkspaceDb(args: DeleteResourceOpts) {
   editWorkspace(args, (wsFile, args) => {
     if (args.type === "string")
       wsFile.removeString(args.name);
@@ -193,13 +193,13 @@ async function deleteFromWorkspaceFile(args: DeleteResourceOpts) {
   });
 }
 
-async function vacuumWorkspaceFile(args: WorkspaceId) {
-  const ws = new WorkspaceFile(args.workspaceId, IModelHost.appWorkspace);
+async function vacuumWorkspaceDb(args: WorkspaceDbOpt) {
+  const ws = new WorkspaceDb(args.workspaceId, IModelHost.appWorkspace);
   IModelHost.platform.DgnDb.vacuum(ws.localFile);
   console.log(`${ws.localFile} vacuumed`);
 }
 
-async function uploadWorkspaceFile(args: UploadOptions) {
+async function uploadWorkspaceDb(args: UploadOptions) {
   const containerProps = {
     auth: args.auth,
     container: args.workspaceId,
@@ -209,7 +209,7 @@ async function uploadWorkspaceFile(args: UploadOptions) {
   if (args.create)
     await CloudSqlite.create(containerProps);
 
-  const ws = new WorkspaceFile(args.workspaceId, IModelHost.appWorkspace);
+  const ws = new WorkspaceDb(args.workspaceId, IModelHost.appWorkspace);
   await CloudSqlite.uploadDb({ dbAlias: args.workspaceId, localFile: ws.localFile }, containerProps);
 }
 
@@ -232,63 +232,63 @@ function runCommand<T extends EditorOpts>(cmd: (args: T) => Promise<void>) {
 async function main() {
   const type = { alias: "t", describe: "the type of resource", choices: ["blob", "string", "file"], required: true };
   const update = { alias: "u", describe: "update (i.e. replace) rather than add the files", boolean: true, default: false };
-  Yargs.usage("Edits or lists contents of a WorkspaceFile")
+  Yargs.usage("Edits or lists contents of a WorkspaceDb")
     .wrap(Math.min(130, Yargs.terminalWidth()))
     .strict()
     .version("V1.0")
-    .option("directory", { alias: "d", describe: "directory to use for WorkspaceFiles", string: true })
+    .option("directory", { alias: "d", describe: "directory to use for WorkspaceDbs", string: true })
     .command({
       command: "create <workspaceId>",
-      describe: "create a new WorkspaceFile",
-      handler: runCommand(createWorkspaceFile),
+      describe: "create a new WorkspaceDb",
+      handler: runCommand(createWorkspaceDb),
     })
     .command({
       command: "list <workspaceId>",
-      describe: "list the contents of a WorkspaceFile",
+      describe: "list the contents of a WorkspaceDb",
       builder: {
         strings: { alias: "s", describe: "list string resources", boolean: true, default: false },
         blobs: { alias: "b", describe: "list blob resources", boolean: true, default: false },
         files: { alias: "f", describe: "list file resources", boolean: true, default: false },
       },
-      handler: runCommand(listWorkspaceFile),
+      handler: runCommand(listWorkspaceDb),
     })
     .command({
       command: "add <workspaceId> <files>",
-      describe: "add or update files into a WorkspaceFile",
+      describe: "add or update files into a WorkspaceDb",
       builder: {
         name: { alias: "n", describe: "resource name for file", string: true },
         root: { alias: "r", describe: "root directory. Path parts after this will be saved in resource name", string: true },
         update,
         type,
       },
-      handler: runCommand(addToWorkspaceFile),
+      handler: runCommand(addToWorkspaceDb),
     })
     .command({
       command: "extract <workspaceId> <name> <fileName>",
-      describe: "extract a resource from a WorkspaceFile into a local file",
+      describe: "extract a resource from a WorkspaceDb into a local file",
       builder: { type },
-      handler: runCommand(extractFromWorkspaceFile),
+      handler: runCommand(extractFromWorkspaceDb),
     })
     .command({
       command: "delete <workspaceId> <name>",
-      describe: "delete a resource from a WorkspaceFile",
+      describe: "delete a resource from a WorkspaceDb",
       builder: { type },
-      handler: runCommand(deleteFromWorkspaceFile),
+      handler: runCommand(deleteFromWorkspaceDb),
     })
     .command({
       command: "upload <workspaceId>",
-      describe: "upload a WorkspaceFile to cloud storage",
+      describe: "upload a WorkspaceDb to cloud storage",
       builder: {
         create: { alias: "c", describe: "create container", boolean: true, default: false },
         auth: { alias: "a", describe: "authorization token", string: true },
         user: { alias: "u", describe: "user account name", string: true },
       },
-      handler: runCommand(uploadWorkspaceFile),
+      handler: runCommand(uploadWorkspaceDb),
     })
     .command({
       command: "vacuum <workspaceId>",
-      describe: "vacuum a WorkspaceFile",
-      handler: runCommand(vacuumWorkspaceFile),
+      describe: "vacuum a WorkspaceDb",
+      handler: runCommand(vacuumWorkspaceDb),
     })
     .demandCommand()
     .help()
