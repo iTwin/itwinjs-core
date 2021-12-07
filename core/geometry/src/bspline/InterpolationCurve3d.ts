@@ -208,8 +208,13 @@ export class InterpolationCurve3dOptions {
         if (dataA.knots === undefined && dataB.knots === undefined)
           return true;
         /* alas .. need to allow tricky mismatch of end replication */
-        const knotsA = BSplineCurveOps.C2CubicFit.convertCubicKnotVectorToFitParams(dataA.knots, dataA.fitPoints.length, false);
-        const knotsB = BSplineCurveOps.C2CubicFit.convertCubicKnotVectorToFitParams(dataB.knots, dataB.fitPoints.length, false);
+        let knotsA = dataA.knots, knotsB = dataB.knots;
+        if (dataA.knots === undefined)  // construct undefined knots to compare against defined knots
+          knotsA = BSplineCurveOps.C2CubicFit.constructFitParametersFromPoints(dataA.fitPoints, dataA.isChordLenKnots, dataA.closed);
+        else if (dataB.knots === undefined)
+          knotsB = BSplineCurveOps.C2CubicFit.constructFitParametersFromPoints(dataB.fitPoints, dataB.isChordLenKnots, dataB.closed);
+        knotsA = BSplineCurveOps.C2CubicFit.convertCubicKnotVectorToFitParams(knotsA, dataA.fitPoints.length, false);
+        knotsB = BSplineCurveOps.C2CubicFit.convertCubicKnotVectorToFitParams(knotsB, dataB.fitPoints.length, false);
         return Geometry.almostEqualNumberArrays(knotsA, knotsB, (a: number, b: number) => Geometry.isAlmostEqualNumber(a, b));
       }
     }
@@ -220,8 +225,7 @@ export class InterpolationCurve3dOptions {
     this.fitPoints.reverse();
     if (this.knots)
       this.knots.reverse();
-    // Swap pointers to tangents.
-    // NEEDS WORK: Do the vector coordinates need to be negated?
+    // Swap pointers to tangents. They don't need to be negated because they point into the curve.
     const oldStart = this._startTangent;
     this._startTangent = this.endTangent;
     this._endTangent = oldStart;
@@ -306,7 +310,10 @@ export class InterpolationCurve3d extends ProxyCurve {
     const proxyOk = this._proxyCurve.tryTransformInPlace(transform);
     if (proxyOk) {
       transform.multiplyPoint3dArrayInPlace(this._options.fitPoints);
-      // START HERE: transform start/endTangent
+      if (this._options.startTangent)
+        transform.multiplyVectorInPlace(this._options.startTangent);
+      if (this._options.endTangent)
+        transform.multiplyVectorInPlace(this._options.endTangent);
     }
     return proxyOk;
   }
