@@ -44,27 +44,30 @@ function expectIndices(indices: VertexIndices, expected: number[]): void {
     expect(stream.nextUint24).to.equal(expectedIndex);
 }
 
-function expectEdgeTable(edges: EdgeTable, expectedVertexIndices: number[]): void {
-  // ###TODO expect partitioned with silhouettes in upper partition
-  // ###TODO expect oct-encoded normals for silhouettes
-  const actualVertexIndices: number[] = [];
+// expectedSegments = 2 indices per segment edge.
+// expectedSilhouettes = 2 indices and 2 oct-encoded normals per silhouette edge.
+function expectEdgeTable(edges: EdgeTable, expectedSegments: number[], expectedSilhouettes: number[]): void {
+  expect(expectedSegments.length % 2).to.equal(0);
+  expect(edges.numSegments).to.equal(expectedSegments.length / 2);
+
   const stream = new ByteStream(edges.data.buffer);
-  while (stream.curPos < stream.length) {
-    actualVertexIndices.push(stream.nextUint24);
-    actualVertexIndices.push(stream.nextUint24);
+  const actualSegments: number[] = [];
+  for (let i = 0; i < expectedSegments.length; i += 2) {
+    actualSegments.push(stream.nextUint24);
+    actualSegments.push(stream.nextUint24);
   }
 
-  // Each edge consists of 2 vertex indices.
-  expect(expectedVertexIndices.length % 2).to.equal(0);
-  // If we have an odd number of edges, there will be two unused indices at the end, because indices span RGBA values.
-  if ((expectedVertexIndices.length / 2) % 2) {
-    expect(actualVertexIndices.length).to.equal(expectedVertexIndices.length + 2);
-    expect(actualVertexIndices[actualVertexIndices.length - 1]).to.equal(0);
-    expect(actualVertexIndices[actualVertexIndices.length - 2]).to.equal(0);
-    actualVertexIndices.splice(expectedVertexIndices.length);
+  expect(expectedSilhouettes.length % 4).to.equal(0);
+  const actualSilhouettes: number[] = [];
+  for (let i = 0; i < expectedSilhouettes.length; i += 4) {
+    actualSilhouettes.push(stream.nextUint24);
+    actualSilhouettes.push(stream.nextUint24);
+    actualSilhouettes.push(stream.nextUint16);
+    actualSilhouettes.push(stream.nextUint16);
   }
 
-  expect(actualVertexIndices).to.deep.equal(expectedVertexIndices);
+  expect(actualSegments).to.deep.equal(expectedSegments);
+  expect(actualSilhouettes).to.deep.equal(expectedSilhouettes);
 }
 
 describe.only("IndexedEdgeParams", () => {
@@ -136,8 +139,10 @@ describe.only("IndexedEdgeParams", () => {
       0, 1, 1, 3, 3, 4,
       // polylines
       0, 2, 2, 4, 2, 4, 3, 4, 1, 3, 0, 1,
+    ], [
       // silhouettes
-      1, 2, 2, 3,
+      1, 2, 0, 0xffff,
+      2, 3, 0x1234, 0xfedc,
     ]);
   });
 });

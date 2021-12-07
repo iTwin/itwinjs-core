@@ -6,10 +6,12 @@
  * @module Rendering
  */
 
+import { assert } from "@itwin/core-bentley";
 import { LinePixels, MeshEdge, OctEncodedNormalPair, PolylineData } from "@itwin/core-common";
 import { MeshArgs, MeshArgsEdges } from "./mesh/MeshPrimitives";
-import { computeDimensions, VertexIndices } from "./VertexTable";
+import { VertexIndices } from "./VertexTable";
 import { TesselatedPolyline, wantJointTriangles } from "./PolylineParams";
+import { IModelApp } from "../../IModelApp";
 
 /**
  * Describes a set of line segments representing edges of a mesh.
@@ -129,6 +131,7 @@ export interface EdgeTable {
   readonly data: Uint8Array;
   readonly width: number;
   readonly height: number;
+  readonly numSegments: number;
 }
 
 export interface IndexedEdgeParams {
@@ -145,7 +148,8 @@ function buildIndexedEdges(args: MeshArgsEdges, doPolylines: boolean): IndexedEd
   const numHardEdges = hardEdges?.length ?? 0;
   const numSilhouettes = silhouettes?.edges?.length ?? 0;
   const numPolylines = polylines ? polylines.reduce((count: number, pd: PolylineData) => count + Math.max(0, pd.vertIndices.length - 1), 0) : 0;
-  const numTotalEdges = numHardEdges + numSilhouettes + numPolylines;
+  const numSegmentEdges = numHardEdges + numPolylines;
+  const numTotalEdges = numSegmentEdges + numSilhouettes;
   if (numTotalEdges === 0)
     return undefined;
 
@@ -155,9 +159,26 @@ function buildIndexedEdges(args: MeshArgsEdges, doPolylines: boolean): IndexedEd
     for (let j = 0; j < 6; j++)
       indices.setNthIndex(i * 6 + j, i);
 
-  // Each edge requires 2 24-bit indices = 3 bytes = 1.5 RGBA values.
-  // Request twice as many bytes per edge for half as many edges so that we can tightly pack them.
-  const dimensions = computeDimensions(Math.ceil(numTotalEdges / 2), 3, 0);
+
+  // Each segment edge requires 2 24-bit indices = 3 bytes = 1.5 RGBA values.
+  // Each silhouette requires the same as segment edge plus 2 16-bit oct-encoded normals = 2.5 RGBA values.
+  const nRgbaRequired = Math.ceil(1.5 * numSegmentEdges + 2.5 * numSilhouettes);
+  const maxSize = IModelApp.renderSystem.maxTextureSize;
+  let dimensions;
+  if (nRgbaRequired < maxSize) {
+    dimensions = { width: nRgbaRequired, height: 1 };
+  } else {
+    // Make roughly square to reduce unused space in last row.
+    let width = Math.ceil(Math.sqrt(nRgbaRequired));
+    // Each entry's data must fit on the same row. 15 RGBA = 60 bytes = lowest common multiple of 6, 10, and 4.
+    const remainder = width % 15;
+    if (0 !== remainder)
+      width += 15 - remainder;
+
+    const height = Math.ceil(nRgbaRequired / width);
+    dimensions = { width, height };
+  }
+
   const data = new Uint8Array(dimensions.width * dimensions.height * 4);
   function setUint24(byteIndex: number, value: number): void {
     data[byteIndex + 0] = value & 0x0000ff;
@@ -192,9 +213,22 @@ function buildIndexedEdges(args: MeshArgsEdges, doPolylines: boolean): IndexedEd
   }
 
   if (silhouettes?.edges) {
-    // ##TODO normals
-    for (const silhouette of silhouettes.edges)
-      setEdge(curIndex++, silhouette.indices[0], silhouette.indices[1]);
+    assert(undefined !== silhouettes.normals);
+    assert(silhouettes.normals.length === silhouettes.edges.length);
+    const silhouettesStartByteIndex = numSegmentEdges * 6;
+    function setSilhouette(index: number, start: number, end: number, normals: OctEncodedNormalPair): void {
+      const byteIndex = silhouettesStartByteIndex + index * 10;
+      setUint24(byteIndex, start);
+      setUint24(byteIndex + 3, end);
+      data[byteIndex + 6] = normals.first.value & 0xff;
+      data[byteIndex + 7] = (normals.first.value & 0xff00) >>> 8;
+      data[byteIndex + 8] = normals.second.value & 0xff;
+      data[byteIndex + 9] = (normals.second.value & 0xff00) >>> 8;
+    }
+
+    curIndex = 0;
+    for (let i = 0; i < silhouettes.edges.length; i++)
+      setSilhouette(curIndex++, silhouettes.edges[i].indices[0], silhouettes.edges[i].indices[1], silhouettes.normals[i]);
   }
 
   return {
@@ -203,6 +237,7 @@ function buildIndexedEdges(args: MeshArgsEdges, doPolylines: boolean): IndexedEd
       data,
       width: dimensions.width,
       height: dimensions.height,
+      numSegments: numSegmentEdges,
     },
   };
 }
