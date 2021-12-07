@@ -87,7 +87,9 @@ export interface RealityDataSourceKey {
   /** The context id that was used when reality data was attached - if none provided, current session iTwinId will be used */
   iTwinId?: string;
 }
-/** @beta */
+/**
+ * RealityDataSourceKey utility functions
+ * @beta */
 export namespace RealityDataSourceKey {
   /** Utility function to convert a RealityDataSourceKey into its string representation */
   export function toString(rdSourceKey: RealityDataSourceKey): string {
