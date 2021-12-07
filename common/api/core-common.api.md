@@ -1745,7 +1745,7 @@ export class ContextRealityModel {
     set planarClipMaskSettings(settings: PlanarClipMaskSettings | undefined);
     // (undocumented)
     protected readonly _props: ContextRealityModelProps;
-    // @alpha
+    // @beta
     readonly rdSourceKey?: RealityDataSourceKey;
     readonly realityDataId?: string;
     toJSON(): ContextRealityModelProps;
@@ -1761,7 +1761,7 @@ export interface ContextRealityModelProps {
     // @alpha
     orbitGtBlob?: OrbitGtBlobProps;
     planarClipMask?: PlanarClipMaskProps;
-    // @alpha
+    // @beta
     rdSourceKey?: RealityDataSourceKey;
     realityDataId?: string;
     tilesetUrl: string;
@@ -6749,13 +6749,13 @@ export interface RealityDataAccess {
     getRealityDataUrl: (iTwinId: string | undefined, realityDataId: string) => Promise<string>;
 }
 
-// @alpha
+// @beta
 export enum RealityDataFormat {
     OPC = "OPC",
     ThreeDTile = "ThreeDTile"
 }
 
-// @alpha
+// @beta
 export enum RealityDataProvider {
     CesiumIonAsset = "CesiumIonAsset",
     ContextShare = "ContextShare",
@@ -6763,7 +6763,7 @@ export enum RealityDataProvider {
     TilesetUrl = "TilesetUrl"
 }
 
-// @alpha
+// @beta
 export interface RealityDataSourceKey {
     format: string;
     id: string;
@@ -6771,7 +6771,13 @@ export interface RealityDataSourceKey {
     provider: string;
 }
 
-// @alpha
+// @beta
+export namespace RealityDataSourceKey {
+    export function isEqual(key1: RealityDataSourceKey, key2: RealityDataSourceKey): boolean;
+    export function toString(rdSourceKey: RealityDataSourceKey): string;
+}
+
+// @beta
 export interface RealityDataSourceProps {
     sourceKey: RealityDataSourceKey;
 }
