@@ -422,6 +422,14 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
         return this._classifierAndMaskCombinedBuffer?.texture;
     }
   }
+  public getOrCreateClassifierTexture(): Texture | undefined {
+    if (undefined === this._classifierBuffers)
+      this._classifierBuffers = ClassifierFrameBuffers.create(this._width, this._height);
+    if (undefined !== this._classifierBuffers && undefined === this._classifierCombinedBuffer)
+      this._classifierCombinedBuffer = ClassifierCombinationBuffer.create(this._width, this._height, this._classifierBuffers.textures.color, this._classifierBuffers.textures.feature);
+
+    return this._classifierCombinedBuffer?.texture;
+  }
 
   private pushBatches(batchState: BatchState, graphics: RenderGraphic[]) {
     graphics.forEach((graphic) => {

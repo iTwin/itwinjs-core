@@ -39,7 +39,7 @@ const testInside = `
 bool testInside(float x0, float y0, float x1, float y1, float x, float y) {
   vec2 perp = vec2(y0 - y1, x1 - x0), test = vec2(x - x0, y - y0);
   float dot = (test.x * perp.x + test.y * perp.y) / sqrt(perp.x * perp.x + perp.y * perp.y);
-  return dot >= -.001;
+  return dot >= 0.0;
 }
 `;
 

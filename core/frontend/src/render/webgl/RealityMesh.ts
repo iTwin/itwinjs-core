@@ -125,7 +125,7 @@ export class RealityTextureParams {
         textureParams.push(new RealityTextureParam(terrainTexture.texture, matrix, undefined));
       } else {
         const classifier = texture.classifier;
-        textureParams.push(new RealityTextureParam(classifier.texture, Matrix4.fromMatrix4d(classifier.projectionMatrix), texture));
+        textureParams.push(new RealityTextureParam(classifier.getOrCreateClassifierTexture(), Matrix4.fromMatrix4d(classifier.projectionMatrix), texture));
       }
     }
 
@@ -264,8 +264,6 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
             continue;
           for (const secondaryTexture of secondaryLayer) {
             if (secondaryTexture instanceof ClassifierTexture) {
-              if (!secondaryTexture.classifier.texture)
-                continue;
               layerTextures.push(secondaryTexture.clone(targetRectangle));
             } else {
               const secondaryRectangle = secondaryTexture.targetRectangle;
