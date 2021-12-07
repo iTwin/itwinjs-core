@@ -14,7 +14,7 @@ import { IModelHost } from "../IModelHost";
 
 /** @beta */
 export namespace CloudSqlite {
-  export type DbAlias = string;
+  export type DbName = string;
 
   export interface AccountProps {
     /** blob storage module: e.g. "azure", "google", "aws". May also include URI style parameters. */
@@ -24,7 +24,7 @@ export namespace CloudSqlite {
   }
   export interface ContainerProps {
     /** the name of the container. */
-    containerName: string;
+    containerId: string;
     /** SAS token that grants access to the container. */
     sasToken: string;
   }
@@ -32,7 +32,7 @@ export namespace CloudSqlite {
   export type DownloadProps = ContainerAccessProps & { onProgress?: (loaded: number, total: number) => number };
   export type Logger = (stream: NodeJS.ReadableStream) => void;
   export type ProcessProps = DaemonProps & AccountProps & { stdoutLogger?: Logger, stderrLogger?: Logger };
-  export interface DbProps { dbAlias: DbAlias, localFile: LocalFileName }
+  export interface DbProps { dbName: DbName, localFile: LocalFileName }
 }
 
 /** @beta */
@@ -76,12 +76,12 @@ export class CloudSqlite {
   }
   private static toBlobAccessProps(props: CloudSqlite.ContainerAccessProps) {
     return {
-      container: props.containerName,
+      container: props.containerId,
       auth: props.sasToken,
       ...this.toBlobAccountProps(props),
     };
   }
-  public static async attach(dbAlias: CloudSqlite.DbAlias, props: CloudSqlite.ContainerAccessProps) {
+  public static async attach(dbAlias: CloudSqlite.DbName, props: CloudSqlite.ContainerAccessProps) {
     const args: BlobDaemonCommandArg & CloudSqlite.ProcessProps = {
       log: "meh",
       maxCacheSize: "10G",
@@ -114,7 +114,7 @@ export class CloudSqlite {
   }
 
   public static async downloadDb(db: CloudSqlite.DbProps, props: CloudSqlite.DownloadProps) {
-    const downloader = new IModelHost.platform.CloudDbTransfer({ direction: "download", ...db, ...this.toBlobAccessProps(props) });
+    const downloader = new IModelHost.platform.CloudDbTransfer({ direction: "download", dbAlias: db.dbName, localFile: db.localFile, ...this.toBlobAccessProps(props) });
 
     let timer: NodeJS.Timeout | undefined;
     try {
@@ -145,13 +145,13 @@ export class CloudSqlite {
   }
 
   public static async uploadDb(db: CloudSqlite.DbProps, props: CloudSqlite.ContainerAccessProps) {
-    const stat = await BlobDaemon.command("upload", { ...db, ...this.toBlobAccessProps(props) });
+    const stat = await BlobDaemon.command("upload", { dbAlias: db.dbName, localFile: db.localFile, ...this.toBlobAccessProps(props) });
     if (stat.result !== DbResult.BE_SQLITE_OK)
       throw new Error(`Cannot upload db: ${stat.errMsg}`);
   }
 
   public static async deleteDb(db: CloudSqlite.DbProps, props: CloudSqlite.ContainerAccessProps) {
-    const stat = await BlobDaemon.command("delete", { ...db, ...this.toBlobAccessProps(props) });
+    const stat = await BlobDaemon.command("delete", { dbAlias: db.dbName, localFile: db.localFile, ...this.toBlobAccessProps(props) });
     if (stat.result !== DbResult.BE_SQLITE_OK)
       throw new Error(`Cannot delete db: ${stat.errMsg}`);
   }
