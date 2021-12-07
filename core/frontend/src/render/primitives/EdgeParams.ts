@@ -159,11 +159,16 @@ function buildIndexedEdges(args: MeshArgsEdges, doPolylines: boolean): IndexedEd
   // Request twice as many bytes per edge for half as many edges so that we can tightly pack them.
   const dimensions = computeDimensions(Math.ceil(numTotalEdges / 2), 3, 0);
   const data = new Uint8Array(dimensions.width * dimensions.height * 4);
-  const view = new DataView(data.buffer);
+  function setUint24(byteIndex: number, value: number): void {
+    data[byteIndex + 0] = value & 0x0000ff;
+    data[byteIndex + 1] = (value & 0x00ff00) >>> 8;
+    data[byteIndex + 2] = (value & 0xff0000) >>> 16;
+  }
+
   function setEdge(index: number, startPointIndex: number, endPointIndex: number): void {
     const byteIndex = index * 6;
-    view.setUint32(byteIndex, startPointIndex, true);
-    view.setUint32(byteIndex + 3, endPointIndex, true);
+    setUint24(byteIndex, startPointIndex);
+    setUint24(byteIndex + 3, endPointIndex);
   }
 
   let curIndex = 0;
