@@ -124,7 +124,7 @@ You can use these environment variables to alter the default behavior of various
   * The name of a view to open by default within an iModel.
 * IMJS_STANDALONE_SIGNIN
   * If defined (value does not matter), the user will be required to sign in at startup. This enables access to content stored on the reality data service. As a side effect, you may observe a harmless "failed to fetch" dialog on startup, which can be safely dismissed.
-* IMJS_NO_STARTUP_MACRO
+* IMJS_STARTUP_MACRO
   * If defined, run macro from specified path. If file extension not specified, .txt is assumed.
 * IMJS_NO_MAXIMIZE_WINDOW
   * If defined, don't maximize the electron window on startup
@@ -214,6 +214,7 @@ display-test-app has access to all key-ins defined in the imodeljs-frontend and 
 * `dta signin` - sign in to use Bentley services like iModelHub and reality data.
 * `dta macro` - runs the macro file specified in the argument.  If file extension not specified, .txt is assumed.  Each line in the file is executed as a keyin command and run sequentially.
 * `dta output shaders` - output debug information for compiled shaders. Requires IMJS_DEBUG_SHADERS to have been set. Accepts 0-2 arguments:
+  * `c`: compile all shaders – compiles all shaders before output, otherwise only shaders that have been compiled by the time it is run will output.
   * `d=output\directory\` - directory into which to put the output files.
   * filter string: a combination of the following characters to filter the output (e.g., `gu` outputs all used glsl shaders, both fragment and vertex):
     * `f` or `v`: output only fragment or vertex shaders, respectively.

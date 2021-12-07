@@ -18,7 +18,7 @@ export class DtaRpcInterface extends RpcInterface {
   public static types = () => [];
 
   /** The backend server, when running on a browser */
-  public static backendServer: http.Server | https.Server;
+  public static backendServer: http.Server | https.Server | undefined;
 
   public static getClient(): DtaRpcInterface { return RpcManager.getClientForInterface(DtaRpcInterface); }
   public async readExternalSavedViews(_filename: string): Promise<string> { return this.forward(arguments); }

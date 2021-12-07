@@ -12,7 +12,9 @@ export class MacroTool extends Tool {
 
   public override async run(macroFile: string): Promise<boolean> {
     const macroString = await DtaRpcInterface.getClient().readExternalFile(macroFile);
-    const commands = macroString.split ("\r\n");
+    const re = /\r/g;
+    const macroStr2 = macroString.replace (re, "");
+    const commands = macroStr2.split ("\n");
     commands.forEach((item, index) => {
       if(item === "") commands.splice(index,1);
     });
@@ -27,14 +29,14 @@ export class MacroTool extends Tool {
               message = `Cannot find a key-in that matches: ${cmd}`;
               break;
             case ParseAndRunResult.BadArgumentCount:
-              message = "Incorrect number of arguments";
+              message = `Incorrect number of arguments for: ${cmd}`;
               break;
             case ParseAndRunResult.FailedToRun:
-              message = "Key-in failed to run";
+              message = `Key-in failed to run: ${cmd}`;
               break;
           }
         } catch (ex) {
-          message = `Key-in produced exception: ${ex}`;
+          message = `Key-in ${cmd} produced exception: ${ex}`;
         }
         if (undefined !== message)
           await IModelApp.notifications.openMessageBox(MessageBoxType.MediumAlert, message, MessageBoxIconType.Warning);

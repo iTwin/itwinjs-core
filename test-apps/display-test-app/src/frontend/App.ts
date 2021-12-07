@@ -195,6 +195,7 @@ class ExitTool extends Tool {
   public static override toolId = "Exit";
 
   public override async run(_args: any[]): Promise<boolean> {
+    DisplayTestApp.surface.closeAllViewers();
     await DtaRpcInterface.getClient().terminate();
     return true;
   }
