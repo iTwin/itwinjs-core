@@ -7543,7 +7543,7 @@ export function readElementGraphics(bytes: Uint8Array, iModel: IModelConnection,
 // @internal
 export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined;
 
-// @alpha
+// @beta
 export interface RealityDataSource {
     // @internal
     getRootDocument(iTwinId: GuidString | undefined): Promise<any>;
@@ -7562,7 +7562,7 @@ export interface RealityDataSource {
     readonly realityDataType: string | undefined;
 }
 
-// @alpha (undocumented)
+// @beta
 export namespace RealityDataSource {
     // (undocumented)
     export function createKeyFromBlobUrl(blobUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey;
