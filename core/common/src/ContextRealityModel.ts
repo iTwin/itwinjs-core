@@ -23,7 +23,7 @@ export interface OrbitGtBlobProps {
 }
 
 /** Identify the Reality Data service provider
- * @public
+ * @beta
  */
 export enum RealityDataProvider {
   /**
@@ -53,7 +53,7 @@ export enum RealityDataProvider {
 }
 
 /** Identify the Reality Data storage format
- * @public
+ * @beta
  */
 export enum RealityDataFormat {
   /**
@@ -69,7 +69,7 @@ export enum RealityDataFormat {
 /**
  * Key used by RealityDataSource to identify provider and reality data format
  * This key identify one and only one reality data source on the provider
- * @public
+ * @beta
  */
 export interface RealityDataSourceKey {
   /**
@@ -105,8 +105,8 @@ export namespace RealityDataSourceKey {
   }
 }
 
-/** JSON representation of the reality data reference attachment properties. 
- * @public
+/** JSON representation of the reality data reference attachment properties.
+ * @beta
 */
 export interface RealityDataSourceProps {
   /** The source key that identify a reality data for the provider. */
@@ -117,9 +117,8 @@ export interface RealityDataSourceProps {
  * @public
  */
 export interface ContextRealityModelProps {
-  /**
-   * The reality data source key identify the reality data provider and storage format.
-   * It takes precedence over tilesetUrl and orbitGtBlob when present and can be use to actually replace these properties.
+  /** @see [[ContextRealityModel.rdSourceKey]].
+   * @beta
    */
   rdSourceKey?: RealityDataSourceKey;
   /** The URL that supplies the 3d tiles for displaying the reality model. */
@@ -189,7 +188,11 @@ export namespace ContextRealityModelProps {
  */
 export class ContextRealityModel {
   protected readonly _props: ContextRealityModelProps;
-  /** The reality data source key identify the reality data provider and storage format. */
+  /**
+   * The reality data source key identify the reality data provider and storage format.
+   * It takes precedence over tilesetUrl and orbitGtBlob when present and can be use to actually replace these properties.
+   * @beta
+   */
   public readonly  rdSourceKey?: RealityDataSourceKey;
   /** A name suitable for display in a user interface. By default, an empty string. */
   public readonly name: string;

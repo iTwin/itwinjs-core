@@ -50,7 +50,7 @@ export interface RealityDataSource {
    */
   getTileJson(name: string): Promise<any>;
 }
-/** @public */
+/** @beta */
 export namespace RealityDataSource {
   /** Utility function to convert a RealityDataSourceKey into its string representation */
   export function keyToString(rdSourceKey: RealityDataSourceKey): string {
