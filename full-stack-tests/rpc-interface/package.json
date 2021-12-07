@@ -1,7 +1,7 @@
 {
   "name": "@itwin/rpcinterface-full-stack-tests",
-  "version": "3.0.0-dev.138",
-  "description": "Test the full iModel.js stack (frontend and backend) using standard RPC interfaces",
+  "version": "3.0.0-dev.143",
+  "description": "Test the full iTwin.js Core stack (frontend and backend) using standard RPC interfaces",
   "license": "MIT",
   "scripts": {
     "build": "tsc 1>&2 && npm run -s webpack:frontend",
@@ -25,7 +25,7 @@
   "keywords": [
     "Bentley",
     "Presentation",
-    "iModelJS",
+    "iTwin.js",
     "Testing"
   ],
   "author": {
@@ -42,7 +42,7 @@
     "@itwin/core-quantity": "workspace:*",
     "@itwin/certa": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
-    "@itwin/oidc-signin-tool": "^3.0.0-dev.110",
+    "@itwin/oidc-signin-tool": "3.0.0-dev.110",
     "@itwin/presentation-common": "workspace:*",
     "@itwin/presentation-frontend": "workspace:*",
     "@itwin/service-authorization": "^0.3.0",

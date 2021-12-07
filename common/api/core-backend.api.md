@@ -928,7 +928,7 @@ export class DevTools {
     static stats(): DevToolsStats;
     static versions(): {
         application: string;
-        iModelJs: any;
+        iTwinJs: any;
     };
 }
 

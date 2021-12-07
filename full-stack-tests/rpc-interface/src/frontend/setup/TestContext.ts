@@ -57,7 +57,7 @@ export class TestContext {
     // Print out the configuration
     console.log(this.settings.toString());
 
-    // Configure iModel.js frontend logging to go to the console
+    // Configure iTwin.js frontend logging to go to the console
     Logger.initializeToConsole();
     Logger.setLevelDefault(this.settings.logLevel === undefined ? LogLevel.Warning : this.settings.logLevel);
 
@@ -69,6 +69,7 @@ export class TestContext {
         clientId: this.settings.oidcClientId,
         redirectUri: this.settings.oidcRedirect,
         scope: this.settings.oidcScopes,
+        authority: this.settings.oidcAuthority,
       } as TestBrowserAuthorizationClientConfiguration);
     }
 

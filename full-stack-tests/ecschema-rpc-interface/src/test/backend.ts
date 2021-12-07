@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-// Sets up a local backend to be used for testing within the iModel.js repo.
+// Sets up a local backend to be used for testing within the iTwin.js Core repo.
 
 import * as path from "path";
 import { IModelJsExpressServer } from "@itwin/express-server";

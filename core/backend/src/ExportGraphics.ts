@@ -113,7 +113,7 @@ export interface ExportPartInstanceInfo {
   /** The base display properties when the [GeometryPart]($core-backend) was referenced. */
   displayProps: ExportPartDisplayInfo;
   /** A row-major storage 4x3 transform for this instance.
-   *  See export-gltf under test-apps in the iModel.js monorepo for a working reference.
+   *  See export-gltf under test-apps in the iTwin.js monorepo for a working reference.
    */
   transform?: Float64Array;
 }
