@@ -23,7 +23,7 @@ export interface OrbitGtBlobProps {
 }
 
 /** Identify the Reality Data service provider
- * @alpha
+ * @public
  */
 export enum RealityDataProvider {
   /**
@@ -37,7 +37,7 @@ export enum RealityDataProvider {
    * This is the legacy mode where the access to the 3d tiles is harcoded in ContextRealityModelProps.OrbitGtBlob property.
    * It was use to support OrbitPointCloud (OPC) from other server than ContextShare
    * You should use other mode when possible
-   * @see [[RealityDataSource.createRealityDataSourceKeyFromUrl]] that will try to detect provider from an URL
+   * @see [[RealityDataSource.createKeyFromOrbitGtBlobProps]] that will try to detect provider from an URL
    */
   OrbitGtBlob = "OrbitGtBlob",
   /**
@@ -53,7 +53,7 @@ export enum RealityDataProvider {
 }
 
 /** Identify the Reality Data storage format
- * @alpha
+ * @public
  */
 export enum RealityDataFormat {
   /**
@@ -69,7 +69,7 @@ export enum RealityDataFormat {
 /**
  * Key used by RealityDataSource to identify provider and reality data format
  * This key identify one and only one reality data source on the provider
- * @alpha
+ * @public
  */
 export interface RealityDataSourceKey {
   /**
@@ -87,10 +87,27 @@ export interface RealityDataSourceKey {
   /** The context id that was used when reality data was attached - if none provided, current session iTwinId will be used */
   iTwinId?: string;
 }
+/** @beta */
+export namespace RealityDataSourceKey {
+  /** Utility function to convert a RealityDataSourceKey into its string representation */
+  export function toString(rdSourceKey: RealityDataSourceKey): string {
+    return `${rdSourceKey.provider}:${rdSourceKey.format}:${rdSourceKey.id}:${rdSourceKey?.iTwinId}`;
+  }
+  /** Utility function to compare two RealityDataSourceKey, we consider it equal event if itwinId is different */
+  export function isEqual(key1: RealityDataSourceKey, key2: RealityDataSourceKey): boolean {
+    if ((key1.provider === RealityDataProvider.CesiumIonAsset) && key2.provider === RealityDataProvider.CesiumIonAsset)
+      return true; // ignore other properties for CesiumIonAsset, id is hidden
+    if ((key1.provider === key2.provider) && (key1.format === key2.format) && (key1.id === key2.id) ) {
+      // && (key1?.iTwinId === key2?.iTwinId)) -> ignore iTwinId, consider it is the same reality data
+      return true;
+    }
+    return false;
+  }
+}
 
-/** JSON representation of the reality data reference attachment properties.
- * @alpha
- */
+/** JSON representation of the reality data reference attachment properties. 
+ * @public
+*/
 export interface RealityDataSourceProps {
   /** The source key that identify a reality data for the provider. */
   sourceKey: RealityDataSourceKey;
@@ -103,7 +120,6 @@ export interface ContextRealityModelProps {
   /**
    * The reality data source key identify the reality data provider and storage format.
    * It takes precedence over tilesetUrl and orbitGtBlob when present and can be use to actually replace these properties.
-   * @alpha
    */
   rdSourceKey?: RealityDataSourceKey;
   /** The URL that supplies the 3d tiles for displaying the reality model. */
@@ -173,10 +189,7 @@ export namespace ContextRealityModelProps {
  */
 export class ContextRealityModel {
   protected readonly _props: ContextRealityModelProps;
-  /**
-   * The reality data source key identify the reality data provider and storage format.
-   * @alpha
-   */
+  /** The reality data source key identify the reality data provider and storage format. */
   public readonly  rdSourceKey?: RealityDataSourceKey;
   /** A name suitable for display in a user interface. By default, an empty string. */
   public readonly name: string;

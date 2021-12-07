@@ -12,7 +12,7 @@ import { CesiumIonAssetProvider, ContextShareProvider, getCesiumAccessTokenAndEn
 
 /**
  * This interface provide methods used to access a reality data from a reality data provider
- * @alpha
+ * @beta
  */
 export interface RealityDataSource {
   readonly key: RealityDataSourceKey;
@@ -50,13 +50,11 @@ export interface RealityDataSource {
    */
   getTileJson(name: string): Promise<any>;
 }
-/** @alpha */
+/** @public */
 export namespace RealityDataSource {
-  /** Utility function to convert a RealityDataSourceKey into its string representation
-  * @alpha
-  */
+  /** Utility function to convert a RealityDataSourceKey into its string representation */
   export function keyToString(rdSourceKey: RealityDataSourceKey): string {
-    return `${rdSourceKey.provider}:${rdSourceKey.format}:${rdSourceKey.id}:${rdSourceKey.iTwinId}`;
+    return rdSourceKey.toString();
   }
   export function formatfromUrl(tilesetUrl: string): RealityDataFormat {
     let format = RealityDataFormat.ThreeDTile;
@@ -67,8 +65,9 @@ export namespace RealityDataSource {
   export function createKeyFromUrl(tilesetUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey {
     let format = inputFormat ? inputFormat : formatfromUrl(tilesetUrl);
     if (CesiumIonAssetProvider.isProviderUrl(tilesetUrl)) {
-      const provider = inputProvider ? inputProvider : RealityDataProvider.CesiumIonAsset;
-      const cesiumIonAssetKey: RealityDataSourceKey = { provider, format, id: tilesetUrl };
+      const provider = RealityDataProvider.CesiumIonAsset;
+      // Keep url hidden and use a dummy id
+      const cesiumIonAssetKey: RealityDataSourceKey = { provider, format, id: "OSMBuildings" };
       return cesiumIonAssetKey;
     }
 
@@ -132,7 +131,7 @@ export namespace RealityDataSource {
  * The key provided at the creation determines if this is ProjectWise Context Share reference.
  * If not then it is considered local (ex: C:\temp\TileRoot.json) or plain http access (http://someserver.com/data/TileRoot.json)
  * There is a one to one relationship between a reality data and the instances of present class.
-* @alpha
+* @beta
 */
 class RealityDataSourceImpl implements RealityDataSource {
   private static _realityDataSources = new Map<string, RealityDataSource>();
@@ -162,7 +161,6 @@ class RealityDataSourceImpl implements RealityDataSource {
   }
   /**
    * Create an instance of this class from a source key and iTwin context/
-   * @alpha
    */
   public static async createFromKey(sourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined> {
     const rdSource = new RealityDataSourceImpl({sourceKey});
@@ -177,11 +175,10 @@ class RealityDataSourceImpl implements RealityDataSource {
   }
   /** Return an instance of a RealityDataSource from a source key.
    * There will aways be only one reality data connection for a corresponding reality data source key.
-   * @alpha
    */
   public static async fromKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined> {
     // search to see if it was already created
-    const rdSourceKeyString = RealityDataSource.keyToString(rdSourceKey);
+    const rdSourceKeyString = rdSourceKey.toString();
     let rdSource = RealityDataSourceImpl._realityDataSources.get(rdSourceKeyString);
     if (rdSource)
       return rdSource;
