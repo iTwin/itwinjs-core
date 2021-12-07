@@ -47,6 +47,16 @@ function createTarget(): Target | undefined {
   return System.instance.createTarget(canvas) as Target;
 }
 
+// ###TODO Remove this test.
+describe.only("Indexed edge shaders", () => {
+  before(async () => IModelApp.startup());
+  after(() => IModelApp.shutdown());
+
+  it("compiles", () =>  {
+    expect(System.instance.techniques.getTechnique(TechniqueId.IndexedEdge).compileShaders()).to.be.true;
+  });
+});
+
 describe("Techniques", () => {
   const canvas = document.createElement("canvas");
   const maxWebGLVersion = null !== canvas.getContext("webgl2") ? 2 : 1;

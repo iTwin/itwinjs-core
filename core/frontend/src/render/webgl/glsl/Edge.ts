@@ -56,15 +56,19 @@ const computeIndexedQuantizedPosition = `
     g_quadIndex = 3.0;
 
   float edgeIndex = decodeUInt24(a_pos);
-  vec2 tc = compute_edge_coords(edgeIndex);
-  g_edgeSample0 = floor(TEXTURE(u_edgeLUT, tc) * 255.0 + 0.5);
+  vec2 tc = compute_edge_coords(floor(edgeIndex * 1.5));
+  vec4 s0 = floor(TEXTURE(u_edgeLUT, tc) * 255.0 + 0.5);
   tc.x += g_edge_stepX;
-  g_edgeSample1 = floor(TEXTURE(u_edgeLUT, tc) * 255.0 + 0.5);
-  return g_quadIndex < 2.0 ? g_edgeSample0.xyz : vec3(g_edgeSample0.w, g_edgeSample1.xy);
+  vec4 s1 = floor(TEXTURE(u_edgeLUT, tc) * 255.0 + 0.5);
+  bool isEven = 0 == (int(edgeIndex) & 1);
+  vec3 i0 = isEven ? s0.xyz : vec3(s0.zw, s1.x);
+  vec3 i1 = isEven ? vec3(s0.w, s1.xy) : s1.yzw;
+  g_otherIndexIndex = g_quadIndex < 2.0 ? i1 : i0;
+  return g_quadIndex < 2.0 ? i0 : i1;
 `;
 
 const initializeIndexed = `
-  g_otherIndex = decodeUInt24(g_quadIndex < 2.0 ? vec3(g_edgeSample0.w, g_edgeSample1.xy) : g_edgeSample0.xyz);
+  g_otherIndex = decodeUInt24(g_otherIndexIndex);
 ${computeOtherPos}
 `;
 
@@ -185,10 +189,9 @@ function createBase(type: EdgeBuilderType, instanced: IsInstanced, isAnimated: I
 
   if (isIndexed) {
     vert.addGlobal("g_vertexId", VariableType.Int);
-    vert.addGlobal("g_edgeSample0", VariableType.Vec4);
-    vert.addGlobal("g_edgeSample1", VariableType.Vec4);
+    vert.addGlobal("g_otherIndexIndex", VariableType.Vec3);
 
-    const initLut = addLookupTable(vert, "edge", "2.0");
+    const initLut = addLookupTable(vert, "edge", "1.0");
     vert.addUniform("u_edgeLUT", VariableType.Sampler2D, (prog) => {
       prog.addGraphicUniform("u_edgeLUT", (uniform, params) => {
         const edge = params.geometry.asIndexedEdge;
