@@ -272,6 +272,9 @@ export abstract class RenderSystem implements IDisposable {
   public get supportsInstancing(): boolean { return true; }
 
   /** @internal */
+  public get supportsIndexedEdges(): boolean { return true; }
+
+  /** @internal */
   public get supportsNonuniformScaledInstancing(): boolean { return true; }
 
   /** @internal */

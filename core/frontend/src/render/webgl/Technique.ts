@@ -990,8 +990,7 @@ export class Techniques implements WebGLDisposable {
     this._list[TechniqueId.RealityMesh] = new RealityMeshTechnique(gl);
     this._list[TechniqueId.PlanarGrid] = new SingularTechnique(createPlanarGridProgram(gl));
 
-    // ###TODO System.instance.supportsIndexedEdges
-    if (System.instance.isWebGL2)
+    if (System.instance.supportsIndexedEdges)
       this._list[TechniqueId.IndexedEdge] = new EdgeTechnique(gl, "IndexedEdge");
     else
       this._list[TechniqueId.IndexedEdge] = unsupportedTechnique;
