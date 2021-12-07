@@ -45,7 +45,6 @@ function expectIndices(indices: VertexIndices, expected: number[]): void {
 }
 
 function expectEdgeTable(edges: EdgeTable, expectedVertexIndices: number[]): void {
-  // ###TODO expect 24-bit indices instead of 32
   // ###TODO expect partitioned with silhouettes in upper partition
   // ###TODO expect oct-encoded normals for silhouettes
   const actualVertexIndices: number[] = [];
@@ -53,7 +52,16 @@ function expectEdgeTable(edges: EdgeTable, expectedVertexIndices: number[]): voi
   while (stream.curPos < stream.length) {
     actualVertexIndices.push(stream.nextUint24);
     actualVertexIndices.push(stream.nextUint24);
-    stream.nextUint16;
+  }
+
+  // Each edge consists of 2 vertex indices.
+  expect(expectedVertexIndices.length % 2).to.equal(0);
+  // If we have an odd number of edges, there will be two unused indices at the end, because indices span RGBA values.
+  if ((expectedVertexIndices.length / 2) % 2) {
+    expect(actualVertexIndices.length).to.equal(expectedVertexIndices.length + 2);
+    expect(actualVertexIndices[actualVertexIndices.length - 1]).to.equal(0);
+    expect(actualVertexIndices[actualVertexIndices.length - 2]).to.equal(0);
+    actualVertexIndices.splice(expectedVertexIndices.length);
   }
 
   expect(actualVertexIndices).to.deep.equal(expectedVertexIndices);

@@ -155,13 +155,13 @@ function buildIndexedEdges(args: MeshArgsEdges, doPolylines: boolean): IndexedEd
     for (let j = 0; j < 6; j++)
       indices.setNthIndex(i * 6 + j, i);
 
-  // ###TODO tightly pack edge data. For now allocate 2 RGBA values per edge.
-  const numRgbaPerEdge = 2;
-  const dimensions = computeDimensions(numTotalEdges, numRgbaPerEdge, 0);
+  // Each edge requires 2 24-bit indices = 3 bytes = 1.5 RGBA values.
+  // Request twice as many bytes per edge for half as many edges so that we can tightly pack them.
+  const dimensions = computeDimensions(Math.ceil(numTotalEdges / 2), 3, 0);
   const data = new Uint8Array(dimensions.width * dimensions.height * 4);
   const view = new DataView(data.buffer);
   function setEdge(index: number, startPointIndex: number, endPointIndex: number): void {
-    const byteIndex = index * 8;
+    const byteIndex = index * 6;
     view.setUint32(byteIndex, startPointIndex, true);
     view.setUint32(byteIndex + 3, endPointIndex, true);
   }
