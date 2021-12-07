@@ -3360,6 +3360,8 @@ export interface ProcessChangesetOptions {
     // (undocumented)
     filterSpatial?: boolean;
     // (undocumented)
+    relationshipCacheSize?: number;
+    // (undocumented)
     rulesetDir?: string;
     // (undocumented)
     rulesetId: string;
@@ -3371,6 +3373,8 @@ export interface ProcessChangesetOptions {
     wantParents?: boolean;
     // (undocumented)
     wantPropertyChecksums?: boolean;
+    // (undocumented)
+    wantRelationshipCaching?: boolean;
 }
 
 // @public
