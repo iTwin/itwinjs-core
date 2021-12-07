@@ -38,7 +38,7 @@ import { ComponentExampleCategory, ComponentExampleProps } from "./ComponentExam
 import { SampleContextMenu } from "./SampleContextMenu";
 import { SampleExpandableBlock } from "./SampleExpandableBlock";
 import { SampleImageCheckBox } from "./SampleImageCheckBox";
-import { SamplePopupContextMenu } from "./SamplePopupContextMenu";
+import { ButtonWithContextMenu, ContextMenuInPopup, GlobalContextMenuInPopup, PopupContextMenuInPopup, SamplePopupContextMenu } from "./SamplePopupContextMenu";
 import { FormatPopupButton } from "./FormatPopupButton";
 import { AccudrawSettingsPageComponent } from "../Settings";
 import { ExpandableBlock } from "@itwin/itwinui-react";
@@ -640,8 +640,12 @@ export class ComponentExamplesProvider {
     return {
       title: "ContextMenu",
       examples: [
-        createComponentExample("ContextMenu", undefined, <UnderlinedButton onActivate={() => SampleContextMenu.showContextMenu()}> Open ContextMenu</UnderlinedButton>),
-        createComponentExample("Popup with ContextMenu", undefined, <SamplePopupContextMenu />),
+        createComponentExample("Abstract ContextMenu", undefined, <UnderlinedButton onActivate={() => SampleContextMenu.showContextMenu()}> Open ContextMenu</UnderlinedButton>),
+        createComponentExample("ContextMenu", undefined, <ButtonWithContextMenu />),
+        createComponentExample("ContextMenu in Popup", undefined, <ContextMenuInPopup />),
+        createComponentExample("Popup ContextMenu", undefined, <SamplePopupContextMenu />),
+        createComponentExample("PopupContextMenu in Popup", undefined, <PopupContextMenuInPopup />),
+        createComponentExample("Global ContextMenu", undefined, <GlobalContextMenuInPopup />),
       ],
     };
   }
