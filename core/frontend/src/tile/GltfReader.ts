@@ -178,7 +178,7 @@ export abstract class GltfReader {
   protected get _isCanceled(): boolean { return undefined !== this._canceled && this._canceled(this); }
   protected get _isVolumeClassifier(): boolean { return BatchType.VolumeClassifier === this._type; }
 
-  protected readGltfAndCreateGraphics(isLeaf: boolean, featureTable: FeatureTable, contentRange: ElementAlignedBox3d, transformToRoot?: Transform, pseudoRtcBias?: Vector3d, instances?: InstancedGraphicParams): GltfReaderResult {
+  protected readGltfAndCreateGraphics(isLeaf: boolean, featureTable: FeatureTable | undefined, contentRange: ElementAlignedBox3d, transformToRoot?: Transform, pseudoRtcBias?: Vector3d, instances?: InstancedGraphicParams): GltfReaderResult {
     if (this._isCanceled)
       return { readStatus: TileReadStatus.Canceled, isLeaf };
 
@@ -226,7 +226,10 @@ export abstract class GltfReader {
 
       range = transform.inverse()!.multiplyRange(contentRange);
     }
-    renderGraphic = this._system.createBatch(renderGraphic, PackedFeatureTable.pack(featureTable), range);
+
+    if (featureTable)
+      renderGraphic = this._system.createBatch(renderGraphic, PackedFeatureTable.pack(featureTable), range);
+
     if (transform) {
       const branch = new GraphicBranch(true);
       branch.add(renderGraphic);
@@ -270,7 +273,7 @@ export abstract class GltfReader {
     return mesh.getGraphics(meshGraphicArgs, this._system, instances);
   }
 
-  private readNodeAndCreateGraphics(renderGraphicList: RenderGraphic[], node: any, featureTable: FeatureTable, parentTransform: Transform | undefined, instances?: InstancedGraphicParams, pseudoRtcBias?: Vector3d): TileReadStatus {
+  private readNodeAndCreateGraphics(renderGraphicList: RenderGraphic[], node: any, featureTable: FeatureTable | undefined, parentTransform: Transform | undefined, instances?: InstancedGraphicParams, pseudoRtcBias?: Vector3d): TileReadStatus {
     if (undefined === node)
       return TileReadStatus.InvalidTileData;
 
