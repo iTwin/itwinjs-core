@@ -53,11 +53,9 @@ $node-font-size: $iui-font-size;
   }
 
   &-icon {
+    position: relative;
+    top: 1px;
     width: 16px;
-    height: 24px;
-    display: inline-block;
-    box-sizing: border-box;
-    padding: 5px 0;
     margin-right: 5px;
   }
 
