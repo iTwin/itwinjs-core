@@ -140,7 +140,6 @@ export interface IndexedEdgeParams {
 }
 
 function buildIndexedEdges(args: MeshArgsEdges, doPolylines: boolean): IndexedEdgeParams | undefined {
-  // ###TODO: Partition table between hard edges and silhouette edges. For now, treat everything as a hard edge.
   const hardEdges = args.edges?.edges;
   const silhouettes = args.silhouettes;
   const polylines = doPolylines ? args.polylines?.lines : undefined;

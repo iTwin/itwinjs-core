@@ -85,7 +85,8 @@ export class IndexedEdgeGeometry extends MeshGeometry {
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
-    stats.addVisibleEdges(this._indices.bytesUsed + this.edgeLut.bytesUsed); // ###TODO: addIndexedEdges
+    stats.addIndexedEdges(this._indices.bytesUsed);
+    stats.addEdgeTable(this.edgeLut.bytesUsed);
   }
 
   protected _draw(numInstances: number, instances?: BuffersContainer): void {
