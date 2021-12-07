@@ -5,7 +5,7 @@
 // cspell:words buddi urlps
 
 import { AccessToken, assert, GuidString } from "@itwin/core-bentley";
-import { ElectronAuthorizationBackend } from "@itwin/electron-authorization/lib/cjs/ElectronBackend";
+import { ElectronMainAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronMain";
 import { Version } from "@bentley/imodelhub-client";
 import { IModelHubBackend } from "@bentley/imodelhub-client/lib/cjs/imodelhub-node";
 import { BriefcaseDb, BriefcaseManager, IModelHost, IModelHostConfiguration, RequestNewBriefcaseArg } from "@itwin/core-backend";
@@ -30,7 +30,7 @@ export class IModelTransformerTestAppHost {
     await ElectronHost.startup(opt);
   }
 
-  private static _authClient: ElectronAuthorizationBackend | undefined;
+  private static _authClient: ElectronMainAuthorization | undefined;
 
   /** Similar to get `IModelHost.authorizationClient.getAccessToken()` but lazily
    * initializes auth, so users aren't prompted to sign in unless a hub-accessing feature is used.
@@ -45,14 +45,14 @@ export class IModelTransformerTestAppHost {
         + "Please see the .env.template file on how to set up environment variables."
       );
       return new Promise<AccessToken>(async (resolve, reject) => {
-        const client = await ElectronAuthorizationBackend.create({
+        const client = await ElectronMainAuthorization.create({
           clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
           redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
           scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
         });
         this._authClient = client;
 
-        ElectronAuthorizationBackend.onUserStateChanged.addOnce((token) => {
+        ElectronMainAuthorization.onUserStateChanged.addOnce((token) => {
           if (token !== "") {
             resolve(token);
           } else {

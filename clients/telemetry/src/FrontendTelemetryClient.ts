@@ -15,8 +15,8 @@ import { TelemetryClient, TelemetryEvent } from "./TelemetryClient";
  * General telemetry event data augmented with data obtained from an [[AuthorizedClientRequestContext]]
  */
 export class ClientTelemetryEvent extends TelemetryEvent {
-  protected static readonly _iModelJsVersion: string = require("../../package.json").version; // eslint-disable-line @typescript-eslint/no-var-requires
-  public get iModelJsVersion(): string { return ClientTelemetryEvent._iModelJsVersion; }
+  protected static readonly _iTwinJsVersion: string = require("../../package.json").version; // eslint-disable-line @typescript-eslint/no-var-requires
+  public get iTwinJsVersion(): string { return ClientTelemetryEvent._iTwinJsVersion; }
   /** Unique identifier for the current activity. Useful for correlating any actions performed during a specific activity. */
   public readonly activityId?: GuidString;
   /** Unique identifier for the current user session. */

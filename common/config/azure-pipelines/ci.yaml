@@ -6,11 +6,11 @@
 # which require several webpacking steps. Due to the time it takes to run, these are only used in a limited number of cases.
 #
 # The main CI build used is the ./jobs/fast-ci.yaml due to it running on a set of faster machines. However, those are currently
-# only available to members of the iModel.js GitHub Organization for security reasons. This may change in the future but for now
+# only available to members of the iTwin GitHub Organization for security reasons. This may change in the future but for now
 # the limitation will exist.
 #
 # This build is not automatically queued for fork-based PRs and needs to be manually triggered by using a comment trigger in the PR.
-# Anyone in the iModel.js Org can trigger this pipeline by adding this comment,
+# Anyone in the iTwin Org can trigger this pipeline by adding this comment,
 #   `/azp run imodeljs.imodeljs`
 
 trigger: none

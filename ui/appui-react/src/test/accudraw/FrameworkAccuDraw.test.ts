@@ -205,7 +205,7 @@ describe("FrameworkAccuDraw localStorage Wrapper", () => {
       expect(FrameworkAccuDraw.displayNotifications).to.be.false;
 
       const instance = new FrameworkAccuDraw();
-      await instance.loadUserSettings(UiFramework.getUiSettingsStorage());
+      await instance.loadUserSettings(UiFramework.getUiStateStorage());
       await TestUtils.flushAsyncOperations();
       expect(FrameworkAccuDraw.displayNotifications).to.be.false;
     });

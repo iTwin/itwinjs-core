@@ -199,7 +199,7 @@ function SettingsItem(props: SettingsItemProps) {
  */
 export function getUiSettingsManagerEntry(itemPriority: number, allowSettingUiFrameworkVersion?: boolean): SettingsTabEntry {
   return {
-    itemPriority, tabId: "uifw:UiSettings",
+    itemPriority, tabId: "uifw:UiStateStorage",
     label: UiFramework.translate("settings.uiSettingsPage.label"),
     icon: IconSpecUtilities.createSvgIconSpec(widowSettingsIconSvg),
     page: <UiSettingsPage allowSettingUiFrameworkVersion={!!allowSettingUiFrameworkVersion} />,

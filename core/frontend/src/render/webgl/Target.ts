@@ -975,6 +975,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       if (isEmptyImage)
         return undefined;
     } else {
+      // Need to scale image.
       const canvas = imageBufferToCanvas(image, false); // retrieve a canvas of the image we read, throwing away alpha channel.
       if (undefined === canvas)
         return undefined;
@@ -1263,6 +1264,12 @@ export class OnScreenTarget extends Target {
       const w = this.viewRect.width, h = this.viewRect.height;
       const yOffset = system.canvas.height - h; // drawImage has top as Y=0, GL has bottom as Y=0
       onscreenContext.save();
+
+      if (this.uniforms.style.backgroundAlpha < 1) {
+        // If background is transparent, we aren't guaranteed that every pixel will be overwritten - clear it.
+        onscreenContext.clearRect(0, 0, w, h);
+      }
+
       onscreenContext.setTransform(1, 0, 0, 1, 0, 0); // revert any previous devicePixelRatio scale for drawImage() call below.
       onscreenContext.drawImage(system.canvas, 0, yOffset, w, h, 0, 0, w, h);
       onscreenContext.restore();

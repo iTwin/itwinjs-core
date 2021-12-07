@@ -25,7 +25,7 @@
     "@itwin/core-electron": "workspace:*",
     "@itwin/core-transformer": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "@itwin/electron-authorization": "^0.3.2",
+    "@itwin/electron-authorization": "^0.5.0",
     "fs-extra": "^8.1.0",
     "yargs": "^16.0.0",
     "dotenv": "^10.0.0",

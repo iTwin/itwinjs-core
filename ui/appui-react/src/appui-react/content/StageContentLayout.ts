@@ -63,9 +63,11 @@ export class StageContentLayout {
   public static async viewStatesFromProps(iModelConnection: IModelConnection, savedProps: StageContentLayoutProps): Promise<Array<ViewState | undefined>> {
     const viewStates = new Array<ViewState | undefined>();
 
-    for (const savedViewProps of savedProps.viewStateProps) {
-      const viewState = await ViewStateHelper.viewStateFromProps(iModelConnection, savedViewProps);
-      viewStates.push(viewState);
+    if (savedProps.viewStateProps) {
+      for (const savedViewProps of savedProps.viewStateProps) {
+        const viewState = await ViewStateHelper.viewStateFromProps(iModelConnection, savedViewProps);
+        viewStates.push(viewState);
+      }
     }
 
     return viewStates;

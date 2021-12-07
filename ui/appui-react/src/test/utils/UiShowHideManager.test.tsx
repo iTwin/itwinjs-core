@@ -13,7 +13,7 @@ import {
 } from "../../appui-react";
 import { TestFrontstage } from "../frontstage/FrontstageTestUtils";
 import TestUtils, { storageMock } from "../TestUtils";
-import { LocalSettingsStorage } from "@itwin/core-react";
+import { LocalStateStorage } from "@itwin/core-react";
 import { StandardContentLayouts } from "@itwin/appui-abstract";
 
 describe("UiShowHideManager localStorage Wrapper", () => {
@@ -250,14 +250,14 @@ describe("UiShowHideManager localStorage Wrapper", () => {
   describe("UiShowHideSettingsProvider ", () => {
 
     it("should get and set defaults", async () => {
-      const settingsStorage = new LocalSettingsStorage();
+      const settingsStorage = new LocalStateStorage();
       await UiShowHideSettingsProvider.storeAutoHideUi(false, settingsStorage);
       await UiShowHideSettingsProvider.storeUseProximityOpacity(false, settingsStorage);
       await UiShowHideSettingsProvider.storeSnapWidgetOpacity(false, settingsStorage);
       await TestUtils.initializeUiFramework();
 
       const uiShowHideSettingsProvider = new UiShowHideSettingsProvider();
-      await uiShowHideSettingsProvider.loadUserSettings(UiFramework.getUiSettingsStorage());
+      await uiShowHideSettingsProvider.loadUserSettings(UiFramework.getUiStateStorage());
 
       expect(UiShowHideManager.autoHideUi).to.eq(false);
       expect(UiShowHideManager.useProximityOpacity).to.eq(false);

@@ -330,6 +330,8 @@ enum QuerySubEntity {
   LinearEdge = 3,
   /** Return whether the angle between the normals of the supplied vertices's edges never exceeds the internal smooth angle tolerance along the length of the edge */
   SmoothVertex = 4,
+  /** Return whether the supplied sub-entity is a redundant edge (containing faces share surface) */
+  RedundantEdge = 5,
 }
 
 interface QuerySubEntityRequestProps  {
@@ -638,6 +640,10 @@ export class SolidModelingCommand extends BasicManipulationCommand implements So
 
   public async isLinearEdge(id: Id64String, subEntity: SubEntityProps): Promise<boolean> {
     return this.subEntityQuery(id, subEntity, QuerySubEntity.LinearEdge);
+  }
+
+  public async isRedundantEdge(id: Id64String, subEntity: SubEntityProps): Promise<boolean> {
+    return this.subEntityQuery(id, subEntity, QuerySubEntity.RedundantEdge);
   }
 
   public async isSmoothVertex(id: Id64String, subEntity: SubEntityProps): Promise<boolean> {
