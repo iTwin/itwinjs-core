@@ -31,9 +31,8 @@ $node-font-size: $iui-font-size;
     }
 
     > .expansion-toggle {
-      display: inline-block;
-      margin-top: auto;
-      margin-bottom: auto;
+      position: relative;
+      top: -1px;
     }
 
     .core-checkbox {
@@ -53,8 +52,6 @@ $node-font-size: $iui-font-size;
   }
 
   &-icon {
-    position: relative;
-    top: 1px;
     width: 16px;
     margin-right: 5px;
   }
