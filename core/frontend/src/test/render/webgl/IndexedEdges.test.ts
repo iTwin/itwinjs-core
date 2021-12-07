@@ -70,7 +70,7 @@ function expectEdgeTable(edges: EdgeTable, expectedSegments: number[], expectedS
   expect(actualSilhouettes).to.deep.equal(expectedSilhouettes);
 }
 
-describe.only("IndexedEdgeParams", () => {
+describe("IndexedEdgeParams", () => {
   before(async () => {
     await IModelApp.startup();
   });
