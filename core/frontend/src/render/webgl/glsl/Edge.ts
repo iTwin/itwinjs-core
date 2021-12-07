@@ -6,10 +6,12 @@
  * @module WebGL
  */
 
+import { assert } from "@itwin/core-bentley";
 import { AttributeMap } from "../AttributeMap";
 import { ProgramBuilder, ShaderBuilderFlags, VariableType, VertexShaderBuilder, VertexShaderComponent } from "../ShaderBuilder";
 import { IsAnimated, IsInstanced, IsThematic } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
+import { TextureUnit } from "../RenderFlags";
 import { addAnimation } from "./Animation";
 import { addColor } from "./Color";
 import { addFrustum, addShaderFlags } from "./Common";
@@ -18,18 +20,53 @@ import { addAdjustWidth, addLineCode } from "./Polyline";
 import { octDecodeNormal } from "./Surface";
 import { addLineWeight, addModelViewMatrix, addNormalMatrix, addProjectionMatrix } from "./Vertex";
 import { addModelToWindowCoordinates, addViewport } from "./Viewport";
+import { addLookupTable } from "./LookupTable";
 
-const decodeEndPointAndQuadIndices = `
-  g_otherIndex = decodeUInt24(a_endPointAndQuadIndices.xyz);
+export type EdgeBuilderType = "SegmentEdge" | "Silhouette" | "IndexedEdge";
+
+const computeOtherPos = `
   vec2 tc = computeLUTCoords(g_otherIndex, u_vertParams.xy, g_vert_center, u_vertParams.z);
   vec4 enc1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
   tc.x += g_vert_stepX;
   vec4 enc2 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
   vec3 qpos = vec3(decodeUInt16(enc1.xy), decodeUInt16(enc1.zw), decodeUInt16(enc2.xy));
   g_otherPos = unquantizePosition(qpos, u_qOrigin, u_qScale);
+`;
+
+const decodeEndPointAndQuadIndices = `
+  g_otherIndex = decodeUInt24(a_endPointAndQuadIndices.xyz);
+${computeOtherPos}
   g_quadIndex = a_endPointAndQuadIndices.w;
 `;
+
 const animateEndPoint = `g_otherPos.xyz += computeAnimationDisplacement(g_otherIndex, u_animDispParams.x, u_animDispParams.y, u_animDispParams.z, u_qAnimDispOrigin, u_qAnimDispScale);`;
+
+// a_pos is a 24-bit index into edge lookup table.
+// First six bytes of lookup table entry are the pair of 24-bit indices identifying the endpoints of the edge in the vertex table.
+// Return the 24-bit index of "this" vertex in the vertex table encoded in a vec3.
+const computeIndexedQuantizedPosition = `
+  g_vertexId = gl_VertexID % 6;
+  if (g_vertexId == 0)
+    g_quadIndex = 0.0;
+  else if (g_vertexId == 2 || g_vertexId == 3)
+    g_quadIndex = 1.0;
+  else if (g_vertexId == 1 || g_vertexId == 4)
+    g_quadIndex = 2.0;
+  else
+    g_quadIndex = 3.0;
+
+  float edgeIndex = decodeUInt24(a_pos);
+  vec2 tc = compute_edge_coords(edgeIndex);
+  g_edgeSample0 = floor(TEXTURE(u_edgeLUT, tc) * 255.0 + 0.25);
+  tc.x += g_edge_stepX;
+  g_edgeSample1 = floor(TEXTURE(u_edgeLUT, tc) * 255.0 + 0.25);
+  return g_quadIndex < 2.0 ? g_edgeSample0.xyz : vec3(g_edgeSample0.w, g_edgeSample1.xy);
+`;
+
+const initializeIndexed = `
+  g_otherIndex = decodeUInt24(g_quadIndex < 2.0 ? vec3(g_edgeSample0.w, g_edgeSample1.xy) : g_edgeSample0.xyz);
+${computeOtherPos}
+`;
 
 const checkForSilhouetteDiscard = `
   vec3 n0 = MAT_NORM * octDecodeNormal(a_normals.xy);
@@ -128,9 +165,14 @@ export function addEdgeContrast(vert: VertexShaderBuilder): void {
   vert.set(VertexShaderComponent.AdjustContrast, adjustContrast);
 }
 
-function createBase(isSilhouette: boolean, instanced: IsInstanced, isAnimated: IsAnimated): ProgramBuilder {
+const edgeLutParams = new Float32Array(2);
+
+function createBase(type: EdgeBuilderType, instanced: IsInstanced, isAnimated: IsAnimated): ProgramBuilder {
   const isInstanced = IsInstanced.Yes === instanced;
-  const attrMap = AttributeMap.findAttributeMap(isSilhouette ? TechniqueId.SilhouetteEdge : TechniqueId.Edge, isInstanced);
+  const isSilhouette = "Silhouette" === type;
+  const isIndexed = "IndexedEdge" === type;
+  const techId = isSilhouette ? TechniqueId.SilhouetteEdge : (isIndexed ? TechniqueId.IndexedEdge : TechniqueId.Edge);
+  const attrMap = AttributeMap.findAttributeMap(techId, isInstanced);
 
   const builder = new ProgramBuilder(attrMap, isInstanced ? ShaderBuilderFlags.InstancedVertexTable : ShaderBuilderFlags.VertexTable);
   const vert = builder.vert;
@@ -141,7 +183,36 @@ function createBase(isSilhouette: boolean, instanced: IsInstanced, isAnimated: I
   vert.addGlobal("g_windowDir", VariableType.Vec2);
   vert.addGlobal("g_otherIndex", VariableType.Float);
 
-  vert.addInitializer(decodeEndPointAndQuadIndices);
+  if (isIndexed) {
+    vert.addGlobal("g_vertexId", VariableType.Int);
+    vert.addGlobal("g_edgeSample0", VariableType.Vec4);
+    vert.addGlobal("g_edgeSample1", VariableType.Vec4);
+
+    const initLut = addLookupTable(vert, "edge", "2.0");
+    vert.addUniform("u_edgeLUT", VariableType.Sampler2D, (prog) => {
+      prog.addGraphicUniform("u_edgeLUT", (uniform, params) => {
+        const edge = params.geometry.asIndexedEdge;
+        assert(undefined !== edge);
+        edge.edgeLut.texture.bindSampler(uniform, TextureUnit.EdgeLUT);
+      });
+    });
+
+    vert.addUniform("u_edgeParams", VariableType.Vec2, (prog) => {
+      prog.addGraphicUniform("u_edgeParams", (uniform, params) => {
+        const edge = params.geometry.asIndexedEdge;
+        assert(undefined !== edge);
+        edgeLutParams[0] = edge.edgeLut.texture.width;
+        edgeLutParams[1] = edge.edgeLut.texture.height;
+        uniform.setUniform2fv(edgeLutParams);
+      });
+    });
+
+    vert.set(VertexShaderComponent.ComputeQuantizedPosition, `${initLut}\n\n${computeIndexedQuantizedPosition}`);
+    vert.addInitializer(initializeIndexed);
+  } else {
+    vert.addInitializer(decodeEndPointAndQuadIndices);
+  }
+
   if (isAnimated) {
     addAnimation(vert, false, IsThematic.No);
     vert.addInitializer(animateEndPoint);
@@ -163,6 +234,7 @@ function createBase(isSilhouette: boolean, instanced: IsInstanced, isAnimated: I
 
   addLineWeight(vert);
 
+  // ###TODO Indexed silhouette edges
   if (isSilhouette) {
     addNormalMatrix(vert, instanced);
     addFrustum(builder);
@@ -174,8 +246,8 @@ function createBase(isSilhouette: boolean, instanced: IsInstanced, isAnimated: I
 }
 
 /** @internal */
-export function createEdgeBuilder(isSilhouette: boolean, instanced: IsInstanced, isAnimated: IsAnimated): ProgramBuilder {
-  const builder = createBase(isSilhouette, instanced, isAnimated);
+export function createEdgeBuilder(type: EdgeBuilderType, instanced: IsInstanced, isAnimated: IsAnimated): ProgramBuilder {
+  const builder = createBase(type, instanced, isAnimated);
   addShaderFlags(builder);
   addColor(builder);
   addEdgeContrast(builder.vert);

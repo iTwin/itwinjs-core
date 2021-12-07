@@ -52,13 +52,14 @@ export class EdgeLUT implements WebGLDisposable {
 export class IndexedEdgeGeometry extends MeshGeometry {
   private readonly _buffers: BuffersContainer;
   private readonly _indices: BufferHandle;
-  private readonly _edgeLut: EdgeLUT;
+  public readonly edgeLut: EdgeLUT;
 
   public get lutBuffers() { return this._buffers; }
+  public override get asIndexedEdge() { return this; }
 
   private constructor(mesh: MeshData, indices: BufferHandle, numIndices: number, lut: EdgeLUT) {
     super(mesh, numIndices);
-    this._edgeLut = lut;
+    this.edgeLut = lut;
     this._buffers = BuffersContainer.create();
     const attrPos = AttributeMap.findAttribute("a_pos", TechniqueId.IndexedEdge, false);
     assert(undefined !== attrPos);
@@ -69,11 +70,11 @@ export class IndexedEdgeGeometry extends MeshGeometry {
   public dispose(): void {
     dispose(this._buffers);
     dispose(this._indices);
-    dispose(this._edgeLut);
+    dispose(this.edgeLut);
   }
 
   public get isDisposed(): boolean {
-    return this._buffers.isDisposed && this._indices.isDisposed && this._edgeLut.isDisposed;
+    return this._buffers.isDisposed && this._indices.isDisposed && this.edgeLut.isDisposed;
   }
 
   public static create(mesh: MeshData, params: IndexedEdgeParams): IndexedEdgeGeometry | undefined {
@@ -83,7 +84,7 @@ export class IndexedEdgeGeometry extends MeshGeometry {
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
-    stats.addVisibleEdges(this._indices.bytesUsed + this._edgeLut.bytesUsed); // ###TODO: addIndexedEdges
+    stats.addVisibleEdges(this._indices.bytesUsed + this.edgeLut.bytesUsed); // ###TODO: addIndexedEdges
   }
 
   protected _draw(numInstances: number, instances?: BuffersContainer): void {
