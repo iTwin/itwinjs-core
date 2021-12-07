@@ -433,6 +433,9 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
       }
     });
   }
+  public get sourceTransparency() {
+    return this._classifierTreeRef?.transparency;
+  }
 
   public pushBatchState(batchState: BatchState) {
     this._baseBatchId = batchState.nextBatchId - 1;

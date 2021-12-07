@@ -64,7 +64,7 @@ bool applyTexture(inout vec4 col, sampler2D sampler, mat4 params, mat4 matrix) {
 
     uv.x = classPos.x;
     uv.y = classPos.y / imageCount;
-    layerAlpha = 1.0;
+    layerAlpha = params[0][2];
     if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0)
       return false;
 

@@ -27,6 +27,7 @@ export abstract class MapLayerTileTreeReference extends TileTreeReference {
   public set layerSettings(layerSettings: MapLayerSettings) { this._layerSettings = layerSettings; }
   public get layerSettings(): MapLayerSettings { return this._layerSettings; }
   public get layerIndex(): number { return this._layerIndex; }
+  public get transparency() { return this._transparency; }
   public override async getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined> {
     const tree = this.treeOwner.tileTree;
     if (undefined === tree || hit.iModel !== tree.iModel || tree.modelId !== hit.sourceId)

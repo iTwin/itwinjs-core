@@ -33,9 +33,6 @@ const scratchOverlapRange = Range2d.createNull();
 const scratchBytes = new Uint8Array(4);
 const scratchBatchBaseId = new Uint32Array(scratchBytes.buffer);
 const scratchRange2d = Range2d.createNull();
-
-// eslint-disable-next-line prefer-const
-let skipIndex = -1;
 class ClassifierTexture {
   public classifier: PlanarClassifier;
   constructor(classifier: RenderPlanarClassifier, public meshParams: RealityMeshGraphicParams, public targetRectangle: Range2d) {
@@ -57,6 +54,7 @@ class RealityTextureParam {
     } else {
       result.data[0] = 1;
       result.data[1] = this._classifierTexture.classifier.textureImageCount;
+      result.data[2] = this._classifierTexture.classifier.sourceTransparency === undefined ? 1.0 : (1.0 - this._classifierTexture.classifier.sourceTransparency);
       scratchBatchBaseId[0] = this._classifierTexture.classifier.baseBatchId;
       result.data[4] = scratchBytes[0];
       result.data[5] = scratchBytes[1];
@@ -256,7 +254,6 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
       // If only there is not more than one layer then we can group all of the textures into a single draw call.
       meshes.push(new RealityMeshGeometry(realityMesh._realityMeshParams, RealityTextureParams.create(textures), realityMesh._transform, baseColor, baseTransparent, realityMesh._isTerrain));
     } else {
-      let index = 0;
       const primaryLayer = layers.shift()!;
       for (const primaryTexture of primaryLayer) {
         const targetRectangle =  primaryTexture.targetRectangle;
@@ -292,8 +289,7 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
           meshes.push(new RealityMeshGeometry(realityMesh._realityMeshParams, RealityTextureParams.create(layerTextures.slice(0, texturesPerMesh)), realityMesh._transform, baseColor, baseTransparent, realityMesh._isTerrain));
           layerTextures = layerTextures.slice(texturesPerMesh);
         }
-        if (skipIndex < 0  || skipIndex === index++)
-          meshes.push(new RealityMeshGeometry(realityMesh._realityMeshParams, RealityTextureParams.create(layerTextures), realityMesh._transform, baseColor, baseTransparent, realityMesh._isTerrain));
+        meshes.push(new RealityMeshGeometry(realityMesh._realityMeshParams, RealityTextureParams.create(layerTextures), realityMesh._transform, baseColor, baseTransparent, realityMesh._isTerrain));
       }
     }
 
