@@ -125,7 +125,7 @@ You can use these environment variables to alter the default behavior of various
 * IMJS_STANDALONE_SIGNIN
   * If defined (value does not matter), the user will be required to sign in at startup. This enables access to content stored on the reality data service. As a side effect, you may observe a harmless "failed to fetch" dialog on startup, which can be safely dismissed.
 * IMJS_STARTUP_MACRO
-  * If defined, run macro from specified path. If file extension not specified, .txt is assumed.
+  * If defined, run macro from specified path. If the file path contains no periods, a .txt extension will be appended.
 * IMJS_NO_MAXIMIZE_WINDOW
   * If defined, don't maximize the electron window on startup
 * IMJS_NO_DEV_TOOLS
