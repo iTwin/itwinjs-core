@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelDb, IModelHost, SnapshotDb } from "@itwin/core-backend";
-import { Presentation } from "@itwin/presentation-backend";
 import { DbResult, QueryRowFormat } from "@itwin/core-common";
+import { Presentation } from "@itwin/presentation-backend";
 
-describe("#performance Properties loading", () => {
+describe("#performance Element properties loading", () => {
   let imodel: SnapshotDb;
 
   before(async () => {
@@ -29,7 +29,6 @@ describe("#performance Properties loading", () => {
   });
 
   it("load properties using 'getElementProperties'", async function () {
-    this.timeout(0);
     const startTime = (new Date()).getTime();
     let propertiesCount = 0;
     const { total, iterator } = await Presentation.getManager().getElementProperties({ imodel });
@@ -42,7 +41,6 @@ describe("#performance Properties loading", () => {
   });
 
   it("load properties using ECSQL", async function () {
-    this.timeout(0);
     const startTime = new Date().getTime();
     process.stdout.write(`Loading properties.`);
     let propertiesCount = 0;

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Add new GeoServices class and first method to interpret WKT or complete GCS JSON.\"",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

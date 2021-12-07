@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-common",
+      "comment": "Added 'onlyIfNotHandled' property support to all content rule specifications",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-common"
+}
