@@ -57,9 +57,9 @@ const computeIndexedQuantizedPosition = `
 
   float edgeIndex = decodeUInt24(a_pos);
   vec2 tc = compute_edge_coords(edgeIndex);
-  g_edgeSample0 = floor(TEXTURE(u_edgeLUT, tc) * 255.0 + 0.25);
+  g_edgeSample0 = floor(TEXTURE(u_edgeLUT, tc) * 255.0 + 0.5);
   tc.x += g_edge_stepX;
-  g_edgeSample1 = floor(TEXTURE(u_edgeLUT, tc) * 255.0 + 0.25);
+  g_edgeSample1 = floor(TEXTURE(u_edgeLUT, tc) * 255.0 + 0.5);
   return g_quadIndex < 2.0 ? g_edgeSample0.xyz : vec3(g_edgeSample0.w, g_edgeSample1.xy);
 `;
 
