@@ -62,10 +62,16 @@ const computeIndexedQuantizedPosition = `
   vec4 s0 = floor(TEXTURE(u_edgeLUT, tc) * 255.0 + 0.5);
   tc.x += g_edge_stepX;
   vec4 s1 = floor(TEXTURE(u_edgeLUT, tc) * 255.0 + 0.5);
+  tc.x += g_edge_stepX;
+  vec4 s2 = floor(TEXTURE(u_edgeLUT, tc) * 255.0 + 0.5);
+
   bool isEven = 0 == (int(edgeIndex) & 1);
   vec3 i0 = isEven ? s0.xyz : vec3(s0.zw, s1.x);
   vec3 i1 = isEven ? vec3(s0.w, s1.xy) : s1.yzw;
   g_otherIndexIndex = g_quadIndex < 2.0 ? i1 : i0;
+
+  g_normals = isEven ? vec4(s1.zw, s2.xy) : s2;
+
   return g_quadIndex < 2.0 ? i0 : i1;
 `;
 
@@ -75,9 +81,6 @@ ${computeOtherPos}
 `;
 
 const checkForSilhouetteDiscard = `
-  vec3 n0 = MAT_NORM * octDecodeNormal(a_normals.xy);
-  vec3 n1 = MAT_NORM * octDecodeNormal(a_normals.zw);
-
   if (kFrustumType_Perspective != u_frustum.z) {
     float perpTol = 4.75e-6;
     return (n0.z * n1.z > perpTol);      // orthographic.
@@ -100,6 +103,21 @@ const checkForSilhouetteDiscard = `
 
     return dot0 * dot1 > perpTol;
   }
+`;
+
+const checkForSilhouetteDiscardNonIndexed = `
+  vec3 n0 = MAT_NORM * octDecodeNormal(a_normals.xy);
+  vec3 n1 = MAT_NORM * octDecodeNormal(a_normals.zw);
+${checkForSilhouetteDiscard}
+`;
+
+const checkForSilhouetteDiscardIndexed = `
+  if (!g_isSilhouette)
+    return false;
+
+  vec3 n0 = MAT_NORM * octDecodeNormal(g_normals.xy);
+  vec3 n1 = MAT_NORM * octDecodeNormal(g_normals.zw);
+${checkForSilhouetteDiscard}
 `;
 
 const computePosition = `
@@ -193,6 +211,7 @@ function createBase(type: EdgeBuilderType, instanced: IsInstanced, isAnimated: I
     vert.addGlobal("g_vertexId", VariableType.Int);
     vert.addGlobal("g_otherIndexIndex", VariableType.Vec3);
     vert.addGlobal("g_isSilhouette", VariableType.Boolean, "false");
+    vert.addGlobal("g_normals", VariableType.Vec4);
 
     const initLut = addLookupTable(vert, "edge", "1.0");
     vert.addUniform("u_edgeLUT", VariableType.Sampler2D, (prog) => {
@@ -241,12 +260,11 @@ function createBase(type: EdgeBuilderType, instanced: IsInstanced, isAnimated: I
 
   addLineWeight(vert);
 
-  // ###TODO Indexed silhouette edges
-  if (isSilhouette) {
+  if (isSilhouette || isIndexed) {
     addNormalMatrix(vert, instanced);
     addFrustum(builder);
-    vert.set(VertexShaderComponent.CheckForEarlyDiscard, checkForSilhouetteDiscard);
     vert.addFunction(octDecodeNormal);
+    vert.set(VertexShaderComponent.CheckForEarlyDiscard, isSilhouette ? checkForSilhouetteDiscardNonIndexed : checkForSilhouetteDiscardIndexed);
   }
 
   return builder;
