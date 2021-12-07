@@ -56,7 +56,9 @@ const computeIndexedQuantizedPosition = `
     g_quadIndex = 3.0;
 
   float edgeIndex = decodeUInt24(a_pos);
-  vec2 tc = compute_edge_coords(floor(edgeIndex * 1.5));
+  g_isSilhouette = edgeIndex >= u_edgeParams.z;
+  float edgeBaseIndex = g_isSilhouette ? (u_edgeParams.z * 1.5 + edgeIndex * 2.5) : edgeIndex * 1.5;
+  vec2 tc = compute_edge_coords(floor(edgeBaseIndex));
   vec4 s0 = floor(TEXTURE(u_edgeLUT, tc) * 255.0 + 0.5);
   tc.x += g_edge_stepX;
   vec4 s1 = floor(TEXTURE(u_edgeLUT, tc) * 255.0 + 0.5);
@@ -169,7 +171,7 @@ export function addEdgeContrast(vert: VertexShaderBuilder): void {
   vert.set(VertexShaderComponent.AdjustContrast, adjustContrast);
 }
 
-const edgeLutParams = new Float32Array(2);
+const edgeLutParams = new Float32Array(3);
 
 function createBase(type: EdgeBuilderType, instanced: IsInstanced, isAnimated: IsAnimated): ProgramBuilder {
   const isInstanced = IsInstanced.Yes === instanced;
@@ -190,6 +192,7 @@ function createBase(type: EdgeBuilderType, instanced: IsInstanced, isAnimated: I
   if (isIndexed) {
     vert.addGlobal("g_vertexId", VariableType.Int);
     vert.addGlobal("g_otherIndexIndex", VariableType.Vec3);
+    vert.addGlobal("g_isSilhouette", VariableType.Boolean, "false");
 
     const initLut = addLookupTable(vert, "edge", "1.0");
     vert.addUniform("u_edgeLUT", VariableType.Sampler2D, (prog) => {
@@ -200,13 +203,14 @@ function createBase(type: EdgeBuilderType, instanced: IsInstanced, isAnimated: I
       });
     });
 
-    vert.addUniform("u_edgeParams", VariableType.Vec2, (prog) => {
+    vert.addUniform("u_edgeParams", VariableType.Vec3, (prog) => {
       prog.addGraphicUniform("u_edgeParams", (uniform, params) => {
         const edge = params.geometry.asIndexedEdge;
         assert(undefined !== edge);
         edgeLutParams[0] = edge.edgeLut.texture.width;
         edgeLutParams[1] = edge.edgeLut.texture.height;
-        uniform.setUniform2fv(edgeLutParams);
+        edgeLutParams[2] = edge.edgeLut.numSegments;
+        uniform.setUniform3fv(edgeLutParams);
       });
     });
 

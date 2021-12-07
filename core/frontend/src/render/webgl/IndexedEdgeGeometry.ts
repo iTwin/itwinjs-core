@@ -25,10 +25,11 @@ import { RenderOrder } from "./RenderFlags";
 
 export class EdgeLUT implements WebGLDisposable {
   public readonly texture: TextureHandle;
-  // ###TODO partition info
+  public readonly numSegments: number;
 
-  private constructor(texture: TextureHandle) {
+  private constructor(texture: TextureHandle, numSegments: number) {
     this.texture = texture;
+    this.numSegments = numSegments;
   }
 
   public dispose(): void {
@@ -37,7 +38,7 @@ export class EdgeLUT implements WebGLDisposable {
 
   public static create(table: EdgeTable): EdgeLUT | undefined {
     const texture = TextureHandle.createForData(table.width, table.height, table.data);
-    return texture ? new EdgeLUT(texture) : undefined;
+    return texture ? new EdgeLUT(texture, table.numSegments) : undefined;
   }
 
   public get bytesUsed(): number {
