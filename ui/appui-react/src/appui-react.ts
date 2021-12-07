@@ -230,8 +230,6 @@ export * from "./appui-react/uistate/AppUiSettings";
 export * from "./appui-react/uistate/UserSettingsStorage";
 export * from "./appui-react/uistate/useUiStateStorage";
 
-export * from "./appui-react/UserInfo";
-
 export * from "./appui-react/utils/ViewUtilities";
 export * from "./appui-react/utils/PropsHelper";
 export * from "./appui-react/utils/UiShowHideManager";
