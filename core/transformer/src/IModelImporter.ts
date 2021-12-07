@@ -140,9 +140,13 @@ export class IModelImporter implements Required<IModelImportOptions> {
       return elementProps.id;
     }
     if (this.preserveElementIdsForFiltering) {
-      // categories are the only element that onInserted will immediately insert a new element (their default subcategory)
+      if (elementProps.id === undefined) {
+        throw new IModelError(IModelStatus.BadElement, `elementProps.id must be defined during a preserveIds operation`);
+      }
+      // Categories are the only element that onInserted will immediately insert a new element (their default subcategory)
       // since default subcategories always exist and always will be inserted after their categories, we treat them as an update
-      // to prevent duplicate inserts
+      // to prevent duplicate inserts.
+      // Otherwise we always insert during a preserveElementIdsForFiltering operation
       if (isSubCategory(elementProps) && isDefaultSubCategory(elementProps)) {
         this.onUpdateElement(elementProps);
       } else {
@@ -500,7 +504,10 @@ function isSubCategory(props: ElementProps): props is SubCategoryProps {
 
 /** check if element props are a subcategory without loading the element */
 function isDefaultSubCategory(props: SubCategoryProps): boolean {
+  if (props.id === undefined) return false;
+  if (!Id64.isId64(props.id))
+    throw new IModelError(IModelStatus.BadElement, `subcategory had invalid id`);
   if (props.parent?.id === undefined)
-    throw new IModelError(IModelStatus.BadElement, "subcategory had no parent");
-  return props.id === IModelDb.getDefaultSubCategoryId(props.parent?.id);
+    throw new IModelError(IModelStatus.BadElement, `subcategory with id ${props.id} had no parent`);
+  return props.id === IModelDb.getDefaultSubCategoryId(props.parent.id);
 }
