@@ -58,9 +58,8 @@ describe("iModelHub CheckpointHandler", () => {
 
     if (!TestConfig.enableMocks) {
       const checkpoints = await iModelClient.checkpoints.get(accessToken, imodelId);
-      if (checkpoints.length === 0)
+      if (checkpoints.length === 0 || (checkpoints.length === 1 && !checkpoints[0].mergedChangeSetId))
         this.skip();
-      return;
     }
 
     if (!fs.existsSync(workDir)) {
