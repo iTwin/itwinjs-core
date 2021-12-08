@@ -31,7 +31,6 @@ import * as keyinPaletteTools from "./tools/KeyinPaletteTools";
 import * as openSettingTools from "./tools/OpenSettingsTool";
 import * as restoreLayoutTools from "./tools/RestoreLayoutTool";
 import * as toolSettingTools from "./tools/ToolSettingsTools";
-import { UserInfo } from "./UserInfo";
 import { UiShowHideManager, UiShowHideSettingsProvider } from "./utils/UiShowHideManager";
 import { WidgetManager } from "./widgets/WidgetManager";
 import { FrontstageManager } from "./frontstage/FrontstageManager";
@@ -425,16 +424,6 @@ export class UiFramework {
    */
   public static getUiStateStorage(): UiStateStorage {
     return UiFramework._uiStateStorage;
-  }
-
-  /** @public */
-  public static setUserInfo(userInfo: UserInfo | undefined, immediateSync = false) {
-    UiFramework.dispatchActionToStore(SessionStateActionId.SetUserInfo, userInfo, immediateSync);
-  }
-
-  /** @public */
-  public static getUserInfo(): UserInfo | undefined {
-    return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.userInfo : /* istanbul ignore next */  undefined;
   }
 
   public static setDefaultIModelViewportControlId(iModelViewportControlId: string, immediateSync = false) {
