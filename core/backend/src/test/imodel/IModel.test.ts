@@ -1709,6 +1709,8 @@ describe("iModel", () => {
       iModel.updateIModelProps();
       iModel.saveChanges();
 
+      await iModel.setUpGcsWorkspaces();
+
       const testPoint1: XYZProps[] = [];
       testPoint1.push(inputCoord);
       const requestProps1: GeoCoordinatesRequestProps = { target: datumOrGCS, iModelCoords: testPoint1 };
@@ -1752,28 +1754,36 @@ describe("iModel", () => {
             polarRadius: 6356256.909237,
             id: "EPSG:7001",
             description: "Airy 1830",
-            source: "EPSG, Version 6 [EPSG]"},
+            source: "EPSG, Version 6 [EPSG]",
+          },
           transforms: [
             {
               method: "PositionalVector",
               sourceEllipsoid: {
                 equatorialRadius: 6377563.396,
                 polarRadius: 6356256.909237,
-                id: "EPSG:7001"},
+                id: "EPSG:7001",
+              },
               targetEllipsoid: {
                 equatorialRadius: 6378137,
                 polarRadius: 6356752.3142,
-                id: "WGS84"},
+                id: "WGS84",
+              },
               positionalVector: {
                 delta: {
                   x: 446.448,
                   y: -125.157,
-                  z: 542.06},
+                  z: 542.06,
+                },
                 rotation: {
                   x: 0.15,
                   y: 0.247,
-                  z: 0.842},
-                scalePPM: -20.489}}]},
+                  z: 0.842,
+                },
+                scalePPM: -20.489,
+              },
+            }],
+        },
         unit: "Meter",
         projection: {
           method: "TransverseMercator",
@@ -1781,28 +1791,37 @@ describe("iModel", () => {
           falseNorthing: -100000,
           centralMeridian: -2,
           latitudeOfOrigin: 49,
-          scaleFactor: 0.999601272737422},
+          scaleFactor: 0.999601272737422,
+        },
         extent: {
           southWest: {
             latitude: 49.96,
-            longitude: -7.56},
+            longitude: -7.56,
+          },
           northEast: {
             latitude: 60.84,
-            longitude: 1.78}}},
+            longitude: 1.78,
+          },
+        },
+      },
       verticalCRS: {
-        id: "ELLIPSOID"},
+        id: "ELLIPSOID",
+      },
       additionalTransform: {
         helmert2DWithZOffset: {
           translationX: 284597.3343,
           translationY: 79859.4651,
           translationZ: 0,
           rotDeg: 0.5263624458992088,
-          scale: 0.9996703340508721}}};
+          scale: 0.9996703340508721,
+        },
+      },
+    };
 
-    await convertTest("BritishNatGrid-EllipsoidHelmert1.bim", EWRGCS, "WGS84", { x: 199247.08883859176, y: 150141.68625139236, z: 0.0 }, { p: { x:-0.80184489371471, y:51.978341907041205, z:0.0 }, s: 0 });
-    await convertTest("BritishNatGrid-EllipsoidHelmert1.bim", EWRGCS, "WGS84", { x: 66091.33104544488, y: 394055.0279323471, z:0.0 }, { p: { x: -2.8125, y: 54.162433968067798, z: 0.0 }, s: 0 });
+    await convertTest("BritishNatGrid-EllipsoidHelmert1.bim", EWRGCS, "WGS84", { x: 199247.08883859176, y: 150141.68625139236, z: 0.0 }, { p: { x: -0.80184489371471, y: 51.978341907041205, z: 0.0 }, s: 0 });
+    await convertTest("BritishNatGrid-EllipsoidHelmert1.bim", EWRGCS, "WGS84", { x: 66091.33104544488, y: 394055.0279323471, z: 0.0 }, { p: { x: -2.8125, y: 54.162433968067798, z: 0.0 }, s: 0 });
 
-    await convertTest("ExtonCampus1.bim", { horizontalCRS: { id: "EPSG:2272" }, verticalCRS: { id: "NAVD88" } }, "WGS84", { x: 775970.3155166894, y: 83323.24543981979, z:130.74977547686285 }, { p: { x:-75.68712011112366, y:40.06524845273591, z:95.9769083 }, s: 0 });
+    await convertTest("ExtonCampus1.bim", { horizontalCRS: { id: "EPSG:2272" }, verticalCRS: { id: "NAVD88" } }, "WGS84", { x: 775970.3155166894, y: 83323.24543981979, z: 130.74977547686285 }, { p: { x: -75.68712011112366, y: 40.06524845273591, z: 95.9769083 }, s: 0 });
 
     await convertTest("BritishNatGrid-Ellipsoid1.bim", { horizontalCRS: { id: "BritishNatGrid" }, verticalCRS: { id: "ELLIPSOID" } }, "", { x: 170370.71800000000000, y: 11572.40500000000000, z: 0.0 }, { p: { x: -5.2020119082059511, y: 49.959453295440234, z: 0.0 }, s: 0 });
     await convertTest("BritishNatGrid-Ellipsoid2.bim", { horizontalCRS: { id: "BritishNatGrid" }, verticalCRS: { id: "ELLIPSOID" } }, "ETRF89", { x: 170370.71800000000000, y: 11572.40500000000000, z: 0.0 }, { p: { x: -5.2030365061523707, y: 49.960007477936202, z: 0.0 }, s: 0 });

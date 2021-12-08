@@ -72,6 +72,13 @@ export class HorizontalCRSExtent implements HorizontalCRSExtentProps {
   public equals(other: HorizontalCRSExtent): boolean {
     return this.southWest.equals(other.southWest) && this.northEast.equals(other.northEast);
   }
+
+  /** Verifies if the two extents overlap.
+   *  @public */
+  public overlaps(other: HorizontalCRSExtent): boolean {
+    return this.southWest.longitude < other.northEast.longitude && this.northEast.longitude > other.southWest.longitude &&
+      this.southWest.latitude < other.northEast.latitude && this.northEast.latitude > other.southWest.latitude;
+  }
 }
 
 /** Horizontal Geographic Coordinate Reference System definition

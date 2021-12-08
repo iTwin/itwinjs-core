@@ -16,15 +16,15 @@ import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
   CodeSpec, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
   DomainOptions, EcefLocation, ECSqlReader, ElementAspectProps, ElementGeometryRequest, ElementGeometryUpdate, ElementGraphicsRequestProps,
-  ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontProps, GeoCoordinatesRequestProps,
-  GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesRequestProps,
+  ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontProps, GcsWorkspaceIndex, GeoCoordinatesRequestProps,
+  GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, HorizontalCRSExtent, IModel, IModelCoordinatesRequestProps,
   IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName, MassPropertiesRequestProps,
   MassPropertiesResponseProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryBinder,
   QueryOptions, QueryOptionsBuilder, RpcActivity, SchemaState, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions,
   SpatialViewDefinitionProps, StandaloneOpenOptions, TextureData, TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinitionProps,
   ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "@itwin/core-common";
-import { Range3d } from "@itwin/core-geometry";
+import { Point3d, Range3d, XYZProps } from "@itwin/core-geometry";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager, PullChangesArgs, PushChangesArgs } from "./BriefcaseManager";
 import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
@@ -664,6 +664,50 @@ export abstract class IModelDb extends IModel {
   /** Update the IModelProps of this iModel in the database. */
   public updateIModelProps(): void {
     this.nativeDb.updateIModelProps(this.toJSON());
+  }
+
+  /** Checks for the required GCS Workspaces and loads them */
+  public async setUpGcsWorkspaces(index?: GcsWorkspaceIndex): Promise<void> {
+
+    if (!this.geographicCoordinateSystem)
+      return;
+
+    let listWorkspaces: string[] = [];
+
+    if (this.geographicCoordinateSystem && this.geographicCoordinateSystem.horizontalCRS && this.geographicCoordinateSystem.horizontalCRS.projection) {
+      if (this.geographicCoordinateSystem.horizontalCRS.projection.method === "TransverseMercatorOSTN97" ||
+          this.geographicCoordinateSystem.horizontalCRS.projection.method === "TransverseMercatorOSTN02" ||
+          this.geographicCoordinateSystem.horizontalCRS.projection.method === "TransverseMercatorOSTN15") {
+        // TODO The ostn workspace must be downloaded and installed immediately because even non datum conversions
+        // used to compute geo coordinates of project extent below will fail without this workspace.
+      }
+    }
+
+    const theIndex = (index === undefined ? GcsWorkspaceIndex.theDefaultIndex : index);
+    const projectGeoExtent = new HorizontalCRSExtent();
+    const projectPoints: XYZProps[] = [];
+    projectPoints.push(this.projectExtents.low);
+    projectPoints.push(this.projectExtents.high);
+    const requestProps: GeoCoordinatesRequestProps = { target: "", iModelCoords: projectPoints }; // Target being self datum no workspace is needed to succeed.
+    const response = await this.getGeoCoordinatesFromIModelCoordinates(requestProps);
+    if (response.geoCoords.length === 2 && response.geoCoords[0].s === 0 && response.geoCoords[1].s === 0) {
+      const point1 = Point3d.fromJSON(response.geoCoords[0].p);
+      const point2 = Point3d.fromJSON(response.geoCoords[1].p);
+      projectGeoExtent.southWest.longitude = Math.min(point1.x, point2.x);
+      projectGeoExtent.southWest.latitude = Math.min(point1.y, point2.y);
+      projectGeoExtent.northEast.longitude = Math.max(point1.x, point2.x);
+      projectGeoExtent.northEast.latitude = Math.max(point1.y, point2.y);
+      listWorkspaces = theIndex.getWorkspaceNames(projectGeoExtent);
+    } else {
+      // Something went wrong with determining the geo extent of project. We fallback on GCS extent if one is specified.
+      if (this.geographicCoordinateSystem.horizontalCRS && this.geographicCoordinateSystem.horizontalCRS.extent) {
+        listWorkspaces = theIndex.getWorkspaceNames(this.geographicCoordinateSystem.horizontalCRS.extent);
+      }
+    }
+
+    if (listWorkspaces.length > 0) {
+      // TODO Download and install workspaces then call AddGcsWorkspace()
+    }
   }
 
   /** Commit pending changes to this iModel.

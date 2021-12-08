@@ -397,7 +397,7 @@ export class CartographicRange {
    * Y values are kept between -PI and +PI while
    * longitude values can be expressed in any range between -2PI to +2PI
    * given the minimum longitude is always smaller numerically than the maximum longitude.
-   * Note that usually the longitudes are usually by convention in the range of -PI to PI except
+   * Note that the longitudes are by convention in the range of -PI to PI except
    * for ranges that overlap the -PI/+PI frontier in which case either representation is acceptable.
    */
   public getLongitudeLatitudeBoundingBox(): Range2d {

@@ -35,6 +35,7 @@ export * from "./FeatureSymbology";
 export * from "./FeatureTable";
 export * from "./Fonts";
 export * from "./Frustum";
+export * from "./GcsWorkspaceIndex";
 export * from "./GeoCoordinateServices";
 export * from "./geometry/AdditionalTransform";
 export * from "./geometry/AreaPattern";

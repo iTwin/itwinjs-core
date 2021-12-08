@@ -4227,6 +4227,7 @@ export class HorizontalCRSExtent implements HorizontalCRSExtentProps {
     equals(other: HorizontalCRSExtent): boolean;
     static fromJSON(data: HorizontalCRSExtentProps): HorizontalCRSExtent;
     readonly northEast: Carto2DDegrees;
+    overlaps(other: HorizontalCRSExtent): boolean;
     readonly southWest: Carto2DDegrees;
     toJSON(): HorizontalCRSExtentProps;
 }
