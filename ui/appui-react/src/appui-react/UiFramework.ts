@@ -13,9 +13,9 @@ import { GuidString, Logger, ProcessDetector } from "@itwin/core-bentley";
 import { Localization, RpcActivity } from "@itwin/core-common";
 import { IModelApp, IModelConnection, SnapMode, ViewState } from "@itwin/core-frontend";
 import { Presentation } from "@itwin/presentation-frontend";
-import { TelemetryEvent } from "@bentley/telemetry-client";
+import { TelemetryEvent } from "@itwin/core-telemetry";
 import { getClassName, UiAdmin, UiError } from "@itwin/appui-abstract";
-import { LocalSettingsStorage, SettingsManager, UiEvent, UiSettingsStorage } from "@itwin/core-react";
+import { LocalStateStorage, SettingsManager, UiEvent, UiStateStorage } from "@itwin/core-react";
 import { UiIModelComponents } from "@itwin/imodel-components-react";
 import { BackstageManager } from "./backstage/BackstageManager";
 import { ChildWindowManager } from "./childwindow/ChildWindowManager";
@@ -31,26 +31,25 @@ import * as keyinPaletteTools from "./tools/KeyinPaletteTools";
 import * as openSettingTools from "./tools/OpenSettingsTool";
 import * as restoreLayoutTools from "./tools/RestoreLayoutTool";
 import * as toolSettingTools from "./tools/ToolSettingsTools";
-import { UserInfo } from "./UserInfo";
 import { UiShowHideManager, UiShowHideSettingsProvider } from "./utils/UiShowHideManager";
 import { WidgetManager } from "./widgets/WidgetManager";
 import { FrontstageManager } from "./frontstage/FrontstageManager";
 
 // cSpell:ignore Mobi
 
-/** Defined that available Ui Versions. It is recommended to always use the latest version available.
+/** Defined that available UI Versions. It is recommended to always use the latest version available.
  * @public
  */
 export type FrameworkVersionId = "1" | "2";
 
-/** Interface to be implemented but any classes that wants to load their user settings when the UiSetting storage class is set.
+/** Interface to be implemented but any classes that wants to load their user settings when the UiStateEntry storage class is set.
  * @public
  */
 export interface UserSettingsProvider {
   /** Unique provider Id */
   providerId: string;
   /** Function to load settings from settings storage */
-  loadUserSettings(storage: UiSettingsStorage): Promise<void>; // eslint-disable-line deprecation/deprecation
+  loadUserSettings(storage: UiStateStorage): Promise<void>;
 }
 
 /** UiVisibility Event Args interface.
@@ -99,8 +98,8 @@ export class UiFramework {
   private static _widgetManager?: WidgetManager;
   private static _uiVersion: FrameworkVersionId = "2";
   private static _hideIsolateEmphasizeActionHandler?: HideIsolateEmphasizeActionHandler;
-  /** this provides a default storage location for settings */
-  private static _uiSettingsStorage: UiSettingsStorage = new LocalSettingsStorage();  // eslint-disable-line deprecation/deprecation
+  /** this provides a default state storage handler */
+  private static _uiStateStorage: UiStateStorage = new LocalStateStorage();
   private static _settingsManager?: SettingsManager;
   private static _uiSettingsProviderRegistry: Map<string, UserSettingsProvider> = new Map<string, UserSettingsProvider>();
   private static _PopupWindowManager = new ChildWindowManager();
@@ -216,7 +215,8 @@ export class UiFramework {
   public static get initialized(): boolean { return UiFramework._initialized; }
 
   /** Property that returns the SettingManager used by AppUI-based applications.
-   *  @public */
+   * @public
+   */
   public static get settingsManager() {
     if (undefined === UiFramework._settingsManager)
       UiFramework._settingsManager = new SettingsManager();
@@ -391,39 +391,39 @@ export class UiFramework {
     return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.iModelConnection : /* istanbul ignore next */  undefined;
   }
 
-  /** @public */
-  public static async setUiSettingsStorage(storage: UiSettingsStorage, immediateSync = false) { // eslint-disable-line deprecation/deprecation
-    if (UiFramework._uiSettingsStorage === storage)
-      return;
-
-    UiFramework._uiSettingsStorage = storage;
-
+  /** Called by iModelApp to initialize saved UI state from registered UseSettingsProviders
+   * @public
+   */
+  public static async initializeStateFromUserSettingsProviders(immediateSync = false) {
     // let any registered providers to load values from the new storage location
     const providerKeys = [...this._uiSettingsProviderRegistry.keys()];
     for await (const key of providerKeys) {
-      await this._uiSettingsProviderRegistry.get(key)!.loadUserSettings(storage);
+      await this._uiSettingsProviderRegistry.get(key)!.loadUserSettings(UiFramework._uiStateStorage);
     }
 
     // istanbul ignore next
     if (immediateSync)
-      SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(SyncUiEventId.UiSettingsChanged);
+      SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(SyncUiEventId.UiStateStorageChanged);
     else
-      SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.UiSettingsChanged);
+      SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.UiStateStorageChanged);
   }
 
   /** @public */
-  public static getUiSettingsStorage(): UiSettingsStorage { // eslint-disable-line deprecation/deprecation
-    return UiFramework._uiSettingsStorage;
+  public static async setUiStateStorage(storage: UiStateStorage, immediateSync = false) {
+    if (UiFramework._uiStateStorage === storage)
+      return;
+
+    UiFramework._uiStateStorage = storage;
+    await this.initializeStateFromUserSettingsProviders(immediateSync);
   }
 
-  /** @public */
-  public static setUserInfo(userInfo: UserInfo | undefined, immediateSync = false) {
-    UiFramework.dispatchActionToStore(SessionStateActionId.SetUserInfo, userInfo, immediateSync);
-  }
-
-  /** @public */
-  public static getUserInfo(): UserInfo | undefined {
-    return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.userInfo : /* istanbul ignore next */  undefined;
+  /** The UI Settings Storage is a convenient wrapper around Local Storage to assist in caching state information across user sessions.
+   * It was previously used to conflate both the state information across session and the information driven directly from user explicit action,
+   * which are now handled with user preferences.
+   * @public
+   */
+  public static getUiStateStorage(): UiStateStorage {
+    return UiFramework._uiStateStorage;
   }
 
   public static setDefaultIModelViewportControlId(iModelViewportControlId: string, immediateSync = false) {
@@ -551,5 +551,4 @@ export class UiFramework {
     const contextMenu = document.querySelector("div.core-context-menu-opened");
     return contextMenu !== null && contextMenu !== undefined;
   }
-
 }

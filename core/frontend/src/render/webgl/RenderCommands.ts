@@ -10,7 +10,7 @@ import { assert } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import { Frustum, FrustumPlanes, RenderMode, ViewFlags } from "@itwin/core-common";
 import { Decorations } from "../Decorations";
-import { SurfaceType } from "../primitives/VertexTable";
+import { SurfaceType } from "../primitives/SurfaceParams";
 import { GraphicList, RenderGraphic } from "../RenderGraphic";
 import { AnimationBranchState } from "../GraphicBranch";
 import { BranchStack } from "./BranchStack";
@@ -341,7 +341,7 @@ export class RenderCommands implements Iterable<DrawCommands> {
 
   private getAnimationBranchState(branch: Branch): AnimationBranchState | undefined {
     const animId = branch.branch.animationId;
-    return undefined !== animId ? this.target.animationBranches?.get(animId) : undefined;
+    return undefined !== animId ? this.target.animationBranches?.branchStates.get(animId) : undefined;
   }
 
   private pushAndPopBranchForPass(pass: RenderPass, branch: Branch, func: () => void): void {
@@ -718,5 +718,29 @@ export class RenderCommands implements Iterable<DrawCommands> {
           break;
       }
     }
+  }
+
+  public dump(): Array<{ name: string, count: number }> {
+    const dump = [
+      { name: "Primitives", count: 0 },
+      { name: "Batches", count: 0 },
+      { name: "Branches", count: 0 },
+    ];
+
+    for (const cmds of this._commands) {
+      for (const cmd of cmds) {
+        let index;
+        switch (cmd.opcode) {
+          case "drawPrimitive": index = 0; break;
+          case "pushBatch": index = 1; break;
+          case "pushBranch": index = 2; break;
+          default: continue;
+        }
+
+        dump[index].count++;
+      }
+    }
+
+    return dump;
   }
 }

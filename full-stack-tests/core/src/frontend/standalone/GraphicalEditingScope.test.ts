@@ -23,7 +23,7 @@ function makeUpdate(id: Id64String, range?: Range3d): ElementGeometryChange { re
 function makeDelete(id: Id64String): ElementGeometryChange { return { id, type: DbOpcode.Delete }; }
 
 describe("GraphicalEditingScope", () => {
-  if (ProcessDetector.isElectronAppFrontend) {
+  if (!ProcessDetector.isMobileAppFrontend) {
     let imodel: BriefcaseConnection | undefined;
     // Editable; BisCore version < 1.0.11
     const oldFilePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/test.bim");
@@ -38,7 +38,7 @@ describe("GraphicalEditingScope", () => {
     }
 
     before(async () => {
-      await TestUtility.startFrontend();
+      await TestUtility.startFrontend(undefined, undefined, true);
       await initializeEditTools();
     });
 

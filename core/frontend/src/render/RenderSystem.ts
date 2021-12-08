@@ -28,7 +28,9 @@ import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
 import { RealityMeshGraphicParams, RealityMeshPrimitive } from "./primitives/mesh/RealityMeshPrimitive";
 import { TerrainMeshPrimitive } from "./primitives/mesh/TerrainMeshPrimitive";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
-import { MeshParams, PointStringParams, PolylineParams } from "./primitives/VertexTable";
+import { PointStringParams } from "./primitives/PointStringParams";
+import { PolylineParams } from "./primitives/PolylineParams";
+import { MeshParams } from "./primitives/VertexTable";
 import { RenderClipVolume } from "./RenderClipVolume";
 import { RenderGraphic, RenderGraphicOwner } from "./RenderGraphic";
 import { RenderMemory } from "./RenderMemory";
@@ -107,9 +109,6 @@ class GraphicOwner extends RenderGraphicOwner {
 export interface RenderSystemDebugControl {
   /** Destroy this system's webgl context. Returns false if this behavior is not supported. */
   loseContext(): boolean;
-
-  /** Draw surfaces as "pseudo-wiremesh", using GL_LINES instead of GL_TRIANGLES. Useful for visualizing faces of a mesh. Not suitable for real wiremesh display. */
-  drawSurfacesAsWiremesh: boolean;
 
   /** Overrides [[RenderSystem.dpiAwareLOD]].
    * @internal
@@ -484,6 +483,16 @@ export abstract class RenderSystem implements IDisposable {
 
   /** Create a graphic from a [[GraphicBranch]]. */
   public abstract createGraphicBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions): RenderGraphic;
+
+  /** Create a node in the scene graph corresponding to a transform node in the scene's schedule script.
+   * Nodes under this branch will only be drawn if they belong to the specified transform node.
+   * This allows the graphics in a single Tile to be efficiently drawn with different transforms applied by different nodes.
+   * The node Id is either the Id of a single transform node in the script, of 0xffffffff to indicate all nodes that have no transform applied to them.
+   * @internal
+   */
+  public createAnimationTransformNode(graphic: RenderGraphic, _nodeId: number): RenderGraphic {
+    return graphic;
+  }
 
   /** Create a RenderGraphic consisting of batched [[Feature]]s.
    * @internal

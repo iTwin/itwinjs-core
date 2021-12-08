@@ -25,14 +25,14 @@ export class DumpPlanProjectionSettingsTool extends DisplayStyleTool {
 
   protected override get require3d() { return true; }
 
-  protected parse(args: string[]) {
+  protected async parse(args: string[]) {
     if (1 === args.length)
       this._copyToClipboard = "c" === args[0].toLowerCase();
 
     return true;
   }
 
-  protected execute(vp: Viewport): boolean {
+  protected async execute(vp: Viewport) {
     const settings = (vp.displayStyle as DisplayStyle3dState).settings.planProjectionSettings;
     if (undefined === settings) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "No plan projection settings defined"));
@@ -65,7 +65,7 @@ export abstract class OverrideSubCategoryPriorityTool extends DisplayStyleTool {
   private readonly _subcatIds = new Set<string>();
   private _priority?: number;
 
-  protected execute(vp: Viewport): boolean {
+  protected async execute(vp: Viewport) {
     const style = vp.displayStyle;
     for (const id of this._subcatIds) {
       const ovr = style.getSubCategoryOverride(id);
@@ -82,7 +82,7 @@ export abstract class OverrideSubCategoryPriorityTool extends DisplayStyleTool {
     return true;
   }
 
-  protected parse(args: string[]) {
+  protected async parse(args: string[]) {
     for (const id of args[0].split(","))
       this._subcatIds.add(id);
 
@@ -107,7 +107,7 @@ export abstract class ChangePlanProjectionSettingsTool extends DisplayStyleTool 
 
   protected override get require3d() { return true; }
 
-  protected execute(vp: Viewport): boolean {
+  protected async execute(vp: Viewport) {
     const settings = (vp.displayStyle as DisplayStyle3dState).settings;
     for (const modelId of this._modelIds)
       settings.setPlanProjectionSettings(modelId, this._settings);
@@ -115,7 +115,7 @@ export abstract class ChangePlanProjectionSettingsTool extends DisplayStyleTool 
     return true;
   }
 
-  protected parse(inputArgs: string[]) {
+  protected async parse(inputArgs: string[]) {
     if (!this.parseModels(inputArgs[0]))
       return false;
 

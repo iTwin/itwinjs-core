@@ -578,6 +578,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     const system = System.instance;
     const maskViewFlags = {
       renderMode: RenderMode.SmoothShade,
+      wiremesh: false,
       transparency: !this.isClassifyingPointCloud, // point clouds don't support transparency.
       textures: false,
       lighting: false,

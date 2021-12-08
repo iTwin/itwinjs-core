@@ -258,7 +258,7 @@ export class BezierCurve3dH extends BezierCurveBase {
       const workB = this._workCoffsB!;
       const packedData = this._polygon.packedData;
       for (let i = 0; i < 3; i++) {
-        // x representing loop pass:   (w * spacePoint.x - curve.x(s), 1.0) * (curveDelta.x(s) * curve.w(s) - curve.x(s) * curveDelta.w(s))
+        // x representing loop pass:   (w * spacePoint.x - curve.x(s) * 1.0) * (curveDelta.x(s) * curve.w(s) - curve.x(s) * curveDelta.w(s))
         // (and p.w is always 1)
         BezierPolynomialAlgebra.scaledComponentSum(workA, packedData, 4, orderA, 3, spacePoint.at(i), // w * spacePoint.x
           i, -1.0); // curve.x(s) * 1.0

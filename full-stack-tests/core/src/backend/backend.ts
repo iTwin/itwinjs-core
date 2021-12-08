@@ -7,20 +7,22 @@ import "./RpcImpl";
 import "@itwin/oidc-signin-tool/lib/cjs/certa/certaBackend";
 import * as fs from "fs";
 import * as path from "path";
+import { ElectronMainAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronMain";
+import { WebEditServer } from "@itwin/express-server";
 import { IModelHubBackend } from "@bentley/imodelhub-client/lib/cjs/imodelhub-node";
 import {
-  FileNameResolver, IModelDb, IModelHost, IModelHostConfiguration, IpcHandler, PhysicalModel, PhysicalPartition, SpatialCategory,
+  FileNameResolver, IModelDb, IModelHost, IModelHostConfiguration, IpcHandler, LocalhostIpcHost, PhysicalModel, PhysicalPartition, SpatialCategory,
   SubjectOwnsPartitionElements,
 } from "@itwin/core-backend";
 import { Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { BentleyCloudRpcManager, CodeProps, ElementProps, IModel, RelatedElement, RpcConfiguration, SubCategoryAppearance } from "@itwin/core-common";
-import { ElectronAuthorizationBackend, ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
+import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backend";
-import { IModelJsExpressServer } from "@itwin/express-server";
 import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIpc";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
 import * as testCommands from "./TestEditCommands";
+import { exposeBackendCallbacks } from "../certa/certaBackend";
 
 /* eslint-disable no-console */
 
@@ -79,15 +81,17 @@ async function init() {
 
   const iModelHost = new IModelHostConfiguration();
   iModelHost.hubAccess = new IModelHubBackend(CloudEnv.cloudEnv.imodelClient);
+  iModelHost.cacheDir = path.join(__dirname, ".cache");  // Set local cache dir
 
   if (ProcessDetector.isElectronAppBackend) {
-    await ElectronHost.startup({ electronHost: { rpcInterfaces }, iModelHost });
-
-    IModelHost.authorizationClient = new ElectronAuthorizationBackend({
+    exposeBackendCallbacks();
+    const authClient = await ElectronMainAuthorization.create({
       clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
       redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
       scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
     });
+    iModelHost.authorizationClient = authClient;
+    await ElectronHost.startup({ electronHost: { rpcInterfaces }, iModelHost });
 
     EditCommandAdmin.registerModule(testCommands);
     EditCommandAdmin.register(BasicManipulationCommand);
@@ -97,11 +101,15 @@ async function init() {
 
     // create a basic express web server
     const port = Number(process.env.CERTA_PORT || 3011) + 2000;
-    const server = new IModelJsExpressServer(rpcConfig.protocol);
+    const server = new WebEditServer(rpcConfig.protocol);
     await server.initialize(port);
     console.log(`Web backend for full-stack-tests listening on port ${port}`);
 
-    await IModelHost.startup(iModelHost);
+    await LocalhostIpcHost.startup({ iModelHost, localhostIpcHost: { noServer: true } });
+
+    EditCommandAdmin.registerModule(testCommands);
+    EditCommandAdmin.register(BasicManipulationCommand);
+    FullStackTestIpcHandler.register();
   }
 
   IModelHost.snapshotFileNameResolver = new BackendTestAssetResolver();

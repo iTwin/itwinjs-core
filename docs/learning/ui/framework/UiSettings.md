@@ -1,6 +1,6 @@
-# UI Settings
+# Application UI Settings
 
-'UI Settings' refers to settings that define the state of different parts of the UI, e.g., "dark" or "light" theme, size and location of column sizes, or panel sizes.
+'Application UI Settings' refers to settings that define the state of different parts of the UI, e.g., "dark" or "light" theme, size and location of column sizes, or panel sizes.
 
 ### AppUiSettings
 
@@ -38,7 +38,7 @@ The [AppUiSettings]($appui-react) class, which implements the UserSettingsProvid
 
 ### FrameworkVersion
 
-The [FrameworkVersion]($appui-react) component defines the version context that is accessible to any lower level components. The version string should be set to "2" and it should match the value returned by UiFramework.uiVersion. Version "1" compatible components are deprecated and will be removed in a future release.
+The [FrameworkVersion]($appui-react) component defines the version context that is accessible to any lower level components. The version string is set to the value returned by UiFramework.uiVersion. Version "1" compatible components are deprecated and will be removed in a future release.
 
 ## Settings Components
 
@@ -59,7 +59,7 @@ UI and Quantity Settings as well as other settings can be present to the user fo
 The [SettingsModalFrontstage.getBackstageActionItem] method can be used to get a [BackstageActionItem]($appui-abstract) to construct the backstage. Below is an example of how to set up a backstage menu component to display the 'Settings' entry if `SettingsTabEntry` items are provided.
 
 ```tsx
-export function AppBackstageComposerComponent({ userInfo }: AppBackstageComposerProps) {
+export function AppBackstageComposerComponent() {
   const [backstageItems] = React.useState(() => {
     return [
       BackstageItemUtilities.createStageLauncher(ViewsFrontstage.stageId, 100, 10, IModelApp.i18n.translate("SampleApp:backstage.viewIModel"),
@@ -69,9 +69,7 @@ export function AppBackstageComposerComponent({ userInfo }: AppBackstageComposer
   });
 
   return (
-    <BackstageComposer items={backstageItems}
-      header={userInfo && <UserProfileBackstageItem userInfo={userInfo} />}
-    />
+    <BackstageComposer items={backstageItems} />
   );
 }
 ```

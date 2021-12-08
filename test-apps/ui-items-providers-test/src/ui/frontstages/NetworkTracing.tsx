@@ -12,7 +12,7 @@ import {
 } from "@itwin/appui-react";
 import { StageUsage, StandardContentLayouts } from "@itwin/appui-abstract";
 import { NetworkTracingUiProvider } from "../providers/NetworkTracingUiProvider";
-import { LocalSettingsStorage } from "@itwin/core-react";
+import { LocalStateStorage } from "@itwin/core-react";
 import { IModelConnection } from "@itwin/core-frontend";
 
 function getImodelSpecificKey(inKey: string, iModelConnection: IModelConnection | undefined) {
@@ -21,12 +21,12 @@ function getImodelSpecificKey(inKey: string, iModelConnection: IModelConnection 
 }
 
 export async function hasSavedViewLayoutProps(activeFrontstageId: string, iModelConnection: IModelConnection | undefined) {
-  const localSettings = new LocalSettingsStorage();
+  const localSettings = new LocalStateStorage();
   return localSettings.hasSetting("ContentGroupLayout", getImodelSpecificKey(activeFrontstageId, iModelConnection));
 }
 
 export async function getSavedViewLayoutProps(activeFrontstageId: string, iModelConnection: IModelConnection | undefined) {
-  const localSettings = new LocalSettingsStorage();
+  const localSettings = new LocalStateStorage();
   const result = await localSettings.getSetting("ContentGroupLayout", getImodelSpecificKey(activeFrontstageId, iModelConnection));
 
   if (result.setting) {

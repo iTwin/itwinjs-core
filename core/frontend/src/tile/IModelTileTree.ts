@@ -44,6 +44,7 @@ export interface IModelTileTreeParams extends TileTreeParams {
   formatVersion?: number;
   tileScreenSize: number;
   options: IModelTileTreeOptions;
+  transformNodeRanges?: Map<number, Range3d>;
 }
 
 /** @internal */
@@ -55,6 +56,13 @@ export function iModelTileTreeParamsFromJSON(props: IModelTileTreeProps, iModel:
   let contentRange;
   if (undefined !== props.contentRange)
     contentRange = Range3d.fromJSON<ElementAlignedBox3d>(props.contentRange);
+
+  let transformNodeRanges;
+  if (props.transformNodeRanges) {
+    transformNodeRanges = new Map<number, Range3d>();
+    for (const entry of props.transformNodeRanges)
+      transformNodeRanges.set(entry.id, Range3d.fromJSON(entry));
+  }
 
   const priority = BatchType.Primary === options.batchType ? TileLoadPriority.Primary : TileLoadPriority.Classifier;
   return {
@@ -71,6 +79,7 @@ export function iModelTileTreeParamsFromJSON(props: IModelTileTreeProps, iModel:
     priority,
     options,
     tileScreenSize,
+    transformNodeRanges,
   };
 }
 
@@ -331,6 +340,7 @@ class RootTile extends Tile {
 export class IModelTileTree extends TileTree {
   private readonly _rootTile: RootTile;
   private readonly _options: IModelTileTreeOptions;
+  private readonly _transformNodeRanges?: Map<number, Range3d>;
   public readonly contentIdQualifier?: string;
   public readonly geometryGuid?: string;
   public readonly maxTilesToSkip: number;
@@ -359,6 +369,7 @@ export class IModelTileTree extends TileTree {
     this.maxTilesToSkip = IModelApp.tileAdmin.maximumLevelsToSkip;
 
     this._options = params.options;
+    this._transformNodeRanges = params.transformNodeRanges;
 
     this.contentIdProvider = ContentIdProvider.create(params.options.allowInstancing, IModelApp.tileAdmin, params.formatVersion);
 
@@ -413,5 +424,13 @@ export class IModelTileTree extends TileTree {
   public get hiddenElements(): Id64Array {
     const state = this._rootTile.tileState;
     return "dynamic" === state.type ? state.rootTile.hiddenElements : [];
+  }
+
+  public getTransformNodeRange(nodeId: number): Range3d | undefined {
+    return this._transformNodeRanges?.get(nodeId);
+  }
+
+  public get containsTransformNodes(): boolean {
+    return undefined !== this._transformNodeRanges;
   }
 }

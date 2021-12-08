@@ -21,7 +21,7 @@ import {
   SingleElementPropertiesRequestOptions,
 } from "@itwin/presentation-common";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "./Constants";
-import { buildElementsProperties, getElementIdsByClass, getElementsCount } from "./ElementPropertiesHelper";
+import { buildElementsProperties, getElementsCount, iterateElementIds } from "./ElementPropertiesHelper";
 import {
   createDefaultNativePlatform, NativePlatformDefinition, NativePlatformRequestTypes, NativePresentationDefaultUnitFormats,
   NativePresentationKeySetJSON, NativePresentationUnitSystem,
@@ -147,6 +147,15 @@ export interface ContentCacheConfig {
 export interface UnitSystemFormat {
   unitSystems: UnitSystemKey[];
   format: FormatProps;
+}
+
+/**
+ * Data structure for multiple element properties request response.
+ * @alpha
+ */
+export interface MultiElementPropertiesResponse {
+  total: number;
+  iterator: () => AsyncGenerator<ElementProperties[]>;
 }
 
 /**
@@ -305,6 +314,7 @@ export class PresentationManager {
   private _isDisposed: boolean;
   private _disposeIModelOpenedListener?: () => void;
   private _updatesTracker?: UpdatesTracker;
+  private _onManagerUsed?: () => void;
 
   /** Get / set active locale used for localizing presentation data */
   public activeLocale: string | undefined;
@@ -379,6 +389,11 @@ export class PresentationManager {
     this._isDisposed = true;
   }
 
+  /** @internal */
+  public setOnManagerUsedHandler(handler: () => void) {
+    this._onManagerUsed = handler;
+  }
+
   /** Properties used to initialize the manager */
   public get props() { return this._props; }
 
@@ -431,6 +446,15 @@ export class PresentationManager {
 
   private getRulesetIdObject(rulesetOrId: Ruleset | string): { uniqueId: string, parts: { id: string, hash?: string } } {
     if (typeof rulesetOrId === "object") {
+      if (IpcHost.isValid) {
+        // in case of native apps we don't want to enforce ruleset id uniqueness as ruleset variables
+        // are stored on a backend and creating new id will lose those variables
+        return {
+          uniqueId: rulesetOrId.id,
+          parts: { id: rulesetOrId.id },
+        };
+      }
+
       const hashedId = hash.MD5(rulesetOrId);
       return {
         uniqueId: `${rulesetOrId.id}-${hashedId}`,
@@ -618,12 +642,12 @@ export class PresentationManager {
    */
   public async getElementProperties(requestOptions: Prioritized<SingleElementPropertiesRequestOptions<IModelDb>>): Promise<ElementProperties | undefined>;
   /**
-   * Retrieves property data in simplified format for multiple elements specified by class
-   * or all element.
+   * Retrieves property data in simplified format for multiple elements specified by class or all element.
+   * @return An object that contains element count and AsyncGenerator to iterate over properties of those elements in batches of undefined size.
    * @alpha
    */
-  public async getElementProperties(requestOptions: Prioritized<MultiElementPropertiesRequestOptions<IModelDb>>): Promise<PagedResponse<ElementProperties>>;
-  public async getElementProperties(requestOptions: Prioritized<ElementPropertiesRequestOptions<IModelDb>>): Promise<ElementProperties | undefined | PagedResponse<ElementProperties>> {
+  public async getElementProperties(requestOptions: Prioritized<MultiElementPropertiesRequestOptions<IModelDb>>): Promise<MultiElementPropertiesResponse>;
+  public async getElementProperties(requestOptions: Prioritized<ElementPropertiesRequestOptions<IModelDb>>): Promise<ElementProperties | undefined | MultiElementPropertiesResponse> {
     if (isSingleElementPropertiesRequestOptions(requestOptions)) {
       const { elementId, ...optionsNoElementId } = requestOptions;
       const content = await this.getContent({
@@ -642,29 +666,36 @@ export class PresentationManager {
     return this.getMultipleElementProperties(requestOptions);
   }
 
-  private async getMultipleElementProperties(requestOptions: Prioritized<MultiElementPropertiesRequestOptions<IModelDb>>) {
-    const { elementClasses, paging, ...optionsNoElementClasses } = requestOptions;
+  private async getMultipleElementProperties(requestOptions: Prioritized<MultiElementPropertiesRequestOptions<IModelDb>>): Promise<MultiElementPropertiesResponse> {
+    const { elementClasses, ...optionsNoElementClasses } = requestOptions;
     const elementsCount = getElementsCount(requestOptions.imodel, requestOptions.elementClasses);
-    const elementIds = getElementIdsByClass(requestOptions.imodel, elementClasses, paging);
 
-    const elementProperties: ElementProperties[] = [];
-    for (const entry of elementIds) {
-      const properties = await buildElementsPropertiesInPages(entry[0], entry[1], async (keys) => {
-        const content = await this.getContent({
-          ...optionsNoElementClasses,
-          descriptor: {
-            displayType: DefaultContentDisplayTypes.PropertyPane,
-            contentFlags: ContentFlags.ShowLabels,
-          },
-          rulesetOrId: "ElementProperties",
-          keys,
-        });
-        return buildElementsProperties(content);
+    const propertiesGetter = async (className: string, ids: string[]) => buildElementsPropertiesInPages(className, ids, async (keys) => {
+      const content = await this.getContent({
+        ...optionsNoElementClasses,
+        descriptor: {
+          displayType: DefaultContentDisplayTypes.PropertyPane,
+          contentFlags: ContentFlags.ShowLabels,
+        },
+        rulesetOrId: "ElementProperties",
+        keys,
       });
-      elementProperties.push(...properties);
-    }
+      return buildElementsProperties(content);
+    });
 
-    return { total: elementsCount, items: elementProperties };
+    const ELEMENT_IDS_BATCH_SIZE = 1000;
+    return {
+      total: elementsCount,
+      async *iterator() {
+        for (const idsByClass of iterateElementIds(requestOptions.imodel, elementClasses, ELEMENT_IDS_BATCH_SIZE)) {
+          const propertiesPage: ElementProperties[] = [];
+          for (const entry of idsByClass) {
+            propertiesPage.push(...(await propertiesGetter(entry[0], entry[1])));
+          }
+          yield propertiesPage;
+        }
+      },
+    };
   }
 
   /**
@@ -727,6 +758,8 @@ export class PresentationManager {
 
   private async request<TParams extends { diagnostics?: DiagnosticsOptionsWithHandler, requestId: string, imodel: IModelDb, locale?: string, unitSystem?: UnitSystemKey }, TResult>(params: TParams, reviver?: (key: string, value: any) => any): Promise<TResult> {
     const { requestId, imodel, locale, unitSystem, diagnostics, ...strippedParams } = params;
+    if (this._onManagerUsed)
+      this._onManagerUsed();
     const imodelAddon = this.getNativePlatform().getImodelAddon(imodel);
     const nativeRequestParams: any = {
       requestId,

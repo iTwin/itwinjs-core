@@ -8,7 +8,7 @@ import { BentleyStatus, DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import {
   Angle, AngleSweep, Arc3d, Box, ClipMaskXYZRangePlanes, ClipPlane, ClipPlaneContainment, ClipPrimitive, ClipShape, ClipVector, ConvexClipPlaneSet,
   CurveCollection, CurvePrimitive, Geometry, GeometryQueryCategory, IndexedPolyface, LineSegment3d, LineString3d, Loop, Matrix3d,
-  Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point3dArray, PointString3d, PolyfaceBuilder, Range3d, RuledSweep, SolidPrimitive, Sphere,
+  Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point3dArray, PointString3d, PolyfaceBuilder, Range3d, SolidPrimitive, Sphere,
   StrokeOptions, Transform, Vector3d, YawPitchRollAngles,
 } from "@itwin/core-geometry";
 import {
@@ -2478,45 +2478,6 @@ describe("BRepGeometry", () => {
     } catch (error: any) {
       assert(false, error.message);
     }
-  });
-
-  it("catch solid kernel severe error - main thread", async () => {
-    const builder = new ElementGeometry.Builder();
-    builder.appendGeometryQuery(Loop.createPolygon([Point3d.create(0, 0, 0), Point3d.create(0, 1, 0), Point3d.create(-1.1, 1, 0), Point3d.create(-1, 1.1, 0)]));
-
-    // Test main thread using createBRepGeometry...
-    const onResult: BRepGeometryFunction = (_info: BRepGeometryInfo): void => { };
-
-    const createProps: BRepGeometryCreate = {
-      operation: BRepGeometryOperation.Offset,
-      entryArray: builder.entries,
-      onResult,
-      parameters: { distance: 0.25 },
-    };
-
-    // Expect exception creating sheet body from invalid loop (imprint error)...
-    expect(() => imodel.createBRepGeometry(createProps)).to.throw(Error, "Solid kernel severe error: 942");
-  });
-
-  it("catch solid kernel severe error - worker thread", async () => {
-    const builder = new ElementGeometry.Builder();
-    const loop0 = Loop.createPolygon([Point3d.create(0, 0, 0), Point3d.create(0, 1, 0), Point3d.create(-1.1, 1, 0), Point3d.create(-1, 1.1, 0)]);
-    const loop1 = Loop.create(Arc3d.createXY(Point3d.create(0, 0, 1), 0.2));
-    const solid = RuledSweep.create([loop0, loop1], true);
-    assert.isDefined(solid);
-    builder.appendGeometryQuery(solid!);
-
-    // Test worker thread using getMassProperties...
-    const result = createGeometricElemFromSeed(imodel, "0x1d", builder.entries);
-    assert.isTrue(DbResult.BE_SQLITE_OK === result.status);
-
-    const requestProps: MassPropertiesRequestProps = {
-      operation: MassPropertiesOperation.AccumulateVolumes,
-      candidates: [result.newId],
-    };
-
-    // Expect exception creating sheet body from invalid loop (imprint error)...
-    await expect(imodel.getMassProperties(requestProps)).to.be.rejectedWith(Error, "Solid kernel severe error: 942");
   });
 });
 

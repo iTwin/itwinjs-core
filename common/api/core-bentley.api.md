@@ -686,8 +686,6 @@ export enum IModelHubStatus {
     // (undocumented)
     FailedToGetITwinPermissions = 102436,
     // (undocumented)
-    FailedToGetProductSettings = 102448,
-    // (undocumented)
     FileAlreadyExists = 102426,
     // (undocumented)
     FileDoesNotExist = 102425,
