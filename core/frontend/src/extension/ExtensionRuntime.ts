@@ -8,6 +8,16 @@
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
+import {
+  BackgroundFill, BackgroundMapType, BatchType, BisCodeSpec, BriefcaseIdValue, ChangedValueState, ChangeOpCode, ChangesetType, ColorByName, ColorDef, CommonLoggerCategory,
+  ECSqlSystemProperty, ECSqlValueType, ElementGeometryOpcode, FeatureOverrideType, FillDisplay, FillFlags, FontType, GeoCoordStatus, GeometryClass, GeometryStreamFlags,
+  GeometrySummaryVerbosity, GlobeMode, GridOrientationType, HSVConstants, ImageBufferFormat, ImageSourceFormat, LinePixels, MassPropertiesOperation, MonochromeMode,
+  Npc, PlanarClipMaskMode, PlanarClipMaskPriority, QueryRowFormat, Rank, RenderMode, SectionType, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, SyncMode,
+  TerrainHeightOriginMode, TextureMapUnits, ThematicDisplayMode, ThematicGradientColorScheme, ThematicGradientMode, TxnAction, TypeOfChange,
+} from "@itwin/core-common";
+import { ExtensionImpl } from "./ExtensionImpl";
+import { ExtensionHost } from "./ExtensionHost";
+
 import { AccuDrawHintBuilder, ContextRotationId } from "../AccuDraw";
 import { ACSDisplayOptions, ACSType } from "../AuxCoordSys";
 import { CoordSystem } from "../CoordSystem";
@@ -29,7 +39,7 @@ import { BingElevationProvider, readElementGraphics, TileBoundingBoxes, TileGrap
 import { ClipEventType } from "../tools/ClipViewTool";
 import { PrimitiveTool } from "../tools/PrimitiveTool";
 import { SelectionMethod, SelectionMode, SelectionProcessing } from "../tools/SelectTool";
-import { BeButton, BeButtonEvent, BeModifierKeys, CoordinateLockOverrides, CoordSource, EventHandled, InputSource, InteractiveTool, KeyinParseError, ParseAndRunResult, Tool } from "../tools/Tool";
+import { BeButton, BeButtonEvent, BeModifierKeys, CoordinateLockOverrides, CoordSource, EventHandled, InputCollector, InputSource, InteractiveTool, KeyinParseError, ParseAndRunResult, Tool } from "../tools/Tool";
 import { ManipulatorToolEvent, StartOrResume } from "../tools/ToolAdmin";
 import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod } from "../tools/ToolAssistance";
 import { ViewTool } from "../tools/ViewTool";
@@ -37,20 +47,15 @@ import { EditManipulator } from "../tools/EditManipulator";
 import { EmphasizeElements } from "../EmphasizeElements";
 import { FeatureSymbology } from "../render/FeatureSymbology";
 import { GraphicBranch } from "../render/GraphicBranch";
-
-import {
-  BackgroundFill, BackgroundMapType, BatchType, BisCodeSpec, BriefcaseIdValue, ChangedValueState, ChangeOpCode, ChangesetType, ColorByName, ColorDef, CommonLoggerCategory,
-  ECSqlSystemProperty, ECSqlValueType, ElementGeometryOpcode, FeatureOverrideType, FillDisplay, FillFlags, FontType, GeoCoordStatus, GeometryClass, GeometryStreamFlags,
-  GeometrySummaryVerbosity, GlobeMode, GridOrientationType, HSVConstants, ImageBufferFormat, ImageSourceFormat, LinePixels, MassPropertiesOperation, MonochromeMode,
-  Npc, PlanarClipMaskMode, PlanarClipMaskPriority, QueryRowFormat, Rank, RenderMode, SectionType, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, SyncMode,
-  TerrainHeightOriginMode, TextureMapUnits, ThematicDisplayMode, ThematicGradientColorScheme, ThematicGradientMode, TxnAction, TypeOfChange,
-} from "@itwin/core-common";
-import { ExtensionImpl } from "./ExtensionImpl";
-import { ExtensionHost } from "./ExtensionHost";
 import { canvasToImageBuffer, canvasToResizedCanvasWithBars, extractImageSourceDimensions, getCompressedJpegFromCanvas, getImageSourceFormatForMimeType, getImageSourceMimeType,
   imageBufferToBase64EncodedPng, imageBufferToCanvas, imageBufferToPngDataUrl, imageElementFromImageSource, imageElementFromUrl } from "../ImageUtil";
 import { queryTerrainElevationOffset } from "../ViewGlobalLocation";
 import { BingLocationProvider } from "../BingLocation";
+import { FrustumAnimator } from "../FrustumAnimator";
+import { GlobeAnimator } from "../GlobeAnimator";
+import { MarginPercent } from "../MarginPercent";
+import { Cluster, Marker } from "../Marker";
+import { ToolSettings } from "../tools/ToolSettings";
 
 const globalSymbol = Symbol.for("itwin.core.frontend.globals");
 if ((globalThis as any)[globalSymbol])
@@ -63,6 +68,7 @@ const getExtensionApi = (id: string) => {
       InteractiveTool, PrimitiveTool, ViewTool, Tool,
 
       ToolAssistance, BeButtonEvent, ViewRect, Pixel, LocateResponse, EditManipulator, AccuDrawHintBuilder, EmphasizeElements, FeatureSymbology, GraphicBranch, NotifyMessageDetails,
+      Readonly<ToolSettings>,
 
       ColorDef,
 
@@ -71,7 +77,7 @@ const getExtensionApi = (id: string) => {
       imageElementFromImageSource, imageElementFromUrl, queryTerrainElevationOffset, readElementGraphics, canvasToImageBuffer, canvasToResizedCanvasWithBars, extractImageSourceDimensions,
 
       // Frontend classes
-      BingElevationProvider, BingLocationProvider,
+      BingElevationProvider, BingLocationProvider, InputCollector, FrustumAnimator, GlobeAnimator, MarginPercent, Marker, Cluster,
 
       ExtensionHost,
 

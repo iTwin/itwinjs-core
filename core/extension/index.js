@@ -8,6 +8,7 @@ export const {
   ViewTool,
   Tool,
 
+  ToolSettings,
   ToolAssistance,
   BeButtonEvent,
   ViewRect,
@@ -27,7 +28,13 @@ export const {
 // re-export frontend items
 export const {
   BingElevationProvider,
-  BingLocationProvider
+  BingLocationProvider,
+  InputCollector,
+  FrustumAnimator,
+  GlobeAnimator,
+  MarginPercent,
+  Marker,
+  Cluster
 } = ext.exports;
 
 // re-export functions

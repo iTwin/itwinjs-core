@@ -175,10 +175,9 @@ export type {
   GeometricModelState,
   GraphicBuilder,
   IModelConnection,
-  InputCollector,
+  // InputCollector, @REAL
   // InteractiveTool, @REAL
   MarkerSet,
-  // MeasureElementTool, @TOOL-IMPL
   NotificationHandler,
   // PrimitiveTool, @REAL
   RenderClipVolume,
@@ -213,7 +212,7 @@ export type {
   // BingLocationProvider, @REAL
   CategorySelectorState,
   ChangeFlags,
-  Cluster,
+  // Cluster, @REAL
   ContextRealityModelState,
   DecorateContext,
   Decorations,
@@ -229,53 +228,36 @@ export type {
   // EmphasizeElements, @REAL
   EntityState,
   EventController,
-  // FitViewTool, @TOOL-IMPL
   FlashSettings,
-  // FlyViewTool, @TOOL-IMPL
-  FrustumAnimator,
+  // FrustumAnimator, @REAL
   GeometricModel2dState,
   GeometricModel3dState,
-  GlobeAnimator,
+  // GlobeAnimator, @REAL
   // GraphicBranch, @REAL
   HiliteSet,
   HitDetail,
   HitList,
   IconSprites,
-  // IdleTool, @TOOL-IMPL
   // IModelApp, @BANNED
   IntersectDetail,
   // IpcApp, @BANNED
   LocateOptions,
   // LocateResponse, @REAL
-  // LookAndMoveTool, @TOOL-IMPL
-  // LookViewTool, @TOOL-IMPL
-  MarginPercent,
-  Marker,
-  // MeasureAreaByPointsTool, @TOOL-IMPL
-  // MeasureAreaTool, @TOOL-IMPL
-  // MeasureDistanceTool, @TOOL-IMPL
-  // MeasureLengthTool, @TOOL-IMPL
-  // MeasureLocationTool, @TOOL-IMPL
-  // MeasureVolumeTool, @TOOL-IMPL
+  // MarginPercent, @REAL
+  // Marker, @REAL
   ModelSelectorState,
   ModelState,
   NotificationManager,
-  NotifyMessageDetails,
+  // NotifyMessageDetails, @REAL
   OffScreenViewport,
   OrthographicViewState,
-  // PanViewTool, @TOOL-IMPL
   PhysicalModelState,
   RenderContext,
-  // RotateViewTool, @TOOL-IMPL
   Scene,
   SceneContext,
   ScreenViewport,
-  // ScrollViewTool, @TOOL-IMPL
   SectionDrawingModelState,
   SelectionSet,
-  // SelectionTool, @TOOL-IMPL
-  // SetupCameraTool, @TOOL-IMPL
-  // SetupWalkCameraTool, @TOOL-IMPL
   SheetModelState,
   SheetViewState,
   SnapDetail,
@@ -284,7 +266,6 @@ export type {
   SpatialViewState,
   Sprite,
   SpriteLocation,
-  // StandardViewTool, @TOOL-IMPL
   TentativePoint,
   TileAdmin,
   TileDrawArgs,
@@ -297,28 +278,12 @@ export type {
   // Tool, @REAL
   ToolAdmin,
   // ToolAssistance, @REAL
-  ToolSettings,
-  // ViewClipByElementTool, @TOOL-IMPL
-  // ViewClipByPlaneTool, @TOOL-IMPL
-  // ViewClipByRangeTool, @TOOL-IMPL
-  // ViewClipByShapeTool, @TOOL-IMPL
-  // ViewClipClearTool, @TOOL-IMPL
-  // ViewClipTool, @TOOL-IMPL
+  // ToolSettings, @REAL
   ViewCreator2d,
   ViewCreator3d,
-  // ViewGlobeBirdTool, @TOOL-IMPL
-  // ViewGlobeIModelTool, @TOOL-IMPL
-  // ViewGlobeLocationTool, @TOOL-IMPL
-  // ViewGlobeSatelliteTool, @TOOL-IMPL
   ViewingSpace,
   ViewManager,
   // ViewRect, @REAL
-  // ViewRedoTool, @TOOL-IMPL
-  // ViewToggleCameraTool, @TOOL-IMPL
-  // ViewUndoTool, @TOOL-IMPL
-  // WalkViewTool, @TOOL-IMPL
-  // WindowAreaTool, @TOOL-IMPL
-  // ZoomViewTool @TOOL-IMPL
 } from "@itwin/core-frontend";
 
 // namespaces (minus conflicts)
