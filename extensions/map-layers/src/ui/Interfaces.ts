@@ -36,3 +36,12 @@ export interface MapLayerOptions {
   fetchPublicMapLayerSources?: boolean;
   mapTypeOptions?: MapTypesOptions;
 }
+
+export interface MapFeatureInfoPropertyGridOptions {
+  isPropertySelectionEnabled?: boolean;
+}
+
+export interface MapFeatureInfoOptions {
+  showLoadProgressAnimation?: boolean;
+  propertyGridOptions?: MapFeatureInfoPropertyGridOptions;
+}

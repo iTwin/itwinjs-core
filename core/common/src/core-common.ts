@@ -72,7 +72,6 @@ export * from "./LightSettings";
 export * from "./LinePixels";
 export * from "./Localization";
 export * from "./MapImagerySettings";
-export * from "./MapFeatureInfo";
 export * from "./MapLayerSettings";
 export * from "./MassProperties";
 export * from "./MaterialProps";

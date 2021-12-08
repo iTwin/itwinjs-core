@@ -49,6 +49,7 @@ export * from "./ImdlReader";
 export * from "./map/ArcGISTileMap";
 export * from "./map/ArcGisTokenGenerator";
 export * from "./map/ArcGisTokenManager";
+export * from "./map/MapFeatureInfo";
 export * from "./map/MapLayerFormatRegistry";
 export * from "./map/ArcGisUtilities";
 export * from "./map/WmsUtilities";

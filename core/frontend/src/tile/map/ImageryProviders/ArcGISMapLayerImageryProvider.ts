@@ -6,15 +6,18 @@
  * @module Tiles
  */
 
-import { Cartographic, FeatureInfoPropertyValueFormat, ImageSource, IModelStatus, MapFeatureInfoRecord, MapLayerFeatureInfo, MapLayerSettings, MapSubLayerFeatureInfo, ServerError } from "@itwin/core-common";
+import { Cartographic, ImageSource, IModelStatus, MapLayerSettings, ServerError } from "@itwin/core-common";
 import { getJson, request, RequestOptions, Response } from "@bentley/itwin-client";
 import { IModelApp } from "../../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../../NotificationManager";
 import { ScreenViewport } from "../../../Viewport";
 import {
   ArcGisErrorCode, ArcGISTileMap, ArcGisTokenClientType, ArcGisTokenManager, ArcGisUtilities, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle,
-  MapLayerImageryProvider, MapLayerImageryProviderStatus, QuadId,
+  MapFeatureInfoRecord,
+  MapLayerFeatureInfo,
+  MapLayerImageryProvider, MapLayerImageryProviderStatus, MapSubLayerFeatureInfo, QuadId,
 } from "../../internal";
+import { PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
 
 // eslint-disable-next-line prefer-const
 let doToolTips = true;
@@ -274,10 +277,11 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
           records : [],
         };
         for (const [key, value] of Object.entries(result.attributes)) {
+          // Convert everything to string for now
           const strValue = String(value);
           subLayerInfo.records?.push(new MapFeatureInfoRecord (
-            {valueFormat:FeatureInfoPropertyValueFormat.Primitive, rawValue: value, stringValue: strValue},
-            {name: key, displayLabel: key, typename:"string"}
+            {valueFormat:PropertyValueFormat.Primitive, value:strValue, displayValue: strValue},
+            {name: key, displayLabel: key, typename:StandardTypeNames.String}
           ));
         }
 

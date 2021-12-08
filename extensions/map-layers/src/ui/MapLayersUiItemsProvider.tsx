@@ -9,8 +9,8 @@ import { Localization } from "@itwin/core-common";
 import { MapLayersWidget } from "./widget/MapLayersWidget";
 import { ConfigurableCreateInfo, WidgetControl } from "@itwin/appui-react";
 import { IModelApp } from "@itwin/core-frontend";
-import { MapLayerOptions } from "./Interfaces";
-import { FeatureInfoWidget } from "./widget/FeatureInfoWidget";
+import { MapFeatureInfoOptions, MapLayerOptions } from "./Interfaces";
+import { MapFeatureInfoWidget } from "./widget/FeatureInfoWidget";
 
 export class MapLayersUiItemsProvider implements UiItemsProvider {
   public readonly id = "MapLayersUiItemsProvider";
@@ -66,9 +66,9 @@ export class FeatureInfoWidgetControl extends WidgetControl {
   public static id = "FeatureInfoWidget";
   public static iconSpec = "icon-map";
   public static label = "FeatureInfoWidgetControl";
-  constructor(info: ConfigurableCreateInfo, options: any) {
-    super(info, options);
+  constructor(info: ConfigurableCreateInfo, featureInfoOpts: MapFeatureInfoOptions) {
+    super(info, featureInfoOpts);
 
-    super.reactNode = <FeatureInfoWidget />;
+    super.reactNode = <MapFeatureInfoWidget featureInfoOpts={featureInfoOpts}/>;
   }
 }

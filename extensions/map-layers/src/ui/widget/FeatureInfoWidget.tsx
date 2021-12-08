@@ -5,23 +5,56 @@
 import * as React from "react";
 
 import { PropertyGrid} from "@itwin/components-react";
-import { Orientation } from "@itwin/core-react";
+import { FillCentered, Orientation } from "@itwin/core-react";
 
-import { FeatureInfoDataProvider } from "./FeatureInfoDataProvider";
+import { FeatureInfoDataProvider, MapFeatureInfoLoadState } from "./FeatureInfoDataProvider";
+import { ProgressRadial } from "@itwin/itwinui-react";
+import { MapFeatureInfoOptions } from "../Interfaces";
 
-export class FeatureInfoWidget extends React.Component {
-  private _dataProvider: FeatureInfoDataProvider;
+interface MapFeatureInfoWidgetProps {
+  featureInfoOpts?: MapFeatureInfoOptions;
+}
 
-  constructor(props: any) {
-    super(props);
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export function MapFeatureInfoWidget(props: MapFeatureInfoWidgetProps) {
 
-    this._dataProvider = new FeatureInfoDataProvider();
-  }
+  const [dataProvider] = React.useState<FeatureInfoDataProvider>(new FeatureInfoDataProvider());
+  const [loadingData, setLoadingData] = React.useState<boolean>(false);
 
-  public override render() {
-    return (
-      <PropertyGrid dataProvider={this._dataProvider} orientation={Orientation.Vertical} isPropertySelectionEnabled={true} />
-    );
+  const handleLoadStateChange = (state: MapFeatureInfoLoadState) => {
+    setLoadingData(state === MapFeatureInfoLoadState.DataLoadStart);
+  };
+
+  React.useEffect(() => {
+    if (props.featureInfoOpts?.showLoadProgressAnimation) {
+      dataProvider.onDataLoadStateChanged.addListener(handleLoadStateChange);
+      return () => {
+        dataProvider.onDataLoadStateChanged.removeListener(handleLoadStateChange);
+      };
+    }
+    return;
+
+  }, [dataProvider.onDataLoadStateChanged, props.featureInfoOpts?.showLoadProgressAnimation]);
+
+  if (loadingData) {
+    return (<FillCentered><ProgressRadial indeterminate={true}></ProgressRadial></FillCentered>);
+  } else {
+    return (<PropertyGrid dataProvider={dataProvider} orientation={Orientation.Vertical} isPropertySelectionEnabled={props.featureInfoOpts?.propertyGridOptions?.isPropertySelectionEnabled} />);
   }
 }
 
+// export class MapFeatureInfoWidget extends React.Component {
+//   private _dataProvider: FeatureInfoDataProvider;
+
+//   constructor(props: any) {
+//     super(props);
+
+//     this._dataProvider = new FeatureInfoDataProvider();
+//   }
+
+//   public override render() {
+//     return (
+//       <PropertyGrid dataProvider={this._dataProvider} orientation={Orientation.Vertical} isPropertySelectionEnabled={true} />
+//     );
+//   }
+// }

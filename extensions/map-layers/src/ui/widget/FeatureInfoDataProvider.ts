@@ -8,40 +8,26 @@
 
 import { PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
 import { IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent } from "@itwin/components-react";
-import { MapLayerFeatureInfo } from "@itwin/core-common";
+import { BeEvent } from "@itwin/core-bentley";
 import { HitDetail } from "@itwin/core-frontend";
-import { IdentifyHitEvent, MapLayersUI } from "../../mapLayers";
+import { MapLayersUI } from "../../mapLayers";
 // import { IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent } from ""
-
-class FeatureInfoRecord extends PropertyRecord {
-  constructor(name: string, value: any, typename: string = StandardTypeNames.String) {
-    const v = {
-      valueFormat: PropertyValueFormat.Primitive,
-      value,
-      displayValue: value.toString(),
-    } as PrimitiveValue;
-    const p = {
-      name,
-      displayLabel: name,
-      typename,
-    } as PropertyDescription;
-    super(v, p);
-
-    this.description = `${name} - description`;
-    this.isReadonly = false;
-  }
-}
 
 /**
  * Implementation of [IPropertyDataProvider] that uses an associative array.
  * @public
  */
+
+export enum MapFeatureInfoLoadState {DataLoadStart, DataLoadEnd}
+export declare type MapFeatureInfoLoadSListener = (state: MapFeatureInfoLoadState) => void;
+
 export class FeatureInfoDataProvider implements IPropertyDataProvider, PropertyData {
   public label: PropertyRecord = PropertyRecord.fromString("");
   public description?: string;
   public categories: PropertyCategory[] = [];
   public records: { [categoryName: string]: PropertyRecord[] } = {};
   public onDataChanged = new PropertyDataChangeEvent();
+  public onDataLoadStateChanged = new BeEvent<MapFeatureInfoLoadSListener>();
   constructor() {
 
     // eslint-disable-next-line @typescript-eslint/unbound-method
@@ -52,30 +38,40 @@ export class FeatureInfoDataProvider implements IPropertyDataProvider, PropertyD
     if (identifyHit?.isMapHit) {
       this.records = {};
       this.categories = [];
+      this.onDataLoadStateChanged.raiseEvent(MapFeatureInfoLoadState.DataLoadStart);
       const mapInfo = await identifyHit.viewport.getMapFeatureInfo(identifyHit);
+      this.onDataLoadStateChanged.raiseEvent(MapFeatureInfoLoadState.DataLoadEnd);
       if (mapInfo.layerInfo !== undefined ) {
         for (const curLayerInfo of mapInfo.layerInfo) {
-          const layerCategory: PropertyCategory = {name:curLayerInfo.layerName, label:curLayerInfo.layerName, expand:true, childCategories:[]};
+          const layerCatIdx = this.findCategoryIndexByName(curLayerInfo.layerName);
+          const layerCategory = (
+            layerCatIdx === -1 ?
+              {name:curLayerInfo.layerName, label:curLayerInfo.layerName, expand:true, childCategories:[]}
+              : this.categories[layerCatIdx] );
+
           if (curLayerInfo.info && !(curLayerInfo.info instanceof HTMLElement)) {
 
             for (const infoResult of curLayerInfo.info) {
-              const catIdx = this.findCategoryIndexByName(infoResult.subLayerName);
-              if (catIdx === -1) {
-                const subLayerCategory = {name:infoResult.subLayerName, label:infoResult.subLayerName, expand:true};
+              const subCatIdx = layerCategory.childCategories?.findIndex((testCategory: PropertyCategory) => {
+                return testCategory.name === infoResult.subLayerName;
+              });
+              let subLayerCategory;
+              if (subCatIdx === -1) {
+                subLayerCategory = {name:infoResult.subLayerName, label:infoResult.subLayerName, expand:true};
                 this.addSubCategory(subLayerCategory.name);
                 layerCategory.childCategories?.push(subLayerCategory);
+              }
+              if (infoResult.records) {
+                for (const record of infoResult.records) {
+                  // Always use the string value for now
+                  this.addProperty(record, infoResult.subLayerName);
 
-                if (infoResult.records) {
-                  for (const record of infoResult.records) {
-                    // Always use the string value for now
-                    this.addProperty(new FeatureInfoRecord(record.property.displayLabel, record.value.stringValue),
-                      subLayerCategory.name);
-                  }
                 }
               }
             }
           }
-          this.addCategory(layerCategory);
+          if (layerCatIdx === -1)
+            this.addCategory(layerCategory);
         }
       }
       this.onDataChanged.raiseEvent();
@@ -84,12 +80,10 @@ export class FeatureInfoDataProvider implements IPropertyDataProvider, PropertyD
 
   public addSubCategory(categoryName: string) {
     this.records[categoryName] = [];
-    // this.onDataChanged.raiseEvent();
   }
   public addCategory(category: PropertyCategory): number {
     const categoryIdx = this.categories.push(category) - 1;
     this.records[this.categories[categoryIdx].name] = [];
-    // this.onDataChanged.raiseEvent();
     return categoryIdx;
   }
 
@@ -107,8 +101,13 @@ export class FeatureInfoDataProvider implements IPropertyDataProvider, PropertyD
   }
 
   public addProperty(propertyRecord: PropertyRecord, categoryName: string): void {
-    this.records[categoryName].push(propertyRecord);
-    // this.onDataChanged.raiseEvent();
+    const idx = this.records[categoryName].findIndex((prop)=> prop.property.name === propertyRecord.property.name);
+    if (idx === -1) {
+      this.records[categoryName].push(propertyRecord);
+    } else {
+      this.records[categoryName][idx].isMerged = true;
+      this.records[categoryName][idx].isReadonly = true;
+    }
   }
 
   public removeProperty(propertyRecord: PropertyRecord, categoryIdx: number): boolean {
@@ -118,7 +117,6 @@ export class FeatureInfoDataProvider implements IPropertyDataProvider, PropertyD
 
     let result = false;
 
-    // istanbul ignore else
     if (index >= 0) {
       this.records[this.categories[categoryIdx].name].splice(index, 1);
       this.onDataChanged.raiseEvent();
