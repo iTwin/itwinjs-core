@@ -220,6 +220,8 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
     if (newExtents.isNull)
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "Invalid project extents");
 
+    await this.iModel.acquireSchemaLock();
+
     this.iModel.updateProjectExtents(newExtents);
 
     // Set source from calculated to user so connectors preserve the change.
@@ -238,6 +240,8 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
   }
 
   public async updateEcefLocation(ecefLocation: EcefLocationProps): Promise<void> {
+    await this.iModel.acquireSchemaLock();
+
     // Clear GCS that caller already determined was invalid...
     this.iModel.deleteFileProperty({ name: "DgnGCS", namespace: "dgn_Db" });
 
