@@ -119,6 +119,43 @@ export class ThematicGradientSettings {
     return true;
   }
 
+  /** Compares two sets of thematic gradient settings.
+   * @param lhs First set of thematic gradient settings to compare
+   * @param rhs Second set of thematic gradient settings to compare
+   * @returns 0 if lhs is equivalent to rhs, a negative number if lhs compares less than rhs, or a positive number if lhs compares greater than rhs.
+   */
+  public static compare(lhs: ThematicGradientSettings, rhs: ThematicGradientSettings): number {
+    if (lhs.mode < rhs.mode)
+      return -1;
+    if (lhs.mode > rhs.mode)
+      return 1;
+    if (lhs.stepCount < rhs.stepCount)
+      return -1;
+    if (lhs.stepCount > rhs.stepCount)
+      return 1;
+    if (!lhs.marginColor.equals(rhs.marginColor))
+      return lhs.marginColor.tbgr - rhs.marginColor.tbgr;
+    if (lhs.colorScheme < rhs.colorScheme)
+      return -1;
+    if (lhs.colorScheme > rhs.colorScheme)
+      return 1;
+    if (lhs.colorMix < rhs.colorMix)
+      return -1;
+    if (lhs.colorMix > rhs.colorMix)
+      return 1;
+    if (lhs.customKeys.length < rhs.customKeys.length)
+      return -1;
+    if (lhs.customKeys.length > rhs.customKeys.length)
+      return 1;
+
+    for (let i = 0; i < lhs.customKeys.length; i++) {
+      if (!Gradient.keyColorEquals(lhs.customKeys[i], rhs.customKeys[i]))
+        return lhs.customKeys[i].color.tbgr - rhs.customKeys[i].color.tbgr;
+    }
+
+    return 0;
+  }
+
   private constructor(json?: ThematicGradientSettingsProps) {
     this.customKeys = [];
     if (undefined === json) {
