@@ -129,7 +129,7 @@ export namespace RealityDataSource {
 }
 
 /** This class provides access to the reality data provider services.
- * It encapsulates access to a reality data wether it be from local access, http or ProjectWise Context Share.
+ * It encapsulates access to a reality data weiter it be from local access, http or ProjectWise Context Share.
  * The key provided at the creation determines if this is ProjectWise Context Share reference.
  * If not then it is considered local (ex: C:\temp\TileRoot.json) or plain http access (http://someserver.com/data/TileRoot.json)
  * There is a one to one relationship between a reality data and the instances of present class.
