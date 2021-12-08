@@ -368,7 +368,7 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
   }
 
   /** Create a smoothly closed B-spline curve with uniform knots.
-   *  Note that the curve does not start at the first pole.
+   *  Note that the curve does not start at the first pole, and first and last poles should be distinct.
   */
   public static createPeriodicUniformKnots(poles: Point3d[] | Float64Array | GrowableXYZArray, order: number): BSplineCurve3d | undefined {
     const numPoles = poles instanceof Float64Array ? poles.length / 3 : poles.length;
