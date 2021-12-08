@@ -182,13 +182,19 @@ export class FrameBuilder {
       } else if (data instanceof InterpolationCurve3d) {
         const point = Point3d.create();
         for (let i = 0; this.savedVectorCount() < 2; i++) {
-          if (i < data.options.fitPoints.length-1) {
+          if (i < data.options.fitPoints.length) {
             point.setFrom(data.options.fitPoints[i]);
             this.announcePoint(point);
           } else break;
         }
+      } else { // unimplemented CurvePrimitive type
+        const frame = data.fractionToFrenetFrame(0.0);
+        if (undefined !== frame) {
+          this.announcePoint(frame.getOrigin());
+          this.announceVector(frame.matrix.getColumn(0));
+          this.announceVector(frame.matrix.getColumn(1));
+        }
       }
-      // TODO: unknown curve type.  Stroke? FrenetFrame?
     } else if (data instanceof CurveCollection) {
       if (data.children)
         for (const child of data.children) {
