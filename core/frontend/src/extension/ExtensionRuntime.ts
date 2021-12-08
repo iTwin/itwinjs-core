@@ -25,7 +25,7 @@ import { GraphicType } from "../render/GraphicBuilder";
 import { Pixel } from "../render/Pixel";
 import { TextureTransparency } from "../render/RenderTexture";
 import { UniformType, VaryingType } from "../render/ScreenSpaceEffectBuilder";
-import { TileBoundingBoxes, TileGraphicType, TileLoadPriority, TileLoadStatus, TileTreeLoadStatus, TileVisibility } from "../tile/internal";
+import { BingElevationProvider, readElementGraphics, TileBoundingBoxes, TileGraphicType, TileLoadPriority, TileLoadStatus, TileTreeLoadStatus, TileVisibility } from "../tile/internal";
 import { ClipEventType } from "../tools/ClipViewTool";
 import { PrimitiveTool } from "../tools/PrimitiveTool";
 import { SelectionMethod, SelectionMode, SelectionProcessing } from "../tools/SelectTool";
@@ -42,12 +42,15 @@ import {
   BackgroundFill, BackgroundMapType, BatchType, BisCodeSpec, BriefcaseIdValue, ChangedValueState, ChangeOpCode, ChangesetType, ColorByName, ColorDef, CommonLoggerCategory,
   ECSqlSystemProperty, ECSqlValueType, ElementGeometryOpcode, FeatureOverrideType, FillDisplay, FillFlags, FontType, GeoCoordStatus, GeometryClass, GeometryStreamFlags,
   GeometrySummaryVerbosity, GlobeMode, GridOrientationType, HSVConstants, ImageBufferFormat, ImageSourceFormat, LinePixels, MassPropertiesOperation, MonochromeMode,
-  Npc, PlanarClipMaskMode, PlanarClipMaskPriority, QueryRowFormat, Rank, RenderMode, RpcContentType, RpcEndpoint, RpcProtocolEvent, RpcRequestEvent, RpcRequestStatus,
-  RpcResponseCacheControl, SectionType, SkyBoxImageType, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, SyncMode, TerrainHeightOriginMode,
-  TextureMapUnits, ThematicDisplayMode, ThematicGradientColorScheme, ThematicGradientMode, TxnAction, TypeOfChange,
+  Npc, PlanarClipMaskMode, PlanarClipMaskPriority, QueryRowFormat, Rank, RenderMode, SectionType, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, SyncMode,
+  TerrainHeightOriginMode, TextureMapUnits, ThematicDisplayMode, ThematicGradientColorScheme, ThematicGradientMode, TxnAction, TypeOfChange,
 } from "@itwin/core-common";
 import { ExtensionImpl } from "./ExtensionImpl";
 import { ExtensionHost } from "./ExtensionHost";
+import { canvasToImageBuffer, canvasToResizedCanvasWithBars, extractImageSourceDimensions, getCompressedJpegFromCanvas, getImageSourceFormatForMimeType, getImageSourceMimeType,
+  imageBufferToBase64EncodedPng, imageBufferToCanvas, imageBufferToPngDataUrl, imageElementFromImageSource, imageElementFromUrl } from "../ImageUtil";
+import { queryTerrainElevationOffset } from "../ViewGlobalLocation";
+import { BingLocationProvider } from "../BingLocation";
 
 const globalSymbol = Symbol.for("itwin.core.frontend.globals");
 if ((globalThis as any)[globalSymbol])
@@ -56,11 +59,19 @@ if ((globalThis as any)[globalSymbol])
 const getExtensionApi = (id: string) => {
   return {
     exports: {
+      // Tools
       InteractiveTool, PrimitiveTool, ViewTool, Tool,
 
       ToolAssistance, BeButtonEvent, ViewRect, Pixel, LocateResponse, EditManipulator, AccuDrawHintBuilder, EmphasizeElements, FeatureSymbology, GraphicBranch, NotifyMessageDetails,
 
       ColorDef,
+
+      // Frontend functions
+      getCompressedJpegFromCanvas, getImageSourceFormatForMimeType, getImageSourceMimeType, imageBufferToBase64EncodedPng, imageBufferToCanvas, imageBufferToPngDataUrl,
+      imageElementFromImageSource, imageElementFromUrl, queryTerrainElevationOffset, readElementGraphics, canvasToImageBuffer, canvasToResizedCanvasWithBars, extractImageSourceDimensions,
+
+      // Frontend classes
+      BingElevationProvider, BingLocationProvider,
 
       ExtensionHost,
 
@@ -76,8 +87,8 @@ const getExtensionApi = (id: string) => {
       CommonLoggerCategory, ECSqlSystemProperty, ECSqlValueType, ElementGeometryOpcode, FeatureOverrideType, FillDisplay, FillFlags, FontType,
       GeoCoordStatus, GeometryClass, GeometryStreamFlags, GeometrySummaryVerbosity, GlobeMode, GridOrientationType, HSVConstants, ImageBufferFormat,
       ImageSourceFormat, LinePixels, MassPropertiesOperation, MonochromeMode, Npc, PlanarClipMaskMode, PlanarClipMaskPriority, QueryRowFormat, Rank,
-      RenderMode, RpcContentType, RpcEndpoint, RpcProtocolEvent, RpcRequestEvent, RpcRequestStatus, RpcResponseCacheControl, SectionType,
-      SkyBoxImageType, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, SyncMode, TerrainHeightOriginMode, TextureMapUnits,
+      RenderMode, SectionType,
+      SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, SyncMode, TerrainHeightOriginMode, TextureMapUnits,
       ThematicDisplayMode, ThematicGradientColorScheme, ThematicGradientMode, TxnAction, TypeOfChange,
     },
     api: new ExtensionImpl(id),

@@ -209,8 +209,8 @@ export type {
   BeButtonState,
   BeTouchEvent,
   BeWheelEvent,
-  BingElevationProvider,
-  BingLocationProvider,
+  // BingElevationProvider, @REAL
+  // BingLocationProvider, @REAL
   CategorySelectorState,
   ChangeFlags,
   Cluster,

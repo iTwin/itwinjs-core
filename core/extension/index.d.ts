@@ -21,6 +21,21 @@ export {
   GraphicBranch,
   NotifyMessageDetails,
   ExtensionHost,
+  BingElevationProvider,
+  BingLocationProvider,
+  getCompressedJpegFromCanvas,
+  getImageSourceFormatForMimeType,
+  getImageSourceMimeType,
+  imageBufferToBase64EncodedPng,
+  imageBufferToCanvas,
+  imageBufferToPngDataUrl,
+  imageElementFromImageSource,
+  imageElementFromUrl,
+  queryTerrainElevationOffset,
+  readElementGraphics,
+  canvasToImageBuffer,
+  canvasToResizedCanvasWithBars,
+  extractImageSourceDimensions,
 } from "@itwin/core-frontend";
 
 export { ColorDef } from "@itwin/core-common";

@@ -24,6 +24,29 @@ export const {
   ExtensionHost,
 } = ext.exports;
 
+// re-export frontend items
+export const {
+  BingElevationProvider,
+  BingLocationProvider
+} = ext.exports;
+
+// re-export functions
+export const {
+  getCompressedJpegFromCanvas,
+  getImageSourceFormatForMimeType,
+  getImageSourceMimeType,
+  imageBufferToBase64EncodedPng,
+  imageBufferToCanvas,
+  imageBufferToPngDataUrl,
+  imageElementFromImageSource,
+  imageElementFromUrl,
+  queryTerrainElevationOffset,
+  readElementGraphics,
+  canvasToImageBuffer,
+  canvasToResizedCanvasWithBars,
+  extractImageSourceDimensions
+} = ext.exports;
+
 // re-export enums
 export const {
   // core-frontend:
@@ -117,14 +140,7 @@ export const {
   QueryRowFormat,
   Rank,
   RenderMode,
-  RpcContentType,
-  RpcEndpoint,
-  RpcProtocolEvent,
-  RpcRequestEvent,
-  RpcRequestStatus,
-  RpcResponseCacheControl,
   SectionType,
-  SkyBoxImageType,
   SpatialClassifierInsideDisplay,
   SpatialClassifierOutsideDisplay,
   SyncMode,
