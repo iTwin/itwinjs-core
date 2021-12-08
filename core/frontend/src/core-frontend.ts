@@ -218,7 +218,4 @@ export * from "./RealityDataSource";
  * APIs for working with user preferences in an iModelApp.
  * See [the learning articles]($docs/learning/frontend/preferences.md).
  */
-/**
- * @docs-group-description RealityDataSource
- * APIs for working with Reality Data providers.
- */
+

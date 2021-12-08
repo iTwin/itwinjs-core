@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
+/** @packageDocumentation
+ * @module Tiles
+ */
 import { getJson, request, RequestOptions } from "@bentley/itwin-client";
 import { AccessToken, BentleyStatus, GuidString, Logger } from "@itwin/core-bentley";
 import { IModelError, OrbitGtBlobProps, RealityData, RealityDataFormat, RealityDataProvider, RealityDataSourceKey, RealityDataSourceProps } from "@itwin/core-common";
