@@ -47,18 +47,24 @@ export function ControlledSelectableContent(props: ControlledSelectableContentPr
   }, [onSelectedContentIdChanged]);
 
   const selectedContent = props.children.find((contentDef) => contentDef.id === props.selectedContentId) ?? props.children[0];
+  const options = React.useMemo(() => {
+    return props.children.map((componentDef) => ({
+      label: componentDef.label,
+      value: componentDef.id,
+    })) as SelectOption<string>[];
+  }, [props.children]);
+
   return (
     <div className="components-selectable-content">
       <div className="components-selectable-content-header">
-        <Select onChange={onContentIdSelected} size="small"
-          className="components-selectable-content-selector"
-          aria-label={props.selectAriaLabel}
-          value={selectedContent.id}
-          options={props.children.map((componentDef) => ({
-            label: componentDef.label,
-            value: componentDef.id,
-          })) as SelectOption<string>[]}
-        />
+        {options.length > 0 &&
+          <Select onChange={onContentIdSelected} size="small"
+            className="components-selectable-content-selector"
+            aria-label={props.selectAriaLabel}
+            value={selectedContent.id}
+            options={options}
+          />
+        }
       </div>
       <div className="components-selectable-content-wrapper">
         {selectedContent?.render()}
