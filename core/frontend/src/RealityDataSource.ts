@@ -54,18 +54,15 @@ export interface RealityDataSource {
  * @beta
  */
 export namespace RealityDataSource {
-  /** Utility function to convert a RealityDataSourceKey into its string representation */
-  export function keyToString(rdSourceKey: RealityDataSourceKey): string {
-    return rdSourceKey.toString();
-  }
-  export function formatfromUrl(tilesetUrl: string): RealityDataFormat {
-    let format = RealityDataFormat.ThreeDTile;
-    if (tilesetUrl.includes(".opc"))
-      format = RealityDataFormat.OPC;
-    return format;
-  }
+  /**
+   * Create a RealityDataSourceKey from a tilesetUrl.
+   * @param tilesetUrl the reality data attachment url
+   * @param inputProvider identify the RealityDataProvider if known, otherwise function will try to extract it from the tilesetUrl
+   * @param inputFormat identify the RealityDataFormat if known, otherwise function will try to extract it from the tilesetUrl
+   * @returns the RealityDataSourceKey that uniquely identify a reality data for a provider
+   */
   export function createKeyFromUrl(tilesetUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey {
-    let format = inputFormat ? inputFormat : formatfromUrl(tilesetUrl);
+    let format = inputFormat ? inputFormat : RealityDataFormat.fromUrl(tilesetUrl);
     if (CesiumIonAssetProvider.isProviderUrl(tilesetUrl)) {
       const provider = RealityDataProvider.CesiumIonAsset;
       // Keep url hidden and use a dummy id
@@ -87,6 +84,7 @@ export namespace RealityDataSource {
     const urlKey: RealityDataSourceKey = { provider: provider2, format, id: tilesetUrl };
     return urlKey;
   }
+  /** @alpha - was used for a very specific case of point cloud (opc) attachment that should not be made public */
   export function createKeyFromBlobUrl(blobUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey {
     const info = ContextShareProvider.getInfoFromBlobUrl(blobUrl);
     const format = inputFormat ? inputFormat : info.format;
@@ -94,6 +92,7 @@ export namespace RealityDataSource {
     const contextShareKey: RealityDataSourceKey = { provider, format, id: info.id };
     return contextShareKey;
   }
+  /** @alpha - OrbitGtBlobProps is alpha */
   export function createKeyFromOrbitGtBlobProps(orbitGtBlob: OrbitGtBlobProps, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey {
     const format = inputFormat ? inputFormat : RealityDataFormat.OPC;
     if(orbitGtBlob.blobFileName && orbitGtBlob.blobFileName.toLowerCase().startsWith("http")) {
@@ -105,6 +104,7 @@ export namespace RealityDataSource {
     const id = `${orbitGtBlob.accountName}:${orbitGtBlob.containerName}:${orbitGtBlob.blobFileName}:?${orbitGtBlob.sasToken}`;
     return { provider, format, id };
   }
+  /** @alpha - OrbitGtBlobProps is alpha */
   export function createOrbitGtBlobPropsFromKey(rdSourceKey: RealityDataSourceKey): OrbitGtBlobProps | undefined {
     if (rdSourceKey.provider !== RealityDataProvider.OrbitGtBlob)
       return undefined;

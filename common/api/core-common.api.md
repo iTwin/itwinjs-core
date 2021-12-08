@@ -1743,7 +1743,7 @@ export class ContextRealityModel {
     protected _planarClipMask?: PlanarClipMaskSettings;
     get planarClipMaskSettings(): PlanarClipMaskSettings | undefined;
     set planarClipMaskSettings(settings: PlanarClipMaskSettings | undefined);
-    // (undocumented)
+    // @internal (undocumented)
     protected readonly _props: ContextRealityModelProps;
     // @beta
     readonly rdSourceKey?: RealityDataSourceKey;
@@ -6753,6 +6753,11 @@ export interface RealityDataAccess {
 export enum RealityDataFormat {
     OPC = "OPC",
     ThreeDTile = "ThreeDTile"
+}
+
+// @beta
+export namespace RealityDataFormat {
+    export function fromUrl(tilesetUrl: string): RealityDataFormat;
 }
 
 // @beta

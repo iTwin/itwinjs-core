@@ -66,6 +66,23 @@ export enum RealityDataFormat {
   OPC = "OPC",
 }
 
+/** Utility function for RealityDataFormat
+ * @beta
+ */
+export namespace RealityDataFormat  {
+  /**
+   * Try to extract the RealityDataFormat from the url
+   * @param tilesetUrl the reality data attachment url
+   * @returns the extracted RealityDataFormat or ThreeDTile by default if not found
+   */
+  export function fromUrl(tilesetUrl: string): RealityDataFormat {
+    let format = RealityDataFormat.ThreeDTile;
+    if (tilesetUrl.includes(".opc"))
+      format = RealityDataFormat.OPC;
+    return format;
+  }
+}
+
 /**
  * Key used by RealityDataSource to identify provider and reality data format
  * This key identify one and only one reality data source on the provider
@@ -95,7 +112,7 @@ export namespace RealityDataSourceKey {
   export function toString(rdSourceKey: RealityDataSourceKey): string {
     return `${rdSourceKey.provider}:${rdSourceKey.format}:${rdSourceKey.id}:${rdSourceKey?.iTwinId}`;
   }
-  /** Utility function to compare two RealityDataSourceKey, we consider it equal event if itwinId is different */
+  /** Utility function to compare two RealityDataSourceKey, we consider it equal even if itwinId is different */
   export function isEqual(key1: RealityDataSourceKey, key2: RealityDataSourceKey): boolean {
     if ((key1.provider === RealityDataProvider.CesiumIonAsset) && key2.provider === RealityDataProvider.CesiumIonAsset)
       return true; // ignore other properties for CesiumIonAsset, id is hidden
@@ -189,6 +206,7 @@ export namespace ContextRealityModelProps {
  * @public
  */
 export class ContextRealityModel {
+  /** @internal */
   protected readonly _props: ContextRealityModelProps;
   /**
    * The reality data source key identify the reality data provider and storage format.

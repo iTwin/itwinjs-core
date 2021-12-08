@@ -538,6 +538,7 @@ internal;readTileContentDescription(stream: ByteStream, sizeMultiplier: number |
 beta;RealityData
 beta;RealityDataAccess
 beta;RealityDataFormat
+beta;RealityDataFormat
 beta;RealityDataProvider
 beta;RealityDataSourceKey
 beta;RealityDataSourceKey
