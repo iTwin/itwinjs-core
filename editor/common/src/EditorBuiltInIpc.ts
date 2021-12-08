@@ -93,14 +93,14 @@ export interface BasicManipulationCommandIpc extends EditCommandIpc {
 
   /** Update the project extents for the iModel.
    * @param extents New project extents.
-   * @throws [[IModelError]] if unable to update the extents property.
+   * @throws [[IModelError]] if unable to aquire schema lock or update the extents property.
    */
   updateProjectExtents(extents: Range3dProps): Promise<void>;
 
   /** Update the position of the iModel on the earth.
    * @param ecefLocation New ecef location properties.
-   * @throws [[IModelError]] if unable to update the ecef location property.
-   * @note Clears the geographic coordinate reference system of the iModel, should only be called if invalid.
+   * @throws [[IModelError]] if unable to aquire schema lock or update the ecef location property.
+   * @note Clears the geographic coordinate reference system of the iModel, do not call when a valid GCS exists.
    */
   updateEcefLocation(ecefLocation: EcefLocationProps): Promise<void>;
 }

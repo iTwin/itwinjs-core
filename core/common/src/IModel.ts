@@ -216,7 +216,7 @@ export class EcefLocation implements EcefLocationProps {
   /** Optional Y column vector used with [[xVector]] to calculate potentially non-rigid transform if a projection is present. */
   public readonly yVector?: Vector3d;
 
-  private _transform: Transform;
+  private readonly _transform: Transform;
 
   /** Get the transform from iModel Spatial coordinates to ECEF from this EcefLocation */
   public getTransform(): Transform { return this._transform; }
@@ -228,8 +228,8 @@ export class EcefLocation implements EcefLocationProps {
     if (props.cartographicOrigin)
       this.cartographicOrigin = Cartographic.fromRadians({ longitude: props.cartographicOrigin.longitude, latitude: props.cartographicOrigin.latitude, height: props.cartographicOrigin.height }).freeze();
     if (props.xVector && props.yVector) {
-      this.xVector = Vector3d.fromJSON(props.xVector);
-      this.yVector = Vector3d.fromJSON(props.yVector);
+      this.xVector = Vector3d.fromJSON(props.xVector).freeze();
+      this.yVector = Vector3d.fromJSON(props.yVector).freeze();
     }
     let matrix;
     if (this.xVector && this.yVector) {
@@ -241,6 +241,7 @@ export class EcefLocation implements EcefLocationProps {
       matrix = this.orientation.toMatrix3d();
 
     this._transform = Transform.createOriginAndMatrix(this.origin, matrix);
+    this._transform.freeze();
   }
 
   /** Construct ECEF Location from cartographic origin with optional known point and angle.   */
@@ -323,7 +324,6 @@ export abstract class IModel implements IModelProps {
   private _rootSubject?: RootSubjectProps;
   private _globalOrigin?: Point3d;
   private _ecefLocation?: EcefLocation;
-  private _ecefTrans?: Transform;
   private _geographicCoordinateSystem?: GeographicCRS;
   private _iModelId?: GuidString;
 
@@ -558,13 +558,7 @@ export abstract class IModel implements IModelProps {
   public getEcefTransform(): Transform {
     if (undefined === this._ecefLocation)
       throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
-
-    if (this._ecefTrans === undefined) {
-      this._ecefTrans = this._ecefLocation.getTransform();
-      this._ecefTrans.freeze();
-    }
-
-    return this._ecefTrans;
+    return this._ecefLocation.getTransform();
   }
 
   /** Convert a point in this iModel's Spatial coordinates to an ECEF point using its [[IModel.ecefLocation]].
