@@ -62,6 +62,7 @@ export interface TileOptions {
   readonly useLargerTiles: boolean;
   readonly disableMagnification: boolean;
   readonly alwaysSubdivideIncompleteTiles: boolean;
+  readonly enableIndexedEdges: boolean;
 }
 
 /** @internal */
@@ -87,6 +88,7 @@ export namespace TileOptions {
       useLargerTiles: 0 !== (tree.flags & TreeFlags.UseLargerTiles),
       disableMagnification: false,
       alwaysSubdivideIncompleteTiles: false,
+      enableIndexedEdges: true,
     };
   }
 }
@@ -252,6 +254,7 @@ export const defaultTileOptions: TileOptions = Object.freeze({
   useLargerTiles: true,
   disableMagnification: false,
   alwaysSubdivideIncompleteTiles: false,
+  enableIndexedEdges: true,
 });
 
 function contentFlagsFromId(id: string): ContentFlags {

@@ -292,6 +292,7 @@ describe("TileMetadata", () => {
           optimizeBRepProcessing: true === expected.optimizeBReps,
           disableMagnification: false,
           alwaysSubdivideIncompleteTiles: false,
+          enableIndexedEdges: true,
         };
 
         expect(TileOptions.fromTreeIdAndContentId(treeId, contentId)).to.deep.equal(options);
@@ -395,6 +396,7 @@ describe("TileMetadata", () => {
           useProjectExtents: true === expected.tileOptions.projectExtents,
           disableMagnification: false,
           alwaysSubdivideIncompleteTiles: false,
+          enableIndexedEdges: true,
           optimizeBRepProcessing: true === expected.tileOptions.optimizeBReps,
           useLargerTiles: true === expected.tileOptions.largerTiles,
         };
