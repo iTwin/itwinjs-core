@@ -29,42 +29,42 @@ describe("ThematicGradientSettings", () => {
     // Make sure A > B when B lowers the stepCount.
     propsB = settingsA.toJSON();
     propsB.stepCount = 4;
-    expect(ThematicGradientSettings.compare(settingsA, ThematicGradientSettings.fromJSON(propsB))).to.equal(1);
+    expect(ThematicGradientSettings.compare(settingsA, ThematicGradientSettings.fromJSON(propsB))).to.greaterThan(0);
 
     // Make sure A < B when B raises the stepCount.
     propsB = settingsA.toJSON();
     propsB.stepCount = 6;
-    expect(ThematicGradientSettings.compare(settingsA, ThematicGradientSettings.fromJSON(propsB))).to.equal(-1);
+    expect(ThematicGradientSettings.compare(settingsA, ThematicGradientSettings.fromJSON(propsB))).to.lessThan(0);
 
     // Make sure A > B when B lowers the mode.
     propsB = settingsA.toJSON();
     propsB.mode = ThematicGradientMode.Smooth;
-    expect(ThematicGradientSettings.compare(settingsA, ThematicGradientSettings.fromJSON(propsB))).to.equal(1);
+    expect(ThematicGradientSettings.compare(settingsA, ThematicGradientSettings.fromJSON(propsB))).to.greaterThan(0);
 
-    // Make sure A < B when B raises the mode.
+    // // Make sure A < B when B raises the mode.
     propsB = settingsA.toJSON();
     propsB.mode = ThematicGradientMode.SteppedWithDelimiter;
-    expect(ThematicGradientSettings.compare(settingsA, ThematicGradientSettings.fromJSON(propsB))).to.equal(-1);
+    expect(ThematicGradientSettings.compare(settingsA, ThematicGradientSettings.fromJSON(propsB))).to.lessThan(0);
 
-    // Make sure A > B when B lowers the colorScheme.
+    // // Make sure A > B when B lowers the colorScheme.
     propsB = settingsA.toJSON();
     propsB.colorScheme = ThematicGradientColorScheme.Monochrome;
-    expect(ThematicGradientSettings.compare(settingsA, ThematicGradientSettings.fromJSON(propsB))).to.equal(1);
+    expect(ThematicGradientSettings.compare(settingsA, ThematicGradientSettings.fromJSON(propsB))).to.greaterThan(0);
 
-    // Make sure A < B when B raises the colorScheme.
+    // // Make sure A < B when B raises the colorScheme.
     propsB = settingsA.toJSON();
     propsB.colorScheme = ThematicGradientColorScheme.SeaMountain;
-    expect(ThematicGradientSettings.compare(settingsA, ThematicGradientSettings.fromJSON(propsB))).to.equal(-1);
+    expect(ThematicGradientSettings.compare(settingsA, ThematicGradientSettings.fromJSON(propsB))).to.lessThan(0);
 
-    // Make sure A > B when B lowers the colorMix.
+    // // Make sure A > B when B lowers the colorMix.
     propsB = settingsA.toJSON();
     propsB.colorMix = 0.4;
-    expect(ThematicGradientSettings.compare(settingsA, ThematicGradientSettings.fromJSON(propsB))).to.equal(1);
+    expect(ThematicGradientSettings.compare(settingsA, ThematicGradientSettings.fromJSON(propsB))).to.greaterThan(0);
 
     // Make sure A < B when B raises the colorMix.
     propsB = settingsA.toJSON();
     propsB.colorMix = 0.6;
-    expect(ThematicGradientSettings.compare(settingsA, ThematicGradientSettings.fromJSON(propsB))).to.equal(-1);
+    expect(ThematicGradientSettings.compare(settingsA, ThematicGradientSettings.fromJSON(propsB))).to.lessThan(0);
 
     // Make sure A !== B when B changes the marginColor.
     propsB = settingsA.toJSON();

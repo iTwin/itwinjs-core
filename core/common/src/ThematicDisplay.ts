@@ -6,6 +6,7 @@
  * @module Symbology
  */
 
+import { compareNumbers } from "@itwin/core-bentley";
 import { Point3d, Range1d, Range1dProps, Vector3d, XYZProps } from "@itwin/core-geometry";
 import { ColorDef, ColorDefProps } from "./ColorDef";
 import { Gradient } from "./Gradient";
@@ -125,35 +126,26 @@ export class ThematicGradientSettings {
    * @returns 0 if lhs is equivalent to rhs, a negative number if lhs compares less than rhs, or a positive number if lhs compares greater than rhs.
    */
   public static compare(lhs: ThematicGradientSettings, rhs: ThematicGradientSettings): number {
-    if (lhs.mode < rhs.mode)
-      return -1;
-    if (lhs.mode > rhs.mode)
-      return 1;
-    if (lhs.stepCount < rhs.stepCount)
-      return -1;
-    if (lhs.stepCount > rhs.stepCount)
-      return 1;
-    if (!lhs.marginColor.equals(rhs.marginColor))
-      return lhs.marginColor.tbgr - rhs.marginColor.tbgr;
-    if (lhs.colorScheme < rhs.colorScheme)
-      return -1;
-    if (lhs.colorScheme > rhs.colorScheme)
-      return 1;
-    if (lhs.colorMix < rhs.colorMix)
-      return -1;
-    if (lhs.colorMix > rhs.colorMix)
-      return 1;
-    if (lhs.customKeys.length < rhs.customKeys.length)
-      return -1;
-    if (lhs.customKeys.length > rhs.customKeys.length)
-      return 1;
+    let diff = 0;
+    if ((diff = compareNumbers(lhs.mode, rhs.mode)) !== 0)
+      return diff;
+    if ((diff = compareNumbers(lhs.stepCount, rhs.stepCount)) !== 0)
+      return diff;
+    if ((diff = compareNumbers(lhs.marginColor.tbgr, rhs.marginColor.tbgr)) !== 0)
+      return diff;
+    if ((diff = compareNumbers(lhs.colorScheme, rhs.colorScheme)) !== 0)
+      return diff;
+    if ((diff = compareNumbers(lhs.colorMix, rhs.colorMix)) !== 0)
+      return diff;
+    if ((diff = compareNumbers(lhs.customKeys.length, rhs.customKeys.length)) !== 0)
+      return diff;
 
     for (let i = 0; i < lhs.customKeys.length; i++) {
-      if (!Gradient.keyColorEquals(lhs.customKeys[i], rhs.customKeys[i]))
-        return lhs.customKeys[i].color.tbgr - rhs.customKeys[i].color.tbgr;
+      if ((diff = compareNumbers(lhs.customKeys[i].color.tbgr, rhs.customKeys[i].color.tbgr)) !== 0)
+        return diff;
     }
 
-    return 0;
+    return diff;
   }
 
   private constructor(json?: ThematicGradientSettingsProps) {
