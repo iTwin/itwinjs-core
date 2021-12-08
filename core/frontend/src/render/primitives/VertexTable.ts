@@ -94,7 +94,9 @@ export function computeDimensions(nEntries: number, nRgbaPerEntry: number, nExtr
   }
 
   // Compute height
-  const height = Math.ceil(nRgba / width);
+  let height = Math.ceil(nRgba / width);
+  if (width * height < nRgba)
+    ++height;
 
   assert(height <= maxSize);
   assert(width <= maxSize);

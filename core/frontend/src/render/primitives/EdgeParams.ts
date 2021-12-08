@@ -159,8 +159,8 @@ function buildIndexedEdges(args: MeshArgsEdges, doPolylines: boolean): IndexedEd
       indices.setNthIndex(i * 6 + j, i);
 
 
-  // Each segment edge requires 2 24-bit indices = 3 bytes = 1.5 RGBA values.
-  // Each silhouette requires the same as segment edge plus 2 16-bit oct-encoded normals = 2.5 RGBA values.
+  // Each segment edge requires 2 24-bit indices = 6 bytes = 1.5 RGBA values.
+  // Each silhouette requires the same as segment edge plus 2 16-bit oct-encoded normals = 10 bytes = 2.5 RGBA values.
   const nRgbaRequired = Math.ceil(1.5 * numSegmentEdges + 2.5 * numSilhouettes);
   const maxSize = IModelApp.renderSystem.maxTextureSize;
   let dimensions;
@@ -174,7 +174,10 @@ function buildIndexedEdges(args: MeshArgsEdges, doPolylines: boolean): IndexedEd
     if (0 !== remainder)
       width += 15 - remainder;
 
-    const height = Math.ceil(nRgbaRequired / width);
+    let height = Math.ceil(nRgbaRequired / width);
+    if (width * height < nRgbaRequired)
+      height++;
+
     dimensions = { width, height };
   }
 
