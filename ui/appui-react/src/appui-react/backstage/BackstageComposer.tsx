@@ -7,11 +7,11 @@
  */
 
 import * as React from "react";
-import { BackstageItem, BackstageItemsManager, ConditionalBooleanValue, isStageLauncher } from "@itwin/appui-abstract";
+import { BackstageItem, BackstageItemsManager, ConditionalBooleanValue, isStageLauncher, UiSyncEventArgs } from "@itwin/appui-abstract";
 import { CommonProps } from "@itwin/core-react";
 import { BackstageSeparator, Backstage as NZ_Backstage } from "@itwin/appui-layout-react";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
-import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
+import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { BackstageComposerItem } from "./BackstageComposerItem";
 import { useBackstageManager, useIsBackstageOpen } from "./BackstageManager";
 import { useDefaultBackstageItems } from "./useDefaultBackstageItems";
@@ -24,7 +24,7 @@ function useBackstageItemSyncEffect(itemsManager: BackstageItemsManager, syncIds
   const isInitialMount = React.useRef(true);
 
   React.useEffect(() => {
-    const handleSyncUiEvent = (args: SyncUiEventArgs) => {
+    const handleSyncUiEvent = (args: UiSyncEventArgs) => {
       if (0 === syncIdsOfInterest.length)
         return;
 

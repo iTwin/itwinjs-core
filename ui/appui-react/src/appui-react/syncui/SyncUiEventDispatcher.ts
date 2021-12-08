@@ -110,6 +110,7 @@ export class SyncUiEventDispatcher {
   }
 
   /** Return SyncUiEvent so callers can register an event callback. */
+  // eslint-disable-next-line deprecation/deprecation
   public static get onSyncUiEvent(): SyncUiEvent {
     return SyncUiEventDispatcher._uiEventDispatcher.onSyncUiEvent;
   }

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { UiEvent } from "../../core-react";
+import { UiEvent } from "../../appui-abstract";
 
 describe("UIEvent", () => {
 
@@ -13,7 +13,6 @@ describe("UIEvent", () => {
     testNum: number;
   }
 
-  // eslint-disable-next-line deprecation/deprecation
   class TestEvent extends UiEvent<TestEventArgs> { }
 
   it("should call handler", () => {
