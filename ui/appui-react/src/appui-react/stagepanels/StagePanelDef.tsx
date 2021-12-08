@@ -36,8 +36,8 @@ export interface PanelStateChangedEventArgs {
   panelState: StagePanelState;
 }
 
-/** Widget State Changed Event class.
- * @beta @deprecated
+/** Panel State Changed Event class.
+ * @beta
  */
 export class PanelStateChangedEvent extends UiEvent<PanelStateChangedEventArgs> { }
 
@@ -52,7 +52,7 @@ export class PanelSizeChangedEvent extends UiEvent<PanelSizeChangedEventArgs> { 
 
 /**
  * A StagePanelDef represents each Stage Panel within a Frontstage.
- * @public @deprecated
+ * @public
  */
 export class StagePanelDef extends WidgetHost {
   private _panelState = StagePanelState.Open;
@@ -80,7 +80,19 @@ export class StagePanelDef extends WidgetHost {
   public get minSize() { return this._minSize; }
 
   /** Default size of the panel */
-  public get size() { return this._size; }
+  public get size() {
+    // istanbul ignore next
+    if ("1" === UiFramework.uiVersion)
+      return this._size;
+
+    // istanbul ignore else
+    if (FrontstageManager.activeFrontstageDef) {
+      const [_, size] = FrontstageManager.activeFrontstageDef.getPanelCurrentState(this);
+      return size;
+    }
+    // istanbul ignore next
+    return this._defaultSize;
+  }
 
   public set size(size) {
     if (this._size === size)
@@ -120,7 +132,16 @@ export class StagePanelDef extends WidgetHost {
 
   /** Panel state. Defaults to PanelState.Open. */
   public get panelState() {
-    return this._panelState;
+    if ("1" === UiFramework.uiVersion)
+      return this._panelState;
+
+    // istanbul ignore else
+    if (FrontstageManager.activeFrontstageDef) {
+      const [state] = FrontstageManager.activeFrontstageDef?.getPanelCurrentState(this);
+      return state;
+    }
+    // istanbul ignore next
+    return this.defaultState;
   }
 
   public set panelState(panelState: StagePanelState) {

@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-metadata",
-  "version": "3.0.0-dev.126",
+  "version": "3.0.0-dev.144",
   "description": "ECObjects core concepts in typescript",
   "license": "MIT",
   "main": "lib/cjs/ecschema-metadata.js",
@@ -26,7 +26,8 @@
   "keywords": [
     "Bentley",
     "iModel",
-    "iModel.js",
+    "iTwin",
+    "iTwin.js",
     "EC"
   ],
   "author": {
@@ -34,10 +35,10 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@itwin/core-bentley": "workspace:*",
-    "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "workspace:*",
     "@bentley/units-schema": "^1.0.5",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@types/almost-equal": "1.1.0",
     "@types/benchmark": "^2.1.0",
     "@types/chai": "^4.1.4",
@@ -55,11 +56,10 @@
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "sinon": "^9.0.2",
-    "typescript": "~4.4.0",
-    "xmlhttprequest": "^1.8.0"
+    "typescript": "~4.4.0"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.126"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.144"
   },
   "dependencies": {
     "almost-equal": "^1.1.0"

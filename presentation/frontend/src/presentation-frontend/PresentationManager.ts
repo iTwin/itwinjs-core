@@ -12,9 +12,9 @@ import { UnitSystemKey } from "@itwin/core-quantity";
 import {
   Content, ContentDescriptorRequestOptions, ContentInstanceKeysRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, ContentUpdateInfo,
   Descriptor, DescriptorOverrides, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions,
-  ElementProperties, ElementPropertiesRequestOptions, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions,
-  HierarchyRequestOptions, HierarchyUpdateInfo, InstanceKey, isSingleElementPropertiesRequestOptions, Item, Key, KeySet, LabelDefinition,
-  MultiElementPropertiesRequestOptions, Node, NodeKey, NodeKeyJSON, NodePathElement, Paged, PagedResponse, PageOptions, PresentationIpcEvents,
+  ElementProperties, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions,
+  HierarchyRequestOptions, HierarchyUpdateInfo, InstanceKey, Item, Key, KeySet, LabelDefinition,
+  Node, NodeKey, NodeKeyJSON, NodePathElement, Paged, PagedResponse, PageOptions, PresentationIpcEvents,
   RpcRequestsHandler, Ruleset, RulesetVariable, SelectClassInfo, SingleElementPropertiesRequestOptions, UpdateInfo, UpdateInfoJSON,
   VariableValueTypes,
 } from "@itwin/presentation-common";
@@ -413,23 +413,9 @@ export class PresentationManager implements IDisposable {
    * Retrieves property data in a simplified format for a single element specified by ID.
    * @beta
    */
-  public async getElementProperties(requestOptions: SingleElementPropertiesRequestOptions<IModelConnection>): Promise<ElementProperties | undefined>;
-  /**
-   * Retrieves property data in a simplified format for multiple elements specified by class
-   * or all elements.
-   * @alpha
-   */
-  public async getElementProperties(requestOptions: MultiElementPropertiesRequestOptions<IModelConnection>): Promise<PagedResponse<ElementProperties>>;
-  public async getElementProperties(requestOptions: ElementPropertiesRequestOptions<IModelConnection>): Promise<ElementProperties | undefined | PagedResponse<ElementProperties>> {
+  public async getElementProperties(requestOptions: SingleElementPropertiesRequestOptions<IModelConnection>): Promise<ElementProperties | undefined> {
     await this.onConnection(requestOptions.imodel);
-    if (isSingleElementPropertiesRequestOptions(requestOptions)) {
-      return this._requestsHandler.getElementProperties(this.toRpcTokenOptions(requestOptions));
-    }
-
-    const rpcOptions = this.toRpcTokenOptions(requestOptions);
-    return buildPagedArrayResponse(requestOptions.paging, async (partialPageOptions) => {
-      return this._requestsHandler.getElementProperties({ ...rpcOptions, paging: partialPageOptions });
-    });
+    return this._requestsHandler.getElementProperties(this.toRpcTokenOptions(requestOptions));
   }
 
   /**

@@ -1,6 +1,6 @@
 {
   "name": "@itwin/imodelhub-client-tests",
-  "version": "3.0.0-dev.126",
+  "version": "3.0.0-dev.144",
   "main": "lib/imodelhub-client-tests.js",
   "description": "Tests the iModelHub client",
   "license": "MIT",
@@ -35,10 +35,10 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@itwin/core-bentley": "workspace:*",
     "@bentley/imodelhub-client": "workspace:*",
-    "@itwin/core-common": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/core-common": "workspace:*",
     "chai": "^4.1.2",
     "deep-assign": "^2.0.0",
     "fs-extra": "^8.1.0",
@@ -49,7 +49,7 @@
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
-    "@itwin/oidc-signin-tool": "^3.0.0-dev.109",
+    "@itwin/oidc-signin-tool": "3.0.0-dev.110",
     "@itwin/projects-client": "^0.2.0",
     "@types/chai": "^4.1.4",
     "@types/deep-assign": "^0.1.0",

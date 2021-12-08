@@ -6,6 +6,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { ProcessDetector } from "@itwin/core-bentley";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
+import { ElectronMainAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronMain";
 import { IModelHost, IModelHostConfiguration } from "@itwin/core-backend";
 import { IModelHubBackend } from "@bentley/imodelhub-client/lib/cjs/imodelhub-node";
 import { IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@itwin/core-common";
@@ -36,17 +37,19 @@ export async function initializeBackend() {
 
   if (ProcessDetector.isElectronAppBackend) {
     const rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
+    const authClient = await ElectronMainAuthorization.create({
+      clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
+      redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
+      scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
+    });
+    iModelHost.authorizationClient = authClient;
     await ElectronHost.startup({
       electronHost: {
-        webResourcesPath: path.join(__dirname, "..", "..", "build"), rpcInterfaces, authConfig: {
-          clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
-          redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
-          scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
-        },
+        webResourcesPath: path.join(__dirname, "..", "..", "build"),
+        rpcInterfaces,
       },
       iModelHost,
     });
-
   } else
     await IModelHost.startup(iModelHost);
 }

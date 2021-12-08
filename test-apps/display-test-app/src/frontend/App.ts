@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { AsyncMethodsOf, GuidString, ProcessDetector } from "@itwin/core-bentley";
-import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
+import { ElectronApp, ElectronAppOpts } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { BrowserAuthorizationCallbackHandler } from "@itwin/browser-authorization";
 import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
@@ -13,7 +13,7 @@ import {
 } from "@itwin/core-common";
 import { EditTools } from "@itwin/editor-frontend";
 import {
-  AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, IModelApp, IpcApp, LocalhostIpcApp, RenderSystem, SelectionTool, SnapMode, TileAdmin, Tool,
+  AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, IModelApp, IpcApp, LocalhostIpcApp, LocalHostIpcAppOpts, RenderSystem, SelectionTool, SnapMode, TileAdmin, Tool,
   ToolAdmin,
 } from "@itwin/core-frontend";
 import { AndroidApp, IOSApp } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
@@ -46,6 +46,8 @@ import { SyncViewportFrustaTool, SyncViewportsTool } from "./SyncViewportsTool";
 import { TimePointComparisonTool } from "./TimePointComparison";
 import { UiManager } from "./UiManager";
 import { MarkupTool, ModelClipTool, SaveImageTool, ZoomToSelectedElementsTool } from "./Viewer";
+import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
+import { MacroTool } from "./MacroTools";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -189,6 +191,16 @@ class ShutDownTool extends Tool {
   }
 }
 
+class ExitTool extends Tool {
+  public static override toolId = "Exit";
+
+  public override async run(_args: any[]): Promise<boolean> {
+    DisplayTestApp.surface.closeAllViewers();
+    await DtaRpcInterface.getClient().terminate();
+    return true;
+  }
+}
+
 export class DisplayTestApp {
   private static _surface?: Surface;
   public static get surface() { return this._surface!; }
@@ -197,11 +209,10 @@ export class DisplayTestApp {
   public static get iTwinId(): GuidString | undefined { return this._iTwinId; }
 
   public static async startup(configuration: DtaConfiguration, renderSys: RenderSystem.Options, tileAdmin: TileAdmin.Props): Promise<void> {
-    const socketUrl = new URL(configuration.customOrchestratorUri || "http://localhost:3001");
-    socketUrl.protocol = "ws";
-    socketUrl.pathname = [...socketUrl.pathname.split("/"), "ipc"].filter((v) => v).join("/");
+    let socketUrl = new URL(configuration.customOrchestratorUri || "http://localhost:3001");
+    socketUrl = LocalhostIpcApp.buildUrlForSocket(socketUrl);
 
-    const opts = {
+    const opts: ElectronAppOpts | LocalHostIpcAppOpts = {
       iModelApp: {
         accuSnap: new DisplayTestAppAccuSnap(),
         notifications: new Notifications(),
@@ -224,13 +235,16 @@ export class DisplayTestApp {
         /* eslint-enable @typescript-eslint/naming-convention */
       },
       localhostIpcApp: {
-        socketPath: socketUrl.toString(),
+        socketUrl,
       },
     };
 
     this._iTwinId = configuration.iTwinId;
 
     if (ProcessDetector.isElectronAppFrontend) {
+      const authClient: ElectronRendererAuthorization = new ElectronRendererAuthorization();
+      if (opts.iModelApp)
+        opts.iModelApp.authorizationClient = authClient;
       await ElectronApp.startup(opts);
     } else if (ProcessDetector.isIOSAppFrontend) {
       await IOSApp.startup(opts);
@@ -244,7 +258,8 @@ export class DisplayTestApp {
       }
 
       const rpcParams: BentleyCloudRpcParams = { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: configuration.customOrchestratorUri || "http://localhost:3001" };
-      BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp.rpcInterfaces);
+      if (opts.iModelApp?.rpcInterfaces)
+        BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp.rpcInterfaces);
       await LocalhostIpcApp.startup(opts);
     }
 
@@ -264,12 +279,14 @@ export class DisplayTestApp {
       DockWindowTool,
       DrawingAidTestTool,
       EditingScopeTool,
+      ExitTool,
       FenceClassifySelectedTool,
       FocusWindowTool,
       FrameStatsTool,
       GenerateTileContentTool,
       IncidentMarkerDemoTool,
       PathDecorationTestTool,
+      MacroTool,
       MarkupSelectTestTool,
       MarkupTool,
       MaximizeWindowTool,
