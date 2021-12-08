@@ -29,9 +29,13 @@ export class FeatureInfoDataProvider implements IPropertyDataProvider, PropertyD
   public onDataChanged = new PropertyDataChangeEvent();
   public onDataLoadStateChanged = new BeEvent<MapFeatureInfoLoadSListener>();
   constructor() {
-
     // eslint-disable-next-line @typescript-eslint/unbound-method
     MapLayersUI.onIdentifyHit?.addListener(this.handleIdentifyHit, this);
+  }
+
+  public onUnload() {
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    MapLayersUI.onIdentifyHit?.removeListener(this.handleIdentifyHit);
   }
 
   private async handleIdentifyHit(identifyHit: HitDetail)  {
