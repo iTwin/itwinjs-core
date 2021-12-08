@@ -2,6 +2,18 @@
   "name": "@bentley/imodelhub-client-tests",
   "entries": [
     {
+      "version": "2.19.26",
+      "tag": "@bentley/imodelhub-client-tests_v2.19.26",
+      "date": "Wed, 08 Dec 2021 20:54:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Adjusting Checkpoint test setup logic: skip tests if only the Baseline Checkpoint exists."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.25",
       "tag": "@bentley/imodelhub-client-tests_v2.19.25",
       "date": "Fri, 03 Dec 2021 20:05:49 GMT",
