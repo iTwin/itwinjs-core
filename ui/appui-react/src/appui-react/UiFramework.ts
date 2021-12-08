@@ -392,17 +392,14 @@ export class UiFramework {
     return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.iModelConnection : /* istanbul ignore next */  undefined;
   }
 
-  /** @public */
-  public static async setUiStateStorage(storage: UiStateStorage, immediateSync = false) {
-    if (UiFramework._uiStateStorage === storage)
-      return;
-
-    UiFramework._uiStateStorage = storage;
-
+  /** Called by iModelApp to initialize saved UI state from registered UseSettingsProviders
+   * @public
+   */
+  public static async initializeStateFromUserSettingsProviders(immediateSync = false) {
     // let any registered providers to load values from the new storage location
     const providerKeys = [...this._uiSettingsProviderRegistry.keys()];
     for await (const key of providerKeys) {
-      await this._uiSettingsProviderRegistry.get(key)!.loadUserSettings(storage);
+      await this._uiSettingsProviderRegistry.get(key)!.loadUserSettings(UiFramework._uiStateStorage);
     }
 
     // istanbul ignore next
@@ -410,6 +407,15 @@ export class UiFramework {
       SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(SyncUiEventId.UiStateStorageChanged);
     else
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.UiStateStorageChanged);
+  }
+
+  /** @public */
+  public static async setUiStateStorage(storage: UiStateStorage, immediateSync = false) {
+    if (UiFramework._uiStateStorage === storage)
+      return;
+
+    UiFramework._uiStateStorage = storage;
+    await this.initializeStateFromUserSettingsProviders(immediateSync);
   }
 
   /** The UI Settings Storage is a convenient wrapper around Local Storage to assist in caching state information across user sessions.
@@ -556,5 +562,4 @@ export class UiFramework {
     const contextMenu = document.querySelector("div.core-context-menu-opened");
     return contextMenu !== null && contextMenu !== undefined;
   }
-
 }

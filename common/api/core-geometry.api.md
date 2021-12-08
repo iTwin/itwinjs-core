@@ -768,6 +768,7 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     // (undocumented)
     static createFromAkimaCurve3dOptions(options: AkimaCurve3dOptions): BSplineCurve3d | undefined;
     static createFromInterpolationCurve3dOptions(options: InterpolationCurve3dOptions): BSplineCurve3d | undefined;
+    static createPeriodicUniformKnots(poles: Point3d[] | Float64Array | GrowableXYZArray, order: number): BSplineCurve3d | undefined;
     static createUniformKnots(poles: Point3d[] | Float64Array | GrowableXYZArray, order: number): BSplineCurve3d | undefined;
     dispatchToGeometryHandler(handler: GeometryHandler): any;
     emitStrokableParts(handler: IStrokeHandler, options?: StrokeOptions): void;
@@ -882,6 +883,7 @@ export class BSplineCurveOps {
 export namespace BSplineCurveOps {
     export class C2CubicFit {
         static constructFitParameters(options: InterpolationCurve3dOptions): boolean;
+        static constructFitParametersFromPoints(fitPoints: Point3d[], isChordLength: number | undefined, closed: boolean | undefined): number[] | undefined;
         static constructPoles(options: InterpolationCurve3dOptions): Point3d[] | Float64Array | undefined;
         static convertCubicKnotVectorToFitParams(knots: number[] | undefined, numFitPoints: number, normalize?: boolean): number[] | undefined;
         static convertFitParamsToCubicKnotVector(params: number[] | undefined, closed?: boolean, legacy?: boolean): number[] | undefined;
@@ -5547,6 +5549,7 @@ export class Transform implements BeJSONFunctions {
     multiplyTransformTransform(other: Transform, result?: Transform): Transform;
     multiplyTransposeXYZW(x: number, y: number, z: number, w: number, result?: Point4d): Point4d;
     multiplyVector(vector: Vector3d, result?: Vector3d): Vector3d;
+    multiplyVectorInPlace(vector: Vector3d): void;
     multiplyVectorXYZ(x: number, y: number, z: number, result?: Vector3d): Vector3d;
     multiplyXYAndZInPlace(point: XYAndZ): void;
     multiplyXYZ(x: number, y: number, z?: number, result?: Point3d): Point3d;

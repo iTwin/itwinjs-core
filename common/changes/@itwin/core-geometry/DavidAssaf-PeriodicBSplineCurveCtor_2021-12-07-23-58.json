@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "add periodic B-spline curve ctor",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}

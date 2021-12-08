@@ -12,7 +12,7 @@ import {
 import { UiItemsProvidersTest } from "../../ui-items-providers-test";
 
 /** UnitsPopup is a modal dialog with only one DialogItem. It is intended to be a very basic example of using DialogItem interfaces and the DialogLayoutDataProvider to create React UI
- * in an iModel.js app and to apply changes only when the user hits the OK button.
+ * in an iTwin.js app and to apply changes only when the user hits the OK button.
  */
 export class UnitsPopupUiDataProvider extends DialogLayoutDataProvider {
   constructor() {

@@ -323,6 +323,9 @@ export class SampleAppIModelApp {
 
     UiFramework.useDefaultPopoutUrl = true;
 
+    // initialize state from all registered UserSettingsProviders
+    await UiFramework.initializeStateFromUserSettingsProviders();
+
     // try starting up event loop if not yet started so key-in palette can be opened
     IModelApp.startEventLoop();
   }
