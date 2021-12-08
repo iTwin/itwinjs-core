@@ -1087,7 +1087,7 @@ export interface MessageButtonProps extends CommonProps {
     onClick?: () => void;
 }
 
-// @internal @deprecated
+// @internal
 export class MessageCenter extends React.PureComponent<MessageCenterProps> {
     // (undocumented)
     render(): JSX.Element;
