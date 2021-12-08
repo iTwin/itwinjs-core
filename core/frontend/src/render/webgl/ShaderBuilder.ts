@@ -910,6 +910,9 @@ export const enum FragmentShaderComponent {
   // (Optional) Override fragment color. This is invoked just after alpha is multiplied, and just before FragColor is assigned.
   // vec4 overrideColor(vec4 currentColor)
   OverrideColor,
+  // (Optional) Override render order to be output to pick buffers.
+  // float overrideRenderOrder(float renderOrder)
+  OverrideRenderOrder,
   COUNT,
 }
 

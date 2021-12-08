@@ -8,7 +8,7 @@
 
 import { assert } from "@itwin/core-bentley";
 import { AttributeMap } from "../AttributeMap";
-import { ProgramBuilder, ShaderBuilderFlags, VariableType, VertexShaderBuilder, VertexShaderComponent } from "../ShaderBuilder";
+import { FragmentShaderComponent, ProgramBuilder, ShaderBuilderFlags, VariableType, VertexShaderBuilder, VertexShaderComponent } from "../ShaderBuilder";
 import { IsAnimated, IsInstanced, IsThematic } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
 import { TextureUnit } from "../RenderFlags";
@@ -21,6 +21,7 @@ import { octDecodeNormal } from "./Surface";
 import { addLineWeight, addModelViewMatrix, addNormalMatrix, addProjectionMatrix } from "./Vertex";
 import { addModelToWindowCoordinates, addViewport } from "./Viewport";
 import { addLookupTable } from "./LookupTable";
+import { addRenderOrder, addRenderOrderConstants } from "./FeatureSymbology";
 
 export type EdgeBuilderType = "SegmentEdge" | "Silhouette" | "IndexedEdge";
 
@@ -78,6 +79,14 @@ const computeIndexedQuantizedPosition = `
 const initializeIndexed = `
   g_otherIndex = decodeUInt24(g_otherIndexIndex);
 ${computeOtherPos}
+`;
+
+// IndexedEdgeGeometry.renderOrder returns Edge or PlanarEdge. Adjust if silhouette for output to pick buffers.
+const computeIndexedRenderOrder = `
+  if (g_isSilhouette)
+    v_renderOrder = kRenderOrder_Edge == u_renderOrder ? kRenderOrder_Silhouette : kRenderOrder_PlanarSilhouette;
+  else
+    v_renderOrder = u_renderOrder;
 `;
 
 const checkForSilhouetteDiscard = `
@@ -235,6 +244,11 @@ function createBase(type: EdgeBuilderType, instanced: IsInstanced, isAnimated: I
 
     vert.set(VertexShaderComponent.ComputeQuantizedPosition, `${initLut}\n\n${computeIndexedQuantizedPosition}`);
     vert.addInitializer(initializeIndexed);
+
+    addRenderOrder(vert);
+    addRenderOrderConstants(vert);
+    builder.addInlineComputedVarying("v_renderOrder", VariableType.Float, computeIndexedRenderOrder);
+    builder.frag.set(FragmentShaderComponent.OverrideRenderOrder, "return v_renderOrder;");
   } else {
     vert.addInitializer(decodeEndPointAndQuadIndices);
   }
