@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { connect } from "react-redux";
 import { IModelApp } from "@itwin/core-frontend";
 import { BackstageItemUtilities, BadgeType, ConditionalBooleanValue } from "@itwin/appui-abstract";
 import { BackstageComposer, FrontstageManager, SettingsModalFrontstage, UiFramework } from "@itwin/appui-react";
