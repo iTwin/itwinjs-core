@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodelhub-client-tests",
+      "comment": "Adjusting Checkpoint test setup logic: skip tests if only the Baseline Checkpoint exists.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodelhub-client-tests",
+  "email": "70565417+austeja-bentley@users.noreply.github.com"
+}
