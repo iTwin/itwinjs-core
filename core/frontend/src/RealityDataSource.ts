@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
+/** @packageDocumentation
+ * @module Tiles
+ */
 import { getJson, request, RequestOptions } from "@bentley/itwin-client";
 import { AccessToken, BentleyStatus, GuidString, Logger } from "@itwin/core-bentley";
 import { IModelError, OrbitGtBlobProps, RealityData, RealityDataFormat, RealityDataProvider, RealityDataSourceKey, RealityDataSourceProps } from "@itwin/core-common";
@@ -12,7 +14,7 @@ import { CesiumIonAssetProvider, ContextShareProvider, getCesiumAccessTokenAndEn
 
 /**
  * This interface provide methods used to access a reality data from a reality data provider
- * @alpha
+ * @beta
  */
 export interface RealityDataSource {
   readonly key: RealityDataSourceKey;
@@ -50,25 +52,23 @@ export interface RealityDataSource {
    */
   getTileJson(name: string): Promise<any>;
 }
-/** @alpha */
+/** Utility functions for RealityDataSource
+ * @beta
+ */
 export namespace RealityDataSource {
-  /** Utility function to convert a RealityDataSourceKey into its string representation
-  * @alpha
-  */
-  export function keyToString(rdSourceKey: RealityDataSourceKey): string {
-    return `${rdSourceKey.provider}:${rdSourceKey.format}:${rdSourceKey.id}:${rdSourceKey.iTwinId}`;
-  }
-  export function formatfromUrl(tilesetUrl: string): RealityDataFormat {
-    let format = RealityDataFormat.ThreeDTile;
-    if (tilesetUrl.includes(".opc"))
-      format = RealityDataFormat.OPC;
-    return format;
-  }
+  /**
+   * Create a RealityDataSourceKey from a tilesetUrl.
+   * @param tilesetUrl the reality data attachment url
+   * @param inputProvider identify the RealityDataProvider if known, otherwise function will try to extract it from the tilesetUrl
+   * @param inputFormat identify the RealityDataFormat if known, otherwise function will try to extract it from the tilesetUrl
+   * @returns the RealityDataSourceKey that uniquely identify a reality data for a provider
+   */
   export function createKeyFromUrl(tilesetUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey {
-    let format = inputFormat ? inputFormat : formatfromUrl(tilesetUrl);
+    let format = inputFormat ? inputFormat : RealityDataFormat.fromUrl(tilesetUrl);
     if (CesiumIonAssetProvider.isProviderUrl(tilesetUrl)) {
-      const provider = inputProvider ? inputProvider : RealityDataProvider.CesiumIonAsset;
-      const cesiumIonAssetKey: RealityDataSourceKey = { provider, format, id: tilesetUrl };
+      const provider = RealityDataProvider.CesiumIonAsset;
+      // Keep url hidden and use a dummy id
+      const cesiumIonAssetKey: RealityDataSourceKey = { provider, format, id: "OSMBuildings" };
       return cesiumIonAssetKey;
     }
 
@@ -86,6 +86,7 @@ export namespace RealityDataSource {
     const urlKey: RealityDataSourceKey = { provider: provider2, format, id: tilesetUrl };
     return urlKey;
   }
+  /** @alpha - was used for a very specific case of point cloud (opc) attachment that should not be made public */
   export function createKeyFromBlobUrl(blobUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey {
     const info = ContextShareProvider.getInfoFromBlobUrl(blobUrl);
     const format = inputFormat ? inputFormat : info.format;
@@ -93,6 +94,7 @@ export namespace RealityDataSource {
     const contextShareKey: RealityDataSourceKey = { provider, format, id: info.id };
     return contextShareKey;
   }
+  /** @alpha - OrbitGtBlobProps is alpha */
   export function createKeyFromOrbitGtBlobProps(orbitGtBlob: OrbitGtBlobProps, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey {
     const format = inputFormat ? inputFormat : RealityDataFormat.OPC;
     if(orbitGtBlob.blobFileName && orbitGtBlob.blobFileName.toLowerCase().startsWith("http")) {
@@ -104,6 +106,7 @@ export namespace RealityDataSource {
     const id = `${orbitGtBlob.accountName}:${orbitGtBlob.containerName}:${orbitGtBlob.blobFileName}:?${orbitGtBlob.sasToken}`;
     return { provider, format, id };
   }
+  /** @alpha - OrbitGtBlobProps is alpha */
   export function createOrbitGtBlobPropsFromKey(rdSourceKey: RealityDataSourceKey): OrbitGtBlobProps | undefined {
     if (rdSourceKey.provider !== RealityDataProvider.OrbitGtBlob)
       return undefined;
@@ -128,11 +131,11 @@ export namespace RealityDataSource {
 }
 
 /** This class provides access to the reality data provider services.
- * It encapsulates access to a reality data wether it be from local access, http or ProjectWise Context Share.
+ * It encapsulates access to a reality data weiter it be from local access, http or ProjectWise Context Share.
  * The key provided at the creation determines if this is ProjectWise Context Share reference.
  * If not then it is considered local (ex: C:\temp\TileRoot.json) or plain http access (http://someserver.com/data/TileRoot.json)
  * There is a one to one relationship between a reality data and the instances of present class.
-* @alpha
+* @beta
 */
 class RealityDataSourceImpl implements RealityDataSource {
   private static _realityDataSources = new Map<string, RealityDataSource>();
@@ -162,7 +165,6 @@ class RealityDataSourceImpl implements RealityDataSource {
   }
   /**
    * Create an instance of this class from a source key and iTwin context/
-   * @alpha
    */
   public static async createFromKey(sourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined> {
     const rdSource = new RealityDataSourceImpl({sourceKey});
@@ -177,11 +179,10 @@ class RealityDataSourceImpl implements RealityDataSource {
   }
   /** Return an instance of a RealityDataSource from a source key.
    * There will aways be only one reality data connection for a corresponding reality data source key.
-   * @alpha
    */
   public static async fromKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined> {
     // search to see if it was already created
-    const rdSourceKeyString = RealityDataSource.keyToString(rdSourceKey);
+    const rdSourceKeyString = rdSourceKey.toString();
     let rdSource = RealityDataSourceImpl._realityDataSources.get(rdSourceKeyString);
     if (rdSource)
       return rdSource;
