@@ -191,10 +191,15 @@ export class IdMap implements WebGLDisposable {
       this.materials.set(material.key, material);
   }
 
-  /** Add a texture to this IdMap, given that it has a valid key. */
-  public addTexture(texture: RenderTexture) {
+  /** Add a texture to this IdMap, given that it has a valid string key. If specified, it will instead use the key parameter, which could also be a gradient symb. */
+  public addTexture(texture: RenderTexture, key?: TextureCacheKey) {
     assert(texture instanceof Texture);
-    if (texture.key)
+    if (undefined !== key) {
+      if ("string" === typeof key)
+        this.textures.set(key, texture);
+      else
+        this.addGradient(key, texture);
+    } else if (texture.key)
       this.textures.set(texture.key, texture);
   }
 
@@ -686,7 +691,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
 
     const texture = new Texture({ handle, type, ownership: args.ownership });
     if (texture && info)
-      info.idMap.addTexture(texture);
+      info.idMap.addTexture(texture, info.key);
 
     return texture;
   }
