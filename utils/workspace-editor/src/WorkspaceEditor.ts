@@ -5,13 +5,15 @@
 
 import * as fs from "fs";
 import * as glob from "glob";
+import * as readline from "readline";
+import * as os from "os";
 import { join } from "path";
 import * as Yargs from "yargs";
 import {
   CloudSqlite, EditableWorkspaceDb, IModelHost, IModelHostConfiguration, IModelJsFs, ITwinWorkspaceDb, WorkspaceContainerId, WorkspaceDbName,
   WorkspaceResourceName,
 } from "@itwin/core-backend";
-import { DbResult } from "@itwin/core-bentley";
+import { DbResult, StopWatch } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 
 // cspell:ignore nodir
@@ -63,12 +65,20 @@ interface ListOptions extends WorkspaceDbOpt {
   blobs?: boolean;
 }
 
-/** Options for listing the resources in a WorkspaceDb */
-interface UploadOptions extends WorkspaceDbOpt {
-  initialize: boolean;
+interface BlobAccountProps {
   sasToken: string;
   accountName: string;
   storageType: string;
+}
+
+/** Options for uploading a WorkspaceDb to blob storage */
+interface UploadOptions extends BlobAccountProps, WorkspaceDbOpt {
+  initialize: boolean;
+}
+
+/** Options for downloading a WorkspaceDb from blob storage */
+interface DownloadOptions extends BlobAccountProps, WorkspaceDbOpt {
+  localFile?: string;
 }
 
 /** Create a new empty WorkspaceDb  */
@@ -201,13 +211,34 @@ async function vacuumWorkspaceDb(args: WorkspaceDbOpt) {
   console.log(`${ws.localFile} vacuumed`);
 }
 
+async function performTransfer(direction: CloudSqlite.TransferDirection, args: CloudSqlite.ContainerAccessProps & CloudSqlite.DbProps) {
+  const onProgress = (loaded: number, total: number) => {
+    if (total > 0) {
+      const message = `${direction} ${args.localFile} ... ${(loaded * 100 / total).toFixed(2)}%`;
+      process.stdout.write(message);
+      readline.moveCursor(process.stdout, -1 * message.length, 0);
+      if (loaded >= total)
+        process.stdout.write(os.EOL);
+    }
+    return 0;
+  };
+  const timer = new StopWatch(direction, true);
+  await CloudSqlite.transferDb(direction, { ...args, onProgress });
+  console.log(`${direction} of ${args.localFile} complete, ${timer.elapsedSeconds.toString()} seconds`);
+}
+
 async function uploadWorkspaceDb(args: UploadOptions) {
   const ws = new ITwinWorkspaceDb(args.dbName, IModelHost.appWorkspace.getContainer(args));
-
   if (args.initialize)
     await CloudSqlite.initializeContainer(args);
 
-  await CloudSqlite.uploadDb({ ...args, localFile: ws.localFile }, args);
+  return performTransfer("upload", { ...args, localFile: ws.localFile });
+}
+
+async function downloadWorkspaceDb(args: DownloadOptions) {
+  const ws = new ITwinWorkspaceDb(args.dbName, IModelHost.appWorkspace.getContainer(args));
+  const localFile = args.localFile ?? ws.localFile;
+  return performTransfer("download", { ...args, localFile });
 }
 
 /** Start `IModelHost`, then run a WorkspaceEditor command. Errors are logged to console. */
@@ -233,7 +264,7 @@ async function main() {
     .wrap(Math.min(130, Yargs.terminalWidth()))
     .strict()
     .config()
-    .default("config", "workspaceEdit.json")
+    .default("config", "workspaceEditor.json")
     .help()
     .version("V1.0")
     .options({
@@ -288,6 +319,17 @@ async function main() {
         storageType: { describe: "storage module type", string: true, default: "azure?sas=1" },
       },
       handler: runCommand(uploadWorkspaceDb),
+    })
+    .command({
+      command: "download <dbName>",
+      describe: "download a WorkspaceDb from cloud storage to local file",
+      builder: {
+        localFile: { alias: "l", describe: "name of local file", string: true, required: false },
+        sasToken: { alias: "s", describe: "shared access signature token", string: true, required: false },
+        accountName: { alias: "a", describe: "user account name", string: true, required: true },
+        storageType: { describe: "storage module type", string: true, default: "azure?sas=1" },
+      },
+      handler: runCommand(downloadWorkspaceDb),
     })
     .command({
       command: "vacuum <dbName>",

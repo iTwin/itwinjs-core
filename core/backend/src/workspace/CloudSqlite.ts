@@ -29,10 +29,14 @@ export namespace CloudSqlite {
     sasToken: string;
   }
   export type ContainerAccessProps = AccountProps & ContainerProps;
-  export type DownloadProps = ContainerAccessProps & { onProgress?: (loaded: number, total: number) => number };
   export type Logger = (stream: NodeJS.ReadableStream) => void;
   export type ProcessProps = DaemonProps & AccountProps & { stdoutLogger?: Logger, stderrLogger?: Logger };
   export interface DbProps { dbName: DbName, localFile: LocalFileName }
+  export type TransferDirection = "upload" | "download";
+  export interface TransferProgress { onProgress?: (loaded: number, total: number) => number }
+  export type TransferProps = ContainerAccessProps & TransferProgress;
+  export type TransferDbProps = TransferProps & DbProps;
+
 }
 
 /** @beta */
@@ -113,8 +117,8 @@ export class CloudSqlite {
       throw new Error(`Cannot initialize container: ${stat.errMsg}`);
   }
 
-  public static async downloadDb(db: CloudSqlite.DbProps, props: CloudSqlite.DownloadProps) {
-    const downloader = new IModelHost.platform.CloudDbTransfer({ direction: "download", dbAlias: db.dbName, localFile: db.localFile, ...this.toBlobAccessProps(props) });
+  public static async transferDb(direction: CloudSqlite.TransferDirection, props: CloudSqlite.TransferDbProps) {
+    const transfer = new IModelHost.platform.CloudDbTransfer({ direction, ...props, dbAlias: props.dbName, ...this.toBlobAccessProps(props) });
 
     let timer: NodeJS.Timeout | undefined;
     try {
@@ -122,32 +126,34 @@ export class CloudSqlite {
       const onProgress = props.onProgress;
       if (onProgress) {
         timer = setInterval(async () => { // set an interval timer to show progress every 250ms
-          const progress = downloader.getProgress();
+          const progress = transfer.getProgress();
           total = progress.total;
           if (onProgress(progress.loaded, progress.total))
-            downloader.cancelTransfer();
+            transfer.cancelTransfer();
         }, 250);
       }
-      await downloader.promise;
+      await transfer.promise;
       onProgress?.(total, total); // make sure we call progress func one last time when download completes
     } catch (err: any) {
-      throw (err.message === "cancelled") ? new IModelError(BriefcaseStatus.DownloadCancelled, "download cancelled") : err;
+      throw (err.message === "cancelled") ? new IModelError(BriefcaseStatus.DownloadCancelled, `${direction} cancelled`) : err;
     } finally {
       if (timer)
         clearInterval(timer);
     }
   }
 
+  public static async uploadDb(props: CloudSqlite.TransferDbProps) {
+    return this.transferDb("upload", props);
+  }
+
+  public static async downloadDb(props: CloudSqlite.TransferDbProps) {
+    return this.transferDb("download", props);
+  }
+
   public static async copyDb(oldVersion: string, newVersion: string, props: CloudSqlite.ContainerAccessProps) {
     const stat = await BlobDaemon.command("copy", { dbAlias: oldVersion, toAlias: newVersion, ...this.toBlobAccessProps(props) });
     if (stat.result !== DbResult.BE_SQLITE_OK)
       throw new Error(`Cannot copy db: ${stat.errMsg}`);
-  }
-
-  public static async uploadDb(db: CloudSqlite.DbProps, props: CloudSqlite.ContainerAccessProps) {
-    const stat = await BlobDaemon.command("upload", { dbAlias: db.dbName, localFile: db.localFile, ...this.toBlobAccessProps(props) });
-    if (stat.result !== DbResult.BE_SQLITE_OK)
-      throw new Error(`Cannot upload db: ${stat.errMsg}`);
   }
 
   public static async deleteDb(db: CloudSqlite.DbProps, props: CloudSqlite.ContainerAccessProps) {

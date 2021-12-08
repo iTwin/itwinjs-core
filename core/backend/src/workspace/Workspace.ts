@@ -10,7 +10,7 @@ import { createHash } from "crypto";
 import * as fs from "fs-extra";
 import { dirname, extname, join } from "path";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
-import { BeEvent, DbResult, OpenMode } from "@itwin/core-bentley";
+import { BeEvent, DbResult, OpenMode, Optional } from "@itwin/core-bentley";
 import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
 import { IModelJsFs } from "../IModelJsFs";
 import { SQLiteDb } from "../SQLiteDb";
@@ -83,7 +83,7 @@ export type ContainerNameOrId = { containerName: WorkspaceContainerName, contain
  * @beta
  */
 export type WorkspaceContainerProps = ContainerNameOrId & {
-  cloudProps?: CloudSqlite.ContainerAccessProps;
+  cloudProps?: CloudSqlite.TransferProps;
 };
 
 export type WorkspaceDbProps = WorkspaceContainerProps & {
@@ -194,7 +194,7 @@ export interface WorkspaceContainer {
   /** @internal */
   addWorkspaceDb(toAdd: ITwinWorkspaceDb): void;
 
-  getWorkspaceDb(props: WorkspaceDbProps): Promise<WorkspaceDb>;
+  getWorkspaceDb(props: WorkspaceDbProps & { containerId?: WorkspaceContainerId }): Promise<WorkspaceDb>;
   /** Close and remove a currently opened [[WorkspaceDb]] from this Workspace. */
   dropWorkspaceDb(container: WorkspaceDb): void;
   /** Close this WorkspaceContainer. All currently opened WorkspaceDbs are dropped. */
@@ -295,11 +295,11 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
     this._wsDbs.set(toAdd.dbName, toAdd);
   }
 
-  public async getWorkspaceDb(props: WorkspaceDbProps): Promise<WorkspaceDb> {
+  public async getWorkspaceDb(props: Optional<WorkspaceDbProps, "containerId">): Promise<WorkspaceDb> {
     const db = this._wsDbs.get(props.dbName) ?? new ITwinWorkspaceDb(props.dbName, this);
     if (!db.isOpen) {
       if (props.cloudProps)
-        await CloudSqlite.downloadDb(db, props.cloudProps);
+        await CloudSqlite.downloadDb({ ...db, ...props.cloudProps, containerId: this.id });
       db.open();
     }
     return db;
@@ -492,8 +492,8 @@ export class EditableWorkspaceDb extends ITwinWorkspaceDb {
     return CloudSqlite.copyDb(oldVersion, newVersion, cloudProps);
   }
 
-  public async upload(cloudProps: CloudSqlite.ContainerAccessProps) {
-    return CloudSqlite.uploadDb(this, cloudProps);
+  public async upload(cloudProps: CloudSqlite.TransferProps) {
+    return CloudSqlite.uploadDb({ ...cloudProps, ...this });
   }
 
   /** Add a new string resource to this WorkspaceDb.

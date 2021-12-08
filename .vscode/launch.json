@@ -834,11 +834,10 @@
       "request": "launch",
       "program": "${workspaceFolder}/utils/workspace-editor/lib/WorkspaceEditor.js",
       "args": [
-        "upload",
-        "australia",
-        "-u=geocoordsandbox",
-        "-c",
-        "-a=se=2021-12-04&sp=rcwdl&sv=2018-11-09&sr=c&sig=l6kFCuuD8d/gPCCw8Jlwo5/rtDy7iWxTRUZTDCknQT0%3D",
+        "download",
+        "brazil",
+        "--config=edit.json",
+        "-l=d:/temp/abc.d"
       ],
       "outFiles": [
         "${workspaceFolder}/utils/workspace-editor/lib/**/*.js"
