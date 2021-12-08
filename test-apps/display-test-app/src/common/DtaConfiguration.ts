@@ -14,6 +14,7 @@ export interface DtaConfiguration {
   filename?: string;
   standalonePath?: string;    // Used when run in the browser - a common base path for all standalone imodels
   signInForStandalone?: boolean; // If true, and standalone is true, then sign in. Required when opening local files containing reality models.
+  startupMacro?: string;    // Used when running a macro at startup, specifies file path
   enableDiagnostics?: boolean; // If true, all RenderDiagnostics will be enabled (assertions, debug output, GL state checks).
   disabledExtensions?: string[]; // An array of names of WebGL extensions to be disabled
   disableInstancing?: boolean; // default false
@@ -74,6 +75,7 @@ export const getConfig = (): DtaConfiguration => {
   configuration.iModelName = process.env.IMJS_STANDALONE_FILENAME;
   configuration.standalonePath = process.env.IMJS_STANDALONE_FILEPATH; // optional (browser-use only)
   configuration.viewName = process.env.IMJS_STANDALONE_VIEWNAME; // optional
+  configuration.startupMacro = process.env.IMJS_STARTUP_MACRO;
 
   if (undefined !== process.env.IMJS_DISABLE_DIAGNOSTICS)
     configuration.enableDiagnostics = false;
