@@ -32,6 +32,9 @@ import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
     const iModelHost = new IModelHostConfiguration();
     iModelHost.hubAccess = new IModelHubBackend();
 
+    // ECSchemaRpcInterface allows schema retrieval for the UnitProvider implementation.
+    RpcManager.registerImpl(ECSchemaRpcInterface, ECSchemaRpcImpl);
+
     // invoke platform-specific initialization
     if (ProcessDetector.isElectronAppBackend) {
       await initializeElectron(iModelHost);
@@ -51,9 +54,6 @@ import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
       enableSchemasPreload: true,
       updatesPollInterval: 100,
     });
-
-    // ECSchemaRpcInterface allows schema retrieval for the UnitProvider implementation.
-    RpcManager.registerImpl(ECSchemaRpcInterface, ECSchemaRpcImpl);
 
   } catch (error: any) {
     Logger.logError(loggerCategory, error);

@@ -363,7 +363,7 @@ export class QuantityFormatter implements UnitsProvider {
    * @param showMetricOrUnitSystem - Pass in `true` to show Metric formatted quantity values. Defaults to Imperial. To explicitly
    * set it to a specific unit system pass a UnitSystemKey.
    */
-  constructor(private _unitsProvider: UnitsProvider, showMetricOrUnitSystem?: boolean | UnitSystemKey) {
+  constructor(showMetricOrUnitSystem?: boolean | UnitSystemKey) {
     if (undefined !== showMetricOrUnitSystem) {
       if (typeof showMetricOrUnitSystem === "boolean")
         this._activeUnitSystem = showMetricOrUnitSystem ? "metric" : "imperial";

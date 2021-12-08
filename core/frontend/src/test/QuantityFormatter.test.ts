@@ -56,7 +56,7 @@ describe("Quantity formatter", async () => {
   });
 
   beforeEach(async () => {
-    quantityFormatter = new QuantityFormatter(new BasicUnitsProvider(UNIT_EXTRA_DATA));
+    quantityFormatter = new QuantityFormatter();
     await quantityFormatter.onInitialized();
   });
 
@@ -492,7 +492,7 @@ describe("Quantity formatter", async () => {
 describe("Test Custom QuantityType", async () => {
   let quantityFormatter: QuantityFormatter;
   beforeEach(async () => {
-    quantityFormatter = new QuantityFormatter(new BasicUnitsProvider(UNIT_EXTRA_DATA));
+    quantityFormatter = new QuantityFormatter();
     await quantityFormatter.onInitialized();
   });
 
@@ -526,7 +526,7 @@ describe("Test Custom QuantityType", async () => {
 describe("Test Formatted Quantities", async () => {
   let quantityFormatter: QuantityFormatter;
   beforeEach(async () => {
-    quantityFormatter = new QuantityFormatter(new BasicUnitsProvider(UNIT_EXTRA_DATA));
+    quantityFormatter = new QuantityFormatter();
     await quantityFormatter.onInitialized();
   });
 

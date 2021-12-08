@@ -190,7 +190,6 @@ export class SchemaUnitProvider implements UnitsProvider {
       label: unit.label ?? "",
       phenomenon: unit.phenomenon ? unit.phenomenon.fullName : "",
       isValid: true,
-      alternateLabels: this.getAlternateDisplayLabels(unit.name),
       system: unit.unitSystem === undefined ? "" : unit.unitSystem.fullName,
     };
   }

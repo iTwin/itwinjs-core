@@ -371,7 +371,7 @@ export class IModelApp {
     this._accuSnap = opts.accuSnap ?? new AccuSnap();
     this._locateManager = opts.locateManager ?? new ElementLocateManager();
     this._tentativePoint = opts.tentativePoint ?? new TentativePoint();
-    this._quantityFormatter = opts.quantityFormatter ?? new QuantityFormatter(new BasicUnitsProvider());
+    this._quantityFormatter = opts.quantityFormatter ?? new QuantityFormatter();
     this._uiAdmin = opts.uiAdmin ?? new UiAdmin();
     this._mapLayerFormatRegistry = new MapLayerFormatRegistry(opts.mapLayerOptions);
     this._realityDataAccess = opts.realityDataAccess;
