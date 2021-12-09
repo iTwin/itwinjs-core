@@ -49,7 +49,7 @@ export class IModelHubFrontend implements FrontendHubAccess {
   public async getChangesetFromVersion(arg: IModelIdArg & { version: IModelVersion }): Promise<ChangesetIndexAndId> {
     const version = arg.version;
     if (version.isFirst)
-      return { index: -1, id: "" };
+      return { index: 1, id: "" };
 
     const asOfChangeSetId = version.getAsOfChangeSet();
     if (asOfChangeSetId)
