@@ -175,7 +175,7 @@ export * from "./RealityDataSource";
  */
 /**
  * @docs-group-description Extensions
- * Classes for creating and managing runtime [Extensions]($docs/learning/frontend/Extensions.md)
+ * Classes for creating and managing runtime
  */
 /**
  * @docs-group-description Properties
