@@ -85,7 +85,9 @@ export abstract class MapLayerImageryProvider {
     }
   }
 
-  public async getFeatureInfo(_featureInfos: MapLayerFeatureInfo[] , _quadId: QuadId, _carto: Cartographic, _tree: ImageryMapTileTree): Promise<void> {
+  public async getFeatureInfo(featureInfos: MapLayerFeatureInfo[], _quadId: QuadId, _carto: Cartographic, _tree: ImageryMapTileTree): Promise<void> {
+    // default implementation; simply return an empty feature info
+    featureInfos.push({layerName: this._settings.name});
   }
 
   protected getRequestAuthorization(): RequestBasicCredentials | undefined {
