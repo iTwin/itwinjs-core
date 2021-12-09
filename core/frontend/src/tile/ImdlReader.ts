@@ -128,6 +128,7 @@ interface ImdlIndexedEdges {
   readonly width: number;
   readonly height: number;
   readonly numSegments: number;
+  readonly silhouettePadding: number;
 }
 
 interface ImdlMeshEdges {
@@ -783,6 +784,7 @@ export class ImdlReader extends GltfReader {
         data: edgeTable,
         width: json.width,
         height: json.height,
+        silhouettePadding: json.silhouettePadding,
         numSegments: json.numSegments,
       },
     };

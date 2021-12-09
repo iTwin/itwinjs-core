@@ -132,6 +132,7 @@ export interface EdgeTable {
   readonly width: number;
   readonly height: number;
   readonly numSegments: number;
+  readonly silhouettePadding: number;
 }
 
 export interface IndexedEdgeParams {
@@ -139,7 +140,7 @@ export interface IndexedEdgeParams {
   readonly edges: EdgeTable;
 }
 
-function buildIndexedEdges(args: MeshArgsEdges, doPolylines: boolean): IndexedEdgeParams | undefined {
+function buildIndexedEdges(args: MeshArgsEdges, doPolylines: boolean, maxSize: number): IndexedEdgeParams | undefined {
   const hardEdges = args.edges?.edges;
   const silhouettes = args.silhouettes;
   const polylines = doPolylines ? args.polylines?.lines : undefined;
@@ -161,9 +162,10 @@ function buildIndexedEdges(args: MeshArgsEdges, doPolylines: boolean): IndexedEd
 
   // Each segment edge requires 2 24-bit indices = 6 bytes = 1.5 RGBA values.
   // Each silhouette requires the same as segment edge plus 2 16-bit oct-encoded normals = 10 bytes = 2.5 RGBA values.
-  const nRgbaRequired = Math.ceil(1.5 * numSegmentEdges + 2.5 * numSilhouettes);
-  const maxSize = IModelApp.renderSystem.maxTextureSize;
+  let nRgbaRequired = Math.ceil(1.5 * numSegmentEdges + 2.5 * numSilhouettes);
   let dimensions;
+  let silhouetteStartByteIndex = numSegmentEdges * 6;
+  let silhouettePadding = 0;
   if (nRgbaRequired < maxSize) {
     dimensions = { width: nRgbaRequired, height: 1 };
   } else {
@@ -173,6 +175,14 @@ function buildIndexedEdges(args: MeshArgsEdges, doPolylines: boolean): IndexedEd
     const remainder = width % 15;
     if (0 !== remainder)
       width += 15 - remainder;
+
+    // If the table contains both segments and silhouettes, there may be one row containing a mix of the two where padding
+    // is required between them.
+    if (numSilhouettes > 0 && numSegmentEdges > 0) {
+      const silOffset = silhouetteStartByteIndex % 60; // some multiple of 6.
+      silhouettePadding = (60 - silOffset) % 10;
+      nRgbaRequired += Math.ceil(silhouettePadding / 4);
+    }
 
     let height = Math.ceil(nRgbaRequired / width);
     if (width * height < nRgbaRequired)
@@ -217,9 +227,8 @@ function buildIndexedEdges(args: MeshArgsEdges, doPolylines: boolean): IndexedEd
   if (silhouettes?.edges) {
     assert(undefined !== silhouettes.normals);
     assert(silhouettes.normals.length === silhouettes.edges.length);
-    const silhouettesStartByteIndex = numSegmentEdges * 6;
     function setSilhouette(index: number, start: number, end: number, normals: OctEncodedNormalPair): void {
-      const byteIndex = silhouettesStartByteIndex + index * 10;
+      const byteIndex = silhouetteStartByteIndex + silhouettePadding + index * 10;
       setUint24(byteIndex, start);
       setUint24(byteIndex + 3, end);
       data[byteIndex + 6] = normals.first.value & 0xff;
@@ -240,6 +249,7 @@ function buildIndexedEdges(args: MeshArgsEdges, doPolylines: boolean): IndexedEd
       width: dimensions.width,
       height: dimensions.height,
       numSegments: numSegmentEdges,
+      silhouettePadding,
     },
   };
 }
@@ -260,7 +270,7 @@ export interface EdgeParams {
 }
 
 export namespace EdgeParams {
-  export function fromMeshArgs(meshArgs: MeshArgs): EdgeParams | undefined {
+  export function fromMeshArgs(meshArgs: MeshArgs, maxWidth?: number): EdgeParams | undefined {
     const args = meshArgs.edges;
     const doJoints = wantJointTriangles(args.width, meshArgs.is2d);
     const polylines = doJoints ? TesselatedPolyline.fromMesh(meshArgs) : undefined;
@@ -271,7 +281,7 @@ export namespace EdgeParams {
 
     const doIndexedEdges = true; // ###TODO check TileAdmin and RenderSystem
     if (doIndexedEdges) {
-      indexed = buildIndexedEdges(args, !doJoints);
+      indexed = buildIndexedEdges(args, !doJoints, maxWidth ?? /*IModelApp.renderSystem.maxTextureSize*/ 15);
     } else {
       segments = convertPolylinesAndEdges(undefined, args.edges.edges);
       silhouettes = args.silhouettes.edges && args.silhouettes.normals ? convertSilhouettes(args.silhouettes.edges, args.silhouettes.normals) : undefined;

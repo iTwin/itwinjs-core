@@ -58,7 +58,7 @@ const computeIndexedQuantizedPosition = `
 
   float edgeIndex = decodeUInt24(a_pos);
   g_isSilhouette = edgeIndex >= u_edgeParams.z;
-  float edgeBaseIndex = g_isSilhouette ? (u_edgeParams.z * 1.5 + (edgeIndex - u_edgeParams.z) * 2.5) : edgeIndex * 1.5;
+  float edgeBaseIndex = g_isSilhouette ? (u_edgeParams.z * 1.5 + u_edgeParams.w * 0.25 + (edgeIndex - u_edgeParams.z) * 2.5) : edgeIndex * 1.5;
   vec2 tc = compute_edge_coords(floor(edgeBaseIndex));
   vec4 s0 = floor(TEXTURE(u_edgeLUT, tc) * 255.0 + 0.5);
   tc.x += g_edge_stepX;
@@ -67,6 +67,9 @@ const computeIndexedQuantizedPosition = `
   vec4 s2 = floor(TEXTURE(u_edgeLUT, tc) * 255.0 + 0.5);
 
   bool isEven = 0 == (int(edgeIndex) & 1);
+  if (g_isSilhouette && 0 != int(u_edgeParams.z) % 4)
+    isEven = !isEven;
+
   vec3 i0 = isEven ? s0.xyz : vec3(s0.zw, s1.x);
   vec3 i1 = isEven ? vec3(s0.w, s1.xy) : s1.yzw;
   g_otherIndexIndex = g_quadIndex < 2.0 ? i1 : i0;
@@ -198,7 +201,7 @@ export function addEdgeContrast(vert: VertexShaderBuilder): void {
   vert.set(VertexShaderComponent.AdjustContrast, adjustContrast);
 }
 
-const edgeLutParams = new Float32Array(3);
+const edgeLutParams = new Float32Array(4);
 
 function createBase(type: EdgeBuilderType, instanced: IsInstanced, isAnimated: IsAnimated): ProgramBuilder {
   const isInstanced = IsInstanced.Yes === instanced;
@@ -231,14 +234,15 @@ function createBase(type: EdgeBuilderType, instanced: IsInstanced, isAnimated: I
       });
     });
 
-    vert.addUniform("u_edgeParams", VariableType.Vec3, (prog) => {
+    vert.addUniform("u_edgeParams", VariableType.Vec4, (prog) => {
       prog.addGraphicUniform("u_edgeParams", (uniform, params) => {
         const edge = params.geometry.asIndexedEdge;
         assert(undefined !== edge);
         edgeLutParams[0] = edge.edgeLut.texture.width;
         edgeLutParams[1] = edge.edgeLut.texture.height;
         edgeLutParams[2] = edge.edgeLut.numSegments;
-        uniform.setUniform3fv(edgeLutParams);
+        edgeLutParams[3] = edge.edgeLut.silhouettePadding;
+        uniform.setUniform4fv(edgeLutParams);
       });
     });
 
