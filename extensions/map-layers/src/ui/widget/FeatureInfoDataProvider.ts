@@ -48,33 +48,35 @@ export class FeatureInfoDataProvider implements IPropertyDataProvider, PropertyD
       if (mapInfo.layerInfo !== undefined ) {
         for (const curLayerInfo of mapInfo.layerInfo) {
           const layerCatIdx = this.findCategoryIndexByName(curLayerInfo.layerName);
+          let nbRecords = 0;
           const layerCategory = (
             layerCatIdx === -1 ?
               {name:curLayerInfo.layerName, label:curLayerInfo.layerName, expand:true, childCategories:[]}
               : this.categories[layerCatIdx] );
 
           if (curLayerInfo.info && !(curLayerInfo.info instanceof HTMLElement)) {
-
-            for (const infoResult of curLayerInfo.info) {
+            // This is not an HTMLElement, so iterate over each sub-layer info
+            for (const subLayerInfo of curLayerInfo.info) {
+              nbRecords++;
               const subCatIdx = layerCategory.childCategories?.findIndex((testCategory: PropertyCategory) => {
-                return testCategory.name === infoResult.subLayerName;
+                return testCategory.name === subLayerInfo.subLayerName;
               });
               let subLayerCategory;
               if (subCatIdx === -1) {
-                subLayerCategory = {name:infoResult.subLayerName, label:infoResult.subLayerName, expand:true};
+                subLayerCategory = {name:subLayerInfo.subLayerName, label:subLayerInfo.subLayerName, expand:true};
                 this.addSubCategory(subLayerCategory.name);
                 layerCategory.childCategories?.push(subLayerCategory);
               }
-              if (infoResult.records) {
-                for (const record of infoResult.records) {
+              if (subLayerInfo.records) {
+                for (const record of subLayerInfo.records) {
                   // Always use the string value for now
-                  this.addProperty(record, infoResult.subLayerName);
+                  this.addProperty(record, subLayerInfo.subLayerName);
 
                 }
               }
             }
           }
-          if (layerCatIdx === -1)
+          if (layerCatIdx === -1 && nbRecords>0)
             this.addCategory(layerCategory);
         }
       }
