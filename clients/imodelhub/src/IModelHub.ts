@@ -9,7 +9,7 @@ import { BriefcaseId, ChangesetIndexAndId, IModelVersion } from "@itwin/core-com
 import { BriefcaseQuery } from "./imodelhub/Briefcases";
 import { ChangeSet, ChangeSetQuery } from "./imodelhub/ChangeSets";
 import { IModelHubClient } from "./imodelhub/Client";
-import { VersionQuery } from "./imodelhub/Versions";
+import { Version, VersionQuery } from "./imodelhub/Versions";
 import { IModelQuery } from "./imodelhub/iModels";
 
 // TODO: Replace with types from imodeljs-backend once its dep is removed on this client
@@ -34,17 +34,16 @@ export class IModelHubFrontend implements FrontendHubAccess {
 
   private async _getChangesetFromId(arg: IModelIdArg & { changeSetId: string }): Promise<ChangesetIndexAndId> {
     const changeSets: ChangeSet[] = await this.hubClient.changeSets.get(arg.accessToken, arg.iModelId, new ChangeSetQuery().byId(arg.changeSetId));
-    if (!changeSets[0] || !changeSets[0].changeSetIndex || !changeSets[0].changeSetId)
+    if (!changeSets[0] || !changeSets[0].index || !changeSets[0].changeSetId)
       throw new BentleyError(BentleyStatus.ERROR, `Changeset ${arg.changeSetId} not found`);
-    return { index: changeSets[0].changeSetIndex, id: changeSets[0].changeSetId };
-
+    return { index: +changeSets[0].index, id: changeSets[0].changeSetId };
   }
 
   public async getLatestChangeset(arg: IModelIdArg): Promise<ChangesetIndexAndId> {
     const changeSets: ChangeSet[] = await this.hubClient.changeSets.get(arg.accessToken, arg.iModelId, new ChangeSetQuery().top(1).latest());
-    if (!changeSets[0] || !changeSets[0].changeSetIndex || !changeSets[0].id)
+    if (!changeSets[0] || !changeSets[0].index || !changeSets[0].id)
       throw new BentleyError(BentleyStatus.ERROR, `No changesets found for ${arg.iModelId}`);
-    return { index: changeSets[0].changeSetIndex, id: changeSets[0].id };
+    return { index: +changeSets[0].index, id: changeSets[0].id };
   }
 
   public async getChangesetFromVersion(arg: IModelIdArg & { version: IModelVersion }): Promise<ChangesetIndexAndId> {
@@ -65,7 +64,7 @@ export class IModelHubFrontend implements FrontendHubAccess {
 
   public async getChangesetFromNamedVersion(arg: IModelIdArg & { versionName?: string }): Promise<ChangesetIndexAndId> {
     const versionQuery = arg.versionName ? new VersionQuery().select("ChangeSetId").byName(arg.versionName) : new VersionQuery().top(1);
-    const versions = await this.hubClient.versions.get(arg.accessToken, arg.iModelId, versionQuery);
+    const versions: Version[] = await this.hubClient.versions.get(arg.accessToken, arg.iModelId, versionQuery);
     if (!versions[0] || !versions[0].changeSetIndex || !versions[0].changeSetId)
       throw new BentleyError(BentleyStatus.ERROR, `Named version ${arg.versionName ?? ""} not found`);
     return { index: versions[0].changeSetIndex, id: versions[0].changeSetId };
