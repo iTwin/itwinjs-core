@@ -34,7 +34,8 @@ import { addSolarShadowMap } from "./SolarShadowMapping";
 import { addThematicDisplay, getComputeThematicIndex } from "./Thematic";
 import { addTranslucency } from "./Translucency";
 import { addFeatureAndMaterialLookup, addModelViewMatrix, addNormalMatrix, addProjectionMatrix } from "./Vertex";
-import { wantMaterials } from "../Mesh";
+import { wantMaterials } from "../SurfaceGeometry";
+import { addWiremesh } from "./Wiremesh";
 
 // NB: Textures do not contain pre-multiplied alpha.
 const sampleSurfaceTexture = `
@@ -363,7 +364,7 @@ const computeAnimatedNormal = `
 ${computeNormal}`;
 
 const applyBackgroundColor = `
-  return u_surfaceFlags[kSurfaceBitIndex_BackgroundFill] ? vec4(u_bgColor.rgb, 1.0) : baseColor;
+  return u_surfaceFlags[kSurfaceBitIndex_BackgroundFill] ? vec4(u_bgColor.rgb, baseColor.a) : baseColor;
 `;
 
 const computeTexCoord = `
@@ -581,6 +582,9 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
 
   addSurfaceMonochrome(builder.frag);
   addMaterial(builder);
+
+  if (flags.isWiremesh)
+    addWiremesh(builder);
 
   return builder;
 }

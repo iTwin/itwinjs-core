@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BentleyError, Id64String } from "@itwin/core-bentley";
-import { Angle, AngleSweep, Arc3d, BSplineCurve3d, BSplineCurveOps, CurveCollection, CurveFactory, CurvePrimitive, FrameBuilder, Geometry, GeometryQuery, IModelJson, LineString3d, Loop, Matrix3d, Path, Plane3dByOriginAndUnitNormal, Point3d, PointString3d, Ray3d, RegionOps, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { Angle, AngleSweep, Arc3d, BSplineCurve3d, CurveCollection, CurveFactory, CurvePrimitive, FrameBuilder, Geometry, GeometryQuery, IModelJson, InterpolationCurve3d, InterpolationCurve3dOptions, InterpolationCurve3dProps, LineString3d, Loop, Matrix3d, Path, Plane3dByOriginAndUnitNormal, Point3d, PointString3d, Ray3d, RegionOps, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { Code, ColorDef, ElementGeometry, ElementGeometryInfo, FlatBufferGeometryStream, GeometricElementProps, GeometryParams, GeometryStreamProps, isPlacement3dProps, JsonGeometryStream, LinePixels, PlacementProps } from "@itwin/core-common";
 import { AccuDrawHintBuilder, AngleDescription, BeButton, BeButtonEvent, BeModifierKeys, CoreTools, DecorateContext, DynamicsContext, EventHandled, GraphicType, HitDetail, IModelApp, LengthDescription, NotifyMessageDetails, OutputMessagePriority, SnapDetail, TentativeOrAccuSnap, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "@itwin/core-frontend";
 import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@itwin/editor-common";
@@ -305,6 +305,7 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
       switch (curve.curvePrimitiveType) {
         case "arc":
         case "bsplineCurve":
+        case "interpolationCurve":
           break;
         default:
           return;
@@ -346,6 +347,14 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
 
         builder.setSymbology(context.viewport.getContrastToBackgroundColor(), ColorDef.black, 5);
         builder.addPointString(poles);
+        break;
+      }
+
+      case "interpolationCurve": {
+        const fitCurve = curve as InterpolationCurve3d;
+
+        builder.setSymbology(context.viewport.getContrastToBackgroundColor(), ColorDef.black, 5);
+        builder.addPointString(fitCurve.options.fitPoints); // deep copy shoulnd't be necessary...
         break;
       }
 
@@ -711,10 +720,18 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
     return true;
   }
 
+  protected async cancelPoint(_ev: BeButtonEvent): Promise<boolean> { return true; }
+
   public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     if (!await this.acceptPoint(ev))
       return EventHandled.Yes;
     return super.onDataButtonDown(ev);
+  }
+
+  public override async onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
+    if (!await this.cancelPoint(ev))
+      return EventHandled.Yes;
+    return super.onResetButtonUp(ev);
   }
 
   public override async onUndoPreviousStep(): Promise<boolean> {
@@ -794,14 +811,13 @@ export class CreateLineStringTool extends CreateOrContinuePathTool {
     return LineString3d.create(pts);
   }
 
-  public override async onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
+  protected override async cancelPoint(ev: BeButtonEvent): Promise<boolean> {
     // NOTE: Starting another tool will not create element...require reset or closure...
     if (this.isComplete(ev)) {
       await this.updateCurveAndContinuationData(ev, false, CreateCurvePhase.DefineEnd);
       await this.createElement();
     }
-
-    return super.onResetButtonUp(ev);
+    return true;
   }
 
   public async onRestartTool() {
@@ -1502,14 +1518,13 @@ export class CreateCircleTool extends CreateOrContinuePathTool {
     return Arc3d.create(center, vector0, vector90);
   }
 
-  public override async onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
+  protected override async cancelPoint(_ev: BeButtonEvent): Promise<boolean> {
     if (CircleMethod.Center === this.method && this.useRadius) {
       // Exit instead of restarting to avoid having circle "stuck" on cursor...
       await this.exitTool();
-      return EventHandled.Yes;
+      return false;
     }
-
-    return super.onResetButtonUp(ev);
+    return true;
   }
 
   private syncToolSettingsRadius(): void {
@@ -1961,6 +1976,12 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
   public static override toolId = "CreateBCurve";
   public static override iconSpec = "icon-snaps-nearest"; // Need better icon...
 
+  protected _isPhysicallyClosedOrComplete = false;
+  protected _tangentPhase = CreateCurvePhase.DefineOther;
+
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 3; } // method, order, tangents...
+
   protected override get wantPickableDynamics(): boolean { return true; } // Allow snapping to control polygon or through points...
   protected override get showCurveConstructions(): boolean { return true; } // Display control polygon or through points...
 
@@ -2023,25 +2044,84 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
   protected get minOrder(): number { return 2; }
   protected get maxOrder(): number { return 16; }
 
+  private _tangentsProperty: DialogProperty<boolean> | undefined;
+  public get tangentsProperty() {
+    if (!this._tangentsProperty)
+      this._tangentsProperty = new DialogProperty<boolean>(
+        PropertyDescriptionHelper.buildToggleDescription("bcurveTangents", EditTools.translate("CreateBCurve.Label.Tangents")), false);
+    return this._tangentsProperty;
+  }
+
+  public get tangents(): boolean { return this.tangentsProperty.value; }
+  public set tangents(value: boolean) { this.tangentsProperty.value = value; }
+
   protected override get wantClosure(): boolean {
     // A bcurve can support physical closure when creating a new path...
     return this.allowClosure;
   }
 
+  protected get requiredPointCount(): number {
+    if (BCurveMethod.ThroughPoints === this.method)
+      return 3; // Interpolation curve is always order 4 with 3 point minimum...
+
+    return this.order;
+  }
+
+  protected override get createCurvePhase(): CreateCurvePhase {
+    if (CreateCurvePhase.DefineOther !== this._tangentPhase)
+      return CreateCurvePhase.DefineOther;
+
+    return super.createCurvePhase;
+  }
+
   protected override isComplete(ev: BeButtonEvent): boolean {
     // Accept on reset with sufficient points...
     if (BeButton.Reset === ev.button)
-      return (this.accepted.length >= this.order);
+      return (this.accepted.length >= this.requiredPointCount);
 
     // Allow data to complete on physical closure...
-    return this.isClosed;
+    return this.isClosed || this._isPhysicallyClosedOrComplete;
+  }
+
+  protected override showConstructionGraphics(ev: BeButtonEvent, context: DynamicsContext): boolean {
+    if (CreateCurvePhase.DefineOther !== this._tangentPhase && this.current) {
+      const fitCurve = this.current as InterpolationCurve3d;
+      const builder = context.createGraphic({ type: GraphicType.WorldOverlay });
+      const color = context.viewport.getContrastToBackgroundColor();
+
+      builder.setSymbology(color, ColorDef.black, 1, LinePixels.Code2);
+      builder.addLineString([ev.point, fitCurve.options.fitPoints[CreateCurvePhase.DefineStart === this._tangentPhase ? 0 : fitCurve.options.fitPoints.length-1]]);
+
+      builder.setSymbology(color, ColorDef.black, 8);
+      builder.addPointString([ev.point]);
+
+      context.addGraphic(builder.finish());
+    }
+
+    return super.showConstructionGraphics(ev, context);
   }
 
   protected createNewCurvePrimitive(ev: BeButtonEvent, isDynamics: boolean): CurvePrimitive | undefined {
+    if (CreateCurvePhase.DefineOther !== this._tangentPhase && this.current) {
+      const fitCurve = this.current as InterpolationCurve3d;
+
+      if (CreateCurvePhase.DefineStart === this._tangentPhase) {
+        const tangentS = Vector3d.createStartEnd(ev.point, fitCurve.options.fitPoints[0]);
+        if (tangentS.magnitude() > Geometry.smallMetricDistance)
+          fitCurve.options.startTangent = tangentS;
+      } else {
+        const tangentE = Vector3d.createStartEnd(ev.point, fitCurve.options.fitPoints[fitCurve.options.fitPoints.length-1]);
+        if (tangentE.magnitude() > Geometry.smallMetricDistance)
+          fitCurve.options.endTangent = tangentE;
+      }
+
+      return fitCurve;
+    }
+
     // Don't include current point if it's the same as the last accepted point, want dynamics to show an accurate preview of what reset will accept...
     const includeCurrPt = (isDynamics && (0 === this.accepted.length || !ev.point.isAlmostEqual(this.accepted[this.accepted.length - 1])));
     const pts = (includeCurrPt ? [...this.accepted, ev.point] : this.accepted);
-    const numRequired = this.order;
+    const numRequired = this.requiredPointCount;
 
     if (pts.length < numRequired) {
       // Create point/linestring construction geometry to support join...
@@ -2049,27 +2129,41 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
       return LineString3d.create(1 === pts.length ? [pts[0], pts[0]] : pts);
     }
 
-    // TODO: Support physical closure by creating closed/rational bcurve...
-    if (BCurveMethod.ControlPoints === this.method)
+    // Create periodic-looking curve on physical closure with sufficient points even when not creating a loop/surface...
+    this._isPhysicallyClosedOrComplete = (undefined === this.continuationData && pts[0].isAlmostEqual(pts[pts.length -1]));
+
+    if (BCurveMethod.ControlPoints === this.method) {
+      if (this._isPhysicallyClosedOrComplete && this.order > 2) {
+        const tmpPts = pts.slice(undefined, -1); // Don't include closure point...
+        return BSplineCurve3d.createPeriodicUniformKnots(tmpPts, this.order);
+      }
+
       return BSplineCurve3d.createUniformKnots(pts, this.order);
-
-    // TODO: InterpolationCurve3d, set end tangents using continuation curve...self-closure, etc.
-    return BSplineCurveOps.createThroughPoints(pts, this.order);
-  }
-
-  protected override addConstructionGraphics(curve: CurvePrimitive, showCurve: boolean, context: DynamicsContext): void {
-    // TODO: Need proper Interpolation curve class to extract/show through points...
-    if (BCurveMethod.ThroughPoints === this.method && !showCurve && 0 !== this.accepted.length) {
-      const builder = context.createGraphic({ type: GraphicType.WorldOverlay });
-
-      builder.setSymbology(context.viewport.getContrastToBackgroundColor(), ColorDef.black, 5);
-      builder.addPointString(this.accepted);
-
-      context.addGraphic(builder.finish());
-      return;
     }
 
-    return super.addConstructionGraphics(curve, showCurve, context);
+    const interpProps: InterpolationCurve3dProps = { fitPoints: pts, closed: this._isPhysicallyClosedOrComplete, isChordLenKnots: 1, isColinearTangents: 1 };
+
+    // Create interpolation curve tangent to continuation curve...
+    if (undefined !== this.continuationData && this.tangents) {
+      const tangentS = this.continuationData.path.children[0].fractionToPointAndUnitTangent(0.0);
+      const tangentE = this.continuationData.path.children[this.continuationData.path.children.length - 1].fractionToPointAndUnitTangent(1.0);
+
+      if (pts[0].isAlmostEqual(tangentS.origin))
+        interpProps.startTangent = tangentS.direction.scale(-1);
+      else if (pts[0].isAlmostEqual(tangentE.origin))
+        interpProps.startTangent = tangentE.direction;
+
+      if (pts[pts.length - 1].isAlmostEqual(tangentS.origin))
+        interpProps.endTangent = tangentS.direction.scale(-1);
+      else if (pts[pts.length - 1].isAlmostEqual(tangentE.origin))
+        interpProps.endTangent = tangentE.direction;
+
+      this._isPhysicallyClosedOrComplete = (undefined !== interpProps.startTangent && undefined !== interpProps.endTangent);
+    }
+
+    const interpOpts = InterpolationCurve3dOptions.create(interpProps);
+
+    return InterpolationCurve3d.createCapture(interpOpts);
   }
 
   protected override getSnapGeometry(): GeometryQuery | undefined {
@@ -2080,14 +2174,54 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
     return super.getSnapGeometry();
   }
 
-  public override async onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
+  protected override async acceptPoint(ev: BeButtonEvent): Promise<boolean> {
+    switch (this._tangentPhase) {
+      case CreateCurvePhase.DefineOther:
+        return super.acceptPoint(ev);
+
+      case CreateCurvePhase.DefineStart:
+        this._tangentPhase = CreateCurvePhase.DefineEnd;
+        break;
+
+      case CreateCurvePhase.DefineEnd:
+        this._isPhysicallyClosedOrComplete = true;
+        break;
+    }
+
+    await this.updateCurveAndContinuationData(ev, false, CreateCurvePhase.DefineOther);
+    return true;
+  }
+
+  protected override async cancelPoint(ev: BeButtonEvent): Promise<boolean> {
     // NOTE: Starting another tool will not create element...require reset or closure...
     if (this.isComplete(ev)) {
+      if (BCurveMethod.ThroughPoints === this.method && this.tangents && this.current) {
+        const fitCurve = this.current as InterpolationCurve3d;
+
+        switch (this._tangentPhase) {
+          case CreateCurvePhase.DefineOther:
+            await this.updateCurveAndContinuationData(ev, false, CreateCurvePhase.DefineEnd);
+            this._tangentPhase = (undefined === fitCurve.options.startTangent ? CreateCurvePhase.DefineStart : CreateCurvePhase.DefineEnd);
+            IModelApp.toolAdmin.updateDynamics();
+            return false;
+
+          case CreateCurvePhase.DefineStart:
+            fitCurve.options.startTangent = undefined; // Not accepted, compute default start tangent...
+            this._tangentPhase = CreateCurvePhase.DefineEnd;
+            IModelApp.toolAdmin.updateDynamics();
+            return false;
+
+          case CreateCurvePhase.DefineEnd:
+            fitCurve.options.endTangent = undefined; // Not accepted, compute default end tangent...
+            await this.createElement();
+            return true;
+        }
+      }
+
       await this.updateCurveAndContinuationData(ev, false, CreateCurvePhase.DefineEnd);
       await this.createElement();
     }
-
-    return super.onResetButtonUp(ev);
+    return true;
   }
 
   private syncOrderState(): void {
@@ -2109,6 +2243,10 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
       this.order = updatedValue.value.value as number;
       IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.orderProperty.item);
       return true;
+    } else if (updatedValue.propertyName === this.tangentsProperty.name) {
+      this.tangents = updatedValue.value.value as boolean;
+      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.tangentsProperty.item);
+      return true;
     }
     return false;
   }
@@ -2116,7 +2254,10 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
   public override supplyToolSettingsProperties(): DialogItem[] | undefined {
     const toolSettings = new Array<DialogItem>();
     toolSettings.push(this.methodProperty.toDialogItem({ rowPriority: 1, columnIndex: 0 }));
-    toolSettings.push(this.orderProperty.toDialogItem({ rowPriority: 2, columnIndex: 1 }));
+    if (BCurveMethod.ThroughPoints === this.method)
+      toolSettings.push(this.tangentsProperty.toDialogItem({ rowPriority: 2, columnIndex: 0 }));
+    else
+      toolSettings.push(this.orderProperty.toDialogItem({ rowPriority: 2, columnIndex: 1 }));
     return toolSettings;
   }
 
@@ -2139,16 +2280,22 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
     if (undefined !== orderValue)
       this.orderProperty.dialogItemValue = orderValue;
 
+    const tangentsValue = IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValue(this.toolId, this.tangentsProperty.name);
+    if (undefined !== tangentsValue)
+      this.tangentsProperty.dialogItemValue = tangentsValue;
+
     return true;
   }
 
   /** The keyin takes the following arguments, all of which are optional:
    *  - `method=0|1` How bcurve will be defined. 0 for control points, 1 for through points.
    *  - `order=number` bcurve order from 2 to 16.
+   *  - 'tangents=0|1 Whether to specify start/end tangents for through points construction.
    */
   public override async parseAndRun(...inputArgs: string[]): Promise<boolean> {
     let bcurveMethod;
     let bcurveOrder;
+    let bcurveTangents;
 
     for (const arg of inputArgs) {
       const parts = arg.split("=");
@@ -2172,6 +2319,9 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
         if (order >= this.minOrder && order <= this.maxOrder) {
           bcurveOrder = order;
         }
+      } else if (parts[0].toLowerCase().startsWith("ta")) {
+        const tangents = Number.parseInt(parts[1], 10);
+        bcurveTangents = (0 !== tangents);
       }
     }
 
@@ -2181,6 +2331,9 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
 
     if (undefined !== bcurveOrder)
       IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: this.orderProperty.name, value: { value: bcurveOrder } });
+
+    if (undefined !== bcurveTangents)
+      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: this.tangentsProperty.name, value: { value: bcurveTangents } });
 
     return this.run();
   }

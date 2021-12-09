@@ -776,7 +776,7 @@ export namespace RenderSchedule {
     public addSymbologyOverrides(overrides: FeatureOverrides, time: number): void {
       const appearance = this.getFeatureAppearance(this.getVisibility(time), time);
       if (appearance)
-        overrides.overrideModel(this.modelId, appearance);
+        overrides.override({ modelId: this.modelId, appearance });
 
       for (const timeline of this.elementTimelines)
         timeline.addSymbologyOverrides(overrides, time);
@@ -810,9 +810,14 @@ export namespace RenderSchedule {
     public readonly containsFeatureOverrides: boolean;
     /** The total time period over which this script animates. */
     public readonly duration: Range1d;
+    /** The batchIds of all nodes in all timelines that apply a transform.
+     * @internal
+     */
+    public readonly transformBatchIds: ReadonlySet<number>;
 
     protected constructor(props: Readonly<ScriptProps>) {
       this.duration = Range1d.createNull();
+      const transformBatchIds = new Set<number>();
 
       const modelTimelines: ModelTimeline[] = [];
       let containsModelClipping = false;
@@ -830,6 +835,9 @@ export namespace RenderSchedule {
         requiresBatching ||= model.requiresBatching;
         containsTransform ||= model.containsTransform;
         containsFeatureOverrides ||= model.containsFeatureOverrides;
+
+        for (const batchId of model.transformBatchIds)
+          transformBatchIds.add(batchId);
       }
 
       this.modelTimelines = modelTimelines;
@@ -837,6 +845,7 @@ export namespace RenderSchedule {
       this.containsTransform = containsTransform;
       this.requiresBatching = requiresBatching || this.containsTransform;
       this.containsFeatureOverrides = containsFeatureOverrides;
+      this.transformBatchIds = transformBatchIds;
     }
 
     public static fromJSON(props: Readonly<ScriptProps>): Script | undefined {

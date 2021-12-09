@@ -17,8 +17,8 @@ import ReactDataGrid from "react-data-grid";
 import { DisposableList, Guid, GuidString } from "@itwin/core-bentley";
 import { PropertyValueFormat } from "@itwin/appui-abstract";
 import {
-  CommonProps, Dialog, ElementResizeObserver, isNavigationKey, ItemKeyboardNavigator, LocalSettingsStorage, Orientation, SortDirection, Timer,
-  UiSettings, UiSettingsStatus, UiSettingsStorage,
+  CommonProps, Dialog, ElementResizeObserver, isNavigationKey, ItemKeyboardNavigator, LocalStateStorage, Orientation, SortDirection, Timer,
+  UiStateStorage, UiStateStorageStatus,
 } from "@itwin/core-react";
 import {
   MultiSelectionHandler, OnItemsDeselectedCallback, OnItemsSelectedCallback, SelectionHandler, SingleSelectionHandler,
@@ -125,10 +125,10 @@ export interface TableProps extends CommonProps {
   /** Indicates whether the Table columns are reorderable */
   reorderableColumns?: boolean;
   /** Optional parameter for persistent UI settings. Used for column reordering and show persistency. */
-  settingsStorage?: UiSettingsStorage;
+  settingsStorage?: UiStateStorage;
   /** Optional parameter for persistent UI settings. Used for column reordering and show persistency.
    * @deprecated use settingsStorage property */
-  uiSettings?: UiSettings;
+  uiStateStorage?: UiStateStorage;
   /** Identifying string used for persistent state. */
   settingsIdentifier?: string;
   /** Custom property value renderer manager */
@@ -521,21 +521,20 @@ export class Table extends React.Component<TableProps, TableState> {
 
     let dataGridColumns = columnDescriptions.map(this._columnDescriptionToReactDataGridColumn);
     if (this.props.settingsIdentifier) {
-      // eslint-disable-next-line deprecation/deprecation
-      const settingsStorage: UiSettingsStorage = this.props.settingsStorage || /* istanbul ignore next */ this.props.uiSettings || /* istanbul ignore next */ new LocalSettingsStorage();
-      const reorderResult = await settingsStorage.getSetting(this.props.settingsIdentifier, "ColumnReorder");
+      const stateStorage: UiStateStorage = this.props.settingsStorage || /* istanbul ignore next */ this.props.uiStateStorage || /* istanbul ignore next */ new LocalStateStorage();
+      const reorderResult = await stateStorage.getSetting(this.props.settingsIdentifier, "ColumnReorder");
       // istanbul ignore next
-      if (reorderResult.status === UiSettingsStatus.Success) {
+      if (reorderResult.status === UiStateStorageStatus.Success) {
         const setting = reorderResult.setting as string[];
         // map columns according to the keys in columns, in the order of the loaded array of keys
         dataGridColumns = setting.map((key) => dataGridColumns.filter((col) => col.key === key)[0]);
-      } else if (reorderResult.status === UiSettingsStatus.NotFound) {
+      } else if (reorderResult.status === UiStateStorageStatus.NotFound) {
         const keys = columnDescriptions.map((col) => col.key);
-        await settingsStorage.saveSetting(this.props.settingsIdentifier, "ColumnReorder", keys);
+        await stateStorage.saveSetting(this.props.settingsIdentifier, "ColumnReorder", keys);
       }
-      const showhideResult = await settingsStorage.getSetting(this.props.settingsIdentifier, "ColumnShowHideHiddenColumns");
+      const showhideResult = await stateStorage.getSetting(this.props.settingsIdentifier, "ColumnShowHideHiddenColumns");
       // istanbul ignore next
-      if (showhideResult.status === UiSettingsStatus.Success) {
+      if (showhideResult.status === UiStateStorageStatus.Success) {
         const hiddenColumns = showhideResult.setting as string[];
         this.setState({ hiddenColumns });
       }
@@ -1323,9 +1322,9 @@ export class Table extends React.Component<TableProps, TableState> {
     cols.splice(columnTargetIndex, 0, cols.splice(columnSourceIndex, 1)[0]);
     // istanbul ignore else
     if (this.props.settingsIdentifier) {
-      const settingsStorage: UiSettingsStorage = this.props.settingsStorage || /* istanbul ignore next */ new LocalSettingsStorage();
+      const stateStorage: UiStateStorage = this.props.settingsStorage || /* istanbul ignore next */ new LocalStateStorage();
       const keys = cols.map((col) => col.key);
-      settingsStorage.saveSetting(this.props.settingsIdentifier, "ColumnReorder", keys); // eslint-disable-line @typescript-eslint/no-floating-promises
+      stateStorage.saveSetting(this.props.settingsIdentifier, "ColumnReorder", keys); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
     this.setState({ columns: [] }, () => { // fix react-data-grid update issues
       this.setState({ columns: cols });
@@ -1454,8 +1453,8 @@ export class Table extends React.Component<TableProps, TableState> {
   private _handleShowHideChange = (cols: string[]) => {
     this.setState({ hiddenColumns: cols });
     if (this.props.settingsIdentifier) {
-      const settingsStorage: UiSettingsStorage = this.props.settingsStorage || new LocalSettingsStorage();
-      settingsStorage.saveSetting(this.props.settingsIdentifier, "ColumnShowHideHiddenColumns", cols); // eslint-disable-line @typescript-eslint/no-floating-promises
+      const stateStorage: UiStateStorage = this.props.settingsStorage || new LocalStateStorage();
+      stateStorage.saveSetting(this.props.settingsIdentifier, "ColumnShowHideHiddenColumns", cols); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
     return true;
   };

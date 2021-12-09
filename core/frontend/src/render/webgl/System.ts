@@ -12,7 +12,6 @@ import {
   ColorDef, ElementAlignedBox3d, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSourceFormat, IModelError, PackedFeatureTable, RenderMaterial, RenderTexture,
 } from "@itwin/core-common";
 import { Capabilities, DepthType, WebGLContext } from "@itwin/webgl-compatibility";
-import { SkyBox } from "../../DisplayStyleState";
 import { imageElementFromImageSource } from "../../ImageUtil";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
@@ -25,13 +24,16 @@ import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
 import { RealityMeshPrimitive } from "../primitives/mesh/RealityMeshPrimitive";
 import { TerrainMeshPrimitive } from "../primitives/mesh/TerrainMeshPrimitive";
 import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
-import { MeshParams, PointStringParams, PolylineParams } from "../primitives/VertexTable";
+import { MeshParams } from "../primitives/VertexTable";
+import { PointStringParams } from "../primitives/PointStringParams";
+import { PolylineParams } from "../primitives/PolylineParams";
 import { RenderClipVolume } from "../RenderClipVolume";
 import { RenderGraphic, RenderGraphicOwner } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
 import { CreateTextureArgs, CreateTextureFromSourceArgs, TextureCacheKey, TextureTransparency } from "../RenderTexture";
 import {
-  DebugShaderFile, GLTimerResultCallback, PlanarGridProps, RenderAreaPattern, RenderDiagnostics, RenderGeometry, RenderSystem, RenderSystemDebugControl, TerrainTexture,
+  DebugShaderFile, GLTimerResultCallback, PlanarGridProps, RenderAreaPattern, RenderDiagnostics, RenderGeometry, RenderSkyBoxParams,
+  RenderSystem, RenderSystemDebugControl, TerrainTexture,
 } from "../RenderSystem";
 import { RenderTarget } from "../RenderTarget";
 import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "../ScreenSpaceEffectBuilder";
@@ -44,7 +46,7 @@ import { WebGLDisposable } from "./Disposable";
 import { DepthBuffer, FrameBufferStack } from "./FrameBuffer";
 import { GL } from "./GL";
 import { GLTimer } from "./GLTimer";
-import { Batch, Branch, Graphic, GraphicOwner, GraphicsArray } from "./Graphic";
+import { AnimationTransformBranch, Batch, Branch, Graphic, GraphicOwner, GraphicsArray } from "./Graphic";
 import { Layer, LayerContainer } from "./Layer";
 import { LineCode } from "./LineCode";
 import { Material } from "./Material";
@@ -189,10 +191,15 @@ export class IdMap implements WebGLDisposable {
       this.materials.set(material.key, material);
   }
 
-  /** Add a texture to this IdMap, given that it has a valid key. */
-  public addTexture(texture: RenderTexture) {
+  /** Add a texture to this IdMap, given that it has a valid string key. If specified, it will instead use the key parameter, which could also be a gradient symb. */
+  public addTexture(texture: RenderTexture, key?: TextureCacheKey) {
     assert(texture instanceof Texture);
-    if (texture.key)
+    if (undefined !== key) {
+      if ("string" === typeof key)
+        this.textures.set(key, texture);
+      else
+        this.addGradient(key, texture);
+    } else if (texture.key)
       this.textures.set(texture.key, texture);
   }
 
@@ -559,6 +566,10 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return new Branch(branch, transform, undefined, options);
   }
 
+  public override createAnimationTransformNode(graphic: RenderGraphic, nodeId: number): RenderGraphic {
+    return new AnimationTransformBranch(graphic, nodeId);
+  }
+
   public createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions): RenderGraphic {
     return new Batch(graphic, features, range, options);
   }
@@ -575,11 +586,10 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return new LayerContainer(graphic as Graphic, drawAsOverlay, transparency, elevation);
   }
 
-  public override createSkyBox(params: SkyBox.CreateParams): RenderGraphic | undefined {
-    if (undefined !== params.cube)
-      return SkyCubePrimitive.create(SkyBoxQuadsGeometry.create(params.cube));
+  public override createSkyBox(params: RenderSkyBoxParams): RenderGraphic | undefined {
+    if ("cube" === params.type)
+      return SkyCubePrimitive.create(SkyBoxQuadsGeometry.create(params.texture));
 
-    assert(undefined !== params.sphere || undefined !== params.gradient);
     return SkySpherePrimitive.create(SkySphereViewportQuadGeometry.createGeometry(params));
   }
 
@@ -681,7 +691,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
 
     const texture = new Texture({ handle, type, ownership: args.ownership });
     if (texture && info)
-      info.idMap.addTexture(texture);
+      info.idMap.addTexture(texture, info.key);
 
     return texture;
   }
@@ -864,9 +874,6 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
 
   // RenderSystemDebugControl
   public override get debugControl(): RenderSystemDebugControl { return this; }
-  private _drawSurfacesAsWiremesh = false;
-  public get drawSurfacesAsWiremesh() { return this._drawSurfacesAsWiremesh; }
-  public set drawSurfacesAsWiremesh(asWiremesh: boolean) { this._drawSurfacesAsWiremesh = asWiremesh; }
 
   private _dpiAwareLOD?: boolean;
   public override get dpiAwareLOD(): boolean { return this._dpiAwareLOD ?? super.dpiAwareLOD; }

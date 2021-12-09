@@ -965,7 +965,7 @@ export abstract class Viewport implements IDisposable {
   private attachToView(): void {
     this.registerDisplayStyleListeners(this.view.displayStyle);
     this.registerViewListeners();
-    this.view.attachToViewport();
+    this.view.attachToViewport(this);
     this._mapTiledGraphicsProvider = new MapTiledGraphicsProvider(this);
   }
 
@@ -2780,7 +2780,7 @@ export class ScreenViewport extends Viewport {
     return div;
   }
 
-  /** The HTMLImageElement of the iModel.js logo displayed in this ScreenViewport
+  /** The HTMLImageElement of the iTwin.js logo displayed in this ScreenViewport
    * @beta
    */
   public get logo() { return this._logo; }
@@ -2788,11 +2788,11 @@ export class ScreenViewport extends Viewport {
   /** @internal */
   protected addLogo() {
     const logo = this._logo = IModelApp.makeHTMLElement("img", { parent: this.vpDiv, className: "imodeljs-icon" });
-    logo.src = "images/imodeljs-icon.svg";
+    logo.src = `${IModelApp.publicPath}images/imodeljs-icon.svg`;
     logo.alt = "";
 
     const showLogos = (ev: Event) => {
-      const aboutBox = IModelApp.makeModalDiv({ autoClose: true, width: 460, closeBox: true }).modal;
+      const aboutBox = IModelApp.makeModalDiv({ autoClose: true, width: 460, closeBox: true, rootDiv: this.vpDiv.ownerDocument.body }).modal;
       aboutBox.className += " imodeljs-about"; // only added so the CSS knows this is the about dialog
       const logos = IModelApp.makeHTMLElement("table", { parent: aboutBox, className: "logo-cards" });
       if (undefined !== IModelApp.applicationLogoCard)
@@ -2955,7 +2955,7 @@ export class ScreenViewport extends Viewport {
       return npcPt.z < 1.0;
     };
 
-    if (this.view.getDisplayStyle3d().environment.ground.display) {
+    if (this.view.getDisplayStyle3d().environment.displayGround) {
       const groundPlane = Plane3dByOriginAndUnitNormal.create(Point3d.create(0, 0, this.view.getGroundElevation()), Vector3d.unitZ());
       if (undefined !== groundPlane && boresiteIntersect(groundPlane))
         return { plane: Plane3dByOriginAndUnitNormal.create(projectedPt, groundPlane.getNormalRef())!, source: DepthPointSource.GroundPlane };

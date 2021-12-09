@@ -10,11 +10,14 @@ import { BeButtonEvent } from '@itwin/core-frontend';
 import { BeEvent } from '@itwin/core-bentley';
 import { BeModifierKeys } from '@itwin/core-frontend';
 import { BooleanMode } from '@itwin/editor-common';
+import { BRepEntityType } from '@itwin/editor-common';
 import { BriefcaseConnection } from '@itwin/core-frontend';
 import { CanvasDecoration } from '@itwin/core-frontend';
 import { Cartographic } from '@itwin/core-common';
+import { ChamferMode } from '@itwin/editor-common';
 import { ClipShape } from '@itwin/core-geometry';
 import { ClipVector } from '@itwin/core-geometry';
+import { CoordinateLockOverrides } from '@itwin/core-frontend';
 import { CurvePrimitive } from '@itwin/core-geometry';
 import { DecorateContext } from '@itwin/core-frontend';
 import { DialogItem } from '@itwin/appui-abstract';
@@ -74,6 +77,7 @@ import { Vector3d } from '@itwin/core-geometry';
 import { ViewClipControlArrow } from '@itwin/core-frontend';
 import { Viewport } from '@itwin/core-frontend';
 import { XYAndZ } from '@itwin/core-geometry';
+import { XYZProps } from '@itwin/core-geometry';
 
 // @alpha (undocumented)
 export enum ArcMethod {
@@ -96,6 +100,30 @@ export enum BCurveMethod {
 }
 
 // @alpha
+export abstract class BlendEdgesTool extends LocateSubEntityTool {
+    // (undocumented)
+    protected addSubEntity(id: Id64String, props: SubEntityLocationProps): Promise<void>;
+    // (undocumented)
+    protected addTangentEdges(id: Id64String, edge?: SubEntityProps, chordTolerance?: number): Promise<void>;
+    // (undocumented)
+    protected get geometryCacheFilter(): ElementGeometryCacheFilter | undefined;
+    // (undocumented)
+    protected getAcceptedSubEntities(): SubEntityProps[];
+    // (undocumented)
+    protected getSubEntityFilter(): SubEntityFilter | undefined;
+    // (undocumented)
+    protected getTangentEdges(id: Id64String, edge: SubEntityProps): Promise<SubEntityProps[] | undefined>;
+    // (undocumented)
+    protected propagateSmooth: boolean;
+    // (undocumented)
+    protected removeSubEntity(id: Id64String, props?: SubEntityLocationProps): Promise<void>;
+    // (undocumented)
+    protected removeTangentEdges(_id: Id64String, edge?: SubEntityProps): Promise<void>;
+    // (undocumented)
+    protected wantSubEntityType(type: SubEntityType): boolean;
+}
+
+// @alpha
 export abstract class BooleanOperationTool extends ElementGeometryCacheTool {
     // (undocumented)
     protected get allowDragSelect(): boolean;
@@ -115,6 +143,22 @@ export abstract class BooleanOperationTool extends ElementGeometryCacheTool {
     processAgenda(_ev: BeButtonEvent): Promise<void>;
     // (undocumented)
     protected get requiredElementCount(): number;
+}
+
+// @alpha
+export class ChamferEdgesTool extends BlendEdgesTool {
+    // (undocumented)
+    protected applyAgendaOperation(ev: BeButtonEvent, isAccept: boolean): Promise<ElementGeometryResultProps | undefined>;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    protected length: number;
+    // (undocumented)
+    protected mode: ChamferMode;
+    // (undocumented)
+    onRestartTool(): Promise<void>;
+    // (undocumented)
+    static toolId: string;
 }
 
 // @alpha (undocumented)
@@ -194,9 +238,13 @@ export class CreateArcTool extends CreateOrContinuePathTool {
 // @alpha
 export class CreateBCurveTool extends CreateOrContinuePathTool {
     // (undocumented)
-    protected addConstructionGraphics(curve: CurvePrimitive, showCurve: boolean, context: DynamicsContext): void;
+    protected acceptPoint(ev: BeButtonEvent): Promise<boolean>;
     // (undocumented)
     applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean>;
+    // (undocumented)
+    protected cancelPoint(ev: BeButtonEvent): Promise<boolean>;
+    // (undocumented)
+    protected get createCurvePhase(): CreateCurvePhase;
     // (undocumented)
     protected createNewCurvePrimitive(ev: BeButtonEvent, isDynamics: boolean): CurvePrimitive | undefined;
     // (undocumented)
@@ -206,6 +254,10 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
     // (undocumented)
     protected isComplete(ev: BeButtonEvent): boolean;
     // (undocumented)
+    protected _isPhysicallyClosedOrComplete: boolean;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
     protected get maxOrder(): number;
     // (undocumented)
     get method(): BCurveMethod;
@@ -213,11 +265,11 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
     // (undocumented)
     get methodProperty(): DialogProperty<number>;
     // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
     protected get minOrder(): number;
     // (undocumented)
     onInstall(): Promise<boolean>;
-    // (undocumented)
-    onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
     onRestartTool(): Promise<void>;
     // (undocumented)
@@ -229,9 +281,20 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
     // (undocumented)
     protected provideToolAssistance(_mainInstrText?: string, _additionalInstr?: ToolAssistanceInstruction[]): void;
     // (undocumented)
+    protected get requiredPointCount(): number;
+    // (undocumented)
+    protected showConstructionGraphics(ev: BeButtonEvent, context: DynamicsContext): boolean;
+    // (undocumented)
     protected get showCurveConstructions(): boolean;
     // (undocumented)
     supplyToolSettingsProperties(): DialogItem[] | undefined;
+    // (undocumented)
+    protected _tangentPhase: CreateCurvePhase;
+    // (undocumented)
+    get tangents(): boolean;
+    set tangents(value: boolean);
+    // (undocumented)
+    get tangentsProperty(): DialogProperty<boolean>;
     // (undocumented)
     static toolId: string;
     // (undocumented)
@@ -244,6 +307,8 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
 export class CreateCircleTool extends CreateOrContinuePathTool {
     // (undocumented)
     applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean>;
+    // (undocumented)
+    protected cancelPoint(_ev: BeButtonEvent): Promise<boolean>;
     // (undocumented)
     protected get createCurvePhase(): CreateCurvePhase;
     // (undocumented)
@@ -267,8 +332,6 @@ export class CreateCircleTool extends CreateOrContinuePathTool {
     onPostInstall(): Promise<void>;
     // (undocumented)
     onReinitialize(): Promise<void>;
-    // (undocumented)
-    onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
     onRestartTool(): Promise<void>;
     parseAndRun(...inputArgs: string[]): Promise<boolean>;
@@ -347,13 +410,13 @@ export class CreateEllipseTool extends CreateOrContinuePathTool {
 // @alpha
 export class CreateLineStringTool extends CreateOrContinuePathTool {
     // (undocumented)
+    protected cancelPoint(ev: BeButtonEvent): Promise<boolean>;
+    // (undocumented)
     protected createNewCurvePrimitive(ev: BeButtonEvent, isDynamics: boolean): CurvePrimitive | undefined;
     // (undocumented)
     static iconSpec: string;
     // (undocumented)
     protected isComplete(ev: BeButtonEvent): boolean;
-    // (undocumented)
-    onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
     onRestartTool(): Promise<void>;
     // (undocumented)
@@ -384,6 +447,8 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
     protected get allowSimplify(): boolean;
     // (undocumented)
     static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]>;
+    // (undocumented)
+    protected cancelPoint(_ev: BeButtonEvent): Promise<boolean>;
     // (undocumented)
     protected clearGraphics(): void;
     // (undocumented)
@@ -460,6 +525,8 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
     onModifierKeyTransition(_wentDown: boolean, modifier: BeModifierKeys, _event: KeyboardEvent): Promise<EventHandled>;
     // (undocumented)
     onMouseMotion(ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
     onUndoPreviousStep(): Promise<boolean>;
     // (undocumented)
@@ -554,6 +621,42 @@ export class CreateRectangleTool extends CreateOrContinuePathTool {
     }
 
 // @alpha
+export class CutSolidElementsTool extends ElementGeometryCacheTool {
+    // (undocumented)
+    protected applyAgendaOperation(): Promise<ElementGeometryResultProps | undefined>;
+    // (undocumented)
+    protected bothDirections: boolean;
+    // (undocumented)
+    protected buildLocateAgenda(hit: HitDetail): Promise<boolean>;
+    // (undocumented)
+    protected createElementGeometryCache(id: Id64String): Promise<boolean>;
+    // (undocumented)
+    protected distance: number;
+    // (undocumented)
+    protected get geometryCacheFilter(): ElementGeometryCacheFilter | undefined;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    protected get isProfilePhase(): boolean;
+    // (undocumented)
+    protected onAgendaModified(): Promise<void>;
+    // (undocumented)
+    onRestartTool(): Promise<void>;
+    // (undocumented)
+    protected outside: undefined;
+    // (undocumented)
+    processAgenda(_ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    protected get requiredElementCount(): number;
+    // (undocumented)
+    protected targetPoint?: Point3d;
+    // (undocumented)
+    static toolId: string;
+    // (undocumented)
+    protected toolPoint?: Point3d;
+}
+
+// @alpha
 export class DeleteElementsTool extends ElementSetTool {
     // (undocumented)
     protected get allowDragSelect(): boolean;
@@ -575,6 +678,26 @@ export class DeleteElementsTool extends ElementSetTool {
     protected get requireAcceptForSelectionSetOperation(): boolean;
     // (undocumented)
     static toolId: string;
+}
+
+// @alpha
+export class DeleteSubEntitiesTool extends LocateSubEntityTool {
+    // (undocumented)
+    protected applyAgendaOperation(ev: BeButtonEvent, isAccept: boolean): Promise<ElementGeometryResultProps | undefined>;
+    // (undocumented)
+    protected doPickSubEntities(id: Id64String, ev: BeButtonEvent): Promise<SubEntityLocationProps[] | undefined>;
+    // (undocumented)
+    protected get geometryCacheFilter(): ElementGeometryCacheFilter | undefined;
+    // (undocumented)
+    protected getMaximumSubEntityHits(type: SubEntityType): number;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    onRestartTool(): Promise<void>;
+    // (undocumented)
+    static toolId: string;
+    // (undocumented)
+    protected wantSubEntityType(type: SubEntityType): boolean;
 }
 
 // @alpha (undocumented)
@@ -628,7 +751,11 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
     // (undocumented)
     addFeatureOverrides(overrides: FeatureSymbology.Overrides, _vp: Viewport): void;
     // (undocumented)
-    protected get agendaAppearance(): FeatureAppearance;
+    protected agendaAppearance(isDynamics: boolean): FeatureAppearance;
+    // (undocumented)
+    protected _agendaAppearanceDefault?: FeatureAppearance;
+    // (undocumented)
+    protected _agendaAppearanceDynamic?: FeatureAppearance;
     // (undocumented)
     protected allowView(vp: Viewport): boolean;
     // (undocumented)
@@ -639,6 +766,8 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
     protected clearElementGeometryCache(): Promise<void>;
     // (undocumented)
     protected clearGraphic(): void;
+    // (undocumented)
+    protected createElementGeometryCache(id: Id64String): Promise<boolean>;
     // (undocumented)
     protected createGraphic(graphicData: Uint8Array): Promise<void>;
     // (undocumented)
@@ -665,6 +794,8 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
     onCleanup(): Promise<void>;
     // (undocumented)
     onDynamicFrame(_ev: BeButtonEvent, context: DynamicsContext): void;
+    // (undocumented)
+    protected onGeometryCacheFilterChanged(): void;
     // (undocumented)
     onMouseMotion(ev: BeButtonEvent): Promise<void>;
     // (undocumented)
@@ -703,9 +834,48 @@ export class ElementGeometryGraphicsProvider {
 }
 
 // @alpha
+export class EmbossSolidElementsTool extends ElementGeometryCacheTool {
+    // (undocumented)
+    protected applyAgendaOperation(): Promise<ElementGeometryResultProps | undefined>;
+    // (undocumented)
+    protected buildLocateAgenda(hit: HitDetail): Promise<boolean>;
+    // (undocumented)
+    protected get geometryCacheFilter(): ElementGeometryCacheFilter | undefined;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    protected get isProfilePhase(): boolean;
+    // (undocumented)
+    protected onAgendaModified(): Promise<void>;
+    // (undocumented)
+    onRestartTool(): Promise<void>;
+    // (undocumented)
+    processAgenda(_ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    protected get requiredElementCount(): number;
+    // (undocumented)
+    protected targetPoint?: Point3d;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha (undocumented)
+export class FaceLocationData {
+    constructor(point: Point3d, normal: Vector3d);
+    // (undocumented)
+    static create(pointProps: XYZProps, normalProps: XYZProps): FaceLocationData;
+    // (undocumented)
+    normal: Vector3d;
+    // (undocumented)
+    point: Point3d;
+}
+
+// @alpha
 export class HollowFacesTool extends LocateSubEntityTool {
     // (undocumented)
     protected applyAgendaOperation(ev: BeButtonEvent, isAccept: boolean): Promise<ElementGeometryResultProps | undefined>;
+    // (undocumented)
+    protected faceThickness: number;
     // (undocumented)
     protected get geometryCacheFilter(): ElementGeometryCacheFilter | undefined;
     // (undocumented)
@@ -713,7 +883,62 @@ export class HollowFacesTool extends LocateSubEntityTool {
     // (undocumented)
     onRestartTool(): Promise<void>;
     // (undocumented)
+    protected shellThickness: number;
+    // (undocumented)
     static toolId: string;
+}
+
+// @alpha
+export class ImprintSolidElementsTool extends LocateSubEntityTool {
+    // (undocumented)
+    protected get allowSubEntityControlSelect(): boolean;
+    // (undocumented)
+    protected applyAgendaOperation(_ev: BeButtonEvent, isAccept: boolean): Promise<ElementGeometryResultProps | undefined>;
+    // (undocumented)
+    protected createSubEntityData(id: Id64String, hit: SubEntityLocationProps): Promise<SubEntityData>;
+    // (undocumented)
+    protected distance: number;
+    // (undocumented)
+    protected extend: boolean;
+    // (undocumented)
+    protected gatherInput(ev: BeButtonEvent): Promise<EventHandled | undefined>;
+    // (undocumented)
+    protected get geometryCacheFilter(): ElementGeometryCacheFilter | undefined;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    protected get inhibitSubEntityDisplay(): boolean;
+    // (undocumented)
+    protected method: ImprintSolidMethod;
+    // (undocumented)
+    protected onAgendaModified(): Promise<void>;
+    // (undocumented)
+    onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void;
+    // (undocumented)
+    onRestartTool(): Promise<void>;
+    // (undocumented)
+    protected points: Point3d[];
+    // (undocumented)
+    protected get requiredElementCount(): number;
+    // (undocumented)
+    protected setupAccuDraw(): void;
+    // (undocumented)
+    static toolId: string;
+    // (undocumented)
+    protected get wantAccuSnap(): boolean;
+    // (undocumented)
+    protected get wantAdditionalInput(): boolean;
+    // (undocumented)
+    protected get wantDynamics(): boolean;
+    // (undocumented)
+    protected wantSubEntityType(type: SubEntityType): boolean;
+}
+
+// @alpha (undocumented)
+export enum ImprintSolidMethod {
+    Edges = 1,
+    Element = 0,
+    Points = 2
 }
 
 // @alpha
@@ -728,58 +953,156 @@ export class IntersectSolidElementsTool extends BooleanOperationTool {
     static toolId: string;
 }
 
+// @alpha (undocumented)
+export function isSameSubEntity(a: SubEntityProps, b: SubEntityProps): boolean;
+
+// @alpha
+export abstract class LocateFaceOrProfileTool extends LocateSubEntityTool {
+    // (undocumented)
+    protected createSubEntityData(id: Id64String, hit: SubEntityLocationProps): Promise<SubEntityData>;
+    // (undocumented)
+    protected doPickSubEntities(id: Id64String, ev: BeButtonEvent): Promise<SubEntityLocationProps[] | undefined>;
+    // (undocumented)
+    protected drawAcceptedSubEntities(context: DecorateContext): void;
+    // (undocumented)
+    protected drawSubEntity(context: DecorateContext, subEntity: SubEntityData, accepted: boolean): void;
+    // (undocumented)
+    protected get geometryCacheFilter(): ElementGeometryCacheFilter | undefined;
+    // (undocumented)
+    protected get wantGeometrySummary(): boolean;
+    // (undocumented)
+    protected wantSubEntityType(type: SubEntityType): boolean;
+}
+
 // @alpha
 export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
     // (undocumented)
-    protected _acceptedSubEntity?: SubEntityLocationProps;
+    protected _acceptedSubEntities: SubEntityData[];
+    protected addSubEntity(id: Id64String, props: SubEntityLocationProps): Promise<void>;
+    // (undocumented)
+    protected get allowSubEntityControlDeselect(): boolean;
+    // (undocumented)
+    protected get allowSubEntityControlSelect(): boolean;
+    // (undocumented)
+    protected get allowSubEntitySelectNext(): boolean;
     // (undocumented)
     protected applyAgendaOperation(_ev: BeButtonEvent, _isAccept: boolean): Promise<ElementGeometryResultProps | undefined>;
     // (undocumented)
+    protected changeCurrentSubEntity(id?: Id64String, current?: SubEntityLocationProps, chordTolerance?: number): Promise<boolean>;
+    // (undocumented)
+    changeLocateState(enableLocate: boolean, enableSnap?: boolean, cursor?: string, coordLockOvr?: CoordinateLockOverrides): void;
+    // (undocumented)
     protected chooseNextHit(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
-    protected clearSubEntityGraphic(): void;
+    protected clearCurrentSubEntity(): void;
+    // (undocumented)
+    protected clearSubEntityGraphics(): void;
+    // (undocumented)
+    protected createElementGeometryCache(id: Id64String): Promise<boolean>;
+    // (undocumented)
+    protected createElementGeometrySummary(id: Id64String): Promise<boolean>;
+    // (undocumented)
+    protected createSubEntityData(id: Id64String, hit: SubEntityLocationProps): Promise<SubEntityData>;
+    // (undocumented)
+    protected createSubEntityGraphic(id: Id64String, data: SubEntityData, chordTolerance?: number): Promise<boolean>;
     // (undocumented)
     protected _currentSubEntity?: SubEntityData;
     // (undocumented)
     decorate(context: DecorateContext): void;
     // (undocumented)
+    decorateSuspended(context: DecorateContext): void;
     protected doLocateSubEntity(ev: BeButtonEvent, newSearch: boolean): Promise<boolean>;
     // (undocumented)
     protected doPickSubEntities(id: Id64String, ev: BeButtonEvent): Promise<SubEntityLocationProps[] | undefined>;
     // (undocumented)
+    protected drawAcceptedSubEntities(context: DecorateContext): void;
+    // (undocumented)
+    protected drawSubEntity(context: DecorateContext, subEntity: SubEntityData, accepted: boolean): void;
+    // (undocumented)
     protected gatherInput(ev: BeButtonEvent): Promise<EventHandled | undefined>;
+    // (undocumented)
+    protected getAcceptedSubEntities(): SubEntityProps[];
+    // (undocumented)
+    protected getAcceptedSubEntityData(index?: number): SubEntityData | undefined;
+    // (undocumented)
+    protected getBRepEntityTypeForSubEntity(id: Id64String, subEntity: SubEntityProps): BRepEntityType;
+    // (undocumented)
+    protected getCurrentElement(): Id64String | undefined;
     // (undocumented)
     protected getGraphicData(ev: BeButtonEvent): Promise<Uint8Array | undefined>;
     // (undocumented)
     protected getLocateAperture(ev: BeButtonEvent): number;
     // (undocumented)
-    protected getMaximumSubEntityHits(type: SubEntityType): 0 | 25;
+    protected getMaximumSubEntityHits(type: SubEntityType): number;
     // (undocumented)
     protected getMaxRayDistance(ev: BeButtonEvent, aperture: number): number;
     // (undocumented)
+    protected getRayOrigin(ev: BeButtonEvent): Point3d;
+    // (undocumented)
     protected getSubEntityFilter(): SubEntityFilter | undefined;
     // (undocumented)
+    protected get haveAcceptedSubEntities(): boolean;
+    // (undocumented)
+    protected get inhibitSubEntityDisplay(): boolean;
+    // (undocumented)
+    protected _locatedSubEntities?: SubEntityLocationProps[];
+    // (undocumented)
     onCleanup(): Promise<void>;
+    // (undocumented)
+    onModifierKeyTransition(wentDown: boolean, modifier: BeModifierKeys, event: KeyboardEvent): Promise<EventHandled>;
     // (undocumented)
     protected pickSubEntities(id: Id64String, boresite: Ray3d, maxFace: number, maxEdge: number, maxVertex: number, maxDistance: number, hiddenEdgesVisible: boolean, filter?: SubEntityFilter): Promise<SubEntityLocationProps[] | undefined>;
     // (undocumented)
     processAgenda(ev: BeButtonEvent): Promise<void>;
+    protected removeSubEntity(_id: Id64String, props?: SubEntityLocationProps): Promise<void>;
     // (undocumented)
-    protected setCurrentSubEntity(id?: Id64String, current?: SubEntityLocationProps, chordTolerance?: number): Promise<boolean>;
+    protected get requiredSubEntityCount(): number;
+    // (undocumented)
+    protected setCurrentSubEntity(id: Id64String, hit: SubEntityLocationProps, chordTolerance?: number): Promise<boolean>;
     // (undocumented)
     protected setupAccuDraw(): void;
     // (undocumented)
     protected setupAndPromptForNextAction(): void;
     // (undocumented)
+    protected get shouldEnableSnap(): boolean;
+    // (undocumented)
+    protected readonly _summaryIds: Map<string, BRepEntityType[]>;
+    // (undocumented)
+    protected updateCurrentSubEntity(ev: BeButtonEvent): Promise<boolean>;
+    // (undocumented)
     protected updateGraphic(ev: BeButtonEvent, isDynamics: boolean): Promise<void>;
     // (undocumented)
-    protected updateSubEntityGraphic(ev: BeButtonEvent): Promise<boolean>;
-    // (undocumented)
-    protected get wantAdditionalInput(): boolean;
+    protected get wantAdditionalSubEntities(): boolean;
     // (undocumented)
     protected get wantAgendaAppearanceOverride(): boolean;
     // (undocumented)
+    protected get wantGeometrySummary(): boolean;
+    // (undocumented)
+    protected wantHiddenEdges(vp: Viewport): boolean;
+    // (undocumented)
+    protected get wantSubEntitySnap(): boolean;
+    // (undocumented)
     protected wantSubEntityType(type: SubEntityType): boolean;
+}
+
+// @alpha
+export class LoftProfilesTool extends ElementGeometryCacheTool {
+    // (undocumented)
+    protected applyAgendaOperation(): Promise<ElementGeometryResultProps | undefined>;
+    // (undocumented)
+    protected get controlKeyContinuesSelection(): boolean;
+    // (undocumented)
+    protected get geometryCacheFilter(): ElementGeometryCacheFilter | undefined;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    onRestartTool(): Promise<void>;
+    // (undocumented)
+    processAgenda(_ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    protected get requiredElementCount(): number;
+    // (undocumented)
+    static toolId: string;
 }
 
 // @alpha
@@ -799,23 +1122,42 @@ export class MoveElementsTool extends TransformElementsTool {
 // @alpha
 export class OffsetFacesTool extends LocateSubEntityTool {
     // (undocumented)
+    protected addSmoothFaces: boolean;
+    // (undocumented)
     protected applyAgendaOperation(ev: BeButtonEvent, isAccept: boolean): Promise<ElementGeometryResultProps | undefined>;
+    // (undocumented)
+    protected createSubEntityData(id: Id64String, hit: SubEntityLocationProps): Promise<SubEntityData>;
+    // (undocumented)
+    protected drawAcceptedSubEntities(context: DecorateContext): void;
     // (undocumented)
     protected get geometryCacheFilter(): ElementGeometryCacheFilter | undefined;
     // (undocumented)
+    protected getSmoothFaces(id: Id64String, face: SubEntityProps): Promise<SubEntityProps[] | undefined>;
+    // (undocumented)
     static iconSpec: string;
     // (undocumented)
-    onRestartTool(): Promise<void>;
+    protected offset: number;
     // (undocumented)
-    requireWriteableTarget(): boolean;
+    onRestartTool(): Promise<void>;
     // (undocumented)
     protected setupAccuDraw(): void;
     // (undocumented)
     static toolId: string;
     // (undocumented)
+    protected useOffset: boolean;
+    // (undocumented)
     protected get wantAccuSnap(): boolean;
     // (undocumented)
     protected get wantDynamics(): boolean;
+}
+
+// @alpha (undocumented)
+export class ProfileLocationData {
+    constructor(point: Point3d, orientation: Vector3d | Matrix3d);
+    // (undocumented)
+    orientation: Vector3d | Matrix3d;
+    // (undocumented)
+    point: Point3d;
 }
 
 // @beta
@@ -1239,6 +1581,20 @@ export enum RotateMethod {
 }
 
 // @alpha
+export class RoundEdgesTool extends BlendEdgesTool {
+    // (undocumented)
+    protected applyAgendaOperation(ev: BeButtonEvent, isAccept: boolean): Promise<ElementGeometryResultProps | undefined>;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    onRestartTool(): Promise<void>;
+    // (undocumented)
+    protected radius: number;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
 export class SewSheetElementsTool extends ElementGeometryCacheTool {
     // (undocumented)
     protected get allowDragSelect(): boolean;
@@ -1262,8 +1618,41 @@ export class SewSheetElementsTool extends ElementGeometryCacheTool {
     static toolId: string;
 }
 
+// @alpha
+export class SpinFacesTool extends LocateFaceOrProfileTool {
+    // (undocumented)
+    protected applyAgendaOperation(ev: BeButtonEvent, isAccept: boolean): Promise<ElementGeometryResultProps | undefined>;
+    // (undocumented)
+    protected gatherInput(ev: BeButtonEvent): Promise<EventHandled | undefined>;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void;
+    // (undocumented)
+    onRestartTool(): Promise<void>;
+    // (undocumented)
+    protected points: Point3d[];
+    // (undocumented)
+    protected setupAccuDraw(): void;
+    // (undocumented)
+    protected sweep: number;
+    // (undocumented)
+    static toolId: string;
+    // (undocumented)
+    protected get wantAccuSnap(): boolean;
+    // (undocumented)
+    protected get wantAdditionalInput(): boolean;
+    // (undocumented)
+    protected get wantDynamics(): boolean;
+    // (undocumented)
+    protected get wantSubEntitySnap(): boolean;
+}
+
 // @alpha (undocumented)
 export class SubEntityData {
+    constructor(props: SubEntityProps);
+    // (undocumented)
+    chordTolerance?: number;
     // (undocumented)
     cleanupGraphic(): void;
     // (undocumented)
@@ -1271,17 +1660,19 @@ export class SubEntityData {
     // (undocumented)
     display(context: DecorateContext, accepted: boolean): void;
     // (undocumented)
-    geom?: SubEntityGeometryProps;
+    get geometry(): SubEntityGeometryProps | undefined;
+    set geometry(value: SubEntityGeometryProps | undefined);
     // (undocumented)
     getAppearance(vp: Viewport, accepted: boolean): FeatureAppearance;
     // (undocumented)
-    protected _graphicsProvider?: ElementGeometryGraphicsProvider;
-    // (undocumented)
     get hasGraphic(): boolean;
     // (undocumented)
-    info?: SubEntityProps;
-    // (undocumented)
     isSame(other: SubEntityProps): boolean;
+    // (undocumented)
+    get props(): SubEntityProps;
+    set props(value: SubEntityProps);
+    // (undocumented)
+    toolData?: any;
 }
 
 // @alpha
@@ -1292,6 +1683,72 @@ export class SubtractSolidElementsTool extends BooleanOperationTool {
     protected get mode(): BooleanMode;
     // (undocumented)
     onRestartTool(): Promise<void>;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
+export class SweepAlongPathTool extends ElementGeometryCacheTool {
+    // (undocumented)
+    protected applyAgendaOperation(): Promise<ElementGeometryResultProps | undefined>;
+    // (undocumented)
+    protected get geometryCacheFilter(): ElementGeometryCacheFilter | undefined;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    onRestartTool(): Promise<void>;
+    // (undocumented)
+    processAgenda(_ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    protected get requiredElementCount(): number;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
+export class SweepFacesTool extends LocateFaceOrProfileTool {
+    // (undocumented)
+    protected addSmoothFaces: boolean;
+    // (undocumented)
+    protected applyAgendaOperation(ev: BeButtonEvent, isAccept: boolean): Promise<ElementGeometryResultProps | undefined>;
+    // (undocumented)
+    protected distance: number;
+    // (undocumented)
+    protected getSmoothFaces(id: Id64String, face: SubEntityProps): Promise<SubEntityProps[] | undefined>;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    onRestartTool(): Promise<void>;
+    // (undocumented)
+    protected setupAccuDraw(): void;
+    // (undocumented)
+    static toolId: string;
+    // (undocumented)
+    protected useDistance: boolean;
+    // (undocumented)
+    protected get wantAccuSnap(): boolean;
+    // (undocumented)
+    protected get wantDynamics(): boolean;
+    // (undocumented)
+    protected get wantSubEntitySnap(): boolean;
+}
+
+// @alpha
+export class ThickenSheetElementsTool extends ElementGeometryCacheTool {
+    // (undocumented)
+    protected applyAgendaOperation(): Promise<ElementGeometryResultProps | undefined>;
+    // (undocumented)
+    protected backDistance: number;
+    // (undocumented)
+    protected frontDistance: number;
+    // (undocumented)
+    protected get geometryCacheFilter(): ElementGeometryCacheFilter | undefined;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    onRestartTool(): Promise<void>;
+    // (undocumented)
+    processAgenda(_ev: BeButtonEvent): Promise<void>;
     // (undocumented)
     static toolId: string;
 }

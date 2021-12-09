@@ -8,17 +8,16 @@ import * as sinon from "sinon";
 import { fireEvent } from "@testing-library/react";
 import { expect } from "chai";
 
-import { Localization } from "@itwin/core-common";
-import { ITwinLocalization } from "@itwin/core-i18n";
-import { UserInfo } from "../appui-react/UserInfo";
 import { ContentLayoutProps, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyRecord, PropertyValueFormat, StandardContentLayouts, StandardTypeNames } from "@itwin/appui-abstract";
-import { UiSettings, UiSettingsResult, UiSettingsStatus } from "@itwin/core-react";
+import { UiStateStorage, UiStateStorageResult, UiStateStorageStatus } from "@itwin/core-react";
 
 import {
   ActionsUnion, combineReducers, ContentGroup, createAction, DeepReadonly, FrameworkReducer,
   FrameworkState, SyncUiEventDispatcher, ToolSettingsManager, UiFramework,
 } from "../appui-react";
 import { TestContentControl } from "./frontstage/FrontstageTestUtils";
+
+/* eslint-disable deprecation/deprecation */
 
 interface SampleAppState {
   placeHolder?: boolean;
@@ -28,7 +27,7 @@ const initialState: SampleAppState = {
   placeHolder: false,
 };
 
-/** @internal */
+/** */
 export interface RootState {
   sampleAppState: SampleAppState;
   testDifferentFrameworkKey?: FrameworkState;
@@ -55,20 +54,13 @@ function SampleAppReducer(state: SampleAppState = initialState, action: SampleAp
 
 /** @internal */
 export class TestUtils {
-  private static _localization?: Localization;
   private static _uiFrameworkInitialized = false;
   public static store: Store<RootState>;
 
   private static _rootReducer: any;
 
-  public static get localization(): Localization {
-    return TestUtils._localization!;
-  }
-
   public static async initializeUiFramework(testAlternateKey = false) {
     if (!TestUtils._uiFrameworkInitialized) {
-      TestUtils._localization = new ITwinLocalization();
-      await TestUtils._localization.initialize(["IModelJs"]);
       if (testAlternateKey) {
         // this is the rootReducer for the test application.
         this._rootReducer = combineReducers({
@@ -103,9 +95,7 @@ export class TestUtils {
     TestUtils._uiFrameworkInitialized = false;
   }
 
-  /** Define Content Layouts referenced by Frontstages.
-   */
-
+  /** Define Content Layouts referenced by Frontstages. */
   public static fourQuadrants: ContentLayoutProps = {
     id: "FourQuadrants",
     description: "SampleApp:ContentLayoutDef.FourQuadrants",
@@ -117,8 +107,7 @@ export class TestUtils {
     },
   };
 
-  /** Define Content Groups referenced by Frontstages.
-   */
+  /** Define Content Groups referenced by Frontstages. */
   public static TestContentGroup1 = new ContentGroup({
     id: "TestContentGroup1",
     layout: StandardContentLayouts.fourQuadrants,
@@ -195,16 +184,6 @@ export class TestUtils {
 // cSpell:ignore testuser mailinator saml
 
 /** @internal */
-export const mockUserInfo = (): UserInfo => {
-  const id = "596c0d8b-eac2-46a0-aa4a-b590c3314e7c";
-  const email = { id: "testuser001@mailinator.com" };
-  const profile = { firstName: "test", lastName: "user" };
-  const organization = { id: "fefac5b-bcad-488b-aed2-df27bffe5786", name: "Bentley" };
-  const featureTracking = { ultimateSite: "1004144426", usageCountryIso: "US" };
-  return new UserInfo(id, email, profile, organization, featureTracking);
-};
-
-/** @internal */
 export const storageMock = () => {
   const storage: { [key: string]: any } = {};
   return {
@@ -228,24 +207,24 @@ export const storageMock = () => {
 };
 
 /** @internal */
-export class UiSettingsStub implements UiSettings {
-  public async deleteSetting(): Promise<UiSettingsResult> {
+export class UiStateStorageStub implements UiStateStorage {
+  public async deleteSetting(): Promise<UiStateStorageResult> {
     return {
-      status: UiSettingsStatus.Success,
+      status: UiStateStorageStatus.Success,
       setting: {},
     };
   }
 
-  public async getSetting(): Promise<UiSettingsResult> {
+  public async getSetting(): Promise<UiStateStorageResult> {
     return {
-      status: UiSettingsStatus.NotFound,
+      status: UiStateStorageStatus.NotFound,
       setting: {},
     };
   }
 
-  public async saveSetting(): Promise<UiSettingsResult> {
+  public async saveSetting(): Promise<UiStateStorageResult> {
     return {
-      status: UiSettingsStatus.Success,
+      status: UiStateStorageStatus.Success,
       setting: {},
     };
   }

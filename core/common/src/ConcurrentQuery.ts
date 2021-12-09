@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module iModels
  */
-import { BentleyError, CompressedId64Set, DbResult, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
+import { BentleyError, CompressedId64Set, DbResult, Id64, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import { Point2d, Point3d } from "@itwin/core-geometry";
 
 /**
@@ -13,20 +13,20 @@ import { Point2d, Point3d } from "@itwin/core-geometry";
  * [IModelConnection]($frontend), [IModelDb]($backend), and [ECDb]($backend).
  *
  * @public
- * */
+ */
 export enum QueryRowFormat {
   /** Each row is an object in which each non-null column value can be accessed by its name as defined in the ECSql.
    * Null values are omitted.
    */
   UseECSqlPropertyNames,
-  /** Each row is an object in which each non-null column value can be accessed by a [remapped property name]($docs/learning/ECSqlRowFormat.md).
-   * This format is backwards-compatible with the format produced by iModel.js version 2.x. Null values are omitted.
-   */
-  UseJsPropertyNames,
   /** Each row is an array of values accessed by an index corresponding to the property's position in the ECSql SELECT statement.
    * Null values are included if they are followed by a non-null column, but trailing null values at the end of the array are omitted.
    */
-  UseArrayIndexes,
+  UseECSqlPropertyIndexes,
+  /** Each row is an object in which each non-null column value can be accessed by a [remapped property name]($docs/learning/ECSqlRowFormat.md).
+   * This format is backwards-compatible with the format produced by iTwin.js 2.x. Null values are omitted.
+   */
+  UseJsPropertyNames,
 }
 /**
  * Specify limit or range of rows to return
@@ -45,7 +45,7 @@ export interface QueryPropertyMetaData {
   index: number;
   jsonName: string;
   name: string;
-  system: boolean;
+  extendType: string;
   typeName: string;
 }
 /** @beta */
@@ -106,6 +106,10 @@ export interface QueryOptions extends BaseReaderOptions {
    * When true, XXXXClassId property will be returned as className.
    * */
   convertClassIdsToClassNames?: boolean;
+  /**
+   * Determine row format.
+   */
+  rowFormat?: QueryRowFormat;
 }
 /** @beta */
 export type BlobRange = QueryLimit;
@@ -127,6 +131,7 @@ export class QueryOptionsBuilder {
   public setSuppressLogErrors(val: boolean) { this._options.suppressLogErrors = val; return this; }
   public setConvertClassIdsToNames(val: boolean) { this._options.convertClassIdsToClassNames = val; return this; }
   public setLimit(val: QueryLimit) { this._options.limit = val; return this; }
+  public setRowFormat(val: QueryRowFormat){ this._options.rowFormat = val; return this; }
 }
 /** @beta */
 export class BlobOptionsBuilder {
@@ -218,10 +223,11 @@ export class QueryBinder {
   public bindIdSet(indexOrName: string | number, val: OrderedId64Iterable) {
     this.verify(indexOrName);
     const name = String(indexOrName);
+    OrderedId64Iterable.uniqueIterator(val);
     Object.defineProperty(this._args, name, {
       enumerable: true, value: {
         type: QueryParamType.IdSet,
-        value: CompressedId64Set.compressIds(val),
+        value: CompressedId64Set.sortAndCompress(OrderedId64Iterable.uniqueIterator(val)),
       },
     });
     return this;
@@ -316,7 +322,7 @@ export class QueryBinder {
       params.bindPoint2d(nameOrId, val);
     } else if (val instanceof Point3d) {
       params.bindPoint3d(nameOrId, val);
-    } else if (val instanceof Set) {
+    } else if (val instanceof Array && val.length > 0 && typeof val[0] === "string" && Id64.isValidId64(val[0])) {
       params.bindIdSet(nameOrId, val);
     } else if (typeof val === "object" && !Array.isArray(val)) {
       params.bindStruct(nameOrId, val);
@@ -359,19 +365,31 @@ export enum DbResponseKind {
 }
 /** @internal */
 export enum DbResponseStatus {
-  Error = 0,
-  Done = 1,
-  Cancel = 2,
-  Partial = 3,
-  TimeOut = 4,
-  QueueFull = 5
+  Done = 1,  /* query ran to completion. */
+  Cancel = 2, /*  Requested by user.*/
+  Partial = 3, /*  query was running but ran out of quota.*/
+  Timeout = 4, /*  query time quota expired while it was in queue.*/
+  QueueFull = 5, /*  could not submit the query as queue was full.*/
+  Error = 100, /*  generic error*/
+  Error_ECSql_PreparedFailed = Error + 1, /*  ecsql prepared failed*/
+  Error_ECSql_StepFailed = Error + 2, /*  ecsql step failed*/
+  Error_ECSql_RowToJsonFailed = Error + 3, /*  ecsql failed to serialized row to json.*/
+  Error_ECSql_BindingFailed = Error + 4, /*  ecsql binding failed.*/
+  Error_BlobIO_OpenFailed = Error + 5, /*  class or property or instance specified was not found or property as not of type blob.*/
+  Error_BlobIO_OutOfRange = Error + 6, /*  range specified is invalid based on size of blob.*/
+}
+/** @internal */
+export enum DbValueFormat {
+  ECSqlNames = 0,
+  JsNames = 1
 }
 /** @internal */
 export interface DbRequest extends BaseReaderOptions {
-  kind: DbRequestKind;
+  kind?: DbRequestKind;
 }
 /** @internal */
 export interface DbQueryRequest extends DbRequest, QueryOptions {
+  valueFormat?: DbValueFormat;
   query: string;
   args?: object;
 }
@@ -405,7 +423,7 @@ export class DbQueryError extends BentleyError {
     super(rc ?? DbResult.BE_SQLITE_ERROR, response.error, { response, request });
   }
   public static throwIfError(response: any, request?: any) {
-    if (response.status === DbResponseStatus.Error) {
+    if ((response.status as number) >= (DbResponseStatus.Error as number)) {
       throw new DbQueryError(response, request);
     }
     if (response.status === DbResponseStatus.Cancel) {

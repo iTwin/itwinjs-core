@@ -236,8 +236,22 @@
           ],
           "description": "List of ECClass specifications whose ECInstances should be selected."
         },
+        "excludedClasses": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/MultiSchemaClassesSpecification"
+            },
+            {
+              "items": {
+                "$ref": "#/definitions/MultiSchemaClassesSpecification"
+              },
+              "type": "array"
+            }
+          ],
+          "description": "List of ECClass specifications whose ECInstances should be excluded."
+        },
         "handleInstancesPolymorphically": {
-          "description": "Whether to get content from instances of derived `classes`.",
+          "description": "Whether to get content from instances of derived `classes`.\nActs as default value for `classes.arePolymorphic` and `excludedClasses.arePolymorphic`.",
           "type": "boolean"
         },
         "handlePropertiesPolymorphically": {
@@ -247,6 +261,10 @@
         "instanceFilter": {
           "description": "Condition for filtering instances of defined classes.\n\nSee: ECExpressions available in instance filter",
           "type": "string"
+        },
+        "onlyIfNotHandled": {
+          "description": "Identifies whether we should ignore this specification if there is already an existing specification\nwith higher `priority` that already provides content.",
+          "type": "boolean"
         },
         "priority": {
           "description": "Defines the order in which specifications are evaluated and executed. Defaults to `1000`.",
@@ -376,6 +394,10 @@
         "instanceFilter": {
           "description": "Condition for filtering instances targeted by specified relationship paths.\n\nSee: ECExpressions available in instance filter",
           "type": "string"
+        },
+        "onlyIfNotHandled": {
+          "description": "Identifies whether we should ignore this specification if there is already an existing specification\nwith higher `priority` that already provides content.",
+          "type": "boolean"
         },
         "priority": {
           "description": "Defines the order in which specifications are evaluated and executed. Defaults to `1000`.",
@@ -1259,7 +1281,7 @@
       "description": "Creates nodes for all instances of specified ECClasses.",
       "properties": {
         "arePolymorphic": {
-          "description": "Should all `classes` be handled polymorphically.",
+          "description": "Whether to get instances from derived `classes`.\nActs as default value for `classes.arePolymorphic` and `excludedClasses.arePolymorphic`.",
           "type": "boolean"
         },
         "classes": {
@@ -1279,6 +1301,20 @@
         "doNotSort": {
           "description": "Set this flag to `true` to suppress default sorting of ECInstances returned by this specification.\n\nNote: setting this flag to `true` improves performance.",
           "type": "boolean"
+        },
+        "excludedClasses": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/MultiSchemaClassesSpecification"
+            },
+            {
+              "items": {
+                "$ref": "#/definitions/MultiSchemaClassesSpecification"
+              },
+              "type": "array"
+            }
+          ],
+          "description": "Specifications of ECClasses whose instances should be excluded."
         },
         "groupByClass": {
           "description": "Group instances by ECClass. Defaults to `true`.",
@@ -1399,12 +1435,15 @@
       "additionalProperties": false,
       "description": "Specification for multiple ECClasses that belong to\nthe same ECSchema.",
       "properties": {
+        "arePolymorphic": {
+          "description": "Should all classes specified in `classNames` array be handled polymorphically.",
+          "type": "boolean"
+        },
         "classNames": {
-          "description": "List of ECClass names.\n\nEach class name may be prefixed with:\n- `E:` to exclude class from results\n- `PE:` to exclude class and all its sublasses from results\nSo generally the list may contain `[\"base_class_name\", \"PE:derived_class_name\"]` to\ninclude all instances of `base_class_name` except all polymorphic instances of\n`derived_class_name`.",
+          "description": "List of ECClass names.",
           "items": {
             "type": "string"
           },
-          "pattern": "^(E:|PE:)?[\\w\\d]+$",
           "type": "array"
         },
         "schemaName": {

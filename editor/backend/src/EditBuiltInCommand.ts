@@ -10,7 +10,7 @@ import { BentleyStatus, CompressedId64Set, DbResult, Id64String, IModelStatus } 
 import { Matrix3d, Matrix3dProps, Point3d, PointString3d, Range3d, Range3dProps, Transform, TransformProps, XYZProps, YawPitchRollAngles } from "@itwin/core-geometry";
 import { GeometricElement, IModelDb } from "@itwin/core-backend";
 import { BRepEntity, ColorDefProps, DynamicGraphicsRequest3dProps, EcefLocation, EcefLocationProps, ElementGeometry, ElementGeometryDataEntry, ElementGeometryFunction, ElementGeometryInfo, ElementGeometryRequest, ElementGeometryUpdate, FilePropertyProps, GeometricElementProps, GeometryPartProps, GeometryStreamBuilder, IModelError, Placement3dProps } from "@itwin/core-common";
-import { BasicManipulationCommandIpc, BlendEdgesProps, BooleanOperationProps, BRepEntityType, ChamferEdgesProps, ConnectedSubEntityProps, DeleteSubEntityProps, EdgeParameterRangeProps, editorBuiltInCmdIds, ElementGeometryCacheFilter, ElementGeometryResultOptions, ElementGeometryResultProps, EvaluatedEdgeProps, EvaluatedFaceProps, EvaluatedVertexProps, FaceParameterRangeProps, FlatBufferGeometricElementData, FlatBufferGeometryFilter, FlatBufferGeometryPartData, HollowFacesProps, LocateSubEntityProps, OffsetEdgesProps, OffsetFacesProps, PointInsideResultProps, SewSheetProps, SolidModelingCommandIpc, SpinFacesProps, SubEntityAppearanceProps, SubEntityGeometryProps, SubEntityLocationProps, SubEntityProps, SubEntityType, SweepFacesProps, ThickenSheetProps, TransformSubEntityProps } from "@itwin/editor-common";
+import { BasicManipulationCommandIpc, BlendEdgesProps, BooleanOperationProps, BRepEntityType, ChamferEdgesProps, ConnectedSubEntityProps, CutProps, DeleteSubEntityProps, EdgeParameterRangeProps, editorBuiltInCmdIds, ElementGeometryCacheFilter, ElementGeometryResultOptions, ElementGeometryResultProps, EmbossProps, EvaluatedEdgeProps, EvaluatedFaceProps, EvaluatedVertexProps, FaceParameterRangeProps, FlatBufferGeometricElementData, FlatBufferGeometryFilter, FlatBufferGeometryPartData, HollowFacesProps, ImprintProps, LocateSubEntityProps, LoftProps, OffsetEdgesProps, OffsetFacesProps, PointInsideResultProps, SewSheetProps, SolidModelingCommandIpc, SpinFacesProps, SubEntityAppearanceProps, SubEntityGeometryProps, SubEntityLocationProps, SubEntityProps, SubEntityType, SweepFacesProps, SweepPathProps, ThickenSheetProps, TransformSubEntityProps } from "@itwin/editor-common";
 import { EditCommand } from "./EditCommand";
 
 /** @alpha */
@@ -220,6 +220,8 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
     if (newExtents.isNull)
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "Invalid project extents");
 
+    await this.iModel.acquireSchemaLock();
+
     this.iModel.updateProjectExtents(newExtents);
 
     // Set source from calculated to user so connectors preserve the change.
@@ -238,6 +240,8 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
   }
 
   public async updateEcefLocation(ecefLocation: EcefLocationProps): Promise<void> {
+    await this.iModel.acquireSchemaLock();
+
     // Clear GCS that caller already determined was invalid...
     this.iModel.deleteFileProperty({ name: "DgnGCS", namespace: "dgn_Db" });
 
@@ -330,6 +334,8 @@ enum QuerySubEntity {
   LinearEdge = 3,
   /** Return whether the angle between the normals of the supplied vertices's edges never exceeds the internal smooth angle tolerance along the length of the edge */
   SmoothVertex = 4,
+  /** Return whether the supplied sub-entity is a redundant edge (containing faces share surface) */
+  RedundantEdge = 5,
 }
 
 interface QuerySubEntityRequestProps  {
@@ -350,6 +356,8 @@ enum QueryBody {
   OnlyPlanarFaces = 2,
   /** Return whether the geometric primitive index is a body with any edge that is non-linear or any face that is non-planar */
   CurvedFaceOrEdge = 3,
+  /** Return whether the geometric primitive index is a planar sheet or wire body */
+  PlanarBody = 4,
 }
 
 interface QueryBodyRequestProps  {
@@ -455,13 +463,11 @@ enum OperationType {
   TransformSubEntity = 23,
   Blend = 24,
   Chamfer = 25,
-  Cut = 26, // TODO
-  Emboss = 27, // TODO
-  Imprint = 28, // TODO
-  SweepBody = 29, // TODO
-  SpinBody = 30, // TODO
-  SweepPath = 31, // TODO
-  Loft = 32, // TODO
+  Cut = 26,
+  Emboss = 27,
+  Imprint = 28,
+  SweepPath = 29,
+  Loft = 30,
 }
 
 interface ElementGeometryCacheOperationRequestProps {
@@ -470,7 +476,7 @@ interface ElementGeometryCacheOperationRequestProps {
   /** Requested operation */
   op: OperationType;
   /** Parameters for operation */
-  params?: GeometrySummaryRequestProps | SubEntityGeometryRequestProps | SubEntityParameterRangeRequestProps | SubEntityEvaluateRequestProps | QuerySubEntityRequestProps | QueryBodyRequestProps | BodySubEntitiesRequestProps | ConnectedSubEntityRequestProps | LocateSubEntityRequestProps | LocateFaceRequestProps | ClosestSubEntityRequestProps | ClosestPointRequestProps | PointInsideRequestProps| BooleanOperationProps | SewSheetProps | ThickenSheetProps | OffsetFacesProps | OffsetEdgesProps | HollowFacesProps | SweepFacesProps | SpinFacesProps | DeleteSubEntityProps | TransformSubEntityProps | BlendEdgesProps | ChamferEdgesProps;
+  params?: GeometrySummaryRequestProps | SubEntityGeometryRequestProps | SubEntityParameterRangeRequestProps | SubEntityEvaluateRequestProps | QuerySubEntityRequestProps | QueryBodyRequestProps | BodySubEntitiesRequestProps | ConnectedSubEntityRequestProps | LocateSubEntityRequestProps | LocateFaceRequestProps | ClosestSubEntityRequestProps | ClosestPointRequestProps | PointInsideRequestProps| BooleanOperationProps | SewSheetProps | ThickenSheetProps | CutProps | EmbossProps | ImprintProps | SweepPathProps | LoftProps | OffsetFacesProps | OffsetEdgesProps | HollowFacesProps | SweepFacesProps | SpinFacesProps | DeleteSubEntityProps | TransformSubEntityProps | BlendEdgesProps | ChamferEdgesProps;
   /** Callback for result when element's geometry stream is requested in flatbuffer or graphic formats */
   onGeometry?: ElementGeometryFunction;
 }
@@ -579,6 +585,7 @@ export class SolidModelingCommand extends BasicManipulationCommand implements So
       type: "3d",
       placement: { origin: Point3d.createZero(), angles: YawPitchRollAngles.createDegrees(0, 0, 0) },
       categoryId: geometryProps.category,
+      elementId: id,
       geometry: { format: "flatbuffer", data: [geometryProps.geometry] },
     };
 
@@ -639,6 +646,10 @@ export class SolidModelingCommand extends BasicManipulationCommand implements So
     return this.subEntityQuery(id, subEntity, QuerySubEntity.LinearEdge);
   }
 
+  public async isRedundantEdge(id: Id64String, subEntity: SubEntityProps): Promise<boolean> {
+    return this.subEntityQuery(id, subEntity, QuerySubEntity.RedundantEdge);
+  }
+
   public async isSmoothVertex(id: Id64String, subEntity: SubEntityProps): Promise<boolean> {
     return this.subEntityQuery(id, subEntity, QuerySubEntity.SmoothVertex);
   }
@@ -657,6 +668,10 @@ export class SolidModelingCommand extends BasicManipulationCommand implements So
 
   public async isDisjointBody(id: Id64String, index: number): Promise<boolean> {
     return this.bodyQuery(id, index, QueryBody.DisjointBody);
+  }
+
+  public async isPlanarBody(id: Id64String, index: number): Promise<boolean> {
+    return this.bodyQuery(id, index, QueryBody.PlanarBody);
   }
 
   public async isSingleFacePlanarSheet(id: Id64String, index: number): Promise<boolean> {
@@ -817,6 +832,7 @@ export class SolidModelingCommand extends BasicManipulationCommand implements So
       type: "3d",
       placement,
       categoryId: info.categoryId,
+      elementId: id,
       geometry: { format: "flatbuffer", data: info.entryArray },
     };
 
@@ -869,6 +885,68 @@ export class SolidModelingCommand extends BasicManipulationCommand implements So
   public async thickenSheets(id: Id64String, params: ThickenSheetProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined> {
     const props: ElementGeometryCacheOperationRequestProps = { id, op: OperationType.ThickenSheets, params };
     return this.doElementGeometryOperation(props, opts);
+  }
+
+  public async cutSolid(id: Id64String, params: CutProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined> {
+    const props: ElementGeometryCacheOperationRequestProps = { id, op: OperationType.Cut, params };
+    const resultProps = this.doElementGeometryOperation(props, opts);
+
+    // target insert = keep profile, target update = delete profile...
+    if (undefined !== resultProps && opts.writeChanges && undefined === opts.insertProps)
+      this.iModel.elements.deleteElement(params.profile);
+
+    return resultProps;
+  }
+
+  public async embossBody(id: Id64String, params: EmbossProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined> {
+    const props: ElementGeometryCacheOperationRequestProps = { id, op: OperationType.Emboss, params };
+    const resultProps = this.doElementGeometryOperation(props, opts);
+
+    // target insert = keep profile, target update = delete profile...
+    if (undefined !== resultProps && opts.writeChanges && undefined === opts.insertProps)
+      this.iModel.elements.deleteElement(params.profile);
+
+    return resultProps;
+  }
+
+  public async imprintBody(id: Id64String, params: ImprintProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined> {
+    const props: ElementGeometryCacheOperationRequestProps = { id, op: OperationType.Imprint, params };
+    const resultProps = this.doElementGeometryOperation(props, opts);
+
+    // target insert = keep profile, target update = delete profile...
+    if (undefined !== resultProps && opts.writeChanges && undefined === opts.insertProps && "string" === typeof(params.imprint) )
+      this.iModel.elements.deleteElement(params.imprint);
+
+    return resultProps;
+  }
+
+  public async sweepAlongPath(id: Id64String, params: SweepPathProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined> {
+    const props: ElementGeometryCacheOperationRequestProps = { id, op: OperationType.SweepPath, params };
+    const resultProps = this.doElementGeometryOperation(props, opts);
+
+    // target insert = keep path, target update = delete path...
+    if (undefined !== resultProps && opts.writeChanges && undefined === opts.insertProps)
+      this.iModel.elements.deleteElement(params.path);
+
+    return resultProps;
+  }
+
+  public async loftProfiles(id: Id64String, params: LoftProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined> {
+    const props: ElementGeometryCacheOperationRequestProps = { id, op: OperationType.Loft, params };
+    const resultProps = this.doElementGeometryOperation(props, opts);
+
+    // target insert = keep profiles and guides, target update = delete profiles and guides...
+    if (undefined !== resultProps && opts.writeChanges && undefined === opts.insertProps) {
+      for (const toolId of params.tools)
+        this.iModel.elements.deleteElement(toolId);
+
+      if (undefined !== params.guides) {
+        for (const guideId of params.guides)
+          this.iModel.elements.deleteElement(guideId);
+      }
+    }
+
+    return resultProps;
   }
 
   public async offsetFaces(id: Id64String, params: OffsetFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined> {

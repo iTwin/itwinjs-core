@@ -204,7 +204,8 @@ export abstract class MapLayerImageryProvider {
 
   // Map tile providers like Bing and Mapbox allow the URL to be constructed directory from the zoom level and tile coordinates.
   // However, WMS-based servers take a bounding box instead. This method can help get that bounding box from a tile.
-  public getEPSG3857Extent(row: number, column: number, zoomLevel: number): { left: number, right: number, top: number, bottom: number } {
+
+  public getEPSG4326Extent(row: number, column: number, zoomLevel: number): { longitudeLeft: number, longitudeRight: number, latitudeTop: number, latitudeBottom: number } {
     const mapSize = 256 << zoomLevel;
     const leftGrid = 256 * column;
     const topGrid = 256 * row;
@@ -217,15 +218,33 @@ export abstract class MapLayerImageryProvider {
     const y1 = 0.5 - (topGrid / mapSize);
     const latitudeTop = 90.0 - 360.0 * Math.atan(Math.exp(-y1 * 2 * Math.PI)) / Math.PI;
 
-    const left = this.getEPSG3857X(longitudeLeft);
-    const right = this.getEPSG3857X(longitudeRight);
-    const bottom = this.getEPSG3857Y(latitudeBottom);
-    const top = this.getEPSG3857Y(latitudeTop);
+    return { longitudeLeft, longitudeRight, latitudeTop, latitudeBottom };
+  }
+
+  public getEPSG3857Extent(row: number, column: number, zoomLevel: number): { left: number, right: number, top: number, bottom: number } {
+    const epsg4326Extent = this.getEPSG4326Extent(row, column, zoomLevel);
+
+    const left = this.getEPSG3857X(epsg4326Extent.longitudeLeft);
+    const right = this.getEPSG3857X(epsg4326Extent.longitudeRight);
+    const bottom = this.getEPSG3857Y(epsg4326Extent.latitudeBottom);
+    const top = this.getEPSG3857Y(epsg4326Extent.latitudeTop);
 
     return { left, right, bottom, top };
   }
+
   public getEPSG3857ExtentString(row: number, column: number, zoomLevel: number) {
     const tileExtent = this.getEPSG3857Extent(row, column, zoomLevel);
     return `${tileExtent.left.toFixed(2)},${tileExtent.bottom.toFixed(2)},${tileExtent.right.toFixed(2)},${tileExtent.top.toFixed(2)}`;
+  }
+
+  public getEPSG4326ExtentString(row: number, column: number, zoomLevel: number, latLongAxisOrdering: boolean) {
+    const tileExtent = this.getEPSG4326Extent(row, column, zoomLevel);
+    if (latLongAxisOrdering) {
+      return `${tileExtent.latitudeBottom.toFixed(8)},${tileExtent.longitudeLeft.toFixed(8)},
+              ${tileExtent.latitudeTop.toFixed(8)},${tileExtent.longitudeRight.toFixed(8)}`;
+    } else {
+      return `${tileExtent.longitudeLeft.toFixed(8)},${tileExtent.latitudeBottom.toFixed(8)},
+              ${tileExtent.longitudeRight.toFixed(8)},${tileExtent.latitudeTop.toFixed(8)}`;
+    }
   }
 }

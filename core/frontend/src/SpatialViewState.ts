@@ -16,7 +16,7 @@ import { DisplayStyle3dState } from "./DisplayStyleState";
 import { GeometricModel3dState, GeometricModelState } from "./ModelState";
 import { SceneContext } from "./ViewContext";
 import { IModelConnection } from "./IModelConnection";
-import { ViewState3d } from "./ViewState";
+import { AttachToViewportArgs, ViewState3d } from "./ViewState";
 import { SpatialTileTreeReferences, TileTreeReference } from "./tile/internal";
 
 /** Defines a view of one or more SpatialModels.
@@ -181,8 +181,8 @@ export class SpatialViewState extends ViewState3d {
   }
 
   /** @internal */
-  public override attachToViewport(): void {
-    super.attachToViewport();
+  public override attachToViewport(args: AttachToViewportArgs): void {
+    super.attachToViewport(args);
     this.registerModelSelectorListeners();
   }
 
@@ -190,6 +190,17 @@ export class SpatialViewState extends ViewState3d {
   public override detachFromViewport(): void {
     super.detachFromViewport();
     this.unregisterModelSelectorListeners();
+  }
+
+  /** Chiefly for debugging: change the "deactivated" state of one or more tile tree references. Deactivated references are
+   * omitted when iterating the references, so e.g. their graphics are omitted from the scene.
+   * @param modelIds The Ids of one or more models whose tile tree references are to be affected. If omitted, all models are affected.
+   * @param deactivated True to deactivate the specified references, false to reactivate them, undefined to invert each one's current state.
+   * @param which The references to be affected as either a broad category or one or more indices of animated references.
+   * @internal
+   */
+  public setTileTreeReferencesDeactivated(modelIds: Id64String | Id64String[] | undefined, deactivated: boolean | undefined, which: "all" | "animated" | "primary" | "section" | number[]): void {
+    this._treeRefs.setDeactivated(modelIds, deactivated, which);
   }
 
   private registerModelSelectorListeners(): void {

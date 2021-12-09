@@ -43,8 +43,8 @@ export * from "./appui-react/content/ContentGroup";
 export * from "./appui-react/content/ContentLayout";
 export * from "./appui-react/content/ContentLayoutManager";
 export * from "./appui-react/content/ContentViewManager";
-export * from "./appui-react/content/SavedView";
-export * from "./appui-react/content/SavedViewLayout";
+export * from "./appui-react/content/ViewStateHelper";
+export * from "./appui-react/content/StageContentLayout";
 export * from "./appui-react/content/ViewportContentControl";
 export * from "./appui-react/content/IModelViewport";
 export * from "./appui-react/content/DefaultViewOverlay";
@@ -86,6 +86,7 @@ export * from "./appui-react/hooks/useSolarDataProvider";
 
 export * from "./appui-react/imodel-components/spatial-tree/SpatialContainmentTree";
 export * from "./appui-react/imodel-components/category-tree/CategoriesTree";
+export * from "./appui-react/imodel-components/category-tree/CategoryVisibilityHandler";
 export * from "./appui-react/imodel-components/models-tree/ModelsTree";
 export * from "./appui-react/imodel-components/models-tree/ModelsVisibilityHandler";
 export * from "./appui-react/imodel-components/Common";
@@ -162,7 +163,6 @@ export * from "./appui-react/stagepanels/FrameworkStagePanel";
 export * from "./appui-react/stagepanels/StagePanel";
 export * from "./appui-react/stagepanels/StagePanelDef";
 export * from "./appui-react/stagepanels/StagePanelHeader";
-export * from "./appui-react/stagepanels/StagePanelEnums";
 
 export * from "./appui-react/statusbar/StatusBar";
 export * from "./appui-react/statusbar/StatusBarWidgetControl";
@@ -226,11 +226,9 @@ export * from "./appui-react/ui-items-provider/StandardNavigationToolsProvider";
 export * from "./appui-react/ui-items-provider/StandardStatusbarItemsProvider";
 export * from "./appui-react/uiprovider/DefaultDialogGridContainer";
 
-export * from "./appui-react/uisettings/AppUiSettings";
-export * from "./appui-react/uisettings/UserSettingsStorage";
-export * from "./appui-react/uisettings/useUiSettings";
-
-export * from "./appui-react/UserInfo";
+export * from "./appui-react/uistate/AppUiSettings";
+export * from "./appui-react/uistate/UserSettingsStorage";
+export * from "./appui-react/uistate/useUiStateStorage";
 
 export * from "./appui-react/utils/ViewUtilities";
 export * from "./appui-react/utils/PropsHelper";
@@ -316,10 +314,6 @@ export * from "./appui-react/zones/ZoneDef";
  * Classes for working with a dialog
  */
 /**
- * @docs-group-description DragDrop
- * Classes for managing DragDrop API drag layers
- */
-/**
  * @docs-group-description Frontstage
  * Classes for working with a Frontstage
  */
@@ -347,11 +341,6 @@ export * from "./appui-react/zones/ZoneDef";
  * @docs-group-description Notification
  * Classes for working with a Notification or Message
  */
-
-/**
- * @docs-group-description ChildWindow
- * Classes for working with child windows.
- */
 /**
  * @docs-group-description ChildWindowManager
  * Classes for working with child windows.
@@ -359,6 +348,10 @@ export * from "./appui-react/zones/ZoneDef";
 /**
  * @docs-group-description Picker
  * Classes for working with various pickers
+ */
+/**
+ * @docs-group-description Popup
+ * Classes for working with popup components
  */
 /**
  * @docs-group-description State
@@ -401,7 +394,7 @@ export * from "./appui-react/zones/ZoneDef";
  * Interfaces and classes for specifying UI items to be inserted at runtime.
  */
 /**
- * @docs-group-description UiSettings
+ * @docs-group-description UiStateStorage
  * Interfaces and classes for persisting UI settings.
  */
 /**

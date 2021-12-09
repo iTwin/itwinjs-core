@@ -122,7 +122,7 @@ export class Model extends Entity implements ModelProps {
    * @beta
    */
   protected static onUpdate(arg: OnModelPropsArg): void {
-    arg.iModel.locks.checkExclusiveLock(arg.props.id!, "model", "update");
+    arg.iModel.locks.checkExclusiveLock(arg.props.id!, "model", "update"); // eslint-disable-line @typescript-eslint/no-non-null-assertion
   }
 
   /** Called after a Model is updated.

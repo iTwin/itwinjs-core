@@ -9,6 +9,8 @@ import { Direction, Toolbar } from "@itwin/appui-layout-react";
 import { ActionItemButton, FrontstageManager, MarkupTools, ToolWidget } from "../appui-react";
 import TestUtils, { mount } from "./TestUtils";
 
+/* eslint-disable deprecation/deprecation */
+
 describe("MarkupToolDefinitions", () => {
 
   let horizontalToolbar: React.ReactNode;
@@ -45,7 +47,7 @@ describe("MarkupToolDefinitions", () => {
 
   it("ToolWidget should render with Markup Tool Definitions", () => {
     mount(
-      <ToolWidget // eslint-disable-line deprecation/deprecation
+      <ToolWidget
         horizontalToolbar={horizontalToolbar}
       />,
     );
@@ -57,7 +59,7 @@ describe("MarkupToolDefinitions", () => {
     setImmediate(async () => {
       await TestUtils.flushAsyncOperations();
       shallow(
-        <ToolWidget // eslint-disable-line deprecation/deprecation
+        <ToolWidget
           id="toolWidget"
           horizontalToolbar={horizontalToolbar}
         />,

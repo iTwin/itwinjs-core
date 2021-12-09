@@ -7,55 +7,17 @@
  */
 
 import { join } from "path";
-import { AccessToken, AuthStatus, BeEvent, GuidString } from "@itwin/core-bentley";
+import { AccessToken, assert, BeEvent, GuidString } from "@itwin/core-bentley";
 import {
-  AuthorizationClient, BriefcaseProps, IModelError, InternetConnectivityStatus, LocalBriefcaseProps, NativeAppAuthorizationConfiguration, nativeAppChannel,
-  NativeAppFunctions, NativeAppNotifications, nativeAppNotify, OverriddenBy, RequestNewBriefcaseProps, SessionProps, StorageValue,
+  BriefcaseProps, InternetConnectivityStatus, LocalBriefcaseProps, nativeAppChannel, NativeAppFunctions, NativeAppNotifications, nativeAppNotify,
+  OverriddenBy, RequestNewBriefcaseProps, StorageValue,
 } from "@itwin/core-common";
-import { ImsAuthorizationClient, RequestGlobalOptions } from "@bentley/itwin-client";
+import { RequestGlobalOptions } from "@bentley/itwin-client";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { Downloads } from "./CheckpointManager";
 import { IModelHost } from "./IModelHost";
 import { IpcHandler, IpcHost, IpcHostOpts } from "./IpcHost";
 import { NativeAppStorage } from "./NativeAppStorage";
-
-/** @internal */
-export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClient implements AuthorizationClient {
-  protected _accessToken: AccessToken = "";
-  public abstract signIn(): Promise<void>;
-  public abstract signOut(): Promise<void>;
-  protected abstract refreshToken(): Promise<AccessToken>;
-  public config?: NativeAppAuthorizationConfiguration;
-  public expireSafety = 60 * 10; // refresh token 10 minutes before real expiration time
-  public issuerUrl?: string;
-
-  protected constructor(config?: NativeAppAuthorizationConfiguration) {
-    super();
-    this.config = config;
-  }
-
-  public setAccessToken(token: AccessToken) {
-    if (token === this._accessToken)
-      return;
-    this._accessToken = token;
-    NativeHost.onAccessTokenChanged.raiseEvent(token);
-  }
-
-  public async getAccessToken(): Promise<AccessToken> {
-    if (!this._accessToken) // TODO: This should happen from a timer, not here
-      this.setAccessToken(await this.refreshToken());
-    return this._accessToken;
-  }
-
-  public async initialize(config?: NativeAppAuthorizationConfiguration) {
-    this.config = config ?? this.config;
-    if (!this.config)
-      throw new IModelError(AuthStatus.Error, "Must specify a valid configuration when initializing authorization");
-    if (this.config.expiryBuffer)
-      this.expireSafety = this.config.expiryBuffer;
-    this.issuerUrl = this.config.issuerUrl ?? await this.getUrl();
-  }
-}
 
 /**
  * Implementation of NativeAppFunctions
@@ -63,26 +25,10 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
 class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   public get channelName() { return nativeAppChannel; }
 
-  public async setAccessToken(token: AccessToken) {
-    NativeHost.authorization.setAccessToken(token);
+  public async getAccessToken(): Promise<AccessToken | undefined> {
+    return IModelHost.authorizationClient?.getAccessToken();
   }
-  public async getAccessToken(): Promise<AccessToken> {
-    return NativeHost.authorization.getAccessToken();
-  }
-  public async initializeAuth(props: SessionProps, config?: NativeAppAuthorizationConfiguration): Promise<number> {
-    IModelHost.session.applicationId = props.applicationId;
-    IModelHost.applicationVersion = props.applicationVersion;
-    IModelHost.sessionId = props.sessionId;
 
-    await NativeHost.authorization.initialize(config);
-    return NativeHost.authorization.expireSafety;
-  }
-  public async signIn(): Promise<void> {
-    return NativeHost.authorization.signIn();
-  }
-  public async signOut(): Promise<void> {
-    return NativeHost.authorization.signOut();
-  }
   public async checkInternetConnectivity(): Promise<InternetConnectivityStatus> {
     return NativeHost.checkInternetConnectivity();
   }
@@ -116,7 +62,8 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
 
     const downloadPromise = BriefcaseManager.downloadBriefcase(args);
     const checkAbort = () => {
-      const job = Downloads.isInProgress(args.fileName!);
+      assert(undefined !== args.fileName);
+      const job = Downloads.isInProgress(args.fileName);
       return (job && (job.request as any).abort === 1) ? 1 : 0;
     };
     return downloadPromise;
@@ -175,7 +122,8 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
 }
 
 /** Options for [[NativeHost.startup]]
- * @public */
+ * @public
+ */
 export interface NativeHostOpts extends IpcHostOpts {
   nativeHost?: {
     /** Application name. Used, for example, to name the settings file. If not supplied, defaults to "iTwinApp". */
@@ -191,12 +139,6 @@ export class NativeHost {
   private static _reachability?: InternetConnectivityStatus;
   private static _applicationName: string;
   private constructor() { } // no instances - static methods only
-
-  /** @internal */
-  public static get authorization() { return IModelHost.authorizationClient as NativeAppAuthorizationBackend; }
-
-  /** Event called when the user's sign-in state changes - this may be due to calls to signIn(), signOut() or because the token was refreshed */
-  public static readonly onAccessTokenChanged = new BeEvent<(token: AccessToken) => void>();
 
   /** Event called when the internet connectivity changes, if known. */
   public static readonly onInternetConnectivityChanged = new BeEvent<(status: InternetConnectivityStatus) => void>();
@@ -232,8 +174,6 @@ export class NativeHost {
       this._isValid = true;
       this.onInternetConnectivityChanged.addListener((status: InternetConnectivityStatus) =>
         NativeHost.notifyNativeFrontend("notifyInternetConnectivityChanged", status));
-      this.onAccessTokenChanged.addListener((token: AccessToken) =>
-        NativeHost.notifyNativeFrontend("notifyAccessTokenChanged", token));
       this._applicationName = opt?.nativeHost?.applicationName ?? "iTwinApp";
     }
 
@@ -246,7 +186,6 @@ export class NativeHost {
   public static async shutdown(): Promise<void> {
     this._isValid = false;
     this.onInternetConnectivityChanged.clear();
-    this.onAccessTokenChanged.clear();
     await IpcHost.shutdown();
   }
 

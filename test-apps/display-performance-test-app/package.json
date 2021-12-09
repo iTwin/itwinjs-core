@@ -48,9 +48,10 @@
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "@itwin/appui-abstract": "workspace:*",
+    "@itwin/reality-data-client": "^0.2.4",
     "@itwin/hypermodeling-frontend": "workspace:*",
-    "@bentley/reality-data-client": "workspace:*",
-    "@itwin/browser-authorization": "^0.2.0",
+    "@itwin/browser-authorization": "^0.3.1",
+    "@itwin/electron-authorization": "^0.5.0",
     "body-parser": "^1.18.2"
   },
   "devDependencies": {
@@ -64,7 +65,7 @@
     "child_process": "^1.0.2",
     "chrome-launcher": "^0.10.5",
     "cross-env": "^5.1.4",
-    "cpx": "^1.5.0",
+    "cpx2": "^3.0.0",
     "dotenv": "^10.0.0",
     "dotenv-expand": "^5.1.0",
     "electron": "^14.0.0",

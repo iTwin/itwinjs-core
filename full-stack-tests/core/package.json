@@ -24,7 +24,7 @@
   "dependencies": {
     "@bentley/imodelhub-client": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "@itwin/browser-authorization": "^0.2.0",
+    "@itwin/browser-authorization": "^0.3.1",
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
@@ -32,6 +32,7 @@
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-markup": "workspace:*",
+    "@itwin/electron-authorization": "^0.5.0",
     "@itwin/editor-backend": "workspace:*",
     "@itwin/editor-common": "workspace:*",
     "@itwin/editor-frontend": "workspace:*",
@@ -43,11 +44,10 @@
     "electron": "^14.0.0"
   },
   "devDependencies": {
-    "@bentley/product-settings-client": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/certa": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
-    "@itwin/oidc-signin-tool": "workspace:*",
+    "@itwin/oidc-signin-tool": "3.0.0-dev.110",
     "@itwin/projects-client": "^0.2.0",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
