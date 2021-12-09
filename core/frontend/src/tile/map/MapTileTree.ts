@@ -770,9 +770,9 @@ export class MapTileTreeReference extends TileTreeReference {
     return imageryTree === undefined ? imageryTree : imageryTree.layerSettings;
   }
 
-  public override async getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined> {
+  // Utility method that execute the provided function for every *imagery* tiles under a given HotDetail object.
+  private async forEachImageryTileHit(hit: HitDetail, func: (imageryTreeRef: ImageryMapLayerTreeReference, quadId: QuadId, cartoGraphic: Cartographic,imageryTree: ImageryMapTileTree ) => Promise<void>): Promise<void> {
     const tree = this.treeOwner.tileTree as MapTileTree;
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     if (undefined === tree || hit.iModel !== tree.iModel || tree.modelId !== hit.modelId || !hit.viewport || !hit.viewport.view.is3d)
       return undefined;
 
@@ -794,19 +794,39 @@ export class MapTileTreeReference extends TileTreeReference {
           if (imageryTree) {
             for (const imageryTile of terrainTile.imageryTiles) {
               if (imageryTree === imageryTile.imageryTree && imageryTile.rectangle.containsCartographic(cartoGraphic))
-                await imageryTree.imageryLoader.getToolTip(strings, imageryTile.quadId, cartoGraphic, imageryTree);
+                await func (imageryTreeRef, imageryTile.quadId, cartoGraphic, imageryTree);
             }
           }
         }
       }
     }
+  }
 
-    strings.push(`Latitude: ${cartoGraphic.latitudeDegrees.toFixed(4)}`);
-    strings.push(`Longitude: ${cartoGraphic.longitudeDegrees.toFixed(4)}`);
-    if (this.settings.applyTerrain) {
-      const geodeticHeight = (cartoGraphic.height - tree.bimElevationBias) / tree.terrainExaggeration;
-      strings.push(`Height (Meters) Geodetic: ${geodeticHeight.toFixed(1)} Sea Level: ${(geodeticHeight - tree.geodeticOffset).toFixed(1)}`);
+  public override async getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined> {
+    const tree = this.treeOwner.tileTree as MapTileTree;
+    if (tree.modelId !== hit.modelId)
+      return undefined;
+
+    let carto: Cartographic|undefined;
+
+    const strings: string[] = [];
+
+    const getTooltipFunc = async (imageryTreeRef: ImageryMapLayerTreeReference,  quadId: QuadId, cartoGraphic: Cartographic,imageryTree: ImageryMapTileTree ) => {
+      strings.push(`Imagery Layer: ${imageryTreeRef.layerSettings.name}`);
+      carto = cartoGraphic;
+      await imageryTree.imageryLoader.getToolTip(strings, quadId, cartoGraphic, imageryTree);
+    };
+    await this.forEachImageryTileHit(hit, getTooltipFunc);
+
+    if (carto) {
+      strings.push(`Latitude: ${carto.latitudeDegrees.toFixed(4)}`);
+      strings.push(`Longitude: ${carto.longitudeDegrees.toFixed(4)}`);
+      if (this.settings.applyTerrain) {
+        const geodeticHeight = (carto.height - tree.bimElevationBias) / tree.terrainExaggeration;
+        strings.push(`Height (Meters) Geodetic: ${geodeticHeight.toFixed(1)} Sea Level: ${(geodeticHeight - tree.geodeticOffset).toFixed(1)}`);
+      }
     }
+
     const div = document.createElement("div");
     div.innerHTML = strings.join("<br>");
     return div;
@@ -814,36 +834,19 @@ export class MapTileTreeReference extends TileTreeReference {
 
   public override async getMapFeatureInfo(hit: HitDetail): Promise<MapLayerFeatureInfo[] | undefined> {
     const tree = this.treeOwner.tileTree as MapTileTree;
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     if (undefined === tree || hit.iModel !== tree.iModel || tree.modelId !== hit.modelId || !hit.viewport || !hit.viewport.view.is3d)
       return undefined;
 
-    const backgroundMapGeometry = hit.viewport.displayStyle.getBackgroundMapGeometry();
-    if (undefined === backgroundMapGeometry)
-      return undefined;
-
-    const worldPoint = hit.hitPoint.clone();
-    const cartoGraphic = await backgroundMapGeometry.dbToCartographicFromGcs(worldPoint);
-    const strings = [];
     const info: MapLayerFeatureInfo[] = [];
-
     const imageryTreeRef = this.imageryTreeFromTreeModelIds(hit.modelId, hit.sourceId);
     if (imageryTreeRef !== undefined) {
-      strings.push(`Imagery Layer: ${imageryTreeRef.layerSettings.name}`);
-      if (hit.tileId !== undefined) {
-        const terrainQuadId = QuadId.createFromContentId(hit.tileId);
-        const terrainTile = tree.tileFromQuadId(terrainQuadId);
-        if (terrainTile && terrainTile.imageryTiles) {
-          const imageryTree = imageryTreeRef.treeOwner.tileTree as ImageryMapTileTree;
-          if (imageryTree) {
-            for (const imageryTile of terrainTile.imageryTiles) {
-              if (imageryTree === imageryTile.imageryTree && imageryTile.rectangle.containsCartographic(cartoGraphic))
-                await imageryTree.imageryLoader.getMapFeatureInfo(info, imageryTile.quadId, cartoGraphic, imageryTree);
-            }
-          }
-        }
-      }
+
+      const getFeatureInfoFunc = async (_imageryTreeRef: ImageryMapLayerTreeReference, quadId: QuadId, cartoGraphic: Cartographic,imageryTree: ImageryMapTileTree ) => {
+        await imageryTree.imageryLoader.getMapFeatureInfo(info, quadId, cartoGraphic, imageryTree);
+      };
+      await this.forEachImageryTileHit(hit, getFeatureInfoFunc);
     }
+
     return info;
   }
 
