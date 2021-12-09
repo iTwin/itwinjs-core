@@ -171,7 +171,7 @@ export class RpcBriefcaseUtility {
       db = await SnapshotDb.openCheckpointV2(checkpoint);
       Logger.logTrace(loggerCategory, "using V2 checkpoint briefcase", () => ({ ...tokenProps }));
     } catch (e) {
-      Logger.logTrace(loggerCategory, "unable to open V2 checkpoint - falling back to V1 checkpoint", () => ({ error: e, ...tokenProps }));
+      Logger.logTrace(loggerCategory, "unable to open V2 checkpoint - falling back to V1 checkpoint", () => ({ error: BentleyError.getErrorProps(e), ...tokenProps }));
 
       // this isn't a v2 checkpoint. Set up a race between the specified timeout period and the open. Throw an RpcPendingResponse exception if the timeout happens first.
       const request = {
