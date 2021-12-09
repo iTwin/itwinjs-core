@@ -242,9 +242,6 @@ export class DisplayTestApp {
     this._iTwinId = configuration.iTwinId;
 
     if (ProcessDetector.isElectronAppFrontend) {
-      const authClient: ElectronRendererAuthorization = new ElectronRendererAuthorization();
-      if (opts.iModelApp)
-        opts.iModelApp.authorizationClient = authClient;
       await ElectronApp.startup(opts);
     } else if (ProcessDetector.isIOSAppFrontend) {
       await IOSApp.startup(opts);

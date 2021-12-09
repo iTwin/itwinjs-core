@@ -5,7 +5,7 @@
 import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
 import { IModelApp  } from "@itwin/core-frontend";
 import { BrowserAuthorizationClient } from "@itwin/browser-authorization";
-import { AccessToken } from "@itwin/core-bentley";
+import { AccessToken, ProcessDetector } from "@itwin/core-bentley";
 
 // Wraps the signIn process
 // @return Promise that resolves to true after signIn is complete
@@ -22,25 +22,39 @@ export async function signIn(): Promise<boolean> {
     });
   }
 
-  const browserAuth = new BrowserAuthorizationClient({
-    clientId: "imodeljs-spa-test",
-    redirectUri: "http://localhost:3000/signin-callback",
-    scope: "openid email profile organization itwinjs",
-    responseType: "code",
-  });
-  try {
-    await browserAuth.signInSilent();
-  } catch (err) { }
+  if (ProcessDetector.isElectronAppFrontend) {
+    const electronAuth: ElectronRendererAuthorization = new ElectronRendererAuthorization();
+    IModelApp.authorizationClient = electronAuth;
 
-  IModelApp.authorizationClient = browserAuth;
+    if (electronAuth.isAuthorized)
+      return true;
 
-  if (browserAuth.isAuthorized)
-    return true;
+    return new Promise<boolean>((resolve, reject) => {
+      electronAuth.onAccessTokenChanged.addOnce((token: AccessToken) => resolve(token !== ""));
+      electronAuth.signIn().catch((err) => reject(err));
+    });
 
-  return new Promise<boolean>((resolve, reject) => {
-    browserAuth.onAccessTokenChanged.addOnce((token: AccessToken) => resolve(token !== ""));
-    browserAuth.signIn().catch((err) => reject(err));
-  });
+  } else {
+    const browserAuth = new BrowserAuthorizationClient({
+      clientId: "imodeljs-spa-test",
+      redirectUri: "http://localhost:3000/signin-callback",
+      scope: "openid email profile organization itwinjs",
+      responseType: "code",
+    });
+    try {
+      await browserAuth.signInSilent();
+    } catch (err) { }
+
+    IModelApp.authorizationClient = browserAuth;
+
+    if (browserAuth.isAuthorized)
+      return true;
+
+    return new Promise<boolean>((resolve, reject) => {
+      browserAuth.onAccessTokenChanged.addOnce((token: AccessToken) => resolve(token !== ""));
+      browserAuth.signIn().catch((err) => reject(err));
+    });
+  }
 }
 
 export async function signOut(): Promise<void> {
