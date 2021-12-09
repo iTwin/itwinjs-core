@@ -1812,6 +1812,8 @@ export class CategorySelectorState extends ElementState {
 export class CesiumIonAssetProvider {
     static isProviderUrl(url: string): boolean;
     // (undocumented)
+    static osmBuildingId: string;
+    // (undocumented)
     static parseCesiumUrl(url: string): {
         id: number;
         key: string;
