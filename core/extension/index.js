@@ -8,7 +8,6 @@ export const {
   ViewTool,
   Tool,
 
-  ToolSettings,
   ToolAssistance,
   BeButtonEvent,
   ViewRect,

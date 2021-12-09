@@ -29,7 +29,6 @@ export {
   MarginPercent,
   Marker,
   Cluster,
-  ToolSettings,
   getCompressedJpegFromCanvas,
   getImageSourceFormatForMimeType,
   getImageSourceMimeType,

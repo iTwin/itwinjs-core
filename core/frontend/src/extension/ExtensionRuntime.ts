@@ -55,7 +55,6 @@ import { FrustumAnimator } from "../FrustumAnimator";
 import { GlobeAnimator } from "../GlobeAnimator";
 import { MarginPercent } from "../MarginPercent";
 import { Cluster, Marker } from "../Marker";
-import { ToolSettings } from "../tools/ToolSettings";
 
 const globalSymbol = Symbol.for("itwin.core.frontend.globals");
 if ((globalThis as any)[globalSymbol])
@@ -68,7 +67,6 @@ const getExtensionApi = (id: string) => {
       InteractiveTool, PrimitiveTool, ViewTool, Tool,
 
       ToolAssistance, BeButtonEvent, ViewRect, Pixel, LocateResponse, EditManipulator, AccuDrawHintBuilder, EmphasizeElements, FeatureSymbology, GraphicBranch, NotifyMessageDetails,
-      Readonly<ToolSettings>,
 
       ColorDef,
 

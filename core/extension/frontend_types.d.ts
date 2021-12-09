@@ -278,7 +278,7 @@ export type {
   // Tool, @REAL
   ToolAdmin,
   // ToolAssistance, @REAL
-  // ToolSettings, @REAL
+  ToolSettings,
   ViewCreator2d,
   ViewCreator3d,
   ViewingSpace,
