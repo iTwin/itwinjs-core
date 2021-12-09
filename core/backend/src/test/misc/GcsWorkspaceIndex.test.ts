@@ -5,8 +5,8 @@
 // cspell:disable
 
 import { expect } from "chai";
-import { GcsWorkspaceIndex, GcsWorkspaceIndexProps } from "../GcsWorkspaceIndex";
-import { GeographicCRS } from "../geometry/CoordinateReferenceSystem";
+import { GcsWorkspaceIndex } from "../../GcsWorkspaceIndex";
+import { GeographicCRS } from "@itwin/core-common";
 
 describe("GcsWorkspace tests", () => {
 
@@ -85,11 +85,12 @@ describe("GcsWorkspace tests", () => {
     if (EWRGCS.horizontalCRS && EWRGCS.horizontalCRS.extent) {
       const listOfWorkspaces = theIndex.getWorkspaceNames(EWRGCS.horizontalCRS.extent);
 
-      expect(listOfWorkspaces.length === 3).to.be.true;
+      expect(listOfWorkspaces.length === 5).to.be.true;
       expect(listOfWorkspaces.indexOf("uk") >= 0);
       expect(listOfWorkspaces.indexOf("uk-networkrail") >= 0);
       expect(listOfWorkspaces.indexOf("ostn") >= 0);
-
+      expect(listOfWorkspaces.indexOf("uk-hs2") >= 0);
+      expect(listOfWorkspaces.indexOf("france") >= 0);
     }
   });
 });

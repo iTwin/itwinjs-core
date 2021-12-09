@@ -7,7 +7,7 @@
  */
 // cspell:ignore nadcon, harn, nsrs, vertcon, newzealand, ostn, networkrail
 
-import { HorizontalCRSExtent, HorizontalCRSExtentProps } from "./geometry/CoordinateReferenceSystem";
+import { HorizontalCRSExtent, HorizontalCRSExtentProps } from "@itwin/core-common";
 
 /** Represents an entry in the GCS Workspace Index.
  *  @beta
