@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "getChangesetIdFromLatestNamedVersion",
+      "comment": "Update FrontendHubAccess api to use ChangesetIndexAndId",
       "type": "none"
     }
   ],
