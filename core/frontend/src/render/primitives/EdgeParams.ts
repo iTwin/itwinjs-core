@@ -281,7 +281,7 @@ export namespace EdgeParams {
 
     const doIndexedEdges = true; // ###TODO check TileAdmin and RenderSystem
     if (doIndexedEdges) {
-      indexed = buildIndexedEdges(args, !doJoints, maxWidth ?? /*IModelApp.renderSystem.maxTextureSize*/ 15);
+      indexed = buildIndexedEdges(args, !doJoints, maxWidth ?? IModelApp.renderSystem.maxTextureSize);
     } else {
       segments = convertPolylinesAndEdges(undefined, args.edges.edges);
       silhouettes = args.silhouettes.edges && args.silhouettes.normals ? convertSilhouettes(args.silhouettes.edges, args.silhouettes.normals) : undefined;

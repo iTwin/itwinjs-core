@@ -46,9 +46,10 @@ function expectIndices(indices: VertexIndices, expected: number[]): void {
 
 // expectedSegments = 2 indices per segment edge.
 // expectedSilhouettes = 2 indices and 2 oct-encoded normals per silhouette edge.
-function expectEdgeTable(edges: EdgeTable, expectedSegments: number[], expectedSilhouettes: number[]): void {
+function expectEdgeTable(edges: EdgeTable, expectedSegments: number[], expectedSilhouettes: number[], expectedPaddingBytes = 0): void {
   expect(expectedSegments.length % 2).to.equal(0);
   expect(edges.numSegments).to.equal(expectedSegments.length / 2);
+  expect(edges.silhouettePadding).to.equal(expectedPaddingBytes);
 
   const stream = new ByteStream(edges.data.buffer);
   const actualSegments: number[] = [];
@@ -59,6 +60,10 @@ function expectEdgeTable(edges: EdgeTable, expectedSegments: number[], expectedS
 
   expect(expectedSilhouettes.length % 4).to.equal(0);
   const actualSilhouettes: number[] = [];
+
+  for (let i = 0; i < expectedPaddingBytes; i++)
+    expect(stream.nextUint8).to.equal(0);
+
   for (let i = 0; i < expectedSilhouettes.length; i += 4) {
     actualSilhouettes.push(stream.nextUint24);
     actualSilhouettes.push(stream.nextUint24);
@@ -144,5 +149,36 @@ describe("IndexedEdgeParams", () => {
       1, 2, 0, 0xffff,
       2, 3, 0x1234, 0xfedc,
     ]);
+  });
+
+  it("inserts padding between segments and silhouettes when required", () => {
+    const args = createMeshArgs();
+    const edges = EdgeParams.fromMeshArgs(args, 15)!;
+    expect(edges).not.to.be.undefined;
+    expect(edges.indexed).not.to.be.undefined;
+    expectIndices(edges.indexed!.indices, [
+      0, 0, 0, 0, 0, 0,
+      1, 1, 1, 1, 1, 1,
+      2, 2, 2, 2, 2, 2,
+      3, 3, 3, 3, 3, 3,
+      4, 4, 4, 4, 4, 4,
+      5, 5, 5, 5, 5, 5,
+      6, 6, 6, 6, 6, 6,
+      7, 7, 7, 7, 7, 7,
+      8, 8, 8, 8, 8, 8,
+      9, 9, 9, 9, 9, 9,
+      10, 10, 10, 10, 10, 10,
+    ]);
+    expectEdgeTable(edges.indexed!.edges, [
+      // visible
+      0, 1, 1, 3, 3, 4,
+      // polylines
+      0, 2, 2, 4, 2, 4, 3, 4, 1, 3, 0, 1,
+    ], [
+      // silhouettes
+      1, 2, 0, 0xffff,
+      2, 3, 0x1234, 0xfedc,
+    ],
+    6);
   });
 });
