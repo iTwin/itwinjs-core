@@ -45,6 +45,7 @@ import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
 import { DirectSpiral3d } from "../../curve/spiral/DirectSpiral3d";
 import { InterpolationCurve3d } from "../../bspline/InterpolationCurve3d";
+import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
 
 /* eslint-disable no-console */
 
@@ -489,6 +490,23 @@ class ExerciseCurve {
         ExerciseCurve.exerciseClosestPoint(ck, bcurve, 0.1);
         GeometryCoreTestIO.captureGeometry(allGeometry, bcurve, dx);
         dx += bcurve.range().xLength() + dxGap;
+      }
+    }
+
+    {
+      const poles = [Point3d.create(0,0,0), Point3d.create(5,0,0), Point3d.create(5,5,0), Point3d.create(0,5,0)];
+      for (let order = 2; order <= poles.length; ++order) {
+        const bcurve = BSplineCurve3d.createPeriodicUniformKnots(poles, order);
+        if (ck.testPointer(bcurve)) {
+          ExerciseCurve.exerciseFractionToPoint(ck, bcurve, false, false);
+          ExerciseCurve.exerciseMoveSignedDistance(ck, bcurve);
+          ExerciseCurve.exerciseStroke(ck, bcurve);
+          ExerciseCurve.exerciseCloneAndTransform(ck, bcurve);
+          ExerciseCurve.exerciseClosestPoint(ck, bcurve, 0.1);
+          GeometryCoreTestIO.captureGeometry(allGeometry, bcurve, dx);
+          testGeometryQueryRoundTrip(ck, bcurve);
+          dx += bcurve.range().xLength() + dxGap;
+        }
       }
     }
 

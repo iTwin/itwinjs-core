@@ -640,7 +640,7 @@ export namespace RealityModelTileTree {
     // If we can get a valid connection from sourceKey, returns the tile tree
     if (rdSource) {
       // Serialize the reality data source key into a string to uniquely identify this tile tree
-      const tileTreeId = RealityDataSource.keyToString(rdSource.key);
+      const tileTreeId = rdSource.key.toString();
       if (tileTreeId === undefined)
         return undefined;
       const props = await getTileTreeProps(rdSource, tilesetToDb, iModel);
