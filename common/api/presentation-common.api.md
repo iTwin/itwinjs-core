@@ -360,6 +360,7 @@ export type ContentSpecification = ContentInstancesOfSpecificClassesSpecificatio
 
 // @public
 export interface ContentSpecificationBase extends ContentModifiersList {
+    onlyIfNotHandled?: boolean;
     priority?: number;
     relatedInstances?: RelatedInstanceSpecification[];
     showImages?: boolean;
@@ -2621,7 +2622,6 @@ export interface SelectedNodeInstancesSpecification extends ContentSpecification
     acceptableClassNames?: string[];
     acceptablePolymorphically?: boolean;
     acceptableSchemaName?: string;
-    onlyIfNotHandled?: boolean;
     specType: ContentSpecificationTypes.SelectedNodeInstances;
 }
 

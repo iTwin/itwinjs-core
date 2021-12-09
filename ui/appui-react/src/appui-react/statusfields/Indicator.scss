@@ -43,6 +43,13 @@
   visibility: visible;
   color: $buic-foreground-body;
 
+  >.nz-label {
+    font-size: $text-font-size;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   &.uifw-indicator-fade-in {
     animation: uifw-indicator-FadeIn 1s linear;
     opacity: 1;
@@ -89,7 +96,6 @@
   >.nz-label {
     margin-right: $space-between-text-and-icon;
     display: none;
-    font-size: $text-font-size;
 
     &.nz-is-visible {
       display: block;

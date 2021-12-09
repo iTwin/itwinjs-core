@@ -118,7 +118,6 @@ The following code applies a display style similar to those illustrated above to
   });
 ```
 
-
 ## Transparent viewport background
 
 In some applications it is useful to be able to see HTML content underneath a [Viewport]($frontend). This can now be achieved by setting [DisplayStyleSettings.backgroundColor]($common) to a color with a transparency value greater than zero. HTML content behind the viewport will blend with the viewport's background color.
@@ -1211,7 +1210,7 @@ SAML support has officially been dropped as a supported workflow. All related AP
 
 | Removed                            | Replacement                    |
 | ---------------------------------- | ------------------------------ |
-| `UserInfo`                         | Moved to @itwin/appui-react |
+| `UserInfo`                         | *eliminated*                   |
 | `AuthorizationClient.isAuthorized` | *eliminated*                   |
 
 ### @bentley/appui-react

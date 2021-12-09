@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Promote RealityDataSource and RealityDataSourceKey API to beta and update documentation",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

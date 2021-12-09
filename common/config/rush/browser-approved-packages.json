@@ -811,10 +811,6 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
-      "name": "react-virtualized",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
       "name": "react-window",
       "allowedCategories": [ "frontend" ]
     },
