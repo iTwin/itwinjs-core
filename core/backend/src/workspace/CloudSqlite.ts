@@ -31,12 +31,12 @@ export namespace CloudSqlite {
   export type ContainerAccessProps = AccountProps & ContainerProps;
   export type Logger = (stream: NodeJS.ReadableStream) => void;
   export type ProcessProps = DaemonProps & AccountProps & { stdoutLogger?: Logger, stderrLogger?: Logger };
-  export interface DbProps { dbName: DbName, localFile: LocalFileName }
+  export interface DbNameProp { dbName: DbName }
+  export interface DbProps extends DbNameProp { localFile: LocalFileName }
   export type TransferDirection = "upload" | "download";
   export interface TransferProgress { onProgress?: (loaded: number, total: number) => number }
   export type TransferProps = ContainerAccessProps & TransferProgress;
   export type TransferDbProps = TransferProps & DbProps;
-
 }
 
 /** @beta */

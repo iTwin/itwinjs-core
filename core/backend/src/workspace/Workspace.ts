@@ -341,6 +341,12 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
       throw new Error(`${msg} [${name}] may not have leading or tailing spaces`);
   }
 
+  private static validateDbName(dbName: WorkspaceDbName) {
+    if (dbName === "" || dbName.length > 255 || /[#\.<>:"/\\"`'|?*\u0000-\u001F]/g.test(dbName) || /^(con|prn|aux|nul|com\d|lpt\d)$/i.test(dbName))
+      throw new Error(`invalid dbName: [${dbName}]`);
+    this.noLeadingOrTrailingSpaces(dbName, "dbName");
+  }
+
   public get isOpen() { return this.sqliteDb.isOpen; }
   public queryFileResource(rscName: WorkspaceResourceName) {
     const info = this.sqliteDb.nativeDb.queryEmbeddedFile(rscName);
@@ -355,6 +361,7 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
   }
 
   public constructor(dbName: WorkspaceDbName, container: WorkspaceContainer) {
+    ITwinWorkspaceDb.validateDbName(dbName);
     this.dbName = dbName;
     this.container = container;
     this.localFile = join(container.dirName, `${dbName}.${workspaceDbFileExt}`);

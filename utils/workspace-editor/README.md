@@ -1,25 +1,49 @@
 # WorkspaceEditor
 
-**WorkspaceEditor** is a command line utility for creating and editing `WorkspaceResources` in iTwin `WorkspaceFile`s.
+**WorkspaceEditor** is a command line utility for creating and editing `WorkspaceResources` in iTwin `WorkspaceDb`s, and for uploading and downloading `WorkspaceDb`s to cloud `WorkspaceContainer`s.
 
-An iTwin `WorkspaceFile` may hold many `WorkSpaceResources`, each with a `WorkspaceResourceName` and `WorkspaceResourceType`. `WorkspaceEditor` adds, updates, deletes, and extracts *local files* into/from a `WorkspaceFile`.
+An iTwin `WorkspaceDb` may hold many `WorkSpaceResources`, each with a `WorkspaceResourceName` and `WorkspaceResourceType`. `WorkspaceEditor` adds, updates, deletes, and extracts *local files* into/from a `WorkspaceDb`.
 
 ## Workspace Resource Types
 
 There are 3 `WorkspaceResourceType`s that may be accessed by `@itwin-backend` applications at runtime via the `WorkspaceContainer` api:
+
  1. `string` accessed via the `getString` method
  2. `blob`  binary data accessed via the `getBlob` method
  3. `file`  extracted to a local file via the `getFile` method
 
 Several `WorkspaceEditor` commands require a `--type` argument to specify which `WorkspaceResourceType` to use.
 
-## The WorkspaceFile Directory
+## The WorkspaceContainer Directory
 
-`WorkspaceFile`s are located in iTwin.js in the `WorkspaceContainerDir` directory. It is specified as a directory name in the `workspace.containerDir` member on the `configuration` argument of  `IModelHost.startup`. The default value is `%localappdata%\iTwin\Workspace`. WorkspaceEditor will normally create and edit `WorkspaceFiles` in the default directory, but if you wish to use a different directory, supply the `--directory` option to specify a different `WorkspaceContainerDir` location.
+`WorkspaceDb`s are located by iTwin.js inside a `WorkspaceContainer` subdirectory within the `WorkspaceContainerDir` directory. `WorkspaceContainerDir` is specified as a directory name in the `workspace.containerDir` member on the `configuration` argument of  `IModelHost.startup`. The default value is `%localappdata%/iTwin/Workspace`. WorkspaceEditor will normally create and edit `WorkspaceDb`s in the default directory, but if you wish to use a different directory, supply the `--directory` option to specify a different `WorkspaceContainerDir` location.
 
-## WorkspaceId
+## Workspace dbName
 
-The WorkspaceEditor commands all take a `WorkspaceId` option to specify the `WorkspaceFile` on which to operate. `WorkspaceId` become the resolved name of the `WorkspaceContainerName` from the Workspace api. `WorkspaceIds` must be less than 255 characters, may not have leading or trailing whitespace, and may not use any reserved path specification characters (see documentation for `WorkspaceContainerId` for details.) The `WorkspaceFile` filename is formed from the `WorkspaceContainerDir` plus the `WorkspaceId` plus the `.itwin-workspace` file extension.
+The WorkspaceEditor commands all take a `dbName` option to specify the `WorkspaceDb` on which to operate. The WorkspaceDb is located inside the `WorkspaceContainerId` specified with the --containerId argument. `WorkspaceDbName`s must be less than 255 characters, may not have leading or trailing whitespace, and may not use any reserved path specification characters (see documentation for `WorkspaceDbName` for details.) The `WorkspaceDb` filename is formed via: `${WorkspaceContainerDir}/${WorkspaceContainerId}/${WorkspaceDbName}.itwin-workspace`.
+
+## WorkspaceEditor Config file
+
+`WorkspaceEditor` accepts the `--config` option to specify the name of a JSON file that holds values for any other `WorkspaceEditor` options. By default, `WorkspaceEditor` looks in the current directory for a file named `workspaceEditor.json`.
+
+Example:
+
+```sh
+> WorkspaceEdit --config myConfig.json list db1
+...
+```
+
+```json
+> cat myConfig.json
+{
+  "directory": "d:/projData/112/",
+  "containerId": "proj112",
+  "accountName": "smsblob1",
+  "sasToken": "<valid token here>"
+}
+```
+
+> Note: config files **must** have a `.json` extension.
 
 ## WorkspaceEditor Commands
 
@@ -30,14 +54,15 @@ The following WorkspaceEditor commands are available:
 Create a new empty `WorkspaceFile`.
 
 Example:
+
 ```sh
-> WorkspaceEdit create proj112
-created WorkspaceFile C:\Users\User.Name\AppData\Local\iTwin\Workspace\proj112.itwin-workspace
+> WorkspaceEdit create proj
+created WorkspaceFile C:\Users\User.Name\AppData\Local\iTwin\Workspace\proj112\proj.itwin-workspace
 ```
 
 ### Add
 
-Add one or more local files into a `WorkspaceFile`.
+Add one or more local files as resources into a `WorkspaceDb`.
 
 `--type` specifies the type of resource(s) to add. Required
 `--name` specifies the name of the resource. Defaults to the name of the local file.
@@ -47,22 +72,23 @@ Add one or more local files into a `WorkspaceFile`.
 > Note: `--name`  is only applicable when adding a single file.
 
 Examples:
+
 ```sh
-> WorkspaceEditor add proj112 -n equipment-data D:\data\equip.dat
-WorkspaceFile [C:\Users\User.Name\AppData\Local\iTwin\Workspace\proj112.itwin-workspace]
+> WorkspaceEditor add proj -n equipment-data D:\data\equip.dat
+WorkspaceDb [C:\Users\User.Name\AppData\Local\iTwin\Workspace\proj112\proj.itwin-workspace]
  added "D:\data\equip.dat" as file resource [equipment-data]
 ```
 
 ```sh
-> WorkspaceEditor add proj112 -string *.json
-WorkspaceFile [C:\Users\User.Name\AppData\Local\iTwin\Workspace\proj112.itwin-workspace]
+> WorkspaceEditor add proj -string *.json
+WorkspaceDb [C:\Users\User.Name\AppData\Local\iTwin\Workspace\proj112\proj.itwin-workspace]
  added "specs.json" as string resource [specs.json]
  added "vendor.json" as string resource [vendor.json]
  ```
 
 ```sh
- > WorkspaceEditor add proj112 -t blob -r d:\projData\112\ **\*.dict
-WorkspaceFile [C:\Users\User.Name\AppData\Local\iTwin\Workspace\proj112.itwin-workspace]
+ > WorkspaceEditor add proj -t blob -r d:\projData\112\ **\*.dict
+WorkspaceDb [C:\Users\User.Name\AppData\Local\iTwin\Workspace\proj112\proj.itwin-workspace]
  added "d:\projData\112\TernKit\KDEO5814.dict" as blob resource [TernKit/KDEO5814.dict]
  added "d:\projData\112\TernKit\KDEO5815.dict" as blob resource [TernKit/KDEO5815.dict]
  added "d:\projData\112\UniSpace\KDEO5814.dict" as blob resource [UniSpace/KDEO5814.dict]
@@ -74,13 +100,13 @@ WorkspaceFile [C:\Users\User.Name\AppData\Local\iTwin\Workspace\proj112.itwin-wo
 
 ### List
 
-List the contents of a `WorkspaceFile`. By default it will show all 3 resource types. To limit the output to specific types, supply the `--strings`, `--blobs`, or `--files` options.
+List the contents of a `WorkspaceDb`. By default it will show all 3 resource types. To limit the output to specific types, supply the `--strings`, `--blobs`, or `--files` options.
 
 Examples:
 
 ```sh
-> WorkspaceEditor list proj112
-WorkspaceFile [C:\Users\User.Name\AppData\Local\iTwin\Workspace\proj112.itwin-workspace]
+> WorkspaceEditor list proj
+WorkspaceDb [C:\Users\User.Name\AppData\Local\iTwin\Workspace\proj112\proj.itwin-workspace]
  strings:
   name=[specs.json], size=12050
   name=[vendor.json], size=31335
@@ -97,8 +123,8 @@ WorkspaceFile [C:\Users\User.Name\AppData\Local\iTwin\Workspace\proj112.itwin-wo
 ```
 
 ```sh
-> WorkspaceEditor list proj112 --strings
-WorkspaceFile [C:\Users\User.Name\AppData\Local\iTwin\Workspace\proj112.itwin-workspace]
+> WorkspaceEditor list proj --strings
+WorkspaceDb [C:\Users\User.Name\AppData\Local\iTwin\Workspace\proj112\proj.itwin-workspace]
  strings:
   name=[specs.json], size=12050
   name=[vendor.json], size=31335
@@ -106,32 +132,32 @@ WorkspaceFile [C:\Users\User.Name\AppData\Local\iTwin\Workspace\proj112.itwin-wo
 
 ### Extract
 
-Extract a `WorkspaceResource` from a `WorkspaceFile` into a local file.
+Extract a `WorkspaceResource` from a `WorkspaceDb` into a local file.
 
 Example:
 ```sh
-> WorkspaceEditor extract proj112 -t blob UniSpace/KDEO5815.dict d:\temp\kd.dict
-WorkspaceFile [C:\Users\User.Name\AppData\Local\iTwin\Workspace\proj112.itwin-workspace]
+> WorkspaceEditor extract proj -t blob UniSpace/KDEO5815.dict d:\temp\kd.dict
+WorkspaceDb [C:\Users\User.Name\AppData\Local\iTwin\Workspace\proj112\proj.itwin-workspace]
  blob resource [UniSpace/KDEO5815.dict] extracted to "d:\temp\kd.dict"
 ```
 
 ### Delete
 
-Delete an existing `WorkspaceResource` from a `WorkspaceFile`.
+Delete an existing `WorkspaceResource` from a `WorkspaceDb`.
 
 Example:
 ```sh
-> WorkspaceEditor delete proj112 -t blob UniSpace/KDEO5815.dict
-WorkspaceFile [C:\Users\User.Name\AppData\Local\iTwin\Workspace\proj112.itwin-workspace]
+> WorkspaceEditor delete proj -t blob UniSpace/KDEO5815.dict
+WorkspaceDb [C:\Users\User.Name\AppData\Local\iTwin\Workspace\proj112\proj.itwin-workspace]
  deleted blob resource [UniSpace/KDEO5815.dict]
 ```
 
 ### Vacuum
 
-[Vacuum](https://www.sqlite.org/lang_vacuum.html) a `WorkspaceFile`. This can make a `WorkspaceFile` smaller and more efficient to access.
+[Vacuum](https://www.sqlite.org/lang_vacuum.html) a `WorkspaceDb`. This can make a `WorkspaceDb` smaller and more efficient to access.
 
 Example:
 ```sh
-> WorkspaceEditor vacuum proj112
-WorkspaceFile [C:\Users\User.Name\AppData\Local\iTwin\Workspace\proj112.itwin-workspace] vacuumed
+> WorkspaceEditor vacuum proj
+WorkspaceDb [C:\Users\User.Name\AppData\Local\iTwin\Workspace\proj112\proj.itwin-workspace] vacuumed
 ```

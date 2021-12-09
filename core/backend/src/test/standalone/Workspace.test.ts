@@ -11,7 +11,7 @@ import { Guid } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import { IModelJsFs } from "../../IModelJsFs";
 import { BaseSettings, SettingDictionary, SettingsPriority } from "../../workspace/Settings";
-import { EditableWorkspaceDb, ITwinWorkspace, ITwinWorkspaceContainer, WorkspaceContainerName, WorkspaceDbName } from "../../workspace/Workspace";
+import { EditableWorkspaceDb, ITwinWorkspace, ITwinWorkspaceContainer, ITwinWorkspaceDb, WorkspaceContainerName, WorkspaceDbName } from "../../workspace/Workspace";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
@@ -64,7 +64,37 @@ describe.only("WorkspaceFile", () => {
     new ITwinWorkspaceContainer(workspace, Guid.createValue()); // guids should be valid
   });
 
-  it("create new WorkspaceFile", async () => {
+  it("WorkspaceDbNames", () => {
+    const container = new ITwinWorkspaceContainer(workspace, "test");
+    const expectBadName = (names: string[]) => {
+      names.forEach((name) => {
+        expect(() => new ITwinWorkspaceDb(name, container)).to.throw("dbName");
+      });
+    };
+
+    expectBadName([
+      "",
+      "  ",
+      "1/2",
+      "a\\b",
+      `a"b`,
+      "a:b",
+      "a.b",
+      "a?b",
+      "a*b",
+      "a|b",
+      "con",
+      "prn",
+      "return\r",
+      "newline\n",
+      "a".repeat(256), // too long
+      " leading space",
+      "trailing space "]);
+
+    new ITwinWorkspaceDb(Guid.createValue(), container); // guids should be valid
+  });
+
+  it("create new WorkspaceDb", async () => {
     const wsFile = makeEditableDb("acme-engineering-inc-2", "db1");
     const inFile = IModelTestUtils.resolveAssetFile("test.setting.json5");
     const testRange = new Range3d(1.2, 2.3, 3.4, 4.5, 5.6, 6.7);
