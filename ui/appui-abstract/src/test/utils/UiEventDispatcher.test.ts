@@ -121,7 +121,7 @@ describe("UiEventDispatcher", () => {
     eventDispatcher.onSyncUiEvent.removeListener(handleSyncUiEvent);
   });
 
-  it.skip("test multiple event Id with a multiple dispatches", () => {
+  it("test multiple event Id with a multiple dispatches", () => {
     const fakeTimers = sinon.useFakeTimers();
     let callbackCalled = false;
     let callbackHasExpectedEventIds = false;
