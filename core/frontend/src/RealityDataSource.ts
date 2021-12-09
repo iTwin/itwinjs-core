@@ -182,7 +182,7 @@ class RealityDataSourceImpl implements RealityDataSource {
    */
   public static async fromKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined> {
     // search to see if it was already created
-    const rdSourceKeyString = rdSourceKey.toString();
+    const rdSourceKeyString = RealityDataSourceKey.convertToString(rdSourceKey);
     let rdSource = RealityDataSourceImpl._realityDataSources.get(rdSourceKeyString);
     if (rdSource)
       return rdSource;

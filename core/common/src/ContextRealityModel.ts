@@ -109,7 +109,7 @@ export interface RealityDataSourceKey {
  * @beta */
 export namespace RealityDataSourceKey {
   /** Utility function to convert a RealityDataSourceKey into its string representation */
-  export function toString(rdSourceKey: RealityDataSourceKey): string {
+  export function convertToString(rdSourceKey: RealityDataSourceKey): string {
     return `${rdSourceKey.provider}:${rdSourceKey.format}:${rdSourceKey.id}:${rdSourceKey?.iTwinId}`;
   }
   /** Utility function to compare two RealityDataSourceKey, we consider it equal even if itwinId is different */
