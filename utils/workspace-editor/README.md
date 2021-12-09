@@ -24,7 +24,7 @@ The WorkspaceEditor commands all take a `dbName` option to specify the `Workspac
 
 ## WorkspaceEditor Config file
 
-`WorkspaceEditor` accepts the `--config` option to specify the name of a JSON file that holds values for any other `WorkspaceEditor` options. By default, `WorkspaceEditor` looks in the current directory for a file named `workspaceEditor.json`.
+`WorkspaceEditor` accepts the `--config` option to specify the name of a JSON file that holds values for `WorkspaceEditor` options. By default, `WorkspaceEditor` looks in the current directory for a file named `workspaceEditor.json`.
 
 Example:
 
@@ -51,13 +51,13 @@ The following WorkspaceEditor commands are available:
 
 ### Create
 
-Create a new empty `WorkspaceFile`.
+Create a new empty `WorkspaceDb`.
 
 Example:
 
 ```sh
 > WorkspaceEdit create proj
-created WorkspaceFile C:\Users\User.Name\AppData\Local\iTwin\Workspace\proj112\proj.itwin-workspace
+created WorkspaceDb C:\Users\User.Name\AppData\Local\iTwin\Workspace\proj112\proj.itwin-workspace
 ```
 
 ### Add

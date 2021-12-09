@@ -279,87 +279,87 @@ function runCommand<T extends EditorOpts>(cmd: (args: T) => Promise<void>) {
 async function main() {
   const type = { alias: "t", describe: "the type of resource", choices: ["blob", "string", "file"], required: true };
   const update = { alias: "u", describe: "update (i.e. replace) rather than add the files", boolean: true, default: false };
-  Yargs.usage("Edits or lists contents of a WorkspaceDb")
-    .wrap(Math.min(130, Yargs.terminalWidth()))
-    .strict()
-    .config()
-    .default("config", "workspaceEditor.json")
-    .help()
-    .version("V2.0")
-    .options({
-      directory: { alias: "d", describe: "directory to use for WorkspaceContainers", string: true },
-      containerId: { alias: "c", describe: "WorkspaceContainerId for WorkspaceDb", string: true, required: true },
-      sasToken: { alias: "s", describe: "shared access signature token", string: true, default: "" },
-      accountName: { alias: "a", describe: "cloud storage account name for container", string: true, default: "" },
-      storageType: { describe: "storage module type", string: true, default: "azure?sas=1" },
-    })
-    .command({
-      command: "create <dbName>",
-      describe: "create a new WorkspaceDb",
-      handler: runCommand(createWorkspaceDb),
-    })
-    .command({
-      command: "list <dbName>",
-      describe: "list the contents of a WorkspaceDb",
-      builder: {
-        strings: { alias: "s", describe: "list string resources", boolean: true, default: false },
-        blobs: { alias: "b", describe: "list blob resources", boolean: true, default: false },
-        files: { alias: "f", describe: "list file resources", boolean: true, default: false },
-      },
-      handler: runCommand(listWorkspaceDb),
-    })
-    .command({
-      command: "add <dbName> <files>",
-      describe: "add or update files into a WorkspaceDb",
-      builder: {
-        name: { alias: "n", describe: "resource name for file", string: true },
-        root: { alias: "r", describe: "root directory. Path parts after this will be saved in resource name", string: true },
-        update,
-        type,
-      },
-      handler: runCommand(addResource),
-    })
-    .command({
-      command: "extract <dbName> <rscName> <fileName>",
-      describe: "extract a resource from a WorkspaceDb into a local file",
-      builder: { type },
-      handler: runCommand(extractResource),
-    })
-    .command({
-      command: "deleteResource <dbName> <rscName>",
-      describe: "delete a resource from a WorkspaceDb",
-      builder: { type },
-      handler: runCommand(deleteResource),
-    })
-    .command({
-      command: "upload <dbName>",
-      describe: "upload a WorkspaceDb to cloud storage",
-      builder: {
-        initialize: { alias: "i", describe: "initialize container", boolean: true, default: false },
-        localFile: { alias: "l", describe: "name of source local file", string: true, required: false },
-      },
-      handler: runCommand(uploadWorkspaceDb),
-    })
-    .command({
-      command: "download <dbName>",
-      describe: "download a WorkspaceDb from cloud storage to local file",
-      builder: {
-        localFile: { alias: "l", describe: "name of target local file", string: true, required: false },
-      },
-      handler: runCommand(downloadWorkspaceDb),
-    })
-    .command({
-      command: "deleteDb <dbName>",
-      describe: "delete a WorkspaceDb from cloud storage",
-      handler: runCommand(deleteWorkspaceDb),
-    })
-    .command({
-      command: "vacuum <dbName>",
-      describe: "vacuum a WorkspaceDb",
-      handler: runCommand(vacuumWorkspaceDb),
-    })
-    .demandCommand()
-    .argv;
+  Yargs.usage("Edits or lists contents of a WorkspaceDb");
+  Yargs.wrap(Math.min(130, Yargs.terminalWidth()));
+  Yargs.strict();
+  Yargs.config();
+  Yargs.default("config", "workspaceEditor.json");
+  Yargs.help();
+  Yargs.version("V2.0");
+  Yargs.options({
+    directory: { alias: "d", describe: "directory to use for WorkspaceContainers", string: true },
+    containerId: { alias: "c", describe: "WorkspaceContainerId for WorkspaceDb", string: true, required: true },
+    sasToken: { alias: "s", describe: "shared access signature token", string: true, default: "" },
+    accountName: { alias: "a", describe: "cloud storage account name for container", string: true, default: "" },
+    storageType: { describe: "storage module type", string: true, default: "azure?sas=1" },
+  });
+  Yargs.command({
+    command: "create <dbName>",
+    describe: "create a new WorkspaceDb",
+    handler: runCommand(createWorkspaceDb),
+  });
+  Yargs.command({
+    command: "list <dbName>",
+    describe: "list the contents of a WorkspaceDb",
+    builder: {
+      strings: { alias: "s", describe: "list string resources", boolean: true, default: false },
+      blobs: { alias: "b", describe: "list blob resources", boolean: true, default: false },
+      files: { alias: "f", describe: "list file resources", boolean: true, default: false },
+    },
+    handler: runCommand(listWorkspaceDb),
+  });
+  Yargs.command({
+    command: "add <dbName> <files>",
+    describe: "add or update files into a WorkspaceDb",
+    builder: {
+      name: { alias: "n", describe: "resource name for file", string: true },
+      root: { alias: "r", describe: "root directory. Path parts after this will be saved in resource name", string: true },
+      update,
+      type,
+    },
+    handler: runCommand(addResource),
+  });
+  Yargs.command({
+    command: "extract <dbName> <rscName> <fileName>",
+    describe: "extract a resource from a WorkspaceDb into a local file",
+    builder: { type },
+    handler: runCommand(extractResource),
+  });
+  Yargs.command({
+    command: "deleteResource <dbName> <rscName>",
+    describe: "delete a resource from a WorkspaceDb",
+    builder: { type },
+    handler: runCommand(deleteResource),
+  });
+  Yargs.command({
+    command: "upload <dbName>",
+    describe: "upload a WorkspaceDb to cloud storage",
+    builder: {
+      initialize: { alias: "i", describe: "initialize container", boolean: true, default: false },
+      localFile: { alias: "l", describe: "name of source local file", string: true, required: false },
+    },
+    handler: runCommand(uploadWorkspaceDb),
+  });
+  Yargs.command({
+    command: "download <dbName>",
+    describe: "download a WorkspaceDb from cloud storage to local file",
+    builder: {
+      localFile: { alias: "l", describe: "name of target local file", string: true, required: false },
+    },
+    handler: runCommand(downloadWorkspaceDb),
+  });
+  Yargs.command({
+    command: "deleteDb <dbName>",
+    describe: "delete a WorkspaceDb from cloud storage",
+    handler: runCommand(deleteWorkspaceDb),
+  });
+  Yargs.command({
+    command: "vacuum <dbName>",
+    describe: "vacuum a WorkspaceDb",
+    handler: runCommand(vacuumWorkspaceDb),
+  });
+  Yargs.demandCommand();
+  Yargs.argv;
 }
 
 void main();
