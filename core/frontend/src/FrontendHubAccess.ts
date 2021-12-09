@@ -7,7 +7,7 @@
  */
 
 import { AccessToken, GuidString } from "@itwin/core-bentley";
-import { ChangesetId, IModelVersion } from "@itwin/core-common";
+import { ChangesetIndexAndId, IModelVersion } from "@itwin/core-common";
 
 /** @public */
 export interface IModelIdArg {
@@ -17,8 +17,7 @@ export interface IModelIdArg {
 
 /** @public */
 export interface FrontendHubAccess {
-  getLatestChangesetId(arg: IModelIdArg): Promise<ChangesetId>;
-  getChangesetIdFromVersion(arg: IModelIdArg & { version: IModelVersion }): Promise<ChangesetId>;
-  getChangesetIdFromNamedVersion(arg: IModelIdArg & { versionName: string }): Promise<ChangesetId>;
-  getChangesetIdFromLatestNamedVersion(arg: IModelIdArg): Promise<ChangesetId>;
+  getLatestChangeset(arg: IModelIdArg): Promise<ChangesetIndexAndId>;
+  getChangesetFromVersion(arg: IModelIdArg & { version: IModelVersion }): Promise<ChangesetIndexAndId>;
+  getChangesetFromNamedVersion(arg: IModelIdArg & { versionName?: string }): Promise<ChangesetIndexAndId>;
 }
