@@ -63,57 +63,29 @@ exports[`ListPicker ListPickerItem should render correctly 1`] = `
 
 exports[`ListPicker v1 rendering should render correctly 1`] = `
 <ContextProvider
-  value="1"
->
-  <ListPicker
-    items={
-      Array [
-        Object {
-          "enabled": true,
-          "name": "123456789012345678901234567890",
-          "type": 0,
-        },
-        Object {
-          "enabled": false,
-          "type": 1,
-        },
-        Object {
-          "children": Array [
-            Object {
-              "enabled": true,
-              "name": "123456789012345678901234567890",
-              "type": 0,
-            },
-          ],
-          "enabled": true,
-          "type": 2,
-        },
-        Object {
-          "children": Array [],
-          "enabled": true,
-          "type": 2,
-        },
-      ]
+  value={
+    Object {
+      "store": Object {
+        "@@observable": [Function],
+        "dispatch": [Function],
+        "getState": [Function],
+        "replaceReducer": [Function],
+        "subscribe": [Function],
+      },
+      "subscription": Object {
+        "addNestedSub": [Function],
+        "getListeners": [Function],
+        "handleChangeWrapper": [Function],
+        "isSubscribed": [Function],
+        "notifyNestedSubs": [Function],
+        "onStateChange": [Function],
+        "trySubscribe": [Function],
+        "tryUnsubscribe": [Function],
+      },
     }
-    setEnabled={[Function]}
-    title="Test"
-  />
-</ContextProvider>
-`;
-
-exports[`ListPicker v2 rendering should render correctly 1`] = `
-<ContextProvider
-  value="2"
+  }
 >
-  <ContextProvider
-    value={
-      Object {
-        "hasOverflow": false,
-        "onResize": [Function],
-        "useHeight": false,
-      }
-    }
-  >
+  <FrameworkVersion>
     <ListPicker
       items={
         Array [
@@ -147,6 +119,78 @@ exports[`ListPicker v2 rendering should render correctly 1`] = `
       setEnabled={[Function]}
       title="Test"
     />
-  </ContextProvider>
+  </FrameworkVersion>
+</ContextProvider>
+`;
+
+exports[`ListPicker v2 rendering should render correctly 1`] = `
+<ContextProvider
+  value={
+    Object {
+      "store": Object {
+        "@@observable": [Function],
+        "dispatch": [Function],
+        "getState": [Function],
+        "replaceReducer": [Function],
+        "subscribe": [Function],
+      },
+      "subscription": Object {
+        "addNestedSub": [Function],
+        "getListeners": [Function],
+        "handleChangeWrapper": [Function],
+        "isSubscribed": [Function],
+        "notifyNestedSubs": [Function],
+        "onStateChange": [Function],
+        "trySubscribe": [Function],
+        "tryUnsubscribe": [Function],
+      },
+    }
+  }
+>
+  <FrameworkVersion>
+    <ContextProvider
+      value={
+        Object {
+          "hasOverflow": false,
+          "onResize": [Function],
+          "useHeight": false,
+        }
+      }
+    >
+      <ListPicker
+        items={
+          Array [
+            Object {
+              "enabled": true,
+              "name": "123456789012345678901234567890",
+              "type": 0,
+            },
+            Object {
+              "enabled": false,
+              "type": 1,
+            },
+            Object {
+              "children": Array [
+                Object {
+                  "enabled": true,
+                  "name": "123456789012345678901234567890",
+                  "type": 0,
+                },
+              ],
+              "enabled": true,
+              "type": 2,
+            },
+            Object {
+              "children": Array [],
+              "enabled": true,
+              "type": 2,
+            },
+          ]
+        }
+        setEnabled={[Function]}
+        title="Test"
+      />
+    </ContextProvider>
+  </FrameworkVersion>
 </ContextProvider>
 `;

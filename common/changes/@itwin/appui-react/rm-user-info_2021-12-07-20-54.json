@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Remove UserInfo completely",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}
