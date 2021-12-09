@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { AccessToken, assert, BeDuration, BentleyStatus, IModelStatus, Logger } from "@itwin/core-bentley";
+import { AccessToken, assert, BeDuration, BentleyError, BentleyStatus, IModelStatus, Logger } from "@itwin/core-bentley";
 import {
   BriefcaseProps, IModelConnectionProps, IModelError, IModelRpcOpenProps, IModelRpcProps, IModelVersion, RpcActivity, RpcPendingResponse, SyncMode,
 } from "@itwin/core-common";
