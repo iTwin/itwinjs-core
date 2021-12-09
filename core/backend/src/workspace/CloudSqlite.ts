@@ -156,8 +156,8 @@ export class CloudSqlite {
       throw new Error(`Cannot copy db: ${stat.errMsg}`);
   }
 
-  public static async deleteDb(db: CloudSqlite.DbProps, props: CloudSqlite.ContainerAccessProps) {
-    const stat = await BlobDaemon.command("delete", { dbAlias: db.dbName, localFile: db.localFile, ...this.toBlobAccessProps(props) });
+  public static async deleteDb(props: CloudSqlite.ContainerAccessProps & { dbName: string }) {
+    const stat = await BlobDaemon.command("delete", { dbAlias: props.dbName, ...this.toBlobAccessProps(props) });
     if (stat.result !== DbResult.BE_SQLITE_OK)
       throw new Error(`Cannot delete db: ${stat.errMsg}`);
   }

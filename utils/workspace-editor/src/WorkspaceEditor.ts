@@ -65,19 +65,25 @@ interface ListOptions extends WorkspaceDbOpt {
   blobs?: boolean;
 }
 
+/** Properties for accessing a blob storage account. */
 interface BlobAccountProps {
+  /** Token that provides required access (read/write/create/etc.) for blob store operation. */
   sasToken: string;
+  /** Name for blob store user account */
   accountName: string;
+  /** The string that identifies the storage type. Default = "azure?sas=1" */
   storageType: string;
 }
 
 /** Options for uploading a WorkspaceDb to blob storage */
 interface UploadOptions extends BlobAccountProps, WorkspaceDbOpt {
   initialize: boolean;
+  replace: boolean;
 }
 
 /** Options for downloading a WorkspaceDb from blob storage */
 interface DownloadOptions extends BlobAccountProps, WorkspaceDbOpt {
+  /** If present, name of local file for download.  */
   localFile?: string;
 }
 
@@ -147,7 +153,7 @@ async function listWorkspaceDb(args: ListOptions) {
 }
 
 /** Add or Update files into a WorkspaceDb. */
-async function addToWorkspaceDb(args: AddFileOptions) {
+async function addResource(args: AddFileOptions) {
   editWorkspace(args, (wsFile, args) => {
     glob.sync(args.files, { cwd: args.root ?? process.cwd(), nodir: true }).forEach((filePath) => {
       const file = args.root ? join(args.root, filePath) : filePath;
@@ -173,7 +179,7 @@ async function addToWorkspaceDb(args: AddFileOptions) {
 }
 
 /** Extract a single resource from a WorkspaceDb into a local file */
-async function extractFromWorkspaceDb(args: ExtractResourceOpts) {
+async function extractResource(args: ExtractResourceOpts) {
   readWorkspace(args, (file, args) => {
     const verify = <T>(val: T | undefined): T => {
       if (val === undefined)
@@ -193,7 +199,7 @@ async function extractFromWorkspaceDb(args: ExtractResourceOpts) {
 }
 
 /** Delete a single resource from a WorkspaceDb */
-async function deleteFromWorkspaceDb(args: DeleteResourceOpts) {
+async function deleteResource(args: DeleteResourceOpts) {
   editWorkspace(args, (wsFile, args) => {
     if (args.type === "string")
       wsFile.removeString(args.rscName);
@@ -241,6 +247,9 @@ async function downloadWorkspaceDb(args: DownloadOptions) {
   return performTransfer("download", { ...args, localFile });
 }
 
+async function deleteWorkspaceDb(args: BlobAccountProps & WorkspaceDbOpt) {
+  return CloudSqlite.deleteDb(args);
+}
 /** Start `IModelHost`, then run a WorkspaceEditor command. Errors are logged to console. */
 function runCommand<T extends EditorOpts>(cmd: (args: T) => Promise<void>) {
   return async (args: T) => {
@@ -260,6 +269,12 @@ function runCommand<T extends EditorOpts>(cmd: (args: T) => Promise<void>) {
 async function main() {
   const type = { alias: "t", describe: "the type of resource", choices: ["blob", "string", "file"], required: true };
   const update = { alias: "u", describe: "update (i.e. replace) rather than add the files", boolean: true, default: false };
+  const accountOpts = {
+    sasToken: { alias: "s", describe: "shared access signature token", string: true, required: true },
+    accountName: { alias: "a", describe: "user account name", string: true, required: true },
+    storageType: { describe: "storage module type", string: true, default: "azure?sas=1" },
+  };
+
   Yargs.usage("Edits or lists contents of a WorkspaceDb")
     .wrap(Math.min(130, Yargs.terminalWidth()))
     .strict()
@@ -295,28 +310,26 @@ async function main() {
         update,
         type,
       },
-      handler: runCommand(addToWorkspaceDb),
+      handler: runCommand(addResource),
     })
     .command({
       command: "extract <dbName> <rscName> <fileName>",
       describe: "extract a resource from a WorkspaceDb into a local file",
       builder: { type },
-      handler: runCommand(extractFromWorkspaceDb),
+      handler: runCommand(extractResource),
     })
     .command({
-      command: "delete <dbName> <rscName>",
+      command: "deleteResource <dbName> <rscName>",
       describe: "delete a resource from a WorkspaceDb",
       builder: { type },
-      handler: runCommand(deleteFromWorkspaceDb),
+      handler: runCommand(deleteResource),
     })
     .command({
       command: "upload <dbName>",
       describe: "upload a WorkspaceDb to cloud storage",
       builder: {
         initialize: { alias: "i", describe: "initialize container", boolean: true, default: false },
-        sasToken: { alias: "s", describe: "shared access signature token", string: true, required: true },
-        accountName: { alias: "a", describe: "user account name", string: true, required: true },
-        storageType: { describe: "storage module type", string: true, default: "azure?sas=1" },
+        ...accountOpts,
       },
       handler: runCommand(uploadWorkspaceDb),
     })
@@ -325,11 +338,17 @@ async function main() {
       describe: "download a WorkspaceDb from cloud storage to local file",
       builder: {
         localFile: { alias: "l", describe: "name of local file", string: true, required: false },
-        sasToken: { alias: "s", describe: "shared access signature token", string: true, required: false },
-        accountName: { alias: "a", describe: "user account name", string: true, required: true },
-        storageType: { describe: "storage module type", string: true, default: "azure?sas=1" },
+        ...accountOpts,
       },
       handler: runCommand(downloadWorkspaceDb),
+    })
+    .command({
+      command: "deleteDb <dbName>",
+      describe: "delete a WorkspaceDb from cloud storage",
+      builder: {
+        ...accountOpts,
+      },
+      handler: runCommand(deleteWorkspaceDb),
     })
     .command({
       command: "vacuum <dbName>",

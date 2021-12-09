@@ -194,7 +194,7 @@ export interface WorkspaceContainer {
   /** @internal */
   addWorkspaceDb(toAdd: ITwinWorkspaceDb): void;
 
-  getWorkspaceDb(props: WorkspaceDbProps & { containerId?: WorkspaceContainerId }): Promise<WorkspaceDb>;
+  getWorkspaceDb(props: Optional<WorkspaceDbProps, "containerName">): Promise<WorkspaceDb>;
   /** Close and remove a currently opened [[WorkspaceDb]] from this Workspace. */
   dropWorkspaceDb(container: WorkspaceDb): void;
   /** Close this WorkspaceContainer. All currently opened WorkspaceDbs are dropped. */
@@ -295,7 +295,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
     this._wsDbs.set(toAdd.dbName, toAdd);
   }
 
-  public async getWorkspaceDb(props: Optional<WorkspaceDbProps, "containerId">): Promise<WorkspaceDb> {
+  public async getWorkspaceDb(props: Optional<WorkspaceDbProps, "containerName">): Promise<WorkspaceDb> {
     const db = this._wsDbs.get(props.dbName) ?? new ITwinWorkspaceDb(props.dbName, this);
     if (!db.isOpen) {
       if (props.cloudProps)

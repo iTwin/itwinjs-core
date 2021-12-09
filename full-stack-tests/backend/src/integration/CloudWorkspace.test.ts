@@ -49,7 +49,7 @@ describe("Cloud workspace containers", () => {
     await ws1.upload(cloudAccess);
 
     IModelJsFs.unlinkSync(dbName);
-    let ws2 = await container.getWorkspaceDb({ dbName: testDbName, containerName: testContainerName, cloudProps: { ...containerProps, ...accountProps } });
+    let ws2 = await container.getWorkspaceDb({ dbName: testDbName, cloudProps: { ...containerProps, ...accountProps } });
     let val = ws2.getString("string 1");
     expect(val).equals("value of string 1");
     ws2.container.dropWorkspaceDb(ws2);
@@ -61,10 +61,10 @@ describe("Cloud workspace containers", () => {
     ws3.updateString("string 1", newVal);
     ws3.close();
 
-    await CloudSqlite.deleteDb(ws3, cloudAccess);
+    await CloudSqlite.deleteDb({ ...ws3, ...cloudAccess });
     await ws3.upload(cloudAccess);
 
-    ws2 = await container.getWorkspaceDb({ dbName: testDbName, containerName: testContainerName, cloudProps: { ...containerProps, ...accountProps } });
+    ws2 = await container.getWorkspaceDb({ dbName: testDbName, cloudProps: { ...containerProps, ...accountProps } });
     val = ws2.getString("string 1");
     expect(val).equals(newVal);
     ws2.container.dropWorkspaceDb(ws2);
