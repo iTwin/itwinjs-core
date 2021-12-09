@@ -36,22 +36,22 @@ export class IModelBankFrontend implements TestFrontendHubAccess {
 
   private async _getChangesetFromId(arg: IModelIdArg & { changeSetId: string }): Promise<ChangesetIndexAndId> {
     const changeSets: ChangeSet[] = await this._hubClient.changeSets.get(arg.accessToken, arg.iModelId, new ChangeSetQuery().byId(arg.changeSetId));
-    if (!changeSets[0] || !changeSets[0].index || !changeSets[0].changeSetId)
+    if (!changeSets[0] || !changeSets[0].index || !changeSets[0].id)
       throw new BentleyError(BentleyStatus.ERROR, `Changeset ${arg.changeSetId} not found`);
-    return { index: +changeSets[0].index, id: changeSets[0].changeSetId };
+    return { index: +changeSets[0].index, id: changeSets[0].id };
   }
 
   public async getLatestChangeset(arg: IModelIdArg): Promise<ChangesetIndexAndId> {
     const changeSets: ChangeSet[] = await this._hubClient.changeSets.get(arg.accessToken, arg.iModelId, new ChangeSetQuery().top(1).latest());
     if (!changeSets[0] || !changeSets[0].index || !changeSets[0].id)
-      throw new BentleyError(BentleyStatus.ERROR, `No changesets found for ${arg.iModelId}`);
+      return { index: 0, id: "" };
     return { index: +changeSets[0].index, id: changeSets[0].id };
   }
 
   public async getChangesetFromVersion(arg: IModelIdArg & { version: IModelVersion }): Promise<ChangesetIndexAndId> {
     const version = arg.version;
     if (version.isFirst)
-      return { index: 1, id: "" };
+      return { index: 0, id: "" };
 
     const asOfChangeSetId = version.getAsOfChangeSet();
     if (asOfChangeSetId)
