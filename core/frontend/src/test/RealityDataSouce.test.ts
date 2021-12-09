@@ -21,7 +21,8 @@ describe("RealityDataSource", () => {
     const rdSourceKey = RealityDataSource.createKeyFromUrl(tilesetUrl);
     expect(rdSourceKey.provider).to.equal(RealityDataProvider.CesiumIonAsset);
     expect(rdSourceKey.format).to.equal(RealityDataFormat.ThreeDTile);
-    expect(rdSourceKey.id).to.be.equal(tilesetUrl);
+    // dummy id for CesiumIonAsset, we want to hide the url and key
+    expect(rdSourceKey.id).to.be.equal("OSMBuildings");
     expect(rdSourceKey.iTwinId).to.be.undefined;
   });
   it("should handle creation from Context Share url", () => {

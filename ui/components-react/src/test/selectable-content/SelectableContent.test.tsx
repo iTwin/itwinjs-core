@@ -29,17 +29,11 @@ describe("<SelectableContent />", () => {
     expect(selectComponent).to.not.be.undefined;
     expect(selectComponent).to.not.be.null;
 
-    const componentsSelectableContent = selectComponent.firstElementChild;
+    const componentsSelectableContent = selectComponent.querySelector(".iui-select-button");
     expect(componentsSelectableContent).to.not.be.null;
 
-    const componentsSelectableContentHeader = componentsSelectableContent?.firstElementChild;
-    expect(componentsSelectableContentHeader).to.not.be.null.and.to.not.be.undefined;
+    fireEvent.click(componentsSelectableContent!);
 
-    const uiCoreReactSelectTop = componentsSelectableContentHeader?.firstElementChild;
-    expect(uiCoreReactSelectTop).to.not.be.null.and.to.not.be.undefined;
-    expect(uiCoreReactSelectTop?.firstElementChild).to.not.be.null.and.to.not.be.undefined;
-
-    fireEvent.keyDown(uiCoreReactSelectTop!.firstElementChild!, { key: "ArrowDown" });
     await waitFor(() => getByText("B"));
     expect(getByText("C")).to.not.be.undefined;
     expect(queryAllByText("A")).to.have.length(2);
@@ -92,23 +86,15 @@ describe("<SelectableContent />", () => {
     );
     const selectComponent = getByTestId("selectable-content");
 
-    expect(selectComponent).to.not.be.undefined;
-    expect(selectComponent).to.not.be.null;
-
-    expect(getByText("A")).not.be.undefined;
-    expect(getByTestId("a")).not.be.undefined;
-
-    const componentsSelectableContent = selectComponent.firstElementChild;
+    const componentsSelectableContent = selectComponent.querySelector(".iui-select-button");
     expect(componentsSelectableContent).to.not.be.null;
 
-    const componentsSelectableContentHeader = componentsSelectableContent?.firstElementChild;
-    expect(componentsSelectableContentHeader).to.not.be.null.and.to.not.be.undefined;
+    fireEvent.click(componentsSelectableContent!);
 
-    const uiCoreReactSelectTop = componentsSelectableContentHeader?.firstElementChild;
-    expect(uiCoreReactSelectTop).to.not.be.null.and.to.not.be.undefined;
-    expect(uiCoreReactSelectTop?.firstElementChild).to.not.be.null.and.to.not.be.undefined;
+    expect(selectComponent).to.not.be.undefined;
+    expect(selectComponent).to.not.be.null;
+    expect(getByTestId("a")).not.be.undefined;
 
-    fireEvent.keyDown(uiCoreReactSelectTop!.firstElementChild!, { key: "ArrowDown" });
     await waitFor(() => getByText("B"));
     fireEvent.click(getByText("B"));
 

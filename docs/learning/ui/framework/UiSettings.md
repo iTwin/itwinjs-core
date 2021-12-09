@@ -59,7 +59,7 @@ UI and Quantity Settings as well as other settings can be present to the user fo
 The [SettingsModalFrontstage.getBackstageActionItem] method can be used to get a [BackstageActionItem]($appui-abstract) to construct the backstage. Below is an example of how to set up a backstage menu component to display the 'Settings' entry if `SettingsTabEntry` items are provided.
 
 ```tsx
-export function AppBackstageComposerComponent({ userInfo }: AppBackstageComposerProps) {
+export function AppBackstageComposerComponent() {
   const [backstageItems] = React.useState(() => {
     return [
       BackstageItemUtilities.createStageLauncher(ViewsFrontstage.stageId, 100, 10, IModelApp.i18n.translate("SampleApp:backstage.viewIModel"),
@@ -69,9 +69,7 @@ export function AppBackstageComposerComponent({ userInfo }: AppBackstageComposer
   });
 
   return (
-    <BackstageComposer items={backstageItems}
-      header={userInfo && <UserProfileBackstageItem userInfo={userInfo} />}
-    />
+    <BackstageComposer items={backstageItems} />
   );
 }
 ```

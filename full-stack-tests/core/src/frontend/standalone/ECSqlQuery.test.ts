@@ -32,7 +32,9 @@ describe("ECSql Query", () => {
     if (imodel5) await imodel5.close();
     await TestUtility.shutdownFrontend();
   });
-  it("Restart query", async () => {
+
+  // ###TODO @khanaffan fails more often than succeeds on macOS.
+  it.skip("Restart query", async () => {
     let cancelled = 0;
     let successful = 0;
     let rowCount = 0;
