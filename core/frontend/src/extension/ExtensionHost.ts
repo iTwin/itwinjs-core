@@ -17,7 +17,7 @@ import type { RenderSystem } from "../render/RenderSystem";
 
 /**
  * Subset of IModelApp exposed to Extensions
- * @alpha
+ * @beta
  */
 export class ExtensionHost {
   protected constructor() { }

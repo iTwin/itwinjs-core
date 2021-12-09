@@ -46,7 +46,7 @@ enum ActivationEvents {
  *
  * On application startup, an initial list of Extensions is gathered by searching in known locations for
  *
- * @alpha
+ * @beta
  */
 export class ExtensionAdmin {
   /** The list of places to download an Extension.  */

@@ -9,21 +9,21 @@
 import { ExtensionManifest, LocalExtensionProps } from "./Extension";
 
 /** The minimum information required to download an Extension
- * @alpha
+ * @beta
 */
 export interface ExtensionLoaderProps {
   name: string;
   version: string;
 }
 
-/** @alpha */
+/** @beta */
 export interface BuiltInExtensionLoaderProps {
   manifest: Promise<any>;
   loader: (() => Promise<any>);
 }
 
 /** Describes what is needed in order to write an Extension Loader.
- * @alpha
+ * @beta
  */
 export interface ExtensionLoader {
   /** Retrieves an Extension manifest for the provided Extension identifier */

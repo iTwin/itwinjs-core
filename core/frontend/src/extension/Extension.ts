@@ -9,7 +9,7 @@
 type ResolveFunc = (() => Promise<any>);
 
 /** Defines the format of an Extension manifest
- * @alpha
+ * @beta
 */
 export interface ExtensionManifest {
   readonly name: string;
@@ -27,7 +27,7 @@ export interface ExtensionManifest {
   readonly enableProposedApi?: boolean;
 }
 
-/** @alpha */
+/** @beta */
 export interface BuildExtensionManifest extends ExtensionManifest {
   /** Only valid when the Extension is loaded at build-time.
    *
@@ -37,7 +37,7 @@ export interface BuildExtensionManifest extends ExtensionManifest {
 }
 
 /** Describes an Extension that has already been downloaded and has a location files can be easily executed.
- * @alpha
+ * @beta
 */
 export interface LocalExtensionProps {
   readonly manifest: ExtensionManifest;

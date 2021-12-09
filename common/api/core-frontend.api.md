@@ -1746,12 +1746,12 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     reverseTxns(numOperations: number): Promise<IModelStatus>;
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export interface BuildExtensionManifest extends ExtensionManifest {
     readonly module?: string;
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export interface BuiltInExtensionLoaderProps {
     // (undocumented)
     loader: (() => Promise<any>);
@@ -3030,7 +3030,7 @@ export enum EventHandled {
     Yes = 1
 }
 
-// @alpha
+// @beta
 export class ExtensionAdmin {
     constructor();
     addBuildExtension(manifestPromise: Promise<any>, mainFunc?: ResolveFunc_2): Promise<void>;
@@ -3039,7 +3039,7 @@ export class ExtensionAdmin {
     onStartup: () => Promise<void>;
     }
 
-// @alpha
+// @beta
 export class ExtensionHost {
     protected constructor();
     // (undocumented)
@@ -3058,20 +3058,20 @@ export class ExtensionHost {
     static get viewManager(): ViewManager;
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export class ExtensionImpl {
     constructor(_id: string);
     // (undocumented)
     registerTool(tool: ToolType, onRegistered?: () => any): Promise<void>;
 }
 
-// @alpha
+// @beta
 export interface ExtensionLoader {
     downloadExtension(arg: ExtensionLoaderProps): Promise<LocalExtensionProps>;
     getManifest(arg: ExtensionLoaderProps): Promise<ExtensionManifest>;
 }
 
-// @alpha
+// @beta
 export interface ExtensionLoaderProps {
     // (undocumented)
     name: string;
@@ -3079,7 +3079,7 @@ export interface ExtensionLoaderProps {
     version: string;
 }
 
-// @alpha
+// @beta
 export interface ExtensionManifest {
     readonly activationEvents?: string[];
     // (undocumented)
@@ -4541,6 +4541,8 @@ export class IModelApp {
     static readonly onBeforeShutdown: BeEvent<() => void>;
     // @internal
     static readonly onBeforeStartup: BeEvent<() => void>;
+    // @beta
+    static get publicPath(): string;
     // @alpha
     static get quantityFormatter(): QuantityFormatter;
     static queryRenderCompatibility(): WebGLRenderCompatibilityInfo;
@@ -5127,7 +5129,7 @@ export class LengthDescription extends FormattedQuantityDescription {
 // @internal (undocumented)
 export function linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void;
 
-// @alpha
+// @beta
 export interface LocalExtensionProps {
     // (undocumented)
     readonly mainFunc?: ResolveFunc;
@@ -11195,7 +11197,7 @@ export interface ToolAssistanceSection {
 // @public (undocumented)
 export type ToolList = ToolType[];
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export class ToolProvider implements UiItemsProvider {
     constructor(tool: ToolType);
     // (undocumented)

@@ -10,7 +10,7 @@ import { ToolType } from "../tools/Tool";
 import { IModelApp } from "../IModelApp";
 import { CommonToolbarItem, StageUsage, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage, UiItemsManager, UiItemsProvider } from "@itwin/appui-abstract";
 
-/** @alpha */
+/** @beta */
 export class ToolProvider implements UiItemsProvider {
   public readonly id;
   private _toolId = "";
@@ -30,7 +30,7 @@ export class ToolProvider implements UiItemsProvider {
   }
 }
 
-/** @alpha */
+/** @beta */
 export class ExtensionImpl {
   constructor(private _id: string) { }
 
