@@ -2,6 +2,12 @@
   "name": "@bentley/ui-abstract",
   "entries": [
     {
+      "version": "2.19.26",
+      "tag": "@bentley/ui-abstract_v2.19.26",
+      "date": "Wed, 08 Dec 2021 20:54:53 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.19.25",
       "tag": "@bentley/ui-abstract_v2.19.25",
       "date": "Fri, 03 Dec 2021 20:05:49 GMT",
