@@ -4000,6 +4000,15 @@ export enum GraphicType {
     WorldOverlay = 3
 }
 
+// @public
+export abstract class GreedyClusteringMarkerSet<T extends Marker> extends MarkerSet<T> {
+    protected clusterMarkers(context: DecorateContext): Array<T | Cluster<T>>;
+    // (undocumented)
+    protected clusterRadius: number;
+    protected getAverageLocation(cluster: Cluster<T>): Point3d;
+    protected setClusterRectFromMarkers<T extends Marker>(cluster: Cluster<T>): void;
+}
+
 // @internal (undocumented)
 export interface GroundPlaneDecorations {
     // (undocumented)
@@ -6003,6 +6012,7 @@ export abstract class MarkerSet<T extends Marker> {
     addDecoration(context: DecorateContext): void;
     // @beta
     changeViewport(viewport: ScreenViewport): void;
+    protected clusterMarkers(context: DecorateContext): Array<T | Cluster<T>>;
     // @internal (undocumented)
     protected _entries: Array<T | Cluster<T>>;
     protected abstract getClusterMarker(cluster: Cluster<T>): Marker;

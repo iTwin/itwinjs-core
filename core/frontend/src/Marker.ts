@@ -458,8 +458,9 @@ export abstract class MarkerSet<T extends Marker> {
 }
 
 /**
- * A MarkerSet sub-class that uses a gready clustering algorithm. Sub-classes should use the [[getAverageLocation]] function
- * to set the location of the marker they return in getClusterMarker.
+ * A [[MarkerSet]] sub-class that uses a gready clustering algorithm. Sub-classes should use the [[getAverageLocation]] function
+ * to set the location of the marker they return in `getClusterMarker`.
+ * @public
  */
 export abstract class GreedyClusteringMarkerSet<T extends Marker> extends MarkerSet<T> {
   /// The radius (in pixels) for clustering markers, default 0 which implies calculating the radius based on the visible marker imageSize/size.

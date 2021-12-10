@@ -237,6 +237,7 @@ public;GraphicShape
 public;GraphicShape2d 
 public;GraphicSolidPrimitive
 public;GraphicType
+public;class GreedyClusteringMarkerSet
 internal;GroundPlaneDecorations
 alpha;GroupMark
 internal;Hilites
