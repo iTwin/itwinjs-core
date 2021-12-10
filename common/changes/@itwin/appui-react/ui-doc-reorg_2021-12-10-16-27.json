@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Update links in API doc comments.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}
