@@ -67,7 +67,7 @@ const computeIndexedQuantizedPosition = `
   vec4 s2 = floor(TEXTURE(u_edgeLUT, tc) * 255.0 + 0.5);
 
   bool isEven = 0 == (int(edgeIndex) & 1);
-  if (g_isSilhouette && 0 != int(u_edgeParams.z) % 4)
+  if (g_isSilhouette && 0 != int(u_edgeParams.w) % 4)
     isEven = !isEven;
 
   vec3 i0 = isEven ? s0.xyz : vec3(s0.zw, s1.x);
