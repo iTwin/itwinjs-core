@@ -127,16 +127,36 @@ function convertSilhouettes(edges: MeshEdge[], normalPairs: OctEncodedNormalPair
   };
 }
 
+/** A lookup table of edges for a mesh. The table is partitioned such that the lower partition contains simple segment edges
+ * and the upper partition contains silhouette edges. Each entry in the lower partition consists of 2 24-bit indices into
+ * a [[VertexTable]] from which to obtain the endpoints of the edge. Each entry in the upper partition consists of 2 24-bit
+ * vertex indices followed by two 16-bit [[OctEncodedNormals]].
+ * If both partitions exist then one row may exist between them containing a mix of segments and silhouettes; in this case a handful
+ * of padding bytes may exist between the last segment and the first silhouette.
+ * @see [[IndexedEdgeParams.edges]].
+ * @internal
+ */
 export interface EdgeTable {
+  /** The rectangular lookup table. */
   readonly data: Uint8Array;
+  /** Width of the table. */
   readonly width: number;
+  /** Height of the table. */
   readonly height: number;
+  /** The number of segments in the lower partition. */
   readonly numSegments: number;
+  /** The number of padding bytes inserted between the partitions to preserve alignment of data. */
   readonly silhouettePadding: number;
 }
 
+/** Describes the edges of a surface as a lookup table. Each edge consists of six identical indices into the lookup table, forming a quad.
+ * @see [[EdgeParams.indexed]].
+ * @internal
+ */
 export interface IndexedEdgeParams {
+  /** The indices into [[edges]]. */
   readonly indices: VertexIndices;
+  /** The lookup table indexed by [[indices]]. */
   readonly edges: EdgeTable;
 }
 
@@ -266,9 +286,11 @@ export interface EdgeParams {
   readonly silhouettes?: SilhouetteParams;
   /** Polyline edges, always displayed when edge display is enabled. */
   readonly polylines?: TesselatedPolyline;
+  /** Silhouettes and simple-segment edges, compactly represented as indices into a lookup table. */
   readonly indexed?: IndexedEdgeParams;
 }
 
+/** @internal */
 export namespace EdgeParams {
   export function fromMeshArgs(meshArgs: MeshArgs, maxWidth?: number): EdgeParams | undefined {
     const args = meshArgs.edges;

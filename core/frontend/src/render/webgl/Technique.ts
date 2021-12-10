@@ -63,6 +63,9 @@ export interface Technique extends WebGLDisposable {
   compileShaders(): boolean;
 }
 
+/* Placeholder technique used for techniques not supported by particular client.
+ * e.g., IndexedEdgeTechnique only supported on WebGL 2.
+ */
 const unsupportedTechnique: Technique = {
   getShader: () => { throw new Error("Unsupported technique"); },
   getShaderByIndex: () => { throw new Error("Unsupported technique"); },

@@ -23,6 +23,9 @@ import { Target } from "./Target";
 import { ShaderProgramParams } from "./DrawCommand";
 import { RenderOrder } from "./RenderFlags";
 
+/** @see [[EdgeTable]]
+ * @internal
+ */
 export class EdgeLUT implements WebGLDisposable {
   public readonly texture: TextureHandle;
   public readonly numSegments: number;
@@ -52,6 +55,9 @@ export class EdgeLUT implements WebGLDisposable {
   }
 }
 
+/** @see [[IndexedEdgeParams]]
+ * @internal
+ */
 export class IndexedEdgeGeometry extends MeshGeometry {
   private readonly _buffers: BuffersContainer;
   private readonly _indices: BufferHandle;
