@@ -35,7 +35,6 @@ import { ExtensionLoader } from "./ExtensionLoader";
  */
 
 type ResolveFunc = (() => Promise<any>);
-// type RejectFunc = ((arg: Error) => void);
 
 enum ActivationEvents {
   onStartupApp = "onStartupApp",
@@ -58,7 +57,6 @@ export class ExtensionAdmin {
   /**
     * Fired when an Extension has been added or removed.
     */
-  // public readonly onInstallExtension = new BeEvent<(added: readonly ExtensionProps[], removed: readonly ExtensionProps[]) => void>();
 
   public onStartup = async () => {
     await this.activateExtensionEvents(ActivationEvents.onStartupApp);

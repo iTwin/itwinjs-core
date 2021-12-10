@@ -31,9 +31,3 @@ export interface ExtensionLoader {
   /** Downloads an Extension provided the name of the Extension */
   downloadExtension(arg: ExtensionLoaderProps): Promise<LocalExtensionProps>;
 }
-
-// export class BuiltInExtensionLoader {
-//   public async getManifest(name: string): Promise<ExtensionManifest> {
-
-//   }
-// }
