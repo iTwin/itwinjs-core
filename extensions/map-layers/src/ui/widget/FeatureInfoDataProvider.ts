@@ -30,20 +30,20 @@ export class FeatureInfoDataProvider implements IPropertyDataProvider, PropertyD
   public onDataLoadStateChanged = new BeEvent<MapFeatureInfoLoadSListener>();
   constructor() {
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    MapLayersUI.onIdentifyHit?.addListener(this.handleIdentifyHit, this);
+    MapLayersUI.onMapHit?.addListener(this.handleMapHit, this);
   }
 
   public onUnload() {
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    MapLayersUI.onIdentifyHit?.removeListener(this.handleIdentifyHit);
+    MapLayersUI.onMapHit?.removeListener(this.handleMapHit);
   }
 
-  private async handleIdentifyHit(identifyHit: HitDetail)  {
-    if (identifyHit?.isMapHit) {
+  private async handleMapHit(mapHit: HitDetail)  {
+    if (mapHit?.isMapHit) {
       this.records = {};
       this.categories = [];
       this.onDataLoadStateChanged.raiseEvent(MapFeatureInfoLoadState.DataLoadStart);
-      const mapInfo = await identifyHit.viewport.getMapFeatureInfo(identifyHit);
+      const mapInfo = await mapHit.viewport.getMapFeatureInfo(mapHit);
       this.onDataLoadStateChanged.raiseEvent(MapFeatureInfoLoadState.DataLoadEnd);
       if (mapInfo.layerInfo !== undefined ) {
         for (const curLayerInfo of mapInfo.layerInfo) {

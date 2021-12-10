@@ -8,7 +8,7 @@ import { UiItemsManager } from "@itwin/appui-abstract";
 import { ConfigurableUiManager } from "@itwin/appui-react";
 import { BeEvent } from "@itwin/core-bentley";
 
-export type IdentifyHitEvent = BeEvent<(hit: HitDetail) => void>;
+export type MapHitEvent = BeEvent<(hit: HitDetail) => void>;
 /** MapLayersUI is use when the package is used as a dependency to another app.
  * '''ts
  *  await MapLayersUI.initialize(registerItemsProvider);
@@ -20,10 +20,10 @@ export class MapLayersUI {
   private static _uiItemsProvider: MapLayersUiItemsProvider;
 
   private static _iTwinConfig?: UserPreferencesAccess;
-  private static _onIdentifyHit?: IdentifyHitEvent;
+  private static _onMapHit?: MapHitEvent;
 
   public static get iTwinConfig(): UserPreferencesAccess | undefined { return this._iTwinConfig; }
-  public static get onIdentifyHit(): IdentifyHitEvent | undefined { return this._onIdentifyHit; }
+  public static get onMapHit(): MapHitEvent | undefined { return this._onMapHit; }
 
   /** Used to initialize the Map Layers.
    *
@@ -37,9 +37,9 @@ export class MapLayersUI {
    *
    * If an iTwinConfig is provided, it will be used to load the MapLayerSources that are stored.
    */
-  public static async initialize(registerItemsProvider = true, iTwinConfig?: UserPreferencesAccess, onIdentifyHit?: IdentifyHitEvent): Promise<void> {
+  public static async initialize(registerItemsProvider = true, iTwinConfig?: UserPreferencesAccess, onMapHit?: MapHitEvent): Promise<void> {
     MapLayersUI._iTwinConfig = iTwinConfig;
-    MapLayersUI._onIdentifyHit = onIdentifyHit;
+    MapLayersUI._onMapHit = onMapHit;
 
     // register namespace containing localized strings for this package
     await IModelApp.localization.registerNamespace(this.localizationNamespace);
