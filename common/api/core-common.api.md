@@ -6778,8 +6778,8 @@ export interface RealityDataSourceKey {
 
 // @beta
 export namespace RealityDataSourceKey {
+    export function convertToString(rdSourceKey: RealityDataSourceKey): string;
     export function isEqual(key1: RealityDataSourceKey, key2: RealityDataSourceKey): boolean;
-    export function toString(rdSourceKey: RealityDataSourceKey): string;
 }
 
 // @beta

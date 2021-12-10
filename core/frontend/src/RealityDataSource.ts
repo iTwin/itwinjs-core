@@ -10,7 +10,7 @@ import { AccessToken, BentleyStatus, GuidString, Logger } from "@itwin/core-bent
 import { IModelError, OrbitGtBlobProps, RealityData, RealityDataFormat, RealityDataProvider, RealityDataSourceKey, RealityDataSourceProps } from "@itwin/core-common";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { IModelApp } from "./IModelApp";
-import { CesiumIonAssetProvider, ContextShareProvider, getCesiumAccessTokenAndEndpointUrl } from "./tile/internal";
+import { CesiumIonAssetProvider, ContextShareProvider, getCesiumAccessTokenAndEndpointUrl, getCesiumOSMBuildingsUrl } from "./tile/internal";
 
 /**
  * This interface provide methods used to access a reality data from a reality data provider
@@ -68,7 +68,7 @@ export namespace RealityDataSource {
     if (CesiumIonAssetProvider.isProviderUrl(tilesetUrl)) {
       const provider = RealityDataProvider.CesiumIonAsset;
       // Keep url hidden and use a dummy id
-      const cesiumIonAssetKey: RealityDataSourceKey = { provider, format, id: "OSMBuildings" };
+      const cesiumIonAssetKey: RealityDataSourceKey = { provider, format, id: CesiumIonAssetProvider.osmBuildingId };
       return cesiumIonAssetKey;
     }
 
@@ -182,7 +182,7 @@ class RealityDataSourceImpl implements RealityDataSource {
    */
   public static async fromKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined> {
     // search to see if it was already created
-    const rdSourceKeyString = rdSourceKey.toString();
+    const rdSourceKeyString = RealityDataSourceKey.convertToString(rdSourceKey);
     let rdSource = RealityDataSourceImpl._realityDataSources.get(rdSourceKeyString);
     if (rdSource)
       return rdSource;
@@ -294,8 +294,12 @@ class RealityDataSourceImpl implements RealityDataSource {
         const errMsg = `Error getting URL from ContextShare using realityDataId=${rdSourceKey.id} and iTwinId=${iTwinId}`;
         Logger.logError(FrontendLoggerCategory.RealityData, errMsg);
       }
-    } else if (this.key.provider === RealityDataProvider.TilesetUrl || this.key.provider === RealityDataProvider.CesiumIonAsset) {
+    } else if (this.key.provider === RealityDataProvider.TilesetUrl) {
       this._tilesetUrl = this.key.id;
+    } else if (this.key.provider === RealityDataProvider.CesiumIonAsset ) {
+      this._tilesetUrl = this.key.id;
+      if (this.key.id === CesiumIonAssetProvider.osmBuildingId)
+        this._tilesetUrl = getCesiumOSMBuildingsUrl();
     }
     return this._tilesetUrl;
   }

@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 /** @packageDocumentation
  * @module Form
  */
@@ -15,12 +16,12 @@ import { Button } from "@itwin/itwinui-react";
 // cSpell:ignore multilinetextbox
 
 /** The available editors for the fields in a [[Form]].
- * @public
+ * @public @deprecated
  */
 export type FieldEditor = "textbox" | "multilinetextbox" | "dropdown" | "checkbox";
 
 /** Interface used to define each [[Field]] in a [[Form]]
- * @public
+ * @public @deprecated
  */
 export interface FieldDef {
   /* The label text for the field */
@@ -37,14 +38,14 @@ export interface FieldDef {
 }
 
 /** Key/value pairs for all the field values with key being the field HTML Id.
- * @public
+ * @public @deprecated
  */
 export interface FieldValues {
   [key: string]: any;
 }
 
 /** The state data used by [[Form]] to hold state of each [[Field]] and the result of submit button processing.
- * @public
+ * @public @deprecated
  */
 interface FormState {
   /* The field values */
@@ -59,14 +60,14 @@ interface FormState {
 
 /**
  * FormContextState combines the Form's state data with the callbacks used to update the value of the state data.
- * @public
+ * @public @deprecate
  */
 export interface FormContextState extends FormState {
   setValues: (values: FieldValues) => void;
 }
 
 /** React context used by Form as a Provider and by the Fields as Consumers and updaters.
- * @public
+ * @public @deprecated
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const FormContext = React.createContext<FormContextState | undefined>(undefined);
@@ -143,7 +144,7 @@ export interface FormProps {
  *     </div >
  *   );
  * }
- * @public
+ * @public @deprecate
  */
 export class Form extends React.Component<FormProps, FormState> {
   private _submitButtonLabel = UiCore.translate("form.submitButtonLabel");
