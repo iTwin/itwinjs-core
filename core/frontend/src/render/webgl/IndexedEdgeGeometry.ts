@@ -11,7 +11,7 @@ import { RenderMode } from "@itwin/core-common";
 import { EdgeTable, IndexedEdgeParams } from "../primitives/EdgeParams";
 import { RenderMemory } from "../RenderMemory";
 import { TextureHandle } from "./Texture";
-import { BufferHandle, BuffersContainer, BufferParameters } from "./AttributeBuffers";
+import { BufferHandle, BufferParameters, BuffersContainer } from "./AttributeBuffers";
 import { WebGLDisposable } from "./Disposable";
 import { MeshData } from "./MeshData";
 import { MeshGeometry } from "./MeshGeometry";

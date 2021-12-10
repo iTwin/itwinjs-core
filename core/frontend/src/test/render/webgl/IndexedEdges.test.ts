@@ -22,7 +22,7 @@ function makeNormalPair(n0: number, n1: number): OctEncodedNormalPair {
  * 0   2   4
  */
 function createMeshArgs(opts?: {
-  is2d?: boolean,
+  is2d?: boolean;
 }): MeshArgs {
   const args = new MeshArgs();
   args.points = QPoint3dList.fromPoints([new Point3d(0, 0, 0), new Point3d(1, 1, 0), new Point3d(2, 0, 0), new Point3d(3, 1, 0), new Point3d(4, 0, 0)]);
@@ -249,7 +249,6 @@ describe("IndexedEdgeParams", () => {
         [74, 37, 6, 15, 14],
       ];
 
-      let curIndex = 0;
       for (const test of testCases) {
         const table = makeEdgeTable(test[0], test[1]);
         // console.log(JSON.stringify({ index: curIndex++, segs: test[0], sils: test[1], pad: test[2] }));
@@ -259,7 +258,6 @@ describe("IndexedEdgeParams", () => {
         expect(table.height).to.equal(test[4]);
 
         const bytes = Array.from(table.data);
-        const byteWidth = table.width * 4;
         for (let i = table.numSegments; i < test[1]; i++) {
           const texelIndex = table.numSegments * 1.5 + test[2] * 0.25 + (i - table.numSegments) * 2.5;
           const byteIndex = texelIndex * 4;

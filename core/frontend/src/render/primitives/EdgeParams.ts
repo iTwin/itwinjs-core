@@ -179,12 +179,11 @@ function buildIndexedEdges(args: MeshArgsEdges, doPolylines: boolean, maxSize: n
     for (let j = 0; j < 6; j++)
       indices.setNthIndex(i * 6 + j, i);
 
-
   // Each segment edge requires 2 24-bit indices = 6 bytes = 1.5 RGBA values.
   // Each silhouette requires the same as segment edge plus 2 16-bit oct-encoded normals = 10 bytes = 2.5 RGBA values.
   let nRgbaRequired = Math.ceil(1.5 * numSegmentEdges + 2.5 * numSilhouettes);
   let dimensions;
-  let silhouetteStartByteIndex = numSegmentEdges * 6;
+  const silhouetteStartByteIndex = numSegmentEdges * 6;
   let silhouettePadding = 0;
   if (nRgbaRequired < maxSize) {
     dimensions = { width: nRgbaRequired, height: 1 };
@@ -233,8 +232,8 @@ function buildIndexedEdges(args: MeshArgsEdges, doPolylines: boolean, maxSize: n
     for (const pd of polylines) {
       const num = pd.vertIndices.length - 1;
       for (let i = 0; i < num; i++) {
-        let p0 = pd.vertIndices[i];
-        let p1 = pd.vertIndices[i + 1];
+        const p0 = pd.vertIndices[i];
+        const p1 = pd.vertIndices[i + 1];
         // Ensure lower index is first.
         if (p0 < p1)
           setEdge(curIndex++, p0, p1);
