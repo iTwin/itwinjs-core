@@ -25,7 +25,8 @@ describe("GraphicBuilder", () => {
   let viewport: ScreenViewport;
 
   before(async () => {
-    await IModelApp.startup();
+    // One test wants to confirm number of segment and silhouette edges produced - disable indexed edges.
+    await IModelApp.startup({ tileAdmin: { enableIndexedEdges: false } });
     imodel = createBlankConnection();
   });
 
