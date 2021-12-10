@@ -84,7 +84,7 @@ export function SamplePopupContextMenu() {
         Button with Menu
       </button>
       <PopupContextMenu isOpen={isMenuOpen} position={RelativePosition.BottomLeft} target={target} offset={1}
-        onClose={onCloseMenu} onSelect={onCloseMenu} selectedIndex={0}>
+        onClose={onCloseMenu} onSelect={onCloseMenu} selectedIndex={0} autoflip={false}>
         <ContextSubMenu label="Item ~1" icon="icon-placeholder">
           <ContextMenuItem icon="icon-placeholder" iconRight="icon-checkmark">SubMenu Item ~1</ContextMenuItem>
           <ContextMenuItem icon="icon-placeholder">SubMenu Item ~2</ContextMenuItem>

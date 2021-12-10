@@ -525,6 +525,15 @@ export class Transform implements BeJSONFunctions {
   public multiplyVector(vector: Vector3d, result?: Vector3d): Vector3d {
     return this._matrix.multiplyVector(vector, result);
   }
+
+/** Multiply the vector in place by the Matrix3d part of the transform.
+   *
+   * *  The transform's origin is not used.
+   */
+ public multiplyVectorInPlace(vector: Vector3d): void {
+  this._matrix.multiplyVectorInPlace(vector);
+}
+
   /** Multiply the vector (x,y,z) by the Matrix3d part of the transform.
    *
    * *  The transform's origin is not used.

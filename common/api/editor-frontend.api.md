@@ -238,9 +238,13 @@ export class CreateArcTool extends CreateOrContinuePathTool {
 // @alpha
 export class CreateBCurveTool extends CreateOrContinuePathTool {
     // (undocumented)
-    protected addConstructionGraphics(curve: CurvePrimitive, showCurve: boolean, context: DynamicsContext): void;
+    protected acceptPoint(ev: BeButtonEvent): Promise<boolean>;
     // (undocumented)
     applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean>;
+    // (undocumented)
+    protected cancelPoint(ev: BeButtonEvent): Promise<boolean>;
+    // (undocumented)
+    protected get createCurvePhase(): CreateCurvePhase;
     // (undocumented)
     protected createNewCurvePrimitive(ev: BeButtonEvent, isDynamics: boolean): CurvePrimitive | undefined;
     // (undocumented)
@@ -250,6 +254,10 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
     // (undocumented)
     protected isComplete(ev: BeButtonEvent): boolean;
     // (undocumented)
+    protected _isPhysicallyClosedOrComplete: boolean;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
     protected get maxOrder(): number;
     // (undocumented)
     get method(): BCurveMethod;
@@ -257,11 +265,11 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
     // (undocumented)
     get methodProperty(): DialogProperty<number>;
     // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
     protected get minOrder(): number;
     // (undocumented)
     onInstall(): Promise<boolean>;
-    // (undocumented)
-    onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
     onRestartTool(): Promise<void>;
     // (undocumented)
@@ -273,9 +281,20 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
     // (undocumented)
     protected provideToolAssistance(_mainInstrText?: string, _additionalInstr?: ToolAssistanceInstruction[]): void;
     // (undocumented)
+    protected get requiredPointCount(): number;
+    // (undocumented)
+    protected showConstructionGraphics(ev: BeButtonEvent, context: DynamicsContext): boolean;
+    // (undocumented)
     protected get showCurveConstructions(): boolean;
     // (undocumented)
     supplyToolSettingsProperties(): DialogItem[] | undefined;
+    // (undocumented)
+    protected _tangentPhase: CreateCurvePhase;
+    // (undocumented)
+    get tangents(): boolean;
+    set tangents(value: boolean);
+    // (undocumented)
+    get tangentsProperty(): DialogProperty<boolean>;
     // (undocumented)
     static toolId: string;
     // (undocumented)
@@ -288,6 +307,8 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
 export class CreateCircleTool extends CreateOrContinuePathTool {
     // (undocumented)
     applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean>;
+    // (undocumented)
+    protected cancelPoint(_ev: BeButtonEvent): Promise<boolean>;
     // (undocumented)
     protected get createCurvePhase(): CreateCurvePhase;
     // (undocumented)
@@ -311,8 +332,6 @@ export class CreateCircleTool extends CreateOrContinuePathTool {
     onPostInstall(): Promise<void>;
     // (undocumented)
     onReinitialize(): Promise<void>;
-    // (undocumented)
-    onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
     onRestartTool(): Promise<void>;
     parseAndRun(...inputArgs: string[]): Promise<boolean>;
@@ -391,13 +410,13 @@ export class CreateEllipseTool extends CreateOrContinuePathTool {
 // @alpha
 export class CreateLineStringTool extends CreateOrContinuePathTool {
     // (undocumented)
+    protected cancelPoint(ev: BeButtonEvent): Promise<boolean>;
+    // (undocumented)
     protected createNewCurvePrimitive(ev: BeButtonEvent, isDynamics: boolean): CurvePrimitive | undefined;
     // (undocumented)
     static iconSpec: string;
     // (undocumented)
     protected isComplete(ev: BeButtonEvent): boolean;
-    // (undocumented)
-    onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
     onRestartTool(): Promise<void>;
     // (undocumented)
@@ -428,6 +447,8 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
     protected get allowSimplify(): boolean;
     // (undocumented)
     static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]>;
+    // (undocumented)
+    protected cancelPoint(_ev: BeButtonEvent): Promise<boolean>;
     // (undocumented)
     protected clearGraphics(): void;
     // (undocumented)
@@ -504,6 +525,8 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
     onModifierKeyTransition(_wentDown: boolean, modifier: BeModifierKeys, _event: KeyboardEvent): Promise<EventHandled>;
     // (undocumented)
     onMouseMotion(ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
     onUndoPreviousStep(): Promise<boolean>;
     // (undocumented)
