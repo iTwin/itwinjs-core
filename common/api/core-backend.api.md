@@ -2994,8 +2994,10 @@ export class LockConflict extends IModelError {
 
 // @beta
 export interface LockControl {
-    acquireExclusiveLock(ids: Id64Arg): Promise<void>;
-    acquireSharedLock(ids: Id64Arg): Promise<void>;
+    acquireLocks(arg: {
+        shared?: Id64Arg;
+        exclusive?: Id64Arg;
+    }): Promise<void>;
     // @internal
     checkExclusiveLock(id: Id64String, type: string, operation: string): void;
     // @internal

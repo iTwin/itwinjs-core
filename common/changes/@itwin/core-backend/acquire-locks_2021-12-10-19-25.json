@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "make one method to acquire both shared and exclusive locks",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
