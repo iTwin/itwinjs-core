@@ -15,7 +15,7 @@ import { UiItemsProvidersTest } from "@itwin/ui-items-providers-test";
 import {
   IconSpecUtilities, ToolbarItemUtilities,
 } from "@itwin/appui-abstract";
-import { LocalSettingsStorage } from "@itwin/core-react";
+import { LocalStateStorage } from "@itwin/core-react";
 import {
   ChildWindowLocationProps, ContentGroup, ContentLayoutManager, ContentProps, FrontstageManager, StageContentLayout, StageContentLayoutProps, UiFramework,
 } from "@itwin/appui-react";
@@ -49,19 +49,19 @@ export class TestExtensionUiProviderTool extends Tool {
   }
 }
 
-function getImodelSpecificKey(inKey: string, iModelConnection: IModelConnection | undefined) {
+function getIModelSpecificKey(inKey: string, iModelConnection: IModelConnection | undefined) {
   const imodelId = iModelConnection?.iModelId ?? "unknownImodel";
   return `[${imodelId}]${inKey}`;
 }
 
 export async function hasSavedViewLayoutProps(activeFrontstageId: string, iModelConnection: IModelConnection | undefined) {
-  const localSettings = new LocalSettingsStorage();
-  return localSettings.hasSetting("ContentGroupLayout", getImodelSpecificKey(activeFrontstageId, iModelConnection));
+  const localSettings = new LocalStateStorage();
+  return localSettings.hasSetting("ContentGroupLayout", getIModelSpecificKey(activeFrontstageId, iModelConnection));
 }
 
 export async function getSavedViewLayoutProps(activeFrontstageId: string, iModelConnection: IModelConnection | undefined) {
-  const localSettings = new LocalSettingsStorage();
-  const result = await localSettings.getSetting("ContentGroupLayout", getImodelSpecificKey(activeFrontstageId, iModelConnection));
+  const localSettings = new LocalStateStorage();
+  const result = await localSettings.getSetting("ContentGroupLayout", getIModelSpecificKey(activeFrontstageId, iModelConnection));
 
   if (result.setting) {
     // Parse StageContentLayoutProps
@@ -69,6 +69,8 @@ export async function getSavedViewLayoutProps(activeFrontstageId: string, iModel
     if (iModelConnection) {
       // Create ViewStates
       const viewStates = await StageContentLayout.viewStatesFromProps(iModelConnection, savedViewLayoutProps);
+      if (0 === viewStates.length)
+        return undefined;
 
       // Add applicationData to the ContentProps
       savedViewLayoutProps.contentGroupProps.contents.forEach((contentProps: ContentProps, index: number) => {
@@ -95,7 +97,7 @@ export class SaveContentLayoutTool extends Tool {
 
   public override async run(): Promise<boolean> {
     if (FrontstageManager.activeFrontstageDef && ContentLayoutManager.activeLayout && ContentLayoutManager.activeContentGroup) {
-      const localSettings = new LocalSettingsStorage();
+      const localSettings = new LocalStateStorage();
 
       // Create props for the Layout, ContentGroup and ViewStates
       const savedViewLayoutProps = StageContentLayout.viewLayoutToProps(ContentLayoutManager.activeLayout,
@@ -115,7 +117,7 @@ export class SaveContentLayoutTool extends Tool {
         savedViewLayoutProps.contentGroupProps = FrontstageManager.activeFrontstageDef.contentGroupProvider.prepareToSaveProps(savedViewLayoutProps.contentGroupProps);
 
       await localSettings.saveSetting("ContentGroupLayout",
-        getImodelSpecificKey(FrontstageManager.activeFrontstageDef.id, UiFramework.getIModelConnection()),
+        getIModelSpecificKey(FrontstageManager.activeFrontstageDef.id, UiFramework.getIModelConnection()),
         savedViewLayoutProps);
     }
     return true;
@@ -169,10 +171,10 @@ export class RemoveSavedContentLayoutTool extends Tool {
 
   public override async run(): Promise<boolean> {
     if (FrontstageManager.activeFrontstageDef) {
-      const localSettings = new LocalSettingsStorage();
+      const localSettings = new LocalStateStorage();
 
       await localSettings.deleteSetting("ContentGroupLayout",
-        getImodelSpecificKey(FrontstageManager.activeFrontstageDef.id, UiFramework.getIModelConnection()));
+        getIModelSpecificKey(FrontstageManager.activeFrontstageDef.id, UiFramework.getIModelConnection()));
     }
     return true;
   }

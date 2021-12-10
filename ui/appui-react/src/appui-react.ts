@@ -226,11 +226,9 @@ export * from "./appui-react/ui-items-provider/StandardNavigationToolsProvider";
 export * from "./appui-react/ui-items-provider/StandardStatusbarItemsProvider";
 export * from "./appui-react/uiprovider/DefaultDialogGridContainer";
 
-export * from "./appui-react/uisettings/AppUiSettings";
-export * from "./appui-react/uisettings/UserSettingsStorage";
-export * from "./appui-react/uisettings/useUiSettings";
-
-export * from "./appui-react/UserInfo";
+export * from "./appui-react/uistate/AppUiSettings";
+export * from "./appui-react/uistate/UserSettingsStorage";
+export * from "./appui-react/uistate/useUiStateStorage";
 
 export * from "./appui-react/utils/ViewUtilities";
 export * from "./appui-react/utils/PropsHelper";
@@ -316,10 +314,6 @@ export * from "./appui-react/zones/ZoneDef";
  * Classes for working with a dialog
  */
 /**
- * @docs-group-description DragDrop
- * Classes for managing DragDrop API drag layers
- */
-/**
  * @docs-group-description Frontstage
  * Classes for working with a Frontstage
  */
@@ -346,11 +340,6 @@ export * from "./appui-react/zones/ZoneDef";
 /**
  * @docs-group-description Notification
  * Classes for working with a Notification or Message
- */
-
-/**
- * @docs-group-description ChildWindow
- * Classes for working with child windows.
  */
 /**
  * @docs-group-description ChildWindowManager
@@ -405,7 +394,7 @@ export * from "./appui-react/zones/ZoneDef";
  * Interfaces and classes for specifying UI items to be inserted at runtime.
  */
 /**
- * @docs-group-description UiSettings
+ * @docs-group-description UiStateStorage
  * Interfaces and classes for persisting UI settings.
  */
 /**

@@ -154,14 +154,16 @@ import { TreeSelectionModificationEventArgs } from '@itwin/components-react';
 import { TreeSelectionReplacementEventArgs } from '@itwin/components-react';
 import { UiAdmin } from '@itwin/appui-abstract';
 import { UiDataProvider } from '@itwin/appui-abstract';
-import { UiEvent } from '@itwin/core-react';
+import { UiEvent } from '@itwin/appui-abstract';
+import { UiEvent as UiEvent_2 } from '@itwin/core-react';
 import { UiItemsProvider } from '@itwin/appui-abstract';
 import { UiLayoutDataProvider } from '@itwin/appui-abstract';
-import { UiSetting } from '@itwin/core-react';
-import { UiSettings } from '@itwin/core-react';
-import { UiSettingsResult } from '@itwin/core-react';
-import { UiSettingsStatus } from '@itwin/core-react';
-import { UiSettingsStorage } from '@itwin/core-react';
+import { UiStateEntry } from '@itwin/core-react';
+import { UiStateStorage } from '@itwin/core-react';
+import { UiStateStorageResult } from '@itwin/core-react';
+import { UiStateStorageStatus } from '@itwin/core-react';
+import { UiSyncEvent } from '@itwin/appui-abstract';
+import { UiSyncEventArgs } from '@itwin/appui-abstract';
 import { UnifiedSelectionTreeEventHandler } from '@itwin/presentation-components';
 import { UnifiedSelectionTreeEventHandlerParams } from '@itwin/presentation-components';
 import { UnitSystemKey } from '@itwin/core-quantity';
@@ -549,19 +551,19 @@ export class AppNotificationManager extends NotificationManager {
 export class AppUiSettings implements UserSettingsProvider {
     constructor(defaults: Partial<InitialAppUiSettings>);
     // (undocumented)
-    apply(storage: UiSettingsStorage): Promise<void>;
+    apply(storage: UiStateStorage): Promise<void>;
     // (undocumented)
-    colorTheme: UiSetting<string>;
+    colorTheme: UiStateEntry<string>;
     // (undocumented)
-    dragInteraction: UiSetting<boolean>;
+    dragInteraction: UiStateEntry<boolean>;
     // (undocumented)
-    frameworkVersion: UiSetting<FrameworkVersionId>;
+    frameworkVersion: UiStateEntry<FrameworkVersionId>;
     // (undocumented)
-    loadUserSettings(storage: UiSettingsStorage): Promise<void>;
+    loadUserSettings(storage: UiStateStorage): Promise<void>;
     // (undocumented)
     readonly providerId = "AppUiSettingsProvider";
     // (undocumented)
-    widgetOpacity: UiSetting<number>;
+    widgetOpacity: UiStateEntry<number>;
 }
 
 // @beta
@@ -644,7 +646,7 @@ export interface BackstageComposerStageLauncherProps {
 }
 
 // @public
-export class BackstageEvent extends UiEvent<BackstageEventArgs> {
+export class BackstageEvent extends UiEvent_2<BackstageEventArgs> {
 }
 
 // @public @deprecated
@@ -722,8 +724,6 @@ export interface BackstageProps extends CommonProps {
     onClose?: () => void;
     // (undocumented)
     showOverlay?: boolean;
-    // (undocumented)
-    userInfo?: UserInfo;
 }
 
 // @beta @deprecated
@@ -770,14 +770,14 @@ export interface BasicToolWidgetProps {
     showCategoryAndModelsContextTools?: boolean;
 }
 
-// @public
+// @public @deprecated
 export interface BooleanListenerProps {
     boolFunc: () => boolean;
     defaultValue?: boolean;
     eventIds: string[];
 }
 
-// @public
+// @public @deprecated
 export class BooleanSyncUiListener extends React.Component<BooleanListenerProps, BooleanListenerState> {
     constructor(props: BooleanListenerProps);
     // (undocumented)
@@ -2214,7 +2214,7 @@ export class FrameworkAccuDraw extends AccuDraw implements UserSettingsProvider 
     static readonly isTopRotationConditional: ConditionalBooleanValue;
     static readonly isViewRotationConditional: ConditionalBooleanValue;
     // (undocumented)
-    loadUserSettings(storage: UiSettings): Promise<void>;
+    loadUserSettings(storage: UiStateStorage): Promise<void>;
     static readonly onAccuDrawGrabInputFocusEvent: AccuDrawGrabInputFocusEvent;
     static readonly onAccuDrawSetCompassModeEvent: AccuDrawSetCompassModeEvent;
     static readonly onAccuDrawSetFieldFocusEvent: AccuDrawSetFieldFocusEvent;
@@ -2237,15 +2237,15 @@ export class FrameworkAccuDraw extends AccuDraw implements UserSettingsProvider 
     static setFieldValueFromUi(field: ItemField, stringValue: string): void;
     // @internal (undocumented)
     setFocusItem(index: ItemField): void;
-    static get uiSettings(): AccuDrawUiSettings | undefined;
-    static set uiSettings(v: AccuDrawUiSettings | undefined);
-    }
+    static get uiStateStorage(): AccuDrawUiSettings | undefined;
+    static set uiStateStorage(v: AccuDrawUiSettings | undefined);
+}
 
 // @public
 export const FrameworkReducer: (state: import("./redux-ts").CombinedReducerState<{
     configurableUiState: typeof ConfigurableUiReducer;
     sessionState: typeof SessionStateReducer;
-}>, action: import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetTheme, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetWidgetOpacity, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetDragInteraction, boolean>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetFrameworkVersion, import("../UiFramework").FrameworkVersionId>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetUserInfo, import("./redux-ts").DeepReadonlyObject<import("../UserInfo").UserInfo>>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetActiveIModelId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAvailableSelectionScopes, import("./redux-ts").DeepReadonlyArray<import("./SessionState").PresentationSelectionScope>>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultIModelViewportControlId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewState, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetNumItemsSelected, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetIModelConnection, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetSelectionScope, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.UpdateCursorMenu, import("./redux-ts").DeepReadonlyObject<import("./SessionState").CursorMenuData>>>) => import("./redux-ts").CombinedReducerState<{
+}>, action: import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetTheme, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetWidgetOpacity, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetDragInteraction, boolean>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetFrameworkVersion, import("../UiFramework").FrameworkVersionId>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetActiveIModelId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAvailableSelectionScopes, import("./redux-ts").DeepReadonlyArray<import("./SessionState").PresentationSelectionScope>>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultIModelViewportControlId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewState, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetNumItemsSelected, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetIModelConnection, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetSelectionScope, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.UpdateCursorMenu, import("./redux-ts").DeepReadonlyObject<import("./SessionState").CursorMenuData>>>) => import("./redux-ts").CombinedReducerState<{
     configurableUiState: typeof ConfigurableUiReducer;
     sessionState: typeof SessionStateReducer;
 }>;
@@ -2460,7 +2460,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
 export const FRONTSTAGE_SETTINGS_NAMESPACE = "uifw-frontstageSettings";
 
 // @public
-export class FrontstageActivatedEvent extends UiEvent<FrontstageActivatedEventArgs> {
+export class FrontstageActivatedEvent extends UiEvent_2<FrontstageActivatedEventArgs> {
 }
 
 // @public
@@ -2521,7 +2521,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
 }
 
 // @public
-export class FrontstageDeactivatedEvent extends UiEvent<FrontstageDeactivatedEventArgs> {
+export class FrontstageDeactivatedEvent extends UiEvent_2<FrontstageDeactivatedEventArgs> {
 }
 
 // @public
@@ -2578,8 +2578,12 @@ export class FrontstageDef {
     getFloatingWidgetContainerIdByWidgetId(widgetId: string): string | undefined;
     // (undocumented)
     getFloatingWidgetContainerIds(): string[];
+    // @internal
+    getPanelCurrentState(panelDef: StagePanelDef): [StagePanelState, number];
     // @beta
     getStagePanelDef(location: StagePanelLocation): StagePanelDef | undefined;
+    // @internal
+    getWidgetCurrentState(widgetDef: WidgetDef): WidgetState | undefined;
     getZoneDef(zoneId: number): ZoneDef | undefined;
     // (undocumented)
     get id(): string;
@@ -2725,10 +2729,10 @@ export class FrontstageManager {
     static readonly onFrontstageActivatedEvent: FrontstageActivatedEvent;
     static readonly onFrontstageDeactivatedEvent: FrontstageDeactivatedEvent;
     // @internal (undocumented)
-    static readonly onFrontstageNineZoneStateChangedEvent: UiEvent<FrontstageNineZoneStateChangedEventArgs>;
+    static readonly onFrontstageNineZoneStateChangedEvent: UiEvent_2<FrontstageNineZoneStateChangedEventArgs>;
     static readonly onFrontstageReadyEvent: FrontstageReadyEvent;
     // @internal (undocumented)
-    static readonly onFrontstageRestoreLayoutEvent: UiEvent<FrontstageEventArgs>;
+    static readonly onFrontstageRestoreLayoutEvent: UiEvent_2<FrontstageEventArgs>;
     static readonly onModalFrontstageChangedEvent: ModalFrontstageChangedEvent;
     static readonly onModalFrontstageClosedEvent: ModalFrontstageClosedEvent;
     static readonly onNavigationAidActivatedEvent: NavigationAidActivatedEvent;
@@ -2739,16 +2743,16 @@ export class FrontstageManager {
     static readonly onToolActivatedEvent: ToolActivatedEvent;
     static readonly onToolIconChangedEvent: ToolIconChangedEvent;
     // @internal
-    static readonly onToolPanelOpenedEvent: UiEvent<void>;
-    static readonly onToolSettingsReloadEvent: UiEvent<void>;
+    static readonly onToolPanelOpenedEvent: UiEvent_2<void>;
+    static readonly onToolSettingsReloadEvent: UiEvent_2<void>;
     // @internal (undocumented)
-    static readonly onWidgetDefsUpdatedEvent: UiEvent<void>;
+    static readonly onWidgetDefsUpdatedEvent: UiEvent_2<void>;
     // @internal (undocumented)
-    static readonly onWidgetExpandEvent: UiEvent<WidgetEventArgs>;
+    static readonly onWidgetExpandEvent: UiEvent_2<WidgetEventArgs>;
     // @internal (undocumented)
-    static readonly onWidgetLabelChangedEvent: UiEvent<WidgetChangedEventArgs>;
+    static readonly onWidgetLabelChangedEvent: UiEvent_2<WidgetChangedEventArgs>;
     // @internal (undocumented)
-    static readonly onWidgetShowEvent: UiEvent<WidgetEventArgs>;
+    static readonly onWidgetShowEvent: UiEvent_2<WidgetEventArgs>;
     static readonly onWidgetStateChangedEvent: WidgetStateChangedEvent;
     static openModalFrontstage(modalFrontstage: ModalFrontstageInfo): void;
     static openNestedFrontstage(nestedFrontstage: FrontstageDef): Promise<void>;
@@ -2820,7 +2824,7 @@ export abstract class FrontstageProvider {
 }
 
 // @public
-export class FrontstageReadyEvent extends UiEvent<FrontstageReadyEventArgs> {
+export class FrontstageReadyEvent extends UiEvent_2<FrontstageReadyEventArgs> {
 }
 
 // @public
@@ -3252,8 +3256,8 @@ export enum InputStatus {
 export const isCollapsedToPanelState: (isCollapsed: boolean) => StagePanelState.Minimized | StagePanelState.Open;
 
 // @internal (undocumented)
-export function isFrontstageStateSettingResult(settingsResult: UiSettingsResult): settingsResult is {
-    status: UiSettingsStatus.Success;
+export function isFrontstageStateSettingResult(settingsResult: UiStateStorageResult): settingsResult is {
+    status: UiStateStorageStatus.Success;
     setting: WidgetPanelsFrontstageState;
 };
 
@@ -3618,7 +3622,7 @@ export interface ListPickerPropsExtended extends ListPickerProps {
 // @internal (undocumented)
 export function loadCategoriesFromViewport(iModel?: IModelConnection, vp?: Viewport): Promise<Category[]>;
 
-// @public
+// @public @deprecated
 export class MarkupTools {
     // (undocumented)
     static get arrowToolDef(): ToolItemDef;
@@ -3807,7 +3811,7 @@ export class ModalFrontstage extends React.Component<ModalFrontstageProps> {
 }
 
 // @public
-export class ModalFrontstageChangedEvent extends UiEvent<ModalFrontstageChangedEventArgs> {
+export class ModalFrontstageChangedEvent extends UiEvent_2<ModalFrontstageChangedEventArgs> {
 }
 
 // @public
@@ -3817,7 +3821,7 @@ export interface ModalFrontstageChangedEventArgs {
 }
 
 // @public
-export class ModalFrontstageClosedEvent extends UiEvent<ModalFrontstageClosedEventArgs> {
+export class ModalFrontstageClosedEvent extends UiEvent_2<ModalFrontstageClosedEventArgs> {
 }
 
 // @public
@@ -3855,7 +3859,7 @@ export interface ModalFrontstageProps extends CommonProps {
 }
 
 // @alpha
-export class ModalFrontstageRequestedCloseEvent extends UiEvent<ModalFrontstageRequestedCloseEventArgs> {
+export class ModalFrontstageRequestedCloseEvent extends UiEvent_2<ModalFrontstageRequestedCloseEventArgs> {
 }
 
 // @alpha
@@ -4142,7 +4146,7 @@ export class OpenMessageCenterEvent extends UiEvent<{}> {
 export function packNineZoneState(state: NineZoneState): SavedNineZoneState;
 
 // @internal (undocumented)
-export class PanelSizeChangedEvent extends UiEvent<PanelSizeChangedEventArgs> {
+export class PanelSizeChangedEvent extends UiEvent_2<PanelSizeChangedEventArgs> {
 }
 
 // @internal (undocumented)
@@ -4153,8 +4157,8 @@ export interface PanelSizeChangedEventArgs {
     size: number | undefined;
 }
 
-// @beta @deprecated
-export class PanelStateChangedEvent extends UiEvent<PanelStateChangedEventArgs> {
+// @beta
+export class PanelStateChangedEvent extends UiEvent_2<PanelStateChangedEventArgs> {
 }
 
 // @public @deprecated
@@ -4607,8 +4611,6 @@ export interface SessionState {
     iModelId: string;
     // (undocumented)
     numItemsSelected: number;
-    // (undocumented)
-    userInfo: UserInfo | undefined;
 }
 
 // @public
@@ -4630,14 +4632,11 @@ export enum SessionStateActionId {
     // (undocumented)
     SetSelectionScope = "sessionstate:set-selection-scope",
     // (undocumented)
-    SetUserInfo = "sessionstate:set-user-info",
-    // (undocumented)
     UpdateCursorMenu = "sessionstate:update-cursor-menu"
 }
 
 // @public
 export const SessionStateActions: {
-    setUserInfo: (userInfo: UserInfo) => import("./redux-ts").ActionWithPayload<SessionStateActionId.SetUserInfo, import("./redux-ts").DeepReadonlyObject<UserInfo>>;
     setActiveIModelId: (iModelId: string) => import("./redux-ts").ActionWithPayload<SessionStateActionId.SetActiveIModelId, string>;
     setAvailableSelectionScopes: (availableSelectionScopes: PresentationSelectionScope[]) => import("./redux-ts").ActionWithPayload<SessionStateActionId.SetAvailableSelectionScopes, import("./redux-ts").DeepReadonlyArray<PresentationSelectionScope>>;
     setDefaultIModelViewportControlId: (iModelViewportControlId: string) => import("./redux-ts").ActionWithPayload<SessionStateActionId.SetDefaultIModelViewportControlId, string>;
@@ -4668,8 +4667,6 @@ export interface SessionStateActionsProps {
     // (undocumented)
     setSelectionScope: (typeof SessionStateActions.setSelectionScope);
     // (undocumented)
-    setUserInfo: (typeof SessionStateActions.setUserInfo);
-    // (undocumented)
     updateCursorMenu: (typeof SessionStateActions.updateCursorMenu);
 }
 
@@ -4678,7 +4675,6 @@ export type SessionStateActionsUnion = ActionsUnion<typeof SessionStateActions>;
 
 // @beta
 export const sessionStateMapDispatchToProps: {
-    setUserInfo: (userInfo: UserInfo) => import("./redux-ts").ActionWithPayload<SessionStateActionId.SetUserInfo, import("./redux-ts").DeepReadonlyObject<UserInfo>>;
     setActiveIModelId: (iModelId: string) => import("./redux-ts").ActionWithPayload<SessionStateActionId.SetActiveIModelId, string>;
     setAvailableSelectionScopes: (availableSelectionScopes: PresentationSelectionScope[]) => import("./redux-ts").ActionWithPayload<SessionStateActionId.SetAvailableSelectionScopes, import("./redux-ts").DeepReadonlyArray<PresentationSelectionScope>>;
     setDefaultIModelViewportControlId: (iModelViewportControlId: string) => import("./redux-ts").ActionWithPayload<SessionStateActionId.SetDefaultIModelViewportControlId, string>;
@@ -5454,7 +5450,7 @@ export interface StagePanelChangeHandler {
     handleTogglePanelCollapse(panelLocation: StagePanelLocation): void;
 }
 
-// @public @deprecated
+// @public
 export class StagePanelDef extends WidgetHost {
     constructor();
     get applicationData(): any | undefined;
@@ -5884,15 +5880,11 @@ export interface SyncToolSettingsPropertiesEventArgs {
     toolId: string;
 }
 
-// @public
-export class SyncUiEvent extends UiEvent<SyncUiEventArgs> {
-}
+// @public @deprecated
+export type SyncUiEvent = UiSyncEvent;
 
-// @public
-export interface SyncUiEventArgs {
-    // (undocumented)
-    eventIds: Set<string>;
-}
+// @public @deprecated
+export type SyncUiEventArgs = UiSyncEventArgs;
 
 // @public
 export class SyncUiEventDispatcher {
@@ -5932,7 +5924,7 @@ export enum SyncUiEventId {
     // @deprecated
     TaskActivated = "taskactivated",
     ToolActivated = "toolactivated",
-    UiSettingsChanged = "uisettingschanged",
+    UiStateStorageChanged = "uistatestoragechanged",
     ViewStateChanged = "viewstatechanged",
     WidgetStateChanged = "widgetstatechanged",
     // @deprecated
@@ -5977,7 +5969,7 @@ export class Task extends ItemDefBase {
 }
 
 // @internal @deprecated
-export class TaskActivatedEvent extends UiEvent<TaskActivatedEventArgs> {
+export class TaskActivatedEvent extends UiEvent_2<TaskActivatedEventArgs> {
 }
 
 // @internal @deprecated
@@ -6079,7 +6071,7 @@ export interface ToastMessageProps {
 export function toggleAllCategories(viewManager: ViewManager, imodel: IModelConnection, display: boolean, viewport?: Viewport, forAllViewports?: boolean, filteredProvider?: IPresentationTreeDataProvider): Promise<void>;
 
 // @public
-export class ToolActivatedEvent extends UiEvent<ToolActivatedEventArgs> {
+export class ToolActivatedEvent extends UiEvent_2<ToolActivatedEventArgs> {
 }
 
 // @public
@@ -6106,9 +6098,9 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
     // @internal (undocumented)
     componentWillUnmount(): void;
     // @internal (undocumented)
-    context: React.ContextType<typeof UiSettingsContext>;
+    context: React.ContextType<typeof UiStateStorageContext>;
     // @internal (undocumented)
-    static contextType: React.Context<UiSettingsStorage>;
+    static contextType: React.Context<UiStateStorage>;
     // @internal (undocumented)
     static readonly defaultProps: ToolAssistanceFieldDefaultProps;
     // @internal (undocumented)
@@ -6118,7 +6110,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
     }
 
 // @internal
-export type ToolAssistanceFieldDefaultProps = Pick<ToolAssistanceFieldProps, "includePromptAtCursor" | "uiSettings" | "cursorPromptTimeout" | "fadeOutCursorPrompt" | "defaultPromptAtCursor">;
+export type ToolAssistanceFieldDefaultProps = Pick<ToolAssistanceFieldProps, "includePromptAtCursor" | "uiStateStorage" | "cursorPromptTimeout" | "fadeOutCursorPrompt" | "defaultPromptAtCursor">;
 
 // @public
 export interface ToolAssistanceFieldProps extends StatusFieldProps {
@@ -6126,7 +6118,7 @@ export interface ToolAssistanceFieldProps extends StatusFieldProps {
     defaultPromptAtCursor: boolean;
     fadeOutCursorPrompt: boolean;
     includePromptAtCursor: boolean;
-    uiSettings?: UiSettingsStorage;
+    uiStateStorage?: UiStateStorage;
 }
 
 // @internal
@@ -6283,7 +6275,7 @@ export interface ToolButtonProps extends ToolItemProps, CommonProps {
 export const ToolGroupPanelContext: React.Context<boolean>;
 
 // @public
-export class ToolIconChangedEvent extends UiEvent<ToolIconChangedEventArgs> {
+export class ToolIconChangedEvent extends UiEvent_2<ToolIconChangedEventArgs> {
 }
 
 // @public
@@ -6543,10 +6535,7 @@ export class UiFramework {
     static getIModelConnection(): IModelConnection | undefined;
     // (undocumented)
     static getIsUiVisible(): boolean;
-    // (undocumented)
-    static getUiSettingsStorage(): UiSettingsStorage;
-    // (undocumented)
-    static getUserInfo(): UserInfo | undefined;
+    static getUiStateStorage(): UiStateStorage;
     // (undocumented)
     static getWidgetOpacity(): number;
     // @alpha (undocumented)
@@ -6555,6 +6544,7 @@ export class UiFramework {
     static get initialized(): boolean;
     // @internal
     static initializeEx(store: Store<any> | undefined, frameworkStateKey?: string): Promise<void>;
+    static initializeStateFromUserSettingsProviders(immediateSync?: boolean): Promise<void>;
     // @alpha
     static get isContextMenuOpen(): boolean;
     // (undocumented)
@@ -6597,13 +6587,11 @@ export class UiFramework {
     static setIsUiVisible(visible: boolean): void;
     static get settingsManager(): SettingsManager;
     // (undocumented)
-    static setUiSettingsStorage(storage: UiSettingsStorage, immediateSync?: boolean): Promise<void>;
+    static setUiStateStorage(storage: UiStateStorage, immediateSync?: boolean): Promise<void>;
     // (undocumented)
     static setUiVersion(version: FrameworkVersionId): void;
     // (undocumented)
     static setUseDragInteraction(useDragInteraction: boolean): void;
-    // (undocumented)
-    static setUserInfo(userInfo: UserInfo | undefined, immediateSync?: boolean): void;
     // (undocumented)
     static setWidgetOpacity(opacity: number): void;
     static get store(): Store<any>;
@@ -6629,23 +6617,15 @@ export interface UiIntervalEventArgs {
     idleTimeout?: number;
 }
 
-// @internal (undocumented)
-export const UiSettingsContext: React.Context<UiSettingsStorage>;
-
 // @beta
 export function UiSettingsPage({ allowSettingUiFrameworkVersion }: {
     allowSettingUiFrameworkVersion: boolean;
 }): JSX.Element;
 
 // @public
-export function UiSettingsProvider(props: UiSettingsProviderProps): JSX.Element;
-
-// @public
 export interface UiSettingsProviderProps {
     // (undocumented)
     children?: React.ReactNode;
-    // (undocumented)
-    settingsStorage: UiSettingsStorage;
 }
 
 // @public
@@ -6684,16 +6664,22 @@ export class UiShowHideSettingsProvider implements UserSettingsProvider {
     // (undocumented)
     static initialize(): void;
     // (undocumented)
-    loadUserSettings(storage: UiSettings): Promise<void>;
+    loadUserSettings(storage: UiStateStorage): Promise<void>;
     // (undocumented)
     readonly providerId = "UiShowHideSettingsProvider";
     // (undocumented)
-    static storeAutoHideUi(v: boolean, storage?: UiSettings): Promise<void>;
+    static storeAutoHideUi(v: boolean, storage?: UiStateStorage): Promise<void>;
     // (undocumented)
-    static storeSnapWidgetOpacity(v: boolean, storage?: UiSettings): Promise<void>;
+    static storeSnapWidgetOpacity(v: boolean, storage?: UiStateStorage): Promise<void>;
     // (undocumented)
-    static storeUseProximityOpacity(v: boolean, storage?: UiSettings): Promise<void>;
+    static storeUseProximityOpacity(v: boolean, storage?: UiStateStorage): Promise<void>;
     }
+
+// @internal (undocumented)
+export const UiStateStorageContext: React.Context<UiStateStorage>;
+
+// @public
+export function UiStateStorageHandler(props: UiSettingsProviderProps): JSX.Element;
 
 // @public
 export class UiVisibilityChangedEvent extends UiEvent<UiVisibilityEventArgs> {
@@ -6785,62 +6771,19 @@ export function useNineZoneDispatch(frontstageDef: FrontstageDef): NineZoneDispa
 export function useNineZoneState(frontstageDef: FrontstageDef): NineZoneState | undefined;
 
 // @public
-export class UserInfo {
-    constructor(
-    id: string,
-    email?: {
-        id: string;
-        isVerified?: boolean | undefined;
-    } | undefined,
-    profile?: {
-        firstName: string;
-        lastName: string;
-        name?: string | undefined;
-        preferredUserName?: string | undefined;
-    } | undefined,
-    organization?: {
-        id: string;
-        name: string;
-    } | undefined,
-    featureTracking?: {
-        ultimateSite: string;
-        usageCountryIso: string;
-    } | undefined);
-    email?: {
-        id: string;
-        isVerified?: boolean | undefined;
-    } | undefined;
-    featureTracking?: {
-        ultimateSite: string;
-        usageCountryIso: string;
-    } | undefined;
-    id: string;
-    organization?: {
-        id: string;
-        name: string;
-    } | undefined;
-    profile?: {
-        firstName: string;
-        lastName: string;
-        name?: string | undefined;
-        preferredUserName?: string | undefined;
-    } | undefined;
-}
-
-// @public
 export interface UserSettingsProvider {
-    loadUserSettings(storage: UiSettingsStorage): Promise<void>;
+    loadUserSettings(storage: UiStateStorage): Promise<void>;
     providerId: string;
 }
 
 // @public @deprecated
-export class UserSettingsStorage implements UiSettingsStorage {
+export class UserSettingsStorage implements UiStateStorage {
     // (undocumented)
-    deleteSetting(namespace: string, name: string): Promise<UiSettingsResult>;
+    deleteSetting(namespace: string, name: string): Promise<UiStateStorageResult>;
     // (undocumented)
-    getSetting(namespace: string, name: string): Promise<UiSettingsResult>;
+    getSetting(namespace: string, name: string): Promise<UiStateStorageResult>;
     // (undocumented)
-    saveSetting(namespace: string, name: string, setting: any): Promise<UiSettingsResult>;
+    saveSetting(namespace: string, name: string, setting: any): Promise<UiStateStorageResult>;
 }
 
 // @internal (undocumented)
@@ -6859,9 +6802,6 @@ export function useSolarDataProvider(viewport: ScreenViewport | undefined): Sola
 export function useStatusBarEntry(): DockedStatusBarEntryContextArg;
 
 // @internal (undocumented)
-export function useSyncDefinitions(frontstageDef: FrontstageDef): void;
-
-// @internal (undocumented)
 export function useToolSettingsNode(): string | number | boolean | {} | React.ReactElement<any, string | React.JSXElementConstructor<any>> | React.ReactNodeArray | React.ReactPortal | null | undefined;
 
 // @public
@@ -6874,7 +6814,7 @@ export const useUiItemsProviderStatusBarItems: (manager: StatusBarItemsManager_2
 export const useUiItemsProviderToolbarItems: (manager: ToolbarItemsManager, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => readonly CommonToolbarItem[];
 
 // @public (undocumented)
-export function useUiSettingsStorageContext(): UiSettingsStorage;
+export function useUiStateStorageHandler(): UiStateStorage;
 
 // @internal (undocumented)
 export function useUiVisibility(): boolean;
@@ -7624,7 +7564,7 @@ export class Workflow extends ItemDefBase {
 }
 
 // @internal @deprecated
-export class WorkflowActivatedEvent extends UiEvent<WorkflowActivatedEventArgs> {
+export class WorkflowActivatedEvent extends UiEvent_2<WorkflowActivatedEventArgs> {
 }
 
 // @internal @deprecated
@@ -7689,9 +7629,10 @@ export class Zone extends React.Component<ZoneProps> {
     render(): React.ReactNode;
 }
 
-// @public @deprecated
+// @public
 export class ZoneDef extends WidgetHost {
     constructor();
+    // @deprecated
     get allowsMerging(): boolean;
     get applicationData(): any | undefined;
     // @internal (undocumented)
@@ -7699,6 +7640,7 @@ export class ZoneDef extends WidgetHost {
     get initialWidth(): number | undefined;
     get isStatusBar(): boolean;
     get isToolSettings(): boolean;
+    // @deprecated
     get mergeWithZone(): ZoneLocation | undefined;
     // @internal (undocumented)
     setInitialWidth(width: number | undefined): void;
@@ -7706,6 +7648,7 @@ export class ZoneDef extends WidgetHost {
     // @internal
     get zoneLocation(): ZoneLocation;
     set zoneLocation(zoneLocation: ZoneLocation);
+    // @deprecated
     get zoneState(): ZoneState;
     }
 

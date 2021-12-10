@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/editor-common",
+      "comment": "Allow sweep/spin of open path to create a sheet.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/editor-common"
+}

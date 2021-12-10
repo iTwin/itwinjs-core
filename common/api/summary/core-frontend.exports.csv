@@ -27,10 +27,12 @@ public;ACSType
 public;ActivityMessageDetails
 public;ActivityMessageEndReason
 internal;addRangeGraphic(builder: GraphicBuilder, range: Range3d, is2d: boolean): void
+internal;AlternateUnitLabelsRegistry 
 beta;AngleDescription 
 internal;AnimatedTreeReference 
 internal;AnimationBranchState
-internal;AnimationBranchStates = Map
+internal;AnimationBranchStates
+internal;AnimationNodeId
 public;Animator
 internal;ArcGisErrorCode
 internal;ArcGisGenerateTokenOptions
@@ -102,7 +104,7 @@ internal;createDefaultViewFlagOverrides(options:
 internal;createEmptyRenderPlan(): RenderPlan
 internal;createMaskTreeReference(view: ViewState, model: GeometricModelState): TileTreeReference
 internal;createOrbitGtTileTreeReference(props: OrbitGtTileTree.ReferenceProps): RealityModelTileTree.Reference
-internal;createPrimaryTileTreeReference(view: ViewState, model: GeometricModelState): TileTreeReference
+internal;createPrimaryTileTreeReference(view: ViewState, model: GeometricModelState): PrimaryTreeReference
 internal;createRealityTileTreeReference(props: RealityModelTileTree.ReferenceProps): RealityModelTileTree.Reference
 internal;createRenderPlanFromViewport(vp: Viewport): RenderPlan
 public;CreateTextureArgs
@@ -164,6 +166,7 @@ public;FlashMode
 public;FlashSettings
 public;FlashSettingsOptions = Mutable
 public;FlyViewTool 
+internal;formatAnimationBranchId(modelId: Id64String, branchId: number): string
 beta;class FormattedQuantityDescription 
 beta;FormatterParserSpecsProvider
 beta;FormattingUnitSystemChangedArgs
@@ -260,6 +263,7 @@ internal;ImageryMapTile
 internal;ImageryMapTileTree 
 internal;ImageryTileContent 
 internal;ImdlReader 
+internal;ImdlReaderCreateArgs
 internal;ImdlReaderResult 
 public;IModelApp
 public;IModelAppOptions
@@ -360,7 +364,6 @@ public;ModelState
 alpha;ModifyElementSource
 internal;MutableChangeFlags 
 public;NativeApp
-public;NativeAppAuthorization 
 internal;NativeAppLogger
 public;NativeAppOpts 
 internal;NoRenderApp
@@ -430,8 +433,11 @@ beta;QueryVisibleFeaturesOptions = QueryScreenFeaturesOptions | QueryTileFeature
 internal;rangeToCartographicArea(view3d: ViewState3d, range: Range3d): GlobalLocationArea | undefined
 public;readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean, options?: BatchOptions | false): Promise
 internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined
-alpha;RealityDataSource
-alpha;RealityDataSource
+beta;RealityDataSource
+beta;RealityDataSource
+alpha;createKeyFromBlobUrl(blobUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey
+alpha;createKeyFromOrbitGtBlobProps(orbitGtBlob: OrbitGtBlobProps, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey
+alpha;createOrbitGtBlobPropsFromKey(rdSourceKey: RealityDataSourceKey): OrbitGtBlobProps | undefined
 internal;fromKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise
 internal;RealityModelSource = ViewState | DisplayStyleState
 internal;RealityModelTileTree 
@@ -564,7 +570,6 @@ public;TileRequest
 public;TileRequestChannel
 public;TileRequestChannels
 public;TileRequestChannelStatistics
-public;Tiles
 public;class TileTree
 public;TileTreeDiscloser
 public;TileTreeLoadStatus
@@ -608,6 +613,7 @@ public;UniformContext
 public;UniformParams
 public;UniformType
 beta;UnitFormattingSettingsProvider
+beta;UnitNameKey = string
 internal;UpsampledMapTile 
 beta;UserPreferencesAccess
 public;VaryingType

@@ -120,7 +120,7 @@ public;CommonLoggerCategory
 internal;compareIModelTileTreeIds(lhs: IModelTileTreeId, rhs: IModelTileTreeId): number
 internal;CompositeTileHeader 
 internal;computeChildTileProps(parent: TileMetadata, idProvider: ContentIdProvider, root: TileTreeMetadata):
-internal;computeTileChordTolerance(tile: TileMetadata, is3d: boolean): number
+internal;computeTileChordTolerance(tile: TileMetadata, is3d: boolean, tileScreenSize: number): number
 alpha;ContentFlags
 internal;class ContentIdProvider
 public;ContextRealityModel
@@ -152,6 +152,7 @@ internal;DbResponse
 internal;DbResponseKind
 internal;DbResponseStatus
 beta;DbRuntimeStats
+internal;DbValueFormat
 internal;DecorationGeometryProps
 beta;DefaultSupportedTypes
 internal;defaultTileOptions: TileOptions
@@ -262,6 +263,8 @@ public;GeodeticTransform
 public;GeodeticTransformMethod = "None" | "Geocentric" | "PositionalVector" | "GridFiles" | "MultipleRegression" | "Undefined"
 public;GeodeticTransformProps
 public;GeographicCRS 
+beta;GeographicCRSInterpretRequestProps
+beta;GeographicCRSInterpretResponseProps
 public;GeographicCRSProps
 public;GeometricElement2dProps 
 public;GeometricElement3dProps 
@@ -376,6 +379,7 @@ internal;class IpcWebSocket
 internal;IpcWebSocketBackend 
 internal;IpcWebSocketFrontend 
 internal;IpcWebSocketMessage
+internal;IpcWebSocketMessage
 internal;IpcWebSocketMessageType
 internal;class IpcWebSocketTransport
 internal;isKnownTileFormat(format: number): boolean
@@ -428,7 +432,6 @@ public;ModelProps
 public;ModelQueryParams 
 public;ModelSelectorProps 
 public;MonochromeMode
-beta;NativeAppAuthorizationConfiguration
 internal;nativeAppChannel = "nativeApp"
 internal;NativeAppFunctions
 internal;NativeAppNotifications
@@ -527,16 +530,19 @@ beta;QueryPropertyMetaData
 public;QueryQuota
 public;QueryRowFormat
 beta;QueryRowProxy
+beta;QueryStats
 beta;QueryValueType = any
 public;Rank
 internal;ReadableFormData 
 internal;readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription
 beta;RealityData
 beta;RealityDataAccess
-alpha;RealityDataFormat
-alpha;RealityDataProvider
-alpha;RealityDataSourceKey
-alpha;RealityDataSourceProps
+beta;RealityDataFormat
+beta;RealityDataFormat
+beta;RealityDataProvider
+beta;RealityDataSourceKey
+beta;RealityDataSourceKey
+beta;RealityDataSourceProps
 internal;REGISTRY: unique symbol
 public;RelatedElement 
 public;RelatedElementProps

@@ -220,6 +220,8 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
     if (newExtents.isNull)
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "Invalid project extents");
 
+    await this.iModel.acquireSchemaLock();
+
     this.iModel.updateProjectExtents(newExtents);
 
     // Set source from calculated to user so connectors preserve the change.
@@ -238,6 +240,8 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
   }
 
   public async updateEcefLocation(ecefLocation: EcefLocationProps): Promise<void> {
+    await this.iModel.acquireSchemaLock();
+
     // Clear GCS that caller already determined was invalid...
     this.iModel.deleteFileProperty({ name: "DgnGCS", namespace: "dgn_Db" });
 
@@ -330,6 +334,8 @@ enum QuerySubEntity {
   LinearEdge = 3,
   /** Return whether the angle between the normals of the supplied vertices's edges never exceeds the internal smooth angle tolerance along the length of the edge */
   SmoothVertex = 4,
+  /** Return whether the supplied sub-entity is a redundant edge (containing faces share surface) */
+  RedundantEdge = 5,
 }
 
 interface QuerySubEntityRequestProps  {
@@ -638,6 +644,10 @@ export class SolidModelingCommand extends BasicManipulationCommand implements So
 
   public async isLinearEdge(id: Id64String, subEntity: SubEntityProps): Promise<boolean> {
     return this.subEntityQuery(id, subEntity, QuerySubEntity.LinearEdge);
+  }
+
+  public async isRedundantEdge(id: Id64String, subEntity: SubEntityProps): Promise<boolean> {
+    return this.subEntityQuery(id, subEntity, QuerySubEntity.RedundantEdge);
   }
 
   public async isSmoothVertex(id: Id64String, subEntity: SubEntityProps): Promise<boolean> {

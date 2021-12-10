@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-common",
+      "comment": "Added `excludedClasses` attribute to `ContentInstancesOfSpecificClassesSpecification` and `InstanceNodesOfSpecificClassesSpecification` specifications.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-common"
+}

@@ -34,8 +34,9 @@ class IModelIndexControl extends ContentControl {
 }
 
 export class IModelIndexFrontstage extends FrontstageProvider {
+  public static stageId = "ui-test-app:IModelIndex";
   public get id(): string {
-    return "IModelIndex";
+    return IModelIndexFrontstage.stageId;
   }
 
   public get frontstage(): React.ReactElement<FrontstageProps> {

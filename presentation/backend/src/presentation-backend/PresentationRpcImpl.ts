@@ -12,10 +12,10 @@ import { IModelRpcProps } from "@itwin/core-common";
 import {
   ContentDescriptorRpcRequestOptions, ContentFlags, ContentInstanceKeysRpcRequestOptions, ContentRpcRequestOptions, ContentSourcesRpcRequestOptions,
   ContentSourcesRpcResult, DescriptorJSON, DiagnosticsOptions, DiagnosticsScopeLogs, DisplayLabelRpcRequestOptions, DisplayLabelsRpcRequestOptions,
-  DisplayValueGroup, DisplayValueGroupJSON, DistinctValuesRpcRequestOptions, ElementProperties, ElementPropertiesRpcRequestOptions,
-  ElementPropertiesRpcResult, FilterByInstancePathsHierarchyRpcRequestOptions, FilterByTextHierarchyRpcRequestOptions, HierarchyRpcRequestOptions,
-  InstanceKey, isSingleElementPropertiesRequestOptions, ItemJSON, KeySet, KeySetJSON, LabelDefinition, LabelDefinitionJSON,
-  MultiElementPropertiesRpcRequestOptions, Node, NodeJSON, NodeKey, NodeKeyJSON, NodePathElement, NodePathElementJSON, Paged, PagedResponse,
+  DisplayValueGroup, DisplayValueGroupJSON, DistinctValuesRpcRequestOptions, ElementProperties,
+  FilterByInstancePathsHierarchyRpcRequestOptions, FilterByTextHierarchyRpcRequestOptions, HierarchyRpcRequestOptions,
+  InstanceKey, ItemJSON, KeySet, KeySetJSON, LabelDefinition, LabelDefinitionJSON,
+  Node, NodeJSON, NodeKey, NodeKeyJSON, NodePathElement, NodePathElementJSON, Paged, PagedResponse,
   PageOptions, PresentationError, PresentationRpcInterface, PresentationRpcResponse, PresentationStatus, Ruleset, RulesetVariable,
   RulesetVariableJSON, SelectClassInfo, SelectionScope, SelectionScopeRpcRequestOptions, SingleElementPropertiesRpcRequestOptions,
 } from "@itwin/presentation-common";
@@ -242,13 +242,8 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
     return this.successResponse(content.result ? content.result.contentSet : { total: 0, items: [] });
   }
 
-  public override async getElementProperties(token: IModelRpcProps, requestOptions: SingleElementPropertiesRpcRequestOptions): PresentationRpcResponse<ElementProperties | undefined>;
-  public override async getElementProperties(token: IModelRpcProps, requestOptions: MultiElementPropertiesRpcRequestOptions): PresentationRpcResponse<PagedResponse<ElementProperties>>;
-  public override async getElementProperties(token: IModelRpcProps, requestOptions: ElementPropertiesRpcRequestOptions): PresentationRpcResponse<ElementPropertiesRpcResult> {
+  public override async getElementProperties(token: IModelRpcProps, requestOptions: SingleElementPropertiesRpcRequestOptions): PresentationRpcResponse<ElementProperties | undefined> {
     return this.makeRequest(token, "getElementProperties", { ...requestOptions }, async (options) => {
-      if (!isSingleElementPropertiesRequestOptions(options)) {
-        options = enforceValidPageSize(options);
-      }
       return this.getManager(requestOptions.clientId).getElementProperties(options);
     });
   }

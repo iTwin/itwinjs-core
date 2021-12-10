@@ -16,7 +16,7 @@ import { TestUtility } from "../TestUtility";
 
 async function executeQuery(iModel: IModelConnection, ecsql: string, bindings?: any[] | object): Promise<any[]> {
   const rows: any[] = [];
-  for await (const row of iModel.query(ecsql, QueryBinder.from(bindings), QueryRowFormat.UseJsPropertyNames)) {
+  for await (const row of iModel.query(ecsql, QueryBinder.from(bindings), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
     rows.push(row);
   }
   return rows;

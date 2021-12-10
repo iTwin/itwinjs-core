@@ -70,6 +70,9 @@
     "ShutDown": {
       "keyin": "dta shutdown"
     },
+    "Exit": {
+      "keyin": "dta exit"
+    },
     "SignIn": {
       "keyin": "dta signin"
     },
@@ -138,6 +141,12 @@
     },
     "SyncFrusta": {
       "keyin": "dta frustum sync"
+    },
+    "GenerateTileContent": {
+      "keyin": "dta gen tile"
+    },
+    "Macro": {
+      "keyin": "dta macro"
     }
   }
 }

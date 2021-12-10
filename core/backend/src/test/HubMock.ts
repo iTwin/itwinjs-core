@@ -7,7 +7,7 @@ import { join } from "path";
 import * as sinon from "sinon";
 import { Guid, GuidString } from "@itwin/core-bentley";
 import {
-  ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetProps, ChangesetRange, IModelVersion, LocalDirName,
+  ChangesetFileProps, ChangesetIndex, ChangesetIndexAndId, ChangesetProps, ChangesetRange, IModelVersion, LocalDirName,
 } from "@itwin/core-common";
 import {
   BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetRangeArg, CheckpointArg, CreateNewIModelProps, IModelIdArg, IModelNameArg,
@@ -43,7 +43,7 @@ import { LocalHub } from "./LocalHub";
  * test against a "real" IModelHub, you can simply comment off the call [[startup]], though in that case you should make sure the name of your
  * iModel is unique so your test won't collide with other tests (iModel name uniqueness is not necessary for mocked tests.)
  *
- * Mocked tests must always start by creating a new iModel via [[IModelHost.hubAccess.createNewIModel]] with a `revision0` iModel.
+ * Mocked tests must always start by creating a new iModel via [[IModelHost.hubAccess.createNewIModel]] with a `version0` iModel.
  * They use mock (aka "bogus") credentials for `AccessTokens`, which is fine since [[HubMock]] never accesses resources outside the current
  * computer.
  *
@@ -202,11 +202,11 @@ export class HubMock {
     return undefined;
   }
 
-  public static async downloadV2Checkpoint(arg: CheckpointArg): Promise<ChangesetId> {
+  public static async downloadV2Checkpoint(arg: CheckpointArg): Promise<ChangesetIndexAndId> {
     return this.findLocalHub(arg.checkpoint.iModelId).downloadCheckpoint({ changeset: arg.checkpoint.changeset, targetFile: arg.localFile });
   }
 
-  public static async downloadV1Checkpoint(arg: CheckpointArg): Promise<ChangesetId> {
+  public static async downloadV1Checkpoint(arg: CheckpointArg): Promise<ChangesetIndexAndId> {
     return this.findLocalHub(arg.checkpoint.iModelId).downloadCheckpoint({ changeset: arg.checkpoint.changeset, targetFile: arg.localFile });
   }
 
