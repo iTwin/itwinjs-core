@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Added GreedyClusteringMarkerSet which implements a different clustering algorithm.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
