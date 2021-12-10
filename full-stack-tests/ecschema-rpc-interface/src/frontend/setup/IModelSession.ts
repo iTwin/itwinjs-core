@@ -56,9 +56,9 @@ export class IModelSession {
     } else
       imodelId = iModelData.id!;
 
-    console.log(`Using iModel { name:${iModelData.name}, id:${iModelData.id}, projectId:${iModelData.iTwinId}, changesetId:${iModelData.changesetId} }`); // eslint-disable-line no-console
+    console.log(`Using iModel { name:${iModelData.name}, id:${imodelId}, iTwinId:${contextId}, changesetId:${iModelData.changesetId} }`); // eslint-disable-line no-console
 
-    return new IModelSession(contextId, imodelId, iModelData.changesetId);
+    return new IModelSession(imodelId, contextId, iModelData.changesetId);
   }
 
   public async getConnection(): Promise<CheckpointConnection> {

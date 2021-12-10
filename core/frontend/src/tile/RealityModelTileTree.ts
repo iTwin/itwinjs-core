@@ -28,7 +28,7 @@ import { SceneContext } from "../ViewContext";
 import { ScreenViewport } from "../Viewport";
 import { ViewState } from "../ViewState";
 import {
-  BatchedTileIdMap, CesiumIonAssetProvider, createClassifierTileTreeReference, createDefaultViewFlagOverrides, DisclosedTileTreeSet, getCesiumOSMBuildingsUrl, getGcsConverterAvailable, RealityTile, RealityTileLoader, RealityTileParams,
+  BatchedTileIdMap, CesiumIonAssetProvider, createClassifierTileTreeReference, createDefaultViewFlagOverrides, DisclosedTileTreeSet, getGcsConverterAvailable, RealityTile, RealityTileLoader, RealityTileParams,
   RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile, TileDrawArgs, TileLoadPriority, TileRequest, TileTree,
   TileTreeOwner, TileTreeReference, TileTreeSupplier,
 } from "./internal";
@@ -821,7 +821,7 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
   }
 
   public override addLogoCards(cards: HTMLTableElement, _vp: ScreenViewport): void {
-    if (this._rdSourceKey.id === getCesiumOSMBuildingsUrl()) {
+    if (this._rdSourceKey.provider === RealityDataProvider.CesiumIonAsset) {
       cards.appendChild(IModelApp.makeLogoCard({ heading: "OpenStreetMap", notice: `&copy;<a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> ${IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap:OpenStreetMapContributors")}` }));
     }
   }

@@ -430,7 +430,8 @@ export class LocalHub {
     const index = this.getIndexFromChangeset(arg.changeset);
     const prev = this.queryPreviousCheckpoint(index);
     IModelJsFs.copySync(join(this.checkpointDir, this.checkpointNameFromIndex(prev)), arg.targetFile);
-    return this.getChangesetByIndex(prev).id;
+    const changeset = this.getChangesetByIndex(index);
+    return { index, id: changeset.id };
   }
 
   private copyChangeset(arg: ChangesetFileProps): ChangesetFileProps {

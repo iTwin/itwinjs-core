@@ -152,4 +152,4 @@ ReducerRegistryInstance.registerReducer(
 );
 ```
 
-See complete [example](./framework/state/#example-of-defining-dynamic-reducer-needed-by-a-package).
+See complete [example](./appui/appui&#8209;react/State.md##example&#8209;of&#8209;defining&#8209;dynamic&#8209;reducer&#8209;needed&#8209;by&#8209;a&#8209;package).
