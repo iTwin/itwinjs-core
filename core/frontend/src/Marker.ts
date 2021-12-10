@@ -385,8 +385,9 @@ export abstract class MarkerSet<T extends Marker> {
   }
 
   /**
-   * Clusters the markers into this._entries.
+   * Clusters the markers returning an array containing a mixture of markers and clusters.
    * @param context The DecorateContext for the Markers
+   * @returns The clustered markers array.
    */
   protected clusterMarkers(context: DecorateContext): Array<T | Cluster<T>> {
     const vp = context.viewport;
@@ -499,8 +500,9 @@ export abstract class GreedyClusteringMarkerSet<T extends Marker> extends Marker
   }
 
   /**
-   * Clusters the this.markers using the greedy clustering algorithm.
+   * Clusters the markers using the greedy clustering algorithm.
    * @param context The DecorateContext for the Markers
+   * @returns The clustered markers array.
    */
   protected override clusterMarkers(context: DecorateContext): Array<T | Cluster<T>> {
     const vp = context.viewport;
