@@ -250,11 +250,15 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
     }
     params.layerClassifiers?.forEach((layerClassifier, layerIndex) => layers[layerIndex] = [new ClassifierTexture(layerClassifier, params, params.tileRectangle)]);
 
-    if (layers.length < 2 && !layerClassifiers?.size) {
+    if (layers.length < 2 && !layerClassifiers?.size && textures.length < texturesPerMesh) {
       // If only there is not more than one layer then we can group all of the textures into a single draw call.
       meshes.push(new RealityMeshGeometry(realityMesh._realityMeshParams, RealityTextureParams.create(textures), realityMesh._transform, baseColor, baseTransparent, realityMesh._isTerrain));
     } else {
-      const primaryLayer = layers.shift()!;
+      let primaryLayer;
+      while (primaryLayer === undefined)
+        primaryLayer = layers.shift();
+      if (!primaryLayer)
+        return undefined;
       for (const primaryTexture of primaryLayer) {
         const targetRectangle =  primaryTexture.targetRectangle;
         const overlapMinimum = 1.0E-5 * (targetRectangle.high.x - targetRectangle.low.x) * (targetRectangle.high.y - targetRectangle.low.y);
