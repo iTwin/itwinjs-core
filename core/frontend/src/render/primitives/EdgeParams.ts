@@ -279,8 +279,7 @@ export namespace EdgeParams {
     let silhouettes: SilhouetteParams | undefined;
     let indexed: IndexedEdgeParams | undefined;
 
-    const doIndexedEdges = true; // ###TODO check TileAdmin and RenderSystem
-    if (doIndexedEdges) {
+    if (IModelApp.tileAdmin.enableIndexedEdges) {
       indexed = buildIndexedEdges(args, !doJoints, maxWidth ?? IModelApp.renderSystem.maxTextureSize);
     } else {
       segments = convertPolylinesAndEdges(undefined, args.edges.edges);
