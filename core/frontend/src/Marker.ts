@@ -384,6 +384,39 @@ export abstract class MarkerSet<T extends Marker> {
     return this._minScaleViewW;
   }
 
+  /**
+   * Clusters the markers into this._entries.
+   * @param context The DecorateContext for the Markers
+   */
+  protected clusterMarkers(context: DecorateContext): Array<T | Cluster<T>> {
+    const vp = context.viewport;
+    const entries = new Array<T | Cluster<T>>();
+
+    // loop through all of the Markers in the MarkerSet.
+    for (const marker of this.markers) {
+      // establish the screen position for this marker. If it's not in view, setPosition returns false
+      if (!marker.setPosition(vp, this))
+        continue;
+
+      let added = false;
+      for (let i = 0; i < entries.length; ++i) { // loop through all of the currently visible markers/clusters
+        const entry = entries[i];
+        if (marker.rect.overlaps(entry.rect)) { // does new Marker overlap with this entry?
+          added = true; // yes, we're going to save it as a Cluster
+          if (entry instanceof Cluster) { // is the entry already a Cluster?
+            entry.markers.push(marker); // yes, just add this to the existing cluster
+          } else {
+            entries[i] = new Cluster([entry, marker]); // no, make a new Cluster holding both
+          }
+          break; // this Marker has been handled, we can stop looking for overlaps
+        }
+      }
+      if (!added)
+        entries.push(marker); // there was no overlap, save this Marker to be drawn
+    }
+    return entries;
+  }
+
   /** This method should be called from [[Decorator.decorate]]. It will add this this MarkerSet to the supplied DecorateContext.
    * This method implements the logic that turns overlapping Markers into a Cluster.
    * @param context The DecorateContext for the Markers
@@ -393,53 +426,134 @@ export abstract class MarkerSet<T extends Marker> {
     if (vp !== this._viewport)
       return; // not viewport of this MarkerSet, ignore it
 
-    const entries = this._entries;
-
     // Don't recreate the entries array if the view hasn't changed. This is important for performance, but also necessary for hilite of
     // clusters (otherwise they're recreated continually and never hilited.) */
     if (!this._worldToViewMap.isAlmostEqual(vp.worldToViewMap.transform0)) {
       this._worldToViewMap.setFrom(vp.worldToViewMap.transform0);
       this._minScaleViewW = undefined; // Invalidate current value.
-      entries.length = 0; // start over.
-
-      // loop through all of the Markers in the MarkerSet.
-      for (const marker of this.markers) {
-        // establish the screen position for this marker. If it's not in view, setPosition returns false
-        if (!marker.setPosition(vp, this))
-          continue;
-
-        let added = false;
-        for (let i = 0; i < entries.length; ++i) { // loop through all of the currently visible markers/clusters
-          const entry = entries[i];
-          if (marker.rect.overlaps(entry.rect)) { // does new Marker overlap with this entry?
-            added = true; // yes, we're going to save it as a Cluster
-            if (entry instanceof Cluster) { // is the entry already a Cluster?
-              entry.markers.push(marker); // yes, just add this to the existing cluster
-            } else {
-              entries[i] = new Cluster([entry, marker]); // no, make a new Cluster holding both
-            }
-            break; // this Marker has been handled, we can stop looking for overlaps
-          }
-        }
-        if (!added)
-          entries.push(marker); // there was no overlap, save this Marker to be drawn
-      }
+      this._entries = this.clusterMarkers(context);
     }
 
     // we now have an array of Markers and Clusters, add them to context
-    for (const entry of entries) {
+    for (const entry of this._entries) {
       if (entry instanceof Cluster) { // is this entry a Cluster?
         if (entry.markers.length <= this.minimumClusterSize) { // yes, does it have more than the minimum number of entries?
           entry.markers.forEach((marker) => marker.addMarker(context)); // no, just draw all of its Markers
         } else {
           // yes, get and draw the Marker for this Cluster
-          if (undefined === entry.clusterMarker) // have we already created this cluster marker?
-            entry.clusterMarker = this.getClusterMarker(entry); // no, get it now.
+          if (undefined === entry.clusterMarker) { // have we already created this cluster marker?
+            const clusterMarker = this.getClusterMarker(entry); // no, get it now.
+            // set the marker's position as we shouldn't assume getClusterMarker sets it
+            if (clusterMarker.rect.isNull)
+              clusterMarker.setPosition(vp, this);
+            entry.clusterMarker = clusterMarker;
+          }
           entry.clusterMarker.addMarker(context);
         }
       } else {
         entry.addMarker(context); // entry is a non-overlapping Marker, draw it.
       }
     }
+  }
+}
+
+/**
+ * A MarkerSet sub-class that uses a gready clustering algorithm. Sub-classes should use the [[getAverageLocation]] function
+ * to set the location of the marker they return in getClusterMarker.
+ */
+export abstract class GreedyClusteringMarkerSet<T extends Marker> extends MarkerSet<T> {
+  /// The radius (in pixels) for clustering markers, default 0 which implies calculating the radius based on the visible marker imageSize/size.
+  protected clusterRadius = 0;
+
+  /**
+   * Gets the average of the cluster markers worldLocation.
+   * @param cluster Cluster to get average location of.
+   * @returns The average of the cluster markers worldLocation.
+   */
+  protected getAverageLocation(cluster: Cluster<T>) {
+    const location = Point3d.createZero();
+    cluster.markers.forEach((marker) => location.addInPlace(marker.worldLocation));
+    location.scaleInPlace(1 / cluster.markers.length);
+    return location;
+  }
+
+  /**
+   * Sets the cluster's rect by averaging the rects of all the markers in the cluster.
+   * @param cluster Cluster to set rect of.
+   */
+  protected setClusterRectFromMarkers<T extends Marker>(cluster: Cluster<T>) {
+    const len = cluster.markers.length;
+    if (len > 1) {
+      const midPoint = Point3d.createZero();
+      const size = Point3d.createZero();
+      cluster.markers.forEach((marker) => {
+        const center = new Point2d(marker.rect.left + (marker.rect.width / 2), marker.rect.top + (marker.rect.height / 2));
+        midPoint.addXYZInPlace(center.x, center.y);
+        size.addXYZInPlace(marker.rect.width, marker.rect.height);
+      });
+      midPoint.scaleInPlace(1 / len);
+      size.scaleInPlace(0.5 * (1 / len));
+      cluster.rect.init(midPoint.x - size.x, midPoint.y - size.y, midPoint.x + size.x, midPoint.y + size.y);
+    }
+  }
+
+  /**
+   * Clusters the this.markers using the greedy clustering algorithm.
+   * @param context The DecorateContext for the Markers
+   */
+  protected override clusterMarkers(context: DecorateContext): Array<T | Cluster<T>> {
+    const vp = context.viewport;
+    const entries = new Array<T | Cluster<T>>();
+
+    // get the visible markers
+    const visibleMarkers: T[] = [];
+    this.markers.forEach((marker) => {
+      if (marker.setPosition(vp, this)) {
+        visibleMarkers.push(marker);
+      }
+    });
+
+    // Greedy clustering algorithm:
+    // - Start with any point from the dataset.
+    // - Find all points within a certain radius around that point.
+    // - Form a new cluster with the nearby points.
+    // - Choose a new point that isn’t part of a cluster, and repeat until we have visited all the points.
+    if (this.clusterRadius <= 0 && visibleMarkers.length > 0) {
+      const marker = visibleMarkers[0];
+      const size = marker.imageSize ? marker.imageSize : marker.size;
+      this.clusterRadius = Math.max(size.x, size.y) * 1.5;
+    }
+    const distSquared = this.clusterRadius * this.clusterRadius;
+    const clustered = new Set<T>();
+
+    for (const marker of visibleMarkers) {
+      if (clustered.has(marker))
+        continue;
+
+      const clusterMarkers: T[] = [];
+      for (const otherMarker of visibleMarkers) {
+        if (marker === otherMarker || clustered.has(marker))
+          continue;
+
+        if (marker.position.distanceSquaredXY(otherMarker.position) <= distSquared)
+          clusterMarkers.push(otherMarker);
+      }
+
+      if (clusterMarkers.length > 0) {
+        clusterMarkers.unshift(marker);
+        clusterMarkers.forEach((m) => clustered.add(m));
+        const cluster = new Cluster(clusterMarkers);
+        this.setClusterRectFromMarkers(cluster);
+        entries.push(cluster);
+      }
+    }
+
+    // add any unprocessed markers to the entries
+    visibleMarkers.forEach((m) => {
+      if (!clustered.has(m))
+        entries.push(m);
+    });
+
+    return entries;
   }
 }
