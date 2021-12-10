@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import { ByteStream } from "@itwin/core-bentley";
 import {
-  BatchType, computeChildTileProps, computeTileChordTolerance, ContentIdProvider, defaultTileOptions, ImdlHeader, iModelTileTreeIdToString,
+  BatchType, computeChildTileProps, computeTileChordTolerance, ContentIdProvider, defaultTileOptions, EdgeType, ImdlHeader, iModelTileTreeIdToString,
   TileMetadata, TileProps, TileTreeMetadata,
 } from "@itwin/core-common";
 import {
@@ -20,7 +20,7 @@ describe("Tile tolerance", () => {
   let imodel: IModelConnection;
   const minimumSpatialTolerance = 0.02;
   const modelId = "0x1c";
-  const treeId = iModelTileTreeIdToString(modelId, { type: BatchType.Primary, edgesRequired: false }, { ...defaultTileOptions, useLargerTiles: false });
+  const treeId = iModelTileTreeIdToString(modelId, { type: BatchType.Primary, edges: EdgeType.None }, { ...defaultTileOptions, useLargerTiles: false });
 
   before(async () => {
     await TestUtility.startFrontend({ tileAdmin: { minimumSpatialTolerance, useLargerTiles: false } });
