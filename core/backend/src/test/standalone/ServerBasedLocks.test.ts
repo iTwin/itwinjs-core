@@ -99,7 +99,7 @@ describe("Server-based locks", () => {
     await expect(bc2Locks.acquireLocks({ shared: childEl.model })).rejectedWith(IModelError, exclusiveLockError);
 
     await bc1Locks.releaseAllLocks();
-    await bc1Locks.acquireLocks({ exclusive: parentId });
+    await bc1Locks.acquireLocks({ exclusive: parentId, shared: parentId });
     assertLockCounts(bc1Locks, 3, 1);
     assertSharedLocks(bc1Locks, [modelId, IModel.rootSubjectId]);
     assertExclusiveLocks(bc1Locks, [parentId, child1, child2]); // acquiring exclusive lock on parent implicitly holds exclusive lock on children
@@ -200,7 +200,7 @@ describe("Server-based locks", () => {
     await expect(bc2Locks.acquireLocks({ exclusive: child1 })).rejectedWith(IModelError, "pull is required"); // can't get lock since other briefcase changed it
 
     await bc2.pullChanges({ accessToken: accessToken2 });
-    await bc2Locks.acquireLocks({ exclusive: child1 });
+    await bc2Locks.acquireLocks({ exclusive: child1, shared: child1 });
     const child2El = bc2.elements.getElement<PhysicalElement>(child1);
     assert.equal(child2El.userLabel, childEl.userLabel);
 
