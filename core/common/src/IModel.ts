@@ -42,6 +42,18 @@ export interface IModelRpcProps extends IModelRpcOpenProps {
 }
 
 /** Properties that position an iModel on the earth via [ECEF](https://en.wikipedia.org/wiki/ECEF) (Earth Centered Earth Fixed) coordinates
+ * The origin is specified as an ECEF coordinate. The cartographicOrigin property contains the latitude, longitude and elevation above the WGS84 ellipsoid
+ * of the origin property. This cartographicOrigin is offered as a convenient pre-calculated value representing the location of the ECEF origin.
+ * The 3D coordinate system this class represents is positioned at specified origin and the axis positioned according to
+ * the other properties.
+ * If the xVector and yVector properties are defined then they take precedence over the YawPitchRoll orientation property. The xVector and yVector
+ * represent the direction and scale of the X and Y axes. The Z axis is always perpendicular (according to the right hand rule) to these X-Y axes.
+ * The scaling in the Z direction is always unity. The scale of the X and Y axes is represented by the size of the vector length.
+ * If the xVector and yVector are not present then the YawPitchRoll properties indicates the angles for all tree axes. Scaling in that case
+ * is unity in all three directions.
+ * Note that the present class is intended to represent geolocated 3D coordinate systems that are normally tangent to the WGS84 ellipsoid
+ * possibly offset in altitude by the terrain elevation above the ellipsoid but other general 3D coordinate systems
+ * can be defined.
  * @public
  */
 export interface EcefLocationProps {
@@ -189,6 +201,7 @@ export interface FilePropertyProps {
 }
 
 /** The position and orientation of an iModel on the earth in [ECEF](https://en.wikipedia.org/wiki/ECEF) (Earth Centered Earth Fixed) coordinates
+ * @note This is an immutable type - all of its properties are frozen.
  * @see [GeoLocation of iModels]($docs/learning/GeoLocation.md)
  * @public
  */
@@ -204,7 +217,7 @@ export class EcefLocation implements EcefLocationProps {
   /** Optional Y column vector used with [[xVector]] to calculate potentially non-rigid transform if a projection is present. */
   public readonly yVector?: Vector3d;
 
-  private _transform: Transform;
+  private readonly _transform: Transform;
 
   /** Get the transform from iModel Spatial coordinates to ECEF from this EcefLocation */
   public getTransform(): Transform { return this._transform; }
@@ -216,8 +229,8 @@ export class EcefLocation implements EcefLocationProps {
     if (props.cartographicOrigin)
       this.cartographicOrigin = Cartographic.fromRadians({ longitude: props.cartographicOrigin.longitude, latitude: props.cartographicOrigin.latitude, height: props.cartographicOrigin.height }).freeze();
     if (props.xVector && props.yVector) {
-      this.xVector = Vector3d.fromJSON(props.xVector);
-      this.yVector = Vector3d.fromJSON(props.yVector);
+      this.xVector = Vector3d.fromJSON(props.xVector).freeze();
+      this.yVector = Vector3d.fromJSON(props.yVector).freeze();
     }
     let matrix;
     if (this.xVector && this.yVector) {
@@ -229,6 +242,7 @@ export class EcefLocation implements EcefLocationProps {
       matrix = this.orientation.toMatrix3d();
 
     this._transform = Transform.createOriginAndMatrix(this.origin, matrix);
+    this._transform.freeze();
   }
 
   /** Construct ECEF Location from cartographic origin with optional known point and angle.   */
@@ -311,7 +325,6 @@ export abstract class IModel implements IModelProps {
   private _rootSubject?: RootSubjectProps;
   private _globalOrigin?: Point3d;
   private _ecefLocation?: EcefLocation;
-  private _ecefTrans?: Transform;
   private _geographicCoordinateSystem?: GeographicCRS;
   private _iModelId?: GuidString;
 
@@ -406,7 +419,17 @@ export abstract class IModel implements IModelProps {
     }
   }
 
-  /** The [EcefLocation]($docs/learning/glossary#ecefLocation) of the iModel in Earth Centered Earth Fixed coordinates. */
+  /** The [EcefLocation]($docs/learning/glossary#ecefLocation) of the iModel in Earth Centered Earth Fixed coordinates.
+   * If the iModel property geographicCoordinateSystem is not defined then the ecefLocation provides a geolocation by defining a
+   * 3D coordinate system relative to the Earth model WGS84. Refer to additional documentation for details. If the geographicCoordinateSystem
+   * property is defined then the ecefLocation must be used with care. When the geographicCoordinateSystem is defined it indicates the
+   * iModel cartesian space is the result of a cartographic projection. This implies a flattening of the Earth surface process that
+   * results in scale, angular or area distortion. The ecefLocation is then an approximation calculated at the center of the project extent.
+   * If the project is more than 2 kilometer in size, the ecefLocation may represent a poor approximation of the effective
+   * cartographic projection used and a linear transformation should then be calculated at the exact origin of the data
+   * it must position.
+   * @see [GeoLocation of iModels]($docs/learning/GeoLocation.md)
+  */
   public get ecefLocation(): EcefLocation | undefined {
     return this._ecefLocation;
   }
@@ -536,13 +559,7 @@ export abstract class IModel implements IModelProps {
   public getEcefTransform(): Transform {
     if (undefined === this._ecefLocation)
       throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
-
-    if (this._ecefTrans === undefined) {
-      this._ecefTrans = this._ecefLocation.getTransform();
-      this._ecefTrans.freeze();
-    }
-
-    return this._ecefTrans;
+    return this._ecefLocation.getTransform();
   }
 
   /** Convert a point in this iModel's Spatial coordinates to an ECEF point using its [[IModel.ecefLocation]].

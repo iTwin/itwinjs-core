@@ -31,7 +31,6 @@ import * as keyinPaletteTools from "./tools/KeyinPaletteTools";
 import * as openSettingTools from "./tools/OpenSettingsTool";
 import * as restoreLayoutTools from "./tools/RestoreLayoutTool";
 import * as toolSettingTools from "./tools/ToolSettingsTools";
-import { UserInfo } from "./UserInfo";
 import { UiShowHideManager, UiShowHideSettingsProvider } from "./utils/UiShowHideManager";
 import { WidgetManager } from "./widgets/WidgetManager";
 import { FrontstageManager } from "./frontstage/FrontstageManager";
@@ -392,17 +391,14 @@ export class UiFramework {
     return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.iModelConnection : /* istanbul ignore next */  undefined;
   }
 
-  /** @public */
-  public static async setUiStateStorage(storage: UiStateStorage, immediateSync = false) {
-    if (UiFramework._uiStateStorage === storage)
-      return;
-
-    UiFramework._uiStateStorage = storage;
-
+  /** Called by iModelApp to initialize saved UI state from registered UseSettingsProviders
+   * @public
+   */
+  public static async initializeStateFromUserSettingsProviders(immediateSync = false) {
     // let any registered providers to load values from the new storage location
     const providerKeys = [...this._uiSettingsProviderRegistry.keys()];
     for await (const key of providerKeys) {
-      await this._uiSettingsProviderRegistry.get(key)!.loadUserSettings(storage);
+      await this._uiSettingsProviderRegistry.get(key)!.loadUserSettings(UiFramework._uiStateStorage);
     }
 
     // istanbul ignore next
@@ -412,6 +408,15 @@ export class UiFramework {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.UiStateStorageChanged);
   }
 
+  /** @public */
+  public static async setUiStateStorage(storage: UiStateStorage, immediateSync = false) {
+    if (UiFramework._uiStateStorage === storage)
+      return;
+
+    UiFramework._uiStateStorage = storage;
+    await this.initializeStateFromUserSettingsProviders(immediateSync);
+  }
+
   /** The UI Settings Storage is a convenient wrapper around Local Storage to assist in caching state information across user sessions.
    * It was previously used to conflate both the state information across session and the information driven directly from user explicit action,
    * which are now handled with user preferences.
@@ -419,16 +424,6 @@ export class UiFramework {
    */
   public static getUiStateStorage(): UiStateStorage {
     return UiFramework._uiStateStorage;
-  }
-
-  /** @public */
-  public static setUserInfo(userInfo: UserInfo | undefined, immediateSync = false) {
-    UiFramework.dispatchActionToStore(SessionStateActionId.SetUserInfo, userInfo, immediateSync);
-  }
-
-  /** @public */
-  public static getUserInfo(): UserInfo | undefined {
-    return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.userInfo : /* istanbul ignore next */  undefined;
   }
 
   public static setDefaultIModelViewportControlId(iModelViewportControlId: string, immediateSync = false) {
@@ -556,5 +551,4 @@ export class UiFramework {
     const contextMenu = document.querySelector("div.core-context-menu-opened");
     return contextMenu !== null && contextMenu !== undefined;
   }
-
 }

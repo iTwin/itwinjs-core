@@ -4452,6 +4452,8 @@ export class IModelApp {
     static get mapLayerFormatRegistry(): MapLayerFormatRegistry;
     static get notifications(): NotificationManager;
     static readonly onBeforeShutdown: BeEvent<() => void>;
+    // @beta
+    static get publicPath(): string;
     // @alpha
     static get quantityFormatter(): QuantityFormatter;
     static queryRenderCompatibility(): WebGLRenderCompatibilityInfo;
@@ -4502,6 +4504,8 @@ export interface IModelAppOptions {
     // @beta
     mapLayerOptions?: MapLayerOptions;
     notifications?: NotificationManager;
+    // @beta
+    publicPath?: string;
     // @internal (undocumented)
     quantityFormatter?: QuantityFormatter;
     // @beta (undocumented)
@@ -5039,6 +5043,8 @@ export function linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: V
 // @internal
 export class LocalhostIpcApp {
     // (undocumented)
+    static buildUrlForSocket(base: URL, path?: string): URL;
+    // (undocumented)
     static startup(opts: LocalHostIpcAppOpts): Promise<void>;
 }
 
@@ -5049,7 +5055,7 @@ export interface LocalHostIpcAppOpts {
     // (undocumented)
     localhostIpcApp?: {
         socketPort?: number;
-        socketPath?: string;
+        socketUrl?: URL;
     };
 }
 
@@ -7537,7 +7543,7 @@ export function readElementGraphics(bytes: Uint8Array, iModel: IModelConnection,
 // @internal
 export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined;
 
-// @alpha
+// @beta
 export interface RealityDataSource {
     // @internal
     getRootDocument(iTwinId: GuidString | undefined): Promise<any>;
@@ -7556,21 +7562,17 @@ export interface RealityDataSource {
     readonly realityDataType: string | undefined;
 }
 
-// @alpha (undocumented)
+// @beta
 export namespace RealityDataSource {
-    // (undocumented)
+    // @alpha
     export function createKeyFromBlobUrl(blobUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey;
-    // (undocumented)
+    // @alpha
     export function createKeyFromOrbitGtBlobProps(orbitGtBlob: OrbitGtBlobProps, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey;
-    // (undocumented)
     export function createKeyFromUrl(tilesetUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey;
-    // (undocumented)
+    // @alpha
     export function createOrbitGtBlobPropsFromKey(rdSourceKey: RealityDataSourceKey): OrbitGtBlobProps | undefined;
-    // (undocumented)
-    export function formatfromUrl(tilesetUrl: string): RealityDataFormat;
     // @internal
     export function fromKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined>;
-    export function keyToString(rdSourceKey: RealityDataSourceKey): string;
 }
 
 // @internal (undocumented)

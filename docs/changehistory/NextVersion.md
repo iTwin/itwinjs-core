@@ -4,6 +4,10 @@ publish: false
 
 # NextVersion
 
+## Update guide
+
+To aid in the update from iModel.js 2.x, a [codemod tool](https://github.com/iTwin/codemods) using [JSCodeshift](https://github.com/facebook/jscodeshift) has been released which should serve as a starting point for updating your project to iTwin.js 3.0. Please see the included [readme.md](https://github.com/iTwin/codemods#readme) for instructions on running the tool against your project.
+
 ## Updated minimum requirements
 
 Support for Node 10 has been dropped. The new minimum Node version is 12.22.0. The recommended version is the latest LTS version of Node. Please visit our [Supported Platforms](../learning/supportedplatforms) documentation for a full breakdown of compatibility.
@@ -113,7 +117,6 @@ The following code applies a display style similar to those illustrated above to
     },
   });
 ```
-
 
 ## Transparent viewport background
 
@@ -234,7 +237,7 @@ The [AsyncFunction]($core-bentley), [AsyncMethodsOf]($core-bentley), and [Promis
 
 ## Continued transition to `ChangesetIndex`
 
-Every Changeset has both an Id (a string hash of its content and parent changeset) and an Index (a small integer representing its relative position on the iModel's timeline.) Either value can be used to uniquely identify a changeset. However, it is often necessary to compare two changeset identifiers to determine relative order, or to supply a range of changesets of interest. In this case, Id is not useful and must be converted to an index via a round-trip to an iModelHub server. Unfortunately, much of the iModel.js api uses only [ChangesetId]($common) to identify a changeset. That was unfortunate, since [ChangesetIndex]($common) is frequently needed and `ChangesetId` is rarely useful. For this reason we are migrating the api to prefer `ChangesetIndex` over several releases.
+Every Changeset has both an Id (a string hash of its content and parent changeset) and an Index (a small integer representing its relative position on the iModel's timeline.) Either value can be used to uniquely identify a changeset. However, it is often necessary to compare two changeset identifiers to determine relative order, or to supply a range of changesets of interest. In this case, Id is not useful and must be converted to an index via a round-trip to an iModelHub server. Unfortunately, much of the iTwin.js API uses only [ChangesetId]($common) to identify a changeset. That was unfortunate, since [ChangesetIndex]($common) is frequently needed and `ChangesetId` is rarely useful. For this reason we are migrating the API to prefer `ChangesetIndex` over several releases.
 
 In version 2.19, we introduced the type [ChangesetIdWithIndex]($common) to begin that migration. However, for 2.x compatibility we could not use it several places where it would have been helpful:
 
@@ -1207,7 +1210,7 @@ SAML support has officially been dropped as a supported workflow. All related AP
 
 | Removed                            | Replacement                    |
 | ---------------------------------- | ------------------------------ |
-| `UserInfo`                         | Moved to @itwin/appui-react |
+| `UserInfo`                         | *eliminated*                   |
 | `AuthorizationClient.isAuthorized` | *eliminated*                   |
 
 ### @bentley/appui-react

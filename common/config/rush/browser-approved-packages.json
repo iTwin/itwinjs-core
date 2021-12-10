@@ -492,7 +492,7 @@
     },
     {
       "name": "express-ws",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "faker",
@@ -785,10 +785,6 @@
     {
       "name": "react-test-renderer",
       "allowedCategories": [ "frontend", "internal" ]
-    },
-    {
-      "name": "react-virtualized",
-      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "react-window",

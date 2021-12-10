@@ -47,6 +47,7 @@ import { TimePointComparisonTool } from "./TimePointComparison";
 import { UiManager } from "./UiManager";
 import { MarkupTool, ModelClipTool, SaveImageTool, ZoomToSelectedElementsTool } from "./Viewer";
 import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
+import { MacroTool } from "./MacroTools";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -190,6 +191,16 @@ class ShutDownTool extends Tool {
   }
 }
 
+class ExitTool extends Tool {
+  public static override toolId = "Exit";
+
+  public override async run(_args: any[]): Promise<boolean> {
+    DisplayTestApp.surface.closeAllViewers();
+    await DtaRpcInterface.getClient().terminate();
+    return true;
+  }
+}
+
 export class DisplayTestApp {
   private static _surface?: Surface;
   public static get surface() { return this._surface!; }
@@ -198,9 +209,8 @@ export class DisplayTestApp {
   public static get iTwinId(): GuidString | undefined { return this._iTwinId; }
 
   public static async startup(configuration: DtaConfiguration, renderSys: RenderSystem.Options, tileAdmin: TileAdmin.Props): Promise<void> {
-    const socketUrl = new URL(configuration.customOrchestratorUri || "http://localhost:3001");
-    socketUrl.protocol = "ws";
-    socketUrl.pathname = [...socketUrl.pathname.split("/"), "ipc"].filter((v) => v).join("/");
+    let socketUrl = new URL(configuration.customOrchestratorUri || "http://localhost:3001");
+    socketUrl = LocalhostIpcApp.buildUrlForSocket(socketUrl);
 
     const opts: ElectronAppOpts | LocalHostIpcAppOpts = {
       iModelApp: {
@@ -225,7 +235,7 @@ export class DisplayTestApp {
         /* eslint-enable @typescript-eslint/naming-convention */
       },
       localhostIpcApp: {
-        socketPath: socketUrl.toString(),
+        socketUrl,
       },
     };
 
@@ -269,12 +279,14 @@ export class DisplayTestApp {
       DockWindowTool,
       DrawingAidTestTool,
       EditingScopeTool,
+      ExitTool,
       FenceClassifySelectedTool,
       FocusWindowTool,
       FrameStatsTool,
       GenerateTileContentTool,
       IncidentMarkerDemoTool,
       PathDecorationTestTool,
+      MacroTool,
       MarkupSelectTestTool,
       MarkupTool,
       MaximizeWindowTool,
