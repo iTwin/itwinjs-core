@@ -9,7 +9,7 @@
 import * as React from "react";
 import { Id64String, Logger } from "@itwin/core-bentley";
 import { IModelApp, IModelConnection, ViewState } from "@itwin/core-frontend";
-import { UiEvent } from "@itwin/core-react";
+import { UiEvent } from "@itwin/appui-abstract";
 import { SupportsViewSelectorChange } from "../content/ContentControl";
 import { ContentViewManager } from "../content/ContentViewManager";
 import { connectIModelConnection } from "../redux/connectIModel";
