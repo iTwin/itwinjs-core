@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { registerTool } from "@itwin/core-extension";
-import { SelectionTool } from "./SelectTool";
+import { ExtensionSelectTool } from "./SelectTool";
 
 export default function activate() {
-  registerTool(SelectionTool);
+  registerTool(ExtensionSelectTool);
   console.log("hello world");
 }

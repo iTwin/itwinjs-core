@@ -38,13 +38,7 @@
     "typescript": "~4.4.0"
   },
   "dependencies": {
-    "@bentley/itwin-client": "workspace:*",
-    "@itwin/appui-abstract": "workspace:*",
-    "@itwin/core-bentley": "workspace:*",
-    "@itwin/core-common": "workspace:*",
     "@itwin/core-extension": "workspace:*",
-    "@itwin/core-geometry": "workspace:*",
-    "@itwin/core-i18n": "workspace:*",
     "buffer": "^6.0.3",
     "url": "^0.11.0"
   },
