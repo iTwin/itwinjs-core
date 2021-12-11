@@ -34,6 +34,7 @@ module.exports = {
     "@typescript-eslint/class-name-casing": "off",
     "@typescript-eslint/camelcase": "off", // Using @typescript-eslint/naming-convention instead
     "@typescript-eslint/consistent-type-assertions": "error",
+    "@typescript-eslint/consistent-type-imports": "error",
     "@typescript-eslint/consistent-type-definitions": "error",
     // Checks for return types of all methods so even wants void/Promise<void>.  Do we want to do that?
     // Otherwise we need to use `allowedTypedFunctionExpressions - false`. Could always do this for only tests.
@@ -272,7 +273,7 @@ module.exports = {
     "no-cond-assign": "off",
     "no-console": "error",
     "no-debugger": "error",
-    "no-duplicate-imports": "error",
+    // "no-duplicate-imports": "error",
     "no-empty": "off",
     "no-eval": "error",
     "no-fallthrough": "error",
