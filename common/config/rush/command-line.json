@@ -108,6 +108,16 @@
       "summary": "Run copyright linter using lintstaged",
       "autoinstallerName": "rush-lintstaged",
       "shellCommand": "lint-staged --quiet --config common/scripts/.lintstagedrc.json"
+    },
+    {
+      "name": "lint:fix",
+      "commandKind": "bulk",
+      "summary": "Run lint:fix script for each package",
+      "description": "Iterates through each package in the monorepo and runs the 'lint:fix' script",
+      "enableParallelism": true,
+      "ignoreMissingScript": true,
+      "ignoreDependencyOrder": true,
+      "allowWarningsInSuccessfulBuild": true
     }
   ]
 }
