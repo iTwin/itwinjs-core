@@ -55,12 +55,14 @@ export function Resizer(props: ResizerProps) {
         onTouchEnd();
       }}
       onClick={(event) => {
+        // istanbul ignore else
         if (onClick) {
           event.preventDefault();
           onClick(event.nativeEvent);
         }
       }}
       onDoubleClick={(event) => {
+        // istanbul ignore else
         if (onDoubleClick) {
           event.preventDefault();
           onDoubleClick(event.nativeEvent);

@@ -48,6 +48,7 @@ export * from "./appui-react/content/StageContentLayout";
 export * from "./appui-react/content/ViewportContentControl";
 export * from "./appui-react/content/IModelViewport";
 export * from "./appui-react/content/DefaultViewOverlay";
+export * from "./appui-react/content/split-pane/SplitPane";
 
 export * from "./appui-react/cursor/CursorInformation";
 export * from "./appui-react/cursor/cursorprompt/CursorPrompt";

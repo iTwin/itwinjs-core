@@ -66,13 +66,16 @@ export interface SplitPaneProps {
 }
 
 function unFocus(ownerDoc: Document | undefined) {
+  // istanbul ignore next
   if (!ownerDoc)
     return;
 
   const docSelection = ownerDoc.getSelection();
+  // istanbul ignore else
   if (docSelection) {
     docSelection.empty();
   } else {
+    // istanbul ignore next
     try {
       const winSelection = ownerDoc.defaultView?.getSelection();
       winSelection?.removeAllRanges();
@@ -81,6 +84,7 @@ function unFocus(ownerDoc: Document | undefined) {
 }
 
 function getDefaultSize(defaultSize?: number | string, minSize?: string | number, maxSize?: string | number, draggedSize?: number) {
+  // istanbul ignore next
   if (typeof draggedSize === "number") {
     const min = typeof minSize === "number" ? minSize : 0;
     const max =
@@ -168,6 +172,7 @@ export function SplitPane(props: SplitPaneProps) {
   const pane2Classes = React.useMemo(() => classnames("Pane2", paneClassName, pane2ClassName), [paneClassName, pane2ClassName]);
 
   const initializeDrag = React.useCallback((x: number, y: number) => {
+    // istanbul ignore next
     unFocus(splitPane.current?.ownerDocument);
     const newPosition = split === "vertical" ? x : y;
     onDragStarted && onDragStarted();
@@ -176,29 +181,35 @@ export function SplitPane(props: SplitPaneProps) {
   }, [onDragStarted, split]);
 
   const onTouchStart = React.useCallback((event: TouchEvent) => {
+    // istanbul ignore else
     if (allowResize) {
       initializeDrag(event.touches[0].clientX, event.touches[0].clientY);
     }
   }, [allowResize, initializeDrag]);
 
   const processMove = React.useCallback((x: number, y: number) => {
+    // istanbul ignore next
     unFocus(splitPane.current?.ownerDocument);
     const isPrimaryFirst = primary === "first";
     const ref = isPrimaryFirst ? pane1.current : pane2.current;
     const ref2 = isPrimaryFirst ? pane2.current : pane1.current;
     const splitPaneDiv = splitPane.current;
 
+    // istanbul ignore else
     if (ref && ref2 && splitPaneDiv) {
       const node = ref;
       const node2 = ref2;
-
+      // istanbul ignore else
       if (node.getBoundingClientRect) {
         const width = node.getBoundingClientRect().width;
         const height = node.getBoundingClientRect().height;
+        // istanbul ignore next
         const current = split === "vertical" ? x : y;
+        // istanbul ignore next
         const oldSize = split === "vertical" ? width : height;
         let positionDelta = position - current;
         if (step) {
+          // istanbul ignore next
           if (Math.abs(positionDelta) < step) {
             return;
           }
@@ -208,13 +219,17 @@ export function SplitPane(props: SplitPaneProps) {
         }
         let sizeDelta = isPrimaryFirst ? positionDelta : -positionDelta;
 
-        const pane1Order = parseInt(node?.ownerDocument?.defaultView?.getComputedStyle(node).order ?? "0", 10);
-        const pane2Order = parseInt(node2?.ownerDocument?.defaultView?.getComputedStyle(node2).order ?? "0", 10);
+        // istanbul ignore next
+        const pane1Order = parseInt(node.ownerDocument?.defaultView?.getComputedStyle(node).order ?? "0", 10);
+        // istanbul ignore next
+        const pane2Order = parseInt(node2.ownerDocument?.defaultView?.getComputedStyle(node2).order ?? "0", 10);
+        // istanbul ignore next
         if (pane1Order > pane2Order) {
           sizeDelta = -sizeDelta;
         }
 
         let newMaxSize = maxSize;
+        // istanbul ignore next
         if (typeof maxSize === "number" && maxSize !== undefined && maxSize <= 0) {
           if (split === "vertical") {
             newMaxSize = splitPaneDiv.getBoundingClientRect().width + maxSize;
@@ -226,6 +241,7 @@ export function SplitPane(props: SplitPaneProps) {
         let newSize = oldSize - sizeDelta;
         const newPosition = position - positionDelta;
 
+        // istanbul ignore next
         if (typeof minSize === "number" && newSize < minSize) {
           newSize = minSize;
         } else if (typeof newMaxSize === "number" && newMaxSize !== undefined && newSize > newMaxSize) {
@@ -242,6 +258,7 @@ export function SplitPane(props: SplitPaneProps) {
   }, [maxSize, minSize, onChange, position, primary, split, step]);
 
   const onTouchMove = React.useCallback((event: TouchEvent) => {
+    // istanbul ignore next
     if (!allowResize || !active)
       return;
     processMove(event.touches[0].clientX, event.touches[0].clientY);
@@ -254,6 +271,7 @@ export function SplitPane(props: SplitPaneProps) {
   }, [active, allowResize, processMove]);
 
   const onMouseDown = React.useCallback((event: MouseEvent) => {
+    // istanbul ignore else
     if (allowResize) {
       event.preventDefault();
       initializeDrag(event.clientX, event.clientY);
@@ -261,6 +279,7 @@ export function SplitPane(props: SplitPaneProps) {
   }, [allowResize, initializeDrag]);
 
   const processResizeFinished = React.useCallback(() => {
+    // istanbul ignore else
     if (undefined !== draggedSize && allowResize && active) {
       onDragFinished && onDragFinished(draggedSize);
     }
@@ -273,7 +292,9 @@ export function SplitPane(props: SplitPaneProps) {
   }, [processResizeFinished]);
 
   React.useEffect(() => {
+    // istanbul ignore next
     const ownerDoc = splitPane.current?.ownerDocument;
+    // istanbul ignore next
     if (!ownerDoc)
       return;
 
