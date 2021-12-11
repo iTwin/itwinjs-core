@@ -125,19 +125,17 @@ export interface LockControl {
    */
   holdsSharedLock(id: Id64String): boolean;
   /**
-   * Acquire the exclusive lock on one or more elements from the lock server, if locks are required and not already held.
+   * Acquire locks on one or more elements from the lock server, if required and not already held.
    * If any required lock is not available, this method throws an exception and *none* of the requested locks are acquired.
    * > Note: acquiring the exclusive lock on an element requires also obtaining a shared lock on all its owner elements. This method will
-   * attempt to acquire all necessary locks for the set of input ids.
+   * attempt to acquire all necessary locks for both sets of input ids.
    */
-  acquireExclusiveLock(ids: Id64Arg): Promise<void>;
-  /**
-   * Acquire a shared lock on one or more elements from the lock server, if locks are required and not already held.
-   * If any required lock is not available, this method throws an exception and *none* of the requested locks are acquired.
-   * > Note: acquiring the shared lock on an element requires also obtaining a shared lock on all its owner elements. This method will
-   * attempt to acquire all necessary locks for the set of input ids.
-   */
-  acquireSharedLock(ids: Id64Arg): Promise<void>;
+  acquireLocks(arg: {
+    /** if present, one or more elements to obtain shared lock */
+    shared?: Id64Arg;
+    /** if present, one or more elements to obtain exclusive lock */
+    exclusive?: Id64Arg;
+  }): Promise<void>;
   /**
    * Release all locks currently held by this Briefcase from the lock server.
    */
@@ -154,8 +152,7 @@ class NoLocks implements LockControl {
   public checkExclusiveLock(): void { }
   public checkSharedLock(): void { }
   public elementWasCreated(): void { }
-  public async acquireExclusiveLock(): Promise<void> { }
-  public async acquireSharedLock(): Promise<void> { }
+  public async acquireLocks() { }
   public async releaseAllLocks(): Promise<void> { }
 }
 
@@ -236,7 +233,7 @@ export abstract class IModelDb extends IModel {
    * will be able to acquire *any* locks while the schema lock is held.
    */
   public async acquireSchemaLock(): Promise<void> {
-    return this.locks.acquireExclusiveLock(IModel.repositoryModelId);
+    return this.locks.acquireLocks({ exclusive: IModel.repositoryModelId });
   }
   /** determine whether the schema lock is currently held for this iModel. */
   public get holdsSchemaLock() {
