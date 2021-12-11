@@ -18,6 +18,7 @@
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-markup/file.json --tsIndexFile=./core-markup.ts --onlyJson",
     "extract-api": "betools extract-api --entry=core-markup",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint:fix": "npm run -s lint -- --fix",
     "pseudolocalize": "betools pseudolocalize --englishDir ./src/public/locales/en --out ./public/locales/en-PSEUDO",
     "test": "npm run -s webpackTests && certa -r chrome",
     "test:debug": "certa -r chrome --debug",

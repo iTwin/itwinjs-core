@@ -17,6 +17,7 @@
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-frontend/file.json --tsIndexFile=./core-frontend.ts --onlyJson --excludes=webgl/**/*,**/primitives,**/map/*.d.ts,**/tile/*.d.ts,**/*-css.ts",
     "extract-api": "betools extract-api --entry=core-frontend",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint:fix": "npm run -s lint -- --fix",
     "pseudolocalize": "betools pseudolocalize --englishDir ./src/public/locales/en --out ./public/locales/en-PSEUDO",
     "test": "npm run -s webpackTests && certa -r chrome",
     "cover": "npm -s test",

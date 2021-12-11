@@ -11,6 +11,7 @@
     "cover": "npm -s test",
     "docs": "",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint:fix": "npm run -s lint -- --fix",
     "test": "npm run -s test:chrome && npm run -s test:electron",
     "test:chrome": "certa -r chrome -b ./lib/backend/http.js",
     "test:electron": "certa -r electron -b ./lib/backend/electron.js",

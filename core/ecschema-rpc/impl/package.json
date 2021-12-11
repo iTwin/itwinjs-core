@@ -18,6 +18,7 @@
     "docs": "",
     "extract-api": "betools extract-api --entry=ecschema-rpc-impl",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint:fix": "npm run -s lint -- --fix",
     "test": ""
   },
   "keywords": [

@@ -14,6 +14,7 @@
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-electron/file.json --tsIndexFile=./__DOC_ONLY__.ts --onlyJson",
     "extract-api": "betools extract-api --entry=__DOC_ONLY__",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint:fix": "npm run -s lint -- --fix",
     "test": "",
     "cover": ""
   },

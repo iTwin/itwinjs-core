@@ -17,6 +17,7 @@
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",
     "extract-api": "betools extract-api --entry=ecschema-editing",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint:fix": "npm run -s lint -- --fix",
     "test": "mocha",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/ecschema-editing/file.json --tsIndexFile=./ecschema-editing.ts --onlyJson",
     "cover": "nyc npm -s test",

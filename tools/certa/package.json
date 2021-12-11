@@ -16,6 +16,7 @@
     "build:ci": "npm run -s build",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint:fix": "npm run -s lint -- --fix",
     "test": "",
     "docs": "",
     "cover": ""

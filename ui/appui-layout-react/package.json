@@ -24,6 +24,7 @@
     "docs:typedoc": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/ui/appui-layout-react/file.json --excludeGlob=**/declarations.d.ts --tsIndexFile=./appui-layout-react.ts --onlyJson",
     "extract-api": "betools extract-api --entry=appui-layout-react",
     "lint": "eslint -f visualstudio \"./src/**/*.{ts,tsx}\" 1>&2",
+    "lint:fix": "npm run -s lint -- --fix",
     "test": "mocha --config ../.mocharc.json \"./lib/cjs/test/**/*.test.js\"",
     "test:watch": "npm -s test -- --reporter min --watch-extensions ts,tsx --watch"
   },

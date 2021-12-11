@@ -20,6 +20,7 @@
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-i18n/file.json --tsIndexFile=./core-i18n.ts --onlyJson",
     "extract-api": "betools extract-api --entry=core-i18n",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint:fix": "npm run -s lint -- --fix",
     "test": "",
     "cover": ""
   },

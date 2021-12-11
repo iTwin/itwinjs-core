@@ -13,6 +13,7 @@
     "test": "",
     "cover": "",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint:fix": "npm run -s lint -- --fix",
     "blint": "npm run -s build && npm run -s lint",
     "main1": "node lib/main.js",
     "byDirectory": "node lib/byDirectory.js --input=CurveFactory --output=abc",

@@ -41,6 +41,7 @@
     "ruleset-json-schema:generate": "typescript-json-schema ./tsconfig.json Ruleset --noExtraProps --required --strictNullChecks --include ./src/presentation-common/rules/**/*.ts --include ./src/presentation-common/rules/*.ts > ./Ruleset.schema.json",
     "ruleset-json-schema:post-process": "node ./scripts/post-process-json-schema.js --path ./Ruleset.schema.json",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint:fix": "npm run -s lint -- --fix",
     "pseudolocalize:assets": "betools pseudolocalize --englishDir ./assets/locales/en --out ./lib/cjs/assets/locales/en-PSEUDO",
     "pseudolocalize:public": "betools pseudolocalize --englishDir ./assets/locales/en --out ./lib/public/locales/en-PSEUDO",
     "test": "mocha --config ../.mocharc.json --file ./lib/cjs/test/index.test.js \"./lib/cjs/test/**/*.test.js\"",

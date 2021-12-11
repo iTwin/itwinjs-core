@@ -34,6 +34,7 @@
     "extract": "betools extract --fileExt=ts --extractFrom=./src/test --recursive --out=../../generated-docs/extract",
     "extract-api": "betools extract-api --entry=presentation-testing",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint:fix": "npm run -s lint -- --fix",
     "test": "mocha -r ignore-styles -r jsdom-global/register --config ../.mocharc.json \"./lib/cjs/test/**/*.test.js\""
   },
   "devDependencies": {

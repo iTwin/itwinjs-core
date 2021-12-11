@@ -16,6 +16,7 @@
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-common/file.json --tsIndexFile=./core-common.ts --onlyJson",
     "extract-api": "betools extract-api --entry=core-common",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint:fix": "npm run -s lint -- --fix",
     "test": "mocha",
     "cover": "nyc npm -s test"
   },

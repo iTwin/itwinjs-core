@@ -20,6 +20,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint:fix": "npm run -s lint -- --fix",
     "test": "mocha \"./lib/test/**/*.test.js\"",
     "cover": "nyc npm -s test"
   },

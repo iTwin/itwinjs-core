@@ -13,6 +13,7 @@
     "extract": "betools extract --fileExt=ts --extractFrom=./src --recursive --out=../../generated-docs/extract",
     "docs": "npm run -s extract && npm run -s extract-assets",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint:fix": "npm run -s lint -- --fix",
     "test": "npm run -s copy:test-backend-assets && npm run -s copy:backend-assets && mocha --no-config",
     "cover": "npm -s test"
   },

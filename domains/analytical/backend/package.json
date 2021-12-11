@@ -16,6 +16,7 @@
     "docs": "betools docs --includes=../../../generated-docs/extract --json=../../../generated-docs/domains/analytical-backend/file.json --tsIndexFile=./analytical-backend.ts --onlyJson",
     "extract-api": "betools extract-api --entry=analytical-backend",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint:fix": "npm run -s lint -- --fix",
     "test": "mocha"
   },
   "repository": {

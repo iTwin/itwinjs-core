@@ -18,6 +18,7 @@
     "cover": "nyc npm -s test",
     "docs": "",
     "lint": "eslint -f visualstudio \"./src/**/*.{ts,tsx}\" 1>&2",
+    "lint:fix": "npm run -s lint -- --fix",
     "pseudolocalize": "betools pseudolocalize --englishDir=./src/public/locales/en --out=./src/public/locales/en-PSEUDO",
     "test": "mocha \"./lib/cjs/test/**/*.test.js\""
   },

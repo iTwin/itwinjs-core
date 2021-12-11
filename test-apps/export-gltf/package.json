@@ -7,6 +7,7 @@
     "build": "tsc 1>&2",
     "build:ci": "npm run -s build",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint:fix": "npm run -s lint -- --fix",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "test": "",
     "docs": "",

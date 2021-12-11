@@ -10,6 +10,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:config": "internal-tools copy-config",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint:fix": "npm run -s lint -- --fix",
     "azurite:setup": "mkdirp ./lib/cjs/test/azuriteStorage && azurite --silent --loose --location ./lib/cjs/test/azuriteStorage",
     "test": "",
     "cover": "",

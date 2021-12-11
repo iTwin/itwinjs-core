@@ -24,6 +24,7 @@
     "cover": "nyc npm -s test",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/ui/imodel-components-react/file.json --tsIndexFile=./imodel-components-react.ts --onlyJson",
     "lint": "eslint -f visualstudio \"./src/**/*.{ts,tsx}\" 1>&2",
+    "lint:fix": "npm run -s lint -- --fix",
     "extract-api": "betools extract-api --entry=imodel-components-react",
     "test": "mocha --config ../.mocharc.json \"./lib/cjs/test/**/*.test.js\"",
     "test:watch": "npm -s test -- --reporter min --watch-extensions ts,tsx --watch"
