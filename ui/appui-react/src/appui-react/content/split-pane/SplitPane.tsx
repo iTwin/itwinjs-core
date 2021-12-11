@@ -12,10 +12,9 @@ import { Pane } from "./Pane";
 import { Resizer } from "./Resizer";
 import _ = require("lodash");
 
-/** Based on react-split-pane package. See https://github.com/tomkp/react-split-pane/blob/master/LICENSE */
-
 /**
- *
+ * Props for [[SplitPane]] component
+ * @public
  */
 export interface SplitPaneProps {
   /** Pass false to disable resizing */
@@ -36,7 +35,9 @@ export interface SplitPaneProps {
    * (in other words it sets the minimal size of the 'resizable' pane in this case). This can be useful also in the
    * full-screen case of use. */
   maxSize?: string | number;
+  /** Default initial size of primary pane */
   defaultSize?: string | number;
+  /** Size of primary pane */
   size?: string | number;
   /** You can use the step prop to only allow resizing in fixed increments. */
   step?: number;
@@ -45,9 +46,11 @@ export interface SplitPaneProps {
   onDragStarted?: () => void;
   /** This callback is invoked when a drag ends. */
   onDragFinished?: (newSize: number) => void;
-  /** Callback is invoked with the current drag during a drag event. It is recommended that it is wrapped in a debounce function. */
+  /** Callback is invoked with the current drag during a drag event.*/
   onChange?: (newSize: number) => void;
+  /** Callback is invoked if user clicks on Resizer. */
   onResizerClick?: (event: MouseEvent) => void;
+  /** Callback is invoked if user double clicks on Resizer. */
   onResizerDoubleClick?: (event: MouseEvent) => void;
   /** Styling to be applied to the main container */
   style?: React.CSSProperties;
@@ -59,9 +62,13 @@ export interface SplitPaneProps {
   pane2Style?: React.CSSProperties;
   /** Styling to be applied to the resizer bar */
   resizerStyle?: React.CSSProperties;
+  /** Class name to be added to the SplitPane div */
   className?: string;
+  /** Class name to be added to each Pane's div */
   paneClassName?: string;
+  /** Class name to be added to Pane1's div */
   pane1ClassName?: string;
+  /** Class name to be added to Pane2's div */
   pane2ClassName?: string;
 }
 
@@ -102,7 +109,10 @@ function removeNullChildren(children: React.ReactNode[]) {
 }
 
 /**
- *
+ * Local TypeScript implementation of `SplitPane` from `react-split-pane` package since that
+ * package is not regularly maintained.
+ * See https://github.com/tomkp/react-split-pane/blob/master/LICENSE.
+ * @public
  */
 export function SplitPane(props: SplitPaneProps) {
   const { style, size, defaultSize, maxSize, children,
