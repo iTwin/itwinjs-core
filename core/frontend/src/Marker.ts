@@ -314,6 +314,17 @@ export class Cluster<T extends Marker> {
     this.rect = markers[0].rect;
     this.markers = markers;
   }
+
+  /**
+   * Gets the average of the markers worldLocation.
+   * @returns The average of the cluster markers worldLocation.
+   */
+  public getAverageLocation() {
+    const location = Point3d.createZero();
+    this.markers.forEach((marker) => location.addInPlace(marker.worldLocation));
+    location.scaleInPlace(1 / this.markers.length);
+    return location;
+  }
 }
 
 /** A *set* of Markers that are logically related, such that they *cluster* when they overlap one another in screen space.
@@ -459,25 +470,13 @@ export abstract class MarkerSet<T extends Marker> {
 }
 
 /**
- * A [[MarkerSet]] sub-class that uses a gready clustering algorithm. Sub-classes should use the [[getAverageLocation]] function
+ * A [[MarkerSet]] sub-class that uses a greedy clustering algorithm. Sub-classes should use the [[Cluster.getAverageLocation]] function
  * to set the location of the marker they return in `getClusterMarker`.
  * @public
  */
 export abstract class GreedyClusteringMarkerSet<T extends Marker> extends MarkerSet<T> {
   /// The radius (in pixels) for clustering markers, default 0 which implies calculating the radius based on the visible marker imageSize/size.
   protected clusterRadius = 0;
-
-  /**
-   * Gets the average of the cluster markers worldLocation.
-   * @param cluster Cluster to get average location of.
-   * @returns The average of the cluster markers worldLocation.
-   */
-  protected getAverageLocation(cluster: Cluster<T>) {
-    const location = Point3d.createZero();
-    cluster.markers.forEach((marker) => location.addInPlace(marker.worldLocation));
-    location.scaleInPlace(1 / cluster.markers.length);
-    return location;
-  }
 
   /**
    * Sets the cluster's rect by averaging the rects of all the markers in the cluster.
@@ -489,8 +488,7 @@ export abstract class GreedyClusteringMarkerSet<T extends Marker> extends Marker
       const midPoint = Point3d.createZero();
       const size = Point3d.createZero();
       cluster.markers.forEach((marker) => {
-        const center = new Point2d(marker.rect.left + (marker.rect.width / 2), marker.rect.top + (marker.rect.height / 2));
-        midPoint.addXYZInPlace(center.x, center.y);
+        midPoint.addXYZInPlace(marker.rect.left + (marker.rect.width / 2), marker.rect.top + (marker.rect.height / 2));
         size.addXYZInPlace(marker.rect.width, marker.rect.height);
       });
       midPoint.scaleInPlace(1 / len);
@@ -535,7 +533,7 @@ export abstract class GreedyClusteringMarkerSet<T extends Marker> extends Marker
 
       const clusterMarkers: T[] = [];
       for (const otherMarker of visibleMarkers) {
-        if (marker === otherMarker || clustered.has(marker))
+        if (marker === otherMarker || clustered.has(otherMarker))
           continue;
 
         if (marker.position.distanceSquaredXY(otherMarker.position) <= distSquared)
