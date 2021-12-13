@@ -6,7 +6,6 @@ import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib
 import { IModelApp  } from "@itwin/core-frontend";
 import { BrowserAuthorizationClient } from "@itwin/browser-authorization";
 import { AccessToken, ProcessDetector } from "@itwin/core-bentley";
-import { AuthorizationClient } from "../../../../core/common/lib/cjs/AuthorizationClient";
 
 // Wraps the signIn process
 // @return Promise that resolves to true after signIn is complete
