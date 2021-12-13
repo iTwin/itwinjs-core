@@ -43,7 +43,14 @@ export class GltfDecorationTool extends Tool {
       return false;
 
     try {
-      const [handle] = await (window as any).showOpenFilePicker();
+      const [handle] = await (window as any).showOpenFilePicker({
+        types: [
+          {
+            description: "glTF",
+            accept: { "model/*": [".gltf", ".glb"] },
+          },
+        ],
+      });
       const file = await handle.getFile();
       const buffer = await file.arrayBuffer() as ArrayBuffer;
       let graphic = await readGlbGraphics({
