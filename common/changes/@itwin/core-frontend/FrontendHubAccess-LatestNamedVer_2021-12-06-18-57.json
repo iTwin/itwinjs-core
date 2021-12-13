@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Update FrontendHubAccess api to use ChangesetIndexAndId",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

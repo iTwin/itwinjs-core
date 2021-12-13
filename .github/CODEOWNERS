@@ -56,8 +56,8 @@ rush.json       @iTwin/itwinjs-core-admins
 /common/**/express-server/                    @calebmshafer @wgoehrig
 /common/**/frontend-devtools.*                @iTwin/itwinjs-core-display @Ellord207
 /common/**/frontend-devtools/                 @iTwin/itwinjs-core-display @Ellord207
-/common/**/core-geometry.*                    @bbastings @EarlinLutz @mgooding @RBBentley @dassaf4
-/common/**/core-geometry/                     @bbastings @EarlinLutz @mgooding @RBBentley @dassaf4
+/common/**/core-geometry.*                    @bbastings @EarlinLutz @mgooding @dassaf4
+/common/**/core-geometry/                     @bbastings @EarlinLutz @mgooding @dassaf4
 /common/**/hypermodeling-frontend.*           @iTwin/itwinjs-core-display @bbastings
 /common/**/hypermodeling-frontend/            @iTwin/itwinjs-core-display @bbastings
 /common/**/core-backend.*                     @iTwin/itwinjs-core-admins
@@ -111,7 +111,7 @@ rush.json       @iTwin/itwinjs-core-admins
 /core/frontend                  @kabentley @bbastings @iTwin/itwinjs-core-display
 /core/frontend/src/extension    @calebmshafer @wgoehrig
 /core/frontend-devtools         @iTwin/itwinjs-core-display @Ellord207
-/core/geometry                  @bbastings @EarlinLutz @mgooding @RBBentley @dassaf4
+/core/geometry                  @bbastings @EarlinLutz @mgooding @dassaf4
 /core/hypermodeling             @bbastings @iTwin/itwinjs-core-display
 /core/i18n                      @wgoehrig @calebmshafer
 /core/markup                    @kabentley @pmconne @bbastings
@@ -160,7 +160,7 @@ rush.json       @iTwin/itwinjs-core-admins
 /test-apps/imodel-transformer               @MichaelBelousov @ColinKerr
 /test-apps/ninezone-test-app                @iTwin/itwinjs-core-ui
 /test-apps/presentation-test-app            @iTwin/itwinjs-core-presentation
-/test-apps/synchro-schedule-importer        @RBBentley @pmconne
+/test-apps/synchro-schedule-importer        @iTwin/itwinjs-core-display
 /test-apps/ui-test-app                      @iTwin/itwinjs-core-ui
 /test-apps/ui-items-providers-test          @iTwin/itwinjs-core-ui
 

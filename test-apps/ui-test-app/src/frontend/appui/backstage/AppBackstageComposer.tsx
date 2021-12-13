@@ -3,14 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { connect } from "react-redux";
 import { IModelApp } from "@itwin/core-frontend";
 import { BackstageItemUtilities, BadgeType, ConditionalBooleanValue } from "@itwin/appui-abstract";
-import { BackstageComposer, FrontstageManager, SettingsModalFrontstage, UiFramework, UserInfo } from "@itwin/appui-react";
-import { UserProfileBackstageItem } from "./UserProfile";
+import { BackstageComposer, FrontstageManager, SettingsModalFrontstage, UiFramework } from "@itwin/appui-react";
 import { ComponentExamplesModalFrontstage } from "../frontstages/component-examples/ComponentExamples";
 import { LocalFileOpenFrontstage } from "../frontstages/LocalFileStage";
-import { RootState, SampleAppIModelApp, SampleAppUiActionId } from "../..";
+import { SampleAppIModelApp, SampleAppUiActionId } from "../..";
 
 import stageIconSvg from "./imodeljs.svg?sprite";
 import { EditFrontstage } from "../frontstages/editing/EditFrontstage";
@@ -23,21 +21,7 @@ import { Frontstage3 } from "../frontstages/Frontstage3";
 import { Frontstage4 } from "../frontstages/Frontstage4";
 import { FrontstageUi2 } from "../frontstages/FrontstageUi2";
 
-function mapStateToProps(state: RootState) {
-  const frameworkState = state.frameworkState;
-
-  if (!frameworkState)
-    return undefined;
-
-  return { userInfo: frameworkState.sessionState.userInfo! };
-}
-
-interface AppBackstageComposerProps {
-  /** UserInfo from sign-in */
-  userInfo: UserInfo | undefined;
-}
-
-export function AppBackstageComposerComponent({ userInfo }: AppBackstageComposerProps) {
+export function AppBackstageComposer() {
   const hiddenCondition3 = new ConditionalBooleanValue(() => SampleAppIModelApp.getTestProperty() === "HIDE", [SampleAppUiActionId.setTestProperty]);
   const enableCondition = new ConditionalBooleanValue(() => SampleAppIModelApp.getTestProperty() === "HIDE", [SampleAppUiActionId.setTestProperty]);
   const notUi2Condition = new ConditionalBooleanValue(() => UiFramework.uiVersion === "1", ["configurableui:set-framework-version"]);
@@ -70,10 +54,6 @@ export function AppBackstageComposerComponent({ userInfo }: AppBackstageComposer
   });
 
   return (
-    <BackstageComposer items={backstageItems}
-      header={userInfo && <UserProfileBackstageItem userInfo={userInfo} />}
-    />
+    <BackstageComposer items={backstageItems} />
   );
 }
-
-export const AppBackstageComposer = connect(mapStateToProps)(AppBackstageComposerComponent); // eslint-disable-line @typescript-eslint/naming-convention
