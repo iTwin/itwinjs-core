@@ -64,11 +64,11 @@ export class IModelBankFrontend implements TestFrontendHubAccess {
     return this.getLatestChangeset(arg);
   }
 
-  public async getChangesetFromNamedVersion(arg: IModelIdArg & { versionName?: string }): Promise<ChangesetIndexAndId> {
-    const versionQuery = arg.versionName ? new VersionQuery().select("ChangeSetId").byName(arg.versionName) : new VersionQuery().top(1);
+  public async getChangesetFromNamedVersion(arg: IModelIdArg & { versionName: string }): Promise<ChangesetIndexAndId> {
+    const versionQuery = new VersionQuery().select("ChangeSetId").byName(arg.versionName);
     const versions = await this._hubClient.versions.get(arg.accessToken, arg.iModelId, versionQuery);
     if (!versions[0] || !versions[0].changeSetIndex || !versions[0].changeSetId)
-      throw new BentleyError(BentleyStatus.ERROR, `Named version ${arg.versionName ?? ""} not found`);
+      throw new BentleyError(BentleyStatus.ERROR, `Named version ${arg.versionName} not found`);
     return { index: versions[0].changeSetIndex, id: versions[0].changeSetId };
   }
 
