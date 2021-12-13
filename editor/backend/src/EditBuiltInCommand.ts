@@ -6,7 +6,7 @@
  * @module Editing
  */
 
-import { BentleyStatus, CompressedId64Set, DbResult, Id64String, IModelStatus } from "@itwin/core-bentley";
+import { BentleyStatus, CompressedId64Set, DbResult, Id64, Id64Arg, Id64String, IModelStatus } from "@itwin/core-bentley";
 import { Matrix3d, Matrix3dProps, Point3d, PointString3d, Range3d, Range3dProps, Transform, TransformProps, XYZProps, YawPitchRollAngles } from "@itwin/core-geometry";
 import { GeometricElement, IModelDb } from "@itwin/core-backend";
 import { BRepEntity, ColorDefProps, DynamicGraphicsRequest3dProps, EcefLocation, EcefLocationProps, ElementGeometry, ElementGeometryDataEntry, ElementGeometryFunction, ElementGeometryInfo, ElementGeometryRequest, ElementGeometryUpdate, FilePropertyProps, GeometricElementProps, GeometryPartProps, GeometryStreamBuilder, IModelError, Placement3dProps } from "@itwin/core-common";
@@ -20,16 +20,22 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
   public constructor(iModel: IModelDb, protected _str: string) { super(iModel); }
 
   public async deleteElements(ids: CompressedId64Set): Promise<IModelStatus> {
-    for (const id of CompressedId64Set.iterable(ids))
+    const idSet = CompressedId64Set.decompressSet(ids);
+    await this.iModel.locks.acquireLocks({ exclusive: idSet });
+
+    for (const id of idSet)
       this.iModel.elements.deleteElement(id);
 
     return IModelStatus.Success;
   }
 
   public async transformPlacement(ids: CompressedId64Set, transProps: TransformProps): Promise<IModelStatus> {
+    const idSet = CompressedId64Set.decompressSet(ids);
+    await this.iModel.locks.acquireLocks({ exclusive: idSet });
+
     const transform = Transform.fromJSON(transProps);
 
-    for (const id of CompressedId64Set.iterable(ids)) {
+    for (const id of idSet) {
       const element = this.iModel.elements.getElement<GeometricElement>(id);
 
       if (!element.placement.isValid)
@@ -43,9 +49,12 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
   }
 
   public async rotatePlacement(ids: CompressedId64Set, matrixProps: Matrix3dProps, aboutCenter: boolean): Promise<IModelStatus> {
+    const idSet = CompressedId64Set.decompressSet(ids);
+    await this.iModel.locks.acquireLocks({ exclusive: idSet });
+
     const matrix = Matrix3d.fromJSON(matrixProps);
 
-    for (const id of CompressedId64Set.iterable(ids)) {
+    for (const id of idSet) {
       const element = this.iModel.elements.getElement<GeometricElement>(id);
 
       if (!element.placement.isValid)
@@ -62,6 +71,8 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
   }
 
   public async insertGeometricElement(props: GeometricElementProps, data?: FlatBufferGeometricElementData): Promise<Id64String> {
+    await this.iModel.locks.acquireLocks({ shared: props.model });
+
     const newElem = this.iModel.elements.createElement(props);
     const newId = this.iModel.elements.insertElement(newElem);
     if (undefined === data)
@@ -84,6 +95,8 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
   }
 
   public async insertGeometryPart(props: GeometryPartProps, data?: FlatBufferGeometryPartData): Promise<Id64String> {
+    await this.iModel.locks.acquireLocks({ shared: props.model });
+
     if (undefined === props.geom && undefined !== data) {
       const builder = new GeometryStreamBuilder();
       builder.appendGeometry(PointString3d.create(Point3d.createZero()));
@@ -122,6 +135,8 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
 
     if (undefined === props.id)
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "Element id required for update");
+
+    await this.iModel.locks.acquireLocks({ exclusive: props.id });
 
     this.iModel.elements.updateElement(props);
     if (undefined === data)
@@ -776,7 +791,7 @@ export class SolidModelingCommand extends BasicManipulationCommand implements So
     return accepted;
   }
 
-  private async getElementGeometryResults(id: Id64String, info: ElementGeometryInfo, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined> {
+  private async getElementGeometryResults(id: Id64String, info: ElementGeometryInfo, opts: ElementGeometryResultOptions, tools?: Id64Arg): Promise<ElementGeometryResultProps | undefined> {
     if (0 === info.entryArray.length || undefined === info.categoryId || undefined === info.bbox)
       return undefined;
 
@@ -806,6 +821,15 @@ export class SolidModelingCommand extends BasicManipulationCommand implements So
     }
 
     if (opts.writeChanges) {
+      if (undefined !== tools) {
+        if (opts.insertProps) {
+          // NOTE: Insert model may be different than tool model(s), can't rely on getting shared lock from them...
+          await this.iModel.locks.acquireLocks({ shared: opts.insertProps.model, exclusive: tools });
+        } else {
+          await this.iModel.locks.acquireLocks({ exclusive: [id, ...tools] });
+        }
+      }
+
       if (opts.insertProps) {
         opts.insertProps.placement = placement; // entryArray is local to this placement...
         delete opts.insertProps.geom; // Ignore geometry if present...
@@ -816,6 +840,11 @@ export class SolidModelingCommand extends BasicManipulationCommand implements So
         updateProps.placement = placement; // entryArray is local to this placement...
         await this.updateGeometricElement(updateProps, { entryArray: info.entryArray });
         resultProps.elementId = id;
+      }
+
+      if (undefined !== tools) {
+        for (const toolId of Id64.iterable(tools))
+          this.iModel.elements.deleteElement(toolId);
       }
     }
 
@@ -841,7 +870,7 @@ export class SolidModelingCommand extends BasicManipulationCommand implements So
     return resultProps;
   }
 
-  private async doElementGeometryOperation(props: ElementGeometryCacheOperationRequestProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined> {
+  private async doElementGeometryOperation(props: ElementGeometryCacheOperationRequestProps, opts: ElementGeometryResultOptions, tools?: Id64Arg): Promise<ElementGeometryResultProps | undefined> {
     let accepted: ElementGeometryInfo | undefined;
     const onGeometry: ElementGeometryFunction = (info: ElementGeometryInfo): void => {
       accepted = info;
@@ -853,33 +882,19 @@ export class SolidModelingCommand extends BasicManipulationCommand implements So
     if (undefined === accepted)
       return undefined;
 
-    return this.getElementGeometryResults(props.id, accepted, opts);
+    return this.getElementGeometryResults(props.id, accepted, opts, tools);
   }
 
   public async booleanOperation(id: Id64String, params: BooleanOperationProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined> {
-    const props: ElementGeometryCacheOperationRequestProps = { id, op: OperationType.BooleanOp, params };
-    const resultProps = await this.doElementGeometryOperation(props, opts);
-
     // target insert = keep tools, target update = delete tools...
-    if (undefined !== resultProps && opts.writeChanges && undefined === opts.insertProps) {
-      for (const toolId of params.tools)
-        this.iModel.elements.deleteElement(toolId);
-    }
-
-    return resultProps;
+    const props: ElementGeometryCacheOperationRequestProps = { id, op: OperationType.BooleanOp, params };
+    return this.doElementGeometryOperation(props, opts, undefined === opts.insertProps ? params.tools : undefined);
   }
 
   public async sewSheets(id: Id64String, params: SewSheetProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined> {
-    const props: ElementGeometryCacheOperationRequestProps = { id, op: OperationType.SewSheets, params };
-    const resultProps = await this.doElementGeometryOperation(props, opts);
-
     // target insert = keep tools, target update = delete tools...
-    if (undefined !== resultProps && opts.writeChanges && undefined === opts.insertProps) {
-      for (const toolId of params.tools)
-        this.iModel.elements.deleteElement(toolId);
-    }
-
-    return resultProps;
+    const props: ElementGeometryCacheOperationRequestProps = { id, op: OperationType.SewSheets, params };
+    return this.doElementGeometryOperation(props, opts, undefined === opts.insertProps ? params.tools : undefined);
   }
 
   public async thickenSheets(id: Id64String, params: ThickenSheetProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined> {
@@ -889,64 +904,41 @@ export class SolidModelingCommand extends BasicManipulationCommand implements So
 
   public async cutSolid(id: Id64String, params: CutProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined> {
     const props: ElementGeometryCacheOperationRequestProps = { id, op: OperationType.Cut, params };
-    const resultProps = this.doElementGeometryOperation(props, opts);
-
-    // target insert = keep profile, target update = delete profile...
-    if (undefined !== resultProps && opts.writeChanges && undefined === opts.insertProps)
-      this.iModel.elements.deleteElement(params.profile);
-
-    return resultProps;
+    return this.doElementGeometryOperation(props, opts, !params.keepProfile ? params.profile : undefined);
   }
 
   public async embossBody(id: Id64String, params: EmbossProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined> {
     const props: ElementGeometryCacheOperationRequestProps = { id, op: OperationType.Emboss, params };
-    const resultProps = this.doElementGeometryOperation(props, opts);
-
-    // target insert = keep profile, target update = delete profile...
-    if (undefined !== resultProps && opts.writeChanges && undefined === opts.insertProps)
-      this.iModel.elements.deleteElement(params.profile);
-
-    return resultProps;
+    return this.doElementGeometryOperation(props, opts, !params.keepProfile ? params.profile : undefined);
   }
 
   public async imprintBody(id: Id64String, params: ImprintProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined> {
     const props: ElementGeometryCacheOperationRequestProps = { id, op: OperationType.Imprint, params };
-    const resultProps = this.doElementGeometryOperation(props, opts);
-
-    // target insert = keep profile, target update = delete profile...
-    if (undefined !== resultProps && opts.writeChanges && undefined === opts.insertProps && "string" === typeof(params.imprint) )
-      this.iModel.elements.deleteElement(params.imprint);
-
-    return resultProps;
+    return this.doElementGeometryOperation(props, opts, !params.keepProfile && "string" === typeof(params.imprint) ? params.imprint : undefined);
   }
 
   public async sweepAlongPath(id: Id64String, params: SweepPathProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined> {
     const props: ElementGeometryCacheOperationRequestProps = { id, op: OperationType.SweepPath, params };
-    const resultProps = this.doElementGeometryOperation(props, opts);
-
-    // target insert = keep path, target update = delete path...
-    if (undefined !== resultProps && opts.writeChanges && undefined === opts.insertProps)
-      this.iModel.elements.deleteElement(params.path);
-
-    return resultProps;
+    return this.doElementGeometryOperation(props, opts, !params.keepPath ? params.path : undefined);
   }
 
   public async loftProfiles(id: Id64String, params: LoftProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined> {
-    const props: ElementGeometryCacheOperationRequestProps = { id, op: OperationType.Loft, params };
-    const resultProps = this.doElementGeometryOperation(props, opts);
+    const toolIds = (opts.writeChanges && (!params.keepTools || !params.keepGuides)) ? new Set<Id64String>() : undefined;
 
-    // target insert = keep profiles and guides, target update = delete profiles and guides...
-    if (undefined !== resultProps && opts.writeChanges && undefined === opts.insertProps) {
-      for (const toolId of params.tools)
-        this.iModel.elements.deleteElement(toolId);
+    if (undefined !== toolIds) {
+      if (!params.keepTools) {
+        for (const toolId of Id64.iterable(params.tools))
+          toolIds.add(toolId);
+      }
 
-      if (undefined !== params.guides) {
-        for (const guideId of params.guides)
-          this.iModel.elements.deleteElement(guideId);
+      if (undefined !== params.guides && !params.keepGuides) {
+        for (const guideId of Id64.iterable(params.guides))
+          toolIds.add(guideId);
       }
     }
 
-    return resultProps;
+    const props: ElementGeometryCacheOperationRequestProps = { id, op: OperationType.Loft, params };
+    return this.doElementGeometryOperation(props, opts, toolIds);
   }
 
   public async offsetFaces(id: Id64String, params: OffsetFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined> {
