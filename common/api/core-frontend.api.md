@@ -3282,7 +3282,7 @@ export class FrameStatsCollector {
 // @public (undocumented)
 export interface FrontendHubAccess {
     getChangesetFromNamedVersion(arg: IModelIdArg & {
-        versionName?: string;
+        versionName: string;
     }): Promise<ChangesetIndexAndId>;
     // (undocumented)
     getChangesetFromVersion(arg: IModelIdArg & {

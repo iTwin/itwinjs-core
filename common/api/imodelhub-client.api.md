@@ -880,7 +880,7 @@ export enum IModelHubEventType {
 export class IModelHubFrontend implements FrontendHubAccess {
     // (undocumented)
     getChangesetFromNamedVersion(arg: IModelIdArg & {
-        versionName?: string;
+        versionName: string;
     }): Promise<ChangesetIndexAndId>;
     // (undocumented)
     getChangesetFromVersion(arg: IModelIdArg & {
