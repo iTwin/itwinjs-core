@@ -67,6 +67,9 @@
     "TogglePathDecoration": {
       "keyin": "dta path decoration"
     },
+    "AddGltfDecoration": {
+      "keyin": "dta gltf"
+    },
     "ShutDown": {
       "keyin": "dta shutdown"
     },

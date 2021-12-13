@@ -37,7 +37,7 @@ export interface ReadGlbGraphicsArgs {
 }
 
 export async function readGlbGraphics(args: ReadGlbGraphicsArgs): Promise<RenderGraphic | undefined> {
-  const stream = new ByteStream(args.glb);
+  const stream = new ByteStream(args.glb.buffer);
   const props = GltfReaderProps.create(stream, args.yAxisUp);
   const reader = props ? new GlbReader(props, args) : undefined;
   if (!reader)

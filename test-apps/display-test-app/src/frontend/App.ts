@@ -36,6 +36,7 @@ import { MarkupSelectTestTool } from "./MarkupSelectTestTool";
 import { Notifications } from "./Notifications";
 import { OutputShadersTool } from "./OutputShadersTool";
 import { PathDecorationTestTool } from "./PathDecorationTest";
+import { GltfDecorationTool } from "./GltfDecoration";
 import { ToggleShadowMapTilesTool } from "./ShadowMapDecoration";
 import { signIn, signOut } from "./signIn";
 import {
@@ -272,6 +273,7 @@ export class DisplayTestApp {
       FocusWindowTool,
       FrameStatsTool,
       GenerateTileContentTool,
+      GltfDecorationTool,
       IncidentMarkerDemoTool,
       PathDecorationTestTool,
       MarkupSelectTestTool,
