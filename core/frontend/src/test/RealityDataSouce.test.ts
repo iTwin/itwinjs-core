@@ -5,6 +5,7 @@
 
 import { OrbitGtBlobProps, RealityDataFormat, RealityDataProvider, RealityDataSourceKey } from "@itwin/core-common";
 import { expect } from "chai";
+import { CesiumIonAssetProvider } from "../core-frontend";
 import { RealityDataSource } from "../RealityDataSource";
 
 describe("RealityDataSource", () => {
@@ -24,7 +25,7 @@ describe("RealityDataSource", () => {
     expect(rdSourceKey.provider).to.equal(RealityDataProvider.CesiumIonAsset);
     expect(rdSourceKey.format).to.equal(RealityDataFormat.ThreeDTile);
     // dummy id for CesiumIonAsset, we want to hide the url and key
-    expect(rdSourceKey.id).to.be.equal("OSMBuildings");
+    expect(rdSourceKey.id).to.be.equal(CesiumIonAssetProvider.osmBuildingId);
     expect(rdSourceKey.iTwinId).to.be.undefined;
     const rdSourceKeyStr = RealityDataSourceKey.convertToString(rdSourceKey);
     expect(rdSourceKeyStr).to.be.equal("CesiumIonAsset:ThreeDTile:OSMBuildings:undefined");

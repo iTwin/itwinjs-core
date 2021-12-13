@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/editor-common",
+      "comment": "Aquire locks for built-in edit commands.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/editor-common"
+}

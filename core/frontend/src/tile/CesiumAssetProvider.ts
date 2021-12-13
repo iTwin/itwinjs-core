@@ -8,6 +8,7 @@
  * @internal
  */
 export class CesiumIonAssetProvider {
+  public static osmBuildingId="OSMBuildings";
   /** Return true if this is a supported url to this service provider */
   public static isProviderUrl(url: string): boolean {
     return url.includes("$CesiumIonAsset=");

@@ -40,7 +40,6 @@ import { Capabilities } from '@itwin/webgl-compatibility';
 import { Cartographic } from '@itwin/core-common';
 import { CategorySelectorProps } from '@itwin/core-common';
 import { ChangedEntities } from '@itwin/core-common';
-import { ChangesetId } from '@itwin/core-common';
 import { ChangesetIndex } from '@itwin/core-common';
 import { ChangesetIndexAndId } from '@itwin/core-common';
 import { ClipPlane } from '@itwin/core-geometry';
@@ -1812,6 +1811,8 @@ export class CategorySelectorState extends ElementState {
 export class CesiumIonAssetProvider {
     static isProviderUrl(url: string): boolean;
     // (undocumented)
+    static osmBuildingId: string;
+    // (undocumented)
     static parseCesiumUrl(url: string): {
         id: number;
         key: string;
@@ -3280,16 +3281,15 @@ export class FrameStatsCollector {
 
 // @public (undocumented)
 export interface FrontendHubAccess {
+    getChangesetFromNamedVersion(arg: IModelIdArg & {
+        versionName?: string;
+    }): Promise<ChangesetIndexAndId>;
     // (undocumented)
-    getChangesetIdFromNamedVersion(arg: IModelIdArg & {
-        versionName: string;
-    }): Promise<ChangesetId>;
-    // (undocumented)
-    getChangesetIdFromVersion(arg: IModelIdArg & {
+    getChangesetFromVersion(arg: IModelIdArg & {
         version: IModelVersion;
-    }): Promise<ChangesetId>;
+    }): Promise<ChangesetIndexAndId>;
     // (undocumented)
-    getLatestChangesetId(arg: IModelIdArg): Promise<ChangesetId>;
+    getLatestChangeset(arg: IModelIdArg): Promise<ChangesetIndexAndId>;
 }
 
 // @public

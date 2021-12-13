@@ -20,7 +20,7 @@ BackstageItemUtilities.createActionItem("SampleApp.settings", 300, 10, () => Fro
 
 In both examples, the first parameter is a key for the backstage item. This key must be unique across all other backstage items. The next two parameters define the group priority and the item priority within the group.  These values are use to determine the order of the item in the menu. This method allows other packages and extensions to insert items at specific positions within the menu.  It is recommended that the host application increment group priority by 100 and item priority by 10 to provide sufficient gaps for additional groups and items. The ordering is done from lowest to highest priority values.
 
-See additional example in [Backstage](../../../learning/ui/framework/Backstage.md).
+See additional example in [Backstage](../../../learning/ui/appui/appui&#8209;react/Backstage.md).
 
 ## API Reference
 

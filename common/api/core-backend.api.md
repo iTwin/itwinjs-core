@@ -32,6 +32,7 @@ import { ChangesetFileProps } from '@itwin/core-common';
 import { ChangesetId } from '@itwin/core-common';
 import { ChangesetIdWithIndex } from '@itwin/core-common';
 import { ChangesetIndex } from '@itwin/core-common';
+import { ChangesetIndexAndId } from '@itwin/core-common';
 import { ChangesetIndexOrId } from '@itwin/core-common';
 import { ChangesetProps } from '@itwin/core-common';
 import { ChangesetRange } from '@itwin/core-common';
@@ -334,9 +335,9 @@ export interface BackendHubAccess {
         targetDir: LocalDirName;
     }) => Promise<ChangesetFileProps[]>;
     // @internal
-    downloadV1Checkpoint: (arg: CheckpointArg) => Promise<ChangesetId>;
+    downloadV1Checkpoint: (arg: CheckpointArg) => Promise<ChangesetIndexAndId>;
     // @internal
-    downloadV2Checkpoint: (arg: CheckpointArg) => Promise<ChangesetId>;
+    downloadV2Checkpoint: (arg: CheckpointArg) => Promise<ChangesetIndexAndId>;
     getChangesetFromNamedVersion: (arg: IModelIdArg & {
         versionName: string;
     }) => Promise<ChangesetProps>;
@@ -2993,8 +2994,10 @@ export class LockConflict extends IModelError {
 
 // @beta
 export interface LockControl {
-    acquireExclusiveLock(ids: Id64Arg): Promise<void>;
-    acquireSharedLock(ids: Id64Arg): Promise<void>;
+    acquireLocks(arg: {
+        shared?: Id64Arg;
+        exclusive?: Id64Arg;
+    }): Promise<void>;
     // @internal
     checkExclusiveLock(id: Id64String, type: string, operation: string): void;
     // @internal

@@ -12,11 +12,11 @@ import "./ContentLayout.scss";
 import classnames from "classnames";
 import * as React from "react";
 import SplitPane from "react-split-pane";
-import { CommonProps, Orientation, UiEvent } from "@itwin/core-react";
+import { CommonProps, Orientation } from "@itwin/core-react";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { ContentGroup } from "./ContentGroup";
-import { ContentLayoutProps, LayoutFragmentProps, LayoutHorizontalSplitProps, LayoutSplitPropsBase, LayoutVerticalSplitProps } from "@itwin/appui-abstract";
+import { ContentLayoutProps, LayoutFragmentProps, LayoutHorizontalSplitProps, LayoutSplitPropsBase, LayoutVerticalSplitProps, UiEvent } from "@itwin/appui-abstract";
 import { ActiveContentChangedEventArgs, ContentViewManager } from "./ContentViewManager";
 
 /** Properties for [[ContentWrapper]] */
