@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Added GreedyClusteringMarkerSet which implements a different clustering algorithm.",
+      "comment": "Implemented a different clustering algorithm in MarkerSet.",
       "type": "none"
     }
   ],
