@@ -56,19 +56,35 @@ const computeIndexedQuantizedPosition = `
   else
     g_quadIndex = 3.0;
 
-  float edgeIndex = decodeUInt24(a_pos);
-  g_isSilhouette = edgeIndex >= u_edgeParams.z;
-  float edgeBaseIndex = g_isSilhouette ? (u_edgeParams.z * 1.5 + u_edgeParams.w * 0.25 + (edgeIndex - u_edgeParams.z) * 2.5) : edgeIndex * 1.5;
+  // The following formula computes the texel index, but suffers from precision issues for large edge indices, so we must compute using integers instead.
+  // edgeBaseIndex = float(nSegments + nSegments / 2 + padBytes / 4 + silIndex + silIndex + (silIndex / 2) + shift / 2);
+  float fEdgeIndex = decodeUInt24(a_pos);
+  g_isSilhouette = fEdgeIndex >= u_edgeParams.z;
+  int edgeIndex = int(fEdgeIndex);
+  bool isEven = 0 == (edgeIndex & 1);
+  float edgeBaseIndex;
+  if (!g_isSilhouette) {
+    edgeBaseIndex = float(edgeIndex + (edgeIndex / 2));
+  } else {
+    // If both pad and edgeIndex produce a remainder (0.5 for each - pad is a multiple of 2), we must add one to the index to account for it.
+    int shift = isEven ? 0 : 1;
+    int pad = int(u_edgeParams.w);
+    if (0 != (pad % 4)) {
+      isEven = !isEven;
+      shift = shift + 1;
+    }
+
+    // s = num segments p = num padding bytes i = edge index
+    // texel index = 1.5s + .25p + 2.5(i - s) = 1.5s + .25p + 2.5i - 2.5s = 2.5i + .25p - s = i + i + i/2 + p/4 - s
+    edgeBaseIndex = float(edgeIndex + edgeIndex + edgeIndex / 2 + pad / 4 - int(u_edgeParams.z) + shift / 2);
+  }
+
   vec2 tc = compute_edge_coords(floor(edgeBaseIndex));
   vec4 s0 = floor(TEXTURE(u_edgeLUT, tc) * 255.0 + 0.5);
   tc.x += g_edge_stepX;
   vec4 s1 = floor(TEXTURE(u_edgeLUT, tc) * 255.0 + 0.5);
   tc.x += g_edge_stepX;
   vec4 s2 = floor(TEXTURE(u_edgeLUT, tc) * 255.0 + 0.5);
-
-  bool isEven = 0 == (int(edgeIndex) & 1);
-  if (g_isSilhouette && 0 != int(u_edgeParams.w) % 4)
-    isEven = !isEven;
 
   vec3 i0 = isEven ? s0.xyz : vec3(s0.zw, s1.x);
   vec3 i1 = isEven ? vec3(s0.w, s1.xy) : s1.yzw;
