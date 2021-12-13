@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "add persistent iModel-based settings",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
