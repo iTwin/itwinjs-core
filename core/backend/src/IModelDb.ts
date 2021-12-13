@@ -1183,6 +1183,7 @@ export abstract class IModelDb extends IModel {
    * @param name The name for the SettingDictionary. If a dictionary by that name already exists in the iModel, its value is replaced.
    * @param dict The SettingDictionary object to stringify and save.
    * @note All saved `SettingDictionary`s are loaded into [[workspace.settings]] every time an iModel is opened.
+   * @beta
    */
   public saveSettingDictionary(name: string, dict: SettingDictionary) {
     this.withSqliteStatement("REPLACE INTO be_Prop(id,SubId,TxnMode,Namespace,Name,strData) VALUES(0,0,0,?,?,?)", (stmt) => {
@@ -1198,6 +1199,7 @@ export abstract class IModelDb extends IModel {
 
   /** Delete a SettingDictionary, previously added with [[saveSettingDictionary]], from this iModel.
    * @param name The name of the dictionary to delete.
+   * @beta
    */
   public deleteSettingDictionary(name: string) {
     this.withSqliteStatement("DELETE FROM be_Prop WHERE Namespace=? AND Name=?", (stmt) => {

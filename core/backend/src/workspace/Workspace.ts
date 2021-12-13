@@ -54,7 +54,9 @@ export type WorkspaceContainerName = string;
  */
 export type WorkspaceContainerId = string;
 
-/** The name of a WorkspaceDb within a WorkspaceContainer. */
+/** The name of a WorkspaceDb within a WorkspaceContainer.
+ * @beta
+ */
 export type WorkspaceDbName = string;
 
 /**
@@ -74,6 +76,9 @@ export type WorkspaceDbVersion = string;
  */
 export type WorkspaceResourceName = string;
 
+/** supply either container name of id, not both
+ * @beta
+ */
 export type ContainerNameOrId = { containerName: WorkspaceContainerName, containerId?: never } | { containerId: WorkspaceContainerId, containerName?: never };
 
 /**
@@ -86,6 +91,9 @@ export type WorkspaceContainerProps = ContainerNameOrId & {
   cloudProps?: CloudSqlite.TransferProps;
 };
 
+/** Properties of a WorkspaceDb
+ * @beta
+ */
 export type WorkspaceDbProps = WorkspaceContainerProps & {
   /** the name of the WorkspaceDb */
   dbName: WorkspaceDbName;
@@ -185,6 +193,9 @@ export interface Workspace {
   close(): void;
 }
 
+/** A WorkspaceContainer holds WorkspaceDbs.
+ * @beta
+ */
 export interface WorkspaceContainer {
   readonly dirName: LocalDirName;
   /** the local directory where this WorkspaceContainer will store temporary files extracted for file-resources. */
@@ -264,6 +275,7 @@ export class ITwinWorkspace implements Workspace {
   }
 }
 
+/** @internal */
 export class ITwinWorkspaceContainer implements WorkspaceContainer {
   public readonly workspace: ITwinWorkspace;
   public readonly filesDir: LocalDirName;
