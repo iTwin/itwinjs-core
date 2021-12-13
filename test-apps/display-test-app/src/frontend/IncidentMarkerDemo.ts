@@ -6,8 +6,8 @@ import { Logger } from "@itwin/core-bentley";
 import { AngleSweep, Arc3d, Point2d, Point3d, XAndY, XYAndZ } from "@itwin/core-geometry";
 import { AxisAlignedBox3d, ColorByName, ColorDef } from "@itwin/core-common";
 import {
-  BeButton, BeButtonEvent, Cluster, DecorateContext, GraphicType, GreedyClusteringMarkerSet, imageElementFromUrl, IModelApp, 
-  Marker, MarkerImage, MarkerSet, MessageBoxIconType, MessageBoxType, Tool,
+  BeButton, BeButtonEvent, Cluster, DecorateContext, GraphicType, imageElementFromUrl, IModelApp, Marker, MarkerImage, MarkerSet, MessageBoxIconType,
+  MessageBoxType, Tool,
 } from "@itwin/core-frontend";
 
 // cspell:ignore lerp
@@ -93,7 +93,7 @@ class IncidentClusterMarker extends Marker {
   }
 
   /** Create a new cluster marker with label and color based on the content of the cluster */
-  constructor(location: XYAndZ, size: XAndY, cluster: Cluster<IncidentMarker>, image: MarkerImage | undefined) {
+  constructor(location: XYAndZ, size: XAndY, cluster: Cluster<IncidentMarker>, image: MarkerImage | Promise<MarkerImage> | undefined) {
     super(location, size);
 
     // get the top 10 incidents by severity
@@ -138,14 +138,7 @@ class IncidentClusterMarker extends Marker {
 /** A MarkerSet to hold incidents. This class supplies to `getClusterMarker` method to create IncidentClusterMarkers. */
 class IncidentMarkerSet extends MarkerSet<IncidentMarker> {
   protected getClusterMarker(cluster: Cluster<IncidentMarker>): Marker {
-    return IncidentClusterMarker.makeFrom(cluster.markers[0], cluster, IncidentMarkerDemo.decorator!.warningSign);
-  }
-}
-
-/** A MarkerSet to hold incidents. Same as IncidentMarkerSet except it has a different clustering algoith by extending GreedyClusteringMarkerSet */
-class IncidentMarkerSetGC extends GreedyClusteringMarkerSet<IncidentMarker> {
-  protected getClusterMarker(cluster: Cluster<IncidentMarker>): Marker {
-    return new IncidentClusterMarker(this.getAverageLocation(cluster), cluster.markers[0].size, cluster, IncidentMarkerDemo.decorator!.warningSign);
+    return new IncidentClusterMarker(cluster.getAverageLocation(), cluster.markers[0].size, cluster, IncidentMarkerDemo.decorator!.warningSign);
   }
 }
 
@@ -157,7 +150,7 @@ export class IncidentMarkerDemo {
   private _awaiting = false;
   private _loading?: Promise<any>;
   private _images: Array<HTMLImageElement | undefined> = [];
-  private incidents: IncidentMarkerSet | IncidentMarkerSetGC = new IncidentMarkerSet();
+  public readonly incidents = new IncidentMarkerSet();
   private static _numMarkers = 500;
   public static decorator?: IncidentMarkerDemo; // static variable so we can tell if the demo is active.
 
@@ -231,18 +224,13 @@ export class IncidentMarkerDemo {
     }
   }
 
-  public get viewport() {
-    return this.incidents.viewport;
-  }
-
   /** start the demo by creating the IncidentMarkerDemo object and adding it as a ViewManager decorator. */
-  private static start(extents: AxisAlignedBox3d, useGreedyClustering: boolean) {
+  private static start(extents: AxisAlignedBox3d) {
     IncidentMarkerDemo.decorator = new IncidentMarkerDemo(extents);
-    IncidentMarkerDemo.decorator.setClusteringMethod(useGreedyClustering);
     IModelApp.viewManager.addDecorator(IncidentMarkerDemo.decorator);
 
     // hook the event for viewport changing and stop the demo. This is called when the view is closed too. */
-    IncidentMarkerDemo.decorator.viewport!.onChangeView.addOnce(() => this.stop());
+    IncidentMarkerDemo.decorator.incidents.viewport!.onChangeView.addOnce(() => this.stop());
   }
 
   /** stop the demo */
@@ -253,34 +241,20 @@ export class IncidentMarkerDemo {
   }
 
   /** Turn the markers on and off. Each time it runs it creates a new random set of incidents. */
-  public static toggle(extents: AxisAlignedBox3d, useGreedyClustering: boolean) {
+  public static toggle(extents: AxisAlignedBox3d) {
     if (undefined === IncidentMarkerDemo.decorator)
-      this.start(extents, useGreedyClustering);
+      this.start(extents);
     else
       this.stop();
-  }
-
-  public setClusteringMethod(useGreedyClustering: boolean) {
-    const usingGreedy = this.incidents instanceof IncidentMarkerSetGC;
-    if (usingGreedy !== useGreedyClustering) {
-      const markerSet = useGreedyClustering ? new IncidentMarkerSetGC() : new IncidentMarkerSet();
-      this.incidents.markers.forEach(marker => markerSet.markers.add(marker));
-      this.incidents.markers.clear();
-      markerSet.minimumClusterSize = this.incidents.minimumClusterSize;
-      if (this.incidents.viewport)
-        markerSet.changeViewport(this.incidents.viewport);
-      this.incidents = markerSet;
-    }
   }
 }
 
 export class IncidentMarkerDemoTool extends Tool {
   public static override toolId = "ToggleIncidentMarkers";
-  public static override get maxArgs(): number | undefined { return 1; }
-  public override async parseAndRun(...args: string[]) {
+  public override async run(_args: any[]): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== vp && vp.view.isSpatialView())
-      IncidentMarkerDemo.toggle(vp.view.iModel.projectExtents, args && args.length > 0 && args[0] == "greedy");
+      IncidentMarkerDemo.toggle(vp.view.iModel.projectExtents);
 
     return true;
   }
