@@ -15,7 +15,7 @@ import { EditableWorkspaceDb, ITwinWorkspace, ITwinWorkspaceContainer, ITwinWork
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
-describe.only("WorkspaceFile", () => {
+describe("WorkspaceFile", () => {
 
   const workspace = new ITwinWorkspace(new BaseSettings(), { containerDir: join(KnownTestLocations.outputDir, "TestWorkspaces") });
 
