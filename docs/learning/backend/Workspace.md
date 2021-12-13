@@ -298,9 +298,9 @@ A `WorkspaceDb` holds a set of resources, each with a [WorkspaceResourceName]($b
 
 Possible resource types are:
 
-- `string` resources that hold strings. They may be loaded with [WorkspaceContainer.getString]($backend).
-- `blob` resources that hold `Uint8Array`s. They may be loaded with [WorkspaceContainer.getBlob]($backend).
-- `file` resources that hold arbitrary files. They may be extracted to local files with [WorkspaceContainer.getFile]($backend)
+- `string` resources that hold strings. They may be loaded with [WorkspaceDb.getString]($backend).
+- `blob` resources that hold `Uint8Array`s. They may be loaded with [WorkspaceDb.getBlob]($backend).
+- `file` resources that hold arbitrary files. They may be extracted to local files with [WorkspaceDb.getFile]($backend)
 
 > Note: files are zipped as they are stored in `WorkspaceContainer`s.
 
