@@ -46,17 +46,6 @@ export class ViewAttributesStatusField extends React.Component<StatusFieldProps,
     this.updateState();
   }
 
-  /** Handle opening/closing the dialog */
-  private _handleIndicatorClick = () => {
-    this.updateState();
-
-    const isOpen = this.props.openWidget === this._className;
-    if (isOpen)
-      this.setOpenWidget(null);
-    else
-      this.setOpenWidget(this._className);
-  };
-
   // istanbul ignore next
   private updateState() {
     if (IModelApp.viewManager.selectedView) {
@@ -121,44 +110,22 @@ export class ViewAttributesStatusField extends React.Component<StatusFieldProps,
 
   public override render() {
     const isOpen = this.props.openWidget === this._className;
-
     return (
       <>
-        <div ref={this._handleTargetRef} title={this._title}>
-          <Indicator
-            iconName="icon-window-settings"
-            onClick={this._handleIndicatorClick}
-            opened={isOpen}
-            isInFooterMode={this.props.isInFooterMode}
-          />
-        </div>
-        <FooterPopup
-          target={this.state.target}
-          onClose={this._handleClose}
-          isOpen={isOpen}>
-          <Dialog
+        <Indicator
+          iconName="icon-window-settings"
+          opened={isOpen}
+          toolTip={this._title}
+          dialog={<Dialog
             titleBar={
               <TitleBar title={this._title} />
             }>
             {this.getViewFlags()}
-          </Dialog>
-        </FooterPopup>
+          </Dialog>}
+          isInFooterMode={this.props.isInFooterMode}
+        />
       </>
     );
   }
 
-  private _handleTargetRef = (target: HTMLElement | null) => {
-    this.setState({ target });
-  };
-
-  private _handleClose = () => {
-    this.setOpenWidget(null);
-  };
-
-  /** Opens the pop-up window. */
-  private setOpenWidget(openWidget: StatusBarFieldId) {
-    // istanbul ignore else
-    if (this.props.onOpenWidget)
-      this.props.onOpenWidget(openWidget);
-  }
 }

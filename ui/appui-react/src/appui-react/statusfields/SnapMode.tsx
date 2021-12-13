@@ -80,11 +80,13 @@ class SnapModeFieldComponent extends React.Component<SnapModeFieldProps, SnapMod
 
   /** Standard React render method. */
   public override render(): React.ReactNode {
+    const divStyle = { ...this.props.style, height: "100%" };
+
     return (
       <>
         <div ref={this._handleTargetRef}
           className={this.props.className}
-          style={this.props.style}
+          style={divStyle}
           title={this._title}
         >
           <NZ_SnapMode // eslint-disable-line deprecation/deprecation
