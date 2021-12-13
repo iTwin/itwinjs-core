@@ -357,6 +357,13 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@itwin/workspace-editor",
+      "projectFolder": "utils/workspace-editor",
+      "reviewCategory": "backend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "@itwin/ecschema-rpcinterface-common",
       "projectFolder": "core/ecschema-rpc/common",
       "reviewCategory": "common",
