@@ -10,7 +10,6 @@ import * as React from "react";
 import classnames from "classnames";
 import { Pane } from "./Pane";
 import { Resizer } from "./Resizer";
-import _ = require("lodash");
 
 /**
  * Props for [[SplitPane]] component
