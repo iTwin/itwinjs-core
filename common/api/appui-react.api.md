@@ -5388,6 +5388,38 @@ export interface SpatialContainmentTreeProps {
     width: number;
 }
 
+// @public
+export function SplitPane(props: SplitPaneProps): JSX.Element;
+
+// @public
+export interface SplitPaneProps {
+    allowResize?: boolean;
+    children: React.ReactNode[];
+    className?: string;
+    defaultSize?: string | number;
+    maxSize?: string | number;
+    // (undocumented)
+    minSize?: string | number;
+    onChange?: (newSize: number) => void;
+    onDragFinished?: (newSize: number) => void;
+    onDragStarted?: () => void;
+    onResizerClick?: (event: MouseEvent) => void;
+    onResizerDoubleClick?: (event: MouseEvent) => void;
+    pane1ClassName?: string;
+    pane1Style?: React.CSSProperties;
+    pane2ClassName?: string;
+    pane2Style?: React.CSSProperties;
+    paneClassName?: string;
+    paneStyle?: React.CSSProperties;
+    primary?: "first" | "second";
+    resizerStyle?: React.CSSProperties;
+    size?: string | number;
+    // (undocumented)
+    split?: "vertical" | "horizontal";
+    step?: number;
+    style?: React.CSSProperties;
+}
+
 // @internal (undocumented)
 export class SplitterPaneTarget extends React.PureComponent<SplitterPaneTargetProps> {
     // (undocumented)

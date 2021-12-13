@@ -11,7 +11,7 @@
 import "./ContentLayout.scss";
 import classnames from "classnames";
 import * as React from "react";
-import SplitPane from "react-split-pane";
+import { SplitPane } from "./split-pane/SplitPane";
 import { CommonProps, Orientation } from "@itwin/core-react";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
@@ -89,7 +89,6 @@ class ContentWrapper extends React.Component<ContentWrapperProps, ContentWrapper
       this.setState((_, props) => ({ content: props.content, isActive: props.content === ContentViewManager.getActiveContent() }));
     }
   }
-
 }
 
 /** Properties for the [[SplitContainer]] component */

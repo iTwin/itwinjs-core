@@ -9,8 +9,8 @@
 import { join } from "path";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import {
-  AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus,
-  JsonUtils, Logger, OpenMode,
+  AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
+  IModelStatus, JsonUtils, Logger, OpenMode, UnexpectedErrors,
 } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
@@ -46,7 +46,7 @@ import { ServerBasedLocks } from "./ServerBasedLocks";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
-import { BaseSettings, SettingName, SettingResolver, SettingsPriority, SettingType } from "./workspace/Settings";
+import { BaseSettings, SettingDictionary, SettingName, SettingResolver, SettingsPriority, SettingType } from "./workspace/Settings";
 import { ITwinWorkspace, Workspace } from "./workspace/Workspace";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
@@ -278,6 +278,7 @@ export abstract class IModelDb extends IModel {
     this.initializeIModelDb();
     IModelDb._openDbs.set(this._fileKey, this);
     this._workspace = new ITwinWorkspace(new IModelSettings(), IModelHost.appWorkspace);
+    this.loadSettingDictionaries();
 
     if (undefined === IModelDb._shutdownListener) { // the first time we create an IModelDb, add a listener to close any orphan files at shutdown.
       IModelDb._shutdownListener = IModelHost.onBeforeShutdown.addListener(() => {
@@ -1174,6 +1175,59 @@ export abstract class IModelDb extends IModel {
    */
   public async generateElementGraphics(request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined> {
     return generateElementGraphics(request, this);
+  }
+
+  private static _settingPropNamespace = "settings";
+
+  /** Save a `SettingDictionary` in this iModel that will be loaded into [[workspace.settings]] every time this iModel is opened in future sessions.
+   * @param name The name for the SettingDictionary. If a dictionary by that name already exists in the iModel, its value is replaced.
+   * @param dict The SettingDictionary object to stringify and save.
+   * @note All saved `SettingDictionary`s are loaded into [[workspace.settings]] every time an iModel is opened.
+   * @beta
+   */
+  public saveSettingDictionary(name: string, dict: SettingDictionary) {
+    this.withSqliteStatement("REPLACE INTO be_Prop(id,SubId,TxnMode,Namespace,Name,strData) VALUES(0,0,0,?,?,?)", (stmt) => {
+      stmt.bindString(1, IModelDb._settingPropNamespace);
+      stmt.bindString(2, name);
+      stmt.bindString(3, JSON.stringify(dict));
+      const rc = stmt.step();
+      if (rc !== DbResult.BE_SQLITE_DONE)
+        throw new IModelError(rc, "cannot save setting");
+    });
+    this.saveChanges("add settings");
+  }
+
+  /** Delete a SettingDictionary, previously added with [[saveSettingDictionary]], from this iModel.
+   * @param name The name of the dictionary to delete.
+   * @beta
+   */
+  public deleteSettingDictionary(name: string) {
+    this.withSqliteStatement("DELETE FROM be_Prop WHERE Namespace=? AND Name=?", (stmt) => {
+      stmt.bindString(1, IModelDb._settingPropNamespace);
+      stmt.bindString(2, name);
+      const rc = stmt.step();
+      if (rc !== DbResult.BE_SQLITE_DONE)
+        throw new IModelError(rc, "cannot delete setting");
+    });
+    this.saveChanges("delete settings");
+  }
+
+  /** Load all setting dictionaries in this iModel into `this.workspace.settings` */
+  private loadSettingDictionaries() {
+    if (!this.nativeDb.isOpen())
+      return;
+
+    this.withSqliteStatement("SELECT Name,StrData FROM be_Prop WHERE Namespace=?", (stmt) => {
+      stmt.bindString(1, IModelDb._settingPropNamespace);
+      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+        try {
+          const dict = JSON.parse(stmt.getValueString(1));
+          this.workspace.settings.addDictionary(stmt.getValueString(0), SettingsPriority.iModel, dict);
+        } catch (e) {
+          UnexpectedErrors.handle(e);
+        }
+      }
+    });
   }
 }
 
