@@ -7,8 +7,8 @@ import { expect } from "chai";
 import { Guid, Id64, Id64String } from "@itwin/core-bentley";
 import { Box, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
-  BatchType, Code, ColorDef, defaultTileOptions, GeometryStreamBuilder, IModel, iModelTileTreeIdToString, PhysicalElementProps, PrimaryTileTreeId,
-  RenderSchedule,
+  BatchType, Code, ColorDef, defaultTileOptions, EdgeType, GeometryStreamBuilder, IModel, iModelTileTreeIdToString, PhysicalElementProps,
+  PrimaryTileTreeId, RenderSchedule,
 } from "@itwin/core-common";
 import {
   GenericSchema, IModelDb, PhysicalModel, PhysicalObject, PhysicalPartition, RenderTimeline, SnapshotDb, SpatialCategory,
@@ -236,7 +236,7 @@ describe("tile tree", () => {
   it("should include checksum on schedule script contents", async () => {
     const treeId: PrimaryTileTreeId = {
       type: BatchType.Primary,
-      edgesRequired: false,
+      edges: EdgeType.None,
     };
 
     const options = { ...defaultTileOptions };
@@ -268,7 +268,7 @@ describe("tile tree", () => {
   it("should update checksum after purge when schedule script contents change", async () => {
     const treeId: PrimaryTileTreeId = {
       type: BatchType.Primary,
-      edgesRequired: false,
+      edges: EdgeType.None,
       animationId: renderTimelineId,
     };
 

@@ -8019,6 +8019,8 @@ export namespace RenderMemory {
         // (undocumented)
         readonly consumers: Consumers[];
         // (undocumented)
+        get indexedEdges(): Consumers;
+        // (undocumented)
         get instances(): Consumers;
         // (undocumented)
         get pointClouds(): Consumers;
@@ -8042,25 +8044,27 @@ export namespace RenderMemory {
     // (undocumented)
     export enum BufferType {
         // (undocumented)
-        COUNT = 10,
+        COUNT = 11,
         // (undocumented)
-        Instances = 7,
+        IndexedEdges = 4,
         // (undocumented)
-        PointClouds = 6,
+        Instances = 8,
         // (undocumented)
-        PointStrings = 5,
+        PointClouds = 7,
+        // (undocumented)
+        PointStrings = 6,
         // (undocumented)
         PolylineEdges = 3,
         // (undocumented)
-        Polylines = 4,
+        Polylines = 5,
         // (undocumented)
-        RealityMesh = 9,
+        RealityMesh = 10,
         // (undocumented)
         SilhouetteEdges = 2,
         // (undocumented)
         Surfaces = 0,
         // (undocumented)
-        Terrain = 8,
+        Terrain = 9,
         // (undocumented)
         VisibleEdges = 1
     }
@@ -8084,23 +8088,25 @@ export namespace RenderMemory {
     // (undocumented)
     export enum ConsumerType {
         // (undocumented)
-        ClipVolumes = 4,
+        ClipVolumes = 5,
         // (undocumented)
-        COUNT = 9,
+        COUNT = 10,
         // (undocumented)
-        FeatureOverrides = 3,
+        EdgeTables = 2,
         // (undocumented)
-        FeatureTables = 2,
+        FeatureOverrides = 4,
         // (undocumented)
-        PlanarClassifiers = 5,
+        FeatureTables = 3,
         // (undocumented)
-        ShadowMaps = 6,
+        PlanarClassifiers = 6,
         // (undocumented)
-        TextureAttachments = 7,
+        ShadowMaps = 7,
+        // (undocumented)
+        TextureAttachments = 8,
         // (undocumented)
         Textures = 0,
         // (undocumented)
-        ThematicTextures = 8,
+        ThematicTextures = 9,
         // (undocumented)
         VertexTables = 1
     }
@@ -8114,9 +8120,13 @@ export namespace RenderMemory {
         // (undocumented)
         addConsumer(type: ConsumerType, numBytes: number): void;
         // (undocumented)
+        addEdgeTable(numBytes: number): void;
+        // (undocumented)
         addFeatureOverrides(numBytes: number): void;
         // (undocumented)
         addFeatureTable(numBytes: number): void;
+        // (undocumented)
+        addIndexedEdges(numBytes: number): void;
         // (undocumented)
         addInstances(numBytes: number): void;
         // (undocumented)
@@ -8157,6 +8167,8 @@ export namespace RenderMemory {
         get clipVolumes(): Consumers;
         // (undocumented)
         readonly consumers: Consumers[];
+        // (undocumented)
+        get edgeTables(): Consumers;
         // (undocumented)
         get featureOverrides(): Consumers;
         // (undocumented)
@@ -8406,6 +8418,8 @@ export abstract class RenderSystem implements IDisposable {
     onInitialized(): void;
     // @internal
     readonly options: RenderSystem.Options;
+    // @internal (undocumented)
+    get supportsIndexedEdges(): boolean;
     // @internal (undocumented)
     get supportsInstancing(): boolean;
     // @internal (undocumented)
@@ -10177,6 +10191,8 @@ export class TileAdmin {
     // @internal (undocumented)
     readonly enableImprovedElision: boolean;
     // @internal (undocumented)
+    get enableIndexedEdges(): boolean;
+    // @internal (undocumented)
     get enableInstancing(): boolean;
     // @internal
     forgetViewport(vp: Viewport): void;
@@ -10296,6 +10312,7 @@ export namespace TileAdmin {
         disableMagnification?: boolean;
         enableExternalTextures?: boolean;
         enableImprovedElision?: boolean;
+        enableIndexedEdges?: boolean;
         enableInstancing?: boolean;
         gpuMemoryLimits?: GpuMemoryLimit | GpuMemoryLimits;
         ignoreAreaPatterns?: boolean;

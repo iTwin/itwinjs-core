@@ -278,6 +278,7 @@ export class InstancedGeometry extends CachedGeometry {
   public override get asSurface() { return this._repr.asSurface; }
   public override get asEdge() { return this._repr.asEdge; }
   public override get asSilhouette() { return this._repr.asSilhouette; }
+  public override get asIndexedEdge() { return this._repr.asIndexedEdge; }
 
   public get renderOrder() { return this._repr.renderOrder; }
   public override get isLitSurface() { return this._repr.isLitSurface; }

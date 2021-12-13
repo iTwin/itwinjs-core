@@ -81,6 +81,7 @@ const dtaFrontendMain = async () => {
   const tileAdminProps: TileAdmin.Props = {
     retryInterval: 50,
     enableInstancing: true,
+    enableIndexedEdges: true !== configuration.disableIndexedEdges,
   };
 
   if (configuration.disableInstancing)
