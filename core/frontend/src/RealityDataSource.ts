@@ -177,7 +177,6 @@ class RealityDataSourceImpl implements RealityDataSource {
     return (tilesetUrl !== undefined) ? rdSource: undefined;
   }
   /** Return an instance of a RealityDataSource from a source key.
-   * There will aways be only one reality data connection for a corresponding reality data source key.
    */
   public static async fromKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined> {
     return RealityDataSourceImpl.createFromKey(rdSourceKey,  iTwinId);
