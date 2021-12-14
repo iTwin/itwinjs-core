@@ -57,7 +57,8 @@ const computeIndexedQuantizedPosition = `
     g_quadIndex = 3.0;
 
   // The following formula computes the texel index, but suffers from precision issues for large edge indices, so we must compute using integers instead.
-  // edgeBaseIndex = float(nSegments + nSegments / 2 + padBytes / 4 + silIndex + silIndex + (silIndex / 2) + shift / 2);
+  // float edgeBaseIndex = u_edgeParams.z * 1.5 + u_edgeParams.w * 0.25 + (edgeIndex - u_edgeParams.z) * 2.5);
+
   float fEdgeIndex = decodeUInt24(a_pos);
   g_isSilhouette = fEdgeIndex >= u_edgeParams.z;
   int edgeIndex = int(fEdgeIndex);

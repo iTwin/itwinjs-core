@@ -130,7 +130,7 @@ function convertSilhouettes(edges: MeshEdge[], normalPairs: OctEncodedNormalPair
 /** A lookup table of edges for a mesh. The table is partitioned such that the lower partition contains simple segment edges
  * and the upper partition contains silhouette edges. Each entry in the lower partition consists of 2 24-bit indices into
  * a [[VertexTable]] from which to obtain the endpoints of the edge. Each entry in the upper partition consists of 2 24-bit
- * vertex indices followed by two 16-bit [[OctEncodedNormals]].
+ * vertex indices followed by two 16-bit [[OctEncodedNormal]]s.
  * If both partitions exist then one row may exist between them containing a mix of segments and silhouettes; in this case a handful
  * of padding bytes may exist between the last segment and the first silhouette.
  * @see [[IndexedEdgeParams.edges]].
