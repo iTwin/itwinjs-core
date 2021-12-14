@@ -42,7 +42,7 @@
   align-items: center;
   visibility: visible;
   color: $buic-foreground-body;
-  gap: 6px;
+  gap: 8px;
 
   &.uifw-footer-action {
     cursor: pointer;
@@ -61,6 +61,10 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+
+    @include for-tablet-landscape-down {
+      display: none;
+    }
   }
 
   &.uifw-indicator-fade-in {
