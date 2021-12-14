@@ -9,7 +9,7 @@
 import { assert, ByteStream, Id64String, JsonUtils } from "@itwin/core-bentley";
 import { ClipVector, ClipVectorProps, Point2d, Point3d, Range2d, Range3d, Range3dProps, Transform, TransformProps, XYProps, XYZProps } from "@itwin/core-geometry";
 import {
-  BatchType, ColorDef, ColorDefProps, ElementAlignedBox3d, FeatureIndexType, FeatureTableHeader, FillFlags, Gradient, ImageSource, ImdlHeader, LinePixels,
+  BatchType, ColorDef, ColorDefProps, ElementAlignedBox3d, FeatureIndexType, FeatureTableHeader, FillFlags, Gradient, ImageSource, ImageSourceFormat, ImdlHeader, LinePixels,
   PackedFeatureTable, PolylineTypeFlags, QParams2d, QParams3d, readTileContentDescription, RenderMaterial, RenderTexture, TextureMapping,
   TileReadError, TileReadStatus,
 } from "@itwin/core-common";
@@ -72,6 +72,63 @@ function extractNodeId(nodeName: string): number {
   const nodeId = Number.parseInt(match[1], 10);
   assert(!Number.isNaN(nodeId));
   return Number.isNaN(nodeId) ? 0 : nodeId;
+}
+
+/** [r, g, b] with each component in [0..1]. */
+type ImdlColorDef = number[];
+
+interface ImdlTextureMapping {
+  name?: string;
+  params: {
+    transform: number[][];
+    weight?: number;
+    mode?: TextureMapping.Mode;
+    worldMapping?: boolean;
+  };
+}
+
+interface ImdlNamedTexture {
+  isGlyph?: boolean;
+  isTileSection?: boolean;
+  bufferView: string;
+  format: ImageSourceFormat;
+  /** This is set when we load the texture. */
+  renderTexture?: RenderTexture;
+}
+
+interface ImdlDisplayParams {
+  type: DisplayParams.Type;
+  lineColor?: ColorDefProps;
+  fillColor?: ColorDefProps;
+  lineWidth?: number;
+  linePixels?: LinePixels;
+  fillFlags?: FillFlags;
+  ignoreLighting?: boolean;
+  materialId?: string;
+  texture?: ImdlTextureMapping;
+  gradient?: Gradient.SymbProps;
+}
+
+interface ImdlRenderMaterial {
+  diffuseColor?: ImdlColorDef;
+  diffuse?: number;
+  specularColor?: ImdlColorDef;
+  specular?: number;
+  reflectColor?: ImdlColorDef;
+  reflect?: number;
+  specularExponent?: number;
+  /** In [0..1] where 0 is fully opaque. */
+  transparency?: number;
+  refract?: number;
+  shadows?: boolean;
+  ambient?: number;
+  textureMapping?: {
+    texture: ImdlTextureMapping;
+  };
+}
+
+interface ImdlRenderMaterials {
+  [key: string]: ImdlRenderMaterial | undefined;
 }
 
 interface ImdlMaterialAtlas {
@@ -220,6 +277,10 @@ export interface ImdlReaderCreateArgs {
   containsTransformNodes?: boolean; // default false
 }
 
+interface ImdlDictionary<T> {
+  [key: string]: T | undefined;
+}
+
 /** Deserializes tile content in iMdl format. These tiles contain element geometry encoded into a format optimized for the imodeljs webgl renderer.
  * @internal
  */
@@ -229,9 +290,9 @@ export class ImdlReader {
   private readonly _bufferViews: any;
   private readonly _meshes: any;
   private readonly _nodes: any;
-  private readonly _materialValues: any;
-  private readonly _renderMaterials: any;  // Materials that may be deserialized and created directly
-  private readonly _namedTextures: any;    // Textures that may be deserialized and created directly
+  private readonly _materialValues: ImdlDictionary<ImdlDisplayParams>;
+  private readonly _renderMaterials: ImdlDictionary<ImdlRenderMaterial>;
+  private readonly _namedTextures: ImdlDictionary<ImdlNamedTexture>;
   private readonly _binaryData: Uint8Array;
   private readonly _iModel: IModelConnection;
   private readonly _is3d: boolean;
@@ -289,7 +350,7 @@ export class ImdlReader {
   }
 
   /** @internal */
-  protected createDisplayParams(json: any): DisplayParams | undefined {
+  protected createDisplayParams(json: ImdlDisplayParams): DisplayParams | undefined {
     const type = JsonUtils.asInt(json.type, DisplayParams.Type.Mesh);
     const lineColor = ColorDef.create(JsonUtils.asInt(json.lineColor));
     const fillColor = ColorDef.create(JsonUtils.asInt(json.fillColor));
@@ -310,7 +371,7 @@ export class ImdlReader {
 
       if (undefined === textureMapping) {
         // Look for a gradient. If defined, create a texture mapping. No reason to pass the Gradient.Symb to the DisplayParams once we have the texture.
-        const gradientProps = json.gradient as Gradient.SymbProps;
+        const gradientProps = json.gradient;
         const gradient = undefined !== gradientProps ? Gradient.Symb.fromJSON(gradientProps) : undefined;
         if (undefined !== gradient) {
           const texture = this._system.getGradientTexture(gradient, this._iModel);
@@ -326,56 +387,59 @@ export class ImdlReader {
   }
 
   /** @internal */
-  protected colorDefFromMaterialJson(json: any): ColorDef | undefined {
+  protected colorDefFromMaterialJson(json: ImdlColorDef | undefined): ColorDef | undefined {
     return undefined !== json ? ColorDef.from(json[0] * 255 + 0.5, json[1] * 255 + 0.5, json[2] * 255 + 0.5) : undefined;
   }
 
   /** @internal */
   protected materialFromJson(key: string): RenderMaterial | undefined {
-    if (this._renderMaterials === undefined || this._renderMaterials[key] === undefined)
+    const material = this._system.findMaterial(key, this._iModel);
+    if (material)
+      return material;
+
+    if (!this._renderMaterials)
       return undefined;
 
-    let material = this._system.findMaterial(key, this._iModel);
-    if (!material) {
-      const materialJson = this._renderMaterials[key];
+    const materialJson = this._renderMaterials[key];
+    if (!materialJson)
+      return undefined;
 
-      const materialParams = new RenderMaterial.Params(key);
-      materialParams.diffuseColor = this.colorDefFromMaterialJson(materialJson.diffuseColor);
-      if (materialJson.diffuse !== undefined)
-        materialParams.diffuse = JsonUtils.asDouble(materialJson.diffuse);
-      materialParams.specularColor = this.colorDefFromMaterialJson(materialJson.specularColor);
-      if (materialJson.specular !== undefined)
-        materialParams.specular = JsonUtils.asDouble(materialJson.specular);
-      materialParams.reflectColor = this.colorDefFromMaterialJson(materialJson.reflectColor);
-      if (materialJson.reflect !== undefined)
-        materialParams.reflect = JsonUtils.asDouble(materialJson.reflect);
+    const materialParams = new RenderMaterial.Params(key);
+    materialParams.diffuseColor = this.colorDefFromMaterialJson(materialJson.diffuseColor);
+    if (materialJson.diffuse !== undefined)
+      materialParams.diffuse = JsonUtils.asDouble(materialJson.diffuse);
 
-      if (materialJson.specularExponent !== undefined)
-        materialParams.specularExponent = materialJson.specularExponent;
+    materialParams.specularColor = this.colorDefFromMaterialJson(materialJson.specularColor);
+    if (materialJson.specular !== undefined)
+      materialParams.specular = JsonUtils.asDouble(materialJson.specular);
 
-      if (undefined !== materialJson.transparency)
-        materialParams.alpha = 1.0 - materialJson.transparency;
+    materialParams.reflectColor = this.colorDefFromMaterialJson(materialJson.reflectColor);
+    if (materialJson.reflect !== undefined)
+      materialParams.reflect = JsonUtils.asDouble(materialJson.reflect);
 
-      materialParams.refract = JsonUtils.asDouble(materialJson.refract);
-      materialParams.shadows = JsonUtils.asBool(materialJson.shadows);
-      materialParams.ambient = JsonUtils.asDouble(materialJson.ambient);
+    if (materialJson.specularExponent !== undefined)
+      materialParams.specularExponent = materialJson.specularExponent;
 
-      if (undefined !== materialJson.textureMapping)
-        materialParams.textureMapping = this.textureMappingFromJson(materialJson.textureMapping.texture);
+    if (undefined !== materialJson.transparency)
+      materialParams.alpha = 1.0 - materialJson.transparency;
 
-      material = this._system.createMaterial(materialParams, this._iModel);
-    }
+    materialParams.refract = JsonUtils.asDouble(materialJson.refract);
+    materialParams.shadows = JsonUtils.asBool(materialJson.shadows);
+    materialParams.ambient = JsonUtils.asDouble(materialJson.ambient);
 
-    return material;
+    if (undefined !== materialJson.textureMapping)
+      materialParams.textureMapping = this.textureMappingFromJson(materialJson.textureMapping.texture);
+
+    return this._system.createMaterial(materialParams, this._iModel);
   }
 
-  private textureMappingFromJson(json: any): TextureMapping | undefined {
+  private textureMappingFromJson(json: ImdlTextureMapping | undefined): TextureMapping | undefined {
     if (undefined === json)
       return undefined;
 
     const name = JsonUtils.asString(json.name);
     const namedTex = 0 !== name.length ? this._namedTextures[name] : undefined;
-    const texture = undefined !== namedTex ? namedTex.renderTexture as RenderTexture : undefined;
+    const texture = undefined !== namedTex ? namedTex.renderTexture : undefined;
     if (undefined === texture) {
       assert(false, "bad texture mapping json");
       return undefined;
@@ -423,7 +487,7 @@ export class ImdlReader {
     namedTex.renderTexture = await this.readNamedTexture(namedTex, name);
   }
 
-  private async readNamedTexture(namedTex: any, name: string): Promise<RenderTexture | undefined> {
+  private async readNamedTexture(namedTex: ImdlNamedTexture, name: string): Promise<RenderTexture | undefined> {
     // Reasons a texture could be embedded in the tile content instead of requested separately from the backend:
     // - external textures are disabled
     // - the texture name is not a valid Id64 string
