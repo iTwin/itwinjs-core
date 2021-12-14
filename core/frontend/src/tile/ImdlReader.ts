@@ -127,10 +127,6 @@ interface ImdlRenderMaterial {
   };
 }
 
-interface ImdlRenderMaterials {
-  [key: string]: ImdlRenderMaterial | undefined;
-}
-
 interface ImdlMaterialAtlas {
   readonly numMaterials: number;
   readonly hasTranslucency?: boolean;
@@ -303,7 +299,7 @@ export class ImdlReader {
   private readonly _scene: ImdlScene;
   private readonly _bufferViews: ImdlDictionary<ImdlBufferView>;
   private readonly _meshes: ImdlDictionary<ImdlMesh>;
-  private readonly _nodes: any;
+  private readonly _nodes: ImdlDictionary<string>;
   private readonly _materialValues: ImdlDictionary<ImdlDisplayParams>;
   private readonly _renderMaterials: ImdlDictionary<ImdlRenderMaterial>;
   private readonly _namedTextures: ImdlDictionary<ImdlNamedTexture>;
@@ -1038,7 +1034,8 @@ export class ImdlReader {
       };
 
       for (const nodeKey of Object.keys(this._nodes)) {
-        const meshValue = this._meshes[this._nodes[nodeKey]];
+        const nodeValue = this._nodes[nodeKey];
+        const meshValue = undefined !== nodeValue ? this._meshes[nodeValue] : undefined;
         const primitives = meshValue?.primitives;
         if (!primitives || !meshValue)
           continue;

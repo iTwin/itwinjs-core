@@ -88,20 +88,6 @@ enum GltfBufferTarget {
   ElementArrayBuffer = 24963,
 }
 
-/** @internal */
-enum GltfConstants {
-  CullFace = 2884,
-  DepthTest = 2929,
-  Nearest = 0x2600,
-  Linear = 9729,
-  LinearMipmapLinear = 9987,
-  ClampToEdge = 33071,
-  ArrayBuffer = 34962,
-  ElementArrayBuffer = 34963,
-  FragmentShader = 35632,
-  VertexShader = 35633,
-}
-
 type Gltf1Id = string;
 type Gltf2Id = number;
 type GltfId = Gltf1Id | Gltf2Id;

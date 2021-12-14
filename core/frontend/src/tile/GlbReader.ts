@@ -18,8 +18,8 @@ export interface ReadGlbGraphicsArgs {
   glb: Uint8Array;
   iModel: IModelConnection;
   yAxisUp?: boolean;
-  modelId?: Id64String,
-  options?: BatchOptions | false,
+  modelId?: Id64String;
+  options?: BatchOptions | false;
 }
 
 export async function readGlbGraphics(args: ReadGlbGraphicsArgs): Promise<RenderGraphic | undefined> {
