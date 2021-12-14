@@ -5,8 +5,8 @@
 import { expect } from "chai";
 import { ByteStream } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
-import { GltfDataType, RenderTexture } from "@itwin/core-common";
-import { B3dmReader, IModelApp, MockRender, SnapshotConnection } from "@itwin/core-frontend";
+import { RenderTexture } from "@itwin/core-common";
+import { B3dmReader, GltfDataType, IModelApp, MockRender, SnapshotConnection } from "@itwin/core-frontend";
 import { TestUtility } from "../../TestUtility";
 
 /* eslint-disable @typescript-eslint/unbound-method */
