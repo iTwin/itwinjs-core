@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Add support for indexed edges in tile graphics to reduce memory footprint and number of draw calls.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

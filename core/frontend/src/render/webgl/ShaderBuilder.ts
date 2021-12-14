@@ -657,6 +657,10 @@ export class ShaderBuilder extends ShaderVariables {
  * @internal
  */
 export const enum VertexShaderComponent {
+  // (Optional) Compute the quantized position. By default this simply returns the `a_pos` attribute.
+  // This runs before any initializers.
+  // vec3 computeQuantizedPosition()
+  ComputeQuantizedPosition,
   // (Optional) Adjust the result of unquantizeVertexPosition().
   // vec4 adjustRawPosition(vec4 rawPosition)
   AdjustRawPosition,
@@ -743,6 +747,10 @@ export class VertexShaderBuilder extends ShaderBuilder {
       prelude.addFunction("vec4 computePosition(vec4 rawPos)", computePosition);
     }
 
+    const computeQPos = this.get(VertexShaderComponent.ComputeQuantizedPosition) ?? "return a_pos;";
+    prelude.addFunction("vec3 computeQuantizedPosition()", computeQPos);
+    main.addline("  vec3 qpos = computeQuantizedPosition();");
+
     // Initialization logic that should occur at start of main() - primarily global variables whose values
     // are too complex to compute inline or which depend on uniforms and/or other globals.
     for (const init of this._initializers) {
@@ -752,7 +760,7 @@ export class VertexShaderBuilder extends ShaderBuilder {
         main.addline(`  { ${init} }\n`);
     }
 
-    main.addline("  vec4 rawPosition = unquantizeVertexPosition(a_pos, u_qOrigin, u_qScale);");
+    main.addline("  vec4 rawPosition = unquantizeVertexPosition(qpos, u_qOrigin, u_qScale);");
     const adjustRawPosition = this.get(VertexShaderComponent.AdjustRawPosition);
     if (undefined !== adjustRawPosition) {
       prelude.addFunction("vec4 adjustRawPosition(vec4 rawPos)", adjustRawPosition);
@@ -902,6 +910,9 @@ export const enum FragmentShaderComponent {
   // (Optional) Override fragment color. This is invoked just after alpha is multiplied, and just before FragColor is assigned.
   // vec4 overrideColor(vec4 currentColor)
   OverrideColor,
+  // (Optional) Override render order to be output to pick buffers.
+  // float overrideRenderOrder(float renderOrder)
+  OverrideRenderOrder,
   COUNT,
 }
 

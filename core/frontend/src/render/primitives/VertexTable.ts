@@ -51,6 +51,10 @@ export class VertexIndices {
     bytes[byteIndex + 2] = (index & 0x00ff0000) >> 16;
   }
 
+  public setNthIndex(n: number, value: number): void {
+    VertexIndices.encodeIndex(value, this.data, n * 3);
+  }
+
   public decodeIndex(index: number): number {
     assert(index < this.length);
     const byteIndex = index * 3;
@@ -90,7 +94,9 @@ export function computeDimensions(nEntries: number, nRgbaPerEntry: number, nExtr
   }
 
   // Compute height
-  const height = Math.ceil(nRgba / width);
+  let height = Math.ceil(nRgba / width);
+  if (width * height < nRgba)
+    ++height;
 
   assert(height <= maxSize);
   assert(width <= maxSize);

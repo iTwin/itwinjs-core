@@ -2517,6 +2517,13 @@ export class EdgeArgs {
     get numEdges(): number;
 }
 
+// @alpha
+export enum EdgeType {
+    Indexed = 2,
+    None = 0,
+    NonIndexed = 1
+}
+
 // @internal
 export interface EditingScopeNotifications {
     // (undocumented)
@@ -3999,6 +4006,8 @@ export interface GraphicsRequestProps {
     readonly clipToProjectExtents?: boolean;
     // @alpha
     readonly contentFlags?: ContentFlags;
+    // @internal
+    readonly edgeType?: EdgeType;
     // @alpha
     readonly formatVersion?: number;
     readonly id: string;
@@ -6237,7 +6246,7 @@ export interface PositionalVectorTransformProps {
 // @internal
 export interface PrimaryTileTreeId {
     animationId?: Id64String;
-    edgesRequired: boolean;
+    edges: EdgeType;
     enforceDisplayPriority?: boolean;
     sectionCut?: string;
     type: BatchType.Primary;
@@ -8997,6 +9006,8 @@ export interface TileOptions {
     readonly enableExternalTextures: boolean;
     // (undocumented)
     readonly enableImprovedElision: boolean;
+    // (undocumented)
+    readonly enableIndexedEdges: boolean;
     // (undocumented)
     readonly enableInstancing: boolean;
     // (undocumented)
