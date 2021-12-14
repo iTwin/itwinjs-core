@@ -260,6 +260,20 @@ interface ImdlAreaPatternSymbol {
   readonly primitives: AnyImdlPrimitive[];
 }
 
+interface ImdlAnimationNodes {
+  bytesPerId: number;
+  bufferView: string;
+}
+
+interface ImdlScene {
+  animationNodes?: ImdlAnimationNodes;
+}
+
+interface ImdlBufferView {
+  byteLength: number;
+  byteOffset: number;
+}
+
 /** Arguments supplied to [[ImdlReader.create]]
  * @internal
  */
@@ -286,9 +300,9 @@ interface ImdlDictionary<T> {
  */
 export class ImdlReader {
   private readonly _buffer: ByteStream;
-  private readonly _scene: any;
-  private readonly _bufferViews: any;
-  private readonly _meshes: any;
+  private readonly _scene: ImdlScene;
+  private readonly _bufferViews: ImdlDictionary<ImdlBufferView>;
+  private readonly _meshes: ImdlDictionary<ImdlMesh>;
   private readonly _nodes: any;
   private readonly _materialValues: ImdlDictionary<ImdlDisplayParams>;
   private readonly _renderMaterials: ImdlDictionary<ImdlRenderMaterial>;
@@ -996,7 +1010,7 @@ export class ImdlReader {
     if (undefined === this._nodes.Node_Root) {
       // Unstructured -- prior to animation support....
       for (const meshKey of Object.keys(this._meshes)) {
-        const meshValue = this._meshes[meshKey] as ImdlMesh | undefined;
+        const meshValue = this._meshes[meshKey];
         const primitives = meshValue?.primitives;
         if (!primitives || !meshValue)
           continue;
@@ -1008,7 +1022,7 @@ export class ImdlReader {
         }
       }
     } else {
-      const readBranch = (primitives: any[], nodeId: number, animationId: string | undefined) => {
+      const readBranch = (primitives: Array<AnyImdlPrimitive | ImdlAreaPattern>, nodeId: number, animationId: string | undefined) => {
         const branch = new GraphicBranch(true);
         branch.animationId = animationId;
         branch.animationNodeId = nodeId;
@@ -1024,7 +1038,7 @@ export class ImdlReader {
       };
 
       for (const nodeKey of Object.keys(this._nodes)) {
-        const meshValue = this._meshes[this._nodes[nodeKey]] as ImdlMesh | undefined;
+        const meshValue = this._meshes[this._nodes[nodeKey]];
         const primitives = meshValue?.primitives;
         if (!primitives || !meshValue)
           continue;
