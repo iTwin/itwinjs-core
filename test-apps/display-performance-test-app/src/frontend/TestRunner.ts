@@ -1140,6 +1140,9 @@ function getTileProps(props: TileAdmin.Props): string {
       case "disableMagnification":
         if (props[key]) tilePropsStr += "-mag";
         break;
+      case "enableIndexedEdges":
+        if (!props[key]) tilePropsStr += "-idxEdg";
+        break;
     }
   }
 
