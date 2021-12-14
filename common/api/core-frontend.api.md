@@ -1915,10 +1915,11 @@ export class Cluster<T extends Marker> {
     constructor(markers: T[]);
     // (undocumented)
     clusterMarker?: Marker;
+    getClusterLocation(): Point3d;
     // (undocumented)
     readonly markers: T[];
     // (undocumented)
-    readonly rect: ViewRect;
+    get position(): Point3d;
 }
 
 // @alpha (undocumented)
@@ -5897,7 +5898,7 @@ export abstract class MapTilingScheme {
     // (undocumented)
     readonly numberOfLevelZeroTilesY: number;
     // (undocumented)
-    get rootLevel(): 0 | -1;
+    get rootLevel(): -1 | 0;
     // (undocumented)
     rowZeroAtNorthPole: boolean;
     // (undocumented)
@@ -6003,7 +6004,7 @@ export abstract class MarkerSet<T extends Marker> {
     addDecoration(context: DecorateContext): void;
     // @beta
     changeViewport(viewport: ScreenViewport): void;
-    protected clusterMarkers(context: DecorateContext): Array<T | Cluster<T>>;
+    protected clusterRadius: number;
     // @internal (undocumented)
     protected _entries: Array<T | Cluster<T>>;
     protected abstract getClusterMarker(cluster: Cluster<T>): Marker;

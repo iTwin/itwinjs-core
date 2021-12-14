@@ -116,6 +116,7 @@ class IncidentClusterMarker extends Marker {
     this.label = cluster.markers.length.toLocaleString();
     this.labelColor = "black";
     this.labelFont = "bold 14px sans-serif";
+    this.setScaleFactor({ low: .7, high: 1.2 });
 
     let title = "";
     sorted.forEach((marker) => {
@@ -138,7 +139,7 @@ class IncidentClusterMarker extends Marker {
 /** A MarkerSet to hold incidents. This class supplies to `getClusterMarker` method to create IncidentClusterMarkers. */
 class IncidentMarkerSet extends MarkerSet<IncidentMarker> {
   protected getClusterMarker(cluster: Cluster<IncidentMarker>): Marker {
-    return new IncidentClusterMarker(cluster.getAverageLocation(), cluster.markers[0].size, cluster, IncidentMarkerDemo.decorator!.warningSign);
+    return new IncidentClusterMarker(cluster.getClusterLocation(), cluster.markers[0].size, cluster, IncidentMarkerDemo.decorator!.warningSign);
   }
 }
 

@@ -151,7 +151,7 @@ export class Marker implements CanvasDecoration {
   }
 
   /** Make a new Marker at the same position and size as this Marker.
-   * The new Marker will share the world location and size objects, but will be otherwise blank.
+   * The new Marker will share the world location and size, but will be otherwise blank.
    */
   public static makeFrom<T extends Marker>(other: Marker, ...args: any[]): T {
     const out = new (this as any)(other.worldLocation, other.size, ...args) as T;
@@ -313,11 +313,14 @@ export class Cluster<T extends Marker> {
     this.markers = markers;
   }
 
+  public get position() {
+    return this.markers[0].position;
+  }
   /**
-   * Gets the average of the markers worldLocation.
+   * Gets the location for the cluster
    * @returns The average of the cluster markers worldLocation.
    */
-  public getAverageLocation() {
+  public getClusterLocation() {
     const location = Point3d.createZero();
     this.markers.forEach((marker) => location.addInPlace(marker.worldLocation));
     location.scaleInPlace(1 / this.markers.length);
@@ -395,66 +398,6 @@ export abstract class MarkerSet<T extends Marker> {
     return this._minScaleViewW;
   }
 
-  /**
-   * Clusters the markers returning an array containing a mixture of markers and clusters.
-   * @param context The DecorateContext for the Markers
-   * @returns The clustered markers array.
-   */
-  protected clusterMarkers(context: DecorateContext): Array<T | Cluster<T>> {
-    const vp = context.viewport;
-    const entries = new Array<T | Cluster<T>>();
-
-    // get the visible markers
-    const visibleMarkers: T[] = [];
-    this.markers.forEach((marker) => {
-      if (marker.setPosition(vp, this)) {
-        visibleMarkers.push(marker);
-      }
-    });
-
-    // Greedy clustering algorithm:
-    // - Start with any point from the dataset.
-    // - Find all points within a certain radius around that point.
-    // - Form a new cluster with the nearby points.
-    // - Choose a new point that isn’t part of a cluster, and repeat until we have visited all the points.
-    if (this.clusterRadius <= 0 && visibleMarkers.length > 0) {
-      const marker = visibleMarkers[0];
-      const size = marker.imageSize ? marker.imageSize : marker.size;
-      this.clusterRadius = Math.max(size.x, size.y) * 1.5;
-    }
-    const distSquared = this.clusterRadius * this.clusterRadius;
-    const clustered = new Set<T>();
-
-    for (const marker of visibleMarkers) {
-      if (clustered.has(marker))
-        continue;
-
-      const clusterMarkers: T[] = [];
-      for (const otherMarker of visibleMarkers) {
-        if (marker === otherMarker || clustered.has(otherMarker))
-          continue;
-
-        if (marker.position.distanceSquaredXY(otherMarker.position) <= distSquared)
-          clusterMarkers.push(otherMarker);
-      }
-
-      if (clusterMarkers.length > 0) {
-        clusterMarkers.unshift(marker);
-        clusterMarkers.forEach((m) => clustered.add(m));
-        const cluster = new Cluster(clusterMarkers);
-        entries.push(cluster);
-      }
-    }
-
-    // add any unprocessed markers to the entries
-    visibleMarkers.forEach((m) => {
-      if (!clustered.has(m))
-        entries.push(m);
-    });
-
-    return entries;
-  }
-
   /** This method should be called from [[Decorator.decorate]]. It will add this this MarkerSet to the supplied DecorateContext.
    * This method implements the logic that turns overlapping Markers into a Cluster.
    * @param context The DecorateContext for the Markers
@@ -464,16 +407,49 @@ export abstract class MarkerSet<T extends Marker> {
     if (vp !== this._viewport)
       return; // not viewport of this MarkerSet, ignore it
 
+    const entries = this._entries;
+
     // Don't recreate the entries array if the view hasn't changed. This is important for performance, but also necessary for hilite of
     // clusters (otherwise they're recreated continually and never hilited.) */
     if (!this._worldToViewMap.isAlmostEqual(vp.worldToViewMap.transform0)) {
       this._worldToViewMap.setFrom(vp.worldToViewMap.transform0);
       this._minScaleViewW = undefined; // Invalidate current value.
-      this._entries = this.clusterMarkers(context);
+      entries.length = 0; // start over.
+
+      let distSquared = this.clusterRadius;
+
+      // loop through all of the Markers in the MarkerSet.
+      for (const marker of this.markers) {
+        // establish the screen position for this marker. If it's not in view, setPosition returns false
+        if (!marker.setPosition(vp, this))
+          continue;
+
+        if (distSquared <= 0) {
+          const size = marker.imageSize ? marker.imageSize : marker.size;
+          const dist = Math.max(size.x, size.y) * 1.5;
+          distSquared = dist * dist;
+        }
+
+        let added = false;
+        for (let i = 0; i < entries.length; ++i) { // loop through all of the currently visible markers/clusters
+          const entry = entries[i];
+          if (marker.position.distanceSquaredXY(entry.position) <= distSquared) {
+            added = true; // yes, we're going to save it as a Cluster
+            if (entry instanceof Cluster) { // is the entry already a Cluster?
+              entry.markers.push(marker); // yes, just add this to the existing cluster
+            } else {
+              entries[i] = new Cluster([entry, marker]); // no, make a new Cluster holding both
+            }
+            break; // this Marker has been handled, we can stop looking for overlaps
+          }
+        }
+        if (!added)
+          entries.push(marker); // there was no overlap, save this Marker to be drawn
+      }
     }
 
     // we now have an array of Markers and Clusters, add them to context
-    for (const entry of this._entries) {
+    for (const entry of entries) {
       if (entry instanceof Cluster) { // is this entry a Cluster?
         if (entry.markers.length <= this.minimumClusterSize) { // yes, does it have more than the minimum number of entries?
           entry.markers.forEach((marker) => marker.addMarker(context)); // no, just draw all of its Markers
