@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Remove optimization that keep RealityDataSource from key in a list.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

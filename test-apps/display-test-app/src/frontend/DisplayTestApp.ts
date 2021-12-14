@@ -145,6 +145,8 @@ const dtaFrontendMain = async () => {
 
     await uiReady; // Now wait for the HTML UI to finish loading.
     await initView(iModel);
+    if (configuration.startupMacro)
+      await IModelApp.tools.parseAndRun(`dta macro ${configuration.startupMacro}`);
   } catch (reason) {
     alert(reason);
     return;

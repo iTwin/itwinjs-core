@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Refactor SynchUiEventDispatcher to use new UiEventDispatcher from appui-abstract. Deprecate obsolete code.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}

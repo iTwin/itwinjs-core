@@ -1272,6 +1272,9 @@ export enum OpenMode {
 }
 
 // @public
+export type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
+
+// @public
 export type OrderedComparator<T, U = T> = (lhs: T, rhs: U) => number;
 
 // @public

@@ -131,7 +131,7 @@ Object {
       "pinned": true,
       "resizable": true,
       "side": "bottom",
-      "size": undefined,
+      "size": 0,
       "span": true,
       "widgets": Array [],
     },
@@ -144,7 +144,7 @@ Object {
       "pinned": true,
       "resizable": true,
       "side": "left",
-      "size": undefined,
+      "size": 0,
       "widgets": Array [],
     },
     "right": Object {
@@ -156,7 +156,7 @@ Object {
       "pinned": true,
       "resizable": true,
       "side": "right",
-      "size": undefined,
+      "size": 0,
       "widgets": Array [],
     },
     "top": Object {
@@ -168,7 +168,7 @@ Object {
       "pinned": true,
       "resizable": true,
       "side": "top",
-      "size": undefined,
+      "size": 0,
       "span": true,
       "widgets": Array [],
     },
@@ -501,6 +501,7 @@ exports[`Frontstage local storage wrapper WidgetPanelsFrontstage should render 1
       "_id": "",
       "_isApplicationClosing": false,
       "_isInFooterMode": true,
+      "_isReady": false,
       "_isStageClosing": false,
       "_timeTracker": TimeTracker {
         "_firstActiveTimestamp": 0,
@@ -528,6 +529,7 @@ exports[`Frontstage local storage wrapper WidgetPanelsFrontstage should render m
       "_id": "",
       "_isApplicationClosing": false,
       "_isInFooterMode": true,
+      "_isReady": false,
       "_isStageClosing": false,
       "_timeTracker": TimeTracker {
         "_firstActiveTimestamp": 0,
