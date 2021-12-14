@@ -164,10 +164,14 @@ public;ToolbarUsage
 public;UiAdmin
 public;class UiDataProvider
 public;UiError 
+public;UiEvent
+public;UiEventDispatcher
 public;UiFlags
 public;UiItemProviderRegisteredEventArgs
 public;UiItemsApplicationAction
 public;UiItemsManager
 public;UiItemsProvider
 public;class UiLayoutDataProvider 
+public;UiSyncEvent 
+public;UiSyncEventArgs
 public;WidgetState

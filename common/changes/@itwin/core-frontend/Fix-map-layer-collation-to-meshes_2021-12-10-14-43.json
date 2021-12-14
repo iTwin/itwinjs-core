@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Correct loop for collating imagery tiles to map mesh primitives",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

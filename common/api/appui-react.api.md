@@ -154,13 +154,16 @@ import { TreeSelectionModificationEventArgs } from '@itwin/components-react';
 import { TreeSelectionReplacementEventArgs } from '@itwin/components-react';
 import { UiAdmin } from '@itwin/appui-abstract';
 import { UiDataProvider } from '@itwin/appui-abstract';
-import { UiEvent } from '@itwin/core-react';
+import { UiEvent } from '@itwin/appui-abstract';
+import { UiEvent as UiEvent_2 } from '@itwin/core-react';
 import { UiItemsProvider } from '@itwin/appui-abstract';
 import { UiLayoutDataProvider } from '@itwin/appui-abstract';
 import { UiStateEntry } from '@itwin/core-react';
 import { UiStateStorage } from '@itwin/core-react';
 import { UiStateStorageResult } from '@itwin/core-react';
 import { UiStateStorageStatus } from '@itwin/core-react';
+import { UiSyncEvent } from '@itwin/appui-abstract';
+import { UiSyncEventArgs } from '@itwin/appui-abstract';
 import { UnifiedSelectionTreeEventHandler } from '@itwin/presentation-components';
 import { UnifiedSelectionTreeEventHandlerParams } from '@itwin/presentation-components';
 import { UnitSystemKey } from '@itwin/core-quantity';
@@ -643,7 +646,7 @@ export interface BackstageComposerStageLauncherProps {
 }
 
 // @public
-export class BackstageEvent extends UiEvent<BackstageEventArgs> {
+export class BackstageEvent extends UiEvent_2<BackstageEventArgs> {
 }
 
 // @public @deprecated
@@ -767,14 +770,14 @@ export interface BasicToolWidgetProps {
     showCategoryAndModelsContextTools?: boolean;
 }
 
-// @public
+// @public @deprecated
 export interface BooleanListenerProps {
     boolFunc: () => boolean;
     defaultValue?: boolean;
     eventIds: string[];
 }
 
-// @public
+// @public @deprecated
 export class BooleanSyncUiListener extends React.Component<BooleanListenerProps, BooleanListenerState> {
     constructor(props: BooleanListenerProps);
     // (undocumented)
@@ -2457,7 +2460,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
 export const FRONTSTAGE_SETTINGS_NAMESPACE = "uifw-frontstageSettings";
 
 // @public
-export class FrontstageActivatedEvent extends UiEvent<FrontstageActivatedEventArgs> {
+export class FrontstageActivatedEvent extends UiEvent_2<FrontstageActivatedEventArgs> {
 }
 
 // @public
@@ -2518,7 +2521,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
 }
 
 // @public
-export class FrontstageDeactivatedEvent extends UiEvent<FrontstageDeactivatedEventArgs> {
+export class FrontstageDeactivatedEvent extends UiEvent_2<FrontstageDeactivatedEventArgs> {
 }
 
 // @public
@@ -2726,10 +2729,10 @@ export class FrontstageManager {
     static readonly onFrontstageActivatedEvent: FrontstageActivatedEvent;
     static readonly onFrontstageDeactivatedEvent: FrontstageDeactivatedEvent;
     // @internal (undocumented)
-    static readonly onFrontstageNineZoneStateChangedEvent: UiEvent<FrontstageNineZoneStateChangedEventArgs>;
+    static readonly onFrontstageNineZoneStateChangedEvent: UiEvent_2<FrontstageNineZoneStateChangedEventArgs>;
     static readonly onFrontstageReadyEvent: FrontstageReadyEvent;
     // @internal (undocumented)
-    static readonly onFrontstageRestoreLayoutEvent: UiEvent<FrontstageEventArgs>;
+    static readonly onFrontstageRestoreLayoutEvent: UiEvent_2<FrontstageEventArgs>;
     static readonly onModalFrontstageChangedEvent: ModalFrontstageChangedEvent;
     static readonly onModalFrontstageClosedEvent: ModalFrontstageClosedEvent;
     static readonly onNavigationAidActivatedEvent: NavigationAidActivatedEvent;
@@ -2740,16 +2743,16 @@ export class FrontstageManager {
     static readonly onToolActivatedEvent: ToolActivatedEvent;
     static readonly onToolIconChangedEvent: ToolIconChangedEvent;
     // @internal
-    static readonly onToolPanelOpenedEvent: UiEvent<void>;
-    static readonly onToolSettingsReloadEvent: UiEvent<void>;
+    static readonly onToolPanelOpenedEvent: UiEvent_2<void>;
+    static readonly onToolSettingsReloadEvent: UiEvent_2<void>;
     // @internal (undocumented)
-    static readonly onWidgetDefsUpdatedEvent: UiEvent<void>;
+    static readonly onWidgetDefsUpdatedEvent: UiEvent_2<void>;
     // @internal (undocumented)
-    static readonly onWidgetExpandEvent: UiEvent<WidgetEventArgs>;
+    static readonly onWidgetExpandEvent: UiEvent_2<WidgetEventArgs>;
     // @internal (undocumented)
-    static readonly onWidgetLabelChangedEvent: UiEvent<WidgetChangedEventArgs>;
+    static readonly onWidgetLabelChangedEvent: UiEvent_2<WidgetChangedEventArgs>;
     // @internal (undocumented)
-    static readonly onWidgetShowEvent: UiEvent<WidgetEventArgs>;
+    static readonly onWidgetShowEvent: UiEvent_2<WidgetEventArgs>;
     static readonly onWidgetStateChangedEvent: WidgetStateChangedEvent;
     static openModalFrontstage(modalFrontstage: ModalFrontstageInfo): void;
     static openNestedFrontstage(nestedFrontstage: FrontstageDef): Promise<void>;
@@ -2821,7 +2824,7 @@ export abstract class FrontstageProvider {
 }
 
 // @public
-export class FrontstageReadyEvent extends UiEvent<FrontstageReadyEventArgs> {
+export class FrontstageReadyEvent extends UiEvent_2<FrontstageReadyEventArgs> {
 }
 
 // @public
@@ -3808,7 +3811,7 @@ export class ModalFrontstage extends React.Component<ModalFrontstageProps> {
 }
 
 // @public
-export class ModalFrontstageChangedEvent extends UiEvent<ModalFrontstageChangedEventArgs> {
+export class ModalFrontstageChangedEvent extends UiEvent_2<ModalFrontstageChangedEventArgs> {
 }
 
 // @public
@@ -3818,7 +3821,7 @@ export interface ModalFrontstageChangedEventArgs {
 }
 
 // @public
-export class ModalFrontstageClosedEvent extends UiEvent<ModalFrontstageClosedEventArgs> {
+export class ModalFrontstageClosedEvent extends UiEvent_2<ModalFrontstageClosedEventArgs> {
 }
 
 // @public
@@ -3856,7 +3859,7 @@ export interface ModalFrontstageProps extends CommonProps {
 }
 
 // @alpha
-export class ModalFrontstageRequestedCloseEvent extends UiEvent<ModalFrontstageRequestedCloseEventArgs> {
+export class ModalFrontstageRequestedCloseEvent extends UiEvent_2<ModalFrontstageRequestedCloseEventArgs> {
 }
 
 // @alpha
@@ -4143,7 +4146,7 @@ export class OpenMessageCenterEvent extends UiEvent<{}> {
 export function packNineZoneState(state: NineZoneState): SavedNineZoneState;
 
 // @internal (undocumented)
-export class PanelSizeChangedEvent extends UiEvent<PanelSizeChangedEventArgs> {
+export class PanelSizeChangedEvent extends UiEvent_2<PanelSizeChangedEventArgs> {
 }
 
 // @internal (undocumented)
@@ -4155,7 +4158,7 @@ export interface PanelSizeChangedEventArgs {
 }
 
 // @beta
-export class PanelStateChangedEvent extends UiEvent<PanelStateChangedEventArgs> {
+export class PanelStateChangedEvent extends UiEvent_2<PanelStateChangedEventArgs> {
 }
 
 // @public @deprecated
@@ -5385,6 +5388,38 @@ export interface SpatialContainmentTreeProps {
     width: number;
 }
 
+// @public
+export function SplitPane(props: SplitPaneProps): JSX.Element;
+
+// @public
+export interface SplitPaneProps {
+    allowResize?: boolean;
+    children: React.ReactNode[];
+    className?: string;
+    defaultSize?: string | number;
+    maxSize?: string | number;
+    // (undocumented)
+    minSize?: string | number;
+    onChange?: (newSize: number) => void;
+    onDragFinished?: (newSize: number) => void;
+    onDragStarted?: () => void;
+    onResizerClick?: (event: MouseEvent) => void;
+    onResizerDoubleClick?: (event: MouseEvent) => void;
+    pane1ClassName?: string;
+    pane1Style?: React.CSSProperties;
+    pane2ClassName?: string;
+    pane2Style?: React.CSSProperties;
+    paneClassName?: string;
+    paneStyle?: React.CSSProperties;
+    primary?: "first" | "second";
+    resizerStyle?: React.CSSProperties;
+    size?: string | number;
+    // (undocumented)
+    split?: "vertical" | "horizontal";
+    step?: number;
+    style?: React.CSSProperties;
+}
+
 // @internal (undocumented)
 export class SplitterPaneTarget extends React.PureComponent<SplitterPaneTargetProps> {
     // (undocumented)
@@ -5877,15 +5912,11 @@ export interface SyncToolSettingsPropertiesEventArgs {
     toolId: string;
 }
 
-// @public
-export class SyncUiEvent extends UiEvent<SyncUiEventArgs> {
-}
+// @public @deprecated
+export type SyncUiEvent = UiSyncEvent;
 
-// @public
-export interface SyncUiEventArgs {
-    // (undocumented)
-    eventIds: Set<string>;
-}
+// @public @deprecated
+export type SyncUiEventArgs = UiSyncEventArgs;
 
 // @public
 export class SyncUiEventDispatcher {
@@ -5970,7 +6001,7 @@ export class Task extends ItemDefBase {
 }
 
 // @internal @deprecated
-export class TaskActivatedEvent extends UiEvent<TaskActivatedEventArgs> {
+export class TaskActivatedEvent extends UiEvent_2<TaskActivatedEventArgs> {
 }
 
 // @internal @deprecated
@@ -6072,7 +6103,7 @@ export interface ToastMessageProps {
 export function toggleAllCategories(viewManager: ViewManager, imodel: IModelConnection, display: boolean, viewport?: Viewport, forAllViewports?: boolean, filteredProvider?: IPresentationTreeDataProvider): Promise<void>;
 
 // @public
-export class ToolActivatedEvent extends UiEvent<ToolActivatedEventArgs> {
+export class ToolActivatedEvent extends UiEvent_2<ToolActivatedEventArgs> {
 }
 
 // @public
@@ -6276,7 +6307,7 @@ export interface ToolButtonProps extends ToolItemProps, CommonProps {
 export const ToolGroupPanelContext: React.Context<boolean>;
 
 // @public
-export class ToolIconChangedEvent extends UiEvent<ToolIconChangedEventArgs> {
+export class ToolIconChangedEvent extends UiEvent_2<ToolIconChangedEventArgs> {
 }
 
 // @public
@@ -7565,7 +7596,7 @@ export class Workflow extends ItemDefBase {
 }
 
 // @internal @deprecated
-export class WorkflowActivatedEvent extends UiEvent<WorkflowActivatedEventArgs> {
+export class WorkflowActivatedEvent extends UiEvent_2<WorkflowActivatedEventArgs> {
 }
 
 // @internal @deprecated

@@ -7,7 +7,8 @@
  */
 
 import { UiStateEntry, UiStateStorage } from "@itwin/core-react";
-import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
+import { UiSyncEventArgs } from "@itwin/appui-abstract";
+import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { FrameworkVersionId, UiFramework, UserSettingsProvider } from "../UiFramework";
 
 // cSpell:ignore configurableui
@@ -74,7 +75,7 @@ export class AppUiSettings implements UserSettingsProvider {
     SyncUiEventDispatcher.onSyncUiEvent.addListener(this.handleSyncUiEvent);
   }
 
-  private handleSyncUiEvent = async (args: SyncUiEventArgs) => {
+  private handleSyncUiEvent = async (args: UiSyncEventArgs) => {
     if (this._applyingLocalSettings)
       return;
 
