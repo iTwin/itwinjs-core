@@ -31,6 +31,8 @@ export enum GltfMeshMode {
   Lines = 1,
   LineStrip = 3,
   Triangles = 4,
+  TriangleStrip = 5,
+  TriangleFan = 6,
 }
 
 /** @internal */
@@ -54,6 +56,35 @@ export enum GltfDataType {
 }
 
 /** @internal */
+export enum GltfMagFilter {
+  Nearest = 9728,
+  Linear = 9729,
+}
+
+/** @internal */
+export enum GltfMinFilter {
+  Nearest = GltfMagFilter.Nearest,
+  Linear = GltfMagFilter.Linear,
+  NearestMipMapNearest = 9984,
+  LinearMipMapNearest = 9985,
+  NearestMipMapLinear = 9986,
+  LinearMipMapLinear = 9987,
+}
+
+/** @internal */
+export enum GltfWrapMode {
+  ClampToEdge = 33071,
+  MirroredRepeat = 33648,
+  Repeat = 10497,
+}
+
+/** @internal */
+export enum GltfBufferTarget {
+  ArrayBuffer = 34962,
+  ElementArrayBuffer = 24963,
+}
+
+/** @internal */
 export enum GltfConstants {
   CullFace = 2884,
   DepthTest = 2929,
@@ -65,6 +96,139 @@ export enum GltfConstants {
   ElementArrayBuffer = 34963,
   FragmentShader = 35632,
   VertexShader = 35633,
+}
+
+export type GltfId = number;
+
+export interface GltfProperty {
+  extensions?: Object;
+  extras?: any;
+}
+
+export interface GltfChildOfRootProperty extends GltfProperty {
+  name?: string;
+}
+
+export interface GltfMeshPrimitive extends GltfProperty {
+  attributes: { [k: string]: GltfId; };
+  indices?: GltfId;
+  material?: GltfId;
+  mode?: GltfMeshMode;
+  targets?: { [k: string]: GltfId };
+}
+
+export interface GltfMesh extends GltfChildOfRootProperty {
+  primitives?: GltfMeshPrimitive;
+  weights?: number[];
+}
+
+export interface GltfNode extends GltfChildOfRootProperty {
+  camera?: GltfId;
+  skin?: GltfId;
+  mesh?: GltfId;
+  weights?: number[];
+  children?: GltfId[];
+  matrix?: number[];
+  rotation?: number[];
+  scale?: number[];
+  translation?: number[];
+}
+
+export interface GltfScene extends GltfChildOfRootProperty {
+  nodes?: GltfId[];
+}
+
+export interface GltfAsset extends GltfProperty {
+  copyright?: string;
+  generator?: string;
+  version: string;
+  minVersion?: string;
+}
+
+export interface GltfImage extends GltfChildOfRootProperty {
+  uri?: string;
+  mimeType?: "image/jpeg" | "image/png";
+  bufferView?: GltfId;
+}
+
+export interface GltfTextureInfo extends GltfProperty {
+  index: GltfId;
+  texCoord?: number;
+}
+
+export interface GltfTexture extends GltfChildOfRootProperty {
+  sampler?: GltfId;
+  source?: GltfId;
+}
+
+export interface GltfSampler extends  GltfChildOfRootProperty {
+  magFilter?: GltfMagFilter;
+  minFilter?: GltfMinFilter;
+  wrapS?: GltfWrapMode;
+  wrapT?: GltfWrapMode;
+}
+
+export interface GltfMaterialPbrMetallicRoughness extends GltfProperty {
+  baseColorFactor?: number[];
+  baseColorTexture?: GltfTextureInfo;
+  metallicFactor?: number;
+  metallicRoughnessTexture?: GltfTextureInfo;
+}
+
+export interface GltfMaterial extends GltfChildOfRootProperty {
+  pbrMetallicRoughness?: GltfMaterialPbrMetallicRoughness;
+  normalTexture?: any;
+  occlusionTexture?: any;
+  emissiveTexture?: any;
+  emissiveFactor?: number[];
+  alphaMode?: "OPAQUE" | "MASK" | "BLEND";
+  alphaCutoff?: number;
+  doubleSided?: boolean;
+}
+
+export interface GltfBuffer extends GltfChildOfRootProperty {
+  uri?: string;
+  byteLength?: number;
+}
+
+export interface GltfBufferViewProps extends GltfChildOfRootProperty {
+  buffer: GltfId;
+  byteLength?: number;
+  byteOffset?: number;
+  byteStride?: number;
+  target?: GltfBufferTarget;
+}
+
+export interface GltfAccessor extends GltfChildOfRootProperty {
+  bufferView?: GltfId;
+  byteOffset?: number;
+  componentType?: GltfDataType.SignedByte | GltfDataType.UnsignedByte | GltfDataType.SignedShort | GltfDataType.UnsignedShort | GltfDataType.UInt32 | GltfDataType.Float;
+  normalized?: boolean;
+  count: number;
+  type: "SCALAR" | "VEC2" | "VEC3" | "VEC4" | "MAT2" | "MAT3" | "MAT4";
+  max?: number[];
+  min?: number[];
+  sparse?: any;
+}
+
+export interface Gltf extends GltfProperty {
+  extensionsUsed?: string[];
+  extensionsRequired?: string[];
+  accessors?: GltfAccessor[];
+  animations?: any[];
+  asset: GltfAsset;
+  buffers?: GltfBuffer[];
+  bufferViews?: GltfBufferViewProps[];
+  cameras?: any[];
+  images?: GltfImage[];
+  materials?: GltfMaterial[];
+  meshes?: GltfMesh[];
+  nodes?: GltfNode[];
+  samplers?: GltfSampler[];
+  scene?: GltfId;
+  scenes?: GltfScene[];
+  skins?: any[];
+  textures?: GltfTexture[];
 }
 
 /** @internal */
