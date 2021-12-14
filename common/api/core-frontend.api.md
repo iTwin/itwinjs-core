@@ -5898,7 +5898,7 @@ export abstract class MapTilingScheme {
     // (undocumented)
     readonly numberOfLevelZeroTilesY: number;
     // (undocumented)
-    get rootLevel(): -1 | 0;
+    get rootLevel(): 0 | -1;
     // (undocumented)
     rowZeroAtNorthPole: boolean;
     // (undocumented)
