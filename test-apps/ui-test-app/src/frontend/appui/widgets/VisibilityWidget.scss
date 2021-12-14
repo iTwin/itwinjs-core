@@ -34,6 +34,7 @@
     flex-direction: column;
     border: 1px solid #ccc;
     margin-top: 4px;
+    overflow: hidden;
   }
 
   .ui-test-app-visibility-tree-toolbar {
@@ -61,5 +62,6 @@
 
   .ui-test-app-visibility-tree-content {
     flex-grow: 1;
+    overflow: hidden;
   }
 }

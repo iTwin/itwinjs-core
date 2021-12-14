@@ -40,7 +40,6 @@ import { Capabilities } from '@itwin/webgl-compatibility';
 import { Cartographic } from '@itwin/core-common';
 import { CategorySelectorProps } from '@itwin/core-common';
 import { ChangedEntities } from '@itwin/core-common';
-import { ChangesetId } from '@itwin/core-common';
 import { ChangesetIndex } from '@itwin/core-common';
 import { ChangesetIndexAndId } from '@itwin/core-common';
 import { ClipPlane } from '@itwin/core-geometry';
@@ -1812,6 +1811,8 @@ export class CategorySelectorState extends ElementState {
 export class CesiumIonAssetProvider {
     static isProviderUrl(url: string): boolean;
     // (undocumented)
+    static osmBuildingId: string;
+    // (undocumented)
     static parseCesiumUrl(url: string): {
         id: number;
         key: string;
@@ -3280,16 +3281,15 @@ export class FrameStatsCollector {
 
 // @public (undocumented)
 export interface FrontendHubAccess {
+    getChangesetFromNamedVersion(arg: IModelIdArg & {
+        versionName?: string;
+    }): Promise<ChangesetIndexAndId>;
     // (undocumented)
-    getChangesetIdFromNamedVersion(arg: IModelIdArg & {
-        versionName: string;
-    }): Promise<ChangesetId>;
-    // (undocumented)
-    getChangesetIdFromVersion(arg: IModelIdArg & {
+    getChangesetFromVersion(arg: IModelIdArg & {
         version: IModelVersion;
-    }): Promise<ChangesetId>;
+    }): Promise<ChangesetIndexAndId>;
     // (undocumented)
-    getLatestChangesetId(arg: IModelIdArg): Promise<ChangesetId>;
+    getLatestChangeset(arg: IModelIdArg): Promise<ChangesetIndexAndId>;
 }
 
 // @public
@@ -7543,7 +7543,7 @@ export function readElementGraphics(bytes: Uint8Array, iModel: IModelConnection,
 // @internal
 export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined;
 
-// @alpha
+// @beta
 export interface RealityDataSource {
     // @internal
     getRootDocument(iTwinId: GuidString | undefined): Promise<any>;
@@ -7562,21 +7562,17 @@ export interface RealityDataSource {
     readonly realityDataType: string | undefined;
 }
 
-// @alpha (undocumented)
+// @beta
 export namespace RealityDataSource {
-    // (undocumented)
+    // @alpha
     export function createKeyFromBlobUrl(blobUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey;
-    // (undocumented)
+    // @alpha
     export function createKeyFromOrbitGtBlobProps(orbitGtBlob: OrbitGtBlobProps, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey;
-    // (undocumented)
     export function createKeyFromUrl(tilesetUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey;
-    // (undocumented)
+    // @alpha
     export function createOrbitGtBlobPropsFromKey(rdSourceKey: RealityDataSourceKey): OrbitGtBlobProps | undefined;
-    // (undocumented)
-    export function formatfromUrl(tilesetUrl: string): RealityDataFormat;
     // @internal
     export function fromKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined>;
-    export function keyToString(rdSourceKey: RealityDataSourceKey): string;
 }
 
 // @internal (undocumented)

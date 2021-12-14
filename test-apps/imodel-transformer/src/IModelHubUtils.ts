@@ -6,7 +6,7 @@
 
 import { AccessToken, assert, GuidString } from "@itwin/core-bentley";
 import { ElectronMainAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronMain";
-import { BackendiModelsAccess } from "@itwin/imodels-access-backend";
+import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { BriefcaseDb, BriefcaseManager, IModelHost, IModelHostConfiguration, RequestNewBriefcaseArg } from "@itwin/core-backend";
 import { BriefcaseIdValue, ChangesetId, ChangesetIndex, ChangesetProps, IModelVersion } from "@itwin/core-common";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
@@ -14,7 +14,7 @@ import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 export class IModelTransformerTestAppHost {
   public static async startup(): Promise<void> {
     const iModelHost = new IModelHostConfiguration();
-    iModelHost.hubAccess = new BackendiModelsAccess();
+    iModelHost.hubAccess = new BackendIModelsAccess();
 
     const opt = {
       electronHost: {
@@ -98,8 +98,8 @@ export namespace IModelHubUtils {
 
   /** Call the specified function for each (named) Version of the specified iModel. */
   export async function forEachNamedVersion(accessToken: AccessToken, iModelId: GuidString, func: (v: IModelVersion) => void): Promise<void> {
-    assert(IModelHost.hubAccess instanceof BackendiModelsAccess);
-    IModelHost.hubAccess.queryChangesets()
+    assert(IModelHost.hubAccess instanceof BackendIModelsAccess);
+    IModelHost.hubAccess.queryChangesets();
     const namedVersions = await IModelHost.hubAccess.iModelClient.versions.get(accessToken, iModelId);
     for (const namedVersion of namedVersions) {
       func(namedVersion);

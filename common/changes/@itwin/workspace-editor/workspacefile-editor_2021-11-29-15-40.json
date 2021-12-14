@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/workspace-editor",
+      "comment": "new",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/workspace-editor"
+}

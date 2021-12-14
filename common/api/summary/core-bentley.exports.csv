@@ -88,6 +88,7 @@ public;ObservableSet
 beta;OneAtATimeAction
 public;OnUnexpectedError = (error: any) => void
 public;OpenMode
+public;Optional
 public;OrderedComparator
 public;OrderedId64Array 
 public;OrderedId64Iterable = Iterable
