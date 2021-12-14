@@ -65,9 +65,11 @@ export function Indicator(props: IndicatorProps) {
     labelSide === StatusBarLabelSide.Right && "uifw-footer-label-reversed",
     className);
   return (
+
     <>
+      {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
       <div ref={target}
-        role="presentation"
+        role="button" tabIndex={-1}
         className={classNames}
         title={title}
         style={style}
