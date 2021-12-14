@@ -98,7 +98,13 @@ export enum GltfConstants {
   VertexShader = 35633,
 }
 
-export type GltfId = number;
+export type Gltf1Id = string;
+export type Gltf2Id = number;
+export type GltfId = Gltf1Id | Gltf2Id;
+
+export interface Gltf1Dictionary<T> { [k: Gltf1Id]: T | undefined; }
+export interface Gltf2Dictionary<T> { [k: Gltf2Id]: T | undefined; }
+export type GltfDictionary<T> = Gltf1Dictionary<T> | Gltf2Dictionary<T>;
 
 export interface GltfProperty {
   extensions?: Object;
@@ -212,23 +218,23 @@ export interface GltfAccessor extends GltfChildOfRootProperty {
 }
 
 export interface Gltf extends GltfProperty {
+  asset: GltfAsset;
+  scene?: GltfId;
   extensionsUsed?: string[];
   extensionsRequired?: string[];
-  accessors?: GltfAccessor[];
-  animations?: any[];
-  asset: GltfAsset;
-  buffers?: GltfBuffer[];
-  bufferViews?: GltfBufferViewProps[];
-  cameras?: any[];
-  images?: GltfImage[];
-  materials?: GltfMaterial[];
-  meshes?: GltfMesh[];
-  nodes?: GltfNode[];
-  samplers?: GltfSampler[];
-  scene?: GltfId;
-  scenes?: GltfScene[];
-  skins?: any[];
-  textures?: GltfTexture[];
+  accessors?: GltfDictionary<GltfAccessor>;
+  animations?: GltfDictionary<any>;
+  buffers?: GltfDictionary<GltfBuffer>;
+  bufferViews?: GltfDictionary<GltfBufferViewProps>;
+  cameras?: GltfDictionary<any>;
+  images?: GltfDictionary<GltfImage>;
+  materials?: GltfDictionary<GltfMaterial>;
+  meshes?: GltfDictionary<GltfMesh>;
+  nodes?: GltfDictionary<GltfNode>;
+  samplers?: GltfDictionary<GltfSampler>;
+  scenes?: GltfDictionary<GltfScene>;
+  skins?: GltfDictionary<any>;
+  textures?: GltfDictionary<GltfTexture>;
 }
 
 /** @internal */
