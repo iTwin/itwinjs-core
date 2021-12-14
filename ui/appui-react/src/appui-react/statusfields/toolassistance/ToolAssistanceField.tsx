@@ -19,7 +19,8 @@ import {
   FillCentered, Icon, LocalStateStorage, SvgSprite, UiCore, UiStateEntry, UiStateStorage, UiStateStorageResult, UiStateStorageStatus,
 } from "@itwin/core-react";
 import {
-  FooterPopup, ToolAssistanceInstruction as NZ_ToolAssistanceInstruction, TitleBarButton, ToolAssistance, ToolAssistanceDialog, ToolAssistanceItem,
+  FooterPopup, ToolAssistanceInstruction as NZ_ToolAssistanceInstruction, TitleBarButton, ToolAssistance, ToolAssistanceDialog,
+  ToolAssistanceItem,
   ToolAssistanceSeparator,
 } from "@itwin/appui-layout-react";
 import { HorizontalTabs, ToggleSwitch } from "@itwin/itwinui-react";

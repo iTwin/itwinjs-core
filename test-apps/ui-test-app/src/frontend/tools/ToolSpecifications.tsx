@@ -25,7 +25,7 @@ import {
   FrontstageManager, IModelViewportControl, Indicator, MessageManager, ModalDialogManager, ReactNotifyMessageDetails,
   StatusBarItemUtilities, SyncUiEventDispatcher, SyncUiEventId, ToolItemDef, withStatusFieldProps,
 } from "@itwin/appui-react";
-import { FooterSeparator, Dialog as NZ_Dialog, TitleBar } from "@itwin/appui-layout-react";
+import { FooterPopupContentType, FooterSeparator, Dialog as NZ_Dialog, TitleBar } from "@itwin/appui-layout-react";
 import { SampleAppIModelApp } from "../";
 import { AppUi } from "../appui/AppUi";
 import { TestMessageBox } from "../appui/dialogs/TestMessageBox";
@@ -132,6 +132,7 @@ class AppItemsProvider implements UiItemsProvider {
         iconName="icon-placeholder"
         dialog={<TestStatusBarDialog />}
         toolTip="Middle"
+        contentType={FooterPopupContentType.Panel}
       />, { isHidden: isHiddenCondition }));
 
     statusBarItems.push(StatusBarItemUtilities.createStatusBarItem(AppItemsProvider.sampleStatusField3Id, StatusBarSection.Left, 14,
