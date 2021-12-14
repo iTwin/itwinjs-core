@@ -351,7 +351,7 @@ export abstract class MarkerSet<T extends Marker> {
   public minimumClusterSize = 1;
   /** The set of Markers in this MarkerSet. Add your [[Marker]]s into this. */
   public get markers(): Set<T> { return this._markers; }
-  /** The radius (in pixels) for clustering markers, default 0. When less than or equal to 0, the radius is calculated based on the visible marker imageSize/size. */
+  /** The radius (in pixels) representing the distance between the screen X,Y positions of two Markers to be clustered. When less than or equal to 0 (the default), the radius is calculated based on the first visible marker imageSize/size. */
   protected clusterRadius = 0;
 
   /** Construct a new MarkerSet for a specific ScreenViewport.

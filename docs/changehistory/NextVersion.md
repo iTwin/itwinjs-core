@@ -1734,6 +1734,7 @@ On the frontend the [GeoConverter]($frontend) class has been modified to accept 
 
 **NOTE**: The [IModelCoordinatesRequestProps.source]($common) and the [GeoCoordinatesRequestProps.target]($common) were renamed from previous version that used the sourceDatum and targetDatum properties.
 
-## Different clustering algorithm for MarkerSet
+## New clustering algorithm for MarkerSet
 
-The `MarkerSet` class now clusters markers by distance rather than by overlap, so the `Cluster.rect` property is no longer needed and has been removed.
+The [MarkerSet]($frontend) class now clusters markers by the screen distance between their positions rather than overlap of their rectangles, so the `Cluster.rect` property is no longer needed and has been removed. Instead, there is a new member `MarkerSet.clusterRadius` that controls when nearby Markers are clustered. See its documentation for details.
+
