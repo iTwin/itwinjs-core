@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { Logger, ObservableSet } from "@itwin/core-bentley";
+import { assert, Logger, ObservableSet } from "@itwin/core-bentley";
 import { Geometry, Matrix4d, Point2d, Point3d, Range1d, Range1dProps, Vector3d, XAndY, XYAndZ } from "@itwin/core-geometry";
 import { ColorDef } from "@itwin/core-common";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
@@ -310,12 +310,14 @@ export class Cluster<T extends Marker> {
   public clusterMarker?: Marker;
 
   public constructor(markers: T[]) {
+    assert(markers.length > 0);
     this.markers = markers;
   }
 
   public get position() {
     return this.markers[0].position;
   }
+
   /**
    * Gets the location for the cluster
    * @returns The average of the cluster markers worldLocation.
@@ -347,7 +349,7 @@ export abstract class MarkerSet<T extends Marker> {
   public minimumClusterSize = 1;
   /** The set of Markers in this MarkerSet. Add your [[Marker]]s into this. */
   public get markers(): Set<T> { return this._markers; }
-  /** The radius (in pixels) for clustering markers, default 0 which implies calculating the radius based on the visible marker imageSize/size. */
+  /** The radius (in pixels) for clustering markers, default 0. When less than or equal to 0, the radius is calculated based on the visible marker imageSize/size. */
   protected clusterRadius = 0;
 
   /** Construct a new MarkerSet for a specific ScreenViewport.
@@ -416,7 +418,7 @@ export abstract class MarkerSet<T extends Marker> {
       this._minScaleViewW = undefined; // Invalidate current value.
       entries.length = 0; // start over.
 
-      let distSquared = this.clusterRadius;
+      let distSquared = this.clusterRadius * this.clusterRadius;
 
       // loop through all of the Markers in the MarkerSet.
       for (const marker of this.markers) {
