@@ -102,9 +102,9 @@ export type Gltf1Id = string;
 export type Gltf2Id = number;
 export type GltfId = Gltf1Id | Gltf2Id;
 
-export interface Gltf1Dictionary<T> { [k: Gltf1Id]: T | undefined; }
-export interface Gltf2Dictionary<T> { [k: Gltf2Id]: T | undefined; }
-export type GltfDictionary<T> = Gltf1Dictionary<T> | Gltf2Dictionary<T>;
+export interface GltfDictionary<T extends GltfChildOfRootProperty> {
+  [key: string | number]: T | undefined;
+}
 
 export interface GltfProperty {
   extensions?: Object;
@@ -116,7 +116,7 @@ export interface GltfChildOfRootProperty extends GltfProperty {
 }
 
 export interface GltfMeshPrimitive extends GltfProperty {
-  attributes: { [k: string]: GltfId; };
+  attributes: { [k: string]: GltfId };
   indices?: GltfId;
   material?: GltfId;
   mode?: GltfMeshMode;
