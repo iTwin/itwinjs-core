@@ -65,6 +65,8 @@ export class ByteStream {
   public get nextFloat64(): number { return this.read(8, (view) => view.getFloat64(this.curPos, true)); }
   /** Read an unsigned 64-bit integer from the current read position, advance by 8 bytes, and return the 64-bit value as an Id64String. */
   public get nextId64(): Id64String { return Id64.fromUint32Pair(this.nextUint32, this.nextUint32); }
+  /** Read an unsigned 24-bit integer from the current read position and advance by 3 bytes. */
+  public get nextUint24(): number { return this.nextUint8 | (this.nextUint8 << 8) | (this.nextUint8 << 16); }
 
   /** Read the specified number of bytes beginning at the current read position into a Uint8Array and advance by the specified number of byte.
    * @param numBytes The number of bytes to read.

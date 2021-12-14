@@ -173,6 +173,7 @@ export class ByteStream {
     get nextId64(): Id64String;
     get nextInt32(): number;
     get nextUint16(): number;
+    get nextUint24(): number;
     get nextUint32(): number;
     nextUint32s(numUint32s: number): Uint32Array;
     get nextUint8(): number;

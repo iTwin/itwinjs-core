@@ -138,7 +138,6 @@ export namespace RealityDataSource {
 * @beta
 */
 class RealityDataSourceImpl implements RealityDataSource {
-  private static _realityDataSources = new Map<string, RealityDataSource>();
   public readonly key: RealityDataSourceKey;
   /** The URL that supplies the 3d tiles for displaying the reality model. */
   private _tilesetUrl: string | undefined;
@@ -178,19 +177,9 @@ class RealityDataSourceImpl implements RealityDataSource {
     return (tilesetUrl !== undefined) ? rdSource: undefined;
   }
   /** Return an instance of a RealityDataSource from a source key.
-   * There will aways be only one reality data connection for a corresponding reality data source key.
    */
   public static async fromKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined> {
-    // search to see if it was already created
-    const rdSourceKeyString = RealityDataSourceKey.convertToString(rdSourceKey);
-    let rdSource = RealityDataSourceImpl._realityDataSources.get(rdSourceKeyString);
-    if (rdSource)
-      return rdSource;
-    // If not already in our list, create and add it to our list before returing it.
-    rdSource = await RealityDataSourceImpl.createFromKey(rdSourceKey,  iTwinId);
-    if (rdSource)
-      RealityDataSourceImpl._realityDataSources.set(rdSourceKeyString,rdSource);
-    return rdSource;
+    return RealityDataSourceImpl.createFromKey(rdSourceKey,  iTwinId);
   }
   public get isContextShare(): boolean {
     return (this.key.provider === RealityDataProvider.ContextShare);
