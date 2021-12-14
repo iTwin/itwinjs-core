@@ -141,7 +141,6 @@ export abstract class GltfReader {
   protected readonly _bufferViews: any;
   protected readonly _meshes: any;
   protected readonly _nodes: any;
-  protected readonly _batchData: any;
   protected readonly _materialValues: any;
   protected readonly _textures: any;
   protected readonly _images: any;
