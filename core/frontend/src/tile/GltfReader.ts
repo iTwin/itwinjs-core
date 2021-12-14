@@ -207,6 +207,7 @@ interface GltfAccessor extends GltfChildOfRootProperty {
   sparse?: any;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface Gltf extends GltfProperty {
   asset: GltfAsset;
   scene?: GltfId;

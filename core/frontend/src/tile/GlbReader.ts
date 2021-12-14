@@ -14,6 +14,7 @@ import { BatchOptions } from "../render/GraphicBuilder";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { GltfReader, GltfReaderProps, GltfReaderResult } from "./internal";
 
+/** WIP @alpha */
 export interface ReadGlbGraphicsArgs {
   glb: Uint8Array;
   iModel: IModelConnection;
@@ -22,6 +23,7 @@ export interface ReadGlbGraphicsArgs {
   options?: BatchOptions | false;
 }
 
+/** WIP @alpha */
 export async function readGlbGraphics(args: ReadGlbGraphicsArgs): Promise<RenderGraphic | undefined> {
   const stream = new ByteStream(args.glb.buffer);
   const props = GltfReaderProps.create(stream, args.yAxisUp);
