@@ -8,11 +8,13 @@
 
 import { ByteStream, Id64String, JsonUtils } from "@itwin/core-bentley";
 import { Point3d, Transform, Vector3d } from "@itwin/core-geometry";
-import { B3dmHeader, BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureTable, GltfBufferData, GltfDataType, TileReadStatus } from "@itwin/core-common";
+import { B3dmHeader, BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureTable, TileReadStatus } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { RenderSystem } from "../render/RenderSystem";
-import { BatchedTileIdMap, GltfReader, GltfReaderProps, GltfReaderResult, ShouldAbortReadGltf } from "./internal";
+import {
+  BatchedTileIdMap, GltfBufferData, GltfDataType, GltfReader, GltfReaderProps, GltfReaderResult, ShouldAbortReadGltf,
+} from "./internal";
 
 /**
  * Deserializes a tile in [b3dm](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification/TileFormats/Batched3DModel) format.
