@@ -608,8 +608,6 @@ class ExerciseCurve {
           DirectSpiral3d.createDirectHalfCosine(Transform.createIdentity(), 100, 300, undefined),
           DirectSpiral3d.createJapaneseCubic(Transform.createIdentity(), 100, 300, undefined),
           DirectSpiral3d.createArema(Transform.createIdentity(), 100, 300, undefined),
-          //  TODO: comment out until fix clothoid exerciseClosestPoint bug (1)
-          IntegratedSpiral3d.createRadiusRadiusBearingBearing(Segment1d.create(0, 1000), AngleSweep.createStartEndDegrees(0, 10), Segment1d.create(0, 1), Transform.createIdentity()),
           ]) {
           if (ck.testPointer(spiral)) {
             ExerciseCurve.exerciseCurvePlaneIntersections(ck, spiral);
