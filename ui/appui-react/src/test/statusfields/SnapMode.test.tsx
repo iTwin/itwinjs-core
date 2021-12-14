@@ -5,16 +5,14 @@
 import { expect } from "chai";
 import * as React from "react";
 import { Provider } from "react-redux";
-import * as sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
 import { MockRender, SnapMode } from "@itwin/core-frontend";
 import { WidgetState } from "@itwin/appui-abstract";
-import { FooterPopup } from "@itwin/appui-layout-react";
 import {
   ConfigurableCreateInfo, ConfigurableUiControlType, SnapModeField, StatusBar, StatusBarWidgetControl, StatusBarWidgetControlArgs, UiFramework,
   WidgetDef,
 } from "../../appui-react";
-import TestUtils, { mount } from "../TestUtils";
+import TestUtils from "../TestUtils";
 
 describe("SnapModeField", () => {
 
