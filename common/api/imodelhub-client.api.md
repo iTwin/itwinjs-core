@@ -8,7 +8,7 @@ import { AccessToken } from '@itwin/core-bentley';
 import { AuthorizationClient } from '@itwin/core-common';
 import { BriefcaseId } from '@itwin/core-common';
 import { CancelRequest } from '@bentley/itwin-client';
-import { ChangesetId } from '@itwin/core-common';
+import { ChangesetIndexAndId } from '@itwin/core-common';
 import { Client } from '@bentley/itwin-client';
 import { DefaultRequestOptionsProvider } from '@bentley/itwin-client';
 import { FileHandler } from '@bentley/itwin-client';
@@ -252,6 +252,7 @@ export class Checkpoint extends WsgInstance {
     fileName?: string;
     fileSize?: string;
     mergedChangeSetId?: string;
+    mergedChangeSetIndex?: number;
     state?: InitializationState;
 }
 
@@ -878,15 +879,15 @@ export enum IModelHubEventType {
 // @internal
 export class IModelHubFrontend implements FrontendHubAccess {
     // (undocumented)
-    getChangesetIdFromNamedVersion(arg: IModelIdArg & {
-        versionName: string;
-    }): Promise<ChangesetId>;
+    getChangesetFromNamedVersion(arg: IModelIdArg & {
+        versionName?: string;
+    }): Promise<ChangesetIndexAndId>;
     // (undocumented)
-    getChangesetIdFromVersion(arg: IModelIdArg & {
+    getChangesetFromVersion(arg: IModelIdArg & {
         version: IModelVersion;
-    }): Promise<ChangesetId>;
+    }): Promise<ChangesetIndexAndId>;
     // (undocumented)
-    getLatestChangesetId(arg: IModelIdArg): Promise<ChangesetId>;
+    getLatestChangeset(arg: IModelIdArg): Promise<ChangesetIndexAndId>;
     // (undocumented)
     getMyBriefcaseIds(arg: IModelIdArg): Promise<number[]>;
     // (undocumented)
@@ -1211,6 +1212,7 @@ export class Version extends WsgInstance {
     applicationId?: string;
     applicationName?: string;
     changeSetId?: string;
+    changeSetIndex?: number;
     createdDate?: string;
     description?: string;
     hidden?: boolean;

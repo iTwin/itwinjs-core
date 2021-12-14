@@ -19,7 +19,7 @@ import { addInstanceOverrides } from "./Instancing";
 import { addLookupTable } from "./LookupTable";
 
 const initializeVertLUTCoords = `
-  g_vertexLUTIndex = decodeUInt24(a_pos);
+  g_vertexLUTIndex = decodeUInt24(qpos);
   g_vertexBaseCoords = compute_vert_coords(g_vertexLUTIndex);
 `;
 

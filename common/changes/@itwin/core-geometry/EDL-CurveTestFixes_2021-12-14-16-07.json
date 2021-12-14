@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "Fix poor accuracy of closestPoint for BSplineCurve3dH and Integrated Spirals",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}

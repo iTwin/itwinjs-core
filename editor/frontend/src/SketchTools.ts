@@ -2132,9 +2132,14 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
     // Create periodic-looking curve on physical closure with sufficient points even when not creating a loop/surface...
     this._isPhysicallyClosedOrComplete = (undefined === this.continuationData && pts[0].isAlmostEqual(pts[pts.length -1]));
 
-    // TODO: Support physical closure for pole construction...
-    if (BCurveMethod.ControlPoints === this.method)
+    if (BCurveMethod.ControlPoints === this.method) {
+      if (this._isPhysicallyClosedOrComplete && this.order > 2) {
+        const tmpPts = pts.slice(undefined, -1); // Don't include closure point...
+        return BSplineCurve3d.createPeriodicUniformKnots(tmpPts, this.order);
+      }
+
       return BSplineCurve3d.createUniformKnots(pts, this.order);
+    }
 
     const interpProps: InterpolationCurve3dProps = { fitPoints: pts, closed: this._isPhysicallyClosedOrComplete, isChordLenKnots: 1, isColinearTangents: 1 };
 

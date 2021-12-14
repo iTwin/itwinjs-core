@@ -73,6 +73,9 @@
     "ShutDown": {
       "keyin": "dta shutdown"
     },
+    "Exit": {
+      "keyin": "dta exit"
+    },
     "SignIn": {
       "keyin": "dta signin"
     },
@@ -144,6 +147,9 @@
     },
     "GenerateTileContent": {
       "keyin": "dta gen tile"
+    },
+    "Macro": {
+      "keyin": "dta macro"
     }
   }
 }

@@ -119,6 +119,7 @@ export class IModelTile extends Tile {
       stream: streamBuffer,
       type: tree.batchType,
       loadEdges: tree.hasEdges,
+      options: { tileId: this.contentId },
       iModel, modelId, is3d, system, isCanceled, sizeMultiplier, containsTransformNodes,
     });
 

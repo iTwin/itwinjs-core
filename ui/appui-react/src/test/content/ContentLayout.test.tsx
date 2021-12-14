@@ -6,12 +6,11 @@ import { expect } from "chai";
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import SplitPane from "react-split-pane";
 import { MockRender } from "@itwin/core-frontend";
 import { ContentLayoutProps, StandardContentLayouts } from "@itwin/appui-abstract";
 import {
   ConfigurableCreateInfo, ContentControl, ContentGroup, ContentLayout, ContentLayoutDef, ContentLayoutManager,
-  ContentViewManager, CoreTools, Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider,
+  ContentViewManager, CoreTools, Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider, SplitPane,
 } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
