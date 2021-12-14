@@ -9,7 +9,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { ElectronMainAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronMain";
 import { WebEditServer } from "@itwin/express-server";
-import { BackendiModelsAccess } from "@itwin/imodels-access-backend";
+import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import {
   FileNameResolver, IModelDb, IModelHost, IModelHostConfiguration, IpcHandler, LocalhostIpcHost, PhysicalModel, PhysicalPartition, SpatialCategory,
   SubjectOwnsPartitionElements,
@@ -80,7 +80,7 @@ async function init() {
   await CloudEnv.initialize();
 
   const iModelHost = new IModelHostConfiguration();
-  iModelHost.hubAccess = new BackendiModelsAccess(CloudEnv.cloudEnv.imodelClient);
+  iModelHost.hubAccess = new BackendIModelsAccess(CloudEnv.cloudEnv.imodelClient);
   iModelHost.cacheDir = path.join(__dirname, ".cache");  // Set local cache dir
 
   if (ProcessDetector.isElectronAppBackend) {

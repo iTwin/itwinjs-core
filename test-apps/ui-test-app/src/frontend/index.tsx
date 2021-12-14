@@ -9,7 +9,7 @@ import { connect, Provider } from "react-redux";
 import { Store } from "redux"; // createStore,
 import reactAxe from "@axe-core/react";
 import { BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient } from "@itwin/browser-authorization";
-import { IModelHubClient, IModelHubFrontend, IModelQuery } from "@bentley/imodelhub-client";
+import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
 import { ProgressInfo } from "@bentley/itwin-client";
 import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
 import { RealityDataAccessClient } from "@itwin/reality-data-client";
@@ -66,6 +66,8 @@ import {
 import { IModelOpenFrontstage } from "./appui/frontstages/IModelOpenFrontstage";
 import { IModelIndexFrontstage } from "./appui/frontstages/IModelIndexFrontstage";
 import { SignInFrontstage } from "./appui/frontstages/SignInFrontstage";
+import { IModelsClient } from "@itwin/imodels-client-management";
+import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -160,6 +162,7 @@ export class SampleAppIModelApp {
   public static sampleAppNamespace?: string;
   public static iModelParams: SampleIModelParams | undefined;
   public static testAppConfiguration: TestAppConfiguration | undefined;
+  public static hubClient?: IModelsClient;
   private static _appStateManager: StateManager | undefined;
 
   // Favorite Properties Support
@@ -169,7 +172,9 @@ export class SampleAppIModelApp {
     return StateManager.store as Store<RootState>;
   }
 
-  public static async startup(opts: NativeAppOpts): Promise<void> {
+  public static async startup(opts: NativeAppOpts, hubClient?: IModelsClient): Promise<void> {
+
+    this.hubClient = hubClient;
 
     const iModelAppOpts = {
       ...opts.iModelApp,
@@ -714,6 +719,9 @@ async function main() {
     BingMaps: SampleAppIModelApp.testAppConfiguration.bingMapsKey ? { key: "key", value: SampleAppIModelApp.testAppConfiguration.bingMapsKey } : undefined,
     Mapbox: SampleAppIModelApp.testAppConfiguration.mapBoxKey ? { key: "key", value: SampleAppIModelApp.testAppConfiguration.mapBoxKey } : undefined,
   };
+
+  const iModelClient = new IModelsClient();
+
   const opts: NativeAppOpts = {
     iModelApp: {
       accuSnap: new SampleAppAccuSnap(),
@@ -725,14 +733,14 @@ async function main() {
       realityDataAccess: new RealityDataAccessClient(),
       renderSys: { displaySolarShadows: true },
       rpcInterfaces: getSupportedRpcs(),
-      hubAccess: new IModelHubFrontend(),
+      hubAccess: new FrontendIModelsAccess(iModelClient),
       mapLayerOptions: mapLayerOpts,
       tileAdmin: { cesiumIonKey: SampleAppIModelApp.testAppConfiguration.cesiumIonKey },
     },
   };
 
   // Start the app.
-  await SampleAppIModelApp.startup(opts);
+  await SampleAppIModelApp.startup(opts, iModelClient);
 
   await SampleAppIModelApp.initialize();
 

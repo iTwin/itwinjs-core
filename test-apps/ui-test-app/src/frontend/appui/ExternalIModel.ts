@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Id64String, Logger } from "@itwin/core-bentley";
+import { AccessToken, Id64String, Logger } from "@itwin/core-bentley";
 import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
-import { IModelHubFrontend } from "@bentley/imodelhub-client";
+import { Authorization, IModelsClient } from "@itwin/imodels-client-management";
 import { CheckpointConnection, IModelApp, IModelConnection } from "@itwin/core-frontend";
 import { SampleAppIModelApp } from "../";
 
@@ -16,6 +16,19 @@ export interface BasicIModelInfo {
 }
 export interface IModelInfo extends BasicIModelInfo {
   createdDate: Date;
+}
+
+// FIXME: This is a painful way to use the imodels new client library. Discuss to update happening here,
+// https://github.com/iTwin/imodels-clients/issues/57
+function toAuthorization(accessToken: AccessToken): Authorization {
+  const splitAccessToken = accessToken.split(" ");
+  if (splitAccessToken.length !== 2)
+    throw new Error("Unsupported access token format");
+
+  return {
+    scheme: splitAccessToken[0],
+    token: splitAccessToken[1],
+  };
 }
 
 /** Opens External iModel */
@@ -66,14 +79,17 @@ export class ExternalIModel {
     if (!args.iModelId && !args.iModelName) {
       throw new Error("An iModel name or id is required to construct an External iModel");
     } else if (!args.iModelId && args.iModelName) {
-      const hubClient = new IModelHubFrontend();
-      const iModelId = await hubClient.queryIModelByName({
-        iModelName: args.iModelName,
-        iTwinId: createArgs.iTwinId!,
-        accessToken,
-      });
-      // note: iModelName is set in createArgs
-      createArgs.iModelId = iModelId;
+      const hubClient = new IModelsClient();
+      for await (const iModel of hubClient.iModels.getMinimalList({
+        urlParams: {
+          name: args.iModelName,
+          projectId: createArgs.iTwinId!,
+        },
+        authorization: async () => toAuthorization(accessToken),
+      })) {
+        createArgs.iModelId = iModel.id;
+        break;
+      }
     }
 
     return new ExternalIModel(createArgs);

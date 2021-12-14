@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { CheckpointConnection } from "@itwin/core-frontend";
-import { iModelsClient, iModelsApiUrlFormatter, Constants as iModelConstants } from "@itwin/imodels-client-management";
+import { Constants as IModelConstants, IModelsApiUrlFormatter, IModelsClient } from "@itwin/imodels-client-management";
 import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
 import { IModelData } from "../../common/Settings";
 import { AccessToken } from "@itwin/core-bentley";
@@ -48,10 +48,10 @@ export class IModelSession {
       contextId = iModelData.iTwinId!;
 
     if (iModelData.useName) {
-      const imodelClient = new iModelsClient();
+      const imodelClient = new IModelsClient();
 
-      const hubUrl = new iModelsApiUrlFormatter(iModelConstants.api.baseUrl);
-      hubUrl.getiModelListUrl({
+      const hubUrl = new IModelsApiUrlFormatter(IModelConstants.api.baseUrl);
+      hubUrl.getIModelListUrl({
         urlParams: {
           name: iModelData.name,
         },

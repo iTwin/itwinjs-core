@@ -33,7 +33,7 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@itwin/imodels-access-frontend": "0.1.0-dev.1",
+    "@itwin/imodels-access-frontend": "0.1.0",
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
@@ -57,7 +57,7 @@
   "devDependencies": {
     "@itwin/core-backend": "workspace:*",
     "@itwin/express-server": "workspace:*",
-    "@itwin/imodels-access-backend": "0.1.0-dev.1",
+    "@itwin/imodels-access-backend": "0.1.0",
     "@itwin/presentation-backend": "workspace:*",
     "@itwin/projects-client": "^0.2.0",
     "@types/chai": "^4.1.4",

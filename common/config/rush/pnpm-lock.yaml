@@ -1557,7 +1557,7 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/ecschema-metadata': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@itwin/imodels-access-backend': 0.1.0-dev.1
+      '@itwin/imodels-access-backend': 0.1.0
       '@itwin/oidc-signin-tool': 3.0.0-dev.110
       '@itwin/perf-tools': workspace:*
       '@itwin/projects-client': ^0.2.0
@@ -1589,7 +1589,7 @@ importers:
       '@itwin/core-common': link:../../core/common
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
-      '@itwin/imodels-access-backend': 0.1.0-dev.1
+      '@itwin/imodels-access-backend': 0.1.0
       '@itwin/oidc-signin-tool': 3.0.0-dev.110
       '@itwin/perf-tools': link:../../tools/perf-tools
       '@itwin/projects-client': 0.2.0
@@ -1636,8 +1636,8 @@ importers:
       '@itwin/eslint-plugin': workspace:*
       '@itwin/express-server': workspace:*
       '@itwin/hypermodeling-frontend': workspace:*
-      '@itwin/imodels-access-backend': 0.1.0-dev.1
-      '@itwin/imodels-access-frontend': 0.1.0-dev.1
+      '@itwin/imodels-access-backend': 0.1.0
+      '@itwin/imodels-access-frontend': 0.1.0
       '@itwin/oidc-signin-tool': 3.0.0-dev.110
       '@itwin/projects-client': ^0.2.0
       '@types/chai': ^4.1.4
@@ -1680,8 +1680,8 @@ importers:
       '@itwin/electron-authorization': 0.5.1
       '@itwin/express-server': link:../../core/express-server
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
-      '@itwin/imodels-access-backend': 0.1.0-dev.1
-      '@itwin/imodels-access-frontend': 0.1.0-dev.1
+      '@itwin/imodels-access-backend': 0.1.0
+      '@itwin/imodels-access-frontend': 0.1.0
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
       electron: 14.2.2
@@ -1728,9 +1728,9 @@ importers:
       '@itwin/ecschema-rpcinterface-common': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@itwin/express-server': workspace:*
-      '@itwin/imodels-access-backend': 0.1.0-dev.1
-      '@itwin/imodels-access-frontend': 0.1.0-dev.1
-      '@itwin/imodels-client-management': 0.1.0-dev.1
+      '@itwin/imodels-access-backend': 0.1.0
+      '@itwin/imodels-access-frontend': 0.1.0
+      '@itwin/imodels-client-management': 0.1.0
       '@itwin/oidc-signin-tool': 3.0.0-dev.110
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-frontend': workspace:*
@@ -1768,9 +1768,9 @@ importers:
       '@itwin/core-quantity': link:../../core/quantity
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
       '@itwin/ecschema-rpcinterface-common': link:../../core/ecschema-rpc/common
-      '@itwin/imodels-access-backend': 0.1.0-dev.1
-      '@itwin/imodels-access-frontend': 0.1.0-dev.1
-      '@itwin/imodels-client-management': 0.1.0-dev.1
+      '@itwin/imodels-access-backend': 0.1.0
+      '@itwin/imodels-access-frontend': 0.1.0
+      '@itwin/imodels-client-management': 0.1.0
       '@itwin/oidc-signin-tool': 3.0.0-dev.110
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-frontend': link:../../presentation/frontend
@@ -2002,8 +2002,8 @@ importers:
       '@itwin/core-quantity': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@itwin/express-server': workspace:*
-      '@itwin/imodels-access-backend': 0.1.0-dev.1
-      '@itwin/imodels-access-frontend': 0.1.0-dev.1
+      '@itwin/imodels-access-backend': 0.1.0
+      '@itwin/imodels-access-frontend': 0.1.0
       '@itwin/oidc-signin-tool': 3.0.0-dev.110
       '@itwin/presentation-backend': workspace:*
       '@itwin/presentation-common': workspace:*
@@ -2041,7 +2041,7 @@ importers:
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-quantity': link:../../core/quantity
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@itwin/imodels-access-frontend': 0.1.0-dev.1
+      '@itwin/imodels-access-frontend': 0.1.0
       '@itwin/oidc-signin-tool': 3.0.0-dev.110
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-frontend': link:../../presentation/frontend
@@ -2056,7 +2056,7 @@ importers:
     devDependencies:
       '@itwin/core-backend': link:../../core/backend
       '@itwin/express-server': link:../../core/express-server
-      '@itwin/imodels-access-backend': 0.1.0-dev.1
+      '@itwin/imodels-access-backend': 0.1.0
       '@itwin/presentation-backend': link:../../presentation/backend
       '@itwin/projects-client': 0.2.0
       '@types/chai': 4.2.22
@@ -2518,8 +2518,8 @@ importers:
       '@itwin/electron-authorization': ^0.5.0
       '@itwin/eslint-plugin': workspace:*
       '@itwin/hypermodeling-frontend': workspace:*
-      '@itwin/imodels-access-backend': 0.1.0-dev.1
-      '@itwin/imodels-access-frontend': 0.1.0-dev.1
+      '@itwin/imodels-access-backend': 0.1.0
+      '@itwin/imodels-access-frontend': 0.1.0
       '@itwin/perf-tools': workspace:*
       '@itwin/reality-data-client': ^3.0.0-dev.80
       '@types/body-parser': ^1.17.0
@@ -2555,8 +2555,8 @@ importers:
       '@itwin/core-quantity': link:../../core/quantity
       '@itwin/electron-authorization': 0.5.1
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
-      '@itwin/imodels-access-backend': 0.1.0-dev.1
-      '@itwin/imodels-access-frontend': 0.1.0-dev.1
+      '@itwin/imodels-access-backend': 0.1.0
+      '@itwin/imodels-access-frontend': 0.1.0
       '@itwin/reality-data-client': 3.0.0-dev.80
       body-parser: 1.19.0
     devDependencies:
@@ -2611,8 +2611,8 @@ importers:
       '@itwin/eslint-plugin': workspace:*
       '@itwin/frontend-devtools': workspace:*
       '@itwin/hypermodeling-frontend': workspace:*
-      '@itwin/imodels-access-backend': 0.1.0-dev.1
-      '@itwin/imodels-access-frontend': 0.1.0-dev.1
+      '@itwin/imodels-access-backend': 0.1.0
+      '@itwin/imodels-access-frontend': 0.1.0
       '@itwin/webgl-compatibility': workspace:*
       '@types/express': ^4.16.1
       '@types/express-ws': ^3.0.1
@@ -2657,8 +2657,8 @@ importers:
       '@itwin/electron-authorization': 0.5.1
       '@itwin/frontend-devtools': link:../../core/frontend-devtools
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
-      '@itwin/imodels-access-backend': 0.1.0-dev.1
-      '@itwin/imodels-access-frontend': 0.1.0-dev.1
+      '@itwin/imodels-access-backend': 0.1.0
+      '@itwin/imodels-access-frontend': 0.1.0
       '@itwin/webgl-compatibility': link:../../core/webgl-compatibility
       body-parser: 1.19.0
     devDependencies:
@@ -2879,7 +2879,7 @@ importers:
       '@itwin/core-transformer': workspace:*
       '@itwin/electron-authorization': ^0.5.0
       '@itwin/eslint-plugin': workspace:*
-      '@itwin/imodels-access-backend': 0.1.0-dev.1
+      '@itwin/imodels-access-backend': 0.1.0
       '@itwin/projects-client': ^0.2.0
       '@types/chai': ^4.1.4
       '@types/fs-extra': ^4.0.7
@@ -2907,7 +2907,7 @@ importers:
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-transformer': link:../../core/transformer
       '@itwin/electron-authorization': 0.5.1
-      '@itwin/imodels-access-backend': 0.1.0-dev.1
+      '@itwin/imodels-access-backend': 0.1.0
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
       fs-extra: 8.1.0
@@ -3123,8 +3123,9 @@ importers:
       '@itwin/frontend-devtools': workspace:*
       '@itwin/hypermodeling-frontend': workspace:*
       '@itwin/imodel-components-react': workspace:*
-      '@itwin/imodels-access-backend': 0.1.0-dev.1
-      '@itwin/imodels-access-frontend': 0.1.0-dev.1
+      '@itwin/imodels-access-backend': 0.1.0
+      '@itwin/imodels-access-frontend': 0.1.0
+      '@itwin/imodels-client-management': 0.1.0
       '@itwin/itwinui-css': ^0.37.0
       '@itwin/itwinui-react': ^1.23.0
       '@itwin/map-layers': workspace:*
@@ -3194,8 +3195,9 @@ importers:
       '@itwin/frontend-devtools': link:../../core/frontend-devtools
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
       '@itwin/imodel-components-react': link:../../ui/imodel-components-react
-      '@itwin/imodels-access-backend': 0.1.0-dev.1
-      '@itwin/imodels-access-frontend': 0.1.0-dev.1
+      '@itwin/imodels-access-backend': 0.1.0
+      '@itwin/imodels-access-frontend': 0.1.0
+      '@itwin/imodels-client-management': 0.1.0
       '@itwin/itwinui-css': 0.37.2
       '@itwin/itwinui-react': 1.26.1_react-dom@17.0.2+react@17.0.2
       '@itwin/map-layers': link:../../extensions/map-layers
@@ -6040,12 +6042,12 @@ packages:
     requiresBuild: true
     dev: false
 
-  /@bentley/itwin-client/3.0.0-dev.141_61f1522c5eb8a412c6799903719c4937:
-    resolution: {integrity: sha512-pFFbHi3KRrOLOn0hO6UzfPnuvvjbD0zjUGXg7PKDBJWpywLhVxNZykSi6DTDoXtQl6iCRLHx3lYBFI7gSR54Rw==}
+  /@bentley/itwin-client/3.0.0-dev.151_15babb73a7bd9cc9b6daa1a8914b7b34:
+    resolution: {integrity: sha512-hK1mehAXZh3UQfGJvSKMyDKBQ7riGD4XSCc4k+XuyjPc32CCjqTFgTI3iGf1p2AQ3dfNmvyVU7XEMTNl36dtug==}
     peerDependencies:
-      '@itwin/core-bentley': ^3.0.0-dev.141
+      '@itwin/core-bentley': ^3.0.0-dev.151
     dependencies:
-      '@itwin/core-bentley': 3.0.0-dev.141
+      '@itwin/core-bentley': 3.0.0-dev.151
       deep-assign: 2.0.0
       js-base64: 3.7.2
       lodash: 4.17.21
@@ -6497,12 +6499,12 @@ packages:
   /@itwin/browser-authorization/0.3.2:
     resolution: {integrity: sha512-TmdK+K2kaBqE4H4nyUZdhcuFoOnePddvSEs0OVMLqW6s/1DtrfIc1hLwnX4xvEct/BBUSMTyNCYUOsY+wQuXhQ==}
     dependencies:
-      '@itwin/core-bentley': 3.0.0-dev.141
+      '@itwin/core-bentley': 3.0.0-dev.151
       oidc-client: 1.11.5
     dev: false
 
-  /@itwin/certa/3.0.0-dev.141:
-    resolution: {integrity: sha512-lmCeLjkgBmEw9908JTJ3bQM63qkX9XVzLd081iEbof06rKqblhgb7fB9lIOBeSPV/zR9fqaAlzgnlVNZMFN/ew==}
+  /@itwin/certa/3.0.0-dev.151:
+    resolution: {integrity: sha512-ftbwJZcsBrcKD31hmbmlppWNeb0XC3/Lr3o1KMDUoN6KRwb97mE27UxzRLxhzDAVcb7vtrv5XUHTLmXtcIJX4Q==}
     hasBin: true
     peerDependencies:
       electron: ^14.0.0
@@ -6524,8 +6526,8 @@ packages:
       - supports-color
       - utf-8-validate
 
-  /@itwin/certa/3.0.0-dev.141_electron@14.2.2:
-    resolution: {integrity: sha512-lmCeLjkgBmEw9908JTJ3bQM63qkX9XVzLd081iEbof06rKqblhgb7fB9lIOBeSPV/zR9fqaAlzgnlVNZMFN/ew==}
+  /@itwin/certa/3.0.0-dev.151_electron@14.2.2:
+    resolution: {integrity: sha512-ftbwJZcsBrcKD31hmbmlppWNeb0XC3/Lr3o1KMDUoN6KRwb97mE27UxzRLxhzDAVcb7vtrv5XUHTLmXtcIJX4Q==}
     hasBin: true
     peerDependencies:
       electron: ^14.0.0
@@ -6549,8 +6551,8 @@ packages:
       - utf-8-validate
     dev: true
 
-  /@itwin/core-bentley/3.0.0-dev.141:
-    resolution: {integrity: sha512-WvRDLsZ7mb3aT5QoUvUz4wbS4zbEnDLE/nL3NYuGMtpcDM+ZIuGlrg/M2QBxlqEgw8APXowtyIchNYIOicJpaw==}
+  /@itwin/core-bentley/3.0.0-dev.151:
+    resolution: {integrity: sha512-vp3+Mty/zLGNqVaCLG5IAWTnezHOEhS/5loCLil8k0arlDzDEtUharwoYVicschlw1vlNtKiCogqUNycxC71VA==}
 
   /@itwin/core-bentley/3.0.0-extension.1:
     resolution: {integrity: sha512-3r1aRoZp694aqP2E0M9dZiaPSAC0E/E2VTvvN9K73NnlTvO4jpaIdt520oHp7tkGYx24VS9Q8+ED1Z0CH9+RkA==}
@@ -6572,8 +6574,8 @@ packages:
   /@itwin/electron-authorization/0.5.1:
     resolution: {integrity: sha512-S6BxwfX4/fxcrLglqN0exrTDV2w4l0r34SEJEqSN3DbHuoGhjRJISXZux0OXprMwWjuCy7hI09n/9EW733J2uA==}
     dependencies:
-      '@bentley/itwin-client': 3.0.0-dev.141_61f1522c5eb8a412c6799903719c4937
-      '@itwin/core-bentley': 3.0.0-dev.141
+      '@bentley/itwin-client': 3.0.0-dev.151_15babb73a7bd9cc9b6daa1a8914b7b34
+      '@itwin/core-bentley': 3.0.0-dev.151
       '@openid/appauth': 1.3.1
       keytar: 7.7.0
       open: 8.4.0
@@ -6583,48 +6585,39 @@ packages:
       - supports-color
     dev: false
 
-  /@itwin/imodels-access-backend/0.1.0-dev.1:
-    resolution: {integrity: sha512-Czcrx6onGGdVWKR7Yym+cSKeHXME6tBZ+fDsJ0OaPKAbBFA8dUwDg0kwP6rvadae1U5l24oDDqcVJMKrfitMOQ==}
+  /@itwin/imodels-access-backend/0.1.0:
+    resolution: {integrity: sha512-hzAhGuWvpCZUPgXdpkrnpyS3YHD8duuu6kNbPZMkZfY094z1JPl+sQfXummeV8TM5yWc1vm1QqRo892U0fazlQ==}
     peerDependencies:
-      '@bentley/itwin-client': ~3.0.0-dev.129
-      '@itwin/core-backend': ~3.0.0-dev.129
-      '@itwin/core-bentley': ~3.0.0-dev.129
-      '@itwin/core-common': ~3.0.0-dev.129
-      '@itwin/core-geometry': ~3.0.0-dev.129
-      '@itwin/ecschema-metadata': ~3.0.0-dev.129
+      '@itwin/core-backend': ~3.0.0-dev.141
+      '@itwin/core-bentley': ~3.0.0-dev.141
+      '@itwin/core-common': ~3.0.0-dev.141
     dependencies:
-      '@itwin/imodels-client-authoring': 0.1.0-dev.1
+      '@itwin/imodels-client-authoring': 0.1.0
     transitivePeerDependencies:
       - debug
 
-  /@itwin/imodels-access-frontend/0.1.0-dev.1:
-    resolution: {integrity: sha512-H6jpO88u2g4U6FsPwZEgHWNR7rJB1Aew6tFkKbtaYG219E4H5Yyp7ZgX4lKyCQ0mcK0X+Lh0sJsFWOCQu9dNjQ==}
+  /@itwin/imodels-access-frontend/0.1.0:
+    resolution: {integrity: sha512-VdGbKXcEktkPnPP/2xYoI2Y+OByrmHFRfNvXQiM19Dc4EePfBpcz+K/oNDnFYtk96sYYx6T5RDl/z4NWxS6NeQ==}
     peerDependencies:
-      '@bentley/itwin-client': ~3.0.0-dev.129
-      '@itwin/appui-abstract': ~3.0.0-dev.129
-      '@itwin/core-bentley': ~3.0.0-dev.129
-      '@itwin/core-common': ~3.0.0-dev.129
-      '@itwin/core-frontend': ~3.0.0-dev.129
-      '@itwin/core-geometry': ~3.0.0-dev.129
-      '@itwin/core-orbitgt': ~3.0.0-dev.129
-      '@itwin/core-quantity': ~3.0.0-dev.129
-      '@itwin/webgl-compatibility': ~3.0.0-dev.129
+      '@itwin/core-bentley': ~3.0.0-dev.141
+      '@itwin/core-common': ~3.0.0-dev.141
+      '@itwin/core-frontend': ~3.0.0-dev.141
     dependencies:
-      '@itwin/imodels-client-management': 0.1.0-dev.1
+      '@itwin/imodels-client-management': 0.1.0
     transitivePeerDependencies:
       - debug
     dev: false
 
-  /@itwin/imodels-client-authoring/0.1.0-dev.1:
-    resolution: {integrity: sha512-zzZ3Do6sN730o5Ik7ddTxmnGVJWycNxyZRWN7Bv4u4E/mxjzn6bhROwfrKTa4xdlHQ7aoX6hdtE8JzRGLBd2tg==}
+  /@itwin/imodels-client-authoring/0.1.0:
+    resolution: {integrity: sha512-4TB1p+qFDN/dLsGeEOsDpcyArdRM9eoD3hWQXBWIyjoY48x9itseBVOFQoczLdPIz1vkM0SZaOVWMrOMluQPEg==}
     dependencies:
       '@azure/storage-blob': 12.7.0
-      '@itwin/imodels-client-management': 0.1.0-dev.1
+      '@itwin/imodels-client-management': 0.1.0
     transitivePeerDependencies:
       - debug
 
-  /@itwin/imodels-client-management/0.1.0-dev.1:
-    resolution: {integrity: sha512-5bxixHh+OYWT4mqZaqCsWF1QGa5LG7y/iG3ilNU/dbPBbxg/YVA9eYsQqS2Bh7xM3/R/B5E/2nkpWNecgp634Q==}
+  /@itwin/imodels-client-management/0.1.0:
+    resolution: {integrity: sha512-ZyH97JotJ6KIJfL1stFr5xTOp0Y/WZ2nbwd5dzIHjA8sfW95a6vDjpa6gxTTMzgCqmfGV4l3PHUB07mbvNS/GQ==}
     dependencies:
       axios: 0.21.4
     transitivePeerDependencies:
@@ -6712,8 +6705,8 @@ packages:
   /@itwin/oidc-signin-tool/3.0.0-dev.110:
     resolution: {integrity: sha512-uoTmMBqnEueiBQSzP6JjaTQu96fJa8JBqTESZZT/6Ub43jP1jYUcI+t0bk0lq3V4GF1GVWisTmcBaW6VK7kHsw==}
     dependencies:
-      '@itwin/certa': 3.0.0-dev.141
-      '@itwin/core-bentley': 3.0.0-dev.141
+      '@itwin/certa': 3.0.0-dev.151
+      '@itwin/core-bentley': 3.0.0-dev.151
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
       openid-client: 4.9.1
@@ -6727,8 +6720,8 @@ packages:
   /@itwin/oidc-signin-tool/3.0.0-dev.110_electron@14.2.2:
     resolution: {integrity: sha512-uoTmMBqnEueiBQSzP6JjaTQu96fJa8JBqTESZZT/6Ub43jP1jYUcI+t0bk0lq3V4GF1GVWisTmcBaW6VK7kHsw==}
     dependencies:
-      '@itwin/certa': 3.0.0-dev.141_electron@14.2.2
-      '@itwin/core-bentley': 3.0.0-dev.141
+      '@itwin/certa': 3.0.0-dev.151_electron@14.2.2
+      '@itwin/core-bentley': 3.0.0-dev.151
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
       openid-client: 4.9.1

@@ -22,8 +22,8 @@
   },
   "repository": {},
   "dependencies": {
-    "@itwin/imodels-access-backend": "0.1.0-dev.1",
-    "@itwin/imodels-access-frontend": "0.1.0-dev.1",
+    "@itwin/imodels-access-backend": "0.1.0",
+    "@itwin/imodels-access-frontend": "0.1.0",
     "@bentley/itwin-client": "workspace:*",
     "@itwin/browser-authorization": "^0.3.0",
     "@itwin/core-backend": "workspace:*",

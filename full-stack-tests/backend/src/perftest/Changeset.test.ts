@@ -15,8 +15,8 @@ import { BriefcaseManager, DictionaryModel, Element, IModelDb, IModelHost, IMode
 import { HubWrappers, IModelTestUtils, KnownTestLocations, RevisionUtility } from "@itwin/core-backend/lib/cjs/test/index";
 import { HubUtility } from "../HubUtility";
 import { PerfTestUtility } from "./PerfTestUtils";
-import { ChangeSetQuery, ChangesType, CheckpointQuery, IModelHubClient, VersionQuery } from "@bentley/imodelhub-client";
-import { BackendiModelsAccess } from "@itwin/imodels-access-backend";
+import { ChangesType, CheckpointQuery, IModelHubClient, VersionQuery } from "@bentley/imodelhub-client";
+import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -629,7 +629,7 @@ describe("ImodelChangesetPerformance own data", () => {
       fs.mkdirSync(outDir);
 
     accessToken = await TestUtility.getAccessToken(TestUsers.regular);
-    const hubBackend = new BackendiModelsAccess();
+    const hubBackend = new BackendIModelsAccess();
     for (const opSize of opSizes) {
       for (const baseName of baseNames) {
         const iModelName = `${iModelNameBase + baseName}_${opSize.toString()}`;

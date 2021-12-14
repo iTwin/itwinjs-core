@@ -188,7 +188,7 @@
     },
     {
       "name": "@itwin/imodels-client-management",
-      "allowedCategories": [ "integration-testing" ]
+      "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
       "name": "@itwin/itwinui-css",

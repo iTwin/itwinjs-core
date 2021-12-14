@@ -5,7 +5,7 @@
 
 import { IModelHostConfiguration } from "@itwin/core-backend";
 import { TestUtils } from "@itwin/core-backend/lib/cjs/test";
-import { BackendiModelsAccess } from "@itwin/imodels-access-backend";
+import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -31,7 +31,7 @@ before(async () => {
 
   const cfg = new IModelHostConfiguration();
   cfg.cacheDir = path.join(__dirname, ".cache");  // Set the cache dir to be under the lib directory.
-  cfg.hubAccess = new BackendiModelsAccess();
+  cfg.hubAccess = new BackendIModelsAccess();
 
   await TestUtils.startBackend(cfg);
 });
