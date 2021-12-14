@@ -28,7 +28,10 @@ import { PolylineParams, TesselatedPolyline } from "../render/primitives/Polylin
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderGeometry, RenderSystem } from "../render/RenderSystem";
 import { BatchOptions } from "../render/GraphicBuilder";
-import { GltfReader, GltfReaderProps, IModelTileContent, ShouldAbortReadGltf } from "./internal";
+import { GltfReaderProps, IModelTileContent } from "./internal";
+
+/** @internal */
+export type ShouldAbortImdlReader = (reader: ImdlReader) => boolean;
 
 /* eslint-disable no-restricted-syntax */
 
@@ -211,7 +214,7 @@ export interface ImdlReaderCreateArgs {
   system: RenderSystem;
   type?: BatchType; // default Primary
   loadEdges?: boolean; // default true
-  isCanceled?: ShouldAbortReadGltf;
+  isCanceled?: ShouldAbortImdlReader;
   sizeMultiplier?: number;
   options?: BatchOptions | false;
   containsTransformNodes?: boolean; // default false
@@ -220,13 +223,31 @@ export interface ImdlReaderCreateArgs {
 /** Deserializes tile content in iMdl format. These tiles contain element geometry encoded into a format optimized for the imodeljs webgl renderer.
  * @internal
  */
-export class ImdlReader extends GltfReader {
+export class ImdlReader {
+  private readonly _buffer: ByteStream;
+  private readonly _scene: any;
+  private readonly _bufferViews: any;
+  private readonly _meshes: any;
+  private readonly _nodes: any;
+  private readonly _materialValues: any;
+  private readonly _renderMaterials: any;  // Materials that may be deserialized and created directly
+  private readonly _namedTextures: any;    // Textures that may be deserialized and created directly
+  private readonly _binaryData: Uint8Array;
+  private readonly _iModel: IModelConnection;
+  private readonly _is3d: boolean;
+  private readonly _modelId: Id64String;
+  private readonly _system: RenderSystem;
+  private readonly _type: BatchType;
+  private readonly _canceled?: ShouldAbortImdlReader;
   private readonly _sizeMultiplier?: number;
   private readonly _loadEdges: boolean;
   private readonly _options: BatchOptions | false;
   private readonly _patternSymbols: { [key: string]: ImdlAreaPatternSymbol | undefined };
   private readonly _patternGeometry = new Map<string, RenderGeometry[]>();
   private readonly _containsTransformNodes: boolean;
+
+  private get _isCanceled(): boolean { return undefined !== this._canceled && this._canceled(this); }
+  private get _isVolumeClassifier(): boolean { return BatchType.VolumeClassifier === this._type; }
 
   /** Attempt to initialize an ImdlReader to deserialize iModel tile data beginning at the stream's current position. */
   public static create(args: ImdlReaderCreateArgs): ImdlReader | undefined {
@@ -268,10 +289,7 @@ export class ImdlReader extends GltfReader {
   }
 
   /** @internal */
-  protected override extractReturnToCenter(_extensions: any): number[] | undefined { return undefined; }
-
-  /** @internal */
-  protected override createDisplayParams(json: any): DisplayParams | undefined {
+  protected createDisplayParams(json: any): DisplayParams | undefined {
     const type = JsonUtils.asInt(json.type, DisplayParams.Type.Mesh);
     const lineColor = ColorDef.create(JsonUtils.asInt(json.lineColor));
     const fillColor = ColorDef.create(JsonUtils.asInt(json.fillColor));
@@ -493,7 +511,23 @@ export class ImdlReader extends GltfReader {
   }
 
   private constructor(props: GltfReaderProps, args: ImdlReaderCreateArgs) {
-    super(props, args.iModel, args.modelId, args.is3d, args.system, args.type, args.isCanceled);
+    this._buffer = props.buffer;
+    this._scene = props.scene;
+    this._binaryData = props.binaryData;
+    this._bufferViews = props.bufferViews;
+    this._meshes = props.meshes;
+    this._nodes = props.nodes;
+    this._materialValues = props.materials;
+    this._renderMaterials = props.scene.renderMaterials;
+    this._namedTextures = props.scene.namedTextures;
+
+    this._iModel = args.iModel;
+    this._modelId = args.modelId;
+    this._is3d = args.is3d;
+    this._system = args.system;
+    this._type = args.type ?? BatchType.Primary;
+    this._canceled = args.isCanceled;
+
     this._sizeMultiplier = args.sizeMultiplier;
     this._loadEdges = args.loadEdges ?? true;
     this._options = args.options ?? {};

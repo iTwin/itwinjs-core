@@ -144,8 +144,6 @@ export abstract class GltfReader {
   protected readonly _batchData: any;
   protected readonly _materialValues: any;
   protected readonly _textures: any;
-  protected readonly _renderMaterials: any;  // Materials that may be deserialized and created directly
-  protected readonly _namedTextures: any;    // Textures that may be deserialized and created directly
   protected readonly _images: any;
   protected readonly _samplers: any;
   protected readonly _techniques: any;
@@ -408,9 +406,6 @@ export abstract class GltfReader {
     this._returnToCenter = this.extractReturnToCenter(props.extensions);
     this._textures = props.scene.textures;
     this._images = props.scene.images;
-
-    this._renderMaterials = props.scene.renderMaterials;
-    this._namedTextures = props.scene.namedTextures;
 
     this._iModel = iModel;
     this._modelId = modelId;
