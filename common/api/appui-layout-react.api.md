@@ -2527,7 +2527,7 @@ export interface ToastProps extends CommonProps, NoChildrenProps {
 // @internal
 export type ToastStyle = Pick<React.CSSProperties, "width" | "height">;
 
-// @internal @deprecated
+// @internal
 export class ToolAssistance extends React.PureComponent<ToolAssistanceProps> {
     // (undocumented)
     render(): JSX.Element;
