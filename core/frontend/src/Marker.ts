@@ -324,8 +324,10 @@ export class Cluster<T extends Marker> {
    */
   public getClusterLocation() {
     const location = Point3d.createZero();
-    this.markers.forEach((marker) => location.addInPlace(marker.worldLocation));
-    location.scaleInPlace(1 / this.markers.length);
+    if (this.markers.length > 0) {
+      this.markers.forEach((marker) => location.addInPlace(marker.worldLocation));
+      location.scaleInPlace(1 / this.markers.length);
+    }
     return location;
   }
 }
