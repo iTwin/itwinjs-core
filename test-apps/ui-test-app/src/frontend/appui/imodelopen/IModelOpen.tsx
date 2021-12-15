@@ -17,7 +17,6 @@ import { BlockingPrompt } from "./BlockingPrompt";
 import { IModelList } from "./IModelList";
 import { NavigationItem, NavigationList } from "./Navigation";
 import { ITwinDropdown } from "./ITwinDropdown";
-import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
 import { SampleAppIModelApp } from "../..";
 import { Authorization } from "@itwin/imodels-client-management";
 

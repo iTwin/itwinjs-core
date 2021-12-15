@@ -4,25 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import "./IModelIndex.scss";
 import * as React from "react";
-import { AccessToken, Id64String } from "@itwin/core-bentley";
+import { Id64String } from "@itwin/core-bentley";
 import { IModelApp, IModelConnection } from "@itwin/core-frontend";
 import { LoadingSpinner } from "@itwin/core-react";
 import { ModelsTab } from "./ModelsTab";
 import { SheetsTab } from "./SheetsTab";
 import { Tab, Tabs } from "./Tabs";
-import { Authorization, IModelsClient, NamedVersion } from "@itwin/imodels-client-management";
-import { SampleAppIModelApp } from "../..";
-
-function toAuthorization(accessToken: AccessToken): Authorization {
-  const splitAccessToken = accessToken.split(" ");
-  if (splitAccessToken.length !== 2)
-    throw new Error("Unsupported access token format");
-
-  return {
-    scheme: splitAccessToken[0],
-    token: splitAccessToken[1],
-  };
-}
 
 /* represents a tab item on the IModelIndex page */
 interface Category {
