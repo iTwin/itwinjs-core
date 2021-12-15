@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ImageSource, ImageSourceFormat, RenderTexture } from "@itwin/core-common";
+import { Gradient, ImageSource, ImageSourceFormat, RenderTexture } from "@itwin/core-common";
 import { Capabilities, WebGLContext } from "@itwin/webgl-compatibility";
 import { IModelApp } from "../../../IModelApp";
 import { IModelConnection } from "../../../IModelConnection";
@@ -201,6 +201,41 @@ describe("RenderSystem", () => {
 
     after(async () => {
       await IModelApp.shutdown();
+    });
+
+    function requestThematicGradient(stepCount: number) {
+      const symb = Gradient.Symb.fromJSON({
+        mode: Gradient.Mode.Thematic,
+        thematicSettings: {stepCount},
+        keys: [{ value: 0.6804815398789292, color: 610 }, { value: 0.731472008309797, color: 229 }],
+      });
+      return IModelApp.renderSystem.getGradientTexture(symb, imodel);
+    }
+
+    it("should properly request a thematic gradient texture", async () => {
+      const g1 = requestThematicGradient(5);
+      expect(g1).to.not.be.undefined;
+      g1!.dispose();
+    });
+
+    it("should properly cache and reuse thematic gradient textures", async () => {
+      const g1 = requestThematicGradient(5);
+      expect(g1).to.not.be.undefined;
+      const g2 = requestThematicGradient(5);
+      expect(g2).to.not.be.undefined;
+      expect(g2 === g1).to.be.true;
+      g1!.dispose();
+      g2!.dispose();
+    });
+
+    it("should properly create separate thematic gradient textures if thematic settings differ", async () => {
+      const g1 = requestThematicGradient(5);
+      expect(g1).to.not.be.undefined;
+      const g2 = requestThematicGradient(6);
+      expect(g2).to.not.be.undefined;
+      expect(g2 === g1).to.be.false;
+      g1!.dispose();
+      g2!.dispose();
     });
 
     async function requestTexture(key: string | undefined, source?: ImageSource): Promise<RenderTexture | undefined> {

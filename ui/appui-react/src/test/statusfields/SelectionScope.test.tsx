@@ -14,7 +14,7 @@ import {
   ConfigurableCreateInfo, ConfigurableUiControlType, PresentationSelectionScope, SelectionScopeField, SessionStateActionId, StatusBar,
   StatusBarWidgetControl, StatusBarWidgetControlArgs, UiFramework, WidgetDef,
 } from "../../appui-react";
-import TestUtils, { handleError, selectChangeValueByText, stubScrollIntoView } from "../TestUtils";
+import TestUtils, { handleError, selectChangeValueByIndex, stubScrollIntoView } from "../TestUtils";
 
 class AppStatusBarWidgetControl extends StatusBarWidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -130,7 +130,7 @@ describe("Test that requires Presentation", () => {
     expect(component).not.to.be.undefined;
     const selectElement = component.getByTestId("components-selectionScope-selector") as HTMLSelectElement;
     expect(selectElement).not.to.be.null;
-    selectChangeValueByText(selectElement, "Assembly", handleError);
+    selectChangeValueByIndex(selectElement, 1, handleError); // use index now that labels are localized in frontend
     await TestUtils.flushAsyncOperations();
     expect(UiFramework.getActiveSelectionScope()).to.be.equal("assembly");
     // expect(selectElement.selectedIndex).to.be.equal(1);

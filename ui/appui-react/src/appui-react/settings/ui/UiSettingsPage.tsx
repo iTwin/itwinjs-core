@@ -15,8 +15,8 @@ import { SettingsTabEntry } from "@itwin/core-react";
 import { UiFramework } from "../../UiFramework";
 import { ColorTheme, SYSTEM_PREFERRED_COLOR_THEME } from "../../theme/ThemeManager";
 import { UiShowHideManager } from "../../utils/UiShowHideManager";
-import { SyncUiEventArgs, SyncUiEventDispatcher, SyncUiEventId } from "../../syncui/SyncUiEventDispatcher";
-import { IconSpecUtilities } from "@itwin/appui-abstract";
+import { SyncUiEventDispatcher, SyncUiEventId } from "../../syncui/SyncUiEventDispatcher";
+import { IconSpecUtilities, UiSyncEventArgs } from "@itwin/appui-abstract";
 import { Select, SelectOption, Slider, ToggleSwitch } from "@itwin/itwinui-react";
 
 /** UiSettingsPage displaying the active UI settings. This page lets users set the following settings.
@@ -64,7 +64,7 @@ export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettin
     const syncIdsOfInterest = ["configurableui:set_theme", "configurableui:set_widget_opacity",
       "configurableui:set-drag-interaction", "configurableui:set-framework-version", SyncUiEventId.ShowHideManagerSettingChange];
 
-    const handleSyncUiEvent = (args: SyncUiEventArgs) => {
+    const handleSyncUiEvent = (args: UiSyncEventArgs) => {
       // istanbul ignore else
       if (syncIdsOfInterest.some((value: string): boolean => args.eventIds.has(value))) {
         if (UiFramework.getColorTheme() !== theme)

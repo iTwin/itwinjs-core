@@ -880,6 +880,7 @@ class ClosestPointStrokeHandler extends NewtonRotRStrokeHandler implements IStro
     }
     return this._closestPoint;
   }
+  public needPrimaryGeometryForStrokes() { return true; }
   public startCurvePrimitive(curve: CurvePrimitive | undefined) {
     this._curve = curve;
     this._fractionA = 0.0;

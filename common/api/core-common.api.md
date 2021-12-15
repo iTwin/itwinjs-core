@@ -2517,6 +2517,13 @@ export class EdgeArgs {
     get numEdges(): number;
 }
 
+// @alpha
+export enum EdgeType {
+    Indexed = 2,
+    None = 0,
+    NonIndexed = 1
+}
+
 // @internal
 export interface EditingScopeNotifications {
     // (undocumented)
@@ -3999,6 +4006,8 @@ export interface GraphicsRequestProps {
     readonly clipToProjectExtents?: boolean;
     // @alpha
     readonly contentFlags?: ContentFlags;
+    // @internal
+    readonly edgeType?: EdgeType;
     // @alpha
     readonly formatVersion?: number;
     readonly id: string;
@@ -6237,7 +6246,7 @@ export interface PositionalVectorTransformProps {
 // @internal
 export interface PrimaryTileTreeId {
     animationId?: Id64String;
-    edgesRequired: boolean;
+    edges: EdgeType;
     enforceDisplayPriority?: boolean;
     sectionCut?: string;
     type: BatchType.Primary;
@@ -6778,8 +6787,8 @@ export interface RealityDataSourceKey {
 
 // @beta
 export namespace RealityDataSourceKey {
+    export function convertToString(rdSourceKey: RealityDataSourceKey): string;
     export function isEqual(key1: RealityDataSourceKey, key2: RealityDataSourceKey): boolean;
-    export function toString(rdSourceKey: RealityDataSourceKey): string;
 }
 
 // @beta
@@ -8858,6 +8867,7 @@ export class ThematicGradientSettings {
     clone(changedProps?: ThematicGradientSettingsProps): ThematicGradientSettings;
     readonly colorMix: number;
     readonly colorScheme: ThematicGradientColorScheme;
+    static compare(lhs: ThematicGradientSettings, rhs: ThematicGradientSettings): number;
     // (undocumented)
     static get contentMax(): number;
     // (undocumented)
@@ -8996,6 +9006,8 @@ export interface TileOptions {
     readonly enableExternalTextures: boolean;
     // (undocumented)
     readonly enableImprovedElision: boolean;
+    // (undocumented)
+    readonly enableIndexedEdges: boolean;
     // (undocumented)
     readonly enableInstancing: boolean;
     // (undocumented)

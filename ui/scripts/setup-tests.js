@@ -10,6 +10,7 @@ const path = require("path");
 require('jsdom-global')();
 window.Date = Date;
 document.elementFromPoint = () => null;
+window.HTMLElement.prototype.scrollIntoView = () => { };
 
 // Fill in more missing functions left out by jsdom or mocha
 performance = window.performance;

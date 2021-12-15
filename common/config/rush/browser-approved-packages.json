@@ -775,20 +775,12 @@
       "allowedCategories": [ "frontend" ]
     },
     {
-      "name": "react-split-pane",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
       "name": "react-table",
       "allowedCategories": [ "internal" ]
     },
     {
       "name": "react-test-renderer",
       "allowedCategories": [ "frontend", "internal" ]
-    },
-    {
-      "name": "react-virtualized",
-      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "react-window",
@@ -956,7 +948,7 @@
     },
     {
       "name": "yargs",
-      "allowedCategories": [ "common", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "internal", "tools" ]
     }
   ]
 }

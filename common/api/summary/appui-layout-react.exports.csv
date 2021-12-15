@@ -208,7 +208,6 @@ deprecated;Message
 internal;MessageButton 
 internal;MessageButtonProps 
 internal;MessageCenter 
-deprecated;MessageCenter 
 internal;MessageCenterDialog 
 internal;MessageCenterDialogProps 
 internal;MessageCenterMessage 

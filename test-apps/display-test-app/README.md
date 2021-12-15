@@ -137,7 +137,9 @@ You can use these environment variables to alter the default behavior of various
 * IMJS_DISABLED_EXTENSIONS
   * If defined, a semicolon-separated list of names of WebGLExtensions to be disabled. See WebGLExtensionName for valid names (case-sensitive).
 * IMJS_DISABLE_INSTANCING
-  * If defined, instanced geometry will not be generated for tiles.
+  * If defined, instanced geometry will not be generated for tiles. See TileAdmin.enableInstancing.
+* IMJS_DISABLE_INDEXED_EDGES
+  * If defined, indexed edges will not be produced. See TileAdmin.enableIndexedEdges.
 * IMJS_NO_IMPROVED_ELISION
   * If defined, disables more accurate empty tile elision on backend.
 * IMJS_IGNORE_AREA_PATTERNS

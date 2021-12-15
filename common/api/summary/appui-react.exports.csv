@@ -88,7 +88,9 @@ public;BasicNavigationWidgetProps
 public;BasicToolWidget(props: BasicToolWidgetProps): JSX.Element
 public;BasicToolWidgetProps
 public;BooleanListenerProps
+deprecated;BooleanListenerProps
 public;BooleanSyncUiListener 
+deprecated;BooleanSyncUiListener 
 alpha;BumpToolSetting 
 alpha;Calculator 
 internal;CalculatorEngine
@@ -504,6 +506,8 @@ public;SnapModeField: import("react-redux").ConnectedComponent
 alpha;SolarTimelineDataProvider 
 public;SpatialContainmentTree(props: SpatialContainmentTreeProps): JSX.Element
 public;SpatialContainmentTreeProps
+public;SplitPane(props: SplitPaneProps): JSX.Element
+public;SplitPaneProps
 internal;SplitterPaneTarget 
 internal;SplitterPaneTargetProps
 public;StageContentLayout
@@ -566,8 +570,10 @@ public;StickyMessageProps
 public;SupportsViewSelectorChange
 public;SyncToolSettingsPropertiesEvent 
 public;SyncToolSettingsPropertiesEventArgs
-public;SyncUiEvent 
-public;SyncUiEventArgs
+public;SyncUiEvent = UiSyncEvent
+deprecated;SyncUiEvent = UiSyncEvent
+public;SyncUiEventArgs = UiSyncEventArgs
+deprecated;SyncUiEventArgs = UiSyncEventArgs
 public;SyncUiEventDispatcher
 public;SyncUiEventId
 public;SYSTEM_PREFERRED_COLOR_THEME = "SYSTEM_PREFERRED"

@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { AccessToken, assert, BeDuration, BentleyStatus, IModelStatus, Logger } from "@itwin/core-bentley";
+import { AccessToken, assert, BeDuration, BentleyError, BentleyStatus, IModelStatus, Logger } from "@itwin/core-bentley";
 import {
   BriefcaseProps, IModelConnectionProps, IModelError, IModelRpcOpenProps, IModelRpcProps, IModelVersion, RpcActivity, RpcPendingResponse, SyncMode,
 } from "@itwin/core-common";
@@ -171,7 +171,7 @@ export class RpcBriefcaseUtility {
       db = await SnapshotDb.openCheckpointV2(checkpoint);
       Logger.logTrace(loggerCategory, "using V2 checkpoint briefcase", () => ({ ...tokenProps }));
     } catch (e) {
-      Logger.logTrace(loggerCategory, "unable to open V2 checkpoint - falling back to V1 checkpoint", () => ({ ...tokenProps }));
+      Logger.logTrace(loggerCategory, "unable to open V2 checkpoint - falling back to V1 checkpoint", () => ({ error: BentleyError.getErrorProps(e), ...tokenProps }));
 
       // this isn't a v2 checkpoint. Set up a race between the specified timeout period and the open. Throw an RpcPendingResponse exception if the timeout happens first.
       const request = {

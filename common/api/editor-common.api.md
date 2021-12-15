@@ -113,6 +113,7 @@ export interface CutProps {
     depth?: CutDepthMode;
     direction?: CutDirectionMode;
     distance?: number;
+    keepProfile?: true;
     outside?: true;
     profile: Id64String;
     targetPoint?: XYZProps;
@@ -198,6 +199,7 @@ export enum EmbossDirectionMode {
 // @alpha (undocumented)
 export interface EmbossProps {
     direction?: EmbossDirectionMode;
+    keepProfile?: true;
     profile: Id64String;
     targetPoint?: XYZProps;
 }
@@ -267,6 +269,7 @@ export interface ImprintProps {
     extend?: true;
     face?: SubEntityProps;
     imprint: Id64String | SubEntityProps[] | ElementGeometryDataEntry;
+    keepProfile?: true;
 }
 
 // @alpha (undocumented)
@@ -282,6 +285,8 @@ export interface LocateSubEntityProps {
 // @alpha (undocumented)
 export interface LoftProps {
     guides?: Id64String | Id64String[];
+    keepGuides?: true;
+    keepTools?: true;
     orderCurves?: true;
     orientCurves?: true;
     periodic?: true;
@@ -435,6 +440,7 @@ export interface SweepFacesProps {
 export interface SweepPathProps {
     alignParallel?: true;
     createSheet?: true;
+    keepPath?: true;
     lockDirection?: XYZProps;
     path: Id64String;
     scale?: number;

@@ -7,7 +7,7 @@ import { join } from "path";
 import * as sinon from "sinon";
 import { Guid, GuidString } from "@itwin/core-bentley";
 import {
-  ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetProps, ChangesetRange, IModelVersion, LocalDirName,
+  ChangesetFileProps, ChangesetIndex, ChangesetIndexAndId, ChangesetProps, ChangesetRange, IModelVersion, LocalDirName,
 } from "@itwin/core-common";
 import {
   BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetRangeArg, CheckpointArg, CreateNewIModelProps, IModelIdArg, IModelNameArg,
@@ -202,11 +202,11 @@ export class HubMock {
     return undefined;
   }
 
-  public static async downloadV2Checkpoint(arg: CheckpointArg): Promise<ChangesetId> {
+  public static async downloadV2Checkpoint(arg: CheckpointArg): Promise<ChangesetIndexAndId> {
     return this.findLocalHub(arg.checkpoint.iModelId).downloadCheckpoint({ changeset: arg.checkpoint.changeset, targetFile: arg.localFile });
   }
 
-  public static async downloadV1Checkpoint(arg: CheckpointArg): Promise<ChangesetId> {
+  public static async downloadV1Checkpoint(arg: CheckpointArg): Promise<ChangesetIndexAndId> {
     return this.findLocalHub(arg.checkpoint.iModelId).downloadCheckpoint({ changeset: arg.checkpoint.changeset, targetFile: arg.localFile });
   }
 
