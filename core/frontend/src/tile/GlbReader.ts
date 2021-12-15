@@ -18,7 +18,6 @@ import { GltfReader, GltfReaderProps, GltfReaderResult } from "./internal";
 export interface ReadGlbGraphicsArgs {
   glb: Uint8Array;
   iModel: IModelConnection;
-  yAxisUp?: boolean;
   modelId?: Id64String;
   options?: BatchOptions | false;
 }
@@ -26,7 +25,7 @@ export interface ReadGlbGraphicsArgs {
 /** WIP @alpha */
 export async function readGlbGraphics(args: ReadGlbGraphicsArgs): Promise<RenderGraphic | undefined> {
   const stream = new ByteStream(args.glb.buffer);
-  const props = GltfReaderProps.create(stream, args.yAxisUp);
+  const props = GltfReaderProps.create(stream, /*yAxisUp=*/true); // glTF supports exactly one coordinate system with y up.
   const reader = props ? new GlbReader(props, args) : undefined;
   if (!reader)
     return undefined;
