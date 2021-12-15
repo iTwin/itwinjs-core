@@ -6,10 +6,10 @@
  * @module Tiles
  */
 
-import { assert, ByteStream, Id64String, JsonUtils } from "@itwin/core-bentley";
+import { assert, ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import { ClipVector, ClipVectorProps, Point2d, Point3d, Range2d, Range3d, Range3dProps, Transform, TransformProps, XYProps, XYZProps } from "@itwin/core-geometry";
 import {
-  BatchType, ColorDef, ColorDefProps, ElementAlignedBox3d, FeatureIndexType, FeatureTableHeader, FillFlags, Gradient, ImageSource, ImageSourceFormat, ImdlHeader, LinePixels,
+  BatchType, ColorDef, ColorDefProps, ElementAlignedBox3d, FeatureIndexType, FeatureTableHeader, FillFlags, GltfHeader, Gradient, ImageSource, ImageSourceFormat, ImdlHeader, LinePixels,
   PackedFeatureTable, PolylineTypeFlags, QParams2d, QParams3d, readTileContentDescription, RenderMaterial, RenderTexture, TextureMapping,
   TileReadError, TileReadStatus,
 } from "@itwin/core-common";
@@ -28,7 +28,7 @@ import { PolylineParams, TesselatedPolyline } from "../render/primitives/Polylin
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderGeometry, RenderSystem } from "../render/RenderSystem";
 import { BatchOptions } from "../render/GraphicBuilder";
-import { GltfReaderProps, IModelTileContent } from "./internal";
+import { IModelTileContent } from "./internal";
 
 /** @internal */
 export type ShouldAbortImdlReader = (reader: ImdlReader) => boolean;
@@ -448,8 +448,8 @@ export class ImdlReader {
 
   /** Attempt to initialize an ImdlReader to deserialize iModel tile data beginning at the stream's current position. */
   public static create(args: ImdlReaderCreateArgs): ImdlReader | undefined {
-    const header = new ImdlHeader(args.stream);
-    if (!header.isValid || !header.isReadableVersion)
+    const imdlHeader = new ImdlHeader(args.stream);
+    if (!imdlHeader.isValid || !imdlHeader.isReadableVersion)
       return undefined;
 
     // The feature table follows the iMdl header
@@ -457,8 +457,61 @@ export class ImdlReader {
       return undefined;
 
     // A glTF header follows the feature table
-    const props = GltfReaderProps.create(args.stream, false);
-    return undefined !== props ? new ImdlReader(props, args) : undefined;
+    const gltfHeader = new GltfHeader(args.stream);
+    if (!gltfHeader.isValid)
+      return undefined;
+
+    args.stream.curPos = gltfHeader.scenePosition;
+    const sceneStrData = args.stream.nextBytes(gltfHeader.sceneStrLength);
+    const sceneStr = utf8ToString(sceneStrData);
+    if (!sceneStr)
+      return undefined;
+
+    try {
+      const sceneValue = JSON.parse(sceneStr);
+      const imdl: Imdl = {
+        scene: JsonUtils.asString(sceneValue.scene),
+        scenes: JsonUtils.asArray(sceneValue.scenes),
+        animationNodes: JsonUtils.asObject(sceneValue.animationNodes),
+        bufferViews: JsonUtils.asObject(sceneValue.bufferViews),
+        meshes: JsonUtils.asObject(sceneValue.meshes),
+        nodes: JsonUtils.asObject(sceneValue.nodes),
+        materials: JsonUtils.asObject(sceneValue.materials),
+        renderMaterials: JsonUtils.asObject(sceneValue.renderMaterials),
+        namedTextures: JsonUtils.asObject(sceneValue.namedTextures),
+        patternSymbols: JsonUtils.asObject(sceneValue.patternSymbols),
+      };
+
+      return undefined !== imdl.meshes ? new ImdlReader(imdl, gltfHeader.binaryPosition, args) : undefined;
+    } catch (_) {
+      return undefined;
+    }
+  }
+
+  private constructor(imdl: Imdl, binaryPosition: number, args: ImdlReaderCreateArgs) {
+    this._buffer = args.stream;
+    this._binaryData = new Uint8Array(this._buffer.arrayBuffer, binaryPosition);
+
+    this._animationNodes = JsonUtils.asObject(imdl.animationNodes);
+    this._bufferViews = imdl.bufferViews;
+    this._meshes = imdl.meshes;
+    this._nodes = imdl.nodes;
+    this._materialValues = imdl.materials ?? { };
+    this._renderMaterials = imdl.renderMaterials ?? { };
+    this._namedTextures = imdl.namedTextures ?? { };
+    this._patternSymbols = imdl.patternSymbols ?? {};
+
+    this._iModel = args.iModel;
+    this._modelId = args.modelId;
+    this._is3d = args.is3d;
+    this._system = args.system;
+    this._type = args.type ?? BatchType.Primary;
+    this._canceled = args.isCanceled;
+
+    this._sizeMultiplier = args.sizeMultiplier;
+    this._loadEdges = args.loadEdges ?? true;
+    this._options = args.options ?? {};
+    this._containsTransformNodes = args.containsTransformNodes ?? false;
   }
 
   /** Attempt to deserialize the tile data */
@@ -708,32 +761,6 @@ export class ImdlReader {
     this._buffer.curPos = startPos + header.length;
 
     return new PackedFeatureTable(packedFeatureArray, this._modelId, header.count, header.maxFeatures, this._type, animNodesArray);
-  }
-
-  private constructor(props: GltfReaderProps, args: ImdlReaderCreateArgs) {
-    this._buffer = props.buffer;
-    const imdl = props.scene as Imdl;
-    this._animationNodes = JsonUtils.asObject(imdl.animationNodes);
-    this._binaryData = props.binaryData;
-    this._bufferViews = props.bufferViews;
-    this._meshes = props.meshes;
-    this._nodes = props.nodes;
-    this._materialValues = (props.materials as ImdlDictionary<ImdlDisplayParams>) ?? { };
-    this._renderMaterials = imdl.renderMaterials ?? { };
-    this._namedTextures = imdl.namedTextures ?? { };
-
-    this._iModel = args.iModel;
-    this._modelId = args.modelId;
-    this._is3d = args.is3d;
-    this._system = args.system;
-    this._type = args.type ?? BatchType.Primary;
-    this._canceled = args.isCanceled;
-
-    this._sizeMultiplier = args.sizeMultiplier;
-    this._loadEdges = args.loadEdges ?? true;
-    this._options = args.options ?? {};
-    this._containsTransformNodes = args.containsTransformNodes ?? false;
-    this._patternSymbols = imdl.patternSymbols ?? {};
   }
 
   private static skipFeatureTable(stream: ByteStream): boolean {
