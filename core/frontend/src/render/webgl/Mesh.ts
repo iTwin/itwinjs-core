@@ -20,6 +20,7 @@ import { Primitive } from "./Primitive";
 import { RenderCommands } from "./RenderCommands";
 import { RenderPass } from "./RenderFlags";
 import { EdgeGeometry, PolylineEdgeGeometry, SilhouetteEdgeGeometry } from "./EdgeGeometry";
+import { IndexedEdgeGeometry } from "./IndexedEdgeGeometry";
 import { SurfaceGeometry } from "./SurfaceGeometry";
 import { MeshData } from "./MeshData";
 
@@ -30,6 +31,7 @@ export class MeshRenderGeometry {
   public readonly segmentEdges?: EdgeGeometry;
   public readonly silhouetteEdges?: SilhouetteEdgeGeometry;
   public readonly polylineEdges?: PolylineEdgeGeometry;
+  public readonly indexedEdges?: IndexedEdgeGeometry;
   public readonly range: Range3d;
 
   private constructor(data: MeshData, params: MeshParams) {
@@ -48,6 +50,9 @@ export class MeshRenderGeometry {
 
     if (edges.polylines)
       this.polylineEdges = PolylineEdgeGeometry.create(data, edges.polylines);
+
+    if (edges.indexed)
+      this.indexedEdges = IndexedEdgeGeometry.create(data, edges.indexed);
   }
 
   public static create(params: MeshParams, viewIndependentOrigin: Point3d | undefined): MeshRenderGeometry | undefined {
@@ -61,6 +66,7 @@ export class MeshRenderGeometry {
     dispose(this.segmentEdges);
     dispose(this.silhouetteEdges);
     dispose(this.polylineEdges);
+    dispose(this.indexedEdges);
   }
 
   public collectStatistics(stats: RenderMemory.Statistics) {
@@ -69,6 +75,7 @@ export class MeshRenderGeometry {
     this.segmentEdges?.collectStatistics(stats);
     this.silhouetteEdges?.collectStatistics(stats);
     this.polylineEdges?.collectStatistics(stats);
+    this.indexedEdges?.collectStatistics(stats);
   }
 }
 
@@ -113,6 +120,7 @@ export class MeshGraphic extends Graphic {
     this.addPrimitive(geometry.segmentEdges);
     this.addPrimitive(geometry.silhouetteEdges);
     this.addPrimitive(geometry.polylineEdges);
+    this.addPrimitive(geometry.indexedEdges);
   }
 
   public get isDisposed(): boolean { return this.meshData.isDisposed && 0 === this._primitives.length; }

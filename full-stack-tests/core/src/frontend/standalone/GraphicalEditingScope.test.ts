@@ -7,7 +7,7 @@ import * as chaiAsPromised from "chai-as-promised";
 import * as path from "path";
 import { BeDuration, compareStrings, DbOpcode, Guid, Id64String, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
-import { BatchType, ChangedEntities, ElementGeometryChange, IModelError } from "@itwin/core-common";
+import { BatchType, ChangedEntities, EdgeType, ElementGeometryChange, IModelError } from "@itwin/core-common";
 import {
   BriefcaseConnection, GeometricModel3dState, GraphicalEditingScope, IModelTileTree, IModelTileTreeParams, TileLoadPriority,
 } from "@itwin/core-frontend";
@@ -283,7 +283,7 @@ describe("GraphicalEditingScope", () => {
           },
         };
 
-        return new IModelTileTree(params, { edgesRequired: false, type: BatchType.Primary });
+        return new IModelTileTree(params, { edges: EdgeType.None, type: BatchType.Primary });
       }
 
       const expectTreeState = async (tree: IModelTileTree | IModelTileTree[], expectedState: "static" | "interactive" | "dynamic" | "disposed", expectedHiddenElementCount: number, expectedRange: Range3d) => {

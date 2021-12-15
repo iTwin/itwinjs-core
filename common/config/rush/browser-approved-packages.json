@@ -23,10 +23,6 @@
       "allowedCategories": [ "internal" ]
     },
     {
-      "name": "@bentley/imodelhub-client",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "@bentley/imodeljs-native",
       "allowedCategories": [ "backend", "internal" ]
     },
