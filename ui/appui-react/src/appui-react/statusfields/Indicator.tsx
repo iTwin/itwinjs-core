@@ -45,7 +45,7 @@ interface IndicatorProps extends CommonProps {
  * @beta
  */
 export function Indicator(props: IndicatorProps) {
-  const { className, contentType, dialog, iconName, iconSpec, isInFooterMode, label, labelSide, onClick, opened, style, toolTip } = props;
+  const { className, contentType, dialog, iconName, iconSpec, isInFooterMode, isLabelVisible, label, labelSide, onClick, opened, style, toolTip } = props;
   const hasClickAction = React.useMemo(() => !!onClick || !!dialog, [dialog, onClick]);
   const [isOpen, setIsOpen] = React.useState(!!opened);
   const handleOnIndicatorClick = React.useCallback(() => {
@@ -75,7 +75,7 @@ export function Indicator(props: IndicatorProps) {
         style={style}
         onClick={handleOnIndicatorClick}
       >
-        {label && <span>{ConditionalStringValue.getValue(label)}</span>}
+        {isLabelVisible && label && <span>{ConditionalStringValue.getValue(label)}</span>}
         {icon && <div className="uifw-indicator-icon"><Icon iconSpec={icon} /></div>}
       </div>
       {dialog && <FooterPopup contentType={contentType}
