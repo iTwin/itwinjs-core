@@ -13,7 +13,6 @@ import { StatusFieldProps, UiFramework } from "@itwin/appui-react";
 import { FooterIndicator } from "@itwin/appui-layout-react";
 import { ProgressRadial } from "@itwin/itwinui-react";
 import { ErrorHandling } from "../../../api/ErrorHandling";
-import { SampleAppIModelApp } from "../../..";
 
 function translate(prompt: string) {
   return IModelApp.localization.getLocalizedString(`SampleApp:statusFields.${prompt}`);
@@ -46,34 +45,34 @@ class SyncManager {
     this.changesetListenerInitialized = true;
 
     if (this.briefcaseConnection) {
-      const iModelId = this.briefcaseConnection.iModelId;
+      // const iModelId = this.briefcaseConnection.iModelId;
       try {
         // Bootstrap the process by finding out if there are newer changesets on the server already.
-        this.state.parentChangesetIndex = this.briefcaseConnection.changeset.index!;
+        // this.state.parentChangesetIndex = this.briefcaseConnection.changeset.index!;
 
-        if (!!this.state.parentChangesetIndex) {  // avoid error if imodel has no changesets.
-          const allOnServer = SampleAppIModelApp.hubClient?.changesets.getMinimalList({
-            iModelId,
-            urlParams: {
-              afterIndex: this.state.parentChangesetIndex,
-            },
-            authorization: () => await IModelApp.getAccessToken(),
-          });
-          // .get(accessToken, iModelId, new ChangeSetQuery().fromId(this.state.parentChangesetId));
-          this.state.changesOnServer = allOnServer.map((changeset) => changeset.id!);
+        // if (!!this.state.parentChangesetIndex) {  // avoid error if imodel has no changesets.
+        //   const allOnServer = SampleAppIModelApp.hubClient?.changesets.getMinimalList({
+        //     iModelId,
+        //     urlParams: {
+        //       afterIndex: this.state.parentChangesetIndex,
+        //     },
+        //     authorization: async () => toAuthorization(await IModelApp.getAccessToken()),
+        //   });
+        //   // .get(accessToken, iModelId, new ChangeSetQuery().fromId(this.state.parentChangesetId));
+        //   this.state.changesOnServer = allOnServer.map((changeset) => changeset.id!);
 
-          this.onStateChange.raiseEvent();
+        //   this.onStateChange.raiseEvent();
 
-          // Once the initial state of the briefcase is known, register for events announcing new changesets
-          // const changeSetSubscription = await SampleAppIModelApp.hubClient?.events.subscriptions.create(accessToken, iModelId, ["ChangeSetPostPushEvent"]); // eslint-disable-line deprecation/deprecation
+        // Once the initial state of the briefcase is known, register for events announcing new changesets
+        // const changeSetSubscription = await SampleAppIModelApp.hubClient?.events.subscriptions.create(accessToken, iModelId, ["ChangeSetPostPushEvent"]); // eslint-disable-line deprecation/deprecation
 
-          // hubAccess.hubClient.events.createListener(async () => accessToken, changeSetSubscription.wsgId, iModelId, async (receivedEvent: ChangeSetPostPushEvent) => {
-          //   if (receivedEvent.changeSetId !== this.state.parentChangesetId) {
-          //     this.state.changesOnServer.push(receivedEvent.changeSetId);
-          //     this.onStateChange.raiseEvent();
-          //   }
-          // });
-        }
+        // hubAccess.hubClient.events.createListener(async () => accessToken, changeSetSubscription.wsgId, iModelId, async (receivedEvent: ChangeSetPostPushEvent) => {
+        //   if (receivedEvent.changeSetId !== this.state.parentChangesetId) {
+        //     this.state.changesOnServer.push(receivedEvent.changeSetId);
+        //     this.onStateChange.raiseEvent();
+        //   }
+        // });
+        // }
       } catch (err: any) {
         ErrorHandling.onUnexpectedError(err);
       }
@@ -141,7 +140,7 @@ class SyncManager {
 
     try {
       await this.briefcaseConnection.pushChanges("");
-      const parentChangesetIndex = this.briefcaseConnection.changeset.index;
+      const parentChangesetIndex = this.briefcaseConnection.changeset.index!;
       this.updateParentChangesetIndex(parentChangesetIndex);
     } catch (err: any) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, failmsg, err.message, OutputMessageType.Alert, OutputMessageAlert.Dialog));

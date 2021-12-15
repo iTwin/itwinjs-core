@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { CheckpointConnection } from "@itwin/core-frontend";
-import { Constants as IModelConstants, IModelsApiUrlFormatter, IModelsClient } from "@itwin/imodels-client-management";
+import { CheckpointConnection, IModelApp } from "@itwin/core-frontend";
+import { Authorization, IModelsClient } from "@itwin/imodels-client-management";
 import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
 import { IModelData } from "../../common/Settings";
 import { AccessToken } from "@itwin/core-bentley";
@@ -24,7 +24,7 @@ export class IModelSession {
   }
 
   public static async create(requestContext: AccessToken, iModelData: IModelData): Promise<IModelSession> {
-    let contextId;
+    let iTwinId;
     let imodelId;
 
     // Turn the iTwin name into an id
@@ -43,30 +43,32 @@ export class IModelSession {
       else if (iTwinList.length > 1)
         throw new Error(`Multiple iTwins named ${iModelData.iTwinName} were found for the user.`);
 
-      contextId = iTwinList[0].id;
+      iTwinId = iTwinList[0].id;
     } else
-      contextId = iModelData.iTwinId!;
+      iTwinId = iModelData.iTwinId!;
 
     if (iModelData.useName) {
       const imodelClient = new IModelsClient();
-
-      const hubUrl = new IModelsApiUrlFormatter(IModelConstants.api.baseUrl);
-      hubUrl.getIModelListUrl({
+      const imodels = imodelClient.iModels.getRepresentationList({
+        authorization: async () => IModelSession.toAuthorization(await IModelApp.getAccessToken()),
         urlParams: {
-          name: iModelData.name,
+          projectId: iTwinId,
         },
       });
-
-      const imodels = await imodelClient.iModels.get(requestContext, contextId, new IModelQuery().byName(iModelData.name!));
-      if (undefined === imodels || imodels.length === 0)
-        throw new Error(`The iModel ${iModelData.name} does not exist in project ${contextId}.`);
-      imodelId = imodels[0].wsgId;
+      for await (const iModel of imodels) {
+        if (iModel.name === iModelData.name) {
+          imodelId = iModel.id;
+          break;
+        }
+      }
+      if (!imodelId)
+        throw new Error(`The iModel ${iModelData.name} does not exist in iTwin ${iTwinId}.`);
     } else
       imodelId = iModelData.id!;
 
-    console.log(`Using iModel { name:${iModelData.name}, id:${imodelId}, iTwinId:${contextId}, changesetId:${iModelData.changesetId} }`); // eslint-disable-line no-console
+    console.log(`Using iModel { name:${iModelData.name}, id:${imodelId}, iTwinId:${iTwinId}, changesetId:${iModelData.changesetId} }`); // eslint-disable-line no-console
 
-    return new IModelSession(imodelId, contextId, iModelData.changesetId);
+    return new IModelSession(imodelId, iTwinId, iModelData.changesetId);
   }
 
   public async getConnection(): Promise<CheckpointConnection> {
@@ -84,5 +86,16 @@ export class IModelSession {
     }
 
     return this._iModel;
+  }
+
+  public static toAuthorization(accessToken: AccessToken): Authorization {
+    const splitAccessToken = accessToken.split(" ");
+    if (splitAccessToken.length !== 2)
+      throw new Error("Unsupported access token format");
+
+    return {
+      scheme: splitAccessToken[0],
+      token: splitAccessToken[1],
+    };
   }
 }

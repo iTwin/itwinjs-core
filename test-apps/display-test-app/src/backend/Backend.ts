@@ -7,10 +7,10 @@ import * as path from "path";
 import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { ElectronMainAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronMain";
 import { ElectronHost, ElectronHostOptions } from "@itwin/core-electron/lib/cjs/ElectronBackend";
-import { IModelBankClient } from "@bentley/imodelhub-client";
+// import { IModelBankClient } from "@bentley/imodelhub-client";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
-import { UrlFileHandler } from "@bentley/imodelhub-client/lib/cjs/imodelhub-node";
-import { IModelHostConfiguration, LocalhostIpcHost } from "@itwin/core-backend";
+// import { UrlFileHandler } from "@bentley/imodelhub-client/lib/cjs/imodelhub-node";
+import { IModelHost, IModelHostConfiguration, LocalhostIpcHost } from "@itwin/core-backend";
 import {
   IModelReadRpcInterface, IModelTileRpcInterface, RpcInterfaceDefinition, RpcManager,
   SnapshotIModelRpcInterface,
@@ -163,8 +163,8 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
   iModelHost.logTileSizeThreshold = 500000;
 
   let hubClient;
-  if (dtaConfig.customOrchestratorUri)
-    hubClient = new IModelBankClient(dtaConfig.customOrchestratorUri, new UrlFileHandler());
+  // if (dtaConfig.customOrchestratorUri)
+  //   hubClient = new IModelBankClient(dtaConfig.customOrchestratorUri, new UrlFileHandler());
 
   iModelHost.hubAccess = new BackendIModelsAccess(hubClient);
 

@@ -77,11 +77,11 @@ export class TestUtility {
       await (authorizationClient as IModelHubUserMgr).signIn();
     }
 
-    const cloudParams = await TestRpcInterface.getClient().getCloudEnv();
-    if (cloudParams.iModelBank)
-      this.iTwinPlatformEnv = new ITwinStackCloudEnv(cloudParams.iModelBank.url);
-    else
-      this.iTwinPlatformEnv = new ITwinPlatformCloudEnv(authorizationClient);
+    // const cloudParams = await TestRpcInterface.getClient().getCloudEnv();
+    // if (cloudParams.iModelBank)
+    //   this.iTwinPlatformEnv = new ITwinStackCloudEnv(cloudParams.iModelBank.url);
+    // else
+    this.iTwinPlatformEnv = new ITwinPlatformCloudEnv(authorizationClient);
 
     ((IModelApp as any)._hubAccess) = this.iTwinPlatformEnv.hubAccess;
   }

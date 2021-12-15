@@ -8,7 +8,6 @@ import classnames from "classnames";
 import * as React from "react";
 import { AccessToken, BeDuration } from "@itwin/core-bentley";
 import { Project as ITwin, ProjectsAccessClient } from "@itwin/projects-client";
-import { HubIModel, IModelHubFrontend, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
 import { ActivityMessageDetails, ActivityMessageEndReason, IModelApp } from "@itwin/core-frontend";
 import { ActivityMessagePopup } from "@itwin/appui-react";
 import { Button } from "@itwin/itwinui-react";
@@ -18,6 +17,20 @@ import { BlockingPrompt } from "./BlockingPrompt";
 import { IModelList } from "./IModelList";
 import { NavigationItem, NavigationList } from "./Navigation";
 import { ITwinDropdown } from "./ITwinDropdown";
+import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
+import { SampleAppIModelApp } from "../..";
+import { Authorization } from "@itwin/imodels-client-management";
+
+function toAuthorization(accessToken: AccessToken): Authorization {
+  const splitAccessToken = accessToken.split(" ");
+  if (splitAccessToken.length !== 2)
+    throw new Error("Unsupported access token format");
+
+  return {
+    scheme: splitAccessToken[0],
+    token: splitAccessToken[1],
+  };
+}
 
 /** Properties for the [[IModelOpen]] component */
 export interface IModelOpenProps {
@@ -86,26 +99,26 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
   public async getIModels(iTwinId: string, top: number, skip: number): Promise<IModelInfo[]> {
 
     const accessToken = await IModelApp.getAccessToken();
-    const hubAccess = new IModelHubFrontend();
+    const authorization = async () => toAuthorization(accessToken);
 
     const iModelInfos: IModelInfo[] = [];
-    const queryOptions = new IModelQuery();
-    queryOptions.select("*").top(top).skip(skip);
+    if (!SampleAppIModelApp.hubClient)
+      return iModelInfos;
+
     try {
-      const iModels: HubIModel[] = await hubAccess.hubClient.iModels.get(accessToken, iTwinId, queryOptions);
-      for (const imodel of iModels) {
-        const versions: Version[] = await hubAccess.hubClient.versions.get(accessToken, imodel.id!, new VersionQuery().select("Name,ChangeSetId").top(1));
-        if (versions.length > 0) {
-          imodel.latestVersionName = versions[0].name;
-          imodel.latestVersionChangeSetId = versions[0].changeSetId;
-        }
-      }
-      for (const thisIModel of iModels) {
+      for await (const imodel of SampleAppIModelApp.hubClient?.iModels.getRepresentationList({
+        urlParams: {
+          projectId: iTwinId,
+          $skip: skip,
+          $top: top,
+        },
+        authorization,
+      })) {
         iModelInfos.push({
           iTwinId,
-          id: thisIModel.id!,
-          name: thisIModel.name!,
-          createdDate: new Date(thisIModel.createdDate!),
+          id: imodel.id,
+          name: imodel.name,
+          createdDate: new Date(imodel.createdDateTime),
         });
       }
     } catch (e) {

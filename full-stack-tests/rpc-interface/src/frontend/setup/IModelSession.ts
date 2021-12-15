@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { CheckpointConnection } from "@itwin/core-frontend";
-import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
+import { CheckpointConnection, IModelApp } from "@itwin/core-frontend";
 import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
 import { IModelData } from "../../common/Settings";
 import { IModelVersion } from "@itwin/core-common";
 import { AccessToken } from "@itwin/core-bentley";
+import { Authorization, IModelsClient } from "@itwin/imodels-client-management";
 
 export class IModelSession {
 
@@ -54,11 +54,21 @@ export class IModelSession {
       iTwinId = iModelData.iTwinId!;
 
     if (iModelData.useName) {
-      const imodelClient = new IModelHubClient();
-      const imodels = await imodelClient.iModels.get(requestContext, iTwinId, new IModelQuery().byName(iModelData.name!));
-      if (undefined === imodels || imodels.length === 0)
+      const imodelClient = new IModelsClient();
+      const imodels = imodelClient.iModels.getRepresentationList({
+        authorization: async () => IModelSession.toAuthorization(await IModelApp.getAccessToken()),
+        urlParams: {
+          projectId: iTwinId,
+        },
+      });
+      for await (const iModel of imodels) {
+        if (iModel.name === iModelData.name) {
+          imodelId = iModel.id;
+          break;
+        }
+      }
+      if (!imodelId)
         throw new Error(`The iModel ${iModelData.name} does not exist in iTwin ${iTwinId}.`);
-      imodelId = imodels[0].wsgId;
     } else
       imodelId = iModelData.id!;
 
@@ -83,4 +93,16 @@ export class IModelSession {
 
     return this._iModel;
   }
+
+  public static toAuthorization(accessToken: AccessToken): Authorization {
+    const splitAccessToken = accessToken.split(" ");
+    if (splitAccessToken.length !== 2)
+      throw new Error("Unsupported access token format");
+
+    return {
+      scheme: splitAccessToken[0],
+      token: splitAccessToken[1],
+    };
+  }
+
 }

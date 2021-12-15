@@ -20,9 +20,9 @@ import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backend";
 import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIpc";
 import { rpcInterfaces } from "../common/RpcInterfaces";
-import { CloudEnv } from "./cloudEnv";
 import * as testCommands from "./TestEditCommands";
 import { exposeBackendCallbacks } from "../certa/certaBackend";
+import { getIModelBankAccess } from "./IModelBankBackendCloudEnv";
 
 /* eslint-disable no-console */
 
@@ -76,11 +76,16 @@ async function init() {
   loadEnv(path.join(__dirname, "..", "..", ".env"));
   RpcConfiguration.developmentMode = true;
 
-  // Bootstrap the cloud environment
-  await CloudEnv.initialize();
-
   const iModelHost = new IModelHostConfiguration();
-  iModelHost.hubAccess = new BackendIModelsAccess(CloudEnv.cloudEnv.imodelClient);
+
+  // Bootstrap the cloud environment
+  const enableIModelBank: boolean = process.env.IMJS_TEST_IMODEL_BANK !== undefined && !!JSON.parse(process.env.IMJS_TEST_IMODEL_BANK);
+  if (!enableIModelBank) {
+    iModelHost.hubAccess = new BackendIModelsAccess();
+  } else {
+    iModelHost.hubAccess = getIModelBankAccess();
+  }
+
   iModelHost.cacheDir = path.join(__dirname, ".cache");  // Set local cache dir
 
   if (ProcessDetector.isElectronAppBackend) {

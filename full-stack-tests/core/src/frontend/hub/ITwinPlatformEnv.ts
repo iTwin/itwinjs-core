@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { AccessToken, BentleyError, BentleyStatus, GuidString } from "@itwin/core-bentley";
 import { Project as ITwin } from "@itwin/projects-client";
-import { AuthorizationClient, BriefcaseId, ChangesetId, IModelVersion } from "@itwin/core-common";
+import { AuthorizationClient, BriefcaseId, ChangesetIndexAndId, IModelVersion } from "@itwin/core-common";
 import { FrontendHubAccess, IModelIdArg } from "@itwin/core-frontend";
-import { FrontendiModelsAccess } from "@itwin/imodels-access-frontend";
-import { IModelQuery, VersionQuery } from "@itwin/imodels-client-management";
+import { BriefcaseQuery, ChangeSet, ChangeSetQuery, IModelBankClient, IModelBankFileSystemITwinClient, IModelQuery, VersionQuery } from "@bentley/imodelbank-client"; // TODO: Remove when we have a replacement for the current iModelBank client in the way
+import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
 import { ITwinAccessClientWrapper } from "../../common/ITwinAccessClientWrapper";
 
 export interface IModelNameArg {
@@ -27,17 +27,18 @@ export interface TestFrontendHubAccess extends FrontendHubAccess {
   releaseBriefcase(arg: BriefcaseIdArg): Promise<void>;
 }
 
+// WARNING: Only this section is allowed to import from imodelhub-client
 export class IModelBankFrontend implements TestFrontendHubAccess {
   private _hubClient: IModelBankClient;
   constructor(orchestratorUrl: string) {
     this._hubClient = new IModelBankClient(orchestratorUrl, undefined);
   }
 
-  private async _getChangesetFromId(arg: IModelIdArg & { changeSetId: string }): Promise<ChangesetIndexAndId> {
-    const changeSets: ChangeSet[] = await this._hubClient.changeSets.get(arg.accessToken, arg.iModelId, new ChangeSetQuery().byId(arg.changeSetId));
-    if (!changeSets[0] || !changeSets[0].index || !changeSets[0].id)
-      throw new BentleyError(BentleyStatus.ERROR, `Changeset ${arg.changeSetId} not found`);
-    return { index: +changeSets[0].index, id: changeSets[0].id };
+  private async _getChangesetFromId(arg: IModelIdArg & { changesetId: string }): Promise<ChangesetIndexAndId> {
+    const changesets: ChangeSet[] = await this._hubClient.changeSets.get(arg.accessToken, arg.iModelId, new ChangeSetQuery().byId(arg.changesetId));
+    if (!changesets[0] || !changesets[0].index || !changesets[0].id)
+      throw new BentleyError(BentleyStatus.ERROR, `Changeset ${arg.changesetId} not found`);
+    return { index: +changesets[0].index, id: changesets[0].id };
   }
 
   public async getLatestChangeset(arg: IModelIdArg): Promise<ChangesetIndexAndId> {
@@ -54,7 +55,7 @@ export class IModelBankFrontend implements TestFrontendHubAccess {
 
     const asOfChangeSetId = version.getAsOfChangeSet();
     if (asOfChangeSetId)
-      return this._getChangesetFromId({ ...arg, changeSetId: asOfChangeSetId });
+      return this._getChangesetFromId({ ...arg, changesetId: asOfChangeSetId });
 
     const versionName = version.getName();
     if (versionName)
@@ -92,7 +93,7 @@ export class IModelBankFrontend implements TestFrontendHubAccess {
 
 /** Defines a base set of the set of Simple base interface for the client implementations that will be passed to the IModelApp. */
 export interface ITwinPlatformAbstraction {
-  readonly hubAccess: TestFrontendHubAccess;
+  readonly hubAccess: FrontendHubAccess;
   readonly iTwinMgr: ITwinAccessClientWrapper;
   readonly authClient?: AuthorizationClient;
 }
@@ -100,7 +101,7 @@ export interface ITwinPlatformAbstraction {
 /** A convenient wrapper that includes a default set of clients necessary to configure an iTwin.js application for the iTwin Platform. */
 export class ITwinPlatformCloudEnv implements ITwinPlatformAbstraction {
   public readonly iTwinMgr = new ITwinAccessClientWrapper(); // this should be the new ITwinRegistryWrapper defined in #2045
-  public readonly hubAccess = new FrontendiModelsAccess();
+  public readonly hubAccess = new FrontendIModelsAccess();
   public readonly authClient?: AuthorizationClient; // This should be the new AuthorizationClient method defined in #
 
   public constructor(authClient?: AuthorizationClient) {

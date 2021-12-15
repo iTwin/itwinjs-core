@@ -8,8 +8,20 @@ import { AccessToken, assert, GuidString } from "@itwin/core-bentley";
 import { ElectronMainAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronMain";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { BriefcaseDb, BriefcaseManager, IModelHost, IModelHostConfiguration, RequestNewBriefcaseArg } from "@itwin/core-backend";
-import { BriefcaseIdValue, ChangesetId, ChangesetIndex, ChangesetProps, IModelVersion } from "@itwin/core-common";
+import { BriefcaseIdValue, ChangesetId, ChangesetIndex, ChangesetProps } from "@itwin/core-common";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
+import { Authorization, IModelsClient, NamedVersion } from "@itwin/imodels-client-management";
+
+function toAuthorization(accessToken: AccessToken): Authorization {
+  const splitAccessToken = accessToken.split(" ");
+  if (splitAccessToken.length !== 2)
+    throw new Error("Unsupported access token format");
+
+  return {
+    scheme: splitAccessToken[0],
+    token: splitAccessToken[1],
+  };
+}
 
 export class IModelTransformerTestAppHost {
   public static async startup(): Promise<void> {
@@ -97,11 +109,10 @@ export namespace IModelHubUtils {
   }
 
   /** Call the specified function for each (named) Version of the specified iModel. */
-  export async function forEachNamedVersion(accessToken: AccessToken, iModelId: GuidString, func: (v: IModelVersion) => void): Promise<void> {
+  export async function forEachNamedVersion(accessToken: AccessToken, iModelId: GuidString, func: (v: NamedVersion) => void): Promise<void> {
     assert(IModelHost.hubAccess instanceof BackendIModelsAccess);
-    IModelHost.hubAccess.queryChangesets();
-    const namedVersions = await IModelHost.hubAccess.iModelClient.versions.get(accessToken, iModelId);
-    for (const namedVersion of namedVersions) {
+    const client = new IModelsClient();
+    for await (const namedVersion of client.namedVersions.getRepresentationList({iModelId, authorization: async () => toAuthorization(accessToken)})) {
       func(namedVersion);
     }
   }

@@ -4,15 +4,25 @@
 *--------------------------------------------------------------------------------------------*/
 import "./IModelIndex.scss";
 import * as React from "react";
-import { Id64String } from "@itwin/core-bentley";
-import { Version, VersionQuery } from "@bentley/imodelhub-client";
+import { AccessToken, Id64String } from "@itwin/core-bentley";
 import { IModelApp, IModelConnection } from "@itwin/core-frontend";
 import { LoadingSpinner } from "@itwin/core-react";
 import { ModelsTab } from "./ModelsTab";
 import { SheetsTab } from "./SheetsTab";
 import { Tab, Tabs } from "./Tabs";
-import { IModelsClient } from "@itwin/imodels-client-management";
+import { Authorization, IModelsClient, NamedVersion } from "@itwin/imodels-client-management";
 import { SampleAppIModelApp } from "../..";
+
+function toAuthorization(accessToken: AccessToken): Authorization {
+  const splitAccessToken = accessToken.split(" ");
+  if (splitAccessToken.length !== 2)
+    throw new Error("Unsupported access token format");
+
+  return {
+    scheme: splitAccessToken[0],
+    token: splitAccessToken[1],
+  };
+}
 
 /* represents a tab item on the IModelIndex page */
 interface Category {
@@ -99,39 +109,47 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
 
   /* retrieve version information */
   private async startRetrieveIModelInfo() {
-    const iTwinId = this.props.iModelConnection.iTwinId!;
-    const iModelId = this.props.iModelConnection.iModelId!;
-    const accessToken = await IModelApp.getAccessToken();
+    // const iTwinId = this.props.iModelConnection.iTwinId!;
+    // const iModelId = this.props.iModelConnection.iModelId!;
+    // const accessToken = await IModelApp.getAccessToken();
 
-    /* get the iModel name */
-    const imodels = SampleAppIModelApp.hubClient?.iModels.getMinimalList({
-      urlParams: {
-        projectId: iTwinId,
-      },
-      authorization: async () => IModelApp.getAccessToken(),
-    });
-
-    // accessToken, iTwinId, new IModelQuery().byId(iModelId));
+    // const imodel = await SampleAppIModelApp.hubClient?.iModels.getSingle({
+    //   iModelId,
+    //   authorization: async () => toAuthorization(accessToken),
+    // });
 
     /* get the top named version */
-    const _versions: Version[] = await hubClient.versions.get(accessToken, iModelId, new VersionQuery().top(1));
+    // const _versions: Version[] = await SampleAppIModelApp.hubClient?.namedVersions.getSingle({
+    //   namedVersionId: {
+    //   }
+    //   iModelId,
+    //   authorization: async () => toAuthorization(accessToken),
+    // }); // .get(accessToken, iModelId, new VersionQuery().top(1));
 
     /* determine if the version is up-to-date */
-    const changeSetId = this.props.iModelConnection.changeset.id;
-    const _upToDate = (_versions.length > 0 && _versions[0].changeSetId === changeSetId);
+    // const changeSetId = this.props.iModelConnection.changeset.id;
+    // // const _upToDate = (_versions.length > 0 && _versions[0].changeSetId === changeSetId);
 
-    /* get the version name */
-    let currentVersions: Version[] = [];
-    let _versionName = "";
-    try {
-      currentVersions = await hubClient.versions.get(accessToken, iModelId, new VersionQuery().byChangeSet(changeSetId));
-      _versionName = (currentVersions.length === 1) ? currentVersions[0].name! : "Version name not found!";
-    } catch (e) { }
+    // /* get the version name */
+    // const currentVersions: NamedVersion[] = [];
+    // let _versionName = "";
+    // try {
+    //   for await (const ver of SampleAppIModelApp.hubClient?.namedVersions.getMinimalList({
+    //     urlParams: {
+    //       $top: 1,
+    //     },
+    //     iModelId,
+    //     authorization: async () => toAuthorization(accessToken),
+    //   })) {
+    //     currentVersions.push(ver);
+    //   }
+    //   _versionName = (currentVersions.length === 1) ? currentVersions[0].name : "Version name not found!";
+    // } catch (e) { }
 
-    this.setState({
-      upToDate: _upToDate, checkingUpToDate: false, iModelName: imodels[0].name, versionName: _versionName,
-      versionDate: (currentVersions.length === 1) ? this._getReadableDate(currentVersions[0].createdDate) : "",
-    });
+    // this.setState({
+    //   upToDate: _upToDate, checkingUpToDate: false, iModelName: imodel.name, versionName: _versionName,
+    //   versionDate: (currentVersions.length === 1) ? this._getReadableDate(currentVersions[0].createdDate) : "",
+    // });
   }
 
   /* convert the date to a readable date */
