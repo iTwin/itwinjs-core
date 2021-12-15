@@ -391,7 +391,6 @@ internal;ToastDefaultProps = Pick
 internal;ToastProps 
 internal;ToastStyle = Pick
 internal;ToolAssistance 
-deprecated;ToolAssistance 
 internal;ToolAssistanceDialog 
 internal;ToolAssistanceDialogProps 
 internal;ToolAssistanceInstruction 
