@@ -1,5 +1,7 @@
 # Workspaces in iTwin.js
 
+> Note: Workspaces and Settings are both backend-only concepts.
+
 When an iTwin.js backend starts, [IModelHost.startup]($backend) creates an instance of a [Workspace]($backend), in [IModelHost.appWorkspace]($backend).
 
 `IModelHost.appWorkspace` customizes the session according to the choices of the host application(s), including the default values for its settings.
@@ -13,19 +15,19 @@ When combined, the `IModelHost.appWorkspace` and the `IModelDb.workspace` custom
 3. current iTwin
 4. current iModel
 
-In the list above, later entries tend to change more frequently and, in the case of conflicting choices, later entries override earlier ones.
+In the list above, later entries tend to change more frequently and, in the case of duplicate values, later entries override earlier ones.
 
 [Workspace]($backend)s expresses the current state of the session in two forms:
 
   1. [Settings](#settings)
-  2. [WorkspaceContainers](#workspacecontainers)
+  2. [WorkspaceDbs](#workspaceDbs)
 
 `Settings` are *named parameters* that an application defines and whose values are supplied at runtime. `WorkspaceContainers` hold *named resources* (i.e. data) that the application uses. `Settings` and `WorkspaceContainers` are often related in application logic, e.g.:
 
 - a Setting may contain the "formula" to find a resource
 - a `WorkspaceContainer` may hold a resource that defines a group of Settings
 
-This means that there must be some way to initialize the process. That should be some external (e.g. outside of WorkspaceContainer) service that supplies the initial Settings values.
+This means that there must be some way to initialize the process. That can either be in the form of [Settings stored inside an iModel](#imodel-settings) and automatically loaded when it opens, or some external (e.g. outside of WorkspaceContainer) service that supplies the initial Settings values.
 
 ## Settings
 
@@ -202,15 +204,48 @@ Of course `SettingDictionary`s wouldn't be very useful if you could only define 
 
 > Hint: iTwin.js supports [JSON5](https://json5.org/) format to permit comments in settings files. [VSCode](https://code.visualstudio.com/) recognizes the `.json5` extension to edit JSON5 content with comments.
 
-## WorkspaceContainers
+### iModel-based Settings
 
-[WorkspaceContainer]($backend)s are named containers of a group of [workspace resources](#workspace-resources). There is no limit on the number of `WorkspaceContainers` accessed during a session, nor is there a limit on the number of resources held within a `WorkspaceContainer`. However, keep in mind:
+Every iModel can hold a set of `SettingDictionary`s that are loaded every session. This can be used to supply values that should be present every session, for example a list of required `WorkspaceDb`s.
 
-- Access rights are per-`WorkspaceContainer`. That is, if a user has permission to access a `WorkspaceContainer`, they will have access to all resources within it.
-- For offline access, `WorkspaceContainer`s are saved as files on local computers, and must be initially downloaded and re-downloaded whenever they are updated. Multi-gigabyte downloads can be time consuming.
-- WorkspaceContainers are versioned as a whole. There is no versioning of individual resources within a WorkspaceContainer.
+To save a `SettingDictionary` in an iModel, use [IModelDb.saveSettingDictionary]($backend).
 
-Generally, it is expected that a single `WorkspaceContainer` will hold a related set of resources for a single "scope" (e.g. organization, discipline, iTwin, iModel, etc.) for an appropriate set of users.
+## Cloud Workspaces
+
+`WorkspaceContainer`s provide a mechanism for storing and retrieving `Workspace` data through a secure, reliable, and highly available cloud api.
+
+Data stored in cloud-based `WorkspaceContainers`:
+  - can be versioned
+  - can have fine-grained access permissions, or may be publicly accessible
+  - can be accessed directly from cloud storage
+  - is automatically *cached* locally for fast access
+  - can be downloaded for offline use
+  - is automatically synched when it changes
+
+The `WorkspaceContainer` apis abstract the cloud storage implementation, so the may be configured to use any cloud storage system (e.g. Azure, AWS, Google, etc.)
+
+### Cloud storage fundamentals
+
+Cloud-based storage systems provide access to data through a top-level concept called a "storage account". A storage account is assigned a unique name (the "account name") by the cloud provider, and is registered to a single organization who pays for its use. Within a storage account, data is stored in named groups called "containers". Containers names must be unique within a storage account, and generally have strict rules on format and length. It is generally expected that container names are not human-readable, but are instead identifiers like GUIDs, perhaps with a prefix or suffix. Containers can each have independent access rights, and users and applications are granted permissions to read, write, create, etc. by authenticating their identity and then obtaining a container-specific (usually expiring) "shared access signature token" or `sasToken` from the storage authority.
+
+### WorkspaceContainer and WorkspaceDb
+
+A [WorkspaceContainer]($backend) is a special type of cloud container that (only) holds [WorkspaceDb]($backend)s. [WorkspaceDb]($backend)s are files that hold [workspace resources](#workspace-resources).
+
+Conceptually, you can picture the hierarchy like this:
+
+- Cloud Storage Account  (usually provided by service provider, e.g. Bentley)
+  - `WorkspaceContainer`
+    - `WorkspaceDb`
+      - `WorkspaceResource`
+
+Each `WorkspaceContainer` may hold many `WorkspaceDb`s, though it is common for `WorkspaceContainer`s to hold a single `WorkspaceDb`. There is no limit on the number of `WorkspaceDbs` within a `WorkspaceContainer` or accessed during a session, nor is there a limit on the number of resources held within a `WorkspaceDb`.
+
+However, when deciding how to organize workspace data, keep in mind:
+
+- Access rights are per-`WorkspaceContainer`. That is, if a user has permission to access a `WorkspaceContainer`, they will have access to all `WorkspaceDb`s within it.
+- For offline access, `WorkspaceDb`s are saved as files on local computers, and must be downloaded before going offline and then re-downloaded whenever they are updated. Large downloads can be time consuming, so breaking large sets of resources into multiple `WorkspaceDb`s can be helpful.
+- `WorkspaceContainers` and `WorkspaceDb`s may be versioned. There is no versioning of individual resources within a `WorkspaceDb`.
 
 ### WorkspaceContainerName and WorkspaceContainerId
 
@@ -253,43 +288,27 @@ For example:
 
 > Note: more than one `WorkspaceContainerName` may resolve to the same `WorkspaceContainerId`.
 
-### Cloud-backed WorkspaceContainers
+### Creating and Editing WorkspaceContainers
 
-`WorkspaceContainer`s are meant to be the distribution system for application resources, so users need to be sure they're always using the correct version of resources - which may or may not be the newest version, depending on their workflow. That may be accomplished either by *brute force* (e.g. copying files around), or much better, by using a cloud *workspace service*. The `Workspace` API is virtually the same either way.
-
-When using a cloud workspace service, every call to [Workspace.getContainer]($backend) first checks whether the local copy of the `WorkspaceContainer` is up-to-date with the cloud version, and synchronizes it if not. When using the "offline" mode, the `WorkspaceContainer` is fully downloaded to a local file in the [Workspace.containerDir]($backend) directory, with the name `${containerId}.itwin-workspace-container`.
-
-When using brute force, `Workspace.containerDir` may be a directory on a shared file server, or the `.itwin-workspace-container` files may be copied around some other way.
-
-### Creating WorkspaceContainers
-
-`WorkspaceContainers` are always created and modified by administrators rather than users, usually on desktop computers. They are created as local files using [EditableWorkspaceFile.create]($backend), and modified using the other methods on `EditableWorkspaceFile`.
-
-When using a cloud workspace service, the cloud container is created by calling [EditableWorkspaceFile.upload]($backend).
-
-### WorkspaceContainer Editing and Synchronization
-
-To modify the cloud version of `WorkspaceContainer`s, the `CloudContainer` process must be must be running and a writable cloud access token must first be obtained. There may only be one editor at a time per `WorkspaceContainer`. Changes are automatically uploaded when the `WorkspaceContainer` is closed. Then, whenever any user attempts to access it using [Workspace.getContainer]($backend), their local copy will automatically be update with the latest changes.
-
-### WorkspaceContainer Versioning
+`WorkspaceContainers` are always created and modified by administrators rather than users. They are created and edited with the `WorkspaceEditor` utility. See README.md for details.
 
 ## Workspace Resources
 
-A `WorkspaceContainer` holds a set of resources, each with a [WorkspaceResourceName]($backend) and a resource type.
+A `WorkspaceDb` holds a set of resources, each with a [WorkspaceResourceName]($backend) and a resource type.
 
 Possible resource types are:
 
-- `string` resources that hold strings. They may be loaded with [WorkspaceContainer.getString]($backend).
-- `blob` resources that hold `Uint8Array`s. They may be loaded with [WorkspaceContainer.getBlob]($backend).
-- `file` resources that hold arbitrary files. They may be extracted to local files with [WorkspaceContainer.getFile]($backend)
+- `string` resources that hold strings. They may be loaded with [WorkspaceDb.getString]($backend).
+- `blob` resources that hold `Uint8Array`s. They may be loaded with [WorkspaceDb.getBlob]($backend).
+- `file` resources that hold arbitrary files. They may be extracted to local files with [WorkspaceDb.getFile]($backend)
 
 > Note: files are zipped as they are stored in `WorkspaceContainer`s.
 
 ### WorkspaceResourceNames
 
-[WorkspaceResourceName]($backend)s identify resources within a `WorkspaceContainer`. There are no restrictions on the format of a `WorkspaceResourceName`, other than they are limited to 1024 characters and may not start or end with a blank character.
+[WorkspaceResourceName]($backend)s identify resources within a `WorkspaceDb`. There are no restrictions on the format of a `WorkspaceResourceName`, other than they are limited to 1024 characters and may not start or end with a blank character.
 
-> Note: WorkspaceResourceNames must be unique for each resource type. But, it is possible to have a `string`, a `blob`, and a `file` resource in the same `WorkspaceContainer` with the same `WorkspaceResourceName`.
+> Note: `WorkspaceResourceName`s must be unique for each resource type. But, it is possible to have a `string`, a `blob`, and a `file` resource in the same `WorkspaceDb` with the same `WorkspaceResourceName`.
 
 ### SettingDictionary Resources
 

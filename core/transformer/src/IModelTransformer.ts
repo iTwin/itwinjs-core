@@ -73,9 +73,20 @@ export interface IModelTransformOptions {
 
   /** Flag that indicates whether or not the transformation process should clone using binary geometry.
    * Only transformations that need to manipulate geometry should consider setting this flag as it impacts performance.
-   * @note The default is `true`.
+   * @default true
    */
   cloneUsingBinaryGeometry?: boolean;
+
+  /** Flag that indicates that ids should be preserved while copying elements to the target
+   * Intended only for pure-filter transforms, so you can keep parts of the source, while deleting others,
+   * and element ids are guaranteed to be the same, (other entity ids are not, however)
+   * @note the target must be empty
+   * @note it is invalid to insert elements during the transformation, do not use this with transformers that try to
+   * @note this does not preserve the ids of non-element entities such as link table relationships, or aspects, etc
+   * @default false
+   * @beta
+   */
+  preserveElementIdsForFiltering?: boolean;
 }
 
 /** Base class used to transform a source iModel into a different target iModel.
@@ -112,6 +123,8 @@ export class IModelTransformer extends IModelExportHandler {
   private readonly _isReverseSynchronization: boolean;
   /** Set if it can be determined whether this is the first source --> target synchronization. */
   private _isFirstSynchronization?: boolean;
+  /** @see [[IModelTransformOptions.preserveElementIdsForFiltering]] */
+  private readonly _preserveElementIdsForFiltering: boolean;
 
   /** Construct a new IModelTransformer
    * @param source Specifies the source IModelExporter or the source IModelDb that will be used to construct the source IModelExporter.
@@ -128,6 +141,7 @@ export class IModelTransformer extends IModelExportHandler {
     this._wasSourceIModelCopiedToTarget = options?.wasSourceIModelCopiedToTarget ?? false;
     this._isReverseSynchronization = options?.isReverseSynchronization ?? false;
     this._isFirstSynchronization = this._wasSourceIModelCopiedToTarget ? true : undefined;
+    this._preserveElementIdsForFiltering = options?.preserveElementIdsForFiltering ?? false;
     // initialize exporter and sourceDb
     if (source instanceof IModelDb) {
       this.exporter = new IModelExporter(source);
@@ -153,6 +167,7 @@ export class IModelTransformer extends IModelExportHandler {
       this.importer = target;
     }
     this.targetDb = this.importer.targetDb;
+    this.importer.preserveElementIdsForFiltering = this._preserveElementIdsForFiltering;
     // initialize the IModelCloneContext
     this.context = new IModelCloneContext(this.sourceDb, this.targetDb);
   }
@@ -425,7 +440,10 @@ export class IModelTransformer extends IModelExportHandler {
   protected override onExportElement(sourceElement: Element): void {
     let targetElementId: Id64String | undefined;
     let targetElementProps: ElementProps;
-    if (this._wasSourceIModelCopiedToTarget) {
+    if (this._preserveElementIdsForFiltering) {
+      targetElementId = sourceElement.id;
+      targetElementProps = this.onTransformElement(sourceElement);
+    } else if (this._wasSourceIModelCopiedToTarget) {
       targetElementId = sourceElement.id;
       targetElementProps = this.targetDb.elements.getElementProps(targetElementId);
     } else {
@@ -756,18 +774,11 @@ export class IModelTransformer extends IModelExportHandler {
     return Semver.gt(`${schemaKey.version.read}.${schemaKey.version.write}.${schemaKey.version.minor}`, Schema.toSemverString(versionInTarget));
   }
 
-  private _hasNativelyExportedAllSchemas = false;
-
   /** Override of [IModelExportHandler.onExportSchema]($transformer) that serializes a schema to disk for [[processSchemas]] to import into
    * the target iModel when it is exported from the source iModel. */
   protected override async onExportSchema(schema: ECSchemaMetaData.Schema): Promise<void> {
     this.sourceDb.nativeDb.exportSchema(schema.name, this._schemaExportDir);
   }
-
-  // pending PR https://github.com/typescript-eslint/typescript-eslint/pull/3601 fixes the rule @typescript-eslint/return-await
-  // to work in try/catch syntax in functions that contain a nested function
-  // until that merges and we upgrade our dependency, the callback cannot be defined inside the method it is used
-  private makeAbsolute = (s: string) => path.join(this._schemaExportDir, s);
 
   /** Cause all schemas to be exported from the source iModel and imported into the target iModel.
    * @note For performance reasons, it is recommended that [IModelDb.saveChanges]($backend) be called after `processSchemas` is complete.
@@ -777,11 +788,10 @@ export class IModelTransformer extends IModelExportHandler {
     try {
       IModelJsFs.mkdirSync(this._schemaExportDir);
       await this.exporter.exportSchemas();
-      this._hasNativelyExportedAllSchemas = false;
       const exportedSchemaFiles = IModelJsFs.readdirSync(this._schemaExportDir);
       if (exportedSchemaFiles.length === 0)
         return;
-      const schemaFullPaths = exportedSchemaFiles.map(this.makeAbsolute);
+      const schemaFullPaths = exportedSchemaFiles.map((s) => path.join(this._schemaExportDir, s));
       return await this.targetDb.importSchemas(schemaFullPaths);
     } finally {
       IModelJsFs.removeSync(this._schemaExportDir);

@@ -173,6 +173,7 @@ export class ByteStream {
     get nextId64(): Id64String;
     get nextInt32(): number;
     get nextUint16(): number;
+    get nextUint24(): number;
     get nextUint32(): number;
     nextUint32s(numUint32s: number): Uint32Array;
     get nextUint8(): number;
@@ -1269,6 +1270,9 @@ export enum OpenMode {
     // (undocumented)
     ReadWrite = 2
 }
+
+// @public
+export type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
 
 // @public
 export type OrderedComparator<T, U = T> = (lhs: T, rhs: U) => number;

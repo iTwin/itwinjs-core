@@ -29,7 +29,6 @@ export interface MessageCenterProps extends FooterIndicatorProps {
 
 /** Message center indicator used in [[Footer]] component.
  * @note Used with [[MessageCenterDialog]] component.
- * @deprecated Use [MessageCenterField]($appui-react) instead
  * @internal
  */
 export class MessageCenter extends React.PureComponent<MessageCenterProps> {

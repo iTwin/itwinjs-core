@@ -58,6 +58,8 @@ export * from "./appui-abstract/utils/isLetter";
 export * from "./appui-abstract/utils/IconSpecUtilities";
 export * from "./appui-abstract/utils/PointProps";
 export * from "./appui-abstract/utils/UiError";
+export * from "./appui-abstract/utils/UiEventDispatcher";
+export * from "./appui-abstract/utils/UiEvent";
 export * from "./appui-abstract/utils/filter/charCode";
 export * from "./appui-abstract/utils/filter/filters";
 export * from "./appui-abstract/utils/filter/strings";

@@ -206,10 +206,10 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
               if (!textureRange.isNull)
                 layerTextures.push(new TerrainTexture(secondaryTexture.texture, secondaryTexture.featureId, secondaryTexture.scale, secondaryTexture.translate, secondaryTexture.targetRectangle, secondaryTexture.layerIndex, secondaryTexture.transparency, textureRange));
             }
-            layerTextures.length = Math.min(layerTextures.length, texturesPerMesh);
-            meshes.push(new RealityMeshGeometry(realityMesh._realityMeshParams, RealityTextureParams.create(layerTextures), realityMesh._transform, baseColor, baseTransparent, realityMesh._isTerrain));
           }
         }
+        layerTextures.length = Math.min(layerTextures.length, texturesPerMesh);
+        meshes.push(new RealityMeshGeometry(realityMesh._realityMeshParams, RealityTextureParams.create(layerTextures), realityMesh._transform, baseColor, baseTransparent, realityMesh._isTerrain));
       }
     }
 

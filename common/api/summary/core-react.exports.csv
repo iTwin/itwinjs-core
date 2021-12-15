@@ -80,11 +80,16 @@ public;ExpansionToggleProps
 beta;FeaturedTile(props: TileProps): JSX.Element
 deprecated;FeaturedTile(props: TileProps): JSX.Element
 public;Field 
+deprecated;Field 
 public;FieldDef
+deprecated;FieldDef
 public;FieldDefinitions
 public;FieldEditor = "textbox" | "multilinetextbox" | "dropdown" | "checkbox"
+deprecated;FieldEditor = "textbox" | "multilinetextbox" | "dropdown" | "checkbox"
 public;FieldProps 
+deprecated;FieldProps 
 public;FieldValues
+deprecated;FieldValues
 public;FillCentered(props: CommonDivProps): JSX.Element
 alpha;FilteredText(props: FilteredTextProps): JSX.Element
 alpha;FilteredTextProps 
@@ -95,6 +100,7 @@ internal;FocusTrap(props: FocusTrapProps): JSX.Element | null
 internal;FocusTrapProps 
 public;Form 
 public;FormContext: React.Context
+deprecated;FormContext: React.Context
 public;FormContextState 
 public;FormProps
 public;Gap(props: GapProps): JSX.Element
@@ -349,6 +355,7 @@ public;TreeNodeProps
 public;TreeProps 
 public;UiCore
 public;UiEvent
+deprecated;UiEvent
 internal;UiGeometry
 public;UiStateEntry
 public;UiStateStorage

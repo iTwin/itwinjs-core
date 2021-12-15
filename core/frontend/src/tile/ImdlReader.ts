@@ -21,7 +21,7 @@ import { AuxChannelTable, AuxChannelTableProps } from "../render/primitives/AuxC
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { createSurfaceMaterial, isValidSurfaceType, SurfaceMaterial, SurfaceParams, SurfaceType } from "../render/primitives/SurfaceParams";
-import { EdgeParams, SegmentEdgeParams, SilhouetteParams } from "../render/primitives/EdgeParams";
+import { EdgeParams, IndexedEdgeParams, SegmentEdgeParams, SilhouetteParams } from "../render/primitives/EdgeParams";
 import { MeshParams, VertexIndices, VertexTable } from "../render/primitives/VertexTable";
 import { PointStringParams } from "../render/primitives/PointStringParams";
 import { PolylineParams, TesselatedPolyline } from "../render/primitives/PolylineParams";
@@ -122,10 +122,20 @@ interface ImdlSilhouetteEdges extends ImdlSegmentEdges {
   readonly normalPairs: string;
 }
 
+interface ImdlIndexedEdges {
+  readonly indices: string;
+  readonly edges: string;
+  readonly width: number;
+  readonly height: number;
+  readonly numSegments: number;
+  readonly silhouettePadding: number;
+}
+
 interface ImdlMeshEdges {
   readonly segments?: ImdlSegmentEdges;
   readonly silhouettes?: ImdlSilhouetteEdges;
   readonly polylines?: ImdlPolyline;
+  readonly indexed?: ImdlIndexedEdges;
 }
 
 interface ImdlPolyline {
@@ -762,10 +772,29 @@ export class ImdlReader extends GltfReader {
     return undefined !== segments && undefined !== normalPairs ? { normalPairs, indices: segments.indices, endPointAndQuadIndices: segments.endPointAndQuadIndices } : undefined;
   }
 
+  private readIndexedEdges(json: ImdlIndexedEdges): IndexedEdgeParams | undefined {
+    const indices = this.readVertexIndices(json.indices);
+    const edgeTable = this.findBuffer(json.edges);
+    if (!indices || !edgeTable)
+      return undefined;
+
+    return {
+      indices,
+      edges: {
+        data: edgeTable,
+        width: json.width,
+        height: json.height,
+        silhouettePadding: json.silhouettePadding,
+        numSegments: json.numSegments,
+      },
+    };
+  }
+
   private readEdges(json: ImdlMeshEdges, displayParams: DisplayParams): { succeeded: boolean, params?: EdgeParams } {
     let segments: SegmentEdgeParams | undefined;
     let silhouettes: SilhouetteParams | undefined;
     let polylines: TesselatedPolyline | undefined;
+    let indexed: IndexedEdgeParams | undefined;
 
     let succeeded = false;
     if (undefined !== json.segments && undefined === (segments = this.readSegmentEdges(json.segments)))
@@ -777,13 +806,17 @@ export class ImdlReader extends GltfReader {
     if (undefined !== json.polylines && undefined === (polylines = this.readTesselatedPolyline(json.polylines)))
       return { succeeded };
 
+    if (undefined !== json.indexed && undefined === (indexed = this.readIndexedEdges(json.indexed)))
+      return { succeeded };
+
     succeeded = true;
     let params: EdgeParams | undefined;
-    if (undefined !== segments || undefined !== silhouettes || undefined !== polylines) {
+    if (segments || silhouettes || polylines || indexed) {
       params = {
         segments,
         silhouettes,
         polylines,
+        indexed,
         weight: displayParams.width,
         linePixels: displayParams.linePixels,
       };

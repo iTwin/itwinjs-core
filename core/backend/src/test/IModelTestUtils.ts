@@ -342,8 +342,8 @@ export class IModelTestUtils {
       model,
       code: newModelCode,
     };
-    const modeledElement: Element = testDb.elements.createElement(modeledElementProps);
-    await testDb.locks.acquireSharedLock(model);
+    const modeledElement = testDb.elements.createElement(modeledElementProps);
+    await testDb.locks.acquireLocks({ shared: model });
     return testDb.elements.insertElement(modeledElement);
   }
 

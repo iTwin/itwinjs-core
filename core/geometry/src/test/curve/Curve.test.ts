@@ -45,6 +45,7 @@ import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
 import { DirectSpiral3d } from "../../curve/spiral/DirectSpiral3d";
 import { InterpolationCurve3d } from "../../bspline/InterpolationCurve3d";
+import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
 
 /* eslint-disable no-console */
 
@@ -492,6 +493,23 @@ class ExerciseCurve {
       }
     }
 
+    {
+      const poles = [Point3d.create(0,0,0), Point3d.create(5,0,0), Point3d.create(5,5,0), Point3d.create(0,5,0)];
+      for (let order = 2; order <= poles.length; ++order) {
+        const bcurve = BSplineCurve3d.createPeriodicUniformKnots(poles, order);
+        if (ck.testPointer(bcurve)) {
+          ExerciseCurve.exerciseFractionToPoint(ck, bcurve, false, false);
+          ExerciseCurve.exerciseMoveSignedDistance(ck, bcurve);
+          ExerciseCurve.exerciseStroke(ck, bcurve);
+          ExerciseCurve.exerciseCloneAndTransform(ck, bcurve);
+          ExerciseCurve.exerciseClosestPoint(ck, bcurve, 0.1);
+          GeometryCoreTestIO.captureGeometry(allGeometry, bcurve, dx);
+          testGeometryQueryRoundTrip(ck, bcurve);
+          dx += bcurve.range().xLength() + dxGap;
+        }
+      }
+    }
+
     { // with weights, but all weights 1.0
       const bcurveH1 = BSplineCurve3dH.createUniformKnots([Point4d.create(0, 0, 0, 1), Point4d.create(5, 0, 0, 1), Point4d.create(10, 4, 0, 1)], 3);
       if (ck.testPointer(bcurveH1)) {
@@ -503,7 +521,7 @@ class ExerciseCurve {
         }
     }
 
-/*  {   // TODO: comment out until fix homogeneous exerciseClosestPoint bugs (16)
+  {
       const poles4d = [
         Point4d.create(0, 0, 0, 1),
         Point4d.create(5, 0, 0, 0.8),
@@ -524,7 +542,6 @@ class ExerciseCurve {
         }
       }
     }
-*/
     {
       const radius = 2;
       const points = Sample.createArcStrokes(4, Point3d.create(radius, 0, 0), radius, Angle.createDegrees(0), Angle.createDegrees(225), false);
@@ -587,11 +604,10 @@ class ExerciseCurve {
     {
       if (Checker.noisy.testTransitionSpiral) {
         for (const spiral of [
+          IntegratedSpiral3d.createRadiusRadiusBearingBearing(Segment1d.create(0, 1000), AngleSweep.createStartEndDegrees(0, 10), Segment1d.create(0, 1), Transform.createIdentity()),
           DirectSpiral3d.createDirectHalfCosine(Transform.createIdentity(), 100, 300, undefined),
           DirectSpiral3d.createJapaneseCubic(Transform.createIdentity(), 100, 300, undefined),
           DirectSpiral3d.createArema(Transform.createIdentity(), 100, 300, undefined),
-          // TODO: comment out until fix clothoid exerciseClosestPoint bug (1)
-          // IntegratedSpiral3d.createRadiusRadiusBearingBearing(Segment1d.create(0, 1000), AngleSweep.createStartEndDegrees(0, 10), Segment1d.create(0, 1), Transform.createIdentity())
           ]) {
           if (ck.testPointer(spiral)) {
             ExerciseCurve.exerciseCurvePlaneIntersections(ck, spiral);

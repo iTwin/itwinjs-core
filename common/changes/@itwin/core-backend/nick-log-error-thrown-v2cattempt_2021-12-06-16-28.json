@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Log the error that we catch when v2 checkpoint fails to open",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

@@ -8,7 +8,7 @@
 
 import { Matrix3d, Point3d, Vector3d } from "@itwin/core-geometry";
 import { IModelApp, SelectedViewportChangedArgs, StandardViewId, Viewport } from "@itwin/core-frontend";
-import { UiEvent } from "@itwin/core-react";
+import { UiEvent } from "@itwin/appui-abstract";
 import { Face } from "../navigationaids/Cube";
 
 /** Arguments for [[DrawingViewportChangeEvent]]

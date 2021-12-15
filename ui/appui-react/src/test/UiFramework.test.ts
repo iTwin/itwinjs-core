@@ -16,7 +16,7 @@ import { Presentation, SelectionManager, SelectionScopesManager, SelectionScopes
 import { initialize as initializePresentationTesting, terminate as terminatePresentationTesting } from "@itwin/presentation-testing";
 import { ColorTheme, CursorMenuData, SettingsModalFrontstage, UiFramework, UserSettingsProvider } from "../appui-react";
 import { LocalStateStorage, UiStateStorage } from "@itwin/core-react";
-import TestUtils, { mockUserInfo, storageMock } from "./TestUtils";
+import TestUtils, { storageMock } from "./TestUtils";
 import { OpenSettingsTool } from "../appui-react/tools/OpenSettingsTool";
 
 describe("UiFramework localStorage Wrapper", () => {
@@ -190,11 +190,6 @@ describe("UiFramework localStorage Wrapper", () => {
       await TestUtils.initializeUiFramework();
       const settingsProvider = new testSettingsProvider();
       UiFramework.registerUserSettingsProvider(settingsProvider);
-
-      const userInfo = mockUserInfo();
-
-      UiFramework.setUserInfo(userInfo);
-      expect(UiFramework.getUserInfo()!.id).to.eq(userInfo.id);
 
       UiFramework.setDefaultIModelViewportControlId("DefaultIModelViewportControlId");
       expect(UiFramework.getDefaultIModelViewportControlId()).to.eq("DefaultIModelViewportControlId");

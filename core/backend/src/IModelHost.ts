@@ -445,7 +445,7 @@ export class IModelHost {
     this._briefcaseCacheDir = path.join(this._cacheDir, "imodels");
   }
 
-  /** This method must be called when an iTwin.js services is shut down. Raises [[onBeforeShutdown]] */
+  /** This method must be called when an iTwin.js host is shut down. Raises [[onBeforeShutdown]] */
   public static async shutdown(): Promise<void> {
     // NB: This method is set as a node listener where `this` is unbound
     if (!IModelHost._isValid)
