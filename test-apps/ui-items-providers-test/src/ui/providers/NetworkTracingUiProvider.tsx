@@ -7,12 +7,14 @@ import * as React from "react";
 import {
   AbstractWidgetProps, BackstageItem,
   BackstageItemUtilities, BadgeType,
+  CommonStatusBarItem,
   CommonToolbarItem, ConditionalBooleanValue, IconSpecUtilities,
   StagePanelLocation, StagePanelSection,
+  StatusBarSection,
   ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage,
   UiItemsManager, UiItemsProvider, WidgetState,
 } from "@itwin/appui-abstract";
-import { StateManager, SyncUiEventDispatcher } from "@itwin/appui-react";
+import { Indicator, StateManager, StatusBarItemUtilities, SyncUiEventDispatcher } from "@itwin/appui-react";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
 import { PresentationPropertyGridWidget, PresentationPropertyGridWidgetControl } from "../widgets/PresentationPropertyGridWidget";
 import { OpenTraceDialogTool } from "../../tools/OpenTraceDialogTool";
@@ -20,6 +22,7 @@ import { NetworkTracingFrontstage } from "../frontstages/NetworkTracing";
 import { getTestProviderState, setIsTraceAvailable } from "../../store";
 import { UiItemsProvidersTest } from "../../ui-items-providers-test";
 import { SelectedElementDataWidgetComponent } from "../widgets/SelectedElementDataWidget";
+import { VisibilityTreeComponent } from "../widgets/VisibilityWidget";
 
 /** the following will import svgs into DOM and generate SymbolId that is used to locate the svg image. This
  * processing is done via the 'magic' webpack plugin and requires the use or the Bentley build scripts. */
@@ -133,7 +136,7 @@ export class NetworkTracingUiProvider implements UiItemsProvider {
 
       /** The following test tool hides/shows based on value in Redux store via `isTraceAvailableCondition` */
       const getStandaloneButton = ToolbarItemUtilities.createActionButton(
-        "trace-tool-standalone", 232, "icon-symbol",  UiItemsProvidersTest.translate("tools.trace-tool-standalone"),
+        "trace-tool-standalone", 232, "icon-symbol", UiItemsProvidersTest.translate("tools.trace-tool-standalone"),
         (): void => {
           IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "trace-tool-standalone activated", undefined, OutputMessageType.Toast));
         },
@@ -190,5 +193,15 @@ export class NetworkTracingUiProvider implements UiItemsProvider {
       // use 200 to group it with secondary stages in ui-test-app
       BackstageItemUtilities.createStageLauncher(NetworkTracingFrontstage.stageId, 200, 1, label, "from provider", "icon-draw"),
     ];
+  }
+
+  public provideStatusBarItems(stageId: string, _stageUsage: string): CommonStatusBarItem[] {
+    const statusBarItems: CommonStatusBarItem[] = [];
+    if (stageId === NetworkTracingFrontstage.stageId) {
+      statusBarItems.push(
+        StatusBarItemUtilities.createStatusBarItem("Test:Visibility", StatusBarSection.Center, 50, <Indicator iconSpec="icon-visibility" label="Searchable Tree" opened={false} dialog={<VisibilityTreeComponent />} />),
+      );
+    }
+    return statusBarItems;
   }
 }
