@@ -60,6 +60,9 @@
         height: 26px;
         width: 26px;
         padding: 4px;
+        span {
+          display: flex;
+        }
       }
     }
 
