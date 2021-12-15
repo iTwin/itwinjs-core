@@ -23,6 +23,7 @@ export const enum TechniqueId {
   PointString,
   Edge,
   SilhouetteEdge,
+  IndexedEdge,
   RealityMesh,
   PlanarGrid,
 

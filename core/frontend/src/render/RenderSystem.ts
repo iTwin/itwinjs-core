@@ -28,7 +28,9 @@ import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
 import { RealityMeshPrimitive } from "./primitives/mesh/RealityMeshPrimitive";
 import { TerrainMeshPrimitive } from "./primitives/mesh/TerrainMeshPrimitive";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
-import { MeshParams, PointStringParams, PolylineParams } from "./primitives/VertexTable";
+import { PointStringParams } from "./primitives/PointStringParams";
+import { PolylineParams } from "./primitives/PolylineParams";
+import { MeshParams } from "./primitives/VertexTable";
 import { RenderClipVolume } from "./RenderClipVolume";
 import { RenderGraphic, RenderGraphicOwner } from "./RenderGraphic";
 import { RenderMemory } from "./RenderMemory";
@@ -268,6 +270,9 @@ export abstract class RenderSystem implements IDisposable {
 
   /** @internal */
   public get supportsInstancing(): boolean { return true; }
+
+  /** @internal */
+  public get supportsIndexedEdges(): boolean { return true; }
 
   /** @internal */
   public get supportsNonuniformScaledInstancing(): boolean { return true; }

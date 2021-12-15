@@ -93,7 +93,7 @@ class IncidentClusterMarker extends Marker {
   }
 
   /** Create a new cluster marker with label and color based on the content of the cluster */
-  constructor(location: XYAndZ, size: XAndY, cluster: Cluster<IncidentMarker>, image: Promise<MarkerImage>) {
+  constructor(location: XYAndZ, size: XAndY, cluster: Cluster<IncidentMarker>, image: MarkerImage | Promise<MarkerImage> | undefined) {
     super(location, size);
 
     // get the top 10 incidents by severity
@@ -116,6 +116,7 @@ class IncidentClusterMarker extends Marker {
     this.label = cluster.markers.length.toLocaleString();
     this.labelColor = "black";
     this.labelFont = "bold 14px sans-serif";
+    this.setScaleFactor({ low: .7, high: 1.2 });
 
     let title = "";
     sorted.forEach((marker) => {
@@ -130,14 +131,15 @@ class IncidentClusterMarker extends Marker {
     div.innerHTML = title;
     this.title = div;
     this._clusterColor = IncidentMarker.makeColor(sorted[0].severity).toHexString();
-    this.setImage(image);
+    if (image)
+      this.setImage(image);
   }
 }
 
 /** A MarkerSet to hold incidents. This class supplies to `getClusterMarker` method to create IncidentClusterMarkers. */
 class IncidentMarkerSet extends MarkerSet<IncidentMarker> {
   protected getClusterMarker(cluster: Cluster<IncidentMarker>): Marker {
-    return IncidentClusterMarker.makeFrom(cluster.markers[0], cluster, IncidentMarkerDemo.decorator!.warningSign);
+    return new IncidentClusterMarker(cluster.getClusterLocation(), cluster.markers[0].size, cluster, IncidentMarkerDemo.decorator!.warningSign);
   }
 }
 

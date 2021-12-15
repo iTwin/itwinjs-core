@@ -13,7 +13,8 @@ import { IModelConnection } from "../../IModelConnection";
 import { createBlankConnection } from "../createBlankConnection";
 import { RenderSystem } from "../../render/RenderSystem";
 import { ScreenViewport } from "../../Viewport";
-import { MeshParams, SurfaceType } from "../../render/primitives/VertexTable";
+import { MeshParams } from "../../render/primitives/VertexTable";
+import { SurfaceType } from "../../render/primitives/SurfaceParams";
 import { MeshArgs } from "../../render/primitives/mesh/MeshPrimitives";
 import { MeshGraphic } from "../../render/webgl/Mesh";
 import { InstancedGraphicParams } from "../../render/InstancedGraphicParams";
@@ -24,7 +25,8 @@ describe("GraphicBuilder", () => {
   let viewport: ScreenViewport;
 
   before(async () => {
-    await IModelApp.startup();
+    // One test wants to confirm number of segment and silhouette edges produced - disable indexed edges.
+    await IModelApp.startup({ tileAdmin: { enableIndexedEdges: false } });
     imodel = createBlankConnection();
   });
 

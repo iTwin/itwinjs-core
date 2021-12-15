@@ -9,8 +9,8 @@
 import { join } from "path";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import {
-  AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus,
-  JsonUtils, Logger, OpenMode,
+  AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
+  IModelStatus, JsonUtils, Logger, OpenMode, UnexpectedErrors,
 } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
@@ -46,7 +46,7 @@ import { ServerBasedLocks } from "./ServerBasedLocks";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
-import { BaseSettings, SettingName, SettingResolver, SettingsPriority, SettingType } from "./workspace/Settings";
+import { BaseSettings, SettingDictionary, SettingName, SettingResolver, SettingsPriority, SettingType } from "./workspace/Settings";
 import { ITwinWorkspace, Workspace } from "./workspace/Workspace";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
@@ -125,19 +125,17 @@ export interface LockControl {
    */
   holdsSharedLock(id: Id64String): boolean;
   /**
-   * Acquire the exclusive lock on one or more elements from the lock server, if locks are required and not already held.
+   * Acquire locks on one or more elements from the lock server, if required and not already held.
    * If any required lock is not available, this method throws an exception and *none* of the requested locks are acquired.
    * > Note: acquiring the exclusive lock on an element requires also obtaining a shared lock on all its owner elements. This method will
-   * attempt to acquire all necessary locks for the set of input ids.
+   * attempt to acquire all necessary locks for both sets of input ids.
    */
-  acquireExclusiveLock(ids: Id64Arg): Promise<void>;
-  /**
-   * Acquire a shared lock on one or more elements from the lock server, if locks are required and not already held.
-   * If any required lock is not available, this method throws an exception and *none* of the requested locks are acquired.
-   * > Note: acquiring the shared lock on an element requires also obtaining a shared lock on all its owner elements. This method will
-   * attempt to acquire all necessary locks for the set of input ids.
-   */
-  acquireSharedLock(ids: Id64Arg): Promise<void>;
+  acquireLocks(arg: {
+    /** if present, one or more elements to obtain shared lock */
+    shared?: Id64Arg;
+    /** if present, one or more elements to obtain exclusive lock */
+    exclusive?: Id64Arg;
+  }): Promise<void>;
   /**
    * Release all locks currently held by this Briefcase from the lock server.
    */
@@ -154,8 +152,7 @@ class NoLocks implements LockControl {
   public checkExclusiveLock(): void { }
   public checkSharedLock(): void { }
   public elementWasCreated(): void { }
-  public async acquireExclusiveLock(): Promise<void> { }
-  public async acquireSharedLock(): Promise<void> { }
+  public async acquireLocks() { }
   public async releaseAllLocks(): Promise<void> { }
 }
 
@@ -236,7 +233,7 @@ export abstract class IModelDb extends IModel {
    * will be able to acquire *any* locks while the schema lock is held.
    */
   public async acquireSchemaLock(): Promise<void> {
-    return this.locks.acquireExclusiveLock(IModel.repositoryModelId);
+    return this.locks.acquireLocks({ exclusive: IModel.repositoryModelId });
   }
   /** determine whether the schema lock is currently held for this iModel. */
   public get holdsSchemaLock() {
@@ -281,6 +278,7 @@ export abstract class IModelDb extends IModel {
     this.initializeIModelDb();
     IModelDb._openDbs.set(this._fileKey, this);
     this._workspace = new ITwinWorkspace(new IModelSettings(), IModelHost.appWorkspace);
+    this.loadSettingDictionaries();
 
     if (undefined === IModelDb._shutdownListener) { // the first time we create an IModelDb, add a listener to close any orphan files at shutdown.
       IModelDb._shutdownListener = IModelHost.onBeforeShutdown.addListener(() => {
@@ -1177,6 +1175,59 @@ export abstract class IModelDb extends IModel {
    */
   public async generateElementGraphics(request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined> {
     return generateElementGraphics(request, this);
+  }
+
+  private static _settingPropNamespace = "settings";
+
+  /** Save a `SettingDictionary` in this iModel that will be loaded into [[workspace.settings]] every time this iModel is opened in future sessions.
+   * @param name The name for the SettingDictionary. If a dictionary by that name already exists in the iModel, its value is replaced.
+   * @param dict The SettingDictionary object to stringify and save.
+   * @note All saved `SettingDictionary`s are loaded into [[workspace.settings]] every time an iModel is opened.
+   * @beta
+   */
+  public saveSettingDictionary(name: string, dict: SettingDictionary) {
+    this.withSqliteStatement("REPLACE INTO be_Prop(id,SubId,TxnMode,Namespace,Name,strData) VALUES(0,0,0,?,?,?)", (stmt) => {
+      stmt.bindString(1, IModelDb._settingPropNamespace);
+      stmt.bindString(2, name);
+      stmt.bindString(3, JSON.stringify(dict));
+      const rc = stmt.step();
+      if (rc !== DbResult.BE_SQLITE_DONE)
+        throw new IModelError(rc, "cannot save setting");
+    });
+    this.saveChanges("add settings");
+  }
+
+  /** Delete a SettingDictionary, previously added with [[saveSettingDictionary]], from this iModel.
+   * @param name The name of the dictionary to delete.
+   * @beta
+   */
+  public deleteSettingDictionary(name: string) {
+    this.withSqliteStatement("DELETE FROM be_Prop WHERE Namespace=? AND Name=?", (stmt) => {
+      stmt.bindString(1, IModelDb._settingPropNamespace);
+      stmt.bindString(2, name);
+      const rc = stmt.step();
+      if (rc !== DbResult.BE_SQLITE_DONE)
+        throw new IModelError(rc, "cannot delete setting");
+    });
+    this.saveChanges("delete settings");
+  }
+
+  /** Load all setting dictionaries in this iModel into `this.workspace.settings` */
+  private loadSettingDictionaries() {
+    if (!this.nativeDb.isOpen())
+      return;
+
+    this.withSqliteStatement("SELECT Name,StrData FROM be_Prop WHERE Namespace=?", (stmt) => {
+      stmt.bindString(1, IModelDb._settingPropNamespace);
+      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+        try {
+          const dict = JSON.parse(stmt.getValueString(1));
+          this.workspace.settings.addDictionary(stmt.getValueString(0), SettingsPriority.iModel, dict);
+        } catch (e) {
+          UnexpectedErrors.handle(e);
+        }
+      }
+    });
   }
 }
 

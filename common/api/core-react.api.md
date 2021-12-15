@@ -737,14 +737,14 @@ export interface ExpansionToggleProps extends CommonProps {
 // @beta @deprecated
 export function FeaturedTile(props: TileProps): JSX.Element;
 
-// @public
+// @public @deprecated
 export class Field extends React.Component<FieldProps> {
     constructor(props: FieldProps);
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @public
+// @public @deprecated
 export interface FieldDef {
     // (undocumented)
     editor?: FieldEditor;
@@ -764,16 +764,16 @@ export interface FieldDefinitions {
     [key: string]: FieldDef;
 }
 
-// @public
+// @public @deprecated
 export type FieldEditor = "textbox" | "multilinetextbox" | "dropdown" | "checkbox";
 
-// @public
+// @public @deprecated
 export interface FieldProps extends FieldDef {
     // (undocumented)
     id: string;
 }
 
-// @public
+// @public @deprecated
 export interface FieldValues {
     // (undocumented)
     [key: string]: any;
@@ -820,7 +820,7 @@ export class Form extends React.Component<FormProps, FormState> {
     render(): JSX.Element;
     }
 
-// @public
+// @public @deprecated
 export const FormContext: React.Context<FormContextState | undefined>;
 
 // @public
@@ -2369,7 +2369,7 @@ export class UiCore {
     static translate(key: string | string[]): string;
 }
 
-// @public
+// @public @deprecated
 export class UiEvent<TEventArgs> extends BeUiEvent<TEventArgs> {
 }
 

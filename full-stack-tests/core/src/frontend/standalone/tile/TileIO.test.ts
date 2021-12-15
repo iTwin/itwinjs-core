@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { ByteStream, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  BatchType, CurrentImdlVersion, ImdlFlags, ImdlHeader, IModelRpcProps, IModelTileRpcInterface, IModelTileTreeId, iModelTileTreeIdToString,
+  BatchType, CurrentImdlVersion, EdgeType, ImdlFlags, ImdlHeader, IModelRpcProps, IModelTileRpcInterface, IModelTileTreeId, iModelTileTreeIdToString,
   ModelProps, RelatedElementProps, RenderMode, TileContentSource, TileFormat, TileReadStatus, ViewFlags,
 } from "@itwin/core-common";
 import {
@@ -628,7 +628,7 @@ describe("mirukuru TileTree", () => {
 
     const options = { is3d: true, batchType: BatchType.Primary, edgesRequired: true, allowInstancing: true };
     const params = iModelTileTreeParamsFromJSON(treeProps, imodel, "0x1c", options);
-    const tree = new IModelTileTree(params, { edgesRequired: true, type: BatchType.Primary });
+    const tree = new IModelTileTree(params, { edges: EdgeType.NonIndexed, type: BatchType.Primary });
 
     const response: TileRequest.Response = await tree.staticBranch.requestContent();
     expect(response).not.to.be.undefined;
@@ -687,7 +687,7 @@ describe("mirukuru TileTree", () => {
     const options = { is3d: true, batchType: BatchType.Primary, edgesRequired: false, allowInstancing: false };
     const params = iModelTileTreeParamsFromJSON(v3Props, imodel, "0x1c", options);
 
-    const v3Tree = new IModelTileTree(params, { edgesRequired: false, type: BatchType.Primary });
+    const v3Tree = new IModelTileTree(params, { edges: EdgeType.None, type: BatchType.Primary });
     await test(v3Tree, 0x00030000, "_3_0_0_0_0_0_1");
   });
 
@@ -771,7 +771,7 @@ describe.skip("TileAdmin", () => {
           expectedTreeIdStrNoEdges = `${expectedTreeIdStr.substring(0, lastIndex)}E:0_${expectedTreeIdStr.substring(lastIndex)}`;
         }
 
-        const treeId: IModelTileTreeId = { type: BatchType.Primary, edgesRequired: false, animationId };
+        const treeId: IModelTileTreeId = { type: BatchType.Primary, edges: EdgeType.None, animationId };
         let actualTreeIdStr = iModelTileTreeIdToString("0x1c", treeId, IModelApp.tileAdmin);
         expect(actualTreeIdStr).to.equal(expectedTreeIdStrNoEdges);
 
@@ -787,7 +787,7 @@ describe.skip("TileAdmin", () => {
         expect(await this.rootTileHasEdges(treeNoEdges, imodel)).to.equal(!requestWithoutEdges);
 
         // Test with edges
-        treeId.edgesRequired = true;
+        treeId.edges = EdgeType.NonIndexed;
         actualTreeIdStr = iModelTileTreeIdToString("0x1c", treeId, IModelApp.tileAdmin);
         expect(actualTreeIdStr).to.equal(expectedTreeIdStr);
 
@@ -903,7 +903,7 @@ describe.skip("TileAdmin", () => {
 
         const options = { is3d: true, batchType: BatchType.Primary, edgesRequired: true, allowInstancing: true };
         const params = iModelTileTreeParamsFromJSON(treeProps, imodel, "0x1c", options);
-        const tree = new IModelTileTree(params, { edgesRequired: true, type: BatchType.Primary });
+        const tree = new IModelTileTree(params, { edges: EdgeType.NonIndexed, type: BatchType.Primary });
 
         const intfc = IModelTileRpcInterface.getClient();
         const generateTileContent = intfc.generateTileContent;

@@ -144,7 +144,7 @@ class DistanceIndexConstructionContext implements IStrokeHandler {
       this._fragments.push(new PathFragment(fraction0, fraction1, d0, this._accumulatedDistance, cp));
     } else {
       let f1;
-      for (let i = 1, f0 = 0.0; i <= numStrokes; i++, f0 = f1) {
+      for (let i = 1, f0 = fraction0; i <= numStrokes; i++, f0 = f1) {
         f1 = Geometry.interpolate(fraction0, i / numStrokes, fraction1);
         d0 = this._accumulatedDistance;
         this._accumulatedDistance += (Math.abs(f1 - f0) * point0.distance(point1));
@@ -524,11 +524,10 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
    *     (via a handler) determines a CurveLocation detail among the children.
    * * The returned detail directly identifies fractional position along the CurveChainWithDistanceIndex, and has pointer to an additional detail for the child curve.
    * @param spacePoint point in space
-   * @param extend true to extend the curve (NOT USED)
+   * @param extend true to extend the curve
    * @returns Returns a CurveLocationDetail structure that holds the details of the close point.
    */
   public override closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter): CurveLocationDetail | undefined {
-    // umm... to "extend", would require selective extension of first, last
     let childDetail: CurveLocationDetail | undefined;
     let aMin = Number.MAX_VALUE;
     const numChildren = this.path.children.length;

@@ -446,6 +446,15 @@ export class PresentationManager {
 
   private getRulesetIdObject(rulesetOrId: Ruleset | string): { uniqueId: string, parts: { id: string, hash?: string } } {
     if (typeof rulesetOrId === "object") {
+      if (IpcHost.isValid) {
+        // in case of native apps we don't want to enforce ruleset id uniqueness as ruleset variables
+        // are stored on a backend and creating new id will lose those variables
+        return {
+          uniqueId: rulesetOrId.id,
+          parts: { id: rulesetOrId.id },
+        };
+      }
+
       const hashedId = hash.MD5(rulesetOrId);
       return {
         uniqueId: `${rulesetOrId.id}-${hashedId}`,

@@ -367,6 +367,40 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     return curve;
   }
 
+  /** Create a smoothly closed B-spline curve with uniform knots.
+   *  Note that the curve does not start at the first pole.
+  */
+  public static createPeriodicUniformKnots(poles: Point3d[] | Float64Array | GrowableXYZArray, order: number): BSplineCurve3d | undefined {
+    const numPoles = poles instanceof Float64Array ? poles.length / 3 : poles.length;
+    if (order < 1 || numPoles < order)
+      return undefined;
+    const degree = order - 1;
+    const numIntervals = numPoles;
+    const knots = KnotVector.createUniformWrapped(numIntervals, degree, 0.0, 1.0);
+    knots.wrappable = BSplineWrapMode.OpenByAddingControlPoints;
+    // append degree wraparound poles
+    const curve = new BSplineCurve3d(numPoles + degree, order, knots);
+    if (poles instanceof Float64Array) {
+      for (let i = 0; i < 3 * numPoles; i++)
+        curve._bcurve.packedData[i] = poles[i];
+      for (let i = 0; i < 3 * degree; i++)
+        curve._bcurve.packedData[3 * numPoles + i] = poles[i];
+    } else if (poles instanceof GrowableXYZArray) {
+      curve._bcurve.packedData = poles.float64Data().slice(0, 3 * numPoles);
+      for (let i = 0; i < 3 * degree; i++)
+        curve._bcurve.packedData[3 * numPoles + i] = poles.float64Data()[i];
+    } else {
+      let i = 0;
+      for (const p of poles) { curve._bcurve.packedData[i++] = p.x; curve._bcurve.packedData[i++] = p.y; curve._bcurve.packedData[i++] = p.z; }
+      for (let j = 0; j < degree; j++) {
+        curve._bcurve.packedData[i++] = poles[j].x;
+        curve._bcurve.packedData[i++] = poles[j].y;
+        curve._bcurve.packedData[i++] = poles[j].z;
+      }
+    }
+    return curve;
+  }
+
   /**
    * Create a C2 cubic B-spline curve that interpolates the given points and optional end tangents.
    * @param options collection of points and end conditions.
