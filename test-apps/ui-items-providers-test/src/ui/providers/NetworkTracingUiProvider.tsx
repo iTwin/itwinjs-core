@@ -14,6 +14,7 @@ import {
   ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage,
   UiItemsManager, UiItemsProvider, WidgetState,
 } from "@itwin/appui-abstract";
+import { CustomToolbarItem } from "@itwin/components-react";
 import { Indicator, StateManager, StatusBarItemUtilities, SyncUiEventDispatcher } from "@itwin/appui-react";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
 import { PresentationPropertyGridWidget, PresentationPropertyGridWidgetControl } from "../widgets/PresentationPropertyGridWidget";
@@ -145,7 +146,19 @@ export class NetworkTracingUiProvider implements UiItemsProvider {
           badgeType: BadgeType.TechnicalPreview,
         }
       );
-      return [groupSpec, getStandaloneButton, toggleTracingSpec];
+
+      const customVisibilityTreeButton: CustomToolbarItem = {
+        isCustom: true,
+        id: "test.custom-popup-with-visibility-tree",
+        itemPriority: 225,
+        icon: "icon-tree",
+        label: "Searchable Tree",
+        panelContentNode: <VisibilityTreeComponent />,
+        keepContentsLoaded: true,
+        groupPriority: 20,
+      };
+
+      return [groupSpec, getStandaloneButton, toggleTracingSpec, customVisibilityTreeButton];
     }
     return [];
   }
@@ -199,7 +212,7 @@ export class NetworkTracingUiProvider implements UiItemsProvider {
     const statusBarItems: CommonStatusBarItem[] = [];
     if (stageId === NetworkTracingFrontstage.stageId) {
       statusBarItems.push(
-        StatusBarItemUtilities.createStatusBarItem("Test:Visibility", StatusBarSection.Center, 50, <Indicator iconSpec="icon-visibility" label="Searchable Tree" opened={false} dialog={<VisibilityTreeComponent />} />),
+        StatusBarItemUtilities.createStatusBarItem("Test:Visibility", StatusBarSection.Center, 50, <Indicator iconSpec="icon-tree" isLabelVisible={false} label="Searchable Tree" opened={false} dialog={<VisibilityTreeComponent />} />),
       );
     }
     return statusBarItems;

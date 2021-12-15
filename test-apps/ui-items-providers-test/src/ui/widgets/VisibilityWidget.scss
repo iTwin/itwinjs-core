@@ -3,6 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+.nz-footer-popup div.ui-test-app-visibility-widget {
+  height: 50vh;
+}
+
+.core-popup.components-toolbar-popupItem_popupItemPopup div.ui-test-app-visibility-widget {
+  height: 50vh;
+}
+
 .ui-test-app-visibility-widget {
   padding: 4px 4px 5px 5px;
   width: 100%;
