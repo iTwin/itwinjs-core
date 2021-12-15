@@ -9,7 +9,8 @@ import { join } from "path";
 import * as readline from "readline";
 import * as Yargs from "yargs";
 import {
-  CloudSqlite, EditableWorkspaceDb, IModelHost, IModelHostConfiguration, IModelJsFs, ITwinWorkspaceDb, WorkspaceContainerId, WorkspaceDbName,
+  CloudSqlite,
+  EditableWorkspaceDb, IModelHost, IModelHostConfiguration, IModelJsFs, ITwinWorkspaceDb, WorkspaceContainerId, WorkspaceDbName,
   WorkspaceResourceName,
 } from "@itwin/core-backend";
 import { DbResult, StopWatch } from "@itwin/core-bentley";
