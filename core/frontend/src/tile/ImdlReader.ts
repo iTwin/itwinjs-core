@@ -74,28 +74,39 @@ function extractNodeId(nodeName: string): number {
   return Number.isNaN(nodeId) ? 0 : nodeId;
 }
 
-/** [r, g, b] with each component in [0..1]. */
+/** Describes a [ColorDef]($common) as [r, g, b] with each component in [0..1]. */
 type ImdlColorDef = number[];
 
+/** Describes a [TextureMapping]($common). */
 interface ImdlTextureMapping {
+  /** Optional name, which may be the Id of a persistent [RenderTexture]($common) or some other name unique among all texture mappings within the tile. */
   name?: string;
+  /** Describes the [TextureMapping.Params]($common). */
   params: {
+    /** Describes a [TextureMapping.Trans2x3]($common) as a 2x3 matrix. */
     transform: number[][];
+    /** @see [TextureMapping.Params.weight]($common). Default: 1.0. */
     weight?: number;
+    /** Default: [TextureMapping.Mode.Parametric]($common). */
     mode?: TextureMapping.Mode;
+    /** @see [TextureMapping.Params.worldMapping]($common). Default: false. */
     worldMapping?: boolean;
   };
 }
 
+/** Describes a [RenderTexture]($common) with its image embedded into the tile data. */
 interface ImdlNamedTexture {
+  /** If true, the image is a texture atlas containing any number of glyphs used for text. */
   isGlyph?: boolean;
+  /** If true, the texture should not repeat and should not be mip-mapped. */
   isTileSection?: boolean;
+  /** The Id of the [[ImdlBufferView]] containing the image data. */
   bufferView: string;
+  /** The format of the image data referenced by [[bufferView]]. */
   format: ImageSourceFormat;
-  /** This is set when we load the texture. */
-  renderTexture?: RenderTexture;
 }
 
+/** Describes a [[DisplayParams]]. */
 interface ImdlDisplayParams {
   type: DisplayParams.Type;
   lineColor?: ColorDefProps;
@@ -109,6 +120,7 @@ interface ImdlDisplayParams {
   gradient?: Gradient.SymbProps;
 }
 
+/** Describes a [RenderMaterial]($common). */
 interface ImdlRenderMaterial {
   diffuseColor?: ImdlColorDef;
   diffuse?: number;
@@ -127,30 +139,47 @@ interface ImdlRenderMaterial {
   };
 }
 
+/** Describes a [[SurfaceMaterialAtlas]] embedded into an [[ImdlVertexTable]]. */
 interface ImdlMaterialAtlas {
   readonly numMaterials: number;
   readonly hasTranslucency?: boolean;
   readonly overridesAlpha?: boolean;
 }
 
+/** Describes a [[VertexTable]]. */
 interface ImdlVertexTable {
+  /** Id of the [[ImdlBufferView]] containing the binary vertex table data. */
   readonly bufferView: string;
+  /** The number of vertices in the table. */
   readonly count: number;
+  /** The number of RGBA values in the lookup texture allocated per vertex. */
   readonly numRgbaPerVertex: number;
+  /** The number of colors in the color table embedded into the vertex table, or undefined if [[uniformColor]] is defined. */
   readonly numColors?: number;
+  /** The width of the lookup texture. */
   readonly width: number;
+  /** The height of the lookup texture. */
   readonly height: number;
+  /** True if [[uniformColor]] has transparency or the embedded color table contains transparent colors. */
   readonly hasTranslucency: boolean;
+  /** Describes the number (0, 1, or more than 1) of features contained in the vertex table. */
   readonly featureIndexType: FeatureIndexType;
+  /** If [[featureIndexType]] is [FeatureIndexType.Uniform]($common), the ID of the feature associated with all vertices in the table. */
   readonly featureID?: number;
+  /** If defined, the color associated with all vertices in the table. */
   readonly uniformColor?: ColorDefProps;
+  /** The quantization range of the vertex positions. @see [QParams3d]($common). */
   readonly params: {
     readonly decodedMin: number[];
     readonly decodedMax: number[];
   };
+  /** If the vertex table contains multiple surface materials, describes the embedded material atlas. */
   readonly materialAtlas?: ImdlMaterialAtlas;
 }
 
+/** Describes how to draw a single [[ImdlPrimitive]] repeatedly.
+ * @see [[InstancedGraphicParams]].
+ */
 interface ImdlInstances {
   readonly count: number;
   readonly transformCenter: number[];
@@ -159,57 +188,108 @@ interface ImdlInstances {
   readonly symbologyOverrides?: string;
 }
 
+/** Describes a unit of geometry within an [[ImdlMesh]]. */
 interface ImdlPrimitive {
+  /** The Id of the associated [[ImdlDisplayParams]]. */
   readonly material?: string;
+  /** A lookup table containing the primitive's vertices. */
   readonly vertices: ImdlVertexTable;
+  /** If true, all the vertices lie in a single plane. */
   readonly isPlanar?: boolean;
+  /** If defined, a point about which the primitive should rotate when displayed to always face the camera. */
   readonly viewIndependentOrigin?: XYZProps;
+  /** If defined, describes repeated instances of the same primitive. */
   readonly instances?: ImdlInstances;
 }
 
+/** Per-vertex data used to animate and/or resymbolize a mesh.
+ * @see [[AuxChannelTable]].
+ */
 type ImdlAuxChannelTable = Omit<AuxChannelTableProps, "data"> & { bufferView: string };
 
+/** Describes the "hard" edges of an [[ImdlMeshPrimitive]]. These edges represent simple line segments connecting two vertices of the mesh.
+ * They are always visible regardless of view orientation.
+ * Each segment is represented as a quad such that it can be expanded to a desired width in pixels.
+ */
 interface ImdlSegmentEdges {
+  /** Id of the [[ImdlBufferView]] containing - for each vertex of each quad - the 24-bit index of the vertex in the mesh's [[ImdlVertexTable]]. */
   readonly indices: string;
+  /** Id of the [[ImdlBufferView]] containing - for each vertex of each quad - the 24-bit index of the segmnent's other endpoint in the mesh's [[ImdlVertexTable]],
+   * along with a "quad index" in [0..3] identifying which corner of the quad the vertex represents.
+   */
   readonly endPointAndQuadIndices: string;
 }
 
+/** Describes "hidden" edges of an [[ImdlMeshPrimitive]]. These edges represent simple line segments connecting two vertices of the mesh.
+ * A given silhouette is visible when only one of the faces associated with the edge is facing the camera, producing view-dependent outlines for curved
+ * geometry like spheres and cones.
+ */
 interface ImdlSilhouetteEdges extends ImdlSegmentEdges {
+  /** The Id of the [[ImdlBufferView]] containing - for each vertex - a pair of [OctEncodedNormal]($common)s for the two faces associated with the edge. */
   readonly normalPairs: string;
 }
 
+/** A compact alternative representation of [[ImdlSegmentEdges]] and [[ImdlSilhouetteEdges]] consisting of a lookup table containing information about each unique
+ * edge, along with indices into that table.
+ * @see [[IndexedEdgeParams]].
+ */
 interface ImdlIndexedEdges {
+  /** Id of the [[ImdlBufferView]] containing the indices - 6 per segment, forming a quad. */
   readonly indices: string;
+  /** Id of the [[ImdlBufferView]] containing the lookup table binary data. */
   readonly edges: string;
+  /** Width of the lookup texture. */
   readonly width: number;
+  /** Height of the lookup texture. */
   readonly height: number;
+  /** The number of simple segments in the lower partition of the lookup table. @see [[IndexedEdgeParams.numSegments]]. */
   readonly numSegments: number;
+  /** The number of bytes inserted for alignment between the lower and upper partitions of the lookup table. @see [[IndexedEdgeParams.silhouettePadding]]. */
   readonly silhouettePadding: number;
 }
 
+/** Describes the edges of an [[ImdlMeshPrimitive]]. */
 interface ImdlMeshEdges {
+  /** @see [[ImdlSegmentEdges]]. */
   readonly segments?: ImdlSegmentEdges;
+  /** @see [[ImdlSilhouetteEdges]]. */
   readonly silhouettes?: ImdlSilhouetteEdges;
+  /** Line strings with additional joint triangles inserted to produce wide edges with rounded corners.
+   * Typically only produced for 2d views.
+   */
   readonly polylines?: ImdlPolyline;
+  /** @see [[ImdlIndexedEdges]]. */
   readonly indexed?: ImdlIndexedEdges;
 }
 
+/** Describes a collection of line strings with additional joint triangles inserted to produce wide line strings with rounded corners.
+ * @see [[TesselatedPolyline]] and [[PolylineParams]].
+ */
 interface ImdlPolyline {
+  /** Id of the [[ImdlBufferView]] containing the [[TesselatedPolyline.indices]]. */
   readonly indices: string;
+  /** Id of the [[ImdlBufferView]] containing the [[TesselatedPolyline.prevIndices]]. */
   readonly prevIndices: string;
+  /** Id of the [[ImdlBufferView]] containing the [[TesselatedPolyline.nextIndicesAndParams]]. */
   readonly nextIndicesAndParams: string;
 }
 
+/** Describes a planar region in which a pattern symbol is repeated in a regular grid.
+ * @see [[PatternGraphicParams]].
+ */
 interface ImdlAreaPattern {
   readonly type: "areaPattern";
-  /** Used as lookup key into ImdlReader._patternSymbols. */
+  /** The Id of the [[ImdlAreaPatternSymbol]] containing the pattern geometry. */
   readonly symbolName: string;
+  /** A [ClipVector]($geometry-core) used to clip symbols to the pattern region's boundary. */
   readonly clip: ClipVectorProps;
+  /** Uniform scale applied to the pattern geometry. */
   readonly scale: number;
+  /** Spacing between each instance of the pattern in meters. */
   readonly spacing: XYProps;
   readonly orgTransform: TransformProps;
   readonly origin: XYProps;
-  /** Lookup key in ImdlReader._bufferViews. */
+  /** Id of the [[ImdlBufferView]] containing the offset of each occurrence of the symbol in pattern-space. */
   readonly xyOffsets: string;
   readonly featureId: number;
   readonly modelTransform: TransformProps;
@@ -218,17 +298,24 @@ interface ImdlAreaPattern {
   readonly viewIndependentOrigin?: XYZProps;
 }
 
+/** Describes the surface of an [[ImdlMeshPrimitive]] as a collection of triangles. */
 interface ImdlSurface {
+  /** The type of surface. */
   readonly type: SurfaceType;
+  /** The 24-bit indices into the [[ImdlVertexTable]] of each triangle's vertex. */
   readonly indices: string;
+  /** If true, the [[ImdlTextureMapping]] is applied regardless of [ViewFlags.textures]($common). */
   readonly alwaysDisplayTexture?: boolean;
+  /** The quantization range for the UV coordinates. @see [QParams2d]($common). */
   readonly uvParams?: {
     readonly decodedMin: number[];
     readonly decodedMax: number[];
   };
 }
 
+/** Describes a triangle mesh, optionally including its edges. @see [[MeshParams]]. */
 interface ImdlMeshPrimitive extends ImdlPrimitive {
+  /** Type discriminator for [[AnyImdlPrimitive]]. */
   readonly type: Mesh.PrimitiveType.Mesh;
   readonly surface: ImdlSurface;
   readonly edges?: ImdlMeshEdges;
@@ -236,38 +323,81 @@ interface ImdlMeshPrimitive extends ImdlPrimitive {
   readonly areaPattern?: ImdlAreaPattern;
 }
 
+/** Describes a collection of line strings. @see [[PolylineParams]]. */
 interface ImdlPolylinePrimitive extends ImdlPrimitive, ImdlPolyline {
+  /** Type discriminator for [[AnyImdlPrimitive]]. */
   readonly type: Mesh.PrimitiveType.Polyline;
 }
 
+/** Describes a collection of individual points. @see [[PointStringParams. */
 interface ImdlPointStringPrimitive extends ImdlPrimitive {
+  /** Type discriminator for [[AnyImdlPrimitive]]. */
   readonly type: Mesh.PrimitiveType.Point;
+  /** The Id of the [[ImdlBufferView]] containing - for each point - the 24-bit index of the corresponding vertex in the [[ImdlVertexTable]]. */
   readonly indices: string;
 }
 
 type AnyImdlPrimitive = ImdlMeshPrimitive | ImdlPolylinePrimitive | ImdlPointStringPrimitive;
 
+/** A collection of primitive geometry to be rendered. */
 interface ImdlMesh {
+  /** The geometry to be rendered. */
   readonly primitives?: Array<AnyImdlPrimitive | ImdlAreaPattern>;
+  /** If this mesh defines a layer, the unique Id of that layer.
+   * @see [[RenderSystem.createGraphicLayer]] for a description of layers.
+   */
   readonly layer?: string;
 }
 
+/** A collection of primitive geometry to be rendered as the pattern symbol for an [[ImdlAreaPattern]]. */
 interface ImdlAreaPatternSymbol {
   readonly primitives: AnyImdlPrimitive[];
 }
 
+/** If the tile has an associated [RenderSchedule.Script]($common), an array of Ids of nodes in the script used to group elements. */
 interface ImdlAnimationNodes {
+  /** The number of bytes in each integer Id provided by [[bufferView]] - either 1, 2, or 4. */
   bytesPerId: number;
+  /** The Id of the [[ImdlBufferView]] containing the tightly-packed array of 1-, 2- or 4-byte unsigned integer node Ids; the number of bytes is specified by [[bytesPerId]]. */
   bufferView: string;
 }
 
-interface ImdlScene {
-  animationNodes?: ImdlAnimationNodes;
+/** Describes a contiguous array of bytes within the binary portion of the tile. */
+interface ImdlBufferView {
+  /** The number of bytes in the array. */
+  byteLength: number;
+  /** The offset from the beginning of the binary portion of the tile data to the first byte in the array. */
+  byteOffset: number;
 }
 
-interface ImdlBufferView {
-  byteLength: number;
-  byteOffset: number;
+/** A top-level dictionary of resources of a particular type contained in an [[Imdl]] tile.
+ * Each resource has a unique name by which it can be referred to by other contents of the tile.
+ */
+interface ImdlDictionary<T> {
+  [key: string]: T | undefined;
+}
+
+/** Describes all of the geometry contained in the tile. */
+interface ImdlScene {
+  /** The Ids of the elements of [[Imdl.nodes]] to be included in the scene. */
+  nodes: string[];
+}
+
+/** Describes the top-level contents of a tile. */
+export interface Imdl {
+  /** The Id of the [[ImdlScene]] in [[scenes]] that describes the tile's geometry. */
+  scene: string;
+  /** The collection of [[ImdlScene]]s included in the tile. */
+  scenes: ImdlDictionary<ImdlScene>;
+  /** Maps each node Id to the Id of the corresponding mesh in [[meshes]]. */
+  nodes: ImdlDictionary<string>;
+  meshes: ImdlDictionary<ImdlMesh>;
+  bufferViews: ImdlDictionary<ImdlBufferView>;
+  materials?: ImdlDictionary<ImdlDisplayParams>;
+  patternSymbols?: ImdlDictionary<ImdlAreaPatternSymbol>;
+  animationNodes?: ImdlAnimationNodes;
+  renderMaterials?: ImdlDictionary<ImdlRenderMaterial>;
+  namedTextures?: ImdlDictionary<ImdlNamedTexture>;
 }
 
 /** Arguments supplied to [[ImdlReader.create]]
@@ -287,22 +417,19 @@ export interface ImdlReaderCreateArgs {
   containsTransformNodes?: boolean; // default false
 }
 
-interface ImdlDictionary<T> {
-  [key: string]: T | undefined;
-}
-
 /** Deserializes tile content in iMdl format. These tiles contain element geometry encoded into a format optimized for the imodeljs webgl renderer.
  * @internal
  */
 export class ImdlReader {
   private readonly _buffer: ByteStream;
-  private readonly _scene: ImdlScene;
   private readonly _bufferViews: ImdlDictionary<ImdlBufferView>;
   private readonly _meshes: ImdlDictionary<ImdlMesh>;
   private readonly _nodes: ImdlDictionary<string>;
   private readonly _materialValues: ImdlDictionary<ImdlDisplayParams>;
   private readonly _renderMaterials: ImdlDictionary<ImdlRenderMaterial>;
-  private readonly _namedTextures: ImdlDictionary<ImdlNamedTexture>;
+  private readonly _namedTextures: ImdlDictionary<ImdlNamedTexture & { renderTexture?: RenderTexture }>;
+  private readonly _patternSymbols: { [key: string]: ImdlAreaPatternSymbol | undefined };
+  private readonly _animationNodes?: ImdlAnimationNodes;
   private readonly _binaryData: Uint8Array;
   private readonly _iModel: IModelConnection;
   private readonly _is3d: boolean;
@@ -313,7 +440,6 @@ export class ImdlReader {
   private readonly _sizeMultiplier?: number;
   private readonly _loadEdges: boolean;
   private readonly _options: BatchOptions | false;
-  private readonly _patternSymbols: { [key: string]: ImdlAreaPatternSymbol | undefined };
   private readonly _patternGeometry = new Map<string, RenderGeometry[]>();
   private readonly _containsTransformNodes: boolean;
 
@@ -554,7 +680,7 @@ export class ImdlReader {
       return undefined;
 
     let animNodesArray: Uint8Array | Uint16Array | Uint32Array | undefined;
-    const animationNodes = JsonUtils.asObject(this._scene.animationNodes);
+    const animationNodes = this._animationNodes;
     if (undefined !== animationNodes) {
       const bytesPerId = JsonUtils.asInt(animationNodes.bytesPerId);
       const bufferViewId = JsonUtils.asString(animationNodes.bufferView);
@@ -586,14 +712,15 @@ export class ImdlReader {
 
   private constructor(props: GltfReaderProps, args: ImdlReaderCreateArgs) {
     this._buffer = props.buffer;
-    this._scene = props.scene;
+    const imdl = props.scene as Imdl;
+    this._animationNodes = JsonUtils.asObject(imdl.animationNodes);
     this._binaryData = props.binaryData;
     this._bufferViews = props.bufferViews;
     this._meshes = props.meshes;
     this._nodes = props.nodes;
-    this._materialValues = props.materials;
-    this._renderMaterials = props.scene.renderMaterials;
-    this._namedTextures = props.scene.namedTextures;
+    this._materialValues = (props.materials as ImdlDictionary<ImdlDisplayParams>) ?? { };
+    this._renderMaterials = imdl.renderMaterials ?? { };
+    this._namedTextures = imdl.namedTextures ?? { };
 
     this._iModel = args.iModel;
     this._modelId = args.modelId;
@@ -606,7 +733,7 @@ export class ImdlReader {
     this._loadEdges = args.loadEdges ?? true;
     this._options = args.options ?? {};
     this._containsTransformNodes = args.containsTransformNodes ?? false;
-    this._patternSymbols = props.scene.patternSymbols ?? {};
+    this._patternSymbols = imdl.patternSymbols ?? {};
   }
 
   private static skipFeatureTable(stream: ByteStream): boolean {
