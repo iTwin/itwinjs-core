@@ -43,8 +43,8 @@ steps:
            if ("-" in latestVer):
              latestVer, latestDevVer = latestVer.split("-")
              latestDevVer = int(latestDevVer.split(".")[1])
-           if ("-" in prevousVer):
-             prevousVer, previousDevVer = prevousVer.split("-")
+           if ("-" in previousVer):
+             previousVer, previousDevVer = previousVer.split("-")
              latestDevVer = int(latestDevVer.split(".")[1])
 
            currentMajorVer, currentMinorVer, currentPatchVer = currentVer.split(".")
@@ -54,6 +54,7 @@ steps:
            latestMajorVer, latestMinorVer, latestPatchVer = int(latestMajorVer), int(latestMinorVer), int(latestPatchVer)
            previousMajorVer, previousMinorVer, previousPatchVer = int(previousMajorVer), int(previousMinorVer), int(previousPatchVer)
 
+           # We should never see a dev version except in the case of a release candidate for the next latest release
            if (currentDevVer != -1):
              distTag = "rc"
            else:
