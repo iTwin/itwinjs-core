@@ -82,8 +82,8 @@ export function ViewFlagItem(flagName: string) {
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function FloatingWidgetComponent() {
-  const widgetDef = useWidgetDef("ui-item-provider-test:floatingWidget");
+export function ViewAttributesWidgetComponent() {
+  const widgetDef = useWidgetDef("ui-item-provider-test:ViewAttributesWidget");
   React.useEffect(() => {
     // using setImmediate to give time for frontstage to load before calling setWidgetState
     setImmediate(() => widgetDef?.setWidgetState(WidgetState.Floating));

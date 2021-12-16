@@ -21,7 +21,7 @@ import { NetworkTracingFrontstage } from "../frontstages/NetworkTracing";
 import { getTestProviderState, setIsTraceAvailable } from "../../store";
 import { UiItemsProvidersTest } from "../../ui-items-providers-test";
 import { SelectedElementDataWidgetComponent } from "../widgets/SelectedElementDataWidget";
-import { FloatingWidgetComponent } from "../widgets/FloatingWidget";
+import { ViewAttributesWidgetComponent } from "../widgets/ViewAttributesWidget";
 
 /** the following will import svgs into DOM and generate SymbolId that is used to locate the svg image. This
  * processing is done via the 'magic' webpack plugin and requires the use or the Bentley build scripts. */
@@ -185,13 +185,13 @@ export class NetworkTracingUiProvider implements UiItemsProvider {
     }
     if (stageId === NetworkTracingFrontstage.stageId || _stageUsage === StageUsage.General) {
       const widget: AbstractWidgetProps = {
-        id: "ui-item-provider-test:floatingWidget",
+        id: "ui-item-provider-test:ViewAttributesWidget",
         label: "View Attributes",
         defaultState: WidgetState.Floating,
         isFloatingStateSupported: true,
         // eslint-disable-next-line react/display-name
         getWidgetContent: () => {
-          return <FloatingWidgetComponent />;
+          return <ViewAttributesWidgetComponent />;
         },
         canPopout: true,
       };
