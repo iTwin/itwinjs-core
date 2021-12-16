@@ -141,7 +141,7 @@ describe("ECSql Query", () => {
   });
   it("concurrent query use idset", async () => {
     const ids: string[] = [];
-    for await (const row of imodel1.query("SELECT ECInstanceId FROM BisCore.Element ORDER BY random() LIMIT 23")) {
+    for await (const row of imodel1.query("SELECT ECInstanceId FROM BisCore.Element LIMIT 23")) {
       ids.push(row[0]);
     }
     const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element WHERE InVirtualSet(?, ECInstanceId)", QueryBinder.from([ids]));
