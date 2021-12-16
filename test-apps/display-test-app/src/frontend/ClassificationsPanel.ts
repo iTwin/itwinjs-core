@@ -23,16 +23,6 @@ function clearElement(element: HTMLElement): void {
 
 const NO_MODEL_ID = "-1";
 
-enum RealityDataType {
-  REALITYMESH3DTILES  = "REALITYMESH3DTILES",
-  OSMBUILDINGS = "OSMBUILDINGS",
-  OPC = "OPC",
-  TERRAIN3DTILES = "TERRAIN3DTILES", // Terrain3DTiles
-  OMR = "OMR", // Mapping Resource,
-  CESIUM3DTILES = "CESIUM3DTILES",
-  UNKNOWN = "UNKNOWN",
-}
-
 export class ClassificationsPanel extends ToolBarDropDown {
   private readonly _vp: Viewport;
   private readonly _element: HTMLElement;
@@ -98,9 +88,13 @@ export class ClassificationsPanel extends ToolBarDropDown {
   private createRealityDataSourceKeyFromITwinRealityData(iTwinRealityData: ITwinRealityData): RealityDataSourceKey {
     return {
       provider: RealityDataProvider.ContextShare,
-      format: iTwinRealityData.type === RealityDataType.OPC ? RealityDataFormat.OPC : RealityDataFormat.ThreeDTile,
+      format: iTwinRealityData.type === "OPC" ? RealityDataFormat.OPC : RealityDataFormat.ThreeDTile,
       id: iTwinRealityData.id,
     };
+  }
+
+  private hasAttachedRealityModelFromKey(style: DisplayStyle3dState, rdSourceKey: RealityDataSourceKey ): boolean {
+    return undefined !== style.settings.contextRealityModels.models.find((x) => x.rdSourceKey && RealityDataSourceKey.isEqual(rdSourceKey,x.rdSourceKey));
   }
 
   private async populateRealityModelsPicker(): Promise<void> {
@@ -153,7 +147,7 @@ export class ClassificationsPanel extends ToolBarDropDown {
           name,
           id: RealityDataSourceKey.convertToString(rdSourceKey),
           parent: this._realityModelPickerMenu.body,
-          isChecked: view.displayStyle.hasAttachedRealityModelFromKey(rdSourceKey),
+          isChecked: this.hasAttachedRealityModelFromKey(view.displayStyle, rdSourceKey),
           handler: (checkbox) => this.toggle(entry, checkbox.checked),
         });
       }
@@ -260,13 +254,18 @@ export class ClassificationsPanel extends ToolBarDropDown {
       this._modelComboBox.select.value = modelId;
   }
 
+  private detachRealityModelByKey(style: DisplayStyle3dState, rdSourceKey: RealityDataSourceKey): boolean {
+    const model = style.settings.contextRealityModels.models.find((x) => x.rdSourceKey && RealityDataSourceKey.isEqual(rdSourceKey,x.rdSourceKey));
+    return undefined !== model && style.settings.contextRealityModels.delete(model);
+  }
+
   private toggle(entry: ContextRealityModelProps, enabled: boolean): void {
     const view = this._vp.view as SpatialViewState;
     const style = view.getDisplayStyle3d();
     if (enabled)
       style.attachRealityModel(entry);
     else
-      entry.rdSourceKey ? style.detachRealityModelByKey(entry.rdSourceKey) : style.detachRealityModelByNameAndUrl(entry.name!, entry.tilesetUrl);
+      entry.rdSourceKey ? this.detachRealityModelByKey(style, entry.rdSourceKey) : style.detachRealityModelByNameAndUrl(entry.name!, entry.tilesetUrl);
 
     this.populateRealityModelList();
     this._vp.invalidateScene();

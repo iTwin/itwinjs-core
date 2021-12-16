@@ -2448,8 +2448,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     detachMapLayerByIndex(index: number, isOverlay: boolean): void;
     // @internal (undocumented)
     detachMapLayerByNameAndUrl(name: string, url: string, isOverlay: boolean): void;
-    // @internal
-    detachRealityModelByKey(rdSourceKey: RealityDataSourceKey): boolean;
     detachRealityModelByNameAndUrl(name: string, url: string): boolean;
     // @internal (undocumented)
     get displayTerrain(): boolean;
@@ -2484,8 +2482,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // @internal (undocumented)
     hasAttachedMapLayer(name: string, url: string, isOverlay: boolean): boolean;
     hasAttachedRealityModel(name: string, url: string): boolean;
-    // @internal
-    hasAttachedRealityModelFromKey(rdSourceKey: RealityDataSourceKey): boolean;
     get hasSubCategoryOverride(): boolean;
     is3d(): this is DisplayStyle3dState;
     load(): Promise<void>;
