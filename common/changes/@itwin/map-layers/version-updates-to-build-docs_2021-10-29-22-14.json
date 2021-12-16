@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/map-layers",
+      "comment": "Lock down and update version numbers so docs will build.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/map-layers"
+}

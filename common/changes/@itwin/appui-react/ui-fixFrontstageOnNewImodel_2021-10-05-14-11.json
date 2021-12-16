@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Updates to enable frontstageDef to be cached per iModelConnection.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}

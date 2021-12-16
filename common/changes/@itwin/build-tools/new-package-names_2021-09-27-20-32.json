@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/build-tools",
+      "comment": "rename to @itwin/build-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/build-tools"
+}

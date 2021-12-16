@@ -6,10 +6,10 @@
  * @module DisplayStyles
  */
 
-import { assert, CompressedId64Set, Constructor, Id64, Id64Set, Id64String, OrderedId64Iterable } from "@bentley/bentleyjs-core";
+import { assert, CompressedId64Set, Constructor, Id64, Id64Set, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import {
   ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Matrix3d, Plane3dByOriginAndUnitNormal, Point3d, Point4d, Range1d, Transform, UnionOfConvexClipPlaneSets, Vector3d, XYAndZ,
-} from "@bentley/geometry-core";
+} from "@itwin/core-geometry";
 import { RgbColor } from "./RgbColor";
 import { FeatureAppearance, FeatureOverrides } from "./FeatureSymbology";
 
@@ -96,7 +96,7 @@ export namespace RenderSchedule {
     pivot?: number[];
   }
 
-  /** JSON representation of a [Transform]($geometry-core) associated with a [[RenderSchedule.TransformEntryProps]]. */
+  /** JSON representation of a [Transform]($core-geometry) associated with a [[RenderSchedule.TransformEntryProps]]. */
   export interface TransformProps extends TransformComponentsProps {
     /** 3 X 4 transformation matrix containing 3 arrays of matrix rows consisting of 4 numbers each: [qx qy qz ax]
      * where the fourth columnn in each row holds the translation.
@@ -120,7 +120,7 @@ export namespace RenderSchedule {
     colorTimeline?: ColorEntryProps[];
     /** Timeline applying transforms to the associated geometry. */
     transformTimeline?: TransformEntryProps[];
-    /** Timeline applying [ClipVector]($geometry-core)s to the associated geometry. */
+    /** Timeline applying [ClipVector]($core-geometry)s to the associated geometry. */
     cuttingPlaneTimeline?: CuttingPlaneEntryProps[];
   }
 
@@ -285,7 +285,7 @@ export namespace RenderSchedule {
     }
   }
 
-  /** Defines a [ClipPlane]($geometry-core) associated with a [[RenderSchedule.CuttingPlaneEntry]]. */
+  /** Defines a [ClipPlane]($core-geometry) associated with a [[RenderSchedule.CuttingPlaneEntry]]. */
   export class CuttingPlane {
     /** A point on the plane. */
     public readonly position: XYAndZ;
@@ -319,9 +319,9 @@ export namespace RenderSchedule {
     }
   }
 
-  /** A timeline entry that applies a [ClipPlane]($geometry-core) to the affected geometry. */
+  /** A timeline entry that applies a [ClipPlane]($core-geometry) to the affected geometry. */
   export class CuttingPlaneEntry extends TimelineEntry {
-    /** The definition of the [ClipPlane]($geometry-core), or undefined if this entry applies no clipping. */
+    /** The definition of the [ClipPlane]($core-geometry), or undefined if this entry applies no clipping. */
     public readonly value: CuttingPlane | undefined;
 
     public constructor(props: CuttingPlaneEntryProps) {
@@ -776,7 +776,7 @@ export namespace RenderSchedule {
     public addSymbologyOverrides(overrides: FeatureOverrides, time: number): void {
       const appearance = this.getFeatureAppearance(this.getVisibility(time), time);
       if (appearance)
-        overrides.overrideModel(this.modelId, appearance);
+        overrides.override({ modelId: this.modelId, appearance });
 
       for (const timeline of this.elementTimelines)
         timeline.addSymbologyOverrides(overrides, time);
@@ -810,9 +810,14 @@ export namespace RenderSchedule {
     public readonly containsFeatureOverrides: boolean;
     /** The total time period over which this script animates. */
     public readonly duration: Range1d;
+    /** The batchIds of all nodes in all timelines that apply a transform.
+     * @internal
+     */
+    public readonly transformBatchIds: ReadonlySet<number>;
 
     protected constructor(props: Readonly<ScriptProps>) {
       this.duration = Range1d.createNull();
+      const transformBatchIds = new Set<number>();
 
       const modelTimelines: ModelTimeline[] = [];
       let containsModelClipping = false;
@@ -830,6 +835,9 @@ export namespace RenderSchedule {
         requiresBatching ||= model.requiresBatching;
         containsTransform ||= model.containsTransform;
         containsFeatureOverrides ||= model.containsFeatureOverrides;
+
+        for (const batchId of model.transformBatchIds)
+          transformBatchIds.add(batchId);
       }
 
       this.modelTimelines = modelTimelines;
@@ -837,6 +845,7 @@ export namespace RenderSchedule {
       this.containsTransform = containsTransform;
       this.requiresBatching = requiresBatching || this.containsTransform;
       this.containsFeatureOverrides = containsFeatureOverrides;
+      this.transformBatchIds = transformBatchIds;
     }
 
     public static fromJSON(props: Readonly<ScriptProps>): Script | undefined {

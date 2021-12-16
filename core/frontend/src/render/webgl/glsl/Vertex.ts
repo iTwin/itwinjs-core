@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { DrawParams } from "../DrawCommand";
 import { UniformHandle } from "../UniformHandle";
 import { Matrix4 } from "../Matrix";
@@ -19,7 +19,7 @@ import { addInstanceOverrides } from "./Instancing";
 import { addLookupTable } from "./LookupTable";
 
 const initializeVertLUTCoords = `
-  g_vertexLUTIndex = decodeUInt24(a_pos);
+  g_vertexLUTIndex = decodeUInt24(qpos);
   g_vertexBaseCoords = compute_vert_coords(g_vertexLUTIndex);
 `;
 

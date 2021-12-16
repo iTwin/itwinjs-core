@@ -1,0 +1,251 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ContentLayout FourQuadrantsVertical renders correctly 1`] = `
+<div
+  id="uifw-contentlayout-div"
+  key="[contentGroup2-3]-fourQuadrantsVertical"
+  onMouseDown={[Function]}
+  onMouseUp={[Function]}
+  role="presentation"
+>
+  <SplitContainer
+    contentA={
+      <SplitContainer
+        contentA={
+          <ContentWrapper
+            content={
+              <div>
+                Test
+              </div>
+            }
+          />
+        }
+        contentB={
+          <ContentWrapper
+            content={
+              <div>
+                Test
+              </div>
+            }
+          />
+        }
+        minSizeBottomRight={50}
+        minSizeTopLeft={50}
+        onSplitterChange={[Function]}
+        orientation={0}
+        percentage={0.5}
+        resizable={false}
+        splitterStateId="fourQuadrantsRightHorizontal"
+      />
+    }
+    contentB={
+      <SplitContainer
+        contentA={
+          <ContentWrapper
+            content={
+              <div>
+                Test
+              </div>
+            }
+          />
+        }
+        contentB={
+          <ContentWrapper
+            content={
+              <div>
+                Test
+              </div>
+            }
+          />
+        }
+        minSizeBottomRight={50}
+        minSizeTopLeft={50}
+        onSplitterChange={[Function]}
+        orientation={0}
+        percentage={0.5}
+        resizable={false}
+        splitterStateId="fourQuadrantsLeftHorizontal"
+      />
+    }
+    minSizeBottomRight={100}
+    minSizeTopLeft={100}
+    onSplitterChange={[Function]}
+    orientation={1}
+    percentage={0.5}
+    resizable={false}
+    splitterStateId="fourQuadrantsVertical"
+  />
+</div>
+`;
+
+exports[`ContentLayout FourQuadrantsVertical renders correctly 2`] = `
+<div
+  id="uifw-contentlayout-div"
+  key="[contentGroup2-3]-fourQuadrantsHorizontal"
+  onMouseDown={[Function]}
+  onMouseUp={[Function]}
+  role="presentation"
+>
+  <SplitContainer
+    contentA={
+      <SplitContainer
+        contentA={
+          <ContentWrapper
+            content={
+              <div>
+                Test
+              </div>
+            }
+          />
+        }
+        contentB={
+          <ContentWrapper
+            content={
+              <div>
+                Test
+              </div>
+            }
+          />
+        }
+        minSizeBottomRight={100}
+        minSizeTopLeft={100}
+        onSplitterChange={[Function]}
+        orientation={1}
+        percentage={0.5}
+        resizable={false}
+        splitterStateId="fourQuadrantsTopVertical"
+      />
+    }
+    contentB={
+      <SplitContainer
+        contentA={
+          <ContentWrapper
+            content={
+              <div>
+                Test
+              </div>
+            }
+          />
+        }
+        contentB={
+          <ContentWrapper
+            content={
+              <div>
+                Test
+              </div>
+            }
+          />
+        }
+        minSizeBottomRight={100}
+        minSizeTopLeft={100}
+        onSplitterChange={[Function]}
+        orientation={1}
+        percentage={0.5}
+        resizable={false}
+        splitterStateId="fourQuadrantsBottomVertical"
+      />
+    }
+    minSizeBottomRight={100}
+    minSizeTopLeft={100}
+    onSplitterChange={[Function]}
+    orientation={0}
+    percentage={0.5}
+    resizable={false}
+    splitterStateId="fourQuadrantsHorizontal"
+  />
+</div>
+`;
+
+exports[`ContentLayout SingleContent renders correctly 1`] = `
+<div
+  id="uifw-contentlayout-div"
+  key="[testGroup-2]-SingleContent"
+  onMouseDown={[Function]}
+  onMouseUp={[Function]}
+  role="presentation"
+>
+  <SingleContentContainer
+    content={
+      <div>
+        Test
+      </div>
+    }
+  />
+</div>
+`;
+
+exports[`ContentLayout TwoHalvesHorizontal renders correctly 1`] = `
+<div
+  id="uifw-contentlayout-div"
+  key="[contentGroup2-3]-TwoHalvesHorizontal"
+  onMouseDown={[Function]}
+  onMouseUp={[Function]}
+  role="presentation"
+>
+  <SplitContainer
+    contentA={
+      <ContentWrapper
+        content={
+          <div>
+            Test
+          </div>
+        }
+      />
+    }
+    contentB={
+      <ContentWrapper
+        content={
+          <div>
+            Test
+          </div>
+        }
+      />
+    }
+    minSizeBottomRight={6}
+    minSizeTopLeft={6}
+    onSplitterChange={[Function]}
+    orientation={0}
+    percentage={0.5}
+    resizable={true}
+    splitterStateId="TwoHalvesHorizontal.HorizontalSplit"
+  />
+</div>
+`;
+
+exports[`ContentLayout TwoHalvesVertical renders correctly 1`] = `
+<div
+  id="uifw-contentlayout-div"
+  key="[contentGroup2-3]-TwoHalvesVertical"
+  onMouseDown={[Function]}
+  onMouseUp={[Function]}
+  role="presentation"
+>
+  <SplitContainer
+    contentA={
+      <ContentWrapper
+        content={
+          <div>
+            Test
+          </div>
+        }
+      />
+    }
+    contentB={
+      <ContentWrapper
+        content={
+          <div>
+            Test
+          </div>
+        }
+      />
+    }
+    minSizeBottomRight={6}
+    minSizeTopLeft={6}
+    onSplitterChange={[Function]}
+    orientation={1}
+    percentage={0.5}
+    resizable={true}
+    splitterStateId="TwoHalvesVertical.VerticalSplit"
+  />
+</div>
+`;

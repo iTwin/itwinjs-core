@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as React from "react";
-import { RelativePosition } from "@bentley/ui-abstract";
-import { Popup, WebFontIcon } from "@bentley/ui-core";
+import { RelativePosition } from "@itwin/appui-abstract";
+import { Popup, WebFontIcon } from "@itwin/core-react";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import { MapManagerSettings } from "./MapManagerSettings";
 
@@ -16,7 +16,7 @@ import "./MapLayerSettingsPopupButton.scss";
 export function MapLayerSettingsPopupButton() {
   const panelRef = React.useRef<HTMLDivElement>(null);
   const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
-  const [buttonTooltip] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.SettingsButtonTooltip"));
+  const [buttonTooltip] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Widget.SettingsButtonTooltip"));
 
   const buttonRef = React.useRef<HTMLButtonElement>(null);
   const togglePopupDisplay = React.useCallback((event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Matrix3d, Point3d, Point4d, Transform, TransformProps } from "@bentley/geometry-core";
+import { Matrix3d, Point3d, Point4d, Transform, TransformProps } from "@itwin/core-geometry";
 import { RenderSchedule } from "../RenderSchedule";
 import { RgbColor } from "../RgbColor";
 

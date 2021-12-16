@@ -3,29 +3,31 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Id64 } from "@bentley/bentleyjs-core";
-import { Content, PropertyValueFormat } from "@bentley/presentation-common";
+import * as moq from "typemoq";
+import { ECSqlStatement, ECSqlValue, IModelDb } from "@itwin/core-backend";
+import { DbResult, Id64 } from "@itwin/core-bentley";
+import { Content, PresentationError, PropertyValueFormat } from "@itwin/presentation-common";
 import {
-  createTestCategoryDescription, createTestContentDescriptor, createTestContentItem, createTestSimpleContentField,
-} from "@bentley/presentation-common/lib/test/_helpers/Content";
-import { createTestECClassInfo, createTestECInstanceKey } from "@bentley/presentation-common/lib/test/_helpers/EC";
-import { buildElementProperties } from "../presentation-backend/ElementPropertiesHelper";
+  createTestCategoryDescription, createTestContentDescriptor, createTestContentItem, createTestECClassInfo, createTestECInstanceKey,
+  createTestNestedContentField, createTestSimpleContentField,
+} from "@itwin/presentation-common/lib/cjs/test";
+import { buildElementsProperties, getElementsCount, iterateElementIds } from "../presentation-backend/ElementPropertiesHelper";
 
-describe("buildElementProperties", () => {
+describe("buildElementsProperties", () => {
 
-  it("returns undefined when given undefined content", () => {
-    expect(buildElementProperties(undefined)).to.be.undefined;
+  it("returns empty array when given undefined content", () => {
+    expect(buildElementsProperties(undefined)).to.be.empty;
   });
 
-  it("returns undefined when given content with not items", () => {
-    expect(buildElementProperties(new Content(
+  it("returns empty array when given content with no items", () => {
+    expect(buildElementsProperties(new Content(
       createTestContentDescriptor({ fields: [] }),
       [],
-    ))).to.be.undefined;
+    ))).to.be.empty;
   });
 
   it("sets class label", () => {
-    expect(buildElementProperties(new Content(
+    expect(buildElementsProperties(new Content(
       createTestContentDescriptor({ fields: [] }),
       [
         createTestContentItem({
@@ -34,11 +36,11 @@ describe("buildElementProperties", () => {
           displayValues: {},
         }),
       ],
-    ))).to.containSubset({ class: "Test label" });
+    ))).to.containSubset([{ class: "Test label" }]);
   });
 
   it("sets element label", () => {
-    expect(buildElementProperties(new Content(
+    expect(buildElementsProperties(new Content(
       createTestContentDescriptor({ fields: [] }),
       [
         createTestContentItem({
@@ -47,11 +49,11 @@ describe("buildElementProperties", () => {
           displayValues: {},
         }),
       ],
-    ))).to.containSubset({ label: "Test label" });
+    ))).to.containSubset([{ label: "Test label" }]);
   });
 
   it("sets invalid element id when content item has not primary keys", () => {
-    expect(buildElementProperties(new Content(
+    expect(buildElementsProperties(new Content(
       createTestContentDescriptor({ fields: [] }),
       [
         createTestContentItem({
@@ -60,11 +62,11 @@ describe("buildElementProperties", () => {
           displayValues: {},
         }),
       ],
-    ))).to.containSubset({ id: Id64.invalid });
+    ))).to.containSubset([{ id: Id64.invalid }]);
   });
 
   it("sets element id", () => {
-    expect(buildElementProperties(new Content(
+    expect(buildElementsProperties(new Content(
       createTestContentDescriptor({ fields: [] }),
       [
         createTestContentItem({
@@ -73,13 +75,13 @@ describe("buildElementProperties", () => {
           displayValues: {},
         }),
       ],
-    ))).to.containSubset({ id: "0x123" });
+    ))).to.containSubset([{ id: "0x123" }]);
   });
 
   it("categorizes properties", () => {
     const parentCategory = createTestCategoryDescription({ name: "cat1", label: "Parent Category" });
     const childCategory = createTestCategoryDescription({ name: "cat2", label: "Child Category", parent: parentCategory });
-    expect(buildElementProperties(new Content(
+    expect(buildElementsProperties(new Content(
       createTestContentDescriptor({
         categories: [parentCategory, childCategory],
         fields: [
@@ -99,63 +101,114 @@ describe("buildElementProperties", () => {
           },
         }),
       ],
-    ))?.items).to.deep.eq({
-      ["Parent Category"]: {
-        type: "category",
-        items: {
-          ["Child Category"]: {
-            type: "category",
-            items: {
-              ["Prop Two"]: {
-                type: "primitive",
-                value: "Value Two",
+    ))).to.deep.eq([{
+      class: "",
+      id: "0x1",
+      label: "",
+      items: {
+        ["Parent Category"]: {
+          type: "category",
+          items: {
+            ["Child Category"]: {
+              type: "category",
+              items: {
+                ["Prop Two"]: {
+                  type: "primitive",
+                  value: "Value Two",
+                },
               },
             },
-          },
-          ["Prop One"]: {
-            type: "primitive",
-            value: "Value One",
+            ["Prop One"]: {
+              type: "primitive",
+              value: "Value One",
+            },
           },
         },
       },
-    });
+    }]);
   });
 
   it("sets primitive property value to empty string when it's not set", () => {
     const category = createTestCategoryDescription({ label: "Test Category" });
-    expect(buildElementProperties(new Content(
+    expect(buildElementsProperties(new Content(
       createTestContentDescriptor({
         categories: [category],
         fields: [
+          createTestSimpleContentField({ name: "emptyProp", label: "EmptyProp", category }),
+          createTestSimpleContentField({ name: "undefinedProps", label: "UndefinedProp", category }),
           createTestSimpleContentField({ name: "prop", label: "Prop", category }),
         ],
       }),
       [
         createTestContentItem({
           values: {
-            prop: "value",
+            emptyProp: undefined,
+            undefinedProps: undefined,
+            prop: "valid value",
           },
           displayValues: {
-            prop: undefined,
+            emptyProp: "",
+            undefinedProps: undefined,
+            prop: "valid value",
           },
         }),
       ],
-    ))?.items).to.deep.eq({
-      ["Test Category"]: {
-        type: "category",
-        items: {
-          ["Prop"]: {
-            type: "primitive",
-            value: "",
+    ))).to.deep.eq([{
+      class: "",
+      id: "0x1",
+      label: "",
+      items: {
+        ["Test Category"]: {
+          type: "category",
+          items: {
+            ["EmptyProp"]: {
+              type: "primitive",
+              value: "",
+            },
+            ["UndefinedProp"]: {
+              type: "primitive",
+              value: "",
+            },
+            ["Prop"]: {
+              type: "primitive",
+              value: "valid value",
+            },
           },
         },
       },
-    });
+    }]);
+  });
+
+  it("does not include category if it only has nested content field without values", () => {
+    const category = createTestCategoryDescription({ label: "Test Category" });
+    expect(buildElementsProperties(new Content(
+      createTestContentDescriptor({
+        categories: [category],
+        fields: [
+          createTestNestedContentField({ name: "nestedField", category, nestedFields: [createTestSimpleContentField({ name: "primitiveField" })] }),
+        ],
+      }),
+      [
+        createTestContentItem({
+          values: {
+            nestedField: [],
+          },
+          displayValues: {
+            nestedField: [],
+          },
+        }),
+      ],
+    ))).to.deep.eq([{
+      class: "",
+      id: "0x1",
+      label: "",
+      items: {},
+    }]);
   });
 
   it("sets property value to empty string when it's merged", () => {
     const category = createTestCategoryDescription({ label: "Test Category" });
-    expect(buildElementProperties(new Content(
+    expect(buildElementsProperties(new Content(
       createTestContentDescriptor({
         categories: [category],
         fields: [
@@ -173,22 +226,27 @@ describe("buildElementProperties", () => {
           mergedFieldNames: ["prop"],
         }),
       ],
-    ))?.items).to.deep.eq({
-      ["Test Category"]: {
-        type: "category",
-        items: {
-          ["Prop"]: {
-            type: "primitive",
-            value: "",
+    ))).to.deep.eq([{
+      class: "",
+      id: "0x1",
+      label: "",
+      items: {
+        ["Test Category"]: {
+          type: "category",
+          items: {
+            ["Prop"]: {
+              type: "primitive",
+              value: "",
+            },
           },
         },
       },
-    });
+    }]);
   });
 
   it("handles struct properties", () => {
     const category = createTestCategoryDescription({ label: "Test Category" });
-    expect(buildElementProperties(new Content(
+    expect(buildElementsProperties(new Content(
       createTestContentDescriptor({
         categories: [category],
         fields: [
@@ -234,31 +292,36 @@ describe("buildElementProperties", () => {
           },
         }),
       ],
-    ))?.items).to.deep.eq({
-      ["Test Category"]: {
-        type: "category",
-        items: {
-          ["Prop"]: {
-            type: "struct",
-            members: {
-              ["Member One"]: {
-                type: "primitive",
-                value: "Value One",
-              },
-              ["Member Two"]: {
-                type: "primitive",
-                value: "Value Two",
+    ))).to.deep.eq([{
+      class: "",
+      id: "0x1",
+      label: "",
+      items: {
+        ["Test Category"]: {
+          type: "category",
+          items: {
+            ["Prop"]: {
+              type: "struct",
+              members: {
+                ["Member One"]: {
+                  type: "primitive",
+                  value: "Value One",
+                },
+                ["Member Two"]: {
+                  type: "primitive",
+                  value: "Value Two",
+                },
               },
             },
           },
         },
       },
-    });
+    }]);
   });
 
   it("handles primitive array properties", () => {
     const category = createTestCategoryDescription({ label: "Test Category" });
-    expect(buildElementProperties(new Content(
+    expect(buildElementsProperties(new Content(
       createTestContentDescriptor({
         categories: [category],
         fields: [
@@ -287,23 +350,28 @@ describe("buildElementProperties", () => {
           },
         }),
       ],
-    ))?.items).to.deep.eq({
-      ["Test Category"]: {
-        type: "category",
-        items: {
-          ["Prop"]: {
-            type: "array",
-            valueType: "primitive",
-            values: ["Value One", "Value Two"],
+    ))).to.deep.eq([{
+      class: "",
+      id: "0x1",
+      label: "",
+      items: {
+        ["Test Category"]: {
+          type: "category",
+          items: {
+            ["Prop"]: {
+              type: "array",
+              valueType: "primitive",
+              values: ["Value One", "Value Two"],
+            },
           },
         },
       },
-    });
+    }]);
   });
 
   it("handles struct array properties", () => {
     const category = createTestCategoryDescription({ label: "Test Category" });
-    expect(buildElementProperties(new Content(
+    expect(buildElementsProperties(new Content(
       createTestContentDescriptor({
         categories: [category],
         fields: [
@@ -348,28 +416,206 @@ describe("buildElementProperties", () => {
           },
         }),
       ],
-    ))?.items).to.deep.eq({
-      ["Test Category"]: {
-        type: "category",
-        items: {
-          ["Prop"]: {
-            type: "array",
-            valueType: "struct",
-            values: [{
-              ["Test Member"]: {
-                type: "primitive",
-                value: "Value One",
-              },
-            }, {
-              ["Test Member"]: {
-                type: "primitive",
-                value: "Value Two",
-              },
-            }],
+    ))).to.deep.eq([{
+      class: "",
+      id: "0x1",
+      label: "",
+      items: {
+        ["Test Category"]: {
+          type: "category",
+          items: {
+            ["Prop"]: {
+              type: "array",
+              valueType: "struct",
+              values: [{
+                ["Test Member"]: {
+                  type: "primitive",
+                  value: "Value One",
+                },
+              }, {
+                ["Test Member"]: {
+                  type: "primitive",
+                  value: "Value Two",
+                },
+              }],
+            },
           },
         },
       },
+    }]);
+  });
+
+});
+
+describe("getElementsCount", () => {
+  const imodelMock = moq.Mock.ofType<IModelDb>();
+  beforeEach(() => {
+    imodelMock.reset();
+  });
+
+  it("returns 0 when statement has no rows", () => {
+    imodelMock.setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())).returns((_q, cb) => {
+      const statementMock = moq.Mock.ofType<ECSqlStatement>();
+      statementMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_DONE);
+      return cb(statementMock.object);
     });
+    expect(getElementsCount(imodelMock.object)).to.be.eq(0);
+  });
+
+  it("returns count when statement has row", () => {
+    const elementCount = 3;
+    imodelMock.setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())).returns((_q, cb) => {
+      const valueMock = moq.Mock.ofType<ECSqlValue>();
+      valueMock.setup((x) => x.getInteger()).returns(() => elementCount);
+      const statementMock = moq.Mock.ofType<ECSqlStatement>();
+      statementMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_ROW);
+      statementMock.setup((x) => x.getValue(0)).returns(() => valueMock.object);
+      return cb(statementMock.object);
+    });
+    expect(getElementsCount(imodelMock.object)).to.be.eq(elementCount);
+  });
+
+  it("adds WHERE clause when class list is defined and not empty", () => {
+    imodelMock.setup((x) => x.withPreparedStatement(moq.It.is((query) => query.includes("WHERE")), moq.It.isAny()))
+      .returns(() => 0).verifiable();
+    getElementsCount(imodelMock.object, ["TestSchema:TestClass"]);
+    imodelMock.verifyAll();
+  });
+
+  it("throws if class list contains invalid class name", () => {
+    expect(() => getElementsCount(imodelMock.object, ["'TestSchema:TestClass'"])).to.throw(PresentationError);
+    expect(() => getElementsCount(imodelMock.object, ["%TestSchema:TestClass%"])).to.throw(PresentationError);
+    expect(() => getElementsCount(imodelMock.object, ["TestSchema:TestClass  "])).to.throw(PresentationError);
+  });
+
+});
+
+describe("iterateElementIds", () => {
+  const imodelMock = moq.Mock.ofType<IModelDb>();
+  beforeEach(() => {
+    imodelMock.reset();
+  });
+
+  function collectResults<T>(generator: Generator<T>) {
+    const results = [];
+    for (const entry of generator) {
+      results.push(entry);
+    }
+    return results;
+  }
+
+  it("returns empty map when statement has no rows", () => {
+    imodelMock.setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())).returns((_q, cb) => {
+      const statementMock = moq.Mock.ofType<ECSqlStatement>();
+      statementMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_DONE);
+      return cb(statementMock.object);
+    });
+    expect(collectResults(iterateElementIds(imodelMock.object))).to.be.deep.eq([new Map<string, string[]>()]);
+  });
+
+  it("returns ids grouped by class when statement has rows", () => {
+    const elements = [
+      { className: "TestSchema:TestClass", id: "0x1" },
+      { className: "TestSchema:TestClass", id: "0x2" },
+      { className: "TestSchema:TestClass2", id: "0x3" },
+      { className: "TestSchema:TestClass", id: "0x4" },
+    ];
+    imodelMock.setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())).returns((_q, cb) => {
+      const statementMock = moq.Mock.ofType<ECSqlStatement>();
+      for (const element of elements) {
+        statementMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_ROW);
+        statementMock.setup((x) => x.getRow()).returns(() => ({ elId: element.id, elClassName: element.className }));
+      }
+      statementMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_DONE);
+      return cb(statementMock.object);
+    });
+    const expectedResult = [new Map<string, string[]>([
+      ["TestSchema:TestClass", ["0x1", "0x2", "0x4"]],
+      ["TestSchema:TestClass2", ["0x3"]],
+    ])];
+    expect(collectResults(iterateElementIds(imodelMock.object))).to.be.deep.eq(expectedResult);
+  });
+
+  it("skips rows without class name or id", () => {
+    const elements = [
+      { className: undefined, id: "0x1" },
+      { className: "TestSchema:TestClass", id: undefined },
+      { className: "TestSchema:TestClass", id: "0x2" },
+    ];
+    imodelMock.setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())).returns((_q, cb) => {
+      const statementMock = moq.Mock.ofType<ECSqlStatement>();
+      for (const element of elements) {
+        statementMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_ROW);
+        statementMock.setup((x) => x.getRow()).returns(() => ({ elId: element.id, elClassName: element.className }));
+      }
+      statementMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_DONE);
+      return cb(statementMock.object);
+    });
+    const expectedResult = [
+      new Map<string, string[]>([
+        ["TestSchema:TestClass", ["0x2"]],
+      ])];
+    expect(collectResults(iterateElementIds(imodelMock.object))).to.be.deep.eq(expectedResult);
+  });
+
+  it("adds WHERE clause when class list is defined and not empty", () => {
+    imodelMock.setup((x) => x.withPreparedStatement(moq.It.is((query) => query.includes("WHERE") && query.includes("IS (TestSchema:TestClass)")), moq.It.isAny()))
+      .returns((_q, cb) => {
+        const statementMock = moq.Mock.ofType<ECSqlStatement>();
+        statementMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_DONE);
+        return cb(statementMock.object);
+      })
+      .verifiable();
+    collectResults(iterateElementIds(imodelMock.object, ["TestSchema:TestClass"]));
+    imodelMock.verifyAll();
+  });
+
+  it("queries ids in pages", () => {
+    imodelMock.setup((x) => x.withPreparedStatement(moq.It.is((query) => !query.includes("WHERE")), moq.It.isAny()))
+      .returns((_q, cb) => {
+        const statementMock = moq.Mock.ofType<ECSqlStatement>();
+        statementMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_ROW);
+        statementMock.setup((x) => x.getRow()).returns(() => ({ elId: "0x1", elClassName: "TestClass" }));
+        return cb(statementMock.object);
+      })
+      .verifiable();
+    imodelMock.setup((x) => x.withPreparedStatement(moq.It.is((query) => query.includes("ECInstanceId > ?")), moq.It.isAny()))
+      .returns((_q, cb) => {
+        const statementMock = moq.Mock.ofType<ECSqlStatement>();
+        statementMock.setup((x) => x.bindId(1, "0x1")).verifiable();
+        statementMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_DONE);
+        return cb(statementMock.object);
+      })
+      .verifiable();
+    collectResults(iterateElementIds(imodelMock.object, undefined, 1));
+    imodelMock.verifyAll();
+  });
+
+  it("queries ids in pages with class filter", () => {
+    imodelMock.setup((x) => x.withPreparedStatement(moq.It.is((query) => query.includes("IS (TestSchema:TestClass)") && !query.includes("ECInstanceId > ?")), moq.It.isAny()))
+      .returns((_q, cb) => {
+        const statementMock = moq.Mock.ofType<ECSqlStatement>();
+        statementMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_ROW);
+        statementMock.setup((x) => x.getRow()).returns(() => ({ elId: "0x1", elClassName: "TestClass" }));
+        return cb(statementMock.object);
+      })
+      .verifiable();
+    imodelMock.setup((x) => x.withPreparedStatement(moq.It.is((query) => query.includes("IS (TestSchema:TestClass)") && query.includes("ECInstanceId > ?")), moq.It.isAny()))
+      .returns((_q, cb) => {
+        const statementMock = moq.Mock.ofType<ECSqlStatement>();
+        statementMock.setup((x) => x.bindId(1, "0x1")).verifiable();
+        statementMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_DONE);
+        return cb(statementMock.object);
+      })
+      .verifiable();
+    collectResults(iterateElementIds(imodelMock.object, ["TestSchema:TestClass"], 1));
+    imodelMock.verifyAll();
+  });
+
+  it("throws if class list contains invalid class name", () => {
+    expect(() => collectResults(iterateElementIds(imodelMock.object, ["'TestSchema:TestClass'"]))).to.throw(PresentationError);
+    expect(() => collectResults(iterateElementIds(imodelMock.object, ["%TestSchema:TestClass%"]))).to.throw(PresentationError);
+    expect(() => collectResults(iterateElementIds(imodelMock.object, ["TestSchema:TestClass  "]))).to.throw(PresentationError);
   });
 
 });

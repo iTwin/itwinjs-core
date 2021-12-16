@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, StandardEditorNames, StandardTypeNames } from "@bentley/ui-abstract";
-import { PropertyCategory, PropertyGrid, PropertyUpdatedArgs, SimplePropertyDataProvider } from "@bentley/ui-components";
-import { Orientation } from "@bentley/ui-core";
-import { ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, WidgetControl } from "@bentley/ui-framework";
-import { HorizontalAnchor, WidgetContent } from "@bentley/ui-ninezone";
+import { PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, StandardEditorNames, StandardTypeNames } from "@itwin/appui-abstract";
+import { PropertyCategory, PropertyGrid, PropertyUpdatedArgs, SimplePropertyDataProvider } from "@itwin/components-react";
+import { Orientation } from "@itwin/core-react";
+import { ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, WidgetControl } from "@itwin/appui-react";
+import { HorizontalAnchor, WidgetContent } from "@itwin/appui-layout-react";
 
 class SamplePropertyRecord extends PropertyRecord {
   constructor(name: string, index: number, value: any, typename: string = StandardTypeNames.String, editor?: string) {
@@ -133,14 +133,14 @@ class VerticalPropertyGridWidget extends React.Component {
 ConfigurableUiManager.registerControl("VerticalPropertyGridDemoWidget", VerticalPropertyGridWidgetControl);
 
 export class HorizontalPropertyGridWidgetControl extends WidgetControl {
-  private _ref = React.createRef<WidgetContent>();
+  private _ref = React.createRef<WidgetContent>(); // eslint-disable-line deprecation/deprecation
 
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
     this.reactNode = (
-      <WidgetContent
-        anchor={HorizontalAnchor.Right}
+      <WidgetContent // eslint-disable-line deprecation/deprecation
+        anchor={HorizontalAnchor.Right} // eslint-disable-line deprecation/deprecation
         content={
           <HorizontalPropertyGridWidget style={{ overflow: "unset" }} />
         }

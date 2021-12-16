@@ -1,0 +1,53 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "../style/themecolors";
+@import "../style/variables";
+@import "~@itwin/itwinui-css/scss/inputs/input";
+@import "~@itwin/itwinui-css/scss/style/space";
+@import "~@itwin/itwinui-css/scss/style/typography";
+
+.core-searchbox {
+  @include iui-font-family;
+  display: flex;
+  align-items: center;
+  position: relative;
+  //default values (height, width, font-size, color)
+  height: $uicore-component-height-normal;
+  width: 12em;
+  font-size: $iui-font-size;
+  color: $buic-text-color;
+
+  input {
+    @include iui-input;
+    min-height: $uicore-component-height-normal;
+    padding: $iui-xxs 2em $iui-xxs 12px; //12px from design guide
+    height: 100%;
+    margin: 0;
+    color: inherit;
+    font-size: inherit;
+    box-sizing: border-box;
+  }
+
+  .core-searchbox-button {
+    position: absolute;
+    height: 100%;
+    right: 0;
+    width: 2em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    cursor: pointer;
+
+    &:hover span {
+      color: $buic-foreground-primary;
+    }
+
+    &:focus {
+      outline: none;
+    }
+
+  }
+}

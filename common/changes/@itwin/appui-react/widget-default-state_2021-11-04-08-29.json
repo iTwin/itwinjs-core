@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Hide widgets with Hidden defaultState when frontstage is activated.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}

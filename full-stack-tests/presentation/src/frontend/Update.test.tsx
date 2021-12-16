@@ -6,15 +6,15 @@ import { expect } from "chai";
 import * as faker from "faker";
 import { enablePatches } from "immer";
 import * as sinon from "sinon";
-import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
-import { ChildNodeSpecificationTypes, RuleTypes } from "@bentley/presentation-common";
-import { IPresentationTreeDataProvider, PresentationTreeNodeLoaderProps, usePresentationTreeNodeLoader } from "@bentley/presentation-components";
-import { Presentation } from "@bentley/presentation-frontend";
-import { PrimitiveValue } from "@bentley/ui-abstract";
+import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { ChildNodeSpecificationTypes, RuleTypes } from "@itwin/presentation-common";
+import { IPresentationTreeDataProvider, PresentationTreeNodeLoaderProps, usePresentationTreeNodeLoader } from "@itwin/presentation-components";
+import { Presentation } from "@itwin/presentation-frontend";
+import { PrimitiveValue } from "@itwin/appui-abstract";
 import {
   AbstractTreeNodeLoader, DelayLoadedTreeNodeItem, MutableTreeModelNode, PagedTreeNodeLoader, Subscription, TreeModelNode, TreeModelRootNode,
   TreeModelSource,
-} from "@bentley/ui-components";
+} from "@itwin/components-react";
 import { renderHook } from "@testing-library/react-hooks";
 import { initialize, terminate } from "../IntegrationTests";
 
@@ -485,78 +485,6 @@ describe("Update", () => {
         return result;
       }
     }
-
-    describe("paging", () => {
-      it("collects results from multiple pages", async () => {
-        const ruleset = await Presentation.presentation.rulesets().add({
-          id: faker.random.uuid(),
-          rules: [{
-            ruleType: RuleTypes.RootNodes,
-            specifications: [{
-              specType: ChildNodeSpecificationTypes.CustomNode,
-              type: "T_ROOT-1",
-              label: "root-1",
-            }],
-          }],
-        });
-        expect(ruleset).to.not.be.undefined;
-
-        const { result, unmount } = renderHook(
-          (props: PresentationTreeNodeLoaderProps) => usePresentationTreeNodeLoader(props).nodeLoader,
-          { initialProps: { imodel, ruleset: ruleset.id, pagingSize: 100, enableHierarchyAutoUpdate: true } },
-        );
-        await loadHierarchy(result.current);
-        unmount();
-
-        const modifiedRuleset = await Presentation.presentation.rulesets().modify(ruleset, {
-          rules: [
-            {
-              ruleType: RuleTypes.RootNodes,
-              specifications: [{
-                specType: ChildNodeSpecificationTypes.CustomNode,
-                type: "T_ROOT-0",
-                label: "root-0",
-              }],
-            },
-            ...ruleset.rules,
-            {
-              ruleType: RuleTypes.RootNodes,
-              specifications: [{
-                specType: ChildNodeSpecificationTypes.CustomNode,
-                type: "T_ROOT-2",
-                label: "root-2",
-              }],
-            },
-          ],
-        });
-        expect(modifiedRuleset).to.not.be.undefined;
-
-        const rpcSpy = sinon.spy(Presentation.presentation.rpcRequestsHandler, "compareHierarchiesPaged");
-        const changes = await Presentation.presentation.compareHierarchies({
-          imodel,
-          prev: {
-            rulesetOrId: ruleset,
-            rulesetVariables: [],
-          },
-          rulesetOrId: modifiedRuleset,
-          rulesetVariables: [],
-          resultSetSize: 1,
-        });
-        expect(changes).to.containSubset([
-          {
-            type: "Insert",
-            node: { key: { type: "T_ROOT-0" } },
-            position: 0,
-          },
-          {
-            type: "Insert",
-            node: { key: { type: "T_ROOT-2" } },
-            position: 2,
-          },
-        ]);
-        expect(rpcSpy).to.be.calledTwice;
-      });
-    });
 
     async function loadHierarchy(loader: AbstractTreeNodeLoader): Promise<void> {
       await loadChildren(loader.modelSource.getModel().getRootNode());

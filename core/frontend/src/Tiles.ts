@@ -6,7 +6,7 @@
  * @module IModelConnection
  */
 
-import { BeTimePoint, Dictionary, dispose, Id64Array, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
+import { BeTimePoint, Dictionary, dispose, Id64Array, Id64String, IModelStatus } from "@itwin/core-bentley";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeSupplier } from "./tile/internal";
@@ -54,7 +54,7 @@ class TreeOwner implements TileTreeOwner {
     try {
       tree = await this._supplier.createTileTree(this.id, this._iModel);
       newStatus = undefined !== tree && !tree.rootTile.contentRange.isNull ? TileTreeLoadStatus.Loaded : TileTreeLoadStatus.NotFound;
-    } catch (err) {
+    } catch (err: any) {
       newStatus = (err.errorNumber && err.errorNumber === IModelStatus.ServerTimeout) ? TileTreeLoadStatus.NotLoaded : TileTreeLoadStatus.NotFound;
     }
 
@@ -73,7 +73,7 @@ class TreeOwner implements TileTreeOwner {
  * @see [[IModelConnection.tiles]].
  * @public
  */
-export class Tiles {
+export class Tiles implements Iterable<{ supplier: TileTreeSupplier, id: any, owner: TileTreeOwner }> {
   private _iModel: IModelConnection;
   private readonly _treesBySupplier = new Map<TileTreeSupplier, Dictionary<any, TreeOwner>>();
   private _disposed = false;
@@ -192,6 +192,14 @@ export class Tiles {
   public forEachTreeOwner(func: (owner: TileTreeOwner) => void): void {
     for (const dict of this._treesBySupplier.values())
       dict.forEach((_key, value) => func(value));
+  }
+
+  /** Iterate over all of the TileTreeOwners. */
+  public * [Symbol.iterator](): Iterator<{ supplier: TileTreeSupplier, id: any, owner: TileTreeOwner }> {
+    for (const [supplier, dict] of this._treesBySupplier) {
+      for (const entry of dict)
+        yield { supplier, id: entry.key, owner: entry.value };
+    }
   }
 
   /** Obtain the TileTreeOwners supplied by the specified supplier. */

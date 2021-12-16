@@ -4,10 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { DelayedPromiseWithProps, DiagnosticCategory, DiagnosticType, ECClassModifier, EntityClass,
+import { DelayedPromiseWithProps, ECClassModifier, EntityClass,
   RelationshipClass, Schema, SchemaContext, schemaItemTypeToString,
-} from "@bentley/ecschema-metadata";
+} from "@itwin/ecschema-metadata";
 import * as Rules from "../../../Validation/ECRules";
+import { DiagnosticCategory, DiagnosticType } from "../../../Validation/Diagnostic";
 
 /* eslint-disable deprecation/deprecation */
 

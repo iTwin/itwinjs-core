@@ -6,12 +6,12 @@
  * @module WebGL
  */
 
-import { assert, dispose } from "@bentley/bentleyjs-core";
-import { Angle, Point2d, Point3d, Range3d, Vector2d, Vector3d } from "@bentley/geometry-core";
-import { Npc, QParams2d, QParams3d, QPoint2dList, QPoint3dList, RenderMode, RenderTexture } from "@bentley/imodeljs-common";
-import { SkyBox } from "../../DisplayStyleState";
+import { assert, dispose } from "@itwin/core-bentley";
+import { Angle, Point2d, Point3d, Range3d, Vector2d, Vector3d } from "@itwin/core-geometry";
+import { Npc, QParams2d, QParams3d, QPoint2dList, QPoint3dList, RenderMode, RenderTexture } from "@itwin/core-common";
+import { RenderSkyGradientParams, RenderSkySphereParams } from "../RenderSystem";
 import { FlashMode } from "../../FlashSettings";
-import { TesselatedPolyline } from "../primitives/VertexTable";
+import { TesselatedPolyline } from "../primitives/PolylineParams";
 import { RenderMemory } from "../RenderMemory";
 import { AttributeMap } from "./AttributeMap";
 import { ColorInfo } from "./ColorInfo";
@@ -23,7 +23,10 @@ import { GL } from "./GL";
 import { BufferHandle, BufferParameters, BuffersContainer, QBufferHandle2d, QBufferHandle3d } from "./AttributeBuffers";
 import { InstancedGeometry } from "./InstancedGeometry";
 import { MaterialInfo } from "./Material";
-import { EdgeGeometry, MeshGeometry, SilhouetteEdgeGeometry, SurfaceGeometry } from "./Mesh";
+import { MeshGeometry } from "./MeshGeometry";
+import { EdgeGeometry, SilhouetteEdgeGeometry } from "./EdgeGeometry";
+import { IndexedEdgeGeometry } from "./IndexedEdgeGeometry";
+import { SurfaceGeometry } from "./SurfaceGeometry";
 import { PointCloudGeometry } from "./PointCloud";
 import { CompositeFlags, RenderOrder, RenderPass } from "./RenderFlags";
 import { System } from "./System";
@@ -57,6 +60,7 @@ export abstract class CachedGeometry implements WebGLDisposable, RenderMemory.Co
   public get asSurface(): SurfaceGeometry | undefined { return undefined; }
   public get asMesh(): MeshGeometry | undefined { return undefined; }
   public get asEdge(): EdgeGeometry | undefined { return undefined; }
+  public get asIndexedEdge(): IndexedEdgeGeometry | undefined { return undefined; }
   public get asRealityMesh(): RealityMeshGeometry | undefined { return undefined; }
   public get asSilhouette(): SilhouetteEdgeGeometry | undefined { return undefined; }
   public get asInstanced(): InstancedGeometry | undefined { return undefined; }
@@ -422,7 +426,9 @@ export class SkyBoxQuadsGeometry extends CachedGeometry {
   public get renderOrder() { return RenderOrder.UnlitSurface; }
 
   public draw(): void {
+    this._params.buffers.bind();
     System.instance.context.drawArrays(GL.PrimitiveType.Triangles, 0, 36);
+    this._params.buffers.unbind();
   }
 
   public get qOrigin() { return this._params.positions.origin; }
@@ -640,7 +646,7 @@ export class SkySphereViewportQuadGeometry extends ViewportQuadGeometry {
     }
   }
 
-  protected constructor(params: IndexedGeometryParams, skybox: SkyBox.CreateParams, techniqueId: TechniqueId) {
+  protected constructor(params: IndexedGeometryParams, skybox: RenderSkySphereParams | RenderSkyGradientParams, techniqueId: TechniqueId) {
     super(params, techniqueId);
 
     this.worldPos = new Float32Array(4 * 3);
@@ -652,11 +658,9 @@ export class SkySphereViewportQuadGeometry extends ViewportQuadGeometry {
     this.nadirColor = new Float32Array(3);
     this.zOffset = skybox.zOffset;
 
-    const sphere = skybox.sphere;
-    this.rotation = undefined !== sphere ? sphere.rotation : 0.0;
-
-    if (undefined !== sphere) {
-      this.skyTexture = sphere.texture;
+    this.rotation = "sphere" === skybox.type ? skybox.rotation : 0;
+    if (skybox.type === "sphere") {
+      this.skyTexture = skybox.texture;
       this.typeAndExponents[0] = 0.0;
       this.typeAndExponents[1] = 1.0;
       this.typeAndExponents[2] = 1.0;
@@ -673,7 +677,7 @@ export class SkySphereViewportQuadGeometry extends ViewportQuadGeometry {
       this.groundColor[1] = 0.0;
       this.groundColor[2] = 0.0;
     } else {
-      const gradient = skybox.gradient!;
+      const gradient = skybox.gradient;
 
       this.zenithColor[0] = gradient.zenithColor.colors.r / 255.0;
       this.zenithColor[1] = gradient.zenithColor.colors.g / 255.0;
@@ -706,12 +710,12 @@ export class SkySphereViewportQuadGeometry extends ViewportQuadGeometry {
     }
   }
 
-  public static createGeometry(skybox: SkyBox.CreateParams) {
+  public static createGeometry(skybox: RenderSkySphereParams | RenderSkyGradientParams) {
     const params = ViewportQuad.getInstance().createParams();
     if (undefined === params)
       return undefined;
 
-    const technique = undefined !== skybox.sphere ? TechniqueId.SkySphereTexture : TechniqueId.SkySphereGradient;
+    const technique = "sphere" === skybox.type ? TechniqueId.SkySphereTexture : TechniqueId.SkySphereGradient;
     return new SkySphereViewportQuadGeometry(params, skybox, technique);
   }
 

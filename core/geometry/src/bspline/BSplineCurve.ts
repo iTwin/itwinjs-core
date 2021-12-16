@@ -15,7 +15,6 @@ import { StrokeOptions } from "../curve/StrokeOptions";
 import { Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
-import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
 /* eslint-disable @typescript-eslint/naming-convention, no-empty, no-console*/
@@ -89,7 +88,7 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
   protected _bcurve: BSpline1dNd;
   private _definitionData?: any;
   public set definitionData(data: any) { this._definitionData = data; }
-  public get definitionData(): any { return this._definitionData;}
+  public get definitionData(): any { return this._definitionData; }
   protected constructor(poleDimension: number, numPoles: number, order: number, knots: KnotVector) {
     super();
     this._bcurve = BSpline1dNd.create(numPoles, poleDimension, order, knots) as BSpline1dNd;
@@ -368,11 +367,38 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     return curve;
   }
 
-  /**
-   * @deprecated Use `createFromInterpolationCurve3dOptions` instead
-   */
-   public static createThroughPoints(points: IndexedXYZCollection | Point3d[], order: number): BSplineCurve3d | undefined {
-    return BSplineCurveOps.createThroughPoints(points, order);
+  /** Create a smoothly closed B-spline curve with uniform knots.
+   *  Note that the curve does not start at the first pole.
+  */
+  public static createPeriodicUniformKnots(poles: Point3d[] | Float64Array | GrowableXYZArray, order: number): BSplineCurve3d | undefined {
+    const numPoles = poles instanceof Float64Array ? poles.length / 3 : poles.length;
+    if (order < 1 || numPoles < order)
+      return undefined;
+    const degree = order - 1;
+    const numIntervals = numPoles;
+    const knots = KnotVector.createUniformWrapped(numIntervals, degree, 0.0, 1.0);
+    knots.wrappable = BSplineWrapMode.OpenByAddingControlPoints;
+    // append degree wraparound poles
+    const curve = new BSplineCurve3d(numPoles + degree, order, knots);
+    if (poles instanceof Float64Array) {
+      for (let i = 0; i < 3 * numPoles; i++)
+        curve._bcurve.packedData[i] = poles[i];
+      for (let i = 0; i < 3 * degree; i++)
+        curve._bcurve.packedData[3 * numPoles + i] = poles[i];
+    } else if (poles instanceof GrowableXYZArray) {
+      curve._bcurve.packedData = poles.float64Data().slice(0, 3 * numPoles);
+      for (let i = 0; i < 3 * degree; i++)
+        curve._bcurve.packedData[3 * numPoles + i] = poles.float64Data()[i];
+    } else {
+      let i = 0;
+      for (const p of poles) { curve._bcurve.packedData[i++] = p.x; curve._bcurve.packedData[i++] = p.y; curve._bcurve.packedData[i++] = p.z; }
+      for (let j = 0; j < degree; j++) {
+        curve._bcurve.packedData[i++] = poles[j].x;
+        curve._bcurve.packedData[i++] = poles[j].y;
+        curve._bcurve.packedData[i++] = poles[j].z;
+      }
+    }
+    return curve;
   }
 
   /**
@@ -388,7 +414,7 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
    * @param options collection of points and end conditions.
    */
   public static createFromAkimaCurve3dOptions(options: AkimaCurve3dOptions): BSplineCurve3d | undefined {
-    return BSplineCurveOps.createThroughPoints (options.fitPoints, 4);  // temporary
+    return BSplineCurveOps.createThroughPoints(options.fitPoints, 4);  // temporary
   }
 
   /** Create a bspline with given knots.

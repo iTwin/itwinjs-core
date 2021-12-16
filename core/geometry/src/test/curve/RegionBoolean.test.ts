@@ -578,7 +578,7 @@ function runRegionTest(allGeometry: GeometryQuery[], pointArrayA: number[][], po
   const fixedRegions = RegionOps.constructAllXYRegionLoops(region);
   saveShiftedLoops(allGeometry, fixedRegions, x0, y0, 15.0);
 }
-/*
+/**
  * Intersect a plane with each primitive of a loop.
  * If any intersection is coincident, or at an endpoint, return undefined.
  * Otherwise (the good case!) return the intersection sorted as in-out pairs.
@@ -616,7 +616,7 @@ function findSimpleLoopPlaneCuts(loop: Loop, plane: Plane3dByOriginAndUnitNormal
   return undefined;
 }
 */
-/*
+/**
  * * Construct (by some unspecified means) a point that is inside the loop.
  * * Pass that point to the `accept` function.
  * * If the function returns a value (other than undefined) return that value.
@@ -644,7 +644,6 @@ function classifyLoopByAnyInternalPoint<T>(loop: Loop, accept: (loop: Loop, test
   }
   return undefined;
 }
-/*
 /*
 function classifyAreasByAnyInternalPoint(candidates: Loop[], accept: (loop: Loop, testPoint: Point3d) => boolean): Loop[] {
   const acceptedLoops: Loop[] = [];

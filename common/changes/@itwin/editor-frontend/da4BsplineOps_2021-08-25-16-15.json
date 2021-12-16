@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/editor-frontend",
+      "comment": "InterpolationCurve3d support",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/editor-frontend"
+}

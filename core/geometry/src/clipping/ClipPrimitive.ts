@@ -18,9 +18,14 @@ import { Matrix4d } from "../geometry4d/Matrix4d";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../topology/Graph";
 import { Triangulator } from "../topology/Triangulation";
 import { ClipPlane } from "./ClipPlane";
-import { ClipPlaneContainment } from "./ClipUtils";
+import { Clipper, ClipPlaneContainment } from "./ClipUtils";
 import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets, UnionOfConvexClipPlaneSetsProps } from "./UnionOfConvexClipPlaneSets";
+import { AlternatingCCTreeNode } from "./AlternatingConvexClipTree";
+import { Point3dArray } from "../geometry3d/PointHelpers";
+import { PolylineOps } from "../geometry3d/PolylineOps";
+import { Arc3d } from "../curve/Arc3d";
+import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
 
 /**
  * Bit mask type for referencing subsets of 6 planes of range box.
@@ -90,14 +95,23 @@ export type ClipPrimitiveProps = ClipPrimitivePlanesProps | ClipPrimitiveShapePr
  *   * A UnionOfConvexClipPlaneSets designated "clipPlanes"
  *   * an "invisible" flag
  * * When constructed directly, objects of type ClipPrimitive (directly, not through a derived class) will have just planes
- * * Derived classes (e.g. ClipShape) carry additional data of a swept shape.
+ * * Derived classes (e.g. ClipShape) carry additional data such as a swept shape.
  * * ClipPrimitive can be constructed with no planes.
  *     * Derived class is responsible for filling the plane sets.
  *     * At discretion of derived classes, plane construction can be done at construction time or "on demand when" queries call `ensurePlaneSets ()`
- * * ClipPrimitive can be constructed with planes (and no derived class).
+ * * ClipPrimitive can be constructed directly with planes (and no derived class).
+ * * That the prevailing use is via a ClipShape derived class.
+ *    * The ClipShape has an "isMask" property
+ *       * isMask === false means the plane sets should cover the inside of its polygon
+ *       * isMask === true means the plane sets should cover the outside of its polygon.
+ *  * Note that the ClipShape's `isMask` property and the ClipPrimitive's `isInvisible` property are distinct controls.
+ *     * In normal usage, callers get "outside" clip behavior using ONLY the ClipShape isMask property.
+ *     * The ClipShape happens to pass the _invisible bit down to ClipPlane's that it creates.
+ *         * At that level, it controls whether the cut edges are produce on the plane
+ *         * This seems like an confused overloading of the meaning.
  * @public
  */
-export class ClipPrimitive {
+export class ClipPrimitive implements Clipper{
   /** The (union of) convex regions. */
   protected _clipPlanes?: UnionOfConvexClipPlaneSets;
   /** If true, pointInside inverts the sense of the pointInside for the _clipPlanes */
@@ -169,9 +183,38 @@ export class ClipPrimitive {
     let inside = true;
     if (this._clipPlanes)
       inside = this._clipPlanes.isPointOnOrInside(point, onTolerance);
-    if (this._invisible)
-      inside = !inside;
     return inside;
+  }
+
+  /** Method from [[Clipper]] interface.
+   * * Implement as dispatch to clipPlaneSets as supplied by derived class.
+   */
+   public isPointOnOrInside(point: Point3d, onTolerance: number = Geometry.smallMetricDistanceSquared): boolean {
+    this.ensurePlaneSets();
+    let inside = true;
+    if (this._clipPlanes)
+      inside = this._clipPlanes.isPointOnOrInside(point, onTolerance);
+    return inside;
+  }
+  /** Method from [[Clipper]] interface.
+   * * Implement as dispatch to clipPlaneSets as supplied by derived class.
+   */
+   public announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber): boolean {
+    this.ensurePlaneSets();
+    let hasInsideParts = false;
+    if (this._clipPlanes)
+      hasInsideParts = this._clipPlanes.announceClippedSegmentIntervals(f0, f1, pointA, pointB, announce);
+    return hasInsideParts;
+  }
+  /** Method from [[Clipper]] interface.
+   * * Implement as dispatch to clipPlaneSets as supplied by derived class.
+   */
+  public announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
+    this.ensurePlaneSets();
+    let hasInsideParts = false;
+    if (this._clipPlanes)
+      hasInsideParts = this._clipPlanes.announceClippedArcIntervals(arc, announce);
+    return hasInsideParts;
   }
 
   /**
@@ -272,20 +315,33 @@ export class ClipPrimitive {
 
 /** Internal helper class holding XYZ components that serves as a representation of polygon edges defined by clip planes */
 class PolyEdge {
-  public origin: Point3d;
-  public next: Point3d;
-  public normal: Vector2d;
+  public pointA: Point3d;
+  public pointB: Point3d;
+  public normal: Vector3d;
 
-  public constructor(origin: Point3d, next: Point3d, normal: Vector2d, z: number) {
-    this.origin = Point3d.create(origin.x, origin.y, z);
-    this.next = Point3d.create(next.x, next.y, z);
+  public constructor(origin: Point3d, next: Point3d, normal: Vector3d, z: number) {
+    this.pointA = Point3d.create(origin.x, origin.y, z);
+    this.pointB = Point3d.create(next.x, next.y, z);
     this.normal = normal;
+  }
+  // Assume both normals are unit length.
+  // old logic: use difference of (previously computed) normals as perpendicular to bisector.
+  public static makeUnitPerpendicularToBisector(edgeA: PolyEdge, edgeB: PolyEdge, reverse: boolean): Vector3d | undefined{
+    let candidate = edgeB.normal.minus(edgeA.normal);
+    if (candidate.normalize(candidate) === undefined) {
+      candidate = Vector3d.createStartEnd(edgeA.pointA, edgeB.pointB);
+      if (candidate.normalize(candidate) === undefined)
+        return undefined;
+    }
+    if (reverse)
+      candidate.scale(-1.0, candidate);
+    return candidate;
   }
 }
 /**
  * A clipping volume defined by a shape (an array of 3d points using only x and y dimensions).
  * May be given either a ClipPlaneSet to store directly, or an array of polygon points as well as other parameters
- * for parsing clipplanes from the shape later.
+ * for parsing ClipPlanes from the shape later.
  * @public
  */
 export class ClipShape extends ClipPrimitive {
@@ -425,9 +481,11 @@ export class ClipShape extends ClipPrimitive {
     if (polygon.length < 3)
       return undefined;
     const pPoints = polygon.slice(0);
-    // Add closure point
-    if (!pPoints[0].isExactEqual(pPoints[pPoints.length - 1]))
-      pPoints.push(pPoints[0]);
+    // Add closure point.
+    if (pPoints[0].isAlmostEqual(pPoints[pPoints.length - 1]))
+      pPoints[0].clone(pPoints[pPoints.length - 1]);
+    else
+      pPoints.push(pPoints[0].clone());
     if (result) {
       result._clipPlanes = undefined; // Start as undefined
       result._invisible = invisible;
@@ -484,14 +542,19 @@ export class ClipShape extends ClipPrimitive {
       this.parseLinearPlanes(set, this._polygon[0], this._polygon[1]);
       return true;
     }
-    const direction = PolygonOps.testXYPolygonTurningDirections(points);
-    if (0 !== direction) {
-      this.parseConvexPolygonPlanes(set, this._polygon, direction);
-      return true;
-    } else {
-      this.parseConcavePolygonPlanes(set, this._polygon);
-      return false;
+
+    if (!this.isMask){
+      const direction = PolygonOps.testXYPolygonTurningDirections(this.polygon);
+      if (direction !== 0){
+        this.parseConvexPolygonPlanes(set, this._polygon, direction, false);
+        return true;
+      }
     }
+
+  // REMARK:  Pass all polygons to non-convex case.  It will funnel
+  // to concave case as appropriate.
+  this.parsePolygonPlanes(set, this._polygon, this.isMask);
+  return true;
   }
   /** Given a start and end point, populate the given UnionOfConvexClipPlaneSets with ConvexClipPlaneSets defining the bounded region of linear planes. Returns true if successful. */
   private parseLinearPlanes(set: UnionOfConvexClipPlaneSets, start: Point3d, end: Point3d, cameraFocalLength?: number): boolean {
@@ -524,81 +587,104 @@ export class ClipShape extends ClipPrimitive {
     set.addConvexSet(convexSet);
     return true;
   }
+
   /** Given a convex polygon defined as an array of points, populate the given UnionOfConvexClipPlaneSets with ConvexClipPlaneSets defining the bounded region. Returns true if successful. */
-  private parseConvexPolygonPlanes(set: UnionOfConvexClipPlaneSets, polygon: Point3d[], direction: number, cameraFocalLength?: number): boolean {
+  private parseConvexPolygonPlanes(set: UnionOfConvexClipPlaneSets, polygon: Point3d[], direction: number, buildExteriorClipper: boolean, cameraFocalLength?: number): boolean {
     const samePointTolerance = 1.0e-8; // This could possibly be replaced with more widely used constants
     const edges: PolyEdge[] = [];
-    const reverse = (direction < 0) !== this._isMask;
+    //  const reverse = (direction < 0) !== this._isMask;
+    const reverse = direction < 0;
     for (let i = 0; i < polygon.length - 1; i++) {
       const z = (cameraFocalLength === undefined) ? 0.0 : -cameraFocalLength;
-      const dir = Vector2d.createFrom((polygon[i + 1].minus(polygon[i])));
+      const dir = Vector3d.createStartEnd (polygon[i], polygon[i + 1]);
       const magnitude = dir.magnitude();
       dir.normalize(dir);
       if (magnitude > samePointTolerance) {
-        const normal = Vector2d.create(reverse ? dir.y : -dir.y, reverse ? -dir.x : dir.x);
+        const normal = Vector3d.create(reverse ? dir.y : -dir.y, reverse ? -dir.x : dir.x);
         edges.push(new PolyEdge(polygon[i], polygon[i + 1], normal, z));
       }
     }
     if (edges.length < 3) {
       return false;
     }
-    if (this._isMask) {
+    if (buildExteriorClipper) {
       const last = edges.length - 1;
       for (let i = 0; i <= last; i++) {
         const edge = edges[i];
         const prevEdge = edges[i ? (i - 1) : last];
         const nextEdge = edges[(i === last) ? 0 : (i + 1)];
         const convexSet = ConvexClipPlaneSet.createEmpty();
-        const prevNormal = edge.normal.minus(prevEdge.normal);
-        const nextNormal = edge.normal.minus(nextEdge.normal);
-        prevNormal.normalize(prevNormal);
-        nextNormal.normalize(nextNormal);
+        const previousPerpendicular = PolyEdge.makeUnitPerpendicularToBisector(prevEdge, edge, !reverse);
+        const nextPerpendicular = PolyEdge.makeUnitPerpendicularToBisector(edge, nextEdge, reverse);
         // Create three-sided fans from each edge.   Note we could define the correct region
         // with only two planes for edge, but cannot then designate the "interior" status of the edges accurately.
-        convexSet.planes.push(ClipPlane.createNormalAndPoint(Vector3d.create(prevNormal.x, prevNormal.y), edge.origin, this._invisible, true)!);
-        convexSet.planes.push(ClipPlane.createNormalAndPoint(Vector3d.create(edge.normal.x, edge.normal.y), edge.origin, this._invisible, false)!);
-        convexSet.planes.push(ClipPlane.createNormalAndPoint(Vector3d.create(nextNormal.x, nextNormal.y), nextEdge.origin, this._invisible, true)!);
-        convexSet.addZClipPlanes(this._invisible, this._zLow, this._zHigh);
+
+        if (previousPerpendicular)
+          convexSet.planes.push(ClipPlane.createNormalAndPoint(previousPerpendicular, edge.pointA, this._invisible, true)!);
+        convexSet.planes.push(ClipPlane.createNormalAndPoint(edge.normal, edge.pointB, this._invisible, false)!);
+        if (nextPerpendicular)
+          convexSet.planes.push(ClipPlane.createNormalAndPoint(nextPerpendicular, nextEdge.pointA, this._invisible, true)!);
         set.addConvexSet(convexSet);
+        set.addOutsideZClipSets(this._invisible, this._zLow, this._zHigh);
       }
-      set.addOutsideZClipSets(this._invisible, this._zLow, this._zHigh);
     } else {
       const convexSet = ConvexClipPlaneSet.createEmpty();
       if (cameraFocalLength === undefined) {
         for (const edge of edges)
-          convexSet.planes.push(ClipPlane.createNormalAndPoint(Vector3d.create(edge.normal.x, edge.normal.y), edge.origin)!);
+          convexSet.planes.push(ClipPlane.createNormalAndPoint(Vector3d.create(edge.normal.x, edge.normal.y), edge.pointA)!);
       } else {
         if (reverse)
           for (const edge of edges)
-            convexSet.planes.push(ClipPlane.createNormalAndDistance(Vector3d.createFrom(edge.origin).crossProduct(Vector3d.createFrom(edge.next)).normalize()!, 0.0)!);
+            convexSet.planes.push(ClipPlane.createNormalAndDistance(Vector3d.createFrom(edge.pointA).crossProduct(Vector3d.createFrom(edge.pointB)).normalize()!, 0.0)!);
         else
           for (const edge of edges)
-            convexSet.planes.push(ClipPlane.createNormalAndDistance(Vector3d.createFrom(edge.next).crossProduct(Vector3d.createFrom(edge.origin)).normalize()!, 0.0)!);
+            convexSet.planes.push(ClipPlane.createNormalAndDistance(Vector3d.createFrom(edge.pointB).crossProduct(Vector3d.createFrom(edge.pointA)).normalize()!, 0.0)!);
       }
       convexSet.addZClipPlanes(this._invisible, this._zLow, this._zHigh);
       set.addConvexSet(convexSet);
     }
     return true;
   }
-  /** Given a concave polygon defined as an array of points, populate the given UnionOfConvexClipPlaneSets with multiple ConvexClipPlaneSets defining the bounded region. Returns true if successful. */
-  private parseConcavePolygonPlanes(set: UnionOfConvexClipPlaneSets, polygon: Point3d[], cameraFocalLength?: number): boolean {
-    const triangulatedPolygon = Triangulator.createTriangulatedGraphFromSingleLoop(polygon);
-    if (triangulatedPolygon === undefined)
-      return false;
-    Triangulator.flipTriangles(triangulatedPolygon);
-    triangulatedPolygon.announceFaceLoops((_graph: HalfEdgeGraph, edge: HalfEdge): boolean => {
+  /** Given a (possibly non-convex) polygon defined as an array of points, populate the given UnionOfConvexClipPlaneSets with multiple ConvexClipPlaneSets defining the bounded region. Returns true if successful. */
+  private parsePolygonPlanes(set: UnionOfConvexClipPlaneSets, polygon: Point3d[], isMask: boolean, cameraFocalLength?: number): boolean {
+    const cleanPolygon = PolylineOps.compressDanglers(polygon, true);
+    const announceFace = (_graph: HalfEdgeGraph, edge: HalfEdge): boolean => {
       if (!edge.isMaskSet(HalfEdgeMask.EXTERIOR)) {
         const convexFacetPoints = edge.collectAroundFace((node: HalfEdge): any => {
           if (!node.isMaskSet(HalfEdgeMask.EXTERIOR))
             return Point3d.create(node.x, node.y, 0);
         });
         // parseConvexPolygonPlanes expects a closed loop (pushing the reference doesn't matter)
-        convexFacetPoints.push(convexFacetPoints[0]);
+        convexFacetPoints.push(convexFacetPoints[0].clone());
         const direction = PolygonOps.testXYPolygonTurningDirections(convexFacetPoints); // ###TODO: Can we expect a direction coming out of graph facet?
-        this.parseConvexPolygonPlanes(set, convexFacetPoints, direction, cameraFocalLength);
+        this.parseConvexPolygonPlanes(set, convexFacetPoints, direction, false, cameraFocalLength);
       }
       return true;
-    });
+    };
+    if (isMask) {
+      const polygonA = Point3dArray.clonePoint3dArray ( cleanPolygon);
+      const hullAndInlets = AlternatingCCTreeNode.createHullAndInletsForPolygon(polygonA);
+      const allLoops = hullAndInlets.extractLoops();
+      if (allLoops.length === 0)
+        return false;
+      const hull = allLoops[0];
+      const direction1 = PolygonOps.testXYPolygonTurningDirections(hull); // ###TODO: Can we expect a direction coming out of graph facet?
+      this.parseConvexPolygonPlanes(set, hull, -direction1, true, cameraFocalLength);
+      for (let i = 1; i < allLoops.length; i++) {
+        const triangulatedPolygon = Triangulator.createTriangulatedGraphFromSingleLoop(allLoops[i]);
+        if (triangulatedPolygon) {
+          Triangulator.flipTriangles(triangulatedPolygon);
+          triangulatedPolygon.announceFaceLoops(announceFace);
+        }
+      }
+      return true;
+    } else {
+      const triangulatedPolygon = Triangulator.createTriangulatedGraphFromSingleLoop(cleanPolygon);
+      if (triangulatedPolygon === undefined)
+        return false;
+      Triangulator.flipTriangles(triangulatedPolygon);
+      triangulatedPolygon.announceFaceLoops(announceFace);
+    }
     return true;
   }
   /**

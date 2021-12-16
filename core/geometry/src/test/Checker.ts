@@ -114,6 +114,7 @@ export class Checker {
     this.announceError("expect same Point3d", dataA, dataB, params);
     return false;
   }
+
   /** test if `transformAToB * dataA` matches pointB */
   public testTransformedPoint3d(transformAToB: Transform, dataA: Point3d, dataB: Point3d, ...params: any[]): boolean {
     const dataA1 = transformAToB.multiplyPoint3d(dataA);
@@ -552,6 +553,9 @@ export class Checker {
   public static shift(dx: number, dy: number, dz: number = 0) {
     Checker._transform.multiplyTransformTransform(Transform.createTranslationXYZ(dx, dy, dz), Checker._transform);
   }
+  public static moveTo(dx: number, dy: number, dz: number = 0) {
+      Checker._transform = Transform.createTranslationXYZ(dx, dy, dz), Checker._transform;
+    }
 
   // ===================================================================================
   // Output

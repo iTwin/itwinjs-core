@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Format, InvertedUnit, KindOfQuantity, OverrideFormat, Unit } from "@bentley/ecschema-metadata";
+import { Format, InvertedUnit, KindOfQuantity, OverrideFormat, Unit } from "@itwin/ecschema-metadata";
 
 /**
  * @internal

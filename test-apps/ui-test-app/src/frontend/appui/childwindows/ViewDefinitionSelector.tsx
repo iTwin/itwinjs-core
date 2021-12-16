@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as React from "react";
-import { Id64String } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { ViewQueryParams } from "@bentley/imodeljs-common";
+import { Id64String } from "@itwin/core-bentley";
+import { IModelConnection } from "@itwin/core-frontend";
+import { ViewQueryParams } from "@itwin/core-common";
 import { Select, SelectOption } from "@itwin/itwinui-react";
 
 export async function getViewDefinitions(imodel: IModelConnection): Promise<{ id: string, class: string, label: string }[]> {
@@ -48,7 +48,7 @@ export default function ViewDefinitionSelector(props: ViewDefinitionSelectorProp
   }, [availableViewDefinitions]);
   return (
     <div className="ViewDefinitionSelector">
-      <Select onChange={memoizedOnViewDefinitionSelected} value={props.selectedViewDefinition} options={selectOptions} />
+      <Select onChange={memoizedOnViewDefinitionSelected} value={props.selectedViewDefinition} options={selectOptions} size="small" />
     </div>
   );
 }

@@ -7,21 +7,22 @@
 // the following quiet warning caused by react-beautiful-dnd package
 /* eslint-disable @typescript-eslint/unbound-method */
 
-import { MapImagerySettings, MapSubLayerProps, MapSubLayerSettings } from "@bentley/imodeljs-common";
-import {
-  ImageryMapTileTree, IModelApp, MapLayerImageryProvider, MapLayerSettingsService, MapLayerSource, MapLayerSourceChangeType,
-  MapLayerSources, NotifyMessageDetails, OutputMessagePriority, ScreenViewport, TileTreeOwner, Viewport,
-} from "@bentley/imodeljs-frontend";
-import { ToggleSwitch } from "@itwin/itwinui-react";
-import { assert } from "@bentley/bentleyjs-core";
+import "./MapLayerManager.scss";
 import * as React from "react";
 import { DragDropContext, DropResult } from "react-beautiful-dnd";
+import { assert, BentleyError } from "@itwin/core-bentley";
+import { MapImagerySettings, MapSubLayerProps, MapSubLayerSettings } from "@itwin/core-common";
+import {
+  ImageryMapTileTree, IModelApp, MapLayerImageryProvider, MapLayerSource, MapLayerSources, NotifyMessageDetails, OutputMessagePriority,
+  ScreenViewport, TileTreeOwner, Viewport,
+} from "@itwin/core-frontend";
+import { ToggleSwitch } from "@itwin/itwinui-react";
+import { MapLayerPreferences, MapLayerSourceChangeType } from "../../MapLayerPreferences";
 import { MapLayerOptions, StyleMapLayerSettings } from "../Interfaces";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import { AttachLayerPopupButton } from "./AttachLayerPopupButton";
 import { BasemapPanel } from "./BasemapPanel";
 import { MapLayerDroppable } from "./MapLayerDroppable";
-import "./MapLayerManager.scss";
 import { MapLayerSettingsPopupButton } from "./MapLayerSettingsPopupButton";
 
 /** @internal */
@@ -93,8 +94,8 @@ export function MapLayerManager(props: MapLayerManagerProps) {
   const [mapSources, setMapSources] = React.useState<MapLayerSource[] | undefined>();
   const [loadingSources, setLoadingSources] = React.useState(false);
   const [baseSources, setBaseSources] = React.useState<MapLayerSource[] | undefined>();
-  const [overlaysLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.OverlayLayers"));
-  const [underlaysLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.BackgroundLayers"));
+  const [overlaysLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Widget.OverlayLayers"));
+  const [underlaysLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Widget.BackgroundLayers"));
   const { activeViewport, mapLayerOptions } = props;
   const hideExternalMapLayersSection = mapLayerOptions?.hideExternalMapLayers ? mapLayerOptions.hideExternalMapLayers : false;
   const fetchPublicMapLayerSources = mapLayerOptions?.fetchPublicMapLayerSources ? mapLayerOptions.fetchPublicMapLayerSources : false;
@@ -183,6 +184,18 @@ export function MapLayerManager(props: MapLayerManagerProps) {
       const sources: MapLayerSource[] = [];
       const bases: MapLayerSource[] = [];
       const sourceLayers = await MapLayerSources.create(undefined, (fetchPublicMapLayerSources && !hideExternalMapLayersSection));
+
+      const iModel = IModelApp.viewManager.selectedView ? IModelApp.viewManager.selectedView.iModel : undefined;
+      if (iModel && iModel.iTwinId && iModel.iModelId) {
+        try {
+          const preferenceSources = await MapLayerPreferences.getSources(iModel.iTwinId, iModel.iModelId);
+          for (const source of preferenceSources)
+            await MapLayerSources.addSourceToMapLayerSources(source);
+        } catch (err) {
+          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.localization.getLocalizedString("mapLayers:CustomAttach.ErrorLoadingLayers"), BentleyError.getErrorMessage(err)));
+        }
+      }
+
       if (!isMounted.current) {
         return;
       }
@@ -215,8 +228,8 @@ export function MapLayerManager(props: MapLayerManagerProps) {
     setMapSources(newSources);
   }, [setMapSources]);
 
-  /*
-  * Handle change events in the MapLayerSettingsService
+  /**
+  * Handle change events in the MapLayerPreferences
   */
   React.useEffect(() => {
     const handleLayerSourceChange = async (changeType: MapLayerSourceChangeType, oldSource?: MapLayerSource, newSource?: MapLayerSource) => {
@@ -247,9 +260,9 @@ export function MapLayerManager(props: MapLayerManagerProps) {
         }
       }
     };
-    MapLayerSettingsService.onLayerSourceChanged.addListener(handleLayerSourceChange);
+    MapLayerPreferences.onLayerSourceChanged.addListener(handleLayerSourceChange);
     return (() => {
-      MapLayerSettingsService.onLayerSourceChanged.removeListener(handleLayerSourceChange);
+      MapLayerPreferences.onLayerSourceChanged.removeListener(handleLayerSourceChange);
     });
   }, [updateMapSources]);
 
@@ -279,7 +292,7 @@ export function MapLayerManager(props: MapLayerManagerProps) {
       case "zoom-to-layer":
         activeViewport.displayStyle.viewMapLayerRange(indexInDisplayStyle, mapLayerSettings.isOverlay, activeViewport).then((status) => {
           if (!status) {
-            const msg = MapLayersUiItemsProvider.i18n.translate("mapLayers:Messages.NoRangeDefined");
+            const msg = MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Messages.NoRangeDefined");
             IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, `${msg} [${mapLayerSettings.name}]`));
           }
         }).catch((_error) => { });
@@ -392,7 +405,7 @@ export function MapLayerManager(props: MapLayerManagerProps) {
       loadMapLayerSettingsFromViewport(activeViewport);
   }, [activeViewport, loadMapLayerSettingsFromViewport]);
 
-  const [baseMapPanelLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Basemap.BaseMapPanelTitle"));
+  const [baseMapPanelLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Basemap.BaseMapPanelTitle"));
 
   return (
     <SourceMapContext.Provider value={{

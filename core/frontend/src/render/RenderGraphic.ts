@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { IDisposable } from "@bentley/bentleyjs-core";
+import { IDisposable } from "@itwin/core-bentley";
 import { RenderMemory } from "./RenderMemory";
 
 /** Abstract representation of an object which can be rendered by a [[RenderSystem]].

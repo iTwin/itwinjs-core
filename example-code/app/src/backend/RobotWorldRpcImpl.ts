@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 // __PUBLISH_EXTRACT_START__ RpcInterface.implementation
-import { IModelRpcProps, RpcInterface, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
-import { Id64String } from "@bentley/bentleyjs-core";
-import { IModelDb } from "@bentley/imodeljs-backend";
+import { IModelRpcProps, RpcInterface, RpcInterfaceDefinition } from "@itwin/core-common";
+import { Id64String } from "@itwin/core-bentley";
+import { IModelDb } from "@itwin/core-backend";
 import { RobotWorldEngine } from "./RobotWorldEngine";
 import { RobotWorldReadRpcInterface } from "../common/RobotWorldRpcInterface";
 
@@ -29,7 +29,7 @@ export class RobotWorldReadRpcImpl extends RpcInterface implements RobotWorldRea
 // __PUBLISH_EXTRACT_END__
 
 /* eslint-disable no-duplicate-imports */ // Disable this because it is intentionally separated.
-import { Angle, AngleProps, Point3d, XYZProps } from "@bentley/geometry-core";
+import { Angle, AngleProps, Point3d, XYZProps } from "@itwin/core-geometry";
 import { RobotWorldWriteRpcInterface } from "../common/RobotWorldRpcInterface";
 
 // Implement RobotWorldWriteRpcInterface
@@ -48,7 +48,7 @@ export class RobotWorldWriteRpcImpl extends RpcInterface implements RobotWorldWr
 }
 
 // __PUBLISH_EXTRACT_START__ RpcInterface.initializeForCloud
-import { BentleyCloudRpcManager, BentleyCloudRpcParams } from "@bentley/imodeljs-common";
+import { BentleyCloudRpcManager, BentleyCloudRpcParams } from "@itwin/core-common";
 
 export function initializeRpcImplBentleyCloud(interfaces: RpcInterfaceDefinition[]) {
   const cloudParams: BentleyCloudRpcParams = { info: { title: "RobotWorldEngine", version: "v1.0" } };
@@ -57,7 +57,7 @@ export function initializeRpcImplBentleyCloud(interfaces: RpcInterfaceDefinition
 // __PUBLISH_EXTRACT_END__
 
 // __PUBLISH_EXTRACT_START__ RpcInterface.initializeBackendForElectron
-import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
+import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 
 export async function initializeForElectron(rpcInterfaces: RpcInterfaceDefinition[]) {
   await ElectronHost.startup({ electronHost: { rpcInterfaces } });

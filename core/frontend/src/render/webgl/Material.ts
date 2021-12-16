@@ -6,8 +6,8 @@
  * @module WebGL
  */
 
-import { ColorDef, RenderMaterial } from "@bentley/imodeljs-common";
-import { SurfaceMaterial, SurfaceMaterialAtlas } from "../primitives/VertexTable";
+import { ColorDef, RenderMaterial } from "@itwin/core-common";
+import { SurfaceMaterial, SurfaceMaterialAtlas } from "../primitives/SurfaceParams";
 import { FloatRgb } from "./FloatRGBA";
 
 /** Parameters describing a single material. The parameters used are:

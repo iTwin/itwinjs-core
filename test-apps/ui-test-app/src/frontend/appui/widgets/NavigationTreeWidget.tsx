@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { useResizeDetector } from "react-resize-detector";
-import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { usePresentationTreeNodeLoader, useUnifiedSelectionTreeEventHandler } from "@bentley/presentation-components";
-import { ControlledTree, SelectionMode, useTreeModel } from "@bentley/ui-components";
-import { ConfigurableCreateInfo, ConfigurableUiManager, WidgetControl } from "@bentley/ui-framework";
+import { IModelApp, IModelConnection } from "@itwin/core-frontend";
+import { usePresentationTreeNodeLoader, useUnifiedSelectionTreeEventHandler } from "@itwin/presentation-components";
+import { ControlledTree, SelectionMode, useTreeModel } from "@itwin/components-react";
+import { ConfigurableCreateInfo, ConfigurableUiManager, WidgetControl } from "@itwin/appui-react";
 import { Input } from "@itwin/itwinui-react";
 
 export class NavigationTreeWidgetControl extends WidgetControl {
@@ -41,36 +41,36 @@ class NavigationTreeWidget extends React.Component<NavigationTreeWidgetProps> {
               <td>{this.props.iModelConnection ? this.props.iModelConnection.name : ""}</td>
             </tr>
             <tr>
-              <td><label htmlFor="demo-month">{IModelApp.i18n.translate("SampleApp:zone6.month")}</label></td>
-              <td> <Input type="month" id="demo-month" /> </td>
+              <td><label htmlFor="demo-month">{IModelApp.localization.getLocalizedString("SampleApp:zone6.month")}</label></td>
+              <td> <Input type="month" id="demo-month" size="small" /> </td>
             </tr>
             <tr>
-              <td><label htmlFor="demo-number">{IModelApp.i18n.translate("SampleApp:zone6.number")}</label></td>
-              <td> <Input type="number" id="demo-number" min="10" max="20" /> </td>
+              <td><label htmlFor="demo-number">{IModelApp.localization.getLocalizedString("SampleApp:zone6.number")}</label></td>
+              <td> <Input type="number" id="demo-number" min="10" max="20" size="small" /> </td>
             </tr>
             <tr>
-              <td><label htmlFor="demo-password">{IModelApp.i18n.translate("SampleApp:zone6.password")}</label></td>
-              <td> <Input type="password" id="demo-password" /> </td>
+              <td><label htmlFor="demo-password">{IModelApp.localization.getLocalizedString("SampleApp:zone6.password")}</label></td>
+              <td> <Input type="password" id="demo-password" size="small" /> </td>
             </tr>
             <tr>
-              <td><label htmlFor="demo-radio">{IModelApp.i18n.translate("SampleApp:zone6.radio")}</label></td>
-              <td> <Input type="radio" id="demo-radio" /> </td>
+              <td><label htmlFor="demo-radio">{IModelApp.localization.getLocalizedString("SampleApp:zone6.radio")}</label></td>
+              <td> <Input type="radio" id="demo-radio" size="small" /> </td>
             </tr>
             <tr>
-              <td><label htmlFor="demo-range">{IModelApp.i18n.translate("SampleApp:zone6.range")}</label></td>
-              <td> <Input type="range" id="demo-range" /> </td>
+              <td><label htmlFor="demo-range">{IModelApp.localization.getLocalizedString("SampleApp:zone6.range")}</label></td>
+              <td> <Input type="range" id="demo-range" size="small" /> </td>
             </tr>
             <tr>
-              <td><label htmlFor="demo-search">{IModelApp.i18n.translate("SampleApp:zone6.search")}</label></td>
-              <td> <Input type="search" id="demo-search" /> </td>
+              <td><label htmlFor="demo-search">{IModelApp.localization.getLocalizedString("SampleApp:zone6.search")}</label></td>
+              <td> <Input type="search" id="demo-search" size="small" /> </td>
             </tr>
             <tr>
-              <td><label htmlFor="demo-tel">{IModelApp.i18n.translate("SampleApp:zone6.Tel")}</label></td>
-              <td> <Input type="tel" id="demo-tel" /> </td>
+              <td><label htmlFor="demo-tel">{IModelApp.localization.getLocalizedString("SampleApp:zone6.Tel")}</label></td>
+              <td> <Input type="tel" id="demo-tel" size="small" /> </td>
             </tr>
             <tr>
-              <td><label htmlFor="demo-text">{IModelApp.i18n.translate("SampleApp:zone6.Text")}</label></td>
-              <td> <Input type="text" id="demo-text" /> </td>
+              <td><label htmlFor="demo-text">{IModelApp.localization.getLocalizedString("SampleApp:zone6.Text")}</label></td>
+              <td> <Input type="text" id="demo-text" size="small" /> </td>
             </tr>
           </tbody>
         </table>

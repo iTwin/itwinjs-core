@@ -6,17 +6,14 @@
  * @module NativeApp
  */
 
-import {
-  AsyncMethodsOf, BeEvent, GuidString, Logger, PromiseReturnType, SessionProps,
-} from "@bentley/bentleyjs-core";
+import { AsyncMethodsOf, BeEvent, GuidString, Logger, PromiseReturnType } from "@itwin/core-bentley";
 import {
   BriefcaseDownloader, BriefcaseProps, IModelVersion, InternetConnectivityStatus, IpcSocketFrontend, LocalBriefcaseProps,
-  NativeAppAuthorizationConfiguration, nativeAppChannel, NativeAppFunctions, NativeAppNotifications, nativeAppNotify, OverriddenBy,
+  nativeAppChannel, NativeAppFunctions, NativeAppNotifications, nativeAppNotify, OverriddenBy,
   RequestNewBriefcaseProps, StorageValue, SyncMode,
-} from "@bentley/imodeljs-common";
-import { AccessToken, AccessTokenProps, ProgressCallback, RequestGlobalOptions } from "@bentley/itwin-client";
+} from "@itwin/core-common";
+import { ProgressCallback, RequestGlobalOptions } from "@bentley/itwin-client";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
-import { IModelApp } from "./IModelApp";
 import { IpcApp, IpcAppOptions, NotificationHandler } from "./IpcApp";
 import { NativeAppLogger } from "./NativeAppLogger";
 
@@ -46,74 +43,6 @@ class NativeAppNotifyHandler extends NotificationHandler implements NativeAppNot
     Logger.logInfo(FrontendLoggerCategory.NativeApp, "Internet connectivity changed");
     NativeApp.onInternetConnectivityChanged.raiseEvent(status);
   }
-  public notifyUserStateChanged(props?: AccessTokenProps) {
-    IModelApp.authorizationClient?.onUserStateChanged.raiseEvent(props ? AccessToken.fromJson(props) : undefined);
-  }
-}
-
-/**
- * Object to be set as `IModelApp.authorizationClient` for the frontend of NativeApps.
- * Since NativeApps use the backend for all authorization, this class sends signIn/signOut requests to the backend
- * and then listens for the `onUserStateChanged` event to cache the accessToken. The token is cached
- * here on the frontend because it is used for every RPC operation, even when we're running as a NativeApp.
- * We must therefore check for expiration and request refreshes as/when necessary.
- * @public
- */
-export class NativeAppAuthorization {
-  private _config?: NativeAppAuthorizationConfiguration;
-  private _cachedToken?: AccessToken;
-  private _refreshingToken = false;
-  protected _expireSafety = 60 * 10; // seconds before real expiration time so token will be refreshed before it expires
-  public readonly onUserStateChanged = new BeEvent<(token?: AccessToken) => void>();
-  public get hasSignedIn() { return this._cachedToken !== undefined; }
-  public get isAuthorized(): boolean { return this.hasSignedIn && !this._cachedToken!.isExpired(this._expireSafety); }
-
-  /** ctor for NativeAppAuthorization
-   * @param config if present, overrides backend supplied configuration. Generally not necessary, should be supplied
-   * in [NativeHostOpts]($backend)
-   */
-  public constructor(config?: NativeAppAuthorizationConfiguration) {
-    this._config = config;
-    this.onUserStateChanged.addListener((token?: AccessToken) => {
-      this._cachedToken = token;
-    });
-  }
-
-  /** Used to initialize the the backend authorization. Must be awaited before any other methods are called */
-  public async initialize(props: SessionProps): Promise<void> {
-    this._expireSafety = await NativeApp.callNativeHost("initializeAuth", props, this._config);
-  }
-
-  /** Called to start the sign-in process. Subscribe to onUserStateChanged to be notified when sign-in completes */
-  public async signIn(): Promise<void> {
-    return NativeApp.callNativeHost("signIn");
-  }
-
-  /** Called to start the sign-out process. Subscribe to onUserStateChanged to be notified when sign-out completes */
-  public async signOut(): Promise<void> {
-    return NativeApp.callNativeHost("signOut");
-  }
-
-  /** Returns a promise that resolves to the AccessToken if signed in.
-   * - The token is ensured to be valid *at least* for the buffer of time specified by the configuration.
-   * - The token is refreshed if it's possible and necessary.
-   * - This method must be called to refresh the token - the client does NOT automatically monitor for token expiry.
-   * - Getting or refreshing the token will trigger the [[onUserStateChanged]] event.
-   */
-  public async getAccessToken(): Promise<AccessToken> {
-    // if we have a valid token, return it. Otherwise call backend to refresh the token.
-    if (!this.isAuthorized) {
-      if (this._refreshingToken) {
-        return Promise.reject(); // short-circuits any recursive use of this function
-      }
-
-      this._refreshingToken = true;
-      this._cachedToken = AccessToken.fromJson(await NativeApp.callNativeHost("getAccessTokenProps"));
-      this._refreshingToken = false;
-    }
-
-    return this._cachedToken!;
-  }
 }
 
 /**
@@ -121,16 +50,7 @@ export class NativeAppAuthorization {
  * @public
  */
 export interface NativeAppOpts extends IpcAppOptions {
-  nativeApp?: {
-    /** if present, [[IModelApp.authorizationClient]] will be set to an instance of NativeAppAuthorization and will be initialized.
-     * @deprecated Initialize authorization for native applications at the backend
-     */
-    authConfig?: NativeAppAuthorizationConfiguration;
-    /** if true, do not attempt to initialize AuthorizationClient
-     * @deprecated Initialize authorization for native applications at the backend
-     */
-    noInitializeAuthClient?: boolean;
-  };
+  nativeApp?: {};
 }
 
 /**
@@ -198,13 +118,6 @@ export class NativeApp {
       RequestGlobalOptions.online = window.navigator.onLine;
       await this.setConnectivity(OverriddenBy.Browser, window.navigator.onLine ? InternetConnectivityStatus.Online : InternetConnectivityStatus.Offline);
     }
-
-    const auth = new NativeAppAuthorization(opts?.nativeApp?.authConfig); // eslint-disable-line deprecation/deprecation
-    IModelApp.authorizationClient = auth;
-    const connStatus = await NativeApp.checkInternetConnectivity();
-    if (opts?.nativeApp?.authConfig && true !== opts?.nativeApp?.noInitializeAuthClient && connStatus === InternetConnectivityStatus.Online) { // eslint-disable-line deprecation/deprecation
-      await auth.initialize({ applicationId: IModelApp.applicationId, applicationVersion: IModelApp.applicationVersion, sessionId: IModelApp.sessionId });
-    }
   }
 
   /** @internal */
@@ -215,7 +128,7 @@ export class NativeApp {
     this._isValid = false;
   }
 
-  public static async requestDownloadBriefcase(contextId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions,
+  public static async requestDownloadBriefcase(iTwinId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions,
     asOf: IModelVersion = IModelVersion.latest(), progress?: ProgressCallback): Promise<BriefcaseDownloader> {
 
     let stopProgressEvents = () => { };
@@ -229,7 +142,7 @@ export class NativeApp {
       (downloadOptions.syncMode === SyncMode.PullOnly ? 0 : await this.callNativeHost("acquireNewBriefcaseId", iModelId));
 
     const fileName = downloadOptions.fileName ?? await this.getBriefcaseFileName({ briefcaseId, iModelId });
-    const requestProps: RequestNewBriefcaseProps = { iModelId, briefcaseId, contextId, asOf: asOf.toJSON(), fileName };
+    const requestProps: RequestNewBriefcaseProps = { iModelId, briefcaseId, iTwinId, asOf: asOf.toJSON(), fileName };
 
     const doDownload = async (): Promise<void> => {
       try {
@@ -307,8 +220,13 @@ export class NativeApp {
 export class Storage {
   constructor(public readonly id: string) { }
 
+  /** get the type of a value for a key, or undefined if not present. */
+  public async getValueType(key: string): Promise<"number" | "string" | "boolean" | "Uint8Array" | "null" | undefined> {
+    return NativeApp.callNativeHost("storageGetValueType", this.id, key);
+  }
+
   /** Get the value for a key */
-  public async getData(key: string): Promise<StorageValue | undefined> {
+  public async getData(key: string): Promise<StorageValue> {
     return NativeApp.callNativeHost("storageGet", this.id, key);
   }
 

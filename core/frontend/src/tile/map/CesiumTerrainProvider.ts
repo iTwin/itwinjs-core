@@ -6,10 +6,10 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { assert, BeDuration, BeTimePoint, ByteStream, ClientRequestContext, Id64String, JsonUtils, utf8ToString } from "@bentley/bentleyjs-core";
-import { Point2d, Point3d, Range1d, Vector3d } from "@bentley/geometry-core";
-import { nextPoint3d64FromByteStream, OctEncodedNormal, QParams3d, QPoint2d } from "@bentley/imodeljs-common";
-import { request, RequestOptions, Response } from "@bentley/itwin-client";
+import { assert, BeDuration, BeTimePoint, ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
+import { Point2d, Point3d, Range1d, Vector3d } from "@itwin/core-geometry";
+import { nextPoint3d64FromByteStream, OctEncodedNormal, QParams3d, QPoint2d } from "@itwin/core-common";
+import { request, RequestOptions } from "@bentley/itwin-client";
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
@@ -25,31 +25,37 @@ enum QuantizedMeshExtensionIds {
   Metadata = 4,
 }
 
-/** @internal */
-const bentleyCesiumIonRequestKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJkZWIxNzk1OC0wNmVjLTQ1NDItOTBlYS1lOTViMDljNzQyNWUiLCJpZCI6MTQwLCJzY29wZXMiOlsiYXNsIiwiYXNyIiwiYXN3IiwiZ2MiXSwiaWF0IjoxNTYyMDA0NTYwfQ.VyMP5TPl--eX2bCQjIY7ijfPCd-J0sSPnEFj_mfPC3k";
-
 /** Return the URL for a Cesium ION asset from its asset ID and request Key.
  * @public
  */
-export function getCesiumAssetUrl(osmAssetId: number, requestKey: string) {
+export function getCesiumAssetUrl(osmAssetId: number, requestKey: string): string {
   return `$CesiumIonAsset=${osmAssetId}:${requestKey}`;
 }
 /** @internal */
-export function getCesiumOSMBuildingsUrl() {
+export function getCesiumOSMBuildingsUrl(): string | undefined {
+  const key = IModelApp.tileAdmin.cesiumIonKey;
+  if (undefined === key)
+    return undefined;
+
   const osmBuildingAssetId = 96188;
-  return getCesiumAssetUrl(osmBuildingAssetId, bentleyCesiumIonRequestKey);
+  return getCesiumAssetUrl(osmBuildingAssetId, key);
 }
 
 /** @internal */
 export async function getCesiumAccessTokenAndEndpointUrl(assetId = 1, requestKey?: string): Promise<{ token?: string, url?: string }> {
-  const requestContext = new ClientRequestContext("");
-  const _requestKey = requestKey ? requestKey : bentleyCesiumIonRequestKey;
-  const _requestTemplate = `https://api.cesium.com/v1/assets/${assetId}/endpoint?access_token={CesiumRequestToken}`;
-  const apiUrl: string = _requestTemplate.replace("{CesiumRequestToken}", _requestKey);
+
+  if (undefined === requestKey) {
+    requestKey = IModelApp.tileAdmin.cesiumIonKey;
+    if (undefined === requestKey)
+      return {};
+  }
+
+  const requestTemplate = `https://api.cesium.com/v1/assets/${assetId}/endpoint?access_token={CesiumRequestToken}`;
+  const apiUrl: string = requestTemplate.replace("{CesiumRequestToken}", requestKey);
   const apiRequestOptions: RequestOptions = { method: "GET", responseType: "json" };
 
   try {
-    const apiResponse: Response = await request(requestContext, apiUrl, apiRequestOptions);
+    const apiResponse = await request(apiUrl, apiRequestOptions);
     if (undefined === apiResponse || undefined === apiResponse.body || undefined === apiResponse.body.url) {
       assert(false);
       return {};
@@ -63,7 +69,6 @@ export async function getCesiumAccessTokenAndEndpointUrl(assetId = 1, requestKey
 
 /** @internal */
 export async function getCesiumTerrainProvider(iModel: IModelConnection, modelId: Id64String, wantSkirts: boolean, wantNormals: boolean, exaggeration: number): Promise<TerrainMeshProvider | undefined> {
-  const requestContext = new ClientRequestContext("");
   let layers;
 
   const accessTokenAndEndpointUrl = await getCesiumAccessTokenAndEndpointUrl();
@@ -73,7 +78,7 @@ export async function getCesiumTerrainProvider(iModel: IModelConnection, modelId
   try {
     const layerRequestOptions: RequestOptions = { method: "GET", responseType: "json", headers: { authorization: `Bearer ${accessTokenAndEndpointUrl.token}` } };
     const layerUrl = `${accessTokenAndEndpointUrl.url}layer.json`;
-    const layerResponse = await request(requestContext, layerUrl, layerRequestOptions);
+    const layerResponse = await request(layerUrl, layerRequestOptions);
     if (undefined === layerResponse) {
       assert(false);
       return undefined;
@@ -155,7 +160,8 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
 
   public override forceTileLoad(tile: Tile): boolean {
     // Force loading of the metadata availability tiles as these are required for determining the availability of descendants.
-    return undefined !== this._metaDataAvailableLevel && tile.depth === 1 + this._metaDataAvailableLevel && !(tile as MapTile).everLoaded;
+    const mapTile = tile as MapTile;
+    return undefined !== this._metaDataAvailableLevel && mapTile.quadId.level === this._metaDataAvailableLevel && !mapTile.everLoaded;
   }
 
   constructor(iModel: IModelConnection, modelId: Id64String, private _accessToken: string, private _tileUrlTemplate: string,
@@ -165,7 +171,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
   }
 
   public override getLogo(): HTMLTableRowElement {
-    return IModelApp.makeLogoCard({ iconSrc: "images/cesium-ion.svg", heading: "Cesium Ion", notice: IModelApp.i18n.translate("iModelJs:BackgroundMap.CesiumWorldTerrainAttribution") });
+    return IModelApp.makeLogoCard({ iconSrc: `${IModelApp.publicPath}images/cesium-ion.svg`, heading: "Cesium Ion", notice: IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap.CesiumWorldTerrainAttribution") });
   }
 
   public get maxDepth(): number { return this._maxDepth; }
@@ -175,7 +181,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     if (quadId.level > this.maxDepth)
       return false;
 
-    return this._tileAvailability ? this._tileAvailability.isTileAvailable(quadId.level - 1, quadId.column, quadId.row) : true;
+    return this._tileAvailability ? this._tileAvailability.isTileAvailable(quadId.level, quadId.column, quadId.row) : true;
   }
 
   public override async getMesh(tile: MapTile, data: Uint8Array): Promise<TerrainMeshPrimitive | undefined> {
@@ -196,7 +202,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     const streamBuffer = new ByteStream(blob.buffer);
     const center = nextPoint3d64FromByteStream(streamBuffer);
     const quadId = QuadId.createFromContentId(tile.contentId);
-    const skirtHeight = this.getLevelMaximumGeometricError(quadId.level) * 10.0;
+    const skirtHeight = this.getLevelMaximumGeometricError(quadId.level + 1) * 10.0;  // Add 1 to level to restore height calculation to before the quadId level was from root. (4326 unification)
     const minHeight = this._exaggeration * streamBuffer.nextFloat32;
     const maxHeight = this._exaggeration * streamBuffer.nextFloat32;
     const boundCenter = nextPoint3d64FromByteStream(streamBuffer);
@@ -369,11 +375,11 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
   }
 
   public override constructUrl(row: number, column: number, zoomLevel: number): string {
-    return this._tileUrlTemplate.replace("{z}", (zoomLevel - 1).toString()).replace("{x}", column.toString()).replace("{y}", row.toString());
+    return this._tileUrlTemplate.replace("{z}", zoomLevel.toString()).replace("{x}", column.toString()).replace("{y}", row.toString());
   }
 
   public getChildHeightRange(quadId: QuadId, rectangle: MapCartoRectangle, parent: MapTile): Range1d | undefined {
-    return (quadId.level <= ApproximateTerrainHeights.maxLevel) ? ApproximateTerrainHeights.instance.getMinimumMaximumHeights(rectangle) : (parent).heightRange;
+    return (quadId.level < ApproximateTerrainHeights.maxLevel) ? ApproximateTerrainHeights.instance.getMinimumMaximumHeights(rectangle) : (parent).heightRange;
   }
   /**
    * Specifies the quality of terrain created from heightmaps.  A value of 1.0 will

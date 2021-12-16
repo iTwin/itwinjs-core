@@ -6,8 +6,8 @@
  * @module Tile
  */
 
-import { BentleyError, ByteStream } from "@bentley/bentleyjs-core";
-import { Point3d } from "@bentley/geometry-core";
+import { BentleyError, ByteStream } from "@itwin/core-bentley";
+import { Point3d } from "@itwin/core-geometry";
 
 /** Type codes for various tile formats. Often these are embedded as 32-bit 'magic numbers' in a binary stream to indicate the format.
  * @internal

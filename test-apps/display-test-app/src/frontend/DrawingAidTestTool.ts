@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelJson as GeomJson, LineString3d, Point3d, Vector3d } from "@bentley/geometry-core";
-import { ColorDef, GeometryStreamProps } from "@bentley/imodeljs-common";
+import { IModelJson as GeomJson, LineString3d, Point3d, Vector3d } from "@itwin/core-geometry";
+import { ColorDef, GeometryStreamProps } from "@itwin/core-common";
 import {
   AccuDrawHintBuilder, BeButtonEvent, DecorateContext, DynamicsContext, EventHandled, GraphicType, HitDetail, IModelApp, PrimitiveTool, SnapStatus,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 
 export class DrawingAidTestTool extends PrimitiveTool {
   public static override toolId = "DrawingAidTest.Points";
@@ -15,7 +15,7 @@ export class DrawingAidTestTool extends PrimitiveTool {
   protected _snapGeomId?: string;
 
   public override requireWriteableTarget(): boolean { return false; }
-  public override onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
+  public override async onPostInstall() { await super.onPostInstall(); this.setupAndPromptForNextAction(); }
 
   public setupAndPromptForNextAction(): void {
     IModelApp.accuSnap.enableSnap(true);
@@ -86,7 +86,7 @@ export class DrawingAidTestTool extends PrimitiveTool {
       if (SnapStatus.Success === status)
         return EventHandled.No;
     }
-    this.onReinitialize();
+    await this.onReinitialize();
     return EventHandled.No;
   }
 
@@ -96,15 +96,15 @@ export class DrawingAidTestTool extends PrimitiveTool {
 
     this.points.pop();
     if (0 === this.points.length)
-      this.onReinitialize();
+      await this.onReinitialize();
     else
       this.setupAndPromptForNextAction();
     return true;
   }
 
-  public onRestartTool(): void {
+  public async onRestartTool() {
     const tool = new DrawingAidTestTool();
-    if (!tool.run())
-      this.exitTool();
+    if (!await tool.run())
+      return this.exitTool();
   }
 }

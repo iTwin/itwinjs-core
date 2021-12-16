@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "make ViewState3d.lookAt take named arguments",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

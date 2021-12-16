@@ -6,9 +6,9 @@
  * @module Tiles
  */
 
-import { BeTimePoint } from "@bentley/bentleyjs-core";
-import { ClipVector, Geometry, Map4d, Matrix4d, Point3d, Point4d, Range1d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
-import { FeatureAppearanceProvider, FrustumPlanes, HiddenLine, ViewFlagOverrides } from "@bentley/imodeljs-common";
+import { BeTimePoint } from "@itwin/core-bentley";
+import { ClipVector, Geometry, Map4d, Matrix4d, Point3d, Point4d, Range1d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
+import { FeatureAppearanceProvider, FrustumPlanes, HiddenLine, ViewFlagOverrides } from "@itwin/core-common";
 import { FeatureSymbology } from "../render/FeatureSymbology";
 import { GraphicBranch } from "../render/GraphicBranch";
 import { RenderClipVolume } from "../render/RenderClipVolume";
@@ -53,6 +53,13 @@ export interface TileDrawArgParams {
   hiddenLineSettings?: HiddenLine.Settings;
   /** If defined, tiles should be culled if they do not intersect this clip. */
   intersectionClip?: ClipVector;
+  /** If defined, the Id of a node in the scene's [RenderSchedule.Script]($common) that applies a transform to the graphics;
+   * or "0xffffffff" for any node that does *not* apply a transform.
+   * @internal
+   */
+  animationTransformNodeId?: number;
+  /** If defined, a bounding range in tile tree coordinates outside of which tiles should not be selected. */
+  boundingRange?: Range3d;
 }
 /**
  * Provides context used when selecting and drawing [[Tile]]s.
@@ -99,8 +106,12 @@ export class TileDrawArgs {
   public get symbologyOverrides(): FeatureSymbology.Overrides | undefined { return this.graphics.symbologyOverrides; }
   /** If defined, tiles will be culled if they do not intersect this clip. */
   public intersectionClip?: ClipVector;
+  /** If defined, a bounding range in tile tree coordinates outside of which tiles should not be selected. */
+  public boundingRange?: Range3d;
   /** @internal */
   public readonly pixelSizeScaleFactor;
+  /** @internal */
+  public readonly animationTransformNodeId?: number;
 
   /** Compute the size in pixels of the specified tile at the point on its bounding sphere closest to the camera. */
   public getPixelSize(tile: Tile): number {
@@ -156,7 +167,7 @@ export class TileDrawArgs {
    * Device scaling is not applied.
    */
   protected computePixelSizeInMetersAtClosestPoint(center: Point3d, radius: number): number {
-    if (this.context.viewport.view.isCameraEnabled() && this._nearFrontCenter) {
+    if (this.context.viewport.view.is3d() && this.context.viewport.isCameraOn && this._nearFrontCenter) {
       const toFront = Vector3d.createStartEnd(center, this._nearFrontCenter);
       const viewZ = this.context.viewport.rotation.rowZ();
       // If the sphere overlaps the near front plane just use near front point.  This also handles behind eye conditions.
@@ -242,6 +253,8 @@ export class TileDrawArgs {
     this.now = now;
     this._appearanceProvider = params.appearanceProvider;
     this.hiddenLineSettings = params.hiddenLineSettings;
+    this.animationTransformNodeId = params.animationTransformNodeId;
+    this.boundingRange = params.boundingRange;
 
     // Do not cull tiles based on clip volume if tiles outside clip are supposed to be drawn but in a different color.
     if (undefined !== clipVolume && !context.viewport.view.displayStyle.settings.clipStyle.outsideColor)
@@ -264,7 +277,7 @@ export class TileDrawArgs {
     }
 
     this.parentsAndChildrenExclusive = parentsAndChildrenExclusive;
-    if (context.viewport.view.isCameraEnabled())
+    if (context.viewport.isCameraOn)
       this._nearFrontCenter = context.viewport.getFrustum(CoordSystem.World).frontCenter;
 
     this.pixelSizeScaleFactor = this.computePixelSizeScaleFactor();
@@ -328,7 +341,11 @@ export class TileDrawArgs {
       hline: this.hiddenLineSettings,
     };
 
-    return this.context.createGraphicBranch(graphics, this.location, opts);
+    let graphic = this.context.createGraphicBranch(graphics, this.location, opts);
+    if (undefined !== this.animationTransformNodeId)
+      graphic = this.context.renderSystem.createAnimationTransformNode(graphic, this.animationTransformNodeId);
+
+    return graphic;
   }
 
   /** Output graphics for all accumulated tiles. */

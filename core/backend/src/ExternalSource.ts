@@ -7,12 +7,12 @@
  * @module Elements
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
-import { Point3d } from "@bentley/geometry-core";
+import { Id64String } from "@itwin/core-bentley";
+import { Point3d } from "@itwin/core-geometry";
 import {
   BisCodeSpec, Code, CodeScopeSpec, ExternalSourceAttachmentProps, ExternalSourceAttachmentRole, ExternalSourceProps, IModel, RelatedElement,
   SynchronizationConfigLinkProps,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { InformationReferenceElement, UrlLink } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { ExternalSourceAttachmentAttachesSource, ExternalSourceIsInRepository } from "./NavigationRelationship";

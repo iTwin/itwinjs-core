@@ -3,17 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ByteStream, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { ByteStream, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  BatchType, CurrentImdlVersion, ImdlFlags, ImdlHeader, IModelRpcProps, IModelTileRpcInterface, IModelTileTreeId,
-  iModelTileTreeIdToString, ModelProps, RelatedElementProps, RenderMode, TileFormat, TileReadStatus, ViewFlags,
-} from "@bentley/imodeljs-common";
+  BatchType, CurrentImdlVersion, EdgeType, ImdlFlags, ImdlHeader, IModelRpcProps, IModelTileRpcInterface, IModelTileTreeId, iModelTileTreeIdToString,
+  ModelProps, RelatedElementProps, RenderMode, TileContentSource, TileFormat, TileReadStatus, ViewFlags,
+} from "@itwin/core-common";
 import {
   GeometricModelState, ImdlReader, IModelApp, IModelConnection, IModelTileTree, iModelTileTreeParamsFromJSON, MockRender, RenderGraphic,
   SnapshotConnection, TileAdmin, TileRequest, TileTreeLoadStatus, ViewState,
-} from "@bentley/imodeljs-frontend";
-import { SurfaceType } from "@bentley/imodeljs-frontend/lib/render-primitives";
-import { Batch, GraphicsArray, MeshGraphic, PolylineGeometry, Primitive, RenderOrder } from "@bentley/imodeljs-frontend/lib/webgl";
+} from "@itwin/core-frontend";
+import { SurfaceType } from "@itwin/core-frontend/lib/cjs/render-primitives";
+import { Batch, GraphicsArray, MeshGraphic, PolylineGeometry, Primitive, RenderOrder } from "@itwin/core-frontend/lib/cjs/webgl";
+import { TestUtility } from "../../TestUtility";
 import { TileTestCase, TileTestData } from "./data/TileIO.data";
 import { TILE_DATA_1_1 } from "./data/TileIO.data.1.1";
 import { TILE_DATA_1_2 } from "./data/TileIO.data.1.2";
@@ -97,7 +98,14 @@ function processHeader(data: TileTestData, test: TileTestCase, numElements: numb
 function createReader(imodel: IModelConnection, data: TileTestData, test: TileTestCase): ImdlReader | undefined {
   const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
   const stream = new ByteStream(test.bytes.buffer);
-  const reader = ImdlReader.create(stream, imodel, model.id, model.is3d, IModelApp.renderSystem);
+  const reader = ImdlReader.create({
+    stream,
+    iModel: imodel,
+    modelId: model.id,
+    is3d: model.is3d,
+    system: IModelApp.renderSystem,
+  });
+
   expect(undefined === reader).to.equal(!!data.unreadable);
   return reader;
 }
@@ -257,13 +265,13 @@ describe("TileIO (WebGL)", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    await IModelApp.startup();
+    await TestUtility.startFrontend();
     imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {
     if (imodel) await imodel.close();
-    await IModelApp.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("should read an iModel tile containing a single rectangle", async () => {
@@ -427,20 +435,30 @@ describe("TileIO (mock render)", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    await MockRender.App.startup();
+    await TestUtility.startFrontend(undefined, true);
     imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {
     if (imodel) await imodel.close();
-    await MockRender.App.shutdown();
+    await TestUtility.shutdownFrontend();
   });
 
   it("should support canceling operation", async () => {
     if (IModelApp.initialized) {
       const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
       const stream = new ByteStream(currentTestCase.rectangle.bytes.buffer);
-      const reader = ImdlReader.create(stream, model.iModel, model.id, model.is3d, IModelApp.renderSystem, BatchType.Primary, true, (_) => true);
+      const reader = ImdlReader.create({
+        stream,
+        iModel: model.iModel,
+        modelId: model.id,
+        is3d: model.is3d,
+        system: IModelApp.renderSystem,
+        type: BatchType.Primary,
+        loadEdges: true,
+        isCanceled: (_) => true,
+      });
+
       expect(reader).not.to.be.undefined;
 
       const result = await reader!.read();
@@ -610,7 +628,7 @@ describe("mirukuru TileTree", () => {
 
     const options = { is3d: true, batchType: BatchType.Primary, edgesRequired: true, allowInstancing: true };
     const params = iModelTileTreeParamsFromJSON(treeProps, imodel, "0x1c", options);
-    const tree = new IModelTileTree(params, { edgesRequired: true, type: BatchType.Primary });
+    const tree = new IModelTileTree(params, { edges: EdgeType.NonIndexed, type: BatchType.Primary });
 
     const response: TileRequest.Response = await tree.staticBranch.requestContent();
     expect(response).not.to.be.undefined;
@@ -669,7 +687,7 @@ describe("mirukuru TileTree", () => {
     const options = { is3d: true, batchType: BatchType.Primary, edgesRequired: false, allowInstancing: false };
     const params = iModelTileTreeParamsFromJSON(v3Props, imodel, "0x1c", options);
 
-    const v3Tree = new IModelTileTree(params, { edgesRequired: false, type: BatchType.Primary });
+    const v3Tree = new IModelTileTree(params, { edges: EdgeType.None, type: BatchType.Primary });
     await test(v3Tree, 0x00030000, "_3_0_0_0_0_0_1");
   });
 
@@ -706,7 +724,7 @@ describe.skip("TileAdmin", () => {
     }
 
     if (IModelApp.initialized)
-      await IModelApp.shutdown();
+      await TestUtility.shutdownFrontend();
   };
 
   after(async () => {
@@ -736,7 +754,7 @@ describe.skip("TileAdmin", () => {
         theIModel = undefined;
       }
 
-      await IModelApp.shutdown();
+      await TestUtility.shutdownFrontend();
     }
   }
 
@@ -753,7 +771,7 @@ describe.skip("TileAdmin", () => {
           expectedTreeIdStrNoEdges = `${expectedTreeIdStr.substring(0, lastIndex)}E:0_${expectedTreeIdStr.substring(lastIndex)}`;
         }
 
-        const treeId: IModelTileTreeId = { type: BatchType.Primary, edgesRequired: false, animationId };
+        const treeId: IModelTileTreeId = { type: BatchType.Primary, edges: EdgeType.None, animationId };
         let actualTreeIdStr = iModelTileTreeIdToString("0x1c", treeId, IModelApp.tileAdmin);
         expect(actualTreeIdStr).to.equal(expectedTreeIdStrNoEdges);
 
@@ -769,7 +787,7 @@ describe.skip("TileAdmin", () => {
         expect(await this.rootTileHasEdges(treeNoEdges, imodel)).to.equal(!requestWithoutEdges);
 
         // Test with edges
-        treeId.edgesRequired = true;
+        treeId.edges = EdgeType.NonIndexed;
         actualTreeIdStr = iModelTileTreeIdToString("0x1c", treeId, IModelApp.tileAdmin);
         expect(actualTreeIdStr).to.equal(expectedTreeIdStr);
 
@@ -798,7 +816,14 @@ describe.skip("TileAdmin", () => {
         expect(response).instanceof(Uint8Array);
 
         const stream = new ByteStream(response.buffer);
-        const reader = ImdlReader.create(stream, imodel, "0x1c", true, IModelApp.renderSystem)!;
+        const reader = ImdlReader.create({
+          stream,
+          iModel: imodel,
+          modelId: "0x1c",
+          is3d: true,
+          system: IModelApp.renderSystem,
+        });
+
         expect(reader).not.to.be.undefined;
 
         const meshes = (reader as any)._meshes;
@@ -878,7 +903,7 @@ describe.skip("TileAdmin", () => {
 
         const options = { is3d: true, batchType: BatchType.Primary, edgesRequired: true, allowInstancing: true };
         const params = iModelTileTreeParamsFromJSON(treeProps, imodel, "0x1c", options);
-        const tree = new IModelTileTree(params, { edgesRequired: true, type: BatchType.Primary });
+        const tree = new IModelTileTree(params, { edges: EdgeType.NonIndexed, type: BatchType.Primary });
 
         const intfc = IModelTileRpcInterface.getClient();
         const generateTileContent = intfc.generateTileContent;
@@ -891,7 +916,7 @@ describe.skip("TileAdmin", () => {
           else
             expect(guid).to.equal(`first_${qualifier!}`);
 
-          return new Uint8Array(1);
+          return TileContentSource.Backend;
         };
 
         await tree.staticBranch.requestContent();

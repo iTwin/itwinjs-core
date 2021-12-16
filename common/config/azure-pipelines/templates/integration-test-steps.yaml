@@ -4,7 +4,8 @@ parameters:
 
 steps:
   - checkout: self
-    clean: all
+    clean: true
+    fetchDepth: 1
 
   - template: setup-integration-users.yaml
 
@@ -23,15 +24,9 @@ steps:
     displayName: rush install
 
   - script: |
-      node ./common/scripts/install-run-rush build -v --to backend-itwin-client
-
-      node ./common/scripts/install-run-rush build -v --to context-registry-client
-
-      node ./common/scripts/install-run-rush build -v --to product-settings-client
-
       node ./common/scripts/install-run-rush build -v --to reality-data-client
 
-      node ./common/scripts/install-run-rush build -v --to imodeljs-backend
+      node ./common/scripts/install-run-rush build -v --to backend-integration-tests
 
       node ./common/scripts/install-run-rush build -v --to imodelhub-client-tests
 
@@ -40,14 +35,7 @@ steps:
       node ./common/scripts/install-run-rush build -v --to rpcinterface-full-stack-tests
 
       node ./common/scripts/install-run-rush build -v --to presentation-full-stack-tests
-
-      node ./common/scripts/install-run-rush build -v --to oidc-signin-tool
     displayName: "Rush build"
-
-  - script: "npm run test:integration"
-    workingDirectory: "clients/context-registry"
-    displayName: "Run Context Registry Client Tests"
-    condition: succeededOrFailed()
 
   - script: "npm run test:integration"
     workingDirectory: clients/reality-data
@@ -55,13 +43,8 @@ steps:
     condition: succeededOrFailed()
 
   - script: "npm run test:integration"
-    workingDirectory: "core/backend"
+    workingDirectory: "full-stack-tests/backend"
     displayName: "Run Backend Tests"
-    condition: succeededOrFailed()
-
-  - script: "npm run test:integration"
-    workingDirectory: "core/backend-itwin-client"
-    displayName: "Run Backend iTwin Client Tests"
     condition: succeededOrFailed()
 
   - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration
@@ -84,27 +67,6 @@ steps:
     displayName: "Run Presentation Full Stack Tests"
     condition: succeededOrFailed()
 
-  - script: "npm run test:integration"
-    workingDirectory: "tools/oidc-signin-tool"
-    displayName: "Run OIDC Sign-in Tool Tests"
-    condition: succeededOrFailed()
-
-  - task: PublishTestResults@2
-    displayName: "Publish Context Registry Client Test Results"
-    inputs:
-      testResultsFiles: "clients/context-registry/lib/test/junit_results.xml"
-      testRunTitle: "Client - Context Registry Tests - ${{ parameters.Node_Version }}"
-    continueOnError: true
-    condition: succeededOrFailed()
-
-  - task: PublishTestResults@2
-    displayName: "Publish Product Settings Clients Test Results"
-    inputs:
-      testResultsFiles: "clients/product-settings/lib/test/junit_results.xml"
-      testRunTitle: "Client - Product Settings Tests - ${{ parameters.Node_Version }}"
-    continueOnError: true
-    condition: succeededOrFailed()
-
   - task: PublishTestResults@2
     displayName: "Publish Reality Data Clients Test Results"
     inputs:
@@ -116,16 +78,8 @@ steps:
   - task: PublishTestResults@2
     displayName: "Publish Backend Test Results"
     inputs:
-      testResultsFiles: "core/backend/lib/test/junit_results.xml"
+      testResultsFiles: "full-stack-tests/backend/lib/test/junit_results.xml"
       testRunTitle: "Core - Backend Tests - ${{ parameters.Node_Version }}"
-    continueOnError: true
-    condition: succeededOrFailed()
-
-  - task: PublishTestResults@2
-    displayName: "Publish Backend iTwin Client Test Results"
-    inputs:
-      testResultsFiles: "core/backend-itwin-client/lib/test/junit_results.xml"
-      testRunTitle: "Core - Backend iTwin Client Tests - ${{ parameters.Node_Version }}"
     continueOnError: true
     condition: succeededOrFailed()
 
@@ -144,14 +98,6 @@ steps:
     condition: succeededOrFailed()
 
   - task: PublishTestResults@2
-    displayName: "Publish Native App Integration Test Results"
-    inputs:
-      testResultsFiles: "full-stack-tests/native-app/lib/test/junit_results.xml"
-      testRunTitle: "Native App - Integration Tests - ${{ parameters.Node_Version }}"
-    enabled: false
-    condition: succeededOrFailed()
-
-  - task: PublishTestResults@2
     displayName: "Publish Rpc Interface Integration Test Results"
     inputs:
       testResultsFiles: "full-stack-tests/rpc-interface/full_stack_test_results/full_stack_test_result.xml"
@@ -163,11 +109,4 @@ steps:
     inputs:
       testResultsFiles: full-stack-tests/presentation/lib/test/junit_results.xml
       testRunTitle: "Presentation - Integration Tests - ${{ parameters.Node_Version }}"
-    condition: succeededOrFailed()
-
-  - task: PublishTestResults@2
-    displayName: "Publish Oidc Signin Tool Test Results"
-    inputs:
-      testResultsFiles: "tools/oidc-signin-tool/lib/test/junit_results.xml"
-      testRunTitle: "Tools - Oidc Signin Tool Tests - ${{ parameters.Node_Version }}"
     condition: succeededOrFailed()

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/itwin-client",
+      "comment": "Moved AuthorizationClient to core-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/itwin-client"
+}

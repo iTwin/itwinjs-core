@@ -2,10 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Angle } from "@bentley/geometry-core";
-import { MapSubLayerProps } from "@bentley/imodeljs-common";
+import { Angle } from "@itwin/core-geometry";
+import { MapSubLayerProps } from "@itwin/core-common";
 import { getJson, request, RequestBasicCredentials, RequestOptions, Response } from "@bentley/itwin-client";
-import { FrontendRequestContext } from "../../FrontendRequestContext";
 import {
   ArcGisBaseToken, ArcGisOAuth2Token, ArcGisTokenClientType, ArcGisTokenManager,EsriOAuth2, EsriOAuth2Endpoint, EsriOAuth2EndpointType,
   MapCartoRectangle, MapLayerAuthType, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation,
@@ -46,13 +45,13 @@ export class ArcGisUtilities {
     return `${range.low.x * Angle.degreesPerRadian},${range.low.y * Angle.degreesPerRadian},${range.high.x * Angle.degreesPerRadian},${range.high.y * Angle.degreesPerRadian}`;
   }
   public static async getEndpoint(url: string): Promise<any | undefined> {
-    const capabilities = await getJson(new FrontendRequestContext(""), `${url}?f=pjson`);
+    const capabilities = await getJson(`${url}?f=pjson`);
 
     return capabilities;
   }
   public static async getNationalMapSources(): Promise<MapLayerSource[]> {
     const sources = new Array<MapLayerSource>();
-    const services = await getJson(new FrontendRequestContext(""), "https://viewer.nationalmap.gov/tnmaccess/api/getMapServiceList");
+    const services = await getJson("https://viewer.nationalmap.gov/tnmaccess/api/getMapServiceList");
 
     if (!Array.isArray(services))
       return sources;
@@ -80,7 +79,7 @@ export class ArcGisUtilities {
     if (undefined === baseUrl)
       baseUrl = url;
     let sources = new Array<MapLayerSource>();
-    const json = await getJson(new FrontendRequestContext(""), `${url}?f=json`);
+    const json = await getJson(`${url}?f=json`);
     if (json !== undefined) {
       if (Array.isArray(json.folders)) {
         for (const folder of json.folders) {
@@ -105,7 +104,7 @@ export class ArcGisUtilities {
   public static async getSourcesFromQuery(range?: MapCartoRectangle, url = "https://usgs.maps.arcgis.com/sharing/rest/search"): Promise<MapLayerSource[]> {
     const sources = new Array<MapLayerSource>();
     for (let start = 1; start > 0;) {
-      const json = await getJson(new FrontendRequestContext(""), `${url}?f=json&q=(group:9d1199a521334e77a7d15abbc29f8144) AND (type:"Map Service")&bbox=${ArcGisUtilities.getBBoxString(range)}&sortOrder=desc&start=${start}&num=100`);
+      const json = await getJson(`${url}?f=json&q=(group:9d1199a521334e77a7d15abbc29f8144) AND (type:"Map Service")&bbox=${ArcGisUtilities.getBBoxString(range)}&sortOrder=desc&start=${start}&num=100`);
       if (!json) break;
       start = json.nextStart ? json.nextStart : -1;
       if (json !== undefined && Array.isArray(json.results)) {
@@ -189,7 +188,7 @@ export class ArcGisUtilities {
           return token;   // An error occurred, return immediately
       }
       const finalUrl = `${url}?f=json${tokenParam}`;
-      const data = await request(new FrontendRequestContext(""), finalUrl, options);
+      const data = await request(finalUrl, options);
       const json = data.body ?? undefined;
 
       // Cache the response only if it doesn't contain a token error.
@@ -222,7 +221,7 @@ export class ArcGisUtilities {
         if (token?.token)
           tokenParam = `&token=${token.token}`;
       }
-      const json = await getJson(new FrontendRequestContext(""), `${url}?f=json&option=footprints&outSR=4326${tokenParam}`);
+      const json = await getJson(`${url}?f=json&option=footprints&outSR=4326${tokenParam}`);
       ArcGisUtilities._footprintCache.set(url, json);
       return json;
     } catch (_error) {
@@ -239,7 +238,7 @@ export class ArcGisUtilities {
   }
 
   public static async requestGetJson(url: string) {
-    return request(new FrontendRequestContext(""), url, { method: "GET", responseType: "json" });
+    return request(url, { method: "GET", responseType: "json" });
   }
 
   public static async getRestUrlFromGenerateTokenUrl(url: string): Promise<string | undefined> {
@@ -272,9 +271,9 @@ export class ArcGisUtilities {
 
     let status: number | undefined;
     try {
-      const data = await request(new FrontendRequestContext(""), endpointUrl, { method: "GET" });
+      const data = await request(endpointUrl, { method: "GET" });
       status = data.status;
-    } catch (error) {
+    } catch (error: any) {
       status = error.status;
     }
     return status === 400;    // Oauth2 API returns 400 (Bad Request) when there are missing parameters
@@ -287,7 +286,6 @@ export class ArcGisUtilities {
   private static _oauthTokenEndPointsCache = new Map<string, any>();
 
   public static async getOAuth2EndpointFromMapLayerUrl(url: string, endpoint: EsriOAuth2EndpointType): Promise<EsriOAuth2Endpoint | undefined> {
-    await EsriOAuth2.loadFromSettingsService();
 
     // Return from cache if available
     const cachedEndpoint = (endpoint === EsriOAuth2EndpointType.Authorize ? this._oauthAuthorizeEndPointsCache.get(url) : this._oauthTokenEndPointsCache.get(url));

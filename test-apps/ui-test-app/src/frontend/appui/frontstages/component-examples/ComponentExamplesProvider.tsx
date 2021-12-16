@@ -5,23 +5,23 @@
 /* eslint-disable deprecation/deprecation */
 
 import * as React from "react";
-import { BeDuration, Logger } from "@bentley/bentleyjs-core";
+import { BeDuration, Logger } from "@itwin/core-bentley";
 import moreSvg from "@bentley/icons-generic/icons/more-circular.svg?sprite";
 import moreVerticalSvg from "@bentley/icons-generic/icons/more-vertical-circular.svg?sprite";
-import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
+import { ColorByName, ColorDef } from "@itwin/core-common";
 import {
   ActivityMessageDetails, ActivityMessageEndReason, IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType, QuantityType,
-} from "@bentley/imodeljs-frontend";
-import { Format, FormatProps, FormatterSpec, FormatTraits, UnitProps, UnitsProvider } from "@bentley/imodeljs-quantity";
-import { DateFormatter, IconSpecUtilities, ParseResults, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, RelativePosition, TimeDisplay } from "@bentley/ui-abstract";
+} from "@itwin/core-frontend";
+import { Format, FormatProps, FormatterSpec, FormatTraits, UnitProps, UnitsProvider } from "@itwin/core-quantity";
+import { DateFormatter, IconSpecUtilities, ParseResults, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, RelativePosition, TimeDisplay } from "@itwin/appui-abstract";
 import {
   adjustDateToTimezone, ColumnDescription, DatePickerPopupButton, DatePickerPopupButtonProps,
   IntlFormatter, ParsedInput, Table, TableDataChangeEvent, TableDataProvider,
-} from "@bentley/ui-components";
+} from "@itwin/components-react";
 import {
   ColorPickerButton, ColorPickerDialog, ColorPickerPopup, ColorSwatch, LineWeightSwatch,
   QuantityInput, QuantityNumberInput, WeightPickerButton,
-} from "@bentley/ui-imodel-components";
+} from "@itwin/imodel-components-react";
 import {
   AutoSuggest,
   AutoSuggestData,
@@ -31,19 +31,35 @@ import {
   MinimalFeaturedTile, MinimalTile, MutedText, NewBadge, NumberInput, Popup, ProgressBar, ProgressSpinner, Radio, ReactMessage,
   SearchBox, Select, SettingsContainer, SettingsTabEntry, Slider, SmallText, Spinner, SpinnerSize, SplitButton, Subheading, Textarea, ThemedSelect, Tile, Title,
   Toggle, ToggleButtonType, UnderlinedButton, VerticalTabs,
-} from "@bentley/ui-core";
-import { MessageManager, ModalDialogManager, QuantityFormatSettingsPage, ReactNotifyMessageDetails, UiFramework } from "@bentley/ui-framework";
+} from "@itwin/core-react";
+import { MessageManager, ModalDialogManager, QuantityFormatSettingsPage, ReactNotifyMessageDetails, UiFramework } from "@itwin/appui-react";
 import { SampleAppIModelApp } from "../../..";
 import { ComponentExampleCategory, ComponentExampleProps } from "./ComponentExamples";
 import { SampleContextMenu } from "./SampleContextMenu";
 import { SampleExpandableBlock } from "./SampleExpandableBlock";
 import { SampleImageCheckBox } from "./SampleImageCheckBox";
-import { SamplePopupContextMenu } from "./SamplePopupContextMenu";
+import { ButtonWithContextMenu, ContextMenuInPopup, GlobalContextMenuInPopup, PopupContextMenuInPopup, SamplePopupContextMenu } from "./SamplePopupContextMenu";
 import { FormatPopupButton } from "./FormatPopupButton";
 import { AccudrawSettingsPageComponent } from "../Settings";
 import { ExpandableBlock } from "@itwin/itwinui-react";
 import { TableExampleContent } from "../../contentviews/TableExampleContent";
-import { ItemsAppendedSampleTimeline, ItemsPrefixedSampleTimeline, ItemsReplacedSampleTimeline, LocalizedTimeSampleTimeline, NoLocalizedTimeSampleTimeline, NoRepeatSampleTimeline } from "./SampleTimelineComponent";
+import { CurrentDateMarkedCustomIconSampleTimeline, CurrentDateMarkedSampleTimeline, ItemsAppendedSampleTimeline, ItemsPrefixedSampleTimeline, ItemsReplacedSampleTimeline, LocalizedTimeSampleTimeline, NoLocalizedTimeSampleTimeline, NoRepeatSampleTimeline } from "./SampleTimelineComponent";
+
+function DualColorPickers() {
+  const [colorDef, setColorDef] = React.useState(ColorDef.green);
+  const onPopupClose = (color: ColorDef) => {
+    setColorDef(color);
+    const msg = `popup color value: ${color.toRgbaString()}`;
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
+  };
+
+  return (
+    <div style={{ display: "flex", gap: "4px" }}>
+      <ColorPickerPopup initialColor={colorDef} onClose={onPopupClose} colorInputType="rgb" />
+      <ColorPickerPopup initialColor={colorDef} onClose={onPopupClose} colorInputType="hsl" showCaret />
+    </div>
+  );
+}
 
 function MySettingsPage() {
   const tabs: SettingsTabEntry[] = [
@@ -410,7 +426,8 @@ export function ColorPickerToggle() {
   const handleBgColorClick = React.useCallback((newColor: ColorDef, e: React.MouseEvent<Element, MouseEvent>) => {
     e.preventDefault();
     ModalDialogManager.openDialog(<ColorPickerDialog dialogTitle={colorDialogTitle} color={newColor} colorPresets={presetColors.current}
-      onOkResult={handleBackgroundColorDialogOk} onCancelResult={handleBackgroundColorDialogCancel} />);
+      onOkResult={handleBackgroundColorDialogOk} onCancelResult={handleBackgroundColorDialogCancel}
+      colorInputType="rgb" />);
   }, [presetColors, handleBackgroundColorDialogOk, colorDialogTitle, handleBackgroundColorDialogCancel]);
 
   return (
@@ -521,9 +538,10 @@ export class ComponentExamplesProvider {
   }
 
   private static get colorSamples(): ComponentExampleCategory {
-    const colorDef = ColorDef.blue;
+    let colorDef = ColorDef.blue;
     const handleColorPick = (color: ColorDef) => {
       console.log(`color picked: ${color.toRgbaString()}`);
+      colorDef = color;
     };
 
     const onPopupClose = (color: ColorDef) => {
@@ -549,6 +567,7 @@ export class ComponentExamplesProvider {
         createComponentExample("Color Picker Popup", undefined, <ColorPickerPopup initialColor={colorDef} onClose={onPopupClose} />),
         createComponentExample("Color Picker Popup", "with Caret", <ColorPickerPopup initialColor={colorDef} onClose={onPopupClose} showCaret />),
         createComponentExample("Color Picker Popup", "disabled with Caret", <ColorPickerPopup initialColor={colorDef} onClose={onPopupClose} disabled showCaret />),
+        createComponentExample("Dual Color Pickers", "test update initialColor", <DualColorPickers />),
       ],
     };
   }
@@ -621,8 +640,12 @@ export class ComponentExamplesProvider {
     return {
       title: "ContextMenu",
       examples: [
-        createComponentExample("ContextMenu", undefined, <UnderlinedButton onActivate={() => SampleContextMenu.showContextMenu()}> Open ContextMenu</UnderlinedButton>),
-        createComponentExample("Popup with ContextMenu", undefined, <SamplePopupContextMenu />),
+        createComponentExample("Abstract ContextMenu", undefined, <UnderlinedButton onActivate={() => SampleContextMenu.showContextMenu()}> Open ContextMenu</UnderlinedButton>),
+        createComponentExample("ContextMenu", undefined, <ButtonWithContextMenu />),
+        createComponentExample("ContextMenu in Popup", undefined, <ContextMenuInPopup />),
+        createComponentExample("Popup ContextMenu", undefined, <SamplePopupContextMenu />),
+        createComponentExample("PopupContextMenu in Popup", undefined, <PopupContextMenuInPopup />),
+        createComponentExample("Global ContextMenu", undefined, <GlobalContextMenuInPopup />),
       ],
     };
   }
@@ -651,25 +674,25 @@ export class ComponentExamplesProvider {
           </ExpandableList>),
         createComponentExample("ExpandableList w/ singleExpandOnly", "ExpandableList with singleExpandOnly prop",
           <ExpandableList className="uicore-full-width" singleExpandOnly={true} defaultActiveBlock={0}>
-            <ExpandableBlock title="Test1" isExpanded={false} >
+            <ExpandableBlock title="Test1" isExpanded={false} size='small' >
               Hello World 1
             </ExpandableBlock>
-            <ExpandableBlock title="Test2" isExpanded={false} >
+            <ExpandableBlock title="Test2" isExpanded={false} size='small' >
               Hello World 2
             </ExpandableBlock>
-            <ExpandableBlock title="Test3" isExpanded={false} >
+            <ExpandableBlock title="Test3" isExpanded={false} size='small' >
               Hello World 3
             </ExpandableBlock>
           </ExpandableList>),
         createComponentExample("ExpandableList w/ singleIsCollapsible", "ExpandableList with singleIsCollapsible prop",
           <ExpandableList className="uicore-full-width" singleExpandOnly={true} singleIsCollapsible={true} defaultActiveBlock={0}>
-            <ExpandableBlock title="Test1" isExpanded={false} >
+            <ExpandableBlock title="Test1" isExpanded={false} size='small' >
               Hello World 1
             </ExpandableBlock>
-            <ExpandableBlock title="Test2" isExpanded={false} >
+            <ExpandableBlock title="Test2" isExpanded={false} size='small' >
               Hello World 2
             </ExpandableBlock>
-            <ExpandableBlock title="Test3" isExpanded={false} >
+            <ExpandableBlock title="Test3" isExpanded={false} size='small' >
               Hello World 3
             </ExpandableBlock>
           </ExpandableList>),
@@ -775,6 +798,7 @@ export class ComponentExamplesProvider {
         createComponentExample("Disabled Textarea", "Textarea with disabled prop", <Textarea placeholder="Disabled Textarea" disabled />),
 
         createComponentExample("Number Input .25 step", "New Numeric Input component", <NumberInput value={10.5} precision={2} step={0.25} containerClassName="uicore-full-width" />),
+        createComponentExample("Disabled Number Input .25 step", "New Numeric Input component", <NumberInput value={10.5} precision={2} step={0.25} containerClassName="uicore-full-width" disabled />),
         createComponentExample("Number Input .25 step w/snap", "New Numeric Input component", <NumberInput value={10.5} precision={2} step={0.25} snap containerClassName="uicore-full-width" />),
         createComponentExample("Number Input .25 step w/snap custom format and parser", "New Numeric Input component", <NumberInput value={10.5} format={formatDollar} parse={parseDollar} precision={2} step={0.25} snap containerClassName="uicore-full-width" />),
         createComponentExample("Number Input w/touch buttons", "New Numeric Input component", <NumberInput value={10.5} precision={2} step={.5} snap showTouchButtons containerClassName="uicore-full-width" />),
@@ -965,6 +989,8 @@ export class ComponentExamplesProvider {
           <QuantityNumberInput style={{ width: "140px" }} persistenceValue={initialLength} step={0.25} snap quantityType={QuantityType.Length} onChange={onLengthChange} />),
         createComponentExample("Quantity Number Input", "QuantityType.LengthEngineering",
           <QuantityNumberInput style={{ width: "140px" }} placeholder={"Specify Length"} step={0.25} snap quantityType={QuantityType.LengthEngineering} onChange={onLengthChange} />),
+        createComponentExample("Quantity Number Input", "Disabled QuantityType.LengthEngineering",
+          <QuantityNumberInput style={{ width: "140px" }} placeholder={"Specify Length"} step={0.25} snap quantityType={QuantityType.LengthEngineering} onChange={onLengthChange} disabled />),
         createComponentExample("Quantity Number Input", "QuantityType.Angle",
           <QuantityNumberInput style={{ width: "140px" }} persistenceValue={initialAngle} step={0.5} snap quantityType={QuantityType.Angle} onChange={onAngleChange} />),
         createComponentExample("Quantity Number Input", "QuantityType.Volume",
@@ -1314,6 +1340,8 @@ export class ComponentExamplesProvider {
       createComponentExample("TimelineComponent", "With no repeat option", <NoRepeatSampleTimeline />),
       createComponentExample("TimelineComponent", "With timezone offset of 0", <NoLocalizedTimeSampleTimeline />),
       createComponentExample("TimelineComponent", "With no timezone offset specified", <LocalizedTimeSampleTimeline />),
+      createComponentExample("TimelineComponent", "With with today's date marked by the default marker", <CurrentDateMarkedSampleTimeline />),
+      createComponentExample("TimelineComponent", "With with today's date marked by a star", <CurrentDateMarkedCustomIconSampleTimeline />),
     );
     return {
       title: "Timelines",

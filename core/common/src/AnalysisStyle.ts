@@ -6,7 +6,7 @@
  * @module DisplayStyles
  */
 
-import { Range1d, Range1dProps } from "@bentley/geometry-core";
+import { Range1d, Range1dProps } from "@itwin/core-geometry";
 import { ThematicGradientSettings, ThematicGradientSettingsProps } from "./ThematicDisplay";
 import { Gradient } from "./Gradient";
 
@@ -23,12 +23,12 @@ export interface AnalysisStyleDisplacementProps {
   scale?: number;
 }
 
-/** Describes how an [[AnalysisStyle]] deforms a [Polyface]($geometry-core) by applying translation to its vertices.
+/** Describes how an [[AnalysisStyle]] deforms a [Polyface]($core-geometry) by applying translation to its vertices.
  * @see [[AnalysisStyle.displacement]].
  * @public
  */
 export class AnalysisStyleDisplacement {
-  /** The name of the [AuxChannel]($geometry-core) supplying the displacements to be applied to the vertices. */
+  /** The name of the [AuxChannel]($core-geometry) supplying the displacements to be applied to the vertices. */
   public readonly channelName: string;
   /** A scale applied to the displacements to adjust the magnitude of the effect.
    * Default value: 1.
@@ -61,30 +61,31 @@ export class AnalysisStyleDisplacement {
   }
 }
 
-/** JSON representation of an [[AnalysisStyleScalar]].
+/** JSON representation of an [[AnalysisStyleThematic]].
  * @see [[AnalysisStyleProps.scalar]].
  * @public
  */
-export interface AnalysisStyleScalarProps {
-  /** @see [[AnalysisStyleScalar.channelName]]. */
+export interface AnalysisStyleThematicProps {
+  /** @see [[AnalysisStyleThematic.channelName]]. */
   channelName: string;
-  /** @see [[AnalysisStyleScalar.range]]. */
+  /** @see [[AnalysisStyleThematic.range]]. */
   range: Range1dProps;
-  /** @see [[AnalysisStyleScalar.thematicSettings]].
+  /** @see [[AnalysisStyleThematic.thematicSettings]].
    * Default value: [[ThematicGradientSettings.defaults]].
    */
   thematicSettings?: ThematicGradientSettingsProps;
 }
 
-/** Describes how an [[AnalysisStyle]] recolors [Polyface]($geometry-core) vertices by mapping scalar values supplied
- * by an [AuxChannel]($geometry-core) to colors supplied by a [[Gradient]] image.
- * @see [[AnalysisStyle.scalar]].
+/** Describes how an [[AnalysisStyle]] recolors [Polyface]($core-geometry) vertices by mapping values of type
+ * [AuxChannelDataType.Scalar]($core-geometry) or [AuxChannelDataType.Distance]($core-geometry) supplied
+ * by an [AuxChannel]($core-geometry) to colors supplied by a [[Gradient]] image.
+ * @see [[AnalysisStyle.thematic]].
  * @public
  */
-export class AnalysisStyleScalar {
-  /** The name of the [AuxChannel]($geometry-core) supplying the scalar values from which the vertex colors are computed. */
+export class AnalysisStyleThematic {
+  /** The name of the [AuxChannel]($core-geometry) supplying the values from which the vertex colors are computed. */
   public readonly channelName: string;
-  /** The minimum and maximum scalar values that map to colors in the [[Gradient]] image. Vertices with values outside of
+  /** The minimum and maximum values that map to colors in the [[Gradient]] image. Vertices with values outside of
    * this range are displayed with the gradient's margin color.
    */
   public readonly range: Readonly<Range1d>;
@@ -93,20 +94,20 @@ export class AnalysisStyleScalar {
   private _gradient?: Gradient.Symb;
 
   /** @internal */
-  private constructor(props: AnalysisStyleScalarProps) {
+  private constructor(props: AnalysisStyleThematicProps) {
     this.channelName = props.channelName;
     this.range = Range1d.fromJSON(props.range);
     this.thematicSettings = ThematicGradientSettings.fromJSON(props.thematicSettings);
   }
 
   /** Create from JSON representation. */
-  public static fromJSON(props: AnalysisStyleScalarProps): AnalysisStyleScalar {
+  public static fromJSON(props: AnalysisStyleThematicProps): AnalysisStyleThematic {
     return new this(props);
   }
 
   /** Convert to JSON representation. */
-  public toJSON(): AnalysisStyleScalarProps {
-    const props: AnalysisStyleScalarProps = {
+  public toJSON(): AnalysisStyleThematicProps {
+    const props: AnalysisStyleThematicProps = {
       channelName: this.channelName,
       range: this.range.toJSON(),
     };
@@ -126,7 +127,7 @@ export class AnalysisStyleScalar {
   }
 
   /** Return true if `this` is equivalent to `other`. */
-  public equals(other: AnalysisStyleScalar): boolean {
+  public equals(other: AnalysisStyleThematic): boolean {
     return this.channelName === other.channelName && this.range.isAlmostEqual(other.range) && this.thematicSettings.equals(other.thematicSettings);
   }
 }
@@ -137,8 +138,10 @@ export class AnalysisStyleScalar {
 export interface AnalysisStyleProps {
   /** @see [[AnalysisStyle.displacement]]. */
   displacement?: AnalysisStyleDisplacementProps;
-  /** @see [[AnalysisStyle.scalar]]. */
-  scalar?: AnalysisStyleScalarProps;
+  /** JSON representation of [[AnalysisStyle.thematic]].
+   * @note The name "scalar" is used instead of "thematic" for backwards compatibility.
+   */
+  scalar?: AnalysisStyleThematicProps;
   /** @see [[AnalysisStyle.normalChannelName]]. */
   normalChannelName?: string;
 }
@@ -188,7 +191,7 @@ function tryConvertLegacyProps(input: AnalysisStyleProps): AnalysisStyleProps {
 }
 
 /** As part of a [[DisplayStyleSettings]], describes how to animate meshes in the view that have been augmented with
- * [PolyfaceAuxData]($geometry-core). The style specifies which channels to use, and can deform the meshes by
+ * [PolyfaceAuxData]($core-geometry). The style specifies which channels to use, and can deform the meshes by
  * translating vertices and/or recolor vertices using [[ThematicDisplay]].
  * @see [[DisplayStyleSettings.analysisStyle]] to define the analysis style for a [DisplayStyle]($backend).
  * @see [[DisplayStyleSettings.analysisFraction]] to control playback of the animation.
@@ -196,8 +199,8 @@ function tryConvertLegacyProps(input: AnalysisStyleProps): AnalysisStyleProps {
  */
 export class AnalysisStyle {
   public readonly displacement?: AnalysisStyleDisplacement;
-  public readonly scalar?: AnalysisStyleScalar;
-  /** If defined, the name of the [AuxChannel]($geometry-core) from which to obtain normal vectors for the vertices. */
+  public readonly thematic?: AnalysisStyleThematic;
+  /** If defined, the name of the [AuxChannel]($core-geometry) from which to obtain normal vectors for the vertices. */
   public readonly normalChannelName?: string;
 
   /** Create an analysis style from its JSON representation.
@@ -221,7 +224,7 @@ export class AnalysisStyle {
       this.displacement = AnalysisStyleDisplacement.fromJSON(props.displacement);
 
     if (props.scalar)
-      this.scalar = AnalysisStyleScalar.fromJSON(props.scalar);
+      this.thematic = AnalysisStyleThematic.fromJSON(props.scalar);
   }
 
   /** Convert this style to its JSON representation. */
@@ -233,8 +236,8 @@ export class AnalysisStyle {
     if (this.displacement)
       props.displacement = this.displacement.toJSON();
 
-    if (this.scalar)
-      props.scalar = this.scalar.toJSON();
+    if (this.thematic)
+      props.scalar = this.thematic.toJSON();
 
     if (undefined !== this.normalChannelName)
       props.normalChannelName = this.normalChannelName;
@@ -260,10 +263,10 @@ export class AnalysisStyle {
     else if (this.displacement && !this.displacement.equals(other.displacement!))
       return false;
 
-    if ((undefined === this.scalar) !== (undefined === other.scalar))
+    if ((undefined === this.thematic) !== (undefined === other.thematic))
       return false;
 
-    return undefined === this.scalar || this.scalar.equals(other.scalar!);
+    return undefined === this.thematic || this.thematic.equals(other.thematic!);
   }
 
   public static readonly defaults = new AnalysisStyle({ });

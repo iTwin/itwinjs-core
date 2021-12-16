@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-backend",
+      "comment": "Fix ruleset variables storing in IPC apps",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-backend"
+}

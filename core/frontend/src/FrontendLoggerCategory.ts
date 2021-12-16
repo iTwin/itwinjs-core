@@ -7,34 +7,39 @@
  */
 
 /** Logger categories used by this package
- * @note All logger categories in this package start with the `imodeljs-frontend` prefix.
+ * @note All logger categories in this package start with the `core-frontend` prefix.
  * @see [Logger]($bentley)
  * @public
  */
 export enum FrontendLoggerCategory {
-  Package = "imodeljs-frontend",
+  Package = "core-frontend",
 
   /** The logger category used by the [[FrontendRequestContext]] class and other related classes. */
-  FrontendRequestContext = "imodeljs-frontend.FrontendRequestContext",
+  FrontendRequestContext = "core-frontend.FrontendRequestContext",
 
   /** The logger category used by the [[IModelConnection]] class and other related classes. */
-  IModelConnection = "imodeljs-frontend.IModelConnection",
+  IModelConnection = "core-frontend.IModelConnection",
 
   /** The logger category used by OIDC-related functions on iOS. */
-  MobileAuthorizationClient = "imodeljs-frontend.MobileAuthorizationClient",
+  MobileAuthorizationClient = "core-frontend.MobileAuthorizationClient",
 
   /** The logger category used by EventSource */
-  EventSource = "imodeljs-frontend.EventSource",
+  EventSource = "core-frontend.EventSource",
 
   /** The logger category used for general authorization purposes */
-  Authorization = "imodeljs-frontend.Authorization",
+  Authorization = "core-frontend.Authorization",
 
   /** The logger category used for NativeApp */
-  NativeApp = "imodeljs-frontend.NativeApp",
+  NativeApp = "core-frontend.NativeApp",
 
   /**
    * The logger category used by FeatureTrackingManager
    * @alpha
    */
-  FeatureTracking = "imodeljs-frontend.FeatureTracking",
+  FeatureTracking = "core-frontend.FeatureTracking",
+  /**
+   * The logger category used by RealityData
+   * @alpha
+   */
+  RealityData = "core-frontend.RealityData",
 }

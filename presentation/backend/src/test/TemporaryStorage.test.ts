@@ -5,8 +5,8 @@
 import { expect } from "chai";
 import * as lolex from "lolex";
 import * as sinon from "sinon";
-import { using } from "@bentley/bentleyjs-core";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
+import * as moq from "typemoq";
+import { using } from "@itwin/core-bentley";
 import { TemporaryStorage } from "../presentation-backend/TemporaryStorage";
 
 describe("TemporaryStorage", () => {
@@ -122,6 +122,34 @@ describe("TemporaryStorage", () => {
       expect(onCreatedSpy).to.not.be.called;
 
       factoryMock.verify((x) => x("a"), moq.Times.once());
+    });
+
+    it("does not dispose value if 'onValueUsed' was called", () => {
+      const spy = sinon.spy();
+      let valueUsed = () => { };
+      const storage = new TemporaryStorage<string>({
+        factory: (id: string) => id,
+        onCreated: (_id: string, value: string, onValueUsed: () => void) => {
+          if (value === "a")
+            valueUsed = onValueUsed;
+        },
+        onDisposedSingle: spy,
+        valueLifetime: 2,
+      });
+
+      storage.getValue("a");
+      storage.getValue("b");
+      // advance clock and verify values are still there
+      clock.tick(1);
+      expect(storage.values.length).to.eq(2);
+      valueUsed();
+
+      // advance clock and verify one value is still there
+      clock.tick(2);
+      storage.disposeOutdatedValues();
+      expect(storage.values.length).to.eq(1);
+      expect(spy).to.be.calledOnce;
+      expect(spy).to.be.calledWith("b");
     });
 
   });

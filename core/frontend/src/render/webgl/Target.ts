@@ -6,11 +6,11 @@
  * @module WebGL
  */
 
-import { assert, dispose, Id64, Id64String, IDisposable } from "@bentley/bentleyjs-core";
-import { Point2d, Point3d, Range3d, Transform, XAndY, XYZ } from "@bentley/geometry-core";
+import { assert, dispose, Id64, Id64String, IDisposable } from "@itwin/core-bentley";
+import { Point2d, Point3d, Range3d, Transform, XAndY, XYZ } from "@itwin/core-geometry";
 import {
   AmbientOcclusion, AnalysisStyle, Frustum, ImageBuffer, ImageBufferFormat, Npc, RenderMode, RenderTexture, SpatialClassifier, ThematicDisplayMode, ViewFlags,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { canvasToImageBuffer, canvasToResizedCanvasWithBars, imageBufferToCanvas } from "../../ImageUtil";
 import { HiliteSet } from "../../SelectionSet";
 import { SceneContext } from "../../ViewContext";
@@ -20,7 +20,7 @@ import { IModelConnection } from "../../IModelConnection";
 import { CanvasDecoration } from "../CanvasDecoration";
 import { Decorations } from "../Decorations";
 import { FeatureSymbology } from "../FeatureSymbology";
-import { AnimationBranchStates } from "../GraphicBranch";
+import { AnimationBranchStates, AnimationNodeId } from "../GraphicBranch";
 import { Pixel } from "../Pixel";
 import { GraphicList } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
@@ -127,6 +127,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public activeVolumeClassifierTexture?: WebGLTexture;
   public activeVolumeClassifierProps?: SpatialClassifier;
   public activeVolumeClassifierModelId?: Id64String;
+  private _currentAnimationTransformNodeId?: number;
 
   // RenderTargetDebugControl
   public vcSupportIntersectingVolumes: boolean = false;
@@ -273,9 +274,16 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     if (undefined === color)
       return undefined;
 
-    this._fbo = FrameBuffer.create([color]);
+    const depth = System.instance.createDepthBuffer(rect.width, rect.height, 1);
+    if (undefined === depth) {
+      color.dispose();
+      return undefined;
+    }
+
+    this._fbo = FrameBuffer.create([color], depth);
     if (undefined === this._fbo) {
       color.dispose();
+      depth.dispose();
       return undefined;
     }
 
@@ -287,12 +295,16 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       return;
 
     const tx = this._fbo.getColor(0);
+    const db = this._fbo.depthBuffer;
     this._fbo = dispose(this._fbo);
     this._dcAssigned = false;
 
     // We allocated our framebuffer's color attachment, so must dispose of it too.
     assert(undefined !== tx);
     dispose(tx);
+    // We allocated our framebuffer's depth attachment, so must dispose of it too.
+    assert(undefined !== db);
+    dispose(db);
   }
 
   public override dispose() {
@@ -513,7 +525,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   protected drawOverlayDecorations(): void { }
 
-  /*
+  /**
    * Invoked via Viewport.changeView() when the owning Viewport is changed to look at a different view.
    * Invoked via dispose() when the target is being destroyed.
    * The primary difference is that in the former case we retain the SceneCompositor.
@@ -963,6 +975,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       if (isEmptyImage)
         return undefined;
     } else {
+      // Need to scale image.
       const canvas = imageBufferToCanvas(image, false); // retrieve a canvas of the image we read, throwing away alpha channel.
       if (undefined === canvas)
         return undefined;
@@ -1035,6 +1048,24 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return { viewport: this._viewport };
   }
 
+  public get currentAnimationTransformNodeId(): number | undefined {
+    return this._currentAnimationTransformNodeId;
+  }
+  public set currentAnimationTransformNodeId(id: number | undefined) {
+    assert(undefined === this._currentAnimationTransformNodeId || undefined === id);
+    this._currentAnimationTransformNodeId = id;
+  }
+
+  /** Given GraphicBranch.animationId identifying *any* node in the scene's schedule script, return the transform node Id
+   * that should be used to filter the branch's graphics for display, or undefined if no filtering should be applied.
+   */
+  public getAnimationTransformNodeId(animationNodeId: number | undefined): number | undefined {
+    if (undefined === this.animationBranches || undefined === this.currentAnimationTransformNodeId || undefined === animationNodeId)
+      return undefined;
+
+    return this.animationBranches.transformNodeIds.has(animationNodeId) ? animationNodeId : AnimationNodeId.Untransformed;
+  }
+
   protected abstract _assignDC(): boolean;
   protected abstract _beginPaint(fbo: FrameBuffer): void;
   protected abstract _endPaint(): void;
@@ -1058,6 +1089,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       Math.floor(rect.top * ratio),
       Math.floor(rect.right * ratio),
       Math.floor(rect.bottom * ratio));
+  }
+
+  public getRenderCommands(): Array<{ name: string, count: number }> {
+    return this._renderCommands.dump();
   }
 }
 
@@ -1229,6 +1264,12 @@ export class OnScreenTarget extends Target {
       const w = this.viewRect.width, h = this.viewRect.height;
       const yOffset = system.canvas.height - h; // drawImage has top as Y=0, GL has bottom as Y=0
       onscreenContext.save();
+
+      if (this.uniforms.style.backgroundAlpha < 1) {
+        // If background is transparent, we aren't guaranteed that every pixel will be overwritten - clear it.
+        onscreenContext.clearRect(0, 0, w, h);
+      }
+
       onscreenContext.setTransform(1, 0, 0, 1, 0, 0); // revert any previous devicePixelRatio scale for drawImage() call below.
       onscreenContext.drawImage(system.canvas, 0, yOffset, w, h, 0, 0, w, h);
       onscreenContext.restore();

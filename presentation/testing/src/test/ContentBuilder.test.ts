@@ -6,13 +6,13 @@ import { expect, use } from "chai";
 import ChaiAsPromised from "chai-as-promised";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { BeEvent, Guid, Id64String } from "@bentley/bentleyjs-core";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { BeEvent, Guid, Id64String } from "@itwin/core-bentley";
+import { IModelConnection } from "@itwin/core-frontend";
 import {
   CategoryDescription, Content, DefaultContentDisplayTypes, Descriptor, DisplayValue, Field, Item, KeySet, PrimitiveTypeDescription,
   PropertyValueFormat, RegisteredRuleset, Ruleset, Value, ValuesDictionary,
-} from "@bentley/presentation-common";
-import { Presentation, PresentationManager, RulesetManager } from "@bentley/presentation-frontend";
+} from "@itwin/presentation-common";
+import { Presentation, PresentationManager, RulesetManager } from "@itwin/presentation-frontend";
 import { ContentBuilder, IContentBuilderDataProvider } from "../presentation-testing/ContentBuilder";
 
 use(ChaiAsPromised);
@@ -74,17 +74,23 @@ const createStringTypeDescription = (): PrimitiveTypeDescription => ({
   typeName: "string",
 });
 
-class DataProvider extends EmptyDataProvider {
-  public descriptor = new Descriptor({
+const createContentDescriptor = () => {
+  const category = createCategoryDescription();
+  return new Descriptor({
     displayType: "Grid",
     selectClasses: [],
+    categories: [category],
     fields: [
-      new Field(createCategoryDescription(), "width", "width", createStringTypeDescription(), false, 1),
-      new Field(createCategoryDescription(), "title", "title", createStringTypeDescription(), false, 1),
-      new Field(createCategoryDescription(), "radius", "radius", createStringTypeDescription(), false, 1),
+      new Field(category, "width", "width", createStringTypeDescription(), false, 1),
+      new Field(category, "title", "title", createStringTypeDescription(), false, 1),
+      new Field(category, "radius", "radius", createStringTypeDescription(), false, 1),
     ],
     contentFlags: 1,
   });
+};
+
+class DataProvider extends EmptyDataProvider {
+  public descriptor = createContentDescriptor();
   public values = [
     { title: "Item", height: 15, width: 16 },
     { title: "Circle", radius: 13 },
@@ -171,7 +177,6 @@ describe("ContentBuilder", () => {
       rulesetManagerMock.setup(async (x) => x.add(moq.It.isAny())).returns(async (ruleset) => new RegisteredRuleset(ruleset, Guid.createValue(), () => { }));
       presentationManagerMock.reset();
       presentationManagerMock.setup((manager) => manager.rulesets()).returns(() => rulesetManagerMock.object);
-      // eslint-disable-next-line deprecation/deprecation
       presentationManagerMock.setup(async (manager) => manager.getContent(moq.It.isAny())).returns(getEmptyContent);
       presentationManagerMock.setup((x) => x.onIModelContentChanged).returns(() => new BeEvent());
       Presentation.setPresentationManager(presentationManagerMock.object);

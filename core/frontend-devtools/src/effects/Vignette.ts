@@ -6,7 +6,7 @@
  * @module Effects
  */
 
-import { ScreenSpaceEffectBuilder, Tool, UniformType, VaryingType } from "@bentley/imodeljs-frontend";
+import { ScreenSpaceEffectBuilder, Tool, UniformType, VaryingType } from "@itwin/core-frontend";
 import { parseArgs } from "../tools/parseArgs";
 import { AddEffectTool, refreshViewportsForEffect } from "./EffectTools";
 
@@ -97,7 +97,7 @@ export class VignetteConfig extends Tool {
    */
   public static smoothness = 0.5;
 
-  public override run(width?: number, height?: number, roundness?: number, smoothness?: number): boolean {
+  public override async run(width?: number, height?: number, roundness?: number, smoothness?: number): Promise<boolean> {
     const config = VignetteConfig;
     config.size[0] = width ?? config.size[0];
     config.size[1] = height ?? config.size[1];
@@ -108,7 +108,7 @@ export class VignetteConfig extends Tool {
     return true;
   }
 
-  public override parseAndRun(...input: string[]): boolean {
+  public override async parseAndRun(...input: string[]): Promise<boolean> {
     const args = parseArgs(input);
     return this.run(args.getFloat("w"), args.getFloat("h"), args.getFloat("r"), args.getFloat("s"));
   }

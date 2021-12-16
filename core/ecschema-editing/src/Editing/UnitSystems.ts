@@ -6,7 +6,7 @@
  * @module Editing
  */
 
-import { SchemaKey, UnitSystemProps } from "@bentley/ecschema-metadata";
+import { SchemaKey, UnitSystemProps } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { MutableUnitSystem } from "./Mutable/MutableUnitSystem";
 

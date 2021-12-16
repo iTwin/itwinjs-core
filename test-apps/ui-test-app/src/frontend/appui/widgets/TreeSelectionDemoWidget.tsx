@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { useResizeDetector } from "react-resize-detector";
-import { PropertyRecord } from "@bentley/ui-abstract";
+import { PropertyRecord } from "@itwin/appui-abstract";
 import {
   AbstractTreeNodeLoaderWithProvider, ControlledTree, DelayLoadedTreeNodeItem, ITreeDataProvider, MutableTreeModel, SelectionMode, Subscription,
   TreeCheckboxStateChangeEventArgs, TreeEventHandler, TreeModel, TreeModelChanges, TreeModelNode, TreeNodeItem, TreeSelectionModificationEventArgs,
   TreeSelectionReplacementEventArgs, useTreeEventsHandler, useTreeModel, useTreeModelSource, useTreeNodeLoader,
-} from "@bentley/ui-components";
-import { CheckBoxState } from "@bentley/ui-core";
-import { ConfigurableCreateInfo, WidgetControl } from "@bentley/ui-framework";
+} from "@itwin/components-react";
+import { CheckBoxState } from "@itwin/core-react";
+import { ConfigurableCreateInfo, WidgetControl } from "@itwin/appui-react";
 
 export class TreeSelectionDemoWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {

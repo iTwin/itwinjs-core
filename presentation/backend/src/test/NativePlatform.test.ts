@@ -2,12 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import "@bentley/presentation-common/lib/test/_helpers/Promises";
 import { expect } from "chai";
 import * as faker from "faker";
 import * as moq from "typemoq";
-import { IModelDb, IModelHost, IModelJsNative } from "@bentley/imodeljs-backend";
-import { DiagnosticsScopeLogs, PresentationError, UpdateInfo, VariableValueTypes } from "@bentley/presentation-common";
+import { IModelDb, IModelHost, IModelJsNative } from "@itwin/core-backend";
+import { DiagnosticsScopeLogs, PresentationError, UpdateInfo, VariableValueTypes } from "@itwin/presentation-common";
 import { createDefaultNativePlatform, NativePlatformDefinition } from "../presentation-backend/NativePlatform";
 import { PresentationManagerMode } from "../presentation-backend/PresentationManager";
 
@@ -57,16 +56,16 @@ describe("default NativePlatform", () => {
 
   it("calls addon's forceLoadSchemas", async () => {
     addonMock
-      .setup((x) => x.forceLoadSchemas(moq.It.isAny(), moq.It.isAny()))
-      .callback((_db, cb) => { cb({ result: undefined }); })
+      .setup(async (x) => x.forceLoadSchemas(moq.It.isAny()))
+      .returns(async () => ({ result: undefined }))
       .verifiable();
     await nativePlatform.forceLoadSchemas(undefined);
     addonMock.verifyAll();
 
     addonMock.reset();
     addonMock
-      .setup((x) => x.forceLoadSchemas(moq.It.isAny(), moq.It.isAny()))
-      .callback((_db, cb) => { cb({ error: { status: IModelJsNative.ECPresentationStatus.Error, message: "rejected" } }); })
+      .setup(async (x) => x.forceLoadSchemas(moq.It.isAny()))
+      .returns(async () => ({ error: { status: IModelJsNative.ECPresentationStatus.Error, message: "rejected" } }))
       .verifiable();
     await expect(nativePlatform.forceLoadSchemas(undefined)).to.be.rejected;
     addonMock.verifyAll();
@@ -155,7 +154,7 @@ describe("default NativePlatform", () => {
   it("calls addon's setupRulesetDirectories", async () => {
     addonMock
       .setup((x) => x.setupRulesetDirectories(moq.It.isAny()))
-      .returns(() => ({}))
+      .returns(() => ({ result: undefined }))
       .verifiable();
     nativePlatform.setupRulesetDirectories([]);
     addonMock.verifyAll();
@@ -164,7 +163,7 @@ describe("default NativePlatform", () => {
   it("calls addon's setupSupplementalRulesetDirectories", async () => {
     addonMock
       .setup((x) => x.setupSupplementalRulesetDirectories(moq.It.isAny()))
-      .returns(() => ({}))
+      .returns(() => ({ result: undefined }))
       .verifiable();
     nativePlatform.setupSupplementalRulesetDirectories([]);
     addonMock.verifyAll();
@@ -205,7 +204,7 @@ describe("default NativePlatform", () => {
   });
 
   it("calls addon's clearRulesets", async () => {
-    addonMock.setup((x) => x.clearRulesets()).returns(() => ({})).verifiable();
+    addonMock.setup((x) => x.clearRulesets()).returns(() => ({ result: undefined })).verifiable();
     nativePlatform.clearRulesets();
     addonMock.verifyAll();
   });
@@ -215,7 +214,7 @@ describe("default NativePlatform", () => {
     const variableId = faker.random.word();
     const value = faker.random.word();
     addonMock.setup((x) => x.setRulesetVariableValue(rulesetId, variableId, VariableValueTypes.String, value))
-      .returns(() => ({}))
+      .returns(() => ({ result: undefined }))
       .verifiable();
     nativePlatform.setRulesetVariableValue(rulesetId, variableId, VariableValueTypes.String, value);
     addonMock.verifyAll();
@@ -225,7 +224,7 @@ describe("default NativePlatform", () => {
     const rulesetId = faker.random.word();
     const variableId = faker.random.word();
     addonMock.setup((x) => x.unsetRulesetVariableValue(rulesetId, variableId))
-      .returns(() => ({}))
+      .returns(() => ({ result: undefined }))
       .verifiable();
     nativePlatform.unsetRulesetVariableValue(rulesetId, variableId);
     addonMock.verifyAll();
@@ -255,7 +254,7 @@ describe("default NativePlatform", () => {
 
   it("calls addon's updateHierarchyState", async () => {
     addonMock.setup((x) => x.updateHierarchyState(moq.It.isAny(), "test-ruleset-id", "nodesExpanded", "[]"))
-      .returns(() => ({}))
+      .returns(() => ({ result: undefined }))
       .verifiable();
     nativePlatform.updateHierarchyState({}, "test-ruleset-id", "nodesExpanded", "[]");
     addonMock.verifyAll();

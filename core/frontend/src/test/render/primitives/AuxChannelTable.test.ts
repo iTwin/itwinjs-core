@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { AuxChannel, AuxChannelData, AuxChannelDataType, Geometry, Vector3d } from "@bentley/geometry-core";
-import { OctEncodedNormal } from "@bentley/imodeljs-common";
+import { AuxChannel, AuxChannelData, AuxChannelDataType, Geometry, Vector3d } from "@itwin/core-geometry";
+import { OctEncodedNormal } from "@itwin/core-common";
 import { MockRender } from "../../../render/MockRender";
 import { AuxChannelTable } from "../../../render/primitives/AuxChannelTable";
 

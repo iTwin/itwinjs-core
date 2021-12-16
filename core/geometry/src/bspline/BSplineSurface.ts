@@ -143,7 +143,7 @@ export interface BSplineSurface3dQuery {
    */
   poleStepUV(select: UVSelect): number;
 
-  /*
+  /**
      * evaluate the surface at u and v fractions. Return a (squared, right handed) coordinate frame at that point on the surface.
      * @param fractionU u parameter
      * @param fractionV v parameter

@@ -6,8 +6,8 @@
  * @module Tile
  */
 
-import { GuidString } from "@bentley/bentleyjs-core";
-import { Range3dProps, TransformProps } from "@bentley/geometry-core";
+import { GuidString } from "@itwin/core-bentley";
+import { Range3dProps, TransformProps } from "@itwin/core-geometry";
 
 /** Wire format describing an [IModelTile]($frontend)
  * @internal
@@ -55,6 +55,10 @@ export interface IModelTileTreeProps extends TileTreeProps {
   maxInitialTilesToSkip?: number;
   /** Optionally specifies the maximum tile format version supported. */
   formatVersion?: number;
+  /** Size of each tile in pixels. Defaults to 512. Will be 2048 if TileAdmin.useLargerTiles is true. */
+  tileScreenSize?: number;
+  /** For a tile tree produced for a [[RenderTimeline.Script]], the bounding ranges for each transform node in the script. */
+  transformNodeRanges?: Array<Range3dProps & { id: number }>;
 }
 
 /** Metadata describing the version/format of the tiles supplied by the backend.
@@ -69,4 +73,12 @@ export interface TileVersionInfo {
    * @see [[CurrentImdlVersion]] to obtain the current version used by the frontend or backend.
    */
   formatVersion: number;
+}
+
+/**
+ * @internal
+ */
+export enum TileContentSource {
+  Backend = 0,
+  ExternalCache = 1,
 }

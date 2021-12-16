@@ -45,6 +45,8 @@ export const enum GeometryType {
 }
 
 /** Reserved texture units for specific sampler variables, to avoid conflicts between shader components which each have their own textures.
+ * WebGL 1 guarantees a minimum of 8 vertex texture units, and iOS provides no more than that.
+ * WebGL 2 guarantees a minimum of 15 vertex texture units.
  * @internal
  */
 export enum TextureUnit {
@@ -56,7 +58,7 @@ export enum TextureUnit {
   Four = WebGLRenderingContext.TEXTURE4,
   Five = WebGLRenderingContext.TEXTURE5,
   Six = WebGLRenderingContext.TEXTURE6,
-  Seven = WebGLRenderingContext.TEXTURE7, // Last one available for GLES2
+  Seven = WebGLRenderingContext.TEXTURE7, // Last one guaranteed available for WebGL 1
 
   ClipVolume = Zero,
   FeatureSymbology = One,
@@ -76,14 +78,21 @@ export enum TextureUnit {
   // Texture unit 7 is overloaded. Therefore receiving shadows and thematic display are mutually exclusive.
   ShadowMap = Seven,
   ThematicSensors = Seven,
-  // The number of allowable map layers for either background or overlay map is limited to 3 if only 8 texture units is available (IOS)... 6 layers are available if the hardware supports them.
+
+  // Textures used for up to 3 background or overlay map layers.
   RealityMesh0 = Two,
-  RealityMesh1 = VertexLUT,                       // Reality meshes do not use VertexLUT.
-  RealityMesh2 = ShadowMap,                       //  Shadow map when picking -- PickDepthAndOrder otherwise....
-  RealityMesh3 = WebGLRenderingContext.TEXTURE8,  // These are used only if available.
+  RealityMesh1 = VertexLUT, // Reality meshes do not use VertexLUT.
+  RealityMesh2 = ShadowMap, //  Shadow map when picking -- PickDepthAndOrder otherwise....
+
+  // If more than 8 texture units are available, 3 additional background or overlay map layers.
+  RealityMesh3 = WebGLRenderingContext.TEXTURE8,
   RealityMesh4 = WebGLRenderingContext.TEXTURE9,
   RealityMesh5 = WebGLRenderingContext.TEXTURE10,
+
   RealityMeshThematicGradient = WebGLRenderingContext.TEXTURE11,
+
+  // Lookup table for indexed edges - used only if WebGL 2 is available.
+  EdgeLUT = WebGLRenderingContext.TEXTURE12,
 }
 
 /**
@@ -191,6 +200,7 @@ export const enum OvrFlags {
   Weight = 1 << 7,
   Hilited = 1 << 8,
   Emphasized = 1 << 9, // rendered with "emphasis" hilite settings (silhouette etc).
+  ViewIndependentTransparency = 1 << 10,
 
   Rgba = Rgb | Alpha,
 }

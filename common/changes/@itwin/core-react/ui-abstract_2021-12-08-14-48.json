@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-react",
+      "comment": "Deprecate obsolete code.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-react"
+}

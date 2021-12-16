@@ -2,15 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String } from "@itwin/core-bentley";
 import {
   CheckBox, ComboBox, ComboBoxEntry, createCheckBox, createColorInput, createComboBox, createNestedMenu, createNumericInput, createSlider, Slider,
-} from "@bentley/frontend-devtools";
+} from "@itwin/frontend-devtools";
 import {
-  BackgroundMapProps, BackgroundMapProviderName, BackgroundMapType, ColorDef, DisplayStyle3dSettingsProps, GlobeMode, HiddenLine, LinePixels,
-  MonochromeMode, RenderMode, TerrainProps, ThematicDisplayMode, ThematicGradientColorScheme, ThematicGradientMode,
-} from "@bentley/imodeljs-common";
-import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState, Viewport, ViewState, ViewState3d } from "@bentley/imodeljs-frontend";
+  BackgroundMapProps, BackgroundMapProviderName, BackgroundMapProviderProps, BackgroundMapType, BaseMapLayerSettings, ColorDef, DisplayStyle3dSettingsProps,
+  GlobeMode, HiddenLine, LinePixels, MonochromeMode, RenderMode, TerrainProps, ThematicDisplayMode, ThematicGradientColorScheme, ThematicGradientMode,
+} from "@itwin/core-common";
+import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState, Viewport, ViewState, ViewState3d } from "@itwin/core-frontend";
 import { AmbientOcclusionEditor } from "./AmbientOcclusion";
 import { EnvironmentEditor } from "./EnvironmentEditor";
 import { Settings } from "./FeatureOverrides";
@@ -55,6 +55,21 @@ const renderingStyles: RenderingStyle[] = [{
   viewflags: renderingStyleViewFlags,
   lights: {
     solar: { direction: [-0.9833878378071199, -0.18098510351728977, 0.013883542698953828] },
+  },
+}, {
+  name: "Ambient",
+  backgroundColor: 10921638,
+  environment: {
+    sky: { display: false },
+    ground: { display: false },
+  },
+  viewflags: { ...renderingStyleViewFlags, ambientOcclusion: true },
+  lights: {
+    solar: { intensity: 0 },
+    portrait: { intensity: 0 },
+    ambient: { intensity: 0.55 },
+    fresnel: { intensity: 0.8, invert: true },
+    specularIntensity: 0,
   },
 }, {
   name: "Illustration",
@@ -484,7 +499,7 @@ export class ViewAttributes {
         { name: "Bing", value: "BingProvider" },
         { name: "MapBox", value: "MapBoxProvider" },
       ],
-      handler: (select) => this.updateBackgroundMap({ providerName: select.value as BackgroundMapProviderName }),
+      handler: (select) => this.updateBackgroundMapProvider({ name: select.value as BackgroundMapProviderName }),
     }).select;
 
     const types = createComboBox({
@@ -496,7 +511,7 @@ export class ViewAttributes {
         { name: "Aerial", value: BackgroundMapType.Aerial },
         { name: "Hybrid", value: BackgroundMapType.Hybrid },
       ],
-      handler: (select) => this.updateBackgroundMap({ providerData: { mapType: Number.parseInt(select.value, 10) } }),
+      handler: (select) => this.updateBackgroundMapProvider({ type: Number.parseInt(select.value, 10) }),
     }).select;
     const globeModes = createComboBox({
       parent: backgroundSettingsDiv,
@@ -536,9 +551,13 @@ export class ViewAttributes {
       checkboxLabel.style.fontWeight = checkbox.checked ? "bold" : "500";
       showOrHideSettings(checkbox.checked);
 
+      const baseLayer = view.displayStyle.settings.mapImagery.backgroundBase;
+      if (baseLayer instanceof BaseMapLayerSettings && baseLayer.provider) {
+        imageryProviders.value = baseLayer.provider.name;
+        types.value = baseLayer.provider.type.toString();
+      }
+
       const map = this.getBackgroundMap(view);
-      imageryProviders.value = map.providerName;
-      types.value = map.mapType.toString();
       terrainCheckbox.checked = map.applyTerrain;
       transCheckbox.checked = false !== map.transparency;
       locatable.checked = map.locatable;
@@ -585,6 +604,11 @@ export class ViewAttributes {
 
   private updateBackgroundMap(props: BackgroundMapProps): void {
     this._vp.changeBackgroundMapProps(props);
+    this.sync();
+  }
+
+  private updateBackgroundMapProvider(props: BackgroundMapProviderProps): void {
+    this._vp.displayStyle.changeBackgroundMapProvider(props);
     this.sync();
   }
 

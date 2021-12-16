@@ -6,7 +6,7 @@
  * @module DisplayStyles
  */
 
-import { JsonUtils } from "@bentley/bentleyjs-core";
+import { JsonUtils } from "@itwin/core-bentley";
 import { ColorByName } from "./ColorByName";
 import { ColorDef, ColorDefProps } from "./ColorDef";
 import { RgbColor } from "./RgbColor";
@@ -41,7 +41,7 @@ export class SolarShadowSettings {
       this.color = RgbColor.fromColorDef(ColorDef.fromJSON(props.color));
   }
 
-  public static defaults = new SolarShadowSettings({ });
+  public static defaults = new SolarShadowSettings({});
 
   public static fromJSON(props?: SolarShadowSettingsProps): SolarShadowSettings {
     return props ? new SolarShadowSettings(props) : this.defaults;
@@ -52,7 +52,7 @@ export class SolarShadowSettings {
     if (this.equals(defaults))
       return undefined;
 
-    const props: SolarShadowSettingsProps = { };
+    const props: SolarShadowSettingsProps = {};
     if (!this.color.equals(defaults.color))
       props.color = this.color.toColorDef().toJSON();
 
@@ -74,7 +74,7 @@ export class SolarShadowSettings {
     if (!changedProps)
       return this;
 
-    const props = this.toJSON() ?? { };
+    const props = this.toJSON() ?? {};
     if (changedProps.color)
       props.color = changedProps.color;
 

@@ -1,0 +1,35 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/index";
+@import "~@itwin/itwinui-css/scss/style/typography";
+
+$components-desktop-item-width: 40px;
+$components-desktop-item-height: 40px;
+
+$components-items-border-width: 1px;
+$components-desktop-space-between-toolbar-items: 1px;
+$components-desktop-separator-gap-between-toolbar-items: 5px;
+$components-desktop-separator-thickness: 1px;
+$components-desktop-separator-center-offset: -3px;
+
+$components-desktop-toolbar-width: 42px;
+$components-desktop-toolbar-height: 42px;
+
+$desktop-tool-stripe-width: 2px;
+$desktop-tool-stripe-height: 30px;
+
+$font-size: $iui-font-size;
+$icon-size: 16px;
+$icon-color: $buic-icon-color;
+$hovered-icon-color: $buic-foreground-activehover;
+$pressed-icon-color: $buic-foreground-activehover;
+$active-icon-color: $buic-foreground-activehover;
+$disabled-icon-color: $buic-icon-color-disabled;
+$icon-shadow-color: $buic-icon-color-reverse;
+$icon-shadow: drop-shadow(0 1px 0 $icon-shadow-color);
+$no-shadow: drop-shadow(0 0 0 transparent);
+
+$desktop-tool-stripe-width: 2px;
+$desktop-tool-stripe-height: 30px;

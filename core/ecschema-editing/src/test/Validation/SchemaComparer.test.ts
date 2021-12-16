@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import { AnyECType, AnyProperty, ECClass, EntityClass, Enumeration, Format, KindOfQuantity, PropertyCategory,
   RelationshipClass, Schema, SchemaContext, Unit,
-} from "@bentley/ecschema-metadata";
+} from "@itwin/ecschema-metadata";
 import { AnyDiagnostic, DiagnosticCategory, DiagnosticType } from "../../Validation/Diagnostic";
 import { ISchemaChanges, SchemaChanges } from "../../Validation/SchemaChanges";
 import { SchemaCompareCodes } from "../../Validation/SchemaCompareDiagnostics";
@@ -4132,7 +4132,7 @@ describe("Schema comparison tests", () => {
       const unitB = await schemaB.getItem("UnitB") as ECClass;
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.KoqDelta, DiagnosticType.SchemaItem, itemA, ["persistenceUnit", unitA, unitB], itemA.schema);
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.KoqDelta, DiagnosticType.SchemaItem, itemA, ["persistenceUnit", unitA.fullName, unitB.fullName], itemA.schema);
     });
 
     it("Different presentation units, diagnostic reported for each schema", async () => {

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { RadialButton, RadialMenu } from "@bentley/ui-core";
+import { RadialButton, RadialMenu } from "@itwin/core-react";
 
 export interface TestRadialMenuProps {
   opened: boolean;

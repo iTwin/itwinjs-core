@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { AnyProperty, DelayedPromiseWithProps, ECClass, EntityClass, KindOfQuantity, PrimitiveProperty, PrimitiveType,
-  PropertyProps, RelationshipClass, Schema, SchemaContext, StructClass } from "@bentley/ecschema-metadata";
+  PropertyProps, RelationshipClass, Schema, SchemaContext, StructClass } from "@itwin/ecschema-metadata";
 import { MutableClass } from "../../../Editing/Mutable/MutableClass";
 import { MutableSchema } from "../../../Editing/Mutable/MutableSchema";
 import { DiagnosticCategory, DiagnosticType } from "../../../Validation/Diagnostic";

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-common",
+      "comment": "Added `getContentSources` RPC to retrieve information about where content for specific types of elements comes from.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-common",
+  "email": "35135765+grigasp@users.noreply.github.com"
+}

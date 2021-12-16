@@ -6,7 +6,7 @@
  * @module Editing
  */
 
-import { ConstantProps, DelayedPromiseWithProps, Phenomenon, SchemaItemKey, SchemaItemType, SchemaKey } from "@bentley/ecschema-metadata";
+import { ConstantProps, DelayedPromiseWithProps, Phenomenon, SchemaItemKey, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { MutableConstant } from "./Mutable/MutableConstant";
 
@@ -27,7 +27,7 @@ export class Constants {
       return { errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(true)}.` };
     }
 
-    const newPhenomenon = (await this._schemaEditor.schemaContext.getSchemaItem(phenomenon)) as Phenomenon;
+    const newPhenomenon = (await this._schemaEditor.schemaContext.getSchemaItem<Phenomenon>(phenomenon));
     if (newPhenomenon === undefined || newPhenomenon.schemaItemType !== SchemaItemType.Phenomenon) {
       return { errorMessage: `Unable to locate phenomenon ${phenomenon.name}` };
     }
@@ -50,7 +50,7 @@ export class Constants {
     if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
     if (constantProps.name === undefined) return { errorMessage: `No name was supplied within props.` };
-    const newConstant = (await schema.createConstant(constantProps.name)) as MutableConstant;
+    const newConstant = (await schema.createConstant(constantProps.name));
     if (newConstant === undefined) {
       return { errorMessage: `Failed to create class ${constantProps.name} in schema ${schemaKey.toString(true)}.` };
     }

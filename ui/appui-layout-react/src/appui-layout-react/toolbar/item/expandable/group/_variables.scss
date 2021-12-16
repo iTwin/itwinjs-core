@@ -1,0 +1,16 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+@import "~@itwin/core-react/lib/cjs/core-react/typography";
+
+$panel-padding-left: 16px;
+$panel-padding-right: 8px;
+$panel-padding-top: $panel-padding-right;
+$panel-padding-bottom: 12px;
+$title-color: $buic-text-color;
+$back-arrow-thickness: 2px;
+$back-arrow-size-val: 6;
+$title-horizontal-margin: 20px;
+$title-horizontal-back-arrow-margin: 28px;

@@ -8,7 +8,7 @@
 
 // cspell:ignore ovrs
 
-import { JsonUtils, Mutable, NonFunctionPropertiesOf } from "@bentley/bentleyjs-core";
+import { JsonUtils, Mutable, NonFunctionPropertiesOf } from "@itwin/core-bentley";
 
 /** Enumerates the available basic rendering modes, as part of a [DisplayStyle]($backend)'s [[ViewFlags]].
  * The rendering mode broadly affects various aspects of the display style - in particular, whether and how surfaces and their edges are drawn.
@@ -34,7 +34,7 @@ export enum RenderMode {
    * Lighting (and by extension, shadows) is not applied.
    */
   SolidFill = 4,
-  /** Identical to [[RenderMode.SmoothShade]], except:
+  /** Identical to [[RenderMode.SolidFill]], except:
    *  - Surfaces are drawn using the [DisplayStyle]($backend)'s background color.
    *  - Edges are drawn using their surface's colors; this can be overridden using [[HiddenLine.Settings]].
    */
@@ -97,6 +97,10 @@ export interface ViewFlagProps {
   ambientOcclusion?: boolean;
   /** If true, apply [[ThematicDisplay]]. */
   thematicDisplay?: boolean;
+  /** If true, overlay surfaces with wiremesh to reveal their triangulation.
+   * @beta
+   */
+  wiremesh?: boolean;
   /** Controls whether surface discard is always applied regardless of other ViewFlags.
    * Surface shaders contain complicated logic to ensure that the edges of a surface always draw in front of the surface, and that planar surfaces sketched coincident with
    * non-planar surfaces always draw in front of those non-planar surfaces.
@@ -104,7 +108,9 @@ export interface ViewFlagProps {
    * that logic does not execute, potentially improving performance for no degradation in visual quality. In some scenarios - such as wireframe views containing many planar regions with interior fill, or smooth views containing many coincident planar and non-planar surfaces - enabling this view flag improves display quality by forcing that logic to execute.
    */
   forceSurfaceDiscard?: boolean;
-  /** Disables the "white-on-white reversal" employed by some CAD applications. White-on-white reversal causes white geometry to be drawn as black if the view's background color is also white. */
+  /** Disables the "white-on-white reversal" employed by some CAD applications.
+   * @see [[ViewFlags.whiteOnWhiteReversal]].
+   */
   noWhiteOnWhiteReversal?: boolean;
 }
 
@@ -198,6 +204,10 @@ export class ViewFlags {
   public readonly ambientOcclusion: boolean;
   /** Whether to apply [[ThematicDisplay]]. Default: false. */
   public readonly thematicDisplay: boolean;
+  /** If true, overlay surfaces with wiremesh to reveal their triangulation.
+   * @beta
+   */
+  public readonly wiremesh: boolean;
   /** Controls whether surface discard is always applied regardless of other ViewFlags.
    * Surface shaders contain complicated logic to ensure that the edges of a surface always draw in front of the surface, and that planar surfaces sketched coincident with
    * non-planar surfaces always draw in front of those non-planar surfaces.
@@ -207,6 +217,7 @@ export class ViewFlags {
   public readonly forceSurfaceDiscard: boolean;
   /** Whether to apply white-on-white reversal.
    * Some CAD applications use this to cause white geometry to be drawn as black if the view's background color is white.
+   * When enabled, the [[DisplayStyleSettings]]' [[WhiteOnWhiteReversalSettings]] control how white-on-white reversal is applied.
    * Default: true.
    */
   public readonly whiteOnWhiteReversal: boolean;
@@ -241,6 +252,7 @@ export class ViewFlags {
     this.backgroundMap = flags?.backgroundMap ?? false;
     this.ambientOcclusion = flags?.ambientOcclusion ?? false;
     this.thematicDisplay = flags?.thematicDisplay ?? false;
+    this.wiremesh = flags?.wiremesh ?? false;
     this.forceSurfaceDiscard = flags?.forceSurfaceDiscard ?? false;
     this.whiteOnWhiteReversal = flags?.whiteOnWhiteReversal ?? true;
     this.lighting = flags?.lighting ?? false;
@@ -262,16 +274,31 @@ export class ViewFlags {
    * @see [[copy]] to have `undefined` properties reset to their default values.
    */
   public override(overrides: Partial<ViewFlagsProperties>): ViewFlags {
-    // Create a copy of the input with all undefined ViewFlags properties removed.
-    // Note we use the keys of `ViewFlags.defaults` instead of those of the input to avoid processing additional unrelated properties that may be present on input.
-    overrides = { ...overrides };
-    for (const propName of Object.keys(ViewFlags.defaults)) {
+    // This method can get called very frequently when a RenderTimeline script is applied to the view. Often `overrides` will be an empty object.
+    // To optimize:
+    //  - Bail as quickly as possible if nothing is actually overridden, without allocating a new ViewFlags.
+    //  - Only make a copy of the input if at least one property is explicitly `undefined`.
+    let copied = false;
+    let anyOverridden = false;
+
+    for (const propName of Object.keys(overrides)) {
       const key = propName as keyof Partial<ViewFlagsProperties>;
-      if (undefined === overrides[key])
+      const overrideValue = overrides[key];
+      if (undefined === overrideValue) {
+        if (!copied) {
+          // Don't modify input...
+          overrides = { ...overrides };
+          copied = true;
+        }
+
+        // `undefined` means "retain existing value".
         delete overrides[key];
+      } else if (overrideValue !== this[key]) {
+        anyOverridden = true;
+      }
     }
 
-    return this.copy(overrides);
+    return anyOverridden ? this.copy(overrides) : this;
   }
 
   /** Produce a copy of these ViewFlags with a single boolean property changed.
@@ -362,6 +389,7 @@ export class ViewFlags {
     if (this.backgroundMap) out.backgroundMap = true;
     if (this.ambientOcclusion) out.ambientOcclusion = true;
     if (this.thematicDisplay) out.thematicDisplay = true;
+    if (this.wiremesh) out.wiremesh = true;
     if (this.forceSurfaceDiscard) out.forceSurfaceDiscard = true;
     if (!this.whiteOnWhiteReversal) out.noWhiteOnWhiteReversal = true;
 
@@ -397,6 +425,7 @@ export class ViewFlags {
       backgroundMap: this.backgroundMap,
       ambientOcclusion: this.ambientOcclusion,
       thematicDisplay: this.thematicDisplay,
+      wiremesh: this.wiremesh,
       forceSurfaceDiscard: this.forceSurfaceDiscard,
       noWhiteOnWhiteReversal: !this.whiteOnWhiteReversal,
     };
@@ -456,6 +485,7 @@ export class ViewFlags {
       backgroundMap: JsonUtils.asBool(json.backgroundMap),
       ambientOcclusion: JsonUtils.asBool(json.ambientOcclusion),
       thematicDisplay: JsonUtils.asBool(json.thematicDisplay),
+      wiremesh: JsonUtils.asBool(json.wiremesh),
       forceSurfaceDiscard: JsonUtils.asBool(json.forceSurfaceDiscard),
       whiteOnWhiteReversal: !JsonUtils.asBool(json.noWhiteOnWhiteReversal),
     });
@@ -487,6 +517,7 @@ export class ViewFlags {
       && this.backgroundMap === other.backgroundMap
       && this.ambientOcclusion === other.ambientOcclusion
       && this.thematicDisplay === other.thematicDisplay
+      && this.wiremesh === other.wiremesh
       && this.forceSurfaceDiscard === other.forceSurfaceDiscard
       && this.whiteOnWhiteReversal === other.whiteOnWhiteReversal;
   }

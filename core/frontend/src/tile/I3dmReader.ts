@@ -5,9 +5,9 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { ByteStream, Id64String, JsonUtils, utf8ToString } from "@bentley/bentleyjs-core";
-import { AxisOrder, Matrix3d, Point3d, Vector3d } from "@bentley/geometry-core";
-import { BatchType, ElementAlignedBox3d, Feature, FeatureTable, I3dmHeader, TileReadStatus } from "@bentley/imodeljs-common";
+import { ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
+import { AxisOrder, Matrix3d, Point3d, Vector3d } from "@itwin/core-geometry";
+import { BatchType, ElementAlignedBox3d, Feature, FeatureTable, I3dmHeader, TileReadStatus } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 import { InstancedGraphicParams } from "../render/InstancedGraphicParams";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
@@ -51,7 +51,7 @@ export class I3dmReader extends GltfReader {
   private _featureTable?: FeatureTable;
 
   public static create(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, is3d: boolean, range: ElementAlignedBox3d,
-    system: RenderSystem, yAxisUp: boolean, isLeaf: boolean, isCanceled?: ShouldAbortReadGltf, idMap?: BatchedTileIdMap): I3dmReader | undefined {
+    system: RenderSystem, yAxisUp: boolean, isLeaf: boolean, isCanceled?: ShouldAbortReadGltf, idMap?: BatchedTileIdMap, deduplicateVertices=false): I3dmReader | undefined {
     const header = new I3dmHeader(stream);
     if (!header.isValid)
       return undefined;
@@ -67,13 +67,13 @@ export class I3dmReader extends GltfReader {
 
     const featureBinary = new Uint8Array(stream.arrayBuffer, header.featureTableJsonPosition + header.featureTableJsonLength, header.featureTableBinaryLength);
     return new I3dmReader(featureBinary, JSON.parse(featureStr), header.batchTableJson, props, iModel, modelId, is3d, system,
-      range, isLeaf, isCanceled, idMap);
+      range, isLeaf, isCanceled, idMap, deduplicateVertices);
   }
 
   private constructor(private _featureBinary: Uint8Array, private _featureJson: any, private _batchTableJson: any, props: GltfReaderProps,
     iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem, private _range: ElementAlignedBox3d,
-    private _isLeaf: boolean, isCanceled?: ShouldAbortReadGltf, private _idMap?: BatchedTileIdMap) {
-    super(props, iModel, modelId, is3d, system, BatchType.Primary, isCanceled);
+    private _isLeaf: boolean, isCanceled?: ShouldAbortReadGltf, private _idMap?: BatchedTileIdMap, deduplicateVertices=false) {
+    super(props, iModel, modelId, is3d, system, BatchType.Primary, isCanceled, deduplicateVertices);
   }
 
   public async read(): Promise<GltfReaderResult> {

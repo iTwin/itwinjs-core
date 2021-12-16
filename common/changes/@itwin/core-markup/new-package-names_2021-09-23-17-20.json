@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-markup",
+      "comment": "rename to @itwin/core-markup",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-markup"
+}

@@ -1,0 +1,15 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/base/base";
+@import "~@itwin/core-react/lib/cjs/core-react/z-index";
+
+.uifw-centered-popup {
+  position: absolute;
+  top: 0;
+  left: 0;
+  @include uicore-z-index(dialog-popup);
+  @include uicore-full-height;
+  @include uicore-full-width;
+}

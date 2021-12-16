@@ -5,8 +5,8 @@
 
 import { expect } from "chai";
 import * as moq from "typemoq";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { KeySet } from "@bentley/presentation-common";
+import { IModelConnection } from "@itwin/core-frontend";
+import { KeySet } from "@itwin/presentation-common";
 import {
   ISelectionProvider, SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType, SelectionHandler, SelectionManager,
 } from "../../presentation-frontend";

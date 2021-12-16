@@ -7,7 +7,7 @@
  */
 
 /** Logger categories used by this package
- * @note All logger categories in this package start with the `imodeljs-backend` prefix.
+ * @note All logger categories in this package start with the `core-backend` prefix.
  * @see [Logger]($bentley)
  * @public
  */
@@ -15,15 +15,15 @@ export enum TransformerLoggerCategory {
   /** The logger category used by the [IModelExporter]($transformer) class.
    * @beta
    */
-  IModelExporter = "imodeljs-backend.IModelExporter",
+  IModelExporter = "core-backend.IModelExporter",
 
   /** The logger category used by the [IModelImporter]($transformer) class.
    * @beta
    */
-  IModelImporter = "imodeljs-backend.IModelImporter",
+  IModelImporter = "core-backend.IModelImporter",
 
   /** The logger category used by the [IModelTransformer]($transformer) class.
    * @beta
    */
-  IModelTransformer = "imodeljs-backend.IModelTransformer",
+  IModelTransformer = "core-backend.IModelTransformer",
 }

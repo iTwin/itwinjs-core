@@ -5,9 +5,9 @@
 
 import { expect } from "chai";
 import * as faker from "faker";
-import { GroupingNodeKey, LabelDefinition, Node } from "@bentley/presentation-common";
-import { createRandomECInstancesNode, createRandomGroupingNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { PageOptions } from "@bentley/ui-components";
+import { GroupingNodeKey, LabelDefinition, Node } from "@itwin/presentation-common";
+import { createRandomECInstancesNode, createRandomGroupingNodeKey } from "@itwin/presentation-common/lib/cjs/test";
+import { PageOptions } from "@itwin/components-react";
 import {
   createPartialTreeNodeItem, createTreeNodeItem, createTreeNodeItems, pageOptionsUiToPresentation, PRESENTATION_TREE_NODE_KEY,
 } from "../../presentation-components/tree/Utils";
@@ -57,7 +57,7 @@ describe("Utils", () => {
     it("assigns item id and label from loaded node", () => {
       const node = createPartialTreeNodeItem(
         {
-          key: { type: "", pathFromRoot: [] },
+          key: { type: "", version: 0, pathFromRoot: [] },
           label: LabelDefinition.fromLabelString("test"),
         },
         undefined,

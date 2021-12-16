@@ -8,12 +8,12 @@
 
 import * as React from "react";
 import { Subscription } from "rxjs/internal/Subscription";
-import { HierarchyUpdateRecord, PageOptions, UPDATE_FULL } from "@bentley/presentation-common";
-import { IModelHierarchyChangeEventArgs, Presentation } from "@bentley/presentation-frontend";
+import { HierarchyUpdateRecord, PageOptions, UPDATE_FULL } from "@itwin/presentation-common";
+import { IModelHierarchyChangeEventArgs, Presentation } from "@itwin/presentation-frontend";
 import {
   computeVisibleNodes, isTreeModelNode, isTreeModelNodePlaceholder, MutableTreeModel, MutableTreeModelNode, PagedTreeNodeLoader, RenderedItemsRange,
   TreeModelNode, TreeModelNodeInput, TreeModelSource, TreeNodeItem, usePagedTreeNodeLoader, VisibleTreeNodes,
-} from "@bentley/ui-components";
+} from "@itwin/components-react";
 import { RulesetRegistrationHelper } from "../../common/RulesetRegistrationHelper";
 import { PresentationTreeDataProvider, PresentationTreeDataProviderProps } from "../DataProvider";
 import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
@@ -37,12 +37,6 @@ export interface PresentationTreeNodeLoaderProps extends PresentationTreeDataPro
   pagingSize: number;
 
   /**
-   * Should node loader initiate loading of the whole hierarchy as soon as it's created.
-   * @alpha @deprecated Will be removed on 3.0.
-   */
-  preloadingEnabled?: boolean;
-
-  /**
    * Auto-update the hierarchy when ruleset, ruleset variables or data in the iModel changes.
    * @alpha
    */
@@ -59,7 +53,7 @@ export interface PresentationTreeNodeLoaderResult {
 
   /**
    * Callback for when rendered tree node item range changes. This property should be passed to
-   * [ControlledTree]($ui-components) when property `enableHierarchyAutoUpdate` is `true`.
+   * [ControlledTree]($components-react) when property `enableHierarchyAutoUpdate` is `true`.
    * @alpha
    */
   onItemsRendered: (items: RenderedItemsRange) => void;

@@ -4,7 +4,7 @@
       "keyin": "fdt webgl lose context"
     },
     "ToggleWiremesh": {
-      "keyin": "fdt toggle wiremesh"
+      "keyin": "fdt wiremesh"
     },
     "ToggleDPIForLOD": {
       "keyin": "fdt dpi lod"
@@ -441,6 +441,24 @@
       "Prompts": {
         "IdentifyMaskSubCategory": "Identify mask subCategory"
       }
+    },
+    "QueryScheduleScript": {
+      "keyin": "fdt query schedule script"
+    },
+    "ToggleTileTreeReferences": {
+      "keyin": "fdt toggle treerefs"
+    },
+   "WoWIgnoreBackground": {
+      "keyin": "fdt wow ignore background"
+    },
+    "SetSkySphere": {
+      "keyin": "fdt sky sphere"
+    },
+    "SetSkyCube": {
+      "keyin": "fdt sky cube"
+    },
+    "ChangeBackgroundColor": {
+      "keyin": "fdt bgcolor"
     }
   }
 }

@@ -8,7 +8,7 @@ import { FormatterSpec } from "../Formatter/FormatterSpec";
 import { Formatter } from "../Formatter/Formatter";
 import { BasicUnit } from "../Unit";
 import { TestUnitsProvider } from "./TestUtils/TestHelper";
-import { FormatTraits, FormatType } from "../imodeljs-quantity";
+import { FormatTraits, FormatType } from "../core-quantity";
 import { DecimalPrecision } from "../Formatter/FormatEnums";
 import { UnitProps } from "../Interfaces";
 
@@ -727,7 +727,6 @@ describe("Numeric Formats tests:", () => {
       label: "ft",
       phenomenon: "Units.LENGTH",
       isValid: true,
-      alternateLabels: [`'`, "feet", "foot"],
       system: "Units.USCUSTOM",
     };
 

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/rpcinterface-full-stack-tests",
+      "comment": "Added a test for `PresentationRpcInterface.getContentSources` RPC",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/rpcinterface-full-stack-tests",
+  "email": "35135765+grigasp@users.noreply.github.com"
+}

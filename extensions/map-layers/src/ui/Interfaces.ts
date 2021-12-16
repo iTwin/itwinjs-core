@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { MapSubLayerProps } from "@bentley/imodeljs-common";
-import { MapLayerImageryProvider } from "@bentley/imodeljs-frontend";
+import { MapSubLayerProps } from "@itwin/core-common";
+import { MapLayerImageryProvider } from "@itwin/core-frontend";
 
 export interface StyleMapLayerSettings {
   /** Name */
@@ -35,5 +35,4 @@ export interface MapLayerOptions {
   hideExternalMapLayers?: boolean;
   fetchPublicMapLayerSources?: boolean;
   mapTypeOptions?: MapTypesOptions;
-  showEsriOAuthSettings?: boolean;
 }

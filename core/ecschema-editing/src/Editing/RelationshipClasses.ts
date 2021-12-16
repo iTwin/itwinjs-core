@@ -9,7 +9,7 @@
 import {
   ECObjectsError, ECObjectsStatus, RelationshipClass, RelationshipClassProps, SchemaItemKey, SchemaItemType,
   SchemaKey, StrengthDirection,
-} from "@bentley/ecschema-metadata";
+} from "@itwin/ecschema-metadata";
 import { PropertyEditResults, SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { ECClasses } from "./ECClasses";
 import { MutableRelationshipClass } from "./Mutable/MutableRelationshipClass";
@@ -68,7 +68,7 @@ export class RelationshipClasses extends ECClasses {
   }
 
   public async createNavigationProperty(relationshipKey: SchemaItemKey, name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<PropertyEditResults> {
-    const relationshipClass = (await this._schemaEditor.schemaContext.getSchemaItem(relationshipKey)) as MutableRelationshipClass;
+    const relationshipClass = (await this._schemaEditor.schemaContext.getSchemaItem<MutableRelationshipClass>(relationshipKey));
 
     if (relationshipClass === undefined) throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Relationship Class ${relationshipKey.fullName} not found in schema context.`);
     if (relationshipClass.schemaItemType !== SchemaItemType.RelationshipClass) throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected ${relationshipKey.fullName} to be of type Relationship Class.`);

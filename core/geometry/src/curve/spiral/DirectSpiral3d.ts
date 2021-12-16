@@ -452,6 +452,17 @@ export class DirectSpiral3d extends TransitionSpiral3d {
       this._activeFractionInterval?.clone(),
       this._evaluator.clone());
   }
+
+  /** Return (if possible) a spiral which is a portion of this curve. */
+  public override clonePartialCurve(fractionA: number, fractionB: number): DirectSpiral3d | undefined {
+    const spiralB = this.clone();
+    const globalFractionA = this._activeFractionInterval.fractionToPoint(fractionA);
+    const globalFractionB  = this._activeFractionInterval.fractionToPoint(fractionB);
+    spiralB._activeFractionInterval.set(globalFractionA, globalFractionB);
+    spiralB.refreshComputedProperties();
+    return spiralB;
+  }
+
   /** apply `transform` to this spiral's local to world transform. */
   public tryTransformInPlace(transformA: Transform): boolean {
     const rigidData = this.applyRigidPartOfTransform(transformA);
@@ -470,9 +481,9 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     return result;
   }
   /** Return the spiral start point. */
-  public override startPoint(): Point3d { return this.activeStrokes.startPoint(); }
+  public override startPoint(): Point3d { return this.localToWorld.multiplyPoint3d(this.activeStrokes.startPoint()); }
   /** return the spiral end point. */
-  public override endPoint(): Point3d { return this.activeStrokes.endPoint(); }
+  public override endPoint(): Point3d { return this.localToWorld.multiplyPoint3d(this.activeStrokes.endPoint()); }
   /** test if the local to world transform places the spiral xy plane into `plane` */
   public isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean {
     return plane.isPointInPlane(this.localToWorld.origin as Point3d)
@@ -490,7 +501,7 @@ export class DirectSpiral3d extends TransitionSpiral3d {
   /** Return length of the spiral.
    * * True length is stored at back of uvParams . . .
    */
-  public override curveLength() { return this.quickLength(); }
+  //   use the generic integrator ... public override curveLength() { return this.quickLength(); }
   /** Test if `other` is an instance of `TransitionSpiral3d` */
   public isSameGeometryClass(other: any): boolean { return other instanceof DirectSpiral3d; }
   /** Add strokes from this spiral to `dest`.

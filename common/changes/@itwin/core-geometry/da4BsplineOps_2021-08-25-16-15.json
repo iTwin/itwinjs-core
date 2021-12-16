@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "InterpolationCurve3d support",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}

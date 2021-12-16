@@ -9,18 +9,18 @@
 /**
  * Sub-specification to include additional calculated properties into the content.
  *
- * @see [More details]($docs/learning/presentation/Content/CalculatedPropertiesSpecification.md)
+ * @see [More details]($docs/presentation/Content/CalculatedPropertiesSpecification.md)
  * @public
  */
 export interface CalculatedPropertiesSpecification {
-  /** Label of the calculated property. May be [localized]($docs/learning/presentation/Localization.md). */
+  /** Label of the calculated property. May be [localized]($docs/presentation/Advanced/Localization.md). */
   label: string;
 
   /**
-   * [ECExpression]($docs/learning/presentation/ECExpressions.md) used to calculate the value. The
+   * [ECExpression]($docs/presentation/Advanced/ECExpressions.md) used to calculate the value. The
    * following symbol sets are available:
-   * - [ECInstance ECExpression context]($docs/learning/presentation/ECExpressions.md#ecinstance)
-   * - [Ruleset variables]($docs/learning/presentation/ECExpressions.md#ruleset-variables-user-settings)
+   * - [ECInstance ECExpression context]($docs/presentation/Advanced/ECExpressions.md#ecinstance)
+   * - [Ruleset variables]($docs/presentation/Advanced/ECExpressions.md#ruleset-variables-user-settings)
    */
   value: string;
 

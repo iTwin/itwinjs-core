@@ -1,0 +1,21 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "../style/colors";
+
+// Sizes
+$uicore-icons-x-small: 12px;
+$uicore-icons-smaller: 14px;
+$uicore-icons-small: 16px;
+$uicore-icons-medium: 2 * $uicore-icons-small;
+$uicore-icons-large: 3 * $uicore-icons-small;
+$uicore-icons-x-large: 4 * $uicore-icons-small;
+
+// Colors
+$uicore-icons-light: $uicore-gray;
+$uicore-icons-dark: $uicore-gray-5;
+$uicore-icons-green: $uicore-green;
+$uicore-icons-red: $uicore-red;
+$uicore-icons-orange: $uicore-orange;
+$uicore-icons-blue: $uicore-teal-b;

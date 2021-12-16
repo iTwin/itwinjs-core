@@ -4,4 +4,3 @@ A [Code]($common) is an in-memory representation of a [BIS Code](../../bis/intro
 
 You can assign a Code to an an Element by setting the [Element.code]($backend) property and then inserting or updating the element.
 
-You must *reserve* a Code before assigning it. See [code reservation](./ConcurrencyControl.md#code-reservation) for details.

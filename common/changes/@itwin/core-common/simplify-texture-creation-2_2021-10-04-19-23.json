@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Deprecate RenderTexture.Params",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

@@ -58,7 +58,7 @@ export declare type Rule = CustomizationRule | NavigationRule | ContentRule | Co
 export interface ConditionContainer {
   /**
    * Defines a condition for the rule, which needs to be met in order to execute it. Condition
-   * is an [ECExpression]($docs/learning/presentation/ECExpressions.md), which can use
+   * is an [ECExpression]($docs/presentation/Advanced/ECExpressions.md), which can use
    * a limited set of symbols (depends on specific `ConditionContainer`).
    */
   condition?: string;

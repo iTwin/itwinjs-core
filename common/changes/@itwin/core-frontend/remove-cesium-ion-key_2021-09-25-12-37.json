@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Replace hard-coded Cesium ION key with TileAdminProps.cesiumIonKey to be supplied at IModelApp.startup.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

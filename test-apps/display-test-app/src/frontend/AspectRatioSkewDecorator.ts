@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "@bentley/bentleyjs-core";
-import { IModelJson, Path } from "@bentley/geometry-core";
-import { ColorDef, ViewDetails } from "@bentley/imodeljs-common";
-import { DecorateContext, GraphicType, IModelApp, IModelConnection, Tool } from "@bentley/imodeljs-frontend";
-import { parseArgs } from "@bentley/frontend-devtools";
+import { assert } from "@itwin/core-bentley";
+import { IModelJson, Path } from "@itwin/core-geometry";
+import { ColorDef, ViewDetails } from "@itwin/core-common";
+import { DecorateContext, GraphicType, IModelApp, IModelConnection, Tool } from "@itwin/core-frontend";
+import { parseArgs } from "@itwin/frontend-devtools";
 
 class AspectRatioSkewDecorator {
   private static _instance?: AspectRatioSkewDecorator;
@@ -47,8 +47,7 @@ class AspectRatioSkewDecorator {
     if (!context.viewport.view.isSpatialView())
       return;
 
-    const builder = context.createGraphicBuilder(GraphicType.WorldDecoration);
-    builder.applyAspectRatioSkew = this._applyAspectRatioSkew;
+    const builder = context.createGraphic({ type: GraphicType.WorldDecoration, applyAspectRatioSkew: this._applyAspectRatioSkew });
     builder.setSymbology(ColorDef.white, ColorDef.white, 3);
     builder.addPath(this._path);
     context.addDecorationFromBuilder(builder);
@@ -78,7 +77,7 @@ export class ToggleAspectRatioSkewDecoratorTool extends Tool {
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 1; }
 
-  public override run(): boolean {
+  public override async run(): Promise<boolean> {
     const iModel = IModelApp.viewManager.selectedView?.iModel;
     if (iModel)
       AspectRatioSkewDecorator.toggle(iModel, this._applyAspectRatioSkew);
@@ -86,7 +85,7 @@ export class ToggleAspectRatioSkewDecoratorTool extends Tool {
     return true;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const parsedArgs = parseArgs(args);
     this._applyAspectRatioSkew = parsedArgs.getBoolean("a") ?? true;
     return this.run();

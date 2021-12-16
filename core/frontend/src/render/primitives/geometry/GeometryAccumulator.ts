@@ -6,10 +6,9 @@
  * @module Rendering
  */
 
-import { assert } from "@bentley/bentleyjs-core";
-import { IndexedPolyface, Loop, Path, Point3d, Range3d, SolidPrimitive, Transform } from "@bentley/geometry-core";
-import { AnalysisStyleDisplacement } from "@bentley/imodeljs-common";
-import { IModelConnection } from "../../../IModelConnection";
+import { assert } from "@itwin/core-bentley";
+import { IndexedPolyface, Loop, Path, Point3d, Range3d, SolidPrimitive, Transform } from "@itwin/core-geometry";
+import { AnalysisStyleDisplacement } from "@itwin/core-common";
 import { GraphicBranch } from "../../GraphicBranch";
 import { RenderGraphic } from "../../RenderGraphic";
 import { RenderSystem } from "../../RenderSystem";
@@ -29,7 +28,6 @@ export class GeometryAccumulator {
 
   public readonly tileRange: Range3d;
   public readonly geometries: GeometryList = new GeometryList();
-  public readonly iModel: IModelConnection;
   public readonly system: RenderSystem;
 
   public get surfacesOnly(): boolean { return this._surfacesOnly; }
@@ -37,20 +35,18 @@ export class GeometryAccumulator {
   public get isEmpty(): boolean { return this.geometries.isEmpty; }
   public get haveTransform(): boolean { return !this._transform.isIdentity; }
 
-  public constructor(options: {
-    iModel: IModelConnection;
+  public constructor(options?: {
     system?: RenderSystem;
     surfacesOnly?: boolean;
     transform?: Transform;
     tileRange?: Range3d;
     analysisStyleDisplacement?: AnalysisStyleDisplacement;
   }) {
-    this.iModel = options.iModel;
-    this.system = options.system ?? IModelApp.renderSystem;
-    this.tileRange = options.tileRange ?? Range3d.createNull();
-    this._surfacesOnly = true === options.surfacesOnly;
-    this._transform = options.transform ?? Transform.createIdentity();
-    this._analysisDisplacement = options.analysisStyleDisplacement;
+    this.system = options?.system ?? IModelApp.renderSystem;
+    this.tileRange = options?.tileRange ?? Range3d.createNull();
+    this._surfacesOnly = true === options?.surfacesOnly;
+    this._transform = options?.transform ?? Transform.createIdentity();
+    this._analysisDisplacement = options?.analysisStyleDisplacement;
   }
 
   private getPrimitiveRange(geom: PrimitiveGeometryType): Range3d | undefined {
@@ -143,12 +139,6 @@ export class GeometryAccumulator {
   public addGeometry(geom: Geometry): boolean { this.geometries.push(geom); return true; }
 
   public clear(): void { this.geometries.clear(); }
-
-  public reset(transform: Transform = Transform.createIdentity(), surfacesOnly: boolean = false) {
-    this.clear();
-    this._transform = transform;
-    this._surfacesOnly = surfacesOnly;
-  }
 
   /**
    * Generates a MeshBuilderMap

@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@bentley/ui-core/lib/ui-core/index";
+@import "~@itwin/core-react/lib/cjs/core-react/index";
 @import "~@itwin/itwinui-css/scss/style/typography";
 
 .map-transparency-popup-panel {
@@ -45,6 +45,7 @@
       fill: $buic-foreground-primary-tone;
     }
   }
+
   &:focus {
     box-shadow: $uicore-button-focus-boxshadow;
     outline: none;

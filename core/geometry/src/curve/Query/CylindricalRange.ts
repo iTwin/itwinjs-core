@@ -110,7 +110,7 @@ export class CylindricalRangeQuery extends RecurseToCurvesGeometryHandler {
             axis.direction.crossProduct(defaultVectorFromAxis, vectorV);
           else
             axis.direction.crossProduct(vectorU, vectorV);
-          geometry.packedDerivatives!.getVector3dAtCheckedVectorIndex(i, vectorU); // reuse vector U as curve derivative
+          geometry.packedDerivatives.getVector3dAtCheckedVectorIndex(i, vectorU); // reuse vector U as curve derivative
           vectorU.crossProduct(vectorV, vectorV);  // reuse vector V as normal!
           vectorV.normalizeInPlace();
           normals.push(vectorV);

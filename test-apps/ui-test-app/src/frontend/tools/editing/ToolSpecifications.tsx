@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelApp } from "@bentley/imodeljs-frontend";
-import { ToolItemDef } from "@bentley/ui-framework";
+import { IModelApp } from "@itwin/core-frontend";
+import { ToolItemDef } from "@itwin/appui-react";
 import { PlaceBlockTool } from "./PlaceBlockTool";
-import { CreateArcTool, CreateLineStringTool, DeleteElementsTool, MoveElementsTool, RotateElementsTool } from "@bentley/imodeljs-editor-frontend";
+import { CreateArcTool, CreateLineStringTool, DeleteElementsTool, MoveElementsTool, RotateElementsTool } from "@itwin/editor-frontend";
 
 export class EditTools {
   public static get deleteElementTool() {
@@ -14,9 +14,7 @@ export class EditTools {
       iconSpec: DeleteElementsTool.iconSpec,
       label: DeleteElementsTool.flyover,
       tooltip: DeleteElementsTool.description,
-      execute: () => {
-        IModelApp.tools.run(DeleteElementsTool.toolId);
-      },
+      execute: async () => IModelApp.tools.run(DeleteElementsTool.toolId),
     });
   }
 
@@ -26,9 +24,7 @@ export class EditTools {
       iconSpec: MoveElementsTool.iconSpec,
       label: MoveElementsTool.flyover,
       tooltip: MoveElementsTool.description,
-      execute: () => {
-        IModelApp.tools.run(MoveElementsTool.toolId);
-      },
+      execute: async () => IModelApp.tools.run(MoveElementsTool.toolId),
     });
   }
 
@@ -38,9 +34,7 @@ export class EditTools {
       iconSpec: RotateElementsTool.iconSpec,
       label: RotateElementsTool.flyover,
       tooltip: RotateElementsTool.description,
-      execute: () => {
-        IModelApp.tools.run(RotateElementsTool.toolId);
-      },
+      execute: async () => IModelApp.tools.run(RotateElementsTool.toolId),
     });
   }
 
@@ -50,9 +44,8 @@ export class EditTools {
       iconSpec: CreateLineStringTool.iconSpec,
       label: CreateLineStringTool.flyover,
       tooltip: CreateLineStringTool.description,
-      execute: () => {
-        IModelApp.tools.run(CreateLineStringTool.toolId);
-      },
+      execute: async () => IModelApp.tools.run(CreateLineStringTool.toolId)
+      ,
     });
   }
 
@@ -62,9 +55,8 @@ export class EditTools {
       iconSpec: PlaceBlockTool.iconSpec,
       label: PlaceBlockTool.flyover,
       tooltip: PlaceBlockTool.description,
-      execute: async () => {
-        IModelApp.tools.run(PlaceBlockTool.toolId);
-      },
+      execute: async () => IModelApp.tools.run(PlaceBlockTool.toolId)
+      ,
     });
   }
 
@@ -74,9 +66,8 @@ export class EditTools {
       iconSpec: CreateArcTool.iconSpec,
       label: CreateArcTool.flyover,
       tooltip: CreateArcTool.description,
-      execute: async () => {
-        IModelApp.tools.run(CreateArcTool.toolId);
-      },
+      execute: async () => IModelApp.tools.run(CreateArcTool.toolId)
+      ,
     });
   }
 

@@ -1,14 +1,18 @@
 # start off ignoring everything
 *
 # then add back only the files we want
+!*.md
+
 !lib/**/*.d.ts
 !lib/**/*.d.ts.map
 !lib/**/*.js
 !lib/**/*.js.map
-!lib/assets/**/*
-!lib/public/**/*
+!lib/**/assets/**/*
+!lib/**/public/**/*
+
+
 !Ruleset.schema.json
-!*.md
+
 # then ignore some stuff again
-lib/test
-lib/public/locales/en-PSEUDO
+lib/**/test/**
+lib/**/public/locales/en-PSEUDO/**

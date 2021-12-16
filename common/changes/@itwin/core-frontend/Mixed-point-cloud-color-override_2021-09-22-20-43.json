@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Support color mixing when overriding point cloud color",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

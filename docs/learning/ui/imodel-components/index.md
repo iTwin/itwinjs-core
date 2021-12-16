@@ -1,6 +1,6 @@
-# The ui-imodel-components package
+# The imodel-components-react package
 
-The ui-imodel-components package contains React components that depend on the imodeljs-frontend, imodeljs-common or imodeljs-quantity packages.
+The imodel-components-react package contains React components that depend on the core-frontend, core-common or core-quantity packages.
 The components pertain to Color, Cube, LineWeight, Navigation Aids, Quantity Inputs, Timeline and Viewport.
 
 ## Topics

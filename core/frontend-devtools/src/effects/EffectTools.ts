@@ -6,10 +6,10 @@
  * @module Effects
  */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import {
   IModelApp, ScreenSpaceEffectBuilder, ScreenSpaceEffectSource, Tool,
-} from "@bentley/imodeljs-frontend";
+} from "@itwin/core-frontend";
 
 /** Adds a screen-space effect to the selected viewport.
  * @beta
@@ -26,7 +26,7 @@ export abstract class AddEffectTool extends Tool {
   /** Add uniforms, varyings, etc. */
   protected abstract defineEffect(builder: ScreenSpaceEffectBuilder): void;
 
-  public override run(): boolean {
+  public override async run(): Promise<boolean> {
     // Avoid conflicts with the names of other registered screen-space effects.
     const name = `fdt ${this.effectName}`;
     if (!AddEffectTool._registeredEffects.has(name)) {
@@ -60,7 +60,7 @@ export class ClearEffectsTool extends Tool {
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 0; }
 
-  public override run(): boolean {
+  public override async run(): Promise<boolean> {
     IModelApp.viewManager.selectedView?.removeScreenSpaceEffects();
     return true;
   }

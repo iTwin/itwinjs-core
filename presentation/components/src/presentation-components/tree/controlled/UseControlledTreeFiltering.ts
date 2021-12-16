@@ -7,14 +7,14 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { of } from "rxjs";
+import { Observable } from "rxjs/internal/Observable";
 import {
-  AbstractTreeNodeLoaderWithProvider, ActiveMatchInfo, HighlightableTreeProps, ITreeNodeLoaderWithProvider, LoadedNodeHierarchy, PagedTreeNodeLoader, TreeModelSource,
-  useDebouncedAsyncValue,
-} from "@bentley/ui-components";
+  AbstractTreeNodeLoaderWithProvider, ActiveMatchInfo, HighlightableTreeProps, ITreeNodeLoaderWithProvider, LoadedNodeHierarchy, PagedTreeNodeLoader,
+  TreeModelSource, useDebouncedAsyncValue,
+} from "@itwin/components-react";
 import { FilteredPresentationTreeDataProvider, IFilteredPresentationTreeDataProvider } from "../FilteredDataProvider";
 import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
-import { Observable } from "rxjs/internal/Observable";
-import { of } from "rxjs";
 
 const FILTERED_DATA_PAGE_SIZE = 20;
 
@@ -34,12 +34,6 @@ class FilteringInProgressNodeLoader extends AbstractTreeNodeLoaderWithProvider<I
 }
 
 /**
- * Parameters for [[useControlledTreeFiltering]] hook
- * @beta
- * @deprecated Use [[ControlledPresentationTreeFilteringProps]]
- */
-export type ControlledTreeFilteringProps = ControlledPresentationTreeFilteringProps;
-/**
  * Parameters for [[useControlledPresentationTreeFiltering]] hook
  * @public
  */
@@ -49,16 +43,6 @@ export interface ControlledPresentationTreeFilteringProps {
   activeMatchIndex?: number;
 }
 
-/**
- * A custom hook that creates filtered model source and node loader for supplied filter.
- * If filter string is not provided or filtering is still in progress it returns supplied
- * model source and node loader.
- *
- * @note It is required for the tree to use [[IPresentationTreeDataProvider]].
- * @beta
- * @deprecated Use [[useControlledPresentationTreeFiltering]]
- */
-export const useControlledTreeFiltering = useControlledPresentationTreeFiltering;
 /**
  * A custom hook that creates filtered model source and node loader for supplied filter.
  * If filter string is not provided or filtering is still in progress it returns supplied

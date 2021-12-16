@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Arc3d, Loop, Path, Point2d, Point3d, Polyface, SolidPrimitive } from "@bentley/geometry-core";
+import { Arc3d, Loop, Path, Point2d, Point3d, Polyface, SolidPrimitive } from "@itwin/core-geometry";
 import { GraphicBuilder, GraphicType } from "../../render/GraphicBuilder";
 import { GraphicPrimitive } from "../../render/GraphicPrimitive";
 
@@ -19,7 +19,7 @@ describe("GraphicPrimitive", () => {
 
     public constructor() {
       super({
-        viewport: {} as any,
+        computeChordTolerance: () => 1,
         type: GraphicType.Scene,
       });
     }

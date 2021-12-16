@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { WebGLContext } from "@bentley/webgl-compatibility";
+import { WebGLContext } from "@itwin/webgl-compatibility";
 import { AttributeMap } from "../AttributeMap";
 import { EVSMGeometry } from "../CachedGeometry";
 import { TextureUnit } from "../RenderFlags";

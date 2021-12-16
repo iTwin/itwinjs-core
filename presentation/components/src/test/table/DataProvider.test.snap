@@ -12,108 +12,12 @@ Array [
 ]
 `;
 
-exports[`TableDataProvider getColumns returns valid column descriptions 1`] = `
-Array [
-  Object {
-    "editable": false,
-    "filterable": false,
-    "key": "backing up",
-    "label": "vortals relationships payment",
-    "sortable": true,
-  },
-  Object {
-    "editable": false,
-    "filterable": false,
-    "key": "Tala",
-    "label": "Underpass Towels",
-    "sortable": true,
-  },
-  Object {
-    "editable": true,
-    "filterable": false,
-    "key": "program",
-    "label": "Surinam Dollar Creative Rubber",
-    "sortable": true,
-  },
-]
-`;
+exports[`TableDataProvider getColumns returns valid column descriptions 1`] = `Array []`;
 
 exports[`TableDataProvider getRow returns valid row item 1`] = `
 Object {
-  "cells": Array [
-    Object {
-      "key": "Home Loan Account",
-      "record": PropertyRecord {
-        "description": "Bike array Guatemala",
-        "isReadonly": true,
-        "property": Object {
-          "displayLabel": "Administrator",
-          "editor": Object {
-            "name": "Clothing",
-            "params": Array [],
-          },
-          "name": "Home Loan Account",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "float",
-        },
-        "value": Object {
-          "displayValue": "Bike array Guatemala",
-          "value": "Heights",
-          "valueFormat": 0,
-        },
-      },
-    },
-    Object {
-      "key": "Dynamic",
-      "record": PropertyRecord {
-        "description": "Unbranded Optimized",
-        "isReadonly": true,
-        "property": Object {
-          "displayLabel": "ADP neural-net",
-          "editor": Object {
-            "name": "seamless",
-            "params": Array [],
-          },
-          "name": "Dynamic",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "bit",
-        },
-        "value": Object {
-          "displayValue": "Unbranded Optimized",
-          "value": "Sleek",
-          "valueFormat": 0,
-        },
-      },
-    },
-    Object {
-      "key": "SAS",
-      "record": PropertyRecord {
-        "description": "system engine Indonesia",
-        "property": Object {
-          "displayLabel": "azure Licensed",
-          "editor": Object {
-            "name": "cyan",
-            "params": Array [],
-          },
-          "name": "SAS",
-          "renderer": Object {
-            "name": "custom_renderer",
-          },
-          "typename": "bigint",
-        },
-        "value": Object {
-          "displayValue": "system engine Indonesia",
-          "value": "Engineer",
-          "valueFormat": 0,
-        },
-      },
-    },
-  ],
-  "key": "{\\"className\\":\\"Ethiopian Birr\\",\\"id\\":\\"0xaee00000014f8f\\"}",
+  "cells": Array [],
+  "key": "{\\"className\\":\\"compress\\",\\"id\\":\\"0x60650000003e2c\\"}",
 }
 `;
 
@@ -129,13 +33,13 @@ Object {
           "typename": "string",
         },
         "value": Object {
-          "displayValue": "Berkshire alliance capacitor",
-          "value": "Berkshire alliance capacitor",
+          "displayValue": "Shoes Regional",
+          "value": "Shoes Regional",
           "valueFormat": 0,
         },
       },
     },
   ],
-  "key": "{\\"className\\":\\"envisioneer\\",\\"id\\":\\"0x2bb00000018315\\"}",
+  "key": "{\\"className\\":\\"Liaison\\",\\"id\\":\\"0x766f000000c697\\"}",
 }
 `;

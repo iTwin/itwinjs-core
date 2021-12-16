@@ -9,7 +9,7 @@ export * from "./AnalyticalRelationships";
 export * from "./AnalyticalSchema";
 
 /** @docs-package-description
- * The `@bentley/analytical-backend` package contains classes for working with analytical schemas on the backend.
+ * The `@itwin/analytical-backend` package contains classes for working with analytical schemas on the backend.
  */
 
 /** @docs-group-description Analytical

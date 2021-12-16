@@ -8,17 +8,17 @@ Graphics produced by a [GraphicBuilder]($frontend) can now produce edges for sur
 
 ### Solid primitives in decorations
 
-Decoration graphics can now be produced from [SolidPrimitive]($geometry-core)s - e.g., spheres, cones, slabs, swept surfaces, and so on - using [GraphicBuilder.addSolidPrimitive]($frontend).
+Decoration graphics can now be produced from [SolidPrimitive]($core-geometry)s - e.g., spheres, cones, slabs, swept surfaces, and so on - using [GraphicBuilder.addSolidPrimitive]($frontend).
 
 ## Presentation changes
 
-Added [RelatedPropertiesSpecificationNew.skipIfDuplicate]($presentation-common) attribute to allow specification to be overriden by specifications from higher priority content modifiers. Set this attribute to all related properties' specifications in the default BisCore ruleset.
+Added `RelatedPropertiesSpecificationNew.skipIfDuplicate` attribute to allow specification to be overriden by specifications from higher priority content modifiers. Set this attribute to all related properties' specifications in the default BisCore ruleset.
 
 ## Dictionary enhancements
 
-[Dictionary.keys]($bentleyjs-core) and [Dictionary.values]($bentleyjs-core) enable iteration of the dictionary's keys and values in the same manner as a standard Map.
+[Dictionary.keys]($core-bentley) and [Dictionary.values]($core-bentley) enable iteration of the dictionary's keys and values in the same manner as a standard Map.
 
-[Dictionary.findOrInsert]($bentleyjs-core) returns the existing value associated with a key, or - if none yet exists - inserts a new value with that key. It also returns a flag indicating whether or not a new value was inserted. This allows the following code that requires two lookups of the key:
+[Dictionary.findOrInsert]($core-bentley) returns the existing value associated with a key, or - if none yet exists - inserts a new value with that key. It also returns a flag indicating whether or not a new value was inserted. This allows the following code that requires two lookups of the key:
 
 ```ts
 let value = dictionary.get(key);
@@ -44,7 +44,7 @@ Much of the `iTwin.js` api that refers to changesets takes a `ChangesetId` as an
 
 ### Breaking change
 
- The return type of the methods [BriefcaseDb.pullAndMergeChanges]($backend) and [BriefcaseDb.pushChanges]($backend) was changed from a string `ChangesetId` to [ChangesetIndexAndId]($common).
+ The return type of the methods `BriefcaseDb.pullAndMergeChanges` and [BriefcaseDb.pushChanges]($backend) was changed from a string `ChangesetId` to [ChangesetIndexAndId]($common).
 
 ## FederationGuid Policy Change
 

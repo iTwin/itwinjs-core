@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { CanvasDecoration, DecorateContext, GraphicType, HitDetail, IModelApp, Tool } from "@bentley/imodeljs-frontend";
-import { AxisAlignedBox3d, GeometryStreamProps } from "@bentley/imodeljs-common";
-import { AngleSweep, Arc3d, Path, Range1d, Range3d } from "@bentley/geometry-core";
+import { CanvasDecoration, DecorateContext, GraphicType, HitDetail, IModelApp, Tool } from "@itwin/core-frontend";
+import { AxisAlignedBox3d, GeometryStreamProps } from "@itwin/core-common";
+import { AngleSweep, Arc3d, Path, Range1d, Range3d } from "@itwin/core-geometry";
 
 class PathCanvasDecoration implements CanvasDecoration {
   public drawDecoration(ctx: CanvasRenderingContext2D) {
@@ -73,7 +73,7 @@ export class PathDecorationTest {
 
 export class PathDecorationTestTool extends Tool {
   public static override toolId = "TogglePathDecoration";
-  public override run(_args: any[]): boolean {
+  public override async run(_args: any[]) {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== vp)
       PathDecorationTest.toggle(vp.view.iModel.projectExtents);

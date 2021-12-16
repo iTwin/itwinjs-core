@@ -1,0 +1,34 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "../../variables";
+
+.uifw-cursorpopup {
+  border: {
+    color: $uifw-popup-border-color;
+    radius: $uifw-popup-border-radius;
+    style: solid;
+    width: $uifw-popup-border-width;
+  }
+
+  background-color: rgba($buic-background-2-rgb, $uifw-popup-opacity);
+  position: fixed;
+  height: fit-content;
+  width: fit-content;
+  transition: opacity 500ms;
+
+  >.uifw-cursorpopup-title {
+    min-height: $uifw-popup-title-bar-min-height;
+    opacity: $uifw-popup-opacity;
+  }
+
+  >.uifw-cursorpopup-content {
+    padding: $uifw-popup-content-padding;
+  }
+
+  &.uifw-cursorpopup-fadeOut {
+    opacity: 0;
+  }
+
+}

@@ -6,7 +6,7 @@
  * @module Tools
  */
 
-import * as Fuse from "fuse.js";
+import Fuse from "fuse.js";
 
 /** @public */
 export class FuzzySearch<T> {

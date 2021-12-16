@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ImdlFlags } from "@bentley/imodeljs-common";
+import { ImdlFlags } from "@itwin/core-common";
 
 // Describes a single tile.
 export interface TileTestCase {

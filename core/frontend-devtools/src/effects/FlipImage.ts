@@ -6,7 +6,7 @@
  * @module Effects
  */
 
-import { ScreenSpaceEffectBuilder, Tool, UniformType, VaryingType } from "@bentley/imodeljs-frontend";
+import { ScreenSpaceEffectBuilder, Tool, UniformType, VaryingType } from "@itwin/core-frontend";
 import { parseArgs } from "../tools/parseArgs";
 import { AddEffectTool, refreshViewportsForEffect } from "./EffectTools";
 
@@ -90,7 +90,7 @@ export class FlipImageConfig extends Tool {
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 3; }
 
-  public override run(horizontal?: boolean, vertical?: boolean, color?: boolean): boolean {
+  public override async run(horizontal?: boolean, vertical?: boolean, color?: boolean): Promise<boolean> {
     flipHorizontal = !!horizontal;
     flipVertical = !!vertical;
     flipColor = !!color;
@@ -99,7 +99,7 @@ export class FlipImageConfig extends Tool {
     return true;
   }
 
-  public override parseAndRun(...input: string[]): boolean {
+  public override async parseAndRun(...input: string[]): Promise<boolean> {
     const args = parseArgs(input);
     return this.run(args.getBoolean("h"), args.getBoolean("v"), args.getBoolean("c"));
   }

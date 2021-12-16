@@ -5,11 +5,11 @@
   ],
   "include": [
     "src/**/*",
-    "lib/**/*"
+    "lib/cjs/**/*"
   ],
   "exclude": [
     "src/test/**/*",
-    "lib/test/**/*",
+    "lib/cjs/test/**/*",
     "lib/module/**/*",
     "**/*.d.ts",
     "**/*.d.tsx"
@@ -18,8 +18,8 @@
     ".ts",
     ".tsx"
   ],
-  "temp-dir": "./lib/test/coverage/.nyc_output",
-  "report-dir": "./lib/test/coverage",
+  "temp-dir": "./lib/cjs/test/coverage/.nyc_output",
+  "report-dir": "./lib/cjs/test/coverage",
   "reporter": [
     "text-summary",
     "lcov",

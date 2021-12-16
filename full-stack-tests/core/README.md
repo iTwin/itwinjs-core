@@ -3,7 +3,7 @@
 This package contains tests of standard iTwin.js RPC interfaces using a local client and server side.
 Every test in this directory should test frontend APIs with an actual backend.
 
-The tests run in both Electron and Chrome, using [Certa](https://www.npmjs.com/package/@bentley/certa), and should only include one test RPC interface.
+The tests run in both Electron and Chrome, using [Certa](https://www.npmjs.com/package/@itwin/certa), and should only include one test RPC interface.
 
 There are two types of tests;
 
@@ -29,7 +29,7 @@ To run the integration tests, there is an initial configuration step required to
     # Ensure the client is configured for  the redirect uri and scopes below.
     IMJS_OIDC_BROWSER_TEST_CLIENT_ID=
     IMJS_OIDC_BROWSER_TEST_REDIRECT_URI="http://localhost:3000/signin-callback"
-    IMJS_OIDC_BROWSER_TEST_SCOPES="openid email profile organization imodelhub context-registry-service:read-only product-settings-service"
+    IMJS_OIDC_BROWSER_TEST_SCOPES="openid email profile organization imodelhub context-registry-service:read-only"
     ```
 
 > Important: Every time the `.env` file, or environment variables, are changed it requires the tests be re-built using `npm run build`

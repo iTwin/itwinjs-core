@@ -6,13 +6,13 @@
  * @module Ids
  */
 
-/** A string containing a well-formed string representation of an [Id64]($bentleyjs-core).
+/** A string containing a well-formed string representation of an [Id64]($core-bentley).
  * See [Working with Ids]($docs/learning/common/Id64.md).
  * @public
  */
 export type Id64String = string;
 
-/** A string containing a well-formed string representation of a [Guid]($bentleyjs-core).
+/** A string containing a well-formed string representation of a [Guid]($core-bentley).
  * @public
  */
 export type GuidString = string;

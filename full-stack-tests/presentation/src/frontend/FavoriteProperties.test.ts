@@ -4,15 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import sinon from "sinon";
-import { IModelApp, IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
-import { Field, KeySet } from "@bentley/presentation-common";
-import { PresentationPropertyDataProvider } from "@bentley/presentation-components";
-import { FAVORITES_CATEGORY_NAME } from "@bentley/presentation-components/lib/presentation-components/favorite-properties/DataProvider";
-import { DEFAULT_PROPERTY_GRID_RULESET } from "@bentley/presentation-components/lib/presentation-components/propertygrid/DataProvider";
-import { FavoritePropertiesScope, Presentation } from "@bentley/presentation-frontend";
-import { SettingsResult, SettingsStatus } from "@bentley/product-settings-client";
-import { PropertyRecord } from "@bentley/ui-abstract";
-import { PropertyData } from "@bentley/ui-components";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { PropertyData } from "@itwin/components-react";
+import { IModelApp, IModelConnection, ITwinIdArg, PreferenceArg, PreferenceKeyArg, SnapshotConnection, TokenArg } from "@itwin/core-frontend";
+import { Field, KeySet } from "@itwin/presentation-common";
+import { DEFAULT_PROPERTY_GRID_RULESET, FAVORITES_CATEGORY_NAME, PresentationPropertyDataProvider } from "@itwin/presentation-components";
+import {
+  createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, FavoritePropertiesManager, FavoritePropertiesScope, Presentation,
+} from "@itwin/presentation-frontend";
 import { initialize, initializeWithClientServices, terminate } from "../IntegrationTests";
 
 describe("Favorite properties", () => {
@@ -37,6 +36,7 @@ describe("Favorite properties", () => {
 
   beforeEach(async () => {
     propertiesDataProvider = new PresentationPropertyDataProvider({ imodel, ruleset: DEFAULT_PROPERTY_GRID_RULESET });
+    propertiesDataProvider.isNestedPropertyCategoryGroupingEnabled = false;
     await Presentation.favoriteProperties.initializeConnection(imodel);
   });
 
@@ -55,7 +55,7 @@ describe("Favorite properties", () => {
       // note: Presentation is initialized without client services, so favorite properties are stored locally - clearing
       // them doesn't affect what's stored in user settings service
       await Presentation.favoriteProperties.clear(imodel, FavoritePropertiesScope.Global);
-      await Presentation.favoriteProperties.clear(imodel, FavoritePropertiesScope.Project);
+      await Presentation.favoriteProperties.clear(imodel, FavoritePropertiesScope.ITwin);
       await Presentation.favoriteProperties.clear(imodel, FavoritePropertiesScope.IModel);
     });
 
@@ -151,7 +151,7 @@ describe("Favorite properties", () => {
       // note: Presentation is initialized without client services, so favorite properties are stored locally - clearing
       // them doesn't affect what's stored in user settings service
       await Presentation.favoriteProperties.clear(imodel, FavoritePropertiesScope.Global);
-      await Presentation.favoriteProperties.clear(imodel, FavoritePropertiesScope.Project);
+      await Presentation.favoriteProperties.clear(imodel, FavoritePropertiesScope.ITwin);
       await Presentation.favoriteProperties.clear(imodel, FavoritePropertiesScope.IModel);
     });
 
@@ -261,22 +261,28 @@ describe("Favorite properties", () => {
 
   describe("#with-services", () => {
 
+    function setupFavoritesStorageWithSettingsService() {
+      Presentation.setFavoritePropertiesManager(new FavoritePropertiesManager({
+        storage: createFavoritePropertiesStorage(DefaultFavoritePropertiesStorageTypes.UserPreferencesStorage),
+      }));
+    }
+
     before(async () => {
       await imodel.close();
       await terminate();
       await initializeWithClientServices();
       await openIModel();
+      setupFavoritesStorageWithSettingsService();
+      await Presentation.favoriteProperties.initializeConnection(imodel);
     });
 
     it("favorite properties survive Presentation re-initialization", async () => {
       const storage = new Map<string, any>();
-      sinon.stub(IModelApp.settings, "saveUserSetting").callsFake(async (_, value, _settingNs, settingId) => {
-        storage.set(settingId, value);
-        return new SettingsResult(SettingsStatus.Success);
-      });
-      sinon.stub(IModelApp.settings, "getUserSetting").callsFake(async (_, _settingNs, settingId) => {
-        return new SettingsResult(SettingsStatus.Success, undefined, storage.get(settingId));
-      });
+      sinon.stub(IModelApp, "userPreferences").get(() => ({
+        get: async (arg: PreferenceKeyArg & ITwinIdArg & TokenArg) => storage.get(arg.key),
+        save: async (arg: PreferenceArg & ITwinIdArg & TokenArg) => storage.set(arg.key, arg.content),
+        delete: async (arg: PreferenceKeyArg & ITwinIdArg & TokenArg) => storage.delete(arg.key),
+      }));
 
       propertiesDataProvider.keys = new KeySet([{ className: "Generic:PhysicalObject", id: "0x74" }]);
       let propertyData = await propertiesDataProvider.getData();
@@ -298,7 +304,11 @@ describe("Favorite properties", () => {
       // refresh Presentation
       Presentation.terminate();
       await Presentation.initialize();
+      setupFavoritesStorageWithSettingsService();
+      await Presentation.favoriteProperties.initializeConnection(imodel);
+
       propertiesDataProvider = new PresentationPropertyDataProvider({ imodel, ruleset: DEFAULT_PROPERTY_GRID_RULESET });
+      propertiesDataProvider.isNestedPropertyCategoryGroupingEnabled = false;
       propertiesDataProvider.keys = new KeySet([{ className: "Generic:PhysicalObject", id: "0x74" }]);
 
       // verify the property is still in favorites group

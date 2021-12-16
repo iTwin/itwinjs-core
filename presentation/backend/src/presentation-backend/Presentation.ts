@@ -6,11 +6,12 @@
  * @module Core
  */
 
-import { ClientRequestContext, DisposeFunc, Logger } from "@bentley/bentleyjs-core";
-import { IModelHost } from "@bentley/imodeljs-backend";
-import { RpcManager } from "@bentley/imodeljs-common";
-import { PresentationError, PresentationRpcInterface, PresentationStatus } from "@bentley/presentation-common";
+import { IModelHost, IpcHost } from "@itwin/core-backend";
+import { DisposeFunc, Logger } from "@itwin/core-bentley";
+import { RpcManager } from "@itwin/core-common";
+import { PresentationError, PresentationRpcInterface, PresentationStatus } from "@itwin/presentation-common";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
+import { PresentationIpcHandler } from "./PresentationIpcHandler";
 import { PresentationManager, PresentationManagerProps } from "./PresentationManager";
 import { PresentationRpcImpl } from "./PresentationRpcImpl";
 import { TemporaryStorage } from "./TemporaryStorage";
@@ -18,9 +19,12 @@ import { TemporaryStorage } from "./TemporaryStorage";
 const defaultRequestTimeout: number = 90000;
 
 /**
- * @public @deprecated
+ * Props for initializing the [[Presentation]] library for using multiple [[PresentationManager]]
+ * instances, one for each frontend.
+ *
+ * @public
  */
-export interface PresentationPropsDeprecated extends PresentationManagerProps {
+export interface MultiManagerPresentationProps extends PresentationManagerProps {
   /**
    * Factory method for creating separate managers for each client
    * @internal
@@ -40,9 +44,12 @@ export interface PresentationPropsDeprecated extends PresentationManagerProps {
 }
 
 /**
+ * Props for initializing the [[Presentation]] library with ability to use a single
+ * [[PresentationManager]] instance for handling all requests.
+ *
  * @public
  */
-export interface PresentationPropsNew extends PresentationManagerProps {
+export interface SingleManagerPresentationProps extends PresentationManagerProps {
   /**
    * How much time should an unused client manager be stored in memory
    * before it's disposed.
@@ -51,7 +58,7 @@ export interface PresentationPropsNew extends PresentationManagerProps {
 
   /**
    * Specifies to use single manager for all clients.
-   * @internal
+   * @alpha
    */
   useSingleManager?: boolean;
 }
@@ -60,10 +67,9 @@ export interface PresentationPropsNew extends PresentationManagerProps {
  * Properties that can be used to configure [[Presentation]] API
  * @public
  */
-export type PresentationProps = PresentationPropsDeprecated | PresentationPropsNew; // eslint-disable-line deprecation/deprecation
+export type PresentationProps = MultiManagerPresentationProps | SingleManagerPresentationProps;
 
 interface ClientStoreItem {
-  context: ClientRequestContext;
   manager: PresentationManager;
 }
 
@@ -72,7 +78,7 @@ interface ClientStoreItem {
  * Basically what it does is:
  * - Register a RPC implementation
  * - Create a singleton [[PresentationManager]] instance
- * - Subscribe for [IModelHost.onBeforeShutdown]($imodeljs-backend) event and terminate
+ * - Subscribe for [IModelHost.onBeforeShutdown]($core-backend) event and terminate
  *   the presentation manager when that happens.
  *
  * @public
@@ -82,6 +88,7 @@ export class Presentation {
   private static _initProps: PresentationProps | undefined;
   private static _clientsStorage: TemporaryStorage<ClientStoreItem> | undefined;
   private static _requestTimeout: number | undefined;
+  private static _disposeIpcHandler: DisposeFunc | undefined;
   private static _shutdownListener: DisposeFunc | undefined;
   private static _manager: PresentationManager | undefined;
 
@@ -94,23 +101,16 @@ export class Presentation {
   /**
    * Initializes Presentation library for the backend.
    *
-   * Example:
-   * ``` ts
-   * [[include:Presentation.Backend.Initialization]]
-   * [[include:Presentation.Backend.Initialization2]]
-   * ```
+   * See [this]($docs/presentation/Setup/index.md#backend) for an example.
    *
-   * **Important:** The method should be called after a call to [IModelHost.startup]($imodeljs-backend)
+   * **Important:** The method should be called after a call to [IModelHost.startup]($core-backend)
    *
-   * @param props Optional properties for PresentationManager
+   * @param props Optional properties for [[PresentationManager]]
    */
   public static initialize(props?: PresentationProps): void {
-    try {
-      RpcManager.registerImpl(PresentationRpcInterface, PresentationRpcImpl);
-    } catch (_e) {
-      // note: RpcManager.registerImpl throws when called more than once with the same
-      // rpc interface. However, it doesn't provide any way to unregister a, interface so we end up
-      // using the one registered first. At least we can avoid an exception...
+    RpcManager.registerImpl(PresentationRpcInterface, PresentationRpcImpl);
+    if (IpcHost.isValid) {
+      this._disposeIpcHandler = PresentationIpcHandler.register();
     }
     this._initProps = props || {};
     this._shutdownListener = IModelHost.onBeforeShutdown.addListener(() => Presentation.terminate());
@@ -129,16 +129,19 @@ export class Presentation {
         // by default, manager is disposed after 1 hour of being unused
         valueLifetime: this._initProps.unusedClientLifetime ?? 60 * 60 * 1000,
         // add some logging
-        onCreated: /* istanbul ignore next */ (id: string) => Logger.logInfo(PresentationBackendLoggerCategory.PresentationManager, `Created a PresentationManager instance with ID: ${id}. Total instances: ${this._clientsStorage?.values.length}.`),
-        onDisposedSingle: /* istanbul ignore next */ (id: string) => Logger.logInfo(PresentationBackendLoggerCategory.PresentationManager, `Disposed PresentationManager instance with ID: ${id}. Total instances: ${this._clientsStorage?.values.length}.`),
-        onDisposedAll: /* istanbul ignore next */ () => Logger.logInfo(PresentationBackendLoggerCategory.PresentationManager, `Disposed all PresentationManager instances.`),
+        onCreated: /* istanbul ignore next */(id: string, value: ClientStoreItem, onValueUsed: () => void) => {
+          Logger.logInfo(PresentationBackendLoggerCategory.PresentationManager, `Created a PresentationManager instance with ID: ${id}. Total instances: ${this._clientsStorage?.values.length}.`);
+          value.manager.setOnManagerUsedHandler(onValueUsed);
+        },
+        onDisposedSingle: /* istanbul ignore next */(id: string) => Logger.logInfo(PresentationBackendLoggerCategory.PresentationManager, `Disposed PresentationManager instance with ID: ${id}. Total instances: ${this._clientsStorage?.values.length}.`),
+        onDisposedAll: /* istanbul ignore next */() => Logger.logInfo(PresentationBackendLoggerCategory.PresentationManager, `Disposed all PresentationManager instances.`),
       });
     }
   }
 
   /**
    * Terminates Presentation. Consumers don't need to call this as it's automatically
-   * called on [IModelHost.onBeforeShutdown]($imodeljs-backend) event.
+   * called on [IModelHost.onBeforeShutdown]($core-backend) event.
    */
   public static terminate(): void {
     if (this._clientsStorage) {
@@ -153,6 +156,10 @@ export class Presentation {
       this._manager.dispose();
       this._manager = undefined;
     }
+    RpcManager.unregisterImpl(PresentationRpcInterface);
+    if (this._disposeIpcHandler) {
+      this._disposeIpcHandler();
+    }
     this._initProps = undefined;
     if (this._requestTimeout)
       this._requestTimeout = undefined;
@@ -164,11 +171,10 @@ export class Presentation {
       manager = Presentation._initProps.clientManagerFactory(clientId, Presentation._initProps);
     else
       manager = new PresentationManager(Presentation._initProps);
-    return { manager, context: ClientRequestContext.current };
+    return { manager };
   }
 
   private static disposeClientManager(storeItem: ClientStoreItem) {
-    storeItem.context.enter();
     storeItem.manager.dispose();
   }
 
@@ -196,6 +202,6 @@ export class Presentation {
   }
 }
 
-function isSingleManagerProps(props: PresentationProps): props is PresentationPropsNew {
-  return !!(props as PresentationPropsNew).useSingleManager;
+function isSingleManagerProps(props: PresentationProps): props is SingleManagerPresentationProps {
+  return !!(props as SingleManagerPresentationProps).useSingleManager;
 }

@@ -6,7 +6,7 @@
  * @module Metadata
  */
 
-import { assert } from "@bentley/bentleyjs-core";
+import { assert } from "@itwin/core-bentley";
 import { ECObjectsError, ECObjectsStatus } from "./Exception";
 
 const validECNameRegex = /^([a-zA-Z_]+[a-zA-Z0-9_]*)$/i;

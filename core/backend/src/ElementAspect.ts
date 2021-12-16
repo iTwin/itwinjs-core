@@ -6,11 +6,11 @@
  * @module ElementAspects
  */
 
-import { ChannelRootAspectProps, ElementAspectProps, ExternalSourceAspectProps, RelatedElement } from "@bentley/imodeljs-common";
+import { ChannelRootAspectProps, ElementAspectProps, ExternalSourceAspectProps, RelatedElement } from "@itwin/core-common";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { ECSqlStatement } from "./ECSqlStatement";
-import { DbResult, Id64String } from "@bentley/bentleyjs-core";
+import { DbResult, Id64String } from "@itwin/core-bentley";
 
 /** Argument for the `ElementAspect.onXxx` static methods
  * @beta
@@ -47,7 +47,7 @@ export class ElementAspect extends Entity implements ElementAspectProps {
   /** @internal */
   constructor(props: ElementAspectProps, iModel: IModelDb) {
     super(props, iModel);
-    this.element = RelatedElement.fromJSON(props.element)!;
+    this.element = RelatedElement.fromJSON(props.element)!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
   }
 
   /** @internal */
@@ -177,7 +177,7 @@ export class ExternalSourceAspect extends ElementMultiAspect implements External
   /** @internal */
   constructor(props: ExternalSourceAspectProps, iModel: IModelDb) {
     super(props, iModel);
-    this.scope = RelatedElement.fromJSON(props.scope)!;
+    this.scope = RelatedElement.fromJSON(props.scope)!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
     this.source = RelatedElement.fromJSON(props.source);
     this.identifier = props.identifier;
     this.kind = props.kind;

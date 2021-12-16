@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Simplify RenderTexture creation APIs.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

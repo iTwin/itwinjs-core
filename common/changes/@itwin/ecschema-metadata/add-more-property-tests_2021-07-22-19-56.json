@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/ecschema-metadata",
+      "comment": "Added delete class from schema and delete property from class as well as corresponding tests",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/ecschema-metadata",
+  "email": "Ivan.Kok@itwin.com"
+}

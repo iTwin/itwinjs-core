@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-bentley",
+      "comment": "Support for Node 16",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-bentley"
+}

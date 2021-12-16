@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { RegisteredRuleset, Ruleset } from "@bentley/presentation-common";
+import { RegisteredRuleset, Ruleset } from "@itwin/presentation-common";
 import { NativePlatformDefinition } from "./NativePlatform";
 
 /**

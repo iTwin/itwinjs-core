@@ -3,16 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { CompressedId64Set, Guid, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Box, Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { CompressedId64Set, Guid, Id64, Id64String } from "@itwin/core-bentley";
+import { Box, Point3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   Code, GeometryStreamBuilder, IModel, PhysicalElementProps, RenderSchedule, RenderTimelineProps,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import {
   GenericSchema, PhysicalModel, PhysicalObject, PhysicalPartition, RenderTimeline, SpatialCategory, StandaloneDb, SubjectOwnsPartitionElements,
-} from "@bentley/imodeljs-backend";
-import { IModelTransformer } from "../../imodeljs-transformer";
-import { IModelTestUtils } from "@bentley/imodeljs-backend/lib/test/IModelTestUtils";
+} from "@itwin/core-backend";
+import { IModelTestUtils } from "@itwin/core-backend/lib/cjs/test";
+import { IModelTransformer } from "../../core-transformer";
 
 describe("RenderTimeline Remap", () => {
   before(() => {

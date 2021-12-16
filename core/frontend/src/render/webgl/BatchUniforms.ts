@@ -135,6 +135,22 @@ export class BatchUniforms {
     }
   }
 
+  public bindUniformTransparencyOverride(uniform: UniformHandle): void {
+    if (sync(this, uniform))
+      return;
+
+    if (undefined !== this._overrides) {
+      const uo = this._overrides.getUniformOverrides();
+      if (uo[0] & OvrFlags.Alpha) {
+        uniform.setUniform1f(uo[7]/255.0);
+      } else {
+        uniform.setUniform1f(-1.0);
+      }
+    } else {
+      uniform.setUniform1f(-1.0);
+    }
+  }
+
   public bindUniformNonLocatable(uniform: UniformHandle, ignoreNonLocatable: boolean): void {
     if (sync(this, uniform))
       return;

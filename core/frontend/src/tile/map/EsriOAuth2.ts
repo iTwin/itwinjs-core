@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, BeEvent } from "@bentley/bentleyjs-core";
-import { ArcGisOAuth2Token, ArcGisTokenManager, ArcGisUtilities, EsriSettingsService, MapLayerTokenEndpoint} from "../internal";
+import { ArcGisOAuth2Token, ArcGisTokenManager, ArcGisUtilities, MapLayerTokenEndpoint} from "../internal";
 
 /** @internal */
 export enum EsriOAuth2EndpointType {Authorize,Token}
@@ -75,7 +75,6 @@ export class EsriOAuth2 {
   private static _redirectUri: string;
   private static _expiration: number|undefined;
   private static _clientIds: EsriOAuthClientIds|undefined;
-  private static _retrievedFromSettingsService = false;
 
   /** Initialize ESRI OAuth2
    * @param redirectUri URI where the user is going redirected with the token
@@ -116,30 +115,6 @@ export class EsriOAuth2 {
     };
 
     return true;
-  }
-
-  // Load settings from setting service.
-  // This step is made outside  Initialize() because we delay settings load to avoid sign-in issues.
-  // We don't do any setting merging, so if you set settings by API, it will disable setting service R/W.
-  public static async loadFromSettingsService() {
-    if (this._clientIds === undefined  && !this._retrievedFromSettingsService) {
-      try {
-        const fetchClientIds = await EsriSettingsService.getClientIds();
-        if (fetchClientIds) {
-          EsriOAuth2._clientIds = fetchClientIds;
-        }
-        this._retrievedFromSettingsService = true;
-      } catch {}
-      this._retrievedFromSettingsService = true;
-    }
-  }
-
-  // Store settings in settings service, only if settings were initially loaded from setting service too.
-  public static async saveInSettingsService(): Promise<boolean> {
-    if (EsriOAuth2._clientIds !== undefined && this._retrievedFromSettingsService) {
-      return EsriSettingsService.storeClientIds(EsriOAuth2._clientIds);
-    }
-    return false;
   }
 
   /** @internal */

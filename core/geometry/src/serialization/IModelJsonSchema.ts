@@ -330,29 +330,13 @@ export namespace IModelJson {
     /** Radius at end  (0 for straight line) */
     endRadius?: number;
     /** length along curve.
-     * REMARK: "length" is preferred.  "curveLength" is deprecated.
      */
     length?: number;
-    /**
-     * Deprecated synonym for `length` property.
-     * @deprecated
-     */
-    curveLength?: number;
     /** Fractional part of active interval.
      * * There has been name confusion between native and typescript .... accept any variant ..
      * * native (July 2020) emits activeFractionInterval
      */
     activeFractionInterval?: number[];
-    /**
-     * DEPRECATED -- use activeFractionInterval.   Reader looks for both, writer produces activeFractionInterval
-     * @deprecated
-     */
-    fractionInterval?: number[];
-    /**
-     * DEPRECATED -- use activeFractionInterval.   Reader looks for both, writer produces activeFractionInterval
-     * @deprecated
-     */
-    intervalFractions?: [number, number];
     /** TransitionSpiral type.
      * * expected names are given in `IntegratedSpiralTypeName` and `DirectSpiralTypeName`
      */
@@ -1907,7 +1891,7 @@ export namespace IModelJson {
 
     /** Convert strongly typed instance to tagged json */
     public handleAkimaCurve3d(curve: AkimaCurve3d): any {
-      return { akimaCurve: curve.cloneProps()};
+      return { akimaCurve: curve.cloneProps() };
     }
 
     /** Convert strongly typed instance to tagged json */

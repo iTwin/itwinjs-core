@@ -5,24 +5,15 @@
 
 import { expect } from "chai";
 
-import { EsriOAuth2EndpointType } from "../../../tile/map/EsriOAuth2";
 import * as sinon from "sinon";
-import { ArcGisUtilities, EsriSettingsService } from "../../../tile/internal";
+import { ArcGisUtilities, EsriOAuth2, EsriOAuth2EndpointType} from "../../../tile/internal";
 
 describe("ArcGisUtilities tests", () => {
   const sandbox = sinon.createSandbox();
 
   beforeEach(async () => {
-
-    // Fake the setting service
-    sandbox.stub(EsriSettingsService, "getClientIds").callsFake(async function () {
-      return Promise.resolve( {
-        arcgisOnlineClientId: "dummy_clientId1",
-        enterpriseClientIds:[
-          {serviceBaseUrl:"https://dtlgeoarcgis.adtl.com", clientId:"dummy_clientId2"},
-        ],
-      });
-    });
+    EsriOAuth2.arcGisOnlineClientId = "dummy_clientId1";
+    EsriOAuth2.setEnterpriseClientId("https://dtlgeoarcgis.adtl.com", "dummy_clientId2");
   });
 
   afterEach(async () => {

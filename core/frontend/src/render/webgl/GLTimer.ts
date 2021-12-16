@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BentleyStatus } from "@bentley/bentleyjs-core";
-import { IModelError } from "@bentley/imodeljs-common";
+import { BentleyStatus } from "@itwin/core-bentley";
+import { IModelError } from "@itwin/core-common";
 import { GLTimerResult, GLTimerResultCallback } from "../RenderSystem";
 import { System } from "./System";
 

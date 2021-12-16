@@ -5,8 +5,8 @@
 
 import * as fs from "fs-extra";
 import * as path from "path";
-import { CloudStorageService, CloudStorageUploadOptions } from "@bentley/imodeljs-backend";
-import { CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageProvider } from "@bentley/imodeljs-common";
+import { CloudStorageService, CloudStorageUploadOptions } from "@itwin/core-backend";
+import { CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageProvider } from "@itwin/core-common";
 
 /** Simulates cloud storage tile cache, caching tiles in ./lib/backend/tiles/ */
 export class FakeTileCacheService extends CloudStorageService {

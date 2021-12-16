@@ -2,30 +2,26 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/* eslint-disable @typescript-eslint/promise-function-async */
-
-import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
+import "@itwin/presentation-frontend/lib/cjs/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import * as moq from "typemoq";
+import { IModelConnection } from "@itwin/core-frontend";
 import {
-  Content, ContentDescriptorRequestOptions, Descriptor, DescriptorOverrides, ExtendedContentRequestOptions, Field, FIELD_NAMES_SEPARATOR, Item,
-  KeySet, NestedContentField, Paged, RegisteredRuleset, SelectionInfo,
-} from "@bentley/presentation-common";
-import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { PromiseContainer, ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
+  Content, ContentDescriptorRequestOptions, ContentRequestOptions, Descriptor, FIELD_NAMES_SEPARATOR, KeySet, Paged, RegisteredRuleset, SelectionInfo,
+} from "@itwin/presentation-common";
 import {
-  createRandomCategory, createRandomContent, createRandomDescriptor, createRandomECClassInfo, createRandomECInstanceKey, createRandomPrimitiveField,
-  createRandomPrimitiveTypeDescription, createRandomPropertiesField, createRandomRelationshipPath, createRandomRuleset,
-} from "@bentley/presentation-common/lib/test/_helpers/random";
-import { Presentation, PresentationManager, RulesetManager } from "@bentley/presentation-frontend";
-import { PrimitiveValue, PropertyDescription, PropertyRecord } from "@bentley/ui-abstract";
+  createRandomECInstanceKey, createRandomRuleset, createTestContentDescriptor, createTestContentItem, createTestNestedContentField, createTestPropertiesContentField,
+  createTestPropertyInfo, createTestSimpleContentField, PromiseContainer, ResolvablePromise,
+} from "@itwin/presentation-common/lib/cjs/test";
+import { Presentation, PresentationManager, RulesetManager } from "@itwin/presentation-frontend";
+import { PrimitiveValue, PropertyDescription, PropertyRecord } from "@itwin/appui-abstract";
 import { CacheInvalidationProps, ContentDataProvider, ContentDataProviderProps } from "../../presentation-components/common/ContentDataProvider";
 import { mockPresentationManager } from "../_helpers/UiComponents";
 
 /**
- * The Provider class is used to make protected ContentDataProvider
+ * The Provider class is used to make protected [[ContentDataProvider]]
  * function public so the tests can call and spy on them.
  */
 class Provider extends ContentDataProvider {
@@ -33,12 +29,8 @@ class Provider extends ContentDataProvider {
     super(props);
   }
   public override invalidateCache(props: CacheInvalidationProps) { super.invalidateCache(props); }
-  public override configureContentDescriptor(descriptor: Readonly<Descriptor>) { return super.configureContentDescriptor(descriptor); } // eslint-disable-line deprecation/deprecation
-  public override shouldExcludeFromDescriptor(field: Field) { return super.shouldExcludeFromDescriptor(field); } // eslint-disable-line deprecation/deprecation
-  public override shouldConfigureContentDescriptor() { return super.shouldConfigureContentDescriptor(); } // eslint-disable-line deprecation/deprecation
   public override shouldRequestContentForEmptyKeyset() { return super.shouldRequestContentForEmptyKeyset(); }
-  public override getDescriptorOverrides() { return super.getDescriptorOverrides(); }
-  public override isFieldHidden(field: Field) { return super.isFieldHidden(field); } // eslint-disable-line deprecation/deprecation
+  public override async getDescriptorOverrides() { return super.getDescriptorOverrides(); }
 }
 
 describe("ContentDataProvider", () => {
@@ -228,18 +220,6 @@ describe("ContentDataProvider", () => {
 
   });
 
-  describe("configureContentDescriptor", () => {
-
-    it("excludes fields from result descriptor", () => {
-      const source = createRandomDescriptor();
-      provider.shouldExcludeFromDescriptor = () => true;
-      const result = provider.configureContentDescriptor(source); // eslint-disable-line deprecation/deprecation
-      expect(source.fields.length).to.be.greaterThan(0);
-      expect(result.fields.length).to.eq(0);
-    });
-
-  });
-
   describe("getContentDescriptor", () => {
 
     const selection: SelectionInfo = { providerName: "test" };
@@ -249,9 +229,9 @@ describe("ContentDataProvider", () => {
     });
 
     it("requests presentation manager for descriptor and returns its copy", async () => {
-      const result = createRandomDescriptor(displayType);
+      const result = createTestContentDescriptor({ displayType, fields: [] });
       presentationManagerMock
-        .setup((x) => x.getContentDescriptor(moq.It.isObjectWith<ContentDescriptorRequestOptions<IModelConnection, KeySet>>({ imodel: imodelMock.object, rulesetOrId: rulesetId, displayType, selection })))
+        .setup(async (x) => x.getContentDescriptor(moq.It.isObjectWith<ContentDescriptorRequestOptions<IModelConnection, KeySet>>({ imodel: imodelMock.object, rulesetOrId: rulesetId, displayType, selection })))
         .returns(async () => result)
         .verifiable();
       provider.selectionInfo = selection;
@@ -265,7 +245,7 @@ describe("ContentDataProvider", () => {
       provider.keys = new KeySet();
       provider.shouldRequestContentForEmptyKeyset = () => true;
       presentationManagerMock
-        .setup((x) => x.getContentDescriptor(moq.It.isAny()))
+        .setup(async (x) => x.getContentDescriptor(moq.It.isAny()))
         .returns(async () => undefined)
         .verifiable();
       const descriptor = await provider.getContentDescriptor();
@@ -276,7 +256,7 @@ describe("ContentDataProvider", () => {
     it("doesn't request presentation manager for descriptor when keyset is empty and `shouldRequestContentForEmptyKeyset()` returns `false`", async () => {
       provider.keys = new KeySet();
       presentationManagerMock
-        .setup((x) => x.getContentDescriptor(moq.It.isAny()))
+        .setup(async (x) => x.getContentDescriptor(moq.It.isAny()))
         .returns(async () => undefined)
         .verifiable(moq.Times.never());
       const descriptor = await provider.getContentDescriptor();
@@ -285,28 +265,19 @@ describe("ContentDataProvider", () => {
     });
 
     it("handles undefined descriptor returned by presentation manager", async () => {
-      presentationManagerMock.setup((x) => x.getContentDescriptor(moq.It.isAny()))
+      presentationManagerMock.setup(async (x) => x.getContentDescriptor(moq.It.isAny()))
         .returns(async () => undefined);
       const descriptor = await provider.getContentDescriptor();
       expect(descriptor).to.be.undefined;
     });
 
-    it("configures copy of descriptor returned by presentation manager", async () => {
-      const configureSpy = sinon.spy(provider, "configureContentDescriptor");
-      const result = createRandomDescriptor(displayType);
-      presentationManagerMock.setup((x) => x.getContentDescriptor(moq.It.isAny()))
-        .returns(async () => result);
-      await provider.getContentDescriptor();
-      expect(configureSpy).to.be.calledOnce;
-    });
-
     it("memoizes result", async () => {
       const resultPromiseContainer = new PromiseContainer<Descriptor>();
-      presentationManagerMock.setup((x) => x.getContentDescriptor(moq.It.isAny()))
+      presentationManagerMock.setup(async (x) => x.getContentDescriptor(moq.It.isAny()))
         .returns(async () => resultPromiseContainer.promise)
         .verifiable(moq.Times.once());
       const requests = [provider.getContentDescriptor(), provider.getContentDescriptor()];
-      const result = createRandomDescriptor();
+      const result = createTestContentDescriptor({ fields: [] });
       resultPromiseContainer.resolve(result);
       const descriptors = await Promise.all(requests);
       descriptors.forEach((descriptor) => expect(descriptor).to.deep.eq(result));
@@ -322,10 +293,7 @@ describe("ContentDataProvider", () => {
     });
 
     it("returns 0 when manager returns undefined descriptor", async () => {
-      presentationManagerMock.setup((x) => x.getContentDescriptor(moq.It.isAny()))
-        .returns(async () => undefined)
-        .verifiable();
-      presentationManagerMock.setup((x) => x.getContentSetSize(moq.It.isAny()))
+      presentationManagerMock.setup(async (x) => x.getContentSetSize(moq.It.isAny()))
         .verifiable(moq.Times.never());
       const size = await provider.getContentSetSize();
       presentationManagerMock.verifyAll();
@@ -334,14 +302,11 @@ describe("ContentDataProvider", () => {
 
     it("requests presentation manager for size", async () => {
       const result = new PromiseContainer<{ content: Content, size: number }>();
-      presentationManagerMock.setup((x) => x.getContentDescriptor(moq.It.isAny()))
-        .returns(async () => createRandomDescriptor())
-        .verifiable();
-      presentationManagerMock.setup((x) => x.getContentAndSize(moq.It.isObjectWith<Paged<ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet>>>({ paging: { start: 0, size: 10 } })))
+      presentationManagerMock.setup(async (x) => x.getContentAndSize(moq.It.isObjectWith<Paged<ContentRequestOptions<IModelConnection, Descriptor, KeySet>>>({ paging: { start: 0, size: 10 } })))
         .returns(async () => result.promise)
         .verifiable();
       provider.pagingSize = 10;
-      const contentAndContentSize = { content: createRandomContent(), size: faker.random.number() };
+      const contentAndContentSize = { content: new Content(createTestContentDescriptor({ fields: [] }), []), size: faker.random.number() };
       result.resolve(contentAndContentSize);
       const size = await provider.getContentSetSize();
       expect(size).to.eq(contentAndContentSize.size);
@@ -350,15 +315,12 @@ describe("ContentDataProvider", () => {
 
     it("memoizes result", async () => {
       const resultPromiseContainer = new PromiseContainer<{ content: Content, size: number }>();
-      presentationManagerMock.setup((x) => x.getContentDescriptor(moq.It.isAny()))
-        .returns(async () => createRandomDescriptor())
-        .verifiable();
-      presentationManagerMock.setup((x) => x.getContentAndSize(moq.It.isObjectWith<Paged<ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet>>>({ paging: { start: 0, size: 10 } })))
+      presentationManagerMock.setup(async (x) => x.getContentAndSize(moq.It.isObjectWith<Paged<ContentRequestOptions<IModelConnection, Descriptor, KeySet>>>({ paging: { start: 0, size: 10 } })))
         .returns(async () => resultPromiseContainer.promise)
         .verifiable(moq.Times.once());
       provider.pagingSize = 10;
       const requests = [provider.getContentSetSize(), provider.getContentSetSize()];
-      const result = { content: createRandomContent(), size: faker.random.number() };
+      const result = { content: new Content(createTestContentDescriptor({ fields: [] }), []), size: faker.random.number() };
       resultPromiseContainer.resolve(result);
       const sizes = await Promise.all(requests);
       sizes.forEach((size) => expect(size).to.eq(result.size));
@@ -369,15 +331,12 @@ describe("ContentDataProvider", () => {
       const resultPromiseContainer = new PromiseContainer<{ content: Content, size: number }>();
       const pagingSize = 20;
 
-      presentationManagerMock.setup((x) => x.getContentDescriptor(moq.It.isAny()))
-        .returns(async () => createRandomDescriptor())
-        .verifiable();
-      presentationManagerMock.setup((x) => x.getContentAndSize(moq.It.isObjectWith<Paged<ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet>>>({ paging: { start: 0, size: pagingSize } })))
+      presentationManagerMock.setup(async (x) => x.getContentAndSize(moq.It.isObjectWith<Paged<ContentRequestOptions<IModelConnection, Descriptor, KeySet>>>({ paging: { start: 0, size: pagingSize } })))
         .returns(async () => resultPromiseContainer.promise)
         .verifiable(moq.Times.once());
 
       provider.pagingSize = pagingSize;
-      const result = { content: createRandomContent(), size: faker.random.number() };
+      const result = { content: new Content(createTestContentDescriptor({ fields: [] }), []), size: faker.random.number() };
       resultPromiseContainer.resolve(result);
       const size = await provider.getContentSetSize();
       expect(size).to.eq(result.size);
@@ -385,38 +344,18 @@ describe("ContentDataProvider", () => {
     });
 
     it("returns content size equal to content set size when page options are undefined", async () => {
-      const descriptor = createRandomDescriptor();
-      const content = new Content(descriptor, [new Item([], "1", "", undefined, {}, {}, [])]);
-      presentationManagerMock.setup((x) => x.getContentDescriptor(moq.It.isAny()))
-        .returns(async () => descriptor)
-        .verifiable();
-      presentationManagerMock.setup((x) => x.getContent(moq.It.isObjectWith<Paged<ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet>>>({ paging: undefined })))
+      const descriptor = createTestContentDescriptor({ fields: [] });
+      const content = new Content(descriptor, [createTestContentItem({ values: {}, displayValues: {} })]);
+      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isObjectWith<Paged<ContentRequestOptions<IModelConnection, Descriptor, KeySet>>>({ paging: undefined })))
         .returns(async () => content)
         .verifiable(moq.Times.once());
-      presentationManagerMock.setup((x) => x.getContentSetSize(moq.It.isAny()))
+      presentationManagerMock.setup(async (x) => x.getContentSetSize(moq.It.isAny()))
         .verifiable(moq.Times.never());
       const size = await provider.getContentSetSize();
       presentationManagerMock.verifyAll();
       expect(size).to.equal(content.contentSet.length);
     });
 
-    it("requests content set size with descriptor overrides when `shouldConfigureContentDescriptor()` returns false", async () => {
-      const overrides: DescriptorOverrides = { displayType: "test", contentFlags: 123, hiddenFieldNames: [] };
-      provider.shouldConfigureContentDescriptor = () => false;
-      provider.getDescriptorOverrides = () => overrides;
-
-      const content = new Content(createRandomDescriptor(), [1, 2, 3].map(() => ({} as any)));
-
-      presentationManagerMock.setup(async (x) => x.getContentDescriptor(moq.It.isAny()))
-        .verifiable(moq.Times.never());
-      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isObjectWith<Paged<ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet>>>({ descriptor: overrides })))
-        .returns(async () => content)
-        .verifiable(moq.Times.once());
-
-      const size = await provider.getContentSetSize();
-      presentationManagerMock.verifyAll();
-      expect(size).to.eq(content.contentSet.length);
-    });
   });
 
   describe("getContent", () => {
@@ -425,21 +364,7 @@ describe("ContentDataProvider", () => {
       provider.keys = new KeySet([createRandomECInstanceKey()]);
     });
 
-    it("returns undefined when manager returns undefined descriptor", async () => {
-      presentationManagerMock.setup(async (x) => x.getContentDescriptor(moq.It.isAny()))
-        .returns(async () => undefined)
-        .verifiable();
-      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isAny()))
-        .verifiable(moq.Times.never());
-      const c = await provider.getContent();
-      presentationManagerMock.verifyAll();
-      expect(c).to.be.undefined;
-    });
-
     it("returns undefined when manager returns undefined content", async () => {
-      presentationManagerMock.setup(async (x) => x.getContentDescriptor(moq.It.isAny()))
-        .returns(async () => createRandomDescriptor())
-        .verifiable();
       presentationManagerMock.setup(async (x) => x.getContent(moq.It.isAny()))
         .returns(async () => undefined)
         .verifiable();
@@ -449,15 +374,12 @@ describe("ContentDataProvider", () => {
     });
 
     it("requests presentation manager for content", async () => {
-      const descriptor = createRandomDescriptor();
+      const descriptor = createTestContentDescriptor({ fields: [] });
       const result: { content: Content, size: number } = {
         content: new Content(descriptor, []),
         size: 1,
       };
-      presentationManagerMock.setup(async (x) => x.getContentDescriptor(moq.It.isAny()))
-        .returns(async () => descriptor)
-        .verifiable();
-      presentationManagerMock.setup(async (x) => x.getContentAndSize(moq.It.isObjectWith<Paged<ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet>>>({ paging: { start: 0, size: 10 } })))
+      presentationManagerMock.setup(async (x) => x.getContentAndSize(moq.It.isObjectWith<Paged<ContentRequestOptions<IModelConnection, Descriptor, KeySet>>>({ paging: { start: 0, size: 10 } })))
         .returns(async () => result)
         .verifiable();
       const c = await provider.getContent({ start: 0, size: 10 });
@@ -466,29 +388,24 @@ describe("ContentDataProvider", () => {
     });
 
     it("memoizes result", async () => {
-      const descriptor = createRandomDescriptor();
-      presentationManagerMock.setup(async (x) => x.getContentDescriptor(moq.It.isAny()))
-        .returns(async () => descriptor)
-        .verifiable();
-
       const resultContentFirstPagePromise0 = new PromiseContainer<Content>();
-      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isObjectWith<Paged<ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet>>>({ paging: undefined })))
+      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isObjectWith<Paged<ContentRequestOptions<IModelConnection, Descriptor, KeySet>>>({ paging: undefined })))
         .returns(async () => resultContentFirstPagePromise0.promise)
         .verifiable(moq.Times.once());
-      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isObjectWith<Paged<ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet>>>({ paging: { start: undefined, size: 0 } })))
+      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isObjectWith<Paged<ContentRequestOptions<IModelConnection, Descriptor, KeySet>>>({ paging: { start: undefined, size: 0 } })))
         .verifiable(moq.Times.never());
-      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isObjectWith<Paged<ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet>>>({ paging: { start: 0, size: undefined } })))
+      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isObjectWith<Paged<ContentRequestOptions<IModelConnection, Descriptor, KeySet>>>({ paging: { start: 0, size: undefined } })))
         .verifiable(moq.Times.never());
-      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isObjectWith<Paged<ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet>>>({ paging: { start: 0, size: 0 } })))
+      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isObjectWith<Paged<ContentRequestOptions<IModelConnection, Descriptor, KeySet>>>({ paging: { start: 0, size: 0 } })))
         .verifiable(moq.Times.never());
 
       const resultContentFirstPagePromise1 = new PromiseContainer<{ content: Content, size: number }>();
-      presentationManagerMock.setup(async (x) => x.getContentAndSize(moq.It.isObjectWith<Paged<ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet>>>({ paging: { start: 0, size: 1 } })))
+      presentationManagerMock.setup(async (x) => x.getContentAndSize(moq.It.isObjectWith<Paged<ContentRequestOptions<IModelConnection, Descriptor, KeySet>>>({ paging: { start: 0, size: 1 } })))
         .returns(async () => resultContentFirstPagePromise1.promise)
         .verifiable(moq.Times.once());
 
       const resultContentNonFirstPagePromise = new PromiseContainer<Content>();
-      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isObjectWith<Paged<ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet>>>({ paging: { start: 1, size: 0 } })))
+      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isObjectWith<Paged<ContentRequestOptions<IModelConnection, Descriptor, KeySet>>>({ paging: { start: 1, size: 0 } })))
         .returns(async () => resultContentNonFirstPagePromise.promise)
         .verifiable(moq.Times.once());
 
@@ -502,14 +419,15 @@ describe("ContentDataProvider", () => {
       ];
 
       // for first 4 requests
-      const nonPagedContentStartingAt0Response = new Content(descriptor, [new Item([], "1", "", undefined, {}, {}, [])]);
+      const descriptor = createTestContentDescriptor({ fields: [] });
+      const nonPagedContentStartingAt0Response = new Content(descriptor, [createTestContentItem({ label: "1", values: {}, displayValues: {} })]);
       // for 5'th request
       const pagedContentAndSizeResponse = {
-        content: new Content(descriptor, [new Item([], "2", "", undefined, {}, {}, [])]),
+        content: new Content(descriptor, [createTestContentItem({ label: "2", values: {}, displayValues: {} })]),
         size: 1,
       };
       // for 6'th request
-      const nonPagedContentStartingAt1Response = new Content(descriptor, [new Item([], "3", "", undefined, {}, {}, [])]);
+      const nonPagedContentStartingAt1Response = new Content(descriptor, [createTestContentItem({ label: "3", values: {}, displayValues: {} })]);
 
       resultContentFirstPagePromise0.resolve(nonPagedContentStartingAt0Response);
       resultContentFirstPagePromise1.resolve(pagedContentAndSizeResponse);
@@ -526,29 +444,12 @@ describe("ContentDataProvider", () => {
       presentationManagerMock.verifyAll();
     });
 
-    it("requests content with descriptor overrides when `shouldConfigureContentDescriptor()` returns false", async () => {
-      const result = createRandomContent();
-      const overrides: DescriptorOverrides = { displayType: "test", contentFlags: 123, hiddenFieldNames: [] };
-      provider.shouldConfigureContentDescriptor = () => false;
-      provider.getDescriptorOverrides = () => overrides;
-
-      presentationManagerMock.setup(async (x) => x.getContentDescriptor(moq.It.isAny()))
-        .verifiable(moq.Times.never());
-      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isObjectWith<Paged<ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet>>>({ descriptor: overrides })))
-        .returns(async () => result)
-        .verifiable(moq.Times.once());
-
-      const content = await provider.getContent();
-      expect(content).to.eq(result);
-
-      presentationManagerMock.verifyAll();
-    });
-
     it("doesn't request for content when keyset is empty and `shouldRequestContentForEmptyKeyset()` returns `false`", async () => {
       provider.keys = new KeySet();
-      const spy = sinon.spy(provider, "shouldConfigureContentDescriptor");
       await provider.getContent();
-      expect(spy).to.not.be.called;
+      presentationManagerMock.verify(async (x) => x.getContentDescriptor(moq.It.isAny()), moq.Times.never());
+      presentationManagerMock.verify(async (x) => x.getContent(moq.It.isAny()), moq.Times.never());
+      presentationManagerMock.verify(async (x) => x.getContentAndSize(moq.It.isAny()), moq.Times.never());
     });
 
   });
@@ -580,7 +481,7 @@ describe("ContentDataProvider", () => {
     });
 
     it("return undefined if descriptor is not set", async () => {
-      presentationManagerMock.setup((x) =>
+      presentationManagerMock.setup(async (x) =>
         x.getContentDescriptor(moq.It.isAny()))
         .returns(async () => undefined)
         .verifiable(moq.Times.once());
@@ -591,9 +492,9 @@ describe("ContentDataProvider", () => {
     });
 
     it("return undefined when field is not found", async () => {
-      const descriptor = createRandomDescriptor();
+      const descriptor = createTestContentDescriptor({ fields: [] });
 
-      presentationManagerMock.setup((x) =>
+      presentationManagerMock.setup(async (x) =>
         x.getContentDescriptor(moq.It.isAny()))
         .returns(async () => descriptor)
         .verifiable(moq.Times.once());
@@ -604,37 +505,36 @@ describe("ContentDataProvider", () => {
     });
 
     it("return a field", async () => {
-      const field = createRandomPropertiesField();
-      field.name = faker.random.word();
-      const descriptor = createRandomDescriptor(undefined, [field]);
-      propertyRecord.property.name = field.name;
+      const field = createTestPropertiesContentField({
+        name: "test-field",
+        properties: [{
+          property: createTestPropertyInfo({ name: "test-property" }),
+        }],
+      });
+      const descriptor = createTestContentDescriptor({ fields: [field] });
+      propertyRecord.property.name = "test-field";
 
-      presentationManagerMock.setup((x) =>
-        x.getContentDescriptor(moq.It.isAny()))
-        .returns(async () => descriptor)
-        .verifiable(moq.Times.once());
+      presentationManagerMock.setup(async (x) => x.getContentDescriptor(moq.It.isAny())).returns(async () => descriptor).verifiable(moq.Times.once());
 
       const resultField = await provider.getFieldByPropertyRecord(propertyRecord);
       presentationManagerMock.verifyAll();
-      expect(resultField!.name).to.eq(field.name);
+      expect(resultField).to.eq(field);
     });
 
     it("return a nested field", async () => {
-      const nestedField = createRandomPrimitiveField();
-      const field = new NestedContentField(createRandomCategory(), faker.random.word(),
-        faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
-        faker.random.number(), createRandomECClassInfo(), createRandomRelationshipPath(1), [nestedField], undefined, faker.random.boolean());
-      const descriptor = createRandomDescriptor(undefined, [field]);
-      propertyRecord.property.name = `${field.name}${FIELD_NAMES_SEPARATOR}${nestedField.name}`;
+      const nestedField = createTestSimpleContentField({ name: "nested-field" });
+      const nestingField = createTestNestedContentField({
+        name: "nesting-field",
+        nestedFields: [nestedField],
+      });
+      const descriptor = createTestContentDescriptor({ fields: [nestingField] });
+      propertyRecord.property.name = `${nestingField.name}${FIELD_NAMES_SEPARATOR}${nestedField.name}`;
 
-      presentationManagerMock.setup((x) =>
-        x.getContentDescriptor(moq.It.isAny()))
-        .returns(async () => descriptor)
-        .verifiable(moq.Times.once());
+      presentationManagerMock.setup(async (x) => x.getContentDescriptor(moq.It.isAny())).returns(async () => descriptor).verifiable(moq.Times.once());
 
       const resultField = await provider.getFieldByPropertyRecord(propertyRecord);
       presentationManagerMock.verifyAll();
-      expect(resultField!.name).to.eq(nestedField.name);
+      expect(resultField).to.eq(nestedField);
     });
 
   });
@@ -689,12 +589,9 @@ describe("ContentDataProvider", () => {
       });
       sinon.stub(provider, "shouldRequestContentForEmptyKeyset").returns(true);
 
-      const descriptor = createRandomDescriptor();
-      const content = new Content(descriptor, [new Item([], "1", "", undefined, {}, {}, [])]);
-      presentationManagerMock.setup((x) => x.getContentDescriptor(moq.It.isObjectWith<Paged<ContentDescriptorRequestOptions<IModelConnection, KeySet>>>({ diagnostics: { editor: "error", handler: diagnosticsHandler } })))
-        .returns(async () => descriptor)
-        .verifiable(moq.Times.once());
-      presentationManagerMock.setup((x) => x.getContent(moq.It.isObjectWith<Paged<ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet>>>({ diagnostics: { editor: "error", handler: diagnosticsHandler } })))
+      const descriptor = createTestContentDescriptor({ fields: [] });
+      const content = new Content(descriptor, [createTestContentItem({ values: {}, displayValues: {} })]);
+      presentationManagerMock.setup(async (x) => x.getContent(moq.It.isObjectWith<Paged<ContentRequestOptions<IModelConnection, Descriptor, KeySet>>>({ diagnostics: { editor: "error", handler: diagnosticsHandler } })))
         .returns(async () => content)
         .verifiable(moq.Times.once());
       await provider.getContentSetSize();

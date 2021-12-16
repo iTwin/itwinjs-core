@@ -6,11 +6,10 @@
  * @module Tools
  */
 
-import { assert } from "@bentley/bentleyjs-core";
-import { Point2d, Point3d, PolygonOps, XAndY } from "@bentley/geometry-core";
-import { GeometryStreamProps, IModelError } from "@bentley/imodeljs-common";
-import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
-import { DialogItem, DialogPropertySyncItem } from "@bentley/ui-abstract";
+import { DialogItem, DialogPropertySyncItem } from "@itwin/appui-abstract";
+import { assert } from "@itwin/core-bentley";
+import { GeometryStreamProps, IModelError } from "@itwin/core-common";
+import { Point2d, Point3d, PolygonOps, XAndY } from "@itwin/core-geometry";
 import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
 import { FuzzySearch, FuzzySearchResults } from "../FuzzySearch";
 import { HitDetail } from "../HitDetail";
@@ -326,11 +325,8 @@ export class Tool {
    * The value is the name of an icon WebFont entry, or if specifying an SVG symbol, use `svg:` prefix.
    */
   public static iconSpec = "";
-  /** The [I18NNamespace]($i18n) that provides localized strings for this Tool. Subclasses should override this. */
-  public static namespace: I18NNamespace;
-
-  /** The internationalization services instance used to translate strings from the namespace. */
-  public static i18n: I18N;
+  /** The namespace that provides localized strings for this Tool. Subclasses should override this. */
+  public static namespace: string;
 
   /** @internal */
   public get ctor() { return this.constructor as ToolType; }
@@ -352,13 +348,14 @@ export class Tool {
   /**
    * Register this Tool class with the [[ToolRegistry]].
    * @param namespace optional namespace to supply to [[ToolRegistry.register]]. If undefined, use namespace from superclass.
-   * @param i18n optional internationalization services object (required only for externally hosted extensions). If undefined, use IModelApp.i18n.
    */
-  public static register(namespace?: I18NNamespace, i18n?: I18N) { IModelApp.tools.register(this, namespace, i18n); }
+  public static register(namespace?: string) {
+    IModelApp.tools.register(this, namespace);
+  }
 
   private static getLocalizedKey(name: string): string | undefined {
     const key = `tools.${this.toolId}.${name}`;
-    const val = this.i18n.translateWithNamespace(this.namespace.name, key);
+    const val = IModelApp.localization.getLocalizedStringWithNamespace(this.namespace, key);
     return key === val ? undefined : val; // if translation for key doesn't exist, `translate` returns the key as the result
   }
 
@@ -377,7 +374,7 @@ export class Tool {
    */
   public static get englishKeyin(): string {
     const key = `tools.${this.toolId}.keyin`;
-    const val = this.i18n.getEnglishTranslation(this.namespace.name, key);
+    const val = IModelApp.localization.getEnglishString(this.namespace, key);
     return val !== key ? val : ""; // default to empty string
   }
 
@@ -431,7 +428,7 @@ export class Tool {
    * Run this instance of a Tool. Subclasses should override to perform some action.
    * @returns `true` if the tool executed successfully.
    */
-  public run(..._args: any[]): boolean { return true; }
+  public async run(..._args: any[]): Promise<boolean> { return true; }
 
   /** Run this instance of a tool using a series of string arguments. Override this method to parse the arguments, and if they're
    * acceptable, execute your [[run]] method. If the arguments aren't valid, return `false`.
@@ -439,7 +436,7 @@ export class Tool {
    * @note Generally, implementers of this method are **not** expected to call `super.parseAndRun(...)`. Instead, call your
    * [[run]] method with the appropriate (parsed) arguments directly.
    */
-  public parseAndRun(..._args: string[]): boolean {
+  public async parseAndRun(..._args: string[]): Promise<boolean> {
     return this.run();
   }
 }
@@ -457,28 +454,28 @@ export abstract class InteractiveTool extends Tool {
   public receivedDownEvent = false;
 
   /** Override to execute additional logic when tool is installed. Return false to prevent this tool from becoming active */
-  public onInstall(): boolean { return true; }
+  public async onInstall(): Promise<boolean> { return true; }
 
   /** Override to execute additional logic after tool becomes active */
-  public onPostInstall(): void { }
+  public async onPostInstall(): Promise<void> { }
 
-  public abstract exitTool(): void;
+  public abstract exitTool(): Promise<void>;
 
   /** Override Call to reset tool to initial state */
-  public onReinitialize(): void { }
+  public async onReinitialize(): Promise<void> { }
 
   /** Invoked when the tool becomes no longer active, to perform additional cleanup logic */
-  public onCleanup(): void { }
+  public async onCleanup(): Promise<void> { }
 
   /** Notification of a ViewTool or InputCollector starting and this tool is being suspended.
    * @note Applies only to PrimitiveTool and InputCollector, a ViewTool can't be suspended.
    */
-  public onSuspend(): void { }
+  public async onSuspend(): Promise<void> { }
 
   /** Notification of a ViewTool or InputCollector exiting and this tool is being unsuspended.
    *  @note Applies only to PrimitiveTool and InputCollector, a ViewTool can't be suspended.
    */
-  public onUnsuspend(): void { }
+  public async onUnsuspend(): Promise<void> { }
 
   /** Called to support operations on pickable decorations, like snapping. */
   public testDecorationHit(_id: string): boolean { return false; }
@@ -685,7 +682,7 @@ export abstract class InteractiveTool extends Tool {
   /** Used to receive property changes from UI. Return false if there was an error applying updatedValue.
    * @beta
    */
-  public applyToolSettingPropertyChange(_updatedValue: DialogPropertySyncItem): boolean { return true; }
+  public async applyToolSettingPropertyChange(_updatedValue: DialogPropertySyncItem): Promise<boolean> { return true; }
 
   /** Called by tool to synchronize the UI with property changes made by tool. This is typically used to provide user feedback during tool dynamics.
    * If the syncData contains a quantity value and if the displayValue is not defined, the displayValue will be generated in the UI layer before displaying the value.
@@ -717,22 +714,22 @@ export abstract class InteractiveTool extends Tool {
  * @public
  */
 export abstract class InputCollector extends InteractiveTool {
-  public override run(..._args: any[]): boolean {
+  public override async run(..._args: any[]): Promise<boolean> {
     const toolAdmin = IModelApp.toolAdmin;
     // An input collector can only suspend a primitive tool, don't install if a viewing tool is active...
-    if (undefined !== toolAdmin.viewTool || !toolAdmin.onInstallTool(this))
+    if (undefined !== toolAdmin.viewTool || !await toolAdmin.onInstallTool(this))
       return false;
 
-    toolAdmin.startInputCollector(this);
-    toolAdmin.onPostInstallTool(this);
+    await toolAdmin.startInputCollector(this);
+    await toolAdmin.onPostInstallTool(this);
     return true;
   }
 
-  public exitTool(): void {
-    IModelApp.toolAdmin.exitInputCollector();
+  public async exitTool() {
+    return IModelApp.toolAdmin.exitInputCollector();
   }
   public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
-    this.exitTool();
+    await this.exitTool();
     return EventHandled.Yes;
   }
 }
@@ -798,22 +795,27 @@ export class ToolRegistry {
   public readonly tools = new Map<string, ToolType>();
   private _keyinList?: ToolList;
 
+  public shutdown() {
+    this.tools.clear();
+    this._keyinList = undefined;
+  }
   /**
    * Un-register a previously registered Tool class.
    * @param toolId the toolId of a previously registered tool to unRegister.
    */
-  public unRegister(toolId: string) { this.tools.delete(toolId); this._keyinList = undefined; }
+  public unRegister(toolId: string) {
+    this.tools.delete(toolId);
+    this._keyinList = undefined;
+  }
 
   /**
    * Register a Tool class. This establishes a connection between the toolId of the class and the class itself.
    * @param toolClass the subclass of Tool to register.
    * @param namespace the namespace for the localized strings for this tool. If undefined, use namespace from superclass.
    */
-  public register(toolClass: ToolType, namespace?: I18NNamespace, i18n?: I18N) {
+  public register(toolClass: ToolType, namespace?: string) {
     if (namespace) // namespace is optional because it can come from superclass
       toolClass.namespace = namespace;
-
-    toolClass.i18n = (i18n) ? i18n : IModelApp.i18n;
 
     if (toolClass.toolId.length === 0)
       return; // must be an abstract class, ignore it
@@ -829,11 +831,11 @@ export class ToolRegistry {
    * Register all the Tool classes found in a module.
    * @param modelObj the module to search for subclasses of Tool.
    */
-  public registerModule(moduleObj: any, namespace?: I18NNamespace, i18n?: I18N) {
+  public registerModule(moduleObj: any, namespace?: string) {
     for (const thisMember in moduleObj) {  // eslint-disable-line guard-for-in
       const thisTool = moduleObj[thisMember];
       if (thisTool.prototype instanceof Tool) {
-        this.register(thisTool, namespace, i18n);
+        this.register(thisTool, namespace);
       }
     }
   }
@@ -860,7 +862,7 @@ export class ToolRegistry {
    * @param args arguments to pass to the constructor, and to run.
    * @return true if the tool was found and successfully run.
    */
-  public run(toolId: string, ...args: any[]): boolean {
+  public async run(toolId: string, ...args: any[]): Promise<boolean> {
     const tool = this.create(toolId, ...args);
     return tool !== undefined && tool.run(...args);
   }
@@ -1009,7 +1011,7 @@ export class ToolRegistry {
    * @throws any Error thrown by the tool's `parseAndRun` method.
    * @public
    */
-  public parseAndRun(keyin: string): ParseAndRunResult {
+  public async parseAndRun(keyin: string): Promise<ParseAndRunResult> {
     const parsed = this.parseKeyin(keyin);
     if (!parsed.ok) {
       switch (parsed.error) {
@@ -1024,7 +1026,7 @@ export class ToolRegistry {
       return ParseAndRunResult.BadArgumentCount;
 
     const tool = new parsed.tool();
-    return tool.parseAndRun(...parsed.args) ? ParseAndRunResult.Success : ParseAndRunResult.FailedToRun;
+    return await tool.parseAndRun(...parsed.args) ? ParseAndRunResult.Success : ParseAndRunResult.FailedToRun;
   }
 
   /**
@@ -1054,6 +1056,6 @@ export class ToolRegistry {
 export class CoreTools {
   public static namespace = "CoreTools";
   public static tools = "CoreTools:tools.";
-  public static translate(prompt: string) { return IModelApp.i18n.translate(this.tools + prompt); }
+  public static translate(prompt: string) { return IModelApp.localization.getLocalizedString(this.tools + prompt); }
   public static outputPromptByKey(key: string) { return IModelApp.notifications.outputPromptByKey(this.tools + key); }
 }

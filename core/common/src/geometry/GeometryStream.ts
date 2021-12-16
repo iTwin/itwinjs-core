@@ -6,11 +6,11 @@
  * @module Geometry
  */
 
-import { Id64, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
+import { Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
 import {
   Angle, AnyGeometryQuery, GeometryQuery, IModelJson as GeomJson, LowAndHighXYZ, Matrix3d, Point2d, Point3d, Range3d, Transform, TransformProps,
   Vector3d, XYZProps, YawPitchRollAngles, YawPitchRollProps,
-} from "@bentley/geometry-core";
+} from "@itwin/core-geometry";
 import { ColorDef, ColorDefProps } from "../ColorDef";
 import { GeometricElement2dProps, GeometricElement3dProps, GeometryPartProps, isPlacement2dProps, PlacementProps } from "../ElementProps";
 import { BackgroundFill, FillDisplay, GeometryClass, GeometryParams } from "../GeometryParams";

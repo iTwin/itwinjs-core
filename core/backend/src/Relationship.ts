@@ -6,16 +6,13 @@
  * @module Relationships
  */
 
-import { DbOpcode, DbResult, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
-import { IModelError, IModelStatus, RelationshipProps, SourceAndTarget } from "@bentley/imodeljs-common";
-import { BackendLoggerCategory } from "./BackendLoggerCategory";
+import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
+import { IModelError, IModelStatus, RelationshipProps, SourceAndTarget } from "@itwin/core-common";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 
-export type { SourceAndTarget, RelationshipProps } from "@bentley/imodeljs-common"; // for backwards compatibility
-
-const loggerCategory = BackendLoggerCategory.Relationship;
+export type { SourceAndTarget, RelationshipProps } from "@itwin/core-common"; // for backwards compatibility
 
 /** Base class for all link table ECRelationships
  * @public
@@ -66,15 +63,6 @@ export class Relationship extends Entity implements RelationshipProps {
   public delete() { this.iModel.relationships.deleteInstance(this); }
 
   public static getInstance<T extends Relationship>(iModel: IModelDb, criteria: Id64String | SourceAndTarget): T { return iModel.relationships.getInstance(this.classFullName, criteria); }
-
-  /** Add a request for the locks that would be needed to carry out the specified operation.
-   * @param opcode The operation that will be performed on the Relationship instance.
-   */
-  public override buildConcurrencyControlRequest(opcode: DbOpcode): void {
-    if (this.iModel.isBriefcaseDb()) {
-      this.iModel.concurrencyControl.buildRequestForRelationship(this, opcode);
-    }
-  }
 }
 
 /** A Relationship where one Element refers to another Element
@@ -264,8 +252,8 @@ export interface ElementDrivesElementProps extends RelationshipProps {
  * * Inputs - The sources of all edges that point to the element. This includes all upstream elements that flow into the element.
  * * Outputs - The targets of all edges that point out of the element. This includes all downstream elements.
  *
- * #Subgraph Processing
- * When changes are made, iModel.js finds and processes only the part of the overall graph that is affected. So, for example,
+ * # Subgraph Processing
+ * When changes are made, only the part of the overall graph that is affected will be processed. So, for example,
  * suppose we have this graph:
  * ```
  * e1 --> e2 --> e3
@@ -303,7 +291,7 @@ export interface ElementDrivesElementProps extends RelationshipProps {
  *           e31
  * ```
  * # Callbacks
- * Once iModel.js has found the affected subgraph to process, it propagates changes through it by making callbacks.
+ * Once the affected subgraph to process is found, it propagates changes through it by making callbacks.
  * Classes for both elements (nodes) and ElementDrivesElements relationships (edges) can receive callbacks.
  *
  * ## ElementDrivesElement Callbacks
@@ -379,7 +367,7 @@ export interface ElementDrivesElementProps extends RelationshipProps {
  * involved in a cycle will have their status set to 1, indicating a failure.
  *
  * A callback may call txnManager.reportError to reject an invalid change. It can classify the error as fatal or just a warning.
- * A callback make set the status value of an ElementDrivesElement instance to 1 to indicate a processing falure in that edge.
+ * A callback make set the status value of an ElementDrivesElement instance to 1 to indicate a processing failure in that edge.
  *
  * After BriefcaseDb.saveChanges is called, an app should check db.txns.validationErrors and db.txns.hasFatalError to find out if graph-evaluation failed.
  *
@@ -389,9 +377,9 @@ export class ElementDrivesElement extends Relationship implements ElementDrivesE
   /** @internal */
   public static override get className(): string { return "ElementDrivesElement"; }
   /** Relationship status
-   * * 0 indicates no errors. iModel.js sets this after a successful evaluation.
-   * * 1 indicates that this driving relationship could not be evaluated. The callback itself can set this to indicate that it failed to process the input changes. Also, iModel.js sets this if it finds that the relationship is part of a circular dependency.
-   * * 0x80 The app or callback can set this to tell iModel.js not propagate changes through this relationship.
+   * * 0 indicates no errors. Set after a successful evaluation.
+   * * 1 indicates that this driving relationship could not be evaluated. The callback itself can set this to indicate that it failed to process the input changes. Also, it is set if the relationship is part of a circular dependency.
+   * * 0x80 The app or callback can set this to indicate to not propagate changes through this relationship.
    */
   public status: number;
   /** Affects the order in which relationships are processed in the case where two relationships have the same output. */
@@ -428,7 +416,7 @@ export class Relationships {
   /** Check classFullName to ensure it is a link table relationship class. */
   private checkRelationshipClass(classFullName: string) {
     if (!this._iModel.nativeDb.isLinkTableRelationship(classFullName.replace(".", ":"))) {
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, `Class '${classFullName}' must be a relationship class and it should be subclass of BisCore:ElementRefersToElements or BisCore:ElementDrivesElement.`, Logger.logWarning, loggerCategory);
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, `Class '${classFullName}' must be a relationship class and it should be subclass of BisCore:ElementRefersToElements or BisCore:ElementDrivesElement.`);
     }
   }
 
@@ -436,38 +424,22 @@ export class Relationships {
    * @param props The properties of the new relationship.
    * @returns The Id of the newly inserted relationship.
    * @note The id property of the props object is set as a side effect of this function.
-   * @throws [[IModelError]] if unable to insert the relationship instance.
    */
   public insertInstance(props: RelationshipProps): Id64String {
     this.checkRelationshipClass(props.classFullName);
-    const val = this._iModel.nativeDb.insertLinkTableRelationship(props);
-    if (val.error)
-      throw new IModelError(val.error.status, "Error inserting relationship instance", Logger.logWarning, loggerCategory);
-
-    props.id = Id64.fromJSON(val.result);
-    return props.id;
+    return props.id = this._iModel.nativeDb.insertLinkTableRelationship(props);
   }
 
-  /** Update the properties of an existing relationship instance in the iModel.The relationship provided must be subclass of BisCore:ElementRefersToElements or BisCore:ElementDrivesElement.
+  /** Update the properties of an existing relationship instance in the iModel.
    * @param props the properties of the relationship instance to update. Any properties that are not present will be left unchanged.
-   * @throws [[IModelError]] if unable to update the relationship instance.
    */
   public updateInstance(props: RelationshipProps): void {
-    this.checkRelationshipClass(props.classFullName);
-    const error = this._iModel.nativeDb.updateLinkTableRelationship(props);
-    if (error !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(error, "Error updating relationship instance", Logger.logWarning, loggerCategory);
+    this._iModel.nativeDb.updateLinkTableRelationship(props);
   }
 
-  /** Delete an Relationship instance from this iModel.The relationship provided must be subclass of BisCore:ElementRefersToElements or BisCore:ElementDrivesElement.
-   * @param id The Id of the Relationship to be deleted
-   * @throws [[IModelError]]
-   */
+  /** Delete an Relationship instance from this iModel. */
   public deleteInstance(props: RelationshipProps): void {
-    this.checkRelationshipClass(props.classFullName);
-    const error = this._iModel.nativeDb.deleteLinkTableRelationship(props);
-    if (error !== DbResult.BE_SQLITE_DONE)
-      throw new IModelError(error, "", Logger.logWarning, loggerCategory);
+    this._iModel.nativeDb.deleteLinkTableRelationship(props);
   }
 
   /** Get the props of a Relationship instance
@@ -479,7 +451,7 @@ export class Relationships {
   public getInstanceProps<T extends RelationshipProps>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T {
     const relationshipProps = this.tryGetInstanceProps<T>(relClassFullName, criteria);
     if (undefined === relationshipProps) {
-      throw new IModelError(IModelStatus.NotFound, "Relationship not found", Logger.logWarning, loggerCategory);
+      throw new IModelError(IModelStatus.NotFound, "Relationship not found");
     }
     return relationshipProps;
   }

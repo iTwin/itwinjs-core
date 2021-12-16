@@ -1,0 +1,37 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/itwinui-css/scss/style/space";
+@import "~@itwin/itwinui-css/scss/style/typography";
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+
+.uifw-sections-footer-contents {
+  display: flex;
+  flex-direction: column;
+  width: 200px;
+  padding: 8px;
+}
+
+.uifw-uifw-sections-toggle-container {
+  display: flex;
+  margin: $iui-xs;
+  justify-content: center;
+}
+
+.uifw-sections-toggle {
+  align-self: center;
+  margin-right: $iui-s;
+}
+
+.uifw-sections-label {
+  @include iui-font-family;
+  color: $buic-text-color;
+  font-size: $iui-font-size;
+  align-self: center;
+  margin: $iui-s;
+
+  &.disabled {
+    color: $buic-text-color-disabled;
+  }
+}

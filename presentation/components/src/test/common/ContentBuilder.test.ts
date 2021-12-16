@@ -3,13 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { EnumerationInfo, FieldHierarchy, traverseContentItem } from "@bentley/presentation-common";
+import { EnumerationInfo, FieldHierarchy, traverseContentItem } from "@itwin/presentation-common";
 import {
-  createTestCategoryDescription, createTestContentDescriptor, createTestContentItem, createTestNestedContentField, createTestPropertiesContentField,
-  createTestSimpleContentField,
-} from "@bentley/presentation-common/lib/test/_helpers/Content";
-import { createTestECInstanceKey, createTestPropertyInfo } from "@bentley/presentation-common/lib/test/_helpers/EC";
-import { ArrayValue, PropertyRecord, StructValue } from "@bentley/ui-abstract";
+  createTestCategoryDescription, createTestContentDescriptor, createTestContentItem, createTestECInstanceKey, createTestNestedContentField, createTestPropertiesContentField, createTestPropertyInfo, createTestSimpleContentField,
+} from "@itwin/presentation-common/lib/cjs/test";
+import { ArrayValue, PropertyRecord, StructValue } from "@itwin/appui-abstract";
 import { FieldHierarchyRecord, IPropertiesAppender, PropertyRecordsBuilder } from "../../presentation-components/common/ContentBuilder";
 
 class TestPropertyRecordsBuilder extends PropertyRecordsBuilder {
@@ -38,7 +36,6 @@ describe("PropertyRecordsBuilder", () => {
       fields: [createTestPropertiesContentField({
         properties: [{
           property: createTestPropertyInfo({ enumerationInfo }),
-          relatedClassPath: [],
         }],
       })],
     });
@@ -101,6 +98,30 @@ describe("PropertyRecordsBuilder", () => {
     expect(record.autoExpand).to.be.true;
     expect((record.value as ArrayValue).items[0].autoExpand).to.be.true;
     expect(((record.value as ArrayValue).items[0].value as StructValue).members.child.autoExpand).to.be.undefined;
+  });
+
+  it("sets custom `renderer`", () => {
+    const descriptor = createTestContentDescriptor({
+      fields: [createTestSimpleContentField({ renderer: { name: "custom-renderer" } })],
+    });
+    const item = createTestContentItem({ values: {}, displayValues: {} });
+    traverseContentItem(builder, descriptor, item);
+    expect(builder.entries.length).to.eq(1);
+    expect(builder.entries[0].record.property.renderer).to.deep.eq({
+      name: "custom-renderer",
+    });
+  });
+
+  it("sets custom `editor`", () => {
+    const descriptor = createTestContentDescriptor({
+      fields: [createTestSimpleContentField({ editor: { name: "custom-editor" } })],
+    });
+    const item = createTestContentItem({ values: {}, displayValues: {} });
+    traverseContentItem(builder, descriptor, item);
+    expect(builder.entries.length).to.eq(1);
+    expect(builder.entries[0].record.property.editor).to.deep.eq({
+      name: "custom-editor",
+    });
   });
 
 });

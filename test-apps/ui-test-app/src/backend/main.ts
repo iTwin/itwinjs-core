@@ -4,13 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
 import * as path from "path";
-import { Logger, ProcessDetector } from "@bentley/bentleyjs-core";
-import { Presentation } from "@bentley/presentation-backend";
+import { IModelHostConfiguration } from "@itwin/core-backend";
+import { Logger, ProcessDetector } from "@itwin/core-bentley";
+import { Presentation } from "@itwin/presentation-backend";
+import { IModelHubBackend } from "@bentley/imodelhub-client/lib/cjs/imodelhub-node";
 import { initializeLogging } from "./logging";
 import { initializeWeb } from "./web/BackendServer";
 import { initializeElectron } from "./electron/ElectronMain";
 import { loggerCategory } from "../common/TestAppConfiguration";
-import { AndroidHost, IOSHost } from "@bentley/mobile-manager/lib/MobileBackend";
+import { AndroidHost, IOSHost } from "@itwin/core-mobile/lib/cjs/MobileBackend";
 import { getSupportedRpcs } from "../common/rpcs";
 
 (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
@@ -24,15 +26,18 @@ import { getSupportedRpcs } from "../common/rpcs";
 
     initializeLogging();
 
+    const iModelHost = new IModelHostConfiguration();
+    iModelHost.hubAccess = new IModelHubBackend();
+
     // invoke platform-specific initialization
     if (ProcessDetector.isElectronAppBackend) {
-      await initializeElectron();
+      await initializeElectron(iModelHost);
     } else if (ProcessDetector.isIOSAppBackend) {
       await IOSHost.startup({ mobileHost: { rpcInterfaces: getSupportedRpcs() } });
     } else if (ProcessDetector.isAndroidAppBackend) {
       await AndroidHost.startup({ mobileHost: { rpcInterfaces: getSupportedRpcs() } });
     } else {
-      await initializeWeb();
+      await initializeWeb(iModelHost);
     }
 
     // initialize presentation-backend
@@ -43,7 +48,7 @@ import { getSupportedRpcs } from "../common/rpcs";
       enableSchemasPreload: true,
       updatesPollInterval: 100,
     });
-  } catch (error) {
+  } catch (error: any) {
     Logger.logError(loggerCategory, error);
     process.exitCode = 1;
   }

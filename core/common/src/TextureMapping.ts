@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { IndexedPolyfaceVisitor, Matrix3d, Point2d, Point3d, PolyfaceVisitor, Transform, Vector3d } from "@bentley/geometry-core";
+import { IndexedPolyfaceVisitor, Matrix3d, Point2d, Point3d, PolyfaceVisitor, Transform, Vector3d } from "@itwin/core-geometry";
 import { RenderTexture } from "./RenderTexture";
 
 /** Describes how to map a [[RenderTexture]]'s image onto a surface as part of a [[RenderMaterial]].
@@ -61,7 +61,7 @@ export namespace TextureMapping { // eslint-disable-line no-redeclare
      *  | m00 m01 originX |
      *  | m10 m11 originY |
      * ```
-     * Producing the [Transform]($geometry-core):
+     * Producing the [Transform]($core-geometry):
      * ```
      *  | m00 m01 0 originX |
      *  | m10 m11 0 originY |

@@ -7,14 +7,14 @@
  * @module Tools
  */
 
-import { IModelApp, NotifyMessageDetails, OutputMessagePriority, RenderSystemDebugControl, Tool } from "@bentley/imodeljs-frontend";
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority, RenderSystemDebugControl, Tool } from "@itwin/core-frontend";
 import { parseToggle } from "./parseToggle";
 
 /** Executes some code against a RenderSystemDebugControl obtained from the IModelApp's RenderSystem.
  * @beta
  */
 export abstract class RenderSystemDebugControlTool extends Tool {
-  public override run(_args: any[]): boolean {
+  public override async run(_args: any[]): Promise<boolean> {
     const control = IModelApp.renderSystem.debugControl;
     if (undefined !== control)
       this.execute(control);
@@ -32,16 +32,6 @@ export class LoseWebGLContextTool extends RenderSystemDebugControlTool {
   public static override toolId = "LoseWebGLContext";
   public execute(control: RenderSystemDebugControl): void {
     control.loseContext();
-  }
-}
-
-/** Toggles pseudo-wiremesh surface display, for better visualization of mesh faces.
- * @beta
- */
-export class ToggleWiremeshTool extends RenderSystemDebugControlTool {
-  public static override toolId = "ToggleWiremesh";
-  public execute(control: RenderSystemDebugControl): void {
-    control.drawSurfacesAsWiremesh = !control.drawSurfacesAsWiremesh;
   }
 }
 
@@ -74,11 +64,11 @@ export class ToggleDPIForLODTool extends RenderSystemDebugControlTool {
     IModelApp.viewManager.invalidateViewportScenes();
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const enable = parseToggle(args[0]);
     if (typeof enable !== "string") {
       this._enable = enable;
-      this.run([]);
+      await this.run([]);
     }
 
     return true;

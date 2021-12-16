@@ -6,8 +6,8 @@
  * @module Symbology
  */
 
-import { assert } from "@bentley/bentleyjs-core";
-import { Angle, AngleProps } from "@bentley/geometry-core";
+import { assert } from "@itwin/core-bentley";
+import { Angle, AngleProps } from "@itwin/core-geometry";
 import { ColorDef, ColorDefProps } from "./ColorDef";
 import { ImageBuffer, ImageBufferFormat } from "./Image";
 import { ThematicGradientColorScheme, ThematicGradientMode, ThematicGradientSettings, ThematicGradientSettingsProps } from "./ThematicDisplay";
@@ -206,6 +206,16 @@ export namespace Gradient {
         if (!lhs.keys[i].color.equals(rhs.keys[i].color))
           return lhs.keys[i].color.tbgr - rhs.keys[i].color.tbgr;
       }
+      if (lhs.thematicSettings !== rhs.thematicSettings)
+        if (undefined === lhs.thematicSettings)
+          return -1;
+        else if (undefined === rhs.thematicSettings)
+          return 1;
+        else {
+          const thematicCompareResult = ThematicGradientSettings.compare(lhs.thematicSettings, rhs.thematicSettings);
+          if (0 !== thematicCompareResult)
+            return thematicCompareResult;
+        }
       return 0;
     }
 

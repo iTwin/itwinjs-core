@@ -7,13 +7,14 @@ import { expect } from "chai";
 import * as faker from "faker";
 import * as React from "react";
 import * as moq from "typemoq";
-import { I18N } from "@bentley/imodeljs-i18n";
-import { applyOptionalPrefix, LabelCompositeValue, LabelDefinition } from "@bentley/presentation-common";
+import { ITwinLocalization } from "@itwin/core-i18n";
+import { applyOptionalPrefix, LabelCompositeValue, LabelDefinition } from "@itwin/presentation-common";
 import {
-  createRandomDescriptor, createRandomLabelCompositeValue, createRandomLabelDefinition, createRandomNestedContentField, createRandomPropertiesField,
-} from "@bentley/presentation-common/lib/test/_helpers/random";
-import { Presentation } from "@bentley/presentation-frontend";
-import { Primitives, PrimitiveValue } from "@bentley/ui-abstract";
+  createRandomLabelCompositeValue, createRandomLabelDefinition, createTestContentDescriptor, createTestNestedContentField, createTestPropertiesContentField,
+  createTestPropertyInfo, createTestSimpleContentField,
+} from "@itwin/presentation-common/lib/cjs/test";
+import { Presentation } from "@itwin/presentation-frontend";
+import { Primitives, PrimitiveValue } from "@itwin/appui-abstract";
 import * as utils from "../../presentation-components/common/Utils";
 
 class TestComponent extends React.Component {
@@ -49,30 +50,36 @@ describe("Utils", () => {
   describe("findField", () => {
 
     it("returns undefined for invalid name", () => {
-      const descriptor = createRandomDescriptor();
+      const descriptor = createTestContentDescriptor({ fields: [] });
       const result = utils.findField(descriptor, "doesn't exist");
       expect(result).to.be.undefined;
     });
 
     it("returns undefined for invalid name when there are nested fields", () => {
-      const nestedField = createRandomPropertiesField();
-      const nestingField = createRandomNestedContentField([nestedField]);
-      const descriptor = createRandomDescriptor(undefined, [nestingField]);
+      const nestedField = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo() }],
+      });
+      const nestingField = createTestNestedContentField({ nestedFields: [nestedField] });
+      const descriptor = createTestContentDescriptor({ fields: [nestingField] });
       const result = utils.findField(descriptor, applyOptionalPrefix(nestedField.name, "doesn't exist"));
       expect(result).to.be.undefined;
     });
 
     it("finds field in Descriptor.fields list", () => {
-      const descriptor = createRandomDescriptor();
+      const descriptor = createTestContentDescriptor({
+        fields: [createTestSimpleContentField()],
+      });
       const field = descriptor.fields[0];
       const result = utils.findField(descriptor, field.name);
       expect(result).to.eq(field);
     });
 
     it("finds nested field", () => {
-      const nestedField = createRandomPropertiesField();
-      const nestingField = createRandomNestedContentField([nestedField]);
-      const descriptor = createRandomDescriptor(undefined, [nestingField]);
+      const nestedField = createTestPropertiesContentField({
+        properties: [{ property: createTestPropertyInfo() }],
+      });
+      const nestingField = createTestNestedContentField({ nestedFields: [nestedField] });
+      const descriptor = createTestContentDescriptor({ fields: [nestingField] });
       const result = utils.findField(descriptor, applyOptionalPrefix(nestedField.name, nestingField.name));
       expect(result!.name).to.eq(nestedField.name);
     });
@@ -80,11 +87,11 @@ describe("Utils", () => {
   });
 
   describe("initializeLocalization", () => {
-    const i18nMock = moq.Mock.ofType<I18N>();
+    const i18nMock = moq.Mock.ofType<ITwinLocalization>();
 
     beforeEach(() => {
-      i18nMock.setup((x) => x.registerNamespace(moq.It.isAny())).returns(() => ({ name: "namespace", readFinished: Promise.resolve() }));
-      Presentation.setI18nManager(i18nMock.object);
+      i18nMock.setup(async (x) => x.registerNamespace(moq.It.isAny())).returns(async () => (Promise.resolve()));
+      Presentation.setLocalization(i18nMock.object);
     });
 
     afterEach(() => {
@@ -93,7 +100,7 @@ describe("Utils", () => {
 
     it("registers and unregisters namespace", async () => {
       const terminate = await utils.initializeLocalization();
-      i18nMock.verify((x) => x.registerNamespace(moq.It.isAny()), moq.Times.once());
+      i18nMock.verify(async (x) => x.registerNamespace(moq.It.isAny()), moq.Times.once());
       terminate();
       i18nMock.verify((x) => x.unregisterNamespace(moq.It.isAny()), moq.Times.once());
     });

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-bentley",
+      "comment": "Deprecated Config and removed config.app usage",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-bentley",
+  "email": "20171969+pbell97@users.noreply.github.com "
+}

@@ -1,26 +1,10 @@
 # Loading
 
-The [Loading]($ui-core:Loading) category in the `@bentley/ui-core` package includes components for displaying determinate and indeterminate status indicators, such as spinners and progress bars. These include:
+The [Loading]($core-react:Loading) category in the `@itwin/core-react` package includes components for displaying determinate and indeterminate status indicators, such as spinners and progress bars. These include:
 
-- [Spinner]($ui-core) - indeterminate spinner component that supports multiple sizes
-- [LoadingBar]($ui-core) - determinate loading bar with optional percentage text
-- [LoadingPrompt]($ui-core) - component to display during loading that optionally shows percentage, status text and a cancel button
-- [LoadingSpinner]($ui-core) - loading spinner component that optionally shows a text message
-- [ProgressBar]($ui-core) - horizontal progress bar that supports determinate and indeterminate modes
-- [ProgressSpinner]($ui-core) - circular progress indicator that supports determinate and indeterminate modes
-
-## Spinner Examples
-
-The following examples show the Spinner component at different sizes.
-
-```tsx
-<Spinner size={SpinnerSize.Small} />
-<Spinner size={SpinnerSize.Medium} />
-<Spinner size={SpinnerSize.Large} />
-<Spinner size={SpinnerSize.XLarge} />
-```
-
-![spinners](./images/Spinners.png "Spinners")
+- [LoadingBar]($core-react) - determinate loading bar with optional percentage text
+- [LoadingPrompt]($core-react) - component to display during loading that optionally shows percentage, status text and a cancel button
+- [LoadingSpinner]($core-react) - loading spinner component that optionally shows a text message
 
 ## LoadingSpinner Examples
 
@@ -89,4 +73,4 @@ The following examples show the LoadingPrompt component with different props.
 
 ## API Reference
 
-- [Loading]($ui-core:Loading) - An indeterminate spinner component
+- [Loading]($core-react:Loading) - An indeterminate spinner component

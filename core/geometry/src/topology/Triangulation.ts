@@ -513,7 +513,10 @@ export class Triangulator {
       // earcut does not support self intersections.
       // BUT  .. maybe if we watch from the simplest case of next2 returning to pred it will catch some . . .
       // (no need to do flips -- we know it's already a triangle)
-      if (Geometry.isAlmostEqualXAndY(next2, pred)) {
+      // EDL Sept 2021 NO... coordinate test is fooled into early exit when large outer triangle has
+      // edges going in from pred.
+      // Hence add the around vertex test.  But this is possibly vulnerable to a variant false positive ..
+      if (Geometry.isAlmostEqualXAndY(next2, pred) && !next2.findAroundVertex (pred)) {
         HalfEdge.pinch(pred, next2);
         ear.setMaskAroundFace(HalfEdgeMask.TRIANGULATED_FACE);
         ear = next2;

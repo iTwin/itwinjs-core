@@ -1,0 +1,18 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+.nz-widget-contentRenderer {
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+.nz-widget-panelWidget {
+  &.nz-horizontal {
+    .nz-minimized {
+      .nz-widget-contentRenderer {
+        position: absolute;
+      }
+    }
+  }
+}

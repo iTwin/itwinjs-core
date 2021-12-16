@@ -6,7 +6,7 @@ import * as child_process from "child_process";
 import * as chromeLauncher from "chrome-launcher";
 import * as express from "express";
 import * as path from "path";
-import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@bentley/imodeljs-common";
+import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@itwin/core-common";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { initializeBackend } from "./backend";
 
@@ -86,7 +86,7 @@ function startWebServer() {
   app.get("/v3/swagger.json", (req, res) => cloudConfig.protocol.handleOpenApiDescriptionRequest(req, res));
   app.post("*", async (req, res) => cloudConfig.protocol.handleOperationPostRequest(req, res));
   app.get(/\/imodel\//, async (req, res) => cloudConfig.protocol.handleOperationGetRequest(req, res));
-  app.use("*", (_req, res) => { res.send("<h1>IModelJs RPC Server</h1>"); });
+  app.use("*", (_req, res) => { res.send("<h1>iTwin.js RPC Server</h1>"); });
 
   // ---------------------------------------------
   // Run the server...

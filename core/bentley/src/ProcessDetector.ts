@@ -31,7 +31,7 @@ export class ProcessDetector {
    * @note This method will return `true` for any frontend running on an iPad, whether it is a user-launched web browser (e.g. Safari) or the frontend of a mobile app.
    */
   public static get isIPadBrowser() {
-    return this.isBrowserProcess && window.navigator.platform === "iPad" || (window.navigator.platform === "MacIntel" && window.navigator.maxTouchPoints > 0 && !window.MSStream);
+    return this.isBrowserProcess && window.navigator.platform === "iPad" || (window.navigator.platform === "MacIntel" && window.navigator.maxTouchPoints > 0 && !("MSStream" in window)); /* eslint-disable-line deprecation/deprecation */
   }
 
   /** Is this process running in a browser on an iPhone?
@@ -53,6 +53,11 @@ export class ProcessDetector {
    * @note This method will return `true` for any frontend running on a mobile device, whether it is a user-launched web browser or the frontend of a mobile app.
   */
   public static get isMobileBrowser() { return this.isIOSBrowser || this.isAndroidBrowser; }
+
+  /** Is this process running in a Chromium based browser (Chrome / new Edge / Electron front end)? */
+  public static get isChromium() {
+    return (this.isBrowserProcess && window.navigator.userAgent.indexOf("Chrome") > -1 && window.navigator.userAgent.indexOf("OP") === -1) || this.isElectronAppFrontend;
+  }
 
   /** Is this process the frontend of an iTwin mobile application?
    * @note this indicates that this is a browser process started by an iTwin mobile application.

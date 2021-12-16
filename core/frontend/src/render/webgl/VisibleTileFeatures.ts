@@ -6,8 +6,8 @@
  * @module WebGL
  */
 
-import { Id64 } from "@bentley/bentleyjs-core";
-import { BatchType, PackedFeature } from "@bentley/imodeljs-common";
+import { Id64 } from "@itwin/core-bentley";
+import { BatchType, PackedFeature } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
 import { QueryTileFeaturesOptions, VisibleFeature } from "../VisibleFeature";
 import { RenderPass } from "./RenderFlags";
@@ -65,7 +65,7 @@ function isFeatureVisible(feature: PackedFeature, target: Target, modelIdParts: 
   return undefined !== app && (includeNonLocatable || !app.nonLocatable);
 }
 
-function * commandIterator(features: VisibleTileFeatures, pass: RenderPass) {
+function* commandIterator(features: VisibleTileFeatures, pass: RenderPass) {
   const commands = features.renderCommands.getCommands(pass);
   const executor = new ShaderProgramExecutor(features.target, pass);
   try {
@@ -100,11 +100,11 @@ function * commandIterator(features: VisibleTileFeatures, pass: RenderPass) {
   }
 }
 
-function * iterator(features: VisibleTileFeatures) {
+function* iterator(features: VisibleTileFeatures) {
   try {
     features.target.pushViewClip();
     for (const pass of clippedPasses)
-      yield * commandIterator(features, pass);
+      yield* commandIterator(features, pass);
   } finally {
     features.target.popViewClip();
   }

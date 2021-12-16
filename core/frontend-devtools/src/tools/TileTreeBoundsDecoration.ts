@@ -7,8 +7,8 @@
  * @module Tools
  */
 
-import { ColorDef, LinePixels } from "@bentley/imodeljs-common";
-import { DecorateContext, GraphicType, IModelApp, TileTreeReference, Tool } from "@bentley/imodeljs-frontend";
+import { ColorDef, LinePixels } from "@itwin/core-common";
+import { DecorateContext, GraphicType, IModelApp, TileTreeReference, Tool } from "@itwin/core-frontend";
 import { parseToggle } from "./parseToggle";
 
 class TreeDecoration {
@@ -73,15 +73,15 @@ export class ToggleTileTreeBoundsDecorationTool extends Tool {
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 1; }
 
-  public override run(enable?: boolean): boolean {
+  public override async run(enable?: boolean): Promise<boolean> {
     TreeDecoration.toggle(enable);
     return true;
   }
 
-  public override parseAndRun(...args: string[]): boolean {
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
     const enable = parseToggle(args[0]);
     if (typeof enable !== "string")
-      this.run(enable);
+      await this.run(enable);
 
     return true;
   }

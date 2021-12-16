@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module iModelBankClient
  */
-import { AuthorizedClientRequestContext, FileHandler } from "@bentley/itwin-client";
+import { FileHandler } from "@bentley/itwin-client";
 import { IModelClient } from "../IModelClient";
 import { IModelBankHandler } from "./IModelBankHandler";
 
@@ -21,8 +21,8 @@ export class IModelBankClient extends IModelClient {
     super(new IModelBankHandler(url, handler));
   }
 
-  public async getUrl(rqctx: AuthorizedClientRequestContext): Promise<string> {
-    return (this._handler as IModelBankHandler).getUrl(rqctx);
+  public async getUrl(): Promise<string> {
+    return (this._handler as IModelBankHandler).getUrl();
   }
 
   public get baseUrl(): string {

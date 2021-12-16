@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Supports instanced rendering of area pattern symbols.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

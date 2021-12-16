@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/components-react",
+      "comment": "Replaced ui-core Slider with one from iTwinUi-react. ",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/components-react",
+  "email": "65047615+bsteinbk@users.noreply.github.com"
+}

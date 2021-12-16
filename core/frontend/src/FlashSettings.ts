@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { BeDuration, Mutable } from "@bentley/bentleyjs-core";
+import { BeDuration, Mutable } from "@itwin/core-bentley";
 
 /** As part of [[FlashSettings]], describes how geometry is flashed.
  * @public

@@ -53,15 +53,12 @@ async function tryCopyDirectoryContents(source: string, target: string) {
     } else {
       await fs.copy(source, target, copyOptions);
     }
-  } catch (err) {
+  } catch (err: any) {
     console.log(`Error trying to copy '${source}' to '${target}': ${err.toString()}`);
   }
 }
 
-/** Prefer use of CopyStaticAssetsPlugin instead.
- * @note Will be removed in 3.0
- * @deprecated
- */
+/** Prefer use of CopyStaticAssetsPlugin instead when outside monorepos. */
 export class CopyBentleyStaticResourcesPlugin extends AbstractAsyncStartupPlugin {
   private _directoryNames: string[];
   private _useDirectoryName: boolean;
@@ -74,26 +71,34 @@ export class CopyBentleyStaticResourcesPlugin extends AbstractAsyncStartupPlugin
 
   public async runAsync(compiler: Compiler) {
     const paths = getPaths();
-    const bentleyDir = path.resolve(paths.appNodeModules, "@bentley");
-    let subDirectoryNames: string[];
-    try {
-      subDirectoryNames = await fs.readdir(bentleyDir);
-    } catch (err) {
-      this.logger.error(`Can't locate ${err.path}`);
-      return;
-    }
-    for (const thisSubDir of subDirectoryNames) {
-      if (!(await isDirectory(path.resolve(bentleyDir, thisSubDir))))
-        continue;
 
-      const fullDirName = path.resolve(bentleyDir, thisSubDir);
-      for (const staticAssetsDirectoryName of this._directoryNames) {
-        await tryCopyDirectoryContents(
-          path.join(fullDirName, "lib", staticAssetsDirectoryName),
-          this._useDirectoryName ? compiler.outputPath : path.join(compiler.outputPath, staticAssetsDirectoryName),
-        );
+    const copyContents = async (basePath: string) => {
+      let subDirectoryNames: string[];
+      try {
+        subDirectoryNames = await fs.readdir(basePath);
+      } catch (err: any) {
+        return;
       }
-    }
+      for (const thisSubDir of subDirectoryNames) {
+        if (!(await isDirectory(path.resolve(basePath, thisSubDir))))
+          continue;
+
+        const fullDirName = path.resolve(basePath, thisSubDir);
+        for (const staticAssetsDirectoryName of this._directoryNames) {
+          await tryCopyDirectoryContents(
+            path.join(fullDirName, "lib", staticAssetsDirectoryName),
+            this._useDirectoryName ? compiler.outputPath : path.join(compiler.outputPath, staticAssetsDirectoryName),
+          );
+        }
+      }
+    };
+
+    const bentleyDir = path.resolve(paths.appNodeModules, "@bentley");
+    const itwinDir = path.resolve(paths.appNodeModules, "@itwin");
+
+    await copyContents(bentleyDir);
+    await copyContents(itwinDir);
+
     return;
   }
 }
@@ -112,10 +117,16 @@ export class CopyAppAssetsPlugin extends AbstractAsyncStartupPlugin {
 export class CopyStaticAssetsPlugin {
   private _scopes: string[];
   private _fromTo: string;
+  private _useDirectoryName: boolean;
 
-  constructor({ scopes = ["@bentley", "@itwin"], fromTo = "public" }) {
+  constructor({
+    scopes = ["@bentley", "@itwin"],
+    fromTo = "public",
+    useDirectoryName = false,
+  }) {
     this._scopes = scopes;
     this._fromTo = fromTo;
+    this._useDirectoryName = useDirectoryName;
   }
 
   private _getPatterns() {
@@ -123,21 +134,20 @@ export class CopyStaticAssetsPlugin {
       return [];
     }
 
-    const patterns = [];
     const fromTo = this._fromTo;
+    const useDirectoryName = this._useDirectoryName;
 
-    for (const scope of this._scopes) {
-      patterns.push({
+    return this._scopes.map((scope) => {
+      return {
         from: `**/${fromTo}/**/*`,
         context: `node_modules/${scope}`,
         noErrorOnMissing: true,
         to({ absoluteFilename }: { absoluteFilename: string }) {
           const regex = new RegExp(`(${fromTo}(?:\\\\|\/))(.*)`);
-          return regex.exec(absoluteFilename)![2];
+          return regex.exec(absoluteFilename)![useDirectoryName ? 0 : 2];
         },
-      });
-    }
-    return patterns;
+      };
+    });
   }
 
   public apply(compiler: Compiler) {

@@ -2,18 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import { assert } from "chai";
 import * as path from "path";
 import * as semver from "semver";
-import { Guid, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { Guid, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  BackendRequestContext, BisCoreSchema, ClassRegistry, GenericSchema, GeometricElement3d, IModelDb, IModelHost, IModelJsFs, KnownLocations,
-  PhysicalPartition, Schema, Schemas, SnapshotDb, SpatialCategory, SubjectOwnsPartitionElements,
-} from "@bentley/imodeljs-backend";
+  BisCoreSchema, ClassRegistry, GenericSchema, GeometricElement3d, IModelDb, IModelHost, IModelJsFs, KnownLocations, PhysicalPartition, Schema,
+  Schemas, SnapshotDb, SpatialCategory, SubjectOwnsPartitionElements,
+} from "@itwin/core-backend";
 import {
   CategoryProps, Code, ColorDef, GeometricElement3dProps, IModel, InformationPartitionElementProps, ModelProps, PropertyMetaData, RelatedElement,
   TypeDefinitionElementProps,
-} from "@bentley/imodeljs-common";
+} from "@itwin/core-common";
 import { AnalyticalElement, AnalyticalModel, AnalyticalPartition, AnalyticalSchema } from "../analytical-backend";
 
 class TestAnalyticalSchema extends Schema {
@@ -68,7 +69,7 @@ describe("AnalyticalSchema", () => {
     assert.isTrue(IModelJsFs.existsSync(BisCoreSchema.schemaFilePath));
     assert.isTrue(IModelJsFs.existsSync(analyticalSchemaFileName));
     assert.isTrue(IModelJsFs.existsSync(testSchemaFileName));
-    await iModelDb.importSchemas(new BackendRequestContext(), [analyticalSchemaFileName, testSchemaFileName]);
+    await iModelDb.importSchemas([analyticalSchemaFileName, testSchemaFileName]);
     assert.isFalse(iModelDb.nativeDb.hasPendingTxns(), "Expect importSchemas to not have txns for snapshots");
     assert.isFalse(iModelDb.nativeDb.hasUnsavedChanges(), "Expect no unsaved changes after importSchemas");
     iModelDb.saveChanges();
@@ -160,7 +161,7 @@ describe("AnalyticalSchema", () => {
     });
 
     // Import the Analytical schema
-    await iModelDb.importSchemas(new BackendRequestContext(), [AnalyticalSchema.schemaFilePath, TestAnalyticalSchema.schemaFilePath]);
+    await iModelDb.importSchemas([AnalyticalSchema.schemaFilePath, TestAnalyticalSchema.schemaFilePath]);
     iModelDb.saveChanges("Import TestAnalytical schema");
 
     // Insert a SpatialCategory

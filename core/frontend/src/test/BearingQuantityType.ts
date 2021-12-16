@@ -5,7 +5,7 @@
 
 import {
   CustomFormatProps, Format, FormatProps, FormatterSpec, Parser, ParserSpec, QuantityParseResult, UnitConversionSpec, UnitProps, UnitsProvider, UnitSystemKey,
-} from "@bentley/imodeljs-quantity";
+} from "@itwin/core-quantity";
 import {
   CheckboxFormatPropEditorSpec, CustomFormatPropEditorSpec, CustomQuantityTypeDefinition,
   TextInputFormatPropEditorSpec, TextSelectFormatPropEditorSpec,

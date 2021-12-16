@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Omit terrain skirts if the background map has a transparent clip mask applied.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Point3d, Range3d } from "@bentley/geometry-core";
+import { Point3d, Range3d } from "@itwin/core-geometry";
 import { EcefLocation, EcefLocationProps, IModel, IModelProps, RootSubjectProps } from "../IModel";
 import { GeographicCRS } from "../geometry/CoordinateReferenceSystem";
 
@@ -176,17 +176,5 @@ describe("IModel", () => {
       expectNoChange(imodel, () => imodel.initFromProps(imodel.getProps()));
     });
 
-    it("are not dispatched when members of RootSubjectProps are directly modified", () => {
-      const imodel = new TestIModel({
-        key: "",
-        name: "imodel",
-        rootSubject: { name: "subject", description: "SUBJECT" },
-        projectExtents: { low: [0, 1, 2], high: [3, 4, 5] },
-        globalOrigin: [-1, -2, -3],
-      });
-
-      expectNoChange(imodel, () => imodel.rootSubject.name = "new name");
-      expectNoChange(imodel, () => imodel.rootSubject.description = "new description");
-    });
   });
 });

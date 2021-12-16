@@ -6,8 +6,8 @@
  * @module WebGL
  */
 
-import { assert } from "@bentley/bentleyjs-core";
-import { AnalysisStyleDisplacement, AnalysisStyleScalar, ThematicGradientSettings } from "@bentley/imodeljs-common";
+import { assert } from "@itwin/core-bentley";
+import { AnalysisStyleDisplacement, AnalysisStyleThematic, ThematicGradientSettings } from "@itwin/core-common";
 import { AuxChannel, AuxDisplacementChannel, AuxParamChannel } from "../../primitives/AuxChannelTable";
 import { DrawParams } from "../DrawCommand";
 import { TextureUnit } from "../RenderFlags";
@@ -157,8 +157,8 @@ function getNormalChannel(params: DrawParams): AuxChannel | undefined {
   return params.geometry.asLUT?.lut.auxChannels?.normals?.get(channelName);
 }
 
-function getScalarChannel(params: DrawParams): { channel: AuxParamChannel, scalar: AnalysisStyleScalar } | undefined {
-  const scalar = params.target.analysisStyle?.scalar;
+function getScalarChannel(params: DrawParams): { channel: AuxParamChannel, scalar: AnalysisStyleThematic } | undefined {
+  const scalar = params.target.analysisStyle?.thematic;
   if (!scalar)
     return undefined;
 

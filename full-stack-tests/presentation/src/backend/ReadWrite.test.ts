@@ -4,10 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as fs from "fs";
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { SnapshotDb } from "@bentley/imodeljs-backend";
-import { PresentationManager } from "@bentley/presentation-backend";
-import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@bentley/presentation-common";
+import { SnapshotDb } from "@itwin/core-backend";
+import { PresentationManager } from "@itwin/presentation-backend";
+import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { initialize, terminate } from "../IntegrationTests";
 
 describe("ReadWrite", () => {
@@ -67,12 +66,11 @@ describe("ReadWrite", () => {
         </ECSchema>`;
 
       const nodesRequest = manager.getNodes({
-        requestContext: ClientRequestContext.current,
         imodel,
         rulesetOrId: ruleset,
       });
 
-      await imodel.importSchemaStrings(ClientRequestContext.current, [schema]);
+      await imodel.importSchemaStrings([schema]);
       imodel.saveChanges();
 
       const nodes = await nodesRequest;

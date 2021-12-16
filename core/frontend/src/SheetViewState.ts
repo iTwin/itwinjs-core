@@ -6,11 +6,11 @@
  * @module Views
  */
 
-import { assert, dispose, Id64Array, Id64String } from "@bentley/bentleyjs-core";
-import { Angle, ClipShape, ClipVector, Constant, Matrix3d, Point2d, Point3d, PolyfaceBuilder, Range2d, Range3d, StrokeOptions, Transform } from "@bentley/geometry-core";
+import { assert, dispose, Id64Array, Id64String } from "@itwin/core-bentley";
+import { Angle, ClipShape, ClipVector, Constant, Matrix3d, Point2d, Point3d, PolyfaceBuilder, Range2d, Range3d, StrokeOptions, Transform } from "@itwin/core-geometry";
 import {
-  AxisAlignedBox3d, ColorDef, Feature, FeatureTable, Frustum, Gradient, GraphicParams, HiddenLine, PackedFeatureTable, Placement2d, RenderMaterial, RenderTexture, SheetProps, TextureMapping, ViewAttachmentProps, ViewDefinition2dProps, ViewFlagOverrides, ViewStateProps,
-} from "@bentley/imodeljs-common";
+  AxisAlignedBox3d, ColorDef, Feature, FeatureTable, Frustum, Gradient, GraphicParams, HiddenLine, PackedFeatureTable, Placement2d, RenderMaterial, SheetProps, TextureMapping, ViewAttachmentProps, ViewDefinition2dProps, ViewFlagOverrides, ViewStateProps,
+} from "@itwin/core-common";
 import { CategorySelectorState } from "./CategorySelectorState";
 import { DisplayStyle2dState } from "./DisplayStyleState";
 import { IModelConnection } from "./IModelConnection";
@@ -29,10 +29,11 @@ import { ViewRect } from "./ViewRect";
 import { IModelApp } from "./IModelApp";
 import { CoordSystem } from "./CoordSystem";
 import { OffScreenViewport, Viewport } from "./Viewport";
-import { ViewState, ViewState2d } from "./ViewState";
+import { AttachToViewportArgs, ViewState, ViewState2d } from "./ViewState";
 import { DrawingViewState } from "./DrawingViewState";
 import { createDefaultViewFlagOverrides, DisclosedTileTreeSet, TileGraphicType } from "./tile/internal";
 import { imageBufferToPngDataUrl, openImageDataUrlInNewWindow } from "./ImageUtil";
+import { TextureTransparency } from "./render/RenderTexture";
 
 // cSpell:ignore ovrs
 
@@ -177,7 +178,7 @@ class ViewAttachmentsInfo {
         try {
           const view = await iModel.views.load(attachment.view.id);
           return view;
-        } catch (_) {
+        } catch {
           return undefined;
         }
       };
@@ -215,7 +216,7 @@ class ViewAttachments {
 
   public constructor(infos: ViewAttachmentInfo[], sheetView: SheetViewState) {
     for (const info of infos) {
-      const drawAsRaster = info.jsonProperties?.displayOptions?.drawAsRaster || info.attachedView.isCameraEnabled();
+      const drawAsRaster = info.jsonProperties?.displayOptions?.drawAsRaster || (info.attachedView.is3d() && info.attachedView.isCameraOn);
       const ctor = drawAsRaster ? RasterAttachment : OrthographicAttachment;
       const attachment = new ctor(info.attachedView, info, sheetView);
       this._attachments.push(attachment);
@@ -421,7 +422,7 @@ export class SheetViewState extends ViewState2d {
     const ecsql = `SELECT ECInstanceId as attachmentId FROM bis.ViewAttachment WHERE model.Id=${this.baseModelId}`;
     const ids: string[] = [];
     for await (const row of this.iModel.query(ecsql))
-      ids.push(row.attachmentId);
+      ids.push(row[0]);
 
     return ids;
   }
@@ -436,8 +437,8 @@ export class SheetViewState extends ViewState2d {
   }
 
   /** @internal */
-  public override attachToViewport(): void {
-    super.attachToViewport();
+  public override attachToViewport(args: AttachToViewportArgs): void {
+    super.attachToViewport(args);
     assert(undefined === this._attachments);
     this._attachments = this._attachmentsInfo.createAttachments(this);
   }
@@ -934,9 +935,10 @@ class RasterAttachment {
         openImageDataUrlInNewWindow(url, "Attachment");
     }
 
-    const textureParams = new RenderTexture.Params();
-    const texture = IModelApp.renderSystem.createTextureFromImageBuffer(image, vp.iModel, textureParams);
-    if (undefined === texture)
+    const texture = IModelApp.renderSystem.createTexture({
+      image: { source: image, transparency: TextureTransparency.Opaque },
+    });
+    if (!texture)
       return undefined;
 
     // Create a material for the texture
@@ -978,6 +980,9 @@ class RasterAttachment {
     // Wrap the polyface in a GraphicBranch.
     const branch = new GraphicBranch(true);
     const vfOvrs = createDefaultViewFlagOverrides({ clipVolume: true, shadows: false, lighting: false, thematic: false });
+
+    // Disable transparency - background pixels are 100% transparent so they will be discarded anyway. Other pixels are 100% opaque.
+    vfOvrs.transparency = false;
     branch.setViewFlagOverrides(vfOvrs);
     branch.symbologyOverrides = new FeatureSymbology.Overrides();
     branch.entries.push(graphic);

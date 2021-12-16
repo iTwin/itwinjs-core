@@ -50,7 +50,7 @@ A backend can use platform-specific globals and modules, but only in guarded cod
 For example, a backend can use node builtins in guarded code, like this:
 
 ```ts
-  import { Platform } from "@bentley/imodeljs-backend";
+  import { Platform } from "@itwin/core-backend";
 
   if (Platform.isNodeJs()) {
     // access nodejs-specific modules and/or globals
@@ -63,9 +63,9 @@ For example, a backend can use node builtins in guarded code, like this:
 
 ### Avoiding Node.js dependencies
 
-A backend can use the following portable imodeljs-backend classes to avoid unnecessary node dependencies:
+A backend can use the following portable `@itwin/core-backend` classes to avoid unnecessary node dependencies:
 
-|Node builtin|imodeljs-backend portable substitute|
+|Node builtin|portable substitute|
 |---|---|
 |fs|[IModelJsFs]($backend)
 |os|[Platform]($backend)
@@ -75,7 +75,7 @@ A backend can use the following portable imodeljs-backend classes to avoid unnec
 |console|[Logger]($bentley)
 |path|[path](#path)|
 
-In most cases, the imodeljs-backend substitutes do *not* provide all of the properties of the node global. That is by design, as not all of the features offered by node are portable.
+In most cases, the substitutes do *not* provide all of the properties of the node global. That is by design, as not all of the features offered by node are portable.
 
 #### path
 

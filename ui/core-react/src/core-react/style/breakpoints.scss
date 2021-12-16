@@ -1,0 +1,41 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+
+/* Breakpoints */
+@mixin for-phone-only {
+  @media (max-width: 599px) { @content; }
+}
+
+@mixin for-tablet-portrait-up {
+  @media (min-width: 600px) { @content; }
+}
+
+@mixin for-tablet-portrait-down {
+  @media (max-width: 799px) { @content; }
+}
+
+@mixin for-tablet-landscape-up {
+  @media (min-width: 800px) { @content; }
+}
+
+@mixin for-tablet-landscape-down {
+  @media (max-width: 1099px) { @content; }
+}
+
+@mixin for-desktop-up {
+  @media (min-width: 1100px) { @content; }
+}
+
+@mixin for-small-desktop-down {
+  @media (max-width: 1299px) { @content; }
+}
+
+@mixin for-medium-desktop-up {
+  @media (min-width: 1300px) { @content; }
+}
+
+@mixin for-big-desktop-up {
+  @media (min-width: 1800px) { @content; }
+}

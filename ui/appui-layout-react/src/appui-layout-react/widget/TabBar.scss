@@ -1,0 +1,33 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+@import "variables";
+
+.nz-widget-tabBar {
+  background: $buic-background-4;
+  display: flex;
+  border-radius: $nz-widget-tab-border-radius $nz-widget-tab-border-radius 0 0;
+  flex: 0 0 auto;
+  position: relative;
+  height: $nz-widget-tab-height;
+
+  &.nz-separator {
+    border-bottom: 1px solid $buic-background-5;
+  }
+
+  >.nz-handle {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    cursor: auto;
+  }
+
+  >.nz-widget-tabBarButtons {
+    display: flex;
+    align-items: center;
+    align-content: center;
+    height: 100%
+  }
+}

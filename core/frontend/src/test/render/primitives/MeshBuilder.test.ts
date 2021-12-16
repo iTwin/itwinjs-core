@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { Arc3d, AuxChannel, AuxChannelData, AuxChannelDataType, LineString3d, Loop, Point3d, PolyfaceAuxData, PolyfaceBuilder, Range3d, Transform } from "@bentley/geometry-core";
-import { ColorDef, GraphicParams } from "@bentley/imodeljs-common";
+import { Arc3d, AuxChannel, AuxChannelData, AuxChannelDataType, LineString3d, Loop, Point3d, PolyfaceAuxData, PolyfaceBuilder, Range3d, Transform } from "@itwin/core-geometry";
+import { ColorDef, GraphicParams } from "@itwin/core-common";
 import { GraphicType } from "../../../render/GraphicBuilder";
 import { IModelApp } from "../../../IModelApp";
 import { MockRender } from "../../../render/MockRender";
@@ -321,9 +321,6 @@ describe("Mesh Builder Tests", () => {
     let points = [new Point3d(), new Point3d(100, 100, 100), new Point3d(200, 200, 200)];
     const fillColor = ColorDef.white.tbgr;
 
-    // throws assertion error if type is mesh (should be point or polyline)
-    expect(() => mb.addPolyline(points, fillColor)).to.throw("Assert: Programmer Error");
-
     points = [new Point3d(), new Point3d(1, 1, 1), new Point3d(2, 2, 2)];
     type = Mesh.PrimitiveType.Polyline;
     mb = MeshBuilder.create({ displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
@@ -355,9 +352,6 @@ describe("Mesh Builder Tests", () => {
     let points = [new Point3d(), new Point3d(100, 100, 100), new Point3d(200, 200, 200)];
     const fillColor = ColorDef.white.tbgr;
 
-    // throws assertion error if type is mesh (should be point or polyline)
-    expect(() => mb.addPointString(points, fillColor)).to.throw("Assert: Programmer Error");
-
     points = [new Point3d(), new Point3d(1, 1, 1), new Point3d(2, 2, 2)];
     type = Mesh.PrimitiveType.Polyline;
     mb = MeshBuilder.create({ displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
@@ -387,15 +381,10 @@ describe("Mesh Builder Tests", () => {
     const tolerance = 0.15;
     const areaTolerance = ToleranceRatio.facetArea * tolerance;
 
-    let mb = MeshBuilder.create({ displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
+    const mb = MeshBuilder.create({ displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
     expect(mb.mesh.triangles!.length).to.equal(0);
     mb.addTriangle(triangle);
     expect(mb.mesh.triangles!.length).to.equal(1);
-
-    // degenerate case
-    triangle.setIndices(0, 0, 0);
-    mb = MeshBuilder.create({ displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
-    expect(() => mb.addTriangle(triangle)).to.throw("Programmer Error");
   });
 
   function createMeshBuilder(type: Mesh.PrimitiveType, range: Range3d, options?: Partial<Omit<MeshBuilder.Props, "range" | "type">>): MeshBuilder {
