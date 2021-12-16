@@ -5,7 +5,7 @@
 
 import { Transform } from "@itwin/core-geometry";
 import {
-  DecorateContext, GraphicBranch, GraphicType, IModelApp, readGlbGraphics, RenderGraphic, Tool,
+  DecorateContext, GraphicBranch, GraphicType, IModelApp, readGltfGraphics, RenderGraphic, Tool,
 } from "@itwin/core-frontend";
 
 class GltfDecoration {
@@ -53,7 +53,7 @@ export class GltfDecorationTool extends Tool {
       });
       const file = await handle.getFile();
       const buffer = await file.arrayBuffer() as ArrayBuffer;
-      let graphic = await readGlbGraphics({
+      let graphic = await readGltfGraphics({
         glb: new Uint8Array(buffer),
         iModel,
       });

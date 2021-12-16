@@ -15,7 +15,9 @@ import {
 } from "@itwin/core-common";
 import { getImageSourceFormatForMimeType, imageElementFromImageSource } from "../ImageUtil";
 import { IModelConnection } from "../IModelConnection";
+import { IModelApp } from "../IModelApp";
 import { GraphicBranch } from "../render/GraphicBranch";
+import { BatchOptions } from "../render/GraphicBuilder";
 import { InstancedGraphicParams } from "../render/InstancedGraphicParams";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { Mesh, MeshGraphicArgs } from "../render/primitives/mesh/MeshPrimitives";
@@ -1419,5 +1421,40 @@ export abstract class GltfReader {
     const textureJson = this._glTF.textures ? JsonUtils.asObject(this._glTF.textures[textureId]) : undefined;
     const texture = undefined !== textureJson ? textureJson.renderTexture as RenderTexture : undefined;
     return undefined !== texture ? new TextureMapping(texture, new TextureMapping.Params()) : undefined;
+  }
+}
+
+/** ###TODO @alpha */
+export interface ReadGltfGraphicsArgs {
+  glb: Uint8Array;
+  iModel: IModelConnection;
+  modelId?: Id64String;
+  options?: BatchOptions | false;
+}
+
+/** ###TODO @alpha */
+export async function readGltfGraphics(args: ReadGltfGraphicsArgs): Promise<RenderGraphic | undefined> {
+  const stream = new ByteStream(args.glb.buffer);
+  const props = GltfReaderProps.create(stream, /*yAxisUp=*/true); // glTF supports exactly one coordinate system with y up.
+  const reader = props ? new Reader(props, args) : undefined;
+  if (!reader)
+    return undefined;
+
+  const result = await reader.read();
+  return result.graphic;
+}
+
+/** Implements [[readGltfGraphics]]. */
+class Reader extends GltfReader {
+  public constructor(props: GltfReaderProps, args: ReadGltfGraphicsArgs) {
+    super(props, args.iModel, args.modelId ?? "0", false, IModelApp.renderSystem);
+    // ###TODO FeatureTable
+    // ###TODO modelId useless unless feature table, and required if have feature table?
+  }
+
+  public async read(): Promise<GltfReaderResult> {
+    await this.loadTextures();
+    // ###TODO contentRange - produce from meshes while reading...
+    return this.readGltfAndCreateGraphics(true, undefined, Range3d.createNull());
   }
 }
