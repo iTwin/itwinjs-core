@@ -16,18 +16,14 @@ export function useWidgetDef(id: string) {
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function ToggleCameraItem() {
   const activeViewport = useActiveViewport();
-  const [activeViewId, setActiveViewId] = React.useState(activeViewport?.view.id);
   const [cameraOn, setCameraOn] = React.useState(activeViewport?.isCameraOn);
 
   React.useEffect(() => {
     const handleViewChanged = (vp: Viewport): void => {
       setCameraOn(vp.isCameraOn);
     };
-    if (activeViewport)
-      setActiveViewId(activeViewport.view.id);
-
     return activeViewport?.onChangeView.addListener(handleViewChanged);
-  }, [activeViewId, activeViewport]);
+  }, [activeViewport]);
 
   const onToggleCamera = React.useCallback(async () => {
     if (activeViewport) {
