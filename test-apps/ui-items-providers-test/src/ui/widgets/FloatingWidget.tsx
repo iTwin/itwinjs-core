@@ -41,7 +41,6 @@ export function ToggleCameraItem() {
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function ViewFlagItem(flagName: string) {
   const activeViewport = useActiveViewport();
-  const [activeViewId, setActiveViewId] = React.useState(activeViewport?.view.id);
 
   const flagValue = React.useCallback((name: string, vp?: Viewport) => {
     const props: ViewFlagProps | undefined = vp?.viewFlags.toJSON();
@@ -57,13 +56,10 @@ export function ViewFlagItem(flagName: string) {
       const viewFlags = ViewFlags.fromJSON(props);
       vp.viewFlags = viewFlags;
       setValue((props as any)[flagName] === undefined ? false : (props as any)[flagName]);
-      setActiveViewId(vp.view.id);
     };
-    if (activeViewport)
-      setActiveViewId(activeViewport.view.id);
 
     return activeViewport?.onChangeView.addListener(handleViewChanged);
-  }, [activeViewId, activeViewport, flagName]);
+  }, [activeViewport, flagName]);
 
   const onViewFlagChanged = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const checked = e.target.checked;
