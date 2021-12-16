@@ -46,7 +46,7 @@
     "@itwin/core-webpack-tools": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
-    "@itwin/projects-client": "^0.2.0",
+    "@itwin/projects-client": "^0.3.0",
     "@bentley/react-scripts": "4.0.3",
     "@types/lorem-ipsum": "^1.0.2",
     "@types/node": "14.14.31",
