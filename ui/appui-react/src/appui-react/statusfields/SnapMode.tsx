@@ -9,11 +9,11 @@
 import * as React from "react";
 import { connect } from "react-redux";
 import { SnapMode } from "@itwin/core-frontend";
-import { FooterPopup, FooterPopupContentType, SnapMode as NZ_SnapMode, Snap, SnapModePanel } from "@itwin/appui-layout-react";
+import { Snap, SnapModePanel } from "@itwin/appui-layout-react";
 import { ConfigurableUiActions } from "../configurableui/state";
-import { StatusBarFieldId } from "../statusbar/StatusBarWidgetControl";
 import { UiFramework } from "../UiFramework";
 import { StatusFieldProps } from "./StatusFieldProps";
+import { Indicator } from "./Indicator";
 
 // cSpell:ignore multione
 /** Defines properties supported by the SnapMode Field Component.
@@ -49,7 +49,6 @@ class SnapModeFieldComponent extends React.Component<SnapModeFieldProps, SnapMod
     { label: UiFramework.translate("snapModeField.midpoint"), value: SnapMode.MidPoint as number, iconName: "snaps-midpoint" },
     { label: UiFramework.translate("snapModeField.bisector"), value: SnapMode.Bisector as number, iconName: "snaps-bisector" },
   ];
-  private _indicator = React.createRef<HTMLDivElement>();
   private _title = UiFramework.translate("snapModeField.snapMode");
 
   public override readonly state: SnapModeFieldState = {
@@ -82,59 +81,24 @@ class SnapModeFieldComponent extends React.Component<SnapModeFieldProps, SnapMod
   public override render(): React.ReactNode {
     return (
       <>
-        <div ref={this._handleTargetRef}
-          className={this.props.className}
-          style={this.props.style}
-          title={this._title}
-        >
-          <NZ_SnapMode // eslint-disable-line deprecation/deprecation
-            icon={
-              <i className={`icon icon-${this.getSnapModeIconNameFromMode(this.props.snapMode)}`} />
-            }
-            indicatorRef={this._indicator}
-            isInFooterMode={this.props.isInFooterMode}
-            onClick={this._handleSnapModeIndicatorClick}
-          >
-            {this.props.isInFooterMode ? this._title : /* istanbul ignore next */ undefined}
-          </NZ_SnapMode>
-        </div>
-        <FooterPopup
-          contentType={FooterPopupContentType.Panel}
-          isOpen={this.props.openWidget === this._className}
-          onClose={this._handleClose}
-          onOutsideClick={this._handleOutsideClick}
-          target={this.state.target}
-        >
-          <SnapModePanel
-            title={this._title}
-          >
-            {this.getSnapEntries()}
-          </SnapModePanel>
-        </FooterPopup>
+        <Indicator
+          iconName={`icon-${this.getSnapModeIconNameFromMode(this.props.snapMode)}`}
+          toolTip={this._title}
+          label={this._title}
+          isLabelVisible={true}
+          dialog={
+            <SnapModePanel title={this._title}>
+              {this.getSnapEntries()}
+            </SnapModePanel>
+          }
+        />
       </>
     );
   }
 
-  private _handleTargetRef = (target: HTMLElement | null) => {
-    this.setState({ target });
-  };
-
-  private _handleClose = () => {
-    this.setOpenWidget(null);
-  };
-
-  private _handleOutsideClick = (e: MouseEvent) => {
-    if (!this._indicator.current ||
-      !(e.target instanceof Node) ||
-      this._indicator.current.contains(e.target))
-      return;
-
-    this._handleClose();
-  };
-
   /** Return array of SnapRow elements, one for each support snap mode. This array will populate the pop-up used
-   * to select a SnapMode.
-   */
+    * to select a SnapMode.
+    */
   private getSnapEntries(): JSX.Element[] {
     return this._snapModeFieldArray.map((item: SnapModeFieldEntry, index: number) => {
       return (
@@ -157,21 +121,6 @@ class SnapModeFieldComponent extends React.Component<SnapModeFieldProps, SnapMod
     this.props.setSnapMode(snapModeField);
   };
 
-  /** Called when user click on field in status bar which triggers the pop-up to open. */
-  private _handleSnapModeIndicatorClick = () => {
-    const isOpen = this.props.openWidget === this._className;
-    if (isOpen)
-      this.setOpenWidget(null);
-    else
-      this.setOpenWidget(this._className);
-  };
-
-  /** Opens the pop-up window. */
-  private setOpenWidget(openWidget: StatusBarFieldId) {
-    // istanbul ignore else
-    if (this.props.onOpenWidget)
-      this.props.onOpenWidget(openWidget);
-  }
 }
 
 // Used by Redux to map dispatch functions to props entry. This requires SnapModeFieldProps interface above to include a setSnapMode entry */
