@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-frontend",
-  "version": "3.0.0-dev.153",
+  "version": "3.0.0-dev.154",
   "description": "iTwin.js frontend components",
   "main": "lib/cjs/core-frontend.js",
   "module": "lib/esm/core-frontend.js",
@@ -39,14 +39,14 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.153",
-    "@itwin/appui-abstract": "workspace:^3.0.0-dev.153",
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.153",
-    "@itwin/core-common": "workspace:^3.0.0-dev.153",
-    "@itwin/core-geometry": "workspace:^3.0.0-dev.153",
-    "@itwin/core-orbitgt": "workspace:^3.0.0-dev.153",
-    "@itwin/core-quantity": "workspace:^3.0.0-dev.153",
-    "@itwin/webgl-compatibility": "workspace:^3.0.0-dev.153"
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.154",
+    "@itwin/appui-abstract": "workspace:^3.0.0-dev.154",
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.154",
+    "@itwin/core-common": "workspace:^3.0.0-dev.154",
+    "@itwin/core-geometry": "workspace:^3.0.0-dev.154",
+    "@itwin/core-orbitgt": "workspace:^3.0.0-dev.154",
+    "@itwin/core-quantity": "workspace:^3.0.0-dev.154",
+    "@itwin/webgl-compatibility": "workspace:^3.0.0-dev.154"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
