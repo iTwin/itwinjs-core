@@ -6,7 +6,6 @@
  * @module Tiles
  */
 
-import { MessageSeverity } from "@itwin/appui-abstract";
 import { assert, compareBooleans, compareNumbers, compareStrings, compareStringsOrUndefined, CompressedId64Set, Id64String } from "@itwin/core-bentley";
 import {
   Angle, AngleSweep, Constant, Ellipsoid, EllipsoidPatch, Point3d, Range1d, Range3d, Ray3d, Transform, Vector3d, XYZProps,
@@ -407,8 +406,6 @@ function createViewFlagOverrides(wantLighting: boolean, wantThematic: false | un
   return createDefaultViewFlagOverrides({ clipVolume: false, lighting: wantLighting, thematic: wantThematic });
 }
 
-let terrainFallbackNotification = true;
-
 class MapTreeSupplier implements TileTreeSupplier {
   public readonly isEcefDependent = true;
 
@@ -494,11 +491,8 @@ class MapTreeSupplier implements TileTreeSupplier {
       terrainProvider = await getCesiumTerrainProvider(iModel, modelId, id.wantSkirts, id.wantNormals, id.terrainExaggeration);
 
       if (!terrainProvider) {
-        if (terrainFallbackNotification)
-          IModelApp.notifications.displayMessage(MessageSeverity.Information, IModelApp.localization.getLocalizedString(`BackgroundMap.TerrainFallback`));
         applyTerrain = false;
         geodeticOffset = 0;
-        terrainFallbackNotification = false;
       }
     }
 
@@ -510,10 +504,6 @@ class MapTreeSupplier implements TileTreeSupplier {
     const loader = new MapTileLoader(iModel, modelId, bimElevationBias, terrainProvider);
     const ecefToDb = iModel.getMapEcefToDb(bimElevationBias);
 
-    if (undefined === loader) {
-      assert(false, "Invalid Terrain Provider");
-      return undefined;
-    }
     if (id.maskModelIds)
       await iModel.models.load(CompressedId64Set.decompressSet(id.maskModelIds));
 
