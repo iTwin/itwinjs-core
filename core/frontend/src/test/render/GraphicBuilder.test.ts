@@ -272,6 +272,6 @@ describe("GraphicBuilder", () => {
       expectEdges("none", (builder) => {
         builder.addSolidPrimitive(Sphere.createCenterRadius(new Point3d(0, 0, 0), 1));
       }, false);
-    });
+    }).timeout(20000); // macOS is slow.
   });
 });
