@@ -1540,7 +1540,7 @@ importers:
       '@types/enzyme': 3.9.3
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
-      '@types/react': 17.0.31
+      '@types/react': ^17.0.37
       '@types/react-beautiful-dnd': ^12.1.2
       '@types/react-select': 3.0.26
       '@types/sinon': ^9.0.0
@@ -1597,7 +1597,7 @@ importers:
       '@types/enzyme': 3.9.3
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
-      '@types/react': 17.0.31
+      '@types/react': 17.0.37
       '@types/react-beautiful-dnd': 12.1.5
       '@types/react-select': 3.0.26
       '@types/sinon': 9.0.11
@@ -1961,7 +1961,7 @@ importers:
       '@types/faker': ^4.1.0
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
-      '@types/react': 17.0.31
+      '@types/react': ^17.0.37
       '@types/react-dom': ^17.0.0
       '@types/rimraf': ^2.0.2
       '@types/sinon': ^9.0.0
@@ -2041,7 +2041,7 @@ importers:
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@types/react': 17.0.31
+      '@types/react': 17.0.37
       '@types/react-dom': 17.0.11
       cache-require-paths: 0.3.0
       cross-env: 5.2.1
@@ -2379,7 +2379,7 @@ importers:
       '@types/enzyme': 3.9.3
       '@types/faker': ^4.1.0
       '@types/mocha': ^8.2.2
-      '@types/react': 17.0.31
+      '@types/react': ^17.0.37
       '@types/react-dom': ^17.0.0
       '@types/sinon': ^9.0.0
       '@types/sinon-chai': ^3.2.0
@@ -2438,7 +2438,7 @@ importers:
       '@types/enzyme': 3.9.3
       '@types/faker': 4.1.12
       '@types/mocha': 8.2.3
-      '@types/react': 17.0.31
+      '@types/react': 17.0.37
       '@types/react-dom': 17.0.11
       '@types/sinon': 9.0.11
       '@types/sinon-chai': 3.2.6
@@ -3076,7 +3076,7 @@ importers:
       '@itwin/presentation-components': workspace:*
       '@itwin/presentation-frontend': workspace:*
       '@types/bunyan': ^1.8.4
-      '@types/react': 17.0.31
+      '@types/react': ^17.0.37
       '@types/react-dom': ^17.0.0
       '@types/react-select': 3.0.26
       autoprefixer: ^8.6.5
@@ -3129,7 +3129,7 @@ importers:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@types/bunyan': 1.8.8
-      '@types/react': 17.0.31
+      '@types/react': 17.0.37
       '@types/react-dom': 17.0.11
       '@types/react-select': 3.0.26
       autoprefixer: 8.6.5
@@ -3167,7 +3167,7 @@ importers:
       '@itwin/presentation-components': workspace:*
       '@itwin/presentation-frontend': workspace:*
       '@reduxjs/toolkit': ^1.5.0
-      '@types/react': 17.0.31
+      '@types/react': ^17.0.37
       '@types/react-select': 3.0.26
       classnames: ^2.3.1
       cpx2: ^3.0.0
@@ -3203,7 +3203,7 @@ importers:
       '@bentley/react-scripts': 4.0.3_react@17.0.2+typescript@4.4.4
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@types/react': 17.0.31
+      '@types/react': 17.0.37
       '@types/react-select': 3.0.26
       cpx2: 3.0.2
       eslint: 7.32.0
@@ -3256,7 +3256,7 @@ importers:
       '@itwin/ui-items-providers-test': workspace:*
       '@types/lorem-ipsum': ^1.0.2
       '@types/node': 14.14.31
-      '@types/react': 17.0.31
+      '@types/react': ^17.0.37
       '@types/react-dom': ^17.0.0
       '@types/react-redux': ^7.1.18
       '@types/react-select': 3.0.26
@@ -3343,7 +3343,7 @@ importers:
       '@itwin/projects-client': 0.3.0
       '@types/lorem-ipsum': 1.0.2
       '@types/node': 14.14.31
-      '@types/react': 17.0.31
+      '@types/react': 17.0.37
       '@types/react-dom': 17.0.11
       '@types/react-redux': 7.1.20
       '@types/react-select': 3.0.26
@@ -3774,7 +3774,7 @@ importers:
       '@types/chai-spies': ^1.0.0
       '@types/enzyme': 3.9.3
       '@types/mocha': ^8.2.2
-      '@types/react': 17.0.31
+      '@types/react': ^17.0.37
       '@types/react-dom': ^17.0.0
       '@types/sinon': ^9.0.0
       '@types/uuid': ^7.0.2
@@ -3823,7 +3823,7 @@ importers:
       '@types/chai-spies': 1.0.3
       '@types/enzyme': 3.9.3
       '@types/mocha': 8.2.3
-      '@types/react': 17.0.31
+      '@types/react': 17.0.37
       '@types/react-dom': 17.0.11
       '@types/sinon': 9.0.11
       '@types/uuid': 7.0.5
@@ -3887,7 +3887,7 @@ importers:
       '@types/lodash': ^4.14.0
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
-      '@types/react': 17.0.31
+      '@types/react': ^17.0.37
       '@types/react-dom': ^17.0.0
       '@types/react-redux': ^7.1.18
       '@types/rimraf': ^2.0.2
@@ -3971,7 +3971,7 @@ importers:
       '@types/lodash': 4.14.178
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
-      '@types/react': 17.0.31
+      '@types/react': 17.0.37
       '@types/react-dom': 17.0.11
       '@types/react-redux': 7.1.20
       '@types/rimraf': 2.0.5
@@ -4032,7 +4032,7 @@ importers:
       '@types/linkify-it': ~2.1.0
       '@types/lodash': ^4.14.0
       '@types/mocha': ^8.2.2
-      '@types/react': 17.0.31
+      '@types/react': ^17.0.37
       '@types/react-data-grid': 4.0.2
       '@types/react-dom': ^17.0.0
       '@types/react-highlight-words': ^0.16.1
@@ -4129,7 +4129,7 @@ importers:
       '@types/linkify-it': 2.1.0
       '@types/lodash': 4.14.178
       '@types/mocha': 8.2.3
-      '@types/react': 17.0.31
+      '@types/react': 17.0.37
       '@types/react-data-grid': 4.0.2
       '@types/react-dom': 17.0.11
       '@types/react-highlight-words': 0.16.3
@@ -4189,7 +4189,7 @@ importers:
       '@types/lodash': ^4.14.0
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
-      '@types/react': 17.0.31
+      '@types/react': ^17.0.37
       '@types/react-autosuggest': 10.1.2
       '@types/react-dom': ^17.0.0
       '@types/react-select': 3.0.26
@@ -4256,7 +4256,7 @@ importers:
       '@types/lodash': 4.14.178
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
-      '@types/react': 17.0.31
+      '@types/react': 17.0.37
       '@types/react-autosuggest': 10.1.2
       '@types/react-dom': 17.0.11
       '@types/react-select': 3.0.26
@@ -4316,7 +4316,7 @@ importers:
       '@types/faker': ^4.1.0
       '@types/lodash': ^4.14.0
       '@types/mocha': ^8.2.2
-      '@types/react': 17.0.31
+      '@types/react': ^17.0.37
       '@types/react-dom': ^17.0.0
       '@types/sinon': ^9.0.0
       '@types/sinon-chai': ^3.2.0
@@ -4386,7 +4386,7 @@ importers:
       '@types/faker': 4.1.12
       '@types/lodash': 4.14.178
       '@types/mocha': 8.2.3
-      '@types/react': 17.0.31
+      '@types/react': 17.0.37
       '@types/react-dom': 17.0.11
       '@types/sinon': 9.0.11
       '@types/sinon-chai': 3.2.6
@@ -8236,7 +8236,7 @@ packages:
         optional: true
     dependencies:
       '@babel/runtime': 7.16.5
-      '@types/react': 17.0.31
+      '@types/react': 17.0.37
       '@types/react-dom': 17.0.11
       '@types/react-test-renderer': 17.0.1
       react: 17.0.2
@@ -8258,7 +8258,7 @@ packages:
         optional: true
     dependencies:
       '@babel/runtime': 7.16.5
-      '@types/react': 17.0.31
+      '@types/react': 17.0.37
       '@types/react-dom': 17.0.11
       '@types/react-test-renderer': 17.0.1
       react: 17.0.2
@@ -8280,7 +8280,7 @@ packages:
         optional: true
     dependencies:
       '@babel/runtime': 7.16.5
-      '@types/react': 17.0.31
+      '@types/react': 17.0.37
       '@types/react-dom': 17.0.11
       '@types/react-test-renderer': 17.0.1
       react: 17.0.2
@@ -8490,7 +8490,7 @@ packages:
     resolution: {integrity: sha512-jDKoZiiMA3lGO3skSO7dfqEHNvmiTLLV+PHD9EBQVlJANJvpY6qq1zzjRI24ZOtG7F+CS7BVWDXKewRmN8PjHQ==}
     dependencies:
       '@types/cheerio': 0.22.30
-      '@types/react': 17.0.31
+      '@types/react': 17.0.37
     dev: true
 
   /@types/eslint/7.2.14:
@@ -8579,7 +8579,7 @@ packages:
   /@types/hoist-non-react-statics/3.3.1:
     resolution: {integrity: sha512-iMIqiko6ooLrTh1joXodJK5X9xeEALT1kM5G3ZLhD3hszxBdIEd5C75U834D9mLcINgD4OyZf5uQXjkuYydWvA==}
     dependencies:
-      '@types/react': 17.0.31
+      '@types/react': 17.0.37
       hoist-non-react-statics: 3.3.2
 
   /@types/html-minifier-terser/5.1.2:
@@ -8739,44 +8739,44 @@ packages:
   /@types/react-autosuggest/10.1.2:
     resolution: {integrity: sha512-K23lmXhC3Bbd8y/jm5+wYrw/NAeN4U/wlHTgAEBIwLOyQKFCFYA3ONKte9P21L+RGIXRP8UlzHOSRtmIZw5Nqw==}
     dependencies:
-      '@types/react': 17.0.31
+      '@types/react': 17.0.37
     dev: true
 
   /@types/react-beautiful-dnd/12.1.5:
     resolution: {integrity: sha512-UHSjLoRsPBRX81FMRmNwIFT0hSjPW0BayEFCcMhz1f3WsXEiYytR09WAzkBqvytJHzSL25ooCBA2DSjK6m1Qow==}
     dependencies:
-      '@types/react': 17.0.31
+      '@types/react': 17.0.37
     dev: true
 
   /@types/react-data-grid/4.0.2:
     resolution: {integrity: sha512-no7HnLfm5CSLicuLixZjgsfq0myt6+aBxyVCIo9XiJdNLiZUC0uogMa2f4wq+xdTaslYHeyzwsVL6KF0B765Yg==}
     dependencies:
-      '@types/react': 17.0.31
+      '@types/react': 17.0.37
     dev: true
 
   /@types/react-dom/17.0.11:
     resolution: {integrity: sha512-f96K3k+24RaLGVu/Y2Ng3e1EbZ8/cVJvypZWd7cy0ofCBaf2lcM46xNhycMZ2xGwbBjRql7hOlZ+e2WlJ5MH3Q==}
     dependencies:
-      '@types/react': 17.0.31
+      '@types/react': 17.0.37
 
   /@types/react-highlight-words/0.16.3:
     resolution: {integrity: sha512-ZarU4+/R593xctDXy/SkyWeS/dg5sG8TxZ2DATd2EdDKHlfqCPnOYzHEo/7XaYpCoSCgk5Sp1sVNhnOzC/ezJg==}
     dependencies:
-      '@types/react': 17.0.31
+      '@types/react': 17.0.37
     dev: true
 
   /@types/react-redux/7.1.20:
     resolution: {integrity: sha512-q42es4c8iIeTgcnB+yJgRTTzftv3eYYvCZOh1Ckn2eX/3o5TdsQYKUWpLoLuGlcY/p+VAhV9IOEZJcWk/vfkXw==}
     dependencies:
       '@types/hoist-non-react-statics': 3.3.1
-      '@types/react': 17.0.31
+      '@types/react': 17.0.37
       hoist-non-react-statics: 3.3.2
       redux: 4.1.2
 
   /@types/react-select/3.0.26:
     resolution: {integrity: sha512-rAaiD0SFkBi3PUwp1DrJV04CobPl2LuZXF+kv6MKw8kaeGo82xTOZzjM8DDi4lrdkqGbInZiE2QO9nIJm3bqgw==}
     dependencies:
-      '@types/react': 17.0.31
+      '@types/react': 17.0.37
       '@types/react-dom': 17.0.11
       '@types/react-transition-group': 4.4.4
     dev: true
@@ -8784,27 +8784,27 @@ packages:
   /@types/react-table/7.7.9:
     resolution: {integrity: sha512-ejP/J20Zlj9VmuLh73YgYkW2xOSFTW39G43rPH93M4mYWdMmqv66lCCr+axZpkdtlNLGjvMG2CwzT4S6abaeGQ==}
     dependencies:
-      '@types/react': 17.0.31
+      '@types/react': 17.0.37
 
   /@types/react-test-renderer/17.0.1:
     resolution: {integrity: sha512-3Fi2O6Zzq/f3QR9dRnlnHso9bMl7weKCviFmfF6B4LS1Uat6Hkm15k0ZAQuDz+UBq6B3+g+NM6IT2nr5QgPzCw==}
     dependencies:
-      '@types/react': 17.0.31
+      '@types/react': 17.0.37
 
   /@types/react-transition-group/4.4.4:
     resolution: {integrity: sha512-7gAPz7anVK5xzbeQW9wFBDg7G++aPLAFY0QaSMOou9rJZpbuI58WAuJrgu+qR92l61grlnCUe7AFX8KGahAgug==}
     dependencies:
-      '@types/react': 17.0.31
+      '@types/react': 17.0.37
     dev: true
 
   /@types/react-window/1.8.5:
     resolution: {integrity: sha512-V9q3CvhC9Jk9bWBOysPGaWy/Z0lxYcTXLtLipkt2cnRj1JOSFNF7wqGpkScSXMgBwC+fnVRg/7shwgddBG5ICw==}
     dependencies:
-      '@types/react': 17.0.31
+      '@types/react': 17.0.37
     dev: true
 
-  /@types/react/17.0.31:
-    resolution: {integrity: sha512-MQSR5EL4JZtdWRvqDgz9kXhSDDoy2zMTYyg7UhP+FZ5ttUOocWyxiqFJiI57sUG0BtaEX7WDXYQlkCYkb3X9vQ==}
+  /@types/react/17.0.37:
+    resolution: {integrity: sha512-2FS1oTqBGcH/s0E+CjrCCR9+JMpsu9b69RTFO+40ua43ZqP5MmQ4iUde/dMjWR909KxZwmOQIFq6AV6NjEG5xg==}
     dependencies:
       '@types/prop-types': 15.7.4
       '@types/scheduler': 0.16.2
