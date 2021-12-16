@@ -14,7 +14,7 @@ import {
 } from "@itwin/core-frontend";
 import { DisplayTestApp } from "./App";
 import { ToolBarDropDown } from "./ToolBar";
-import { ITwinRealityData, RealityDataAccessClient, RealityDataQueryCriteria, RealityDataResponse } from "@itwin/reality-data-client";
+import { ITwinRealityData, RealityDataAccessClient, RealityDataClientOptions, RealityDataQueryCriteria, RealityDataResponse } from "@itwin/reality-data-client";
 
 function clearElement(element: HTMLElement): void {
   while (element.hasChildNodes())
@@ -122,7 +122,13 @@ export class ClassificationsPanel extends ToolBarDropDown {
           const criteria: RealityDataQueryCriteria = {
             extent: range,
           };
-          available = await new RealityDataAccessClient().getRealityDatas(accessToken, this._iTwinId, criteria);
+          const realityDataClientOptions: RealityDataClientOptions = {
+            /** API Version. v1 by default */
+            // version?: ApiVersion;
+            /** API Url. Used to select environment. Defaults to "https://api.bentley.com/realitydata" */
+            baseUrl: `https://${process.env.IMJS_URL_PREFIX}api.bentley.com/realitydata`,
+          };
+          available = await new RealityDataAccessClient(realityDataClientOptions).getRealityDatas(accessToken, this._iTwinId, criteria);
         }
       }
     } catch (_error) {
