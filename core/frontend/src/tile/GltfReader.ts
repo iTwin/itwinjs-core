@@ -31,17 +31,19 @@ import { TileContent } from "./internal";
 let forceLUT = false;
 /* eslint-disable no-restricted-syntax */
 
-/** @internal */
+/** Enumerates the types of [[GltfMeshPrimitive]]s. */
 enum GltfMeshMode {
   Points = 0,
   Lines = 1,
   LineStrip = 3,
   Triangles = 4,
+  /** Not currently supported. */
   TriangleStrip = 5,
+  /** Not currently supported. */
   TriangleFan = 6,
 }
 
-/** @internal */
+/** Enumerates the basic data types supported by types like [[GltfAccessor]], material values, technique uniforms, etc. */
 export enum GltfDataType {
   SignedByte = 0x1400,
   UnsignedByte = 0x1401,
@@ -77,46 +79,58 @@ enum GltfMinFilter {
   LinearMipMapLinear = 9987,
 }
 
-/** @internal */
+/** Describes how texture coordinates outside of the range [0..1] are handled. */
 enum GltfWrapMode {
   ClampToEdge = 33071,
   MirroredRepeat = 33648,
   Repeat = 10497,
 }
 
-/** @internal */
+/** Describes the intended target of a [[GltfBufferViewProps]]. */
 enum GltfBufferTarget {
   ArrayBuffer = 34962,
   ElementArrayBuffer = 24963,
 }
 
+/** The type used to refer to an entry in a [[GltfDictionary]] in a glTF 1.0 asset. */
 type Gltf1Id = string;
+/** The type used to refer to an entry in a [[GltfDictionary]] in a glTF 2.0 asset. */
 type Gltf2Id = number;
+/** The type used to refer to an entry in a [[GltfDictionary]]. */
 type GltfId = Gltf1Id | Gltf2Id;
 
+/** A collection of resources of some type defined at the top-level of a [[Gltf]] asset.
+ * In glTF 1.0, these are defined as objects; each resource is referenced and accessed by its string key.
+ * In glTF 2.0, these are defined as arrays; each resource is referenced and accessed by its integer array index.
+ */
 interface GltfDictionary<T extends GltfChildOfRootProperty> {
-  [key: string | number]: T | undefined;
+  [key: GltfId]: T | undefined;
 }
 
+/** Optional extensions applied to a [[GltfProperty]] to enable behavior not defined in the core specification. */
 interface GltfExtensions {
   [key: string]: unknown | undefined;
 }
 
+/** The base interface provided by most objects in a glTF asset, permitting additional data to be associated with the object. */
 interface GltfProperty {
   extensions?: GltfExtensions;
   extras?: any;
 }
 
+/** The base interface provided by top-level properties of a [[Gltf]] asset. */
 interface GltfChildOfRootProperty extends GltfProperty {
+  /** Optional name, strictly for human consumption. */
   name?: string;
 }
 
+/** A unit of geometry belonging to a [[GltfMesh]]. */
 interface GltfMeshPrimitive extends GltfProperty {
-  attributes: { [k: string]: GltfId };
+  attributes: { [k: string]: GltfId | undefined };
   indices?: GltfId;
   material?: GltfId;
   mode?: GltfMeshMode;
-  targets?: { [k: string]: GltfId };
+  targets?: { [k: string]: GltfId | undefined };
 }
 
 interface GltfMesh extends GltfChildOfRootProperty {
@@ -278,14 +292,33 @@ interface GltfAccessor extends GltfChildOfRootProperty {
   sparse?: unknown; // ###TODO sparse accessors
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+/** Describes the top-level structure of a glTF asset.
+ * This interface, along with all of the related Gltf* types defined in this file, is primarily based upon the [official glTF 2.0 specification](https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html#schema-reference-node).
+ * However, it can also represent a [glTF 1.0](https://github.com/KhronosGroup/glTF/tree/main/specification/1.0#reference-node) asset.
+ * Some types are combined. For example, the top-level dictionaries in glTF 1.0 are objects, while in glTF 2.0 they are arrays; the GltfDictionary interface supports accessing
+ * items using either strings or numeric indexes represented by [[GltfId]].
+ * For types that differ significantly between the two specs, Gltf1* and Gltf2* versions are defined (e.g., GltfMaterial is a union of Gltf1Material and Gltf2Material).
+ * These interfaces also accommodate some deviations from both specs that are known to exist in the wild.
+ * Most aspects of the specifications that are not implemented here are omitted (e.g., skinning, animations).
+ */
 interface Gltf extends GltfProperty {
-  asset?: GltfAsset; // Asset is required in glTF 2.0, optional in 1.0
+  /** Metadata about the glTF asset.
+   * @note This property is required in glTF 2.0, but optional in 1.0.
+   */
+  asset?: GltfAsset;
+  /** The Id of the default [[GltfScene]] in [[scenes]]. */
   scene?: GltfId;
   extensions?: GltfExtensions & {
+    /** The [CESIUM_RTC extension](https://github.com/KhronosGroup/glTF/blob/main/extensions/1.0/Vendor/CESIUM_RTC/README.md) defines a centroid
+     * relative to which all coordinates in the asset are defined, to reduce floating-point precision errors for large coordinates.
+     */
     CESIUM_RTC?: {
       center?: number[];
     };
+    /** The [KHR_techniques_webgl extension](https://github.com/KhronosGroup/glTF/blob/c1c12bd100e88ff468ccef1cb88cfbec56a69af2/extensions/2.0/Khronos/KHR_techniques_webgl/README.md)
+     * allows "techniques" to be associated with [[GltfMaterial]]s. Techniques can supply custom shader programs to render geometry; this was a core feature of glTF 1.0 (see [[GltfTechnique]]).
+     * Here, it is only used to extract uniform values.
+     */
     KHR_techniques_webgl?: {
       techniques?: Array<{
         uniforms?: {
@@ -294,12 +327,16 @@ interface Gltf extends GltfProperty {
       }>;
     };
   };
+  /** Names of glTF extensions used in the asset. */
   extensionsUsed?: string[];
+  /** Names of glTF extensions required to properly load the asset. */
   extensionsRequired?: string[];
   accessors?: GltfDictionary<GltfAccessor>;
+  /** Not currently supported. */
   animations?: GltfDictionary<any>;
   buffers?: GltfDictionary<GltfBuffer>;
   bufferViews?: GltfDictionary<GltfBufferViewProps>;
+  /** Not currently used. */
   cameras?: GltfDictionary<any>;
   images?: GltfDictionary<GltfImage>;
   materials?: GltfDictionary<GltfMaterial>;
@@ -307,8 +344,10 @@ interface Gltf extends GltfProperty {
   nodes?: GltfDictionary<GltfNode>;
   samplers?: GltfDictionary<GltfSampler>;
   scenes?: GltfDictionary<GltfScene>;
+  /** Not currently supported. */
   skins?: GltfDictionary<any>;
   textures?: GltfDictionary<GltfTexture>;
+  /** For glTF 1.0 only, techniques associated with [[Gltf1Material]]s. */
   techniques?: GltfDictionary<GltfTechnique>;
 }
 
