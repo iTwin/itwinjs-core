@@ -10,14 +10,11 @@ import {
   SpatialClassifierOutsideDisplay, SpatialClassifiers,
 } from "@itwin/core-common";
 import {
-  ContextRealityModelState, DisplayStyle3dState, IModelApp, RealityDataSource, SpatialModelState, SpatialViewState, Viewport,
+  ContextRealityModelState, DisplayStyle3dState, IModelApp, SpatialModelState, SpatialViewState, Viewport,
 } from "@itwin/core-frontend";
-import { RealityDataAccessClient } from "@itwin/reality-data-client";
 import { DisplayTestApp } from "./App";
 import { ToolBarDropDown } from "./ToolBar";
-import { RealityDataQueryCriteria } from "@itwin/reality-data-client";
-import { RealityDataResponse } from "@itwin/reality-data-client";
-import { ITwinRealityData } from "@itwin/reality-data-client";
+import { ITwinRealityData, RealityDataAccessClient, RealityDataQueryCriteria, RealityDataResponse } from "@itwin/reality-data-client";
 
 function clearElement(element: HTMLElement): void {
   while (element.hasChildNodes())
@@ -35,7 +32,6 @@ enum RealityDataType {
   CESIUM3DTILES = "CESIUM3DTILES",
   UNKNOWN = "UNKNOWN",
 }
-
 
 export class ClassificationsPanel extends ToolBarDropDown {
   private readonly _vp: Viewport;
