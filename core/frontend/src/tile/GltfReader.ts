@@ -556,6 +556,7 @@ class TransformStack {
       // first the scale is applied to the vertices, then the rotation, and then the translation.
       const scale = Transform.createRefs(undefined, node.scale ? Matrix3d.createScale(node.scale[0], node.scale[1], node.scale[2]) : Matrix3d.identity);
       const rot = Transform.createRefs(undefined, node.rotation ? Matrix3d.createFromQuaternion(Point4d.create(node.rotation[0], node.rotation[1], node.rotation[2], node.rotation[3])) : Matrix3d.identity);
+      rot.matrix.transposeInPlace(); // See comment on Matrix3d.createFromQuaternion
       const trans = Transform.createTranslation(node.translation ? new Point3d(node.translation[0], node.translation[1], node.translation[2]) : Point3d.createZero());
 
       nodeTransform = scale.multiplyTransformTransform(rot);
