@@ -31,7 +31,7 @@ import { TileContent } from "./internal";
 let forceLUT = false;
 /* eslint-disable no-restricted-syntax */
 
-/** Enumerates the types of [[GltfMeshPrimitive]]s. */
+/** Enumerates the types of [[GltfMeshPrimitive]] topologies. */
 enum GltfMeshMode {
   Points = 0,
   Lines = 1,
@@ -126,45 +126,74 @@ interface GltfChildOfRootProperty extends GltfProperty {
 
 /** A unit of geometry belonging to a [[GltfMesh]]. */
 interface GltfMeshPrimitive extends GltfProperty {
+  /** Maps the name of each mesh attribute semantic to the Id of the [[GltfAccessor]] providing the attribute's data. */
   attributes: { [k: string]: GltfId | undefined };
+  /** The Id of the [[GltfAccessor]] providing the vertex indices. */
   indices?: GltfId;
+  /** The Id of the [[GltfMaterial]] to apply to the primitive when rendering. */
   material?: GltfId;
+  /** The primitive topology type. */
   mode?: GltfMeshMode;
+  /** Morph targets - currently unsupported. */
   targets?: { [k: string]: GltfId | undefined };
 }
 
+/** A collection of [[GltfMeshPrimitive]]s to be rendered. Each mesh is referenced by a node. Multiple nodes can refer to the same mesh.
+ * The node's transform is applied when rendering the mesh.
+ */
 interface GltfMesh extends GltfChildOfRootProperty {
+  /** The collection of primitives to be rendered. */
   primitives?: GltfMeshPrimitive[];
+  /** For morph targets - currently unsupported. */
   weights?: number[];
 }
 
-interface GltfNodeTransformProps {
+/** Properties common to [[Gltf1Node]] and [[Gltf2Node]]. */
+interface GltfNodeBaseProps {
+  /** The Ids of the child nodes. @see [[GltfNode]]. */
+  children?: GltfId[];
+  /** Currently unsupported. */
+  camera?: GltfId;
+  /** Currently unsupported. */
+  skin?: GltfId;
+  /** A 4x4 column-major transformation matrix. Mutually exclusive with [[rotation]], [[scale]], and [[translation]]. */
   matrix?: number[];
+  /** Unit quaternion as [x, y, z, w], where w is the scalar. */
   rotation?: number[];
+  /** Non-uniform scale as [x, y, z]. */
   scale?: number[];
+  /** Translation as [x, y, z]. */
   translation?: number[];
 }
 
+/** glTF 1.0 representation of a [[GltfNode]]. Unlike a [[Gltf2Node]], a Gltf1Node may refer to any number of [[GltfMesh]]es. */
 interface Gltf1Node extends GltfChildOfRootProperty, GltfNodeTransformProps {
-  children?: GltfId[];
-  // The spec defines this as an array of strings. GltfReader apparently believed it was actually always a string. Perhaps some non-compliant tiles exist that provide a string instead of string[]?
+  /** The Ids of the [[GltfMesh]]es to be rendered by this node.
+   * @note The spec defines this as an array of strings, but the original implementation of [[GltfReader]] was written to treat it as a string instead.
+   * In case this was because of non-spec-compliant glTF that placed a string here instead of an array, either is permitted.
+   */
   meshes?: GltfId[] | string;
   mesh?: never;
-  camera?: GltfId;
-  skin?: GltfId;
+  /** Currently unsupported. */
   jointName?: GltfId;
+  /** Currently unsupported. */
   skeletons?: GltfId[];
 }
 
+/** glTF 2.0 representation of a [[GltfNode]]. Unlike a [[Gltf1Node]], a Gltf2Node may refer to at most one [[GltfMesh]]. */
 interface Gltf2Node extends GltfChildOfRootProperty, GltfNodeTransformProps {
-  children?: GltfId[];
+  /** The Id of the [[GltfMesh]] to be rendered by this node. */
   mesh?: GltfId;
   meshes?: never;
-  camera?: GltfId;
-  skin?: GltfId;
+  /** Morph targets - currently unsupported. */
   weights?: number[];
 }
 
+/** Describes a node in a [[GltfScene]]. Each node may be associated with zero, one (glTF 2.0), or any number of (glTF 1.0) [[GltfMesh]]es.
+ * Each node may define a transform. Each node may have any number of child nodes. A child node's transform is multiplied by its parent node's transform.
+ * Some nodes may be associated with other types of data like cameras, skins, lights, etc - these types of data are currently unsupported.
+ * Rendering a node means rendering its meshes and the meshes of all of its descendants, with transforms applied.
+ */
 type GltfNode = Gltf1Node | Gltf2Node;
 
 function getNodeMeshIds(node: GltfNode): GltfId[] {
@@ -176,42 +205,82 @@ function getNodeMeshIds(node: GltfNode): GltfId[] {
   return [];
 }
 
+/** Describes a scene graph that composes any number of [[GltfNode]]s to produce a rendering of the [[Gltf]] asset.
+ * An asset may define any number of scenes; the default scene is specified by [[Gltf.scene]].
+ */
 interface GltfScene extends GltfChildOfRootProperty {
+  /** The Ids of the nodes comprising the scene graph. */
   nodes?: GltfId[];
 }
 
+/** Provides metadata about a [[Gltf]] asset. */
 interface GltfAsset extends GltfProperty {
+  /** A copyright message suitable for display to credit the content creator. */
   copyright?: string;
+  /** The name of the tool that generated the asset. */
   generator?: string;
+  /** The glTF version targeted by the asset, in the form "major.minor" where "major" and "minor" are integers. */
   version: string;
+  /** The minimum glTF version required to properly load this asset, in the same form as [[version]].
+   * This minimum version must be no greater than [[version]].
+   */
   minVersion?: string;
 }
 
+/** Describes an image such as one used for a [[GltfTexture]]. The image may be referenced by a [[uri]] or a [[bufferView]]. */
 interface GltfImage extends GltfChildOfRootProperty {
+  /** URI from which the image data can be obtained, either as a base-64-encoded data URI or an external resource.
+   * Mutually exclusive with [[bufferView]].
+   * Currently unsupported.
+   */
   uri?: string;
+  /** The image's media type. This property is required if [[bufferView]] is defined. */
   mimeType?: "image/jpeg" | "image/png";
+  /** The Id of the [[GltfBufferViewProps]] containing the image data. Mutually exclusive with [[uri]]. */
   bufferView?: GltfId;
 }
 
+/** Describes a reference to a [[GltfTexture]]. */
 interface GltfTextureInfo extends GltfProperty {
+  /** The Id of the [[GltfTexture]]. */
   index: GltfId;
+  /** The set index of the texture's TEXCOORD attribute used for texture coordinate mapping. */
   texCoord?: number;
 }
 
+/** Describes a texture and its sampler. */
 interface GltfTexture extends GltfChildOfRootProperty {
+  /** The Id of the [[GltfSampler]] used by this texture.
+   * If undefined, a sampler with repeat wrapping and auto filtering should be used by default.
+   */
   sampler?: GltfId;
+  /** The Id of the [[GltfImage]] used by this texture.
+   * If undefined, an extension or other mechanism should supply an alternate image source - otherwise, the behavior is undefined.
+   */
   source?: GltfId;
 }
 
+/** Describes the filtering and wrapping behavior to be applied to a [[GltfTexture]]. */
 interface GltfSampler extends  GltfChildOfRootProperty {
+  /** Magnification filter. */
   magFilter?: GltfMagFilter;
+  /** Minification filter. */
   minFilter?: GltfMinFilter;
+  /** S (U) wrapping mode. */
   wrapS?: GltfWrapMode;
+  /** T (V) wrapping mode. */
   wrapT?: GltfWrapMode;
 }
 
+/** For glTF 1.0 only, describes shader programs and shader state associated with a [[Gltf1Material]], used to render meshes associated with the material.
+ * This implementation uses it strictly to identify techniques that require alpha blending.
+ */
 interface GltfTechnique extends GltfChildOfRootProperty {
+  /** GL render states to be applied by the technique. */
   states?: {
+    /** An array of integers corresponding to boolean GL states that should be enabled using GL's `enable` function.
+     * For example, the value `3042` indicates that blending should be enabled.
+     */
     enable?: number[];
   };
 }
@@ -1373,7 +1442,7 @@ export abstract class GltfReader {
           const technique = this._glTF.techniques[material.technique];
           if (technique?.states?.enable) {
             for (const enable of technique.states.enable) {
-              if (3042 === enable) {
+              if (3042 === enable) { // 3042 = BLEND
                 transparentTextures.add(material.values.tex.toString());
                 break;
               }
