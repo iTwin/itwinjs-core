@@ -6,15 +6,18 @@
 import { assert, compareStringsOrUndefined, GuidString } from "@itwin/core-bentley";
 import { ComboBox, ComboBoxEntry, createCheckBox, createComboBox, createNestedMenu, createNumericInput, NestedMenu } from "@itwin/frontend-devtools";
 import {
-  CartographicRange, ContextRealityModelProps, ModelProps, SpatialClassifier, SpatialClassifierFlagsProps, SpatialClassifierInsideDisplay,
+  CartographicRange, ContextRealityModelProps, ModelProps, RealityDataFormat, RealityDataProvider, RealityDataSourceKey, SpatialClassifier, SpatialClassifierFlagsProps, SpatialClassifierInsideDisplay,
   SpatialClassifierOutsideDisplay, SpatialClassifiers,
 } from "@itwin/core-common";
 import {
-  ContextRealityModelState, DisplayStyle3dState, IModelApp, SpatialModelState, SpatialViewState, Viewport,
+  ContextRealityModelState, DisplayStyle3dState, IModelApp, RealityDataSource, SpatialModelState, SpatialViewState, Viewport,
 } from "@itwin/core-frontend";
-import { RealityDataAccessClient } from "@bentley/reality-data-client";
+import { RealityDataAccessClient } from "@itwin/reality-data-client";
 import { DisplayTestApp } from "./App";
 import { ToolBarDropDown } from "./ToolBar";
+import { RealityDataQueryCriteria } from "@itwin/reality-data-client";
+import { RealityDataResponse } from "@itwin/reality-data-client";
+import { ITwinRealityData } from "@itwin/reality-data-client";
 
 function clearElement(element: HTMLElement): void {
   while (element.hasChildNodes())
@@ -22,6 +25,17 @@ function clearElement(element: HTMLElement): void {
 }
 
 const NO_MODEL_ID = "-1";
+
+enum RealityDataType {
+  REALITYMESH3DTILES  = "REALITYMESH3DTILES",
+  OSMBUILDINGS = "OSMBUILDINGS",
+  OPC = "OPC",
+  TERRAIN3DTILES = "TERRAIN3DTILES", // Terrain3DTiles
+  OMR = "OMR", // Mapping Resource,
+  CESIUM3DTILES = "CESIUM3DTILES",
+  UNKNOWN = "UNKNOWN",
+}
+
 
 export class ClassificationsPanel extends ToolBarDropDown {
   private readonly _vp: Viewport;
@@ -85,6 +99,14 @@ export class ClassificationsPanel extends ToolBarDropDown {
     this._element.appendChild(this._realityModelPickerMenu.div);
   }
 
+  private createRealityDataSourceKeyFromITwinRealityData(iTwinRealityData: ITwinRealityData): RealityDataSourceKey {
+    return {
+      provider: RealityDataProvider.ContextShare,
+      format: iTwinRealityData.type === RealityDataType.OPC ? RealityDataFormat.OPC : RealityDataFormat.ThreeDTile,
+      id: iTwinRealityData.id,
+    };
+  }
+
   private async populateRealityModelsPicker(): Promise<void> {
     this._realityModelPickerMenu.div.style.display = "none";
     clearElement(this._realityModelPickerMenu.body);
@@ -96,30 +118,46 @@ export class ClassificationsPanel extends ToolBarDropDown {
     }
 
     const range = new CartographicRange(this._vp.iModel.projectExtents, ecef.getTransform());
-    let available = new Array<ContextRealityModelProps>();
+    let available: RealityDataResponse = {realityDatas: []};
     try {
       if (this._iTwinId !== undefined && IModelApp.authorizationClient) {
         const accessToken = await IModelApp.authorizationClient.getAccessToken();
         if (accessToken) {
-          available = await new RealityDataAccessClient().queryRealityData(accessToken, { iTwinId: this._iTwinId, range });
+          const criteria: RealityDataQueryCriteria = {
+            extent: range,
+          };
+          available = await new RealityDataAccessClient().getRealityDatas(accessToken, this._iTwinId, criteria);
         }
       }
     } catch (_error) {
       // eslint-disable-next-line no-console
       console.error("Error in query RealitydataList, you need to set IMJS_STANDALONE_SIGNIN=true, and is your IMJS_ITWIN_ID correctly set?");
     }
-    for (const entry of available) {
-      const name = undefined !== entry.name ? entry.name : entry.tilesetUrl;
-      createCheckBox({
-        name,
-        id: entry.tilesetUrl,
-        parent: this._realityModelPickerMenu.body,
-        isChecked: view.displayStyle.hasAttachedRealityModel(name, entry.tilesetUrl),
-        handler: (checkbox) => this.toggle(entry, checkbox.checked),
-      });
+
+    for (const rdEntry of available.realityDatas) {
+      const name = undefined !== rdEntry.displayName ? rdEntry.displayName : rdEntry.id;
+      const rdSourceKey = this.createRealityDataSourceKeyFromITwinRealityData(rdEntry);
+      const tilesetUrl = await IModelApp.realityDataAccess?.getRealityDataUrl(this._iTwinId,rdSourceKey.id);
+      if (tilesetUrl) {
+        const entry: ContextRealityModelProps = {
+          rdSourceKey,
+          tilesetUrl,
+          name,
+          description: rdEntry?.description,
+          realityDataId: rdSourceKey.id,
+        };
+
+        createCheckBox({
+          name,
+          id: RealityDataSourceKey.convertToString(rdSourceKey),
+          parent: this._realityModelPickerMenu.body,
+          isChecked: view.displayStyle.hasAttachedRealityModelFromKey(rdSourceKey),
+          handler: (checkbox) => this.toggle(entry, checkbox.checked),
+        });
+      }
     }
     IModelApp.makeHTMLElement("hr", { parent: this._realityModelPickerMenu.body });
-    if (available.length > 0)
+    if (available.realityDatas.length > 0)
       this._realityModelPickerMenu.div.style.display = "block";
   }
 
@@ -226,7 +264,7 @@ export class ClassificationsPanel extends ToolBarDropDown {
     if (enabled)
       style.attachRealityModel(entry);
     else
-      style.detachRealityModelByNameAndUrl(entry.name!, entry.tilesetUrl);
+      entry.rdSourceKey ? style.detachRealityModelByKey(entry.rdSourceKey) : style.detachRealityModelByNameAndUrl(entry.name!, entry.tilesetUrl);
 
     this.populateRealityModelList();
     this._vp.invalidateScene();

@@ -11,7 +11,7 @@ import {
   BackgroundMapProps, BackgroundMapProvider, BackgroundMapProviderProps, BackgroundMapSettings,
   BaseLayerSettings, BaseMapLayerSettings, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
   DisplayStyleProps, DisplayStyleSettings, Environment, FeatureAppearance, GlobeMode, LightSettings, MapLayerProps,
-  MapLayerSettings, MapSubLayerProps, RenderSchedule, RenderTimelineProps,
+  MapLayerSettings, MapSubLayerProps, RealityDataSourceKey, RenderSchedule, RenderTimelineProps,
   SolarShadowSettings, SubCategoryOverride, SubLayerId, TerrainHeightOriginMode, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, ViewFlags,
 } from "@itwin/core-common";
 import { ApproximateTerrainHeights } from "./ApproximateTerrainHeights";
@@ -287,6 +287,15 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     return undefined !== model && this.settings.contextRealityModels.delete(model);
   }
 
+  /** Detach the first [ContextRealityModel]($common) that matches the specified name and url.
+   * @see [DisplayStyleSettings.contextRealityModels]($common)
+   * @see [ContextRealityModels.delete]($common)
+   */
+  public detachRealityModelByKey(rdSourceKey: RealityDataSourceKey): boolean {
+    const model = this.settings.contextRealityModels.models.find((x) => x.rdSourceKey && RealityDataSourceKey.isEqual(rdSourceKey,x.rdSourceKey));
+    return undefined !== model && this.settings.contextRealityModels.delete(model);
+  }
+
   /** Get the [[ContextRealityModelState]] that displays the OpenStreetMap worldwide building layer, if enabled.
    * @see [[setOSMBuildingDisplay]]
    */
@@ -340,6 +349,14 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * */
   public hasAttachedRealityModel(name: string, url: string): boolean {
     return undefined !== this.settings.contextRealityModels.models.find((x) => x.matchesNameAndUrl(name, url));
+  }
+
+  /**
+   * Return if a context reality model is attached.
+   * @see [[ContextRealityModelProps]].
+   * */
+  public hasAttachedRealityModelFromKey(rdSourceKey: RealityDataSourceKey ): boolean {
+    return undefined !== this.settings.contextRealityModels.models.find((x) => x.rdSourceKey && RealityDataSourceKey.isEqual(rdSourceKey,x.rdSourceKey));
   }
 
   /** @internal */
