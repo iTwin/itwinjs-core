@@ -2,37 +2,146 @@
 
 > TypeScript type: [ContentInstancesOfSpecificClassesSpecification]($presentation-common).
 
-Returns content for instances of specific ECClasses.
+Specification which allows selection of content instances based on their ECClass.
 
 ## Attributes
 
-| Name                              | Required? | Type                                                                                | Default | Meaning                                                                                                                                                                                                                                                     |
-| --------------------------------- | --------- | ----------------------------------------------------------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Name                              | Required? | Type                                                                                                                         | Default |
+| --------------------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------- | ------- |
 | *Filtering*                       |
-| `classes`                         | Yes       | `MultiSchemaClassesSpecification \| MultiSchemaClassesSpecification[]`              | `[]`    | Classes whose instances should be used.                                                                                                                                                                                                                     |
-| `handleInstancesPolymorphically`  | No        | `boolean`                                                                           | `false` | Whether to also get content from instances of derived `classes`.                                                                                                                                                                                            |
-| `handlePropertiesPolymorphically` | No        | `boolean`                                                                           | `false` | Whether to also get content from properties of derived `classes`.                                                                                                                                                                                           |
-| `instanceFilter`                  | No        | [ECExpression](./ECExpressions.md#instance-filter)                                  | `""`    | Condition for filtering instances.                                                                                                                                                                                                                          |
+| [`classes`](#attribute-classes)                         | Yes       | [`MultiSchemaClassesSpecification \| MultiSchemaClassesSpecification[]`](../Common-Rules/MultiSchemaClassesSpecification.md) | `[]`    |
+| [`handleInstancesPolymorphically`](#attribute-handleinstancespolymorphically)  | No        | `boolean`                                                                                                                    | `false` |
+| [`handlePropertiesPolymorphically`](#attribute-handlepropertiespolymorphically) | No        | `boolean`                                                                                                                    | `false` |
+| [`instanceFilter`](#attribute-instancefilter)                  | No        | [ECExpression](./ECExpressions.md#instance-filter)                                                                           | `""`    |
+| [`onlyIfNotHandled`](#attribute-onlyifnothandled)                | No        | boolean                                                                                                                      | `false` |
 | *Ordering*                        |
-| `priority`                        | No        | `number`                                                                            | `1000`  | Changes the order of specifications.                                                                                                                                                                                                                        |
+| [`priority`](#attribute-priority)                        | No        | `number`                                                                                                                     | `1000`  |
 | *Content Modifiers*               |
-| `relatedProperties`               | No        | `RelatedPropertiesSpecification[]`                                                  | `[]`    | Specifications of [related properties](./Terminology.md#related-properties) which are included in the generated content. *See [this page](./RelatedPropertiesSpecification.md) for more details.*                                                           |
-| `calculatedProperties`            | No        | `CalculatedPropertiesSpecification[]`                                               | `[]`    | Specifications of calculated properties whose values are generated using provided ECExpressions. *See [this page](./CalculatedPropertiesSpecification.md) for more details.*                                                                                |
-| `propertyCategories`              | No        | `PropertyCategorySpecification[]`                                                   | `[]`    | Specifications for custom categories. Simply defining the categories does nothing - they have to be referenced from `PropertySpecification` defined in `propertyOverrides` by `id`. *See [this page](./PropertyCategorySpecification.md) for more details.* |
-| `propertyOverrides`               | No        | `PropertySpecification[]`                                                           | `[]`    | Specifications for various property overrides. *See [this page](./PropertySpecification.md) for more details.*                                                                                                                                              |
-| `showImages`                      | No        | `boolean`                                                                           | `false` | Should image IDs be calculated for the returned instances. When `true`, [ImageIdOverride](../customization/ImageIdOverride.md) rules get applied when creating content.                                                                                     |
+| [`relatedProperties`](#attribute-relatedproperties)               | No        | `RelatedPropertiesSpecification[]`                                                                                           | `[]`    |
+| [`calculatedProperties`](#attribute-calculatedproperties)            | No        | `CalculatedPropertiesSpecification[]`                                                                                        | `[]`    |
+| [`propertyCategories`](#attribute-propertycategories)              | No        | `PropertyCategorySpecification[]`                                                                                            | `[]`    |
+| [`propertyOverrides`](#attribute-propertyoverrides)               | No        | `PropertySpecification[]`                                                                                                    | `[]`    |
+| [`showImages`](#attribute-showimages)                      | No        | `boolean`                                                                                                                    | `false` |
 | *Misc.*                           |
-| `relatedInstances`                | No        | [`RelatedInstanceSpecification[]`](../Common-Rules/RelatedInstanceSpecification.md) | `[]`    | Specifications of [related instances](../Common-Rules/RelatedInstanceSpecification.md) that can be used in content creation.                                                                                                                                |
+| [`relatedInstances`](#attribute-relatedinstances)                | No        | [`RelatedInstanceSpecification[]`](../Common-Rules/RelatedInstanceSpecification.md)                                          | `[]`    |
 
-## Example
+### Attribute: `classes`
 
-```JSON
-{
-  "specType": "ContentInstancesOfSpecificClasses",
-  "classes": {
-    "schemaName": "BisCore",
-    "classNames": ["Model"]
-  },
-  "handleInstancesPolymorphically": true
-}
+Defines a single or an array of [multi schema classes](../Common-Rules/MultiSchemaClassesSpecification.md) which will specify what and how the classes need to be selected to form result content.
+
+```ts
+[[include:ContentInstancesOfSpecificClasses.Classes.Ruleset]]
 ```
+
+![Example of using classes attribute](./media/contentInstancesOfSpecificClasses-with-classes-attribute.png)
+
+### Attribute: `handlePropertiesPolymorphically`
+
+Defines the default value whether the properties of derived `classes` should be included in the content.
+
+```ts
+[[include:ContentInstancesOfSpecificClasses.Classes.Ruleset]]
+```
+
+  | handlePropertiesPolymorphically | Result                                                                                                                                      |
+  | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+  | `false`  | ![Example when only selecting class specified properties](./media/contentInstancesOfSpecificClasses-with-handlePropertiesPolymorphically-attribute-1.png) |
+  | `true`    | ![Example when selecting parent and child class properties](./media/contentInstancesOfSpecificClasses-with-handlePropertiesPolymorphically-attribute-2.png)     |
+
+### Attribute: `instanceFilter`
+
+Allows defining additional conditions when filtering result target class instances. More information found [here](./ECExpressions.md#instance-filter).
+
+```ts
+[[include:ContentInstancesOfSpecificClasses.InstanceFilter.Ruleset]]
+```
+
+  |  | Result                                                                                                                                      |
+  | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+  | without  | ![Example when selecting all instances](./media/contentInstancesOfSpecificClasses-with-instanceFilter-attribute-1.png) |
+  | with    | ![Example when filtering instances](./media/contentInstancesOfSpecificClasses-with-instanceFilter-attribute-2.png)     |
+
+### Attribute: `onlyIfNotHandled`
+
+Identifies whether we should ignore this specification if another specification was already handled (based on rule priorities and definition order). Should be used when defining a fallback specification.
+
+```ts
+[[include:ContentInstancesOfSpecificClasses.OnlyIfNotHandled.Ruleset]]
+```
+
+### Attribute: `priority`
+
+Defines the order in which specifications are handled - higher priority means the specifications is handled first. If priorities are equal, the specifications are handled in the order they're defined. Default `priority` is 1000.
+
+```ts
+[[include:ContentInstancesOfSpecificClasses.Priority.Ruleset]]
+```
+
+![Example of using priority attribute](./media/contentInstancesOfSpecificClasses-with-priority-attribute.png)
+
+### Attribute: `relatedProperties`
+
+Specifications of [related properties](./Terminology.md#related-properties) which are included in the generated content. *See [this page](./RelatedPropertiesSpecification.md) for more details.*
+
+```ts
+[[include:ContentInstancesOfSpecificClasses.RelatedProperties.Ruleset]]
+```
+
+  |  | Result                                                                                                                                      |
+  | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+  | without  | ![Example when doing normal property select](./media/contentInstancesOfSpecificClasses-with-relatedProperties-attribute-1.png) |
+  | with    | ![Example when selecting with related properties](./media/contentInstancesOfSpecificClasses-with-relatedProperties-attribute-2.png)     |
+
+### Attribute: `calculatedProperties`
+
+Specifications of calculated properties whose values are generated using provided ECExpressions. *See [this page](./CalculatedPropertiesSpecification.md) for more details.
+
+```ts
+[[include:ContentInstancesOfSpecificClasses.CalculatedProperties.Ruleset]]
+```
+
+![Example of using calculatedProperties attribute](./media/contentInstancesOfSpecificClasses-with-calculatedProperties-attribute.png)
+
+### Attribute: `propertyCategories`
+
+Specifications for custom categories. Simply defining the categories does nothing - they have to be referenced from `PropertySpecification` defined in `propertyOverrides` by `id`. *See [this page](./PropertyCategorySpecification.md) for more details.*
+
+```ts
+[[include:ContentInstancesOfSpecificClasses.PropertyCategories.Ruleset]]
+```
+
+![Example of using propertyCategories attribute](./media/contentInstancesOfSpecificClasses-with-propertyCategories-attribute.png)
+
+### Attribute: `propertyOverrides`
+
+Specifications for various property overrides. *See [this page](./PropertySpecification.md) for more details.*
+
+```ts
+[[include:ContentInstancesOfSpecificClasses.PropertyOverrides.Ruleset]]
+```
+
+![Example of using propertyOverrides attribute](./media/contentInstancesOfSpecificClasses-with-propertyOverrides-attribute.png)
+
+### Attribute: `showImages`
+
+Should image IDs be calculated for the returned instances. When `true`, [ImageIdOverride](../customization/ImageIdOverride.md) rules get applied when creating.
+
+### Attribute: `relatedInstances`
+
+Specifications of [related instances](../Common-Rules/RelatedInstanceSpecification.md) that can be used in content creation.
+
+```ts
+[[include:ContentInstancesOfSpecificClasses.RelatedInstances.Ruleset]]
+```
+
+  |  | Result                                                                                                                                      |
+  | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+  | SpatialViewDefinitions  | ![Example when doing normal property select](./media/contentInstancesOfSpecificClasses-with-relatedInstances-attribute-3.png) |
+  | ModelSelectors  | ![Example when doing normal property select](./media/contentInstancesOfSpecificClasses-with-relatedInstances-attribute-2.png) |
+  | ModelSelectors filtered by SpatialViewDefinition Yaw    | ![Example when selecting with related properties](./media/contentInstancesOfSpecificClasses-with-relatedInstances-attribute-1.png)     |
+
+## Deprecated Attributes
+
+### Attribute: `handleInstancesPolymorphically`
+
+Defines default `classes` polymorphism value. If set to true, all target classes by default will include also include derived class instances. This value is overriden by the `classes`.[`arePolymorphic`](../Common-Rules/MultiSchemaClassesSpecification.md#attritue-arepolymorphic) value.
