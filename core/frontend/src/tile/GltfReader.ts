@@ -152,9 +152,9 @@ interface Gltf2Node extends GltfChildOfRootProperty, GltfNodeTransformProps {
 type GltfNode = Gltf1Node | Gltf2Node;
 
 function getNodeMeshIds(node: GltfNode): GltfId[] {
-  if (node.meshes)
+  if (undefined !== node.meshes)
     return typeof node.meshes === "string" ? [node.meshes] : node.meshes;
-  else if (node.mesh)
+  else if (undefined !== node.mesh)
     return [node.mesh];
 
   return [];
