@@ -530,10 +530,10 @@ function colorFromMaterial(material: GltfMaterial | undefined): ColorDef {
 }
 
 class TransformStack {
-  private readonly _stack: Array<{ nodeTransform?: Transform; product: Transform | undefined}> = [];
+  private readonly _stack: Array<Transform | undefined> = [];
 
   public get transform(): Transform | undefined {
-    return this._stack.length > 0 ? this._stack[this._stack.length - 1].product : undefined;
+    return this._stack.length > 0 ? this._stack[this._stack.length - 1] : undefined;
   }
 
   public get isEmpty(): boolean {
@@ -564,12 +564,10 @@ class TransformStack {
     }
 
     const top = this.transform;
-    if (!top) {
-      this._stack.push({ nodeTransform, product: nodeTransform });
-    } else {
-      const product = nodeTransform ? top.multiplyTransformTransform(nodeTransform) : top;
-      this._stack.push({ nodeTransform, product });
-    }
+    if (!top)
+      this._stack.push(nodeTransform);
+    else
+      this._stack.push(nodeTransform ? top.multiplyTransformTransform(nodeTransform) : top);
   }
 
   public pop(): void {
