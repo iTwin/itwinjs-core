@@ -31,8 +31,9 @@ $node-font-size: $iui-font-size;
     }
 
     > .expansion-toggle {
-      position: relative;
-      top: -1px;
+      display: inline-block;
+      margin-top: auto;
+      margin-bottom: auto;
     }
 
     .core-checkbox {
@@ -52,8 +53,11 @@ $node-font-size: $iui-font-size;
   }
 
   &-icon {
-    width: 16px;
-    margin-right: 5px;
+    margin: 0 7px;
+
+    > .bui-webfont-icon {
+      vertical-align: middle;
+    }
   }
 
   &.is-focused, &:focus {
