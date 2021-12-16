@@ -24,8 +24,6 @@ steps:
     displayName: rush install
 
   - script: |
-      node ./common/scripts/install-run-rush build -v --to reality-data-client
-
       node ./common/scripts/install-run-rush build -v --to backend-integration-tests
 
       node ./common/scripts/install-run-rush build -v --to imodelhub-client-tests
