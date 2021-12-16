@@ -657,7 +657,8 @@ export abstract class GltfReader {
 
       if (this._yAxisUp)
         transform = transform.multiplyTransformMatrix3d(Matrix3d.createRotationAroundVector(Vector3d.create(1.0, 0.0, 0.0), Angle.createRadians(Angle.piOver2Radians)) as Matrix3d);
-      if (undefined !== transformToRoot)
+
+      if (transformToRoot)
         transform = transformToRoot.multiplyTransformTransform(transform);
 
       range = transform.inverse()!.multiplyRange(contentRange);
@@ -681,16 +682,16 @@ export abstract class GltfReader {
   }
 
   private graphicFromMeshData(gltfMesh: GltfMeshData, meshGraphicArgs: MeshGraphicArgs, instances?: InstancedGraphicParams) {
-    if (!gltfMesh.points || !gltfMesh.pointRange) {
-      assert(false);
+    if (!gltfMesh.points || !gltfMesh.pointRange)
       return;
-    }
+
     const realityMeshPrimitive = (forceLUT || instances) ? undefined : RealityMeshPrimitive.createFromGltfMesh(gltfMesh);
     if (realityMeshPrimitive) {
       const realityMesh = this._system.createRealityMesh(realityMeshPrimitive);
       if (realityMesh)
         return realityMesh;
     }
+
     const mesh = gltfMesh.primitive;
     const pointCount = gltfMesh.points.length / 3;
     mesh.points.fromTypedArray(gltfMesh.pointRange, gltfMesh.points);
@@ -702,6 +703,7 @@ export abstract class GltfReader {
       for (let i = 0, j = 0; i < pointCount; i++)
         mesh.uvParams.push(gltfMesh.uvQParams.unquantize(gltfMesh.uvs[j++], gltfMesh.uvs[j++]));
     }
+
     if (gltfMesh.normals)
       for (const normal of gltfMesh.normals)
         mesh.normals.push(new OctEncodedNormal(normal));
