@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-rpcinterface-tests",
-  "version": "3.0.0-dev.152",
+  "version": "3.0.0-dev.153",
   "description": "Integration tests for the Schema RPC Interface",
   "author": {
     "name": "Bentley Systems, Inc.",
@@ -37,7 +37,7 @@
     "@itwin/core-quantity": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/ecschema-rpcinterface-common": "workspace:*",
-    "@itwin/oidc-signin-tool": "3.0.0-dev.110",
+    "@itwin/oidc-signin-tool": "3.0.0",
     "@itwin/presentation-common": "workspace:*",
     "@itwin/presentation-frontend": "workspace:*",
     "chai": "^4.1.2",
@@ -52,7 +52,7 @@
     "@itwin/core-backend": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
     "@itwin/express-server": "workspace:*",
-    "@itwin/projects-client": "^0.2.0",
+    "@itwin/projects-client": "^0.3.0",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^8.2.2",
