@@ -5,9 +5,10 @@
 import { AccessToken, BentleyError, BentleyStatus, GuidString } from "@itwin/core-bentley";
 import { Project as ITwin } from "@itwin/projects-client";
 import { AuthorizationClient, BriefcaseId, ChangesetIndexAndId, IModelVersion } from "@itwin/core-common";
-import { FrontendHubAccess, IModelIdArg } from "@itwin/core-frontend";
+import { FrontendHubAccess, IModelApp, IModelIdArg } from "@itwin/core-frontend";
 import { BriefcaseQuery, ChangeSet, ChangeSetQuery, IModelBankClient, IModelBankFileSystemITwinClient, IModelQuery, VersionQuery } from "@bentley/imodelbank-client"; // TODO: Remove when we have a replacement for the current iModelBank client in the way
 import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
+import { Authorization, AuthorizationCallback, AuthorizationParam, Briefcase, GetBriefcaseListParams, GetIModelListParams, IModelScopedOperationParams, MinimalIModel, SPECIAL_VALUES_ME, toArray } from "@itwin/imodels-client-management";
 import { ITwinAccessClientWrapper } from "../../common/ITwinAccessClientWrapper";
 
 export interface IModelNameArg {
@@ -25,6 +26,73 @@ export interface TestFrontendHubAccess extends FrontendHubAccess {
   queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined>;
   getMyBriefcaseIds(arg: IModelIdArg): Promise<number[]>;
   releaseBriefcase(arg: BriefcaseIdArg): Promise<void>;
+}
+
+export class TestHubFrontend extends FrontendIModelsAccess {
+  public static toAuthorization(accessToken: AccessToken): Authorization {
+    const splitAccessToken = accessToken.split(" ");
+    if (splitAccessToken.length !== 2)
+      throw new Error("Unsupported access token format");
+
+    return {
+      scheme: splitAccessToken[0],
+      token: splitAccessToken[1],
+    };
+  }
+
+  private getAuthParam(tokenArg?: string): AuthorizationParam {
+
+    const authorizationCallback: AuthorizationCallback = tokenArg
+      ? async () => TestHubFrontend.toAuthorization(tokenArg)
+      : async () => TestHubFrontend.toAuthorization(await IModelApp.getAccessToken());
+
+    return {
+      authorization: authorizationCallback,
+    };
+  }
+
+  private getScopedOperationParams(arg: IModelIdArg): IModelScopedOperationParams {
+    return {
+      ...this.getAuthParam(arg.accessToken),
+      iModelId: arg.iModelId,
+    };
+  }
+
+  public async queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined> {
+    const getIModelListParams: GetIModelListParams = {
+      ...this.getAuthParam(arg.accessToken),
+      urlParams: {
+        projectId: arg.iTwinId,
+        name: arg.iModelName,
+      },
+    };
+
+    const iModelsIterator: AsyncIterableIterator< MinimalIModel> = this._iModelsClient.iModels.getMinimalList(getIModelListParams);
+    const iModels = await toArray(iModelsIterator);
+    return iModels.length === 0 ? undefined : iModels[0].id;
+  }
+  public async getMyBriefcaseIds(arg: IModelIdArg): Promise<number[]> {
+    const getBriefcaseListParams: GetBriefcaseListParams = {
+      ...this.getScopedOperationParams(arg),
+      urlParams: {
+        ownerId: SPECIAL_VALUES_ME,
+      },
+    };
+
+    const briefcasesIterator: AsyncIterableIterator<Briefcase> = this._iModelsClient.briefcases.getRepresentationList(getBriefcaseListParams);
+    const briefcases: Briefcase[] = await toArray(briefcasesIterator);
+    const briefcaseIds: BriefcaseId[] = briefcases.map((briefcase) => briefcase.briefcaseId);
+    return briefcaseIds;
+
+  }
+  public async releaseBriefcase(_arg: BriefcaseIdArg): Promise<void> {
+    // const releaseBriefcaseParams: ReleaseBriefcaseParams = {
+    //   ...this.getScopedOperationParams(arg),
+    //   briefcaseId: arg.briefcaseId,
+    // };
+
+    // return this._iModelsClient.briefcases.release(releaseBriefcaseParams);
+  }
 }
 
 // WARNING: Only this section is allowed to import from imodelhub-client
@@ -93,7 +161,7 @@ export class IModelBankFrontend implements TestFrontendHubAccess {
 
 /** Defines a base set of the set of Simple base interface for the client implementations that will be passed to the IModelApp. */
 export interface ITwinPlatformAbstraction {
-  readonly hubAccess: FrontendHubAccess;
+  readonly hubAccess: TestFrontendHubAccess;
   readonly iTwinMgr: ITwinAccessClientWrapper;
   readonly authClient?: AuthorizationClient;
 }
@@ -101,7 +169,7 @@ export interface ITwinPlatformAbstraction {
 /** A convenient wrapper that includes a default set of clients necessary to configure an iTwin.js application for the iTwin Platform. */
 export class ITwinPlatformCloudEnv implements ITwinPlatformAbstraction {
   public readonly iTwinMgr = new ITwinAccessClientWrapper(); // this should be the new ITwinRegistryWrapper defined in #2045
-  public readonly hubAccess = new FrontendIModelsAccess();
+  public readonly hubAccess = new TestHubFrontend();
   public readonly authClient?: AuthorizationClient; // This should be the new AuthorizationClient method defined in #
 
   public constructor(authClient?: AuthorizationClient) {
@@ -128,4 +196,3 @@ export class ITwinStackCloudEnv implements ITwinPlatformAbstraction {
     await this.iTwinMgr.createITwin(token, iTwinName);
   }
 }
-

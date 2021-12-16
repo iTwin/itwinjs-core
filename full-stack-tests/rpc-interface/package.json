@@ -4,7 +4,8 @@
   "description": "Test the full iTwin.js Core stack (frontend and backend) using standard RPC interfaces",
   "license": "MIT",
   "scripts": {
-    "build": "tsc 1>&2 && npm run -s webpack:frontend",
+    "build": "tsc 1>&2",
+    "//build": "tsc 1>&2 && npm run -s webpack:frontend",
     "build:ci": "npm run -s build",
     "clean": "rimraf lib .rush/temp/package-deps*.json integration_test_results",
     "copy:config": "internal-tools copy-config",
@@ -14,7 +15,8 @@
     "optest": "certa -r chrome --fgrep \"Operational: \"",
     "start:backend": "node ./lib/test/backend.js",
     "test": "",
-    "test:integration": "npm-run-all -r -p start:backend test:integration:chrome",
+    "test:integration": "",
+    "//test:integration": "npm-run-all -r -p start:backend test:integration:chrome",
     "test:integration:chrome": "certa -r chrome",
     "webpack:frontend": "webpack --config webpack.config.js 1>&2"
   },
