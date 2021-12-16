@@ -290,6 +290,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** Detach the first [ContextRealityModel]($common) that matches the specified name and url.
    * @see [DisplayStyleSettings.contextRealityModels]($common)
    * @see [ContextRealityModels.delete]($common)
+   * @internal
    */
   public detachRealityModelByKey(rdSourceKey: RealityDataSourceKey): boolean {
     const model = this.settings.contextRealityModels.models.find((x) => x.rdSourceKey && RealityDataSourceKey.isEqual(rdSourceKey,x.rdSourceKey));
@@ -354,6 +355,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /**
    * Return if a context reality model is attached.
    * @see [[ContextRealityModelProps]].
+   * @internal
    * */
   public hasAttachedRealityModelFromKey(rdSourceKey: RealityDataSourceKey ): boolean {
     return undefined !== this.settings.contextRealityModels.models.find((x) => x.rdSourceKey && RealityDataSourceKey.isEqual(rdSourceKey,x.rdSourceKey));
