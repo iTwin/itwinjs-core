@@ -7,7 +7,7 @@
  */
 
 import { assert, ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
-import { Angle, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
+import { Angle, Matrix3d, Point2d, Point3d, Point4d, Range2d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import {
   BatchType, ColorDef, ElementAlignedBox3d, FeatureTable, FillFlags, GltfHeader, ImageSource, ImageSourceFormat, LinePixels, MeshEdge,
   MeshEdges, MeshPolyline, MeshPolylineList, OctEncodedNormal, PackedFeatureTable, QParams2d, QParams3d, QPoint2dList,
@@ -529,6 +529,54 @@ function colorFromMaterial(material: GltfMaterial | undefined): ColorDef {
   return ColorDef.white;
 }
 
+class TransformStack {
+  private readonly _stack: Array<{ nodeTransform?: Transform; product: Transform | undefined}> = [];
+
+  public get transform(): Transform | undefined {
+    return this._stack.length > 0 ? this._stack[this._stack.length - 1].product : undefined;
+  }
+
+  public get isEmpty(): boolean {
+    return 0 === this._stack.length;
+  }
+
+  public push(node: GltfNode): void {
+    let nodeTransform;
+    if (node.matrix) {
+      const origin = Point3d.create(node.matrix[12], node.matrix[13], node.matrix[14]);
+      const matrix = Matrix3d.createRowValues(
+        node.matrix[0], node.matrix[4], node.matrix[8],
+        node.matrix[1], node.matrix[5], node.matrix[9],
+        node.matrix[2], node.matrix[6], node.matrix[10],
+      );
+
+      nodeTransform = Transform.createOriginAndMatrix(origin, matrix);
+    } else if (node.rotation || node.scale || node.translation) {
+      // SPEC: To compose the local transformation matrix, TRS properties MUST be converted to matrices and postmultiplied in the T * R * S order;
+      // first the scale is applied to the vertices, then the rotation, and then the translation.
+      const scale = Transform.createRefs(undefined, node.scale ? Matrix3d.createScale(node.scale[0], node.scale[1], node.scale[2]) : Matrix3d.identity);
+      const rot = Transform.createRefs(undefined, node.rotation ? Matrix3d.createFromQuaternion(Point4d.create(node.rotation[0], node.rotation[1], node.rotation[2], node.rotation[3])) : Matrix3d.identity);
+      const trans = Transform.createTranslation(node.translation ? new Point3d(node.translation[0], node.translation[1], node.translation[2]) : Point3d.createZero());
+
+      nodeTransform = scale.multiplyTransformTransform(rot);
+      trans.multiplyTransformTransform(nodeTransform, nodeTransform);
+    }
+
+    const top = this.transform;
+    if (!top) {
+      this._stack.push({ nodeTransform, product: nodeTransform });
+    } else {
+      const product = nodeTransform ? top.multiplyTransformTransform(nodeTransform) : top;
+      this._stack.push({ nodeTransform, product });
+    }
+  }
+
+  public pop(): void {
+    assert(this._stack.length > 0);
+    this._stack.pop();
+  }
+}
+
 /** Deserializes [glTF](https://www.khronos.org/gltf/).
  * @internal
  */
@@ -578,11 +626,13 @@ export abstract class GltfReader {
     if (this._returnToCenter || this._nodes[0]?.matrix || (pseudoRtcBias && pseudoRtcBias.magnitude() < 1.0E5))
       pseudoRtcBias = undefined;
 
+    const transformStack = new TransformStack();
     const renderGraphicList: RenderGraphic[] = [];
     let readStatus: TileReadStatus = TileReadStatus.InvalidTileData;
     for (const nodeKey of this._sceneNodes) {
+      assert(transformStack.isEmpty);
       const node = this._nodes[nodeKey];
-      if (node && TileReadStatus.Success !== (readStatus = this.readNodeAndCreateGraphics(renderGraphicList, node, featureTable, undefined, instances, pseudoRtcBias)))
+      if (node && TileReadStatus.Success !== (readStatus = this.readNodeAndCreateGraphics(renderGraphicList, node, featureTable, transformStack, instances, pseudoRtcBias)))
         return { readStatus, isLeaf };
     }
 
@@ -659,17 +709,14 @@ export abstract class GltfReader {
     return mesh.getGraphics(meshGraphicArgs, this._system, instances);
   }
 
-  private readNodeAndCreateGraphics(renderGraphicList: RenderGraphic[], node: GltfNode, featureTable: FeatureTable | undefined, parentTransform: Transform | undefined, instances?: InstancedGraphicParams, pseudoRtcBias?: Vector3d): TileReadStatus {
+  private readNodeAndCreateGraphics(renderGraphicList: RenderGraphic[], node: GltfNode, featureTable: FeatureTable | undefined, transformStack: TransformStack, instances?: InstancedGraphicParams, pseudoRtcBias?: Vector3d): TileReadStatus {
     if (undefined === node)
       return TileReadStatus.InvalidTileData;
 
-    let thisTransform = parentTransform;
-    let thisBias;
-    if (Array.isArray(node.matrix)) {
-      const jTrans = node.matrix;
-      const nodeTransform = Transform.createOriginAndMatrix(Point3d.create(jTrans[12], jTrans[13], jTrans[14]), Matrix3d.createRowValues(jTrans[0], jTrans[4], jTrans[8], jTrans[1], jTrans[5], jTrans[9], jTrans[2], jTrans[6], jTrans[10]));
-      thisTransform = thisTransform ? thisTransform.multiplyTransformTransform(nodeTransform) : nodeTransform;
-    }
+    // IMPORTANT: Do not return without popping this node from the stack.
+    transformStack.push(node);
+    let thisTransform = transformStack.transform;
+
     /**
      * This is a workaround for tiles generated by
      * context capture which have a large offset from the tileset origin that exceeds the
@@ -678,6 +725,7 @@ export abstract class GltfReader {
      * as the vertices are supplied in a quantized format, applying the RTC bias to
      * quantization origin will make these tiles work correctly.
      */
+    let thisBias;
     if (undefined !== pseudoRtcBias)
       thisBias = (undefined === thisTransform) ? pseudoRtcBias : thisTransform.matrix.multiplyInverse(pseudoRtcBias);
 
@@ -703,15 +751,18 @@ export abstract class GltfReader {
               if (undefined !== renderGraphic)
                 thisList.push(renderGraphic);
             }
+
             if (0 !== thisList.length)
               renderGraphic = this._system.createGraphicList(thisList);
           }
+
           if (renderGraphic) {
             if (thisTransform && !thisTransform.isIdentity) {
               const branch = new GraphicBranch(true);
               branch.add(renderGraphic);
               renderGraphic = this._system.createBranch(branch, thisTransform);
             }
+
             renderGraphicList.push(renderGraphic);
           }
         }
@@ -722,10 +773,11 @@ export abstract class GltfReader {
       for (const childId of node.children) {
         const child = this._nodes[childId];
         if (child)
-          this.readNodeAndCreateGraphics(renderGraphicList, child, featureTable, thisTransform, instances);
+          this.readNodeAndCreateGraphics(renderGraphicList, child, featureTable, transformStack, instances);
       }
     }
 
+    transformStack.pop();
     return TileReadStatus.Success;
   }
 
