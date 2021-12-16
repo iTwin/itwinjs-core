@@ -122,16 +122,42 @@ interface GltfMesh extends GltfChildOfRootProperty {
   weights?: number[];
 }
 
-interface GltfNode extends GltfChildOfRootProperty {
-  camera?: GltfId;
-  skin?: GltfId;
-  mesh?: GltfId;
-  weights?: number[];
-  children?: GltfId[];
+interface GltfNodeTransformProps {
   matrix?: number[];
   rotation?: number[];
   scale?: number[];
   translation?: number[];
+}
+
+interface Gltf1Node extends GltfChildOfRootProperty, GltfNodeTransformProps {
+  children?: GltfId[];
+  // The spec defines this as an array of strings. GltfReader apparently believed it was actually always a string. Perhaps some non-compliant tiles exist that provide a string instead of string[]?
+  meshes?: GltfId[] | string;
+  mesh?: never;
+  camera?: GltfId;
+  skin?: GltfId;
+  jointName?: GltfId;
+  skeletons?: GltfId[];
+}
+
+interface Gltf2Node extends GltfChildOfRootProperty, GltfNodeTransformProps {
+  children?: GltfId[];
+  mesh?: GltfId;
+  meshes?: never;
+  camera?: GltfId;
+  skin?: GltfId;
+  weights?: number[];
+}
+
+type GltfNode = Gltf1Node | Gltf2Node;
+
+function getNodeMeshIds(node: GltfNode): GltfId[] {
+  if (node.meshes)
+    return typeof node.meshes === "string" ? [node.meshes] : node.meshes;
+  else if (node.mesh)
+    return [node.mesh];
+
+  return [];
 }
 
 interface GltfScene extends GltfChildOfRootProperty {
@@ -175,6 +201,10 @@ interface GltfTechnique extends GltfChildOfRootProperty {
 }
 
 interface Gltf1Material extends GltfChildOfRootProperty {
+  diffuse?: string;
+  emission?: number[];
+  shininess?: number;
+  specular?: number[];
   technique?: GltfId;
   values?: {
     texStep?: number[];
@@ -192,9 +222,9 @@ interface GltfMaterialPbrMetallicRoughness extends GltfProperty {
 
 interface Gltf2Material extends GltfChildOfRootProperty {
   pbrMetallicRoughness?: GltfMaterialPbrMetallicRoughness;
-  normalTexture?: any;
-  occlusionTexture?: any;
-  emissiveTexture?: any;
+  normalTexture?: unknown;
+  occlusionTexture?: unknown;
+  emissiveTexture?: GltfTextureInfo;
   emissiveFactor?: number[];
   alphaMode?: "OPAQUE" | "MASK" | "BLEND";
   alphaCutoff?: number;
@@ -243,7 +273,7 @@ interface GltfAccessor extends GltfChildOfRootProperty {
   type: "SCALAR" | "VEC2" | "VEC3" | "VEC4" | "MAT2" | "MAT3" | "MAT4";
   max?: number[];
   min?: number[];
-  sparse?: any;
+  sparse?: unknown; // ###TODO sparse accessors
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -356,12 +386,12 @@ class GltfBufferView {
   public readonly data: Uint8Array;
   public readonly count: number;
   public readonly type: GltfDataType;
-  public readonly accessor: any;
+  public readonly accessor: GltfAccessor;
   public readonly stride: number;
 
   public get byteLength(): number { return this.data.length; }
 
-  public constructor(data: Uint8Array, count: number, type: GltfDataType, accessor: any, stride: number) {
+  public constructor(data: Uint8Array, count: number, type: GltfDataType, accessor: GltfAccessor, stride: number) {
     this.data = data;
     this.count = count;
     this.type = type;
@@ -556,10 +586,13 @@ export abstract class GltfReader {
 
     const renderGraphicList: RenderGraphic[] = [];
     let readStatus: TileReadStatus = TileReadStatus.InvalidTileData;
-    for (const nodeKey of Object.keys(this._nodes))
-      if (!childNodes.has(nodeKey))
-        if (TileReadStatus.Success !== (readStatus = this.readNodeAndCreateGraphics(renderGraphicList, this._nodes[nodeKey], featureTable, undefined, instances, pseudoRtcBias)))
+    for (const nodeKey of Object.keys(this._nodes)) {
+      if (!childNodes.has(nodeKey)) {
+        const node = this._nodes[nodeKey];
+        if (node && TileReadStatus.Success !== (readStatus = this.readNodeAndCreateGraphics(renderGraphicList, node, featureTable, undefined, instances, pseudoRtcBias)))
           return { readStatus, isLeaf };
+      }
+    }
 
     if (0 === renderGraphicList.length)
       return { readStatus: TileReadStatus.InvalidTileData, isLeaf };
@@ -634,7 +667,7 @@ export abstract class GltfReader {
     return mesh.getGraphics(meshGraphicArgs, this._system, instances);
   }
 
-  private readNodeAndCreateGraphics(renderGraphicList: RenderGraphic[], node: any, featureTable: FeatureTable | undefined, parentTransform: Transform | undefined, instances?: InstancedGraphicParams, pseudoRtcBias?: Vector3d): TileReadStatus {
+  private readNodeAndCreateGraphics(renderGraphicList: RenderGraphic[], node: GltfNode, featureTable: FeatureTable | undefined, parentTransform: Transform | undefined, instances?: InstancedGraphicParams, pseudoRtcBias?: Vector3d): TileReadStatus {
     if (undefined === node)
       return TileReadStatus.InvalidTileData;
 
@@ -653,11 +686,10 @@ export abstract class GltfReader {
      * as the vertices are supplied in a quantized format, applying the RTC bias to
      * quantization origin will make these tiles work correctly.
      */
-    if (undefined !== pseudoRtcBias) {
+    if (undefined !== pseudoRtcBias)
       thisBias = (undefined === thisTransform) ? pseudoRtcBias : thisTransform.matrix.multiplyInverse(pseudoRtcBias);
-    }
-    const meshKey = node.meshes ? node.meshes : node.mesh;
-    if (undefined !== meshKey) {
+
+    for (const meshKey of getNodeMeshIds(node)) {
       const nodeMesh = this._meshes[meshKey];
       if (nodeMesh?.primitives) {
         const meshGraphicArgs = new MeshGraphicArgs();
@@ -693,13 +725,19 @@ export abstract class GltfReader {
         }
       }
     }
+
     if (node.children) {
-      for (const child of node.children)
-        this.readNodeAndCreateGraphics(renderGraphicList, this._nodes[child], featureTable, thisTransform, instances);
+      for (const childId of node.children) {
+        const child = this._nodes[childId];
+        if (child)
+          this.readNodeAndCreateGraphics(renderGraphicList, child, featureTable, thisTransform, instances);
+      }
     }
+
     return TileReadStatus.Success;
   }
 
+  // ###TODO what is the actual type of `json`?
   public getBufferView(json: any, accessorName: string): GltfBufferView | undefined {
     try {
       const accessorValue = JsonUtils.asString(json[accessorName]);
@@ -780,8 +818,8 @@ export abstract class GltfReader {
 
   protected readFeatureIndices(_json: any): number[] | undefined { return undefined; }
 
-  private extractTextureId(materialJson: any): string | undefined {
-    if (typeof materialJson !== "object")
+  private extractTextureId(material: GltfMaterial): string | undefined {
+    if (typeof material !== "object")
       return undefined;
 
     const extractId = (value: any) => {
@@ -796,27 +834,25 @@ export abstract class GltfReader {
     };
 
     // Bimium's shader value...almost certainly obsolete at this point.
-    let id = extractId(materialJson.values?.tex);
-    if (undefined !== id)
-      return id;
+    if (isGltf1Material(material))
+      return material.diffuse ?? extractId(material.values?.tex);
 
     // KHR_techniques_webgl extension
     const techniques = this._glTF.extensions?.KHR_techniques_webgl?.techniques;
-    const ext = Array.isArray(techniques) ? materialJson.extensions?.KHR_techniques_webgl : undefined;
-    if (techniques && undefined !== ext && typeof ext.values === "object") {
+    const ext = Array.isArray(techniques) ? material.extensions?.KHR_techniques_webgl : undefined;
+    if (techniques && undefined !== ext) {
       const uniforms = typeof ext.technique === "number" ? techniques[ext.technique].uniforms : undefined;
       if (typeof uniforms === "object") {
         for (const uniformName of Object.keys(uniforms)) {
           const uniform = uniforms[uniformName];
           if (typeof uniform === "object" && uniform.type === GltfDataType.Sampler2d)
-            return extractId(ext.values[uniformName]?.index);
+            return extractId(uniform.value?.index);
         }
       }
     }
 
-    id = extractId(materialJson.diffuseTexture?.index);
-    id = id ?? extractId(materialJson.emissiveTexture?.index);
-    return id ?? extractId(materialJson.pbrMetallicRoughness?.baseColorTexture?.index);
+    const id = extractId(material.emissiveTexture?.index);
+    return id ?? extractId(material.pbrMetallicRoughness?.baseColorTexture?.index);
   }
 
   protected createDisplayParams(materialJson: any, hasBakedLighting: boolean): DisplayParams | undefined {
@@ -829,8 +865,8 @@ export abstract class GltfReader {
   protected readMeshPrimitive(primitive: any, featureTable?: FeatureTable, pseudoRtcBias?: Vector3d): GltfMeshData | undefined {
     const materialName = JsonUtils.asString(primitive.material);
     const hasBakedLighting = undefined === primitive.attributes.NORMAL;
-    const materialValue = 0 < materialName.length ? JsonUtils.asObject(this._materialValues[materialName]) : undefined;
-    const displayParams = this.createDisplayParams(materialValue, hasBakedLighting);
+    const material = 0 < materialName.length ? this._materialValues[materialName] : undefined;
+    const displayParams = this.createDisplayParams(material, hasBakedLighting);
     if (undefined === displayParams)
       return undefined;
 
@@ -866,6 +902,7 @@ export abstract class GltfReader {
       hasBakedLighting,
       isVolumeClassifier,
     });
+
     const mesh = new GltfMeshData(meshPrimitive);
 
     // We don't have real colormap - just load material color.  This will be used if non-Bentley
@@ -874,12 +911,12 @@ export abstract class GltfReader {
     meshPrimitive.colorMap.insert(displayParams.fillColor.tbgr);   // White...
 
     const colorIndices = this.readBufferData16(primitive.attributes, "_COLORINDEX");
-    if (undefined !== colorIndices) {
+    if (undefined !== colorIndices && material) {
       let texStep;
-      if (materialValue.values !== undefined && Array.isArray(materialValue.values.texStep))
-        texStep = materialValue.values.texStep;
-      else if (materialValue.extensions && materialValue.extensions.KHR_techniques_webgl && materialValue.extensions.KHR_techniques_webgl.values && Array.isArray(materialValue.extensions.KHR_techniques_webgl.values.u_texStep))
-        texStep = materialValue.extensions.KHR_techniques_webgl.values.u_texStep;
+      if (isGltf1Material(material))
+        texStep = material.values?.texStep;
+      else
+        texStep = material.extensions?.KHR_techniques_webgl?.values?.u_texStep;
 
       if (texStep) {
         const uvParams = [];
