@@ -46,7 +46,6 @@ import { SyncViewportFrustaTool, SyncViewportsTool } from "./SyncViewportsTool";
 import { TimePointComparisonTool } from "./TimePointComparison";
 import { UiManager } from "./UiManager";
 import { MarkupTool, ModelClipTool, SaveImageTool, ZoomToSelectedElementsTool } from "./Viewer";
-import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
 import { MacroTool } from "./MacroTools";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
@@ -242,9 +241,6 @@ export class DisplayTestApp {
     this._iTwinId = configuration.iTwinId;
 
     if (ProcessDetector.isElectronAppFrontend) {
-      const authClient: ElectronRendererAuthorization = new ElectronRendererAuthorization();
-      if (opts.iModelApp)
-        opts.iModelApp.authorizationClient = authClient;
       await ElectronApp.startup(opts);
     } else if (ProcessDetector.isIOSAppFrontend) {
       await IOSApp.startup(opts);

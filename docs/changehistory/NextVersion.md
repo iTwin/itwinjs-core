@@ -1733,3 +1733,8 @@ More complex Geographic CRS can also be used such as the following user-defined:
 On the frontend the [GeoConverter]($frontend) class has been modified to accept either a string containing the datum or a [GeographicCRSProps]($common) of a similar format retaining cache capability as before for either format.
 
 **NOTE**: The [IModelCoordinatesRequestProps.source]($common) and the [GeoCoordinatesRequestProps.target]($common) were renamed from previous version that used the sourceDatum and targetDatum properties.
+
+## New clustering algorithm for MarkerSet
+
+The [MarkerSet]($frontend) class now clusters markers by the screen distance between their positions rather than overlap of their rectangles, so the `Cluster.rect` property is no longer needed and has been removed. Instead, there is a new member `MarkerSet.clusterRadius` that controls when nearby Markers are clustered. See its documentation for details.
+

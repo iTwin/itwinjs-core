@@ -34,7 +34,7 @@
     "@itwin/core-i18n": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
     "@itwin/core-react": "workspace:*",
-    "@itwin/oidc-signin-tool": "3.0.0-dev.110",
+    "@itwin/oidc-signin-tool": "3.0.0",
     "@itwin/presentation-backend": "workspace:*",
     "@itwin/presentation-common": "workspace:*",
     "@itwin/presentation-components": "workspace:*",

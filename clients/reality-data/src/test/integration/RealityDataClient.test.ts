@@ -57,7 +57,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
     chai.assert(realityData.iTwinId === iTwinId);
   });
 
-  it("should be able to retrieve reality data properties for every reality data associated with iTwin", async () => {
+  it.skip("should be able to retrieve reality data properties for every reality data associated with iTwin", async () => {
     const realityData: RealityData[] = await realityDataServiceClient.getRealityDataInITwin(accessToken, iTwinId);
 
     realityData.forEach((value) => {
