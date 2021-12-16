@@ -1443,7 +1443,7 @@ importers:
       '@itwin/eslint-plugin': workspace:*
       '@itwin/oidc-signin-tool': 3.0.0
       '@itwin/projects-client': ^0.3.0
-      '@itwin/service-authorization': ^0.3.0
+      '@itwin/service-authorization': ^0.4.0
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
       '@types/fs-extra': ^4.0.7
@@ -1465,7 +1465,7 @@ importers:
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-transformer': link:../../core/transformer
       '@itwin/projects-client': 0.3.0
-      '@itwin/service-authorization': 0.3.0
+      '@itwin/service-authorization': 0.4.0
       fs-extra: 8.1.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
@@ -1697,7 +1697,7 @@ importers:
     specifiers:
       '@bentley/imodelbank-client': workspace:*
       '@bentley/itwin-client': workspace:*
-      '@itwin/browser-authorization': ^0.3.1
+      '@itwin/browser-authorization': ^0.4.0
       '@itwin/build-tools': workspace:*
       '@itwin/certa': workspace:*
       '@itwin/core-backend': workspace:*
@@ -1710,7 +1710,7 @@ importers:
       '@itwin/editor-backend': workspace:*
       '@itwin/editor-common': workspace:*
       '@itwin/editor-frontend': workspace:*
-      '@itwin/electron-authorization': ^0.5.0
+      '@itwin/electron-authorization': ^0.6.0
       '@itwin/eslint-plugin': workspace:*
       '@itwin/express-server': workspace:*
       '@itwin/hypermodeling-frontend': workspace:*
@@ -1746,7 +1746,7 @@ importers:
     dependencies:
       '@bentley/imodelbank-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
-      '@itwin/browser-authorization': 0.3.2
+      '@itwin/browser-authorization': 0.4.0
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
@@ -1757,7 +1757,7 @@ importers:
       '@itwin/editor-backend': link:../../editor/backend
       '@itwin/editor-common': link:../../editor/common
       '@itwin/editor-frontend': link:../../editor/frontend
-      '@itwin/electron-authorization': 0.5.1
+      '@itwin/electron-authorization': 0.6.0
       '@itwin/express-server': link:../../core/express-server
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
       '@itwin/imodels-access-backend': 0.2.0
@@ -2091,7 +2091,7 @@ importers:
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-frontend': workspace:*
       '@itwin/projects-client': ^0.3.0
-      '@itwin/service-authorization': ^0.3.0
+      '@itwin/service-authorization': ^0.4.0
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
       '@types/mocha': ^8.2.2
@@ -2129,7 +2129,7 @@ importers:
       '@itwin/oidc-signin-tool': 3.0.0
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-frontend': link:../../presentation/frontend
-      '@itwin/service-authorization': 0.3.0
+      '@itwin/service-authorization': 0.4.0
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
       dotenv: 10.0.0
@@ -2588,7 +2588,7 @@ importers:
       '@bentley/itwin-client': workspace:*
       '@bentley/react-scripts': 4.0.3
       '@itwin/appui-abstract': workspace:*
-      '@itwin/browser-authorization': ^0.3.1
+      '@itwin/browser-authorization': ^0.4.0
       '@itwin/build-tools': workspace:*
       '@itwin/core-backend': workspace:*
       '@itwin/core-bentley': workspace:*
@@ -2598,7 +2598,7 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/core-mobile': workspace:*
       '@itwin/core-quantity': workspace:*
-      '@itwin/electron-authorization': ^0.5.0
+      '@itwin/electron-authorization': ^0.6.0
       '@itwin/eslint-plugin': workspace:*
       '@itwin/hypermodeling-frontend': workspace:*
       '@itwin/imodels-access-backend': 0.2.0
@@ -2627,7 +2627,7 @@ importers:
     dependencies:
       '@bentley/itwin-client': link:../../clients/itwin
       '@itwin/appui-abstract': link:../../ui/appui-abstract
-      '@itwin/browser-authorization': 0.3.2
+      '@itwin/browser-authorization': 0.4.0
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
@@ -2636,7 +2636,7 @@ importers:
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-mobile': link:../../core/mobile
       '@itwin/core-quantity': link:../../core/quantity
-      '@itwin/electron-authorization': 0.5.1
+      '@itwin/electron-authorization': 0.6.0
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
       '@itwin/imodels-access-backend': 0.2.0
       '@itwin/imodels-access-frontend': 0.2.0
@@ -2675,7 +2675,7 @@ importers:
       '@bentley/reality-data-client': workspace:*
       '@itwin/appui-abstract': workspace:*
       '@itwin/backend-webpack-tools': workspace:*
-      '@itwin/browser-authorization': ^0.3.1
+      '@itwin/browser-authorization': ^0.4.0
       '@itwin/build-tools': workspace:*
       '@itwin/core-backend': workspace:*
       '@itwin/core-bentley': workspace:*
@@ -2690,7 +2690,7 @@ importers:
       '@itwin/editor-backend': workspace:*
       '@itwin/editor-common': workspace:*
       '@itwin/editor-frontend': workspace:*
-      '@itwin/electron-authorization': ^0.5.0
+      '@itwin/electron-authorization': ^0.6.0
       '@itwin/eslint-plugin': workspace:*
       '@itwin/frontend-devtools': workspace:*
       '@itwin/hypermodeling-frontend': workspace:*
@@ -2724,7 +2724,7 @@ importers:
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/reality-data-client': link:../../clients/reality-data
       '@itwin/appui-abstract': link:../../ui/appui-abstract
-      '@itwin/browser-authorization': 0.3.2
+      '@itwin/browser-authorization': 0.4.0
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
@@ -2737,7 +2737,7 @@ importers:
       '@itwin/editor-backend': link:../../editor/backend
       '@itwin/editor-common': link:../../editor/common
       '@itwin/editor-frontend': link:../../editor/frontend
-      '@itwin/electron-authorization': 0.5.1
+      '@itwin/electron-authorization': 0.6.0
       '@itwin/frontend-devtools': link:../../core/frontend-devtools
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
       '@itwin/imodels-access-backend': 0.2.0
@@ -2960,7 +2960,7 @@ importers:
       '@itwin/core-electron': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/core-transformer': workspace:*
-      '@itwin/electron-authorization': ^0.5.0
+      '@itwin/electron-authorization': ^0.6.0
       '@itwin/eslint-plugin': workspace:*
       '@itwin/imodels-access-backend': 0.2.0
       '@itwin/imodels-client-management': 0.2.0
@@ -2989,7 +2989,7 @@ importers:
       '@itwin/core-electron': link:../../core/electron
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-transformer': link:../../core/transformer
-      '@itwin/electron-authorization': 0.5.1
+      '@itwin/electron-authorization': 0.6.0
       '@itwin/imodels-access-backend': 0.2.0
       '@itwin/imodels-client-management': 0.2.0
       dotenv: 10.0.0
@@ -3028,7 +3028,7 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/core-quantity': workspace:*
       '@itwin/core-react': workspace:*
-      '@itwin/electron-authorization': ^0.5.0
+      '@itwin/electron-authorization': ^0.6.0
       '@itwin/eslint-plugin': workspace:*
       '@itwin/express-server': workspace:*
       '@itwin/imodel-components-react': workspace:*
@@ -3073,7 +3073,7 @@ importers:
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-quantity': link:../../core/quantity
       '@itwin/core-react': link:../../ui/core-react
-      '@itwin/electron-authorization': 0.5.1
+      '@itwin/electron-authorization': 0.6.0
       '@itwin/express-server': link:../../core/express-server
       '@itwin/imodel-components-react': link:../../ui/imodel-components-react
       '@itwin/itwinui-css': 0.37.2
@@ -3183,7 +3183,7 @@ importers:
       '@itwin/appui-abstract': workspace:*
       '@itwin/appui-layout-react': workspace:*
       '@itwin/appui-react': workspace:*
-      '@itwin/browser-authorization': ^0.3.1
+      '@itwin/browser-authorization': ^0.4.0
       '@itwin/build-tools': workspace:*
       '@itwin/components-react': workspace:*
       '@itwin/core-backend': workspace:*
@@ -3200,7 +3200,7 @@ importers:
       '@itwin/editor-backend': workspace:*
       '@itwin/editor-common': workspace:*
       '@itwin/editor-frontend': workspace:*
-      '@itwin/electron-authorization': ^0.5.0
+      '@itwin/electron-authorization': ^0.6.0
       '@itwin/eslint-plugin': workspace:*
       '@itwin/express-server': workspace:*
       '@itwin/frontend-devtools': workspace:*
@@ -3258,7 +3258,7 @@ importers:
       '@itwin/appui-abstract': link:../../ui/appui-abstract
       '@itwin/appui-layout-react': link:../../ui/appui-layout-react
       '@itwin/appui-react': link:../../ui/appui-react
-      '@itwin/browser-authorization': 0.3.2
+      '@itwin/browser-authorization': 0.4.0
       '@itwin/components-react': link:../../ui/components-react
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
@@ -3273,7 +3273,7 @@ importers:
       '@itwin/editor-backend': link:../../editor/backend
       '@itwin/editor-common': link:../../editor/common
       '@itwin/editor-frontend': link:../../editor/frontend
-      '@itwin/electron-authorization': 0.5.1
+      '@itwin/electron-authorization': 0.6.0
       '@itwin/express-server': link:../../core/express-server
       '@itwin/frontend-devtools': link:../../core/frontend-devtools
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
@@ -3824,7 +3824,7 @@ importers:
       '@bentley/itwin-client': workspace:*
       '@itwin/appui-abstract': workspace:*
       '@itwin/appui-layout-react': workspace:*
-      '@itwin/browser-authorization': ^0.3.1
+      '@itwin/browser-authorization': ^0.4.0
       '@itwin/build-tools': workspace:*
       '@itwin/components-react': workspace:*
       '@itwin/core-bentley': workspace:*
@@ -3898,7 +3898,7 @@ importers:
     dependencies:
       '@bentley/icons-generic': 1.0.34
       '@bentley/icons-generic-webfont': 1.0.34
-      '@itwin/browser-authorization': 0.3.2
+      '@itwin/browser-authorization': 0.4.0
       '@itwin/core-telemetry': link:../../core/telemetry
       '@itwin/itwinui-css': 0.37.2
       '@itwin/itwinui-react': 1.27.0_react-dom@17.0.2+react@17.0.2
@@ -6720,7 +6720,7 @@ packages:
       babel-plugin-polyfill-corejs2: 0.3.0_@babel+core@7.12.3
       babel-plugin-polyfill-corejs3: 0.4.0_@babel+core@7.12.3
       babel-plugin-polyfill-regenerator: 0.3.0_@babel+core@7.12.3
-      core-js-compat: 3.19.3
+      core-js-compat: 3.20.0
       semver: 6.3.0
     transitivePeerDependencies:
       - supports-color
@@ -6805,7 +6805,7 @@ packages:
       babel-plugin-polyfill-corejs2: 0.3.0_@babel+core@7.16.5
       babel-plugin-polyfill-corejs3: 0.4.0_@babel+core@7.16.5
       babel-plugin-polyfill-regenerator: 0.3.0_@babel+core@7.16.5
-      core-js-compat: 3.19.3
+      core-js-compat: 3.20.0
       semver: 6.3.0
     transitivePeerDependencies:
       - supports-color
@@ -6885,7 +6885,7 @@ packages:
     resolution: {integrity: sha512-F1pMwvTiUNSAM8mc45kccMQxj31x3y3P+tA/X8hKNWp3/hUsxdGxZ3D3H8JIkxtfA8qGkaBTKvcmvStaYseAFw==}
     engines: {node: '>=6.9.0'}
     dependencies:
-      core-js-pure: 3.19.3
+      core-js-pure: 3.20.0
       regenerator-runtime: 0.13.9
 
   /@babel/runtime/7.16.5:
@@ -6943,6 +6943,22 @@ packages:
     requiresBuild: true
     dev: false
 
+  /@bentley/itwin-client/3.0.0-dev.135_1f1133e0683841193b047e5518caa238:
+    resolution: {integrity: sha512-facpvfpiOsyvNxrOUP47Qn1T/9uUp2pxF9EweNg18HpcgdRZvfQtqGAdYoiR4qdvCVZJEqpoCz7p6t1DFFjAuA==}
+    peerDependencies:
+      '@itwin/core-bentley': ^3.0.0-dev.135
+    dependencies:
+      '@itwin/core-bentley': 3.0.0-dev.148
+      deep-assign: 2.0.0
+      js-base64: 3.7.2
+      lodash: 4.17.21
+      qs: 6.10.2
+      superagent: 5.3.1
+      xpath: 0.0.27
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
   /@bentley/itwin-client/3.0.0-dev.138:
     resolution: {integrity: sha512-8V7H6+Jq/Ew2pzAqEe+v939xXMKzmejHo8jCEmIW+SlC7F2DSV4ma92bd5OJAM27UfnInjCsxTcEETviYS3wsw==}
     peerDependencies:
@@ -6956,22 +6972,6 @@ packages:
       xpath: 0.0.27
     transitivePeerDependencies:
       - supports-color
-
-  /@bentley/itwin-client/3.0.0-dev.153_11e18f6e74ac13825ae4ce23a8c29853:
-    resolution: {integrity: sha512-UD2q6JGgeDcuwN79kJNa6LQ/ZLgta5ojAYN0N7C2rQbdZoyX1sAQ7a8dresH4LBPI95P6O26r/luMNiGHD1w/w==}
-    peerDependencies:
-      '@itwin/core-bentley': ^3.0.0-dev.153
-    dependencies:
-      '@itwin/core-bentley': 3.0.0-dev.153
-      deep-assign: 2.0.0
-      js-base64: 3.7.2
-      lodash: 4.17.21
-      qs: 6.10.2
-      superagent: 5.3.1
-      xpath: 0.0.27
-    transitivePeerDependencies:
-      - supports-color
-    dev: false
 
   /@bentley/react-scripts/4.0.3_react@17.0.2+typescript@4.4.4:
     resolution: {integrity: sha512-gET4e/0PWe/FVvSJR3QKi+m1ct9CND6ZwNdZcAoTvLlkrb/6i/SexR3ZjOIMFXgKKBsCVjf2c83BZBzjAsRCWg==}
@@ -7396,10 +7396,10 @@ packages:
     resolution: {integrity: sha512-ZXRY4jNvVgSVQ8DL3LTcakaAtXwTVUxE81hslsyD2AtoXW/wVob10HkOJ1X/pAlcI7D+2YoZKg5do8G/w6RYgA==}
     engines: {node: '>=8'}
 
-  /@itwin/browser-authorization/0.3.2:
-    resolution: {integrity: sha512-TmdK+K2kaBqE4H4nyUZdhcuFoOnePddvSEs0OVMLqW6s/1DtrfIc1hLwnX4xvEct/BBUSMTyNCYUOsY+wQuXhQ==}
+  /@itwin/browser-authorization/0.4.0:
+    resolution: {integrity: sha512-oDHnF7b2VYxfVt7h/azX2wDDi08kLeuyISAvMjxvjOH5GyQmsVAUwMa2diGQolIPNCBTW/v9Z+/bRNgMePd06A==}
     dependencies:
-      '@itwin/core-bentley': 3.0.0-dev.153
+      '@itwin/core-bentley': 3.0.0-dev.148
       oidc-client: 1.11.5
     dev: false
 
@@ -7451,32 +7451,18 @@ packages:
       - utf-8-validate
     dev: true
 
+  /@itwin/core-bentley/3.0.0-dev.148:
+    resolution: {integrity: sha512-OVNmxpb7/AAd4pm/cBdE1I+p1lBoiXI3EBaRN1hAPZzqLDk7AbWgTegfQBPXAnyP5FxX9MyeU+lplvsl2aWjXg==}
+    dev: false
+
   /@itwin/core-bentley/3.0.0-dev.153:
     resolution: {integrity: sha512-UGAOpcl1HzXyuOIL5t8aE6+b8so1xLtiQM86AzDQu2/ivER7mY/260NQmvzoLCFIwEpcpiFB8r2AAV7xYqzYMg==}
 
-  /@itwin/core-bentley/3.0.0-extension.1:
-    resolution: {integrity: sha512-3r1aRoZp694aqP2E0M9dZiaPSAC0E/E2VTvvN9K73NnlTvO4jpaIdt520oHp7tkGYx24VS9Q8+ED1Z0CH9+RkA==}
-    dev: false
-
-  /@itwin/core-common/3.0.0-extension.1_f2c3418fbeb77077b236020c30c9aae4:
-    resolution: {integrity: sha512-IMcuAb/xJjbzvwSrZp5URmKU7h0se97DGIF1R76EMxaTvTCTa7OOkelu6t8f1mH0BXHv8WfeBfUu5ajP+RU7vg==}
-    peerDependencies:
-      '@bentley/itwin-client': ^3.0.0-extension.1
-      '@itwin/core-bentley': ^3.0.0-extension.1
-      '@itwin/core-geometry': ^3.0.0-extension.1
+  /@itwin/electron-authorization/0.6.0:
+    resolution: {integrity: sha512-sY6cjtfz625KnDm1sU+e8n8Ir1rTNWjVXKtgOIss7UnBKmqvSjwVn35oorVrZI5xhoKTglWbpJhqytx7uD6ZfA==}
     dependencies:
-      '@itwin/core-bentley': 3.0.0-extension.1
-      '@ungap/url-search-params': 0.1.4
-      flatbuffers: 1.12.0
-      js-base64: 3.7.2
-      semver: 5.7.1
-    dev: false
-
-  /@itwin/electron-authorization/0.5.1:
-    resolution: {integrity: sha512-S6BxwfX4/fxcrLglqN0exrTDV2w4l0r34SEJEqSN3DbHuoGhjRJISXZux0OXprMwWjuCy7hI09n/9EW733J2uA==}
-    dependencies:
-      '@bentley/itwin-client': 3.0.0-dev.153_11e18f6e74ac13825ae4ce23a8c29853
-      '@itwin/core-bentley': 3.0.0-dev.153
+      '@bentley/itwin-client': 3.0.0-dev.135_1f1133e0683841193b047e5518caa238
+      '@itwin/core-bentley': 3.0.0-dev.148
       '@openid/appauth': 1.3.1
       keytar: 7.7.0
       open: 8.4.0
@@ -7642,6 +7628,7 @@ packages:
     dependencies:
       '@bentley/itwin-client': 3.0.0-dev.138
     transitivePeerDependencies:
+      - '@itwin/core-bentley'
       - supports-color
 
   /@itwin/reality-data-client/0.2.4:
@@ -7651,14 +7638,11 @@ packages:
       axios: ^0.24.0
     dev: false
 
-  /@itwin/service-authorization/0.3.0:
-    resolution: {integrity: sha512-ZX7jsxxW3IWXQA0DXnSHV5PInf8S/IyqvhwEDyPYMCE1KtYo6CawNCeKnxe9kv8sbB0g017Xj7qHLC40+t9jHg==}
+  /@itwin/service-authorization/0.4.0:
+    resolution: {integrity: sha512-IGyES+Dra8S/SaeiAFo7NKllVTF3gwMlPMic7Hyd7GLq3xySRLmuO3UlfzphNgHDquYmU7u0tE6gGaQzp6y4Lg==}
     dependencies:
-      '@itwin/core-bentley': 3.0.0-extension.1
-      '@itwin/core-common': 3.0.0-extension.1_f2c3418fbeb77077b236020c30c9aae4
+      '@itwin/core-bentley': 3.0.0-dev.148
       openid-client: 4.9.1
-    transitivePeerDependencies:
-      - '@bentley/itwin-client'
     dev: false
 
   /@jest/console/26.6.2:
@@ -10246,7 +10230,7 @@ packages:
     dependencies:
       '@babel/core': 7.12.3
       '@babel/helper-define-polyfill-provider': 0.3.0_@babel+core@7.12.3
-      core-js-compat: 3.19.3
+      core-js-compat: 3.20.0
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -10258,7 +10242,7 @@ packages:
     dependencies:
       '@babel/core': 7.16.5
       '@babel/helper-define-polyfill-provider': 0.3.0_@babel+core@7.16.5
-      core-js-compat: 3.19.3
+      core-js-compat: 3.20.0
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -10691,7 +10675,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001286
-      electron-to-chromium: 1.4.18
+      electron-to-chromium: 1.4.19
     dev: true
 
   /browserslist/4.14.2:
@@ -10700,7 +10684,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001286
-      electron-to-chromium: 1.4.18
+      electron-to-chromium: 1.4.19
       escalade: 3.1.1
       node-releases: 1.1.77
     dev: true
@@ -10711,7 +10695,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001286
-      electron-to-chromium: 1.4.18
+      electron-to-chromium: 1.4.19
       escalade: 3.1.1
       node-releases: 2.0.1
       picocolors: 1.0.0
@@ -11558,15 +11542,15 @@ packages:
       webpack-sources: 1.4.3
     dev: true
 
-  /core-js-compat/3.19.3:
-    resolution: {integrity: sha512-59tYzuWgEEVU9r+SRgceIGXSSUn47JknoiXW6Oq7RW8QHjXWz3/vp8pa7dbtuVu40sewz3OP3JmQEcDdztrLhA==}
+  /core-js-compat/3.20.0:
+    resolution: {integrity: sha512-relrah5h+sslXssTTOkvqcC/6RURifB0W5yhYBdBkaPYa5/2KBMiog3XiD+s3TwEHWxInWVv4Jx2/Lw0vng+IQ==}
     dependencies:
       browserslist: 4.19.1
       semver: 7.0.0
     dev: true
 
-  /core-js-pure/3.19.3:
-    resolution: {integrity: sha512-N3JruInmCyt7EJj5mAq3csCgGYgiSqu7p7TQp2KOztr180/OAIxyIvL1FCjzgmQk/t3Yniua50Fsak7FShI9lA==}
+  /core-js-pure/3.20.0:
+    resolution: {integrity: sha512-qsrbIwWSEEYOM7z616jAVgwhuDDtPLwZSpUsU3vyUkHYqKTf/uwOJBZg2V7lMurYWkpVlaVOxBrfX0Q3ppvjfg==}
     requiresBuild: true
 
   /core-js/2.6.12:
@@ -11575,8 +11559,8 @@ packages:
     requiresBuild: true
     dev: true
 
-  /core-js/3.19.3:
-    resolution: {integrity: sha512-LeLBMgEGSsG7giquSzvgBrTS7V5UL6ks3eQlUSbN8dJStlLFiRzUm5iqsRyzUB8carhfKjkJ2vzKqE6z1Vga9g==}
+  /core-js/3.20.0:
+    resolution: {integrity: sha512-KjbKU7UEfg4YPpskMtMXPhUKn7m/1OdTHTVjy09ScR2LVaoUXe8Jh0UdvN2EKUR6iKTJph52SJP95mAB0MnVLQ==}
     requiresBuild: true
 
   /core-util-is/1.0.3:
@@ -12485,8 +12469,8 @@ packages:
     requiresBuild: true
     dev: true
 
-  /electron-to-chromium/1.4.18:
-    resolution: {integrity: sha512-i7nKjGGBE1+YUIbfLObA1EZPmN7J1ITEllbhusDk+KIk6V6gUxN9PFe36v+Sd+8Cg0k3cgUv9lQhQZalr8rggw==}
+  /electron-to-chromium/1.4.19:
+    resolution: {integrity: sha512-TeAjwsC/vhvxEtX/xN1JQUMkl+UrwKXlB4rwLyuLYVuBuRtqJJrU4Jy5pCVihMQg4m1ceZ3MEJ0yYuxHj8vC+w==}
 
   /electron/14.2.2:
     resolution: {integrity: sha512-1nh4NUQ/7jxVEQdxdgPWFq8jGWgUSSF62jni+5jvQNIZZN4/q1wbGN2i/tg/t4oeU5EtOOloa43Y9d29VmvPuw==}
@@ -17463,7 +17447,7 @@ packages:
     dependencies:
       acorn: 7.4.1
       base64-js: 1.5.1
-      core-js: 3.19.3
+      core-js: 3.20.0
       crypto-js: 4.1.1
       serialize-javascript: 4.0.0
     dev: false
@@ -19072,7 +19056,7 @@ packages:
     resolution: {integrity: sha512-0sF4ny9v/B7s6aoehwze9vJNWcmCemAUYBVasscVr92+UYiEqDXOxfKjXN685mDaMRNF3WdhHQs76oTODMocFA==}
     engines: {node: '>=10'}
     dependencies:
-      core-js: 3.19.3
+      core-js: 3.20.0
       object-assign: 4.1.1
       promise: 8.1.0
       raf: 3.4.1
