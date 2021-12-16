@@ -545,6 +545,7 @@ export abstract class GltfReader {
   protected readonly _type: BatchType;
   protected readonly _deduplicateVertices: boolean;
   private readonly _canceled?: ShouldAbortReadGltf;
+  protected readonly _sceneNodes: GltfId[];
 
   protected get _nodes(): GltfDictionary<GltfNode> { return this._glTF.nodes ?? emptyDict; }
   protected get _meshes(): GltfDictionary<GltfMesh> { return this._glTF.meshes ?? emptyDict; }
@@ -573,25 +574,16 @@ export abstract class GltfReader {
     if (this._isCanceled)
       return { readStatus: TileReadStatus.Canceled, isLeaf };
 
+    // ###TODO this looks like a hack? Why does it assume the first node's transform is special, or that the transform will be specified as a matrix instead of translation+rot+scale?
     if (this._returnToCenter || this._nodes[0]?.matrix || (pseudoRtcBias && pseudoRtcBias.magnitude() < 1.0E5))
       pseudoRtcBias = undefined;
 
-    const childNodes = new Set<string>();
-    for (const key of Object.keys(this._nodes)) {
-      const node = this._nodes[key];
-      if (node && node.children)
-        for (const child of node.children)
-          childNodes.add(child.toString());
-    }
-
     const renderGraphicList: RenderGraphic[] = [];
     let readStatus: TileReadStatus = TileReadStatus.InvalidTileData;
-    for (const nodeKey of Object.keys(this._nodes)) {
-      if (!childNodes.has(nodeKey)) {
-        const node = this._nodes[nodeKey];
-        if (node && TileReadStatus.Success !== (readStatus = this.readNodeAndCreateGraphics(renderGraphicList, node, featureTable, undefined, instances, pseudoRtcBias)))
-          return { readStatus, isLeaf };
-      }
+    for (const nodeKey of this._sceneNodes) {
+      const node = this._nodes[nodeKey];
+      if (node && TileReadStatus.Success !== (readStatus = this.readNodeAndCreateGraphics(renderGraphicList, node, featureTable, undefined, instances, pseudoRtcBias)))
+        return { readStatus, isLeaf };
     }
 
     if (0 === renderGraphicList.length)
@@ -809,6 +801,19 @@ export abstract class GltfReader {
     this._type = type;
     this._canceled = isCanceled;
     this._deduplicateVertices = deduplicateVertices;
+
+    // The original implementation of GltfReader would process and produce graphics for every node in glTF.nodes.
+    // What it's *supposed* to do is process the nodes in glTF.scenes[glTF.scene].nodes
+    // Some nodes may not be referenced by the configured scene, or only indirectly via GltfNode.children.
+    // Perhaps some faulty tiles existed that didn't define their scenes properly?
+    let sceneNodes;
+    if (this._glTF.scenes && undefined !== this._glTF.scene)
+      sceneNodes = this._glTF.scenes[this._glTF.scene]?.nodes;
+
+    if (!sceneNodes)
+      sceneNodes = Object.keys(this._nodes);
+
+    this._sceneNodes = sceneNodes;
   }
 
   protected readBufferData(json: any, accessorName: string, type: GltfDataType): GltfBufferData | undefined {
