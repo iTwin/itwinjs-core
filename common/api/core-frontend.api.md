@@ -5734,7 +5734,7 @@ export abstract class MapTileProjection {
 
 // @internal (undocumented)
 export class MapTileTree extends RealityTileTree {
-    constructor(params: RealityTileTreeParams, ecefToDb: Transform, bimElevationBias: number, geodeticOffset: number, sourceTilingScheme: MapTilingScheme, id: MapTreeId);
+    constructor(params: RealityTileTreeParams, ecefToDb: Transform, bimElevationBias: number, geodeticOffset: number, sourceTilingScheme: MapTilingScheme, id: MapTreeId, applyTerrain: boolean);
     // (undocumented)
     addImageryLayer(tree: ImageryMapTileTree, settings: MapLayerSettings): void;
     // (undocumented)

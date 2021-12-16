@@ -3193,7 +3193,7 @@ importers:
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-components': link:../../presentation/components
       '@itwin/presentation-frontend': link:../../presentation/frontend
-      '@reduxjs/toolkit': 1.7.0_react-redux@7.2.6+react@17.0.2
+      '@reduxjs/toolkit': 1.7.1_react-redux@7.2.6+react@17.0.2
       classnames: 2.3.1
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2
@@ -6976,12 +6976,12 @@ packages:
     transitivePeerDependencies:
       - supports-color
 
-  /@bentley/itwin-client/3.0.0-dev.153_11e18f6e74ac13825ae4ce23a8c29853:
-    resolution: {integrity: sha512-UD2q6JGgeDcuwN79kJNa6LQ/ZLgta5ojAYN0N7C2rQbdZoyX1sAQ7a8dresH4LBPI95P6O26r/luMNiGHD1w/w==}
+  /@bentley/itwin-client/3.0.0-dev.154_31db84c5521f3363d692371667eed1c0:
+    resolution: {integrity: sha512-2foHuZRI5X9dEHgj5cSbwrNE6JiI7E0J+nl48/goaSNFwJLIQK4KABvetOJZELSL1L5VRPL9ZJRe7Ug/x3hzRg==}
     peerDependencies:
-      '@itwin/core-bentley': ^3.0.0-dev.153
+      '@itwin/core-bentley': ^3.0.0-dev.154
     dependencies:
-      '@itwin/core-bentley': 3.0.0-dev.153
+      '@itwin/core-bentley': 3.0.0-dev.154
       deep-assign: 2.0.0
       js-base64: 3.7.2
       lodash: 4.17.21
@@ -7418,12 +7418,12 @@ packages:
   /@itwin/browser-authorization/0.3.2:
     resolution: {integrity: sha512-TmdK+K2kaBqE4H4nyUZdhcuFoOnePddvSEs0OVMLqW6s/1DtrfIc1hLwnX4xvEct/BBUSMTyNCYUOsY+wQuXhQ==}
     dependencies:
-      '@itwin/core-bentley': 3.0.0-dev.153
+      '@itwin/core-bentley': 3.0.0-dev.154
       oidc-client: 1.11.5
     dev: false
 
-  /@itwin/certa/3.0.0-dev.153:
-    resolution: {integrity: sha512-OJVlZHzQ00bXGT+OYsXdCLyOiRY/Vxh1wpycsKjvnM8x9x+K018rT3vUqpcU86YJn5SqcIDqiIKFnSnqmlAPzg==}
+  /@itwin/certa/3.0.0-dev.154:
+    resolution: {integrity: sha512-kkeuGaiP4LTxUGQKd6PtRNizsxDMi5WGfTJDQe0H0RWd/6tLDgNF0P5p4ABi4azne8bljwB/5LYx0UpA6gMwEA==}
     hasBin: true
     peerDependencies:
       electron: ^14.0.0
@@ -7445,8 +7445,8 @@ packages:
       - supports-color
       - utf-8-validate
 
-  /@itwin/certa/3.0.0-dev.153_electron@14.2.2:
-    resolution: {integrity: sha512-OJVlZHzQ00bXGT+OYsXdCLyOiRY/Vxh1wpycsKjvnM8x9x+K018rT3vUqpcU86YJn5SqcIDqiIKFnSnqmlAPzg==}
+  /@itwin/certa/3.0.0-dev.154_electron@14.2.2:
+    resolution: {integrity: sha512-kkeuGaiP4LTxUGQKd6PtRNizsxDMi5WGfTJDQe0H0RWd/6tLDgNF0P5p4ABi4azne8bljwB/5LYx0UpA6gMwEA==}
     hasBin: true
     peerDependencies:
       electron: ^14.0.0
@@ -7470,8 +7470,8 @@ packages:
       - utf-8-validate
     dev: true
 
-  /@itwin/core-bentley/3.0.0-dev.153:
-    resolution: {integrity: sha512-UGAOpcl1HzXyuOIL5t8aE6+b8so1xLtiQM86AzDQu2/ivER7mY/260NQmvzoLCFIwEpcpiFB8r2AAV7xYqzYMg==}
+  /@itwin/core-bentley/3.0.0-dev.154:
+    resolution: {integrity: sha512-6XRIPY0lgRQihC8vldlEXQpeOShDmpcT4AdpwULChyGw8gXcuGwxGIrkE20gSh/7OSsopb4MAjicnnWX8rLkow==}
 
   /@itwin/core-bentley/3.0.0-extension.1:
     resolution: {integrity: sha512-3r1aRoZp694aqP2E0M9dZiaPSAC0E/E2VTvvN9K73NnlTvO4jpaIdt520oHp7tkGYx24VS9Q8+ED1Z0CH9+RkA==}
@@ -7494,8 +7494,8 @@ packages:
   /@itwin/electron-authorization/0.5.1:
     resolution: {integrity: sha512-S6BxwfX4/fxcrLglqN0exrTDV2w4l0r34SEJEqSN3DbHuoGhjRJISXZux0OXprMwWjuCy7hI09n/9EW733J2uA==}
     dependencies:
-      '@bentley/itwin-client': 3.0.0-dev.153_11e18f6e74ac13825ae4ce23a8c29853
-      '@itwin/core-bentley': 3.0.0-dev.153
+      '@bentley/itwin-client': 3.0.0-dev.154_31db84c5521f3363d692371667eed1c0
+      '@itwin/core-bentley': 3.0.0-dev.154
       '@openid/appauth': 1.3.1
       keytar: 7.7.0
       open: 8.4.0
@@ -7587,8 +7587,8 @@ packages:
   /@itwin/oidc-signin-tool/3.0.0:
     resolution: {integrity: sha512-zp6S6tQDyI0MSEoA7THlyXJlrtlqhk7X7BMpH8VMkvabEgJOY9AdLjoFbvJPZhcnhjq7CMdxXJWVC3D9QOaYgA==}
     dependencies:
-      '@itwin/certa': 3.0.0-dev.153
-      '@itwin/core-bentley': 3.0.0-dev.153
+      '@itwin/certa': 3.0.0-dev.154
+      '@itwin/core-bentley': 3.0.0-dev.154
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
       openid-client: 4.9.1
@@ -7602,8 +7602,8 @@ packages:
   /@itwin/oidc-signin-tool/3.0.0_electron@14.2.2:
     resolution: {integrity: sha512-zp6S6tQDyI0MSEoA7THlyXJlrtlqhk7X7BMpH8VMkvabEgJOY9AdLjoFbvJPZhcnhjq7CMdxXJWVC3D9QOaYgA==}
     dependencies:
-      '@itwin/certa': 3.0.0-dev.153_electron@14.2.2
-      '@itwin/core-bentley': 3.0.0-dev.153
+      '@itwin/certa': 3.0.0-dev.154_electron@14.2.2
+      '@itwin/core-bentley': 3.0.0-dev.154
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
       openid-client: 4.9.1
@@ -7620,7 +7620,6 @@ packages:
     dependencies:
       '@bentley/itwin-client': 3.0.0-dev.138
     transitivePeerDependencies:
-      - '@itwin/core-bentley'
       - supports-color
 
   /@itwin/reality-data-client/0.2.4:
@@ -7638,7 +7637,6 @@ packages:
       openid-client: 4.9.1
     transitivePeerDependencies:
       - '@bentley/itwin-client'
-      - '@itwin/core-geometry'
     dev: false
 
   /@jest/console/26.6.2:
@@ -7993,8 +7991,8 @@ packages:
     resolution: {integrity: sha512-Pc/AFTdwZwEKJxFJvlxrSmGe/di+aAOBn60sremrpLo6VI/6cmiUYNNwlI5KNYttg7uypzA3ILPMPgxB2GYZEg==}
     dev: false
 
-  /@reduxjs/toolkit/1.7.0_react-redux@7.2.6+react@17.0.2:
-    resolution: {integrity: sha512-iApo4zS+8kWnIn4xucTDWpqRjDNkXruFIyJQWwThIEIbMj5kwqvbMaQcEgd2a305B68Z+4bvZqAqJSATeddaJA==}
+  /@reduxjs/toolkit/1.7.1_react-redux@7.2.6+react@17.0.2:
+    resolution: {integrity: sha512-wXwXYjBVz/ItxB7SMzEAMmEE/FBiY1ze18N+VVVX7NtVbRUrdOGKhpQMHivIJfkbJvSdLUU923a/yAagJQzY0Q==}
     peerDependencies:
       react: ^16.9.0 || ^17.0.0 || 18.0.0-beta
       react-redux: ^7.2.1 || ^8.0.0-beta
@@ -10043,7 +10041,7 @@ packages:
     hasBin: true
     dependencies:
       browserslist: 3.2.8
-      caniuse-lite: 1.0.30001286
+      caniuse-lite: 1.0.30001287
       normalize-range: 0.1.2
       num2fraction: 1.2.2
       postcss: 6.0.23
@@ -10055,7 +10053,7 @@ packages:
     hasBin: true
     dependencies:
       browserslist: 4.19.1
-      caniuse-lite: 1.0.30001286
+      caniuse-lite: 1.0.30001287
       normalize-range: 0.1.2
       num2fraction: 1.2.2
       picocolors: 0.2.1
@@ -10780,8 +10778,8 @@ packages:
     resolution: {integrity: sha512-WHVocJYavUwVgVViC0ORikPHQquXwVh939TaelZ4WDqpWgTX/FsGhl/+P4qBUAGcRvtOgDgC+xftNWWp2RUTAQ==}
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001286
-      electron-to-chromium: 1.4.19
+      caniuse-lite: 1.0.30001287
+      electron-to-chromium: 1.4.20
     dev: true
 
   /browserslist/4.14.2:
@@ -10789,8 +10787,8 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001286
-      electron-to-chromium: 1.4.19
+      caniuse-lite: 1.0.30001287
+      electron-to-chromium: 1.4.20
       escalade: 3.1.1
       node-releases: 1.1.77
     dev: true
@@ -10800,8 +10798,8 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001286
-      electron-to-chromium: 1.4.19
+      caniuse-lite: 1.0.30001287
+      electron-to-chromium: 1.4.20
       escalade: 3.1.1
       node-releases: 2.0.1
       picocolors: 1.0.0
@@ -11043,13 +11041,13 @@ packages:
     resolution: {integrity: sha512-bsTwuIg/BZZK/vreVTYYbSWoe2F+71P7K5QGEX+pT250DZbfU1MQ5prOKpPR+LL6uWKK3KMwMCAS74QB3Um1uw==}
     dependencies:
       browserslist: 4.19.1
-      caniuse-lite: 1.0.30001286
+      caniuse-lite: 1.0.30001287
       lodash.memoize: 4.1.2
       lodash.uniq: 4.5.0
     dev: true
 
-  /caniuse-lite/1.0.30001286:
-    resolution: {integrity: sha512-zaEMRH6xg8ESMi2eQ3R4eZ5qw/hJiVsO/HlLwniIwErij0JDr9P+8V4dtx1l+kLq6j3yy8l8W4fst1lBnat5wQ==}
+  /caniuse-lite/1.0.30001287:
+    resolution: {integrity: sha512-4udbs9bc0hfNrcje++AxBuc6PfLNHwh3PO9kbwnfCQWyqtlzg3py0YgFu8jyRTTo85VAz4U+VLxSlID09vNtWA==}
 
   /capture-exit/2.0.0:
     resolution: {integrity: sha512-PiT/hQmTonHhl/HFGN+Lx3JJUznrVYJ3+AQsnthneZbvW7x+f08Tk7yLJTLEOUvBTbduLeeBkxEaYXUOUrRq6g==}
@@ -12575,8 +12573,8 @@ packages:
     requiresBuild: true
     dev: true
 
-  /electron-to-chromium/1.4.19:
-    resolution: {integrity: sha512-TeAjwsC/vhvxEtX/xN1JQUMkl+UrwKXlB4rwLyuLYVuBuRtqJJrU4Jy5pCVihMQg4m1ceZ3MEJ0yYuxHj8vC+w==}
+  /electron-to-chromium/1.4.20:
+    resolution: {integrity: sha512-N7ZVNrdzX8NE90OXEFBMsBf3fp8P/vVDUER3WCUZjzC7OkNTXHVoF6W9qVhq8+dA8tGnbDajzUpj2ISNVVyj+Q==}
 
   /electron/14.2.2:
     resolution: {integrity: sha512-1nh4NUQ/7jxVEQdxdgPWFq8jGWgUSSF62jni+5jvQNIZZN4/q1wbGN2i/tg/t4oeU5EtOOloa43Y9d29VmvPuw==}
@@ -18551,7 +18549,7 @@ packages:
     dependencies:
       autoprefixer: 9.8.8
       browserslist: 4.19.1
-      caniuse-lite: 1.0.30001286
+      caniuse-lite: 1.0.30001287
       css-blank-pseudo: 0.1.4
       css-has-pseudo: 0.10.0
       css-prefers-color-scheme: 3.1.1

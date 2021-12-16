@@ -304,7 +304,7 @@ beta;IModelConnectedViewSelector: import("react-redux").ConnectedComponent
 public;IModelViewportControl 
 public;IModelViewportControlOptions
 internal;INACTIVITY_TIME_DEFAULT = 3500
-beta;Indicator 
+beta;Indicator(props: IndicatorProps): JSX.Element
 public;InitialAppUiSettings
 internal;initializeNineZoneState(frontstageDef: FrontstageDef): NineZoneState
 internal;initializePanel(nineZone: NineZoneState, frontstageDef: FrontstageDef, panelSide: PanelSide): NineZoneState

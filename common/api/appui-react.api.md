@@ -51,6 +51,7 @@ import { DisplayStyle3dState } from '@itwin/core-frontend';
 import { DraggedWidgetManagerProps } from '@itwin/appui-layout-react';
 import { ECClassGroupingNodeKey } from '@itwin/presentation-common';
 import { EmphasizeElementsProps } from '@itwin/core-common';
+import { FooterPopupContentType } from '@itwin/appui-layout-react';
 import { FunctionKey } from '@itwin/appui-abstract';
 import { GroupButton as GroupButton_2 } from '@itwin/appui-abstract';
 import { GuidString } from '@itwin/core-bentley';
@@ -128,6 +129,7 @@ import { StagePanelType } from '@itwin/appui-layout-react';
 import { StageUsage } from '@itwin/appui-abstract';
 import { StandardViewId } from '@itwin/core-frontend';
 import { StatusBarItemsManager as StatusBarItemsManager_2 } from '@itwin/appui-abstract';
+import { StatusBarLabelSide } from '@itwin/appui-abstract';
 import { StatusBarSection } from '@itwin/appui-abstract';
 import { Store } from 'redux';
 import { StringGetter } from '@itwin/appui-abstract';
@@ -3163,11 +3165,7 @@ export interface IModelViewportControlOptions {
 export const INACTIVITY_TIME_DEFAULT = 3500;
 
 // @beta
-export class Indicator extends React.Component<IndicatorProps, any> {
-    constructor(props: IndicatorProps);
-    // (undocumented)
-    render(): JSX.Element;
-}
+export function Indicator(props: IndicatorProps): JSX.Element;
 
 // @public
 export interface InitialAppUiSettings {
