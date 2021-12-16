@@ -96,8 +96,12 @@ interface GltfDictionary<T extends GltfChildOfRootProperty> {
   [key: string | number]: T | undefined;
 }
 
+interface GltfExtensions {
+  [key: string]: unknown | undefined;
+}
+
 interface GltfProperty {
-  extensions?: Object;
+  extensions?: GltfExtensions;
   extras?: any;
 }
 
@@ -164,6 +168,21 @@ interface GltfSampler extends  GltfChildOfRootProperty {
   wrapT?: GltfWrapMode;
 }
 
+interface GltfTechnique extends GltfChildOfRootProperty {
+  states?: {
+    enable?: number[];
+  };
+}
+
+interface Gltf1Material extends GltfChildOfRootProperty {
+  technique?: GltfId;
+  values?: {
+    texStep?: number[];
+    color?: number[];
+    tex?: number | string;
+  };
+}
+
 interface GltfMaterialPbrMetallicRoughness extends GltfProperty {
   baseColorFactor?: number[];
   baseColorTexture?: GltfTextureInfo;
@@ -171,7 +190,7 @@ interface GltfMaterialPbrMetallicRoughness extends GltfProperty {
   metallicRoughnessTexture?: GltfTextureInfo;
 }
 
-interface GltfMaterial extends GltfChildOfRootProperty {
+interface Gltf2Material extends GltfChildOfRootProperty {
   pbrMetallicRoughness?: GltfMaterialPbrMetallicRoughness;
   normalTexture?: any;
   occlusionTexture?: any;
@@ -180,6 +199,26 @@ interface GltfMaterial extends GltfChildOfRootProperty {
   alphaMode?: "OPAQUE" | "MASK" | "BLEND";
   alphaCutoff?: number;
   doubleSided?: boolean;
+  extensions?: GltfExtensions & {
+    KHR_techniques_webgl?: {
+      technique?: number;
+      values?: {
+        u_texStep?: number[];
+        u_color?: number[];
+      };
+    };
+  };
+}
+
+type GltfMaterial = Gltf1Material | Gltf2Material;
+
+function isGltf1Material(material: GltfMaterial): material is Gltf1Material {
+  const mat1 = material as Gltf1Material;
+  return undefined !== mat1.technique || undefined !== mat1.values;
+}
+
+function isGltf2Material(material: GltfMaterial): material is Gltf2Material {
+  return !isGltf1Material(material);
 }
 
 interface GltfBuffer extends GltfChildOfRootProperty {
@@ -209,8 +248,20 @@ interface GltfAccessor extends GltfChildOfRootProperty {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface Gltf extends GltfProperty {
-  asset: GltfAsset;
+  asset?: GltfAsset; // Asset is required in glTF 2.0, optional in 1.0
   scene?: GltfId;
+  extensions?: GltfExtensions & {
+    CESIUM_RTC?: {
+      center?: number[];
+    };
+    KHR_techniques_webgl?: {
+      techniques?: Array<{
+        uniforms?: {
+          [key: string]: { type: GltfDataType; value?: any; } | undefined;
+        };
+      }>;
+    };
+  };
   extensionsUsed?: string[];
   extensionsRequired?: string[];
   accessors?: GltfDictionary<GltfAccessor>;
@@ -226,7 +277,7 @@ interface Gltf extends GltfProperty {
   scenes?: GltfDictionary<GltfScene>;
   skins?: GltfDictionary<any>;
   textures?: GltfDictionary<GltfTexture>;
-  techniques?: Object; // ###TODO glTF 1.0; only used in one place.
+  techniques?: GltfDictionary<GltfTechnique>;
 }
 
 /** @internal */
@@ -429,6 +480,25 @@ export type ShouldAbortReadGltf = (reader: GltfReader) => boolean;
 
 const emptyDict = { };
 
+function colorFromJson(values: number[]): ColorDef {
+  return ColorDef.from(values[0] * 255, values[1] * 255, values[2] * 255, (1.0 - values[3]) * 255);
+}
+
+function colorFromMaterial(material: GltfMaterial | undefined): ColorDef {
+  if (material) {
+    if (isGltf1Material(material)) {
+      if (material.values?.color && Array.isArray(material.values.color))
+        return colorFromJson(material.values.color);
+    } else if (material.extensions?.KHR_techniques_webgl?.values?.u_color) {
+      return colorFromJson(material.extensions.KHR_techniques_webgl.values.u_color);
+    } else if (material.pbrMetallicRoughness?.baseColorFactor) {
+      return colorFromJson(material.pbrMetallicRoughness.baseColorFactor);
+    }
+  }
+
+  return ColorDef.white;
+}
+
 /** Deserializes [glTF](https://www.khronos.org/gltf/).
  * @internal
  */
@@ -440,7 +510,7 @@ export abstract class GltfReader {
   protected readonly _is3d: boolean;
   protected readonly _modelId: Id64String;
   protected readonly _system: RenderSystem;
-  protected readonly _returnToCenter: number[] | undefined;
+  protected readonly _returnToCenter?: Point3d;
   protected readonly _yAxisUp: boolean;
   protected readonly _type: BatchType;
   protected readonly _deduplicateVertices: boolean;
@@ -502,10 +572,10 @@ export abstract class GltfReader {
 
     let transform;
     let range = contentRange;
-    if (undefined !== this._returnToCenter || undefined !== pseudoRtcBias || this._yAxisUp || undefined !== transformToRoot) {
-      if (undefined !== this._returnToCenter)
-        transform = Transform.createTranslationXYZ(this._returnToCenter[0], this._returnToCenter[1], this._returnToCenter[2]);
-      else if (undefined !== pseudoRtcBias)
+    if (this._returnToCenter || pseudoRtcBias || this._yAxisUp || transformToRoot) {
+      if (this._returnToCenter)
+        transform = Transform.createTranslation(this._returnToCenter.clone());
+      else if (pseudoRtcBias)
         transform = Transform.createTranslationXYZ(pseudoRtcBias.x, pseudoRtcBias.y, pseudoRtcBias.z);
       else
         transform = Transform.createIdentity();
@@ -688,7 +758,11 @@ export abstract class GltfReader {
     this._binaryData = props.binaryData;
     this._glTF = props.glTF;
     this._yAxisUp = props.yAxisUp;
-    this._returnToCenter = this.extractReturnToCenter(props.glTF.extensions);
+
+    const rtcCenter = props.glTF.extensions?.CESIUM_RTC?.center;
+    if (rtcCenter && 3 === rtcCenter.length)
+      if (0 !== rtcCenter[0] || 0 !== rtcCenter[1] || 0 !== rtcCenter[2])
+        this._returnToCenter = Point3d.fromJSON(rtcCenter);
 
     this._iModel = iModel;
     this._modelId = modelId;
@@ -705,21 +779,6 @@ export abstract class GltfReader {
   }
 
   protected readFeatureIndices(_json: any): number[] | undefined { return undefined; }
-
-  private colorFromJson(values: number[]): ColorDef { return ColorDef.from(values[0] * 255, values[1] * 255, values[2] * 255, (1.0 - values[3]) * 255); }
-
-  private colorFromMaterial(materialJson: any): ColorDef {
-    if (materialJson) {
-      if (materialJson.values && Array.isArray(materialJson.values.color))
-        return this.colorFromJson(materialJson.values.color);
-      else if (materialJson.pbrMetallicRoughness && Array.isArray(materialJson.pbrMetallicRoughness.baseColorFactor))
-        return this.colorFromJson(materialJson.pbrMetallicRoughness.baseColorFactor);
-      else if (materialJson.extensions && materialJson.extensions.KHR_techniques_webgl && materialJson.extensions.KHR_techniques_webgl.values && materialJson.extensions.KHR_techniques_webgl.values.u_color)
-        return this.colorFromJson(materialJson.extensions.KHR_techniques_webgl.values.u_color);
-    }
-
-    return ColorDef.white;
-  }
 
   private extractTextureId(materialJson: any): string | undefined {
     if (typeof materialJson !== "object")
@@ -744,7 +803,7 @@ export abstract class GltfReader {
     // KHR_techniques_webgl extension
     const techniques = this._glTF.extensions?.KHR_techniques_webgl?.techniques;
     const ext = Array.isArray(techniques) ? materialJson.extensions?.KHR_techniques_webgl : undefined;
-    if (undefined !== ext && typeof ext.values === "object") {
+    if (techniques && undefined !== ext && typeof ext.values === "object") {
       const uniforms = typeof ext.technique === "number" ? techniques[ext.technique].uniforms : undefined;
       if (typeof uniforms === "object") {
         for (const uniformName of Object.keys(uniforms)) {
@@ -763,15 +822,8 @@ export abstract class GltfReader {
   protected createDisplayParams(materialJson: any, hasBakedLighting: boolean): DisplayParams | undefined {
     const textureId = this.extractTextureId(materialJson);
     const textureMapping = undefined !== textureId ? this.findTextureMapping(textureId) : undefined;
-    const color = this.colorFromMaterial(materialJson);
+    const color = colorFromMaterial(materialJson);
     return new DisplayParams(DisplayParams.Type.Mesh, color, color, 1, LinePixels.Solid, FillFlags.Always, undefined, undefined, hasBakedLighting, textureMapping);
-  }
-  protected extractReturnToCenter(extensions: any): number[] | undefined {
-    if (extensions === undefined) { return undefined; }
-    const cesiumRtc = JsonUtils.asObject(extensions.CESIUM_RTC);
-    if (cesiumRtc === undefined) return undefined;
-    const rtc = JsonUtils.asArray(cesiumRtc.center);
-    return (rtc[0] === 0.0 && rtc[1] === 0.0 && rtc[2] === 0.0) ? undefined : rtc;
   }
 
   protected readMeshPrimitive(primitive: any, featureTable?: FeatureTable, pseudoRtcBias?: Vector3d): GltfMeshData | undefined {
@@ -1180,19 +1232,20 @@ export abstract class GltfReader {
     const transparentTextures: Set<string> = new Set<string>();
     if (this._glTF.techniques) {
       for (const name of Object.keys(this._materialValues)) {
-        const materialValue = this._materialValues[name];
-        let technique;
-        if (undefined !== materialValue?.values &&
-          undefined !== materialValue.values.tex &&
-          undefined !== materialValue.technique &&
-          undefined !== (technique = this._glTF.techniques[materialValue.technique]) &&
-          undefined !== technique.states &&
-          Array.isArray(technique.states.enable)) {
-          for (const enable of technique.states.enable)
-            if (enable === 3042)
-              transparentTextures.add(materialValue.values.tex);
+        const material = this._materialValues[name];
+        if (material && isGltf1Material(material) && undefined !== material.technique && undefined !== material.values?.tex) {
+          const technique = this._glTF.techniques[material.technique];
+          if (technique?.states?.enable) {
+            for (const enable of technique.states.enable) {
+              if (3042 === enable) {
+                transparentTextures.add(material.values.tex.toString());
+                break;
+              }
+            }
+          }
         }
       }
+    }
 
     const promises = new Array<Promise<void>>();
     for (const name of Object.keys(this._glTF.textures))
@@ -1200,7 +1253,6 @@ export abstract class GltfReader {
 
     if (promises.length > 0)
       await Promise.all(promises);
-    }
   }
 
   protected async loadTextureImage(imageJson: any, samplerJson: any, isTransparent: boolean): Promise<RenderTexture | undefined> {
