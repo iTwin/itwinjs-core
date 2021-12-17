@@ -50,6 +50,10 @@ $node-font-size: $iui-font-size;
         line-height: unset;
       }
     }
+
+    > .core-image-checkbox {
+      top: -1px;
+    }
   }
 
   &-icon {
