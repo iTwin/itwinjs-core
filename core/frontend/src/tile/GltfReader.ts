@@ -1571,7 +1571,7 @@ export interface ReadGltfGraphicsArgs {
  */
 export async function readGltfGraphics(args: ReadGltfGraphicsArgs): Promise<RenderGraphic | undefined> {
   const stream = new ByteStream(args.gltf.buffer);
-  const props = GltfReaderProps.create(stream, /*yAxisUp=*/ true); // glTF supports exactly one coordinate system with y up.
+  const props = GltfReaderProps.create(stream, true); // glTF supports exactly one coordinate system with y axis up.
   const reader = props ? new Reader(props, args) : undefined;
   if (!reader)
     return undefined;
