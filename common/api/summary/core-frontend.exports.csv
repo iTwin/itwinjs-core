@@ -265,6 +265,7 @@ internal;ImageryMapLayerTreeReference
 internal;ImageryMapTile 
 internal;ImageryMapTileTree 
 internal;ImageryTileContent 
+internal;Imdl
 internal;ImdlReader
 internal;ImdlReaderCreateArgs
 internal;ImdlReaderResult 
@@ -435,8 +436,8 @@ beta;QueryVisibleFeaturesCallback = (features: Iterable
 beta;QueryVisibleFeaturesOptions = QueryScreenFeaturesOptions | QueryTileFeaturesOptions
 internal;rangeToCartographicArea(view3d: ViewState3d, range: Range3d): GlobalLocationArea | undefined
 public;readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean, options?: BatchOptions | false): Promise
-alpha;readGlbGraphics(args: ReadGlbGraphicsArgs): Promise
-alpha;ReadGlbGraphicsArgs
+public;readGltfGraphics(args: ReadGltfGraphicsArgs): Promise
+public;ReadGltfGraphicsArgs
 internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined
 beta;RealityDataSource
 beta;RealityDataSource
