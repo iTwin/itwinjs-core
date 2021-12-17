@@ -52,6 +52,7 @@
     "@itwin/hypermodeling-frontend": "workspace:*",
     "@itwin/imodels-access-backend": "0.2.0",
     "@itwin/imodels-access-frontend": "0.2.0",
+    "@itwin/imodels-client-authoring": "0.2.0",
     "@itwin/reality-data-client": "^0.2.4",
     "body-parser": "^1.18.2"
   },

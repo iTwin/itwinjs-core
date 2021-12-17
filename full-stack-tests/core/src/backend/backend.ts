@@ -10,6 +10,7 @@ import * as path from "path";
 import { ElectronMainAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronMain";
 import { WebEditServer } from "@itwin/express-server";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
+import { IModelsClient } from "@itwin/imodels-client-authoring";
 import {
   FileNameResolver, IModelDb, IModelHost, IModelHostConfiguration, IpcHandler, LocalhostIpcHost, PhysicalModel, PhysicalPartition, SpatialCategory,
   SubjectOwnsPartitionElements,
@@ -81,7 +82,8 @@ async function init() {
   // Bootstrap the cloud environment
   const enableIModelBank: boolean = process.env.IMJS_TEST_IMODEL_BANK !== undefined && !!JSON.parse(process.env.IMJS_TEST_IMODEL_BANK);
   if (!enableIModelBank) {
-    iModelHost.hubAccess = new BackendIModelsAccess();
+    const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
+    iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
   } else {
     iModelHost.hubAccess = getIModelBankAccess();
   }

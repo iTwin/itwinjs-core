@@ -79,7 +79,7 @@ export class ExternalIModel {
     if (!args.iModelId && !args.iModelName) {
       throw new Error("An iModel name or id is required to construct an External iModel");
     } else if (!args.iModelId && args.iModelName) {
-      const hubClient = new IModelsClient();
+      const hubClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
       for await (const iModel of hubClient.iModels.getMinimalList({
         urlParams: {
           name: args.iModelName,

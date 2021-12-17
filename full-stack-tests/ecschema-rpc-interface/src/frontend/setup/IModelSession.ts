@@ -48,7 +48,7 @@ export class IModelSession {
       iTwinId = iModelData.iTwinId!;
 
     if (iModelData.useName) {
-      const imodelClient = new IModelsClient();
+      const imodelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
       const imodels = imodelClient.iModels.getRepresentationList({
         authorization: async () => IModelSession.toAuthorization(await IModelApp.getAccessToken()),
         urlParams: {

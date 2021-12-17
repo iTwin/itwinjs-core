@@ -24,8 +24,11 @@ function toAuthorization(accessToken: AccessToken): Authorization {
 }
 
 export class IModelTransformerTestAppHost {
+  public static iModelClient?: IModelsClient;
+
   public static async startup(): Promise<void> {
     const iModelHost = new IModelHostConfiguration();
+    IModelTransformerTestAppHost.iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
     iModelHost.hubAccess = new BackendIModelsAccess();
 
     const opt = {
@@ -110,9 +113,10 @@ export namespace IModelHubUtils {
 
   /** Call the specified function for each (named) Version of the specified iModel. */
   export async function forEachNamedVersion(accessToken: AccessToken, iModelId: GuidString, func: (v: NamedVersion) => void): Promise<void> {
-    assert(IModelHost.hubAccess instanceof BackendIModelsAccess);
-    const client = new IModelsClient();
-    for await (const namedVersion of client.namedVersions.getRepresentationList({iModelId, authorization: async () => toAuthorization(accessToken)})) {
+    if (!IModelTransformerTestAppHost.iModelClient)
+      throw new Error("IModelTransformerTestAppHost.startup has not been called.");
+
+    for await (const namedVersion of IModelTransformerTestAppHost.iModelClient.namedVersions.getRepresentationList({iModelId, authorization: async () => toAuthorization(accessToken)})) {
       func(namedVersion);
     }
   }

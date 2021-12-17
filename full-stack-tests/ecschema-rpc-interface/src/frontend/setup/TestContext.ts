@@ -14,6 +14,7 @@ import { getProcessEnvFromBackend } from "../../common/SideChannels";
 import { IModelSession } from "./IModelSession";
 import { BentleyCloudRpcManager, OpenAPIInfo } from "@itwin/core-common";
 import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
+import { IModelsClient } from "@itwin/imodels-client-management";
 
 export class TestContext {
   public adminUserAccessToken!: AccessToken;
@@ -72,10 +73,12 @@ export class TestContext {
 
     this.initializeRpcInterfaces({ title: this.settings.Backend.name, version: this.settings.Backend.version });
 
+    const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
+
     await NoRenderApp.startup({
       applicationId: this.settings.gprid,
       authorizationClient: new TestFrontendAuthorizationClient(this.adminUserAccessToken),
-      hubAccess: new FrontendIModelsAccess(),
+      hubAccess: new FrontendIModelsAccess(iModelClient),
     });
 
     console.log("TestSetup: Done");  // eslint-disable-line

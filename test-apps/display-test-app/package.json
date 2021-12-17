@@ -52,6 +52,7 @@
     "@itwin/core-geometry": "workspace:*",
     "@itwin/imodels-access-backend": "0.2.0",
     "@itwin/imodels-access-frontend": "0.2.0",
+    "@itwin/imodels-client-authoring": "0.2.0",
     "@bentley/itwin-client": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
