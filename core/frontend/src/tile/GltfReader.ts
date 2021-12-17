@@ -1543,14 +1543,29 @@ export abstract class GltfReader {
   }
 }
 
-/** ###TODO @alpha */
+/** Arguments supplied to [[readGltfGraphics]] to produce a [[RenderGraphic]] from a [glTF](https://www.khronos.org/gltf/) asset.
+ * @public
+ */
 export interface ReadGltfGraphicsArgs {
+  /** The binary data describing the glTF asset. */
   gltf: Uint8Array;
+  /** The iModel with which the graphics will be associated - typically obtained from the [[Viewport]] into which they will be drawn. */
   iModel: IModelConnection;
+  /** Options for making the graphic [pickable]($docs/learning/frontend/ViewDecorations#pickable-view-graphic-decoration).
+   * Only the [[PickableGraphicOptions.id]] property is required to make the graphics pickable. If a `modelId` is also supplied and differs from the `id`,
+   * the graphics will also be selectable.
+   */
   pickableOptions?: PickableGraphicOptions & { modelId?: Id64String };
 }
 
-/** ###TODO @alpha */
+/** Produce a [[RenderGraphic]] from a [glTF](https://www.khronos.org/gltf/) asset suitable for use in [view decorations]($docs/learning/frontend/ViewDecorations).
+ * @returns a graphic produced from the glTF asset's default scene, or `undefined` if a graphic could not be produced from the asset.
+ * ###TODO link to example-code snippet.
+ * @note Support for the full [glTF 2.0 specification](https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html#schema-reference-gltf) is currently a work in progress.
+ * If a particular glTF asset fails to load and/or display properly, please
+ * [submit an issue](https://github.com/iTwin/itwinjs-core/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc).
+ * @public
+ */
 export async function readGltfGraphics(args: ReadGltfGraphicsArgs): Promise<RenderGraphic | undefined> {
   const stream = new ByteStream(args.gltf.buffer);
   const props = GltfReaderProps.create(stream, /*yAxisUp=*/true); // glTF supports exactly one coordinate system with y up.
