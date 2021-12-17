@@ -7,21 +7,21 @@
  */
 
 import { IModelDb } from "@itwin/core-backend";
-import { Id64String, Logger } from "@itwin/core-bentley";
+import { assert, Id64String, IDisposable, Logger } from "@itwin/core-bentley";
 import { IModelRpcProps } from "@itwin/core-common";
 import {
   ContentDescriptorRpcRequestOptions, ContentFlags, ContentInstanceKeysRpcRequestOptions, ContentRpcRequestOptions, ContentSourcesRpcRequestOptions,
   ContentSourcesRpcResult, DescriptorJSON, DiagnosticsOptions, DiagnosticsScopeLogs, DisplayLabelRpcRequestOptions, DisplayLabelsRpcRequestOptions,
-  DisplayValueGroup, DisplayValueGroupJSON, DistinctValuesRpcRequestOptions, ElementProperties,
-  FilterByInstancePathsHierarchyRpcRequestOptions, FilterByTextHierarchyRpcRequestOptions, HierarchyRpcRequestOptions,
-  InstanceKey, ItemJSON, KeySet, KeySetJSON, LabelDefinition, LabelDefinitionJSON,
-  Node, NodeJSON, NodeKey, NodeKeyJSON, NodePathElement, NodePathElementJSON, Paged, PagedResponse,
-  PageOptions, PresentationError, PresentationRpcInterface, PresentationRpcResponse, PresentationStatus, Ruleset, RulesetVariable,
-  RulesetVariableJSON, SelectClassInfo, SelectionScope, SelectionScopeRpcRequestOptions, SingleElementPropertiesRpcRequestOptions,
+  DisplayValueGroup, DisplayValueGroupJSON, DistinctValuesRpcRequestOptions, ElementProperties, FilterByInstancePathsHierarchyRpcRequestOptions,
+  FilterByTextHierarchyRpcRequestOptions, HierarchyRpcRequestOptions, InstanceKey, ItemJSON, KeySet, KeySetJSON, LabelDefinition, LabelDefinitionJSON,
+  Node, NodeJSON, NodeKey, NodeKeyJSON, NodePathElement, NodePathElementJSON, Paged, PagedResponse, PageOptions, PresentationError,
+  PresentationRpcInterface, PresentationRpcResponse, PresentationRpcResponseData, PresentationStatus, Ruleset, RulesetVariable, RulesetVariableJSON,
+  SelectClassInfo, SelectionScope, SelectionScopeRpcRequestOptions, SingleElementPropertiesRpcRequestOptions,
 } from "@itwin/presentation-common";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { Presentation } from "./Presentation";
 import { PresentationManager } from "./PresentationManager";
+import { TemporaryStorage } from "./TemporaryStorage";
 
 type ContentGetter<TResult = any, TOptions = any> = (requestOptions: TOptions) => TResult;
 
@@ -42,16 +42,33 @@ export const MAX_ALLOWED_KEYS_PAGE_SIZE = 10000;
  *
  * @internal
  */
-export class PresentationRpcImpl extends PresentationRpcInterface {
+export class PresentationRpcImpl extends PresentationRpcInterface implements IDisposable {
 
-  public constructor(_id?: string) {
+  private _requestTimeout: number;
+  private _pendingRequests: TemporaryStorage<PresentationRpcResponse<any>>;
+
+  public constructor(props?: { requestTimeout: number }) {
     super();
+    this._requestTimeout = props?.requestTimeout ?? 90 * 1000;
+    this._pendingRequests = new TemporaryStorage({
+      // remove the pending request after request timeout + 10 seconds - this gives
+      // frontend 10 seconds to re-send the request until it's removed from requests' cache
+      unusedValueLifetime: this._requestTimeout + 10 * 1000,
+
+      // attempt to clean up every second
+      cleanupInterval: 1000,
+
+      cleanupHandler: (id) => {
+        Logger.logTrace(PresentationBackendLoggerCategory.Rpc, `Cleaning up request without frontend retrieving it: ${id}.`);
+      },
+    });
   }
 
-  /**
-   * Get the maximum result waiting time.
-   */
-  public get requestTimeout(): number { return Presentation.getRequestTimeout(); }
+  public dispose() {
+    this._pendingRequests.dispose();
+  }
+
+  public get requestTimeout() { return this._requestTimeout; }
 
   /** Returns an ok response with result inside */
   private successResponse<TResult>(result: TResult, diagnostics?: DiagnosticsScopeLogs[]) {
@@ -90,56 +107,87 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
   }
 
   private async makeRequest<TRpcOptions extends { rulesetOrId?: Ruleset | string, clientId?: string, diagnostics?: DiagnosticsOptions, rulesetVariables?: RulesetVariableJSON[] }, TResult>(token: IModelRpcProps, requestId: string, requestOptions: TRpcOptions, request: ContentGetter<Promise<TResult>>): PresentationRpcResponse<TResult> {
-    Logger.logInfo(PresentationBackendLoggerCategory.Rpc, `Received '${requestId}' request. Params: ${JSON.stringify(requestOptions)}`);
-    let imodel: IModelDb;
-    try {
-      imodel = this.getIModel(token);
-    } catch (e) {
-      return this.errorResponse((e as PresentationError).errorNumber, (e as PresentationError).message);
-    }
+    const requestKey = JSON.stringify(requestOptions);
 
-    const { clientId, diagnostics: diagnosticsOptions, rulesetVariables, ...options } = requestOptions; // eslint-disable-line @typescript-eslint/no-unused-vars
-    const managerRequestOptions: any = {
-      ...options,
-      imodel,
-    };
+    Logger.logInfo(PresentationBackendLoggerCategory.Rpc, `Received '${requestId}' request. Params: ${requestKey}`);
 
-    // set up ruleset variables
-    if (rulesetVariables)
-      managerRequestOptions.rulesetVariables = rulesetVariables.map(RulesetVariable.fromJSON);
+    let resultPromise = this._pendingRequests.getValue(requestKey);
+    if (resultPromise) {
+      Logger.logTrace(PresentationBackendLoggerCategory.Rpc, `Request already pending`);
+    } else {
+      Logger.logTrace(PresentationBackendLoggerCategory.Rpc, `Request not found, creating a new one`);
+      let imodel: IModelDb;
+      try {
+        imodel = this.getIModel(token);
+      } catch (e) {
+        assert(e instanceof Error);
+        return this.errorResponse(PresentationStatus.InvalidArgument, e.message);
+      }
 
-    // set up diagnostics listener
-    let diagnosticLogs: DiagnosticsScopeLogs[] | undefined;
-    if (diagnosticsOptions) {
-      managerRequestOptions.diagnostics = {
-        ...diagnosticsOptions,
-        handler: (logs: DiagnosticsScopeLogs[]) => {
-          // istanbul ignore else
-          if (!diagnosticLogs)
-            diagnosticLogs = [];
-          diagnosticLogs.push(...logs);
-        },
+      const { clientId: _, diagnostics: diagnosticsOptions, rulesetVariables, ...options } = requestOptions;
+      const managerRequestOptions: any = {
+        ...options,
+        imodel,
       };
+
+      // set up ruleset variables
+      if (rulesetVariables)
+        managerRequestOptions.rulesetVariables = rulesetVariables.map(RulesetVariable.fromJSON);
+
+      // set up diagnostics listener
+      let diagnosticLogs: DiagnosticsScopeLogs[] | undefined;
+      if (diagnosticsOptions) {
+        managerRequestOptions.diagnostics = {
+          ...diagnosticsOptions,
+          handler: (logs: DiagnosticsScopeLogs[]) => {
+            if (!diagnosticLogs)
+              diagnosticLogs = [];
+            diagnosticLogs.push(...logs);
+          },
+        };
+      }
+
+      // initiate request
+      resultPromise = request(managerRequestOptions)
+        .then((result) => this.successResponse(result, diagnosticLogs))
+        .catch((e: PresentationError) => this.errorResponse(e.errorNumber, e.message, diagnosticLogs));
+
+      // store the request promise
+      this._pendingRequests.addValue(requestKey, resultPromise);
     }
 
-    // initiate request
-    const resultPromise = request(managerRequestOptions)
-      .then((result) => this.successResponse(result, diagnosticLogs))
-      .catch((e: PresentationError) => this.errorResponse(e.errorNumber, e.message, diagnosticLogs));
-
-    if (this.requestTimeout === 0)
+    if (this._requestTimeout === 0) {
+      Logger.logTrace(PresentationBackendLoggerCategory.Rpc, `Request timeout not configured, returning promise without a timeout.`);
+      resultPromise.finally(() => {
+        this._pendingRequests.deleteValue(requestKey);
+      });
       return resultPromise;
+    }
 
     let timeout: NodeJS.Timeout;
     const timeoutPromise = new Promise<any>((_resolve, reject) => {
       timeout = setTimeout(() => {
         reject("Timed out");
-      }, this.requestTimeout);
+      }, this._requestTimeout);
     });
 
-    return Promise.race([resultPromise, timeoutPromise])
-      .catch(() => this.errorResponse(PresentationStatus.BackendTimeout))
-      .finally(() => clearTimeout(timeout));
+    /* eslint-disable @typescript-eslint/indent */
+    Logger.logTrace(PresentationBackendLoggerCategory.Rpc, `Returning a promise with a timeout of ${this._requestTimeout}.`);
+    return Promise
+      .race([resultPromise, timeoutPromise])
+      .catch<PresentationRpcResponseData>(() => {
+        Logger.logTrace(PresentationBackendLoggerCategory.Rpc, `Request timeout, returning "BackendTimeout" status.`);
+        return this.errorResponse(PresentationStatus.BackendTimeout);
+      })
+      .then((response: PresentationRpcResponseData<any>) => {
+        if (response.statusCode !== PresentationStatus.BackendTimeout) {
+          Logger.logTrace(PresentationBackendLoggerCategory.Rpc, `Request completed, returning result.`);
+          this._pendingRequests.deleteValue(requestKey);
+        }
+        clearTimeout(timeout);
+        return response;
+      });
+    /* eslint-enable @typescript-eslint/indent */
   }
 
   public override async getNodesCount(token: IModelRpcProps, requestOptions: HierarchyRpcRequestOptions): PresentationRpcResponse<number> {
