@@ -37,7 +37,7 @@ export async function initializeBackend() {
 
   if (ProcessDetector.isElectronAppBackend) {
     const rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
-    const authClient = await ElectronMainAuthorization.create({
+    const authClient = new ElectronMainAuthorization({
       clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
       redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
       scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
@@ -50,6 +50,7 @@ export async function initializeBackend() {
       },
       iModelHost,
     });
+    await authClient.signInSilent();
   } else
     await IModelHost.startup(iModelHost);
 }
