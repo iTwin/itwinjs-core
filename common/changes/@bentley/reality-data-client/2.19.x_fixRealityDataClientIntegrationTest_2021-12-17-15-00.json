@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/reality-data-client",
-      "comment": "Fix integration test",
+      "comment": "Fix integration test for reality data client",
       "type": "none"
     }
   ],
