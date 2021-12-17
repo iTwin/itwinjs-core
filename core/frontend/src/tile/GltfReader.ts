@@ -9,7 +9,7 @@
 import { assert, ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import { Angle, Matrix3d, Point2d, Point3d, Point4d, Range2d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import {
-  BatchType, ColorDef, ElementAlignedBox3d, FeatureTable, FillFlags, GltfHeader, ImageSource, ImageSourceFormat, LinePixels, MeshEdge,
+  BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureTable, FillFlags, GltfHeader, ImageSource, ImageSourceFormat, LinePixels, MeshEdge,
   MeshEdges, MeshPolyline, MeshPolylineList, OctEncodedNormal, PackedFeatureTable, QParams2d, QParams3d, QPoint2dList,
   QPoint3dList, Quantization, RenderTexture, TextureMapping, TileReadStatus,
 } from "@itwin/core-common";
@@ -1549,8 +1549,7 @@ export abstract class GltfReader {
 export interface ReadGltfGraphicsArgs {
   gltf: Uint8Array;
   iModel: IModelConnection;
-  modelId?: Id64String;
-  pickableOptions?: PickableGraphicOptions | false;
+  pickableOptions?: PickableGraphicOptions;
 }
 
 /** ###TODO @alpha */
@@ -1567,14 +1566,22 @@ export async function readGltfGraphics(args: ReadGltfGraphicsArgs): Promise<Rend
 
 /** Implements [[readGltfGraphics]]. */
 class Reader extends GltfReader {
+  private readonly _featureTable?: FeatureTable;
+
   public constructor(props: GltfReaderProps, args: ReadGltfGraphicsArgs) {
-    super(props, args.iModel, args.modelId ?? "0", false, IModelApp.renderSystem);
-    // ###TODO FeatureTable
-    // ###TODO modelId useless unless feature table, and required if have feature table?
+    const pickableId = args.pickableOptions?.id;
+    const modelId = pickableId ?? "0";
+    super(props, args.iModel, modelId, false, IModelApp.renderSystem);
+
+    if (pickableId) {
+      this._featureTable = new FeatureTable(1, modelId, BatchType.Primary);
+      this._featureTable.insert(new Feature(pickableId));
+    }
+
   }
 
   public async read(): Promise<GltfReaderResult> {
     await this.loadTextures();
-    return this.readGltfAndCreateGraphics(true, undefined, undefined);
+    return this.readGltfAndCreateGraphics(true, this._featureTable, undefined);
   }
 }
