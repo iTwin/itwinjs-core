@@ -364,7 +364,7 @@ interface GltfAccessor extends GltfChildOfRootProperty {
 }
 
 /** Describes the top-level structure of a glTF asset.
- * This interface, along with all of the related Gltf* types defined in this file, is primarily based upon the [official glTF 2.0 specification](https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html#schema-reference-node).
+ * This interface, along with all of the related Gltf* types defined in this file, is primarily based upon the [official glTF 2.0 specification](https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html).
  * However, it can also represent a [glTF 1.0](https://github.com/KhronosGroup/glTF/tree/main/specification/1.0#reference-node) asset.
  * Some types are combined. For example, the top-level dictionaries in glTF 1.0 are objects, while in glTF 2.0 they are arrays; the GltfDictionary interface supports accessing
  * items using either strings or numeric indexes represented by [[GltfId]].
@@ -1562,10 +1562,10 @@ export interface ReadGltfGraphicsArgs {
 
 /** Produce a [[RenderGraphic]] from a [glTF](https://www.khronos.org/gltf/) asset suitable for use in [view decorations]($docs/learning/frontend/ViewDecorations).
  * @returns a graphic produced from the glTF asset's default scene, or `undefined` if a graphic could not be produced from the asset.
- * ###TODO link to example-code snippet.
- * @note Support for the full [glTF 2.0 specification](https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html#schema-reference-gltf) is currently a work in progress.
+ * @note Support for the full [glTF 2.0 specification](https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html) is currently a work in progress.
  * If a particular glTF asset fails to load and/or display properly, please
- * [submit an issue](https://github.com/iTwin/itwinjs-core/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc).
+ * [submit an issue](https://github.com/iTwin/itwinjs-core/issues).
+ * @see [Example decorator]($docs/learning/frontend/ViewDecorations#gltf-decorations) for an example of a decorator that reads and displays a glTF asset.
  * @public
  */
 export async function readGltfGraphics(args: ReadGltfGraphicsArgs): Promise<RenderGraphic | undefined> {

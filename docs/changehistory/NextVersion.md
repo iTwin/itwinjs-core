@@ -164,6 +164,12 @@ style.environment = style.environment.withDisplay({ sky: true, ground: false });
 
 Additionally, until now the images used by a [SkySphere]($common) or [SkyBox]($common) were required to be hosted by persistent [Texture]($backend) elements stored in the iModel. Now, they can also be specified as a URL resolving to an HTMLImageElement, allowing custom skyboxes to be created without modifying the iModel.
 
+## Support for glTF graphics
+
+[glTF](https://www.khronos.org/gltf/) has become the de facto standard format for 3d graphics on the web. Now you can create a [RenderGraphic]($frontend) from a glTF asset for use with [Decorators]($docs/learning/frontend/ViewDecorations), using [readGltfGraphics]($frontend). [This example]($docs/learning/frontend/ViewDecorations#gltf-decorations) demonstrates how to convert a glTF asset into a graphic and display it using a decorator.
+
+Note: `readGltfGraphics` targets the [glTF 2.0 specification](https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html), but implementation of the full specification is an ongoing work in progress. The current implementation can successfully read many glTF assets, but if a particular asset fails to load or display properly, please [file an issue](https://github.com/iTwin/itwinjs-core/issues).
+
 ## Merging appearance overrides
 
 A [Viewport]($frontend) can have any number of [FeatureOverrideProvider]($frontend)s, each of which can specify how to override the appearances of elements, models, and/or subcategories. Sometimes, multiple providers want to override aspects of the appearance of the same objects, which produces conflicts. The existing methods for defining overrides - [FeatureOverrides.overrideElement]($common), [FeatureOverrides.overrideModel]($common), and [FeatureOverrides.overrideSubCategory]($common) - each take a boolean `replaceExisting` argument that defaults to `true`. This means that if one provider overrides the line width of an element and another wants to override the same element's transparency, the caller's only choice is to either replace the existing override, resulting in only transparency being overridden; or keep the existing override, resulting in only line width being overridden. But in most cases, the better result would be to **merge** the two sets of overrides such that both transparency and line width are overridden.
