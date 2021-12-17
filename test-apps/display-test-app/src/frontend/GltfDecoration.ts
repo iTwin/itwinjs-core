@@ -67,9 +67,11 @@ export class GltfDecorationTool extends Tool {
       let graphic = await readGltfGraphics({
         gltf: new Uint8Array(buffer),
         iModel,
-        pickableOptions: { id },
-        // The modelId must be different from the pickable Id for the decoration to be selectable and hilite-able.
-        modelId: iModel.transientIds.next,
+        pickableOptions: {
+          id,
+          // The modelId must be different from the pickable Id for the decoration to be selectable and hilite-able.
+          modelId: iModel.transientIds.next,
+        },
       });
 
       if (!graphic)

@@ -23,6 +23,7 @@ import {
 export class B3dmReader extends GltfReader {
   private _batchIdRemap = new Map<number, number>();
   private _colors?: Array<number>;
+  private readonly _modelId: Id64String;
 
   public static create(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, is3d: boolean, range: ElementAlignedBox3d,
     system: RenderSystem, yAxisUp: boolean, isLeaf: boolean, tileCenter: Point3d, transformToRoot?: Transform,
@@ -59,7 +60,8 @@ export class B3dmReader extends GltfReader {
   private constructor(props: GltfReaderProps, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem,
     private _range: ElementAlignedBox3d, private _isLeaf: boolean, private _batchTableLength: number, private _transformToRoot?: Transform, private _batchTableJson?: any
     , isCanceled?: ShouldAbortReadGltf, private _idMap?: BatchedTileIdMap, private _pseudoRtcBias?: Vector3d, deduplicateVertices=false) {
-    super(props, iModel, modelId, is3d, system, BatchType.Primary, isCanceled, deduplicateVertices);
+    super(props, iModel, is3d, system, BatchType.Primary, isCanceled, deduplicateVertices);
+    this._modelId = modelId;
   }
 
   public async read(): Promise<GltfReaderResult> {

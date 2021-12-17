@@ -695,7 +695,6 @@ export abstract class GltfReader {
   protected readonly _glTF: Gltf;
   protected readonly _iModel: IModelConnection;
   protected readonly _is3d: boolean;
-  protected readonly _modelId: Id64String;
   protected readonly _system: RenderSystem;
   protected readonly _returnToCenter?: Point3d;
   protected readonly _yAxisUp: boolean;
@@ -959,7 +958,7 @@ export abstract class GltfReader {
   public readBufferData8(json: any, accessorName: string): GltfBufferData | undefined { return this.readBufferData(json, accessorName, GltfDataType.UnsignedByte); }
   public readBufferDataFloat(json: any, accessorName: string): GltfBufferData | undefined { return this.readBufferData(json, accessorName, GltfDataType.Float); }
 
-  protected constructor(props: GltfReaderProps, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem, type: BatchType = BatchType.Primary, isCanceled?: ShouldAbortReadGltf, deduplicateVertices=false) {
+  protected constructor(props: GltfReaderProps, iModel: IModelConnection, is3d: boolean, system: RenderSystem, type: BatchType = BatchType.Primary, isCanceled?: ShouldAbortReadGltf, deduplicateVertices=false) {
     this._buffer = props.buffer;
     this._binaryData = props.binaryData;
     this._glTF = props.glTF;
@@ -971,7 +970,6 @@ export abstract class GltfReader {
         this._returnToCenter = Point3d.fromJSON(rtcCenter);
 
     this._iModel = iModel;
-    this._modelId = modelId;
     this._is3d = is3d;
     this._system = system;
     this._type = type;
@@ -1549,8 +1547,7 @@ export abstract class GltfReader {
 export interface ReadGltfGraphicsArgs {
   gltf: Uint8Array;
   iModel: IModelConnection;
-  pickableOptions?: PickableGraphicOptions;
-  modelId?: Id64String;
+  pickableOptions?: PickableGraphicOptions & { modelId?: Id64String };
 }
 
 /** ###TODO @alpha */
@@ -1570,12 +1567,11 @@ class Reader extends GltfReader {
   private readonly _featureTable?: FeatureTable;
 
   public constructor(props: GltfReaderProps, args: ReadGltfGraphicsArgs) {
-    const pickableId = args.pickableOptions?.id;
-    const modelId = args.modelId ?? (pickableId ?? "0");
-    super(props, args.iModel, modelId, false, IModelApp.renderSystem);
+    super(props, args.iModel, false, IModelApp.renderSystem);
 
+    const pickableId = args.pickableOptions?.id;
     if (pickableId) {
-      this._featureTable = new FeatureTable(1, modelId, BatchType.Primary);
+      this._featureTable = new FeatureTable(1, args.pickableOptions?.modelId ?? pickableId, BatchType.Primary);
       this._featureTable.insert(new Feature(pickableId));
     }
 
