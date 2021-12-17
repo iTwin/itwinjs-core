@@ -102,10 +102,10 @@ describe("UiSettingsPage", () => {
     expect(checkbox).not.to.be.null;
     fireEvent.click(checkbox!);
     await TestUtils.flushAsyncOperations();
-    expect(checkbox?.checked).to.be.true;
+    expect(checkbox?.checked).to.be.false; // defaults to true so this should make if false
     fireEvent.click(checkbox!);
     await TestUtils.flushAsyncOperations();
-    expect(checkbox?.checked).to.be.false;
+    expect(checkbox?.checked).to.be.true;
     expect(wrapper.container.querySelectorAll("span.title").length).to.eq(3);
     wrapper.unmount();
   });
@@ -152,10 +152,10 @@ describe("UiSettingsPage", () => {
     const checkbox = getInputBySpanTitle(titleSpan);
     fireEvent.click(checkbox!);
     await TestUtils.flushAsyncOperations();
-    expect(checkbox?.checked).to.be.false;
+    expect(checkbox?.checked).to.be.true; // latest default value
     fireEvent.click(checkbox!);
     await TestUtils.flushAsyncOperations();
-    expect(checkbox?.checked).to.be.true;
+    expect(checkbox?.checked).to.be.false;
     wrapper.unmount();
   });
 
