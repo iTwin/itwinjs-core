@@ -703,6 +703,7 @@ export abstract class GltfReader {
   protected readonly _deduplicateVertices: boolean;
   private readonly _canceled?: ShouldAbortReadGltf;
   protected readonly _sceneNodes: GltfId[];
+  protected _computedContentRange?: ElementAlignedBox3d;
 
   protected get _nodes(): GltfDictionary<GltfNode> { return this._glTF.nodes ?? emptyDict; }
   protected get _meshes(): GltfDictionary<GltfMesh> { return this._glTF.meshes ?? emptyDict; }
@@ -727,9 +728,15 @@ export abstract class GltfReader {
   protected get _isCanceled(): boolean { return undefined !== this._canceled && this._canceled(this); }
   protected get _isVolumeClassifier(): boolean { return BatchType.VolumeClassifier === this._type; }
 
-  protected readGltfAndCreateGraphics(isLeaf: boolean, featureTable: FeatureTable | undefined, contentRange: ElementAlignedBox3d, transformToRoot?: Transform, pseudoRtcBias?: Vector3d, instances?: InstancedGraphicParams): GltfReaderResult {
+  protected readGltfAndCreateGraphics(isLeaf: boolean, featureTable: FeatureTable | undefined, contentRange: ElementAlignedBox3d | undefined, transformToRoot?: Transform, pseudoRtcBias?: Vector3d, instances?: InstancedGraphicParams): GltfReaderResult {
     if (this._isCanceled)
       return { readStatus: TileReadStatus.Canceled, isLeaf };
+
+    // If contentRange was not supplied, we will compute it as we read the meshes.
+    if (!contentRange)
+      this._computedContentRange = contentRange = Range3d.createNull();
+    else
+      this._computedContentRange = undefined;
 
     // ###TODO this looks like a hack? Why does it assume the first node's transform is special, or that the transform will be specified as a matrix instead of translation+rot+scale?
     if (this._returnToCenter || this._nodes[0]?.matrix || (pseudoRtcBias && pseudoRtcBias.magnitude() < 1.0E5))
@@ -847,8 +854,14 @@ export abstract class GltfReader {
         const meshes = [];
         for (const primitive of nodeMesh.primitives) {
           const geometry = this.readMeshPrimitive(primitive, featureTable, thisBias);
-          if (undefined !== geometry)
+          if (geometry) {
             meshes.push(geometry);
+            if (this._computedContentRange && geometry.pointRange) {
+              const invTransform = thisTransform?.inverse();
+              const meshRange = invTransform ? invTransform.multiplyRange(geometry.pointRange) : geometry.pointRange;
+              this._computedContentRange.extendRange(meshRange);
+            }
+          }
         }
 
         let renderGraphic: RenderGraphic | undefined;
@@ -1562,7 +1575,6 @@ class Reader extends GltfReader {
 
   public async read(): Promise<GltfReaderResult> {
     await this.loadTextures();
-    // ###TODO contentRange - produce from meshes while reading...
-    return this.readGltfAndCreateGraphics(true, undefined, Range3d.createNull());
+    return this.readGltfAndCreateGraphics(true, undefined, undefined);
   }
 }
