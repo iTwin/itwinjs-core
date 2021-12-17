@@ -983,7 +983,7 @@ export class ToolAdmin {
       return; // we're inside a pickable decoration, don't send event to tool
     }
 
-    const processMotion = () => {
+    const processMotion = async (): Promise<void> => {
       // Update event to account for AccuSnap adjustments...
       current.fromButton(vp, pt2d, inputSource, true);
       current.toEvent(ev, true);
@@ -1003,31 +1003,31 @@ export class ToolAdmin {
         if (undefined !== tool && isValidLocation)
           tool.receivedDownEvent = true;
 
-        return this.onStartDrag(ev, isValidLocation ? tool : undefined);
+        await this.onStartDrag(ev, isValidLocation ? tool : undefined);
+        return;
       }
 
       this.updateDynamics(ev);
-      return;
     };
 
     const snapPromise = this._snapMotionPromise = this.onMotionSnap(ev);
 
-    /** Make sure active tool gets a chance to handle onMouseStartDrag event before passing
-     * the onTouchMoveStart event onto the IdleTool when called from convertTouchMoveStartToButtonDownAndMotion.
+    /** When forceStartDrag is true, make sure we don't return a fulfilled promise until we've processed the motion so callers can await it.
+     * The .then below happens AFTER this method returns its (fulfilled) promise so we can't use that.
      */
     if (forceStartDrag) {
       await snapPromise;
       return processMotion();
     }
 
+    if (this.isLocateCircleOn)
+      vp.invalidateDecorations();
+
     snapPromise.then((snapOk) => {
       if (!snapOk || snapPromise !== this._snapMotionPromise)
         return;
       return processMotion();
     }).catch((_) => { });
-
-    if (this.isLocateCircleOn)
-      vp.invalidateDecorations();
   }
 
   private async onMouseMove(event: ToolEvent): Promise<any> {
