@@ -11,7 +11,7 @@ import reactAxe from "@axe-core/react";
 import { BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient } from "@itwin/browser-authorization";
 import { ProgressInfo } from "@bentley/itwin-client";
 import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
-import { RealityDataAccessClient } from "@itwin/reality-data-client";
+import { RealityDataAccessClient, RealityDataClientOptions } from "@itwin/reality-data-client";
 import { getClassName } from "@itwin/appui-abstract";
 import { SafeAreaInsets } from "@itwin/appui-layout-react";
 import {
@@ -747,6 +747,12 @@ async function main() {
 
   const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
 
+  const realityDataClientOptions: RealityDataClientOptions = {
+    /** API Version. v1 by default */
+    // version?: ApiVersion;
+    /** API Url. Used to select environment. Defaults to "https://api.bentley.com/realitydata" */
+    baseUrl: `https://${process.env.IMJS_URL_PREFIX}api.bentley.com/realitydata`,
+  };
   const opts: NativeAppOpts = {
     iModelApp: {
       accuSnap: new SampleAppAccuSnap(),
@@ -755,7 +761,7 @@ async function main() {
       uiAdmin: new FrameworkUiAdmin(),
       accuDraw: new FrameworkAccuDraw(),
       viewManager: new AppViewManager(true),  // Favorite Properties Support
-      realityDataAccess: new RealityDataAccessClient(),
+      realityDataAccess: new RealityDataAccessClient(realityDataClientOptions),
       renderSys: { displaySolarShadows: true },
       rpcInterfaces: getSupportedRpcs(),
       hubAccess: new FrontendIModelsAccess(iModelClient),

@@ -137,73 +137,6 @@ importers:
       typescript: 4.4.4
       webpack: 4.42.0
 
-  ../../clients/reality-data:
-    specifiers:
-      '@bentley/itwin-client': workspace:*
-      '@itwin/build-tools': workspace:*
-      '@itwin/certa': workspace:*
-      '@itwin/core-bentley': workspace:*
-      '@itwin/core-common': workspace:*
-      '@itwin/core-frontend': workspace:*
-      '@itwin/core-geometry': workspace:*
-      '@itwin/eslint-plugin': workspace:*
-      '@itwin/oidc-signin-tool': 3.0.0
-      '@itwin/projects-client': ^0.3.0
-      '@types/chai': ^4.1.4
-      '@types/chai-as-promised': ^7
-      '@types/deep-assign': ^0.1.0
-      '@types/jsonpath': ^0.2.0
-      '@types/lodash': ^4.14.0
-      '@types/mocha': ^8.2.2
-      '@types/node': 14.14.31
-      chai: ^4.1.2
-      chai-as-promised: ^7
-      deep-assign: ^2.0.0
-      dotenv: ^10.0.0
-      dotenv-expand: ^5.1.0
-      eslint: ^7.11.0
-      internal-tools: workspace:*
-      jsonpath: ^1.1.1
-      lodash: ^4.17.10
-      mocha: ^8.3.2
-      rimraf: ^3.0.2
-      source-map-loader: ^1.0.0
-      typescript: ~4.4.0
-      webpack: 4.42.0
-    dependencies:
-      '@itwin/core-bentley': link:../../core/bentley
-      deep-assign: 2.0.0
-      lodash: 4.17.21
-    devDependencies:
-      '@bentley/itwin-client': link:../itwin
-      '@itwin/build-tools': link:../../tools/build
-      '@itwin/certa': link:../../tools/certa
-      '@itwin/core-common': link:../../core/common
-      '@itwin/core-frontend': link:../../core/frontend
-      '@itwin/core-geometry': link:../../core/geometry
-      '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@itwin/oidc-signin-tool': 3.0.0
-      '@itwin/projects-client': 0.3.0
-      '@types/chai': 4.3.0
-      '@types/chai-as-promised': 7.1.4
-      '@types/deep-assign': 0.1.1
-      '@types/jsonpath': 0.2.0
-      '@types/lodash': 4.14.178
-      '@types/mocha': 8.2.3
-      '@types/node': 14.14.31
-      chai: 4.3.4
-      chai-as-promised: 7.1.1_chai@4.3.4
-      dotenv: 10.0.0
-      dotenv-expand: 5.1.0
-      eslint: 7.32.0
-      internal-tools: link:../../tools/internal
-      jsonpath: 1.1.1
-      mocha: 8.4.0
-      rimraf: 3.0.2
-      source-map-loader: 1.1.3_webpack@4.42.0
-      typescript: 4.4.4
-      webpack: 4.42.0
-
   ../../core/backend:
     specifiers:
       '@azure/storage-blob': ^12.7.0
@@ -2609,7 +2542,7 @@ importers:
       '@itwin/imodels-access-frontend': ~0.2.1
       '@itwin/imodels-client-authoring': ~0.2.1
       '@itwin/perf-tools': workspace:*
-      '@itwin/reality-data-client': ^0.2.4
+      '@itwin/reality-data-client': ^0.4.2
       '@types/body-parser': ^1.17.0
       '@types/express': ^4.16.1
       '@types/node': 14.14.31
@@ -2646,7 +2579,7 @@ importers:
       '@itwin/imodels-access-backend': 0.2.1
       '@itwin/imodels-access-frontend': 0.2.1
       '@itwin/imodels-client-authoring': 0.2.1
-      '@itwin/reality-data-client': 0.2.4
+      '@itwin/reality-data-client': 0.4.3
       body-parser: 1.19.1
     devDependencies:
       '@bentley/react-scripts': 4.0.3_typescript@4.4.4
@@ -2679,7 +2612,6 @@ importers:
       '@bentley/imodelbank-client': workspace:*
       '@bentley/itwin-client': workspace:*
       '@bentley/react-scripts': 4.0.3
-      '@bentley/reality-data-client': workspace:*
       '@itwin/appui-abstract': workspace:*
       '@itwin/backend-webpack-tools': workspace:*
       '@itwin/browser-authorization': ^0.4.0
@@ -2704,6 +2636,7 @@ importers:
       '@itwin/imodels-access-backend': ~0.2.1
       '@itwin/imodels-access-frontend': ~0.2.1
       '@itwin/imodels-client-authoring': ~0.2.1
+      '@itwin/reality-data-client': ^0.4.2
       '@itwin/webgl-compatibility': workspace:*
       '@types/express': ^4.16.1
       '@types/express-ws': ^3.0.1
@@ -2731,7 +2664,6 @@ importers:
       '@bentley/icons-generic-webfont': 1.0.34
       '@bentley/imodelbank-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
-      '@bentley/reality-data-client': link:../../clients/reality-data
       '@itwin/appui-abstract': link:../../ui/appui-abstract
       '@itwin/browser-authorization': 0.4.0
       '@itwin/core-backend': link:../../core/backend
@@ -2752,6 +2684,7 @@ importers:
       '@itwin/imodels-access-backend': 0.2.1
       '@itwin/imodels-access-frontend': 0.2.1
       '@itwin/imodels-client-authoring': 0.2.1
+      '@itwin/reality-data-client': 0.4.3
       '@itwin/webgl-compatibility': link:../../core/webgl-compatibility
       body-parser: 1.19.1
     devDependencies:
@@ -3136,6 +3069,7 @@ importers:
       '@itwin/core-quantity': workspace:*
       '@itwin/core-react': workspace:*
       '@itwin/eslint-plugin': workspace:*
+      '@itwin/itwinui-react': ^1.27.0
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-components': workspace:*
       '@itwin/presentation-frontend': workspace:*
@@ -3163,6 +3097,7 @@ importers:
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-quantity': link:../../core/quantity
       '@itwin/core-react': link:../../ui/core-react
+      '@itwin/itwinui-react': 1.27.0_react-dom@17.0.2+react@17.0.2
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-components': link:../../presentation/components
       '@itwin/presentation-frontend': link:../../presentation/frontend
@@ -3227,7 +3162,7 @@ importers:
       '@itwin/presentation-components': workspace:*
       '@itwin/presentation-frontend': workspace:*
       '@itwin/projects-client': ^0.3.0
-      '@itwin/reality-data-client': ^0.2.4
+      '@itwin/reality-data-client': ^0.4.2
       '@itwin/ui-items-providers-test': workspace:*
       '@types/lorem-ipsum': ^1.0.2
       '@types/node': 14.14.31
@@ -3298,7 +3233,7 @@ importers:
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-components': link:../../presentation/components
       '@itwin/presentation-frontend': link:../../presentation/frontend
-      '@itwin/reality-data-client': 0.2.4
+      '@itwin/reality-data-client': 0.4.3
       '@itwin/ui-items-providers-test': link:../ui-items-providers-test
       classnames: 2.3.1
       lorem-ipsum: 2.0.4
@@ -7468,6 +7403,13 @@ packages:
   /@itwin/core-bentley/3.0.0-dev.155:
     resolution: {integrity: sha512-XjmoH8tqOa++0ec0VxYkrwWCQ9IkbsnMBEjwZ6JRFdSq0iPP2B3cdaQvqHFzCMRCQLR+y0nJ6X44JfbQoGFCgA==}
 
+  /@itwin/core-geometry/3.0.0-dev.148:
+    resolution: {integrity: sha512-y1ECs8FTtwozAYTHLYwNTNxXA/NQNYxJt0cOr82KpdX0s0P+Zu/9EBbOp4jLwnh0ap59X7w9IyrdGfi+i8lHYw==}
+    dependencies:
+      '@itwin/core-bentley': 3.0.0-dev.148
+      flatbuffers: 1.12.0
+    dev: false
+
   /@itwin/electron-authorization/0.6.0:
     resolution: {integrity: sha512-sY6cjtfz625KnDm1sU+e8n8Ir1rTNWjVXKtgOIss7UnBKmqvSjwVn35oorVrZI5xhoKTglWbpJhqytx7uD6ZfA==}
     dependencies:
@@ -7638,14 +7580,17 @@ packages:
     dependencies:
       '@bentley/itwin-client': 3.0.0-dev.138
     transitivePeerDependencies:
-      - '@itwin/core-bentley'
       - supports-color
 
-  /@itwin/reality-data-client/0.2.4:
-    resolution: {integrity: sha512-O+GLL+FXqsAIv22YL8NDhak9hr1DiI9R4X87aQ67LFdnK6yB7oSUWYbMqr8P00wD0whlBSYbWu96q9nvGu4wLg==}
+  /@itwin/reality-data-client/0.4.3:
+    resolution: {integrity: sha512-+HqhYK9RZBVMFvR+mF1XvteGb0NvWJZ1JRtKKOSmUMG4xLLMNVyGORlQOkdGmonx86C5Xmj3A17Pi9GPg7E/EA==}
     peerDependencies:
       '@itwin/core-common': rc
-      axios: ^0.24.0
+    dependencies:
+      '@itwin/core-geometry': 3.0.0-dev.148
+      axios: 0.24.0
+    transitivePeerDependencies:
+      - debug
     dev: false
 
   /@itwin/service-authorization/0.4.0:
@@ -8646,10 +8591,6 @@ packages:
 
   /@types/json5/0.0.29:
     resolution: {integrity: sha1-7ihweulOEdK4J7y+UnC86n8+ce4=}
-
-  /@types/jsonpath/0.2.0:
-    resolution: {integrity: sha512-v7qlPA0VpKUlEdhghbDqRoKMxFB3h3Ch688TApBJ6v+XLDdvWCGLJIYiPKGZnS6MAOie+IorCfNYVHOPIHSWwQ==}
-    dev: true
 
   /@types/jsonwebtoken/8.5.6:
     resolution: {integrity: sha512-+P3O/xC7nzVizIi5VbF34YtqSonFsdnbXBnWUCYRiKOi1f9gA4sEFvXkrGr/QVV23IbMYvcoerI7nnhDUiWXRQ==}

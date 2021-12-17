@@ -78,7 +78,7 @@
     "@itwin/imodels-access-backend": "~0.2.1",
     "@itwin/imodels-access-frontend": "~0.2.1",
     "@itwin/imodels-client-management": "~0.2.1",
-    "@itwin/reality-data-client": "^0.2.4",
+    "@itwin/reality-data-client": "^0.4.2",
     "@itwin/appui-abstract": "workspace:*",
     "@itwin/appui-layout-react": "workspace:*",
     "@itwin/appui-react": "workspace:*",

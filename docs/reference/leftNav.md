@@ -24,8 +24,7 @@ packageClassification:  [
      "order":"2",
      "header": "Client Packages",
      "packages": [
-       "itwin-client",
-       "reality-data-client"
+       "itwin-client"
      ]
    },
    {

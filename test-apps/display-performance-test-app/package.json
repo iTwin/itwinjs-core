@@ -53,7 +53,7 @@
     "@itwin/imodels-access-backend": "~0.2.1",
     "@itwin/imodels-access-frontend": "~0.2.1",
     "@itwin/imodels-client-authoring": "~0.2.1",
-    "@itwin/reality-data-client": "^0.2.4",
+    "@itwin/reality-data-client": "^0.4.2",
     "body-parser": "^1.18.2"
   },
   "devDependencies": {
