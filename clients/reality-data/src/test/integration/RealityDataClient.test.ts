@@ -62,7 +62,6 @@ describe("RealityServicesClient Normal (#integration)", () => {
     const realityData: RealityData[] = await realityDataServiceClient.getRealityDataInProject(requestContext, projectId);
 
     realityData.forEach((value) => {
-      chai.assert(value.type === "RealityMesh3DTiles"); // iModelJS only supports this type
       chai.assert(value.rootDocument && value.rootDocument !== ""); // All such type require a root document to work correctly
       chai.assert(value.projectId === projectId);
       chai.assert(value.id);
@@ -81,7 +80,6 @@ describe("RealityServicesClient Normal (#integration)", () => {
 
     chai.expect(realityData).that.is.not.empty;
     realityData.forEach((value) => {
-      chai.assert(value.type === "RealityMesh3DTiles"); // iModelJS only supports this type
       chai.assert(value.rootDocument && value.rootDocument !== ""); // All such type require a root document to work correctly
       chai.assert(value.projectId === projectId);
       chai.assert(value.id);
