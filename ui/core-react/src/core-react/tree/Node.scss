@@ -53,9 +53,13 @@ $node-font-size: $iui-font-size;
   }
 
   &-icon {
-    margin: 0 7px;
+    width: 16px;
+    margin: 0 5px;
 
     > .bui-webfont-icon {
+      display: inline-block;
+      width: 16px;
+      text-align: center;
       vertical-align: middle;
     }
   }
