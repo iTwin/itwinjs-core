@@ -381,6 +381,7 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
   protected _currentSubEntity?: SubEntityData;
   protected _acceptedSubEntities: SubEntityData[] = [];
   protected _locatedSubEntities?: SubEntityLocationProps[];
+  protected _subEntityGraphicPending?: true;
   protected readonly _summaryIds = new Map<Id64String, BRepEntityType[]>();
 
   protected override get wantAgendaAppearanceOverride(): boolean { return true; }
@@ -731,14 +732,21 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
     if (undefined === id)
       return this.changeCurrentSubEntity();
 
-    const current = await this.doPickSubEntities(id, ev);
-    const chordTolerance = current ? computeChordToleranceFromPoint(ev.viewport, Point3d.fromJSON(current[0].point)) : 0.0;
-
-    if (!await this.changeCurrentSubEntity(id, current ? current[0] : undefined, chordTolerance))
+    if (this._subEntityGraphicPending)
       return false;
 
-    IModelApp.viewManager.invalidateDecorationsAllViews();
-    return true;
+    this._subEntityGraphicPending = true;
+
+    const current = await this.doPickSubEntities(id, ev);
+    const chordTolerance = current ? computeChordToleranceFromPoint(ev.viewport, Point3d.fromJSON(current[0].point)) : 0.0;
+    const status = await this.changeCurrentSubEntity(id, current ? current[0] : undefined, chordTolerance);
+
+    this._subEntityGraphicPending = undefined;
+
+    if (status)
+      IModelApp.viewManager.invalidateDecorationsAllViews();
+
+    return status;
   }
 
   protected async createSubEntityGraphic(id: Id64String, data: SubEntityData, chordTolerance?: number): Promise<boolean> {
