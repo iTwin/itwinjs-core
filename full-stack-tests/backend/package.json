@@ -36,7 +36,6 @@
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/imodels-access-backend": "0.2.0",
     "@itwin/imodels-client-authoring": "0.2.0",
-    "@itwin/imodels-client-management": "0.2.0",
     "@itwin/oidc-signin-tool": "3.0.0",
     "@itwin/perf-tools": "workspace:*",
     "@itwin/projects-client": "^0.3.0",

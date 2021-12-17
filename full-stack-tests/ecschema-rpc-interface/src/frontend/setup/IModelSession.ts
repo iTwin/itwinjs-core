@@ -49,13 +49,13 @@ export class IModelSession {
 
     if (iModelData.useName) {
       const imodelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
-      const imodels = imodelClient.iModels.getRepresentationList({
+      const iModels = imodelClient.iModels.getRepresentationList({
         authorization: async () => IModelSession.toAuthorization(await IModelApp.getAccessToken()),
         urlParams: {
           projectId: iTwinId,
         },
       });
-      for await (const iModel of imodels) {
+      for await (const iModel of iModels) {
         if (iModel.name === iModelData.name) {
           imodelId = iModel.id;
           break;

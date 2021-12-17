@@ -1634,7 +1634,6 @@ importers:
       '@itwin/eslint-plugin': workspace:*
       '@itwin/imodels-access-backend': 0.2.0
       '@itwin/imodels-client-authoring': 0.2.0
-      '@itwin/imodels-client-management': 0.2.0
       '@itwin/oidc-signin-tool': 3.0.0
       '@itwin/perf-tools': workspace:*
       '@itwin/projects-client': ^0.3.0
@@ -1668,7 +1667,6 @@ importers:
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
       '@itwin/imodels-access-backend': 0.2.0
       '@itwin/imodels-client-authoring': 0.2.0
-      '@itwin/imodels-client-management': 0.2.0
       '@itwin/oidc-signin-tool': 3.0.0
       '@itwin/perf-tools': link:../../tools/perf-tools
       '@itwin/projects-client': 0.3.0
@@ -2975,7 +2973,7 @@ importers:
       '@itwin/electron-authorization': ^0.6.0
       '@itwin/eslint-plugin': workspace:*
       '@itwin/imodels-access-backend': 0.2.0
-      '@itwin/imodels-client-management': 0.2.0
+      '@itwin/imodels-client-authoring': 0.2.0
       '@itwin/projects-client': ^0.3.0
       '@types/chai': ^4.1.4
       '@types/fs-extra': ^4.0.7
@@ -3003,7 +3001,7 @@ importers:
       '@itwin/core-transformer': link:../../core/transformer
       '@itwin/electron-authorization': 0.6.0
       '@itwin/imodels-access-backend': 0.2.0
-      '@itwin/imodels-client-management': 0.2.0
+      '@itwin/imodels-client-authoring': 0.2.0
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
       fs-extra: 8.1.0
@@ -7640,7 +7638,6 @@ packages:
     dependencies:
       '@bentley/itwin-client': 3.0.0-dev.138
     transitivePeerDependencies:
-      - '@itwin/core-bentley'
       - supports-color
 
   /@itwin/reality-data-client/0.2.4:

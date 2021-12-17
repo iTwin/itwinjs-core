@@ -10,12 +10,12 @@ import { ProjectsAccessClient } from "@itwin/projects-client";
 import { IModelDb, IModelHost, IModelJsFs, SnapshotDb, StandaloneDb } from "@itwin/core-backend";
 import { BriefcaseIdValue, ChangesetId, ChangesetIndex, ChangesetProps, IModelVersion } from "@itwin/core-common";
 import { TransformerLoggerCategory } from "@itwin/core-transformer";
+import { NamedVersion } from "@itwin/imodels-client-authoring";
 import { ElementUtils } from "./ElementUtils";
 import { IModelHubUtils, IModelTransformerTestAppHost } from "./IModelHubUtils";
 import { loggerCategory, Transformer, TransformerOptions } from "./Transformer";
 import * as dotenv from "dotenv";
 import * as dotenvExpand from "dotenv-expand";
-import { NamedVersion } from "@itwin/imodels-client-management";
 
 interface CommandLineArgs {
   hub?: string;

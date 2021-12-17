@@ -10,7 +10,7 @@ import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { BriefcaseDb, BriefcaseManager, IModelHost, IModelHostConfiguration, RequestNewBriefcaseArg } from "@itwin/core-backend";
 import { BriefcaseIdValue, ChangesetId, ChangesetIndex, ChangesetProps } from "@itwin/core-common";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
-import { Authorization, IModelsClient, NamedVersion } from "@itwin/imodels-client-management";
+import { Authorization, IModelsClient, NamedVersion } from "@itwin/imodels-client-authoring";
 
 function toAuthorization(accessToken: AccessToken): Authorization {
   const splitAccessToken = accessToken.split(" ");
@@ -29,7 +29,7 @@ export class IModelTransformerTestAppHost {
   public static async startup(): Promise<void> {
     const iModelHost = new IModelHostConfiguration();
     IModelTransformerTestAppHost.iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
-    iModelHost.hubAccess = new BackendIModelsAccess();
+    iModelHost.hubAccess = new BackendIModelsAccess(IModelTransformerTestAppHost.iModelClient);
 
     const opt = {
       electronHost: {

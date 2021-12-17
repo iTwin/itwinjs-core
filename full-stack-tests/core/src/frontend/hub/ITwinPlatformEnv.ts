@@ -8,7 +8,7 @@ import { AuthorizationClient, BriefcaseId, ChangesetIndexAndId, IModelVersion } 
 import { FrontendHubAccess, IModelApp, IModelIdArg } from "@itwin/core-frontend";
 import { BriefcaseQuery, ChangeSet, ChangeSetQuery, IModelBankClient, IModelBankFileSystemITwinClient, IModelQuery, VersionQuery } from "@bentley/imodelbank-client"; // TODO: Remove when we have a replacement for the current iModelBank client in the way
 import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
-import { Authorization, AuthorizationCallback, AuthorizationParam, Briefcase, GetBriefcaseListParams, GetIModelListParams, IModelScopedOperationParams, MinimalIModel, SPECIAL_VALUES_ME, toArray } from "@itwin/imodels-client-management";
+import { Authorization, AuthorizationCallback, AuthorizationParam, Briefcase, GetBriefcaseListParams, GetIModelListParams, IModelScopedOperationParams, MinimalIModel, ReleaseBriefcaseParams, SPECIAL_VALUES_ME, toArray } from "@itwin/imodels-client-authoring";
 import { ITwinAccessClientWrapper } from "../../common/ITwinAccessClientWrapper";
 
 export interface IModelNameArg {
@@ -41,7 +41,6 @@ export class TestHubFrontend extends FrontendIModelsAccess {
   }
 
   private getAuthParam(tokenArg?: string): AuthorizationParam {
-
     const authorizationCallback: AuthorizationCallback = tokenArg
       ? async () => TestHubFrontend.toAuthorization(tokenArg)
       : async () => TestHubFrontend.toAuthorization(await IModelApp.getAccessToken());
@@ -67,7 +66,7 @@ export class TestHubFrontend extends FrontendIModelsAccess {
       },
     };
 
-    const iModelsIterator: AsyncIterableIterator< MinimalIModel> = this._iModelsClient.iModels.getMinimalList(getIModelListParams);
+    const iModelsIterator: AsyncIterableIterator<MinimalIModel> = this._iModelsClient.iModels.getMinimalList(getIModelListParams);
     const iModels = await toArray(iModelsIterator);
     return iModels.length === 0 ? undefined : iModels[0].id;
   }
@@ -85,13 +84,13 @@ export class TestHubFrontend extends FrontendIModelsAccess {
     return briefcaseIds;
 
   }
-  public async releaseBriefcase(_arg: BriefcaseIdArg): Promise<void> {
-    // const releaseBriefcaseParams: ReleaseBriefcaseParams = {
-    //   ...this.getScopedOperationParams(arg),
-    //   briefcaseId: arg.briefcaseId,
-    // };
+  public async releaseBriefcase(arg: BriefcaseIdArg): Promise<void> {
+    const releaseBriefcaseParams: ReleaseBriefcaseParams = {
+      ...this.getScopedOperationParams(arg),
+      briefcaseId: arg.briefcaseId,
+    };
 
-    // return this._iModelsClient.briefcases.release(releaseBriefcaseParams);
+    return this._iModelsClient.briefcases.release(releaseBriefcaseParams);
   }
 }
 
