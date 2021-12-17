@@ -17,7 +17,7 @@ import { getImageSourceFormatForMimeType, imageElementFromImageSource } from "..
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
 import { GraphicBranch } from "../render/GraphicBranch";
-import { BatchOptions } from "../render/GraphicBuilder";
+import { PickableGraphicOptions } from "../render/GraphicBuilder";
 import { InstancedGraphicParams } from "../render/InstancedGraphicParams";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { Mesh, MeshGraphicArgs } from "../render/primitives/mesh/MeshPrimitives";
@@ -167,7 +167,7 @@ interface GltfNodeBaseProps {
 }
 
 /** glTF 1.0 representation of a [[GltfNode]]. Unlike a [[Gltf2Node]], a Gltf1Node may refer to any number of [[GltfMesh]]es. */
-interface Gltf1Node extends GltfChildOfRootProperty, GltfNodeTransformProps {
+interface Gltf1Node extends GltfChildOfRootProperty, GltfNodeBaseProps {
   /** The Ids of the [[GltfMesh]]es to be rendered by this node.
    * @note The spec defines this as an array of strings, but the original implementation of [[GltfReader]] was written to treat it as a string instead.
    * In case this was because of non-spec-compliant glTF that placed a string here instead of an array, either is permitted.
@@ -181,7 +181,7 @@ interface Gltf1Node extends GltfChildOfRootProperty, GltfNodeTransformProps {
 }
 
 /** glTF 2.0 representation of a [[GltfNode]]. Unlike a [[Gltf1Node]], a Gltf2Node may refer to at most one [[GltfMesh]]. */
-interface Gltf2Node extends GltfChildOfRootProperty, GltfNodeTransformProps {
+interface Gltf2Node extends GltfChildOfRootProperty, GltfNodeBaseProps {
   /** The Id of the [[GltfMesh]] to be rendered by this node. */
   mesh?: GltfId;
   meshes?: never;
@@ -1537,12 +1537,12 @@ export interface ReadGltfGraphicsArgs {
   gltf: Uint8Array;
   iModel: IModelConnection;
   modelId?: Id64String;
-  options?: BatchOptions | false;
+  pickableOptions?: PickableGraphicOptions | false;
 }
 
 /** ###TODO @alpha */
 export async function readGltfGraphics(args: ReadGltfGraphicsArgs): Promise<RenderGraphic | undefined> {
-  const stream = new ByteStream(args.glb.buffer);
+  const stream = new ByteStream(args.gltf.buffer);
   const props = GltfReaderProps.create(stream, /*yAxisUp=*/true); // glTF supports exactly one coordinate system with y up.
   const reader = props ? new Reader(props, args) : undefined;
   if (!reader)

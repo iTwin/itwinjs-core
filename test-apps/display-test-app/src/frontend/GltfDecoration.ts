@@ -20,11 +20,8 @@ class GltfDecoration {
   public readonly useCachedDecorations = true;
 
   public decorate(context: DecorateContext): void {
-    const branch = new GraphicBranch();
-    branch.add(this._graphic);
-    const transform = Transform.createTranslation(context.viewport.iModel.projectExtents.center);
-    const graphic = context.createGraphicBranch(branch, transform);
-    context.addDecoration(GraphicType.Scene, graphic);
+    if (context.viewport.view.isSpatialView())
+      context.addDecoration(GraphicType.Scene, this._graphic);
   }
 
   public testDecorationHit(id: string): boolean {
@@ -32,6 +29,9 @@ class GltfDecoration {
   }
 }
 
+/** Opens a file picker from which the user can select a glTF or glb file. Creates a decoration graphic from the glTF and
+ * installs a decorator to display it at the center of the active viewport's iModel's project extents.
+ */
 export class GltfDecorationTool extends Tool {
   public static override toolId = "AddGltfDecoration";
   public static override get minArgs() { return 0; }
@@ -42,6 +42,7 @@ export class GltfDecorationTool extends Tool {
     if (!iModel)
       return false;
 
+    // Allow the user to select a glTF file.
     try {
       const [handle] = await (window as any).showOpenFilePicker({
         types: [
@@ -51,18 +52,40 @@ export class GltfDecorationTool extends Tool {
           },
         ],
       });
+
       const file = await handle.getFile();
       const buffer = await file.arrayBuffer() as ArrayBuffer;
+
+      // Convert the glTF into a RenderGraphic.
+      const id = iModel.transientIds.next;
       let graphic = await readGltfGraphics({
         gltf: new Uint8Array(buffer),
         iModel,
+        pickableOptions: { id },
       });
 
       if (!graphic)
         return false;
 
-      graphic = IModelApp.renderSystem.createGraphicOwner(graphic);
-      IModelApp.viewManager.addDecorator(new GltfDecoration(graphic));
+      // Transform the graphic to the center of the project extents.
+      const branch = new GraphicBranch();
+      branch.add(graphic);
+      const transform = Transform.createTranslation(iModel.projectExtents.center);
+      graphic = IModelApp.renderSystem.createGraphicBranch(branch, transform);
+
+      // Take ownership of the graphic so it is not disposed of until we're finished with it.
+      const graphicOwner = IModelApp.renderSystem.createGraphicOwner(graphic);
+
+      // Install the decorator.
+      const decorator = new GltfDecoration(graphicOwner, id);
+      IModelApp.viewManager.addDecorator(decorator);
+
+      // Once the iModel is closed, dispose of the graphic and uninstall the decorator.
+      iModel.onClose.addOnce(() => {
+        graphicOwner.disposeGraphic();
+        IModelApp.viewManager.dropDecorator(decorator);
+      });
+
       return true;
     } catch (_) {
       return false;
