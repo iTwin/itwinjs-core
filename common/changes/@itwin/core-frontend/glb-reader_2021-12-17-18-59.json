@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Add readGltfGraphics for producing graphics from glTF assets.",
+      "comment": "Add readGltfGraphics for producing graphics from a glTF asset.",
       "type": "none"
     }
   ],
