@@ -1550,6 +1550,7 @@ export interface ReadGltfGraphicsArgs {
   gltf: Uint8Array;
   iModel: IModelConnection;
   pickableOptions?: PickableGraphicOptions;
+  modelId?: Id64String;
 }
 
 /** ###TODO @alpha */
@@ -1570,7 +1571,7 @@ class Reader extends GltfReader {
 
   public constructor(props: GltfReaderProps, args: ReadGltfGraphicsArgs) {
     const pickableId = args.pickableOptions?.id;
-    const modelId = pickableId ?? "0";
+    const modelId = args.modelId ?? (pickableId ?? "0");
     super(props, args.iModel, modelId, false, IModelApp.renderSystem);
 
     if (pickableId) {

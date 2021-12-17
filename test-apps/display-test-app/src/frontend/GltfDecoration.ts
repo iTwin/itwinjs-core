@@ -10,10 +10,12 @@ import {
 
 class GltfDecoration {
   private readonly _graphic: RenderGraphic;
+  private readonly _tooltip: string;
   private readonly _pickableId?: string;
 
-  public constructor(graphic: RenderGraphic, pickableId?: string) {
+  public constructor(graphic: RenderGraphic, tooltip: string, pickableId?: string) {
     this._graphic = graphic;
+    this._tooltip = tooltip;
     this._pickableId = pickableId;
   }
 
@@ -26,6 +28,10 @@ class GltfDecoration {
 
   public testDecorationHit(id: string): boolean {
     return undefined !== this._pickableId && id === this._pickableId;
+  }
+
+  public async getDecorationToolTip() {
+    return this._tooltip;
   }
 }
 
@@ -62,6 +68,8 @@ export class GltfDecorationTool extends Tool {
         gltf: new Uint8Array(buffer),
         iModel,
         pickableOptions: { id },
+        // The modelId must be different from the pickable Id for the decoration to be selectable and hilite-able.
+        modelId: iModel.transientIds.next,
       });
 
       if (!graphic)
@@ -77,7 +85,7 @@ export class GltfDecorationTool extends Tool {
       const graphicOwner = IModelApp.renderSystem.createGraphicOwner(graphic);
 
       // Install the decorator.
-      const decorator = new GltfDecoration(graphicOwner, id);
+      const decorator = new GltfDecoration(graphicOwner, file.name, id);
       IModelApp.viewManager.addDecorator(decorator);
 
       // Once the iModel is closed, dispose of the graphic and uninstall the decorator.
