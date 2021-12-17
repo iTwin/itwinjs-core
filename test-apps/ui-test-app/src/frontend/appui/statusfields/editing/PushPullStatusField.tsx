@@ -56,7 +56,7 @@ class SyncManager {
         //     urlParams: {
         //       afterIndex: this.state.parentChangesetIndex,
         //     },
-        //     authorization: async () => toAuthorization(await IModelApp.getAccessToken()),
+        //     authorization: AccessTokenAdapter.toAuthorizationCallback(await IModelHost.getAccessToken()),
         //   });
         //   // .get(accessToken, iModelId, new ChangeSetQuery().fromId(this.state.parentChangesetId));
         //   this.state.changesOnServer = allOnServer.map((changeset) => changeset.id!);

@@ -3,9 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AccessToken, Id64String, Logger } from "@itwin/core-bentley";
+import { Id64String, Logger } from "@itwin/core-bentley";
 import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
-import { Authorization, IModelsClient } from "@itwin/imodels-client-management";
+import { IModelsClient } from "@itwin/imodels-client-management";
+import { AccessTokenAdapter } from "@itwin/imodels-access-frontend";
 import { CheckpointConnection, IModelApp, IModelConnection } from "@itwin/core-frontend";
 import { SampleAppIModelApp } from "../";
 
@@ -16,19 +17,6 @@ export interface BasicIModelInfo {
 }
 export interface IModelInfo extends BasicIModelInfo {
   createdDate: Date;
-}
-
-// FIXME: This is a painful way to use the imodels new client library. Discuss to update happening here,
-// https://github.com/iTwin/imodels-clients/issues/57
-function toAuthorization(accessToken: AccessToken): Authorization {
-  const splitAccessToken = accessToken.split(" ");
-  if (splitAccessToken.length !== 2)
-    throw new Error("Unsupported access token format");
-
-  return {
-    scheme: splitAccessToken[0],
-    token: splitAccessToken[1],
-  };
 }
 
 /** Opens External iModel */
@@ -85,7 +73,7 @@ export class ExternalIModel {
           name: args.iModelName,
           projectId: createArgs.iTwinId!,
         },
-        authorization: async () => toAuthorization(accessToken),
+        authorization: AccessTokenAdapter.toAuthorizationCallback(accessToken),
       })) {
         createArgs.iModelId = iModel.id;
         break;

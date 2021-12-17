@@ -6,22 +6,11 @@
 
 import { AccessToken, assert, GuidString } from "@itwin/core-bentley";
 import { ElectronMainAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronMain";
-import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
+import { AccessTokenAdapter, BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { BriefcaseDb, BriefcaseManager, IModelHost, IModelHostConfiguration, RequestNewBriefcaseArg } from "@itwin/core-backend";
 import { BriefcaseIdValue, ChangesetId, ChangesetIndex, ChangesetProps } from "@itwin/core-common";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
-import { Authorization, IModelsClient, NamedVersion } from "@itwin/imodels-client-authoring";
-
-function toAuthorization(accessToken: AccessToken): Authorization {
-  const splitAccessToken = accessToken.split(" ");
-  if (splitAccessToken.length !== 2)
-    throw new Error("Unsupported access token format");
-
-  return {
-    scheme: splitAccessToken[0],
-    token: splitAccessToken[1],
-  };
-}
+import { IModelsClient, NamedVersion } from "@itwin/imodels-client-authoring";
 
 export class IModelTransformerTestAppHost {
   public static iModelClient?: IModelsClient;
@@ -116,7 +105,7 @@ export namespace IModelHubUtils {
     if (!IModelTransformerTestAppHost.iModelClient)
       throw new Error("IModelTransformerTestAppHost.startup has not been called.");
 
-    for await (const namedVersion of IModelTransformerTestAppHost.iModelClient.namedVersions.getRepresentationList({iModelId, authorization: async () => toAuthorization(accessToken)})) {
+    for await (const namedVersion of IModelTransformerTestAppHost.iModelClient.namedVersions.getRepresentationList({iModelId, authorization: AccessTokenAdapter.toAuthorizationCallback(accessToken)})) {
       func(namedVersion);
     }
   }

@@ -11,8 +11,7 @@
     "url": "https://github.com/iTwin/itwinjs-core/tree/master/full-stack-tests/ecschema-rpc-interface"
   },
   "scripts": {
-    "build": "tsc 1>&2",
-    "//build": "tsc 1>&2 && npm run -s webpack:frontend",
+    "build": "tsc 1>&2 && npm run -s webpack:frontend",
     "build:ci": "npm run -s build",
     "clean": "rimraf lib .rush/temp/package-deps*.json integration_test_results",
     "copy:config": "internal-tools copy-config",
@@ -22,9 +21,8 @@
     "optest": "certa -r chrome --fgrep \"Operational: \"",
     "start:backend": "node ./lib/test/backend.js",
     "test": "",
-    "test:integration": "",
-    "// test:integration": "npm-run-all -r -p start:backend test:integration:chrome",
-    "//test:integration:chrome": "certa -r chrome",
+    "test:integration": "npm-run-all -r -p start:backend test:integration:chrome",
+    "test:integration:chrome": "certa -r chrome",
     "webpack:frontend": "webpack --config webpack.config.js 1>&2"
   },
   "dependencies": {
@@ -38,9 +36,9 @@
     "@itwin/core-quantity": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/ecschema-rpcinterface-common": "workspace:*",
-    "@itwin/imodels-access-backend": "0.2.0",
-    "@itwin/imodels-access-frontend": "0.2.0",
-    "@itwin/imodels-client-management": "0.2.0",
+    "@itwin/imodels-access-backend": "~0.2.1",
+    "@itwin/imodels-access-frontend": "~0.2.1",
+    "@itwin/imodels-client-management": "~0.2.1",
     "@itwin/oidc-signin-tool": "3.0.0",
     "@itwin/presentation-common": "workspace:*",
     "@itwin/presentation-frontend": "workspace:*",

@@ -10,6 +10,7 @@ import { AccessToken, BeDuration } from "@itwin/core-bentley";
 import { Project as ITwin, ProjectsAccessClient } from "@itwin/projects-client";
 import { ActivityMessageDetails, ActivityMessageEndReason, IModelApp } from "@itwin/core-frontend";
 import { ActivityMessagePopup } from "@itwin/appui-react";
+import { AccessTokenAdapter } from "@itwin/imodels-access-frontend";
 import { Button } from "@itwin/itwinui-react";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { BasicIModelInfo, IModelInfo } from "../ExternalIModel";
@@ -18,18 +19,6 @@ import { IModelList } from "./IModelList";
 import { NavigationItem, NavigationList } from "./Navigation";
 import { ITwinDropdown } from "./ITwinDropdown";
 import { SampleAppIModelApp } from "../..";
-import { Authorization } from "@itwin/imodels-client-management";
-
-function toAuthorization(accessToken: AccessToken): Authorization {
-  const splitAccessToken = accessToken.split(" ");
-  if (splitAccessToken.length !== 2)
-    throw new Error("Unsupported access token format");
-
-  return {
-    scheme: splitAccessToken[0],
-    token: splitAccessToken[1],
-  };
-}
 
 /** Properties for the [[IModelOpen]] component */
 export interface IModelOpenProps {
@@ -98,7 +87,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
   public async getIModels(iTwinId: string, top: number, skip: number): Promise<IModelInfo[]> {
 
     const accessToken = await IModelApp.getAccessToken();
-    const authorization = async () => toAuthorization(accessToken);
+    const authorization = AccessTokenAdapter.toAuthorizationCallback(accessToken);
 
     const iModelInfos: IModelInfo[] = [];
     if (!SampleAppIModelApp.hubClient)

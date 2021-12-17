@@ -37,6 +37,8 @@ import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
 import { MapLayersUI } from "@itwin/map-layers";
 import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, Presentation } from "@itwin/presentation-frontend";
+import { Authorization, IModelsClient } from "@itwin/imodels-client-management";
+import { AccessTokenAdapter, FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
 import { getSupportedRpcs } from "../common/rpcs";
 import { loggerCategory, TestAppConfiguration } from "../common/TestAppConfiguration";
 import { BearingQuantityType } from "./api/BearingQuantityType";
@@ -65,8 +67,6 @@ import {
 import { IModelOpenFrontstage } from "./appui/frontstages/IModelOpenFrontstage";
 import { IModelIndexFrontstage } from "./appui/frontstages/IModelIndexFrontstage";
 import { SignInFrontstage } from "./appui/frontstages/SignInFrontstage";
-import { Authorization, IModelsClient } from "@itwin/imodels-client-management";
-import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -521,7 +521,7 @@ export class SampleAppIModelApp {
           projectId: iTwin.id,
           $top: 1,
         },
-        authorization: async () => toAuthorization(accessToken),
+        authorization: AccessTokenAdapter.toAuthorizationCallback(accessToken),
       }))
         iModel = imodel;
 

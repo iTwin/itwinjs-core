@@ -4,10 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import "./IModelIndex.scss";
 import * as React from "react";
-import { AccessToken, Id64String } from "@itwin/core-bentley";
+import { Id64String } from "@itwin/core-bentley";
 import { IModelApp, IModelConnection } from "@itwin/core-frontend";
 import { LoadingSpinner } from "@itwin/core-react";
-import { Authorization, NamedVersion } from "@itwin/imodels-client-management";
+import { NamedVersion } from "@itwin/imodels-client-management";
+import { AccessTokenAdapter } from "@itwin/imodels-access-frontend";
 import { ModelsTab } from "./ModelsTab";
 import { SheetsTab } from "./SheetsTab";
 import { Tab, Tabs } from "./Tabs";
@@ -40,17 +41,6 @@ interface IModelIndexState {
   checkingUpToDate: boolean;
   header: React.ReactNode | undefined;
   showWaiting: boolean;
-}
-
-function toAuthorization(accessToken: AccessToken): Authorization {
-  const splitAccessToken = accessToken.split(" ");
-  if (splitAccessToken.length !== 2)
-    throw new Error("Unsupported access token format");
-
-  return {
-    scheme: splitAccessToken[0],
-    token: splitAccessToken[1],
-  };
 }
 
 /**
@@ -106,7 +96,7 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
 
     const imodel = await SampleAppIModelApp.hubClient?.iModels.getSingle({
       iModelId,
-      authorization: async () => toAuthorization(accessToken),
+      authorization: AccessTokenAdapter.toAuthorizationCallback(accessToken),
     });
 
     /* get the version name */
@@ -118,7 +108,7 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
           $top: 1,
         },
         iModelId,
-        authorization: async () => toAuthorization(accessToken),
+        authorization: AccessTokenAdapter.toAuthorizationCallback(accessToken),
       })) {
         currentVersions.push(ver);
       }

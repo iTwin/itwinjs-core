@@ -8,6 +8,7 @@ import { Authorization, IModelsClient } from "@itwin/imodels-client-management";
 import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
 import { IModelData } from "../../common/Settings";
 import { AccessToken } from "@itwin/core-bentley";
+import { AccessTokenAdapter } from "@itwin/imodels-access-frontend";
 
 export class IModelSession {
 
@@ -50,7 +51,7 @@ export class IModelSession {
     if (iModelData.useName) {
       const imodelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
       const iModels = imodelClient.iModels.getRepresentationList({
-        authorization: async () => IModelSession.toAuthorization(await IModelApp.getAccessToken()),
+        authorization: AccessTokenAdapter.toAuthorizationCallback(await IModelApp.getAccessToken()),
         urlParams: {
           projectId: iTwinId,
         },
@@ -86,16 +87,5 @@ export class IModelSession {
     }
 
     return this._iModel;
-  }
-
-  public static toAuthorization(accessToken: AccessToken): Authorization {
-    const splitAccessToken = accessToken.split(" ");
-    if (splitAccessToken.length !== 2)
-      throw new Error("Unsupported access token format");
-
-    return {
-      scheme: splitAccessToken[0],
-      token: splitAccessToken[1],
-    };
   }
 }
