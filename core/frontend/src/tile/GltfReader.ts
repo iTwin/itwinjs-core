@@ -43,7 +43,9 @@ enum GltfMeshMode {
   TriangleFan = 6,
 }
 
-/** Enumerates the basic data types supported by types like [[GltfAccessor]], material values, technique uniforms, etc. */
+/** Enumerates the basic data types supported by accessors, material values, technique uniforms, etc.
+ * @internal
+ */
 export enum GltfDataType {
   SignedByte = 0x1400,
   UnsignedByte = 0x1401,

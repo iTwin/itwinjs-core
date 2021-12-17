@@ -383,11 +383,13 @@ interface ImdlScene {
   nodes: string[];
 }
 
-/** Describes the top-level contents of a tile. */
+/** Describes the top-level contents of a tile.
+ * @internal
+ */
 export interface Imdl {
-  /** The Id of the [[ImdlScene]] in [[scenes]] that describes the tile's geometry. */
+  /** The Id of the ImdlScene in [[scenes]] that describes the tile's geometry. */
   scene: string;
-  /** The collection of [[ImdlScene]]s included in the tile. */
+  /** The collection of ImdlScenes included in the tile. */
   scenes: ImdlDictionary<ImdlScene>;
   /** Maps each node Id to the Id of the corresponding mesh in [[meshes]]. */
   nodes: ImdlDictionary<string>;
