@@ -36,11 +36,6 @@ steps:
     displayName: "Rush build"
 
   - script: "npm run test:integration"
-    workingDirectory: clients/reality-data
-    displayName: "Run Reality Data Client Tests"
-    condition: succeededOrFailed()
-
-  - script: "npm run test:integration"
     workingDirectory: "full-stack-tests/backend"
     displayName: "Run Backend Tests"
     condition: succeededOrFailed()
@@ -63,14 +58,6 @@ steps:
   - script: "npm run test:integration"
     workingDirectory: "full-stack-tests/presentation"
     displayName: "Run Presentation Full Stack Tests"
-    condition: succeededOrFailed()
-
-  - task: PublishTestResults@2
-    displayName: "Publish Reality Data Clients Test Results"
-    inputs:
-      testResultsFiles: "clients/reality-data/lib/test/junit_results.xml"
-      testRunTitle: "Client - Reality Data Tests - ${{ parameters.Node_Version }}"
-    continueOnError: true
     condition: succeededOrFailed()
 
   - task: PublishTestResults@2
