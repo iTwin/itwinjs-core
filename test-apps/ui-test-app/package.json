@@ -76,7 +76,7 @@
     "@bentley/icons-generic": "^1.0.15",
     "@bentley/imodelhub-client": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "@itwin/reality-data-client": "^0.2.4",
+    "@itwin/reality-data-client": "^0.4.2",
     "@itwin/appui-abstract": "workspace:*",
     "@itwin/appui-layout-react": "workspace:*",
     "@itwin/appui-react": "workspace:*",
