@@ -983,12 +983,7 @@ export class ToolAdmin {
       return; // we're inside a pickable decoration, don't send event to tool
     }
 
-    const snapPromise = this._snapMotionPromise = this.onMotionSnap(ev);
-
-    snapPromise.then((snapOk) => {
-      if (!snapOk || snapPromise !== this._snapMotionPromise)
-        return;
-
+    const processMotion = () => {
       // Update event to account for AccuSnap adjustments...
       current.fromButton(vp, pt2d, inputSource, true);
       current.toEvent(ev, true);
@@ -1013,6 +1008,22 @@ export class ToolAdmin {
 
       this.updateDynamics(ev);
       return;
+    };
+
+    const snapPromise = this._snapMotionPromise = this.onMotionSnap(ev);
+
+    /** Make sure active tool gets a chance to handle onMouseStartDrag event before passing
+     * the onTouchMoveStart event onto the IdleTool when called from convertTouchMoveStartToButtonDownAndMotion.
+     */
+    if (forceStartDrag) {
+      await snapPromise;
+      return processMotion();
+    }
+
+    snapPromise.then((snapOk) => {
+      if (!snapOk || snapPromise !== this._snapMotionPromise)
+        return;
+      return processMotion();
     }).catch((_) => { });
 
     if (this.isLocateCircleOn)
