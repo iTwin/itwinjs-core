@@ -205,7 +205,7 @@ describe("BriefcaseManager", () => {
 
     const downloadPromise = BriefcaseManager.downloadBriefcase(args);
     setTimeout(async () => aborted = 1, 1000);
-    await expect(downloadPromise).to.be.rejectedWith(UserCancelledError).to.eventually.have.property("errorNumber", BriefcaseStatus.DownloadCancelled);
+    await expect(downloadPromise).to.be.rejectedWith(IModelError).to.eventually.have.property("errorNumber", BriefcaseStatus.DownloadCancelled);
   });
 
 });

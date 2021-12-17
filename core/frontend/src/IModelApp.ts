@@ -72,7 +72,7 @@ export interface FrontendSecurityOptions {
  * @public
  */
 export interface IModelAppOptions {
-  /** If present, supplies the [[IModelClient]] for this session. */
+  /** If present, supplies the [[FrontendHubAccess]] for this session. */
   hubAccess?: FrontendHubAccess;
   /** If present, supplies the Id of this application. Applications must set this to the Bentley Global Product Registry Id (GPRID) for usage logging. */
   applicationId?: string;
