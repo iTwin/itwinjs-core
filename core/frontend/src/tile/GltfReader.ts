@@ -561,6 +561,7 @@ export class GltfReaderProps {
       const glTF: Gltf = {
         asset,
         scene: JsonUtils.asString(json.scene),
+        extensions: JsonUtils.asObject(json.extensions),
         extensionsUsed: JsonUtils.asArray(json.extensionsUsed),
         extensionsRequired: JsonUtils.asArray(json.extensionsRequired),
         accessors: JsonUtils.asObject(json.accessors),

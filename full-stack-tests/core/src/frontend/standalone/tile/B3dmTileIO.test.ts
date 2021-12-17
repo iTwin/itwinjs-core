@@ -320,7 +320,7 @@ describe("B3dmReader", () => {
     expect(reader).not.to.be.undefined;
 
     // The technique specifies a uniform sampler2d named "u_diffuse".
-    const extensions = (reader as any)._extensions;
+    const extensions = (reader as any)._glTF.extensions;
     expect(extensions).not.to.be.undefined;
     const uniformType = extensions.KHR_techniques_webgl?.techniques[0]?.uniforms?.u_diffuse?.type;
     expect(typeof uniformType).to.equal("number");
