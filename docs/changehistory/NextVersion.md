@@ -841,7 +841,7 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | `DocumentCarrier`                                            | _eliminated_                                                        |
 | `IModelDb.clearSqliteStatementCache`                         | `IModelDb.clearCaches`                                              |
 | `IModelDb.clearStatementCache`                               | `IModelDb.clearCaches`                                              |
-| `IModelHost.iModelClient`                                    | `IModelHubBackend.iModelClient`                                     |
+| `IModelHost.iModelClient`                                    | `IModelsClient` in @itwin/imodels-client-authoring                  |
 | `IModelHostConfiguration.briefcaseCacheDir`                  | `IModelHostConfiguration.cacheDir`                                  |
 | `InformationCarrierElement`                                  | _eliminated_                                                        |
 | `Platform.isDesktop`                                         | `ProcessDetector.isElectronAppBackend`                              |
@@ -853,9 +853,9 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | `Texture.width, height, flags`                               | _eliminated_                                                        |
 | `TxnAction`                                                  | `TxnAction` in @itwin/core-common                                   |
 | `TxnChangedEntities.inserted, deleted, updated`              | `TxnChangedEntities.inserts, deletes, updates`                      |
-| `NativeAppAuthorizationBackend`                              | Moved to @iTwin/auth-clients repo as `ElectronAuthorizationBackend` |
-| `ElectronAuthorizationEvents`                                | Moved to @iTwin/auth-clients repo                                   |
-| `ElectronAuthorizationRequestHandler`                        | Moved to @iTwin/auth-clients repo                                   |
+| `NativeAppAuthorizationBackend`                              | Moved to iTwin/auth-clients repo as `ElectronAuthorizationBackend` |
+| `ElectronAuthorizationEvents`                                | Moved to iTwin/auth-clients repo                                   |
+| `ElectronAuthorizationRequestHandler`                        | Moved to iTwin/auth-clients repo                                   |
 
 ### @itwin/core-common
 
@@ -1737,4 +1737,3 @@ On the frontend the [GeoConverter]($frontend) class has been modified to accept 
 ## New clustering algorithm for MarkerSet
 
 The [MarkerSet]($frontend) class now clusters markers by the screen distance between their positions rather than overlap of their rectangles, so the `Cluster.rect` property is no longer needed and has been removed. Instead, there is a new member `MarkerSet.clusterRadius` that controls when nearby Markers are clustered. See its documentation for details.
-

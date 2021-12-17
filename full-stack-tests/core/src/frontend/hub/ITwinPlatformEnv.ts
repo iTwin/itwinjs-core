@@ -95,7 +95,7 @@ export class TestHubFrontend extends FrontendIModelsAccess {
   }
 }
 
-// WARNING: Only this section is allowed to import from imodelhub-client
+// WARNING: Only this section is allowed to import from imodelbank-client
 export class IModelBankFrontend implements TestFrontendHubAccess {
   private _hubClient: IModelBankClient;
   constructor(orchestratorUrl: string) {

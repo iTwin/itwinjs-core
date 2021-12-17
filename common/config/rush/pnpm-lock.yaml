@@ -2670,6 +2670,7 @@ importers:
     specifiers:
       '@bentley/icons-generic': ^1.0.15
       '@bentley/icons-generic-webfont': ^1.0.15
+      '@bentley/imodelbank-client': workspace:*
       '@bentley/itwin-client': workspace:*
       '@bentley/react-scripts': 4.0.3
       '@bentley/reality-data-client': workspace:*
@@ -2721,6 +2722,7 @@ importers:
     dependencies:
       '@bentley/icons-generic': 1.0.34
       '@bentley/icons-generic-webfont': 1.0.34
+      '@bentley/imodelbank-client': link:../../clients/imodelhub
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/reality-data-client': link:../../clients/reality-data
       '@itwin/appui-abstract': link:../../ui/appui-abstract
