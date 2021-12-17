@@ -1534,7 +1534,7 @@ export abstract class GltfReader {
 
 /** ###TODO @alpha */
 export interface ReadGltfGraphicsArgs {
-  glb: Uint8Array;
+  gltf: Uint8Array;
   iModel: IModelConnection;
   modelId?: Id64String;
   options?: BatchOptions | false;

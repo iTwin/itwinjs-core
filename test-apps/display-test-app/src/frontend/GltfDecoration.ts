@@ -54,7 +54,7 @@ export class GltfDecorationTool extends Tool {
       const file = await handle.getFile();
       const buffer = await file.arrayBuffer() as ArrayBuffer;
       let graphic = await readGltfGraphics({
-        glb: new Uint8Array(buffer),
+        gltf: new Uint8Array(buffer),
         iModel,
       });
 
