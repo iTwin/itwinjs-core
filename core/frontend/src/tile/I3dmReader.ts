@@ -49,6 +49,7 @@ function setTransform(transforms: Float32Array, index: number, rotation: Matrix3
 export class I3dmReader extends GltfReader {
   private _instanceCount = 0;
   private _featureTable?: FeatureTable;
+  private readonly _modelId: Id64String;
 
   public static create(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, is3d: boolean, range: ElementAlignedBox3d,
     system: RenderSystem, yAxisUp: boolean, isLeaf: boolean, isCanceled?: ShouldAbortReadGltf, idMap?: BatchedTileIdMap, deduplicateVertices=false): I3dmReader | undefined {
@@ -73,7 +74,8 @@ export class I3dmReader extends GltfReader {
   private constructor(private _featureBinary: Uint8Array, private _featureJson: any, private _batchTableJson: any, props: GltfReaderProps,
     iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem, private _range: ElementAlignedBox3d,
     private _isLeaf: boolean, isCanceled?: ShouldAbortReadGltf, private _idMap?: BatchedTileIdMap, deduplicateVertices=false) {
-    super(props, iModel, modelId, is3d, system, BatchType.Primary, isCanceled, deduplicateVertices);
+    super(props, iModel, is3d, system, BatchType.Primary, isCanceled, deduplicateVertices);
+    this._modelId = modelId;
   }
 
   public async read(): Promise<GltfReaderResult> {
