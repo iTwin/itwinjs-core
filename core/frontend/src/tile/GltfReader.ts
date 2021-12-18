@@ -333,7 +333,7 @@ interface Gltf2Material extends GltfChildOfRootProperty {
         u_color?: number[];
         // Diffuse texture.
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        u_diffuse?: { index: number; texCoord: number; };
+        u_diffuse?: { index: number, texCoord: number };
         [k: string]: unknown | undefined;
       };
     };
