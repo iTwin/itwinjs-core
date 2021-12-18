@@ -317,14 +317,24 @@ interface Gltf2Material extends GltfChildOfRootProperty {
   alphaCutoff?: number;
   doubleSided?: boolean;
   extensions?: GltfExtensions & {
+    /** The [KHR_techniques_webgl extension](https://github.com/KhronosGroup/glTF/blob/c1c12bd100e88ff468ccef1cb88cfbec56a69af2/extensions/2.0/Khronos/KHR_techniques_webgl/README.md)
+     * allows "techniques" to be associated with [[GltfMaterial]]s. Techniques can supply custom shader programs to render geometry; this was a core feature of glTF 1.0 (see [[GltfTechnique]]).
+     * Here, it is only used to extract uniform values.
+     */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     KHR_techniques_webgl?: {
       technique?: number;
+      // An object containing uniform values. Each property name corresponds to a uniform in the material's technique and must conform to that uniform's type and count properties.
+      // A handful of uniforms referenced in this implementation by name are defined below.
       values?: {
         // eslint-disable-next-line @typescript-eslint/naming-convention
         u_texStep?: number[];
         // eslint-disable-next-line @typescript-eslint/naming-convention
         u_color?: number[];
+        // Diffuse texture.
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        u_diffuse?: { index: number; texCoord: number; };
+        [k: string]: unknown | undefined;
       };
     };
   };
@@ -1023,13 +1033,13 @@ export abstract class GltfReader {
     // KHR_techniques_webgl extension
     const techniques = this._glTF.extensions?.KHR_techniques_webgl?.techniques;
     const ext = Array.isArray(techniques) ? material.extensions?.KHR_techniques_webgl : undefined;
-    if (techniques && undefined !== ext) {
+    if (techniques && undefined !== ext && typeof(ext.values) === "object") {
       const uniforms = typeof ext.technique === "number" ? techniques[ext.technique].uniforms : undefined;
       if (typeof uniforms === "object") {
         for (const uniformName of Object.keys(uniforms)) {
           const uniform = uniforms[uniformName];
           if (typeof uniform === "object" && uniform.type === GltfDataType.Sampler2d)
-            return extractId(uniform.value?.index);
+            return extractId((ext.values[uniformName] as any)?.index);
         }
       }
     }
