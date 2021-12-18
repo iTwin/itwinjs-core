@@ -5,8 +5,8 @@
 import { expect } from "chai";
 import { ByteStream } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
-import { GltfDataType, RenderTexture } from "@itwin/core-common";
-import { B3dmReader, IModelApp, MockRender, SnapshotConnection } from "@itwin/core-frontend";
+import { RenderTexture } from "@itwin/core-common";
+import { B3dmReader, GltfDataType, IModelApp, MockRender, SnapshotConnection } from "@itwin/core-frontend";
 import { TestUtility } from "../../TestUtility";
 
 /* eslint-disable @typescript-eslint/unbound-method */
@@ -320,7 +320,7 @@ describe("B3dmReader", () => {
     expect(reader).not.to.be.undefined;
 
     // The technique specifies a uniform sampler2d named "u_diffuse".
-    const extensions = (reader as any)._extensions;
+    const extensions = (reader as any)._glTF.extensions;
     expect(extensions).not.to.be.undefined;
     const uniformType = extensions.KHR_techniques_webgl?.techniques[0]?.uniforms?.u_diffuse?.type;
     expect(typeof uniformType).to.equal("number");

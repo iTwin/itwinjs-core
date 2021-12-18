@@ -17,7 +17,7 @@ import { FooterPopup, FooterPopupContentType } from "@itwin/appui-layout-react";
 interface IndicatorProps extends CommonProps {
   /** Label of balloon icon. @deprecated use label */
   balloonLabel?: string;
-  /** Dialog to display in popup when indication is clicked. */
+  /** Dialog to display in popup when indicator is clicked. */
   dialog?: React.ReactChild;
   /** Icon to use in the footer. @deprecated use iconSpec */
   iconName?: string;

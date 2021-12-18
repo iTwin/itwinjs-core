@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "convertTouchMoveStartToButtonDownAndMotion stopped working with change to not await snap.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

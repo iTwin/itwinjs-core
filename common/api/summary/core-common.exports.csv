@@ -294,13 +294,7 @@ public;GeometrySummaryRequestProps
 public;GeometrySummaryVerbosity
 internal;getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number
 public;GlobeMode
-internal;GltfBufferData
-internal;GltfBufferView
-internal;GltfConstants
-internal;GltfDataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array
-internal;GltfDataType
 internal;GltfHeader 
-internal;GltfMeshMode
 internal;GltfV2ChunkTypes
 internal;GltfVersions
 public;Gradient
