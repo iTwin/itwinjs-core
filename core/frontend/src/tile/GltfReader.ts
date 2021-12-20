@@ -1501,7 +1501,7 @@ export abstract class GltfReader {
     try {
       const binaryImageJson = (imageJson.extensions && imageJson.extensions.KHR_binary_glTF) ? JsonUtils.asObject(imageJson.extensions.KHR_binary_glTF) : imageJson;
       const bufferView = this._bufferViews[binaryImageJson.bufferView];
-      if (!bufferView?.byteOffset || !bufferView?.byteLength)
+      if (!bufferView || undefined === bufferView.byteLength || bufferView.byteLength <= 0)
         return undefined;
 
       const mimeType = JsonUtils.asString(binaryImageJson.mimeType);
@@ -1514,7 +1514,7 @@ export abstract class GltfReader {
         (undefined !== samplerJson.wrapS || undefined !== samplerJson.wrapT))
         textureType = RenderTexture.Type.TileSection;
 
-      const offset = bufferView.byteOffset;
+      const offset = bufferView.byteOffset ?? 0;
 
       /* -----------------------------------
           const jpegArray = this._binaryData.slice(offset, offset + bufferView.byteLength);
