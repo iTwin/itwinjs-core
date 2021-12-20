@@ -27,8 +27,6 @@ import { RenderSystem } from "../render/RenderSystem";
 import { TextureTransparency } from "../render/RenderTexture";
 import { TileContent } from "./internal";
 
-// eslint-disable-next-line prefer-const
-let forceLUT = false;
 /* eslint-disable no-restricted-syntax */
 
 /** Enumerates the types of [[GltfMeshPrimitive]] topologies. */
@@ -700,6 +698,18 @@ class TransformStack {
   }
 }
 
+/** @internal */
+export interface GltfReaderArgs {
+  props: GltfReaderProps,
+  iModel: IModelConnection,
+  is2d?: boolean,
+  system?: RenderSystem,
+  type?: BatchType, // default Primary
+  shouldAbort?: ShouldAbortReadGltf,
+  deduplicateVertices?: boolean,
+  vertexTableRequired?: boolean,
+}
+
 /** Deserializes [glTF](https://www.khronos.org/gltf/).
  * @internal
  */
@@ -714,6 +724,7 @@ export abstract class GltfReader {
   protected readonly _yAxisUp: boolean;
   protected readonly _type: BatchType;
   protected readonly _deduplicateVertices: boolean;
+  protected readonly _vertexTableRequired: boolean;
   private readonly _canceled?: ShouldAbortReadGltf;
   protected readonly _sceneNodes: GltfId[];
   protected _computedContentRange?: ElementAlignedBox3d;
@@ -814,7 +825,7 @@ export abstract class GltfReader {
     if (!gltfMesh.points || !gltfMesh.pointRange)
       return;
 
-    const realityMeshPrimitive = (forceLUT || instances) ? undefined : RealityMeshPrimitive.createFromGltfMesh(gltfMesh);
+    const realityMeshPrimitive = (this._vertexTableRequired || instances) ? undefined : RealityMeshPrimitive.createFromGltfMesh(gltfMesh);
     if (realityMeshPrimitive) {
       const realityMesh = this._system.createRealityMesh(realityMeshPrimitive);
       if (realityMesh)
@@ -972,23 +983,24 @@ export abstract class GltfReader {
   public readBufferData8(json: any, accessorName: string): GltfBufferData | undefined { return this.readBufferData(json, accessorName, GltfDataType.UnsignedByte); }
   public readBufferDataFloat(json: any, accessorName: string): GltfBufferData | undefined { return this.readBufferData(json, accessorName, GltfDataType.Float); }
 
-  protected constructor(props: GltfReaderProps, iModel: IModelConnection, is3d: boolean, system: RenderSystem, type: BatchType = BatchType.Primary, isCanceled?: ShouldAbortReadGltf, deduplicateVertices=false) {
-    this._buffer = props.buffer;
-    this._binaryData = props.binaryData;
-    this._glTF = props.glTF;
-    this._yAxisUp = props.yAxisUp;
+  protected constructor(args: GltfReaderArgs) {
+    this._buffer = args.props.buffer;
+    this._binaryData = args.props.binaryData;
+    this._glTF = args.props.glTF;
+    this._yAxisUp = args.props.yAxisUp;
 
-    const rtcCenter = props.glTF.extensions?.CESIUM_RTC?.center;
+    const rtcCenter = args.props.glTF.extensions?.CESIUM_RTC?.center;
     if (rtcCenter && 3 === rtcCenter.length)
       if (0 !== rtcCenter[0] || 0 !== rtcCenter[1] || 0 !== rtcCenter[2])
         this._returnToCenter = Point3d.fromJSON(rtcCenter);
 
-    this._iModel = iModel;
-    this._is3d = is3d;
-    this._system = system;
-    this._type = type;
-    this._canceled = isCanceled;
-    this._deduplicateVertices = deduplicateVertices;
+    this._iModel = args.iModel;
+    this._is3d = true !== args.is2d;
+    this._system = args.system ?? IModelApp.renderSystem;
+    this._type = args.type ?? BatchType.Primary;
+    this._canceled = args.shouldAbort;
+    this._deduplicateVertices = args.deduplicateVertices ?? false;
+    this._vertexTableRequired = args.vertexTableRequired ?? false;
 
     // The original implementation of GltfReader would process and produce graphics for every node in glTF.nodes.
     // What it's *supposed* to do is process the nodes in glTF.scenes[glTF.scene].nodes
@@ -1596,7 +1608,11 @@ class Reader extends GltfReader {
   private readonly _featureTable?: FeatureTable;
 
   public constructor(props: GltfReaderProps, args: ReadGltfGraphicsArgs) {
-    super(props, args.iModel, false, IModelApp.renderSystem);
+    super({
+      props,
+      iModel: args.iModel,
+      vertexTableRequired: true,
+    });
 
     const pickableId = args.pickableOptions?.id;
     if (pickableId) {
