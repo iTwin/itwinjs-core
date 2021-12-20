@@ -197,7 +197,7 @@ export const WidgetTab = React.memo<WidgetTabProps>(function WidgetTab(props) { 
       title={tab.label}
     >
       {tab.iconSpec && <Icon iconSpec={tab.iconSpec} />}
-      {(!showIconOnly) && <span>{tab.label}</span>}
+      {(!showIconOnly || !tab.iconSpec) && <span>{tab.label}</span>}
       {!widgetTabsEntryContext && <div className="nz-icon" />}
       {props.badge && <div className="nz-badge">
         {props.badge}
