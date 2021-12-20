@@ -30,6 +30,10 @@
  &.core-popup-hidden {
   display: none;
  }
+
+ &.core-animation-ended {
+   animation-name: none;
+ }
 }
 
 .core-popup.arrow::after, .core-popup.arrow::before {
