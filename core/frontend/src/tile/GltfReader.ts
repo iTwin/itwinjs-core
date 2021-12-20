@@ -542,7 +542,6 @@ export interface GltfReaderResult extends TileContent {
  */
 export class GltfReaderProps {
   private constructor(
-    public readonly buffer: ByteStream,
     public readonly binaryData: Uint8Array,
     public readonly glTF: Gltf,
     public readonly yAxisUp: boolean) { }
@@ -585,7 +584,7 @@ export class GltfReaderProps {
         techniques: JsonUtils.asObject(json.techniques),
       };
 
-      return glTF.meshes ? new GltfReaderProps(buffer, binaryData, glTF, yAxisUp) : undefined;
+      return glTF.meshes ? new GltfReaderProps(binaryData, glTF, yAxisUp) : undefined;
     } catch (e) {
       return undefined;
     }
@@ -714,7 +713,6 @@ export interface GltfReaderArgs {
  * @internal
  */
 export abstract class GltfReader {
-  protected readonly _buffer: ByteStream;
   protected readonly _binaryData: Uint8Array;
   protected readonly _glTF: Gltf;
   protected readonly _iModel: IModelConnection;
@@ -984,7 +982,6 @@ export abstract class GltfReader {
   public readBufferDataFloat(json: any, accessorName: string): GltfBufferData | undefined { return this.readBufferData(json, accessorName, GltfDataType.Float); }
 
   protected constructor(args: GltfReaderArgs) {
-    this._buffer = args.props.buffer;
     this._binaryData = args.props.binaryData;
     this._glTF = args.props.glTF;
     this._yAxisUp = args.props.yAxisUp;
