@@ -748,6 +748,8 @@ export abstract class GltfReader {
   protected get _accessors(): GltfDictionary<GltfAccessor> { return this._glTF.accessors ?? emptyDict; }
   protected get _bufferViews(): GltfDictionary<GltfBufferViewProps> { return this._glTF.bufferViews ?? emptyDict; }
   protected get _materialValues(): GltfDictionary<GltfMaterial> { return this._glTF.materials ?? emptyDict; }
+  protected get _textures(): GltfDictionary<GltfTexture & { renderTexture?: RenderTexture }> { return this._glTF.textures ?? emptyDict; }
+  protected get _samplers(): GltfDictionary<GltfSampler> { return this._glTF.samplers ?? emptyDict; }
 
   /* -----------------------------------
   private static _webWorkerManager: WebWorkerManager;
@@ -1567,18 +1569,19 @@ export abstract class GltfReader {
     if (!this._glTF.textures || !this._glTF.images)
       return;
 
-    const textureJson = JsonUtils.asObject(this._glTF.textures[textureId]);
-    if (undefined === textureJson)
+    const textureJson = this._textures[textureId];
+    if (!textureJson || textureJson.renderTexture || undefined === textureJson.source)
       return;
 
-    const texture = await this.loadTextureImage(this._glTF.images[textureJson.source], this._glTF.samplers ? this._glTF.samplers[textureJson.sampler] : undefined, isTransparent);
+    const samplerId = textureJson.sampler;
+    const sampler = undefined !== samplerId ? this._samplers[samplerId] : undefined;
+    const texture = await this.loadTextureImage(this._glTF.images[textureJson.source], sampler, isTransparent);
     textureJson.renderTexture = texture;
   }
 
   protected findTextureMapping(textureId: string): TextureMapping | undefined {
-    const textureJson = this._glTF.textures ? JsonUtils.asObject(this._glTF.textures[textureId]) : undefined;
-    const texture = undefined !== textureJson ? textureJson.renderTexture as RenderTexture : undefined;
-    return undefined !== texture ? new TextureMapping(texture, new TextureMapping.Params()) : undefined;
+    const texture = this._textures[textureId];
+    return texture?.renderTexture ? new TextureMapping(texture.renderTexture, new TextureMapping.Params()) : undefined;
   }
 }
 
