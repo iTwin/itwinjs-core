@@ -210,6 +210,7 @@ internal;GltfDataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array
 internal;GltfDataType
 internal;GltfMeshData
 internal;class GltfReader
+internal;GltfReaderArgs
 internal;GltfReaderProps
 internal;GltfReaderResult 
 internal;GLTimerResult

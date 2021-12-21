@@ -697,16 +697,32 @@ class TransformStack {
   }
 }
 
-/** @internal */
+/** Arguments to [[GltfReader]] constructor.
+ * @internal
+ */
 export interface GltfReaderArgs {
-  props: GltfReaderProps,
-  iModel: IModelConnection,
-  is2d?: boolean,
-  system?: RenderSystem,
-  type?: BatchType, // default Primary
-  shouldAbort?: ShouldAbortReadGltf,
-  deduplicateVertices?: boolean,
-  vertexTableRequired?: boolean,
+  /** Properties of the glTF source. */
+  props: GltfReaderProps;
+  /** The iModel with which the graphics are to be associated. */
+  iModel: IModelConnection;
+  /** If true, create 2d graphics. */
+  is2d?: boolean;
+  /** The render system that will produce the graphics. Defaults to [[IModelApp.renderSystem]]. */
+  system?: RenderSystem;
+  /** The type of batch to create. Defaults to [BatchType.Primary]($common).
+   * @see [[RenderSystem.createBatch]].
+   */
+  type?: BatchType;
+  /** An optional function that, if supplied, is invoked periodically to determine if the process of producing graphics from the glTF should terminate early. */
+  shouldAbort?: ShouldAbortReadGltf;
+  /** If true, each vertex in the graphics should belong to exactly one triangle. This is less efficient than sharing vertices between adjoining triangles, but
+   * sometimes required - for example, for [ViewFlags.wiremesh]($common).
+   */
+  deduplicateVertices?: boolean;
+  /** If true, the graphics produced will always use a [[VertexTable]]; otherwise, where possible a [[RealityMeshPrimitive]] will be used instead.
+   * Reality meshes are simpler but do not support some features like lighting.
+   */
+  vertexTableRequired?: boolean;
 }
 
 /** Deserializes [glTF](https://www.khronos.org/gltf/).

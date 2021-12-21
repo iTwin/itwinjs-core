@@ -7,7 +7,7 @@
  */
 import { ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import { AxisOrder, Matrix3d, Point3d, Vector3d } from "@itwin/core-geometry";
-import { BatchType, ElementAlignedBox3d, Feature, FeatureTable, I3dmHeader, TileReadStatus } from "@itwin/core-common";
+import { ElementAlignedBox3d, Feature, FeatureTable, I3dmHeader, TileReadStatus } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 import { InstancedGraphicParams } from "../render/InstancedGraphicParams";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
