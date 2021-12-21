@@ -12,7 +12,7 @@ import * as React from "react";
 import { CommonProps, Icon, Point, Rectangle, Timer, useRefs, useRefState, useResizeObserver } from "@itwin/core-react";
 import { assert } from "@itwin/core-bentley";
 import { useDragTab } from "../base/DragManager";
-import { MeasureContext, NineZoneDispatchContext, TabNodeContext } from "../base/NineZone";
+import { MeasureContext, NineZoneDispatchContext, ShowWidgetIconContext, TabNodeContext } from "../base/NineZone";
 import { TabState } from "../base/NineZoneState";
 import { PointerCaptorArgs, PointerCaptorEvent, usePointerCaptor } from "../base/PointerCaptor";
 import { PanelSideContext } from "../widget-panels/Panel";
@@ -185,7 +185,8 @@ export const WidgetTab = React.memo<WidgetTabProps>(function WidgetTab(props) { 
   );
 
   const showIconOnly = React.useContext(TabIconContext);
-
+  const showWidgetIcon = React.useContext(ShowWidgetIconContext);
+  const showLabel = (showIconOnly && !tab.iconSpec) || (showWidgetIcon && !showIconOnly) || !showWidgetIcon;
   return (
     <div
       data-item-id={tab.id}
@@ -196,8 +197,8 @@ export const WidgetTab = React.memo<WidgetTabProps>(function WidgetTab(props) { 
       style={props.style}
       title={tab.label}
     >
-      {tab.iconSpec && <Icon iconSpec={tab.iconSpec} />}
-      {(!showIconOnly || !tab.iconSpec) && <span>{tab.label}</span>}
+      {(showWidgetIcon || showIconOnly) && tab.iconSpec && <Icon iconSpec={tab.iconSpec} />}
+      {showLabel && <span>{tab.label}</span>}
       {!widgetTabsEntryContext && <div className="nz-icon" />}
       {props.badge && <div className="nz-badge">
         {props.badge}

@@ -24,6 +24,7 @@ export enum ConfigurableUiActionId {
   SetWidgetOpacity = "configurableui:set_widget_opacity",
   SetDragInteraction = "configurableui:set-drag-interaction",
   SetFrameworkVersion = "configurableui:set-framework-version",
+  SetShowWidgetIcon = "configurableui:set-show-widget-icon",
 }
 
 /** The portion of state managed by the ConfigurableUiReducer.
@@ -36,6 +37,7 @@ export interface ConfigurableUiState {
   widgetOpacity: number;
   useDragInteraction: boolean;
   frameworkVersion: FrameworkVersionId;
+  showWidgetIcon: boolean;
 }
 
 /** used on first call of ConfigurableUiReducer */
@@ -46,6 +48,7 @@ const initialState: ConfigurableUiState = {
   widgetOpacity: WIDGET_OPACITY_DEFAULT,
   useDragInteraction: false,
   frameworkVersion: "2",
+  showWidgetIcon: true,
 };
 
 /** An object with a function that creates each ConfigurableUiReducer that can be handled by our reducer.
@@ -64,6 +67,7 @@ export const ConfigurableUiActions = {   // eslint-disable-line @typescript-esli
     (opacity: number) => createAction(ConfigurableUiActionId.SetWidgetOpacity, opacity),
   setDragInteraction: (dragInteraction: boolean) => createAction(ConfigurableUiActionId.SetDragInteraction, dragInteraction),
   setFrameworkVersion: (frameworkVersion: FrameworkVersionId) => createAction(ConfigurableUiActionId.SetFrameworkVersion, frameworkVersion),
+  setShowWidgetIcon: (showWidgetIcon: boolean) => createAction(ConfigurableUiActionId.SetShowWidgetIcon, showWidgetIcon),
 };
 
 /** Union of ConfigurableUi Redux actions
@@ -96,6 +100,9 @@ export function ConfigurableUiReducer(state: ConfigurableUiState = initialState,
     case ConfigurableUiActionId.SetFrameworkVersion: {
       const frameworkVersion = (action.payload);
       return { ...state, frameworkVersion };
+    }
+    case ConfigurableUiActionId.SetShowWidgetIcon: {
+      return { ...state, showWidgetIcon: action.payload };
     }
   }
   return outState;

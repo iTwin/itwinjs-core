@@ -33,12 +33,14 @@ describe("AppUiSettings", () => {
     const opacity = 0.5;
     const colorTheme = "dark";
     const useDragInteraction = true;
+    const showWidgetIcon = true;
     UiFramework.setUiVersion(uiVersion);
     UiFramework.setWidgetOpacity(opacity);
     UiFramework.setWidgetOpacity(opacity);
     UiFramework.setUseDragInteraction(true);
     UiFramework.setColorTheme(colorTheme);
     UiFramework.setUseDragInteraction(useDragInteraction);
+    UiFramework.setShowWidgetIcon(!!showWidgetIcon);
     await TestUtils.flushAsyncOperations();
     expect(UiFramework.uiVersion).to.eql(uiVersion);
     expect(UiFramework.getWidgetOpacity()).to.eql(opacity);

@@ -39,6 +39,8 @@ import { WidgetPanelsTab } from "./Tab";
 import { WidgetPanelsToolbars } from "./Toolbars";
 import { ToolSettingsContent, WidgetPanelsToolSettings } from "./ToolSettings";
 import { useEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome";
+import { FrameworkRootState } from "../redux/StateManager";
+import { useSelector } from "react-redux";
 
 const panelZoneKeys: StagePanelZoneDefKeys[] = ["start", "middle", "end"];
 
@@ -207,6 +209,11 @@ export function ActiveFrontstageDefProvider({ frontstageDef }: { frontstageDef: 
   useFrontstageManager(frontstageDef);
   useItemsManager(frontstageDef);
   const labels = useLabels();
+  const showWidgetIcon = useSelector((state: FrameworkRootState) => {
+    const frameworkState = (state as any)[UiFramework.frameworkStateKey];
+    return !!frameworkState.configurableUiState.showWidgetIcon;
+  });
+
   const handleKeyDown = useEscapeSetFocusToHome();
   return (
     <div
@@ -219,6 +226,7 @@ export function ActiveFrontstageDefProvider({ frontstageDef }: { frontstageDef: 
         labels={labels}
         state={nineZone}
         tab={tabElement}
+        showWidgetIcon={showWidgetIcon}
         toolSettingsContent={toolSettingsContent}
         widgetContent={widgetContent}
       >

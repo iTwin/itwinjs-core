@@ -508,6 +508,17 @@ export class UiFramework {
     UiFramework.dispatchActionToStore(ConfigurableUiActionId.SetFrameworkVersion, version === "1" ? "1" : "2", true);
   }
 
+  public static get showWidgetIcon(): boolean {
+    return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.showWidgetIcon : false;
+  }
+
+  public static setShowWidgetIcon(value: boolean) {
+    if (UiFramework.showWidgetIcon === value)
+      return;
+
+    UiFramework.dispatchActionToStore(ConfigurableUiActionId.SetShowWidgetIcon, value, true);
+  }
+
   public static get useDragInteraction(): boolean {
     return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.useDragInteraction : false;
   }
