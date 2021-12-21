@@ -7,6 +7,7 @@ import { expect } from "chai";
 import { UnexpectedErrors } from "@itwin/core-bentley";
 import { AnalysisStyle } from "@itwin/core-common";
 import { ScreenViewport } from "../Viewport";
+import { DisplayStyle3dState } from "../DisplayStyleState";
 import { IModelApp } from "../IModelApp";
 import { openBlankViewport } from "./openBlankViewport";
 
@@ -119,6 +120,69 @@ describe("Viewport", () => {
 
       expectChangedEvent("undefined", () => viewport.displayStyle.settings.analysisStyle = undefined);
       expectChangedEvent("none", () => viewport.displayStyle.settings.analysisStyle = undefined);
+    });
+  });
+
+  describe("background map", () => {
+    function expectBackgroundMap(expected: boolean) {
+      expect(viewport.viewFlags.backgroundMap).to.equal(expected);
+    }
+
+    function expectTerrain(expected: boolean) {
+      expect(viewport.backgroundMap).not.to.be.undefined; // this is *never* undefined despite type annotation...
+      expect(viewport.backgroundMap!.settings.applyTerrain).to.equal(expected);
+    }
+
+    beforeEach(() => {
+      expectBackgroundMap(false);
+      expectTerrain(false);
+
+      viewport.viewFlags = viewport.viewFlags.with("backgroundMap", true);
+      expectBackgroundMap(true);
+      expectTerrain(false);
+    });
+
+    afterEach(() => {
+      viewport.view.displayStyle = new DisplayStyle3dState({} as any, viewport.iModel);
+      expectBackgroundMap(false);
+      expectTerrain(false);
+    });
+
+    it("updates when display style is assigned to", () => {
+      let style = viewport.displayStyle.clone();
+      style.viewFlags = style.viewFlags.with("backgroundMap", false);
+      viewport.displayStyle = style;
+      expectBackgroundMap(false);
+      expectTerrain(false);
+
+      style = style.clone();
+      style.viewFlags = style.viewFlags.with("backgroundMap", true);
+      style.settings.applyOverrides({ backgroundMap: { applyTerrain: true } });
+      viewport.displayStyle = style;
+      expectBackgroundMap(true);
+      expectTerrain(true);
+
+      style = style.clone();
+      style.settings.applyOverrides({ backgroundMap: { applyTerrain: false } });
+      viewport.displayStyle = style;
+      expectBackgroundMap(true);
+      expectTerrain(false);
+    });
+
+    it("updates when settings are modified", () => {
+      const style = viewport.displayStyle;
+      style.viewFlags = style.viewFlags.with("backgroundMap", false);
+      expectBackgroundMap(false);
+      expectTerrain(false);
+
+      style.viewFlags = style.viewFlags.with("backgroundMap", true);
+      style.settings.applyOverrides({ backgroundMap: { applyTerrain: true } });
+      expectBackgroundMap(true);
+      expectTerrain(true);
+
+      style.settings.applyOverrides({ backgroundMap: { applyTerrain: false } });
+      expectBackgroundMap(true);
+      expectTerrain(false);
     });
   });
 });
