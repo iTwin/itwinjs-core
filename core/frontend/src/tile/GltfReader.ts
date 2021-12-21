@@ -725,6 +725,23 @@ export interface GltfReaderArgs {
   vertexTableRequired?: boolean;
 }
 
+function * traverseNodes(ids: Iterable<GltfId>, nodes: GltfDictionary<GltfNode>, traversed: Set<GltfId>): Iterable<GltfNode> {
+  for (const id of ids) {
+    if (traversed.has(id))
+      throw new Error("Cycle detected while traversing glTF nodes");
+
+    traversed.add(id);
+    const node = nodes[id];
+    if (!node)
+      continue;
+
+    yield node;
+    if (node.children)
+      for (const child of traverseNodes(node.children, nodes, traversed))
+        yield child;
+  }
+}
+
 /** Deserializes [glTF](https://www.khronos.org/gltf/).
  * @internal
  */
@@ -769,33 +786,18 @@ export abstract class GltfReader {
   protected get _isVolumeClassifier(): boolean { return BatchType.VolumeClassifier === this._type; }
 
   /** Traverse the nodes specified by their Ids, recursing into their child nodes.
-   * @param nodes The Ids of the nodes to traverse.
-   * @param callback A function invoked for each node, returning true to continue traversal or false to terminate early
-   * @returns true if traversal completed, false if traversal terminated early due to `callback` returning false for any node.
+   * @param nodeIds The Ids of the nodes to traverse.
    * @throws Error if a node appears more than once during traversal
    */
-  public traverseNodes(nodes: Iterable<GltfId>, callback: (node: GltfNode, nodeId: GltfId) => boolean): boolean {
-    return this._traverseNodes(nodes, callback, new Set<GltfId>());
+  public traverseNodes(nodeIds: Iterable<GltfId>): Iterable<GltfNode> {
+    return traverseNodes(nodeIds, this._nodes, new Set<GltfId>());
   }
 
-  protected _traverseNodes(nodes: Iterable<GltfId>, callback: (node: GltfNode, nodeId: GltfId) => boolean, traversed: Set<GltfId>): boolean {
-    for (const nodeId of nodes) {
-      if (traversed.has(nodeId))
-        throw new Error("Cycle detected while traversing glTF nodes");
-
-      traversed.add(nodeId);
-      const node = this._nodes[nodeId];
-      if (!node)
-        continue;
-
-      if (!callback(node, nodeId))
-        return false;
-
-      if (node.children && !this._traverseNodes(node.children, callback, traversed))
-        return false;
-    }
-
-    return true;
+  /** Traverse the nodes specified by their scene, recursing into their child nodes.
+   * @throws Error if a node appears more than once during traversal
+   */
+  public traverseScene(): Iterable<GltfNode> {
+    return this.traverseNodes(this._sceneNodes);
   }
 
   protected readGltfAndCreateGraphics(isLeaf: boolean, featureTable: FeatureTable | undefined, contentRange: ElementAlignedBox3d | undefined, transformToRoot?: Transform, pseudoRtcBias?: Vector3d, instances?: InstancedGraphicParams): GltfReaderResult {
