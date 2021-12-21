@@ -93,17 +93,17 @@ enum GltfBufferTarget {
 }
 
 /** The type used to refer to an entry in a [[GltfDictionary]] in a glTF 1.0 asset. */
-type Gltf1Id = string;
+export type Gltf1Id = string;
 /** The type used to refer to an entry in a [[GltfDictionary]] in a glTF 2.0 asset. */
-type Gltf2Id = number;
+export type Gltf2Id = number;
 /** The type used to refer to an entry in a [[GltfDictionary]]. */
-type GltfId = Gltf1Id | Gltf2Id;
+export type GltfId = Gltf1Id | Gltf2Id;
 
 /** A collection of resources of some type defined at the top-level of a [[Gltf]] asset.
  * In glTF 1.0, these are defined as objects; each resource is referenced and accessed by its string key.
  * In glTF 2.0, these are defined as arrays; each resource is referenced and accessed by its integer array index.
  */
-interface GltfDictionary<T extends GltfChildOfRootProperty> {
+export interface GltfDictionary<T extends GltfChildOfRootProperty> {
   [key: GltfId]: T | undefined;
 }
 
@@ -1656,7 +1656,7 @@ export interface ReadGltfGraphicsArgs {
 export async function readGltfGraphics(args: ReadGltfGraphicsArgs): Promise<RenderGraphic | undefined> {
   const stream = new ByteStream(args.gltf.buffer);
   const props = GltfReaderProps.create(stream, true); // glTF supports exactly one coordinate system with y axis up.
-  const reader = props ? new Reader(props, args) : undefined;
+  const reader = props ? new GltfGraphicsReader(props, args) : undefined;
   if (!reader)
     return undefined;
 
@@ -1664,8 +1664,10 @@ export async function readGltfGraphics(args: ReadGltfGraphicsArgs): Promise<Rend
   return result.graphic;
 }
 
-/** Implements [[readGltfGraphics]]. */
-class Reader extends GltfReader {
+/** Implements [[readGltfGraphics]]. Exported strictly for tests.
+ * @internal
+ */
+export class GltfGraphicsReader extends GltfReader {
   private readonly _featureTable?: FeatureTable;
 
   public constructor(props: GltfReaderProps, args: ReadGltfGraphicsArgs) {
@@ -1680,11 +1682,13 @@ class Reader extends GltfReader {
       this._featureTable = new FeatureTable(1, args.pickableOptions?.modelId ?? pickableId, BatchType.Primary);
       this._featureTable.insert(new Feature(pickableId));
     }
-
   }
 
   public async read(): Promise<GltfReaderResult> {
     await this.loadTextures();
     return this.readGltfAndCreateGraphics(true, this._featureTable, undefined);
   }
+
+  public get sceneNodes(): GltfId[] { return this._sceneNodes; }
+  public get textures(): GltfDictionary<GltfTexture & { renderTexture?: RenderTexture }> { return this._textures; }
 }
