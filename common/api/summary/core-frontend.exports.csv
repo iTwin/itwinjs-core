@@ -208,6 +208,7 @@ public;GlobeAnimator
 internal;GltfBufferData
 internal;GltfDataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array
 internal;GltfDataType
+internal;GltfGraphicsReader 
 internal;GltfMeshData
 internal;class GltfReader
 internal;GltfReaderArgs

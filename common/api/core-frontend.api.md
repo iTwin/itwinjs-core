@@ -3607,6 +3607,19 @@ export enum GltfDataType {
 }
 
 // @internal
+export class GltfGraphicsReader extends GltfReader {
+    constructor(props: GltfReaderProps, args: ReadGltfGraphicsArgs);
+    // (undocumented)
+    read(): Promise<GltfReaderResult>;
+    // (undocumented)
+    get sceneNodes(): GltfId[];
+    // (undocumented)
+    get textures(): GltfDictionary<GltfTexture & {
+        renderTexture?: RenderTexture;
+    }>;
+}
+
+// @internal
 export class GltfMeshData {
     constructor(props: Mesh);
     // (undocumented)
@@ -3700,9 +3713,17 @@ export abstract class GltfReader {
     // (undocumented)
     protected readonly _returnToCenter?: Point3d;
     // (undocumented)
+    protected get _samplers(): GltfDictionary<GltfSampler>;
+    // (undocumented)
     protected readonly _sceneNodes: GltfId[];
     // (undocumented)
     protected readonly _system: RenderSystem;
+    // (undocumented)
+    protected get _textures(): GltfDictionary<GltfTexture & {
+        renderTexture?: RenderTexture;
+    }>;
+    traverseNodes(nodeIds: Iterable<GltfId>): Iterable<GltfNode>;
+    traverseScene(): Iterable<GltfNode>;
     // (undocumented)
     protected readonly _type: BatchType;
     // (undocumented)

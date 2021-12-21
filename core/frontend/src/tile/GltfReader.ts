@@ -93,17 +93,17 @@ enum GltfBufferTarget {
 }
 
 /** The type used to refer to an entry in a [[GltfDictionary]] in a glTF 1.0 asset. */
-export type Gltf1Id = string;
+type Gltf1Id = string;
 /** The type used to refer to an entry in a [[GltfDictionary]] in a glTF 2.0 asset. */
-export type Gltf2Id = number;
+type Gltf2Id = number;
 /** The type used to refer to an entry in a [[GltfDictionary]]. */
-export type GltfId = Gltf1Id | Gltf2Id;
+type GltfId = Gltf1Id | Gltf2Id;
 
 /** A collection of resources of some type defined at the top-level of a [[Gltf]] asset.
  * In glTF 1.0, these are defined as objects; each resource is referenced and accessed by its string key.
  * In glTF 2.0, these are defined as arrays; each resource is referenced and accessed by its integer array index.
  */
-export interface GltfDictionary<T extends GltfChildOfRootProperty> {
+interface GltfDictionary<T extends GltfChildOfRootProperty> {
   [key: GltfId]: T | undefined;
 }
 
