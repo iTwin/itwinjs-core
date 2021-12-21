@@ -1518,6 +1518,7 @@ export abstract class GltfReader {
     if (undefined === this._glTF.textures)
       return;
 
+    // ###TODO this seems pretty hacky, and won't work for glTF 2.0 even if the KHR_techniques_webgl extension is used...
     const transparentTextures: Set<string> = new Set<string>();
     if (this._glTF.techniques) {
       for (const name of Object.keys(this._materialValues)) {
@@ -1536,12 +1537,24 @@ export abstract class GltfReader {
       }
     }
 
-    const promises = new Array<Promise<void>>();
-    for (const name of Object.keys(this._glTF.textures))
-      promises.push(this.loadTexture(name, transparentTextures.has(name)));
+    const promises = new Map<string, Promise<void>>();
+    for (const node of this.traverseScene()) {
+      for (const meshId of getNodeMeshIds(node)) {
+        const mesh = this._meshes[meshId];
+        if (!mesh?.primitives)
+          continue;
 
-    if (promises.length > 0)
-      await Promise.all(promises);
+        for (const primitive of mesh.primitives) {
+          const material = undefined !== primitive.material ? this._materialValues[primitive.material] : undefined;
+          const textureId = material ? this.extractTextureId(material) : undefined;
+          if (undefined !== textureId && !promises.has(textureId))
+            promises.set(textureId, this.loadTexture(textureId, transparentTextures.has(textureId)));
+        }
+      }
+    }
+
+    if (promises.size > 0)
+      await Promise.all(promises.values());
   }
 
   protected async loadTextureImage(imageJson: any, samplerJson: any, isTransparent: boolean): Promise<RenderTexture | undefined> {
