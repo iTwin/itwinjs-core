@@ -768,6 +768,36 @@ export abstract class GltfReader {
   protected get _isCanceled(): boolean { return undefined !== this._canceled && this._canceled(this); }
   protected get _isVolumeClassifier(): boolean { return BatchType.VolumeClassifier === this._type; }
 
+  /** Traverse the nodes specified by their Ids, recursing into their child nodes.
+   * @param nodes The Ids of the nodes to traverse.
+   * @param callback A function invoked for each node, returning true to continue traversal or false to terminate early
+   * @returns true if traversal completed, false if traversal terminated early due to `callback` returning false for any node.
+   * @throws Error if a node appears more than once during traversal
+   */
+  public traverseNodes(nodes: Iterable<GltfId>, callback: (node: GltfNode, nodeId: GltfId) => boolean): boolean {
+    return this._traverseNodes(nodes, callback, new Set<GltfId>());
+  }
+
+  protected _traverseNodes(nodes: Iterable<GltfId>, callback: (node: GltfNode, nodeId: GltfId) => boolean, traversed: Set<GltfId>): boolean {
+    for (const nodeId of nodes) {
+      if (traversed.has(nodeId))
+        throw new Error("Cycle detected while traversing glTF nodes");
+
+      traversed.add(nodeId);
+      const node = this._nodes[nodeId];
+      if (!node)
+        continue;
+
+      if (!callback(node, nodeId))
+        return false;
+
+      if (node.children && !this._traverseNodes(node.children, callback, traversed))
+        return false;
+    }
+
+    return true;
+  }
+
   protected readGltfAndCreateGraphics(isLeaf: boolean, featureTable: FeatureTable | undefined, contentRange: ElementAlignedBox3d | undefined, transformToRoot?: Transform, pseudoRtcBias?: Vector3d, instances?: InstancedGraphicParams): GltfReaderResult {
     if (this._isCanceled)
       return { readStatus: TileReadStatus.Canceled, isLeaf };
