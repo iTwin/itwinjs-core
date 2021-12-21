@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { BeDuration, UnexpectedErrors } from "@itwin/core-bentley";
+import { UnexpectedErrors } from "@itwin/core-bentley";
 import { AnalysisStyle } from "@itwin/core-common";
 import { ScreenViewport } from "../Viewport";
 import { DisplayStyle3dState } from "../DisplayStyleState";
@@ -133,7 +133,7 @@ describe("Viewport", () => {
       expect(viewport.backgroundMap!.settings.applyTerrain).to.equal(expected);
     }
 
-    beforeEach(async () => {
+    beforeEach(() => {
       expectBackgroundMap(false);
       expectTerrain(false);
 
@@ -142,7 +142,7 @@ describe("Viewport", () => {
       expectTerrain(false);
     });
 
-    afterEach(async () => {
+    afterEach(() => {
       viewport.view.displayStyle = new DisplayStyle3dState({} as any, viewport.iModel);
       expectBackgroundMap(false);
       expectTerrain(false);
