@@ -313,7 +313,7 @@ describe("B3dmReader", () => {
       return new MockRender.Graphic();
     };
 
-    const stream = new ByteStream(b3dmBytes.buffer);
+    const stream = ByteStream.fromUint8Array(b3dmBytes);
     const renderSystem = IModelApp.renderSystem;
     const range = Range3d.createXYZXYZ(0, 0, 0, 10, 10, 10);
     const reader = B3dmReader.create(stream, imodel, "0x123", true, range, renderSystem, false, true, range.center)!;

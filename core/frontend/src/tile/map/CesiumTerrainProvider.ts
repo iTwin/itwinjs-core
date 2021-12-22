@@ -214,7 +214,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     assert(data instanceof Uint8Array);
     assert(tile instanceof MapTile);
     const blob = data;
-    const streamBuffer = new ByteStream(blob.buffer);
+    const streamBuffer = ByteStream.fromUint8Array(blob);
     const center = nextPoint3d64FromByteStream(streamBuffer);
     const quadId = QuadId.createFromContentId(tile.contentId);
     const skirtHeight = this.getLevelMaximumGeometricError(quadId.level + 1) * 10.0;  // Add 1 to level to restore height calculation to before the quadId level was from root. (4326 unification)
