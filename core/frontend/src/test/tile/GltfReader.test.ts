@@ -241,7 +241,7 @@ describe.only("GltfReader", () => {
     expectSceneNodes(5, [0, 1, 2, 3, 4, 5]);
   });
 
-  it("throws if scene contains cycles", () => {
+  it("throws during traversal if scene contains cycles", () => {
     const json: Gltf = {
       ...minimalJson,
       meshes: [] as any,
@@ -261,7 +261,11 @@ describe.only("GltfReader", () => {
 
     function expectCycle(scene: GltfId | undefined) {
       json.scene = scene;
-      expect(() => createReader(makeGlb(json, minimalBin))).to.throw("Cycle detected while traversing glTF nodes");
+      const reader = createReader(makeGlb(json, minimalBin))!;
+      expect(reader).not.to.be.undefined;
+      expect(() => {
+        for (const _ of reader.traverseScene()) { }
+      }).to.throw("Cycle detected while traversing glTF nodes");
     }
 
     expectCycle(0);
