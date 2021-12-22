@@ -84,7 +84,7 @@ function expectBinaryData(reader: GltfGraphicsReader, expected: Uint8Array | und
     expect(Array.from(reader.binaryData!)).to.deep.equal(Array.from(expected));
 }
 
-describe.only("GltfReader", () => {
+describe("GltfReader", () => {
   let iModel: IModelConnection;
 
   before(async () => {
@@ -184,20 +184,6 @@ describe.only("GltfReader", () => {
     }]);
 
     expect(createReader(glb)).to.be.undefined;
-  });
-
-  it("rejects glb with misaligned chunks", () => {
-    expect(createReader(glbFromChunks([{
-      data: jsonToBytes(minimalJson, 7), type: GltfV2ChunkTypes.JSON,
-    }, {
-      data: minimalBin, type: GltfV2ChunkTypes.Binary,
-    }]))).to.be.undefined;
-
-    expect(createReader(glbFromChunks([{
-      data: jsonToBytes(minimalJson), type: GltfV2ChunkTypes.JSON,
-    }, {
-      data: new Uint8Array([1, 2, 3, 4, 5]), type: GltfV2ChunkTypes.Binary,
-    }]))).to.be.undefined;
   });
 
   it("identifies the scene nodes", () => {
