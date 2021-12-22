@@ -92,12 +92,12 @@ enum GltfBufferTarget {
   ElementArrayBuffer = 24963,
 }
 
-/** The type used to refer to an entry in a [[GltfDictionary]] in a glTF 1.0 asset. */
-type Gltf1Id = string;
-/** The type used to refer to an entry in a [[GltfDictionary]] in a glTF 2.0 asset. */
-type Gltf2Id = number;
-/** The type used to refer to an entry in a [[GltfDictionary]]. */
-type GltfId = Gltf1Id | Gltf2Id;
+/** The type used to refer to an entry in a [[GltfDictionary]] in a glTF 1.0 asset. @internal */
+export type Gltf1Id = string;
+/** The type used to refer to an entry in a [[GltfDictionary]] in a glTF 2.0 asset. @internal */
+export type Gltf2Id = number;
+/** The type used to refer to an entry in a [[GltfDictionary]]. @internal */
+export type GltfId = Gltf1Id | Gltf2Id;
 
 /** A collection of resources of some type defined at the top-level of a [[Gltf]] asset.
  * In glTF 1.0, these are defined as objects; each resource is referenced and accessed by its string key.
@@ -378,8 +378,9 @@ interface GltfAccessor extends GltfChildOfRootProperty {
  * For types that differ significantly between the two specs, Gltf1* and Gltf2* versions are defined (e.g., GltfMaterial is a union of Gltf1Material and Gltf2Material).
  * These interfaces also accommodate some deviations from both specs that are known to exist in the wild.
  * Most aspects of the specifications that are not implemented here are omitted (e.g., skinning, animations).
+ * @internal
  */
-interface Gltf extends GltfProperty {
+export interface Gltf extends GltfProperty {
   /** Metadata about the glTF asset.
    * @note This property is required in glTF 2.0, but optional in 1.0.
    */
@@ -1691,4 +1692,5 @@ export class GltfGraphicsReader extends GltfReader {
 
   public get sceneNodes(): GltfId[] { return this._sceneNodes; }
   public get textures(): GltfDictionary<GltfTexture & { renderTexture?: RenderTexture }> { return this._textures; }
+  public get binaryData(): Uint8Array { return this._binaryData; }
 }
