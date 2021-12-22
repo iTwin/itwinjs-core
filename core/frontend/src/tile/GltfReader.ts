@@ -561,10 +561,10 @@ export class GltfReaderProps {
 
       version = header.version;
       if (header.binaryChunk)
-        binaryData = new Uint8Array(source.buffer, header.binaryChunk.offset, header.binaryChunk.length);
+        binaryData = new Uint8Array(source.buffer, source.byteOffset + header.binaryChunk.offset, header.binaryChunk.length);
 
       try {
-        const jsonBytes = new Uint8Array(source.buffer, header.jsonChunk.offset, header.jsonChunk.length);
+        const jsonBytes = new Uint8Array(source.buffer, source.byteOffset + header.jsonChunk.offset, header.jsonChunk.length);
         const jsonStr = utf8ToString(jsonBytes);
         if (undefined === jsonStr)
           return undefined;
