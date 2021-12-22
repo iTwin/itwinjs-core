@@ -8,7 +8,7 @@ import { ByteStream } from "@itwin/core-bentley";
 import { GltfV2ChunkTypes, GltfVersions, TileFormat } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
-import { Gltf, GltfGraphicsReader, GltfId, GltfReaderProps } from "../../tile/GltfReader";
+import { Gltf, GltfGraphicsReader, GltfId, GltfNode, GltfReaderProps } from "../../tile/GltfReader";
 import { createBlankConnection } from "../createBlankConnection";
 
 const minimalBin = new Uint8Array([12, 34, 0xfe, 0xdc]);
@@ -197,7 +197,7 @@ describe("GltfReader", () => {
         { nodes: [0, 1, 2, 3, 4, 5] }, // 5
         // 6 non-existent
       ] as any,
-    }
+    };
 
     function expectSceneNodes(sceneId: GltfId | undefined, expectedSceneNodes: GltfId[]) {
       json.scene = sceneId;
@@ -206,6 +206,7 @@ describe("GltfReader", () => {
       expect(reader.sceneNodes).to.deep.equal(expectedSceneNodes);
     }
 
+    // If scene is not present we fall back to Object.keys, which are strings.
     const allNodes = ["0", "1", "2", "3", "4", "5"];
 
     // Scene not defined or not present. Fall back to all nodes. NOT SPEC COMPLIANT but was in original implementation and unknown if faulty tiles exist that require it.
@@ -217,6 +218,62 @@ describe("GltfReader", () => {
     expectSceneNodes(3, [2, 3]);
     expectSceneNodes(4, [3, 4, 5]);
     expectSceneNodes(5, [0, 1, 2, 3, 4, 5]);
+  });
+
+  it("traverses scene nodes", () => {
+    const json: Gltf = {
+      ...minimalJson,
+      meshes: [] as any,
+      nodes: [
+        { }, // 0
+        { children: [2] }, // 1
+        { children: [4, 5] }, // 2
+        { children: [0] }, // 3
+        { children: [9, 8, 7, 6] }, // 4
+        { }, // 5
+        { }, // 6
+      ] as any,
+      scenes: [
+        { }, // 0
+        { nodes: [] }, // 1
+        { nodes: [0] }, // 2
+        { nodes: [1] }, // 3
+        { nodes: [2] }, // 4
+        { nodes: [3] }, // 5
+        { nodes: [4] }, // 6
+        { nodes: [5] }, // 7
+        { nodes: [4, 0, 9] }, // 8
+        { nodes: [2, 3] }, // 9
+      ] as any,
+    };
+
+    function expectTraversal(sceneId: GltfId, expectedTraversal: GltfId[]) {
+      json.scene = sceneId;
+      const reader = createReader(makeGlb(json, minimalBin))!;
+      expect(reader).not.to.be.undefined;
+      expect(reader.sceneNodes).to.deep.equal(reader.scenes[sceneId]?.nodes);
+
+      let actualTraversal = [];
+      expect(Array.isArray(reader.nodes)).to.be.true;
+      const nodes = reader.nodes as unknown as GltfNode[];
+      for (const node of reader.traverseScene()) {
+        const nodeId = nodes.indexOf(node);
+        expect(nodeId).least(0);
+        actualTraversal.push(nodeId);
+      }
+
+      expect(actualTraversal).to.deep.equal(expectedTraversal);
+    }
+
+    expectTraversal(1, []);
+    expectTraversal(2, [0]);
+    expectTraversal(3, [1, 2, 4, 6, 5]);
+    expectTraversal(4, [2, 4, 6, 5]);
+    expectTraversal(5, [3, 0]);
+    expectTraversal(6, [4, 6]);
+    expectTraversal(7, [5]);
+    expectTraversal(8, [4, 6, 0]);
+    expectTraversal(9, [2, 4, 6, 5, 3, 0]);
   });
 
   it("throws during traversal if scene contains cycles", () => {

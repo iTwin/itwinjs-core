@@ -194,7 +194,7 @@ interface Gltf2Node extends GltfChildOfRootProperty, GltfNodeBaseProps {
  * Some nodes may be associated with other types of data like cameras, skins, lights, etc - these types of data are currently unsupported.
  * Rendering a node means rendering its meshes and the meshes of all of its descendants, with transforms applied.
  */
-type GltfNode = Gltf1Node | Gltf2Node;
+export type GltfNode = Gltf1Node | Gltf2Node;
 
 function getNodeMeshIds(node: GltfNode): GltfId[] {
   if (undefined !== node.meshes)
@@ -745,11 +745,11 @@ function * traverseNodes(ids: Iterable<GltfId>, nodes: GltfDictionary<GltfNode>,
     if (traversed.has(id))
       throw new Error("Cycle detected while traversing glTF nodes");
 
-    traversed.add(id);
     const node = nodes[id];
     if (!node)
       continue;
 
+    traversed.add(id);
     yield node;
     if (node.children)
       for (const child of traverseNodes(node.children, nodes, traversed))
@@ -1711,6 +1711,8 @@ export class GltfGraphicsReader extends GltfReader {
     return this.readGltfAndCreateGraphics(true, this._featureTable, undefined);
   }
 
+  public get nodes(): GltfDictionary<GltfNode> { return this._nodes; }
+  public get scenes(): GltfDictionary<GltfScene> { return this._glTF.scenes ?? emptyDict; }
   public get sceneNodes(): GltfId[] { return this._sceneNodes; }
   public get textures(): GltfDictionary<GltfTexture & { renderTexture?: RenderTexture }> { return this._textures; }
   public get binaryData(): Uint8Array | undefined { return this._binaryData; }
