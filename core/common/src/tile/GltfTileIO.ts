@@ -30,7 +30,7 @@ export interface GltfChunk {
   length: number;
 }
 
-type TypedGltfChunk = GltfChunk & { type: number };
+export type TypedGltfChunk = GltfChunk & { type: number };
 
 function consumeNextChunk(stream: ByteStream): TypedGltfChunk | undefined | false {
   if (stream.isAtTheEnd)
@@ -47,6 +47,7 @@ export class GlbHeader extends TileHeader {
   public readonly gltfLength: number = 0;
   public readonly jsonChunk: GltfChunk = { offset: 0, length: 0 };
   public readonly binaryChunk?: GltfChunk;
+  public readonly additionalChunks: TypedGltfChunk[] = [];
 
   public get isValid(): boolean {
     return TileFormat.Gltf === this.format;
@@ -91,10 +92,8 @@ export class GlbHeader extends TileHeader {
           return;
         }
 
-        let numChunks = 1;
         let chunk;
         while (chunk = consumeNextChunk(stream)) {
-          ++numChunks;
           switch (chunk.type) {
             case GltfV2ChunkTypes.JSON:
               // Only one JSON chunk permitted and it must be the first.
@@ -102,7 +101,7 @@ export class GlbHeader extends TileHeader {
               return;
             case GltfV2ChunkTypes.Binary:
               // At most one binary chunk permitted and it must be the second if present.
-              if (this.binaryChunk || numChunks !== 2) {
+              if (this.binaryChunk || this.additionalChunks.length) {
                 this.invalidate();
                 return;
               }
@@ -111,6 +110,7 @@ export class GlbHeader extends TileHeader {
               break;
             default:
               // Any other chunk type should be ignored - for use by extensions.
+              this.additionalChunks.push(chunk);
               break;
           }
         }
