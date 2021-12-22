@@ -201,7 +201,7 @@ describe.only("GltfReader", () => {
   it("identifies the scene nodes", () => {
     const json: Gltf = {
       ...minimalJson,
-      meshes: undefined,
+      meshes: [] as any,
       nodes: [
         { }, // 0
         { children: [2] }, // 1
@@ -228,7 +228,7 @@ describe.only("GltfReader", () => {
       expect(reader.sceneNodes).to.deep.equal(expectedSceneNodes);
     }
 
-    const allNodes = [0, 1, 2, 3, 4, 5];
+    const allNodes = ["0", "1", "2", "3", "4", "5"];
 
     // Scene not defined or not present. Fall back to all nodes. NOT SPEC COMPLIANT but was in original implementation and unknown if faulty tiles exist that require it.
     expectSceneNodes(undefined, allNodes);
@@ -238,24 +238,24 @@ describe.only("GltfReader", () => {
     expectSceneNodes(2, [0]);
     expectSceneNodes(3, [2, 3]);
     expectSceneNodes(4, [3, 4, 5]);
-    expectSceneNodes(5, allNodes);
+    expectSceneNodes(5, [0, 1, 2, 3, 4, 5]);
   });
 
   it("throws if scene contains cycles", () => {
     const json: Gltf = {
       ...minimalJson,
-      meshes: undefined,
+      meshes: [] as any,
       nodes: {
-        0: { children: [0] },
-        1: { children: [1] },
-        2: { children: [2] },
+        0: { children: ["0"] },
+        1: { children: ["1"] },
+        2: { children: ["2"] },
         3: { },
       },
       scenes: {
-        0: { nodes: [0] },
-        1: { nodes: [1], },
-        2: { nodes: [2], },
-        3: { nodes: [3, 3] },
+        0: { nodes: ["0"] },
+        1: { nodes: ["1"], },
+        2: { nodes: ["2"], },
+        3: { nodes: ["3", "3"] },
       },
     };
 
