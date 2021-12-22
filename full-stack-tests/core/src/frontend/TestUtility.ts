@@ -31,6 +31,7 @@ export class TestUtility {
     // A version of the above that uses BisCore 1.0.13 and includes a second display style with schedule script stored
     // separately on a RenderTimeline element.
     synchroNew: "SYNCHRO.UTK.1.0.13",
+    realityDataAccess: "Tuxford_qa",
   };
 
   public static testSnapshotIModels = {

@@ -287,8 +287,10 @@ class RealityDataSourceImpl implements RealityDataSource {
       this._tilesetUrl = this.key.id;
     } else if (this.key.provider === RealityDataProvider.CesiumIonAsset ) {
       this._tilesetUrl = this.key.id;
-      if (this.key.id === CesiumIonAssetProvider.osmBuildingId)
+      if (this.key.id === CesiumIonAssetProvider.osmBuildingId) {
         this._tilesetUrl = getCesiumOSMBuildingsUrl();
+        this._isUrlResolved=true;
+      }
     }
     return this._tilesetUrl;
   }

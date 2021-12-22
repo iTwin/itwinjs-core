@@ -38,6 +38,7 @@
     "@itwin/editor-frontend": "workspace:*",
     "@itwin/express-server": "workspace:*",
     "@itwin/hypermodeling-frontend": "workspace:*",
+    "@itwin/reality-data-client": "^0.4.3",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
     "fs-extra": "^8.1.0",
