@@ -9,7 +9,7 @@
 import { assert, ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import { Angle, Matrix3d, Point2d, Point3d, Point4d, Range2d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import {
-  BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureTable, FillFlags, GltfHeader, ImageSource, ImageSourceFormat, LinePixels, MeshEdge,
+  BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureTable, FillFlags, GlbHeader, ImageSource, ImageSourceFormat, LinePixels, MeshEdge,
   MeshEdges, MeshPolyline, MeshPolylineList, OctEncodedNormal, PackedFeatureTable, QParams2d, QParams3d, QPoint2dList,
   QPoint3dList, Quantization, RenderTexture, TextureMapping, TileReadStatus,
 } from "@itwin/core-common";
@@ -543,52 +543,68 @@ export interface GltfReaderResult extends TileContent {
  */
 export class GltfReaderProps {
   private constructor(
-    public readonly binaryData: Uint8Array,
+    public readonly binaryData: Uint8Array, // ###TODO make this optional
     public readonly glTF: Gltf,
     public readonly yAxisUp: boolean) { }
 
   /** Attempt to construct a new GltfReaderProps from the binary data beginning at the supplied stream's current read position. */
-  public static create(buffer: ByteStream, yAxisUp: boolean = false): GltfReaderProps | undefined {
-    const header = new GltfHeader(buffer);
-    if (!header.isValid)
-      return undefined;
+  public static create(source: Uint8Array | Gltf, yAxisUp: boolean = false): GltfReaderProps | undefined {
+    let version: number;
+    let json: Gltf;
+    let binaryData: Uint8Array | undefined;
 
-    const binaryData = new Uint8Array(buffer.arrayBuffer, header.binaryPosition);
-    buffer.curPos = header.scenePosition;
-    const jsonStrData = buffer.nextBytes(header.sceneStrLength);
-    const jsonStr = utf8ToString(jsonStrData);
-    if (undefined === jsonStr)
-      return undefined;
+    if (source instanceof Uint8Array) {
+      const buffer = new ByteStream(source.buffer);
+      const header = new GlbHeader(buffer);
+      if (!header.isValid)
+        return undefined;
 
-    try {
-      const json: Gltf = JSON.parse(jsonStr);
-      const asset = JsonUtils.asObject(json.asset);
-      if (header.version === 2 && !asset)
-        return undefined; // asset is required in glTF 2.0
+      version = header.version;
+      if (header.binaryChunk)
+        binaryData = new Uint8Array(source.buffer, header.binaryChunk.offset, header.binaryChunk.length);
 
-      const glTF: Gltf = {
-        asset,
-        scene: JsonUtils.asString(json.scene),
-        extensions: JsonUtils.asObject(json.extensions),
-        extensionsUsed: JsonUtils.asArray(json.extensionsUsed),
-        extensionsRequired: JsonUtils.asArray(json.extensionsRequired),
-        accessors: JsonUtils.asObject(json.accessors),
-        buffers: JsonUtils.asObject(json.buffers),
-        bufferViews: JsonUtils.asObject(json.bufferViews),
-        images: JsonUtils.asObject(json.images),
-        materials: JsonUtils.asObject(json.materials),
-        meshes: JsonUtils.asObject(json.meshes),
-        nodes: JsonUtils.asObject(json.nodes),
-        samplers: JsonUtils.asObject(json.samplers),
-        scenes: JsonUtils.asObject(json.scenes),
-        textures: JsonUtils.asObject(json.textures),
-        techniques: JsonUtils.asObject(json.techniques),
-      };
+      try {
+        const jsonBytes = new Uint8Array(source.buffer, header.jsonChunk.offset, header.jsonChunk.length);
+        const jsonStr = utf8ToString(jsonBytes);
+        if (undefined === jsonStr)
+          return undefined;
 
-      return glTF.meshes ? new GltfReaderProps(binaryData, glTF, yAxisUp) : undefined;
-    } catch (e) {
-      return undefined;
+        json = JSON.parse(jsonStr);
+      } catch (_) {
+        return undefined;
+      }
+    } else {
+      version = 2; // ###TODO check source.asset?.version
+      json = source;
     }
+
+    // asset is required in glTF 2, optional in glTF 1
+    const asset = JsonUtils.asObject(json.asset);
+    if (version === 2 && !asset)
+      return undefined;
+
+    const glTF: Gltf = {
+      asset,
+      scene: JsonUtils.asString(json.scene),
+      extensions: JsonUtils.asObject(json.extensions),
+      extensionsUsed: JsonUtils.asArray(json.extensionsUsed),
+      extensionsRequired: JsonUtils.asArray(json.extensionsRequired),
+      accessors: JsonUtils.asObject(json.accessors),
+      buffers: JsonUtils.asObject(json.buffers),
+      bufferViews: JsonUtils.asObject(json.bufferViews),
+      images: JsonUtils.asObject(json.images),
+      materials: JsonUtils.asObject(json.materials),
+      meshes: JsonUtils.asObject(json.meshes),
+      nodes: JsonUtils.asObject(json.nodes),
+      samplers: JsonUtils.asObject(json.samplers),
+      scenes: JsonUtils.asObject(json.scenes),
+      textures: JsonUtils.asObject(json.textures),
+      techniques: JsonUtils.asObject(json.techniques),
+    };
+
+    // ###TODO binaryData can be undefined.
+    binaryData = binaryData ?? new Uint8Array();
+    return glTF.meshes ? new GltfReaderProps(binaryData, glTF, yAxisUp) : undefined;
   }
 }
 
@@ -1636,7 +1652,7 @@ export abstract class GltfReader {
  */
 export interface ReadGltfGraphicsArgs {
   /** The binary data describing the glTF asset. */
-  gltf: Uint8Array;
+  gltf: Uint8Array | Gltf;
   /** The iModel with which the graphics will be associated - typically obtained from the [[Viewport]] into which they will be drawn. */
   iModel: IModelConnection;
   /** Options for making the graphic [pickable]($docs/learning/frontend/ViewDecorations#pickable-view-graphic-decorations).
@@ -1655,8 +1671,7 @@ export interface ReadGltfGraphicsArgs {
  * @public
  */
 export async function readGltfGraphics(args: ReadGltfGraphicsArgs): Promise<RenderGraphic | undefined> {
-  const stream = new ByteStream(args.gltf.buffer);
-  const props = GltfReaderProps.create(stream, true); // glTF supports exactly one coordinate system with y axis up.
+  const props = GltfReaderProps.create(args.gltf, true); // glTF supports exactly one coordinate system with y axis up.
   const reader = props ? new GltfGraphicsReader(props, args) : undefined;
   if (!reader)
     return undefined;

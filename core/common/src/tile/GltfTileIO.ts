@@ -36,7 +36,7 @@ function consumeNextChunk(stream: ByteStream): TypedGltfChunk | undefined | fals
   if (stream.isAtTheEnd)
     return undefined;
 
-  const offset = stream.curPos;
+  const offset = stream.curPos + 8;
   const length = stream.nextUint32;
   const type = stream.nextUint32;
   stream.advance(length);

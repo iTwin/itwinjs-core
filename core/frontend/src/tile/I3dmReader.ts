@@ -57,7 +57,7 @@ export class I3dmReader extends GltfReader {
     if (!header.isValid)
       return undefined;
 
-    const props = GltfReaderProps.create(stream, yAxisUp);
+    const props = GltfReaderProps.create(stream.nextBytes(header.length - stream.curPos), yAxisUp);
     if (undefined === props)
       return undefined;
 

@@ -95,9 +95,8 @@ describe.only("GltfReader", () => {
     await IModelApp.shutdown();
   });
 
-  function createReader(gltf: Uint8Array): GltfGraphicsReader | undefined {
-    const stream = new ByteStream(gltf.buffer);
-    const props = GltfReaderProps.create(stream, true);
+  function createReader(gltf: Uint8Array | Gltf): GltfGraphicsReader | undefined {
+    const props = GltfReaderProps.create(gltf, true);
     return props ? new GltfGraphicsReader(props, { gltf, iModel }) : undefined;
   }
 
