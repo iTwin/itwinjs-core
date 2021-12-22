@@ -554,7 +554,7 @@ export class GltfReaderProps {
     let binaryData: Uint8Array | undefined;
 
     if (source instanceof Uint8Array) {
-      const buffer = new ByteStream(source.buffer);
+      const buffer = ByteStream.fromUint8Array(source);
       const header = new GlbHeader(buffer);
       if (!header.isValid)
         return undefined;
