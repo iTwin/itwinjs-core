@@ -102,7 +102,7 @@ export class GltfHeader extends TileHeader {
  * @public
  */
 export async function readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean, options?: BatchOptions | false): Promise<RenderGraphic | undefined> {
-  const stream = new ByteStream(bytes.buffer);
+  const stream = ByteStream.fromUint8Array(bytes);
   const reader = ImdlReader.create({
     stream, iModel, modelId, is3d, options,
     system: IModelApp.renderSystem,
