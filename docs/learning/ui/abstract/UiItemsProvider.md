@@ -17,7 +17,7 @@ export interface UiItemsProvider {
 }
 ```
 
-### UiItemsProvider Example
+### Basic UiItemsProvider Example
 
 The code excerpt below is an example taken from `test-apps\ui-test-app` that shows a class that implements the UiItemsProvider interface.
 
@@ -92,6 +92,10 @@ class TestUiProvider implements UiItemsProvider {
   }
 }
 ```
+
+### BaseUiItemsProvider Example
+
+The [StandardContentToolsProvider]($appui-react) class serves as a good example of an items provider that allows an application to define a callback function to determine if the items are to be added to the active stage. See this [example](https://github.com/iTwin/itwinjs-core/blob/master/test-apps/ui-items-providers-test/src/ui/frontstages/NetworkTracing.tsx) to see how the StandardContentToolsProvider can provide one set of tools to a specific stage. While the same [provider](https://github.com/iTwin/itwinjs-core/blob/master/test-apps/ui-test-app/src/frontend/appui/frontstages/FrontstageUi2.tsx) can be registered with a different Id and a different isSupportedStage callback to provide a different set of tools to different stages.
 
 ## UiItemsManager Class
 

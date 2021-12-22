@@ -226,7 +226,14 @@ export class ToolWithSettings extends PrimitiveTool {
   public get coordinateProperty() {
     if (!this._coordinateProperty)
       this._coordinateProperty = new DialogProperty<string>(
-        PropertyDescriptionHelper.buildTextEditorDescription("coordinate", IModelApp.localization.getLocalizedString("SampleApp:tools.ToolWithSettings.Prompts.Coordinate")),
+        PropertyDescriptionHelper.buildTextEditorDescription("coordinate", IModelApp.localization.getLocalizedString("SampleApp:tools.ToolWithSettings.Prompts.Coordinate"),
+          [
+            {
+              type: PropertyEditorParamTypes.InputEditorSize,
+              size: 16,   // num characters
+            } as InputEditorSizeParams,
+          ]
+        ),
         "0.0, 0.0, 0.0", undefined);
     return this._coordinateProperty;
   }
