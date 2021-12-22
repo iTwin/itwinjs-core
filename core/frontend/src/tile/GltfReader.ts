@@ -543,7 +543,7 @@ export interface GltfReaderResult extends TileContent {
  */
 export class GltfReaderProps {
   private constructor(
-    public readonly binaryData: Uint8Array, // ###TODO make this optional
+    public readonly binaryData: Uint8Array | undefined,
     public readonly glTF: Gltf,
     public readonly yAxisUp: boolean) { }
 
@@ -602,8 +602,6 @@ export class GltfReaderProps {
       techniques: JsonUtils.asObject(json.techniques),
     };
 
-    // ###TODO binaryData can be undefined.
-    binaryData = binaryData ?? new Uint8Array();
     return glTF.meshes ? new GltfReaderProps(binaryData, glTF, yAxisUp) : undefined;
   }
 }
@@ -763,7 +761,7 @@ function * traverseNodes(ids: Iterable<GltfId>, nodes: GltfDictionary<GltfNode>,
  * @internal
  */
 export abstract class GltfReader {
-  protected readonly _binaryData: Uint8Array;
+  protected readonly _binaryData?: Uint8Array;
   protected readonly _glTF: Gltf;
   protected readonly _iModel: IModelConnection;
   protected readonly _is3d: boolean;
@@ -996,6 +994,10 @@ export abstract class GltfReader {
 
   // ###TODO what is the actual type of `json`?
   public getBufferView(json: any, accessorName: string): GltfBufferView | undefined {
+    // ###TODO remove this check - resolve buffer data ahead of time.
+    if (!this._binaryData)
+      return undefined;
+
     try {
       const accessorValue = JsonUtils.asString(json[accessorName]);
       const accessor = 0 < accessorValue.length ? JsonUtils.asObject(this._accessors[accessorValue]) : undefined;
@@ -1034,8 +1036,8 @@ export abstract class GltfReader {
       const byteStride = bufferView.byteStride ? bufferView.byteStride : componentCount * dataSize;
       const offset = ((bufferView && bufferView.byteOffset) ? bufferView.byteOffset : 0) + (accessor.byteOffset ? accessor.byteOffset : 0);
       const length = byteStride * accessor.count;
+
       // If the data is misaligned (Scalable mesh tile publisher) use slice to copy -- else use subarray.
-      // assert(0 === offset % dataSize);
       const bytes = (0 === (this._binaryData.byteOffset + offset) % dataSize) ? this._binaryData.subarray(offset, offset + length) : this._binaryData.slice(offset, offset + length);
       return new GltfBufferView(bytes, accessor.count as number, type, accessor, byteStride / dataSize);
     } catch (e) {
@@ -1575,6 +1577,10 @@ export abstract class GltfReader {
   }
 
   protected async loadTextureImage(imageJson: any, samplerJson: any, isTransparent: boolean): Promise<RenderTexture | undefined> {
+    // ###TODO remove this check - resolve buffer data ahead of time
+    if (!this._binaryData)
+      return undefined;
+
     try {
       const binaryImageJson = (imageJson.extensions && imageJson.extensions.KHR_binary_glTF) ? JsonUtils.asObject(imageJson.extensions.KHR_binary_glTF) : imageJson;
       const bufferView = this._bufferViews[binaryImageJson.bufferView];
@@ -1707,5 +1713,5 @@ export class GltfGraphicsReader extends GltfReader {
 
   public get sceneNodes(): GltfId[] { return this._sceneNodes; }
   public get textures(): GltfDictionary<GltfTexture & { renderTexture?: RenderTexture }> { return this._textures; }
-  public get binaryData(): Uint8Array { return this._binaryData; }
+  public get binaryData(): Uint8Array | undefined { return this._binaryData; }
 }

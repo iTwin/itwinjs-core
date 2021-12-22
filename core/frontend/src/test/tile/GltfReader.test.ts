@@ -78,8 +78,10 @@ function makeGlb(json: Object | undefined, binary?: Uint8Array, header?: Header)
   return glbFromChunks(chunks, header);
 }
 
-function expectBinaryData(reader: GltfGraphicsReader, expected: Uint8Array): void {
-  expect(Array.from(reader.binaryData)).to.deep.equal(Array.from(expected));
+function expectBinaryData(reader: GltfGraphicsReader, expected: Uint8Array | undefined): void {
+  expect(undefined === reader.binaryData).to.equal(undefined === expected);
+  if (expected)
+    expect(Array.from(reader.binaryData!)).to.deep.equal(Array.from(expected));
 }
 
 describe.only("GltfReader", () => {
@@ -275,5 +277,9 @@ describe.only("GltfReader", () => {
   });
 
   it("loads only (and all of) the textures referenced by the scene exactly once", async () => {
+  });
+
+  it("relaxes spec to tolerate misaligned buffer data", () => {
+    // ScalableMesh tile publisher apparently sometimes fails to align their buffers to 32-bit boundaries; we accommodate them...
   });
 });
