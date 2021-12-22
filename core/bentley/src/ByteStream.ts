@@ -39,6 +39,7 @@ export class ByteStream {
   public get length(): number { return this._view.byteLength; }
   /** Returns true if the current read position has been advanced past the end of the stream */
   public get isPastTheEnd(): boolean { return this.curPos > this.length; }
+  public get isAtTheEnd(): boolean { return this.curPos === this.length; }
 
   /** The current read position as an index into the stream of bytes. */
   public get curPos(): number { return this._curPos; }
