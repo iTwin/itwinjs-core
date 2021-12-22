@@ -17,7 +17,7 @@ import {
   ToolAdmin,
 } from "@itwin/core-frontend";
 import { AndroidApp, IOSApp } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
-import { RealityDataAccessClient } from "@bentley/reality-data-client";
+import { RealityDataAccessClient, RealityDataClientOptions } from "@itwin/reality-data-client";
 import { DtaConfiguration } from "../common/DtaConfiguration";
 import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
@@ -36,6 +36,7 @@ import { MarkupSelectTestTool } from "./MarkupSelectTestTool";
 import { Notifications } from "./Notifications";
 import { OutputShadersTool } from "./OutputShadersTool";
 import { PathDecorationTestTool } from "./PathDecorationTest";
+import { GltfDecorationTool } from "./GltfDecoration";
 import { ToggleShadowMapTilesTool } from "./ShadowMapDecoration";
 import { signIn, signOut } from "./signIn";
 import {
@@ -210,7 +211,12 @@ export class DisplayTestApp {
   public static async startup(configuration: DtaConfiguration, renderSys: RenderSystem.Options, tileAdmin: TileAdmin.Props): Promise<void> {
     let socketUrl = new URL(configuration.customOrchestratorUri || "http://localhost:3001");
     socketUrl = LocalhostIpcApp.buildUrlForSocket(socketUrl);
-
+    const realityDataClientOptions: RealityDataClientOptions = {
+      /** API Version. v1 by default */
+      // version?: ApiVersion;
+      /** API Url. Used to select environment. Defaults to "https://api.bentley.com/realitydata" */
+      baseUrl: `https://${process.env.IMJS_URL_PREFIX}api.bentley.com/realitydata`,
+    };
     const opts: ElectronAppOpts | LocalHostIpcAppOpts = {
       iModelApp: {
         accuSnap: new DisplayTestAppAccuSnap(),
@@ -218,7 +224,7 @@ export class DisplayTestApp {
         tileAdmin,
         toolAdmin: new DisplayTestAppToolAdmin(),
         uiAdmin: new UiManager(),
-        realityDataAccess: new RealityDataAccessClient(),
+        realityDataAccess: new RealityDataAccessClient(realityDataClientOptions),
         renderSys,
         rpcInterfaces: [
           DtaRpcInterface,
@@ -280,6 +286,7 @@ export class DisplayTestApp {
       FocusWindowTool,
       FrameStatsTool,
       GenerateTileContentTool,
+      GltfDecorationTool,
       IncidentMarkerDemoTool,
       PathDecorationTestTool,
       MacroTool,

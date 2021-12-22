@@ -3769,98 +3769,6 @@ export enum GlobeMode {
 }
 
 // @internal
-export class GltfBufferData {
-    constructor(buffer: GltfDataBuffer, count: number);
-    // (undocumented)
-    readonly buffer: GltfDataBuffer;
-    // (undocumented)
-    readonly count: number;
-    static create(bytes: Uint8Array, actualType: GltfDataType, expectedType: GltfDataType, count: number): GltfBufferData | undefined;
-    }
-
-// @internal
-export class GltfBufferView {
-    constructor(data: Uint8Array, count: number, type: GltfDataType, accessor: any, stride: number);
-    // (undocumented)
-    readonly accessor: any;
-    // (undocumented)
-    get byteLength(): number;
-    // (undocumented)
-    readonly count: number;
-    // (undocumented)
-    readonly data: Uint8Array;
-    // (undocumented)
-    readonly stride: number;
-    // (undocumented)
-    toBufferData(desiredType: GltfDataType): GltfBufferData | undefined;
-    // (undocumented)
-    readonly type: GltfDataType;
-}
-
-// @internal (undocumented)
-export enum GltfConstants {
-    // (undocumented)
-    ArrayBuffer = 34962,
-    // (undocumented)
-    ClampToEdge = 33071,
-    // (undocumented)
-    CullFace = 2884,
-    // (undocumented)
-    DepthTest = 2929,
-    // (undocumented)
-    ElementArrayBuffer = 34963,
-    // (undocumented)
-    FragmentShader = 35632,
-    // (undocumented)
-    Linear = 9729,
-    // (undocumented)
-    LinearMipmapLinear = 9987,
-    // (undocumented)
-    Nearest = 9728,
-    // (undocumented)
-    VertexShader = 35633
-}
-
-// @internal (undocumented)
-export type GltfDataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array;
-
-// @internal (undocumented)
-export enum GltfDataType {
-    // (undocumented)
-    Float = 5126,
-    // (undocumented)
-    FloatMat3 = 35675,
-    // (undocumented)
-    FloatMat4 = 35676,
-    // (undocumented)
-    FloatVec2 = 35664,
-    // (undocumented)
-    FloatVec3 = 35665,
-    // (undocumented)
-    FloatVec4 = 35666,
-    // (undocumented)
-    IntVec2 = 35667,
-    // (undocumented)
-    IntVec3 = 35668,
-    // (undocumented)
-    Rgb = 6407,
-    // (undocumented)
-    Rgba = 6408,
-    // (undocumented)
-    Sampler2d = 35678,
-    // (undocumented)
-    SignedByte = 5120,
-    // (undocumented)
-    SignedShort = 5122,
-    // (undocumented)
-    UInt32 = 5125,
-    // (undocumented)
-    UnsignedByte = 5121,
-    // (undocumented)
-    UnsignedShort = 5123
-}
-
-// @internal
 export class GltfHeader extends TileHeader {
     constructor(stream: ByteStream);
     // (undocumented)
@@ -3873,18 +3781,6 @@ export class GltfHeader extends TileHeader {
     readonly scenePosition: number;
     // (undocumented)
     readonly sceneStrLength: number;
-}
-
-// @internal (undocumented)
-export enum GltfMeshMode {
-    // (undocumented)
-    Lines = 1,
-    // (undocumented)
-    LineStrip = 3,
-    // (undocumented)
-    Points = 0,
-    // (undocumented)
-    Triangles = 4
 }
 
 // @internal (undocumented)

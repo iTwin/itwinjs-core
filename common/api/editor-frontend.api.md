@@ -1139,6 +1139,8 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
     // (undocumented)
     protected get shouldEnableSnap(): boolean;
     // (undocumented)
+    protected _subEntityGraphicPending?: true;
+    // (undocumented)
     protected readonly _summaryIds: Map<string, BRepEntityType[]>;
     // (undocumented)
     protected updateCurrentSubEntity(ev: BeButtonEvent): Promise<boolean>;
