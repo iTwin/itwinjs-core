@@ -126,16 +126,6 @@ describe("GltfReader", () => {
 
     // Unrecognized format
     test(2, 0xbaadf00d);
-
-    // Invalid length
-    test(2, TileFormat.Gltf, -1);
-
-    // Length smaller than header
-    test(2, TileFormat.Gltf, 11);
-
-    // Inaccurate length
-    test(2, TileFormat.Gltf, 75);
-    test(2, TileFormat.Gltf, 77);
   });
 
   it("accepts glb with no binary chunk", () => {
