@@ -53,10 +53,6 @@ export class GltfHeader extends TileHeader {
   public constructor(stream: ByteStream) {
     super(stream);
     this.gltfLength = stream.nextUint32;
-    if (this.gltfLength !== stream.length) {
-      this.invalidate();
-      return;
-    }
 
     this.sceneStrLength = stream.nextUint32;
     const value5 = stream.nextUint32;

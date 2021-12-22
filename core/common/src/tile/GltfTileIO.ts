@@ -56,10 +56,6 @@ export class GlbHeader extends TileHeader {
   public constructor(stream: ByteStream) {
     super(stream);
     this.gltfLength = stream.nextUint32;
-    if (this.gltfLength !== stream.length) {
-      this.invalidate();
-      return;
-    }
 
     const jsonLength = stream.nextUint32;
     const word5 = stream.nextUint32;
