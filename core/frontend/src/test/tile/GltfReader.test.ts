@@ -202,6 +202,7 @@ describe.only("GltfReader", () => {
   it("identifies the scene nodes", () => {
     const json: Gltf = {
       ...minimalJson,
+      meshes: undefined,
       nodes: [
         { }, // 0
         { children: [2] }, // 1
@@ -209,7 +210,7 @@ describe.only("GltfReader", () => {
         { }, // 3
         { }, // 4
         { }, // 5
-      ],
+      ] as any,
       scenes: [
         { }, // 0
         { nodes: [] }, // 1
@@ -218,7 +219,7 @@ describe.only("GltfReader", () => {
         { nodes: [3, 4, 5] }, // 4,
         { nodes: [0, 1, 2, 3, 4, 5] }, // 5
         // 6 non-existent
-      ],
+      ] as any,
     }
 
     function expectSceneNodes(sceneId: GltfId | undefined, expectedSceneNodes: GltfId[]) {
@@ -244,18 +245,19 @@ describe.only("GltfReader", () => {
   it("throws if scene contains cycles", () => {
     const json: Gltf = {
       ...minimalJson,
-      nodes: [
-        { children: [0] },
-        { children: [1] },
-        { children: [2] },
-        { },
-      ],
-      scenes: [
-        { nodes: [0] },
-        { nodes: [1], },
-        { nodes: [2], },
-        { nodes: [3, 3] },
-      ],
+      meshes: undefined,
+      nodes: {
+        0: { children: [0] },
+        1: { children: [1] },
+        2: { children: [2] },
+        3: { },
+      },
+      scenes: {
+        0: { nodes: [0] },
+        1: { nodes: [1], },
+        2: { nodes: [2], },
+        3: { nodes: [3, 3] },
+      },
     };
 
     function expectCycle(scene: GltfId | undefined) {
