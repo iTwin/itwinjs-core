@@ -196,7 +196,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
     this._lastValidValue = {
       valueFormat: PropertyValueFormat.Primitive,
       value: (record.value as PrimitiveValue).value,
-      displayValue: initialDisplayValue
+      displayValue: initialDisplayValue,
     };
     let size: number | undefined;
     let maxLength: number | undefined;
