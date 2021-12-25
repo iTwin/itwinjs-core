@@ -27,8 +27,6 @@ import { RenderSystem } from "../render/RenderSystem";
 import { TextureTransparency } from "../render/RenderTexture";
 import { TileContent } from "./internal";
 
-// eslint-disable-next-line prefer-const
-let forceLUT = false;
 /* eslint-disable no-restricted-syntax */
 
 /** Enumerates the types of [[GltfMeshPrimitive]] topologies. */
@@ -544,7 +542,6 @@ export interface GltfReaderResult extends TileContent {
  */
 export class GltfReaderProps {
   private constructor(
-    public readonly buffer: ByteStream,
     public readonly binaryData: Uint8Array,
     public readonly glTF: Gltf,
     public readonly yAxisUp: boolean) { }
@@ -587,7 +584,7 @@ export class GltfReaderProps {
         techniques: JsonUtils.asObject(json.techniques),
       };
 
-      return glTF.meshes ? new GltfReaderProps(buffer, binaryData, glTF, yAxisUp) : undefined;
+      return glTF.meshes ? new GltfReaderProps(binaryData, glTF, yAxisUp) : undefined;
     } catch (e) {
       return undefined;
     }
@@ -700,11 +697,38 @@ class TransformStack {
   }
 }
 
+/** Arguments to [[GltfReader]] constructor.
+ * @internal
+ */
+export interface GltfReaderArgs {
+  /** Properties of the glTF source. */
+  props: GltfReaderProps;
+  /** The iModel with which the graphics are to be associated. */
+  iModel: IModelConnection;
+  /** If true, create 2d graphics. */
+  is2d?: boolean;
+  /** The render system that will produce the graphics. Defaults to [[IModelApp.renderSystem]]. */
+  system?: RenderSystem;
+  /** The type of batch to create. Defaults to [BatchType.Primary]($common).
+   * @see [[RenderSystem.createBatch]].
+   */
+  type?: BatchType;
+  /** An optional function that, if supplied, is invoked periodically to determine if the process of producing graphics from the glTF should terminate early. */
+  shouldAbort?: ShouldAbortReadGltf;
+  /** If true, each vertex in the graphics should belong to exactly one triangle. This is less efficient than sharing vertices between adjoining triangles, but
+   * sometimes required - for example, for [ViewFlags.wiremesh]($common).
+   */
+  deduplicateVertices?: boolean;
+  /** If true, the graphics produced will always use a [[VertexTable]]; otherwise, where possible a [[RealityMeshPrimitive]] will be used instead.
+   * Reality meshes are simpler but do not support some features like lighting.
+   */
+  vertexTableRequired?: boolean;
+}
+
 /** Deserializes [glTF](https://www.khronos.org/gltf/).
  * @internal
  */
 export abstract class GltfReader {
-  protected readonly _buffer: ByteStream;
   protected readonly _binaryData: Uint8Array;
   protected readonly _glTF: Gltf;
   protected readonly _iModel: IModelConnection;
@@ -714,6 +738,7 @@ export abstract class GltfReader {
   protected readonly _yAxisUp: boolean;
   protected readonly _type: BatchType;
   protected readonly _deduplicateVertices: boolean;
+  protected readonly _vertexTableRequired: boolean;
   private readonly _canceled?: ShouldAbortReadGltf;
   protected readonly _sceneNodes: GltfId[];
   protected _computedContentRange?: ElementAlignedBox3d;
@@ -814,7 +839,7 @@ export abstract class GltfReader {
     if (!gltfMesh.points || !gltfMesh.pointRange)
       return;
 
-    const realityMeshPrimitive = (forceLUT || instances) ? undefined : RealityMeshPrimitive.createFromGltfMesh(gltfMesh);
+    const realityMeshPrimitive = (this._vertexTableRequired || instances) ? undefined : RealityMeshPrimitive.createFromGltfMesh(gltfMesh);
     if (realityMeshPrimitive) {
       const realityMesh = this._system.createRealityMesh(realityMeshPrimitive);
       if (realityMesh)
@@ -972,23 +997,23 @@ export abstract class GltfReader {
   public readBufferData8(json: any, accessorName: string): GltfBufferData | undefined { return this.readBufferData(json, accessorName, GltfDataType.UnsignedByte); }
   public readBufferDataFloat(json: any, accessorName: string): GltfBufferData | undefined { return this.readBufferData(json, accessorName, GltfDataType.Float); }
 
-  protected constructor(props: GltfReaderProps, iModel: IModelConnection, is3d: boolean, system: RenderSystem, type: BatchType = BatchType.Primary, isCanceled?: ShouldAbortReadGltf, deduplicateVertices=false) {
-    this._buffer = props.buffer;
-    this._binaryData = props.binaryData;
-    this._glTF = props.glTF;
-    this._yAxisUp = props.yAxisUp;
+  protected constructor(args: GltfReaderArgs) {
+    this._binaryData = args.props.binaryData;
+    this._glTF = args.props.glTF;
+    this._yAxisUp = args.props.yAxisUp;
 
-    const rtcCenter = props.glTF.extensions?.CESIUM_RTC?.center;
+    const rtcCenter = args.props.glTF.extensions?.CESIUM_RTC?.center;
     if (rtcCenter && 3 === rtcCenter.length)
       if (0 !== rtcCenter[0] || 0 !== rtcCenter[1] || 0 !== rtcCenter[2])
         this._returnToCenter = Point3d.fromJSON(rtcCenter);
 
-    this._iModel = iModel;
-    this._is3d = is3d;
-    this._system = system;
-    this._type = type;
-    this._canceled = isCanceled;
-    this._deduplicateVertices = deduplicateVertices;
+    this._iModel = args.iModel;
+    this._is3d = true !== args.is2d;
+    this._system = args.system ?? IModelApp.renderSystem;
+    this._type = args.type ?? BatchType.Primary;
+    this._canceled = args.shouldAbort;
+    this._deduplicateVertices = args.deduplicateVertices ?? false;
+    this._vertexTableRequired = args.vertexTableRequired ?? false;
 
     // The original implementation of GltfReader would process and produce graphics for every node in glTF.nodes.
     // What it's *supposed* to do is process the nodes in glTF.scenes[glTF.scene].nodes
@@ -1489,7 +1514,7 @@ export abstract class GltfReader {
     try {
       const binaryImageJson = (imageJson.extensions && imageJson.extensions.KHR_binary_glTF) ? JsonUtils.asObject(imageJson.extensions.KHR_binary_glTF) : imageJson;
       const bufferView = this._bufferViews[binaryImageJson.bufferView];
-      if (!bufferView?.byteOffset || !bufferView?.byteLength)
+      if (!bufferView || undefined === bufferView.byteLength || bufferView.byteLength <= 0)
         return undefined;
 
       const mimeType = JsonUtils.asString(binaryImageJson.mimeType);
@@ -1502,7 +1527,7 @@ export abstract class GltfReader {
         (undefined !== samplerJson.wrapS || undefined !== samplerJson.wrapT))
         textureType = RenderTexture.Type.TileSection;
 
-      const offset = bufferView.byteOffset;
+      const offset = bufferView.byteOffset ?? 0;
 
       /* -----------------------------------
           const jpegArray = this._binaryData.slice(offset, offset + bufferView.byteLength);
@@ -1596,7 +1621,11 @@ class Reader extends GltfReader {
   private readonly _featureTable?: FeatureTable;
 
   public constructor(props: GltfReaderProps, args: ReadGltfGraphicsArgs) {
-    super(props, args.iModel, false, IModelApp.renderSystem);
+    super({
+      props,
+      iModel: args.iModel,
+      vertexTableRequired: true,
+    });
 
     const pickableId = args.pickableOptions?.id;
     if (pickableId) {

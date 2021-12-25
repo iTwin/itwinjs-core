@@ -3631,13 +3631,11 @@ export class GltfMeshData {
 
 // @internal
 export abstract class GltfReader {
-    protected constructor(props: GltfReaderProps, iModel: IModelConnection, is3d: boolean, system: RenderSystem, type?: BatchType, isCanceled?: ShouldAbortReadGltf, deduplicateVertices?: boolean);
+    protected constructor(args: GltfReaderArgs);
     // (undocumented)
     protected get _accessors(): GltfDictionary<GltfAccessor>;
     // (undocumented)
     protected readonly _binaryData: Uint8Array;
-    // (undocumented)
-    protected readonly _buffer: ByteStream;
     // (undocumented)
     protected get _bufferViews(): GltfDictionary<GltfBufferViewProps>;
     // (undocumented)
@@ -3708,15 +3706,27 @@ export abstract class GltfReader {
     // (undocumented)
     protected readonly _type: BatchType;
     // (undocumented)
+    protected readonly _vertexTableRequired: boolean;
+    // (undocumented)
     protected readonly _yAxisUp: boolean;
+}
+
+// @internal
+export interface GltfReaderArgs {
+    deduplicateVertices?: boolean;
+    iModel: IModelConnection;
+    is2d?: boolean;
+    props: GltfReaderProps;
+    shouldAbort?: ShouldAbortReadGltf;
+    system?: RenderSystem;
+    type?: BatchType;
+    vertexTableRequired?: boolean;
 }
 
 // @internal
 export class GltfReaderProps {
     // (undocumented)
     readonly binaryData: Uint8Array;
-    // (undocumented)
-    readonly buffer: ByteStream;
     static create(buffer: ByteStream, yAxisUp?: boolean): GltfReaderProps | undefined;
     // (undocumented)
     readonly glTF: Gltf;
@@ -5692,7 +5702,7 @@ export class MapTile extends RealityTile {
 
 // @internal (undocumented)
 export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
-    constructor(_vp: Viewport);
+    constructor(viewportId: number, displayStyle: DisplayStyleState);
     // (undocumented)
     readonly backgroundDrapeMap: MapTileTreeReference;
     // (undocumented)
@@ -5709,7 +5719,7 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
     readonly overlayMap: MapTileTreeReference;
     // (undocumented)
     setView(newView: ViewState): void;
-    }
+}
 
 // @internal
 export class MapTileLoader extends RealityTileLoader {
