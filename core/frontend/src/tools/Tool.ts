@@ -710,11 +710,17 @@ export abstract class InteractiveTool extends Tool {
     return undefined;
   }
 
+  protected toolSettingProperties = new Map<string, DialogProperty<any>>();
+
   /** Override to return the property for the supplied property name.
    * @see [[changeToolSettingPropertyValue]]
    * @beta
    */
   protected getToolSettingPropertyByName(propertyName: string): DialogProperty<any> {
+    const foundProperty = this.toolSettingProperties.get(propertyName);
+    if (foundProperty)
+      return foundProperty;
+
     throw new Error(`property not found: ${propertyName}`);
   }
 
@@ -742,8 +748,10 @@ export abstract class InteractiveTool extends Tool {
    * @beta
    */
   protected initializeToolSettingPropertyValues(properties: DialogProperty<any>[]): void {
-    for (const property of properties)
+    for (const property of properties) {
+      this.toolSettingProperties.set(property.name, property);
       this.restoreToolSettingPropertyValue(property);
+    }
   }
 
   /** Used to supply list of properties that can be used to generate ToolSettings. If undefined is returned then no ToolSettings will be displayed.

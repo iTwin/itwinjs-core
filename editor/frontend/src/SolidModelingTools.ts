@@ -682,16 +682,6 @@ export class OffsetFacesTool extends LocateSubEntityTool {
     hints.sendHints(false);
   }
 
-  protected override getToolSettingPropertyByName(propertyName: string): DialogProperty<any> {
-    if (propertyName === this.addSmoothProperty.name)
-      return this.addSmoothProperty;
-    else if (propertyName === this.useDistanceProperty.name)
-      return this.useDistanceProperty;
-    else if (propertyName === this.distanceProperty.name)
-      return this.distanceProperty;
-    return super.getToolSettingPropertyByName(propertyName);
-  }
-
   protected override getToolSettingPropertyLocked(property: DialogProperty<any>): DialogProperty<any> | undefined {
     return (property === this.useDistanceProperty ? this.distanceProperty : undefined);
   }
@@ -990,7 +980,7 @@ export class ImprintSolidElementsTool extends LocateSubEntityTool {
         if (undefined === geom)
           return undefined;
 
-        params = { imprint : geom, face: this.getAcceptedSubEntityData(0)?.props, extend: this.extend ? true : undefined };
+        params = { imprint: geom, face: this.getAcceptedSubEntityData(0)?.props, extend: this.extend ? true : undefined };
       } else if (ImprintSolidMethod.Edges === this.method) {
         if (!this.haveAcceptedSubEntities)
           return undefined;
@@ -1000,18 +990,18 @@ export class ImprintSolidElementsTool extends LocateSubEntityTool {
         if (undefined === edge)
           return undefined;
 
-        const edgeFaces = await ElementGeometryCacheTool.callCommand("getConnectedSubEntities", id, edge, SubEntityType.Face );
+        const edgeFaces = await ElementGeometryCacheTool.callCommand("getConnectedSubEntities", id, edge, SubEntityType.Face);
         if (undefined === edgeFaces || 0 === edgeFaces.length)
           return undefined;
 
         // TODO: Check planar face...get preferred face from cursor location in dynamics, etc.
-        const edgeLoop = await ElementGeometryCacheTool.callCommand("getConnectedSubEntities", id, edge, SubEntityType.Edge, { loopFace: edgeFaces[0] } );
+        const edgeLoop = await ElementGeometryCacheTool.callCommand("getConnectedSubEntities", id, edge, SubEntityType.Edge, { loopFace: edgeFaces[0] });
         if (undefined === edgeLoop || 0 === edgeLoop.length)
           return undefined;
 
-        params = { imprint : edgeLoop, face: edgeFaces[0], distance: this.distance, extend: this.extend ? true : undefined };
+        params = { imprint: edgeLoop, face: edgeFaces[0], distance: this.distance, extend: this.extend ? true : undefined };
       } else {
-        params = { imprint : this.agenda.elements[1], extend: this.extend ? true : undefined };
+        params = { imprint: this.agenda.elements[1], extend: this.extend ? true : undefined };
       }
 
       const opts: ElementGeometryResultOptions = { writeChanges: true };
@@ -1115,13 +1105,13 @@ export class ImprintSolidElementsTool extends LocateSubEntityTool {
 
     switch (this.method) {
       case ImprintSolidMethod.Element:
-    	toolSettings.push(this.extendProperty.toDialogItem({ rowPriority: 2, columnIndex: 0 }));
+        toolSettings.push(this.extendProperty.toDialogItem({ rowPriority: 2, columnIndex: 0 }));
         break;
       case ImprintSolidMethod.Edges:
         toolSettings.push(this.distanceProperty.toDialogItem({ rowPriority: 2, columnIndex: 0 }));
         break;
       case ImprintSolidMethod.Points:
-    	toolSettings.push(this.extendProperty.toDialogItem({ rowPriority: 2, columnIndex: 0 }));
+        toolSettings.push(this.extendProperty.toDialogItem({ rowPriority: 2, columnIndex: 0 }));
         break;
     }
 
@@ -1191,7 +1181,7 @@ export abstract class BlendEdgesTool extends LocateSubEntityTool {
 
   protected async removeTangentEdges(_id: Id64String, edge?: SubEntityProps): Promise<void> {
     if (undefined === edge) {
-      this._acceptedSubEntities = this._acceptedSubEntities.filter((entry) => undefined === entry.toolData );
+      this._acceptedSubEntities = this._acceptedSubEntities.filter((entry) => undefined === entry.toolData);
       return;
     }
 
