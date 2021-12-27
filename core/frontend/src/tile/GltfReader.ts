@@ -107,6 +107,19 @@ interface GltfDictionary<T extends GltfChildOfRootProperty> {
   [key: GltfId]: T | undefined;
 }
 
+function * iterateDictionary<T extends GltfChildOfRootProperty>(dict: GltfDictionary<T>): Iterable<T> {
+  if (Array.isArray(dict)) {
+    for (const elem of dict)
+      yield elem;
+  } else {
+    for (const key of Object.keys(dict)) {
+      const value = dict[key];
+      if (undefined !== value)
+        yield value;
+    }
+  }
+}
+
 /** Optional extensions applied to a [[GltfProperty]] to enable behavior not defined in the core specification. */
 interface GltfExtensions {
   [key: string]: unknown | undefined;
@@ -787,7 +800,7 @@ export abstract class GltfReader {
   protected get _meshes(): GltfDictionary<GltfMesh> { return this._glTF.meshes ?? emptyDict; }
   protected get _accessors(): GltfDictionary<GltfAccessor> { return this._glTF.accessors ?? emptyDict; }
   protected get _bufferViews(): GltfDictionary<GltfBufferViewProps> { return this._glTF.bufferViews ?? emptyDict; }
-  protected get _materialValues(): GltfDictionary<GltfMaterial> { return this._glTF.materials ?? emptyDict; }
+  protected get _materials(): GltfDictionary<GltfMaterial> { return this._glTF.materials ?? emptyDict; }
   protected get _samplers(): GltfDictionary<GltfSampler> { return this._glTF.samplers ?? emptyDict; }
 
   protected get _textures(): GltfDictionary<GltfTexture & { resolvedTexture?: RenderTexture }> { return this._glTF.textures ?? emptyDict; }
@@ -1154,7 +1167,7 @@ export abstract class GltfReader {
   protected readMeshPrimitive(primitive: any, featureTable?: FeatureTable, pseudoRtcBias?: Vector3d): GltfMeshData | undefined {
     const materialName = JsonUtils.asString(primitive.material);
     const hasBakedLighting = undefined === primitive.attributes.NORMAL;
-    const material = 0 < materialName.length ? this._materialValues[materialName] : undefined;
+    const material = 0 < materialName.length ? this._materials[materialName] : undefined;
     const displayParams = this.createDisplayParams(material, hasBakedLighting);
     if (undefined === displayParams)
       return undefined;
@@ -1551,6 +1564,11 @@ export abstract class GltfReader {
     return true;
   }
 
+  protected async resolveResources(): Promise<void> {
+    // ###TODO traverse the scene nodes to find resources referenced by them, instead of resolving everything - some resources may not
+    // be required for the scene.
+  }
+
   protected async loadTextures(): Promise<void> {
     if (undefined === this._glTF.textures)
       return;
@@ -1558,8 +1576,8 @@ export abstract class GltfReader {
     // ###TODO this seems pretty hacky, and won't work for glTF 2.0 even if the KHR_techniques_webgl extension is used...
     const transparentTextures: Set<string> = new Set<string>();
     if (this._glTF.techniques) {
-      for (const name of Object.keys(this._materialValues)) {
-        const material = this._materialValues[name];
+      for (const name of Object.keys(this._materials)) {
+        const material = this._materials[name];
         if (material && isGltf1Material(material) && undefined !== material.technique && undefined !== material.values?.tex) {
           const technique = this._glTF.techniques[material.technique];
           if (technique?.states?.enable) {
@@ -1582,7 +1600,7 @@ export abstract class GltfReader {
           continue;
 
         for (const primitive of mesh.primitives) {
-          const material = undefined !== primitive.material ? this._materialValues[primitive.material] : undefined;
+          const material = undefined !== primitive.material ? this._materials[primitive.material] : undefined;
           const textureId = material ? this.extractTextureId(material) : undefined;
           if (undefined !== textureId && !promises.has(textureId))
             promises.set(textureId, this.loadTexture(textureId, transparentTextures.has(textureId)));
