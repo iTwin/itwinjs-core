@@ -1744,6 +1744,11 @@ export interface ReadGltfGraphicsArgs {
    * the graphics will also be selectable.
    */
   pickableOptions?: PickableGraphicOptions & { modelId?: Id64String };
+  /** The base URL for any relative URIs in the glTF. For example, if `baseURL` is "http://example.com", an image URI of "./image.png" will resolve to
+   * "http://example.com/image.png". This is the typically (and required by the glTF spec to be) the same as the base URL for the glTF file itself.
+   * If not supplied, relative URIs cannot be resolved.
+   */
+  baseUrl?: string;
 }
 
 /** Produce a [[RenderGraphic]] from a [glTF](https://www.khronos.org/gltf/) asset suitable for use in [view decorations]($docs/learning/frontend/ViewDecorations).
@@ -1755,7 +1760,7 @@ export interface ReadGltfGraphicsArgs {
  * @public
  */
 export async function readGltfGraphics(args: ReadGltfGraphicsArgs): Promise<RenderGraphic | undefined> {
-  const props = GltfReaderProps.create(args.gltf, true); // glTF supports exactly one coordinate system with y axis up.
+  const props = GltfReaderProps.create(args.gltf, true, args.baseUrl); // glTF supports exactly one coordinate system with y axis up.
   const reader = props ? new GltfGraphicsReader(props, args) : undefined;
   if (!reader)
     return undefined;
