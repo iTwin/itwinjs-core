@@ -9,7 +9,7 @@
 import { assert, ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import { Angle, Matrix3d, Point2d, Point3d, Point4d, Range2d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import {
-  BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureTable, FillFlags, GlbHeader, GltfVersions, ImageSource, ImageSourceFormat, LinePixels, MeshEdge,
+  BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureTable, FillFlags, GlbHeader, ImageSource, ImageSourceFormat, LinePixels, MeshEdge,
   MeshEdges, MeshPolyline, MeshPolylineList, OctEncodedNormal, PackedFeatureTable, QParams2d, QParams3d, QPoint2dList,
   QPoint3dList, Quantization, RenderTexture, TextureMapping, TileReadStatus,
 } from "@itwin/core-common";
@@ -542,12 +542,12 @@ export interface GltfReaderResult extends TileContent {
  * @internal
  */
 export class GltfReaderProps {
-  public readonly version: GltfVersions;
+  public readonly version: number;
   public readonly binaryData?: Uint8Array;
   public readonly glTF: Gltf;
   public readonly yAxisUp: boolean;
 
-  private constructor(glTF: Gltf, version: GltfVersions, yAxisUp: boolean, binaryData: Uint8Array | undefined) {
+  private constructor(glTF: Gltf, version: number, yAxisUp: boolean, binaryData: Uint8Array | undefined) {
     this.version = version;
     this.glTF = glTF;
     this.binaryData = binaryData;
@@ -770,7 +770,7 @@ function * traverseNodes(ids: Iterable<GltfId>, nodes: GltfDictionary<GltfNode>,
 export abstract class GltfReader {
   protected readonly _binaryData?: Uint8Array;
   protected readonly _glTF: Gltf;
-  protected readonly _version: GltfVersions;
+  protected readonly _version: number;
   protected readonly _iModel: IModelConnection;
   protected readonly _is3d: boolean;
   protected readonly _system: RenderSystem;
@@ -1062,7 +1062,6 @@ export abstract class GltfReader {
   public readBufferDataFloat(json: any, accessorName: string): GltfBufferData | undefined { return this.readBufferData(json, accessorName, GltfDataType.Float); }
 
   protected constructor(args: GltfReaderArgs) {
-    this._binaryData = args.props.binaryData; // ###TODO remove - resolve binary buffer instead.
     this._glTF = args.props.glTF;
     this._version = args.props.version;
     this._yAxisUp = args.props.yAxisUp;
@@ -1079,6 +1078,13 @@ export abstract class GltfReader {
     this._canceled = args.shouldAbort;
     this._deduplicateVertices = args.deduplicateVertices ?? false;
     this._vertexTableRequired = args.vertexTableRequired ?? false;
+
+    const binaryData = args.props.binaryData;
+    if (binaryData) {
+      const buffer = this._buffers[this._version === 2 ? 0 : "binary_glTF"];
+      if (buffer && undefined === buffer.uri)
+        buffer.resolvedBuffer = binaryData;
+    }
 
     // The original implementation of GltfReader would process and produce graphics for every node in glTF.nodes.
     // What it's *supposed* to do is process the nodes in glTF.scenes[glTF.scene].nodes
