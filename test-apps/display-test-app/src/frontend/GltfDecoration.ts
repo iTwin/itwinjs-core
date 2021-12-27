@@ -59,9 +59,6 @@ export class GltfDecorationTool extends Tool {
       const response = await fetch(url);
       const buffer = await response.arrayBuffer();
 
-      // const slashIndex = url.lastIndexOf("/");
-      // const baseUrl = -1 !== slashIndex ? url.substr(0, slashIndex) : undefined;
-
       // Convert the glTF into a RenderGraphic.
       const id = iModel.transientIds.next;
       let graphic = await readGltfGraphics({
