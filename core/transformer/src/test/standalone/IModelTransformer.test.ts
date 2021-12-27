@@ -1385,40 +1385,97 @@ describe("IModelTransformer", () => {
     targetDb.close();
   });
 
-  it.only("predecessor deletion is considered invalid", async () => {
-    const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "PredecessorCleanupSource.bim");
-    const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "PredecessorCleanup" } });
+  function createIModelWithDeadPredecessor(opts: {name: string, path: string}) {
+    const sourceDb = SnapshotDb.createEmpty(opts.path, { rootSubject: { name: opts.name } });
 
     const sourceCategoryId = SpatialCategory.insert(sourceDb, IModel.dictionaryId, "SpatialCategory", { color: ColorDef.green.toJSON() });
     const sourceModelId = PhysicalModel.insert(sourceDb, IModel.rootSubjectId, "Physical");
-    const [physObj1, physObj2, physObj3] = [1, 2, 3].map((x) => {
-      const physicalObjectProps: PhysicalElementProps = {
+    const myPhysObjCodeSpec = CodeSpec.create(sourceDb, "myPhysicalObjects", CodeScopeSpec.Type.ParentElement);
+    const myPhysObjCodeSpecId = sourceDb.codeSpecs.insert(myPhysObjCodeSpec);
+    const physicalObjects = [1, 2, 3].map((x) => {
+      const code = new Code({
+        spec: myPhysObjCodeSpecId,
+        scope: sourceModelId,
+        value: `PhysicalObject(${x})`,
+      });
+      const props: PhysicalElementProps = {
         classFullName: PhysicalObject.classFullName,
         model: sourceModelId,
         category: sourceCategoryId,
-        code: Code.createEmpty(),
+        code,
         userLabel: `PhysicalObject(${x})`,
         geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1)),
         placement: Placement3d.fromJSON({ origin: { x }, angles: {} }),
       };
-      const physicalObjectId = sourceDb.elements.insertElement(physicalObjectProps);
-      return physicalObjectId;
+      const id = sourceDb.elements.insertElement(props);
+      return { code, id };
     });
-    const _myDisplayStyleId = DisplayStyle3d.insert(sourceDb, IModel.dictionaryId, "MyDisplayStyle", {excludedElements: [physObj1, physObj2, physObj3]});
-    sourceDb.elements.deleteElement(physObj3);
+    const displayStyleId = DisplayStyle3d.insert(
+      sourceDb,
+      IModel.dictionaryId,
+      "MyDisplayStyle",
+      {
+        excludedElements: physicalObjects.map((o) => o.id),
+      }
+    );
+    const displayStyleCode = sourceDb.elements.getElement(displayStyleId).code;
+
+    const physObjId3 = physicalObjects[2].id;
+    // this deletion makes the display style have an reference to a now-gone element
+    sourceDb.elements.deleteElement(physObjId3);
 
     sourceDb.saveChanges();
 
-    // this seed has an old biscore, so we know that transforming an empty source (which starts with a fresh, updated biscore)
-    // will cause an update to the old biscore in this target
-    const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "PredecessorCleanupTarget.bim");
-    const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: { name: "PredecessorCleanup" } });
+    return [
+      sourceDb,
+      {
+        sourceCategoryId,
+        sourceModelId,
+        physicalObjects,
+        displayStyleId,
+        displayStyleCode,
+      },
+    ] as const;
+  }
 
-    const transformer = new IModelTransformer(sourceDb, targetDb);
-    await expect(transformer.processAll()).to.be.rejectedWith(
+  it.only("predecessor deletion is considered invalid without ignoreDeadPredecessors enabled", async () => {
+    const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "DeadPredecessorSource.bim");
+    const [
+      sourceDb,
+      { physicalObjects: [, , physObj3], displayStyleCode, displayStyleId },
+    ] = createIModelWithDeadPredecessor({ name: "DeadPredecessors", path: sourceDbPath });
+
+    const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "DeadPredecessorTarget.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
+
+    const defaultTransformer = new IModelTransformer(sourceDb, targetDb);
+    await expect(defaultTransformer.processAll()).to.be.rejectedWith(
       /Found a reference to an element "[^"]*" that doesn't exist/
     );
+
+    const ignoreDeadPredecessorsDisabledTransformer = new IModelTransformer(sourceDb, targetDb, { ignoreDeadPredecessors: false });
+    await expect(ignoreDeadPredecessorsDisabledTransformer.processAll()).to.be.rejectedWith(
+      /Found a reference to an element "[^"]*" that doesn't exist/
+    );
+
+    const ignoreDeadPredecessorsEnabledTransformer = new IModelTransformer(sourceDb, targetDb, { ignoreDeadPredecessors: true});
+    await expect(ignoreDeadPredecessorsEnabledTransformer.processAll()).not.to.be.rejected;
     targetDb.saveChanges();
+
+    expect(sourceDb.elements.tryGetElement(physObj3.id)).to.be.undefined;
+    const displayStyleInSource = sourceDb.elements.getElement<DisplayStyle3d>(displayStyleId);
+    expect(displayStyleInSource.settings.excludedElementIds).to.include(physObj3.id);
+
+    const displayStyleInTargetId = targetDb.elements.queryElementIdByCode(displayStyleCode);
+    // should contribute assert clauses to the relevant functions in chai and friends
+    if (displayStyleInTargetId === undefined) throw Error("expected it to be defined");
+    const displayStyleInTarget = targetDb.elements.getElement<DisplayStyle3d>(displayStyleInTargetId);
+
+    const physObj3InTargetId = targetDb.elements.queryElementIdByCode(physObj3.code);
+    if (physObj3InTargetId  === undefined) throw Error("expected it to be defined");
+
+    expect(targetDb.elements.tryGetElement(physObj3InTargetId)).to.be.undefined;
+    expect(displayStyleInTarget.settings.excludedElementIds).to.include(physObj3InTargetId);
 
     sourceDb.close();
     targetDb.close();
