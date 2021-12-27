@@ -92,11 +92,11 @@ enum GltfBufferTarget {
   ElementArrayBuffer = 24963,
 }
 
-/** The type used to refer to an entry in a [[GltfDictionary]] in a glTF 1.0 asset. @internal */
+/** The type used to refer to an entry in a GltfDictionary in a glTF 1.0 asset. @internal */
 export type Gltf1Id = string;
-/** The type used to refer to an entry in a [[GltfDictionary]] in a glTF 2.0 asset. @internal */
+/** The type used to refer to an entry in a GltfDictionary in a glTF 2.0 asset. @internal */
 export type Gltf2Id = number;
-/** The type used to refer to an entry in a [[GltfDictionary]]. @internal */
+/** The type used to refer to an entry in a GltfDictionary. @internal */
 export type GltfId = Gltf1Id | Gltf2Id;
 
 /** A collection of resources of some type defined at the top-level of a [[Gltf]] asset.
