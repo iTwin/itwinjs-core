@@ -1392,7 +1392,7 @@ describe("IModelTransformer", () => {
     const sourceModelId = PhysicalModel.insert(sourceDb, IModel.rootSubjectId, "Physical");
     const myPhysObjCodeSpec = CodeSpec.create(sourceDb, "myPhysicalObjects", CodeScopeSpec.Type.ParentElement);
     const myPhysObjCodeSpecId = sourceDb.codeSpecs.insert(myPhysObjCodeSpec);
-    const physicalObjects = [1, 2, 3].map((x) => {
+    const physicalObjects = [1, 2].map((x) => {
       const code = new Code({
         spec: myPhysObjCodeSpecId,
         scope: sourceModelId,
@@ -1420,9 +1420,9 @@ describe("IModelTransformer", () => {
     );
     const displayStyleCode = sourceDb.elements.getElement(displayStyleId).code;
 
-    const physObjId3 = physicalObjects[2].id;
+    const physObjId2 = physicalObjects[1].id;
     // this deletion makes the display style have an reference to a now-gone element
-    sourceDb.elements.deleteElement(physObjId3);
+    sourceDb.elements.deleteElement(physObjId2);
 
     sourceDb.saveChanges();
 
@@ -1447,10 +1447,9 @@ describe("IModelTransformer", () => {
   class ShiftElemIdsTransformer extends IModelTransformer {
     constructor(...args: ConstructorParameters<typeof IModelTransformer>) {
       super(...args);
-      // the choice of element to insert is arbitrary, anything easy works
       try {
-        const myCodeSpec = CodeSpec.create(this.targetDb, "MyCodeSpec", CodeScopeSpec.Type.ParentElement);
-        this.targetDb.codeSpecs.insert(myCodeSpec);
+        // the choice of element to insert is arbitrary, anything easy works
+        PhysicalModel.insert(this.targetDb, IModel.rootSubjectId, "MyShiftElemIdsPhysicalModel");
       } catch (_err) {} // ignore error in case someone tries to transform the same target multiple times with this
     }
   }
@@ -1479,9 +1478,9 @@ describe("IModelTransformer", () => {
     await expect(ignoreDeadPredecessorsEnabledTransformer.processAll()).not.to.be.rejected;
     targetDb.saveChanges();
 
-    expect(sourceDb.elements.tryGetElement(physicalObjects[2].id)).to.be.undefined;
+    expect(sourceDb.elements.tryGetElement(physicalObjects[1].id)).to.be.undefined;
     const displayStyleInSource = sourceDb.elements.getElement<DisplayStyle3d>(displayStyleId);
-    expect([...displayStyleInSource.settings.excludedElementIds]).to.include(physicalObjects[2].id);
+    expect([...displayStyleInSource.settings.excludedElementIds]).to.include(physicalObjects[1].id);
 
     const displayStyleInTargetId = targetDb.elements.queryElementIdByCode(displayStyleCode);
     // should contribute assert clauses to the relevant functions in chai and friends
@@ -1494,8 +1493,7 @@ describe("IModelTransformer", () => {
     });
 
     expect(physObjsInTarget[0].id).not.to.be.undefined;
-    expect(physObjsInTarget[1].id).not.to.be.undefined;
-    expect(physObjsInTarget[2].id).to.be.undefined;
+    expect(physObjsInTarget[1].id).to.be.undefined;
 
     expect(
       [...displayStyleInTarget.settings.excludedElementIds]
