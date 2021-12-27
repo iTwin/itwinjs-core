@@ -800,6 +800,10 @@ function * traverseNodes(ids: Iterable<GltfId>, nodes: GltfDictionary<GltfNode>,
   }
 }
 
+interface NamedIdMap {
+  [name: string]: GltfId | undefined;
+}
+
 /** Deserializes [glTF](https://www.khronos.org/gltf/).
  * @internal
  */
@@ -1040,7 +1044,7 @@ export abstract class GltfReader {
   }
 
   // ###TODO what is the actual type of `json`?
-  public getBufferView(json: any, accessorName: string): GltfBufferView | undefined {
+  public getBufferView(json: NamedIdMap, accessorName: string): GltfBufferView | undefined {
     try {
       const accessorValue = JsonUtils.asString(json[accessorName]);
       const accessor = accessorValue ? this._accessors[accessorValue] : undefined;
@@ -1096,10 +1100,10 @@ export abstract class GltfReader {
     }
   }
 
-  public readBufferData32(json: any, accessorName: string): GltfBufferData | undefined { return this.readBufferData(json, accessorName, GltfDataType.UInt32); }
-  public readBufferData16(json: any, accessorName: string): GltfBufferData | undefined { return this.readBufferData(json, accessorName, GltfDataType.UnsignedShort); }
-  public readBufferData8(json: any, accessorName: string): GltfBufferData | undefined { return this.readBufferData(json, accessorName, GltfDataType.UnsignedByte); }
-  public readBufferDataFloat(json: any, accessorName: string): GltfBufferData | undefined { return this.readBufferData(json, accessorName, GltfDataType.Float); }
+  public readBufferData32(json: NamedIdMap, accessorName: string): GltfBufferData | undefined { return this.readBufferData(json, accessorName, GltfDataType.UInt32); }
+  public readBufferData16(json: NamedIdMap, accessorName: string): GltfBufferData | undefined { return this.readBufferData(json, accessorName, GltfDataType.UnsignedShort); }
+  public readBufferData8(json: NamedIdMap, accessorName: string): GltfBufferData | undefined { return this.readBufferData(json, accessorName, GltfDataType.UnsignedByte); }
+  public readBufferDataFloat(json: NamedIdMap, accessorName: string): GltfBufferData | undefined { return this.readBufferData(json, accessorName, GltfDataType.Float); }
 
   protected constructor(args: GltfReaderArgs) {
     this._glTF = args.props.glTF;
@@ -1141,7 +1145,7 @@ export abstract class GltfReader {
     this._sceneNodes = sceneNodes;
   }
 
-  protected readBufferData(json: any, accessorName: string, type: GltfDataType): GltfBufferData | undefined {
+  protected readBufferData(json: NamedIdMap, accessorName: string, type: GltfDataType): GltfBufferData | undefined {
     const view = this.getBufferView(json, accessorName);
     return undefined !== view ? view.toBufferData(type) : undefined;
   }
@@ -1433,7 +1437,7 @@ export abstract class GltfReader {
     return true;
   }
 
-  protected readIndices(json: any, accessorName: string): number[] | undefined {
+  protected readIndices(json: NamedIdMap, accessorName: string): number[] | undefined {
     const data = this.readBufferData32(json, accessorName);
     if (undefined === data)
       return undefined;
@@ -1448,7 +1452,7 @@ export abstract class GltfReader {
   protected readBatchTable(_mesh: Mesh, _json: any) {
   }
 
-  protected readMeshIndices(mesh: GltfMeshData, json: any): boolean {
+  protected readMeshIndices(mesh: GltfMeshData, json: NamedIdMap): boolean {
     const data = this.readBufferData16(json, "indices") || this.readBufferData32(json, "indices");
     if (undefined === data || (!(data.buffer instanceof (Uint16Array)) && !(data.buffer instanceof (Uint32Array))))
       return false;
@@ -1458,7 +1462,7 @@ export abstract class GltfReader {
     return true;
   }
 
-  protected readNormals(mesh: GltfMeshData, json: any, accessorName: string): boolean {
+  protected readNormals(mesh: GltfMeshData, json: NamedIdMap, accessorName: string): boolean {
     const view = this.getBufferView(json, accessorName);
     if (undefined === view)
       return false;
@@ -1499,7 +1503,7 @@ export abstract class GltfReader {
     }
   }
 
-  private readUVParams(mesh: GltfMeshData, json: any, accessorName: string): boolean {
+  private readUVParams(mesh: GltfMeshData, json: NamedIdMap, accessorName: string): boolean {
     const view = this.getBufferView(json, accessorName);
     let data: any;
 
@@ -1563,7 +1567,7 @@ export abstract class GltfReader {
     return true;
   }
 
-  protected readPolylines(polylines: MeshPolylineList, json: any, accessorName: string, disjoint: boolean): boolean {
+  protected readPolylines(polylines: MeshPolylineList, json: NamedIdMap, accessorName: string, disjoint: boolean): boolean {
     const data = this.readBufferData32(json, accessorName);
     if (undefined === data)
       return false;
