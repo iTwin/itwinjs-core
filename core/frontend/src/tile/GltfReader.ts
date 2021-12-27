@@ -13,7 +13,7 @@ import {
   MeshEdges, MeshPolyline, MeshPolylineList, OctEncodedNormal, PackedFeatureTable, QParams2d, QParams3d, QPoint2dList,
   QPoint3dList, Quantization, RenderTexture, TextureMapping, TileReadStatus,
 } from "@itwin/core-common";
-import { getImageSourceFormatForMimeType, imageElementFromImageSource } from "../ImageUtil";
+import { getImageSourceFormatForMimeType, imageElementFromImageSource, tryImageElementFromUrl } from "../ImageUtil";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
 import { GraphicBranch } from "../render/GraphicBranch";
@@ -562,19 +562,21 @@ export interface GltfReaderResult extends TileContent {
  */
 export class GltfReaderProps {
   public readonly version: number;
-  public readonly binaryData?: Uint8Array;
   public readonly glTF: Gltf;
   public readonly yAxisUp: boolean;
+  public readonly binaryData?: Uint8Array;
+  public readonly baseUrl?: string;
 
-  private constructor(glTF: Gltf, version: number, yAxisUp: boolean, binaryData: Uint8Array | undefined) {
+  private constructor(glTF: Gltf, version: number, yAxisUp: boolean, binaryData: Uint8Array | undefined, baseUrl?: string | undefined) {
     this.version = version;
     this.glTF = glTF;
     this.binaryData = binaryData;
     this.yAxisUp = yAxisUp;
+    this.baseUrl = baseUrl;
   }
 
   /** Attempt to construct a new GltfReaderProps from the binary data beginning at the supplied stream's current read position. */
-  public static create(source: Uint8Array | Gltf, yAxisUp: boolean = false): GltfReaderProps | undefined {
+  public static create(source: Uint8Array | Gltf, yAxisUp: boolean = false, baseUrl?: string): GltfReaderProps | undefined {
     let version: number;
     let json: Gltf;
     let binaryData: Uint8Array | undefined;
@@ -628,7 +630,7 @@ export class GltfReaderProps {
       techniques: JsonUtils.asObject(json.techniques),
     };
 
-    return glTF.meshes ? new GltfReaderProps(glTF, version, yAxisUp, binaryData) : undefined;
+    return glTF.meshes ? new GltfReaderProps(glTF, version, yAxisUp, binaryData, baseUrl) : undefined;
   }
 }
 
@@ -794,6 +796,7 @@ export abstract class GltfReader {
   protected readonly _system: RenderSystem;
   protected readonly _returnToCenter?: Point3d;
   protected readonly _yAxisUp: boolean;
+  protected readonly _baseUrl?: string;
   protected readonly _type: BatchType;
   protected readonly _deduplicateVertices: boolean;
   protected readonly _vertexTableRequired: boolean;
@@ -1087,6 +1090,7 @@ export abstract class GltfReader {
     this._glTF = args.props.glTF;
     this._version = args.props.version;
     this._yAxisUp = args.props.yAxisUp;
+    this._baseUrl = args.props.baseUrl;
 
     const rtcCenter = args.props.glTF.extensions?.CESIUM_RTC?.center;
     if (rtcCenter && 3 === rtcCenter.length)
@@ -1583,33 +1587,85 @@ export abstract class GltfReader {
           promises.push(this.resolveBuffer(buffer));
 
       await Promise.all(promises);
+      if (this._isCanceled)
+        return;
 
       promises.length = 0;
       for (const image of dictionaryIterator(this._images))
         if (!image.resolvedImage)
           promises.push(this.resolveImage(image));
 
-      await promises;
+      await Promise.all(promises);
+      if (this._isCanceled)
+        return;
 
-      // ###TODO move texture loading here, remove loadTextures.
-      await this.loadTextures();
+      this.resolveTextures();
     } catch (_) {
     }
   }
 
+  private resolveUrl(uri: string): string | undefined {
+    try {
+      return new URL(uri, this._baseUrl).toString();
+    } catch (_) {
+      return undefined;
+    }
+  }
+
   private async resolveBuffer(buffer: GltfBuffer & { resolvedBuffer?: Uint8Array }): Promise<void> {
-    if (buffer.resolvedBuffer)
+    if (buffer.resolvedBuffer || undefined === buffer.uri)
       return;
 
+    try {
+      const url = this.resolveUrl(buffer.uri);
+      const response = url ? await fetch(url) : undefined;
+      if (this._isCanceled)
+        return;
 
+      const data = await response?.arrayBuffer();
+      if (this._isCanceled)
+        return;
+
+      if (data)
+        buffer.resolvedBuffer = new Uint8Array(data);
+    } catch (_) {
+      //
+    }
   }
 
   private async resolveImage(image: GltfImage & { resolvedImage?: HTMLImageElement }): Promise<void> {
     if (image.resolvedImage)
       return;
+
+    interface BufferViewSource { bufferView?: GltfId; mimeType?: string; };
+    const bvSrc: BufferViewSource | undefined = undefined !== image.bufferView ? image : image.extensions?.KHR_binary_glTF;
+    if (undefined !== bvSrc?.bufferView) {
+      const format = undefined !== bvSrc.mimeType ? getImageSourceFormatForMimeType(bvSrc.mimeType) : undefined;
+      const bufferView = this._bufferViews[bvSrc.bufferView];
+      if (undefined === format || !bufferView || !bufferView.byteLength || bufferView.byteLength < 0)
+        return;
+
+      const bufferData = this._buffers[bufferView.buffer]?.resolvedBuffer;
+      if (!bufferData)
+        return;
+
+      const offset = bufferView.byteOffset ?? 0;
+      const bytes = bufferData.subarray(offset, offset + bufferView.byteLength);
+      try {
+        image.resolvedImage = await imageElementFromImageSource(new ImageSource(bytes, format));
+      } catch (_) {
+        //
+      }
+
+      return;
+    }
+
+    const url = undefined !== image.uri ? this.resolveUrl(image.uri) : undefined;
+    if (undefined !== url)
+      image.resolvedImage = await tryImageElementFromUrl(url);
   }
 
-  private async loadTextures(): Promise<void> {
+  private resolveTextures(): void {
     if (undefined === this._glTF.textures)
       return;
 
@@ -1632,7 +1688,6 @@ export abstract class GltfReader {
       }
     }
 
-    const promises = new Map<string, Promise<void>>();
     for (const node of this.traverseScene()) {
       for (const meshId of getNodeMeshIds(node)) {
         const mesh = this._meshes[meshId];
@@ -1642,89 +1697,32 @@ export abstract class GltfReader {
         for (const primitive of mesh.primitives) {
           const material = undefined !== primitive.material ? this._materials[primitive.material] : undefined;
           const textureId = material ? this.extractTextureId(material) : undefined;
-          if (undefined !== textureId && !promises.has(textureId))
-            promises.set(textureId, this.loadTexture(textureId, transparentTextures.has(textureId)));
+          if (undefined !== textureId)
+            this.resolveTexture(textureId, transparentTextures.has(textureId));
         }
       }
     }
-
-    if (promises.size > 0)
-      await Promise.all(promises.values());
   }
 
-  protected async loadTextureImage(image: GltfImage, samplerJson: any, isTransparent: boolean): Promise<RenderTexture | undefined> {
-    try {
-      interface BufferViewSource { bufferView?: GltfId; mimeType?: string; };
-      const bvSrc: BufferViewSource | undefined = undefined !== image.bufferView ? image : image.extensions?.KHR_binary_glTF;
-      if (undefined === bvSrc?.bufferView || undefined === bvSrc?.mimeType)
-        return undefined;
-
-      const bufferView = this._bufferViews[bvSrc.bufferView];
-      const format = getImageSourceFormatForMimeType(bvSrc.mimeType);
-      if (undefined === format || !bufferView || !bufferView.byteLength || undefined === bufferView.buffer || bufferView.byteLength < 0)
-        return undefined;
-
-      const bufferData = this._buffers[bufferView.buffer]?.resolvedBuffer;
-      if (!bufferData)
-        return undefined;
-
-      let textureType = RenderTexture.Type.Normal;
-      if (undefined !== samplerJson &&
-        (undefined !== samplerJson.wrapS || undefined !== samplerJson.wrapT))
-        textureType = RenderTexture.Type.TileSection;
-
-      const offset = bufferView.byteOffset ?? 0;
-
-      /* -----------------------------------
-          const jpegArray = this._binaryData.slice(offset, offset + bufferView.byteLength);
-          const jpegArrayBuffer = jpegArray.buffer;
-          const workerOp = new ImageDecodeWorkerOperation(jpegArrayBuffer, mimeType);
-          try {
-            const imageBitmap = await GltfReader.webWorkerManager.queueOperation(workerOp)
-            return this._isCanceled ? undefined : this._system.createTextureFromImage(imageBitmap, isTransparent && ImageSourceFormat.Png === format, this._iModel, textureParams))
-          } catch {
-            return undefined;
-          }
-        ------------------------------------- */
-
-       const bytes = bufferData.subarray(offset, offset + bufferView.byteLength);
-      const imageSource = new ImageSource(bytes, format);
-      try {
-        const image = await imageElementFromImageSource(imageSource);
-        if (this._isCanceled)
-          return undefined;
-
-        return this._system.createTexture({
-          type: textureType,
-          image: {
-            source: image,
-            transparency: isTransparent && ImageSourceFormat.Png === format ? TextureTransparency.Translucent : TextureTransparency.Opaque,
-          },
-        });
-      } catch {
-        return undefined;
-      }
-    } catch (e) {
-      return undefined;
-    }
-  }
-
-  protected async loadTexture(textureId: string, isTransparent: boolean): Promise<void> {
-    if (!this._glTF.textures || !this._glTF.images)
+  private resolveTexture(textureId: string, isTransparent: boolean): void {
+    const texture = this._textures[textureId];
+    if (!texture || texture.resolvedTexture || undefined === texture.source)
       return;
 
-    const textureJson = this._textures[textureId];
-    if (!textureJson || textureJson.resolvedTexture || undefined === textureJson.source)
-      return;
-
-    const image = this._glTF.images[textureJson.source];
+    const image = this._images[texture.source]?.resolvedImage;
     if (!image)
       return;
 
-    const samplerId = textureJson.sampler;
+    const samplerId = texture.sampler;
     const sampler = undefined !== samplerId ? this._samplers[samplerId] : undefined;
-    const texture = await this.loadTextureImage(image, sampler, isTransparent);
-    textureJson.resolvedTexture = texture;
+    const textureType = undefined !== sampler?.wrapS || undefined !== sampler?.wrapT ? RenderTexture.Type.TileSection : RenderTexture.Type.Normal;
+    texture.resolvedTexture = this._system.createTexture({
+      type: textureType,
+      image: {
+        source: image,
+        transparency: isTransparent ? TextureTransparency.Translucent : TextureTransparency.Opaque,
+      },
+    });
   }
 
   protected findTextureMapping(textureId: string): TextureMapping | undefined {
