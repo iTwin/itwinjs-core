@@ -141,7 +141,7 @@ export class B3dmReader extends GltfReader {
       featureTable.insert(feature);
     }
 
-    await this.loadTextures();
+    await this.resolveResources();
     if (this._isCanceled)
       return { readStatus: TileReadStatus.Canceled, isLeaf: this._isLeaf };
 

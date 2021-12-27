@@ -100,7 +100,7 @@ export class I3dmReader extends GltfReader {
       this._featureTable.insert(feature);
     }
 
-    await this.loadTextures();
+    await this.resolveResources();
     if (this._isCanceled)
       return { readStatus: TileReadStatus.Canceled, isLeaf: this._isLeaf };
 

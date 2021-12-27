@@ -107,7 +107,7 @@ interface GltfDictionary<T extends GltfChildOfRootProperty> {
   [key: GltfId]: T | undefined;
 }
 
-function * iterateDictionary<T extends GltfChildOfRootProperty>(dict: GltfDictionary<T>): Iterable<T> {
+function * dictionaryIterator<T extends GltfChildOfRootProperty>(dict: GltfDictionary<T>): Iterable<T> {
   if (Array.isArray(dict)) {
     for (const elem of dict)
       yield elem;
@@ -1567,9 +1567,40 @@ export abstract class GltfReader {
   protected async resolveResources(): Promise<void> {
     // ###TODO traverse the scene nodes to find resources referenced by them, instead of resolving everything - some resources may not
     // be required for the scene.
+    const promises: Array<Promise<void>> = [];
+    try {
+      for (const buffer of dictionaryIterator(this._buffers))
+        if (!buffer.resolvedBuffer)
+          promises.push(this.resolveBuffer(buffer));
+
+      await Promise.all(promises);
+
+      promises.length = 0;
+      for (const image of dictionaryIterator(this._images))
+        if (!image.resolvedImage)
+          promises.push(this.resolveImage(image));
+
+      await promises;
+
+      // ###TODO move texture loading here, remove loadTextures.
+      await this.loadTextures();
+    } catch (_) {
+    }
   }
 
-  protected async loadTextures(): Promise<void> {
+  private async resolveBuffer(buffer: GltfBuffer & { resolvedBuffer?: Uint8Array }): Promise<void> {
+    if (buffer.resolvedBuffer)
+      return;
+
+
+  }
+
+  private async resolveImage(image: GltfImage & { resolvedImage?: HTMLImageElement }): Promise<void> {
+    if (image.resolvedImage)
+      return;
+  }
+
+  private async loadTextures(): Promise<void> {
     if (undefined === this._glTF.textures)
       return;
 
@@ -1743,7 +1774,7 @@ export class GltfGraphicsReader extends GltfReader {
   }
 
   public async read(): Promise<GltfReaderResult> {
-    await this.loadTextures();
+    await this.resolveResources();
     return this.readGltfAndCreateGraphics(true, this._featureTable, undefined);
   }
 
