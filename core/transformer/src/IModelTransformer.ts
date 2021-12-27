@@ -167,12 +167,22 @@ export class IModelTransformer extends IModelExportHandler {
     this.exporter.excludeElementAspectClass("BisCore:TextAnnotationData"); // This ElementAspect is auto-created by the BisCore:TextAnnotation2d/3d element handlers
     // initialize importer and targetDb
     if (target instanceof IModelDb) {
-      this.importer = new IModelImporter(target);
+      this.importer = new IModelImporter(target, { preserveElementIdsForFiltering: this._options.preserveElementIdsForFiltering });
     } else {
       this.importer = target;
+      /* eslint-disable deprecation/deprecation */
+      if (this._options.preserveElementIdsForFiltering !== this.importer.preserveElementIdsForFiltering) {
+        Logger.logWarning(
+          loggerCategory,
+          "A custom importer was passed as a target but its 'preserveElementIdsForFiltering' option is out of sync with the transformer's option."
+          + "\nThe custom importer target's option will be force updated to use the transformer's value."
+          + "\nThis behavior is deprecated and will be removed in a future version, throwing an error if they are out of sync."
+        );
+        this.importer.preserveElementIdsForFiltering = Boolean(this._options.preserveElementIdsForFiltering);
+      }
+      /* eslint-enable deprecation/deprecation */
     }
     this.targetDb = this.importer.targetDb;
-    this.importer.preserveElementIdsForFiltering = Boolean(this._options.preserveElementIdsForFiltering);
     // initialize the IModelCloneContext
     this.context = new IModelCloneContext(this.sourceDb, this.targetDb);
   }
@@ -196,7 +206,7 @@ export class IModelTransformer extends IModelExportHandler {
     Logger.logInfo(loggerCategory, `this._cloneUsingBinaryGeometry=${this._options.cloneUsingBinaryGeometry}`);
     Logger.logInfo(loggerCategory, `this._wasSourceIModelCopiedToTarget=${this._options.wasSourceIModelCopiedToTarget}`);
     Logger.logInfo(loggerCategory, `this._isReverseSynchronization=${this._options.isReverseSynchronization}`);
-    Logger.logInfo(TransformerLoggerCategory.IModelImporter, `this.importer.autoExtendProjectExtents=${this.importer.autoExtendProjectExtents}`);
+    Logger.logInfo(TransformerLoggerCategory.IModelImporter, `this.importer.autoExtendProjectExtents=${this.importer.options.autoExtendProjectExtents}`);
     Logger.logInfo(TransformerLoggerCategory.IModelImporter, `this.importer.simplifyElementGeometry=${this.importer.simplifyElementGeometry}`);
   }
 
@@ -916,12 +926,15 @@ export class TemplateModelCloner extends IModelTransformer {
   private _sourceIdToTargetIdMap?: Map<Id64String, Id64String>;
   /** Construct a new TemplateModelCloner
    * @param sourceDb The source IModelDb that contains the templates to clone
-   * @param targetDb Optionally specify the target IModelDb where the cloned template will be inserted. Typically should be left `undefined`.
+   * @param targetDb Optionally specify the target IModelDb where the cloned template will be inserted.
+   *                 Typically this is left unspecified, and the default is to use the sourceDb as the target
    * @note The expectation is that the template definitions are within the same iModel where instances will be placed.
    */
   public constructor(sourceDb: IModelDb, targetDb: IModelDb = sourceDb) {
-    super(sourceDb, targetDb, { noProvenance: true }); // WIP: need to decide the proper way to handle provenance
-    this.importer.autoExtendProjectExtents = false; // autoExtendProjectExtents is intended for transformation service use cases, not template --> instance cloning
+    const target = new IModelImporter(targetDb, {
+      autoExtendProjectExtents: false, // autoExtendProjectExtents is intended for transformation service use cases, not template --> instance cloning
+    });
+    super(sourceDb, target, { noProvenance: true }); // WIP: need to decide the proper way to handle provenance
   }
   /** Place a template from the sourceDb at the specified placement in the target model within the targetDb.
    * @param sourceTemplateModelId The Id of the template model in the sourceDb
