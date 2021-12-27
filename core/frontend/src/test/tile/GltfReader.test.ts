@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { ByteStream } from "@itwin/core-bentley";
 import { GltfV2ChunkTypes, GltfVersions, TileFormat } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
@@ -253,7 +252,7 @@ describe("GltfReader", () => {
       expect(reader).not.to.be.undefined;
       expect(reader.sceneNodes).to.deep.equal(reader.scenes[sceneId]?.nodes);
 
-      let actualTraversal = [];
+      const actualTraversal = [];
       expect(Array.isArray(reader.nodes)).to.be.true;
       const nodes = reader.nodes as unknown as GltfNode[];
       for (const node of reader.traverseScene()) {
@@ -288,8 +287,8 @@ describe("GltfReader", () => {
       },
       scenes: {
         0: { nodes: ["0"] },
-        1: { nodes: ["1"], },
-        2: { nodes: ["2"], },
+        1: { nodes: ["1"] },
+        2: { nodes: ["2"] },
         3: { nodes: ["3", "3"] },
       },
     };

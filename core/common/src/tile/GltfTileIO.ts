@@ -25,11 +25,21 @@ export enum GltfV2ChunkTypes {
   Binary = 0x004E4942,
 }
 
+/** A chunk of a glb file.
+ * @internal
+ */
 export interface GltfChunk {
+  /** Offset of the first byte of the chunk's data relative to the beginning of the glb data.
+   * This excludes the 8-byte chunk header containing the length and type fields.
+   */
   offset: number;
+  /** The number of bytes in the chunk's data. */
   length: number;
 }
 
+/** Describes a glTF chunk's data along with its type.
+ * @internal
+ */
 export type TypedGltfChunk = GltfChunk & { type: number };
 
 function consumeNextChunk(stream: ByteStream): TypedGltfChunk | undefined | false {
@@ -43,6 +53,7 @@ function consumeNextChunk(stream: ByteStream): TypedGltfChunk | undefined | fals
   return stream.isPastTheEnd ? false : { offset, length, type };
 }
 
+/** @internal */
 export class GlbHeader extends TileHeader {
   public readonly gltfLength: number = 0;
   public readonly jsonChunk: GltfChunk = { offset: 0, length: 0 };
@@ -65,7 +76,7 @@ export class GlbHeader extends TileHeader {
     if (this.version === GltfVersions.Version2 && word5 === GltfVersions.Gltf1SceneFormat)
       this.version = GltfVersions.Version1;
 
-    this.jsonChunk = { offset: stream.curPos, length: jsonLength }
+    this.jsonChunk = { offset: stream.curPos, length: jsonLength };
     switch (this.version) {
       case GltfVersions.Version1:
         if (GltfVersions.Gltf1SceneFormat !== word5) {

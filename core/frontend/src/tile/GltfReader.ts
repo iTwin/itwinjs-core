@@ -9,7 +9,7 @@
 import { assert, ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import { Angle, Matrix3d, Point2d, Point3d, Point4d, Range2d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import {
-  BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureTable, FillFlags, GlbHeader, ImageSource, ImageSourceFormat, LinePixels, MeshEdge,
+  BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureTable, FillFlags, GlbHeader, ImageSource, LinePixels, MeshEdge,
   MeshEdges, MeshPolyline, MeshPolylineList, OctEncodedNormal, PackedFeatureTable, QParams2d, QParams3d, QPoint2dList,
   QPoint3dList, Quantization, RenderTexture, TextureMapping, TileFormat, TileReadStatus,
 } from "@itwin/core-common";
@@ -153,6 +153,7 @@ interface GltfMeshPrimitive extends GltfProperty {
     /** The [CESIUM_primitive_outline](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Vendor/CESIUM_primitive_outline) extension
      * describes how to draw outline edges for a triangle mesh.
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     CESIUM_primitive_outline?: {
       /** The Id of the [[GltfBufferViewProps]] supplying the endpoints of each edge as indices into the triangle mesh's vertex array.
        * The number of indices must be even; each consecutive pair of indices describes one line segment. No connectivity between
@@ -218,6 +219,7 @@ interface Gltf2Node extends GltfChildOfRootProperty, GltfNodeBaseProps {
  * Each node may define a transform. Each node may have any number of child nodes. A child node's transform is multiplied by its parent node's transform.
  * Some nodes may be associated with other types of data like cameras, skins, lights, etc - these types of data are currently unsupported.
  * Rendering a node means rendering its meshes and the meshes of all of its descendants, with transforms applied.
+ * @internal
  */
 export type GltfNode = Gltf1Node | Gltf2Node;
 
@@ -267,6 +269,7 @@ interface GltfImage extends GltfChildOfRootProperty {
      * be embedded in a binary chunk appended to the glTF asset's JSON, instead of being referenced by an external URI.
      * This is superseded in glTF 2.0 by support for the glb file format specification.
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     KHR_binary_glTF?: {
       /** The Id of the [[GltfBufferViewProps]] that contains the binary image data. */
       bufferView?: GltfId;
@@ -1107,7 +1110,7 @@ export abstract class GltfReader {
       // If the data is misaligned (Scalable mesh tile publisher) use slice to copy -- else use subarray.
       const aligned = 0 === (bufferData.byteOffset + offset) % dataSize;
       const bytes = aligned ? bufferData.subarray(offset, offset + length) : bufferData.slice(offset, offset + length);
-      return new GltfBufferView(bytes, accessor.count as number, type, accessor, byteStride / dataSize);
+      return new GltfBufferView(bytes, accessor.count, type, accessor, byteStride / dataSize);
     } catch (e) {
       return undefined;
     }
@@ -1671,7 +1674,7 @@ export abstract class GltfReader {
     if (image.resolvedImage)
       return;
 
-    interface BufferViewSource { bufferView?: GltfId; mimeType?: string; };
+    interface BufferViewSource { bufferView?: GltfId, mimeType?: string }
     const bvSrc: BufferViewSource | undefined = undefined !== image.bufferView ? image : image.extensions?.KHR_binary_glTF;
     if (undefined !== bvSrc?.bufferView) {
       const format = undefined !== bvSrc.mimeType ? getImageSourceFormatForMimeType(bvSrc.mimeType) : undefined;
@@ -1769,8 +1772,12 @@ export abstract class GltfReader {
  * @public
  */
 export interface ReadGltfGraphicsArgs {
-  /** The binary data describing the glTF asset. */
-  gltf: Uint8Array | Gltf;
+  /** A representation of the glTF data as one of:
+   *  - The binary data in glb format as a Uint8Array; or
+   *  - A JSON object conforming to the [glTF 2.0 specification](https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html); or
+   *  - A Uint8Array containing the utf8-encoded stringified JSON of an object conforming to the [glTF 2.0 specification](https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html).
+   */
+  gltf: Uint8Array | Object;
   /** The iModel with which the graphics will be associated - typically obtained from the [[Viewport]] into which they will be drawn. */
   iModel: IModelConnection;
   /** Options for making the graphic [pickable]($docs/learning/frontend/ViewDecorations#pickable-view-graphic-decorations).
