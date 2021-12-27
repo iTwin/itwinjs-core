@@ -1415,7 +1415,9 @@ describe("IModelTransformer", () => {
     const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: { name: "PredecessorCleanup" } });
 
     const transformer = new IModelTransformer(sourceDb, targetDb);
-    await transformer.processAll();
+    await expect(transformer.processAll()).to.be.rejectedWith(
+      /Found a reference to an element "[^"]*" that doesn't exist/
+    );
     targetDb.saveChanges();
 
     sourceDb.close();

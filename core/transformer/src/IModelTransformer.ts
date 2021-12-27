@@ -410,7 +410,7 @@ export class IModelTransformer extends IModelExportHandler {
               throw new IModelError(
                 IModelStatus.NotFound,
                 `Found a reference to an element "${sourcePredecessorId}" that doesn't exist while looking for predecessors of "${sourceElement.id}"`
-                + "\nThis must have been caused by an upstream application that manipulated the model."
+                + "\nThis must have been caused by an upstream application that changed the iModel."
                 + "\nYou can enable the IModelTransformerOptions.ignoreDeadPredecessors option to ignore these cases, but this will leave the iModel"
                 + "\nin a state where downstream consuming applications will need to handle the invalidity themselves. In some cases, writing a custom"
                 + "\ntransformer to remove the reference and fix affected elements may be suitable."
