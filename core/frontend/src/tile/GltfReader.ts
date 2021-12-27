@@ -634,7 +634,7 @@ export class GltfReaderProps {
         }
       }
     } else {
-      version = 2; // ###TODO check source.asset?.version
+      version = 2; // ###TODO verify against source.asset?.version
       json = source;
     }
 
