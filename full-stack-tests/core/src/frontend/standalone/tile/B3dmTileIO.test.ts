@@ -327,7 +327,7 @@ describe("B3dmReader", () => {
     expect(uniformType).to.equal(GltfDataType.Sampler2d);
 
     // The material specifies the value for the "u_diffuse" uniform.
-    const materials = (reader as any)._materialValues;
+    const materials = (reader as any)._materials;
     expect(materials).not.to.be.undefined;
     const materialExtension = materials[0]?.extensions?.KHR_techniques_webgl;
     expect(typeof materialExtension).to.equal("object");
