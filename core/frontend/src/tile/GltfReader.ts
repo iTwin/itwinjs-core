@@ -9,7 +9,7 @@
 import { assert, ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import { Angle, Matrix3d, Point2d, Point3d, Point4d, Range2d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import {
-  BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureTable, FillFlags, GlbHeader, ImageSource, ImageSourceFormat, LinePixels, MeshEdge,
+  BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureTable, FillFlags, GlbHeader, GltfVersions, ImageSource, ImageSourceFormat, LinePixels, MeshEdge,
   MeshEdges, MeshPolyline, MeshPolylineList, OctEncodedNormal, PackedFeatureTable, QParams2d, QParams3d, QPoint2dList,
   QPoint3dList, Quantization, RenderTexture, TextureMapping, TileReadStatus,
 } from "@itwin/core-common";
@@ -542,10 +542,17 @@ export interface GltfReaderResult extends TileContent {
  * @internal
  */
 export class GltfReaderProps {
-  private constructor(
-    public readonly binaryData: Uint8Array | undefined,
-    public readonly glTF: Gltf,
-    public readonly yAxisUp: boolean) { }
+  public readonly version: GltfVersions;
+  public readonly binaryData?: Uint8Array;
+  public readonly glTF: Gltf;
+  public readonly yAxisUp: boolean;
+
+  private constructor(glTF: Gltf, version: GltfVersions, yAxisUp: boolean, binaryData: Uint8Array | undefined) {
+    this.version = version;
+    this.glTF = glTF;
+    this.binaryData = binaryData;
+    this.yAxisUp = yAxisUp;
+  }
 
   /** Attempt to construct a new GltfReaderProps from the binary data beginning at the supplied stream's current read position. */
   public static create(source: Uint8Array | Gltf, yAxisUp: boolean = false): GltfReaderProps | undefined {
@@ -602,7 +609,7 @@ export class GltfReaderProps {
       techniques: JsonUtils.asObject(json.techniques),
     };
 
-    return glTF.meshes ? new GltfReaderProps(binaryData, glTF, yAxisUp) : undefined;
+    return glTF.meshes ? new GltfReaderProps(glTF, version, yAxisUp, binaryData) : undefined;
   }
 }
 
@@ -763,6 +770,7 @@ function * traverseNodes(ids: Iterable<GltfId>, nodes: GltfDictionary<GltfNode>,
 export abstract class GltfReader {
   protected readonly _binaryData?: Uint8Array;
   protected readonly _glTF: Gltf;
+  protected readonly _version: GltfVersions;
   protected readonly _iModel: IModelConnection;
   protected readonly _is3d: boolean;
   protected readonly _system: RenderSystem;
@@ -780,8 +788,11 @@ export abstract class GltfReader {
   protected get _accessors(): GltfDictionary<GltfAccessor> { return this._glTF.accessors ?? emptyDict; }
   protected get _bufferViews(): GltfDictionary<GltfBufferViewProps> { return this._glTF.bufferViews ?? emptyDict; }
   protected get _materialValues(): GltfDictionary<GltfMaterial> { return this._glTF.materials ?? emptyDict; }
-  protected get _textures(): GltfDictionary<GltfTexture & { resolvedTexture?: RenderTexture }> { return this._glTF.textures ?? emptyDict; }
   protected get _samplers(): GltfDictionary<GltfSampler> { return this._glTF.samplers ?? emptyDict; }
+
+  protected get _textures(): GltfDictionary<GltfTexture & { resolvedTexture?: RenderTexture }> { return this._glTF.textures ?? emptyDict; }
+  protected get _images(): GltfDictionary<GltfImage & { resolvedImage?: HTMLImageElement }> { return this._glTF.images ?? emptyDict; }
+  protected get _buffers(): GltfDictionary<GltfBuffer & { resolvedBuffer?: Uint8Array }> { return this._glTF.buffers ?? emptyDict; }
 
   /* -----------------------------------
   private static _webWorkerManager: WebWorkerManager;
@@ -1051,8 +1062,9 @@ export abstract class GltfReader {
   public readBufferDataFloat(json: any, accessorName: string): GltfBufferData | undefined { return this.readBufferData(json, accessorName, GltfDataType.Float); }
 
   protected constructor(args: GltfReaderArgs) {
-    this._binaryData = args.props.binaryData;
+    this._binaryData = args.props.binaryData; // ###TODO remove - resolve binary buffer instead.
     this._glTF = args.props.glTF;
+    this._version = args.props.version;
     this._yAxisUp = args.props.yAxisUp;
 
     const rtcCenter = args.props.glTF.extensions?.CESIUM_RTC?.center;
