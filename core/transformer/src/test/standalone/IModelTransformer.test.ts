@@ -1438,6 +1438,21 @@ describe("IModelTransformer", () => {
     ] as const;
   }
 
+  /**
+   * A transformer that inserts an element at the beginning to ensure the target doesn't end up with the same ids as the source.
+   * Useful if you need to check that some source/target element references match and want to be sure it isn't a coincidence because
+   * the target was empty and therefore some elements are deterministically inserted in a coincidentally matching fashion
+   * @note it modifies the target so there are possible side effects
+   */
+  class ShiftElemIdsTransformer extends IModelTransformer {
+    constructor(...args: ConstructorParameters<typeof IModelTransformer>) {
+      super(...args);
+      // the choice of element to insert is arbitrary, anything easy works
+      const myCodeSpec = CodeSpec.create(this.targetDb, "MyCodeSpec", CodeScopeSpec.Type.ParentElement);
+      this.targetDb.codeSpecs.insert(myCodeSpec);
+    }
+  }
+
   it.only("predecessor deletion is considered invalid without ignoreDeadPredecessors enabled", async () => {
     const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "DeadPredecessorSource.bim");
     const [
@@ -1448,17 +1463,17 @@ describe("IModelTransformer", () => {
     const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "DeadPredecessorTarget.bim");
     const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
 
-    const defaultTransformer = new IModelTransformer(sourceDb, targetDb);
+    const defaultTransformer = new ShiftElemIdsTransformer(sourceDb, targetDb);
     await expect(defaultTransformer.processAll()).to.be.rejectedWith(
       /Found a reference to an element "[^"]*" that doesn't exist/
     );
 
-    const ignoreDeadPredecessorsDisabledTransformer = new IModelTransformer(sourceDb, targetDb, { ignoreDeadPredecessors: false });
+    const ignoreDeadPredecessorsDisabledTransformer = new ShiftElemIdsTransformer(sourceDb, targetDb, { ignoreDeadPredecessors: false });
     await expect(ignoreDeadPredecessorsDisabledTransformer.processAll()).to.be.rejectedWith(
       /Found a reference to an element "[^"]*" that doesn't exist/
     );
 
-    const ignoreDeadPredecessorsEnabledTransformer = new IModelTransformer(sourceDb, targetDb, { ignoreDeadPredecessors: true});
+    const ignoreDeadPredecessorsEnabledTransformer = new ShiftElemIdsTransformer(sourceDb, targetDb, { ignoreDeadPredecessors: true});
     await expect(ignoreDeadPredecessorsEnabledTransformer.processAll()).not.to.be.rejected;
     targetDb.saveChanges();
 
