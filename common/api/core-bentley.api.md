@@ -157,6 +157,11 @@ export enum BriefcaseStatus {
 
 // @public
 export class ByteStream {
+    // @deprecated
+    constructor(buffer: ArrayBuffer | SharedArrayBuffer, subView?: {
+        byteOffset: number;
+        byteLength: number;
+    });
     advance(numBytes: number): boolean;
     get arrayBuffer(): ArrayBuffer | SharedArrayBuffer;
     get curPos(): number;
