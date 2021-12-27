@@ -149,6 +149,18 @@ interface GltfMeshPrimitive extends GltfProperty {
   mode?: GltfMeshMode;
   /** Morph targets - currently unsupported. */
   targets?: { [k: string]: GltfId | undefined };
+  extensions?: GltfExtensions & {
+    /** The [CESIUM_primitive_outline](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Vendor/CESIUM_primitive_outline) extension
+     * describes how to draw outline edges for a triangle mesh.
+     */
+    CESIUM_primitive_outline?: {
+      /** The Id of the [[GltfBufferViewProps]] supplying the endpoints of each edge as indices into the triangle mesh's vertex array.
+       * The number of indices must be even; each consecutive pair of indices describes one line segment. No connectivity between
+       * line segments is implied.
+       */
+      indices?: GltfId;
+    };
+  };
 }
 
 /** A collection of [[GltfMeshPrimitive]]s to be rendered. Each mesh is referenced by a node. Multiple nodes can refer to the same mesh.
@@ -165,9 +177,9 @@ interface GltfMesh extends GltfChildOfRootProperty {
 interface GltfNodeBaseProps {
   /** The Ids of the child nodes. @see [[GltfNode]]. */
   children?: GltfId[];
-  /** Currently unsupported. */
+  /** Currently ignored. */
   camera?: GltfId;
-  /** Currently unsupported. */
+  /** Currently ignored. */
   skin?: GltfId;
   /** A 4x4 column-major transformation matrix. Mutually exclusive with [[rotation]], [[scale]], and [[translation]]. */
   matrix?: number[];
@@ -187,9 +199,9 @@ interface Gltf1Node extends GltfChildOfRootProperty, GltfNodeBaseProps {
    */
   meshes?: GltfId[] | string;
   mesh?: never;
-  /** Currently unsupported. */
+  /** Currently ignored. */
   jointName?: GltfId;
-  /** Currently unsupported. */
+  /** Currently ignored. */
   skeletons?: GltfId[];
 }
 
@@ -198,7 +210,7 @@ interface Gltf2Node extends GltfChildOfRootProperty, GltfNodeBaseProps {
   /** The Id of the [[GltfMesh]] to be rendered by this node. */
   mesh?: GltfId;
   meshes?: never;
-  /** Morph targets - currently unsupported. */
+  /** Morph targets - currently ignored. */
   weights?: number[];
 }
 
@@ -244,7 +256,6 @@ interface GltfAsset extends GltfProperty {
 interface GltfImage extends GltfChildOfRootProperty {
   /** URI from which the image data can be obtained, either as a base-64-encoded data URI or an external resource.
    * Mutually exclusive with [[bufferView]].
-   * Currently unsupported.
    */
   uri?: string;
   /** The image's media type. This property is required if [[bufferView]] is defined. */
@@ -252,8 +263,14 @@ interface GltfImage extends GltfChildOfRootProperty {
   /** The Id of the [[GltfBufferViewProps]] containing the image data. Mutually exclusive with [[uri]]. */
   bufferView?: GltfId;
   extensions?: GltfExtensions & {
+    /** The [KHR_binary_glTF](https://github.com/KhronosGroup/glTF/tree/main/extensions/1.0/Khronos/KHR_binary_glTF) allows an image to
+     * be embedded in a binary chunk appended to the glTF asset's JSON, instead of being referenced by an external URI.
+     * This is superseded in glTF 2.0 by support for the glb file format specification.
+     */
     KHR_binary_glTF?: {
+      /** The Id of the [[GltfBufferViewProps]] that contains the binary image data. */
       bufferView?: GltfId;
+      /** Required - @see [[GltfImage.mimeType]]. */
       mimeType?: string;
     };
   };
@@ -800,10 +817,6 @@ function * traverseNodes(ids: Iterable<GltfId>, nodes: GltfDictionary<GltfNode>,
   }
 }
 
-interface NamedIdMap {
-  [name: string]: GltfId | undefined;
-}
-
 /** Deserializes [glTF](https://www.khronos.org/gltf/).
  * @internal
  */
@@ -1044,7 +1057,7 @@ export abstract class GltfReader {
   }
 
   // ###TODO what is the actual type of `json`?
-  public getBufferView(json: NamedIdMap, accessorName: string): GltfBufferView | undefined {
+  public getBufferView(json: { [k: string]: any }, accessorName: string): GltfBufferView | undefined {
     try {
       const accessorValue = JsonUtils.asString(json[accessorName]);
       const accessor = accessorValue ? this._accessors[accessorValue] : undefined;
@@ -1100,10 +1113,10 @@ export abstract class GltfReader {
     }
   }
 
-  public readBufferData32(json: NamedIdMap, accessorName: string): GltfBufferData | undefined { return this.readBufferData(json, accessorName, GltfDataType.UInt32); }
-  public readBufferData16(json: NamedIdMap, accessorName: string): GltfBufferData | undefined { return this.readBufferData(json, accessorName, GltfDataType.UnsignedShort); }
-  public readBufferData8(json: NamedIdMap, accessorName: string): GltfBufferData | undefined { return this.readBufferData(json, accessorName, GltfDataType.UnsignedByte); }
-  public readBufferDataFloat(json: NamedIdMap, accessorName: string): GltfBufferData | undefined { return this.readBufferData(json, accessorName, GltfDataType.Float); }
+  public readBufferData32(json: { [k: string]: any }, accessorName: string): GltfBufferData | undefined { return this.readBufferData(json, accessorName, GltfDataType.UInt32); }
+  public readBufferData16(json: { [k: string]: any }, accessorName: string): GltfBufferData | undefined { return this.readBufferData(json, accessorName, GltfDataType.UnsignedShort); }
+  public readBufferData8(json: { [k: string]: any }, accessorName: string): GltfBufferData | undefined { return this.readBufferData(json, accessorName, GltfDataType.UnsignedByte); }
+  public readBufferDataFloat(json: { [k: string]: any }, accessorName: string): GltfBufferData | undefined { return this.readBufferData(json, accessorName, GltfDataType.Float); }
 
   protected constructor(args: GltfReaderArgs) {
     this._glTF = args.props.glTF;
@@ -1145,7 +1158,7 @@ export abstract class GltfReader {
     this._sceneNodes = sceneNodes;
   }
 
-  protected readBufferData(json: NamedIdMap, accessorName: string, type: GltfDataType): GltfBufferData | undefined {
+  protected readBufferData(json: { [k: string]: any }, accessorName: string, type: GltfDataType): GltfBufferData | undefined {
     const view = this.getBufferView(json, accessorName);
     return undefined !== view ? view.toBufferData(type) : undefined;
   }
@@ -1196,7 +1209,7 @@ export abstract class GltfReader {
     return new DisplayParams(DisplayParams.Type.Mesh, color, color, 1, LinePixels.Solid, FillFlags.Always, undefined, undefined, hasBakedLighting, textureMapping);
   }
 
-  protected readMeshPrimitive(primitive: any, featureTable?: FeatureTable, pseudoRtcBias?: Vector3d): GltfMeshData | undefined {
+  protected readMeshPrimitive(primitive: GltfMeshPrimitive, featureTable?: FeatureTable, pseudoRtcBias?: Vector3d): GltfMeshData | undefined {
     const materialName = JsonUtils.asString(primitive.material);
     const hasBakedLighting = undefined === primitive.attributes.NORMAL;
     const material = 0 < materialName.length ? this._materials[materialName] : undefined;
@@ -1223,7 +1236,6 @@ export abstract class GltfReader {
         assert(false);
         return undefined;
     }
-    const isPlanar = JsonUtils.asBool(primitive.isPlanar);
 
     const isVolumeClassifier = this._isVolumeClassifier;
     const meshPrimitive = Mesh.create({
@@ -1232,7 +1244,7 @@ export abstract class GltfReader {
       type: primitiveType,
       range: Range3d.createNull(),
       is2d: !this._is3d,
-      isPlanar,
+      isPlanar: false,
       hasBakedLighting,
       isVolumeClassifier,
     });
@@ -1307,6 +1319,7 @@ export abstract class GltfReader {
         return undefined;
       }
     }
+
     if (displayParams.textureMapping && !mesh.uvs)
       return undefined;
 
@@ -1370,7 +1383,7 @@ export abstract class GltfReader {
    * context capture which have a large offset from the tileset origin that exceeds the
    * capacity of 32 bit integers. This is essentially an ad hoc RTC applied at read time.
    */
-  private readVertices(mesh: GltfMeshData, primitive: any, pseudoRtcBias?: Vector3d): boolean {
+  private readVertices(mesh: GltfMeshData, primitive: GltfMeshPrimitive, pseudoRtcBias?: Vector3d): boolean {
     const view = this.getBufferView(primitive.attributes, "POSITION");
     if (undefined === view)
       return false;
@@ -1437,7 +1450,7 @@ export abstract class GltfReader {
     return true;
   }
 
-  protected readIndices(json: NamedIdMap, accessorName: string): number[] | undefined {
+  protected readIndices(json: { [k: string]: any }, accessorName: string): number[] | undefined {
     const data = this.readBufferData32(json, accessorName);
     if (undefined === data)
       return undefined;
@@ -1452,7 +1465,7 @@ export abstract class GltfReader {
   protected readBatchTable(_mesh: Mesh, _json: any) {
   }
 
-  protected readMeshIndices(mesh: GltfMeshData, json: NamedIdMap): boolean {
+  protected readMeshIndices(mesh: GltfMeshData, json: { [k: string]: any }): boolean {
     const data = this.readBufferData16(json, "indices") || this.readBufferData32(json, "indices");
     if (undefined === data || (!(data.buffer instanceof (Uint16Array)) && !(data.buffer instanceof (Uint32Array))))
       return false;
@@ -1462,7 +1475,7 @@ export abstract class GltfReader {
     return true;
   }
 
-  protected readNormals(mesh: GltfMeshData, json: NamedIdMap, accessorName: string): boolean {
+  protected readNormals(mesh: GltfMeshData, json: { [k: string]: any }, accessorName: string): boolean {
     const view = this.getBufferView(json, accessorName);
     if (undefined === view)
       return false;
@@ -1503,7 +1516,7 @@ export abstract class GltfReader {
     }
   }
 
-  private readUVParams(mesh: GltfMeshData, json: NamedIdMap, accessorName: string): boolean {
+  private readUVParams(mesh: GltfMeshData, json: { [k: string]: any }, accessorName: string): boolean {
     const view = this.getBufferView(json, accessorName);
 
     if (view === undefined)
@@ -1569,7 +1582,7 @@ export abstract class GltfReader {
     return true;
   }
 
-  protected readPolylines(polylines: MeshPolylineList, json: NamedIdMap, accessorName: string, disjoint: boolean): boolean {
+  protected readPolylines(polylines: MeshPolylineList, json: { [k: string]: any }, accessorName: string, disjoint: boolean): boolean {
     const data = this.readBufferData32(json, accessorName);
     if (undefined === data)
       return false;
