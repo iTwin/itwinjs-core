@@ -1505,14 +1505,16 @@ export abstract class GltfReader {
 
   private readUVParams(mesh: GltfMeshData, json: NamedIdMap, accessorName: string): boolean {
     const view = this.getBufferView(json, accessorName);
-    let data: any;
 
     if (view === undefined)
       return false;
 
     switch (view.type) {
       case GltfDataType.Float: {
-        data = this.readBufferDataFloat(json, accessorName);
+        const data = this.readBufferDataFloat(json, accessorName);
+        if (!data)
+          return false;
+
         mesh.uvRange = Range2d.createNull();
 
         for (let i = 0; i < data.count; i++) {
