@@ -4934,6 +4934,8 @@ export abstract class InteractiveTool extends Tool {
     // @beta
     bumpToolSetting(_settingIndex?: number): Promise<boolean>;
     changeLocateState(enableLocate: boolean, enableSnap?: boolean, cursor?: string, coordLockOvr?: CoordinateLockOverrides): void;
+    // @beta
+    protected changeToolSettingPropertyValue(syncItem: DialogPropertySyncItem): boolean;
     decorate(_context: DecorateContext): void;
     decorateSuspended(_context: DecorateContext): void;
     endDynamics(): void;
@@ -4942,7 +4944,13 @@ export abstract class InteractiveTool extends Tool {
     filterHit(_hit: HitDetail, _out?: LocateResponse): Promise<LocateFilterStatus>;
     getCurrentButtonEvent(ev: BeButtonEvent): void;
     getDecorationGeometry(_hit: HitDetail): GeometryStreamProps | undefined;
+    // @internal (undocumented)
+    protected getToolSettingPropertyByName(propertyName: string): DialogProperty<any>;
+    // @beta
+    protected getToolSettingPropertyLocked(_property: DialogProperty<any>): DialogProperty<any> | undefined;
     getToolTip(_hit: HitDetail): Promise<HTMLElement | string>;
+    // @beta
+    protected initializeToolSettingPropertyValues(properties: DialogProperty<any>[]): void;
     initLocateElements(enableLocate?: boolean, enableSnap?: boolean, cursor?: string, coordLockOvr?: CoordinateLockOverrides): void;
     // (undocumented)
     isCompatibleViewport(_vp: ScreenViewport, _isSelectedViewChange: boolean): boolean;
@@ -4980,11 +4988,19 @@ export abstract class InteractiveTool extends Tool {
     receivedDownEvent: boolean;
     // @beta
     reloadToolSettingsProperties(): void;
+    // @internal (undocumented)
+    protected restoreToolSettingPropertyValue(property: DialogProperty<any>): boolean;
+    // @internal (undocumented)
+    protected saveToolSettingPropertyValue(property: DialogProperty<any>, itemValue: DialogItemValue): boolean;
     // @beta
     supplyToolSettingsProperties(): DialogItem[] | undefined;
+    // @internal (undocumented)
+    protected syncToolSettingPropertyValue(property: DialogProperty<any>, isDisabled?: boolean): void;
     // @beta
     syncToolSettingsProperties(syncData: DialogPropertySyncItem[]): void;
     testDecorationHit(_id: string): boolean;
+    // @internal (undocumented)
+    protected toolSettingProperties?: Map<string, DialogProperty<any>>;
 }
 
 // @internal (undocumented)
