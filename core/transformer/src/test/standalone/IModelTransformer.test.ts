@@ -1460,7 +1460,7 @@ describe("IModelTransformer", () => {
     const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "DeadPredecessorSource.bim");
     const [
       sourceDb,
-      { displayStyleCode, displayStyleId, myPhysObjCodeSpec, physicalObjects, sourceModelId },
+      { displayStyleId, physicalObjects },
     ] = createIModelWithDeadPredecessor({ name: "DeadPredecessors", path: sourceDbPath });
 
     const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "DeadPredecessorTarget.bim");
@@ -1484,34 +1484,22 @@ describe("IModelTransformer", () => {
     const displayStyleInSource = sourceDb.elements.getElement<DisplayStyle3d>(displayStyleId);
     expect([...displayStyleInSource.settings.excludedElementIds]).to.include(physicalObjects[1].id);
 
-    const sourceModelElemInSource = sourceDb.elements.getElement(sourceModelId); // the model submodels a physical partition element
-    const sourceModelElemInTargetId = targetDb.elements.queryElementIdByCode(sourceModelElemInSource.code);
-    // should contribute assert clauses to the relevant functions in chai and friends
-    if (sourceModelElemInTargetId  === undefined) throw Error("expected it to be defined");
-
-    const displayStyleInTargetId = targetDb.elements.queryElementIdByCode(displayStyleCode);
-    if (displayStyleInTargetId === undefined) throw Error("expected it to be defined");
+    const displayStyleInTargetId = ignoreDeadPredecessorsEnabledTransformer.context.findTargetElementId(displayStyleId);
     const displayStyleInTarget = targetDb.elements.getElement<DisplayStyle3d>(displayStyleInTargetId);
 
     const physObjsInTarget = physicalObjects.map((physObjInSource) => {
-      const targetCodeSpec = targetDb.codeSpecs.getByName(myPhysObjCodeSpec.name);
-      const remappedCode = Code.fromJSON({
-        value: physObjInSource.code.value,
-        spec: targetCodeSpec.id,
-        scope: sourceModelElemInTargetId,
-      });
-      const physObjInTargetId = targetDb.elements.queryElementIdByCode(remappedCode);
+      const physObjInTargetId = ignoreDeadPredecessorsEnabledTransformer.context.findTargetElementId(physObjInSource.id);
       return { ...physObjInSource, id: physObjInTargetId };
     });
 
-    expect(physObjsInTarget[0].id).not.to.be.undefined;
-    expect(physObjsInTarget[1].id).to.be.undefined;
+    expect(Id64.isValidId64(physObjsInTarget[0].id)).to.be.true;
+    expect(Id64.isValidId64(physObjsInTarget[1].id)).not.to.be.true;
 
     expect(
       [...displayStyleInTarget.settings.excludedElementIds]
     ).to.deep.equal(
       physObjsInTarget
-        .filter(({id}) => id !== undefined)
+        .filter(({id}) => Id64.isValidId64(id))
         .map(({id}) => id)
     );
 
