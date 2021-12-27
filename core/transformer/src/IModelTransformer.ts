@@ -405,6 +405,7 @@ export class IModelTransformer extends IModelExportHandler {
           if (sourcePredecessor === undefined) {
             if (this._options.ignoreDeadPredecessors) {
               Logger.logWarning(loggerCategory, `Source element (${sourceElement.id}) "${sourceElement.getDisplayLabel()}" has a missing predecessor (${sourcePredecessorId})`);
+              sourcePredecessorIds.delete(sourcePredecessorId);
               return;
             } else {
               throw new IModelError(

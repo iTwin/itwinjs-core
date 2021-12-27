@@ -1442,7 +1442,7 @@ describe("IModelTransformer", () => {
     const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "DeadPredecessorSource.bim");
     const [
       sourceDb,
-      { physicalObjects: [, , physObj3], displayStyleCode, displayStyleId },
+      { physicalObjects, displayStyleCode, displayStyleId },
     ] = createIModelWithDeadPredecessor({ name: "DeadPredecessors", path: sourceDbPath });
 
     const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "DeadPredecessorTarget.bim");
@@ -1462,20 +1462,31 @@ describe("IModelTransformer", () => {
     await expect(ignoreDeadPredecessorsEnabledTransformer.processAll()).not.to.be.rejected;
     targetDb.saveChanges();
 
-    expect(sourceDb.elements.tryGetElement(physObj3.id)).to.be.undefined;
+    expect(sourceDb.elements.tryGetElement(physicalObjects[2].id)).to.be.undefined;
     const displayStyleInSource = sourceDb.elements.getElement<DisplayStyle3d>(displayStyleId);
-    expect(displayStyleInSource.settings.excludedElementIds).to.include(physObj3.id);
+    expect([...displayStyleInSource.settings.excludedElementIds]).to.include(physicalObjects[2].id);
 
     const displayStyleInTargetId = targetDb.elements.queryElementIdByCode(displayStyleCode);
     // should contribute assert clauses to the relevant functions in chai and friends
     if (displayStyleInTargetId === undefined) throw Error("expected it to be defined");
     const displayStyleInTarget = targetDb.elements.getElement<DisplayStyle3d>(displayStyleInTargetId);
 
-    const physObj3InTargetId = targetDb.elements.queryElementIdByCode(physObj3.code);
-    if (physObj3InTargetId  === undefined) throw Error("expected it to be defined");
+    const physObjsInTarget = physicalObjects.map((physObjInSource) => {
+      const physObjInTargetId = sourceDb.elements.queryElementIdByCode(physObjInSource.code);
+      return { ...physObjInSource, id: physObjInTargetId };
+    });
 
-    expect(targetDb.elements.tryGetElement(physObj3InTargetId)).to.be.undefined;
-    expect(displayStyleInTarget.settings.excludedElementIds).to.include(physObj3InTargetId);
+    expect(physObjsInTarget[0].id).not.to.be.undefined;
+    expect(physObjsInTarget[1].id).not.to.be.undefined;
+    expect(physObjsInTarget[2].id).to.be.undefined;
+
+    expect(
+      [...displayStyleInTarget.settings.excludedElementIds]
+    ).to.deep.equal(
+      physObjsInTarget
+        .filter(({id}) => id !== undefined)
+        .map(({id}) => id)
+    );
 
     sourceDb.close();
     targetDb.close();
