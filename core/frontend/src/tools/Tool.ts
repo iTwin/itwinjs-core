@@ -675,6 +675,9 @@ export abstract class InteractiveTool extends Tool {
   }
 
   /** @internal */
+  protected toolSettingProperties?: Map<string, DialogProperty<any>>;
+
+  /** @internal */
   protected restoreToolSettingPropertyValue(property: DialogProperty<any>): boolean {
     const itemValue = IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValue(this.toolId, property.name);
     if (undefined === itemValue?.value)
@@ -702,6 +705,15 @@ export abstract class InteractiveTool extends Tool {
     this.syncToolSettingsProperties([property.syncItem]);
   }
 
+  /** @internal */
+  protected getToolSettingPropertyByName(propertyName: string): DialogProperty<any> {
+    const foundProperty = this.toolSettingProperties?.get(propertyName);
+    if (foundProperty)
+      return foundProperty;
+
+    throw new Error(`property not found: ${propertyName}`);
+  }
+
   /** Override to return the property that is disabled/enabled if the supplied property is a lock property.
    * @see [[changeToolSettingPropertyValue]]
    * @beta
@@ -710,23 +722,8 @@ export abstract class InteractiveTool extends Tool {
     return undefined;
   }
 
-  protected toolSettingProperties = new Map<string, DialogProperty<any>>();
-
-  /** Override to return the property for the supplied property name.
-   * @see [[changeToolSettingPropertyValue]]
-   * @beta
-   */
-  protected getToolSettingPropertyByName(propertyName: string): DialogProperty<any> {
-    const foundProperty = this.toolSettingProperties.get(propertyName);
-    if (foundProperty)
-      return foundProperty;
-
-    throw new Error(`property not found: ${propertyName}`);
-  }
-
   /** Helper method for responding to a tool setting property value change by updating saved settings.
    * @see [[applyToolSettingPropertyChange]]
-   * @see [[getToolSettingPropertyByName]] to return the tool property for the supplied name.
    * @see [[getToolSettingPropertyLocked]] to return the corresponding locked property, if any.
    * @beta
    */
@@ -748,6 +745,11 @@ export abstract class InteractiveTool extends Tool {
    * @beta
    */
   protected initializeToolSettingPropertyValues(properties: DialogProperty<any>[]): void {
+    if (undefined !== this.toolSettingProperties)
+      return;
+
+    this.toolSettingProperties = new Map<string, DialogProperty<any>>();
+
     for (const property of properties) {
       this.toolSettingProperties.set(property.name, property);
       this.restoreToolSettingPropertyValue(property);
