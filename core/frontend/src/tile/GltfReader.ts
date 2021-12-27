@@ -251,6 +251,12 @@ interface GltfImage extends GltfChildOfRootProperty {
   mimeType?: "image/jpeg" | "image/png";
   /** The Id of the [[GltfBufferViewProps]] containing the image data. Mutually exclusive with [[uri]]. */
   bufferView?: GltfId;
+  extensions?: GltfExtensions & {
+    KHR_binary_glTF?: {
+      bufferView?: GltfId;
+      mimeType?: string;
+    };
+  };
 }
 
 /** Describes a reference to a [[GltfTexture]]. */
@@ -781,7 +787,6 @@ function * traverseNodes(ids: Iterable<GltfId>, nodes: GltfDictionary<GltfNode>,
  * @internal
  */
 export abstract class GltfReader {
-  protected readonly _binaryData?: Uint8Array;
   protected readonly _glTF: Gltf;
   protected readonly _version: number;
   protected readonly _iModel: IModelConnection;
@@ -1018,17 +1023,20 @@ export abstract class GltfReader {
 
   // ###TODO what is the actual type of `json`?
   public getBufferView(json: any, accessorName: string): GltfBufferView | undefined {
-    // ###TODO remove this check - resolve buffer data ahead of time.
-    if (!this._binaryData)
-      return undefined;
-
     try {
       const accessorValue = JsonUtils.asString(json[accessorName]);
-      const accessor = 0 < accessorValue.length ? JsonUtils.asObject(this._accessors[accessorValue]) : undefined;
-      const bufferViewAccessorValue = undefined !== accessor ? JsonUtils.asString(accessor.bufferView) : "";
-      const bufferView = 0 < bufferViewAccessorValue.length ? JsonUtils.asObject(this._bufferViews[bufferViewAccessorValue]) : undefined;
+      const accessor = accessorValue ? this._accessors[accessorValue] : undefined;
+      if (!accessor)
+        return undefined;
 
-      if (undefined === accessor)
+      const bufferViewAccessorValue = accessor.bufferView;
+      const bufferView = bufferViewAccessorValue ? this._bufferViews[bufferViewAccessorValue] : undefined;
+      if (!bufferView || undefined === bufferView.buffer)
+        return undefined;
+
+      const buffer = this._buffers[bufferView.buffer];
+      const bufferData = buffer?.resolvedBuffer;
+      if (!bufferData)
         return undefined;
 
       const type = accessor.componentType as GltfDataType;
@@ -1062,7 +1070,8 @@ export abstract class GltfReader {
       const length = byteStride * accessor.count;
 
       // If the data is misaligned (Scalable mesh tile publisher) use slice to copy -- else use subarray.
-      const bytes = (0 === (this._binaryData.byteOffset + offset) % dataSize) ? this._binaryData.subarray(offset, offset + length) : this._binaryData.slice(offset, offset + length);
+      const aligned = 0 === (bufferData.byteOffset + offset) % dataSize;
+      const bytes = aligned ? bufferData.subarray(offset, offset + length) : bufferData.slice(offset, offset + length);
       return new GltfBufferView(bytes, accessor.count as number, type, accessor, byteStride / dataSize);
     } catch (e) {
       return undefined;
@@ -1643,20 +1652,20 @@ export abstract class GltfReader {
       await Promise.all(promises.values());
   }
 
-  protected async loadTextureImage(imageJson: any, samplerJson: any, isTransparent: boolean): Promise<RenderTexture | undefined> {
-    // ###TODO remove this check - resolve buffer data ahead of time
-    if (!this._binaryData)
-      return undefined;
-
+  protected async loadTextureImage(image: GltfImage, samplerJson: any, isTransparent: boolean): Promise<RenderTexture | undefined> {
     try {
-      const binaryImageJson = (imageJson.extensions && imageJson.extensions.KHR_binary_glTF) ? JsonUtils.asObject(imageJson.extensions.KHR_binary_glTF) : imageJson;
-      const bufferView = this._bufferViews[binaryImageJson.bufferView];
-      if (!bufferView || undefined === bufferView.byteLength || bufferView.byteLength <= 0)
+      interface BufferViewSource { bufferView?: GltfId; mimeType?: string; };
+      const bvSrc: BufferViewSource | undefined = undefined !== image.bufferView ? image : image.extensions?.KHR_binary_glTF;
+      if (undefined === bvSrc?.bufferView || undefined === bvSrc?.mimeType)
         return undefined;
 
-      const mimeType = JsonUtils.asString(binaryImageJson.mimeType);
-      const format = getImageSourceFormatForMimeType(mimeType);
-      if (undefined === format)
+      const bufferView = this._bufferViews[bvSrc.bufferView];
+      const format = getImageSourceFormatForMimeType(bvSrc.mimeType);
+      if (undefined === format || !bufferView || !bufferView.byteLength || undefined === bufferView.buffer || bufferView.byteLength < 0)
+        return undefined;
+
+      const bufferData = this._buffers[bufferView.buffer]?.resolvedBuffer;
+      if (!bufferData)
         return undefined;
 
       let textureType = RenderTexture.Type.Normal;
@@ -1678,7 +1687,7 @@ export abstract class GltfReader {
           }
         ------------------------------------- */
 
-      const bytes = this._binaryData.subarray(offset, offset + bufferView.byteLength);
+       const bytes = bufferData.subarray(offset, offset + bufferView.byteLength);
       const imageSource = new ImageSource(bytes, format);
       try {
         const image = await imageElementFromImageSource(imageSource);
@@ -1708,9 +1717,13 @@ export abstract class GltfReader {
     if (!textureJson || textureJson.resolvedTexture || undefined === textureJson.source)
       return;
 
+    const image = this._glTF.images[textureJson.source];
+    if (!image)
+      return;
+
     const samplerId = textureJson.sampler;
     const sampler = undefined !== samplerId ? this._samplers[samplerId] : undefined;
-    const texture = await this.loadTextureImage(this._glTF.images[textureJson.source], sampler, isTransparent);
+    const texture = await this.loadTextureImage(image, sampler, isTransparent);
     textureJson.resolvedTexture = texture;
   }
 
@@ -1758,6 +1771,7 @@ export async function readGltfGraphics(args: ReadGltfGraphicsArgs): Promise<Rend
  */
 export class GltfGraphicsReader extends GltfReader {
   private readonly _featureTable?: FeatureTable;
+  public readonly binaryData?: Uint8Array; // strictly for tests
 
   public constructor(props: GltfReaderProps, args: ReadGltfGraphicsArgs) {
     super({
@@ -1766,6 +1780,7 @@ export class GltfGraphicsReader extends GltfReader {
       vertexTableRequired: true,
     });
 
+    this.binaryData = props.binaryData;
     const pickableId = args.pickableOptions?.id;
     if (pickableId) {
       this._featureTable = new FeatureTable(1, args.pickableOptions?.modelId ?? pickableId, BatchType.Primary);
@@ -1782,5 +1797,4 @@ export class GltfGraphicsReader extends GltfReader {
   public get scenes(): GltfDictionary<GltfScene> { return this._glTF.scenes ?? emptyDict; }
   public get sceneNodes(): GltfId[] { return this._sceneNodes; }
   public get textures(): GltfDictionary<GltfTexture & { resolvedTexture?: RenderTexture }> { return this._textures; }
-  public get binaryData(): Uint8Array | undefined { return this._binaryData; }
 }
