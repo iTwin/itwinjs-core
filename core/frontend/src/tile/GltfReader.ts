@@ -1189,7 +1189,7 @@ export abstract class GltfReader {
     return id ?? extractId(material.pbrMetallicRoughness?.baseColorTexture?.index);
   }
 
-  protected createDisplayParams(materialJson: any, hasBakedLighting: boolean): DisplayParams | undefined {
+  protected createDisplayParams(materialJson: GltfMaterial, hasBakedLighting: boolean): DisplayParams | undefined {
     const textureId = this.extractTextureId(materialJson);
     const textureMapping = undefined !== textureId ? this.findTextureMapping(textureId) : undefined;
     const color = colorFromMaterial(materialJson);
@@ -1200,7 +1200,7 @@ export abstract class GltfReader {
     const materialName = JsonUtils.asString(primitive.material);
     const hasBakedLighting = undefined === primitive.attributes.NORMAL;
     const material = 0 < materialName.length ? this._materials[materialName] : undefined;
-    const displayParams = this.createDisplayParams(material, hasBakedLighting);
+    const displayParams = material ? this.createDisplayParams(material, hasBakedLighting) : undefined;
     if (undefined === displayParams)
       return undefined;
 
