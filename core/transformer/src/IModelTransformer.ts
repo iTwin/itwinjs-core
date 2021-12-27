@@ -404,9 +404,6 @@ export class IModelTransformer extends IModelExportHandler {
           const sourcePredecessor = this.sourceDb.elements.tryGetElement(sourcePredecessorId);
           if (sourcePredecessor === undefined) {
             if (this._options.ignoreDeadPredecessors) {
-              // It is possible to craft an iModel with invalidated relationships e.g. by improperly deleting elements without fixing predecessors.
-              // To make sure it is still possible to transform such iModels, we ignore the missing predecessors in this case, but it this passes
-              // the issue to consumers of the iModel and is very likely to cause errors if propagated.
               Logger.logWarning(loggerCategory, `Source element (${sourceElement.id}) "${sourceElement.getDisplayLabel()}" has a missing predecessor (${sourcePredecessorId})`);
               return;
             } else {
