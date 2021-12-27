@@ -780,7 +780,7 @@ export abstract class GltfReader {
   protected get _accessors(): GltfDictionary<GltfAccessor> { return this._glTF.accessors ?? emptyDict; }
   protected get _bufferViews(): GltfDictionary<GltfBufferViewProps> { return this._glTF.bufferViews ?? emptyDict; }
   protected get _materialValues(): GltfDictionary<GltfMaterial> { return this._glTF.materials ?? emptyDict; }
-  protected get _textures(): GltfDictionary<GltfTexture & { renderTexture?: RenderTexture }> { return this._glTF.textures ?? emptyDict; }
+  protected get _textures(): GltfDictionary<GltfTexture & { resolvedTexture?: RenderTexture }> { return this._glTF.textures ?? emptyDict; }
   protected get _samplers(): GltfDictionary<GltfSampler> { return this._glTF.samplers ?? emptyDict; }
 
   /* -----------------------------------
@@ -1638,18 +1638,18 @@ export abstract class GltfReader {
       return;
 
     const textureJson = this._textures[textureId];
-    if (!textureJson || textureJson.renderTexture || undefined === textureJson.source)
+    if (!textureJson || textureJson.resolvedTexture || undefined === textureJson.source)
       return;
 
     const samplerId = textureJson.sampler;
     const sampler = undefined !== samplerId ? this._samplers[samplerId] : undefined;
     const texture = await this.loadTextureImage(this._glTF.images[textureJson.source], sampler, isTransparent);
-    textureJson.renderTexture = texture;
+    textureJson.resolvedTexture = texture;
   }
 
   protected findTextureMapping(textureId: string): TextureMapping | undefined {
     const texture = this._textures[textureId];
-    return texture?.renderTexture ? new TextureMapping(texture.renderTexture, new TextureMapping.Params()) : undefined;
+    return texture?.resolvedTexture ? new TextureMapping(texture.resolvedTexture, new TextureMapping.Params()) : undefined;
   }
 }
 
@@ -1714,6 +1714,6 @@ export class GltfGraphicsReader extends GltfReader {
   public get nodes(): GltfDictionary<GltfNode> { return this._nodes; }
   public get scenes(): GltfDictionary<GltfScene> { return this._glTF.scenes ?? emptyDict; }
   public get sceneNodes(): GltfId[] { return this._sceneNodes; }
-  public get textures(): GltfDictionary<GltfTexture & { renderTexture?: RenderTexture }> { return this._textures; }
+  public get textures(): GltfDictionary<GltfTexture & { resolvedTexture?: RenderTexture }> { return this._textures; }
   public get binaryData(): Uint8Array | undefined { return this._binaryData; }
 }
