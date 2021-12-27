@@ -562,16 +562,6 @@ export class RotateElementsTool extends TransformElementsTool {
     super.provideToolAssistance(mainMsg);
   }
 
-  protected override getToolSettingPropertyByName(propertyName: string): DialogProperty<any> {
-    if (propertyName === this.methodProperty.name)
-      return this.methodProperty;
-    else if (propertyName === this.aboutProperty.name)
-      return this.aboutProperty;
-    else if (propertyName === this.angleProperty.name)
-      return this.angleProperty;
-    return super.getToolSettingPropertyByName(propertyName);
-  }
-
   public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
     if (!this.changeToolSettingPropertyValue(updatedValue))
       return false;

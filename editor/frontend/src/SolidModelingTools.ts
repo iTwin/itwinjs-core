@@ -192,14 +192,6 @@ export class ThickenSheetElementsTool extends ElementGeometryCacheTool {
       await this.saveChanges();
   }
 
-  protected override getToolSettingPropertyByName(propertyName: string): DialogProperty<any> {
-    if (propertyName === this.frontDistanceProperty.name)
-      return this.frontDistanceProperty;
-    else if (propertyName === this.backDistanceProperty.name)
-      return this.backDistanceProperty;
-    return super.getToolSettingPropertyByName(propertyName);
-  }
-
   public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
     return this.changeToolSettingPropertyValue(updatedValue);
   }
@@ -330,18 +322,6 @@ export class CutSolidElementsTool extends ElementGeometryCacheTool {
       this.targetPoint = hit.hitPoint;
 
     return super.buildLocateAgenda(hit);
-  }
-
-  protected override getToolSettingPropertyByName(propertyName: string): DialogProperty<any> {
-    if (propertyName === this.bothDirectionsProperty.name)
-      return this.bothDirectionsProperty;
-    else if (propertyName === this.outsideProperty.name)
-      return this.outsideProperty;
-    else if (propertyName === this.useDepthProperty.name)
-      return this.useDepthProperty;
-    else if (propertyName === this.depthProperty.name)
-      return this.depthProperty;
-    return super.getToolSettingPropertyByName(propertyName);
   }
 
   protected override getToolSettingPropertyLocked(property: DialogProperty<any>): DialogProperty<any> | undefined {
@@ -759,14 +739,6 @@ export class HollowFacesTool extends LocateSubEntityTool {
     }
   }
 
-  protected override getToolSettingPropertyByName(propertyName: string): DialogProperty<any> {
-    if (propertyName === this.shellThicknessProperty.name)
-      return this.shellThicknessProperty;
-    else if (propertyName === this.faceThicknessProperty.name)
-      return this.faceThicknessProperty;
-    return super.getToolSettingPropertyByName(propertyName);
-  }
-
   public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
     return this.changeToolSettingPropertyValue(updatedValue);
   }
@@ -1077,16 +1049,6 @@ export class ImprintSolidElementsTool extends LocateSubEntityTool {
     hints.sendHints(false);
   }
 
-  protected override getToolSettingPropertyByName(propertyName: string): DialogProperty<any> {
-    if (propertyName === this.methodProperty.name)
-      return this.methodProperty;
-    else if (propertyName === this.extendProperty.name)
-      return this.extendProperty;
-    else if (propertyName === this.distanceProperty.name)
-      return this.distanceProperty;
-    return super.getToolSettingPropertyByName(propertyName);
-  }
-
   public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
     if (!this.changeToolSettingPropertyValue(updatedValue))
       return false;
@@ -1274,14 +1236,6 @@ export class RoundEdgesTool extends BlendEdgesTool {
     }
   }
 
-  protected override getToolSettingPropertyByName(propertyName: string): DialogProperty<any> {
-    if (propertyName === this.radiusProperty.name)
-      return this.radiusProperty;
-    else if (propertyName === this.addSmoothProperty.name)
-      return this.addSmoothProperty;
-    return super.getToolSettingPropertyByName(propertyName);
-  }
-
   public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
     if (!this.changeToolSettingPropertyValue(updatedValue))
       return false;
@@ -1415,22 +1369,6 @@ export class ChamferEdgesTool extends BlendEdgesTool {
     } catch (err) {
       return undefined;
     }
-  }
-
-  protected override getToolSettingPropertyByName(propertyName: string): DialogProperty<any> {
-    if (propertyName === this.methodProperty.name)
-      return this.methodProperty;
-    else if (propertyName === this.addSmoothProperty.name)
-      return this.addSmoothProperty;
-    else if (propertyName === this.lengthProperty.name)
-      return this.lengthProperty;
-    else if (propertyName === this.distanceLeftProperty.name)
-      return this.distanceLeftProperty;
-    else if (propertyName === this.distanceRightProperty.name)
-      return this.distanceRightProperty;
-    else if (propertyName === this.angleProperty.name)
-      return this.angleProperty;
-    return super.getToolSettingPropertyByName(propertyName);
   }
 
   public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
@@ -1682,16 +1620,6 @@ export class SweepFacesTool extends LocateFaceOrProfileTool {
     hints.sendHints(false);
   }
 
-  protected override getToolSettingPropertyByName(propertyName: string): DialogProperty<any> {
-    if (propertyName === this.addSmoothProperty.name)
-      return this.addSmoothProperty;
-    else if (propertyName === this.useDistanceProperty.name)
-      return this.useDistanceProperty;
-    else if (propertyName === this.distanceProperty.name)
-      return this.distanceProperty;
-    return super.getToolSettingPropertyByName(propertyName);
-  }
-
   public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
     return this.changeToolSettingPropertyValue(updatedValue);
   }
@@ -1828,12 +1756,6 @@ export class SpinFacesTool extends LocateFaceOrProfileTool {
       hints.setNormal(profileData.orientation);
 
     hints.sendHints(false);
-  }
-
-  protected override getToolSettingPropertyByName(propertyName: string): DialogProperty<any> {
-    if (propertyName === this.angleProperty.name)
-      return this.angleProperty;
-    return super.getToolSettingPropertyByName(propertyName);
   }
 
   public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
