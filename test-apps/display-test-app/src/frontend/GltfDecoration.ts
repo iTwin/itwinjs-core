@@ -40,33 +40,34 @@ class GltfDecoration {
  */
 export class GltfDecorationTool extends Tool {
   public static override toolId = "AddGltfDecoration";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 0; }
+  public static override get minArgs() { return 1; }
+  public static override get maxArgs() { return 1; }
 
-  public override async run() {
+  public override async parseAndRun(...args: string[]) {
+    return this.run(args[0]);
+  }
+
+  public override async run(url?: string) {
+    if ("string" !== typeof url)
+      return false;
+
     const iModel = IModelApp.viewManager.selectedView?.iModel;
     if (!iModel)
       return false;
 
-    // Allow the user to select a glTF file.
     try {
-      const [handle] = await (window as any).showOpenFilePicker({
-        types: [
-          {
-            description: "glTF",
-            accept: { "model/*": [".gltf", ".glb"] },
-          },
-        ],
-      });
+      const response = await fetch(url);
+      const buffer = await response.arrayBuffer();
 
-      const file = await handle.getFile();
-      const buffer = await file.arrayBuffer() as ArrayBuffer;
+      const slashIndex = url.lastIndexOf("/");
+      const baseUrl = -1 !== slashIndex ? url.substr(0, slashIndex) : undefined;
 
       // Convert the glTF into a RenderGraphic.
       const id = iModel.transientIds.next;
       let graphic = await readGltfGraphics({
         gltf: new Uint8Array(buffer),
         iModel,
+        baseUrl,
         pickableOptions: {
           id,
           // The modelId must be different from the pickable Id for the decoration to be selectable and hilite-able.
@@ -87,7 +88,7 @@ export class GltfDecorationTool extends Tool {
       const graphicOwner = IModelApp.renderSystem.createGraphicOwner(graphic);
 
       // Install the decorator.
-      const decorator = new GltfDecoration(graphicOwner, file.name, id);
+      const decorator = new GltfDecoration(graphicOwner, url, id);
       IModelApp.viewManager.addDecorator(decorator);
 
       // Once the iModel is closed, dispose of the graphic and uninstall the decorator.

@@ -1033,7 +1033,7 @@ export abstract class GltfReader {
         return undefined;
 
       const bufferViewAccessorValue = accessor.bufferView;
-      const bufferView = bufferViewAccessorValue ? this._bufferViews[bufferViewAccessorValue] : undefined;
+      const bufferView = undefined !== bufferViewAccessorValue ? this._bufferViews[bufferViewAccessorValue] : undefined;
       if (!bufferView || undefined === bufferView.buffer)
         return undefined;
 
