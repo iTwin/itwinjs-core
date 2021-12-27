@@ -7,7 +7,7 @@
  */
 import * as path from "path";
 import * as Semver from "semver";
-import { AccessToken, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, LogLevel } from "@itwin/core-bentley";
+import { AccessToken, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, LogLevel, MarkRequired } from "@itwin/core-bentley";
 import * as ECSchemaMetaData from "@itwin/ecschema-metadata";
 import { Point3d, Transform } from "@itwin/core-geometry";
 import {
@@ -119,13 +119,15 @@ export class IModelTransformer extends IModelExportHandler {
   /** The IModelTransformContext for this IModelTransformer. */
   public readonly context: IModelCloneContext;
   /** The Id of the Element in the **target** iModel that represents the **source** repository as a whole and scopes its [ExternalSourceAspect]($backend) instances. */
-  public readonly targetScopeElementId: Id64String;
+  public get targetScopeElementId(): Id64String {
+    return this._options.targetScopeElementId;
+  }
 
   /** The set of Elements that were deferred during a prior transformation pass. */
   protected _deferredElementIds = new Set<Id64String>();
 
   /** the options that were used to initialize this transformer */
-  private readonly _options: IModelTransformOptions;
+  private readonly _options: MarkRequired<IModelTransformOptions, "targetScopeElementId">;
 
   /** Set if it can be determined whether this is the first source --> target synchronization. */
   private _isFirstSynchronization?: boolean;
@@ -138,11 +140,11 @@ export class IModelTransformer extends IModelExportHandler {
   public constructor(source: IModelDb | IModelExporter, target: IModelDb | IModelImporter, options?: IModelTransformOptions) {
     super();
     // initialize IModelTransformOptions
-    this.targetScopeElementId = options?.targetScopeElementId ?? IModel.rootSubjectId;
     this._options = {
       ...options,
-      // true defaults
+      // non-falsy defaults
       cloneUsingBinaryGeometry: options?.cloneUsingBinaryGeometry ?? true,
+      targetScopeElementId: options?.targetScopeElementId ?? IModel.rootSubjectId,
     };
     this._isFirstSynchronization = this._options.wasSourceIModelCopiedToTarget ? true : undefined;
     // initialize exporter and sourceDb
