@@ -1434,15 +1434,17 @@ describe("IModelTransformer", () => {
         physicalObjects,
         displayStyleId,
         displayStyleCode,
+        myPhysObjCodeSpec,
       },
     ] as const;
   }
 
   /**
    * A transformer that inserts an element at the beginning to ensure the target doesn't end up with the same ids as the source.
-   * Useful if you need to check that some source/target element references match and want to be sure it isn't a coincidence because
-   * the target was empty and therefore some elements are deterministically inserted in a coincidentally matching fashion
-   * @note it modifies the target so there are possible side effects
+   * Useful if you need to check that some source/target element references match and want to be sure it isn't a coincidence,
+   * which can happen deterministically in several cases, as well as just copy-paste errors where you accidentally test a
+   * source or target db against itself
+   * @note it modifies the target so there are side effects
    */
   class ShiftElemIdsTransformer extends IModelTransformer {
     constructor(...args: ConstructorParameters<typeof IModelTransformer>) {
@@ -1458,7 +1460,7 @@ describe("IModelTransformer", () => {
     const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "DeadPredecessorSource.bim");
     const [
       sourceDb,
-      { physicalObjects, displayStyleCode, displayStyleId },
+      { displayStyleCode, displayStyleId, myPhysObjCodeSpec, physicalObjects, sourceModelId },
     ] = createIModelWithDeadPredecessor({ name: "DeadPredecessors", path: sourceDbPath });
 
     const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "DeadPredecessorTarget.bim");
@@ -1482,13 +1484,23 @@ describe("IModelTransformer", () => {
     const displayStyleInSource = sourceDb.elements.getElement<DisplayStyle3d>(displayStyleId);
     expect([...displayStyleInSource.settings.excludedElementIds]).to.include(physicalObjects[1].id);
 
-    const displayStyleInTargetId = targetDb.elements.queryElementIdByCode(displayStyleCode);
+    const sourceModelElemInSource = sourceDb.elements.getElement(sourceModelId); // the model submodels a physical partition element
+    const sourceModelElemInTargetId = targetDb.elements.queryElementIdByCode(sourceModelElemInSource.code);
     // should contribute assert clauses to the relevant functions in chai and friends
+    if (sourceModelElemInTargetId  === undefined) throw Error("expected it to be defined");
+
+    const displayStyleInTargetId = targetDb.elements.queryElementIdByCode(displayStyleCode);
     if (displayStyleInTargetId === undefined) throw Error("expected it to be defined");
     const displayStyleInTarget = targetDb.elements.getElement<DisplayStyle3d>(displayStyleInTargetId);
 
     const physObjsInTarget = physicalObjects.map((physObjInSource) => {
-      const physObjInTargetId = sourceDb.elements.queryElementIdByCode(physObjInSource.code);
+      const targetCodeSpec = targetDb.codeSpecs.getByName(myPhysObjCodeSpec.name);
+      const remappedCode = Code.fromJSON({
+        value: physObjInSource.code.value,
+        spec: targetCodeSpec.id,
+        scope: sourceModelElemInTargetId,
+      });
+      const physObjInTargetId = targetDb.elements.queryElementIdByCode(remappedCode);
       return { ...physObjInSource, id: physObjInTargetId };
     });
 
