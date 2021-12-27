@@ -11,7 +11,7 @@ import { Angle, Matrix3d, Point2d, Point3d, Point4d, Range2d, Range3d, Transform
 import {
   BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureTable, FillFlags, GlbHeader, ImageSource, ImageSourceFormat, LinePixels, MeshEdge,
   MeshEdges, MeshPolyline, MeshPolylineList, OctEncodedNormal, PackedFeatureTable, QParams2d, QParams3d, QPoint2dList,
-  QPoint3dList, Quantization, RenderTexture, TextureMapping, TileReadStatus,
+  QPoint3dList, Quantization, RenderTexture, TextureMapping, TileFormat, TileReadStatus,
 } from "@itwin/core-common";
 import { getImageSourceFormatForMimeType, imageElementFromImageSource, tryImageElementFromUrl } from "../ImageUtil";
 import { IModelConnection } from "../IModelConnection";
@@ -582,24 +582,39 @@ export class GltfReaderProps {
     let binaryData: Uint8Array | undefined;
 
     if (source instanceof Uint8Array) {
+      // It may be JSON - check for magic indicating glb.
       const buffer = ByteStream.fromUint8Array(source);
-      const header = new GlbHeader(buffer);
-      if (!header.isValid)
-        return undefined;
+      if (TileFormat.Gltf !== buffer.nextUint32) {
+        try {
+          const utf8Json = utf8ToString(source);
+          if (!utf8Json)
+            return undefined;
 
-      version = header.version;
-      if (header.binaryChunk)
-        binaryData = new Uint8Array(source.buffer, source.byteOffset + header.binaryChunk.offset, header.binaryChunk.length);
-
-      try {
-        const jsonBytes = new Uint8Array(source.buffer, source.byteOffset + header.jsonChunk.offset, header.jsonChunk.length);
-        const jsonStr = utf8ToString(jsonBytes);
-        if (undefined === jsonStr)
+          json = JSON.parse(utf8Json);
+          version = 2;
+        } catch (_) {
+          return undefined;
+        }
+      } else {
+        buffer.reset();
+        const header = new GlbHeader(buffer);
+        if (!header.isValid)
           return undefined;
 
-        json = JSON.parse(jsonStr);
-      } catch (_) {
-        return undefined;
+        version = header.version;
+        if (header.binaryChunk)
+          binaryData = new Uint8Array(source.buffer, source.byteOffset + header.binaryChunk.offset, header.binaryChunk.length);
+
+        try {
+          const jsonBytes = new Uint8Array(source.buffer, source.byteOffset + header.jsonChunk.offset, header.jsonChunk.length);
+          const jsonStr = utf8ToString(jsonBytes);
+          if (undefined === jsonStr)
+            return undefined;
+
+          json = JSON.parse(jsonStr);
+        } catch (_) {
+          return undefined;
+        }
       }
     } else {
       version = 2; // ###TODO check source.asset?.version
