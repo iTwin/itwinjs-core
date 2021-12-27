@@ -1448,8 +1448,10 @@ describe("IModelTransformer", () => {
     constructor(...args: ConstructorParameters<typeof IModelTransformer>) {
       super(...args);
       // the choice of element to insert is arbitrary, anything easy works
-      const myCodeSpec = CodeSpec.create(this.targetDb, "MyCodeSpec", CodeScopeSpec.Type.ParentElement);
-      this.targetDb.codeSpecs.insert(myCodeSpec);
+      try {
+        const myCodeSpec = CodeSpec.create(this.targetDb, "MyCodeSpec", CodeScopeSpec.Type.ParentElement);
+        this.targetDb.codeSpecs.insert(myCodeSpec);
+      } catch (_err) {} // ignore error in case someone tries to transform the same target multiple times with this
     }
   }
 
