@@ -171,7 +171,6 @@ export class ByteStream {
         byteLength: number;
     }): ByteStream;
     static fromUint8Array(bytes: Uint8Array): ByteStream;
-    // (undocumented)
     get isAtTheEnd(): boolean;
     get isPastTheEnd(): boolean;
     get length(): number;
