@@ -673,6 +673,8 @@ export class CutSolidElementsTool extends ElementGeometryCacheTool {
     // (undocumented)
     protected get geometryCacheFilter(): ElementGeometryCacheFilter | undefined;
     // (undocumented)
+    protected getToolSettingPropertyLocked(property: DialogProperty<any>): DialogProperty<any> | undefined;
+    // (undocumented)
     static iconSpec: string;
     // (undocumented)
     protected get isProfilePhase(): boolean;
@@ -1218,6 +1220,8 @@ export class OffsetFacesTool extends LocateSubEntityTool {
     protected get geometryCacheFilter(): ElementGeometryCacheFilter | undefined;
     // (undocumented)
     protected getSmoothFaces(id: Id64String, face: SubEntityProps): Promise<SubEntityProps[] | undefined>;
+    // (undocumented)
+    protected getToolSettingPropertyLocked(property: DialogProperty<any>): DialogProperty<any> | undefined;
     // (undocumented)
     static iconSpec: string;
     // (undocumented)

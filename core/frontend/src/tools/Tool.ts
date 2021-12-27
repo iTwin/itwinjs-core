@@ -6,7 +6,7 @@
  * @module Tools
  */
 
-import { DialogItem, DialogPropertySyncItem } from "@itwin/appui-abstract";
+import { DialogItem, DialogItemValue, DialogProperty, DialogPropertySyncItem } from "@itwin/appui-abstract";
 import { assert } from "@itwin/core-bentley";
 import { GeometryStreamProps, IModelError } from "@itwin/core-common";
 import { Point2d, Point3d, PolygonOps, XAndY } from "@itwin/core-geometry";
@@ -674,12 +674,96 @@ export abstract class InteractiveTool extends Tool {
     this.changeLocateState(enableLocate, enableSnap, cursor, coordLockOvr);
   }
 
+  /** @internal */
+  protected toolSettingProperties?: Map<string, DialogProperty<any>>;
+
+  /** @internal */
+  protected restoreToolSettingPropertyValue(property: DialogProperty<any>): boolean {
+    const itemValue = IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValue(this.toolId, property.name);
+    if (undefined === itemValue?.value)
+      return false;
+
+    property.dialogItemValue = itemValue;
+    return true;
+  }
+
+  /** @internal */
+  protected saveToolSettingPropertyValue(property: DialogProperty<any>, itemValue: DialogItemValue): boolean {
+    if (undefined === itemValue.value)
+      return false;
+
+    property.value = itemValue.value;
+    IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, property.item);
+    return true;
+  }
+
+  /** @internal */
+  protected syncToolSettingPropertyValue(property: DialogProperty<any>, isDisabled?: boolean): void {
+    if (undefined !== isDisabled)
+      property.isDisabled = isDisabled;
+
+    this.syncToolSettingsProperties([property.syncItem]);
+  }
+
+  /** @internal */
+  protected getToolSettingPropertyByName(propertyName: string): DialogProperty<any> {
+    const foundProperty = this.toolSettingProperties?.get(propertyName);
+    if (foundProperty)
+      return foundProperty;
+
+    throw new Error(`property not found: ${propertyName}`);
+  }
+
+  /** Override to return the property that is disabled/enabled if the supplied property is a lock property.
+   * @see [[changeToolSettingPropertyValue]]
+   * @beta
+   */
+  protected getToolSettingPropertyLocked(_property: DialogProperty<any>): DialogProperty<any> | undefined {
+    return undefined;
+  }
+
+  /** Helper method for responding to a tool setting property value change by updating saved settings.
+   * @see [[applyToolSettingPropertyChange]]
+   * @see [[getToolSettingPropertyLocked]] to return the corresponding locked property, if any.
+   * @beta
+   */
+  protected changeToolSettingPropertyValue(syncItem: DialogPropertySyncItem): boolean {
+    const property = this.getToolSettingPropertyByName(syncItem.propertyName);
+
+    if (!this.saveToolSettingPropertyValue(property, syncItem.value))
+      return false;
+
+    const lockedProperty = this.getToolSettingPropertyLocked(property);
+    if (undefined !== lockedProperty)
+      this.syncToolSettingPropertyValue(lockedProperty, !property.value);
+
+    return true;
+  }
+
+  /** Helper method to establish initial values for tool setting properties from saved settings.
+   * @see [[supplyToolSettingsProperties]]
+   * @beta
+   */
+  protected initializeToolSettingPropertyValues(properties: DialogProperty<any>[]): void {
+    if (undefined !== this.toolSettingProperties)
+      return;
+
+    this.toolSettingProperties = new Map<string, DialogProperty<any>>();
+
+    for (const property of properties) {
+      this.toolSettingProperties.set(property.name, property);
+      this.restoreToolSettingPropertyValue(property);
+    }
+  }
+
   /** Used to supply list of properties that can be used to generate ToolSettings. If undefined is returned then no ToolSettings will be displayed.
+   * @see [[initializeToolSettingPropertyValues]]
    * @beta
    */
   public supplyToolSettingsProperties(): DialogItem[] | undefined { return undefined; }
 
   /** Used to receive property changes from UI. Return false if there was an error applying updatedValue.
+   * @see [[changeToolSettingPropertyValue]]
    * @beta
    */
   public async applyToolSettingPropertyChange(_updatedValue: DialogPropertySyncItem): Promise<boolean> { return true; }
