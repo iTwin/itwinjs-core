@@ -1490,6 +1490,22 @@ The property `InterpolationCurve3dOptions.isChordLenTangent` has been deprecated
 The iModel Transformer APIs, such as the classes [IModelExporter]($transformer), [IModelImporter]($transformer), and [IModelTransformer]($transformer)
 were removed from the `@itwin/core-backend` package and moved to a new package, `@itwin/core-transformer`.
 
+## transformer instance property settings are now deprecated in favor of initialization-only settings
+
+The importer instance properties `IModelImporter.simplifyElementGeometry`, `IModelImporter.autoExtendProjectExtents`,
+and `IModelImporter.preserveElementIdsForFiltering`, have been deprecated in favor of accessing the same properties from the
+`IModelImporter.options` object.
+`IModelImporter.options` is an instance of `IModelImportOptions` and is readonly. To set properties such as
+`autoExtendProjectExtents` for a transformation, use a custom `IModelImporter` as your transformer's target like so:
+
+```ts
+const transformer = new IModelTransformer(
+  sourceDb,
+  new IModelImporter(targetDb, { autoExtendProjectExtents: true }),
+  transformationOptions
+);
+```
+
 ## @itwin/core-common
 
 The `fromRadians`, `fromDegrees`, and `fromAngles` methods of [Cartographic]($common) now expect to receive a single input argument - an object containing a longitude, latitude and optional height property. The public constructor for [Cartographic]($common) has also been removed. If you would like to create a [Cartographic]($common) object without specifying longitude and latiude, you can use the new `createZero` method. These changes will help callers avoid misordering longitude, latitude, and height when creating a [Cartographic]($common) object. Additionally, the `LatAndLong` and `LatLongAndHeight` interfaces have been removed and replaced with a single [CartographicProps]($common) interface.
@@ -1747,4 +1763,3 @@ On the frontend the [GeoConverter]($frontend) class has been modified to accept 
 ## New clustering algorithm for MarkerSet
 
 The [MarkerSet]($frontend) class now clusters markers by the screen distance between their positions rather than overlap of their rectangles, so the `Cluster.rect` property is no longer needed and has been removed. Instead, there is a new member `MarkerSet.clusterRadius` that controls when nearby Markers are clustered. See its documentation for details.
-
