@@ -18,6 +18,10 @@ Tiles produced by the iTwin.js backend use the [iModel tile format](./TileFormat
 
 ## Scene creation
 
+Every spatial view can aggregate any number of spatial models, as specified by its [ModelSelector]($backend). Each model is associated with one [TileTree]($frontend) which supplies the graphics for that model. The animated GIF below illustrates how a spatial view of an office building can be composed from four separate models: one supplying the ductwork, another the structural elements, a third the architectural components, and finally the landscaping.
+
+![Composing a view from multiple models](./assets/office-models.gif)
+
 
 ## Resource management
 

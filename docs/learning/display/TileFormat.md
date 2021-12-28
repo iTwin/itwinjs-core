@@ -1,10 +1,6 @@
 # iModel tiles
 
-Cesium's [3d tiles reference card](https://github.com/CesiumGS/3d-tiles/blob/main/3d-tiles-reference-card.pdf) provides a good overview of general concepts, along with some details specific to the standard 3d tile formats. iTwin.js is fully capable of streaming and rendering tile in any of the standard formats - that is how it displays reality models and terrain. However, the tiles produced by the iTwin.js backend to visualize the contents of [GeometricModel]($backend)s use a non-standard format referred to as "iMdl" (for "iModel"), optimized for the unique features provided by iTwin.js.
-
-Every spatial view can aggregate any number of spatial models, as specified by its [ModelSelector]($backend). Each model is associated with one [TileTree]($frontend) which supplies the graphics for that model. The animated GIF below illustrates how a spatial view of an office building can be composed from four separate models: one supplying the ductwork, another the structural elements, a third the architectural components, and finally the landscaping.
-
-![Composing a view from multiple models](./assets/office-models.gif)
+iTwin.js is fully capable of streaming and rendering tile in any of the [standard 3d tile formats](https://github.com/CesiumGS/3d-tiles/blob/main/3d-tiles-reference-card.pdf)- that is how it displays reality models and terrain. However, the tiles produced by the iTwin.js backend to visualize the contents of [GeometricModel]($backend)s use a non-standard format referred to as "iMdl" (for "iModel"), optimized for the unique features provided by iTwin.js.
 
 ## Level of detail
 
@@ -108,7 +104,7 @@ Tiles - depth 2:
 
 iModel tiles employ a number of optimizations aimed at reducing tile size (and by extension, GPU memory usage and download time) and improving framerate, including:
 
-- Extensive use of lookup tables: typically, vertex data like position, color, normal vector, and so on are submitted to the GPU as vertex attributes. iModel tiles embed all vertex data into a single texture used as a lookup table; the only vertex attributes are the 24-bit index into that table of each triangle vertex. Similarly, another lookup table contains information about each visible edge in a mesh. This drastically reduces redundancy resulting in smaller tiles.
+- Extensive use of lookup tables: typically, vertex data like position, color, normal vector, and so on are submitted to the GPU as vertex attributes. iModel tiles instead embed all vertex data into a single texture used as a lookup table; the only vertex attributes are the 24-bit indices into that table of each triangle vertex. Similarly, another lookup table contains information about each visible edge in a mesh. This drastically reduces redundancy resulting in smaller tiles.
 
 - Purpose-built tiles: iTwin.js supports [displaying the edges](./EdgeDisplay.md) of meshes. This requires information about the edges to be included in each tile, which can substantially increase the size of each tile. If edges are not currently being displayed, iTwin.js will produce tiles that omit the edge information, avoiding the unnecessary overhead at the expense of requiring new tiles to be requested if edge display is later enabled. Similarly, special tiles are produced for [section-cut graphics](./Clipping.md#section-cut-graphics), [timeline animation](./TimelineAnimation.md), and other purposes.
 
