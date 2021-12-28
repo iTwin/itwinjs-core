@@ -42,7 +42,7 @@ In some cases, entire elements may be smaller than a pixel, in which case they m
 
 ![Neighborhood root tile](./assets/neighborhood-root-tile.jpg)
 
-If we enlarge one of the doors in this tile, we'll notice the doorknob is entirely missing!
+If we enlarge one of the doors in this tile, we'll notice that - in addition to some decidedly non-circular circles - the doorknob is entirely missing!
 
 ![Neighborhood root tile - enlarged](./assets/neighborhood-root-tile-zoom.jpg)
 
@@ -50,13 +50,62 @@ This is fine, as long as we only display this tile at the appropriate screen siz
 
 ![Neighborhood child tiles](./assets/neighborhood-child-tiles.jpg)
 
-The key to level of detail is that tiles encompassing a larger volume of space provide a lower level of detail, so each tile should contain approximately the same number of triangles. And because the number of tiles displayed on screen should remain relatively constant, the number of triangles displayed at any given time should also remain relatively constant, regardless of which portion of the model is currently being viewed. When the user is zoomed out to view the entire model, tiny details can be omitted or simplified, because they would not be discernible.
+The key to level of detail is that tiles encompassing a larger volume of space provide a lower level of detail, so each tile should contain approximately the same number of triangles. And because the number of tiles displayed on screen should remain relatively constant, the number of triangles displayed at any given time should also remain relatively constant, regardless of which portion of the model is currently being viewed. When the user is zoomed out to view the entire model, tiny details can be omitted or simplified, because they would not be discernible. Constraining the number of triangles allows us to visualize models of any scale without over-taxing the GPU.
+
+### Batching
+
+In addition to constraining the number of triangles submitted to the GPU, tiles also minimize the number of "draw calls". A draw call is a discrete command sent to the GPU - i.e., "draw this bunch of triangles". For example, imagine we want to draw a scene consisting of 1000 triangles. We could submit 10 draw calls consisting of 100 triangles each, or 1 draw call consisting of 1000 triangles. Modern graphics hardware performs much more efficiently in the latter case.
+
+iModels are composed of [Element]($backend)s. In the example house iModel above, each window, door, wall, doorknob, and section of roof is an individual element. Traditional renderers would produce a triangle mesh for each element and submit each as a separate draw call.
+
+The iTwin.js renderer does not render elements - it renders tiles. Given the set of elements intersecting the tile's volume, we endeavor to batch them all into as few meshes as possible - ideally, one. This is achieved through a handful of strategies, including:
+
+- Color tables: A lookup table of each unique color in the mesh is produced. Each vertex, instead of specifying its RGBA color, simply specifies its 8- or 16-bit integer index in the table.
+- Material atlases: A lookup table of each unique [RenderMaterial]($common) in the mesh is produced. Instead of producing a separate mesh per material, each vertex specifies the 8-bit integer index of the corresponding material in the table.
+
+Unfortunately, producing a single mesh per tile is not always possible. For example, meshes that use different [RenderTexture]($common)s cannot be batched together; and opaque meshes cannot be batched with transparent meshes, because they must be rendered in separate passes.
+
+#### Feature tables
+
+If iTwin.js doesn't render elements, how is it possible to select individual elements by clicking with the mouse? Each tile embeds a [FeatureTable]($common) describing each unique [Feature]($common) - that is, combination of element Id, [SubCategory]($backend) Id, and [GeometryClass]($common) - present in the tile. Each vertex in the tile specifies the 24-bit integer index of the feature from which it originated. When the renderer wants to query which feature(s) are visible in a given region - say, at the mouse cursor location - it renders the tiles intersecting that region, outputting the feature Ids, and then queries the feature table to obtain the corresponding features.
+
+Feature tables also enable efficient [resymbolization](./SymbologyOverrides.md). A lookup table is constructed from the current [FeatureOverrides]($common). The vertex shader indexes into this table using its feature Id and applies the corresponding overrides.
 
 ### Tile tree structure
 
+Standard 3d tilesets are typically static: they consist of a finite set of tiles organized by a known hierarchy. For example, [Bentley ContextCapture](https://www.bentley.com/en/products/product-line/reality-modeling-software/contextcapture) publishes a set of tiles and a JSON file describing their structure; displaying such a tileset simply requires consulting the JSON file and downloading the appropriate tiles.
 
+iModel tiles are different. Because a user can zoom in quite closely in a [Viewport]($frontend), the set of tiles is theoretically infinite. It would be entirely impractical to produce an exhaustive set of tiles for a model. Instead, an iModel tile doesn't exist until someone requests it, at which point it is generated by the iTwin.js backend (and then optionally [cached](./TileCache.md) for subsequent reuse).
 
+Moreover, the structure of the tile tree cannot be known in full - it can only be dynamically discovered during tile generation. For example, a particular tile's volume of space may be entirely devoid of elements - that tile is therefore empty, and it has no child tiles. Or, the tile's volume may include only uncurved geometry, in which case it may be unnecessary to produce child tiles to refine it as no higher level of detail would be attained. These and other features of the tile tree structure can only be determined by actually generating the tiles (or their parent tiles - more on that below).
 
 #### Refinement strategies
 
+Given a tile encompassing some volume, we want to obtain a higher-resolution representation of the geometry intersecting that volume. This is referred to as "refining" the tile. Tiles adhere to "spatial coherence" - that is, the volume(s) of a tile's child tiles must be entirely contained within the parent tile's volume. iTwin.js employs two tile refinement strategies:
+
+- Subdivision: this is by far the most common strategy for 3d tiles in general, with a variety of approaches including [quad trees](https://en.wikipedia.org/wiki/Quadtree), [oct trees](https://en.wikipedia.org/wiki/Octree), and [k-d trees](https://en.wikipedia.org/wiki/K-d_tree). All of them take the parent tile's volume and sub-divide it into smaller sub-volumes. For 3d models, iTwin.js applies subdivision to produce 8 sub-volumes. The parent tile's volume is split in half across its longest axis; then the resulting halves are split across their longest axes; and finally the 4 resulting sub-volumes are split once more across their longest axes. This process is illustrated below. (For 2d models, only four instead of eight sub-volumes are produced).
+
+![Tile subdivision](./assets/subdivision.jpg)
+
+- Magnification: instead of sub-dividing a tile's volume to produce multiple, smaller child tiles, magnification produces a single child tile of the same size as the parent tile, but with twice the level of detail. This strategy can help to mitigate depth complexity, wherein as the user zooms in, more tiles must be requested to display geometry extending into the screen. However, it must be applied judiciously, as increasing the level of detail too much without also reducing the tile volume can introduce floating-point precision errors resulting in graphical artifacts.
+
+#### Determining the structure
+
+
+### Optimizations
+
+
+#### Lookup tables
+
+
+#### Content volumes
+
+
+#### Compression
+
+
+## Scene creation
+
+
+## Resource management
 
