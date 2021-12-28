@@ -120,12 +120,13 @@ Tiles - depth 2:
 
 ### Optimizations
 
+iModel tiles employ a number of optimizations aimed at reducing tile size (and by extension, GPU memory usage and download time) and improving framerate, including:
 
-#### Compression
+- Extensive use of lookup tables: typically, vertex data like position, color, normal vector, and so on are submitted to the GPU as vertex attributes. iModel tiles embed all vertex data into a single texture used as a lookup table; the only vertex attributes are the 24-bit index into that table of each triangle vertex. Similarly, another lookup table contains information about each visible edge in a mesh. This drastically reduces redundancy resulting in smaller tiles.
 
+- Purpose-built tiles: iTwin.js supports [displaying the edges](./EdgeDisplay.md) of meshes. This requires information about the edges to be included in each tile, which can substantially increase the size of each tile. If edges are not currently being displayed, iTwin.js will produce tiles that omit the edge information, avoiding the unnecessary overhead at the expense of requiring new tiles to be requested if edge display is later enabled. Similarly, special tiles are produced for [section-cut graphics](./Clipping.md#section-cut-graphics), [timeline animation](./TimelineAnimation.md), and other purposes.
 
-#### Lookup tables
-
+- Compression: various strategies are employed to minimize a tile's memory footprint, including [quantization of positions](https://www.itwinjs.org/reference/imodeljs-common/geometry/qpoint3d/), [oct-encoding of normal vectors](https://www.itwinjs.org/reference/imodeljs-common/rendering/octencodednormal/), and the use of 24-bit integers as indices.
 
 ## Scene creation
 
