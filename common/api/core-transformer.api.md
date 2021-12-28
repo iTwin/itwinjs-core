@@ -118,7 +118,9 @@ export class IModelImporter implements Required<IModelImportOptions> {
     get preserveElementIdsForFiltering(): Required<IModelImportOptions>["preserveElementIdsForFiltering"];
     set preserveElementIdsForFiltering(val: Required<IModelImportOptions>["preserveElementIdsForFiltering"]);
     progressInterval: number;
-    simplifyElementGeometry: boolean;
+    // @deprecated
+    get simplifyElementGeometry(): Required<IModelImportOptions>["simplifyElementGeometry"];
+    set simplifyElementGeometry(val: Required<IModelImportOptions>["simplifyElementGeometry"]);
     readonly targetDb: IModelDb;
     }
 
@@ -128,6 +130,7 @@ export interface IModelImportOptions {
         excludeOutliers: boolean;
     };
     preserveElementIdsForFiltering?: boolean;
+    simplifyElementGeometry?: boolean;
 }
 
 // @beta

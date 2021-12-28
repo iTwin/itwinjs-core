@@ -57,7 +57,6 @@ export class IModelImporter implements Required<IModelImportOptions> {
   public get autoExtendProjectExtents(): Required<IModelImportOptions>["autoExtendProjectExtents"] {
     return this.options.autoExtendProjectExtents;
   }
-  /** @deprecated see the getter and prefer [[IModelImporter.options.autoExtendProjectExtents]] */
   public set autoExtendProjectExtents(val: Required<IModelImportOptions>["autoExtendProjectExtents"]) {
     this.options.autoExtendProjectExtents = val;
   }
@@ -69,19 +68,17 @@ export class IModelImporter implements Required<IModelImportOptions> {
   public get preserveElementIdsForFiltering(): Required<IModelImportOptions>["preserveElementIdsForFiltering"] {
     return this.options.preserveElementIdsForFiltering;
   }
-  /** @deprecated see the getter and prefer [[IModelImporter.options.preserveElementIdsForFiltering]] */
   public set preserveElementIdsForFiltering(val: Required<IModelImportOptions>["preserveElementIdsForFiltering"]) {
     this.options.preserveElementIdsForFiltering = val;
   }
 
   /**
    * @see [IModelTransformOptions.simplifyElementGeometry]($transformer)
-   * @deprecated Use [[IModelImporter.options.preserveElementIdsForFiltering]] instead
+   * @deprecated Use [[IModelImporter.options.simplifyElementGeometry]] instead
    */
   public get simplifyElementGeometry(): Required<IModelImportOptions>["simplifyElementGeometry"] {
     return this.options.preserveElementIdsForFiltering;
   }
-  /** @deprecated see the getter and prefer [[IModelImporter.options.simplifyElementGeometry]] */
   public set simplifyElementGeometry(val: Required<IModelImportOptions>["simplifyElementGeometry"]) {
     this.options.preserveElementIdsForFiltering = val;
   }
