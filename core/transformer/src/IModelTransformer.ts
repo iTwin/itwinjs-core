@@ -26,6 +26,14 @@ import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
 
 const loggerCategory: string = TransformerLoggerCategory.IModelTransformer;
 
+/** Options for handling dead predecessors during transformations
+ * @beta
+ */
+export enum DeadPredecessorsBehavior {
+  Reject = "reject",
+  Ignore = "ignore",
+}
+
 /** Options provided to the [[IModelTransformer]] constructor.
  * @beta
  */
@@ -88,17 +96,18 @@ export interface IModelTransformOptions {
    */
   preserveElementIdsForFiltering?: boolean;
 
-  /** When an element reference (id) is found stored as a predecessor on an element, but the referenced element
-   * does not actually exist, do not throw an error but rather ignore it.
+  /** The behavior to use when an element reference (id) is found stored as a predecessor on an element, but the referenced element
+   * does not actually exist
    * It is possible to craft an iModel with dead predecessors/invalidated relationships by, e.g., deleting certain
    * elements without fixing up references.
+   *
    * @note turning this on passes the issue down to consuming applications, iModels that have invalid element references
    *       like this can cause errors, and you should consider adding custom logic in your transformer to remove the
    *       reference depending on your use case.
-   * @default false
+   * @default [[DeadPredecessorsBehavior.Reject]]
    * @beta
    */
-  ignoreDeadPredecessors?: boolean;
+  deadPredecessorsBehavior?: DeadPredecessorsBehavior;
 }
 
 /** Base class used to transform a source iModel into a different target iModel.
@@ -127,7 +136,7 @@ export class IModelTransformer extends IModelExportHandler {
   protected _deferredElementIds = new Set<Id64String>();
 
   /** the options that were used to initialize this transformer */
-  private readonly _options: MarkRequired<IModelTransformOptions, "targetScopeElementId">;
+  private readonly _options: MarkRequired<IModelTransformOptions, "targetScopeElementId" | "deadPredecessorsBehavior">;
 
   /** Set if it can be determined whether this is the first source --> target synchronization. */
   private _isFirstSynchronization?: boolean;
@@ -145,6 +154,7 @@ export class IModelTransformer extends IModelExportHandler {
       // non-falsy defaults
       cloneUsingBinaryGeometry: options?.cloneUsingBinaryGeometry ?? true,
       targetScopeElementId: options?.targetScopeElementId ?? IModel.rootSubjectId,
+      deadPredecessorsBehavior: options?.deadPredecessorsBehavior ?? DeadPredecessorsBehavior.Reject,
     };
     this._isFirstSynchronization = this._options.wasSourceIModelCopiedToTarget ? true : undefined;
     // initialize exporter and sourceDb
@@ -415,19 +425,20 @@ export class IModelTransformer extends IModelExportHandler {
         } else {
           const sourcePredecessor = this.sourceDb.elements.tryGetElement(sourcePredecessorId);
           if (sourcePredecessor === undefined) {
-            if (this._options.ignoreDeadPredecessors) {
-              Logger.logWarning(loggerCategory, `Source element (${sourceElement.id}) "${sourceElement.getDisplayLabel()}" has a missing predecessor (${sourcePredecessorId})`);
-              sourcePredecessorIds.delete(sourcePredecessorId);
-              return;
-            } else {
-              throw new IModelError(
-                IModelStatus.NotFound,
-                `Found a reference to an element "${sourcePredecessorId}" that doesn't exist while looking for predecessors of "${sourceElement.id}"`
-                + "\nThis must have been caused by an upstream application that changed the iModel."
-                + "\nYou can enable the IModelTransformerOptions.ignoreDeadPredecessors option to ignore these cases, but this will leave the iModel"
-                + "\nin a state where downstream consuming applications will need to handle the invalidity themselves. In some cases, writing a custom"
-                + "\ntransformer to remove the reference and fix affected elements may be suitable."
-              );
+            switch (this._options.deadPredecessorsBehavior) {
+              case DeadPredecessorsBehavior.Ignore:
+                Logger.logWarning(loggerCategory, `Source element (${sourceElement.id}) "${sourceElement.getDisplayLabel()}" has a missing predecessor (${sourcePredecessorId})`);
+                sourcePredecessorIds.delete(sourcePredecessorId);
+                return;
+              case DeadPredecessorsBehavior.Reject:
+                throw new IModelError(
+                  IModelStatus.NotFound,
+                  `Found a reference to an element "${sourcePredecessorId}" that doesn't exist while looking for predecessors of "${sourceElement.id}"`
+                  + "\nThis must have been caused by an upstream application that changed the iModel."
+                  + "\nYou can enable the IModelTransformerOptions.ignoreDeadPredecessors option to ignore these cases, but this will leave the iModel"
+                  + "\nin a state where downstream consuming applications will need to handle the invalidity themselves. In some cases, writing a custom"
+                  + "\ntransformer to remove the reference and fix affected elements may be suitable."
+                );
             }
           }
           if (!this.exporter.shouldExportElement(sourcePredecessor)) {

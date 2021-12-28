@@ -27,6 +27,7 @@ import {
   ClassCounter, FilterByViewTransformer, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerTestUtils, PhysicalModelConsolidator,
   RecordingIModelImporter, TestIModelTransformer, TransformerExtensiveTestScenario,
 } from "../IModelTransformerUtils";
+import { DeadPredecessorsBehavior } from "../../IModelTransformer";
 
 describe("IModelTransformer", () => {
   const outputDir: string = path.join(KnownTestLocations.outputDir, "IModelTransformer");
@@ -1471,12 +1472,12 @@ describe("IModelTransformer", () => {
       /Found a reference to an element "[^"]*" that doesn't exist/
     );
 
-    const ignoreDeadPredecessorsDisabledTransformer = new ShiftElemIdsTransformer(sourceDb, targetDb, { ignoreDeadPredecessors: false });
+    const ignoreDeadPredecessorsDisabledTransformer = new ShiftElemIdsTransformer(sourceDb, targetDb, { deadPredecessorsBehavior: DeadPredecessorsBehavior.Reject });
     await expect(ignoreDeadPredecessorsDisabledTransformer.processAll()).to.be.rejectedWith(
       /Found a reference to an element "[^"]*" that doesn't exist/
     );
 
-    const ignoreDeadPredecessorsEnabledTransformer = new ShiftElemIdsTransformer(sourceDb, targetDb, { ignoreDeadPredecessors: true});
+    const ignoreDeadPredecessorsEnabledTransformer = new ShiftElemIdsTransformer(sourceDb, targetDb, { deadPredecessorsBehavior: DeadPredecessorsBehavior.Ignore });
     await expect(ignoreDeadPredecessorsEnabledTransformer.processAll()).not.to.be.rejected;
     targetDb.saveChanges();
 
