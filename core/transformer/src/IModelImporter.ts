@@ -73,7 +73,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
   }
 
   /**
-   * @see [IModelTransformOptions.simplifyElementGeometry]($transformer)
+   * @see [[IModelImportOptions.simplifyElementGeometry]]
    * @deprecated Use [[IModelImporter.options.simplifyElementGeometry]] instead
    */
   public get simplifyElementGeometry(): Required<IModelImportOptions>["simplifyElementGeometry"] {
