@@ -27,6 +27,10 @@ export interface IModelImportOptions {
   autoExtendProjectExtents?: boolean | { excludeOutliers: boolean };
   /** @see [IModelTransformOptions]($transformer) */
   preserveElementIdsForFiltering?: boolean;
+  /** If `true`, simplify the element geometry for visualization purposes. For example, convert b-reps into meshes.
+   * @default false
+   */
+  simplifyElementGeometry?: boolean;
 }
 
 /** Base class for importing data into an iModel.
@@ -53,6 +57,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
   public get autoExtendProjectExtents(): Required<IModelImportOptions>["autoExtendProjectExtents"] {
     return this.options.autoExtendProjectExtents;
   }
+  /** @deprecated see the getter and prefer [[IModelImporter.options.autoExtendProjectExtents]] */
   public set autoExtendProjectExtents(val: Required<IModelImportOptions>["autoExtendProjectExtents"]) {
     this.options.autoExtendProjectExtents = val;
   }
@@ -64,14 +69,23 @@ export class IModelImporter implements Required<IModelImportOptions> {
   public get preserveElementIdsForFiltering(): Required<IModelImportOptions>["preserveElementIdsForFiltering"] {
     return this.options.preserveElementIdsForFiltering;
   }
+  /** @deprecated see the getter and prefer [[IModelImporter.options.preserveElementIdsForFiltering]] */
   public set preserveElementIdsForFiltering(val: Required<IModelImportOptions>["preserveElementIdsForFiltering"]) {
     this.options.preserveElementIdsForFiltering = val;
   }
 
-  /** If `true`, simplify the element geometry for visualization purposes. For example, convert b-reps into meshes.
-   * @note `false` is the default
+  /**
+   * @see [IModelTransformOptions.simplifyElementGeometry]($transformer)
+   * @deprecated Use [[IModelImporter.options.preserveElementIdsForFiltering]] instead
    */
-  public simplifyElementGeometry: boolean = false;
+  public get simplifyElementGeometry(): Required<IModelImportOptions>["simplifyElementGeometry"] {
+    return this.options.preserveElementIdsForFiltering;
+  }
+  /** @deprecated see the getter and prefer [[IModelImporter.options.simplifyElementGeometry]] */
+  public set simplifyElementGeometry(val: Required<IModelImportOptions>["simplifyElementGeometry"]) {
+    this.options.preserveElementIdsForFiltering = val;
+  }
+
   /** The set of elements that should not be updated by this IModelImporter.
    * @note Adding an element to this set is typically necessary when remapping a source element to one that already exists in the target and already has the desired properties.
    */
@@ -92,6 +106,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
     this.options = {
       autoExtendProjectExtents: options?.autoExtendProjectExtents ?? true,
       preserveElementIdsForFiltering: options?.preserveElementIdsForFiltering ?? false,
+      simplifyElementGeometry: options?.simplifyElementGeometry ?? false,
     };
     // Add in the elements that are always present (even in an "empty" iModel) and therefore do not need to be updated
     this.doNotUpdateElementIds.add(IModel.rootSubjectId);
@@ -200,7 +215,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
       elementProps.id = elementId;
       Logger.logInfo(loggerCategory, `Inserted ${this.formatElementForLogger(elementProps)}`);
       this.trackProgress();
-      if (this.simplifyElementGeometry) {
+      if (this.options.simplifyElementGeometry) {
         this.targetDb.nativeDb.simplifyElementGeometry({ id: elementId, convertBReps: true });
         Logger.logInfo(loggerCategory, `Simplified element geometry for ${this.formatElementForLogger(elementProps)}`);
       }
@@ -225,7 +240,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
     this.targetDb.elements.updateElement(elementProps);
     Logger.logInfo(loggerCategory, `Updated ${this.formatElementForLogger(elementProps)}`);
     this.trackProgress();
-    if (this.simplifyElementGeometry) {
+    if (this.options.simplifyElementGeometry) {
       this.targetDb.nativeDb.simplifyElementGeometry({ id: elementProps.id, convertBReps: true });
       Logger.logInfo(loggerCategory, `Simplified element geometry for ${this.formatElementForLogger(elementProps)}`);
     }
