@@ -879,6 +879,63 @@ describe("Learning Snippets", () => {
 
       });
 
+      describe("RelatedInstanceNodesSpecification", () => {
+
+        it("uses `relationshipPaths` attribute", async () => {
+          // __PUBLISH_EXTRACT_START__ Hierarchies.RelatedInstanceNodesSpecification.RelationshipPaths.Ruleset
+          // The ruleset has a specification that returns nodes for instances of "BisCore.PhysicalModel" class and all
+          // its subclasses.
+          const ruleset: Ruleset = {
+            id: "example",
+            rules: [{
+              ruleType: RuleTypes.RootNodes,
+              specifications: [{
+                specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+                classes: { schemaName: "BisCore", classNames: ["PhysicalModel"] },
+                groupByClass: false,
+                groupByLabel: true,
+              }],
+            }, {
+              ruleType: RuleTypes.ChildNodes,
+              condition: `ParentNode.IsOfClass("Model", "BisCore")`,
+              specifications: [{
+                specType: ChildNodeSpecificationTypes.RelatedInstanceNodes,
+                relationshipPaths: [{
+                  relationship: { schemaName: "BisCore", className: "ModelContainsElements" },
+                  direction: RelationshipDirection.Forward,
+                  targetClass: { schemaName: "BisCore", className: "GeometricElement3d" },
+                }],
+              }],
+            }],
+          };
+          // __PUBLISH_EXTRACT_END__
+          printRuleset(ruleset);
+
+          const modelNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+          expect(modelNodes.length).to.eq(1);
+          expect(modelNodes).to.containSubset([{
+            key: { instanceKeys: [{ className: "BisCore:PhysicalModel" }] },
+          }]);
+
+          const elementClassGroupingNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: modelNodes[0].key });
+          expect(elementClassGroupingNodes.length).to.eq(2);
+          expect(elementClassGroupingNodes).to.containSubset([{
+            label: { displayValue: "Physical Object" },
+          }, {
+            label: { displayValue: "TestClass" },
+          }]);
+
+          const elementNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: elementClassGroupingNodes[0].key });
+          expect(elementNodes.length).to.eq(2);
+          expect(elementNodes).to.containSubset([{
+            key: { instanceKeys: [{ className: "Generic:PhysicalObject" }] },
+          }, {
+            key: { instanceKeys: [{ className: "Generic:PhysicalObject" }] },
+          }]);
+        });
+
+      });
+
     });
 
   });
