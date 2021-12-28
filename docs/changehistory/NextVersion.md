@@ -686,9 +686,9 @@ These methods were previously synchronous and are now async:
 
 APIs for importing and exporting data between iModels have moved from the [@itwin/core-backend](https://www.npmjs.com/package/@itwin/core-backend) package to the new [@itwin/core-transformer](https://www.npmjs.com/package/@itwin/core-transformer) package. These APIs include [IModelExporter]($transformer), [IModelImporter]($transformer), and [IModelTransformer]($transformer).
 
-### New IModelImporter options
+### IModelImporter property options deprecated in favor of constructor options
 
-Configuration of an [IModelImporter]($transformer) is now only represented by an [IModelImporterOptions]($transformer) object. The ability to modify options with the [IModelImporter]($transformer) properties `simplifyElementGeometry`, `autoExtendProjectExtents`, and `preserveElementIdsForFiltering` has been deprecated; instead, access these options directly via [IModelImporter.options]($transformer). For example, replace the following:
+Configuration of an [IModelImporter]($transformer) is now only represented by an [IModelImportOptions]($transformer) object passed to the constructor. The ability to modify options with the [IModelImporter]($transformer) properties `simplifyElementGeometry`, `autoExtendProjectExtents`, and `preserveElementIdsForFiltering` has been deprecated; instead, access these options directly via [IModelImporter.options]($transformer). For example, replace the following:
 
 ```ts
   const importer = new IModelImporter(targetDb);
