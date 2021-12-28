@@ -189,7 +189,7 @@ export class IModelTransformer extends IModelExportHandler {
 // @beta
 export interface IModelTransformOptions {
     cloneUsingBinaryGeometry?: boolean;
-    deadPredecessorsBehavior?: "reject" | "ignore";
+    danglingPredecessorsBehavior?: "reject" | "ignore";
     includeSourceProvenance?: boolean;
     isReverseSynchronization?: boolean;
     loadSourceGeometry?: boolean;
