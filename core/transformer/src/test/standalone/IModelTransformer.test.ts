@@ -1456,7 +1456,7 @@ describe("IModelTransformer", () => {
     }
   }
 
-  it.only("predecessor deletion is considered invalid without ignoreDeadPredecessors enabled", async () => {
+  it("predecessor deletion is considered invalid without ignoreDeadPredecessors enabled", async () => {
     const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "DeadPredecessorSource.bim");
     const [
       sourceDb,
