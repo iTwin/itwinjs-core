@@ -680,6 +680,39 @@ These methods were previously synchronous and are now async:
 - [InteractiveTool.onSuspend]($frontend)
 - [InteractiveTool.onUnsuspend]($frontend)
 
+## Changes to iModel transformer APIs
+
+### New @itwin/core-transformer package
+
+APIs for importing and exporting data between iModels have moved from the [@itwin/core-backend](https://www.npmjs.com/package/@itwin/core-backend) package to the new [@itwin/core-transformer](https://www.npmjs.com/package/@itwin/core-transformer) package. These APIs include [IModelExporter]($transformer), [IModelImporter]($transformer), and [IModelTransformer]($transformer).
+
+### New IModelImporter options
+
+Configuration of an [IModelImporter]($transformer) is now represented by an [IModelImporterOptions]($transformer) object. The [IModelImporter]($transformer) properties `simplifyElementGeometry`, `autoExtendProjectExtents`, and `preserveElementIdsForFiltering` have been deprecated; instead, access these options directly via [IModelImporter.options]($transformer). For example, replace the following:
+
+```ts
+  const importer = new IModelImporter(targetDb);
+  importer.autoExtendProjectExtents = true;
+}
+```
+
+With this:
+
+```ts
+  const importer = new IModelImporter(targetDb);
+  importer.options.autoExtendProjectExtents = true;
+```
+
+Or, supply an [IModelImporterOptions]($transformer) to the constructor:
+
+```ts
+  const importer = new IModelImporter(targetDb, { autoExtendProjectExtents: true });
+```
+
+### Customized handling of dangling predecessor Ids
+
+TODO MikeB
+
 ## Changes to `@itwin/presentation-common`
 
 ### `NodeKey`
@@ -1484,27 +1517,6 @@ The loader has been deprecated due to a preference for using the dotenv package 
 The method `BSplineCurve3d.createThroughPoints` has been deprecated in favor of the more general method `BSplineCurve3d.createFromInterpolationCurve3dOptions`.
 
 The property `InterpolationCurve3dOptions.isChordLenTangent` has been deprecated due to a naming inconsistency with similar adjacent properties. Use `InterpolationCurve3dOptions.isChordLenTangents` instead.
-
-## new @itwin/core-transformer package split out of backend package
-
-The iModel Transformer APIs, such as the classes [IModelExporter]($transformer), [IModelImporter]($transformer), and [IModelTransformer]($transformer)
-were removed from the `@itwin/core-backend` package and moved to a new package, `@itwin/core-transformer`.
-
-## transformer instance property settings are now deprecated in favor of initialization-only settings
-
-The importer instance properties `IModelImporter.simplifyElementGeometry`, `IModelImporter.autoExtendProjectExtents`,
-and `IModelImporter.preserveElementIdsForFiltering`, have been deprecated in favor of accessing the same properties from the
-`IModelImporter.options` object.
-`IModelImporter.options` is an instance of `IModelImportOptions` and is readonly. To set properties such as
-`autoExtendProjectExtents` for a transformation, use a custom `IModelImporter` as your transformer's target like so:
-
-```ts
-const transformer = new IModelTransformer(
-  sourceDb,
-  new IModelImporter(targetDb, { autoExtendProjectExtents: true }),
-  transformationOptions
-);
-```
 
 ## @itwin/core-common
 
