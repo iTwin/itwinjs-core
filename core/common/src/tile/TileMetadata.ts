@@ -771,7 +771,7 @@ export function readTileContentDescription(stream: ByteStream, sizeMultiplier: n
     // Must sub-divide if tile explicitly specifies...
     let canSkipSubdivision = 0 === (header.flags & ImdlFlags.DisallowMagnification);
     // ...or in 2d, or if app explicitly disabled magnification, or tolerance large enough to risk quantization error...
-    canSkipSubdivision = canSkipSubdivision && !is2d && !options.disableMagnification && header.tolerance <= maxLeafTolerance;
+    canSkipSubdivision = canSkipSubdivision && !is2d /*&& !options.disableMagnification*/ && header.tolerance <= maxLeafTolerance;
     // ...or app specifies incomplete tiles must always be sub-divided.
     canSkipSubdivision = canSkipSubdivision && (completeTile || !options.alwaysSubdivideIncompleteTiles);
     if (canSkipSubdivision) {
@@ -780,9 +780,9 @@ export function readTileContentDescription(stream: ByteStream, sizeMultiplier: n
         const containsCurves = 0 !== (header.flags & ImdlFlags.ContainsCurves);
         if (!containsCurves)
           isLeaf = true;
-        else if (undefined === sizeMultiplier)
+        else if (undefined === sizeMultiplier && !options.disableMagnification)
           sizeMultiplier = 1.0;
-      } else if (undefined === sizeMultiplier && header.numElementsIncluded + header.numElementsExcluded <= minElementsPerTile) {
+      } else if (undefined === sizeMultiplier && !options.disableMagnification && header.numElementsIncluded + header.numElementsExcluded <= minElementsPerTile) {
         sizeMultiplier = 1.0;
       }
     }
