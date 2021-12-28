@@ -688,11 +688,12 @@ APIs for importing and exporting data between iModels have moved from the [@itwi
 
 ### IModelImporter property options deprecated in favor of constructor options
 
-Configuration of an [IModelImporter]($transformer) is now only represented by an [IModelImportOptions]($transformer) object passed to the constructor. The ability to modify options with the [IModelImporter]($transformer) properties `simplifyElementGeometry`, `autoExtendProjectExtents`, and `preserveElementIdsForFiltering` has been deprecated; instead, access these options directly via [IModelImporter.options]($transformer). For example, replace the following:
+Configuration of an [IModelImporter]($transformer) is now only represented by an [IModelImportOptions]($transformer) object passed to the constructor. The ability to modify options with the [IModelImporter]($transformer) properties `simplifyElementGeometry`, `autoExtendProjectExtents`, and `preserveElementIdsForFiltering` has been deprecated; instead, set these options while constructing your [IModelImporter]($transformer), and read them if necessary from [IModelImporter.options]($transformer). For example, replace the following:
 
 ```ts
   const importer = new IModelImporter(targetDb);
   importer.autoExtendProjectExtents = true;
+  const isExtendingProjectExtents = importer.autoExtendProjectExtents;
 }
 ```
 
@@ -700,6 +701,7 @@ With this:
 
 ```ts
   const importer = new IModelImporter(targetDb, { autoExtendProjectExtents: true });
+  const isExtendingProjectExtents = importer.options.autoExtendProjectExtents;
 ```
 
 ### Customized handling of dangling predecessor Ids
