@@ -1385,7 +1385,7 @@ describe("IModelTransformer", () => {
     targetDb.close();
   });
 
-  function createIModelWithDeadPredecessor(opts: {name: string, path: string}) {
+  function createIModelWithDanglingPredecessor(opts: {name: string, path: string}) {
     const sourceDb = SnapshotDb.createEmpty(opts.path, { rootSubject: { name: opts.name } });
 
     const sourceCategoryId = SpatialCategory.insert(sourceDb, IModel.dictionaryId, "SpatialCategory", { color: ColorDef.green.toJSON() });
@@ -1456,14 +1456,14 @@ describe("IModelTransformer", () => {
     }
   }
 
-  it("predecessor deletion is considered invalid without ignoreDeadPredecessors enabled", async () => {
-    const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "DeadPredecessorSource.bim");
+  it("predecessor deletion is considered invalid when danglingPredecessorsBehavior='reject' and that is the default", async () => {
+    const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "DanglingPredecessorSource.bim");
     const [
       sourceDb,
       { displayStyleId, physicalObjects },
-    ] = createIModelWithDeadPredecessor({ name: "DeadPredecessors", path: sourceDbPath });
+    ] = createIModelWithDanglingPredecessor({ name: "DanglingPredecessors", path: sourceDbPath });
 
-    const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "DeadPredecessorTarget.bim");
+    const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "DanglingPredecessorTarget.bim");
     const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
 
     const defaultTransformer = new ShiftElemIdsTransformer(sourceDb, targetDb);
@@ -1471,24 +1471,24 @@ describe("IModelTransformer", () => {
       /Found a reference to an element "[^"]*" that doesn't exist/
     );
 
-    const ignoreDeadPredecessorsDisabledTransformer = new ShiftElemIdsTransformer(sourceDb, targetDb, { deadPredecessorsBehavior: "reject" });
-    await expect(ignoreDeadPredecessorsDisabledTransformer.processAll()).to.be.rejectedWith(
+    const ignoreDanglingPredecessorsDisabledTransformer = new ShiftElemIdsTransformer(sourceDb, targetDb, { danglingPredecessorsBehavior: "reject" });
+    await expect(ignoreDanglingPredecessorsDisabledTransformer.processAll()).to.be.rejectedWith(
       /Found a reference to an element "[^"]*" that doesn't exist/
     );
 
-    const ignoreDeadPredecessorsEnabledTransformer = new ShiftElemIdsTransformer(sourceDb, targetDb, { deadPredecessorsBehavior: "ignore" });
-    await expect(ignoreDeadPredecessorsEnabledTransformer.processAll()).not.to.be.rejected;
+    const ignoreDanglingPredecessorsEnabledTransformer = new ShiftElemIdsTransformer(sourceDb, targetDb, { danglingPredecessorsBehavior: "ignore" });
+    await expect(ignoreDanglingPredecessorsEnabledTransformer.processAll()).not.to.be.rejected;
     targetDb.saveChanges();
 
     expect(sourceDb.elements.tryGetElement(physicalObjects[1].id)).to.be.undefined;
     const displayStyleInSource = sourceDb.elements.getElement<DisplayStyle3d>(displayStyleId);
     expect([...displayStyleInSource.settings.excludedElementIds]).to.include(physicalObjects[1].id);
 
-    const displayStyleInTargetId = ignoreDeadPredecessorsEnabledTransformer.context.findTargetElementId(displayStyleId);
+    const displayStyleInTargetId = ignoreDanglingPredecessorsEnabledTransformer.context.findTargetElementId(displayStyleId);
     const displayStyleInTarget = targetDb.elements.getElement<DisplayStyle3d>(displayStyleInTargetId);
 
     const physObjsInTarget = physicalObjects.map((physObjInSource) => {
-      const physObjInTargetId = ignoreDeadPredecessorsEnabledTransformer.context.findTargetElementId(physObjInSource.id);
+      const physObjInTargetId = ignoreDanglingPredecessorsEnabledTransformer.context.findTargetElementId(physObjInSource.id);
       return { ...physObjInSource, id: physObjInTargetId };
     });
 

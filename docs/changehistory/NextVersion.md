@@ -688,7 +688,7 @@ APIs for importing and exporting data between iModels have moved from the [@itwi
 
 ### New IModelImporter options
 
-Configuration of an [IModelImporter]($transformer) is now represented by an [IModelImporterOptions]($transformer) object. The [IModelImporter]($transformer) properties `simplifyElementGeometry`, `autoExtendProjectExtents`, and `preserveElementIdsForFiltering` have been deprecated; instead, access these options directly via [IModelImporter.options]($transformer). For example, replace the following:
+Configuration of an [IModelImporter]($transformer) is now only represented by an [IModelImporterOptions]($transformer) object. The ability to modify options with the [IModelImporter]($transformer) properties `simplifyElementGeometry`, `autoExtendProjectExtents`, and `preserveElementIdsForFiltering` has been deprecated; instead, access these options directly via [IModelImporter.options]($transformer). For example, replace the following:
 
 ```ts
   const importer = new IModelImporter(targetDb);
@@ -699,19 +699,16 @@ Configuration of an [IModelImporter]($transformer) is now represented by an [IMo
 With this:
 
 ```ts
-  const importer = new IModelImporter(targetDb);
-  importer.options.autoExtendProjectExtents = true;
-```
-
-Or, supply an [IModelImporterOptions]($transformer) to the constructor:
-
-```ts
   const importer = new IModelImporter(targetDb, { autoExtendProjectExtents: true });
 ```
 
 ### Customized handling of dangling predecessor Ids
 
-TODO MikeB
+When the [IModelTransformer]($transformer) encounters a dangling predecessor element id reference in an iModel, an element id for which no element exists in the database, by default the entire transformation is rejected. Now, there are multiple behaviors to choose from for the transformer to use when it encounters such references while analyzing predecessor elements. The `danglingPredecessorBehavior` option defaults to `reject`, or can be configured as `ignore`, which will instead leave the dangling reference as is while transforming to the target. You can configure the new behavior like so:
+
+```ts
+  const transformer = new IModelTransformer(sourceDb, targetDb, { danglingPredecessorBehavior: "ignore" });
+```
 
 ## Changes to `@itwin/presentation-common`
 
