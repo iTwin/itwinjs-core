@@ -26,14 +26,6 @@ import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
 
 const loggerCategory: string = TransformerLoggerCategory.IModelTransformer;
 
-/** Options for handling dead predecessors during transformations
- * @beta
- */
-export enum DeadPredecessorsBehavior {
-  Reject = "reject",
-  Ignore = "ignore",
-}
-
 /** Options provided to the [[IModelTransformer]] constructor.
  * @beta
  */
@@ -104,10 +96,10 @@ export interface IModelTransformOptions {
    * @note turning this on passes the issue down to consuming applications, iModels that have invalid element references
    *       like this can cause errors, and you should consider adding custom logic in your transformer to remove the
    *       reference depending on your use case.
-   * @default [[DeadPredecessorsBehavior.Reject]]
+   * @default "reject"
    * @beta
    */
-  deadPredecessorsBehavior?: DeadPredecessorsBehavior;
+  deadPredecessorsBehavior?: "reject" | "ignore";
 }
 
 /** Base class used to transform a source iModel into a different target iModel.
@@ -154,7 +146,7 @@ export class IModelTransformer extends IModelExportHandler {
       // non-falsy defaults
       cloneUsingBinaryGeometry: options?.cloneUsingBinaryGeometry ?? true,
       targetScopeElementId: options?.targetScopeElementId ?? IModel.rootSubjectId,
-      deadPredecessorsBehavior: options?.deadPredecessorsBehavior ?? DeadPredecessorsBehavior.Reject,
+      deadPredecessorsBehavior: options?.deadPredecessorsBehavior ?? "reject",
     };
     this._isFirstSynchronization = this._options.wasSourceIModelCopiedToTarget ? true : undefined;
     // initialize exporter and sourceDb
@@ -426,11 +418,11 @@ export class IModelTransformer extends IModelExportHandler {
           const sourcePredecessor = this.sourceDb.elements.tryGetElement(sourcePredecessorId);
           if (sourcePredecessor === undefined) {
             switch (this._options.deadPredecessorsBehavior) {
-              case DeadPredecessorsBehavior.Ignore:
+              case "ignore":
                 Logger.logWarning(loggerCategory, `Source element (${sourceElement.id}) "${sourceElement.getDisplayLabel()}" has a missing predecessor (${sourcePredecessorId})`);
                 sourcePredecessorIds.delete(sourcePredecessorId);
                 return;
-              case DeadPredecessorsBehavior.Reject:
+              case "reject":
                 throw new IModelError(
                   IModelStatus.NotFound,
                   `Found a reference to an element "${sourcePredecessorId}" that doesn't exist while looking for predecessors of "${sourceElement.id}"`

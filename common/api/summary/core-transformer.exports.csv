@@ -1,6 +1,5 @@
 sep=;
 Release Tag;API Item
-beta;DeadPredecessorsBehavior
 beta;IModelExporter
 beta;class IModelExportHandler
 beta;IModelImporter 

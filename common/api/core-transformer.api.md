@@ -27,14 +27,6 @@ import { Schema } from '@itwin/ecschema-metadata';
 import { SchemaKey } from '@itwin/ecschema-metadata';
 
 // @beta
-export enum DeadPredecessorsBehavior {
-    // (undocumented)
-    Ignore = "ignore",
-    // (undocumented)
-    Reject = "reject"
-}
-
-// @beta
 export class IModelExporter {
     constructor(sourceDb: IModelDb);
     excludeCodeSpec(codeSpecName: string): void;
@@ -197,7 +189,7 @@ export class IModelTransformer extends IModelExportHandler {
 // @beta
 export interface IModelTransformOptions {
     cloneUsingBinaryGeometry?: boolean;
-    deadPredecessorsBehavior?: DeadPredecessorsBehavior;
+    deadPredecessorsBehavior?: "reject" | "ignore";
     includeSourceProvenance?: boolean;
     isReverseSynchronization?: boolean;
     loadSourceGeometry?: boolean;
