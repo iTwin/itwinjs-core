@@ -50,7 +50,7 @@ export class B3dmReader extends GltfReader {
     if (undefined !== returnToCenterTransform)
       transformToRoot = transformToRoot ? transformToRoot.multiplyTransformTransform(returnToCenterTransform) : returnToCenterTransform;
 
-    const props = GltfReaderProps.create(stream, yAxisUp);
+    const props = GltfReaderProps.create(stream.nextBytes(header.length - stream.curPos), yAxisUp);
     const batchTableLength = header.featureTableJson ? JsonUtils.asInt(header.featureTableJson.BATCH_LENGTH, 0) : 0;
 
     return undefined !== props ? new B3dmReader(props, iModel, modelId, is3d, system, range, isLeaf, batchTableLength,
@@ -141,7 +141,7 @@ export class B3dmReader extends GltfReader {
       featureTable.insert(feature);
     }
 
-    await this.loadTextures();
+    await this.resolveResources();
     if (this._isCanceled)
       return { readStatus: TileReadStatus.Canceled, isLeaf: this._isLeaf };
 

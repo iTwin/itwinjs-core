@@ -62,7 +62,7 @@ export abstract class RealityTileLoader {
   public async loadTileContent(tile: Tile, data: TileRequest.ResponseData, system: RenderSystem, isCanceled?: () => boolean): Promise<TileContent> {
     assert(data instanceof Uint8Array);
     const blob = data;
-    const streamBuffer = new ByteStream(blob.buffer);
+    const streamBuffer = ByteStream.fromUint8Array(blob);
     return this.loadTileContentFromStream(tile as RealityTile, streamBuffer, system, isCanceled);
   }
 
