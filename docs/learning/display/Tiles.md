@@ -91,17 +91,40 @@ Given a tile encompassing some volume, we want to obtain a higher-resolution rep
 
 #### Determining the structure
 
+To generate a tile, the iTwin.js backend must query for all geometric elements whose bounding volumes intersect the tile's volume. Then, it traverses the [GeometryStream](../common/GeometryStream.md) of each element. Any element or geometric primitive that is sufficiently small relative to the tile's chord tolerance is omitted. Otherwise, the geometry is converted to triangle meshes (or polylines, or point strings) and added to the tile's batched mesh(es). Finally the feature table and some metadata are embedded into the tile. (NOTE: this is an extremely simplified description of the tile generation process - many details and nuances have been omitted).
+
+The metadata produced by the tile generation process is key to discovering the structure of the tile tree. Among other information, each tile's metadata records:
+
+- Whether any sufficiently small elements or bits of geometry were omitted from the tile's graphics;
+- Whether any curved or decimated geometry was encountered within the tile's volume;
+- A tight bounding box encompassing all of the geometry within the tile's volume; and
+- A bitfield indicating which sub-volumes of the tile's volume were determined to be entirely empty.
+
+Where practical, sub-volumes are tested for intersection with individual facets and line segments rather than with bounding boxes; this improves the detection of empty sub-volumes.
+
+If any geometry was omitted or any curved or decimated geometry exists within the tile's volume, we know that the tile requires refinement; otherwise, refinement will produce no actual improvement in level of detail.
+
+The content volume allows us to perform tighter intersection tests against the viewing frustum, to avoid drawing tiles that aren't actually visible. In the image below, the green rectangles represent each tile's content volume:
+
+![Tile content volumes](./assets/content-volumes.jpg)
+
+The information about empty sub-volumes enables us to elide requests for child tiles which we know would produce no graphics. In the images below, the green rectangles represent tiles that require refinement and the blue rectangles represent tiles requiring no refinement. Missing rectangles indicate volumes that were identified as being entirely empty, therefore resulting in no tile requests for those volumes. Note that all of the green rectangles contain curved geometry, and all of the blue rectangles contain only uncurved geometry:
+
+Tiles - depth 1:
+
+![Tiles - depth 1](./assets/child-tiles.jpg)
+
+Tiles - depth 2:
+
+![Tiles - depth 2](./assets/grandchild-tiles.jpg)
 
 ### Optimizations
 
 
-#### Lookup tables
-
-
-#### Content volumes
-
-
 #### Compression
+
+
+#### Lookup tables
 
 
 ## Scene creation
