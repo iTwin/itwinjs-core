@@ -7,15 +7,14 @@
  */
 
 import * as React from "react";
-import { AbstractWidgetProps, BadgeType, ConditionalStringValue, PointProps, StringGetter, UiError, WidgetState } from "@itwin/appui-abstract";
-import { UiEvent } from "@itwin/core-react";
+import { AbstractWidgetProps, BadgeType, ConditionalStringValue, PointProps, StringGetter, UiError, UiEvent, UiSyncEventArgs, WidgetState } from "@itwin/appui-abstract";
 import { Direction, PanelSide } from "@itwin/appui-layout-react";
 import { ConfigurableCreateInfo, ConfigurableUiControlConstructor, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { CommandItemDef } from "../shared/CommandItemDef";
 import { ItemList } from "../shared/ItemMap";
-import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
+import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";
 import { PropsHelper } from "../utils/PropsHelper";
 import { WidgetControl } from "./WidgetControl";
@@ -69,8 +68,8 @@ export enum WidgetType {
  * @public
  */
 export interface ToolbarWidgetProps extends WidgetProps {
-  horizontalDirection?: Direction;
-  verticalDirection?: Direction;
+  horizontalDirection?: Direction; // eslint-disable-line deprecation/deprecation
+  verticalDirection?: Direction; // eslint-disable-line deprecation/deprecation
 
   horizontalItems?: ItemList;
   verticalItems?: ItemList;
@@ -95,7 +94,7 @@ export interface NavigationWidgetProps extends ToolbarWidgetProps {
  */
 export type AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetProps;
 
-/** Prototype for WidgetDef StateFunc
+/** Prototype for WidgetDef StateFunc (UI 1.0 only deprecate ???)
  * @public
  */
 export type WidgetStateFunc = (state: Readonly<WidgetState>) => WidgetState;
@@ -152,7 +151,19 @@ export class WidgetDef {
     widgetIndex: 0,
   };
 
-  public get state(): WidgetState { return this._state; }
+  public get state(): WidgetState {
+    if ("1" === UiFramework.uiVersion)
+      return this._state;
+
+    const frontstageDef = FrontstageManager.activeFrontstageDef;
+    if (frontstageDef?.findWidgetDef(this.id)) {
+      const currentState = frontstageDef.getWidgetCurrentState(this);
+      if (undefined !== currentState)
+        return currentState;
+    }
+    return this.defaultState;
+  }
+
   public get id(): string { return this._id; }
   public get classId(): string | ConfigurableUiControlConstructor | undefined { return this._classId; }
   public get priority(): number { return this._priority; }
@@ -166,7 +177,7 @@ export class WidgetDef {
   public get syncEventIds(): string[] { return this._syncEventIds; }
   public get stateFunc(): WidgetStateFunc | undefined { return this._stateFunc; }
   public get applicationData(): any | undefined { return this._applicationData; }
-  public get isFloating(): boolean { return this._state === WidgetState.Floating; }
+  public get isFloating(): boolean { return this.state === WidgetState.Floating; }
   public get iconSpec(): string | ConditionalStringValue | React.ReactNode { return this._iconSpec; }
   public get badgeType(): BadgeType | undefined { return this._badgeType; }
 
@@ -220,7 +231,8 @@ export class WidgetDef {
 
     if (widgetProps.defaultState !== undefined) {
       me._defaultState = widgetProps.defaultState;
-      me._state = widgetProps.defaultState === WidgetState.Floating ? WidgetState.Open : widgetProps.defaultState;
+      if ("1" === UiFramework.uiVersion)
+        me._state = widgetProps.defaultState === WidgetState.Floating ? WidgetState.Open : widgetProps.defaultState;
     }
 
     if (widgetProps.isFreeform !== undefined) {
@@ -276,7 +288,7 @@ export class WidgetDef {
     }
   }
 
-  private _handleSyncUiEvent = (args: SyncUiEventArgs): void => {
+  private _handleSyncUiEvent = (args: UiSyncEventArgs): void => {
     if ((this.syncEventIds.length > 0) && this.syncEventIds.some((value: string): boolean => args.eventIds.has(value.toLowerCase()))) {
       // istanbul ignore else
       if (this.stateFunc) {
@@ -379,7 +391,8 @@ export class WidgetDef {
   public setWidgetState(newState: WidgetState): void {
     if (this.state === newState)
       return;
-    this._state = newState;
+    if ("1" === UiFramework.uiVersion)
+      this._state = newState;
     this._stateChanged = true;
     FrontstageManager.onWidgetStateChangedEvent.emit({ widgetDef: this, widgetState: newState });
     this.onWidgetStateChanged();
@@ -419,7 +432,7 @@ export class WidgetDef {
 
   public onWidgetStateChanged(): void {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this.widgetControl && UiFramework.postTelemetry(`Widget ${this.widgetControl.classId} state set to ${widgetStateNameMap.get(this._state)}`, "35402486-9839-441E-A5C7-46D546142D11");
+    this.widgetControl && UiFramework.postTelemetry(`Widget ${this.widgetControl.classId} state set to ${widgetStateNameMap.get(this.state)}`, "35402486-9839-441E-A5C7-46D546142D11");
     this.widgetControl && this.widgetControl.onWidgetStateChanged();
     // istanbul ignore next
     this._onWidgetStateChanged && this._onWidgetStateChanged();

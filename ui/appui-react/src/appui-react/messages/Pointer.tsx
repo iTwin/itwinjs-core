@@ -11,8 +11,8 @@ import classnames from "classnames";
 import * as React from "react";
 import { XAndY } from "@itwin/core-geometry";
 import { OutputMessagePriority } from "@itwin/core-frontend";
-import { MessageSeverity, PointProps, RelativePosition } from "@itwin/appui-abstract";
-import { CommonProps, MessageContainer, Point, Rectangle, SizeProps, UiEvent } from "@itwin/core-react";
+import { MessageSeverity, PointProps, RelativePosition, UiEvent } from "@itwin/appui-abstract";
+import { CommonProps, MessageContainer, Point, Rectangle, SizeProps } from "@itwin/core-react";
 import { offsetAndContainInContainer, Tooltip } from "@itwin/appui-layout-react";
 import { MessageManager } from "./MessageManager";
 import { MessageDiv, MessageSpan } from "./MessageSpan";
@@ -135,7 +135,7 @@ export class PointerMessage extends React.Component<PointerMessageProps, Pointer
     const severity = MessageManager.getSeverity(this.state.messageDetails!);
 
     return (
-      <Tooltip
+      <Tooltip // eslint-disable-line deprecation/deprecation
         className={className}
         onSizeChanged={this._handleSizeChanged}
         position={this.state.position}

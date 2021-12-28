@@ -87,7 +87,7 @@ export abstract class IModelExportHandler {
 }
 
 // @beta
-export class IModelImporter {
+export class IModelImporter implements Required<IModelImportOptions> {
     constructor(targetDb: IModelDb, options?: IModelImportOptions);
     autoExtendProjectExtents: boolean | {
         excludeOutliers: boolean;
@@ -113,6 +113,7 @@ export class IModelImporter {
     protected onUpdateElementAspect(aspectProps: ElementAspectProps): void;
     protected onUpdateModel(modelProps: ModelProps): void;
     protected onUpdateRelationship(relationshipProps: RelationshipProps): void;
+    preserveElementIdsForFiltering: boolean;
     progressInterval: number;
     simplifyElementGeometry: boolean;
     readonly targetDb: IModelDb;
@@ -123,6 +124,7 @@ export interface IModelImportOptions {
     autoExtendProjectExtents?: boolean | {
         excludeOutliers: boolean;
     };
+    preserveElementIdsForFiltering?: boolean;
 }
 
 // @beta
@@ -185,6 +187,7 @@ export interface IModelTransformOptions {
     isReverseSynchronization?: boolean;
     loadSourceGeometry?: boolean;
     noProvenance?: boolean;
+    preserveElementIdsForFiltering?: boolean;
     targetScopeElementId?: Id64String;
     wasSourceIModelCopiedToTarget?: boolean;
 }

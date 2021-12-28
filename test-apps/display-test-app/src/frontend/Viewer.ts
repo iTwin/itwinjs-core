@@ -198,6 +198,10 @@ export class Viewer extends Window {
 
   private constructor(surface: Surface, view: ViewState, views: ViewList, props: ViewerProps) {
     super(surface, { scrollbars: true });
+
+    // Allow HTMLElements beneath viewport to be visible if background color has transparency.
+    this.contentDiv.style.backgroundColor = "transparent";
+    this.container.style.backgroundColor = "transparent";
     surface.element.appendChild(this.container);
 
     this.disableEdges = true === props.disableEdges;

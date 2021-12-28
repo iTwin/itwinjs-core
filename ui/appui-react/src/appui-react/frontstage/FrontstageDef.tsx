@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 /** @packageDocumentation
  * @module Frontstage
  */
@@ -10,11 +11,11 @@
 
 import * as React from "react";
 import { IModelApp, ScreenViewport } from "@itwin/core-frontend";
-import { PointProps, StagePanelLocation, StageUsage, UiError } from "@itwin/appui-abstract";
+import { PointProps, StagePanelLocation, StageUsage, UiError, WidgetState } from "@itwin/appui-abstract";
 import { RectangleProps, SizeProps } from "@itwin/core-react";
 import {
   dockWidgetContainer, findTab, findWidget, floatWidget, isFloatingLocation, isPopoutLocation, isPopoutWidgetLocation,
-  NineZoneManagerProps, NineZoneState, popoutWidgetToChildWindow, setFloatingWidgetContainerBounds,
+  NineZoneManagerProps, NineZoneState, PanelSide, panelSides, popoutWidgetToChildWindow, setFloatingWidgetContainerBounds,
 } from "@itwin/appui-layout-react";
 import { ContentControl } from "../content/ContentControl";
 import { ContentGroup, ContentGroupProvider } from "../content/ContentGroup";
@@ -22,7 +23,7 @@ import { ContentLayoutDef } from "../content/ContentLayout";
 import { ContentLayoutManager } from "../content/ContentLayoutManager";
 import { ContentViewManager } from "../content/ContentViewManager";
 import { ToolItemDef } from "../shared/ToolItemDef";
-import { StagePanelDef } from "../stagepanels/StagePanelDef";
+import { StagePanelDef, StagePanelState, toPanelSide } from "../stagepanels/StagePanelDef";
 import { UiFramework } from "../UiFramework";
 import { WidgetControl } from "../widgets/WidgetControl";
 import { WidgetDef } from "../widgets/WidgetDef";
@@ -58,6 +59,7 @@ export class FrontstageDef {
   private _defaultContentId: string = "";
   private _isInFooterMode: boolean = true;
   private _isStageClosing = false;
+  private _isReady = false;
   private _isApplicationClosing = false;
   private _applicationData?: any;
   private _usage?: string;
@@ -125,14 +127,112 @@ export class FrontstageDef {
   public get nineZone(): NineZoneManagerProps | undefined { return this._nineZone; } // istanbul ignore next
   public set nineZone(props: NineZoneManagerProps | undefined) { this._nineZone = props; }
 
+  private toStagePanelLocation(side: PanelSide): StagePanelLocation {
+    switch (side) {
+      case "bottom":
+        return StagePanelLocation.Bottom;
+      case "left":
+        return StagePanelLocation.Left;
+      case "right":
+        return StagePanelLocation.Right;
+      case "top":
+        return StagePanelLocation.Top;
+    }
+  }
+
+  private populateStateMaps(nineZone: NineZoneState, panelMap: Map<StagePanelDef, StagePanelState>, widgetMap: Map<WidgetDef, WidgetState>) {
+    for (const panelSide of panelSides) {
+      const panel = nineZone.panels[panelSide];
+      const location = this.toStagePanelLocation(panelSide);
+      const panelDef = this.getStagePanelDef(location);
+      if (panelDef) {
+        const panelState = panel.collapsed ? StagePanelState.Minimized : StagePanelState.Open;
+        panelMap.set(panelDef, panelState);
+      }
+      for (const widgetId of panel.widgets) {
+        const widget = nineZone.widgets[widgetId];
+        // istanbul ignore else
+        if (widget) {
+          for (const tabId of widget.tabs) {
+            const widgetDef = this.findWidgetDef(tabId);
+            if (widgetDef) {
+              let widgetState = WidgetState.Open;
+              if (widget.minimized || tabId !== widget.activeTabId)
+                widgetState = WidgetState.Closed;
+              widgetMap.set(widgetDef, widgetState);
+            }
+          }
+        }
+      }
+    }
+    // istanbul ignore next
+    for (const widgetId of nineZone.floatingWidgets.allIds) {
+      const widget = nineZone.widgets[widgetId];
+      if (widget) {
+        for (const tabId of widget.tabs) {
+          const widgetDef = this.findWidgetDef(tabId);
+          if (widgetDef) {
+            let widgetState = WidgetState.Open;
+            if (widget.minimized || tabId !== widget.activeTabId)
+              widgetState = WidgetState.Closed;
+            widgetMap.set(widgetDef, widgetState);
+          }
+        }
+      }
+    }
+  }
+
+  private triggerStateChangeEventForWidgetsAndPanels(state: NineZoneState | undefined) {
+    // istanbul ignore else
+    if (!(this._isStageClosing || this._isApplicationClosing)) {
+      if (state) {
+        const originalPanelStateMap = new Map<StagePanelDef, StagePanelState>();
+        const originalWidgetStateMap = new Map<WidgetDef, WidgetState>();
+        const newPanelStateMap = new Map<StagePanelDef, StagePanelState>();
+        const newWidgetStateMap = new Map<WidgetDef, WidgetState>();
+        this._nineZoneState && this.populateStateMaps(this._nineZoneState, originalPanelStateMap, originalWidgetStateMap);
+        this.populateStateMaps(state, newPanelStateMap, newWidgetStateMap);
+
+        // set internal state value before triggering events
+        this._nineZoneState = state;
+
+        // now walk and trigger set state events
+        newWidgetStateMap.forEach((stateValue, widgetDef) => {
+          const originalState = originalWidgetStateMap.get(widgetDef);
+          if (originalState !== stateValue) {
+            FrontstageManager.onWidgetStateChangedEvent.emit({ widgetDef, widgetState: stateValue });
+            widgetDef.onWidgetStateChanged();
+          }
+        });
+        newPanelStateMap.forEach((stateValue, panelDef) => {
+          const originalState = originalPanelStateMap.get(panelDef);
+          if (originalState !== stateValue) {
+            FrontstageManager.onPanelStateChangedEvent.emit({
+              panelDef,
+              panelState: stateValue,
+            });
+          }
+        });
+      } else {
+        this._nineZoneState = state;
+      }
+    }
+  }
+
   /** @internal */
   public get nineZoneState(): NineZoneState | undefined { return this._nineZoneState; }
   public set nineZoneState(state: NineZoneState | undefined) {
     if (this._nineZoneState === state)
       return;
-    this._nineZoneState = state;
-    // istanbul ignore else
-    if (!(this._isStageClosing || this._isApplicationClosing)) {
+
+    if ("1" === UiFramework.uiVersion || !this._nineZoneState) {
+      this._nineZoneState = state;
+    } else {
+      this.triggerStateChangeEventForWidgetsAndPanels(state);
+    }
+
+    // istanbul ignore next - don't trigger any side effects until stage "isReady"
+    if (!(this._isStageClosing || this._isApplicationClosing) || this.isReady) {
       FrontstageManager.onFrontstageNineZoneStateChangedEvent.emit({
         frontstageDef: this,
         state,
@@ -212,6 +312,7 @@ export class FrontstageDef {
 
   /** Returns once the contained widgets and content controls are ready to use */
   public async waitUntilReady(): Promise<void> {
+    this._isReady = false;
     // create an array of control-ready promises
     const controlReadyPromises = new Array<Promise<void>>();
     this._widgetControls.forEach((control: WidgetControl) => {
@@ -230,6 +331,7 @@ export class FrontstageDef {
 
     await Promise.all(controlReadyPromises);
     // Frontstage ready
+    this._isReady = true;
   }
 
   /** Handles when the Frontstage becomes active */
@@ -557,6 +659,42 @@ export class FrontstageDef {
     FrontstageManager.onFrontstageRestoreLayoutEvent.emit({ frontstageDef: this });
   }
 
+  /** Used only in UI 2.0 to determine WidgetState from NinezoneState
+   *  @internal
+   */
+  public getWidgetCurrentState(widgetDef: WidgetDef): WidgetState | undefined {
+    // istanbul ignore else
+    if (this.nineZoneState) {
+      const location = findTab(this.nineZoneState, widgetDef.id);
+      // istanbul ignore next
+      if (!location)
+        return WidgetState.Hidden;
+
+      const widgetContainer = this.nineZoneState.widgets[location.widgetId];
+      if (widgetDef.id === widgetContainer.activeTabId)
+        return WidgetState.Open;
+      else
+        return WidgetState.Closed;
+    }
+    return widgetDef.defaultState;
+  }
+
+  /** Used only in UI 2.0 to determine StagePanelState and size from NinezoneState
+   *  @internal
+   */
+  public getPanelCurrentState(panelDef: StagePanelDef): [StagePanelState, number] {
+    // istanbul ignore else
+    if (this.nineZoneState) {
+      const side = toPanelSide(panelDef.location);
+      const panel = this.nineZoneState.panels[side];
+      if (panel) {
+        return [panel.collapsed ? StagePanelState.Minimized : StagePanelState.Open, panel.size ?? 0];
+      }
+      return [StagePanelState.Off, 0];
+    }
+    return [panelDef.defaultState, panelDef.defaultSize ?? 0];
+  }
+
   public isPopoutWidget(widgetId: string) {
     // istanbul ignore else
     if (this.nineZoneState) {
@@ -687,6 +825,10 @@ export class FrontstageDef {
 
   public get isApplicationClosing() {
     return this._isApplicationClosing;
+  }
+
+  public get isReady() {
+    return this._isReady;
   }
 
   /** @internal */

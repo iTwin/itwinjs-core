@@ -15,7 +15,7 @@ import {
 } from "@itwin/core-backend";
 import { BentleyError, BriefcaseStatus, GuidString, Id64String, IModelHubStatus, IModelStatus, Logger, OpenMode } from "@itwin/core-bentley";
 import {
-  BriefcaseIdValue, ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetProps, CodeProps, IModelError, IModelVersion, LocalDirName,
+  BriefcaseIdValue, ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetIndexAndId, ChangesetProps, CodeProps, IModelError, IModelVersion, LocalDirName,
 } from "@itwin/core-common";
 import { IModelBankClient } from "./imodelbank/IModelBankClient";
 import { IModelClient } from "./IModelClient";
@@ -30,7 +30,7 @@ import { Lock, LockLevel, LockQuery, LockType } from "./imodelhub/Locks";
 import { VersionQuery } from "./imodelhub/Versions";
 import { AzureFileHandler } from "./itwin-client/AzureFileHandler";
 
-const changeSet0 = { id: "", changesType: 0, description: "revision0", parentId: "", briefcaseId: 0, pushDate: "", userCreated: "", index: 0 };
+const changeSet0 = { id: "", changesType: 0, description: "version0", parentId: "", briefcaseId: 0, pushDate: "", userCreated: "", index: 0 };
 
 /** @internal */
 export class IModelHubBackend implements BackendHubAccess {
@@ -91,17 +91,17 @@ export class IModelHubBackend implements BackendHubAccess {
     if (this.isUsingIModelBankClient)
       throw new IModelError(IModelStatus.BadRequest, "This is a iModelHub only operation");
 
-    const revision0 = join(IModelHost.cacheDir, "temp-revision0.bim");
-    IModelJsFs.removeSync(revision0);
-    if (!arg.revision0) { // if they didn't supply a revision0 file, create a blank one.
-      const blank = SnapshotDb.createEmpty(revision0, { rootSubject: { name: arg.description ?? arg.iModelName } });
+    const version0 = join(IModelHost.cacheDir, "temp-version0.bim");
+    IModelJsFs.removeSync(version0);
+    if (!arg.version0) { // if they didn't supply a version0 file, create a blank one.
+      const blank = SnapshotDb.createEmpty(version0, { rootSubject: { name: arg.description ?? arg.iModelName } });
       blank.saveChanges();
       blank.close();
     } else {
-      IModelJsFs.copySync(arg.revision0, revision0);
+      IModelJsFs.copySync(arg.version0, version0);
     }
 
-    const nativeDb = IModelDb.openDgnDb({ path: revision0 }, OpenMode.ReadWrite);
+    const nativeDb = IModelDb.openDgnDb({ path: version0 }, OpenMode.ReadWrite);
     try {
       nativeDb.setITwinId(arg.iTwinId);
       // nativeDb.setDbGuid(this.iModelId); NEEDS_WORK - iModelHub should accept this value, not create it.
@@ -115,8 +115,8 @@ export class IModelHubBackend implements BackendHubAccess {
     }
 
     const accessToken = await this.getAccessToken(arg);
-    const hubIModel = await this.iModelClient.iModels.create(accessToken, arg.iTwinId, arg.iModelName, { path: revision0, description: arg.description });
-    IModelJsFs.removeSync(revision0);
+    const hubIModel = await this.iModelClient.iModels.create(accessToken, arg.iTwinId, arg.iModelName, { path: version0, description: arg.description });
+    IModelJsFs.removeSync(version0);
     return hubIModel.wsgId;
   }
 
@@ -301,7 +301,7 @@ export class IModelHubBackend implements BackendHubAccess {
     return val;
   }
 
-  public async downloadV1Checkpoint(arg: CheckpointArg): Promise<ChangesetId> {
+  public async downloadV1Checkpoint(arg: CheckpointArg): Promise<ChangesetIndexAndId> {
     const checkpoint = arg.checkpoint;
     let checkpointQuery = new CheckpointQuery().selectDownloadUrl();
     checkpointQuery = checkpointQuery.precedingCheckpoint(checkpoint.changeset.id);
@@ -317,7 +317,7 @@ export class IModelHubBackend implements BackendHubAccess {
     };
 
     await this.iModelClient.checkpoints.download(accessToken, checkpoints[0], arg.localFile, progressCallback, cancelRequest);
-    return checkpoints[0].mergedChangeSetId!;
+    return { index: checkpoints[0].mergedChangeSetIndex!, id: checkpoints[0].mergedChangeSetId! };
   }
 
   public async queryV2Checkpoint(arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined> {
@@ -340,7 +340,7 @@ export class IModelHubBackend implements BackendHubAccess {
     };
   }
 
-  public async downloadV2Checkpoint(arg: CheckpointArg): Promise<ChangesetId> {
+  public async downloadV2Checkpoint(arg: CheckpointArg): Promise<ChangesetIndexAndId> {
     const checkpoint = arg.checkpoint;
     let checkpointQuery = new CheckpointV2Query();
     checkpointQuery = checkpointQuery.precedingCheckpointV2(checkpoint.changeset.id).selectContainerAccessKey();
@@ -361,7 +361,8 @@ export class IModelHubBackend implements BackendHubAccess {
     if (!containerAccessKeyContainer || !containerAccessKeySAS || !containerAccessKeyAccount || !containerAccessKeyDbName)
       throw new IModelError(IModelStatus.NotFound, "invalid V2 checkpoint");
 
-    const downloader = new IModelHost.platform.DownloadV2Checkpoint({
+    const transfer = new IModelHost.platform.CloudDbTransfer({
+      direction: "download",
       container: containerAccessKeyContainer,
       auth: containerAccessKeySAS,
       storageType: "azure?sas=1",
@@ -377,13 +378,13 @@ export class IModelHubBackend implements BackendHubAccess {
       const onProgress = arg.onProgress;
       if (onProgress) {
         timer = setInterval(async () => { // set an interval timer to show progress every 250ms
-          const progress = downloader.getProgress();
+          const progress = transfer.getProgress();
           total = progress.total;
           if (onProgress(progress.loaded, progress.total))
-            downloader.cancelDownload();
+            transfer.cancelTransfer();
         }, 250);
       }
-      await downloader.downloadPromise;
+      await transfer.promise;
       onProgress?.(total, total); // make sure we call progress func one last time when download completes
     } catch (err: any) {
       throw (err.message === "cancelled") ? new UserCancelledError(BriefcaseStatus.DownloadCancelled, "download cancelled") : err;
@@ -391,7 +392,7 @@ export class IModelHubBackend implements BackendHubAccess {
       if (timer)
         clearInterval(timer);
     }
-    return checkpoints[0].changeSetId!;
+    return { index: checkpoints[0].mergedChangeSetIndex!, id: checkpoints[0].mergedChangeSetId! };
   }
 
   public async releaseAllLocks(arg: BriefcaseDbArg) {

@@ -8,6 +8,7 @@
 
 import * as React from "react";
 import { Logger } from "@itwin/core-bentley";
+import { UiSyncEventArgs } from "@itwin/appui-abstract";
 import { CommonProps, NoChildrenProps, Orientation, ResizableContainerObserver, Size } from "@itwin/core-react";
 import { Direction, Toolbar as NZ_Toolbar, ToolbarPanelAlignment } from "@itwin/appui-layout-react";
 import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
@@ -15,7 +16,7 @@ import { AnyItemDef } from "../shared/AnyItemDef";
 import { CustomItemDef } from "../shared/CustomItemDef";
 import { ItemDefBase } from "../shared/ItemDefBase";
 import { ItemList } from "../shared/ItemMap";
-import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
+import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";
 import { GroupItemDef } from "./GroupItem";
 
@@ -30,9 +31,9 @@ export interface ToolbarProps extends CommonProps, NoChildrenProps {
   /** Logging and debugging Id */
   toolbarId?: string;
   /** Describes to which direction the history/panel items are expanded. Defaults to: [[Direction.Bottom]] */
-  expandsTo?: Direction;
+  expandsTo?: Direction; // eslint-disable-line deprecation/deprecation
   /** Describes how expanded panels are aligned. Defaults to: [[ToolbarPanelAlignment.Start]] */
-  panelAlignment?: ToolbarPanelAlignment;
+  panelAlignment?: ToolbarPanelAlignment; // eslint-disable-line deprecation/deprecation
   /** initial size */
   initialSize?: Size;
 }
@@ -124,14 +125,14 @@ export class Toolbar extends React.Component<ToolbarProps, ToolbarState> {
     return false;
   }
 
-  private _processSyncUiEvent(itemList: ItemList | ItemDefBase[] | AnyItemDef[] | undefined, args: SyncUiEventArgs): boolean {
+  private _processSyncUiEvent(itemList: ItemList | ItemDefBase[] | AnyItemDef[] | undefined, args: UiSyncEventArgs): boolean {
     // istanbul ignore next
     if (!itemList || 0 === itemList.length)
       return false;
 
     let returnValue = false;
 
-    // Review all the itemDefs to see if any are monitoring sync events in SyncUiEventArgs
+    // Review all the itemDefs to see if any are monitoring sync events in UiSyncEventArgs
     for (const item of itemList) {
       if (item.stateFunc && item.stateSyncIds && item.stateSyncIds.length > 0 && // eslint-disable-line deprecation/deprecation
         item.stateSyncIds.some((value: string): boolean => args.eventIds.has(value.toLowerCase()))) { // eslint-disable-line deprecation/deprecation
@@ -153,7 +154,7 @@ export class Toolbar extends React.Component<ToolbarProps, ToolbarState> {
     return returnValue;
   }
 
-  private _handleSyncUiEvent = (args: SyncUiEventArgs): void => {
+  private _handleSyncUiEvent = (args: UiSyncEventArgs): void => {
     if (this._processSyncUiEvent(this.props.items, args)) {
       setImmediate(() => {
         // if sync event changed number of displayable buttons layout the toolbar and re-render
@@ -288,7 +289,7 @@ export class Toolbar extends React.Component<ToolbarProps, ToolbarState> {
     Logger.logTrace(UiFramework.loggerCategory(this), `---> render ${this._toolbarId} `);
     return (
       <ResizableContainerObserver onResize={this._onResize}>
-        <NZ_Toolbar
+        <NZ_Toolbar // eslint-disable-line deprecation/deprecation
           style={this.props.style}
           className={this.props.className}
           expandsTo={this.props.expandsTo}

@@ -31,7 +31,7 @@ These packages provide the following services:
 - Communicating with the Backend via an [RpcInterface](../RpcInterface.md)
 - Displaying [Views](./Views.md) of iModels
 - Executing [ECSQL queries](./ExecutingECSQL.md) on iModels
-- Storing [Settings](./Settings.md) for Applications, Projects, and iModels.
+- Storing [User Preferences](./Preferences.md) for iTwins and iModels.
 - [Formatting Quantities](./QuantityFormatting.md)
 
 ## Web browser compatibility

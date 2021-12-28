@@ -6,7 +6,7 @@
 import { ByteStream, GuidString, Id64String, Logger, StopWatch } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import {
-  BatchType, computeChildTileProps, ContentIdProvider, CurrentImdlVersion, iModelTileTreeIdToString, TileMetadata, TileMetadataReader, TileProps,
+  BatchType, computeChildTileProps, ContentIdProvider, CurrentImdlVersion, EdgeType, iModelTileTreeIdToString, TileMetadata, TileMetadataReader, TileProps,
 } from "@itwin/core-common";
 import { IModelDb, SpatialModel } from "@itwin/core-backend";
 import { ConcurrencyQueue } from "./ConcurrencyQueue";
@@ -17,6 +17,7 @@ interface TileTreeInfo {
   modelId: Id64String;
   is2d: boolean;
   guid?: GuidString;
+  tileScreenSize: number;
 }
 
 export interface TileGenParams {
@@ -49,6 +50,7 @@ export interface Stats {
 
 const kEmptyTileSize = 332; // bytes
 const loggerCategory = "TileGenerationPerformance";
+const tileScreenSize = 512;
 
 export class BackendTileGenerator {
   private readonly _iModel: IModelDb;
@@ -67,6 +69,8 @@ export class BackendTileGenerator {
     enableExternalTextures: true,
     alwaysSubdivideIncompleteTiles: false,
     optimizeBRepProcessing: true,
+    useLargerTiles: true,
+    enableIndexedEdges: true,
   };
   private readonly _stats: Stats = {
     modelCount: 0,
@@ -95,8 +99,8 @@ export class BackendTileGenerator {
     for (const modelId of this._iModel.queryEntityIds(queryParams)) {
       try {
         const model = this._iModel.models.getModel<SpatialModel>(modelId);
-        const treeId = iModelTileTreeIdToString(modelId, { type: BatchType.Primary, edgesRequired: false }, this._options);
-        models.push({ treeId, modelId, guid: model.geometryGuid, is2d: false, treeType: BatchType.Primary });
+        const treeId = iModelTileTreeIdToString(modelId, { type: BatchType.Primary, edges: EdgeType.None }, this._options);
+        models.push({ treeId, modelId, guid: model.geometryGuid, is2d: false, treeType: BatchType.Primary, tileScreenSize });
       } catch (err) {
         Logger.logError(loggerCategory, `Failed to load model "${modelId}": ${err}`);
       }

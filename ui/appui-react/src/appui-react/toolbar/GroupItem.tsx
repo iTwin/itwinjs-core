@@ -9,7 +9,7 @@
 import classnames from "classnames";
 import * as React from "react";
 import { Logger } from "@itwin/core-bentley";
-import { BadgeType, ConditionalStringValue, OnItemExecutedFunc, SpecialKey, StringGetter } from "@itwin/appui-abstract";
+import { BadgeType, ConditionalStringValue, OnItemExecutedFunc, SpecialKey, StringGetter, UiSyncEventArgs } from "@itwin/appui-abstract";
 import { BadgeUtilities, CommonProps, Icon, IconSpec, SizeProps, withOnOutsideClick } from "@itwin/core-react";
 import {
   Direction, ExpandableItem, GroupColumn, GroupTool, GroupToolExpander, Item, NestedGroup as NestedToolGroupComponent, ToolbarDirectionContext,
@@ -23,16 +23,16 @@ import { AnyItemDef } from "../shared/AnyItemDef";
 import { GroupItemProps } from "../shared/GroupItemProps";
 import { BaseItemState, ItemDefBase } from "../shared/ItemDefBase";
 import { ItemList, ItemMap } from "../shared/ItemMap";
-import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
+import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";
 import { PropsHelper } from "../utils/PropsHelper";
 import { ToolbarDragInteractionContext } from "./DragInteraction";
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
+// eslint-disable-next-line @typescript-eslint/naming-convention, deprecation/deprecation
 const ToolGroup = withOnOutsideClick(ToolGroupComponent, undefined, false);
-// eslint-disable-next-line @typescript-eslint/naming-convention
+// eslint-disable-next-line @typescript-eslint/naming-convention, deprecation/deprecation
 const NestedToolGroup = withOnOutsideClick(NestedToolGroupComponent, undefined, false);
-// eslint-disable-next-line @typescript-eslint/naming-convention
+// eslint-disable-next-line @typescript-eslint/naming-convention, deprecation/deprecation
 const ItemWithDragInteraction = withDragInteraction(Item);
 
 // -----------------------------------------------------------------------------
@@ -47,7 +47,7 @@ export class GroupItemDef extends ActionButtonItemDef {
   public static groupIdPrefix = "Group-";
 
   public groupId: string;
-  public direction: Direction;
+  public direction: Direction; // eslint-disable-line deprecation/deprecation
   public itemsInColumn: number;
   public items: AnyItemDef[];
   public directionExplicit: boolean;
@@ -72,7 +72,7 @@ export class GroupItemDef extends ActionButtonItemDef {
     }
 
     this.directionExplicit = (groupItemProps.direction !== undefined);
-    this.direction = (groupItemProps.direction !== undefined) ? groupItemProps.direction : Direction.Bottom;
+    this.direction = (groupItemProps.direction !== undefined) ? groupItemProps.direction : Direction.Bottom; // eslint-disable-line deprecation/deprecation
     this.itemsInColumn = (groupItemProps.itemsInColumn !== undefined) ? groupItemProps.itemsInColumn : 7;
     this._panelLabel = PropsHelper.getStringSpec(groupItemProps.panelLabel, groupItemProps.panelLabelKey); // eslint-disable-line deprecation/deprecation
     this.items = groupItemProps.items;
@@ -210,7 +210,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
     }
   }
 
-  private _handleSyncUiEvent = (args: SyncUiEventArgs): void => {
+  private _handleSyncUiEvent = (args: UiSyncEventArgs): void => {
     // istanbul ignore next
     if (this._componentUnmounting) return;
     let refreshState = false;
@@ -373,7 +373,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
         {(direction) => (
           <ToolbarDragInteractionContext.Consumer>
             {(dragInteraction) => (
-              <ExpandableItem
+              <ExpandableItem // eslint-disable-line deprecation/deprecation
                 {...props}
                 className={classNames}
                 key={this.state.groupItemDef.id}
@@ -401,7 +401,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
                   ) :
                   (
                     <div ref={this._ref}>
-                      <Item
+                      <Item // eslint-disable-line deprecation/deprecation
                         badge={badge}
                         className={groupItemDef.overflow ? "nz-ellipsis-icon" : undefined}
                         icon={<Icon
@@ -543,7 +543,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
             ];
           }, []);
           const columns = (columnToItems.map((columnItems, columnIndex) =>
-            <GroupColumn key={columnIndex}>
+            <GroupColumn key={columnIndex}> {/* eslint-disable-line deprecation/deprecation */}
               {columnItems.map((itemKey) => {
                 const item = tray.items.get(itemKey)!;
                 const icon = <Icon iconSpec={item.iconSpec} />;

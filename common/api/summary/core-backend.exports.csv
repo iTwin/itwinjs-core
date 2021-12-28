@@ -2,12 +2,14 @@ sep=;
 Release Tag;API Item
 public;AcquireNewBriefcaseIdArg 
 beta;AliCloudStorageService 
+beta;AliCloudStorageServiceCredentials
 public;AnnotationElement2d 
 public;class AuxCoordSystem 
 public;AuxCoordSystem2d 
 public;AuxCoordSystem3d 
 public;AuxCoordSystemSpatial 
 beta;AzureBlobStorage 
+beta;AzureBlobStorageCredentials
 beta;BackendHubAccess
 public;BackendLoggerCategory
 internal;BaseSettings 
@@ -35,13 +37,15 @@ internal;CheckpointArg = DownloadRequest
 internal;CheckpointManager
 public;CheckpointProps 
 public;ClassRegistry
+beta;CloudSqlite
+beta;CloudSqlite
 beta;class CloudStorageService
-beta;CloudStorageServiceCredentials
 internal;CloudStorageTileUploader
 beta;CloudStorageUploadOptions
 public;CodeSpecs
 public;ComputedProjectExtents
 public;ComputeProjectExtentsOptions
+beta;ContainerNameOrId =
 alpha;CrashReportingConfig
 alpha;CrashReportingConfigNameValuePair
 beta;CreateChangeSummaryArgs 
@@ -90,7 +94,7 @@ public;ECSqlInsertResult
 public;ECSqlStatement 
 public;ECSqlValue
 public;ECSqlValueIterator 
-beta;EditableWorkspaceFile 
+beta;EditableWorkspaceDb 
 public;Element 
 public;ElementAspect 
 beta;ElementDrivesElement 
@@ -203,6 +207,8 @@ public;IpcHost
 public;IpcHostOpts
 public;ITwinIdArg
 internal;ITwinWorkspace 
+internal;ITwinWorkspaceContainer 
+beta;ITwinWorkspaceDb 
 public;KnownLocations
 internal;LightLocation 
 public;LineStyle 
@@ -220,7 +226,6 @@ public;LockState
 internal;MetaDataRegistry
 public;Model 
 public;ModelSelector 
-internal;class NativeAppAuthorizationBackend 
 public;NativeAppStorage
 public;NativeHost
 public;NativeHostOpts 
@@ -354,8 +359,11 @@ beta;Workspace
 beta;WorkspaceContainer
 beta;WorkspaceContainerId = string
 beta;WorkspaceContainerName = string
-beta;WorkspaceContainerProps = WorkspaceContainerName |
-beta;WorkspaceFile 
+beta;WorkspaceContainerProps = ContainerNameOrId &
+beta;WorkspaceDb
+beta;WorkspaceDbName = string
+beta;WorkspaceDbProps = WorkspaceContainerProps &
+beta;WorkspaceDbVersion = string
 beta;WorkspaceOpts
 beta;WorkspaceResourceName = string
-beta;WorkspaceResourceProps
+beta;WorkspaceResourceProps = WorkspaceDbProps &

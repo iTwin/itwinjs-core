@@ -140,7 +140,7 @@ export class V2CheckpointManager {
 
   private static async performDownload(job: DownloadJob): Promise<ChangesetId> {
     CheckpointManager.onDownloadV2.raiseEvent(job);
-    return IModelHost.hubAccess.downloadV2Checkpoint(job.request);
+    return (await IModelHost.hubAccess.downloadV2Checkpoint(job.request)).id;
   }
 
   /** Fully download a V2 checkpoint to a local file that can be used to create a briefcase or to work offline.
@@ -186,7 +186,7 @@ export class V1CheckpointManager {
 
   private static async performDownload(job: DownloadJob): Promise<ChangesetId> {
     CheckpointManager.onDownloadV1.raiseEvent(job);
-    return IModelHost.hubAccess.downloadV1Checkpoint(job.request);
+    return (await IModelHost.hubAccess.downloadV1Checkpoint(job.request)).id;
   }
 }
 
@@ -238,7 +238,7 @@ export class CheckpointManager {
           await BriefcaseManager.pullAndApplyChangesets(db, { accessToken, toIndex });
         } else {
           // make sure the parent changeset index is saved in the file - old versions didn't have it.
-          currentChangeset.index = checkpoint.changeset.index!;
+          currentChangeset.index = checkpoint.changeset.index!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
           nativeDb.saveLocalValue("parentChangeSet", JSON.stringify(currentChangeset));
         }
       } finally {

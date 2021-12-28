@@ -27,7 +27,7 @@ import { ScreenViewport } from '@itwin/core-frontend';
 import { StandardViewId } from '@itwin/core-frontend';
 import { TentativePoint } from '@itwin/core-frontend';
 import { TypeEditor } from '@itwin/components-react';
-import { UiEvent } from '@itwin/core-react';
+import { UiEvent } from '@itwin/appui-abstract';
 import { UnitProps } from '@itwin/core-quantity';
 import { UnitsProvider } from '@itwin/core-quantity';
 import { Vector3d } from '@itwin/core-geometry';
@@ -1085,17 +1085,7 @@ export interface ViewIdChangedEventArgs {
 }
 
 // @public
-export class ViewportComponent extends React.Component<ViewportProps, ViewportState> {
-    constructor(props: ViewportProps);
-    // (undocumented)
-    componentDidMount(): Promise<void>;
-    // (undocumented)
-    componentDidUpdate(prevProps: ViewportProps): Promise<void>;
-    // (undocumented)
-    componentWillUnmount(): void;
-    // (undocumented)
-    render(): JSX.Element;
-    }
+export function ViewportComponent(props: ViewportProps): JSX.Element;
 
 // @public
 export class ViewportComponentEvents {

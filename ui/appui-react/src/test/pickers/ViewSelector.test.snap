@@ -1,39 +1,37 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`ViewSelector should render correctly 1`] = `
-<ListPicker
-  iconSpec="icon-saved-view"
-  items={
-    Array [
-      Object {
-        "children": Array [],
-        "enabled": false,
-        "key": "views3dContainer",
-        "name": "savedViews.spatialViews",
-        "type": 2,
+<ContextProvider
+  value={
+    Object {
+      "store": Object {
+        "@@observable": [Function],
+        "dispatch": [Function],
+        "getState": [Function],
+        "replaceReducer": [Function],
+        "subscribe": [Function],
       },
-      Object {
-        "children": Array [],
-        "enabled": false,
-        "key": "views2dContainer",
-        "name": "savedViews.drawings",
-        "type": 2,
+      "subscription": Object {
+        "addNestedSub": [Function],
+        "getListeners": [Function],
+        "handleChangeWrapper": [Function],
+        "isSubscribed": [Function],
+        "notifyNestedSubs": [Function],
+        "onStateChange": [Function],
+        "trySubscribe": [Function],
+        "tryUnsubscribe": [Function],
       },
-      Object {
-        "children": Array [],
-        "enabled": false,
-        "key": "sheetContainer",
-        "name": "savedViews.sheets",
-        "type": 2,
-      },
-    ]
+    }
   }
-  onExpanded={[Function]}
-  setEnabled={[Function]}
-  showDrawings={true}
-  showSheets={true}
-  showSpatials={true}
-  showUnknown={true}
-  title="savedViews.views"
-/>
+>
+  <FrameworkVersion>
+    <ViewSelector
+      imodel={null}
+      showDrawings={true}
+      showSheets={true}
+      showSpatials={true}
+      showUnknown={true}
+    />
+  </FrameworkVersion>
+</ContextProvider>
 `;

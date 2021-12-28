@@ -10,6 +10,7 @@ public;AbstractStatusBarLabelItem
 public;AbstractToolbarProps
 public;AbstractWidgetProps 
 public;AbstractZoneLocation
+deprecated;AbstractZoneLocation
 public;ActionButton 
 public;AlternateDateFormats
 public;ArrayValue 
@@ -163,10 +164,14 @@ public;ToolbarUsage
 public;UiAdmin
 public;class UiDataProvider
 public;UiError 
+public;UiEvent
+public;UiEventDispatcher
 public;UiFlags
 public;UiItemProviderRegisteredEventArgs
 public;UiItemsApplicationAction
 public;UiItemsManager
 public;UiItemsProvider
 public;class UiLayoutDataProvider 
+public;UiSyncEvent 
+public;UiSyncEventArgs
 public;WidgetState

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-webpack-tools",
+      "comment": "Update BackendDefaultsPlugin to use new CopyStaticAssetsPlugin which will copy assets using a glob pattern",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-webpack-tools"
+}

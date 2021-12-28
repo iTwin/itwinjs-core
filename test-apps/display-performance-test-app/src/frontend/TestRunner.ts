@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { RealityDataAccessClient } from "@bentley/reality-data-client";
+import { RealityDataAccessClient, RealityDataClientOptions } from "@itwin/reality-data-client";
 import {
   assert, BeDuration, Dictionary, Id64, Id64Array, Id64String, ProcessDetector, SortedArray, StopWatch,
 } from "@itwin/core-bentley";
@@ -130,8 +130,8 @@ class OverrideProvider {
     if (this._defaultOvrs)
       ovrs.setDefaultOverrides(this._defaultOvrs);
 
-    for (const [key, value] of this._elementOvrs)
-      ovrs.overrideElement(key, value);
+    for (const [elementId, appearance] of this._elementOvrs)
+      ovrs.override({ elementId, appearance });
   }
 }
 
@@ -179,10 +179,16 @@ export class TestRunner {
     if (IModelApp.initialized && needRestart)
       await IModelApp.shutdown();
     if (needRestart) {
+      const realityDataClientOptions: RealityDataClientOptions = {
+        /** API Version. v1 by default */
+        // version?: ApiVersion;
+        /** API Url. Used to select environment. Defaults to "https://api.bentley.com/realitydata" */
+        baseUrl: `https://${process.env.IMJS_URL_PREFIX}api.bentley.com/realitydata`,
+      };
       await DisplayPerfTestApp.startup({
         renderSys: renderOptions,
         tileAdmin: this.curConfig.tileProps,
-        realityDataAccess: new RealityDataAccessClient(),
+        realityDataAccess: new RealityDataAccessClient(realityDataClientOptions),
       });
     }
 
@@ -202,7 +208,12 @@ export class TestRunner {
 
   private async runTestSet(set: TestSetProps): Promise<void> {
     let needRestart = this._config.push(set);
-
+    const realityDataClientOptions: RealityDataClientOptions = {
+      /** API Version. v1 by default */
+      // version?: ApiVersion;
+      /** API Url. Used to select environment. Defaults to "https://api.bentley.com/realitydata" */
+      baseUrl: `https://${process.env.IMJS_URL_PREFIX}api.bentley.com/realitydata`,
+    };
     // Perform all the tests for this iModel. If the iModel name contains an asterisk,
     // treat it as a wildcard and run tests for each iModel that matches the given wildcard.
     for (const testProps of set.tests) {
@@ -222,7 +233,7 @@ export class TestRunner {
         await DisplayPerfTestApp.startup({
           renderSys: renderOptions,
           tileAdmin: this.curConfig.tileProps,
-          realityDataAccess: new RealityDataAccessClient(),
+          realityDataAccess: new RealityDataAccessClient(realityDataClientOptions),
         });
       }
 
@@ -1140,6 +1151,9 @@ function getTileProps(props: TileAdmin.Props): string {
       case "disableMagnification":
         if (props[key]) tilePropsStr += "-mag";
         break;
+      case "enableIndexedEdges":
+        if (!props[key]) tilePropsStr += "-idxEdg";
+        break;
     }
   }
 
@@ -1233,6 +1247,7 @@ const viewFlagsPropsStrings = {
   grid: "+grid",
   whiteOnWhiteReversal: "+wow",
   acsTriad: "+acsTriad",
+  wiremesh: "+wm",
 };
 
 function getViewFlagsString(test: TestCase): string {

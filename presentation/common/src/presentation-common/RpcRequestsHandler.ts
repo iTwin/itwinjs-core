@@ -22,12 +22,11 @@ import { KeySetJSON } from "./KeySet";
 import { LabelDefinitionJSON } from "./LabelDefinition";
 import {
   ContentDescriptorRequestOptions, ContentInstanceKeysRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, DisplayLabelRequestOptions,
-  DisplayLabelsRequestOptions, DistinctValuesRequestOptions, ElementPropertiesRequestOptions, FilterByInstancePathsHierarchyRequestOptions,
-  FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, MultiElementPropertiesRequestOptions, Paged, RequestOptions,
-  SelectionScopeRequestOptions, SingleElementPropertiesRequestOptions,
+  DisplayLabelsRequestOptions, DistinctValuesRequestOptions, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions,
+  HierarchyRequestOptions, Paged, RequestOptions, SelectionScopeRequestOptions, SingleElementPropertiesRequestOptions,
 } from "./PresentationManagerOptions";
 import {
-  ContentSourcesRpcResult, ElementPropertiesRpcResult, PresentationRpcInterface, PresentationRpcRequestOptions, PresentationRpcResponse,
+  ContentSourcesRpcResult, PresentationRpcInterface, PresentationRpcRequestOptions, PresentationRpcResponse,
 } from "./PresentationRpcInterface";
 import { RulesetVariableJSON } from "./RulesetVariables";
 import { SelectionScope } from "./selection/SelectionScope";
@@ -55,7 +54,7 @@ export interface RpcRequestsHandlerProps {
  * @internal
  */
 export class RpcRequestsHandler implements IDisposable {
-  private _maxRequestRepeatCount: number = 5;
+  public readonly maxRequestRepeatCount: number = 5;
 
   /** ID that identifies this handler as a client */
   public readonly clientId: string;
@@ -81,14 +80,14 @@ export class RpcRequestsHandler implements IDisposable {
       if (response.statusCode === PresentationStatus.Success)
         return response.result!;
 
-      if (response.statusCode === PresentationStatus.BackendTimeout && repeatCount < this._maxRequestRepeatCount)
+      if (response.statusCode === PresentationStatus.BackendTimeout && repeatCount < this.maxRequestRepeatCount)
         shouldRepeat = true;
       else
         error = new PresentationError(response.statusCode, response.errorMessage);
 
     } catch (e) {
       error = e;
-      if (repeatCount < this._maxRequestRepeatCount)
+      if (repeatCount < this.maxRequestRepeatCount)
         shouldRepeat = true;
 
     } finally {
@@ -173,10 +172,8 @@ export class RpcRequestsHandler implements IDisposable {
       this.rpcClient.getPagedDistinctValues.bind(this.rpcClient), options);
   }
 
-  public async getElementProperties(options: SingleElementPropertiesRequestOptions<IModelRpcProps>): Promise<ElementProperties | undefined>;
-  public async getElementProperties(options: MultiElementPropertiesRequestOptions<IModelRpcProps>): Promise<PagedResponse<ElementProperties>>;
-  public async getElementProperties(options: ElementPropertiesRequestOptions<IModelRpcProps>): Promise<ElementPropertiesRpcResult> {
-    return this.request<ElementPropertiesRpcResult, ElementPropertiesRequestOptions<IModelRpcProps>>(
+  public async getElementProperties(options: SingleElementPropertiesRequestOptions<IModelRpcProps>): Promise<ElementProperties | undefined> {
+    return this.request<ElementProperties | undefined, SingleElementPropertiesRequestOptions<IModelRpcProps>>(
       this.rpcClient.getElementProperties.bind(this.rpcClient), options);
   }
 

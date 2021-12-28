@@ -44,6 +44,12 @@ export interface ContentSpecificationBase extends ContentModifiersList {
 
   /** Specifications for joining related instances */
   relatedInstances?: RelatedInstanceSpecification[];
+
+  /**
+   * Identifies whether we should ignore this specification if there is already an existing specification
+   * with higher `priority` that already provides content.
+   */
+  onlyIfNotHandled?: boolean;
 }
 
 /**

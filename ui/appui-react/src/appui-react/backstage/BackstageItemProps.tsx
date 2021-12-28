@@ -12,7 +12,7 @@ import { BackstageItemUtilities } from "./BackstageItemUtilities";
 
 /** Base properties for a [[Backstage]] item.
  * @public
- * @deprecated - use [BackstageItem]($appui-abstract) in bentley/appui-abstract instead
+ * @deprecated Use [BackstageItem]($appui-abstract) instead
  */
 export interface BackstageItemProps extends IconProps {
   /** if set, component will be enabled - defaults to true */
@@ -39,7 +39,7 @@ export interface BackstageItemProps extends IconProps {
 
 /** Properties that define the state of a Backstage items.
  * @public
- * @deprecated - use [BackstageItem]($appui-abstract) in bentley/appui-abstract instead
+ * @deprecated Use [BackstageItem]($appui-abstract) instead
  */
 export interface BackstageItemState {
   isEnabled: boolean;
@@ -52,7 +52,7 @@ export interface BackstageItemState {
 
 /** Helper method to set backstage item state from props.
  * @public
- * @deprecated - use [BackstageItem]($appui-abstract) in bentley/appui-abstract instead
+ * @deprecated Use [BackstageItem]($appui-abstract) instead
  */
 // istanbul ignore next
 export const getBackstageItemStateFromProps = (props: BackstageItemProps): BackstageItemState => { // eslint-disable-line deprecation/deprecation

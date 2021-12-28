@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-transformer",
+      "comment": "add preserveElementIdsForFiltering option for transformations",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-transformer"
+}

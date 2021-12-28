@@ -1,0 +1,77 @@
+{
+  "Name": "Network Tracing",
+  "trace-tool-connected": "Connected",
+  "trace-tool-downstream": "Downstream",
+  "trace-tool-group": "Network Trace",
+  "trace-tool-upstream": "Upstream",
+  "Dialogs": {
+    "SampleModal": {
+      "title": "Sample Modal (ui items providers test supplied)"
+    }
+  },
+  "backstage": {
+    "networkTracingFrontstageLabel": "Networking",
+    "customContentFrontstageLabel": "Custom"
+  },
+  "StatusBar": {
+    "Units": "Units",
+    "Metric": "Metric",
+    "Imperial": "Imperial",
+    "UsSurvey": "US Survey",
+    "UsCustomary": "US Customary",
+    "UnitsFlyover": "Update the units system active in the user interface"
+  },
+  "tools": {
+    "open-abstract-dialog": "Open Abstract Dialog",
+    "trace-tool-standalone": "Standalone Trace",
+    "uiItemsProvidersTest-SampleTool": {
+      "keyin": "uiTest Sample Tool",
+      "description": "Demo Sample Tool",
+      "flyover": "Sample Tool",
+      "Prompts": {
+        "GetPoint": "Enter point/Reset to Exit",
+        "Options": "Options",
+        "Lock": "Lock",
+        "City": "City",
+        "Color": "Color",
+        "Weight": "Weight",
+        "State": "State",
+        "Station": "Station",
+        "Coordinate": "Coordinate",
+        "Length": "Length",
+        "Angle": "Angle"
+      },
+      "Options": {
+        "Red": "Red",
+        "White": "White",
+        "Blue": "Blue",
+        "Yellow": "Yellow",
+        "Green": "Green",
+        "Pink": "Pink"
+      }
+    },
+    "uiItemsProvidersTest-GenericLocateTool": {
+      "keyin": "state generic tool",
+      "description": "Generic Tool from Provider",
+      "flyover": "Generic Tool",
+      "Prompts": {
+        "identifyElement": "Identify Element",
+        "identifyPosition": "Identify Position"
+      }
+    }
+  },
+  "properties": {
+    "widget-label": "Properties",
+    "too-many-elements-selected": "Too many elements selected",
+    "context-menu": {
+      "add-favorite": {
+        "label": "Add to Favorite",
+        "description": "Add this property to Favorite category"
+      },
+      "remove-favorite": {
+        "label": "Remove from Favorite",
+        "description": "Remove this property from Favorite category"
+      }
+    }
+  }
+}

@@ -85,6 +85,7 @@ export interface AbstractWidgetProps extends ProvidedItem {
     readonly internalData?: Map<string, any>;
     readonly isFloatingStateSupported?: boolean;
     readonly isFloatingStateWindowResizable?: boolean;
+    // @deprecated
     readonly isFreeform?: boolean;
     readonly isStatusBar?: boolean;
     readonly isToolSettings?: boolean;
@@ -98,7 +99,7 @@ export interface AbstractWidgetProps extends ProvidedItem {
     readonly tooltip?: string | ConditionalStringValue;
 }
 
-// @public
+// @public @deprecated
 export enum AbstractZoneLocation {
     // (undocumented)
     BottomLeft = 7,
@@ -2030,6 +2031,25 @@ export class UiError extends BentleyError {
 }
 
 // @public
+export class UiEvent<TEventArgs> extends BeUiEvent<TEventArgs> {
+}
+
+// @public
+export class UiEventDispatcher {
+    constructor();
+    checkForAdditionalIds(): void;
+    dispatchImmediateSyncUiEvent(eventId: string): void;
+    dispatchSyncUiEvent(eventId: string): void;
+    dispatchSyncUiEvents(eventIds: string[]): void;
+    hasEventOfInterest(eventIds: Set<string>, idsOfInterest: string[]): boolean;
+    get onSyncUiEvent(): UiSyncEvent;
+    // @internal
+    setTimeoutPeriod(period: number): void;
+    get syncEventIds(): Set<string>;
+    get timeoutPeriod(): number;
+    }
+
+// @public
 export interface UiFlags {
     allowKeyinPalette?: boolean;
 }
@@ -2093,6 +2113,16 @@ export abstract class UiLayoutDataProvider extends UiDataProvider {
     reloadDialogItems(emitEvent?: boolean): void;
     get rows(): DialogRow[];
     supplyDialogItems(): DialogItem[] | undefined;
+}
+
+// @public
+export class UiSyncEvent extends UiEvent<UiSyncEventArgs> {
+}
+
+// @public
+export interface UiSyncEventArgs {
+    // (undocumented)
+    eventIds: Set<string>;
 }
 
 // @public

@@ -58,8 +58,8 @@ describe("NavigationWidget localStorage Wrapper", () => {
       iconSpec: "icon-home",
       labelKey: "SampleApp:Test.my-label",
       navigationAidId: "StandardRotationNavigationAid",
-      horizontalDirection: Direction.Top,
-      verticalDirection: Direction.Left,
+      horizontalDirection: Direction.Top, // eslint-disable-line deprecation/deprecation
+      verticalDirection: Direction.Left, // eslint-disable-line deprecation/deprecation
     };
 
     it("NavigationWidgetDef from WidgetProps", () => {
@@ -77,8 +77,8 @@ describe("NavigationWidget localStorage Wrapper", () => {
     });
 
     const horizontalToolbar =
-      <Toolbar
-        expandsTo={Direction.Bottom}
+      <Toolbar // eslint-disable-line deprecation/deprecation
+        expandsTo={Direction.Bottom} // eslint-disable-line deprecation/deprecation
         items={
           <>
             <ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool1" />
@@ -88,8 +88,8 @@ describe("NavigationWidget localStorage Wrapper", () => {
       />;
 
     const verticalToolbar =
-      <Toolbar
-        expandsTo={Direction.Left}
+      <Toolbar // eslint-disable-line deprecation/deprecation
+        expandsTo={Direction.Left} // eslint-disable-line deprecation/deprecation
         items={
           <>
             <ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool1" />

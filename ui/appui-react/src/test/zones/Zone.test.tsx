@@ -2,12 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 import { expect } from "chai";
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { WidgetState } from "@itwin/appui-abstract";
-import { Zone } from "../../appui-react";
+import { UiFramework, Zone } from "../../appui-react";
 import { WidgetDef } from "../../appui-react/widgets/WidgetDef";
 import { ZoneRuntimeProps } from "../../appui-react/zones/Zone";
 import TestUtils, { mount } from "../TestUtils";
@@ -16,6 +17,7 @@ describe("Zone", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
+    UiFramework.setUiVersion("1");
   });
 
   after(() => {

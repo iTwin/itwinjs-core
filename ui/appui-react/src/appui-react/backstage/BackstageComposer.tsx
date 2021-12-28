@@ -7,11 +7,11 @@
  */
 
 import * as React from "react";
-import { BackstageItem, BackstageItemsManager, ConditionalBooleanValue } from "@itwin/appui-abstract";
+import { BackstageItem, BackstageItemsManager, ConditionalBooleanValue, isStageLauncher, UiSyncEventArgs } from "@itwin/appui-abstract";
 import { CommonProps } from "@itwin/core-react";
-import { Backstage as NZ_Backstage, BackstageSeparator } from "@itwin/appui-layout-react"; // eslint-disable-line sort-imports
+import { BackstageSeparator, Backstage as NZ_Backstage } from "@itwin/appui-layout-react";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
-import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
+import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { BackstageComposerItem } from "./BackstageComposerItem";
 import { useBackstageManager, useIsBackstageOpen } from "./BackstageManager";
 import { useDefaultBackstageItems } from "./useDefaultBackstageItems";
@@ -24,7 +24,7 @@ function useBackstageItemSyncEffect(itemsManager: BackstageItemsManager, syncIds
   const isInitialMount = React.useRef(true);
 
   React.useEffect(() => {
-    const handleSyncUiEvent = (args: SyncUiEventArgs) => {
+    const handleSyncUiEvent = (args: UiSyncEventArgs) => {
       if (0 === syncIdsOfInterest.length)
         return;
 
@@ -49,12 +49,32 @@ function useBackstageItemSyncEffect(itemsManager: BackstageItemsManager, syncIds
 }
 
 /** local function to combine items from Stage and from Extensions */
-function combineItems(stageItems: ReadonlyArray<BackstageItem>, addonItems: ReadonlyArray<BackstageItem>) {
-  const items: BackstageItem[] = [];
-  if (stageItems.length)
-    items.push(...stageItems);
-  if (addonItems.length)
-    items.push(...addonItems);
+function combineItems(stageItems: ReadonlyArray<BackstageItem>, addonItems: ReadonlyArray<BackstageItem>, hideSoloStageEntry: boolean) {
+  let items: BackstageItem[] = [];
+  if (stageItems.length) {
+    // Walk through each and ensure no duplicate ids are added.
+    stageItems.forEach((srcItem) => {
+      if (-1 === items.findIndex((item) => item.id === srcItem.id)) {
+        items.push(srcItem);
+      }
+    });
+  }
+  if (addonItems.length) {
+    // Walk through each and ensure no duplicate ids are added.
+    addonItems.forEach((srcItem) => {
+      if (-1 === items.findIndex((item) => item.id === srcItem.id)) {
+        items.push(srcItem);
+      }
+    });
+  }
+
+  if (hideSoloStageEntry) {
+    // per user request don't show stage launcher if only one stage is available
+    const numberOfFrontstageItems = items.reduce((accumulator, item) => accumulator + (isStageLauncher(item) ? 1 : 0), 0);
+    if (1 === numberOfFrontstageItems)
+      items = items.filter((item) => !isStageLauncher(item));
+  }
+
   return items;
 }
 
@@ -105,6 +125,8 @@ export interface BackstageComposerProps extends CommonProps {
   readonly showOverlay?: boolean;
   /** List of backstage items to show */
   readonly items: BackstageItem[];
+  /** If true and only one stage launcher item is found, do not show entry in backstage */
+  readonly hideSoloStageEntry?: boolean;
 }
 
 /** Backstage component composed from [[BackstageManager]] items.
@@ -137,7 +159,7 @@ export function BackstageComposer(props: BackstageComposerProps) {
   const addonSyncIdsOfInterest = React.useMemo(() => BackstageItemsManager.getSyncIdsOfInterest(addonItems), [addonItems]);
   useBackstageItemSyncEffect(addonItemsManager, addonSyncIdsOfInterest);
 
-  const combinedBackstageItems = React.useMemo(() => combineItems(defaultItems, addonItems), [defaultItems, addonItems]);
+  const combinedBackstageItems = React.useMemo(() => combineItems(defaultItems, addonItems, !!props.hideSoloStageEntry), [defaultItems, addonItems, props.hideSoloStageEntry]);
   const groups = useGroupedItems(combinedBackstageItems);
 
   return (

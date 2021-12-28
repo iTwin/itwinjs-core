@@ -107,8 +107,6 @@ beta;ElementPropertiesPropertyItem = ElementPropertiesPrimitivePropertyItem | El
 beta;ElementPropertiesPropertyItemBase 
 beta;ElementPropertiesPropertyValueType = "primitive" | "array" | "struct"
 beta;ElementPropertiesRequestOptions
-beta;ElementPropertiesRpcRequestOptions = PresentationRpcRequestOptions
-beta;ElementPropertiesRpcResult = ElementProperties | PagedResponse
 beta;ElementPropertiesStructArrayPropertyItem 
 beta;ElementPropertiesStructPropertyItem 
 public;EnumerationChoice
@@ -202,7 +200,6 @@ public;LabelOverride
 public;LabelRawValue = string | number | boolean | LabelCompositeValue
 public;LabelRawValueJSON = string | number | boolean | LabelCompositeValueJSON
 beta;MultiElementPropertiesRequestOptions
-beta;MultiElementPropertiesRpcRequestOptions = PresentationRpcRequestOptions
 public;MultiSchemaClassesSpecification
 public;NamedFieldDescriptor 
 public;NavigationRule = RootNodeRule | ChildNodeRule
@@ -259,6 +256,8 @@ alpha;PresentationIpcEvents
 internal;PresentationIpcInterface
 public;PresentationRpcInterface 
 public;PresentationRpcRequestOptions
+public;PresentationRpcResponse
+public;PresentationRpcResponseData
 public;PresentationStatus
 public;PrimitivePropertyValue = string | number | boolean | Point | InstanceKey | undefined
 public;PrimitiveTypeDescription 

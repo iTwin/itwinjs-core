@@ -68,6 +68,9 @@ export const initialize = async (props?: PresentationTestingInitProps) => {
   if (!props)
     props = {};
 
+  // set up rpc interfaces
+  initializeRpcInterfaces([SnapshotIModelRpcInterface, IModelReadRpcInterface, PresentationRpcInterface]);
+
   // init backend
   // make sure backend gets assigned an id which puts its resources into a unique directory
   props.backendProps = props.backendProps ?? {};
@@ -75,9 +78,6 @@ export const initialize = async (props?: PresentationTestingInitProps) => {
     props.backendProps.id = `test-${Guid.createValue()}`;
   await IModelHost.startup();
   PresentationBackend.initialize(props.backendProps);
-
-  // set up rpc interfaces
-  initializeRpcInterfaces([SnapshotIModelRpcInterface, IModelReadRpcInterface, PresentationRpcInterface]);
 
   // init frontend
   if (!props.frontendApp)

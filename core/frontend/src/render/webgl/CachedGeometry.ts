@@ -11,7 +11,7 @@ import { Angle, Point2d, Point3d, Range3d, Vector2d, Vector3d } from "@itwin/cor
 import { Npc, QParams2d, QParams3d, QPoint2dList, QPoint3dList, RenderMode, RenderTexture } from "@itwin/core-common";
 import { RenderSkyGradientParams, RenderSkySphereParams } from "../RenderSystem";
 import { FlashMode } from "../../FlashSettings";
-import { TesselatedPolyline } from "../primitives/VertexTable";
+import { TesselatedPolyline } from "../primitives/PolylineParams";
 import { RenderMemory } from "../RenderMemory";
 import { AttributeMap } from "./AttributeMap";
 import { ColorInfo } from "./ColorInfo";
@@ -23,7 +23,10 @@ import { GL } from "./GL";
 import { BufferHandle, BufferParameters, BuffersContainer, QBufferHandle2d, QBufferHandle3d } from "./AttributeBuffers";
 import { InstancedGeometry } from "./InstancedGeometry";
 import { MaterialInfo } from "./Material";
-import { EdgeGeometry, MeshGeometry, SilhouetteEdgeGeometry, SurfaceGeometry } from "./Mesh";
+import { MeshGeometry } from "./MeshGeometry";
+import { EdgeGeometry, SilhouetteEdgeGeometry } from "./EdgeGeometry";
+import { IndexedEdgeGeometry } from "./IndexedEdgeGeometry";
+import { SurfaceGeometry } from "./SurfaceGeometry";
 import { PointCloudGeometry } from "./PointCloud";
 import { CompositeFlags, RenderOrder, RenderPass } from "./RenderFlags";
 import { System } from "./System";
@@ -57,6 +60,7 @@ export abstract class CachedGeometry implements WebGLDisposable, RenderMemory.Co
   public get asSurface(): SurfaceGeometry | undefined { return undefined; }
   public get asMesh(): MeshGeometry | undefined { return undefined; }
   public get asEdge(): EdgeGeometry | undefined { return undefined; }
+  public get asIndexedEdge(): IndexedEdgeGeometry | undefined { return undefined; }
   public get asRealityMesh(): RealityMeshGeometry | undefined { return undefined; }
   public get asSilhouette(): SilhouetteEdgeGeometry | undefined { return undefined; }
   public get asInstanced(): InstancedGeometry | undefined { return undefined; }
@@ -422,7 +426,9 @@ export class SkyBoxQuadsGeometry extends CachedGeometry {
   public get renderOrder() { return RenderOrder.UnlitSurface; }
 
   public draw(): void {
+    this._params.buffers.bind();
     System.instance.context.drawArrays(GL.PrimitiveType.Triangles, 0, 36);
+    this._params.buffers.unbind();
   }
 
   public get qOrigin() { return this._params.positions.origin; }

@@ -113,6 +113,7 @@ export interface CutProps {
     depth?: CutDepthMode;
     direction?: CutDirectionMode;
     distance?: number;
+    keepProfile?: true;
     outside?: true;
     profile: Id64String;
     targetPoint?: XYZProps;
@@ -198,6 +199,7 @@ export enum EmbossDirectionMode {
 // @alpha (undocumented)
 export interface EmbossProps {
     direction?: EmbossDirectionMode;
+    keepProfile?: true;
     profile: Id64String;
     targetPoint?: XYZProps;
 }
@@ -267,6 +269,7 @@ export interface ImprintProps {
     extend?: true;
     face?: SubEntityProps;
     imprint: Id64String | SubEntityProps[] | ElementGeometryDataEntry;
+    keepProfile?: true;
 }
 
 // @alpha (undocumented)
@@ -282,6 +285,8 @@ export interface LocateSubEntityProps {
 // @alpha (undocumented)
 export interface LoftProps {
     guides?: Id64String | Id64String[];
+    keepGuides?: true;
+    keepTools?: true;
     orderCurves?: true;
     orientCurves?: true;
     periodic?: true;
@@ -349,6 +354,7 @@ export interface SolidModelingCommandIpc extends EditCommandIpc {
     isPlanarBody(id: Id64String, index: number): Promise<boolean>;
     isPlanarFace(id: Id64String, subEntity: SubEntityProps): Promise<boolean>;
     isPointInside(id: Id64String, point: XYZProps): Promise<PointInsideResultProps[] | undefined>;
+    isRedundantEdge(id: Id64String, subEntity: SubEntityProps): Promise<boolean>;
     isSingleFacePlanarSheet(id: Id64String, index: number): Promise<boolean>;
     isSmoothEdge(id: Id64String, subEntity: SubEntityProps): Promise<boolean>;
     isSmoothVertex(id: Id64String, subEntity: SubEntityProps): Promise<boolean>;
@@ -434,6 +440,7 @@ export interface SweepFacesProps {
 export interface SweepPathProps {
     alignParallel?: true;
     createSheet?: true;
+    keepPath?: true;
     lockDirection?: XYZProps;
     path: Id64String;
     scale?: number;
@@ -450,7 +457,7 @@ export interface ThickenSheetProps {
 // @alpha (undocumented)
 export interface TransformSubEntityProps {
     subEntities: SubEntityProps | SubEntityProps[];
-    transforms: TransformProps | TransformProps[];
+    transforms: TransformProps[];
 }
 
 

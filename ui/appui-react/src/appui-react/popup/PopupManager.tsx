@@ -11,9 +11,9 @@ import { Logger } from "@itwin/core-bentley";
 import { XAndY } from "@itwin/core-geometry";
 import {
   AbstractToolbarProps, DialogLayoutDataProvider, OnCancelFunc, OnItemExecutedFunc, OnValueCommitFunc, Primitives, PrimitiveValue,
-  PropertyDescription, PropertyRecord, PropertyValueFormat, RelativePosition,
+  PropertyDescription, PropertyRecord, PropertyValueFormat, RelativePosition, UiEvent,
 } from "@itwin/appui-abstract";
-import { Orientation, Point, Rectangle, SizeProps, UiEvent } from "@itwin/core-react";
+import { Orientation, Point, Rectangle, SizeProps } from "@itwin/core-react";
 import { offsetAndContainInContainer } from "@itwin/appui-layout-react";
 import { KeyinEntry } from "../uiadmin/FrameworkUiAdmin";
 import { UiFramework } from "../UiFramework";
@@ -27,7 +27,7 @@ import { ToolSettingsPopup } from "./ToolSettingsPopup";
 // cSpell:ignore uiadmin
 
 /** Information maintained by PopupManager about a Popup
- * @alpha
+ * @public
  */
 export interface PopupInfo {
   id: string;
@@ -36,18 +36,18 @@ export interface PopupInfo {
   parentDocument: Document;
 }
 
-/** @alpha */
+/** @public */
 export interface PopupsChangedEventArgs {
   popups: ReadonlyArray<PopupInfo>;
 }
 
 /** Popups Changed Event class.
- * @alpha
+ * @public
  */
 export class PopupsChangedEvent extends UiEvent<PopupsChangedEventArgs> { }
 
 /** Props for each popup managed by the PopupManager
- * @alpha
+ * @public
  */
 export interface PopupPropsBase {
   id: string;
@@ -57,14 +57,14 @@ export interface PopupPropsBase {
 }
 
 /** Describes React based content
- * @alpha
+ * @public
  */
 export interface ReactContent {
   reactNode: React.ReactNode;
 }
 
 /** Type for Popup Content
- * @alpha
+ * @public
  */
 export type PopupContentType = HTMLElement | ReactContent;
 
@@ -76,7 +76,7 @@ export const isReactContent = (content: PopupContentType): content is ReactConte
 };
 
 /** Popup Manager class
- * @alpha
+ * @public
  */
 export class PopupManager {
   private static _popups: ReadonlyArray<PopupInfo> = [];
@@ -320,7 +320,7 @@ interface PopupRendererState {
 }
 
 /**  Popup Renderer
- * @alpha
+ * @public
  */
 export class PopupRenderer extends React.Component<{}, PopupRendererState> {
   /** @internal */

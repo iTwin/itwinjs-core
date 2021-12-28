@@ -4,6 +4,10 @@ publish: false
 
 # NextVersion
 
+## Update guide
+
+To aid in the update from iModel.js 2.x, a [codemod tool](https://github.com/iTwin/codemods) using [JSCodeshift](https://github.com/facebook/jscodeshift) has been released which should serve as a starting point for updating your project to iTwin.js 3.0. Please see the included [readme.md](https://github.com/iTwin/codemods#readme) for instructions on running the tool against your project.
+
 ## Updated minimum requirements
 
 Support for Node 10 has been dropped. The new minimum Node version is 12.22.0. The recommended version is the latest LTS version of Node. Please visit our [Supported Platforms](../learning/supportedplatforms) documentation for a full breakdown of compatibility.
@@ -22,7 +26,7 @@ The following dependencies of iTwin.js have been updated;
 A number of packages have been renamed to use the @itwin scope rather than the @bentley scope, and we have modified a few package names to move towards a more consistent naming pattern. The full list of changed packages are listed in the table below.
 
 | Current                                | New                                  |
-|----------------------------------------|--------------------------------------|
+| -------------------------------------- | ------------------------------------ |
 | @bentley/imodeljs-backend              | @itwin/core-backend                  |
 | @bentley/imodeljs-common               | @itwin/core-common                   |
 | @bentley/imodeljs-frontend             | @itwin/core-frontend                 |
@@ -62,8 +66,8 @@ A number of packages have been renamed to use the @itwin scope rather than the @
 | @bentley/imodeljs-quantity             | @itwin/core-quantity                 |
 | @bentley/imodeljs-i18n                 | @itwin/core-i18n                     |
 | @bentley/hypermodeling-frontend        | @itwin/hypermodeling-frontend        |
-| @bentley/electron-manager              | @itwin/core-electron              |
-| @bentley/mobile-manager                | @itwin/core-mobile                |
+| @bentley/electron-manager              | @itwin/core-electron                 |
+| @bentley/mobile-manager                | @itwin/core-mobile                   |
 | @bentley/express-server                | @itwin/express-server                |
 | @bentley/ecschema-rpcinterface-common  | @itwin/ecschema-rpcinterface-common  |
 | @bentley/ecschema-rpcinterface-impl    | @itwin/ecschema-rpcinterface-impl    |
@@ -76,26 +80,23 @@ A number of packages have been renamed to use the @itwin scope rather than the @
 | @bentley/rpcinterface-full-stack-tests | @itwin/rpcinterface-full-stack-tests |
 | @bentley/imodelhub-client-tests        | @itwin/imodelhub-client-tests        |
 
-## Build tools changes
-
-- Removed `test` and `test-tsnode` scripts from `@itwin/build-tools`. Please use mocha directly instead.
-- Removed TSLint support from `@itwin/build-tools`. If you're still using it, please switch to ESLint.
-- Removed legacy `.eslintrc.js` file from the same package. Instead, use `@itwin/eslint-plugin` and the `imodeljs-recommended` config included in it.
-- Dropped support for ESLint 6.x.
-
 ## Fresnel effect
 
 [LightSettings]($common) has been enhanced to support a non-realistic Fresnel effect. As simply explained [here](https://www.dorian-iten.com/fresnel/), the effect causes surfaces to reflect more light based on the angle between the viewer's line of sight and the vector between the viewer and a given point on the surface. Use [FresnelSettings]($common) to configure this effect.
 
 Especially when combined with ambient occlusion, this effect can produce non-realistic views suitable for plant models and architectural models.
 
+Fresnel effect applied to an architectural model:
+
 ![Fresnel effect applied to an architectural model](./assets/fresnel-building.jpg)
+
+Fresnel effect applied to a plant model:
 
 ![Fresnel effect applied to a plant model](./assets/fresnel-plant.jpg)
 
 The following code applies a display style similar to those illustrated above to a [Viewport]($frontend):
 
-```
+```ts
   // Enable ambient occlusion.
   viewport.viewFlags = viewport.viewFlags.with("ambientOcclusion", true);
 
@@ -116,6 +117,28 @@ The following code applies a display style similar to those illustrated above to
     },
   });
 ```
+
+## Transparent viewport background
+
+In some applications it is useful to be able to see HTML content underneath a [Viewport]($frontend). This can now be achieved by setting [DisplayStyleSettings.backgroundColor]($common) to a color with a transparency value greater than zero. HTML content behind the viewport will blend with the viewport's background color.
+
+Three overlapping viewports with transparent background colors:
+
+![Three overlapping viewports with transparent background colors](./assets/transparent-viewport.jpg)
+
+## Wiremesh display
+
+The graphics displayed by an iTwin.js [Viewport]($frontend) consist primarily of triangulated meshes. It can sometimes be useful to visualize the triangulation of these meshes. A new view flag - [ViewFlags.wiremesh]($common) - now enables wiremesh display. When wiremesh display is enabled, the edges of each triangle are overlaid on top of the mesh as anti-aliased black lines approximately 1 pixel wide.
+
+To enable wiremesh display for a viewport:
+
+```ts
+  viewport.viewFlags = viewport.viewFlags.with("wiremesh", true);
+```
+
+![Wiremesh applied to a plant model](./assets/wiremesh-plant.jpg)
+
+![Wiremesh applied to a reality model](./assets/wiremesh-reality.jpg)
 
 ## Viewport synchronization
 
@@ -141,6 +164,48 @@ style.environment = style.environment.withDisplay({ sky: true, ground: false });
 
 Additionally, until now the images used by a [SkySphere]($common) or [SkyBox]($common) were required to be hosted by persistent [Texture]($backend) elements stored in the iModel. Now, they can also be specified as a URL resolving to an HTMLImageElement, allowing custom skyboxes to be created without modifying the iModel.
 
+## Support for glTF graphics
+
+[glTF](https://www.khronos.org/gltf/) has become the de facto standard format for 3d graphics on the web. Now you can create a [RenderGraphic]($frontend) from a glTF asset for use with [Decorators]($docs/learning/frontend/ViewDecorations), using [readGltfGraphics]($frontend). [This example]($docs/learning/frontend/ViewDecorations#gltf-decorations) demonstrates how to convert a glTF asset into a graphic and display it using a decorator.
+
+Note: `readGltfGraphics` targets the [glTF 2.0 specification](https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html), but implementation of the full specification is an ongoing work in progress. The current implementation can successfully read many glTF assets, but if a particular asset fails to load or display properly, please [file an issue](https://github.com/iTwin/itwinjs-core/issues).
+
+## Merging appearance overrides
+
+A [Viewport]($frontend) can have any number of [FeatureOverrideProvider]($frontend)s, each of which can specify how to override the appearances of elements, models, and/or subcategories. Sometimes, multiple providers want to override aspects of the appearance of the same objects, which produces conflicts. The existing methods for defining overrides - [FeatureOverrides.overrideElement]($common), [FeatureOverrides.overrideModel]($common), and [FeatureOverrides.overrideSubCategory]($common) - each take a boolean `replaceExisting` argument that defaults to `true`. This means that if one provider overrides the line width of an element and another wants to override the same element's transparency, the caller's only choice is to either replace the existing override, resulting in only transparency being overridden; or keep the existing override, resulting in only line width being overridden. But in most cases, the better result would be to **merge** the two sets of overrides such that both transparency and line width are overridden.
+
+A new [FeatureOverrides.override]($common) method has been introduced to support merging appearance overrides. The caller can specify one of four strategies for dealing with conflicts, or accept the default:
+
+- "replace": The existing appearance overrides are replaced by the caller's own overrides, equivalent to the default `replaceExisting=true` for methods like `overrideElement`;
+- "skip": The existing appearance overrides are retained and the caller's own overrides are ignored, equivalent to `replaceExisting=false` for methods like `overrideElement`; or
+- "extend": Merge the new appearance with the existing appearance such that any aspect of the appearance **not** overridden by the existing appearance can be overridden by the new appearance.
+- "subsume" (the default): Merge the new appearance with the existing appearance such that any aspects of the appearance overridden by the existing appearance are preserved only if the new appearance does not also override them.
+
+For example, if one provider overrides an element's color and transparency, and a second provider attempts to override its transparency and line width, using the "extend" option means the second provider will only override the line width, leaving the existing color and transparency overrides intact. Using the "subsume" option, the second provider will override the transparency and line width, leaving the existing color override intact.
+
+Because the previous default behavior is generally not desirable, `overrideElement`, `overrideModel`, and `overrideSubCategory` have been deprecated in favor of the new `override` method. Existing code can be updated as follows:
+
+```ts
+// To use the new default "extend" behavior, replace these:
+ovrs.overrideElement("0x123", appearance);
+ovrs.overrideModel("0x456", appearance);
+ovrs.overrideSubCategory("0x789", appearance);
+// With these:
+ovrs.override({ elementId: "0x123", appearance });
+ovrs.override({ modelId: "0x456", appearance });
+ovrs.override({ subCategoryId: " 0x789", appearance });
+
+// To use the previous default "replace" behavior, replace this:
+ovrs.overrideElement("0x123", appearance, true); // third argument is optional - defaults to true
+// With this:
+ovrs.override({ elementId: "0x123", appearance, onConflict: "replace" });
+
+// To use the `replaceExisting=false` behavior, replace this:
+ovrs.overrideModel("0x456", appearance, false);
+// With this:
+ovrs.override({ modelId: "0x456", appearance, onConflict: "skip" });
+```
+
 ## BentleyError constructor no longer logs
 
 In V2, the constructor of the base exception class [BentleyError]($core-bentley) accepted 5 arguments, the last 3 being optional. Arguments 3 and 4 were for logging the exception in the constructor itself. That is a bad idea, since exceptions are often handled and recovered in `catch` statements, so there is no actual "problem" to report. In that case the message in the log is either misleading or just plain wrong. Also, code in `catch` statements always has more "context" about *why* the error may have happened than the lower level code that threw (e.g. "invalid Id" vs. "invalid MyHashClass Id") so log messages from callers can be more helpful than from callees. Since every thrown exception must be caught *somewhere*, logging should be done when exceptions are caught, not when they're thrown.
@@ -165,6 +230,10 @@ you can simply delete it.
 
 This change mostly affects backend code. For backend [RPC]($docs/learning/RpcInterface.md) implementations, all *unhandled* exceptions will automatically be logged along the appropriate RPC metadata. For this reason, it often preferable to throw an exception rather than logging an error and returning a status in code that may or may not be called from RPC.
 
+## Moved utility types
+
+The [AsyncFunction]($core-bentley), [AsyncMethodsOf]($core-bentley), and [PromiseReturnType]($core-bentley) types have moved to the @itwin/core-bentley package. The ones in @itwin/core-frontend have been deprecated.
+
 ## Viewport.zoomToElements improvements
 
 [Viewport.zoomToElements]($frontend) accepts any number of element Ids and fits the viewport to the union of their [Placement]($common)s. A handful of shortcomings of the previous implementation have been addressed:
@@ -174,7 +243,7 @@ This change mostly affects backend code. For backend [RPC]($docs/learning/RpcInt
 
 ## Continued transition to `ChangesetIndex`
 
-Every Changeset has both an Id (a string hash of its content and parent changeset) and an Index (a small integer representing its relative position on the iModel's timeline.) Either value can be used to uniquely identify a changeset. However, it is often necessary to compare two changeset identifiers to determine relative order, or to supply a range of changesets of interest. In this case, Id is not useful and must be converted to an index via a round-trip to an iModelHub server. Unfortunately, much of the iModel.js api uses only [ChangesetId]($common) to identify a changeset. That was unfortunate, since [ChangesetIndex]($common) is frequently needed and `ChangesetId` is rarely useful. For this reason we are migrating the api to prefer `ChangesetIndex` over several releases.
+Every Changeset has both an Id (a string hash of its content and parent changeset) and an Index (a small integer representing its relative position on the iModel's timeline.) Either value can be used to uniquely identify a changeset. However, it is often necessary to compare two changeset identifiers to determine relative order, or to supply a range of changesets of interest. In this case, Id is not useful and must be converted to an index via a round-trip to an iModelHub server. Unfortunately, much of the iTwin.js API uses only [ChangesetId]($common) to identify a changeset. That was unfortunate, since [ChangesetIndex]($common) is frequently needed and `ChangesetId` is rarely useful. For this reason we are migrating the API to prefer `ChangesetIndex` over several releases.
 
 In version 2.19, we introduced the type [ChangesetIdWithIndex]($common) to begin that migration. However, for 2.x compatibility we could not use it several places where it would have been helpful:
 
@@ -519,10 +588,6 @@ Likewise if you are reading a [BackgroundMapSettings]($common) directly from a p
 
 [DisplayStyleSettings.onBackgroundMapChanged]($common) will no longer be raised when changing the imagery provider. Use [DisplayStyleSettings.onMapImageryChanged]($common) instead.
 
-## Moved utility types
-
-The [AsyncFunction]($core-bentley), [AsyncMethodsOf]($core-bentley), and [PromiseReturnType]($core-bentley) types have moved to the @itwin/core-bentley package. The ones in @itwin/core-frontend have been deprecated.
-
 ## Removed default API keys
 
 Previous versions of `@itwin/core-frontend` included API keys for Bing Maps, MapBox Imagery, and Cesium ION that would be used for _all_ iTwin.js applications. These common keys are no longer supported and will soon be disabled. All applications will now need to provide their own keys.
@@ -562,9 +627,9 @@ await IModelApp.startup(appOptions);
 
 The previous implementation of `ConcurrencyControl` for locking elements has been replaced with the [LockControl]($backend) interface.
 
-`ConcurrencyControl` relied on detecting a list of changed elements and deferring the acquisition of locks until the application called the asynchronous `request` method to acquire locks, after the fact, but before calling [BriefcaseDb.saveChanges]($backend). The new approach is to require applications to call the asynchronous [LockControl.acquireExclusiveLock]($backend) on elements before update or delete, and to call [LockControl.acquireSharedLock]($backend) on parents and models before insert. If an attempt is made to modify or insert without the required locks, an exception is thrown when the change is attempted. This will require tools to make the necessary lock calls.
+`ConcurrencyControl` relied on detecting a list of changed elements and deferring the acquisition of locks until the application called the asynchronous `request` method to acquire locks, after the fact, but before calling [BriefcaseDb.saveChanges]($backend). The new approach is to require applications to call the asynchronous method [LockControl.acquireLocks]($backend) to get an exclusive lock on elements before update or delete, and shared locks on parents and models before insert. If an attempt is made to modify or insert without the required locks, an exception is thrown when the change is attempted. This will require tools to make the necessary lock calls.
 
-Previously the concurrency "mode" was determined by applications when opening a briefcase. It is now established as a property of an iModel when it is first created (and "revision0" is uploaded.) By default, iModels use pessimistic (i.e. locks) mode, so all previously created iModels will require locks. If you pass `noLocks: true` as an argument to [BackendHubAccess.createNewIModel]($backend), a briefcase-local value is saved in rev0.bim before it is uploaded. Thereafter, all briefcases of that iModel will use use optimistic (i.e. no locks, change merging) mode, since everyone will use briefcases derived from rev0.bim. The value is inspected in the `BriefcaseDb.useLockServer` method called by [BriefcaseDb.open]($backend).
+Previously the concurrency "mode" was determined by applications when opening a briefcase. It is now established as a property of an iModel when it is first created (and "version0" is uploaded.) By default, iModels use pessimistic (i.e. locks) mode, so all previously created iModels will require locks. If you pass `noLocks: true` as an argument to [BackendHubAccess.createNewIModel]($backend), a briefcase-local value is saved in rev0.bim before it is uploaded. Thereafter, all briefcases of that iModel will use use optimistic (i.e. no locks, change merging) mode, since everyone will use briefcases derived from rev0.bim. The value is inspected in the `BriefcaseDb.useLockServer` method called by [BriefcaseDb.open]($backend).
 
 Locks apply to Elements only. The "schema lock" is acquired by exclusively locking element id 0x1 (the root subject id). Models are locked via their modeled element (which has the same id as the model)
 
@@ -592,6 +657,12 @@ The signatures to several methods in [BriefcaseManager]($backend) and [Briefcase
 | `BriefcaseManager.downloadBriefcase`     | [RequestNewBriefcaseArg]($backend)                    |                                  |
 | `IModelDb.importSchemas`                 | `LocalFileName[]`                                     | `requestContext` removed         |
 
+## Deprecation of the Settings on iModelApp
+
+The previous `IModelApp.settings` API has been removed in favor of [IModelApp.userPreferences]($frontend). The updated API will provide a clear distinction between the "settings" within the control of the user (user preferences) and which are within control of the admin of an iModel/iTwin (Workspaces). The separation is intended to make it clear who is capability of modifying and overriding a given setting while making the API easier to use.
+
+The new [UserPreferencesAccess]($frontend) interface is a simple, easy-to-use API that can be implemented in many different ways. The `core-frontend` package does not dictate an implementation and could easily be setup using Local Storage (via [Storage APIs](https://developer.mozilla.org/en-US/docs/Web/API/Storage)) or by a cloud-hosted storage mechanism to share across user sessions.
+
 ## `Tool.run` and `Tool.parseAndRun` are now async
 
 In V2.0, the methods [Tool.run]($frontend) and [Tool.parseAndRun]($frontend) were synchronous. This was problematic in that it was impossible to invoke a tool and await its completion. Those two methods are now both `async` and return `Promise<boolean>`. This is obviously a breaking change. Any Tool subclasses that override those methods will need to become async, and any code that calls `Tool.run` or `Tool.parseAndRun` will need to appropriately handle the returned Promise (usually by awaiting it.)
@@ -609,15 +680,29 @@ These methods were previously synchronous and are now async:
 - [InteractiveTool.onSuspend]($frontend)
 - [InteractiveTool.onUnsuspend]($frontend)
 
-## `NodeKey` in `@itwin/presentation-common`
+## Changes to `@itwin/presentation-common`
+
+### `NodeKey`
 
 The [NodeKey]($presentation-common) object contains a `pathFromRoot` attribute which can be used to uniquely identify a node in a hierarchy. In addition, the attribute is stable - the value for the same node is the same even when being created by different backends, which allows it to be persisted and later be used to identify specific nodes.
 
 In `3.0` changes have been made that changed the way this attribute is calculated, which means the same node produced by pre-3.0 and 3.x versions of `imodeljs` will have keys with different `pathFromRoot` value. To help identify the version of `NodeKey` a new `version` attribute has been added, with `undefined` or `1` being assigned to keys produced by pre-3.0 and `2` being assigned to keys produced by `3.x` versions of imodeljs. In addition, a new [NodeKey.equals]($presentation-common) function has been added to help with the equality checking of node keys, taking their version into account.
 
-## `KeySetJSON` in `@itwin/presentation-common`
+### `KeySetJSON`
 
 The format of [KeySetJSON]($presentation-common) has been changed to reduce its size. Instead of containing an array of instance IDs it now contains a single compressed IDs string. See [CompressedId64Set]($core-bentley) for more details about compressing IDs.
+
+### Changes to presentation rule specifications
+
+- Added ability to specify polymorphism at class level rather than specification level.
+
+  Previously polymorphism was specified at specification level using [ContentInstancesOfSpecificClassesSpecification.handleInstancesPolymorphically]($presentation-common) and [InstanceNodesOfSpecificClassesSpecification.arePolymorphic]($presentation-common) flags. They're now deprecated in favor of the new [MultiSchemaClassesSpecification.arePolymorphic]($presentation-common) attribute and act as default values if the new attribute is not specified.
+
+  The change allows [ContentInstancesOfSpecificClassesSpecification]($presentation-common) and [InstanceNodesOfSpecificClassesSpecification]($presentation-common) specify multiple classes with different polymorphism, if necessary.
+
+- Added ability to exclude some classes when creating content and hierarchies.
+
+  New optional attributes [ContentInstancesOfSpecificClassesSpecification.excludedClasses]($presentation-common) and [InstanceNodesOfSpecificClassesSpecification.excludedClasses]($presentation-common) have been added to specify classes that could be excluded. This provides a convenient way to describe what class instances should be excluded from content or hierarchy, e.g. `give me all bis.Element instances except bis.GeometricElement`.
 
 ## Changes to `Presentation` initialization in `@itwin/presentation-backend`
 
@@ -707,7 +792,7 @@ The format of [KeySetJSON]($presentation-common) has been changed to reduce its 
     favorites: {
       // by default the no-op storage is used, but we can choose another option (or provide our own implementation)
       storage: createFavoritePropertiesStorage(
-        DefaultFavoritePropertiesStorageTypes.UserSettingsServiceStorage
+        DefaultFavoritePropertiesStorageTypes.UserPreferencesStorage,
       ),
     },
   });
@@ -735,108 +820,122 @@ await IModelApp.startup({
 
 The two methods [IModelDb.getIModelCoordinatesFromGeoCoordinates]($backend) and [IModelDb.getGeoCoordinatesFromIModelCoordinates]($backend) used to take a string argument that was a stringified [IModelCoordinatesRequestProps]($common) and [GeoCoordinatesRequestProps]($common) respectively. Those arguments were changed to accept the interfaces directly. You should remove `JSON.stringify` from your code if you get compile errors.
 
+## Changes to UnitProps
+
+The `altDisplayLabels` property in [UnitProps]($quantity) has been removed. AlternateLabels are now provided via a [AlternateUnitLabelsProvider]($quantity). The [QuantityFormatter]($frontend) now provides one for use when parsing string to quantities. To add custom labels use [QuantityFormatter.addAlternateLabels]($frontend) see example below.
+
+  ```ts
+  IModelApp.quantityFormatter.addAlternateLabels("Units.FT", "feet", "foot");
+  ```
+
 ## Removal of previously deprecated APIs
 
 In this 3.0 major release, we have removed several APIs that were previously marked as deprecated in 2.x. Generally, the reason for the deprecation as well as the alternative suggestions can be found in the 2.x release notes. They are summarized here for quick reference.
 
 ### @itwin/core-backend
 
-| Removed                                                      | Replacement                                    |
-| ------------------------------------------------------------ | ---------------------------------------------- |
-| `AutoPush`                                                   | _eliminated_                                   |
-| `BriefcaseDb.reinstateChanges`                               | `BriefcaseDb.pullChanges`                      |
-| `BriefcaseDb.reverseChanges`                                 | `BriefcaseDb.pullChanges`                      |
-| `BriefcaseIdValue`                                           | `BriefcaseIdValue` in @itwin/core-common       |
-| `BriefcaseManager.getCompatibilityFileName`                  | _eliminated_                                   |
-| `BriefcaseManager.getCompatibilityPath`                      | _eliminated_                                   |
-| `BriefcaseManager.isStandaloneBriefcaseId`                   | use `id === BriefcaseIdValue.Unassigned`       |
-| `compatibilityDir` argument of `BriefcaseManager.initialize` | _eliminated_                                   |
-| `DocumentCarrier`                                            | _eliminated_                                   |
-| `IModelDb.clearSqliteStatementCache`                         | `IModelDb.clearCaches`                         |
-| `IModelDb.clearStatementCache`                               | `IModelDb.clearCaches`                         |
-| `IModelHost.iModelClient`                                    | `IModelHubBackend.iModelClient`                |
-| `IModelHostConfiguration.briefcaseCacheDir`                  | `IModelHostConfiguration.cacheDir`             |
-| `InformationCarrierElement`                                  | _eliminated_                                   |
-| `Platform.isDesktop`                                         | `ProcessDetector.isElectronAppBackend`         |
-| `Platform.isElectron`                                        | `ProcessDetector.isElectronAppBackend`         |
-| `Platform.isMobile`                                          | `ProcessDetector.isMobileAppBackend`           |
-| `Platform.isNodeJs`                                          | `ProcessDetector.isNodeProcess`                |
-| `SnapshotDb.filePath`                                        | `SnapshotDb.pathName`                          |
-| `StandaloneDb.filePath`                                      | `StandaloneDb.pathName`                        |
-| `Texture.width, height, flags`                               | _eliminated_                                   |
-| `TxnAction`                                                  | `TxnAction` in @itwin/core-common              |
-| `TxnChangedEntities.inserted, deleted, updated`              | `TxnChangedEntities.inserts, deletes, updates` |
+| Removed                                                      | Replacement                                                         |
+| ------------------------------------------------------------ | ------------------------------------------------------------------- |
+| `AutoPush`                                                   | _eliminated_                                                        |
+| `BriefcaseDb.reinstateChanges`                               | `BriefcaseDb.pullChanges`                                           |
+| `BriefcaseDb.reverseChanges`                                 | `BriefcaseDb.pullChanges`                                           |
+| `BriefcaseIdValue`                                           | `BriefcaseIdValue` in @itwin/core-common                            |
+| `BriefcaseManager.getCompatibilityFileName`                  | _eliminated_                                                        |
+| `BriefcaseManager.getCompatibilityPath`                      | _eliminated_                                                        |
+| `BriefcaseManager.isStandaloneBriefcaseId`                   | use `id === BriefcaseIdValue.Unassigned`                            |
+| `compatibilityDir` argument of `BriefcaseManager.initialize` | _eliminated_                                                        |
+| `DocumentCarrier`                                            | _eliminated_                                                        |
+| `IModelDb.clearSqliteStatementCache`                         | `IModelDb.clearCaches`                                              |
+| `IModelDb.clearStatementCache`                               | `IModelDb.clearCaches`                                              |
+| `IModelHost.iModelClient`                                    | `IModelHubBackend.iModelClient`                                     |
+| `IModelHostConfiguration.briefcaseCacheDir`                  | `IModelHostConfiguration.cacheDir`                                  |
+| `InformationCarrierElement`                                  | _eliminated_                                                        |
+| `Platform.isDesktop`                                         | `ProcessDetector.isElectronAppBackend`                              |
+| `Platform.isElectron`                                        | `ProcessDetector.isElectronAppBackend`                              |
+| `Platform.isMobile`                                          | `ProcessDetector.isMobileAppBackend`                                |
+| `Platform.isNodeJs`                                          | `ProcessDetector.isNodeProcess`                                     |
+| `SnapshotDb.filePath`                                        | `SnapshotDb.pathName`                                               |
+| `StandaloneDb.filePath`                                      | `StandaloneDb.pathName`                                             |
+| `Texture.width, height, flags`                               | _eliminated_                                                        |
+| `TxnAction`                                                  | `TxnAction` in @itwin/core-common                                   |
+| `TxnChangedEntities.inserted, deleted, updated`              | `TxnChangedEntities.inserts, deletes, updates`                      |
+| `NativeAppAuthorizationBackend`                              | Moved to @iTwin/auth-clients repo as `ElectronAuthorizationBackend` |
+| `ElectronAuthorizationEvents`                                | Moved to @iTwin/auth-clients repo                                   |
+| `ElectronAuthorizationRequestHandler`                        | Moved to @iTwin/auth-clients repo                                   |
 
 ### @itwin/core-common
 
-| Removed                                               | Replacement                                                    |
-| ----------------------------------------------------- | -------------------------------------------------------------- |
-| `AnalysisStyle.scalar`                                | `AnalysisStyle.thematic`                                       |
-| `AnalysisStyleScalar`                                 | `AnalysisStyleThematic`                                        |
-| `AnalysisStyleScalarProps`                            | `AnalysisStyleThematicProps`                                   |
-| `BriefcaseTypes.DeprecatedStandalone`                 | `BriefcaseTypes.Unassigned`                                    |
-| `BriefcaseTypes.Standalone`                           | `BriefcaseTypes.Unassigned`                                    |
-| `Code.getValue`                                       | `Code.value`                                                   |
-| `CodeSpec.specScopeType`                              | `CodeSpec.scopeType`                                           |
-| `DisplayStyleSettings.excludedElements`               | `DisplayStyleSettings.excludedElementIds`                      |
-| `DisplayStyleOverridesOptions.includeProjectSpecific` | `DisplayStyleOverridesOptions.includeITwinSpecific`            |
-| `IModel.changeSetId`                                  | `IModel.changeset.id`                                          |
-| `IModelVersion.evaluateChangeSet`                     | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
-| `IModelVersion.fromJson`                              | `IModelVersion.fromJSON`                                       |
-| `IModelVersion.getChangeSetFromNamedVersion`          | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
-| `IModelVersion.getLatestChangeSetId`                  | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
-| `IModelWriteRpcInterface`                             | Use IPC for writing to iModels                                 |
-| `LatAndLong`                                          | _eliminated_                                                   |
-| `LatLongAndHeight`                                    | [CartographicProps]($common)                                   |
-| `TerrainSettings.locatable`                           | `BackgroundMapSettings.locatable`                              |
-| `TerrainSettingsProps.nonLocatable`                   | `BackgroundMapProps.nonLocatable`                              |
-| `ViewFlagOverrides` class                             | [ViewFlagOverrides]($common) type                              |
-| `ViewFlagProps.edgeMask`                              | _eliminated_                                                   |
-| `ViewFlagProps.hlMatColors`                           | _eliminated_                                                   |
-| `ViewFlags.clone`                                     | [ViewFlags.copy]($common)                                      |
-| `ViewFlags.edgeMask`                                  | _eliminated_                                                   |
-| `ViewFlags.hLineMaterialColors`                       | _eliminated_                                                   |
-| `ViewFlags.noCameraLights`                            | [ViewFlags.lighting]($common)                                  |
-| `ViewFlags.noGeometryMap`                             | _eliminated_                                                   |
-| `ViewFlags.noSolarLight`                              | [ViewFlags.lighting]($common)                                  |
-| `ViewFlags.noSourceLights`                            | [ViewFlags.lighting]($common)                                  |
+| Removed                                               | Replacement                                                       |
+| ----------------------------------------------------- | ----------------------------------------------------------------- |
+| `AnalysisStyle.scalar`                                | `AnalysisStyle.thematic`                                          |
+| `AnalysisStyleScalar`                                 | `AnalysisStyleThematic`                                           |
+| `AnalysisStyleScalarProps`                            | `AnalysisStyleThematicProps`                                      |
+| `BriefcaseTypes.DeprecatedStandalone`                 | `BriefcaseTypes.Unassigned`                                       |
+| `BriefcaseTypes.Standalone`                           | `BriefcaseTypes.Unassigned`                                       |
+| `Code.getValue`                                       | `Code.value`                                                      |
+| `CodeSpec.specScopeType`                              | `CodeSpec.scopeType`                                              |
+| `DisplayStyleSettings.excludedElements`               | `DisplayStyleSettings.excludedElementIds`                         |
+| `DisplayStyleOverridesOptions.includeProjectSpecific` | `DisplayStyleOverridesOptions.includeITwinSpecific`               |
+| `IModel.changeSetId`                                  | `IModel.changeset.id`                                             |
+| `IModelVersion.evaluateChangeSet`                     | `IModelHost`/`IModelApp` `hubAccess.getChangesetFromVersion`      |
+| `IModelVersion.fromJson`                              | `IModelVersion.fromJSON`                                          |
+| `IModelVersion.getChangeSetFromNamedVersion`          | `IModelHost`/`IModelApp` `hubAccess.getChangesetFromNamedVersion` |
+| `IModelVersion.getLatestChangeSetId`                  | `IModelHost`/`IModelApp` `hubAccess.getLatestChangeset`           |
+| `IModelWriteRpcInterface`                             | Use IPC for writing to iModels                                    |
+| `LatAndLong`                                          | _eliminated_                                                      |
+| `LatLongAndHeight`                                    | [CartographicProps]($common)                                      |
+| `TerrainSettings.locatable`                           | `BackgroundMapSettings.locatable`                                 |
+| `TerrainSettingsProps.nonLocatable`                   | `BackgroundMapProps.nonLocatable`                                 |
+| `ViewFlagOverrides` class                             | [ViewFlagOverrides]($common) type                                 |
+| `ViewFlagProps.edgeMask`                              | _eliminated_                                                      |
+| `ViewFlagProps.hlMatColors`                           | _eliminated_                                                      |
+| `ViewFlags.clone`                                     | [ViewFlags.copy]($common)                                         |
+| `ViewFlags.edgeMask`                                  | _eliminated_                                                      |
+| `ViewFlags.hLineMaterialColors`                       | _eliminated_                                                      |
+| `ViewFlags.noCameraLights`                            | [ViewFlags.lighting]($common)                                     |
+| `ViewFlags.noGeometryMap`                             | _eliminated_                                                      |
+| `ViewFlags.noSolarLight`                              | [ViewFlags.lighting]($common)                                     |
+| `ViewFlags.noSourceLights`                            | [ViewFlags.lighting]($common)                                     |
+| `NativeAppAuthorizationConfiguration`                 | `MobileAppAuthorizationConfiguration` in @itwin/core-mobile       |
 
 ### @itwin/core-frontend
 
-| Removed                                       | Replacement                                                        |
-| --------------------------------------------- | ------------------------------------------------------------------ |
-| `AppearanceOverrideProps`                     | [AppearanceOverrideProps]($common)                                 |
-| `AsyncMethodsOf`                              | [AsyncMethodsOf]($core-bentley)                                    |
-| `AsyncFunction`                               | [AsyncFunction]($core-bentley)                                     |
-| `EmphasizeElementsProps`                      | [EmphasizeElementsProps]($common)                                  |
-| `PromiseReturnType`                           | [PromiseReturnType]($core-bentley)                                 |
-| `CheckpointConnection.open`                   | `CheckpointConnection.openRemote`                                  |
-| `DecorateContext.screenViewport`              | `DecorateContext.viewport`                                         |
-| `FeatureOverrideType`                         | [FeatureOverrideType]($common)                                     |
-| `FeatureSymbology.Appearance`                 | [FeatureAppearance]($common)                                       |
-| `FeatureSymbology.AppearanceProps`            | [FeatureAppearanceProps]($common)                                  |
-| `findAvailableRealityModels`                  | `queryRealityData`                                                 |
-| `findAvailableUnattachedRealityModels`        | `queryRealityData`                                                 |
-| `IModelApp.iModelClient`                      | `IModelHubFrontend.iModelClient`                                   |
-| `IModelConnection.Models.loaded`              | use `for..of` to iterate and `getLoaded` to look up by Id          |
-| `IModelConnection.Views.saveThumbnail`        | use IPC and `IModelDb.saveThumbnail`                               |
-| `IOidcFrontendClient`                         | `FrontendAuthorizationClient`                                      |
-| `isIOidcFrontendClient`                       | `FrontendAuthorizationClient`                                      |
-| `OidcBrowserClient`                           | `BrowserAuthorizationClient`                                       |
-| `OidcFrontendClientConfiguration`             | `BrowserAuthorizationClientConfiguration`                          |
-| `QuantityFormatter.onActiveUnitSystemChanged` | [QuantityFormatter.onActiveFormattingUnitSystemChanged]($frontend) |
-| `QuantityFormatter.useImperialFormats`        | [QuantityFormatter.setActiveUnitSystem]($frontend)                 |
-| `RemoteBriefcaseConnection`                   | `CheckpointConnection`                                             |
-| `ScreenViewport.decorationDiv`                | `DecorateContext.addHtmlDecoration`                                |
-| `UnitSystemKey`                               | Moved to `@bentley/imodeljs-quantity`                              |
-| `ViewManager.forEachViewport`                 | Use a `for..of` loop                                               |
-| `ViewState.isCameraEnabled`                   | Use `view.is3d() && view.isCameraOn`                               |
-| `ViewState3d.lookAtPerspectiveOrOrtho`        | `ViewState3d.LookAt`                                               |
-| `ViewState3d.lookAtUsingLensAngle`            | `ViewState3d.lookAt`                                               |
-| `Viewport.featureOverrideProvider`            | [Viewport.featureOverrideProviders]($frontend)                     |
-| `Viewport.setFlashed`                         | [Viewport.flashedId]($frontend)                                    |
-| `Viewport.setRedrawPending`                   | [Viewport.requestRedraw]($frontend)                                |
-| `WebAppViewer`                                | *eliminated*                                                       |
+| Removed                                       | Replacement                                                                 |
+| --------------------------------------------- | --------------------------------------------------------------------------- |
+| `AppearanceOverrideProps`                     | [AppearanceOverrideProps]($common)                                          |
+| `AsyncMethodsOf`                              | [AsyncMethodsOf]($core-bentley)                                             |
+| `AsyncFunction`                               | [AsyncFunction]($core-bentley)                                              |
+| `EmphasizeElementsProps`                      | [EmphasizeElementsProps]($common)                                           |
+| `PromiseReturnType`                           | [PromiseReturnType]($core-bentley)                                          |
+| `CheckpointConnection.open`                   | `CheckpointConnection.openRemote`                                           |
+| `DecorateContext.screenViewport`              | `DecorateContext.viewport`                                                  |
+| `FeatureOverrideType`                         | [FeatureOverrideType]($common)                                              |
+| `FeatureSymbology.Appearance`                 | [FeatureAppearance]($common)                                                |
+| `FeatureSymbology.AppearanceProps`            | [FeatureAppearanceProps]($common)                                           |
+| `findAvailableRealityModels`                  | `getRealityDatas` in `@itwin/reality-data-client`                          |
+| `findAvailableUnattachedRealityModels`        | `getRealityDatas` in `@itwin/reality-data-client`                          |
+| `IModelApp.iModelClient`                      | `IModelApp.hubAccess`                                                       |
+| `IModelApp.settings`                          | [IModelApp.userPreferences]($frontend)                                      |
+| `IModelConnection.Models.loaded`              | use `for..of` to iterate and `getLoaded` to look up by Id                   |
+| `IModelConnection.Views.saveThumbnail`        | use IPC and `IModelDb.saveThumbnail`                                        |
+| `IOidcFrontendClient`                         | _eliminated_                                                                |
+| `isIOidcFrontendClient`                       | _eliminated_                                                                |
+| `OidcBrowserClient`                           | `BrowserAuthorizationClient` in `@itwin/browser-authorization`              |
+| `OidcFrontendClientConfiguration`             | `BrowserAuthorizationClientConfiguration` in `@itwin/browser-authorization` |
+| `QuantityFormatter.onActiveUnitSystemChanged` | [QuantityFormatter.onActiveFormattingUnitSystemChanged]($frontend)          |
+| `QuantityFormatter.useImperialFormats`        | [QuantityFormatter.setActiveUnitSystem]($frontend)                          |
+| `RemoteBriefcaseConnection`                   | `CheckpointConnection`                                                      |
+| `ScreenViewport.decorationDiv`                | `DecorateContext.addHtmlDecoration`                                         |
+| `UnitSystemKey`                               | Moved to `@bentley/imodeljs-quantity`                                       |
+| `ViewManager.forEachViewport`                 | Use a `for..of` loop                                                        |
+| `ViewState.isCameraEnabled`                   | Use `view.is3d() && view.isCameraOn`                                        |
+| `ViewState3d.lookAtPerspectiveOrOrtho`        | `ViewState3d.LookAt`                                                        |
+| `ViewState3d.lookAtUsingLensAngle`            | `ViewState3d.lookAt`                                                        |
+| `Viewport.featureOverrideProvider`            | [Viewport.featureOverrideProviders]($frontend)                              |
+| `Viewport.setFlashed`                         | [Viewport.flashedId]($frontend)                                             |
+| `Viewport.setRedrawPending`                   | [Viewport.requestRedraw]($frontend)                                         |
+| `WebAppViewer`                                | _eliminated_                                                                |
+| `NativeAppAuthorization`                      | Moved to @iTwin/auth-clients repo as `ElectronRendererAuthorization`        |
 
 ### @itwin/core-geometry
 
@@ -853,30 +952,35 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 
 SAML support has officially been dropped as a supported workflow. All related APIs for SAML have been removed.
 
-| Removed                             | Replacement                                                 |
-| ----------------------------------- | --------------------------------------------                |
-| `OidcDelegationClientConfiguration` | `DelegationAuthorizationClientConfiguration`                |
-| `OidcDelegationClient`              | `DelegationAuthorizationClient`                             |
-| `BackendAuthorizationClient`        | Moved to @iTwin/auth-clients as BrowserAuthorizationClient  |
-| `AgentAuthorizationClient`          | Moved to @iTwin/auth-clients as SerivceAuthorizationClient  |
-| `DelegationAuthorizationClient`     | *removed*                                                   |
-| `IntrospectionClient`               | Moved to @iTwin/auth-clients                                |
+| Removed                             | Replacement                                                |
+| ----------------------------------- | ---------------------------------------------------------- |
+| `OidcDelegationClientConfiguration` | `DelegationAuthorizationClientConfiguration`               |
+| `OidcDelegationClient`              | `DelegationAuthorizationClient`                            |
+| `BackendAuthorizationClient`        | Moved to @iTwin/auth-clients as BrowserAuthorizationClient |
+| `AgentAuthorizationClient`          | Moved to @iTwin/auth-clients as SerivceAuthorizationClient |
+| `DelegationAuthorizationClient`     | _removed_                                                  |
+| `IntrospectionClient`               | Moved to @iTwin/auth-clients                               |
+| `ImsAuthorizationClient`            | _removed_                                                  |
 
 ### @itwin/appui-abstract
 
-| Removed                       | Replacement                  |
-| ----------------------------- | ---------------------------- |
-| `ContentLayoutProps.priority` | *eliminated*                 |
-| `UiItemsArbiter`              | *eliminated*                 |
-| `UiAbstract.messagePresenter` | `UiAdmin.messagePresenter`   |
+| Removed                       | Replacement                |
+| ----------------------------- | -------------------------- |
+| `ContentLayoutProps.priority` | _eliminated_               |
+| `UiItemsArbiter`              | _eliminated_               |
+| `UiAbstract.messagePresenter` | `UiAdmin.messagePresenter` |
 
 ### @itwin/core-react
 
-| Removed                              | Replacement                                                |
-| ------------------------------------ | ---------------------------------------------------------- |
+| Removed                              | Replacement                                             |
+| ------------------------------------ | ------------------------------------------------------- |
 | `LoadingPromptProps.isDeterministic` | `LoadingPromptProps.isDeterminate` in @itwin/core-react |
 | `NumericInput` component             | `NumberInput` component in @itwin/core-react            |
 | `TabsProps.onClickLabel`             | `TabsProps.onActivateTab` in @itwin/core-react          |
+| `LocalSettingsStorage`               | `LocalStateStorage`                                     |
+| `UiSettingsResult`                   | `UiStateStorageResult`                                  |
+| `UiSetting`                          | `UiStateEntry`                                          |
+| `UiSettings`                         | `UiStateStorage`                                        |
 
 ### @itwin/components-react
 
@@ -916,16 +1020,16 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `FunctionKey`                              | `FunctionKey` in @bentley/ui-abstract                                                                                         |
 | `IModelAppUiSettings`                      | `UserSettingsStorage` in @bentley/ui-framework                                                                                |
 | `ConfigurableUiManager.findFrontstageDef`  | `FrontstageManager.findFrontstageDef`                                                                                         |
-| `ConfigurableUiManager.loadContentGroup`   | *eliminated*                                                                                                                  |
-| `ConfigurableUiManager.loadContentGroups`  | *eliminated*                                                                                                                  |
-| `ConfigurableUiManager.loadContentLayout`  | *eliminated*                                                                                                                  |
-| `ConfigurableUiManager.loadContentLayouts` | *eliminated*                                                                                                                  |
-| `ContentGroupManager`                      | *eliminated*                                                                                                                  |
+| `ConfigurableUiManager.loadContentGroup`   | _eliminated_                                                                                                                  |
+| `ConfigurableUiManager.loadContentGroups`  | _eliminated_                                                                                                                  |
+| `ConfigurableUiManager.loadContentLayout`  | _eliminated_                                                                                                                  |
+| `ConfigurableUiManager.loadContentLayouts` | _eliminated_                                                                                                                  |
+| `ContentGroupManager`                      | _eliminated_                                                                                                                  |
 | `Frontstage.initializeFrontstageDef`       | `FrontstageManager.getFrontstageDef` (async method)                                                                           |
 | `Frontstage.findFrontstageDef`             | `FrontstageManager.getFrontstageDef` (async method)                                                                           |
 | `Frontstage.initializeFromProvider`        | `Frontstage.create` (async method)                                                                                            |
 | `FrontstageProps.defaultLayout`            | `ContentGroup` now holds the layout information.                                                                              |
-| `FrontstageProvider.initializeDef`         | *eliminated*                                                                                                                  |
+| `FrontstageProvider.initializeDef`         | _eliminated_                                                                                                                  |
 | `FrontstageProvider.frontstageDef`         | `FrontstageManager.getFrontstageDef` (async method)                                                                           |
 | `reactElement` in ContentControl           | `ContentControl.reactNode`                                                                                                    |
 | `reactElement` in NavigationAidControl     | `NavigationAidControl.reactNode`                                                                                              |
@@ -933,27 +1037,34 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `reactElement` in ToolWidgetDef            | `ToolWidgetDef.reactNode`                                                                                                     |
 | `reactElement` in WidgetControl            | `WidgetControl.reactNode`                                                                                                     |
 | `reactElement` in WidgetDef                | `WidgetDef.reactNode`                                                                                                         |
-| `ReactMessage`                             | `ReactMessage` in @itwin/core-react                                                                                        |
+| `ReactMessage`                             | `ReactMessage` in @itwin/core-react                                                                                           |
+| `SavedView`                                | `ViewStateHelper`                                                                                                             |
+| `SavedViewProps`                           | `ViewStateHelperProps`                                                                                                        |
+| `SavedViewLayout`                          | `StageContentLayout`                                                                                                          |
+| `SavedViewLayoutProps`                     | `StageContentLayoutProps`                                                                                                     |
 | `SpecialKey`                               | `SpecialKey` in @itwin/appui-abstract                                                                                         |
 | `WidgetState`                              | `WidgetState` in @itwin/appui-abstract                                                                                        |
-| `UserProfileBackstageItem`                 | *eliminated*                                                                                                                  |
-| `SignIn`                                   | *eliminated*                                                                                                                  |
-| `SignOutModalFrontstage`                   | *eliminated*                                                                                                                  |
-| `IModelConnectedCategoryTree`              | *eliminated*                                                                                                                  |
-| `IModelConnectedModelsTree`                | *eliminated*                                                                                                                  |
-| `IModelConnectedSpatialContainmentTree`    | *eliminated*                                                                                                                  |
-| `CategoryTreeWithSearchBox`                | *eliminated*                                                                                                                  |
+| `UserProfileBackstageItem`                 | _eliminated_                                                                                                                  |
+| `SignIn`                                   | _eliminated_                                                                                                                  |
+| `SignOutModalFrontstage`                   | _eliminated_                                                                                                                  |
+| `IModelConnectedCategoryTree`              | _eliminated_                                                                                                                  |
+| `IModelConnectedModelsTree`                | _eliminated_                                                                                                                  |
+| `IModelConnectedSpatialContainmentTree`    | _eliminated_                                                                                                                  |
+| `CategoryTreeWithSearchBox`                | _eliminated_                                                                                                                  |
+| `UiSettingsProvider`                       | `UiStateStorageHandler`                                                                                                       |
+| `useUiSettingsStorageContext`              | `useUiStateStorageHandler`                                                                                                    |
 | `VisibilityComponent`                      | `TreeWidgetComponent` in @bentley/tree-widget-react                                                                           |
 | `VisibilityWidget`                         | `TreeWidgetControl` in @bentley/tree-widget-react                                                                             |
 | `ContentLayoutProps`                       | `ContentLayoutProps` in @itwin/appui-abstract                                                                                 |
 | All drag & drop related APIs               | Third party components. E.g. see this [example](https://www.itwinjs.org/sample-showcase/?group=UI+Trees&sample=drag-and-drop) |
+| `ModelsTreeProps.enablePreloading`         | _eliminated_                                                                                                                  |
 
 ### @itwin/core-bentley
 
 | Removed         | Replacement                                                |
 | --------------- | ---------------------------------------------------------- |
 | `Config`        | Use `process.env` to access environment variables directly |
-| `EnvMacroSubst` | *eliminated*                                               |
+| `EnvMacroSubst` | _eliminated_                                               |
 
 ### @itwin/presentation-common
 
@@ -963,11 +1074,11 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `ContentInstancesOfSpecificClassesSpecification.arePolymorphic` | `ContentInstancesOfSpecificClassesSpecification.handleInstancesPolymorphically`                                                                                |
 | `ContentModifiersList.propertiesDisplay`                        | `ContentModifiersList.propertyOverrides`                                                                                                                       |
 | `ContentModifiersList.propertyEditors`                          | `ContentModifiersList.propertyOverrides`                                                                                                                       |
-| `ContentRelatedInstancesSpecification.isRecursive`              | *eliminated*                                                                                                                                                   |
+| `ContentRelatedInstancesSpecification.isRecursive`              | _eliminated_                                                                                                                                                   |
 | `ContentRelatedInstancesSpecification.relatedClasses`           | `ContentRelatedInstancesSpecification.relationshipPaths.targetClass`                                                                                           |
 | `ContentRelatedInstancesSpecification.relationships`            | `ContentRelatedInstancesSpecification.relationshipPaths.relationship`                                                                                          |
 | `ContentRelatedInstancesSpecification.requiredDirection`        | `ContentRelatedInstancesSpecification.relationshipPaths.direction`                                                                                             |
-| `ContentRelatedInstancesSpecification.skipRelatedLevel`         | *eliminated*                                                                                                                                                   |
+| `ContentRelatedInstancesSpecification.skipRelatedLevel`         | _eliminated_                                                                                                                                                   |
 | `Descriptor.toCompressedJSON`                                   | `Descriptor.toJSON`                                                                                                                                            |
 | `DescriptorOverrides.hiddenFieldNames`                          | `DescriptorOverrides.fieldsSelector`                                                                                                                           |
 | `DescriptorOverrides.sortDirection`                             | `DescriptorOverrides.sorting.direction`                                                                                                                        |
@@ -978,22 +1089,22 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `ExtendedHierarchyRequestOptions`                               | `HierarchyRequestOptions`                                                                                                                                      |
 | `ExtendedHierarchyRpcRequestOptions`                            | `HierarchyRpcRequestOptions`                                                                                                                                   |
 | `Field.fromJSON`                                                | `Field.fromCompressedJSON`                                                                                                                                     |
-| `HierarchyCompareRpcOptions`                                    | *eliminated*                                                                                                                                                   |
+| `HierarchyCompareRpcOptions`                                    | _eliminated_                                                                                                                                                   |
 | `LabelRequestOptions`                                           | `DisplayLabelRequestOptions`                                                                                                                                   |
 | `LabelRpcRequestOptions`                                        | `DisplayLabelRpcRequestOptions`                                                                                                                                |
 | `LoggingNamespaces`                                             | `PresentationBackendLoggerCategory`, `PresentationBackendNativeLoggerCategory`, `PresentationFrontendLoggerCategory` or `PresentationComponentsLoggerCategory` |
 | `NodeDeletionInfo.target`                                       | `NodeDeletionInfo.parent` and `NodeDeletionInfo.position`                                                                                                      |
 | `NodeDeletionInfoJSON.target`                                   | `NodeDeletionInfoJSON.parent` and `NodeDeletionInfoJSON.position`                                                                                              |
-| `PresentationDataCompareOptions`                                | *eliminated*                                                                                                                                                   |
-| `PresentationRpcInterface.compareHierarchies`                   | *eliminated*                                                                                                                                                   |
-| `PresentationRpcInterface.compareHierarchiesPaged`              | *eliminated*                                                                                                                                                   |
+| `PresentationDataCompareOptions`                                | _eliminated_                                                                                                                                                   |
+| `PresentationRpcInterface.compareHierarchies`                   | _eliminated_                                                                                                                                                   |
+| `PresentationRpcInterface.compareHierarchiesPaged`              | _eliminated_                                                                                                                                                   |
 | `PresentationRpcInterface.getContent`                           | `PresentationRpcInterface.getPagedContent` and `getPagedContentSet`                                                                                            |
 | `PresentationRpcInterface.getContentAndSize`                    | `PresentationRpcInterface.getPagedContent` and `getPagedContentSet`                                                                                            |
 | `PresentationRpcInterface.getDisplayLabelDefinitions`           | `PresentationRpcInterface.getPagedDisplayLabelDefinitions`                                                                                                     |
 | `PresentationRpcInterface.getDistinctValues`                    | `PresentationRpcInterface.getPagedDistinctValues`                                                                                                              |
 | `PresentationRpcInterface.getNodes`                             | `PresentationRpcInterface.getPagedNodes`                                                                                                                       |
 | `PresentationRpcInterface.getNodesAndCount`                     | `PresentationRpcInterface.getPagedNodes`                                                                                                                       |
-| `PresentationRpcInterface.loadHierarchy`                        | *eliminated*                                                                                                                                                   |
+| `PresentationRpcInterface.loadHierarchy`                        | _eliminated_                                                                                                                                                   |
 | `PresentationUnitSystem`                                        | `UnitSystemKey` in `@bentley/imodeljs-quantity`                                                                                                                |
 | `PropertiesFieldDescriptor.propertyClass`                       | `PropertiesFieldDescriptor.properties.class`                                                                                                                   |
 | `PropertiesFieldDescriptor.propertyName`                        | `PropertiesFieldDescriptor.properties.name`                                                                                                                    |
@@ -1002,8 +1113,8 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `RelatedInstanceNodesSpecification.relatedClasses`              | `RelatedInstanceNodesSpecification.relationshipPaths.targetClass`                                                                                              |
 | `RelatedInstanceNodesSpecification.relationships`               | `RelatedInstanceNodesSpecification.relationshipPaths.relationship`                                                                                             |
 | `RelatedInstanceNodesSpecification.requiredDirection`           | `RelatedInstanceNodesSpecification.relationshipPaths.direction`                                                                                                |
-| `RelatedInstanceNodesSpecification.skipRelatedLevel`            | *eliminated*                                                                                                                                                   |
-| `RelatedInstanceNodesSpecification.supportedSchemas`            | *eliminated*                                                                                                                                                   |
+| `RelatedInstanceNodesSpecification.skipRelatedLevel`            | _eliminated_                                                                                                                                                   |
+| `RelatedInstanceNodesSpecification.supportedSchemas`            | _eliminated_                                                                                                                                                   |
 | `RelatedInstanceSpecification.class`                            | `RelatedInstanceSpecification.relationshipPath.targetClass`                                                                                                    |
 | `RelatedInstanceSpecification.relationship`                     | `RelatedInstanceSpecification.relationshipPath.relationship`                                                                                                   |
 | `RelatedInstanceSpecification.requiredDirection`                | `RelatedInstanceSpecification.relationshipPath.direction`                                                                                                      |
@@ -1013,8 +1124,8 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `RelatedPropertiesSpecification.relationships`                  | `RelatedPropertiesSpecification.propertiesSource.relationship`                                                                                                 |
 | `RelatedPropertiesSpecification.requiredDirection`              | `RelatedPropertiesSpecification.propertiesSource.direction`                                                                                                    |
 | `Ruleset.supportedSchemas`                                      | `Ruleset.requiredSchemas`                                                                                                                                      |
-| `RequestPriority`                                               | *eliminated*                                                                                                                                                   |
-| `RequestOptions<TIModel>.priority`                              | *eliminated*                                                                                                                                                   |
+| `RequestPriority`                                               | _eliminated_                                                                                                                                                   |
+| `RequestOptions<TIModel>.priority`                              | _eliminated_                                                                                                                                                   |
 | `SelectClassInfo.pathToPrimaryClass`                            | `SelectClassInfo.pathFromInputToSelectClass`                                                                                                                   |
 | `SelectClassInfo.relatedInstanceClasses`                        | `SelectClassInfo.relatedInstancePaths`                                                                                                                         |
 | `SelectClassInfoJSON.pathToPrimaryClass`                        | `SelectClassInfoJSON.pathFromInputToSelectClass`                                                                                                               |
@@ -1074,8 +1185,8 @@ SAML support has officially been dropped as a supported workflow. All related AP
 
 ### @iwin/ecschema-metadata
 
-| Removed                                  | Replacement                                                  |
-| ---------------------------------------- | ------------------------------------------------------------ |
+| Removed                                  | Replacement                                                |
+| ---------------------------------------- | ---------------------------------------------------------- |
 | `IDiagnostic`                            | `IDiagnostic` in @itwin/ecschema-editing                   |
 | `BaseDiagnostic`                         | `BaseDiagnostic` in @itwin/ecschema-editing                |
 | `DiagnosticType`                         | `DiagnosticType` in @itwin/ecschema-editing                |
@@ -1097,34 +1208,34 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `SchemaCompareDiagnostics`               | `SchemaCompareDiagnostics` in @itwin/ecschema-editing      |
 | `SchemaValidater`                        | `SchemaValidater` in @itwin/ecschema-editing               |
 | `SchemaValidationVisitor`                | `SchemaValidationVisitor` in @itwin/ecschema-editing       |
-| `RelationshipConstraint.deserialize`     | `RelationshipConstraint.fromJSON`                            |
-| `RelationshipConstraint.deserializeSync` | `RelationshipConstraint.fromJSONSync`                        |
-| `RelationshipConstraint.toJson`          | `RelationshipConstraint.toJSON`                              |
+| `RelationshipConstraint.deserialize`     | `RelationshipConstraint.fromJSON`                          |
+| `RelationshipConstraint.deserializeSync` | `RelationshipConstraint.fromJSONSync`                      |
+| `RelationshipConstraint.toJson`          | `RelationshipConstraint.toJSON`                            |
 
 ### @bentley/itwin-client
 
-| Removed                            | Replacement                    |
-| ---------------------------------- | ------------------------------ |
-| `UserInfo`                         | Moved to @itwin/appui-react |
-| `AuthorizationClient.isAuthorized` | *eliminated*                   |
+| Removed                            | Replacement  |
+| ---------------------------------- | ------------ |
+| `UserInfo`                         | _eliminated_ |
+| `AuthorizationClient.isAuthorized` | _eliminated_ |
 
 ### @bentley/appui-react
 
-| Removed                            | Replacement                                           |
-| ---------------------------------- | ----------------------------------------------------- |
-| `WidgetProvider`                   | Provide widget via [UiItemsProvider]($appui-abstract) |
+| Removed          | Replacement                                           |
+| ---------------- | ----------------------------------------------------- |
+| `WidgetProvider` | Provide widget via [UiItemsProvider]($appui-abstract) |
 
 ### @bentley/frontend-authorization-client
 
-| Removed                                          | Replacement                    |
-| -------------------------------------------------| ------------------------------ |
-| `FrontendAuthorizationClient`                    | *removed*                      |
-| `FrontendAuthorizationClientLoggerCategory`      | *removed*                      |
-| `BrowserAuthorizationCallbackHandler`            | Moved to iTwin/auth-clients    |
-| `BrowserAuthorizationBase`                       | *removed*                      |
-| `BrowserAuthorizationClient`                     | Moved to iTwin/auth-clients    |
-| `BrowserAuthorizationClientRedirectState`        | Moved to iTwin/auth-clients    |
-| `BrowserAuthorizationLogger`                     | Moved to iTwin/auth-clients    |
+| Removed                                     | Replacement                 |
+| ------------------------------------------- | --------------------------- |
+| `FrontendAuthorizationClient`               | _removed_                   |
+| `FrontendAuthorizationClientLoggerCategory` | _removed_                   |
+| `BrowserAuthorizationCallbackHandler`       | Moved to iTwin/auth-clients |
+| `BrowserAuthorizationBase`                  | _removed_                   |
+| `BrowserAuthorizationClient`                | Moved to iTwin/auth-clients |
+| `BrowserAuthorizationClientRedirectState`   | Moved to iTwin/auth-clients |
+| `BrowserAuthorizationLogger`                | Moved to iTwin/auth-clients |
 
 <!---
 User Interface Changes - section to comment below
@@ -1142,6 +1253,8 @@ The @itwin ui and @itwin/presentation-components packages are now dependent on R
 
 React 16 is not an officially supported version of iTwin.js app or Extension development using the iTwin.js AppUi.
 
+The component `UiSettingsProvider` has been renamed to [UiStateStorageHandler]($appui-react) and updated so it no longer takes a prop. Internally it now uses the value from `UiFrameWork.getUiStateStorage` and listens for changes to that value. This rename was to avoid confusion between UI State and User Preferences.
+
 The component [FrameworkVersion]($appui-react) has been updated so it no longer takes a version prop. It now uses the value of `frameworkState.configurableUiState.frameworkVersion` from the redux store as the version. This value may be set using `UiFramework.setUiVersion` method and will be initialized to "2". Existing iModelApps using the 1.0 version of the user interface were not required to include the `<FrameworkVersion>` component in its component tree. It is now required that every iModelApp include the `<FrameworkVersion>` component and that the redux store entry mentioned above is specified to either "1" or "2". Below is a typical component tree for an iModeApp.
 
 ```tsx
@@ -1150,11 +1263,11 @@ The component [FrameworkVersion]($appui-react) has been updated so it no longer 
     <SafeAreaContext.Provider value={SafeAreaInsets.All}>
       <ToolbarDragInteractionContext.Provider value={false}>
         <FrameworkVersion>
-          <UiSettingsProvider settingsStorage={uiSettingsStorage}>
+          <UiStateStorageHandler>
             <ConfigurableUiContent
               appBackstage={<AppBackstageComposer />}
             />
-          </UiSettingsProvider>
+          </UiStateStorageHandler>
         </FrameworkVersion>
       </ToolbarDragInteractionContext.Provider>
     </SafeAreaContext.Provider>
@@ -1164,15 +1277,15 @@ The component [FrameworkVersion]($appui-react) has been updated so it no longer 
 
 ### New options for defining Frontstages
 
-| Class/Component                                  | Description                                                                                      |
-| ------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
+| Class/Component                                 | Description                                                                                      |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------ |
 | [StandardFrontstageProvider]($appui-react)      | Frontstage provider that provides an 'empty' stage that is to be populated via UiItemsProviders. |
 | [StandardContentToolsProvider]($appui-react)    | UiItemsProvider that will add common tool entries to Tool Widget.                                |
 | [StandardNavigationToolsProvider]($appui-react) | UiItemsProvider that will add common view tool entries to Navigation Widget.                     |
 | [StandardStatusbarItemsProvider]($appui-react)  | UiItemsProvider that will add common statusbar items.                                            |
 | [ContentToolWidgetComposer]($appui-react)       | Provides an empty Tool Widget that is to be populate via UiItemsProviders.                       |
 | [ViewToolWidgetComposer]($appui-react)          | Provides an empty Navigation Widget that is to be populate via UiItemsProviders.                 |
-| [StandardContentLayouts]($appui-abstract)           | Provides standard view layouts that can be used when defining a ContentGroup.                    |
+| [StandardContentLayouts]($appui-abstract)       | Provides standard view layouts that can be used when defining a ContentGroup.                    |
 | [ContentGroupProvider]($appui-react)            | Class that generates a ContentGroup at runtime when the frontstageDef is being constructed.      |
 
 ### New Timeline Date Marker
@@ -1185,6 +1298,10 @@ Widgets provided via UiItemsProviders may now set `defaultState: WidgetState.Flo
 the widget in a floating container. The property `defaultFloatingPosition` may also be specified to define the position of the floating container. If a position is not defined the container will be centered in the `AppUi` area.
 
 The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to retrieve the Ids for all floating widget containers for the active frontstage as specified by the `frontstageDef`. These ids can be used to query the size of the floating container via `frontstageDef.getFloatingWidgetContainerBounds`. The method `frontstageDef.setFloatingWidgetContainerBounds` can then be used to set the size and position of a floating widget container.
+
+### New API to Enable and Disable View Overlays
+
+UiFramework now offers a `setViewOverlayDisplay(display:boolean)` method to enable or disable viewports displaying overlays. By default, the display is enabled. The current setting is available in `UiFramework.viewOverlayDisplay`.
 
 ### Removed user change monitoring from @itwin/appui-react
 
@@ -1270,45 +1387,45 @@ Several UI components in the @itwin/core-react and @itwin/components-react packa
 Developers should use equivalent components in @itwin/itwinui-react instead.
 
 | Deprecated in @itwin/core-react | Use from @itwin/itwinui-react instead          |
-| ---------------------------------- | ---------------------------------------------- |
-| Button                             | Button                                         |
-| ButtonSize                         | `size` prop for itwinui-react Button           |
-| ButtonType                         | `styleType` prop for itwinui-react Button      |
-| Checkbox                           | Checkbox                                       |
-| ExpandableBlock                    | ExpandableBlock                                |
-| Headline                           | Headline                                       |
-| HorizontalTabs                     | HorizontalTabs                                 |
-| Input                              | Input                                          |
-| LabeledInput                       | LabeledInput                                   |
-| LabeledSelect                      | LabeledSelect                                  |
-| LabeledTextarea                    | LabeledTextarea                                |
-| LabeledToggle                      | ToggleSwitch with `labelPosition="right"` prop |
-| LeadingText                        | Leading                                        |
-| ProgressBar                        | ProgressLinear                                 |
-| ProgressSpinner                    | ProgressRadial                                 |
-| Radio                              | Radio                                          |
-| Select                             | Select                                         |
-| SelectOption                       | SelectOption                                   |
-| Slider                             | Slider                                         |
-| SmallText                          | Small                                          |
-| Spinner                            | ProgressRadial with `indeterminate` prop       |
-| SpinnerSize                        | `size` prop in ProgressRadialProps             |
-| SplitButton                        | SplitButton                                    |
-| Subheading                         | Subheading                                     |
-| Textarea                           | Textarea                                       |
-| Tile                               | Tile                                           |
-| Title                              | Title                                          |
-| Toggle                             | ToggleSwitch                                   |
-| Tooltip                            | Tooltip                                        |
-| TooltipPlacement                   | Placement                                      |
+| ------------------------------- | ---------------------------------------------- |
+| Button                          | Button                                         |
+| ButtonSize                      | `size` prop for itwinui-react Button           |
+| ButtonType                      | `styleType` prop for itwinui-react Button      |
+| Checkbox                        | Checkbox                                       |
+| ExpandableBlock                 | ExpandableBlock                                |
+| Headline                        | Headline                                       |
+| HorizontalTabs                  | HorizontalTabs                                 |
+| Input                           | Input                                          |
+| LabeledInput                    | LabeledInput                                   |
+| LabeledSelect                   | LabeledSelect                                  |
+| LabeledTextarea                 | LabeledTextarea                                |
+| LabeledToggle                   | ToggleSwitch with `labelPosition="right"` prop |
+| LeadingText                     | Leading                                        |
+| ProgressBar                     | ProgressLinear                                 |
+| ProgressSpinner                 | ProgressRadial                                 |
+| Radio                           | Radio                                          |
+| Select                          | Select                                         |
+| SelectOption                    | SelectOption                                   |
+| Slider                          | Slider                                         |
+| SmallText                       | Small                                          |
+| Spinner                         | ProgressRadial with `indeterminate` prop       |
+| SpinnerSize                     | `size` prop in ProgressRadialProps             |
+| SplitButton                     | SplitButton                                    |
+| Subheading                      | Subheading                                     |
+| Textarea                        | Textarea                                       |
+| Tile                            | Tile                                           |
+| Title                           | Title                                          |
+| Toggle                          | ToggleSwitch                                   |
+| Tooltip                         | Tooltip                                        |
+| TooltipPlacement                | Placement                                      |
 
 | Deprecated in @itwin/components-react | Use from @itwin/itwinui-react instead |
-| ---------------------------------------- | ------------------------------------- |
-| Breadcrumb                               | Breadcrumbs                           |
+| ------------------------------------- | ------------------------------------- |
+| Breadcrumb                            | Breadcrumbs                           |
 
 | Deprecated in @itwin/imodel-components-react | Use from @itwin/itwinui-react instead |
 | -------------------------------------------- | ------------------------------------- |
-| ColorPickerPanel                           | ColorPicker                           |
+| ColorPickerPanel                             | ColorPicker                           |
 
 #### Slider
 
@@ -1320,13 +1437,13 @@ A few constructs were deprecated in @itwin/core-react package.
 Some were copied to the @itwin/appui-abstract package.
 Some have replacements within the @itwin/core-react package.
 
-| Deprecated                                | Replacement                                    |
-| ----------------------------------------- | ---------------------------------------------- |
-| DialogButtonDef in @itwin/core-react   | DialogButtonDef in @itwin/appui-abstract       |
-| DialogButtonStyle in @itwin/core-react | DialogButtonStyle in @itwin/appui-abstract     |
-| DialogButtonType in @itwin/core-react  | DialogButtonType in @itwin/appui-abstract      |
-| LocalUiSettings in @itwin/core-react   | LocalSettingsStorage in @itwin/core-react   |
-| SessionUiSettings in @itwin/core-react | SessionSettingsStorage in @itwin/core-react |
+| Deprecated                             | Replacement                                |
+| -------------------------------------- | ------------------------------------------ |
+| DialogButtonDef in @itwin/core-react   | DialogButtonDef in @itwin/appui-abstract   |
+| DialogButtonStyle in @itwin/core-react | DialogButtonStyle in @itwin/appui-abstract |
+| DialogButtonType in @itwin/core-react  | DialogButtonType in @itwin/appui-abstract  |
+| LocalUiSettings in @itwin/core-react   | LocalStateStorage in @itwin/core-react     |
+| SessionUiSettings in @itwin/core-react | _eliminated_                               |
 
 ### New @itwin/imodel-components-react package
 
@@ -1360,7 +1477,7 @@ The cli tool has been deprecated due to an impending change of Extensions and th
 
 ## @bentley/config-loader
 
-The loader has been deprecated due to a preference for using the dotenv package instead. Any workflows using .env files will not be affected.
+The loader has been deprecated due to a preference for using the dotenv package instead. Any workflows using `.env` files will not be affected.
 
 ## @itwin/core-geometry
 
@@ -1389,10 +1506,9 @@ Improvements were made to the performance of [ParticleCollectionBuilder]($fronte
 
 Several changes to the APIs for executing ECSql statements have been made to improve performance and flexibility. This involved breaking changes to the `query`, `queryRowCount`, and `restartQuery` methods of [IModelConnection]($frontend), [IModelDb]($backend), and [ECDb]($backend).
 
-- Previously there was no way to control the format of each row returned by the `query` and `restartQuery` methods, and the default format was verbose and inefficient. Now, these methods accept a [QueryRowFormat]($common) parameter describing the desired format. The default format returns each row as an array instead of an object.
-
 - The `query` and `restartQuery` methods used to take multiple arguments indicating a limit on the number of rows to return, a priority, a quota, and so on. These have been combined into a single [QueryOptions]($common) parameter.
 
+- Previously there was no way to control the format of each row returned by the `query` and `restartQuery` methods, and the default format was verbose and inefficient. Now, these methods accept a [QueryRowFormat]($common) as part of their [QueryOptions]($common) parameter describing the desired format. The default format returns each row as an array instead of an object.
 - The `query`, `restartQuery`, and `queryRowCount` methods used to accept the statement bindings as type `any[] | object`. The bindings are now specified instead as the more type-safe type [QueryBinder]($common).
 
 ### Binding parameters using QueryBinder
@@ -1433,16 +1549,16 @@ Now, you can bind a set of Ids as a parameter for the `IN` clause. The Ids will 
 The signature of the method has changed to:
 
 ```ts
-query(ecsql: string, params?: QueryBinder, rowFormat = QueryRowFormat.UseArrayIndexes, config?: QueryOptions): AsyncIterableIterator<any>;
+query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
 ```
 
-The `rowFormat` parameter defaults to `QueryRowFormat.Array`. That format is more efficient so its use is preferred, but it differs from the previous row format. You can upgrade existing code to use the old format with minimal changes. For example, if your existing code passes query parameters as an array, change it as follows:
+The `rowFormat` property of the `options` parameter defaults to `QueryRowFormat.UseECSqlPropertyIndexes`. That format is more efficient so its use is preferred, but it differs from the previous row format. You can upgrade existing code to use the old format with minimal changes. For example, if your existing code passes query parameters as an array, change it as follows:
 
 ```ts
   // Replace this:
   db.query("SELECT * FROM bis.Element WHERE ECInstanceId=?", ["0x1"]);
   // With this:
-  db.query("SELECT * FROM bis.Element WHERE ECInstanceId=?", QueryBinder.from(["0x1"]), QueryRowFormat.UseJsPropertyNames);
+  db.query("SELECT * FROM bis.Element WHERE ECInstanceId=?", QueryBinder.from(["0x1"]), { rowFormat: QueryRowFormat.UseJsPropertyNames });
   // The code that accesses the properties of each row can remain unchanged.
 ```
 
@@ -1452,7 +1568,7 @@ Similarly, if your existing code passes an object instead of an array as the que
   // Replace this:
   db.query("SELECT * FROM bis.Element WHERE ECInstanceId = :id", {id: "0x1"});
   // With this:
-  db.query("SELECT * FROM bis.Element WHERE ECInstanceId=?", QueryBinder.from({id: "0x1"}), QueryRowFormat.UseJsPropertyNames);
+  db.query("SELECT * FROM bis.Element WHERE ECInstanceId=?", QueryBinder.from({id: "0x1"}), { rowFormat: QueryRowFormat.UseJsPropertyNames });
   // The code that accesses the properties of each row can remain unchanged.
 ```
 
@@ -1502,11 +1618,7 @@ await IModelApp.startup({ localization: new ITwinLocalization(localizationOption
 
 In previous versions, the [Tool.register]($frontend) method took an optional argument to supply the localization object. Since it always existed on `IModelApp`, that argument served no purpose and is now removed. If you previously passed it, simply remove it.
 
-## Improve/Enhance particle systems
-
-Improvements were made to the performance of [ParticleCollectionBuilder]($frontend) and an optional rotationMatrix was added to [ParticleProps]($frontend) so that particles can be rotated.
-
-## Buildology
+## Buildology Updates
 
 `@itwin/build-tools` has bumped the [Typescript compilation target](https://www.typescriptlang.org/tsconfig#target) from [ES2017](https://262.ecma-international.org/8.0/) to [ES2019](https://262.ecma-international.org/10.0/).
 
@@ -1515,3 +1627,124 @@ All packages will continue to build a CommonJS variant, but will now deliver it 
 If you were previously importing directly from the `lib` directory (e.g. `import { ElectronHost } from "@itwin/core-electron/lib/ElectronBackend";`), you will need to update your code to import from the new directory, `lib/cjs`, (e.g. `import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";`).
 
 This also affects how you will import `*.scss` from the ui packages. If you were previously importing scss from the `lib` directory (e.g. `@import "~@itwin/ui-pkg/lib/ui-pkg/...";`), you will need to update your code to import from the new directory, `lib/esm`, (e.g. `@import "~@itwin/ui-pkg/lib/esm/ui-pkg/...";`).
+
+### Updates to @bentley/build-tools
+
+- Removed `test` and `test-tsnode` scripts from `@itwin/build-tools`. Please use mocha directly instead.
+- Removed TSLint support from `@itwin/build-tools`. If you're still using it, please switch to ESLint.
+- Removed legacy `.eslintrc.js` file from the same package. Instead, use `@itwin/eslint-plugin` and the `imodeljs-recommended` config included in it.
+- Dropped support for ESLint 6.x.
+
+## Simplification of CloudStorageService setup in iModelHost
+
+`IModelHostConfiguration.tileCacheCredentials` is changed to [IModelHostConfiguration.tileCacheAzureCredentials]($backend) and used for setting Azure cloud storage for tile cache.
+`IModelHost.tileCacheService` is moved to [IModelHostConfiguration.tileCacheService]($backend) and is used to supply a different implementation for any service provider by setting this property with a custom [CloudStorageService]($backend).
+If both `tileCacheAzureCredentials` and `tileCacheService` omitted - local cache will be used, if both set - error will be thrown.
+
+To use Azure cloud storage for tile cache set [IModelHostConfiguration.tileCacheAzureCredentials]($backend) property:
+
+```ts
+  const config = new IModelHostConfiguration();
+  // Replace this:
+  config.tileCacheCredentials = {
+    service: "azure",
+    account: "account",
+    accessKey: "accessKey",
+  };
+  // With this:
+  config.tileCacheAzureCredentials = {
+    account: "account",
+    accessKey: "accessKey",
+  };
+```
+
+To use AliCloud storage set [IModelHostConfiguration.tileCacheService]($backend) property with provided [AliCloudStorageService]($backend) implementation:
+
+```ts
+  import { AliCloudStorageService } from "@itwin/core-backend";
+
+  const config = new IModelHostConfiguration();
+  // Replace this:
+  config.tileCacheCredentials = {
+    service: "alicloud",
+    account: "account",
+    accessKey: "accessKey",
+  };
+  // With this:
+  config.tileCacheService = new AliCloudStorageService({
+    region: "region",
+    accessKeyId: "accessKeyId",
+    accessKeySecret: "accessKeySecret",
+  });
+```
+
+To use any other external storage set [IModelHostConfiguration.tileCacheService]($backend) with a custom [CloudStorageService]($backend) implementation:
+
+```ts
+  const config = new IModelHostConfiguration();
+  // Replace this:
+  config.tileCacheCredentials = {
+    service: "external",
+    account: "",
+    accessKey: "",
+  };
+  IModelHost.tileCacheService = new CustomCloudStorageService();
+  // With this:
+  config.tileCacheService = new CustomCloudStorageService();
+```
+
+## Coordinate Conversion between iModel GeographicCRS and any other GeographicCRS
+
+Coordinate conversions is now possible between the iModel Geographic Coordinate Reference System and any other Geographic Coordinate Reference System.
+Prior to this version, coordinate conversions were limited to those between the iModel Geographic Coordinate Reference System and latitude/longitude of a specified datum, usually WGS84.
+
+To use, in the backend create either a [IModelCoordinatesRequestProps]($common) or a [GeoCoordinatesRequestProps]($common) depending on the direction coordinates are to be converted. Set the [IModelCoordinatesRequestProps.source]($common) or the [GeoCoordinatesRequestProps.target]($common) property to a string containing either the name of a datum (typically WGS84) or an empty string to specify the iModel Geographic CRS native datum or a stringified version of a [GeographicCRSProps]($common) containing the definition of the source or target of the coordinate conversion. The request can be added coordinates to be converted and fed in methods iModel.getGeoCoordinatesFromIModelCoordinates or iModel.getIModelCoordinatesFromGeoCoordinates.
+
+Specification of the GeographicCRS can be complete or incomplete. Although fully-defined custom Geographic CRS are supported, most of the time simply specifying the id or the epsg code of the GeographicCRS is sufficient.
+
+Here are examples of typical GeographicCRS:
+
+```ts
+{ horizontalCRS: { id: "CA83-II" }, verticalCRS: { id: "NAVD88" } }
+```
+
+or
+
+```ts
+{ horizontalCRS: { epsg: 26942 }, verticalCRS: { id: "NAVD88" } },
+```
+
+These identifiers refer to either the key-name of a Geographic CRS in the list of the dictionary or a known EPSG code.
+
+More complex Geographic CRS can also be used such as the following user-defined:
+
+```ts
+      {
+        horizontalCRS: {
+          id: "UserDef-On-NAD83/2011",
+          description: "User Defined",
+          datumId: "NAD83/2011",
+          unit: "Meter",
+          projection: {
+            method: "TransverseMercator",
+            centralMeridian: -1.5,
+            latitudeOfOrigin: 52.30,
+            scaleFactor: 1.0,
+            falseEasting: 198873.0046,
+            falseNorthing: 375064.3871,
+          },
+        },
+        verticalCRS: {
+          id: "GEOID",
+        },
+      }
+```
+
+On the frontend the [GeoConverter]($frontend) class has been modified to accept either a string containing the datum or a [GeographicCRSProps]($common) of a similar format retaining cache capability as before for either format.
+
+**NOTE**: The [IModelCoordinatesRequestProps.source]($common) and the [GeoCoordinatesRequestProps.target]($common) were renamed from previous version that used the sourceDatum and targetDatum properties.
+
+## New clustering algorithm for MarkerSet
+
+The [MarkerSet]($frontend) class now clusters markers by the screen distance between their positions rather than overlap of their rectangles, so the `Cluster.rect` property is no longer needed and has been removed. Instead, there is a new member `MarkerSet.clusterRadius` that controls when nearby Markers are clustered. See its documentation for details.
+

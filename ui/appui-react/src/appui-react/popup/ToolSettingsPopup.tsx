@@ -15,7 +15,8 @@ import { PositionPopup, PositionPopupContent } from "./PositionPopup";
 import { ComponentGenerator } from "../uiprovider/ComponentGenerator";
 import { DialogGridContainer } from "../uiprovider/DefaultDialogGridContainer";
 
-/** @alpha */
+/** Props for defining a popup tool settings component
+ * @beta */
 export interface ToolSettingsPopupProps extends PopupPropsBase {
   dataProvider: DialogLayoutDataProvider;
   relativePosition: RelativePosition;
@@ -29,7 +30,7 @@ interface ToolSettingsPopupState {
 }
 
 /** Popup component for Tool Settings
- * @alpha
+ * @beta
  */
 export class ToolSettingsPopup extends React.PureComponent<ToolSettingsPopupProps, ToolSettingsPopupState> {
 

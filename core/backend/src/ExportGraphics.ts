@@ -6,7 +6,7 @@
  * @module iModels
  */
 
-import { Id64Array, Id64String } from "@itwin/core-bentley";
+import { assert, Id64Array, Id64String } from "@itwin/core-bentley";
 import { IndexedPolyface, Polyface, PolyfaceData, PolyfaceVisitor } from "@itwin/core-geometry";
 import { GeometryClass } from "@itwin/core-common";
 
@@ -113,7 +113,7 @@ export interface ExportPartInstanceInfo {
   /** The base display properties when the [GeometryPart]($core-backend) was referenced. */
   displayProps: ExportPartDisplayInfo;
   /** A row-major storage 4x3 transform for this instance.
-   *  See export-gltf under test-apps in the iModel.js monorepo for a working reference.
+   *  See export-gltf under test-apps in the iTwin.js monorepo for a working reference.
    */
   transform?: Float64Array;
 }
@@ -278,12 +278,14 @@ export namespace ExportGraphics {
       polyface.data.point.pushXYZ(p[i], p[i + 1], p[i + 2]);
 
     const n: Float32Array = mesh.normals;
+    assert(undefined !== polyface.data.normal);
     for (let i = 0; i < n.length; i += 3)
-      polyface.data.normal!.pushXYZ(n[i], n[i + 1], n[i + 2]);
+      polyface.data.normal.pushXYZ(n[i], n[i + 1], n[i + 2]);
 
     const uv: Float32Array = mesh.params;
+    assert(undefined !== polyface.data.param);
     for (let i = 0; i < uv.length; i += 2)
-      polyface.data.param!.pushXY(uv[i], uv[i + 1]);
+      polyface.data.param.pushXY(uv[i], uv[i + 1]);
 
     const indices = mesh.indices;
     const addIndex = (idx: number) => {

@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 /** @packageDocumentation
  * @module Frontstage
  */
@@ -111,7 +112,7 @@ export interface FrontstageProps extends CommonProps {
 
 interface FrontstageState {
   isUiVisible: boolean;
-  widgetIdToContent: Partial<{ [id in WidgetZoneId]: HTMLDivElement | undefined }>;
+  widgetIdToContent: Partial<{ [id in WidgetZoneId]: HTMLDivElement | undefined }>; // eslint-disable-line deprecation/deprecation
 }
 
 /** Frontstage React component.
@@ -119,8 +120,9 @@ interface FrontstageState {
  * @public
  */
 export class Frontstage extends React.Component<FrontstageProps, FrontstageState> {
-  private static _zoneIds: ReadonlyArray<WidgetZoneId> = widgetZoneIds.filter((z) => z !== 8);
-  private _contentRefs = new Map<WidgetZoneId, React.Ref<HTMLDivElement>>();
+  private _isMounted = false;
+  private static _zoneIds: ReadonlyArray<WidgetZoneId> = widgetZoneIds.filter((z) => z !== 8); // eslint-disable-line deprecation/deprecation
+  private _contentRefs = new Map<WidgetZoneId, React.Ref<HTMLDivElement>>(); // eslint-disable-line deprecation/deprecation
   private _zonesMeasurer = React.createRef<HTMLDivElement>();
   private _floatingZonesMeasurer = React.createRef<HTMLDivElement>();
   private _zonesStyle: React.CSSProperties = {
@@ -146,6 +148,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
    * @internal
    */
   public override async componentDidMount() {
+    this._isMounted = true;
     UiFramework.onUiVisibilityChanged.addListener(this._uiVisibilityChanged);
     UiFramework.widgetManager.onWidgetsChanged.addListener(this._handleWidgetsChanged);
     UiItemsManager.onUiProviderRegisteredEvent.addListener(this._handleUiProviderRegisteredEvent);
@@ -166,12 +169,15 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
    * @internal
    */
   public override componentWillUnmount() {
+    this._isMounted = false;
     UiFramework.onUiVisibilityChanged.removeListener(this._uiVisibilityChanged);
     UiItemsManager.onUiProviderRegisteredEvent.removeListener(this._handleUiProviderRegisteredEvent);
   }
 
   private _uiVisibilityChanged = (args: UiVisibilityEventArgs): void => {
-    this.setState({ isUiVisible: args.visible });
+    // istanbul ignore else
+    if (this._isMounted)
+      this.setState({ isUiVisible: args.visible });
   };
 
   private _handleWidgetsChanged = (_args: WidgetsChangedEventArgs): void => {
@@ -192,7 +198,8 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
       const frontstageDef = this.props.runtimeProps.frontstageDef;
       frontstageDef.updateWidgetDefs();
       FrontstageManager.onWidgetDefsUpdatedEvent.emit();
-      this.forceUpdate();
+      if (this._isMounted)
+        this.forceUpdate();
     }
   }
 
@@ -214,7 +221,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
     return undefined;
   }
 
-  private static getZoneElement(zoneId: WidgetZoneId, props: FrontstageProps): React.ReactElement<ZoneProps> | undefined {
+  private static getZoneElement(zoneId: WidgetZoneId, props: FrontstageProps): React.ReactElement<ZoneProps> | undefined { // eslint-disable-line deprecation/deprecation
     switch (zoneId) {
       case ZoneLocation.TopLeft:
         return props.contentManipulationTools ? props.contentManipulationTools : props.topLeft;   // eslint-disable-line deprecation/deprecation
@@ -281,17 +288,19 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
     return panelElement;
   }
 
-  private _getContentRef = (widget: WidgetZoneId) => {
+  private _getContentRef = (widget: WidgetZoneId) => { // eslint-disable-line deprecation/deprecation
     const ref = this._contentRefs.get(widget);
     if (ref)
       return ref;
     const newRef = (el: HTMLDivElement | null) => {
-      this.setState((prevState) => ({
-        widgetIdToContent: {
-          ...prevState.widgetIdToContent,
-          [widget]: el === null ? undefined : el,
-        },
-      }));
+      if (this._isMounted) {
+        this.setState((prevState) => ({
+          widgetIdToContent: {
+            ...prevState.widgetIdToContent,
+            [widget]: el === null ? undefined : el,
+          },
+        }));
+      }
     };
     this._contentRefs.set(widget, newRef);
     return newRef;
@@ -358,8 +367,9 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
     return null;
   }
 
+  // eslint-disable-next-line deprecation/deprecation
   private cloneZoneElements(zoneIds: ReadonlyArray<WidgetZoneId>, runtimeProps: FrontstageRuntimeProps): React.ReactNode[] {
-    return zoneIds.map((zoneId: WidgetZoneId) => {
+    return zoneIds.map((zoneId: WidgetZoneId) => { // eslint-disable-line deprecation/deprecation
       const zoneElement = Frontstage.getZoneElement(zoneId, this.props);
       if (!zoneElement || !React.isValidElement(zoneElement))
         return null;
@@ -411,7 +421,9 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
     });
   }
 
+  // eslint-disable-next-line deprecation/deprecation
   private cloneWidgetContentElements(zones: ReadonlyArray<WidgetZoneId>, runtimeProps: FrontstageRuntimeProps): React.ReactNode[] {
+    // eslint-disable-next-line deprecation/deprecation
     const widgets = zones.reduce<Array<{ id: WidgetZoneId, def: WidgetDef, tabIndex: number }>>((prev, zoneId) => {
       const zoneDef = runtimeProps.zoneDefProvider.getZoneDef(zoneId);
 
@@ -511,7 +523,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
 }
 
 interface WidgetContentRendererProps {
-  anchor: HorizontalAnchor;
+  anchor: HorizontalAnchor; // eslint-disable-line deprecation/deprecation
   isHidden: boolean;
   renderTo: HTMLDivElement | undefined;
   toolSettingsMode: ToolSettingsWidgetMode | undefined;
@@ -523,6 +535,7 @@ interface WidgetContentRendererState {
 }
 
 class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererProps, WidgetContentRendererState> {
+  private _isMounted = false;
   private _content = document.createElement("span");
   public constructor(props: WidgetContentRendererProps) {
     super(props);
@@ -533,6 +546,7 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
   }
 
   public override componentDidMount() {
+    this._isMounted = true;
     FrontstageManager.onWidgetStateChangedEvent.addListener(this._handleWidgetStateChangedEvent);
     FrontstageManager.onToolActivatedEvent.addListener(this._handleToolActivatedEvent);
 
@@ -545,6 +559,9 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
   }
 
   public override componentDidUpdate(prevProps: WidgetContentRendererProps) {
+    // istanbul ignore next
+    if (!this._isMounted)
+      return;
     if (this.props.isHidden !== prevProps.isHidden) {
       this._content.style.display = this.props.isHidden ? "none" : "flex";
     }
@@ -561,6 +578,7 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
   }
 
   public override componentWillUnmount() {
+    this._isMounted = false;
     this._content.parentNode && this._content.parentNode.removeChild(this._content);
     FrontstageManager.onWidgetStateChangedEvent.removeListener(this._handleWidgetStateChangedEvent);
     FrontstageManager.onToolActivatedEvent.removeListener(this._handleToolActivatedEvent);
@@ -591,13 +609,13 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
   }
 
   private _handleWidgetStateChangedEvent = (args: WidgetStateChangedEventArgs) => {
-    if (this.props.widgetDef !== args.widgetDef)
+    if (this.props.widgetDef !== args.widgetDef || !this._isMounted)
       return;
     this.forceUpdate();
   };
 
   private _handleToolActivatedEvent = () => {
-    if (this.props.toolSettingsMode === undefined)
+    if (this.props.toolSettingsMode === undefined || !this._isMounted)
       return;
     // force update when tool is activated
     this.setState((prevState) => ({ widgetKey: prevState.widgetKey + 1 }));
@@ -605,10 +623,11 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
 }
 
 /** @internal */
+// eslint-disable-next-line deprecation/deprecation
 export const getExtendedZone = (zoneId: WidgetZoneId, zones: ZonesManagerProps, defProvider: ZoneDefProvider): ZoneManagerProps => {
   const zone = zones.zones[zoneId];
   if (zoneId === 1 || zoneId === 3) {
-    let extendOverId: WidgetZoneId = zoneId;
+    let extendOverId: WidgetZoneId = zoneId; // eslint-disable-line deprecation/deprecation
     const zonesManager = FrontstageManager.NineZoneManager.getZonesManager();
     let bottomZoneId = zonesManager.bottomZones.getInitial(extendOverId);
     while (bottomZoneId !== undefined) {
