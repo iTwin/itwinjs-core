@@ -1512,8 +1512,6 @@ describe("IModelTransformer", () => {
     const sourceDb  = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "deferred-element-with-aspects"} });
 
     const myPhysicalModelId = PhysicalModel.insert(sourceDb, IModelDb.rootSubjectId, "MyPhysicalModel");
-    // because they are definition elements, display styles will be transformed first, but deferred until the excludedElementIds
-    // (which are predecessors)
     const mySpatialCategId = SpatialCategory.insert(sourceDb, IModelDb.dictionaryId, "MySpatialCateg", { color: ColorDef.black.toJSON() });
     const myPhysicalObjId = sourceDb.elements.insertElement({
       classFullName: PhysicalObject.classFullName,
@@ -1524,26 +1522,39 @@ describe("IModelTransformer", () => {
       geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1)),
       placement: Placement3d.fromJSON({ origin: { x: 1 }, angles: {} }),
     } as PhysicalElementProps);
-    DisplayStyle3d.insert(sourceDb, IModelDb.dictionaryId, "MyDisplayStyle3d", {
+    // because they are definition elements, display styles will be transformed first, but deferred until the excludedElements
+    // (which are predecessors) are inserted
+    const myDisplayStyleId = DisplayStyle3d.insert(sourceDb, IModelDb.dictionaryId, "MyDisplayStyle3d", {
       excludedElements: [myPhysicalObjId],
     });
     const _partitionAspectId = sourceDb.elements.insertAspect({
       classFullName: "BisCore:TextAnnotationData",
-      element: { id:myPhysicalModelId },
+      element: { id: myDisplayStyleId },
     });
     sourceDb.saveChanges();
 
     const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "PreserveIdOnTestModel-Target.bim");
     const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
 
-    const transformer = new IModelTransformer(sourceDb, targetDb, { includeSourceProvenance: true });
+    class PublicSkipElementTransformer extends IModelTransformer {
+      public override skipElement(...args: Parameters<IModelTransformer["skipElement"]>) {
+        super.skipElement(...args);
+      }
+    }
+
+    const transformer = new PublicSkipElementTransformer(sourceDb, targetDb, { includeSourceProvenance: true });
+    const skipElementSpy = sinon.spy(transformer, "skipElement");
+
     await transformer.processAll();
+    assert(skipElementSpy.called); // make sure an element was deferred during the transformation
+
     targetDb.saveChanges();
 
     const sourceContent = await getAllElementsInvariants(sourceDb);
     const targetContent = await getAllElementsInvariants(targetDb);
     expect(targetContent).to.deep.equal(sourceContent);
 
+    sinon.restore();
     sourceDb.close();
     targetDb.close();
   });
