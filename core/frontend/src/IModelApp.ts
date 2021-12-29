@@ -114,7 +114,7 @@ export interface IModelAppOptions {
   tentativePoint?: TentativePoint;
   /** @internal */
   quantityFormatter?: QuantityFormatter;
-  /** @internal */
+  /** If present, supplies an implementation of the render system, or options for initializing the default render system. */
   renderSys?: RenderSystem | RenderSystem.Options;
   /** If present, supplies the [[UiAdmin]] for this session. */
   uiAdmin?: UiAdmin;

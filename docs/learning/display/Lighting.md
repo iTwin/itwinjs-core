@@ -9,7 +9,7 @@ However, the renderer does provide a wide variety of options for customizing the
 - @[LightSettings]($common) can define directional, portrait, ambient, and hemisphere light sources; as well as control over specular, cel-shading, and Fresnel effects.
 - @[SolarShadowSettings]($common) produce shadows based on the real-world sun position at a given location and date.
 - @[AmbientOcclusion]($common) can simulate shadows.
-- An @[Environment]($frontend) can provide a decorative sky box or sky sphere.
+- An [Environment]($common) can provide a decorative sky box or sky sphere.
 
 [This sample](https://www.itwinjs.org/sample-showcase/?group=Viewer+Features&sample=display-styles-sample&imodel=Villa) provides examples of various display styles utilizing a variety of these settings.
 

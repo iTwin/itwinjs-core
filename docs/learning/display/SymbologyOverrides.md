@@ -1,6 +1,6 @@
 # Appearance Overrides
 
-The [iTwin.js renderer](./frontend-overview.md) provides the ability to dynamically override various aspects of the appearance of @[Feature]($common)s (roughly correlating to @[GeomtricElement]($backend)s) within tiles. The renderer uses the [feature table](./TileFormat#feature-table) embedded in each tile to produce a lookup table from which the vertex shader can obtain the overrides. The following aspects can be overridden using @[FeatureOverrides]($common):
+The [iTwin.js renderer](./frontend-overview.md) provides the ability to dynamically override various aspects of the appearance of @[Feature]($common)s (roughly correlating to @[GeometricElement]($backend)s) within tiles. The renderer uses the [feature table](./TileFormat.md#feature-tables) embedded in each tile to produce a lookup table from which the vertex shader can obtain the overrides. The following aspects can be overridden using @[FeatureOverrides]($common):
 
 - Color and transparency.
 - Line width and style.
@@ -13,7 +13,7 @@ Appearance overrides can be applied on the basis of any combination of model, el
 
 - The visible categories specified by the @[CategorySelector]($backend);
 - The per-@[Model]($backend), per-@[SubCategory]($backend), and per-@[GeometryClass]($common) overrides specified by the display style;
-- The @[RenderTimeline]($common) script controlling the view's animation;
+- The [RenderTimeline]($backend) script controlling the view's animation;
 - The display style's @[PlanProjectionSettings]($common);
 - @[FeatureAppearanceProvider]($common)s supplied by tile trees;
 - Any number of @[FeatureOverrideProvider]($frontend)s registered with the @[Viewport]($frontend).
