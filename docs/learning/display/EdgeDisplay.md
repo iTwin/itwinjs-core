@@ -1,6 +1,6 @@
 # Edge Display
 
-In many CAD-oriented workflows, visualization of the edges of a surface can be as important as visualization of the surface. The [iTwin.js renderer](./frontend-overview.md) supports displaying edges in wireframe mode (no surfaces) or along with their surfaces. When both surfaces and edges are displayed, special rendering techniques are employed to ensure that edges always draw in front of their corresponding surface, to prevent the z-fighting that would otherwise occur.
+In many CAD-oriented workflows, visualization of the edges of a surface can be as important as visualization of the surface. The [iTwin.js renderer](./index.md) supports displaying edges in wireframe mode (no surfaces) or along with their surfaces. When both surfaces and edges are displayed, special rendering techniques are employed to ensure that edges always draw in front of their corresponding surface, to prevent the z-fighting that would otherwise occur.
 
 ## Render modes
 

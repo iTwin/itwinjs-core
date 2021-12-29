@@ -1,6 +1,6 @@
 # Clipping and Section-cut Graphics
 
-The [iTwin.js renderer](./frontend-overview.md) supports clipping out portions of the geometry in a view using [ClipVector]($geometry)s. This is useful for isolating regions of interest within an iModel, visualization of [section drawings](./DrawingsAndSheets.md), and [hyper-modeling](./HyperModeling.md), among other use cases.
+The [iTwin.js renderer](./index.md) supports clipping out portions of the geometry in a view using [ClipVector]($geometry)s. This is useful for isolating regions of interest within an iModel, visualization of [section drawings](./DrawingsAndSheets.md), and [hyper-modeling](./HyperModeling.md), among other use cases.
 
 # Clipping
 

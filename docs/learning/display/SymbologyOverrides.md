@@ -1,6 +1,6 @@
 # Appearance Overrides
 
-The [iTwin.js renderer](./frontend-overview.md) provides the ability to dynamically override various aspects of the appearance of [Feature]($common)s (roughly correlating to [GeometricElement]($backend)s) within tiles. The renderer uses the [feature table](./TileFormat.md#feature-tables) embedded in each tile to produce a lookup table from which the vertex shader can obtain the overrides. The following aspects can be overridden using [FeatureOverrides]($common):
+The [iTwin.js renderer](./index.md) provides the ability to dynamically override various aspects of the appearance of [Feature]($common)s (roughly correlating to [GeometricElement]($backend)s) within tiles. The renderer uses the [feature table](./TileFormat.md#feature-tables) embedded in each tile to produce a lookup table from which the vertex shader can obtain the overrides. The following aspects can be overridden using [FeatureOverrides]($common):
 
 - Color and transparency.
 - Line width and style.
