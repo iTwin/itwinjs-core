@@ -15,6 +15,10 @@ The lighting and environment of a [view](../frontend/Views.md) can be customized
 
 [This sample](https://www.itwinjs.org/sample-showcase/?group=Viewer+Features&sample=display-styles-sample&imodel=Villa) provides examples of various display styles utilizing a variety of these settings.
 
+The images below illustrate the effects of different lighting and environment settings upon the same view.
+
+![Display styles](../../changehistory/assets/display-styles.jpg)
+
 ## Materials
 
 [RenderMaterialElement]($backend)s in an iModel can store many [RenderMaterial]($common) properties for use by a renderer. However, the WebGL-based renderer currently supports only a small subset of these properties:
