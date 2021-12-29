@@ -61,6 +61,10 @@
       "Method": {
         "ControlPoints": "Control Points",
         "ThroughPoints": "Through Points"
+      },
+      "Prompts": {
+        "StartTangent": "Define start tangent",
+        "EndTangent": "Define end tangent"
       }
     },
     "CreateCircle": {

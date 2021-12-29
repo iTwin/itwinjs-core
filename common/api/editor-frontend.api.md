@@ -216,6 +216,8 @@ export class CreateArcTool extends CreateOrContinuePathTool {
     // (undocumented)
     protected createNewCurvePrimitive(ev: BeButtonEvent, isDynamics: boolean): CurvePrimitive | undefined;
     // (undocumented)
+    protected getToolSettingPropertyLocked(property: DialogProperty<any>): DialogProperty<any> | undefined;
+    // (undocumented)
     static iconSpec: string;
     // (undocumented)
     protected isComplete(_ev: BeButtonEvent): boolean;
@@ -343,6 +345,8 @@ export class CreateCircleTool extends CreateOrContinuePathTool {
     protected get createCurvePhase(): CreateCurvePhase;
     // (undocumented)
     protected createNewCurvePrimitive(ev: BeButtonEvent, isDynamics: boolean): CurvePrimitive | undefined;
+    // (undocumented)
+    protected getToolSettingPropertyLocked(property: DialogProperty<any>): DialogProperty<any> | undefined;
     // (undocumented)
     static iconSpec: string;
     // (undocumented)
@@ -613,6 +617,8 @@ export class CreateRectangleTool extends CreateOrContinuePathTool {
     protected createNewCurvePrimitive(ev: BeButtonEvent, isDynamics: boolean): CurvePrimitive | undefined;
     // (undocumented)
     protected createNewPath(placement: PlacementProps): JsonGeometryStream | FlatBufferGeometryStream | undefined;
+    // (undocumented)
+    protected getToolSettingPropertyLocked(property: DialogProperty<any>): DialogProperty<any> | undefined;
     // (undocumented)
     static iconSpec: string;
     // (undocumented)
@@ -1469,10 +1475,14 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
     // (undocumented)
     acceptCoordinates(): Promise<void>;
     // (undocumented)
+    protected acceptDefaultLocation(): void;
+    // (undocumented)
     acceptKnownLocation(ev: BeButtonEvent): void;
     // (undocumented)
     get altitude(): number;
     set altitude(value: number);
+    // (undocumented)
+    get altitudeProperty(): DialogProperty<number>;
     // (undocumented)
     applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean>;
     // (undocumented)
@@ -1493,8 +1503,12 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
     get latitude(): number;
     set latitude(value: number);
     // (undocumented)
+    get latitudeProperty(): DialogProperty<number>;
+    // (undocumented)
     get longitude(): number;
     set longitude(value: number);
+    // (undocumented)
+    get longitudeProperty(): DialogProperty<number>;
     // (undocumented)
     static get maxArgs(): number;
     // (undocumented)
@@ -1502,6 +1516,8 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
     // (undocumented)
     get north(): number;
     set north(value: number);
+    // (undocumented)
+    get northProperty(): DialogProperty<number>;
     // (undocumented)
     onCleanup(): Promise<void>;
     // (undocumented)
