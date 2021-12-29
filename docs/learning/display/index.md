@@ -1,6 +1,6 @@
 # The iTwin.js Display System
 
-The iTwin.js display system is responsible for producing and rendering graphics to enable visualization of the contents of an iTwin. Those contents can include iModels, reality models, IoT sensor data, map imagery, and other data sources. Applications can also provide their own graphics via [Decorators](../frontend/ViewDecorations.md) and [TiledGraphicsProvider](./TileGraphicsProvider.md)s.
+The iTwin.js display system is responsible for producing and rendering graphics to enable visualization of the contents of an iTwin. Those contents can include iModels, reality models, IoT sensor data, map imagery, and other data sources. Applications can also provide their own graphics via [Decorators](../frontend/ViewDecorations.md) and [TiledGraphicsProvider](./TiledGraphicsProvider.md)s.
 
 The display system is divided into two subsystems:
 - The WebGL-based tile renderer running on the [frontend](../frontend/index.md), responsible for displaying the contents of [Viewport]($frontend)s; and
@@ -25,7 +25,6 @@ This documentation concerns itself primarily with the frontend portion of the di
 - [Thematic visualization](./ThematicDisplay.md)
 - [Timeline animation](./TimelineAnimation.md)
 - [Element graphics](./ElementGraphics.md)
-- [glTF graphics](./glTF.md)
 - [Multi-sample anti-aliasing](./MSAA.md)
 - [Wiremesh display](./Wiremesh.md)
 
