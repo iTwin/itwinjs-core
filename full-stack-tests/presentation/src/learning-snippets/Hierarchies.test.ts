@@ -883,8 +883,9 @@ describe("Learning Snippets", () => {
 
         it("uses `relationshipPaths` attribute", async () => {
           // __PUBLISH_EXTRACT_START__ Hierarchies.RelatedInstanceNodesSpecification.RelationshipPaths.Ruleset
-          // The ruleset has a specification that returns nodes for instances of "BisCore.PhysicalModel" class and all
-          // its subclasses.
+          // The ruleset has a specification that returns PhysicalModel root nodes. The child node specification
+          // returns GeometricElement3d instance nodes that are related to parent Model through ModelContainsElements
+          // relationship by following it in forward direction (from Model to Element).
           const ruleset: Ruleset = {
             id: "example",
             rules: [{
@@ -893,7 +894,6 @@ describe("Learning Snippets", () => {
                 specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
                 classes: { schemaName: "BisCore", classNames: ["PhysicalModel"] },
                 groupByClass: false,
-                groupByLabel: true,
               }],
             }, {
               ruleType: RuleTypes.ChildNodes,
@@ -936,6 +936,108 @@ describe("Learning Snippets", () => {
 
       });
 
+      describe("CustomNodeSpecification", () => {
+
+        it("uses `type` attribute", async () => {
+          // __PUBLISH_EXTRACT_START__ Hierarchies.CustomNodeSpecification.Type.Ruleset
+          // The ruleset has a root node specification that returns a single custom node with specified parameters.
+          const ruleset: Ruleset = {
+            id: "example",
+            rules: [{
+              ruleType: RuleTypes.RootNodes,
+              specifications: [{
+                specType: ChildNodeSpecificationTypes.CustomNode,
+                type: "T_MY_NODE",
+                label: "My Node",
+              }],
+            }],
+          };
+          // __PUBLISH_EXTRACT_END__
+          printRuleset(ruleset);
+
+          const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+          expect(nodes.length).to.eq(1);
+          expect(nodes).to.containSubset([{
+            key: { type: "T_MY_NODE" },
+          }]);
+        });
+
+        it("uses `label` attribute", async () => {
+          // __PUBLISH_EXTRACT_START__ Hierarchies.CustomNodeSpecification.Label.Ruleset
+          // The ruleset has a root node specification that returns a single custom node with specified parameters.
+          const ruleset: Ruleset = {
+            id: "example",
+            rules: [{
+              ruleType: RuleTypes.RootNodes,
+              specifications: [{
+                specType: ChildNodeSpecificationTypes.CustomNode,
+                type: "T_MY_NODE",
+                label: "My Node",
+              }],
+            }],
+          };
+          // __PUBLISH_EXTRACT_END__
+          printRuleset(ruleset);
+
+          const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+          expect(nodes.length).to.eq(1);
+          expect(nodes).to.containSubset([{
+            label: { displayValue: "My Node" },
+          }]);
+        });
+
+        it("uses `description` attribute", async () => {
+          // __PUBLISH_EXTRACT_START__ Hierarchies.CustomNodeSpecification.Description.Ruleset
+          // The ruleset has a root node specification that returns a single custom node and assigns it a description.
+          const ruleset: Ruleset = {
+            id: "example",
+            rules: [{
+              ruleType: RuleTypes.RootNodes,
+              specifications: [{
+                specType: ChildNodeSpecificationTypes.CustomNode,
+                type: "T_MY_NODE",
+                label: "My Node",
+                description: "My node's description",
+              }],
+            }],
+          };
+          // __PUBLISH_EXTRACT_END__
+          printRuleset(ruleset);
+
+          const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+          expect(nodes.length).to.eq(1);
+          expect(nodes).to.containSubset([{
+            description: "My node's description",
+          }]);
+        });
+
+        it("uses `imageId` attribute", async () => {
+          // __PUBLISH_EXTRACT_START__ Hierarchies.CustomNodeSpecification.ImageId.Ruleset
+          // The ruleset has a root node specification that returns a single custom node and assigns it an image identifier.
+          const ruleset: Ruleset = {
+            id: "example",
+            rules: [{
+              ruleType: RuleTypes.RootNodes,
+              specifications: [{
+                specType: ChildNodeSpecificationTypes.CustomNode,
+                type: "T_MY_NODE",
+                label: "My Node",
+                imageId: "my-icon-identifier",
+              }],
+            }],
+          };
+          // __PUBLISH_EXTRACT_END__
+          printRuleset(ruleset);
+
+          const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+          expect(nodes.length).to.eq(1);
+          expect(nodes).to.containSubset([{
+            imageId: "my-icon-identifier",
+          }]);
+        });
+
+      });
+
     });
 
   });
@@ -943,6 +1045,8 @@ describe("Learning Snippets", () => {
 });
 
 function printRuleset(ruleset: Ruleset) {
-  if (process.env.PRINT_RULESETS)
+  if (process.env.PRINT_RULESETS) {
+    // eslint-disable-next-line no-console
     console.log(JSON.stringify(ruleset, undefined, 2));
+  }
 }
