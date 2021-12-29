@@ -6,7 +6,7 @@ This feature can be enabled in one of two ways:
 
 ## Controlling anti-aliasing for a specific viewport
 
-[Viewport.antialiasSapmles]($frontend) gets or sets the number of MSAA samples for the viewport.
+[Viewport.antialiasSamples]($frontend) gets or sets the number of MSAA samples for the viewport.
 
 ```ts
   viewport.antialiasSamples = 8; // Enable 8x MSAA

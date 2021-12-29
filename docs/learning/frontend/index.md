@@ -4,7 +4,7 @@ The frontend of an app is concerned mainly with data visualization and user inte
 
 - Always runs in a web browser.
 - Gets access to the data in an iModel by making requests on a [backend](../backend/index.md).
-- May use the [display system](../display/overview.md) to visualize the contents of an iTwin.
+- May use the [display system](../display/index.md) to visualize the contents of an iTwin.
 
 The following app configurations are supported:
 

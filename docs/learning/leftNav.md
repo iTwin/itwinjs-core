@@ -26,7 +26,7 @@
 
 - [Tutorials](./tutorials/index.md)
 - [ECSQL](./ECSQL.md)
-- [Display system](./display/overview.md)
+- [Display system](./display/index.md)
 - [iModelHub](./iModelHub/index.md)
 - [Wire format](./WireFormat.md)
 - [Frequently asked questions](./faq.md)

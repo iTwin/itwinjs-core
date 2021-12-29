@@ -47,7 +47,7 @@ The iTwin.js library requires a JavaScript engine with es2017 support.
 - [App backend development](./backend/index)
 - [Classes packaged by both frontends and backends](./common/index)
 - [ECSQL](./ECSQL.md)
-- [Display system](./display/overview.md)
+- [Display system](./display/index.md)
 - [iModelHub](./iModelHub/index)
 - [Snapshot iModels](./backend/AccessingIModels.md)
 - [GeoLocation in iModels](./GeoLocation.md)
