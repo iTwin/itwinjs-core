@@ -18,3 +18,15 @@ Tools interact with classified regions of the reality model as if they were inte
 ## Planar clip masks
 
 As with planar classification, the design models are projected onto a plane to create a mask. The mask can then be used to clip out portions of a reality model, terrain, and/or map imagery. By default the portions that intersect the mask are clipped out, but this behavior can be inverted. The geometry used to construct the mask can be filtered based on model, subcategory, and element Id.
+
+A reality model of a quarry displayed with the background map - observe how the map obscures the excavated portions of the quarry:
+
+![Unmasked quarry reality model](../../changehistory/assets/PlanarMask_QuarryNoMask.jpg)
+
+The same quarry model, with the reality model fully masking the background map, revealing the excavation:
+
+![Masked quarry reality model](../../changehistory/assets/PlanarMask_QuarryMasked.jpg)
+
+A design model of an underground metro station and tunnels, combined with a reality model of the surrounding city. The design model is masked by the reality model such that the underground portions are displayed as semi-transparent:
+
+![Masked metro tunnels](../../changehistory/assets/PlanarMask_TunnelTransparent.jpg)
