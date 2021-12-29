@@ -18,7 +18,7 @@ Tiles produced by the iTwin.js backend use the [iModel tile format](./TileFormat
 
 ## Scene creation
 
-Every spatial view can aggregate any number of spatial models, as specified by its [ModelSelector]($backend). Each model is associated with one [TileTree]($frontend) which supplies the graphics for that model. The animated GIF below illustrates how a spatial view of an office building can be composed from four separate models: one supplying the ductwork, another the structural elements, a third the architectural components, and finally the landscaping.
+A spatial view can aggregate any number of spatial models, as specified by its [ModelSelector]($backend). Each model is associated with one [TileTree]($frontend) which supplies the graphics for that model. The animated GIF below illustrates how a spatial view of an office building can be composed from four separate models: one supplying the ductwork, another the structural elements, a third the architectural components, and finally the landscaping.
 
 ![Composing a view from multiple models](./assets/office-models.gif)
 
@@ -43,18 +43,13 @@ If the tile intersects the viewed volume and any clip volumes applied to the vie
 
 The graphics for all tiles selected for display are added to the scene graph. The renderer then deconstructs the graph into an ordered sequence of render commands organized into several render passes. For example, opaque geometry is drawn in one pass, and transparent geometry in a subsequent pass. Finally, these commands are submitted to the GPU and the new image is blitted to the screen.
 
-## Resource management
-
-
---- --- ----
-
 ## Tile loading
 
-A tile typically comes into existence with no graphics - its graphics are only loaded when (if) the tile is selected for display during scene creation. The [TileAdmin]($frontend) maintains a queue of tile content requests. At any given time, a maximum of N content requests may be "in flight"; the rest reside on a priority queue. The precise maximum depends on the application configuration; for web apps, it defaults to 10 to account for limitations of HTTP/1.1; for desktop and mobile apps, it is based on the hardware concurrency of the client device. Pending requests are removed from the queue when canceled - e.g., if the viewing frustum changes such that the tile's graphics are no longer required for display in any viewport.
+A tile typically comes into existence with no graphics - its graphics are only loaded when (if) the tile is selected for display during scene creation. The [TileAdmin]($frontend) maintains a queue of tile content requests. At any given time, a maximum of N content requests may be "in flight"; the rest reside on a priority queue. The precise maximum depends on the application configuration; for web apps, it defaults to 10 to account for limitations of HTTP/1.1; for desktop and mobile apps, it is based on the hardware concurrency of the client device. Pending requests are removed from the queue upon cancellation - e.g., if the viewing frustum changes such that the tile's graphics are no longer required for display in any viewport.
 
 ## Resource management
 
 Tile graphics consume graphics memory, and the tiles themselves consume JavaScript heap memory. Tiles are routinely discarded after a configurable period of disuse, along with their WebGL resources and all of their descendants. Entire tile trees are likewise discarded after a (usually longer) period of disuse.
 
-Each tile keeps track of the total amount of memory it has requested from WebGL. The [TileAdmin]($frontend) can be configured with a graphics memory limit; if the total amount of memory consumed by tiles exceeds this limit, the graphics of the least-recently-used tiles are discarded until the limit has been satisfied. The tiles themselves are not discarded; nor are the graphics of any tile that is currently selected for display in any viewport. This limit requires careful balancing: a limit too low may cause excessive repeated requests for the same tile content, while a limit too high risks exceeding the client's available graphics memory, typically resulting in context loss.
+Each tile keeps track of the total amount of memory it has requested from WebGL. [TileAdmin.gpuMemoryLimit]($frontend) can be configured to impose limits on the amount of graphics memory consumed; if the total amount of memory consumed by tiles exceeds this limit, the graphics of the least-recently-used tiles are discarded until the limit has been satisfied. The tiles themselves are not discarded; nor are the graphics of any tile that is currently selected for display in any viewport. This limit requires careful balancing: a limit too low may cause excessive repeated requests for the same tile content, while a limit too high risks exceeding the client's available graphics memory, typically resulting in context loss.
 
