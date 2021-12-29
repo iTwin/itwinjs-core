@@ -10,7 +10,7 @@ The display system can aggregate different types of tiles from a broad variety o
 - Map imagery from a wide variety of sources including [Bing](https://www.microsoft.com/en-us/maps) and [MapBox](https://www.mapbox.com/);
 - 3d world-wide terrain meshes from [Cesium ION](https://cesium.com/platform/cesium-ion/content/cesium-world-terrain/);
 - World-wide building meshes supplied by [OpenStreetMap](https://osmbuildings.org/);
-- 3d tiles of any format supplied by an application via [TiledGraphicsProvider](./TileGraphicsProvider.md)s;
+- 3d tiles of any format supplied by an application via [TiledGraphicsProvider](./TiledGraphicsProvider.md)s;
 
 Cesium's [3d tiles reference card](https://github.com/CesiumGS/3d-tiles/blob/main/3d-tiles-reference-card.pdf) provides a good overview of general concepts, along with some details specific to the standard 3d tile formats.
 
