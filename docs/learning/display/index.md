@@ -25,7 +25,7 @@ This documentation concerns itself primarily with the frontend portion of the di
 - [Thematic visualization](./ThematicDisplay.md)
 - [Timeline animation](./TimelineAnimation.md)
 - [Element graphics](./ElementGraphics.md)
-- [glTF decorations](./glTF.md)
+- [glTF graphics](./glTF.md)
 - [Multi-sample anti-aliasing](./MSAA.md)
 - [Wiremesh display](./Wiremesh.md)
 
