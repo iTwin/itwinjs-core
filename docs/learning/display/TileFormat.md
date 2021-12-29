@@ -86,7 +86,7 @@ Where practical, sub-volumes are tested for intersection with individual facets 
 
 If any geometry was omitted or any curved or decimated geometry exists within the tile's volume, we know that the tile requires refinement (i.e., it has child tiles); otherwise, refinement will produce no actual improvement in level of detail.
 
-The content volume allows us to perform tighter intersection tests against the viewing frustum, to avoid drawing tiles that aren't actually visible. In the image below, the green and blue rectangles represent each tile's content volume, which is smaller than the tile's bounding volume:
+The content volume allows us to perform tighter intersection tests against the viewing frustum, to avoid drawing tiles that aren't actually visible. In the image below, the green and blue rectangles represent each tile's content volume, which is generally smaller (and never larger) than the tile's bounding volume:
 
 ![Tile content volumes](./assets/content-volumes.jpg)
 
