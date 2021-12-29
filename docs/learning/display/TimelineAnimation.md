@@ -10,3 +10,6 @@ A schedule script partitions sets of elements within the scene into animation no
 
 As time advances during script playback, the timelines are consulted for their values at the current time point. These values can be linearly interpolated between time points or quantized to discrete time points. [Appearance overrides](./SymbologyOverrides.md) are applied to adjust color and transparency according to the script.
 
+The GIF below illustrates the animation of the construction of a model according to its render timeline:
+
+![Timeline animation](./assets/timeline-animation.gif)
