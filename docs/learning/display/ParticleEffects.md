@@ -4,4 +4,8 @@ iTwin.js supports display of large quantities of similar objects - called "parti
 
 - [Rain and snow effects](https://www.itwinjs.org/sample-showcase/?group=Viewer+Features&sample=snow-rain-sample&imodel=Villa)
 - [Fire and smoke effects](https://www.itwinjs.org/sample-showcase/?group=Viewer+Features&sample=fire-sample&imodel=Villa)
-- Traffic simulation (sample not yet published - it simulates tens of thousands of vehicles traversing roads anywhere in the world, using roadway information obtained from OpenStreetMaps. We can provide a live demo or video if desired).
+- Traffic simulation of tens of thousands of vehicles traversing roads anywhere in the world, using roadway information obtained from OpenStreetMaps for accurate navigation (sample forthcoming).
+
+In the image below, snowfall is simulated using a particle effect:
+
+![Snowfall particle effect](../../changehistory/assets/snow.jpg)
