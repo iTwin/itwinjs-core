@@ -1,6 +1,6 @@
 # iModel tiles
 
-iTwin.js is fully capable of streaming and rendering [tiles](./Tiles.md) in any of the [standard 3d tile formats](https://github.com/CesiumGS/3d-tiles/blob/main/3d-tiles-reference-card.pdf) - that is how it displays reality models and terrain. However, the tiles produced by the iTwin.js backend to visualize the contents of [GeometricModel]($backend)s use a non-standard format referred to as "iMdl" (for "iModel"), optimized for the unique features provided by iTwin.js.
+iTwin.js is fully capable of streaming and rendering [tiles](./Tiles.md) in any of the [standard 3d tile formats](https://github.com/CesiumGS/3d-tiles/tree/main/specification) - that is how it displays reality models and terrain. However, the tiles produced by the iTwin.js backend to visualize the contents of [GeometricModel]($backend)s use a non-standard format referred to as "iMdl" (for "iModel"), optimized for the unique features provided by iTwin.js.
 
 ## Level of detail
 
@@ -40,7 +40,7 @@ In addition to constraining the number of triangles submitted to the GPU, tiles 
 
 iModels are composed of [Element]($backend)s. In the example house iModel above, each window, door, wall, doorknob, and section of roof is an individual element. Traditional renderers would produce a triangle mesh for each element and submit each as a separate draw call. In a real iModel consisting of thousands or millions of elements, this would produce far too many draw calls to sustain an interactive framerate.
 
-The iTwin.js renderer does not render elements - it renders tiles. Given the set of elements intersecting the tile's volume, we endeavor to batch them all into as few meshes as possible - ideally, one. This is achieved through a handful of strategies, including:
+The iTwin.js renderer does not render elements - it renders tiles. Given the set of elements intersecting the tile's volume, we endeavor to batch them all into as few meshes as possible - ideally, one. This is achieved by merging the element meshes and then differentiating the vertices within the merged mesh through a handful of strategies, including:
 
 - Color tables: A lookup table of each unique color in the mesh is produced. Each vertex, instead of specifying its RGBA color, simply specifies its 8- or 16-bit integer index in the table.
 - Material atlases: A lookup table of each unique [RenderMaterial]($common) in the mesh is produced. Instead of producing a separate mesh per material, each vertex specifies the 8-bit integer index of the corresponding material in the table.
@@ -86,7 +86,7 @@ Where practical, sub-volumes are tested for intersection with individual facets 
 
 If any geometry was omitted or any curved or decimated geometry exists within the tile's volume, we know that the tile requires refinement (i.e., it has child tiles); otherwise, refinement will produce no actual improvement in level of detail.
 
-The content volume allows us to perform tighter intersection tests against the viewing frustum, to avoid drawing tiles that aren't actually visible. In the image below, the green rectangles represent each tile's content volume:
+The content volume allows us to perform tighter intersection tests against the viewing frustum, to avoid drawing tiles that aren't actually visible. In the image below, the green and blue rectangles represent each tile's content volume, which is smaller than the tile's bounding volume:
 
 ![Tile content volumes](./assets/content-volumes.jpg)
 

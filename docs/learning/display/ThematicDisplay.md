@@ -9,7 +9,7 @@ Thematic display applies a color gradient to the scene to help visualize attribu
 
 The gradient can be applied smoothly, or using discrete steps. The stepped gradient can optionally display delimiters between each discrete color; or the delimiters can be displayed by themselves producing an isoline visualization. It can be applied to design models, reality models, and 3d terrain meshes.
 
-[This sample](https://www.itwinjs.org/sample-showcase/?group=Viewer+Features&sample=thematic-display-sample&imodel=CoffsHarborDemo) attempts to demonstrate the feature, but does not do a very good job of it.
+## Example images
 
 Thematic height - stepped:
 

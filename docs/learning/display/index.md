@@ -45,4 +45,6 @@ The renderer will attempt to use WebGL 2, which provides more features and bette
 
 Major modern browsers are supported, including Firefox, Safari, and chromium-based browsers (Chrome, Electron, Brave, "new" Edge, etc). Optimal graphics performance is observed in chromium-based browsers. Internet Explorer and "old" Edge are not supported.
 
+## Alternatives
 
+WebGL exposes only a fraction of the capabilities of modern graphics hardware. More photorealistic visualizations of iModels can be produced by leveraging Bentley Systems' [iTwin for Unreal](https://developer.bentley.com/unreal) or [sample Unity exporter](https://github.com/iTwin/imodel-unity-example) to export meshes for consumption by [Unreal Engine](https://www.unrealengine.com/en-US/) and [Unity](https://unity.com), respectively. Or, you can write an exporter to the format of your choice using [IModelDb.exportGraphics]($backend).
