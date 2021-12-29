@@ -11,4 +11,22 @@ The gradient can be applied smoothly, or using discrete steps. The stepped gradi
 
 [This sample](https://www.itwinjs.org/sample-showcase/?group=Viewer+Features&sample=thematic-display-sample&imodel=CoffsHarborDemo) attempts to demonstrate the feature, but does not do a very good job of it.
 
+Thematic height - stepped:
 
+![Thematic height - stepped](../../changehistory/assets/thematic_stepped.png)
+
+Thematic height - stepped with delimiters:
+
+![Thematic height - stepped with delimiters](../../changehistory/assets/thematic_steppedWithDelimiter.png)
+
+Thematic height - isolines:
+
+![Thematic height - isolines](../../changehistory/assets/thematic_isolines.png)
+
+Thematic hillshade:
+
+![Thematic hillshade](../../changehistory/assets/thematic_hillshade.png)
+
+Thematic slope:
+
+![Thematic slope](../../changehistory/assets/thematic_slope.png)
