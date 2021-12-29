@@ -7,13 +7,13 @@
 
 Cloud-based caches are appropriate for multi-user web apps. If such a cache is configured, then the frontend will first check for cached tile content before asking the backend to generate content for a given tile. The backend uploads each tile it generates to that same cache.
 
-A local SQLite database is appropriate for desktop and mobile apps, for which the backend (and the iModel) resides on the same device as the frontend and which may sometimes be operated in an environment with poor or no connectivity. It would be possible for such apps to employ a hybrid approach, in which they too consult a cloud-based cache while connected to the network while maintaining the local cache for periods of poor connectivity, but this has not yet been implemented.
+A local SQLite database is appropriate for desktop and mobile apps, for which the backend (and the iModel) resides on the same device as the frontend and which may sometimes be operated in an environment with poor or no connectivity. In the future, it could be made possible for such apps to employ a hybrid approach in which they consult a cloud-based cache while connected to the network but fall back to the local cache during periods of poor connectivity.
 
 A cached tile remains valid as long as the following conditions hold:
 - The geometry contained with the tile tree's corresponding model has not changed.
   - This is tracked by a GeometryGuid column that is automatically updated when the placement or geometry of any element within the model is modified, or a geometric element is added or removed.
 - The version number of the tile format has not changed since the tile was generated.
-  - The format version is incremented conservatively, primarily for bug fixes, performance optimizations, and bug fixes. If a change to the tile generation code can be made without incrementing the format version, we avoid doing so.
+  - The format version is incremented conservatively, primarily for bug fixes and performance optimizations. If a change to the tile generation code can be made without incrementing the format version, we avoid doing so.
 
 A tile generation agent may be employed to prepopulate portions of a cloud-based cache, for example, by generating content for the first N levels of each tile tree when a new revision of the iModel is produced. A tile *regeneration* agent may be employed when a new version of the tile format is deployed to production; it locates all extant tiles in the cache and generates new tiles using the new version of the tile format. This minimizes the impact on users when large numbers of tiles become invalidated at once.
 

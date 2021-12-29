@@ -1,8 +1,6 @@
 # Lighting, materials, and environment
 
-The [iTwin.js renderer](./index.md) is designed for efficient visualization of large infrastructure digital twins in a constrained browser environment. Photorealistic rendering is **not** part of that design - many of the techniques required for producing more lifelike images are unsupported or impractically expensive using WebGL. Solutions like [LumenRT](https://www.bentley.com/en/products/brands/lumenrt) and [Unity](https://unity.com) can apply more advanced rendering techniques to iModels. Advanced desktop rendering of iModels can be achieved by using [IModelDb.exportGraphics]($backend) to produce meshes in a format the target application can consume.
-
-However, the renderer does provide a wide variety of options for customizing the look of your iTwin.
+The [iTwin.js renderer](./index.md) is designed for efficient visualization of large infrastructure digital twins in a constrained browser environment. Photorealistic rendering is **not** part of that design - many of the techniques required for producing more lifelike images are unsupported or impractically expensive using WebGL. However, the renderer does provide a wide variety of options for customizing the look of your iTwin.
 
 ## Lighting and environment
 
