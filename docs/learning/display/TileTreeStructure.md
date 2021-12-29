@@ -4,7 +4,7 @@ Most 3d tile formats are statically generated along with a complete description 
 
 ## Basic structure
 
-Each tile tree corresponds to a single @[GeometricModel]($backend) in the iModel. The basic structure is an oct-tree (or quad-tree, for 2d models). Given a parent tile, one of two refinement strategies can be applied to obtain its direct descendants:
+Each tile tree corresponds to a single [GeometricModel]($backend) in the iModel. The basic structure is an oct-tree (or quad-tree, for 2d models). Given a parent tile, one of two refinement strategies can be applied to obtain its direct descendants:
 - Subdivision: the tile volume is split along its longest axis, then each sub-volume along its longest axis, and (for 3d models), each of those 4 sub-volumes along their longest axes.
 - Magnification: the tile volume remains the same, but the level of detail is doubled.
 

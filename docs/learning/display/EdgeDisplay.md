@@ -4,7 +4,7 @@ In many CAD-oriented workflows, visualization of the edges of a surface can be a
 
 ## Render modes
 
-iTwin.js supports four built-in @[RenderMode]($common)s that - among other things - affect how edges and surfaces are displayed.
+iTwin.js supports four built-in [RenderMode]($common)s that - among other things - affect how edges and surfaces are displayed.
 
 - Wireframe: Only edges are drawn.
 - Smooth shaded: Surfaces are drawn with materials and lighting. Edges can optionally be displayed as well.
@@ -16,6 +16,6 @@ The latter two modes are somewhat old-fashioned; more visually pleasing results 
 
 ## Edge appearance
 
-A @[DisplayStyle]($backend) can customize the appearance of the edges by overriding their color, width, and/or style using @[HiddenLine.Settings]($common). Optionally, edges obscured by surfaces can also be displayed.
+A [DisplayStyle]($backend) can customize the appearance of the edges by overriding their color, width, and/or style using [HiddenLine.Settings]($common). Optionally, edges obscured by surfaces can also be displayed.
 
 The "Comic Book", "Schematic", "Illustration", and "Architectural: Monochrome" display styles in [this sample](https://www.itwinjs.org/sample-showcase/?group=Viewer+Features&sample=display-styles-sample&imodel=Villa) demonstrate edge display in shaded views.

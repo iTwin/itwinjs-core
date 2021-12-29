@@ -1,10 +1,10 @@
 # iTwin.js Display System Overview
 
-The iTwin.js display system is responsible for producing and rendering graphics to enable visualization of the contents of an iTwin. Those contents can include iModels, reality models, IoT sensor data, map imagery, and other data sources. Applications can also provide their own graphics via @[Decorators](../frontend/ViewDecorations.md) and @[TiledGraphicsProvider]($frontend)s.
+The iTwin.js display system is responsible for producing and rendering graphics to enable visualization of the contents of an iTwin. Those contents can include iModels, reality models, IoT sensor data, map imagery, and other data sources. Applications can also provide their own graphics via [Decorators](../frontend/ViewDecorations.md) and [TiledGraphicsProvider](./TileGraphicsProvider.md)s.
 
 The display system is divided into two subsystems:
-- The WebGL-based [tile renderer](./frontend-overview.md) running on the @[frontend](../frontend/index.md), responsible for requesting and display tiles; and
-- The native-code [tile generator](./backend-overview.md) running on the @[backend](../backend/index.md), responsible for producing tiles from the contents of an iModel.
+- The WebGL-based [tile renderer](./frontend-overview.md) running on the [frontend](../frontend/index.md), responsible for requesting and display tiles; and
+- The native-code [tile generator](./backend-overview.md) running on the [backend](../backend/index.md), responsible for producing tiles from the contents of an iModel.
 
 A [caching layer](./TileCache.md) may be introduced between the frontend and backend subsystems to supply previously-generated tiles; or the backend may maintain its own internal cache.
 

@@ -2,7 +2,7 @@
 
 Tiles can be expensive to generate - both in terms of processing time and in demand on the backend - and an iModel may be viewed repeatedly by many different users during its lifetime. Therefore caching of previously-generated tiles is an important performance optimization. iTwin.js provides two tile caching mechanisms, suited for different purposes:
 
-- A @[CloudStorageTileCache]($common) that caches tiles in the cloud (or on a more restricted network); and
+- A [CloudStorageTileCache]($common) that caches tiles in the cloud (or on a more restricted network); and
 - A SQLite database stored on the backend's local file system.
 
 Cloud-based caches are appropriate for multi-user web apps. If such a cache is configured, then the frontend will first check for cached tile content before asking the backend to generate content for a given tile. The backend uploads each tile it generates to that same cache.
