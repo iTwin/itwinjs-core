@@ -4,7 +4,7 @@ The iTwin.js display system is responsible for producing and rendering graphics 
 
 The display system is divided into two subsystems:
 - The WebGL-based [tile renderer](./frontend-overview.md) running on the [frontend](../frontend/index.md), responsible for requesting and display tiles; and
-- The native-code [tile generator](./backend-overview.md) running on the [backend](../backend/index.md), responsible for producing tiles from the contents of an iModel.
+- The native-code tile generator running on the [backend](../backend/index.md), responsible for [producing tiles](./TileFormat.md) from the contents of an iModel.
 
 A [caching layer](./TileCache.md) may be introduced between the frontend and backend subsystems to supply previously-generated tiles; or the backend may maintain its own internal cache.
 
