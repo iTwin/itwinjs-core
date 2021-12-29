@@ -4690,7 +4690,6 @@ export interface IModelAppOptions {
     quantityFormatter?: QuantityFormatter;
     // @beta (undocumented)
     realityDataAccess?: RealityDataAccess;
-    // @internal (undocumented)
     renderSys?: RenderSystem | RenderSystem.Options;
     // (undocumented)
     rpcInterfaces?: RpcInterfaceDefinition[];

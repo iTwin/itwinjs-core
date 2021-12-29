@@ -22,15 +22,9 @@ Every spatial view can aggregate any number of spatial models, as specified by i
 
 ![Composing a view from multiple models](./assets/office-models.gif)
 
+Views may also incorporate tile trees associated with reality models, or maps, or terrain, or [custom providers](./TiledGraphicsProvider.md). Assembling the scene entails traversing each tile tree, selecting the tiles most appropriate for display, possibly enqueuing requests to load more appropriate tiles, and finally rendering the tiles to the screen.
 
-## Resource management
-
-
---- --- ----
-
-## Scene creation
-
-To construct the scene graph, the renderer asks each tile tree in the scene to supply tiles appropriate for the current view. Typically, that process looks something like the following, beginning with the root tile:
+This process is primarily implemented by [TileTreeReference.addToScene]($frontend). While the details will differ between different implementations of [TileTreeReference]($frontend), it typically looks something like the following, beginning with the root tile:
 
 ```
 If the tile intersects the viewed volume and any clip volumes applied to the view or model:
@@ -47,7 +41,12 @@ If the tile intersects the viewed volume and any clip volumes applied to the vie
     Repeat the process for each of the tile's direct descendants.
 ```
 
-The graphics of all tiles selected for display are added to the scene graph. The renderer then deconstructs the graph into an ordered sequence of render commands organized into several render passes. These commands are submitted to the GPU for drawing.
+The graphics for all tiles selected for display are added to the scene graph. The renderer then deconstructs the graph into an ordered sequence of render commands organized into several render passes. For example, opaque geometry is drawn in one pass, and transparent geometry in a subsequent pass. Finally, these commands are submitted to the GPU and the new image is blitted to the screen.
+
+## Resource management
+
+
+--- --- ----
 
 ## Tile loading
 
