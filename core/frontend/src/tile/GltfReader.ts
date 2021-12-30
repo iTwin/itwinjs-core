@@ -354,6 +354,11 @@ interface Gltf2Material extends GltfChildOfRootProperty {
   alphaCutoff?: number;
   doubleSided?: boolean;
   extensions?: GltfExtensions & {
+    /** The [KHR_materials_unlit](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_unlit) extension
+     * indicates that the material should be displayed without lighting. The extension adds no additional properties - it is effectively a boolean flag.
+     */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    KHR_materials_unlit?: { }
     /** The [KHR_techniques_webgl extension](https://github.com/KhronosGroup/glTF/blob/c1c12bd100e88ff468ccef1cb88cfbec56a69af2/extensions/2.0/Khronos/KHR_techniques_webgl/README.md)
      * allows "techniques" to be associated with [[GltfMaterial]]s. Techniques can supply custom shader programs to render geometry; this was a core feature of glTF 1.0 (see [[GltfTechnique]]).
      * Here, it is only used to extract uniform values.
@@ -1214,10 +1219,13 @@ export abstract class GltfReader {
 
   protected readMeshPrimitive(primitive: GltfMeshPrimitive, featureTable?: FeatureTable, pseudoRtcBias?: Vector3d): GltfMeshData | undefined {
     const materialName = JsonUtils.asString(primitive.material);
-    const hasBakedLighting = undefined === primitive.attributes.NORMAL;
     const material = 0 < materialName.length ? this._materials[materialName] : undefined;
+    if (!material)
+      return undefined;
+
+    const hasBakedLighting = undefined === primitive.attributes.NORMAL || undefined !== material.extensions?.KHR_materials_unlit;
     const displayParams = material ? this.createDisplayParams(material, hasBakedLighting) : undefined;
-    if (undefined === displayParams)
+    if (!displayParams)
       return undefined;
 
     let primitiveType: number = -1;
