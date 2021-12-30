@@ -13,22 +13,36 @@ the master iModel. It can also be useful to update a branch with changes that th
 ## Provenance
 
 *Provenance* is the tracking of where an entity originated from in an iModel. All connectors
-store provenance as they translate entities from some source format into an iModel. The [IModelTransformer]($transformer) will
-also store its own provenance, especially in the cases of synchronization since provenance will be used by the transformer
-during synchronizations to identify which element in the branch came from the master in order to merge and append changes.
+store provenance as they connect entities from some source format into an iModel. The [IModelTransformer]($transformer) will
+also store provenance as it makes changes to a target; provenance will be used during synchronizations to identify which element
+in the branch came from the master in order to merge and append changes.
 
 The [IModelTransformer]($transformer) has several options defined in the [IModelTransformOptions]($transformer) type
 that configure what provenance is stored, and particular configurations are required for performing each branching operation
 with the transformer.
 
-Additional notes on provenance from the connector application viewpoint can be found [here](/learning/writeaconnector/#sync).
+Provenance is stored for entities by adding an [ExternalSourceAspect]($backend) to them, which contains properties referencing the original
+repository they came from. The ExternalSourceAspects must reference an element that represents the real-world external source from which
+their corresponding entity was derived; in the case of transformation where the external source is an external iModel, the iModel is best
+conventionally represented with an [ExternalSource]($backend) element in a [RepositoryLink]($backend) element.
 
 ### TargetScopeElement
 
-The *Target Scope Element* is the element in the *target* iModel of a transformation that represents the source repository as a whole,
-and is therefore used as the scope of all [ExternalSourceAspect]($backend)s.
-When transforming, and generally when the external source is another iModel, the element typically inserted to represent it is a
-[RepositoryLink]($backend).
+The *Target Scope Element* is the element in the target iModel of a transformation that represents the source repository as a whole,
+and is therefore used as the scope of [ExternalSourceAspect]($backend)s. Typically creating a branch iModel includes inserting a new
+[RepositoryLink]($backend) and [ExternalSource]($backend) pair representing the master, and then all forward synchronization transformations
+will use the master-representing ExternalSource as the Target Scope Element by setting the [IModelTransformOptions.targetScopeElementId]($backend) option.
+
+It is possible to not specify a `targetScopeElementId` for a branch transformation,
+which will default to using the target's root subject as the targetScopeElement.
+While this works for simple singular branches, it is not recommended because an explicit
+external source contains more information, and if you decide to branch your branch iModel,
+you will need a unique target scope element for both synchronization directions, one for
+the forward synchronizations from master and one for reverse synchronizations from the sub branch.
+
+### More on provenance
+
+Additional notes on provenance from the connector application viewpoint can be found [here](/learning/writeaconnector/#sync).
 
 ## Synchronization (implementing branching)
 
@@ -36,7 +50,7 @@ The process of transferring change history between iModels is called *synchroniz
 [IModelTransformer]($transformer) to support branching concepts.
 
 - *First Synchronization* is the initialization of a new iModel as a branch iModel for some existing iModel, the master iModel.
-  The initialization can create an arbitrary transformation of the master iModel, hiding pieces, or even adding relevant ones.
+  The initialization can create an arbitrary transformation of the master iModel, hiding pieces, or even adding branch-only ones.
 - *Synchronization*, or *Forward Synchronization*, is the transfer of iModel changes from a master iModel to an existing branch iModel.
 - *Reverse Synchronization* is the transfer of iModel changes from a branch iModel back to the master iModel from which it was created.
 
@@ -44,65 +58,125 @@ The process of transferring change history between iModels is called *synchroniz
 
 In the above diagram you can see an example change history of a master and its branch. Each arrow is an application submitting
 changesets to the iModel, and each vertical connection (notably an arrow with with two sources) is a transformation reading both
-iModels and submitting a changeset to one of them, *synchronizing them*.
+iModels and submitting a changeset to one of them, *synchronizing* them.
 
 Synchronization logic is implemented by the [IModelTransformer]($transformer), which can be configured to perform each type of
-synchronization. Move to the examples
+synchronization, as shown in the samples below.
 
 ## Synchronization Examples
-
-The following examples use snapshot iModels for simple demonstration. For an online iModel with an actual change history,
-you will need to create your iModels through whatever management hub you use, such as iModel Hub.
 
 ### Creating a branch (First Synchronization)
 
 ```ts
-const masterDb = yourChosenHubImpl.openMyIModel("my-master-id");
-// create a duplicate
-const newBranchDb = yourChosenHubImpl.createDuplicateOfExistingIModel("my-master-id");
-// the branch is an identical duplicate, update it with the provenance required for the transformer to perform future synchronizations
-const transformer = new IModelTransformer(masterDb, newBranchDb, { wasSourceIModelCopiedToTarget: true });
-await transformer.processAll();
-// create an external source to use as our *Target Scope Element* for future synchronizations
-const masterRepoLinkId = new RepositoryLink({
-  classFullName: RepositoryLink.classFullName, // TODO: confirm this is necessary
-  code: RepositoryLink.createCode(masterDb, IModelDb.rootSubjectId, 'example-master-repo-link-id'),
+// download and open master
+const masterDbProps = await BriefcaseManager.downloadBriefcase({
+  accessToken: myAccessToken,
+  iTwinId: myITwinId,
+  iModelId: masterIModelId
+});
+const masterDb = await BriefcaseDb.open({ fileName: masterDbProps.fileName });
+
+// create a duplicate of master as a good starting point for our branch
+const branchIModelId = await IModelHost.hubAccess.createNewIModel({
+  iTwinId: myITwinId,
+  iModelName: "my-branch-imodel",
+  version0: masterDb.pathName
+});
+
+// download and open the new branch
+const branchDbProps = await BriefcaseManager.downloadBriefcase({
+  accessToken: myAccessToken,
+  iTwinId: myITwinId,
+  iModelId: branchIModelId
+});
+const branchDb = await BriefcaseDb.open({ fileName: branchDbProps.fileName });
+
+// create an external source and owning repo to use as our *Target Scope Element* for future synchronizations
+const masterLinkRepoId = new RepositoryLink({
+  classFullName: RepositoryLink.classFullName,
+  code: RepositoryLink.createCode(branchDb, IModelDb.repositoryModelId, 'example-master-repo-link-id'),
+  model: IModelDb.repositoryModelId,
+  url: "https://wherever-you-got-your-imodel.net",
+  format: "iModel",
+  repositoryGuid: masterDb.iModelId,
+  description: "master iModel repository"
+}, branchDb).insert();
+
+const masterExternalSourceId = new ExternalSource({
+  classFullName: ExternalSource.classFullName,
   model: IModelDb.rootSubjectId,
-  repositoryGuid: masterDb.iModelId, // by convention the repositoryGuid of an external source that is an iModel is that iModel's id
-  format: "example-format-iModel",
-}).insert();
-// save/push our changes to whatever hub we're using
-yourChosenHubImpl.saveAndPushChanges(newBranchDb);
+  code: Code.createEmpty(),
+  repository: new ExternalSourceIsInRepository(masterLinkRepoId),
+  connectorName: "iModel Transformer",
+  connectorVersion: require("@itwin/core-transformer/package.json").version,
+}, branchDb).insert();
+
+// initialize the branch provenance
+const branchInitializer = new IModelTransformer(masterDb, newBranchDb, {
+  // tells the transformer that we have a raw copy of a source and the target should receive
+  // provenance from the source that is necessary for performing synchronizations in the future
+  wasSourceIModelCopiedToTarget: true,
+  // store the synchronization provenance in the scope of our representation of the external source, master
+  targetScopeElementId: masterExternalSourceId,
+});
+await branchInitializer.processAll();
+branchInitializer.dispose();
+
+
+// save+push our changes to whatever hub we're using
+const description = "initialized branch iModel"
+branchDb.saveChanges(description);
+await branchDb.pushChanges({
+  accessToken: myAccessToken,
+  description,
+});
 ```
 
 ### Update branch with master changes (Forward Synchronization)
 
 ```ts
-const masterDb = yourChosenHubImpl.openMyIModel("my-master-id");
-const branchDb = yourChosenHubImpl.openMyIModel("my-branch-id");
-// the branch is an identical duplicate, update it with the provenance required for the transformer to perform future synchronizations
-const transformer = new IModelTransformer(masterDb, branchDb, {
-  // tells the transformer that we have a raw copy of a source and the target should be filled with provenance external source aspects
-  // that are necessary for performing synchronizations in the future
-  wasSourceIModelCopiedToTarget: true
+// we assume masterDb and branchDb have already been opened (see the first example)
+const masterExternalSourceId = branchDb.elements.queryElementIdByCode(
+  RepositoryLink.createCode(masterDb, IModelDb.repositoryModelId, 'example-master-repo-link-id'),
+);
+const synchronizer = new IModelTransformer(masterDb, branchDb, {
+  // read the synchronization provenance in the scope of our representation of the external source, master
+  targetScopeElementId: masterExternalSourceId,
 });
-await transformer.processAll();
+await synchronizer.processChanges();
+synchronizer.dispose();
+// save and push
+const description = "updated branch with recent master changes"
+branchDb.saveChanges(description);
+await branchDb.pushChanges({
+  accessToken: myAccessToken,
+  description,
+});
 ```
 
 ### Update master with branch changes (Reverse Synchronization)
 
 ```ts
-const masterDb = yourChosenHubImpl.openMyIModel("my-master-id");
-const branchDb = yourChosenHubImpl.openMyIModel("my-branch-id");
-const transformer = new IModelTransformer(branchDb, masterDb, {
-  // disables the transformer's normal provenance storage
-  noProvenance: true,
-  // tells the transformer that the branch provenance will be stored in the source since the synchronization direction is reversed
+// we assume masterDb and branchDb have already been opened (see the first example)
+const reverseSynchronizer = new IModelTransformer(branchDb, masterDb, {
+  // tells the transformer that the branch provenance will be stored in the source
+  // since the synchronization direction is reversed
   isReverseSynchronization: true,
+  // read the synchronization provenance in the scope of our representation of the external source, master
+  // "isReverseSynchronization" actually causes the provenance (and therefore the targetScopeElementId) to
+  // be searched for from the source
+  targetScopeElementId: masterExternalSourceId,
 });
-await transformer.processAll();
+await reverseSynchronizer.processChanges();
+reverseSynchronizer.dispose();
+// save and push
+const description = "merged changes from branch into master"
+masterDb.saveChanges(description);
+await masterDb.pushChanges({
+  accessToken: myAccessToken,
+  description,
+});
 ```
 
-For more in depth examples, you can read some of the "branch" tests [here](https://github.com/iTwin/itwinjs-core/blob/master/core/transformer/src/test/standalone/IModelTransformer.test.ts)
-and [here](https://github.com/iTwin/itwinjs-core/blob/master/core/transformer/src/test/standalone/IModelTransformerHub.test.ts)
+For more in depth examples, you can read some of the "branch" tests [here](https://github.com/iTwin/itwinjs-core/blob/master/core/transformer/src/test/standalone/IModelTransformerHub.test.ts)
 in the iTwin.js source repository.
