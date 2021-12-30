@@ -305,9 +305,9 @@ interface GltfSampler extends  GltfChildOfRootProperty {
   magFilter?: GltfMagFilter;
   /** Minification filter. */
   minFilter?: GltfMinFilter;
-  /** S (U) wrapping mode. */
+  /** S (U) wrapping mode. Default: Repeat. */
   wrapS?: GltfWrapMode;
-  /** T (V) wrapping mode. */
+  /** T (V) wrapping mode. Default: Repeat. */
   wrapT?: GltfWrapMode;
 }
 
@@ -1752,7 +1752,9 @@ export abstract class GltfReader {
 
     const samplerId = texture.sampler;
     const sampler = undefined !== samplerId ? this._samplers[samplerId] : undefined;
-    const textureType = undefined !== sampler?.wrapS || undefined !== sampler?.wrapT ? RenderTexture.Type.TileSection : RenderTexture.Type.Normal;
+    // ###TODO: RenderTexture should support different wrapping behavior for U vs V, and support mirrored repeat.
+    // For now, repeat unless either explicitly clamps.
+    const textureType = GltfWrapMode.ClampToEdge === sampler?.wrapS || GltfWrapMode.ClampToEdge === sampler?.wrapT ? RenderTexture.Type.TileSection : RenderTexture.Type.Normal;
     texture.resolvedTexture = this._system.createTexture({
       type: textureType,
       image: {
