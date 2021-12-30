@@ -311,6 +311,12 @@ interface GltfSampler extends  GltfChildOfRootProperty {
   wrapT?: GltfWrapMode;
 }
 
+/** GL states that can be enabled by a [[GltfTechnique]]. Only those queried by this implementation are enumerated. */
+enum GltfTechniqueState {
+  /** Enables alpha blending. */
+  Blend = 3042,
+}
+
 /** For glTF 1.0 only, describes shader programs and shader state associated with a [[Gltf1Material]], used to render meshes associated with the material.
  * This implementation uses it strictly to identify techniques that require alpha blending.
  */
@@ -318,9 +324,9 @@ interface GltfTechnique extends GltfChildOfRootProperty {
   /** GL render states to be applied by the technique. */
   states?: {
     /** An array of integers corresponding to boolean GL states that should be enabled using GL's `enable` function.
-     * For example, the value `3042` indicates that blending should be enabled.
+     * For example, the value [[GltfTechniqueState.Blend]] (3042) indicates that blending should be enabled.
      */
-    enable?: number[];
+    enable?: GltfTechniqueState[];
   };
 }
 
@@ -1725,7 +1731,7 @@ export abstract class GltfReader {
           const technique = this._glTF.techniques[material.technique];
           if (technique?.states?.enable) {
             for (const enable of technique.states.enable) {
-              if (3042 === enable) { // 3042 = BLEND
+              if (GltfTechniqueState.Blend === enable) {
                 transparentTextures.add(material.values.tex.toString());
                 break;
               }
