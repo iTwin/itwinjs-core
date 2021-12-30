@@ -724,6 +724,12 @@ function colorFromJson(values: number[]): ColorDef {
   return ColorDef.from(values[0] * 255, values[1] * 255, values[2] * 255, (1.0 - values[3]) * 255);
 }
 
+function isMaterialTransparent(material: Gltf2Material): boolean {
+  // Default: OPAQUE.
+  // ###TODO support MASK. For now treat as opaque.
+  return "BLEND" === material.alphaMode;
+}
+
 function colorFromMaterial(material: GltfMaterial | undefined): ColorDef {
   if (material) {
     if (isGltf1Material(material)) {
@@ -732,7 +738,13 @@ function colorFromMaterial(material: GltfMaterial | undefined): ColorDef {
     } else if (material.extensions?.KHR_techniques_webgl?.values?.u_color) {
       return colorFromJson(material.extensions.KHR_techniques_webgl.values.u_color);
     } else if (material.pbrMetallicRoughness?.baseColorFactor) {
-      return colorFromJson(material.pbrMetallicRoughness.baseColorFactor);
+      let color = colorFromJson(material.pbrMetallicRoughness.baseColorFactor);
+      if (!isMaterialTransparent(material)) {
+        // SPEC: Opaque materials ignore any alpha channel.
+        color = color.withTransparency(0);
+      }
+
+      return color;
     }
   }
 
