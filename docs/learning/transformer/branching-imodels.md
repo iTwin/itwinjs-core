@@ -12,7 +12,7 @@ the master iModel. It can also be useful to update a branch with changes that th
 
 ## Provenance
 
-*Provenance* is the tracking of where an entity originated from when it was connected to an iModel. All connectors
+*Provenance* is the tracking of where an entity originated from in an iModel. All connectors
 store provenance as they translate entities from some source format into an iModel. The [IModelTransformer]($transformer) will
 also store its own provenance, especially in the cases of synchronization since provenance will be used by the transformer
 during synchronizations to identify which element in the branch came from the master in order to merge and append changes.
@@ -21,7 +21,7 @@ The [IModelTransformer]($transformer) has several options defined in the [IModel
 that configure what provenance is stored, and particular configurations are required for performing each branching operation
 with the transformer.
 
-Some additional notes on provenance from the connector application viewpoint can be found [here](/learning/writeaconnector/#sync).
+Additional notes on provenance from the connector application viewpoint can be found [here](/learning/writeaconnector/#sync).
 
 ### TargetScopeElement
 
@@ -37,7 +37,7 @@ The process of transferring change history between iModels is called *synchroniz
 
 - *First Synchronization* is the initialization of a new iModel as a branch iModel for some existing iModel, the master iModel.
   The initialization can create an arbitrary transformation of the master iModel, hiding pieces, or even adding relevant ones.
-- *Synchronization* is the transfer of iModel changes from a master iModel to an existing branch iModel.
+- *Synchronization*, or *Forward Synchronization*, is the transfer of iModel changes from a master iModel to an existing branch iModel.
 - *Reverse Synchronization* is the transfer of iModel changes from a branch iModel back to the master iModel from which it was created.
 
 ![synchronization diagram](./iModelBranching.drawio.svg)
@@ -103,5 +103,6 @@ const transformer = new IModelTransformer(branchDb, masterDb, {
 await transformer.processAll();
 ```
 
-For more in depth examples, you can read some of the ["branch" tests](https://github.com/iTwin/itwinjs-core/blob/master/core/transformer/src/test/standalone/IModelTransformer.test.ts)
+For more in depth examples, you can read some of the "branch" tests [here](https://github.com/iTwin/itwinjs-core/blob/master/core/transformer/src/test/standalone/IModelTransformer.test.ts)
+and [here](https://github.com/iTwin/itwinjs-core/blob/master/core/transformer/src/test/standalone/IModelTransformerHub.test.ts)
 in the iTwin.js source repository.
