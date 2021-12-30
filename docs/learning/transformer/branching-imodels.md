@@ -31,7 +31,7 @@ conventionally represented with an [ExternalSource]($backend) element in a [Repo
 The *Target Scope Element* is the element in the target iModel of a transformation that represents the source repository as a whole,
 and is therefore used as the scope of [ExternalSourceAspect]($backend)s. Typically creating a branch iModel includes inserting a new
 [RepositoryLink]($backend) and [ExternalSource]($backend) pair representing the master, and then all forward synchronization transformations
-will use the master-representing ExternalSource as the Target Scope Element by setting the [IModelTransformOptions.targetScopeElementId]($backend) option.
+will use the master-representing ExternalSource as the Target Scope Element by setting the `targetScopeElementId` option in the [IModelTransformOptions]($tranformer) option.
 
 It is possible to not specify a `targetScopeElementId` for a branch transformation,
 which will default to using the target's root subject as the targetScopeElement.
