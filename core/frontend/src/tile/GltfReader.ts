@@ -689,7 +689,7 @@ export class GltfMeshData {
   public uvQParams?: QParams2d;
   public uvs?: Uint16Array;
   public uvRange?: Range2d;
-  public indices?: Uint16Array | Uint32Array;
+  public indices?: Uint8Array | Uint16Array | Uint32Array;
 
   public constructor(props: Mesh) {
     this.primitive = props;
@@ -1357,6 +1357,8 @@ export abstract class GltfReader {
     const indices = mesh.indices;
     if (indices instanceof Uint16Array && numPoints > 0xffff)
       mesh.indices = new Uint32Array(numPoints);
+    else if (indices instanceof Uint8Array && numPoints > 0xff)
+      mesh.indices = new Uint32Array(numPoints);
 
     const points = new Uint16Array(3 * numPoints);
     const normals = mesh.normals ? new Uint16Array(numPoints) : undefined;
@@ -1478,12 +1480,12 @@ export abstract class GltfReader {
 
   protected readMeshIndices(mesh: GltfMeshData, json: { [k: string]: any }): boolean {
     const data = this.readBufferData16(json, "indices") || this.readBufferData32(json, "indices");
-    if (undefined === data || (!(data.buffer instanceof (Uint16Array)) && !(data.buffer instanceof (Uint32Array))))
-      return false;
+    if (data && (data.buffer instanceof Uint8Array || data.buffer instanceof Uint16Array || data.buffer instanceof Uint32Array)) {
+      mesh.indices = data.buffer;
+      return true;
+    }
 
-    mesh.indices = data.buffer;
-
-    return true;
+    return false;
   }
 
   protected readNormals(mesh: GltfMeshData, json: { [k: string]: any }, accessorName: string): boolean {
