@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
+import { assert, ByteStream, compareBooleans, compareNumbers, compareStrings, Dictionary, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import { Angle, Matrix3d, Point2d, Point3d, Point4d, Range2d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import {
   BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureTable, FillFlags, GlbHeader, ImageSource, LinePixels, MeshEdge,
@@ -724,31 +724,22 @@ function colorFromJson(values: number[]): ColorDef {
   return ColorDef.from(values[0] * 255, values[1] * 255, values[2] * 255, (1.0 - values[3]) * 255);
 }
 
-function isMaterialTransparent(material: Gltf2Material): boolean {
-  // Default: OPAQUE.
-  // ###TODO support MASK. For now treat as opaque.
-  return "BLEND" === material.alphaMode;
-}
-
-function colorFromMaterial(material: GltfMaterial | undefined): ColorDef {
-  if (material) {
-    if (isGltf1Material(material)) {
-      if (material.values?.color && Array.isArray(material.values.color))
-        return colorFromJson(material.values.color);
-    } else if (material.extensions?.KHR_techniques_webgl?.values?.u_color) {
-      return colorFromJson(material.extensions.KHR_techniques_webgl.values.u_color);
-    } else if (material.pbrMetallicRoughness?.baseColorFactor) {
-      let color = colorFromJson(material.pbrMetallicRoughness.baseColorFactor);
-      if (!isMaterialTransparent(material)) {
-        // SPEC: Opaque materials ignore any alpha channel.
-        color = color.withTransparency(0);
-      }
-
-      return color;
-    }
+function colorFromMaterial(material: GltfMaterial, isTransparent: boolean): ColorDef {
+  let color = ColorDef.white;
+  if (isGltf1Material(material)) {
+    if (material.values?.color && Array.isArray(material.values.color))
+      color = colorFromJson(material.values.color);
+  } else if (material.extensions?.KHR_techniques_webgl?.values?.u_color) {
+    color = colorFromJson(material.extensions.KHR_techniques_webgl.values.u_color);
+  } else if (material.pbrMetallicRoughness?.baseColorFactor) {
+    color = colorFromJson(material.pbrMetallicRoughness.baseColorFactor);
   }
 
-  return ColorDef.white;
+  // SPEC: Opaque materials ignore any alpha channel.
+  if (!isTransparent)
+    color = color.withTransparency(0);
+
+  return color;
 }
 
 class TransformStack {
@@ -843,6 +834,26 @@ function * traverseNodes(ids: Iterable<GltfId>, nodes: GltfDictionary<GltfNode>,
   }
 }
 
+interface TextureKey {
+  readonly id: GltfId;
+  readonly isTransparent: boolean;
+}
+
+function compareTextureKeys(lhs: TextureKey, rhs: TextureKey): number {
+  const cmp = compareBooleans(lhs.isTransparent, rhs.isTransparent);
+  if (0 !== cmp)
+    return cmp;
+
+  assert(typeof lhs.id === typeof rhs.id);
+  if ("string" === typeof lhs.id) {
+    assert("string" === typeof rhs.id);
+    return compareStrings(lhs.id, rhs.id);
+  }
+
+  assert("number" === typeof lhs.id && "number" === typeof rhs.id);
+  return compareNumbers(lhs.id, rhs.id);
+}
+
 /** Deserializes [glTF](https://www.khronos.org/gltf/).
  * @internal
  */
@@ -861,6 +872,7 @@ export abstract class GltfReader {
   private readonly _canceled?: ShouldAbortReadGltf;
   protected readonly _sceneNodes: GltfId[];
   protected _computedContentRange?: ElementAlignedBox3d;
+  private readonly _resolvedTextures = new Dictionary<TextureKey, RenderTexture | false>((lhs, rhs) => compareTextureKeys(lhs, rhs));
 
   protected get _nodes(): GltfDictionary<GltfNode> { return this._glTF.nodes ?? emptyDict; }
   protected get _meshes(): GltfDictionary<GltfMesh> { return this._glTF.meshes ?? emptyDict; }
@@ -868,8 +880,8 @@ export abstract class GltfReader {
   protected get _bufferViews(): GltfDictionary<GltfBufferViewProps> { return this._glTF.bufferViews ?? emptyDict; }
   protected get _materials(): GltfDictionary<GltfMaterial> { return this._glTF.materials ?? emptyDict; }
   protected get _samplers(): GltfDictionary<GltfSampler> { return this._glTF.samplers ?? emptyDict; }
+  protected get _textures(): GltfDictionary<GltfTexture> { return this._glTF.textures ?? emptyDict; }
 
-  protected get _textures(): GltfDictionary<GltfTexture & { resolvedTexture?: RenderTexture }> { return this._glTF.textures ?? emptyDict; }
   protected get _images(): GltfDictionary<GltfImage & { resolvedImage?: HTMLImageElement }> { return this._glTF.images ?? emptyDict; }
   protected get _buffers(): GltfDictionary<GltfBuffer & { resolvedBuffer?: Uint8Array }> { return this._glTF.buffers ?? emptyDict; }
 
@@ -1228,10 +1240,27 @@ export abstract class GltfReader {
     return id ?? extractId(material.pbrMetallicRoughness?.baseColorTexture?.index);
   }
 
-  protected createDisplayParams(materialJson: GltfMaterial, hasBakedLighting: boolean): DisplayParams | undefined {
-    const textureId = this.extractTextureId(materialJson);
-    const textureMapping = undefined !== textureId ? this.findTextureMapping(textureId) : undefined;
-    const color = colorFromMaterial(materialJson);
+  private isMaterialTransparent(material: GltfMaterial): boolean {
+    if (isGltf1Material(material)) {
+      if (this._glTF.techniques && undefined !== material.technique) {
+        const technique = this._glTF.techniques[material.technique];
+        if (technique?.states?.enable?.some((state: GltfTechniqueState) => state === GltfTechniqueState.Blend))
+          return true;
+      }
+
+      return false;
+    } else {
+      // Default: OPAQUE.
+      // ###TODO support MASK. For now treat as opaque.
+      return "BLEND" === material.alphaMode;
+    }
+  }
+
+  protected createDisplayParams(material: GltfMaterial, hasBakedLighting: boolean): DisplayParams | undefined {
+    const isTransparent = this.isMaterialTransparent(material);
+    const textureId = this.extractTextureId(material);
+    const textureMapping = undefined !== textureId ? this.findTextureMapping(textureId, isTransparent) : undefined;
+    const color = colorFromMaterial(material, isTransparent);
     return new DisplayParams(DisplayParams.Type.Mesh, color, color, 1, LinePixels.Solid, FillFlags.Always, undefined, undefined, hasBakedLighting, textureMapping);
   }
 
@@ -1661,10 +1690,6 @@ export abstract class GltfReader {
           promises.push(this.resolveImage(image));
 
       await Promise.all(promises);
-      if (this._isCanceled)
-        return;
-
-      this.resolveTextures();
     } catch (_) {
     }
   }
@@ -1730,71 +1755,37 @@ export abstract class GltfReader {
       image.resolvedImage = await tryImageElementFromUrl(url);
   }
 
-  private resolveTextures(): void {
-    if (undefined === this._glTF.textures)
-      return;
-
-    // ###TODO this seems pretty hacky, and won't work for glTF 2.0 even if the KHR_techniques_webgl extension is used...
-    const transparentTextures: Set<string> = new Set<string>();
-    if (this._glTF.techniques) {
-      for (const name of Object.keys(this._materials)) {
-        const material = this._materials[name];
-        if (material && isGltf1Material(material) && undefined !== material.technique && undefined !== material.values?.tex) {
-          const technique = this._glTF.techniques[material.technique];
-          if (technique?.states?.enable) {
-            for (const enable of technique.states.enable) {
-              if (GltfTechniqueState.Blend === enable) {
-                transparentTextures.add(material.values.tex.toString());
-                break;
-              }
-            }
-          }
-        }
-      }
-    }
-
-    for (const node of this.traverseScene()) {
-      for (const meshId of getNodeMeshIds(node)) {
-        const mesh = this._meshes[meshId];
-        if (!mesh?.primitives)
-          continue;
-
-        for (const primitive of mesh.primitives) {
-          const material = undefined !== primitive.material ? this._materials[primitive.material] : undefined;
-          const textureId = material ? this.extractTextureId(material) : undefined;
-          if (undefined !== textureId)
-            this.resolveTexture(textureId, transparentTextures.has(textureId));
-        }
-      }
-    }
-  }
-
-  private resolveTexture(textureId: string, isTransparent: boolean): void {
+  private resolveTexture(textureId: string, isTransparent: boolean): RenderTexture | false {
     const texture = this._textures[textureId];
-    if (!texture || texture.resolvedTexture || undefined === texture.source)
-      return;
+    if (!texture || undefined === texture.source)
+      return false;
 
     const image = this._images[texture.source]?.resolvedImage;
     if (!image)
-      return;
+      return false;
 
     const samplerId = texture.sampler;
     const sampler = undefined !== samplerId ? this._samplers[samplerId] : undefined;
     // ###TODO: RenderTexture should support different wrapping behavior for U vs V, and support mirrored repeat.
     // For now, repeat unless either explicitly clamps.
     const textureType = GltfWrapMode.ClampToEdge === sampler?.wrapS || GltfWrapMode.ClampToEdge === sampler?.wrapT ? RenderTexture.Type.TileSection : RenderTexture.Type.Normal;
-    texture.resolvedTexture = this._system.createTexture({
+    const renderTexture = this._system.createTexture({
       type: textureType,
       image: {
         source: image,
         transparency: isTransparent ? TextureTransparency.Translucent : TextureTransparency.Opaque,
       },
     });
+
+    return renderTexture ?? false;
   }
 
-  protected findTextureMapping(textureId: string): TextureMapping | undefined {
-    const texture = this._textures[textureId];
-    return texture?.resolvedTexture ? new TextureMapping(texture.resolvedTexture, new TextureMapping.Params()) : undefined;
+  protected findTextureMapping(id: string, isTransparent: boolean): TextureMapping | undefined {
+    let texture = this._resolvedTextures.get({ id, isTransparent });
+    if (undefined === texture)
+      this._resolvedTextures.set({ id, isTransparent }, texture = this.resolveTexture(id, isTransparent));
+
+    return texture ? new TextureMapping(texture, new TextureMapping.Params()) : undefined;
   }
 }
 
@@ -1869,5 +1860,5 @@ export class GltfGraphicsReader extends GltfReader {
   public get nodes(): GltfDictionary<GltfNode> { return this._nodes; }
   public get scenes(): GltfDictionary<GltfScene> { return this._glTF.scenes ?? emptyDict; }
   public get sceneNodes(): GltfId[] { return this._sceneNodes; }
-  public get textures(): GltfDictionary<GltfTexture & { resolvedTexture?: RenderTexture }> { return this._textures; }
+  public get textures(): GltfDictionary<GltfTexture> { return this._textures; }
 }
