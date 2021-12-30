@@ -6,8 +6,8 @@ It can be useful in some applications to take iModels and their linear concept o
 *branching*, where an iModel diverges into two separate iModels after a changeset, allowing each to have new distinct changes and
 a distinct history. Typically, one of them is referred to as the *master iModel*, and the other the *branch iModel*,
 with the master iModel being the one that existed before the branch was created from it.
-Importantly, these branches can often be used to isolate a set of changes from others being made to the master iModel
-in other contexts. Usually the intention is to move the changes in the branch iModel's history back into
+Importantly, these branches can often be used to updates to one branch iModel while the master iModel
+can received updates from other contexts. Usually the intention is to move the changes in the branch iModel's history back into
 the master iModel. It can also be useful to update a branch with changes that the master received since their divergence.
 
 ## Provenance
@@ -49,8 +49,8 @@ Additional notes on provenance from the connector application viewpoint can be f
 The process of transferring change history between iModels is called *synchronization*, and is implemented by the
 [IModelTransformer]($transformer) to support branching concepts.
 
-- *First Synchronization* is the initialization of a new iModel as a branch iModel for some existing iModel, the master iModel.
-  The initialization can create an arbitrary transformation of the master iModel, hiding pieces, or even adding branch-only ones.
+- *First Synchronization* is the initialization of a new iModel as a branch iModel for some existing "master" iModel.
+  The initialization can filter the master iModel arbitrarily using other transformation techniques.
 - *Synchronization*, or *Forward Synchronization*, is the transfer of iModel changes from a master iModel to an existing branch iModel.
 - *Reverse Synchronization* is the transfer of iModel changes from a branch iModel back to the master iModel from which it was created.
 
@@ -91,10 +91,10 @@ const branchDbProps = await BriefcaseManager.downloadBriefcase({
 });
 const branchDb = await BriefcaseDb.open({ fileName: branchDbProps.fileName });
 
-// create an external source and owning repo to use as our *Target Scope Element* for future synchronizations
+// create an external source and owning repository link to use as our *Target Scope Element* for future synchronizations
 const masterLinkRepoId = new RepositoryLink({
   classFullName: RepositoryLink.classFullName,
-  code: RepositoryLink.createCode(branchDb, IModelDb.repositoryModelId, 'example-master-repo-link-id'),
+  code: RepositoryLink.createCode(branchDb, IModelDb.repositoryModelId, "example-code-value"),
   model: IModelDb.repositoryModelId,
   url: "https://wherever-you-got-your-imodel.net",
   format: "iModel",
@@ -137,7 +137,7 @@ await branchDb.pushChanges({
 ```ts
 // we assume masterDb and branchDb have already been opened (see the first example)
 const masterExternalSourceId = branchDb.elements.queryElementIdByCode(
-  RepositoryLink.createCode(masterDb, IModelDb.repositoryModelId, 'example-master-repo-link-id'),
+  RepositoryLink.createCode(masterDb, IModelDb.repositoryModelId, "example-code-value"),
 );
 const synchronizer = new IModelTransformer(masterDb, branchDb, {
   // read the synchronization provenance in the scope of our representation of the external source, master
@@ -158,6 +158,9 @@ await branchDb.pushChanges({
 
 ```ts
 // we assume masterDb and branchDb have already been opened (see the first example)
+const masterExternalSourceId = branchDb.elements.queryElementIdByCode(
+  RepositoryLink.createCode(masterDb, IModelDb.repositoryModelId, "example-code-value"),
+);
 const reverseSynchronizer = new IModelTransformer(branchDb, masterDb, {
   // tells the transformer that the branch provenance will be stored in the source
   // since the synchronization direction is reversed
