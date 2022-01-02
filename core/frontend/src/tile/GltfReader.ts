@@ -299,7 +299,10 @@ interface GltfTexture extends GltfChildOfRootProperty {
   source?: GltfId;
 }
 
-/** Describes the filtering and wrapping behavior to be applied to a [[GltfTexture]]. */
+/** Describes the filtering and wrapping behavior to be applied to a [[GltfTexture]].
+ * @note The implementation currently does not support MirroredRepeat and does not support different wrapping for U and V;
+ * effectively, unless `wrapS` or `wrapT` is set to ClampToEdge, the sampler will use GltfWrapMode.Repeat.
+ */
 interface GltfSampler extends  GltfChildOfRootProperty {
   /** Magnification filter. */
   magFilter?: GltfMagFilter;
