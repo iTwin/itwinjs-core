@@ -1,6 +1,6 @@
 {
   "name": "@itwin/imodelhub-client-tests",
-  "version": "3.0.0-dev.171",
+  "version": "3.0.0-dev.172",
   "main": "lib/imodelhub-client-tests.js",
   "description": "Tests the iModelHub client",
   "license": "MIT",
