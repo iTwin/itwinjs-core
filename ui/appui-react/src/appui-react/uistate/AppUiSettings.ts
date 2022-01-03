@@ -67,7 +67,7 @@ export class AppUiSettings implements UserSettingsProvider {
 
     this.showWidgetIcon = new UiStateEntry<boolean>(AppUiSettings._settingNamespace, "ShowWidgetIcon",
       () => UiFramework.showWidgetIcon,
-      (value: boolean) => UiFramework.setShowWidgetIcon(value), !!defaults.showWidgetIcon);
+      (value: boolean) => UiFramework.setShowWidgetIcon(value), defaults.showWidgetIcon);
     this._settings.push(this.showWidgetIcon);
 
     this.frameworkVersion = new UiStateEntry<FrameworkVersionId>(AppUiSettings._settingNamespace, "FrameworkVersion",
@@ -98,7 +98,7 @@ export class AppUiSettings implements UserSettingsProvider {
     if (args.eventIds.has("configurableui:set-framework-version"))
       await this.frameworkVersion.saveSetting(UiFramework.getUiStateStorage());
 
-    if (args.eventIds.has("configurableui:configurableui:set-show-widget-icon"))
+    if (args.eventIds.has("configurableui:set-show-widget-icon"))
       await this.showWidgetIcon.saveSetting(UiFramework.getUiStateStorage());
 
     if (args.eventIds.has("configurableui:set_widget_opacity"))
