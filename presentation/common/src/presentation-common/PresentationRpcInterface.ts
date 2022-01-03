@@ -22,9 +22,8 @@ import { KeySetJSON } from "./KeySet";
 import { LabelDefinitionJSON } from "./LabelDefinition";
 import {
   ContentDescriptorRequestOptions, ContentInstanceKeysRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, DisplayLabelRequestOptions,
-  DisplayLabelsRequestOptions, DistinctValuesRequestOptions, FilterByInstancePathsHierarchyRequestOptions,
-  FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, Paged, SelectionScopeRequestOptions,
-  SingleElementPropertiesRequestOptions,
+  DisplayLabelsRequestOptions, DistinctValuesRequestOptions, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions,
+  HierarchyRequestOptions, Paged, SelectionScopeRequestOptions, SingleElementPropertiesRequestOptions,
 } from "./PresentationManagerOptions";
 import { RulesetVariableJSON } from "./RulesetVariables";
 import { SelectionScope } from "./selection/SelectionScope";
@@ -45,7 +44,7 @@ export type PresentationRpcRequestOptions<TManagerRequestOptions> = Omit<TManage
  * Data structure for presentation RPC responses
  * @public
  */
-export type PresentationRpcResponse<TResult = undefined> = Promise<{
+export interface PresentationRpcResponseData<TResult = undefined> {
   /** Response status code */
   statusCode: PresentationStatus;
   /** In case of an error response, the error message */
@@ -54,7 +53,13 @@ export type PresentationRpcResponse<TResult = undefined> = Promise<{
   result?: TResult;
   /** @alpha */
   diagnostics?: DiagnosticsScopeLogs[];
-}>;
+}
+
+/**
+ * A promise of [[PresentationRpcResponseData]].
+ * @public
+ */
+export type PresentationRpcResponse<TResult = undefined> = Promise<PresentationRpcResponseData<TResult>>;
 
 /**
  * Data structure for hierarchy request options.
