@@ -24,6 +24,16 @@ export class ByteStream {
   /** Construct a new ByteStream with the read position set to the beginning.
    * @param buffer The underlying buffer from which data is to be extracted.
    * @param subView If defined, specifies the subset of the underlying buffer's data to use.
+   * This constructor is subject to two common mistakes:
+   *
+   * 1. Given `bytes: Uint8Array`, `new ByteStream(bytes)` will compile but at run-time will produce an error asserting that
+   * the DataView constructor requires an ArrayBuffer. The correct usage is `new ByteStream(bytes.buffer)`.
+   * 2. Given `bytes: Uint8Array`, `new ByteStream(bytes.buffer)` creates a stream for the entire range of bytes represented by the underlying
+   * ArrayBuffer. If `bytes` represents only a **sub-range** of the underlying buffer's data, the results will be unexpected unless the optional `subView`
+   * argument is supplied, with correct offset and length.
+   *
+   * For both of the above reasons, prefer to use [[fromUint8Array]].
+   * @deprecated Use [[fromUint8Array]] or [[fromArrayBuffer]].
    */
   public constructor(buffer: ArrayBuffer | SharedArrayBuffer, subView?: { byteOffset: number, byteLength: number }) {
     if (undefined !== subView) {
@@ -35,10 +45,32 @@ export class ByteStream {
     }
   }
 
+  /** Construct a new ByteStream for the range of bytes represented by `bytes`, which may be a subset of the range of bytes
+   * represented by the underlying ArrayBuffer. The read position will be set to the beginning of the range of bytes.
+   */
+  public static fromUint8Array(bytes: Uint8Array): ByteStream {
+    const { byteOffset, byteLength } = bytes;
+    return new ByteStream(bytes.buffer, { byteOffset, byteLength }); // eslint-disable-line deprecation/deprecation
+  }
+
+  /** Construct a new ByteStream with the read position set to the beginning.
+   * @param buffer The underlying buffer from which data is to be extracted.
+   * @param subView If defined, specifies the subset of the underlying buffer's data to use.
+   */
+  public static fromArrayBuffer(buffer: ArrayBuffer | SharedArrayBuffer, subView?: { byteOffset: number, byteLength: number }): ByteStream {
+    return new ByteStream(buffer, subView); // eslint-disable-line deprecation/deprecation
+  }
+
   /** The number of bytes in this stream */
   public get length(): number { return this._view.byteLength; }
-  /** Returns true if the current read position has been advanced past the end of the stream */
+  /** Returns true if the current read position has been advanced past the end of the stream. This generally indicates that an attempt was made to read more data than is available.
+   * @see [[isAtTheEnd]]
+   */
   public get isPastTheEnd(): boolean { return this.curPos > this.length; }
+  /** Returns true if the current read position has advanced precisely to the end of the stream, indicating all of the data has been consumed.
+   * @see [[isPastTheEnd]].
+   */
+  public get isAtTheEnd(): boolean { return this.curPos === this.length; }
 
   /** The current read position as an index into the stream of bytes. */
   public get curPos(): number { return this._curPos; }

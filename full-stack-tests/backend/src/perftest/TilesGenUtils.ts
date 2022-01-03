@@ -187,7 +187,7 @@ export class BackendTileGenerator {
     if (content.length <= kEmptyTileSize)
       this._stats.emptyTileCount++;
 
-    const metadata = reader.read(new ByteStream(content.buffer), tile);
+    const metadata = reader.read(ByteStream.fromUint8Array(content), tile);
     if (this._getTileStats || this._getTileMetadata) {
       const stats: TileStats = { treeId: treeInfo.treeId, contentId: tile.contentId };
       if (this._getTileStats) {
