@@ -1929,12 +1929,16 @@ export type PresentationRpcRequestOptions<TManagerRequestOptions> = Omit<TManage
 };
 
 // @public
-export type PresentationRpcResponse<TResult = undefined> = Promise<{
-    statusCode: PresentationStatus;
+export type PresentationRpcResponse<TResult = undefined> = Promise<PresentationRpcResponseData<TResult>>;
+
+// @public
+export interface PresentationRpcResponseData<TResult = undefined> {
+    // @alpha (undocumented)
+    diagnostics?: DiagnosticsScopeLogs[];
     errorMessage?: string;
     result?: TResult;
-    diagnostics?: DiagnosticsScopeLogs[];
-}>;
+    statusCode: PresentationStatus;
+}
 
 // @public
 export enum PresentationStatus {
@@ -2453,6 +2457,8 @@ export class RpcRequestsHandler implements IDisposable {
     getPagedNodes(options: Paged<HierarchyRequestOptions<IModelRpcProps, NodeKeyJSON, RulesetVariableJSON>>): Promise<PagedResponse<NodeJSON>>;
     // (undocumented)
     getSelectionScopes(options: SelectionScopeRequestOptions<IModelRpcProps>): Promise<SelectionScope[]>;
+    // (undocumented)
+    readonly maxRequestRepeatCount: number;
     request<TResult, TOptions extends RequestOptions<IModelRpcProps>, TArg = any>(func: (token: IModelRpcProps, options: PresentationRpcRequestOptions<TOptions>, ...args: TArg[]) => PresentationRpcResponse<TResult>, options: TOptions, ...additionalOptions: TArg[]): Promise<TResult>;
     }
 

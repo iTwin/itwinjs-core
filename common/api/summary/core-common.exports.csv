@@ -293,8 +293,9 @@ public;GeometrySummaryOptions
 public;GeometrySummaryRequestProps
 public;GeometrySummaryVerbosity
 internal;getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number
+internal;GlbHeader 
 public;GlobeMode
-internal;GltfHeader 
+internal;GltfChunk
 internal;GltfV2ChunkTypes
 internal;GltfVersions
 public;Gradient
@@ -728,6 +729,7 @@ public;TxnAction
 internal;TxnNotifications
 public;TypeDefinition 
 public;TypeDefinitionElementProps 
+internal;TypedGltfChunk = GltfChunk &
 public;TypeOfChange
 public;UnitType = "Meter" | "InternationalFoot" | "USSurveyFoot" | "Degree" | "Unsupported"
 public;UpdateCallback = (obj: any, t: number) => void

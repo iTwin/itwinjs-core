@@ -193,25 +193,11 @@ export class ThickenSheetElementsTool extends ElementGeometryCacheTool {
   }
 
   public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
-    if (updatedValue.propertyName === this.frontDistanceProperty.name) {
-      this.frontDistance = updatedValue.value.value as number;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.frontDistanceProperty.item);
-      return true;
-    } else if (updatedValue.propertyName === this.backDistanceProperty.name) {
-      this.backDistance = updatedValue.value.value as number;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.backDistanceProperty.item);
-      return true;
-    }
-    return false;
+    return this.changeToolSettingPropertyValue(updatedValue);
   }
 
   public override supplyToolSettingsProperties(): DialogItem[] | undefined {
-    IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValues(this.toolId, [this.frontDistanceProperty.name, this.backDistanceProperty.name])?.forEach((value) => {
-      if (value.propertyName === this.frontDistanceProperty.name)
-        this.frontDistanceProperty.dialogItemValue = value.value;
-      else if (value.propertyName === this.backDistanceProperty.name)
-        this.backDistanceProperty.dialogItemValue = value.value;
-    });
+    this.initializeToolSettingPropertyValues([this.frontDistanceProperty, this.backDistanceProperty]);
 
     const toolSettings = new Array<DialogItem>();
     toolSettings.push(this.frontDistanceProperty.toDialogItem({ rowPriority: 1, columnIndex: 0 }));
@@ -338,49 +324,16 @@ export class CutSolidElementsTool extends ElementGeometryCacheTool {
     return super.buildLocateAgenda(hit);
   }
 
-  private syncDepthState(): void {
-    this.depthProperty.displayValue = (this.depthProperty.description as LengthDescription).format(this.depth);
-    this.depthProperty.isDisabled = !this.useDepth;
-    this.syncToolSettingsProperties([this.depthProperty.syncItem]);
+  protected override getToolSettingPropertyLocked(property: DialogProperty<any>): DialogProperty<any> | undefined {
+    return (property === this.useDepthProperty ? this.depthProperty : undefined);
   }
 
   public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
-    if (updatedValue.propertyName === this.bothDirectionsProperty.name) {
-      this.bothDirections = updatedValue.value.value as boolean;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.bothDirectionsProperty.item);
-      return true;
-    } else if (updatedValue.propertyName === this.outsideProperty.name) {
-      this.outside = updatedValue.value.value as boolean;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.outsideProperty.item);
-      return true;
-    } else if (updatedValue.propertyName === this.useDepthProperty.name) {
-      this.useDepth = updatedValue.value.value as boolean;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.useDepthProperty.item);
-      this.syncDepthState();
-      return true;
-    } else if (updatedValue.propertyName === this.depthProperty.name) {
-      if (!updatedValue.value.value) {
-        this.syncDepthState(); // force UI to redisplay last valid value
-        return false;
-      }
-      this.depth = updatedValue.value.value as number;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.depthProperty.item);
-      return true;
-    }
-    return false;
+    return this.changeToolSettingPropertyValue(updatedValue);
   }
 
   public override supplyToolSettingsProperties(): DialogItem[] | undefined {
-    IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValues(this.toolId, [this.bothDirectionsProperty.name, this.outsideProperty.name, this.useDepthProperty.name, this.depthProperty.name])?.forEach((value) => {
-      if (value.propertyName === this.bothDirectionsProperty.name)
-        this.bothDirectionsProperty.dialogItemValue = value.value;
-      else if (value.propertyName === this.outsideProperty.name)
-        this.outsideProperty.dialogItemValue = value.value;
-      else if (value.propertyName === this.useDepthProperty.name)
-        this.useDepthProperty.dialogItemValue = value.value;
-      else if (value.propertyName === this.depthProperty.name)
-        this.depthProperty.dialogItemValue = value.value;
-    });
+    this.initializeToolSettingPropertyValues([this.bothDirectionsProperty, this.outsideProperty, this.useDepthProperty, this.depthProperty]);
 
     const toolSettings = new Array<DialogItem>();
     toolSettings.push(this.bothDirectionsProperty.toDialogItem({ rowPriority: 1, columnIndex: 0 }));
@@ -709,43 +662,16 @@ export class OffsetFacesTool extends LocateSubEntityTool {
     hints.sendHints(false);
   }
 
-  private syncDistanceState(): void {
-    this.distanceProperty.displayValue = (this.distanceProperty.description as LengthDescription).format(this.distance);
-    this.distanceProperty.isDisabled = !this.useDistance;
-    this.syncToolSettingsProperties([this.distanceProperty.syncItem]);
+  protected override getToolSettingPropertyLocked(property: DialogProperty<any>): DialogProperty<any> | undefined {
+    return (property === this.useDistanceProperty ? this.distanceProperty : undefined);
   }
 
   public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
-    if (updatedValue.propertyName === this.addSmoothProperty.name) {
-      this.addSmooth = updatedValue.value.value as boolean;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.addSmoothProperty.item);
-      return true;
-    } else if (updatedValue.propertyName === this.useDistanceProperty.name) {
-      this.useDistance = updatedValue.value.value as boolean;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.useDistanceProperty.item);
-      this.syncDistanceState();
-      return true;
-    } else if (updatedValue.propertyName === this.distanceProperty.name) {
-      if (!updatedValue.value.value) {
-        this.syncDistanceState(); // force UI to redisplay last valid value
-        return false;
-      }
-      this.distance = updatedValue.value.value as number;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.distanceProperty.item);
-      return true;
-    }
-    return false;
+    return this.changeToolSettingPropertyValue(updatedValue);
   }
 
   public override supplyToolSettingsProperties(): DialogItem[] | undefined {
-    IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValues(this.toolId, [this.addSmoothProperty.name, this.useDistanceProperty.name, this.distanceProperty.name])?.forEach((value) => {
-      if (value.propertyName === this.addSmoothProperty.name)
-        this.addSmoothProperty.dialogItemValue = value.value;
-      else if (value.propertyName === this.useDistanceProperty.name)
-        this.useDistanceProperty.dialogItemValue = value.value;
-      else if (value.propertyName === this.distanceProperty.name)
-        this.distanceProperty.dialogItemValue = value.value;
-    });
+    this.initializeToolSettingPropertyValues([this.addSmoothProperty, this.useDistanceProperty, this.distanceProperty]);
 
     const toolSettings = new Array<DialogItem>();
 
@@ -814,25 +740,11 @@ export class HollowFacesTool extends LocateSubEntityTool {
   }
 
   public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
-    if (updatedValue.propertyName === this.shellThicknessProperty.name) {
-      this.shellThickness = updatedValue.value.value as number;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.shellThicknessProperty.item);
-      return true;
-    } else if (updatedValue.propertyName === this.faceThicknessProperty.name) {
-      this.faceThickness = updatedValue.value.value as number;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.faceThicknessProperty.item);
-      return true;
-    }
-    return false;
+    return this.changeToolSettingPropertyValue(updatedValue);
   }
 
   public override supplyToolSettingsProperties(): DialogItem[] | undefined {
-    IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValues(this.toolId, [this.shellThicknessProperty.name, this.faceThicknessProperty.name])?.forEach((value) => {
-      if (value.propertyName === this.shellThicknessProperty.name)
-        this.shellThicknessProperty.dialogItemValue = value.value;
-      else if (value.propertyName === this.faceThicknessProperty.name)
-        this.faceThicknessProperty.dialogItemValue = value.value;
-    });
+    this.initializeToolSettingPropertyValues([this.shellThicknessProperty, this.faceThicknessProperty]);
 
     const toolSettings = new Array<DialogItem>();
     toolSettings.push(this.shellThicknessProperty.toDialogItem({ rowPriority: 1, columnIndex: 0 }));
@@ -1040,7 +952,7 @@ export class ImprintSolidElementsTool extends LocateSubEntityTool {
         if (undefined === geom)
           return undefined;
 
-        params = { imprint : geom, face: this.getAcceptedSubEntityData(0)?.props, extend: this.extend ? true : undefined };
+        params = { imprint: geom, face: this.getAcceptedSubEntityData(0)?.props, extend: this.extend ? true : undefined };
       } else if (ImprintSolidMethod.Edges === this.method) {
         if (!this.haveAcceptedSubEntities)
           return undefined;
@@ -1050,18 +962,18 @@ export class ImprintSolidElementsTool extends LocateSubEntityTool {
         if (undefined === edge)
           return undefined;
 
-        const edgeFaces = await ElementGeometryCacheTool.callCommand("getConnectedSubEntities", id, edge, SubEntityType.Face );
+        const edgeFaces = await ElementGeometryCacheTool.callCommand("getConnectedSubEntities", id, edge, SubEntityType.Face);
         if (undefined === edgeFaces || 0 === edgeFaces.length)
           return undefined;
 
         // TODO: Check planar face...get preferred face from cursor location in dynamics, etc.
-        const edgeLoop = await ElementGeometryCacheTool.callCommand("getConnectedSubEntities", id, edge, SubEntityType.Edge, { loopFace: edgeFaces[0] } );
+        const edgeLoop = await ElementGeometryCacheTool.callCommand("getConnectedSubEntities", id, edge, SubEntityType.Edge, { loopFace: edgeFaces[0] });
         if (undefined === edgeLoop || 0 === edgeLoop.length)
           return undefined;
 
-        params = { imprint : edgeLoop, face: edgeFaces[0], distance: this.distance, extend: this.extend ? true : undefined };
+        params = { imprint: edgeLoop, face: edgeFaces[0], distance: this.distance, extend: this.extend ? true : undefined };
       } else {
-        params = { imprint : this.agenda.elements[1], extend: this.extend ? true : undefined };
+        params = { imprint: this.agenda.elements[1], extend: this.extend ? true : undefined };
       }
 
       const opts: ElementGeometryResultOptions = { writeChanges: true };
@@ -1138,45 +1050,30 @@ export class ImprintSolidElementsTool extends LocateSubEntityTool {
   }
 
   public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
-    if (updatedValue.propertyName === this.methodProperty.name) {
-      this.method = updatedValue.value.value as number;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.methodProperty.item);
+    if (!this.changeToolSettingPropertyValue(updatedValue))
+      return false;
+
+    if (updatedValue.propertyName === this.methodProperty.name)
       await this.onReinitialize();
-      return true;
-    } else if (updatedValue.propertyName === this.extendProperty.name) {
-      this.extend = updatedValue.value.value as boolean;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.extendProperty.item);
-      return true;
-    } else if (updatedValue.propertyName === this.distanceProperty.name) {
-      this.distance = updatedValue.value.value as number;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.distanceProperty.item);
-      return true;
-    }
-    return false;
+
+    return true;
   }
 
   public override supplyToolSettingsProperties(): DialogItem[] | undefined {
-    IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValues(this.toolId, [this.methodProperty.name, this.extendProperty.name, this.distanceProperty.name])?.forEach((value) => {
-      if (value.propertyName === this.methodProperty.name)
-        this.methodProperty.dialogItemValue = value.value;
-      else if (value.propertyName === this.extendProperty.name)
-        this.extendProperty.dialogItemValue = value.value;
-      else if (value.propertyName === this.distanceProperty.name)
-        this.distanceProperty.dialogItemValue = value.value;
-    });
+    this.initializeToolSettingPropertyValues([this.methodProperty, this.extendProperty, this.distanceProperty]);
 
     const toolSettings = new Array<DialogItem>();
     toolSettings.push(this.methodProperty.toDialogItem({ rowPriority: 1, columnIndex: 0 }));
 
     switch (this.method) {
       case ImprintSolidMethod.Element:
-    	toolSettings.push(this.extendProperty.toDialogItem({ rowPriority: 2, columnIndex: 0 }));
+        toolSettings.push(this.extendProperty.toDialogItem({ rowPriority: 2, columnIndex: 0 }));
         break;
       case ImprintSolidMethod.Edges:
         toolSettings.push(this.distanceProperty.toDialogItem({ rowPriority: 2, columnIndex: 0 }));
         break;
       case ImprintSolidMethod.Points:
-    	toolSettings.push(this.extendProperty.toDialogItem({ rowPriority: 2, columnIndex: 0 }));
+        toolSettings.push(this.extendProperty.toDialogItem({ rowPriority: 2, columnIndex: 0 }));
         break;
     }
 
@@ -1246,7 +1143,7 @@ export abstract class BlendEdgesTool extends LocateSubEntityTool {
 
   protected async removeTangentEdges(_id: Id64String, edge?: SubEntityProps): Promise<void> {
     if (undefined === edge) {
-      this._acceptedSubEntities = this._acceptedSubEntities.filter((entry) => undefined === entry.toolData );
+      this._acceptedSubEntities = this._acceptedSubEntities.filter((entry) => undefined === entry.toolData);
       return;
     }
 
@@ -1340,26 +1237,17 @@ export class RoundEdgesTool extends BlendEdgesTool {
   }
 
   public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
-    if (updatedValue.propertyName === this.radiusProperty.name) {
-      this.radius = updatedValue.value.value as number;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.radiusProperty.item);
-      return true;
-    } else if (updatedValue.propertyName === this.addSmoothProperty.name) {
-      this.addSmooth = updatedValue.value.value as boolean;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.addSmoothProperty.item);
+    if (!this.changeToolSettingPropertyValue(updatedValue))
+      return false;
+
+    if (updatedValue.propertyName === this.addSmoothProperty.name)
       await this.syncTangentEdges();
-      return true;
-    }
-    return false;
+
+    return true;
   }
 
   public override supplyToolSettingsProperties(): DialogItem[] | undefined {
-    IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValues(this.toolId, [this.radiusProperty.name, this.addSmoothProperty.name])?.forEach((value) => {
-      if (value.propertyName === this.radiusProperty.name)
-        this.radiusProperty.dialogItemValue = value.value;
-      else if (value.propertyName === this.addSmoothProperty.name)
-        this.addSmoothProperty.dialogItemValue = value.value;
-    });
+    this.initializeToolSettingPropertyValues([this.radiusProperty, this.addSmoothProperty]);
 
     const toolSettings = new Array<DialogItem>();
     toolSettings.push(this.radiusProperty.toDialogItem({ rowPriority: 1, columnIndex: 0 }));
@@ -1484,50 +1372,17 @@ export class ChamferEdgesTool extends BlendEdgesTool {
   }
 
   public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
-    if (updatedValue.propertyName === this.methodProperty.name) {
-      this.method = updatedValue.value.value as number;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.methodProperty.item);
+    if (!this.changeToolSettingPropertyValue(updatedValue))
+      return false;
+
+    if (updatedValue.propertyName === this.methodProperty.name)
       await this.onReinitialize();
-      return true;
-    } else if (updatedValue.propertyName === this.addSmoothProperty.name) {
-      this.addSmooth = updatedValue.value.value as boolean;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.addSmoothProperty.item);
-      return true;
-    } else if (updatedValue.propertyName === this.lengthProperty.name) {
-      this.length = updatedValue.value.value as number;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.lengthProperty.item);
-      return true;
-    } else if (updatedValue.propertyName === this.distanceLeftProperty.name) {
-      this.distanceLeft = updatedValue.value.value as number;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.distanceLeftProperty.item);
-      return true;
-    } else if (updatedValue.propertyName === this.distanceRightProperty.name) {
-      this.distanceRight = updatedValue.value.value as number;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.distanceRightProperty.item);
-      return true;
-    } else if (updatedValue.propertyName === this.angleProperty.name) {
-      this.angle = updatedValue.value.value as number;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.angleProperty.item);
-      return true;
-    }
-    return false;
+
+    return true;
   }
 
   public override supplyToolSettingsProperties(): DialogItem[] | undefined {
-    IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValues(this.toolId, [this.methodProperty.name, this.addSmoothProperty.name, this.lengthProperty.name, this.distanceLeftProperty.name, this.distanceRightProperty.name, this.angleProperty.name])?.forEach((value) => {
-      if (value.propertyName === this.methodProperty.name)
-        this.methodProperty.dialogItemValue = value.value;
-      else if (value.propertyName === this.addSmoothProperty.name)
-        this.addSmoothProperty.dialogItemValue = value.value;
-      else if (value.propertyName === this.lengthProperty.name)
-        this.lengthProperty.dialogItemValue = value.value;
-      else if (value.propertyName === this.distanceLeftProperty.name)
-        this.distanceLeftProperty.dialogItemValue = value.value;
-      else if (value.propertyName === this.distanceRightProperty.name)
-        this.distanceRightProperty.dialogItemValue = value.value;
-      else if (value.propertyName === this.angleProperty.name)
-        this.angleProperty.dialogItemValue = value.value;
-    });
+    this.initializeToolSettingPropertyValues([this.methodProperty, this.addSmoothProperty, this.lengthProperty, this.distanceLeftProperty, this.distanceRightProperty, this.angleProperty]);
 
     const toolSettings = new Array<DialogItem>();
     toolSettings.push(this.methodProperty.toDialogItem({ rowPriority: 1, columnIndex: 0 }));
@@ -1765,43 +1620,12 @@ export class SweepFacesTool extends LocateFaceOrProfileTool {
     hints.sendHints(false);
   }
 
-  private syncDistanceState(): void {
-    this.distanceProperty.displayValue = (this.distanceProperty.description as LengthDescription).format(this.distance);
-    this.distanceProperty.isDisabled = !this.useDistance;
-    this.syncToolSettingsProperties([this.distanceProperty.syncItem]);
-  }
-
   public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
-    if (updatedValue.propertyName === this.addSmoothProperty.name) {
-      this.addSmooth = updatedValue.value.value as boolean;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.addSmoothProperty.item);
-      return true;
-    } else if (updatedValue.propertyName === this.useDistanceProperty.name) {
-      this.useDistance = updatedValue.value.value as boolean;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.useDistanceProperty.item);
-      this.syncDistanceState();
-      return true;
-    } else if (updatedValue.propertyName === this.distanceProperty.name) {
-      if (!updatedValue.value.value) {
-        this.syncDistanceState(); // force UI to redisplay last valid value
-        return false;
-      }
-      this.distance = updatedValue.value.value as number;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.distanceProperty.item);
-      return true;
-    }
-    return false;
+    return this.changeToolSettingPropertyValue(updatedValue);
   }
 
   public override supplyToolSettingsProperties(): DialogItem[] | undefined {
-    IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValues(this.toolId, [this.addSmoothProperty.name, this.useDistanceProperty.name, this.distanceProperty.name])?.forEach((value) => {
-      if (value.propertyName === this.addSmoothProperty.name)
-        this.addSmoothProperty.dialogItemValue = value.value;
-      else if (value.propertyName === this.useDistanceProperty.name)
-        this.useDistanceProperty.dialogItemValue = value.value;
-      else if (value.propertyName === this.distanceProperty.name)
-        this.distanceProperty.dialogItemValue = value.value;
-    });
+    this.initializeToolSettingPropertyValues([this.addSmoothProperty, this.useDistanceProperty, this.distanceProperty]);
 
     const toolSettings = new Array<DialogItem>();
 
@@ -1935,19 +1759,11 @@ export class SpinFacesTool extends LocateFaceOrProfileTool {
   }
 
   public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
-    if (updatedValue.propertyName === this.angleProperty.name) {
-      this.angle = updatedValue.value.value as number;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.angleProperty.item);
-      return true;
-    }
-    return false;
+    return this.changeToolSettingPropertyValue(updatedValue);
   }
 
   public override supplyToolSettingsProperties(): DialogItem[] | undefined {
-    IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValues(this.toolId, [this.angleProperty.name])?.forEach((value) => {
-      if (value.propertyName === this.angleProperty.name)
-        this.angleProperty.dialogItemValue = value.value;
-    });
+    this.initializeToolSettingPropertyValues([this.angleProperty]);
 
     const toolSettings = new Array<DialogItem>();
     toolSettings.push(this.angleProperty.toDialogItem({ rowPriority: 1, columnIndex: 0 }));
