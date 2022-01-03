@@ -283,7 +283,10 @@ interface GltfImage extends GltfChildOfRootProperty {
 interface GltfTextureInfo extends GltfProperty {
   /** The Id of the [[GltfTexture]]. */
   index: GltfId;
-  /** The set index of the texture's TEXCOORD attribute used for texture coordinate mapping. */
+  /** The set index of the texture's TEXCOORD attribute used for texture coordinate mapping.
+   * For example, if `texCoord` is `2`, an attribute named `TEXCOORD_2` must exist containing the texture coordinates.
+   * Default: 0.
+   */
   texCoord?: number;
 }
 
@@ -1360,8 +1363,13 @@ export abstract class GltfReader {
         if (!displayParams.ignoreLighting && !this.readNormals(mesh, primitive.attributes, "NORMAL"))
           return undefined;
 
-        if (!mesh.uvs)
-          this.readUVParams(mesh, primitive.attributes, "TEXCOORD_0");
+        if (!mesh.uvs) {
+          let texCoordIndex = 0;
+          if (!isGltf1Material(material) && undefined !== material.pbrMetallicRoughness?.baseColorTexture?.texCoord)
+            texCoordIndex = JsonUtils.asInt(material.pbrMetallicRoughness.baseColorTexture.texCoord);
+
+          this.readUVParams(mesh, primitive.attributes, `TEXCOORD_${texCoordIndex}`);
+        }
 
         if (this._deduplicateVertices && !this.deduplicateVertices(mesh))
           return undefined;
