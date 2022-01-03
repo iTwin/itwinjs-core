@@ -232,6 +232,7 @@ export type RenderSkyBoxParams = RenderSkyGradientParams | RenderSkySphereParams
 /** A RenderSystem provides access to resources used by the internal WebGL-based rendering system.
  * An application rarely interacts directly with the RenderSystem; instead it interacts with types like [[Viewport]] which
  * coordinate with the RenderSystem on the application's behalf.
+ * @see [Display system overview]($docs/learning/display/index.md)
  * @see [[IModelApp.renderSystem]].
  * @public
  */

@@ -21,7 +21,7 @@ export class GenerateTileContentTool extends Tool {
     try {
       const { tree, contentId } = args;
       const bytes = await IModelApp.tileAdmin.generateTileContent({ contentId, iModelTree: tree });
-      const stream = new ByteStream(bytes.buffer);
+      const stream = ByteStream.fromUint8Array(bytes);
       const { iModel, modelId, is3d, containsTransformNodes } = tree;
       const reader = ImdlReader.create({
         stream, iModel, modelId, is3d, containsTransformNodes,

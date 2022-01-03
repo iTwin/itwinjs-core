@@ -1465,7 +1465,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
-    componentDidUpdate(previousProps: PopupProps): void;
+    componentDidUpdate(previousProps: PopupProps, prevState: PopupState): void;
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)

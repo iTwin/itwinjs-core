@@ -373,7 +373,7 @@ class GraphicsTile extends Tile {
       isCanceled = () => !this.isLoading;
 
     assert(data instanceof Uint8Array);
-    const stream = new ByteStream(data.buffer);
+    const stream = ByteStream.fromUint8Array(data);
 
     const position = stream.curPos;
     const format = stream.nextUint32;

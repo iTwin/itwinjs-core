@@ -202,8 +202,11 @@ export async function imageElementFromImageSource(source: ImageSource): Promise<
  * @public
  */
 export async function imageElementFromUrl(url: string): Promise<HTMLImageElement> {
+  // We must set crossorigin property so that images loaded from same origin can be used with texImage2d.
+  // We must do that outside of the promise constructor or it won't work, for reasons.
+  const image = new Image();
+  image.crossOrigin = "anonymous";
   return new Promise((resolve: (image: HTMLImageElement) => void, reject) => {
-    const image = new Image();
     image.onload = () => resolve(image);
 
     // The "error" produced by Image is not an Error. It looks like an Event, but isn't one.
