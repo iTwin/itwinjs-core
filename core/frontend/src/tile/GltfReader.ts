@@ -1239,8 +1239,8 @@ export abstract class GltfReader {
       }
     }
 
-    const id = extractId(material.emissiveTexture?.index);
-    return id ?? extractId(material.pbrMetallicRoughness?.baseColorTexture?.index);
+    const id = extractId(material.pbrMetallicRoughness?.baseColorTexture?.index);
+    return id ?? extractId(material.emissiveTexture?.index);
   }
 
   private isMaterialTransparent(material: GltfMaterial): boolean {
