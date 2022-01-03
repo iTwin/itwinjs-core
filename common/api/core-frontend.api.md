@@ -3675,9 +3675,7 @@ export class GltfGraphicsReader extends GltfReader {
     // (undocumented)
     get scenes(): GltfDictionary<GltfScene>;
     // (undocumented)
-    get textures(): GltfDictionary<GltfTexture & {
-        resolvedTexture?: RenderTexture;
-    }>;
+    get textures(): GltfDictionary<GltfTexture>;
 }
 
 // @internal
@@ -3702,7 +3700,7 @@ export type GltfId = Gltf1Id | Gltf2Id;
 export class GltfMeshData {
     constructor(props: Mesh);
     // (undocumented)
-    indices?: Uint16Array | Uint32Array;
+    indices?: Uint8Array | Uint16Array | Uint32Array;
     // (undocumented)
     normals?: Uint16Array;
     // (undocumented)
@@ -3740,11 +3738,11 @@ export abstract class GltfReader {
     // (undocumented)
     protected _computedContentRange?: ElementAlignedBox3d;
     // (undocumented)
-    protected createDisplayParams(materialJson: GltfMaterial, hasBakedLighting: boolean): DisplayParams | undefined;
+    protected createDisplayParams(material: GltfMaterial, hasBakedLighting: boolean): DisplayParams | undefined;
     // (undocumented)
     protected readonly _deduplicateVertices: boolean;
     // (undocumented)
-    protected findTextureMapping(textureId: string): TextureMapping | undefined;
+    protected findTextureMapping(id: string, isTransparent: boolean): TextureMapping | undefined;
     // (undocumented)
     getBufferView(json: {
         [k: string]: any;
@@ -3825,9 +3823,7 @@ export abstract class GltfReader {
     // (undocumented)
     protected readonly _system: RenderSystem;
     // (undocumented)
-    protected get _textures(): GltfDictionary<GltfTexture & {
-        resolvedTexture?: RenderTexture;
-    }>;
+    protected get _textures(): GltfDictionary<GltfTexture>;
     traverseNodes(nodeIds: Iterable<GltfId>): Iterable<GltfNode>;
     traverseScene(): Iterable<GltfNode>;
     // (undocumented)
