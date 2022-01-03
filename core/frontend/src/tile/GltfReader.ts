@@ -367,7 +367,7 @@ interface Gltf2Material extends GltfChildOfRootProperty {
   doubleSided?: boolean;
   extensions?: GltfExtensions & {
     /** The [KHR_materials_unlit](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_materials_unlit) extension
-     * indicates that the material should be displayed without lighting. The extension adds no additional properties - it is effectively a boolean flag.
+     * indicates that the material should be displayed without lighting. The extension adds no additional properties; it is effectively a boolean flag.
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     KHR_materials_unlit?: { };
