@@ -5,7 +5,7 @@ Items provided at runtime may be inserted into a Toolbar, StatusBar or Backstage
 
 ## UiItemsProvider Interface
 
-Below is an excerpt from the [UiItemsProvider]($appui-abstract) interface that shows the primary methods that an application or extension would want to implement to add items to different areas of the User Interface.
+Below is an excerpt from the [UiItemsProvider]($appui-abstract) interface that shows the primary methods that an application or extension would want to implement to add items to different areas of the User Interface. The class [BaseUiItemsProvider]($appui-abstract) is a base class that implements the UiItemsProvider interface and allows the user to determine if the provider is to be used within a specific stage.
 
 ```ts
 export interface UiItemsProvider {
@@ -17,9 +17,9 @@ export interface UiItemsProvider {
 }
 ```
 
-### Basic UiItemsProvider Example
+### UiItemsProvider Example
 
-The code excerpt below is an example taken from `test-apps\ui-test-app` that shows a class that implements the UiItemsProvider interface.
+The code excerpt below shows a class that implements the UiItemsProvider interface.
 
 ```tsx
 class TestUiProvider implements UiItemsProvider {
