@@ -307,11 +307,4 @@ describe("GltfReader", () => {
     expectCycle(2);
     expectCycle(3);
   });
-
-  it("loads only (and all of) the textures referenced by the scene exactly once", async () => {
-  });
-
-  it("relaxes spec to tolerate misaligned buffer data", () => {
-    // ScalableMesh tile publisher apparently sometimes fails to align their buffers to 32-bit boundaries; we accommodate them...
-  });
 });
