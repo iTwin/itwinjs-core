@@ -171,6 +171,7 @@ export class NetworkTracingUiProvider implements UiItemsProvider {
       /** This widget when only be displayed when there is an element selected. */
       const widget: AbstractWidgetProps = {
         id: "ui-item-provider-test:elementDataListWidget",
+        icon: "icon-annotation-info",
         label: "Data",
         defaultState: WidgetState.Hidden,
         isFloatingStateSupported: true,
@@ -187,6 +188,7 @@ export class NetworkTracingUiProvider implements UiItemsProvider {
       const widget: AbstractWidgetProps = {
         id: PresentationPropertyGridWidgetControl.id,
         label: PresentationPropertyGridWidgetControl.label,
+        icon: PresentationPropertyGridWidgetControl.iconSpec,
         defaultState: WidgetState.Open,
         isFloatingStateSupported: true,
         // eslint-disable-next-line react/display-name
@@ -202,6 +204,7 @@ export class NetworkTracingUiProvider implements UiItemsProvider {
       const widget: AbstractWidgetProps = {
         id: "ui-item-provider-test:ViewAttributesWidget",
         label: "View Attributes",
+        icon: "icon-window-settings",
         defaultState: WidgetState.Floating,
         isFloatingStateSupported: true,
         // eslint-disable-next-line react/display-name
