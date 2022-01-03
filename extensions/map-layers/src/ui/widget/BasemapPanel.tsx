@@ -156,7 +156,7 @@ export function BasemapPanel() {
           <WebFontIcon iconName={baseMapVisible ? "icon-visibility" : "icon-visibility-hide-2"} />
         </button>
         <span className="map-manager-base-label">{baseLayerLabel}</span>
-        <Select options={baseMapOptions} closeMenuOnSelect placeholder={selectBaseMapLabel} value={selectedBaseMapValue.value} onChange={handleBaseMapSelection} size="small" />
+        <Select options={baseMapOptions} placeholder={selectBaseMapLabel} value={selectedBaseMapValue.value} onChange={handleBaseMapSelection} size="small" />
         {
           baseIsColor &&
           <ColorSwatch className="map-manager-base-item-color" colorDef={ColorDef.fromJSON(bgColor)} round={false} onColorPick={handleBgColorClick} />
