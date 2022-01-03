@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-react",
+      "comment": "Fix issue with PopupContextMenu not closing when click occurs in a parent popup.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-react"
+}

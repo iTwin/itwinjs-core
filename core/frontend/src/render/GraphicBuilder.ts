@@ -97,7 +97,7 @@ export interface BatchOptions {
   locateOnly?: boolean;
 }
 
-/** Options used as part of [[GraphicBuilderOptions]] to describe a pickable [[RenderGraphic]].
+/** Options used as part of [[GraphicBuilderOptions]] to describe a [pickable]($docs/learning/frontend/ViewDecorations#pickable-view-graphic-decorations) [[RenderGraphic]].
  * @public
  */
 export interface PickableGraphicOptions extends BatchOptions {

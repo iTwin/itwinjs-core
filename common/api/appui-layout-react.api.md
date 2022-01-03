@@ -1087,7 +1087,7 @@ export interface MessageButtonProps extends CommonProps {
     onClick?: () => void;
 }
 
-// @internal @deprecated
+// @internal
 export class MessageCenter extends React.PureComponent<MessageCenterProps> {
     // (undocumented)
     render(): JSX.Element;
@@ -2527,7 +2527,7 @@ export interface ToastProps extends CommonProps, NoChildrenProps {
 // @internal
 export type ToastStyle = Pick<React.CSSProperties, "width" | "height">;
 
-// @internal @deprecated
+// @internal
 export class ToolAssistance extends React.PureComponent<ToolAssistanceProps> {
     // (undocumented)
     render(): JSX.Element;

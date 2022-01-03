@@ -186,6 +186,7 @@ beta;ECSqlReader
 public;ECSqlSystemProperty
 public;ECSqlValueType
 internal;EdgeArgs
+alpha;EdgeType
 internal;EditingScopeNotifications
 public;ElementAlignedBox2d = Range2d
 public;ElementAlignedBox3d = Range3d
@@ -263,6 +264,8 @@ public;GeodeticTransform
 public;GeodeticTransformMethod = "None" | "Geocentric" | "PositionalVector" | "GridFiles" | "MultipleRegression" | "Undefined"
 public;GeodeticTransformProps
 public;GeographicCRS 
+beta;GeographicCRSInterpretRequestProps
+beta;GeographicCRSInterpretResponseProps
 public;GeographicCRSProps
 public;GeometricElement2dProps 
 public;GeometricElement3dProps 
@@ -290,14 +293,9 @@ public;GeometrySummaryOptions
 public;GeometrySummaryRequestProps
 public;GeometrySummaryVerbosity
 internal;getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number
+internal;GlbHeader 
 public;GlobeMode
-internal;GltfBufferData
-internal;GltfBufferView
-internal;GltfConstants
-internal;GltfDataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array
-internal;GltfDataType
-internal;GltfHeader 
-internal;GltfMeshMode
+internal;GltfChunk
 internal;GltfV2ChunkTypes
 internal;GltfVersions
 public;Gradient
@@ -376,6 +374,7 @@ public;IpcSocketFrontend
 internal;class IpcWebSocket 
 internal;IpcWebSocketBackend 
 internal;IpcWebSocketFrontend 
+internal;IpcWebSocketMessage
 internal;IpcWebSocketMessage
 internal;IpcWebSocketMessageType
 internal;class IpcWebSocketTransport
@@ -534,10 +533,12 @@ internal;ReadableFormData
 internal;readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription
 beta;RealityData
 beta;RealityDataAccess
-alpha;RealityDataFormat
-alpha;RealityDataProvider
-alpha;RealityDataSourceKey
-alpha;RealityDataSourceProps
+beta;RealityDataFormat
+beta;RealityDataFormat
+beta;RealityDataProvider
+beta;RealityDataSourceKey
+beta;RealityDataSourceKey
+beta;RealityDataSourceProps
 internal;REGISTRY: unique symbol
 public;RelatedElement 
 public;RelatedElementProps
@@ -728,6 +729,7 @@ public;TxnAction
 internal;TxnNotifications
 public;TypeDefinition 
 public;TypeDefinitionElementProps 
+internal;TypedGltfChunk = GltfChunk &
 public;TypeOfChange
 public;UnitType = "Meter" | "InternationalFoot" | "USSurveyFoot" | "Degree" | "Unsupported"
 public;UpdateCallback = (obj: any, t: number) => void

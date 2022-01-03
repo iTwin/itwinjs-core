@@ -69,7 +69,7 @@ export class KnotVector {
   /** Whether the bspline was created by adding poles into "closed" structure. This is used by serialize/deserialize to mark knotVector's that were converted from periodic style. */
   public get wrappable() { return this._wrapMode === undefined ? BSplineWrapMode.None : this._wrapMode; }
   public set wrappable(value: BSplineWrapMode) { this._wrapMode = value; }
-  /** Return the number of bezier spans.  Not that this includes zero-length spans if there are repeated knots. */
+  /** Return the number of bezier spans.  Note that this includes zero-length spans if there are repeated knots. */
   public get numSpans() { return this.rightKnotIndex - this.leftKnotIndex; }
   /**
    *
@@ -183,7 +183,7 @@ export class KnotVector {
     return knots;
   }
   /**
-   * Create knot vector with {degree-1} replicated knots at start and end, and uniform knots between.
+   * Create knot vector with wraparound knots at start and end, and uniform knots between.
    * @param  numInterval number of intervals in knot space.  (NOT POLE COUNT)
    * @param degree degree of polynomial
    * @param a0 left knot value for active interval

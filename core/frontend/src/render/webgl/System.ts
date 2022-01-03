@@ -24,7 +24,9 @@ import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
 import { RealityMeshPrimitive } from "../primitives/mesh/RealityMeshPrimitive";
 import { TerrainMeshPrimitive } from "../primitives/mesh/TerrainMeshPrimitive";
 import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
-import { MeshParams, PointStringParams, PolylineParams } from "../primitives/VertexTable";
+import { MeshParams } from "../primitives/VertexTable";
+import { PointStringParams } from "../primitives/PointStringParams";
+import { PolylineParams } from "../primitives/PolylineParams";
 import { RenderClipVolume } from "../RenderClipVolume";
 import { RenderGraphic, RenderGraphicOwner } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
@@ -189,10 +191,15 @@ export class IdMap implements WebGLDisposable {
       this.materials.set(material.key, material);
   }
 
-  /** Add a texture to this IdMap, given that it has a valid key. */
-  public addTexture(texture: RenderTexture) {
+  /** Add a texture to this IdMap, given that it has a valid string key. If specified, it will instead use the key parameter, which could also be a gradient symb. */
+  public addTexture(texture: RenderTexture, key?: TextureCacheKey) {
     assert(texture instanceof Texture);
-    if (texture.key)
+    if (undefined !== key) {
+      if ("string" === typeof key)
+        this.textures.set(key, texture);
+      else
+        this.addGradient(key, texture);
+    } else if (texture.key)
       this.textures.set(texture.key, texture);
   }
 
@@ -378,6 +385,9 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   public override get maxTextureSize(): number { return this.capabilities.maxTextureSize; }
   public override get supportsInstancing(): boolean { return this.capabilities.supportsInstancing; }
   public override get supportsNonuniformScaledInstancing(): boolean { return this.capabilities.isWebGL2; }
+
+  /** Requires gl_VertexID (WebGL 2 only) and > 8 texture units (WebGL 1 only guarantees 8). */
+  public override get supportsIndexedEdges(): boolean { return this.isWebGL2; }
   public get isWebGL2(): boolean { return this.capabilities.isWebGL2; }
   public override get isMobile(): boolean { return this.capabilities.isMobile; }
 
@@ -684,7 +694,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
 
     const texture = new Texture({ handle, type, ownership: args.ownership });
     if (texture && info)
-      info.idMap.addTexture(texture);
+      info.idMap.addTexture(texture, info.key);
 
     return texture;
   }

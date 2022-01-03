@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Render 2d map when terrain data is not available.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

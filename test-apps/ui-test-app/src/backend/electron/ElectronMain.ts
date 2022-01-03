@@ -7,9 +7,10 @@ import { join } from "path";
 import { assert } from "@itwin/core-bentley";
 import { ElectronMainAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronMain";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
-import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backend";
 import { getSupportedRpcs } from "../../common/rpcs";
 import { IModelHostConfiguration } from "@itwin/core-backend";
+import { EditCommandAdmin } from "@itwin/editor-backend";
+import * as editorBuiltInCommands from "@itwin/editor-backend";
 
 const mainWindowName = "mainWindow";
 
@@ -36,7 +37,7 @@ export async function initializeElectron(opts?: IModelHostConfiguration) {
     opt.iModelHost.authorizationClient = authClient;
 
   await ElectronHost.startup(opt);
-  EditCommandAdmin.register(BasicManipulationCommand);
+  EditCommandAdmin.registerModule(editorBuiltInCommands);
 
   // Handle custom keyboard shortcuts
   ElectronHost.app.on("web-contents-created", (_e, wc) => {

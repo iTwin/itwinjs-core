@@ -7,9 +7,10 @@
  */
 
 import * as React from "react";
+import { UiSyncEventArgs } from "@itwin/appui-abstract";
 import { LocalStateStorage, UiStateStorage } from "@itwin/core-react";
 import { UiFramework } from "../UiFramework";
-import { SyncUiEventArgs, SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
+import { SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 
 /** @public */
 export function useUiStateStorageHandler(): UiStateStorage {
@@ -34,7 +35,7 @@ export function UiStateStorageHandler(props: UiSettingsProviderProps) {
   const [stateStorage, setStateStorage] = React.useState(UiFramework.getUiStateStorage());
 
   React.useEffect(() => {
-    const handleSyncUiEvent = (args: SyncUiEventArgs): void => {
+    const handleSyncUiEvent = (args: UiSyncEventArgs): void => {
       if (SyncUiEventDispatcher.hasEventOfInterest(args.eventIds, [SyncUiEventId.UiStateStorageChanged]))
         setStateStorage(UiFramework.getUiStateStorage());
     };
