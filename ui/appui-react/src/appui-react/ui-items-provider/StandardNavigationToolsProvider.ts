@@ -6,7 +6,7 @@
  * @module StandardUiItemsProvider
  */
 
-import { BaseUiItemsProvider, CommonToolbarItem, StageUsage, ToolbarOrientation, ToolbarUsage, UiItemsManager, UiItemsProvider } from "@itwin/appui-abstract";
+import { BaseUiItemsProvider, CommonToolbarItem, ToolbarOrientation, ToolbarUsage, UiItemsManager } from "@itwin/appui-abstract";
 import { ToolbarHelper } from "../toolbar/ToolbarHelper";
 import { CoreTools } from "../tools/CoreToolDefinitions";
 
