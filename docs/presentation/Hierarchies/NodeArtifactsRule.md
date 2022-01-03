@@ -42,7 +42,9 @@ Specifies an ECExpression that allows applying node artifacts based on evaluatio
 [[include:Hierarchies.NodeArtifacts.Condition.Ruleset]]
 ```
 
-![Example of using "condition" attribute](./media/hierarchy-artifacts-with-condition-attribute.png)
+```ts
+[[include:Hierarchies.NodeArtifacts.Condition.Result]]
+```
 
 ### Attribute: `requiredSchemas`
 
@@ -86,4 +88,8 @@ A map of [ECExpressions](./ECExpressions.md#specification) whose evaluation resu
 
 ```ts
 [[include:Hierarchies.NodeArtifacts.Items.Ruleset]]
+```
+
+```ts
+[[include:Hierarchies.NodeArtifacts.Items.Result]]
 ```

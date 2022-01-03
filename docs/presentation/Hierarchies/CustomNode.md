@@ -28,7 +28,7 @@ Returns a static custom-defined node that's not based on an ECInstance.
 Specifies node type, which is assigned to node's key. The type can be used:
 
 - In [ECExpressions](../Advanced/ECExpressions.md) by using the [NavNode.Type](../Advanced/ECExpressions.md#navnode) symbol.
-- In code through [NodeKey.type]($presentation-common).
+- In code through [BaseNodeKey.type]($presentation-common).
 
 Generally this attribute is used to assign some unique identifier and use it in [condition](./ChildNodeRule.md#attribute-condition) of
 another [child node rule](./ChildNodeRule.md) to assign children to this node.
@@ -37,7 +37,9 @@ another [child node rule](./ChildNodeRule.md) to assign children to this node.
 [[include:Hierarchies.CustomNodeSpecification.Type.Ruleset]]
 ```
 
-![Example of using "type" attribute](./media/hierarchy-with-specification-type-attribute.png)
+```ts
+[[include:Hierarchies.CustomNodeSpecification.Type.Result]]
+```
 
 ### Attribute: `label`
 
@@ -45,6 +47,10 @@ Specifies node label. This is a string value that may be [localized](../Advanced
 
 ```ts
 [[include:Hierarchies.CustomNodeSpecification.Label.Ruleset]]
+```
+
+```ts
+[[include:Hierarchies.CustomNodeSpecification.Label.Result]]
 ```
 
 ![Example of using "label" attribute](./media/hierarchy-with-specification-label-attribute.png)
@@ -60,6 +66,10 @@ assigned to [Node.description]($presentation-common) and it's up to the UI compo
 [[include:Hierarchies.CustomNodeSpecification.Description.Ruleset]]
 ```
 
+```ts
+[[include:Hierarchies.CustomNodeSpecification.Description.Result]]
+```
+
 ![Example of using "description" attribute](./media/hierarchy-with-specification-description-attribute.png)
 
 ### Attribute: `imageId`
@@ -73,7 +83,9 @@ to decide what to do with it.
 [[include:Hierarchies.CustomNodeSpecification.ImageId.Ruleset]]
 ```
 
-![Example of using "imageId" attribute](./media/hierarchy-with-specification-imageid-attribute.png)
+```ts
+[[include:Hierarchies.CustomNodeSpecification.ImageId.Result]]
+```
 
 ### Attribute: `hideNodesInHierarchy`
 
@@ -97,7 +109,7 @@ Specifies whether the node created through this specification should be hidden i
 [[include:Hierarchies.Specification.HideIfNoChildren.Ruleset]]
 ```
 
-![Example of using "hide nodes in hierarchy" attribute](./media/hierarchy-with-specification-hideifnochildren-attribute.png)
+![Example of using "hide if no children" attribute](./media/hierarchy-with-specification-hideifnochildren-attribute.png)
 
 ### Attribute: `hideExpression`
 
@@ -146,7 +158,9 @@ list even if there are child node rules that define children for it.
 [[include:Hierarchies.Specification.HasChildren.Ruleset]]
 ```
 
-![Example of using "has children" attribute](./media/hierarchy-with-specification-haschildren-attribute.png)
+```ts
+[[include:Hierarchies.Specification.HasChildren.Result]]
+```
 
 ### Attribute: `nestedRules`
 

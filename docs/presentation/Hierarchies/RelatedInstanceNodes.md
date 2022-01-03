@@ -38,7 +38,7 @@ Either a single or an array of specifications may be specified for this attribut
 [[include:Hierarchies.RelatedInstanceNodesSpecification.RelationshipPaths.Ruleset]]
 ```
 
-![Example of using "instance filter" attribute](./media/hierarchy-with-specification-instancefilter-attribute.png)
+![Example of using "relationship paths" attribute](./media/hierarchy-with-specification-relationshippaths-attribute.png)
 
 ### Attribute: `instanceFilter`
 
@@ -74,7 +74,7 @@ Specifies whether nodes created through this specification should be hidden if t
 [[include:Hierarchies.Specification.HideIfNoChildren.Ruleset]]
 ```
 
-![Example of using "hide nodes in hierarchy" attribute](./media/hierarchy-with-specification-hideifnochildren-attribute.png)
+![Example of using "hide if no children" attribute](./media/hierarchy-with-specification-hideifnochildren-attribute.png)
 
 ### Attribute: `hideExpression`
 
@@ -92,7 +92,7 @@ Specifies an [ECExpression](./ECExpressions.md#specification) whose evaluation r
 
 > **Default value:** `false`
 
-Specifies whether similar ancestor nodes' checking should be suppressed when creating nodes based on this specification. [See more](./InfiniteHierarchiesPrevention.md).
+Specifies whether similar ancestor nodes' checking should be suppressed when creating nodes based on this specification. See more in [Infinite Hierarchies Prevention page](./InfiniteHierarchiesPrevention.md).
 
 ```ts
 [[include:Hierarchies.Specification.SuppressSimilarAncestorsCheck.Ruleset]]

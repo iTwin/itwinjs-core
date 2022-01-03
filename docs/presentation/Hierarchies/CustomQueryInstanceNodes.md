@@ -10,20 +10,20 @@ Returns nodes for instances returned by a provided ECSQL query.
 | --------------------------------------------------------------------------- | --------- | ----------------------------------------------------------------------------------- | ----------- |
 | *Filtering*                                                                 |
 | [`queries`](#attribute-queries)                                             | No        | [`QuerySpecification[]`](#string-query-specification)                               | `[]`        |
-| [`hideNodesInHierarchy`](#attribute-hideNodesInHierarchy)                   | No        | `boolean`                                                                           | `false`     |
-| [`hideIfNoChildren`](#attribute-hideIfNoChildren)                           | No        | `boolean`                                                                           | `false`     |
-| [`hideExpression`](#attribute-hideExpression)                               | No        | [ECExpression](./ECExpressions.md#specification)                                    | `""`        |
-| [`suppressSimilarAncestorsCheck`](#attribute-suppressSimilarAncestorsCheck) | No        | `boolean`                                                                           | `false`     |
+| [`hideNodesInHierarchy`](#attribute-hidenodesinhierarchy)                   | No        | `boolean`                                                                           | `false`     |
+| [`hideIfNoChildren`](#attribute-hideifnochildren)                           | No        | `boolean`                                                                           | `false`     |
+| [`hideExpression`](#attribute-hideexpression)                               | No        | [ECExpression](./ECExpressions.md#specification)                                    | `""`        |
+| [`suppressSimilarAncestorsCheck`](#attribute-suppresssimilarancestorscheck) | No        | `boolean`                                                                           | `false`     |
 | *Ordering*                                                                  |
 | [`priority`](#attribute-priority)                                           | No        | `number`                                                                            | `1000`      |
-| [`doNotSort`](#attribute-doNotSort)                                         | No        | `boolean`                                                                           | `false`     |
+| [`doNotSort`](#attribute-donotsort)                                         | No        | `boolean`                                                                           | `false`     |
 | *Grouping*                                                                  |
-| [`groupByClass`](#attribute-groupByClass)                                   | No        | `boolean`                                                                           | `true`      |
-| [`groupByLabel`](#attribute-groupByLabel)                                   | No        | `boolean`                                                                           | `true`      |
+| [`groupByClass`](#attribute-groupbyclass)                                   | No        | `boolean`                                                                           | `true`      |
+| [`groupByLabel`](#attribute-groupbylabel)                                   | No        | `boolean`                                                                           | `true`      |
 | *Misc.*                                                                     |
-| [`hasChildren`](#attribute-hasChildren)                                     | No        | `"Always" \| "Never" \| "Unknown"`                                                  | `"Unknown"` |
-| [`relatedInstances`](#attribute-relatedInstances)                           | No        | [`RelatedInstanceSpecification[]`](../Common-Rules/RelatedInstanceSpecification.md) | `[]`        |
-| [`nestedRules`](#attribute-nestedRules)                                     | No        | [`ChildNodeRule[]`](./ChildNodeRule.md)                                             | `[]`        |
+| [`hasChildren`](#attribute-haschildren)                                     | No        | `"Always" \| "Never" \| "Unknown"`                                                  | `"Unknown"` |
+| [`relatedInstances`](#attribute-relatedinstances)                           | No        | [`RelatedInstanceSpecification[]`](../Common-Rules/RelatedInstanceSpecification.md) | `[]`        |
+| [`nestedRules`](#attribute-nestedrules)                                     | No        | [`ChildNodeRule[]`](./ChildNodeRule.md)                                             | `[]`        |
 
 ### Attribute: `queries`
 
@@ -35,14 +35,14 @@ are 2 types of supported query specifications:
 - [String query specification](#string-query-specification)
 - [ECProperty value query specification](#ecproperty-value-query-specification).
 
-> The queries used in the specifications **must** return `ECClassId` and `ECInstanceId` columns, e.g.:
->
-> ```SQL
-> SELECT [e].[ECClassId], [e].[ECInstanceId]
->   FROM [bis].[Element] e
->  WHERE [e].[Parent].[Id] = 0x123
-> ```
->
+The queries used in the specifications **must** return `ECClassId` and `ECInstanceId` columns, e.g.:
+
+```SQL
+SELECT [e].[ECClassId], [e].[ECInstanceId]
+  FROM [bis].[Element] e
+ WHERE [e].[Parent].[Id] = 0x123
+```
+
 > **Note:** sorting and grouping happens **after** results of multiple query specifications are aggregated.
 
 #### String Query Specification
@@ -64,8 +64,8 @@ The specification contains an ECSQL query which is used to query for instances.
 
 The specification specifies the name of the parent node instance property whose value is the ECSQL used to query for instances.
 
-**Precondition:** can be used only if parent node is ECInstance node. If there is no immediate parent instance node, the rules engine walks
-up the hierarchy until it finds one. If that fails, this specification has no effect.
+> **Precondition:** can be used only if parent node is ECInstance node. If there is no immediate parent instance node, the rules engine walks
+> up the hierarchy until it finds one. If that fails, this specification has no effect.
 
 | Name                 | Required? | Type                             | Meaning                                                                                                                                                        |
 | -------------------- | --------- | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -98,7 +98,7 @@ Specifies whether nodes created through this specification should be hidden if t
 [[include:Hierarchies.Specification.HideIfNoChildren.Ruleset]]
 ```
 
-![Example of using "hide nodes in hierarchy" attribute](./media/hierarchy-with-specification-hideifnochildren-attribute.png)
+![Example of using "hide if no children" attribute](./media/hierarchy-with-specification-hideifnochildren-attribute.png)
 
 ### Attribute: `hideExpression`
 
@@ -116,7 +116,7 @@ Specifies an [ECExpression](./ECExpressions.md#specification) whose evaluation r
 
 > **Default value:** `false`
 
-Specifies whether similar ancestor nodes' checking should be suppressed when creating nodes based on this specification. [See more](./InfiniteHierarchiesPrevention.md).
+Specifies whether similar ancestor nodes' checking should be suppressed when creating nodes based on this specification. See more in [Infinite Hierarchies Prevention page](./InfiniteHierarchiesPrevention.md).
 
 ```ts
 [[include:Hierarchies.Specification.SuppressSimilarAncestorsCheck.Ruleset]]
@@ -245,22 +245,3 @@ different children.
 ```
 
 ![Example of using "nested rules" attribute](./media/hierarchy-with-specification-nestedrules-attribute.png)
-
-## Example
-
-```JSON
-{
-  "specType": "CustomQueryInstanceNodes",
-  "groupByClass": false,
-  "groupByLabel": false,
-  "queries": [{
-    "specType": "String",
-    "class": {"schemaName": "BisCore", "className": "Element"},
-    "query": "SELECT ECClassId, ECInstanceId FROM [bis].[Element] e WHERE e.ParentId = 10"
-  }, {
-    "specType": "ECPropertyValue",
-    "class": {"schemaName": "BisCore", "className": "GeometricElement3d"},
-    "parentPropertyName": "ChildrenQuery"
-  }]
-}
-```

@@ -86,13 +86,15 @@ Tells the library that the rule should only be handled if no other grouping rule
 
 ### Attribute: `groups`
 
-Specifies a list of grouping specifications which describe the kind of grouping that should be applied. There are 3 types of supported grouping:
+Specifies a list of [grouping specifications](#grouping-specifications) which describe the kind of grouping that should be applied. There are 3 types of supported grouping:
 
 - [Base class grouping](#base-class-grouping)
 - [Property grouping](#property-grouping)
 - [Same label instance grouping](#same-label-instance-grouping)
 
-#### Base Class Grouping
+## Grouping Specifications
+
+### Base Class Grouping
 
 Base class grouping allows grouping ECInstance nodes by their base class (as opposed to the hierarchy specifications' `groupByClass` attribute, which
 always groups by direct class).
@@ -106,7 +108,7 @@ defined in required order, the actual order may be adjusted using the [`priority
 | [`baseClass`](#attribute-baseclass)                               | No        | `SingleSchemaClassSpecification` | Rule's `class` |
 | [`createGroupForSingleItem`](#attribute-creategroupforsingleitem) | No        | `boolean`                        | `false`        |
 
-##### Attribute: `baseClass`
+#### Attribute: `baseClass`
 
 > **Default value:** Value of [rule's `class` attribute](#attribute-class).
 
@@ -116,9 +118,7 @@ Specification of the base ECClass to group by. If specified, allows grouping by 
 [[include:Hierarchies.Grouping.ClassGroup.BaseClass.Ruleset]]
 ```
 
-![Example of using "base class" attribute](./media/hierarchy-grouping-with-baseclass-attribute.png)
-
-##### Attribute: `createGroupForSingleItem`
+#### Attribute: `createGroupForSingleItem`
 
 > **Default value:** `false`
 
@@ -128,9 +128,9 @@ Specifies whether a grouping node should be created if there is only one item in
 [[include:Hierarchies.Grouping.Specification.CreateGroupForSingleItem.Ruleset]]
 ```
 
-![Example of using "createGroupForSingleItem" attribute](./media/hierarchy-grouping-with-createGroupForSingleItem-attribute.png)
+![Example of using "create group for single item" attribute](./media/hierarchy-grouping-with-creategroupforsingleitem-attribute.png)
 
-#### Property Grouping
+### Property Grouping
 
 Property grouping allows grouping by a property of the instance by value or by given ranges of values.
 
@@ -149,12 +149,12 @@ If the rules can't be defined in required order, the actual order may be adjuste
 | [`sortingValue`](#deprecated-attribute-sortingvalue)                            | No        | `"PropertyValue" \| "DisplayLabel"`                                                | `"DisplayLabel"` |
 | [`ranges`](#attribute-ranges)                                                   | No        | [`PropertyRangeGroupSpecification[]`](#propertyrangegroupspecification-attributes) | `[]`             |
 
-##### Attribute: `propertyName`
+#### Attribute: `propertyName`
 
 Name of the ECProperty which is used for grouping. The property must exist on the ECClass specified by the [rule's `class` attribute](#attribute-class) and it must be
 of either a primitive or a navigation type.
 
-##### Attribute: `createGroupForSingleItem`
+#### Attribute: `createGroupForSingleItem`
 
 > **Default value:** `false`
 
@@ -164,9 +164,9 @@ Specifies whether a grouping node should be created if there is only one item in
 [[include:Hierarchies.Grouping.Specification.CreateGroupForSingleItem.Ruleset]]
 ```
 
-![Example of using "createGroupForSingleItem" attribute](./media/hierarchy-grouping-with-createGroupForSingleItem-attribute.png)
+![Example of using "create group for single item" attribute](./media/hierarchy-grouping-with-creategroupforsingleitem-attribute.png)
 
-##### Attribute: `createGroupForUnspecifiedValues`
+#### Attribute: `createGroupForUnspecifiedValues`
 
 > **Default value:** `true`
 
@@ -178,7 +178,7 @@ Should a separate grouping node be created for nodes whose grouping value is not
 
 ![Example of using "create group for unspecified values" attribute](./media/hierarchy-grouping-with-creategroupforunspecifiedvalues-attribute.png)
 
-##### Attribute: `imageId`
+#### Attribute: `imageId`
 
 > **Default value:** `""`
 
@@ -193,7 +193,7 @@ to decide what to do with it.
 [[include:Hierarchies.Grouping.PropertyGroup.ImageId.Result]]
 ```
 
-##### Attribute: `ranges`
+#### Attribute: `ranges`
 
 > **Default value:** `[]`
 
@@ -215,7 +215,7 @@ range is used, even if it matches the value. The ranges are evaluated at the ord
 
 ![Example of using "ranges" attribute](./media/hierarchy-grouping-with-ranges-attribute.png)
 
-##### Deprecated Attribute: `groupingValue`
+#### Deprecated Attribute: `groupingValue`
 
 > **Default value:** `"DisplayLabel"`
 
@@ -228,7 +228,7 @@ Specifies whether instances should be grouped using property's display or raw va
 Display value should always be used for grouping. In cases when there's a need to show grouped instances count suffix, that
 can be achieved at the UI component layer by composing UI node's label from node's display label and [GroupingNodeKey.groupedInstancesCount]($presentation-common).
 
-##### Deprecated Attribute: `sortingValue`
+#### Deprecated Attribute: `sortingValue`
 
 > **Default value:** `"DisplayLabel"`
 
@@ -239,7 +239,7 @@ unless a [label override rule](../Customization/LabelOverride.md) is used to cha
 >
 > **Warning:** Grouping by label and sorting by property value is not possible.
 
-#### Same Label Instance Grouping
+### Same Label Instance Grouping
 
 Allows grouping multiple instances with the same label into one ECInstances type of node. Similar to display label grouping, but instead of showing a grouping
 node with multiple grouped ECInstance nodes, it shows a single ECInstances node which represents multiple ECInstances.
@@ -248,7 +248,7 @@ node with multiple grouped ECInstance nodes, it shows a single ECInstances node 
 | ------------------------------------------------- | --------- | -------------------------- | --------- |
 | [`applicationStage`](#attribute-applicationstage) | No        | `"Query" \| "PostProcess"` | `"Query"` |
 
-##### Attribute: `applicationStage`
+#### Attribute: `applicationStage`
 
 > **Default value:** `"Query"`
 
@@ -266,7 +266,9 @@ Stage of hierarchy creation at which the rule is applied.
   [[include:Hierarchies.Grouping.SameLabelInstanceGroup.ApplicationStage.Query.Ruleset]]
   ```
 
-  ![Example of using "application stage" attribute set to "query"](./media/hierarchy-grouping-with-applicationstage-query-attribute.png)
+  ```ts
+  [[include:Hierarchies.Grouping.SameLabelInstanceGroup.ApplicationStage.Query.Result]]
+  ```
 
 - `PostProcess` groups instances after the whole hierarchy level is built. This is generally useful when the hierarchy level
   is built from classes without common base class, using multiple specifications or is merged from multiple nested hierarchy levels using the
@@ -278,4 +280,6 @@ Stage of hierarchy creation at which the rule is applied.
   [[include:Hierarchies.Grouping.SameLabelInstanceGroup.ApplicationStage.PostProcess.Ruleset]]
   ```
 
-  ![Example of using "application stage" attribute set to "post-process"](./media/hierarchy-grouping-with-applicationstage-postprocess-attribute.png)
+  ```ts
+  [[include:Hierarchies.Grouping.SameLabelInstanceGroup.ApplicationStage.PostProcess.Result]]
+  ```

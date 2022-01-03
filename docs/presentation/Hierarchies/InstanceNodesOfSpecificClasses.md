@@ -10,22 +10,22 @@ Returns nodes for instances of specific ECClasses.
 | --------------------------------------------------------------------------- | --------- | ----------------------------------------------------------------------------------- | ----------- |
 | *Filtering*                                                                 |
 | [`classes`](#attribute-classes)                                             | Yes       | `MultiSchemaClassesSpecification \| MultiSchemaClassesSpecification[]`              |             |
-| [`excludedClasses`](#attribute-excludedClasses)                             | No        | `MultiSchemaClassesSpecification \| MultiSchemaClassesSpecification[]`              | `[]`        |
-| [`instanceFilter`](#attribute-instanceFilter)                               | No        | [ECExpression](./ECExpressions.md#instance-filter)                                  | `""`        |
-| [`hideNodesInHierarchy`](#attribute-hideNodesInHierarchy)                   | No        | `boolean`                                                                           | `false`     |
-| [`hideIfNoChildren`](#attribute-hideIfNoChildren)                           | No        | `boolean`                                                                           | `false`     |
-| [`hideExpression`](#attribute-hideExpression)                               | No        | [ECExpression](./ECExpressions.md#specification)                                    | `""`        |
-| [`suppressSimilarAncestorsCheck`](#attribute-suppressSimilarAncestorsCheck) | No        | `boolean`                                                                           | `false`     |
+| [`excludedClasses`](#attribute-excludedclasses)                             | No        | `MultiSchemaClassesSpecification \| MultiSchemaClassesSpecification[]`              | `[]`        |
+| [`instanceFilter`](#attribute-instancefilter)                               | No        | [ECExpression](./ECExpressions.md#instance-filter)                                  | `""`        |
+| [`hideNodesInHierarchy`](#attribute-hidenodesinhierarchy)                   | No        | `boolean`                                                                           | `false`     |
+| [`hideIfNoChildren`](#attribute-hideifnochildren)                           | No        | `boolean`                                                                           | `false`     |
+| [`hideExpression`](#attribute-hideexpression)                               | No        | [ECExpression](./ECExpressions.md#specification)                                    | `""`        |
+| [`suppressSimilarAncestorsCheck`](#attribute-suppresssimilarancestorscheck) | No        | `boolean`                                                                           | `false`     |
 | *Ordering*                                                                  |
 | [`priority`](#attribute-priority)                                           | No        | `number`                                                                            | `1000`      |
-| [`doNotSort`](#attribute-doNotSort)                                         | No        | `boolean`                                                                           | `false`     |
+| [`doNotSort`](#attribute-donotsort)                                         | No        | `boolean`                                                                           | `false`     |
 | *Grouping*                                                                  |
-| [`groupByClass`](#attribute-groupByClass)                                   | No        | `boolean`                                                                           | `true`      |
-| [`groupByLabel`](#attribute-groupByLabel)                                   | No        | `boolean`                                                                           | `true`      |
+| [`groupByClass`](#attribute-groupbyclass)                                   | No        | `boolean`                                                                           | `true`      |
+| [`groupByLabel`](#attribute-groupbylabel)                                   | No        | `boolean`                                                                           | `true`      |
 | *Misc.*                                                                     |
-| [`hasChildren`](#attribute-hasChildren)                                     | No        | `"Always" \| "Never" \| "Unknown"`                                                  | `"Unknown"` |
-| [`relatedInstances`](#attribute-relatedInstances)                           | No        | [`RelatedInstanceSpecification[]`](../Common-Rules/RelatedInstanceSpecification.md) | `[]`        |
-| [`nestedRules`](#attribute-nestedRules)                                     | No        | [`ChildNodeRule[]`](./ChildNodeRule.md)                                             | `[]`        |
+| [`hasChildren`](#attribute-haschildren)                                     | No        | `"Always" \| "Never" \| "Unknown"`                                                  | `"Unknown"` |
+| [`relatedInstances`](#attribute-relatedinstances)                           | No        | [`RelatedInstanceSpecification[]`](../Common-Rules/RelatedInstanceSpecification.md) | `[]`        |
+| [`nestedRules`](#attribute-nestedrules)                                     | No        | [`ChildNodeRule[]`](./ChildNodeRule.md)                                             | `[]`        |
 
 ### Attribute: `classes`
 
@@ -85,7 +85,7 @@ Specifies whether nodes created through this specification should be hidden if t
 [[include:Hierarchies.Specification.HideIfNoChildren.Ruleset]]
 ```
 
-![Example of using "hide nodes in hierarchy" attribute](./media/hierarchy-with-specification-hideifnochildren-attribute.png)
+![Example of using "hide if no children" attribute](./media/hierarchy-with-specification-hideifnochildren-attribute.png)
 
 ### Attribute: `hideExpression`
 
@@ -103,7 +103,7 @@ Specifies an [ECExpression](./ECExpressions.md#specification) whose evaluation r
 
 > **Default value:** `false`
 
-Specifies whether similar ancestor nodes' checking should be suppressed when creating nodes based on this specification. [See more](./InfiniteHierarchiesPrevention.md).
+Specifies whether similar ancestor nodes' checking should be suppressed when creating nodes based on this specification. See more in [Infinite Hierarchies Prevention page](./InfiniteHierarchiesPrevention.md).
 
 ```ts
 [[include:Hierarchies.Specification.SuppressSimilarAncestorsCheck.Ruleset]]
