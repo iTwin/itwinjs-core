@@ -69,6 +69,11 @@ Identifies whether we should ignore this specification if another specification 
 [[include:ContentInstancesOfSpecificClasses.OnlyIfNotHandled.Ruleset]]
 ```
 
+  | onlyIfNotHandled | Result                                                                                                                                      |
+  | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+  | true  | ![Example when selecting all instances](./media/contentInstancesOfSpecificClasses-with-onlyIfNotHandled-attribute-1.png) |
+  | false    | ![Example when filtering instances](./media/contentInstancesOfSpecificClasses-with-onlyIfNotHandled-attribute-2.png)     |
+
 ### Attribute: `priority`
 
 Defines the order in which specifications are handled - higher priority means the specifications is handled first. If priorities are equal, the specifications are handled in the order they're defined. Default `priority` is 1000.

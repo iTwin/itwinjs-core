@@ -589,4 +589,149 @@ describe("Learning Snippets", () => {
 
   });
 
+  describe("ContentInstancesOfSpecificClasses", () => {
+
+    let imodel: IModelConnection;
+
+    beforeEach(async () => {
+      await initialize();
+      imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
+    });
+
+    afterEach(async () => {
+      await imodel.close();
+      await terminate();
+    });
+
+    it("uses `classes` attribute", async () => {
+      // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.classes.Ruleset
+      // The ruleset has a content rule with contentInstancesOfSpecificClasses specification that returns content of all `bis.PhysicalModel`.
+      const ruleset: Ruleset = {
+        id: "example",
+        rules: [{
+          ruleType: RuleTypes.Content,
+          specifications: [{
+            specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+            classes: { schemaName: "BisCore", classNames: ["PhysicalModel"] },
+          }],
+        }],
+      };
+      // __PUBLISH_EXTRACT_END__
+
+      // Ensure only the `bis.PhysicalModel` instances are selected.
+      const content = await Presentation.presentation.getContent({
+        imodel,
+        rulesetOrId: ruleset,
+        keys: new KeySet(),
+        descriptor: {},
+      });
+
+      expect(content!.contentSet.length).to.eq(1);
+      expect(content!.contentSet[0].values["Modeled Element"]).to.eq("Properties_60InstancesWithUrl2");
+    });
+
+    it("uses `handlePropertiesPolymorphically` attribute", async () => {
+      // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.handlePropertiesPolymorphically.Ruleset
+      // The ruleset has a content rule with contentInstancesOfSpecificClasses specification that returns content of all `bis.ViewDefinition`
+      // instances and all of the content instances that inherit from `bis.ViewDefinition`.
+
+      const ruleset: Ruleset = {
+        id: "example",
+        rules: [{
+          ruleType: RuleTypes.Content,
+          specifications: [{
+            specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+            classes: { schemaName: "BisCore", classNames: ["ViewDefinition"], arePolymorphic: true },
+            handlePropertiesPolymorphically: true,
+          }],
+        }],
+      };
+      // __PUBLISH_EXTRACT_END__
+
+      // Ensure that derived `bis.ViewDefinition` instances along with their properties are also selected.
+      const content = await Presentation.presentation.getContent({
+        imodel,
+        rulesetOrId: ruleset,
+        keys: new KeySet(),
+        descriptor: {},
+      });
+      expect(content!.descriptor.fields).to.containSubset([
+        { label: "Category Selector" },
+        { label: "Code" },
+        { label: "Description" },
+        { label: "Display Style" },
+        { label: "Extents" },
+        { label: "Eye Point" },
+        { label: "Focus Distance" },
+        { label: "Is Camera On" },
+        { label: "Is Private" },
+        { label: "Lens Angle" },
+        { label: "Model" },
+        { label: "Model Selector" },
+        { label: "Origin" },
+        { label: "Pitch" },
+        { label: "Roll" },
+        { label: "User Label" },
+        { label: "Yaw" },
+      ]).and.to.have.lengthOf(17);
+
+      expect(content!.contentSet.length).to.eq(4);
+    });
+
+    it("uses `instanceFilter` attribute", async () => {
+      // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.instanceFilter.Ruleset
+      // The ruleset has a content rule with contentInstancesOfSpecificClasses specification that returns content of all filtered
+      // `bis.SpatialViewDefinition` instances whose `Pitch` property value is higher or equal to 0.
+
+      const ruleset: Ruleset = {
+        id: "example",
+        rules: [{
+          ruleType: RuleTypes.Content,
+          specifications: [{
+            specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+            classes: { schemaName: "BisCore", classNames: ["SpatialViewDefinition"] },
+            instanceFilter: "this.Pitch >= 0",
+          }],
+        }],
+      };
+      // __PUBLISH_EXTRACT_END__
+
+      // Ensure that only `bis.SpatialViewDefinition` instances that have Pitch >= 0 are selected.
+      const content = await Presentation.presentation.getContent({
+        imodel,
+        rulesetOrId: ruleset,
+        keys: new KeySet(),
+        descriptor: {},
+      });
+
+      expect(content!.contentSet.length).to.eq(2);
+      expect(content!.contentSet[0].values.Pitch).to.eq(0);
+      expect(content!.contentSet[1].values.Pitch).to.eq(90);
+    });
+
+    it("uses `onlyIfNotHandled` attribute", async () => {
+      // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.onlyIfNotHandled.Ruleset
+      // The ruleset has a content rule with two contentInstancesOfSpecificClasses specifications for
+      // `bis.ViewDefinition` and `bis.PhysicalModel` respectively. The `bis.PhysicalModel` rule has lower priority and `onlyIfNotHandled`
+      // attribute, which allows it to be overriden by higher priority rules.
+    });
+
+    it("uses `priority` attribute", async () => {
+    });
+
+    it("uses `relatedProperties` attribute", async () => {
+    });
+
+    it("uses `calculatedProperties` attribute", async () => {
+    });
+
+    it("uses `propertyCategories` attribute", async () => {
+    });
+
+    it("uses `propertyOverrides` attribute", async () => {
+    });
+
+    it("uses `relatedInstances` attribute", async () => {
+    });
+  });
 });
