@@ -6,7 +6,8 @@ import { expect } from "chai";
 import { assert } from "@itwin/core-bentley";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import {
-  ChildNodeSpecificationTypes, NodeKey, QuerySpecificationTypes, RelationshipDirection, Ruleset, RuleTypes, StandardNodeTypes,
+  ChildNodeSpecificationTypes, GroupingSpecificationTypes, NodeKey, QuerySpecificationTypes, RelationshipDirection, Ruleset, RuleTypes,
+  SameLabelInstanceGroupApplicationStage, StandardNodeTypes,
 } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../IntegrationTests";
@@ -1121,6 +1122,393 @@ describe("Learning Snippets", () => {
           // we can't construct any ruleset that would actually return nodes for this test case
           const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
           expect(nodes).to.be.empty;
+        });
+
+      });
+
+    });
+
+    describe("Grouping", () => {
+
+      it("uses `condition` attribute", async () => {
+        // __PUBLISH_EXTRACT_START__ Hierarchies.Grouping.Condition.Ruleset
+        // There's a hierarchy of Models and their Elements. In addition, there's a grouping rule for Elements
+        // that only takes effect if the Model has `IsPrivate` flag set to `true`.
+        const ruleset: Ruleset = {
+          id: "example",
+          rules: [{
+            ruleType: RuleTypes.RootNodes,
+            specifications: [{
+              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+              classes: { schemaName: "BisCore", classNames: ["Model"], arePolymorphic: true },
+              groupByClass: false,
+            }],
+          }, {
+            ruleType: RuleTypes.ChildNodes,
+            condition: `ParentNode.IsOfClass("Model", "BisCore")`,
+            specifications: [{
+              specType: ChildNodeSpecificationTypes.RelatedInstanceNodes,
+              relationshipPaths: [{
+                relationship: { schemaName: "BisCore", className: "ModelContainsElements" },
+                direction: RelationshipDirection.Forward,
+              }],
+              groupByClass: false,
+              groupByLabel: false,
+            }],
+            customizationRules: [{
+              ruleType: RuleTypes.Grouping,
+              class: { schemaName: "BisCore", className: "Element" },
+              condition: `ParentNode.ECInstance.IsPrivate`,
+              groups: [{
+                specType: GroupingSpecificationTypes.Property,
+                propertyName: "UserLabel",
+              }],
+            }],
+          }],
+        };
+        // __PUBLISH_EXTRACT_END__
+        printRuleset(ruleset);
+
+        // Confirm that only private models have children grouped by property
+        const modelNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+        expect(modelNodes).to.have.lengthOf(8).and.containSubset([{
+          label: { displayValue: "BisCore.DictionaryModel" },
+        }, {
+          label: { displayValue: "BisCore.RealityDataSources" },
+        }, {
+          label: { displayValue: "Converted Drawings" },
+        }, {
+          label: { displayValue: "Converted Groups" },
+        }, {
+          label: { displayValue: "Converted Sheets" },
+        }, {
+          label: { displayValue: "Definition Model For DgnV8Bridge:D:\\Temp\\Properties_60InstancesWithUrl2.dgn, Default" },
+        }, {
+          label: { displayValue: "Properties_60InstancesWithUrl2" },
+        }, {
+          // Note: Due to bug #776790 the label of RepositoryModel is not calculated correctly and it gets the
+          // localized "Not Specified" label. Confirm that's the expected model using its id.
+          key: { instanceKeys: [{ id: "0x1" }] },
+        }]);
+
+        const privateModels = ["BisCore.DictionaryModel", "BisCore.RealityDataSources"];
+        await Promise.all(modelNodes.filter((m) => m.label.displayValue.includes("a")).map(async (modelNode) => {
+          if (!modelNode.hasChildren)
+            return;
+
+          const expectedChildrenType = privateModels.includes(modelNode.label.displayValue) ? StandardNodeTypes.ECPropertyGroupingNode : StandardNodeTypes.ECInstancesNode;
+          const childNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset, parentKey: modelNode.key });
+          childNodes.forEach((childNode) => {
+            expect(childNode.key.type).to.eq(expectedChildrenType, `Unexpected child node type for model "${modelNode.label.displayValue}".`);
+          });
+        }));
+      });
+
+      it("uses `createGroupForSingleItem` attribute", async () => {
+        // __PUBLISH_EXTRACT_START__ Hierarchies.Grouping.CreateGroupForSingleItem.Ruleset
+        // There's a root nodes rule that returns nodes for all elements and there's a grouping rule
+        // that groups those elements by `CodeValue` property. The grouping rule has the `createGroupForSingleItem`
+        // flag, so property grouping nodes are created even if they group only a single element.
+        const ruleset: Ruleset = {
+          id: "example",
+          rules: [{
+            ruleType: RuleTypes.RootNodes,
+            specifications: [{
+              specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+              classes: { schemaName: "BisCore", classNames: ["Element"], arePolymorphic: true },
+              groupByClass: false,
+            }],
+            customizationRules: [{
+              ruleType: RuleTypes.Grouping,
+              class: { schemaName: "BisCore", className: "Element" },
+              groups: [{
+                specType: GroupingSpecificationTypes.Property,
+                propertyName: "CodeValue",
+                createGroupForSingleItem: true,
+              }],
+            }],
+          }],
+        };
+        // __PUBLISH_EXTRACT_END__
+        printRuleset(ruleset);
+
+        // Confirm all nodes are property grouping nodes
+        const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+        expect(nodes).to.be.not.empty;
+        nodes.forEach((node) => {
+          expect(node.key.type).to.eq(StandardNodeTypes.ECPropertyGroupingNode);
+        });
+      });
+
+      describe("ClassGroup", () => {
+
+        it("uses `baseClass` attribute", async () => {
+          // __PUBLISH_EXTRACT_START__ Hierarchies.Grouping.ClassGroup.BaseClass.Ruleset
+          // The ruleset contains a root nodes rule for Elements and a grouping rule that puts
+          // all PhysicalElements into a class group.
+          const ruleset: Ruleset = {
+            id: "example",
+            rules: [{
+              ruleType: RuleTypes.RootNodes,
+              specifications: [{
+                specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+                classes: { schemaName: "BisCore", classNames: ["Element"], arePolymorphic: true },
+                groupByClass: false,
+              }],
+              customizationRules: [{
+                ruleType: RuleTypes.Grouping,
+                class: { schemaName: "BisCore", className: "Element" },
+                groups: [{
+                  specType: GroupingSpecificationTypes.Class,
+                  baseClass: { schemaName: "BisCore", className: "PhysicalElement" },
+                }],
+              }],
+            }],
+          };
+          // __PUBLISH_EXTRACT_END__
+          printRuleset(ruleset);
+
+          // Confirm there's a class grouping node for PhysicalElement
+          const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+          expect(nodes).to.containSubset([{
+            key: {
+              type: StandardNodeTypes.ECClassGroupingNode,
+              className: "BisCore:PhysicalElement",
+            },
+          }]);
+        });
+
+      });
+
+      describe("PropertyGroup", () => {
+
+        it("uses `createGroupForUnspecifiedValues` attribute", async () => {
+          // __PUBLISH_EXTRACT_START__ Hierarchies.Grouping.PropertyGroup.CreateGroupForUnspecifiedValues.Ruleset
+          // The ruleset contains a root nodes rule for Elements and a grouping rule that groups them
+          // by `UserLabel` property. By default all nodes whose instance doesn't have a value for the property would
+          // be placed under a "Not Specified" grouping node, but the grouping rule has this behavior disabled through
+          // the `createGroupForUnspecifiedValues` attribute.
+          const ruleset: Ruleset = {
+            id: "example",
+            rules: [{
+              ruleType: RuleTypes.RootNodes,
+              specifications: [{
+                specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+                classes: { schemaName: "BisCore", classNames: ["Element"], arePolymorphic: true },
+                groupByClass: false,
+              }],
+              customizationRules: [{
+                ruleType: RuleTypes.Grouping,
+                class: { schemaName: "BisCore", className: "Element" },
+                groups: [{
+                  specType: GroupingSpecificationTypes.Property,
+                  propertyName: "UserLabel",
+                  createGroupForUnspecifiedValues: false,
+                }],
+              }],
+            }],
+          };
+          // __PUBLISH_EXTRACT_END__
+          printRuleset(ruleset);
+
+          // Confirm there's no "Not Specified" node
+          const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+          expect(nodes).to.not.containSubset([{
+            key: {
+              type: StandardNodeTypes.ECPropertyGroupingNode,
+              propertyName: "UserLabel",
+              groupingValues: [null],
+            },
+          }]);
+        });
+
+        it("uses `imageId` attribute", async () => {
+          // __PUBLISH_EXTRACT_START__ Hierarchies.Grouping.PropertyGroup.ImageId.Ruleset
+          // The ruleset contains a root nodes rule for Elements and a grouping rule that groups them
+          // by `UserLabel` property. The grouping rule also sets an image identifier for all grouping nodes.
+          const ruleset: Ruleset = {
+            id: "example",
+            rules: [{
+              ruleType: RuleTypes.RootNodes,
+              specifications: [{
+                specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+                classes: { schemaName: "BisCore", classNames: ["Element"], arePolymorphic: true },
+                groupByClass: false,
+              }],
+              customizationRules: [{
+                ruleType: RuleTypes.Grouping,
+                class: { schemaName: "BisCore", className: "Element" },
+                groups: [{
+                  specType: GroupingSpecificationTypes.Property,
+                  propertyName: "UserLabel",
+                  imageId: "my-icon-identifier",
+                  createGroupForSingleItem: true,
+                }],
+              }],
+            }],
+          };
+          // __PUBLISH_EXTRACT_END__
+          printRuleset(ruleset);
+
+          // __PUBLISH_EXTRACT_START__ Hierarchies.Grouping.PropertyGroup.ImageId.Result
+          // Confirm that all grouping nodes got the `imageId`
+          const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+          expect(nodes).to.not.be.empty;
+          nodes.forEach((node) => {
+            expect(node).to.containSubset({
+              key: {
+                type: StandardNodeTypes.ECPropertyGroupingNode,
+                propertyName: "UserLabel",
+              },
+              imageId: "my-icon-identifier",
+            });
+          });
+          // __PUBLISH_EXTRACT_END__
+        });
+
+        it("uses `ranges` attribute", async () => {
+          // __PUBLISH_EXTRACT_START__ Hierarchies.Grouping.PropertyGroup.Ranges.Ruleset
+          // The ruleset contains a root nodes rule for GeometricElement3d and a grouping rule that groups them
+          // by `Yaw` property into 3 ranges: Negative, Positive and Zero.
+          const ruleset: Ruleset = {
+            id: "example",
+            rules: [{
+              ruleType: RuleTypes.RootNodes,
+              specifications: [{
+                specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+                classes: { schemaName: "BisCore", classNames: ["GeometricElement3d"], arePolymorphic: true },
+                groupByClass: false,
+              }],
+              customizationRules: [{
+                ruleType: RuleTypes.Grouping,
+                class: { schemaName: "BisCore", className: "GeometricElement3d" },
+                groups: [{
+                  specType: GroupingSpecificationTypes.Property,
+                  propertyName: "Yaw",
+                  ranges: [{
+                    fromValue: "0",
+                    toValue: "0",
+                    label: "Zero",
+                  }, {
+                    fromValue: "-360",
+                    toValue: "0",
+                    label: "Negative",
+                  }, {
+                    fromValue: "0",
+                    toValue: "360",
+                    label: "Positive",
+                  }],
+                }],
+              }],
+            }],
+          };
+          // __PUBLISH_EXTRACT_END__
+          printRuleset(ruleset);
+
+          // Confirm that elements were correctly grouped into ranges
+          const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+          expect(nodes).to.have.lengthOf(2).and.to.containSubset([{
+            key: { type: StandardNodeTypes.ECPropertyGroupingNode, propertyName: "Yaw", groupedInstancesCount: 2 },
+            label: { displayValue: "Negative" },
+          }, {
+            key: { type: StandardNodeTypes.ECPropertyGroupingNode, propertyName: "Yaw", groupedInstancesCount: 60 },
+            label: { displayValue: "Zero" },
+          }]);
+        });
+
+      });
+
+      describe("SameLabelInstanceGroup", () => {
+
+        it("uses `applicationStage = Query` attribute", async () => {
+          // __PUBLISH_EXTRACT_START__ Hierarchies.Grouping.SameLabelInstanceGroup.ApplicationStage.Query.Ruleset
+          // The ruleset contains a root nodes rule for SubCategory instances. The grouping rule
+          // tells the rules engine to group them by label by creating a single ECInstances node for grouped instances.
+          const ruleset: Ruleset = {
+            id: "example",
+            rules: [{
+              ruleType: RuleTypes.RootNodes,
+              specifications: [{
+                specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+                classes: { schemaName: "BisCore", classNames: ["SubCategory"] },
+                groupByClass: false,
+              }],
+              customizationRules: [{
+                ruleType: RuleTypes.Grouping,
+                class: { schemaName: "BisCore", className: "SubCategory" },
+                groups: [{
+                  specType: GroupingSpecificationTypes.SameLabelInstance,
+                  applicationStage: SameLabelInstanceGroupApplicationStage.Query,
+                }],
+              }],
+            }],
+          };
+          // __PUBLISH_EXTRACT_END__
+          printRuleset(ruleset);
+
+          // Confirm that elements were correctly grouped under a single ECInstances node
+          const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+          expect(nodes).to.have.lengthOf(1).and.to.containSubset([{
+            key: {
+              type: StandardNodeTypes.ECInstancesNode,
+              instanceKeys: [{
+                className: "BisCore:SubCategory", id: "0x18",
+              }, {
+                className: "BisCore:SubCategory", id: "0x1a",
+              }],
+            },
+            label: { displayValue: "Uncategorized" },
+          }]);
+        });
+
+        it("uses `applicationStage = PostProcess` attribute", async () => {
+          // __PUBLISH_EXTRACT_START__ Hierarchies.Grouping.SameLabelInstanceGroup.ApplicationStage.PostProcess.Ruleset
+          // The ruleset contains a root nodes rule for PhysicalModel and PhysicalPartition instances. The grouping rule
+          // tells the rules engine to group them by label. PhysicalModel and PhysicalPartition classes have no common base class,
+          // so two different grouping rules are required to define this kind of grouping and that also means that "Query" type
+          // of grouping is not possible - grouping at "PostProcessing" step is required.
+          const ruleset: Ruleset = {
+            id: "example",
+            rules: [{
+              ruleType: RuleTypes.RootNodes,
+              specifications: [{
+                specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
+                classes: { schemaName: "BisCore", classNames: ["PhysicalModel", "PhysicalPartition"] },
+                groupByClass: false,
+              }],
+              customizationRules: [{
+                ruleType: RuleTypes.Grouping,
+                class: { schemaName: "BisCore", className: "PhysicalModel" },
+                groups: [{
+                  specType: GroupingSpecificationTypes.SameLabelInstance,
+                  applicationStage: SameLabelInstanceGroupApplicationStage.PostProcess,
+                }],
+              }, {
+                ruleType: RuleTypes.Grouping,
+                class: { schemaName: "BisCore", className: "PhysicalPartition" },
+                groups: [{
+                  specType: GroupingSpecificationTypes.SameLabelInstance,
+                  applicationStage: SameLabelInstanceGroupApplicationStage.PostProcess,
+                }],
+              }],
+            }],
+          };
+          // __PUBLISH_EXTRACT_END__
+          printRuleset(ruleset);
+
+          // Confirm that elements were correctly grouped under a single ECInstances node
+          const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
+          expect(nodes).to.have.lengthOf(1).and.to.containSubset([{
+            key: {
+              type: StandardNodeTypes.ECInstancesNode,
+              instanceKeys: [{
+                className: "BisCore:PhysicalPartition", id: "0x1c",
+              }, {
+                className: "BisCore:PhysicalModel", id: "0x1c",
+              }],
+            },
+            label: { displayValue: "Properties_60InstancesWithUrl2" },
+          }]);
         });
 
       });
