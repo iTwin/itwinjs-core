@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { ViewClipByPlaneTool } from "@itwin/core-frontend";
-import { CommonStatusBarItem, CommonToolbarItem, StageUsage, StatusBarSection, ToolbarOrientation, ToolbarUsage, UiItemsManager, UiItemsProvider } from "@itwin/appui-abstract";
+import { BaseUiItemsProvider, CommonStatusBarItem, CommonToolbarItem, StatusBarSection, ToolbarOrientation, ToolbarUsage, UiItemsManager } from "@itwin/appui-abstract";
 import { SelectionContextToolDefinitions } from "../selection/SelectionContextItemDef";
 import { StatusBarItemUtilities } from "../statusbar/StatusBarItemUtilities";
 import { withStatusFieldProps } from "../statusbar/withStatusFieldProps";
@@ -94,8 +94,7 @@ function getGroupPriority(potentialId: any, defaultValue: number) {
  * Provide standard tools for the ContentManipulationWidgetComposer.
  * @public
  */
-export class StandardContentToolsProvider implements UiItemsProvider {
-
+export class StandardContentToolsProvider extends BaseUiItemsProvider {
   /**
    * static function to register the StandardContentToolsProvider
    * @param providerId - unique identifier for this instance of the provider.  This is required in case separate packages want
@@ -106,31 +105,22 @@ export class StandardContentToolsProvider implements UiItemsProvider {
    * the current stage's `usage` is set to `StageUsage.General` then the provider will add items to frontstage.
    */
   public static register(providerId: string, defaultContextTools?: DefaultContentTools, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean) {
-    UiItemsManager.register(new StandardContentToolsProvider(providerId, defaultContextTools, isSupportedStage));
+    const provider = new StandardContentToolsProvider(providerId, defaultContextTools, isSupportedStage);
+    UiItemsManager.register(provider);
 
     // register core commands not automatically registered
     ViewClipByPlaneTool.register();
+    return provider;
   }
 
-  public static unregister(providerId: string) {
-    UiItemsManager.unregister(providerId);
+  constructor(providerId: string, private defaultContextTools?: DefaultContentTools, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean) {
+    super(providerId, isSupportedStage);
   }
 
-  constructor(private _providerId: string, private defaultContextTools?: DefaultContentTools, private isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean) { }
-
-  public get id(): string { return this._providerId; }
-
-  public provideToolbarButtonItems(stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any): CommonToolbarItem[] {
+  public override provideToolbarButtonItemsInternal(_stageId: string, _stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any): CommonToolbarItem[] {
     const items: CommonToolbarItem[] = [];
-    let provideToStage = false;
 
-    if (this.isSupportedStage) {
-      provideToStage = this.isSupportedStage(stageId, stageUsage, stageAppData);
-    } else {
-      provideToStage = (stageUsage === StageUsage.General);
-    }
-
-    if (provideToStage && toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Horizontal) {
+    if (toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Horizontal) {
       const clearSelectionGroupPriority = getGroupPriority(stageAppData?.defaultContentTools?.horizontal?.clearSelectionGroupPriority, 10);
       const overridesGroupPriority = getGroupPriority(stageAppData?.defaultContentTools?.horizontal?.overridesGroupPriority, 20);
 
@@ -158,7 +148,7 @@ export class StandardContentToolsProvider implements UiItemsProvider {
         items.push(ToolbarHelper.createToolbarItemFromItemDef(50, SelectionContextToolDefinitions.emphasizeElementsItemDef, { groupPriority: overridesGroupPriority }));
       }
 
-    } else /* istanbul ignore else */ if (provideToStage && toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Vertical) {
+    } else /* istanbul ignore else */ if (toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Vertical) {
       const selectElementGroupPriority = getGroupPriority(stageAppData?.defaultContentTools?.vertical?.selectElementGroupPriority, 10);
       const measureGroupPriority = getGroupPriority(stageAppData?.defaultContentTools?.vertical?.measureGroupPriority, 10);
       const selectionGroupPriority = getGroupPriority(stageAppData?.defaultContentTools?.vertical?.selectionGroupPriority, 10);
@@ -175,27 +165,15 @@ export class StandardContentToolsProvider implements UiItemsProvider {
     return items;
   }
 
-  public provideStatusBarItems(stageId: string, stageUsage: string, stageAppData?: any): CommonStatusBarItem[] {
+  public override provideStatusBarItemsInternal(_stageId: string, _stageUsage: string, _stageAppData?: any): CommonStatusBarItem[] {
     const statusBarItems: CommonStatusBarItem[] = [];
-    let provideToStage = false;
 
-    // istanbul ignore else
-    if (this.isSupportedStage) {
-      provideToStage = this.isSupportedStage(stageId, stageUsage, stageAppData);
-    } else {
-      provideToStage = (stageUsage === StageUsage.General);
-    }
-
-    // istanbul ignore else
-    if (provideToStage) {
-      // if the sectionGroup tools are to be shown then we want the status field added to allow clearing or manipulation the section
-      if (this.defaultContextTools?.vertical?.sectionGroup) {
-        const Sections = withStatusFieldProps(SectionsStatusField);
-        statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.Sections", StatusBarSection.Center, 20, <Sections hideWhenUnused />));
-      }
+    // if the sectionGroup tools are to be shown then we want the status field added to allow clearing or manipulation the section
+    if (this.defaultContextTools?.vertical?.sectionGroup) {
+      const Sections = withStatusFieldProps(SectionsStatusField);
+      statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.Sections", StatusBarSection.Center, 20, <Sections hideWhenUnused />));
     }
 
     return statusBarItems;
   }
-
 }
