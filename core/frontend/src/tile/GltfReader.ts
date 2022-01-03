@@ -1529,13 +1529,26 @@ export abstract class GltfReader {
   }
 
   protected readMeshIndices(mesh: GltfMeshData, json: { [k: string]: any }): boolean {
-    const data = this.readBufferData16(json, "indices") || this.readBufferData32(json, "indices");
-    if (data && (data.buffer instanceof Uint8Array || data.buffer instanceof Uint16Array || data.buffer instanceof Uint32Array)) {
-      mesh.indices = data.buffer;
-      return true;
+    if (undefined !== json.indices) {
+      const data = this.readBufferData16(json, "indices") || this.readBufferData32(json, "indices");
+      if (data && (data.buffer instanceof Uint8Array || data.buffer instanceof Uint16Array || data.buffer instanceof Uint32Array)) {
+        mesh.indices = data.buffer;
+        return true;
+      }
+
+      return false;
     }
 
-    return false;
+    // Non-indexed geometry. Manufacture triangle indices from points.
+    const numPoints = mesh.points?.length;
+    if (undefined === numPoints || 0 !== numPoints % 3)
+      return false;
+
+    mesh.indices = numPoints < 255 ? new Uint8Array(numPoints) : (numPoints < 0xffff ? new Uint16Array(numPoints) : new Uint32Array(numPoints));
+    for (let i = 0; i < numPoints; i++)
+      mesh.indices[i] = i;
+
+    return true;
   }
 
   protected readNormals(mesh: GltfMeshData, json: { [k: string]: any }, accessorName: string): boolean {
