@@ -521,7 +521,7 @@ class ExerciseCurve {
         }
     }
 
-/*  {   // TODO: comment out until fix homogeneous exerciseClosestPoint bugs (16)
+  {
       const poles4d = [
         Point4d.create(0, 0, 0, 1),
         Point4d.create(5, 0, 0, 0.8),
@@ -542,7 +542,6 @@ class ExerciseCurve {
         }
       }
     }
-*/
     {
       const radius = 2;
       const points = Sample.createArcStrokes(4, Point3d.create(radius, 0, 0), radius, Angle.createDegrees(0), Angle.createDegrees(225), false);
@@ -605,11 +604,10 @@ class ExerciseCurve {
     {
       if (Checker.noisy.testTransitionSpiral) {
         for (const spiral of [
+          IntegratedSpiral3d.createRadiusRadiusBearingBearing(Segment1d.create(0, 1000), AngleSweep.createStartEndDegrees(0, 10), Segment1d.create(0, 1), Transform.createIdentity()),
           DirectSpiral3d.createDirectHalfCosine(Transform.createIdentity(), 100, 300, undefined),
           DirectSpiral3d.createJapaneseCubic(Transform.createIdentity(), 100, 300, undefined),
           DirectSpiral3d.createArema(Transform.createIdentity(), 100, 300, undefined),
-          // TODO: comment out until fix clothoid exerciseClosestPoint bug (1)
-          // IntegratedSpiral3d.createRadiusRadiusBearingBearing(Segment1d.create(0, 1000), AngleSweep.createStartEndDegrees(0, 10), Segment1d.create(0, 1), Transform.createIdentity())
           ]) {
           if (ck.testPointer(spiral)) {
             ExerciseCurve.exerciseCurvePlaneIntersections(ck, spiral);

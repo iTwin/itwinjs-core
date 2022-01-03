@@ -385,6 +385,9 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   public override get maxTextureSize(): number { return this.capabilities.maxTextureSize; }
   public override get supportsInstancing(): boolean { return this.capabilities.supportsInstancing; }
   public override get supportsNonuniformScaledInstancing(): boolean { return this.capabilities.isWebGL2; }
+
+  /** Requires gl_VertexID (WebGL 2 only) and > 8 texture units (WebGL 1 only guarantees 8). */
+  public override get supportsIndexedEdges(): boolean { return this.isWebGL2; }
   public get isWebGL2(): boolean { return this.capabilities.isWebGL2; }
   public override get isMobile(): boolean { return this.capabilities.isMobile; }
 

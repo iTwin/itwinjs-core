@@ -43,8 +43,8 @@ describe("UiShowHideManager localStorage Wrapper", () => {
 
     describe("getters and setters", () => {
 
-      it("autoHideUi should return default of false", () => {
-        expect(UiShowHideManager.autoHideUi).to.be.false;
+      it("autoHideUi should return default of true", () => {
+        expect(UiShowHideManager.autoHideUi).to.be.true;
       });
 
       it("autoHideUi should set & return correct value", () => {
@@ -92,8 +92,8 @@ describe("UiShowHideManager localStorage Wrapper", () => {
         remove();
       });
 
-      it("useProximityOpacity should return default of true", () => {
-        expect(UiShowHideManager.useProximityOpacity).to.be.true;
+      it("useProximityOpacity should return default of false", () => {
+        expect(UiShowHideManager.useProximityOpacity).to.be.false;
       });
 
       it("useProximityOpacity should set & return correct value", () => {

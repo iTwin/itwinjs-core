@@ -232,6 +232,10 @@ describe("UiFramework localStorage Wrapper", () => {
       UiFramework.setDefaultViewState(viewState.object);
       expect(UiFramework.getDefaultViewState()).not.to.be.undefined;
 
+      const displayOverlay = false;
+      UiFramework.setViewOverlayDisplay(displayOverlay);
+      expect(UiFramework.viewOverlayDisplay).to.eql(displayOverlay);
+
       TestUtils.terminateUiFramework();
 
       // try again when store is not defined

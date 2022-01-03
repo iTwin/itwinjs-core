@@ -17,19 +17,19 @@ import { UnitSystemKey } from "@itwin/core-quantity";
 import { Presentation } from "@itwin/presentation-frontend";
 import {
   AbstractWidgetProps, BackstageItem, BackstageItemUtilities, CommonStatusBarItem, ConditionalBooleanValue, ConditionalStringValue, DialogButtonType,
-  MessageSeverity, StagePanelLocation, StagePanelSection, StandardContentLayouts, StatusBarSection, UiItemsManager, UiItemsProvider, WidgetState,
+  MessageSeverity, StagePanelLocation, StagePanelSection, StandardContentLayouts, StatusBarLabelSide, StatusBarSection, UiItemsManager, UiItemsProvider, WidgetState,
 } from "@itwin/appui-abstract";
 import { Dialog, FillCentered, ReactMessage, SvgPath, SvgSprite, UnderlinedButton } from "@itwin/core-react";
 import {
   Backstage, CommandItemDef, ContentGroup, ContentGroupProps, ContentLayoutManager, ContentProps, ContentViewManager,
-  FrontstageManager, IModelViewportControl, MessageManager, ModalDialogManager, ReactNotifyMessageDetails,
+  FrontstageManager, IModelViewportControl, Indicator, MessageManager, ModalDialogManager, ReactNotifyMessageDetails,
   StatusBarItemUtilities, SyncUiEventDispatcher, SyncUiEventId, ToolItemDef, withStatusFieldProps,
 } from "@itwin/appui-react";
-import { FooterSeparator } from "@itwin/appui-layout-react";
+import { FooterPopupContentType, FooterSeparator, Dialog as NZ_Dialog, TitleBar } from "@itwin/appui-layout-react";
 import { SampleAppIModelApp } from "../";
 import { AppUi } from "../appui/AppUi";
 import { TestMessageBox } from "../appui/dialogs/TestMessageBox";
-import { SampleStatusField } from "../appui/statusfields/SampleStatusField";
+import { SampleStatusField, TestStatusBarDialog } from "../appui/statusfields/SampleStatusField";
 import { AnalysisAnimationTool } from "../tools/AnalysisAnimation";
 import { Tool1 } from "../tools/Tool1";
 import { Tool2 } from "../tools/Tool2";
@@ -104,6 +104,8 @@ const SampleStatus = withStatusFieldProps(SampleStatusField);
 class AppItemsProvider implements UiItemsProvider {
   public readonly id = "AnotherStatusBarItemProvider";
   public static readonly sampleStatusFieldId = "appuiprovider:statusField1";
+  public static readonly sampleStatusField2Id = "appuiprovider:statusField2";
+  public static readonly sampleStatusField3Id = "appuiprovider:statusField3";
   public static readonly sampleStatusSeparatorId = "appuiprovider:statusSeparator1";
   public static readonly sampleBackstageItem = "appuiprovider:backstage1";
   public static readonly syncEventId = "appuiprovider:dynamic-item-visibility-changed";
@@ -125,6 +127,25 @@ class AppItemsProvider implements UiItemsProvider {
     const isHiddenCondition = new ConditionalBooleanValue(() => !AppItemsProvider._sampleBackstageItemVisible, [AppItemsProvider.syncEventId]);
     statusBarItems.push(StatusBarItemUtilities.createStatusBarItem(AppItemsProvider.sampleStatusSeparatorId, StatusBarSection.Left, 11, <FooterSeparator />, { isHidden: isHiddenCondition }));
     statusBarItems.push(StatusBarItemUtilities.createStatusBarItem(AppItemsProvider.sampleStatusFieldId, StatusBarSection.Left, 12, <SampleStatus />, { isHidden: isHiddenCondition }));
+    statusBarItems.push(StatusBarItemUtilities.createStatusBarItem(AppItemsProvider.sampleStatusField2Id, StatusBarSection.Left, 13,
+      <Indicator
+        iconName="icon-placeholder"
+        dialog={<TestStatusBarDialog />}
+        toolTip="Middle"
+        contentType={FooterPopupContentType.Panel}
+      />, { isHidden: isHiddenCondition }));
+
+    statusBarItems.push(StatusBarItemUtilities.createStatusBarItem(AppItemsProvider.sampleStatusField3Id, StatusBarSection.Left, 14,
+      <Indicator
+        iconName="icon-placeholder"
+        dialog={<NZ_Dialog titleBar={<TitleBar title="Right Test" />}>
+          <TestStatusBarDialog />
+        </NZ_Dialog>}
+        label="Right"
+        isLabelVisible={true}
+        toolTip="Right Test"
+        labelSide={StatusBarLabelSide.Right}
+      />, { isHidden: isHiddenCondition }));
     return statusBarItems;
   }
 

@@ -164,6 +164,12 @@ style.environment = style.environment.withDisplay({ sky: true, ground: false });
 
 Additionally, until now the images used by a [SkySphere]($common) or [SkyBox]($common) were required to be hosted by persistent [Texture]($backend) elements stored in the iModel. Now, they can also be specified as a URL resolving to an HTMLImageElement, allowing custom skyboxes to be created without modifying the iModel.
 
+## Support for glTF graphics
+
+[glTF](https://www.khronos.org/gltf/) has become the de facto standard format for 3d graphics on the web. Now you can create a [RenderGraphic]($frontend) from a glTF asset for use with [Decorators]($docs/learning/frontend/ViewDecorations), using [readGltfGraphics]($frontend). [This example]($docs/learning/frontend/ViewDecorations#gltf-decorations) demonstrates how to convert a glTF asset into a graphic and display it using a decorator.
+
+Note: `readGltfGraphics` targets the [glTF 2.0 specification](https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html), but implementation of the full specification is an ongoing work in progress. The current implementation can successfully read many glTF assets, but if a particular asset fails to load or display properly, please [file an issue](https://github.com/iTwin/itwinjs-core/issues).
+
 ## Merging appearance overrides
 
 A [Viewport]($frontend) can have any number of [FeatureOverrideProvider]($frontend)s, each of which can specify how to override the appearances of elements, models, and/or subcategories. Sometimes, multiple providers want to override aspects of the appearance of the same objects, which produces conflicts. The existing methods for defining overrides - [FeatureOverrides.overrideElement]($common), [FeatureOverrides.overrideModel]($common), and [FeatureOverrides.overrideSubCategory]($common) - each take a boolean `replaceExisting` argument that defaults to `true`. This means that if one provider overrides the line width of an element and another wants to override the same element's transparency, the caller's only choice is to either replace the existing override, resulting in only transparency being overridden; or keep the existing override, resulting in only line width being overridden. But in most cases, the better result would be to **merge** the two sets of overrides such that both transparency and line width are overridden.
@@ -621,7 +627,7 @@ await IModelApp.startup(appOptions);
 
 The previous implementation of `ConcurrencyControl` for locking elements has been replaced with the [LockControl]($backend) interface.
 
-`ConcurrencyControl` relied on detecting a list of changed elements and deferring the acquisition of locks until the application called the asynchronous `request` method to acquire locks, after the fact, but before calling [BriefcaseDb.saveChanges]($backend). The new approach is to require applications to call the asynchronous [LockControl.acquireExclusiveLock]($backend) on elements before update or delete, and to call [LockControl.acquireSharedLock]($backend) on parents and models before insert. If an attempt is made to modify or insert without the required locks, an exception is thrown when the change is attempted. This will require tools to make the necessary lock calls.
+`ConcurrencyControl` relied on detecting a list of changed elements and deferring the acquisition of locks until the application called the asynchronous `request` method to acquire locks, after the fact, but before calling [BriefcaseDb.saveChanges]($backend). The new approach is to require applications to call the asynchronous method [LockControl.acquireLocks]($backend) to get an exclusive lock on elements before update or delete, and shared locks on parents and models before insert. If an attempt is made to modify or insert without the required locks, an exception is thrown when the change is attempted. This will require tools to make the necessary lock calls.
 
 Previously the concurrency "mode" was determined by applications when opening a briefcase. It is now established as a property of an iModel when it is first created (and "version0" is uploaded.) By default, iModels use pessimistic (i.e. locks) mode, so all previously created iModels will require locks. If you pass `noLocks: true` as an argument to [BackendHubAccess.createNewIModel]($backend), a briefcase-local value is saved in rev0.bim before it is uploaded. Thereafter, all briefcases of that iModel will use use optimistic (i.e. no locks, change merging) mode, since everyone will use briefcases derived from rev0.bim. The value is inspected in the `BriefcaseDb.useLockServer` method called by [BriefcaseDb.open]($backend).
 
@@ -906,8 +912,8 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | `FeatureOverrideType`                         | [FeatureOverrideType]($common)                                              |
 | `FeatureSymbology.Appearance`                 | [FeatureAppearance]($common)                                                |
 | `FeatureSymbology.AppearanceProps`            | [FeatureAppearanceProps]($common)                                           |
-| `findAvailableRealityModels`                  | `queryRealityData` in `@itwin/reality-data-client`                          |
-| `findAvailableUnattachedRealityModels`        | `queryRealityData` in `@itwin/reality-data-client`                          |
+| `findAvailableRealityModels`                  | `getRealityDatas` in `@itwin/reality-data-client`                          |
+| `findAvailableUnattachedRealityModels`        | `getRealityDatas` in `@itwin/reality-data-client`                          |
 | `IModelApp.iModelClient`                      | `IModelApp.hubAccess`                                                       |
 | `IModelApp.settings`                          | [IModelApp.userPreferences]($frontend)                                      |
 | `IModelConnection.Models.loaded`              | use `for..of` to iterate and `getLoaded` to look up by Id                   |
@@ -1292,6 +1298,10 @@ Widgets provided via UiItemsProviders may now set `defaultState: WidgetState.Flo
 the widget in a floating container. The property `defaultFloatingPosition` may also be specified to define the position of the floating container. If a position is not defined the container will be centered in the `AppUi` area.
 
 The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to retrieve the Ids for all floating widget containers for the active frontstage as specified by the `frontstageDef`. These ids can be used to query the size of the floating container via `frontstageDef.getFloatingWidgetContainerBounds`. The method `frontstageDef.setFloatingWidgetContainerBounds` can then be used to set the size and position of a floating widget container.
+
+### New API to Enable and Disable View Overlays
+
+UiFramework now offers a `setViewOverlayDisplay(display:boolean)` method to enable or disable viewports displaying overlays. By default, the display is enabled. The current setting is available in `UiFramework.viewOverlayDisplay`.
 
 ### Removed user change monitoring from @itwin/appui-react
 
@@ -1733,3 +1743,8 @@ More complex Geographic CRS can also be used such as the following user-defined:
 On the frontend the [GeoConverter]($frontend) class has been modified to accept either a string containing the datum or a [GeographicCRSProps]($common) of a similar format retaining cache capability as before for either format.
 
 **NOTE**: The [IModelCoordinatesRequestProps.source]($common) and the [GeoCoordinatesRequestProps.target]($common) were renamed from previous version that used the sourceDatum and targetDatum properties.
+
+## New clustering algorithm for MarkerSet
+
+The [MarkerSet]($frontend) class now clusters markers by the screen distance between their positions rather than overlap of their rectangles, so the `Cluster.rect` property is no longer needed and has been removed. Instead, there is a new member `MarkerSet.clusterRadius` that controls when nearby Markers are clustered. See its documentation for details.
+

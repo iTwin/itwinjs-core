@@ -810,6 +810,14 @@ class AdditionalTools {
     }), { groupPriority: 30 }),
     ToolbarHelper.createToolbarItemFromItemDef(140, CoreTools.restoreFrontstageLayoutCommandItemDef, { groupPriority: 40 }),
     this.formatGroupItemsItem(),
+    ToolbarHelper.createToolbarItemFromItemDef(150, new CommandItemDef({
+      commandId: "Toggle Overlay",
+      iconSpec: "icon-lightbulb",
+      label: "Toggle View Overlay",
+      execute: () => {
+        UiFramework.setViewOverlayDisplay(!UiFramework.viewOverlayDisplay);
+      },
+    }), { groupPriority: 30 }),
   ];
 
   public getMiscGroupItem = (): CommonToolbarItem => {

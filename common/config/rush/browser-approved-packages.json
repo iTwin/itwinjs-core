@@ -35,10 +35,6 @@
       "allowedCategories": [ "internal" ]
     },
     {
-      "name": "@bentley/reality-data-client",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "@bentley/units-schema",
       "allowedCategories": [ "backend", "common" ]
     },
@@ -775,10 +771,6 @@
       "allowedCategories": [ "frontend" ]
     },
     {
-      "name": "react-split-pane",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
       "name": "react-table",
       "allowedCategories": [ "internal" ]
     },
@@ -952,7 +944,7 @@
     },
     {
       "name": "yargs",
-      "allowedCategories": [ "common", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "internal", "tools" ]
     }
   ]
 }

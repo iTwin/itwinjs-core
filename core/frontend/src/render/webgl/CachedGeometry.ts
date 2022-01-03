@@ -25,6 +25,7 @@ import { InstancedGeometry } from "./InstancedGeometry";
 import { MaterialInfo } from "./Material";
 import { MeshGeometry } from "./MeshGeometry";
 import { EdgeGeometry, SilhouetteEdgeGeometry } from "./EdgeGeometry";
+import { IndexedEdgeGeometry } from "./IndexedEdgeGeometry";
 import { SurfaceGeometry } from "./SurfaceGeometry";
 import { PointCloudGeometry } from "./PointCloud";
 import { CompositeFlags, RenderOrder, RenderPass } from "./RenderFlags";
@@ -59,6 +60,7 @@ export abstract class CachedGeometry implements WebGLDisposable, RenderMemory.Co
   public get asSurface(): SurfaceGeometry | undefined { return undefined; }
   public get asMesh(): MeshGeometry | undefined { return undefined; }
   public get asEdge(): EdgeGeometry | undefined { return undefined; }
+  public get asIndexedEdge(): IndexedEdgeGeometry | undefined { return undefined; }
   public get asRealityMesh(): RealityMeshGeometry | undefined { return undefined; }
   public get asSilhouette(): SilhouetteEdgeGeometry | undefined { return undefined; }
   public get asInstanced(): InstancedGeometry | undefined { return undefined; }
