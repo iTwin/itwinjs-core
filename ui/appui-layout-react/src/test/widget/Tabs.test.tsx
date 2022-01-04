@@ -6,7 +6,7 @@ import { render } from "@testing-library/react";
 import * as React from "react";
 import * as sinon from "sinon";
 import {
-  addPanelWidget, addTab, createNineZoneState, PanelSideContext, ShowWidgetIconContext, TabIconContext, WidgetIdContext, WidgetStateContext, WidgetTabs,
+  addPanelWidget, addTab, createNineZoneState, PanelSideContext, ShowWidgetIconContext, WidgetIdContext, WidgetStateContext, WidgetTabs,
 } from "../../appui-layout-react";
 import { TestNineZoneProvider } from "../Providers";
 
