@@ -61,12 +61,12 @@ export const INACTIVITY_TIME_DEFAULT = 3500;  /** Wait 3.5 seconds */
  */
 export class UiShowHideManager {
   private static _isUiVisible: boolean = true;
-  private static _autoHideUi: boolean = false;
+  private static _autoHideUi: boolean = true;
   private static _showHidePanels: boolean = false;
   private static _showHideFooter: boolean = false;
   private static _inactivityTime: number = INACTIVITY_TIME_DEFAULT;
   private static _timeout: NodeJS.Timeout;
-  private static _useProximityOpacity: boolean = true;
+  private static _useProximityOpacity: boolean = false;
   private static _snapWidgetOpacity: boolean = false;
 
   /** Determines if the Ui is visible */

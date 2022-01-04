@@ -46,10 +46,12 @@ import { ClipPlane } from '@itwin/core-geometry';
 import { ClipShape } from '@itwin/core-geometry';
 import { ClipStyle } from '@itwin/core-common';
 import { ClipVector } from '@itwin/core-geometry';
+import { ClipVectorProps } from '@itwin/core-geometry';
 import { Code } from '@itwin/core-common';
 import { CodeProps } from '@itwin/core-common';
 import { CodeSpec } from '@itwin/core-common';
 import { ColorDef } from '@itwin/core-common';
+import { ColorDefProps } from '@itwin/core-common';
 import { ColorIndex } from '@itwin/core-common';
 import { CompressedId64Set } from '@itwin/core-bentley';
 import { Constructor } from '@itwin/core-bentley';
@@ -114,9 +116,6 @@ import { GeometryQuery } from '@itwin/core-geometry';
 import { GeometryStreamProps } from '@itwin/core-common';
 import { GeometrySummaryRequestProps } from '@itwin/core-common';
 import { GlobeMode } from '@itwin/core-common';
-import { GltfBufferData } from '@itwin/core-common';
-import { GltfBufferView } from '@itwin/core-common';
-import { GltfDataType } from '@itwin/core-common';
 import { Gradient } from '@itwin/core-common';
 import { GraphicParams } from '@itwin/core-common';
 import { GridOrientationType } from '@itwin/core-common';
@@ -279,6 +278,7 @@ import { ThematicDisplay } from '@itwin/core-common';
 import { ThematicDisplaySensor } from '@itwin/core-common';
 import { ThematicDisplaySensorSettings } from '@itwin/core-common';
 import { ThumbnailProps } from '@itwin/core-common';
+import { TileHeader } from '@itwin/core-common';
 import { TileProps } from '@itwin/core-common';
 import { TileReadStatus } from '@itwin/core-common';
 import { TileVersionInfo } from '@itwin/core-common';
@@ -310,6 +310,7 @@ import { WebGLRenderCompatibilityInfo } from '@itwin/webgl-compatibility';
 import { WhiteOnWhiteReversalSettings } from '@itwin/core-common';
 import { XAndY } from '@itwin/core-geometry';
 import { XYAndZ } from '@itwin/core-geometry';
+import { XYProps } from '@itwin/core-geometry';
 import { XYZ } from '@itwin/core-geometry';
 import { XYZProps } from '@itwin/core-geometry';
 
@@ -3558,10 +3559,148 @@ export class GlobeAnimator implements Animator {
 }
 
 // @internal
+export interface Gltf extends GltfProperty {
+    // (undocumented)
+    accessors?: GltfDictionary<GltfAccessor>;
+    animations?: GltfDictionary<any>;
+    asset?: GltfAsset;
+    // (undocumented)
+    buffers?: GltfDictionary<GltfBuffer>;
+    // (undocumented)
+    bufferViews?: GltfDictionary<GltfBufferViewProps>;
+    cameras?: GltfDictionary<any>;
+    // (undocumented)
+    extensions?: GltfExtensions & {
+        CESIUM_RTC?: {
+            center?: number[];
+        };
+        KHR_techniques_webgl?: {
+            techniques?: Array<{
+                uniforms?: {
+                    [key: string]: {
+                        type: GltfDataType;
+                        value?: any;
+                    } | undefined;
+                };
+            }>;
+        };
+    };
+    extensionsRequired?: string[];
+    extensionsUsed?: string[];
+    // (undocumented)
+    images?: GltfDictionary<GltfImage>;
+    // (undocumented)
+    materials?: GltfDictionary<GltfMaterial>;
+    // (undocumented)
+    meshes?: GltfDictionary<GltfMesh>;
+    // (undocumented)
+    nodes?: GltfDictionary<GltfNode>;
+    // (undocumented)
+    samplers?: GltfDictionary<GltfSampler>;
+    scene?: GltfId;
+    // (undocumented)
+    scenes?: GltfDictionary<GltfScene>;
+    skins?: GltfDictionary<any>;
+    techniques?: GltfDictionary<GltfTechnique>;
+    // (undocumented)
+    textures?: GltfDictionary<GltfTexture>;
+}
+
+// @internal
+export type Gltf1Id = string;
+
+// @internal
+export type Gltf2Id = number;
+
+// @internal
+export class GltfBufferData {
+    constructor(buffer: GltfDataBuffer, count: number);
+    // (undocumented)
+    readonly buffer: GltfDataBuffer;
+    // (undocumented)
+    readonly count: number;
+    static create(bytes: Uint8Array, actualType: GltfDataType, expectedType: GltfDataType, count: number): GltfBufferData | undefined;
+    }
+
+// @internal (undocumented)
+export type GltfDataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array;
+
+// @internal
+export enum GltfDataType {
+    // (undocumented)
+    Float = 5126,
+    // (undocumented)
+    FloatMat3 = 35675,
+    // (undocumented)
+    FloatMat4 = 35676,
+    // (undocumented)
+    FloatVec2 = 35664,
+    // (undocumented)
+    FloatVec3 = 35665,
+    // (undocumented)
+    FloatVec4 = 35666,
+    // (undocumented)
+    IntVec2 = 35667,
+    // (undocumented)
+    IntVec3 = 35668,
+    // (undocumented)
+    Rgb = 6407,
+    // (undocumented)
+    Rgba = 6408,
+    // (undocumented)
+    Sampler2d = 35678,
+    // (undocumented)
+    SignedByte = 5120,
+    // (undocumented)
+    SignedShort = 5122,
+    // (undocumented)
+    UInt32 = 5125,
+    // (undocumented)
+    UnsignedByte = 5121,
+    // (undocumented)
+    UnsignedShort = 5123
+}
+
+// @internal
+export class GltfGraphicsReader extends GltfReader {
+    constructor(props: GltfReaderProps, args: ReadGltfGraphicsArgs);
+    // (undocumented)
+    readonly binaryData?: Uint8Array;
+    // (undocumented)
+    get nodes(): GltfDictionary<GltfNode>;
+    // (undocumented)
+    read(): Promise<GltfReaderResult>;
+    // (undocumented)
+    get sceneNodes(): GltfId[];
+    // (undocumented)
+    get scenes(): GltfDictionary<GltfScene>;
+    // (undocumented)
+    get textures(): GltfDictionary<GltfTexture>;
+}
+
+// @internal
+export class GltfHeader extends TileHeader {
+    constructor(stream: ByteStream);
+    // (undocumented)
+    readonly binaryPosition: number;
+    // (undocumented)
+    readonly gltfLength: number;
+    // (undocumented)
+    get isValid(): boolean;
+    // (undocumented)
+    readonly scenePosition: number;
+    // (undocumented)
+    readonly sceneStrLength: number;
+}
+
+// @internal
+export type GltfId = Gltf1Id | Gltf2Id;
+
+// @internal
 export class GltfMeshData {
     constructor(props: Mesh);
     // (undocumented)
-    indices?: Uint16Array | Uint32Array;
+    indices?: Uint8Array | Uint16Array | Uint32Array;
     // (undocumented)
     normals?: Uint16Array;
     // (undocumented)
@@ -3581,32 +3720,39 @@ export class GltfMeshData {
 }
 
 // @internal
+export type GltfNode = Gltf1Node | Gltf2Node;
+
+// @internal
 export abstract class GltfReader {
-    protected constructor(props: GltfReaderProps, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem, type?: BatchType, isCanceled?: ShouldAbortReadGltf, deduplicateVertices?: boolean);
+    protected constructor(args: GltfReaderArgs);
     // (undocumented)
-    protected readonly _accessors: any;
+    protected get _accessors(): GltfDictionary<GltfAccessor>;
     // (undocumented)
-    protected readonly _batchData: any;
+    protected readonly _baseUrl?: string;
     // (undocumented)
-    protected readonly _binaryData: Uint8Array;
+    protected get _buffers(): GltfDictionary<GltfBuffer & {
+        resolvedBuffer?: Uint8Array;
+    }>;
     // (undocumented)
-    protected readonly _buffer: ByteStream;
+    protected get _bufferViews(): GltfDictionary<GltfBufferViewProps>;
     // (undocumented)
-    protected readonly _bufferViews: any;
+    protected _computedContentRange?: ElementAlignedBox3d;
     // (undocumented)
-    protected createDisplayParams(materialJson: any, hasBakedLighting: boolean): DisplayParams | undefined;
+    protected createDisplayParams(material: GltfMaterial, hasBakedLighting: boolean): DisplayParams | undefined;
     // (undocumented)
     protected readonly _deduplicateVertices: boolean;
     // (undocumented)
-    protected readonly _extensions: any;
+    protected findTextureMapping(id: string, isTransparent: boolean): TextureMapping | undefined;
     // (undocumented)
-    protected extractReturnToCenter(extensions: any): number[] | undefined;
+    getBufferView(json: {
+        [k: string]: any;
+    }, accessorName: string): GltfBufferView | undefined;
     // (undocumented)
-    protected findTextureMapping(textureId: string): TextureMapping | undefined;
+    protected readonly _glTF: Gltf;
     // (undocumented)
-    getBufferView(json: any, accessorName: string): GltfBufferView | undefined;
-    // (undocumented)
-    protected readonly _images: any;
+    protected get _images(): GltfDictionary<GltfImage & {
+        resolvedImage?: HTMLImageElement;
+    }>;
     // (undocumented)
     protected readonly _iModel: IModelConnection;
     // (undocumented)
@@ -3616,93 +3762,103 @@ export abstract class GltfReader {
     // (undocumented)
     protected get _isVolumeClassifier(): boolean;
     // (undocumented)
-    protected loadTexture(textureId: string, isTransparent: boolean): Promise<void>;
+    protected get _materials(): GltfDictionary<GltfMaterial>;
     // (undocumented)
-    protected loadTextureImage(imageJson: any, samplerJson: any, isTransparent: boolean): Promise<RenderTexture | undefined>;
+    protected get _meshes(): GltfDictionary<GltfMesh>;
     // (undocumented)
-    protected loadTextures(): Promise<void>;
-    // (undocumented)
-    protected readonly _materialValues: any;
-    // (undocumented)
-    protected readonly _meshes: any;
-    // (undocumented)
-    protected readonly _modelId: Id64String;
-    // (undocumented)
-    protected readonly _namedTextures: any;
-    // (undocumented)
-    protected readonly _nodes: any;
+    protected get _nodes(): GltfDictionary<GltfNode>;
     abstract read(): Promise<GltfReaderResult>;
     // (undocumented)
     protected readBatchTable(_mesh: Mesh, _json: any): void;
     // (undocumented)
-    protected readBufferData(json: any, accessorName: string, type: GltfDataType): GltfBufferData | undefined;
+    protected readBufferData(json: {
+        [k: string]: any;
+    }, accessorName: string, type: GltfDataType): GltfBufferData | undefined;
     // (undocumented)
-    readBufferData16(json: any, accessorName: string): GltfBufferData | undefined;
+    readBufferData16(json: {
+        [k: string]: any;
+    }, accessorName: string): GltfBufferData | undefined;
     // (undocumented)
-    readBufferData32(json: any, accessorName: string): GltfBufferData | undefined;
+    readBufferData32(json: {
+        [k: string]: any;
+    }, accessorName: string): GltfBufferData | undefined;
     // (undocumented)
-    readBufferData8(json: any, accessorName: string): GltfBufferData | undefined;
+    readBufferData8(json: {
+        [k: string]: any;
+    }, accessorName: string): GltfBufferData | undefined;
     // (undocumented)
-    readBufferDataFloat(json: any, accessorName: string): GltfBufferData | undefined;
+    readBufferDataFloat(json: {
+        [k: string]: any;
+    }, accessorName: string): GltfBufferData | undefined;
     // (undocumented)
     protected readFeatureIndices(_json: any): number[] | undefined;
     // (undocumented)
-    protected readGltfAndCreateGraphics(isLeaf: boolean, featureTable: FeatureTable, contentRange: ElementAlignedBox3d, transformToRoot?: Transform, pseudoRtcBias?: Vector3d, instances?: InstancedGraphicParams): GltfReaderResult;
+    protected readGltfAndCreateGraphics(isLeaf: boolean, featureTable: FeatureTable | undefined, contentRange: ElementAlignedBox3d | undefined, transformToRoot?: Transform, pseudoRtcBias?: Vector3d, instances?: InstancedGraphicParams): GltfReaderResult;
     // (undocumented)
-    protected readIndices(json: any, accessorName: string): number[] | undefined;
+    protected readIndices(json: {
+        [k: string]: any;
+    }, accessorName: string): number[] | undefined;
     // (undocumented)
-    protected readMeshIndices(mesh: GltfMeshData, json: any): boolean;
+    protected readMeshIndices(mesh: GltfMeshData, json: {
+        [k: string]: any;
+    }): boolean;
     // (undocumented)
-    protected readMeshPrimitive(primitive: any, featureTable?: FeatureTable, pseudoRtcBias?: Vector3d): GltfMeshData | undefined;
+    protected readMeshPrimitive(primitive: GltfMeshPrimitive, featureTable?: FeatureTable, pseudoRtcBias?: Vector3d): GltfMeshData | undefined;
     // (undocumented)
-    protected readNormals(mesh: GltfMeshData, json: any, accessorName: string): boolean;
+    protected readNormals(mesh: GltfMeshData, json: {
+        [k: string]: any;
+    }, accessorName: string): boolean;
     // (undocumented)
-    protected readPolylines(polylines: MeshPolylineList, json: any, accessorName: string, disjoint: boolean): boolean;
+    protected readPolylines(polylines: MeshPolylineList, json: {
+        [k: string]: any;
+    }, accessorName: string, disjoint: boolean): boolean;
     // (undocumented)
-    protected readonly _renderMaterials: any;
+    protected resolveResources(): Promise<void>;
     // (undocumented)
-    protected readonly _returnToCenter: number[] | undefined;
+    protected readonly _returnToCenter?: Point3d;
     // (undocumented)
-    protected readonly _samplers: any;
+    protected get _samplers(): GltfDictionary<GltfSampler>;
     // (undocumented)
-    protected readonly _scene: any;
+    protected readonly _sceneNodes: GltfId[];
     // (undocumented)
     protected readonly _system: RenderSystem;
     // (undocumented)
-    protected readonly _techniques: any;
-    // (undocumented)
-    protected readonly _textures: any;
+    protected get _textures(): GltfDictionary<GltfTexture>;
+    traverseNodes(nodeIds: Iterable<GltfId>): Iterable<GltfNode>;
+    traverseScene(): Iterable<GltfNode>;
     // (undocumented)
     protected readonly _type: BatchType;
+    // (undocumented)
+    protected readonly _version: number;
+    // (undocumented)
+    protected readonly _vertexTableRequired: boolean;
     // (undocumented)
     protected readonly _yAxisUp: boolean;
 }
 
 // @internal
+export interface GltfReaderArgs {
+    deduplicateVertices?: boolean;
+    iModel: IModelConnection;
+    is2d?: boolean;
+    props: GltfReaderProps;
+    shouldAbort?: ShouldAbortReadGltf;
+    system?: RenderSystem;
+    type?: BatchType;
+    vertexTableRequired?: boolean;
+}
+
+// @internal
 export class GltfReaderProps {
     // (undocumented)
-    readonly accessors: any;
+    readonly baseUrl?: string;
     // (undocumented)
-    readonly binaryData: Uint8Array;
+    readonly binaryData?: Uint8Array;
+    static create(source: Uint8Array | Gltf, yAxisUp?: boolean, baseUrl?: string): GltfReaderProps | undefined;
     // (undocumented)
-    readonly buffer: ByteStream;
+    readonly glTF: Gltf;
     // (undocumented)
-    readonly bufferViews: any;
-    static create(buffer: ByteStream, yAxisUp?: boolean): GltfReaderProps | undefined;
-    // (undocumented)
-    readonly extensions: any;
-    // (undocumented)
-    readonly materials: any;
-    // (undocumented)
-    readonly meshes: any;
-    // (undocumented)
-    readonly nodes: any;
-    // (undocumented)
-    readonly samplers: any;
-    // (undocumented)
-    readonly scene: any;
-    // (undocumented)
-    readonly techniques: any;
+    readonly version: number;
     // (undocumented)
     readonly yAxisUp: boolean;
 }
@@ -4353,14 +4509,33 @@ export interface ImageryTileContent extends TileContent {
 }
 
 // @internal
-export class ImdlReader extends GltfReader {
+export interface Imdl {
     // (undocumented)
-    protected colorDefFromMaterialJson(json: any): ColorDef | undefined;
+    animationNodes?: ImdlAnimationNodes;
+    // (undocumented)
+    bufferViews: ImdlDictionary<ImdlBufferView>;
+    // (undocumented)
+    materials?: ImdlDictionary<ImdlDisplayParams>;
+    // (undocumented)
+    meshes: ImdlDictionary<ImdlMesh>;
+    // (undocumented)
+    namedTextures?: ImdlDictionary<ImdlNamedTexture>;
+    nodes: ImdlDictionary<string>;
+    // (undocumented)
+    patternSymbols?: ImdlDictionary<ImdlAreaPatternSymbol>;
+    // (undocumented)
+    renderMaterials?: ImdlDictionary<ImdlRenderMaterial>;
+    scene: string;
+    scenes: ImdlDictionary<ImdlScene>;
+}
+
+// @internal
+export class ImdlReader {
+    // (undocumented)
+    protected colorDefFromMaterialJson(json: ImdlColorDef | undefined): ColorDef | undefined;
     static create(args: ImdlReaderCreateArgs): ImdlReader | undefined;
     // (undocumented)
-    protected createDisplayParams(json: any): DisplayParams | undefined;
-    // (undocumented)
-    protected extractReturnToCenter(_extensions: any): number[] | undefined;
+    protected createDisplayParams(json: ImdlDisplayParams): DisplayParams | undefined;
     // (undocumented)
     protected materialFromJson(key: string): RenderMaterial | undefined;
     read(): Promise<ImdlReaderResult>;
@@ -4377,7 +4552,7 @@ export interface ImdlReaderCreateArgs {
     // (undocumented)
     is3d: boolean;
     // (undocumented)
-    isCanceled?: ShouldAbortReadGltf;
+    isCanceled?: ShouldAbortImdlReader;
     // (undocumented)
     loadEdges?: boolean;
     // (undocumented)
@@ -4511,7 +4686,6 @@ export interface IModelAppOptions {
     quantityFormatter?: QuantityFormatter;
     // @beta (undocumented)
     realityDataAccess?: RealityDataAccess;
-    // @internal (undocumented)
     renderSys?: RenderSystem | RenderSystem.Options;
     // (undocumented)
     rpcInterfaces?: RpcInterfaceDefinition[];
@@ -4888,6 +5062,8 @@ export abstract class InteractiveTool extends Tool {
     // @beta
     bumpToolSetting(_settingIndex?: number): Promise<boolean>;
     changeLocateState(enableLocate: boolean, enableSnap?: boolean, cursor?: string, coordLockOvr?: CoordinateLockOverrides): void;
+    // @beta
+    protected changeToolSettingPropertyValue(syncItem: DialogPropertySyncItem): boolean;
     decorate(_context: DecorateContext): void;
     decorateSuspended(_context: DecorateContext): void;
     endDynamics(): void;
@@ -4896,7 +5072,13 @@ export abstract class InteractiveTool extends Tool {
     filterHit(_hit: HitDetail, _out?: LocateResponse): Promise<LocateFilterStatus>;
     getCurrentButtonEvent(ev: BeButtonEvent): void;
     getDecorationGeometry(_hit: HitDetail): GeometryStreamProps | undefined;
+    // @internal (undocumented)
+    protected getToolSettingPropertyByName(propertyName: string): DialogProperty<any>;
+    // @beta
+    protected getToolSettingPropertyLocked(_property: DialogProperty<any>): DialogProperty<any> | undefined;
     getToolTip(_hit: HitDetail): Promise<HTMLElement | string>;
+    // @beta
+    protected initializeToolSettingPropertyValues(properties: DialogProperty<any>[]): void;
     initLocateElements(enableLocate?: boolean, enableSnap?: boolean, cursor?: string, coordLockOvr?: CoordinateLockOverrides): void;
     // (undocumented)
     isCompatibleViewport(_vp: ScreenViewport, _isSelectedViewChange: boolean): boolean;
@@ -4934,11 +5116,19 @@ export abstract class InteractiveTool extends Tool {
     receivedDownEvent: boolean;
     // @beta
     reloadToolSettingsProperties(): void;
+    // @internal (undocumented)
+    protected restoreToolSettingPropertyValue(property: DialogProperty<any>): boolean;
+    // @internal (undocumented)
+    protected saveToolSettingPropertyValue(property: DialogProperty<any>, itemValue: DialogItemValue): boolean;
     // @beta
     supplyToolSettingsProperties(): DialogItem[] | undefined;
+    // @internal (undocumented)
+    protected syncToolSettingPropertyValue(property: DialogProperty<any>, isDisabled?: boolean): void;
     // @beta
     syncToolSettingsProperties(syncData: DialogPropertySyncItem[]): void;
     testDecorationHit(_id: string): boolean;
+    // @internal (undocumented)
+    protected toolSettingProperties?: Map<string, DialogProperty<any>>;
 }
 
 // @internal (undocumented)
@@ -5656,7 +5846,7 @@ export class MapTile extends RealityTile {
 
 // @internal (undocumented)
 export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
-    constructor(_vp: Viewport);
+    constructor(viewportId: number, displayStyle: DisplayStyleState);
     // (undocumented)
     readonly backgroundDrapeMap: MapTileTreeReference;
     // (undocumented)
@@ -5673,7 +5863,7 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
     readonly overlayMap: MapTileTreeReference;
     // (undocumented)
     setView(newView: ViewState): void;
-    }
+}
 
 // @internal
 export class MapTileLoader extends RealityTileLoader {
@@ -7542,6 +7732,19 @@ export function rangeToCartographicArea(view3d: ViewState3d, range: Range3d): Gl
 // @public
 export function readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean, options?: BatchOptions | false): Promise<RenderGraphic | undefined>;
 
+// @public
+export function readGltfGraphics(args: ReadGltfGraphicsArgs): Promise<RenderGraphic | undefined>;
+
+// @public
+export interface ReadGltfGraphicsArgs {
+    baseUrl?: string;
+    gltf: Uint8Array | Object;
+    iModel: IModelConnection;
+    pickableOptions?: PickableGraphicOptions & {
+        modelId?: Id64String;
+    };
+}
+
 // @internal
 export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined;
 
@@ -9231,6 +9434,9 @@ export class SheetViewState extends ViewState2d {
     // @internal
     get viewAttachmentProps(): Array<Readonly<ViewAttachmentProps>>;
     }
+
+// @internal (undocumented)
+export type ShouldAbortImdlReader = (reader: ImdlReader) => boolean;
 
 // @internal
 export type ShouldAbortReadGltf = (reader: GltfReader) => boolean;

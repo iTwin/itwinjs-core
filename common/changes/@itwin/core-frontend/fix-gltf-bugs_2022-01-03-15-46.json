@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Improve conformance with the glTF 2.0 spec.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

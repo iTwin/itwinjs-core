@@ -157,6 +157,7 @@ export enum BriefcaseStatus {
 
 // @public
 export class ByteStream {
+    // @deprecated
     constructor(buffer: ArrayBuffer | SharedArrayBuffer, subView?: {
         byteOffset: number;
         byteLength: number;
@@ -165,6 +166,12 @@ export class ByteStream {
     get arrayBuffer(): ArrayBuffer | SharedArrayBuffer;
     get curPos(): number;
     set curPos(pos: number);
+    static fromArrayBuffer(buffer: ArrayBuffer | SharedArrayBuffer, subView?: {
+        byteOffset: number;
+        byteLength: number;
+    }): ByteStream;
+    static fromUint8Array(bytes: Uint8Array): ByteStream;
+    get isAtTheEnd(): boolean;
     get isPastTheEnd(): boolean;
     get length(): number;
     nextBytes(numBytes: number): Uint8Array;
@@ -1210,6 +1217,9 @@ export class LRUDictionary<K, V> extends LRUCache<K, V> {
 export class LRUMap<K, V> extends LRUCache<K, V> {
     constructor(limit: number);
 }
+
+// @public
+export type MarkRequired<T, K extends keyof T> = Pick<Required<T>, K> & Omit<T, K>;
 
 // @public
 export type Mutable<T> = {

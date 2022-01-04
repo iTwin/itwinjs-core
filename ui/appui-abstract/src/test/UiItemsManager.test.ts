@@ -6,19 +6,20 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import {
-  AbstractStatusBarItemUtilities, AbstractWidgetProps, BackstageItem, BackstageItemUtilities, CommonStatusBarItem, CommonToolbarItem,
+  AbstractStatusBarItemUtilities, AbstractWidgetProps, BackstageItem, BackstageItemUtilities, BaseUiItemsProvider, CommonStatusBarItem, CommonToolbarItem,
   StagePanelLocation, StagePanelSection, StageUsage, StatusBarSection, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage, UiItemsManager,
-  UiItemsProvider,
 } from "../appui-abstract";
 
 const testStageUsage = StageUsage.General;
 
 /** TestUiItemsProvider that provides tools and status bar items */
-class TestUiItemsProvider implements UiItemsProvider {
-  public readonly id = "TestUiItemsProvider";
+class TestUiItemsProvider extends BaseUiItemsProvider {
+  constructor(providerId: string, isSupportedStage?: ((stageId: string, stageUsage: string, stageAppData?: any) => boolean)) {
+    super(providerId, isSupportedStage);
+  }
 
-  public provideToolbarButtonItems(_stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[] {
-    if (stageUsage === StageUsage.General && toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Horizontal) {
+  public override provideToolbarButtonItemsInternal(_stageId: string, _stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[] {
+    if (toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Horizontal) {
       const simpleActionSpec = ToolbarItemUtilities.createActionButton("simple-test-action-tool", 200, "icon-developer", "simple-test-action-tool",
         (): void => {
           // eslint-disable-next-line no-console
@@ -30,50 +31,45 @@ class TestUiItemsProvider implements UiItemsProvider {
   }
 
   public static statusBarItemIsVisible = true;
-  public provideStatusBarItems(_stageId: string, stageUsage: string): CommonStatusBarItem[] {
+  public override provideStatusBarItemsInternal(_stageId: string, _stageUsage: string, _stageAppData?: any): CommonStatusBarItem[] {
     const statusBarItems: CommonStatusBarItem[] = [];
 
-    if (stageUsage === StageUsage.General) {
-      statusBarItems.push(
-        AbstractStatusBarItemUtilities.createActionItem("UiItemsProviderTest:StatusBarItem1", StatusBarSection.Center, 100, "icon-developer", "test status bar from extension",
-          () => {
-            // eslint-disable-next-line no-console
-            console.log("Got Here!");
-          }));
+    statusBarItems.push(
+      AbstractStatusBarItemUtilities.createActionItem("UiItemsProviderTest:StatusBarItem1", StatusBarSection.Center, 100, "icon-developer", "test status bar from extension",
+        () => {
+          // eslint-disable-next-line no-console
+          console.log("Got Here!");
+        }));
 
-      statusBarItems.push(AbstractStatusBarItemUtilities.createLabelItem("UiItemsProviderTest:StatusBarLabel1", StatusBarSection.Center, 100, "icon-hand-2", "Hello", undefined));
-    }
+    statusBarItems.push(AbstractStatusBarItemUtilities.createLabelItem("UiItemsProviderTest:StatusBarLabel1", StatusBarSection.Center, 100, "icon-hand-2", "Hello", undefined));
     return statusBarItems;
   }
 
   public static sampleStatusVisible = true;
 
-  public provideBackstageItems(): BackstageItem[] {
+  public override provideBackstageItems(): BackstageItem[] {
     return [
       BackstageItemUtilities.createActionItem("UiItemsProviderTest:backstage1", 500, 50, () => { }, "Dynamic Action", undefined, undefined, { isHidden: !TestUiItemsProvider.sampleStatusVisible }),
     ];
   }
 
-  public provideWidgets(_stageId: string, stageUsage: string, _location: StagePanelLocation, _section?: StagePanelSection | undefined): ReadonlyArray<AbstractWidgetProps> {
+  public override provideWidgetsInternal(_stageId: string, _stageUsage: string, _location: StagePanelLocation, _section?: StagePanelSection, _stageAppData?: any): AbstractWidgetProps[] {
     const widgets: AbstractWidgetProps[] = [];
-
-    if (stageUsage === testStageUsage) {
-      widgets.push({
-        id: "test",
-        getWidgetContent: () => "Hello World!",
-      });
-    }
+    widgets.push({
+      id: "test",
+      getWidgetContent: () => "Hello World!",
+    });
 
     return widgets;
   }
 }
 
-class TestUnregisterUiItemsProvider implements UiItemsProvider {
-  public readonly id = "TestUnregisterUiItemsProvider";
-  constructor(private _onUregisterFunc: () => void) {
-
+class TestUnregisterUiItemsProvider extends BaseUiItemsProvider {
+  constructor(providerId: string, private _onUregisterFunc: () => void) {
+    super(providerId);
   }
-  public onUnregister() {
+
+  public override onUnregister() {
     this._onUregisterFunc();
   }
 }
@@ -82,7 +78,7 @@ describe("UiItemsManager", () => {
   afterEach(() => sinon.restore());
 
   it("can't unregister if provider id is not registered", () => {
-    const testUiProvider = new TestUiItemsProvider();
+    const testUiProvider = new TestUiItemsProvider("TestUiItemsProvider");
     expect(UiItemsManager.hasRegisteredProviders).to.be.false;
     UiItemsManager.register(testUiProvider);
     expect(UiItemsManager.hasRegisteredProviders).to.be.true;
@@ -105,7 +101,7 @@ describe("UiItemsManager", () => {
 
   it("register UiProvider should trigger callback", () => {
     const spy = sinon.spy();
-    const testUiProvider = new TestUiItemsProvider();
+    const testUiProvider = new TestUiItemsProvider("TestUiItemsProvider");
     UiItemsManager.onUiProviderRegisteredEvent.addListener(spy);
     spy.calledOnce.should.false;
     expect(UiItemsManager.hasRegisteredProviders).to.be.false;
@@ -119,17 +115,28 @@ describe("UiItemsManager", () => {
 
   it("register UiProvider should trigger callback", () => {
     const spy = sinon.spy();
-    const testUiProvider = new TestUnregisterUiItemsProvider(spy);
+    const testUiProvider = new TestUnregisterUiItemsProvider("TestUnregisterUiItemsProvider", spy);
     UiItemsManager.register(testUiProvider);
     spy.calledOnce.should.false;
+
+    const toolSpecs = UiItemsManager.getToolbarButtonItems("stage", testStageUsage, ToolbarUsage.ContentManipulation, ToolbarOrientation.Horizontal);
+    expect(toolSpecs.length).to.be.eq(0);
+    const statusbarItems = UiItemsManager.getStatusBarItems("stage", testStageUsage);
+    expect(statusbarItems.length).to.be.eq(0);
+    const widgets = UiItemsManager.getWidgets("", testStageUsage, StagePanelLocation.Right);
+    expect(widgets.length).to.be.eq(0);
+    // back stage items are independent of frontstage
+    const backstageItems = UiItemsManager.getBackstageItems();
+    expect(backstageItems.length).to.be.eq(0);
+
     expect(UiItemsManager.hasRegisteredProviders).to.be.true;
-    UiItemsManager.unregister(testUiProvider.id);
+    testUiProvider.unregister();
     expect(UiItemsManager.hasRegisteredProviders).to.be.false;
     spy.calledOnce.should.true;
   });
 
   it("don't register UiProvider with same id more than once", () => {
-    const testUiProvider = new TestUiItemsProvider();
+    const testUiProvider = new TestUiItemsProvider("TestUiItemsProvider");
     expect(UiItemsManager.hasRegisteredProviders).to.be.false;
     UiItemsManager.register(testUiProvider);
     expect(UiItemsManager.hasRegisteredProviders).to.be.true;
@@ -141,8 +148,8 @@ describe("UiItemsManager", () => {
     expect(UiItemsManager.hasRegisteredProviders).to.be.false;
   });
 
-  it("Registered UiProvider should return items", () => {
-    const testUiProvider = new TestUiItemsProvider();
+  it("Registered UiProvider should return items since stage is supported ", () => {
+    const testUiProvider = new TestUiItemsProvider("TestUiItemsProvider", (_, stageUsage) => stageUsage === StageUsage.General);
     UiItemsManager.register(testUiProvider);
     const toolSpecs = UiItemsManager.getToolbarButtonItems("stage", testStageUsage, ToolbarUsage.ContentManipulation, ToolbarOrientation.Horizontal);
     expect(toolSpecs.length).to.be.eq(1);
@@ -152,6 +159,35 @@ describe("UiItemsManager", () => {
     expect(backstageItems.length).to.be.eq(1);
     const widgets = UiItemsManager.getWidgets("", testStageUsage, StagePanelLocation.Right);
     expect(widgets.length).to.be.eq(1);
+    UiItemsManager.unregister(testUiProvider.id);
+  });
+
+  it(`Registered UiProvider should return items since default usage of "General" is supported`, () => {
+    const testUiProvider = new TestUiItemsProvider("TestUiItemsProvider");
+    UiItemsManager.register(testUiProvider);
+    const toolSpecs = UiItemsManager.getToolbarButtonItems("stage", testStageUsage, ToolbarUsage.ContentManipulation, ToolbarOrientation.Horizontal);
+    expect(toolSpecs.length).to.be.eq(1);
+    const statusbarItems = UiItemsManager.getStatusBarItems("stage", testStageUsage);
+    expect(statusbarItems.length).to.be.eq(2);
+    const backstageItems = UiItemsManager.getBackstageItems();
+    expect(backstageItems.length).to.be.eq(1);
+    const widgets = UiItemsManager.getWidgets("", testStageUsage, StagePanelLocation.Right);
+    expect(widgets.length).to.be.eq(1);
+    UiItemsManager.unregister(testUiProvider.id);
+  });
+
+  it("Registered UiProvider should NOT return items since stage is not supported ", () => {
+    const testUiProvider = new TestUiItemsProvider("TestUiItemsProvider2", (_, stageUsage) => stageUsage === "no-support");
+    UiItemsManager.register(testUiProvider);
+    const toolSpecs = UiItemsManager.getToolbarButtonItems("stage", testStageUsage, ToolbarUsage.ContentManipulation, ToolbarOrientation.Horizontal);
+    expect(toolSpecs.length).to.be.eq(0);
+    const statusbarItems = UiItemsManager.getStatusBarItems("stage", testStageUsage);
+    expect(statusbarItems.length).to.be.eq(0);
+    const widgets = UiItemsManager.getWidgets("", testStageUsage, StagePanelLocation.Right);
+    expect(widgets.length).to.be.eq(0);
+    // back stage items are independent of frontstage
+    const backstageItems = UiItemsManager.getBackstageItems();
+    expect(backstageItems.length).to.be.eq(1);
     UiItemsManager.unregister(testUiProvider.id);
   });
 
