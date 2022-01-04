@@ -68,7 +68,7 @@ describe("Texture", () => {
     expect(Array.from(texture2.data)).to.deep.equal([4, 5, 6, 7]);
   });
 
-  describe.only("queryTextureData", () => {
+  describe("queryTextureData", () => {
     it("reports transparency", async () => {
       // Each test case provides the bytes of a PNG image containing any combination of opaque, transparent, and translucent pixels, where:
       //  opaque has alpha of 241
