@@ -1475,7 +1475,6 @@ importers:
       '@types/node': 14.14.31
       '@types/react': ^17.0.37
       '@types/react-beautiful-dnd': ^12.1.2
-      '@types/react-select': 3.0.26
       '@types/sinon': ^9.0.0
       '@types/sinon-chai': ^3.2.0
       '@wojtekmaj/enzyme-adapter-react-17': ^0.6.3
@@ -1495,7 +1494,6 @@ importers:
       react: ^17.0.0
       react-beautiful-dnd: ^13.0.0
       react-resize-detector: ^6.7.6
-      react-select: 3.2.0
       rimraf: ^3.0.2
       sinon: ^9.0.2
       sinon-chai: ^3.2.0
@@ -1505,7 +1503,6 @@ importers:
       classnames: 2.3.1
       react-beautiful-dnd: 13.1.0_react@17.0.2
       react-resize-detector: 6.7.7_react@17.0.2
-      react-select: 3.2.0_react@17.0.2
     devDependencies:
       '@bentley/itwin-client': link:../../clients/itwin
       '@itwin/appui-abstract': link:../../ui/appui-abstract
@@ -1532,7 +1529,6 @@ importers:
       '@types/node': 14.14.31
       '@types/react': 17.0.38
       '@types/react-beautiful-dnd': 12.1.5
-      '@types/react-select': 3.0.26
       '@types/sinon': 9.0.11
       '@types/sinon-chai': 3.2.8
       '@wojtekmaj/enzyme-adapter-react-17': 0.6.6_enzyme@3.11.0+react@17.0.2
@@ -9864,7 +9860,7 @@ packages:
     hasBin: true
     dependencies:
       browserslist: 3.2.8
-      caniuse-lite: 1.0.30001295
+      caniuse-lite: 1.0.30001296
       normalize-range: 0.1.2
       num2fraction: 1.2.2
       postcss: 6.0.23
@@ -9876,7 +9872,7 @@ packages:
     hasBin: true
     dependencies:
       browserslist: 4.19.1
-      caniuse-lite: 1.0.30001295
+      caniuse-lite: 1.0.30001296
       normalize-range: 0.1.2
       num2fraction: 1.2.2
       picocolors: 0.2.1
@@ -9928,7 +9924,7 @@ packages:
       multistream: 2.1.1
       mysql2: 2.3.3
       rimraf: 3.0.2
-      sequelize: 6.12.4_mysql2@2.3.3+tedious@14.0.0
+      sequelize: 6.12.5_mysql2@2.3.3+tedious@14.0.0
       tedious: 14.0.0
       to-readable-stream: 2.1.0
       tslib: 2.3.1
@@ -10587,8 +10583,8 @@ packages:
     resolution: {integrity: sha512-WHVocJYavUwVgVViC0ORikPHQquXwVh939TaelZ4WDqpWgTX/FsGhl/+P4qBUAGcRvtOgDgC+xftNWWp2RUTAQ==}
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001295
-      electron-to-chromium: 1.4.32
+      caniuse-lite: 1.0.30001296
+      electron-to-chromium: 1.4.33
     dev: true
 
   /browserslist/4.14.2:
@@ -10596,8 +10592,8 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001295
-      electron-to-chromium: 1.4.32
+      caniuse-lite: 1.0.30001296
+      electron-to-chromium: 1.4.33
       escalade: 3.1.1
       node-releases: 1.1.77
     dev: true
@@ -10607,8 +10603,8 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001295
-      electron-to-chromium: 1.4.32
+      caniuse-lite: 1.0.30001296
+      electron-to-chromium: 1.4.33
       escalade: 3.1.1
       node-releases: 2.0.1
       picocolors: 1.0.0
@@ -10845,13 +10841,13 @@ packages:
     resolution: {integrity: sha512-bsTwuIg/BZZK/vreVTYYbSWoe2F+71P7K5QGEX+pT250DZbfU1MQ5prOKpPR+LL6uWKK3KMwMCAS74QB3Um1uw==}
     dependencies:
       browserslist: 4.19.1
-      caniuse-lite: 1.0.30001295
+      caniuse-lite: 1.0.30001296
       lodash.memoize: 4.1.2
       lodash.uniq: 4.5.0
     dev: true
 
-  /caniuse-lite/1.0.30001295:
-    resolution: {integrity: sha512-lSP16vcyC0FEy0R4ECc9duSPoKoZy+YkpGkue9G4D81OfPnliopaZrU10+qtPdT8PbGXad/PNx43TIQrOmJZSQ==}
+  /caniuse-lite/1.0.30001296:
+    resolution: {integrity: sha512-WfrtPEoNSoeATDlf4y3QvkwiELl9GyPLISV5GejTbbQRtQx4LhsXmc9IQ6XCL2d7UxCyEzToEZNMeqR79OUw8Q==}
 
   /capture-exit/2.0.0:
     resolution: {integrity: sha512-PiT/hQmTonHhl/HFGN+Lx3JJUznrVYJ3+AQsnthneZbvW7x+f08Tk7yLJTLEOUvBTbduLeeBkxEaYXUOUrRq6g==}
@@ -12377,8 +12373,8 @@ packages:
     requiresBuild: true
     dev: true
 
-  /electron-to-chromium/1.4.32:
-    resolution: {integrity: sha512-7QRVfMlccTFs7cZV3lB0k9Wcm6R6F+w1yBPX+xBAlAP/1oJIstxTev3A4r8REnUUAFph/cIB8y/EBU7PDbJTQw==}
+  /electron-to-chromium/1.4.33:
+    resolution: {integrity: sha512-OVK1Ad3pHnmuXPhEfq85X8vUKr1UPNHryBnbKnyLcAfh8dPwoFjoDhDlP5KpPJIiymvSucZs48UBrE1250IxOw==}
 
   /electron/14.2.3:
     resolution: {integrity: sha512-7wBqvzUKhK1tw544w3+F8J7NajnqURGC4pH3VFTiBHU5ayiI/oaTTXJxyFLZ54zsR7xwon/3dYEVjIm2i68+Zg==}
@@ -18322,7 +18318,7 @@ packages:
     dependencies:
       autoprefixer: 9.8.8
       browserslist: 4.19.1
-      caniuse-lite: 1.0.30001295
+      caniuse-lite: 1.0.30001296
       css-blank-pseudo: 0.1.4
       css-has-pseudo: 0.10.0
       css-prefers-color-scheme: 3.1.1
@@ -19195,23 +19191,6 @@ packages:
       react-transition-group: 4.4.2_react-dom@17.0.2+react@17.0.2
     dev: false
 
-  /react-select/3.2.0_react@17.0.2:
-    resolution: {integrity: sha512-B/q3TnCZXEKItO0fFN/I0tWOX3WJvi/X2wtdffmwSQVRwg5BpValScTO1vdic9AxlUgmeSzib2hAZAwIUQUZGQ==}
-    peerDependencies:
-      react: ^16.8.0 || ^17.0.0
-      react-dom: ^16.8.0 || ^17.0.0
-    dependencies:
-      '@babel/runtime': 7.16.7
-      '@emotion/cache': 10.0.29
-      '@emotion/core': 10.3.1_react@17.0.2
-      '@emotion/css': 10.0.27
-      memoize-one: 5.2.1
-      prop-types: 15.8.0
-      react: 17.0.2
-      react-input-autosize: 3.0.0_react@17.0.2
-      react-transition-group: 4.4.2_react@17.0.2
-    dev: false
-
   /react-shallow-renderer/16.14.1_react@17.0.2:
     resolution: {integrity: sha512-rkIMcQi01/+kxiTE9D3fdS959U1g7gs+/rborw++42m1O9FAQiNI/UNRZExVUoAOprn4umcXf+pFRou8i4zuBg==}
     peerDependencies:
@@ -19270,6 +19249,7 @@ packages:
       loose-envify: 1.4.0
       prop-types: 15.8.0
       react: 17.0.2
+    dev: true
 
   /react-window/1.8.6_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-8VwEEYyjz6DCnGBsd+MgkD0KJ2/OXFULyDtorIiTz+QzwoP94tBoA7CnbtyXMm+cCeAUER5KJcPtWl9cpKbOBg==}
@@ -20005,8 +19985,8 @@ packages:
     engines: {node: '>= 10.0.0'}
     dev: false
 
-  /sequelize/6.12.4_mysql2@2.3.3+tedious@14.0.0:
-    resolution: {integrity: sha512-P2E8TzlV3VwdvPqTS58ctIpcAOytXdaylUUfxxnALjtMmF6I+kfNtrqTP7WQFaenOboAtXPCJReZ9MPy+Zy/Ig==}
+  /sequelize/6.12.5_mysql2@2.3.3+tedious@14.0.0:
+    resolution: {integrity: sha512-V//3SwPHMkPZi0amkCLlk2aNdS+qnLR0tTAzAYvhrxZ6t7JgMDiIO4R5+84nHZ0PwGE71RDXKOBBVhkYjABxhQ==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
       ibm_db: '*'
