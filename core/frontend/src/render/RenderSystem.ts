@@ -606,7 +606,7 @@ export abstract class RenderSystem implements IDisposable {
       ownership,
       image: {
         source: image,
-        transparency: ImageBufferFormat.Rgba === image.format ? TextureTransparency.Translucent : TextureTransparency.Opaque,
+        transparency: ImageBufferFormat.Rgba === image.format ? TextureTransparency.Mixed : TextureTransparency.Opaque,
       },
     });
   }
@@ -622,7 +622,7 @@ export abstract class RenderSystem implements IDisposable {
       ownership,
       image: {
         source: image,
-        transparency: hasAlpha ? TextureTransparency.Translucent : TextureTransparency.Opaque,
+        transparency: hasAlpha ? TextureTransparency.Mixed : TextureTransparency.Opaque,
       },
     });
   }
@@ -637,7 +637,7 @@ export abstract class RenderSystem implements IDisposable {
       type: params.type,
       source,
       ownership,
-      transparency: source.format === ImageSourceFormat.Jpeg ? TextureTransparency.Opaque : TextureTransparency.Translucent,
+      transparency: source.format === ImageSourceFormat.Jpeg ? TextureTransparency.Opaque : TextureTransparency.Mixed,
     });
   }
 

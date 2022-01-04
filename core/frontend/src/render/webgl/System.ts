@@ -727,7 +727,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return this.createTexture({
       image: {
         source,
-        transparency: ImageBufferFormat.Rgba === source.format ? TextureTransparency.Translucent : TextureTransparency.Opaque,
+        transparency: ImageBufferFormat.Rgba === source.format ? TextureTransparency.Mixed : TextureTransparency.Opaque,
       },
       ownership: iModel ? { iModel, key: symb } : undefined,
       type: RenderTexture.Type.Normal,

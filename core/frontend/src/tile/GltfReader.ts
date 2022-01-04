@@ -957,7 +957,7 @@ export abstract class GltfReader {
           type: textureType,
           image: {
             source: image,
-            transparency: isTransparent && ImageSourceFormat.Png === format ? TextureTransparency.Translucent : TextureTransparency.Opaque,
+            transparency: isTransparent && ImageSourceFormat.Png === format ? TextureTransparency.Mixed : TextureTransparency.Opaque,
           },
         });
       } catch {
