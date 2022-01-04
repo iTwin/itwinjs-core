@@ -11,7 +11,7 @@ import { DbResult, Guid, Id64, Id64String, Logger, LogLevel, OpenMode } from "@i
 import { Point3d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   CategorySelector, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingModel, ECSqlStatement, Element,
-  ElementMultiAspect, ElementOwnsChildElements, ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, GenericPhysicalMaterial,
+  ElementMultiAspect, ElementOwnsChildElements, ElementOwnsExternalSourceAspects, ElementOwnsUniqueAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, GenericPhysicalMaterial,
   GeometricElement,
   IModelCloneContext, IModelDb, IModelHost, IModelJsFs, IModelSchemaLoader, InformationRecordModel, InformationRecordPartition, LinkElement, Model,
   ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, Relationship, RepositoryLink, Schema,
@@ -20,6 +20,7 @@ import {
 import { ExtensiveTestScenario, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import {
   AxisAlignedBox3d, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorDef, CreateIModelProps, DefinitionElementProps,
+  ElementAspectProps,
   ExternalSourceAspectProps, IModel, IModelError, PhysicalElementProps, Placement3d, QueryRowFormat,
 } from "@itwin/core-common";
 import { IModelExporter, IModelExportHandler, IModelTransformer, TransformerLoggerCategory } from "../../core-transformer";
@@ -1511,6 +1512,20 @@ describe("IModelTransformer", () => {
     const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "DeferredElementWithAspects-Source.bim");
     const sourceDb  = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "deferred-element-with-aspects"} });
 
+    const testSchema1Path = IModelTestUtils.prepareOutputFile("IModelTransformer", "TestSchema1.ecschema.xml");
+    // to test element unique aspect code paths (of which the bis kinds are excluded), we add a non-bis ElementUniqueAspect entity class
+    IModelJsFs.writeFileSync(testSchema1Path, `<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="TestSchema1" alias="ts1" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+          <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+          <ECEntityClass typeName="MyUniqueAspect" description="A test unique aspect" displayLabel="a test unique aspect" modifier="Sealed">
+            <BaseClass>bis:ElementUniqueAspect</BaseClass>
+            <ECProperty propertyName="MyProp1" typeName="string"/>
+        </ECEntityClass>
+      </ECSchema>`
+    );
+
+    await sourceDb.importSchemas([testSchema1Path]);
+
     const myPhysicalModelId = PhysicalModel.insert(sourceDb, IModelDb.rootSubjectId, "MyPhysicalModel");
     const mySpatialCategId = SpatialCategory.insert(sourceDb, IModelDb.dictionaryId, "MySpatialCateg", { color: ColorDef.black.toJSON() });
     const myPhysicalObjId = sourceDb.elements.insertElement({
@@ -1529,8 +1544,8 @@ describe("IModelTransformer", () => {
     });
     const sourceRepositoryId = IModelTestUtils.insertRepositoryLink(sourceDb, "external.repo", "https://external.example.com/folder/external.repo", "TEST");
     const sourceExternalSourceId = IModelTestUtils.insertExternalSource(sourceDb, sourceRepositoryId, "HypotheticalDisplayConfigurer");
-    // simulate provenance from a Connector, since this kind of aspect is not excluded
-    const partitionAspectProps: ExternalSourceAspectProps = {
+    // simulate provenance from a connector as an example of a copied over element multi aspect
+    const multiAspectProps: ExternalSourceAspectProps = {
       classFullName: ExternalSourceAspect.classFullName,
       element: { id: myDisplayStyleId, relClassName: ElementOwnsExternalSourceAspects.classFullName },
       scope: { id: sourceExternalSourceId },
@@ -1538,7 +1553,14 @@ describe("IModelTransformer", () => {
       identifier: "ID",
       kind: ExternalSourceAspect.Kind.Element,
     };
-    sourceDb.elements.insertAspect(partitionAspectProps);
+    sourceDb.elements.insertAspect(multiAspectProps);
+    const uniqueAspectProps = {
+      classFullName: "TestSchema1:MyUniqueAspect",
+      element: { id: myDisplayStyleId, relClassName: ElementOwnsUniqueAspect.classFullName },
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      MyProp1: "prop_value",
+    };
+    sourceDb.elements.insertAspect(uniqueAspectProps);
     sourceDb.saveChanges();
 
     const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "PreserveIdOnTestModel-Target.bim");
@@ -1558,9 +1580,15 @@ describe("IModelTransformer", () => {
 
     targetDb.saveChanges();
 
-    const sourceContent = await getAllElementsInvariants(sourceDb);
-    const targetContent = await getAllElementsInvariants(targetDb);
-    expect(targetContent).to.deep.equal(sourceContent);
+    let targetExternalSourceAspects!: any[];
+    let targetMyUniqueAspects!: any[];
+    targetDb.withStatement("SELECT * FROM bis.ExternalSourceAspect", (stmt) => (targetExternalSourceAspects = [...stmt]));
+    targetDb.withStatement("SELECT * FROM TestSchema1.MyUniqueAspect", (stmt) => (targetMyUniqueAspects = [...stmt]));
+
+    expect(targetMyUniqueAspects).to.have.lengthOf(1);
+    expect(targetMyUniqueAspects[0].MyProp1).to.equal(uniqueAspectProps.MyProp1);
+    expect(targetExternalSourceAspects).to.have.lengthOf(1);
+    expect(targetExternalSourceAspects[0].identifier).to.equal(multiAspectProps.identifier);
 
     sinon.restore();
     sourceDb.close();
