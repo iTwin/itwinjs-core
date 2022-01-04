@@ -598,36 +598,27 @@ export class IModelExporter {
   /** Export ElementAspects from the specified element from the source iModel. */
   private async exportElementAspects(elementId: Id64String): Promise<void> {
     // ElementUniqueAspects
-    let uniqueAspects: ElementUniqueAspect[] = this.sourceDb.elements._queryAspects(elementId, ElementUniqueAspect.classFullName, this._excludedElementAspectClassFullNames);
-    if (uniqueAspects.length > 0) {
-      uniqueAspects = uniqueAspects.filter((a) => this.shouldExportElementAspect(a));
-      if (uniqueAspects.length > 0) {
-        uniqueAspects.forEach(async (uniqueAspect: ElementUniqueAspect) => {
-          if (undefined !== this._sourceDbChanges) { // is changeset information available?
-            if (this._sourceDbChanges.aspect.insertIds.has(uniqueAspect.id)) {
-              this.handler["onExportElementUniqueAspect"](uniqueAspect, false);
-              await this.trackProgress();
-            } else if (this._sourceDbChanges.aspect.updateIds.has(uniqueAspect.id)) {
-              this.handler["onExportElementUniqueAspect"](uniqueAspect, true);
-              await this.trackProgress();
-            } else {
-              // not in changeset, don't export
-            }
-          } else {
-            this.handler["onExportElementUniqueAspect"](uniqueAspect, undefined);
-            await this.trackProgress();
-          }
-        });
-      }
-    }
+    this.sourceDb.elements
+      ._queryAspects(elementId, ElementUniqueAspect.classFullName, this._excludedElementAspectClassFullNames)
+      .filter((a) => this.shouldExportElementAspect(a))
+      .forEach(async (uniqueAspect: ElementUniqueAspect) => {
+        const isInsertChange = this._sourceDbChanges?.aspect.insertIds.has(uniqueAspect.id) ?? false;
+        const isUpdateChange = this._sourceDbChanges?.aspect.updateIds.has(uniqueAspect.id) ?? false;
+        const doExport = this._sourceDbChanges === undefined || isInsertChange || isUpdateChange;
+        if (doExport) {
+          const isKnownUpdate = this._sourceDbChanges ? isUpdateChange : undefined;
+          this.handler["onExportElementUniqueAspect"](uniqueAspect, isKnownUpdate);
+          await this.trackProgress();
+        }
+      });
+
     // ElementMultiAspects
-    let multiAspects: ElementMultiAspect[] = this.sourceDb.elements._queryAspects(elementId, ElementMultiAspect.classFullName, this._excludedElementAspectClassFullNames);
+    const multiAspects = this.sourceDb.elements
+      ._queryAspects(elementId, ElementMultiAspect.classFullName, this._excludedElementAspectClassFullNames)
+      .filter((a) => this.shouldExportElementAspect(a));
     if (multiAspects.length > 0) {
-      multiAspects = multiAspects.filter((a) => this.shouldExportElementAspect(a));
-      if (multiAspects.length > 0) {
-        this.handler["onExportElementMultiAspects"](multiAspects);
-        return this.trackProgress();
-      }
+      this.handler["onExportElementMultiAspects"](multiAspects);
+      return this.trackProgress();
     }
   }
 
