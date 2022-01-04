@@ -272,7 +272,7 @@ export class IdMap implements WebGLDisposable {
 
   public async createTextureFromImageSource(args: CreateTextureFromSourceArgs, key: string): Promise<RenderTexture | undefined> {
     // JPEGs don't support transparency.
-    const transparency = ImageSourceFormat.Jpeg === args.source.format ? TextureTransparency.Opaque : (args.transparency ?? TextureTransparency.Translucent);
+    const transparency = ImageSourceFormat.Jpeg === args.source.format ? TextureTransparency.Opaque : (args.transparency ?? TextureTransparency.Mixed);
     try {
       const image = await imageElementFromImageSource(args.source);
       if (!IModelApp.hasRenderSystem)

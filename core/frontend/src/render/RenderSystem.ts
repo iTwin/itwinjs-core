@@ -548,7 +548,7 @@ export abstract class RenderSystem implements IDisposable {
           ownership: { key: id, iModel },
           image: {
             source: image.image,
-            transparency: ImageSourceFormat.Png === image.format ? TextureTransparency.Translucent : TextureTransparency.Opaque,
+            transparency: ImageSourceFormat.Png === image.format ? TextureTransparency.Mixed : TextureTransparency.Opaque,
           },
         });
       }
@@ -645,7 +645,7 @@ export abstract class RenderSystem implements IDisposable {
   public async createTextureFromSource(args: CreateTextureFromSourceArgs): Promise<RenderTexture | undefined> {
     try {
       // JPEGs don't support transparency.
-      const transparency = ImageSourceFormat.Jpeg === args.source.format ? TextureTransparency.Opaque : (args.transparency ?? TextureTransparency.Translucent);
+      const transparency = ImageSourceFormat.Jpeg === args.source.format ? TextureTransparency.Opaque : (args.transparency ?? TextureTransparency.Mixed);
       const image = await imageElementFromImageSource(args.source);
       if (!IModelApp.hasRenderSystem)
         return undefined;
