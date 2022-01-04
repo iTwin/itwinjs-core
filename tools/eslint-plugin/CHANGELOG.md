@@ -1,6 +1,11 @@
 # Change Log - @bentley/eslint-plugin
 
-This log was last generated on Fri, 03 Dec 2021 20:05:49 GMT and should not be manually modified.
+This log was last generated on Wed, 08 Dec 2021 20:54:52 GMT and should not be manually modified.
+
+## 2.19.26
+Wed, 08 Dec 2021 20:54:52 GMT
+
+_Version update only_
 
 ## 2.19.25
 Fri, 03 Dec 2021 20:05:49 GMT
