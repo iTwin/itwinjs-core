@@ -176,7 +176,9 @@ Should a separate grouping node be created for nodes whose grouping value is not
 [[include:Hierarchies.Grouping.PropertyGroup.CreateGroupForUnspecifiedValues.Ruleset]]
 ```
 
-![Example of using "create group for unspecified values" attribute](./media/hierarchy-grouping-with-creategroupforunspecifiedvalues-attribute.png)
+| `createGroupForUnspecifiedValues: false`                                                                                                                          | `createGroupForUnspecifiedValues: true`                                                                                                                                  |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| ![Example of using "create group for unspecified values" attribute set to "false"](./media/hierarchy-grouping-with-creategroupforunspecifiedvalues-attribute.png) | ![Example of using "create group for unspecified values" attribute set to "true"](./media/hierarchy-grouping-with-creategroupforunspecifiedvalues-attribute-grouped.png) |
 
 #### Attribute: `imageId`
 

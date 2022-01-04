@@ -1499,7 +1499,7 @@ describe("Learning Snippets", () => {
           // __PUBLISH_EXTRACT_END__
           printRuleset(ruleset);
 
-          // __PUBLISH_EXTRACT_START__ Hierarchies.Grouping.SameLabelInstanceGroup.ApplicationStage.PostProcess.Ruleset
+          // __PUBLISH_EXTRACT_START__ Hierarchies.Grouping.SameLabelInstanceGroup.ApplicationStage.PostProcess.Result
           // Confirm that at least some nodes are merged from multiple elements
           const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
           expect(nodes).to.satisfy(() => nodes.length > 0 && nodes.some((node) => {

@@ -148,6 +148,8 @@ Suppress sorting of nodes returned by this specification. With this attribute se
 [[include:Hierarchies.Specification.DoNotSort.Ruleset]]
 ```
 
+![Example of using "do not sort" attribute](./media/hierarchy-with-specification-donotsort-attribute.png)
+
 ### Attribute: `groupByClass`
 
 > **Default value:** `true`
@@ -158,7 +160,9 @@ Controls whether returned instances should be grouped by ECClass.
 [[include:Hierarchies.Specification.GroupByClass.Ruleset]]
 ```
 
-![Example of using "group by class" attribute](./media/hierarchy-with-specification-groupbyclass-attribute.png)
+| `groupByClass: false`                                                                                                          | `groupByClass: true`                                                                                                                  |
+| ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| ![Example of using "group by class" attribute set to "false"](./media/hierarchy-with-specification-groupbyclass-attribute.png) | ![Example of using "group by class" attribute set to "true"](./media/hierarchy-with-specification-groupbyclass-attribute-grouped.png) |
 
 ### Attribute: `groupByLabel`
 
@@ -175,7 +179,9 @@ Label grouping node is created only if all of these conditions match:
 [[include:Hierarchies.Specification.GroupByLabel.Ruleset]]
 ```
 
-![Example of using "group by label" attribute](./media/hierarchy-with-specification-groupbylabel-attribute.png)
+| `groupByLabel: false`                                                                                                          | `groupByLabel: true`                                                                                                                  |
+| ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| ![Example of using "group by label" attribute set to "false"](./media/hierarchy-with-specification-groupbylabel-attribute.png) | ![Example of using "group by label" attribute set to "true"](./media/hierarchy-with-specification-groupbylabel-attribute-grouped.png) |
 
 ### Attribute: `hasChildren`
 
@@ -200,7 +206,9 @@ list even if there are child node rules that define children for it.
 [[include:Hierarchies.Specification.HasChildren.Ruleset]]
 ```
 
-![Example of using "has children" attribute](./media/hierarchy-with-specification-haschildren-attribute.png)
+```ts
+[[include:Hierarchies.Specification.HasChildren.Result]]
+```
 
 ### Attribute: `relatedInstances`
 
