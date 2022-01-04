@@ -246,11 +246,17 @@ export class IdMap implements WebGLDisposable {
     if (tex)
       return tex;
 
-    const handle = TextureHandle.createForElement(key, iModel, params.type, format);
+    const handle = TextureHandle.createForElement(key, iModel, params.type, format, (_, data) => {
+      if (tex) {
+        assert(tex instanceof Texture);
+        tex.transparency = data.transparency ?? TextureTransparency.Mixed;
+      }
+    });
+
     if (!handle)
       return undefined;
 
-    tex = new Texture({ handle, type: params.type, ownership: { key, iModel } });
+    tex = new Texture({ handle, type: params.type, ownership: { key, iModel }, transparency: TextureTransparency.Opaque });
     this.addTexture(tex);
     return tex;
   }
@@ -304,7 +310,7 @@ export class IdMap implements WebGLDisposable {
       return undefined;
 
     const ownership = params.key ? { key: params.key, iModel: this._iModel } : (params.isOwned ? "external" : undefined);
-    tex = new Texture({ handle, ownership, type: params.type });
+    tex = new Texture({ handle, ownership, type: params.type, transparency: TextureTransparency.Opaque });
     this.addTexture(tex);
     return tex;
   }
@@ -682,17 +688,16 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     const type = args.type ?? RenderTexture.Type.Normal;
     const source = args.image.source;
 
-    // ###TODO createForImageBuffer should take args.transparency.
     let handle;
     if (source instanceof ImageBuffer)
-      handle = TextureHandle.createForImageBuffer(source, type); // ###TODO use transparency from args
+      handle = TextureHandle.createForImageBuffer(source, type);
     else
-      handle = TextureHandle.createForImage(source, TextureTransparency.Opaque !== args.image.transparency, type);
+      handle = TextureHandle.createForImage(source, type);
 
     if (!handle)
       return undefined;
 
-    const texture = new Texture({ handle, type, ownership: args.ownership });
+    const texture = new Texture({ handle, type, ownership: args.ownership, transparency: args.image.transparency ?? TextureTransparency.Mixed });
     if (texture && info)
       info.idMap.addTexture(texture, info.key);
 
