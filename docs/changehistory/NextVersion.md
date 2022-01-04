@@ -680,6 +680,38 @@ These methods were previously synchronous and are now async:
 - [InteractiveTool.onSuspend]($frontend)
 - [InteractiveTool.onUnsuspend]($frontend)
 
+## Changes to iModel transformer APIs
+
+### New @itwin/core-transformer package
+
+APIs for importing and exporting data between iModels have moved from the [@itwin/core-backend](https://www.npmjs.com/package/@itwin/core-backend) package to the new [@itwin/core-transformer](https://www.npmjs.com/package/@itwin/core-transformer) package. These APIs include [IModelExporter]($transformer), [IModelImporter]($transformer), and [IModelTransformer]($transformer).
+
+### IModelImporter property options deprecated in favor of constructor options
+
+Configuration of an [IModelImporter]($transformer) is now only represented by an [IModelImportOptions]($transformer) object passed to the constructor. The ability to modify options with the [IModelImporter]($transformer) properties `simplifyElementGeometry`, `autoExtendProjectExtents`, and `preserveElementIdsForFiltering` has been deprecated; instead, set these options while constructing your [IModelImporter]($transformer), and read them if necessary from [IModelImporter.options]($transformer). For example, replace the following:
+
+```ts
+  const importer = new IModelImporter(targetDb);
+  importer.autoExtendProjectExtents = true;
+  const isExtendingProjectExtents = importer.autoExtendProjectExtents;
+}
+```
+
+With this:
+
+```ts
+  const importer = new IModelImporter(targetDb, { autoExtendProjectExtents: true });
+  const isExtendingProjectExtents = importer.options.autoExtendProjectExtents;
+```
+
+### Customized handling of dangling predecessor Ids
+
+When the [IModelTransformer]($transformer) encounters a dangling predecessor element id reference in an iModel, an element id for which no element exists in the database, by default the entire transformation is rejected. Now, there are multiple behaviors to choose from for the transformer to use when it encounters such references while analyzing predecessor elements. The `danglingPredecessorBehavior` option defaults to `reject`, or can be configured as `ignore`, which will instead leave the dangling reference as is while transforming to the target. You can configure the new behavior like so:
+
+```ts
+  const transformer = new IModelTransformer(sourceDb, targetDb, { danglingPredecessorBehavior: "ignore" });
+```
+
 ## Changes to `@itwin/presentation-common`
 
 ### `NodeKey`
@@ -1485,11 +1517,6 @@ The method `BSplineCurve3d.createThroughPoints` has been deprecated in favor of 
 
 The property `InterpolationCurve3dOptions.isChordLenTangent` has been deprecated due to a naming inconsistency with similar adjacent properties. Use `InterpolationCurve3dOptions.isChordLenTangents` instead.
 
-## new @itwin/core-transformer package split out of backend package
-
-The iModel Transformer APIs, such as the classes [IModelExporter]($transformer), [IModelImporter]($transformer), and [IModelTransformer]($transformer)
-were removed from the `@itwin/core-backend` package and moved to a new package, `@itwin/core-transformer`.
-
 ## @itwin/core-common
 
 The `fromRadians`, `fromDegrees`, and `fromAngles` methods of [Cartographic]($common) now expect to receive a single input argument - an object containing a longitude, latitude and optional height property. The public constructor for [Cartographic]($common) has also been removed. If you would like to create a [Cartographic]($common) object without specifying longitude and latiude, you can use the new `createZero` method. These changes will help callers avoid misordering longitude, latitude, and height when creating a [Cartographic]($common) object. Additionally, the `LatAndLong` and `LatLongAndHeight` interfaces have been removed and replaced with a single [CartographicProps]($common) interface.
@@ -1747,4 +1774,3 @@ On the frontend the [GeoConverter]($frontend) class has been modified to accept 
 ## New clustering algorithm for MarkerSet
 
 The [MarkerSet]($frontend) class now clusters markers by the screen distance between their positions rather than overlap of their rectangles, so the `Cluster.rect` property is no longer needed and has been removed. Instead, there is a new member `MarkerSet.clusterRadius` that controls when nearby Markers are clustered. See its documentation for details.
-

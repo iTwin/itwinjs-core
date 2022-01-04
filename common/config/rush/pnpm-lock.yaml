@@ -1475,7 +1475,6 @@ importers:
       '@types/node': 14.14.31
       '@types/react': ^17.0.37
       '@types/react-beautiful-dnd': ^12.1.2
-      '@types/react-select': 3.0.26
       '@types/sinon': ^9.0.0
       '@types/sinon-chai': ^3.2.0
       '@wojtekmaj/enzyme-adapter-react-17': ^0.6.3
@@ -1495,7 +1494,6 @@ importers:
       react: ^17.0.0
       react-beautiful-dnd: ^13.0.0
       react-resize-detector: ^6.7.6
-      react-select: 3.2.0
       rimraf: ^3.0.2
       sinon: ^9.0.2
       sinon-chai: ^3.2.0
@@ -1505,7 +1503,6 @@ importers:
       classnames: 2.3.1
       react-beautiful-dnd: 13.1.0_react@17.0.2
       react-resize-detector: 6.7.6_react@17.0.2
-      react-select: 3.2.0_react@17.0.2
     devDependencies:
       '@bentley/itwin-client': link:../../clients/itwin
       '@itwin/appui-abstract': link:../../ui/appui-abstract
@@ -1532,7 +1529,6 @@ importers:
       '@types/node': 14.14.31
       '@types/react': 17.0.37
       '@types/react-beautiful-dnd': 12.1.5
-      '@types/react-select': 3.0.26
       '@types/sinon': 9.0.11
       '@types/sinon-chai': 3.2.6
       '@wojtekmaj/enzyme-adapter-react-17': 0.6.6_enzyme@3.11.0+react@17.0.2
@@ -6911,12 +6907,12 @@ packages:
     transitivePeerDependencies:
       - supports-color
 
-  /@bentley/itwin-client/3.0.0-dev.155_a5f36d1a48f93efc04ebe26db9b993f9:
-    resolution: {integrity: sha512-Rlf50y8lpPwgQTWzGNaxQvDt9y620rRfIZ0NbWJb6KrBltEDIJszL576jx14U3iS3u00WQsgnh2QEphBUmr/tg==}
+  /@bentley/itwin-client/3.0.0-dev.173_d6b9ecf73d57604ff6214f894f1703f4:
+    resolution: {integrity: sha512-93CCkNVGcr1OjBeg0unIyPnq8d8OlTmGo3788EPYfzpd+IRSogA8vfFegsWjxmj1bROXSCqGOVE9PGRLwhtlMw==}
     peerDependencies:
-      '@itwin/core-bentley': ^3.0.0-dev.155
+      '@itwin/core-bentley': ^3.0.0-dev.173
     dependencies:
-      '@itwin/core-bentley': 3.0.0-dev.155
+      '@itwin/core-bentley': 3.0.0-dev.173
       deep-assign: 2.0.0
       js-base64: 3.7.2
       lodash: 4.17.21
@@ -7353,12 +7349,12 @@ packages:
   /@itwin/browser-authorization/0.3.2:
     resolution: {integrity: sha512-TmdK+K2kaBqE4H4nyUZdhcuFoOnePddvSEs0OVMLqW6s/1DtrfIc1hLwnX4xvEct/BBUSMTyNCYUOsY+wQuXhQ==}
     dependencies:
-      '@itwin/core-bentley': 3.0.0-dev.155
+      '@itwin/core-bentley': 3.0.0-dev.173
       oidc-client: 1.11.5
     dev: false
 
-  /@itwin/certa/3.0.0-dev.155:
-    resolution: {integrity: sha512-L33Uo4hB0IrhhwYTuYwVg5SkVO8fwZykC12VadpDaNlotmeulW+q6a2zWZ8gvQ+vIE8YbjEUkB2R6Ijd2yRjkA==}
+  /@itwin/certa/3.0.0-dev.173:
+    resolution: {integrity: sha512-F9ABr8DqFl1bjC5FJnYJp3K46iBk2PP7fHFVT6wBkQtBMO58UUOBB0YAVCbjnjcaKVM8eLqGE2qTvurxbp1/zQ==}
     hasBin: true
     peerDependencies:
       electron: ^14.0.0
@@ -7380,8 +7376,8 @@ packages:
       - supports-color
       - utf-8-validate
 
-  /@itwin/certa/3.0.0-dev.155_electron@14.2.2:
-    resolution: {integrity: sha512-L33Uo4hB0IrhhwYTuYwVg5SkVO8fwZykC12VadpDaNlotmeulW+q6a2zWZ8gvQ+vIE8YbjEUkB2R6Ijd2yRjkA==}
+  /@itwin/certa/3.0.0-dev.173_electron@14.2.2:
+    resolution: {integrity: sha512-F9ABr8DqFl1bjC5FJnYJp3K46iBk2PP7fHFVT6wBkQtBMO58UUOBB0YAVCbjnjcaKVM8eLqGE2qTvurxbp1/zQ==}
     hasBin: true
     peerDependencies:
       electron: ^14.0.0
@@ -7409,8 +7405,8 @@ packages:
     resolution: {integrity: sha512-OVNmxpb7/AAd4pm/cBdE1I+p1lBoiXI3EBaRN1hAPZzqLDk7AbWgTegfQBPXAnyP5FxX9MyeU+lplvsl2aWjXg==}
     dev: false
 
-  /@itwin/core-bentley/3.0.0-dev.155:
-    resolution: {integrity: sha512-XjmoH8tqOa++0ec0VxYkrwWCQ9IkbsnMBEjwZ6JRFdSq0iPP2B3cdaQvqHFzCMRCQLR+y0nJ6X44JfbQoGFCgA==}
+  /@itwin/core-bentley/3.0.0-dev.173:
+    resolution: {integrity: sha512-vvwe7Ddls2OLcaAITCwNlWyoFpGQM+8gLnjifLjyvaO9lPYDODk5NpaHJyiFaXzuN/UsirPtZqExCH4OvkFnNg==}
 
   /@itwin/core-geometry/3.0.0-dev.148:
     resolution: {integrity: sha512-y1ECs8FTtwozAYTHLYwNTNxXA/NQNYxJt0cOr82KpdX0s0P+Zu/9EBbOp4jLwnh0ap59X7w9IyrdGfi+i8lHYw==}
@@ -7422,8 +7418,8 @@ packages:
   /@itwin/electron-authorization/0.5.1:
     resolution: {integrity: sha512-S6BxwfX4/fxcrLglqN0exrTDV2w4l0r34SEJEqSN3DbHuoGhjRJISXZux0OXprMwWjuCy7hI09n/9EW733J2uA==}
     dependencies:
-      '@bentley/itwin-client': 3.0.0-dev.155_a5f36d1a48f93efc04ebe26db9b993f9
-      '@itwin/core-bentley': 3.0.0-dev.155
+      '@bentley/itwin-client': 3.0.0-dev.173_d6b9ecf73d57604ff6214f894f1703f4
+      '@itwin/core-bentley': 3.0.0-dev.173
       '@openid/appauth': 1.3.1
       keytar: 7.7.0
       open: 8.4.0
@@ -7515,8 +7511,8 @@ packages:
   /@itwin/oidc-signin-tool/3.0.0:
     resolution: {integrity: sha512-zp6S6tQDyI0MSEoA7THlyXJlrtlqhk7X7BMpH8VMkvabEgJOY9AdLjoFbvJPZhcnhjq7CMdxXJWVC3D9QOaYgA==}
     dependencies:
-      '@itwin/certa': 3.0.0-dev.155
-      '@itwin/core-bentley': 3.0.0-dev.155
+      '@itwin/certa': 3.0.0-dev.173
+      '@itwin/core-bentley': 3.0.0-dev.173
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
       openid-client: 4.9.1
@@ -7530,8 +7526,8 @@ packages:
   /@itwin/oidc-signin-tool/3.0.0_electron@14.2.2:
     resolution: {integrity: sha512-zp6S6tQDyI0MSEoA7THlyXJlrtlqhk7X7BMpH8VMkvabEgJOY9AdLjoFbvJPZhcnhjq7CMdxXJWVC3D9QOaYgA==}
     dependencies:
-      '@itwin/certa': 3.0.0-dev.155_electron@14.2.2
-      '@itwin/core-bentley': 3.0.0-dev.155
+      '@itwin/certa': 3.0.0-dev.173_electron@14.2.2
+      '@itwin/core-bentley': 3.0.0-dev.173
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
       openid-client: 4.9.1
@@ -7855,7 +7851,7 @@ packages:
       '@types/base64-js': 1.3.0
       '@types/jquery': 3.5.10
       base64-js: 1.5.1
-      follow-redirects: 1.14.6
+      follow-redirects: 1.14.6_debug@4.3.3
       form-data: 4.0.0
       opener: 1.5.2
     transitivePeerDependencies:
@@ -9889,7 +9885,7 @@ packages:
   /axios/0.21.4:
     resolution: {integrity: sha512-ut5vewkiu8jjGBdqpM44XxjuCjq9LAKeHVmoVfHVzy8eHgxxq8SbAVQNovDA8mVi05kP0Ea/n/UzcSHcTJQfNg==}
     dependencies:
-      follow-redirects: 1.14.6
+      follow-redirects: 1.14.6_debug@4.3.3
     transitivePeerDependencies:
       - debug
     dev: false
@@ -9897,7 +9893,7 @@ packages:
   /axios/0.24.0:
     resolution: {integrity: sha512-Q6cWsys88HoPgAaFAVUb0WpPk0O8iTeisR9IMqy9G8AbO4NlpVknrnQS03zzF9PGAWgO3cgletO3VjV/P7VztA==}
     dependencies:
-      follow-redirects: 1.14.6
+      follow-redirects: 1.14.6_debug@4.3.3
     transitivePeerDependencies:
       - debug
     dev: false
@@ -13511,7 +13507,7 @@ packages:
     resolution: {integrity: sha512-GRnmB5gPyJpAhTQdSZTSp9uaPSvl09KoYcMQtsB9rQoOmzs9dH6ffeccH+Z+cv6P68Hu5bC6JjRh4Ah/mHSNRw==}
     dev: false
 
-  /follow-redirects/1.14.6:
+  /follow-redirects/1.14.6_debug@4.3.3:
     resolution: {integrity: sha512-fhUl5EwSJbbl8AR+uYL2KQDxLkdSjZGR36xy46AO7cOMTrCMON6Sa28FmAnC2tRTDbd/Uuzz3aJBv7EBN7JH8A==}
     engines: {node: '>=4.0'}
     peerDependencies:
@@ -13519,6 +13515,8 @@ packages:
     peerDependenciesMeta:
       debug:
         optional: true
+    dependencies:
+      debug: 4.3.3_supports-color@6.1.0
 
   /for-in/1.0.2:
     resolution: {integrity: sha1-gQaNKVqBQuwKxybG4iAMMPttXoA=}
@@ -14339,7 +14337,7 @@ packages:
     engines: {node: '>=8.0.0'}
     dependencies:
       eventemitter3: 4.0.7
-      follow-redirects: 1.14.6
+      follow-redirects: 1.14.6_debug@4.3.3
       requires-port: 1.0.0
     transitivePeerDependencies:
       - debug
@@ -19251,23 +19249,6 @@ packages:
       react-transition-group: 4.4.2_react-dom@17.0.2+react@17.0.2
     dev: false
 
-  /react-select/3.2.0_react@17.0.2:
-    resolution: {integrity: sha512-B/q3TnCZXEKItO0fFN/I0tWOX3WJvi/X2wtdffmwSQVRwg5BpValScTO1vdic9AxlUgmeSzib2hAZAwIUQUZGQ==}
-    peerDependencies:
-      react: ^16.8.0 || ^17.0.0
-      react-dom: ^16.8.0 || ^17.0.0
-    dependencies:
-      '@babel/runtime': 7.16.5
-      '@emotion/cache': 10.0.29
-      '@emotion/core': 10.3.1_react@17.0.2
-      '@emotion/css': 10.0.27
-      memoize-one: 5.2.1
-      prop-types: 15.7.2
-      react: 17.0.2
-      react-input-autosize: 3.0.0_react@17.0.2
-      react-transition-group: 4.4.2_react@17.0.2
-    dev: false
-
   /react-shallow-renderer/16.14.1_react@17.0.2:
     resolution: {integrity: sha512-rkIMcQi01/+kxiTE9D3fdS959U1g7gs+/rborw++42m1O9FAQiNI/UNRZExVUoAOprn4umcXf+pFRou8i4zuBg==}
     peerDependencies:
@@ -19326,6 +19307,7 @@ packages:
       loose-envify: 1.4.0
       prop-types: 15.7.2
       react: 17.0.2
+    dev: true
 
   /react-window/1.8.6_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-8VwEEYyjz6DCnGBsd+MgkD0KJ2/OXFULyDtorIiTz+QzwoP94tBoA7CnbtyXMm+cCeAUER5KJcPtWl9cpKbOBg==}
