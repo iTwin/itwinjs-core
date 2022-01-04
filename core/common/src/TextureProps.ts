@@ -36,6 +36,22 @@ export interface TextureLoadProps {
   maxTextureSize?: number;
 }
 
+/** Describes the type of transparency in the pixels of a [TextureImage]($frontend).
+ * Each pixel can be classified as either 100% opaque, 100% transparent, or semi-transparent ("translucent").
+ * The transparency of the image as a whole is based on the combination of pixel transparencies.
+ * If this information is known, it should be supplied when creating a texture for more efficient rendering.
+ * @see [TextureImage.transparency]($frontend).
+ * @public
+ */
+export enum TextureTransparency {
+  /** All pixels are either 100% opaque or 100% transparent. */
+  Opaque,
+  /** All pixels are fully or partially transparent - no opaque pixels are present. */
+  Translucent,
+  /** Both opaque and semi-transparent pixels are present. Rendering this type of transparency is somewhat more expensive. */
+  Mixed,
+}
+
 /** Information about [Texture]($backend) data returned by [[IModelReadRpcInterface.queryTextureData]].
  * @public
  */
@@ -44,8 +60,10 @@ export interface TextureData {
   width: number;
   /** The height of the image, possibly reduced from the original height based on [[TextureLoadProps.maxTextureSize]]. */
   height: number;
-  /** The format of the returned data, Jpeg or Png. */
+  /** The format of the image (Jpeg or Png). */
   format: ImageSourceFormat;
-  /** returned byte data */
+  /** The encoded image bytes. */
   bytes: Uint8Array;
+  /** Information about the transparency of the texture image. Default: [[TextureTransparency.Mixed]]. */
+  transparency?: TextureTransparency;
 }

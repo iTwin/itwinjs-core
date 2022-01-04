@@ -11,8 +11,7 @@ import { Angle, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform, Vector3
 import {
   BatchType, ColorDef, ElementAlignedBox3d, FeatureTable, FillFlags, GltfBufferData, GltfBufferView, GltfDataType, GltfHeader, GltfMeshMode,
   ImageSource, ImageSourceFormat, LinePixels, MeshEdge, MeshEdges, MeshPolyline, MeshPolylineList, OctEncodedNormal, PackedFeatureTable, QParams2d, QParams3d, QPoint2dList, QPoint3dList,
-  Quantization,
-  RenderTexture, TextureMapping, TileReadStatus,
+  Quantization, RenderTexture, TextureMapping, TextureTransparency, TileReadStatus,
 } from "@itwin/core-common";
 import { getImageSourceFormatForMimeType, imageElementFromImageSource } from "../ImageUtil";
 import { IModelConnection } from "../IModelConnection";
@@ -23,7 +22,6 @@ import { Mesh, MeshGraphicArgs } from "../render/primitives/mesh/MeshPrimitives"
 import { RealityMeshPrimitive } from "../render/primitives/mesh/RealityMeshPrimitive";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
-import { TextureTransparency } from "../render/RenderTexture";
 import { TileContent } from "./internal";
 
 // eslint-disable-next-line prefer-const
