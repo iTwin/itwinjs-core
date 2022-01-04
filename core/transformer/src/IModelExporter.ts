@@ -116,11 +116,6 @@ export abstract class IModelExportHandler {
    * @note A subclass may override this method to report custom progress. The base implementation does nothing.
    */
   protected async onProgress(): Promise<void> { }
-
-  /** Helper method that allows IModelExporter to call protected methods in IModelExportHandler.
-   * @internal
-   */
-  public get callProtected(): any { return this; }
 }
 
 /** Base class for exporting data from an iModel.
@@ -262,16 +257,19 @@ export class IModelExporter {
     // handle deletes
     if (this.visitElements) {
       for (const elementId of this._sourceDbChanges.element.deleteIds) {
-        this.handler.callProtected.onDeleteElement(elementId);
+        // eslint-disable-next-line dot-notation
+        this.handler["onDeleteElement"](elementId);
       }
     }
     // WIP: handle ElementAspects?
     for (const modelId of this._sourceDbChanges.model.deleteIds) {
-      this.handler.callProtected.onDeleteModel(modelId);
+      // eslint-disable-next-line dot-notation
+      this.handler["onDeleteModel"](modelId);
     }
     if (this.visitRelationships) {
       for (const relInstanceId of this._sourceDbChanges.relationship.deleteIds) {
-        this.handler.callProtected.onDeleteRelationship(relInstanceId);
+        // eslint-disable-next-line dot-notation
+        this.handler["onDeleteRelationship"](relInstanceId);
       }
     }
   }
@@ -293,7 +291,8 @@ export class IModelExporter {
           readyToExport = schemaName === BisCoreSchema.schemaName; // schemas prior to BisCore are considered *system* schemas
         }
         const schemaKey = new SchemaKey(schemaName, new ECVersion(versionMajor, versionWrite, versionMinor));
-        if (readyToExport && this.handler.callProtected.shouldExportSchema(schemaKey)) {
+        // eslint-disable-next-line dot-notation
+        if (readyToExport && this.handler["shouldExportSchema"](schemaKey)) {
           schemaNamesToExport.push(schemaName);
         }
       }
@@ -306,7 +305,8 @@ export class IModelExporter {
     await Promise.all(schemaNamesToExport.map(async (schemaName) => {
       const schema = schemaLoader.getSchema(schemaName);
       Logger.logTrace(loggerCategory, `exportSchema(${schemaName})`);
-      return this.handler.callProtected.onExportSchema(schema);
+      // eslint-disable-next-line dot-notation
+      return this.handler["onExportSchema"](schema);
     }));
   }
 
@@ -350,9 +350,11 @@ export class IModelExporter {
       return;
     }
     // CodeSpec has passed standard exclusion rules, now give handler a chance to accept/reject export
-    if (this.handler.callProtected.shouldExportCodeSpec(codeSpec)) {
+    // eslint-disable-next-line dot-notation
+    if (this.handler["shouldExportCodeSpec"](codeSpec)) {
       Logger.logTrace(loggerCategory, `exportCodeSpec(${codeSpecName})${this.getChangeOpSuffix(isUpdate)}`);
-      this.handler.callProtected.onExportCodeSpec(codeSpec, isUpdate);
+      // eslint-disable-next-line dot-notation
+      this.handler["onExportCodeSpec"](codeSpec, isUpdate);
       return this.trackProgress();
     }
   }
@@ -404,7 +406,8 @@ export class IModelExporter {
     Logger.logTrace(loggerCategory, `exportFontById(${fontNumber})`);
     const font: FontProps | undefined = this.sourceDb.fontMap.getFont(fontNumber);
     if (undefined !== font) {
-      this.handler.callProtected.onExportFont(font, isUpdate);
+      // eslint-disable-next-line dot-notation
+      this.handler["onExportFont"](font, isUpdate);
       return this.trackProgress();
     }
   }
@@ -440,7 +443,8 @@ export class IModelExporter {
         return; // not in changeset, don't export
       }
     }
-    this.handler.callProtected.onExportModel(model, isUpdate);
+    // eslint-disable-next-line dot-notation
+    this.handler["onExportModel"](model, isUpdate);
     return this.trackProgress();
   }
 
@@ -538,7 +542,8 @@ export class IModelExporter {
       }
     }
     // element has passed standard exclusion rules, now give handler a chance to accept/reject
-    return this.handler.callProtected.shouldExportElement(element);
+    // eslint-disable-next-line dot-notation
+    return this.handler["shouldExportElement"](element);
   }
 
   /** Export the specified element, its child elements (if applicable), and any owned ElementAspects.
@@ -564,7 +569,8 @@ export class IModelExporter {
     const element: Element = this.sourceDb.elements.getElement({ id: elementId, wantGeometry: this.wantGeometry });
     Logger.logTrace(loggerCategory, `exportElement(${element.id}, "${element.getDisplayLabel()}")${this.getChangeOpSuffix(isUpdate)}`);
     if (this.shouldExportElement(element)) {
-      this.handler.callProtected.onExportElement(element, isUpdate);
+      // eslint-disable-next-line dot-notation
+      this.handler["onExportElement"](element, isUpdate);
       await this.trackProgress();
       await this.exportElementAspects(elementId);
       return this.exportChildElements(elementId);
@@ -597,7 +603,8 @@ export class IModelExporter {
       }
     }
     // ElementAspect has passed standard exclusion rules, now give handler a chance to accept/reject
-    return this.handler.callProtected.shouldExportElementAspect(aspect);
+    // eslint-disable-next-line dot-notation
+    return this.handler["shouldExportElementAspect"](aspect);
   }
 
   /** Export ElementAspects from the specified element from the source iModel. */
@@ -610,16 +617,19 @@ export class IModelExporter {
         uniqueAspects.forEach(async (uniqueAspect: ElementUniqueAspect) => {
           if (undefined !== this._sourceDbChanges) { // is changeset information available?
             if (this._sourceDbChanges.aspect.insertIds.has(uniqueAspect.id)) {
-              this.handler.callProtected.onExportElementUniqueAspect(uniqueAspect, false);
+              // eslint-disable-next-line dot-notation
+              this.handler["onExportElementUniqueAspect"](uniqueAspect, false);
               await this.trackProgress();
             } else if (this._sourceDbChanges.aspect.updateIds.has(uniqueAspect.id)) {
-              this.handler.callProtected.onExportElementUniqueAspect(uniqueAspect, true);
+              // eslint-disable-next-line dot-notation
+              this.handler["onExportElementUniqueAspect"](uniqueAspect, true);
               await this.trackProgress();
             } else {
               // not in changeset, don't export
             }
           } else {
-            this.handler.callProtected.onExportElementUniqueAspect(uniqueAspect, undefined);
+            // eslint-disable-next-line dot-notation
+            this.handler["onExportElementUniqueAspect"](uniqueAspect, undefined);
             await this.trackProgress();
           }
         });
@@ -630,7 +640,8 @@ export class IModelExporter {
     if (multiAspects.length > 0) {
       multiAspects = multiAspects.filter((a) => this.shouldExportElementAspect(a));
       if (multiAspects.length > 0) {
-        this.handler.callProtected.onExportElementMultiAspects(multiAspects);
+      // eslint-disable-next-line dot-notation
+        this.handler["onExportElementMultiAspects"](multiAspects);
         return this.trackProgress();
       }
     }
@@ -681,8 +692,10 @@ export class IModelExporter {
       }
     }
     // relationship has passed standard exclusion rules, now give handler a chance to accept/reject export
-    if (this.handler.callProtected.shouldExportRelationship(relationship)) {
-      this.handler.callProtected.onExportRelationship(relationship, isUpdate);
+    // eslint-disable-next-line dot-notation
+    if (this.handler["shouldExportRelationship"](relationship)) {
+      // eslint-disable-next-line dot-notation
+      this.handler["onExportRelationship"](relationship, isUpdate);
       await this.trackProgress();
     }
   }
@@ -691,7 +704,8 @@ export class IModelExporter {
   private async trackProgress(): Promise<void> {
     this._progressCounter++;
     if (0 === (this._progressCounter % this.progressInterval)) {
-      return this.handler.callProtected.onProgress();
+      // eslint-disable-next-line dot-notation
+      return this.handler["onProgress"]();
     }
   }
 }
