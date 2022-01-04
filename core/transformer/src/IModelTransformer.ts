@@ -765,6 +765,31 @@ export class IModelTransformer extends IModelExportHandler {
     const targetAspectPropsArray: ElementAspectProps[] = sourceAspects.map((sourceAspect: ElementMultiAspect) => {
       return this.onTransformElementAspect(sourceAspect, targetElementId);
     });
+
+    const getSourceElemId = (): Id64String => {
+      let result = Id64.invalid;
+      this.sourceDb.withPreparedStatement("SELECT Element.Id FROM bis.ElementMultiAspect WHERE ECInstanceId=:aspectId", (stmt) => {
+        stmt.bindId("aspectId", sourceAspects[0].id);
+        if (DbResult.BE_SQLITE_ROW === stmt.step()) {
+          result = Id64.fromJSON(stmt.getValue(1).getString());
+        } else {
+          throw new IModelError(IModelStatus.BadElement, `Could not find the source element for the aspect, '${sourceAspects[0].id}'`);
+        }
+      });
+      return result;
+    };
+
+    // In the case that transforming the element prop multi aspects yielded invalid ids, we probably are trying to process
+    // aspects on a deferred element. This case should be skipped because when the deferred element is processed, this will be tried again.
+    // This can be removed when the IModelExporter enables handlers to signal that an element does not need its aspects processed
+    if (targetElementId === Id64.invalid && this._deferredElementIds.has(getSourceElemId())) {
+      Logger.logWarning(
+        loggerCategory,
+        `tried to export aspects for a deferred element, '${sourceAspects[0].element.id}', ` +
+          "if it was deferred, will be retried when the deferred element is processed again"
+      );
+      return;
+    }
     if (this._options.includeSourceProvenance) {
       this.importer.importElementMultiAspects(targetAspectPropsArray, (a: ElementMultiAspect) => {
         return (a instanceof ExternalSourceAspect) ? a.scope.id !== this.targetScopeElementId : true; // filter out ExternalSourceAspects added by IModelTransformer
