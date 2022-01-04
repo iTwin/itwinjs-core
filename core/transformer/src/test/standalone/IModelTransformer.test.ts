@@ -933,10 +933,8 @@ describe("IModelTransformer", () => {
         const schema2 = schemaLoader.getSchema("TestSchema2");
         // by importing schema2 (which references schema1) first, we
         // prove that the import order in processSchemas does not matter
-        /* eslint-disable dot-notation */
         await this.handler["onExportSchema"](schema2);
         await this.handler["onExportSchema"](schema1);
-        /* eslint-enable dot-notation */
       }
     }
 

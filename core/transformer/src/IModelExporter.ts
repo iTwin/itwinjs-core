@@ -257,18 +257,15 @@ export class IModelExporter {
     // handle deletes
     if (this.visitElements) {
       for (const elementId of this._sourceDbChanges.element.deleteIds) {
-        // eslint-disable-next-line dot-notation
         this.handler["onDeleteElement"](elementId);
       }
     }
     // WIP: handle ElementAspects?
     for (const modelId of this._sourceDbChanges.model.deleteIds) {
-      // eslint-disable-next-line dot-notation
       this.handler["onDeleteModel"](modelId);
     }
     if (this.visitRelationships) {
       for (const relInstanceId of this._sourceDbChanges.relationship.deleteIds) {
-        // eslint-disable-next-line dot-notation
         this.handler["onDeleteRelationship"](relInstanceId);
       }
     }
@@ -291,7 +288,6 @@ export class IModelExporter {
           readyToExport = schemaName === BisCoreSchema.schemaName; // schemas prior to BisCore are considered *system* schemas
         }
         const schemaKey = new SchemaKey(schemaName, new ECVersion(versionMajor, versionWrite, versionMinor));
-        // eslint-disable-next-line dot-notation
         if (readyToExport && this.handler["shouldExportSchema"](schemaKey)) {
           schemaNamesToExport.push(schemaName);
         }
@@ -305,7 +301,6 @@ export class IModelExporter {
     await Promise.all(schemaNamesToExport.map(async (schemaName) => {
       const schema = schemaLoader.getSchema(schemaName);
       Logger.logTrace(loggerCategory, `exportSchema(${schemaName})`);
-      // eslint-disable-next-line dot-notation
       return this.handler["onExportSchema"](schema);
     }));
   }
@@ -350,10 +345,8 @@ export class IModelExporter {
       return;
     }
     // CodeSpec has passed standard exclusion rules, now give handler a chance to accept/reject export
-    // eslint-disable-next-line dot-notation
     if (this.handler["shouldExportCodeSpec"](codeSpec)) {
       Logger.logTrace(loggerCategory, `exportCodeSpec(${codeSpecName})${this.getChangeOpSuffix(isUpdate)}`);
-      // eslint-disable-next-line dot-notation
       this.handler["onExportCodeSpec"](codeSpec, isUpdate);
       return this.trackProgress();
     }
@@ -406,7 +399,6 @@ export class IModelExporter {
     Logger.logTrace(loggerCategory, `exportFontById(${fontNumber})`);
     const font: FontProps | undefined = this.sourceDb.fontMap.getFont(fontNumber);
     if (undefined !== font) {
-      // eslint-disable-next-line dot-notation
       this.handler["onExportFont"](font, isUpdate);
       return this.trackProgress();
     }
@@ -443,7 +435,6 @@ export class IModelExporter {
         return; // not in changeset, don't export
       }
     }
-    // eslint-disable-next-line dot-notation
     this.handler["onExportModel"](model, isUpdate);
     return this.trackProgress();
   }
@@ -542,7 +533,6 @@ export class IModelExporter {
       }
     }
     // element has passed standard exclusion rules, now give handler a chance to accept/reject
-    // eslint-disable-next-line dot-notation
     return this.handler["shouldExportElement"](element);
   }
 
@@ -569,7 +559,6 @@ export class IModelExporter {
     const element: Element = this.sourceDb.elements.getElement({ id: elementId, wantGeometry: this.wantGeometry });
     Logger.logTrace(loggerCategory, `exportElement(${element.id}, "${element.getDisplayLabel()}")${this.getChangeOpSuffix(isUpdate)}`);
     if (this.shouldExportElement(element)) {
-      // eslint-disable-next-line dot-notation
       this.handler["onExportElement"](element, isUpdate);
       await this.trackProgress();
       await this.exportElementAspects(elementId);
@@ -603,7 +592,6 @@ export class IModelExporter {
       }
     }
     // ElementAspect has passed standard exclusion rules, now give handler a chance to accept/reject
-    // eslint-disable-next-line dot-notation
     return this.handler["shouldExportElementAspect"](aspect);
   }
 
@@ -617,18 +605,15 @@ export class IModelExporter {
         uniqueAspects.forEach(async (uniqueAspect: ElementUniqueAspect) => {
           if (undefined !== this._sourceDbChanges) { // is changeset information available?
             if (this._sourceDbChanges.aspect.insertIds.has(uniqueAspect.id)) {
-              // eslint-disable-next-line dot-notation
               this.handler["onExportElementUniqueAspect"](uniqueAspect, false);
               await this.trackProgress();
             } else if (this._sourceDbChanges.aspect.updateIds.has(uniqueAspect.id)) {
-              // eslint-disable-next-line dot-notation
               this.handler["onExportElementUniqueAspect"](uniqueAspect, true);
               await this.trackProgress();
             } else {
               // not in changeset, don't export
             }
           } else {
-            // eslint-disable-next-line dot-notation
             this.handler["onExportElementUniqueAspect"](uniqueAspect, undefined);
             await this.trackProgress();
           }
@@ -640,7 +625,6 @@ export class IModelExporter {
     if (multiAspects.length > 0) {
       multiAspects = multiAspects.filter((a) => this.shouldExportElementAspect(a));
       if (multiAspects.length > 0) {
-      // eslint-disable-next-line dot-notation
         this.handler["onExportElementMultiAspects"](multiAspects);
         return this.trackProgress();
       }
@@ -692,9 +676,7 @@ export class IModelExporter {
       }
     }
     // relationship has passed standard exclusion rules, now give handler a chance to accept/reject export
-    // eslint-disable-next-line dot-notation
     if (this.handler["shouldExportRelationship"](relationship)) {
-      // eslint-disable-next-line dot-notation
       this.handler["onExportRelationship"](relationship, isUpdate);
       await this.trackProgress();
     }
@@ -704,7 +686,6 @@ export class IModelExporter {
   private async trackProgress(): Promise<void> {
     this._progressCounter++;
     if (0 === (this._progressCounter % this.progressInterval)) {
-      // eslint-disable-next-line dot-notation
       return this.handler["onProgress"]();
     }
   }
