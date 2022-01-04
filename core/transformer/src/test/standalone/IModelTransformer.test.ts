@@ -1527,10 +1527,18 @@ describe("IModelTransformer", () => {
     const myDisplayStyleId = DisplayStyle3d.insert(sourceDb, IModelDb.dictionaryId, "MyDisplayStyle3d", {
       excludedElements: [myPhysicalObjId],
     });
-    const _partitionAspectId = sourceDb.elements.insertAspect({
-      classFullName: "BisCore:TextAnnotationData",
-      element: { id: myDisplayStyleId },
-    });
+    const sourceRepositoryId = IModelTestUtils.insertRepositoryLink(sourceDb, "external.repo", "https://external.example.com/folder/external.repo", "TEST");
+    const sourceExternalSourceId = IModelTestUtils.insertExternalSource(sourceDb, sourceRepositoryId, "HypotheticalDisplayConfigurer");
+    // simulate provenance from a Connector, since this kind of aspect is not excluded
+    const partitionAspectProps: ExternalSourceAspectProps = {
+      classFullName: ExternalSourceAspect.classFullName,
+      element: { id: myDisplayStyleId, relClassName: ElementOwnsExternalSourceAspects.classFullName },
+      scope: { id: sourceExternalSourceId },
+      source: { id: sourceExternalSourceId },
+      identifier: "ID",
+      kind: ExternalSourceAspect.Kind.Element,
+    };
+    sourceDb.elements.insertAspect(partitionAspectProps);
     sourceDb.saveChanges();
 
     const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "PreserveIdOnTestModel-Target.bim");
