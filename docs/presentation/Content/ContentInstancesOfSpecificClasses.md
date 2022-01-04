@@ -58,8 +58,8 @@ Allows defining additional conditions when filtering result target class instanc
 
   |  | Result                                                                                                                                      |
   | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-  | without  | ![Example when selecting all instances](./media/contentInstancesOfSpecificClasses-with-instanceFilter-attribute-1.png) |
-  | with    | ![Example when filtering instances](./media/contentInstancesOfSpecificClasses-with-instanceFilter-attribute-2.png)     |
+  | without filter | ![Example when selecting all instances](./media/contentInstancesOfSpecificClasses-with-instanceFilter-attribute-1.png) |
+  | with filter  | ![Example when filtering instances](./media/contentInstancesOfSpecificClasses-with-instanceFilter-attribute-2.png)     |
 
 ### Attribute: `onlyIfNotHandled`
 
@@ -133,7 +133,7 @@ Should image IDs be calculated for the returned instances. When `true`, [ImageId
 
 ### Attribute: `relatedInstances`
 
-Specifications of [related instances](../Common-Rules/RelatedInstanceSpecification.md) that can be used in content creation.
+Joining [related instances](../Common-Rules/RelatedInstanceSpecification.md) allows performing advanced filtering, grouping, labeling.
 
 ```ts
 [[include:ContentInstancesOfSpecificClasses.RelatedInstances.Ruleset]]
