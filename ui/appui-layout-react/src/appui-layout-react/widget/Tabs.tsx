@@ -24,7 +24,7 @@ export const WidgetTabs = React.memo(function WidgetTabs() { // eslint-disable-l
   const side = React.useContext(PanelSideContext);
   const widget = React.useContext(WidgetStateContext);
   const showWidgetIcon = React.useContext(ShowWidgetIconContext);
-  const [showTabIcon, setShowTabIcon] = React.useState(showWidgetIcon);
+  const [showOnlyTabIcon, setShowOnlyTabIcon] = React.useState(false);
 
   assert(!!widget);
   const activeTabIndex = widget.tabs.indexOf(widget.activeTabId);
@@ -49,7 +49,7 @@ export const WidgetTabs = React.memo(function WidgetTabs() { // eslint-disable-l
             firstInactive={firstInactive}
             last={index === array.length - 1}
             tab={tabs[tabId]}
-            showTabIcon={showTabIcon && showWidgetIcon}
+            showOnlyTabIcon={showOnlyTabIcon && showWidgetIcon}
           />
           <WidgetTabTarget
             tabIndex={index}
@@ -57,14 +57,14 @@ export const WidgetTabs = React.memo(function WidgetTabs() { // eslint-disable-l
         </React.Fragment>
       );
     });
-  }, [widget.tabs, activeTabIndex, tabs, showTabIcon, showWidgetIcon]);
+  }, [widget.tabs, activeTabIndex, tabs, showOnlyTabIcon, showWidgetIcon]);
   const [overflown, handleResize, handleOverflowResize, handleEntryResize] = useOverflow(children, activeTabIndex);
   const horizontal = side && isHorizontalPanelSide(side);
   const handleContainerResize = React.useCallback((w: number) => {
     if (showWidgetIcon)
-      setShowTabIcon(w < 320); // This allows for two text tabs
+      setShowOnlyTabIcon((widget.tabs.length * 158) > w); // 158px per text tab
     handleResize && handleResize(w);
-  }, [handleResize, showWidgetIcon]);
+  }, [handleResize, showWidgetIcon, widget.tabs]);
 
   const ref = useResizeObserver(handleContainerResize);
   const childrenArray = React.useMemo(() => React.Children.toArray(children), [children]);

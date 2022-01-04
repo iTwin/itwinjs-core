@@ -2325,7 +2325,7 @@ export interface TabGroupProps extends CommonProps {
 }
 
 // @internal (undocumented)
-export const TabIconContext: React.Context<boolean>;
+export const IconOnlyOnWidgetTabContext: React.Context<boolean>;
 
 // @internal (undocumented)
 export const TabIdContext: React.Context<string>;
@@ -3451,12 +3451,12 @@ export interface WidgetTabProps extends CommonProps {
 }
 
 // @internal (undocumented)
-export function WidgetTabProvider({ tab, first, firstInactive, last, showTabIcon }: WidgetTabProviderProps): JSX.Element;
+export function WidgetTabProvider({ tab, first, firstInactive, last, showOnlyTabIcon }: WidgetTabProviderProps): JSX.Element;
 
 // @internal (undocumented)
 export interface WidgetTabProviderProps extends TabPositionContextArgs {
     // (undocumented)
-    showTabIcon?: boolean;
+    showOnlyTabIcon?: boolean;
     // (undocumented)
     tab: TabState;
 }
