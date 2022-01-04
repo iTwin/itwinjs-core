@@ -2117,15 +2117,17 @@ export interface PropertyEditorSpecification {
 export interface PropertyGroup extends GroupingSpecificationBase {
     createGroupForSingleItem?: boolean;
     createGroupForUnspecifiedValues?: boolean;
+    // @deprecated
     groupingValue?: PropertyGroupingValue;
     imageId?: string;
     propertyName: string;
     ranges?: PropertyRangeGroupSpecification[];
+    // @deprecated
     sortingValue?: PropertyGroupingValue;
     specType: GroupingSpecificationTypes.Property;
 }
 
-// @public
+// @public @deprecated
 export enum PropertyGroupingValue {
     DisplayLabel = "DisplayLabel",
     PropertyValue = "PropertyValue"
