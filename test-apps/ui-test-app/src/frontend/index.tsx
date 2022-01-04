@@ -316,6 +316,7 @@ export class SampleAppIModelApp {
       dragInteraction: false,
       frameworkVersion: "2",
       widgetOpacity: 0.8,
+      showWidgetIcon: true,
     };
 
     // initialize any settings providers that may need to have defaults set by iModelApp

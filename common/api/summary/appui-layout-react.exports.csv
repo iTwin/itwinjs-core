@@ -319,6 +319,7 @@ internal;ScrollableWidgetContentProps
 internal;SendBack: React.NamedExoticComponent
 internal;setFloatingWidgetContainerBounds(state: NineZoneState, floatingWidgetId: string, bounds: RectangleProps): NineZoneState
 internal;setRectangleProps(props: Draft
+internal;ShowWidgetIconContext: React.Context
 internal;ShrinkBottom 
 internal;class ShrinkHorizontalStrategy 
 internal;ShrinkLeft 
@@ -361,6 +362,7 @@ internal;Tab
 internal;TabBarButtons: React.NamedExoticComponent
 internal;TabGroup 
 internal;TabGroupProps 
+internal;TabIconContext: React.Context
 internal;TabIdContext: React.Context
 internal;TabMode
 internal;TabModeHelpers
@@ -542,7 +544,7 @@ internal;WidgetTabDragStartAction
 internal;WidgetTabDragStartArguments
 internal;WidgetTabPopoutAction
 internal;WidgetTabProps 
-internal;WidgetTabProvider({ tab, first, firstInactive, last }: WidgetTabProviderProps): JSX.Element
+internal;WidgetTabProvider({ tab, first, firstInactive, last, showTabIcon }: WidgetTabProviderProps): JSX.Element
 internal;WidgetTabProviderProps 
 internal;WidgetTabs: React.NamedExoticComponent
 internal;WidgetTabsEntryContext: React.Context

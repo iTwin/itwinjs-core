@@ -192,6 +192,7 @@ describe("ConfigurableUiReducer", () => {
       widgetOpacity: WIDGET_OPACITY_DEFAULT,
       useDragInteraction: false,
       frameworkVersion: "2",
+      showWidgetIcon: true,
       viewOverlayDisplay: true,
     };
 
@@ -213,7 +214,10 @@ describe("ConfigurableUiReducer", () => {
     outState = ConfigurableUiReducer(initialState, ConfigurableUiActions.setFrameworkVersion("1"));
     expect(outState.frameworkVersion).to.be.eql("1");
 
-    outState = ConfigurableUiReducer(initialState, ConfigurableUiActions.setViewOverlayDisplay (false));
+    outState = ConfigurableUiReducer(initialState, ConfigurableUiActions.setShowWidgetIcon(false));
+    expect(outState.showWidgetIcon).to.be.eql(false);
+
+    outState = ConfigurableUiReducer(initialState, ConfigurableUiActions.setViewOverlayDisplay(false));
     expect(outState.viewOverlayDisplay).to.be.false;
   });
 });

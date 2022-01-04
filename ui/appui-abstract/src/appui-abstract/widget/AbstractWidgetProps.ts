@@ -19,7 +19,7 @@ export interface AbstractWidgetProps extends ProvidedItem {
   readonly getWidgetContent: () => any;
   /** Name of icon WebFont entry or if specifying an SVG symbol added by plug on use "svg:" prefix to imported symbol Id. */
   readonly icon?: string | ConditionalStringValue;
-  /** Optional Id used to uniquely identify the widget.
+  /** Id used to uniquely identify the widget.
    * @note It is recommended to provide unique widget id to correctly save/restore App layout.
    */
   readonly id?: string;

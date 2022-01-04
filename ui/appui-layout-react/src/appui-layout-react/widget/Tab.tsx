@@ -9,10 +9,10 @@
 import "./Tab.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, Point, Rectangle, Timer, useRefs, useResizeObserver } from "@itwin/core-react";
+import { CommonProps, Icon, Point, Rectangle, Timer, useRefs, useResizeObserver } from "@itwin/core-react";
 import { assert } from "@itwin/core-bentley";
 import { useDragTab } from "../base/DragManager";
-import { MeasureContext, NineZoneDispatchContext, TabNodeContext } from "../base/NineZone";
+import { MeasureContext, NineZoneDispatchContext, ShowWidgetIconContext, TabNodeContext } from "../base/NineZone";
 import { TabState } from "../base/NineZoneState";
 import { PointerCaptorArgs, PointerCaptorEvent, usePointerCaptor } from "../base/PointerCaptor";
 import { PanelSideContext } from "../widget-panels/Panel";
@@ -25,10 +25,11 @@ import { TabIdContext } from "./ContentRenderer";
 /** @internal */
 export interface WidgetTabProviderProps extends TabPositionContextArgs {
   tab: TabState;
+  showTabIcon?: boolean;
 }
 
 /** @internal */
-export function WidgetTabProvider({ tab, first, firstInactive, last }: WidgetTabProviderProps) {
+export function WidgetTabProvider({ tab, first, firstInactive, last, showTabIcon }: WidgetTabProviderProps) {
   const tabNode = React.useContext(TabNodeContext);
   const position = React.useMemo<TabPositionContextArgs>(() => ({
     first,
@@ -39,7 +40,9 @@ export function WidgetTabProvider({ tab, first, firstInactive, last }: WidgetTab
     <TabIdContext.Provider value={tab.id}>
       <TabStateContext.Provider value={tab}>
         <TabPositionContext.Provider value={position}>
-          {tabNode}
+          <TabIconContext.Provider value={!!showTabIcon}>
+            {tabNode}
+          </TabIconContext.Provider>
         </TabPositionContext.Provider>
       </TabStateContext.Provider>
     </TabIdContext.Provider>
@@ -180,6 +183,10 @@ export const WidgetTab = React.memo<WidgetTabProps>(function WidgetTab(props) { 
     widgetTabsEntryContext?.lastNotOverflown && "nz-last-not-overflown",
     props.className,
   );
+
+  const showIconOnly = React.useContext(TabIconContext);
+  const showWidgetIcon = React.useContext(ShowWidgetIconContext);
+  const showLabel = (showIconOnly && !tab.iconSpec) || (showWidgetIcon && !showIconOnly) || !showWidgetIcon;
   return (
     <div
       data-item-id={tab.id}
@@ -190,7 +197,8 @@ export const WidgetTab = React.memo<WidgetTabProps>(function WidgetTab(props) { 
       style={props.style}
       title={tab.label}
     >
-      <span>{tab.label}</span>
+      {(showWidgetIcon || showIconOnly) && tab.iconSpec && <Icon iconSpec={tab.iconSpec} />}
+      {showLabel && <span>{tab.label}</span>}
       {!widgetTabsEntryContext && <div className="nz-icon" />}
       {props.badge && <div className="nz-badge">
         {props.badge}
@@ -213,3 +221,7 @@ TabPositionContext.displayName = "nz:TabPositionContext";
 /** @internal */
 export const TabStateContext = React.createContext<TabState>(undefined!);
 TabStateContext.displayName = "nz:TabStateContext";
+
+/** @internal */
+export const TabIconContext = React.createContext<boolean>(false);
+TabIconContext.displayName = "nz:TabIconContext";

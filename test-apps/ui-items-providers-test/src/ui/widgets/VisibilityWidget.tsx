@@ -4,32 +4,46 @@
 *--------------------------------------------------------------------------------------------*/
 import "./VisibilityWidget.scss";
 import * as React from "react";
-import { useResizeDetector } from "react-resize-detector";
 import { BeEvent, Id64Array, Id64String } from "@itwin/core-bentley";
 import { IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport } from "@itwin/core-frontend";
 import { IPresentationTreeDataProvider } from "@itwin/presentation-components";
 import { FilteringInput, FilteringInputStatus, SelectableContent, SelectionMode } from "@itwin/components-react";
-import { Icon, WebFontIcon } from "@itwin/core-react";
+import { Icon, useLayoutResizeObserver, useRefState, WebFontIcon } from "@itwin/core-react";
 import {
-  CategoryTree, ClassGroupingOption, CommandItemDef, ConfigurableCreateInfo, ModelsTree, ModelsTreeSelectionPredicate, toggleAllCategories,
+  CategoryTree, ClassGroupingOption, CommandItemDef, ConfigurableCreateInfo, ModelsTree, ModelsTreeNodeType, ModelsTreeSelectionPredicate, toggleAllCategories,
+  useActiveViewport,
   WidgetControl,
 } from "@itwin/appui-react";
 import { Button } from "@itwin/itwinui-react";
-import { SampleAppIModelApp } from "../..";
-import cancelFilterIconSvg from "../icons/filter-outlined.svg?sprite";
-import filterIconSvg from "../icons/filter.svg?sprite";
+import { NodeKey } from "@itwin/presentation-common";
+import { UiItemsProvidersTest } from "../../ui-items-providers-test";
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+function CancelFilterIcon(props?: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"  {...props}>
+      <path d="M15,1v0.5L9.4,6.2L9,6.5V7v5.5L7,14V7V6.5L6.6,6.2L1,1.5V1H15 M16,0H0v2l6,5v9l4-3V7l6-5V0L16,0z" />
+    </svg>
+  );
+}
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+function FilterIcon(props?: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"  {...props}>
+      <path d="m0 0v2l6 5v9l4-3v-6l6-5v-2z" />
+    </svg>
+  );
+}
 
 export class VisibilityWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
-    this.reactNode = <VisibilityTreeComponent imodel={options.iModelConnection} activeView={IModelApp.viewManager.selectedView}
-      config={options.config} />;
+    this.reactNode = <VisibilityTreeComponent config={options.config} />;
   }
 }
 
-interface VisibilityTreeComponentProps {
-  imodel: IModelConnection;
-  activeView?: Viewport;
+export interface VisibilityTreeComponentProps {
   config?: {
     modelsTree: {
       selectionMode?: SelectionMode;
@@ -41,30 +55,38 @@ interface VisibilityTreeComponentProps {
   };
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function VisibilityTreeComponent(props: VisibilityTreeComponentProps) {
-  const { imodel, activeView } = props;
-  const modelsTreeProps = props.config?.modelsTree;
+  const activeView = useActiveViewport();
+  const imodel = React.useMemo(() => activeView?.iModel, [activeView]);
+
+  const modelsTreeProps = React.useMemo(() => props.config?.modelsTree ?? {
+    selectionMode: SelectionMode.Extended,
+    selectionPredicate: (_key: NodeKey, type: ModelsTreeNodeType) => type === ModelsTreeNodeType.Element,
+  }, [props.config]);
   const categoriesTreeProps = props.config?.categoriesTree;
   const selectLabel = IModelApp.localization.getLocalizedString("UiFramework:visibilityWidget.options");
-  const filteredElementIds = useElementIdsFiltering(props.activeView);
+  const filteredElementIds = useElementIdsFiltering(activeView);
+  const renderModels = React.useCallback(
+    () => imodel ? <ModelsTreeComponent iModel={imodel} activeView={activeView} {...modelsTreeProps} filteredElementIds={filteredElementIds} /> : null,
+    [imodel, activeView, modelsTreeProps, filteredElementIds]);
+
+  const renderCategories = React.useCallback(
+    () => imodel ? <CategoriesTreeComponent iModel={imodel} activeView={activeView} {...categoriesTreeProps} /> : null,
+    [imodel, activeView, categoriesTreeProps]);
+
   return (
     <div className="ui-test-app-visibility-widget">
       <SelectableContent defaultSelectedContentId="models-tree" selectAriaLabel={selectLabel}>
         {[{
           id: "models-tree",
           label: IModelApp.localization.getLocalizedString("UiFramework:visibilityWidget.modeltree"),
-          render: React.useCallback(
-            () => <ModelsTreeComponent iModel={imodel} activeView={activeView} {...modelsTreeProps} filteredElementIds={filteredElementIds} />,
-            [imodel, activeView, modelsTreeProps, filteredElementIds],
-          ),
+          render: renderModels,
         },
         {
           id: "categories-tree",
           label: IModelApp.localization.getLocalizedString("UiFramework:visibilityWidget.categories"),
-          render: React.useCallback(
-            () => <CategoriesTreeComponent iModel={imodel} activeView={activeView} {...categoriesTreeProps} />,
-            [imodel, activeView, categoriesTreeProps],
-          ),
+          render: renderCategories,
         }]}
       </SelectableContent>
     </div>
@@ -79,6 +101,7 @@ interface ModelsTreeComponentProps {
   filteredElementIds?: Id64Array;
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 function ModelsTreeComponent(props: ModelsTreeComponentProps) {
   const {
     searchOptions,
@@ -86,7 +109,10 @@ function ModelsTreeComponent(props: ModelsTreeComponentProps) {
     activeMatchIndex,
     onFilterApplied,
   } = useTreeFilteringState();
-  const { width, height, ref } = useResizeDetector();
+
+  const [divRef, divElement] = useRefState<HTMLDivElement>();
+  const [width, height] = useLayoutResizeObserver(divElement ?? null);
+
   return (
     <>
       <Toolbar
@@ -95,16 +121,16 @@ function ModelsTreeComponent(props: ModelsTreeComponentProps) {
           <Button
             key="activate-filter-btn"
             onClick={async () => IModelApp.tools.run(TriggerFilterHierarchyByVisibleElementIdsTool.toolId)}>
-            <Icon iconSpec={`svg:${filterIconSvg}`} />
+            <Icon iconSpec={<FilterIcon />} />
           </Button>,
           <Button
             key="cancel-filter-btn"
             onClick={async () => IModelApp.tools.run(CancelFilterHierarchyByVisibleElementIdsTool.toolId)}>
-            <Icon iconSpec={`svg:${cancelFilterIconSvg}`} />
+            <Icon iconSpec={<CancelFilterIcon />} />
           </Button>,
         ]}
       </Toolbar>
-      <div ref={ref} className="ui-test-app-visibility-tree-content">
+      <div ref={divRef} className="ui-test-app-visibility-tree-content">
         {width && height ? <ModelsTree
           {...props}
           enableElementsClassGrouping={ClassGroupingOption.YesWithCounts}
@@ -127,6 +153,7 @@ interface CategoriesTreeComponentProps {
   activeView?: Viewport;
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 function CategoriesTreeComponent(props: CategoriesTreeComponentProps) {
   const {
     searchOptions,
@@ -144,7 +171,8 @@ function CategoriesTreeComponent(props: CategoriesTreeComponentProps) {
     return toggleAllCategories(IModelApp.viewManager, props.iModel, false, undefined, true, filteredProvider);
   }, [props.iModel, filteredProvider]);
 
-  const { width, height, ref } = useResizeDetector();
+  const [divRef, divElement] = useRefState<HTMLDivElement>();
+  const [width, height] = useLayoutResizeObserver(divElement ?? null);
 
   return (
     <>
@@ -160,7 +188,7 @@ function CategoriesTreeComponent(props: CategoriesTreeComponentProps) {
           </Button>,
         ]}
       </Toolbar>
-      <div ref={ref} style={{ width: "100%", height: "100%", overflow: "hidden" }}>
+      <div ref={divRef} style={{ width: "100%", height: "100%", overflow: "hidden" }}>
         {width && height ? <CategoryTree
           {...props}
           filterInfo={{
@@ -187,6 +215,7 @@ interface ToolbarProps {
   children?: React.ReactNode[];
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 function Toolbar(props: ToolbarProps) {
   return (
     <div className="ui-test-app-visibility-tree-toolbar">
@@ -285,8 +314,8 @@ const useElementIdsFiltering = (activeViewport: Viewport | undefined) => {
   }, [activeViewport]);
 
   React.useEffect(() => {
-    TriggerFilterHierarchyByVisibleElementIdsTool.register(SampleAppIModelApp.sampleAppNamespace);
-    CancelFilterHierarchyByVisibleElementIdsTool.register(SampleAppIModelApp.sampleAppNamespace);
+    TriggerFilterHierarchyByVisibleElementIdsTool.register(UiItemsProvidersTest.localizationNamespace);
+    CancelFilterHierarchyByVisibleElementIdsTool.register(UiItemsProvidersTest.localizationNamespace);
     return () => {
       IModelApp.tools.unRegister(TriggerFilterHierarchyByVisibleElementIdsTool.toolId);
       IModelApp.tools.unRegister(CancelFilterHierarchyByVisibleElementIdsTool.toolId);
@@ -303,13 +332,13 @@ class FilterHierarchyByElementIds {
 const ELEMENTS_FILTER = new FilterHierarchyByElementIds();
 
 export class TriggerFilterHierarchyByVisibleElementIdsTool extends Tool {
-  public static override toolId = "TriggerFilterHierarchyByVisibleElementIds";
+  public static override toolId = "TestItemsProvider:TriggerFilterHierarchyByVisibleElementIds";
   public override async run(): Promise<boolean> {
     ELEMENTS_FILTER.onTrigger.raiseEvent();
     return true;
   }
   public static override get keyin(): string {
-    return "visibility widget trigger filter by visible elements";
+    return "test visibility widget trigger filter by visible elements";
   }
   public static override get englishKeyin(): string {
     return this.keyin;
@@ -317,7 +346,7 @@ export class TriggerFilterHierarchyByVisibleElementIdsTool extends Tool {
 
   public static getCommandItemDef() {
     return new CommandItemDef({
-      iconSpec: `svg:${filterIconSvg}`,
+      iconSpec: <FilterIcon />,
       commandId: "TriggerFilterHierarchyByVisibleElementIds",
       label: "Enable filter tree by visible elements",
       execute: async () => { await IModelApp.tools.run(TriggerFilterHierarchyByVisibleElementIdsTool.toolId); },
@@ -326,13 +355,13 @@ export class TriggerFilterHierarchyByVisibleElementIdsTool extends Tool {
 }
 
 export class CancelFilterHierarchyByVisibleElementIdsTool extends Tool {
-  public static override toolId = "CancelFilterHierarchyByVisibleElementIds";
+  public static override toolId = "TestItemsProvider:CancelFilterHierarchyByVisibleElementIds";
   public override async run(): Promise<boolean> {
     ELEMENTS_FILTER.onCancel.raiseEvent();
     return true;
   }
   public static override get keyin(): string {
-    return "visibility widget cancel filter by visible elements";
+    return "test visibility widget cancel filter by visible elements";
   }
   public static override get englishKeyin(): string {
     return this.keyin;
@@ -340,7 +369,7 @@ export class CancelFilterHierarchyByVisibleElementIdsTool extends Tool {
 
   public static getCommandItemDef() {
     return new CommandItemDef({
-      iconSpec: `svg:${cancelFilterIconSvg}`,
+      iconSpec: <CancelFilterIcon />,
       commandId: "CancelFilterHierarchyByVisibleElementIds",
       label: "Cancel filter tree by visible elements",
       execute: async () => { await IModelApp.tools.run(CancelFilterHierarchyByVisibleElementIdsTool.toolId); },
