@@ -215,6 +215,7 @@ interface ToolbarProps {
   children?: React.ReactNode[];
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 function Toolbar(props: ToolbarProps) {
   return (
     <div className="ui-test-app-visibility-tree-toolbar">

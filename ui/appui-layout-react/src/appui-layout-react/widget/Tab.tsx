@@ -9,7 +9,7 @@
 import "./Tab.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, Icon, Point, Rectangle, Timer, useRefs, useRefState, useResizeObserver } from "@itwin/core-react";
+import { CommonProps, Icon, Point, Rectangle, Timer, useRefs, useResizeObserver } from "@itwin/core-react";
 import { assert } from "@itwin/core-bentley";
 import { useDragTab } from "../base/DragManager";
 import { MeasureContext, NineZoneDispatchContext, ShowWidgetIconContext, TabNodeContext } from "../base/NineZone";

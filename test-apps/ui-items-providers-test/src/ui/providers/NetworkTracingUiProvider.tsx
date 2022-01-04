@@ -10,7 +10,7 @@ import {
   CommonStatusBarItem,
   CommonToolbarItem, ConditionalBooleanValue, IconSpecUtilities,
   StagePanelLocation, StagePanelSection,
-  StatusBarSection, StageUsage,
+  StageUsage, StatusBarSection,
   ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage,
   UiItemsManager, UiItemsProvider, WidgetState,
 } from "@itwin/appui-abstract";
