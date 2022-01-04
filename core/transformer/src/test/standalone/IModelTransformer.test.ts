@@ -20,7 +20,6 @@ import {
 import { ExtensiveTestScenario, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import {
   AxisAlignedBox3d, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorDef, CreateIModelProps, DefinitionElementProps,
-  ElementAspectProps,
   ExternalSourceAspectProps, IModel, IModelError, PhysicalElementProps, Placement3d, QueryRowFormat,
 } from "@itwin/core-common";
 import { IModelExporter, IModelExportHandler, IModelTransformer, TransformerLoggerCategory } from "../../core-transformer";
@@ -1558,7 +1557,7 @@ describe("IModelTransformer", () => {
       classFullName: "TestSchema1:MyUniqueAspect",
       element: { id: myDisplayStyleId, relClassName: ElementOwnsUniqueAspect.classFullName },
       // eslint-disable-next-line @typescript-eslint/naming-convention
-      MyProp1: "prop_value",
+      myProp1: "prop_value",
     };
     sourceDb.elements.insertAspect(uniqueAspectProps);
     sourceDb.saveChanges();
@@ -1572,21 +1571,25 @@ describe("IModelTransformer", () => {
       }
     }
 
-    const transformer = new PublicSkipElementTransformer(sourceDb, targetDb, { includeSourceProvenance: true });
+    const transformer = new PublicSkipElementTransformer(sourceDb, targetDb, {
+      includeSourceProvenance: true,
+      noProvenance: true, // don't add transformer provenance aspects, makes querying for aspects later simpler
+    });
     const skipElementSpy = sinon.spy(transformer, "skipElement");
 
+    await transformer.processSchemas();
     await transformer.processAll();
     assert(skipElementSpy.called); // make sure an element was deferred during the transformation
 
     targetDb.saveChanges();
 
-    let targetExternalSourceAspects!: any[];
-    let targetMyUniqueAspects!: any[];
-    targetDb.withStatement("SELECT * FROM bis.ExternalSourceAspect", (stmt) => (targetExternalSourceAspects = [...stmt]));
-    targetDb.withStatement("SELECT * FROM TestSchema1.MyUniqueAspect", (stmt) => (targetMyUniqueAspects = [...stmt]));
+    const targetExternalSourceAspects = new Array<any>();
+    const targetMyUniqueAspects = new Array<any>();
+    targetDb.withStatement("SELECT * FROM bis.ExternalSourceAspect", (stmt) => targetExternalSourceAspects.push(...stmt));
+    targetDb.withStatement("SELECT * FROM TestSchema1.MyUniqueAspect", (stmt) => targetMyUniqueAspects.push(...stmt));
 
     expect(targetMyUniqueAspects).to.have.lengthOf(1);
-    expect(targetMyUniqueAspects[0].MyProp1).to.equal(uniqueAspectProps.MyProp1);
+    expect(targetMyUniqueAspects[0].myProp1).to.equal(uniqueAspectProps.myProp1);
     expect(targetExternalSourceAspects).to.have.lengthOf(1);
     expect(targetExternalSourceAspects[0].identifier).to.equal(multiAspectProps.identifier);
 

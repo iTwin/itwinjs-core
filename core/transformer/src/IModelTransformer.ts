@@ -771,7 +771,7 @@ export class IModelTransformer extends IModelExportHandler {
       this.sourceDb.withPreparedStatement("SELECT Element.Id FROM bis.ElementMultiAspect WHERE ECInstanceId=:aspectId", (stmt) => {
         stmt.bindId("aspectId", sourceAspects[0].id);
         if (DbResult.BE_SQLITE_ROW === stmt.step()) {
-          result = Id64.fromJSON(stmt.getValue(1).getString());
+          result = Id64.fromJSON(stmt.getValue(0).getId());
         } else {
           throw new IModelError(IModelStatus.BadElement, `Could not find the source element for the aspect, '${sourceAspects[0].id}'`);
         }
