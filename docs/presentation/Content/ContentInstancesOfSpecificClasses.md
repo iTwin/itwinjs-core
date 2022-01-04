@@ -149,4 +149,4 @@ Joining [related instances](../Common-Rules/RelatedInstanceSpecification.md) all
 
 ### Attribute: `handleInstancesPolymorphically`
 
-Defines default `classes` polymorphism value. If set to true, all target classes by default will include also include derived class instances. This value is overriden by the `classes`.[`arePolymorphic`](../Common-Rules/MultiSchemaClassesSpecification.md#attritue-arepolymorphic) value.
+Defines default `classes` polymorphism value. If set to true, all target classes by default will include also include derived class instances. This value is overriden by the `classes`.[`arePolymorphic`](../Common-Rules/MultiSchemaClassesSpecification.md#attribute-arepolymorphic) value.
