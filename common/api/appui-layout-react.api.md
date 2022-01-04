@@ -997,6 +997,9 @@ export interface HorizontalPanelState extends PanelState {
 }
 
 // @internal (undocumented)
+export const IconOnlyOnWidgetTabContext: React.Context<boolean>;
+
+// @internal (undocumented)
 export function initSizeAndPositionProps<T, K extends KeysOfType<T, SizeAndPositionProps | undefined>>(obj: T, key: K, inValue: SizeAndPositionProps): void;
 
 // @internal (undocumented)
@@ -2323,9 +2326,6 @@ export interface TabGroupProps extends CommonProps {
     isCollapsed?: boolean;
     verticalAnchor: VerticalAnchor;
 }
-
-// @internal (undocumented)
-export const IconOnlyOnWidgetTabContext: React.Context<boolean>;
 
 // @internal (undocumented)
 export const TabIdContext: React.Context<string>;
