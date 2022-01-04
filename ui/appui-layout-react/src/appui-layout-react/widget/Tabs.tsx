@@ -24,7 +24,7 @@ export const WidgetTabs = React.memo(function WidgetTabs() { // eslint-disable-l
   const side = React.useContext(PanelSideContext);
   const widget = React.useContext(WidgetStateContext);
   const showWidgetIcon = React.useContext(ShowWidgetIconContext);
-  const [showTabIcon, setShowTabIcon] = React.useState(false);
+  const [showTabIcon, setShowTabIcon] = React.useState(showWidgetIcon);
 
   assert(!!widget);
   const activeTabIndex = widget.tabs.indexOf(widget.activeTabId);
