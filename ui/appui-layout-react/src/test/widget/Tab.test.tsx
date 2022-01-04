@@ -127,7 +127,7 @@ describe("WidgetTab", () => {
             <WidgetTabsEntryContext.Provider value={{
               lastNotOverflown: true,
             }}>
-              <WidgetTabProvider tab={nineZone.tabs.t1} showTabIcon={true} />
+              <WidgetTabProvider tab={nineZone.tabs.t1} showOnlyTabIcon={true} />
             </WidgetTabsEntryContext.Provider>
           </WidgetStateContext.Provider>
         </ShowWidgetIconContext.Provider>
@@ -149,7 +149,7 @@ describe("WidgetTab", () => {
             <WidgetTabsEntryContext.Provider value={{
               lastNotOverflown: true,
             }}>
-              <WidgetTabProvider tab={nineZone.tabs.t1} showTabIcon={false} />
+              <WidgetTabProvider tab={nineZone.tabs.t1} showOnlyTabIcon={false} />
             </WidgetTabsEntryContext.Provider>
           </WidgetStateContext.Provider>
         </ShowWidgetIconContext.Provider>

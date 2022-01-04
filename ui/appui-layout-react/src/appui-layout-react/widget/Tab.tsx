@@ -25,11 +25,11 @@ import { TabIdContext } from "./ContentRenderer";
 /** @internal */
 export interface WidgetTabProviderProps extends TabPositionContextArgs {
   tab: TabState;
-  showTabIcon?: boolean;
+  showOnlyTabIcon?: boolean;
 }
 
 /** @internal */
-export function WidgetTabProvider({ tab, first, firstInactive, last, showTabIcon }: WidgetTabProviderProps) {
+export function WidgetTabProvider({ tab, first, firstInactive, last, showOnlyTabIcon }: WidgetTabProviderProps) {
   const tabNode = React.useContext(TabNodeContext);
   const position = React.useMemo<TabPositionContextArgs>(() => ({
     first,
@@ -40,9 +40,9 @@ export function WidgetTabProvider({ tab, first, firstInactive, last, showTabIcon
     <TabIdContext.Provider value={tab.id}>
       <TabStateContext.Provider value={tab}>
         <TabPositionContext.Provider value={position}>
-          <TabIconContext.Provider value={!!showTabIcon}>
+          <IconOnlyOnWidgetTabContext.Provider value={!!showOnlyTabIcon}>
             {tabNode}
-          </TabIconContext.Provider>
+          </IconOnlyOnWidgetTabContext.Provider>
         </TabPositionContext.Provider>
       </TabStateContext.Provider>
     </TabIdContext.Provider>
@@ -184,7 +184,7 @@ export const WidgetTab = React.memo<WidgetTabProps>(function WidgetTab(props) { 
     props.className,
   );
 
-  const showIconOnly = React.useContext(TabIconContext);
+  const showIconOnly = React.useContext(IconOnlyOnWidgetTabContext);
   const showWidgetIcon = React.useContext(ShowWidgetIconContext);
   const showLabel = (showIconOnly && !tab.iconSpec) || (showWidgetIcon && !showIconOnly) || !showWidgetIcon;
   return (
@@ -223,5 +223,5 @@ export const TabStateContext = React.createContext<TabState>(undefined!);
 TabStateContext.displayName = "nz:TabStateContext";
 
 /** @internal */
-export const TabIconContext = React.createContext<boolean>(false);
-TabIconContext.displayName = "nz:TabIconContext";
+export const IconOnlyOnWidgetTabContext = React.createContext<boolean>(false);
+IconOnlyOnWidgetTabContext.displayName = "nz:IconOnlyOnWidgetTabContext";
