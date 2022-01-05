@@ -18,11 +18,15 @@ Table of Contents:
 - [Breaking changes](#breaking-changes)
   - [Application Setup](#application-setup)
   - [Authorization](#authorization-re-work)
+  - [iModel APIs](#imodels)
   - [Tool Framework](#tool-framework)
-  - [Presentation](#presentation)
   - [Display System](#display-system)
+  - [Presentation](#presentation)
+  - [AppUI](#appui)
   - [Utility Methods](#utility-methods)
   - [Buildology](#buildology)
+  - [iModel Transformer](#transformation)
+  - [Various Changes](#various-changes)
 - [Dependency Update](#dependency-updates)
 - [Exhaustive API Renames and Deprecation](#api-rename)
 
@@ -325,6 +329,109 @@ requestContext.enter();
 you can simply delete it.
 
 This change mostly affects backend code. For backend [RPC]($docs/learning/RpcInterface.md) implementations, all *unhandled* exceptions will automatically be logged along the appropriate RPC metadata. For this reason, it often preferable to throw an exception rather than logging an error and returning a status in code that may or may not be called from RPC.
+
+### iModels
+
+#### Continued transition to `ChangesetIndex`
+
+Every Changeset has both an Id (a string hash of its content and parent changeset) and an Index (a small integer representing its relative position on the iModel's timeline). Either value can be used to uniquely identify a changeset. However, it is often necessary to compare two changeset identifiers to determine relative order, or to supply a range of changesets of interest. In this case, Id is not useful and must be converted to an index via a round-trip to an iModelHub server. Unfortunately, much of the iTwin.js API uses only [ChangesetId]($common) to identify a changeset. That was unfortunate, since [ChangesetIndex]($common) is frequently needed and `ChangesetId` is rarely useful. For this reason we are migrating the API to prefer `ChangesetIndex` over several releases.
+
+In version 2.19, we introduced the type [ChangesetIdWithIndex]($common) to begin that migration. However, for 2.x compatibility we could not use it several places where it would have been helpful:
+
+- [IModelRpcOpenProps]($common)
+- [CheckpointProps]($backend)
+- [LocalBriefcaseProps]($common)
+
+Each of these interfaces originally had only a member `changeSetId: string`, In 2.19, for backwards compatibility, a new member `changeSetIndex?: number` was added. In V3 those two members are now replaced with a single member `changeset: ChangesetIdWithIndex`. Note that this is a breaking change, and you may have to adjust your code. To get the changeset Id, use `changeset.id`. To get the changeset Index, use `changeset.index` (may be undefined). In V4, this will become `changeset: ChangesetIndexAndId` and index will be required.
+
+> Note: "Changeset" is one word. Apis should not use a capital "S" when referring to them.
+
+#### Concurrency Control
+
+The previous implementation of `ConcurrencyControl` for locking elements has been replaced with the [LockControl]($backend) interface.
+
+`ConcurrencyControl` relied on detecting a list of changed elements and deferring the acquisition of locks until the application called the asynchronous `request` method to acquire locks, after the fact, but before calling [BriefcaseDb.saveChanges]($backend). The new approach is to require applications to call the asynchronous method [LockControl.acquireLocks]($backend) to get an exclusive lock on elements before update or delete, and shared locks on parents and models before insert. If an attempt is made to modify or insert without the required locks, an exception is thrown when the change is attempted. This will require tools to make the necessary lock calls.
+
+Previously the concurrency "mode" was determined by applications when opening a briefcase. It is now established as a property of an iModel when it is first created (and "version0" is uploaded.) By default, iModels use pessimistic (i.e. locks) mode, so all previously created iModels will require locks. If you pass `noLocks: true` as an argument to [BackendHubAccess.createNewIModel]($backend), a briefcase-local value is saved in rev0.bim before it is uploaded. Thereafter, all briefcases of that iModel will use use optimistic (i.e. no locks, change merging) mode, since everyone will use briefcases derived from rev0.bim. The value is inspected in the `BriefcaseDb.useLockServer` method called by [BriefcaseDb.open]($backend).
+
+Locks apply to Elements only. The "schema lock" is acquired by exclusively locking element id 0x1 (the root subject id). Models are locked via their modeled element (which has the same id as the model)
+
+See the [ConcurrencyControl]($docs/learning/backend/ConcurrencyControl.md) learning article for more information and examples.
+
+#### BriefcaseManager, BriefcaseDb, and IModelDb changes
+
+The signatures to several methods in [BriefcaseManager]($backend) and [BriefcaseDb]($backend) have been changed to make optional the previously required argument called `requestContext`. That argument was poorly named, but used only to supply a "user access token". Since anywhere briefcases are relevant, an authenticated user access token is available via the static method `IModelHost.getAccessToken`, this argument is rarely needed. The only case where a caller needs to supply that argument is for tests that wish to simulate multiple users via a single backend (which is not permitted outside of tests.) It is now optional and called `user`.
+
+| Method                                   | New arguments                                         | notes                            |
+| ---------------------------------------- | ----------------------------------------------------- | -------------------------------- |
+| `BriefcaseDb.onOpen`                     | [OpenBriefcaseArgs]($backend)                         | event signature change           |
+| `BriefcaseDb.onOpened`                   | [BriefcaseDb]($backend),[OpenBriefcaseArgs]($backend) | event signature change           |
+| `BriefcaseDb.open`                       | [OpenBriefcaseArgs]($backend)                         |                                  |
+| `BriefcaseDb.pullChanges`                | [PullChangesArgs]($backend)                           | was called `pullAndMergeChanges` |
+| `BriefcaseDb.pushChanges`                | [PushChangesArgs]($backend)                           |                                  |
+| `BriefcaseDb.upgradeSchemas`             | [OpenBriefcaseArgs]($backend)                         | `requestContext` removed         |
+| `BriefcaseManager.acquireNewBriefcaseId` | [IModelIdArg]($backend)                               |                                  |
+| `BriefcaseManager.downloadBriefcase`     | [RequestNewBriefcaseArg]($backend)                    |                                  |
+| `IModelDb.importSchemas`                 | `LocalFileName[]`                                     | `requestContext` removed         |
+
+#### Changed return types
+
+The backend methods [IModelDb.saveFileProperty]($backend) and [IModelDb.deleteFileProperty]($backend) used to return a [DbResult]($core-bentley). They now are `void`, and throw an exception if an error occurred. The error value can be retrieved in the `errorNumber` member of the exception object, if desired.
+
+#### Signature change to backend Geocoordinate methods
+
+The two methods [IModelDb.getIModelCoordinatesFromGeoCoordinates]($backend) and [IModelDb.getGeoCoordinatesFromIModelCoordinates]($backend) used to take a string argument that was a stringified [IModelCoordinatesRequestProps]($common) and [GeoCoordinatesRequestProps]($common) respectively. Those arguments were changed to accept the interfaces directly. You should remove `JSON.stringify` from your code if you get compile errors.
+
+#### Coordinate Conversion between iModel GeographicCRS and any other GeographicCRS
+
+Coordinate conversions is now possible between the iModel Geographic Coordinate Reference System and any other Geographic Coordinate Reference System.
+Prior to this version, coordinate conversions were limited to those between the iModel Geographic Coordinate Reference System and latitude/longitude of a specified datum, usually WGS84.
+
+To use, in the backend create either a [IModelCoordinatesRequestProps]($common) or a [GeoCoordinatesRequestProps]($common) depending on the direction coordinates are to be converted. Set the [IModelCoordinatesRequestProps.source]($common) or the [GeoCoordinatesRequestProps.target]($common) property to a string containing either the name of a datum (typically WGS84) or an empty string to specify the iModel Geographic CRS native datum or a stringified version of a [GeographicCRSProps]($common) containing the definition of the source or target of the coordinate conversion. The request can be added coordinates to be converted and fed in methods iModel.getGeoCoordinatesFromIModelCoordinates or iModel.getIModelCoordinatesFromGeoCoordinates.
+
+Specification of the GeographicCRS can be complete or incomplete. Although fully-defined custom Geographic CRS are supported, most of the time simply specifying the id or the epsg code of the GeographicCRS is sufficient.
+
+Here are examples of typical GeographicCRS:
+
+```ts
+{ horizontalCRS: { id: "CA83-II" }, verticalCRS: { id: "NAVD88" } }
+```
+
+or
+
+```ts
+{ horizontalCRS: { epsg: 26942 }, verticalCRS: { id: "NAVD88" } },
+```
+
+These identifiers refer to either the key-name of a Geographic CRS in the list of the dictionary or a known EPSG code.
+
+More complex Geographic CRS can also be used such as the following user-defined:
+
+```ts
+      {
+        horizontalCRS: {
+          id: "UserDef-On-NAD83/2011",
+          description: "User Defined",
+          datumId: "NAD83/2011",
+          unit: "Meter",
+          projection: {
+            method: "TransverseMercator",
+            centralMeridian: -1.5,
+            latitudeOfOrigin: 52.30,
+            scaleFactor: 1.0,
+            falseEasting: 198873.0046,
+            falseNorthing: 375064.3871,
+          },
+        },
+        verticalCRS: {
+          id: "GEOID",
+        },
+      }
+```
+
+On the frontend the [GeoConverter]($frontend) class has been modified to accept either a string containing the datum or a [GeographicCRSProps]($common) of a similar format retaining cache capability as before for either format.
+
+**NOTE**: The [IModelCoordinatesRequestProps.source]($common) and the [GeoCoordinatesRequestProps.target]($common) were renamed from previous version that used the sourceDatum and targetDatum properties.
 
 ### Utility Methods
 
@@ -969,7 +1076,7 @@ the widget in a floating container. The property `defaultFloatingPosition` may a
 
 The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to retrieve the Ids for all floating widget containers for the active frontstage as specified by the `frontstageDef`. These ids can be used to query the size of the floating container via `frontstageDef.getFloatingWidgetContainerBounds`. The method `frontstageDef.setFloatingWidgetContainerBounds` can then be used to set the size and position of a floating widget container.
 
-### New API to Enable and Disable View Overlays
+#### New API to Enable and Disable View Overlays
 
 UiFramework now offers a `setViewOverlayDisplay(display:boolean)` method to enable or disable viewports displaying overlays. By default, the display is enabled. The current setting is available in `UiFramework.viewOverlayDisplay`.
 
@@ -1079,6 +1186,150 @@ This also affects how you will import `*.scss` from the ui packages. If you were
 - Removed TSLint support from `@itwin/build-tools`. If you're still using it, please switch to ESLint.
 - Removed legacy `.eslintrc.js` file from the same package. Instead, use `@itwin/eslint-plugin` and the `imodeljs-recommended` config included in it.
 - Dropped support for ESLint 6.x.
+
+### Transformation
+
+#### New @itwin/core-transformer package
+
+ APIs for importing and exporting data between iModels have moved from the [@itwin/core-backend](https://www.npmjs.com/package/@itwin/core-backend) package to the new [@itwin/core-transformer](https://www.npmjs.com/package/@itwin/core-transformer) package. These APIs include [IModelExporter]($transformer), [IModelImporter]($transformer), and [IModelTransformer]($transformer).
+
+#### IModelImporter property options deprecated in favor of constructor options
+
+ Configuration of an [IModelImporter]($transformer) is now only represented by an [IModelImportOptions]($transformer) object passed to the constructor. The ability to modify options with the [IModelImporter]($transformer) properties `simplifyElementGeometry`, `autoExtendProjectExtents`, and `preserveElementIdsForFiltering` has been deprecated; instead, set these options while constructing your [IModelImporter]($transformer), and read them if necessary from [IModelImporter.options]($transformer). For example, replace the following:
+
+ ```ts
+   const importer = new IModelImporter(targetDb);
+   importer.autoExtendProjectExtents = true;
+   const isExtendingProjectExtents = importer.autoExtendProjectExtents;
+ }
+ ```
+
+ With this:
+
+ ```ts
+   const importer = new IModelImporter(targetDb, { autoExtendProjectExtents: true });
+   const isExtendingProjectExtents = importer.options.autoExtendProjectExtents;
+ ```
+
+#### Customized handling of dangling predecessor Ids
+
+ When the [IModelTransformer]($transformer) encounters a dangling predecessor element id reference in an iModel, an element id for which no element exists in the database, by default the entire transformation is rejected. Now, there are multiple behaviors to choose from for the transformer to use when it encounters such references while analyzing predecessor elements. The `danglingPredecessorBehavior` option defaults to `reject`, or can be configured as `ignore`, which will instead leave the dangling reference as is while transforming to the target. You can configure the new behavior like so:
+
+ ```ts
+   const transformer = new IModelTransformer(sourceDb, targetDb, { danglingPredecessorBehavior: "ignore" });
+ ```
+
+### Various Changes
+
+#### iTwinId
+
+Several api's in **iTwin.js** refer to the "context" for an iModel, meaning the _project or asset_ to which the iModel belongs, as its `contextId`. That is very confusing, as the term "context" is very overloaded in computer science in general, and in iTwin.js in particular. That is resolved in iTwin.js V3.0 by recognizing that every iModel exists within an **iTwin**, and every iTwin has a GUID called its `iTwinId`. All instances of `contextId` in public apis that mean _the iTwin for this iModel_ are now replaced by `iTwinId`.
+
+This is a breaking change for places like `IModel.contextId`. However, it should be a straightforward search-and-replace `contextId` -> `iTwinId` anywhere you get compilation errors in your code.
+
+#### Changes to UnitProps
+
+The `altDisplayLabels` property in [UnitProps]($quantity) has been removed. AlternateLabels are now provided via a [AlternateUnitLabelsProvider]($quantity). The [QuantityFormatter]($frontend) now provides one for use when parsing string to quantities. To add custom labels use [QuantityFormatter.addAlternateLabels]($frontend) see example below.
+
+  ```ts
+  IModelApp.quantityFormatter.addAlternateLabels("Units.FT", "feet", "foot");
+  ```
+
+#### @bentley/extension-cli
+
+The cli tool has been deprecated due to an impending change of Extensions and the Extension Service. Please continue to use the 2.x version if you still require publishing Extensions.
+
+#### Removed oidc-signin-tool
+
+The `oidc-signin-tool` contained various authorization testing tools. It has been relocated to the [@itwin/auth-clients](https://github.com/iTwin/auth-clients) repository.
+
+### @itwin/core-geometry
+
+The method `BSplineCurve3d.createThroughPoints` has been deprecated in favor of the more general method `BSplineCurve3d.createFromInterpolationCurve3dOptions`.
+
+The property `InterpolationCurve3dOptions.isChordLenTangent` has been deprecated due to a naming inconsistency with similar adjacent properties. Use `InterpolationCurve3dOptions.isChordLenTangents` instead.
+
+#### @itwin/core-common
+
+The `fromRadians`, `fromDegrees`, and `fromAngles` methods of [Cartographic]($common) now expect to receive a single input argument - an object containing a longitude, latitude and optional height property. The public constructor for [Cartographic]($common) has also been removed. If you would like to create a [Cartographic]($common) object without specifying longitude and latitude, you can use the new `createZero` method. These changes will help callers avoid mis-ordering longitude, latitude, and height when creating a [Cartographic]($common) object. Additionally, the `LatAndLong` and `LatLongAndHeight` interfaces have been removed and replaced with a single [CartographicProps]($common) interface.
+
+#### Changes to ECSql APIs
+
+Several changes to the APIs for executing ECSql statements have been made to improve performance and flexibility. This involved breaking changes to the `query`, `queryRowCount`, and `restartQuery` methods of [IModelConnection]($frontend), [IModelDb]($backend), and [ECDb]($backend).
+
+- The `query` and `restartQuery` methods used to take multiple arguments indicating a limit on the number of rows to return, a priority, a quota, and so on. These have been combined into a single [QueryOptions]($common) parameter.
+
+- Previously there was no way to control the format of each row returned by the `query` and `restartQuery` methods, and the default format was verbose and inefficient. Now, these methods accept a [QueryRowFormat]($common) as part of their [QueryOptions]($common) parameter describing the desired format. The default format returns each row as an array instead of an object.
+- The `query`, `restartQuery`, and `queryRowCount` methods used to accept the statement bindings as type `any[] | object`. The bindings are now specified instead as the more type-safe type [QueryBinder]($common).
+
+##### Binding parameters using QueryBinder
+
+[QueryBinder]($common) is a more type-safe way to bind parameters to an ECSql statement. It allows mixing indexed and named parameters in a single statement. For example:
+
+```ts
+  const params = new QueryBinder()
+    .bindString("name", "hello")
+    .bindId(1, "0x123");
+
+  for await (const row of db.query("SELECT ECInstanceId, Name from bis.Element WHERE ECInstanceId=? AND Name=:name", params)) {
+    const obj = { id: row[0], name: row[1] };
+    // ...
+  }
+```
+
+##### Id64Set parameter bindings
+
+It is now possible to efficiently bind a large set of ECInstanceIds to a query parameter. This can be very useful for `IN` clauses. For example, imagine you wanted to select some properties of all of the [SpatialModel]($backend)s belonging to a [ModelSelector]($backend). Previously you would need to write something like this:
+
+```ts
+  const ids = Array.from(modelSelector.models).join(",");
+  db.query("SELECT IsPlanProjection, JsonProperties FROM bis.SpatialModel WHERE ECInstanceId IN (" + ids + ")");
+```
+
+The list of comma-separated Ids could be extremely long - in some cases, it might be so long that it would need to be split up into multiple queries!
+
+Now, you can bind a set of Ids as a parameter for the `IN` clause. The Ids will be serialized in a compact string format.
+
+```ts
+  const params = new QueryBinder().bindIdSet("modelIds", modelSelector.models);
+  db.query("SELECT IsPlanProjection, JsonProperties FROM bis.SpatialModel WHERE InVirtualSet(:modelIds, ECInstanceId)", params);
+```
+
+##### Upgrading existing code to use the new `query` methods
+
+The signature of the method has changed to:
+
+```ts
+query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
+```
+
+The `rowFormat` property of the `options` parameter defaults to `QueryRowFormat.UseECSqlPropertyIndexes`. That format is more efficient so its use is preferred, but it differs from the previous row format. You can upgrade existing code to use the old format with minimal changes. For example, if your existing code passes query parameters as an array, change it as follows:
+
+```ts
+  // Replace this:
+  db.query("SELECT * FROM bis.Element WHERE ECInstanceId=?", ["0x1"]);
+  // With this:
+  db.query("SELECT * FROM bis.Element WHERE ECInstanceId=?", QueryBinder.from(["0x1"]), { rowFormat: QueryRowFormat.UseJsPropertyNames });
+  // The code that accesses the properties of each row can remain unchanged.
+```
+
+Similarly, if your existing code passes an object instead of an array as the query parameter, change it as follows:
+
+```ts
+  // Replace this:
+  db.query("SELECT * FROM bis.Element WHERE ECInstanceId = :id", {id: "0x1"});
+  // With this:
+  db.query("SELECT * FROM bis.Element WHERE ECInstanceId=?", QueryBinder.from({id: "0x1"}), { rowFormat: QueryRowFormat.UseJsPropertyNames });
+  // The code that accesses the properties of each row can remain unchanged.
+```
+
+##### Upgrading existing code to use the new `restartQuery` methods
+
+The parameters have changed in the same way as `query`, so they can be changed as described for `query` above.
+
+##### Upgrading existing code to use the new `queryRowCount` methods
+
+The behavior of this method has not changed, but the parameters must be provided as a [QueryBinder]($common) object instead of an array or object. Upgrade your existing code as described for `query` above.
 
 ## Dependency Updates
 
