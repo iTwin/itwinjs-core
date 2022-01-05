@@ -29,7 +29,7 @@ Returns nodes for instances returned by a provided ECSQL query.
 
 > **Default value:** `[]`
 
-Specifications of queries used to create the content.  Query specifications define the actual results of the specification. There
+Specifications of queries used to create the content. Query specifications define the actual results of the specification. There
 are 2 types of supported query specifications:
 
 - [String query specification](#string-query-specification)
