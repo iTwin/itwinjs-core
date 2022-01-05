@@ -5,7 +5,7 @@
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import * as chai from "chai";
 import chaiSubset from "chai-subset";
-import * as cpx from "cpx";
+import * as cpx from "cpx2";
 import * as fs from "fs";
 import * as path from "path";
 import sinonChai from "sinon-chai";
@@ -59,10 +59,10 @@ class IntegrationTestsApp extends NoRenderApp {
   }
 
   public static override async startup(opts?: IModelAppOptions): Promise<void> {
-    await NoRenderApp.startup({ ...opts, i18n: this.supplyI18NOptions() });
     cpx.copySync(`assets/**/*`, "lib/assets");
     copyBentleyBackendAssets("lib/assets");
     copyBentleyFrontendAssets("lib/public");
+    await NoRenderApp.startup({ ...opts, i18n: this.supplyI18NOptions() });
   }
 }
 
