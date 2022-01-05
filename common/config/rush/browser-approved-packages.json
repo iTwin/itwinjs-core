@@ -35,10 +35,6 @@
       "allowedCategories": [ "internal" ]
     },
     {
-      "name": "@bentley/reality-data-client",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "@bentley/units-schema",
       "allowedCategories": [ "backend", "common" ]
     },

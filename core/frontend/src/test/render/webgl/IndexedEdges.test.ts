@@ -39,7 +39,7 @@ function createMeshArgs(opts?: {
 
 function expectIndices(indices: VertexIndices, expected: number[]): void {
   expect(indices.data.length).to.equal(expected.length * 3);
-  const stream = new ByteStream(indices.data.buffer);
+  const stream = ByteStream.fromUint8Array(indices.data);
   for (const expectedIndex of expected)
     expect(stream.nextUint24).to.equal(expectedIndex);
 }
@@ -51,7 +51,7 @@ function expectEdgeTable(edges: EdgeTable, expectedSegments: number[], expectedS
   expect(edges.numSegments).to.equal(expectedSegments.length / 2);
   expect(edges.silhouettePadding).to.equal(expectedPaddingBytes);
 
-  const stream = new ByteStream(edges.data.buffer);
+  const stream = ByteStream.fromUint8Array(edges.data);
   const actualSegments: number[] = [];
   for (let i = 0; i < expectedSegments.length; i += 2) {
     actualSegments.push(stream.nextUint24);

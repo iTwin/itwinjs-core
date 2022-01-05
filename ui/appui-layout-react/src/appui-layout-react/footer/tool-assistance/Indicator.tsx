@@ -27,7 +27,6 @@ export interface ToolAssistanceProps extends FooterIndicatorProps {
 
 /** Tool assistance indicator used in [[Footer]] component.
  * @note Used with [[ToolAssistanceDialog]] component.
- * @deprecated Use [ToolAssistanceField]($appui-react) instead
  * @internal
  */
 export class ToolAssistance extends React.PureComponent<ToolAssistanceProps> {

@@ -443,7 +443,7 @@
       "program": "${workspaceFolder}/ui/appui-abstract/node_modules/mocha/bin/_mocha",
       "args": [
         "--config",
-        "../.mocharc.json",
+        "../.mocharc-noreact.json",
         "--no-timeouts",
         "lib/cjs/test/**/*.test.js"
       ],

@@ -21,6 +21,7 @@ import { BackstageStageLauncher as BackstageStageLauncher_2 } from '@itwin/appui
 import { BadgeType } from '@itwin/appui-abstract';
 import { BaseSolarDataProvider } from '@itwin/imodel-components-react';
 import { BaseTimelineDataProvider } from '@itwin/imodel-components-react';
+import { BaseUiItemsProvider } from '@itwin/appui-abstract';
 import { BeButtonEvent } from '@itwin/core-frontend';
 import { BeDuration } from '@itwin/core-bentley';
 import { BeEvent } from '@itwin/core-bentley';
@@ -51,6 +52,7 @@ import { DisplayStyle3dState } from '@itwin/core-frontend';
 import { DraggedWidgetManagerProps } from '@itwin/appui-layout-react';
 import { ECClassGroupingNodeKey } from '@itwin/presentation-common';
 import { EmphasizeElementsProps } from '@itwin/core-common';
+import { FooterPopupContentType } from '@itwin/appui-layout-react';
 import { FunctionKey } from '@itwin/appui-abstract';
 import { GroupButton as GroupButton_2 } from '@itwin/appui-abstract';
 import { GuidString } from '@itwin/core-bentley';
@@ -128,6 +130,7 @@ import { StagePanelType } from '@itwin/appui-layout-react';
 import { StageUsage } from '@itwin/appui-abstract';
 import { StandardViewId } from '@itwin/core-frontend';
 import { StatusBarItemsManager as StatusBarItemsManager_2 } from '@itwin/appui-abstract';
+import { StatusBarLabelSide } from '@itwin/appui-abstract';
 import { StatusBarSection } from '@itwin/appui-abstract';
 import { Store } from 'redux';
 import { StringGetter } from '@itwin/appui-abstract';
@@ -156,7 +159,6 @@ import { UiAdmin } from '@itwin/appui-abstract';
 import { UiDataProvider } from '@itwin/appui-abstract';
 import { UiEvent } from '@itwin/appui-abstract';
 import { UiEvent as UiEvent_2 } from '@itwin/core-react';
-import { UiItemsProvider } from '@itwin/appui-abstract';
 import { UiLayoutDataProvider } from '@itwin/appui-abstract';
 import { UiStateEntry } from '@itwin/core-react';
 import { UiStateStorage } from '@itwin/core-react';
@@ -562,6 +564,8 @@ export class AppUiSettings implements UserSettingsProvider {
     loadUserSettings(storage: UiStateStorage): Promise<void>;
     // (undocumented)
     readonly providerId = "AppUiSettingsProvider";
+    // (undocumented)
+    showWidgetIcon: UiStateEntry<boolean>;
     // (undocumented)
     widgetOpacity: UiStateEntry<number>;
 }
@@ -1153,11 +1157,15 @@ export enum ConfigurableUiActionId {
     // (undocumented)
     SetFrameworkVersion = "configurableui:set-framework-version",
     // (undocumented)
+    SetShowWidgetIcon = "configurableui:set-show-widget-icon",
+    // (undocumented)
     SetSnapMode = "configurableui:set_snapmode",
     // (undocumented)
     SetTheme = "configurableui:set_theme",
     // (undocumented)
     SetToolPrompt = "configurableui:set_toolprompt",
+    // (undocumented)
+    SetViewOverlayDisplay = "configurableui:set-view-overlay-display",
     // (undocumented)
     SetWidgetOpacity = "configurableui:set_widget_opacity"
 }
@@ -1170,6 +1178,8 @@ export const ConfigurableUiActions: {
     setWidgetOpacity: (opacity: number) => import("../redux/redux-ts").ActionWithPayload<ConfigurableUiActionId.SetWidgetOpacity, number>;
     setDragInteraction: (dragInteraction: boolean) => import("../redux/redux-ts").ActionWithPayload<ConfigurableUiActionId.SetDragInteraction, boolean>;
     setFrameworkVersion: (frameworkVersion: FrameworkVersionId) => import("../redux/redux-ts").ActionWithPayload<ConfigurableUiActionId.SetFrameworkVersion, FrameworkVersionId>;
+    setShowWidgetIcon: (showWidgetIcon: boolean) => import("../redux/redux-ts").ActionWithPayload<ConfigurableUiActionId.SetShowWidgetIcon, boolean>;
+    setViewOverlayDisplay: (displayViewOverlay: boolean) => import("../redux/redux-ts").ActionWithPayload<ConfigurableUiActionId.SetViewOverlayDisplay, boolean>;
 };
 
 // @public
@@ -1264,6 +1274,8 @@ export interface ConfigurableUiState {
     // (undocumented)
     frameworkVersion: FrameworkVersionId;
     // (undocumented)
+    showWidgetIcon: boolean;
+    // (undocumented)
     snapMode: number;
     // (undocumented)
     theme: string;
@@ -1271,6 +1283,8 @@ export interface ConfigurableUiState {
     toolPrompt: string;
     // (undocumented)
     useDragInteraction: boolean;
+    // (undocumented)
+    viewOverlayDisplay: boolean;
     // (undocumented)
     widgetOpacity: number;
 }
@@ -2127,6 +2141,29 @@ export const expandWidget: (base: {
         readonly [x: string]: {
             readonly id: string;
             readonly label: string;
+            readonly iconSpec?: boolean | React.ReactText | {
+                readonly type: string | React.JSXElementConstructor<any>;
+                readonly props: any;
+                readonly key: React.Key | null;
+            } | {} | {
+                readonly [Symbol.iterator]: () => Iterator<React.ReactNode, any, undefined>;
+            } | {
+                readonly key: React.Key | null;
+                readonly children: boolean | React.ReactText | {
+                    readonly type: string | React.JSXElementConstructor<any>;
+                    readonly props: any;
+                    readonly key: React.Key | null;
+                } | {} | {
+                    readonly [Symbol.iterator]: () => Iterator<React.ReactNode, any, undefined>;
+                } | any | null | undefined;
+                readonly type: string | React.JSXElementConstructor<any>;
+                readonly props: any;
+            } | {
+                readonly stringGetter: () => string;
+                readonly syncEventIds: readonly string[];
+                readonly value: string;
+                readonly refresh: () => boolean;
+            } | null | undefined;
             readonly preferredFloatingWidgetSize?: {
                 readonly width: number;
                 readonly height: number;
@@ -2245,7 +2282,7 @@ export class FrameworkAccuDraw extends AccuDraw implements UserSettingsProvider 
 export const FrameworkReducer: (state: import("./redux-ts").CombinedReducerState<{
     configurableUiState: typeof ConfigurableUiReducer;
     sessionState: typeof SessionStateReducer;
-}>, action: import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetTheme, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetWidgetOpacity, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetDragInteraction, boolean>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetFrameworkVersion, import("../UiFramework").FrameworkVersionId>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetActiveIModelId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAvailableSelectionScopes, import("./redux-ts").DeepReadonlyArray<import("./SessionState").PresentationSelectionScope>>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultIModelViewportControlId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewState, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetNumItemsSelected, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetIModelConnection, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetSelectionScope, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.UpdateCursorMenu, import("./redux-ts").DeepReadonlyObject<import("./SessionState").CursorMenuData>>>) => import("./redux-ts").CombinedReducerState<{
+}>, action: import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetTheme, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetWidgetOpacity, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetDragInteraction, boolean>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetFrameworkVersion, import("../UiFramework").FrameworkVersionId>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetShowWidgetIcon, boolean>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetViewOverlayDisplay, boolean>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetActiveIModelId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAvailableSelectionScopes, import("./redux-ts").DeepReadonlyArray<import("./SessionState").PresentationSelectionScope>>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultIModelViewportControlId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewState, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetNumItemsSelected, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetIModelConnection, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetSelectionScope, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.UpdateCursorMenu, import("./redux-ts").DeepReadonlyObject<import("./SessionState").CursorMenuData>>>) => import("./redux-ts").CombinedReducerState<{
     configurableUiState: typeof ConfigurableUiReducer;
     sessionState: typeof SessionStateReducer;
 }>;
@@ -3132,7 +3169,7 @@ export class IModelViewportControl extends ViewportContentControl {
     getReactElementForViewSelectorChange(iModelConnection: IModelConnection, _unusedViewDefinitionId: Id64String, viewState: ViewState, _name: string): React.ReactNode;
     // (undocumented)
     protected getReactNode(): React.ReactNode;
-    protected _getViewOverlay: (viewport: ScreenViewport) => React.ReactNode;
+    protected _getViewOverlay: (vp: ScreenViewport) => React.ReactNode;
     // (undocumented)
     static get id(): string;
     // (undocumented)
@@ -3163,11 +3200,7 @@ export interface IModelViewportControlOptions {
 export const INACTIVITY_TIME_DEFAULT = 3500;
 
 // @beta
-export class Indicator extends React.Component<IndicatorProps, any> {
-    constructor(props: IndicatorProps);
-    // (undocumented)
-    render(): JSX.Element;
-}
+export function Indicator(props: IndicatorProps): JSX.Element;
 
 // @public
 export interface InitialAppUiSettings {
@@ -3177,6 +3210,8 @@ export interface InitialAppUiSettings {
     dragInteraction: boolean;
     // (undocumented)
     frameworkVersion: FrameworkVersionId;
+    // (undocumented)
+    showWidgetIcon?: boolean;
     // (undocumented)
     widgetOpacity: number;
 }
@@ -4798,6 +4833,29 @@ export const setPanelSize: (base: {
         readonly [x: string]: {
             readonly id: string;
             readonly label: string;
+            readonly iconSpec?: boolean | import("react").ReactText | {
+                readonly type: string | import("react").JSXElementConstructor<any>;
+                readonly props: any;
+                readonly key: import("react").Key | null;
+            } | {} | {
+                readonly [Symbol.iterator]: () => Iterator<import("react").ReactNode, any, undefined>;
+            } | {
+                readonly key: import("react").Key | null;
+                readonly children: boolean | import("react").ReactText | {
+                    readonly type: string | import("react").JSXElementConstructor<any>;
+                    readonly props: any;
+                    readonly key: import("react").Key | null;
+                } | {} | {
+                    readonly [Symbol.iterator]: () => Iterator<import("react").ReactNode, any, undefined>;
+                } | any | null | undefined;
+                readonly type: string | import("react").JSXElementConstructor<any>;
+                readonly props: any;
+            } | {
+                readonly stringGetter: () => string;
+                readonly syncEventIds: readonly string[];
+                readonly value: string;
+                readonly refresh: () => boolean;
+            } | null | undefined;
             readonly preferredFloatingWidgetSize?: {
                 readonly width: number;
                 readonly height: number;
@@ -4963,6 +5021,29 @@ export const setWidgetLabel: (base: {
         readonly [x: string]: {
             readonly id: string;
             readonly label: string;
+            readonly iconSpec?: boolean | React.ReactText | {
+                readonly type: string | React.JSXElementConstructor<any>;
+                readonly props: any;
+                readonly key: React.Key | null;
+            } | {} | {
+                readonly [Symbol.iterator]: () => Iterator<React.ReactNode, any, undefined>;
+            } | {
+                readonly key: React.Key | null;
+                readonly children: boolean | React.ReactText | {
+                    readonly type: string | React.JSXElementConstructor<any>;
+                    readonly props: any;
+                    readonly key: React.Key | null;
+                } | {} | {
+                    readonly [Symbol.iterator]: () => Iterator<React.ReactNode, any, undefined>;
+                } | any | null | undefined;
+                readonly type: string | React.JSXElementConstructor<any>;
+                readonly props: any;
+            } | {
+                readonly stringGetter: () => string;
+                readonly syncEventIds: readonly string[];
+                readonly value: string;
+                readonly refresh: () => boolean;
+            } | null | undefined;
             readonly preferredFloatingWidgetSize?: {
                 readonly width: number;
                 readonly height: number;
@@ -5109,6 +5190,29 @@ export const setWidgetState: (base: {
         readonly [x: string]: {
             readonly id: string;
             readonly label: string;
+            readonly iconSpec?: boolean | React.ReactText | {
+                readonly type: string | React.JSXElementConstructor<any>;
+                readonly props: any;
+                readonly key: React.Key | null;
+            } | {} | {
+                readonly [Symbol.iterator]: () => Iterator<React.ReactNode, any, undefined>;
+            } | {
+                readonly key: React.Key | null;
+                readonly children: boolean | React.ReactText | {
+                    readonly type: string | React.JSXElementConstructor<any>;
+                    readonly props: any;
+                    readonly key: React.Key | null;
+                } | {} | {
+                    readonly [Symbol.iterator]: () => Iterator<React.ReactNode, any, undefined>;
+                } | any | null | undefined;
+                readonly type: string | React.JSXElementConstructor<any>;
+                readonly props: any;
+            } | {
+                readonly stringGetter: () => string;
+                readonly syncEventIds: readonly string[];
+                readonly value: string;
+                readonly refresh: () => boolean;
+            } | null | undefined;
             readonly preferredFloatingWidgetSize?: {
                 readonly width: number;
                 readonly height: number;
@@ -5319,6 +5423,29 @@ export const showWidget: (base: {
         readonly [x: string]: {
             readonly id: string;
             readonly label: string;
+            readonly iconSpec?: boolean | React.ReactText | {
+                readonly type: string | React.JSXElementConstructor<any>;
+                readonly props: any;
+                readonly key: React.Key | null;
+            } | {} | {
+                readonly [Symbol.iterator]: () => Iterator<React.ReactNode, any, undefined>;
+            } | {
+                readonly key: React.Key | null;
+                readonly children: boolean | React.ReactText | {
+                    readonly type: string | React.JSXElementConstructor<any>;
+                    readonly props: any;
+                    readonly key: React.Key | null;
+                } | {} | {
+                    readonly [Symbol.iterator]: () => Iterator<React.ReactNode, any, undefined>;
+                } | any | null | undefined;
+                readonly type: string | React.JSXElementConstructor<any>;
+                readonly props: any;
+            } | {
+                readonly stringGetter: () => string;
+                readonly syncEventIds: readonly string[];
+                readonly value: string;
+                readonly refresh: () => boolean;
+            } | null | undefined;
             readonly preferredFloatingWidgetSize?: {
                 readonly width: number;
                 readonly height: number;
@@ -5627,17 +5754,13 @@ export interface StagePanelZonesProps {
 }
 
 // @public
-export class StandardContentToolsProvider implements UiItemsProvider {
-    constructor(_providerId: string, defaultContextTools?: DefaultContentTools | undefined, isSupportedStage?: ((stageId: string, stageUsage: string, stageAppData?: any) => boolean) | undefined);
+export class StandardContentToolsProvider extends BaseUiItemsProvider {
+    constructor(providerId: string, defaultContextTools?: DefaultContentTools | undefined, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean);
     // (undocumented)
-    get id(): string;
+    provideStatusBarItemsInternal(_stageId: string, _stageUsage: string, _stageAppData?: any): CommonStatusBarItem[];
     // (undocumented)
-    provideStatusBarItems(stageId: string, stageUsage: string, stageAppData?: any): CommonStatusBarItem[];
-    // (undocumented)
-    provideToolbarButtonItems(stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any): CommonToolbarItem[];
-    static register(providerId: string, defaultContextTools?: DefaultContentTools, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean): void;
-    // (undocumented)
-    static unregister(providerId: string): void;
+    provideToolbarButtonItemsInternal(_stageId: string, _stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any): CommonToolbarItem[];
+    static register(providerId: string, defaultContextTools?: DefaultContentTools, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean): StandardContentToolsProvider;
 }
 
 // @public
@@ -5687,15 +5810,11 @@ export interface StandardMessageBoxProps extends CommonProps {
 }
 
 // @public
-export class StandardNavigationToolsProvider implements UiItemsProvider {
-    constructor(_providerId: string, defaultNavigationTools?: DefaultNavigationTools | undefined, isSupportedStage?: ((stageId: string, stageUsage: string, stageAppData?: any) => boolean) | undefined);
+export class StandardNavigationToolsProvider extends BaseUiItemsProvider {
+    constructor(providerId: string, defaultNavigationTools?: DefaultNavigationTools | undefined, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean);
     // (undocumented)
-    get id(): string;
-    // (undocumented)
-    provideToolbarButtonItems(stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any): CommonToolbarItem[];
-    static register(providerId: string, defaultNavigationTools?: DefaultNavigationTools, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean): void;
-    // (undocumented)
-    static unregister(providerId: string): void;
+    provideToolbarButtonItemsInternal(_stageId: string, _stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, _stageAppData?: any): CommonToolbarItem[];
+    static register(providerId: string, defaultNavigationTools?: DefaultNavigationTools, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean): StandardNavigationToolsProvider;
 }
 
 // @alpha
@@ -5715,15 +5834,11 @@ export class StandardRotationNavigationAidControl extends NavigationAidControl {
 }
 
 // @public
-export class StandardStatusbarItemsProvider implements UiItemsProvider {
-    constructor(_providerId: string, _defaultItems?: DefaultStatusbarItems | undefined, _isSupportedStage?: ((stageId: string, stageUsage: string, stageAppData?: any) => boolean) | undefined);
+export class StandardStatusbarItemsProvider extends BaseUiItemsProvider {
+    constructor(providerId: string, _defaultItems?: DefaultStatusbarItems | undefined, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean);
     // (undocumented)
-    get id(): string;
-    // (undocumented)
-    provideStatusBarItems(stageId: string, stageUsage: string, stageAppData?: any): CommonStatusBarItem[];
-    static register(providerId: string, defaultItems?: DefaultStatusbarItems, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean): void;
-    // (undocumented)
-    static unregister(providerId: string): void;
+    provideStatusBarItemsInternal(_stageId: string, _stageUsage: string, _stageAppData?: any): CommonStatusBarItem[];
+    static register(providerId: string, defaultItems?: DefaultStatusbarItems, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean): StandardStatusbarItemsProvider;
 }
 
 // @public
@@ -6617,6 +6732,8 @@ export class UiFramework {
     static setIModelConnection(iModelConnection: IModelConnection | undefined, immediateSync?: boolean): void;
     // (undocumented)
     static setIsUiVisible(visible: boolean): void;
+    // (undocumented)
+    static setShowWidgetIcon(value: boolean): void;
     static get settingsManager(): SettingsManager;
     // (undocumented)
     static setUiStateStorage(storage: UiStateStorage, immediateSync?: boolean): Promise<void>;
@@ -6624,8 +6741,11 @@ export class UiFramework {
     static setUiVersion(version: FrameworkVersionId): void;
     // (undocumented)
     static setUseDragInteraction(useDragInteraction: boolean): void;
+    static setViewOverlayDisplay(display: boolean): void;
     // (undocumented)
     static setWidgetOpacity(opacity: number): void;
+    // (undocumented)
+    static get showWidgetIcon(): boolean;
     static get store(): Store<any>;
     static terminate(): void;
     // @internal
@@ -6635,6 +6755,7 @@ export class UiFramework {
     static useDefaultPopoutUrl: boolean;
     // (undocumented)
     static get useDragInteraction(): boolean;
+    static get viewOverlayDisplay(): boolean;
     // @alpha (undocumented)
     static get widgetManager(): WidgetManager;
     }
@@ -6834,7 +6955,7 @@ export function useSolarDataProvider(viewport: ScreenViewport | undefined): Sola
 export function useStatusBarEntry(): DockedStatusBarEntryContextArg;
 
 // @internal (undocumented)
-export function useToolSettingsNode(): string | number | boolean | {} | React.ReactElement<any, string | React.JSXElementConstructor<any>> | React.ReactNodeArray | React.ReactPortal | null | undefined;
+export function useToolSettingsNode(): string | number | boolean | {} | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined;
 
 // @public
 export const useUiItemsProviderBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem[];
@@ -6895,6 +7016,9 @@ export interface ViewLayout {
     // (undocumented)
     viewStates: Array<ViewState | undefined>;
 }
+
+// @internal
+export function ViewOverlayHost({ viewport, featureOptions, userSuppliedOverlay }: ViewOverlayHostProps): JSX.Element | null;
 
 // @public
 export interface ViewOverlayProps {

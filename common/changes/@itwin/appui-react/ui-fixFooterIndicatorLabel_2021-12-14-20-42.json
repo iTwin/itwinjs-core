@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Add support for all existing Indicator Props.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}
