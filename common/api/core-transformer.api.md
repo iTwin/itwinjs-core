@@ -65,8 +65,6 @@ export class IModelExporter {
 
 // @beta
 export abstract class IModelExportHandler {
-    // @internal
-    get callProtected(): any;
     protected onDeleteElement(_elementId: Id64String): void;
     protected onDeleteModel(_modelId: Id64String): void;
     protected onDeleteRelationship(_relInstanceId: Id64String): void;
@@ -177,7 +175,7 @@ export class IModelTransformer extends IModelExportHandler {
     protected _schemaExportDir: string;
     protected shouldExportCodeSpec(_sourceCodeSpec: CodeSpec): boolean;
     protected shouldExportElement(_sourceElement: Element): boolean;
-    protected shouldExportElementAspect(_sourceAspect: ElementAspect): boolean;
+    protected shouldExportElementAspect(sourceAspect: ElementAspect): boolean;
     protected shouldExportRelationship(_sourceRelationship: Relationship): boolean;
     protected shouldExportSchema(schemaKey: ECSchemaMetaData.SchemaKey): boolean;
     protected skipElement(sourceElement: Element): void;
