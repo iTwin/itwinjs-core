@@ -57,7 +57,7 @@ Contributions and suggestions are welcome. Feel free to [discuss](https://github
 
 ### iTwin Viewer
 
-- [ ] Create fully functional iTwin web viewing application platform, deployable on any cloud infrastructure.
+- [X] Create fully functional iTwin web viewing application platform, deployable on any cloud infrastructure.
 - [ ] Provide necessary infrastructure to host Extensions within any iTwin Viewer-based solution.
 
 ### Point Clouds
