@@ -741,18 +741,23 @@ export class IModelTransformer extends IModelExportHandler {
     return targetRelationshipProps;
   }
 
-  // This is a temporary workaround for the IModelTransformer implementation not yet having a way to
-  // prevent the IModelExporter from trying to export aspects of elements it has deferred the processing of.
-  // It will be superceded by some way for IModelExportHandlers to return a message to the IModelExporter that
-  // it refused to export an entity yet and the entity should not be considered exported.
-  /** @internal the most recently deferred element in the source */
-  private _lastAspectElementId: Id64String | undefined;
-
   /** Override of [IModelExportHandler.shouldExportElementAspect]($transformer) that is called to determine if an ElementAspect should be exported from the source iModel.
    * @note Reaching this point means that the ElementAspect has passed the standard exclusion checks in [IModelExporter]($transformer).
    */
   protected override shouldExportElementAspect(sourceAspect: ElementAspect): boolean {
-    this._lastAspectElementId = sourceAspect.element.id;
+    // When exporting elements, the transformer may choose to *defer* an element, which is something the exporter doesn't understand,
+    // so it tries to export aspects anyway. As such we need to *not* export aspects for deferred elements.
+    // When we retry processing deferred elements and successfully export them is when we export the aspects again
+    const targetElementId = this.context.findTargetElementId(sourceAspect.element.id);
+    if (targetElementId === Id64.invalid && this._deferredElementIds.has(sourceAspect.element.id)) {
+      Logger.logWarning(
+        loggerCategory,
+        `tried to export an aspect for a deferred element, '${sourceAspect.element.id}', ` +
+          "it will be retried when the deferred element is processed again."
+      );
+      return false;
+    }
+
     return true;
   }
 
@@ -761,19 +766,8 @@ export class IModelTransformer extends IModelExportHandler {
    */
   protected override onExportElementUniqueAspect(sourceAspect: ElementUniqueAspect): void {
     const targetElementId: Id64String = this.context.findTargetElementId(sourceAspect.element.id);
-    // see this._lastSourceElementAspect
-    const isAspectOfDeferred = targetElementId === Id64.invalid && this._lastAspectElementId && this._deferredElementIds.has(this._lastAspectElementId);
-    if (isAspectOfDeferred) {
-      Logger.logWarning(
-        loggerCategory,
-        `tried to export aspects for a deferred element, '${sourceAspect.element.id}', ` +
-          "if it was deferred, will be retried when the deferred element is processed again"
-      );
-      return;
-    }
     const targetAspectProps: ElementAspectProps = this.onTransformElementAspect(sourceAspect, targetElementId);
     this.importer.importElementUniqueAspect(targetAspectProps);
-    this._lastAspectElementId = undefined;
   }
 
   /** Override of [IModelExportHandler.onExportElementMultiAspects]($transformer) that imports ElementMultiAspects into the target iModel when they are exported from the source iModel.
@@ -786,18 +780,6 @@ export class IModelTransformer extends IModelExportHandler {
     const targetAspectPropsArray: ElementAspectProps[] = sourceAspects.map((sourceAspect: ElementMultiAspect) => {
       return this.onTransformElementAspect(sourceAspect, targetElementId);
     });
-
-    // see this._lastSourceElementAspect
-    const isAspectOfDeferred = targetElementId === Id64.invalid && this._lastAspectElementId && this._deferredElementIds.has(this._lastAspectElementId);
-    if (isAspectOfDeferred ) {
-      Logger.logWarning(
-        loggerCategory,
-        `tried to export aspects for a deferred element, '${sourceAspects[0].element.id}', ` +
-          "if it was deferred, will be retried when the deferred element is processed again"
-      );
-      return;
-    }
-
     if (this._options.includeSourceProvenance) {
       this.importer.importElementMultiAspects(targetAspectPropsArray, (a: ElementMultiAspect) => {
         return (a instanceof ExternalSourceAspect) ? a.scope.id !== this.targetScopeElementId : true; // filter out ExternalSourceAspects added by IModelTransformer
@@ -805,7 +787,6 @@ export class IModelTransformer extends IModelExportHandler {
     } else {
       this.importer.importElementMultiAspects(targetAspectPropsArray);
     }
-    this._lastAspectElementId = undefined;
   }
 
   /** Transform the specified sourceElementAspect into ElementAspectProps for the target iModel.
