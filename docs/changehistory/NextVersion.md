@@ -161,6 +161,16 @@ ovrs.override({ modelId: "0x456", appearance, onConflict: "skip" });
 
 Improvements were made to the performance of [ParticleCollectionBuilder]($frontend) and an optional rotationMatrix was added to [ParticleProps]($frontend) so that particles can be rotated.
 
+#### New clustering algorithm for MarkerSet
+
+ The [MarkerSet]($frontend) class now clusters markers by the screen distance between their positions rather than overlap of their rectangles, so the `Cluster.rect` property is no longer needed and has been removed. Instead, there is a new member `MarkerSet.clusterRadius` that controls when nearby Markers are clustered. See its documentation for details.
+
+#### Support for glTF graphics
+
+[glTF](https://www.khronos.org/gltf/) has become the de facto standard format for 3d graphics on the web. Now you can create a [RenderGraphic]($frontend) from a glTF asset for use with [Decorators]($docs/learning/frontend/ViewDecorations), using [readGltfGraphics]($frontend). [This example]($docs/learning/frontend/ViewDecorations#gltf-decorations) demonstrates how to convert a glTF asset into a graphic and display it using a decorator.
+
+Note: `readGltfGraphics` targets the [glTF 2.0 specification](https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html), but implementation of the full specification is an ongoing work in progress. The current implementation can successfully read many glTF assets, but if a particular asset fails to load or display properly, please [file an issue](https://github.com/iTwin/itwinjs-core/issues).
+
 ## Breaking Changes
 
 ### Application Setup
@@ -952,6 +962,10 @@ the widget in a floating container. The property `defaultFloatingPosition` may a
 
 The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to retrieve the Ids for all floating widget containers for the active frontstage as specified by the `frontstageDef`. These ids can be used to query the size of the floating container via `frontstageDef.getFloatingWidgetContainerBounds`. The method `frontstageDef.setFloatingWidgetContainerBounds` can then be used to set the size and position of a floating widget container.
 
+### New API to Enable and Disable View Overlays
+
+UiFramework now offers a `setViewOverlayDisplay(display:boolean)` method to enable or disable viewports displaying overlays. By default, the display is enabled. The current setting is available in `UiFramework.viewOverlayDisplay`.
+
 #### Removed user change monitoring from @itwin/appui-react
 
 Previously `UiFramework` would monitor the state of an access token and would close all UI popups if the token was found to be empty. This feature has been removed. It is now the applications responsibility to enable this capability if they want it. The method [ConfigurableUiManager.closeUi]($appui-react) is now public and can be called by application to close the popup items.
@@ -1170,38 +1184,38 @@ A number of packages have been renamed to use the @itwin scope rather than the @
 
 ### @itwin/core-common
 
-| Removed                                               | Replacement                                                    |
-| ----------------------------------------------------- | -------------------------------------------------------------- |
-| `AnalysisStyle.scalar`                                | `AnalysisStyle.thematic`                                       |
-| `AnalysisStyleScalar`                                 | `AnalysisStyleThematic`                                        |
-| `AnalysisStyleScalarProps`                            | `AnalysisStyleThematicProps`                                   |
-| `BriefcaseTypes.DeprecatedStandalone`                 | `BriefcaseTypes.Unassigned`                                    |
-| `BriefcaseTypes.Standalone`                           | `BriefcaseTypes.Unassigned`                                    |
-| `Code.getValue`                                       | `Code.value`                                                   |
-| `CodeSpec.specScopeType`                              | `CodeSpec.scopeType`                                           |
-| `DisplayStyleSettings.excludedElements`               | `DisplayStyleSettings.excludedElementIds`                      |
-| `DisplayStyleOverridesOptions.includeProjectSpecific` | `DisplayStyleOverridesOptions.includeITwinSpecific`            |
-| `IModel.changeSetId`                                  | `IModel.changeset.id`                                          |
-| `IModelVersion.evaluateChangeSet`                     | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
-| `IModelVersion.fromJson`                              | `IModelVersion.fromJSON`                                       |
-| `IModelVersion.getChangeSetFromNamedVersion`          | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
-| `IModelVersion.getLatestChangeSetId`                  | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
-| `IModelWriteRpcInterface`                             | Use IPC for writing to iModels                                 |
-| `LatAndLong`                                          | _eliminated_                                                   |
-| `LatLongAndHeight`                                    | [CartographicProps]($common)                                   |
-| `TerrainSettings.locatable`                           | `BackgroundMapSettings.locatable`                              |
-| `TerrainSettingsProps.nonLocatable`                   | `BackgroundMapProps.nonLocatable`                              |
-| `ViewFlagOverrides` class                             | [ViewFlagOverrides]($common) type                              |
-| `ViewFlagProps.edgeMask`                              | _eliminated_                                                   |
-| `ViewFlagProps.hlMatColors`                           | _eliminated_                                                   |
-| `ViewFlags.clone`                                     | [ViewFlags.copy]($common)                                      |
-| `ViewFlags.edgeMask`                                  | _eliminated_                                                   |
-| `ViewFlags.hLineMaterialColors`                       | _eliminated_                                                   |
-| `ViewFlags.noCameraLights`                            | [ViewFlags.lighting]($common)                                  |
-| `ViewFlags.noGeometryMap`                             | _eliminated_                                                   |
-| `ViewFlags.noSolarLight`                              | [ViewFlags.lighting]($common)                                  |
-| `ViewFlags.noSourceLights`                            | [ViewFlags.lighting]($common)                                  |
-| `NativeAppAuthorizationConfiguration`                 | `MobileAppAuthorizationConfiguration` in @itwin/core-mobile    |
+| Removed                                               | Replacement                                                       |
+| ----------------------------------------------------- | ----------------------------------------------------------------- |
+| `AnalysisStyle.scalar`                                | `AnalysisStyle.thematic`                                          |
+| `AnalysisStyleScalar`                                 | `AnalysisStyleThematic`                                           |
+| `AnalysisStyleScalarProps`                            | `AnalysisStyleThematicProps`                                      |
+| `BriefcaseTypes.DeprecatedStandalone`                 | `BriefcaseTypes.Unassigned`                                       |
+| `BriefcaseTypes.Standalone`                           | `BriefcaseTypes.Unassigned`                                       |
+| `Code.getValue`                                       | `Code.value`                                                      |
+| `CodeSpec.specScopeType`                              | `CodeSpec.scopeType`                                              |
+| `DisplayStyleSettings.excludedElements`               | `DisplayStyleSettings.excludedElementIds`                         |
+| `DisplayStyleOverridesOptions.includeProjectSpecific` | `DisplayStyleOverridesOptions.includeITwinSpecific`               |
+| `IModel.changeSetId`                                  | `IModel.changeset.id`                                             |
+| `IModelVersion.evaluateChangeSet`                     | `IModelHost`/`IModelApp` `hubAccess.getChangesetFromVersion`      |
+| `IModelVersion.fromJson`                              | `IModelVersion.fromJSON`                                          |
+| `IModelVersion.getChangeSetFromNamedVersion`          | `IModelHost`/`IModelApp` `hubAccess.getChangesetFromNamedVersion` |
+| `IModelVersion.getLatestChangeSetId`                  | `IModelHost`/`IModelApp` `hubAccess.hubAccess.getLatestChangeset` |
+| `IModelWriteRpcInterface`                             | Use IPC for writing to iModels                                    |
+| `LatAndLong`                                          | _eliminated_                                                      |
+| `LatLongAndHeight`                                    | [CartographicProps]($common)                                      |
+| `TerrainSettings.locatable`                           | `BackgroundMapSettings.locatable`                                 |
+| `TerrainSettingsProps.nonLocatable`                   | `BackgroundMapProps.nonLocatable`                                 |
+| `ViewFlagOverrides` class                             | [ViewFlagOverrides]($common) type                                 |
+| `ViewFlagProps.edgeMask`                              | _eliminated_                                                      |
+| `ViewFlagProps.hlMatColors`                           | _eliminated_                                                      |
+| `ViewFlags.clone`                                     | [ViewFlags.copy]($common)                                         |
+| `ViewFlags.edgeMask`                                  | _eliminated_                                                      |
+| `ViewFlags.hLineMaterialColors`                       | _eliminated_                                                      |
+| `ViewFlags.noCameraLights`                            | [ViewFlags.lighting]($common)                                     |
+| `ViewFlags.noGeometryMap`                             | _eliminated_                                                      |
+| `ViewFlags.noSolarLight`                              | [ViewFlags.lighting]($common)                                     |
+| `ViewFlags.noSourceLights`                            | [ViewFlags.lighting]($common)                                     |
+| `NativeAppAuthorizationConfiguration`                 | `MobileAppAuthorizationConfiguration` in @itwin/core-mobile       |
 
 ### @itwin/core-frontend
 
@@ -1217,8 +1231,8 @@ A number of packages have been renamed to use the @itwin scope rather than the @
 | `FeatureOverrideType`                         | [FeatureOverrideType]($common)                                     |
 | `FeatureSymbology.Appearance`                 | [FeatureAppearance]($common)                                       |
 | `FeatureSymbology.AppearanceProps`            | [FeatureAppearanceProps]($common)                                  |
-| `findAvailableRealityModels`                  | `queryRealityData` in `@itwin/reality-data-client`                 |
-| `findAvailableUnattachedRealityModels`        | `queryRealityData` in `@itwin/reality-data-client`                 |
+| `findAvailableRealityModels`                  | `getRealityDatas` in `@itwin/reality-data-client`                 |
+| `findAvailableUnattachedRealityModels`        | `getRealityDatas` in `@itwin/reality-data-client`                 |
 | `IModelApp.iModelClient`                      | `IModelApp.hubAccess`                                              |
 | `IModelApp.settings`                          | [IModelApp.userPreferences]($frontend)                             |
 | `IModelConnection.Models.loaded`              | use `for..of` to iterate and `getLoaded` to look up by Id          |
@@ -1521,7 +1535,7 @@ SAML support has officially been dropped as a supported workflow. All related AP
 
 | Removed                            | Replacement                    |
 | ---------------------------------- | ------------------------------ |
-| `UserInfo`                         | Moved to @itwin/appui-react |
+| `UserInfo`                         | *eliminated*                   |
 | `AuthorizationClient.isAuthorized` | *eliminated*                   |
 
 ### @bentley/appui-react
