@@ -66,7 +66,7 @@ Contributions and suggestions are welcome. Feel free to [discuss](https://github
 
 ### Reality Data Sources
 
-- [ ] Implement a grid of linear transformations for large reality data.
+- [X] Implement a grid of linear transformations for large reality data.
 
 ### Geolocated Photos and Panoramas
 
@@ -75,7 +75,7 @@ Contributions and suggestions are welcome. Feel free to [discuss](https://github
 
 ### Geolocation (general)
 
-- [X] Provide a method to access geolocation gcs definition for imodel and context data horizontal and vertical
+- [X] Provide a method to access geolocation gcs definition for iModel and context data horizontal and vertical
 - [ ] Implement frontend reprojection when possible based on orbit gt implementation.
 - [ ] Implement client of new geo coord service.
 - [ ] Obtain geoid separation from new geo coord service client.
