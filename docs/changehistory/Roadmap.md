@@ -1,6 +1,6 @@
 # The iTwin.js Roadmap
 
-This roadmap provides the *big picture* view of the development path for the iTwin.js platform, and the relative priorities along the path.
+This roadmap provides the *big picture* view of the development path for the iTwin.js platform, cataloging proposed features that have received at least some level of priority for development.
 
 ## Themes
 
@@ -13,11 +13,11 @@ We will use the following themes (that may be adjusted from time-to-time accordi
 - Adhere to open source standards and norms wherever possible.
 - Build an ecosystem of innovation and enterprise.
 
-## Release 3.0
+## Roadmap
 
-We plan to release `iTwin.js 3.0` in 2H21. The projects listed below will comprise the priorities during the 3.0 development cycle. However it's likely that some may not be fully functional, or even beta-ready by the release deadline. In that case they will become candidates for the 4.0 cycle.
+A checked box denotes a complated feature. An unchecked box indicates work upon the feature is either in progress or tenatively planned.
 
-Volunteers for help on any or all of these projects are welcome. In particular, the iTwin.js team always benefits from real-world use cases and data sets. If you would like to work together with us on any of these projects, particularly those that describe creating examples and templates for interfacing to external systems, please let us know.
+Contributions and suggestions are welcome. Feel free to [discuss](https://github.com/iTwin/itwinjs-core/discussions) or submit a PR.
 
 ### Visualization
 
