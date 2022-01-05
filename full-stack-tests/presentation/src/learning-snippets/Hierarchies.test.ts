@@ -217,7 +217,7 @@ describe("Learning Snippets", () => {
       it("uses `customizationRules` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ Hierarchies.CustomizationRules.Ruleset
         // The ruleset has a global label override rule and two root node rules that return nodes "A" and "B"
-        // respectively.The "B" rule has a label override of its own.
+        // respectively. The "B" rule has a label override of its own.
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
@@ -337,7 +337,7 @@ describe("Learning Snippets", () => {
 
       it("uses `hideNodesInHierarchy` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ Hierarchies.Specification.HideNodesInHierarchy.Ruleset
-        // The ruleset contains a root node specification for "PhysicalModel" nodes which are grouped by class and hidden. This
+        // The ruleset contains a root node specification for `bis.PhysicalModel` nodes which are grouped by class and hidden. This
         // means class grouping nodes are displayed, but instance nodes are hidden and instead their children are displayed. The
         // children are determined by another rule.
         const ruleset: Ruleset = {
@@ -375,8 +375,8 @@ describe("Learning Snippets", () => {
 
       it("uses `hideIfNoChildren` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ Hierarchies.Specification.HideIfNoChildren.Ruleset
-        // The ruleset contains a root node specification for "Model" nodes which are grouped by class and only
-        // displayed if they have children. The child nodes rule is created only for "PhysicalModel" nodes, so only
+        // The ruleset contains a root node specification for `bis.Model` nodes which are grouped by class and only
+        // displayed if they have children. The child nodes rule is created only for `bis.PhysicalModel` nodes, so only
         // that type of models are displayed at the root level.
         const ruleset: Ruleset = {
           id: "example",
@@ -419,9 +419,9 @@ describe("Learning Snippets", () => {
 
       it("uses `hideExpression` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ Hierarchies.Specification.HideExpression.Ruleset
-        // The ruleset contains a root node specification for "GroupInformationModel" and "PhysicalModel" nodes which
+        // The ruleset contains a root node specification for `bis.GroupInformationModel` and `bis.PhysicalModel` nodes which
         // are grouped by class and hidden if there's a children artifact "isTestNode". The artifact is created only
-        // for "GroupInformationModel" node by its custom child node. This makes the GroupInformationModel node replaced by
+        // for `bis.GroupInformationModel` node by its custom child node. This makes the `bis.GroupInformationModel` node replaced by
         // its children.
         const ruleset: Ruleset = {
           id: "example",
@@ -464,12 +464,12 @@ describe("Learning Snippets", () => {
 
       it("uses `suppressSimilarAncestorsCheck` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ Hierarchies.Specification.SuppressSimilarAncestorsCheck.Ruleset
-        // The ruleset contains a root node specification that returns the root Subject node. Also, there are two
+        // The ruleset contains a root node specification that returns the root `bis.Subject` node. Also, there are two
         // child node rules:
-        // - For any Model node, return its child Element nodes.
-        // - For any Element node, return its children Model nodes.
-        // Children of the root Subject are all in the single RepositoryModel and some of their children are in the same
-        // RepositoryModel as their parent. This means the RepositoryModel node has to be repeated in the hierarchy, but
+        // - For any `bis.Model` node, return its contained `bis.Element` nodes.
+        // - For any `bis.Element` node, return its children `bis.Model` nodes.
+        // Children of the root `bis.Subject` are all in the single `bis.RepositoryModel` and some of their children are in the same
+        // `bis.RepositoryModel` as their parent. This means the `bis.RepositoryModel` node has to be repeated in the hierarchy, but
         // that wouldn't happen due to duplicate nodes prevention, unless the `suppressSimilarAncestorsCheck` flag is set.
         const ruleset: Ruleset = {
           id: "example",
@@ -560,9 +560,9 @@ describe("Learning Snippets", () => {
 
       it("uses `priority` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ Hierarchies.Specification.Priority.Ruleset
-        // The ruleset has two specifications that return nodes for "PhysicalModel" and "SpatialCategory"
-        // respectively.The specifications have different priorities and higher priority rule is handled
-        // first - that's the reason the "SpatialCategory" node appears first in the result.
+        // The ruleset has two specifications that return nodes for `bis.PhysicalModel` and `bis.SpatialCategory`
+        // respectively. The specifications have different priorities and higher priority rule is handled
+        // first - that's the reason the `bis.SpatialCategory` node appears first in the result.
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
@@ -592,7 +592,7 @@ describe("Learning Snippets", () => {
 
       it("uses `doNotSort` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ Hierarchies.Specification.DoNotSort.Ruleset
-        // The ruleset has a specification that returns unsorted "Model" nodes - the order is undefined.
+        // The ruleset has a specification that returns unsorted `bis.Model` nodes - the order is undefined.
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
@@ -615,7 +615,7 @@ describe("Learning Snippets", () => {
 
       it("uses `groupByClass` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ Hierarchies.Specification.GroupByClass.Ruleset
-        // The ruleset contains a specification that returns "Model" nodes without grouping them
+        // The ruleset contains a specification that returns `bis.Model` nodes without grouping them
         // by class.
         const ruleset: Ruleset = {
           id: "example",
@@ -639,7 +639,7 @@ describe("Learning Snippets", () => {
 
       it("uses `groupByLabel` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ Hierarchies.Specification.GroupByLabel.Ruleset
-        // The ruleset contains a specification that returns "ECPropertyDef" nodes without grouping them
+        // The ruleset contains a specification that returns `meta.ECPropertyDef` nodes without grouping them
         // by label.
         const ruleset: Ruleset = {
           id: "example",
@@ -668,8 +668,8 @@ describe("Learning Snippets", () => {
 
       it("uses `hasChildren` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ Hierarchies.Specification.HasChildren.Ruleset
-        // The ruleset contains a root nodes' specification that returns "Model" nodes and a child nodes'
-        // specification that returns a custom node. The "Model" nodes would have the custom node as a
+        // The ruleset contains a root nodes' specification that returns `bis.Model` nodes and a child nodes'
+        // specification that returns a custom node. The `bis.Model` nodes would have the custom node as a
         // child, but `hasChildren: "Never"` attribute overrides that.
         const ruleset: Ruleset = {
           id: "example",
@@ -703,8 +703,8 @@ describe("Learning Snippets", () => {
       // crash in ECSQL, notified Affan
       it.skip("uses `relatedInstances` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ Hierarchies.Specification.RelatedInstances.Ruleset
-        // The ruleset contains a root nodes' specification that returns nodes for Elements that are in
-        // a Category containing "a" in either `UserLabel` or `CodeValue` property.
+        // The ruleset contains a root nodes' specification that returns nodes for `bis.Elements` that are in
+        // a category containing "a" in either `UserLabel` or `CodeValue` property.
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
@@ -739,11 +739,11 @@ describe("Learning Snippets", () => {
       it("uses `nestedRules` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ Hierarchies.Specification.NestedRules.Ruleset
         // The ruleset contains two root nodes' specifications:
-        // - The first one returns SpatialCategory nodes
-        // - The second one returns PhysicalModel nodes and also has a nested child node rule
+        // - The first one returns `bis.SpatialCategory` nodes
+        // - The second one returns `bis.PhysicalModel` nodes and also has a nested child node rule
         //   that creates a static "child" node.
         // Nested rules apply only to nodes created by the same specification, so the static "child"
-        // node is created only for the PhysicalModel, but not SpatialCategory.
+        // node is created only for the `bis.PhysicalModel`, but not `bis.SpatialCategory`.
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
@@ -790,7 +790,7 @@ describe("Learning Snippets", () => {
 
         it("uses `classes` attribute", async () => {
           // __PUBLISH_EXTRACT_START__ Hierarchies.InstanceNodesOfSpecificClassesSpecification.Classes.Ruleset
-          // The ruleset has a specification that returns nodes for instances of "BisCore.PhysicalModel" class and all
+          // The ruleset has a specification that returns nodes for instances of `bis.PhysicalModel` class and all
           // its subclasses.
           const ruleset: Ruleset = {
             id: "example",
@@ -819,8 +819,8 @@ describe("Learning Snippets", () => {
 
         it("uses `excludedClasses` attribute", async () => {
           // __PUBLISH_EXTRACT_START__ Hierarchies.InstanceNodesOfSpecificClassesSpecification.ExcludedClasses.Ruleset
-          // The ruleset has a specification that returns nodes for all instances of "BisCore.Model" class
-          // excluding instances of "BisCore.DefinitionModel", "BisCore.GroupInformationModel" and their subclasses.
+          // The ruleset has a specification that returns nodes for all instances of `bis.Model` class
+          // excluding instances of `bis.DefinitionModel`, `bis.GroupInformationModel` and their subclasses.
           const ruleset: Ruleset = {
             id: "example",
             rules: [{
@@ -849,7 +849,8 @@ describe("Learning Snippets", () => {
         // crash in ECSQL, notified Affan
         it.skip("uses `instanceFilter` attribute", async () => {
           // __PUBLISH_EXTRACT_START__ Hierarchies.InstanceNodesOfSpecificClassesSpecification.InstanceFilter.Ruleset
-          // The ruleset has a specification that returns nodes for "ViewDefinition" instances whose "CodeValue" ends with "View 1".
+          // The ruleset has a specification that returns nodes for `bis.ViewDefinition` instances whose
+          // `CodeValue` property value ends with "View 1".
           const ruleset: Ruleset = {
             id: "example",
             rules: [{
@@ -882,9 +883,9 @@ describe("Learning Snippets", () => {
 
         it("uses `relationshipPaths` attribute", async () => {
           // __PUBLISH_EXTRACT_START__ Hierarchies.RelatedInstanceNodesSpecification.RelationshipPaths.Ruleset
-          // The ruleset has a specification that returns PhysicalModel root nodes. The child node specification
-          // returns GeometricElement3d instance nodes that are related to parent Model through ModelContainsElements
-          // relationship by following it in forward direction (from Model to Element).
+          // The ruleset has a specification that returns `bis.PhysicalModel` root nodes. The child node specification
+          // returns `bis.GeometricElement3d` instance nodes that are related to their model through `bis.ModelContainsElements`
+          // relationship by following it in forward direction (from `bis.Model` to `bis.Element`).
           const ruleset: Ruleset = {
             id: "example",
             rules: [{
@@ -1047,7 +1048,7 @@ describe("Learning Snippets", () => {
 
         it("uses `queries` attribute with StringQuerySpecification", async () => {
           // __PUBLISH_EXTRACT_START__ Hierarchies.CustomQueryInstanceNodesSpecification.StringQuerySpecification.Ruleset
-          // The ruleset has a root nodes' specification that uses a given query to get all Models.
+          // The ruleset has a root nodes' specification that uses a given query to get all `bis.Model` instances.
           const ruleset: Ruleset = {
             id: "example",
             rules: [{
@@ -1093,7 +1094,7 @@ describe("Learning Snippets", () => {
           // __PUBLISH_EXTRACT_START__ Hierarchies.CustomQueryInstanceNodesSpecification.ECPropertyValueQuerySpecification.Ruleset
           // The ruleset has a root nodes' specification that returns `MyDomain.MyParentElement` nodes. It also has
           // a children specification that returns `MyDomain.MyChildElement` children for `MyDomain.MyParentElement`
-          // parent nodes using`ChildrenQuery` property value of the parent element.
+          // parent nodes using `ChildrenQuery` property value of the parent element.
           const ruleset: Ruleset = {
             id: "example",
             rules: [{
@@ -1133,8 +1134,8 @@ describe("Learning Snippets", () => {
 
       it("uses `condition` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ Hierarchies.Grouping.Condition.Ruleset
-        // There's a hierarchy of Models and their Elements. In addition, there's a grouping rule for Elements
-        // that only takes effect if the Model has `IsPrivate` flag set to `true`.
+        // There's a hierarchy of `bis.Model` instances and their elements. In addition, there's a grouping rule for `bis.Element`
+        // that only takes effect if element's model has `IsPrivate` flag set to `true`.
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
@@ -1208,7 +1209,7 @@ describe("Learning Snippets", () => {
 
       it("uses `createGroupForSingleItem` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ Hierarchies.Grouping.Specification.CreateGroupForSingleItem.Ruleset
-        // There's a root nodes rule that returns nodes for all elements and there's a grouping rule
+        // There's a root nodes rule that returns nodes for all `bis.Element` instances and there's a grouping rule
         // that groups those elements by `CodeValue` property. The grouping rule has the `createGroupForSingleItem`
         // flag, so property grouping nodes are created even if they group only a single element.
         const ruleset: Ruleset = {
@@ -1247,8 +1248,8 @@ describe("Learning Snippets", () => {
         // needs this fix: https://bentleycs.visualstudio.com/iModelTechnologies/_git/imodel02/pullrequest/217120.
         it.skip("uses `baseClass` attribute", async () => {
           // __PUBLISH_EXTRACT_START__ Hierarchies.Grouping.ClassGroup.BaseClass.Ruleset
-          // The ruleset contains a root nodes rule for Elements and a grouping rule that puts
-          // all PhysicalElements into a class group.
+          // The ruleset contains a root nodes rule for `bis.Element` instances and a grouping rule that puts
+          // all `bis.PhysicalElement` instances into a class group.
           const ruleset: Ruleset = {
             id: "example",
             rules: [{
@@ -1289,7 +1290,7 @@ describe("Learning Snippets", () => {
 
         it("uses `createGroupForUnspecifiedValues` attribute", async () => {
           // __PUBLISH_EXTRACT_START__ Hierarchies.Grouping.PropertyGroup.CreateGroupForUnspecifiedValues.Ruleset
-          // The ruleset contains a root nodes rule for Elements and a grouping rule that groups them
+          // The ruleset contains a root nodes rule for `bis.Element` instances and a grouping rule that groups them
           // by `UserLabel` property. By default all nodes whose instance doesn't have a value for the property would
           // be placed under a "Not Specified" grouping node, but the grouping rule has this behavior disabled through
           // the `createGroupForUnspecifiedValues` attribute.
@@ -1329,7 +1330,7 @@ describe("Learning Snippets", () => {
 
         it("uses `imageId` attribute", async () => {
           // __PUBLISH_EXTRACT_START__ Hierarchies.Grouping.PropertyGroup.ImageId.Ruleset
-          // The ruleset contains a root nodes rule for Elements and a grouping rule that groups them
+          // The ruleset contains a root nodes rule for `bis.Element` instances and a grouping rule that groups them
           // by `UserLabel` property. The grouping rule also sets an image identifier for all grouping nodes.
           const ruleset: Ruleset = {
             id: "example",
@@ -1373,8 +1374,8 @@ describe("Learning Snippets", () => {
 
         it("uses `ranges` attribute", async () => {
           // __PUBLISH_EXTRACT_START__ Hierarchies.Grouping.PropertyGroup.Ranges.Ruleset
-          // The ruleset contains a root nodes rule for GeometricElement3d and a grouping rule that groups them
-          // by `Yaw` property into 3 ranges: Negative, Positive and Zero.
+          // The ruleset contains a root nodes rule for `bis.GeometricElement3d` and a grouping rule that groups them
+          // by `Yaw` property into 3 ranges: "Negative", "Positive" and "Zero".
           const ruleset: Ruleset = {
             id: "example",
             rules: [{
@@ -1427,7 +1428,7 @@ describe("Learning Snippets", () => {
 
         it("uses `applicationStage = Query` attribute", async () => {
           // __PUBLISH_EXTRACT_START__ Hierarchies.Grouping.SameLabelInstanceGroup.ApplicationStage.Query.Ruleset
-          // The ruleset contains a root nodes rule for SubCategory instances. The grouping rule
+          // The ruleset contains a root nodes rule for `bis.SubCategory` instances. The grouping rule
           // tells the rules engine to group them by label by creating a single ECInstances node for grouped instances.
           const ruleset: Ruleset = {
             id: "example",
@@ -1466,10 +1467,10 @@ describe("Learning Snippets", () => {
 
         it("uses `applicationStage = PostProcess` attribute", async () => {
           // __PUBLISH_EXTRACT_START__ Hierarchies.Grouping.SameLabelInstanceGroup.ApplicationStage.PostProcess.Ruleset
-          // The ruleset contains a root nodes rule for PhysicalModel and PhysicalPartition instances. The grouping rule
-          // tells the rules engine to group them by label. PhysicalModel and PhysicalPartition classes have no common base class,
-          // so two different grouping rules are required to define this kind of grouping and that also means that "Query" type
-          // of grouping is not possible - grouping at "PostProcessing" step is required.
+          // The ruleset contains a root nodes rule for `bis.PhysicalModel` and `bis.PhysicalPartition` instances. The grouping rule
+          // tells the rules engine to group them by label. `bis.PhysicalModel` and `bis.PhysicalPartition` classes have no common base class,
+          // so two different grouping rules are required to define this kind of grouping and that also means that `Query` type
+          // of grouping is not possible - grouping at `PostProcessing` step is required.
           const ruleset: Ruleset = {
             id: "example",
             rules: [{
@@ -1521,11 +1522,11 @@ describe("Learning Snippets", () => {
       // needs this fix: https://bentleycs.visualstudio.com/iModelTechnologies/_git/imodel02/pullrequest/216669
       it.skip("uses `condition` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ Hierarchies.NodeArtifacts.Condition.Ruleset
-        // The ruleset has a root nodes rule that returns Model nodes only if their child node
+        // The ruleset has a root nodes rule that returns `bis.Model` nodes only if their child node
         // artifacts contain an artifact "IsSpecialChild". There's also a child nodes rule that produces
-        // hidden child nodes for Models and GeometricElement3d nodes have the "IsSpecialChild" artifact value
-        // set to `true`. This means only GeometricModel3d models should be displayed as root nodes (no other
-        // type of Model should have GeometricElement3d elements).
+        // hidden child nodes for `bis.Model` and `bis.GeometricElement3d` nodes have the "IsSpecialChild" artifact value
+        // set to `true`. This means only `bis.GeometricModel3d` nodes should be displayed as root nodes (no other
+        // type of `bis.Model` should have `bis.GeometricElement3d` elements).
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
@@ -1574,11 +1575,11 @@ describe("Learning Snippets", () => {
 
       it("uses `items` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ Hierarchies.NodeArtifacts.Items.Ruleset
-        // The ruleset has a root nodes rule that returns Model nodes only if their child node
+        // The ruleset has a root nodes rule that returns `bis.Model` nodes only if their child node
         // artifacts contain an artifact "IsSpecialChild". There's also a child nodes rule that produces
-        // hidden child nodes for Models and the nodes have a calculated "IsSpecialChild" artifact value
-        // that only evaluates to `true` for GeometricElement3d elements. This means only GeometricModel3d
-        // models should be displayed as root nodes (no other type of Model should have GeometricElement3d
+        // hidden child nodes for `bis.Model` and the nodes have a calculated "IsSpecialChild" artifact value
+        // that only evaluates to `true` for `bis.GeometricElement3d` elements. This means only `bis.GeometricModel3d`
+        // models should be displayed as root nodes (no other type of `bis.Model` should have `bis.GeometricElement3d`
         // elements).
         const ruleset: Ruleset = {
           id: "example",
