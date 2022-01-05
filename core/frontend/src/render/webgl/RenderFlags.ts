@@ -46,12 +46,13 @@ export const enum RenderPass {
  * @internal
  */
 export type Pass =
-  "skybox" | // Skybox
+  "skybox" | // SkyBox
   "opaque" | // OpaqueGeneral
   "opaque-linear" | // OpaqueLinear
   "opaque-planar" | // OpaquePlanar
-  "none" | // None
+  "translucent" | // Translucent
   "view-overlay" | // ViewOverlay
+  "none" | // None
   // The following apply to textured meshes when the texture image contains a mix of opaque and transparent pixels.
   // The mesh requests to be rendered in both opaque and transparent passes, with each pass discarding pixels that don't match that pass.
   // (i.e., discard transparent pixels during opaque pass and vice-versa).
@@ -65,6 +66,52 @@ export const enum GeometryType {
   IndexedTriangles,
   IndexedPoints,
   ArrayedPoints,
+}
+
+/** @internal */
+export namespace Pass {
+  /** Return the RenderPass corresponding to the specified Pass. */
+  export function toRenderPass(pass: Exclude<Pass, "opaque-translucent" | "opaque-planar-translucent">): RenderPass {
+    switch (pass) {
+      case "skybox": return RenderPass.SkyBox;
+      case "opaque": return RenderPass.OpaqueGeneral;
+      case "opaque-linear": return RenderPass.OpaqueLinear;
+      case "opaque-planar": return RenderPass.OpaquePlanar;
+      case "translucent": return RenderPass.Translucent;
+      case "view-overlay": return RenderPass.ViewOverlay;
+      case "none": return RenderPass.None;
+    }
+  }
+
+  /** Return true if the specified Pass renders during RenderPass.Translucent.
+   * @note It is possible for both [[rendersTranslucent]] and [[rendersOpaque]] to return true (or false) for a given Pass.
+   */
+  export function rendersTranslucent(pass: Pass): boolean {
+    switch (pass) {
+      case "translucent":
+      case "opaque-translucent":
+      case "opaque-planar-translucent":
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  /** Return true if the specified Pass renders during one of the opaque RenderPasses.
+   * @note It is possible for both [[rendersTranslucent]] and [[rendersOpaque]] to return true for a given Pass.
+   */
+  export function rendersOpaque(pass: Pass): boolean {
+    switch (pass) {
+      case "opaque-translucent":
+      case "opaque-planar-translucent":
+      case "opaque":
+      case "opaque-planar":
+      case "opaque-linear":
+        return true;
+      default:
+        return false;
+    }
+  }
 }
 
 /** Reserved texture units for specific sampler variables, to avoid conflicts between shader components which each have their own textures.
