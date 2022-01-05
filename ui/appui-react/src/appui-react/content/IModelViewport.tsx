@@ -63,7 +63,7 @@ interface ViewOverlayHostProps {
  * @internal
  */
 // istanbul ignore next
-export function ViewOverlayHost({viewport, featureOptions, userSuppliedOverlay}: ViewOverlayHostProps) {
+export function ViewOverlayHost({ viewport, featureOptions, userSuppliedOverlay }: ViewOverlayHostProps) {
   const displayViewOverlay = useSelector((state: FrameworkState) => {
     const frameworkState = (state as any)[UiFramework.frameworkStateKey];
     return frameworkState ? frameworkState.configurableUiState.viewOverlayDisplay : true;
@@ -192,7 +192,7 @@ export class IModelViewportControl extends ViewportContentControl {
 
   /** Get the default ViewOverlay unless parameter is set to not use it. May be override in an application specific sub-class  */
   protected _getViewOverlay = (vp: ScreenViewport): React.ReactNode => {
-    return <ViewOverlayHost viewport={vp} featureOptions={this._featureOptions} userSuppliedOverlay={this._userSuppliedViewOverlay} data-testid="ViewOverlay"/>;
+    return <ViewOverlayHost viewport={vp} featureOptions={this._featureOptions} userSuppliedOverlay={this._userSuppliedViewOverlay} data-testid="ViewOverlay" />;
   };
 
   /** Get the NavigationAidControl associated with this ContentControl */

@@ -85,6 +85,7 @@ export class FrontstageDef {
   private _timeTracker: TimeTracker = new TimeTracker();
   private _nineZoneState?: NineZoneState;
   private _contentGroupProvider?: ContentGroupProvider;
+  private _floatingContentControls?: ContentControl[];
 
   public get id(): string { return this._id; }
   public get defaultTool(): ToolItemDef | undefined { return this._defaultTool; }
@@ -300,6 +301,10 @@ export class FrontstageDef {
 
     this._isStageClosing = true; // this keeps widgets in child windows from automatically re-docking
     UiFramework.childWindowManager.closeAllChildWindows();
+
+    if (this._floatingContentControls) {
+      this._floatingContentControls = undefined;
+    }
 
     await this._onDeactivated();
     this._isStageClosing = false;
@@ -566,14 +571,36 @@ export class FrontstageDef {
     return widgetControls;
   }
 
+  public addFloatingContentControl(contentControl?: ContentControl) {
+    if (!contentControl)
+      return;
+    if (!this._floatingContentControls)
+      this._floatingContentControls = new Array<ContentControl>();
+
+    this._floatingContentControls.push(contentControl);
+  }
+
+  public dropFloatingContentControl(contentControl?: ContentControl) {
+    if (!contentControl || !this._floatingContentControls)
+      return;
+
+    const index = this._floatingContentControls.indexOf(contentControl);
+    if (index > -1) {
+      this._floatingContentControls.splice(index, 1);
+    }
+  }
+
   /** Gets the list of [[ContentControl]]s */
   public get contentControls(): ContentControl[] {
+    const contentControls = new Array<ContentControl>();
     // istanbul ignore else
     if (this.contentGroup) {
-      return this.contentGroup.getContentControls();
-    } else {
-      return [];
+      contentControls.push(...this.contentGroup.getContentControls());
     }
+    if (this._floatingContentControls) {
+      contentControls.push(...this._floatingContentControls);
+    }
+    return contentControls;
   }
 
   /** Initializes a FrontstageDef from FrontstageProps

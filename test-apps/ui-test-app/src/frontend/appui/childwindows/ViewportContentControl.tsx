@@ -6,10 +6,11 @@
 import "./ViewportContentControl.css";
 import * as React from "react";
 import { Id64String } from "@itwin/core-bentley";
-import { IModelConnection } from "@itwin/core-frontend";
+import { IModelConnection, ScreenViewport } from "@itwin/core-frontend";
 import { viewWithUnifiedSelection } from "@itwin/presentation-components";
 import { ViewportComponent } from "@itwin/imodel-components-react";
 import ViewDefinitionSelector, { getViewDefinitions } from "./ViewDefinitionSelector";
+import { ContentViewManager, FloatingViewportContentControl } from "@itwin/appui-react";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const SampleViewport = viewWithUnifiedSelection(ViewportComponent);
@@ -20,6 +21,7 @@ export interface ViewportContentComponentProps {
 }
 
 export default function ViewportContentComponent(props: ViewportContentComponentProps) { // eslint-disable-line @typescript-eslint/naming-convention
+  const [viewport, setViewport] = React.useState<ScreenViewport | undefined>();
   const [selectedViewDefinitionId, setSelectedViewDefinitionId] = React.useState<Id64String | undefined>();
   const [prevIModel, setPrevIModel] = React.useState<IModelConnection | undefined>(props.imodel);
   if (prevIModel !== props.imodel) {
@@ -38,15 +40,32 @@ export default function ViewportContentComponent(props: ViewportContentComponent
     setSelectedViewDefinitionId(id);
   }, []);
 
+  const contentControl = React.useRef<FloatingViewportContentControl | undefined>();
+
+  const viewPortControl = React.useMemo(() =>
+    selectedViewDefinitionId ? (
+      <SampleViewport
+        viewportRef={(v: ScreenViewport) => setViewport(v)}
+        imodel={props.imodel}
+        viewDefinitionId={selectedViewDefinitionId}
+        onContextMenu={props.onContextMenu}
+      />
+    ) : undefined, [props.imodel, selectedViewDefinitionId, props.onContextMenu]);
+
+  React.useEffect(() => {
+    contentControl.current = new FloatingViewportContentControl("TestFloatingControl", "TestFloatingControl", viewPortControl);
+    if (viewport)
+      contentControl.current.viewport = viewport;
+    ContentViewManager.addFloatingContentControl(contentControl.current);
+    return () => {
+      ContentViewManager.dropFloatingContentControl(contentControl.current);
+      contentControl.current = undefined;
+    };
+  }, [viewPortControl, viewport]);
+
   return (
     <div className="ViewportContentComponent" style={{ height: "100%", position: "relative" }}>
-      {selectedViewDefinitionId ? (
-        <SampleViewport
-          imodel={props.imodel}
-          viewDefinitionId={selectedViewDefinitionId}
-          onContextMenu={props.onContextMenu}
-        />
-      ) : undefined}
+      {viewPortControl}
       <ViewDefinitionSelector imodel={props.imodel} selectedViewDefinition={selectedViewDefinitionId} onViewDefinitionSelected={onViewDefinitionChanged} />
     </div>
   );

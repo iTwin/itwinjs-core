@@ -88,6 +88,18 @@ export class ContentViewManager {
     return activeContentControl;
   }
 
+  public static addFloatingContentControl(contentControl?: ContentControl) {
+    const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+    if (activeFrontstageDef && contentControl)
+      activeFrontstageDef.addFloatingContentControl(contentControl);
+  }
+
+  public static dropFloatingContentControl(contentControl?: ContentControl) {
+    const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+    if (activeFrontstageDef && contentControl)
+      activeFrontstageDef.dropFloatingContentControl(contentControl);
+  }
+
   /** Sets the active [[ContentControl]] */
   public static setActiveContent(activeContent?: React.ReactNode, forceEventProcessing = false): void {
     // istanbul ignore else

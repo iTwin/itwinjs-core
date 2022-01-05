@@ -127,3 +127,13 @@ export class ViewportContentControl extends ContentControl implements SupportsVi
   // istanbul ignore next
   public getReactElementForViewSelectorChange(_iModel: IModelConnection, _viewDefinitionId: Id64String, _viewState: ViewState, _name: string): React.ReactNode { return null; }
 }
+
+/**
+ * @beta
+ */
+export class FloatingViewportContentControl extends ViewportContentControl {
+  constructor(uniqueId: string, name: string, node: React.ReactNode) {
+    super(new ConfigurableCreateInfo(name, uniqueId, name), undefined);
+    this._reactNode = node;
+  }
+}
