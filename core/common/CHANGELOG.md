@@ -1,6 +1,13 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Wed, 08 Dec 2021 20:54:52 GMT and should not be manually modified.
+This log was last generated on Wed, 05 Jan 2022 20:07:20 GMT and should not be manually modified.
+
+## 2.19.27
+Wed, 05 Jan 2022 20:07:20 GMT
+
+### Updates
+
+- Add compare method to ThematicGradientSettings. Fix Gradient.Symb.compareSymb method to also compare thematicSettings.
 
 ## 2.19.26
 Wed, 08 Dec 2021 20:54:52 GMT

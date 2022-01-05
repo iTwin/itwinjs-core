@@ -2,6 +2,18 @@
   "name": "@bentley/imodeljs-common",
   "entries": [
     {
+      "version": "2.19.27",
+      "tag": "@bentley/imodeljs-common_v2.19.27",
+      "date": "Wed, 05 Jan 2022 20:07:20 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add compare method to ThematicGradientSettings. Fix Gradient.Symb.compareSymb method to also compare thematicSettings."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.26",
       "tag": "@bentley/imodeljs-common_v2.19.26",
       "date": "Wed, 08 Dec 2021 20:54:52 GMT",
