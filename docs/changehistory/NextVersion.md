@@ -20,7 +20,7 @@ Table of Contents:
   - [Authorization](#authorization-re-work)
   - [iModel APIs](#imodels)
   - [Tool Framework](#tool-framework)
-  - [Display System](#display-system)
+  - [Display System](#display-system-breaking-changes)
   - [Presentation](#presentation)
   - [AppUI](#appui)
   - [Utility Methods](#utility-methods)
@@ -32,13 +32,13 @@ Table of Contents:
 
 ## Upgrade guide
 
-To aid in the update from iModel.js 2.x, a [codemod tool](https://github.com/iTwin/codemods) using [JSCodeshift](https://github.com/facebook/jscodeshift) has been released which should serve as a starting point for updating your project to iTwin.js 3.0. Please see the included [readme.md](https://github.com/iTwin/codemods#readme) for instructions on running the tool against your project.
+To aid in the update from iModel.js 2.x, a [codemod tool](https://github.com/iTwin/codemods) using [JSCodeshift](https://github.com/facebook/jscodeshift) has been released which should serve as a starting point for updating your project to iTwin.js 3.0. This tool can automate some upgrade tasks like updating package names and replacing usage of deprecated or removed APIs with their replacement APIs. Please see the included [readme.md](https://github.com/iTwin/codemods#readme) for instructions on running the tool against your project.
 
-## New Features
+## New features
 
-### Display System
+### Display system
 
-TODO: Small intro if desired about the updates made
+iTwin.js 3.0 introduces several new features and performance enhancements to the display system, along with a collection of [learning articles]($docs/learning/display) describing its capabilities. Many of these enhancements were motivated by feedback from users. If you have a new feature you'd like to see implemented, feel free to [let us know](https://github.com/iTwin/itwinjs-core/discussions)!
 
 #### Viewport.zoomToElements improvements
 
@@ -167,13 +167,13 @@ ovrs.overrideModel("0x456", appearance, false);
 ovrs.override({ modelId: "0x456", appearance, onConflict: "skip" });
 ```
 
-#### Improve/Enhance particle systems
+#### Improve/enhance particle systems
 
 Improvements were made to the performance of [ParticleCollectionBuilder]($frontend) and an optional rotationMatrix was added to [ParticleProps]($frontend) so that particles can be rotated.
 
 #### New clustering algorithm for MarkerSet
 
- The [MarkerSet]($frontend) class now clusters markers by the screen distance between their positions rather than overlap of their rectangles, so the `Cluster.rect` property is no longer needed and has been removed. Instead, there is a new member `MarkerSet.clusterRadius` that controls when nearby Markers are clustered. See its documentation for details.
+ The [MarkerSet]($frontend) class now clusters markers by the screen distance between their positions rather than overlap of their rectangles, so the `Cluster.rect` property is no longer needed and has been removed. Instead, there is a new member [MarkerSet.clusterRadius]($frontend) that controls when nearby Markers are clustered.
 
 #### Support for glTF graphics
 
@@ -181,9 +181,9 @@ Improvements were made to the performance of [ParticleCollectionBuilder]($fronte
 
 Note: `readGltfGraphics` targets the [glTF 2.0 specification](https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html), but implementation of the full specification is an ongoing work in progress. The current implementation can successfully read many glTF assets, but if a particular asset fails to load or display properly, please [file an issue](https://github.com/iTwin/itwinjs-core/issues).
 
-## Breaking Changes
+## Breaking changes
 
-### Application Setup
+### Application setup
 
 A handful of changes have been made to simplify the process of setting up an application on both the backend and frontend side.
 
@@ -314,7 +314,7 @@ To use any other external storage set [IModelHostConfiguration.tileCacheService]
 
 The loader has been deprecated due to a preference for using the dotenv package instead. Any workflows using `.env` files will not be affected.
 
-### Authorization Re-work
+### Authorization re-work
 
 #### ClientRequestContext and AuthorizedClientRequestContext have been removed
 
@@ -346,7 +346,7 @@ Each of these interfaces originally had only a member `changeSetId: string`, In 
 
 > Note: "Changeset" is one word. Apis should not use a capital "S" when referring to them.
 
-#### Concurrency Control
+#### Concurrency control
 
 The previous implementation of `ConcurrencyControl` for locking elements has been replaced with the [LockControl]($backend) interface.
 
@@ -382,7 +382,7 @@ The backend methods [IModelDb.saveFileProperty]($backend) and [IModelDb.deleteFi
 
 The two methods [IModelDb.getIModelCoordinatesFromGeoCoordinates]($backend) and [IModelDb.getGeoCoordinatesFromIModelCoordinates]($backend) used to take a string argument that was a stringified [IModelCoordinatesRequestProps]($common) and [GeoCoordinatesRequestProps]($common) respectively. Those arguments were changed to accept the interfaces directly. You should remove `JSON.stringify` from your code if you get compile errors.
 
-#### Coordinate Conversion between iModel GeographicCRS and any other GeographicCRS
+#### Coordinate conversion between iModel GeographicCRS and any other GeographicCRS
 
 Coordinate conversions is now possible between the iModel Geographic Coordinate Reference System and any other Geographic Coordinate Reference System.
 Prior to this version, coordinate conversions were limited to those between the iModel Geographic Coordinate Reference System and latitude/longitude of a specified datum, usually WGS84.
@@ -433,7 +433,7 @@ On the frontend the [GeoConverter]($frontend) class has been modified to accept 
 
 **NOTE**: The [IModelCoordinatesRequestProps.source]($common) and the [GeoCoordinatesRequestProps.target]($common) were renamed from previous version that used the sourceDatum and targetDatum properties.
 
-### Utility Methods
+### Utility methods
 
 #### BentleyError constructor no longer logs
 
@@ -449,7 +449,7 @@ The optional `metaData` argument for the [Logger]($core-bentley) functions was p
 
 The [AsyncFunction]($core-bentley), [AsyncMethodsOf]($core-bentley), and [PromiseReturnType]($core-bentley) types have moved to the @itwin/core-bentley package. The ones in @itwin/core-frontend have been deprecated.
 
-### Tool Framework
+### Tool framework
 
 #### `Tool.run` and `Tool.parseAndRun` are now async
 
@@ -468,11 +468,11 @@ These methods were previously synchronous and are now async:
 - [InteractiveTool.onSuspend]($frontend)
 - [InteractiveTool.onUnsuspend]($frontend)
 
-#### Registering Tools
+#### Registering tools
 
 In previous versions, the [Tool.register]($frontend) method took an optional argument to supply the localization object. Since it always existed on `IModelApp`, that argument served no purpose and is now removed. If you previously passed it, simply remove it.
 
-### Display System
+### Display system breaking changes
 
 #### Breaking map imagery API changes
 
@@ -595,7 +595,7 @@ If you were using noCameraLights, noSourceLights, or noSolarLight, use [ViewFlag
 
 [ViewFlags.fromJSON]($common) accepts a [ViewFlagProps]($common), which is awkward and error-prone for reasons discussed in that type's documentation. The [ViewFlags.constructor]($common) - like the new [ViewFlags.create]($common) static method - now takes an optional [ViewFlagsProperties]($common), which has exactly the same properties as ViewFlags. Prefer to use either `create` or the constructor instead of `fromJSON`.
 
-#### ViewState3d.lookAt Arguments Changed
+#### ViewState3d.lookAt arguments changed
 
 [ViewState3d.lookAt]($frontend) previously took 6 arguments. Also, the method `ViewState3d.lookAtUsingLensAngle` established a perspective `ViewState3d` from a field-of-view lens angle with many of the same arguments. There is now a new implementation of `ViewState3d.lookAt` that accepts named parameters to set up either a perspective or orthographic view, using the interfaces [LookAtPerspectiveArgs]($frontend), [LookAtOrthoArgs]($frontend), or [LookAtUsingLensAngle]($frontend).
 
@@ -652,7 +652,7 @@ viewState.lookAt({
 });
 ```
 
-#### OnViewExtentsError and MarginOptions Separated from ViewChangeOptions
+#### OnViewExtentsError and MarginOptions separated from ViewChangeOptions
 
 The `opts` argument to [ViewState3d.lookAt]($frontend) was previously declared to be of type [ViewChangeOptions]($frontend). However, it only used the `onExtentsError` member to handle invalid view extents. That caused confusion because it led you to believe that [ViewState3d.lookAt]($frontend) performed a view change when it doesn't, it merely modifies the `ViewState3d`.
 
@@ -942,7 +942,7 @@ The format of [KeySetJSON]($presentation-common) has been changed to reduce its 
   });
   ```
 
-#### `ControlledTree` API Changes
+#### `ControlledTree` API changes
 
 `ControlledTree` component has received the following breaking changes:
 
@@ -1065,18 +1065,18 @@ The component [FrameworkVersion]($appui-react) has been updated so it no longer 
 | [StandardContentLayouts]($appui-abstract)       | Provides standard view layouts that can be used when defining a ContentGroup.                    |
 | [ContentGroupProvider]($appui-react)            | Class that generates a ContentGroup at runtime when the frontstageDef is being constructed.      |
 
-#### New Timeline Date Marker
+#### New timeline date marker
 
 The [TimelineComponent]($imodel-components-react) react component now accepts a property to mark a specific date in a date-based timeline. If the timeline has a defined start date and end date, a date between them can be marked in the timeline by specifying an instance of [TimelineDateMarkerProps]($imodel-components-react) in the new markDate member of [TimelineComponentProps]($imodel-components-react). If the date member is left undefined, today's date will be used. The default marker is a short vertical bar, but a ReactNode can be specified in the dateMarker prop to customize the marker's appearance.
 
-#### New Floating Widget Capabilities
+#### New floating widget capabilities
 
 Widgets provided via UiItemsProviders may now set `defaultState: WidgetState.Floating` and `isFloatingStateSupported: true` to open
 the widget in a floating container. The property `defaultFloatingPosition` may also be specified to define the position of the floating container. If a position is not defined the container will be centered in the `AppUi` area.
 
 The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to retrieve the Ids for all floating widget containers for the active frontstage as specified by the `frontstageDef`. These ids can be used to query the size of the floating container via `frontstageDef.getFloatingWidgetContainerBounds`. The method `frontstageDef.setFloatingWidgetContainerBounds` can then be used to set the size and position of a floating widget container.
 
-#### New API to Enable and Disable View Overlays
+#### New API to enable and disable view overlays
 
 UiFramework now offers a `setViewOverlayDisplay(display:boolean)` method to enable or disable viewports displaying overlays. By default, the display is enabled. The current setting is available in `UiFramework.viewOverlayDisplay`.
 
@@ -1084,7 +1084,7 @@ UiFramework now offers a `setViewOverlayDisplay(display:boolean)` method to enab
 
 Previously `UiFramework` would monitor the state of an access token and would close all UI popups if the token was found to be empty. This feature has been removed. It is now the applications responsibility to enable this capability if they want it. The method [ConfigurableUiManager.closeUi]($appui-react) is now public and can be called by application to close the popup items.
 
-#### Deprecated Components in Favor of iTwinUI-react Components
+#### Deprecated components in favor of iTwinUI-react components
 
 Several UI components in the @itwin/core-react and @itwin/components-react packages have been deprecated.
 Developers should use equivalent components in @itwin/itwinui-react instead.
@@ -1165,7 +1165,7 @@ The following items were moved into the ui-imodel-components package. For a comp
 - ViewportComponent, ViewportComponentEvents
 - LineWeightSwatch, WeightPickerButton, WeightPropertyEditor
 
-#### Tasks and Workflows Deprecated
+#### Tasks and workflows deprecated
 
 Classes and methods pertaining to Tasks and Workflows have been deprecated due to a change in the UX design.
 Please continue to use Frontstages.
@@ -1219,7 +1219,7 @@ This also affects how you will import `*.scss` from the ui packages. If you were
    const transformer = new IModelTransformer(sourceDb, targetDb, { danglingPredecessorBehavior: "ignore" });
  ```
 
-### Various Changes
+### Various changes
 
 #### iTwinId
 
@@ -1331,7 +1331,7 @@ The parameters have changed in the same way as `query`, so they can be changed a
 
 The behavior of this method has not changed, but the parameters must be provided as a [QueryBinder]($common) object instead of an array or object. Upgrade your existing code as described for `query` above.
 
-## Dependency Updates
+## Dependency updates
 
 ### Updated minimum requirements
 
@@ -1346,7 +1346,7 @@ The following dependencies of iTwin.js have been updated;
 - `react` updated from to `^16.8.9` -> `^17.0.0`,
 - `react-dom` updated from to `^16.8.9` -> `^17.0.0`,
 
-## API Rename
+## API rename
 
 Several APIs previously marked as deprecated, renamed alpha/beta APIs and moved APIs from one package to another. Generally, the reason for the deprecation as well as the alternative suggestions can be found in the 2.x release notes. Most of the renames highlighted below are handled automatically in our [upgrade tool](#update-guide) but for reference an exhaustive list can be found below.
 
