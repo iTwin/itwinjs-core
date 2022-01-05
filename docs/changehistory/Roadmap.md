@@ -75,10 +75,11 @@ Contributions and suggestions are welcome. Feel free to [discuss](https://github
 
 ### Geolocation (general)
 
-- [X] Provide a method to access geolocation gcs definition for i model and context data horizontal and vertical
+- [X] Provide a method to access geolocation gcs definition for imodel and context data horizontal and vertical
 - [ ] Implement frontend reprojection when possible based on orbit gt implementation.
-- [ ] Implement backend of new geo coord service reprojection for complex gcs.
-- [ ] Obtain geoid separation from new geo coord service.
+- [ ] Implement client of new geo coord service.
+- [ ] Obtain geoid separation from new geo coord service client.
+- [ ] Complete system grid files in itwin-workspace support.
 
 ### iModel Transformations
 
