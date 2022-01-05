@@ -8673,6 +8673,7 @@ export interface TextureData {
     bytes: Uint8Array;
     format: ImageSourceFormat;
     height: number;
+    transparency?: TextureTransparency;
     width: number;
 }
 
@@ -8772,6 +8773,13 @@ export interface TextureProps extends DefinitionElementProps {
     data: Base64EncodedString;
     description?: string;
     format: ImageSourceFormat;
+}
+
+// @public
+export enum TextureTransparency {
+    Mixed = 2,
+    Opaque = 0,
+    Translucent = 1
 }
 
 // @public
