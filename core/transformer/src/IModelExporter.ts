@@ -597,11 +597,10 @@ export class IModelExporter {
 
   /** Export ElementAspects from the specified element from the source iModel. */
   private async exportElementAspects(elementId: Id64String): Promise<void> {
-    // ElementUniqueAspects
-    this.sourceDb.elements
+    const _uniqueAspects = await Promise.all(this.sourceDb.elements
       ._queryAspects(elementId, ElementUniqueAspect.classFullName, this._excludedElementAspectClassFullNames)
       .filter((a) => this.shouldExportElementAspect(a))
-      .forEach(async (uniqueAspect: ElementUniqueAspect) => {
+      .map(async (uniqueAspect: ElementUniqueAspect) => {
         const isInsertChange = this._sourceDbChanges?.aspect.insertIds.has(uniqueAspect.id) ?? false;
         const isUpdateChange = this._sourceDbChanges?.aspect.updateIds.has(uniqueAspect.id) ?? false;
         const doExport = this._sourceDbChanges === undefined || isInsertChange || isUpdateChange;
@@ -610,12 +609,12 @@ export class IModelExporter {
           this.handler["onExportElementUniqueAspect"](uniqueAspect, isKnownUpdate);
           await this.trackProgress();
         }
-      });
+      }));
 
-    // ElementMultiAspects
     const multiAspects = this.sourceDb.elements
       ._queryAspects(elementId, ElementMultiAspect.classFullName, this._excludedElementAspectClassFullNames)
       .filter((a) => this.shouldExportElementAspect(a));
+
     if (multiAspects.length > 0) {
       this.handler["onExportElementMultiAspects"](multiAspects);
       return this.trackProgress();
