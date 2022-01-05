@@ -15,7 +15,7 @@ We will use the following themes (that may be adjusted from time-to-time accordi
 
 ## Roadmap
 
-A checked box denotes a complated feature. An unchecked box indicates work upon the feature is either in progress or tenatively planned.
+A checked box denotes a completed feature. An unchecked box indicates work upon the feature is either in progress or tenatively planned.
 
 Contributions and suggestions are welcome. Feel free to [discuss](https://github.com/iTwin/itwinjs-core/discussions) or submit a PR.
 
