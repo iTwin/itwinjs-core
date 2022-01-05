@@ -6,16 +6,22 @@ publish: false
 
 With most major releases comes many new features and some breaking API changes. Several breaking changes are the removal of previously deprecated APIs. In other cases, some APIs have changed in ways that may require calling code to be adjusted. This document describes these in detail to help you upgrade.
 
+The first step in migrating to 3.0 is to try out the new [upgrade tool](#upgrade-guide) that makes it easy to react to all of the renames that took place during the 3.0 release.
+
+The table of contents created below will make it easier to navigate through the various changes within the release. It provides a summary of the more complicated or extensive changes made and details on why the change has been made.
+
+Table of Contents:
+
 - [Upgrade guide](#update-guide)
 - [New features](#new-features)
   - [Display System](#display-system)
 - [Breaking changes](#breaking-changes)
   - [Application Setup](#application-setup)
-  - [Display System](#display-system)
   - [Authorization](#authorization-re-work)
-  - [Utility Methods](#utility-methods)
-  - [Presentation](#presentation)
   - [Tool Framework](#tool-framework)
+  - [Presentation](#presentation)
+  - [Display System](#display-system)
+  - [Utility Methods](#utility-methods)
   - [Buildology](#buildology)
 - [Dependency Update](#dependency-updates)
 - [Exhaustive API Renames and Deprecation](#api-rename)
