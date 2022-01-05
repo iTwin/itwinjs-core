@@ -15,6 +15,7 @@ Table of Contents:
 - [Upgrade guide](#update-guide)
 - [New features](#new-features)
   - [Display System](#display-system)
+  - [AppUi Framework](#new-appui-features)
 - [Breaking changes](#breaking-changes)
   - [Application Setup](#application-setup)
   - [Authorization](#authorization-re-work)
@@ -198,6 +199,45 @@ Now, you can bind a set of Ids as a parameter for the `IN` clause. The Ids will 
   const params = new QueryBinder().bindIdSet("modelIds", modelSelector.models);
   db.query("SELECT IsPlanProjection, JsonProperties FROM bis.SpatialModel WHERE InVirtualSet(:modelIds, ECInstanceId)", params);
 ```
+
+### New AppUi Features
+
+#### UiItemsProvider enhancements
+
+UiItemsProviders will now filter out duplicate UiItems to ensure that only one of a particular item (e.g., Widget or Tool) will be added to a given stage. If you want the Select Tool is available in a stage, for example, you can include it in the Content Tools returned by your UiItemsProvider without checking to see if it's already in the stage you're augmenting.
+Until this release, the applicationData specified in the frontstage was obscured once the stage was instantiated. Now, the UiItemsProvider will pass that info along to to each of the provide*() callbacks for the UiItemsProvider to use if needed.
+
+#### Window Resize Enhancements
+
+A new ResizeObserver was has been implemented that supports both the main window and any pop-out windows.
+
+#### New options for defining Frontstages
+
+| Class/Component                                 | Description                                                                                      |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| [StandardFrontstageProvider]($appui-react)      | Frontstage provider that provides an 'empty' stage that is to be populated via UiItemsProviders. |
+| [StandardContentToolsProvider]($appui-react)    | UiItemsProvider that will add common tool entries to Tool Widget.                                |
+| [StandardNavigationToolsProvider]($appui-react) | UiItemsProvider that will add common view tool entries to Navigation Widget.                     |
+| [StandardStatusbarItemsProvider]($appui-react)  | UiItemsProvider that will add common statusbar items.                                            |
+| [ContentToolWidgetComposer]($appui-react)       | Provides an empty Tool Widget that is to be populate via UiItemsProviders.                       |
+| [ViewToolWidgetComposer]($appui-react)          | Provides an empty Navigation Widget that is to be populate via UiItemsProviders.                 |
+| [StandardContentLayouts]($appui-abstract)       | Provides standard view layouts that can be used when defining a ContentGroup.                    |
+| [ContentGroupProvider]($appui-react)            | Class that generates a ContentGroup at runtime when the frontstageDef is being constructed.      |
+
+#### New Timeline Date Marker
+
+The [TimelineComponent]($imodel-components-react) react component now accepts a property to mark a specific date in a date-based timeline. If the timeline has a defined start date and end date, a date between them can be marked in the timeline by specifying an instance of [TimelineDateMarkerProps]($imodel-components-react) in the new markDate member of [TimelineComponentProps]($imodel-components-react). If the date member is left undefined, today's date will be used. The default marker is a short vertical bar, but a ReactNode can be specified in the dateMarker prop to customize the marker's appearance.
+
+#### New Floating Widget Capabilities
+
+Widgets provided via UiItemsProviders may now set `defaultState: WidgetState.Floating` and `isFloatingStateSupported: true` to open
+the widget in a floating container. The property `defaultFloatingPosition` may also be specified to define the position of the floating container. If a position is not defined the container will be centered in the `AppUi` area.
+
+The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to retrieve the Ids for all floating widget containers for the active frontstage as specified by the `frontstageDef`. These ids can be used to query the size of the floating container via `frontstageDef.getFloatingWidgetContainerBounds`. The method `frontstageDef.setFloatingWidgetContainerBounds` can then be used to set the size and position of a floating widget container.
+
+### New API to Enable and Disable View Overlays
+
+UiFramework now offers a `setViewOverlayDisplay(display:boolean)` method to enable or disable viewports displaying overlays. By default, the display is enabled. The current setting is available in `UiFramework.viewOverlayDisplay`.
 
 ## Breaking Changes
 
@@ -1036,15 +1076,14 @@ The format of [KeySetJSON]($presentation-common) has been changed to reduce its 
 
 It is no longer necessary to supply a [Viewport]($frontend) when creating a [GraphicBuilder]($frontend). Instead, you can supply to [RenderSystem.createGraphic]($frontend) a [CustomGraphicBuilderOptions]($frontend) containing a function that can compute the level of detail appropriate for the produced [RenderGraphic]($frontend).
 
-### AppUI
+### AppUi Changes
 
-Several changes were made in the @itwin ui packages.
-Some components in @itwin/core-react were deprecated in favor of components in @itwinui-react.
+Some components in @itwin/core-react were deprecated in favor of components in @itwin/itwinui-react.
 A few constructs were deprecated in @itwin/core-react package with alternatives elsewhere.
-The [Table]($components-react) component has been deprecated in favor of the Table in @itwinui-react.
+The [Table]($components-react) component has been deprecated in favor of the Table in @itwin/itwinui-react.
 A new @itwin/imodel-components-react package has been added and contains items related to Color, Cube, LineWeight, Navigation Aids, Quantity Inputs, Timeline and Viewport.
 
-The @itwin ui and @itwin/presentation-components packages are now dependent on React version 17. **Applications using the ui packages must update to React 17.** Details about React version 17 can be found in the [React Blog](https://reactjs.org/blog/2020/10/20/react-v17.html).
+The iTwin.js ui and @itwin/presentation-components packages are now dependent on React version 17. **Applications using the ui packages must update to React 17.** Details about React version 17 can be found in the [React Blog](https://reactjs.org/blog/2020/10/20/react-v17.html).
 
 React 16 is not an officially supported version of iTwin.js app or Extension development using the iTwin.js AppUi.
 
@@ -1069,34 +1108,6 @@ The component [FrameworkVersion]($appui-react) has been updated so it no longer 
   <ThemeManager>
 </Provider>
 ```
-
-#### New options for defining Frontstages
-
-| Class/Component                                 | Description                                                                                      |
-| ----------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| [StandardFrontstageProvider]($appui-react)      | Frontstage provider that provides an 'empty' stage that is to be populated via UiItemsProviders. |
-| [StandardContentToolsProvider]($appui-react)    | UiItemsProvider that will add common tool entries to Tool Widget.                                |
-| [StandardNavigationToolsProvider]($appui-react) | UiItemsProvider that will add common view tool entries to Navigation Widget.                     |
-| [StandardStatusbarItemsProvider]($appui-react)  | UiItemsProvider that will add common statusbar items.                                            |
-| [ContentToolWidgetComposer]($appui-react)       | Provides an empty Tool Widget that is to be populate via UiItemsProviders.                       |
-| [ViewToolWidgetComposer]($appui-react)          | Provides an empty Navigation Widget that is to be populate via UiItemsProviders.                 |
-| [StandardContentLayouts]($appui-abstract)       | Provides standard view layouts that can be used when defining a ContentGroup.                    |
-| [ContentGroupProvider]($appui-react)            | Class that generates a ContentGroup at runtime when the frontstageDef is being constructed.      |
-
-#### New timeline date marker
-
-The [TimelineComponent]($imodel-components-react) react component now accepts a property to mark a specific date in a date-based timeline. If the timeline has a defined start date and end date, a date between them can be marked in the timeline by specifying an instance of [TimelineDateMarkerProps]($imodel-components-react) in the new markDate member of [TimelineComponentProps]($imodel-components-react). If the date member is left undefined, today's date will be used. The default marker is a short vertical bar, but a ReactNode can be specified in the dateMarker prop to customize the marker's appearance.
-
-#### New floating widget capabilities
-
-Widgets provided via UiItemsProviders may now set `defaultState: WidgetState.Floating` and `isFloatingStateSupported: true` to open
-the widget in a floating container. The property `defaultFloatingPosition` may also be specified to define the position of the floating container. If a position is not defined the container will be centered in the `AppUi` area.
-
-The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to retrieve the Ids for all floating widget containers for the active frontstage as specified by the `frontstageDef`. These ids can be used to query the size of the floating container via `frontstageDef.getFloatingWidgetContainerBounds`. The method `frontstageDef.setFloatingWidgetContainerBounds` can then be used to set the size and position of a floating widget container.
-
-#### New API to enable and disable view overlays
-
-UiFramework now offers a `setViewOverlayDisplay(display:boolean)` method to enable or disable viewports displaying overlays. By default, the display is enabled. The current setting is available in `UiFramework.viewOverlayDisplay`.
 
 #### Removed user change monitoring from @itwin/appui-react
 
