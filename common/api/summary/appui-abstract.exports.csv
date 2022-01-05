@@ -26,6 +26,7 @@ public;BaseDialogItem
 public;BasePropertyEditorParams
 public;BasePropertyValue
 beta;class BaseQuantityDescription 
+public;BaseUiItemsProvider 
 public;ButtonGroupEditorParams 
 internal;enum CharCode
 public;ColorEditorParams 

@@ -1473,7 +1473,6 @@ importers:
       '@types/node': 14.14.31
       '@types/react': ^17.0.37
       '@types/react-beautiful-dnd': ^12.1.2
-      '@types/react-select': 3.0.26
       '@types/sinon': ^9.0.0
       '@types/sinon-chai': ^3.2.0
       '@wojtekmaj/enzyme-adapter-react-17': ^0.6.3
@@ -1493,7 +1492,6 @@ importers:
       react: ^17.0.0
       react-beautiful-dnd: ^13.0.0
       react-resize-detector: ^6.7.6
-      react-select: 3.2.0
       rimraf: ^3.0.2
       sinon: ^9.0.2
       sinon-chai: ^3.2.0
@@ -1503,7 +1501,6 @@ importers:
       classnames: 2.3.1
       react-beautiful-dnd: 13.1.0_react@17.0.2
       react-resize-detector: 6.7.7_react@17.0.2
-      react-select: 3.2.0_react@17.0.2
     devDependencies:
       '@bentley/itwin-client': link:../../clients/itwin
       '@itwin/appui-abstract': link:../../ui/appui-abstract
@@ -1530,7 +1527,6 @@ importers:
       '@types/node': 14.14.31
       '@types/react': 17.0.38
       '@types/react-beautiful-dnd': 12.1.5
-      '@types/react-select': 3.0.26
       '@types/sinon': 9.0.11
       '@types/sinon-chai': 3.2.8
       '@wojtekmaj/enzyme-adapter-react-17': 0.6.6_enzyme@3.11.0+react@17.0.2
@@ -3069,6 +3065,7 @@ importers:
       '@itwin/core-quantity': workspace:*
       '@itwin/core-react': workspace:*
       '@itwin/eslint-plugin': workspace:*
+      '@itwin/itwinui-css': ^0.37.0
       '@itwin/itwinui-react': ^1.27.0
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-components': workspace:*
@@ -3097,6 +3094,7 @@ importers:
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-quantity': link:../../core/quantity
       '@itwin/core-react': link:../../ui/core-react
+      '@itwin/itwinui-css': 0.37.2
       '@itwin/itwinui-react': 1.28.0_react-dom@17.0.2+react@17.0.2
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-components': link:../../presentation/components
@@ -6890,22 +6888,6 @@ packages:
     requiresBuild: true
     dev: false
 
-  /@bentley/itwin-client/3.0.0-dev.135_1f1133e0683841193b047e5518caa238:
-    resolution: {integrity: sha512-facpvfpiOsyvNxrOUP47Qn1T/9uUp2pxF9EweNg18HpcgdRZvfQtqGAdYoiR4qdvCVZJEqpoCz7p6t1DFFjAuA==}
-    peerDependencies:
-      '@itwin/core-bentley': ^3.0.0-dev.135
-    dependencies:
-      '@itwin/core-bentley': 3.0.0-dev.148
-      deep-assign: 2.0.0
-      js-base64: 3.7.2
-      lodash: 4.17.21
-      qs: 6.10.2
-      superagent: 5.3.1
-      xpath: 0.0.27
-    transitivePeerDependencies:
-      - supports-color
-    dev: false
-
   /@bentley/itwin-client/3.0.0-dev.138:
     resolution: {integrity: sha512-8V7H6+Jq/Ew2pzAqEe+v939xXMKzmejHo8jCEmIW+SlC7F2DSV4ma92bd5OJAM27UfnInjCsxTcEETviYS3wsw==}
     peerDependencies:
@@ -6919,6 +6901,22 @@ packages:
       xpath: 0.0.27
     transitivePeerDependencies:
       - supports-color
+
+  /@bentley/itwin-client/3.0.0-dev.148_1f1133e0683841193b047e5518caa238:
+    resolution: {integrity: sha512-Y8eF6h88rZHB0uTaWeAqMvSGY/4mH/32xB71H4JILtm3aBCjwaJVQ+1NRCR3RZgCr2yoaZz27kqJKnqwZlbeaw==}
+    peerDependencies:
+      '@itwin/core-bentley': ^3.0.0-dev.148
+    dependencies:
+      '@itwin/core-bentley': 3.0.0-dev.148
+      deep-assign: 2.0.0
+      js-base64: 3.7.2
+      lodash: 4.17.21
+      qs: 6.10.2
+      superagent: 5.3.1
+      xpath: 0.0.27
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
 
   /@bentley/react-scripts/4.0.3_react@17.0.2+typescript@4.4.4:
     resolution: {integrity: sha512-gET4e/0PWe/FVvSJR3QKi+m1ct9CND6ZwNdZcAoTvLlkrb/6i/SexR3ZjOIMFXgKKBsCVjf2c83BZBzjAsRCWg==}
@@ -7350,8 +7348,8 @@ packages:
       oidc-client: 1.11.5
     dev: false
 
-  /@itwin/certa/3.0.0-dev.173:
-    resolution: {integrity: sha512-F9ABr8DqFl1bjC5FJnYJp3K46iBk2PP7fHFVT6wBkQtBMO58UUOBB0YAVCbjnjcaKVM8eLqGE2qTvurxbp1/zQ==}
+  /@itwin/certa/3.0.0-dev.175:
+    resolution: {integrity: sha512-gxVsTGgYpOFndBKew2XB6kizkceXgf/H8KfN/2TqM+G1B6vV8qXsZPWsSn81j7PnJsJXtfsfl9c5mw9FRGVOVQ==}
     hasBin: true
     peerDependencies:
       electron: ^14.0.0
@@ -7373,8 +7371,8 @@ packages:
       - supports-color
       - utf-8-validate
 
-  /@itwin/certa/3.0.0-dev.173_electron@14.2.3:
-    resolution: {integrity: sha512-F9ABr8DqFl1bjC5FJnYJp3K46iBk2PP7fHFVT6wBkQtBMO58UUOBB0YAVCbjnjcaKVM8eLqGE2qTvurxbp1/zQ==}
+  /@itwin/certa/3.0.0-dev.175_electron@14.2.3:
+    resolution: {integrity: sha512-gxVsTGgYpOFndBKew2XB6kizkceXgf/H8KfN/2TqM+G1B6vV8qXsZPWsSn81j7PnJsJXtfsfl9c5mw9FRGVOVQ==}
     hasBin: true
     peerDependencies:
       electron: ^14.0.0
@@ -7402,8 +7400,8 @@ packages:
     resolution: {integrity: sha512-OVNmxpb7/AAd4pm/cBdE1I+p1lBoiXI3EBaRN1hAPZzqLDk7AbWgTegfQBPXAnyP5FxX9MyeU+lplvsl2aWjXg==}
     dev: false
 
-  /@itwin/core-bentley/3.0.0-dev.173:
-    resolution: {integrity: sha512-vvwe7Ddls2OLcaAITCwNlWyoFpGQM+8gLnjifLjyvaO9lPYDODk5NpaHJyiFaXzuN/UsirPtZqExCH4OvkFnNg==}
+  /@itwin/core-bentley/3.0.0-dev.175:
+    resolution: {integrity: sha512-LlRFPuhVZQkAG4zqKZ05vOYbwB40p/RAm213WdDQEEoq7IIUyF/XUu1dO62KiIJEFfSZMInJOMgsPQO4mEFGjA==}
 
   /@itwin/core-geometry/3.0.0-dev.148:
     resolution: {integrity: sha512-y1ECs8FTtwozAYTHLYwNTNxXA/NQNYxJt0cOr82KpdX0s0P+Zu/9EBbOp4jLwnh0ap59X7w9IyrdGfi+i8lHYw==}
@@ -7415,7 +7413,7 @@ packages:
   /@itwin/electron-authorization/0.6.0:
     resolution: {integrity: sha512-sY6cjtfz625KnDm1sU+e8n8Ir1rTNWjVXKtgOIss7UnBKmqvSjwVn35oorVrZI5xhoKTglWbpJhqytx7uD6ZfA==}
     dependencies:
-      '@bentley/itwin-client': 3.0.0-dev.135_1f1133e0683841193b047e5518caa238
+      '@bentley/itwin-client': 3.0.0-dev.148_1f1133e0683841193b047e5518caa238
       '@itwin/core-bentley': 3.0.0-dev.148
       '@openid/appauth': 1.3.1
       keytar: 7.7.0
@@ -7549,8 +7547,8 @@ packages:
   /@itwin/oidc-signin-tool/3.0.0:
     resolution: {integrity: sha512-zp6S6tQDyI0MSEoA7THlyXJlrtlqhk7X7BMpH8VMkvabEgJOY9AdLjoFbvJPZhcnhjq7CMdxXJWVC3D9QOaYgA==}
     dependencies:
-      '@itwin/certa': 3.0.0-dev.173
-      '@itwin/core-bentley': 3.0.0-dev.173
+      '@itwin/certa': 3.0.0-dev.175
+      '@itwin/core-bentley': 3.0.0-dev.175
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
       openid-client: 4.9.1
@@ -7564,8 +7562,8 @@ packages:
   /@itwin/oidc-signin-tool/3.0.0_electron@14.2.3:
     resolution: {integrity: sha512-zp6S6tQDyI0MSEoA7THlyXJlrtlqhk7X7BMpH8VMkvabEgJOY9AdLjoFbvJPZhcnhjq7CMdxXJWVC3D9QOaYgA==}
     dependencies:
-      '@itwin/certa': 3.0.0-dev.173_electron@14.2.3
-      '@itwin/core-bentley': 3.0.0-dev.173
+      '@itwin/certa': 3.0.0-dev.175_electron@14.2.3
+      '@itwin/core-bentley': 3.0.0-dev.175
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
       openid-client: 4.9.1
@@ -19240,23 +19238,6 @@ packages:
       react-transition-group: 4.4.2_react-dom@17.0.2+react@17.0.2
     dev: false
 
-  /react-select/3.2.0_react@17.0.2:
-    resolution: {integrity: sha512-B/q3TnCZXEKItO0fFN/I0tWOX3WJvi/X2wtdffmwSQVRwg5BpValScTO1vdic9AxlUgmeSzib2hAZAwIUQUZGQ==}
-    peerDependencies:
-      react: ^16.8.0 || ^17.0.0
-      react-dom: ^16.8.0 || ^17.0.0
-    dependencies:
-      '@babel/runtime': 7.16.7
-      '@emotion/cache': 10.0.29
-      '@emotion/core': 10.3.1_react@17.0.2
-      '@emotion/css': 10.0.27
-      memoize-one: 5.2.1
-      prop-types: 15.8.0
-      react: 17.0.2
-      react-input-autosize: 3.0.0_react@17.0.2
-      react-transition-group: 4.4.2_react@17.0.2
-    dev: false
-
   /react-shallow-renderer/16.14.1_react@17.0.2:
     resolution: {integrity: sha512-rkIMcQi01/+kxiTE9D3fdS959U1g7gs+/rborw++42m1O9FAQiNI/UNRZExVUoAOprn4umcXf+pFRou8i4zuBg==}
     peerDependencies:
@@ -19315,6 +19296,7 @@ packages:
       loose-envify: 1.4.0
       prop-types: 15.8.0
       react: 17.0.2
+    dev: true
 
   /react-window/1.8.6_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-8VwEEYyjz6DCnGBsd+MgkD0KJ2/OXFULyDtorIiTz+QzwoP94tBoA7CnbtyXMm+cCeAUER5KJcPtWl9cpKbOBg==}
