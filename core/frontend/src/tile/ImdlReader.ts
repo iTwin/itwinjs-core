@@ -439,7 +439,7 @@ export class ImdlReader extends GltfReader {
       const texBytes = this._binaryData.subarray(byteOffset, byteOffset + byteLength);
       const format = namedTex.format;
       const source = new ImageSource(texBytes, format);
-      return this._system.createTextureFromSource({ source, ownership, type: textureType });
+      return this._system.createTextureFromSource({ source, ownership, type: textureType, transparency: namedTex.transparency });
     }
 
     // bufferViewJson was undefined, so attempt to request the texture directly from the backend
