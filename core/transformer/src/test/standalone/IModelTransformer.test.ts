@@ -1512,7 +1512,7 @@ describe("IModelTransformer", () => {
     const sourceDb  = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "deferred-element-with-aspects"} });
 
     const testSchema1Path = IModelTestUtils.prepareOutputFile("IModelTransformer", "TestSchema1.ecschema.xml");
-    // to test element unique aspect code paths (of which the bis kinds are excluded), we add a non-bis ElementUniqueAspect entity class
+    // the only two ElementUniqueAspect's in bis are ignored by the transformer, so we add our own to test their export
     IModelJsFs.writeFileSync(testSchema1Path, `<?xml version="1.0" encoding="UTF-8"?>
       <ECSchema schemaName="TestSchema1" alias="ts1" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
           <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
