@@ -37,18 +37,20 @@ export interface TextureLoadProps {
 }
 
 /** Describes the type of transparency in the pixels of a [TextureImage]($frontend).
- * Each pixel can be classified as either 100% opaque, 100% transparent, or semi-transparent ("translucent").
+ * Each pixel can be classified as either opaque or translucent.
  * The transparency of the image as a whole is based on the combination of pixel transparencies.
  * If this information is known, it should be supplied when creating a texture for more efficient rendering.
  * @see [TextureImage.transparency]($frontend).
  * @public
  */
 export enum TextureTransparency {
-  /** All pixels are either 100% opaque or 100% transparent. */
+  /** The image contains only opaque pixels. It should not blend with other objects in the scene. */
   Opaque,
-  /** All pixels are fully or partially transparent - no opaque pixels are present. */
+  /** The image contains only translucent pixels. It should blend with other objects in the scene. */
   Translucent,
-  /** Both opaque and semi-transparent pixels are present. Rendering this type of transparency is somewhat more expensive. */
+  /** The image contains both opaque and translucent pixels. The translucent pixels should blend with other objects in the scene, while
+   * the opaque pixels should not. Rendering this type of transparency is somewhat more expensive.
+   */
   Mixed,
 }
 
