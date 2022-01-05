@@ -33,7 +33,7 @@ Volunteers for help on any or all of these projects are welcome. In particular, 
 
 - [ ] Enhance publishing workflow to Bentley's Extension Service.
 - [ ] Create examples and templates for building and publishing Extensions.
-- [ ] Support for better testing in the Extension's Hosting App, i.e. iTwin Viewer, iTwin Design Review, PlantSight, etc.
+- [ ] Support for better testing in the Extension's hosting app - e.g., iTwin Viewer.
 
 ### GIS Display
 
@@ -57,7 +57,7 @@ Volunteers for help on any or all of these projects are welcome. In particular, 
 
 ### iTwin Viewer
 
-- [ ] Create fully functional iTwin web viewing application platform, deployable on any cloud infrastructure. The Bentley iTwin Design Review product will be built from this application.
+- [ ] Create fully functional iTwin web viewing application platform, deployable on any cloud infrastructure.
 - [ ] Provide necessary infrastructure to host Extensions within any iTwin Viewer-based solution.
 
 ### Point Clouds
