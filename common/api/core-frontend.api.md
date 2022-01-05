@@ -275,6 +275,7 @@ import { TerrainProviderName } from '@itwin/core-common';
 import { TextureData } from '@itwin/core-common';
 import { TextureLoadProps } from '@itwin/core-common';
 import { TextureMapping } from '@itwin/core-common';
+import { TextureTransparency } from '@itwin/core-common';
 import { ThematicDisplay } from '@itwin/core-common';
 import { ThematicDisplaySensor } from '@itwin/core-common';
 import { ThematicDisplaySensorSettings } from '@itwin/core-common';
@@ -10026,13 +10027,6 @@ export type TextureImageSource = HTMLImageElement | ImageBuffer;
 
 // @public
 export type TextureOwnership = TextureCacheOwnership | "external";
-
-// @public
-export enum TextureTransparency {
-    Mixed = 2,
-    Opaque = 0,
-    Translucent = 1
-}
 
 // @internal (undocumented)
 export class ThreeAxes {

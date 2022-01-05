@@ -695,6 +695,7 @@ public;TextureMapping
 public;TextureMapProps
 public;TextureMapUnits
 public;TextureProps 
+public;TextureTransparency
 public;ThematicDisplay
 public;ThematicDisplayMode
 public;ThematicDisplayProps
