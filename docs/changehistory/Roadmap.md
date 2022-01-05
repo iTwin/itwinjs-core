@@ -139,6 +139,6 @@ Contributions and suggestions are welcome. Feel free to [discuss](https://github
 
 ### Developer experience
 
-- [ ] Migrate full development of iTwin.js and associated repositories to GitHub.
+- [X] Migrate iTwin.js and associated repositories to GitHub.
 
 > **Feedback welcome!** - Please let us know what you think should be on our priority list. File an issue on [GitHub](https://github.com/iTwin/itwinjs-core/issues).
