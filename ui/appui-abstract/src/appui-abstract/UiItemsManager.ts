@@ -48,14 +48,6 @@ export interface UiItemsProvider {
     zoneLocation?: AbstractZoneLocation, stageAppData?: any) => ReadonlyArray<AbstractWidgetProps>;
   /** Function called when the provider is unregistered via `ItemsManager.unregister` to allow provider to do cleanup. */
   onUnregister?: () => void;
-  /** Called if the application changed the Toolbar button item */
-  onToolbarButtonItemArbiterChange?: (item: CommonToolbarItem, action: UiItemsApplicationAction) => void;
-  /** Called if the application changed the StatusBar item */
-  onStatusBarItemArbiterChange?: (item: CommonStatusBarItem, action: UiItemsApplicationAction) => void;
-  /** Called if the application changed the Backstage item */
-  onBackstageItemArbiterChange?: (item: BackstageItem, action: UiItemsApplicationAction) => void;
-  /** Called if the application changed the Widget */
-  onWidgetArbiterChange?: (widget: AbstractWidgetProps, action: UiItemsApplicationAction) => void;
 }
 
 /**
