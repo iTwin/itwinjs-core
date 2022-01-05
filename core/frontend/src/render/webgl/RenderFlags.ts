@@ -8,6 +8,8 @@
 /* eslint-disable no-restricted-syntax */
 
 /** Ordered list of render passes which produce a rendered frame.
+ * [[RenderCommands]] organizes its [[DrawCommands]] into a list indexed by RenderPass.
+ * @see [[Pass]] for the type from which the RenderPass for a [[Primitive]] is derived.
  * @internal
  */
 export const enum RenderPass {
@@ -34,6 +36,27 @@ export const enum RenderPass {
   VolumeClassifiedRealityData,
   COUNT,
 }
+
+/** Describes the [[RenderPass]]es in which a [[Primitive]] wants to be rendered.
+ * Generally, each Pass corresponds to a single RenderPass. However a couple of passes specify that the primitive should be rendered
+ * twice, in two different render passes.
+ * [[RenderCommands.addPrimitive]] may ignore the requested Pass. For example, edges typically draw in RenderPass.OpaqueLinear, but
+ * may also draw in RenderPass.HiddenEdge; and translucent geometry may sometimes be rendered in an opaque render pass instead.
+ * @see [[CachedGeometry.getPass]].
+ * @internal
+ */
+export type Pass =
+  "skybox" | // Skybox
+  "opaque" | // OpaqueGeneral
+  "opaque-linear" | // OpaqueLinear
+  "opaque-planar" | // OpaquePlanar
+  "none" | // None
+  "view-overlay" | // ViewOverlay
+  // The following apply to textured meshes when the texture image contains a mix of opaque and transparent pixels.
+  // The mesh requests to be rendered in both opaque and transparent passes, with each pass discarding pixels that don't match that pass.
+  // (i.e., discard transparent pixels during opaque pass and vice-versa).
+  "opaque-translucent" | // OpaqueGeneral and Translucent
+  "opaque-planar-translucent"; // OpaquePlanar and Translucent
 
 /** Describes the type of geometry rendered by a ShaderProgram.
  * @internal
