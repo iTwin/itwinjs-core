@@ -133,14 +133,8 @@ Contributions and suggestions are welcome. Feel free to [discuss](https://github
 
 ### Interfaces to external systems
 
-- [ ] Support for exporting to common file formats (e.g. glTF, obj, dxf, pdf, etc.)
-  - [X] glTF
-  - [ ] obj
-  - [ ] dxf
-  - [ ] pdf
-- [ ] Provide reference implementation of reality data in Unity.
-- [ ] Provide more open source examples of integration with third-party visualization systems (Unity, Blender, etc.)
-- [ ] Expand filtering and quality control options for graphics extraction.
+- [X] Provide base functionality for building exporters to other file formats (e.g. glTF, OBJ, USD)
+- [X] Expand filtering and quality control options for graphics extraction.
 
 ### Developer experience
 
