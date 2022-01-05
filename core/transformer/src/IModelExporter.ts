@@ -558,6 +558,7 @@ export class IModelExporter {
     }
     const element: Element = this.sourceDb.elements.getElement({ id: elementId, wantGeometry: this.wantGeometry });
     Logger.logTrace(loggerCategory, `exportElement(${element.id}, "${element.getDisplayLabel()}")${this.getChangeOpSuffix(isUpdate)}`);
+    // the order and `await`ing of calls beyond here is depended upon by the IModelTransformer for a current bug workaround
     if (this.shouldExportElement(element)) {
       this.handler["onExportElement"](element, isUpdate);
       await this.trackProgress();
