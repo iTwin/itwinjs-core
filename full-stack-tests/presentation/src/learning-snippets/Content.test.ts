@@ -11,9 +11,9 @@ import { getFieldByLabel, tryGetFieldByLabel } from "../Utils";
 
 describe("Learning Snippets", () => {
 
-  describe("Rules", () => {
+  describe("Rules", async () => {
 
-    describe("ContentRule", () => {
+    describe("ContentRule", async () => {
 
       let imodel: IModelConnection;
 
@@ -249,7 +249,7 @@ describe("Learning Snippets", () => {
 
     });
 
-    describe("ContentModifier", () => {
+    describe("ContentModifier", async () => {
 
       let imodel: IModelConnection;
 
@@ -593,9 +593,9 @@ describe("Learning Snippets", () => {
 
   });
 
-  describe("Specifications", () => {
+  describe("Specifications", async () => {
 
-    describe("ContentInstancesOfSpecificClasses", () => {
+    describe("ContentInstancesOfSpecificClasses", async () => {
 
       let imodel: IModelConnection;
 

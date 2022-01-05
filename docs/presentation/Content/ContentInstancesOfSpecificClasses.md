@@ -6,24 +6,24 @@ Specification which allows selection of content instances based on their ECClass
 
 ## Attributes
 
-| Name                              | Required? | Type                                                                                                                         | Default |
-| --------------------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------- | ------- |
-| *Filtering*                       |
-| [`classes`](#attribute-classes)                         | Yes       | [`MultiSchemaClassesSpecification \| MultiSchemaClassesSpecification[]`](../Common-Rules/MultiSchemaClassesSpecification.md) | `[]`    |
-| [`handleInstancesPolymorphically`](#attribute-handleinstancespolymorphically)  | No        | `boolean`                                                                                                                    | `false` |
-| [`handlePropertiesPolymorphically`](#attribute-handlepropertiespolymorphically) | No        | `boolean`                                                                                                                    | `false` |
-| [`instanceFilter`](#attribute-instancefilter)                  | No        | [ECExpression](./ECExpressions.md#instance-filter)                                                                           | `""`    |
-| [`onlyIfNotHandled`](#attribute-onlyifnothandled)                | No        | boolean                                                                                                                      | `false` |
-| *Ordering*                        |
-| [`priority`](#attribute-priority)                        | No        | `number`                                                                                                                     | `1000`  |
-| *Content Modifiers*               |
-| [`relatedProperties`](#attribute-relatedproperties)               | No        | `RelatedPropertiesSpecification[]`                                                                                           | `[]`    |
-| [`calculatedProperties`](#attribute-calculatedproperties)            | No        | `CalculatedPropertiesSpecification[]`                                                                                        | `[]`    |
-| [`propertyCategories`](#attribute-propertycategories)              | No        | `PropertyCategorySpecification[]`                                                                                            | `[]`    |
-| [`propertyOverrides`](#attribute-propertyoverrides)               | No        | `PropertySpecification[]`                                                                                                    | `[]`    |
-| [`showImages`](#attribute-showimages)                      | No        | `boolean`                                                                                                                    | `false` |
-| *Misc.*                           |
-| [`relatedInstances`](#attribute-relatedinstances)                | No        | [`RelatedInstanceSpecification[]`](../Common-Rules/RelatedInstanceSpecification.md)                                          | `[]`    |
+| Name                                                                            | Required? | Type                                                                                                                          | Default |
+| ------------------------------------------------------------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------- | ------- |
+| *Filtering*                                                                     |
+| [`classes`](#attribute-classes)                                                 | Yes       | [`MultiSchemaClassesSpecification \| MultiSchemaClassesSpecification[]`](../Common-Rules/MultiSchemaClassesSpecification.md)  | `[]`    |
+| [`handleInstancesPolymorphically`](#attribute-handleinstancespolymorphically)   | No        | `boolean`                                                                                                                     | `false` |
+| [`handlePropertiesPolymorphically`](#attribute-handlepropertiespolymorphically) | No        | `boolean`                                                                                                                     | `false` |
+| [`instanceFilter`](#attribute-instancefilter)                                   | No        | [ECExpression](./ECExpressions.md#instance-filter)                                                                            | `""`    |
+| [`onlyIfNotHandled`](#attribute-onlyifnothandled)                               | No        | boolean                                                                                                                       | `false` |
+| *Ordering*                                                                      |
+| [`priority`](#attribute-priority)                                               | No        | `number`                                                                                                                      | `1000`  |
+| *Content Modifiers*                                                             |
+| [`relatedProperties`](#attribute-relatedproperties)                             | No        | `RelatedPropertiesSpecification[]`                                                                                            | `[]`    |
+| [`calculatedProperties`](#attribute-calculatedproperties)                       | No        | `CalculatedPropertiesSpecification[]`                                                                                         | `[]`    |
+| [`propertyCategories`](#attribute-propertycategories)                           | No        | `PropertyCategorySpecification[]`                                                                                             | `[]`    |
+| [`propertyOverrides`](#attribute-propertyoverrides)                             | No        | `PropertySpecification[]`                                                                                                     | `[]`    |
+| [`showImages`](#attribute-showimages)                                           | No        | `boolean`                                                                                                                     | `false` |
+| *Misc.*                                                                         |
+| [`relatedInstances`](#attribute-relatedinstances)                               | No        | [`RelatedInstanceSpecification[]`](../Common-Rules/RelatedInstanceSpecification.md)                                           | `[]`    |
 
 ### Attribute: `classes`
 
@@ -36,6 +36,8 @@ Defines a single or an array of [multi schema classes](../Common-Rules/MultiSche
 ![Example of using classes attribute](./media/contentInstancesOfSpecificClasses-with-classes-attribute.png)
 
 ### Attribute: `handlePropertiesPolymorphically`
+
+> **Default value:** `false`
 
 Defines the default value whether the properties of derived `classes` should be included in the content.
 
@@ -63,6 +65,8 @@ Allows defining additional conditions when filtering result target class instanc
 
 ### Attribute: `onlyIfNotHandled`
 
+> **Default value:** `false`
+
 Identifies whether we should ignore this specification if another specification was already handled (based on rule priorities and definition order). Should be used when defining a fallback specification.
 
 ```ts
@@ -75,6 +79,8 @@ Identifies whether we should ignore this specification if another specification 
   | false    | ![Example when filtering instances](./media/contentInstancesOfSpecificClasses-with-onlyIfNotHandled-attribute-2.png)     |
 
 ### Attribute: `priority`
+
+> **Default value:** `1000`
 
 Defines the order in which specifications are handled - higher priority means the specifications is handled first. If priorities are equal, the specifications are handled in the order they're defined. Default `priority` is 1000.
 
@@ -129,6 +135,8 @@ Specifications for various property overrides. *See [this page](./PropertySpecif
 
 ### Attribute: `showImages`
 
+> **Default value:** `false`
+
 Should image IDs be calculated for the returned instances. When `true`, [ImageIdOverride](../customization/ImageIdOverride.md) rules get applied when creating.
 
 ### Attribute: `relatedInstances`
@@ -148,5 +156,7 @@ Joining [related instances](../Common-Rules/RelatedInstanceSpecification.md) all
 ## Deprecated Attributes
 
 ### Attribute: `handleInstancesPolymorphically`
+
+> **Default value:** `false`
 
 Defines default `classes` polymorphism value. If set to true, all target classes by default will include also include derived class instances. This value is overriden by the `classes`.[`arePolymorphic`](../Common-Rules/MultiSchemaClassesSpecification.md#attribute-arepolymorphic) value.

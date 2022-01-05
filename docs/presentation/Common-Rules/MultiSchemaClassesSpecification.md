@@ -22,6 +22,8 @@ An array of names for all target ECCLasses.
 
 ### Attribute: `arePolymorphic`
 
+> **Default value:** `false`
+
 Defines whether the derived ECClasses should be included in the result.
 
 ## Example
