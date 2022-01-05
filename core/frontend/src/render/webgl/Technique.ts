@@ -25,7 +25,7 @@ import {
   createVolClassBlendProgram, createVolClassColorUsingStencilProgram, createVolClassCopyZProgram, createVolClassCopyZUsingPointsProgram,
   createVolClassSetBlendProgram,
 } from "./glsl/CopyStencil";
-import { createEdgeBuilder } from "./glsl/Edge";
+import { createEdgeBuilder, EdgeBuilderType } from "./glsl/Edge";
 import { createEVSMProgram } from "./glsl/EVSMFromDepth";
 import { addFeatureId, addFeatureSymbology, addRenderOrder, addUniformFeatureSymbology, FeatureSymbologyOptions, mixFeatureColor } from "./glsl/FeatureSymbology";
 import { addFragColorWithPreMultipliedAlpha, addPickBufferOutputs } from "./glsl/Fragment";
@@ -62,6 +62,18 @@ export interface Technique extends WebGLDisposable {
   // Chiefly for tests - compiles all shader programs - more generally programs are compiled on demand.
   compileShaders(): boolean;
 }
+
+/* Placeholder technique used for techniques not supported by particular client.
+ * e.g., IndexedEdgeTechnique only supported on WebGL 2.
+ */
+const unsupportedTechnique: Technique = {
+  getShader: () => { throw new Error("Unsupported technique"); },
+  getShaderByIndex: () => { throw new Error("Unsupported technique"); },
+  getShaderCount: () => 0,
+  compileShaders: () => true,
+  isDisposed: true,
+  dispose: () => undefined,
+};
 
 /** A rendering technique implemented using a single shader program, typically for some specialized purpose.
  * @internal
@@ -526,11 +538,11 @@ class EdgeTechnique extends VariedTechnique {
   private static readonly _kAnimated = 2;
   private static readonly _kInstanced = 4;
   private static readonly _kFeature = 8;
-  private readonly _isSilhouette: boolean;
+  private readonly _type: EdgeBuilderType;
 
-  public constructor(gl: WebGLContext, isSilhouette: boolean = false) {
+  public constructor(gl: WebGLContext, type: EdgeBuilderType) {
     super(numFeatureVariants(EdgeTechnique._kFeature));
-    this._isSilhouette = isSilhouette;
+    this._type = type;
 
     const flags = scratchTechniqueFlags;
     for (let instanced = IsInstanced.No; instanced <= IsInstanced.Yes; instanced++) {
@@ -538,11 +550,11 @@ class EdgeTechnique extends VariedTechnique {
         for (const featureMode of featureModes) {
           flags.reset(featureMode, instanced, IsShadowable.No, IsThematic.No);
           flags.isAnimated = iAnimate;
-          const builder = createEdgeBuilder(isSilhouette, flags.isInstanced, flags.isAnimated);
+          const builder = createEdgeBuilder(type, flags.isInstanced, flags.isAnimated);
           addUnlitMonochrome(builder.frag);
 
           // The translucent shaders do not need the element IDs.
-          const builderTrans = createEdgeBuilder(isSilhouette, flags.isInstanced, flags.isAnimated);
+          const builderTrans = createEdgeBuilder(type, flags.isInstanced, flags.isAnimated);
           addUnlitMonochrome(builderTrans.frag);
           if (FeatureMode.Overrides === featureMode) {
             addFeatureSymbology(builderTrans, featureMode, FeatureSymbologyOptions.Linear);
@@ -564,7 +576,7 @@ class EdgeTechnique extends VariedTechnique {
     this.finishConstruction();
   }
 
-  protected get _debugDescription() { return this._isSilhouette ? "Silhouette" : "Edge"; }
+  protected get _debugDescription() { return this._type; }
 
   public computeShaderIndex(flags: TechniqueFlags): number {
     let index = flags.isTranslucent ? EdgeTechnique._kTranslucent : EdgeTechnique._kOpaque;
@@ -973,17 +985,24 @@ export class Techniques implements WebGLDisposable {
     this._list[TechniqueId.CombineTextures] = new SingularTechnique(createCombineTexturesProgram(gl));
     this._list[TechniqueId.Combine3Textures] = new SingularTechnique(createCombine3TexturesProgram(gl));
     this._list[TechniqueId.Surface] = new SurfaceTechnique(gl);
-    this._list[TechniqueId.Edge] = new EdgeTechnique(gl, false);
-    this._list[TechniqueId.SilhouetteEdge] = new EdgeTechnique(gl, true);
+    this._list[TechniqueId.Edge] = new EdgeTechnique(gl, "SegmentEdge");
+    this._list[TechniqueId.SilhouetteEdge] = new EdgeTechnique(gl, "Silhouette");
     this._list[TechniqueId.Polyline] = new PolylineTechnique(gl);
     this._list[TechniqueId.PointString] = new PointStringTechnique(gl);
     this._list[TechniqueId.PointCloud] = new PointCloudTechnique(gl);
     this._list[TechniqueId.RealityMesh] = new RealityMeshTechnique(gl);
     this._list[TechniqueId.PlanarGrid] = new SingularTechnique(createPlanarGridProgram(gl));
+
+    if (System.instance.supportsIndexedEdges)
+      this._list[TechniqueId.IndexedEdge] = new EdgeTechnique(gl, "IndexedEdge");
+    else
+      this._list[TechniqueId.IndexedEdge] = unsupportedTechnique;
+
     if (System.instance.capabilities.supportsFragDepth)
       this._list[TechniqueId.VolClassCopyZ] = new SingularTechnique(createVolClassCopyZProgram(gl));
     else
       this._list[TechniqueId.VolClassCopyZ] = new SingularTechnique(createVolClassCopyZUsingPointsProgram(gl));
+
     this._list[TechniqueId.VolClassSetBlend] = new SingularTechnique(createVolClassSetBlendProgram(gl));
     this._list[TechniqueId.VolClassBlend] = new SingularTechnique(createVolClassBlendProgram(gl));
     this._list[TechniqueId.VolClassColorUsingStencil] = new SingularTechnique(createVolClassColorUsingStencilProgram(gl));

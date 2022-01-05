@@ -1743,9 +1743,9 @@ export class ContextRealityModel {
     protected _planarClipMask?: PlanarClipMaskSettings;
     get planarClipMaskSettings(): PlanarClipMaskSettings | undefined;
     set planarClipMaskSettings(settings: PlanarClipMaskSettings | undefined);
-    // (undocumented)
+    // @internal (undocumented)
     protected readonly _props: ContextRealityModelProps;
-    // @alpha
+    // @beta
     readonly rdSourceKey?: RealityDataSourceKey;
     readonly realityDataId?: string;
     toJSON(): ContextRealityModelProps;
@@ -1761,7 +1761,7 @@ export interface ContextRealityModelProps {
     // @alpha
     orbitGtBlob?: OrbitGtBlobProps;
     planarClipMask?: PlanarClipMaskProps;
-    // @alpha
+    // @beta
     rdSourceKey?: RealityDataSourceKey;
     realityDataId?: string;
     tilesetUrl: string;
@@ -2515,6 +2515,13 @@ export class EdgeArgs {
     get isValid(): boolean;
     // (undocumented)
     get numEdges(): number;
+}
+
+// @alpha
+export enum EdgeType {
+    Indexed = 2,
+    None = 0,
+    NonIndexed = 1
 }
 
 // @internal
@@ -3755,6 +3762,21 @@ export function getMaximumMajorTileFormatVersion(maxMajorVersion: number, format
 
 export { GetMetaDataFunction }
 
+// @internal (undocumented)
+export class GlbHeader extends TileHeader {
+    constructor(stream: ByteStream);
+    // (undocumented)
+    readonly additionalChunks: TypedGltfChunk[];
+    // (undocumented)
+    readonly binaryChunk?: GltfChunk;
+    // (undocumented)
+    readonly gltfLength: number;
+    // (undocumented)
+    get isValid(): boolean;
+    // (undocumented)
+    readonly jsonChunk: GltfChunk;
+}
+
 // @public
 export enum GlobeMode {
     Ellipsoid = 0,
@@ -3762,122 +3784,9 @@ export enum GlobeMode {
 }
 
 // @internal
-export class GltfBufferData {
-    constructor(buffer: GltfDataBuffer, count: number);
-    // (undocumented)
-    readonly buffer: GltfDataBuffer;
-    // (undocumented)
-    readonly count: number;
-    static create(bytes: Uint8Array, actualType: GltfDataType, expectedType: GltfDataType, count: number): GltfBufferData | undefined;
-    }
-
-// @internal
-export class GltfBufferView {
-    constructor(data: Uint8Array, count: number, type: GltfDataType, accessor: any, stride: number);
-    // (undocumented)
-    readonly accessor: any;
-    // (undocumented)
-    get byteLength(): number;
-    // (undocumented)
-    readonly count: number;
-    // (undocumented)
-    readonly data: Uint8Array;
-    // (undocumented)
-    readonly stride: number;
-    // (undocumented)
-    toBufferData(desiredType: GltfDataType): GltfBufferData | undefined;
-    // (undocumented)
-    readonly type: GltfDataType;
-}
-
-// @internal (undocumented)
-export enum GltfConstants {
-    // (undocumented)
-    ArrayBuffer = 34962,
-    // (undocumented)
-    ClampToEdge = 33071,
-    // (undocumented)
-    CullFace = 2884,
-    // (undocumented)
-    DepthTest = 2929,
-    // (undocumented)
-    ElementArrayBuffer = 34963,
-    // (undocumented)
-    FragmentShader = 35632,
-    // (undocumented)
-    Linear = 9729,
-    // (undocumented)
-    LinearMipmapLinear = 9987,
-    // (undocumented)
-    Nearest = 9728,
-    // (undocumented)
-    VertexShader = 35633
-}
-
-// @internal (undocumented)
-export type GltfDataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array;
-
-// @internal (undocumented)
-export enum GltfDataType {
-    // (undocumented)
-    Float = 5126,
-    // (undocumented)
-    FloatMat3 = 35675,
-    // (undocumented)
-    FloatMat4 = 35676,
-    // (undocumented)
-    FloatVec2 = 35664,
-    // (undocumented)
-    FloatVec3 = 35665,
-    // (undocumented)
-    FloatVec4 = 35666,
-    // (undocumented)
-    IntVec2 = 35667,
-    // (undocumented)
-    IntVec3 = 35668,
-    // (undocumented)
-    Rgb = 6407,
-    // (undocumented)
-    Rgba = 6408,
-    // (undocumented)
-    Sampler2d = 35678,
-    // (undocumented)
-    SignedByte = 5120,
-    // (undocumented)
-    SignedShort = 5122,
-    // (undocumented)
-    UInt32 = 5125,
-    // (undocumented)
-    UnsignedByte = 5121,
-    // (undocumented)
-    UnsignedShort = 5123
-}
-
-// @internal
-export class GltfHeader extends TileHeader {
-    constructor(stream: ByteStream);
-    // (undocumented)
-    readonly binaryPosition: number;
-    // (undocumented)
-    readonly gltfLength: number;
-    // (undocumented)
-    get isValid(): boolean;
-    // (undocumented)
-    readonly scenePosition: number;
-    // (undocumented)
-    readonly sceneStrLength: number;
-}
-
-// @internal (undocumented)
-export enum GltfMeshMode {
-    // (undocumented)
-    Lines = 1,
-    // (undocumented)
-    LineStrip = 3,
-    // (undocumented)
-    Points = 0,
-    // (undocumented)
-    Triangles = 4
+export interface GltfChunk {
+    length: number;
+    offset: number;
 }
 
 // @internal (undocumented)
@@ -3999,6 +3908,8 @@ export interface GraphicsRequestProps {
     readonly clipToProjectExtents?: boolean;
     // @alpha
     readonly contentFlags?: ContentFlags;
+    // @internal
+    readonly edgeType?: EdgeType;
     // @alpha
     readonly formatVersion?: number;
     readonly id: string;
@@ -4524,6 +4435,8 @@ export abstract class IModel implements IModelProps {
     static getDefaultSubCategoryId(categoryId: Id64String): Id64String;
     getEcefTransform(): Transform;
     getRpcProps(): IModelRpcProps;
+    // @internal
+    protected _getRpcProps(): IModelRpcProps;
     get globalOrigin(): Point3d;
     set globalOrigin(org: Point3d);
     get iModelId(): GuidString | undefined;
@@ -6237,7 +6150,7 @@ export interface PositionalVectorTransformProps {
 // @internal
 export interface PrimaryTileTreeId {
     animationId?: Id64String;
-    edgesRequired: boolean;
+    edges: EdgeType;
     enforceDisplayPriority?: boolean;
     sectionCut?: string;
     type: BatchType.Primary;
@@ -6749,13 +6662,18 @@ export interface RealityDataAccess {
     getRealityDataUrl: (iTwinId: string | undefined, realityDataId: string) => Promise<string>;
 }
 
-// @alpha
+// @beta
 export enum RealityDataFormat {
     OPC = "OPC",
     ThreeDTile = "ThreeDTile"
 }
 
-// @alpha
+// @beta
+export namespace RealityDataFormat {
+    export function fromUrl(tilesetUrl: string): RealityDataFormat;
+}
+
+// @beta
 export enum RealityDataProvider {
     CesiumIonAsset = "CesiumIonAsset",
     ContextShare = "ContextShare",
@@ -6763,7 +6681,7 @@ export enum RealityDataProvider {
     TilesetUrl = "TilesetUrl"
 }
 
-// @alpha
+// @beta
 export interface RealityDataSourceKey {
     format: string;
     id: string;
@@ -6771,7 +6689,13 @@ export interface RealityDataSourceKey {
     provider: string;
 }
 
-// @alpha
+// @beta
+export namespace RealityDataSourceKey {
+    export function convertToString(rdSourceKey: RealityDataSourceKey): string;
+    export function isEqual(key1: RealityDataSourceKey, key2: RealityDataSourceKey): boolean;
+}
+
+// @beta
 export interface RealityDataSourceProps {
     sourceKey: RealityDataSourceKey;
 }
@@ -8847,6 +8771,7 @@ export class ThematicGradientSettings {
     clone(changedProps?: ThematicGradientSettingsProps): ThematicGradientSettings;
     readonly colorMix: number;
     readonly colorScheme: ThematicGradientColorScheme;
+    static compare(lhs: ThematicGradientSettings, rhs: ThematicGradientSettings): number;
     // (undocumented)
     static get contentMax(): number;
     // (undocumented)
@@ -8985,6 +8910,8 @@ export interface TileOptions {
     readonly enableExternalTextures: boolean;
     // (undocumented)
     readonly enableImprovedElision: boolean;
+    // (undocumented)
+    readonly enableIndexedEdges: boolean;
     // (undocumented)
     readonly enableInstancing: boolean;
     // (undocumented)
@@ -9228,6 +9155,11 @@ export interface TypeDefinitionElementProps extends DefinitionElementProps {
     // (undocumented)
     recipe?: RelatedElementProps;
 }
+
+// @internal
+export type TypedGltfChunk = GltfChunk & {
+    type: number;
+};
 
 // @public
 export enum TypeOfChange {

@@ -6,7 +6,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { act, fireEvent, render } from "@testing-library/react";
 import {
-  addPanelWidget, addTab, createNineZoneState, FloatingWidgetIdContext, NineZoneDispatch, PanelSideContext, WidgetContext, WidgetOverflowContext, WidgetStateContext,
+  addPanelWidget, addTab, createNineZoneState, FloatingWidgetIdContext, NineZoneDispatch, PanelSideContext, ShowWidgetIconContext, WidgetContext, WidgetOverflowContext, WidgetStateContext,
   WidgetTab, WidgetTabProvider, WidgetTabsEntryContext,
 } from "../../appui-layout-react";
 import { TestNineZoneProvider } from "../Providers";
@@ -109,6 +109,50 @@ describe("WidgetTab", () => {
             <WidgetTabProvider tab={nineZone.tabs.t1} />
           </WidgetTabsEntryContext.Provider>
         </WidgetStateContext.Provider>
+      </TestNineZoneProvider>,
+    );
+    container.firstChild!.should.matchSnapshot();
+  });
+
+  it("should render tab with icon only", () => {
+    let nineZone = createNineZoneState();
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    nineZone = addTab(nineZone, "t1", { iconSpec: "icon-placeholder" });
+    const { container } = render(
+      <TestNineZoneProvider
+        state={nineZone}
+      >
+        <ShowWidgetIconContext.Provider value={true} >
+          <WidgetStateContext.Provider value={nineZone.widgets.w1}>
+            <WidgetTabsEntryContext.Provider value={{
+              lastNotOverflown: true,
+            }}>
+              <WidgetTabProvider tab={nineZone.tabs.t1} showOnlyTabIcon={true} />
+            </WidgetTabsEntryContext.Provider>
+          </WidgetStateContext.Provider>
+        </ShowWidgetIconContext.Provider>
+      </TestNineZoneProvider>,
+    );
+    container.firstChild!.should.matchSnapshot();
+  });
+
+  it("should render tab with text and icon", () => {
+    let nineZone = createNineZoneState();
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    nineZone = addTab(nineZone, "t1", { iconSpec: "icon-placeholder" });
+    const { container } = render(
+      <TestNineZoneProvider
+        state={nineZone}
+      >
+        <ShowWidgetIconContext.Provider value={true} >
+          <WidgetStateContext.Provider value={nineZone.widgets.w1}>
+            <WidgetTabsEntryContext.Provider value={{
+              lastNotOverflown: true,
+            }}>
+              <WidgetTabProvider tab={nineZone.tabs.t1} showOnlyTabIcon={false} />
+            </WidgetTabsEntryContext.Provider>
+          </WidgetStateContext.Provider>
+        </ShowWidgetIconContext.Provider>
       </TestNineZoneProvider>,
     );
     container.firstChild!.should.matchSnapshot();

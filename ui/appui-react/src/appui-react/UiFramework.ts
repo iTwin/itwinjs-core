@@ -14,8 +14,8 @@ import { Localization, RpcActivity } from "@itwin/core-common";
 import { IModelApp, IModelConnection, SnapMode, ViewState } from "@itwin/core-frontend";
 import { Presentation } from "@itwin/presentation-frontend";
 import { TelemetryEvent } from "@itwin/core-telemetry";
-import { getClassName, UiAdmin, UiError } from "@itwin/appui-abstract";
-import { LocalStateStorage, SettingsManager, UiEvent, UiStateStorage } from "@itwin/core-react";
+import { getClassName, UiAdmin, UiError, UiEvent } from "@itwin/appui-abstract";
+import { LocalStateStorage, SettingsManager, UiStateStorage } from "@itwin/core-react";
 import { UiIModelComponents } from "@itwin/imodel-components-react";
 import { BackstageManager } from "./backstage/BackstageManager";
 import { ChildWindowManager } from "./childwindow/ChildWindowManager";
@@ -31,7 +31,6 @@ import * as keyinPaletteTools from "./tools/KeyinPaletteTools";
 import * as openSettingTools from "./tools/OpenSettingsTool";
 import * as restoreLayoutTools from "./tools/RestoreLayoutTool";
 import * as toolSettingTools from "./tools/ToolSettingsTools";
-import { UserInfo } from "./UserInfo";
 import { UiShowHideManager, UiShowHideSettingsProvider } from "./utils/UiShowHideManager";
 import { WidgetManager } from "./widgets/WidgetManager";
 import { FrontstageManager } from "./frontstage/FrontstageManager";
@@ -427,16 +426,6 @@ export class UiFramework {
     return UiFramework._uiStateStorage;
   }
 
-  /** @public */
-  public static setUserInfo(userInfo: UserInfo | undefined, immediateSync = false) {
-    UiFramework.dispatchActionToStore(SessionStateActionId.SetUserInfo, userInfo, immediateSync);
-  }
-
-  /** @public */
-  public static getUserInfo(): UserInfo | undefined {
-    return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.userInfo : /* istanbul ignore next */  undefined;
-  }
-
   public static setDefaultIModelViewportControlId(iModelViewportControlId: string, immediateSync = false) {
     UiFramework.dispatchActionToStore(SessionStateActionId.SetDefaultIModelViewportControlId, iModelViewportControlId, immediateSync);
   }
@@ -519,6 +508,17 @@ export class UiFramework {
     UiFramework.dispatchActionToStore(ConfigurableUiActionId.SetFrameworkVersion, version === "1" ? "1" : "2", true);
   }
 
+  public static get showWidgetIcon(): boolean {
+    return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.showWidgetIcon : false;
+  }
+
+  public static setShowWidgetIcon(value: boolean) {
+    if (UiFramework.showWidgetIcon === value)
+      return;
+
+    UiFramework.dispatchActionToStore(ConfigurableUiActionId.SetShowWidgetIcon, value, true);
+  }
+
   public static get useDragInteraction(): boolean {
     return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.useDragInteraction : false;
   }
@@ -527,6 +527,20 @@ export class UiFramework {
     UiFramework.dispatchActionToStore(ConfigurableUiActionId.SetDragInteraction, useDragInteraction, true);
   }
 
+  /** Returns the variable controlling whether the overlay is displayed in a Viewport
+   * @public
+   */
+  public static get viewOverlayDisplay() {
+    return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.viewOverlayDisplay : true;
+  }
+  /** Set the variable that controls display of the view overlay. Applies to all viewports in the app
+ * @public
+ */
+  public static setViewOverlayDisplay(display: boolean) {
+    if (UiFramework.viewOverlayDisplay === display)
+      return;
+    UiFramework.dispatchActionToStore(ConfigurableUiActionId.SetViewOverlayDisplay, display);
+  }
   /** Send logging message to the telemetry system
    * @internal
    */

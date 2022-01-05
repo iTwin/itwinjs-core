@@ -144,7 +144,7 @@ ovrs.overrideSubCategory("0x789", appearance);
 // With these:
 ovrs.override({ elementId: "0x123", appearance });
 ovrs.override({ modelId: "0x456", appearance });
-ovrs.override({ subCategoryId:" 0x789", appearance });
+ovrs.override({ subCategoryId: " 0x789", appearance });
 
 // To use the previous default "replace" behavior, replace this:
 ovrs.overrideElement("0x123", appearance, true); // third argument is optional - defaults to true
@@ -760,6 +760,7 @@ The format of [KeySetJSON]($presentation-common) has been changed to reduce its 
       [RequestPriority.Max]: 2,
     },
   });
+
   ```
 
   **After:**
@@ -940,15 +941,15 @@ The component [FrameworkVersion]($appui-react) has been updated so it no longer 
 
 #### New options for defining Frontstages
 
-| Class/Component                                  | Description                                                                                      |
-| ------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
+| Class/Component                                 | Description                                                                                      |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------ |
 | [StandardFrontstageProvider]($appui-react)      | Frontstage provider that provides an 'empty' stage that is to be populated via UiItemsProviders. |
 | [StandardContentToolsProvider]($appui-react)    | UiItemsProvider that will add common tool entries to Tool Widget.                                |
 | [StandardNavigationToolsProvider]($appui-react) | UiItemsProvider that will add common view tool entries to Navigation Widget.                     |
 | [StandardStatusbarItemsProvider]($appui-react)  | UiItemsProvider that will add common statusbar items.                                            |
 | [ContentToolWidgetComposer]($appui-react)       | Provides an empty Tool Widget that is to be populate via UiItemsProviders.                       |
 | [ViewToolWidgetComposer]($appui-react)          | Provides an empty Navigation Widget that is to be populate via UiItemsProviders.                 |
-| [StandardContentLayouts]($appui-abstract)           | Provides standard view layouts that can be used when defining a ContentGroup.                    |
+| [StandardContentLayouts]($appui-abstract)       | Provides standard view layouts that can be used when defining a ContentGroup.                    |
 | [ContentGroupProvider]($appui-react)            | Class that generates a ContentGroup at runtime when the frontstageDef is being constructed.      |
 
 #### New Timeline Date Marker
@@ -976,45 +977,45 @@ Several UI components in the @itwin/core-react and @itwin/components-react packa
 Developers should use equivalent components in @itwin/itwinui-react instead.
 
 | Deprecated in @itwin/core-react | Use from @itwin/itwinui-react instead          |
-| ---------------------------------- | ---------------------------------------------- |
-| Button                             | Button                                         |
-| ButtonSize                         | `size` prop for itwinui-react Button           |
-| ButtonType                         | `styleType` prop for itwinui-react Button      |
-| Checkbox                           | Checkbox                                       |
-| ExpandableBlock                    | ExpandableBlock                                |
-| Headline                           | Headline                                       |
-| HorizontalTabs                     | HorizontalTabs                                 |
-| Input                              | Input                                          |
-| LabeledInput                       | LabeledInput                                   |
-| LabeledSelect                      | LabeledSelect                                  |
-| LabeledTextarea                    | LabeledTextarea                                |
-| LabeledToggle                      | ToggleSwitch with `labelPosition="right"` prop |
-| LeadingText                        | Leading                                        |
-| ProgressBar                        | ProgressLinear                                 |
-| ProgressSpinner                    | ProgressRadial                                 |
-| Radio                              | Radio                                          |
-| Select                             | Select                                         |
-| SelectOption                       | SelectOption                                   |
-| Slider                             | Slider                                         |
-| SmallText                          | Small                                          |
-| Spinner                            | ProgressRadial with `indeterminate` prop       |
-| SpinnerSize                        | `size` prop in ProgressRadialProps             |
-| SplitButton                        | SplitButton                                    |
-| Subheading                         | Subheading                                     |
-| Textarea                           | Textarea                                       |
-| Tile                               | Tile                                           |
-| Title                              | Title                                          |
-| Toggle                             | ToggleSwitch                                   |
-| Tooltip                            | Tooltip                                        |
-| TooltipPlacement                   | Placement                                      |
+| ------------------------------- | ---------------------------------------------- |
+| Button                          | Button                                         |
+| ButtonSize                      | `size` prop for itwinui-react Button           |
+| ButtonType                      | `styleType` prop for itwinui-react Button      |
+| Checkbox                        | Checkbox                                       |
+| ExpandableBlock                 | ExpandableBlock                                |
+| Headline                        | Headline                                       |
+| HorizontalTabs                  | HorizontalTabs                                 |
+| Input                           | Input                                          |
+| LabeledInput                    | LabeledInput                                   |
+| LabeledSelect                   | LabeledSelect                                  |
+| LabeledTextarea                 | LabeledTextarea                                |
+| LabeledToggle                   | ToggleSwitch with `labelPosition="right"` prop |
+| LeadingText                     | Leading                                        |
+| ProgressBar                     | ProgressLinear                                 |
+| ProgressSpinner                 | ProgressRadial                                 |
+| Radio                           | Radio                                          |
+| Select                          | Select                                         |
+| SelectOption                    | SelectOption                                   |
+| Slider                          | Slider                                         |
+| SmallText                       | Small                                          |
+| Spinner                         | ProgressRadial with `indeterminate` prop       |
+| SpinnerSize                     | `size` prop in ProgressRadialProps             |
+| SplitButton                     | SplitButton                                    |
+| Subheading                      | Subheading                                     |
+| Textarea                        | Textarea                                       |
+| Tile                            | Tile                                           |
+| Title                           | Title                                          |
+| Toggle                          | ToggleSwitch                                   |
+| Tooltip                         | Tooltip                                        |
+| TooltipPlacement                | Placement                                      |
 
 | Deprecated in @itwin/components-react | Use from @itwin/itwinui-react instead |
-| ---------------------------------------- | ------------------------------------- |
-| Breadcrumb                               | Breadcrumbs                           |
+| ------------------------------------- | ------------------------------------- |
+| Breadcrumb                            | Breadcrumbs                           |
 
 | Deprecated in @itwin/imodel-components-react | Use from @itwin/itwinui-react instead |
 | -------------------------------------------- | ------------------------------------- |
-| ColorPickerPanel                           | ColorPicker                           |
+| ColorPickerPanel                             | ColorPicker                           |
 
 ##### Slider
 
@@ -1026,13 +1027,13 @@ A few constructs were deprecated in @itwin/core-react package.
 Some were copied to the @itwin/appui-abstract package.
 Some have replacements within the @itwin/core-react package.
 
-| Deprecated                                | Replacement                                    |
-| ----------------------------------------- | ---------------------------------------------- |
-| DialogButtonDef in @itwin/core-react   | DialogButtonDef in @itwin/appui-abstract       |
-| DialogButtonStyle in @itwin/core-react | DialogButtonStyle in @itwin/appui-abstract     |
-| DialogButtonType in @itwin/core-react  | DialogButtonType in @itwin/appui-abstract      |
-| LocalUiSettings in @itwin/core-react   | LocalStateStorage in @itwin/core-react      |
-| SessionUiSettings in @itwin/core-react | *eliminated*                                   |
+| Deprecated                             | Replacement                                |
+| -------------------------------------- | ------------------------------------------ |
+| DialogButtonDef in @itwin/core-react   | DialogButtonDef in @itwin/appui-abstract   |
+| DialogButtonStyle in @itwin/core-react | DialogButtonStyle in @itwin/appui-abstract |
+| DialogButtonType in @itwin/core-react  | DialogButtonType in @itwin/appui-abstract  |
+| LocalUiSettings in @itwin/core-react   | LocalStateStorage in @itwin/core-react     |
+| SessionUiSettings in @itwin/core-react | _eliminated_                               |
 
 #### New @itwin/imodel-components-react package
 
@@ -1058,7 +1059,7 @@ Please continue to use Frontstages.
 
 ### Buildology
 
-`@itwin/build-tools` has bumped the [Typescript compilation target](https://www.typescriptlang.org/tsconfig#target) from [ES2017](https://262.ecma-international.org/8.0/) to [ES2019](https://262.ecma-international.org/10.0/).
+`@itwin/build-tools` has bumped the [Typescript compilation target](https://www.typescriptlang.org/tsconfig#target) from [ES2017](https://262.ecma-international.org/8.0/) to [ES2019](https://262.ecma-international.org/10.0/)
 
 All packages will continue to build a CommonJS variant, but will now deliver it to `lib/cjs`. All frontend and shared ("common") packages will now build an ESModules variant, and deliver it to `lib/esm`. This change is intended to improve the bundle sizes of applications and allow for dynamic imports in order to tree-shake unused code.
 

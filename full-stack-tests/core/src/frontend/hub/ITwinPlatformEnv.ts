@@ -7,7 +7,7 @@ import { Project as ITwin } from "@itwin/projects-client";
 import {
   BriefcaseQuery, ChangeSet, ChangeSetQuery, IModelBankClient, IModelBankFileSystemITwinClient, IModelHubFrontend, IModelQuery, VersionQuery,
 } from "@bentley/imodelhub-client";
-import { AuthorizationClient, BriefcaseId, ChangesetId, IModelVersion } from "@itwin/core-common";
+import { AuthorizationClient, BriefcaseId, ChangesetIndexAndId, IModelVersion } from "@itwin/core-common";
 import { FrontendHubAccess, IModelIdArg } from "@itwin/core-frontend";
 import { ITwinAccessClientWrapper } from "../../common/ITwinAccessClientWrapper";
 
@@ -34,32 +34,42 @@ export class IModelBankFrontend implements TestFrontendHubAccess {
     this._hubClient = new IModelBankClient(orchestratorUrl, undefined);
   }
 
-  public async getLatestChangesetId(arg: IModelIdArg): Promise<ChangesetId> {
-    const changeSets: ChangeSet[] = await this._hubClient.changeSets.get(arg.accessToken, arg.iModelId, new ChangeSetQuery().top(1).latest());
-    return (changeSets.length === 0) ? "" : changeSets[changeSets.length - 1].wsgId;
+  private async _getChangesetFromId(arg: IModelIdArg & { changeSetId: string }): Promise<ChangesetIndexAndId> {
+    const changeSets: ChangeSet[] = await this._hubClient.changeSets.get(arg.accessToken, arg.iModelId, new ChangeSetQuery().byId(arg.changeSetId));
+    if (!changeSets[0] || !changeSets[0].index || !changeSets[0].id)
+      throw new BentleyError(BentleyStatus.ERROR, `Changeset ${arg.changeSetId} not found`);
+    return { index: +changeSets[0].index, id: changeSets[0].id };
   }
 
-  public async getChangesetIdFromVersion(arg: IModelIdArg & { version: IModelVersion }): Promise<ChangesetId> {
+  public async getLatestChangeset(arg: IModelIdArg): Promise<ChangesetIndexAndId> {
+    const changeSets: ChangeSet[] = await this._hubClient.changeSets.get(arg.accessToken, arg.iModelId, new ChangeSetQuery().top(1).latest());
+    if (!changeSets[0] || !changeSets[0].index || !changeSets[0].id)
+      return { index: 0, id: "" };
+    return { index: +changeSets[0].index, id: changeSets[0].id };
+  }
+
+  public async getChangesetFromVersion(arg: IModelIdArg & { version: IModelVersion }): Promise<ChangesetIndexAndId> {
     const version = arg.version;
     if (version.isFirst)
-      return "";
+      return { index: 0, id: "" };
 
-    const asOf = version.getAsOfChangeSet();
-    if (asOf)
-      return asOf;
+    const asOfChangeSetId = version.getAsOfChangeSet();
+    if (asOfChangeSetId)
+      return this._getChangesetFromId({ ...arg, changeSetId: asOfChangeSetId });
 
     const versionName = version.getName();
     if (versionName)
-      return this.getChangesetIdFromNamedVersion({ ...arg, versionName });
+      return this.getChangesetFromNamedVersion({ ...arg, versionName });
 
-    return this.getLatestChangesetId(arg);
+    return this.getLatestChangeset(arg);
   }
 
-  public async getChangesetIdFromNamedVersion(arg: IModelIdArg & { versionName: string }): Promise<ChangesetId> {
-    const versions = await this._hubClient.versions.get(arg.accessToken, arg.iModelId, new VersionQuery().select("ChangeSetId").byName(arg.versionName));
-    if (!versions[0] || !versions[0].changeSetId)
-      throw new BentleyError(BentleyStatus.ERROR, `Named version ${arg.versionName} not found`);
-    return versions[0].changeSetId;
+  public async getChangesetFromNamedVersion(arg: IModelIdArg & { versionName?: string }): Promise<ChangesetIndexAndId> {
+    const versionQuery = arg.versionName ? new VersionQuery().select("ChangeSetId").byName(arg.versionName) : new VersionQuery().top(1);
+    const versions = await this._hubClient.versions.get(arg.accessToken, arg.iModelId, versionQuery);
+    if (!versions[0] || !versions[0].changeSetIndex || !versions[0].changeSetId)
+      throw new BentleyError(BentleyStatus.ERROR, `Named version ${arg.versionName ?? ""} not found`);
+    return { index: versions[0].changeSetIndex, id: versions[0].changeSetId };
   }
 
   /** Get the iModelId of an iModel by name. Undefined if no iModel with that name exists.  */

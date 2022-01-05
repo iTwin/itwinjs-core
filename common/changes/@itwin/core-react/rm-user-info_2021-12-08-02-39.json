@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-react",
+      "comment": "Update snapshots",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-react"
+}

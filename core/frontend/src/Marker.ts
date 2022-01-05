@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { Logger, ObservableSet } from "@itwin/core-bentley";
+import { assert, Logger, ObservableSet } from "@itwin/core-bentley";
 import { Geometry, Matrix4d, Point2d, Point3d, Range1d, Range1dProps, Vector3d, XAndY, XYAndZ } from "@itwin/core-geometry";
 import { ColorDef } from "@itwin/core-common";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
@@ -151,7 +151,7 @@ export class Marker implements CanvasDecoration {
   }
 
   /** Make a new Marker at the same position and size as this Marker.
-   * The new Marker will share the world location and size objects, but will be otherwise blank.
+   * The new Marker will share the world location and size, but will be otherwise blank.
    */
   public static makeFrom<T extends Marker>(other: Marker, ...args: any[]): T {
     const out = new (this as any)(other.worldLocation, other.size, ...args) as T;
@@ -307,12 +307,28 @@ export class Marker implements CanvasDecoration {
  */
 export class Cluster<T extends Marker> {
   public readonly markers: T[];
-  public readonly rect: ViewRect;
   public clusterMarker?: Marker;
 
   public constructor(markers: T[]) {
-    this.rect = markers[0].rect;
+    assert(markers.length > 0);
     this.markers = markers;
+  }
+
+  public get position() {
+    return this.markers[0].position;
+  }
+
+  /**
+   * Gets the location for the cluster
+   * @returns The average of the cluster markers worldLocation.
+   */
+  public getClusterLocation() {
+    const location = Point3d.createZero();
+    if (this.markers.length > 0) {
+      this.markers.forEach((marker) => location.addInPlace(marker.worldLocation));
+      location.scaleInPlace(1 / this.markers.length);
+    }
+    return location;
   }
 }
 
@@ -335,6 +351,8 @@ export abstract class MarkerSet<T extends Marker> {
   public minimumClusterSize = 1;
   /** The set of Markers in this MarkerSet. Add your [[Marker]]s into this. */
   public get markers(): Set<T> { return this._markers; }
+  /** The radius (in pixels) representing the distance between the screen X,Y positions of two Markers to be clustered. When less than or equal to 0 (the default), the radius is calculated based on the first visible marker imageSize/size. */
+  protected clusterRadius = 0;
 
   /** Construct a new MarkerSet for a specific ScreenViewport.
    * @param viewport the ScreenViewport for this MarkerSet. If undefined, use [[IModelApp.viewManager.selectedView]]
@@ -402,16 +420,24 @@ export abstract class MarkerSet<T extends Marker> {
       this._minScaleViewW = undefined; // Invalidate current value.
       entries.length = 0; // start over.
 
+      let distSquared = this.clusterRadius * this.clusterRadius;
+
       // loop through all of the Markers in the MarkerSet.
       for (const marker of this.markers) {
         // establish the screen position for this marker. If it's not in view, setPosition returns false
         if (!marker.setPosition(vp, this))
           continue;
 
+        if (distSquared <= 0) {
+          const size = marker.imageSize ? marker.imageSize : marker.size;
+          const dist = Math.max(size.x, size.y) * 1.5;
+          distSquared = dist * dist;
+        }
+
         let added = false;
         for (let i = 0; i < entries.length; ++i) { // loop through all of the currently visible markers/clusters
           const entry = entries[i];
-          if (marker.rect.overlaps(entry.rect)) { // does new Marker overlap with this entry?
+          if (marker.position.distanceSquaredXY(entry.position) <= distSquared) {
             added = true; // yes, we're going to save it as a Cluster
             if (entry instanceof Cluster) { // is the entry already a Cluster?
               entry.markers.push(marker); // yes, just add this to the existing cluster
@@ -433,8 +459,13 @@ export abstract class MarkerSet<T extends Marker> {
           entry.markers.forEach((marker) => marker.addMarker(context)); // no, just draw all of its Markers
         } else {
           // yes, get and draw the Marker for this Cluster
-          if (undefined === entry.clusterMarker) // have we already created this cluster marker?
-            entry.clusterMarker = this.getClusterMarker(entry); // no, get it now.
+          if (undefined === entry.clusterMarker) { // have we already created this cluster marker?
+            const clusterMarker = this.getClusterMarker(entry); // no, get it now.
+            // set the marker's position as getClusterMarker may not set it.
+            if (clusterMarker.rect.isNull)
+              clusterMarker.setPosition(vp, this);
+            entry.clusterMarker = clusterMarker;
+          }
           entry.clusterMarker.addMarker(context);
         }
       } else {

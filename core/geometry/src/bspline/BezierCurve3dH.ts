@@ -258,12 +258,14 @@ export class BezierCurve3dH extends BezierCurveBase {
       const workB = this._workCoffsB!;
       const packedData = this._polygon.packedData;
       for (let i = 0; i < 3; i++) {
-        // x representing loop pass:   (w * spacePoint.x - curve.x(s) * 1.0) * (curveDelta.x(s) * curve.w(s) - curve.x(s) * curveDelta.w(s))
+        // x representing loop pass:   (w * spacePoint.x - curve.x(s)) * (curveDelta.x(s) * curve.w(s) - curve.x(s) * curveDelta.w(s))
         // (and p.w is always 1)
+        for (let k = 0; k < workA.length; k++)workA[k] = 0;
+        for (let k = 0; k < workB.length; k++)workB[k] = 0;
         BezierPolynomialAlgebra.scaledComponentSum(workA, packedData, 4, orderA, 3, spacePoint.at(i), // w * spacePoint.x
           i, -1.0); // curve.x(s) * 1.0
-        BezierPolynomialAlgebra.accumulateScaledShiftedComponentTimesComponentDelta(workB, packedData, 4, orderA, 1.0, 3, 1.0, i);
-        BezierPolynomialAlgebra.accumulateScaledShiftedComponentTimesComponentDelta(workB, packedData, 4, orderA, -1.0, i, 1.0, 3);
+        BezierPolynomialAlgebra.accumulateScaledShiftedComponentTimesComponentDelta(workB, packedData, 4, orderA, 1.0, 3, 0.0, i);
+        BezierPolynomialAlgebra.accumulateScaledShiftedComponentTimesComponentDelta(workB, packedData, 4, orderA, -1.0, i, 0.0, 3);
         BezierPolynomialAlgebra.accumulateProduct(bezier.coffs, workA, workB);
       }
       roots = bezier.roots(0.0, true);

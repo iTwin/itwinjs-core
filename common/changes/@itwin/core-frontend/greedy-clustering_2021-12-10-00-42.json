@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Implemented a different clustering algorithm in MarkerSet.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

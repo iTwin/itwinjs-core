@@ -124,6 +124,8 @@ You can use these environment variables to alter the default behavior of various
   * The name of a view to open by default within an iModel.
 * IMJS_STANDALONE_SIGNIN
   * If defined (value does not matter), the user will be required to sign in at startup. This enables access to content stored on the reality data service. As a side effect, you may observe a harmless "failed to fetch" dialog on startup, which can be safely dismissed.
+* IMJS_STARTUP_MACRO
+  * If defined, run macro from specified path. If the file path contains no periods, a .txt extension will be appended.
 * IMJS_NO_MAXIMIZE_WINDOW
   * If defined, don't maximize the electron window on startup
 * IMJS_NO_DEV_TOOLS
@@ -135,7 +137,9 @@ You can use these environment variables to alter the default behavior of various
 * IMJS_DISABLED_EXTENSIONS
   * If defined, a semicolon-separated list of names of WebGLExtensions to be disabled. See WebGLExtensionName for valid names (case-sensitive).
 * IMJS_DISABLE_INSTANCING
-  * If defined, instanced geometry will not be generated for tiles.
+  * If defined, instanced geometry will not be generated for tiles. See TileAdmin.enableInstancing.
+* IMJS_DISABLE_INDEXED_EDGES
+  * If defined, indexed edges will not be produced. See TileAdmin.enableIndexedEdges.
 * IMJS_NO_IMPROVED_ELISION
   * If defined, disables more accurate empty tile elision on backend.
 * IMJS_IGNORE_AREA_PATTERNS
@@ -202,6 +206,7 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
 * `win restore` *windowId* - restore (un-dock) the specified or focused window.
 * `win close` *windowId* - close the specified or focused window.
 * `vp clone` *viewportId* - create a new viewport looking at the same view as the specified or currently-selected viewport.
+* `dta gltf` *assetUrl* - load a glTF asset from the specified URL and display it at the center of the project extents in the currently-selected viewport.
 * `dta version compare` - emulate version comparison.
 * `dta save image` - open a new window containing a snapshot of the contents of the selected viewport.
 * `dta record fps` *numFrames* - record average frames-per-second over the specified number of frames (default: 150) and output to status bar.
@@ -210,7 +215,9 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
 * `dta path decoration` - toggle drawing a small path decoration in the selected viewport for testing purposes.
 * `dta markup` - toggle markup on the selected viewport.
 * `dta signin` - sign in to use Bentley services like iModelHub and reality data.
+* `dta macro` - runs the macro file specified in the argument.  If file extension not specified, .txt is assumed.  Each line in the file is executed as a keyin command and run sequentially.
 * `dta output shaders` - output debug information for compiled shaders. Requires IMJS_DEBUG_SHADERS to have been set. Accepts 0-2 arguments:
+  * `c`: compile all shaders – compiles all shaders before output, otherwise only shaders that have been compiled by the time it is run will output.
   * `d=output\directory\` - directory into which to put the output files.
   * filter string: a combination of the following characters to filter the output (e.g., `gu` outputs all used glsl shaders, both fragment and vertex):
     * `f` or `v`: output only fragment or vertex shaders, respectively.
@@ -218,6 +225,7 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
     * `u` or `n`: output only used or not-used shaders, respectively.
 * `dta drawing aid points` - start tool for testing AccuSnap.
 * `dta refresh tiles` *modelId* - reload tile trees for the specified model, or all models if no modelId is specified.
+* `dta exit` - Shuts down the backend server and exits the app.
 * `dta shutdown` - Closes all open viewports and iModels, invokes IModelApp.shutdown(), and finally breaks in the debugger (if debugger is open). Useful for diagnosing memory leaks.
 * `dta shadow tiles` - Display in all but the selected viewport the tiles that are selected for generating the shadow map for the selected viewport. Updates each time the shadow map is regenerated. Argument: "toggle", "on", or "off"; defaults to "toggle" if not supplied.
 * `dta detach views` - If the selected viewport is displaying a sheet view, remove all view attachments from it.

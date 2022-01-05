@@ -63,13 +63,6 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/reality-data-client",
-      "projectFolder": "clients/reality-data",
-      "reviewCategory": "common",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
       "packageName": "@itwin/core-telemetry",
       "projectFolder": "core/telemetry",
       "reviewCategory": "common",
@@ -352,6 +345,13 @@
     {
       "packageName": "@itwin/express-server",
       "projectFolder": "core/express-server",
+      "reviewCategory": "backend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@itwin/workspace-editor",
+      "projectFolder": "utils/workspace-editor",
       "reviewCategory": "backend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"

@@ -2,25 +2,9 @@
 
 The [Loading]($core-react:Loading) category in the `@itwin/core-react` package includes components for displaying determinate and indeterminate status indicators, such as spinners and progress bars. These include:
 
-- [Spinner]($core-react) - indeterminate spinner component that supports multiple sizes
 - [LoadingBar]($core-react) - determinate loading bar with optional percentage text
 - [LoadingPrompt]($core-react) - component to display during loading that optionally shows percentage, status text and a cancel button
 - [LoadingSpinner]($core-react) - loading spinner component that optionally shows a text message
-- [ProgressBar]($core-react) - horizontal progress bar that supports determinate and indeterminate modes
-- [ProgressSpinner]($core-react) - circular progress indicator that supports determinate and indeterminate modes
-
-## Spinner Examples
-
-The following examples show the Spinner component at different sizes.
-
-```tsx
-<Spinner size={SpinnerSize.Small} />
-<Spinner size={SpinnerSize.Medium} />
-<Spinner size={SpinnerSize.Large} />
-<Spinner size={SpinnerSize.XLarge} />
-```
-
-![spinners](./images/Spinners.png "Spinners")
 
 ## LoadingSpinner Examples
 

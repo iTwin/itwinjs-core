@@ -24,8 +24,6 @@ steps:
     displayName: rush install
 
   - script: |
-      node ./common/scripts/install-run-rush build -v --to reality-data-client
-
       node ./common/scripts/install-run-rush build -v --to backend-integration-tests
 
       node ./common/scripts/install-run-rush build -v --to imodelhub-client-tests
@@ -36,11 +34,6 @@ steps:
 
       node ./common/scripts/install-run-rush build -v --to presentation-full-stack-tests
     displayName: "Rush build"
-
-  - script: "npm run test:integration"
-    workingDirectory: clients/reality-data
-    displayName: "Run Reality Data Client Tests"
-    condition: succeededOrFailed()
 
   - script: "npm run test:integration"
     workingDirectory: "full-stack-tests/backend"
@@ -65,14 +58,6 @@ steps:
   - script: "npm run test:integration"
     workingDirectory: "full-stack-tests/presentation"
     displayName: "Run Presentation Full Stack Tests"
-    condition: succeededOrFailed()
-
-  - task: PublishTestResults@2
-    displayName: "Publish Reality Data Clients Test Results"
-    inputs:
-      testResultsFiles: "clients/reality-data/lib/test/junit_results.xml"
-      testRunTitle: "Client - Reality Data Tests - ${{ parameters.Node_Version }}"
-    continueOnError: true
     condition: succeededOrFailed()
 
   - task: PublishTestResults@2

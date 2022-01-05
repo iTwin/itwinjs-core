@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Update BackendHubAccess api to use ChangesetIndexAndId",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

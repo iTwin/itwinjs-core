@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/editor-frontend",
+      "comment": "Create bcurve from control points now supports closure.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/editor-frontend"
+}
