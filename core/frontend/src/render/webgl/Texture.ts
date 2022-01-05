@@ -201,6 +201,8 @@ class Texture2DCreateParams {
 
   public static createForImageBuffer(image: ImageBuffer, type: RenderTexture.Type) {
     const props = this.getImageProperties(type);
+    if (ImageBufferFormat.Rgb === image.format)
+      props.format = GL.Texture.Format.Rgb;
 
     return new Texture2DCreateParams(image.width, image.height, props.format, GL.Texture.DataType.UnsignedByte, props.wrapMode,
       (tex: TextureHandle, params: Texture2DCreateParams) => loadTextureFromBytes(tex, params, image.data), props.useMipMaps, props.interpolate);
