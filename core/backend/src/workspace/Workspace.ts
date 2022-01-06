@@ -9,13 +9,12 @@
 import { createHash } from "crypto";
 import * as fs from "fs-extra";
 import { dirname, extname, join } from "path";
-import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
+import { CloudSqlite, IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
 import { BeEvent, DbResult, OpenMode, Optional } from "@itwin/core-bentley";
 import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
 import { IModelJsFs } from "../IModelJsFs";
 import { SQLiteDb } from "../SQLiteDb";
 import { SqliteStatement } from "../SqliteStatement";
-import { CloudSqlite } from "./CloudSqlite";
 import { Settings, SettingsPriority } from "./Settings";
 
 // cspell:ignore rowid
@@ -463,12 +462,6 @@ export class EditableWorkspaceDb extends ITwinWorkspaceDb {
     const len = typeof val === "string" ? val.length : val.byteLength;
     if (len > (1024 * 1024 * 1024)) // one gigabyte
       throw new Error("value is too large");
-  }
-
-  public async openCloudDb(props: CloudSqlite.ContainerAccessProps) {
-    this.localFile = await CloudSqlite.attach(this.dbName, props);
-    this.sqliteDb.openDb(this.localFile, OpenMode.ReadWrite);
-    this._isCloudOpen = true;
   }
 
   public override open() {

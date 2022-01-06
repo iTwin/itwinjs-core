@@ -443,7 +443,7 @@
       "program": "${workspaceFolder}/ui/appui-abstract/node_modules/mocha/bin/_mocha",
       "args": [
         "--config",
-        "../.mocharc.json",
+        "../.mocharc-noreact.json",
         "--no-timeouts",
         "lib/cjs/test/**/*.test.js"
       ],
@@ -835,8 +835,7 @@
       "program": "${workspaceFolder}/utils/workspace-editor/lib/WorkspaceEditor.js",
       "args": [
         "download",
-        "brazil",
-        "--config=edit.json",
+        "usa-nsrs2011",
         "-l=d:/temp/abc.d"
       ],
       "outFiles": [

@@ -43,7 +43,8 @@ describe.skip("Checkpoints", () => {
       },
     });
     assert.isDefined(checkpoint, "checkpoint missing");
-    assert.isDefined(checkpoint?.auth, "checkpoint storage account is invalid");
+    assert.isDefined(checkpoint?.accountName, "checkpoint storage account is invalid");
+    assert.isDefined(checkpoint?.sasToken, "checkpoint sasToken is invalid");
 
     // Start daemon process and wait for it to be ready
     // fs.chmodSync((BlobDaemon as any).exeName({}), 744);  // FIXME: This probably needs to be an imodeljs-native postinstall step...

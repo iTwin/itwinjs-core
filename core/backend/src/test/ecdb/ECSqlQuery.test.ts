@@ -140,20 +140,23 @@ describe("ECSql Query", () => {
     assert.isTrue(reader.stats.totalTime > 0);
   });
   it("concurrent query use idset", async () => {
-    const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element WHERE InVirtualSet(?, ECInstanceId)", QueryBinder.from([["0x3b", "0x39", "0x3a"]]), { usePrimaryConn: true });
+    const ids: string[] = [];
+    for await (const row of imodel1.query("SELECT ECInstanceId FROM BisCore.Element LIMIT 23")) {
+      ids.push(row[0]);
+    }
+    const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element WHERE InVirtualSet(?, ECInstanceId)", QueryBinder.from([ids]));
     let props = await reader.getMetaData();
     assert.equal(props.length, 11);
     let rows = 0;
     while (await reader.step()) {
       rows++;
     }
-    assert.equal(rows, 3);
+    assert.equal(rows, 23);
     props = await reader.getMetaData();
     assert.equal(props.length, 11);
-    assert.equal(reader.stats.backendRowsReturned, 3);
+    assert.equal(reader.stats.backendRowsReturned, 23);
     assert.isTrue(reader.stats.backendCpuTime > 0);
     assert.isTrue(reader.stats.backendMemUsed > 100);
-    assert.isTrue(reader.stats.totalTime > 0);
   });
   it("concurrent query get meta data", async () => {
     const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element");
@@ -169,7 +172,6 @@ describe("ECSql Query", () => {
     assert.equal(reader.stats.backendRowsReturned, 46);
     assert.isTrue(reader.stats.backendCpuTime > 0);
     assert.isTrue(reader.stats.backendMemUsed > 1000);
-    assert.isTrue(reader.stats.totalTime > 0);
   });
   it("concurrent query quota", async () => {
     let reader = imodel1.createQueryReader("SELECT * FROM BisCore.element", undefined, { limit: { count: 4 } });

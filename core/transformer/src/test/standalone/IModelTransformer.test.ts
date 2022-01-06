@@ -1384,4 +1384,126 @@ describe("IModelTransformer", () => {
     sourceDb.close();
     targetDb.close();
   });
+
+  function createIModelWithDanglingPredecessor(opts: {name: string, path: string}) {
+    const sourceDb = SnapshotDb.createEmpty(opts.path, { rootSubject: { name: opts.name } });
+
+    const sourceCategoryId = SpatialCategory.insert(sourceDb, IModel.dictionaryId, "SpatialCategory", { color: ColorDef.green.toJSON() });
+    const sourceModelId = PhysicalModel.insert(sourceDb, IModel.rootSubjectId, "Physical");
+    const myPhysObjCodeSpec = CodeSpec.create(sourceDb, "myPhysicalObjects", CodeScopeSpec.Type.ParentElement);
+    const myPhysObjCodeSpecId = sourceDb.codeSpecs.insert(myPhysObjCodeSpec);
+    const physicalObjects = [1, 2].map((x) => {
+      const code = new Code({
+        spec: myPhysObjCodeSpecId,
+        scope: sourceModelId,
+        value: `PhysicalObject(${x})`,
+      });
+      const props: PhysicalElementProps = {
+        classFullName: PhysicalObject.classFullName,
+        model: sourceModelId,
+        category: sourceCategoryId,
+        code,
+        userLabel: `PhysicalObject(${x})`,
+        geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1)),
+        placement: Placement3d.fromJSON({ origin: { x }, angles: {} }),
+      };
+      const id = sourceDb.elements.insertElement(props);
+      return { code, id };
+    });
+    const displayStyleId = DisplayStyle3d.insert(
+      sourceDb,
+      IModel.dictionaryId,
+      "MyDisplayStyle",
+      {
+        excludedElements: physicalObjects.map((o) => o.id),
+      }
+    );
+    const displayStyleCode = sourceDb.elements.getElement(displayStyleId).code;
+
+    const physObjId2 = physicalObjects[1].id;
+    // this deletion makes the display style have an reference to a now-gone element
+    sourceDb.elements.deleteElement(physObjId2);
+
+    sourceDb.saveChanges();
+
+    return [
+      sourceDb,
+      {
+        sourceCategoryId,
+        sourceModelId,
+        physicalObjects,
+        displayStyleId,
+        displayStyleCode,
+        myPhysObjCodeSpec,
+      },
+    ] as const;
+  }
+
+  /**
+   * A transformer that inserts an element at the beginning to ensure the target doesn't end up with the same ids as the source.
+   * Useful if you need to check that some source/target element references match and want to be sure it isn't a coincidence,
+   * which can happen deterministically in several cases, as well as just copy-paste errors where you accidentally test a
+   * source or target db against itself
+   * @note it modifies the target so there are side effects
+   */
+  class ShiftElemIdsTransformer extends IModelTransformer {
+    constructor(...args: ConstructorParameters<typeof IModelTransformer>) {
+      super(...args);
+      try {
+        // the choice of element to insert is arbitrary, anything easy works
+        PhysicalModel.insert(this.targetDb, IModel.rootSubjectId, "MyShiftElemIdsPhysicalModel");
+      } catch (_err) {} // ignore error in case someone tries to transform the same target multiple times with this
+    }
+  }
+
+  it("predecessor deletion is considered invalid when danglingPredecessorsBehavior='reject' and that is the default", async () => {
+    const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "DanglingPredecessorSource.bim");
+    const [
+      sourceDb,
+      { displayStyleId, physicalObjects },
+    ] = createIModelWithDanglingPredecessor({ name: "DanglingPredecessors", path: sourceDbPath });
+
+    const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "DanglingPredecessorTarget.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
+
+    const defaultTransformer = new ShiftElemIdsTransformer(sourceDb, targetDb);
+    await expect(defaultTransformer.processAll()).to.be.rejectedWith(
+      /Found a reference to an element "[^"]*" that doesn't exist/
+    );
+
+    const ignoreDanglingPredecessorsDisabledTransformer = new ShiftElemIdsTransformer(sourceDb, targetDb, { danglingPredecessorsBehavior: "reject" });
+    await expect(ignoreDanglingPredecessorsDisabledTransformer.processAll()).to.be.rejectedWith(
+      /Found a reference to an element "[^"]*" that doesn't exist/
+    );
+
+    const ignoreDanglingPredecessorsEnabledTransformer = new ShiftElemIdsTransformer(sourceDb, targetDb, { danglingPredecessorsBehavior: "ignore" });
+    await expect(ignoreDanglingPredecessorsEnabledTransformer.processAll()).not.to.be.rejected;
+    targetDb.saveChanges();
+
+    expect(sourceDb.elements.tryGetElement(physicalObjects[1].id)).to.be.undefined;
+    const displayStyleInSource = sourceDb.elements.getElement<DisplayStyle3d>(displayStyleId);
+    expect([...displayStyleInSource.settings.excludedElementIds]).to.include(physicalObjects[1].id);
+
+    const displayStyleInTargetId = ignoreDanglingPredecessorsEnabledTransformer.context.findTargetElementId(displayStyleId);
+    const displayStyleInTarget = targetDb.elements.getElement<DisplayStyle3d>(displayStyleInTargetId);
+
+    const physObjsInTarget = physicalObjects.map((physObjInSource) => {
+      const physObjInTargetId = ignoreDanglingPredecessorsEnabledTransformer.context.findTargetElementId(physObjInSource.id);
+      return { ...physObjInSource, id: physObjInTargetId };
+    });
+
+    expect(Id64.isValidId64(physObjsInTarget[0].id)).to.be.true;
+    expect(Id64.isValidId64(physObjsInTarget[1].id)).not.to.be.true;
+
+    expect(
+      [...displayStyleInTarget.settings.excludedElementIds]
+    ).to.deep.equal(
+      physObjsInTarget
+        .filter(({id}) => Id64.isValidId64(id))
+        .map(({id}) => id)
+    );
+
+    sourceDb.close();
+    targetDb.close();
+  });
 });

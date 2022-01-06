@@ -16,11 +16,11 @@ The iTwin.js UI library is divided into these NPM packages in the `@bentley` sco
 
 |Package Name|Description
 |-----|-----
-|[appui&#8209;abstract](./abstract/index)|Abstractions for UI controls and items, such as Toolbar, Button, Menu, Backstage, StatusBar and Widget.
-|[core&#8209;react](./core/index)|General purpose React components that can be used outside AppUi apps.
-|[components&#8209;react](./components/index)|React components that are data-oriented, such as PropertyGrid, Table and Tree.
-|[imodel&#8209;components&#8209;react](./imodel&#8209;components/index)|React components that depend on the imodeljs-frontend, imodeljs-common or imodeljs-quantity packages. The components pertain to Color, Cube, LineWeight, Navigation Aids, Quantity Inputs, Timeline and Viewport.
-|[appui&#8209;react](./appui/appui&#8209;react/index)|Classes and components for specifying the application UI consisting of the Backstage, Frontstages, Content Views, Tool Bars, Status Bars, Widgets and Panels.
+|[appui-abstract](./abstract/index)|Abstractions for UI controls and items, such as Toolbar, Button, Menu, Backstage, StatusBar and Widget.
+|[core-react](./core/index)|General purpose React components that can be used outside AppUi apps.
+|[components-react](./components/index)|React components that are data-oriented, such as PropertyGrid, Table and Tree.
+|[imodel-components-react](./imodel-components/index)|React components that depend on the imodeljs-frontend, imodeljs-common or imodeljs-quantity packages. The components pertain to Color, Cube, LineWeight, Navigation Aids, Quantity Inputs, Timeline and Viewport.
+|[appui-react](./appui-react/index)|Classes and components for specifying the application UI consisting of the Backstage, Frontstages, Content Views, Tool Bars, Status Bars, Widgets and Panels.
 
 See also:
 

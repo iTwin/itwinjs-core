@@ -5,8 +5,8 @@
 import { expect } from "chai";
 import { ByteStream } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
-import { GltfDataType, RenderTexture } from "@itwin/core-common";
-import { B3dmReader, IModelApp, MockRender, SnapshotConnection } from "@itwin/core-frontend";
+import { RenderTexture } from "@itwin/core-common";
+import { B3dmReader, GltfDataType, IModelApp, MockRender, SnapshotConnection } from "@itwin/core-frontend";
 import { TestUtility } from "../../TestUtility";
 
 /* eslint-disable @typescript-eslint/unbound-method */
@@ -313,21 +313,21 @@ describe("B3dmReader", () => {
       return new MockRender.Graphic();
     };
 
-    const stream = new ByteStream(b3dmBytes.buffer);
+    const stream = ByteStream.fromUint8Array(b3dmBytes);
     const renderSystem = IModelApp.renderSystem;
     const range = Range3d.createXYZXYZ(0, 0, 0, 10, 10, 10);
     const reader = B3dmReader.create(stream, imodel, "0x123", true, range, renderSystem, false, true, range.center)!;
     expect(reader).not.to.be.undefined;
 
     // The technique specifies a uniform sampler2d named "u_diffuse".
-    const extensions = (reader as any)._extensions;
+    const extensions = (reader as any)._glTF.extensions;
     expect(extensions).not.to.be.undefined;
     const uniformType = extensions.KHR_techniques_webgl?.techniques[0]?.uniforms?.u_diffuse?.type;
     expect(typeof uniformType).to.equal("number");
     expect(uniformType).to.equal(GltfDataType.Sampler2d);
 
     // The material specifies the value for the "u_diffuse" uniform.
-    const materials = (reader as any)._materialValues;
+    const materials = (reader as any)._materials;
     expect(materials).not.to.be.undefined;
     const materialExtension = materials[0]?.extensions?.KHR_techniques_webgl;
     expect(typeof materialExtension).to.equal("object");
