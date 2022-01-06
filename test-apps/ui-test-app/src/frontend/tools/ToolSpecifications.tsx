@@ -646,13 +646,20 @@ export class AppTools {
       execute: () => ModalDialogManager.openDialog(AppTools._messageBox(MessageSeverity.Error, IModelApp.localization.getLocalizedString("SampleApp:buttons.errorMessageBox"))),
     });
   }
+  public static get noIconMessageBoxCommand() {
+    return new CommandItemDef({
+      commandId: "noIconMessage",
+      labelKey: "SampleApp:buttons.noIconMessageBox",
+      execute: () => ModalDialogManager.openDialog(AppTools._messageBox(MessageSeverity.None, IModelApp.localization.getLocalizedString("SampleApp:buttons.noIconMessageBox"))),
+    });
+  }
 
   public static get successMessageBoxCommand() {
     return new CommandItemDef({
       commandId: "successMessage",
       iconSpec: "icon-status-success",
       labelKey: "SampleApp:buttons.successMessageBox",
-      execute: () => ModalDialogManager.openDialog(AppTools._messageBox(MessageSeverity.None, IModelApp.localization.getLocalizedString("SampleApp:buttons.successMessageBox"))),
+      execute: () => ModalDialogManager.openDialog(AppTools._messageBox(MessageSeverity.Success, IModelApp.localization.getLocalizedString("SampleApp:buttons.successMessageBox"))),
     });
   }
 

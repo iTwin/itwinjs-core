@@ -374,6 +374,9 @@ export class MessageManager {
       case OutputMessagePriority.None:
         severity = MessageSeverity.None;
         break;
+      case OutputMessagePriority.Success:
+        severity = MessageSeverity.Success;
+        break;
       case OutputMessagePriority.Info:
         severity = MessageSeverity.Information;
         break;
@@ -398,6 +401,9 @@ export class MessageManager {
     switch (details.priority) {
       case OutputMessagePriority.None:
         iconType = MessageBoxIconType.NoSymbol;
+        break;
+      case OutputMessagePriority.Success:
+        iconType = MessageBoxIconType.Success;
         break;
       case OutputMessagePriority.Info:
         iconType = MessageBoxIconType.Information;
