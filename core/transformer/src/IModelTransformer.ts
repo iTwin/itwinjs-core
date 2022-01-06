@@ -750,7 +750,7 @@ export class IModelTransformer extends IModelExportHandler {
     // When we retry processing deferred elements and successfully export them is when we export the aspects again
     const targetElementId = this.context.findTargetElementId(sourceAspect.element.id);
     if (targetElementId === Id64.invalid && this._deferredElementIds.has(sourceAspect.element.id)) {
-      Logger.logWarning(
+      Logger.logInfo(
         loggerCategory,
         `tried to export an aspect for a deferred element, '${sourceAspect.element.id}', ` +
           "it will be retried when the deferred element is processed again."
