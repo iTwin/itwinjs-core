@@ -162,7 +162,9 @@
       "accuDrawNotificationsTitle": "Display AccuDraw Notifications",
       "accuDrawNotificationsDescription": "Display toast notifications when AccuDraw status changes",
       "widgetOpacityTitle": "Widget Opacity",
-      "widgetOpacityDescription": "Opacity when mouse is not hovering for 2.0 floating widgets and all 1.0 widgets"
+      "widgetOpacityDescription": "Opacity when mouse is not hovering for 2.0 floating widgets and all 1.0 widgets",
+      "widgetIconTitle": "Show Icon on Widget Tab",
+      "widgetIconDescription": "If widget panel less 320 pixels wide then only icons will display on widget tab."
     }
   },
   "tools": {

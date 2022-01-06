@@ -81,4 +81,12 @@
 
 button.nz-toolbar-button-button.nz-toolbar-button-icon.nz-toolbar-button-icon-small.nz-toolbar-button-app-small {
   border-width: 0px;
+  .core-svg-icon {
+    width: $mls-small-button-icon-size;
+    height: $mls-small-button-icon-size;
+    svg {
+      width: 100%;
+      height: 100%;
+    }
+  }
 }
