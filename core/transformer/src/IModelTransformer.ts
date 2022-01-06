@@ -17,7 +17,7 @@ import {
   RecipeDefinitionElement, Relationship, RelationshipProps, Schema, Subject, SynchronizationConfigLink,
 } from "@itwin/core-backend";
 import {
-  Code, CodeSpec, ElementAspectProps, ElementProps, ExternalSourceAspectProps, FontProps, GeometricElement2dProps, GeometricElement3dProps, IModel,
+  Code, CodeSpec, ElementAspectProps, ElementProps, ExternalSourceAspectProps, FilePropertyProps, FontProps, GeometricElement2dProps, GeometricElement3dProps, IModel,
   IModelError, ModelProps, Placement2d, Placement3d, PrimitiveTypeCode, PropertyMetaData,
 } from "@itwin/core-common";
 import { IModelExporter, IModelExportHandler } from "./IModelExporter";
@@ -844,6 +844,17 @@ export class IModelTransformer extends IModelExportHandler {
     this.context.importFont(font.id);
   }
 
+  /** Override of [IModelExportHandler.onExportFileProperty]($transformer) that imports a file property into the target iModel when it is exported from the source iModel. */
+  protected override onExportFileProperty(props: FilePropertyProps): void {
+    const hasNoSuchFileProp = this.targetDb.queryNextAvailableFileProperty(props) === 0;
+    if (hasNoSuchFileProp) {
+      // TODO: replace with new native call that is a single query
+      const blob = this.sourceDb.queryFilePropertyBlob(props);
+      const strval = this.sourceDb.queryFilePropertyString(props);
+      this.targetDb.saveFileProperty(props, strval, blob);
+    }
+  }
+
   /** Cause all CodeSpecs to be exported from the source iModel and imported into the target iModel.
    * @note This method is called from [[processChanges]] and [[processAll]], so it only needs to be called directly when processing a subset of an iModel.
    */
@@ -888,6 +899,7 @@ export class IModelTransformer extends IModelExportHandler {
     this.initFromExternalSourceAspects();
     await this.exporter.exportCodeSpecs();
     await this.exporter.exportFonts();
+    await this.exporter.exportFileProperties();
     // The RepositoryModel and root Subject of the target iModel should not be transformed.
     await this.exporter.exportChildElements(IModel.rootSubjectId); // start below the root Subject
     await this.exporter.exportModelContents(IModel.repositoryModelId, Element.classFullName, true); // after the Subject hierarchy, process the other elements of the RepositoryModel

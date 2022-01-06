@@ -986,3 +986,10 @@ export class ClassCounter extends IModelExportHandler {
     super.onExportRelationship(relationship, isUpdate);
   }
 }
+
+// TODO: upstream to @types/chai
+// @types/chai does not use the typescript assert return type feature, so in some cases where asserting
+// something is defined should tell the typescript compiler to not think it would be undefined, use this
+export function exists<T>(a: T | undefined | null): asserts a is T {
+  assert.exists(a);
+}

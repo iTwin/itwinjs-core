@@ -20,11 +20,11 @@ import {
 import { ExtensiveTestScenario, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import {
   AxisAlignedBox3d, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorDef, CreateIModelProps, DefinitionElementProps,
-  ExternalSourceAspectProps, IModel, IModelError, PhysicalElementProps, Placement3d, QueryRowFormat,
+  ExternalSourceAspectProps, FilePropertyProps, IModel, IModelError, PhysicalElementProps, Placement3d, QueryRowFormat,
 } from "@itwin/core-common";
-import { IModelExporter, IModelExportHandler, IModelTransformer, TransformerLoggerCategory } from "../../core-transformer";
+import { IModelExporter, IModelTransformer, TransformerLoggerCategory } from "../../core-transformer";
 import {
-  ClassCounter, FilterByViewTransformer, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerTestUtils, PhysicalModelConsolidator,
+  ClassCounter, exists, FilterByViewTransformer, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerTestUtils, PhysicalModelConsolidator,
   RecordingIModelImporter, TestIModelTransformer, TransformerExtensiveTestScenario,
 } from "../IModelTransformerUtils";
 
@@ -942,13 +942,7 @@ describe("IModelTransformer", () => {
     const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: { name: "Order Test" } });
     const transformer = new IModelTransformer(new OrderedExporter(sourceDb), targetDb);
 
-    let error: any;
-    try {
-      await transformer.processSchemas();
-    } catch (_error) {
-      error = _error;
-    }
-    assert.isUndefined(error);
+    await expect(transformer.processSchemas()).not.to.be.rejected;
 
     targetDb.saveChanges();
     const targetImportedSchemasLoader = new IModelSchemaLoader(targetDb);
@@ -1502,6 +1496,140 @@ describe("IModelTransformer", () => {
         .filter(({id}) => Id64.isValidId64(id))
         .map(({id}) => id)
     );
+
+    sourceDb.close();
+    targetDb.close();
+  });
+
+  it("handles file property import with conflicts", async () => {
+    const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "FilePropertiesSource.bim");
+    const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "FileProperties" } });
+    const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "FilePropertiesTarget.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
+
+    /** equivalent to nonConflictingSubId */
+    const getConflictingId = (db: IModelDb): FilePropertyProps | undefined => ({
+      namespace: "getConflictingId",
+      name: "test-prop",
+      id: 0,
+      subId: db === sourceDb ? 0 : db === targetDb ? 1 : assert.include([sourceDb, targetDb], db) as never,
+    });
+
+    /** for there to be a subid conflict, id must already conflict */
+    const getConflictingSubId = (_db: IModelDb): FilePropertyProps | undefined => ({
+      namespace: "getConflictingSubId",
+      name: "test-prop",
+      id: 1,
+      subId: 1,
+    });
+
+    const getNonConflictingId  = (db: IModelDb): FilePropertyProps | undefined => ({
+      namespace: "getNonConflictingId",
+      name: "test-prop",
+      id: db === sourceDb ? 2 : db === targetDb ? 3 : assert.include([sourceDb, targetDb], db) as never,
+      subId: 0,
+    });
+
+    const getOnlyInSource  = (db: IModelDb): FilePropertyProps | undefined => (
+      db === sourceDb ?  {
+        namespace: "getOnlyInSource",
+        name: "test-prop",
+        id: 5,
+        subId: 0,
+      } : db === targetDb ? undefined
+        : assert.include([sourceDb, targetDb], db) as never
+    );
+
+    const getOnlyInTarget  = (db: IModelDb): FilePropertyProps | undefined => (
+      db === sourceDb ? undefined
+        : db === targetDb ? {
+          namespace: "getOnlyInTarget",
+          name: "test-prop",
+          id: 5,
+          subId: 0,
+        } : assert.include([sourceDb, targetDb], db) as never
+    );
+
+    const stringToBytes = (s: string) => new Uint8Array(Array.from(s).map((c) => c.charCodeAt(0)));
+
+    const propsToTest = [getConflictingId, getConflictingSubId, getNonConflictingId, getOnlyInSource, getOnlyInTarget];
+
+    const sourcePropsData = propsToTest.map((getProps, index) => (getProps(sourceDb) && {
+      props: getProps(sourceDb) as FilePropertyProps,
+      stringData: `source-prop-${index}`,
+      blobData: stringToBytes(`source-blob-prop-${index}`),
+    }));
+    sourcePropsData.forEach((data) => data && sourceDb.saveFileProperty(data.props, data.stringData, data.blobData));
+    // sourceDb.saveChanges();
+
+    const targetPropsData = propsToTest.map((getProps, index) => (getProps(targetDb) && {
+      props: getProps(targetDb) as FilePropertyProps,
+      stringData: `target-prop-${index}`,
+      blobData: stringToBytes(`target-blob-prop-${index}`),
+    }));
+    targetPropsData.forEach((data) => data && targetDb.saveFileProperty(data.props, data.stringData, data.blobData));
+    // targetDb.saveChanges();
+
+    const transformer = new IModelTransformer(sourceDb, targetDb);
+
+    await expect(transformer.processAll()).not.to.be.rejected;
+
+    for (let i = 0; i < propsToTest.length; ++i) {
+      const getProps = propsToTest[i];
+      const sourceProps = getProps(sourceDb);
+      const targetProps = getProps(targetDb);
+      const sourceData = sourcePropsData[i];
+      const targetData = targetPropsData[i];
+      switch (getProps) {
+        case getConflictingId:
+          exists(sourceProps);
+          exists(targetProps);
+          exists(targetData);
+          expect(targetDb.queryFilePropertyBlob(targetProps)).to.deep.equal(targetData.blobData);
+          expect(targetDb.queryFilePropertyString(targetProps)).to.equal(targetData.stringData);
+          expect(targetDb.queryFilePropertyBlob(sourceProps)).to.be.undefined;
+          expect(targetDb.queryFilePropertyString(sourceProps)).to.be.undefined;
+          break;
+        case getConflictingSubId:
+          exists(sourceProps);
+          exists(targetProps);
+          exists(targetData);
+          expect(sourceProps).to.deep.equal(targetProps);
+          expect(targetDb.queryFilePropertyBlob(targetProps)).to.deep.equal(targetData.blobData);
+          expect(targetDb.queryFilePropertyString(targetProps)).to.equal(targetData.stringData);
+          expect(targetDb.queryFilePropertyBlob(sourceProps)).to.deep.equal(targetData.blobData);
+          expect(targetDb.queryFilePropertyString(sourceProps)).to.equal(targetData.stringData);
+          break;
+        case getNonConflictingId:
+          exists(sourceProps);
+          exists(targetProps);
+          exists(sourceData);
+          exists(targetData);
+          expect(targetDb.queryFilePropertyString(sourceProps)).to.equal(sourceData.stringData);
+          expect(targetDb.queryFilePropertyBlob(sourceProps)).to.deep.equal(sourceData.blobData);
+          expect(targetDb.queryFilePropertyString(targetProps)).to.equal(targetData.stringData);
+          expect(targetDb.queryFilePropertyBlob(targetProps)).to.deep.equal(targetData.blobData);
+          break;
+        case getOnlyInSource:
+          assert.notExists(targetProps);
+          assert.notExists(targetData);
+          exists(sourceProps);
+          exists(sourceData);
+          expect(targetDb.queryFilePropertyString(sourceProps)).to.equal(sourceData.stringData);
+          expect(targetDb.queryFilePropertyBlob(sourceProps)).to.deep.equal(sourceData.blobData);
+          break;
+        case getOnlyInTarget:
+          assert.notExists(sourceProps);
+          assert.notExists(sourceData);
+          exists(targetProps);
+          exists(targetData);
+          expect(targetDb.queryFilePropertyString(targetProps)).to.equal(targetData.stringData);
+          expect(targetDb.queryFilePropertyBlob(targetProps)).to.deep.equal(targetData.blobData);
+          break;
+        default:
+          throw Error("file props test case not tested");
+      }
+    }
 
     sourceDb.close();
     targetDb.close();
