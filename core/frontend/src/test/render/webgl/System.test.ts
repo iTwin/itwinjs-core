@@ -3,13 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Gradient, ImageSource, ImageSourceFormat, RenderTexture } from "@itwin/core-common";
+import { Gradient, ImageSource, ImageSourceFormat, RenderTexture, TextureTransparency } from "@itwin/core-common";
 import { Capabilities, WebGLContext } from "@itwin/webgl-compatibility";
 import { IModelApp } from "../../../IModelApp";
 import { IModelConnection } from "../../../IModelConnection";
 import { MockRender } from "../../../render/MockRender";
 import { RenderSystem } from "../../../render/RenderSystem";
-import { TextureTransparency } from "../../../render/RenderTexture";
 import { TileAdmin } from "../../../tile/internal";
 import { System } from "../../../render/webgl/System";
 
