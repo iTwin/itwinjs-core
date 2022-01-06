@@ -207,8 +207,15 @@ describe("Disposal of WebGL Resources", () => {
 
     // Get a render graphic from tile reader
     const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel0);
-    const stream = new ByteStream(TILE_DATA_1_1.triangles.bytes.buffer);
-    const reader = ImdlReader.create(stream, model.iModel, model.id, model.is3d, system);
+    const stream = ByteStream.fromUint8Array(TILE_DATA_1_1.triangles.bytes);
+    const reader = ImdlReader.create({
+      stream,
+      iModel: model.iModel,
+      modelId: model.id,
+      is3d: model.is3d,
+      system,
+    });
+
     expect(reader).not.to.be.undefined;
     const readerRes = await reader!.read();
     const tileGraphic = readerRes.graphic!;

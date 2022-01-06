@@ -1,7 +1,7 @@
 {
   "name": "@itwin/presentation-backend",
-  "version": "3.0.0-dev.116",
-  "description": "Backend of iModel.js Presentation library",
+  "version": "3.0.0-dev.176",
+  "description": "Backend of iTwin.js Presentation library",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -11,7 +11,8 @@
     "Bentley",
     "EC",
     "Presentation",
-    "iModelJS",
+    "iTwin",
+    "iTwin.js",
     "Backend"
   ],
   "author": {
@@ -38,19 +39,19 @@
     "test:watch": "npm -s test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.116",
-    "@itwin/core-backend": "workspace:^3.0.0-dev.116",
-    "@itwin/core-common": "workspace:^3.0.0-dev.116",
-    "@itwin/core-quantity": "workspace:^3.0.0-dev.116",
-    "@itwin/presentation-common": "workspace:^3.0.0-dev.116"
+    "@itwin/core-backend": "workspace:^3.0.0-dev.176",
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.176",
+    "@itwin/core-common": "workspace:^3.0.0-dev.176",
+    "@itwin/core-quantity": "workspace:^3.0.0-dev.176",
+    "@itwin/presentation-common": "workspace:^3.0.0-dev.176"
   },
   "devDependencies": {
-    "@itwin/core-bentley": "workspace:*",
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "workspace:*",
     "@itwin/core-backend": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@itwin/presentation-common": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
@@ -69,7 +70,7 @@
     "chai-as-promised": "^7",
     "chai-jest-snapshot": "^2.0.0",
     "chai-subset": "1.6.0",
-    "cpx": "^1.5.0",
+    "cpx2": "^3.0.0",
     "cross-env": "^5.1.4",
     "deep-equal": "^1",
     "eslint": "^7.11.0",

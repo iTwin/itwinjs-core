@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "use BentleyError.getErrorProps(e) instead of just logging e",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

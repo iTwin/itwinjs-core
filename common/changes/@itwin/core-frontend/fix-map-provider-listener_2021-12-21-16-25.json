@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix viewport using terrain settings from previous display style when display style is reassigned.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

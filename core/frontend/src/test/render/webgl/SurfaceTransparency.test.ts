@@ -5,11 +5,10 @@
 import { expect } from "chai";
 import { Point2d, Point3d, Range3d, Vector3d } from "@itwin/core-geometry";
 import {
-  ColorDef, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderMaterial, RenderMode, RenderTexture, TextureMapping,
+  ColorDef, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderMaterial, RenderMode, RenderTexture, TextureMapping, TextureTransparency,
 } from "@itwin/core-common";
 import { RenderGraphic } from "../../../render/RenderGraphic";
 import { createRenderPlanFromViewport } from "../../../render/RenderPlan";
-import { TextureTransparency } from "../../../render/RenderTexture";
 import { IModelApp } from "../../../IModelApp";
 import { IModelConnection } from "../../../IModelConnection";
 import { SpatialViewState } from "../../../SpatialViewState";
@@ -17,7 +16,8 @@ import { ScreenViewport } from "../../../Viewport";
 import { Target } from "../../../render/webgl/Target";
 import { Primitive } from "../../../render/webgl/Primitive";
 import { RenderPass } from "../../../render/webgl/RenderFlags";
-import { MeshGraphic, SurfaceGeometry } from "../../../render/webgl/Mesh";
+import { MeshGraphic } from "../../../render/webgl/Mesh";
+import { SurfaceGeometry } from "../../../render/webgl/SurfaceGeometry";
 import { MeshArgs } from "../../../render/primitives/mesh/MeshPrimitives";
 import { MeshParams } from "../../../render/primitives/VertexTable";
 import { createBlankConnection } from "../../createBlankConnection";

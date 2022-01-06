@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "caching options for changed elements processing",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

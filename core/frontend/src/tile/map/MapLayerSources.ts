@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
-import { BentleyError, compareStrings } from "@itwin/core-bentley";
+import { compareStrings } from "@itwin/core-bentley";
 import { Point2d } from "@itwin/core-geometry";
 import {
   BackgroundMapProvider, BackgroundMapType, BaseMapLayerSettings, DeprecatedBackgroundMapProps, MapLayerSettings, MapSubLayerProps,
@@ -12,8 +12,8 @@ import {
 import { getJson, RequestBasicCredentials } from "@bentley/itwin-client";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
-import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationManager";
-import { ArcGisUtilities, MapCartoRectangle, MapLayerSettingsService, MapLayerSourceValidation } from "../internal";
+
+import { ArcGisUtilities, MapCartoRectangle, MapLayerSourceValidation } from "../internal";
 
 /** @internal */
 export enum MapLayerSourceStatus {
@@ -111,7 +111,6 @@ export class MapLayerSource {
 /** A collection of [[MapLayerSource]] objects.
  * @internal
  */
-
 export class MapLayerSources {
   private static _instance?: MapLayerSources;
   private constructor(private _sources: MapLayerSource[]) { }
@@ -138,20 +137,6 @@ export class MapLayerSources {
     return layers;
   }
 
-  /**
-   *  This function fetch the USG map layer sources. Those are free and publicly available but not worldwide.
-   *  Needs to validate the location of the user before fetching it.
-   */
-  private static async getUSGSSources(): Promise<MapLayerSource[]> {
-    const mapLayerSources: MapLayerSource[] = [];
-    (await ArcGisUtilities.getServiceDirectorySources("https://basemap.nationalmap.gov/arcgis/rest/services")).forEach((source) => mapLayerSources.push(source));
-    (await ArcGisUtilities.getServiceDirectorySources("https://index.nationalmap.gov/arcgis/rest/services")).forEach((source) => mapLayerSources.push(source));
-    (await ArcGisUtilities.getServiceDirectorySources("https://hydro.nationalmap.gov/arcgis/rest/services")).forEach((source) => mapLayerSources.push(source));
-    (await ArcGisUtilities.getServiceDirectorySources("https://carto.nationalmap.gov/arcgis/rest/services")).forEach((source) => mapLayerSources.push(source));
-    (await ArcGisUtilities.getServiceDirectorySources("https://elevation.nationalmap.gov/arcgis/rest/services")).forEach((source) => mapLayerSources.push(source));
-    return mapLayerSources;
-  }
-
   private static getBingMapLayerSource(): MapLayerSource[] {
     const mapLayerSources: MapLayerSource[] = [];
     mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Street } })!);
@@ -165,16 +150,6 @@ export class MapLayerSources {
     mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Street } })!);
     mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Aerial } })!);
     mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Hybrid } })!);
-    return mapLayerSources;
-  }
-
-  /**
- *  This function fetch the Disco map layer sources. Those sources are for Europe but not very reliable.
- *  Needs to validate the location of the user before fetching it.
- */
-  private static async getDiscoSources(): Promise<MapLayerSource[]> {
-    const mapLayerSources: MapLayerSource[] = [];
-    (await ArcGisUtilities.getServiceDirectorySources("https://land.discomap.eea.europa.eu/arcgis/rest/services")).forEach((source) => mapLayerSources.push(source));
     return mapLayerSources;
   }
 
@@ -214,7 +189,7 @@ export class MapLayerSources {
     }
 
     if (queryForPublicSources) {
-      const sourcesJson = await getJson("assets/MapLayerSources.json");
+      const sourcesJson = await getJson(`${IModelApp.publicPath}assets/MapLayerSources.json`);
 
       for (const sourceJson of sourcesJson) {
         const source = MapLayerSource.fromJSON(sourceJson);
@@ -223,14 +198,6 @@ export class MapLayerSources {
       }
 
       (await ArcGisUtilities.getSourcesFromQuery(sourceRange)).forEach((queriedSource) => addSource(queriedSource));
-    }
-
-    if (iModel && iModel.iTwinId && iModel.iModelId) {
-      try {
-        (await MapLayerSettingsService.getSourcesFromSettingsService(iModel.iTwinId, iModel.iModelId)).forEach((source) => addSource(source));
-      } catch (err) {
-        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.localization.getLocalizedString("mapLayers:CustomAttach.ErrorLoadingLayers"), BentleyError.getErrorMessage(err)));
-      }
     }
 
     sources.sort((a: MapLayerSource, b: MapLayerSource) => compareStrings(a.name.toLowerCase(), b.name.toLowerCase()));

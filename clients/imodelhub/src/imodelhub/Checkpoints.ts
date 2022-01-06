@@ -50,6 +50,10 @@ export class Checkpoint extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.MergedChangeSetId")
   public mergedChangeSetId?: string;
 
+  /** Index of the last [[ChangeSet]] that was merged into this checkpoint file. */
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.MergedChangeSetIndex")
+  public mergedChangeSetIndex?: number;
+
   /** Date when this checkpoint file was created. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.CreatedDate")
   public createdDate?: string;

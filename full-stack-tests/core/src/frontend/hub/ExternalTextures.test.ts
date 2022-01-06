@@ -100,7 +100,7 @@ describe("external texture requests (#integration)", () => {
     finishedTexRequests.forEach((texReq: ExternalTextureRequest) => {
       expectNoDuplicates(texReq);
       const texHandle = texReq.handle;
-      expect(texHandle.format).to.equal(GL.Texture.Format.Rgb);
+      expect(texHandle.format).to.equal(GL.Texture.Format.Rgba);
       expect(texHandle.width === 1024 || texHandle.width === 512 || texHandle.width === 256).to.be.true;
       expect(texHandle.height === 1024 || texHandle.height === 512 || texHandle.height === 256).to.be.true;
     });

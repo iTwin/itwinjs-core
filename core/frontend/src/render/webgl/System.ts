@@ -9,7 +9,7 @@
 import { assert, BentleyStatus, Dictionary, dispose, Id64, Id64String } from "@itwin/core-bentley";
 import { ClipVector, Point3d, Transform } from "@itwin/core-geometry";
 import {
-  ColorDef, ElementAlignedBox3d, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSourceFormat, IModelError, PackedFeatureTable, RenderMaterial, RenderTexture,
+  ColorDef, ElementAlignedBox3d, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSourceFormat, IModelError, PackedFeatureTable, RenderMaterial, RenderTexture, TextureTransparency,
 } from "@itwin/core-common";
 import { Capabilities, DepthType, WebGLContext } from "@itwin/webgl-compatibility";
 import { imageElementFromImageSource } from "../../ImageUtil";
@@ -24,11 +24,13 @@ import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
 import { RealityMeshPrimitive } from "../primitives/mesh/RealityMeshPrimitive";
 import { TerrainMeshPrimitive } from "../primitives/mesh/TerrainMeshPrimitive";
 import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
-import { MeshParams, PointStringParams, PolylineParams } from "../primitives/VertexTable";
+import { MeshParams } from "../primitives/VertexTable";
+import { PointStringParams } from "../primitives/PointStringParams";
+import { PolylineParams } from "../primitives/PolylineParams";
 import { RenderClipVolume } from "../RenderClipVolume";
 import { RenderGraphic, RenderGraphicOwner } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
-import { CreateTextureArgs, CreateTextureFromSourceArgs, TextureCacheKey, TextureTransparency } from "../RenderTexture";
+import { CreateTextureArgs, CreateTextureFromSourceArgs, TextureCacheKey } from "../RenderTexture";
 import {
   DebugShaderFile, GLTimerResultCallback, PlanarGridProps, RenderAreaPattern, RenderDiagnostics, RenderGeometry, RenderSkyBoxParams,
   RenderSystem, RenderSystemDebugControl, TerrainTexture,
@@ -44,7 +46,7 @@ import { WebGLDisposable } from "./Disposable";
 import { DepthBuffer, FrameBufferStack } from "./FrameBuffer";
 import { GL } from "./GL";
 import { GLTimer } from "./GLTimer";
-import { Batch, Branch, Graphic, GraphicOwner, GraphicsArray } from "./Graphic";
+import { AnimationTransformBranch, Batch, Branch, Graphic, GraphicOwner, GraphicsArray } from "./Graphic";
 import { Layer, LayerContainer } from "./Layer";
 import { LineCode } from "./LineCode";
 import { Material } from "./Material";
@@ -189,10 +191,15 @@ export class IdMap implements WebGLDisposable {
       this.materials.set(material.key, material);
   }
 
-  /** Add a texture to this IdMap, given that it has a valid key. */
-  public addTexture(texture: RenderTexture) {
+  /** Add a texture to this IdMap, given that it has a valid string key. If specified, it will instead use the key parameter, which could also be a gradient symb. */
+  public addTexture(texture: RenderTexture, key?: TextureCacheKey) {
     assert(texture instanceof Texture);
-    if (texture.key)
+    if (undefined !== key) {
+      if ("string" === typeof key)
+        this.textures.set(key, texture);
+      else
+        this.addGradient(key, texture);
+    } else if (texture.key)
       this.textures.set(texture.key, texture);
   }
 
@@ -239,11 +246,17 @@ export class IdMap implements WebGLDisposable {
     if (tex)
       return tex;
 
-    const handle = TextureHandle.createForElement(key, iModel, params.type, format);
+    const handle = TextureHandle.createForElement(key, iModel, params.type, format, (_, data) => {
+      if (tex) {
+        assert(tex instanceof Texture);
+        tex.transparency = data.transparency ?? TextureTransparency.Mixed;
+      }
+    });
+
     if (!handle)
       return undefined;
 
-    tex = new Texture({ handle, type: params.type, ownership: { key, iModel } });
+    tex = new Texture({ handle, type: params.type, ownership: { key, iModel }, transparency: TextureTransparency.Opaque });
     this.addTexture(tex);
     return tex;
   }
@@ -265,7 +278,7 @@ export class IdMap implements WebGLDisposable {
 
   public async createTextureFromImageSource(args: CreateTextureFromSourceArgs, key: string): Promise<RenderTexture | undefined> {
     // JPEGs don't support transparency.
-    const transparency = ImageSourceFormat.Jpeg === args.source.format ? TextureTransparency.Opaque : (args.transparency ?? TextureTransparency.Translucent);
+    const transparency = ImageSourceFormat.Jpeg === args.source.format ? TextureTransparency.Opaque : (args.transparency ?? TextureTransparency.Mixed);
     try {
       const image = await imageElementFromImageSource(args.source);
       if (!IModelApp.hasRenderSystem)
@@ -297,7 +310,7 @@ export class IdMap implements WebGLDisposable {
       return undefined;
 
     const ownership = params.key ? { key: params.key, iModel: this._iModel } : (params.isOwned ? "external" : undefined);
-    tex = new Texture({ handle, ownership, type: params.type });
+    tex = new Texture({ handle, ownership, type: params.type, transparency: TextureTransparency.Opaque });
     this.addTexture(tex);
     return tex;
   }
@@ -378,6 +391,9 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   public override get maxTextureSize(): number { return this.capabilities.maxTextureSize; }
   public override get supportsInstancing(): boolean { return this.capabilities.supportsInstancing; }
   public override get supportsNonuniformScaledInstancing(): boolean { return this.capabilities.isWebGL2; }
+
+  /** Requires gl_VertexID (WebGL 2 only) and > 8 texture units (WebGL 1 only guarantees 8). */
+  public override get supportsIndexedEdges(): boolean { return this.isWebGL2; }
   public get isWebGL2(): boolean { return this.capabilities.isWebGL2; }
   public override get isMobile(): boolean { return this.capabilities.isMobile; }
 
@@ -559,6 +575,10 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return new Branch(branch, transform, undefined, options);
   }
 
+  public override createAnimationTransformNode(graphic: RenderGraphic, nodeId: number): RenderGraphic {
+    return new AnimationTransformBranch(graphic, nodeId);
+  }
+
   public createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions): RenderGraphic {
     return new Batch(graphic, features, range, options);
   }
@@ -668,19 +688,18 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     const type = args.type ?? RenderTexture.Type.Normal;
     const source = args.image.source;
 
-    // ###TODO createForImageBuffer should take args.transparency.
     let handle;
     if (source instanceof ImageBuffer)
-      handle = TextureHandle.createForImageBuffer(source, type); // ###TODO use transparency from args
+      handle = TextureHandle.createForImageBuffer(source, type);
     else
-      handle = TextureHandle.createForImage(source, TextureTransparency.Opaque !== args.image.transparency, type);
+      handle = TextureHandle.createForImage(source, type);
 
     if (!handle)
       return undefined;
 
-    const texture = new Texture({ handle, type, ownership: args.ownership });
+    const texture = new Texture({ handle, type, ownership: args.ownership, transparency: args.image.transparency ?? TextureTransparency.Mixed });
     if (texture && info)
-      info.idMap.addTexture(texture);
+      info.idMap.addTexture(texture, info.key);
 
     return texture;
   }
@@ -708,7 +727,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return this.createTexture({
       image: {
         source,
-        transparency: ImageBufferFormat.Rgba === source.format ? TextureTransparency.Translucent : TextureTransparency.Opaque,
+        transparency: ImageBufferFormat.Rgba === source.format ? TextureTransparency.Mixed : TextureTransparency.Opaque,
       },
       ownership: iModel ? { iModel, key: symb } : undefined,
       type: RenderTexture.Type.Normal,
@@ -863,9 +882,6 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
 
   // RenderSystemDebugControl
   public override get debugControl(): RenderSystemDebugControl { return this; }
-  private _drawSurfacesAsWiremesh = false;
-  public get drawSurfacesAsWiremesh() { return this._drawSurfacesAsWiremesh; }
-  public set drawSurfacesAsWiremesh(asWiremesh: boolean) { this._drawSurfacesAsWiremesh = asWiremesh; }
 
   private _dpiAwareLOD?: boolean;
   public override get dpiAwareLOD(): boolean { return this._dpiAwareLOD ?? super.dpiAwareLOD; }

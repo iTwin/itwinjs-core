@@ -7,10 +7,10 @@
  */
 
 import { Id64, Id64Arg, Id64Array, Id64String } from "@itwin/core-bentley";
-import { editorBuiltInCmdIds, ElementGeometryCacheFilter, ElementGeometryResultOptions, ElementGeometryResultProps, LocateSubEntityProps, SolidModelingCommandIpc, SubEntityFilter, SubEntityGeometryProps, SubEntityLocationProps, SubEntityProps, SubEntityType } from "@itwin/editor-common";
+import { BRepEntityType, editorBuiltInCmdIds, ElementGeometryCacheFilter, ElementGeometryResultOptions, ElementGeometryResultProps, LocateSubEntityProps, SolidModelingCommandIpc, SubEntityFilter, SubEntityGeometryProps, SubEntityLocationProps, SubEntityProps, SubEntityType } from "@itwin/editor-common";
 import { FeatureAppearance, FeatureAppearanceProvider, RgbColor } from "@itwin/core-common";
 import { Point3d, Range3d, Ray3d, Transform } from "@itwin/core-geometry";
-import { AccuDrawHintBuilder, BeButtonEvent, BeModifierKeys, CoordinateLockOverrides, DecorateContext, DynamicsContext, ElementSetTool, EventHandled, FeatureOverrideProvider, FeatureSymbology, GraphicBranch, GraphicBranchOptions, GraphicType, HitDetail, IModelApp, IModelConnection, InputSource, LocateResponse, readElementGraphics, RenderGraphicOwner, SelectionMethod, SelectionSet, Viewport } from "@itwin/core-frontend";
+import { AccuDrawHintBuilder, BeButtonEvent, BeModifierKeys, CoordinateLockOverrides, CoordSource, DecorateContext, DynamicsContext, ElementSetTool, EventHandled, FeatureOverrideProvider, FeatureSymbology, GraphicBranch, GraphicBranchOptions, GraphicType, HitDetail, IModelApp, IModelConnection, InputSource, LocateResponse, readElementGraphics, RenderGraphicOwner, SelectionMethod, SelectionSet, Viewport } from "@itwin/core-frontend";
 import { computeChordToleranceFromPoint } from "./CreateElementTool";
 import { EditTools } from "./EditTool";
 
@@ -89,6 +89,7 @@ export function isSameSubEntity(a: SubEntityProps, b: SubEntityProps): boolean {
 /** @alpha */
 export class SubEntityData {
   public toolData?: any;
+  public chordTolerance?: number;
 
   private _props: SubEntityProps;
   private _geometry?: SubEntityGeometryProps;
@@ -107,7 +108,7 @@ export class SubEntityData {
   public getAppearance(vp: Viewport, accepted: boolean): FeatureAppearance {
     const color = vp.hilite.color;
     const rgb = RgbColor.fromColorDef(accepted ? color.inverse() : color);
-    const transparency = accepted ? 0.35 : 0.25;
+    const transparency = 0.25;
     const emphasized = true; // Necessary for obscured sub-entities w/SceneGraphic...
     let weight;
 
@@ -115,11 +116,11 @@ export class SubEntityData {
       case SubEntityType.Face:
         break;
       case SubEntityType.Edge:
-        const edgeWeight = accepted ? 5 : 3;
+        const edgeWeight = accepted ? 1 : 3;
         weight = this._geometry?.appearance?.weight ? Math.min(this._geometry.appearance.weight + edgeWeight, 31) : edgeWeight;
         break;
       case SubEntityType.Vertex:
-        const vertexWeight = accepted ? 12 : 10;
+        const vertexWeight = accepted ? 8 : 10;
         weight = this._geometry?.appearance?.weight ? Math.min(this._geometry.appearance.weight + vertexWeight, 31) : vertexWeight;
         break;
     }
@@ -152,19 +153,17 @@ export class SubEntityData {
     if (undefined === this._graphicsProvider?.graphic)
       return;
 
-    const appearanceProvider = FeatureAppearanceProvider.supplement((app: FeatureAppearance) => {
-      return app.extendAppearance(this.getAppearance(context.viewport, accepted));
-    });
-
-    const opts: GraphicBranchOptions = { appearanceProvider };
-
     const range = (this._geometry?.range ? Range3d.fromJSON(this._geometry.range) : undefined);
     const pixelSize = context.viewport.getPixelSizeAtPoint(range ? range.center : undefined);
     const offsetDir = context.viewport.view.getZVector();
     offsetDir.scaleToLength(3 * pixelSize, offsetDir);
     const offsetTrans = Transform.createTranslation(offsetDir);
 
-    this._graphicsProvider.addDecoration(context, GraphicType.Scene, offsetTrans, opts);
+    const appearanceProvider = FeatureAppearanceProvider.supplement((app: FeatureAppearance) => {
+      return app.extendAppearance(this.getAppearance(context.viewport, accepted));
+    });
+
+    this._graphicsProvider.addDecoration(context, GraphicType.Scene, offsetTrans, { appearanceProvider });
   }
 }
 
@@ -175,6 +174,8 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
   protected _graphicsProvider?: ElementGeometryGraphicsProvider;
   protected _graphicsPending?: true;
   protected _firstResult = true;
+  protected _agendaAppearanceDefault?: FeatureAppearance;
+  protected _agendaAppearanceDynamic?: FeatureAppearance;
 
   protected allowView(vp: Viewport) { return vp.view.is3d(); }
   public override isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && this.allowView(vp)); }
@@ -189,16 +190,28 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
     return EditTools.callCommand(method, ...args) as ReturnType<SolidModelingCommandIpc[T]>;
   }
 
-  // TODO: This looks nice as long as ViewFlags.transparency is on...
-  protected get agendaAppearance(): FeatureAppearance { return FeatureAppearance.fromTransparency(0.90); }
+  protected agendaAppearance(isDynamics: boolean): FeatureAppearance {
+    if (isDynamics) {
+      if (undefined === this._agendaAppearanceDynamic)
+        this._agendaAppearanceDynamic = FeatureAppearance.fromTransparency(0.0);
+
+      return this._agendaAppearanceDynamic;
+    }
+
+    if (undefined === this._agendaAppearanceDefault)
+      this._agendaAppearanceDefault = FeatureAppearance.fromTransparency(0.9);
+
+    return this._agendaAppearanceDefault;
+  }
+
   protected get wantAgendaAppearanceOverride(): boolean { return false; }
 
   public addFeatureOverrides(overrides: FeatureSymbology.Overrides, _vp: Viewport): void {
     if (this.agenda.isEmpty)
       return;
 
-    const app = this.agendaAppearance;
-    this.agenda.elements.forEach((id) => { overrides.overrideElement(id, app); });
+    const appearance = this.agendaAppearance(false);
+    this.agenda.elements.forEach((elementId) => { overrides.override({ elementId, appearance }); });
   }
 
   protected updateAgendaAppearanceProvider(drop?: true): void {
@@ -236,6 +249,9 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
     let accept = this._checkedIds.get(id);
 
     if (undefined === accept) {
+      if (this.agenda.isEmpty && this._checkedIds.size > 1000)
+        this._checkedIds.clear(); // Limit auto-locate cache size to something reasonable...
+
       accept = await this.createElementGeometryCache(id);
       this._checkedIds.set(id, accept);
     }
@@ -274,8 +290,17 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
   }
 
   public override onDynamicFrame(_ev: BeButtonEvent, context: DynamicsContext): void {
-    if (undefined !== this._graphicsProvider)
-      this._graphicsProvider.addGraphic(context);
+    if (undefined === this._graphicsProvider)
+      return;
+
+    if (!this.wantAgendaAppearanceOverride)
+      return this._graphicsProvider.addGraphic(context);
+
+    const appearanceProvider = FeatureAppearanceProvider.supplement((app: FeatureAppearance) => {
+      return app.extendAppearance(this.agendaAppearance(true));
+    });
+
+    this._graphicsProvider.addGraphic(context, undefined, { appearanceProvider });
   }
 
   public override async onMouseMotion(ev: BeButtonEvent): Promise<void> {
@@ -356,8 +381,12 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
   protected _currentSubEntity?: SubEntityData;
   protected _acceptedSubEntities: SubEntityData[] = [];
   protected _locatedSubEntities?: SubEntityLocationProps[];
+  protected _subEntityGraphicPending?: true;
+  protected readonly _summaryIds = new Map<Id64String, BRepEntityType[]>();
 
   protected override get wantAgendaAppearanceOverride(): boolean { return true; }
+  protected get wantGeometrySummary(): boolean { return false; }
+  protected get wantSubEntitySnap(): boolean { return false; }
 
   protected wantSubEntityType(type: SubEntityType): boolean { return SubEntityType.Face === type; }
   protected getMaximumSubEntityHits(type: SubEntityType): number { return this.wantSubEntityType(type) ? 25 : 0; }
@@ -369,6 +398,46 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
   protected get allowSubEntityControlSelect(): boolean { return true; }
   protected get allowSubEntityControlDeselect(): boolean { return this.allowSubEntityControlSelect; }
   protected get allowSubEntitySelectNext(): boolean { return !this.isDynamicsStarted; }
+
+  protected getBRepEntityTypeForSubEntity(id: Id64String, subEntity: SubEntityProps): BRepEntityType {
+    const summary = this._summaryIds.get(id);
+
+    if (undefined === summary)
+      return BRepEntityType.Invalid;
+
+    const index = (undefined !== subEntity.index ? subEntity.index : 0);
+
+    if (index >= summary.length)
+      return BRepEntityType.Invalid;
+
+    return summary[index];
+  }
+
+  protected async createElementGeometrySummary(id: Id64String): Promise<boolean> {
+    let summary = this._summaryIds.get(id);
+
+    if (undefined === summary) {
+      if (this.agenda.isEmpty && this._summaryIds.size > 1000)
+        this._summaryIds.clear(); // Limit auto-locate cache size to something reasonable...
+
+      try {
+        this._startedCmd = await this.startCommand();
+        if (undefined === (summary = await ElementGeometryCacheTool.callCommand("summarizeElementGeometryCache", id)))
+          return false;
+      } catch (err) {
+        return false;
+      }
+
+      this._summaryIds.set(id, summary);
+    }
+
+    return true;
+  }
+
+  protected override async createElementGeometryCache(id: Id64String): Promise<boolean> {
+    const accept = await super.createElementGeometryCache(id);
+    return (accept && this.wantGeometrySummary ? this.createElementGeometrySummary(id) : accept);
+  }
 
   protected getAcceptedSubEntityData(index: number = -1): SubEntityData | undefined {
     if (-1 === index)
@@ -450,6 +519,10 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
     return spacePoint;
   }
 
+  protected wantHiddenEdges(vp: Viewport): boolean {
+    return vp.viewFlags.hiddenEdgesVisible();
+  }
+
   protected getSubEntityFilter(): SubEntityFilter | undefined { return undefined; }
 
   protected async pickSubEntities(id: Id64String, boresite: Ray3d, maxFace: number, maxEdge: number, maxVertex: number, maxDistance: number, hiddenEdgesVisible: boolean, filter?: SubEntityFilter): Promise<SubEntityLocationProps[] | undefined> {
@@ -485,7 +558,7 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
     const maxDistance = this.getMaxRayDistance(ev, aperture);
     const spacePoint = this.getRayOrigin(ev);
     const boresite = AccuDrawHintBuilder.getBoresite(spacePoint, vp);
-    const hiddenEdgesVisible = vp.viewFlags.hiddenEdgesVisible();
+    const hiddenEdgesVisible = this.wantHiddenEdges(vp);
     const filter = this.getSubEntityFilter();
 
     let hits = await this.pickSubEntities(id, boresite, maxFace, maxEdge, maxVertex, maxDistance, hiddenEdgesVisible, filter);
@@ -522,13 +595,24 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
 
   protected async createSubEntityData(id: Id64String, hit: SubEntityLocationProps): Promise<SubEntityData> {
     const data = new SubEntityData(hit.subEntity);
+    const chordTolerance = (this.targetView ? computeChordToleranceFromPoint(this.targetView, Point3d.fromJSON(hit.point)) : undefined);
 
-    try {
-      const chordTolerance = this.targetView ? computeChordToleranceFromPoint(this.targetView, Point3d.fromJSON(hit.point)) : 0.0;
-      await this.createSubEntityGraphic(id, data, chordTolerance);
-    } catch (err) {}
+    await this.createSubEntityGraphic(id, data, chordTolerance);
 
     return data;
+  }
+
+  /** Append specified sub-entity to accepted array. */
+  protected async addSubEntity(id: Id64String, props: SubEntityLocationProps): Promise<void> {
+    this._acceptedSubEntities.push(await this.createSubEntityData(id, props));
+  }
+
+  /** Remove specified sub-entity from accepted array, or pop last sub-entity if undefined. */
+  protected async removeSubEntity(_id: Id64String, props?: SubEntityLocationProps): Promise<void> {
+    if (undefined !== props)
+      this._acceptedSubEntities = this._acceptedSubEntities.filter((entry) => !isSameSubEntity(entry.props, props.subEntity));
+    else
+      this._acceptedSubEntities.pop();
   }
 
   /** Locate sub-entities for the most recently added (last) agenda entry. Tool sub-classes that wish to identity
@@ -544,16 +628,24 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
       this._locatedSubEntities = await this.doPickSubEntities(id, ev);
       if (undefined === this._locatedSubEntities || 0 === this._locatedSubEntities.length)
         return false;
+
+      /** NOTE: Set last button location to point on sub-entity when not snapping.
+        * If dynamics are enabled on this event, onDynamicFrame is called with this location.
+        */
+      if (CoordSource.ElemSnap !== ev.coordsFrom) {
+        ev.point.setFrom(Point3d.fromJSON(this._locatedSubEntities[0].point));
+        IModelApp.toolAdmin.setAdjustedDataPoint(ev);
+      }
     } else {
-      this._acceptedSubEntities.pop();
+      await this.removeSubEntity(id);
     }
 
     const hit = this._locatedSubEntities?.shift();
     if (undefined !== hit) {
       if (undefined === this._acceptedSubEntities.find((entry) => isSameSubEntity(entry.props, hit.subEntity)))
-        this._acceptedSubEntities.push(await this.createSubEntityData(id, hit));
+        await this.addSubEntity(id, hit);
       else if (this.allowSubEntityControlDeselect)
-        this._acceptedSubEntities = this._acceptedSubEntities.filter((entry) => !isSameSubEntity(entry.props, hit.subEntity));
+        await this.removeSubEntity(id, hit);
     }
 
     IModelApp.viewManager.invalidateDecorationsAllViews();
@@ -583,8 +675,10 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
     if (this.wantAdditionalSubEntities) {
       await this.doLocateSubEntity(ev, true);
 
-      if (this.wantAdditionalSubEntities)
+      if (this.wantAdditionalSubEntities) {
+        this.setupAndPromptForNextAction();
         return EventHandled.No;
+      }
 
       this.clearCurrentSubEntity();
     }
@@ -638,27 +732,39 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
     if (undefined === id)
       return this.changeCurrentSubEntity();
 
-    const current = await this.doPickSubEntities(id, ev);
-    const chordTolerance = current ? computeChordToleranceFromPoint(ev.viewport, Point3d.fromJSON(current[0].point)) : 0.0;
-
-    if (!await this.changeCurrentSubEntity(id, current ? current[0] : undefined, chordTolerance))
+    if (this._subEntityGraphicPending)
       return false;
 
-    IModelApp.viewManager.invalidateDecorationsAllViews();
-    return true;
+    this._subEntityGraphicPending = true;
+
+    const current = await this.doPickSubEntities(id, ev);
+    const chordTolerance = current ? computeChordToleranceFromPoint(ev.viewport, Point3d.fromJSON(current[0].point)) : 0.0;
+    const status = await this.changeCurrentSubEntity(id, current ? current[0] : undefined, chordTolerance);
+
+    this._subEntityGraphicPending = undefined;
+
+    if (status)
+      IModelApp.viewManager.invalidateDecorationsAllViews();
+
+    return status;
   }
 
   protected async createSubEntityGraphic(id: Id64String, data: SubEntityData, chordTolerance?: number): Promise<boolean> {
-    const opts: ElementGeometryResultOptions = {
-      wantGraphic: true,
-      wantRange: true,
-      wantAppearance: true,
-      chordTolerance,
-    };
+    try {
+      const opts: ElementGeometryResultOptions = {
+        wantGraphic: true,
+        wantRange: true,
+        wantAppearance: true,
+        chordTolerance,
+      };
 
-    data.geometry = await ElementGeometryCacheTool.callCommand("getSubEntityGeometry", id, data.props, opts);
+      data.chordTolerance = chordTolerance;
+      data.geometry = await ElementGeometryCacheTool.callCommand("getSubEntityGeometry", id, data.props, opts);
 
-    return data.createGraphic(this.iModel);
+      return await data.createGraphic(this.iModel);
+    } catch (err) {
+      return false;
+    }
   }
 
   protected override async updateGraphic(ev: BeButtonEvent, isDynamics: boolean): Promise<void> {
@@ -707,13 +813,15 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
     if (this.isSelectByPoints || !this.wantAccuSnap)
       return false;
 
-    if (!this.isControlDown)
+    if (this.isDynamicsStarted)
       return true;
 
-    if (!(this.controlKeyContinuesSelection || this.allowSubEntityControlSelect))
-      return true;
+    const isCtrlSelect = (this.isControlDown && (this.controlKeyContinuesSelection || this.allowSubEntityControlSelect));
 
-    return (!(this.wantAdditionalElements || this.wantAdditionalSubEntities));
+    if (isCtrlSelect || this.wantAdditionalElements || this.wantAdditionalSubEntities)
+      return this.wantSubEntitySnap;
+
+    return !this.wantSubEntitySnap;
   }
 
   protected setupAccuDraw(): void { }

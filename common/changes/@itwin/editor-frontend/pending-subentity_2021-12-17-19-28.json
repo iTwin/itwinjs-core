@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/editor-frontend",
+      "comment": "Don't try to locate sub-entity under cursor until previous request completes.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/editor-frontend"
+}

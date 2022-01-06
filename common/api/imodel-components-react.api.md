@@ -27,7 +27,7 @@ import { ScreenViewport } from '@itwin/core-frontend';
 import { StandardViewId } from '@itwin/core-frontend';
 import { TentativePoint } from '@itwin/core-frontend';
 import { TypeEditor } from '@itwin/components-react';
-import { UiEvent } from '@itwin/core-react';
+import { UiEvent } from '@itwin/appui-abstract';
 import { UnitProps } from '@itwin/core-quantity';
 import { UnitsProvider } from '@itwin/core-quantity';
 import { Vector3d } from '@itwin/core-geometry';

@@ -9,7 +9,7 @@ import {
   IModelDb, ModelSelector, PhysicalModel, PhysicalPartition, Relationship, SpatialCategory,
   SpatialViewDefinition, SubCategory, ViewDefinition,
 } from "@itwin/core-backend";
-import { IModelTransformer, IModelTransformOptions } from "@itwin/core-transformer";
+import { IModelImporter, IModelTransformer, IModelTransformOptions } from "@itwin/core-transformer";
 import { ElementProps, IModel } from "@itwin/core-common";
 
 export const loggerCategory = "imodel-transformer";
@@ -66,8 +66,8 @@ export class Transformer extends IModelTransformer {
     transformer.logElapsedTime();
   }
 
-  private constructor(sourceDb: IModelDb, targetDb: IModelDb, options?: IModelTransformOptions) {
-    super(sourceDb, targetDb, options);
+  private constructor(sourceDb: IModelDb, targetDb: IModelDb, options?: TransformerOptions) {
+    super(sourceDb, new IModelImporter(targetDb, { simplifyElementGeometry: options?.simplifyElementGeometry }), options);
   }
 
   private initialize(options?: TransformerOptions): void {
@@ -76,9 +76,6 @@ export class Transformer extends IModelTransformer {
     this.logChangeTrackingMemoryUsed();
 
     // customize transformer using the specified options
-    if (options?.simplifyElementGeometry) {
-      this.importer.simplifyElementGeometry = true;
-    }
     if (options?.combinePhysicalModels) {
       this._targetPhysicalModelId = PhysicalModel.insert(this.targetDb, IModel.rootSubjectId, "CombinedPhysicalModel"); // WIP: Id should be passed in, not inserted here
       this.importer.doNotUpdateElementIds.add(this._targetPhysicalModelId);

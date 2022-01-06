@@ -5,9 +5,11 @@
 import { assert, expect } from "chai";
 import * as sinon from "sinon";
 import * as path from "path";
-import { BlobDaemon } from "@bentley/imodeljs-native";
+import { CloudSqlite } from "@bentley/imodeljs-native";
 import { DbResult, Guid, Logger } from "@itwin/core-bentley";
-import { BatchType, ContentIdProvider, defaultTileOptions, IModelTileRpcInterface, iModelTileTreeIdToString, RpcActivity, RpcManager, RpcRegistry } from "@itwin/core-common";
+import {
+  BatchType, ContentIdProvider, defaultTileOptions, EdgeType, IModelTileRpcInterface, iModelTileTreeIdToString, RpcActivity, RpcManager, RpcRegistry,
+} from "@itwin/core-common";
 import { V2CheckpointAccessProps } from "../../BackendHubAccess";
 import { IModelHost, IModelHostConfiguration } from "../../IModelHost";
 import { IModelDb, SnapshotDb } from "../../IModelDb";
@@ -47,7 +49,7 @@ export async function getTileProps(iModel: IModelDb): Promise<TileContentRequest
       continue;
 
     iModelTileTreeIdToString;
-    const treeId = iModelTileTreeIdToString(modelId, { type: BatchType.Primary, edgesRequired: false }, defaultTileOptions);
+    const treeId = iModelTileTreeIdToString(modelId, { type: BatchType.Primary, edges: EdgeType.None }, defaultTileOptions);
     const treeProps = await iModel.tiles.requestTileTreeProps(treeId);
     // Ignore empty tile trees.
     if (treeProps.rootTile.maximumSize === 0 && treeProps.rootTile.isLeaf === true)
@@ -129,10 +131,10 @@ describe("TileCache, open v2", async () => {
     snapshot.close();
     // Mock iModelHub
     const mockCheckpointV2: V2CheckpointAccessProps = {
-      user: "testAccount",
-      container: `imodelblocks-${iModelId}`,
-      auth: "testSAS",
-      dbAlias: "testDb",
+      accountName: "testAccount",
+      containerId: `imodelblocks-${iModelId}`,
+      sasToken: "testSAS",
+      dbName: "testDb",
       storageType: "azure?sas=1",
     };
 
@@ -142,9 +144,9 @@ describe("TileCache, open v2", async () => {
     sinon.stub(IModelHost, "hubAccess").get(() => HubMock);
     sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => mockCheckpointV2);
     const daemonSuccessResult = { result: DbResult.BE_SQLITE_OK, errMsg: "" };
-    sinon.stub(BlobDaemon, "command").callsFake(async () => daemonSuccessResult);
+    sinon.stub(CloudSqlite.Daemon, "command").callsFake(async () => daemonSuccessResult);
     // Mock blockcacheVFS daemon
-    sinon.stub(BlobDaemon, "getDbFileName").callsFake(() => dbPath);
+    sinon.stub(CloudSqlite.Daemon, "getDbFileName").callsFake(() => dbPath);
 
     process.env.BLOCKCACHE_DIR = "/foo/";
     const checkpointProps = { accessToken: "dummy", iTwinId, iModelId, changeset };

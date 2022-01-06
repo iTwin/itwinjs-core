@@ -11,6 +11,7 @@ import { Point2d, Range1d, Range2d } from "@itwin/core-geometry";
 import { Cartographic } from "@itwin/core-common";
 import { getJson } from "@bentley/itwin-client";
 import { GeographicTilingScheme, QuadId } from "./tile/internal";
+import { IModelApp } from "./IModelApp";
 
 let instance: ApproximateTerrainHeights | undefined;
 
@@ -39,7 +40,7 @@ export class ApproximateTerrainHeights {
    */
   public async initialize(): Promise<void> {
     if (undefined === this._terrainHeights) {
-      this._terrainHeights = await getJson("assets/approximateTerrainHeights.json");
+      this._terrainHeights = await getJson(`${IModelApp.publicPath}assets/approximateTerrainHeights.json`);
     }
   }
 
