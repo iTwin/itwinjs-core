@@ -507,10 +507,10 @@ export const discardClassifiedByAlpha = `
 const discardByTextureAlpha = `
   if (isSurfaceBitSet(kSurfaceBit_HasTexture)) {
     float cutoff = abs(u_alphaCutoff);
-    if (kRenderPass_OpaqueLinear <= u_renderPass && kRenderPass_OpaqueGeneral >= u_renderPass)
+    if (kRenderPass_Translucent == u_renderPass)
+      return u_alphaCutoff > 0.0 && alpha >= cutoff;
+    else
       return alpha < cutoff;
-    else if (kRenderPass_Translucent == u_renderPass && u_alphaCutoff > 0.0)
-      return alpha >= cutoff;
   }
 
   return false;
