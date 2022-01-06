@@ -193,7 +193,7 @@ Note: `readGltfGraphics` targets the [glTF 2.0 specification](https://www.khrono
 
 ##### Schema requirements
 
-A new `requiredSchemas` attribute has been added: [Ruleset.requiredSchemas]($presentation-common) and [Rule.requiredSchemas]($presentation-common). The attribute allows an easy way to filter presentation rules based on
+A new `requiredSchemas` attribute has been added: [Ruleset.requiredSchemas]($presentation-common) and [RuleBase.requiredSchemas]($presentation-common). The attribute allows an easy way to filter presentation rules based on
 ECSchemas / domains available in the iModel. See more details in the [Defining ECSchema Requirements for Presentation Rules]($docs/presentation/Advanced/SchemaRequirements) page.
 
 ##### Conditional root node rules
@@ -215,12 +215,7 @@ The attribute provides an easy way to omit instances of specific classes from th
 
 ##### Content instance keys
 
-A new `getContentInstanceKeys` API has been added to `PresentationManager`:
-
-- On the backend: [PresentationManager.getContentInstanceKeys]($presentation-backend)
-- On the frontend: [PresentationManager.getContentInstanceKeys]($presentation-frontend)
-
-The API allows getting keys of content instances much more effectively compared to getting content with all the properties and having to parse them from there, in cases when only keys are required.
+A new [PresentationManager.getContentInstanceKeys]($presentation-frontend) has been added to allow getting keys of content instances much more effectively compared to getting content with all the properties and having to parse them from there, in cases when only keys are required.
 
 ##### Content sources
 
