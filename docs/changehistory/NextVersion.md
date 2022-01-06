@@ -532,6 +532,12 @@ In previous versions, the [Tool.register]($frontend) method took an optional arg
 
 ### Display system breaking changes
 
+#### Changes to GraphicBuilder
+
+It is no longer necessary to supply a [Viewport]($frontend) when creating a [GraphicBuilder]($frontend). Instead, you can supply to [RenderSystem.createGraphic]($frontend) a [CustomGraphicBuilderOptions]($frontend) containing a function that can compute the level of detail appropriate for the produced [RenderGraphic]($frontend).
+
+[GraphicBuilder]($frontend)'s properties are all now read-only - you can no longer change `placement`, `pickId`, `wantNormals`, or `wantEdges` after creating the builder. Previously, a caller could create a graphic builder, add some geometry, then modify any of these properties before adding more geometry, more often than not producing surprising results.
+
 #### Breaking map imagery API changes
 
 Originally, the type of imagery to be displayed for the background map was defined by `BackgroundMapSettings.providerName` and `BackgroundMapSettings.mapType`. Later, support for any number of map layers from any source was added in the form of [MapImagerySettings]($common). The [BackgroundMapSettings]($common) properties therefore became redundant with (and more limited than) [MapImagerySettings.backgroundBase]($common).
@@ -1073,8 +1079,6 @@ The format of [KeySetJSON]($presentation-common) has been changed to reduce its 
   `width` and `height` props may be calculated dynamically using [ResizeObserver](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver) API.
 
 - Default value of `PresentationPropertyDataProvider.isNestedPropertyCategoryGroupingEnabled` was changed from `false` to `true`.
-
-It is no longer necessary to supply a [Viewport]($frontend) when creating a [GraphicBuilder]($frontend). Instead, you can supply to [RenderSystem.createGraphic]($frontend) a [CustomGraphicBuilderOptions]($frontend) containing a function that can compute the level of detail appropriate for the produced [RenderGraphic]($frontend).
 
 ### AppUi Changes
 
@@ -1771,7 +1775,7 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `TreeWithUnifiedSelectionProps`                        | `UnifiedSelectionTreeEventHandlerParams`        |
 | `useControlledTreeFiltering`                           | `useControlledPresentationTreeFiltering`        |
 
-### @iwin/ecschema-metadata
+### @itwin/ecschema-metadata
 
 | Removed                                  | Replacement                                                  |
 | ---------------------------------------- | ------------------------------------------------------------ |
