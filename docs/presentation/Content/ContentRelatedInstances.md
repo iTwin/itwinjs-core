@@ -1,4 +1,4 @@
-# ContentRelatedInstances Specification
+# Content Related Instances Specification
 
 > TypeScript type: [ContentRelatedInstancesSpecification]($presentation-common).
 
@@ -22,6 +22,17 @@ Returns content for instances related to the selected (input) instances.
 | `showImages`           | No        | `boolean`                                                                             | `false` | Should image IDs be calculated for the returned instances. When `true`, [ImageIdOverride](../customization/ImageIdOverride.md) rules get applied when creating content.                                                                                    |
 | *Misc.*                |
 | `relatedInstances`     | No        | [`RelatedInstanceSpecification[]`](../Common-Rules/RelatedInstanceSpecification.md)   | `[]`    | Specifications of [related instances](../Common-Rules/RelatedInstanceSpecification.md) that can be used in content creation.                                                                                                                               |
+
+### Attribute: `relationshipPaths`
+### Attribute: `instanceFilter`
+### Attribute: `onlyIfNotHandled`
+### Attribute: `priority`
+### Attribute: `relatedProperties`
+### Attribute: `calculatedProperties	`
+### Attribute: `propertyCategories`
+### Attribute: `propertyOverrides`
+### Attribute: `showImages`
+### Attribute: `relatedInstances`
 
 ## Example
 
