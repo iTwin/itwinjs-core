@@ -372,7 +372,7 @@ export class MessageManager {
 
     switch (details.priority) {
       case OutputMessagePriority.None:
-        severity = MessageSeverity.None;
+        severity = MessageSeverity.Success;
         break;
       case OutputMessagePriority.Success:
         severity = MessageSeverity.Success;
