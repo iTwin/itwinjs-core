@@ -1728,6 +1728,7 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `useUiSettingsStorageContext`              | `useUiStateStorageHandler`                                                                                                    |
 | `VisibilityComponent`                      | `TreeWidgetComponent` in @bentley/tree-widget-react                                                                           |
 | `VisibilityWidget`                         | `TreeWidgetControl` in @bentley/tree-widget-react                                                                             |
+| `WidgetProvider`                           | Provide widget via [UiItemsProvider]($appui-abstract)                                                                         |
 | `ContentLayoutProps`                       | `ContentLayoutProps` in @itwin/appui-abstract                                                                                 |
 | All drag & drop related APIs               | Third party components. E.g. see this [example](https://www.itwinjs.org/sample-showcase/?group=UI+Trees&sample=drag-and-drop) |
 | `ModelsTreeProps.enablePreloading`         | *eliminated*                                                                                                                  |
@@ -1891,12 +1892,6 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | ---------------------------------- | ------------ |
 | `UserInfo`                         | *eliminated* |
 | `AuthorizationClient.isAuthorized` | *eliminated* |
-
-### @bentley/appui-react
-
-| Removed          | Replacement                                           |
-| ---------------- | ----------------------------------------------------- |
-| `WidgetProvider` | Provide widget via [UiItemsProvider]($appui-abstract) |
 
 ### @bentley/frontend-authorization-client
 
