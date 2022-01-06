@@ -200,14 +200,14 @@ Now, you can bind a set of Ids as a parameter for the `IN` clause. The Ids will 
   db.query("SELECT IsPlanProjection, JsonProperties FROM bis.SpatialModel WHERE InVirtualSet(:modelIds, ECInstanceId)", params);
 ```
 
-### New AppUi Features
+### New AppUi features
 
 #### UiItemsProvider enhancements
 
 UiItemsProviders will now filter out duplicate UiItems to ensure that only one of a particular item (e.g., Widget or Tool) will be added to a given stage. If you want the Select Tool is available in a stage, for example, you can include it in the Content Tools returned by your UiItemsProvider without checking to see if it's already in the stage you're augmenting.
 Until this release, the applicationData specified in the frontstage was obscured once the stage was instantiated. Now, the UiItemsProvider will pass that info along to to each of the provide*() callbacks for the UiItemsProvider to use if needed.
 
-#### Window Resize Enhancements
+#### Window resize enhancements
 
 A new ResizeObserver was has been implemented that supports both the main window and any pop-out windows.
 
@@ -224,24 +224,24 @@ A new ResizeObserver was has been implemented that supports both the main window
 | [StandardContentLayouts]($appui-abstract)       | Provides standard view layouts that can be used when defining a ContentGroup.                    |
 | [ContentGroupProvider]($appui-react)            | Class that generates a ContentGroup at runtime when the frontstageDef is being constructed.      |
 
-#### New Timeline Date Marker
+#### New timeline date marker
 
 The [TimelineComponent]($imodel-components-react) react component now accepts a property to mark a specific date in a date-based timeline. If the timeline has a defined start date and end date, a date between them can be marked in the timeline by specifying an instance of [TimelineDateMarkerProps]($imodel-components-react) in the new markDate member of [TimelineComponentProps]($imodel-components-react). If the date member is left undefined, today's date will be used. The default marker is a short vertical bar, but a ReactNode can be specified in the dateMarker prop to customize the marker's appearance.
 
-#### New Floating Widget Capabilities
+#### New Floating widget capabilities
 
 Widgets provided via UiItemsProviders may now set `defaultState: WidgetState.Floating` and `isFloatingStateSupported: true` to open
 the widget in a floating container. The property `defaultFloatingPosition` may also be specified to define the position of the floating container. If a position is not defined the container will be centered in the `AppUi` area.
 
 The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to retrieve the Ids for all floating widget containers for the active frontstage as specified by the `frontstageDef`. These ids can be used to query the size of the floating container via `frontstageDef.getFloatingWidgetContainerBounds`. The method `frontstageDef.setFloatingWidgetContainerBounds` can then be used to set the size and position of a floating widget container.
 
-### New API to Enable and Disable View Overlays
+#### New API to enable and disable view overlays
 
 UiFramework now offers a `setViewOverlayDisplay(display:boolean)` method to enable or disable viewports displaying overlays. By default, the display is enabled. The current setting is available in `UiFramework.viewOverlayDisplay`.
 
 ## Breaking Changes
 
-### Application Setup
+### Application setup
 
 A handful of changes have been made to simplify the process of setting up an application on both the backend and frontend side.
 
@@ -280,7 +280,7 @@ const appOptions: IModelAppOptions = {
 await IModelApp.startup(appOptions);
 ```
 
-#### Deprecation of the Settings on iModelApp
+#### Deprecation of the settings on iModelApp
 
 The previous `IModelApp.settings` API has been removed in favor of [IModelApp.userPreferences]($frontend). The updated API will provide a clear distinction between the "settings" within the control of the user (user preferences) and which are within control of the admin of an iModel/iTwin (Workspaces). The separation is intended to make it clear who is capability of modifying and overriding a given setting while making the API easier to use.
 
