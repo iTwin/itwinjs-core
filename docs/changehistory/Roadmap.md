@@ -1,12 +1,12 @@
 # The iTwin.js Roadmap
 
-This roadmap provides the *big picture* view of the development path for the iTwin.js platform, cataloging proposed features that have received at least some level of priority for development.
+This roadmap provides an overview of the development path for the iTwin.js platform, cataloging proposed features that have received at least some level of priority for development. It is updated with each release.
 
 ## Themes
 
 We will use the following themes (that may be adjusted from time-to-time according to your input) to drive the evolution of iTwin.js:
 
-- Be *the open platform* for Infrastructure Digital Twins for federating BIM Models, GIS data, reality data, IT and OT together for a seamless user experience.
+- Be *the open platform for Infrastructure Digital Twins* for federating BIM Models, GIS data, reality data, IT and OT together for a seamless user experience.
 - Be cloud provider-, operating system-, and browser-agnostic to the extent possible.
 - Performance, scalability, security, and stability are our paramount concerns.
 - Make developing with iTwin.js as easy, productive, predictable, and profitable as possible.
@@ -15,7 +15,7 @@ We will use the following themes (that may be adjusted from time-to-time accordi
 
 ## Roadmap
 
-A checked box denotes a completed feature. An unchecked box indicates work upon the feature is either in progress or tenatively planned.
+A checked box denotes a feature completed in the most recent release. An unchecked box indicates work upon the feature is either in progress or tentatively planned for a future release. The sections of this document change over time and are in no particular order. Within a section items are generally sorted by priority (note: priority order doesn't always indicate completion order, since lower priority but simple tasks may be completed quickly). If an item is prioritized lower than you'd like, that represents a tremendous opportunity for submitting a PR.
 
 Contributions and suggestions are welcome. Feel free to [discuss](https://github.com/iTwin/itwinjs-core/discussions) or submit a PR.
 
