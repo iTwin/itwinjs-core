@@ -183,6 +183,97 @@ Improvements were made to the performance of [ParticleCollectionBuilder]($fronte
 
 Note: `readGltfGraphics` targets the [glTF 2.0 specification](https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html), but implementation of the full specification is an ongoing work in progress. The current implementation can successfully read many glTF assets, but if a particular asset fails to load or display properly, please [file an issue](https://github.com/iTwin/itwinjs-core/issues).
 
+### Presentation system
+
+#### Presentation rule additions
+
+##### Schema requirements
+
+A new `requiredSchemas` attribute has been added: [Ruleset.requiredSchemas]($presentation-common) and [Rule.requiredSchemas]($presentation-common). The attribute allows an easy way to filter presentation rules based on
+ECSchemas / domains available in the iModel. See more details in the [Defining ECSchema Requirements for Presentation Rules]($docs/presentation/Advanced/SchemaRequirements) page.
+
+##### Conditional root node rules
+
+Similar to [Child Node Rule]($docs/presentation/Hierarchies/ChildNodeRule), the [Root Node Rule]($docs/presentation/Hierarchies/RootNodeRule) now also has a [condition]($docs/presentation/Hierarchies/RootNodeRule#attribute-condition) attribute. The attribute provides more flexibility in enabling or disabling the rule, including the use of [ruleset variables]($docs/presentation/Advanced/RulesetVariables#using-variables-in-rule-condition).
+
+##### More precise way to set class polymorphism
+
+Previously polymorphism was specified at specification level using [ContentInstancesOfSpecificClassesSpecification.handleInstancesPolymorphically]($presentation-common) and [InstanceNodesOfSpecificClassesSpecification.arePolymorphic]($presentation-common) attributes. They're now deprecated in favor of the new [MultiSchemaClassesSpecification.arePolymorphic]($presentation-common) attribute and act as default values if the new attribute is not specified.
+
+The change allows [ContentInstancesOfSpecificClassesSpecification]($presentation-common) and [InstanceNodesOfSpecificClassesSpecification]($presentation-common) specify multiple classes with different polymorphism values, if necessary.
+
+##### Excluding classes
+
+A new `excludedClasses` attribute has been added: [ContentInstancesOfSpecificClassesSpecification.excludedClasses]($presentation-common) and [InstanceNodesOfSpecificClassesSpecification.excludedClasses]($presentation-common).
+The attribute provides an easy way to omit instances of specific classes from the result set. This was previously possible only through the `instanceFilter` attribute, but the new approach is much cleaner.
+
+#### API additions
+
+##### Content instance keys
+
+A new `getContentInstanceKeys` API has been added to `PresentationManager`:
+
+- On the backend: [PresentationManager.getContentInstanceKeys]($presentation-backend)
+- On the frontend: [PresentationManager.getContentInstanceKeys]($presentation-frontend)
+
+The API allows getting keys of content instances much more effectively compared to getting content with all the properties and having to parse them from there, in cases when only keys are required.
+
+##### Content sources
+
+A new `getContentSources` API has been added to `PresentationManager`:
+
+- On the backend: [PresentationManager.getContentSources]($presentation-backend)
+- On the frontend: [PresentationManager.getContentSources]($presentation-frontend)
+
+The API allows finding out what classes are used to get properties for specific class of elements based on default presentation rules. The default presentation rules set are set up to include properties
+of various related classes when requesting content for specific types of elements. For example:
+
+- Include properties of `bis.ElementUniqueAspect` and `bis.ElementMultiAspect` when creating content for any `bis.Element`.
+- Include properties of `bis.PhysicalType` when creating content for `bis.PhysicalElement`.
+- ...and much more.
+
+That information may be useful when building ECSQL queries or anywhere else where there's a need to know the sources of element properties.
+
+##### Getting properties of multiple elements at once
+
+A new [PresentationManager.getElementProperties]($presentation-backend) override has been added for requesting element properties based on given element classes. Compared to [PresentationManager.getContent]($presentation-backend)
+that was already available and is more flexible, the new API is designed to retrieve the properties in a simplified and more efficient way, especially when requesting properties for large numbers of elements.
+
+#### Auto-update
+
+A number of improvements have been made to support hierarchy and content components' automatic updates when either of these events happen:
+
+- Data in iModel changes (only in [IpcApp]($frontend)).
+- Presentation ruleset is modified.
+- Ruleset variable values for the ruleset are changed.
+
+To enable the feature, an additional attribute has to be set when setting up presentation-rules-driven components:
+
+- When creating a node loader for [ControlledTree]($components-react) using the [usePresentationTreeNodeLoader]($presentation-components) hook, pass `enableHierarchyAutoUpdate: true` prop and resulting `onItemsRendered` callback to `ControlledTree`:
+
+  ```tsx
+  const { nodeLoader, onItemsRendered } = usePresentationTreeNodeLoader({ ...otherLoaderProps, enableHierarchyAutoUpdate: true });
+  return <ControlledTree {...otherTreeProps} nodeLoader={nodeLoader} onItemsRendered={onItemsRendered} />;
+  ```
+
+- When creating [PresentationPropertyDataProvider]($presentation-components), pass `enableContentAutoUpdate: true` as a prop.
+
+- When creating [PresentationTableDataProvider]($presentation-components), pass `enableContentAutoUpdate: true` as a prop.
+
+In addition, to enable iModels' change tracking, IPC backends should initialize [Presentation]($presentation-backend) with the following attributes:
+
+```ts
+Presentation.initialize({
+  ...otherProps,
+
+  // tell presentation system that data in iModels might change
+  mode: PresentationManagerMode.ReadWrite,
+
+  // tell presentation system how often (in milliseconds) it should poll for changes
+  updatesPollInterval: 20,
+});
+```
+
 ### New AppUi features
 
 #### UiItemsProvider enhancements
@@ -901,18 +992,6 @@ In `3.0` changes have been made that changed the way this attribute is calculate
 ##### `KeySetJSON`
 
 The format of [KeySetJSON]($presentation-common) has been changed to reduce its size. Instead of containing an array of instance IDs it now contains a single compressed IDs string. See [CompressedId64Set]($core-bentley) for more details about compressing IDs.
-
-##### Changes to presentation rule specifications
-
-- Added ability to specify polymorphism at class level rather than specification level.
-
-  Previously polymorphism was specified at specification level using [ContentInstancesOfSpecificClassesSpecification.handleInstancesPolymorphically]($presentation-common) and [InstanceNodesOfSpecificClassesSpecification.arePolymorphic]($presentation-common) flags. They're now deprecated in favor of the new [MultiSchemaClassesSpecification.arePolymorphic]($presentation-common) attribute and act as default values if the new attribute is not specified.
-
-  The change allows [ContentInstancesOfSpecificClassesSpecification]($presentation-common) and [InstanceNodesOfSpecificClassesSpecification]($presentation-common) specify multiple classes with different polymorphism, if necessary.
-
-- Added ability to exclude some classes when creating content and hierarchies.
-
-  New optional attributes [ContentInstancesOfSpecificClassesSpecification.excludedClasses]($presentation-common) and [InstanceNodesOfSpecificClassesSpecification.excludedClasses]($presentation-common) have been added to specify classes that could be excluded. This provides a convenient way to describe what class instances should be excluded from content or hierarchy, e.g. `give me all bis.Element instances except bis.GeometricElement`.
 
 #### Changes to `Presentation` initialization in `@itwin/presentation-backend`
 
