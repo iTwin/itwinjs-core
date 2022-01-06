@@ -6,16 +6,14 @@
       "commandKind": "global",
       "summary": "Runs npm audit for the entire monorepo",
       "description": "Scans the entire monorepo for security vulnerabilities via npm audit",
-      "shellCommand": "node tools/internal/scripts/rush/audit.js",
-      "allowWarningsInSuccessfulBuild": true
+      "shellCommand": "node tools/internal/scripts/rush/audit.js"
     },
     {
       "name": "fix-copyrights",
       "commandKind": "global",
       "summary": "Fixes whitespace-only changes caused by broken copyright linter",
       "description": "Manually runs the new copyright linter on all files changed between the current branch and master.",
-      "shellCommand": "node common/scripts/copyright-linter.js --fix",
-      "allowWarningsInSuccessfulBuild": true
+      "shellCommand": "node common/scripts/copyright-linter.js --fix"
     },
     {
       "name": "clean",
