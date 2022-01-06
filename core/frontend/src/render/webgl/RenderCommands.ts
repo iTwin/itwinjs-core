@@ -25,7 +25,7 @@ import { Layer, LayerContainer } from "./Layer";
 import { LayerCommandLists } from "./LayerCommands";
 import { MeshGraphic } from "./Mesh";
 import { Primitive } from "./Primitive";
-import { CompositeFlags, RenderOrder, RenderPass } from "./RenderFlags";
+import { CompositeFlags, Pass, RenderOrder, RenderPass } from "./RenderFlags";
 import { TargetGraphics } from "./TargetGraphics";
 import { Target } from "./Target";
 import { ClipVolume } from "./ClipVolume";
@@ -198,11 +198,11 @@ export class RenderCommands implements Iterable<DrawCommands> {
     this._forcedRenderPass = RenderPass.None;
   }
 
-  public addPrimitiveCommand(command: PrimitiveCommand, pass?: RenderPass): void {
+  public addPrimitiveCommand(command: PrimitiveCommand, pass?: Pass): void {
     if (undefined === pass)
-      pass = command.getRenderPass(this.target);
+      pass = command.getPass(this.target);
 
-    if (RenderPass.None === pass) // Edges will return none if they don't want to draw at all (edges not turned on).
+    if ("none" === pass) // Edges will return none if they don't want to draw at all (edges not turned on).
       return;
 
     if (RenderPass.None !== this._forcedRenderPass) {
@@ -211,62 +211,70 @@ export class RenderCommands implements Iterable<DrawCommands> {
       return;
     }
 
-    const haveFeatureOverrides = (this._opaqueOverrides || this._translucentOverrides) && command.opcode && command.hasFeatures;
-
-    if (RenderPass.Translucent === pass && this._addTranslucentAsOpaque) {
-      switch (command.renderOrder) {
-        case RenderOrder.PlanarLitSurface:
-        case RenderOrder.PlanarUnlitSurface:
-        case RenderOrder.BlankingRegion:
-          pass = RenderPass.OpaquePlanar;
+    if (!command.hasFeatures) {
+      // Draw in general opaque pass so they are not in pick data.
+      switch (pass) {
+        case "opaque-linear":
+        case "opaque-planar":
+          pass = "opaque";
           break;
-        case RenderOrder.LitSurface:
-        case RenderOrder.UnlitSurface:
-          pass = RenderPass.OpaqueGeneral;
-          break;
-        default:
-          pass = RenderPass.OpaqueLinear;
+        case "opaque-planar-translucent":
+          pass = "opaque-translucent";
           break;
       }
     }
 
-    switch (pass) {
-      // If this command ordinarily renders translucent, but some features have been overridden to be opaque, must draw in both passes
-      case RenderPass.Translucent:
-        if (this._opaqueOverrides && haveFeatureOverrides && !command.primitive.cachedGeometry.alwaysRenderTranslucent) {
-          let opaquePass: RenderPass;
-          switch (command.renderOrder) {
-            case RenderOrder.PlanarLitSurface:
-            case RenderOrder.PlanarUnlitSurface:
-            case RenderOrder.BlankingRegion:
-              opaquePass = RenderPass.OpaquePlanar;
-              break;
-            case RenderOrder.LitSurface:
-            case RenderOrder.UnlitSurface:
-              opaquePass = RenderPass.OpaqueGeneral;
-              break;
-            default:
-              opaquePass = RenderPass.OpaqueLinear;
-              break;
-          }
-          this.getCommands(opaquePass).push(command);
-        }
-        break;
-      // If this command ordinarily renders opaque, but some features have been overridden to be translucent,
-      // must draw in both passes unless we are overriding translucent geometry to draw in the opaque pass for _ReadPixels.
-      case RenderPass.OpaqueLinear:
-      case RenderPass.OpaquePlanar:
-        // Want these items to draw in general opaque pass so they are not in pick data.
-        if (!command.hasFeatures)
-          pass = RenderPass.OpaqueGeneral;
-      /* falls through */
-      case RenderPass.OpaqueGeneral:
-        if (this._translucentOverrides && haveFeatureOverrides && !this._addTranslucentAsOpaque)
-          this.getCommands(RenderPass.Translucent).push(command);
-        break;
+    const haveFeatureOverrides = (this._opaqueOverrides || this._translucentOverrides) && command.opcode && command.hasFeatures;
+
+    if (Pass.rendersTranslucent(pass) && this._addTranslucentAsOpaque) {
+      switch (command.renderOrder) {
+        case RenderOrder.PlanarLitSurface:
+        case RenderOrder.PlanarUnlitSurface:
+        case RenderOrder.BlankingRegion:
+          pass = "opaque-planar";
+          break;
+        case RenderOrder.LitSurface:
+        case RenderOrder.UnlitSurface:
+          pass = "opaque";
+          break;
+        default:
+          pass = "opaque-linear";
+          break;
+      }
     }
 
-    this.getCommands(pass).push(command);
+    const isDoublePass = Pass.rendersOpaqueAndTranslucent(pass);
+    const renderTranslucentDuringOpaque = isDoublePass || (this._opaqueOverrides && haveFeatureOverrides);
+    if (renderTranslucentDuringOpaque && Pass.rendersTranslucent(pass) && !command.primitive.cachedGeometry.alwaysRenderTranslucent) {
+      let opaquePass: RenderPass;
+      if (Pass.rendersOpaqueAndTranslucent(pass)) {
+        opaquePass = Pass.toOpaquePass(pass);
+      } else {
+        switch (command.renderOrder) {
+          case RenderOrder.PlanarLitSurface:
+          case RenderOrder.PlanarUnlitSurface:
+          case RenderOrder.BlankingRegion:
+            opaquePass = RenderPass.OpaquePlanar;
+            break;
+          case RenderOrder.LitSurface:
+          case RenderOrder.UnlitSurface:
+            opaquePass = RenderPass.OpaqueGeneral;
+            break;
+          default:
+            opaquePass = RenderPass.OpaqueLinear;
+            break;
+        }
+      }
+
+      this.getCommands(opaquePass).push(command);
+    }
+
+    const renderOpaqueDuringTranslucent = isDoublePass || (this._translucentOverrides && haveFeatureOverrides);
+    if (renderOpaqueDuringTranslucent && Pass.rendersOpaque(pass) && !this._addTranslucentAsOpaque)
+      this.getCommands(RenderPass.Translucent).push(command);
+
+    if (!Pass.rendersOpaqueAndTranslucent(pass))
+      this.getCommands(Pass.toRenderPass(pass)).push(command);
   }
 
   public getCommands(pass: RenderPass): DrawCommands {
@@ -555,7 +563,7 @@ export class RenderCommands implements Iterable<DrawCommands> {
     //   return;
 
     if (undefined !== this._frustumPlanes) { // See if we can cull this primitive.
-      if (RenderPass.Classification === prim.getRenderPass(this.target)) {
+      if ("classification" === prim.getPass(this.target)) {
         const geom = prim.cachedGeometry;
         geom.computeRange(this._scratchRange);
         let frustum = Frustum.fromRange(this._scratchRange, this._scratchFrustum);
@@ -572,7 +580,7 @@ export class RenderCommands implements Iterable<DrawCommands> {
     if (RenderPass.None === this._forcedRenderPass && prim.isEdge) {
       const vf: ViewFlags = this.target.currentViewFlags;
       if (vf.renderMode !== RenderMode.Wireframe && vf.hiddenEdges)
-        this.addPrimitiveCommand(command, RenderPass.HiddenEdge);
+        this.getCommands(RenderPass.HiddenEdge).push(command);
     }
   }
 

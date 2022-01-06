@@ -16,7 +16,7 @@ import { SpatialViewState } from "../../../SpatialViewState";
 import { ScreenViewport } from "../../../Viewport";
 import { Target } from "../../../render/webgl/Target";
 import { Primitive } from "../../../render/webgl/Primitive";
-import { RenderPass } from "../../../render/webgl/RenderFlags";
+import { Pass, RenderPass, SinglePass } from "../../../render/webgl/RenderFlags";
 import { MeshGraphic } from "../../../render/webgl/Mesh";
 import { SurfaceGeometry } from "../../../render/webgl/SurfaceGeometry";
 import { MeshArgs } from "../../../render/primitives/mesh/MeshPrimitives";
@@ -125,7 +125,10 @@ describe("Surface transparency", () => {
 
     const plan = createRenderPlanFromViewport(viewport);
     viewport.target.changeRenderPlan(plan);
-    expect(primitive.getRenderPass(viewport.target as Target)).to.equal(pass);
+
+    const primPass = primitive.getPass(viewport.target as Target);
+    expect(Pass.rendersOpaqueAndTranslucent(primPass)).to.be.false;
+    expect(Pass.toRenderPass(primPass as SinglePass)).to.equal(pass);
   }
 
   function expectOpaque(setup: SetupFunc): void {

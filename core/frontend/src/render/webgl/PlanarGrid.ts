@@ -18,7 +18,7 @@ import { AttributeMap } from "./AttributeMap";
 import { IndexedGeometry, IndexedGeometryParams } from "./CachedGeometry";
 import { GL } from "./GL";
 import { Primitive } from "./Primitive";
-import { RenderOrder, RenderPass } from "./RenderFlags";
+import { Pass, RenderOrder } from "./RenderFlags";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
 
@@ -37,7 +37,7 @@ class PlanarGridGeometryParams extends IndexedGeometryParams {
 
 export class PlanarGridGeometry extends IndexedGeometry {
   public get techniqueId(): TechniqueId { return TechniqueId.PlanarGrid; }
-  public getRenderPass(_target: Target): RenderPass { return RenderPass.Translucent; }
+  public override getPass(): Pass { return "translucent"; }
   public collectStatistics(_stats: RenderMemory.Statistics): void { }
   public get renderOrder(): RenderOrder { return RenderOrder.UnlitSurface; }
   public readonly uvParams: QBufferHandle2d;

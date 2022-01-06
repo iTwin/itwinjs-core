@@ -73,9 +73,9 @@ export class PointCloudGeometry extends CachedGeometry {
   protected _wantWoWReversal(_target: Target): boolean { return false; }
 
   public get techniqueId(): TechniqueId { return TechniqueId.PointCloud; }
-  public getRenderPass(target: Target): RenderPass {
+  public override getPass(target: Target) {
     // Point clouds don't cast shadows.
-    return target.isDrawingShadowMap ? RenderPass.None : RenderPass.OpaqueGeneral;
+    return target.isDrawingShadowMap ? "none" : "opaque";
   }
   public get renderOrder(): RenderOrder { return RenderOrder.Linear; }
   public get qOrigin(): Float32Array { return this._vertices.origin; }

@@ -52,12 +52,16 @@ export type Pass =
   "opaque-planar" | // OpaquePlanar
   "translucent" | // Translucent
   "view-overlay" | // ViewOverlay
+  "classification" | // Classification
   "none" | // None
   // The following apply to textured meshes when the texture image contains a mix of opaque and transparent pixels.
   // The mesh requests to be rendered in both opaque and transparent passes, with each pass discarding pixels that don't match that pass.
   // (i.e., discard transparent pixels during opaque pass and vice-versa).
   "opaque-translucent" | // OpaqueGeneral and Translucent
   "opaque-planar-translucent"; // OpaquePlanar and Translucent
+
+export type DoublePass = "opaque-translucent" | "opaque-planar-translucent";
+export type SinglePass = Exclude<Pass, DoublePass>;
 
 /** Describes the type of geometry rendered by a ShaderProgram.
  * @internal
@@ -71,7 +75,7 @@ export const enum GeometryType {
 /** @internal */
 export namespace Pass {
   /** Return the RenderPass corresponding to the specified Pass. */
-  export function toRenderPass(pass: Exclude<Pass, "opaque-translucent" | "opaque-planar-translucent">): RenderPass {
+  export function toRenderPass(pass: SinglePass): RenderPass {
     switch (pass) {
       case "skybox": return RenderPass.SkyBox;
       case "opaque": return RenderPass.OpaqueGeneral;
@@ -79,6 +83,7 @@ export namespace Pass {
       case "opaque-planar": return RenderPass.OpaquePlanar;
       case "translucent": return RenderPass.Translucent;
       case "view-overlay": return RenderPass.ViewOverlay;
+      case "classification": return RenderPass.Classification;
       case "none": return RenderPass.None;
     }
   }
@@ -111,6 +116,15 @@ export namespace Pass {
       default:
         return false;
     }
+  }
+
+  /** Return true if the specified Pass renders both during RenderPass.Translucent and one of the opaque RenderPasses. */
+  export function rendersOpaqueAndTranslucent(pass: Pass): pass is DoublePass {
+    return "opaque-translucent" === pass || "opaque-planar-translucent" === pass;
+  }
+
+  export function toOpaquePass(pass: DoublePass): RenderPass {
+    return "opaque-translucent" === pass ? RenderPass.OpaqueGeneral : RenderPass.OpaquePlanar;
   }
 }
 
