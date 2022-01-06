@@ -19,7 +19,6 @@ import { IndexedGeometry, IndexedGeometryParams } from "./CachedGeometry";
 import { GL } from "./GL";
 import { Primitive } from "./Primitive";
 import { Pass, RenderOrder } from "./RenderFlags";
-import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
 
 class PlanarGridGeometryParams extends IndexedGeometryParams {

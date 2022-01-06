@@ -22,7 +22,7 @@ import { RenderMemory } from "../RenderMemory";
 import { RenderSystem, TerrainTexture } from "../RenderSystem";
 import { GL } from "./GL";
 import { Primitive } from "./Primitive";
-import { RenderOrder, RenderPass } from "./RenderFlags";
+import { RenderOrder } from "./RenderFlags";
 import { System } from "./System";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
