@@ -16,6 +16,7 @@ Table of Contents:
 - [New features](#new-features)
   - [Display System](#display-system)
   - [AppUi Framework](#new-appui-features)
+  - [ECSql](#new-ecsql-features)
 - [Breaking changes](#breaking-changes)
   - [Application Setup](#application-setup)
   - [Authorization](#authorization-re-work)
@@ -182,24 +183,6 @@ Improvements were made to the performance of [ParticleCollectionBuilder]($fronte
 
 Note: `readGltfGraphics` targets the [glTF 2.0 specification](https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html), but implementation of the full specification is an ongoing work in progress. The current implementation can successfully read many glTF assets, but if a particular asset fails to load or display properly, please [file an issue](https://github.com/iTwin/itwinjs-core/issues).
 
-### ECSql - Id64Set parameter bindings
-
-It is now possible to efficiently bind a large set of ECInstanceIds to a query parameter. This can be very useful for `IN` clauses. For example, imagine you wanted to select some properties of all of the [SpatialModel]($backend)s belonging to a [ModelSelector]($backend). Previously you would need to write something like this:
-
-```ts
-  const ids = Array.from(modelSelector.models).join(",");
-  db.query("SELECT IsPlanProjection, JsonProperties FROM bis.SpatialModel WHERE ECInstanceId IN (" + ids + ")");
-```
-
-The list of comma-separated Ids could be extremely long - in some cases, it might be so long that it would need to be split up into multiple queries!
-
-Now, you can bind a set of Ids as a parameter for the `IN` clause. The Ids will be serialized in a compact string format.
-
-```ts
-  const params = new QueryBinder().bindIdSet("modelIds", modelSelector.models);
-  db.query("SELECT IsPlanProjection, JsonProperties FROM bis.SpatialModel WHERE InVirtualSet(:modelIds, ECInstanceId)", params);
-```
-
 ### New AppUi features
 
 #### UiItemsProvider enhancements
@@ -238,6 +221,26 @@ The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to 
 #### New API to enable and disable view overlays
 
 UiFramework now offers a `setViewOverlayDisplay(display:boolean)` method to enable or disable viewports displaying overlays. By default, the display is enabled. The current setting is available in `UiFramework.viewOverlayDisplay`.
+
+### New ECSql features
+
+#### Id64Set parameter bindings
+
+It is now possible to efficiently bind a large set of ECInstanceIds to a query parameter. This can be very useful for `IN` clauses. For example, imagine you wanted to select some properties of all of the [SpatialModel]($backend)s belonging to a [ModelSelector]($backend). Previously you would need to write something like this:
+
+```ts
+  const ids = Array.from(modelSelector.models).join(",");
+  db.query("SELECT IsPlanProjection, JsonProperties FROM bis.SpatialModel WHERE ECInstanceId IN (" + ids + ")");
+```
+
+The list of comma-separated Ids could be extremely long - in some cases, it might be so long that it would need to be split up into multiple queries!
+
+Now, you can bind a set of Ids as a parameter for the `IN` clause. The Ids will be serialized in a compact string format.
+
+```ts
+  const params = new QueryBinder().bindIdSet("modelIds", modelSelector.models);
+  db.query("SELECT IsPlanProjection, JsonProperties FROM bis.SpatialModel WHERE InVirtualSet(:modelIds, ECInstanceId)", params);
+```
 
 ## Breaking Changes
 
