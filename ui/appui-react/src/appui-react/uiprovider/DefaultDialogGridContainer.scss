@@ -132,9 +132,9 @@ div.uifw-default-container {
 }
 
 .uifw-default-label {
-  text-align: right;
-  text-overflow: ellipsis;
-  width: 100%
+  width: fit-content;
+  margin-left: auto;
+  white-space: nowrap;
 }
 
 /* Overrides when uifw-default-narrow class is added to parent container div */

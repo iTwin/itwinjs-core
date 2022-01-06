@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { AsyncMethodsOf, GuidString, ProcessDetector } from "@itwin/core-bentley";
-import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
+import { ElectronApp, ElectronAppOpts } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { BrowserAuthorizationCallbackHandler } from "@itwin/browser-authorization";
 import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
@@ -13,17 +13,18 @@ import {
 } from "@itwin/core-common";
 import { EditTools } from "@itwin/editor-frontend";
 import {
-  AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, IModelApp, IpcApp, LocalhostIpcApp, RenderSystem, SelectionTool, SnapMode, TileAdmin, Tool,
+  AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, IModelApp, IpcApp, LocalhostIpcApp, LocalHostIpcAppOpts, RenderSystem, SelectionTool, SnapMode, TileAdmin, Tool,
   ToolAdmin,
 } from "@itwin/core-frontend";
 import { AndroidApp, IOSApp } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
-import { RealityDataAccessClient } from "@bentley/reality-data-client";
+import { RealityDataAccessClient, RealityDataClientOptions } from "@itwin/reality-data-client";
 import { DtaConfiguration } from "../common/DtaConfiguration";
 import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { ToggleAspectRatioSkewDecoratorTool } from "./AspectRatioSkewDecorator";
 import { ApplyModelDisplayScaleTool } from "./DisplayScale";
 import { ApplyModelTransformTool } from "./DisplayTransform";
+import { GenerateTileContentTool } from "./TileContentTool";
 import { DrawingAidTestTool } from "./DrawingAidTestTool";
 import { EditingScopeTool, PlaceLineStringTool } from "./EditingTools";
 import { FenceClassifySelectedTool } from "./Fence";
@@ -35,6 +36,7 @@ import { MarkupSelectTestTool } from "./MarkupSelectTestTool";
 import { Notifications } from "./Notifications";
 import { OutputShadersTool } from "./OutputShadersTool";
 import { PathDecorationTestTool } from "./PathDecorationTest";
+import { GltfDecorationTool } from "./GltfDecoration";
 import { ToggleShadowMapTilesTool } from "./ShadowMapDecoration";
 import { signIn, signOut } from "./signIn";
 import {
@@ -45,6 +47,7 @@ import { SyncViewportFrustaTool, SyncViewportsTool } from "./SyncViewportsTool";
 import { TimePointComparisonTool } from "./TimePointComparison";
 import { UiManager } from "./UiManager";
 import { MarkupTool, ModelClipTool, SaveImageTool, ZoomToSelectedElementsTool } from "./Viewer";
+import { MacroTool } from "./MacroTools";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -188,6 +191,16 @@ class ShutDownTool extends Tool {
   }
 }
 
+class ExitTool extends Tool {
+  public static override toolId = "Exit";
+
+  public override async run(_args: any[]): Promise<boolean> {
+    DisplayTestApp.surface.closeAllViewers();
+    await DtaRpcInterface.getClient().terminate();
+    return true;
+  }
+}
+
 export class DisplayTestApp {
   private static _surface?: Surface;
   public static get surface() { return this._surface!; }
@@ -196,18 +209,22 @@ export class DisplayTestApp {
   public static get iTwinId(): GuidString | undefined { return this._iTwinId; }
 
   public static async startup(configuration: DtaConfiguration, renderSys: RenderSystem.Options, tileAdmin: TileAdmin.Props): Promise<void> {
-    const socketUrl = new URL(configuration.customOrchestratorUri || "http://localhost:3001");
-    socketUrl.protocol = "ws";
-    socketUrl.pathname = [...socketUrl.pathname.split("/"), "ipc"].filter((v) => v).join("/");
-
-    const opts = {
+    let socketUrl = new URL(configuration.customOrchestratorUri || "http://localhost:3001");
+    socketUrl = LocalhostIpcApp.buildUrlForSocket(socketUrl);
+    const realityDataClientOptions: RealityDataClientOptions = {
+      /** API Version. v1 by default */
+      // version?: ApiVersion;
+      /** API Url. Used to select environment. Defaults to "https://api.bentley.com/realitydata" */
+      baseUrl: `https://${process.env.IMJS_URL_PREFIX}api.bentley.com/realitydata`,
+    };
+    const opts: ElectronAppOpts | LocalHostIpcAppOpts = {
       iModelApp: {
         accuSnap: new DisplayTestAppAccuSnap(),
         notifications: new Notifications(),
         tileAdmin,
         toolAdmin: new DisplayTestAppToolAdmin(),
         uiAdmin: new UiManager(),
-        realityDataAccess: new RealityDataAccessClient(),
+        realityDataAccess: new RealityDataAccessClient(realityDataClientOptions),
         renderSys,
         rpcInterfaces: [
           DtaRpcInterface,
@@ -223,7 +240,7 @@ export class DisplayTestApp {
         /* eslint-enable @typescript-eslint/naming-convention */
       },
       localhostIpcApp: {
-        socketPath: socketUrl.toString(),
+        socketUrl,
       },
     };
 
@@ -243,7 +260,8 @@ export class DisplayTestApp {
       }
 
       const rpcParams: BentleyCloudRpcParams = { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: configuration.customOrchestratorUri || "http://localhost:3001" };
-      BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp.rpcInterfaces);
+      if (opts.iModelApp?.rpcInterfaces)
+        BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp.rpcInterfaces);
       await LocalhostIpcApp.startup(opts);
     }
 
@@ -263,11 +281,15 @@ export class DisplayTestApp {
       DockWindowTool,
       DrawingAidTestTool,
       EditingScopeTool,
+      ExitTool,
       FenceClassifySelectedTool,
       FocusWindowTool,
       FrameStatsTool,
+      GenerateTileContentTool,
+      GltfDecorationTool,
       IncidentMarkerDemoTool,
       PathDecorationTestTool,
+      MacroTool,
       MarkupSelectTestTool,
       MarkupTool,
       MaximizeWindowTool,

@@ -19,7 +19,7 @@ import { HubMock } from "../HubMock";
 import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils";
 
 describe("Server-based locks", () => {
-  const createRev0 = async () => {
+  const createVersion0 = async () => {
     const dbName = IModelTestUtils.prepareOutputFile("ServerBasedLocks", "ServerBasedLocks.bim");
     const sourceDb = SnapshotDb.createEmpty(dbName, { rootSubject: { name: "server lock test" } });
     assert.isFalse(sourceDb.locks.isServerBased);
@@ -42,7 +42,7 @@ describe("Server-based locks", () => {
     const iModelProps = {
       iModelName: "server locks test",
       iTwinId: Guid.createValue(),
-      revision0: await createRev0(),
+      version0: await createVersion0(),
     };
 
     iModelId = await IModelHost.hubAccess.createNewIModel(iModelProps);
@@ -91,33 +91,33 @@ describe("Server-based locks", () => {
     assertLockCounts(bc1Locks, 0, 1);
     assertExclusiveLocks(bc1Locks, [IModel.dictionaryId, child1, parentId]); // even though we only hold 1 lock (the "schema" lock), every element should say it's locked
 
-    await bc1Locks.acquireExclusiveLock(child1); // attempting to acquire exclusive lock on any element when schema lock is held shouldn't need a server request
+    await bc1Locks.acquireLocks({ exclusive: child1 }); // attempting to acquire exclusive lock on any element when schema lock is held shouldn't need a server request
     assert.equal(lockSpy.callCount, 1);
 
     assert.isFalse(bc2.holdsSchemaLock);
     await expect(bc2.acquireSchemaLock()).rejectedWith(IModelError, exclusiveLockError, "acquire schema exclusive");
-    await expect(bc2Locks.acquireSharedLock(childEl.model)).rejectedWith(IModelError, exclusiveLockError);
+    await expect(bc2Locks.acquireLocks({ shared: childEl.model })).rejectedWith(IModelError, exclusiveLockError);
 
     await bc1Locks.releaseAllLocks();
-    await bc1Locks.acquireExclusiveLock(parentId);
+    await bc1Locks.acquireLocks({ exclusive: parentId, shared: parentId });
     assertLockCounts(bc1Locks, 3, 1);
     assertSharedLocks(bc1Locks, [modelId, IModel.rootSubjectId]);
     assertExclusiveLocks(bc1Locks, [parentId, child1, child2]); // acquiring exclusive lock on parent implicitly holds exclusive lock on children
 
     await bc1Locks.releaseAllLocks();
-    await bc1Locks.acquireExclusiveLock(modelId);
+    await bc1Locks.acquireLocks({ exclusive: modelId });
     assertLockCounts(bc1Locks, 2, 1);
     assertSharedLocks(bc1Locks, [modelId, IModel.rootSubjectId]);
     assertExclusiveLocks(bc1Locks, [modelId, parentId, child1, child2]); // acquiring exclusive lock on model implicitly holds exclusive lock on members
 
     await bc1Locks.releaseAllLocks();
     lockSpy.resetHistory();
-    await bc1Locks.acquireSharedLock(child1);
+    await bc1Locks.acquireLocks({ shared: child1 });
     assert.equal(lockSpy.callCount, 1);
     assert.equal(lockSpy.getCall(0).args[1].size, 5);
     assertSharedLocks(bc1Locks, [child1, parentId, modelId, subjectId, IModel.rootSubjectId]);
     assertLockCounts(bc1Locks, 5, 0);
-    await bc1Locks.acquireExclusiveLock(child1); // upgrade lock from shared to exclusive
+    await bc1Locks.acquireLocks({ exclusive: child1 }); // upgrade lock from shared to exclusive
     assert.equal(lockSpy.callCount, 2);
     assertLockCounts(bc1Locks, 4, 1);
 
@@ -126,12 +126,12 @@ describe("Server-based locks", () => {
 
     await expect(bc2.acquireSchemaLock()).rejectedWith(IModelError, sharedLockError);
     assert.equal(lockSpy.callCount, 3);
-    await expect(bc2Locks.acquireExclusiveLock(parentId)).rejectedWith(IModelError, sharedLockError);
+    await expect(bc2Locks.acquireLocks({ exclusive: parentId })).rejectedWith(IModelError, sharedLockError);
     assert.equal(lockSpy.callCount, 4);
-    await bc2Locks.acquireSharedLock(parentId);
+    await bc2Locks.acquireLocks({ shared: parentId });
     assert.equal(lockSpy.callCount, 5);
     assertSharedLocks(bc2Locks, [parentId, IModel.rootSubjectId]);
-    await bc2Locks.acquireSharedLock(IModel.dictionaryId);
+    await bc2Locks.acquireLocks({ shared: IModel.dictionaryId });
     assert.equal(lockSpy.callCount, 6);
     assertSharedLocks(bc2Locks, IModel.dictionaryId);
 
@@ -158,9 +158,9 @@ describe("Server-based locks", () => {
     await bc2Locks.releaseAllLocks(); // release all locks from bc2 so we can test expected failures below
     assertLockCounts(bc2Locks, 0, 0);
 
-    await expect(bc2Locks.acquireExclusiveLock([IModel.dictionaryId, parentId])).rejectedWith(IModelError, sharedLockError);
+    await expect(bc2Locks.acquireLocks({ exclusive: [IModel.dictionaryId, parentId] })).rejectedWith(IModelError, sharedLockError);
     assertLockCounts(bc2Locks, 0, 0); // exclusive lock is available on dictionary, but not on parent - should get neither
-    await bc2Locks.acquireExclusiveLock([IModel.dictionaryId]); // now attempt to get only dictionary
+    await bc2Locks.acquireLocks({ exclusive: IModel.dictionaryId }); // now attempt to get only dictionary
     assertExclusiveLocks(bc2Locks, IModel.dictionaryId); // that should work
     assertSharedLocks(bc2Locks, IModel.rootSubjectId); // it should also acquire the shared lock on the rootSubject
     assertLockCounts(bc2Locks, 1, 1);
@@ -177,13 +177,13 @@ describe("Server-based locks", () => {
       code: Code.createEmpty(),
     };
     assert.throws(() => bc1.elements.insertElement(physicalProps), IModelError, "shared lock"); // insert requires shared lock on model
-    await bc1Locks.acquireSharedLock(parentId); // also acquires shared lock on model
+    await bc1Locks.acquireLocks({ shared: parentId }); // also acquires shared lock on model
     const newElId = bc1.elements.insertElement(physicalProps);
     assertExclusiveLocks(bc1Locks, newElId);
 
     childEl.userLabel = "new user label";
     assert.throws(() => bc1.elements.updateElement(childEl), "exclusive lock");
-    await bc1Locks.acquireExclusiveLock(child1);
+    await bc1Locks.acquireLocks({ exclusive: child1 });
     bc1.elements.updateElement(childEl);
     bc1.saveChanges();
 
@@ -197,10 +197,10 @@ describe("Server-based locks", () => {
     assert.isFalse(bc1.locks.holdsSharedLock(IModel.repositoryModelId));
 
     assert.throws(() => bc2.elements.deleteElement(child1), "exclusive lock"); // bc2 can't delete because it doesn't hold lock
-    await expect(bc2Locks.acquireExclusiveLock(child1)).rejectedWith(IModelError, "pull is required"); // can't get lock since other briefcase changed it
+    await expect(bc2Locks.acquireLocks({ exclusive: child1 })).rejectedWith(IModelError, "pull is required"); // can't get lock since other briefcase changed it
 
     await bc2.pullChanges({ accessToken: accessToken2 });
-    await bc2Locks.acquireExclusiveLock(child1);
+    await bc2Locks.acquireLocks({ exclusive: child1, shared: child1 });
     const child2El = bc2.elements.getElement<PhysicalElement>(child1);
     assert.equal(child2El.userLabel, childEl.userLabel);
 

@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { storageMock, TestUtils } from "../TestUtils";
 import { UiFramework } from "../../appui-react/UiFramework";
-import { AppUiSettings, InitialAppUiSettings } from "../../appui-react/uisettings/AppUiSettings";
+import { AppUiSettings, InitialAppUiSettings } from "../../appui-react/uistate/AppUiSettings";
 import { SYSTEM_PREFERRED_COLOR_THEME } from "../../appui-react/theme/ThemeManager";
 
 describe("AppUiSettings", () => {
@@ -28,22 +28,25 @@ describe("AppUiSettings", () => {
 
   it("should get/set settings", async () => {
     const uiSetting = new AppUiSettings({});
-    await uiSetting.loadUserSettings(UiFramework.getUiSettingsStorage());
+    await uiSetting.loadUserSettings(UiFramework.getUiStateStorage());
     const uiVersion = "2";
     const opacity = 0.5;
     const colorTheme = "dark";
     const useDragInteraction = true;
+    const showWidgetIcon = false;
     UiFramework.setUiVersion(uiVersion);
     UiFramework.setWidgetOpacity(opacity);
     UiFramework.setWidgetOpacity(opacity);
     UiFramework.setUseDragInteraction(true);
     UiFramework.setColorTheme(colorTheme);
     UiFramework.setUseDragInteraction(useDragInteraction);
+    UiFramework.setShowWidgetIcon(showWidgetIcon);
     await TestUtils.flushAsyncOperations();
     expect(UiFramework.uiVersion).to.eql(uiVersion);
     expect(UiFramework.getWidgetOpacity()).to.eql(opacity);
     expect(UiFramework.getColorTheme()).to.eql(colorTheme);
     expect(UiFramework.useDragInteraction).to.eql(useDragInteraction);
+    expect(UiFramework.showWidgetIcon).to.eql(showWidgetIcon);
   });
 
   it("should used default settings", async () => {
@@ -52,15 +55,17 @@ describe("AppUiSettings", () => {
       dragInteraction: false,
       frameworkVersion: "2",
       widgetOpacity: 0.8,
+      showWidgetIcon: true,
     };
 
     const uiSetting = new AppUiSettings(defaults);
-    await uiSetting.loadUserSettings(UiFramework.getUiSettingsStorage());
+    await uiSetting.loadUserSettings(UiFramework.getUiStateStorage());
     await TestUtils.flushAsyncOperations();
     expect(UiFramework.uiVersion).to.eql(defaults.frameworkVersion);
     expect(UiFramework.getWidgetOpacity()).to.eql(defaults.widgetOpacity);
     expect(UiFramework.getColorTheme()).to.eql(defaults.colorTheme);
     expect(UiFramework.useDragInteraction).to.eql(defaults.dragInteraction);
+    expect(UiFramework.showWidgetIcon).to.eql(defaults.showWidgetIcon);
   });
 
 });

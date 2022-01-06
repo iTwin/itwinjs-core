@@ -6,7 +6,7 @@ import { render } from "@testing-library/react";
 import * as React from "react";
 import * as sinon from "sinon";
 import {
-  addPanelWidget, addTab, createNineZoneState, PanelSideContext, WidgetIdContext, WidgetStateContext, WidgetTabs,
+  addPanelWidget, addTab, createNineZoneState, PanelSideContext, ShowWidgetIconContext, WidgetIdContext, WidgetStateContext, WidgetTabs,
 } from "../../appui-layout-react";
 import { TestNineZoneProvider } from "../Providers";
 
@@ -49,6 +49,31 @@ describe("WidgetTabs", () => {
             </WidgetStateContext.Provider>
           </WidgetIdContext.Provider>
         </PanelSideContext.Provider>
+      </TestNineZoneProvider>,
+    );
+    container.firstChild!.should.matchSnapshot();
+  });
+
+  it("should render tabs with icons", () => {
+    let nineZone = createNineZoneState();
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1", "t2", "t3"]);
+    nineZone = addTab(nineZone, "t1");
+    nineZone = addTab(nineZone, "t2");
+    nineZone = addTab(nineZone, "t3");
+    sinon.stub(Element.prototype, "getBoundingClientRect").returns(DOMRect.fromRect({ width: 300 }));
+    const { container } = render(
+      <TestNineZoneProvider
+        state={nineZone}
+      >
+        <ShowWidgetIconContext.Provider value={true}>
+          <PanelSideContext.Provider value="left">
+            <WidgetIdContext.Provider value="w1">
+              <WidgetStateContext.Provider value={nineZone.widgets.w1}>
+                <WidgetTabs />
+              </WidgetStateContext.Provider>
+            </WidgetIdContext.Provider>
+          </PanelSideContext.Provider>
+        </ShowWidgetIconContext.Provider>
       </TestNineZoneProvider>,
     );
     container.firstChild!.should.matchSnapshot();

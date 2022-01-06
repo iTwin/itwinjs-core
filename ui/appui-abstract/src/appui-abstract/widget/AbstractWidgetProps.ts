@@ -19,7 +19,7 @@ export interface AbstractWidgetProps extends ProvidedItem {
   readonly getWidgetContent: () => any;
   /** Name of icon WebFont entry or if specifying an SVG symbol added by plug on use "svg:" prefix to imported symbol Id. */
   readonly icon?: string | ConditionalStringValue;
-  /** Optional Id used to uniquely identify the widget.
+  /** Id used to uniquely identify the widget.
    * @note It is recommended to provide unique widget id to correctly save/restore App layout.
    */
   readonly id?: string;
@@ -29,7 +29,7 @@ export interface AbstractWidgetProps extends ProvidedItem {
   readonly label?: string | ConditionalStringValue;
   /** used to explicitly set the tooltip shown by a component. */
   readonly tooltip?: string | ConditionalStringValue;
-  /** Indicates whether the Widget is free-form or rectangular. Defaults to false for rectangular. The default is false. */
+  /** Indicates whether the Widget is free-form or rectangular. Defaults to false for rectangular. The default is false. @deprecated */
   readonly isFreeform?: boolean;
   /** Application data attached to the Widget. */
   readonly applicationData?: any;

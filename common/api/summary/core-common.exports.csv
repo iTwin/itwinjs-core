@@ -120,7 +120,7 @@ public;CommonLoggerCategory
 internal;compareIModelTileTreeIds(lhs: IModelTileTreeId, rhs: IModelTileTreeId): number
 internal;CompositeTileHeader 
 internal;computeChildTileProps(parent: TileMetadata, idProvider: ContentIdProvider, root: TileTreeMetadata):
-internal;computeTileChordTolerance(tile: TileMetadata, is3d: boolean): number
+internal;computeTileChordTolerance(tile: TileMetadata, is3d: boolean, tileScreenSize: number): number
 alpha;ContentFlags
 internal;class ContentIdProvider
 public;ContextRealityModel
@@ -152,6 +152,7 @@ internal;DbResponse
 internal;DbResponseKind
 internal;DbResponseStatus
 beta;DbRuntimeStats
+internal;DbValueFormat
 internal;DecorationGeometryProps
 beta;DefaultSupportedTypes
 internal;defaultTileOptions: TileOptions
@@ -185,6 +186,7 @@ beta;ECSqlReader
 public;ECSqlSystemProperty
 public;ECSqlValueType
 internal;EdgeArgs
+alpha;EdgeType
 internal;EditingScopeNotifications
 public;ElementAlignedBox2d = Range2d
 public;ElementAlignedBox3d = Range3d
@@ -221,7 +223,7 @@ beta;ExternalSourceAttachmentProps
 beta;ExternalSourceAttachmentRole
 beta;ExternalSourceProps 
 public;Feature
-public;FeatureAppearance 
+public;FeatureAppearance
 public;FeatureAppearanceProps
 public;FeatureAppearanceProvider
 public;FeatureAppearanceProvider
@@ -262,6 +264,8 @@ public;GeodeticTransform
 public;GeodeticTransformMethod = "None" | "Geocentric" | "PositionalVector" | "GridFiles" | "MultipleRegression" | "Undefined"
 public;GeodeticTransformProps
 public;GeographicCRS 
+beta;GeographicCRSInterpretRequestProps
+beta;GeographicCRSInterpretResponseProps
 public;GeographicCRSProps
 public;GeometricElement2dProps 
 public;GeometricElement3dProps 
@@ -289,14 +293,9 @@ public;GeometrySummaryOptions
 public;GeometrySummaryRequestProps
 public;GeometrySummaryVerbosity
 internal;getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number
+internal;GlbHeader 
 public;GlobeMode
-internal;GltfBufferData
-internal;GltfBufferView
-internal;GltfConstants
-internal;GltfDataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array
-internal;GltfDataType
-internal;GltfHeader 
-internal;GltfMeshMode
+internal;GltfChunk
 internal;GltfV2ChunkTypes
 internal;GltfVersions
 public;Gradient
@@ -376,6 +375,7 @@ internal;class IpcWebSocket
 internal;IpcWebSocketBackend 
 internal;IpcWebSocketFrontend 
 internal;IpcWebSocketMessage
+internal;IpcWebSocketMessage
 internal;IpcWebSocketMessageType
 internal;class IpcWebSocketTransport
 internal;isKnownTileFormat(format: number): boolean
@@ -428,7 +428,6 @@ public;ModelProps
 public;ModelQueryParams 
 public;ModelSelectorProps 
 public;MonochromeMode
-beta;NativeAppAuthorizationConfiguration
 internal;nativeAppChannel = "nativeApp"
 internal;NativeAppFunctions
 internal;NativeAppNotifications
@@ -463,6 +462,11 @@ public;OpenDbKey
 internal;OPERATION: unique symbol
 alpha;OrbitGtBlobProps
 beta;OverriddenBy
+public;OverrideElementAppearanceOptions 
+public;OverrideFeatureAppearanceArgs = OverrideElementAppearanceOptions | OverrideModelAppearanceOptions | OverrideSubCategoryAppearanceOptions
+public;OverrideFeatureAppearanceOptions
+public;OverrideModelAppearanceOptions 
+public;OverrideSubCategoryAppearanceOptions 
 internal;PackedFeature
 internal;PackedFeatureTable
 internal;parseTileTreeIdAndContentId(treeId: string, contentId: string):
@@ -522,16 +526,19 @@ beta;QueryPropertyMetaData
 public;QueryQuota
 public;QueryRowFormat
 beta;QueryRowProxy
+beta;QueryStats
 beta;QueryValueType = any
 public;Rank
 internal;ReadableFormData 
 internal;readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription
 beta;RealityData
 beta;RealityDataAccess
-alpha;RealityDataFormat
-alpha;RealityDataProvider
-alpha;RealityDataSourceKey
-alpha;RealityDataSourceProps
+beta;RealityDataFormat
+beta;RealityDataFormat
+beta;RealityDataProvider
+beta;RealityDataSourceKey
+beta;RealityDataSourceKey
+beta;RealityDataSourceProps
 internal;REGISTRY: unique symbol
 public;RelatedElement 
 public;RelatedElementProps
@@ -683,6 +690,7 @@ public;TextureMapping
 public;TextureMapProps
 public;TextureMapUnits
 public;TextureProps 
+public;TextureTransparency
 public;ThematicDisplay
 public;ThematicDisplayMode
 public;ThematicDisplayProps
@@ -722,6 +730,7 @@ public;TxnAction
 internal;TxnNotifications
 public;TypeDefinition 
 public;TypeDefinitionElementProps 
+internal;TypedGltfChunk = GltfChunk &
 public;TypeOfChange
 public;UnitType = "Meter" | "InternationalFoot" | "USSurveyFoot" | "Degree" | "Unsupported"
 public;UpdateCallback = (obj: any, t: number) => void

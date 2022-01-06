@@ -32,7 +32,7 @@ export interface MapSubLayerProps {
  * have been validated and default values have been applied where explicit values not defined.
  * A map sub layer represents a set of objects within the layer that can be controlled separately.  These
  * are produced only from map servers that produce images on demand and are not supported by tiled (cached) servers.
- * This class can represent an hierarchy, in this case a sub layer is visible only if all its ancestors are also visible.
+ * This class can represent a hierarchy, in this case a sub layer is visible only if all its ancestors are also visible.
  * @see [[MapLayerSettings]]
  * @beta
  */
@@ -150,7 +150,7 @@ export interface MapLayerKey {
   value: string;
 }
 
-/** Normalized representation of a [[MapLayerProps]] for which values have been  validated and default values have been applied where explicit values not defined.
+/** Normalized representation of a [[MapLayerProps]] for which values have been validated and default values have been applied where explicit values not defined.
  * One or more map layers may be included within [[MapImagerySettings]] object.
  * @see [[MapImagerySettings]]
  * @beta
@@ -210,7 +210,7 @@ export class MapLayerSettings {
 
   /** return JSON representation of this MapLayerSettings object */
   public toJSON(): MapLayerProps {
-    const props: MapLayerProps = {formatId: this.formatId, name: this.name, url: this.url};
+    const props: MapLayerProps = { formatId: this.formatId, name: this.name, url: this.url };
     if (this.subLayers.length > 0) {
       props.subLayers = [];
       this.subLayers.forEach((subLayer) => {

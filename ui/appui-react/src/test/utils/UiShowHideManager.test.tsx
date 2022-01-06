@@ -13,7 +13,7 @@ import {
 } from "../../appui-react";
 import { TestFrontstage } from "../frontstage/FrontstageTestUtils";
 import TestUtils, { storageMock } from "../TestUtils";
-import { LocalSettingsStorage } from "@itwin/core-react";
+import { LocalStateStorage } from "@itwin/core-react";
 import { StandardContentLayouts } from "@itwin/appui-abstract";
 
 describe("UiShowHideManager localStorage Wrapper", () => {
@@ -43,8 +43,8 @@ describe("UiShowHideManager localStorage Wrapper", () => {
 
     describe("getters and setters", () => {
 
-      it("autoHideUi should return default of false", () => {
-        expect(UiShowHideManager.autoHideUi).to.be.false;
+      it("autoHideUi should return default of true", () => {
+        expect(UiShowHideManager.autoHideUi).to.be.true;
       });
 
       it("autoHideUi should set & return correct value", () => {
@@ -92,8 +92,8 @@ describe("UiShowHideManager localStorage Wrapper", () => {
         remove();
       });
 
-      it("useProximityOpacity should return default of true", () => {
-        expect(UiShowHideManager.useProximityOpacity).to.be.true;
+      it("useProximityOpacity should return default of false", () => {
+        expect(UiShowHideManager.useProximityOpacity).to.be.false;
       });
 
       it("useProximityOpacity should set & return correct value", () => {
@@ -250,14 +250,14 @@ describe("UiShowHideManager localStorage Wrapper", () => {
   describe("UiShowHideSettingsProvider ", () => {
 
     it("should get and set defaults", async () => {
-      const settingsStorage = new LocalSettingsStorage();
+      const settingsStorage = new LocalStateStorage();
       await UiShowHideSettingsProvider.storeAutoHideUi(false, settingsStorage);
       await UiShowHideSettingsProvider.storeUseProximityOpacity(false, settingsStorage);
       await UiShowHideSettingsProvider.storeSnapWidgetOpacity(false, settingsStorage);
       await TestUtils.initializeUiFramework();
 
       const uiShowHideSettingsProvider = new UiShowHideSettingsProvider();
-      await uiShowHideSettingsProvider.loadUserSettings(UiFramework.getUiSettingsStorage());
+      await uiShowHideSettingsProvider.loadUserSettings(UiFramework.getUiStateStorage());
 
       expect(UiShowHideManager.autoHideUi).to.eq(false);
       expect(UiShowHideManager.useProximityOpacity).to.eq(false);

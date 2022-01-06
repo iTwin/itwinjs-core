@@ -7,7 +7,7 @@ import * as chaiAsPromised from "chai-as-promised";
 import * as path from "path";
 import { BeDuration, compareStrings, DbOpcode, Guid, Id64String, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
-import { BatchType, ChangedEntities, ElementGeometryChange, IModelError } from "@itwin/core-common";
+import { BatchType, ChangedEntities, EdgeType, ElementGeometryChange, IModelError } from "@itwin/core-common";
 import {
   BriefcaseConnection, GeometricModel3dState, GraphicalEditingScope, IModelTileTree, IModelTileTreeParams, TileLoadPriority,
 } from "@itwin/core-frontend";
@@ -23,7 +23,7 @@ function makeUpdate(id: Id64String, range?: Range3d): ElementGeometryChange { re
 function makeDelete(id: Id64String): ElementGeometryChange { return { id, type: DbOpcode.Delete }; }
 
 describe("GraphicalEditingScope", () => {
-  if (ProcessDetector.isElectronAppFrontend) {
+  if (!ProcessDetector.isMobileAppFrontend) {
     let imodel: BriefcaseConnection | undefined;
     // Editable; BisCore version < 1.0.11
     const oldFilePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/test.bim");
@@ -38,7 +38,7 @@ describe("GraphicalEditingScope", () => {
     }
 
     before(async () => {
-      await TestUtility.startFrontend();
+      await TestUtility.startFrontend(undefined, undefined, true);
       await initializeEditTools();
     });
 
@@ -267,6 +267,7 @@ describe("GraphicalEditingScope", () => {
           priority: TileLoadPriority.Primary,
           formatVersion: 14,
           contentRange: modelRange.clone(),
+          tileScreenSize: 512,
           options: {
             allowInstancing: true,
             edgesRequired: false,
@@ -282,7 +283,7 @@ describe("GraphicalEditingScope", () => {
           },
         };
 
-        return new IModelTileTree(params, { edgesRequired: false, type: BatchType.Primary });
+        return new IModelTileTree(params, { edges: EdgeType.None, type: BatchType.Primary });
       }
 
       const expectTreeState = async (tree: IModelTileTree | IModelTileTree[], expectedState: "static" | "interactive" | "dynamic" | "disposed", expectedHiddenElementCount: number, expectedRange: Range3d) => {

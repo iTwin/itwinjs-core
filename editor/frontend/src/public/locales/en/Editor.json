@@ -55,11 +55,16 @@
       "flyover": "Create B-spline Curve",
       "Label": {
         "Method": "Method",
-        "Order": "Order"
+        "Order": "Order",
+        "Tangents": "Define Tangents"
       },
       "Method": {
         "ControlPoints": "Control Points",
         "ThroughPoints": "Through Points"
+      },
+      "Prompts": {
+        "StartTangent": "Define start tangent",
+        "EndTangent": "Define end tangent"
       }
     },
     "CreateCircle": {
@@ -114,9 +119,22 @@
       "keyin": "editor sew sheets",
       "flyover": "Sew selected sheets"
     },
+    "ThickenSheets": {
+      "keyin": "editor thicken sheets",
+      "flyover": "Thicken selected sheets into solids",
+      "Label": {
+        "FrontDistance": "Front Distance",
+        "BackDistance": "Back Distance"
+      }
+    },
     "CutSolids": {
       "keyin": "editor cut solids",
-      "flyover": "Cut solids by open path or planar region"
+      "flyover": "Cut solids by open path or planar region",
+      "Label": {
+        "Depth": "Depth",
+        "BothDirections": "Both Directions",
+        "Outside": "Outside"
+      }
     },
     "EmbossSolids": {
       "keyin": "editor emboss solids",
@@ -124,7 +142,17 @@
     },
     "ImprintSolids": {
       "keyin": "editor imprint solids",
-      "flyover": "Imprint offset edges or another element on a solid"
+      "flyover": "Imprint offset edges or another element on a solid",
+      "Label": {
+        "Method": "Method",
+        "Distance": "Distance",
+        "Extend": "Extend"
+      },
+      "Method": {
+        "Element": "Element",
+        "Edges": "Edges",
+        "Points": "Points"
+      }
     },
     "SweepAlongPath": {
       "keyin": "editor sweep path",
@@ -136,11 +164,63 @@
     },
     "OffsetFaces": {
       "keyin": "editor offset faces",
-      "flyover": "Offset faces of surfaces and solids"
+      "flyover": "Offset faces of surfaces and solids",
+      "Label": {
+        "AddSmooth": "Add Smooth Faces",
+        "Distance": "Distance"
+      }
     },
     "HollowFaces": {
       "keyin": "editor hollow faces",
-      "flyover": "Hollow solids by offsetting faces"
+      "flyover": "Hollow solids by offsetting faces",
+      "Label": {
+        "ShellThickness": "Shell Thickness",
+        "FaceThickness": "Face Thickness"
+      }
+    },
+    "SweepFaces": {
+      "keyin": "editor sweep faces",
+      "flyover": "Sweep planar curves, surfaces, or faces of solids",
+      "Label": {
+        "AddSmooth": "Add Smooth Faces",
+        "Distance": "Distance"
+      }
+    },
+    "SpinFaces": {
+      "keyin": "editor spin faces",
+      "flyover": "Spin planar curves, surfaces, or faces of solids",
+      "Label": {
+        "Angle": "Sweep Angle"
+      }
+    },
+    "RoundEdges": {
+      "keyin": "editor round edges",
+      "flyover": "Round edges of solids and surfaces",
+      "Label": {
+        "Radius": "Radius",
+        "AddSmooth": "Add Smooth Edges"
+      }
+    },
+    "ChamferEdges": {
+      "keyin": "editor chamfer edges",
+      "flyover": "Chamfer edges of solids and surfaces",
+      "Label": {
+        "Method": "Method",
+        "Length": "Length",
+        "LeftDistance": "Left Distance",
+        "RightDistance": "Right Distance",
+        "Angle": "Angle"
+      },
+      "Method": {
+        "Length": "Length",
+        "Distances": "Distances",
+        "DistanceAngle": "Distance/Angle",
+        "AngleDistance": "Angle/Distance"
+      }
+    },
+    "DeleteSubEntities": {
+      "keyin": "editor delete subentities",
+      "flyover": "Delete faces and edges of solids and surfaces"
     },
     "UndoAll": {
       "keyin": "editor undo all",

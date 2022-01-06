@@ -38,6 +38,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
   private _isMounted = false;
   private _formatParams: CustomFormattedNumberParams | undefined;
   private _inputElement = React.createRef<HTMLInputElement>();
+  private _lastValidValue: PropertyValue | undefined;
 
   /** @internal */
   public override readonly state: Readonly<CustomNumberEditorState> = {
@@ -66,6 +67,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
           value: parseResults.value,
           displayValue: newDisplayValue,
         };
+        this._lastValidValue = { ...propertyValue };
         // make sure the text in the input item matches the latest formatted text... this could get out if the input string say 1.5 === the display string of 1'-6"
         // istanbul ignore else
         if (newDisplayValue !== this.state.inputValue) {
@@ -73,19 +75,22 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
         }
       } else {
         // istanbul ignore else
-        if (this.htmlElement)
+        if (this.htmlElement) {
           UiAdmin.messagePresenter.displayInputFieldMessage(this.htmlElement, MessageSeverity.Error, parseResults.parseError ? parseResults.parseError : /* istanbul ignore next */ UiComponents.translate("errors.unable-to-parse-quantity"));
-        else
+          this.htmlElement.focus();
+        } else {
           UiAdmin.messagePresenter.displayMessage(MessageSeverity.Error, parseResults.parseError ? parseResults.parseError : /* istanbul ignore next */ UiComponents.translate("errors.unable-to-parse-quantity"));
+        }
 
         const displayValue = (record.value.displayValue && record.value.displayValue.length > 0) ? record.value.displayValue : /* istanbul ignore next */ (this._formatParams as CustomFormattedNumberParams).formatFunction(record.value.value as number);
-        propertyValue = {
+        propertyValue = this._lastValidValue ? { ...this._lastValidValue } : {
           valueFormat: PropertyValueFormat.Primitive,
           value: record.value.value,
           displayValue,
         };
       }
     }
+
     return propertyValue;
   }
 
@@ -188,6 +193,11 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
     }
 
     const initialDisplayValue = this._getInitialDisplayValue();
+    this._lastValidValue = {
+      valueFormat: PropertyValueFormat.Primitive,
+      value: (record.value as PrimitiveValue).value,
+      displayValue: initialDisplayValue,
+    };
     let size: number | undefined;
     let maxLength: number | undefined;
     let iconSpec: string | undefined;
@@ -216,20 +226,19 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
       this.setState({ inputValue: initialDisplayValue, size, maxLength, iconSpec });
   }
 
-  private _resetToOriginalValue() {
-    const initialDisplayValue = this._getInitialDisplayValue();
-
+  private _resetToLastValidDisplayValue() {
+    const initialDisplayValue = (this._lastValidValue && (this._lastValidValue as PrimitiveValue).displayValue) ?? this._getInitialDisplayValue();
     this.setState({ inputValue: initialDisplayValue });
   }
 
   private _onKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     // istanbul ignore else
     if (e.key === SpecialKey.Escape) {
-      const initialDisplayValue = this._getInitialDisplayValue();
+      const initialDisplayValue = (this._lastValidValue && (this._lastValidValue as PrimitiveValue).displayValue) ?? this._getInitialDisplayValue();
       if (initialDisplayValue !== this.state.inputValue) {
         e.preventDefault();
         e.stopPropagation();
-        this._resetToOriginalValue();
+        this._resetToLastValidDisplayValue();
       } else {
         // istanbul ignore else
         if (this.props.onCancel)

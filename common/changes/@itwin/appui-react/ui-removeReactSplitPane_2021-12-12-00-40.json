@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Remove package react-split-pane.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}

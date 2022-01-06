@@ -14,6 +14,7 @@ import { CommonToolbarItem, ToolbarOrientation, ToolbarUsage } from "./toolbars/
 import { AbstractWidgetProps } from "./widget/AbstractWidgetProps";
 import { AbstractZoneLocation, StagePanelLocation, StagePanelSection } from "./widget/StagePanel";
 import { loggerCategory } from "./utils/misc";
+import { StageUsage } from "./items/StageUsage";
 
 /** Action taken by the application on item provided by a UiItemsProvider
  * @public
@@ -47,14 +48,80 @@ export interface UiItemsProvider {
     zoneLocation?: AbstractZoneLocation, stageAppData?: any) => ReadonlyArray<AbstractWidgetProps>;
   /** Function called when the provider is unregistered via `ItemsManager.unregister` to allow provider to do cleanup. */
   onUnregister?: () => void;
-  /** Called if the application changed the Toolbar button item */
-  onToolbarButtonItemArbiterChange?: (item: CommonToolbarItem, action: UiItemsApplicationAction) => void;
-  /** Called if the application changed the StatusBar item */
-  onStatusBarItemArbiterChange?: (item: CommonStatusBarItem, action: UiItemsApplicationAction) => void;
-  /** Called if the application changed the Backstage item */
-  onBackstageItemArbiterChange?: (item: BackstageItem, action: UiItemsApplicationAction) => void;
-  /** Called if the application changed the Widget */
-  onWidgetArbiterChange?: (widget: AbstractWidgetProps, action: UiItemsApplicationAction) => void;
+}
+
+/**
+ * Base implementation of a UiItemsProvider. The base class allows the user to pass in a function that is used to determine if the
+ * active stage should be provided items. Derived provider classes should override the `xxxInternal` methods to provide items.
+ * @public
+ */
+export class BaseUiItemsProvider implements UiItemsProvider {
+  /*
+   * @param providerId - unique identifier for this instance of the provider. This is required in case separate packages want
+   * to set up custom stage with their own subset of standard tools.
+   * @param isSupportedStage - optional function that will be called to determine if tools should be added to current stage. If not set and
+   * the current stage's `usage` is set to `StageUsage.General` then the provider will add items to frontstage.
+   */
+  constructor(protected _providerId: string, public isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean) { }
+
+  public get id(): string { return this._providerId; }
+  public onUnregister(): void { }
+
+  public unregister() {
+    UiItemsManager.unregister(this._providerId);
+  }
+
+  /** Backstage items are not stage specific so no callback is used */
+  public provideBackstageItems(): BackstageItem[] {
+    return [];
+  }
+
+  public provideToolbarButtonItemsInternal(_stageId: string, _stageUsage: string, _toolbarUsage: ToolbarUsage, _toolbarOrientation: ToolbarOrientation, _stageAppData?: any): CommonToolbarItem[] {
+    return [];
+  }
+  public provideToolbarButtonItems(stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any): CommonToolbarItem[] {
+    let provideToStage = false;
+
+    if (this.isSupportedStage) {
+      provideToStage = this.isSupportedStage(stageId, stageUsage, stageAppData);
+    } else {
+      provideToStage = (stageUsage === StageUsage.General);
+    }
+
+    return provideToStage ? this.provideToolbarButtonItemsInternal(stageId, stageUsage, toolbarUsage, toolbarOrientation, stageAppData) : [];
+  }
+
+  public provideStatusBarItemsInternal(_stageId: string, _stageUsage: string, _stageAppData?: any): CommonStatusBarItem[] {
+    return [];
+  }
+  public provideStatusBarItems(stageId: string, stageUsage: string, stageAppData?: any): CommonStatusBarItem[] {
+    let provideToStage = false;
+
+    if (this.isSupportedStage) {
+      provideToStage = this.isSupportedStage(stageId, stageUsage, stageAppData);
+    } else {
+      provideToStage = (stageUsage === StageUsage.General);
+    }
+
+    return provideToStage ? this.provideStatusBarItemsInternal(stageId, stageUsage, stageAppData) : [];
+  }
+
+  public provideWidgetsInternal(_stageId: string, _stageUsage: string, _location: StagePanelLocation, _section?: StagePanelSection, _stageAppData?: any): AbstractWidgetProps[] {
+    return [];
+  }
+
+  public provideWidgets(stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection,
+    _zoneLocation?: AbstractZoneLocation, stageAppData?: any): ReadonlyArray<AbstractWidgetProps> {
+    let provideToStage = false;
+
+    if (this.isSupportedStage) {
+      provideToStage = this.isSupportedStage(stageId, stageUsage, stageAppData);
+    } else {
+      provideToStage = (stageUsage === StageUsage.General);
+    }
+
+    return provideToStage ? this.provideWidgetsInternal(stageId, stageUsage, location, section, stageAppData) : [];
+  }
 }
 
 /** UIProvider Registered Event Args interface.

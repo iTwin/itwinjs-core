@@ -983,12 +983,7 @@ export class ToolAdmin {
       return; // we're inside a pickable decoration, don't send event to tool
     }
 
-    const snapPromise = this._snapMotionPromise = this.onMotionSnap(ev);
-
-    snapPromise.then((snapOk) => {
-      if (!snapOk || snapPromise !== this._snapMotionPromise)
-        return;
-
+    const processMotion = async (): Promise<void> => {
       // Update event to account for AccuSnap adjustments...
       current.fromButton(vp, pt2d, inputSource, true);
       current.toEvent(ev, true);
@@ -1008,15 +1003,31 @@ export class ToolAdmin {
         if (undefined !== tool && isValidLocation)
           tool.receivedDownEvent = true;
 
-        return this.onStartDrag(ev, isValidLocation ? tool : undefined);
+        await this.onStartDrag(ev, isValidLocation ? tool : undefined);
+        return;
       }
 
       this.updateDynamics(ev);
-      return;
-    }).catch((_) => { });
+    };
+
+    const snapPromise = this._snapMotionPromise = this.onMotionSnap(ev);
+
+    /** When forceStartDrag is true, make sure we don't return a fulfilled promise until we've processed the motion so callers can await it.
+     * The .then below happens AFTER this method returns its (fulfilled) promise so we can't use that.
+     */
+    if (forceStartDrag) {
+      await snapPromise;
+      return processMotion();
+    }
 
     if (this.isLocateCircleOn)
       vp.invalidateDecorations();
+
+    snapPromise.then((snapOk) => {
+      if (!snapOk || snapPromise !== this._snapMotionPromise)
+        return;
+      return processMotion();
+    }).catch((_) => { });
   }
 
   private async onMouseMove(event: ToolEvent): Promise<any> {
@@ -1330,7 +1341,7 @@ export class ToolAdmin {
 
     // ### TODO Restart of primitive tool should be handled by Txn event listener...needs to happen even if not the active tool...
     if (undefined !== this._primitiveTool)
-      this._primitiveTool.onRestartTool();
+      await this._primitiveTool.onRestartTool();
 
     return true;
   }
@@ -1353,7 +1364,7 @@ export class ToolAdmin {
 
     // ### TODO Restart of primitive tool should be handled by Txn event listener...needs to happen even if not the active tool...
     if (undefined !== this._primitiveTool)
-      this._primitiveTool.onRestartTool();
+      await this._primitiveTool.onRestartTool();
 
     return true;
   }
@@ -1738,7 +1749,7 @@ export class ToolAdmin {
       this._inputCollector.onSelectedViewportChanged(previous, current);
 
     if (undefined !== this._primitiveTool)
-      this._primitiveTool.onSelectedViewportChanged(previous, current);
+      await this._primitiveTool.onSelectedViewportChanged(previous, current);
   }
 
   public setLocateCircleOn(locateOn: boolean): void {

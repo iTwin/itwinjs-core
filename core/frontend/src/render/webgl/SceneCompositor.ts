@@ -1238,6 +1238,7 @@ abstract class Compositor extends SceneCompositor {
     const top = this.target.uniforms.branch.top;
     const viewFlags = top.viewFlags.copy({
       renderMode: RenderMode.SmoothShade,
+      wiremesh: false,
       lighting: false,
       forceSurfaceDiscard: false,
       hiddenEdges: false,

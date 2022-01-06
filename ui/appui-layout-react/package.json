@@ -1,7 +1,7 @@
 {
   "name": "@itwin/appui-layout-react",
-  "version": "3.0.0-dev.116",
-  "description": "iModel.js Nine-zone React UI components",
+  "version": "3.0.0-dev.176",
+  "description": "iTwin.js Nine-zone React UI components",
   "main": "lib/cjs/appui-layout-react.js",
   "module": "lib/esm/appui-layout-react.js",
   "typings": "lib/cjs/appui-layout-react",
@@ -37,9 +37,9 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.116",
-    "@itwin/appui-abstract": "workspace:^3.0.0-dev.116",
-    "@itwin/core-react": "workspace:^3.0.0-dev.116",
+    "@itwin/appui-abstract": "workspace:^3.0.0-dev.176",
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.176",
+    "@itwin/core-react": "workspace:^3.0.0-dev.176",
     "react": "^17.0.0",
     "react-dom": "^17.0.0"
   },
@@ -48,11 +48,11 @@
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@itwin/core-bentley": "workspace:*",
-    "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "workspace:*",
     "@itwin/appui-abstract": "workspace:*",
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
     "@itwin/core-react": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
     "@testing-library/react": "^12.0.0",
     "@testing-library/react-hooks": "^7.0.2",
     "@types/chai": "^4.1.4",
@@ -61,7 +61,7 @@
     "@types/chai-spies": "^1.0.0",
     "@types/enzyme": "3.9.3",
     "@types/mocha": "^8.2.2",
-    "@types/react": "17.0.31",
+    "@types/react": "^17.0.37",
     "@types/react-dom": "^17.0.0",
     "@types/sinon": "^9.0.0",
     "@types/uuid": "^7.0.2",
@@ -69,7 +69,7 @@
     "chai-as-promised": "^7",
     "chai-jest-snapshot": "^2.0.0",
     "chai-spies": "1.0.0",
-    "cpx": "^1.5.0",
+    "cpx2": "^3.0.0",
     "enzyme": "^3.4.0",
     "@wojtekmaj/enzyme-adapter-react-17": "^0.6.3",
     "enzyme-to-json": "^3.3.4",
@@ -94,7 +94,7 @@
   ],
   "dependencies": {
     "@itwin/itwinui-css": "^0.37.0",
-    "@itwin/itwinui-react": "^1.23.0",
+    "@itwin/itwinui-react": "^1.27.0",
     "classnames": "^2.3.1",
     "immer": "9.0.6",
     "uuid": "^7.0.3"
