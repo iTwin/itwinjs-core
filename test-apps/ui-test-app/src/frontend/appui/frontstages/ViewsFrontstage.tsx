@@ -432,8 +432,6 @@ export class ViewsFrontstage extends FrontstageProvider {
             initialWidth={400}
             widgets={
               [
-                <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectionTable" control={UnifiedSelectionTableWidgetControl}
-                  applicationData={{ iModelConnection }} fillZone={true} badgeType={BadgeType.New} />,
                 /* <Widget iconSpec="icon-placeholder" label="External iModel View" control={ViewportWidgetControl} fillZone={true} badgeType={BadgeType.TechnicalPreview}
                    applicationData={{ iTwinName: "iModelHubTest", imodelName: "GrandCanyonTerrain" }} />, */
               ]}
@@ -469,6 +467,11 @@ export class ViewsFrontstage extends FrontstageProvider {
         }
         bottomPanel={
           <StagePanel
+            pinned={false}
+            widgets={[
+              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectionTable" control={UnifiedSelectionTableWidgetControl}
+                applicationData={{ iModelConnection }} fillZone={true} badgeType={BadgeType.New} />,
+            ]}
             allowedZones={this._bottomPanel.allowedZones}
           />
         }
@@ -810,6 +813,14 @@ class AdditionalTools {
     }), { groupPriority: 30 }),
     ToolbarHelper.createToolbarItemFromItemDef(140, CoreTools.restoreFrontstageLayoutCommandItemDef, { groupPriority: 40 }),
     this.formatGroupItemsItem(),
+    ToolbarHelper.createToolbarItemFromItemDef(150, new CommandItemDef({
+      commandId: "Toggle Overlay",
+      iconSpec: "icon-lightbulb",
+      label: "Toggle View Overlay",
+      execute: () => {
+        UiFramework.setViewOverlayDisplay(!UiFramework.viewOverlayDisplay);
+      },
+    }), { groupPriority: 30 }),
   ];
 
   public getMiscGroupItem = (): CommonToolbarItem => {

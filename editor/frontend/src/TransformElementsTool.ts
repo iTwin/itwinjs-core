@@ -563,21 +563,13 @@ export class RotateElementsTool extends TransformElementsTool {
   }
 
   public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
-    if (this.methodProperty.name === updatedValue.propertyName) {
-      this.methodProperty.value = updatedValue.value.value as number;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.methodProperty.item);
+    if (!this.changeToolSettingPropertyValue(updatedValue))
+      return false;
+
+    if (this.methodProperty.name === updatedValue.propertyName)
       await this.onRestartTool(); // calling restart, not reinitialize to not exit tool for selection set...
-      return true;
-    } else if (this.aboutProperty.name === updatedValue.propertyName) {
-      this.aboutProperty.value = updatedValue.value.value as number;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.aboutProperty.item);
-      return true;
-    } else if (this.angleProperty.name === updatedValue.propertyName) {
-      this.rotateAngle = updatedValue.value.value as number;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.angleProperty.item);
-      return true;
-    }
-    return false;
+
+    return true;
   }
 
   public override supplyToolSettingsProperties(): DialogItem[] | undefined {
@@ -603,17 +595,7 @@ export class RotateElementsTool extends TransformElementsTool {
       return false;
 
     // Setup initial values here instead of supplyToolSettingsProperties to support keyin args w/o appui-react...
-    const rotateMethod = IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValue(this.toolId, this.methodProperty.name);
-    if (undefined !== rotateMethod)
-      this.methodProperty.dialogItemValue = rotateMethod;
-
-    const rotateAbout = IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValue(this.toolId, this.aboutProperty.name);
-    if (undefined !== rotateAbout)
-      this.aboutProperty.dialogItemValue = rotateAbout;
-
-    const rotateAngle = IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValue(this.toolId, this.angleProperty.name);
-    if (undefined !== rotateAngle)
-      this.angleProperty.dialogItemValue = rotateAngle;
+    this.initializeToolSettingPropertyValues([this.methodProperty, this.aboutProperty, this.angleProperty]);
 
     return true;
   }
@@ -670,13 +652,13 @@ export class RotateElementsTool extends TransformElementsTool {
 
     // Update current session values so keyin args are picked up for tool settings/restart...
     if (undefined !== rotateMethod)
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: this.methodProperty.name, value: { value: rotateMethod } });
+      this.saveToolSettingPropertyValue(this.methodProperty, { value: rotateMethod });
 
     if (undefined !== rotateAbout)
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: this.aboutProperty.name, value: { value: rotateAbout } });
+      this.saveToolSettingPropertyValue(this.aboutProperty, { value: rotateAbout });
 
     if (undefined !== rotateAngle)
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: this.angleProperty.name, value: { value: rotateAngle } });
+      this.saveToolSettingPropertyValue(this.angleProperty, { value: rotateAngle });
 
     return this.run();
   }

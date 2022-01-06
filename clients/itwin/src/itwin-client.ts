@@ -14,7 +14,7 @@ export * from "./Request";
  */
 /**
  * @docs-group-description Authentication
- * Classes for managing [AccessToken] used for all requests in other classes.
+ * Classes for managing [[AccessToken]] used for all requests in other classes.
  */
 /**
  * @docs-group-description iTwinServiceClients

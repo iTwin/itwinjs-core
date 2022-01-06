@@ -7,7 +7,7 @@ import * as faker from "faker";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { IModelDb } from "@itwin/core-backend";
-import { Id64String } from "@itwin/core-bentley";
+import { Id64String, using } from "@itwin/core-bentley";
 import { IModelNotFoundResponse, IModelRpcProps } from "@itwin/core-common";
 import {
   Content, ContentDescriptorRequestOptions, ContentDescriptorRpcRequestOptions, ContentFlags, ContentInstanceKeysRpcRequestOptions,
@@ -15,15 +15,16 @@ import {
   DescriptorOverrides, DiagnosticsScopeLogs, DisplayLabelRequestOptions, DisplayLabelRpcRequestOptions, DisplayLabelsRequestOptions,
   DisplayLabelsRpcRequestOptions, DistinctValuesRequestOptions, DistinctValuesRpcRequestOptions, ElementProperties, FieldDescriptor,
   FieldDescriptorType, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions,
-  HierarchyRpcRequestOptions, InstanceKey, Item, KeySet, Node, NodeKey,
-  NodePathElement, Paged, PageOptions, PresentationError, PresentationRpcRequestOptions, PresentationStatus, RulesetVariable, RulesetVariableJSON,
-  SelectClassInfo, SelectionScopeRequestOptions, SingleElementPropertiesRequestOptions, SingleElementPropertiesRpcRequestOptions, VariableValueTypes,
+  HierarchyRpcRequestOptions, InstanceKey, Item, KeySet, Node, NodeKey, NodePathElement, Paged, PageOptions, PresentationError,
+  PresentationRpcRequestOptions, PresentationStatus, RulesetVariable, RulesetVariableJSON, SelectClassInfo, SelectionScopeRequestOptions,
+  SingleElementPropertiesRequestOptions, SingleElementPropertiesRpcRequestOptions, VariableValueTypes,
 } from "@itwin/presentation-common";
 import {
   createRandomECInstanceKey, createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomId, createRandomLabelDefinitionJSON,
   createRandomNodePathElement, createRandomSelectionScope, createTestContentDescriptor, createTestECInstanceKey, createTestSelectClassInfo,
   ResolvablePromise,
 } from "@itwin/presentation-common/lib/cjs/test";
+import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
 import { Presentation } from "../presentation-backend/Presentation";
 import { PresentationManager } from "../presentation-backend/PresentationManager";
 import { MAX_ALLOWED_KEYS_PAGE_SIZE, MAX_ALLOWED_PAGE_SIZE, PresentationRpcImpl } from "../presentation-backend/PresentationRpcImpl";
@@ -37,23 +38,85 @@ describe("PresentationRpcImpl", () => {
   });
 
   it("uses default PresentationManager implementation if not overridden", () => {
-    Presentation.initialize();
-    const impl = new PresentationRpcImpl();
-    expect(impl.getManager()).is.instanceof(PresentationManager);
+    Presentation.initialize({
+      addon: moq.Mock.ofType<NativePlatformDefinition>().object,
+    });
+    using(new PresentationRpcImpl(), (impl) => {
+      expect(impl.getManager()).is.instanceof(PresentationManager);
+    });
   });
 
-  it("uses default requestWaitTime from the Presentation implementation if it is not overriden", () => {
-    Presentation.initialize();
-    const impl = new PresentationRpcImpl();
-    expect(impl.requestTimeout).to.equal(90000);
-  });
-
-  it("uses custom requestTimeout from the Presentation implementation if it is passed through Presentation.initialize", () => {
+  it("uses custom requestTimeout", () => {
     const randomRequestTimeout = faker.random.number({ min: 0, max: 90000 });
-    Presentation.initialize({ requestTimeout: randomRequestTimeout });
-    const impl = new PresentationRpcImpl();
-    expect(impl.requestTimeout).to.not.throw;
-    expect(impl.requestTimeout).to.equal(randomRequestTimeout);
+    using(new PresentationRpcImpl({ requestTimeout: randomRequestTimeout }), (impl) => {
+      expect(impl.requestTimeout).to.not.throw;
+      expect(impl.requestTimeout).to.equal(randomRequestTimeout);
+    });
+  });
+
+  it("returns all diagnostics when `PresentationManager` calls diagnostics handler multiple times", async () => {
+    const rulesetsMock = moq.Mock.ofType<RulesetManager>();
+    const variablesMock = moq.Mock.ofType<RulesetVariablesManager>();
+    const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
+    presentationManagerMock.setup((x) => x.rulesets()).returns(() => rulesetsMock.object);
+    presentationManagerMock.setup((x) => x.vars(moq.It.isAnyString())).returns(() => variablesMock.object);
+    Presentation.initialize({
+      clientManagerFactory: () => presentationManagerMock.object,
+    });
+
+    const imodelTokenMock = moq.Mock.ofType<IModelRpcProps>();
+    const imodelMock = moq.Mock.ofType<IModelDb>();
+    sinon.stub(IModelDb, "findByKey").returns(imodelMock.object);
+
+    const impl = new PresentationRpcImpl({ requestTimeout: 10 });
+    await using([{ dispose: () => Presentation.terminate() }, impl], async (_) => {
+      presentationManagerMock
+        .setup(async (x) => x.getNodesCount(moq.It.isAny()))
+        .callback((props: HierarchyRequestOptions<IModelDb, NodeKey>) => {
+          props.diagnostics!.handler([{ scope: "1" }]);
+          props.diagnostics!.handler([{ scope: "2" }]);
+        })
+        .returns(async () => 0);
+      const response = await impl.getNodesCount(imodelTokenMock.object, { rulesetOrId: "", diagnostics: { dev: true } });
+      expect(response.diagnostics).to.deep.eq([{
+        scope: "1",
+      }, {
+        scope: "2",
+      }]);
+    });
+  });
+
+  it("returns diagnostics from initial call when same request is repeated multiple times", async () => {
+    const rulesetsMock = moq.Mock.ofType<RulesetManager>();
+    const variablesMock = moq.Mock.ofType<RulesetVariablesManager>();
+    const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
+    presentationManagerMock.setup((x) => x.rulesets()).returns(() => rulesetsMock.object);
+    presentationManagerMock.setup((x) => x.vars(moq.It.isAnyString())).returns(() => variablesMock.object);
+    Presentation.initialize({
+      clientManagerFactory: () => presentationManagerMock.object,
+    });
+
+    const imodelTokenMock = moq.Mock.ofType<IModelRpcProps>();
+    const imodelMock = moq.Mock.ofType<IModelDb>();
+    sinon.stub(IModelDb, "findByKey").returns(imodelMock.object);
+
+    const impl = new PresentationRpcImpl({ requestTimeout: 10 });
+    await using([{ dispose: () => Presentation.terminate() }, impl], async (_) => {
+      let callsCount = 0;
+      const result = new ResolvablePromise<number>();
+      presentationManagerMock
+        .setup(async (x) => x.getNodesCount(moq.It.isAny()))
+        .callback((props: HierarchyRequestOptions<IModelDb, NodeKey>) => {
+          props.diagnostics!.handler([{ scope: `${callsCount++}` }]);
+        })
+        .returns(async () => result);
+      const response1 = await impl.getNodesCount(imodelTokenMock.object, { rulesetOrId: "", diagnostics: { dev: true } });
+      expect(response1.statusCode).to.eq(PresentationStatus.BackendTimeout);
+      await result.resolve(123);
+      const response2 = await impl.getNodesCount(imodelTokenMock.object, { rulesetOrId: "", diagnostics: { dev: true } });
+      expect(response2.statusCode).to.eq(PresentationStatus.Success);
+      expect(response2.diagnostics).to.deep.eq([{ scope: "0" }]);
+    });
   });
 
   describe("calls forwarding", () => {
@@ -73,7 +136,6 @@ describe("PresentationRpcImpl", () => {
       presentationManagerMock.setup((x) => x.vars(moq.It.isAnyString())).returns(() => variablesMock.object);
       presentationManagerMock.setup((x) => x.rulesets()).returns(() => rulesetsMock.object);
       Presentation.initialize({
-        requestTimeout: 10,
         clientManagerFactory: () => presentationManagerMock.object,
       });
       testData = {
@@ -85,7 +147,11 @@ describe("PresentationRpcImpl", () => {
       };
       defaultRpcParams = { clientId: faker.random.uuid() };
       stub_IModelDb_findByKey = sinon.stub(IModelDb, "findByKey").returns(testData.imodelMock.object);
-      impl = new PresentationRpcImpl();
+      impl = new PresentationRpcImpl({ requestTimeout: 10 });
+    });
+
+    afterEach(() => {
+      impl.dispose();
     });
 
     it("returns invalid argument status code when using invalid imodel token", async () => {
@@ -126,12 +192,9 @@ describe("PresentationRpcImpl", () => {
         await result.resolve(999);
       });
 
-      it("should return result if `PresentationStatus.BackendTimeout` is set to 0", async () => {
-        Presentation.terminate();
-        Presentation.initialize({
-          requestTimeout: 0,
-          clientManagerFactory: () => presentationManagerMock.object,
-        });
+      it("should return result if `requestTimeout` is set to 0", async () => {
+        impl.dispose();
+        impl = new PresentationRpcImpl({ requestTimeout: 0 });
         const rpcOptions: HierarchyRpcRequestOptions = {
           ...defaultRpcParams,
           rulesetOrId: testData.rulesetOrId,
@@ -225,12 +288,9 @@ describe("PresentationRpcImpl", () => {
         expect(actualResult.errorMessage).to.eq("test error");
       });
 
-      it("should return error result if manager throws and `PresentationStatus.BackendTimeout` is set to 0", async () => {
-        Presentation.terminate();
-        Presentation.initialize({
-          requestTimeout: 0,
-          clientManagerFactory: () => presentationManagerMock.object,
-        });
+      it("should return error result if manager throws and `requestTimeout` is set to 0", async () => {
+        impl.dispose();
+        impl = new PresentationRpcImpl({ requestTimeout: 0 });
         const rpcOptions: HierarchyRpcRequestOptions = {
           ...defaultRpcParams,
           rulesetOrId: testData.rulesetOrId,

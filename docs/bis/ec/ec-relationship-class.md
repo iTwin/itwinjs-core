@@ -17,18 +17,16 @@ Relationship class rules:
 Relationship inheritance rules:
 
 - Relationships only support single inheritance
-- Relationships may only derive from an abstract relationship
 - Derived relationships narrow relationship constraints of their parent relationship
   - Constraint classes must be equal to or more derived than those defined in a base class
   - Multiplicities must be equal to or more restrictive than those defined in a base class
-  - The minimal number of required endpoints can be increased but not decreased
-  - The maximum number of required endpoints can be decreased but not increased
+    - The minimal number of required endpoints can be increased but not decreased
+    - The maximum number of required endpoints can be decreased but not increased
   - The polymorphic flag may be left unchanged or changed from true to false but not false to true
     - **Note**: If the polymorphic flag is set to false for an abstract relationship class, all derived relationships can only apply to the classes specified in the abstract relationship constraints.
 
 - Role labels may be customized with no restrictions in derived relationships.
 - An abstract constraint class defined in a derived relationship must be or derive from the base abstract constraint class
-- Only base relationships may define properties
 - Only base relationships may be referenced by a Navigation property
 - Only base relationships may set the order by attribute
 

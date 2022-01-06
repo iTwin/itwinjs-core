@@ -69,7 +69,7 @@ describe("Tile tolerance", () => {
       },
       contentId,
     } as IModelTile;
-    const stream = new ByteStream((await IModelApp.tileAdmin.generateTileContent(tile)).buffer);
+    const stream = ByteStream.fromUint8Array(await IModelApp.tileAdmin.generateTileContent(tile));
     const header = new ImdlHeader(stream);
     expect(header.isValid).to.be.true;
     expect(header.isReadableVersion).to.be.true;

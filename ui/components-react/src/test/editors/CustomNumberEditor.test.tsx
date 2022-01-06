@@ -49,11 +49,12 @@ describe("<CustomNumberEditor />", () => {
   it("EditorContainer with CustomNumberPropertyEditor", async () => {
     const spyOnCommit = sinon.spy();
     const spyOnCancel = sinon.spy();
+    const newDisplayValue = "7.78";
     function handleCommit(commit: PropertyUpdatedArgs): void {
       const numValue = (commit.newValue as PrimitiveValue).value as number;
       const displayValue = (commit.newValue as PrimitiveValue).displayValue;
       expect(numValue).to.be.equal(7.777);
-      expect(displayValue).to.be.equal("7.78");
+      expect(displayValue).to.be.equal(newDisplayValue);
       spyOnCommit();
     }
     const propertyRecord = TestUtils.createCustomNumberProperty("FormattedNumber", numVal, displayVal);
@@ -61,16 +62,12 @@ describe("<CustomNumberEditor />", () => {
     // renderedComponent.debug();
     const inputField = renderedComponent.getByTestId("components-customnumber-editor") as HTMLInputElement;
     expect(inputField.value).to.be.equal(displayVal);
-    const newValue = "7.777";
-    fireEvent.change(inputField, { target: { value: newValue } });
-    expect(inputField.value).to.be.equal(newValue);
     const container = renderedComponent.getByTestId("editor-container") as HTMLSpanElement;
+
+    fireEvent.change(inputField, { target: { value: "zzzz" } });
+    expect(inputField.value).to.be.equal("zzzz");
     fireEvent.keyDown(container, { key: "Enter" });
     await TestUtils.flushAsyncOperations();
-    // renderedComponent.debug();
-    expect(spyOnCommit).to.be.calledOnce;
-    fireEvent.change(inputField, { target: { value: "66" } });
-    expect(inputField.value).to.be.equal("66");
 
     // resetToOriginalValue
     fireEvent.keyDown(inputField, { key: SpecialKey.Escape });
@@ -81,6 +78,24 @@ describe("<CustomNumberEditor />", () => {
     fireEvent.keyDown(inputField, { key: SpecialKey.Escape });
     expect(inputField.value).to.be.equal(displayVal);
     expect(spyOnCancel).to.be.calledOnce;
+
+    const newValue = "7.777";
+    fireEvent.change(inputField, { target: { value: newValue } });
+    expect(inputField.value).to.be.equal(newValue);
+    fireEvent.keyDown(container, { key: "Enter" });
+    await TestUtils.flushAsyncOperations();
+    // renderedComponent.debug();
+    expect(spyOnCommit).to.be.calledOnce;
+
+    fireEvent.change(inputField, { target: { value: "zzzz" } });
+    expect(inputField.value).to.be.equal("zzzz");
+    fireEvent.keyDown(container, { key: "Enter" });
+    await TestUtils.flushAsyncOperations();
+
+    // resetToLastValue
+    fireEvent.keyDown(inputField, { key: SpecialKey.Escape });
+    expect(inputField.value).to.be.equal(newDisplayValue);
+
   });
 
   it("CustomNumberPropertyEditor with undefined initial display value", async () => {

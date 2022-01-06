@@ -39,6 +39,8 @@ import { WidgetPanelsTab } from "./Tab";
 import { WidgetPanelsToolbars } from "./Toolbars";
 import { ToolSettingsContent, WidgetPanelsToolSettings } from "./ToolSettings";
 import { useEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome";
+import { FrameworkRootState } from "../redux/StateManager";
+import { useSelector } from "react-redux";
 
 const panelZoneKeys: StagePanelZoneDefKeys[] = ["start", "middle", "end"];
 
@@ -207,6 +209,11 @@ export function ActiveFrontstageDefProvider({ frontstageDef }: { frontstageDef: 
   useFrontstageManager(frontstageDef);
   useItemsManager(frontstageDef);
   const labels = useLabels();
+  const showWidgetIcon = useSelector((state: FrameworkRootState) => {
+    const frameworkState = (state as any)[UiFramework.frameworkStateKey];
+    return !!frameworkState.configurableUiState.showWidgetIcon;
+  });
+
   const handleKeyDown = useEscapeSetFocusToHome();
   return (
     <div
@@ -219,6 +226,7 @@ export function ActiveFrontstageDefProvider({ frontstageDef }: { frontstageDef: 
         labels={labels}
         state={nineZone}
         tab={tabElement}
+        showWidgetIcon={showWidgetIcon}
         toolSettingsContent={toolSettingsContent}
         widgetContent={widgetContent}
       >
@@ -254,6 +262,7 @@ export function addWidgets(state: NineZoneState, widgets: ReadonlyArray<WidgetDe
     const label = getWidgetLabel(widget.label);
     state = addTab(state, widget.id, {
       label,
+      iconSpec: widget.iconSpec,
       preferredPanelWidgetSize: widget.preferredPanelSize,
       canPopout: widget.canPopout,
       isFloatingStateWindowResizable: widget.isFloatingStateWindowResizable,
@@ -288,6 +297,7 @@ export function appendWidgets(state: NineZoneState, widgetDefs: ReadonlyArray<Wi
     const userSized = saveTab ? saveTab.userSized : undefined;
     state = addTab(state, widgetDef.id, {
       label,
+      iconSpec: widgetDef.iconSpec,
       canPopout: widgetDef.canPopout,
       preferredPanelWidgetSize,
       preferredFloatingWidgetSize,
@@ -689,6 +699,7 @@ export function restoreNineZoneState(frontstageDef: FrontstageDef, saved: SavedN
       draft.tabs[tab.id] = {
         ...tab,
         label: getWidgetLabel(widgetDef?.label ?? "undefined"),
+        iconSpec: widgetDef?.iconSpec,
         canPopout: widgetDef?.canPopout,
         isFloatingStateWindowResizable: widgetDef?.isFloatingStateWindowResizable,
       };
@@ -709,7 +720,7 @@ export function restoreNineZoneState(frontstageDef: FrontstageDef, saved: SavedN
 
 /** Prepares NineZoneState to be saved.
  * @note Removes toolSettings tab.
- * @note Removes tab labels.
+ * @note Removes tab labels and iconSpec.
  * @internal
  */
 export function packNineZoneState(state: NineZoneState): SavedNineZoneState {
@@ -751,7 +762,7 @@ export interface WidgetPanelsFrontstageState {
 }
 
 // We don't save tab labels or if widget is allowed to "pop-out".
-type SavedTabState = Omit<TabState, "label" | "canPopout" | "isFloatingStateWindowResizable">;
+type SavedTabState = Omit<TabState, "label" | "canPopout" | "isFloatingStateWindowResizable" | "iconSpec">;
 
 interface SavedTabsState {
   readonly [id: string]: SavedTabState;

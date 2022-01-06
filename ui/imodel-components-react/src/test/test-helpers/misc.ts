@@ -98,7 +98,7 @@ export function getButtonWithText(container: HTMLElement, label: string, onError
     onError && onError(`Couldn't find any '${selector}' buttons`);
 
   const button = [...buttons].find((btn) => {
-    const span = btn.querySelector("span.iui-label");
+    const span = btn.querySelector("span.iui-button-label");
     return span!.textContent === label;
   });
   if (!button)
