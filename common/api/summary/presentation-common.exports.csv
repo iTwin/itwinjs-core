@@ -256,6 +256,8 @@ alpha;PresentationIpcEvents
 internal;PresentationIpcInterface
 public;PresentationRpcInterface 
 public;PresentationRpcRequestOptions
+public;PresentationRpcResponse
+public;PresentationRpcResponseData
 public;PresentationStatus
 public;PrimitivePropertyValue = string | number | boolean | Point | InstanceKey | undefined
 public;PrimitiveTypeDescription 

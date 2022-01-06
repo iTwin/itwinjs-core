@@ -564,9 +564,11 @@ export abstract class Viewport implements IDisposable {
     this.displayStyle.settings.clipStyle = style;
   }
 
-  /** The number of [antialiasing](https://en.wikipedia.org/wiki/Multisample_anti-aliasing) samples to be used when rendering the contents of the viewport.
-   * Must be an integer greater than zero. A value of 1 means antialiasing is disabled. A higher number of samples correlates generally to a higher quality image but
-   * is also more demanding on the graphics hardware.
+  /** Sets the number of [MSAA]($docs/learning/display/MSAA.md) samples for this viewport.
+   * The number of samples is a power of two. Values of 1 or less indicates anti-aliasing should be disabled. Non-power-of-two values are rounded
+   * down to the nearest power of two. The maximum number of samples supported depends upon the client's graphics hardware capabilities. Higher values produce
+   * a higher-quality image but also may also reduce framerate.
+   * @see [[ViewManager.setAntialiasingAllViews]] to adjust the number of samples for all viewports.
    */
   public get antialiasSamples(): number {
     return undefined !== this._target ? this._target.antialiasSamples : 1;
@@ -966,7 +968,7 @@ export abstract class Viewport implements IDisposable {
     this.registerDisplayStyleListeners(this.view.displayStyle);
     this.registerViewListeners();
     this.view.attachToViewport(this);
-    this._mapTiledGraphicsProvider = new MapTiledGraphicsProvider(this);
+    this._mapTiledGraphicsProvider = new MapTiledGraphicsProvider(this.viewportId, this.displayStyle);
   }
 
   private registerViewListeners(): void {
@@ -990,7 +992,7 @@ export abstract class Viewport implements IDisposable {
       this.invalidateRenderPlan();
 
       this.detachFromDisplayStyle();
-      this._mapTiledGraphicsProvider = new MapTiledGraphicsProvider(this);
+      this._mapTiledGraphicsProvider = new MapTiledGraphicsProvider(this.viewportId, newStyle);
       this.registerDisplayStyleListeners(newStyle);
     }));
 

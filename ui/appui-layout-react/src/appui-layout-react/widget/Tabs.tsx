@@ -10,7 +10,7 @@ import "./Tabs.scss";
 import * as React from "react";
 import { useResizeObserver } from "@itwin/core-react";
 import { assert } from "@itwin/core-bentley";
-import { TabsStateContext } from "../base/NineZone";
+import { ShowWidgetIconContext, TabsStateContext } from "../base/NineZone";
 import { getChildKey, useOverflow } from "../tool-settings/Docked";
 import { isHorizontalPanelSide, PanelSideContext } from "../widget-panels/Panel";
 import { WidgetOverflow } from "./Overflow";
@@ -23,6 +23,9 @@ export const WidgetTabs = React.memo(function WidgetTabs() { // eslint-disable-l
   const tabs = React.useContext(TabsStateContext);
   const side = React.useContext(PanelSideContext);
   const widget = React.useContext(WidgetStateContext);
+  const showWidgetIcon = React.useContext(ShowWidgetIconContext);
+  const [showOnlyTabIcon, setShowOnlyTabIcon] = React.useState(false);
+
   assert(!!widget);
   const activeTabIndex = widget.tabs.indexOf(widget.activeTabId);
   const children = React.useMemo<React.ReactNode>(() => {
@@ -46,6 +49,7 @@ export const WidgetTabs = React.memo(function WidgetTabs() { // eslint-disable-l
             firstInactive={firstInactive}
             last={index === array.length - 1}
             tab={tabs[tabId]}
+            showOnlyTabIcon={showOnlyTabIcon && showWidgetIcon}
           />
           <WidgetTabTarget
             tabIndex={index}
@@ -53,10 +57,16 @@ export const WidgetTabs = React.memo(function WidgetTabs() { // eslint-disable-l
         </React.Fragment>
       );
     });
-  }, [widget, tabs, activeTabIndex]);
+  }, [widget.tabs, activeTabIndex, tabs, showOnlyTabIcon, showWidgetIcon]);
   const [overflown, handleResize, handleOverflowResize, handleEntryResize] = useOverflow(children, activeTabIndex);
   const horizontal = side && isHorizontalPanelSide(side);
-  const ref = useResizeObserver(handleResize);
+  const handleContainerResize = React.useCallback((w: number) => {
+    if (showWidgetIcon)
+      setShowOnlyTabIcon((widget.tabs.length * 158) > w); // 158px per text tab
+    handleResize && handleResize(w);
+  }, [handleResize, showWidgetIcon, widget.tabs]);
+
+  const ref = useResizeObserver(handleContainerResize);
   const childrenArray = React.useMemo(() => React.Children.toArray(children), [children]);
   const tabChildren = childrenArray.reduce<Array<[string, React.ReactNode]>>((acc, child, index) => {
     const key = getChildKey(child, index);

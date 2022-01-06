@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-react",
+      "comment": "Update styling on some status field items for better popup alignment.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-react"
+}

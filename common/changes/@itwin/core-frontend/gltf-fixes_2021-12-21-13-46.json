@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix some oversights in implementation of glTF.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
