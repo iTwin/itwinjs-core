@@ -87,7 +87,7 @@ Contributions and suggestions are welcome. Feel free to [discuss](https://github
 
 ### iTwin.js based connector framework
 
-- [ ] Support for creating multi-process connectors using iTwin.js backends. One process links with source application api to read the source application files. It then communicates with another iTwin.js process via IPC to update the iModel.
+- [X] Support for creating multi-process connectors using iTwin.js backends. One process links with source application api to read the source application files. It then communicates with another iTwin.js process via IPC to update the iModel.
 
 ### iModel Editing applications
 
