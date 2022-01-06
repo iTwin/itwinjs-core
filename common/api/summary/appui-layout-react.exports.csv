@@ -184,6 +184,7 @@ deprecated;HorizontalAnchor
 internal;HorizontalAnchorHelpers
 internal;HorizontalPanelSide = TopPanelSide | BottomPanelSide
 internal;HorizontalPanelState 
+internal;IconOnlyOnWidgetTabContext: React.Context
 internal;initSizeAndPositionProps
 internal;isFloatingLocation(location: TabLocation): location is FloatingLocation
 internal;isFloatingWidgetLocation(location: WidgetLocation): location is FloatingLocation
@@ -319,6 +320,7 @@ internal;ScrollableWidgetContentProps
 internal;SendBack: React.NamedExoticComponent
 internal;setFloatingWidgetContainerBounds(state: NineZoneState, floatingWidgetId: string, bounds: RectangleProps): NineZoneState
 internal;setRectangleProps(props: Draft
+internal;ShowWidgetIconContext: React.Context
 internal;ShrinkBottom 
 internal;class ShrinkHorizontalStrategy 
 internal;ShrinkLeft 
@@ -391,7 +393,6 @@ internal;ToastDefaultProps = Pick
 internal;ToastProps 
 internal;ToastStyle = Pick
 internal;ToolAssistance 
-deprecated;ToolAssistance 
 internal;ToolAssistanceDialog 
 internal;ToolAssistanceDialogProps 
 internal;ToolAssistanceInstruction 
@@ -543,7 +544,7 @@ internal;WidgetTabDragStartAction
 internal;WidgetTabDragStartArguments
 internal;WidgetTabPopoutAction
 internal;WidgetTabProps 
-internal;WidgetTabProvider({ tab, first, firstInactive, last }: WidgetTabProviderProps): JSX.Element
+internal;WidgetTabProvider({ tab, first, firstInactive, last, showOnlyTabIcon }: WidgetTabProviderProps): JSX.Element
 internal;WidgetTabProviderProps 
 internal;WidgetTabs: React.NamedExoticComponent
 internal;WidgetTabsEntryContext: React.Context

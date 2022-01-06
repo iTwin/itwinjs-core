@@ -7,6 +7,7 @@
 import { CommonProps } from '@itwin/core-react';
 import * as CSS from 'csstype';
 import { Draft } from 'immer';
+import { IconSpec } from '@itwin/core-react';
 import { Interaction } from 'scheduler/tracing';
 import { NoChildrenProps } from '@itwin/core-react';
 import { Omit } from '@itwin/core-react';
@@ -996,6 +997,9 @@ export interface HorizontalPanelState extends PanelState {
 }
 
 // @internal (undocumented)
+export const IconOnlyOnWidgetTabContext: React.Context<boolean>;
+
+// @internal (undocumented)
 export function initSizeAndPositionProps<T, K extends KeysOfType<T, SizeAndPositionProps | undefined>>(obj: T, key: K, inValue: SizeAndPositionProps): void;
 
 // @internal (undocumented)
@@ -1364,6 +1368,8 @@ export interface NineZoneProps {
     dispatch: NineZoneDispatch;
     // (undocumented)
     labels?: NineZoneLabels;
+    // (undocumented)
+    showWidgetIcon?: boolean;
     // (undocumented)
     state: NineZoneState;
     // (undocumented)
@@ -1911,6 +1917,9 @@ export function setFloatingWidgetContainerBounds(state: NineZoneState, floatingW
 export function setRectangleProps(props: Draft<RectangleProps>, bounds: RectangleProps): void;
 
 // @internal (undocumented)
+export const ShowWidgetIconContext: React.Context<boolean>;
+
+// @internal (undocumented)
 export class ShrinkBottom extends ShrinkVerticalStrategy {
     // (undocumented)
     getDistanceToRoot(bounds: RectangleProps): number;
@@ -2401,6 +2410,8 @@ export interface TabState {
     // (undocumented)
     readonly canPopout?: boolean;
     // (undocumented)
+    readonly iconSpec?: IconSpec;
+    // (undocumented)
     readonly id: string;
     // (undocumented)
     readonly isFloatingStateWindowResizable?: boolean;
@@ -2527,7 +2538,7 @@ export interface ToastProps extends CommonProps, NoChildrenProps {
 // @internal
 export type ToastStyle = Pick<React.CSSProperties, "width" | "height">;
 
-// @internal @deprecated
+// @internal
 export class ToolAssistance extends React.PureComponent<ToolAssistanceProps> {
     // (undocumented)
     render(): JSX.Element;
@@ -3440,10 +3451,12 @@ export interface WidgetTabProps extends CommonProps {
 }
 
 // @internal (undocumented)
-export function WidgetTabProvider({ tab, first, firstInactive, last }: WidgetTabProviderProps): JSX.Element;
+export function WidgetTabProvider({ tab, first, firstInactive, last, showOnlyTabIcon }: WidgetTabProviderProps): JSX.Element;
 
 // @internal (undocumented)
 export interface WidgetTabProviderProps extends TabPositionContextArgs {
+    // (undocumented)
+    showOnlyTabIcon?: boolean;
     // (undocumented)
     tab: TabState;
 }

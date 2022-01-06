@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Improved log message when v2 checkpoint downloaded is not for the changeset requested",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

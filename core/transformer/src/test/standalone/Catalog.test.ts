@@ -18,7 +18,7 @@ import {
   Code, CodeScopeSpec, DefinitionElementProps, GeometricElement2dProps, GeometryStreamProps, IModel, PhysicalElementProps, Placement2d, Placement3d,
   RepositoryLinkProps, SubCategoryAppearance,
 } from "@itwin/core-common";
-import { IModelTransformer, IModelTransformOptions, TemplateModelCloner, TransformerLoggerCategory } from "../../core-transformer";
+import { IModelImporter, IModelTransformer, IModelTransformOptions, TemplateModelCloner, TransformerLoggerCategory } from "../../core-transformer";
 
 const createClassViews = false; // can set to true to make it easier to debug the catalog structure
 
@@ -476,8 +476,8 @@ class CatalogImporter extends IModelTransformer {
       targetScopeElementId,
       noProvenance: targetScopeElementId ? undefined : true, // can't store provenance if targetScopeElementId is not defined
     };
-    super(sourceDb, targetDb, options);
-    this.importer.autoExtendProjectExtents = false;
+    const target = new IModelImporter(targetDb, { autoExtendProjectExtents: false });
+    super(sourceDb, target, options);
     this._targetSpatialCategories = targetSpatialCategories;
     this._targetDrawingCategories = targetDrawingCategories;
   }
@@ -765,8 +765,8 @@ describe("Catalog", () => {
     const sourceDb = SnapshotDb.openFile(acmeCatalogDbFile);
     const targetFile = IModelTestUtils.prepareOutputFile("Catalog", "CloneOfAcmeEquipment.bim");
     const targetDb = SnapshotDb.createEmpty(targetFile, { rootSubject: { name: "Facility" }, createClassViews });
-    const cloner = new IModelTransformer(sourceDb, targetDb);
-    cloner.importer.autoExtendProjectExtents = false; // WIP: how should a catalog handle projectExtents?
+    const target = new IModelImporter(targetDb, { autoExtendProjectExtents: false }); // WIP: how should a catalog handle projectExtents?
+    const cloner = new IModelTransformer(sourceDb, target);
     await cloner.processSchemas();
     await cloner.processAll();
     cloner.dispose();

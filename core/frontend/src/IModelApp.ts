@@ -6,7 +6,7 @@
  * @module IModelApp
  */
 
-const copyrightNotice = 'Copyright © 2017-2021 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
+const copyrightNotice = 'Copyright © 2017-2022 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
 
 import { TelemetryManager } from "@itwin/core-telemetry";
 import { UiAdmin } from "@itwin/appui-abstract";
@@ -114,7 +114,7 @@ export interface IModelAppOptions {
   tentativePoint?: TentativePoint;
   /** @internal */
   quantityFormatter?: QuantityFormatter;
-  /** @internal */
+  /** If present, supplies an implementation of the render system, or options for initializing the default render system. */
   renderSys?: RenderSystem | RenderSystem.Options;
   /** If present, supplies the [[UiAdmin]] for this session. */
   uiAdmin?: UiAdmin;

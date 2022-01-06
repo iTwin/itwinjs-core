@@ -18,6 +18,7 @@ import { MapLayerProps } from "@itwin/core-common";
 import "./MapUrlDialog.scss";
 import { DialogButtonType, SpecialKey } from "@itwin/appui-abstract";
 import { MapLayerPreferences } from "../../MapLayerPreferences";
+import { MapLayersUI } from "../../mapLayers";
 
 export const MAP_TYPES = {
   wms: "WMS",
@@ -94,7 +95,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   const [passwordRequiredLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:AuthenticationInputs.PasswordRequired"));
   const [userNameLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:AuthenticationInputs.Username"));
   const [userNameRequiredLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:AuthenticationInputs.UsernameRequired"));
-  const [settingsStorage, setSettingsStorageRadio] = React.useState("ITwin");
+  const [settingsStorage, setSettingsStorageRadio] = React.useState("iTwin");
 
   const [mapType, setMapType] = React.useState(getFormatFromProps() ?? MAP_TYPES.arcGis);
 
@@ -119,7 +120,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     return types;
   });
 
-  const [isSettingsStorageAvailable] = React.useState(props?.activeViewport?.iModel?.iTwinId && props?.activeViewport?.iModel?.iModelId);
+  const [isSettingsStorageAvailable] = React.useState(MapLayersUI.iTwinConfig && props?.activeViewport?.iModel?.iTwinId && props?.activeViewport?.iModel?.iModelId);
 
   // Even though the settings storage is available,
   // we don't always want to enable it in the UI.
@@ -225,8 +226,10 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
             } else {
               // Update service settings if storage is available and we are not prompting user for credentials
               if (!settingsStorageDisabled && !props.layerRequiringCredentials) {
-                if (!(await MapLayerPreferences.storeSource(source, storeOnIModel, vp.iModel.iTwinId!, vp.iModel.iModelId!)))
-                  return;
+                if (!(await MapLayerPreferences.storeSource(source, storeOnIModel, vp.iModel.iTwinId!, vp.iModel.iModelId!))) {
+                  const msgError = MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:Messages.MapLayerPreferencesStoreFailed");
+                  IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msgError));
+                }
               }
               const layerSettings = source.toLayerSettings(validation.subLayers);
               if (layerSettings) {

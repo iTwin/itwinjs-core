@@ -164,6 +164,12 @@ style.environment = style.environment.withDisplay({ sky: true, ground: false });
 
 Additionally, until now the images used by a [SkySphere]($common) or [SkyBox]($common) were required to be hosted by persistent [Texture]($backend) elements stored in the iModel. Now, they can also be specified as a URL resolving to an HTMLImageElement, allowing custom skyboxes to be created without modifying the iModel.
 
+## Support for glTF graphics
+
+[glTF](https://www.khronos.org/gltf/) has become the de facto standard format for 3d graphics on the web. Now you can create a [RenderGraphic]($frontend) from a glTF asset for use with [Decorators]($docs/learning/frontend/ViewDecorations), using [readGltfGraphics]($frontend). [This example]($docs/learning/frontend/ViewDecorations#gltf-decorations) demonstrates how to convert a glTF asset into a graphic and display it using a decorator.
+
+Note: `readGltfGraphics` targets the [glTF 2.0 specification](https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html), but implementation of the full specification is an ongoing work in progress. The current implementation can successfully read many glTF assets, but if a particular asset fails to load or display properly, please [file an issue](https://github.com/iTwin/itwinjs-core/issues).
+
 ## Merging appearance overrides
 
 A [Viewport]($frontend) can have any number of [FeatureOverrideProvider]($frontend)s, each of which can specify how to override the appearances of elements, models, and/or subcategories. Sometimes, multiple providers want to override aspects of the appearance of the same objects, which produces conflicts. The existing methods for defining overrides - [FeatureOverrides.overrideElement]($common), [FeatureOverrides.overrideModel]($common), and [FeatureOverrides.overrideSubCategory]($common) - each take a boolean `replaceExisting` argument that defaults to `true`. This means that if one provider overrides the line width of an element and another wants to override the same element's transparency, the caller's only choice is to either replace the existing override, resulting in only transparency being overridden; or keep the existing override, resulting in only line width being overridden. But in most cases, the better result would be to **merge** the two sets of overrides such that both transparency and line width are overridden.
@@ -448,7 +454,7 @@ let ovrs = { ...props }; // New code
 
 Previously, creating a [RenderTexture]($common) generally involved creating a [RenderTexture.Params]($common) object and passing it along with an iModel and some representation of an image to one of a half-dozen [RenderSystem]($frontend) APIs. Those APIs have been consolidated into a single API: [RenderSystem.createTexture]($frontend). [RenderTexture.Params]($common) and the [RenderSystem]($frontend) APIs that use it have been deprecated, and the `key` and `isOwned` properties have been removed from [RenderTexture]($common).
 
-[RenderSystem.createTexture]($frontend) takes a [CreateTextureArgs]($frontend) specifying the type of texture to create, the image from which to create it, and optional ownership information. The image includes information about its transparency - that is, whether it contains only opaque pixels, only semi-transparent pixels, or a mixture of both, where fully transparent pixels are ignored. If the caller knows this information, it should be supplied; the default - [TextureTransparency.Mixed]($frontend) - is somewhat more expensive to render.
+[RenderSystem.createTexture]($frontend) takes a [CreateTextureArgs]($frontend) specifying the type of texture to create, the image from which to create it, and optional ownership information. The image includes information about its transparency - that is, whether it contains only opaque pixels, only semi-transparent pixels, or a mixture of both, where fully transparent pixels are ignored. If the caller knows this information, it should be supplied; the default - [TextureTransparency.Mixed]($common) - is somewhat more expensive to render.
 
 Adjusting code to pass the [RenderTexture.Type]($common):
 
@@ -673,6 +679,38 @@ These methods were previously synchronous and are now async:
 - [InteractiveTool.onCleanup]($frontend)
 - [InteractiveTool.onSuspend]($frontend)
 - [InteractiveTool.onUnsuspend]($frontend)
+
+## Changes to iModel transformer APIs
+
+### New @itwin/core-transformer package
+
+APIs for importing and exporting data between iModels have moved from the [@itwin/core-backend](https://www.npmjs.com/package/@itwin/core-backend) package to the new [@itwin/core-transformer](https://www.npmjs.com/package/@itwin/core-transformer) package. These APIs include [IModelExporter]($transformer), [IModelImporter]($transformer), and [IModelTransformer]($transformer).
+
+### IModelImporter property options deprecated in favor of constructor options
+
+Configuration of an [IModelImporter]($transformer) is now only represented by an [IModelImportOptions]($transformer) object passed to the constructor. The ability to modify options with the [IModelImporter]($transformer) properties `simplifyElementGeometry`, `autoExtendProjectExtents`, and `preserveElementIdsForFiltering` has been deprecated; instead, set these options while constructing your [IModelImporter]($transformer), and read them if necessary from [IModelImporter.options]($transformer). For example, replace the following:
+
+```ts
+  const importer = new IModelImporter(targetDb);
+  importer.autoExtendProjectExtents = true;
+  const isExtendingProjectExtents = importer.autoExtendProjectExtents;
+}
+```
+
+With this:
+
+```ts
+  const importer = new IModelImporter(targetDb, { autoExtendProjectExtents: true });
+  const isExtendingProjectExtents = importer.options.autoExtendProjectExtents;
+```
+
+### Customized handling of dangling predecessor Ids
+
+When the [IModelTransformer]($transformer) encounters a dangling predecessor element id reference in an iModel, an element id for which no element exists in the database, by default the entire transformation is rejected. Now, there are multiple behaviors to choose from for the transformer to use when it encounters such references while analyzing predecessor elements. The `danglingPredecessorBehavior` option defaults to `reject`, or can be configured as `ignore`, which will instead leave the dangling reference as is while transforming to the target. You can configure the new behavior like so:
+
+```ts
+  const transformer = new IModelTransformer(sourceDb, targetDb, { danglingPredecessorBehavior: "ignore" });
+```
 
 ## Changes to `@itwin/presentation-common`
 
@@ -906,8 +944,8 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | `FeatureOverrideType`                         | [FeatureOverrideType]($common)                                              |
 | `FeatureSymbology.Appearance`                 | [FeatureAppearance]($common)                                                |
 | `FeatureSymbology.AppearanceProps`            | [FeatureAppearanceProps]($common)                                           |
-| `findAvailableRealityModels`                  | `queryRealityData` in `@itwin/reality-data-client`                          |
-| `findAvailableUnattachedRealityModels`        | `queryRealityData` in `@itwin/reality-data-client`                          |
+| `findAvailableRealityModels`                  | `getRealityDatas` in `@itwin/reality-data-client`                          |
+| `findAvailableUnattachedRealityModels`        | `getRealityDatas` in `@itwin/reality-data-client`                          |
 | `IModelApp.iModelClient`                      | `IModelApp.hubAccess`                                                       |
 | `IModelApp.settings`                          | [IModelApp.userPreferences]($frontend)                                      |
 | `IModelConnection.Models.loaded`              | use `for..of` to iterate and `getLoaded` to look up by Id                   |
@@ -1293,6 +1331,10 @@ the widget in a floating container. The property `defaultFloatingPosition` may a
 
 The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to retrieve the Ids for all floating widget containers for the active frontstage as specified by the `frontstageDef`. These ids can be used to query the size of the floating container via `frontstageDef.getFloatingWidgetContainerBounds`. The method `frontstageDef.setFloatingWidgetContainerBounds` can then be used to set the size and position of a floating widget container.
 
+### New API to Enable and Disable View Overlays
+
+UiFramework now offers a `setViewOverlayDisplay(display:boolean)` method to enable or disable viewports displaying overlays. By default, the display is enabled. The current setting is available in `UiFramework.viewOverlayDisplay`.
+
 ### Removed user change monitoring from @itwin/appui-react
 
 Previously `UiFramework` would monitor the state of an access token and would close all UI popups if the token was found to be empty. This feature has been removed. It is now the applications responsibility to enable this capability if they want it. The method [ConfigurableUiManager.closeUi]($appui-react) is now public and can be called by application to close the popup items.
@@ -1474,11 +1516,6 @@ The loader has been deprecated due to a preference for using the dotenv package 
 The method `BSplineCurve3d.createThroughPoints` has been deprecated in favor of the more general method `BSplineCurve3d.createFromInterpolationCurve3dOptions`.
 
 The property `InterpolationCurve3dOptions.isChordLenTangent` has been deprecated due to a naming inconsistency with similar adjacent properties. Use `InterpolationCurve3dOptions.isChordLenTangents` instead.
-
-## new @itwin/core-transformer package split out of backend package
-
-The iModel Transformer APIs, such as the classes [IModelExporter]($transformer), [IModelImporter]($transformer), and [IModelTransformer]($transformer)
-were removed from the `@itwin/core-backend` package and moved to a new package, `@itwin/core-transformer`.
 
 ## @itwin/core-common
 
@@ -1737,4 +1774,3 @@ On the frontend the [GeoConverter]($frontend) class has been modified to accept 
 ## New clustering algorithm for MarkerSet
 
 The [MarkerSet]($frontend) class now clusters markers by the screen distance between their positions rather than overlap of their rectangles, so the `Cluster.rect` property is no longer needed and has been removed. Instead, there is a new member `MarkerSet.clusterRadius` that controls when nearby Markers are clustered. See its documentation for details.
-

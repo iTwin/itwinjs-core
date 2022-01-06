@@ -66,7 +66,14 @@ public provideWidgets(stageId: string, _stageUsage: string, location: StagePanel
 
 Starting in version 2.17 Widgets can support being "popped-out" to a child window by setting the AbstractWidgetProps property `canPopout` to true. This option must be explicitly set because the method `getWidgetContent` must return React components that works properly in a child window. At minimum  components should typically not use the `window` or `document` property to register listeners as these listener will be registered for events in the main window and not in the child window. Components will need to use the `ownerDocument` and `ownerDocument.defaultView` properties to retrieve `document` and `window` properties for the child window.
 
-To see a more complete example of adding ToolButtons, Status Bar items, and Widgets see the [UiItemsProvider example](./abstract/uiitemsprovider/#uiitemsprovider-example).
+## BaseUiItemsProvider
+
+The BaseUiItemsProvider implements the UiItemsProvider interface and provides the additional functionality of allowing the user of the provider to define a function
+that determines if the provided items are to be supplied to the active stage. The BaseUiItemsProvider is meant to be subclassed to create an items provider that supports the isSupportedStage callback function.
+
+If developing an general purpose UiItemsProvider that may be used in multiple products or may be instantiated multiple times within a product to deliver a different set of items to different stages it is recommended that the provider be subclassed from the BaseUiItemsProvider class.
+
+To see a more complete example of adding ToolButtons, Status Bar items, and Widgets see the [UiItemsProvider example](./abstract/uiitemsprovider/#uiitemsprovider-example). The [StandardContentToolsProvider]($appui-react) class serves as a good example of an items provider subclassed from BaseUiItemsProvider.
 
 ## Adding a Frontstage
 
@@ -152,4 +159,4 @@ ReducerRegistryInstance.registerReducer(
 );
 ```
 
-See complete [example](./appui/appui&#8209;react/State.md##example&#8209;of&#8209;defining&#8209;dynamic&#8209;reducer&#8209;needed&#8209;by&#8209;a&#8209;package).
+See complete [example](./appui-react/State.md#example-of-defining-dynamic-reducer-needed-by-a-package).
