@@ -196,7 +196,7 @@
     },
     {
       "name": "@itwin/oidc-signin-tool",
-      "allowedCategories": [ "common", "integration-testing", "internal" ]
+      "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
       "name": "@itwin/perf-tools",
@@ -416,11 +416,11 @@
     },
     {
       "name": "dotenv",
-      "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "integration-testing", "internal" ]
     },
     {
       "name": "dotenv-expand",
-      "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "integration-testing", "internal" ]
     },
     {
       "name": "electron",
@@ -576,7 +576,7 @@
     },
     {
       "name": "internal-tools",
-      "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "integration-testing", "internal" ]
     },
     {
       "name": "istanbul-instrumenter-loader",
@@ -605,10 +605,6 @@
     {
       "name": "jsonc-parser",
       "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "jsonpath",
-      "allowedCategories": [ "common" ]
     },
     {
       "name": "linkify-it",
@@ -764,7 +760,7 @@
     },
     {
       "name": "react-select",
-      "allowedCategories": [ "extensions", "frontend", "internal" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "react-select-event",

@@ -10,7 +10,7 @@
 import { dispose } from "@itwin/core-bentley";
 import { Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Vector3d } from "@itwin/core-geometry";
 import {
-  ColorDef, Frustum, FrustumPlanes, RenderMode, RenderTexture, SpatialClassifier, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay,
+  ColorDef, Frustum, FrustumPlanes, RenderMode, RenderTexture, SpatialClassifier, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, TextureTransparency,
 } from "@itwin/core-common";
 import { PlanarClipMaskState } from "../../PlanarClipMaskState";
 import { GraphicsCollectorDrawArgs, SpatialClassifierTileTreeReference, TileTreeReference } from "../../tile/internal";
@@ -45,6 +45,7 @@ function createTexture(handle: TextureHandle): Texture {
     handle,
     ownership: "external",
     type: RenderTexture.Type.TileSection,
+    transparency: TextureTransparency.Opaque,
   });
 }
 
@@ -240,7 +241,7 @@ abstract class SingleTextureFrameBuffer implements WebGLDisposable {
     if (!hTexture)
       return undefined;
 
-    const texture = new Texture({ type: RenderTexture.Type.TileSection, ownership: "external", handle: hTexture });
+    const texture = new Texture({ type: RenderTexture.Type.TileSection, ownership: "external", handle: hTexture, transparency: TextureTransparency.Opaque });
     if (!texture)
       return undefined;
 

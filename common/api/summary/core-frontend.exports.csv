@@ -561,7 +561,6 @@ internal;TextureDrapeMap = Map
 public;TextureImage
 public;TextureImageSource = HTMLImageElement | ImageBuffer
 public;TextureOwnership = TextureCacheOwnership | "external"
-public;TextureTransparency
 internal;ThreeAxes
 public;class Tile
 public;TileAdmin
