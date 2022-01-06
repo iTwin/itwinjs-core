@@ -38,9 +38,13 @@ To aid in the update from iModel.js 2.x, a [codemod tool](https://github.com/iTw
 
 ## New features
 
+Many of the enhancements introduced in iTwin.js 3.0 were directly motivated by feedback from users. If you have a new feature you'd like to see implemented, feel free to [let us know](https://github.com/iTwin/itwinjs-core/discussions)!
+
 ### Display system
 
-iTwin.js 3.0 introduces several new features and performance enhancements to the display system, along with a collection of [learning articles]($docs/learning/display/index.md) describing its capabilities. Many of these enhancements were motivated by feedback from users. If you have a new feature you'd like to see implemented, feel free to [let us know](https://github.com/iTwin/itwinjs-core/discussions)!
+#### Documentation
+
+A collection of [learning articles]($docs/learning/display/index.md) has been assembled to provide an overview of the features provided by the display system, illustrated by interactive samples.
 
 #### Viewport.zoomToElements improvements
 
