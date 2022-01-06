@@ -101,22 +101,16 @@ Contributions and suggestions are welcome. Feel free to [discuss](https://github
 
 ### Non-Graphical Data Presentation
 
-- [ ] Filtering presentation rules and rulesets by supported ECSchema version.
-- [ ] Auto-updating data in all presentation rules -driven components when:
-  - [ ] data in source iModel changes
-  - [ ] presentation rules change
-  - [ ] presentation ruleset variables change
-
-#### Tree-related Improvements
-
-- [ ] Making tree nodes "favorite" to make them appear at the top of the hierarchy.
-- [ ] Improve filtering performance.
-- [ ] Excluding or exclusively including some nodes from the hierarchy when filtering.
+- [x] Filtering presentation rules and rulesets by supported ECSchema version.
+- [x] Auto-updating data in all presentation rules -driven components when:
+  - [x] data in source iModel changes
+  - [x] presentation rules change
+  - [x] presentation ruleset variables change
 
 #### Properties-related Improvements
 
-- [ ] Nested property grouping.
-- [ ] Clickable navigation properties that select the target element.
+- [x] Nested property grouping.
+- [x] Clickable navigation properties that select the target element.
 - [ ] Better support for composite properties (arrays, structs, points).
 - [ ] Support relationship properties.
 - [ ] Support ad-hoc properties.
