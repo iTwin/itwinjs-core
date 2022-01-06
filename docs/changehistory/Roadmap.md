@@ -1,6 +1,6 @@
 # The iTwin.js Roadmap
 
-This roadmap provides the *big picture* view of the development path for the iTwin.js platform, cataloging proposed features that have received at least some level of priority for development.
+This roadmap provides the *big picture* view of the development path for iTwin.js, cataloging proposed features that have received at least some level of priority for development.
 
 ## Themes
 
@@ -15,7 +15,7 @@ We will use the following themes (that may be adjusted from time-to-time accordi
 
 ## Roadmap
 
-A checked box denotes a completed feature. An unchecked box indicates work upon the feature is either in progress or tenatively planned.
+A checked box denotes a completed feature. An unchecked box indicates work upon the feature is either in progress or tentatively planned.
 
 Contributions and suggestions are welcome. Feel free to [discuss](https://github.com/iTwin/itwinjs-core/discussions) or submit a PR.
 
@@ -31,9 +31,10 @@ Contributions and suggestions are welcome. Feel free to [discuss](https://github
 
 ### Extensions
 
-- [ ] Enhance publishing workflow to Bentley's Extension Service.
-- [ ] Create examples and templates for building and publishing Extensions.
-- [ ] Support for better testing in the Extension's hosting app - e.g., iTwin Viewer.
+- [ ] Support "built-in" and runtime Extensions that are UI technology agnostic (i.e. does not rely on React, Angular, Vue.js, etc.)
+- [ ] Support adding Tools and minimal UI capabilities
+- [ ] Create examples and templates for building Extensions.
+- [ ] Create quick and easy support for creating in an Extension's hosting app - e.g., iTwin Viewer.
 
 ### GIS Display
 
@@ -53,7 +54,7 @@ Contributions and suggestions are welcome. Feel free to [discuss](https://github
 ### Agent Deployment
 
 - [ ] Provide working examples and templates of agents deployed via Kubernetes.
-- [X] Perform operations on iModels that are triggered by relevant events from iModelHub.
+- [ ] Perform operations on iModels that are triggered by relevant events from iModelHub.
 
 ### iTwin Viewer
 
