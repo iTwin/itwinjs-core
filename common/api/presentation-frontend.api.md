@@ -307,7 +307,7 @@ export class PresentationManager implements IDisposable {
         size: number;
     } | undefined>;
     getContentDescriptor(requestOptions: ContentDescriptorRequestOptions<IModelConnection, KeySet, RulesetVariable>): Promise<Descriptor | undefined>;
-    // @alpha
+    // @beta
     getContentInstanceKeys(requestOptions: ContentInstanceKeysRequestOptions<IModelConnection, KeySet, RulesetVariable>): Promise<{
         total: number;
         items: () => AsyncGenerator<InstanceKey>;
