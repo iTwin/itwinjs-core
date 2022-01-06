@@ -83,7 +83,7 @@ Contributions and suggestions are welcome. Feel free to [discuss](https://github
 
 ### iModel Transformations
 
-- [ ] Create examples and templates illustrating usage of iModel-to-iModel transformations and synchronization.
+- [X] Create examples and templates illustrating usage of iModel-to-iModel transformations and synchronization.
 
 ### iTwin.js based connector framework
 
