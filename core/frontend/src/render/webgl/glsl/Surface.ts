@@ -9,7 +9,7 @@
 import { assert } from "@itwin/core-bentley";
 import { AttributeMap } from "../AttributeMap";
 import { Material } from "../Material";
-import { SurfaceBitIndex, SurfaceFlags, TextureUnit } from "../RenderFlags";
+import { Pass, SurfaceBitIndex, SurfaceFlags, TextureUnit } from "../RenderFlags";
 import {
   FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, ShaderBuilder, ShaderBuilderFlags, VariableType, VertexShaderComponent,
 } from "../ShaderBuilder";
@@ -506,10 +506,11 @@ export const discardClassifiedByAlpha = `
 
 const discardByTextureAlpha = `
   if (isSurfaceBitSet(kSurfaceBit_HasTexture)) {
+    float cutoff = abs(u_alphaCutoff);
     if (kRenderPass_OpaqueLinear <= u_renderPass && kRenderPass_OpaqueGeneral >= u_renderPass)
-      return alpha < u_alphaCutoff;
-    else if (kRenderPass_Translucent == u_renderPass)
-      return alpha >= u_alphaCutoff;
+      return alpha < cutoff;
+    else if (kRenderPass_Translucent == u_renderPass && u_alphaCutoff > 0.0)
+      return alpha >= cutoff;
   }
 
   return false;
@@ -521,8 +522,10 @@ function addTransparencyDiscard(frag: FragmentShaderBuilder): void {
     prog.addGraphicUniform("u_alphaCutoff", (uniform, params) => {
       // This cutoff is used to discard pixels based on the alpha value sampled from the surface texture.
       // During readPixels, or when transparency is disabled, only discard 100% opaque pixels.
-      // Otherwise, use DisplayParams.minTransparency to filter pixels into opaque or tranlucent pass to produce appropriate blending.
-      const cutoff = (params.target.isReadPixelsInProgress || !params.target.currentViewFlags.transparency) ? 1 / 255 : 241 / 255;
+      // Otherwise, if the geometry draws in both opaque and translucent passes, use DisplayParams.minTransparency to filter pixels into appropriate pass to produce appropriate blending.
+      // Negative cutoff applies only during opaque pass; positive cutoff applies during opaque and translucent passes.
+      const pass = params.geometry.getPass(params.target);
+      const cutoff = (!Pass.rendersOpaqueAndTranslucent(pass) || params.target.isReadPixelsInProgress || !params.target.currentViewFlags.transparency) ? -1 / 255 : 241 / 255;
       uniform.setUniform1f(cutoff);
     });
   });
