@@ -723,13 +723,13 @@ describe("IModelTransformer", () => {
         this.iModelExporter = new IModelExporter(iModelDb);
         this.iModelExporter.registerHandler(this);
       }
-      protected override onExportModel(_model: Model, _isUpdate: boolean | undefined): void {
+      public override onExportModel(_model: Model, _isUpdate: boolean | undefined): void {
         ++this.modelCount;
       }
-      protected override onExportElement(_element: Element, _isUpdate: boolean | undefined): void {
+      public override onExportElement(_element: Element, _isUpdate: boolean | undefined): void {
         assert.fail("Should not visit element when visitElements=false");
       }
-      protected override onExportRelationship(_relationship: Relationship, _isUpdate: boolean | undefined): void {
+      public override onExportRelationship(_relationship: Relationship, _isUpdate: boolean | undefined): void {
         assert.fail("Should not visit relationship when visitRelationship=false");
       }
     }
@@ -933,8 +933,8 @@ describe("IModelTransformer", () => {
         const schema2 = schemaLoader.getSchema("TestSchema2");
         // by importing schema2 (which references schema1) first, we
         // prove that the import order in processSchemas does not matter
-        await this.handler["onExportSchema"](schema2);
-        await this.handler["onExportSchema"](schema1);
+        await this.handler.onExportSchema(schema2);
+        await this.handler.onExportSchema(schema1);
       }
     }
 
