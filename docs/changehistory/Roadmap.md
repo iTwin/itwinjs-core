@@ -53,7 +53,7 @@ Contributions and suggestions are welcome. Feel free to [discuss](https://github
 ### Agent Deployment
 
 - [ ] Provide working examples and templates of agents deployed via Kubernetes.
-- [ ] Perform operations on iModels that are triggered by relevant events from iModelHub.
+- [X] Perform operations on iModels that are triggered by relevant events from iModelHub.
 
 ### iTwin Viewer
 
