@@ -60,7 +60,13 @@ export type Pass =
   "opaque-translucent" | // OpaqueGeneral and Translucent
   "opaque-planar-translucent"; // OpaquePlanar and Translucent
 
+/** [[Pass]]es that map to two [[RenderPass]]es.
+ * @internal
+ */
 export type DoublePass = "opaque-translucent" | "opaque-planar-translucent";
+
+/** [[Pass]]es that map to a single [[RenderPass]].
+ * @internal */
 export type SinglePass = Exclude<Pass, DoublePass>;
 
 /** Describes the type of geometry rendered by a ShaderProgram.
@@ -73,7 +79,7 @@ export const enum GeometryType {
 }
 
 /** @internal */
-export namespace Pass {
+export namespace Pass { // eslint-disable-line @typescript-eslint/no-redeclare
   /** Return the RenderPass corresponding to the specified Pass. */
   export function toRenderPass(pass: SinglePass): RenderPass {
     switch (pass) {
