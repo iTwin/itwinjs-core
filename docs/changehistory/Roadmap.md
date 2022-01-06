@@ -117,14 +117,14 @@ Contributions and suggestions are welcome. Feel free to [discuss](https://github
 
 ### User Interface
 
-- [ ] Extend functionality of panel-based AppUi.
+- [x] Extend functionality of panel-based AppUi.
 - [ ] Improve touch support and user experience on mobile devices.
-- [ ] Multi-window support for desktop Electron applications.
+- [x] Multi-window support for desktop Electron applications.
 - [ ] Enhance accessibility and keyboard navigation.
 - [ ] Enhance UiItemProvider to support:
   - [ ] More type editors, especially those necessary to read/write workflows
   - [ ] Async list population
-- [ ] Provide an API to allow apps, extensions, and packages to supply settings to the Settings Stage.
+- [x] Provide an API to allow apps, extensions, and packages to supply settings to the Settings Stage.
 
 ### Interfaces to external systems
 
