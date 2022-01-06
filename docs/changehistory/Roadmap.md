@@ -6,7 +6,7 @@ This roadmap provides the *big picture* view of the development path for the iTw
 
 We will use the following themes (that may be adjusted from time-to-time according to your input) to drive the evolution of iTwin.js:
 
-- Be *the open platform* for Infrastructure Digital Twins for federating BIM Models, GIS data, reality data, IT and OT into a single pane of glass for a seamless user experience.
+- Be *the open platform* for Infrastructure Digital Twins for federating BIM Models, GIS data, reality data, IT and OT together for a seamless user experience.
 - Be cloud provider-, operating system-, and browser-agnostic to the extent possible.
 - Performance, scalability, security, and stability are our paramount concerns.
 - Make developing with iTwin.js as easy, productive, predictable, and profitable as possible.
