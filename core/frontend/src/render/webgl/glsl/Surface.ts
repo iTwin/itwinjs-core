@@ -579,8 +579,6 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
   addLighting(builder);
   addWhiteOnWhiteReversal(builder.frag);
 
-  addTransparencyDiscard(builder.frag);
-
   if (flags.isTranslucent) {
     addTranslucency(builder);
   } else {
@@ -605,6 +603,8 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
 
   if (flags.isClassified)
     addClassificationTranslucencyDiscard(builder);
+  else
+    addTransparencyDiscard(builder.frag);
 
   addSurfaceMonochrome(builder.frag);
   addMaterial(builder);
