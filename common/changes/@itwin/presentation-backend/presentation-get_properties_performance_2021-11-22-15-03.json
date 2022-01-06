@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/presentation-backend",
-      "comment": "Use async interator when getting properties of multiple elements.",
+      "comment": "Use async iterator when getting properties of multiple elements.",
       "type": "none"
     }
   ],
