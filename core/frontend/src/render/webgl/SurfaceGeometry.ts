@@ -7,7 +7,7 @@
  */
 
 import { assert, dispose } from "@itwin/core-bentley";
-import { FillFlags, RenderMode, ViewFlags } from "@itwin/core-common";
+import { FillFlags, RenderMode, TextureTransparency, ViewFlags } from "@itwin/core-common";
 import { SurfaceType } from "../primitives/SurfaceParams";
 import { VertexIndices } from "../primitives/VertexTable";
 import { RenderMemory } from "../RenderMemory";
@@ -16,7 +16,7 @@ import { ShaderProgramParams } from "./DrawCommand";
 import { GL } from "./GL";
 import { BufferHandle, BufferParameters, BuffersContainer } from "./AttributeBuffers";
 import { MaterialInfo } from "./Material";
-import { RenderOrder, RenderPass, SurfaceBitIndex } from "./RenderFlags";
+import { Pass, RenderOrder, RenderPass, SurfaceBitIndex } from "./RenderFlags";
 import { System } from "./System";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
@@ -126,12 +126,12 @@ export class SurfaceGeometry extends MeshGeometry {
       return this.colorInfo;
   }
 
-  public override getPass(target: Target) {
+  public override getPass(target: Target): Pass {
     // Classifiers have a dedicated pass
     if (this.isClassifier)
       return "classification";
 
-    const opaquePass = this.isPlanar ? "opaque-planar" : "opaque";
+    let opaquePass: Pass = this.isPlanar ? "opaque-planar" : "opaque";
 
     // When reading pixels, glyphs are always opaque. Otherwise always transparent (for anti-aliasing).
     if (this.isGlyph)
@@ -169,7 +169,14 @@ export class SurfaceGeometry extends MeshGeometry {
     if (!hasAlpha) {
       // ###TODO handle TextureTransparency.Mixed; remove Texture.hasTranslucency.
       const tex = this.wantTextures(target, true) ? this.texture : undefined;
-      hasAlpha = undefined !== tex && tex.hasTranslucency;
+      switch (tex?.transparency) {
+        case TextureTransparency.Translucent:
+          hasAlpha = true;
+          break;
+        case TextureTransparency.Mixed:
+          opaquePass = `${opaquePass}-translucent`;
+          break;
+      }
     }
 
     return hasAlpha ? "translucent" : opaquePass;
