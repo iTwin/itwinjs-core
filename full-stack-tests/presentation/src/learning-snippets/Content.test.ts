@@ -618,7 +618,7 @@ describe("Learning Snippets", () => {
             ruleType: RuleTypes.Content,
             specifications: [{
               specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
-              classes: { schemaName: "BisCore", classNames: ["PhysicalModel"] },
+              classes: { schemaName: "BisCore", classNames: ["PhysicalModel"], arePolymorphic: false },
             }],
           }],
         };

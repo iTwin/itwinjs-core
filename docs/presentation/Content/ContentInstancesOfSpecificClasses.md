@@ -2,7 +2,7 @@
 
 > TypeScript type: [ContentInstancesOfSpecificClassesSpecification]($presentation-common).
 
-Specification which allows selection of content instances based on their ECClass.
+Specification which allows targeting content instances based on their ECClass.
 
 ## Attributes
 
@@ -82,7 +82,7 @@ Identifies whether we should ignore this specification if another specification 
 
 > **Default value:** `1000`
 
-Defines the order in which specifications are handled - higher priority means the specifications is handled first. If priorities are equal, the specifications are handled in the order they're defined. Default `priority` is 1000.
+Defines the order in which specifications are handled - higher priority means the specifications is handled first. If priorities are equal, the specifications are handled in the order they're defined.
 
 ```ts
 [[include:ContentInstancesOfSpecificClasses.Priority.Ruleset]]
@@ -105,7 +105,7 @@ Specifications of [related properties](./Terminology.md#related-properties) whic
 
 ### Attribute: `calculatedProperties`
 
-Specifications of calculated properties whose values are generated using provided ECExpressions. *See [this page](./CalculatedPropertiesSpecification.md) for more details.
+Specifications of calculated properties whose values are generated using provided ECExpressions. *See [this page](./CalculatedPropertiesSpecification.md) for more details.*
 
 ```ts
 [[include:ContentInstancesOfSpecificClasses.CalculatedProperties.Ruleset]]

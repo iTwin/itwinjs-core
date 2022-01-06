@@ -2,7 +2,7 @@
 
 > TypeScript type: [MultiSchemaClassesSpecification]($presentation-common).
 
-Multi schema classes are used to specify which ECClasses should be targeted when generating display content or hierarchy nodes. The primary purpose of this specification is to provide a way of defining multiple target classes from different schemas.
+Multi schema classes are used to specify which and how ECClasses should be targeted when creating content or hierarchy nodes. The primary purpose of this specification is to provide a way to define a group of target classes.
 
 ## Attributes
 
