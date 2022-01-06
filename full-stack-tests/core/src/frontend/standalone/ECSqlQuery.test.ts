@@ -3,10 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { DbResult } from "@itwin/core-bentley";
+import { DbResult, ProcessDetector } from "@itwin/core-bentley";
 import { QueryBinder, QueryRowFormat } from "@itwin/core-common";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
+
+function skipIf(cond: () => boolean, skipMsg: string, title: string, callback: Mocha.AsyncFunc | Mocha.Func): Mocha.Test {
+  if (cond()) {
+    return it.skip(`${title} [${skipMsg}]`, callback);
+  }
+  return it(title, callback);
+}
+function skipIfWeb(title: string, callback: Mocha.AsyncFunc | Mocha.Func): Mocha.Test {
+  return skipIf(() => ProcessDetector.isBrowserProcess, "skipping for browser", title, callback);
+}
 
 describe("ECSql Query", () => {
   let imodel1: IModelConnection;
@@ -32,7 +42,8 @@ describe("ECSql Query", () => {
     if (imodel5) await imodel5.close();
     await TestUtility.shutdownFrontend();
   });
-  it("Restart query", async () => {
+
+  skipIfWeb("Restart query frontend", async () => {
     let cancelled = 0;
     let successful = 0;
     let rowCount = 0;
@@ -40,7 +51,7 @@ describe("ECSql Query", () => {
       return new Promise<void>(async (resolve, reject) => {
         try {
           // eslint-disable-next-line @typescript-eslint/naming-convention
-          for await (const _row of imodel1.restartQuery("tag", "SELECT ECInstanceId as Id, Parent.Id as ParentId FROM BisCore.element")) {
+          for await (const _row of imodel1.restartQuery("tag", "SELECT * FROM BisCore.element")) {
             rowCount++;
           }
           successful++;
@@ -67,6 +78,7 @@ describe("ECSql Query", () => {
     assert.isAtLeast(successful, 1);
     assert.isAtLeast(rowCount, 1);
   });
+
   it("concurrent query use primary connection", async () => {
     const reader = imodel1.createQueryReader("SELECT * FROM BisCore.element", undefined, { usePrimaryConn: true });
     let props = await reader.getMetaData();

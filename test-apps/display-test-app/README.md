@@ -137,7 +137,9 @@ You can use these environment variables to alter the default behavior of various
 * IMJS_DISABLED_EXTENSIONS
   * If defined, a semicolon-separated list of names of WebGLExtensions to be disabled. See WebGLExtensionName for valid names (case-sensitive).
 * IMJS_DISABLE_INSTANCING
-  * If defined, instanced geometry will not be generated for tiles.
+  * If defined, instanced geometry will not be generated for tiles. See TileAdmin.enableInstancing.
+* IMJS_DISABLE_INDEXED_EDGES
+  * If defined, indexed edges will not be produced. See TileAdmin.enableIndexedEdges.
 * IMJS_NO_IMPROVED_ELISION
   * If defined, disables more accurate empty tile elision on backend.
 * IMJS_IGNORE_AREA_PATTERNS
@@ -204,6 +206,7 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
 * `win restore` *windowId* - restore (un-dock) the specified or focused window.
 * `win close` *windowId* - close the specified or focused window.
 * `vp clone` *viewportId* - create a new viewport looking at the same view as the specified or currently-selected viewport.
+* `dta gltf` *assetUrl* - load a glTF asset from the specified URL and display it at the center of the project extents in the currently-selected viewport.
 * `dta version compare` - emulate version comparison.
 * `dta save image` - open a new window containing a snapshot of the contents of the selected viewport.
 * `dta record fps` *numFrames* - record average frames-per-second over the specified number of frames (default: 150) and output to status bar.

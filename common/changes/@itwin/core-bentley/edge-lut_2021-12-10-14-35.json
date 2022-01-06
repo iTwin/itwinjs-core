@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-bentley",
+      "comment": "Add ByteStream.nextUint24.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-bentley"
+}

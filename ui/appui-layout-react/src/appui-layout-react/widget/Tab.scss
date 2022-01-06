@@ -9,6 +9,9 @@
 .nz-widget-tab {
   user-select: none;
   white-space: nowrap;
+  display: flex;
+  gap: 6px;
+  align-items: center;
 
   >span {
     font-size: $nz-widget-tab-font-size;
@@ -24,7 +27,6 @@
 
   &.nz-overflown {
     cursor: pointer;
-    display: flex;
     position: relative;
     max-width: 18em;
     line-height: 2em;
@@ -70,9 +72,7 @@
 
   &:not(.nz-overflown) {
     cursor: pointer;
-    padding: 0 1em;
-    display: flex;
-    align-items: center;
+    padding: 4px 1em 0;
     position: relative;
     border: 0 solid $buic-background-5;
     max-width: 9em;
@@ -91,7 +91,7 @@
           position: absolute;
           background: currentColor;
           left: $padding;
-          top: 0.25em;
+          top: 1px;
           border-radius: 0.2em;
           width: calc(100% - #{2 * $padding});
           height: 0.15em;

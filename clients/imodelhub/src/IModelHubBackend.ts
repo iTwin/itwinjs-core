@@ -15,7 +15,7 @@ import {
 } from "@itwin/core-backend";
 import { BentleyError, BriefcaseStatus, GuidString, Id64String, IModelHubStatus, IModelStatus, Logger, OpenMode } from "@itwin/core-bentley";
 import {
-  BriefcaseIdValue, ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetProps, CodeProps, IModelError, IModelVersion, LocalDirName,
+  BriefcaseIdValue, ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetIndexAndId, ChangesetProps, CodeProps, IModelError, IModelVersion, LocalDirName,
 } from "@itwin/core-common";
 import { IModelBankClient } from "./imodelbank/IModelBankClient";
 import { IModelClient } from "./IModelClient";
@@ -301,7 +301,7 @@ export class IModelHubBackend implements BackendHubAccess {
     return val;
   }
 
-  public async downloadV1Checkpoint(arg: CheckpointArg): Promise<ChangesetId> {
+  public async downloadV1Checkpoint(arg: CheckpointArg): Promise<ChangesetIndexAndId> {
     const checkpoint = arg.checkpoint;
     let checkpointQuery = new CheckpointQuery().selectDownloadUrl();
     checkpointQuery = checkpointQuery.precedingCheckpoint(checkpoint.changeset.id);
@@ -317,7 +317,7 @@ export class IModelHubBackend implements BackendHubAccess {
     };
 
     await this.iModelClient.checkpoints.download(accessToken, checkpoints[0], arg.localFile, progressCallback, cancelRequest);
-    return checkpoints[0].mergedChangeSetId!;
+    return { index: checkpoints[0].mergedChangeSetIndex!, id: checkpoints[0].mergedChangeSetId! };
   }
 
   public async queryV2Checkpoint(arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined> {
@@ -340,7 +340,7 @@ export class IModelHubBackend implements BackendHubAccess {
     };
   }
 
-  public async downloadV2Checkpoint(arg: CheckpointArg): Promise<ChangesetId> {
+  public async downloadV2Checkpoint(arg: CheckpointArg): Promise<ChangesetIndexAndId> {
     const checkpoint = arg.checkpoint;
     let checkpointQuery = new CheckpointV2Query();
     checkpointQuery = checkpointQuery.precedingCheckpointV2(checkpoint.changeset.id).selectContainerAccessKey();
@@ -392,7 +392,7 @@ export class IModelHubBackend implements BackendHubAccess {
       if (timer)
         clearInterval(timer);
     }
-    return checkpoints[0].changeSetId!;
+    return { index: checkpoints[0].mergedChangeSetIndex!, id: checkpoints[0].mergedChangeSetId! };
   }
 
   public async releaseAllLocks(arg: BriefcaseDbArg) {

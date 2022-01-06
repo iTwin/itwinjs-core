@@ -9,7 +9,7 @@
 // Cspell:ignore popout
 import { castDraft, Draft, produce } from "immer";
 import { PointProps } from "@itwin/appui-abstract";
-import { Point, Rectangle, RectangleProps, SizeProps } from "@itwin/core-react";
+import { IconSpec, Point, Rectangle, RectangleProps, SizeProps } from "@itwin/core-react";
 import { HorizontalPanelSide, isHorizontalPanelSide, PanelSide, panelSides, VerticalPanelSide } from "../widget-panels/Panel";
 import { assert } from "@itwin/core-bentley";
 import { getUniqueId } from "./NineZone";
@@ -21,6 +21,7 @@ export interface SizeAndPositionProps extends SizeProps, PointProps { }
 export interface TabState {
   readonly id: string;
   readonly label: string;
+  readonly iconSpec?: IconSpec;
   readonly preferredFloatingWidgetSize?: SizeProps;
   readonly preferredPopoutWidgetSize?: SizeAndPositionProps;
   readonly preferredPanelWidgetSize?: "fit-content";

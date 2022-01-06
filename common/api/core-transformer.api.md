@@ -87,11 +87,11 @@ export abstract class IModelExportHandler {
 }
 
 // @beta
-export class IModelImporter {
+export class IModelImporter implements Required<IModelImportOptions> {
     constructor(targetDb: IModelDb, options?: IModelImportOptions);
-    autoExtendProjectExtents: boolean | {
-        excludeOutliers: boolean;
-    };
+    // @deprecated
+    get autoExtendProjectExtents(): Required<IModelImportOptions>["autoExtendProjectExtents"];
+    set autoExtendProjectExtents(val: Required<IModelImportOptions>["autoExtendProjectExtents"]);
     computeProjectExtents(): void;
     deleteElement(elementId: Id64String): void;
     deleteRelationship(relationshipProps: RelationshipProps): void;
@@ -113,8 +113,14 @@ export class IModelImporter {
     protected onUpdateElementAspect(aspectProps: ElementAspectProps): void;
     protected onUpdateModel(modelProps: ModelProps): void;
     protected onUpdateRelationship(relationshipProps: RelationshipProps): void;
+    readonly options: Required<IModelImportOptions>;
+    // @deprecated
+    get preserveElementIdsForFiltering(): Required<IModelImportOptions>["preserveElementIdsForFiltering"];
+    set preserveElementIdsForFiltering(val: Required<IModelImportOptions>["preserveElementIdsForFiltering"]);
     progressInterval: number;
-    simplifyElementGeometry: boolean;
+    // @deprecated
+    get simplifyElementGeometry(): Required<IModelImportOptions>["simplifyElementGeometry"];
+    set simplifyElementGeometry(val: Required<IModelImportOptions>["simplifyElementGeometry"]);
     readonly targetDb: IModelDb;
     }
 
@@ -123,6 +129,8 @@ export interface IModelImportOptions {
     autoExtendProjectExtents?: boolean | {
         excludeOutliers: boolean;
     };
+    preserveElementIdsForFiltering?: boolean;
+    simplifyElementGeometry?: boolean;
 }
 
 // @beta
@@ -175,16 +183,18 @@ export class IModelTransformer extends IModelExportHandler {
     protected skipElement(sourceElement: Element): void;
     readonly sourceDb: IModelDb;
     readonly targetDb: IModelDb;
-    readonly targetScopeElementId: Id64String;
+    get targetScopeElementId(): Id64String;
     }
 
 // @beta
 export interface IModelTransformOptions {
     cloneUsingBinaryGeometry?: boolean;
+    danglingPredecessorsBehavior?: "reject" | "ignore";
     includeSourceProvenance?: boolean;
     isReverseSynchronization?: boolean;
     loadSourceGeometry?: boolean;
     noProvenance?: boolean;
+    preserveElementIdsForFiltering?: boolean;
     targetScopeElementId?: Id64String;
     wasSourceIModelCopiedToTarget?: boolean;
 }

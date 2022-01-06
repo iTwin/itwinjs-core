@@ -140,7 +140,7 @@ export class V2CheckpointManager {
 
   private static async performDownload(job: DownloadJob): Promise<ChangesetId> {
     CheckpointManager.onDownloadV2.raiseEvent(job);
-    return IModelHost.hubAccess.downloadV2Checkpoint(job.request);
+    return (await IModelHost.hubAccess.downloadV2Checkpoint(job.request)).id;
   }
 
   /** Fully download a V2 checkpoint to a local file that can be used to create a briefcase or to work offline.
@@ -186,7 +186,7 @@ export class V1CheckpointManager {
 
   private static async performDownload(job: DownloadJob): Promise<ChangesetId> {
     CheckpointManager.onDownloadV1.raiseEvent(job);
-    return IModelHost.hubAccess.downloadV1Checkpoint(job.request);
+    return (await IModelHost.hubAccess.downloadV1Checkpoint(job.request)).id;
   }
 }
 
@@ -200,7 +200,10 @@ export class CheckpointManager {
     try {
       // first see if there's a V2 checkpoint available.
       const changesetId = await V2CheckpointManager.downloadCheckpoint(request);
-      Logger.logInfo(loggerCategory, `Downloaded v2 checkpoint: IModel=${request.checkpoint.iModelId}, changeset=${request.checkpoint.changeset.id}`);
+      if (changesetId !== request.checkpoint.changeset.id)
+        Logger.logInfo(loggerCategory, `Downloaded previous v2 checkpoint because checkpoint for ${request.checkpoint.changeset.id} not found.  Downloaded: IModel=${request.checkpoint.iModelId}, changeset=${changesetId}`);
+      else
+        Logger.logInfo(loggerCategory, `Downloaded v2 checkpoint: IModel=${request.checkpoint.iModelId}, changeset=${request.checkpoint.changeset.id}`);
       return changesetId;
     } catch (error) {
       if (error instanceof IModelError && error.errorNumber === IModelStatus.NotFound) // No V2 checkpoint available, try a v1 checkpoint

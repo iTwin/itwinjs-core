@@ -157,6 +157,7 @@ export enum BriefcaseStatus {
 
 // @public
 export class ByteStream {
+    // @deprecated
     constructor(buffer: ArrayBuffer | SharedArrayBuffer, subView?: {
         byteOffset: number;
         byteLength: number;
@@ -165,6 +166,12 @@ export class ByteStream {
     get arrayBuffer(): ArrayBuffer | SharedArrayBuffer;
     get curPos(): number;
     set curPos(pos: number);
+    static fromArrayBuffer(buffer: ArrayBuffer | SharedArrayBuffer, subView?: {
+        byteOffset: number;
+        byteLength: number;
+    }): ByteStream;
+    static fromUint8Array(bytes: Uint8Array): ByteStream;
+    get isAtTheEnd(): boolean;
     get isPastTheEnd(): boolean;
     get length(): number;
     nextBytes(numBytes: number): Uint8Array;
@@ -173,6 +180,7 @@ export class ByteStream {
     get nextId64(): Id64String;
     get nextInt32(): number;
     get nextUint16(): number;
+    get nextUint24(): number;
     get nextUint32(): number;
     nextUint32s(numUint32s: number): Uint32Array;
     get nextUint8(): number;
@@ -1211,6 +1219,9 @@ export class LRUMap<K, V> extends LRUCache<K, V> {
 }
 
 // @public
+export type MarkRequired<T, K extends keyof T> = Pick<Required<T>, K> & Omit<T, K>;
+
+// @public
 export type Mutable<T> = {
     -readonly [K in keyof T]: T[K];
 };
@@ -1269,6 +1280,9 @@ export enum OpenMode {
     // (undocumented)
     ReadWrite = 2
 }
+
+// @public
+export type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
 
 // @public
 export type OrderedComparator<T, U = T> = (lhs: T, rhs: U) => number;
