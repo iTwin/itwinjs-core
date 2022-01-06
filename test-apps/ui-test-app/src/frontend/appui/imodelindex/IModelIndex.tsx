@@ -111,6 +111,7 @@ export class IModelIndex extends React.Component<IModelIndexProps, IModelIndexSt
         authorization: AccessTokenAdapter.toAuthorizationCallback(accessToken),
       })) {
         currentVersions.push(ver);
+        break;
       }
       _versionName = (currentVersions.length === 1) ? currentVersions[0].name : "Version name not found!";
     } catch (e) { }
