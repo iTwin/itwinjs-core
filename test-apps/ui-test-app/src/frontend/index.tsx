@@ -501,17 +501,6 @@ export class SampleAppIModelApp {
 
       const iTwin: ITwin = iTwinList[0];
 
-      const toAuthorization = (token: AccessToken): Authorization => {
-        const splitAccessToken = token.split(" ");
-        if (splitAccessToken.length !== 2)
-          throw new Error("Unsupported access token format");
-
-        return {
-          scheme: splitAccessToken[0],
-          token: splitAccessToken[1],
-        };
-      };
-
       if (!SampleAppIModelApp.hubClient)
         return;
 

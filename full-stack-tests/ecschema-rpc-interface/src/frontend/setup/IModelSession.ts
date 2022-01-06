@@ -54,13 +54,12 @@ export class IModelSession {
         authorization: AccessTokenAdapter.toAuthorizationCallback(await IModelApp.getAccessToken()),
         urlParams: {
           projectId: iTwinId,
+          name: iModelData.name,
         },
       });
       for await (const iModel of iModels) {
-        if (iModel.name === iModelData.name) {
-          imodelId = iModel.id;
-          break;
-        }
+        imodelId = iModel.id;
+        break;
       }
       if (!imodelId)
         throw new Error(`The iModel ${iModelData.name} does not exist in iTwin ${iTwinId}.`);

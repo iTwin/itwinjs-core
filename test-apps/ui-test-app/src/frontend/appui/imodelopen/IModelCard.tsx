@@ -33,23 +33,6 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
     showDescription: true,
   };
 
-  // called when this component is first loaded
-  public override async componentDidMount() {
-    // we don't get the thumbnail until it's needed.
-    // if (!this.props.iModel.thumbnail)
-    //   this.startRetrieveThumbnail(this.props.iModel); // eslint-disable-line @typescript-eslint/no-floating-promises
-  }
-
-  // retrieves the IModels for a Project. Called when first mounted and when a new Project is selected.
-  // private async startRetrieveThumbnail(arg: { iTwinId: string, id: string }) {
-  //   this.setState({ waitingForThumbnail: true });
-  //   const hubFrontend = new IModelHubFrontend();
-  //   try {
-  //     this.props.iModel.thumbnail = await hubFrontend.hubClient.thumbnails.download((await IModelApp.getAccessToken()), arg.id, { iTwinId: arg.iTwinId, size: "Small" });
-  //   } catch {}
-  //   this.setState({ waitingForThumbnail: false });
-  // }
-
   private _onCardClicked = () => {
     if (this.props.onSelectIModel)
       this.props.onSelectIModel(this.props.iModel);

@@ -81,11 +81,11 @@ async function init() {
 
   // Bootstrap the cloud environment
   const enableIModelBank: boolean = process.env.IMJS_TEST_IMODEL_BANK !== undefined && !!JSON.parse(process.env.IMJS_TEST_IMODEL_BANK);
-  if (!enableIModelBank) {
+  if (enableIModelBank) {
+    iModelHost.hubAccess = getIModelBankAccess();
+  } else {
     const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
     iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
-  } else {
-    iModelHost.hubAccess = getIModelBankAccess();
   }
 
   iModelHost.cacheDir = path.join(__dirname, ".cache");  // Set local cache dir
