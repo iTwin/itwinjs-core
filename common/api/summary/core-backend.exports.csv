@@ -37,8 +37,6 @@ internal;CheckpointArg = DownloadRequest
 internal;CheckpointManager
 public;CheckpointProps 
 public;ClassRegistry
-beta;CloudSqlite
-beta;CloudSqlite
 beta;class CloudStorageService
 internal;CloudStorageTileUploader
 beta;CloudStorageUploadOptions
