@@ -1373,7 +1373,7 @@ Several APIs previously marked as deprecated, renamed alpha/beta APIs and moved 
 A number of packages have been renamed to use the @itwin scope rather than the @bentley scope, and we have modified a few package names to move towards a more consistent naming pattern. The full list of changed packages are listed in the table below.
 
 | Current                                | New                                  |
-|----------------------------------------|--------------------------------------|
+| -------------------------------------- | ------------------------------------ |
 | @bentley/imodeljs-backend              | @itwin/core-backend                  |
 | @bentley/imodeljs-common               | @itwin/core-common                   |
 | @bentley/imodeljs-frontend             | @itwin/core-frontend                 |
@@ -1413,8 +1413,8 @@ A number of packages have been renamed to use the @itwin scope rather than the @
 | @bentley/imodeljs-quantity             | @itwin/core-quantity                 |
 | @bentley/imodeljs-i18n                 | @itwin/core-i18n                     |
 | @bentley/hypermodeling-frontend        | @itwin/hypermodeling-frontend        |
-| @bentley/electron-manager              | @itwin/core-electron              |
-| @bentley/mobile-manager                | @itwin/core-mobile                |
+| @bentley/electron-manager              | @itwin/core-electron                 |
+| @bentley/mobile-manager                | @itwin/core-mobile                   |
 | @bentley/express-server                | @itwin/express-server                |
 | @bentley/ecschema-rpcinterface-common  | @itwin/ecschema-rpcinterface-common  |
 | @bentley/ecschema-rpcinterface-impl    | @itwin/ecschema-rpcinterface-impl    |
@@ -1429,34 +1429,34 @@ A number of packages have been renamed to use the @itwin scope rather than the @
 
 ### @itwin/core-backend
 
-| Removed                                                      | Replacement                                                        |
-| ------------------------------------------------------------ | -------------------------------------------------------------------|
-| `AutoPush`                                                   | _eliminated_                                                       |
-| `BriefcaseDb.reinstateChanges`                               | `BriefcaseDb.pullChanges`                                          |
-| `BriefcaseDb.reverseChanges`                                 | `BriefcaseDb.pullChanges`                                          |
-| `BriefcaseIdValue`                                           | `BriefcaseIdValue` in @itwin/core-common                           |
-| `BriefcaseManager.getCompatibilityFileName`                  | _eliminated_                                                       |
-| `BriefcaseManager.getCompatibilityPath`                      | _eliminated_                                                       |
-| `BriefcaseManager.isStandaloneBriefcaseId`                   | use `id === BriefcaseIdValue.Unassigned`                           |
-| `compatibilityDir` argument of `BriefcaseManager.initialize` | _eliminated_                                                       |
-| `DocumentCarrier`                                            | _eliminated_                                                       |
-| `IModelDb.clearSqliteStatementCache`                         | `IModelDb.clearCaches`                                             |
-| `IModelDb.clearStatementCache`                               | `IModelDb.clearCaches`                                             |
-| `IModelHost.iModelClient`                                    | `IModelHubBackend.iModelClient`                                    |
-| `IModelHostConfiguration.briefcaseCacheDir`                  | `IModelHostConfiguration.cacheDir`                                 |
-| `InformationCarrierElement`                                  | _eliminated_                                                       |
-| `Platform.isDesktop`                                         | `ProcessDetector.isElectronAppBackend`                             |
-| `Platform.isElectron`                                        | `ProcessDetector.isElectronAppBackend`                             |
-| `Platform.isMobile`                                          | `ProcessDetector.isMobileAppBackend`                               |
-| `Platform.isNodeJs`                                          | `ProcessDetector.isNodeProcess`                                    |
-| `SnapshotDb.filePath`                                        | `SnapshotDb.pathName`                                              |
-| `StandaloneDb.filePath`                                      | `StandaloneDb.pathName`                                            |
-| `Texture.width, height, flags`                               | _eliminated_                                                       |
-| `TxnAction`                                                  | `TxnAction` in @itwin/core-common                                  |
-| `TxnChangedEntities.inserted, deleted, updated`              | `TxnChangedEntities.inserts, deletes, updates`                     |
-| `NativeAppAuthorizationBackend`                              | Moved to @iTwin/auth-clients repo as `ElectronAuthorizationBackend`|
-| `ElectronAuthorizationEvents`                                | Moved to @iTwin/auth-clients repo                                  |
-| `ElectronAuthorizationRequestHandler`                        | Moved to @iTwin/auth-clients repo                                  |
+| Removed                                                      | Replacement                                                         |
+| ------------------------------------------------------------ | ------------------------------------------------------------------- |
+| `AutoPush`                                                   | _eliminated_                                                        |
+| `BriefcaseDb.reinstateChanges`                               | `BriefcaseDb.pullChanges`                                           |
+| `BriefcaseDb.reverseChanges`                                 | `BriefcaseDb.pullChanges`                                           |
+| `BriefcaseIdValue`                                           | `BriefcaseIdValue` in @itwin/core-common                            |
+| `BriefcaseManager.getCompatibilityFileName`                  | _eliminated_                                                        |
+| `BriefcaseManager.getCompatibilityPath`                      | _eliminated_                                                        |
+| `BriefcaseManager.isStandaloneBriefcaseId`                   | use `id === BriefcaseIdValue.Unassigned`                            |
+| `compatibilityDir` argument of `BriefcaseManager.initialize` | _eliminated_                                                        |
+| `DocumentCarrier`                                            | _eliminated_                                                        |
+| `IModelDb.clearSqliteStatementCache`                         | `IModelDb.clearCaches`                                              |
+| `IModelDb.clearStatementCache`                               | `IModelDb.clearCaches`                                              |
+| `IModelHost.iModelClient`                                    | `IModelHubBackend.iModelClient`                                     |
+| `IModelHostConfiguration.briefcaseCacheDir`                  | `IModelHostConfiguration.cacheDir`                                  |
+| `InformationCarrierElement`                                  | _eliminated_                                                        |
+| `Platform.isDesktop`                                         | `ProcessDetector.isElectronAppBackend`                              |
+| `Platform.isElectron`                                        | `ProcessDetector.isElectronAppBackend`                              |
+| `Platform.isMobile`                                          | `ProcessDetector.isMobileAppBackend`                                |
+| `Platform.isNodeJs`                                          | `ProcessDetector.isNodeProcess`                                     |
+| `SnapshotDb.filePath`                                        | `SnapshotDb.pathName`                                               |
+| `StandaloneDb.filePath`                                      | `StandaloneDb.pathName`                                             |
+| `Texture.width, height, flags`                               | _eliminated_                                                        |
+| `TxnAction`                                                  | `TxnAction` in @itwin/core-common                                   |
+| `TxnChangedEntities.inserted, deleted, updated`              | `TxnChangedEntities.inserts, deletes, updates`                      |
+| `NativeAppAuthorizationBackend`                              | Moved to @iTwin/auth-clients repo as `ElectronAuthorizationBackend` |
+| `ElectronAuthorizationEvents`                                | Moved to @iTwin/auth-clients repo                                   |
+| `ElectronAuthorizationRequestHandler`                        | Moved to @iTwin/auth-clients repo                                   |
 
 ### @itwin/core-common
 
@@ -1495,42 +1495,42 @@ A number of packages have been renamed to use the @itwin scope rather than the @
 
 ### @itwin/core-frontend
 
-| Removed                                       | Replacement                                                        |
-| --------------------------------------------- | ------------------------------------------------------------------ |
-| `AppearanceOverrideProps`                     | [AppearanceOverrideProps]($common)                                 |
-| `AsyncMethodsOf`                              | [AsyncMethodsOf]($core-bentley)                                    |
-| `AsyncFunction`                               | [AsyncFunction]($core-bentley)                                     |
-| `EmphasizeElementsProps`                      | [EmphasizeElementsProps]($common)                                  |
-| `PromiseReturnType`                           | [PromiseReturnType]($core-bentley)                                 |
-| `CheckpointConnection.open`                   | `CheckpointConnection.openRemote`                                  |
-| `DecorateContext.screenViewport`              | `DecorateContext.viewport`                                         |
-| `FeatureOverrideType`                         | [FeatureOverrideType]($common)                                     |
-| `FeatureSymbology.Appearance`                 | [FeatureAppearance]($common)                                       |
-| `FeatureSymbology.AppearanceProps`            | [FeatureAppearanceProps]($common)                                  |
-| `findAvailableRealityModels`                  | `getRealityDatas` in `@itwin/reality-data-client`                 |
-| `findAvailableUnattachedRealityModels`        | `getRealityDatas` in `@itwin/reality-data-client`                 |
-| `IModelApp.iModelClient`                      | `IModelApp.hubAccess`                                              |
-| `IModelApp.settings`                          | [IModelApp.userPreferences]($frontend)                             |
-| `IModelConnection.Models.loaded`              | use `for..of` to iterate and `getLoaded` to look up by Id          |
-| `IModelConnection.Views.saveThumbnail`        | use IPC and `IModelDb.saveThumbnail`                               |
-| `IOidcFrontendClient`                         | *eliminated*                                                       |
-| `isIOidcFrontendClient`                       | *eliminated*                                                       |
-| `OidcBrowserClient`                           | `BrowserAuthorizationClient` in `@itwin/browser-authorization`     |
+| Removed                                       | Replacement                                                                 |
+| --------------------------------------------- | --------------------------------------------------------------------------- |
+| `AppearanceOverrideProps`                     | [AppearanceOverrideProps]($common)                                          |
+| `AsyncMethodsOf`                              | [AsyncMethodsOf]($core-bentley)                                             |
+| `AsyncFunction`                               | [AsyncFunction]($core-bentley)                                              |
+| `EmphasizeElementsProps`                      | [EmphasizeElementsProps]($common)                                           |
+| `PromiseReturnType`                           | [PromiseReturnType]($core-bentley)                                          |
+| `CheckpointConnection.open`                   | `CheckpointConnection.openRemote`                                           |
+| `DecorateContext.screenViewport`              | `DecorateContext.viewport`                                                  |
+| `FeatureOverrideType`                         | [FeatureOverrideType]($common)                                              |
+| `FeatureSymbology.Appearance`                 | [FeatureAppearance]($common)                                                |
+| `FeatureSymbology.AppearanceProps`            | [FeatureAppearanceProps]($common)                                           |
+| `findAvailableRealityModels`                  | `getRealityDatas` in `@itwin/reality-data-client`                           |
+| `findAvailableUnattachedRealityModels`        | `getRealityDatas` in `@itwin/reality-data-client`                           |
+| `IModelApp.iModelClient`                      | `IModelApp.hubAccess`                                                       |
+| `IModelApp.settings`                          | [IModelApp.userPreferences]($frontend)                                      |
+| `IModelConnection.Models.loaded`              | use `for..of` to iterate and `getLoaded` to look up by Id                   |
+| `IModelConnection.Views.saveThumbnail`        | use IPC and `IModelDb.saveThumbnail`                                        |
+| `IOidcFrontendClient`                         | *eliminated*                                                                |
+| `isIOidcFrontendClient`                       | *eliminated*                                                                |
+| `OidcBrowserClient`                           | `BrowserAuthorizationClient` in `@itwin/browser-authorization`              |
 | `OidcFrontendClientConfiguration`             | `BrowserAuthorizationClientConfiguration` in `@itwin/browser-authorization` |
-| `QuantityFormatter.onActiveUnitSystemChanged` | [QuantityFormatter.onActiveFormattingUnitSystemChanged]($frontend) |
-| `QuantityFormatter.useImperialFormats`        | [QuantityFormatter.setActiveUnitSystem]($frontend)                 |
-| `RemoteBriefcaseConnection`                   | `CheckpointConnection`                                             |
-| `ScreenViewport.decorationDiv`                | `DecorateContext.addHtmlDecoration`                                |
-| `UnitSystemKey`                               | Moved to `@bentley/imodeljs-quantity`                              |
-| `ViewManager.forEachViewport`                 | Use a `for..of` loop                                               |
-| `ViewState.isCameraEnabled`                   | Use `view.is3d() && view.isCameraOn`                               |
-| `ViewState3d.lookAtPerspectiveOrOrtho`        | `ViewState3d.LookAt`                                               |
-| `ViewState3d.lookAtUsingLensAngle`            | `ViewState3d.lookAt`                                               |
-| `Viewport.featureOverrideProvider`            | [Viewport.featureOverrideProviders]($frontend)                     |
-| `Viewport.setFlashed`                         | [Viewport.flashedId]($frontend)                                    |
-| `Viewport.setRedrawPending`                   | [Viewport.requestRedraw]($frontend)                                |
-| `WebAppViewer`                                | *eliminated*                                                       |
-| `NativeAppAuthorization`                      | Moved to @iTwin/auth-clients repo as `ElectronRendererAuthorization`    |
+| `QuantityFormatter.onActiveUnitSystemChanged` | [QuantityFormatter.onActiveFormattingUnitSystemChanged]($frontend)          |
+| `QuantityFormatter.useImperialFormats`        | [QuantityFormatter.setActiveUnitSystem]($frontend)                          |
+| `RemoteBriefcaseConnection`                   | `CheckpointConnection`                                                      |
+| `ScreenViewport.decorationDiv`                | `DecorateContext.addHtmlDecoration`                                         |
+| `UnitSystemKey`                               | Moved to `@bentley/imodeljs-quantity`                                       |
+| `ViewManager.forEachViewport`                 | Use a `for..of` loop                                                        |
+| `ViewState.isCameraEnabled`                   | Use `view.is3d() && view.isCameraOn`                                        |
+| `ViewState3d.lookAtPerspectiveOrOrtho`        | `ViewState3d.LookAt`                                                        |
+| `ViewState3d.lookAtUsingLensAngle`            | `ViewState3d.lookAt`                                                        |
+| `Viewport.featureOverrideProvider`            | [Viewport.featureOverrideProviders]($frontend)                              |
+| `Viewport.setFlashed`                         | [Viewport.flashedId]($frontend)                                             |
+| `Viewport.setRedrawPending`                   | [Viewport.requestRedraw]($frontend)                                         |
+| `WebAppViewer`                                | *eliminated*                                                                |
+| `NativeAppAuthorization`                      | Moved to @iTwin/auth-clients repo as `ElectronRendererAuthorization`        |
 
 ### @itwin/core-geometry
 
@@ -1547,28 +1547,28 @@ A number of packages have been renamed to use the @itwin scope rather than the @
 
 SAML support has officially been dropped as a supported workflow. All related APIs for SAML have been removed.
 
-| Removed                             | Replacement                                                 |
-| ----------------------------------- | --------------------------------------------                |
-| `OidcDelegationClientConfiguration` | `DelegationAuthorizationClientConfiguration`                |
-| `OidcDelegationClient`              | `DelegationAuthorizationClient`                             |
-| `BackendAuthorizationClient`        | Moved to @iTwin/auth-clients as BrowserAuthorizationClient  |
-| `AgentAuthorizationClient`          | Moved to @iTwin/auth-clients as SerivceAuthorizationClient  |
-| `DelegationAuthorizationClient`     | *removed*                                                   |
-| `IntrospectionClient`               | Moved to @iTwin/auth-clients                                |
-| `ImsAuthorizationClient`           | *removed*                                                    |
+| Removed                             | Replacement                                                |
+| ----------------------------------- | ---------------------------------------------------------- |
+| `OidcDelegationClientConfiguration` | `DelegationAuthorizationClientConfiguration`               |
+| `OidcDelegationClient`              | `DelegationAuthorizationClient`                            |
+| `BackendAuthorizationClient`        | Moved to @iTwin/auth-clients as BrowserAuthorizationClient |
+| `AgentAuthorizationClient`          | Moved to @iTwin/auth-clients as SerivceAuthorizationClient |
+| `DelegationAuthorizationClient`     | *removed*                                                  |
+| `IntrospectionClient`               | Moved to @iTwin/auth-clients                               |
+| `ImsAuthorizationClient`            | *removed*                                                  |
 
 ### @itwin/appui-abstract
 
-| Removed                       | Replacement                  |
-| ----------------------------- | ---------------------------- |
-| `ContentLayoutProps.priority` | *eliminated*                 |
-| `UiItemsArbiter`              | *eliminated*                 |
-| `UiAbstract.messagePresenter` | `UiAdmin.messagePresenter`   |
+| Removed                       | Replacement                |
+| ----------------------------- | -------------------------- |
+| `ContentLayoutProps.priority` | *eliminated*               |
+| `UiItemsArbiter`              | *eliminated*               |
+| `UiAbstract.messagePresenter` | `UiAdmin.messagePresenter` |
 
 ### @itwin/core-react
 
-| Removed                              | Replacement                                                |
-| ------------------------------------ | ---------------------------------------------------------- |
+| Removed                              | Replacement                                             |
+| ------------------------------------ | ------------------------------------------------------- |
 | `LoadingPromptProps.isDeterministic` | `LoadingPromptProps.isDeterminate` in @itwin/core-react |
 | `NumericInput` component             | `NumberInput` component in @itwin/core-react            |
 | `TabsProps.onClickLabel`             | `TabsProps.onActivateTab` in @itwin/core-react          |
@@ -1647,7 +1647,7 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `IModelConnectedSpatialContainmentTree`    | *eliminated*                                                                                                                  |
 | `CategoryTreeWithSearchBox`                | *eliminated*                                                                                                                  |
 | `UiSettingsProvider`                       | `UiStateStorageHandler`                                                                                                       |
-| `useUiSettingsStorageContext`              | `useUiStateStorageHandler`                                                                                                       |
+| `useUiSettingsStorageContext`              | `useUiStateStorageHandler`                                                                                                    |
 | `VisibilityComponent`                      | `TreeWidgetComponent` in @bentley/tree-widget-react                                                                           |
 | `VisibilityWidget`                         | `TreeWidgetControl` in @bentley/tree-widget-react                                                                             |
 | `ContentLayoutProps`                       | `ContentLayoutProps` in @itwin/appui-abstract                                                                                 |
@@ -1780,8 +1780,8 @@ SAML support has officially been dropped as a supported workflow. All related AP
 
 ### @itwin/ecschema-metadata
 
-| Removed                                  | Replacement                                                  |
-| ---------------------------------------- | ------------------------------------------------------------ |
+| Removed                                  | Replacement                                                |
+| ---------------------------------------- | ---------------------------------------------------------- |
 | `IDiagnostic`                            | `IDiagnostic` in @itwin/ecschema-editing                   |
 | `BaseDiagnostic`                         | `BaseDiagnostic` in @itwin/ecschema-editing                |
 | `DiagnosticType`                         | `DiagnosticType` in @itwin/ecschema-editing                |
@@ -1803,31 +1803,31 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `SchemaCompareDiagnostics`               | `SchemaCompareDiagnostics` in @itwin/ecschema-editing      |
 | `SchemaValidater`                        | `SchemaValidater` in @itwin/ecschema-editing               |
 | `SchemaValidationVisitor`                | `SchemaValidationVisitor` in @itwin/ecschema-editing       |
-| `RelationshipConstraint.deserialize`     | `RelationshipConstraint.fromJSON`                            |
-| `RelationshipConstraint.deserializeSync` | `RelationshipConstraint.fromJSONSync`                        |
-| `RelationshipConstraint.toJson`          | `RelationshipConstraint.toJSON`                              |
+| `RelationshipConstraint.deserialize`     | `RelationshipConstraint.fromJSON`                          |
+| `RelationshipConstraint.deserializeSync` | `RelationshipConstraint.fromJSONSync`                      |
+| `RelationshipConstraint.toJson`          | `RelationshipConstraint.toJSON`                            |
 
 ### @bentley/itwin-client
 
-| Removed                            | Replacement                    |
-| ---------------------------------- | ------------------------------ |
-| `UserInfo`                         | *eliminated*                   |
-| `AuthorizationClient.isAuthorized` | *eliminated*                   |
+| Removed                            | Replacement  |
+| ---------------------------------- | ------------ |
+| `UserInfo`                         | *eliminated* |
+| `AuthorizationClient.isAuthorized` | *eliminated* |
 
 ### @bentley/appui-react
 
-| Removed                            | Replacement                                           |
-| ---------------------------------- | ----------------------------------------------------- |
-| `WidgetProvider`                   | Provide widget via [UiItemsProvider]($appui-abstract) |
+| Removed          | Replacement                                           |
+| ---------------- | ----------------------------------------------------- |
+| `WidgetProvider` | Provide widget via [UiItemsProvider]($appui-abstract) |
 
 ### @bentley/frontend-authorization-client
 
-| Removed                                          | Replacement                    |
-| -------------------------------------------------| ------------------------------ |
-| `FrontendAuthorizationClient`                    | *removed*                      |
-| `FrontendAuthorizationClientLoggerCategory`      | *removed*                      |
-| `BrowserAuthorizationCallbackHandler`            | Moved to iTwin/auth-clients    |
-| `BrowserAuthorizationBase`                       | *removed*                      |
-| `BrowserAuthorizationClient`                     | Moved to iTwin/auth-clients    |
-| `BrowserAuthorizationClientRedirectState`        | Moved to iTwin/auth-clients    |
-| `BrowserAuthorizationLogger`                     | Moved to iTwin/auth-clients    |
+| Removed                                     | Replacement                 |
+| ------------------------------------------- | --------------------------- |
+| `FrontendAuthorizationClient`               | *removed*                   |
+| `FrontendAuthorizationClientLoggerCategory` | *removed*                   |
+| `BrowserAuthorizationCallbackHandler`       | Moved to iTwin/auth-clients |
+| `BrowserAuthorizationBase`                  | *removed*                   |
+| `BrowserAuthorizationClient`                | Moved to iTwin/auth-clients |
+| `BrowserAuthorizationClientRedirectState`   | Moved to iTwin/auth-clients |
+| `BrowserAuthorizationLogger`                | Moved to iTwin/auth-clients |
