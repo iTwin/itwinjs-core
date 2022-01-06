@@ -28,11 +28,16 @@ export abstract class IpcWebSocketTransport {
       --this._outstanding;
 
       if (this._outstanding === 0) {
-        await Promise.all(this._received.map(async (v, i, a) => a[i] = await this.unwrap(v)));
-        parts = this._received;
-        const message: IpcWebSocketMessage = JSON.parse(this._partial, reviver);
+        const partial = this._partial;
+        const received = this._received;
         this._partial = undefined;
+        this._received = [];
+        await Promise.all(received.map(async (v, i, a) => a[i] = await this.unwrap(v)));
+
+        parts = received;
+        const message: IpcWebSocketMessage = JSON.parse(partial, reviver);
         parts.length = 0;
+
         return InSentOrder.deliver(message);
       } else {
         return IpcWebSocketMessage.internal();
@@ -131,6 +136,8 @@ class InSentOrder {
       if (duplicate || match) {
         this._queue.shift();
         next.release();
+      } else {
+        break;
       }
     }
 

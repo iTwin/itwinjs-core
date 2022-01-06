@@ -121,7 +121,7 @@ export type DistinctValuesRpcRequestOptions = PresentationRpcRequestOptions<Dist
 
 /**
  * Data structure for content instance keys' request options.
- * @alpha
+ * @beta
  */
 export type ContentInstanceKeysRpcRequestOptions = PresentationRpcRequestOptions<ContentInstanceKeysRequestOptions<never, KeySetJSON, RulesetVariableJSON>>;
 
@@ -180,7 +180,7 @@ export class PresentationRpcInterface extends RpcInterface {
 
   public async getPagedDistinctValues(_token: IModelRpcProps, _options: DistinctValuesRpcRequestOptions): PresentationRpcResponse<PagedResponse<DisplayValueGroupJSON>> { return this.forward(arguments); }
 
-  /** @alpha */
+  /** @beta */
   public async getContentInstanceKeys(_token: IModelRpcProps, _options: ContentInstanceKeysRpcRequestOptions): PresentationRpcResponse<{ total: number, items: KeySetJSON }> { return this.forward(arguments); }
 
   public async getDisplayLabelDefinition(_token: IModelRpcProps, _options: DisplayLabelRpcRequestOptions): PresentationRpcResponse<LabelDefinitionJSON> { return this.forward(arguments); }
