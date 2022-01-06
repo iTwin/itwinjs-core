@@ -731,6 +731,20 @@ export class AppTools {
     });
   }
 
+  public static get openMessageBoxCommand3() {
+    return new CommandItemDef({
+      commandId: "openMessageBox3",
+      iconSpec: "icon-status-warning",
+      labelKey: "SampleApp:buttons.openMessageBox",
+      execute: async () => {
+        const value: MessageBoxValue = await IModelApp.notifications.openMessageBox(MessageBoxType.YesNo,
+          "Are you sure you want to remove this item?",
+          MessageBoxIconType.Critical);
+        window.alert(`Closing message box ... value is ${value}`);
+      },
+    });
+  }
+
   private static _infoStr = "This is an info message with more text than will fit.";
   private static _warningStr = "This is a warning message with more text than will fit.";
   private static _errorStr = "This is an error message with more text than will fit.";

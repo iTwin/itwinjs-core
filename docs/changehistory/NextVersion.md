@@ -454,7 +454,7 @@ let ovrs = { ...props }; // New code
 
 Previously, creating a [RenderTexture]($common) generally involved creating a [RenderTexture.Params]($common) object and passing it along with an iModel and some representation of an image to one of a half-dozen [RenderSystem]($frontend) APIs. Those APIs have been consolidated into a single API: [RenderSystem.createTexture]($frontend). [RenderTexture.Params]($common) and the [RenderSystem]($frontend) APIs that use it have been deprecated, and the `key` and `isOwned` properties have been removed from [RenderTexture]($common).
 
-[RenderSystem.createTexture]($frontend) takes a [CreateTextureArgs]($frontend) specifying the type of texture to create, the image from which to create it, and optional ownership information. The image includes information about its transparency - that is, whether it contains only opaque pixels, only semi-transparent pixels, or a mixture of both, where fully transparent pixels are ignored. If the caller knows this information, it should be supplied; the default - [TextureTransparency.Mixed]($frontend) - is somewhat more expensive to render.
+[RenderSystem.createTexture]($frontend) takes a [CreateTextureArgs]($frontend) specifying the type of texture to create, the image from which to create it, and optional ownership information. The image includes information about its transparency - that is, whether it contains only opaque pixels, only semi-transparent pixels, or a mixture of both, where fully transparent pixels are ignored. If the caller knows this information, it should be supplied; the default - [TextureTransparency.Mixed]($common) - is somewhat more expensive to render.
 
 Adjusting code to pass the [RenderTexture.Type]($common):
 
