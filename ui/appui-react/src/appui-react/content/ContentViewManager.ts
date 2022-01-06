@@ -13,6 +13,7 @@ import { ViewUtilities } from "../utils/ViewUtilities";
 import { ContentControl } from "./ContentControl";
 import { ContentLayoutManager } from "./ContentLayoutManager";
 import { IModelApp } from "@itwin/core-frontend";
+import { ContentGroup } from "./ContentGroup";
 
 /** [[MouseDownChangedEvent]] Args interface.
  * @public
@@ -71,6 +72,19 @@ export class ContentViewManager {
     return this._activeContent;
   }
 
+  private static getControlFromElement(activeContentGroup: ContentGroup | undefined, floatingControls: ContentControl[] | undefined) {
+    if (activeContentGroup) {
+      const activeContentControl = activeContentGroup.getControlFromElement(this._activeContent);
+      if (activeContentControl)
+        return activeContentControl;
+    }
+
+    if (floatingControls?.length) {
+      return floatingControls.find((contentControl) => contentControl.reactNode === this._activeContent);
+    }
+    return undefined;
+  }
+
   /** Return the active ContentControl. */
   public static getActiveContentControl(): ContentControl | undefined {
     let activeContentControl: ContentControl | undefined;
@@ -79,10 +93,7 @@ export class ContentViewManager {
     // istanbul ignore else
     if (this._activeContent && activeFrontstageDef) {
       const activeContentGroup = activeFrontstageDef.contentGroup;
-      // istanbul ignore else
-      if (activeContentGroup) {
-        activeContentControl = activeContentGroup.getControlFromElement(this._activeContent);
-      }
+      activeContentControl = this.getControlFromElement(activeContentGroup, activeFrontstageDef.floatingContentControls);
     }
 
     return activeContentControl;
@@ -90,8 +101,9 @@ export class ContentViewManager {
 
   public static addFloatingContentControl(contentControl?: ContentControl) {
     const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
-    if (activeFrontstageDef && contentControl)
+    if (activeFrontstageDef && contentControl) {
       activeFrontstageDef.addFloatingContentControl(contentControl);
+    }
   }
 
   public static dropFloatingContentControl(contentControl?: ContentControl) {
@@ -114,27 +126,25 @@ export class ContentViewManager {
         const activeContentGroup = activeFrontstageDef.contentGroup;
 
         // istanbul ignore else
-        if (activeContentGroup) {
-          const oldContentControl = oldContent ? activeContentGroup.getControlFromElement(oldContent) : undefined;
-          const activeContentControl = activeContentGroup.getControlFromElement(this._activeContent);
+        const oldContentControl = oldContent ? activeContentGroup?.getControlFromElement(oldContent) : undefined;
+        const activeContentControl = this.getControlFromElement(activeContentGroup, activeFrontstageDef.floatingContentControls);
 
-          // Only call setActiveView if going to or coming from a non-viewport ContentControl
+        // Only call setActiveView if going to or coming from a non-viewport ContentControl
+        // istanbul ignore else
+        if (activeContentControl) {
+          // istanbul ignore next
+          const doSetActiveView =
+            forceEventProcessing || (!activeContentControl.viewport ||
+              (/* istanbul ignore next */ oldContentControl && /* istanbul ignore next */ !oldContentControl.viewport));
+
           // istanbul ignore else
-          if (activeContentControl) {
-            // istanbul ignore next
-            const doSetActiveView =
-              forceEventProcessing || (!activeContentControl.viewport ||
-                (/* istanbul ignore next */ oldContentControl && /* istanbul ignore next */ !oldContentControl.viewport));
-
-            // istanbul ignore else
-            if (doSetActiveView) {
-              activeFrontstageDef.setActiveView(activeContentControl, oldContentControl);
-              this.onActiveContentChangedEvent.emit({ activeContent, oldContent });
-            } else {
-              if (activeContentControl.viewport && activeContentControl.viewport !== IModelApp.viewManager.selectedView) {
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                IModelApp.viewManager.setSelectedView(activeContentControl.viewport);
-              }
+          if (doSetActiveView) {
+            activeFrontstageDef.setActiveView(activeContentControl, oldContentControl);
+            this.onActiveContentChangedEvent.emit({ activeContent, oldContent });
+          } else {
+            if (activeContentControl.viewport && activeContentControl.viewport !== IModelApp.viewManager.selectedView) {
+              // eslint-disable-next-line @typescript-eslint/no-floating-promises
+              IModelApp.viewManager.setSelectedView(activeContentControl.viewport);
             }
           }
         }

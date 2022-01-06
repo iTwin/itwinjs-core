@@ -11,6 +11,7 @@ import {
   DrawingViewState, IModelApp, IModelConnection, OrthographicViewState, ScreenViewport, SheetViewState, SpatialViewState, ViewState,
 } from "@itwin/core-frontend";
 import { ConfigurableCreateInfo, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
+import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { CubeNavigationAidControl } from "../navigationaids/CubeNavigationAidControl";
 import { DrawingNavigationAidControl } from "../navigationaids/DrawingNavigationAidControl";
 import { SheetNavigationAidControl } from "../navigationaids/SheetNavigationAid";
@@ -135,5 +136,19 @@ export class FloatingViewportContentControl extends ViewportContentControl {
   constructor(uniqueId: string, name: string, node: React.ReactNode) {
     super(new ConfigurableCreateInfo(name, uniqueId, name), undefined);
     this._reactNode = node;
+    this.setIsReady();
+  }
+
+  /** The React node associated with this control. */
+  public override get reactNode(): React.ReactNode {
+    return this._reactNode;
+  }
+
+  public override set reactNode(r: React.ReactNode) {
+    this._reactNode = r;
+    const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+
+    if (this.viewport && activeFrontstageDef)
+      activeFrontstageDef.setActiveViewFromViewport(this.viewport);
   }
 }

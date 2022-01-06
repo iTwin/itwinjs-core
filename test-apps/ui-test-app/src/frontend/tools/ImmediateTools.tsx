@@ -15,13 +15,14 @@ import { UiItemsProvidersTest } from "@itwin/ui-items-providers-test";
 import {
   IconSpecUtilities, ToolbarItemUtilities,
 } from "@itwin/appui-abstract";
-import { LocalStateStorage } from "@itwin/core-react";
+import { Dialog, LocalStateStorage } from "@itwin/core-react";
 import {
-  ChildWindowLocationProps, ContentGroup, ContentLayoutManager, ContentProps, FrontstageManager, StageContentLayout, StageContentLayoutProps, UiFramework,
+  ChildWindowLocationProps, ContentGroup, ContentLayoutManager, ContentProps, FrontstageManager, ModelessDialogManager, StageContentLayout, StageContentLayoutProps, UiFramework,
 } from "@itwin/appui-react";
 import toolIconSvg from "@bentley/icons-generic/icons/window-add.svg?sprite";
 import tool2IconSvg from "@bentley/icons-generic/icons/window-maximize.svg?sprite";
 import tool3IconSvg from "@bentley/icons-generic/icons/3d-render.svg?sprite";
+import tool4IconSvg from "@bentley/icons-generic/icons/3d.svg?sprite";
 import layoutRestoreIconSvg from "@bentley/icons-generic/icons/download.svg?sprite";
 import removeLayoutIconSvg from "@bentley/icons-generic/icons/remove.svg?sprite";
 import layoutSaveIconSvg from "@bentley/icons-generic/icons/upload.svg?sprite";
@@ -290,7 +291,7 @@ export class OpenViewPopoutTool extends Tool {
       left: 0,
       top: 0,
     };
-    UiFramework.childWindowManager.openChildWindow("ViewPopout", "View Popout", <PopupTestView />, location);
+    UiFramework.childWindowManager.openChildWindow("ViewPopout", "View Popout", <PopupTestView id="ui-test-app:popout-test" showViewPicker />, location);
   }
 
   public static override get flyover(): string {
@@ -312,5 +313,71 @@ export class OpenViewPopoutTool extends Tool {
     };
     return ToolbarItemUtilities.createActionButton(OpenViewPopoutTool.toolId, itemPriority, OpenViewPopoutTool.iconSpec, OpenViewPopoutTool.flyover,
       async () => { await IModelApp.tools.run(OpenViewPopoutTool.toolId); }, overrides);
+  }
+}
+
+// cSpell:ignore appui appuiprovider
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export function IModelViewDialog({ id }: { id: string }) {
+  const handleClose = React.useCallback(() => {
+    ModelessDialogManager.closeDialog(id);
+  }, [id]);
+
+  return (
+    <Dialog
+      title="IModel View"
+      inset={false}
+      style={{ padding: 0 }}
+      opened={true}
+      resizable={true}
+      movable={true}
+      modal={false}
+      onClose={handleClose}
+      onEscape={handleClose}
+      width={"40vw"}
+      height={"40vh"}
+      trapFocus={false}
+    >
+      <PopupTestView id={id} />
+    </Dialog>
+  );
+}
+
+export class OpenViewDialogTool extends Tool {
+  public static override toolId = "OpenViewDialog";
+  public static override iconSpec = IconSpecUtilities.createSvgIconSpec(tool4IconSvg);
+  public static dialogId = "ui-test-app:popup-view-dialog";
+
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 0; }
+
+  public override async run(): Promise<boolean> {
+    await this._run();
+    return true;
+  }
+
+  private async _run(): Promise<void> {
+    ModelessDialogManager.openDialog(<IModelViewDialog id={OpenViewDialogTool.dialogId} />, OpenViewDialogTool.dialogId);
+  }
+
+  public static override get flyover(): string {
+    return "open view dialog";
+  }
+
+  // if supporting localized key-ins return a localized string
+  public static override get keyin(): string {
+    return "open view dialog";
+  }
+
+  public static override get englishKeyin(): string {
+    return "open view dialog";
+  }
+
+  public static getActionButtonDef(itemPriority: number, groupPriority?: number) {
+    const overrides = {
+      groupPriority,
+    };
+    return ToolbarItemUtilities.createActionButton(OpenViewDialogTool.toolId, itemPriority, OpenViewDialogTool.iconSpec, OpenViewDialogTool.flyover,
+      async () => { await IModelApp.tools.run(OpenViewDialogTool.toolId); }, overrides);
   }
 }

@@ -11,7 +11,7 @@ import ViewportContentComponent from "../appui/childwindows/ViewportContentContr
 
 import "./PopupTestView.scss";
 
-export function PopupTestView() {
+export function PopupTestView({ id, showViewPicker }: { id: string, showViewPicker?: boolean }) {
   const menuItems: AbstractMenuItemProps[] = React.useMemo(() => {
     return [
       {
@@ -43,7 +43,7 @@ export function PopupTestView() {
   return (
     <div className="test-popup-test-view" ref={divRef}>
       {activeIModelConnection &&
-        <ViewportContentComponent imodel={activeIModelConnection} onContextMenu={handleContextMenu} />
+        <ViewportContentComponent showViewPicker={showViewPicker} id={id} imodel={activeIModelConnection} onContextMenu={handleContextMenu} />
       }
     </div>
   );

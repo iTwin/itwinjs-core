@@ -95,6 +95,7 @@ export class FrontstageDef {
   public get usage(): string { return this._usage !== undefined ? this._usage : StageUsage.General; }
   public get version(): number { return this._version; }
   public get contentGroupProvider(): ContentGroupProvider | undefined { return this._contentGroupProvider; }
+  public get floatingContentControls() { return this._floatingContentControls; }
 
   public get topLeft(): ZoneDef | undefined { return this._topLeft; }
   public get topCenter(): ZoneDef | undefined { return this._topCenter; }
