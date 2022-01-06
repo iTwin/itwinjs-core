@@ -835,8 +835,7 @@
       "program": "${workspaceFolder}/utils/workspace-editor/lib/WorkspaceEditor.js",
       "args": [
         "download",
-        "brazil",
-        "--config=edit.json",
+        "usa-nsrs2011",
         "-l=d:/temp/abc.d"
       ],
       "outFiles": [

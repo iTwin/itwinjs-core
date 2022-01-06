@@ -9,7 +9,7 @@
 import { assert, BentleyStatus, Dictionary, dispose, Id64, Id64String } from "@itwin/core-bentley";
 import { ClipVector, Point3d, Transform } from "@itwin/core-geometry";
 import {
-  ColorDef, ElementAlignedBox3d, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSourceFormat, IModelError, PackedFeatureTable, RenderMaterial, RenderTexture,
+  ColorDef, ElementAlignedBox3d, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSourceFormat, IModelError, PackedFeatureTable, RenderMaterial, RenderTexture, TextureTransparency,
 } from "@itwin/core-common";
 import { Capabilities, DepthType, WebGLContext } from "@itwin/webgl-compatibility";
 import { imageElementFromImageSource } from "../../ImageUtil";
@@ -30,7 +30,7 @@ import { PolylineParams } from "../primitives/PolylineParams";
 import { RenderClipVolume } from "../RenderClipVolume";
 import { RenderGraphic, RenderGraphicOwner } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
-import { CreateTextureArgs, CreateTextureFromSourceArgs, TextureCacheKey, TextureTransparency } from "../RenderTexture";
+import { CreateTextureArgs, CreateTextureFromSourceArgs, TextureCacheKey } from "../RenderTexture";
 import {
   DebugShaderFile, GLTimerResultCallback, PlanarGridProps, RenderAreaPattern, RenderDiagnostics, RenderGeometry, RenderSkyBoxParams,
   RenderSystem, RenderSystemDebugControl, TerrainTexture,
@@ -246,11 +246,17 @@ export class IdMap implements WebGLDisposable {
     if (tex)
       return tex;
 
-    const handle = TextureHandle.createForElement(key, iModel, params.type, format);
+    const handle = TextureHandle.createForElement(key, iModel, params.type, format, (_, data) => {
+      if (tex) {
+        assert(tex instanceof Texture);
+        tex.transparency = data.transparency ?? TextureTransparency.Mixed;
+      }
+    });
+
     if (!handle)
       return undefined;
 
-    tex = new Texture({ handle, type: params.type, ownership: { key, iModel } });
+    tex = new Texture({ handle, type: params.type, ownership: { key, iModel }, transparency: TextureTransparency.Opaque });
     this.addTexture(tex);
     return tex;
   }
@@ -272,7 +278,7 @@ export class IdMap implements WebGLDisposable {
 
   public async createTextureFromImageSource(args: CreateTextureFromSourceArgs, key: string): Promise<RenderTexture | undefined> {
     // JPEGs don't support transparency.
-    const transparency = ImageSourceFormat.Jpeg === args.source.format ? TextureTransparency.Opaque : (args.transparency ?? TextureTransparency.Translucent);
+    const transparency = ImageSourceFormat.Jpeg === args.source.format ? TextureTransparency.Opaque : (args.transparency ?? TextureTransparency.Mixed);
     try {
       const image = await imageElementFromImageSource(args.source);
       if (!IModelApp.hasRenderSystem)
@@ -304,7 +310,7 @@ export class IdMap implements WebGLDisposable {
       return undefined;
 
     const ownership = params.key ? { key: params.key, iModel: this._iModel } : (params.isOwned ? "external" : undefined);
-    tex = new Texture({ handle, ownership, type: params.type });
+    tex = new Texture({ handle, ownership, type: params.type, transparency: TextureTransparency.Opaque });
     this.addTexture(tex);
     return tex;
   }
@@ -682,17 +688,16 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     const type = args.type ?? RenderTexture.Type.Normal;
     const source = args.image.source;
 
-    // ###TODO createForImageBuffer should take args.transparency.
     let handle;
     if (source instanceof ImageBuffer)
-      handle = TextureHandle.createForImageBuffer(source, type); // ###TODO use transparency from args
+      handle = TextureHandle.createForImageBuffer(source, type);
     else
-      handle = TextureHandle.createForImage(source, TextureTransparency.Opaque !== args.image.transparency, type);
+      handle = TextureHandle.createForImage(source, type);
 
     if (!handle)
       return undefined;
 
-    const texture = new Texture({ handle, type, ownership: args.ownership });
+    const texture = new Texture({ handle, type, ownership: args.ownership, transparency: args.image.transparency ?? TextureTransparency.Mixed });
     if (texture && info)
       info.idMap.addTexture(texture, info.key);
 
@@ -722,7 +727,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return this.createTexture({
       image: {
         source,
-        transparency: ImageBufferFormat.Rgba === source.format ? TextureTransparency.Translucent : TextureTransparency.Opaque,
+        transparency: ImageBufferFormat.Rgba === source.format ? TextureTransparency.Mixed : TextureTransparency.Opaque,
       },
       ownership: iModel ? { iModel, key: symb } : undefined,
       type: RenderTexture.Type.Normal,
