@@ -5,11 +5,11 @@
 import * as fs from "fs";
 import * as path from "path";
 import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
-import { ElectronAuthorizationBackend } from "@itwin/electron-authorization/lib/cjs/ElectronBackend";
+import { ElectronMainAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronMain";
 import { ElectronHost, ElectronHostOptions } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { IModelBankClient } from "@bentley/imodelhub-client";
 import { IModelHubBackend, UrlFileHandler } from "@bentley/imodelhub-client/lib/cjs/imodelhub-node";
-import { IModelHostConfiguration, LocalhostIpcHost } from "@itwin/core-backend";
+import { IModelHost, IModelHostConfiguration, LocalhostIpcHost } from "@itwin/core-backend";
 import {
   IModelReadRpcInterface, IModelTileRpcInterface, RpcInterfaceDefinition, RpcManager,
   SnapshotIModelRpcInterface,
@@ -20,6 +20,7 @@ import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { FakeTileCacheService } from "./FakeTileCacheService";
 import { EditCommandAdmin } from "@itwin/editor-backend";
 import * as editorBuiltInCommands from "@itwin/editor-backend";
+import { app } from "electron";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
@@ -63,6 +64,20 @@ class DisplayTestAppRpc extends DtaRpcInterface {
     return this.writeExternalFile(esvFileName, namedViews);
   }
 
+  public override async readExternalFile(txtFileName: string): Promise<string> {
+    if (ProcessDetector.isMobileAppBackend && process.env.DOCS) {
+      const docPath = process.env.DOCS;
+      txtFileName = path.join(docPath, txtFileName);
+    }
+
+    const dataFileName = this.createTxtFilename(txtFileName);
+    if (!fs.existsSync(dataFileName))
+      return "";
+
+    const contents = fs.readFileSync(dataFileName).toString();
+    return contents ?? "";
+  }
+
   public override async writeExternalFile(fileName: string, content: string): Promise<void> {
     const filePath = this.getFilePath(fileName);
     if (!fs.existsSync(filePath))
@@ -101,6 +116,23 @@ class DisplayTestAppRpc extends DtaRpcInterface {
     if (-1 !== dotIndex)
       return `${fileName.substring(0, dotIndex)}_ESV.json`;
     return `${fileName}.sv`;
+  }
+
+  private createTxtFilename(fileName: string): string {
+    const dotIndex = fileName.lastIndexOf(".");
+    if (-1 === dotIndex)
+      return `${fileName}.txt`;
+    return fileName;
+  }
+
+  public override async terminate() {
+    await IModelHost.shutdown();
+
+    // Electron only
+    if (app !== undefined) app.exit();
+
+    // Browser only
+    if (DtaRpcInterface.backendServer) DtaRpcInterface.backendServer.close();
   }
 }
 
@@ -157,7 +189,7 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
   /** register the implementation of our RPCs. */
   RpcManager.registerImpl(DtaRpcInterface, DisplayTestAppRpc);
   if (ProcessDetector.isElectronAppBackend) {
-    const authClient = await ElectronAuthorizationBackend.create({
+    const authClient = await ElectronMainAuthorization.create({
       clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
       redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
       scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",

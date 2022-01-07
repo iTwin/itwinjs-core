@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { UiEvent } from "@itwin/core-react";
+import { UiEvent } from "@itwin/appui-abstract";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { ViewUtilities } from "../utils/ViewUtilities";
 import { ContentControl } from "./ContentControl";

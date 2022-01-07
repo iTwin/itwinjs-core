@@ -10,7 +10,7 @@ The iTwin.js development team closely monitors our GitHub:
 - [Enhancement Requests](https://github.com/iTwin/itwinjs-core/labels/enhancement)
 - [Bug Reports](https://github.com/iTwin/itwinjs-core/labels/bug)
 
-See the [CONTRIBUTING.md](https://github.com/iTwin/itwinjs-core/blob/master/CONTRIBUTING.md) in the root of the imodeljs repository for additional instructions.
+See the [CONTRIBUTING.md](https://github.com/iTwin/itwinjs-core/blob/master/CONTRIBUTING.md) in the root of the iTwin.js Core repository for additional instructions.
 
 ### Questions and Advice
 

@@ -48,6 +48,7 @@ export * from "./appui-react/content/StageContentLayout";
 export * from "./appui-react/content/ViewportContentControl";
 export * from "./appui-react/content/IModelViewport";
 export * from "./appui-react/content/DefaultViewOverlay";
+export * from "./appui-react/content/split-pane/SplitPane";
 
 export * from "./appui-react/cursor/CursorInformation";
 export * from "./appui-react/cursor/cursorprompt/CursorPrompt";
@@ -226,11 +227,9 @@ export * from "./appui-react/ui-items-provider/StandardNavigationToolsProvider";
 export * from "./appui-react/ui-items-provider/StandardStatusbarItemsProvider";
 export * from "./appui-react/uiprovider/DefaultDialogGridContainer";
 
-export * from "./appui-react/uisettings/AppUiSettings";
-export * from "./appui-react/uisettings/UserSettingsStorage";
-export * from "./appui-react/uisettings/useUiSettings";
-
-export * from "./appui-react/UserInfo";
+export * from "./appui-react/uistate/AppUiSettings";
+export * from "./appui-react/uistate/UserSettingsStorage";
+export * from "./appui-react/uistate/useUiStateStorage";
 
 export * from "./appui-react/utils/ViewUtilities";
 export * from "./appui-react/utils/PropsHelper";
@@ -285,7 +284,7 @@ export * from "./appui-react/zones/ZoneDef";
 /** @docs-package-description
  * The ui-framework package contains classes and components for specifying the application UI consisting of the
  * Backstage, Frontstages, Content Views, Tool Bars, Status Bars, Widgets and Panels.
- * For more information, see [learning about ui-framework]($docs/learning/ui/framework/index.md).
+ * For more information, see [learning about appui-react]($docs/learning/ui/appui-react/index.md).
  */
 /**
  * @docs-group-description AccuDraw
@@ -316,10 +315,6 @@ export * from "./appui-react/zones/ZoneDef";
  * Classes for working with a dialog
  */
 /**
- * @docs-group-description DragDrop
- * Classes for managing DragDrop API drag layers
- */
-/**
  * @docs-group-description Frontstage
  * Classes for working with a Frontstage
  */
@@ -346,11 +341,6 @@ export * from "./appui-react/zones/ZoneDef";
 /**
  * @docs-group-description Notification
  * Classes for working with a Notification or Message
- */
-
-/**
- * @docs-group-description ChildWindow
- * Classes for working with child windows.
  */
 /**
  * @docs-group-description ChildWindowManager
@@ -398,14 +388,14 @@ export * from "./appui-react/zones/ZoneDef";
  */
 /**
  * @docs-group-description ToolSettings
- * Classes for working Tool Settings.  See learning documentation [Tool Settings]($docs/learning/ui/framework/toolsettings.md).
+ * Classes for working Tool Settings.  See learning documentation [Tool Settings]($docs/learning/ui/appui-react/toolsettings.md).
  */
 /**
  * @docs-group-description UiProvider
  * Interfaces and classes for specifying UI items to be inserted at runtime.
  */
 /**
- * @docs-group-description UiSettings
+ * @docs-group-description UiStateStorage
  * Interfaces and classes for persisting UI settings.
  */
 /**

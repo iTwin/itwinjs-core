@@ -35,14 +35,6 @@
       "allowedCategories": [ "internal" ]
     },
     {
-      "name": "@bentley/reality-data-client",
-      "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "@bentley/telemetry-client",
-      "allowedCategories": [ "backend", "frontend" ]
-    },
-    {
       "name": "@bentley/units-schema",
       "allowedCategories": [ "backend", "common" ]
     },
@@ -204,7 +196,7 @@
     },
     {
       "name": "@itwin/oidc-signin-tool",
-      "allowedCategories": [ "common", "integration-testing", "internal" ]
+      "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
       "name": "@itwin/perf-tools",
@@ -424,11 +416,11 @@
     },
     {
       "name": "dotenv",
-      "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "integration-testing", "internal" ]
     },
     {
       "name": "dotenv-expand",
-      "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "integration-testing", "internal" ]
     },
     {
       "name": "electron",
@@ -496,7 +488,7 @@
     },
     {
       "name": "express-ws",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "faker",
@@ -584,7 +576,7 @@
     },
     {
       "name": "internal-tools",
-      "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "integration-testing", "internal" ]
     },
     {
       "name": "istanbul-instrumenter-loader",
@@ -613,10 +605,6 @@
     {
       "name": "jsonc-parser",
       "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "jsonpath",
-      "allowedCategories": [ "common" ]
     },
     {
       "name": "linkify-it",
@@ -772,14 +760,10 @@
     },
     {
       "name": "react-select",
-      "allowedCategories": [ "extensions", "frontend", "internal" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "react-select-event",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
-      "name": "react-split-pane",
       "allowedCategories": [ "frontend" ]
     },
     {
@@ -789,10 +773,6 @@
     {
       "name": "react-test-renderer",
       "allowedCategories": [ "frontend", "internal" ]
-    },
-    {
-      "name": "react-virtualized",
-      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "react-window",
@@ -960,7 +940,7 @@
     },
     {
       "name": "yargs",
-      "allowedCategories": [ "common", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "internal", "tools" ]
     }
   ]
 }

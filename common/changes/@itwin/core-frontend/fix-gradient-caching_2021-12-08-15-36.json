@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix caching of gradient textures.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

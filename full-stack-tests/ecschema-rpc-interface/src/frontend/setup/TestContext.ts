@@ -13,6 +13,7 @@ import { getRpcInterfaces, Settings } from "../../common/Settings";
 import { getProcessEnvFromBackend } from "../../common/SideChannels";
 import { IModelSession } from "./IModelSession";
 import { BentleyCloudRpcManager, OpenAPIInfo } from "@itwin/core-common";
+import { IModelHubFrontend } from "@bentley/imodelhub-client";
 
 export class TestContext {
   public adminUserAccessToken!: AccessToken;
@@ -48,7 +49,7 @@ export class TestContext {
     // Print out the configuration
     console.log(this.settings.toString()); // eslint-disable-line
 
-    // Configure iModel.js frontend logging to go to the console
+    // Configure iTwin.js frontend logging to go to the console
     Logger.initializeToConsole();
     Logger.setLevelDefault(this.settings.logLevel === undefined ? LogLevel.Warning : this.settings.logLevel);
 
@@ -60,6 +61,7 @@ export class TestContext {
         clientId: this.settings.oidcClientId,
         redirectUri: this.settings.oidcRedirect,
         scope: this.settings.oidcScopes,
+        authority: this.settings.oidcAuthority,
       } as TestBrowserAuthorizationClientConfiguration);
     }
 
@@ -73,6 +75,7 @@ export class TestContext {
     await NoRenderApp.startup({
       applicationId: this.settings.gprid,
       authorizationClient: new TestFrontendAuthorizationClient(this.adminUserAccessToken),
+      hubAccess: new IModelHubFrontend(),
     });
 
     console.log("TestSetup: Done");  // eslint-disable-line

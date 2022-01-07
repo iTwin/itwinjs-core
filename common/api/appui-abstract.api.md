@@ -252,6 +252,34 @@ export abstract class BaseQuantityDescription implements PropertyDescription {
 }
 
 // @public
+export class BaseUiItemsProvider implements UiItemsProvider {
+    constructor(_providerId: string, isSupportedStage?: ((stageId: string, stageUsage: string, stageAppData?: any) => boolean) | undefined);
+    // (undocumented)
+    get id(): string;
+    // (undocumented)
+    isSupportedStage?: ((stageId: string, stageUsage: string, stageAppData?: any) => boolean) | undefined;
+    // (undocumented)
+    onUnregister(): void;
+    provideBackstageItems(): BackstageItem[];
+    // (undocumented)
+    protected _providerId: string;
+    // (undocumented)
+    provideStatusBarItems(stageId: string, stageUsage: string, stageAppData?: any): CommonStatusBarItem[];
+    // (undocumented)
+    provideStatusBarItemsInternal(_stageId: string, _stageUsage: string, _stageAppData?: any): CommonStatusBarItem[];
+    // (undocumented)
+    provideToolbarButtonItems(stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any): CommonToolbarItem[];
+    // (undocumented)
+    provideToolbarButtonItemsInternal(_stageId: string, _stageUsage: string, _toolbarUsage: ToolbarUsage, _toolbarOrientation: ToolbarOrientation, _stageAppData?: any): CommonToolbarItem[];
+    // (undocumented)
+    provideWidgets(stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection, _zoneLocation?: AbstractZoneLocation, stageAppData?: any): ReadonlyArray<AbstractWidgetProps>;
+    // (undocumented)
+    provideWidgetsInternal(_stageId: string, _stageUsage: string, _location: StagePanelLocation, _section?: StagePanelSection, _stageAppData?: any): AbstractWidgetProps[];
+    // (undocumented)
+    unregister(): void;
+}
+
+// @public
 export interface ButtonGroupEditorParams extends BasePropertyEditorParams {
     // (undocumented)
     buttons: IconDefinition[];
@@ -2031,6 +2059,25 @@ export class UiError extends BentleyError {
 }
 
 // @public
+export class UiEvent<TEventArgs> extends BeUiEvent<TEventArgs> {
+}
+
+// @public
+export class UiEventDispatcher {
+    constructor();
+    checkForAdditionalIds(): void;
+    dispatchImmediateSyncUiEvent(eventId: string): void;
+    dispatchSyncUiEvent(eventId: string): void;
+    dispatchSyncUiEvents(eventIds: string[]): void;
+    hasEventOfInterest(eventIds: Set<string>, idsOfInterest: string[]): boolean;
+    get onSyncUiEvent(): UiSyncEvent;
+    // @internal
+    setTimeoutPeriod(period: number): void;
+    get syncEventIds(): Set<string>;
+    get timeoutPeriod(): number;
+    }
+
+// @public
 export interface UiFlags {
     allowKeyinPalette?: boolean;
 }
@@ -2065,11 +2112,7 @@ export class UiItemsManager {
 // @public
 export interface UiItemsProvider {
     readonly id: string;
-    onBackstageItemArbiterChange?: (item: BackstageItem, action: UiItemsApplicationAction) => void;
-    onStatusBarItemArbiterChange?: (item: CommonStatusBarItem, action: UiItemsApplicationAction) => void;
-    onToolbarButtonItemArbiterChange?: (item: CommonToolbarItem, action: UiItemsApplicationAction) => void;
     onUnregister?: () => void;
-    onWidgetArbiterChange?: (widget: AbstractWidgetProps, action: UiItemsApplicationAction) => void;
     provideBackstageItems?: () => BackstageItem[];
     provideStatusBarItems?: (stageId: string, stageUsage: string, stageAppData?: any) => CommonStatusBarItem[];
     provideToolbarButtonItems?: (stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any) => CommonToolbarItem[];
@@ -2094,6 +2137,16 @@ export abstract class UiLayoutDataProvider extends UiDataProvider {
     reloadDialogItems(emitEvent?: boolean): void;
     get rows(): DialogRow[];
     supplyDialogItems(): DialogItem[] | undefined;
+}
+
+// @public
+export class UiSyncEvent extends UiEvent<UiSyncEventArgs> {
+}
+
+// @public
+export interface UiSyncEventArgs {
+    // (undocumented)
+    eventIds: Set<string>;
 }
 
 // @public

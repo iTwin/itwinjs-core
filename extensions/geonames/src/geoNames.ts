@@ -66,7 +66,7 @@ class GeoNameMarker extends Marker {
 
 class GeoNameMarkerSet extends MarkerSet<GeoNameMarker> {
   public override minimumClusterSize = 5;
-  protected getClusterMarker(cluster: Cluster<GeoNameMarker>): Marker { return Marker.makeFrom(cluster.markers[0], cluster, cluster.markers[0].image); }
+  protected getClusterMarker(cluster: Cluster<GeoNameMarker>): Marker { return new Marker(cluster.getClusterLocation(), cluster.markers[0].size,); }
 }
 
 export class GeoNameMarkerManager {

@@ -37,14 +37,13 @@ internal;CheckpointArg = DownloadRequest
 internal;CheckpointManager
 public;CheckpointProps 
 public;ClassRegistry
-beta;CloudSqlite
-beta;CloudSqlite
 beta;class CloudStorageService
 internal;CloudStorageTileUploader
 beta;CloudStorageUploadOptions
 public;CodeSpecs
 public;ComputedProjectExtents
 public;ComputeProjectExtentsOptions
+beta;ContainerNameOrId =
 alpha;CrashReportingConfig
 alpha;CrashReportingConfigNameValuePair
 beta;CreateChangeSummaryArgs 
@@ -93,7 +92,7 @@ public;ECSqlInsertResult
 public;ECSqlStatement 
 public;ECSqlValue
 public;ECSqlValueIterator 
-beta;EditableWorkspaceFile 
+beta;EditableWorkspaceDb 
 public;Element 
 public;ElementAspect 
 beta;ElementDrivesElement 
@@ -206,6 +205,8 @@ public;IpcHost
 public;IpcHostOpts
 public;ITwinIdArg
 internal;ITwinWorkspace 
+internal;ITwinWorkspaceContainer 
+beta;ITwinWorkspaceDb 
 public;KnownLocations
 internal;LightLocation 
 public;LineStyle 
@@ -356,9 +357,11 @@ beta;Workspace
 beta;WorkspaceContainer
 beta;WorkspaceContainerId = string
 beta;WorkspaceContainerName = string
-beta;WorkspaceContainerProps = WorkspaceContainerName |
-beta;WorkspaceContainerVersion = string
-beta;WorkspaceFile 
+beta;WorkspaceContainerProps = ContainerNameOrId &
+beta;WorkspaceDb
+beta;WorkspaceDbName = string
+beta;WorkspaceDbProps = WorkspaceContainerProps &
+beta;WorkspaceDbVersion = string
 beta;WorkspaceOpts
 beta;WorkspaceResourceName = string
-beta;WorkspaceResourceProps
+beta;WorkspaceResourceProps = WorkspaceDbProps &

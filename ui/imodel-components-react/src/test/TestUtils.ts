@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ColorByName } from "@itwin/core-common";
-import { ITwinLocalization } from "@itwin/core-i18n";
 import {
   ArrayValue, BasePropertyEditorParams, ButtonGroupEditorParams, ColorEditorParams, CustomFormattedNumberParams, DisplayMessageType,
   ImageCheckBoxParams, MessagePresenter, MessageSeverity, ParseResults,
@@ -17,18 +16,10 @@ import { UiIModelComponents } from "../imodel-components-react/UiIModelComponent
 
 /** @internal */
 export class TestUtils {
-  private static _i18n?: ITwinLocalization;
   private static _uiIModelComponentsInitialized = false;
-
-  public static get i18n(): ITwinLocalization {
-    return TestUtils._i18n!;
-  }
 
   public static async initializeUiIModelComponents() {
     if (!TestUtils._uiIModelComponentsInitialized) {
-      TestUtils._i18n = new ITwinLocalization();
-      await TestUtils._i18n.initialize(["IModelJs"]);
-
       await UiIModelComponents.initialize();
       TestUtils._uiIModelComponentsInitialized = true;
 

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Add Support for APIM RDS url to create RealityDataSourceKey from tilesetUrl",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

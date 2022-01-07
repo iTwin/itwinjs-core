@@ -10,7 +10,7 @@ import {
   assert, BeDuration, BeEvent, BentleyStatus, BeTimePoint, Id64Array, IModelStatus, ProcessDetector,
 } from "@itwin/core-bentley";
 import {
-  BackendError, CloudStorageTileCache, defaultTileOptions, ElementGraphicsRequestProps, getMaximumMajorTileFormatVersion, IModelError, IModelTileRpcInterface,
+  BackendError, CloudStorageTileCache, defaultTileOptions, EdgeType, ElementGraphicsRequestProps, getMaximumMajorTileFormatVersion, IModelError, IModelTileRpcInterface,
   IModelTileTreeProps, RpcOperation, RpcResponseCacheControl, ServerTimeoutError, TileContentSource, TileVersionInfo,
 } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
@@ -112,6 +112,7 @@ export class TileAdmin {
   private _defaultTileSizeModifier: number;
   private readonly _retryInterval: number;
   private readonly _enableInstancing: boolean;
+  private readonly _enableIndexedEdges: boolean;
   /** @internal */
   public readonly enableImprovedElision: boolean;
   /** @internal */
@@ -212,6 +213,7 @@ export class TileAdmin {
     this._defaultTileSizeModifier = (undefined !== options.defaultTileSizeModifier && options.defaultTileSizeModifier > 0) ? options.defaultTileSizeModifier : 1.0;
     this._retryInterval = undefined !== options.retryInterval ? options.retryInterval : 1000;
     this._enableInstancing = options.enableInstancing ?? defaultTileOptions.enableInstancing;
+    this._enableIndexedEdges = options.enableIndexedEdges ?? defaultTileOptions.enableIndexedEdges;
     this.enableImprovedElision = options.enableImprovedElision ?? defaultTileOptions.enableImprovedElision;
     this.ignoreAreaPatterns = options.ignoreAreaPatterns ?? defaultTileOptions.ignoreAreaPatterns;
     this.enableExternalTextures = options.enableExternalTextures ?? defaultTileOptions.enableExternalTextures;
@@ -280,6 +282,8 @@ export class TileAdmin {
 
   /** @internal */
   public get enableInstancing() { return this._enableInstancing && IModelApp.renderSystem.supportsInstancing; }
+  /** @internal */
+  public get enableIndexedEdges() { return this._enableIndexedEdges && IModelApp.renderSystem.supportsIndexedEdges; }
 
   /** Given a numeric combined major+minor tile format version (typically obtained from a request to the backend to query the maximum tile format version it supports),
    * return the maximum *major* format version to be used to request tile content from the backend.
@@ -629,6 +633,9 @@ export class TileAdmin {
    * @public
    */
   public async requestElementGraphics(iModel: IModelConnection, requestProps: ElementGraphicsRequestProps): Promise<Uint8Array | undefined> {
+    if (true !== requestProps.omitEdges && undefined === requestProps.edgeType)
+      requestProps = { ...requestProps, edgeType: this.enableIndexedEdges ? EdgeType.Indexed : EdgeType.NonIndexed };
+
     this.initializeRpc();
     const intfc = IModelTileRpcInterface.getClient();
     return intfc.requestElementGraphics(iModel.getRpcProps(), requestProps);
@@ -917,6 +924,13 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
      * Default value: true
      */
     enableInstancing?: boolean;
+
+    /** If true - and WebGL 2 is supported by the [[RenderSystem]] - when tiles containing edges are requested, request that they produce
+     * indexed edges to reduce tile size and GPU memory consumption.
+     *
+     * Default value: true
+     */
+    enableIndexedEdges?: boolean;
 
     /** If true, during tile generation the backend will perform tighter intersection tests to more accurately identify empty sub-volumes.
      * This can reduce the number of tiles requested and the number of tile requests that return no content.

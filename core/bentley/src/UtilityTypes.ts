@@ -13,6 +13,16 @@ export type Mutable<T> = {
   -readonly [K in keyof T]: T[K];
 };
 
+/** Make a new type from an existing type `T`, with set of required properties `K` optional.
+ * @public
+*/
+export type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
+
+/** Make a new type from an existing type `T`, with set of optional properties `K` required.
+ * @public
+*/
+export type MarkRequired<T, K extends keyof T> = Pick<Required<T>, K> & Omit<T, K>;
+
 /** Generically represents a class `T`, for use in type annotations.
  * @note A variable of type `Constructor<T>` matches a class `T` only if `T` has a **public** constructor.
  * @see [[asInstanceOf]] to attempt to cast an arbitrary value to class `T`.
@@ -87,3 +97,4 @@ export type AsyncMethodsOf<T> = { [P in keyof T]: T[P] extends AsyncFunction ? P
  * @public
  */
 export type PromiseReturnType<T extends AsyncFunction> = T extends (...args: any) => Promise<infer R> ? R : any;
+

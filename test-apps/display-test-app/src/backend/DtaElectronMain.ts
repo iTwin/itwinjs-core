@@ -39,8 +39,8 @@ class DtaHandler extends IpcHandler implements DtaIpcInterface {
 
 /**
  * This is the function that gets called when we start display-test-app via `electron DtaElectronMain.js` from the command line.
- * It runs in the Electron main process and hosts the iModeljs backend (IModelHost) code. It starts the render (frontend) process
- * that starts from the file "index.ts". That launches the iModel.js frontend (IModelApp).
+ * It runs in the Electron main process and hosts the iTwin.js backend (IModelHost) code. It starts the render (frontend) process
+ * that starts from the file "index.ts". That launches the iTwin.js frontend (IModelApp).
  */
 const dtaElectronMain = async () => {
   // Need to load the config first to get the electron options

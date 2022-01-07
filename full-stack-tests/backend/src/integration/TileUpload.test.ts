@@ -7,7 +7,7 @@ import * as zlib from "zlib";
 import * as Azure from "@azure/storage-blob";
 import { AccessToken, GuidString } from "@itwin/core-bentley";
 import {
-  BatchType, CloudStorageTileCache, ContentIdProvider, defaultTileOptions, IModelRpcProps, IModelTileRpcInterface, iModelTileTreeIdToString,
+  BatchType, CloudStorageTileCache, ContentIdProvider, defaultTileOptions, EdgeType, IModelRpcProps, IModelTileRpcInterface, iModelTileTreeIdToString,
   RpcManager, RpcRegistry, TileContentSource,
 } from "@itwin/core-common";
 import { GeometricModel3d, IModelDb, IModelHost, IModelHostConfiguration, RpcTrace } from "@itwin/core-backend";
@@ -35,7 +35,7 @@ export async function getTileProps(iModel: IModelDb): Promise<TileContentRequest
     if (model.isNotSpatiallyLocated || model.isTemplate)
       continue;
 
-    const treeId = iModelTileTreeIdToString(modelId, { type: BatchType.Primary, edgesRequired: false }, defaultTileOptions);
+    const treeId = iModelTileTreeIdToString(modelId, { type: BatchType.Primary, edges: EdgeType.None }, defaultTileOptions);
     const treeProps = await iModel.tiles.requestTileTreeProps(treeId);
     // Ignore empty tile trees.
     if (treeProps.rootTile.maximumSize === 0 && treeProps.rootTile.isLeaf === true)

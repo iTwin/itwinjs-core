@@ -1068,8 +1068,6 @@ export interface ClassifierTileTreeId {
     // (undocumented)
     animationId?: Id64String;
     // (undocumented)
-    animationTransformNodeId?: number;
-    // (undocumented)
     expansion: number;
     // (undocumented)
     type: BatchType.VolumeClassifier | BatchType.PlanarClassifier;
@@ -1745,9 +1743,9 @@ export class ContextRealityModel {
     protected _planarClipMask?: PlanarClipMaskSettings;
     get planarClipMaskSettings(): PlanarClipMaskSettings | undefined;
     set planarClipMaskSettings(settings: PlanarClipMaskSettings | undefined);
-    // (undocumented)
+    // @internal (undocumented)
     protected readonly _props: ContextRealityModelProps;
-    // @alpha
+    // @beta
     readonly rdSourceKey?: RealityDataSourceKey;
     readonly realityDataId?: string;
     toJSON(): ContextRealityModelProps;
@@ -1763,7 +1761,7 @@ export interface ContextRealityModelProps {
     // @alpha
     orbitGtBlob?: OrbitGtBlobProps;
     planarClipMask?: PlanarClipMaskProps;
-    // @alpha
+    // @beta
     rdSourceKey?: RealityDataSourceKey;
     realityDataId?: string;
     tilesetUrl: string;
@@ -1896,6 +1894,8 @@ export interface DbQueryRequest extends DbRequest, QueryOptions {
     args?: object;
     // (undocumented)
     query: string;
+    // (undocumented)
+    valueFormat?: DbValueFormat;
 }
 
 // @internal (undocumented)
@@ -1911,7 +1911,7 @@ export interface DbQueryResponse extends DbResponse {
 // @internal (undocumented)
 export interface DbRequest extends BaseReaderOptions {
     // (undocumented)
-    kind: DbRequestKind;
+    kind?: DbRequestKind;
 }
 
 // @internal (undocumented)
@@ -1957,13 +1957,25 @@ export enum DbResponseStatus {
     // (undocumented)
     Done = 1,
     // (undocumented)
-    Error = 0,
+    Error = 100,
+    // (undocumented)
+    Error_BlobIO_OpenFailed = 105,
+    // (undocumented)
+    Error_BlobIO_OutOfRange = 106,
+    // (undocumented)
+    Error_ECSql_BindingFailed = 104,
+    // (undocumented)
+    Error_ECSql_PreparedFailed = 101,
+    // (undocumented)
+    Error_ECSql_RowToJsonFailed = 103,
+    // (undocumented)
+    Error_ECSql_StepFailed = 102,
     // (undocumented)
     Partial = 3,
     // (undocumented)
     QueueFull = 5,
     // (undocumented)
-    TimeOut = 4
+    Timeout = 4
 }
 
 export { DbResult }
@@ -1980,6 +1992,14 @@ export interface DbRuntimeStats {
     timeLimit: number;
     // (undocumented)
     totalTime: number;
+}
+
+// @internal (undocumented)
+export enum DbValueFormat {
+    // (undocumented)
+    ECSqlNames = 0,
+    // (undocumented)
+    JsNames = 1
 }
 
 // @internal
@@ -2400,9 +2420,9 @@ export class ECSqlReader {
     // (undocumented)
     get done(): boolean;
     // (undocumented)
-    formatCurrentRow(format: QueryRowFormat): any[] | object;
+    formatCurrentRow(onlyReturnObject?: boolean): any[] | object;
     // (undocumented)
-    getMetaData(): QueryPropertyMetaData[];
+    getMetaData(): Promise<QueryPropertyMetaData[]>;
     // (undocumented)
     getRowInternal(): any[];
     // (undocumented)
@@ -2414,9 +2434,11 @@ export class ECSqlReader {
     // (undocumented)
     setParams(param: QueryBinder): void;
     // (undocumented)
+    get stats(): QueryStats;
+    // (undocumented)
     step(): Promise<boolean>;
     // (undocumented)
-    toArray(format: QueryRowFormat): Promise<any[]>;
+    toArray(): Promise<any[]>;
 }
 
 // @public
@@ -2493,6 +2515,13 @@ export class EdgeArgs {
     get isValid(): boolean;
     // (undocumented)
     get numEdges(): number;
+}
+
+// @alpha
+export enum EdgeType {
+    Indexed = 2,
+    None = 0,
+    NonIndexed = 1
 }
 
 // @internal
@@ -3291,7 +3320,7 @@ export class FrustumPlanes {
     // (undocumented)
     init(frustum: Frustum): void;
     // (undocumented)
-    intersectsFrustum(box: Frustum): boolean;
+    intersectsFrustum(box: Frustum, sphere?: BoundingSphere): boolean;
     // (undocumented)
     intersectsRay(origin: Point3d, direction: Vector3d): boolean;
     // (undocumented)
@@ -3456,6 +3485,18 @@ export class GeographicCRS implements GeographicCRSProps {
     readonly horizontalCRS?: HorizontalCRS;
     toJSON(): GeographicCRSProps;
     readonly verticalCRS?: VerticalCRS;
+}
+
+// @beta
+export interface GeographicCRSInterpretRequestProps {
+    format: "WKT" | "JSON";
+    geographicCRSDef: string;
+}
+
+// @beta
+export interface GeographicCRSInterpretResponseProps {
+    geographicCRS?: GeographicCRSProps;
+    status: number;
 }
 
 // @public
@@ -3721,6 +3762,21 @@ export function getMaximumMajorTileFormatVersion(maxMajorVersion: number, format
 
 export { GetMetaDataFunction }
 
+// @internal (undocumented)
+export class GlbHeader extends TileHeader {
+    constructor(stream: ByteStream);
+    // (undocumented)
+    readonly additionalChunks: TypedGltfChunk[];
+    // (undocumented)
+    readonly binaryChunk?: GltfChunk;
+    // (undocumented)
+    readonly gltfLength: number;
+    // (undocumented)
+    get isValid(): boolean;
+    // (undocumented)
+    readonly jsonChunk: GltfChunk;
+}
+
 // @public
 export enum GlobeMode {
     Ellipsoid = 0,
@@ -3728,122 +3784,9 @@ export enum GlobeMode {
 }
 
 // @internal
-export class GltfBufferData {
-    constructor(buffer: GltfDataBuffer, count: number);
-    // (undocumented)
-    readonly buffer: GltfDataBuffer;
-    // (undocumented)
-    readonly count: number;
-    static create(bytes: Uint8Array, actualType: GltfDataType, expectedType: GltfDataType, count: number): GltfBufferData | undefined;
-    }
-
-// @internal
-export class GltfBufferView {
-    constructor(data: Uint8Array, count: number, type: GltfDataType, accessor: any, stride: number);
-    // (undocumented)
-    readonly accessor: any;
-    // (undocumented)
-    get byteLength(): number;
-    // (undocumented)
-    readonly count: number;
-    // (undocumented)
-    readonly data: Uint8Array;
-    // (undocumented)
-    readonly stride: number;
-    // (undocumented)
-    toBufferData(desiredType: GltfDataType): GltfBufferData | undefined;
-    // (undocumented)
-    readonly type: GltfDataType;
-}
-
-// @internal (undocumented)
-export enum GltfConstants {
-    // (undocumented)
-    ArrayBuffer = 34962,
-    // (undocumented)
-    ClampToEdge = 33071,
-    // (undocumented)
-    CullFace = 2884,
-    // (undocumented)
-    DepthTest = 2929,
-    // (undocumented)
-    ElementArrayBuffer = 34963,
-    // (undocumented)
-    FragmentShader = 35632,
-    // (undocumented)
-    Linear = 9729,
-    // (undocumented)
-    LinearMipmapLinear = 9987,
-    // (undocumented)
-    Nearest = 9728,
-    // (undocumented)
-    VertexShader = 35633
-}
-
-// @internal (undocumented)
-export type GltfDataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array;
-
-// @internal (undocumented)
-export enum GltfDataType {
-    // (undocumented)
-    Float = 5126,
-    // (undocumented)
-    FloatMat3 = 35675,
-    // (undocumented)
-    FloatMat4 = 35676,
-    // (undocumented)
-    FloatVec2 = 35664,
-    // (undocumented)
-    FloatVec3 = 35665,
-    // (undocumented)
-    FloatVec4 = 35666,
-    // (undocumented)
-    IntVec2 = 35667,
-    // (undocumented)
-    IntVec3 = 35668,
-    // (undocumented)
-    Rgb = 6407,
-    // (undocumented)
-    Rgba = 6408,
-    // (undocumented)
-    Sampler2d = 35678,
-    // (undocumented)
-    SignedByte = 5120,
-    // (undocumented)
-    SignedShort = 5122,
-    // (undocumented)
-    UInt32 = 5125,
-    // (undocumented)
-    UnsignedByte = 5121,
-    // (undocumented)
-    UnsignedShort = 5123
-}
-
-// @internal
-export class GltfHeader extends TileHeader {
-    constructor(stream: ByteStream);
-    // (undocumented)
-    readonly binaryPosition: number;
-    // (undocumented)
-    readonly gltfLength: number;
-    // (undocumented)
-    get isValid(): boolean;
-    // (undocumented)
-    readonly scenePosition: number;
-    // (undocumented)
-    readonly sceneStrLength: number;
-}
-
-// @internal (undocumented)
-export enum GltfMeshMode {
-    // (undocumented)
-    Lines = 1,
-    // (undocumented)
-    LineStrip = 3,
-    // (undocumented)
-    Points = 0,
-    // (undocumented)
-    Triangles = 4
+export interface GltfChunk {
+    length: number;
+    offset: number;
 }
 
 // @internal (undocumented)
@@ -3965,6 +3908,8 @@ export interface GraphicsRequestProps {
     readonly clipToProjectExtents?: boolean;
     // @alpha
     readonly contentFlags?: ContentFlags;
+    // @internal
+    readonly edgeType?: EdgeType;
     // @alpha
     readonly formatVersion?: number;
     readonly id: string;
@@ -4490,6 +4435,8 @@ export abstract class IModel implements IModelProps {
     static getDefaultSubCategoryId(categoryId: Id64String): Id64String;
     getEcefTransform(): Transform;
     getRpcProps(): IModelRpcProps;
+    // @internal
+    protected _getRpcProps(): IModelRpcProps;
     get globalOrigin(): Point3d;
     set globalOrigin(org: Point3d);
     get iModelId(): GuidString | undefined;
@@ -4683,6 +4630,9 @@ export interface IModelTileTreeProps extends TileTreeProps {
     geometryGuid?: GuidString;
     maxInitialTilesToSkip?: number;
     tileScreenSize?: number;
+    transformNodeRanges?: Array<Range3dProps & {
+        id: number;
+    }>;
 }
 
 // @public
@@ -4890,11 +4840,29 @@ export interface IpcWebSocketMessage {
     // (undocumented)
     response?: number;
     // (undocumented)
+    sequence: number;
+    // (undocumented)
     type: IpcWebSocketMessageType;
 }
 
 // @internal (undocumented)
+export namespace IpcWebSocketMessage {
+    // (undocumented)
+    export function duplicate(): IpcWebSocketMessage;
+    // (undocumented)
+    export function internal(): IpcWebSocketMessage;
+    // (undocumented)
+    export function next(): number;
+    // (undocumented)
+    export function skip(message: IpcWebSocketMessage): boolean;
+}
+
+// @internal (undocumented)
 export enum IpcWebSocketMessageType {
+    // (undocumented)
+    Duplicate = 5,
+    // (undocumented)
+    Internal = 4,
     // (undocumented)
     Invoke = 2,
     // (undocumented)
@@ -4908,7 +4876,13 @@ export enum IpcWebSocketMessageType {
 // @internal (undocumented)
 export abstract class IpcWebSocketTransport {
     // (undocumented)
+    protected notifyIncoming(data: any): Promise<IpcWebSocketMessage>;
+    // (undocumented)
     abstract send(message: IpcWebSocketMessage): void;
+    // (undocumented)
+    protected serialize(data: IpcWebSocketMessage): any[];
+    // (undocumented)
+    protected unwrap(data: any): any;
 }
 
 // @internal
@@ -6176,8 +6150,7 @@ export interface PositionalVectorTransformProps {
 // @internal
 export interface PrimaryTileTreeId {
     animationId?: Id64String;
-    animationTransformNodeId?: number;
-    edgesRequired: boolean;
+    edges: EdgeType;
     enforceDisplayPriority?: boolean;
     sectionCut?: string;
     type: BatchType.Primary;
@@ -6557,6 +6530,7 @@ export interface QueryOptions extends BaseReaderOptions {
     convertClassIdsToClassNames?: boolean;
     includeMetaData?: boolean;
     limit?: QueryLimit;
+    rowFormat?: QueryRowFormat;
     suppressLogErrors?: boolean;
 }
 
@@ -6578,6 +6552,8 @@ export class QueryOptionsBuilder {
     // (undocumented)
     setRestartToken(val: string): this;
     // (undocumented)
+    setRowFormat(val: QueryRowFormat): this;
+    // (undocumented)
     setSuppressLogErrors(val: boolean): this;
     // (undocumented)
     setUsePrimaryConnection(val: boolean): this;
@@ -6588,6 +6564,8 @@ export interface QueryPropertyMetaData {
     // (undocumented)
     className: string;
     // (undocumented)
+    extendType: string;
+    // (undocumented)
     generated: boolean;
     // (undocumented)
     index: number;
@@ -6595,8 +6573,6 @@ export interface QueryPropertyMetaData {
     jsonName: string;
     // (undocumented)
     name: string;
-    // (undocumented)
-    system: boolean;
     // (undocumented)
     typeName: string;
 }
@@ -6609,9 +6585,9 @@ export interface QueryQuota {
 
 // @public
 export enum QueryRowFormat {
-    UseArrayIndexes = 2,
+    UseECSqlPropertyIndexes = 1,
     UseECSqlPropertyNames = 0,
-    UseJsPropertyNames = 1
+    UseJsPropertyNames = 2
 }
 
 // @beta (undocumented)
@@ -6625,9 +6601,23 @@ export interface QueryRowProxy {
     // (undocumented)
     toArray(): QueryValueType[];
     // (undocumented)
-    toJsRow(): any;
-    // (undocumented)
     toRow(): any;
+}
+
+// @beta (undocumented)
+export interface QueryStats {
+    // (undocumented)
+    backendCpuTime: number;
+    // (undocumented)
+    backendMemUsed: number;
+    // (undocumented)
+    backendRowsReturned: number;
+    // (undocumented)
+    backendTotalTime: number;
+    // (undocumented)
+    retryCount: number;
+    // (undocumented)
+    totalTime: number;
 }
 
 // @beta (undocumented)
@@ -6672,13 +6662,18 @@ export interface RealityDataAccess {
     getRealityDataUrl: (iTwinId: string | undefined, realityDataId: string) => Promise<string>;
 }
 
-// @alpha
+// @beta
 export enum RealityDataFormat {
     OPC = "OPC",
     ThreeDTile = "ThreeDTile"
 }
 
-// @alpha
+// @beta
+export namespace RealityDataFormat {
+    export function fromUrl(tilesetUrl: string): RealityDataFormat;
+}
+
+// @beta
 export enum RealityDataProvider {
     CesiumIonAsset = "CesiumIonAsset",
     ContextShare = "ContextShare",
@@ -6686,7 +6681,7 @@ export enum RealityDataProvider {
     TilesetUrl = "TilesetUrl"
 }
 
-// @alpha
+// @beta
 export interface RealityDataSourceKey {
     format: string;
     id: string;
@@ -6694,7 +6689,13 @@ export interface RealityDataSourceKey {
     provider: string;
 }
 
-// @alpha
+// @beta
+export namespace RealityDataSourceKey {
+    export function convertToString(rdSourceKey: RealityDataSourceKey): string;
+    export function isEqual(key1: RealityDataSourceKey, key2: RealityDataSourceKey): boolean;
+}
+
+// @beta
 export interface RealityDataSourceProps {
     sourceKey: RealityDataSourceKey;
 }
@@ -6940,6 +6941,8 @@ export namespace RenderSchedule {
         readonly requiresBatching: boolean;
         // (undocumented)
         toJSON(): ScriptProps;
+        // @internal
+        readonly transformBatchIds: ReadonlySet<number>;
     }
     export class ScriptBuilder {
         addModelTimeline(modelId: Id64String): ModelTimelineBuilder;
@@ -8574,6 +8577,7 @@ export interface TextureData {
     bytes: Uint8Array;
     format: ImageSourceFormat;
     height: number;
+    transparency?: TextureTransparency;
     width: number;
 }
 
@@ -8676,6 +8680,13 @@ export interface TextureProps extends DefinitionElementProps {
 }
 
 // @public
+export enum TextureTransparency {
+    Mixed = 2,
+    Opaque = 0,
+    Translucent = 1
+}
+
+// @public
 export class ThematicDisplay {
     readonly axis: Vector3d;
     readonly displayMode: ThematicDisplayMode;
@@ -8768,6 +8779,7 @@ export class ThematicGradientSettings {
     clone(changedProps?: ThematicGradientSettingsProps): ThematicGradientSettings;
     readonly colorMix: number;
     readonly colorScheme: ThematicGradientColorScheme;
+    static compare(lhs: ThematicGradientSettings, rhs: ThematicGradientSettings): number;
     // (undocumented)
     static get contentMax(): number;
     // (undocumented)
@@ -8906,6 +8918,8 @@ export interface TileOptions {
     readonly enableExternalTextures: boolean;
     // (undocumented)
     readonly enableImprovedElision: boolean;
+    // (undocumented)
+    readonly enableIndexedEdges: boolean;
     // (undocumented)
     readonly enableInstancing: boolean;
     // (undocumented)
@@ -9150,6 +9164,11 @@ export interface TypeDefinitionElementProps extends DefinitionElementProps {
     recipe?: RelatedElementProps;
 }
 
+// @internal
+export type TypedGltfChunk = GltfChunk & {
+    type: number;
+};
+
 // @public
 export enum TypeOfChange {
     Geometry = 2,
@@ -9341,6 +9360,8 @@ export interface ViewFlagProps {
     shadows?: boolean;
     thematicDisplay?: boolean;
     visEdges?: boolean;
+    // @beta
+    wiremesh?: boolean;
 }
 
 // @public
@@ -9383,6 +9404,8 @@ export class ViewFlags {
     readonly visibleEdges: boolean;
     readonly weights: boolean;
     readonly whiteOnWhiteReversal: boolean;
+    // @beta
+    readonly wiremesh: boolean;
     with(flag: keyof Omit<ViewFlagsProperties, "renderMode">, value: boolean): ViewFlags;
     withRenderMode(renderMode: RenderMode): ViewFlags;
 }

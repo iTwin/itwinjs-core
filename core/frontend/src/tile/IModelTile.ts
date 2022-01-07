@@ -101,7 +101,7 @@ export class IModelTile extends Tile {
       isCanceled = () => !this.isLoading;
 
     assert(data instanceof Uint8Array);
-    const streamBuffer = new ByteStream(data.buffer);
+    const streamBuffer = ByteStream.fromUint8Array(data);
 
     const position = streamBuffer.curPos;
     const format = streamBuffer.nextUint32;
@@ -113,8 +113,16 @@ export class IModelTile extends Tile {
       return content;
 
     const tree = this.iModelTree;
-    const mult = this.hasSizeMultiplier ? this.sizeMultiplier : undefined;
-    const reader = ImdlReader.create(streamBuffer, tree.iModel, tree.modelId, tree.is3d, system, tree.batchType, tree.hasEdges, isCanceled, mult, { tileId: this.contentId });
+    const sizeMultiplier = this.hasSizeMultiplier ? this.sizeMultiplier : undefined;
+    const { iModel, modelId, is3d, containsTransformNodes } = tree;
+    const reader = ImdlReader.create({
+      stream: streamBuffer,
+      type: tree.batchType,
+      loadEdges: tree.hasEdges,
+      options: { tileId: this.contentId },
+      iModel, modelId, is3d, system, isCanceled, sizeMultiplier, containsTransformNodes,
+    });
+
     if (undefined !== reader) {
       try {
         content = await reader.read();

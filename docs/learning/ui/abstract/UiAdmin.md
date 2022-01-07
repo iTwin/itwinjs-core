@@ -13,7 +13,7 @@ The [UiAdmin]($appui-abstract) class contains an API used to display the followi
 - Dialog
 - HTML element
 
-The UiAdmin methods are callable from `IModelApp.uiAdmin` in the imodeljs-frontend package.
+The UiAdmin methods are callable from `IModelApp.uiAdmin` in the `@itwin/core-frontend` package.
 
 ## API Functions
 

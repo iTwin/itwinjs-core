@@ -67,8 +67,14 @@
     "TogglePathDecoration": {
       "keyin": "dta path decoration"
     },
+    "AddGltfDecoration": {
+      "keyin": "dta gltf"
+    },
     "ShutDown": {
       "keyin": "dta shutdown"
+    },
+    "Exit": {
+      "keyin": "dta exit"
     },
     "SignIn": {
       "keyin": "dta signin"
@@ -141,6 +147,9 @@
     },
     "GenerateTileContent": {
       "keyin": "dta gen tile"
+    },
+    "Macro": {
+      "keyin": "dta macro"
     }
   }
 }

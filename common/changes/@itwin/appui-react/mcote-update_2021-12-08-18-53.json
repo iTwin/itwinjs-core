@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "updated @itwin/browser-authorization to 0.3.1",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}

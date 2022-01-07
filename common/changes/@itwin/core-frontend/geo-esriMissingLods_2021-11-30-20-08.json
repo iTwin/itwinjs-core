@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix issue that would prevent higher resolutions tiles to be fetch from ArcGIS server.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

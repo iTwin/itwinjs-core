@@ -14,7 +14,6 @@ import {
 } from "@itwin/presentation-common";
 import { Presentation, PresentationManager, RulesetManager } from "@itwin/presentation-frontend";
 import { ContentBuilder, IContentBuilderDataProvider } from "../presentation-testing/ContentBuilder";
-import { QueryRowFormat } from "@itwin/core-common";
 
 use(ChaiAsPromised);
 
@@ -228,7 +227,7 @@ describe("ContentBuilder", () => {
     before(() => {
       imodelMock.reset();
       const f = createQueryFunc(testInstances);
-      imodelMock.setup((imodel) => imodel.query(moq.It.isAny(), moq.It.isAny(), QueryRowFormat.UseJsPropertyNames, moq.It.isAny())).returns(f);
+      imodelMock.setup((imodel) => imodel.query(moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).returns(f);
     });
 
     it("returns all required instances with empty records", async () => {
@@ -270,7 +269,7 @@ describe("ContentBuilder", () => {
 
       it("returns all required instances with empty records", async () => {
         imodelMock.reset();
-        imodelMock.setup((imodel) => imodel.query(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).returns(createQueryFunc(testInstances));
+        imodelMock.setup((imodel) => imodel.query(moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).returns(createQueryFunc(testInstances));
 
         const verificationSpy = sinon.spy();
 
@@ -294,7 +293,7 @@ describe("ContentBuilder", () => {
 
       it("throws when id query throws an unexpected error", async () => {
         imodelMock.reset();
-        imodelMock.setup((imodel) => imodel.query(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).returns(createThrowingQueryFunc(testInstances));
+        imodelMock.setup((imodel) => imodel.query(moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).returns(createThrowingQueryFunc(testInstances));
 
         const verificationSpy = sinon.spy();
 
@@ -312,7 +311,7 @@ describe("ContentBuilder", () => {
 
       before(() => {
         imodelMock.reset();
-        imodelMock.setup((imodel) => imodel.query(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).returns(createQueryFunc(testInstances));
+        imodelMock.setup((imodel) => imodel.query(moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).returns(createQueryFunc(testInstances));
       });
 
       it("returns an empty list", async () => {

@@ -5,7 +5,7 @@
 import { TestRunner, TestSetsProps } from "./TestRunner";
 import { ProcessDetector } from "@itwin/core-bentley";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
-import { ElectronAppAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronFrontend";
+import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
 import {
   BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, RpcConfiguration, SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
@@ -24,10 +24,15 @@ class MarkerHandler extends SectionMarkerHandler {
 export class DisplayPerfTestApp {
   public static async startup(iModelApp?: IModelAppOptions): Promise<void> {
     iModelApp = iModelApp ?? {};
-    iModelApp.tileAdmin = {
-      minimumSpatialTolerance: 0,
-      cesiumIonKey: process.env.IMJS_CESIUM_ION_KEY,
-    };
+    if (iModelApp.tileAdmin === undefined) {
+      iModelApp.tileAdmin = {
+        minimumSpatialTolerance: 0,
+        cesiumIonKey: process.env.IMJS_CESIUM_ION_KEY,
+      };
+    } else {
+      iModelApp.tileAdmin.minimumSpatialTolerance = 0;
+      iModelApp.tileAdmin.cesiumIonKey = process.env.IMJS_CESIUM_ION_KEY;
+    }
 
     /* eslint-disable @typescript-eslint/naming-convention */
     iModelApp.mapLayerOptions = {
@@ -57,9 +62,9 @@ export class DisplayPerfTestApp {
   }
 }
 
-async function createOidcClient(): Promise<ElectronAppAuthorization | BrowserAuthorizationClient> {
+async function createOidcClient(): Promise<ElectronRendererAuthorization | BrowserAuthorizationClient> {
   if (ProcessDetector.isElectronAppFrontend) {
-    const desktopClient = new ElectronAppAuthorization();
+    const desktopClient = new ElectronRendererAuthorization();
     return desktopClient;
   } else {
     const oidcConfiguration: BrowserAuthorizationClientConfiguration = {

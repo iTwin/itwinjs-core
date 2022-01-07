@@ -1,7 +1,7 @@
 {
   "name": "@itwin/core-i18n",
-  "version": "3.0.0-dev.128",
-  "description": "iModel.js localization code",
+  "version": "3.0.0-dev.177",
+  "description": "iTwin.js localization code",
   "main": "lib/cjs/core-i18n.js",
   "module": "lib/esm/core-i18n.js",
   "typings": "lib/cjs/core-i18n",
@@ -33,7 +33,7 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.128"
+    "@itwin/core-bentley": "workspace:^3.0.0-dev.177"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",

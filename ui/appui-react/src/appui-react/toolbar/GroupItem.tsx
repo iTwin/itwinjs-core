@@ -9,7 +9,7 @@
 import classnames from "classnames";
 import * as React from "react";
 import { Logger } from "@itwin/core-bentley";
-import { BadgeType, ConditionalStringValue, OnItemExecutedFunc, SpecialKey, StringGetter } from "@itwin/appui-abstract";
+import { BadgeType, ConditionalStringValue, OnItemExecutedFunc, SpecialKey, StringGetter, UiSyncEventArgs } from "@itwin/appui-abstract";
 import { BadgeUtilities, CommonProps, Icon, IconSpec, SizeProps, withOnOutsideClick } from "@itwin/core-react";
 import {
   Direction, ExpandableItem, GroupColumn, GroupTool, GroupToolExpander, Item, NestedGroup as NestedToolGroupComponent, ToolbarDirectionContext,
@@ -23,7 +23,7 @@ import { AnyItemDef } from "../shared/AnyItemDef";
 import { GroupItemProps } from "../shared/GroupItemProps";
 import { BaseItemState, ItemDefBase } from "../shared/ItemDefBase";
 import { ItemList, ItemMap } from "../shared/ItemMap";
-import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
+import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";
 import { PropsHelper } from "../utils/PropsHelper";
 import { ToolbarDragInteractionContext } from "./DragInteraction";
@@ -210,7 +210,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
     }
   }
 
-  private _handleSyncUiEvent = (args: SyncUiEventArgs): void => {
+  private _handleSyncUiEvent = (args: UiSyncEventArgs): void => {
     // istanbul ignore next
     if (this._componentUnmounting) return;
     let refreshState = false;

@@ -564,9 +564,11 @@ export abstract class Viewport implements IDisposable {
     this.displayStyle.settings.clipStyle = style;
   }
 
-  /** The number of [antialiasing](https://en.wikipedia.org/wiki/Multisample_anti-aliasing) samples to be used when rendering the contents of the viewport.
-   * Must be an integer greater than zero. A value of 1 means antialiasing is disabled. A higher number of samples correlates generally to a higher quality image but
-   * is also more demanding on the graphics hardware.
+  /** Sets the number of [MSAA]($docs/learning/display/MSAA.md) samples for this viewport.
+   * The number of samples is a power of two. Values of 1 or less indicates anti-aliasing should be disabled. Non-power-of-two values are rounded
+   * down to the nearest power of two. The maximum number of samples supported depends upon the client's graphics hardware capabilities. Higher values produce
+   * a higher-quality image but also may also reduce framerate.
+   * @see [[ViewManager.setAntialiasingAllViews]] to adjust the number of samples for all viewports.
    */
   public get antialiasSamples(): number {
     return undefined !== this._target ? this._target.antialiasSamples : 1;
@@ -966,7 +968,7 @@ export abstract class Viewport implements IDisposable {
     this.registerDisplayStyleListeners(this.view.displayStyle);
     this.registerViewListeners();
     this.view.attachToViewport(this);
-    this._mapTiledGraphicsProvider = new MapTiledGraphicsProvider(this);
+    this._mapTiledGraphicsProvider = new MapTiledGraphicsProvider(this.viewportId, this.displayStyle);
   }
 
   private registerViewListeners(): void {
@@ -990,7 +992,7 @@ export abstract class Viewport implements IDisposable {
       this.invalidateRenderPlan();
 
       this.detachFromDisplayStyle();
-      this._mapTiledGraphicsProvider = new MapTiledGraphicsProvider(this);
+      this._mapTiledGraphicsProvider = new MapTiledGraphicsProvider(this.viewportId, newStyle);
       this.registerDisplayStyleListeners(newStyle);
     }));
 
@@ -1980,6 +1982,11 @@ export abstract class Viewport implements IDisposable {
   public setAnimator(animator?: Animator) {
     this._animator?.interrupt();
     this._animator = animator;
+
+    // Immediately invoke the animator to set up the initial frustum.
+    // This is important for TwoWayViewportSync; otherwise, the synced viewport will have its frustum set to the final frustum,
+    // producing a flicker to that frustum during the first frame of animation.
+    this.animate();
   }
 
   /** Used strictly by TwoWayViewportSync to change the reactive viewport's view to a clone of the active viewport's ViewState.
@@ -2197,6 +2204,11 @@ export abstract class Viewport implements IDisposable {
     this._renderPlanValid = true;
   }
 
+  private animate(): void {
+    if (this._animator?.animate())
+      this._animator = undefined; // animation completed.
+  }
+
   /** Renders the contents of this viewport. This method performs only as much work as necessary based on what has changed since
    * the last frame. If nothing has changed since the last frame, nothing is rendered.
    * @note This method should almost never be invoked directly - it is invoked on your behalf by [[ViewManager]]'s render loop.
@@ -2217,8 +2229,7 @@ export abstract class Viewport implements IDisposable {
 
     this._frameStatsCollector.beginTime("animationTime");
     // if any animation is active, perform it now
-    if (this._animator && this._animator.animate())
-      this._animator = undefined; // animation completed
+    this.animate();
     this._frameStatsCollector.endTime("animationTime");
 
     let isRedrawNeeded = this._redrawPending || this._doContinuousRendering;
@@ -2780,7 +2791,7 @@ export class ScreenViewport extends Viewport {
     return div;
   }
 
-  /** The HTMLImageElement of the iModel.js logo displayed in this ScreenViewport
+  /** The HTMLImageElement of the iTwin.js logo displayed in this ScreenViewport
    * @beta
    */
   public get logo() { return this._logo; }
@@ -2788,7 +2799,7 @@ export class ScreenViewport extends Viewport {
   /** @internal */
   protected addLogo() {
     const logo = this._logo = IModelApp.makeHTMLElement("img", { parent: this.vpDiv, className: "imodeljs-icon" });
-    logo.src = "images/imodeljs-icon.svg";
+    logo.src = `${IModelApp.publicPath}images/imodeljs-icon.svg`;
     logo.alt = "";
 
     const showLogos = (ev: Event) => {
