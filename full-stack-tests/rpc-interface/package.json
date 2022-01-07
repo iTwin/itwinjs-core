@@ -33,7 +33,10 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/imodelhub-client": "workspace:*",
+    "@itwin/imodels-access-backend": "~0.3.0",
+    "@itwin/imodels-access-frontend": "~0.3.0",
+    "@itwin/imodels-client-authoring": "~0.3.0",
+    "@itwin/imodels-client-management": "~0.3.0",
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
@@ -57,6 +60,7 @@
   "devDependencies": {
     "@itwin/core-backend": "workspace:*",
     "@itwin/express-server": "workspace:*",
+    "@itwin/imodels-access-backend": "~0.3.0",
     "@itwin/presentation-backend": "workspace:*",
     "@itwin/projects-client": "^0.3.0",
     "@types/chai": "^4.1.4",

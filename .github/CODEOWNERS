@@ -19,7 +19,6 @@
 rush.json       @iTwin/itwinjs-core-admins
 
 /clients                        @calebmshafer @ramanujam-raman
-/clients/imodelhub              @amikoliunas @Animagne
 
 # The syntax used below tries to cover both files and folders in the common folder that operate per=package
 # Due to syntax requirements, both can't be covered in a single line
@@ -40,8 +39,6 @@ rush.json       @iTwin/itwinjs-core-admins
 # Covers most client libraries, all others with more specific reviewers should be after these two lines
 /common/**/*-client.*                         @calebmshafer @ramanujam-raman
 /common/**/*-client/                          @calebmshafer @ramanujam-raman
-/common/**/imodelhub-client.*                 @amikoliunas @Animagne
-/common/**/imodelhub-client/                  @amikoliunas @Animagne
 
 /common/**/*-extension/                       @bsteinbk @calebmshafer
 
@@ -141,7 +138,6 @@ rush.json       @iTwin/itwinjs-core-admins
 
 /full-stack-tests/core                @iTwin/itwinjs-core-admins
 /full-stack-tests/ecschema-rpc-interface @calebmshafer @ColinKerr @wgoehrig
-/full-stack-tests/imodelhub-client    @iTwin/itwinjs-core-admins
 /full-stack-tests/presentation  @iTwin/itwinjs-core-presentation
 /full-stack-tests/rpc           @calebmshafer @wgoehrig @swbsi
 /full-stack-tests/rpc-interface @calebmshafer @wgoehrig
