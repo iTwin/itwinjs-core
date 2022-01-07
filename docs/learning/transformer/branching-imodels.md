@@ -63,7 +63,33 @@ iModels and submitting a changeset to one of them, *synchronizing* them.
 Synchronization logic is implemented by the [IModelTransformer]($transformer), which can be configured to perform each type of
 synchronization, as shown in the samples below.
 
-## Synchronization Examples
+### Squashing changesets
+
+In the above diagram, the synchronizations occur after several changesets, which *squashes* them all into one new changeset in
+the branch. Alternatively, it is possible to run a synchronization per changeset in the source of the synchronization, to keep
+the history intact.
+
+### Conflicts during synchronization
+
+When two elements are detected as the same, the synchronization target's version will be updated to match. As such, it is up to
+the user of the transformer to check whether the element has been changed in both and handle any perceived conflicts.
+any determined conflicts.
+Some data in the iModel follows more specific rules for merging:
+
+- [EC Schemas](/FIXME) are never merged automatically, they will not be inserted into the target if such a version already exists in it
+  If you need schema merging (see [dynamic schemas](/docs/bis/intro/schema-customization.md#Dynamic-Schema-Minor-Change-Considerations))
+- [File properties](/FIXME)
+
+Others must be manually implemented with a custom transformer subclass.
+Schemas for instance are not merged by the transformer, the transformer will not attempt to insert or diff schemas of the same version
+between a source and target. This can happen in the case of [dynamic schemas](/FIXME).
+
+Objects not merged by the transformer:
+
+- file properties
+- schemas
+
+## Synchronization examples
 
 ### Creating a branch (First Synchronization)
 
@@ -180,6 +206,12 @@ await masterDb.pushChanges({
   description,
 });
 ```
+
+### Complete synchronization examples
+
+More in depth samples exist in the tests for the `@itwin/core-transformer` package, and are replicated here.
+
+// FIXME use the [[include:]] directive to include some examples from tests rather than linking to it
 
 For more in depth examples, you can read some of the "branch" tests [here](https://github.com/iTwin/itwinjs-core/blob/master/core/transformer/src/test/standalone/IModelTransformerHub.test.ts)
 in the iTwin.js source repository.
