@@ -138,7 +138,7 @@ export class ViewCreator3d {
     };
 
     const cameraData = new Camera();
-    const cameraOn = options?.cameraOn ? options.cameraOn : false;
+    const cameraOn = options?.cameraOn !== false;
     const viewDefinitionProps: ViewDefinition3dProps = {
       categorySelectorId: "",
       displayStyleId: "",
