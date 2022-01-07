@@ -84,7 +84,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
       this._selectITwin(iTwins[0]);  // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
-  public async getIModels(iTwinId: string, top: number, skip: number): Promise<IModelInfo[]> {
+  public async getIModels(iTwinId: string, top: number): Promise<IModelInfo[]> {
 
     const accessToken = await IModelApp.getAccessToken();
     const authorization = AccessTokenAdapter.toAuthorizationCallback(accessToken);
@@ -97,7 +97,6 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
       for await (const imodel of SampleAppIModelApp.hubClient?.iModels.getRepresentationList({
         urlParams: {
           projectId: iTwinId,
-          $skip: skip,
           $top: top,
         },
         authorization,
@@ -124,7 +123,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
       isLoadingITwins: false,
       currentITwin: iTwin,
     }, async () => {
-      const iModelInfos = await this.getIModels(iTwin.id, 80, 0);
+      const iModelInfos = await this.getIModels(iTwin.id, 80);
       this.setState({
         isLoadingIModels: false,
         iModels: iModelInfos,
