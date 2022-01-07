@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix flickering with TwoWayViewportSync when one of the viewport's frustum is animated.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
