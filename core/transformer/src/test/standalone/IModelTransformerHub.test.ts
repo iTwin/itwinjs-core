@@ -16,8 +16,8 @@ import { Code, ColorDef, IModel, IModelVersion, PhysicalElementProps, SubCategor
 import { Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { IModelExporter, IModelTransformer, TransformerLoggerCategory } from "../../core-transformer";
 import {
-  CountingIModelImporter, IModelToTextFileExporter, IModelTransformerTestUtils, TestIModelTransformer,
-  TransformerExtensiveTestScenario as TransformerExtensiveTestScenario,
+  CountingIModelImporter, exists, IModelToTextFileExporter, IModelTransformerTestUtils,
+  TestIModelTransformer, TransformerExtensiveTestScenario as TransformerExtensiveTestScenario,
 } from "../IModelTransformerUtils";
 
 describe("IModelTransformerHub", () => {
@@ -93,8 +93,9 @@ describe("IModelTransformerHub", () => {
         const sourceExporter = new IModelToTextFileExporter(sourceDb, sourceExportFileName);
         await sourceExporter.exportChanges(accessToken);
         assert.isTrue(IModelJsFs.existsSync(sourceExportFileName));
-        const sourceDbChanges: any = (sourceExporter.exporter as any)._sourceDbChanges; // access private member for testing purposes
-        assert.exists(sourceDbChanges);
+        // eslint-disable-next-line dot-notation
+        const sourceDbChanges = sourceExporter["_sourceDbChanges"]; // access private member for testing purposes
+        exists(sourceDbChanges);
         // expect inserts and 1 update from populateSourceDb
         assert.isAtLeast(sourceDbChanges.codeSpec.insertIds.size, 1);
         assert.isAtLeast(sourceDbChanges.element.insertIds.size, 1);
@@ -127,8 +128,9 @@ describe("IModelTransformerHub", () => {
         const targetExporter = new IModelToTextFileExporter(targetDb, targetExportFileName);
         await targetExporter.exportChanges(accessToken);
         assert.isTrue(IModelJsFs.existsSync(targetExportFileName));
-        const targetDbChanges: any = (targetExporter.exporter as any)._sourceDbChanges; // access private member for testing purposes
-        assert.exists(targetDbChanges);
+        // eslint-disable-next-line dot-notation
+        const targetDbChanges = targetExporter["_sourceDbChanges"]; // access private member for testing purposes
+        exists(targetDbChanges);
         // expect inserts and a few updates from transforming the result of populateSourceDb
         assert.isAtLeast(targetDbChanges.codeSpec.insertIds.size, 1);
         assert.isAtLeast(targetDbChanges.element.insertIds.size, 1);
@@ -185,8 +187,9 @@ describe("IModelTransformerHub", () => {
         const sourceExporter = new IModelToTextFileExporter(sourceDb, sourceExportFileName);
         await sourceExporter.exportChanges(accessToken);
         assert.isTrue(IModelJsFs.existsSync(sourceExportFileName));
-        const sourceDbChanges: any = (sourceExporter.exporter as any)._sourceDbChanges; // access private member for testing purposes
-        assert.exists(sourceDbChanges);
+        // eslint-disable-next-line dot-notation
+        const sourceDbChanges = sourceExporter["_sourceDbChanges"]; // access private member for testing purposes
+        exists(sourceDbChanges);
         // expect some inserts from updateDb
         assert.equal(sourceDbChanges.codeSpec.insertIds.size, 0);
         assert.equal(sourceDbChanges.element.insertIds.size, 1);
@@ -220,7 +223,8 @@ describe("IModelTransformerHub", () => {
         const targetExporter = new IModelToTextFileExporter(targetDb, targetExportFileName);
         await targetExporter.exportChanges(accessToken);
         assert.isTrue(IModelJsFs.existsSync(targetExportFileName));
-        const targetDbChanges: any = (targetExporter.exporter as any)._sourceDbChanges; // access private member for testing purposes
+        // eslint-disable-next-line dot-notation
+        const targetDbChanges: any = targetExporter["_sourceDbChanges"]; // access private member for testing purposes
         assert.exists(targetDbChanges);
         // expect some inserts from transforming the result of updateDb
         assert.equal(targetDbChanges.codeSpec.insertIds.size, 0);

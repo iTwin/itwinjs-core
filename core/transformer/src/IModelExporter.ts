@@ -8,7 +8,7 @@
 
 import { AccessToken, assert, DbResult, Id64, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
 import { ECVersion, Schema, SchemaKey } from "@itwin/ecschema-metadata";
-import { CodeSpec, FontProps, IModel, IModelError } from "@itwin/core-common";
+import { CodeSpec, FilePropertyProps, FontProps, IModel, IModelError } from "@itwin/core-common";
 import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
 import {
   BisCoreSchema, BriefcaseDb, BriefcaseManager, DefinitionModel, ECSqlStatement, Element, ElementAspect,
@@ -42,6 +42,12 @@ export abstract class IModelExportHandler {
    * @note This should be overridden to actually do the export.
    */
   protected onExportFont(_font: FontProps, _isUpdate: boolean | undefined): void { }
+
+  /** Called when a file property should be exported
+   * @param props The file property props uniquely identifying the file property
+   * @note This should be overridden to actually do the export.
+   */
+  protected onExportFileProperty(_font: FilePropertyProps): void { }
 
   /** Called when a model should be exported.
    * @param model The model to export
@@ -232,6 +238,7 @@ export class IModelExporter {
   public async exportAll(): Promise<void> {
     await this.exportCodeSpecs();
     await this.exportFonts();
+    await this.exportFileProperties();
     await this.exportModel(IModel.repositoryModelId);
     await this.exportRelationships(ElementRefersToElements.classFullName);
   }
@@ -256,6 +263,7 @@ export class IModelExporter {
     this._sourceDbChanges = await ChangedInstanceIds.initialize(user, this.sourceDb, startChangesetId);
     await this.exportCodeSpecs();
     await this.exportFonts();
+    await this.exportFileProperties();
     await this.exportModelContents(IModel.repositoryModelId);
     await this.exportSubModels(IModel.repositoryModelId);
     await this.exportRelationships(ElementRefersToElements.classFullName);
@@ -407,6 +415,22 @@ export class IModelExporter {
       this.handler.callProtected.onExportFont(font, isUpdate);
       return this.trackProgress();
     }
+  }
+
+  /** Export all file properties from the source iModel. Used to export things such as file settings.
+   * @note This method is called from [[exportChanges]] and [[exportAll]], so it only needs to be called directly when exporting a subset of an iModel.
+   * file properties are not merged, conflicts resolve to the target, only file properties that do not already exist in the target are inserted.
+   * @note file properties with the same id but different sub-ids are considered conflicting
+   */
+  public async exportFileProperties(): Promise<void> {
+    Logger.logTrace(loggerCategory, `exportFileProperties()`);
+    for (const props of this.sourceDb.nativeDb.getAllFileProperties()) {
+      await this.exportFileProperty(props);
+    }
+  }
+
+  public async exportFileProperty(props: FilePropertyProps): Promise<void> {
+    this.callHandlerOrThis("onExportFileProperty", props);
   }
 
   /** Export the model container, contents, and sub-models from the source iModel.
