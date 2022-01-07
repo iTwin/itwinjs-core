@@ -1982,6 +1982,11 @@ export abstract class Viewport implements IDisposable {
   public setAnimator(animator?: Animator) {
     this._animator?.interrupt();
     this._animator = animator;
+
+    // Immediately invoke the animator to set up the initial frustum.
+    // This is important for TwoWayViewportSync; otherwise, the synced viewport will have its frustum set to the final frustum,
+    // producing a flicker to that frustum during the first frame of animation.
+    this.animate();
   }
 
   /** Used strictly by TwoWayViewportSync to change the reactive viewport's view to a clone of the active viewport's ViewState.
@@ -2199,6 +2204,11 @@ export abstract class Viewport implements IDisposable {
     this._renderPlanValid = true;
   }
 
+  private animate(): void {
+    if (this._animator?.animate())
+      this._animator = undefined; // animation completed.
+  }
+
   /** Renders the contents of this viewport. This method performs only as much work as necessary based on what has changed since
    * the last frame. If nothing has changed since the last frame, nothing is rendered.
    * @note This method should almost never be invoked directly - it is invoked on your behalf by [[ViewManager]]'s render loop.
@@ -2219,8 +2229,7 @@ export abstract class Viewport implements IDisposable {
 
     this._frameStatsCollector.beginTime("animationTime");
     // if any animation is active, perform it now
-    if (this._animator && this._animator.animate())
-      this._animator = undefined; // animation completed
+    this.animate();
     this._frameStatsCollector.endTime("animationTime");
 
     let isRedrawNeeded = this._redrawPending || this._doContinuousRendering;
