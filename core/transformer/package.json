@@ -84,6 +84,14 @@
     "plugins": [
       "@itwin"
     ],
-    "extends": "plugin:@itwin/itwinjs-recommended"
+    "extends": "plugin:@itwin/itwinjs-recommended",
+    "rules": {
+      "@typescript-eslint/dot-notation": [
+        "error",
+        {
+          "allowProtectedClassPropertyAccess": true
+        }
+      ]
+    }
   }
 }

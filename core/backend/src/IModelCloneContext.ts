@@ -144,8 +144,8 @@ export class IModelCloneContext {
         targetElementProps.code.scope = IModel.rootSubjectId;
       }
     }
-    const jsClass: any = this.sourceDb.getJsClass<typeof Element>(sourceElement.classFullName); // declared as "any" so we can call the protected onCloned method
-    jsClass.onCloned(this, sourceElement, targetElementProps);
+    const jsClass = this.sourceDb.getJsClass<typeof Element>(sourceElement.classFullName);
+    jsClass["onCloned"](this, sourceElement, targetElementProps);
     return targetElementProps;
   }
 }
