@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Fix AO striping when depth range is very deep.",
+      "comment": "Fix striping artifacts produced by ambient occlusion in views with very large frustums.",
       "type": "none"
     }
   ],
