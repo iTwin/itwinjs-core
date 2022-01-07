@@ -22,8 +22,6 @@ function loadEnv(envFile: string) {
 }
 
 loadEnv(path.join(__dirname, "..", ".env"));
-// Increase the timeout since iModel creation is taking longer
-RequestGlobalOptions.timeout.response = 60 * 1000; // 60 seconds in ms
 
 /** Basic configuration used by all tests
  */

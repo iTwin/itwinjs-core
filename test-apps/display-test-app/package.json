@@ -50,7 +50,6 @@
     "@itwin/core-mobile": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@bentley/imodelhub-client": "workspace:*",
-    "@bentley/itwin-client": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
     "@itwin/core-frontend": "workspace:*",

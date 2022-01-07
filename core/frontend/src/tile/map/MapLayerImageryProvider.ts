@@ -8,7 +8,7 @@
 
 import { BeEvent } from "@itwin/core-bentley";
 import { Cartographic, ImageSource, ImageSourceFormat, MapLayerSettings } from "@itwin/core-common";
-import { getJson, request, RequestBasicCredentials, RequestOptions, Response } from "@bentley/itwin-client";
+import { getJson, request, RequestBasicCredentials, RequestOptions, Response } from "../../request/Request";
 import { IModelApp } from "../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationManager";
 import { ScreenViewport } from "../../Viewport";

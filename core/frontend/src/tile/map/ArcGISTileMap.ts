@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { getJson} from "@bentley/itwin-client";
+import { getJson } from "../../request/Request";
 import { assert, compareStrings, Dictionary } from "@itwin/core-bentley";
 import { QuadId } from "../internal";
 

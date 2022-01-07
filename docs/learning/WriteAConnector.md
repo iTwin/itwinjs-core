@@ -400,7 +400,6 @@ $npm install  @itwin/core-geometry
 $npm install  @bentley/imodelhub-client
 $npm install  @itwin/core-backend
 $npm install  @itwin/core-common
-$npm install  @bentley/itwin-client
 $npm install  @bentley/rbac-client
 $npm install  @bentley/telemetry-client
 

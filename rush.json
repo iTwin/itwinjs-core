@@ -56,13 +56,6 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/itwin-client",
-      "projectFolder": "clients/itwin",
-      "reviewCategory": "common",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
       "packageName": "@bentley/reality-data-client",
       "projectFolder": "clients/reality-data",
       "reviewCategory": "common",

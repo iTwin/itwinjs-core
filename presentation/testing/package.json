@@ -47,7 +47,6 @@
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
-    "@bentley/itwin-client": "workspace:*",
     "@itwin/presentation-backend": "workspace:*",
     "@itwin/presentation-common": "workspace:*",
     "@itwin/presentation-components": "workspace:*",

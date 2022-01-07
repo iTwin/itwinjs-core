@@ -7,7 +7,7 @@
  */
 
 import { MapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
-import { RequestBasicCredentials } from "@bentley/itwin-client";
+import { RequestBasicCredentials } from "../../request/Request";
 import { IModelConnection } from "../../IModelConnection";
 import {
   ArcGISMapLayerImageryProvider,

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Angle } from "@itwin/core-geometry";
 import { MapSubLayerProps } from "@itwin/core-common";
-import { getJson, request, RequestBasicCredentials, RequestOptions, Response } from "@bentley/itwin-client";
+import { getJson, request, RequestBasicCredentials, RequestOptions, Response } from "../../request/Request";
 import {
   ArcGisTokenClientType, ArcGisTokenManager, MapCartoRectangle, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation,
 } from "../internal";

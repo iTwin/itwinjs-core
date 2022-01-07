@@ -56,7 +56,6 @@
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-i18n": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
-    "@bentley/itwin-client": "workspace:*",
     "@itwin/presentation-common": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",

@@ -9,7 +9,7 @@
 import { assert } from "@itwin/core-bentley";
 import { Point2d, Range1d, Range2d } from "@itwin/core-geometry";
 import { Cartographic } from "@itwin/core-common";
-import { getJson } from "@bentley/itwin-client";
+import { getJson } from "./request/Request";
 import { GeographicTilingScheme, QuadId } from "./tile/internal";
 
 let instance: ApproximateTerrainHeights | undefined;

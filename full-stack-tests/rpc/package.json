@@ -23,7 +23,6 @@
     "@itwin/express-server": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
-    "@bentley/itwin-client": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-electron": "workspace:*",
     "@itwin/core-mobile": "workspace:*",

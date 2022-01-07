@@ -9,7 +9,7 @@ import { MapLayerKey, MapLayerSettings, MapSubLayerProps } from "@itwin/core-com
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { ImageryMapLayerTreeReference, internalMapLayerImageryFormats, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerTileTreeReference } from "../internal";
-import { RequestBasicCredentials } from "@bentley/itwin-client";
+import { RequestBasicCredentials } from "../../request/Request";
 
 /** @internal */
 export class MapLayerFormat {

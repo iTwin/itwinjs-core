@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { getJson, request, RequestOptions } from "@bentley/itwin-client";
+import { getJson, request, RequestOptions } from "./request/Request";
 import { AccessToken, BentleyStatus, GuidString, Logger } from "@itwin/core-bentley";
 import { IModelError, OrbitGtBlobProps, RealityData, RealityDataFormat, RealityDataProvider, RealityDataSourceKey, RealityDataSourceProps } from "@itwin/core-common";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";

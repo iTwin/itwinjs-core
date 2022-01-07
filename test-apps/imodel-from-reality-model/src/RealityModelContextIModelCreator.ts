@@ -112,7 +112,13 @@ export class RealityModelContextIModelCreator {
 
     let json: any;
     try {
-      json = await getJson(this.url);
+      json = await fetch(this.url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json", // eslint-disable-line @typescript-eslint/naming-convention
+        },
+      });
+      json = json.json();
     } catch (error) {
       process.stdout.write(`Error occurred requesting data from: ${this.url}Error: ${error}\n`);
     }
