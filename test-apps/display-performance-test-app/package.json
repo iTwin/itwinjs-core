@@ -50,9 +50,9 @@
     "@itwin/core-quantity": "workspace:*",
     "@itwin/electron-authorization": "^0.6.0",
     "@itwin/hypermodeling-frontend": "workspace:*",
-    "@itwin/imodels-access-backend": "~0.2.2",
-    "@itwin/imodels-access-frontend": "~0.2.2",
-    "@itwin/imodels-client-authoring": "~0.2.2",
+    "@itwin/imodels-access-backend": "~0.3.0",
+    "@itwin/imodels-access-frontend": "~0.3.0",
+    "@itwin/imodels-client-authoring": "~0.3.0",
     "@itwin/reality-data-client": "^0.4.2",
     "body-parser": "^1.18.2"
   },
