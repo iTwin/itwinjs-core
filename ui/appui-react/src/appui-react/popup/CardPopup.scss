@@ -6,6 +6,7 @@
 
 .uifw-card {
   background-color: $buic-background-card;
+  z-index: var(--uicore-z-index-content-card-popup);
 
   .uifw-card-content {
     padding: 6px 10px;
