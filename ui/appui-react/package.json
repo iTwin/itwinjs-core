@@ -64,7 +64,6 @@
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/itwin-client": "workspace:*",
     "@itwin/appui-abstract": "workspace:*",
     "@itwin/appui-layout-react": "workspace:*",
     "@itwin/build-tools": "workspace:*",

@@ -25,7 +25,6 @@ packageClassification:  [
      "header": "Client Packages",
      "packages": [
        "imodelhub-client",
-       "itwin-client"
      ]
    },
    {

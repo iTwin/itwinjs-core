@@ -32,7 +32,6 @@ The iTwin.js library is organized into the following separately downloadable [np
 ## iTwin.js Client Packages
 
 - ($imodelhub-client)
-- ($itwin-client)
 
 ## iTwin.js UI Packages
 

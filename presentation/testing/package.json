@@ -41,7 +41,6 @@
     "ignore-styles": "^5.0.1"
   },
   "dependencies": {
-    "@bentley/itwin-client": "workspace:*",
     "@itwin/appui-abstract": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/components-react": "workspace:*",
