@@ -6,7 +6,7 @@
 import "./ViewportContentControl.css";
 import * as React from "react";
 import { Id64String } from "@itwin/core-bentley";
-import { IModelApp, IModelConnection, ScreenViewport } from "@itwin/core-frontend";
+import { IModelApp, IModelConnection, ScreenViewport, ViewState } from "@itwin/core-frontend";
 import { viewWithUnifiedSelection } from "@itwin/presentation-components";
 import { ViewportComponent } from "@itwin/imodel-components-react";
 import ViewDefinitionSelector, { getViewDefinitions } from "./ViewDefinitionSelector";
@@ -30,6 +30,9 @@ export default function ViewportContentComponent(props: ViewportContentComponent
     setSelectedViewDefinitionId(undefined);
     setPrevIModel(props.imodel);
   }
+  const contentControl = React.useRef<FloatingViewportContentControl | undefined>();
+  const [initialViewState, setInitialViewState] = React.useState<ViewState | undefined>();
+
   React.useEffect(() => {
     async function fetchView(viewId: string | undefined) {
       if (undefined === viewId) {
@@ -38,10 +41,9 @@ export default function ViewportContentComponent(props: ViewportContentComponent
           viewId = definitions[0].id;
         }
       }
-
       if (contentControl.current && viewId) {
         const viewState = await props.imodel.views.load(viewId);
-        await contentControl.current.processViewSelectorChange(props.imodel, viewId, viewState, viewState.name);
+        setInitialViewState(viewState);
       }
       if (viewId !== selectedViewDefinitionId) setSelectedViewDefinitionId(viewId);
     }
@@ -51,8 +53,6 @@ export default function ViewportContentComponent(props: ViewportContentComponent
   const onViewDefinitionChanged = React.useCallback((id?: Id64String) => {
     setSelectedViewDefinitionId(id);
   }, []);
-
-  const contentControl = React.useRef<FloatingViewportContentControl | undefined>();
 
   const onViewportRef = React.useCallback((v: ScreenViewport) => setViewport(v), []);
 
@@ -70,21 +70,27 @@ export default function ViewportContentComponent(props: ViewportContentComponent
   }, [props.id]);
 
   const viewPortControl = React.useMemo(() =>
-    selectedViewDefinitionId ? (
+    initialViewState ? (
       <SampleViewport
         viewportRef={onViewportRef}
         imodel={props.imodel}
-        viewDefinitionId={selectedViewDefinitionId}
+        viewState={initialViewState}
         onContextMenu={props.onContextMenu}
       />
-    ) : undefined, [onViewportRef, props.imodel, selectedViewDefinitionId, props.onContextMenu]);
+    ) : undefined, [onViewportRef, props.imodel, props.onContextMenu, initialViewState]);
 
   React.useEffect(() => {
     if (viewport && contentControl.current) {
       contentControl.current.viewport = viewport;
-      contentControl.current.reactNode = viewPortControl;
+      if (null === contentControl.current.reactNode) {
+        contentControl.current.reactNode = viewPortControl;
+        if (initialViewState) {
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          contentControl.current.processViewSelectorChange(props.imodel, initialViewState.id, initialViewState, initialViewState.name);
+        }
+      }
     }
-  }, [viewPortControl, viewport]);
+  }, [initialViewState, props.imodel, viewPortControl, viewport]);
 
   React.useEffect(() => {
     const onViewClose = (vp: ScreenViewport) => {
