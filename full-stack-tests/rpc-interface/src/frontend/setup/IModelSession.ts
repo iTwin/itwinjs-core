@@ -8,7 +8,7 @@ import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } fr
 import { IModelData } from "../../common/Settings";
 import { IModelVersion } from "@itwin/core-common";
 import { AccessToken } from "@itwin/core-bentley";
-import { Authorization, IModelsClient } from "@itwin/imodels-client-management";
+import { IModelsClient } from "@itwin/imodels-client-management";
 import { AccessTokenAdapter } from "@itwin/imodels-access-frontend";
 
 export class IModelSession {

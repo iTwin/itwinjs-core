@@ -8,7 +8,6 @@ import * as os from "os";
 import * as readline from "readline";
 import { AccessToken, BriefcaseStatus, GuidString, StopWatch } from "@itwin/core-bentley";
 import { BriefcaseIdValue, BriefcaseProps, IModelError, IModelVersion } from "@itwin/core-common";
-import { UserCancelledError } from "@bentley/itwin-client";
 import { BriefcaseDb, BriefcaseManager, IModelHost, IModelJsFs, RequestNewBriefcaseArg } from "@itwin/core-backend";
 import { HubWrappers } from "@itwin/core-backend/lib/cjs/test/index";
 import { HubUtility, TestUserType } from "../HubUtility";
