@@ -15,9 +15,10 @@ import { UiItemsProvidersTest } from "@itwin/ui-items-providers-test";
 import {
   IconSpecUtilities, ToolbarItemUtilities,
 } from "@itwin/appui-abstract";
-import { Dialog, LocalStateStorage } from "@itwin/core-react";
+import { LocalStateStorage } from "@itwin/core-react";
 import {
-  ChildWindowLocationProps, ContentGroup, ContentLayoutManager, ContentProps, FrontstageManager, ModelessDialogManager, StageContentLayout, StageContentLayoutProps, UiFramework,
+  ChildWindowLocationProps, ContentDialog, ContentDialogManager, ContentGroup, ContentLayoutManager, ContentProps,
+  FrontstageManager, StageContentLayout, StageContentLayoutProps, UiFramework,
 } from "@itwin/appui-react";
 import toolIconSvg from "@bentley/icons-generic/icons/window-add.svg?sprite";
 import tool2IconSvg from "@bentley/icons-generic/icons/window-maximize.svg?sprite";
@@ -320,26 +321,22 @@ export class OpenViewPopoutTool extends Tool {
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function IModelViewDialog({ id }: { id: string }) {
   const handleClose = React.useCallback(() => {
-    ModelessDialogManager.closeDialog(id);
+    ContentDialogManager.closeDialog(id);
   }, [id]);
 
   return (
-    <Dialog
+    <ContentDialog
       title="IModel View"
       inset={false}
-      style={{ padding: 0 }}
       opened={true}
-      resizable={true}
-      movable={true}
-      modal={false}
       onClose={handleClose}
       onEscape={handleClose}
       width={"40vw"}
       height={"40vh"}
-      trapFocus={false}
+      dialogId={id}
     >
       <PopupTestView id={id} />
-    </Dialog>
+    </ContentDialog>
   );
 }
 
@@ -357,7 +354,7 @@ export class OpenViewDialogTool extends Tool {
   }
 
   private async _run(): Promise<void> {
-    ModelessDialogManager.openDialog(<IModelViewDialog id={OpenViewDialogTool.dialogId} />, OpenViewDialogTool.dialogId);
+    ContentDialogManager.openDialog(<IModelViewDialog id={OpenViewDialogTool.dialogId} />, OpenViewDialogTool.dialogId);
   }
 
   public static override get flyover(): string {

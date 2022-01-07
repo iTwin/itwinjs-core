@@ -58,6 +58,8 @@ export * from "./appui-react/cursor/cursormenu/CursorMenu";
 
 export * from "./appui-react/dialog/DialogManagerBase";
 export * from "./appui-react/dialog/ModalDialogManager";
+export * from "./appui-react/dialog/ContentDialogManager";
+export * from "./appui-react/dialog/ContentDialog";
 export * from "./appui-react/dialog/ModelessDialog";
 export * from "./appui-react/dialog/ModelessDialogManager";
 export * from "./appui-react/dialog/StandardMessageBox";

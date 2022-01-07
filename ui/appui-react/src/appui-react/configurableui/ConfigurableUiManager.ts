@@ -26,6 +26,7 @@ import { ModalDialogManager } from "../dialog/ModalDialogManager";
 import { MessageManager } from "../messages/MessageManager";
 import { PopupManager } from "../popup/PopupManager";
 import { ActivityTracker } from "./ActivityTracker";
+import { ContentDialogManager } from "../dialog/ContentDialogManager";
 
 /** Ui Activity Event Args interface.
  * @internal
@@ -85,8 +86,9 @@ export class ConfigurableUiManager {
     // Initialize the ToolSettingsManager that manages Tool Settings properties.
     ToolSettingsManager.initialize();
 
-    // Initialize the modeless dialog manager.
+    // Initialize dialog managers that require a
     ModelessDialogManager.initialize();
+    ContentDialogManager.initialize();
 
     // Initialize the Keyboard Shortcut manager
     KeyboardShortcutManager.initialize();
