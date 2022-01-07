@@ -10,7 +10,7 @@ import { IModelApp, IModelConnection, ScreenViewport } from "@itwin/core-fronten
 import { viewWithUnifiedSelection } from "@itwin/presentation-components";
 import { ViewportComponent } from "@itwin/imodel-components-react";
 import ViewDefinitionSelector, { getViewDefinitions } from "./ViewDefinitionSelector";
-import { ContentViewManager, FloatingViewportContentControl } from "@itwin/appui-react";
+import { ContentViewManager, FloatingViewportContentControl, UiShowHideManager } from "@itwin/appui-react";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const SampleViewport = viewWithUnifiedSelection(ViewportComponent);
@@ -97,7 +97,7 @@ export default function ViewportContentComponent(props: ViewportContentComponent
   }, []);
 
   return (
-    <div className="ViewportContentComponent" style={{ height: "100%", position: "relative" }}>
+    <div onMouseMove={UiShowHideManager.handleContentMouseMove} className="uifw-dialog-imodel-content" style={{ height: "100%", position: "relative" }}>
       {viewPortControl}
       {!!props.showViewPicker && <ViewDefinitionSelector imodel={props.imodel} selectedViewDefinition={selectedViewDefinitionId} onViewDefinitionSelected={onViewDefinitionChanged} />}
     </div>
