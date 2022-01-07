@@ -28,7 +28,7 @@ describe("IModelOpen", () => {
     (BriefcaseManager as any).deleteFolderAndContents(path);
   };
 
-  it.only("Unauthorized requests should cause an obvious error", async () => {
+  it("Unauthorized requests should cause an obvious error", async () => {
     // Try the bad request context
     await expect(HubWrappers.downloadAndOpenCheckpoint({ accessToken: "bad", iTwinId: testITwinId, iModelId: testIModelId }))
       .to.be.rejectedWith(IModelError).to.eventually.have.property("errorNumber", RepositoryStatus.InvalidRequest);
