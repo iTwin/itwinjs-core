@@ -19,6 +19,7 @@ import { IModelList } from "./IModelList";
 import { NavigationItem, NavigationList } from "./Navigation";
 import { ITwinDropdown } from "./ITwinDropdown";
 import { SampleAppIModelApp } from "../..";
+import { take } from "@itwin/imodels-client-management";
 
 /** Properties for the [[IModelOpen]] component */
 export interface IModelOpenProps {
@@ -94,13 +95,15 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
       return iModelInfos;
 
     try {
-      for await (const imodel of SampleAppIModelApp.hubClient?.iModels.getRepresentationList({
+      const iter = SampleAppIModelApp.hubClient?.iModels.getRepresentationList({
         urlParams: {
           projectId: iTwinId,
-          $top: top,
         },
         authorization,
-      })) {
+      });
+      const iModels = await take(iter, top);
+
+      for (const imodel of iModels) {
         iModelInfos.push({
           iTwinId,
           id: imodel.id,
