@@ -10,17 +10,18 @@ import * as sinon from "sinon";
 import { DbResult, Guid, Id64, Id64String, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import { Point3d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
-  CategorySelector, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingModel, ECSqlStatement, Element,
+  CategorySelector, ClassRegistry, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingModel, ECSqlStatement, Element,
   ElementMultiAspect, ElementOwnsChildElements, ElementOwnsExternalSourceAspects, ElementOwnsUniqueAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, GenericPhysicalMaterial,
   GeometricElement,
   IModelCloneContext, IModelDb, IModelHost, IModelJsFs, IModelSchemaLoader, InformationRecordModel, InformationRecordPartition, LinkElement, Model,
   ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, Relationship, RepositoryLink, Schema,
-  SnapshotDb, SpatialCategory, StandaloneDb, SubCategory, Subject,
+  Schemas,
+  SnapshotDb, SpatialCategory, SpatialLocationElement, StandaloneDb, SubCategory, Subject,
 } from "@itwin/core-backend";
 import { ExtensiveTestScenario, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import {
   AxisAlignedBox3d, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorDef, CreateIModelProps, DefinitionElementProps,
-  ExternalSourceAspectProps, IModel, IModelError, PhysicalElementProps, Placement3d, QueryRowFormat,
+  ExternalSourceAspectProps, GeometricElement3dProps, IModel, IModelError, PhysicalElementProps, Placement3d, QueryRowFormat, RelatedElement,
 } from "@itwin/core-common";
 import { IModelExporter, IModelExportHandler, IModelTransformer, TransformerLoggerCategory } from "../../core-transformer";
 import {
@@ -1594,6 +1595,60 @@ describe("IModelTransformer", () => {
     expect(targetExternalSourceAspects[0].identifier).to.equal(multiAspectProps.identifier);
 
     sinon.restore();
+    sourceDb.close();
+    targetDb.close();
+  });
+
+  it.only("local test", async () => {
+    class RoadRailSchema extends Schema {
+      public static override get schemaName(): string {
+        return "TestAnalytical";
+      }
+      public static get schemaFilePath(): string {
+        return path.join(__dirname, "assets", "TestAnalytical.ecschema.xml");
+      }
+      public static registerSchema() {
+        if (this !== Schemas.getRegisteredSchema(this.schemaName)) {
+          Schemas.unregisterSchema(this.schemaName);
+          Schemas.registerSchema(this);
+          ClassRegistry.register(Alignment, this);
+        }
+      }
+    }
+
+    class Alignment extends SpatialLocationElement {
+      public static override get className(): string {
+        return "Element";
+      }
+      public constructor(props: GeometricElement3dProps, iModel: IModelDb) {
+        super(props, iModel);
+      }
+      public horizontal!: RelatedElement;
+    }
+
+    RoadRailSchema.registerSchema();
+
+    const sourceDb = SnapshotDb.openFile(
+      "/tmp/bad-relationships-source.bim.bim"
+    );
+    const targetDbPath = IModelTestUtils.prepareOutputFile(
+      "IModelTransformer",
+      "PreserveIdOnTestModel-Target.bim"
+    );
+    const targetDb = SnapshotDb.createEmpty(targetDbPath, {
+      rootSubject: sourceDb.rootSubject,
+    });
+
+    const transformer = new IModelTransformer(sourceDb, targetDb);
+    await transformer.processSchemas();
+    await transformer.processAll();
+
+    targetDb.saveChanges();
+
+    const sourceContent = await getAllElementsInvariants(sourceDb);
+    const targetContent = await getAllElementsInvariants(targetDb);
+    expect(targetContent).to.deep.equal(sourceContent);
+
     sourceDb.close();
     targetDb.close();
   });
