@@ -5,7 +5,6 @@
 import "./PushPullField.scss";
 import * as React from "react";
 import { BeEvent } from "@itwin/core-bentley";
-import { ChangeSetPostPushEvent, ChangeSetQuery, IModelHubFrontend } from "@bentley/imodelhub-client";
 import {
   BriefcaseConnection, IModelApp, NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType,
 } from "@itwin/core-frontend";
@@ -22,13 +21,13 @@ function translate(prompt: string) {
 interface PushPullState {
   timeOfLastSaveEvent: number;    // work around out-of-order events
   mustPush: boolean;
-  parentChangesetId: string;
-  changesOnServer: string[];
+  parentChangesetIndex: number;
+  changesOnServer: number[];
   isSynchronizing: boolean;
 }
 
 class SyncManager {
-  public static state: PushPullState = { timeOfLastSaveEvent: 0, mustPush: false, parentChangesetId: "", changesOnServer: [], isSynchronizing: false };
+  public static state: PushPullState = { timeOfLastSaveEvent: 0, mustPush: false, parentChangesetIndex: 0, changesOnServer: [], isSynchronizing: false };
   public static onStateChange = new BeEvent();
   public static changesetListenerInitialized = false;
   public static localChangesListenerInitialized = false;
@@ -46,29 +45,34 @@ class SyncManager {
     this.changesetListenerInitialized = true;
 
     if (this.briefcaseConnection) {
-      const iModelId = this.briefcaseConnection.iModelId;
+      // const iModelId = this.briefcaseConnection.iModelId;
       try {
-        const accessToken = await IModelApp.getAccessToken();
         // Bootstrap the process by finding out if there are newer changesets on the server already.
-        this.state.parentChangesetId = this.briefcaseConnection.changeset.id;
+        // this.state.parentChangesetIndex = this.briefcaseConnection.changeset.index!;
 
-        if (!!this.state.parentChangesetId) {  // avoid error if imodel has no changesets.
-          const hubAccess = new IModelHubFrontend();
-          const allOnServer = await hubAccess.hubClient.changeSets.get(accessToken, iModelId, new ChangeSetQuery().fromId(this.state.parentChangesetId));
-          this.state.changesOnServer = allOnServer.map((changeset) => changeset.id!);
+        // if (!!this.state.parentChangesetIndex) {  // avoid error if imodel has no changesets.
+        //   const allOnServer = SampleAppIModelApp.hubClient?.changesets.getMinimalList({
+        //     iModelId,
+        //     urlParams: {
+        //       afterIndex: this.state.parentChangesetIndex,
+        //     },
+        //     authorization: AccessTokenAdapter.toAuthorizationCallback(await IModelHost.getAccessToken()),
+        //   });
+        //   // .get(accessToken, iModelId, new ChangeSetQuery().fromId(this.state.parentChangesetId));
+        //   this.state.changesOnServer = allOnServer.map((changeset) => changeset.id!);
 
-          this.onStateChange.raiseEvent();
+        //   this.onStateChange.raiseEvent();
 
-          // Once the initial state of the briefcase is known, register for events announcing new changesets
-          const changeSetSubscription = await hubAccess.hubClient.events.subscriptions.create(accessToken, iModelId, ["ChangeSetPostPushEvent"]); // eslint-disable-line deprecation/deprecation
+        // Once the initial state of the briefcase is known, register for events announcing new changesets
+        // const changeSetSubscription = await SampleAppIModelApp.hubClient?.events.subscriptions.create(accessToken, iModelId, ["ChangeSetPostPushEvent"]); // eslint-disable-line deprecation/deprecation
 
-          hubAccess.hubClient.events.createListener(async () => accessToken, changeSetSubscription.wsgId, iModelId, async (receivedEvent: ChangeSetPostPushEvent) => {
-            if (receivedEvent.changeSetId !== this.state.parentChangesetId) {
-              this.state.changesOnServer.push(receivedEvent.changeSetId);
-              this.onStateChange.raiseEvent();
-            }
-          });
-        }
+        // hubAccess.hubClient.events.createListener(async () => accessToken, changeSetSubscription.wsgId, iModelId, async (receivedEvent: ChangeSetPostPushEvent) => {
+        //   if (receivedEvent.changeSetId !== this.state.parentChangesetId) {
+        //     this.state.changesOnServer.push(receivedEvent.changeSetId);
+        //     this.onStateChange.raiseEvent();
+        //   }
+        // });
+        // }
       } catch (err: any) {
         ErrorHandling.onUnexpectedError(err);
       }
@@ -102,23 +106,23 @@ class SyncManager {
 
       txns.onChangesPushed.addListener((parentChangeset) => {
         // In case I got the changeSetSubscription event first, remove the changeset that I pushed from the list of server changes waiting to be merged.
-        const allChangesOnServer = this.state.changesOnServer.filter((cs) => cs !== parentChangeset.id);
+        const allChangesOnServer = this.state.changesOnServer.filter((cs) => cs !== parentChangeset.index);
         this.state.mustPush = false;
         this.state.changesOnServer = allChangesOnServer;
-        this.state.parentChangesetId = parentChangeset.id;
+        this.state.parentChangesetIndex = parentChangeset.index;
         this.onStateChange.raiseEvent();
       });
 
       txns.onChangesPulled.addListener((parentChangeset) => {
-        this.updateParentChangesetId(parentChangeset.id);
+        this.updateParentChangesetIndex(parentChangeset.index);
         this.onStateChange.raiseEvent();
       });
     }
   }
 
-  private static updateParentChangesetId(parentChangeSetId: string) {
-    this.state.parentChangesetId = parentChangeSetId;
-    const lastPulledIdx = this.state.changesOnServer.findIndex((csId) => csId === parentChangeSetId);
+  private static updateParentChangesetIndex(parentChangesetIndex: number) {
+    this.state.parentChangesetIndex = parentChangesetIndex;
+    const lastPulledIdx = this.state.changesOnServer.findIndex((csId) => csId === parentChangesetIndex);
     if (lastPulledIdx !== -1)
       this.state.changesOnServer.splice(0, lastPulledIdx + 1); // (changeSetSubscription might have added to changesOnServer after I pulled but before this event was fired)
     else
@@ -136,8 +140,8 @@ class SyncManager {
 
     try {
       await this.briefcaseConnection.pushChanges("");
-      const parentChangesetId = this.briefcaseConnection.changeset.id;
-      this.updateParentChangesetId(parentChangesetId);
+      const parentChangesetIndex = this.briefcaseConnection.changeset.index!;
+      this.updateParentChangesetIndex(parentChangesetIndex);
     } catch (err: any) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, failmsg, err.message, OutputMessageType.Alert, OutputMessageAlert.Dialog));
     } finally {

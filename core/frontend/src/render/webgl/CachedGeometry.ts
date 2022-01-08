@@ -731,17 +731,18 @@ export class SkySphereViewportQuadGeometry extends ViewportQuadGeometry {
  * @internal
  */
 export class AmbientOcclusionGeometry extends TexturedViewportQuadGeometry {
-  public static createGeometry(depthAndOrder: WebGLTexture) {
+  public static createGeometry(depthAndOrder: WebGLTexture, depth: WebGLTexture) {
     const params = ViewportQuad.getInstance().createParams();
     if (undefined === params) {
       return undefined;
     }
 
     // Will derive positions and normals from depthAndOrder.
-    return new AmbientOcclusionGeometry(params, [depthAndOrder]);
+    return new AmbientOcclusionGeometry(params, [depth, depthAndOrder]);
   }
 
-  public get depthAndOrder() { return this._textures[0]; }
+  public get depthAndOrder() { return this._textures[1]; }
+  public get depth() { return this._textures[0]; }
   public get noise() { return System.instance.noiseTexture!.getHandle()!; }
 
   private constructor(params: IndexedGeometryParams, textures: WebGLTexture[]) {

@@ -43,13 +43,16 @@
   "dependencies": {
     "@bentley/icons-generic": "^1.0.15",
     "@bentley/icons-generic-webfont": "^1.0.15",
+    "@bentley/imodelbank-client": "workspace:*",
     "@itwin/frontend-devtools": "workspace:*",
     "@itwin/hypermodeling-frontend": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-electron": "workspace:*",
     "@itwin/core-mobile": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
-    "@bentley/imodelhub-client": "workspace:*",
+    "@itwin/imodels-access-backend": "~0.3.0",
+    "@itwin/imodels-access-frontend": "~0.3.0",
+    "@itwin/imodels-client-authoring": "~0.3.0",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
@@ -61,8 +64,8 @@
     "@itwin/appui-abstract": "workspace:*",
     "@itwin/webgl-compatibility": "workspace:*",
     "@itwin/reality-data-client": "^0.4.2",
-    "@itwin/browser-authorization": "^0.3.1",
-    "@itwin/electron-authorization": "^0.5.0",
+    "@itwin/browser-authorization": "^0.4.0",
+    "@itwin/electron-authorization": "^0.6.0",
     "body-parser": "^1.18.2"
   },
   "devDependencies": {
