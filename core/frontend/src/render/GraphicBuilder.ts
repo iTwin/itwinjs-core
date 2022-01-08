@@ -147,6 +147,11 @@ export interface GraphicBuilderOptions {
    * @note Edges will tend to z-fight with their surfaces unless the graphic is [[pickable]].
    */
   generateEdges?: boolean;
+
+  /** If defined, specifies a point about which the graphic will rotate such that it always faces the viewer.
+   * @note This has no effect for graphics displayed in a 2d view.
+   */
+  viewIndependentOrigin?: Point3d;
 }
 
 /** Options for creating a [[GraphicBuilder]] to produce a [[RenderGraphic]] to be displayed in a specific [[Viewport]].
