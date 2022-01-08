@@ -4033,6 +4033,7 @@ export interface GraphicBuilderOptions {
     placement?: Transform;
     preserveOrder?: boolean;
     type: GraphicType;
+    viewIndependentOrigin?: Point3d;
     wantNormals?: boolean;
 }
 
