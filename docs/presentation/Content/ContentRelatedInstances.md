@@ -6,44 +6,118 @@ Returns content for instances related to the selected (input) instances.
 
 ## Attributes
 
-| Name                   | Required? | Type                                                                                  | Default | Meaning                                                                                                                                                                                                                                                    |
-| ---------------------- | --------- | ------------------------------------------------------------------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| *Filtering*            |
-| `relationshipPaths`    | Yes       | [`RelationshipPathSpecification[]`](../Common-Rules/RelationshipPathSpecification.md) |         | List of [relationship path specifications](../Common-Rules/RelationshipPathSpecification.md) to follow when looking for related class instances.                                                                                                           |
-| `instanceFilter`       | No        | [ECExpression](./ECExpressions.md#instance-filter)                                    | `""`    | Condition for filtering instances                                                                                                                                                                                                                          |
-| `onlyIfNotHandled`     | No        | boolean                                                                               | `false` | Identifies whether we should ignore this specification if there is already an existing specification with higher `priority` that already provides content.                                                                                           |
-| *Ordering*             |
-| `priority`             | No        | `number`                                                                              | `1000`  | Changes the order of specifications.                                                                                                                                                                                                                       |
-| *Content Modifiers*    |
-| `relatedProperties`    | No        | `RelatedPropertiesSpecification[]`                                                    | `[]`    | Specifications of [related properties](./Terminology.md#related-properties) which are included in the generated content. *See [this page](./RelatedPropertiesSpecification.md) for more details*                                                           |
-| `calculatedProperties` | No        | `CalculatedPropertiesSpecification[]`                                                 | `[]`    | Specifications of calculated properties whose values are generated using provided ECExpressions. *See [this page](./CalculatedPropertiesSpecification.md) for more details*                                                                                |
-| `propertyCategories`   | No        | `PropertyCategorySpecification[]`                                                     | `[]`    | Specifications for custom categories. Simply defining the categories does nothing - they have to be referenced from `PropertySpecification` defined in `propertyOverrides` by `id`. *See [this page](./PropertyCategorySpecification.md) for more details* |
-| `propertyOverrides`    | No        | `PropertySpecification[]`                                                             | `[]`    | Specifications for various property overrides. *See [this page](./PropertySpecification.md) for more details*                                                                                                                                              |
-| `showImages`           | No        | `boolean`                                                                             | `false` | Should image IDs be calculated for the returned instances. When `true`, [ImageIdOverride](../customization/ImageIdOverride.md) rules get applied when creating content.                                                                                    |
-| *Misc.*                |
-| `relatedInstances`     | No        | [`RelatedInstanceSpecification[]`](../Common-Rules/RelatedInstanceSpecification.md)   | `[]`    | Specifications of [related instances](../Common-Rules/RelatedInstanceSpecification.md) that can be used in content creation.                                                                                                                               |
+| Name                                                      | Required? | Type                                                                                  | Default |
+| --------------------------------------------------------- | --------- | ------------------------------------------------------------------------------------- | ------- |
+| *Filtering*                                               |
+| [`relationshipPaths`](#attribute-relationshippaths)       | Yes       | [`RelationshipPathSpecification[]`](../Common-Rules/RelationshipPathSpecification.md) |
+| [`instanceFilter`](#attribute-instancefilter)             | No        | [ECExpression](./ECExpressions.md#instance-filter)                                    | `""`    |
+| [`onlyIfNotHandled`](#attribute-onlyifnothandled)         | No        | boolean                                                                               | `false` |
+| *Ordering*                                                |
+| [`priority`](#attribute-priority)                         | No        | `number`                                                                              | `1000`  |
+| *Content Modifiers*                                       |
+| [`relatedProperties`](#attribute-relatedproperties)       | No        | `RelatedPropertiesSpecification[]`                                                    | `[]`    |
+| [`calculatedProperties`](#attribute-calculatedproperties) | No        | `CalculatedPropertiesSpecification[]`                                                 | `[]`    |
+| [`propertyCategories`](#attribute-propertycategories)     | No        | `PropertyCategorySpecification[]`                                                     | `[]`    |
+| [`propertyOverrides`](#attribute-propertyoverrides)       | No        | `PropertySpecification[]`                                                             | `[]`    |
+| [`showImages`](#attribute-showimages)                     | No        | `boolean`                                                                             | `false` |
+| *Misc.*                                                   |
+| [`relatedInstances`](#attribute-relatedinstances)         | No        | [`RelatedInstanceSpecification[]`](../Common-Rules/RelatedInstanceSpecification.md)   | `[]`    |
 
 ### Attribute: `relationshipPaths`
+
+Specifies a list of [relationship path specifications](../Common-Rules/RelationshipPathSpecification.md) to follow when looking for related instances.
+Either a single or an array of specifications may be specified for this attribute. Specifying an empty array makes the whole specification a no-op.
+
+```ts
+[[include:ContentRelatedInstances.RelationshipPaths.Ruleset]]
+```
+
 ### Attribute: `instanceFilter`
+
+Specifies an [ECExpression](./ECExpressions.md#instance-filter) for filtering instances of ECClasses targeted through the [`relationshipPaths` attribute](#attribute-relationshippaths).
+
+```ts
+[[include:ContentRelatedInstances.InstanceFilter.Ruleset]]
+```
+
 ### Attribute: `onlyIfNotHandled`
+
+> **Default value:** `false`
+
+Identifies whether we should ignore this specification if another specification was already handled (based on rule priorities and definition order). Should be used when defining a fallback specification.
+
+```ts
+[[include:ContentRelatedInstances.OnlyIfNotHandled.Ruleset]]
+```
+
 ### Attribute: `priority`
+
+> **Default value:** `1000`
+
+Defines the order in which specifications are handled - higher priority means the specifications is handled first. If priorities are equal, the specifications are handled in the order they're defined.
+
+```ts
+[[include:ContentRelatedInstances.Priority.Ruleset]]
+```
+
 ### Attribute: `relatedProperties`
-### Attribute: `calculatedProperties	`
+
+Specifications of [related properties](./RelatedPropertiesSpecification.md) which are included in the generated content.
+
+```ts
+[[include:ContentRelatedInstances.RelatedProperties.Ruleset]]
+```
+
+### Attribute: `calculatedProperties`
+
+Specifications of [calculated properties](./CalculatedPropertiesSpecification.md) whose values are generated using provided [ECExpressions](../Advanced/ECExpressions.md#ecinstance).
+
+```ts
+[[include:ContentRelatedInstances.CalculatedProperties.Ruleset]]
+```
+
 ### Attribute: `propertyCategories`
+
+Specifications of [custom categories](PropertyCategorySpecification.md).
+
+Simply defining the categories does nothing - they have to be referenced through [`PropertySpecification.categoryId`](./PropertySpecification.md) specified in [`propertyOverrides`](#attribute-propertyoverrides) list.
+
+```ts
+[[include:ContentRelatedInstances.PropertyCategories.Ruleset]]
+```
+
 ### Attribute: `propertyOverrides`
+
+Specifications of various [property overrides](./PropertySpecification.md) that allow customizing individual properties display.
+
+```ts
+[[include:ContentRelatedInstances.PropertyOverrides.Ruleset]]
+```
+
 ### Attribute: `showImages`
+
+> **Default value:** `false`
+
+Should image IDs be calculated for the returned instances. When `true`, [ImageIdOverride](../customization/ImageIdOverride.md) rules get applied when creating content.
+
+```ts
+[[include:ContentRelatedInstances.ShowImages.Ruleset]]
+```
+
 ### Attribute: `relatedInstances`
 
-## Example
+Specifications of [related instances](../Common-Rules/RelatedInstanceSpecification.md) that can be used when creating the content. There are several use cases when this is useful:
 
-```JSON
-{
-  "specType": "ContentRelatedInstances",
-  "relationshipPaths": [{
-    "relationship": { "schemaName": "BisCore", "className": "ModelContainsElements" },
-    "direction": "Forward",
-    "targetClass": { "schemaName": "BisCore", "className": "PhysicalElement" }
-  }],
-  "arePolymorphic": true
-}
+- When there's a need to only load instances that have a related instance. Providing a [related instance](../Common-Rules/RelatedInstanceSpecification.md)
+  specification with [isRequired](../Common-Rules/RelatedInstanceSpecification.md) set to `true` filters-out the instances that don't have the related instance.
+
+- When there's a need to filter instances by a related instance value. The [alias](../Common-Rules/RelatedInstanceSpecification.md) attribute may then be used
+  in the [`instanceFilter` attribute](#attribute-instancefilter) to reference related instance property values.
+
+- When there's a need to customize content based on related instance property values. Related instance classes are included when looking for [customization rules](../Customization/index.md),
+  which allows referencing related instances and their properties in [customization rule ECExpressions](../Customization/ECExpressions.md#override-value) by their
+  [alias](../Common-Rules/RelatedInstanceSpecification.md).
+
+```ts
+[[include:ContentRelatedInstances.RelatedInstances.Ruleset]]
 ```
