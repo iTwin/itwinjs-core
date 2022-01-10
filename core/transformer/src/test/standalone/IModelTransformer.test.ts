@@ -7,7 +7,7 @@ import { assert, expect } from "chai";
 import * as path from "path";
 import * as Semver from "semver";
 import * as sinon from "sinon";
-import { DbResult, Guid, Id64, Id64String, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
+import { DbResult, Guid, Id64, Id64Set, Id64String, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import { Point3d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   CategorySelector, ClassRegistry, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingModel, ECSqlStatement, Element,
@@ -1599,37 +1599,7 @@ describe("IModelTransformer", () => {
     targetDb.close();
   });
 
-  it.only("local test", async () => {
-    class RoadRailSchema extends Schema {
-      public static override get schemaName(): string {
-        return "RoadRailAlignment";
-      }
-      public static registerSchema() {
-        if (this !== Schemas.getRegisteredSchema(this.schemaName)) {
-          Schemas.unregisterSchema(this.schemaName);
-          Schemas.registerSchema(this);
-          ClassRegistry.register(Alignment, this);
-        }
-      }
-    }
-
-    class Alignment extends SpatialLocationElement {
-      public static override get className(): string {
-        return "Alignment";
-      }
-      public constructor(props: GeometricElement3dProps, iModel: IModelDb) {
-        super(props, iModel);
-      }
-      public horizontal!: RelatedElement;
-      public override getPredecessorIds() {
-        const result = super.getPredecessorIds();
-        if (this.horizontal?.id) result.add(this.horizontal?.id);
-        return result;
-      }
-    }
-
-    RoadRailSchema.registerSchema();
-
+  it("local test", async () => {
     const sourceDb = SnapshotDb.openFile(
       "/tmp/bad-relationships-source.bim.bim"
     );
@@ -1647,9 +1617,22 @@ describe("IModelTransformer", () => {
 
     targetDb.saveChanges();
 
-    // const sourceContent = await getAllElementsInvariants(sourceDb);
-    // const targetContent = await getAllElementsInvariants(targetDb);
-    // expect(targetContent).to.deep.equal(sourceContent);
+    function getHorizontals(db: IModelDb) {
+      let results = new Array<{ id: Id64String, horizontal: RelatedElement }>();
+      db.withPreparedStatement(
+        "SELECT ECInstanceId, horizontal FROM RoadRailAlignment.Alignment",
+        (stmt) => { results = [...stmt]; }
+      );
+      return results;
+    }
+
+    for (const alignmentInSource of getHorizontals(sourceDb)) {
+      const alignmentInTargetId = transformer.context.findTargetElementId(alignmentInSource.id);
+      const alignmentInTarget = targetDb.elements.getElement(alignmentInTargetId);
+      const horizontalInTargetId = transformer.context.findTargetElementId(alignmentInSource.horizontal.id);
+      // cast to any to access untyped instance properties
+      expect((alignmentInTarget as any).horizontal.id).to.equal(horizontalInTargetId);
+    }
 
     sourceDb.close();
     targetDb.close();
