@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Revisited the way map layers authentication is handled in the UI.",
+      "comment": "Improved map layers validation when authentication is required.",
       "type": "none"
     }
   ],

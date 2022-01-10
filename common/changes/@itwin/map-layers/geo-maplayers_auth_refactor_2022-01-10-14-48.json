@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/map-layers",
-      "comment": "Revisited the way map layers authentication is handled in the UI.",
+      "comment": "No longer display username/password fields by default in the custom map layers dialog: If validation fails and reports authentication is needed, we then ask end-user for credentials.",
       "type": "none"
     }
   ],

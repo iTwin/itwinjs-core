@@ -469,13 +469,13 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
               className="map-layer-source-select"
               options={mapTypes}
               value={mapType}
-              disabled={props.layerRequiringCredentials !== undefined || props.mapLayerSourceToEdit !== undefined || layerAttachPending || layerAuthPending}
+              disabled={props.layerRequiringCredentials !== undefined || props.mapLayerSourceToEdit !== undefined || layerAttachPending}
               onChange={handleMapTypeSelection}
               size="small"/>
             <span className="map-layer-source-label">{nameLabel}</span>
-            <Input className="map-layer-source-input"  placeholder={nameInputPlaceHolder} onChange={onNameChange} value={mapName} disabled={props.layerRequiringCredentials !== undefined || layerAttachPending || layerAuthPending} />
+            <Input className="map-layer-source-input"  placeholder={nameInputPlaceHolder} onChange={onNameChange} value={mapName} disabled={props.layerRequiringCredentials !== undefined || layerAttachPending} />
             <span className="map-layer-source-label">{urlLabel}</span>
-            <Input className="map-layer-source-input" placeholder={urlInputPlaceHolder} onKeyPress={handleOnKeyDown} onChange={onUrlChange} disabled={props.mapLayerSourceToEdit !== undefined || layerAttachPending || layerAuthPending} value={mapUrl} />
+            <Input className="map-layer-source-input" placeholder={urlInputPlaceHolder} onKeyPress={handleOnKeyDown} onChange={onUrlChange} disabled={props.mapLayerSourceToEdit !== undefined || layerAttachPending} value={mapUrl} />
             {serverRequireCredentials
              && (layerAuthMethod === MapLayerAuthType.Basic ||  layerAuthMethod === MapLayerAuthType.EsriToken)
              && props.mapLayerSourceToEdit === undefined &&
@@ -485,7 +485,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
                   displayStyle="inline"
                   placeholder={serverRequireCredentials ? userNameRequiredLabel : userNameLabel}
                   status={!userName && serverRequireCredentials ? "warning" : undefined}
-                  disabled={layerAttachPending || layerAuthPending}
+                  disabled={layerAttachPending}
                   onChange={onUsernameChange}
                   size="small" />
 
@@ -495,7 +495,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
                   displayStyle="inline"
                   type="password" placeholder={serverRequireCredentials ? passwordRequiredLabel : passwordLabel}
                   status={!password && serverRequireCredentials ? "warning" : undefined}
-                  disabled={layerAttachPending || layerAuthPending}
+                  disabled={layerAttachPending}
                   onChange={onPasswordChange}
                   onKeyPress={handleOnKeyDown}
                   size="small" />
@@ -520,7 +520,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
         {renderWarningMessage()}
 
         {/* Progress bar */}
-        {(layerAttachPending || layerAuthPending) &&
+        {(layerAttachPending) &&
           <div className="map-layer-source-progressBar">
             <ProgressLinear indeterminate />
           </div>
