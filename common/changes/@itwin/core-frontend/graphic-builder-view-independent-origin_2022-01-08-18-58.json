@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Add support for view-independent decoration graphics.",
+      "comment": "Added support for view-independent decoration graphics.",
       "type": "none"
     }
   ],
