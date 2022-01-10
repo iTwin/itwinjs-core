@@ -67,6 +67,7 @@ export class BoxDecorator {
       placement: this.placement,
       type: GraphicType.Scene,
       pickable: this.pickable,
+      viewIndependentOrigin: this.viewIndependentOrigin,
     });
 
     builder.setSymbology(this.color, this.color, 1);

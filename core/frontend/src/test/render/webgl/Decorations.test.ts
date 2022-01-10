@@ -105,18 +105,21 @@ describe("Decorations", () => {
       expectColors(viewport, [dec.color, viewport.view.displayStyle.backgroundColor]);
       expectColors(viewport, [dec.color], boxDecLocRect);
 
-      const w = viewport.viewRect.width;
-      const h = viewport.viewRect.height;
       viewport.view.setRotationAboutPoint(ViewState.getStandardViewMatrix(StandardViewId.Bottom), viewIndependentOrigin);
       viewport.synchWithView();
       expectColors(viewport, [dec.color, viewport.view.displayStyle.backgroundColor]);
-      expectColors(viewport, [dec.color], new ViewRect(0, h / 2, w / 2, h));
-    });
+      expectColors(viewport, [dec.color], boxDecLocRect);
+
+      viewport.view.setRotationAboutPoint(ViewState.getStandardViewMatrix(StandardViewId.Front), viewIndependentOrigin);
+      viewport.synchWithView();
+      expectColors(viewport, [dec.color, viewport.view.displayStyle.backgroundColor]);
+      expectColors(viewport, [dec.color], boxDecLocRect);
+    }).timeout(20000);
 
     it("rotates about corner", () => {
-    });
+    }).timeout(20000);
 
     it("applies branch transform to origin", () => {
-    });
+    }).timeout(20000);
   });
 });
