@@ -117,7 +117,7 @@ Specifications of [calculated properties](./CalculatedPropertiesSpecification.md
 
 Specifications of [custom categories](PropertyCategorySpecification.md).
 
-Simply defining the categories does nothing - they have to be referenced through [`PropertySpecification.categoryId`](./PropertySpecification.md) specified in [`propertyOverrides`](#attribute-property-overrides) list.md) for more details.*
+Simply defining the categories does nothing - they have to be referenced through [`PropertySpecification.categoryId`](./PropertySpecification.md) specified in [`propertyOverrides`](#attribute-propertyoverrides) list.
 
 ```ts
 [[include:ContentInstancesOfSpecificClasses.PropertyCategories.Ruleset]]

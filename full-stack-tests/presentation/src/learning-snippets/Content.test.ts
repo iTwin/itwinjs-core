@@ -852,14 +852,8 @@ describe("Learning Snippets", () => {
 
         expect(content!.contentSet.length).to.eq(4);
         expect(content!.descriptor.fields).to.containSubset([
-          { label: "3D Display Style" },
+          { label: "3D Display Style", nestedFields: [{ label: "Model" }, { label: "Code" }, { label: "User Label" }, { label: "Is Private" }] },
         ]).and.to.have.lengthOf(18);
-        expect((content!.descriptor.fields.find((record) => record.isNestedContentField()) as NestedContentField)!.nestedFields).to.containSubset([
-          { name: "pc_bis_Element_Model_2" },
-          { name: "pc_bis_Element_CodeValue_2" },
-          { name: "pc_bis_Element_UserLabel_2" },
-          { name: "pc_bis_DefinitionElement_IsPrivate_2" },
-        ]);
       });
 
       it("uses `calculatedProperties` attribute", async () => {
