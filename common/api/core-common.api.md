@@ -3762,6 +3762,21 @@ export function getMaximumMajorTileFormatVersion(maxMajorVersion: number, format
 
 export { GetMetaDataFunction }
 
+// @internal (undocumented)
+export class GlbHeader extends TileHeader {
+    constructor(stream: ByteStream);
+    // (undocumented)
+    readonly additionalChunks: TypedGltfChunk[];
+    // (undocumented)
+    readonly binaryChunk?: GltfChunk;
+    // (undocumented)
+    readonly gltfLength: number;
+    // (undocumented)
+    get isValid(): boolean;
+    // (undocumented)
+    readonly jsonChunk: GltfChunk;
+}
+
 // @public
 export enum GlobeMode {
     Ellipsoid = 0,
@@ -3769,18 +3784,9 @@ export enum GlobeMode {
 }
 
 // @internal
-export class GltfHeader extends TileHeader {
-    constructor(stream: ByteStream);
-    // (undocumented)
-    readonly binaryPosition: number;
-    // (undocumented)
-    readonly gltfLength: number;
-    // (undocumented)
-    get isValid(): boolean;
-    // (undocumented)
-    readonly scenePosition: number;
-    // (undocumented)
-    readonly sceneStrLength: number;
+export interface GltfChunk {
+    length: number;
+    offset: number;
 }
 
 // @internal (undocumented)
@@ -4429,6 +4435,8 @@ export abstract class IModel implements IModelProps {
     static getDefaultSubCategoryId(categoryId: Id64String): Id64String;
     getEcefTransform(): Transform;
     getRpcProps(): IModelRpcProps;
+    // @internal
+    protected _getRpcProps(): IModelRpcProps;
     get globalOrigin(): Point3d;
     set globalOrigin(org: Point3d);
     get iModelId(): GuidString | undefined;
@@ -8569,6 +8577,7 @@ export interface TextureData {
     bytes: Uint8Array;
     format: ImageSourceFormat;
     height: number;
+    transparency?: TextureTransparency;
     width: number;
 }
 
@@ -8668,6 +8677,13 @@ export interface TextureProps extends DefinitionElementProps {
     data: Base64EncodedString;
     description?: string;
     format: ImageSourceFormat;
+}
+
+// @public
+export enum TextureTransparency {
+    Mixed = 2,
+    Opaque = 0,
+    Translucent = 1
 }
 
 // @public
@@ -9147,6 +9163,11 @@ export interface TypeDefinitionElementProps extends DefinitionElementProps {
     // (undocumented)
     recipe?: RelatedElementProps;
 }
+
+// @internal
+export type TypedGltfChunk = GltfChunk & {
+    type: number;
+};
 
 // @public
 export enum TypeOfChange {

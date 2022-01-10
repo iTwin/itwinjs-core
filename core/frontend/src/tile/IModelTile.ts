@@ -101,7 +101,7 @@ export class IModelTile extends Tile {
       isCanceled = () => !this.isLoading;
 
     assert(data instanceof Uint8Array);
-    const streamBuffer = new ByteStream(data.buffer);
+    const streamBuffer = ByteStream.fromUint8Array(data);
 
     const position = streamBuffer.curPos;
     const format = streamBuffer.nextUint32;

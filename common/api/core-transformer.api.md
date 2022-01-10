@@ -65,33 +65,31 @@ export class IModelExporter {
 
 // @beta
 export abstract class IModelExportHandler {
-    // @internal
-    get callProtected(): any;
-    protected onDeleteElement(_elementId: Id64String): void;
-    protected onDeleteModel(_modelId: Id64String): void;
-    protected onDeleteRelationship(_relInstanceId: Id64String): void;
-    protected onExportCodeSpec(_codeSpec: CodeSpec, _isUpdate: boolean | undefined): void;
-    protected onExportElement(_element: Element, _isUpdate: boolean | undefined): void;
-    protected onExportElementMultiAspects(_aspects: ElementMultiAspect[]): void;
-    protected onExportElementUniqueAspect(_aspect: ElementUniqueAspect, _isUpdate: boolean | undefined): void;
-    protected onExportFont(_font: FontProps, _isUpdate: boolean | undefined): void;
-    protected onExportModel(_model: Model, _isUpdate: boolean | undefined): void;
-    protected onExportRelationship(_relationship: Relationship, _isUpdate: boolean | undefined): void;
-    protected onExportSchema(_schema: Schema): Promise<void>;
-    protected onProgress(): Promise<void>;
-    protected shouldExportCodeSpec(_codeSpec: CodeSpec): boolean;
-    protected shouldExportElement(_element: Element): boolean;
-    protected shouldExportElementAspect(_aspect: ElementAspect): boolean;
-    protected shouldExportRelationship(_relationship: Relationship): boolean;
-    protected shouldExportSchema(_schemaKey: SchemaKey): boolean;
+    onDeleteElement(_elementId: Id64String): void;
+    onDeleteModel(_modelId: Id64String): void;
+    onDeleteRelationship(_relInstanceId: Id64String): void;
+    onExportCodeSpec(_codeSpec: CodeSpec, _isUpdate: boolean | undefined): void;
+    onExportElement(_element: Element, _isUpdate: boolean | undefined): void;
+    onExportElementMultiAspects(_aspects: ElementMultiAspect[]): void;
+    onExportElementUniqueAspect(_aspect: ElementUniqueAspect, _isUpdate: boolean | undefined): void;
+    onExportFont(_font: FontProps, _isUpdate: boolean | undefined): void;
+    onExportModel(_model: Model, _isUpdate: boolean | undefined): void;
+    onExportRelationship(_relationship: Relationship, _isUpdate: boolean | undefined): void;
+    onExportSchema(_schema: Schema): Promise<void>;
+    onProgress(): Promise<void>;
+    shouldExportCodeSpec(_codeSpec: CodeSpec): boolean;
+    shouldExportElement(_element: Element): boolean;
+    shouldExportElementAspect(_aspect: ElementAspect): boolean;
+    shouldExportRelationship(_relationship: Relationship): boolean;
+    shouldExportSchema(_schemaKey: SchemaKey): boolean;
 }
 
 // @beta
 export class IModelImporter implements Required<IModelImportOptions> {
     constructor(targetDb: IModelDb, options?: IModelImportOptions);
-    autoExtendProjectExtents: boolean | {
-        excludeOutliers: boolean;
-    };
+    // @deprecated
+    get autoExtendProjectExtents(): Required<IModelImportOptions>["autoExtendProjectExtents"];
+    set autoExtendProjectExtents(val: Required<IModelImportOptions>["autoExtendProjectExtents"]);
     computeProjectExtents(): void;
     deleteElement(elementId: Id64String): void;
     deleteRelationship(relationshipProps: RelationshipProps): void;
@@ -113,9 +111,14 @@ export class IModelImporter implements Required<IModelImportOptions> {
     protected onUpdateElementAspect(aspectProps: ElementAspectProps): void;
     protected onUpdateModel(modelProps: ModelProps): void;
     protected onUpdateRelationship(relationshipProps: RelationshipProps): void;
-    preserveElementIdsForFiltering: boolean;
+    readonly options: Required<IModelImportOptions>;
+    // @deprecated
+    get preserveElementIdsForFiltering(): Required<IModelImportOptions>["preserveElementIdsForFiltering"];
+    set preserveElementIdsForFiltering(val: Required<IModelImportOptions>["preserveElementIdsForFiltering"]);
     progressInterval: number;
-    simplifyElementGeometry: boolean;
+    // @deprecated
+    get simplifyElementGeometry(): Required<IModelImportOptions>["simplifyElementGeometry"];
+    set simplifyElementGeometry(val: Required<IModelImportOptions>["simplifyElementGeometry"]);
     readonly targetDb: IModelDb;
     }
 
@@ -125,6 +128,7 @@ export interface IModelImportOptions {
         excludeOutliers: boolean;
     };
     preserveElementIdsForFiltering?: boolean;
+    simplifyElementGeometry?: boolean;
 }
 
 // @beta
@@ -139,20 +143,20 @@ export class IModelTransformer extends IModelExportHandler {
     protected hasElementChanged(sourceElement: Element, targetElementId: Id64String): boolean;
     readonly importer: IModelImporter;
     initFromExternalSourceAspects(): void;
-    protected onDeleteElement(sourceElementId: Id64String): void;
-    protected onDeleteModel(_sourceModelId: Id64String): void;
-    protected onDeleteRelationship(sourceRelInstanceId: Id64String): void;
-    protected onExportCodeSpec(sourceCodeSpec: CodeSpec): void;
-    protected onExportElement(sourceElement: Element): void;
-    protected onExportElementMultiAspects(sourceAspects: ElementMultiAspect[]): void;
-    protected onExportElementUniqueAspect(sourceAspect: ElementUniqueAspect): void;
-    protected onExportFont(font: FontProps, _isUpdate: boolean | undefined): void;
-    protected onExportModel(sourceModel: Model): void;
-    protected onExportRelationship(sourceRelationship: Relationship): void;
-    protected onExportSchema(schema: ECSchemaMetaData.Schema): Promise<void>;
-    protected onTransformElement(sourceElement: Element): ElementProps;
+    onDeleteElement(sourceElementId: Id64String): void;
+    onDeleteModel(_sourceModelId: Id64String): void;
+    onDeleteRelationship(sourceRelInstanceId: Id64String): void;
+    onExportCodeSpec(sourceCodeSpec: CodeSpec): void;
+    onExportElement(sourceElement: Element): void;
+    onExportElementMultiAspects(sourceAspects: ElementMultiAspect[]): void;
+    onExportElementUniqueAspect(sourceAspect: ElementUniqueAspect): void;
+    onExportFont(font: FontProps, _isUpdate: boolean | undefined): void;
+    onExportModel(sourceModel: Model): void;
+    onExportRelationship(sourceRelationship: Relationship): void;
+    onExportSchema(schema: ECSchemaMetaData.Schema): Promise<void>;
+    onTransformElement(sourceElement: Element): ElementProps;
     protected onTransformElementAspect(sourceElementAspect: ElementAspect, _targetElementId: Id64String): ElementAspectProps;
-    protected onTransformModel(sourceModel: Model, targetModeledElementId: Id64String): ModelProps;
+    onTransformModel(sourceModel: Model, targetModeledElementId: Id64String): ModelProps;
     protected onTransformRelationship(sourceRelationship: Relationship): RelationshipProps;
     processAll(): Promise<void>;
     processChanges(accessToken: AccessToken, startChangesetId?: string): Promise<void>;
@@ -169,20 +173,21 @@ export class IModelTransformer extends IModelExportHandler {
     processSubject(sourceSubjectId: Id64String, targetSubjectId: Id64String): Promise<void>;
     get provenanceDb(): IModelDb;
     protected _schemaExportDir: string;
-    protected shouldExportCodeSpec(_sourceCodeSpec: CodeSpec): boolean;
-    protected shouldExportElement(_sourceElement: Element): boolean;
-    protected shouldExportElementAspect(_sourceAspect: ElementAspect): boolean;
-    protected shouldExportRelationship(_sourceRelationship: Relationship): boolean;
-    protected shouldExportSchema(schemaKey: ECSchemaMetaData.SchemaKey): boolean;
+    shouldExportCodeSpec(_sourceCodeSpec: CodeSpec): boolean;
+    shouldExportElement(_sourceElement: Element): boolean;
+    shouldExportElementAspect(sourceAspect: ElementAspect): boolean;
+    shouldExportRelationship(_sourceRelationship: Relationship): boolean;
+    shouldExportSchema(schemaKey: ECSchemaMetaData.SchemaKey): boolean;
     protected skipElement(sourceElement: Element): void;
     readonly sourceDb: IModelDb;
     readonly targetDb: IModelDb;
-    readonly targetScopeElementId: Id64String;
+    get targetScopeElementId(): Id64String;
     }
 
 // @beta
 export interface IModelTransformOptions {
     cloneUsingBinaryGeometry?: boolean;
+    danglingPredecessorsBehavior?: "reject" | "ignore";
     includeSourceProvenance?: boolean;
     isReverseSynchronization?: boolean;
     loadSourceGeometry?: boolean;
@@ -195,7 +200,7 @@ export interface IModelTransformOptions {
 // @beta
 export class TemplateModelCloner extends IModelTransformer {
     constructor(sourceDb: IModelDb, targetDb?: IModelDb);
-    protected onTransformElement(sourceElement: Element): ElementProps;
+    onTransformElement(sourceElement: Element): ElementProps;
     placeTemplate2d(sourceTemplateModelId: Id64String, targetModelId: Id64String, placement: Placement2d): Promise<Map<Id64String, Id64String>>;
     placeTemplate3d(sourceTemplateModelId: Id64String, targetModelId: Id64String, placement: Placement3d): Promise<Map<Id64String, Id64String>>;
     }

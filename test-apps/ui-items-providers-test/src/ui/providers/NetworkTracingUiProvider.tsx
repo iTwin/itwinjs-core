@@ -7,13 +7,15 @@ import * as React from "react";
 import {
   AbstractWidgetProps, BackstageItem,
   BackstageItemUtilities, BadgeType,
+  CommonStatusBarItem,
   CommonToolbarItem, ConditionalBooleanValue, IconSpecUtilities,
   StagePanelLocation, StagePanelSection,
-  StageUsage,
+  StageUsage, StatusBarSection,
   ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage,
   UiItemsManager, UiItemsProvider, WidgetState,
 } from "@itwin/appui-abstract";
-import { StateManager, SyncUiEventDispatcher } from "@itwin/appui-react";
+import { CustomToolbarItem } from "@itwin/components-react";
+import { Indicator, StateManager, StatusBarItemUtilities, SyncUiEventDispatcher } from "@itwin/appui-react";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
 import { PresentationPropertyGridWidget, PresentationPropertyGridWidgetControl } from "../widgets/PresentationPropertyGridWidget";
 import { OpenTraceDialogTool } from "../../tools/OpenTraceDialogTool";
@@ -21,6 +23,7 @@ import { NetworkTracingFrontstage } from "../frontstages/NetworkTracing";
 import { getTestProviderState, setIsTraceAvailable } from "../../store";
 import { UiItemsProvidersTest } from "../../ui-items-providers-test";
 import { SelectedElementDataWidgetComponent } from "../widgets/SelectedElementDataWidget";
+import { VisibilityTreeComponent } from "../widgets/VisibilityWidget";
 import { ViewAttributesWidgetComponent } from "../widgets/ViewAttributesWidget";
 
 /** the following will import svgs into DOM and generate SymbolId that is used to locate the svg image. This
@@ -135,7 +138,7 @@ export class NetworkTracingUiProvider implements UiItemsProvider {
 
       /** The following test tool hides/shows based on value in Redux store via `isTraceAvailableCondition` */
       const getStandaloneButton = ToolbarItemUtilities.createActionButton(
-        "trace-tool-standalone", 232, "icon-symbol",  UiItemsProvidersTest.translate("tools.trace-tool-standalone"),
+        "trace-tool-standalone", 232, "icon-symbol", UiItemsProvidersTest.translate("tools.trace-tool-standalone"),
         (): void => {
           IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "trace-tool-standalone activated", undefined, OutputMessageType.Toast));
         },
@@ -144,7 +147,19 @@ export class NetworkTracingUiProvider implements UiItemsProvider {
           badgeType: BadgeType.TechnicalPreview,
         }
       );
-      return [groupSpec, getStandaloneButton, toggleTracingSpec];
+
+      const customVisibilityTreeButton: CustomToolbarItem = {
+        isCustom: true,
+        id: "test.custom-popup-with-visibility-tree",
+        itemPriority: 225,
+        icon: "icon-tree",
+        label: "Searchable Tree",
+        panelContentNode: <VisibilityTreeComponent />,
+        keepContentsLoaded: true,
+        groupPriority: 20,
+      };
+
+      return [groupSpec, getStandaloneButton, toggleTracingSpec, customVisibilityTreeButton];
     }
     return [];
   }
@@ -156,6 +171,7 @@ export class NetworkTracingUiProvider implements UiItemsProvider {
       /** This widget when only be displayed when there is an element selected. */
       const widget: AbstractWidgetProps = {
         id: "ui-item-provider-test:elementDataListWidget",
+        icon: "icon-annotation-info",
         label: "Data",
         defaultState: WidgetState.Hidden,
         isFloatingStateSupported: true,
@@ -172,6 +188,7 @@ export class NetworkTracingUiProvider implements UiItemsProvider {
       const widget: AbstractWidgetProps = {
         id: PresentationPropertyGridWidgetControl.id,
         label: PresentationPropertyGridWidgetControl.label,
+        icon: PresentationPropertyGridWidgetControl.iconSpec,
         defaultState: WidgetState.Open,
         isFloatingStateSupported: true,
         // eslint-disable-next-line react/display-name
@@ -187,6 +204,7 @@ export class NetworkTracingUiProvider implements UiItemsProvider {
       const widget: AbstractWidgetProps = {
         id: "ui-item-provider-test:ViewAttributesWidget",
         label: "View Attributes",
+        icon: "icon-window-settings",
         defaultState: WidgetState.Floating,
         isFloatingStateSupported: true,
         // eslint-disable-next-line react/display-name
@@ -207,5 +225,15 @@ export class NetworkTracingUiProvider implements UiItemsProvider {
       // use 200 to group it with secondary stages in ui-test-app
       BackstageItemUtilities.createStageLauncher(NetworkTracingFrontstage.stageId, 200, 1, label, "from provider", "icon-draw"),
     ];
+  }
+
+  public provideStatusBarItems(stageId: string, _stageUsage: string): CommonStatusBarItem[] {
+    const statusBarItems: CommonStatusBarItem[] = [];
+    if (stageId === NetworkTracingFrontstage.stageId) {
+      statusBarItems.push(
+        StatusBarItemUtilities.createStatusBarItem("Test:Visibility", StatusBarSection.Center, 50, <Indicator iconSpec="icon-tree" isLabelVisible={false} label="Searchable Tree" opened={false} dialog={<VisibilityTreeComponent />} />),
+      );
+    }
+    return statusBarItems;
   }
 }

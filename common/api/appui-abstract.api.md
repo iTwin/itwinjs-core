@@ -252,6 +252,34 @@ export abstract class BaseQuantityDescription implements PropertyDescription {
 }
 
 // @public
+export class BaseUiItemsProvider implements UiItemsProvider {
+    constructor(_providerId: string, isSupportedStage?: ((stageId: string, stageUsage: string, stageAppData?: any) => boolean) | undefined);
+    // (undocumented)
+    get id(): string;
+    // (undocumented)
+    isSupportedStage?: ((stageId: string, stageUsage: string, stageAppData?: any) => boolean) | undefined;
+    // (undocumented)
+    onUnregister(): void;
+    provideBackstageItems(): BackstageItem[];
+    // (undocumented)
+    protected _providerId: string;
+    // (undocumented)
+    provideStatusBarItems(stageId: string, stageUsage: string, stageAppData?: any): CommonStatusBarItem[];
+    // (undocumented)
+    provideStatusBarItemsInternal(_stageId: string, _stageUsage: string, _stageAppData?: any): CommonStatusBarItem[];
+    // (undocumented)
+    provideToolbarButtonItems(stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any): CommonToolbarItem[];
+    // (undocumented)
+    provideToolbarButtonItemsInternal(_stageId: string, _stageUsage: string, _toolbarUsage: ToolbarUsage, _toolbarOrientation: ToolbarOrientation, _stageAppData?: any): CommonToolbarItem[];
+    // (undocumented)
+    provideWidgets(stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection, _zoneLocation?: AbstractZoneLocation, stageAppData?: any): ReadonlyArray<AbstractWidgetProps>;
+    // (undocumented)
+    provideWidgetsInternal(_stageId: string, _stageUsage: string, _location: StagePanelLocation, _section?: StagePanelSection, _stageAppData?: any): AbstractWidgetProps[];
+    // (undocumented)
+    unregister(): void;
+}
+
+// @public
 export interface ButtonGroupEditorParams extends BasePropertyEditorParams {
     // (undocumented)
     buttons: IconDefinition[];
@@ -1339,6 +1367,8 @@ export enum MessageSeverity {
     // (undocumented)
     Question = 2,
     // (undocumented)
+    Success = 6,
+    // (undocumented)
     Warning = 3
 }
 
@@ -2084,11 +2114,7 @@ export class UiItemsManager {
 // @public
 export interface UiItemsProvider {
     readonly id: string;
-    onBackstageItemArbiterChange?: (item: BackstageItem, action: UiItemsApplicationAction) => void;
-    onStatusBarItemArbiterChange?: (item: CommonStatusBarItem, action: UiItemsApplicationAction) => void;
-    onToolbarButtonItemArbiterChange?: (item: CommonToolbarItem, action: UiItemsApplicationAction) => void;
     onUnregister?: () => void;
-    onWidgetArbiterChange?: (widget: AbstractWidgetProps, action: UiItemsApplicationAction) => void;
     provideBackstageItems?: () => BackstageItem[];
     provideStatusBarItems?: (stageId: string, stageUsage: string, stageAppData?: any) => CommonStatusBarItem[];
     provideToolbarButtonItems?: (stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any) => CommonToolbarItem[];

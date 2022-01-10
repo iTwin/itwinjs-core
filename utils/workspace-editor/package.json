@@ -3,7 +3,7 @@
   "private": false,
   "license": "MIT",
   "main": "lib/WorkspaceEditor.js",
-  "version": "3.0.0-dev.161",
+  "version": "3.0.0-dev.181",
   "bin": {
     "WorkspaceEditor": "./lib/WorkspaceEditor.js"
   },
@@ -15,9 +15,12 @@
     "docs": "",
     "lint": "eslint --max-warnings 0 \"./src/**/*.ts\" 1>&2",
     "start": "node ./lib/Main.js",
-    "test": "mocha"
+    "test": ""
   },
-  "repository": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/utils/workspace-editor"
+  },
   "dependencies": {
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",

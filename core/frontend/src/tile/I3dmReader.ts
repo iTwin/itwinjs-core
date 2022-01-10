@@ -57,7 +57,7 @@ export class I3dmReader extends GltfReader {
     if (!header.isValid)
       return undefined;
 
-    const props = GltfReaderProps.create(stream, yAxisUp);
+    const props = GltfReaderProps.create(stream.nextBytes(header.length - stream.curPos), yAxisUp);
     if (undefined === props)
       return undefined;
 
@@ -100,7 +100,7 @@ export class I3dmReader extends GltfReader {
       this._featureTable.insert(feature);
     }
 
-    await this.loadTextures();
+    await this.resolveResources();
     if (this._isCanceled)
       return { readStatus: TileReadStatus.Canceled, isLeaf: this._isLeaf };
 

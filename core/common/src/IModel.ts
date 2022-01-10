@@ -478,7 +478,7 @@ export abstract class IModel implements IModelProps {
       globalOrigin: this.globalOrigin.toJSON(),
       ecefLocation: this.ecefLocation,
       geographicCoordinateSystem: this.geographicCoordinateSystem,
-      ... this.getRpcProps(),
+      ... this._getRpcProps(),
     };
   }
 
@@ -509,11 +509,21 @@ export abstract class IModel implements IModelProps {
   /** The [[OpenMode]] used for this IModel. */
   public get openMode(): OpenMode { return this._openMode; }
 
-  /** Return a token for RPC operations. */
+  /** Return a token for RPC operations.
+   * @throws IModelError if the iModel is not open.
+   */
   public getRpcProps(): IModelRpcProps {
     if (!this.isOpen)
       throw new IModelError(IModelStatus.BadRequest, "IModel is not open for rpc");
 
+    return this._getRpcProps();
+  }
+
+  /** Returns the iModel's RPC properties.
+   * @note It is an error to attempt to use these properties as a token for RPC operations if the iModel is not open.
+   * @internal
+   */
+  protected _getRpcProps(): IModelRpcProps {
     return {
       key: this._fileKey,
       iTwinId: this.iTwinId,

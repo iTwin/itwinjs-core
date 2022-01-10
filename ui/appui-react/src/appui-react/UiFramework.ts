@@ -508,6 +508,17 @@ export class UiFramework {
     UiFramework.dispatchActionToStore(ConfigurableUiActionId.SetFrameworkVersion, version === "1" ? "1" : "2", true);
   }
 
+  public static get showWidgetIcon(): boolean {
+    return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.showWidgetIcon : /* istanbul ignore next */ false;
+  }
+
+  public static setShowWidgetIcon(value: boolean) {
+    if (UiFramework.showWidgetIcon === value)
+      return;
+
+    UiFramework.dispatchActionToStore(ConfigurableUiActionId.SetShowWidgetIcon, value, true);
+  }
+
   public static get useDragInteraction(): boolean {
     return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.useDragInteraction : false;
   }
@@ -516,6 +527,20 @@ export class UiFramework {
     UiFramework.dispatchActionToStore(ConfigurableUiActionId.SetDragInteraction, useDragInteraction, true);
   }
 
+  /** Returns the variable controlling whether the overlay is displayed in a Viewport
+   * @public
+   */
+  public static get viewOverlayDisplay() {
+    return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.viewOverlayDisplay : /* istanbul ignore next */ true;
+  }
+  /** Set the variable that controls display of the view overlay. Applies to all viewports in the app
+ * @public
+ */
+  public static setViewOverlayDisplay(display: boolean) {
+    if (UiFramework.viewOverlayDisplay === display)
+      return;
+    UiFramework.dispatchActionToStore(ConfigurableUiActionId.SetViewOverlayDisplay, display);
+  }
   /** Send logging message to the telemetry system
    * @internal
    */
@@ -536,14 +561,6 @@ export class UiFramework {
       await IModelApp.telemetry.postTelemetry(activity, telemetryEvent);
     } catch { }
   }
-  private static _handleFrameworkVersionChangedEvent = (args: FrameworkVersionChangedEventArgs) => {
-    // Log Ui Version used
-    Logger.logInfo(UiFramework.loggerCategory(UiFramework), `Ui Version changed to ${args.version} `);
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    UiFramework.postTelemetry(`Ui Version changed to ${args.version} `, "F2772C81-962D-4755-807C-2D675A5FF399");
-    UiFramework.setUiVersion(args.version);
-  };
-
   /** Determines whether a ContextMenu is open
    * @alpha
    * */

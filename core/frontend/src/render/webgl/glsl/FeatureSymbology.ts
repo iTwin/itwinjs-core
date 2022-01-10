@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { OvrFlags, RenderOrder, TextureUnit } from "../RenderFlags";
+import { OvrFlags, Pass, RenderOrder, TextureUnit } from "../RenderFlags";
 import {
   FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariablePrecision, VariableType, VertexShaderBuilder,
   VertexShaderComponent,
@@ -188,13 +188,18 @@ function addTransparencyDiscardFlags(vert: VertexShaderBuilder) {
   // 4: discard view-independent translucent during opaque.
   vert.addUniform("u_transparencyDiscardFlags", VariableType.Int, (prog) => {
     prog.addGraphicUniform("u_transparencyDiscardFlags", (uniform, params) => {
-      // During readPixels() we force transparency off. Make sure to ignore a Branch that turns it back on.
       let flags = 0;
-      if (!params.target.isReadPixelsInProgress)
-        flags = params.target.currentViewFlags.transparency ? 1 : 4;
 
-      if (!params.geometry.alwaysRenderTranslucent)
-        flags += 2;
+      // Textured surfaces may render in both passes. If so, it's up to fragment shader to handle discard.
+      const pass = params.geometry.getPass(params.target);
+      if (!Pass.rendersOpaqueAndTranslucent(pass)) {
+        // During readPixels() we force transparency off. Make sure to ignore a Branch that turns it back on.
+        if (!params.target.isReadPixelsInProgress)
+          flags = params.target.currentViewFlags.transparency ? 1 : 4;
+
+        if (!params.geometry.alwaysRenderTranslucent)
+          flags += 2;
+      }
 
       uniform.setUniform1i(flags);
     });

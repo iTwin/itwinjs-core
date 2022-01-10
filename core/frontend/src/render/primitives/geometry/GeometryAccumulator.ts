@@ -25,6 +25,7 @@ export class GeometryAccumulator {
   private _transform: Transform;
   private _surfacesOnly: boolean;
   private readonly _analysisDisplacement?: AnalysisStyleDisplacement;
+  private readonly _viewIndependentOrigin?: Point3d;
 
   public readonly tileRange: Range3d;
   public readonly geometries: GeometryList = new GeometryList();
@@ -41,12 +42,14 @@ export class GeometryAccumulator {
     transform?: Transform;
     tileRange?: Range3d;
     analysisStyleDisplacement?: AnalysisStyleDisplacement;
+    viewIndependentOrigin?: Point3d;
   }) {
     this.system = options?.system ?? IModelApp.renderSystem;
     this.tileRange = options?.tileRange ?? Range3d.createNull();
     this._surfacesOnly = true === options?.surfacesOnly;
     this._transform = options?.transform ?? Transform.createIdentity();
     this._analysisDisplacement = options?.analysisStyleDisplacement;
+    this._viewIndependentOrigin = options?.viewIndependentOrigin;
   }
 
   private getPrimitiveRange(geom: PrimitiveGeometryType): Range3d | undefined {
@@ -190,7 +193,7 @@ export class GeometryAccumulator {
 
       verts.params.origin.setZero();
 
-      const graphic = mesh.getGraphics(args, this.system);
+      const graphic = mesh.getGraphics(args, this.system, this._viewIndependentOrigin);
       if (undefined !== graphic)
         branch.add(graphic);
     }

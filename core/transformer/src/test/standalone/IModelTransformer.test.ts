@@ -11,7 +11,7 @@ import { DbResult, Guid, Id64, Id64String, Logger, LogLevel, OpenMode } from "@i
 import { Point3d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   CategorySelector, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingModel, ECSqlStatement, Element,
-  ElementMultiAspect, ElementOwnsChildElements, ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, GenericPhysicalMaterial,
+  ElementMultiAspect, ElementOwnsChildElements, ElementOwnsExternalSourceAspects, ElementOwnsUniqueAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, GenericPhysicalMaterial,
   GeometricElement,
   IModelCloneContext, IModelDb, IModelHost, IModelJsFs, IModelSchemaLoader, InformationRecordModel, InformationRecordPartition, LinkElement, Model,
   ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, Relationship, RepositoryLink, Schema,
@@ -723,13 +723,13 @@ describe("IModelTransformer", () => {
         this.iModelExporter = new IModelExporter(iModelDb);
         this.iModelExporter.registerHandler(this);
       }
-      protected override onExportModel(_model: Model, _isUpdate: boolean | undefined): void {
+      public override onExportModel(_model: Model, _isUpdate: boolean | undefined): void {
         ++this.modelCount;
       }
-      protected override onExportElement(_element: Element, _isUpdate: boolean | undefined): void {
+      public override onExportElement(_element: Element, _isUpdate: boolean | undefined): void {
         assert.fail("Should not visit element when visitElements=false");
       }
-      protected override onExportRelationship(_relationship: Relationship, _isUpdate: boolean | undefined): void {
+      public override onExportRelationship(_relationship: Relationship, _isUpdate: boolean | undefined): void {
         assert.fail("Should not visit relationship when visitRelationship=false");
       }
     }
@@ -933,8 +933,8 @@ describe("IModelTransformer", () => {
         const schema2 = schemaLoader.getSchema("TestSchema2");
         // by importing schema2 (which references schema1) first, we
         // prove that the import order in processSchemas does not matter
-        await this.handler.callProtected.onExportSchema(schema2);
-        await this.handler.callProtected.onExportSchema(schema1);
+        await this.handler.onExportSchema(schema2);
+        await this.handler.onExportSchema(schema1);
       }
     }
 
@@ -1381,6 +1381,219 @@ describe("IModelTransformer", () => {
     const targetContent = await getAllElementsInvariants(targetDb);
     expect(targetContent).to.deep.equal(sourceContent);
 
+    sourceDb.close();
+    targetDb.close();
+  });
+
+  function createIModelWithDanglingPredecessor(opts: {name: string, path: string}) {
+    const sourceDb = SnapshotDb.createEmpty(opts.path, { rootSubject: { name: opts.name } });
+
+    const sourceCategoryId = SpatialCategory.insert(sourceDb, IModel.dictionaryId, "SpatialCategory", { color: ColorDef.green.toJSON() });
+    const sourceModelId = PhysicalModel.insert(sourceDb, IModel.rootSubjectId, "Physical");
+    const myPhysObjCodeSpec = CodeSpec.create(sourceDb, "myPhysicalObjects", CodeScopeSpec.Type.ParentElement);
+    const myPhysObjCodeSpecId = sourceDb.codeSpecs.insert(myPhysObjCodeSpec);
+    const physicalObjects = [1, 2].map((x) => {
+      const code = new Code({
+        spec: myPhysObjCodeSpecId,
+        scope: sourceModelId,
+        value: `PhysicalObject(${x})`,
+      });
+      const props: PhysicalElementProps = {
+        classFullName: PhysicalObject.classFullName,
+        model: sourceModelId,
+        category: sourceCategoryId,
+        code,
+        userLabel: `PhysicalObject(${x})`,
+        geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1)),
+        placement: Placement3d.fromJSON({ origin: { x }, angles: {} }),
+      };
+      const id = sourceDb.elements.insertElement(props);
+      return { code, id };
+    });
+    const displayStyleId = DisplayStyle3d.insert(
+      sourceDb,
+      IModel.dictionaryId,
+      "MyDisplayStyle",
+      {
+        excludedElements: physicalObjects.map((o) => o.id),
+      }
+    );
+    const displayStyleCode = sourceDb.elements.getElement(displayStyleId).code;
+
+    const physObjId2 = physicalObjects[1].id;
+    // this deletion makes the display style have an reference to a now-gone element
+    sourceDb.elements.deleteElement(physObjId2);
+
+    sourceDb.saveChanges();
+
+    return [
+      sourceDb,
+      {
+        sourceCategoryId,
+        sourceModelId,
+        physicalObjects,
+        displayStyleId,
+        displayStyleCode,
+        myPhysObjCodeSpec,
+      },
+    ] as const;
+  }
+
+  /**
+   * A transformer that inserts an element at the beginning to ensure the target doesn't end up with the same ids as the source.
+   * Useful if you need to check that some source/target element references match and want to be sure it isn't a coincidence,
+   * which can happen deterministically in several cases, as well as just copy-paste errors where you accidentally test a
+   * source or target db against itself
+   * @note it modifies the target so there are side effects
+   */
+  class ShiftElemIdsTransformer extends IModelTransformer {
+    constructor(...args: ConstructorParameters<typeof IModelTransformer>) {
+      super(...args);
+      try {
+        // the choice of element to insert is arbitrary, anything easy works
+        PhysicalModel.insert(this.targetDb, IModel.rootSubjectId, "MyShiftElemIdsPhysicalModel");
+      } catch (_err) {} // ignore error in case someone tries to transform the same target multiple times with this
+    }
+  }
+
+  it("predecessor deletion is considered invalid when danglingPredecessorsBehavior='reject' and that is the default", async () => {
+    const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "DanglingPredecessorSource.bim");
+    const [
+      sourceDb,
+      { displayStyleId, physicalObjects },
+    ] = createIModelWithDanglingPredecessor({ name: "DanglingPredecessors", path: sourceDbPath });
+
+    const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "DanglingPredecessorTarget.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
+
+    const defaultTransformer = new ShiftElemIdsTransformer(sourceDb, targetDb);
+    await expect(defaultTransformer.processAll()).to.be.rejectedWith(
+      /Found a reference to an element "[^"]*" that doesn't exist/
+    );
+
+    const ignoreDanglingPredecessorsDisabledTransformer = new ShiftElemIdsTransformer(sourceDb, targetDb, { danglingPredecessorsBehavior: "reject" });
+    await expect(ignoreDanglingPredecessorsDisabledTransformer.processAll()).to.be.rejectedWith(
+      /Found a reference to an element "[^"]*" that doesn't exist/
+    );
+
+    const ignoreDanglingPredecessorsEnabledTransformer = new ShiftElemIdsTransformer(sourceDb, targetDb, { danglingPredecessorsBehavior: "ignore" });
+    await expect(ignoreDanglingPredecessorsEnabledTransformer.processAll()).not.to.be.rejected;
+    targetDb.saveChanges();
+
+    expect(sourceDb.elements.tryGetElement(physicalObjects[1].id)).to.be.undefined;
+    const displayStyleInSource = sourceDb.elements.getElement<DisplayStyle3d>(displayStyleId);
+    expect([...displayStyleInSource.settings.excludedElementIds]).to.include(physicalObjects[1].id);
+
+    const displayStyleInTargetId = ignoreDanglingPredecessorsEnabledTransformer.context.findTargetElementId(displayStyleId);
+    const displayStyleInTarget = targetDb.elements.getElement<DisplayStyle3d>(displayStyleInTargetId);
+
+    const physObjsInTarget = physicalObjects.map((physObjInSource) => {
+      const physObjInTargetId = ignoreDanglingPredecessorsEnabledTransformer.context.findTargetElementId(physObjInSource.id);
+      return { ...physObjInSource, id: physObjInTargetId };
+    });
+
+    expect(Id64.isValidId64(physObjsInTarget[0].id)).to.be.true;
+    expect(Id64.isValidId64(physObjsInTarget[1].id)).not.to.be.true;
+
+    expect(
+      [...displayStyleInTarget.settings.excludedElementIds]
+    ).to.deep.equal(
+      physObjsInTarget
+        .filter(({id}) => Id64.isValidId64(id))
+        .map(({id}) => id)
+    );
+
+    sourceDb.close();
+    targetDb.close();
+  });
+
+  it("exports aspects of deferred elements", async () => {
+    const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "DeferredElementWithAspects-Source.bim");
+    const sourceDb  = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "deferred-element-with-aspects"} });
+
+    const testSchema1Path = IModelTestUtils.prepareOutputFile("IModelTransformer", "TestSchema1.ecschema.xml");
+    // the only two ElementUniqueAspect's in bis are ignored by the transformer, so we add our own to test their export
+    IModelJsFs.writeFileSync(testSchema1Path, `<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="TestSchema1" alias="ts1" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+          <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+          <ECEntityClass typeName="MyUniqueAspect" description="A test unique aspect" displayLabel="a test unique aspect" modifier="Sealed">
+            <BaseClass>bis:ElementUniqueAspect</BaseClass>
+            <ECProperty propertyName="MyProp1" typeName="string"/>
+        </ECEntityClass>
+      </ECSchema>`
+    );
+
+    await sourceDb.importSchemas([testSchema1Path]);
+
+    const myPhysicalModelId = PhysicalModel.insert(sourceDb, IModelDb.rootSubjectId, "MyPhysicalModel");
+    const mySpatialCategId = SpatialCategory.insert(sourceDb, IModelDb.dictionaryId, "MySpatialCateg", { color: ColorDef.black.toJSON() });
+    const myPhysicalObjId = sourceDb.elements.insertElement({
+      classFullName: PhysicalObject.classFullName,
+      model: myPhysicalModelId,
+      category: mySpatialCategId,
+      code: Code.createEmpty(),
+      userLabel: `MyPhysicalObject`,
+      geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1)),
+      placement: Placement3d.fromJSON({ origin: { x: 1 }, angles: {} }),
+    } as PhysicalElementProps);
+    // because they are definition elements, display styles will be transformed first, but deferred until the excludedElements
+    // (which are predecessors) are inserted
+    const myDisplayStyleId = DisplayStyle3d.insert(sourceDb, IModelDb.dictionaryId, "MyDisplayStyle3d", {
+      excludedElements: [myPhysicalObjId],
+    });
+    const sourceRepositoryId = IModelTestUtils.insertRepositoryLink(sourceDb, "external.repo", "https://external.example.com/folder/external.repo", "TEST");
+    const sourceExternalSourceId = IModelTestUtils.insertExternalSource(sourceDb, sourceRepositoryId, "HypotheticalDisplayConfigurer");
+    // simulate provenance from a connector as an example of a copied over element multi aspect
+    const multiAspectProps: ExternalSourceAspectProps = {
+      classFullName: ExternalSourceAspect.classFullName,
+      element: { id: myDisplayStyleId, relClassName: ElementOwnsExternalSourceAspects.classFullName },
+      scope: { id: sourceExternalSourceId },
+      source: { id: sourceExternalSourceId },
+      identifier: "ID",
+      kind: ExternalSourceAspect.Kind.Element,
+    };
+    sourceDb.elements.insertAspect(multiAspectProps);
+    const uniqueAspectProps = {
+      classFullName: "TestSchema1:MyUniqueAspect",
+      element: { id: myDisplayStyleId, relClassName: ElementOwnsUniqueAspect.classFullName },
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      myProp1: "prop_value",
+    };
+    sourceDb.elements.insertAspect(uniqueAspectProps);
+    sourceDb.saveChanges();
+
+    const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "PreserveIdOnTestModel-Target.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
+
+    class PublicSkipElementTransformer extends IModelTransformer {
+      public override skipElement(...args: Parameters<IModelTransformer["skipElement"]>) {
+        super.skipElement(...args);
+      }
+    }
+
+    const transformer = new PublicSkipElementTransformer(sourceDb, targetDb, {
+      includeSourceProvenance: true,
+      noProvenance: true, // don't add transformer provenance aspects, makes querying for aspects later simpler
+    });
+    const skipElementSpy = sinon.spy(transformer, "skipElement");
+
+    await transformer.processSchemas();
+    await transformer.processAll();
+    assert(skipElementSpy.called); // make sure an element was deferred during the transformation
+
+    targetDb.saveChanges();
+
+    const targetExternalSourceAspects = new Array<any>();
+    const targetMyUniqueAspects = new Array<any>();
+    targetDb.withStatement("SELECT * FROM bis.ExternalSourceAspect", (stmt) => targetExternalSourceAspects.push(...stmt));
+    targetDb.withStatement("SELECT * FROM TestSchema1.MyUniqueAspect", (stmt) => targetMyUniqueAspects.push(...stmt));
+
+    expect(targetMyUniqueAspects).to.have.lengthOf(1);
+    expect(targetMyUniqueAspects[0].myProp1).to.equal(uniqueAspectProps.myProp1);
+    expect(targetExternalSourceAspects).to.have.lengthOf(1);
+    expect(targetExternalSourceAspects[0].identifier).to.equal(multiAspectProps.identifier);
+
+    sinon.restore();
     sourceDb.close();
     targetDb.close();
   });
