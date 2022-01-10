@@ -445,15 +445,7 @@ describe("Learning Snippets", () => {
         expect(content!.contentSet.length).to.eq(1);
         expect(content!.descriptor.fields).to.containSubset([{
           label: "Spatial Category",
-          nestedFields: [{
-            label: "Code",
-          }, {
-            label: "Is Private",
-          }, {
-            label: "Model",
-          }, {
-            label: "User Label",
-          }],
+          nestedFields: [{ label: "Code" }, { label: "Is Private" }, { label: "Model" }, { label: "User Label" }],
         }]);
       });
 
@@ -851,9 +843,11 @@ describe("Learning Snippets", () => {
         });
 
         expect(content!.contentSet.length).to.eq(4);
-        expect(content!.descriptor.fields).to.containSubset([
-          { label: "3D Display Style", nestedFields: [{ label: "Model" }, { label: "Code" }, { label: "User Label" }, { label: "Is Private" }] },
-        ]).and.to.have.lengthOf(18);
+        expect(content!.descriptor.fields).to.containSubset([{
+          label: "3D Display Style",
+          nestedFields: [{ label: "Model" }, { label: "Code" }, { label: "User Label" }, { label: "Is Private" }],
+        }]
+        ).and.to.have.lengthOf(18);
       });
 
       it("uses `calculatedProperties` attribute", async () => {
