@@ -5,7 +5,6 @@ An instance of [IModelApp]($frontend) provides the services needed by the [front
 * Connecting to an [IModelHost]($backend) to access iModels.
 * Management of Views using [ViewManager](./Views.md)
 * [Tools](./Tools.md) and [Drawing aids](./DrawingAids.md)
-* Access to iModelHub using [IModelClient]($imodelhub-client)
 * [Notifications]($frontend:Notifications)
 * [Localization support](./Localization.md)
 

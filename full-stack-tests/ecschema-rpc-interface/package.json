@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-rpcinterface-tests",
-  "version": "3.0.0-dev.177",
+  "version": "3.0.0-dev.181",
   "description": "Integration tests for the Schema RPC Interface",
   "author": {
     "name": "Bentley Systems, Inc.",
@@ -26,7 +26,6 @@
     "webpack:frontend": "webpack --config webpack.config.js 1>&2"
   },
   "dependencies": {
-    "@bentley/imodelhub-client": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/certa": "workspace:*",
@@ -37,6 +36,9 @@
     "@itwin/core-quantity": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/ecschema-rpcinterface-common": "workspace:*",
+    "@itwin/imodels-access-backend": "~0.3.0",
+    "@itwin/imodels-access-frontend": "~0.3.0",
+    "@itwin/imodels-client-management": "~0.3.0",
     "@itwin/oidc-signin-tool": "3.0.0",
     "@itwin/presentation-common": "workspace:*",
     "@itwin/presentation-frontend": "workspace:*",
