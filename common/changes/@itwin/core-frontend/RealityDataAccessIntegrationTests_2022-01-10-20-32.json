@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Mark url has resolved in internal flag in Raster Source for OSM Building entry key.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
