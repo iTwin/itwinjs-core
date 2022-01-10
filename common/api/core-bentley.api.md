@@ -222,6 +222,11 @@ export enum ChangeSetStatus {
     WrongDgnDb = 90130
 }
 
+// @beta
+export namespace ClassUtils {
+    export function isProperSubclassOf<A extends new (..._: any[]) => any, B extends new (..._: any[]) => any>(subclass: A | B, superclass: B): subclass is B;
+}
+
 // @public
 export type CloneFunction<T> = (value: T) => T;
 
