@@ -81,15 +81,9 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   const [modelSettingsLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:CustomAttach.StoreOnModelSettings"));
   const [missingCredentialsLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:CustomAttach.MissingCredentials"));
   const [invalidCredentialsLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:CustomAttach.InvalidCredentials"));
-  const [externalLoginTitle] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:CustomAttach.ExternalLogin"));
-  const [externalLoginFailedMsg] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:CustomAttach.ExternalLoginFailed"));
-  const [externalLoginSucceededMsg] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:CustomAttach.ExternalLoginSucceeded"));
-  const [externalLoginWaitingMsg] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:CustomAttach.ExternalLoginWaiting"));
-  const [externalLoginTryAgainLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:CustomAttach.ExternalLoginTryAgain"));
   const [serverRequireCredentials, setServerRequireCredentials] = React.useState(false);
   const [invalidCredentialsProvided, setInvalidCredentialsProvided] = React.useState(false);
   const [layerAttachPending, setLayerAttachPending] = React.useState(false);
-  const [layerAuthPending, setLayerAuthPending] = React.useState(false);
   const [mapUrl, setMapUrl] = React.useState(getMapUrlFromProps());
   const [mapName, setMapName] = React.useState(getMapNameFromProps());
   const [userName, setUserName] = React.useState("");
@@ -101,7 +95,6 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   const [userNameRequiredLabel] = React.useState(MapLayersUiItemsProvider.localization.getLocalizedString("mapLayers:AuthenticationInputs.UsernameRequired"));
   const [settingsStorage, setSettingsStorageRadio] = React.useState("iTwin");
   const [layerAuthMethod, setLayerAuthMethod] = React.useState(MapLayerAuthType.None);
-  const [authTokenUrl, setAuthTokenUrl] = React.useState<string|undefined>();
 
   const [mapType, setMapType] = React.useState(getFormatFromProps() ?? MAP_TYPES.arcGis);
 

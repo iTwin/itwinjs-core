@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Revisited the way map layers authentication is handled in the UI.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
