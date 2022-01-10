@@ -587,6 +587,64 @@ describe("Learning Snippets", () => {
 
   describe("Specifications", () => {
 
+    describe("ContentRelatedInstances", () => {
+
+      let imodel: IModelConnection;
+
+      beforeEach(async () => {
+        await initialize();
+        imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
+      });
+
+      afterEach(async () => {
+        await imodel.close();
+        await terminate();
+      });
+
+      it("uses `relationshipPaths` attribute", async () => {
+        // __PUBLISH_EXTRACT_START__ ContentRelatedInstances.RelationshipPaths.Ruleset
+        // The ruleset has a specification that returns `bis.ModelSelector` content instances and a specification
+        // that returns `bis.SpatialViewDefinition` content instances which are related to their model selector
+        // through `bis.SpatialViewDefinitionUsesModelSelector` relationship by following it in backward
+        // direction (from `bis.SpatialViewDefinition` to `bis.ModelSelector`).
+        const ruleset: Ruleset = {
+          id: "example",
+          rules: [{
+            ruleType: RuleTypes.Content,
+            specifications: [{
+              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+              classes: { schemaName: "BisCore", classNames: ["ModelSelector"] },
+            }],
+          }, {
+            ruleType: RuleTypes.Content,
+            condition: `ParentNode.IsOfClass("ModelSelector", "BisCore")`,
+            specifications: [{
+              specType: ContentSpecificationTypes.ContentRelatedInstances,
+              relationshipPaths: [{
+                relationship: { schemaName: "BisCore", className: "SpatialViewDefinitionUsesModelSelector" },
+                direction: RelationshipDirection.Backward,
+                targetClass: { schemaName: "BisCore", className: "SpatialViewDefinition" },
+              }],
+            }],
+          }],
+        };
+        // __PUBLISH_EXTRACT_END__
+        printRuleset(ruleset);
+
+        // Ensure that related `bis.SpatialViewDefinition` instances are also returned.
+        const content = await Presentation.presentation.getContent({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:ModelSelector", id: "0x26" }]),
+          descriptor: {},
+        });
+
+        expect(content!.contentSet).to.have.lengthOf(5).and.to.containSubset([{
+          classInfo: { label: "Spatial View Definition" },
+        }]);
+      });
+    });
+
     describe("ContentInstancesOfSpecificClasses", () => {
 
       let imodel: IModelConnection;
@@ -1001,3 +1059,10 @@ describe("Learning Snippets", () => {
 
   });
 });
+
+function printRuleset(ruleset: Ruleset) {
+  if (process.env.PRINT_RULESETS || true) {
+    // eslint-disable-next-line no-console
+    console.log(JSON.stringify(ruleset, undefined, 2));
+  }
+}
