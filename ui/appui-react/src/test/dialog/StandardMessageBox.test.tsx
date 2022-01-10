@@ -136,7 +136,7 @@ describe("StandardMessageBox", () => {
     const reactNode = <StandardMessageBox
       opened={true}
       title="My Title"
-      iconType={MessageBoxIconType.NoSymbol}
+      iconType={MessageBoxIconType.Success}
       messageBoxType={MessageBoxType.Ok}
       onResult={spyOnEscape}
     />;
