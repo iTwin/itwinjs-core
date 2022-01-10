@@ -11,7 +11,7 @@ import { DbResult, Guid, Id64, Id64String, Logger, LogLevel, OpenMode } from "@i
 import { Point3d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   CategorySelector, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingModel, ECSqlStatement, Element,
-  ElementMultiAspect, ElementOwnsChildElements, ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, GenericPhysicalMaterial,
+  ElementMultiAspect, ElementOwnsChildElements, ElementOwnsExternalSourceAspects, ElementOwnsUniqueAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, GenericPhysicalMaterial,
   GeometricElement,
   IModelCloneContext, IModelDb, IModelHost, IModelJsFs, IModelSchemaLoader, InformationRecordModel, InformationRecordPartition, LinkElement, Model,
   ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, Relationship, RepositoryLink, Schema,
@@ -723,13 +723,13 @@ describe("IModelTransformer", () => {
         this.iModelExporter = new IModelExporter(iModelDb);
         this.iModelExporter.registerHandler(this);
       }
-      protected override onExportModel(_model: Model, _isUpdate: boolean | undefined): void {
+      public override onExportModel(_model: Model, _isUpdate: boolean | undefined): void {
         ++this.modelCount;
       }
-      protected override onExportElement(_element: Element, _isUpdate: boolean | undefined): void {
+      public override onExportElement(_element: Element, _isUpdate: boolean | undefined): void {
         assert.fail("Should not visit element when visitElements=false");
       }
-      protected override onExportRelationship(_relationship: Relationship, _isUpdate: boolean | undefined): void {
+      public override onExportRelationship(_relationship: Relationship, _isUpdate: boolean | undefined): void {
         assert.fail("Should not visit relationship when visitRelationship=false");
       }
     }
@@ -933,8 +933,8 @@ describe("IModelTransformer", () => {
         const schema2 = schemaLoader.getSchema("TestSchema2");
         // by importing schema2 (which references schema1) first, we
         // prove that the import order in processSchemas does not matter
-        await this.handler.callProtected.onExportSchema(schema2);
-        await this.handler.callProtected.onExportSchema(schema1);
+        await this.handler.onExportSchema(schema2);
+        await this.handler.onExportSchema(schema1);
       }
     }
 
@@ -1503,6 +1503,97 @@ describe("IModelTransformer", () => {
         .map(({id}) => id)
     );
 
+    sourceDb.close();
+    targetDb.close();
+  });
+
+  it("exports aspects of deferred elements", async () => {
+    const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "DeferredElementWithAspects-Source.bim");
+    const sourceDb  = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "deferred-element-with-aspects"} });
+
+    const testSchema1Path = IModelTestUtils.prepareOutputFile("IModelTransformer", "TestSchema1.ecschema.xml");
+    // the only two ElementUniqueAspect's in bis are ignored by the transformer, so we add our own to test their export
+    IModelJsFs.writeFileSync(testSchema1Path, `<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="TestSchema1" alias="ts1" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+          <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+          <ECEntityClass typeName="MyUniqueAspect" description="A test unique aspect" displayLabel="a test unique aspect" modifier="Sealed">
+            <BaseClass>bis:ElementUniqueAspect</BaseClass>
+            <ECProperty propertyName="MyProp1" typeName="string"/>
+        </ECEntityClass>
+      </ECSchema>`
+    );
+
+    await sourceDb.importSchemas([testSchema1Path]);
+
+    const myPhysicalModelId = PhysicalModel.insert(sourceDb, IModelDb.rootSubjectId, "MyPhysicalModel");
+    const mySpatialCategId = SpatialCategory.insert(sourceDb, IModelDb.dictionaryId, "MySpatialCateg", { color: ColorDef.black.toJSON() });
+    const myPhysicalObjId = sourceDb.elements.insertElement({
+      classFullName: PhysicalObject.classFullName,
+      model: myPhysicalModelId,
+      category: mySpatialCategId,
+      code: Code.createEmpty(),
+      userLabel: `MyPhysicalObject`,
+      geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1)),
+      placement: Placement3d.fromJSON({ origin: { x: 1 }, angles: {} }),
+    } as PhysicalElementProps);
+    // because they are definition elements, display styles will be transformed first, but deferred until the excludedElements
+    // (which are predecessors) are inserted
+    const myDisplayStyleId = DisplayStyle3d.insert(sourceDb, IModelDb.dictionaryId, "MyDisplayStyle3d", {
+      excludedElements: [myPhysicalObjId],
+    });
+    const sourceRepositoryId = IModelTestUtils.insertRepositoryLink(sourceDb, "external.repo", "https://external.example.com/folder/external.repo", "TEST");
+    const sourceExternalSourceId = IModelTestUtils.insertExternalSource(sourceDb, sourceRepositoryId, "HypotheticalDisplayConfigurer");
+    // simulate provenance from a connector as an example of a copied over element multi aspect
+    const multiAspectProps: ExternalSourceAspectProps = {
+      classFullName: ExternalSourceAspect.classFullName,
+      element: { id: myDisplayStyleId, relClassName: ElementOwnsExternalSourceAspects.classFullName },
+      scope: { id: sourceExternalSourceId },
+      source: { id: sourceExternalSourceId },
+      identifier: "ID",
+      kind: ExternalSourceAspect.Kind.Element,
+    };
+    sourceDb.elements.insertAspect(multiAspectProps);
+    const uniqueAspectProps = {
+      classFullName: "TestSchema1:MyUniqueAspect",
+      element: { id: myDisplayStyleId, relClassName: ElementOwnsUniqueAspect.classFullName },
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      myProp1: "prop_value",
+    };
+    sourceDb.elements.insertAspect(uniqueAspectProps);
+    sourceDb.saveChanges();
+
+    const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "PreserveIdOnTestModel-Target.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
+
+    class PublicSkipElementTransformer extends IModelTransformer {
+      public override skipElement(...args: Parameters<IModelTransformer["skipElement"]>) {
+        super.skipElement(...args);
+      }
+    }
+
+    const transformer = new PublicSkipElementTransformer(sourceDb, targetDb, {
+      includeSourceProvenance: true,
+      noProvenance: true, // don't add transformer provenance aspects, makes querying for aspects later simpler
+    });
+    const skipElementSpy = sinon.spy(transformer, "skipElement");
+
+    await transformer.processSchemas();
+    await transformer.processAll();
+    assert(skipElementSpy.called); // make sure an element was deferred during the transformation
+
+    targetDb.saveChanges();
+
+    const targetExternalSourceAspects = new Array<any>();
+    const targetMyUniqueAspects = new Array<any>();
+    targetDb.withStatement("SELECT * FROM bis.ExternalSourceAspect", (stmt) => targetExternalSourceAspects.push(...stmt));
+    targetDb.withStatement("SELECT * FROM TestSchema1.MyUniqueAspect", (stmt) => targetMyUniqueAspects.push(...stmt));
+
+    expect(targetMyUniqueAspects).to.have.lengthOf(1);
+    expect(targetMyUniqueAspects[0].myProp1).to.equal(uniqueAspectProps.myProp1);
+    expect(targetExternalSourceAspects).to.have.lengthOf(1);
+    expect(targetExternalSourceAspects[0].identifier).to.equal(multiAspectProps.identifier);
+
+    sinon.restore();
     sourceDb.close();
     targetDb.close();
   });

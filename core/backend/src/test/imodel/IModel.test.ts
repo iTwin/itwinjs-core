@@ -8,7 +8,7 @@ import { Base64 } from "js-base64";
 import * as path from "path";
 import * as semver from "semver";
 import * as sinon from "sinon";
-import { BlobDaemon } from "@bentley/imodeljs-native";
+import { CloudSqlite } from "@bentley/imodeljs-native";
 import { DbResult, Guid, GuidString, Id64, Id64String, Logger, OpenMode, using } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyleProps,
@@ -2053,10 +2053,10 @@ describe("iModel", () => {
 
     // Mock iModelHub
     const mockCheckpointV2: V2CheckpointAccessProps = {
-      user: "testAccount",
-      container: `imodelblocks-${iModelId}`,
-      auth: "testSAS",
-      dbAlias: "testDb",
+      accountName: "testAccount",
+      containerId: `imodelblocks-${iModelId}`,
+      sasToken: "testSAS",
+      dbName: "testDb",
       storageType: "azure?sas=1",
     };
 
@@ -2064,10 +2064,10 @@ describe("iModel", () => {
     sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => mockCheckpointV2);
 
     // Mock BlobDaemon
-    sinon.stub(BlobDaemon, "getDbFileName").callsFake(() => dbPath);
+    sinon.stub(CloudSqlite.Daemon, "getDbFileName").callsFake(() => dbPath);
     const daemonSuccessResult = { result: DbResult.BE_SQLITE_OK, errMsg: "" };
     const daemonErrorResult = { result: DbResult.BE_SQLITE_ERROR, errMsg: "NOT GOOD" };
-    const commandStub = sinon.stub(BlobDaemon, "command").callsFake(async () => daemonSuccessResult);
+    const commandStub = sinon.stub(CloudSqlite.Daemon, "command").callsFake(async () => daemonSuccessResult);
 
     process.env.BLOCKCACHE_DIR = "/foo/";
     const accessToken = "token";
@@ -2111,19 +2111,19 @@ describe("iModel", () => {
 
     // Mock iModelHub
     const mockCheckpointV2: V2CheckpointAccessProps = {
-      user: "testAccount",
-      container: `imodelblocks-${iModelId}`,
-      auth: "testSAS",
-      dbAlias: "testDb",
+      accountName: "testAccount",
+      containerId: `imodelblocks-${iModelId}`,
+      sasToken: "testSAS",
+      dbName: "testDb",
       storageType: "azure?sas=1",
     };
     sinon.stub(IModelHost, "hubAccess").get(() => HubMock);
     sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => mockCheckpointV2);
 
     // Mock blockcacheVFS daemon
-    sinon.stub(BlobDaemon, "getDbFileName").callsFake(() => dbPath);
+    sinon.stub(CloudSqlite.Daemon, "getDbFileName").callsFake(() => dbPath);
     const daemonSuccessResult = { result: DbResult.BE_SQLITE_OK, errMsg: "" };
-    sinon.stub(BlobDaemon, "command").callsFake(async () => daemonSuccessResult);
+    sinon.stub(CloudSqlite.Daemon, "command").callsFake(async () => daemonSuccessResult);
 
     const accessToken = "token";
 
