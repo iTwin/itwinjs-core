@@ -99,7 +99,13 @@
     ],
     "extends": "plugin:@itwin/itwinjs-recommended",
     "rules": {
-      "@typescript-eslint/no-non-null-assertion": "error"
+      "@typescript-eslint/no-non-null-assertion": "error",
+      "@typescript-eslint/dot-notation": [
+        "error",
+        {
+          "allowProtectedClassPropertyAccess": true
+        }
+      ]
     },
     "overrides": [
       {
