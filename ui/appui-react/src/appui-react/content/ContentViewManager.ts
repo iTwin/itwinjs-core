@@ -72,16 +72,19 @@ export class ContentViewManager {
     return this._activeContent;
   }
 
-  private static getControlFromElement(activeContentGroup: ContentGroup | undefined, floatingControls: ContentControl[] | undefined) {
+  private static getControlFromElement(content: React.ReactNode, activeContentGroup: ContentGroup | undefined, floatingControls: ContentControl[] | undefined) {
+    if (floatingControls?.length) {
+      const control = floatingControls.find((contentControl) => contentControl.reactNode === content);
+      if (control)
+        return control;
+    }
+
     if (activeContentGroup) {
-      const activeContentControl = activeContentGroup.getControlFromElement(this._activeContent);
+      const activeContentControl = activeContentGroup.getControlFromElement(content);
       if (activeContentControl)
         return activeContentControl;
     }
 
-    if (floatingControls?.length) {
-      return floatingControls.find((contentControl) => contentControl.reactNode === this._activeContent);
-    }
     return undefined;
   }
 
@@ -93,7 +96,7 @@ export class ContentViewManager {
     // istanbul ignore else
     if (this._activeContent && activeFrontstageDef) {
       const activeContentGroup = activeFrontstageDef.contentGroup;
-      activeContentControl = this.getControlFromElement(activeContentGroup, activeFrontstageDef.floatingContentControls);
+      activeContentControl = this.getControlFromElement(this._activeContent, activeContentGroup, activeFrontstageDef.floatingContentControls);
     }
 
     return activeContentControl;
@@ -126,8 +129,8 @@ export class ContentViewManager {
         const activeContentGroup = activeFrontstageDef.contentGroup;
 
         // istanbul ignore else
-        const oldContentControl = oldContent ? activeContentGroup?.getControlFromElement(oldContent) : undefined;
-        const activeContentControl = this.getControlFromElement(activeContentGroup, activeFrontstageDef.floatingContentControls);
+        const oldContentControl = this.getControlFromElement(oldContent, activeContentGroup, activeFrontstageDef.floatingContentControls);
+        const activeContentControl = this.getControlFromElement(activeContent, activeContentGroup, activeFrontstageDef.floatingContentControls);
 
         // Only call setActiveView if going to or coming from a non-viewport ContentControl
         // istanbul ignore else

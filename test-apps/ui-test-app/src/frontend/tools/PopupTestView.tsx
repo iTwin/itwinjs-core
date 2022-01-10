@@ -6,12 +6,14 @@
 import * as React from "react";
 import { IModelApp } from "@itwin/core-frontend";
 import { AbstractMenuItemProps } from "@itwin/appui-abstract";
-import { useActiveIModelConnection } from "@itwin/appui-react";
+import { UiFramework, useActiveIModelConnection } from "@itwin/appui-react";
 import ViewportContentComponent from "../appui/childwindows/ViewportContentControl";
 
 import "./PopupTestView.scss";
+import ViewDefinitionSelector, { getViewDefinitions } from "../appui/childwindows/ViewDefinitionSelector";
+import { Id64String } from "@itwin/core-bentley";
 
-export function PopupTestView({ id, showViewPicker }: { id: string, showViewPicker?: boolean }) {
+export function PopupTestView({ contentId, showViewPicker }: { contentId: string, showViewPicker?: boolean }) {
   const menuItems: AbstractMenuItemProps[] = React.useMemo(() => {
     return [
       {
@@ -32,6 +34,27 @@ export function PopupTestView({ id, showViewPicker }: { id: string, showViewPick
 
   const activeIModelConnection = useActiveIModelConnection();
   const divRef = React.useRef<HTMLDivElement>(null);
+  const [initialViewState, setInitialViewState] = React.useState(UiFramework.getDefaultViewState());
+
+  React.useEffect(() => {
+    async function fetchView() {
+      if (undefined === initialViewState && activeIModelConnection) {
+        const definitions = await getViewDefinitions(activeIModelConnection);
+        if (definitions && definitions.length) {
+          const viewState = await activeIModelConnection.views.load(definitions[0].id);
+          setInitialViewState(viewState);
+        }
+      }
+    }
+    void fetchView();
+  }, [activeIModelConnection, initialViewState]);
+
+  const onViewDefinitionChanged = React.useCallback(async (viewId?: Id64String) => {
+    if (activeIModelConnection && viewId) {
+      const viewState = await activeIModelConnection.views.load(viewId);
+      setInitialViewState(viewState);
+    }
+  }, [activeIModelConnection]);
 
   const handleContextMenu = React.useCallback((e: React.MouseEvent): boolean => {
     e.preventDefault();
@@ -42,9 +65,10 @@ export function PopupTestView({ id, showViewPicker }: { id: string, showViewPick
 
   return (
     <div className="test-popup-test-view" ref={divRef}>
-      {activeIModelConnection &&
-        <ViewportContentComponent showViewPicker={showViewPicker} id={id} imodel={activeIModelConnection} onContextMenu={handleContextMenu} />
-      }
+      {initialViewState &&
+        <ViewportContentComponent contentId={contentId} initialViewState={initialViewState} onContextMenu={handleContextMenu} />}
+      {!!showViewPicker && initialViewState &&
+        <ViewDefinitionSelector imodel={initialViewState.iModel} selectedViewDefinition={initialViewState.id} onViewDefinitionSelected={onViewDefinitionChanged} />}
     </div>
   );
 }

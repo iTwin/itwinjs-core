@@ -18,7 +18,7 @@ import {
 import { LocalStateStorage } from "@itwin/core-react";
 import {
   ChildWindowLocationProps, ContentDialog, ContentDialogManager, ContentGroup, ContentLayoutManager, ContentProps,
-  FrontstageManager, StageContentLayout, StageContentLayoutProps, UiFramework,
+  FrontstageManager, StageContentLayout, StageContentLayoutProps, UiFramework, useActiveViewport,
 } from "@itwin/appui-react";
 import toolIconSvg from "@bentley/icons-generic/icons/window-add.svg?sprite";
 import tool2IconSvg from "@bentley/icons-generic/icons/window-maximize.svg?sprite";
@@ -292,7 +292,7 @@ export class OpenViewPopoutTool extends Tool {
       left: 0,
       top: 0,
     };
-    UiFramework.childWindowManager.openChildWindow("ViewPopout", "View Popout", <PopupTestView id="ui-test-app:popout-test" showViewPicker />, location);
+    UiFramework.childWindowManager.openChildWindow("ViewPopout", "View Popout", <PopupTestView contentId="ui-test-app:popout-test" showViewPicker />, location);
   }
 
   public static override get flyover(): string {
@@ -319,14 +319,16 @@ export class OpenViewPopoutTool extends Tool {
 
 // cSpell:ignore appui appuiprovider
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function IModelViewDialog({ id }: { id: string }) {
+export function IModelViewDialog({ id, title }: { id: string, title: string }) {
   const handleClose = React.useCallback(() => {
     ContentDialogManager.closeDialog(id);
   }, [id]);
 
+  const activeContentControl = useActiveViewport()
+
   return (
     <ContentDialog
-      title="IModel View"
+      title={title}
       inset={false}
       opened={true}
       onClose={handleClose}
@@ -335,15 +337,18 @@ export function IModelViewDialog({ id }: { id: string }) {
       height={"40vh"}
       dialogId={id}
     >
-      <PopupTestView id={id} />
+      <PopupTestView contentId={id} />
     </ContentDialog>
   );
 }
 
 export class OpenViewDialogTool extends Tool {
+  private static _counter = 0;
   public static override toolId = "OpenViewDialog";
   public static override iconSpec = IconSpecUtilities.createSvgIconSpec(tool4IconSvg);
-  public static dialogId = "ui-test-app:popup-view-dialog";
+  public static get dialogId(): string {
+    return `ui-test-app:popup-view-dialog-${OpenViewDialogTool._counter}`;
+  }
 
   public static override get minArgs() { return 0; }
   public static override get maxArgs() { return 0; }
@@ -354,7 +359,8 @@ export class OpenViewDialogTool extends Tool {
   }
 
   private async _run(): Promise<void> {
-    ContentDialogManager.openDialog(<IModelViewDialog id={OpenViewDialogTool.dialogId} />, OpenViewDialogTool.dialogId);
+    OpenViewDialogTool._counter = OpenViewDialogTool._counter + 1;
+    ContentDialogManager.openDialog(<IModelViewDialog id={OpenViewDialogTool.dialogId} title={`IModel View (${OpenViewDialogTool._counter})`} />, OpenViewDialogTool.dialogId);
   }
 
   public static override get flyover(): string {

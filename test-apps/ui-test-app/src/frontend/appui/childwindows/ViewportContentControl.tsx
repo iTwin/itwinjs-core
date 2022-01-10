@@ -5,60 +5,33 @@
 
 import "./ViewportContentControl.css";
 import * as React from "react";
-import { Id64String } from "@itwin/core-bentley";
-import { IModelApp, IModelConnection, ScreenViewport, ViewState } from "@itwin/core-frontend";
+import { IModelApp, ScreenViewport, ViewState } from "@itwin/core-frontend";
 import { viewWithUnifiedSelection } from "@itwin/presentation-components";
 import { ViewportComponent } from "@itwin/imodel-components-react";
-import ViewDefinitionSelector, { getViewDefinitions } from "./ViewDefinitionSelector";
 import { ContentViewManager, FloatingViewportContentControl, UiShowHideManager } from "@itwin/appui-react";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const SampleViewport = viewWithUnifiedSelection(ViewportComponent);
 
 export interface ViewportContentComponentProps {
-  imodel: IModelConnection;
+  /** callback used to construct context menu when user right-clicks on canvas/viewport */
   onContextMenu?: (e: React.MouseEvent) => boolean;
-  id: string;
-  showViewPicker?: boolean;
+  /** viewport/content control uniqueId */
+  contentId: string;
+  /** The initial view state used to create the viewport */
+  initialViewState: ViewState;
 }
 
 export default function ViewportContentComponent(props: ViewportContentComponentProps) { // eslint-disable-line @typescript-eslint/naming-convention
+  const { contentId, initialViewState } = props;
   const [viewport, setViewport] = React.useState<ScreenViewport | undefined>();
-  const [selectedViewDefinitionId, setSelectedViewDefinitionId] = React.useState<Id64String | undefined>();
-  const [prevIModel, setPrevIModel] = React.useState<IModelConnection | undefined>(props.imodel);
-  if (prevIModel !== props.imodel) {
-    setSelectedViewDefinitionId(undefined);
-    setPrevIModel(props.imodel);
-  }
   const contentControl = React.useRef<FloatingViewportContentControl | undefined>();
-  const [initialViewState, setInitialViewState] = React.useState<ViewState | undefined>();
-
-  React.useEffect(() => {
-    async function fetchView(viewId: string | undefined) {
-      if (undefined === viewId) {
-        const definitions = await getViewDefinitions(props.imodel);
-        if (definitions && definitions.length) {
-          viewId = definitions[0].id;
-        }
-      }
-      if (contentControl.current && viewId) {
-        const viewState = await props.imodel.views.load(viewId);
-        setInitialViewState(viewState);
-      }
-      if (viewId !== selectedViewDefinitionId) setSelectedViewDefinitionId(viewId);
-    }
-    void fetchView(selectedViewDefinitionId);
-  }, [props.imodel, selectedViewDefinitionId]);
-
-  const onViewDefinitionChanged = React.useCallback((id?: Id64String) => {
-    setSelectedViewDefinitionId(id);
-  }, []);
 
   const onViewportRef = React.useCallback((v: ScreenViewport) => setViewport(v), []);
 
   React.useEffect(() => {
     if (!contentControl.current) {
-      contentControl.current = new FloatingViewportContentControl(props.id, props.id, null);
+      contentControl.current = new FloatingViewportContentControl(contentId, contentId, null);
       ContentViewManager.addFloatingContentControl(contentControl.current);
     }
     return () => {
@@ -67,17 +40,17 @@ export default function ViewportContentComponent(props: ViewportContentComponent
         contentControl.current = undefined;
       }
     };
-  }, [props.id]);
+  }, [contentId]);
 
   const viewPortControl = React.useMemo(() =>
     initialViewState ? (
       <SampleViewport
         viewportRef={onViewportRef}
-        imodel={props.imodel}
+        imodel={initialViewState.iModel}
         viewState={initialViewState}
         onContextMenu={props.onContextMenu}
       />
-    ) : undefined, [onViewportRef, props.imodel, props.onContextMenu, initialViewState]);
+    ) : undefined, [onViewportRef, props.onContextMenu, initialViewState]);
 
   React.useEffect(() => {
     if (viewport && contentControl.current) {
@@ -86,11 +59,11 @@ export default function ViewportContentComponent(props: ViewportContentComponent
         contentControl.current.reactNode = viewPortControl;
         if (initialViewState) {
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          contentControl.current.processViewSelectorChange(props.imodel, initialViewState.id, initialViewState, initialViewState.name);
+          contentControl.current.processViewSelectorChange(initialViewState.iModel, initialViewState.id, initialViewState, initialViewState.name);
         }
       }
     }
-  }, [initialViewState, props.imodel, viewPortControl, viewport]);
+  }, [initialViewState, viewPortControl, viewport]);
 
   React.useEffect(() => {
     const onViewClose = (vp: ScreenViewport) => {
@@ -105,7 +78,6 @@ export default function ViewportContentComponent(props: ViewportContentComponent
   return (
     <div onMouseMove={UiShowHideManager.handleContentMouseMove} className="uifw-dialog-imodel-content" style={{ height: "100%", position: "relative" }}>
       {viewPortControl}
-      {!!props.showViewPicker && <ViewDefinitionSelector imodel={props.imodel} selectedViewDefinition={selectedViewDefinitionId} onViewDefinitionSelected={onViewDefinitionChanged} />}
     </div>
   );
 }
