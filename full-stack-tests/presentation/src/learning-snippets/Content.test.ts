@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { ContentSpecificationTypes, KeySet, RelationshipDirection, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import { ContentSpecificationTypes, KeySet, NestedContentField, RelationshipDirection, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../IntegrationTests";
 import { getFieldByLabel, tryGetFieldByLabel } from "../Utils";
@@ -445,15 +445,7 @@ describe("Learning Snippets", () => {
         expect(content!.contentSet.length).to.eq(1);
         expect(content!.descriptor.fields).to.containSubset([{
           label: "Spatial Category",
-          nestedFields: [{
-            label: "Code",
-          }, {
-            label: "Is Private",
-          }, {
-            label: "Model",
-          }, {
-            label: "User Label",
-          }],
+          nestedFields: [{ label: "Code" }, { label: "Is Private" }, { label: "Model" }, { label: "User Label" }],
         }]);
       });
 
@@ -609,8 +601,41 @@ describe("Learning Snippets", () => {
         await terminate();
       });
 
+      it("uses `MultiSchemaClassesSpecification`", async () => {
+        const ruleset: Ruleset = {
+          id: "example",
+          rules: [{
+            ruleType: RuleTypes.Content,
+            specifications: [{
+              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+              // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.MultiSchemaClasses.Ruleset
+              // The specification returns content of all `bis.PhysicalModel` and `bis.SpatialViewDefinition` classes.
+              classes: {
+                schemaName: "BisCore",
+                classNames: ["PhysicalModel", "SpatialViewDefinition"],
+                arePolymorphic: false,
+              },
+              // __PUBLISH_EXTRACT_END__
+            }],
+          }],
+        };
+
+        // Ensure that `bis.PhysicalModel` and `bis.SpatialViewDefinition` instances are selected.
+        const content = await Presentation.presentation.getContent({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet(),
+          descriptor: {},
+        });
+
+        expect(content!.contentSet.length).to.eq(5);
+        content!.contentSet.forEach((record) => {
+          expect(record.primaryKeys[0].className).to.oneOf(["BisCore:PhysicalModel", "BisCore:SpatialViewDefinition"]);
+        });
+      });
+
       it("uses `classes` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.classes.Ruleset
+        // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.Classes.Ruleset
         // The specification returns content of all `bis.PhysicalModel` classes.
         const ruleset: Ruleset = {
           id: "example",
@@ -633,15 +658,13 @@ describe("Learning Snippets", () => {
         });
 
         expect(content!.contentSet.length).to.eq(1);
-        const calculatedField = tryGetFieldByLabel(content!.descriptor.fields, "Modeled Element");
-        expect(content!.contentSet[0].displayValues[calculatedField!.name]).to.eq("Properties_60InstancesWithUrl2");
+        expect(content!.contentSet[0].primaryKeys[0].className).to.eq("BisCore:PhysicalModel");
       });
 
       it("uses `handlePropertiesPolymorphically` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.handlePropertiesPolymorphically.Ruleset
+        // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.HandlePropertiesPolymorphically.Ruleset
         // The specification returns content of all `bis.ViewDefinition` instances
-        // and all of the content instances that inherit from `bis.ViewDefinition`.
-
+        // with properties of all `bis.ViewDefinition` subclasses.
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
@@ -686,10 +709,9 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `instanceFilter` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.instanceFilter.Ruleset
+        // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.InstanceFilter.Ruleset
         // The specification returns content of all filtered `bis.SpatialViewDefinition` instances
         // whose `Pitch` property value is higher or equal to 0.
-
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
@@ -712,14 +734,14 @@ describe("Learning Snippets", () => {
         });
 
         expect(content!.contentSet.length).to.eq(2);
-        const calculatedField = tryGetFieldByLabel(content!.descriptor.fields, "Pitch");
-        content!.contentSet.forEach(function (contentSetInstance) {
-          expect(Number(contentSetInstance.displayValues[calculatedField!.name])).to.be.not.below(0);
+        const field = getFieldByLabel(content!.descriptor.fields, "Pitch");
+        content!.contentSet.forEach((record) => {
+          expect(record.values[field.name]).to.be.not.below(0);
         });
       });
 
       it("uses `onlyIfNotHandled` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.onlyIfNotHandled.Ruleset
+        // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.OnlyIfNotHandled.Ruleset
         // Specifications to return content for `bis.ViewDefinition` and `bis.PhysicalModel` respectively.
         // The `bis.PhysicalModel` specification is lower priority and has `onlyIfNotHandled` attribute, which
         // allows it to be overriden by higher priority specification.
@@ -748,14 +770,14 @@ describe("Learning Snippets", () => {
         });
 
         expect(content!.contentSet.length).to.eq(4);
-        const calculatedField = tryGetFieldByLabel(content!.descriptor.fields, "Category Selector");
-        content!.contentSet.forEach(function (contentSetInstance) {
-          expect(contentSetInstance.displayValues[calculatedField!.name]).to.have.string("Default - View");
+        const field = getFieldByLabel(content!.descriptor.fields, "Category Selector");
+        content!.contentSet.forEach((record) => {
+          expect(record.displayValues[field.name]).to.be.string("Default - View");
         });
       });
 
       it("uses `priority` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.priority.Ruleset
+        // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.Priority.Ruleset
         // Specifications to return content for `bis.PhysicalModel` and `bis.DictionaryModel` respectively.
         // The `bis.PhysicalModel` specification has lower priority so it's displayed after the
         // higher priority specification.
@@ -785,13 +807,13 @@ describe("Learning Snippets", () => {
         });
 
         expect(content!.contentSet.length).to.eq(2);
-        const calculatedField = tryGetFieldByLabel(content!.descriptor.fields, "Modeled Element");
-        expect(content!.contentSet[0].displayValues[calculatedField!.name]).to.eq("BisCore.DictionaryModel");
-        expect(content!.contentSet[1].displayValues[calculatedField!.name]).to.eq("Properties_60InstancesWithUrl2");
+        const field = getFieldByLabel(content!.descriptor.fields, "Modeled Element");
+        expect(content!.contentSet[0].displayValues[field.name]).to.eq("BisCore.DictionaryModel");
+        expect(content!.contentSet[1].displayValues[field.name]).to.eq("Properties_60InstancesWithUrl2");
       });
 
       it("uses `relatedProperties` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.relatedProperties.Ruleset
+        // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.RelatedProperties.Ruleset
         // The specification returns content for `bis.SpatialViewDefinition` and
         // related `bis.DisplayStyle` properties.
         const ruleset: Ruleset = {
@@ -819,32 +841,17 @@ describe("Learning Snippets", () => {
           keys: new KeySet(),
           descriptor: {},
         });
-        expect(content!.descriptor.fields).to.containSubset([
-          { label: "3D Display Style" },
-          { label: "Category Selector" },
-          { label: "Code" },
-          { label: "Description" },
-          { label: "Display Style" },
-          { label: "Extents" },
-          { label: "Eye Point" },
-          { label: "Focus Distance" },
-          { label: "Is Camera On" },
-          { label: "Is Private" },
-          { label: "Lens Angle" },
-          { label: "Model" },
-          { label: "Model Selector" },
-          { label: "Origin" },
-          { label: "Pitch" },
-          { label: "Roll" },
-          { label: "User Label" },
-          { label: "Yaw" },
-        ]).and.to.have.lengthOf(18);
 
         expect(content!.contentSet.length).to.eq(4);
+        expect(content!.descriptor.fields).to.containSubset([{
+          label: "3D Display Style",
+          nestedFields: [{ label: "Model" }, { label: "Code" }, { label: "User Label" }, { label: "Is Private" }],
+        }]
+        ).and.to.have.lengthOf(18);
       });
 
       it("uses `calculatedProperties` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.calculatedProperties.Ruleset
+        // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.CalculatedProperties.Ruleset
         // The specification returns content for `bis.SpatialViewDefinition` and a custom
         // calculated property `Camera view direction`.
         const ruleset: Ruleset = {
@@ -870,32 +877,15 @@ describe("Learning Snippets", () => {
           keys: new KeySet(),
           descriptor: {},
         });
-        expect(content!.descriptor.fields).to.containSubset([
-          { label: "Camera view direction" },
-          { label: "Category Selector" },
-          { label: "Code" },
-          { label: "Description" },
-          { label: "Display Style" },
-          { label: "Extents" },
-          { label: "Eye Point" },
-          { label: "Focus Distance" },
-          { label: "Is Camera On" },
-          { label: "Is Private" },
-          { label: "Lens Angle" },
-          { label: "Model" },
-          { label: "Model Selector" },
-          { label: "Origin" },
-          { label: "Pitch" },
-          { label: "Roll" },
-          { label: "User Label" },
-          { label: "Yaw" },
-        ]).and.to.have.lengthOf(18);
 
         expect(content!.contentSet.length).to.eq(4);
+        expect(content!.descriptor.fields).to.containSubset([
+          { label: "Camera view direction" },
+        ]).and.to.have.lengthOf(18);
       });
 
       it("uses `propertyCategories` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.propertyCategories.Ruleset
+        // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.PropertyCategories.Ruleset
         // The specification returns content for `bis.SpatialViewDefinition` and rotation
         // properties into `Axis rotations` category.
         const ruleset: Ruleset = {
@@ -916,7 +906,7 @@ describe("Learning Snippets", () => {
         };
         // __PUBLISH_EXTRACT_END__
 
-        // Ensure that the returned content has a custom category `Axis rotations` is created it contains the right properties.
+        // Ensure that the returned content has a custom category `Axis rotations` and it contains the right properties.
         const content = await Presentation.presentation.getContent({
           imodel,
           rulesetOrId: ruleset,
@@ -938,8 +928,8 @@ describe("Learning Snippets", () => {
       });
 
       it("uses `propertyOverrides` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.propertyOverrides.Ruleset
-        // The specification returns content for `bis.SpatialViewDefinition` with one
+        // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.PropertyOverrides.Ruleset
+        // The specification returns content for `bis.ViewDefinition` with one
         // overriden property label.
         const ruleset: Ruleset = {
           id: "example",
@@ -962,6 +952,7 @@ describe("Learning Snippets", () => {
           descriptor: {},
         });
 
+        expect(content!.contentSet.length).to.eq(4);
         expect(content!.descriptor.fields).to.containSubset([
           { label: "Category Selector" },
           { label: "Code" },
@@ -971,14 +962,12 @@ describe("Learning Snippets", () => {
           { label: "Is Private" },
           { label: "User Label" },
         ]).and.to.have.lengthOf(7);
-
-        expect(content!.contentSet.length).to.eq(4);
       });
 
       it("uses `relatedInstances` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.relatedInstances.Ruleset
-        // The specification returns content for `bis.ModelSelector` and related
-        // `bis.SpatialViewDefinition` instances.
+        // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.RelatedInstances.Ruleset
+        // The specification returns content for `bis.ModelSelector` filtered by related
+        // `bis.SpatialViewDefinition` instance `Yaw` property value.
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
@@ -1005,6 +994,8 @@ describe("Learning Snippets", () => {
         });
 
         expect(content!.contentSet.length).to.eq(1);
+        const field = getFieldByLabel(content!.descriptor.fields, "Code");
+        expect(content!.contentSet[0].values[field.name]).to.eq("Default - View 2");
       });
     });
 

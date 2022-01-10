@@ -25,7 +25,7 @@ See the [diagram of a Web agent](./SoftwareArchitecture.md#web) for an overview 
 
 An *iModel Agent* is a program that performs an unattended action upon being invoked by an event from iModelHub.
 
-As an example, consider an iTwin.js Agent that receives notifications from iModelHub for every ChangeSet to a specific iModel. The Agent could inspect every changeset using the [ChangeSummaryManager]($backend) API to ensure all changes to its iModel are in compliance with company standards. A separate instance of the Agent would be deployed for each iModel of interest.
+As an example, consider an iTwin.js Agent that receives notifications from iModelHub for every Changeset to a specific iModel. The Agent could inspect every changeset using the [ChangeSummaryManager]($backend) API to ensure all changes to its iModel are in compliance with company standards. A separate instance of the Agent would be deployed for each iModel of interest.
 
 ![>](./next.png) [How to write a Web agent](../learning/WriteAWebAgent.md).
 

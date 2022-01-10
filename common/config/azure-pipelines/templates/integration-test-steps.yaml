@@ -26,8 +26,6 @@ steps:
   - script: |
       node ./common/scripts/install-run-rush build -v --to backend-integration-tests
 
-      node ./common/scripts/install-run-rush build -v --to imodelhub-client-tests
-
       node ./common/scripts/install-run-rush build -v --to core-full-stack-tests
 
       node ./common/scripts/install-run-rush build -v --to rpcinterface-full-stack-tests
@@ -43,11 +41,6 @@ steps:
   - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration
     workingDirectory: "full-stack-tests/core"
     displayName: "Run Core Full Stack Tests"
-    condition: succeededOrFailed()
-
-  - script: "npm run test:integration"
-    workingDirectory: "full-stack-tests/imodelhub-client"
-    displayName: "Run iModelHub Client Full Stack Tests"
     condition: succeededOrFailed()
 
   - script: "npm run test:integration"
@@ -73,13 +66,6 @@ steps:
     inputs:
       testResultsFiles: "full-stack-tests/core/lib/test/junit_results.xml"
       testRunTitle: "Core - Integration Tests - ${{ parameters.Node_Version }}"
-    condition: succeededOrFailed()
-
-  - task: PublishTestResults@2
-    displayName: "Publish iModelHub Client Integration Test Results"
-    inputs:
-      testResultsFiles: "full-stack-tests/imodelhub-client/lib/test/junit_results.xml"
-      testRunTitle: "iModelHub Client - Integration Tests - ${{ parameters.Node_Version }}"
     condition: succeededOrFailed()
 
   - task: PublishTestResults@2

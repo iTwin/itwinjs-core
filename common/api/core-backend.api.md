@@ -36,6 +36,7 @@ import { ChangesetProps } from '@itwin/core-common';
 import { ChangesetRange } from '@itwin/core-common';
 import { ChannelRootAspectProps } from '@itwin/core-common';
 import { ClipVector } from '@itwin/core-geometry';
+import { CloudSqlite } from '@bentley/imodeljs-native';
 import { CloudStorageContainerDescriptor } from '@itwin/core-common';
 import { CloudStorageContainerUrl } from '@itwin/core-common';
 import { CloudStorageProvider } from '@itwin/core-common';
@@ -47,7 +48,6 @@ import { ColorDef } from '@itwin/core-common';
 import { CreateEmptySnapshotIModelProps } from '@itwin/core-common';
 import { CreateEmptyStandaloneIModelProps } from '@itwin/core-common';
 import { CreateSnapshotIModelProps } from '@itwin/core-common';
-import { DaemonProps } from '@bentley/imodeljs-native';
 import { DbResult } from '@itwin/core-bentley';
 import { DefinitionElementProps } from '@itwin/core-common';
 import { DisplayStyle3dProps } from '@itwin/core-common';
@@ -702,77 +702,7 @@ export class ClassRegistry {
     static unregisterClassesFrom(schema: typeof Schema): void;
 }
 
-// @beta (undocumented)
-export namespace CloudSqlite {
-    // (undocumented)
-    export interface AccountProps {
-        accountName: string;
-        storageType: string;
-    }
-    // (undocumented)
-    export type ContainerAccessProps = AccountProps & ContainerProps;
-    // (undocumented)
-    export interface ContainerProps {
-        containerId: string;
-        sasToken: string;
-    }
-    // (undocumented)
-    export type DbName = string;
-    // (undocumented)
-    export interface DbNameProp {
-        // (undocumented)
-        dbName: DbName;
-    }
-    // (undocumented)
-    export interface DbProps extends DbNameProp {
-        // (undocumented)
-        localFile: LocalFileName;
-    }
-    // (undocumented)
-    export type Logger = (stream: NodeJS.ReadableStream) => void;
-    // (undocumented)
-    export type ProcessProps = DaemonProps & AccountProps & {
-        stdoutLogger?: Logger;
-        stderrLogger?: Logger;
-    };
-    // (undocumented)
-    export type TransferDbProps = TransferProps & DbProps;
-    // (undocumented)
-    export type TransferDirection = "upload" | "download";
-    // (undocumented)
-    export interface TransferProgress {
-        // (undocumented)
-        onProgress?: (loaded: number, total: number) => number;
-    }
-    // (undocumented)
-    export type TransferProps = ContainerAccessProps & TransferProgress;
-}
-
-// @beta (undocumented)
-export class CloudSqlite {
-    // (undocumented)
-    static attach(dbAlias: CloudSqlite.DbName, props: CloudSqlite.ContainerAccessProps): Promise<string>;
-    // (undocumented)
-    static copyDb(oldVersion: string, newVersion: string, props: CloudSqlite.ContainerAccessProps): Promise<void>;
-    // (undocumented)
-    static deleteDb(props: CloudSqlite.ContainerAccessProps & {
-        dbName: string;
-    }): Promise<void>;
-    // (undocumented)
-    static downloadDb(props: CloudSqlite.TransferDbProps): Promise<void>;
-    // (undocumented)
-    static initializeContainer(props: CloudSqlite.ContainerAccessProps): Promise<void>;
-    // (undocumented)
-    static get isRunning(): boolean;
-    // (undocumented)
-    static startProcess(props: CloudSqlite.ProcessProps): Promise<void>;
-    // (undocumented)
-    static stopProcess(): void;
-    // (undocumented)
-    static transferDb(direction: CloudSqlite.TransferDirection, props: CloudSqlite.TransferDbProps): Promise<void>;
-    // (undocumented)
-    static uploadDb(props: CloudSqlite.TransferDbProps): Promise<void>;
-}
+export { CloudSqlite }
 
 // @beta (undocumented)
 export abstract class CloudStorageService {
@@ -1388,8 +1318,6 @@ export class EditableWorkspaceDb extends ITwinWorkspaceDb {
     getBlobWriter(rscName: WorkspaceResourceName): IModelJsNative.BlobIO;
     // (undocumented)
     open(): void;
-    // (undocumented)
-    openCloudDb(props: CloudSqlite.ContainerAccessProps): Promise<void>;
     removeBlob(rscName: WorkspaceResourceName): void;
     removeFile(rscName: WorkspaceResourceName): void;
     removeString(rscName: WorkspaceResourceName): void;
@@ -4386,11 +4314,11 @@ export class V1CheckpointManager {
 
 // @internal
 export interface V2CheckpointAccessProps {
-    readonly auth: AccessToken;
-    readonly container: string;
-    readonly dbAlias: string;
+    readonly accountName: string;
+    readonly containerId: string;
+    readonly dbName: string;
+    readonly sasToken: AccessToken;
     readonly storageType: string;
-    readonly user: string;
 }
 
 // @internal

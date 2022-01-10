@@ -9,7 +9,8 @@ import { join } from "path";
 import * as readline from "readline";
 import * as Yargs from "yargs";
 import {
-  CloudSqlite, EditableWorkspaceDb, IModelHost, IModelHostConfiguration, IModelJsFs, ITwinWorkspaceDb, WorkspaceContainerId, WorkspaceDbName,
+  CloudSqlite,
+  EditableWorkspaceDb, IModelHost, IModelHostConfiguration, IModelJsFs, ITwinWorkspaceDb, WorkspaceContainerId, WorkspaceDbName,
   WorkspaceResourceName,
 } from "@itwin/core-backend";
 import { DbResult, StopWatch } from "@itwin/core-bentley";
@@ -51,7 +52,7 @@ interface ResourceOption extends WorkspaceDbOpt {
 }
 
 /** Options for deleting resources from a WorkspaceDb */
-interface DeleteResourceOpts extends ResourceOption {
+interface RemoveResourceOpts extends ResourceOption {
   rscName: WorkspaceResourceName;
 }
 
@@ -196,8 +197,8 @@ async function extractResource(args: ExtractResourceOpts) {
   });
 }
 
-/** Delete a single resource from a WorkspaceDb */
-async function deleteResource(args: DeleteResourceOpts) {
+/** Remove a single resource from a WorkspaceDb */
+async function removeResource(args: RemoveResourceOpts) {
   editWorkspace(args, (wsFile, args) => {
     if (args.type === "string")
       wsFile.removeString(args.rscName);
@@ -205,7 +206,7 @@ async function deleteResource(args: DeleteResourceOpts) {
       wsFile.removeBlob(args.rscName);
     else
       wsFile.removeFile(args.rscName);
-    console.log(` deleted ${args.type} resource [${args.rscName}]`);
+    console.log(` removed ${args.type} resource [${args.rscName}]`);
   });
 }
 
@@ -326,10 +327,10 @@ async function main() {
     handler: runCommand(extractResource),
   });
   Yargs.command({
-    command: "deleteResource <dbName> <rscName>",
-    describe: "delete a resource from a WorkspaceDb",
+    command: "remove <dbName> <rscName>",
+    describe: "remove a resource from a WorkspaceDb",
     builder: { type },
-    handler: runCommand(deleteResource),
+    handler: runCommand(removeResource),
   });
   Yargs.command({
     command: "upload <dbName>",
@@ -349,7 +350,7 @@ async function main() {
     handler: runCommand(downloadWorkspaceDb),
   });
   Yargs.command({
-    command: "deleteDb <dbName>",
+    command: "delete <dbName>",
     describe: "delete a WorkspaceDb from cloud storage",
     handler: runCommand(deleteWorkspaceDb),
   });

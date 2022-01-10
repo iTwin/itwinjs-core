@@ -293,7 +293,7 @@ export class InstancedGeometry extends CachedGeometry {
   public get techniqueId(): TechniqueId { return this._repr.techniqueId; }
   public override get supportsThematicDisplay() { return this._repr.supportsThematicDisplay; }
 
-  public getRenderPass(target: Target) { return this._repr.getRenderPass(target); }
+  public override getPass(target: Target) { return this._repr.getPass(target); }
   public override wantWoWReversal(params: ShaderProgramParams) { return this._repr.wantWoWReversal(params); }
   public override getLineCode(params: ShaderProgramParams) { return this._repr.getLineCode(params); }
   public override getLineWeight(params: ShaderProgramParams) { return this._repr.getLineWeight(params); }
