@@ -19,7 +19,7 @@ import {
 } from "@itwin/core-backend";
 import { ExtensiveTestScenario, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import {
-  AxisAlignedBox3d, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorDef, CreateIModelProps, DefinitionElementProps,
+  AxisAlignedBox3d, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorDef, CreateIModelProps, DefinitionElementProps, ElementProps,
   ExternalSourceAspectProps, IModel, IModelError, PhysicalElementProps, Placement3d, QueryRowFormat, RelatedElement,
 } from "@itwin/core-common";
 import { IModelExporter, IModelExportHandler, IModelTransformer, TransformerLoggerCategory } from "../../core-transformer";
@@ -1598,40 +1598,96 @@ describe("IModelTransformer", () => {
     targetDb.close();
   });
 
-  it("local test", async () => {
-    const sourceDb = SnapshotDb.openFile(
-      "/tmp/bad-relationships-source.bim.bim"
-    );
-    const targetDbPath = IModelTestUtils.prepareOutputFile(
-      "IModelTransformer",
-      "PreserveIdOnTestModel-Target.bim"
-    );
-    const targetDb = SnapshotDb.createEmpty(targetDbPath, {
-      rootSubject: sourceDb.rootSubject,
-    });
+  it.only("IModelTransformer processes nav property predecessors even in generated classes", async () => {
+    const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "GeneratedNavPropPredecessors-Source.bim");
+    const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "GeneratedNavPropPredecessors" } });
 
-    const transformer = new IModelTransformer(sourceDb, targetDb);
+    const testSchema1Path = IModelTestUtils.prepareOutputFile("IModelTransformer", "TestSchema1.ecschema.xml");
+    IModelJsFs.writeFileSync(testSchema1Path, `<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="TestGeneratedClasses" alias="tgc" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+        <ECEntityClass typeName="TestEntity" description="a sample entity for the end of the test relationships">
+          <BaseClass>bis:DefinitionElement</BaseClass>
+          <ECProperty propertyName="prop" typeName="string" description="a sample property"/>
+        </ECEntityClass>
+        <ECRelationshipClass typeName="ElemRel" strength="referencing" description="elem rel 1" modifier="sealed">
+          <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="false">
+            <Class class="TestElementWithNavProp"/>
+          </Source>
+          <Target multiplicity="(0..1)" roleLabel="is referenced by" polymorphic="false">
+            <Class class="TestEntity"/>
+          </Target>
+        </ECRelationshipClass>
+        <ECEntityClass typeName="TestElementWithNavProp" description="A test domain class that has a base and mixin applied to it.">
+          <BaseClass>bis:DefinitionElement</BaseClass>
+          <ECNavigationProperty propertyName="navProp" relationshipName="ElemRel" direction="Forward" displayLabel="Horizontal Alignment" />
+        </ECEntityClass>
+      </ECSchema>`
+    );
+
+    await sourceDb.importSchemas([testSchema1Path]);
+
+    const navPropTargetId = sourceDb.elements.insertElement({
+      classFullName: "TestGeneratedClasses:TestEntity",
+      prop: "sample-value",
+      model: IModelDb.dictionaryId,
+      code: Code.createEmpty(),
+    } as ElementProps);
+
+    const elemWithNavPropId = sourceDb.elements.insertElement({
+      classFullName: "TestGeneratedClasses:TestElementWithNavProp",
+      navProp: {
+        id: navPropTargetId,
+        relClassName: "TestGeneratedClasses:ElemRel",
+      },
+      model: IModelDb.dictionaryId,
+      code: Code.createEmpty(),
+    } as ElementProps);
+
+    const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "GeneratedNavPropPredecessors-Target.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
+
+    class ProcessTargetLastTransformer extends IModelTransformer {
+      private _exportedNavPropHolder = false;
+      public override onExportElement(sourceElem: Element) {
+        if (sourceElem.id === elemWithNavPropId) {
+          super.onExportElement(sourceElem);
+          this._exportedNavPropHolder = true;
+        } else if (sourceElem.id === navPropTargetId && !this._exportedNavPropHolder) {
+          this.skipElement(sourceElem);
+        } else {
+          super.onExportElement(sourceElem);
+        }
+      }
+    }
+
+    const transformer = new ProcessTargetLastTransformer(sourceDb, targetDb);
     await transformer.processSchemas();
     await transformer.processAll();
 
     targetDb.saveChanges();
 
-    function getHorizontals(db: IModelDb) {
-      let results = new Array<{ id: Id64String, horizontal: RelatedElement }>();
+    function getNavPropContent(db: IModelDb) {
+      let results = new Array<{ id: Id64String, navProp: RelatedElement }>();
       db.withPreparedStatement(
-        "SELECT ECInstanceId, horizontal FROM RoadRailAlignment.Alignment",
+        "SELECT ECInstanceId, navProp FROM TestGeneratedClasses.TestElementWithNavProp",
         (stmt) => { results = [...stmt]; }
       );
       return results;
     }
 
-    for (const alignmentInSource of getHorizontals(sourceDb)) {
-      const alignmentInTargetId = transformer.context.findTargetElementId(alignmentInSource.id);
-      const alignmentInTarget = targetDb.elements.getElement(alignmentInTargetId);
-      const horizontalInTargetId = transformer.context.findTargetElementId(alignmentInSource.horizontal.id);
+    for (const navPropHolderInSource of getNavPropContent(sourceDb)) {
+      const navPropHolderInTargetId = transformer.context.findTargetElementId(navPropHolderInSource.id);
+      const navPropHolderInTarget = targetDb.elements.getElement(navPropHolderInTargetId);
+      const navPropTargetInTarget = transformer.context.findTargetElementId(navPropHolderInSource.navProp.id);
       // cast to any to access untyped instance properties
-      expect((alignmentInTarget as any).horizontal.id).to.equal(horizontalInTargetId);
+      expect((navPropHolderInTarget as any)?.navProp?.id).to.equal(navPropTargetInTarget);
+      expect((navPropHolderInTarget as any)?.navProp?.id).not.to.equal(Id64.invalid);
+      expect((navPropHolderInTarget as any)?.navProp?.id).not.to.be.undefined;
     }
+
+    expect(getNavPropContent(sourceDb)).to.have.length(1);
+    expect(getNavPropContent(targetDb)).to.have.length(1);
 
     sourceDb.close();
     targetDb.close();
