@@ -40,6 +40,19 @@ external source contains more information, and if you decide to branch your bran
 you will need a unique target scope element for both synchronization directions, one for
 the forward synchronizations from master and one for reverse synchronizations from the sub branch.
 
+### Provenance, element Ids, and federation guids
+
+Element Ids are local to an [iModel briefcase](/FIXME), and transformations do not preserve them. However, federation guids
+(globally-unique-identifiers) are preserved.
+
+Generally, it is possible for a transformation to involve operations such as "splitting" an existing element into multiple different
+elements, for which federation guids and element ids cannot be used to correlate the new lower elements to the original one.
+
+As a convenience function to existing applications that may want to rely on branches having similar element Id spaces, there is a
+preserveElementIds during filter operation.
+
+FIXME^^
+
 ### More on provenance
 
 Additional notes on provenance from the connector application viewpoint can be found [here](/learning/writeaconnector/#sync).
@@ -65,29 +78,24 @@ synchronization, as shown in the samples below.
 
 ### Squashing changesets
 
-In the above diagram, the synchronizations occur after several changesets, which *squashes* them all into one new changeset in
-the branch. Alternatively, it is possible to run a synchronization per changeset in the source of the synchronization, to keep
-the history intact.
+In the above diagram, the synchronizations occur after several changesets, each synchronization here *squashes* several changesets
+from the synchronization source into the synchronization target. Alternatively, one could run a synchronization per changeset
+in the source of the synchronization, so that the synchronization target has a changeset corresponding to each one in the
+synchronization source, keeping the changeset granularity intact in the history. A combination of both can be done, such as
+only squashing when reverse synchronizing (squashing branch changes) but keeping changeset data from the master intact during
+forward synchronizations.
 
 ### Conflicts during synchronization
 
 When two elements are detected as the same, the synchronization target's version will be updated to match. As such, it is up to
 the user of the transformer to check whether the element has been changed in both and handle any perceived conflicts.
-any determined conflicts.
-Some data in the iModel follows more specific rules for merging:
+Some data in the iModel follows more specific rules for conflicts:
 
-- [EC Schemas](/FIXME) are never merged automatically, they will not be inserted into the target if such a version already exists in it
-  If you need schema merging (see [dynamic schemas](/docs/bis/intro/schema-customization.md#Dynamic-Schema-Minor-Change-Considerations))
-- [File properties](/FIXME)
+- [ECSchemas](/https://www.itwinjs.org/bis/ec/ec-schema/) are never merged automatically, they will not be inserted into the target
+  if the same version already exists in it.
+- [File properties](https://www.itwinjs.org/reference/imodeljs-backend/imodels/imodeldb/savefileproperty/) are not carried over through transformations
 
-Others must be manually implemented with a custom transformer subclass.
-Schemas for instance are not merged by the transformer, the transformer will not attempt to insert or diff schemas of the same version
-between a source and target. This can happen in the case of [dynamic schemas](/FIXME).
-
-Objects not merged by the transformer:
-
-- file properties
-- schemas
+<!-- If you need schema merging (see [dynamic schemas](/docs/bis/intro/schema-customization.md#Dynamic-Schema-Minor-Change-Considerations)) -->
 
 ## Synchronization examples
 
