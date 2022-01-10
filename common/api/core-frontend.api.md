@@ -5509,6 +5509,24 @@ export class MapCartoRectangle extends Range2d {
 }
 
 // @internal (undocumented)
+export interface MapLayerAuthenticationInfo {
+    // (undocumented)
+    authMethod: MapLayerAuthType;
+    // (undocumented)
+    tokenEndpoint?: MapLayerTokenEndpoint;
+}
+
+// @beta (undocumented)
+export enum MapLayerAuthType {
+    // (undocumented)
+    Basic = 2,
+    // (undocumented)
+    EsriToken = 3,
+    // (undocumented)
+    None = 1
+}
+
+// @internal (undocumented)
 export class MapLayerFormat {
     // (undocumented)
     static createImageryProvider(_settings: MapLayerSettings): MapLayerImageryProvider | undefined;
@@ -5725,6 +5743,8 @@ export enum MapLayerSourceStatus {
 // @internal (undocumented)
 export interface MapLayerSourceValidation {
     // (undocumented)
+    authInfo?: MapLayerAuthenticationInfo;
+    // (undocumented)
     status: MapLayerSourceStatus;
     // (undocumented)
     subLayers?: MapSubLayerProps[];
@@ -5746,6 +5766,14 @@ export abstract class MapLayerTileTreeReference extends TileTreeReference {
     protected _layerSettings: MapLayerSettings;
     // (undocumented)
     protected get _transparency(): number | undefined;
+}
+
+// @internal (undocumented)
+export interface MapLayerTokenEndpoint {
+    // (undocumented)
+    getLoginUrl(stateData?: string): string | undefined;
+    // (undocumented)
+    getUrl(): string;
 }
 
 // @internal (undocumented)
