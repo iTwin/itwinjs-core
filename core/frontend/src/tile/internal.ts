@@ -47,6 +47,7 @@ export * from "./I3dmReader";
 export * from "./B3dmReader";
 export * from "./ImdlReader";
 export * from "./map/ArcGISTileMap";
+export * from "./map/MapLayerAuthentication";
 export * from "./map/ArcGisTokenGenerator";
 export * from "./map/ArcGisTokenManager";
 export * from "./map/MapLayerFormatRegistry";
