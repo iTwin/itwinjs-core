@@ -143,7 +143,7 @@ Specifications of various [property overrides](./PropertySpecification.md) that 
 
 > **Default value:** `false`
 
-Should image IDs be calculated for the returned instances. When `true`, [ImageIdOverride](../customization/ImageIdOverride.md) rules get applied when creating.
+Should image IDs be calculated for the returned instances. When `true`, [ImageIdOverride](../customization/ImageIdOverride.md) rules get applied when creating the content.
 
 ### Attribute: `relatedInstances`
 
