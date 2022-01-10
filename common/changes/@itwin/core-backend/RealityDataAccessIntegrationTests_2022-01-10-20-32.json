@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Add assets used byr reality data integration tests.",
+      "comment": "",
       "type": "none"
     }
   ],
