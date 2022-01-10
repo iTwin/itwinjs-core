@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Fix bug that sets the icon on MessageBox.NoSymbol the Success icon.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}
