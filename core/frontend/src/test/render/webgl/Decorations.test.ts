@@ -58,7 +58,7 @@ describe("Decorations", () => {
 
   afterEach(() => {
     viewport.dispose();
-    for (const decorator of IModelApp.viewManager.decorators.filter((x) => x instanceof BoxDecorator))
+    for (const decorator of IModelApp.viewManager.decorators.filter((x) => x instanceof BoxDecorator || x instanceof SphereDecorator))
       IModelApp.viewManager.dropDecorator(decorator);
   });
 
@@ -69,14 +69,14 @@ describe("Decorations", () => {
   });
 
   it("draws box decoration in expected location", () => {
-    const dec = new BoxDecorator(viewport, ColorDef.red, undefined, undefined, shapePoints);
+    const dec = new BoxDecorator({ viewport, color: ColorDef.red, points: shapePoints });
     expectColors(viewport, [dec.color, viewport.view.displayStyle.backgroundColor]); // are both the decorator and background rendering?
     expectColors(viewport, [dec.color], boxDecLocRect); // is decorator rendering at expected location?
     dec.drop();
   }).timeout(20000); // macOS is slow.
 
   it("draws box decoration in graphic-builder-transformed location", () => {
-    const dec = new BoxDecorator(viewport, ColorDef.red, undefined, Transform.createTranslationXYZ(0.25, 0.25), shapePoints);
+    const dec = new BoxDecorator({ viewport, color: ColorDef.red, placement: Transform.createTranslationXYZ(0.25, 0.25), points: shapePoints });
     expectColors(viewport, [dec.color, viewport.view.displayStyle.backgroundColor]); // are both the decorator and background rendering?
     expectColors(viewport, [viewport.view.displayStyle.backgroundColor], boxDecLocRect); // background should render where the decorator would have been without transform.
     dec.drop();
@@ -95,4 +95,15 @@ describe("Decorations", () => {
     expectColors(viewport, [dec.color], sphereDecBgLocRect); // when sphere is transformed, this location should contain the sphere
     dec.drop();
   }).timeout(20000); // macOS is slow.
+
+  describe("view-independent origin", () => {
+    it("rotates about center", () => {
+    });
+
+    it("rotates about corner", () => {
+    });
+
+    it("applies branch transform to origin", () => {
+    });
+  });
 });
