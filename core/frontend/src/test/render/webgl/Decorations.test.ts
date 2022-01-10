@@ -12,6 +12,8 @@ import { createBlankConnection } from "../../createBlankConnection";
 import { BoxDecorator, SphereDecorator } from "../../TestDecorators";
 import { expectColors } from "../../ExpectColors";
 import { ViewRect } from "../../../ViewRect";
+import { ViewState } from "../../../ViewState";
+import { StandardViewId } from "../../../StandardView";
 
 describe("Decorations", () => {
   let imodel: IModelConnection;
@@ -21,13 +23,11 @@ describe("Decorations", () => {
   let boxDecLocRect: ViewRect;
   let sphereDecBgLocRect: ViewRect;
 
-  const w = 0.5;
-  const h = 0.5;
   const shapePoints = [
     new Point3d(0, 0, 0),
-    new Point3d(w, 0, 0),
-    new Point3d(w, h, 0),
-    new Point3d(0, h, 0),
+    new Point3d(0.5, 0, 0),
+    new Point3d(0.5, 0.5, 0),
+    new Point3d(0, 0.5, 0),
     new Point3d(0, 0, 0),
   ];
 
@@ -52,7 +52,7 @@ describe("Decorations", () => {
     viewport = ScreenViewport.create(div, view);
     width = viewport.viewRect.width;
     height = viewport.viewRect.height;
-    boxDecLocRect = new ViewRect(0, 0, 1, 1);
+    boxDecLocRect = new ViewRect(0, 0, 10, 10);
     sphereDecBgLocRect = new ViewRect(width - 2, height / 2 + 128, width - 2 + 1, height / 2 + 128 + 1);
   });
 
@@ -97,7 +97,16 @@ describe("Decorations", () => {
   }).timeout(20000); // macOS is slow.
 
   describe("view-independent origin", () => {
-    it("rotates about center", () => {
+    it("rotates about top-right corner", () => {
+      const viewIndependentOrigin = new Point3d(0.5, 0.5, 0);
+      const dec = new BoxDecorator({ viewport, color: ColorDef.red, points: shapePoints, viewIndependentOrigin });
+      expectColors(viewport, [dec.color, viewport.view.displayStyle.backgroundColor]);
+      expectColors(viewport, [dec.color], boxDecLocRect);
+
+      viewport.view.setRotationAboutPoint(ViewState.getStandardViewMatrix(StandardViewId.Front), viewIndependentOrigin);
+      viewport.synchWithView();
+      expectColors(viewport, [dec.color, viewport.view.displayStyle.backgroundColor]);
+      expectColors(viewport, [dec.color], boxDecLocRect);
     });
 
     it("rotates about corner", () => {
