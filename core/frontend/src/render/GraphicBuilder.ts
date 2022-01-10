@@ -150,6 +150,7 @@ export interface GraphicBuilderOptions {
 
   /** If defined, specifies a point about which the graphic will rotate such that it always faces the viewer.
    * This can be particular useful for planar regions to create a billboarding effect - e.g., to implement [[Marker]]-like WebGL decorations.
+   * The graphic's [[placement]] transform is not applied to the point.
    * @note This has no effect for graphics displayed in a 2d view.
    */
   viewIndependentOrigin?: Point3d;
