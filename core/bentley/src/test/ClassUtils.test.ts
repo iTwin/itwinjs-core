@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { ClassUtils } from "../core-bentley";
+import { ClassUtils } from "../ClassUtils";
 
 describe("ClassUtils", () => {
   it("isProperSubclassOf", () => {
