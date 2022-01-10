@@ -52,7 +52,7 @@ describe("Decorations", () => {
     viewport = ScreenViewport.create(div, view);
     width = viewport.viewRect.width;
     height = viewport.viewRect.height;
-    boxDecLocRect = new ViewRect(0, 0, 10, 10);
+    boxDecLocRect = new ViewRect(0, 0, width / 2, height / 2);
     sphereDecBgLocRect = new ViewRect(width - 2, height / 2 + 128, width - 2 + 1, height / 2 + 128 + 1);
   });
 
@@ -78,7 +78,7 @@ describe("Decorations", () => {
   it("draws box decoration in graphic-builder-transformed location", () => {
     const dec = new BoxDecorator({ viewport, color: ColorDef.red, placement: Transform.createTranslationXYZ(0.25, 0.25), points: shapePoints });
     expectColors(viewport, [dec.color, viewport.view.displayStyle.backgroundColor]); // are both the decorator and background rendering?
-    expectColors(viewport, [viewport.view.displayStyle.backgroundColor], boxDecLocRect); // background should render where the decorator would have been without transform.
+    expectColors(viewport, [viewport.view.displayStyle.backgroundColor], new ViewRect(0, 0, 10, 10)); // background should render where the decorator would have been without transform.
     dec.drop();
   }).timeout(20000); // macOS is slow.
 
@@ -97,16 +97,20 @@ describe("Decorations", () => {
   }).timeout(20000); // macOS is slow.
 
   describe("view-independent origin", () => {
+    // ###TODO: Viewport.readImage is broken. It accepts a ViewRect which defines the origin at the top-left, and passes it to gl.readPixels, which
+    // defines the origin at the bottom-left. Update these tests after fixing that.
     it("rotates about top-right corner", () => {
       const viewIndependentOrigin = new Point3d(0.5, 0.5, 0);
       const dec = new BoxDecorator({ viewport, color: ColorDef.red, points: shapePoints, viewIndependentOrigin });
       expectColors(viewport, [dec.color, viewport.view.displayStyle.backgroundColor]);
       expectColors(viewport, [dec.color], boxDecLocRect);
 
-      viewport.view.setRotationAboutPoint(ViewState.getStandardViewMatrix(StandardViewId.Front), viewIndependentOrigin);
+      const w = viewport.viewRect.width;
+      const h = viewport.viewRect.height;
+      viewport.view.setRotationAboutPoint(ViewState.getStandardViewMatrix(StandardViewId.Bottom), viewIndependentOrigin);
       viewport.synchWithView();
       expectColors(viewport, [dec.color, viewport.view.displayStyle.backgroundColor]);
-      expectColors(viewport, [dec.color], boxDecLocRect);
+      expectColors(viewport, [dec.color], new ViewRect(0, h / 2, w / 2, h));
     });
 
     it("rotates about corner", () => {
