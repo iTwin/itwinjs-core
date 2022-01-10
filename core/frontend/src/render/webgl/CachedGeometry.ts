@@ -28,7 +28,7 @@ import { EdgeGeometry, SilhouetteEdgeGeometry } from "./EdgeGeometry";
 import { IndexedEdgeGeometry } from "./IndexedEdgeGeometry";
 import { SurfaceGeometry } from "./SurfaceGeometry";
 import { PointCloudGeometry } from "./PointCloud";
-import { CompositeFlags, RenderOrder, RenderPass } from "./RenderFlags";
+import { CompositeFlags, Pass, RenderOrder } from "./RenderFlags";
 import { System } from "./System";
 import { Target } from "./Target";
 import { computeCompositeTechniqueId, TechniqueId } from "./TechniqueId";
@@ -80,8 +80,8 @@ export abstract class CachedGeometry implements WebGLDisposable, RenderMemory.Co
   public abstract get isDisposed(): boolean;
   // Returns the Id of the Technique used to render this geometry
   public abstract get techniqueId(): TechniqueId;
-  // Returns the pass in which to render this geometry. RenderPass.None indicates it should not be rendered.
-  public abstract getRenderPass(target: Target): RenderPass;
+  // Returns the pass in which to render this geometry. "none" indicates it should not be rendered.
+  public abstract getPass(target: Target): Pass;
   // Returns the 'order' of this geometry, which determines how z-fighting is resolved.
   public abstract get renderOrder(): RenderOrder;
   // Returns true if this is a lit surface
@@ -422,7 +422,7 @@ export class SkyBoxQuadsGeometry extends CachedGeometry {
   }
 
   public get techniqueId(): TechniqueId { return this._techniqueId; }
-  public getRenderPass(_target: Target) { return RenderPass.SkyBox; }
+  public override getPass(): Pass { return "skybox"; }
   public get renderOrder() { return RenderOrder.UnlitSurface; }
 
   public draw(): void {
@@ -506,7 +506,7 @@ export class ViewportQuadGeometry extends IndexedGeometry {
   }
 
   public get techniqueId(): TechniqueId { return this._techniqueId; }
-  public getRenderPass(_target: Target) { return RenderPass.OpaqueGeneral; }
+  public override getPass(): Pass { return "opaque"; }
   public get renderOrder() { return RenderOrder.UnlitSurface; }
 
   public collectStatistics(_stats: RenderMemory.Statistics): void {
@@ -731,17 +731,18 @@ export class SkySphereViewportQuadGeometry extends ViewportQuadGeometry {
  * @internal
  */
 export class AmbientOcclusionGeometry extends TexturedViewportQuadGeometry {
-  public static createGeometry(depthAndOrder: WebGLTexture) {
+  public static createGeometry(depthAndOrder: WebGLTexture, depth: WebGLTexture) {
     const params = ViewportQuad.getInstance().createParams();
     if (undefined === params) {
       return undefined;
     }
 
     // Will derive positions and normals from depthAndOrder.
-    return new AmbientOcclusionGeometry(params, [depthAndOrder]);
+    return new AmbientOcclusionGeometry(params, [depth, depthAndOrder]);
   }
 
-  public get depthAndOrder() { return this._textures[0]; }
+  public get depthAndOrder() { return this._textures[1]; }
+  public get depth() { return this._textures[0]; }
   public get noise() { return System.instance.noiseTexture!.getHandle()!; }
 
   private constructor(params: IndexedGeometryParams, textures: WebGLTexture[]) {
@@ -1006,7 +1007,7 @@ export class ScreenPointsGeometry extends CachedGeometry {
 
   protected _wantWoWReversal(_target: Target): boolean { return false; }
   public get techniqueId(): TechniqueId { return TechniqueId.VolClassCopyZ; }
-  public getRenderPass(_target: Target) { return RenderPass.Classification; }
+  public override getPass(): Pass { return "classification"; }
   public get renderOrder() { return RenderOrder.None; }
   public get qOrigin() { return this._origin; }
   public get qScale() { return this._scale; }

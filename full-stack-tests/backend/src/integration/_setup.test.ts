@@ -3,9 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelHubBackend } from "@bentley/imodelhub-client/lib/cjs/IModelHubBackend";
 import { IModelHostConfiguration } from "@itwin/core-backend";
 import { TestUtils } from "@itwin/core-backend/lib/cjs/test";
+import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
+import { IModelsClient } from "@itwin/imodels-client-authoring";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -31,7 +32,8 @@ before(async () => {
 
   const cfg = new IModelHostConfiguration();
   cfg.cacheDir = path.join(__dirname, ".cache");  // Set the cache dir to be under the lib directory.
-  cfg.hubAccess = new IModelHubBackend();
+  const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
+  cfg.hubAccess = new BackendIModelsAccess(iModelClient);
 
   await TestUtils.startBackend(cfg);
 });

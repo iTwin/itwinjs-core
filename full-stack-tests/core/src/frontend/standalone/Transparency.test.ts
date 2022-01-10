@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
-  ColorDef, FeatureAppearance, GraphicParams, ImageBuffer, ImageBufferFormat, RenderMaterial, RenderMode, RenderTexture, TextureMapping,
+  ColorDef, FeatureAppearance, GraphicParams, ImageBuffer, ImageBufferFormat, RenderMaterial, RenderMode, RenderTexture, TextureMapping, TextureTransparency,
 } from "@itwin/core-common";
 import { DecorateContext, FeatureSymbology, GraphicType, IModelApp, RenderGraphicOwner, SnapshotConnection, Viewport } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
@@ -228,9 +228,14 @@ describe("Transparency", async () => {
     if (undefined !== alpha)
       bytes.push(alpha);
 
+    // ###TODO test Mixed transparency.
+    const transparency = undefined !== alpha && alpha < 255 ? TextureTransparency.Translucent : TextureTransparency.Opaque;
     const img = ImageBuffer.create(new Uint8Array(bytes), fmt, 1);
-    // eslint-disable-next-line deprecation/deprecation
-    const texture = IModelApp.renderSystem.createTextureFromImageBuffer(img, imodel, new RenderTexture.Params(imodel.transientIds.next));
+    const texture = IModelApp.renderSystem.createTexture({
+      type: RenderTexture.Type.Normal,
+      image: { source: img, transparency },
+    });
+
     expect(texture).not.to.be.undefined;
     return texture!;
   }
