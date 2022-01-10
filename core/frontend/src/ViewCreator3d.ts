@@ -27,7 +27,7 @@ import { SpatialViewState } from "./SpatialViewState";
  *  @public
 */
 export interface ViewCreator3dOptions {
-  /** Turn [[Camera]] on when generating the view. */
+  /** Turn [[Camera]] on/off when generating the view. Defaults to true (on) */
   cameraOn?: boolean;
   /** Turn [[SkyBox]] on when generating the view. */
   skyboxOn?: boolean;
