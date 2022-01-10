@@ -4,12 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { Code, EntityMetaData } from "@itwin/core-common";
+import { Code, DefinitionElementProps, ElementAspectProps, EntityMetaData, RelatedElement } from "@itwin/core-common";
 import {
-  DefinitionElement, IModelDb, RepositoryLink, SnapshotDb, SpatialViewDefinition, UrlLink, ViewDefinition3d,
+  DefinitionElement, IModelDb, RepositoryLink, Schema, SnapshotDb, SpatialViewDefinition, UrlLink, ViewDefinition3d,
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
+import { Element } from "../../Element";
+import { Schemas } from "../../Schema";
+import { ClassRegistry } from "../../ClassRegistry";
+import { Id64Set } from "@bentley/bentleyjs-core";
 
 describe("Class Registry", () => {
   let imodel: SnapshotDb;
@@ -93,7 +97,124 @@ describe("Class Registry", () => {
 
     assert.isDefined(expectedString);
   });
+});
 
+describe("Class Registry - generated classes", () => {
+  let imodel: SnapshotDb;
+  const testSchemaPath = path.join(KnownTestLocations.assetsDir, "TestGeneratedClasses.ecschema.xml");
+
+  before(async () => {
+    const seedFileName = IModelTestUtils.resolveAssetFile("test.bim");
+    const testFileName = IModelTestUtils.prepareOutputFile("ClassRegistry", "ClassRegistryTest.bim");
+    imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
+    assert.exists(imodel);
+    await imodel.importSchemas([testSchemaPath]); // will throw an exception if import fails
+  });
+
+  after(() => {
+    imodel?.close();
+  });
+
+  interface TestEntityProps extends DefinitionElementProps {
+    prop: string;
+  }
+
+  interface TestElementWithNavPropProps  extends DefinitionElementProps {
+    navProp: RelatedElement;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  interface TestNonElementWithNavPropProps  extends ElementAspectProps {
+    navProp: RelatedElement;
+  }
+
+  class TestElementWithNavProp extends DefinitionElement implements TestElementWithNavPropProps {
+    public static override get className(): string { return "TestElementWithNavProp"; }
+    public navProp: RelatedElement;
+    public constructor(props: TestElementWithNavPropProps, inIModel: IModelDb) {
+      super(props, inIModel);
+      this.navProp = props.navProp;
+    }
+  }
+
+  class TestGeneratedClasses extends Schema {
+    public static override get schemaName(): string { return "TestGeneratedClasses"; }
+    public static classes = [TestElementWithNavProp];
+    public static registerSchema() {
+      if (this !== Schemas.getRegisteredSchema(this.schemaName)) {
+        Schemas.unregisterSchema(this.schemaName);
+        Schemas.registerSchema(this);
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        for (const class_ of this.classes) {
+          ClassRegistry.register(class_, this);
+        }
+      }
+    }
+  }
+
+  it("should only generate automatic collectPredecessorIds implementations for Element subclasses", async () => {
+    await imodel.importSchemas([testSchemaPath]); // will throw an exception if import fails
+
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const GeneratedTestElementWithNavProp = imodel.getJsClass("TestGeneratedClasses:TestElementWithNavProp");
+
+    const testEntityId = imodel.elements.insertElement({
+      classFullName: "TestGeneratedClasses:TestEntity",
+      prop: "sample-value",
+      model: IModelDb.dictionaryId,
+      code: Code.createEmpty(),
+    } as TestEntityProps);
+
+    const elemWithNavProp = new GeneratedTestElementWithNavProp({
+      classFullName: "TestGeneratedClasses:TestElementWithNavProp",
+      navProp: {
+        id: testEntityId,
+        relClassName: "TestGeneratedClasses:ElemRel",
+      },
+    } as TestElementWithNavPropProps, imodel) as Element;
+
+    assert.isDefined((GeneratedTestElementWithNavProp.prototype as any).getPredecessorIds);
+    assert.includeDeepMembers([elemWithNavProp.model, testEntityId], [...elemWithNavProp.getPredecessorIds()]);
+
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const GeneratedTestNonElementWithNavProp = imodel.getJsClass("TestGeneratedClasses:TestNonElementWithNavProp");
+    assert.isUndefined((GeneratedTestNonElementWithNavProp.prototype as any).getPredecessorIds);
+  });
+
+  it("should not override custom registered schema class implementations of collectPredecessorIds", async () => {
+    const testImplPredecessorId = "TEST";
+    class MyTestElementWithNavProp extends TestElementWithNavProp {
+      protected override collectPredecessorIds(predecessorIds: Id64Set) {
+        super.collectPredecessorIds(predecessorIds);
+        predecessorIds.add(testImplPredecessorId);
+      }
+    }
+    class MyTestGeneratedClasses extends TestGeneratedClasses {
+      public static override classes = [MyTestElementWithNavProp];
+    }
+    MyTestGeneratedClasses.registerSchema();
+
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const ActualTestElementWithNavProp = imodel.getJsClass("TestGeneratedClasses:TestElementWithNavProp");
+
+    const testEntityId = imodel.elements.insertElement({
+      classFullName: "TestGeneratedClasses:TestEntity",
+      prop: "sample-value",
+      model: IModelDb.dictionaryId,
+      code: Code.createEmpty(),
+    } as TestEntityProps);
+
+    const elemWithNavProp = new ActualTestElementWithNavProp({
+      classFullName: "TestGeneratedClasses:TestElementWithNavProp",
+      navProp: {
+        id: testEntityId,
+        relClassName: "TestGeneratedClasses:ElemRel",
+      },
+    } as TestElementWithNavPropProps, imodel) as Element;
+
+    assert.isDefined((ActualTestElementWithNavProp.prototype as any).getPredecessorIds);
+    assert.include([...elemWithNavProp.getPredecessorIds()], testImplPredecessorId);
+  });
 });
 
 class Base {

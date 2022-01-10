@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ECSchema schemaName="TestGeneratedClasses" alias="tgc" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+    <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+
+    <ECEntityClass typeName="TestEntity" description="a sample entity for the end of the test relationships">
+        <BaseClass>bis:DefinitionElement</BaseClass>
+        <ECProperty propertyName="prop" typeName="string" description="a sample property"/>
+    </ECEntityClass>
+
+    <ECRelationshipClass typeName="ElemRel" strength="referencing" description="elem rel 1" modifier="sealed">
+        <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="false">
+            <Class class="TestElementWithNavProp"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is referenced by" polymorphic="false">
+            <Class class="TestEntity"/>
+        </Target>
+    </ECRelationshipClass>
+
+    <ECRelationshipClass typeName="NonElemRel" strength="referencing" description="non elem rel 1" modifier="sealed">
+        <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="false">
+            <Class class="TestNonElementWithNavProp"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is referenced by" polymorphic="false">
+            <Class class="TestEntity"/>
+        </Target>
+    </ECRelationshipClass>
+
+    <ECEntityClass typeName="TestNonElementWithNavProp" description="A test domain class that has a base and mixin applied to it.">
+        <BaseClass>bis:ElementMultiAspect</BaseClass>
+        <ECNavigationProperty propertyName="navProp" relationshipName="NonElemRel" direction="Forward" displayLabel="Horizontal Alignment" />
+    </ECEntityClass>
+
+    <ECEntityClass typeName="TestElementWithNavProp" description="A test domain class that has a base and mixin applied to it.">
+        <BaseClass>bis:DefinitionElement</BaseClass>
+        <ECNavigationProperty propertyName="navProp" relationshipName="ElemRel" direction="Forward" displayLabel="Horizontal Alignment" />
+    </ECEntityClass>
+
+</ECSchema>
