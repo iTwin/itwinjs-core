@@ -7,12 +7,14 @@
  */
 
 import { Id64Array, Id64String } from "@itwin/core-bentley";
-import { BlendEdgesProps, BooleanMode, BooleanOperationProps, ChamferEdgesProps, ChamferMode, CutDepthMode, CutDirectionMode, CutProps, DeleteSubEntityProps, ElementGeometryCacheFilter, ElementGeometryResultOptions, ElementGeometryResultProps, EmbossDirectionMode, EmbossProps, HollowFacesProps, ImprintProps, LoftProps, OffsetFacesProps, ProfileClosure, SewSheetProps, SpinFacesProps, SubEntityFilter, SubEntityLocationProps, SubEntityProps, SubEntityType, SweepFacesProps, SweepPathProps, ThickenSheetProps } from "@itwin/editor-common";
+import { BlendEdgesProps, BooleanMode, BooleanOperationProps, BRepEntityType, ChamferEdgesProps, ChamferMode, CutDepthMode, CutDirectionMode, CutProps, DeleteSubEntityProps, ElementGeometryCacheFilter, ElementGeometryResultOptions, ElementGeometryResultProps, EmbossDirectionMode, EmbossProps, HollowFacesProps, ImprintProps, LoftProps, OffsetFacesProps, ProfileClosure, SewSheetProps, SpinFacesProps, SubEntityFilter, SubEntityLocationProps, SubEntityProps, SubEntityType, SweepFacesProps, SweepPathProps, ThickenSheetProps } from "@itwin/editor-common";
 import { ColorDef, ElementGeometry } from "@itwin/core-common";
-import { Angle, Geometry, LineString3d, Point3d, Vector3d, XYZProps } from "@itwin/core-geometry";
-import { AccuDrawHintBuilder, BeButtonEvent, DecorateContext, DynamicsContext, EventHandled, GraphicType, HitDetail } from "@itwin/core-frontend";
+import { Angle, Geometry, LineString3d, Matrix3d, Point3d, Vector3d, XYZProps } from "@itwin/core-geometry";
+import { AccuDraw, AccuDrawHintBuilder, AngleDescription, BeButtonEvent, DecorateContext, DynamicsContext, EventHandled, GraphicType, HitDetail, IModelApp, LengthDescription, TentativeOrAccuSnap } from "@itwin/core-frontend";
 import { computeChordToleranceFromPoint } from "./CreateElementTool";
 import { ElementGeometryCacheTool, isSameSubEntity, LocateSubEntityTool, SubEntityData } from "./ElementGeometryTool";
+import { DialogItem, DialogProperty, DialogPropertySyncItem, EnumerationChoice, PropertyDescriptionHelper } from "@itwin/appui-abstract";
+import { EditTools } from "./EditTool";
 
 /** @alpha Base class for tools that perform boolean operations on a set of elements. */
 export abstract class BooleanOperationTool extends ElementGeometryCacheTool {
@@ -145,9 +147,25 @@ export class ThickenSheetElementsTool extends ElementGeometryCacheTool {
   public static override toolId = "ThickenSheets";
   public static override iconSpec = "icon-move"; // TODO: Need better icon...
 
-  // TODO: Tool settings for front and back distances...
-  protected frontDistance = 0.5;
-  protected backDistance = 0.0;
+  private _frontDistanceProperty: DialogProperty<number> | undefined;
+  public get frontDistanceProperty() {
+    if (!this._frontDistanceProperty)
+      this._frontDistanceProperty = new DialogProperty<number>(new LengthDescription("thickenFront", EditTools.translate("ThickenSheets.Label.FrontDistance")), 0.1, undefined);
+    return this._frontDistanceProperty;
+  }
+
+  public get frontDistance(): number { return this.frontDistanceProperty.value; }
+  public set frontDistance(value: number) { this.frontDistanceProperty.value = value; }
+
+  private _backDistanceProperty: DialogProperty<number> | undefined;
+  public get backDistanceProperty() {
+    if (!this._backDistanceProperty)
+      this._backDistanceProperty = new DialogProperty<number>(new LengthDescription("thickenBack", EditTools.translate("ThickenSheets.Label.BackDistance")), 0.0, undefined);
+    return this._backDistanceProperty;
+  }
+
+  public get backDistance(): number { return this.backDistanceProperty.value; }
+  public set backDistance(value: number) { this.backDistanceProperty.value = value; }
 
   protected override get geometryCacheFilter(): ElementGeometryCacheFilter | undefined {
     return { parts: true, curves: false, surfaces: true, solids: false, other: false };
@@ -174,6 +192,19 @@ export class ThickenSheetElementsTool extends ElementGeometryCacheTool {
       await this.saveChanges();
   }
 
+  public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
+    return this.changeToolSettingPropertyValue(updatedValue);
+  }
+
+  public override supplyToolSettingsProperties(): DialogItem[] | undefined {
+    this.initializeToolSettingPropertyValues([this.frontDistanceProperty, this.backDistanceProperty]);
+
+    const toolSettings = new Array<DialogItem>();
+    toolSettings.push(this.frontDistanceProperty.toDialogItem({ rowPriority: 1, columnIndex: 0 }));
+    toolSettings.push(this.backDistanceProperty.toDialogItem({ rowPriority: 2, columnIndex: 0 }));
+    return toolSettings;
+  }
+
   public async onRestartTool(): Promise<void> {
     const tool = new ThickenSheetElementsTool();
     if (!await tool.run())
@@ -188,10 +219,47 @@ export class CutSolidElementsTool extends ElementGeometryCacheTool {
   protected targetPoint?: Point3d;
   protected toolPoint?: Point3d;
 
-  // TODO: Tool settings for both directions, blind cut depth, and outside...
-  protected bothDirections = false;
-  protected distance = 0.0;
-  protected outside = undefined;
+  private _bothDirectionsProperty: DialogProperty<boolean> | undefined;
+  public get bothDirectionsProperty() {
+    if (!this._bothDirectionsProperty)
+      this._bothDirectionsProperty = new DialogProperty<boolean>(
+        PropertyDescriptionHelper.buildToggleDescription("cutBothDirections", EditTools.translate("CutSolids.Label.BothDirections")), false);
+    return this._bothDirectionsProperty;
+  }
+
+  public get bothDirections(): boolean { return this.bothDirectionsProperty.value; }
+  public set bothDirections(value: boolean) { this.bothDirectionsProperty.value = value; }
+
+  private _outsideProperty: DialogProperty<boolean> | undefined;
+  public get outsideProperty() {
+    if (!this._outsideProperty)
+      this._outsideProperty = new DialogProperty<boolean>(
+        PropertyDescriptionHelper.buildToggleDescription("cutOutside", EditTools.translate("CutSolids.Label.Outside")), false);
+    return this._outsideProperty;
+  }
+
+  public get outside(): boolean { return this.outsideProperty.value; }
+  public set outside(value: boolean) { this.outsideProperty.value = value; }
+
+  private _useDepthProperty: DialogProperty<boolean> | undefined;
+  public get useDepthProperty() {
+    if (!this._useDepthProperty)
+      this._useDepthProperty = new DialogProperty<boolean>(PropertyDescriptionHelper.buildLockPropertyDescription("useCutDepth"), false);
+    return this._useDepthProperty;
+  }
+
+  public get useDepth(): boolean { return this.useDepthProperty.value; }
+  public set useDepth(value: boolean) { this.useDepthProperty.value = value; }
+
+  private _depthProperty: DialogProperty<number> | undefined;
+  public get depthProperty() {
+    if (!this._depthProperty)
+      this._depthProperty = new DialogProperty<number>(new LengthDescription("cutDepth", EditTools.translate("CutSolids.Label.Depth")), 0.1, undefined, !this.useDepth);
+    return this._depthProperty;
+  }
+
+  public get depth(): number { return this.depthProperty.value; }
+  public set depth(value: number) { this.depthProperty.value = value; }
 
   protected override get requiredElementCount(): number { return 2; }
   protected get isProfilePhase(): boolean { return !this.agenda.isEmpty; }
@@ -227,13 +295,13 @@ export class CutSolidElementsTool extends ElementGeometryCacheTool {
       return undefined;
 
     const direction = (this.bothDirections ? CutDirectionMode.Both : CutDirectionMode.Auto);
-    const depth = (0.0 === this.distance ? CutDepthMode.All : CutDepthMode.Blind);
+    const depth = (this.useDepth ? CutDepthMode.Blind : CutDepthMode.All);
 
     try {
       this._startedCmd = await this.startCommand();
       const target = this.agenda.elements[0];
       const profile = this.agenda.elements[1];
-      const params: CutProps = { profile, direction, depth, distance: this.distance, outside: this.outside, closeOpen: ProfileClosure.Auto, targetPoint: this.targetPoint, toolPoint: this.toolPoint };
+      const params: CutProps = { profile, direction, depth, distance: this.depth, outside: this.outside ? true : undefined, closeOpen: ProfileClosure.Auto, targetPoint: this.targetPoint, toolPoint: this.toolPoint };
       const opts: ElementGeometryResultOptions = { writeChanges: true };
       return await ElementGeometryCacheTool.callCommand("cutSolid", target, params, opts);
     } catch (err) {
@@ -254,6 +322,29 @@ export class CutSolidElementsTool extends ElementGeometryCacheTool {
       this.targetPoint = hit.hitPoint;
 
     return super.buildLocateAgenda(hit);
+  }
+
+  protected override getToolSettingPropertyLocked(property: DialogProperty<any>): DialogProperty<any> | undefined {
+    return (property === this.useDepthProperty ? this.depthProperty : undefined);
+  }
+
+  public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
+    return this.changeToolSettingPropertyValue(updatedValue);
+  }
+
+  public override supplyToolSettingsProperties(): DialogItem[] | undefined {
+    this.initializeToolSettingPropertyValues([this.bothDirectionsProperty, this.outsideProperty, this.useDepthProperty, this.depthProperty]);
+
+    const toolSettings = new Array<DialogItem>();
+    toolSettings.push(this.bothDirectionsProperty.toDialogItem({ rowPriority: 1, columnIndex: 0 }));
+    toolSettings.push(this.outsideProperty.toDialogItem({ rowPriority: 2, columnIndex: 0 }));
+
+    // ensure controls are enabled/disabled based on current lock property state
+    this.depthProperty.isDisabled = !this.useDepth;
+    const useDepthLock = this.useDepthProperty.toDialogItem({ rowPriority: 3, columnIndex: 0 });
+    toolSettings.push(this.depthProperty.toDialogItem({ rowPriority: 3, columnIndex: 1 }, useDepthLock));
+
+    return toolSettings;
   }
 
   public async onRestartTool(): Promise<void> {
@@ -422,10 +513,36 @@ export class OffsetFacesTool extends LocateSubEntityTool {
   public static override toolId = "OffsetFaces";
   public static override iconSpec = "icon-move"; // TODO: Need better icon...
 
-  // TODO: Tool settings for offset distance...
-  protected useOffset = false;
-  protected offset = 0.1;
-  protected addSmoothFaces = false;
+  private _addSmoothProperty: DialogProperty<boolean> | undefined;
+  public get addSmoothProperty() {
+    if (!this._addSmoothProperty)
+      this._addSmoothProperty = new DialogProperty<boolean>(
+        PropertyDescriptionHelper.buildToggleDescription("offsetSmooth", EditTools.translate("OffsetFaces.Label.AddSmooth")), false);
+    return this._addSmoothProperty;
+  }
+
+  public get addSmooth(): boolean { return this.addSmoothProperty.value; }
+  public set addSmooth(value: boolean) { this.addSmoothProperty.value = value; }
+
+  private _useDistanceProperty: DialogProperty<boolean> | undefined;
+  public get useDistanceProperty() {
+    if (!this._useDistanceProperty)
+      this._useDistanceProperty = new DialogProperty<boolean>(PropertyDescriptionHelper.buildLockPropertyDescription("useOffsetDistance"), false);
+    return this._useDistanceProperty;
+  }
+
+  public get useDistance(): boolean { return this.useDistanceProperty.value; }
+  public set useDistance(value: boolean) { this.useDistanceProperty.value = value; }
+
+  private _distanceProperty: DialogProperty<number> | undefined;
+  public get distanceProperty() {
+    if (!this._distanceProperty)
+      this._distanceProperty = new DialogProperty<number>(new LengthDescription("offsetDistance", EditTools.translate("OffsetFaces.Label.Distance")), 0.1, undefined, !this.useDistance);
+    return this._distanceProperty;
+  }
+
+  public get distance(): number { return this.distanceProperty.value; }
+  public set distance(value: number) { this.distanceProperty.value = value; }
 
   protected override get wantDynamics(): boolean { return true; }
   protected override get wantAccuSnap(): boolean { return this.isDynamicsStarted; }
@@ -482,7 +599,7 @@ export class OffsetFacesTool extends LocateSubEntityTool {
 
     const offsetDir = Vector3d.createStartEnd(faceData.point, projPt);
 
-    if (this.useOffset && undefined === offsetDir.scaleToLength(this.offset, offsetDir))
+    if (this.useDistance && undefined === offsetDir.scaleToLength(this.distance, offsetDir))
       return undefined;
 
     let offset = offsetDir.magnitude();
@@ -499,7 +616,7 @@ export class OffsetFacesTool extends LocateSubEntityTool {
 
       const faces = this.getAcceptedSubEntities();
 
-      if (this.addSmoothFaces) {
+      if (this.addSmooth) {
         const allSmoothFaces: SubEntityProps[] = [];
 
         for (const face of faces) {
@@ -545,6 +662,28 @@ export class OffsetFacesTool extends LocateSubEntityTool {
     hints.sendHints(false);
   }
 
+  protected override getToolSettingPropertyLocked(property: DialogProperty<any>): DialogProperty<any> | undefined {
+    return (property === this.useDistanceProperty ? this.distanceProperty : undefined);
+  }
+
+  public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
+    return this.changeToolSettingPropertyValue(updatedValue);
+  }
+
+  public override supplyToolSettingsProperties(): DialogItem[] | undefined {
+    this.initializeToolSettingPropertyValues([this.addSmoothProperty, this.useDistanceProperty, this.distanceProperty]);
+
+    const toolSettings = new Array<DialogItem>();
+
+    // ensure controls are enabled/disabled based on current lock property state
+    this.distanceProperty.isDisabled = !this.useDistance;
+    const useDistanceLock = this.useDistanceProperty.toDialogItem({ rowPriority: 1, columnIndex: 0 });
+    toolSettings.push(this.distanceProperty.toDialogItem({ rowPriority: 1, columnIndex: 1 }, useDistanceLock));
+    toolSettings.push(this.addSmoothProperty.toDialogItem({ rowPriority: 2, columnIndex: 0 }));
+
+    return toolSettings;
+  }
+
   public async onRestartTool(): Promise<void> {
     const tool = new OffsetFacesTool();
     if (!await tool.run())
@@ -557,9 +696,25 @@ export class HollowFacesTool extends LocateSubEntityTool {
   public static override toolId = "HollowFaces";
   public static override iconSpec = "icon-move"; // TODO: Need better icon...
 
-  // TODO: Tool settings for shell thickness and face thickness...
-  protected shellThickness = 0.1;
-  protected faceThickness = 0.0;
+  private _shellThicknessProperty: DialogProperty<number> | undefined;
+  public get shellThicknessProperty() {
+    if (!this._shellThicknessProperty)
+      this._shellThicknessProperty = new DialogProperty<number>(new LengthDescription("hollowShellThickness", EditTools.translate("HollowFaces.Label.ShellThickness")), 0.1, undefined);
+    return this._shellThicknessProperty;
+  }
+
+  public get shellThickness(): number { return this.shellThicknessProperty.value; }
+  public set shellThickness(value: number) { this.shellThicknessProperty.value = value; }
+
+  private _faceThicknessProperty: DialogProperty<number> | undefined;
+  public get faceThicknessProperty() {
+    if (!this._faceThicknessProperty)
+      this._faceThicknessProperty = new DialogProperty<number>(new LengthDescription("hollowFaceThickness", EditTools.translate("HollowFaces.Label.FaceThickness")), 0.0, undefined);
+    return this._faceThicknessProperty;
+  }
+
+  public get faceThickness(): number { return this.faceThicknessProperty.value; }
+  public set faceThickness(value: number) { this.faceThicknessProperty.value = value; }
 
   protected override get geometryCacheFilter(): ElementGeometryCacheFilter | undefined {
     return { parts: true, curves: false, surfaces: false, solids: true, other: false };
@@ -582,6 +737,19 @@ export class HollowFacesTool extends LocateSubEntityTool {
     } catch (err) {
       return undefined;
     }
+  }
+
+  public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
+    return this.changeToolSettingPropertyValue(updatedValue);
+  }
+
+  public override supplyToolSettingsProperties(): DialogItem[] | undefined {
+    this.initializeToolSettingPropertyValues([this.shellThicknessProperty, this.faceThicknessProperty]);
+
+    const toolSettings = new Array<DialogItem>();
+    toolSettings.push(this.shellThicknessProperty.toDialogItem({ rowPriority: 1, columnIndex: 0 }));
+    toolSettings.push(this.faceThicknessProperty.toDialogItem({ rowPriority: 2, columnIndex: 0 }));
+    return toolSettings;
   }
 
   public async onRestartTool(): Promise<void> {
@@ -685,12 +853,50 @@ export class ImprintSolidElementsTool extends LocateSubEntityTool {
   public static override toolId = "ImprintSolids";
   public static override iconSpec = "icon-move"; // TODO: Need better icon...
 
-  // TODO: Tool settings for method, propagate for edges, offset distance...
-  protected method = ImprintSolidMethod.Points;
   protected points: Point3d[] = [];
-  protected extend = true;
-  protected distance = 0.1;
 
+  private static methodMessage(str: string) { return EditTools.translate(`ImprintSolids.Method.${str}`); }
+  private static getMethodChoices = (): EnumerationChoice[] => {
+    return [
+      { label: ImprintSolidElementsTool.methodMessage("Element"), value: ImprintSolidMethod.Element },
+      { label: ImprintSolidElementsTool.methodMessage("Edges"), value: ImprintSolidMethod.Edges },
+      { label: ImprintSolidElementsTool.methodMessage("Points"), value: ImprintSolidMethod.Points },
+    ];
+  };
+
+  private _methodProperty: DialogProperty<number> | undefined;
+  public get methodProperty() {
+    if (!this._methodProperty)
+      this._methodProperty = new DialogProperty<number>(PropertyDescriptionHelper.buildEnumPicklistEditorDescription(
+        "imprintMethod", EditTools.translate("ImprintSolids.Label.Method"), ImprintSolidElementsTool.getMethodChoices()), ImprintSolidMethod.Element as number);
+    return this._methodProperty;
+  }
+
+  public get method(): ImprintSolidMethod { return this.methodProperty.value as ImprintSolidMethod; }
+  public set method(method: ImprintSolidMethod) { this.methodProperty.value = method; }
+
+  private _distanceProperty: DialogProperty<number> | undefined;
+  public get distanceProperty() {
+    if (!this._distanceProperty)
+      this._distanceProperty = new DialogProperty<number>(new LengthDescription("imprintDistance", EditTools.translate("ImprintSolids.Label.Distance")), 0.1, undefined);
+    return this._distanceProperty;
+  }
+
+  public get distance(): number { return this.distanceProperty.value; }
+  public set distance(value: number) { this.distanceProperty.value = value; }
+
+  private _extendProperty: DialogProperty<boolean> | undefined;
+  public get extendProperty() {
+    if (!this._extendProperty)
+      this._extendProperty = new DialogProperty<boolean>(
+        PropertyDescriptionHelper.buildToggleDescription("imprintExtend", EditTools.translate("ImprintSolids.Label.Extend")), false);
+    return this._extendProperty;
+  }
+
+  public get extend(): boolean { return this.extendProperty.value; }
+  public set extend(value: boolean) { this.extendProperty.value = value; }
+
+  protected override get requiredSubEntityCount(): number { return ImprintSolidMethod.Element === this.method ? 0 : 1; }
   protected override get requiredElementCount(): number { return ImprintSolidMethod.Element === this.method ? 2 : 1; }
   protected override get allowSubEntityControlSelect(): boolean { return ImprintSolidMethod.Edges === this.method; }
   protected override get inhibitSubEntityDisplay(): boolean { return ImprintSolidMethod.Points === this.method ? false : super.inhibitSubEntityDisplay; }
@@ -746,7 +952,7 @@ export class ImprintSolidElementsTool extends LocateSubEntityTool {
         if (undefined === geom)
           return undefined;
 
-        params = { imprint : geom, face: this.getAcceptedSubEntityData(0)?.props, extend: this.extend ? true : undefined };
+        params = { imprint: geom, face: this.getAcceptedSubEntityData(0)?.props, extend: this.extend ? true : undefined };
       } else if (ImprintSolidMethod.Edges === this.method) {
         if (!this.haveAcceptedSubEntities)
           return undefined;
@@ -756,18 +962,18 @@ export class ImprintSolidElementsTool extends LocateSubEntityTool {
         if (undefined === edge)
           return undefined;
 
-        const edgeFaces = await ElementGeometryCacheTool.callCommand("getConnectedSubEntities", id, edge, SubEntityType.Face );
+        const edgeFaces = await ElementGeometryCacheTool.callCommand("getConnectedSubEntities", id, edge, SubEntityType.Face);
         if (undefined === edgeFaces || 0 === edgeFaces.length)
           return undefined;
 
         // TODO: Check planar face...get preferred face from cursor location in dynamics, etc.
-        const edgeLoop = await ElementGeometryCacheTool.callCommand("getConnectedSubEntities", id, edge, SubEntityType.Edge, { loopFace: edgeFaces[0] } );
+        const edgeLoop = await ElementGeometryCacheTool.callCommand("getConnectedSubEntities", id, edge, SubEntityType.Edge, { loopFace: edgeFaces[0] });
         if (undefined === edgeLoop || 0 === edgeLoop.length)
           return undefined;
 
-        params = { imprint : edgeLoop, face: edgeFaces[0], distance: this.distance, extend: this.extend ? true : undefined };
+        params = { imprint: edgeLoop, face: edgeFaces[0], distance: this.distance, extend: this.extend ? true : undefined };
       } else {
-        params = { imprint : this.agenda.elements[1], extend: this.extend ? true : undefined };
+        params = { imprint: this.agenda.elements[1], extend: this.extend ? true : undefined };
       }
 
       const opts: ElementGeometryResultOptions = { writeChanges: true };
@@ -801,6 +1007,7 @@ export class ImprintSolidElementsTool extends LocateSubEntityTool {
         if (!ev.isControlKey)
           break;
 
+        this.setupAndPromptForNextAction();
         return EventHandled.No;
       }
 
@@ -842,6 +1049,37 @@ export class ImprintSolidElementsTool extends LocateSubEntityTool {
     hints.sendHints(false);
   }
 
+  public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
+    if (!this.changeToolSettingPropertyValue(updatedValue))
+      return false;
+
+    if (updatedValue.propertyName === this.methodProperty.name)
+      await this.onReinitialize();
+
+    return true;
+  }
+
+  public override supplyToolSettingsProperties(): DialogItem[] | undefined {
+    this.initializeToolSettingPropertyValues([this.methodProperty, this.extendProperty, this.distanceProperty]);
+
+    const toolSettings = new Array<DialogItem>();
+    toolSettings.push(this.methodProperty.toDialogItem({ rowPriority: 1, columnIndex: 0 }));
+
+    switch (this.method) {
+      case ImprintSolidMethod.Element:
+        toolSettings.push(this.extendProperty.toDialogItem({ rowPriority: 2, columnIndex: 0 }));
+        break;
+      case ImprintSolidMethod.Edges:
+        toolSettings.push(this.distanceProperty.toDialogItem({ rowPriority: 2, columnIndex: 0 }));
+        break;
+      case ImprintSolidMethod.Points:
+        toolSettings.push(this.extendProperty.toDialogItem({ rowPriority: 2, columnIndex: 0 }));
+        break;
+    }
+
+    return toolSettings;
+  }
+
   public async onRestartTool(): Promise<void> {
     const tool = new ImprintSolidElementsTool();
     if (!await tool.run())
@@ -849,10 +1087,18 @@ export class ImprintSolidElementsTool extends LocateSubEntityTool {
   }
 }
 
-/** @alpha Identify edges of solids and surfaces to apply blend to. */
+/** @alpha Base class for tools to identify edges of solids and surfaces and apply blends. */
 export abstract class BlendEdgesTool extends LocateSubEntityTool {
-  // TODO: Tool settings for tangent edge propagation...
-  protected propagateSmooth = true;
+  private _addSmoothProperty: DialogProperty<boolean> | undefined;
+  public get addSmoothProperty() {
+    if (!this._addSmoothProperty)
+      this._addSmoothProperty = new DialogProperty<boolean>(
+        PropertyDescriptionHelper.buildToggleDescription("blendSmooth", EditTools.translate("RoundEdges.Label.AddSmooth")), false);
+    return this._addSmoothProperty;
+  }
+
+  public get addSmooth(): boolean { return this.addSmoothProperty.value; }
+  public set addSmooth(value: boolean) { this.addSmoothProperty.value = value; }
 
   protected override wantSubEntityType(type: SubEntityType): boolean { return SubEntityType.Edge === type; }
 
@@ -897,7 +1143,7 @@ export abstract class BlendEdgesTool extends LocateSubEntityTool {
 
   protected async removeTangentEdges(_id: Id64String, edge?: SubEntityProps): Promise<void> {
     if (undefined === edge) {
-      this._acceptedSubEntities = this._acceptedSubEntities.filter((entry) => undefined === entry.toolData );
+      this._acceptedSubEntities = this._acceptedSubEntities.filter((entry) => undefined === entry.toolData);
       return;
     }
 
@@ -914,10 +1160,23 @@ export abstract class BlendEdgesTool extends LocateSubEntityTool {
     this._acceptedSubEntities = this._acceptedSubEntities.filter((entry) => !isTangentEdge(entry));
   }
 
+  protected async syncTangentEdges(): Promise<void> {
+    const id = this.getCurrentElement();
+    if (undefined === id)
+      return;
+
+    if (this.addSmooth)
+      await this.addTangentEdges(id);
+    else
+      await this.removeTangentEdges(id);
+
+    IModelApp.viewManager.invalidateDecorationsAllViews();
+  }
+
   protected override async addSubEntity(id: Id64String, props: SubEntityLocationProps): Promise<void> {
     await super.addSubEntity(id, props);
 
-    if (!this.propagateSmooth)
+    if (!this.addSmooth)
       return;
 
     const chordTolerance = (this.targetView ? computeChordToleranceFromPoint(this.targetView, Point3d.fromJSON(props.point)) : undefined);
@@ -926,7 +1185,7 @@ export abstract class BlendEdgesTool extends LocateSubEntityTool {
   }
 
   protected override async removeSubEntity(id: Id64String, props?: SubEntityLocationProps): Promise<void> {
-    if (!this.propagateSmooth)
+    if (!this.addSmooth)
       return super.removeSubEntity(id, props);
 
     const edge = (undefined !== props) ? props.subEntity : this.getAcceptedSubEntityData()?.props;
@@ -948,8 +1207,15 @@ export class RoundEdgesTool extends BlendEdgesTool {
   public static override toolId = "RoundEdges";
   public static override iconSpec = "icon-move"; // TODO: Need better icon...
 
-  // TODO: Tool settings for blend radius...
-  protected radius = 0.5;
+  private _radiusProperty: DialogProperty<number> | undefined;
+  public get radiusProperty() {
+    if (!this._radiusProperty)
+      this._radiusProperty = new DialogProperty<number>(new LengthDescription("roundRadius", EditTools.translate("RoundEdges.Label.Radius")), 0.1, undefined);
+    return this._radiusProperty;
+  }
+
+  public get radius(): number { return this.radiusProperty.value; }
+  public set radius(value: number) { this.radiusProperty.value = value; }
 
   protected override async applyAgendaOperation(ev: BeButtonEvent, isAccept: boolean): Promise<ElementGeometryResultProps | undefined> {
     if (undefined === ev.viewport || this.agenda.isEmpty || !this.haveAcceptedSubEntities)
@@ -957,7 +1223,7 @@ export class RoundEdgesTool extends BlendEdgesTool {
 
     try {
       this._startedCmd = await this.startCommand();
-      const params: BlendEdgesProps = { edges: this.getAcceptedSubEntities(), radii: this.radius, propagateSmooth: this.propagateSmooth };
+      const params: BlendEdgesProps = { edges: this.getAcceptedSubEntities(), radii: this.radius, propagateSmooth: this.addSmooth };
       const opts: ElementGeometryResultOptions = {
         wantGraphic: isAccept ? undefined : true,
         chordTolerance: computeChordToleranceFromPoint(ev.viewport, ev.point),
@@ -968,6 +1234,25 @@ export class RoundEdgesTool extends BlendEdgesTool {
     } catch (err) {
       return undefined;
     }
+  }
+
+  public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
+    if (!this.changeToolSettingPropertyValue(updatedValue))
+      return false;
+
+    if (updatedValue.propertyName === this.addSmoothProperty.name)
+      await this.syncTangentEdges();
+
+    return true;
+  }
+
+  public override supplyToolSettingsProperties(): DialogItem[] | undefined {
+    this.initializeToolSettingPropertyValues([this.radiusProperty, this.addSmoothProperty]);
+
+    const toolSettings = new Array<DialogItem>();
+    toolSettings.push(this.radiusProperty.toDialogItem({ rowPriority: 1, columnIndex: 0 }));
+    toolSettings.push(this.addSmoothProperty.toDialogItem({ rowPriority: 2, columnIndex: 0 }));
+    return toolSettings;
   }
 
   public async onRestartTool(): Promise<void> {
@@ -982,9 +1267,66 @@ export class ChamferEdgesTool extends BlendEdgesTool {
   public static override toolId = "ChamferEdges";
   public static override iconSpec = "icon-move"; // TODO: Need better icon...
 
-  // TODO: Tool settings for chamfer length, distances, distance + angle...
-  protected mode = ChamferMode.Length;
-  protected length = 0.5;
+  private static methodMessage(str: string) { return EditTools.translate(`ChamferEdges.Method.${str}`); }
+  private static getMethodChoices = (): EnumerationChoice[] => {
+    return [
+      { label: ChamferEdgesTool.methodMessage("Length"), value: ChamferMode.Length },
+      { label: ChamferEdgesTool.methodMessage("Distances"), value: ChamferMode.Distances },
+      { label: ChamferEdgesTool.methodMessage("DistanceAngle"), value: ChamferMode.DistanceAngle },
+      { label: ChamferEdgesTool.methodMessage("AngleDistance"), value: ChamferMode.AngleDistance },
+    ];
+  };
+
+  private _methodProperty: DialogProperty<number> | undefined;
+  public get methodProperty() {
+    if (!this._methodProperty)
+      this._methodProperty = new DialogProperty<number>(PropertyDescriptionHelper.buildEnumPicklistEditorDescription(
+        "chamferMethod", EditTools.translate("ChamferEdges.Label.Method"), ChamferEdgesTool.getMethodChoices()), ChamferMode.Length as number);
+    return this._methodProperty;
+  }
+
+  public get method(): ChamferMode { return this.methodProperty.value as ChamferMode; }
+  public set method(method: ChamferMode) { this.methodProperty.value = method; }
+
+  private _lengthProperty: DialogProperty<number> | undefined;
+  public get lengthProperty() {
+    if (!this._lengthProperty)
+      this._lengthProperty = new DialogProperty<number>(new LengthDescription("chamferLength", EditTools.translate("ChamferEdges.Label.Length")), 0.1, undefined);
+    return this._lengthProperty;
+  }
+
+  public get length(): number { return this.lengthProperty.value; }
+  public set length(value: number) { this.lengthProperty.value = value; }
+
+  private _distanceLeftProperty: DialogProperty<number> | undefined;
+  public get distanceLeftProperty() {
+    if (!this._distanceLeftProperty)
+      this._distanceLeftProperty = new DialogProperty<number>(new LengthDescription("chamferLeftDist", EditTools.translate("ChamferEdges.Label.LeftDistance")), 0.1, undefined);
+    return this._distanceLeftProperty;
+  }
+
+  public get distanceLeft(): number { return this.distanceLeftProperty.value; }
+  public set distanceLeft(value: number) { this.distanceLeftProperty.value = value; }
+
+  private _distanceRightProperty: DialogProperty<number> | undefined;
+  public get distanceRightProperty() {
+    if (!this._distanceRightProperty)
+      this._distanceRightProperty = new DialogProperty<number>(new LengthDescription("chamferRightDist", EditTools.translate("ChamferEdges.Label.RightDistance")), 0.1, undefined);
+    return this._distanceRightProperty;
+  }
+
+  public get distanceRight(): number { return this.distanceRightProperty.value; }
+  public set distanceRight(value: number) { this.distanceRightProperty.value = value; }
+
+  private _angleProperty: DialogProperty<number> | undefined;
+  public get angleProperty() {
+    if (!this._angleProperty)
+      this._angleProperty = new DialogProperty<number>(new AngleDescription("chamferAngle", EditTools.translate("ChamferEdges.Label.Angle")), Angle.piOver4Radians, undefined, false);
+    return this._angleProperty;
+  }
+
+  public get angle(): number { return this.angleProperty.value; }
+  public set angle(value: number) { this.angleProperty.value = value; }
 
   protected override async applyAgendaOperation(ev: BeButtonEvent, isAccept: boolean): Promise<ElementGeometryResultProps | undefined> {
     if (undefined === ev.viewport || this.agenda.isEmpty || !this.haveAcceptedSubEntities)
@@ -992,7 +1334,31 @@ export class ChamferEdgesTool extends BlendEdgesTool {
 
     try {
       this._startedCmd = await this.startCommand();
-      const params: ChamferEdgesProps = { edges: this.getAcceptedSubEntities(), mode: this.mode, values1: this.length, propagateSmooth: this.propagateSmooth };
+
+      let values1;
+      let values2;
+
+      switch (this.method) {
+        case ChamferMode.Length:
+          values1 = this.length;
+          break;
+        case ChamferMode.Distances:
+          values1 = this.distanceLeft;
+          values2 = this.distanceRight;
+          break;
+        case ChamferMode.DistanceAngle:
+          values1 = this.distanceLeft;
+          values2 = this.angle;
+          break;
+        case ChamferMode.AngleDistance:
+          values1 = this.angle;
+          values2 = this.distanceRight;
+          break;
+        default:
+          return undefined;
+      }
+
+      const params: ChamferEdgesProps = { edges: this.getAcceptedSubEntities(), mode: this.method, values1, values2, propagateSmooth: this.addSmooth };
       const opts: ElementGeometryResultOptions = {
         wantGraphic: isAccept ? undefined : true,
         chordTolerance: computeChordToleranceFromPoint(ev.viewport, ev.point),
@@ -1005,6 +1371,44 @@ export class ChamferEdgesTool extends BlendEdgesTool {
     }
   }
 
+  public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
+    if (!this.changeToolSettingPropertyValue(updatedValue))
+      return false;
+
+    if (updatedValue.propertyName === this.methodProperty.name)
+      await this.onReinitialize();
+
+    return true;
+  }
+
+  public override supplyToolSettingsProperties(): DialogItem[] | undefined {
+    this.initializeToolSettingPropertyValues([this.methodProperty, this.addSmoothProperty, this.lengthProperty, this.distanceLeftProperty, this.distanceRightProperty, this.angleProperty]);
+
+    const toolSettings = new Array<DialogItem>();
+    toolSettings.push(this.methodProperty.toDialogItem({ rowPriority: 1, columnIndex: 0 }));
+    toolSettings.push(this.addSmoothProperty.toDialogItem({ rowPriority: ChamferMode.Length === this.method ? 3 : 4, columnIndex: 0 }));
+
+    switch (this.method) {
+      case ChamferMode.Length:
+        toolSettings.push(this.lengthProperty.toDialogItem({ rowPriority: 2, columnIndex: 0 }));
+        break;
+      case ChamferMode.Distances:
+        toolSettings.push(this.distanceLeftProperty.toDialogItem({ rowPriority: 2, columnIndex: 0 }));
+        toolSettings.push(this.distanceRightProperty.toDialogItem({ rowPriority: 3, columnIndex: 0 }));
+        break;
+      case ChamferMode.DistanceAngle:
+        toolSettings.push(this.distanceLeftProperty.toDialogItem({ rowPriority: 2, columnIndex: 0 }));
+        toolSettings.push(this.angleProperty.toDialogItem({ rowPriority: 3, columnIndex: 0 }));
+        break;
+      case ChamferMode.AngleDistance:
+        toolSettings.push(this.distanceRightProperty.toDialogItem({ rowPriority: 2, columnIndex: 0 }));
+        toolSettings.push(this.angleProperty.toDialogItem({ rowPriority: 3, columnIndex: 0 }));
+        break;
+    }
+
+    return toolSettings;
+  }
+
   public async onRestartTool(): Promise<void> {
     const tool = new ChamferEdgesTool();
     if (!await tool.run())
@@ -1012,47 +1416,126 @@ export class ChamferEdgesTool extends BlendEdgesTool {
   }
 }
 
-/** @alpha Identify faces of solids and surfaces to translate. */
-export class SweepFacesTool extends LocateSubEntityTool {
-  public static override toolId = "SweepFaces";
-  public static override iconSpec = "icon-move"; // TODO: Need better icon...
+/** @alpha */
+export class ProfileLocationData {
+  public point: Point3d;
+  public orientation: Vector3d | Matrix3d;
 
-  // TODO: Tool settings for sweep distance...
-  protected useDistance = false;
-  protected distance = 0.1;
-  protected addSmoothFaces = false;
+  constructor(point: Point3d, orientation: Vector3d | Matrix3d) {
+    this.point = point;
+    this.orientation = orientation;
+  }
+}
 
-  protected override get wantDynamics(): boolean { return true; }
-  protected override get wantAccuSnap(): boolean { return this.isDynamicsStarted; }
+/** @alpha Base class for picking profiles (open paths and regions) or faces of solids. */
+export abstract class LocateFaceOrProfileTool extends LocateSubEntityTool {
+  protected override get wantGeometrySummary(): boolean { return true; }
 
-  // TODO: Sweep open path to surface, sweep surface to solid...
+  protected override wantSubEntityType(type: SubEntityType): boolean {
+    switch (type) {
+      case SubEntityType.Face:
+      case SubEntityType.Edge:
+        // Choose all faces or all edges...
+        return (0 === this._acceptedSubEntities.length || this._acceptedSubEntities[0].props.type === type);
+      default:
+        return false;
+    }
+  }
+
   protected override get geometryCacheFilter(): ElementGeometryCacheFilter | undefined {
-    return { parts: true, curves: false, surfaces: true, solids: true, other: false };
+    return { parts: true, curves: true, surfaces: true, solids: true, other: false };
+  }
+
+  protected override async doPickSubEntities(id: Id64String, ev: BeButtonEvent): Promise<SubEntityLocationProps[] | undefined> {
+    const hits = await super.doPickSubEntities(id, ev);
+
+    if (undefined === hits)
+      return hits;
+
+    // Only want edges from wire bodies...
+    const accept = (BRepEntityType.Wire === this.getBRepEntityTypeForSubEntity(id, hits[0].subEntity) ? SubEntityType.Edge : SubEntityType.Face);
+    return hits.filter((hit) => { return accept === hit.subEntity.type; });
   }
 
   protected override async createSubEntityData(id: Id64String, hit: SubEntityLocationProps): Promise<SubEntityData> {
     const data = await super.createSubEntityData(id, hit);
 
-    if (undefined !== hit.point && undefined !== hit.normal)
-      data.toolData = FaceLocationData.create(hit.point, hit.normal);
+    // Prefer orientation from snap to take entire path curve as well as placement z into account...
+    const snap = TentativeOrAccuSnap.getCurrentSnap(false);
+    const point = (id === snap?.sourceId && snap.isHot ? snap.snapPoint : Point3d.fromJSON(hit.point));
+    const matrix = (id === snap?.sourceId ? AccuDraw.getSnapRotation(snap, undefined) : undefined);
+    const invMatrix = matrix?.inverse(); // getSnapRotation returns row matrix...
+
+    if (undefined !== invMatrix)
+      data.toolData = new ProfileLocationData(point, invMatrix);
+    else
+      data.toolData = new ProfileLocationData(point, undefined !== hit.normal ? Vector3d.fromJSON(hit.normal) : Vector3d.unitZ());
 
     return data;
+  }
+
+  protected override drawSubEntity(context: DecorateContext, subEntity: SubEntityData, accepted: boolean): void {
+    const id = this.getCurrentElement();
+    if (undefined !== id && BRepEntityType.Solid !== this.getBRepEntityTypeForSubEntity(id, subEntity.props))
+      return; // Operation will be applied to wire or sheet body, don't display sub-entity...
+    super.drawSubEntity(context, subEntity, accepted);
   }
 
   protected override drawAcceptedSubEntities(context: DecorateContext): void {
     super.drawAcceptedSubEntities(context);
 
-    // Show pick point on last identified face, offset direction/distance will be computed from this location...
-    const faceData = this.getAcceptedSubEntityData()?.toolData as FaceLocationData;
-    if (undefined === faceData)
+    // Show pick point on last identified face...
+    const profileData = this.getAcceptedSubEntityData()?.toolData as ProfileLocationData;
+    if (undefined === profileData)
       return;
 
     const builder = context.createGraphic({ type: GraphicType.WorldOverlay });
     builder.setSymbology(context.viewport.getContrastToBackgroundColor(), ColorDef.black, 10);
-    builder.addPointString([faceData.point]);
+    builder.addPointString([profileData.point]);
 
     context.addDecorationFromBuilder(builder);
   }
+}
+
+/** @alpha Identify faces of solids and surfaces to translate. */
+export class SweepFacesTool extends LocateFaceOrProfileTool {
+  public static override toolId = "SweepFaces";
+  public static override iconSpec = "icon-move"; // TODO: Need better icon...
+
+  protected override get wantDynamics(): boolean { return true; }
+  protected override get wantAccuSnap(): boolean { return true; }
+  protected override get wantSubEntitySnap(): boolean { return true; }
+
+  private _addSmoothProperty: DialogProperty<boolean> | undefined;
+  public get addSmoothProperty() {
+    if (!this._addSmoothProperty)
+      this._addSmoothProperty = new DialogProperty<boolean>(
+        PropertyDescriptionHelper.buildToggleDescription("sweepSmooth", EditTools.translate("SweepFaces.Label.AddSmooth")), false);
+    return this._addSmoothProperty;
+  }
+
+  public get addSmooth(): boolean { return this.addSmoothProperty.value; }
+  public set addSmooth(value: boolean) { this.addSmoothProperty.value = value; }
+
+  private _useDistanceProperty: DialogProperty<boolean> | undefined;
+  public get useDistanceProperty() {
+    if (!this._useDistanceProperty)
+      this._useDistanceProperty = new DialogProperty<boolean>(PropertyDescriptionHelper.buildLockPropertyDescription("useOffsetDistance"), false);
+    return this._useDistanceProperty;
+  }
+
+  public get useDistance(): boolean { return this.useDistanceProperty.value; }
+  public set useDistance(value: boolean) { this.useDistanceProperty.value = value; }
+
+  private _distanceProperty: DialogProperty<number> | undefined;
+  public get distanceProperty() {
+    if (!this._distanceProperty)
+      this._distanceProperty = new DialogProperty<number>(new LengthDescription("sweepDistance", EditTools.translate("SweepFaces.Label.Distance")), 0.1, undefined, !this.useDistance);
+    return this._distanceProperty;
+  }
+
+  public get distance(): number { return this.distanceProperty.value; }
+  public set distance(value: number) { this.distanceProperty.value = value; }
 
   protected async getSmoothFaces(id: Id64String, face: SubEntityProps): Promise<SubEntityProps[] | undefined> {
     try {
@@ -1067,11 +1550,11 @@ export class SweepFacesTool extends LocateSubEntityTool {
     if (undefined === ev.viewport || this.agenda.isEmpty || !this.haveAcceptedSubEntities)
       return undefined;
 
-    const faceData = this.getAcceptedSubEntityData()?.toolData as FaceLocationData;
-    if (undefined === faceData)
+    const profileData = this.getAcceptedSubEntityData()?.toolData as ProfileLocationData;
+    if (undefined === profileData)
       return undefined;
 
-    const path = Vector3d.createStartEnd(faceData.point, ev.point);
+    const path = Vector3d.createStartEnd(profileData.point, ev.point);
 
     if (this.useDistance && undefined === path.scaleToLength(this.distance, path))
       return undefined;
@@ -1090,24 +1573,29 @@ export class SweepFacesTool extends LocateSubEntityTool {
         writeChanges: isAccept ? true : undefined,
       };
 
-      const faces = this.getAcceptedSubEntities();
+      const subEntities = this.getAcceptedSubEntities();
+      const params: SweepFacesProps = { path };
 
-      if (this.addSmoothFaces) {
+      if (SubEntityType.Edge === subEntities[0].type || BRepEntityType.Solid !== this.getBRepEntityTypeForSubEntity(id, subEntities[0])) {
+        return await ElementGeometryCacheTool.callCommand("sweepFaces", id, params, opts);
+      }
+
+      if (this.addSmooth) {
         const allSmoothFaces: SubEntityProps[] = [];
 
-        for (const face of faces) {
+        for (const face of subEntities) {
           const smoothFaces = await this.getSmoothFaces(id, face);
           if (undefined !== smoothFaces)
             allSmoothFaces.push(...smoothFaces);
         }
 
         for (const smooth of allSmoothFaces) {
-          if (undefined === faces.find((selected) => isSameSubEntity(selected, smooth)))
-            faces.unshift(smooth); // Preserve last selected entry as reference face...
+          if (undefined === subEntities.find((selected) => isSameSubEntity(selected, smooth)))
+            subEntities.unshift(smooth); // Preserve last selected entry as reference face...
         }
       }
 
-      const params: SweepFacesProps = { faces, path };
+      params.faces = subEntities;
       return await ElementGeometryCacheTool.callCommand("sweepFaces", id, params, opts);
     } catch (err) {
       return undefined;
@@ -1118,8 +1606,8 @@ export class SweepFacesTool extends LocateSubEntityTool {
     if (!this.haveAcceptedSubEntities)
       return;
 
-    const faceData = this.getAcceptedSubEntityData()?.toolData as FaceLocationData;
-    if (undefined === faceData)
+    const profileData = this.getAcceptedSubEntityData()?.toolData as ProfileLocationData;
+    if (undefined === profileData)
       return;
 
     const hints = new AccuDrawHintBuilder();
@@ -1127,9 +1615,27 @@ export class SweepFacesTool extends LocateSubEntityTool {
     hints.setLockY = true;
     hints.setLockZ = true;
     hints.setModeRectangular();
-    hints.setOrigin(faceData.point);
-    hints.setXAxis2(faceData.normal);
+    hints.setOrigin(profileData.point);
+    hints.setXAxis2(profileData.orientation instanceof Matrix3d ? profileData.orientation.getColumn(2) : profileData.orientation);
     hints.sendHints(false);
+  }
+
+  public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
+    return this.changeToolSettingPropertyValue(updatedValue);
+  }
+
+  public override supplyToolSettingsProperties(): DialogItem[] | undefined {
+    this.initializeToolSettingPropertyValues([this.addSmoothProperty, this.useDistanceProperty, this.distanceProperty]);
+
+    const toolSettings = new Array<DialogItem>();
+
+    // ensure controls are enabled/disabled based on current lock property state
+    this.distanceProperty.isDisabled = !this.useDistance;
+    const useDistanceLock = this.useDistanceProperty.toDialogItem({ rowPriority: 1, columnIndex: 0 });
+    toolSettings.push(this.distanceProperty.toDialogItem({ rowPriority: 1, columnIndex: 1 }, useDistanceLock));
+    toolSettings.push(this.addSmoothProperty.toDialogItem({ rowPriority: 2, columnIndex: 0 }));
+
+    return toolSettings;
   }
 
   public async onRestartTool(): Promise<void> {
@@ -1140,35 +1646,25 @@ export class SweepFacesTool extends LocateSubEntityTool {
 }
 
 /** @alpha Identify faces of solids and surfaces to revolve. */
-export class SpinFacesTool extends LocateSubEntityTool {
+export class SpinFacesTool extends LocateFaceOrProfileTool {
   public static override toolId = "SpinFaces";
   public static override iconSpec = "icon-move"; // TODO: Need better icon...
 
   protected points: Point3d[] = [];
 
-  // TODO: Tool settings for sweep angle...
-  protected sweep = Angle.piOver2Radians;
+  private _angleProperty: DialogProperty<number> | undefined;
+  public get angleProperty() {
+    if (!this._angleProperty)
+      this._angleProperty = new DialogProperty<number>(new AngleDescription("spinAngle", EditTools.translate("SpinFaces.Label.Angle")), Angle.piOver2Radians, undefined, false);
+    return this._angleProperty;
+  }
+
+  public get angle(): number { return this.angleProperty.value; }
+  public set angle(value: number) { this.angleProperty.value = value; }
 
   protected override get wantDynamics(): boolean { return true; }
-  protected override get wantAccuSnap(): boolean { return this.isDynamicsStarted || (this.haveAcceptedSubEntities && !this.isControlDown); }
-
-  // TODO: Spin open path to surface, spin surface to solid...
-  protected override get geometryCacheFilter(): ElementGeometryCacheFilter | undefined {
-    return { parts: true, curves: false, surfaces: true, solids: true, other: false };
-  }
-
-  protected override getSubEntityFilter(): SubEntityFilter | undefined {
-    return { nonPlanarFaces: true };
-  }
-
-  protected override async createSubEntityData(id: Id64String, hit: SubEntityLocationProps): Promise<SubEntityData> {
-    const data = await super.createSubEntityData(id, hit);
-
-    if (undefined !== hit.point && undefined !== hit.normal)
-      data.toolData = FaceLocationData.create(hit.point, hit.normal);
-
-    return data;
-  }
+  protected override get wantAccuSnap(): boolean { return true; }
+  protected override get wantSubEntitySnap(): boolean { return true; }
 
   protected override async applyAgendaOperation(ev: BeButtonEvent, isAccept: boolean): Promise<ElementGeometryResultProps | undefined> {
     if (undefined === ev.viewport || this.agenda.isEmpty || !this.haveAcceptedSubEntities || this.points.length < (isAccept ? 2 : 1))
@@ -1179,7 +1675,7 @@ export class SpinFacesTool extends LocateSubEntityTool {
       return undefined;
 
     const origin = this.points[0];
-    const angle = Angle.createRadians(this.sweep);
+    const angle = Angle.createRadians(this.angle);
 
     try {
       this._startedCmd = await this.startCommand();
@@ -1192,9 +1688,14 @@ export class SpinFacesTool extends LocateSubEntityTool {
         writeChanges: isAccept ? true : undefined,
       };
 
-      const faces = this.getAcceptedSubEntities();
-      const params: SpinFacesProps = { faces, origin, direction, angle };
+      const subEntities = this.getAcceptedSubEntities();
+      const params: SpinFacesProps = { origin, direction, angle };
 
+      if (SubEntityType.Edge === subEntities[0].type || BRepEntityType.Solid !== this.getBRepEntityTypeForSubEntity(id, subEntities[0])) {
+        return await ElementGeometryCacheTool.callCommand("spinFaces", id, params, opts);
+      }
+
+      params.faces = subEntities;
       let result = await ElementGeometryCacheTool.callCommand("spinFaces", id, params, opts);
 
       // Spun face can be used to create a pocket...retry with negative sweep...
@@ -1226,7 +1727,7 @@ export class SpinFacesTool extends LocateSubEntityTool {
   }
 
   protected override async gatherInput(ev: BeButtonEvent): Promise<EventHandled | undefined> {
-    if (this.haveAcceptedSubEntities)
+    if (!this.wantAdditionalSubEntities)
       this.points.push(ev.point.clone());
 
     return super.gatherInput(ev);
@@ -1240,15 +1741,33 @@ export class SpinFacesTool extends LocateSubEntityTool {
     if (!this.haveAcceptedSubEntities || 0 !== this.points.length)
       return;
 
-    const faceData = this.getAcceptedSubEntityData()?.toolData as FaceLocationData;
-    if (undefined === faceData)
+    const profileData = this.getAcceptedSubEntityData()?.toolData as ProfileLocationData;
+    if (undefined === profileData)
       return;
 
     const hints = new AccuDrawHintBuilder();
+
     hints.setModeRectangular();
-    hints.setOrigin(faceData.point);
-    hints.setNormal(faceData.normal);
+    hints.setOrigin(profileData.point);
+
+    if (profileData.orientation instanceof Matrix3d)
+      hints.setMatrix(profileData.orientation);
+    else
+      hints.setNormal(profileData.orientation);
+
     hints.sendHints(false);
+  }
+
+  public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
+    return this.changeToolSettingPropertyValue(updatedValue);
+  }
+
+  public override supplyToolSettingsProperties(): DialogItem[] | undefined {
+    this.initializeToolSettingPropertyValues([this.angleProperty]);
+
+    const toolSettings = new Array<DialogItem>();
+    toolSettings.push(this.angleProperty.toDialogItem({ rowPriority: 1, columnIndex: 0 }));
+    return toolSettings;
   }
 
   public async onRestartTool(): Promise<void> {

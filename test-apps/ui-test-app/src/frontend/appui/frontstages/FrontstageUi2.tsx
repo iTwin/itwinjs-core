@@ -8,10 +8,10 @@ import {
   IModelViewportControl, StandardContentToolsProvider, StandardFrontstageProps, StandardFrontstageProvider,
   StandardNavigationToolsProvider,
   StandardStatusbarItemsProvider,
-  SyncUiEventArgs, SyncUiEventDispatcher,
+  SyncUiEventDispatcher,
   UiFramework,
 } from "@itwin/appui-react";
-import { StageUsage, StandardContentLayouts } from "@itwin/appui-abstract";
+import { StageUsage, StandardContentLayouts, UiSyncEventArgs } from "@itwin/appui-abstract";
 import { ScreenViewport } from "@itwin/core-frontend";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../..";
 import { AppUi2StageItemsProvider } from "../../tools/AppUi2StageItemsProvider";
@@ -167,7 +167,7 @@ export function MyCustomViewOverlay() {
   const [showOverlay, setShowOverlay] = React.useState(SampleAppIModelApp.getTestProperty() !== "HIDE");
 
   React.useEffect(() => {
-    const handleSyncUiEvent = (args: SyncUiEventArgs) => {
+    const handleSyncUiEvent = (args: UiSyncEventArgs) => {
       if (0 === syncIdsOfInterest.length)
         return;
 

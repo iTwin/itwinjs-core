@@ -47,8 +47,8 @@ export class ECSqlInsertResult {
  * > The key to making this strategy work is to phrase a statement in a general way and use placeholders to represent parameters that will vary on each use.
  *
  * See also
- * - [Executing ECSQL]($docs/learning/backend/ExecutingECSQL) provides more background on ECSQL and an introduction on how to execute ECSQL with the iModel.js API.
- * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples) illustrate the use of the iModel.js API for executing and working with ECSQL
+ * - [Executing ECSQL]($docs/learning/backend/ExecutingECSQL) provides more background on ECSQL and an introduction on how to execute ECSQL with the iTwin.js API.
+ * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples) illustrate the use of the iTwin.js API for executing and working with ECSQL
  * @public
  */
 export class ECSqlStatement implements IterableIterator<any>, IDisposable {
@@ -116,8 +116,8 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   }
 
   /** Binds the specified value to the specified ECSQL parameter.
-   * The section "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" describes the
-   * iModel.js types to be used for the different ECSQL parameter types.
+   * The section "[iTwin.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" describes the
+   * iTwin.js types to be used for the different ECSQL parameter types.
    * @param parameter Index (1-based) or name of the parameter
    */
   public bindValue(parameter: number | string, val: any): void { this.getBinder(parameter).bind(val); }
@@ -230,8 +230,8 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * Pass an *object of the values keyed on the parameter name* for *named parameters*.
    * The values in either the array or object must match the respective types of the parameter.
    *
-   * The section "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" describes the
-   * iModel.js types to be used for the different ECSQL parameter types.
+   * The section "[iTwin.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" describes the
+   * iTwin.js types to be used for the different ECSQL parameter types.
    *
    * See also these [Code Samples]($docs/learning/backend/ECSQLCodeExamples#binding-to-all-parameters-at-once)
    */
@@ -401,8 +401,8 @@ export class ECSqlBinder {
   public constructor(binder: IModelJsNative.ECSqlBinder) { this._binder = binder; }
 
   /** Binds the specified value to the ECSQL parameter.
-   * The section "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" describes the
-   * iModel.js types to be used for the different ECSQL parameter types.
+   * The section "[iTwin.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" describes the
+   * iTwin.js types to be used for the different ECSQL parameter types.
    * @param val Value to bind
    */
   public bind(val: any): void {
@@ -725,7 +725,7 @@ class ECSqlBindingHelper {
 
   /** Binds the specified value to the specified binder
    * @param binder Parameter Binder to bind to
-   * @param val Value to be bound. (See [iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes))
+   * @param val Value to be bound. (See [iTwin.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes))
    * @throws IModelError in case of errors
    */
   public static bindValue(binder: ECSqlBinder, val: any): void {

@@ -63,6 +63,7 @@
     "MapLayerEditError": "Failed to edit '{{layerName}}'",
     "MapLayerLayerSettingsConversionError": "Conversion to layer settings failed",
     "MapLayerLayerSourceCreationFailed": "Map Layer Source creation failed",
+    "MapLayerPreferencesStoreFailed": "Failed to save map layer definition in preferences",
     "MapLayerValidationFailed": "Map layer validation failed for URL: {{sourceUrl}}"
   },
   "Widget": {

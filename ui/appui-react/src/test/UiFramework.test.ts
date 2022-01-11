@@ -16,7 +16,7 @@ import { Presentation, SelectionManager, SelectionScopesManager, SelectionScopes
 import { initialize as initializePresentationTesting, terminate as terminatePresentationTesting } from "@itwin/presentation-testing";
 import { ColorTheme, CursorMenuData, SettingsModalFrontstage, UiFramework, UserSettingsProvider } from "../appui-react";
 import { LocalStateStorage, UiStateStorage } from "@itwin/core-react";
-import TestUtils, { mockUserInfo, storageMock } from "./TestUtils";
+import TestUtils, { storageMock } from "./TestUtils";
 import { OpenSettingsTool } from "../appui-react/tools/OpenSettingsTool";
 
 describe("UiFramework localStorage Wrapper", () => {
@@ -191,11 +191,6 @@ describe("UiFramework localStorage Wrapper", () => {
       const settingsProvider = new testSettingsProvider();
       UiFramework.registerUserSettingsProvider(settingsProvider);
 
-      const userInfo = mockUserInfo();
-
-      UiFramework.setUserInfo(userInfo);
-      expect(UiFramework.getUserInfo()!.id).to.eq(userInfo.id);
-
       UiFramework.setDefaultIModelViewportControlId("DefaultIModelViewportControlId");
       expect(UiFramework.getDefaultIModelViewportControlId()).to.eq("DefaultIModelViewportControlId");
 
@@ -236,6 +231,14 @@ describe("UiFramework localStorage Wrapper", () => {
       const viewState = moq.Mock.ofType<ViewState>();
       UiFramework.setDefaultViewState(viewState.object);
       expect(UiFramework.getDefaultViewState()).not.to.be.undefined;
+
+      const displayOverlay = false;
+      UiFramework.setViewOverlayDisplay(displayOverlay);
+      expect(UiFramework.viewOverlayDisplay).to.eql(displayOverlay);
+      // test workflow that doesn't change the item
+      const currentDisplay = UiFramework.viewOverlayDisplay;
+      UiFramework.setViewOverlayDisplay(displayOverlay);
+      expect(UiFramework.viewOverlayDisplay).to.eql(currentDisplay);
 
       TestUtils.terminateUiFramework();
 

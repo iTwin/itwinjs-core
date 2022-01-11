@@ -8,7 +8,6 @@ import * as sinon from "sinon";
 import { fireEvent } from "@testing-library/react";
 import { expect } from "chai";
 
-import { UserInfo } from "../appui-react/UserInfo";
 import { ContentLayoutProps, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyRecord, PropertyValueFormat, StandardContentLayouts, StandardTypeNames } from "@itwin/appui-abstract";
 import { UiStateStorage, UiStateStorageResult, UiStateStorageStatus } from "@itwin/core-react";
 
@@ -185,16 +184,6 @@ export class TestUtils {
 // cSpell:ignore testuser mailinator saml
 
 /** @internal */
-export const mockUserInfo = (): UserInfo => {
-  const id = "596c0d8b-eac2-46a0-aa4a-b590c3314e7c";
-  const email = { id: "testuser001@mailinator.com" };
-  const profile = { firstName: "test", lastName: "user" };
-  const organization = { id: "fefac5b-bcad-488b-aed2-df27bffe5786", name: "Bentley" };
-  const featureTracking = { ultimateSite: "1004144426", usageCountryIso: "US" };
-  return new UserInfo(id, email, profile, organization, featureTracking);
-};
-
-/** @internal */
 export const storageMock = () => {
   const storage: { [key: string]: any } = {};
   return {
@@ -282,7 +271,7 @@ export function getButtonWithText(container: HTMLElement, label: string, onError
     onError && onError(`Couldn't find any '${selector}' buttons`);
 
   const button = [...buttons].find((btn) => {
-    const span = btn.querySelector("span.iui-label");
+    const span = btn.querySelector("span.iui-button-label");
     return span!.textContent === label;
   });
   if (!button)

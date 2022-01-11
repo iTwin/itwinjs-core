@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-rpcinterface-tests",
-  "version": "3.0.0-dev.136",
+  "version": "3.0.0-dev.182",
   "description": "Integration tests for the Schema RPC Interface",
   "author": {
     "name": "Bentley Systems, Inc.",
@@ -26,7 +26,6 @@
     "webpack:frontend": "webpack --config webpack.config.js 1>&2"
   },
   "dependencies": {
-    "@bentley/imodelhub-client": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/certa": "workspace:*",
@@ -37,7 +36,10 @@
     "@itwin/core-quantity": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/ecschema-rpcinterface-common": "workspace:*",
-    "@itwin/oidc-signin-tool": "^3.0.0-dev.110",
+    "@itwin/imodels-access-backend": "~0.3.0",
+    "@itwin/imodels-access-frontend": "~0.3.0",
+    "@itwin/imodels-client-management": "~0.3.0",
+    "@itwin/oidc-signin-tool": "3.0.0",
     "@itwin/presentation-common": "workspace:*",
     "@itwin/presentation-frontend": "workspace:*",
     "chai": "^4.1.2",
@@ -52,7 +54,7 @@
     "@itwin/core-backend": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
     "@itwin/express-server": "workspace:*",
-    "@itwin/projects-client": "^0.2.0",
+    "@itwin/projects-client": "^0.3.0",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^8.2.2",

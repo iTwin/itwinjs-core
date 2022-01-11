@@ -10,7 +10,7 @@ import {
   Backstage, CommandLaunchBackstageItem, FrontstageLaunchBackstageItem, FrontstageManager, SyncUiEventDispatcher, TaskLaunchBackstageItem,
 } from "../../appui-react";
 import { SeparatorBackstageItem } from "../../appui-react/backstage/Separator";
-import TestUtils, { mockUserInfo, mount } from "../TestUtils";
+import TestUtils, { mount } from "../TestUtils";
 
 describe("Backstage", () => {
 
@@ -44,10 +44,6 @@ describe("Backstage", () => {
 
     it("renders correctly with header", () => {
       shallow(<Backstage header={<div> Hello World! </div>} />).dive().should.matchSnapshot(); // eslint-disable-line deprecation/deprecation
-    });
-
-    it("renders correctly with UserInfo", () => {
-      shallow(<Backstage userInfo={mockUserInfo()} />).dive().should.matchSnapshot(); // eslint-disable-line deprecation/deprecation
     });
 
     it("with child items", () => {

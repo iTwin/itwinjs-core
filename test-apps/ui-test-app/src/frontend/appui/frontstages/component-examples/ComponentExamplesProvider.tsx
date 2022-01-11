@@ -12,7 +12,7 @@ import { ColorByName, ColorDef } from "@itwin/core-common";
 import {
   ActivityMessageDetails, ActivityMessageEndReason, IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType, QuantityType,
 } from "@itwin/core-frontend";
-import { Format, FormatProps, FormatterSpec, FormatTraits, getTraitString, UnitProps, UnitsProvider } from "@itwin/core-quantity";
+import { Format, FormatProps, FormatterSpec, FormatTraits, UnitProps, UnitsProvider } from "@itwin/core-quantity";
 import { DateFormatter, IconSpecUtilities, ParseResults, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, RelativePosition, TimeDisplay } from "@itwin/appui-abstract";
 import {
   adjustDateToTimezone, ColumnDescription, DatePickerPopupButton, DatePickerPopupButtonProps,
@@ -38,7 +38,7 @@ import { ComponentExampleCategory, ComponentExampleProps } from "./ComponentExam
 import { SampleContextMenu } from "./SampleContextMenu";
 import { SampleExpandableBlock } from "./SampleExpandableBlock";
 import { SampleImageCheckBox } from "./SampleImageCheckBox";
-import { SamplePopupContextMenu } from "./SamplePopupContextMenu";
+import { ButtonWithContextMenu, ContextMenuInPopup, GlobalContextMenuInPopup, PopupContextMenuInPopup, SamplePopupContextMenu } from "./SamplePopupContextMenu";
 import { FormatPopupButton } from "./FormatPopupButton";
 import { AccudrawSettingsPageComponent } from "../Settings";
 import { ExpandableBlock } from "@itwin/itwinui-react";
@@ -83,7 +83,7 @@ function MySettingsPage() {
 }
 
 function setFormatTrait(formatProps: FormatProps, trait: FormatTraits, setActive: boolean) {
-  const traitStr = getTraitString(trait);
+  const traitStr = Format.getTraitString(trait);
   if (undefined === traitStr)
     return;
   let formatTraits: string[] | undefined;
@@ -640,8 +640,12 @@ export class ComponentExamplesProvider {
     return {
       title: "ContextMenu",
       examples: [
-        createComponentExample("ContextMenu", undefined, <UnderlinedButton onActivate={() => SampleContextMenu.showContextMenu()}> Open ContextMenu</UnderlinedButton>),
-        createComponentExample("Popup with ContextMenu", undefined, <SamplePopupContextMenu />),
+        createComponentExample("Abstract ContextMenu", undefined, <UnderlinedButton onActivate={() => SampleContextMenu.showContextMenu()}> Open ContextMenu</UnderlinedButton>),
+        createComponentExample("ContextMenu", undefined, <ButtonWithContextMenu />),
+        createComponentExample("ContextMenu in Popup", undefined, <ContextMenuInPopup />),
+        createComponentExample("Popup ContextMenu", undefined, <SamplePopupContextMenu />),
+        createComponentExample("PopupContextMenu in Popup", undefined, <PopupContextMenuInPopup />),
+        createComponentExample("Global ContextMenu", undefined, <GlobalContextMenuInPopup />),
       ],
     };
   }

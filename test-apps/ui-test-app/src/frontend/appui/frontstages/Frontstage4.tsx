@@ -423,7 +423,7 @@ export class Frontstage4 extends FrontstageProvider {
               labelKey="SampleApp:buttons.toolGroup"
               iconSpec="icon-placeholder"
               items={[
-                AppTools.successMessageBoxCommand, AppTools.informationMessageBoxCommand, AppTools.questionMessageBoxCommand,
+                AppTools.noIconMessageBoxCommand, AppTools.successMessageBoxCommand, AppTools.informationMessageBoxCommand, AppTools.questionMessageBoxCommand,
                 AppTools.warningMessageBoxCommand, AppTools.errorMessageBoxCommand, AppTools.openMessageBoxCommand, AppTools.openMessageBoxCommand2,
                 this._spinnerTestDialogItem,
                 this._sampleModelessDialogItem,

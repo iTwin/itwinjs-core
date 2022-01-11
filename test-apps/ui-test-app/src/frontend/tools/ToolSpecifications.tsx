@@ -17,19 +17,19 @@ import { UnitSystemKey } from "@itwin/core-quantity";
 import { Presentation } from "@itwin/presentation-frontend";
 import {
   AbstractWidgetProps, BackstageItem, BackstageItemUtilities, CommonStatusBarItem, ConditionalBooleanValue, ConditionalStringValue, DialogButtonType,
-  MessageSeverity, StagePanelLocation, StagePanelSection, StandardContentLayouts, StatusBarSection, UiItemsManager, UiItemsProvider, WidgetState,
+  MessageSeverity, StagePanelLocation, StagePanelSection, StandardContentLayouts, StatusBarLabelSide, StatusBarSection, UiItemsManager, UiItemsProvider, WidgetState,
 } from "@itwin/appui-abstract";
 import { Dialog, FillCentered, ReactMessage, SvgPath, SvgSprite, UnderlinedButton } from "@itwin/core-react";
 import {
   Backstage, CommandItemDef, ContentGroup, ContentGroupProps, ContentLayoutManager, ContentProps, ContentViewManager,
-  FrontstageManager, IModelViewportControl, MessageManager, ModalDialogManager, ReactNotifyMessageDetails,
+  FrontstageManager, IModelViewportControl, Indicator, MessageManager, ModalDialogManager, ReactNotifyMessageDetails,
   StatusBarItemUtilities, SyncUiEventDispatcher, SyncUiEventId, ToolItemDef, withStatusFieldProps,
 } from "@itwin/appui-react";
-import { FooterSeparator } from "@itwin/appui-layout-react";
+import { FooterPopupContentType, FooterSeparator, Dialog as NZ_Dialog, TitleBar } from "@itwin/appui-layout-react";
 import { SampleAppIModelApp } from "../";
 import { AppUi } from "../appui/AppUi";
 import { TestMessageBox } from "../appui/dialogs/TestMessageBox";
-import { SampleStatusField } from "../appui/statusfields/SampleStatusField";
+import { SampleStatusField, TestStatusBarDialog } from "../appui/statusfields/SampleStatusField";
 import { AnalysisAnimationTool } from "../tools/AnalysisAnimation";
 import { Tool1 } from "../tools/Tool1";
 import { Tool2 } from "../tools/Tool2";
@@ -104,6 +104,8 @@ const SampleStatus = withStatusFieldProps(SampleStatusField);
 class AppItemsProvider implements UiItemsProvider {
   public readonly id = "AnotherStatusBarItemProvider";
   public static readonly sampleStatusFieldId = "appuiprovider:statusField1";
+  public static readonly sampleStatusField2Id = "appuiprovider:statusField2";
+  public static readonly sampleStatusField3Id = "appuiprovider:statusField3";
   public static readonly sampleStatusSeparatorId = "appuiprovider:statusSeparator1";
   public static readonly sampleBackstageItem = "appuiprovider:backstage1";
   public static readonly syncEventId = "appuiprovider:dynamic-item-visibility-changed";
@@ -125,6 +127,25 @@ class AppItemsProvider implements UiItemsProvider {
     const isHiddenCondition = new ConditionalBooleanValue(() => !AppItemsProvider._sampleBackstageItemVisible, [AppItemsProvider.syncEventId]);
     statusBarItems.push(StatusBarItemUtilities.createStatusBarItem(AppItemsProvider.sampleStatusSeparatorId, StatusBarSection.Left, 11, <FooterSeparator />, { isHidden: isHiddenCondition }));
     statusBarItems.push(StatusBarItemUtilities.createStatusBarItem(AppItemsProvider.sampleStatusFieldId, StatusBarSection.Left, 12, <SampleStatus />, { isHidden: isHiddenCondition }));
+    statusBarItems.push(StatusBarItemUtilities.createStatusBarItem(AppItemsProvider.sampleStatusField2Id, StatusBarSection.Left, 13,
+      <Indicator
+        iconName="icon-app-1"
+        dialog={<TestStatusBarDialog />}
+        toolTip="Middle"
+        contentType={FooterPopupContentType.Panel}
+      />, { isHidden: isHiddenCondition }));
+
+    statusBarItems.push(StatusBarItemUtilities.createStatusBarItem(AppItemsProvider.sampleStatusField3Id, StatusBarSection.Left, 14,
+      <Indicator
+        iconName="icon-app-2"
+        dialog={<NZ_Dialog titleBar={<TitleBar title="Right Test" />}>
+          <TestStatusBarDialog />
+        </NZ_Dialog>}
+        label="Right"
+        isLabelVisible={true}
+        toolTip="Right Test"
+        labelSide={StatusBarLabelSide.Right}
+      />, { isHidden: isHiddenCondition }));
     return statusBarItems;
   }
 
@@ -143,7 +164,7 @@ class AppItemsProvider implements UiItemsProvider {
     if (allowedStages.includes(stageId) && location === StagePanelLocation.Right && section === StagePanelSection.Start) {
       widgets.push({
         id: "uitestapp-test-wd3",
-        icon: "icon-placeholder",
+        icon: " icon-clouds-scattered-day",
         label: "Dynamic Widget 3",
         getWidgetContent: () => <FillCentered>Dynamic Widget 3 (id: uitestapp-test-wd3)</FillCentered>, // eslint-disable-line react/display-name
         defaultState: WidgetState.Hidden,
@@ -625,13 +646,20 @@ export class AppTools {
       execute: () => ModalDialogManager.openDialog(AppTools._messageBox(MessageSeverity.Error, IModelApp.localization.getLocalizedString("SampleApp:buttons.errorMessageBox"))),
     });
   }
+  public static get noIconMessageBoxCommand() {
+    return new CommandItemDef({
+      commandId: "noIconMessage",
+      labelKey: "SampleApp:buttons.noIconMessageBox",
+      execute: () => ModalDialogManager.openDialog(AppTools._messageBox(MessageSeverity.None, IModelApp.localization.getLocalizedString("SampleApp:buttons.noIconMessageBox"))),
+    });
+  }
 
   public static get successMessageBoxCommand() {
     return new CommandItemDef({
       commandId: "successMessage",
       iconSpec: "icon-status-success",
       labelKey: "SampleApp:buttons.successMessageBox",
-      execute: () => ModalDialogManager.openDialog(AppTools._messageBox(MessageSeverity.None, IModelApp.localization.getLocalizedString("SampleApp:buttons.successMessageBox"))),
+      execute: () => ModalDialogManager.openDialog(AppTools._messageBox(MessageSeverity.Success, IModelApp.localization.getLocalizedString("SampleApp:buttons.successMessageBox"))),
     });
   }
 
@@ -705,6 +733,20 @@ export class AppTools {
         const value: MessageBoxValue = await IModelApp.notifications.openMessageBox(MessageBoxType.YesNo,
           message,
           MessageBoxIconType.Warning);
+        window.alert(`Closing message box ... value is ${value}`);
+      },
+    });
+  }
+
+  public static get openMessageBoxCommand3() {
+    return new CommandItemDef({
+      commandId: "openMessageBox3",
+      iconSpec: "icon-status-warning",
+      labelKey: "SampleApp:buttons.openMessageBox",
+      execute: async () => {
+        const value: MessageBoxValue = await IModelApp.notifications.openMessageBox(MessageBoxType.YesNo,
+          "Are you sure you want to remove this item?",
+          MessageBoxIconType.Critical);
         window.alert(`Closing message box ... value is ${value}`);
       },
     });

@@ -49,6 +49,7 @@ import { ViewportWidget } from "../widgets/ViewportWidget";
 import { VisibilityWidgetControl } from "../widgets/VisibilityWidget";
 import { NestedAnimationStage } from "./NestedAnimationStage";
 import { ViewSelectorPanel } from "../../tools/ViewSelectorPanel";
+import { ActiveSettingsManager } from "../../api/ActiveSettingsManager";
 
 function SvgApple(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -119,6 +120,10 @@ function MySliderPanel() {
 }
 
 export class InitialIModelContentStageProvider extends ContentGroupProvider {
+  constructor(private _forEditing?: boolean) {
+    super();
+  }
+
   public override prepareToSaveProps(contentGroupProps: ContentGroupProps) {
     const newContentsArray = contentGroupProps.contents.map((content: ContentProps) => {
       const newContent = { ...content };
@@ -164,6 +169,9 @@ export class InitialIModelContentStageProvider extends ContentGroupProvider {
         const viewState = savedViewLayoutProps.contentGroupProps.contents[0].applicationData?.viewState;
         if (viewState) {
           UiFramework.setDefaultViewState(viewState);
+          if (this._forEditing) {
+            ActiveSettingsManager.onViewOpened(viewState);
+          }
         }
         return new ContentGroup(savedViewLayoutProps.contentGroupProps);
       }
@@ -191,6 +199,9 @@ export class InitialIModelContentStageProvider extends ContentGroupProvider {
     viewStates.forEach((viewState, index) => {
       if (0 === index) {
         UiFramework.setDefaultViewState(viewState);
+        if (this._forEditing) {
+          ActiveSettingsManager.onViewOpened(viewState);
+        }
       }
       const thisContentProps: ContentProps = {
         id: `imodel-view-${index}`,
@@ -421,8 +432,6 @@ export class ViewsFrontstage extends FrontstageProvider {
             initialWidth={400}
             widgets={
               [
-                <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectionTable" control={UnifiedSelectionTableWidgetControl}
-                  applicationData={{ iModelConnection }} fillZone={true} badgeType={BadgeType.New} />,
                 /* <Widget iconSpec="icon-placeholder" label="External iModel View" control={ViewportWidgetControl} fillZone={true} badgeType={BadgeType.TechnicalPreview}
                    applicationData={{ iTwinName: "iModelHubTest", imodelName: "GrandCanyonTerrain" }} />, */
               ]}
@@ -458,6 +467,11 @@ export class ViewsFrontstage extends FrontstageProvider {
         }
         bottomPanel={
           <StagePanel
+            pinned={false}
+            widgets={[
+              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectionTable" control={UnifiedSelectionTableWidgetControl}
+                applicationData={{ iModelConnection }} fillZone={true} badgeType={BadgeType.New} />,
+            ]}
             allowedZones={this._bottomPanel.allowedZones}
           />
         }
@@ -799,6 +813,14 @@ class AdditionalTools {
     }), { groupPriority: 30 }),
     ToolbarHelper.createToolbarItemFromItemDef(140, CoreTools.restoreFrontstageLayoutCommandItemDef, { groupPriority: 40 }),
     this.formatGroupItemsItem(),
+    ToolbarHelper.createToolbarItemFromItemDef(150, new CommandItemDef({
+      commandId: "Toggle Overlay",
+      iconSpec: "icon-lightbulb",
+      label: "Toggle View Overlay",
+      execute: () => {
+        UiFramework.setViewOverlayDisplay(!UiFramework.viewOverlayDisplay);
+      },
+    }), { groupPriority: 30 }),
   ];
 
   public getMiscGroupItem = (): CommonToolbarItem => {

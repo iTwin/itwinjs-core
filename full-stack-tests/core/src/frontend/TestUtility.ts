@@ -8,11 +8,11 @@ import { Project as ITwin } from "@itwin/projects-client";
 import { AuthorizationClient } from "@itwin/core-common";
 import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
-import { IModelApp, IModelAppOptions, MockRender, NativeApp } from "@itwin/core-frontend";
+import { IModelApp, IModelAppOptions, LocalhostIpcApp, MockRender, NativeApp } from "@itwin/core-frontend";
 import { getAccessTokenFromBackend, TestUserCredentials } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { IModelHubUserMgr } from "../common/IModelHubUserMgr";
-import { rpcInterfaces, TestRpcInterface } from "../common/RpcInterfaces";
-import { ITwinPlatformAbstraction, ITwinPlatformCloudEnv, ITwinStackCloudEnv } from "./hub/ITwinPlatformEnv";
+import { rpcInterfaces } from "../common/RpcInterfaces";
+import { ITwinPlatformAbstraction, ITwinPlatformCloudEnv } from "./hub/ITwinPlatformEnv";
 import { setBackendAccessToken } from "../certa/certaCommon";
 
 export class TestUtility {
@@ -65,7 +65,7 @@ export class TestUtility {
 
     let authorizationClient: AuthorizationClient | undefined;
     if (NativeApp.isValid) {
-      authorizationClient = new ElectronRendererAuthorization ();
+      authorizationClient = new ElectronRendererAuthorization();
       IModelApp.authorizationClient = authorizationClient;
       const accessToken = await setBackendAccessToken(user);
       if ("" === accessToken)
@@ -77,11 +77,7 @@ export class TestUtility {
       await (authorizationClient as IModelHubUserMgr).signIn();
     }
 
-    const cloudParams = await TestRpcInterface.getClient().getCloudEnv();
-    if (cloudParams.iModelBank)
-      this.iTwinPlatformEnv = new ITwinStackCloudEnv(cloudParams.iModelBank.url);
-    else
-      this.iTwinPlatformEnv = new ITwinPlatformCloudEnv(authorizationClient);
+    this.iTwinPlatformEnv = new ITwinPlatformCloudEnv(authorizationClient);
 
     ((IModelApp as any)._hubAccess) = this.iTwinPlatformEnv.hubAccess;
   }
@@ -135,13 +131,22 @@ export class TestUtility {
    *
    * Otherwise, IModelApp.startup is used directly.
    */
-  public static async startFrontend(opts?: IModelAppOptions, mockRender?: boolean): Promise<void> {
+  public static async startFrontend(opts?: IModelAppOptions, mockRender?: boolean, enableWebEdit?: boolean): Promise<void> {
     opts = opts ? opts : TestUtility.iModelAppOptions;
     if (mockRender)
       opts.renderSys = this.systemFactory();
     if (ProcessDetector.isElectronAppFrontend)
       return ElectronApp.startup({ iModelApp: opts });
-    return IModelApp.startup(opts);
+
+    if (enableWebEdit) {
+      let socketUrl = new URL(window.location.toString());
+      socketUrl.port = (parseInt(socketUrl.port, 10) + 2000).toString();
+      socketUrl = LocalhostIpcApp.buildUrlForSocket(socketUrl);
+
+      return LocalhostIpcApp.startup({ iModelApp: opts, localhostIpcApp: { socketUrl } });
+    } else {
+      return IModelApp.startup(opts);
+    }
   }
 
   /** Helper around the different shutdown workflows for different app types.

@@ -7,7 +7,6 @@ import * as path from "path";
 import { IModelHostConfiguration } from "@itwin/core-backend";
 import { Logger, ProcessDetector } from "@itwin/core-bentley";
 import { Presentation } from "@itwin/presentation-backend";
-import { IModelHubBackend } from "@bentley/imodelhub-client/lib/cjs/imodelhub-node";
 import { initializeLogging } from "./logging";
 import { initializeWeb } from "./web/BackendServer";
 import { initializeElectron } from "./electron/ElectronMain";
@@ -17,6 +16,7 @@ import { getSupportedRpcs } from "../common/rpcs";
 import { RpcManager } from "@itwin/core-common";
 import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common";
 import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
+import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 
 (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
   try {
@@ -30,7 +30,7 @@ import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
     initializeLogging();
 
     const iModelHost = new IModelHostConfiguration();
-    iModelHost.hubAccess = new IModelHubBackend();
+    iModelHost.hubAccess = new BackendIModelsAccess();
 
     // ECSchemaRpcInterface allows schema retrieval for the UnitProvider implementation.
     RpcManager.registerImpl(ECSchemaRpcInterface, ECSchemaRpcImpl);

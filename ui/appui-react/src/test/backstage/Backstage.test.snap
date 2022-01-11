@@ -20,16 +20,6 @@ exports[`Backstage <Backstage /> renders correctly - isVisible 1`] = `
 />
 `;
 
-exports[`Backstage <Backstage /> renders correctly with UserInfo 1`] = `
-<Backstage
-  header={null}
-  isOpen={false}
-  onClose={[Function]}
-  safeAreaInsets={0}
-  showOverlay={true}
-/>
-`;
-
 exports[`Backstage <Backstage /> renders correctly with header 1`] = `
 <Backstage
   header={
@@ -59,12 +49,14 @@ exports[`Backstage <Backstage /> with child items 1`] = `
     labelKey="UiFramework:tests.label"
   />
   <SeparatorBackstageItem />
+   
   <FrontstageLaunchBackstageItem
     frontstageId="Test1"
     iconSpec="icon-placeholder"
     labelKey="UiFramework:tests.label"
   />
   <SeparatorBackstageItem />
+   
   <TaskLaunchBackstageItem
     iconSpec="icon-placeholder"
     labelKey="UiFramework:tests.label"

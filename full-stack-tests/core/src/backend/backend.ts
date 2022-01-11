@@ -8,21 +8,22 @@ import "@itwin/oidc-signin-tool/lib/cjs/certa/certaBackend";
 import * as fs from "fs";
 import * as path from "path";
 import { ElectronMainAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronMain";
-import { IModelJsExpressServer } from "@itwin/express-server";
-import { IModelHubBackend } from "@bentley/imodelhub-client/lib/cjs/imodelhub-node";
+import { WebEditServer } from "@itwin/express-server";
+import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
+import { IModelsClient } from "@itwin/imodels-client-authoring";
 import {
-  FileNameResolver, IModelDb, IModelHost, IModelHostConfiguration, IpcHandler, PhysicalModel, PhysicalPartition, SpatialCategory,
+  FileNameResolver, IModelDb, IModelHost, IModelHostConfiguration, IpcHandler, LocalhostIpcHost, PhysicalModel, PhysicalPartition, SpatialCategory,
   SubjectOwnsPartitionElements,
 } from "@itwin/core-backend";
 import { Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { BentleyCloudRpcManager, CodeProps, ElementProps, IModel, RelatedElement, RpcConfiguration, SubCategoryAppearance } from "@itwin/core-common";
-import {  ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
+import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backend";
 import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIpc";
 import { rpcInterfaces } from "../common/RpcInterfaces";
-import { CloudEnv } from "./cloudEnv";
 import * as testCommands from "./TestEditCommands";
 import { exposeBackendCallbacks } from "../certa/certaBackend";
+import { getIModelBankAccess } from "./IModelBankBackendCloudEnv";
 
 /* eslint-disable no-console */
 
@@ -76,11 +77,18 @@ async function init() {
   loadEnv(path.join(__dirname, "..", "..", ".env"));
   RpcConfiguration.developmentMode = true;
 
-  // Bootstrap the cloud environment
-  await CloudEnv.initialize();
-
   const iModelHost = new IModelHostConfiguration();
-  iModelHost.hubAccess = new IModelHubBackend(CloudEnv.cloudEnv.imodelClient);
+
+  // Bootstrap the cloud environment
+  const enableIModelBank: boolean = process.env.IMJS_TEST_IMODEL_BANK !== undefined && !!JSON.parse(process.env.IMJS_TEST_IMODEL_BANK);
+  if (enableIModelBank) {
+    iModelHost.hubAccess = getIModelBankAccess();
+  } else {
+    const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
+    iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
+  }
+
+  iModelHost.cacheDir = path.join(__dirname, ".cache");  // Set local cache dir
 
   if (ProcessDetector.isElectronAppBackend) {
     exposeBackendCallbacks();
@@ -100,11 +108,15 @@ async function init() {
 
     // create a basic express web server
     const port = Number(process.env.CERTA_PORT || 3011) + 2000;
-    const server = new IModelJsExpressServer(rpcConfig.protocol);
+    const server = new WebEditServer(rpcConfig.protocol);
     await server.initialize(port);
     console.log(`Web backend for full-stack-tests listening on port ${port}`);
 
-    await IModelHost.startup(iModelHost);
+    await LocalhostIpcHost.startup({ iModelHost, localhostIpcHost: { noServer: true } });
+
+    EditCommandAdmin.registerModule(testCommands);
+    EditCommandAdmin.register(BasicManipulationCommand);
+    FullStackTestIpcHandler.register();
   }
 
   IModelHost.snapshotFileNameResolver = new BackendTestAssetResolver();

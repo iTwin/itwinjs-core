@@ -86,6 +86,7 @@ interface PopupState {
   left: number;
   position: RelativePosition;
   parentDocument: Document;
+  animationEnded: boolean;
 }
 
 /** Popup React component displays a popup relative to an optional target element.
@@ -99,6 +100,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     const parentDocument = this.props.target?.ownerDocument ?? document;
 
     this.state = {
+      animationEnded: false,
       isOpen: this.props.isOpen,
       top: 0,
       left: 0,
@@ -128,7 +130,11 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     return this.state.parentDocument.defaultView ?? window;
   }
 
-  public override componentDidUpdate(previousProps: PopupProps) {
+  public override componentDidUpdate(previousProps: PopupProps, prevState: PopupState) {
+    if (this.state.position !== prevState.position) {
+      this.setState( { animationEnded: false });
+    }
+
     if (this.props.target !== previousProps.target) {
       // istanbul ignore next
       {
@@ -525,6 +531,12 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     return fittedPoint;
   };
 
+  private _handleAnimationEnd = (event: React.AnimationEvent<HTMLDivElement>) => {
+    if (event.target === this._popup) {
+      this.setState({ animationEnded: true });
+    }
+  };
+
   public override render() {
     const animate = this.props.animate !== undefined ? this.props.animate : true;
     const className = classnames(
@@ -534,6 +546,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
       this.props.showArrow && "arrow",
       !animate && "core-popup-animation-none",
       this.props.className,
+      this.state.animationEnded && "core-animation-ended",
       (!this.props.isOpen && this.props.keepContentsMounted) && "core-popup-hidden"
     );
 
@@ -559,6 +572,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
           aria-modal={true}
           tabIndex={-1}
           aria-label={this.props.ariaLabel}
+          onAnimationEnd={this._handleAnimationEnd}
         >
           <FocusTrap active={!!this.props.moveFocus} initialFocusElement={this.props.focusTarget} returnFocusOnDeactivate={true}>
             {this.props.children}

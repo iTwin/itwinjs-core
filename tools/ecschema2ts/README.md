@@ -1,13 +1,13 @@
 ﻿# ecschema2ts
 
-ecschema2ts is a command-line tool that takes an EC3.1/EC3.2 BIS ECSchema xml file and outputs a valid Typescript module that uses iModelJs.
+ecschema2ts is a command-line tool that takes an EC3.1/EC3.2 BIS ECSchema xml file and outputs a valid Typescript module that uses iTwin.js.
 
 ## Quick Overview
 
 ```sh
-$ npm install -g @itwin/ecschema2ts
+npm install -g @itwin/ecschema2ts
 
-$ ecschema2ts -i C:\Path\To\Schema\Domain.ecschema.xml -o C:\Desired\Output\Path\
+ecschema2ts -i C:\Path\To\Schema\Domain.ecschema.xml -o C:\Desired\Output\Path\
 ```
 
 ## Getting Started
@@ -17,7 +17,7 @@ $ ecschema2ts -i C:\Path\To\Schema\Domain.ecschema.xml -o C:\Desired\Output\Path
 Install globally:
 
 ```sh
-$ npm install -g @itwin/ecschema2ts
+npm install -g @itwin/ecschema2ts
 ```
 
 ### Creating a Typescript module
@@ -25,7 +25,7 @@ $ npm install -g @itwin/ecschema2ts
 To create a Typescript file from the an ECSchema, run:
 
 ```sh
-$ ecschema2ts -i C:\Path\To\Schema\Domain.ecschema.xml -o C:\Desired\Output\Path\
+ecschema2ts -i C:\Path\To\Schema\Domain.ecschema.xml -o C:\Desired\Output\Path\
 ```
 
 ## Updating to new version
@@ -33,7 +33,7 @@ $ ecschema2ts -i C:\Path\To\Schema\Domain.ecschema.xml -o C:\Desired\Output\Path
 Since the package is installed globally, updating has a different syntax than normal. To update the package globally, run:
 
 ```sh
-$ npm update -g @itwin/ecschema2ts
+npm update -g @itwin/ecschema2ts
 ```
 
 ## Known Issues

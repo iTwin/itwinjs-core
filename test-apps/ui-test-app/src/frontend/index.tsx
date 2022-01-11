@@ -9,10 +9,9 @@ import { connect, Provider } from "react-redux";
 import { Store } from "redux"; // createStore,
 import reactAxe from "@axe-core/react";
 import { BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient } from "@itwin/browser-authorization";
-import { IModelHubClient, IModelHubFrontend, IModelQuery } from "@bentley/imodelhub-client";
 import { ProgressInfo } from "@bentley/itwin-client";
 import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
-import { RealityDataAccessClient } from "@itwin/reality-data-client";
+import { RealityDataAccessClient, RealityDataClientOptions } from "@itwin/reality-data-client";
 import { getClassName } from "@itwin/appui-abstract";
 import { SafeAreaInsets } from "@itwin/appui-layout-react";
 import {
@@ -39,6 +38,8 @@ import { HyperModeling } from "@itwin/hypermodeling-frontend";
 import { MapLayersUI } from "@itwin/map-layers";
 import { SchemaContext, SchemaUnitProvider } from "@itwin/ecschema-metadata";
 import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, Presentation } from "@itwin/presentation-frontend";
+import { IModelsClient } from "@itwin/imodels-client-management";
+import { AccessTokenAdapter, FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
 import { getSupportedRpcs } from "../common/rpcs";
 import { loggerCategory, TestAppConfiguration } from "../common/TestAppConfiguration";
 import { BearingQuantityType } from "./api/BearingQuantityType";
@@ -162,6 +163,7 @@ export class SampleAppIModelApp {
   public static sampleAppNamespace?: string;
   public static iModelParams: SampleIModelParams | undefined;
   public static testAppConfiguration: TestAppConfiguration | undefined;
+  public static hubClient?: IModelsClient;
   private static _appStateManager: StateManager | undefined;
 
   // Favorite Properties Support
@@ -171,7 +173,9 @@ export class SampleAppIModelApp {
     return StateManager.store as Store<RootState>;
   }
 
-  public static async startup(opts: NativeAppOpts): Promise<void> {
+  public static async startup(opts: NativeAppOpts, hubClient?: IModelsClient): Promise<void> {
+
+    this.hubClient = hubClient;
 
     const iModelAppOpts = {
       ...opts.iModelApp,
@@ -318,12 +322,16 @@ export class SampleAppIModelApp {
       dragInteraction: false,
       frameworkVersion: "2",
       widgetOpacity: 0.8,
+      showWidgetIcon: true,
     };
 
     // initialize any settings providers that may need to have defaults set by iModelApp
     UiFramework.registerUserSettingsProvider(new AppUiSettings(defaults));
 
     UiFramework.useDefaultPopoutUrl = true;
+
+    // initialize state from all registered UserSettingsProviders
+    await UiFramework.initializeStateFromUserSettingsProviders();
 
     // try starting up event loop if not yet started so key-in palette can be opened
     IModelApp.startEventLoop();
@@ -502,14 +510,29 @@ export class SampleAppIModelApp {
 
       const iTwin: ITwin = iTwinList[0];
 
-      const iModel = (await (new IModelHubClient()).iModels.get(accessToken, iTwin.id, new IModelQuery().byName(iModelName)))[0];
+      if (!SampleAppIModelApp.hubClient)
+        return;
+
+      let iModel;
+      for await (const imodel of SampleAppIModelApp.hubClient.iModels.getRepresentationList({
+        urlParams: {
+          name: iModelName,
+          projectId: iTwin.id,
+          $top: 1,
+        },
+        authorization: AccessTokenAdapter.toAuthorizationCallback(accessToken),
+      }))
+        iModel = imodel;
+
+      if (!iModel)
+        throw new Error(`No iModel with the name ${iModelName}`);
 
       if (viewId) {
         // open directly into the iModel (view)
-        await SampleAppIModelApp.openIModelAndViews(iTwin.id, iModel.wsgId, [viewId]);
+        await SampleAppIModelApp.openIModelAndViews(iTwin.id, iModel?.id, [viewId]);
       } else {
         // open to the IModelIndex frontstage
-        await SampleAppIModelApp.showIModelIndex(iTwin.id, iModel.wsgId);
+        await SampleAppIModelApp.showIModelIndex(iTwin.id, iModel?.id);
       }
     } else if (SampleAppIModelApp.iModelParams) {
       if (SampleAppIModelApp.iModelParams.viewIds && SampleAppIModelApp.iModelParams.viewIds.length > 0) {
@@ -720,6 +743,15 @@ async function main() {
     BingMaps: SampleAppIModelApp.testAppConfiguration.bingMapsKey ? { key: "key", value: SampleAppIModelApp.testAppConfiguration.bingMapsKey } : undefined,
     Mapbox: SampleAppIModelApp.testAppConfiguration.mapBoxKey ? { key: "key", value: SampleAppIModelApp.testAppConfiguration.mapBoxKey } : undefined,
   };
+
+  const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
+
+  const realityDataClientOptions: RealityDataClientOptions = {
+    /** API Version. v1 by default */
+    // version?: ApiVersion;
+    /** API Url. Used to select environment. Defaults to "https://api.bentley.com/realitydata" */
+    baseUrl: `https://${process.env.IMJS_URL_PREFIX}api.bentley.com/realitydata`,
+  };
   const opts: NativeAppOpts = {
     iModelApp: {
       accuSnap: new SampleAppAccuSnap(),
@@ -728,17 +760,17 @@ async function main() {
       uiAdmin: new FrameworkUiAdmin(),
       accuDraw: new FrameworkAccuDraw(),
       viewManager: new AppViewManager(true),  // Favorite Properties Support
-      realityDataAccess: new RealityDataAccessClient(),
+      realityDataAccess: new RealityDataAccessClient(realityDataClientOptions),
       renderSys: { displaySolarShadows: true },
       rpcInterfaces: getSupportedRpcs(),
-      hubAccess: new IModelHubFrontend(),
+      hubAccess: new FrontendIModelsAccess(iModelClient),
       mapLayerOptions: mapLayerOpts,
       tileAdmin: { cesiumIonKey: SampleAppIModelApp.testAppConfiguration.cesiumIonKey },
     },
   };
 
   // Start the app.
-  await SampleAppIModelApp.startup(opts);
+  await SampleAppIModelApp.startup(opts, iModelClient);
 
   await SampleAppIModelApp.initialize();
 

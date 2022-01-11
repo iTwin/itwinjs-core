@@ -322,6 +322,21 @@ describe("<Popup />", () => {
     expect(component.queryByTestId("NestedPopup-Button")).to.be.null;
   });
 
+  it("should remove animation", () => {
+    const wrapper = mount<PopupProps>(<Popup isOpen />);
+    const popup = wrapper.find(".core-popup");
+    wrapper.state("animationEnded").should.false;
+
+    const element = document.createElement("div");
+    popup.simulate("animationEnd", { target: element });
+    wrapper.state("animationEnded").should.false;
+
+    popup.simulate("animationEnd");
+    wrapper.state("animationEnded").should.true;
+
+    wrapper.unmount();
+  });
+
   describe("renders", () => {
     it("should render with few props", () => {
       const wrapper = mount(

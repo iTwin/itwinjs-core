@@ -128,7 +128,7 @@ export * from "./RealityDataSource";
 
 /**
  * @docs-group-description IModelApp
- * Classes for configuring and administering an iModel.js application.
+ * Classes for configuring and administering an iTwin.js application.
  * See [the learning articles]($docs/learning/frontend/index.md).
  */
 /**
@@ -218,3 +218,4 @@ export * from "./RealityDataSource";
  * APIs for working with user preferences in an iModelApp.
  * See [the learning articles]($docs/learning/frontend/preferences.md).
  */
+

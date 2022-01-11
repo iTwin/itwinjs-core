@@ -1,7 +1,7 @@
 {
   "name": "@itwin/core-webpack-tools",
-  "version": "3.0.0-dev.136",
-  "description": "Set of Webpack Plugins and Loaders used for building iModel.js applications",
+  "version": "3.0.0-dev.182",
+  "description": "Set of Webpack Plugins and Loaders used for building iTwin.js applications",
   "license": "MIT",
   "repository": {
     "type": "git",

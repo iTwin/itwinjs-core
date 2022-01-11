@@ -7,15 +7,14 @@
  */
 
 import * as React from "react";
-import { AbstractWidgetProps, BadgeType, ConditionalStringValue, PointProps, StringGetter, UiError, WidgetState } from "@itwin/appui-abstract";
-import { UiEvent } from "@itwin/core-react";
+import { AbstractWidgetProps, BadgeType, ConditionalStringValue, PointProps, StringGetter, UiError, UiEvent, UiSyncEventArgs, WidgetState } from "@itwin/appui-abstract";
 import { Direction, PanelSide } from "@itwin/appui-layout-react";
 import { ConfigurableCreateInfo, ConfigurableUiControlConstructor, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { CommandItemDef } from "../shared/CommandItemDef";
 import { ItemList } from "../shared/ItemMap";
-import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
+import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";
 import { PropsHelper } from "../utils/PropsHelper";
 import { WidgetControl } from "./WidgetControl";
@@ -289,7 +288,7 @@ export class WidgetDef {
     }
   }
 
-  private _handleSyncUiEvent = (args: SyncUiEventArgs): void => {
+  private _handleSyncUiEvent = (args: UiSyncEventArgs): void => {
     if ((this.syncEventIds.length > 0) && this.syncEventIds.some((value: string): boolean => args.eventIds.has(value.toLowerCase()))) {
       // istanbul ignore else
       if (this.stateFunc) {
