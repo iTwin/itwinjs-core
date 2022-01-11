@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "optimized calculation of matrix",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
