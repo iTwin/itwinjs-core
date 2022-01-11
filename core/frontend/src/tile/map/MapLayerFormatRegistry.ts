@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Views */
+/** @packageDocumentation
+ * @module MapLayers
+ */
 
 import { assert } from "@itwin/core-bentley";
 import { MapLayerKey, MapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
