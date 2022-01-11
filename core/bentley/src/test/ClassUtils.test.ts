@@ -28,7 +28,7 @@ describe("ClassUtils", () => {
     type Extends<T, Base> = T extends Base ? true : false;
 
     // test won't compile if our type assumptions aren't met
-    const X: typeof B | typeof C = undefined as any;
+    const X: typeof B | typeof C = B;
     if (ClassUtils.isProperSubclassOf(X, C)) {
       const instanceOfX = new X();
       const _doesInstanceOfXExtendC: Extends<typeof instanceOfX, C> = true;
