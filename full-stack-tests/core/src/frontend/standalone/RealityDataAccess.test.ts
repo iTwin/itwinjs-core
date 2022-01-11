@@ -7,7 +7,7 @@ import { CheckpointConnection, IModelApp, IModelConnection, RealityDataSource, S
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { TestUtility } from "../TestUtility";
 import { RealityDataFormat, RealityDataProvider, RealityDataSourceKey } from "@itwin/core-common";
-import { Id64String } from "@itwin/core-bentley";
+import { Id64String, Logger } from "@itwin/core-bentley";
 import { ITwinRealityData, RealityDataAccessClient, RealityDataClientOptions, RealityDataQueryCriteria, RealityDataResponse } from "@itwin/reality-data-client";
 
 export interface IRealityDataModelInfo {
@@ -164,10 +164,11 @@ describe("RealityDataAccess (#integration)", () => {
     }
   });
 
-  it.skip("should get RealityDataSource for Open Street Map Building (OSM)", async () => {
+  it("should get RealityDataSource for Open Street Map Building (OSM)", async () => {
     assert.isTrue(imodel !== undefined);
     const rdSourceKey = getOSMBuildingsKey();
     const rdSource = await RealityDataSource.fromKey(rdSourceKey, iTwinId);
+    // NOTE: This test will fail when IMJS_CESIUM_ION_KEY is not defined in your .env file;
     expect(rdSource).not.undefined;
     expect(rdSource?.isContextShare).to.be.false;
   });
