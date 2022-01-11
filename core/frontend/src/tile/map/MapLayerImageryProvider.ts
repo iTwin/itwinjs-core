@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Tiles
+ * @module MapLayers
  */
 
 import { BeEvent } from "@itwin/core-bentley";
