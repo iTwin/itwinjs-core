@@ -1078,7 +1078,7 @@ describe("Learning Snippets", () => {
 });
 
 function printRuleset(ruleset: Ruleset) {
-  if (process.env.PRINT_RULESETS || true) {
+  if (process.env.PRINT_RULESETS) {
     // eslint-disable-next-line no-console
     console.log(JSON.stringify(ruleset, undefined, 2));
   }
