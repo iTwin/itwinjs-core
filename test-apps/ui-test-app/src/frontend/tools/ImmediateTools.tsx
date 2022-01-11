@@ -319,7 +319,7 @@ export class OpenViewPopoutTool extends Tool {
 
 // cSpell:ignore appui appuiprovider
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function IModelViewDialog({ id, title }: { id: string, title: string }) {
+export function IModelViewDialog({ x, y, id, title }: { x?: number, y?: number, id: string, title: string }) {
   const handleClose = React.useCallback(() => {
     ContentDialogManager.closeDialog(id);
   }, [id]);
@@ -334,6 +334,8 @@ export function IModelViewDialog({ id, title }: { id: string, title: string }) {
       width={"40vw"}
       height={"40vh"}
       dialogId={id}
+      x={x}
+      y={y}
     >
       <PopupTestView contentId={id} />
     </ContentDialog>
@@ -358,7 +360,19 @@ export class OpenViewDialogTool extends Tool {
 
   private async _run(): Promise<void> {
     OpenViewDialogTool._counter = OpenViewDialogTool._counter + 1;
-    ContentDialogManager.openDialog(<IModelViewDialog id={OpenViewDialogTool.dialogId} title={`IModel View (${OpenViewDialogTool._counter})`} />, OpenViewDialogTool.dialogId);
+    let x: number | undefined;
+    let y: number | undefined;
+    const stage = FrontstageManager.activeFrontstageDef;
+    if (stage && stage.nineZoneState) {
+      const floatingContentCount = stage.floatingContentControls?.length ?? 0;
+      // we should not really every support more than 8 floating views
+      if (floatingContentCount < 8 && stage.nineZoneState.size.width > 800 && stage.nineZoneState.size.height > 600) {
+        x = (.3 * stage.nineZoneState.size.width) + (40 * (floatingContentCount - 1));
+        y = (.3 * stage.nineZoneState.size.height) + (40 * (floatingContentCount - 1));
+      }
+    }
+    ContentDialogManager.openDialog(<IModelViewDialog x={x} y={y} id={OpenViewDialogTool.dialogId}
+      title={`IModel View (${OpenViewDialogTool._counter})`} />, OpenViewDialogTool.dialogId);
   }
 
   public static override get flyover(): string {
