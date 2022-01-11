@@ -2,6 +2,18 @@
   "name": "@bentley/reality-data-client",
   "entries": [
     {
+      "version": "2.19.27",
+      "tag": "@bentley/reality-data-client_v2.19.27",
+      "date": "Wed, 05 Jan 2022 20:07:20 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix integration test for reality data client"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.26",
       "tag": "@bentley/reality-data-client_v2.19.26",
       "date": "Wed, 08 Dec 2021 20:54:53 GMT",

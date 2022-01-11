@@ -1,6 +1,6 @@
 {
   "name": "@bentley/config-loader",
-  "version": "2.19.26",
+  "version": "2.19.27",
   "description": "Configuration loader",
   "license": "MIT",
   "repository": {
