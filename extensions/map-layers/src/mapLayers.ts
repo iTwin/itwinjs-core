@@ -43,8 +43,6 @@ export class MapLayersUI {
     MapLayersUI._uiItemsProvider = new MapLayersUiItemsProvider(IModelApp.localization);
     if (registerItemsProvider) {
       UiItemsManager.register(MapLayersUI._uiItemsProvider);
-    } else {
-      ConfigurableUiManager.registerControl(MapLayersWidgetControl.id, MapLayersWidgetControl);
     }
     MapLayersUI._itemsProviderRegistered = registerItemsProvider;
   }
@@ -56,8 +54,6 @@ export class MapLayersUI {
     if (MapLayersUI._itemsProviderRegistered !== undefined) {
       if (MapLayersUI._itemsProviderRegistered) {
         UiItemsManager.unregister(MapLayersUI._uiItemsProvider.id);
-      } else {
-        ConfigurableUiManager.unregisterControl(MapLayersWidgetControl.id);
       }
       MapLayersUI._itemsProviderRegistered = undefined;
     }
