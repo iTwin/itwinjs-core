@@ -634,8 +634,10 @@ export class DisplayStyleSettings {
     return this._json.renderTimeline;
   }
   public set renderTimeline(id: Id64String | undefined) {
-    this.onRenderTimelineChanged.raiseEvent(id);
-    this._json.renderTimeline = id;
+    if (id !== this.renderTimeline) {
+      this.onRenderTimelineChanged.raiseEvent(id);
+      this._json.renderTimeline = id;
+    }
   }
 
   /** @internal @deprecated */
