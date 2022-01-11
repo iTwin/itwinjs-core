@@ -2,18 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import { Id64String } from "@itwin/core-bentley";
 import {
   Code,
   ElementGeometry,
   ElementGeometryBuilderParams,
+  ElementGeometryDataEntry,
+  ElementGeometryOpcode,
   GeometricElementProps,
   GeometryPrimitive,
   GeometryStreamIterator,
   IModel, PhysicalElementProps, SubCategoryAppearance,
 } from "@itwin/core-common";
-import { LineSegment3d, LineString3d, Point3d } from "@itwin/core-geometry";
+import { Arc3d, LineSegment3d, LineString3d, Point3d } from "@itwin/core-geometry";
 import {
   DictionaryModel, IModelDb, PhysicalObject, SpatialCategory,
 } from "../../core-backend";
@@ -42,16 +44,13 @@ describe.only("BinaryGeometryStreamWriteTest", () => {
     // const geomBuilder = new GeometryStreamBuilder();
     // geomBuilder.appendGeometry(Box.createDgnBox(Point3d.createZero(), Vector3d.unitX(), Vector3d.unitY(), new Point3d(0, 0, 2), 2, 2, 2, 2, true)!);
 
-    const lspts: Point3d[] = [];
-    lspts.push(Point3d.create(5, 10, 0));
-    lspts.push(Point3d.create(10, 10, 0));
+    const pts: Point3d[] = [];
+    pts.push(Point3d.create(5, 10, 0));
+    pts.push(Point3d.create(10, 10, 0));
 
-    const elementGeometryBuilderParams: ElementGeometryBuilderParams = {
-      entryArray: [],
-    };
-    const entryLN = ElementGeometry.fromGeometryQuery(LineSegment3d.create(lspts[0], lspts[1]));
+    const entryLN = ElementGeometry.fromGeometryQuery(LineSegment3d.create(pts[0], pts[1]));
     assert.isTrue(entryLN !== undefined);
-    elementGeometryBuilderParams.entryArray.push(entryLN!);
+    const elementGeometryBuilderParams: ElementGeometryBuilderParams = { entryArray: [entryLN!] };
 
     const elemProps: PhysicalElementProps = {
       classFullName: PhysicalObject.classFullName,
@@ -64,20 +63,52 @@ describe.only("BinaryGeometryStreamWriteTest", () => {
 
     const spatialElementId = imodel.elements.insertElement(elemProps);
 
-    const persistentProps = imodel.elements.getElementProps<GeometricElementProps>({ id: spatialElementId, wantGeometry: true });
+    let persistentProps = imodel.elements.getElementProps<GeometricElementProps>({ id: spatialElementId, wantGeometry: true });
     assert.isDefined(persistentProps.geom);
     assert.isTrue(persistentProps.placement !== undefined);
     assert.deepEqual(Point3d.fromJSON(persistentProps.placement!.origin), Point3d.create(0, 0, 0));
     assert.deepEqual(Point3d.fromJSON(persistentProps.placement!.bbox!.low), Point3d.create(5, 10, 0));
     assert.deepEqual(Point3d.fromJSON(persistentProps.placement!.bbox!.high), Point3d.create(10, 10, 0));
 
-    const itLocal = new GeometryStreamIterator(persistentProps.geom!, persistentProps.category);
-    for (const entry of itLocal) {
+    for (const entry of new GeometryStreamIterator(persistentProps.geom!, persistentProps.category)) {
       assert.equal(entry.primitive.type, "geometryQuery");
       const geometry = (entry.primitive as GeometryPrimitive).geometry;
       assert.isTrue(geometry instanceof LineString3d);
       const ls: LineString3d = geometry as LineString3d;
-      assert.deepEqual(ls.points, lspts);
+      assert.deepEqual(ls.points, pts);
+    }
+
+    // Try inserting with no geometry
+    elemProps.elementGeometryBuilderParams = { entryArray: [] };
+    expect(() => imodel.elements.insertElement(elemProps)).to.throw();
+
+    // Try inserting with bad data
+    elemProps.elementGeometryBuilderParams = { entryArray: [{ opcode: 9999 } as unknown as ElementGeometryDataEntry] };
+    expect(() => imodel.elements.insertElement(elemProps)).to.throw();
+
+    elemProps.elementGeometryBuilderParams = { entryArray: [{ opcode: ElementGeometryOpcode.ArcPrimitive, data: undefined } as unknown as ElementGeometryDataEntry] };
+    expect(() => imodel.elements.insertElement(elemProps)).to.throw();
+
+    // Try updating
+    const entryAR = ElementGeometry.fromGeometryQuery(Arc3d.createXY(pts[0], pts[0].distance(pts[1])));
+    assert.exists(entryAR);
+    persistentProps.elementGeometryBuilderParams = { entryArray: [entryAR!] };
+
+    imodel.elements.updateElement(persistentProps);
+
+    persistentProps = imodel.elements.getElementProps<GeometricElementProps>({ id: spatialElementId, wantGeometry: true });
+    assert.isDefined(persistentProps.geom);
+    assert.isTrue(persistentProps.placement !== undefined);
+    assert.deepEqual(Point3d.fromJSON(persistentProps.placement!.origin), Point3d.create(0, 0, 0));
+    assert.deepEqual(Point3d.fromJSON(persistentProps.placement!.bbox!.low), Point3d.create(0, 5, 0));
+    assert.deepEqual(Point3d.fromJSON(persistentProps.placement!.bbox!.high), Point3d.create(10, 15, 0));
+
+    for (const entry of new GeometryStreamIterator(persistentProps.geom!, persistentProps.category)) {
+      assert.equal(entry.primitive.type, "geometryQuery");
+      const geometry = (entry.primitive as GeometryPrimitive).geometry;
+      assert.isTrue(geometry instanceof Arc3d);
+      const ar: Arc3d = geometry as Arc3d;
+      assert.deepEqual(ar.center, pts[0]);
     }
   });
 });
