@@ -886,8 +886,8 @@ describe("Learning Snippets", () => {
 
       it("uses `propertyCategories` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.PropertyCategories.Ruleset
-        // The specification returns content for `bis.SpatialViewDefinition` and rotation
-        // properties into `Axis rotations` category.
+        // The specification returns content for `bis.SpatialViewDefinition` with specified camera
+        // properties under `Camera settings` category.
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
@@ -897,16 +897,16 @@ describe("Learning Snippets", () => {
               classes: { schemaName: "BisCore", classNames: ["SpatialViewDefinition"] },
               propertyCategories: [{
                 id: "cat1",
-                label: "Axis rotations",
+                label: "Camera settings",
                 autoExpand: true,
               }],
-              propertyOverrides: [{ name: "Pitch", categoryId: "cat1" }, { name: "Yaw", categoryId: "cat1" }, { name: "Roll", categoryId: "cat1" }],
+              propertyOverrides: [{ name: "EyePoint", categoryId: "cat1" }, { name: "FocusDistance", categoryId: "cat1" }, { name: "IsCameraOn", categoryId: "cat1" }],
             }],
           }],
         };
         // __PUBLISH_EXTRACT_END__
 
-        // Ensure that the returned content has a custom category `Axis rotations` and it contains the right properties.
+        // Ensure that the returned content has a custom category `Camera settings` and it contains the right properties.
         const content = await Presentation.presentation.getContent({
           imodel,
           rulesetOrId: ruleset,
@@ -914,16 +914,16 @@ describe("Learning Snippets", () => {
           descriptor: {},
         });
 
-        expect(content!.descriptor.categories).containSubset([{ label: "Axis rotations" }]);
+        expect(content!.descriptor.categories).containSubset([{ label: "Camera settings" }]);
         expect(content!.descriptor.fields).to.containSubset([{
-          label: "Pitch",
-          category: { label: "Axis rotations" },
+          label: "EyePoint",
+          category: { label: "Camera settings" },
         }, {
-          label: "Yaw",
-          category: { label: "Axis rotations" },
+          label: "FocusDistance",
+          category: { label: "Camera settings" },
         }, {
-          label: "Roll",
-          category: { label: "Axis rotations" },
+          label: "IsCameraOn",
+          category: { label: "Camera settings" },
         }]);
       });
 
