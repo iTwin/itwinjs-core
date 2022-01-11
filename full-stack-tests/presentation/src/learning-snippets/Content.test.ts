@@ -916,13 +916,13 @@ describe("Learning Snippets", () => {
 
         expect(content!.descriptor.categories).containSubset([{ label: "Camera settings" }]);
         expect(content!.descriptor.fields).to.containSubset([{
-          label: "EyePoint",
+          label: "Eye Point",
           category: { label: "Camera settings" },
         }, {
-          label: "FocusDistance",
+          label: "Focus Distance",
           category: { label: "Camera settings" },
         }, {
-          label: "IsCameraOn",
+          label: "Is Camera On",
           category: { label: "Camera settings" },
         }]);
       });
