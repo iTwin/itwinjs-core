@@ -6,7 +6,6 @@ import { UiFramework } from "@itwin/appui-react";
 import { BeEvent, Id64Array, Id64String, IModelStatus, UnexpectedErrors } from "@itwin/core-bentley";
 import { IModelError, QueryRowFormat } from "@itwin/core-common";
 import { IModelApp, SpatialViewState, ViewState, ViewState2d } from "@itwin/core-frontend";
-import { ErrorHandling } from "./ErrorHandling";
 
 export const iModelInfoAvailableEvent = new BeEvent();
 

@@ -28,6 +28,7 @@ import { BaseQuantityDescription } from '@itwin/appui-abstract';
 import { BatchType } from '@itwin/core-common';
 import { BeDuration } from '@itwin/core-bentley';
 import { BeEvent } from '@itwin/core-bentley';
+import { BentleyError } from '@itwin/core-bentley';
 import { BentleyStatus } from '@itwin/core-bentley';
 import { BeTimePoint } from '@itwin/core-bentley';
 import { BeUiEvent } from '@itwin/core-bentley';
@@ -115,6 +116,7 @@ import { GeometryContainmentResponseProps } from '@itwin/core-common';
 import { GeometryQuery } from '@itwin/core-geometry';
 import { GeometryStreamProps } from '@itwin/core-common';
 import { GeometrySummaryRequestProps } from '@itwin/core-common';
+import { GetMetaDataFunction } from '@itwin/core-bentley';
 import { GlobeMode } from '@itwin/core-common';
 import { Gradient } from '@itwin/core-common';
 import { GraphicParams } from '@itwin/core-common';
@@ -122,6 +124,8 @@ import { GridOrientationType } from '@itwin/core-common';
 import { GuidString } from '@itwin/core-bentley';
 import { HiddenLine } from '@itwin/core-common';
 import { Hilite } from '@itwin/core-common';
+import * as https from 'https';
+import { HttpStatus } from '@itwin/core-bentley';
 import { Id64 } from '@itwin/core-bentley';
 import { Id64Arg } from '@itwin/core-bentley';
 import { Id64Array } from '@itwin/core-bentley';
@@ -208,7 +212,6 @@ import { PolylineEdgeArgs } from '@itwin/core-common';
 import { PolylineFlags } from '@itwin/core-common';
 import { PolylineTypeFlags } from '@itwin/core-common';
 import { PrimaryTileTreeId } from '@itwin/core-common';
-import { ProgressCallback } from '@bentley/itwin-client';
 import { PromiseReturnType } from '@itwin/core-bentley';
 import { PropertyDescription } from '@itwin/appui-abstract';
 import { QParams2d } from '@itwin/core-common';
@@ -238,9 +241,6 @@ import { RenderMaterial } from '@itwin/core-common';
 import { RenderMode } from '@itwin/core-common';
 import { RenderSchedule } from '@itwin/core-common';
 import { RenderTexture } from '@itwin/core-common';
-import { RequestBasicCredentials } from '@bentley/itwin-client';
-import { RequestOptions } from '@bentley/itwin-client';
-import { Response } from '@bentley/itwin-client';
 import { RgbColor } from '@itwin/core-common';
 import { RootSubjectProps } from '@itwin/core-common';
 import { RpcInterfaceDefinition } from '@itwin/core-common';
@@ -3297,18 +3297,15 @@ export interface FrontendHubAccess {
 
 // @public
 export enum FrontendLoggerCategory {
-    Authorization = "core-frontend.Authorization",
-    EventSource = "core-frontend.EventSource",
     // @alpha
     FeatureTracking = "core-frontend.FeatureTracking",
-    FrontendRequestContext = "core-frontend.FrontendRequestContext",
     IModelConnection = "core-frontend.IModelConnection",
-    MobileAuthorizationClient = "core-frontend.MobileAuthorizationClient",
     NativeApp = "core-frontend.NativeApp",
     // (undocumented)
     Package = "core-frontend",
     // @alpha
-    RealityData = "core-frontend.RealityData"
+    RealityData = "core-frontend.RealityData",
+    Request = "core-frontend.Request"
 }
 
 // @public

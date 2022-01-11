@@ -12,7 +12,6 @@ import { Icon } from "@itwin/core-react";
 import { StatusFieldProps, UiFramework } from "@itwin/appui-react";
 import { FooterIndicator } from "@itwin/appui-layout-react";
 import { ProgressRadial } from "@itwin/itwinui-react";
-import { ErrorHandling } from "../../../api/ErrorHandling";
 
 function translate(prompt: string) {
   return IModelApp.localization.getLocalizedString(`SampleApp:statusFields.${prompt}`);
