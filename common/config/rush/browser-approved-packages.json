@@ -412,7 +412,7 @@
     },
     {
       "name": "deep-assign",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [ "common", "frontend" ]
     },
     {
       "name": "deep-equal",
@@ -711,6 +711,10 @@
       "allowedCategories": [ "integration-testing", "tools" ]
     },
     {
+      "name": "qs",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "raf",
       "allowedCategories": [ "frontend" ]
     },
@@ -845,6 +849,10 @@
     {
       "name": "spdy",
       "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "superagent",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "supertest",

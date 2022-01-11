@@ -6,12 +6,14 @@
  * @module iTwinServiceClients
  */
 import * as deepAssign from "deep-assign";
+import * as _ from "lodash";
 import * as https from "https";
 import { IStringifyOptions, stringify } from "qs";
+import * as sarequest from "superagent";
 import { BentleyError, GetMetaDataFunction, HttpStatus, Logger, LogLevel } from "@itwin/core-bentley";
-import { ITwinClientLoggerCategory } from "./ITwinClientLoggerCategory";
+import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 
-const loggerCategory: string = ITwinClientLoggerCategory.Request;
+const loggerCategory: string = FrontendLoggerCategory.Request;
 
 // CMS TODO: Move this entire wrapper to the frontend for use in the map/tile requests. Replace it with
 // just using fetch directly as it is only ever used browser side.
@@ -422,18 +424,4 @@ export async function request(url: string, options: RequestOptions): Promise<Res
     const parsedError = errorCallback(error);
     throw parsedError;
   }
-}
-
-/**
- * fetch json from HTTP request
- * @param url server URL to address the request
- * @internal
- */
-export async function getJson(url: string): Promise<any> {
-  const options: RequestOptions = {
-    method: "GET",
-    responseType: "json",
-  };
-  const data = await request(url, options);
-  return data.body;
 }
