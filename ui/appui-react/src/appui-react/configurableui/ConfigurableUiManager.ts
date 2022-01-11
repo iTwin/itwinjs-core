@@ -215,6 +215,7 @@ export class ConfigurableUiManager {
     MessageManager.closeAllMessages();
     ModelessDialogManager.closeAll();
     ModalDialogManager.closeAll();
+    ContentDialogManager.closeAll();
     KeyboardShortcutManager.closeShortcutsMenu();
     UiFramework.closeCursorMenu();
     PopupManager.clearPopups();

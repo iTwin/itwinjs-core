@@ -38,6 +38,7 @@ import { PopoutWidget } from "../childwindow/PopoutWidget";
 import { setImmediate } from "timers";
 import { saveFrontstagePopoutWidgetSizeAndPosition } from "../widget-panels/Frontstage";
 import { BentleyStatus } from "@itwin/core-bentley";
+import { ContentDialogManager } from "../dialog/ContentDialogManager";
 
 /** @internal */
 export interface FrontstageEventArgs {
@@ -304,6 +305,7 @@ export class FrontstageDef {
     UiFramework.childWindowManager.closeAllChildWindows();
 
     if (this._floatingContentControls) {
+      ContentDialogManager.closeAll();
       this._floatingContentControls = undefined;
     }
 

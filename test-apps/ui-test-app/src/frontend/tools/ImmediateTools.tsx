@@ -324,8 +324,6 @@ export function IModelViewDialog({ id, title }: { id: string, title: string }) {
     ContentDialogManager.closeDialog(id);
   }, [id]);
 
-  const activeContentControl = useActiveViewport()
-
   return (
     <ContentDialog
       title={title}
