@@ -12,6 +12,7 @@ import {
 } from "@itwin/core-geometry";
 import { CodeProps } from "./Code";
 import { EntityProps } from "./EntityProps";
+import { ElementGeometryBuilderParams } from "./geometry/ElementGeometry";
 import { GeometryStreamProps } from "./geometry/GeometryStream";
 import { IModelError, IModelStatus } from "./IModelError";
 import { SubCategoryAppearance } from "./SubCategoryAppearance";
@@ -102,6 +103,8 @@ export interface GeometricElementProps extends ElementProps {
   category: Id64String;
   /** The geometry stream properties */
   geom?: GeometryStreamProps;
+  /** How to build a GeometryStream. This is not a persistent property. It may be specified as an alternative to `geom` when inserting or updating an element.  */
+  elementGeometryBuilderParams?: ElementGeometryBuilderParams;
   /** The placement properties */
   placement?: PlacementProps;
 }
