@@ -67,6 +67,10 @@ export class ContentViewManager {
   /** Gets the [[ActiveContentChangedEvent]] */
   public static readonly onActiveContentChangedEvent = new ActiveContentChangedEvent();
 
+  /** Fires when floating contents are added or removed */
+
+  public static readonly onAvailableContentChangedEvent = new UiEvent<{ contentId: string }>();
+
   /** Gets the active content as a React.ReactNode. */
   public static getActiveContent(): React.ReactNode | undefined {
     return this._activeContent;

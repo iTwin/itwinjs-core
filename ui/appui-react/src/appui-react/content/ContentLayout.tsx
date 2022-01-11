@@ -18,77 +18,61 @@ import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { ContentGroup } from "./ContentGroup";
 import { ContentLayoutProps, LayoutFragmentProps, LayoutHorizontalSplitProps, LayoutSplitPropsBase, LayoutVerticalSplitProps, UiEvent } from "@itwin/appui-abstract";
 import { ActiveContentChangedEventArgs, ContentViewManager } from "./ContentViewManager";
+import { useActiveFrontstageDef } from "../frontstage/Frontstage";
 
 /** Properties for [[ContentWrapper]] */
 interface ContentWrapperProps extends CommonProps {
   content: React.ReactNode;
 }
 
-/** State for [[ContentWrapper]] */
-interface ContentWrapperState {
-  content: React.ReactNode;
-  isActive: boolean;
-}
-
 /** ContentWrapper React component.
+ * @internal
  */
-class ContentWrapper extends React.Component<ContentWrapperProps, ContentWrapperState> {
+export function ContentWrapper(props: ContentWrapperProps) {
+  const { content } = props;
+  const [isActive, setIsActive] = React.useState(content === ContentViewManager.getActiveContent());
+  const activeFrontstageDef = useActiveFrontstageDef();
+  const [hasFloatingContent, setHasFloatingContent] = React.useState(activeFrontstageDef && !!activeFrontstageDef.floatingContentControls?.length);
 
-  /** @internal */
-  public override readonly state: Readonly<ContentWrapperState>;
+  React.useEffect(() => {
+    setIsActive(content === ContentViewManager.getActiveContent());
+  }, [content]);
 
-  constructor(props: ContentWrapperProps) {
-    super(props);
-
-    this.state = {
-      content: this.props.content,
-      isActive: this.props.content === ContentViewManager.getActiveContent(),
+  React.useEffect(() => {
+    const handleActiveContentChanged = (args: ActiveContentChangedEventArgs) => {
+      setIsActive(content === args.activeContent);
+      setHasFloatingContent(activeFrontstageDef && !!activeFrontstageDef.floatingContentControls?.length);
     };
-  }
+    return ContentViewManager.onActiveContentChangedEvent.addListener(handleActiveContentChanged);
+  }, [activeFrontstageDef, content]);
 
-  public override render(): React.ReactNode {
-    const overlayClassName = classnames(
-      "uifw-contentlayout-overlay-div",
-      this.state.isActive ? "uifw-contentlayout-overlay-active" : "uifw-contentlayout-overlay-inactive",
-    );
+  const handleMouseDown = React.useCallback(() => {
+    ContentViewManager.setActiveContent(content);
+  }, [content]);
 
-    return (
-      <div className={classnames("uifw-contentlayout-wrapper", this.props.className)} style={this.props.style}
-        onMouseDown={this._handleMouseDown} onMouseMove={UiShowHideManager.handleContentMouseMove} role="presentation"
-      >
-        {this.state.content}
-        <div className={overlayClassName} />
-      </div>
-    );
-  }
+  React.useEffect(() => {
+    const onAvailableContentChanged = () => {
+      const hasFloats = activeFrontstageDef && !!activeFrontstageDef.floatingContentControls?.length;
+      if (hasFloats !== hasFloatingContent) {
+        setHasFloatingContent(hasFloats);
+      }
+    };
+    return ContentViewManager.onAvailableContentChangedEvent.addListener(onAvailableContentChanged);
+  }, [activeFrontstageDef, hasFloatingContent]);
 
-  private _handleMouseDown = (_event: React.MouseEvent<HTMLDivElement>) => {
-    // event.preventDefault();
+  const overlayClassName = classnames(
+    "uifw-contentlayout-overlay-div",
+    isActive && hasFloatingContent ? "uifw-contentlayout-overlay-active" : "uifw-contentlayout-overlay-inactive",
+  );
 
-    ContentViewManager.setActiveContent(this.state.content);
-  };
-
-  public override componentDidMount() {
-    ContentViewManager.onActiveContentChangedEvent.addListener(this._handleActiveContentChanged);
-  }
-
-  public override componentWillUnmount() {
-    ContentViewManager.onActiveContentChangedEvent.removeListener(this._handleActiveContentChanged);
-  }
-
-  private _handleActiveContentChanged = (args: ActiveContentChangedEventArgs) => {
-    const isActive = this.state.content === args.activeContent;
-    if (this.state.isActive !== isActive) {
-      this.setState({ isActive });
-    }
-  };
-
-  // istanbul ignore next
-  public override componentDidUpdate(prevProps: ContentWrapperProps, _prevState: ContentWrapperState) {
-    if (this.props.content !== prevProps.content) {
-      this.setState((_, props) => ({ content: props.content, isActive: props.content === ContentViewManager.getActiveContent() }));
-    }
-  }
+  return (
+    <div className={classnames("uifw-contentlayout-wrapper", props.className)} style={props.style}
+      onMouseDown={handleMouseDown} onMouseMove={UiShowHideManager.handleContentMouseMove} role="presentation"
+    >
+      {content}
+      <div className={overlayClassName} />
+    </div>
+  );
 }
 
 /** Properties for the [[SplitContainer]] component */
@@ -175,7 +159,7 @@ class SingleContentContainer extends React.Component<SingleContentProps> {
       <div className={classnames("uifw-contentlayout-full-size", this.props.className)} style={this.props.style} data-testid="single-content-container"
         onMouseMove={UiShowHideManager.handleContentMouseMove}
       >
-        {this.props.content}
+        <ContentWrapper content={this.props.content} style={{ height: "100%", position: "relative" }} />
       </div>
     );
   }

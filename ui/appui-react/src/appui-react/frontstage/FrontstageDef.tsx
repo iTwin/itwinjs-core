@@ -581,6 +581,7 @@ export class FrontstageDef {
       this._floatingContentControls = new Array<ContentControl>();
 
     this._floatingContentControls.push(contentControl);
+    ContentViewManager.onAvailableContentChangedEvent.emit({ contentId: contentControl.uniqueId });
   }
 
   public dropFloatingContentControl(contentControl?: ContentControl) {
@@ -590,6 +591,7 @@ export class FrontstageDef {
     const index = this._floatingContentControls.indexOf(contentControl);
     if (index > -1) {
       this._floatingContentControls.splice(index, 1);
+      ContentViewManager.onAvailableContentChangedEvent.emit({ contentId: contentControl.uniqueId });
     }
   }
 
