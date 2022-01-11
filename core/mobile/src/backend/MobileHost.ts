@@ -9,7 +9,8 @@ import {
   IModelReadRpcInterface, IModelTileRpcInterface, InternetConnectivityStatus, RpcInterfaceDefinition,
   SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
-import { CancelRequest, DownloadFailed, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
+import { CancelRequest, DownloadFailed, UserCancelledError } from "./MobileFileHandler";
+import { ProgressCallback } from "./Request";
 import { PresentationRpcInterface } from "@itwin/presentation-common";
 import { BatteryState, DeviceEvents, mobileAppChannel, MobileAppFunctions, Orientation } from "../common/MobileAppProps";
 import { MobileRpcManager } from "../common/MobileRpcManager";

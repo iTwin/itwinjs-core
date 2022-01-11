@@ -417,6 +417,7 @@ $npm install  @itwin/core-common
 
 $npm install  --save-dev @itwin/build-tools
 $npm install  --save-dev @itwin/eslint-plugin
+$npm install  --save-dev @itwin/oidc-signin-tool
 
 $npm install  --save-dev chai
 $npm install  --save-dev cpx2

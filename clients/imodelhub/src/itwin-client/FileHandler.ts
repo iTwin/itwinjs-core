@@ -7,7 +7,7 @@
  */
 import * as https from "https";
 import { AccessToken, BentleyError, GetMetaDataFunction } from "@itwin/core-bentley";
-import { ProgressCallback } from "../request/Request";
+import { ProgressCallback } from "./Request";
 
 /** Interface to cancel a request
   * @beta

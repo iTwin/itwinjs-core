@@ -131,11 +131,16 @@ export class GeoNameMarkerManager {
 
     try {
       this.outputInfoMessage("LoadingLocations");
-      let locationResponse: Response = await fetch(url, { method: "GET"});
-      locationResponse = await locationResponse.json();
+      let json: any = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json", // eslint-disable-line @typescript-eslint/naming-convention
+        },
+      });
+      json = json.json();
 
       const cities = new Array<GeoNameProps>();
-      for (const geoName of locationResponse.geonames) {
+      for (const geoName of json.geonames) {
         cities.push(geoName);
       }
       this.outputInfoMessage("LoadingComplete");

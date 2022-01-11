@@ -12,7 +12,7 @@ import { IStringifyOptions, stringify } from "qs";
 import * as sarequest from "superagent";
 import { BentleyError, GetMetaDataFunction, HttpStatus, Logger, LogLevel } from "@itwin/core-bentley";
 
-const loggerCategory: string = IModelHubClientLoggerCategory.Request;
+const loggerCategory: string = "core-mobile-backend.Request";
 
 /** @internal */
 export const requestIdHeaderName = "X-Correlation-Id";
@@ -155,7 +155,7 @@ export class ResponseError extends BentleyError {
       }
       if (response.response.body && Object.keys(response.response.body).length > 0) {
         error._data = {};
-        deepAssign.default(error._data, response.response.body);
+        deepAssign(error._data, response.response.body);
       } else {
         error._data = response.response.text;
       }
@@ -245,7 +245,7 @@ const logRequest = (req: sarequest.SuperAgentRequest): sarequest.SuperAgentReque
  * @internal
  */
 export async function request(url: string, options: RequestOptions): Promise<Response> {
-  let sareq: sarequest.SuperAgentRequest = sarequest.default(options.method, url);
+  let sareq: sarequest.SuperAgentRequest = sarequest(options.method, url);
   if (options.retries)
     sareq = sareq.retry(options.retries, options.retryCallback);
 
@@ -268,9 +268,6 @@ export async function request(url: string, options: RequestOptions): Promise<Res
 
   Logger.logInfo(loggerCategory, fullUrl);
 
-  if (options.auth)
-    sareq = sareq.auth(options.auth.user, options.auth.password);
-
   if (options.accept)
     sareq = sareq.accept(options.accept);
 
@@ -279,8 +276,6 @@ export async function request(url: string, options: RequestOptions): Promise<Res
 
   if (options.timeout)
     sareq = sareq.timeout(options.timeout);
-  else
-    sareq = sareq.timeout(RequestGlobalOptions.timeout);
 
   if (options.responseType)
     sareq = sareq.responseType(options.responseType);
@@ -299,8 +294,6 @@ export async function request(url: string, options: RequestOptions): Promise<Res
   /** Default to any globally supplied proxy, unless an agent is specified in this call */
   if (options.agent)
     sareq = sareq.agent(options.agent);
-  else if (RequestGlobalOptions.httpsProxy)
-    sareq = sareq.agent(RequestGlobalOptions.httpsProxy);
 
   if (options.progressCallback) {
     sareq = sareq.on("progress", (event: sarequest.ProgressEvent) => {

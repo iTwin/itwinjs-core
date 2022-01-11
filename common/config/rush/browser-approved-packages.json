@@ -412,7 +412,7 @@
     },
     {
       "name": "deep-assign",
-      "allowedCategories": [ "common", "frontend" ]
+      "allowedCategories": [ "backend", "common", "frontend" ]
     },
     {
       "name": "deep-equal",
@@ -624,7 +624,7 @@
     },
     {
       "name": "lodash",
-      "allowedCategories": [ "common", "frontend", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "tools" ]
     },
     {
       "name": "lolex",
@@ -712,7 +712,7 @@
     },
     {
       "name": "qs",
-      "allowedCategories": [ "common", "frontend" ]
+      "allowedCategories": [ "backend", "common", "frontend" ]
     },
     {
       "name": "raf",
@@ -852,7 +852,7 @@
     },
     {
       "name": "superagent",
-      "allowedCategories": [ "common", "frontend" ]
+      "allowedCategories": [ "backend", "common", "frontend" ]
     },
     {
       "name": "supertest",

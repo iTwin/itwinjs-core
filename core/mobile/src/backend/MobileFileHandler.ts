@@ -210,7 +210,8 @@ export class MobileFileHandler {
       let i = 0;
       const callback: ProgressCallback = (progress: ProgressInfo) => {
         const uploaded = i * chunkSize + progress.loaded;
-        progressCallback({ loaded: uploaded, percent: uploaded / fileSize, total: fileSize });
+        if (progressCallback)
+          progressCallback({ loaded: uploaded, percent: uploaded / fileSize, total: fileSize });
       };
       for (; i * chunkSize < fileSize; ++i) {
         await this.uploadChunk(accessToken, uploadUrlString, file, i, progressCallback ? callback : undefined);
