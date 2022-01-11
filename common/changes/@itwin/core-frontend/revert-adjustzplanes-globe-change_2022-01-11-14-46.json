@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix rendering errors when viewing a model from below the ellipsoidal earth using an ortho camera.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
