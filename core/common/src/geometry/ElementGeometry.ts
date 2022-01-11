@@ -126,7 +126,9 @@ export interface ElementGeometryRequest {
   minBRepFeatureSize?: number;
 }
 
-/** Parameters for building a geometry stream using ElementGeometry.Builder */
+/** Parameters for building a geometry stream using ElementGeometry.Builder
+ * @alpha
+ */
 export interface ElementGeometryBuilderParams {
   /** The geometry stream data */
   entryArray: ElementGeometryDataEntry[];

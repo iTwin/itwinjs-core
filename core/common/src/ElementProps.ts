@@ -213,6 +213,8 @@ export interface GeometricElement2dProps extends GeometricElementProps {
  */
 export interface GeometryPartProps extends ElementProps {
   geom?: GeometryStreamProps;
+  /** How to build a GeometryStream. This is not a persistent property. It may be specified as an alternative to `geom` when inserting or updating an element.  */
+  elementGeometryBuilderParams?: ElementGeometryBuilderParams;
   bbox?: LowAndHighXYZ;
 }
 
