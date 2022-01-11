@@ -16,9 +16,10 @@ export namespace ClassUtils {
    * @returns whether `subclass` is a proper subclass of `superclass`
    */
   export function isProperSubclassOf<
-    A extends new (..._: any[]) => any,
-    B extends new (..._: any[]) => any,
-  >(subclass: A | B, superclass: B): subclass is B {
+    SuperClass extends new (..._: any[]) => any,
+    NonSubClass extends new (..._: any[]) => any,
+    SubClass extends new (..._: any[]) => InstanceType<SuperClass>,
+  >(subclass: SubClass | NonSubClass, superclass: SuperClass): subclass is SubClass {
     return subclass.prototype instanceof superclass;
   }
 }
