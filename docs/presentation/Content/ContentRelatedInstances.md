@@ -31,6 +31,7 @@ Either a single or an array of specifications may be specified for this attribut
 ```ts
 [[include:ContentRelatedInstances.RelationshipPaths.Ruleset]]
 ```
+![Example of using calculatedProperties attribute](./media/contentrelatedInstances-with-relationshippaths.png)
 
 ### Attribute: `instanceFilter`
 
@@ -39,6 +40,11 @@ Specifies an [ECExpression](./ECExpressions.md#instance-filter) for filtering in
 ```ts
 [[include:ContentRelatedInstances.InstanceFilter.Ruleset]]
 ```
+
+  |                | Result                                                                                                       |
+  | -------------- | ------------------------------------------------------------------------------------------------------------ |
+  | without filter | ![Example when selecting all instances](./media/contentinstancesofspecificclasses-with-instancefilter-1.png) |
+  | with filter    | ![Example when filtering instances](./media/contentinstancesofspecificclasses-with-instancefilter-2.png)     |
 
 ### Attribute: `onlyIfNotHandled`
 
@@ -50,6 +56,11 @@ Identifies whether we should ignore this specification if another specification 
 [[include:ContentRelatedInstances.OnlyIfNotHandled.Ruleset]]
 ```
 
+  | onlyIfNotHandled | Result                                                                                                         |
+  | ---------------- | -------------------------------------------------------------------------------------------------------------- |
+  | `true`           | ![Example when selecting all instances](./media/contentinstancesofspecificclasses-with-onlyifnothandled-1.png) |
+  | `false`          | ![Example when filtering instances](./media/contentinstancesofspecificclasses-with-onlyifnothandled-2.png)     |
+
 ### Attribute: `priority`
 
 > **Default value:** `1000`
@@ -60,6 +71,8 @@ Defines the order in which specifications are handled - higher priority means th
 [[include:ContentRelatedInstances.Priority.Ruleset]]
 ```
 
+![Example of using priority attribute](./media/contentinstancesofspecificclasses-with-priority.png)
+
 ### Attribute: `relatedProperties`
 
 Specifications of [related properties](./RelatedPropertiesSpecification.md) which are included in the generated content.
@@ -68,6 +81,11 @@ Specifications of [related properties](./RelatedPropertiesSpecification.md) whic
 [[include:ContentRelatedInstances.RelatedProperties.Ruleset]]
 ```
 
+  |         | Result                                                                                                                    |
+  | ------- | ------------------------------------------------------------------------------------------------------------------------- |
+  | without | ![Example when doing normal property select](./media/contentinstancesofspecificclasses-with-relatedproperties-1.png)      |
+  | with    | ![Example when selecting with related properties](./media/contentinstancesofspecificclasses-with-relatedproperties-2.png) |
+
 ### Attribute: `calculatedProperties`
 
 Specifications of [calculated properties](./CalculatedPropertiesSpecification.md) whose values are generated using provided [ECExpressions](../Advanced/ECExpressions.md#ecinstance).
@@ -75,6 +93,8 @@ Specifications of [calculated properties](./CalculatedPropertiesSpecification.md
 ```ts
 [[include:ContentRelatedInstances.CalculatedProperties.Ruleset]]
 ```
+
+![Example of using calculatedProperties attribute](./media/contentinstancesofspecificclasses-with-calculatedproperties.png)
 
 ### Attribute: `propertyCategories`
 
@@ -86,6 +106,8 @@ Simply defining the categories does nothing - they have to be referenced through
 [[include:ContentRelatedInstances.PropertyCategories.Ruleset]]
 ```
 
+![Example of using propertyCategories attribute](./media/contentinstancesofspecificclasses-with-propertycategories.png)
+
 ### Attribute: `propertyOverrides`
 
 Specifications of various [property overrides](./PropertySpecification.md) that allow customizing individual properties display.
@@ -93,6 +115,11 @@ Specifications of various [property overrides](./PropertySpecification.md) that 
 ```ts
 [[include:ContentRelatedInstances.PropertyOverrides.Ruleset]]
 ```
+
+  |        | Result                                                                                                                    |
+  | ------ | ------------------------------------------------------------------------------------------------------------------------- |
+  | before | ![Example when doing normal property select](./media/contentinstancesofspecificclasses-with-propertyoverrides-1.png)      |
+  | after  | ![Example when selecting with related properties](./media/contentinstancesofspecificclasses-with-propertyoverrides-2.png) |
 
 ### Attribute: `showImages`
 
@@ -121,3 +148,9 @@ Specifications of [related instances](../Common-Rules/RelatedInstanceSpecificati
 ```ts
 [[include:ContentRelatedInstances.RelatedInstances.Ruleset]]
 ```
+
+  |                                                                   | Result                                                                                                                                                 |
+  | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+  | `SpatialViewDefinition` instances                                 | ![A list of spatial view definitions](./media/contentinstancesofspecificclasses-with-relatedinstances-3.png)                                           |
+  | `ModelSelector` instances                                         | ![A list of model selectors](./media/contentinstancesofspecificclasses-with-relatedinstances-2.png)                                               |
+  | `ModelSelector` instances filtered by `SpatialViewDefinition.Yaw` | ![A list of model selectors filtered by yaw of related spatial view definition](./media/contentinstancesofspecificclasses-with-relatedinstances-1.png) |
