@@ -80,7 +80,7 @@ function delta(a: number, b: number): number { return Math.abs(a - b); }
 type ProcessGraphic = (graphic: RenderGraphic) => void;
 
 function processHeader(data: TileTestData, test: TileTestCase, numElements: number) {
-  const stream = new ByteStream(test.bytes.buffer);
+  const stream = ByteStream.fromUint8Array(test.bytes);
   stream.reset();
   const header = new ImdlHeader(stream);
   expect(header.isValid).to.be.true;
@@ -97,7 +97,7 @@ function processHeader(data: TileTestData, test: TileTestCase, numElements: numb
 
 function createReader(imodel: IModelConnection, data: TileTestData, test: TileTestCase): ImdlReader | undefined {
   const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
-  const stream = new ByteStream(test.bytes.buffer);
+  const stream = ByteStream.fromUint8Array(test.bytes);
   const reader = ImdlReader.create({
     stream,
     iModel: imodel,
@@ -447,7 +447,7 @@ describe("TileIO (mock render)", () => {
   it("should support canceling operation", async () => {
     if (IModelApp.initialized) {
       const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
-      const stream = new ByteStream(currentTestCase.rectangle.bytes.buffer);
+      const stream = ByteStream.fromUint8Array(currentTestCase.rectangle.bytes);
       const reader = ImdlReader.create({
         stream,
         iModel: model.iModel,
@@ -659,7 +659,7 @@ describe("mirukuru TileTree", () => {
       expect(response).instanceof(Uint8Array);
 
       // The model contains a single rectangular element.
-      const stream = new ByteStream((response as Uint8Array).buffer);
+      const stream = ByteStream.fromUint8Array(response as Uint8Array);
       const header = new ImdlHeader(stream);
       expect(header.isValid).to.be.true;
       expect(header.format).to.equal(TileFormat.IModel);
@@ -815,7 +815,7 @@ describe.skip("TileAdmin", () => {
         expect(response).not.to.be.undefined;
         expect(response).instanceof(Uint8Array);
 
-        const stream = new ByteStream(response.buffer);
+        const stream = ByteStream.fromUint8Array(response);
         const reader = ImdlReader.create({
           stream,
           iModel: imodel,

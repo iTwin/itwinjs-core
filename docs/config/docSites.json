@@ -42,12 +42,16 @@
       "Samples": "sample-showcase",
       "Learning": "learning",
       "API": "reference",
-      "v2.19.0": "changehistory"
+      "v3.0.0": "changehistory"
     },
     "archivedVersions": [
       {
         "version": "v1.14.0",
         "archivedPath": "/v1"
+      },
+      {
+        "version": "v2.19.0",
+        "archivedPath": "/v2"
       }
     ],
     "packageAliases": {
@@ -69,7 +73,6 @@
       "hypermodeling": "hypermodeling-frontend",
       "i18n": "core-i18n",
       "imodel-components-react": "imodel-components-react",
-      "imodelhub-client": "imodelhub-client",
       "itwin-client": "itwin-client",
       "linear-referencing-backend": "linear-referencing-backend",
       "linear-referencing-common": "linear-referencing-common",

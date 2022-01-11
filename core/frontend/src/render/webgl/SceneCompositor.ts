@@ -381,11 +381,11 @@ class Geometry implements WebGLDisposable, RenderMemory.Consumer {
     return undefined !== this.composite;
   }
 
-  public toggleOcclusion(textures: Textures): void {
+  public toggleOcclusion(textures: Textures, depth: DepthBuffer): void {
     if (undefined !== textures.occlusion) {
       assert(undefined !== textures.occlusionBlur);
       this.composite!.occlusion = textures.occlusion.getHandle();
-      this.occlusion = AmbientOcclusionGeometry.createGeometry(textures.depthAndOrder!.getHandle()!);
+      this.occlusion = AmbientOcclusionGeometry.createGeometry(textures.depthAndOrder!.getHandle()!, depth.getHandle()!);
       this.occlusionXBlur = BlurGeometry.createGeometry(textures.occlusion.getHandle()!, textures.depthAndOrder!.getHandle()!, new Vector2d(1.0, 0.0));
       this.occlusionYBlur = BlurGeometry.createGeometry(textures.occlusionBlur.getHandle()!, textures.depthAndOrder!.getHandle()!, new Vector2d(0.0, 1.0));
     } else {
@@ -845,7 +845,7 @@ abstract class Compositor extends SceneCompositor {
       }
 
       this._frameBuffers.toggleOcclusion(this._textures);
-      this._geom.toggleOcclusion(this._textures);
+      this._geom.toggleOcclusion(this._textures, this._depth!);
     }
 
     // Allocate or free volume classifier-related resources if necessary.  Make sure that we have depth/stencil.

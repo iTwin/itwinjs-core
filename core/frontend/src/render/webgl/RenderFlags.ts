@@ -8,6 +8,8 @@
 /* eslint-disable no-restricted-syntax */
 
 /** Ordered list of render passes which produce a rendered frame.
+ * [[RenderCommands]] organizes its [[DrawCommands]] into a list indexed by RenderPass.
+ * @see [[Pass]] for the type from which the RenderPass for a [[Primitive]] is derived.
  * @internal
  */
 export const enum RenderPass {
@@ -35,6 +37,38 @@ export const enum RenderPass {
   COUNT,
 }
 
+/** Describes the [[RenderPass]]es in which a [[Primitive]] wants to be rendered.
+ * Generally, each Pass corresponds to a single RenderPass. However a couple of passes specify that the primitive should be rendered
+ * twice, in two different render passes.
+ * [[RenderCommands.addPrimitive]] may ignore the requested Pass. For example, edges typically draw in RenderPass.OpaqueLinear, but
+ * may also draw in RenderPass.HiddenEdge; and translucent geometry may sometimes be rendered in an opaque render pass instead.
+ * @see [[CachedGeometry.getPass]].
+ * @internal
+ */
+export type Pass =
+  "skybox" | // SkyBox
+  "opaque" | // OpaqueGeneral
+  "opaque-linear" | // OpaqueLinear
+  "opaque-planar" | // OpaquePlanar
+  "translucent" | // Translucent
+  "view-overlay" | // ViewOverlay
+  "classification" | // Classification
+  "none" | // None
+  // The following apply to textured meshes when the texture image contains a mix of opaque and transparent pixels.
+  // The mesh requests to be rendered in both opaque and transparent passes, with each pass discarding pixels that don't match that pass.
+  // (i.e., discard transparent pixels during opaque pass and vice-versa).
+  "opaque-translucent" | // OpaqueGeneral and Translucent
+  "opaque-planar-translucent"; // OpaquePlanar and Translucent
+
+/** [[Pass]]es that map to two [[RenderPass]]es.
+ * @internal
+ */
+export type DoublePass = "opaque-translucent" | "opaque-planar-translucent";
+
+/** [[Pass]]es that map to a single [[RenderPass]].
+ * @internal */
+export type SinglePass = Exclude<Pass, DoublePass>;
+
 /** Describes the type of geometry rendered by a ShaderProgram.
  * @internal
  */
@@ -42,6 +76,62 @@ export const enum GeometryType {
   IndexedTriangles,
   IndexedPoints,
   ArrayedPoints,
+}
+
+/** @internal */
+export namespace Pass { // eslint-disable-line @typescript-eslint/no-redeclare
+  /** Return the RenderPass corresponding to the specified Pass. */
+  export function toRenderPass(pass: SinglePass): RenderPass {
+    switch (pass) {
+      case "skybox": return RenderPass.SkyBox;
+      case "opaque": return RenderPass.OpaqueGeneral;
+      case "opaque-linear": return RenderPass.OpaqueLinear;
+      case "opaque-planar": return RenderPass.OpaquePlanar;
+      case "translucent": return RenderPass.Translucent;
+      case "view-overlay": return RenderPass.ViewOverlay;
+      case "classification": return RenderPass.Classification;
+      case "none": return RenderPass.None;
+    }
+  }
+
+  /** Return true if the specified Pass renders during RenderPass.Translucent.
+   * @note It is possible for both [[rendersTranslucent]] and [[rendersOpaque]] to return true (or false) for a given Pass.
+   */
+  export function rendersTranslucent(pass: Pass): boolean {
+    switch (pass) {
+      case "translucent":
+      case "opaque-translucent":
+      case "opaque-planar-translucent":
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  /** Return true if the specified Pass renders during one of the opaque RenderPasses.
+   * @note It is possible for both [[rendersTranslucent]] and [[rendersOpaque]] to return true for a given Pass.
+   */
+  export function rendersOpaque(pass: Pass): boolean {
+    switch (pass) {
+      case "opaque-translucent":
+      case "opaque-planar-translucent":
+      case "opaque":
+      case "opaque-planar":
+      case "opaque-linear":
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  /** Return true if the specified Pass renders both during RenderPass.Translucent and one of the opaque RenderPasses. */
+  export function rendersOpaqueAndTranslucent(pass: Pass): pass is DoublePass {
+    return "opaque-translucent" === pass || "opaque-planar-translucent" === pass;
+  }
+
+  export function toOpaquePass(pass: DoublePass): RenderPass {
+    return "opaque-translucent" === pass ? RenderPass.OpaqueGeneral : RenderPass.OpaquePlanar;
+  }
 }
 
 /** Reserved texture units for specific sampler variables, to avoid conflicts between shader components which each have their own textures.

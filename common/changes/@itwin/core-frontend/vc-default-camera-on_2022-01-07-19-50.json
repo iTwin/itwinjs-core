@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Default cameraOn in 3d ViewCreator",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

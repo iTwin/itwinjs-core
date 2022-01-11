@@ -161,7 +161,7 @@ export interface MultiElementPropertiesRequestOptions<TIModel> extends RequestOp
 
 /**
  * Request type for content instance keys' requests.
- * @alpha
+ * @beta
  */
 export interface ContentInstanceKeysRequestOptions<TIModel, TKeySet, TRulesetVariable = RulesetVariable> extends Paged<RequestOptionsWithRuleset<TIModel, TRulesetVariable>> {
   /**

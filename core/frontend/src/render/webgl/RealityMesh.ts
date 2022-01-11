@@ -22,7 +22,7 @@ import { RenderMemory } from "../RenderMemory";
 import { RenderSystem, TerrainTexture } from "../RenderSystem";
 import { GL } from "./GL";
 import { Primitive } from "./Primitive";
-import { RenderOrder, RenderPass } from "./RenderFlags";
+import { RenderOrder } from "./RenderFlags";
 import { System } from "./System";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
@@ -231,14 +231,14 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
 
   public get techniqueId(): TechniqueId { return TechniqueId.RealityMesh; }
 
-  public getRenderPass(target: Target): RenderPass {
+  public override getPass(target: Target) {
     if (target.isDrawingShadowMap)
-      return RenderPass.None;
+      return "none";
 
     if (this._baseIsTransparent || (target.wantThematicDisplay && target.uniforms.thematic.wantIsoLines))
-      return RenderPass.Translucent;
+      return "translucent";
 
-    return RenderPass.OpaqueGeneral;
+    return "opaque";
   }
   public get renderOrder(): RenderOrder { return RenderOrder.UnlitSurface; }
 

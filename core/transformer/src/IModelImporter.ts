@@ -27,6 +27,10 @@ export interface IModelImportOptions {
   autoExtendProjectExtents?: boolean | { excludeOutliers: boolean };
   /** @see [IModelTransformOptions]($transformer) */
   preserveElementIdsForFiltering?: boolean;
+  /** If `true`, simplify the element geometry for visualization purposes. For example, convert b-reps into meshes.
+   * @default false
+   */
+  simplifyElementGeometry?: boolean;
 }
 
 /** Base class for importing data into an iModel.
@@ -38,18 +42,47 @@ export interface IModelImportOptions {
 export class IModelImporter implements Required<IModelImportOptions> {
   /** The read/write target iModel. */
   public readonly targetDb: IModelDb;
+
+  /** resolved initialization options for the importer
+   * @beta
+   */
+  public readonly options: Required<IModelImportOptions>;
+
   /** If `true` (the default), compute the projectExtents of the target iModel after elements are imported.
    * The computed projectExtents will either include or exclude *outliers* depending on the `excludeOutliers` flag that defaults to `false`.
    * @see [[IModelImportOptions.autoExtendProjectExtents]]
    * @see [IModelImporter Options]($docs/learning/transformer/index.md#IModelImporter)
+   * @deprecated Use [[IModelImporter.options.autoExtendProjectExtents]] instead
    */
-  public autoExtendProjectExtents: boolean | { excludeOutliers: boolean };
-  /** @see [IModelTransformOptions.preserveElementIdsForFiltering]($transformer) */
-  public preserveElementIdsForFiltering: boolean;
-  /** If `true`, simplify the element geometry for visualization purposes. For example, convert b-reps into meshes.
-   * @note `false` is the default
+  public get autoExtendProjectExtents(): Required<IModelImportOptions>["autoExtendProjectExtents"] {
+    return this.options.autoExtendProjectExtents;
+  }
+  public set autoExtendProjectExtents(val: Required<IModelImportOptions>["autoExtendProjectExtents"]) {
+    this.options.autoExtendProjectExtents = val;
+  }
+
+  /**
+   * @see [IModelTransformOptions.preserveElementIdsForFiltering]($transformer)
+   * @deprecated Use [[IModelImporter.options.preserveElementIdsForFiltering]] instead
    */
-  public simplifyElementGeometry: boolean = false;
+  public get preserveElementIdsForFiltering(): Required<IModelImportOptions>["preserveElementIdsForFiltering"] {
+    return this.options.preserveElementIdsForFiltering;
+  }
+  public set preserveElementIdsForFiltering(val: Required<IModelImportOptions>["preserveElementIdsForFiltering"]) {
+    this.options.preserveElementIdsForFiltering = val;
+  }
+
+  /**
+   * @see [[IModelImportOptions.simplifyElementGeometry]]
+   * @deprecated Use [[IModelImporter.options.simplifyElementGeometry]] instead
+   */
+  public get simplifyElementGeometry(): Required<IModelImportOptions>["simplifyElementGeometry"] {
+    return this.options.preserveElementIdsForFiltering;
+  }
+  public set simplifyElementGeometry(val: Required<IModelImportOptions>["simplifyElementGeometry"]) {
+    this.options.preserveElementIdsForFiltering = val;
+  }
+
   /** The set of elements that should not be updated by this IModelImporter.
    * @note Adding an element to this set is typically necessary when remapping a source element to one that already exists in the target and already has the desired properties.
    */
@@ -67,8 +100,11 @@ export class IModelImporter implements Required<IModelImportOptions> {
    */
   public constructor(targetDb: IModelDb, options?: IModelImportOptions) {
     this.targetDb = targetDb;
-    this.autoExtendProjectExtents = options?.autoExtendProjectExtents ?? true;
-    this.preserveElementIdsForFiltering = options?.preserveElementIdsForFiltering ?? false;
+    this.options = {
+      autoExtendProjectExtents: options?.autoExtendProjectExtents ?? true,
+      preserveElementIdsForFiltering: options?.preserveElementIdsForFiltering ?? false,
+      simplifyElementGeometry: options?.simplifyElementGeometry ?? false,
+    };
     // Add in the elements that are always present (even in an "empty" iModel) and therefore do not need to be updated
     this.doNotUpdateElementIds.add(IModel.rootSubjectId);
     this.doNotUpdateElementIds.add(IModel.dictionaryId);
@@ -139,7 +175,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
       Logger.logInfo(loggerCategory, `Do not update target element ${elementProps.id}`);
       return elementProps.id;
     }
-    if (this.preserveElementIdsForFiltering) {
+    if (this.options.preserveElementIdsForFiltering) {
       if (elementProps.id === undefined) {
         throw new IModelError(IModelStatus.BadElement, `elementProps.id must be defined during a preserveIds operation`);
       }
@@ -170,13 +206,13 @@ export class IModelImporter implements Required<IModelImportOptions> {
     try {
       const elementId = this.targetDb.nativeDb.insertElement(
         elementProps,
-        { forceUseId: this.preserveElementIdsForFiltering },
+        { forceUseId: this.options.preserveElementIdsForFiltering },
       );
       // set the id like [IModelDb.insertElement]($backend), does, the raw nativeDb method does not
       elementProps.id = elementId;
       Logger.logInfo(loggerCategory, `Inserted ${this.formatElementForLogger(elementProps)}`);
       this.trackProgress();
-      if (this.simplifyElementGeometry) {
+      if (this.options.simplifyElementGeometry) {
         this.targetDb.nativeDb.simplifyElementGeometry({ id: elementId, convertBReps: true });
         Logger.logInfo(loggerCategory, `Simplified element geometry for ${this.formatElementForLogger(elementProps)}`);
       }
@@ -201,7 +237,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
     this.targetDb.elements.updateElement(elementProps);
     Logger.logInfo(loggerCategory, `Updated ${this.formatElementForLogger(elementProps)}`);
     this.trackProgress();
-    if (this.simplifyElementGeometry) {
+    if (this.options.simplifyElementGeometry) {
       this.targetDb.nativeDb.simplifyElementGeometry({ id: elementProps.id, convertBReps: true });
       Logger.logInfo(loggerCategory, `Simplified element geometry for ${this.formatElementForLogger(elementProps)}`);
     }
@@ -432,8 +468,8 @@ export class IModelImporter implements Required<IModelImportOptions> {
     Logger.logInfo(loggerCategory, `Current projectExtents=${JSON.stringify(this.targetDb.projectExtents)}`);
     Logger.logInfo(loggerCategory, `Computed projectExtents without outliers=${JSON.stringify(computedProjectExtents.extents)}`);
     Logger.logInfo(loggerCategory, `Computed projectExtents with outliers=${JSON.stringify(computedProjectExtents.extentsWithOutliers)}`);
-    if (this.autoExtendProjectExtents) {
-      const excludeOutliers: boolean = typeof this.autoExtendProjectExtents === "object" ? this.autoExtendProjectExtents.excludeOutliers : false;
+    if (this.options.autoExtendProjectExtents) {
+      const excludeOutliers: boolean = typeof this.options.autoExtendProjectExtents === "object" ? this.options.autoExtendProjectExtents.excludeOutliers : false;
       const newProjectExtents: AxisAlignedBox3d = excludeOutliers ? computedProjectExtents.extents : computedProjectExtents.extentsWithOutliers!;
       if (!newProjectExtents.isAlmostEqual(this.targetDb.projectExtents)) {
         this.targetDb.updateProjectExtents(newProjectExtents);

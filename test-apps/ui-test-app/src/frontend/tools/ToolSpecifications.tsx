@@ -129,7 +129,7 @@ class AppItemsProvider implements UiItemsProvider {
     statusBarItems.push(StatusBarItemUtilities.createStatusBarItem(AppItemsProvider.sampleStatusFieldId, StatusBarSection.Left, 12, <SampleStatus />, { isHidden: isHiddenCondition }));
     statusBarItems.push(StatusBarItemUtilities.createStatusBarItem(AppItemsProvider.sampleStatusField2Id, StatusBarSection.Left, 13,
       <Indicator
-        iconName="icon-placeholder"
+        iconName="icon-app-1"
         dialog={<TestStatusBarDialog />}
         toolTip="Middle"
         contentType={FooterPopupContentType.Panel}
@@ -137,7 +137,7 @@ class AppItemsProvider implements UiItemsProvider {
 
     statusBarItems.push(StatusBarItemUtilities.createStatusBarItem(AppItemsProvider.sampleStatusField3Id, StatusBarSection.Left, 14,
       <Indicator
-        iconName="icon-placeholder"
+        iconName="icon-app-2"
         dialog={<NZ_Dialog titleBar={<TitleBar title="Right Test" />}>
           <TestStatusBarDialog />
         </NZ_Dialog>}
@@ -164,7 +164,7 @@ class AppItemsProvider implements UiItemsProvider {
     if (allowedStages.includes(stageId) && location === StagePanelLocation.Right && section === StagePanelSection.Start) {
       widgets.push({
         id: "uitestapp-test-wd3",
-        icon: "icon-placeholder",
+        icon: " icon-clouds-scattered-day",
         label: "Dynamic Widget 3",
         getWidgetContent: () => <FillCentered>Dynamic Widget 3 (id: uitestapp-test-wd3)</FillCentered>, // eslint-disable-line react/display-name
         defaultState: WidgetState.Hidden,
@@ -646,13 +646,20 @@ export class AppTools {
       execute: () => ModalDialogManager.openDialog(AppTools._messageBox(MessageSeverity.Error, IModelApp.localization.getLocalizedString("SampleApp:buttons.errorMessageBox"))),
     });
   }
+  public static get noIconMessageBoxCommand() {
+    return new CommandItemDef({
+      commandId: "noIconMessage",
+      labelKey: "SampleApp:buttons.noIconMessageBox",
+      execute: () => ModalDialogManager.openDialog(AppTools._messageBox(MessageSeverity.None, IModelApp.localization.getLocalizedString("SampleApp:buttons.noIconMessageBox"))),
+    });
+  }
 
   public static get successMessageBoxCommand() {
     return new CommandItemDef({
       commandId: "successMessage",
       iconSpec: "icon-status-success",
       labelKey: "SampleApp:buttons.successMessageBox",
-      execute: () => ModalDialogManager.openDialog(AppTools._messageBox(MessageSeverity.None, IModelApp.localization.getLocalizedString("SampleApp:buttons.successMessageBox"))),
+      execute: () => ModalDialogManager.openDialog(AppTools._messageBox(MessageSeverity.Success, IModelApp.localization.getLocalizedString("SampleApp:buttons.successMessageBox"))),
     });
   }
 
@@ -726,6 +733,20 @@ export class AppTools {
         const value: MessageBoxValue = await IModelApp.notifications.openMessageBox(MessageBoxType.YesNo,
           message,
           MessageBoxIconType.Warning);
+        window.alert(`Closing message box ... value is ${value}`);
+      },
+    });
+  }
+
+  public static get openMessageBoxCommand3() {
+    return new CommandItemDef({
+      commandId: "openMessageBox3",
+      iconSpec: "icon-status-warning",
+      labelKey: "SampleApp:buttons.openMessageBox",
+      execute: async () => {
+        const value: MessageBoxValue = await IModelApp.notifications.openMessageBox(MessageBoxType.YesNo,
+          "Are you sure you want to remove this item?",
+          MessageBoxIconType.Critical);
         window.alert(`Closing message box ... value is ${value}`);
       },
     });
