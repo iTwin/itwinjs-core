@@ -164,7 +164,7 @@ describe("RealityDataAccess (#integration)", () => {
     }
   });
 
-  it("should get RealityDataSource for Open Street Map Building (OSM)", async () => {
+  it.skip("should get RealityDataSource for Open Street Map Building (OSM)", async () => {
     assert.isTrue(imodel !== undefined);
     const rdSourceKey = getOSMBuildingsKey();
     const rdSource = await RealityDataSource.fromKey(rdSourceKey, iTwinId);
