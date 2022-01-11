@@ -2,19 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
+import { assert } from "chai";
 import { Id64String } from "@itwin/core-bentley";
 import {
   Code,
   ElementGeometry,
   ElementGeometryBuilderParams,
-  ElementGeometryUpdate,
   GeometricElementProps,
   GeometryPrimitive,
   GeometryStreamIterator,
   IModel, PhysicalElementProps, SubCategoryAppearance,
 } from "@itwin/core-common";
-import { LineSegment3d, LineString3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { LineSegment3d, LineString3d, Point3d } from "@itwin/core-geometry";
 import {
   DictionaryModel, IModelDb, PhysicalObject, SpatialCategory,
 } from "../../core-backend";
