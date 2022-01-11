@@ -34,6 +34,7 @@ export enum OutputMessageType {
  */
 export enum OutputMessagePriority {
   None = 0,
+  Success = 1,
   Error = 10,
   Warning = 11,
   Info = 12,
@@ -79,6 +80,7 @@ export enum MessageBoxIconType {
   Question = 2,   // Question Mark
   Warning = 3,   // Exclamation Point
   Critical = 4,   // Stop Sign
+  Success = 5, // check mark
 }
 
 /** Describes the possible return values produced when the user clicks a button in a messagebox opened using [[NotificationManager.openMessageBox]].

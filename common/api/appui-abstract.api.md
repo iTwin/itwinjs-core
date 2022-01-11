@@ -1367,6 +1367,8 @@ export enum MessageSeverity {
     // (undocumented)
     Question = 2,
     // (undocumented)
+    Success = 6,
+    // (undocumented)
     Warning = 3
 }
 
