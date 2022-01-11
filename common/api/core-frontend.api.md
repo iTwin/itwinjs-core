@@ -4033,6 +4033,7 @@ export interface GraphicBuilderOptions {
     placement?: Transform;
     preserveOrder?: boolean;
     type: GraphicType;
+    viewIndependentOrigin?: Point3d;
     wantNormals?: boolean;
 }
 
@@ -6516,6 +6517,8 @@ export enum MessageBoxIconType {
     // (undocumented)
     Question = 2,
     // (undocumented)
+    Success = 5,
+    // (undocumented)
     Warning = 3
 }
 
@@ -7191,6 +7194,8 @@ export enum OutputMessagePriority {
     Info = 12,
     // (undocumented)
     None = 0,
+    // (undocumented)
+    Success = 1,
     // (undocumented)
     Warning = 11
 }

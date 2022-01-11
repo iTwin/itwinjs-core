@@ -39,6 +39,7 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
       system,
       transform: accumulatorTransform,
       analysisStyleDisplacement: this.analysisStyle?.displacement,
+      viewIndependentOrigin: options.viewIndependentOrigin,
     });
   }
 
