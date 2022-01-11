@@ -6,7 +6,7 @@
  * @module ClassUtils
  */
 
-/** Utility functions for dealing with JavaScript classes
+/** Utility functions for working with JavaScript's concept of classes.
  * @beta
  */
 export namespace ClassUtils {
