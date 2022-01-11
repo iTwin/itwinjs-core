@@ -11,21 +11,11 @@ import * as https from "https";
 import { IStringifyOptions, stringify } from "qs";
 import * as sarequest from "superagent";
 import { BentleyError, GetMetaDataFunction, HttpStatus, Logger, LogLevel } from "@itwin/core-bentley";
-import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 
-const loggerCategory: string = FrontendLoggerCategory.Request;
-
-// CMS TODO: Move this entire wrapper to the frontend for use in the map/tile requests. Replace it with
-// just using fetch directly as it is only ever used browser side.
+const loggerCategory: string = IModelHubClientLoggerCategory.Request;
 
 /** @internal */
 export const requestIdHeaderName = "X-Correlation-Id";
-
-/** @internal */
-export interface RequestBasicCredentials { // axios: AxiosBasicCredentials
-  user: string; // axios: username
-  password: string; // axios: password
-}
 
 /** Typical option to query REST API. Note that services may not quite support these fields,
  * and the interface is only provided as a hint.
@@ -93,7 +83,6 @@ export interface RequestTimeoutOptions {
 export interface RequestOptions {
   method: string;
   headers?: any; // {Mas-App-Guid, Mas-UUid, User-Agent}
-  auth?: RequestBasicCredentials;
   body?: any;
   qs?: any | RequestQueryOptions;
   responseType?: string;
@@ -131,22 +120,6 @@ export interface ProgressInfo {
 
 /** @internal */
 export type ProgressCallback = (progress: ProgressInfo) => void;
-
-/** @internal */
-export class RequestGlobalOptions {
-  public static httpsProxy?: https.Agent = undefined;
-  /** Creates an agent for any user defined proxy using the supplied additional options. Returns undefined if user hasn't defined a proxy.
-   * @internal
-   */
-  public static createHttpsProxy: (additionalOptions?: https.AgentOptions) => https.Agent | undefined = (_additionalOptions?: https.AgentOptions) => undefined;
-  public static maxRetries: number = 4;
-  public static timeout: RequestTimeoutOptions = {
-    deadline: 25000,
-    response: 10000,
-  };
-  // Assume application is online or offline. This hint skip retry/timeout
-  public static online: boolean = true;
-}
 
 /** Error object that's thrown/rejected if the Request fails due to a network error, or if the status is *not* in the range of 200-299 (inclusive)
  * @internal
@@ -272,13 +245,9 @@ const logRequest = (req: sarequest.SuperAgentRequest): sarequest.SuperAgentReque
  * @internal
  */
 export async function request(url: string, options: RequestOptions): Promise<Response> {
-  if (!RequestGlobalOptions.online) {
-    throw new ResponseError(503, "Service unavailable");
-  }
-
   let sareq: sarequest.SuperAgentRequest = sarequest.default(options.method, url);
-  const retries = typeof options.retries === "undefined" ? RequestGlobalOptions.maxRetries : options.retries;
-  sareq = sareq.retry(retries, options.retryCallback);
+  if (options.retries)
+    sareq = sareq.retry(options.retries, options.retryCallback);
 
   if (Logger.isEnabled(loggerCategory, LogLevel.Trace))
     sareq = sareq.use(logRequest);

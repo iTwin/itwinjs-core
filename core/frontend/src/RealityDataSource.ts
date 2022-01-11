@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { getJson, request, RequestOptions } from "./request/Request";
+import { request, RequestOptions } from "./request/Request";
 import { AccessToken, BentleyStatus, GuidString, Logger } from "@itwin/core-bentley";
 import { IModelError, OrbitGtBlobProps, RealityData, RealityDataFormat, RealityDataProvider, RealityDataSourceKey, RealityDataSourceProps } from "@itwin/core-common";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
@@ -260,9 +260,13 @@ class RealityDataSourceImpl implements RealityDataSource {
   public async getRealityDataTileJson(accessToken: AccessToken, name: string, realityData: RealityData): Promise<any> {
     const url = await realityData.getBlobUrl(accessToken, name);
 
-    const data = await getJson(url.toString());
-    return data;
+    const data = await request(url.toString(), {
+      method: "GET",
+      responseType: "json",
+    });
+    return data.body;
   }
+
   /**
    * This method returns the URL to access the actual 3d tiles from the service provider.
    * @returns string containing the URL to reality data.

@@ -712,7 +712,7 @@
     },
     {
       "name": "qs",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "common", "frontend" ]
     },
     {
       "name": "raf",
@@ -852,7 +852,7 @@
     },
     {
       "name": "superagent",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "common", "frontend" ]
     },
     {
       "name": "supertest",

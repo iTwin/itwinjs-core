@@ -395,8 +395,6 @@ export async function usingBackendOfflineScope<TResult>(func: () => Promise<TRes
   return result;
 }
 export async function usingFrontendOfflineScope<TResult>(func: () => Promise<TResult>): Promise<TResult> {
-  const timeoutOldValue = { ...RequestGlobalOptions.timeout };
-  const maxRetriesOldValue = RequestGlobalOptions.maxRetries;
   HttpRequestHook.install();
   HttpRequestHook.accept("http://localhost")
     .onRequest(() => undefined)

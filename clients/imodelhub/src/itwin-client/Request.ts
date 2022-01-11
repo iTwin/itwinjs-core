@@ -11,9 +11,9 @@ import * as https from "https";
 import { IStringifyOptions, stringify } from "qs";
 import * as sarequest from "superagent";
 import { BentleyError, GetMetaDataFunction, HttpStatus, Logger, LogLevel } from "@itwin/core-bentley";
-import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
+import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
 
-const loggerCategory: string = FrontendLoggerCategory.Request;
+const loggerCategory: string = IModelHubClientLoggerCategory.Request;
 
 // CMS TODO: Move this entire wrapper to the frontend for use in the map/tile requests. Replace it with
 // just using fetch directly as it is only ever used browser side.

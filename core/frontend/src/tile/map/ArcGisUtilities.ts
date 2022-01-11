@@ -44,10 +44,13 @@ export class ArcGisUtilities {
     return `${range.low.x * Angle.degreesPerRadian},${range.low.y * Angle.degreesPerRadian},${range.high.x * Angle.degreesPerRadian},${range.high.y * Angle.degreesPerRadian}`;
   }
   public static async getEndpoint(url: string): Promise<any | undefined> {
-    const capabilities = await getJson(`${url}?f=pjson`);
-
-    return capabilities;
+    const capabilities = await request(`${url}?f=pjson`, {
+      method: "GET",
+      responseType: "json",
+    });
+    return capabilities.body;
   }
+
   public static async getNationalMapSources(): Promise<MapLayerSource[]> {
     const sources = new Array<MapLayerSource>();
     const services = await getJson("https://viewer.nationalmap.gov/tnmaccess/api/getMapServiceList");

@@ -22,9 +22,11 @@ importers:
       '@types/mocha': ^8.2.2
       '@types/node': 14.14.31
       '@types/proper-lockfile': ^4.1.1
+      '@types/qs': ^6.5.0
       '@types/semver': ^5.5.0
       '@types/sinon': ^9.0.0
       '@types/stream-buffers': ~3.0.2
+      '@types/superagent': ^4.1.14
       agentkeepalive: ^4.1.4
       chai: ^4.1.2
       deep-assign: ^2.0.0
@@ -37,9 +39,11 @@ importers:
       mocha: ^8.3.2
       nock: ^12.0.3
       proper-lockfile: ^4.1.2
+      qs: ^6.5.1
       rimraf: ^3.0.2
       semver: ^5.5.0
       sinon: ^9.0.2
+      superagent: ^7.0.1
       typescript: ~4.4.0
     dependencies:
       agentkeepalive: 4.2.0
@@ -49,7 +53,9 @@ importers:
       js-base64: 3.7.2
       lodash: 4.17.21
       proper-lockfile: 4.1.2
+      qs: 6.10.2
       semver: 5.7.1
+      superagent: 7.0.1
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-backend': link:../../core/backend
@@ -66,9 +72,11 @@ importers:
       '@types/mocha': 8.2.3
       '@types/node': 14.14.31
       '@types/proper-lockfile': 4.1.2
+      '@types/qs': 6.9.7
       '@types/semver': 5.5.0
       '@types/sinon': 9.0.11
       '@types/stream-buffers': 3.0.4
+      '@types/superagent': 4.1.14
       chai: 4.3.4
       eslint: 7.32.0
       fs-extra: 8.1.0
@@ -545,7 +553,7 @@ importers:
       semver: ^5.5.0
       sinon: ^9.0.2
       source-map-loader: ^1.0.0
-      superagent: ^5.2.2
+      superagent: ^7.0.1
       typescript: ~4.4.0
       webpack: 4.42.0
       wms-capabilities: 0.4.0
@@ -558,7 +566,7 @@ importers:
       lodash: 4.17.21
       qs: 6.10.2
       semver: 5.7.1
-      superagent: 5.3.1
+      superagent: 7.0.1
       wms-capabilities: 0.4.0
       xml-js: 1.6.11
     devDependencies:
@@ -7252,8 +7260,8 @@ packages:
       oidc-client: 1.11.5
     dev: false
 
-  /@itwin/certa/3.0.0-dev.181:
-    resolution: {integrity: sha512-9EG6invLF+7Sl/g1rC5emOxFOQMoubY/aoKoeOfd628V3lmex2SKPImtKRUqnalwiETRnchCVhMJrhlN4M/aog==}
+  /@itwin/certa/3.0.0-dev.182:
+    resolution: {integrity: sha512-1jU7gJ0NaK7DeLjGWrf0uWqo9sLn2Ptjzwendbq+STx0SWoJmR7vykriKqK7nhOACZs8f90ghfoOP+yH+eKqAA==}
     hasBin: true
     peerDependencies:
       electron: ^14.0.0
@@ -7275,8 +7283,8 @@ packages:
       - supports-color
       - utf-8-validate
 
-  /@itwin/certa/3.0.0-dev.181_electron@14.2.3:
-    resolution: {integrity: sha512-9EG6invLF+7Sl/g1rC5emOxFOQMoubY/aoKoeOfd628V3lmex2SKPImtKRUqnalwiETRnchCVhMJrhlN4M/aog==}
+  /@itwin/certa/3.0.0-dev.182_electron@14.2.3:
+    resolution: {integrity: sha512-1jU7gJ0NaK7DeLjGWrf0uWqo9sLn2Ptjzwendbq+STx0SWoJmR7vykriKqK7nhOACZs8f90ghfoOP+yH+eKqAA==}
     hasBin: true
     peerDependencies:
       electron: ^14.0.0
@@ -7304,8 +7312,8 @@ packages:
     resolution: {integrity: sha512-YVwC9JzG4vWl0PU3I8oh1LYSfg7qFRSWef6tc/UetA9rCoLZYOAKswlEXyzzCIMMMpyGu8N61XsMQCZCIuD5Nw==}
     dev: false
 
-  /@itwin/core-bentley/3.0.0-dev.181:
-    resolution: {integrity: sha512-xuDmYpQpT8+Z82Xu8vPtnZr4e+Ya9zZKIM40tMLZvxATXt1oHO92bWYXbXgUJpc7YaOmw6qX08eZ84arr+kZgQ==}
+  /@itwin/core-bentley/3.0.0-dev.182:
+    resolution: {integrity: sha512-3g5YOHkcxqEuUqNwntjuUDxyqE9dqjlrIW5+crN5L0gB+z3cLL8sP3cpE/1uEc1DXPt9t8Zi7w5nSp37yrTlzw==}
 
   /@itwin/core-geometry/3.0.0-dev.178:
     resolution: {integrity: sha512-8dPrZQFFWeKptHOAGDBSqozreR3Sfm56f2FhSfZuPCZoQtg21AWvITgBk3JdqyqMSOhYqS4iaiO6rbBE6Y3uRQ==}
@@ -7449,8 +7457,8 @@ packages:
   /@itwin/oidc-signin-tool/3.0.0:
     resolution: {integrity: sha512-zp6S6tQDyI0MSEoA7THlyXJlrtlqhk7X7BMpH8VMkvabEgJOY9AdLjoFbvJPZhcnhjq7CMdxXJWVC3D9QOaYgA==}
     dependencies:
-      '@itwin/certa': 3.0.0-dev.181
-      '@itwin/core-bentley': 3.0.0-dev.181
+      '@itwin/certa': 3.0.0-dev.182
+      '@itwin/core-bentley': 3.0.0-dev.182
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
       openid-client: 4.9.1
@@ -7464,8 +7472,8 @@ packages:
   /@itwin/oidc-signin-tool/3.0.0_electron@14.2.3:
     resolution: {integrity: sha512-zp6S6tQDyI0MSEoA7THlyXJlrtlqhk7X7BMpH8VMkvabEgJOY9AdLjoFbvJPZhcnhjq7CMdxXJWVC3D9QOaYgA==}
     dependencies:
-      '@itwin/certa': 3.0.0-dev.181_electron@14.2.3
-      '@itwin/core-bentley': 3.0.0-dev.181
+      '@itwin/certa': 3.0.0-dev.182_electron@14.2.3
+      '@itwin/core-bentley': 3.0.0-dev.182
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
       openid-client: 4.9.1
@@ -7482,7 +7490,6 @@ packages:
     dependencies:
       '@bentley/itwin-client': 3.0.0-dev.138
     transitivePeerDependencies:
-      - '@itwin/core-bentley'
       - supports-color
 
   /@itwin/reality-data-client/0.4.3:
@@ -7778,7 +7785,7 @@ packages:
       '@types/base64-js': 1.3.0
       '@types/jquery': 3.5.12
       base64-js: 1.5.1
-      follow-redirects: 1.14.7_debug@4.3.3
+      follow-redirects: 1.14.7
       form-data: 4.0.0
       opener: 1.5.2
     transitivePeerDependencies:
@@ -9716,7 +9723,6 @@ packages:
 
   /asap/2.0.6:
     resolution: {integrity: sha1-5QNHYR1+aQlDIIu9r+vLwvuGbUY=}
-    dev: true
 
   /asn1.js/5.4.1:
     resolution: {integrity: sha512-+I//4cYPccV8LdmBLiX8CYvf9Sp3vQsrqu2QNXRcrbiWvcx/UdlFiqUJJzxRQxgsZmvhXhn4cSKeSmoFjVdupA==}
@@ -9821,7 +9827,7 @@ packages:
   /axios/0.24.0:
     resolution: {integrity: sha512-Q6cWsys88HoPgAaFAVUb0WpPk0O8iTeisR9IMqy9G8AbO4NlpVknrnQS03zzF9PGAWgO3cgletO3VjV/P7VztA==}
     dependencies:
-      follow-redirects: 1.14.7_debug@4.3.3
+      follow-redirects: 1.14.7
     transitivePeerDependencies:
       - debug
     dev: false
@@ -12075,6 +12081,13 @@ packages:
   /devtools-protocol/0.0.799653:
     resolution: {integrity: sha512-t1CcaZbvm8pOlikqrsIM9GOa7Ipp07+4h/q9u0JXBWjPCjHdBl9KkddX87Vv9vBHoBGtwV79sYQNGnQM6iS5gg==}
 
+  /dezalgo/1.0.3:
+    resolution: {integrity: sha1-f3Qt4Gb8dIvI24IFad3c5Jvw1FY=}
+    dependencies:
+      asap: 2.0.6
+      wrappy: 1.0.2
+    dev: false
+
   /diff-sequences/26.6.2:
     resolution: {integrity: sha512-Mv/TDa3nZ9sbc5soK+OoA74BsS3mL37yixCvUAQkiuA4Wz6YtwP/K47n2rv2ovzHZvoiQeA5FTQOschKkEwB0Q==}
     engines: {node: '>= 10.14.2'}
@@ -13423,18 +13436,6 @@ packages:
     peerDependenciesMeta:
       debug:
         optional: true
-    dev: false
-
-  /follow-redirects/1.14.7_debug@4.3.3:
-    resolution: {integrity: sha512-+hbxoLbFMbRKDwohX8GkTataGqO6Jb7jGwpAlwgy2bIz25XtRm7KEzJM76R1WiNT5SwZkX4Y75SwBolkpmE7iQ==}
-    engines: {node: '>=4.0'}
-    peerDependencies:
-      debug: '*'
-    peerDependenciesMeta:
-      debug:
-        optional: true
-    dependencies:
-      debug: 4.3.3_supports-color@6.1.0
 
   /for-in/1.0.2:
     resolution: {integrity: sha1-gQaNKVqBQuwKxybG4iAMMPttXoA=}
@@ -13491,6 +13492,15 @@ packages:
   /formidable/1.2.6:
     resolution: {integrity: sha512-KcpbcpuLNOwrEjnbpMC0gS+X8ciDoZE1kkqzat4a8vrprf+s9pKNQ/QIwWfbfs4ltgmFl3MD177SNTkve3BwGQ==}
     deprecated: 'Please upgrade to latest, formidable@v2 or formidable@v3! Check these notes: https://bit.ly/2ZEqIau'
+
+  /formidable/2.0.1:
+    resolution: {integrity: sha512-rjTMNbp2BpfQShhFbR3Ruk3qk2y9jKpvMW78nJgx8QKtxjDVrwbZG+wvDOmVbifHyOUOQJXxqEy6r0faRrPzTQ==}
+    dependencies:
+      dezalgo: 1.0.3
+      hexoid: 1.0.0
+      once: 1.4.0
+      qs: 6.9.3
+    dev: false
 
   /forwarded/0.2.0:
     resolution: {integrity: sha512-buRG0fpBtRHSTCOASe6hD258tEubFoRLb4ZNA6NxMVHNw2gOcwHo9wyablzMzOA5z9xA9L1KNjk/Nt6MT9aYow==}
@@ -14029,6 +14039,11 @@ packages:
     resolution: {integrity: sha512-l9sfDFsuqtOqKDsQdqrMRk0U85RZc0RtOR9yPI7mRVOa4FsR/BVnZ0shmQRM96Ji99kYZP/7hn1cedc1+ApsTQ==}
     dev: true
 
+  /hexoid/1.0.0:
+    resolution: {integrity: sha512-QFLV0taWQOZtvIRIAdBChesmogZrtuXvVWsFHZTk2SU+anspqZ2vMnoLg7IE1+Uk16N19APic1BuF8bC8c2m5g==}
+    engines: {node: '>=8'}
+    dev: false
+
   /highlight-words-core/1.2.2:
     resolution: {integrity: sha512-BXUKIkUuh6cmmxzi5OIbUJxrG8OAk2MqoL1DtO3Wo9D2faJg2ph5ntyuQeLqaHJmzER6H5tllCDA9ZnNe9BVGg==}
     dev: false
@@ -14237,7 +14252,7 @@ packages:
     engines: {node: '>=8.0.0'}
     dependencies:
       eventemitter3: 4.0.7
-      follow-redirects: 1.14.7_debug@4.3.3
+      follow-redirects: 1.14.7
       requires-port: 1.0.0
     transitivePeerDependencies:
       - debug
@@ -18724,6 +18739,11 @@ packages:
     dependencies:
       side-channel: 1.0.4
 
+  /qs/6.9.3:
+    resolution: {integrity: sha512-EbZYNarm6138UKKq46tdx08Yo/q9ZhFoAXAI1meAFd2GtbRDhbZY2WQSICskT0c5q99aFzLG1D4nvTk9tqfXIw==}
+    engines: {node: '>=0.6'}
+    dev: false
+
   /qs/6.9.6:
     resolution: {integrity: sha512-TIRk4aqYLNoJUbd+g2lEdz5kLWIuTMRagAXxl78Q0RiVjAOugHmeKNGdd3cwo/ktpf9aL9epCfFqWDEKysUlLQ==}
     engines: {node: '>=0.6'}
@@ -20716,6 +20736,25 @@ packages:
       semver: 7.3.5
     transitivePeerDependencies:
       - supports-color
+
+  /superagent/7.0.1:
+    resolution: {integrity: sha512-2nFiZ2ds29iRFSjZ291vq+AxqUDg8BdFeg/AObJkDpCVJX6IJT8fU7egBOkYwmxPwaDoNrNu8qRDvtAV/7ZTPw==}
+    engines: {node: '>=6.4.0 !13'}
+    dependencies:
+      component-emitter: 1.3.0
+      cookiejar: 2.1.3
+      debug: 4.3.3
+      fast-safe-stringify: 2.1.1
+      form-data: 4.0.0
+      formidable: 2.0.1
+      methods: 1.1.2
+      mime: 2.6.0
+      qs: 6.10.2
+      readable-stream: 3.6.0
+      semver: 7.3.5
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
 
   /supertest/3.4.2:
     resolution: {integrity: sha512-WZWbwceHUo2P36RoEIdXvmqfs47idNNZjCuJOqDz6rvtkk8ym56aU5oglORCpPeXGxT7l9rkJ41+O1lffQXYSA==}
