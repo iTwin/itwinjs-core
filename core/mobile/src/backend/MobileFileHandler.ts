@@ -50,7 +50,7 @@ export class DownloadFailed extends BentleyError {
 }
 
 /** Error thrown when sas-url provided for download has expired
-  * @beta
+  * @internal
   */
 export class SasUrlExpired extends BentleyError {
   public constructor(errorNumber: number, message: string, getMetaData?: GetMetaDataFunction) {

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import "./PushPullField.scss";
 import * as React from "react";
-import { BeEvent } from "@itwin/core-bentley";
+import { BeEvent, UnexpectedErrors } from "@itwin/core-bentley";
 import {
   BriefcaseConnection, IModelApp, NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType,
 } from "@itwin/core-frontend";
@@ -74,7 +74,7 @@ class SyncManager {
         // });
         // }
       } catch (err: any) {
-        ErrorHandling.onUnexpectedError(err);
+        UnexpectedErrors.handle(err);
       }
     }
   }
@@ -88,7 +88,7 @@ class SyncManager {
       // Bootstrap the process by finding out if the briefcase has local txns already.
       this.state.mustPush = await this.briefcaseConnection.hasPendingTxns();
     } catch (err: any) {
-      ErrorHandling.onUnexpectedError(err);
+      UnexpectedErrors.handle(err);
     }
 
     this.onStateChange.raiseEvent();
@@ -165,8 +165,8 @@ export class PushPullStatusField extends React.Component<StatusFieldProps, PushP
   public override componentDidMount(): void {
     if (SyncManager.briefcaseConnection) {
       SyncManager.onStateChange.addListener(this.syncState);
-      SyncManager.initializeLocalChangesListener().catch((err) => ErrorHandling.onUnexpectedError(err));
-      SyncManager.initializeChangesetListener().catch((err) => ErrorHandling.onUnexpectedError(err));
+      SyncManager.initializeLocalChangesListener().catch((err) => UnexpectedErrors.handle(err));
+      SyncManager.initializeChangesetListener().catch((err) => UnexpectedErrors.handle(err));
     }
   }
 
