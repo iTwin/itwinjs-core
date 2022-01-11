@@ -51,6 +51,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   private _scheduleState?: RenderScheduleState;
   private _ellipsoidMapGeometry: BackgroundMapGeometry | undefined;
   private _attachedRealityModelPlanarClipMasks = new Map<Id64String, PlanarClipMaskState>();
+  private _queryRenderTimelinePropsPromise?: Promise<RenderTimelineProps | undefined>;
+
   /** Event raised just before the [[scheduleScriptReference]] property is changed. */
   public readonly onScheduleScriptReferenceChanged = new BeEvent<(newScriptReference: RenderSchedule.ScriptReference | undefined) => void>();
   /** Event raised just after [[setOSMBuildingDisplay]] changes the enabled state of the OSM buildings. */
@@ -112,7 +114,14 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       let script;
       let sourceId;
       if (timelineId) {
-        const timeline = await this.iModel.elements.loadProps(timelineId, { renderTimeline: { omitScriptElementIds: true } }) as RenderTimelineProps;
+        // If a subsequent call to loadScheduleState is made while we're awaiting this one, abort this one.
+        const promise = this._queryRenderTimelinePropsPromise = this.queryRenderTimelineProps(timelineId);
+        const timeline = await promise;
+        if (promise !== this._queryRenderTimelinePropsPromise)
+          return;
+
+        this._queryRenderTimelinePropsPromise = undefined;
+
         if (timeline) {
           const scriptProps = JSON.parse(timeline.script);
           script = RenderSchedule.Script.fromJSON(scriptProps);
@@ -133,6 +142,15 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     if (newState !== this._scheduleState) {
       this.onScheduleScriptReferenceChanged.raiseEvent(newState);
       this._scheduleState = newState;
+    }
+  }
+
+  /** @internal */
+  protected async queryRenderTimelineProps(timelineId: Id64String): Promise<RenderTimelineProps | undefined> {
+    try {
+      return await this.iModel.elements.loadProps(timelineId, { renderTimeline: { omitScriptElementIds: true } }) as RenderTimelineProps;
+    } catch (_) {
+      return undefined;
     }
   }
 
