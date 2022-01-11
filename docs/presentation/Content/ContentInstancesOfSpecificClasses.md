@@ -10,7 +10,6 @@ A specification that creates content for  instances of specific ECClasses.
 | ------------------------------------------------------------------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------- | ------- |
 | *Filtering*                                                                     |
 | [`classes`](#attribute-classes)                                                 | Yes       | [`MultiSchemaClassesSpecification \| MultiSchemaClassesSpecification[]`](../Common-Rules/MultiSchemaClassesSpecification.md) | `[]`    |
-| [`handleInstancesPolymorphically`](#attribute-handleinstancespolymorphically)   | No        | `boolean`                                                                                                                    | `false` |
 | [`handlePropertiesPolymorphically`](#attribute-handlepropertiespolymorphically) | No        | `boolean`                                                                                                                    | `false` |
 | [`instanceFilter`](#attribute-instancefilter)                                   | No        | [ECExpression](./ECExpressions.md#instance-filter)                                                                           | `""`    |
 | [`onlyIfNotHandled`](#attribute-onlyifnothandled)                               | No        | boolean                                                                                                                      | `false` |
@@ -98,10 +97,9 @@ Specifications of [related properties](./RelatedPropertiesSpecification.md) whic
 [[include:ContentInstancesOfSpecificClasses.RelatedProperties.Ruleset]]
 ```
 
-  |         | Result                                                                                                                    |
-  | ------- | ------------------------------------------------------------------------------------------------------------------------- |
-  | without | ![Example when doing normal property select](./media/contentinstancesofspecificclasses-with-relatedproperties-1.png)      |
-  | with    | ![Example when selecting with related properties](./media/contentinstancesofspecificclasses-with-relatedproperties-2.png) |
+  | without related properties                                                                                           | with related properties                                                                                              |
+  | -------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+  | ![Example when doing normal property select](./media/contentinstancesofspecificclasses-with-relatedproperties-1.png) | ![Example when doing normal property select](./media/contentinstancesofspecificclasses-with-relatedproperties-2.png) |
 
 ### Attribute: `calculatedProperties`
 
@@ -166,7 +164,7 @@ Specifications of [related instances](../Common-Rules/RelatedInstanceSpecificati
   |                                                                   | Result                                                                                                                                                 |
   | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
   | `SpatialViewDefinition` instances                                 | ![A list of spatial view definitions](./media/contentinstancesofspecificclasses-with-relatedinstances-3.png)                                           |
-  | `ModelSelector` instances                                         | ![A list of model selectors](./media/contentinstancesofspecificclasses-with-relatedinstances-2.png)                                               |
+  | `ModelSelector` instances                                         | ![A list of model selectors](./media/contentinstancesofspecificclasses-with-relatedinstances-2.png)                                                    |
   | `ModelSelector` instances filtered by `SpatialViewDefinition.Yaw` | ![A list of model selectors filtered by yaw of related spatial view definition](./media/contentinstancesofspecificclasses-with-relatedinstances-1.png) |
 
 ## Deprecated Attributes
