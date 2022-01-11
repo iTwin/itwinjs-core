@@ -38,7 +38,7 @@ Either a single or an array of specifications may be specified for this attribut
 Specifies an [ECExpression](./ECExpressions.md#instance-filter) for filtering instances of ECClasses targeted through the [`relationshipPaths` attribute](#attribute-relationshippaths).
 
 ```ts
-[[include:ContentRelatedInstances.InstanceFilter.Ruleset]]
+[[include:SharedAttributes.InstanceFilter.Ruleset]]
 ```
 
   |                | Result                                                                                                       |
@@ -53,7 +53,7 @@ Specifies an [ECExpression](./ECExpressions.md#instance-filter) for filtering in
 Identifies whether we should ignore this specification if another specification was already handled (based on rule priorities and definition order). Should be used when defining a fallback specification.
 
 ```ts
-[[include:ContentRelatedInstances.OnlyIfNotHandled.Ruleset]]
+[[include:SharedAttributes.OnlyIfNotHandled.Ruleset]]
 ```
 
   | onlyIfNotHandled | Result                                                                                                         |
@@ -68,7 +68,7 @@ Identifies whether we should ignore this specification if another specification 
 Defines the order in which specifications are handled - higher priority means the specifications is handled first. If priorities are equal, the specifications are handled in the order they're defined.
 
 ```ts
-[[include:ContentRelatedInstances.Priority.Ruleset]]
+[[include:SharedAttributes.Priority.Ruleset]]
 ```
 
 ![Example of using priority attribute](./media/contentinstancesofspecificclasses-with-priority.png)
@@ -78,7 +78,7 @@ Defines the order in which specifications are handled - higher priority means th
 Specifications of [related properties](./RelatedPropertiesSpecification.md) which are included in the generated content.
 
 ```ts
-[[include:ContentRelatedInstances.RelatedProperties.Ruleset]]
+[[include:SharedAttributes.RelatedProperties.Ruleset]]
 ```
 
   |         | Result                                                                                                                    |
@@ -91,7 +91,7 @@ Specifications of [related properties](./RelatedPropertiesSpecification.md) whic
 Specifications of [calculated properties](./CalculatedPropertiesSpecification.md) whose values are generated using provided [ECExpressions](../Advanced/ECExpressions.md#ecinstance).
 
 ```ts
-[[include:ContentRelatedInstances.CalculatedProperties.Ruleset]]
+[[include:SharedAttributes.CalculatedProperties.Ruleset]]
 ```
 
 ![Example of using calculatedProperties attribute](./media/contentinstancesofspecificclasses-with-calculatedproperties.png)
@@ -103,7 +103,7 @@ Specifications of [custom categories](PropertyCategorySpecification.md).
 Simply defining the categories does nothing - they have to be referenced through [`PropertySpecification.categoryId`](./PropertySpecification.md) specified in [`propertyOverrides`](#attribute-propertyoverrides) list.
 
 ```ts
-[[include:ContentRelatedInstances.PropertyCategories.Ruleset]]
+[[include:SharedAttributes.PropertyCategories.Ruleset]]
 ```
 
 ![Example of using propertyCategories attribute](./media/contentinstancesofspecificclasses-with-propertycategories.png)
@@ -113,7 +113,7 @@ Simply defining the categories does nothing - they have to be referenced through
 Specifications of various [property overrides](./PropertySpecification.md) that allow customizing individual properties display.
 
 ```ts
-[[include:ContentRelatedInstances.PropertyOverrides.Ruleset]]
+[[include:SharedAttributes.PropertyOverrides.Ruleset]]
 ```
 
   |        | Result                                                                                                                    |
@@ -128,7 +128,7 @@ Specifications of various [property overrides](./PropertySpecification.md) that 
 Should image IDs be calculated for the returned instances. When `true`, [ImageIdOverride](../customization/ImageIdOverride.md) rules get applied when creating content.
 
 ```ts
-[[include:ContentRelatedInstances.ShowImages.Ruleset]]
+[[include:SharedAttributes.ShowImages.Ruleset]]
 ```
 
 ### Attribute: `relatedInstances`
@@ -146,7 +146,7 @@ Specifications of [related instances](../Common-Rules/RelatedInstanceSpecificati
   [alias](../Common-Rules/RelatedInstanceSpecification.md).
 
 ```ts
-[[include:ContentRelatedInstances.RelatedInstances.Ruleset]]
+[[include:SharedAttributes.RelatedInstances.Ruleset]]
 ```
 
   |                                                                   | Result                                                                                                                                                 |

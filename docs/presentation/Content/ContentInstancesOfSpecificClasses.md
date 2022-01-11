@@ -54,7 +54,7 @@ Specifies whether properties of derived `classes` should be included in the cont
 Specifies an [ECExpression](./ECExpressions.md#instance-filter) for filtering instances of ECClasses specified through the [`classes` attribute](#attribute-classes).
 
 ```ts
-[[include:ContentInstancesOfSpecificClasses.InstanceFilter.Ruleset]]
+[[include:SharedAttributes.InstanceFilter.Ruleset]]
 ```
 
   |                | Result                                                                                                       |
@@ -69,7 +69,7 @@ Specifies an [ECExpression](./ECExpressions.md#instance-filter) for filtering in
 Identifies whether we should ignore this specification if another specification was already handled (based on rule priorities and definition order). Should be used when defining a fallback specification.
 
 ```ts
-[[include:ContentInstancesOfSpecificClasses.OnlyIfNotHandled.Ruleset]]
+[[include:SharedAttributes.OnlyIfNotHandled.Ruleset]]
 ```
 
   | onlyIfNotHandled | Result                                                                                                         |
@@ -84,7 +84,7 @@ Identifies whether we should ignore this specification if another specification 
 Defines the order in which specifications are handled - higher priority means the specifications is handled first. If priorities are equal, the specifications are handled in the order they're defined.
 
 ```ts
-[[include:ContentInstancesOfSpecificClasses.Priority.Ruleset]]
+[[include:SharedAttributes.Priority.Ruleset]]
 ```
 
 ![Example of using priority attribute](./media/contentinstancesofspecificclasses-with-priority.png)
@@ -94,7 +94,7 @@ Defines the order in which specifications are handled - higher priority means th
 Specifications of [related properties](./RelatedPropertiesSpecification.md) which are included in the generated content.
 
 ```ts
-[[include:ContentInstancesOfSpecificClasses.RelatedProperties.Ruleset]]
+[[include:SharedAttributes.RelatedProperties.Ruleset]]
 ```
 
   | without related properties                                                                                           | with related properties                                                                                              |
@@ -106,7 +106,7 @@ Specifications of [related properties](./RelatedPropertiesSpecification.md) whic
 Specifications of [calculated properties](./CalculatedPropertiesSpecification.md) whose values are generated using provided [ECExpressions](../Advanced/ECExpressions.md#ecinstance).
 
 ```ts
-[[include:ContentInstancesOfSpecificClasses.CalculatedProperties.Ruleset]]
+[[include:SharedAttributes.CalculatedProperties.Ruleset]]
 ```
 
 ![Example of using calculatedProperties attribute](./media/contentinstancesofspecificclasses-with-calculatedproperties.png)
@@ -118,7 +118,7 @@ Specifications of [custom categories](PropertyCategorySpecification.md).
 Simply defining the categories does nothing - they have to be referenced through [`PropertySpecification.categoryId`](./PropertySpecification.md) specified in [`propertyOverrides`](#attribute-propertyoverrides) list.
 
 ```ts
-[[include:ContentInstancesOfSpecificClasses.PropertyCategories.Ruleset]]
+[[include:SharedAttributes.PropertyCategories.Ruleset]]
 ```
 
 ![Example of using propertyCategories attribute](./media/contentinstancesofspecificclasses-with-propertycategories.png)
@@ -128,7 +128,7 @@ Simply defining the categories does nothing - they have to be referenced through
 Specifications of various [property overrides](./PropertySpecification.md) that allow customizing individual properties display.
 
 ```ts
-[[include:ContentInstancesOfSpecificClasses.PropertyOverrides.Ruleset]]
+[[include:SharedAttributes.PropertyOverrides.Ruleset]]
 ```
 
   |        | Result                                                                                                                    |
@@ -158,7 +158,7 @@ Specifications of [related instances](../Common-Rules/RelatedInstanceSpecificati
   [alias](../Common-Rules/RelatedInstanceSpecification.md).
 
 ```ts
-[[include:ContentInstancesOfSpecificClasses.RelatedInstances.Ruleset]]
+[[include:SharedAttributes.RelatedInstances.Ruleset]]
 ```
 
   |                                                                   | Result                                                                                                                                                 |
