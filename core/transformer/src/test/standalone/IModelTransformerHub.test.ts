@@ -331,6 +331,7 @@ describe("IModelTransformerHub", () => {
   });
 
   it("should merge changes made on a branch back to master", async () => {
+    // __PUBLISH_EXTRACT_START__ IModelBranchingSamples.synchronizationTest
     // create and push master IModel
     const masterIModelName = "Master";
     const masterSeedFileName = join(outputDir, `${masterIModelName}.bim`);
@@ -555,6 +556,7 @@ describe("IModelTransformerHub", () => {
       await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId: branchIModelId2 });
       await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId: replayedIModelId });
     }
+    // __PUBLISH_EXTRACT_END__
   });
 
   function count(iModelDb: IModelDb, classFullName: string): number {

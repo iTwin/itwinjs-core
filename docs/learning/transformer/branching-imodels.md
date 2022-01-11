@@ -42,7 +42,7 @@ the forward synchronizations from master and one for reverse synchronizations fr
 
 ### Provenance, element Ids, and federation guids
 
-Element Ids are local to an [iModel briefcase](/FIXME), and transformations do not preserve them. However, federation guids
+Element Ids are [local to an iModel briefcase](/learning/common/id64), and transformations do not preserve them. However, federation guids
 (globally-unique-identifiers) are preserved.
 
 Generally, it is possible for a transformation to involve operations such as "splitting" an existing element into multiple different
@@ -50,8 +50,6 @@ elements, for which federation guids and element ids cannot be used to correlate
 
 As a convenience function to existing applications that may want to rely on branches having similar element Id spaces, there is a
 preserveElementIds during filter operation.
-
-FIXME^^
 
 ### More on provenance
 
@@ -91,9 +89,9 @@ When two elements are detected as the same, the synchronization target's version
 the user of the transformer to check whether the element has been changed in both and handle any perceived conflicts.
 Some data in the iModel follows more specific rules for conflicts:
 
-- [ECSchemas](/https://www.itwinjs.org/bis/ec/ec-schema/) are never merged automatically, they will not be inserted into the target
+- [ECSchemas](/bis/ec/ec-schema/) are never merged automatically, they will not be inserted into the target
   if the same version already exists in it.
-- [File properties](https://www.itwinjs.org/reference/imodeljs-backend/imodels/imodeldb/savefileproperty/) are not carried over through transformations
+- File properties<!--missing documentation--> are not carried over through transformations
 
 <!-- If you need schema merging (see [dynamic schemas](/docs/bis/intro/schema-customization.md#Dynamic-Schema-Minor-Change-Considerations)) -->
 
@@ -217,9 +215,8 @@ await masterDb.pushChanges({
 
 ### Complete synchronization examples
 
-More in depth samples exist in the tests for the `@itwin/core-transformer` package, and are replicated here.
+More in depth samples exist in the tests for the
+[`@itwin/core-transformer`](https://github.com/iTwin/itwinjs-core/blob/master/core/transformer/src/test/standalone/IModelTransformerHub.test.ts)
+package, and are partially replicated here.
 
-// FIXME use the [[include:]] directive to include some examples from tests rather than linking to it
-
-For more in depth examples, you can read some of the "branch" tests [here](https://github.com/iTwin/itwinjs-core/blob/master/core/transformer/src/test/standalone/IModelTransformerHub.test.ts)
-in the iTwin.js source repository.
+[[include:IModelBranchingSamples.synchronizationTest]]
