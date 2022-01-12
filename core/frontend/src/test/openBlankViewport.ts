@@ -18,6 +18,8 @@ export interface BlankViewportOptions {
   width?: number;
   /** iModel. If undefined, a new blank connection will be created. */
   iModel?: BlankConnection;
+  /** The position of the containing div. */
+  position?: "absolute";
 }
 
 /** Open a viewport for a blank spatial view.
@@ -36,6 +38,10 @@ export function openBlankViewport(options?: BlankViewportOptions): ScreenViewpor
   parentDiv.setAttribute("width", wPx);
   parentDiv.style.height = hPx;
   parentDiv.style.width = wPx;
+
+  if (options?.position)
+    parentDiv.style.position = options.position;
+
   document.body.appendChild(parentDiv);
 
   const view = SpatialViewState.createBlank(iModel, { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 });
