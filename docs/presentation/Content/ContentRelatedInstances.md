@@ -31,7 +31,7 @@ Either a single or an array of specifications may be specified for this attribut
 ```ts
 [[include:ContentRelatedInstances.RelationshipPaths.Ruleset]]
 ```
-![Example of using calculatedProperties attribute](./media/contentrelatedInstances-with-relationshippaths.png)
+![Example of using "relationship paths" attribute](./media/contentrelatedinstances-with-relationshippaths.png)
 
 ### Attribute: `instanceFilter`
 
@@ -71,7 +71,7 @@ Defines the order in which specifications are handled - higher priority means th
 [[include:SharedAttributes.Priority.Ruleset]]
 ```
 
-![Example of using priority attribute](./media/contentinstancesofspecificclasses-with-priority.png)
+![Example of using "priority" attribute](./media/contentinstancesofspecificclasses-with-priority.png)
 
 ### Attribute: `relatedProperties`
 
@@ -81,10 +81,10 @@ Specifications of [related properties](./RelatedPropertiesSpecification.md) whic
 [[include:SharedAttributes.RelatedProperties.Ruleset]]
 ```
 
-  |         | Result                                                                                                                    |
-  | ------- | ------------------------------------------------------------------------------------------------------------------------- |
-  | without | ![Example when doing normal property select](./media/contentinstancesofspecificclasses-with-relatedproperties-1.png)      |
-  | with    | ![Example when selecting with related properties](./media/contentinstancesofspecificclasses-with-relatedproperties-2.png) |
+  |         | Result                                                                                                                      |
+  | ------- | --------------------------------------------------------------------------------------------------------------------------- |
+  | without | ![Example when doing normal property select](./media/contentinstancesofspecificclasses-with-relatedproperties-1.png)        |
+  | with    | ![Example when selecting with "related properties"](./media/contentinstancesofspecificclasses-with-relatedproperties-2.png) |
 
 ### Attribute: `calculatedProperties`
 
@@ -94,7 +94,7 @@ Specifications of [calculated properties](./CalculatedPropertiesSpecification.md
 [[include:SharedAttributes.CalculatedProperties.Ruleset]]
 ```
 
-![Example of using calculatedProperties attribute](./media/contentinstancesofspecificclasses-with-calculatedproperties.png)
+![Example of using "calculated properties" attribute](./media/contentinstancesofspecificclasses-with-calculatedproperties.png)
 
 ### Attribute: `propertyCategories`
 
@@ -106,7 +106,7 @@ Simply defining the categories does nothing - they have to be referenced through
 [[include:SharedAttributes.PropertyCategories.Ruleset]]
 ```
 
-![Example of using propertyCategories attribute](./media/contentinstancesofspecificclasses-with-propertycategories.png)
+![Example of using "property categories" attribute](./media/contentinstancesofspecificclasses-with-propertycategories.png)
 
 ### Attribute: `propertyOverrides`
 
@@ -126,10 +126,6 @@ Specifications of various [property overrides](./PropertySpecification.md) that 
 > **Default value:** `false`
 
 Should image IDs be calculated for the returned instances. When `true`, [ImageIdOverride](../customization/ImageIdOverride.md) rules get applied when creating content.
-
-```ts
-[[include:SharedAttributes.ShowImages.Ruleset]]
-```
 
 ### Attribute: `relatedInstances`
 
@@ -152,5 +148,5 @@ Specifications of [related instances](../Common-Rules/RelatedInstanceSpecificati
   |                                                                   | Result                                                                                                                                                 |
   | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
   | `SpatialViewDefinition` instances                                 | ![A list of spatial view definitions](./media/contentinstancesofspecificclasses-with-relatedinstances-3.png)                                           |
-  | `ModelSelector` instances                                         | ![A list of model selectors](./media/contentinstancesofspecificclasses-with-relatedinstances-2.png)                                               |
+  | `ModelSelector` instances                                         | ![A list of model selectors](./media/contentinstancesofspecificclasses-with-relatedinstances-2.png)                                                    |
   | `ModelSelector` instances filtered by `SpatialViewDefinition.Yaw` | ![A list of model selectors filtered by yaw of related spatial view definition](./media/contentinstancesofspecificclasses-with-relatedinstances-1.png) |
