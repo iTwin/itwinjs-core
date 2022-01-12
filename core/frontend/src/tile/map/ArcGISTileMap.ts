@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { getJson} from "@bentley/itwin-client";
+import { request } from "../../request/Request";
 import { assert, compareStrings, Dictionary } from "@itwin/core-bentley";
 import { QuadId } from "../internal";
 
@@ -27,7 +27,11 @@ export class ArcGISTileMap {
 
   }
   protected async fetchTileMapFromServer(level: number, row: number, column: number, width: number, height: number): Promise<any> {
-    return getJson(`${this._restBaseUrl}/tilemap/${level}/${row}/${column}/${width}/${height}?f=json`);
+    const data = await request(`${this._restBaseUrl}/tilemap/${level}/${row}/${column}/${width}/${height}?f=json`, {
+      method: "GET",
+      responseType: "json",
+    });
+    return data.body;
   }
 
   protected getAvailableTilesFromCache(tiles: QuadId[]): {allTilesFound: boolean, available: boolean[]} {

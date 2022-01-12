@@ -55,13 +55,6 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/itwin-client",
-      "projectFolder": "clients/itwin",
-      "reviewCategory": "common",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
       "packageName": "@itwin/core-telemetry",
       "projectFolder": "core/telemetry",
       "reviewCategory": "common",
