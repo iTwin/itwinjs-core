@@ -330,6 +330,8 @@ internal;LRUTileListNode
 public;ManipulatorToolEvent
 internal;MapBoxLayerImageryProvider 
 internal;MapCartoRectangle 
+internal;MapLayerAuthenticationInfo
+beta;MapLayerAuthType
 internal;MapLayerFormat
 internal;MapLayerFormatRegistry
 internal;MapLayerFormatType = typeof MapLayerFormat
@@ -341,6 +343,7 @@ internal;MapLayerSources
 internal;MapLayerSourceStatus
 internal;MapLayerSourceValidation
 internal;class MapLayerTileTreeReference 
+internal;MapLayerTokenEndpoint
 internal;MapTile 
 internal;MapTiledGraphicsProvider 
 internal;MapTileLoader 
