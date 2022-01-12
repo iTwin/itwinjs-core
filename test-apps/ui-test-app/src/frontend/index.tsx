@@ -155,6 +155,12 @@ interface SampleIModelParams {
   stageId?: string;
 }
 
+interface ProgressInfo {
+  percent?: number;
+  total?: number;
+  loaded: number;
+}
+
 export class SampleAppIModelApp {
   public static sampleAppNamespace?: string;
   public static iModelParams: SampleIModelParams | undefined;
