@@ -1598,7 +1598,7 @@ describe("IModelTransformer", () => {
     targetDb.close();
   });
 
-  it.only("IModelTransformer processes nav property predecessors even in generated classes", async () => {
+  it("IModelTransformer processes nav property predecessors even in generated classes", async () => {
     const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "GeneratedNavPropPredecessors-Source.bim");
     const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "GeneratedNavPropPredecessors" } });
 
@@ -1688,6 +1688,115 @@ describe("IModelTransformer", () => {
 
     expect(getNavPropContent(sourceDb)).to.have.length(1);
     expect(getNavPropContent(targetDb)).to.have.length(1);
+
+    sourceDb.close();
+    targetDb.close();
+  });
+
+  it.only("local test", async () => {
+    const sourceDb = SnapshotDb.openFile("/tmp/bad-relationships-source.bim");
+
+    const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "GeneratedNavPropPredecessors-Target.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
+
+    const transformer = new IModelTransformer(sourceDb, targetDb, { loadSourceGeometry: true });
+    await transformer.processSchemas();
+    await transformer.processAll();
+
+    targetDb.saveChanges();
+
+    const sourceToTargetMap = new Map<Element, Element | undefined>();
+    const targetToSourceMap = new Map<Element, Element | undefined>();
+    const targetElemIds = new Set<Id64String>();
+
+    for await (const [sourceElemId] of sourceDb.query("SELECT ECInstanceId FROM bis.Element")) {
+      const targetElemId =
+        transformer.context.findTargetElementId(sourceElemId);
+      const sourceElem = sourceDb.elements.getElement(sourceElemId);
+      const targetElem = targetDb.elements.tryGetElement(targetElemId);
+      // expect(targetElem.toExist)
+      sourceToTargetMap.set(sourceElem, targetElem);
+      if (targetElem) {
+        targetElemIds.add(targetElemId);
+        targetToSourceMap.set(targetElem, sourceElem);
+        for (const [propName, prop] of Object.entries(
+          sourceElem.getClassMetaData()!.properties
+        ) ?? []) {
+          if (prop.isNavigation) {
+            let relationTargetInSourceId!: Id64String;
+            let relationTargetInTargetId!: Id64String;
+            expect(sourceElem.classFullName).to.equal(targetElem.classFullName);
+            // some custom handled classes make it difficult to inspect the element props directly with the metadata prop name, so we do this instead
+            const sql = `SELECT ${propName}.Id from ${sourceElem.classFullName} WHERE ECInstanceId=:id`;
+            sourceDb.withPreparedStatement(sql, (stmt) => {
+              stmt.bindId("id", sourceElemId);
+              stmt.step();
+              relationTargetInSourceId = stmt.getValue(0).getId() ?? Id64.invalid;
+            });
+            targetDb.withPreparedStatement(sql, (stmt) => {
+              stmt.bindId("id", targetElemId);
+              expect(stmt.step()).to.equal(DbResult.BE_SQLITE_ROW);
+              relationTargetInTargetId = stmt.getValue(0).getId() ?? Id64.invalid;
+            });
+            const mappedRelationTargetInTargetId = transformer.context.findTargetElementId(relationTargetInSourceId);
+            const _equal = deepEqual(relationTargetInTargetId, mappedRelationTargetInTargetId, { strict: true });
+            expect(relationTargetInTargetId).to.equal(mappedRelationTargetInTargetId);
+          } else {
+            const _equal = deepEqual(
+              targetElem.asAny[propName],
+              sourceElem.asAny[propName],
+              { strict: true }
+            );
+            expect(targetElem.asAny[propName]).to.deep.equal(
+              sourceElem.asAny[propName]
+            );
+          }
+        }
+        const expectedSourceElemJsonProps = { ...sourceElem.jsonProperties };
+
+        // START jsonProperties TRANSFORMATION EXCEPTIONS
+        // the transformer does not propagate source channels which are stored in Subject.jsonProperties.Subject.Job
+        if (sourceElem instanceof Subject) {
+          if (sourceElem.jsonProperties?.Subject?.Job) {
+            if (!expectedSourceElemJsonProps.Subject)
+              expectedSourceElemJsonProps.Subject = {};
+            expectedSourceElemJsonProps.Subject.Job = undefined;
+          }
+        }
+        if (sourceElem instanceof DisplayStyle3d) {
+          if (sourceElem.jsonProperties?.styles?.environment?.sky?.image?.texture === Id64.invalid) {
+            delete expectedSourceElemJsonProps.styles.environment.sky.image.texture;
+          }
+          if (!sourceElem.jsonProperties?.styles?.environment?.sky?.twoColor) {
+            expectedSourceElemJsonProps.styles.environment.sky.twoColor = false;
+          }
+        }
+        // END jsonProperties TRANSFORMATION EXCEPTIONS
+
+        const _strictEqual = deepEqual(
+          targetElem.jsonProperties,
+          expectedSourceElemJsonProps,
+          { strict: true }
+        );
+        expect(targetElem.jsonProperties).to.deep.equal(
+          expectedSourceElemJsonProps
+        );
+        const _test = 5;
+      }
+    }
+
+    for await (const [targetElemId] of targetDb.query("SELECT ECInstanceId FROM bis.Element")) {
+      if (!targetElemIds.has(targetElemId)) {
+        const targetElem = targetDb.elements.getElement(targetElemId);
+        targetToSourceMap.set(targetElem, undefined);
+      }
+    }
+
+    const onlyInSourceElements = [...sourceToTargetMap].filter(([_inSource, inTarget]) => inTarget === undefined);
+    const onlyInTargetElements = [...targetToSourceMap].filter(([_inTarget, inSource]) => inSource === undefined);
+
+    expect(onlyInSourceElements).to.have.length(2);
+    expect(onlyInTargetElements).to.have.length(2);
 
     sourceDb.close();
     targetDb.close();
