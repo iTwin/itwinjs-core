@@ -2628,6 +2628,18 @@ export namespace ElementGeometry {
     export function updateGeometryParams(entry: ElementGeometryDataEntry, geomParams: GeometryParams, localToWorld?: Transform): boolean;
 }
 
+// @alpha
+export interface ElementGeometryBuilderParams {
+    entryArray: ElementGeometryDataEntry[];
+    viewIndependent?: boolean;
+}
+
+// @alpha
+export interface ElementGeometryBuilderParamsForPart {
+    entryArray: ElementGeometryDataEntry[];
+    is2dPart?: boolean;
+}
+
 // @public (undocumented)
 export type ElementGeometryChange = ExtantElementGeometryChange | DeletedElementGeometryChange;
 
@@ -3525,6 +3537,8 @@ export interface GeometricElement3dProps extends GeometricElementProps {
 // @public
 export interface GeometricElementProps extends ElementProps {
     category: Id64String;
+    // @alpha
+    elementGeometryBuilderParams?: ElementGeometryBuilderParams;
     geom?: GeometryStreamProps;
     placement?: PlacementProps;
 }
@@ -3632,6 +3646,8 @@ export interface GeometryPartInstanceProps {
 export interface GeometryPartProps extends ElementProps {
     // (undocumented)
     bbox?: LowAndHighXYZ;
+    // @alpha
+    elementGeometryBuilderParams?: ElementGeometryBuilderParamsForPart;
     // (undocumented)
     geom?: GeometryStreamProps;
 }

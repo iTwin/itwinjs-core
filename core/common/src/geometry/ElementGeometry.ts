@@ -126,6 +126,27 @@ export interface ElementGeometryRequest {
   minBRepFeatureSize?: number;
 }
 
+/** Parameters for building the geometry stream of a [[GeometricElement]] using ElementGeometry.Builder
+ * Note: The geometry stream is always in local coordinates, that is, relative to the element's [[Placement]].
+ * @alpha
+ */
+export interface ElementGeometryBuilderParams {
+  /** The geometry stream data */
+  entryArray: ElementGeometryDataEntry[];
+  /** If true, create geometry that displays oriented to face the camera */
+  viewIndependent?: boolean;
+}
+
+/** Parameters for building the geometry stream of a [[GeometryPart]] using ElementGeometry.Builder.
+ * @alpha
+ */
+export interface ElementGeometryBuilderParamsForPart {
+  /** The geometry stream data */
+  entryArray: ElementGeometryDataEntry[];
+  /** If true, create geometry part with 2d geometry */
+  is2dPart?: boolean;
+}
+
 /** Parameters for [IModelDb.elementGeometryUpdate]($core-backend)
  * @alpha
  */
