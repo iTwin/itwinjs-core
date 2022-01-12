@@ -5,11 +5,14 @@
 
 import { expect } from "chai";
 import { UnexpectedErrors } from "@itwin/core-bentley";
-import { AnalysisStyle } from "@itwin/core-common";
+import { Point2d } from "@itwin/core-geometry";
+import { AnalysisStyle, ColorDef, ImageBuffer, ImageBufferFormat } from "@itwin/core-common";
 import { ScreenViewport } from "../Viewport";
 import { DisplayStyle3dState } from "../DisplayStyleState";
 import { IModelApp } from "../IModelApp";
 import { openBlankViewport, testBlankViewport } from "./openBlankViewport";
+import { DecorateContext } from "../ViewContext";
+import { GraphicType } from "../render/GraphicBuilder";
 
 describe("Viewport", () => {
   before(async () => IModelApp.startup());
@@ -198,6 +201,89 @@ describe("Viewport", () => {
   });
 
   describe("readImage", () => {
+    interface TestCase {
+      width: number;
+      image: ColorDef[];
+    }
 
+    class Decorator {
+      public constructor(public readonly image: ColorDef[], public readonly width: number, public readonly height: number) {
+        IModelApp.viewManager.addDecorator(this);
+      }
+
+      public decorate(context: DecorateContext): void {
+        const builder = context.createGraphicBuilder(GraphicType.ViewOverlay);
+        for (let x = 0; x < this.width; x++) {
+          for (let y = 0; y < this.height; y++) {
+            const color = this.image[x + y * this.height];
+            builder.setSymbology(color, color, 1);
+            builder.addPointString2d([new Point2d(x + 0.5, y + 0.5)], 0);
+          }
+        }
+
+        context.addDecorationFromBuilder(builder);
+      }
+    }
+
+    function test(testCase: TestCase, func: (viewport: ScreenViewport) => void): void {
+      const height = testCase.image.length / testCase.width;
+      expect(height).to.equal(Math.floor(height));
+
+      testBlankViewport({
+        width: testCase.width,
+        height,
+        position: "absolute",
+        test: (viewport) => {
+          expect(viewport.viewRect.width).to.equal(testCase.width);
+          expect(viewport.viewRect.height).to.equal(height);
+
+          const decorator = new Decorator(testCase.image, testCase.width, height);
+          try {
+            viewport.renderFrame();
+            func(viewport);
+          } finally {
+            IModelApp.viewManager.dropDecorator(decorator);
+          }
+        },
+      });
+    }
+
+    function expectColors(image: ImageBuffer, expectedColors: ColorDef[]): void {
+      expect(image.width * image.height).to.equal(expectedColors.length);
+      expect(image.format).to.equal(ImageBufferFormat.Rgba);
+
+      const expected = expectedColors.map((x) => x.tbgr.toString(16));
+      const actual: string[] = [];
+      for (let i = 0; i < expected.length; i++) {
+        const offset = i * 4;
+        actual.push(ColorDef.from(image.data[offset], image.data[offset + 1], image.data[offset + 2], 0xff - image.data[offset + 3]).tbgr.toString(16));
+      }
+
+      expect(actual).to.deep.equal(expected);
+    }
+
+    const rgbw: TestCase = {
+      width: 2,
+      image: [
+        ColorDef.red, ColorDef.green,
+        ColorDef.blue, ColorDef.white,
+      ],
+    };
+
+    it("reads image upside down (BUG)", () => {
+      test(rgbw, (viewport) => {
+        const image = viewport.readImage()!;
+        expect(image).not.to.be.undefined;
+        expectColors(image, [ ColorDef.blue, ColorDef.white, ColorDef.red, ColorDef.green ]);
+      });
+    });
+
+    it("flips image vertically", () => {
+      test(rgbw, (viewport) => {
+        const image = viewport.readImage(undefined, undefined, true)!;
+        expect(image).not.to.be.undefined;
+        expectColors(image, rgbw.image);
+      });
+    });
   });
 });
