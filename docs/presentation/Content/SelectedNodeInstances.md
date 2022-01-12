@@ -26,7 +26,9 @@ Returns content for selected (input) instances.
 
 ### Attribute: `acceptableSchemaName`
 
-Filter selected nodes by specified schema name. All schemas are accepted if not specified.
+>> **Default behaviour:** All schema names accepted
+
+Specifies ECSchema name which the input instances have to match for the specification to be used.
 
 ```ts
 [[include:SelectedNodeInstances.AcceptableSchemaName.Ruleset]]
@@ -40,7 +42,9 @@ Filter selected nodes by specified schema name. All schemas are accepted if not 
 
 ### Attribute: `acceptableClassNames`
 
-Filter selected nodes by specified class names. All classes are accepted if not specified.
+>> **Default behaviour:** All class names accepted
+
+Specifies a list of class names which the input instances have to match for the specification to be used.
 
 ```ts
 [[include:SelectedNodeInstances.AcceptableClassNames.Ruleset]]
@@ -53,7 +57,9 @@ Filter selected nodes by specified class names. All classes are accepted if not 
 
 ### Attribute: `acceptablePolymorphically`
 
-Should `acceptableClassNames` property be checked polymorphically. If true, all derived classes are accepted as well.
+> **Default value:** `false`
+
+Specifies whether derived classes of `acceptableClassNames` should be included in the content.
 
 ```ts
 [[include:SelectedNodeInstances.AcceptablePolymorphically.Ruleset]]
