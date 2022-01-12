@@ -3,9 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { IModelApp, UserPreferencesAccess } from "@itwin/core-frontend";
-import { MapLayersUiItemsProvider, MapLayersWidgetControl } from "./ui/MapLayersUiItemsProvider";
+import { MapLayersUiItemsProvider } from "./ui/MapLayersUiItemsProvider";
 import { UiItemsManager } from "@itwin/appui-abstract";
-import { ConfigurableUiManager } from "@itwin/appui-react";
 
 /** MapLayersUI is use when the package is used as a dependency to another app.
  * '''ts
