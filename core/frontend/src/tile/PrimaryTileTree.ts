@@ -452,7 +452,7 @@ export function createMaskTreeReference(view: ViewState, model: GeometricModelSt
 }
 
 /** @internal */
-export class ClassifierMapLayerTileTreeReference extends MapLayerTileTreeReference {
+export class ModelMapLayerTileTreeReference extends MapLayerTileTreeReference {
   private _id: PrimaryTreeId;
   private _owner: TileTreeOwner;
   public get isPlanar() { return true; }
@@ -500,9 +500,9 @@ export class ClassifierMapLayerTileTreeReference extends MapLayerTileTreeReferen
   }
 }
 /** @internal */
-export function createMapLayerClassifierTileTreeReference(layerSettings: ModelMapLayerSettings, layerIndex: number, iModel: IModelConnection): ClassifierMapLayerTileTreeReference | undefined {
+export function createModelMapLayerTileTreeReference(layerSettings: ModelMapLayerSettings, layerIndex: number, iModel: IModelConnection): ModelMapLayerTileTreeReference | undefined {
   const classifier =  SpatialClassifier.fromModelMapLayer(layerSettings);
-  return classifier ? new ClassifierMapLayerTileTreeReference(layerSettings, classifier, layerIndex, iModel) : undefined;
+  return classifier ? new ModelMapLayerTileTreeReference(layerSettings, classifier, layerIndex, iModel) : undefined;
 }
 
 /** Provides [[TileTreeReference]]s for the loaded models present in a [[SpatialViewState]]'s [[ModelSelectorState]].

@@ -190,7 +190,7 @@ export class RealityTileTree extends TileTree {
     }
 
     if (! (args instanceof GraphicsCollectorDrawArgs))
-      this.collectClassifierGraphics(args, selectedTiles);
+      this.collectModelLayerGraphics(args, selectedTiles);
 
     assert(selectedTiles.length === displayedTileDescendants.length);
     for (let i = 0; i < selectedTiles.length; i++) {
@@ -258,7 +258,7 @@ export class RealityTileTree extends TileTree {
       args.drawGraphicsWithType(graphicTypeBranch[0], graphicTypeBranch[1]);
     }
   }
-  protected collectClassifierGraphics(args: TileDrawArgs, selectedTiles: RealityTile[]) {
+  protected collectModelLayerGraphics(args: TileDrawArgs, selectedTiles: RealityTile[]) {
     const classifier = args.context.planarClassifiers.get(this.modelId);
     if (classifier)
       classifier.collectGraphics(args.context, { modelId: this.modelId, tiles: selectedTiles, location: args.location, isPointCloud: this.isPointCloud });

@@ -10,7 +10,7 @@ import { MapLayerSettings, ModelMapLayerSettings } from "@itwin/core-common";
 import { HitDetail } from "../../HitDetail";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
-import { createMapLayerClassifierTileTreeReference, MapLayerImageryProvider, TileTreeReference } from "../internal";
+import { createModelMapLayerTileTreeReference, MapLayerImageryProvider, TileTreeReference } from "../internal";
 
 /** @internal  */
 export abstract class MapLayerTileTreeReference extends TileTreeReference {
@@ -43,7 +43,7 @@ export abstract class MapLayerTileTreeReference extends TileTreeReference {
 
 export function createMapLayerTreeReference(layerSettings: MapLayerSettings, layerIndex: number, iModel: IModelConnection): MapLayerTileTreeReference | undefined {
   if (layerSettings instanceof ModelMapLayerSettings) {
-    return createMapLayerClassifierTileTreeReference(layerSettings, layerIndex, iModel);
+    return createModelMapLayerTileTreeReference(layerSettings, layerIndex, iModel);
   } else
     return IModelApp.mapLayerFormatRegistry.createImageryMapLayerTree(layerSettings, layerIndex, iModel);
 }

@@ -24,8 +24,7 @@ import { RenderPlanarClassifier } from "../../render/RenderPlanarClassifier";
 import { SceneContext } from "../../ViewContext";
 import { ScreenViewport } from "../../Viewport";
 import {
-  BingElevationProvider, ClassifierMapLayerTileTreeReference, createDefaultViewFlagOverrides,
-  createMapLayerTreeReference,
+  BingElevationProvider, createDefaultViewFlagOverrides, createMapLayerTreeReference,
   DisclosedTileTreeSet,
   EllipsoidTerrainProvider,
   getCesiumTerrainProvider,
@@ -37,6 +36,7 @@ import {
   MapTile,
   MapTileLoader,
   MapTilingScheme,
+  ModelMapLayerTileTreeReference,
   PlanarTilePatch,
   QuadId,
   RealityTile,
@@ -127,7 +127,7 @@ export class MapTileTree extends RealityTileTree {
   public imageryTrees: ImageryMapTileTree[] = [];
   private _layerSettings = new Map<Id64String, MapLayerSettings>();
   private _modelIdToIndex = new Map<Id64String, number>();
-  public layerClassifiers = new Map<number, RenderPlanarClassifier>();
+  public modelLayers = new Map<number, RenderPlanarClassifier>();
 
   public  addImageryLayer(tree: ImageryMapTileTree, settings: MapLayerSettings, index: number) {
     this.imageryTrees.push(tree);
@@ -135,27 +135,27 @@ export class MapTileTree extends RealityTileTree {
     this._modelIdToIndex.set(tree.modelId, index);
   }
 
-  public addClassifierLayer(layerTreeRef: ClassifierMapLayerTileTreeReference, context: SceneContext) {
+  public createModelLayer(layerTreeRef: ModelMapLayerTileTreeReference, context: SceneContext) {
     const classifier = context.addPlanarClassifier(`MapLayer ${this.modelId}-${layerTreeRef.layerIndex}`, layerTreeRef);
     if (classifier)
-      this.layerClassifiers.set(layerTreeRef.layerIndex, classifier);
+      this.modelLayers.set(layerTreeRef.layerIndex, classifier);
   }
 
-  protected override collectClassifierGraphics(args: TileDrawArgs, selectedTiles: RealityTile[]) {
-    super.collectClassifierGraphics(args, selectedTiles);
+  protected override collectModelLayerGraphics(args: TileDrawArgs, selectedTiles: RealityTile[]) {
+    super.collectModelLayerGraphics(args, selectedTiles);
 
-    this.layerClassifiers.forEach((layerClassifier: RenderPlanarClassifier) => {
+    this.modelLayers.forEach((layerClassifier: RenderPlanarClassifier) => {
       if (!(args instanceof GraphicsCollectorDrawArgs))
         layerClassifier.collectGraphics(args.context, { modelId: this.modelId, tiles: selectedTiles, location: args.location, isPointCloud: this.isPointCloud });
 
     });
   }
 
-  public clearImageryTreesAndClassifiers() {
+  public clearImageryTreesAndModelClassifiers() {
     this.imageryTrees.length = 0;
     this._layerSettings.clear();
     this._modelIdToIndex.clear();
-    this.layerClassifiers.clear();
+    this.modelLayers.clear();
   }
 
   public override get isTransparent() {
@@ -719,8 +719,8 @@ export class MapTileTreeReference extends TileTreeReference {
           return false; // Not loaded yet.
         if (layerTree instanceof ImageryMapTileTree) {
           tree.addImageryLayer(layerTree, layerTreeRef.layerSettings, treeIndex);
-        } else if (layerTreeRef instanceof ClassifierMapLayerTileTreeReference)
-          tree.addClassifierLayer(layerTreeRef, context);
+        } else if (layerTreeRef instanceof ModelMapLayerTileTreeReference)
+          tree.createModelLayer(layerTreeRef, context);
       }
     }
     return true;
@@ -752,7 +752,7 @@ export class MapTileTreeReference extends TileTreeReference {
     if (undefined !== args)
       tree.draw(args);
 
-    tree.clearImageryTreesAndClassifiers();
+    tree.clearImageryTreesAndModelClassifiers();
   }
 
   public override createDrawArgs(context: SceneContext): TileDrawArgs | undefined {
@@ -761,7 +761,7 @@ export class MapTileTreeReference extends TileTreeReference {
       return undefined;
 
     const tree = this.treeOwner.load() as MapTileTree;
-    return new RealityTileDrawArgs(args, args.worldToViewMap, args.frustumPlanes, undefined, tree?.layerClassifiers);
+    return new RealityTileDrawArgs(args, args.worldToViewMap, args.frustumPlanes, undefined, tree?.modelLayers);
   }
 
   protected override getViewFlagOverrides(_tree: TileTree) {

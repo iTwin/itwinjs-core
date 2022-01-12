@@ -427,11 +427,11 @@ export class MapTile extends RealityTile {
       return undefined;
 
     const textures = this.getDrapeTextures();
-    const { baseColor, baseTransparent, layerClassifiers } = this.mapTree;
+    const { baseColor, baseTransparent, modelLayers: layerClassifiers } = this.mapTree;
     const graphic = IModelApp.renderSystem.createRealityMeshGraphic({ realityMesh: geometry, projection: this.getProjection(), tileRectangle: this.rectangle, featureTable: PackedFeatureTable.pack(this.mapLoader.featureTable), tileId: this.contentId, baseColor, baseTransparent, textures, layerClassifiers });
 
     // If there are no layer classifiers then we can save this graphic for re-use.  If layer classifiers exist they are regenerated based on view and we must collate them with the imagery.
-    if (this.imageryIsReady && 0 === this.mapTree.layerClassifiers.size)
+    if (this.imageryIsReady && 0 === this.mapTree.modelLayers.size)
       this._graphic = graphic;
 
     return graphic;
