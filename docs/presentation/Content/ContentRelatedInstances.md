@@ -56,10 +56,10 @@ Identifies whether we should ignore this specification if another specification 
 [[include:SharedAttributes.OnlyIfNotHandled.Ruleset]]
 ```
 
-  | onlyIfNotHandled | Result                                                                                                         |
-  | ---------------- | -------------------------------------------------------------------------------------------------------------- |
-  | `true`           | ![Example when selecting all instances](./media/contentinstancesofspecificclasses-with-onlyifnothandled-1.png) |
-  | `false`          | ![Example when filtering instances](./media/contentinstancesofspecificclasses-with-onlyifnothandled-2.png)     |
+  | onlyIfNotHandled | Result                                                                                                                      |
+  | ---------------- | --------------------------------------------------------------------------------------------------------------------------- |
+  | `true`           | ![Example using both specifications](./media/contentinstancesofspecificclasses-with-onlyifnothandled-1.png)                 |
+  | `false`          | ![Example with "only if not handled" specifications](./media/contentinstancesofspecificclasses-with-onlyifnothandled-2.png) |
 
 ### Attribute: `priority`
 
@@ -116,10 +116,10 @@ Specifications of various [property overrides](./PropertySpecification.md) that 
 [[include:SharedAttributes.PropertyOverrides.Ruleset]]
 ```
 
-  |        | Result                                                                                                                    |
-  | ------ | ------------------------------------------------------------------------------------------------------------------------- |
-  | before | ![Example when doing normal property select](./media/contentinstancesofspecificclasses-with-propertyoverrides-1.png)      |
-  | after  | ![Example when selecting with related properties](./media/contentinstancesofspecificclasses-with-propertyoverrides-2.png) |
+  |        | Result                                                                                                                      |
+  | ------ | --------------------------------------------------------------------------------------------------------------------------- |
+  | before | ![Example when doing normal property select](./media/contentinstancesofspecificclasses-with-propertyoverrides-1.png)        |
+  | after  | ![Example when selecting with "property overrides"](./media/contentinstancesofspecificclasses-with-propertyoverrides-2.png) |
 
 ### Attribute: `showImages`
 
