@@ -32,7 +32,7 @@ Defines a single or an array of [multi schema classes](../Common-Rules/MultiSche
 [[include:ContentInstancesOfSpecificClasses.Classes.Ruleset]]
 ```
 
-![Example of using classes attribute](./media/contentinstancesofspecificclasses-with-classes.png)
+![Example of using "classes" attribute](./media/contentinstancesofspecificclasses-with-classes.png)
 
 ### Attribute: `handlePropertiesPolymorphically`
 
@@ -72,10 +72,10 @@ Identifies whether we should ignore this specification if another specification 
 [[include:SharedAttributes.OnlyIfNotHandled.Ruleset]]
 ```
 
-  | onlyIfNotHandled | Result                                                                                                         |
-  | ---------------- | -------------------------------------------------------------------------------------------------------------- |
-  | `true`           | ![Example when selecting all instances](./media/contentinstancesofspecificclasses-with-onlyifnothandled-1.png) |
-  | `false`          | ![Example when filtering instances](./media/contentinstancesofspecificclasses-with-onlyifnothandled-2.png)     |
+  | onlyIfNotHandled | Result                                                                                                                      |
+  | ---------------- | --------------------------------------------------------------------------------------------------------------------------- |
+  | `true`           | ![Example using both specifications](./media/contentinstancesofspecificclasses-with-onlyifnothandled-1.png)                 |
+  | `false`          | ![Example with "only if not handled" specifications](./media/contentinstancesofspecificclasses-with-onlyifnothandled-2.png) |
 
 ### Attribute: `priority`
 
@@ -87,7 +87,7 @@ Defines the order in which specifications are handled - higher priority means th
 [[include:SharedAttributes.Priority.Ruleset]]
 ```
 
-![Example of using priority attribute](./media/contentinstancesofspecificclasses-with-priority.png)
+![Example of using "priority" attribute](./media/contentinstancesofspecificclasses-with-priority.png)
 
 ### Attribute: `relatedProperties`
 
@@ -97,9 +97,9 @@ Specifications of [related properties](./RelatedPropertiesSpecification.md) whic
 [[include:SharedAttributes.RelatedProperties.Ruleset]]
 ```
 
-  | without related properties                                                                                           | with related properties                                                                                              |
-  | -------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-  | ![Example when doing normal property select](./media/contentinstancesofspecificclasses-with-relatedproperties-1.png) | ![Example when doing normal property select](./media/contentinstancesofspecificclasses-with-relatedproperties-2.png) |
+  | without related properties                                                                                           | with related properties                                                                                                   |
+  | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+  | ![Example when doing normal property select](./media/contentinstancesofspecificclasses-with-relatedproperties-1.png) | ![Example when selecting with "related properties"](./media/contentinstancesofspecificclasses-with-relatedproperties-2.png) |
 
 ### Attribute: `calculatedProperties`
 
@@ -109,7 +109,7 @@ Specifications of [calculated properties](./CalculatedPropertiesSpecification.md
 [[include:SharedAttributes.CalculatedProperties.Ruleset]]
 ```
 
-![Example of using calculatedProperties attribute](./media/contentinstancesofspecificclasses-with-calculatedproperties.png)
+![Example of using "calculated properties" attribute](./media/contentinstancesofspecificclasses-with-calculatedproperties.png)
 
 ### Attribute: `propertyCategories`
 
@@ -121,7 +121,7 @@ Simply defining the categories does nothing - they have to be referenced through
 [[include:SharedAttributes.PropertyCategories.Ruleset]]
 ```
 
-![Example of using propertyCategories attribute](./media/contentinstancesofspecificclasses-with-propertycategories.png)
+![Example of using "property categories" attribute](./media/contentinstancesofspecificclasses-with-propertycategories.png)
 
 ### Attribute: `propertyOverrides`
 
@@ -134,7 +134,7 @@ Specifications of various [property overrides](./PropertySpecification.md) that 
   |        | Result                                                                                                                    |
   | ------ | ------------------------------------------------------------------------------------------------------------------------- |
   | before | ![Example when doing normal property select](./media/contentinstancesofspecificclasses-with-propertyoverrides-1.png)      |
-  | after  | ![Example when selecting with related properties](./media/contentinstancesofspecificclasses-with-propertyoverrides-2.png) |
+  | after  | ![Example when selecting with "property overrides"](./media/contentinstancesofspecificclasses-with-propertyoverrides-2.png) |
 
 
 ### Attribute: `showImages`
