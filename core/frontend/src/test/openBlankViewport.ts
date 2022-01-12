@@ -62,3 +62,20 @@ export function openBlankViewport(options?: BlankViewportOptions): ScreenViewpor
 
   return viewport;
 }
+
+export type TestBlankViewportOptions = BlankViewportOptions & { test: (vp: ScreenViewport) => void };
+
+/** Open a viewport for a blank spatial view, invoke a test function, then dispose of the viewport and remove it from the DOM.
+ * @internal
+ */
+export function testBlankViewport(args: TestBlankViewportOptions | ((vp: ScreenViewport) => void)): void {
+  const vp = openBlankViewport(typeof args === "function" ? undefined : args);
+  try {
+    if (typeof args === "function")
+      args(vp);
+    else
+      args.test(vp);
+  } finally {
+    vp.dispose();
+  }
+}
