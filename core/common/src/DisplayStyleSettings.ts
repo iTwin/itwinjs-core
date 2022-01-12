@@ -107,10 +107,7 @@ export interface DisplayStyleSettingsProps {
    * @internal
    */
   scheduleScript?: RenderSchedule.ScriptProps;
-  /** The Id of a [RenderTimeline]($backend) element containing a [[RenderSchedule.Script]] that can be used to animate the view.
-   * @note If this [[DisplayStyleSettings]] is associated with a [DisplayStyleState]($frontend), assigning to [[renderTimeline]] will enqueue asynchronous loading of
-   * the script from the [RenderTimeline]($backend) element; for more readable code, prefer instead to `await` [DisplayStyleState.changeRenderTimeline]($frontend).
-   */
+  /** The Id of a [RenderTimeline]($backend) element containing a [[RenderSchedule.Script]] that can be used to animate the view. */
   renderTimeline?: Id64String;
   /** The point in time reflected by the view, in UNIX seconds.
    * This identifies a point on the timeline of the style's [[RenderSchedule.Script]], if any; it may also affect display of four-dimensional reality models.
@@ -632,7 +629,10 @@ export class DisplayStyleSettings {
     this._json.mapImagery = this._mapImagery.toJSON();
   }
 
-  /** The Id of a [RenderTimeline]($backend) element containing a [[RenderSchedule.Script]] used to animate the view. */
+  /** The Id of a [RenderTimeline]($backend) element containing a [[RenderSchedule.Script]] used to animate the view.
+   * @note If this [[DisplayStyleSettings]] is associated with a [DisplayStyleState]($frontend), assigning to [[renderTimeline]] will enqueue asynchronous loading of
+   * the script from the [RenderTimeline]($backend) element; for more readable code, prefer instead to `await` [DisplayStyleState.changeRenderTimeline]($frontend).
+   */
   public get renderTimeline(): Id64String | undefined {
     return this._json.renderTimeline;
   }
