@@ -10,7 +10,7 @@ import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
 import { createBlankConnection } from "./createBlankConnection";
 
-describe.only("DisplayStyleState", () => {
+describe("DisplayStyleState", () => {
   describe("schedule script state", () => {
     let iModel: IModelConnection;
 
@@ -155,6 +155,44 @@ describe.only("DisplayStyleState", () => {
     });
 
     it("raises onScheduleScriptReferenceChanged", async () => {
+      const style = new Style();
+      const expected: Array<RenderSchedule.ScriptReference | undefined> = [];
+      function expectPayloads() {
+        expect(style.eventPayloads).to.deep.equal(expected);
+      }
+
+      function pushExpected(expectNonNull = true) {
+        expect(style.scheduleState !== undefined).to.equal(expectNonNull);
+        expected.push(style.scheduleState);
+        expectPayloads();
+      }
+
+      style.settings.scheduleScriptProps = script1;
+      pushExpected();
+
+      await style.changeRenderTimeline("0x1");
+      pushExpected();
+
+      await style.changeRenderTimeline("0x2");
+      pushExpected();
+
+      await style.changeRenderTimeline("0x2");
+      expectPayloads();
+
+      style.settings.renderTimeline = "0x1";
+      expectPayloads();
+      await style.finishLoading();
+      pushExpected();
+
+      style.settings.renderTimeline = "0x1";
+      expect(style.isLoading).to.be.false;
+      expectPayloads();
+
+      style.settings.renderTimeline = undefined;
+      pushExpected();
+
+      style.settings.scheduleScriptProps = undefined;
+      pushExpected(false);
     });
 
     it("ignores previous renderTimeline if reassigned while loading", async () => {
