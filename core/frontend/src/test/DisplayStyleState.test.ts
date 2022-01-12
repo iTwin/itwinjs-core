@@ -10,7 +10,7 @@ import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
 import { createBlankConnection } from "./createBlankConnection";
 
-describe("DisplayStyleState", () => {
+describe.only("DisplayStyleState", () => {
   describe("schedule script state", () => {
     let iModel: IModelConnection;
 
@@ -88,6 +88,36 @@ describe("DisplayStyleState", () => {
     }
 
     it("updates when renderTimeline changes", async () => {
+      const style = new Style();
+      expect(style.scheduleState).to.be.undefined;
+
+      style.settings.renderTimeline = "0x1";
+      expect(style.isLoading).to.be.true;
+      expect(style.settings.renderTimeline).to.equal("0x1");
+      expect(style.scheduleState).to.be.undefined;
+
+      await style.finishLoading();
+      expect(style.isLoading).to.be.false;
+      style.expectScript(script1, "0x1");
+      let state = style.scheduleState;
+
+      style.settings.renderTimeline = "0x2";
+      expect(style.isLoading).to.be.true;
+      expect(style.scheduleState).to.equal(state);
+
+      await style.finishLoading();
+      expect(style.isLoading).to.be.false;
+      expect(style.scheduleState).not.to.equal(state);
+      state = style.scheduleState;
+      style.expectScript(script2, "0x2");
+
+      style.settings.renderTimeline = "0x2";
+      expect(style.isLoading).to.be.false;
+      expect(style.scheduleState).to.equal(state);
+
+      style.settings.renderTimeline = undefined;
+      expect(style.isLoading).to.be.false;
+      expect(style.scheduleState).to.be.undefined;
     });
 
     it("updates when scheduleScriptProps changes", () => {
@@ -128,6 +158,15 @@ describe("DisplayStyleState", () => {
     });
 
     it("ignores previous renderTimeline if reassigned while loading", async () => {
+      const style = new Style();
+
+      style.settings.renderTimeline = "0x1";
+      expect(style.isLoading).to.be.true;
+      await style.changeRenderTimeline("0x2");
+      expect(style.isLoading).to.be.false;
+
+      style.expectScript(script2, "0x2");
+      expect(style.eventPayloads).to.deep.equal([style.scheduleState]);
     });
 
     it("is set to undefined if loadScheduleState produces an exception", async () => {
