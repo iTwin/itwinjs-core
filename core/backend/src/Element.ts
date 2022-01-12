@@ -9,7 +9,7 @@
 import { CompressedId64Set, GuidString, Id64, Id64Set, Id64String, JsonUtils, OrderedId64Array } from "@itwin/core-bentley";
 import { ClipVector, Range3d, Transform } from "@itwin/core-geometry";
 import {
-  AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementAlignedBox3d, ElementGeometryUpdate, ElementProps, EntityMetaData,
+  AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementAlignedBox3d, ElementGeometryBuilderParams, ElementGeometryUpdate, ElementProps, EntityMetaData,
   GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps, GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps,
   GeometryStreamProps, IModel, InformationPartitionElementProps, LineStyleProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d,
   Placement3d, RelatedElement, RenderSchedule, RenderTimelineProps, RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps,
@@ -1460,6 +1460,10 @@ export class GeometryPart extends DefinitionElement implements GeometryPartProps
   /** @internal */
   public static override get className(): string { return "GeometryPart"; }
   public geom?: GeometryStreamProps;
+  /** How to build a GeometryStream. This is not a persistent property. It may be specified as an alternative to `geom` when inserting or updating an element.
+   * @alpha
+   */
+  public elementGeometryBuilderParams?: ElementGeometryBuilderParams;
   public bbox: ElementAlignedBox3d;
   /** @internal */
   public constructor(props: GeometryPartProps, iModel: IModelDb) {
