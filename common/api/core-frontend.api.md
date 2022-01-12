@@ -238,6 +238,7 @@ import { RenderMaterial } from '@itwin/core-common';
 import { RenderMode } from '@itwin/core-common';
 import { RenderSchedule } from '@itwin/core-common';
 import { RenderTexture } from '@itwin/core-common';
+import { RenderTimelineProps } from '@itwin/core-common';
 import { RequestBasicCredentials } from '@bentley/itwin-client';
 import { RequestOptions } from '@bentley/itwin-client';
 import { Response } from '@bentley/itwin-client';
@@ -2505,6 +2506,10 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     // @internal (undocumented)
     abstract overrideTerrainDisplay(): TerrainDisplayOverrides | undefined;
+    // @internal (undocumented)
+    protected queryRenderTimelineProps(timelineId: Id64String): Promise<RenderTimelineProps | undefined>;
+    // @internal (undocumented)
+    protected _queryRenderTimelinePropsPromise?: Promise<RenderTimelineProps | undefined>;
     // @internal (undocumented)
     protected registerSettingsEventListeners(): void;
     get scheduleScript(): RenderSchedule.Script | undefined;
@@ -6089,7 +6094,7 @@ export abstract class MapTilingScheme {
     // (undocumented)
     readonly numberOfLevelZeroTilesY: number;
     // (undocumented)
-    get rootLevel(): 0 | -1;
+    get rootLevel(): -1 | 0;
     // (undocumented)
     rowZeroAtNorthPole: boolean;
     // (undocumented)
