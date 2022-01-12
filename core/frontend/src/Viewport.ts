@@ -198,6 +198,15 @@ export interface GetPixelDataWorldPointArgs {
   out?: Point3d;
 }
 
+/** Arguments supplied to [[Viewport.readImageBuffer]].
+ * @public
+ */
+export interface ReadImageBufferArgs {
+  rect?: ViewRect;
+  size?: XAndY;
+  flipVertically?: boolean;
+}
+
 /** A Viewport renders the contents of one or more [GeometricModel]($backend)s onto an `HTMLCanvasElement`.
  *
  * It holds a [[ViewState]] object that defines its viewing parameters; the ViewState in turn defines the [[DisplayStyleState]],
@@ -2406,13 +2415,18 @@ export abstract class Viewport implements IDisposable {
    * @param flipVertically If true, the image is flipped along the x-axis.
    * @returns The contents of the viewport within the specified rectangle as a bitmap image, or undefined if the image could not be read.
    * @note By default the image is returned with the coordinate (0,0) referring to the bottom-most pixel. Pass `true` for `flipVertically` to flip it along the x-axis.
+   * @deprecated Use readImageBuffer.
    */
   public readImage(rect: ViewRect = new ViewRect(0, 0, -1, -1), targetSize: Point2d = Point2d.createZero(), flipVertically: boolean = false): ImageBuffer | undefined {
     return this.target.readImage(rect, targetSize, flipVertically);
   }
 
+  public readImageBuffer(args?: ReadImageBufferArgs): ImageBuffer | undefined {
+    return this.target.readImageBuffer(args);
+  }
+
   /** Reads the current image from this viewport into an HTMLCanvasElement with a Canvas2dRenderingContext such that additional 2d graphics can be drawn onto it.
-   * @see [[readImage]] to obtain the image as a JPEG or PNG.
+   * @see [[readImageBuffer]] to obtain the image as a JPEG or PNG.
    */
   public readImageToCanvas(): HTMLCanvasElement {
     return this.target.readImageToCanvas();
