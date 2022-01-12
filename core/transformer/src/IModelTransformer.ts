@@ -372,7 +372,7 @@ export class IModelTransformer extends IModelExportHandler {
    * @returns ElementProps for the target iModel.
    * @note A subclass can override this method to provide custom transform behavior.
    */
-  protected onTransformElement(sourceElement: Element): ElementProps {
+  public onTransformElement(sourceElement: Element): ElementProps {
     Logger.logTrace(loggerCategory, `onTransformElement(${sourceElement.id}) "${sourceElement.getDisplayLabel()}"`);
     const targetElementProps: ElementProps = this.context.cloneElement(sourceElement, { binaryGeometry: this._options.cloneUsingBinaryGeometry });
     if (sourceElement instanceof Subject) {
@@ -466,12 +466,12 @@ export class IModelTransformer extends IModelExportHandler {
   /** Override of [IModelExportHandler.shouldExportElement]($transformer) that is called to determine if an element should be exported from the source iModel.
    * @note Reaching this point means that the element has passed the standard exclusion checks in IModelExporter.
    */
-  protected override shouldExportElement(_sourceElement: Element): boolean { return true; }
+  public override shouldExportElement(_sourceElement: Element): boolean { return true; }
 
   /** Override of [IModelExportHandler.onExportElement]($transformer) that imports an element into the target iModel when it is exported from the source iModel.
    * This override calls [[onTransformElement]] and then [IModelImporter.importElement]($transformer) to update the target iModel.
    */
-  protected override onExportElement(sourceElement: Element): void {
+  public override onExportElement(sourceElement: Element): void {
     let targetElementId: Id64String | undefined;
     let targetElementProps: ElementProps;
     if (this._options.preserveElementIdsForFiltering) {
@@ -535,7 +535,7 @@ export class IModelTransformer extends IModelExportHandler {
   /** Override of [IModelExportHandler.onDeleteElement]($transformer) that is called when [IModelExporter]($transformer) detects that an Element has been deleted from the source iModel.
    * This override propagates the delete to the target iModel via [IModelImporter.deleteElement]($transformer).
    */
-  protected override onDeleteElement(sourceElementId: Id64String): void {
+  public override onDeleteElement(sourceElementId: Id64String): void {
     const targetElementId: Id64String = this.context.findTargetElementId(sourceElementId);
     if (Id64.isValidId64(targetElementId)) {
       this.importer.deleteElement(targetElementId);
@@ -545,7 +545,7 @@ export class IModelTransformer extends IModelExportHandler {
   /** Override of [IModelExportHandler.onExportModel]($transformer) that is called when a Model should be exported from the source iModel.
    * This override calls [[onTransformModel]] and then [IModelImporter.importModel]($transformer) to update the target iModel.
    */
-  protected override onExportModel(sourceModel: Model): void {
+  public override onExportModel(sourceModel: Model): void {
     if (IModel.repositoryModelId === sourceModel.id) {
       return; // The RepositoryModel should not be directly imported
     }
@@ -555,7 +555,7 @@ export class IModelTransformer extends IModelExportHandler {
   }
 
   /** Override of [IModelExportHandler.onDeleteModel]($transformer) that is called when [IModelExporter]($transformer) detects that a [Model]($backend) has been deleted from the source iModel. */
-  protected override onDeleteModel(_sourceModelId: Id64String): void {
+  public override onDeleteModel(_sourceModelId: Id64String): void {
     // WIP: currently ignored
   }
 
@@ -617,7 +617,7 @@ export class IModelTransformer extends IModelExportHandler {
    * @returns ModelProps for the target iModel.
    * @note A subclass can override this method to provide custom transform behavior.
    */
-  protected onTransformModel(sourceModel: Model, targetModeledElementId: Id64String): ModelProps {
+  public onTransformModel(sourceModel: Model, targetModeledElementId: Id64String): ModelProps {
     const targetModelProps: ModelProps = sourceModel.toJSON();
     targetModelProps.modeledElement.id = targetModeledElementId;
     targetModelProps.id = targetModeledElementId;
@@ -656,12 +656,12 @@ export class IModelTransformer extends IModelExportHandler {
   /** Override of [IModelExportHandler.shouldExportRelationship]($transformer) that is called to determine if a [Relationship]($backend) should be exported.
    * @note Reaching this point means that the relationship has passed the standard exclusion checks in [IModelExporter]($transformer).
    */
-  protected override shouldExportRelationship(_sourceRelationship: Relationship): boolean { return true; }
+  public override shouldExportRelationship(_sourceRelationship: Relationship): boolean { return true; }
 
   /** Override of [IModelExportHandler.onExportRelationship]($transformer) that imports a relationship into the target iModel when it is exported from the source iModel.
    * This override calls [[onTransformRelationship]] and then [IModelImporter.importRelationship]($transformer) to update the target iModel.
    */
-  protected override onExportRelationship(sourceRelationship: Relationship): void {
+  public override onExportRelationship(sourceRelationship: Relationship): void {
     const targetRelationshipProps: RelationshipProps = this.onTransformRelationship(sourceRelationship);
     const targetRelationshipInstanceId: Id64String = this.importer.importRelationship(targetRelationshipProps);
     if (!this._options.noProvenance && Id64.isValidId64(targetRelationshipInstanceId)) {
@@ -675,7 +675,7 @@ export class IModelTransformer extends IModelExportHandler {
   /** Override of [IModelExportHandler.onDeleteRelationship]($transformer) that is called when [IModelExporter]($transformer) detects that a [Relationship]($backend) has been deleted from the source iModel.
    * This override propagates the delete to the target iModel via [IModelImporter.deleteRelationship]($transformer).
    */
-  protected override onDeleteRelationship(sourceRelInstanceId: Id64String): void {
+  public override onDeleteRelationship(sourceRelInstanceId: Id64String): void {
     const sql = `SELECT ECInstanceId,JsonProperties FROM ${ExternalSourceAspect.classFullName} aspect` +
       ` WHERE aspect.Scope.Id=:scopeId AND aspect.Kind=:kind AND aspect.Identifier=:identifier LIMIT 1`;
     this.targetDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
@@ -744,12 +744,27 @@ export class IModelTransformer extends IModelExportHandler {
   /** Override of [IModelExportHandler.shouldExportElementAspect]($transformer) that is called to determine if an ElementAspect should be exported from the source iModel.
    * @note Reaching this point means that the ElementAspect has passed the standard exclusion checks in [IModelExporter]($transformer).
    */
-  protected override shouldExportElementAspect(_sourceAspect: ElementAspect): boolean { return true; }
+  public override shouldExportElementAspect(sourceAspect: ElementAspect): boolean {
+    // When exporting elements, the transformer may choose to *defer* an element, which is something the exporter doesn't understand,
+    // so it tries to export aspects anyway. As such we need to *not* export aspects for deferred elements.
+    // When we retry processing deferred elements and successfully export them is when we export the aspects again
+    const targetElementId = this.context.findTargetElementId(sourceAspect.element.id);
+    if (targetElementId === Id64.invalid && this._deferredElementIds.has(sourceAspect.element.id)) {
+      Logger.logInfo(
+        loggerCategory,
+        `tried to export an aspect for a deferred element, '${sourceAspect.element.id}', ` +
+          "it will be retried when the deferred element is processed again."
+      );
+      return false;
+    }
+
+    return true;
+  }
 
   /** Override of [IModelExportHandler.onExportElementUniqueAspect]($transformer) that imports an ElementUniqueAspect into the target iModel when it is exported from the source iModel.
    * This override calls [[onTransformElementAspect]] and then [IModelImporter.importElementUniqueAspect]($transformer) to update the target iModel.
    */
-  protected override onExportElementUniqueAspect(sourceAspect: ElementUniqueAspect): void {
+  public override onExportElementUniqueAspect(sourceAspect: ElementUniqueAspect): void {
     const targetElementId: Id64String = this.context.findTargetElementId(sourceAspect.element.id);
     const targetAspectProps: ElementAspectProps = this.onTransformElementAspect(sourceAspect, targetElementId);
     this.importer.importElementUniqueAspect(targetAspectProps);
@@ -759,7 +774,7 @@ export class IModelTransformer extends IModelExportHandler {
    * This override calls [[onTransformElementAspect]] for each ElementMultiAspect and then [IModelImporter.importElementMultiAspects]($transformer) to update the target iModel.
    * @note ElementMultiAspects are handled as a group to make it easier to differentiate between insert, update, and delete.
    */
-  protected override onExportElementMultiAspects(sourceAspects: ElementMultiAspect[]): void {
+  public override onExportElementMultiAspects(sourceAspects: ElementMultiAspect[]): void {
     const targetElementId: Id64String = this.context.findTargetElementId(sourceAspects[0].element.id);
     // Transform source ElementMultiAspects into target ElementAspectProps
     const targetAspectPropsArray: ElementAspectProps[] = sourceAspects.map((sourceAspect: ElementMultiAspect) => {
@@ -801,7 +816,7 @@ export class IModelTransformer extends IModelExportHandler {
   /** Override of [IModelExportHandler.shouldExportSchema]($transformer) that is called to determine if a schema should be exported
    * @note the default behavior doesn't import schemas older than those already in the target
    */
-  protected override shouldExportSchema(schemaKey: ECSchemaMetaData.SchemaKey): boolean {
+  public override shouldExportSchema(schemaKey: ECSchemaMetaData.SchemaKey): boolean {
     const versionInTarget = this.targetDb.querySchemaVersion(schemaKey.name);
     if (versionInTarget === undefined)
       return true;
@@ -810,7 +825,7 @@ export class IModelTransformer extends IModelExportHandler {
 
   /** Override of [IModelExportHandler.onExportSchema]($transformer) that serializes a schema to disk for [[processSchemas]] to import into
    * the target iModel when it is exported from the source iModel. */
-  protected override async onExportSchema(schema: ECSchemaMetaData.Schema): Promise<void> {
+  public override async onExportSchema(schema: ECSchemaMetaData.Schema): Promise<void> {
     this.sourceDb.nativeDb.exportSchema(schema.name, this._schemaExportDir);
   }
 
@@ -840,7 +855,7 @@ export class IModelTransformer extends IModelExportHandler {
   }
 
   /** Override of [IModelExportHandler.onExportFont]($transformer) that imports a font into the target iModel when it is exported from the source iModel. */
-  protected override onExportFont(font: FontProps, _isUpdate: boolean | undefined): void {
+  public override onExportFont(font: FontProps, _isUpdate: boolean | undefined): void {
     this.context.importFont(font.id);
   }
 
@@ -861,10 +876,10 @@ export class IModelTransformer extends IModelExportHandler {
   /** Override of [IModelExportHandler.shouldExportCodeSpec]($transformer) that is called to determine if a CodeSpec should be exported from the source iModel.
    * @note Reaching this point means that the CodeSpec has passed the standard exclusion checks in [IModelExporter]($transformer).
    */
-  protected override shouldExportCodeSpec(_sourceCodeSpec: CodeSpec): boolean { return true; }
+  public override shouldExportCodeSpec(_sourceCodeSpec: CodeSpec): boolean { return true; }
 
   /** Override of [IModelExportHandler.onExportCodeSpec]($transformer) that imports a CodeSpec into the target iModel when it is exported from the source iModel. */
-  protected override onExportCodeSpec(sourceCodeSpec: CodeSpec): void {
+  public override onExportCodeSpec(sourceCodeSpec: CodeSpec): void {
     this.context.importCodeSpec(sourceCodeSpec.id);
   }
 
@@ -980,7 +995,7 @@ export class TemplateModelCloner extends IModelTransformer {
     return this._sourceIdToTargetIdMap; // return the sourceElementId -> targetElementId Map in case further post-processing is required.
   }
   /** Cloning from a template requires this override of onTransformElement. */
-  protected override onTransformElement(sourceElement: Element): ElementProps {
+  public override onTransformElement(sourceElement: Element): ElementProps {
     const predecessorIds: Id64Set = sourceElement.getPredecessorIds();
     predecessorIds.forEach((predecessorId: Id64String) => {
       if (Id64.invalid === this.context.findTargetElementId(predecessorId)) {

@@ -274,6 +274,7 @@ import { TerrainProviderName } from '@itwin/core-common';
 import { TextureData } from '@itwin/core-common';
 import { TextureLoadProps } from '@itwin/core-common';
 import { TextureMapping } from '@itwin/core-common';
+import { TextureTransparency } from '@itwin/core-common';
 import { ThematicDisplay } from '@itwin/core-common';
 import { ThematicDisplaySensor } from '@itwin/core-common';
 import { ThematicDisplaySensorSettings } from '@itwin/core-common';
@@ -1385,7 +1386,7 @@ export class BackgroundMapGeometry {
     // (undocumented)
     getEarthEllipsoid(radiusOffset?: number): Ellipsoid;
     // (undocumented)
-    getFrustumIntersectionDepthRange(frustum: Frustum, heightRange?: Range1d, gridPlane?: Plane3dByOriginAndUnitNormal, doGlobalScope?: boolean): Range1d;
+    getFrustumIntersectionDepthRange(frustum: Frustum, bimRange: Range3d, heightRange?: Range1d, gridPlane?: Plane3dByOriginAndUnitNormal, doGlobalScope?: boolean): Range1d;
     // (undocumented)
     getPlane(offset?: number): Plane3dByOriginAndUnitNormal;
     // (undocumented)
@@ -4032,6 +4033,7 @@ export interface GraphicBuilderOptions {
     placement?: Transform;
     preserveOrder?: boolean;
     type: GraphicType;
+    viewIndependentOrigin?: Point3d;
     wantNormals?: boolean;
 }
 
@@ -5508,6 +5510,24 @@ export class MapCartoRectangle extends Range2d {
 }
 
 // @internal (undocumented)
+export interface MapLayerAuthenticationInfo {
+    // (undocumented)
+    authMethod: MapLayerAuthType;
+    // (undocumented)
+    tokenEndpoint?: MapLayerTokenEndpoint;
+}
+
+// @beta (undocumented)
+export enum MapLayerAuthType {
+    // (undocumented)
+    Basic = 2,
+    // (undocumented)
+    EsriToken = 3,
+    // (undocumented)
+    None = 1
+}
+
+// @internal (undocumented)
 export class MapLayerFormat {
     // (undocumented)
     static createImageryProvider(_settings: MapLayerSettings): MapLayerImageryProvider | undefined;
@@ -5724,6 +5744,8 @@ export enum MapLayerSourceStatus {
 // @internal (undocumented)
 export interface MapLayerSourceValidation {
     // (undocumented)
+    authInfo?: MapLayerAuthenticationInfo;
+    // (undocumented)
     status: MapLayerSourceStatus;
     // (undocumented)
     subLayers?: MapSubLayerProps[];
@@ -5745,6 +5767,14 @@ export abstract class MapLayerTileTreeReference extends TileTreeReference {
     protected _layerSettings: MapLayerSettings;
     // (undocumented)
     protected get _transparency(): number | undefined;
+}
+
+// @internal (undocumented)
+export interface MapLayerTokenEndpoint {
+    // (undocumented)
+    getLoginUrl(stateData?: string): string | undefined;
+    // (undocumented)
+    getUrl(): string;
 }
 
 // @internal (undocumented)
@@ -6515,6 +6545,8 @@ export enum MessageBoxIconType {
     // (undocumented)
     Question = 2,
     // (undocumented)
+    Success = 5,
+    // (undocumented)
     Warning = 3
 }
 
@@ -7190,6 +7222,8 @@ export enum OutputMessagePriority {
     Info = 12,
     // (undocumented)
     None = 0,
+    // (undocumented)
+    Success = 1,
     // (undocumented)
     Warning = 11
 }
@@ -10232,13 +10266,6 @@ export type TextureImageSource = HTMLImageElement | ImageBuffer;
 
 // @public
 export type TextureOwnership = TextureCacheOwnership | "external";
-
-// @public
-export enum TextureTransparency {
-    Mixed = 2,
-    Opaque = 0,
-    Translucent = 1
-}
 
 // @internal (undocumented)
 export class ThreeAxes {

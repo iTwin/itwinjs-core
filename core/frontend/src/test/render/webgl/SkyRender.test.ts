@@ -68,7 +68,7 @@ describe("Sky rendering", () => {
 
     const createTexture = () => {
       const img = textureImage.image;
-      return { texture: Texture2DHandle.createForImage(img, false, RenderTexture.Type.SkyBox) } as unknown as RenderTexture;
+      return { texture: Texture2DHandle.createForImage(img, RenderTexture.Type.SkyBox) } as unknown as RenderTexture;
     };
     const createTextureCube = () => {
       const img = textureImage.image;

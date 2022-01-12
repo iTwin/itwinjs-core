@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Tiles
+ * @module MapLayers
  */
 
 import { MapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
@@ -16,7 +16,7 @@ import {
   BingMapsImageryLayerProvider,
   ImageryMapLayerTreeReference,
   MapBoxLayerImageryProvider,
-  MapLayerAuthentificationInfo,
+  MapLayerAuthenticationInfo,
   MapLayerAuthType,
   MapLayerFormat,
   MapLayerImageryProvider,
@@ -95,7 +95,7 @@ class WmsMapLayerFormat extends ImageryMapLayerFormat {
       return { status: MapLayerSourceStatus.Valid, subLayers };
     } catch (err: any) {
       let status = MapLayerSourceStatus.InvalidUrl;
-      let authInfo: MapLayerAuthentificationInfo|undefined;
+      let authInfo: MapLayerAuthenticationInfo|undefined;
       if (err?.status === 401) {
         status = (credentials ? MapLayerSourceStatus.InvalidCredentials : MapLayerSourceStatus.RequireAuth);
         authInfo = {authMethod: MapLayerAuthType.Basic};
