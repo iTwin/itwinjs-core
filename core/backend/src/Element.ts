@@ -418,7 +418,9 @@ export abstract class GeometricElement extends Element implements GeometricEleme
   public category: Id64String;
   /** The GeometryStream for this GeometricElement. */
   public geom?: GeometryStreamProps;
-  /** How to build the element's GeometryStream. This is used for insert and update only. It is not a persistent property. It will be undefined in the properties returned by functions that read a persistent element. It may be specified as an alternative to `geom` when inserting or updating an element.  */
+  /** How to build the element's GeometryStream. This is used for insert and update only. It is not a persistent property. It will be undefined in the properties returned by functions that read a persistent element. It may be specified as an alternative to `geom` when inserting or updating an element.
+   * @alpha
+   */
   public elementGeometryBuilderParams?: ElementGeometryUpdate;
   /** The origin, orientation, and bounding box of this GeometricElement. */
   public abstract get placement(): Placement2d | Placement3d;
