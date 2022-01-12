@@ -61,7 +61,7 @@ import { ECSqlValueType } from '@itwin/core-common';
 import { EditingScopeNotifications } from '@itwin/core-common';
 import { ElementAlignedBox3d } from '@itwin/core-common';
 import { ElementAspectProps } from '@itwin/core-common';
-import { ElementGeometryBuilderParams } from '@itwin/core-common';
+import { ElementGeometryBuilderParamsForPart } from '@itwin/core-common';
 import { ElementGeometryRequest } from '@itwin/core-common';
 import { ElementGeometryUpdate } from '@itwin/core-common';
 import { ElementGraphicsRequestProps } from '@itwin/core-common';
@@ -2065,7 +2065,7 @@ export class GeometryPart extends DefinitionElement implements GeometryPartProps
     static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     // @alpha
-    elementGeometryBuilderParams?: ElementGeometryBuilderParams;
+    elementGeometryBuilderParams?: ElementGeometryBuilderParamsForPart;
     // (undocumented)
     geom?: GeometryStreamProps;
     // @internal (undocumented)

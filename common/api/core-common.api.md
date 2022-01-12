@@ -2634,6 +2634,12 @@ export interface ElementGeometryBuilderParams {
     viewIndependent?: boolean;
 }
 
+// @alpha
+export interface ElementGeometryBuilderParamsForPart {
+    entryArray: ElementGeometryDataEntry[];
+    is2dPart?: boolean;
+}
+
 // @public (undocumented)
 export type ElementGeometryChange = ExtantElementGeometryChange | DeletedElementGeometryChange;
 
@@ -2697,10 +2703,12 @@ export interface ElementGeometryRequest {
 }
 
 // @alpha
-export interface ElementGeometryUpdate extends ElementGeometryBuilderParams {
+export interface ElementGeometryUpdate {
     elementId: Id64String;
+    entryArray: ElementGeometryDataEntry[];
     is2dPart?: boolean;
     isWorld?: boolean;
+    viewIndependent?: boolean;
 }
 
 // @public
@@ -3639,7 +3647,7 @@ export interface GeometryPartProps extends ElementProps {
     // (undocumented)
     bbox?: LowAndHighXYZ;
     // @alpha
-    elementGeometryBuilderParams?: ElementGeometryBuilderParams;
+    elementGeometryBuilderParams?: ElementGeometryBuilderParamsForPart;
     // (undocumented)
     geom?: GeometryStreamProps;
 }
