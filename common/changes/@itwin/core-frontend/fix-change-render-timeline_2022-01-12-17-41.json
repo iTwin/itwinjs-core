@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Ensure DisplayStyleState.scheduleScript is synchronized with changes to DisplayStyleSettings.renderTimeline and DisplayStyleSettings.scheduleScriptProps.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

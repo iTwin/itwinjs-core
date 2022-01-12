@@ -108,7 +108,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     if (undefined !== this.settings.renderTimeline)
       await this.loadScheduleStateFromTimeline(this.settings.renderTimeline);
     else
-      this.loadScheduleStateFromScript(this.settings.scheduleScriptProps);
+      this.loadScheduleStateFromScript(this.settings.scheduleScriptProps); // eslint-disable-line deprecation/deprecation
   }
 
   private loadScheduleStateFromScript(scriptProps: Readonly<RenderSchedule.ScriptProps> | undefined): void {
@@ -730,9 +730,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       this._queryRenderTimelinePropsPromise = undefined;
 
       if (undefined !== newTimeline)
-        this.loadScheduleStateFromTimeline(newTimeline);
+        this.loadScheduleStateFromTimeline(newTimeline); // eslint-disable-line @typescript-eslint/no-floating-promises
       else
-        this.loadScheduleStateFromScript(this.settings.scheduleScriptProps);
+        this.loadScheduleStateFromScript(this.settings.scheduleScriptProps); // eslint-disable-line deprecation/deprecation
     });
 
     this.settings.onPlanarClipMaskChanged.addListener((id, newSettings) => {

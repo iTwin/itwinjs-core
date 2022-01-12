@@ -65,7 +65,7 @@ describe("DisplayStyleState", () => {
           await this._queryRenderTimelinePropsPromise;
       }
 
-      protected override queryRenderTimelineProps(timelineId: string): Promise<RenderTimelineProps | undefined> {
+      protected override async queryRenderTimelineProps(timelineId: string): Promise<RenderTimelineProps | undefined> {
         let script;
         if (timelineId === "0x1")
           script = JSON.stringify(script1);
@@ -123,19 +123,19 @@ describe("DisplayStyleState", () => {
     it("updates when scheduleScriptProps changes", () => {
       const style = new Style();
       expect(style.scheduleState).to.be.undefined;
-      expect(style.settings.scheduleScriptProps).to.be.undefined;
+      expect(style.settings.scheduleScriptProps).to.be.undefined; // eslint-disable-line deprecation/deprecation
 
-      style.settings.scheduleScriptProps = script1;
-      let prevState = style.scheduleState;
+      style.settings.scheduleScriptProps = script1; // eslint-disable-line deprecation/deprecation
+      const prevState = style.scheduleState;
       style.expectScript(script1, "0xbeef");
       expect(prevState).not.to.be.undefined;
 
-      style.settings.scheduleScriptProps = script2;
+      style.settings.scheduleScriptProps = script2; // eslint-disable-line deprecation/deprecation
       expect(style.scheduleState).not.to.equal(prevState);
       expect(style.scheduleState).not.to.be.undefined;
       style.expectScript(script2, "0xbeef");
 
-      style.settings.scheduleScriptProps = undefined;
+      style.settings.scheduleScriptProps = undefined; // eslint-disable-line deprecation/deprecation
       expect(style.scheduleState).to.be.undefined;
     });
 
@@ -144,7 +144,7 @@ describe("DisplayStyleState", () => {
       await style.changeRenderTimeline("0x1");
       style.expectScript(script1, "0x1");
 
-      style.settings.scheduleScriptProps = script2;
+      style.settings.scheduleScriptProps = script2; // eslint-disable-line deprecation/deprecation
       style.expectScript(script1, "0x1");
 
       await style.changeRenderTimeline(undefined);
@@ -167,7 +167,7 @@ describe("DisplayStyleState", () => {
         expectPayloads();
       }
 
-      style.settings.scheduleScriptProps = script1;
+      style.settings.scheduleScriptProps = script1; // eslint-disable-line deprecation/deprecation
       pushExpected();
 
       await style.changeRenderTimeline("0x1");
@@ -191,7 +191,7 @@ describe("DisplayStyleState", () => {
       style.settings.renderTimeline = undefined;
       pushExpected();
 
-      style.settings.scheduleScriptProps = undefined;
+      style.settings.scheduleScriptProps = undefined; // eslint-disable-line deprecation/deprecation
       pushExpected(false);
     });
 
