@@ -260,7 +260,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public get name(): string { return this.code.value; }
 
   /** Change the Id of the [RenderTimeline]($backend) element that hosts the [RenderSchedule.Script]($common) to be applied by this display style for
-   * animating the contents of the view.
+   * animating the contents of the view, and update [[scheduleScriptReference]] using the script associated with the [RenderTimeline]($backend) element.
+   * @see [DisplayStyleSettings.renderTimeline]($common).
    */
   public async changeRenderTimeline(timelineId: Id64String | undefined): Promise<void> {
     // Potentially trigger async loading of new schedule state.
