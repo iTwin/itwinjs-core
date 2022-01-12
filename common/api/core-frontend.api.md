@@ -241,6 +241,7 @@ import { RenderMaterial } from '@itwin/core-common';
 import { RenderMode } from '@itwin/core-common';
 import { RenderSchedule } from '@itwin/core-common';
 import { RenderTexture } from '@itwin/core-common';
+import { RenderTimelineProps } from '@itwin/core-common';
 import { RgbColor } from '@itwin/core-common';
 import { RootSubjectProps } from '@itwin/core-common';
 import { RpcInterfaceDefinition } from '@itwin/core-common';
@@ -2505,6 +2506,10 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     // @internal (undocumented)
     abstract overrideTerrainDisplay(): TerrainDisplayOverrides | undefined;
+    // @internal (undocumented)
+    protected queryRenderTimelineProps(timelineId: Id64String): Promise<RenderTimelineProps | undefined>;
+    // @internal (undocumented)
+    protected _queryRenderTimelinePropsPromise?: Promise<RenderTimelineProps | undefined>;
     // @internal (undocumented)
     protected registerSettingsEventListeners(): void;
     get scheduleScript(): RenderSchedule.Script | undefined;
