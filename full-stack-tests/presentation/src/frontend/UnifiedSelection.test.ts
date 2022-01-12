@@ -148,6 +148,27 @@ describe("Unified Selection", () => {
       expect(imodel.selectionSet.has(instances.transientElement.key.id)).to.be.true;
     });
 
+    it.only("hilites transient element after clearing selection", async () => {
+      // set up the selection to contain a transient element
+      Presentation.selection.addToSelection("", imodel, new KeySet([instances.transientElement.key]));
+      await waitForAllAsyncs([handler]);
+      expect(imodel.selectionSet.size).to.eq(1);
+      expect(Presentation.selection.getSelection(imodel).instanceKeysCount).to.eq(1);
+
+      // clear the selection set and add back the transient element
+      imodel.selectionSet.emptyAll();
+      imodel.selectionSet.replace(instances.transientElement.key.id);
+      await waitForAllAsyncs([handler]);
+
+      // expect the transient element to be both hilited and selected
+      expect(imodel.hilited.models.isEmpty).to.be.true;
+      expect(imodel.hilited.subcategories.isEmpty).to.be.true;
+      expect(imodel.hilited.elements.size).to.eq(1);
+      expect(imodel.hilited.elements.hasId(instances.transientElement.key.id)).to.be.true;
+      expect(imodel.selectionSet.size).to.eq(1);
+      expect(imodel.selectionSet.has(instances.transientElement.key.id)).to.be.true;
+    });
+
     it("hilites after re-initializing Presentation", async () => {
       handler.dispose();
       Presentation.terminate();
