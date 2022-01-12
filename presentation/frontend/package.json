@@ -49,7 +49,6 @@
     "@itwin/presentation-common": "workspace:^3.0.0-dev.183"
   },
   "devDependencies": {
-    "@bentley/itwin-client": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
