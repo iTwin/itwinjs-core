@@ -81,10 +81,9 @@ Specifications of [related properties](./RelatedPropertiesSpecification.md) whic
 [[include:SharedAttributes.RelatedProperties.Ruleset]]
 ```
 
-  |         | Result                                                                                                                      |
-  | ------- | --------------------------------------------------------------------------------------------------------------------------- |
-  | without | ![Example when doing normal property select](./media/contentinstancesofspecificclasses-with-relatedproperties-1.png)        |
-  | with    | ![Example when selecting with "related properties"](./media/contentinstancesofspecificclasses-with-relatedproperties-2.png) |
+  | without related properties                                                                                           | with related properties                                                                                                   |
+  | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+  | ![Example when doing normal property select](./media/contentinstancesofspecificclasses-with-relatedproperties-1.png) | ![Example when selecting with "related properties"](./media/contentinstancesofspecificclasses-with-relatedproperties-2.png) |
 
 ### Attribute: `calculatedProperties`
 
