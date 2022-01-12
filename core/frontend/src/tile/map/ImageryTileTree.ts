@@ -8,7 +8,7 @@
 
 import { assert, compareBooleans, compareNumbers, compareStrings, compareStringsOrUndefined, dispose } from "@itwin/core-bentley";
 import { Angle, Range3d, Transform } from "@itwin/core-geometry";
-import { Cartographic, ImageSource, MapLayerSettings, RenderTexture, ViewFlagOverrides } from "@itwin/core-common";
+import { Cartographic, ImageMapLayerSettings, ImageSource, MapLayerSettings, RenderTexture, ViewFlagOverrides } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { RenderMemory } from "../../render/RenderMemory";
@@ -221,7 +221,7 @@ class ImageryTileLoader extends RealityTileLoader {
 }
 
 interface ImageryMapLayerTreeId {
-  settings: MapLayerSettings;
+  settings: ImageMapLayerSettings;
 }
 
 /** Supplies a TileTree that can load and draw tiles based on our imagery provider.

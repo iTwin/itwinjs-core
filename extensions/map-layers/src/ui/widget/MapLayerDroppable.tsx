@@ -21,6 +21,7 @@ import { MapTypesOptions, StyleMapLayerSettings } from "../Interfaces";
 import { MapLayerSettingsMenu } from "./MapLayerSettingsMenu";
 import { MapUrlDialog } from "./MapUrlDialog";
 import "./MapLayerManager.scss";
+import { ImageMapLayerSettings } from "@itwin/core-common";
 
 /** @internal */
 interface MapLayerDroppableProps {
@@ -68,12 +69,13 @@ export function MapLayerDroppable(props: MapLayerDroppableProps) {
               const indexInDisplayStyle = props.activeViewport?.displayStyle.findMapLayerIndexByNameAndUrl(activeLayer.name, activeLayer.url, activeLayer.isOverlay);
               if (indexInDisplayStyle !== undefined && indexInDisplayStyle >= 0) {
                 const layerSettings = props.activeViewport.displayStyle.mapLayerAtIndex(indexInDisplayStyle, activeLayer.isOverlay);
-
-                ModalDialogManager.openDialog(<MapUrlDialog activeViewport={props.activeViewport}
-                  isOverlay={props.isOverlay}
-                  layerRequiringCredentials={layerSettings?.toJSON()}
-                  onOkResult={props.onItemEdited}
-                  mapTypesOptions={props.mapTypesOptions}></MapUrlDialog>);
+                if (layerSettings instanceof ImageMapLayerSettings) {
+                  ModalDialogManager.openDialog(<MapUrlDialog activeViewport={props.activeViewport}
+                    isOverlay={props.isOverlay}
+                    layerRequiringCredentials={layerSettings?.toJSON()}
+                    onOkResult={props.onItemEdited}
+                    mapTypesOptions={props.mapTypesOptions}></MapUrlDialog>);
+                }
               }
 
             }}

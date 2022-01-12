@@ -8,7 +8,7 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { BaseMapLayerSettings, ColorDef, MapLayerSettings, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay } from "@itwin/core-common";
+import { BaseMapLayerSettings, ColorDef, ModelMapLayerSettings } from "@itwin/core-common";
 import { IModelApp, MapLayerSource, MapLayerSources, MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority, Tool, WmsUtilities } from "@itwin/core-frontend";
 import { parseBoolean } from "./parseBoolean";
 import { parseToggle } from "./parseToggle";
@@ -70,21 +70,23 @@ export class AttachModelMapLayerTool extends Tool {
 
     const iModel = vp.iModel;
     const elements = await iModel.elements.getProps(iModel.selectionSet.elements);
-    const modelIds = new Set<Id64String>();
-
-    const expand = 1;
-    const flags = { inside: SpatialClassifierInsideDisplay.Off, outside: SpatialClassifierOutsideDisplay.Off };
+    const models = new Array<Id64String>();
+    let name = nameIn;
 
     for (const element of elements)
-      modelIds.add(element.model);
+      models.push(element.model);
 
-    for (const modelId of modelIds) {
-      const modelProps = await iModel.models.getProps(modelId);
-      const modelName = modelProps[0].name ? modelProps[0].name : modelId;
-      const name = nameIn ? (modelIds.size > 1 ? `${nameIn}: ${modelName}` : nameIn) : modelName;
-      const classifier = { name, expand, modelId, flags };
-      vp.displayStyle.attachMapLayerSettings(MapLayerSettings.fromJSON({ name, classifier, url: "", formatId: "BIM" }), false);
+    if (!nameIn) {
+      const modelProps = await iModel.models.getProps(models);
+      for (const modelProp of modelProps) {
+        if (modelProp.name)
+          name = name ? (`${name  }, ${  modelProp.name}`) : modelProp.name;
+      }
     }
+    if (!name)
+      name = "Untitled";
+
+    vp.displayStyle.attachMapLayerSettings(ModelMapLayerSettings.fromJSON({ name, models}), false);
 
     return true;
   }

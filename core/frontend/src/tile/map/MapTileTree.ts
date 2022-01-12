@@ -8,7 +8,7 @@
 
 import { assert, compareBooleans, compareNumbers, compareStrings, compareStringsOrUndefined, CompressedId64Set, Id64String } from "@itwin/core-bentley";
 import {
-  BackgroundMapSettings, BaseLayerSettings, Cartographic, ColorDef, FeatureAppearance, GeoCoordStatus, GlobeMode, MapLayerSettings, PlanarClipMaskPriority, TerrainHeightOriginMode,
+  BackgroundMapSettings, BaseLayerSettings, Cartographic, ColorDef, FeatureAppearance, GeoCoordStatus, GlobeMode, MapLayerSettings, MapLayerSettingsBase, PlanarClipMaskPriority, TerrainHeightOriginMode,
   TerrainProviderName,
 } from "@itwin/core-common";
 import {
@@ -557,7 +557,7 @@ export class MapTileTreeReference extends TileTreeReference {
     this._iModel = iModel;
     let tree;
     if (!isOverlay && this._baseLayerSettings !== undefined) {
-      if (this._baseLayerSettings instanceof MapLayerSettings) {
+      if (this._baseLayerSettings instanceof MapLayerSettingsBase) {
         tree = createMapLayerTreeReference(this._baseLayerSettings, 0, iModel);
         this._baseTransparent = this._baseLayerSettings.transparency > 0;
       } else {
@@ -592,7 +592,7 @@ export class MapTileTreeReference extends TileTreeReference {
     let tree;
     this._baseLayerSettings = baseLayerSettings;
 
-    if (baseLayerSettings instanceof MapLayerSettings) {
+    if (baseLayerSettings instanceof MapLayerSettingsBase) {
       tree = createMapLayerTreeReference(baseLayerSettings, 0, this._iModel);
       this._baseColor = undefined;
       this._baseTransparent = baseLayerSettings.transparency > 0;

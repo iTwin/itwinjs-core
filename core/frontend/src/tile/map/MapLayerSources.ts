@@ -4,15 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
-import { compareStrings } from "@itwin/core-bentley";
-import { Point2d } from "@itwin/core-geometry";
-import {
-  BackgroundMapProvider, BackgroundMapType, BaseMapLayerSettings, DeprecatedBackgroundMapProps, MapLayerSettings, MapSubLayerProps,
-} from "@itwin/core-common";
 import { getJson, RequestBasicCredentials } from "@bentley/itwin-client";
+import { compareStrings } from "@itwin/core-bentley";
+import {
+  BackgroundMapProvider, BackgroundMapType, BaseMapLayerSettings, DeprecatedBackgroundMapProps, ImageMapLayerSettings, MapSubLayerProps,
+} from "@itwin/core-common";
+import { Point2d } from "@itwin/core-geometry";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
-
 import { ArcGisUtilities, MapCartoRectangle, MapLayerSourceValidation } from "../internal";
 
 /** @internal */
@@ -96,9 +95,9 @@ export class MapLayerSource {
     return { url: this.url, name: this.name, formatId: this.formatId, transparentBackground: this.transparentBackground };
   }
 
-  public toLayerSettings(subLayers?: MapSubLayerProps[]): MapLayerSettings | undefined {
+  public toLayerSettings(subLayers?: MapSubLayerProps[]): ImageMapLayerSettings | undefined {
     // When MapLayerSetting is created from a MapLayerSource, sub-layers and credentials need to be set separately.
-    const layerSettings = MapLayerSettings.fromJSON({ ...this, subLayers });
+    const layerSettings = ImageMapLayerSettings.fromJSON({ ...this, subLayers });
     layerSettings?.setCredentials(this.userName, this.password);
     return layerSettings;
   }

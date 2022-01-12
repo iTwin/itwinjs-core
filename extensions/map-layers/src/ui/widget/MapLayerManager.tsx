@@ -11,7 +11,7 @@ import "./MapLayerManager.scss";
 import * as React from "react";
 import { DragDropContext, DropResult } from "react-beautiful-dnd";
 import { assert, BentleyError } from "@itwin/core-bentley";
-import { MapImagerySettings, MapSubLayerProps, MapSubLayerSettings } from "@itwin/core-common";
+import { MapImagerySettings, MapSubLayerProps, MapSubLayerSettings, ModelMapLayerSettings } from "@itwin/core-common";
 import {
   ImageryMapTileTree, IModelApp, MapLayerImageryProvider, MapLayerSource, MapLayerSources, NotifyMessageDetails, OutputMessagePriority,
   ScreenViewport, TileTreeOwner, Viewport,
@@ -64,6 +64,10 @@ function getMapLayerSettingsFromViewport(viewport: Viewport, getBackgroundMap: b
   const displayStyleLayers = (getBackgroundMap ? displayStyle.backgroundMapLayers : displayStyle.overlayMapLayers);
   for (let layerIdx = 0; layerIdx < displayStyleLayers.length; layerIdx++) {
     const layerSettings = displayStyleLayers[layerIdx];
+    if (layerSettings instanceof ModelMapLayerSettings) {
+      // Michel: Needs work - support model map layers...
+      continue;
+    }
     const isOverlay = !getBackgroundMap;
     const layerProvider = viewport.getMapLayerImageryProvider(layerIdx, isOverlay);
     layers.push({

@@ -10,8 +10,8 @@ import { Angle, Range1d, Vector3d } from "@itwin/core-geometry";
 import {
   BackgroundMapProps, BackgroundMapProvider, BackgroundMapProviderProps, BackgroundMapSettings,
   BaseLayerSettings, BaseMapLayerSettings, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
-  DisplayStyleProps, DisplayStyleSettings, Environment, FeatureAppearance, GlobeMode, LightSettings, MapLayerProps,
-  MapLayerSettings, MapSubLayerProps, RenderSchedule, RenderTimelineProps,
+  DisplayStyleProps, DisplayStyleSettings, Environment, FeatureAppearance, GlobeMode, ImageMapLayerSettings, LightSettings, MapLayerProps,
+  MapLayerSettings, MapLayerSettingsBase, MapSubLayerProps, ModelMapLayerSettings, RenderSchedule, RenderTimelineProps,
   SolarShadowSettings, SubCategoryOverride, SubLayerId, TerrainHeightOriginMode, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, ViewFlags,
 } from "@itwin/core-common";
 import { ApproximateTerrainHeights } from "./ApproximateTerrainHeights";
@@ -364,7 +364,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   /** @internal */
   public attachMapLayer(props: MapLayerProps, isOverlay: boolean, insertIndex = -1): void {
-    const layerSettings = MapLayerSettings.fromJSON(props);
+    const layerSettings = MapLayerSettingsBase.fromJSON(props);
     if (undefined === layerSettings)
       return;
 
@@ -398,7 +398,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   /** @internal */
   public findMapLayerIndexByNameAndUrl(name: string, url: string, isOverlay: boolean) {
-    return this.getMapLayers(isOverlay).findIndex((x) => x.matchesNameAndUrl(name, url));
+    return this.getMapLayers(isOverlay).findIndex((layer) => layer instanceof ImageMapLayerSettings && layer.matchesNameAndUrl(name, url));
   }
 
   /** @internal */
@@ -437,8 +437,11 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     const layers = this.getMapLayers(isOverlay);
     if (index < 0 || index >= layers.length)
       return;
-    layers[index].setCredentials(userName, password);
-    this._synchBackgroundMapImagery();
+    const layer = layers[index];
+    if (layer instanceof ImageMapLayerSettings) {
+      layer.setCredentials(userName, password);
+      this._synchBackgroundMapImagery();
+    }
   }
 
   public changeMapSubLayerProps(props: Partial<MapSubLayerProps>, subLayerId: SubLayerId, layerIndex: number, isOverlay: boolean) {
@@ -457,7 +460,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** @internal */
   public async getMapLayerRange(layerIndex: number, isOverlay: boolean): Promise<MapCartoRectangle | undefined> {
     const mapLayerSettings = this.mapLayerAtIndex(layerIndex, isOverlay);
-    if (undefined === mapLayerSettings)
+    if (undefined === mapLayerSettings || mapLayerSettings instanceof ModelMapLayerSettings)
       return undefined;
 
     const imageryProvider = IModelApp.mapLayerFormatRegistry.createImageryProvider(mapLayerSettings);

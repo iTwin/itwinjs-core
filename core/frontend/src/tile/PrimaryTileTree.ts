@@ -8,7 +8,7 @@
 
 import { assert, compareBooleans, compareStrings, Id64String } from "@itwin/core-bentley";
 import {
-  BatchType, compareIModelTileTreeIds, EdgeType, FeatureAppearance, FeatureAppearanceProvider, HiddenLine, iModelTileTreeIdToString, MapLayerSettings, PrimaryTileTreeId, RenderMode, SpatialClassifier, ViewFlagOverrides, ViewFlagsProperties,
+  BatchType, compareIModelTileTreeIds, EdgeType, FeatureAppearance, FeatureAppearanceProvider, HiddenLine, iModelTileTreeIdToString, MapLayerSettings, ModelMapLayerSettings, PrimaryTileTreeId, RenderMode, SpatialClassifier, ViewFlagOverrides, ViewFlagsProperties,
 } from "@itwin/core-common";
 import { Geometry, Range3d, StringifiedClipVector, Transform } from "@itwin/core-geometry";
 import { DisplayStyleState } from "../DisplayStyleState";
@@ -500,8 +500,9 @@ export class ClassifierMapLayerTileTreeReference extends MapLayerTileTreeReferen
   }
 }
 /** @internal */
-export function createMapLayerClassifierTileTreeReference(layerSettings: MapLayerSettings, classifier: SpatialClassifier, layerIndex: number, iModel: IModelConnection): ClassifierMapLayerTileTreeReference {
-  return new ClassifierMapLayerTileTreeReference(layerSettings, classifier, layerIndex, iModel);
+export function createMapLayerClassifierTileTreeReference(layerSettings: ModelMapLayerSettings, layerIndex: number, iModel: IModelConnection): ClassifierMapLayerTileTreeReference | undefined {
+  const classifier =  SpatialClassifier.fromModelMapLayer(layerSettings);
+  return classifier ? new ClassifierMapLayerTileTreeReference(layerSettings, classifier, layerIndex, iModel) : undefined;
 }
 
 /** Provides [[TileTreeReference]]s for the loaded models present in a [[SpatialViewState]]'s [[ModelSelectorState]].

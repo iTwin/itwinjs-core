@@ -4,21 +4,21 @@
 *--------------------------------------------------------------------------------------------*/
 // cSpell:ignore Modeless WMTS
 
-import * as React from "react";
-import { Input, LabeledInput, ProgressLinear, Radio, Select, SelectOption } from "@itwin/itwinui-react";
-import { Dialog, Icon, InputStatus } from "@itwin/core-react";
+import { DialogButtonType, SpecialKey } from "@itwin/appui-abstract";
 import { ModalDialogManager } from "@itwin/appui-react";
-import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
-import { MapTypesOptions } from "../Interfaces";
+import { ImageMapLayerProps } from "@itwin/core-common";
 import {
   IModelApp, MapLayerImageryProviderStatus, MapLayerSource,
   MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority, ScreenViewport,
 } from "@itwin/core-frontend";
-import { MapLayerProps } from "@itwin/core-common";
-import "./MapUrlDialog.scss";
-import { DialogButtonType, SpecialKey } from "@itwin/appui-abstract";
+import { Dialog, Icon, InputStatus } from "@itwin/core-react";
+import { Input, LabeledInput, ProgressLinear, Radio, Select, SelectOption } from "@itwin/itwinui-react";
+import * as React from "react";
 import { MapLayerPreferences } from "../../MapLayerPreferences";
 import { MapLayersUI } from "../../mapLayers";
+import { MapTypesOptions } from "../Interfaces";
+import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
+import "./MapUrlDialog.scss";
 
 export const MAP_TYPES = {
   wms: "WMS",
@@ -35,7 +35,7 @@ interface MapUrlDialogProps {
   mapTypesOptions?: MapTypesOptions;
 
   // An optional layer definition can be provide to enable the edit mode
-  layerRequiringCredentials?: MapLayerProps;
+  layerRequiringCredentials?: ImageMapLayerProps;
 
   mapLayerSourceToEdit?: MapLayerSource;
 }

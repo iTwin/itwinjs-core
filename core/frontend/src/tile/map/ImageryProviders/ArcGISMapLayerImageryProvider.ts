@@ -6,8 +6,8 @@
  * @module Tiles
  */
 
-import { Cartographic, ImageSource, IModelStatus, MapLayerSettings, ServerError } from "@itwin/core-common";
 import { getJson, request, RequestOptions, Response } from "@bentley/itwin-client";
+import { Cartographic, ImageMapLayerSettings, ImageSource, IModelStatus, ServerError } from "@itwin/core-common";
 import { IModelApp } from "../../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../../NotificationManager";
 import { ScreenViewport } from "../../../Viewport";
@@ -28,7 +28,7 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
   private _tileMapSupported = false;
   private _tileMap: ArcGISTileMap|undefined;
   public serviceJson: any;
-  constructor(settings: MapLayerSettings) {
+  constructor(settings: ImageMapLayerSettings) {
     super(settings, false);
   }
 
