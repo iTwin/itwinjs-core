@@ -482,7 +482,7 @@ describe("Viewport", () => {
         });
       });
 
-      it("doesn't preserve background alpha when resizing (canvas limitation", () => {
+      it("doesn't preserve background alpha when resizing (canvas limitation)", () => {
         // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/putImageData#data_loss_due_to_browser_optimization
         test(rTransp50pct, (viewport) => {
           const image = viewport.readImageBuffer({ size: { x: 2, y: 4 } })!;
