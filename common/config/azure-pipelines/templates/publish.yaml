@@ -119,6 +119,7 @@ steps:
      packagesToPublish = False
      localVer = ""
      latestVer = ""
+     previousVer = ""
      for artifact in artifactPaths:
        baseName = os.path.basename(artifact)
        print ("")
