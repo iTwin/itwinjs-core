@@ -684,17 +684,17 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
 
     const params = new RenderMaterial.Params();
     params.alpha = args.alpha;
-    if (args.diffuse?.weight)
+    if (undefined !== args.diffuse?.weight)
       params.diffuse = args.diffuse.weight;
 
     params.diffuseColor = getMaterialColor(args.diffuse?.color);
 
     if (args.specular) {
       params.specularColor = getMaterialColor(args.specular?.color);
-      if (args.specular.weight)
+      if (undefined !== args.specular.weight)
         params.specular = args.specular.weight;
 
-      if (args.specular.exponent)
+      if (undefined !== args.specular.exponent)
         params.specularExponent = args.specular.exponent;
     }
 

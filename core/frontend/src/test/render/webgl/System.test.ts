@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
-  Gradient, ImageSource, ImageSourceFormat, RenderMaterial, RenderTexture, RgbColorProps, TextureTransparency,
+  Gradient, ImageSource, ImageSourceFormat, RenderMaterial, RenderTexture, RgbColorProps, TextureMapping, TextureTransparency,
 } from "@itwin/core-common";
 import { Capabilities, WebGLContext } from "@itwin/webgl-compatibility";
 import { IModelApp } from "../../../IModelApp";
@@ -368,7 +368,7 @@ describe("System", () => {
     });
   });
 
-  describe.only("createRenderMaterial", () => {
+  describe("createRenderMaterial", () => {
     let iModel: IModelConnection;
     beforeEach(async () => {
       await IModelApp.startup();
@@ -421,10 +421,10 @@ describe("System", () => {
         const specExp = mat.fragUniforms[3];
 
         const args: CreateRenderMaterialArgs = {
-          diffuse: { weight: weights.x, },
+          diffuse: { weight: Number.parseFloat(weights.x.toPrecision(1)), },
           specular: {
             color: unpackColor(texWeightAndSpecR.y, specGB.x, specGB.y),
-            weight: weights.y,
+            weight: Number.parseFloat(weights.y.toPrecision(1)),
             exponent: specExp,
           },
         };
@@ -439,7 +439,7 @@ describe("System", () => {
           args.textureMapping = {
             texture: mat.textureMapping.texture,
             mode: mat.textureMapping.params.mode,
-            weight: mat.textureMapping.params.weight,
+            weight: Number.parseFloat(texWeightAndSpecR.x.toPrecision(1)),
             worldMapping: mat.textureMapping.params.worldMapping,
             transform: mat.textureMapping.params.textureMatrix,
           };
@@ -459,13 +459,62 @@ describe("System", () => {
 
         const actual = unpackMaterial(mat);
 
+        // shallow spread operator is annoying...
         expected = expected ?? args;
-        expected = { ...defaults, ...expected };
+        expected = {
+          ...defaults,
+          ...expected,
+          diffuse: expected.diffuse ? { ...defaults.diffuse, ...expected.diffuse } : defaults.diffuse,
+          specular: expected.specular ? { ...defaults.specular, ...expected.specular } : defaults.specular,
+        };
+
+        if (expected.textureMapping) {
+          expected.textureMapping = {
+            weight: 1,
+            mode: TextureMapping.Mode.Parametric,
+            worldMapping: false,
+            transform: TextureMapping.Trans2x3.identity,
+            ...expected.textureMapping,
+          };
+        }
 
         expect(actual).to.deep.equal(expected);
       };
 
       test({ }, defaults);
+      test(defaults);
+
+      const color = { r: 1, g: 127, b: 255 };
+      test({ alpha: 1 });
+      test({ alpha: 0 });
+      test({ alpha: 0.5 });
+      test({ alpha: -1 }, { alpha: 0 });
+      test({ alpha: 2 }, { alpha: 1 });
+
+      test({ diffuse: { color } });
+      test({ diffuse: { color, weight: 0 } });
+      test({ diffuse: { color, weight: 1 } });
+      test({ diffuse: { color, weight: 0.5 } });
+      test({ diffuse: { color, weight: -1 } }, { diffuse: { color, weight: 0 } });
+      test({ diffuse: { color, weight: 2 } }, { diffuse: { color, weight: 1 } });
+
+      test({ specular: { weight: 0 } });
+      test({ specular: { weight: 1 } });
+      test({ specular: { weight: 0.5 } });
+      test({ specular: { weight: -1 } }, { specular: { weight: 0 } });
+      test({ specular: { weight: 2 } }, { specular: { weight: 1 } });
+      test({ specular: { exponent: 0 } });
+      test({ specular: { exponent: -12.5 } });
+      test({ specular: { exponent: 54321 } });
+      test({ specular: { color } });
+
+      const texture = { dummy: "my texture" } as unknown as RenderTexture;
+      test({ textureMapping: { texture } });
+      test({ textureMapping: { texture, weight: 0 } });
+      test({ textureMapping: { texture, weight: 1 } });
+      test({ textureMapping: { texture, weight: -1 } }, { textureMapping: { texture, weight: 0 } });
+      test({ textureMapping: { texture, weight: 2 } }, { textureMapping: { texture, weight: 1 } });
+      test({ textureMapping: { texture, weight: 0.5 } });
     });
   });
 
