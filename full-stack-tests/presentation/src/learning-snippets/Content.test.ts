@@ -883,8 +883,7 @@ describe("Learning Snippets", () => {
 
       it("uses `propertyCategories` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.PropertyCategories.Ruleset
-        // The specification returns content for `bis.SpatialViewDefinition` with specified camera
-        // properties under `Camera settings` category.
+        // This ruleset places camera-related `bis.SpatialViewDefinition` properties inside a custom category
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
@@ -893,11 +892,15 @@ describe("Learning Snippets", () => {
               specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
               classes: { schemaName: "BisCore", classNames: ["SpatialViewDefinition"] },
               propertyCategories: [{
-                id: "cat1",
+                id: "camera_category",
                 label: "Camera settings",
                 autoExpand: true,
               }],
-              propertyOverrides: [{ name: "EyePoint", categoryId: "cat1" }, { name: "FocusDistance", categoryId: "cat1" }, { name: "IsCameraOn", categoryId: "cat1" }],
+              propertyOverrides: [
+                { name: "EyePoint", categoryId: "camera_category" },
+                { name: "FocusDistance", categoryId: "camera_category" },
+                { name: "IsCameraOn", categoryId: "camera_category" },
+              ],
             }],
           }],
         };
