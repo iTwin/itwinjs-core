@@ -11,6 +11,7 @@ import { MockRender } from "../../../render/MockRender";
 import { RenderSystem } from "../../../render/RenderSystem";
 import { TileAdmin } from "../../../tile/internal";
 import { System } from "../../../render/webgl/System";
+import { createBlankConnection } from "../../createBlankConnection";
 
 function _createCanvas(): HTMLCanvasElement | undefined {
   const canvas = document.createElement("canvas");
@@ -129,7 +130,7 @@ describe("ExternalTextures", () => {
   });
 });
 
-describe("RenderSystem", () => {
+describe("System", () => {
   it("should override webgl context attributes", () => {
     const expectAttributes = (system: System, expected: WebGLContextAttributes) => {
       const attrs = system.context.getContextAttributes()!;
@@ -359,6 +360,50 @@ describe("RenderSystem", () => {
       const texture = await promise;
       expect(texture).to.be.undefined;
       expect(idmap.texturesFromImageSources.size).to.equal(0);
+    });
+  });
+
+  describe.only("createRenderMaterial", () => {
+    let iModel: IModelConnection;
+    beforeEach(async () => {
+      await IModelApp.startup();
+      iModel = createBlankConnection();
+    });
+
+    afterEach(async () => {
+      await iModel.close();
+      await IModelApp.shutdown();
+    });
+
+    it("caches materials by Id", () => {
+      const sys = IModelApp.renderSystem;
+      expect(sys.findMaterial("0x1", iModel)).to.be.undefined;
+      const mat1 = sys.createRenderMaterial({ source: { id: "0x1", iModel } });
+      expect(sys.createRenderMaterial({ source: { id: "0x1", iModel } })).to.equal(mat1);
+
+      const mat2 = sys.createRenderMaterial({ source: { id: "0x2", iModel } });
+      expect(mat2).not.to.be.undefined;
+      expect(mat2).not.to.equal(mat1);
+
+      const mat0 = sys.createRenderMaterial({});
+      expect(mat0).not.to.be.undefined;
+      expect(mat0).not.to.equal(mat1);
+      expect(mat0).not.to.equal(mat2);
+
+      expect(sys.createRenderMaterial({})).not.to.equal(mat0);
+    });
+
+    it("requires valid Id64String for cache", () => {
+      const sys = IModelApp.renderSystem;
+      const mat1 = sys.createRenderMaterial({ source: { id: "not an id", iModel } });
+      expect(mat1).not.to.be.undefined;
+
+      const mat2 = sys.createRenderMaterial({ source: { id: "not an id", iModel } });
+      expect(mat2).not.to.be.undefined;
+      expect(mat2).not.to.equal(mat1);
+    });
+
+    it("produces expected materials from input", () => {
     });
   });
 
