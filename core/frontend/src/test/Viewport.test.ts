@@ -302,6 +302,9 @@ describe("Viewport", () => {
           expectColors(image, [ ColorDef.blue, ColorDef.white ]);
         });
       });
+
+      it("discards background alpha when resizing (BUG)", () => {
+      });
     });
 
     describe("readImageBuffer", () => {
@@ -327,6 +330,9 @@ describe("Viewport", () => {
           expect(image).not.to.be.undefined;
           expectColors(image, [ ColorDef.green, ColorDef.blue ]);
         });
+      });
+
+      it("preserves background alpha when resizing", () => {
       });
     });
   });
