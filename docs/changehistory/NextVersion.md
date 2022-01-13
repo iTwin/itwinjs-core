@@ -5,7 +5,7 @@ publish: false
 
 ## Simplified material creation
 
-[RenderSystem.createMaterial]($frontend) presents an awkward API requiring the instantiation of several related objects to create even a simple [RenderMaterial]($common); it also requires an [IModelConnection]($frontend). It has been deprecated in favor of [RenderSystem.createRenderMaterial]($frontend), which accepts a single [CreateRenderMaterialArgs]($frontend) object concisely specifying only the properties of interest to the caller. For example, the following:
+[RenderSystem.createMaterial]($frontend) presents an awkward API requiring the instantiation of several related objects to create even a simple [RenderMaterial]($common). It also requires an [IModelConnection]($frontend). It has been deprecated in favor of [RenderSystem.createRenderMaterial]($frontend), which accepts a single [CreateRenderMaterialArgs]($frontend) object concisely specifying only the properties of interest to the caller. For example, the following:
 
 ```ts
   const params = new RenderMaterial.Params();
@@ -16,7 +16,7 @@ publish: false
   const material = IModelApp.renderSystem.createMaterial(params, iModel);
 ```
 
-Can now be expressed as:
+Can now be expressed as follows (note no IModelConnection is required):
 
 ```ts
   const material = IModelApp.renderSystem.createRenderMaterial({
