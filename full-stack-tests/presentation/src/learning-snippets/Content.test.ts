@@ -395,7 +395,7 @@ describe("Learning Snippets", () => {
         };
         // __PUBLISH_EXTRACT_END__
 
-        // Expect to get one `bis.SpatialCategory` field and one related content field
+        // Expect to get one `bis.SpatialCategory` field and one related content field.
         const content = await Presentation.presentation.getContent({
           imodel,
           rulesetOrId: ruleset,
@@ -663,7 +663,7 @@ describe("Learning Snippets", () => {
 
       it("uses `handlePropertiesPolymorphically` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.HandlePropertiesPolymorphically.Ruleset
-        // This ruleset returns content of all `bis.ViewDefinition` instances, including all properties from derived classes
+        // This ruleset returns content of all `bis.ViewDefinition` instances, including all properties from derived classes.
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
@@ -709,7 +709,7 @@ describe("Learning Snippets", () => {
 
       it("uses `instanceFilter` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.InstanceFilter.Ruleset
-        // This ruleset returns content of all `bis.SpatialViewDefinition` instances whose `Pitch` property is greater or equal to 0
+        // This ruleset returns content of all `bis.SpatialViewDefinition` instances whose `Pitch` property is greater or equal to 0.
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
@@ -740,21 +740,25 @@ describe("Learning Snippets", () => {
 
       it("uses `onlyIfNotHandled` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.OnlyIfNotHandled.Ruleset
-        // Specifications to return content for `bis.ViewDefinition` and `bis.PhysicalModel` respectively.
-        // The `bis.PhysicalModel` specification is lower priority and has `onlyIfNotHandled` attribute, which
-        // allows it to be overriden by higher priority specification.
+        // This ruleset defines two specifications that return content for `bis.ViewDefinition` and `bis.PhysicalModel`
+        // instances respectively.
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
             ruleType: RuleTypes.Content,
-            specifications: [{
-              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
-              classes: { schemaName: "BisCore", classNames: ["ViewDefinition"], arePolymorphic: true },
-            }, {
-              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
-              classes: { schemaName: "BisCore", classNames: ["PhysicalModel"], arePolymorphic: true },
-              onlyIfNotHandled: true,
-            }],
+            specifications: [
+              {
+                specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+                classes: { schemaName: "BisCore", classNames: ["ViewDefinition"], arePolymorphic: true },
+              },
+              // The following specification is defined second so it's lower in priority. Because it has `onlyIfNotHandled` attribute,
+              // it's overriden by the specification above.
+              {
+                specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+                classes: { schemaName: "BisCore", classNames: ["PhysicalModel"], arePolymorphic: true },
+                onlyIfNotHandled: true,
+              },
+            ],
           }],
         };
         // __PUBLISH_EXTRACT_END__
@@ -812,7 +816,7 @@ describe("Learning Snippets", () => {
 
       it("uses `relatedProperties` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.RelatedProperties.Ruleset
-        // This ruleset returns content for `bis.SpatialViewDefinition`, which includes all properties from related `bis.DisplayStyle` instances
+        // This ruleset returns content for `bis.SpatialViewDefinition`, which includes all properties from related `bis.DisplayStyle` instances.
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
@@ -883,7 +887,7 @@ describe("Learning Snippets", () => {
 
       it("uses `propertyCategories` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.PropertyCategories.Ruleset
-        // This ruleset places camera-related `bis.SpatialViewDefinition` properties inside a custom category
+        // This ruleset places camera-related `bis.SpatialViewDefinition` properties inside a custom category.
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
