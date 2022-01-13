@@ -663,8 +663,7 @@ describe("Learning Snippets", () => {
 
       it("uses `handlePropertiesPolymorphically` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.HandlePropertiesPolymorphically.Ruleset
-        // The specification returns content of all `bis.ViewDefinition` instances
-        // with properties of all `bis.ViewDefinition` subclasses.
+        // This ruleset returns content of all `bis.ViewDefinition` instances, including all properties from derived classes
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
