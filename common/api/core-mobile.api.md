@@ -8,13 +8,12 @@ import { AccessToken } from '@itwin/core-bentley';
 import { AsyncMethodsOf } from '@itwin/core-bentley';
 import { AuthorizationClient } from '@itwin/core-common';
 import { BeEvent } from '@itwin/core-bentley';
-import { CancelRequest } from '@bentley/itwin-client';
-import { FileHandler } from '@bentley/itwin-client';
+import { BentleyError } from '@itwin/core-bentley';
+import { GetMetaDataFunction } from '@itwin/core-bentley';
 import * as https from 'https';
 import { IModelAppOptions } from '@itwin/core-frontend';
 import { NativeAppOpts } from '@itwin/core-frontend';
 import { NativeHostOpts } from '@itwin/core-backend';
-import { ProgressCallback } from '@bentley/itwin-client';
 import { PromiseReturnType } from '@itwin/core-bentley';
 import { RpcConfiguration } from '@itwin/core-common';
 import { RpcEndpoint } from '@itwin/core-common';
@@ -57,8 +56,18 @@ export enum BatteryState {
     Unplugged = 1
 }
 
+// @beta
+export interface CancelRequest {
+    cancel: () => boolean;
+}
+
 // @beta (undocumented)
 export type DeviceEvents = "memoryWarning" | "orientationChanged" | "enterForeground" | "enterBackground" | "willTerminate";
+
+// @internal
+export class DownloadFailed extends BentleyError {
+    constructor(errorNumber: number, message: string, getMetaData?: GetMetaDataFunction);
+}
 
 // @beta (undocumented)
 export interface DownloadTask {
@@ -210,7 +219,7 @@ export abstract class MobileDevice {
 }
 
 // @internal
-export class MobileFileHandler implements FileHandler {
+export class MobileFileHandler {
     constructor();
     // (undocumented)
     agent?: https.Agent;
@@ -370,6 +379,16 @@ export enum RpcMobilePlatform {
     iOS = 2,
     // (undocumented)
     Unknown = 0
+}
+
+// @internal
+export class SasUrlExpired extends BentleyError {
+    constructor(errorNumber: number, message: string, getMetaData?: GetMetaDataFunction);
+}
+
+// @internal
+export class UserCancelledError extends BentleyError {
+    constructor(errorNumber: number, message: string, getMetaData?: GetMetaDataFunction);
 }
 
 

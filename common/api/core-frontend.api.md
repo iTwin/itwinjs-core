@@ -28,6 +28,7 @@ import { BaseQuantityDescription } from '@itwin/appui-abstract';
 import { BatchType } from '@itwin/core-common';
 import { BeDuration } from '@itwin/core-bentley';
 import { BeEvent } from '@itwin/core-bentley';
+import { BentleyError } from '@itwin/core-bentley';
 import { BentleyStatus } from '@itwin/core-bentley';
 import { BeTimePoint } from '@itwin/core-bentley';
 import { BeUiEvent } from '@itwin/core-bentley';
@@ -115,6 +116,7 @@ import { GeometryContainmentResponseProps } from '@itwin/core-common';
 import { GeometryQuery } from '@itwin/core-geometry';
 import { GeometryStreamProps } from '@itwin/core-common';
 import { GeometrySummaryRequestProps } from '@itwin/core-common';
+import { GetMetaDataFunction } from '@itwin/core-bentley';
 import { GlobeMode } from '@itwin/core-common';
 import { Gradient } from '@itwin/core-common';
 import { GraphicParams } from '@itwin/core-common';
@@ -122,6 +124,8 @@ import { GridOrientationType } from '@itwin/core-common';
 import { GuidString } from '@itwin/core-bentley';
 import { HiddenLine } from '@itwin/core-common';
 import { Hilite } from '@itwin/core-common';
+import * as https from 'https';
+import { HttpStatus } from '@itwin/core-bentley';
 import { Id64 } from '@itwin/core-bentley';
 import { Id64Arg } from '@itwin/core-bentley';
 import { Id64Array } from '@itwin/core-bentley';
@@ -208,7 +212,6 @@ import { PolylineEdgeArgs } from '@itwin/core-common';
 import { PolylineFlags } from '@itwin/core-common';
 import { PolylineTypeFlags } from '@itwin/core-common';
 import { PrimaryTileTreeId } from '@itwin/core-common';
-import { ProgressCallback } from '@bentley/itwin-client';
 import { PromiseReturnType } from '@itwin/core-bentley';
 import { PropertyDescription } from '@itwin/appui-abstract';
 import { QParams2d } from '@itwin/core-common';
@@ -238,9 +241,7 @@ import { RenderMaterial } from '@itwin/core-common';
 import { RenderMode } from '@itwin/core-common';
 import { RenderSchedule } from '@itwin/core-common';
 import { RenderTexture } from '@itwin/core-common';
-import { RequestBasicCredentials } from '@bentley/itwin-client';
-import { RequestOptions } from '@bentley/itwin-client';
-import { Response } from '@bentley/itwin-client';
+import { RenderTimelineProps } from '@itwin/core-common';
 import { RgbColor } from '@itwin/core-common';
 import { RootSubjectProps } from '@itwin/core-common';
 import { RpcInterfaceDefinition } from '@itwin/core-common';
@@ -1386,7 +1387,7 @@ export class BackgroundMapGeometry {
     // (undocumented)
     getEarthEllipsoid(radiusOffset?: number): Ellipsoid;
     // (undocumented)
-    getFrustumIntersectionDepthRange(frustum: Frustum, heightRange?: Range1d, gridPlane?: Plane3dByOriginAndUnitNormal, doGlobalScope?: boolean): Range1d;
+    getFrustumIntersectionDepthRange(frustum: Frustum, bimRange: Range3d, heightRange?: Range1d, gridPlane?: Plane3dByOriginAndUnitNormal, doGlobalScope?: boolean): Range1d;
     // (undocumented)
     getPlane(offset?: number): Plane3dByOriginAndUnitNormal;
     // (undocumented)
@@ -2506,6 +2507,10 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // @internal (undocumented)
     abstract overrideTerrainDisplay(): TerrainDisplayOverrides | undefined;
     // @internal (undocumented)
+    protected queryRenderTimelineProps(timelineId: Id64String): Promise<RenderTimelineProps | undefined>;
+    // @internal (undocumented)
+    protected _queryRenderTimelinePropsPromise?: Promise<RenderTimelineProps | undefined>;
+    // @internal (undocumented)
     protected registerSettingsEventListeners(): void;
     get scheduleScript(): RenderSchedule.Script | undefined;
     get scheduleScriptReference(): RenderSchedule.ScriptReference | undefined;
@@ -3297,18 +3302,15 @@ export interface FrontendHubAccess {
 
 // @public
 export enum FrontendLoggerCategory {
-    Authorization = "core-frontend.Authorization",
-    EventSource = "core-frontend.EventSource",
     // @alpha
     FeatureTracking = "core-frontend.FeatureTracking",
-    FrontendRequestContext = "core-frontend.FrontendRequestContext",
     IModelConnection = "core-frontend.IModelConnection",
-    MobileAuthorizationClient = "core-frontend.MobileAuthorizationClient",
     NativeApp = "core-frontend.NativeApp",
     // (undocumented)
     Package = "core-frontend",
     // @alpha
-    RealityData = "core-frontend.RealityData"
+    RealityData = "core-frontend.RealityData",
+    Request = "core-frontend.Request"
 }
 
 // @public
@@ -4033,6 +4035,7 @@ export interface GraphicBuilderOptions {
     placement?: Transform;
     preserveOrder?: boolean;
     type: GraphicType;
+    viewIndependentOrigin?: Point3d;
     wantNormals?: boolean;
 }
 
@@ -5509,6 +5512,24 @@ export class MapCartoRectangle extends Range2d {
 }
 
 // @internal (undocumented)
+export interface MapLayerAuthenticationInfo {
+    // (undocumented)
+    authMethod: MapLayerAuthType;
+    // (undocumented)
+    tokenEndpoint?: MapLayerTokenEndpoint;
+}
+
+// @beta (undocumented)
+export enum MapLayerAuthType {
+    // (undocumented)
+    Basic = 2,
+    // (undocumented)
+    EsriToken = 3,
+    // (undocumented)
+    None = 1
+}
+
+// @internal (undocumented)
 export class MapLayerFormat {
     // (undocumented)
     static createImageryProvider(_settings: MapLayerSettings): MapLayerImageryProvider | undefined;
@@ -5725,6 +5746,8 @@ export enum MapLayerSourceStatus {
 // @internal (undocumented)
 export interface MapLayerSourceValidation {
     // (undocumented)
+    authInfo?: MapLayerAuthenticationInfo;
+    // (undocumented)
     status: MapLayerSourceStatus;
     // (undocumented)
     subLayers?: MapSubLayerProps[];
@@ -5746,6 +5769,14 @@ export abstract class MapLayerTileTreeReference extends TileTreeReference {
     protected _layerSettings: MapLayerSettings;
     // (undocumented)
     protected get _transparency(): number | undefined;
+}
+
+// @internal (undocumented)
+export interface MapLayerTokenEndpoint {
+    // (undocumented)
+    getLoginUrl(stateData?: string): string | undefined;
+    // (undocumented)
+    getUrl(): string;
 }
 
 // @internal (undocumented)
@@ -6516,6 +6547,8 @@ export enum MessageBoxIconType {
     // (undocumented)
     Question = 2,
     // (undocumented)
+    Success = 5,
+    // (undocumented)
     Warning = 3
 }
 
@@ -7191,6 +7224,8 @@ export enum OutputMessagePriority {
     Info = 12,
     // (undocumented)
     None = 0,
+    // (undocumented)
+    Success = 1,
     // (undocumented)
     Warning = 11
 }

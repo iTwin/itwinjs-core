@@ -19,17 +19,17 @@
   "dependencies": {
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
-    "@bentley/imodelhub-client": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-electron": "workspace:*",
     "@itwin/core-transformer": "workspace:*",
-    "@bentley/itwin-client": "workspace:*",
-    "@itwin/electron-authorization": "^0.5.0",
-    "fs-extra": "^8.1.0",
-    "yargs": "^16.0.0",
+    "@itwin/electron-authorization": "^0.6.0",
+    "@itwin/imodels-access-backend": "~0.3.0",
+    "@itwin/imodels-client-authoring": "~0.3.0",
     "dotenv": "^10.0.0",
-    "dotenv-expand": "^5.1.0"
+    "dotenv-expand": "^5.1.0",
+    "fs-extra": "^8.1.0",
+    "yargs": "^16.0.0"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",

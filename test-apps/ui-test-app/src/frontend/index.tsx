@@ -9,8 +9,6 @@ import { connect, Provider } from "react-redux";
 import { Store } from "redux"; // createStore,
 import reactAxe from "@axe-core/react";
 import { BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient } from "@itwin/browser-authorization";
-import { IModelHubClient, IModelHubFrontend, IModelQuery } from "@bentley/imodelhub-client";
-import { ProgressInfo } from "@bentley/itwin-client";
 import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
 import { RealityDataAccessClient, RealityDataClientOptions } from "@itwin/reality-data-client";
 import { getClassName } from "@itwin/appui-abstract";
@@ -23,7 +21,7 @@ import {
   ToolbarDragInteractionContext, UiFramework, UiStateStorageHandler,
 } from "@itwin/appui-react";
 import { BeDragDropContext } from "@itwin/components-react";
-import { Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
+import { Id64String, Logger, LogLevel, ProcessDetector, UnexpectedErrors } from "@itwin/core-bentley";
 import { BentleyCloudRpcManager, BentleyCloudRpcParams, IModelVersion, RpcConfiguration, SyncMode } from "@itwin/core-common";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
@@ -38,10 +36,11 @@ import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
 import { MapLayersUI } from "@itwin/map-layers";
 import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, Presentation } from "@itwin/presentation-frontend";
+import { IModelsClient } from "@itwin/imodels-client-management";
+import { AccessTokenAdapter, FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
 import { getSupportedRpcs } from "../common/rpcs";
 import { loggerCategory, TestAppConfiguration } from "../common/TestAppConfiguration";
 import { BearingQuantityType } from "./api/BearingQuantityType";
-import { ErrorHandling } from "./api/ErrorHandling";
 import { AppUi } from "./appui/AppUi";
 import { AppBackstageComposer } from "./appui/backstage/AppBackstageComposer";
 import { IModelViewportControl } from "./appui/contentviews/IModelViewport";
@@ -156,10 +155,17 @@ interface SampleIModelParams {
   stageId?: string;
 }
 
+interface ProgressInfo {
+  percent?: number;
+  total?: number;
+  loaded: number;
+}
+
 export class SampleAppIModelApp {
   public static sampleAppNamespace?: string;
   public static iModelParams: SampleIModelParams | undefined;
   public static testAppConfiguration: TestAppConfiguration | undefined;
+  public static hubClient?: IModelsClient;
   private static _appStateManager: StateManager | undefined;
 
   // Favorite Properties Support
@@ -169,7 +175,9 @@ export class SampleAppIModelApp {
     return StateManager.store as Store<RootState>;
   }
 
-  public static async startup(opts: NativeAppOpts): Promise<void> {
+  public static async startup(opts: NativeAppOpts, hubClient?: IModelsClient): Promise<void> {
+
+    this.hubClient = hubClient;
 
     const iModelAppOpts = {
       ...opts.iModelApp,
@@ -497,14 +505,29 @@ export class SampleAppIModelApp {
 
       const iTwin: ITwin = iTwinList[0];
 
-      const iModel = (await (new IModelHubClient()).iModels.get(accessToken, iTwin.id, new IModelQuery().byName(iModelName)))[0];
+      if (!SampleAppIModelApp.hubClient)
+        return;
+
+      let iModel;
+      for await (const imodel of SampleAppIModelApp.hubClient.iModels.getRepresentationList({
+        urlParams: {
+          name: iModelName,
+          projectId: iTwin.id,
+          $top: 1,
+        },
+        authorization: AccessTokenAdapter.toAuthorizationCallback(accessToken),
+      }))
+        iModel = imodel;
+
+      if (!iModel)
+        throw new Error(`No iModel with the name ${iModelName}`);
 
       if (viewId) {
         // open directly into the iModel (view)
-        await SampleAppIModelApp.openIModelAndViews(iTwin.id, iModel.wsgId, [viewId]);
+        await SampleAppIModelApp.openIModelAndViews(iTwin.id, iModel?.id, [viewId]);
       } else {
         // open to the IModelIndex frontstage
-        await SampleAppIModelApp.showIModelIndex(iTwin.id, iModel.wsgId);
+        await SampleAppIModelApp.showIModelIndex(iTwin.id, iModel?.id);
       }
     } else if (SampleAppIModelApp.iModelParams) {
       if (SampleAppIModelApp.iModelParams.viewIds && SampleAppIModelApp.iModelParams.viewIds.length > 0) {
@@ -698,7 +721,7 @@ async function main() {
   Logger.setLevel("ui-framework.UiFramework", LogLevel.Info);
   Logger.setLevel("ViewportComponent", LogLevel.Info);
 
-  ToolAdmin.exceptionHandler = async (err: any) => Promise.resolve(ErrorHandling.onUnexpectedError(err));
+  ToolAdmin.exceptionHandler = async (err: any) => Promise.resolve(UnexpectedErrors.handle(err));
 
   // retrieve, set, and output the global configuration variable
   SampleAppIModelApp.testAppConfiguration = {};
@@ -715,6 +738,9 @@ async function main() {
     BingMaps: SampleAppIModelApp.testAppConfiguration.bingMapsKey ? { key: "key", value: SampleAppIModelApp.testAppConfiguration.bingMapsKey } : undefined,
     Mapbox: SampleAppIModelApp.testAppConfiguration.mapBoxKey ? { key: "key", value: SampleAppIModelApp.testAppConfiguration.mapBoxKey } : undefined,
   };
+
+  const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
+
   const realityDataClientOptions: RealityDataClientOptions = {
     /** API Version. v1 by default */
     // version?: ApiVersion;
@@ -732,14 +758,14 @@ async function main() {
       realityDataAccess: new RealityDataAccessClient(realityDataClientOptions),
       renderSys: { displaySolarShadows: true },
       rpcInterfaces: getSupportedRpcs(),
-      hubAccess: new IModelHubFrontend(),
+      hubAccess: new FrontendIModelsAccess(iModelClient),
       mapLayerOptions: mapLayerOpts,
       tileAdmin: { cesiumIonKey: SampleAppIModelApp.testAppConfiguration.cesiumIonKey },
     },
   };
 
   // Start the app.
-  await SampleAppIModelApp.startup(opts);
+  await SampleAppIModelApp.startup(opts, iModelClient);
 
   await SampleAppIModelApp.initialize();
 

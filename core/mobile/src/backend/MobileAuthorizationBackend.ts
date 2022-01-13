@@ -43,7 +43,6 @@ export interface MobileAppAuthorizationConfiguration {
 
 /** Utility to provide OIDC/OAuth tokens from native ios app to frontend
  * @beta
- * Maybe not needed? Ask Mobile-sdk team
  */
 export class MobileAuthorizationBackend implements AuthorizationClient {
   protected _accessToken?: AccessToken;

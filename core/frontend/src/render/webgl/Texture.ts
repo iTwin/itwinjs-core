@@ -171,8 +171,6 @@ export class Texture extends RenderTexture implements WebGLDisposable {
   public dispose() {
     dispose(this.texture);
   }
-
-  public get hasTranslucency(): boolean { return TextureTransparency.Opaque !== this.transparency; }
 }
 
 function getDataType(data: Texture2DData): GL.Texture.DataType {

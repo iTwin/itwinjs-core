@@ -4,11 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { AccessToken, BentleyError, BentleyStatus, GuidString } from "@itwin/core-bentley";
 import { Project as ITwin } from "@itwin/projects-client";
-import {
-  BriefcaseQuery, ChangeSet, ChangeSetQuery, IModelBankClient, IModelBankFileSystemITwinClient, IModelHubFrontend, IModelQuery, VersionQuery,
-} from "@bentley/imodelhub-client";
 import { AuthorizationClient, BriefcaseId, ChangesetIndexAndId, IModelVersion } from "@itwin/core-common";
 import { FrontendHubAccess, IModelIdArg } from "@itwin/core-frontend";
+import { BriefcaseQuery, ChangeSet, ChangeSetQuery, IModelBankClient, IModelBankFileSystemITwinClient, IModelQuery, VersionQuery } from "@bentley/imodelbank-client"; // TODO: Remove when we have a replacement for the current iModelBank client in the way
+import { AccessTokenAdapter, FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
+import { IModelsClient as AuthorIModelsClient, Briefcase, GetBriefcaseListParams, GetIModelListParams, IModelScopedOperationParams, MinimalIModel, ReleaseBriefcaseParams, SPECIAL_VALUES_ME, toArray } from "@itwin/imodels-client-authoring";
+import { IModelsClient as FrontendIModelsClient } from "@itwin/imodels-client-management";
 import { ITwinAccessClientWrapper } from "../../common/ITwinAccessClientWrapper";
 
 export interface IModelNameArg {
@@ -28,17 +29,65 @@ export interface TestFrontendHubAccess extends FrontendHubAccess {
   releaseBriefcase(arg: BriefcaseIdArg): Promise<void>;
 }
 
+export class TestHubFrontend extends FrontendIModelsAccess {
+  private getScopedOperationParams(arg: IModelIdArg): IModelScopedOperationParams {
+    return {
+      authorization: AccessTokenAdapter.toAuthorizationCallback(arg.accessToken),
+      iModelId: arg.iModelId,
+    };
+  }
+
+  public async queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined> {
+    const getIModelListParams: GetIModelListParams = {
+      authorization: AccessTokenAdapter.toAuthorizationCallback(arg.accessToken),
+      urlParams: {
+        projectId: arg.iTwinId,
+        name: arg.iModelName,
+      },
+    };
+
+    const iModelsIterator: AsyncIterableIterator<MinimalIModel> = this._iModelsClient.iModels.getMinimalList(getIModelListParams);
+    const iModels = await toArray(iModelsIterator);
+    return iModels.length === 0 ? undefined : iModels[0].id;
+  }
+  public async getMyBriefcaseIds(arg: IModelIdArg): Promise<number[]> {
+    const getBriefcaseListParams: GetBriefcaseListParams = {
+      ...this.getScopedOperationParams(arg),
+      urlParams: {
+        ownerId: SPECIAL_VALUES_ME,
+      },
+    };
+
+    const briefcasesIterator: AsyncIterableIterator<Briefcase> = this._iModelsClient.briefcases.getRepresentationList(getBriefcaseListParams);
+    const briefcases: Briefcase[] = await toArray(briefcasesIterator);
+    const briefcaseIds: BriefcaseId[] = briefcases.map((briefcase) => briefcase.briefcaseId);
+    return briefcaseIds;
+
+  }
+  public async releaseBriefcase(arg: BriefcaseIdArg): Promise<void> {
+    const releaseBriefcaseParams: ReleaseBriefcaseParams = {
+      ...this.getScopedOperationParams(arg),
+      briefcaseId: arg.briefcaseId,
+    };
+
+    // Need to use the IModelsClient from the authoring package to be able to release the briefcase.
+    const iModelClient = new AuthorIModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
+    return iModelClient.briefcases.release(releaseBriefcaseParams);
+  }
+}
+
+// WARNING: Only this section is allowed to import from imodelbank-client
 export class IModelBankFrontend implements TestFrontendHubAccess {
   private _hubClient: IModelBankClient;
   constructor(orchestratorUrl: string) {
     this._hubClient = new IModelBankClient(orchestratorUrl, undefined);
   }
 
-  private async _getChangesetFromId(arg: IModelIdArg & { changeSetId: string }): Promise<ChangesetIndexAndId> {
-    const changeSets: ChangeSet[] = await this._hubClient.changeSets.get(arg.accessToken, arg.iModelId, new ChangeSetQuery().byId(arg.changeSetId));
-    if (!changeSets[0] || !changeSets[0].index || !changeSets[0].id)
-      throw new BentleyError(BentleyStatus.ERROR, `Changeset ${arg.changeSetId} not found`);
-    return { index: +changeSets[0].index, id: changeSets[0].id };
+  private async _getChangesetFromId(arg: IModelIdArg & { changesetId: string }): Promise<ChangesetIndexAndId> {
+    const changesets: ChangeSet[] = await this._hubClient.changeSets.get(arg.accessToken, arg.iModelId, new ChangeSetQuery().byId(arg.changesetId));
+    if (!changesets[0] || !changesets[0].index || !changesets[0].id)
+      throw new BentleyError(BentleyStatus.ERROR, `Changeset ${arg.changesetId} not found`);
+    return { index: +changesets[0].index, id: changesets[0].id };
   }
 
   public async getLatestChangeset(arg: IModelIdArg): Promise<ChangesetIndexAndId> {
@@ -55,7 +104,7 @@ export class IModelBankFrontend implements TestFrontendHubAccess {
 
     const asOfChangeSetId = version.getAsOfChangeSet();
     if (asOfChangeSetId)
-      return this._getChangesetFromId({ ...arg, changeSetId: asOfChangeSetId });
+      return this._getChangesetFromId({ ...arg, changesetId: asOfChangeSetId });
 
     const versionName = version.getName();
     if (versionName)
@@ -101,10 +150,12 @@ export interface ITwinPlatformAbstraction {
 /** A convenient wrapper that includes a default set of clients necessary to configure an iTwin.js application for the iTwin Platform. */
 export class ITwinPlatformCloudEnv implements ITwinPlatformAbstraction {
   public readonly iTwinMgr = new ITwinAccessClientWrapper(); // this should be the new ITwinRegistryWrapper defined in #2045
-  public readonly hubAccess = new IModelHubFrontend();
+  public readonly hubAccess: TestFrontendHubAccess;
   public readonly authClient?: AuthorizationClient; // This should be the new AuthorizationClient method defined in #
 
   public constructor(authClient?: AuthorizationClient) {
+    const iModelClient = new FrontendIModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
+    this.hubAccess = new TestHubFrontend(iModelClient);
     this.authClient = authClient;
   }
 }
@@ -128,4 +179,3 @@ export class ITwinStackCloudEnv implements ITwinPlatformAbstraction {
     await this.iTwinMgr.createITwin(token, iTwinName);
   }
 }
-
