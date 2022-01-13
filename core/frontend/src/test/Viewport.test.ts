@@ -201,7 +201,7 @@ describe("Viewport", () => {
     });
   });
 
-  describe("readImage", () => {
+  describe.only("read images", () => {
     interface TestCase {
       width: number;
       image: ColorDef[];
@@ -278,27 +278,55 @@ describe("Viewport", () => {
       image: [ ColorDef.red, ColorDef.green, ColorDef.blue, ColorDef.white, purple ],
     };
 
-    it("reads image upside down (BUG)", () => {
-      test(rgbw2, (viewport) => {
-        const image = viewport.readImage()!;
-        expect(image).not.to.be.undefined;
-        expectColors(image, [ ColorDef.blue, ColorDef.white, ColorDef.red, ColorDef.green ]);
+    describe("readImage", () => {
+      it("reads image upside down (BUG)", () => {
+        test(rgbw2, (viewport) => {
+          const image = viewport.readImage()!;
+          expect(image).not.to.be.undefined;
+          expectColors(image, [ ColorDef.blue, ColorDef.white, ColorDef.red, ColorDef.green ]);
+        });
+      });
+
+      it("flips image vertically", () => {
+        test(rgbw2, (viewport) => {
+          const image = viewport.readImage(undefined, undefined, true)!;
+          expect(image).not.to.be.undefined;
+          expectColors(image, rgbw2.image);
+        });
+      });
+
+      it("inverts view rect y (BUG)", () => {
+        test(rgbwp1, (viewport) => {
+          const image = viewport.readImage(new ViewRect(0, 1, 1, 3), undefined, true)!;
+          expect(image).not.to.be.undefined;
+          expectColors(image, [ ColorDef.blue, ColorDef.white ]);
+        });
       });
     });
 
-    it("flips image vertically", () => {
-      test(rgbw2, (viewport) => {
-        const image = viewport.readImage(undefined, undefined, true)!;
-        expect(image).not.to.be.undefined;
-        expectColors(image, rgbw2.image);
+    describe("readImageBuffer", () => {
+      it("reads image right-side up", () => {
+        test(rgbw2, (viewport) => {
+          const image = viewport.readImageBuffer()!;
+          expect(image).not.to.be.undefined;
+          expectColors(image, rgbw2.image);
+        });
       });
-    });
 
-    it("inverts view rect y (BUG)", () => {
-      test(rgbwp1, (viewport) => {
-        const image = viewport.readImage(new ViewRect(0, 1, 1, 3), undefined, true)!;
-        expect(image).not.to.be.undefined;
-        expectColors(image, [ ColorDef.blue, ColorDef.white ]);
+      it("flips image vertically", () => {
+        test(rgbw2, (viewport) => {
+          const image = viewport.readImageBuffer({ flipVertically: true })!;
+          expect(image).not.to.be.undefined;
+          expectColors(image, [ ColorDef.blue, ColorDef.white, ColorDef.red, ColorDef.green ]);
+        });
+      });
+
+      it("does not invert view rect", () => {
+        test(rgbwp1, (viewport) => {
+          const image = viewport.readImageBuffer({ rect: new ViewRect(0, 1, 1, 3) })!;
+          expect(image).not.to.be.undefined;
+          expectColors(image, [ ColorDef.green, ColorDef.blue ]);
+        });
       });
     });
   });
