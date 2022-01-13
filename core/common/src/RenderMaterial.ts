@@ -18,6 +18,7 @@ export abstract class RenderMaterial {
   /** Describes how to map an image to a surface to which this material is applied. */
   public readonly textureMapping?: TextureMapping;
 
+  // eslint-disable-next-line deprecation/deprecation
   protected constructor(params: RenderMaterial.Params) {
     this.key = params.key;
     this.textureMapping = params.textureMapping;
@@ -34,7 +35,7 @@ export namespace RenderMaterial { // eslint-disable-line no-redeclare
     return Math.max(0.0, Math.min(1.0, value));
   }
 
-  /** Parameters used to construct a [[RenderMaterial]] */
+  /** @deprecated Use [CreateRenderMaterialArgs]($frontend). */
   export class Params {
     /** If the material originates from a Material element in the [[IModel]], the Id of that element. */
     public key?: string;
@@ -66,6 +67,7 @@ export namespace RenderMaterial { // eslint-disable-line no-redeclare
     public constructor(key?: string) { this.key = key; }
 
     /** Obtain an immutable instance of a RenderMaterial with all default properties. */
+    // eslint-disable-next-line deprecation/deprecation
     public static readonly defaults = new Params();
 
     /** A value from 0.0 (fully-transparent) to 1.0 (fully-opaque) controlling the transparency of surfaces to which this material is applied;
@@ -77,7 +79,9 @@ export namespace RenderMaterial { // eslint-disable-line no-redeclare
     }
 
     /** Create a RenderMaterial params object using specified key and ColorDef values, as well as an optional texture mapping. */
+    // eslint-disable-next-line deprecation/deprecation
     public static fromColors(key?: string, diffuseColor?: ColorDef, specularColor?: ColorDef, emissiveColor?: ColorDef, reflectColor?: ColorDef, textureMap?: TextureMapping): Params {
+      // eslint-disable-next-line deprecation/deprecation
       const materialParams = new Params();
       materialParams.key = key;
       materialParams.diffuseColor = diffuseColor;
@@ -90,4 +94,5 @@ export namespace RenderMaterial { // eslint-disable-line no-redeclare
   }
 }
 
+// eslint-disable-next-line deprecation/deprecation
 Object.freeze(RenderMaterial.Params.defaults);

@@ -312,6 +312,9 @@ export abstract class RenderSystem implements IDisposable {
    */
   public createMaterial(_params: RenderMaterial.Params, _imodel: IModelConnection): RenderMaterial | undefined { return undefined; }
 
+  /** Create a [RenderMaterial]($common).
+   * @see [[CreateRenderMaterialArgs]] for a description of the material parameters.
+   */
   public createRenderMaterial(_args: CreateRenderMaterialArgs): RenderMaterial | undefined {
     return undefined;
   }
