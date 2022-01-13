@@ -201,10 +201,12 @@ describe("Viewport", () => {
     });
   });
 
-  describe("read images", () => {
+  describe.only("read images", () => {
     interface TestCase {
       width: number;
+      height?: number;
       image: ColorDef[];
+      transparentBackground?: boolean;
     }
 
     class Decorator {
@@ -227,18 +229,23 @@ describe("Viewport", () => {
     }
 
     function test(testCase: TestCase, func: (viewport: ScreenViewport) => void): void {
-      const height = testCase.image.length / testCase.width;
-      expect(height).to.equal(Math.floor(height));
+      const decHeight = testCase.image.length / testCase.width;
+      const rectHeight = testCase.height ?? decHeight;
+      expect(rectHeight).to.equal(Math.floor(rectHeight));
+      expect(decHeight).to.equal(Math.floor(decHeight));
 
       testBlankViewport({
         width: testCase.width,
-        height,
+        height: rectHeight,
         position: "absolute",
         test: (viewport) => {
           expect(viewport.viewRect.width).to.equal(testCase.width);
-          expect(viewport.viewRect.height).to.equal(height);
+          expect(viewport.viewRect.height).to.equal(rectHeight);
 
-          const decorator = new Decorator(testCase.image, testCase.width, height);
+          if (testCase.transparentBackground)
+            viewport.displayStyle.backgroundColor = viewport.displayStyle.backgroundColor.withTransparency(255);
+
+          const decorator = new Decorator(testCase.image, testCase.width, decHeight);
           try {
             viewport.renderFrame();
             func(viewport);
@@ -272,14 +279,28 @@ describe("Viewport", () => {
     };
 
     const purple = ColorDef.from(255, 0, 255);
+    const transpBlack = ColorDef.black.withTransparency(0xff);
+    const halfRed = ColorDef.from(0x80, 0, 0);
 
     const rgbwp1: TestCase = {
       width: 1,
       image: [ ColorDef.red, ColorDef.green, ColorDef.blue, ColorDef.white, purple ],
     };
 
+    const rTransp50pct: TestCase = {
+      width: 1,
+      height: 2,
+      image: [ ColorDef.red.withTransparency(0x7f) ],
+      transparentBackground: true,
+    };
+
+    const rTransp100pct: TestCase = {
+      ...rTransp50pct,
+      image: [ ColorDef.red.withTransparency(0xff) ],
+    };
+
     describe("readImage", () => {
-      it("reads image upside down (BUG)", () => {
+      it("reads image upside down by default (BUG)", () => {
         test(rgbw2, (viewport) => {
           const image = viewport.readImage()!;
           expect(image).not.to.be.undefined;
@@ -287,7 +308,7 @@ describe("Viewport", () => {
         });
       });
 
-      it("flips image vertically", () => {
+      it("flips image vertically if specified", () => {
         test(rgbw2, (viewport) => {
           const image = viewport.readImage(undefined, undefined, true)!;
           expect(image).not.to.be.undefined;
@@ -308,7 +329,7 @@ describe("Viewport", () => {
     });
 
     describe("readImageBuffer", () => {
-      it("reads image right-side up", () => {
+      it("reads image right-side up by default", () => {
         test(rgbw2, (viewport) => {
           const image = viewport.readImageBuffer()!;
           expect(image).not.to.be.undefined;
@@ -316,7 +337,7 @@ describe("Viewport", () => {
         });
       });
 
-      it("flips image vertically", () => {
+      it("produces upside-down image if specified", () => {
         test(rgbw2, (viewport) => {
           const image = viewport.readImageBuffer({ upsideDown: true })!;
           expect(image).not.to.be.undefined;
@@ -332,7 +353,75 @@ describe("Viewport", () => {
         });
       });
 
-      it("preserves background alpha when resizing", () => {
+      it("captures specified region", () => {
+      });
+
+      it("rejects invalid capture rects", () => {
+        test(rgbw2, (viewport) => {
+          const expectNoImage = (left: number, top: number, right: number, bottom: number) => {
+            expect(viewport.readImageBuffer({ rect: new ViewRect(left, top, right, bottom) })).to.be.undefined;
+          };
+
+          expectNoImage(0, 0, -1, -1);
+          expectNoImage(0, 0, 100, 1);
+          expectNoImage(0, 0, 1, 100);
+          expectNoImage(-1, -1, 1, 1);
+          expectNoImage(1, 1, 1, 1);
+        });
+      });
+
+      it("resizes", () => {
+      });
+
+      it("rejects invalid sizes", () => {
+        test(rgbw2, (viewport) => {
+          const expectNoImage = (width: number, height: number) => {
+            expect(viewport.readImageBuffer({ size: { x: width, y: height } })).to.be.undefined;
+          };
+
+          expectNoImage(0, 1);
+          expectNoImage(1, 0);
+          expectNoImage(-1, 1);
+          expectNoImage(1, -1);
+        });
+      });
+
+      it("discards alpha by default", () => {
+        test({ ...rTransp50pct, transparentBackground: false }, (viewport) => {
+          const image = viewport.readImageBuffer()!;
+          expect(image).not.to.be.undefined;
+          expectColors(image, [ halfRed, ColorDef.black ]);
+        });
+
+        test({ ...rTransp100pct, transparentBackground: false }, (viewport) => {
+          const image = viewport.readImageBuffer()!;
+          expect(image).not.to.be.undefined;
+          expectColors(image, [ ColorDef.black, ColorDef.black ]);
+        });
+      });
+
+      it("preserves background alpha if background color is fully transparent", () => {
+        test(rTransp50pct, (viewport) => {
+          const image = viewport.readImageBuffer()!;
+          expect(image).not.to.be.undefined;
+          expectColors(image, [ halfRed, transpBlack ]);
+        });
+      });
+
+      it("doesn't preserve background alpha when resizing (canvas limitation", () => {
+        // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/putImageData#data_loss_due_to_browser_optimization
+        test(rTransp50pct, (viewport) => {
+          const image = viewport.readImageBuffer({ size: { x: 2, y: 4 } })!;
+          expect(image).not.to.be.undefined;
+          for (let i = 3; i < 2 * 4 * 4; i += 4)
+            expect(image.data[i]).to.equal(0xff);
+        });
+      });
+
+      it("produces undefined if image is entirely transparent background pixels", () => {
+        test(rTransp100pct, (viewport) => {
+          expect(viewport.readImageBuffer()).to.be.undefined;
+        });
       });
     });
   });

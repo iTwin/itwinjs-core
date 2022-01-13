@@ -1047,6 +1047,9 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     // Scale image.
     if (args?.size && (args.size.x !== captureRect.width || args.size.y !== captureRect.height)) {
+      if (args.size.x <= 0 || args.size.y <= 0)
+        return undefined;
+
       let canvas = imageBufferToCanvas(image, true);
       if (!canvas)
         return undefined;
