@@ -849,8 +849,8 @@ describe("Learning Snippets", () => {
 
       it("uses `calculatedProperties` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.CalculatedProperties.Ruleset
-        // The specification returns content for `bis.SpatialViewDefinition` and a custom
-        // calculated property `Camera view direction`.
+        // In addition to returning content for all `bis.SpatialViewDefinition` instances, this ruleset also adds a
+        // custom `Camera view direction` property to each instance.
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
