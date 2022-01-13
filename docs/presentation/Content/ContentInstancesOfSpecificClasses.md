@@ -26,7 +26,7 @@ A specification that creates content for  instances of specific ECClasses.
 
 ### Attribute: `classes`
 
-Defines a single or an array of [multi schema classes](../Common-Rules/MultiSchemaClassesSpecification.md) which specify what and how the classes need to be selected to form result content.
+Defines a set of [multi schema classes](../Common-Rules/MultiSchemaClassesSpecification.md) that specify which ECClasses need to be selected to form the result.
 
 ```ts
 [[include:ContentInstancesOfSpecificClasses.Classes.Ruleset]]
