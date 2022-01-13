@@ -609,7 +609,7 @@ describe("Learning Snippets", () => {
             specifications: [{
               specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
               // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.MultiSchemaClasses.Ruleset
-              // The specification returns content of all `bis.PhysicalModel` and `bis.SpatialViewDefinition` classes.
+              // This specification selects instances of `bis.PhysicalModel` and `bis.SpatialViewDefinition` classes. Classes that derive from this list will not be included.
               classes: {
                 schemaName: "BisCore",
                 classNames: ["PhysicalModel", "SpatialViewDefinition"],
