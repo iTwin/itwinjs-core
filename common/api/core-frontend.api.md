@@ -7017,8 +7017,6 @@ export class NullTarget extends RenderTarget {
     // (undocumented)
     overrideFeatureSymbology(): void;
     // (undocumented)
-    readImage(): undefined;
-    // (undocumented)
     readPixels(): void;
     // (undocumented)
     get renderSystem(): any;
@@ -7779,6 +7777,13 @@ export interface ReadGltfGraphicsArgs {
     pickableOptions?: PickableGraphicOptions & {
         modelId?: Id64String;
     };
+}
+
+// @public
+export interface ReadImageBufferArgs {
+    rect?: ViewRect;
+    size?: XAndY;
+    upsideDown?: boolean;
 }
 
 // @internal
@@ -8759,7 +8764,10 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
     // (undocumented)
     pickOverlayDecoration(_pt: XAndY): CanvasDecoration | undefined;
     queryVisibleTileFeatures(_options: QueryTileFeaturesOptions, _iModel: IModelConnection, callback: QueryVisibleFeaturesCallback): void;
+    // @deprecated (undocumented)
     readImage(_rect: ViewRect, _targetSize: Point2d, _flipVertically: boolean): ImageBuffer | undefined;
+    // (undocumented)
+    readImageBuffer(_args?: ReadImageBufferArgs): ImageBuffer | undefined;
     // (undocumented)
     readImageToCanvas(): HTMLCanvasElement;
     abstract readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean): void;
@@ -10059,6 +10067,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     queryVisibleTileFeatures(options: QueryTileFeaturesOptions, iModel: IModelConnection, callback: QueryVisibleFeaturesCallback): void;
     readImage(wantRectIn: ViewRect, targetSizeIn: Point2d, flipVertically: boolean): ImageBuffer | undefined;
+    // (undocumented)
+    readImageBuffer(args?: ReadImageBufferArgs): ImageBuffer | undefined;
     // (undocumented)
     protected readImagePixels(out: Uint8Array, x: number, y: number, w: number, h: number): boolean;
     // (undocumented)
@@ -12777,7 +12787,9 @@ export abstract class Viewport implements IDisposable {
     pointToGrid(point: Point3d): void;
     // @beta
     queryVisibleFeatures(options: QueryVisibleFeaturesOptions, callback: QueryVisibleFeaturesCallback): void;
+    // @deprecated
     readImage(rect?: ViewRect, targetSize?: Point2d, flipVertically?: boolean): ImageBuffer | undefined;
+    readImageBuffer(args?: ReadImageBufferArgs): ImageBuffer | undefined;
     readImageToCanvas(): HTMLCanvasElement;
     readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable?: boolean): void;
     // @internal
