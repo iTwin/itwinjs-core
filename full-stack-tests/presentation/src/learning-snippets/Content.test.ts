@@ -709,8 +709,7 @@ describe("Learning Snippets", () => {
 
       it("uses `instanceFilter` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.InstanceFilter.Ruleset
-        // The specification returns content of all filtered `bis.SpatialViewDefinition` instances
-        // whose `Pitch` property value is higher or equal to 0.
+        // This ruleset returns content of all `bis.SpatialViewDefinition` instances whose `Pitch` property is greater or equal to 0
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
