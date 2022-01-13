@@ -237,7 +237,6 @@ describe("RenderTarget", () => {
 
       // Read full image, no resize
       expectImageDimensions(undefined, undefined, devRect.width, devRect.height);
-      expectImageDimensions(new ViewRect(0, 0, -1, -1), undefined, devRect.width, devRect.height);
       expectImageDimensions(undefined, new Point2d(devRect.width, devRect.height), devRect.width, devRect.height);
 
       // Read sub-image, no resize
@@ -251,7 +250,7 @@ describe("RenderTarget", () => {
 
       // Read full image and resize
       expectImageDimensions(undefined, new Point2d(256, 128), 256, 128);
-      expectImageDimensions(new ViewRect(0, 0, -1, -1), new Point2d(50, 200), 50, 200);
+      expectImageDimensions(undefined, new Point2d(50, 200), 50, 200);
       expectImageDimensions(cssRect, new Point2d(10, 10), 10, 10);
       expectImageDimensions(undefined, new Point2d(devRect.width, devRect.height), devRect.width, devRect.height);
 
@@ -525,7 +524,7 @@ describe("RenderTarget", () => {
       IModelApp.viewManager.dropDecorator(decorator);
 
       // expect green blended with black background
-      const testColor = vp.readColor(0, 149); // top left pixel, test vp coords are flipped
+      const testColor = vp.readColor(0, 0); // top left pixel
       expect(testColor.r).equals(0);
       expect(testColor.g).approximately(128, 3);
       expect(testColor.b).equals(0);
