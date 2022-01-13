@@ -3,15 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Gradient, ImageSource, ImageSourceFormat, RenderTexture, TextureTransparency } from "@itwin/core-common";
+import {
+  Gradient, ImageSource, ImageSourceFormat, RenderMaterial, RenderTexture, RgbColorProps, TextureTransparency,
+} from "@itwin/core-common";
 import { Capabilities, WebGLContext } from "@itwin/webgl-compatibility";
 import { IModelApp } from "../../../IModelApp";
+import { CreateRenderMaterialArgs } from "../../../render/RenderMaterial";
 import { IModelConnection } from "../../../IModelConnection";
 import { MockRender } from "../../../render/MockRender";
+import { Material } from "../../../render/webgl/Material";
 import { RenderSystem } from "../../../render/RenderSystem";
 import { TileAdmin } from "../../../tile/internal";
 import { System } from "../../../render/webgl/System";
 import { createBlankConnection } from "../../createBlankConnection";
+import { unpackAndNormalizeMaterialParam } from "./Material.test";
 
 function _createCanvas(): HTMLCanvasElement | undefined {
   const canvas = document.createElement("canvas");
@@ -404,6 +409,61 @@ describe("System", () => {
     });
 
     it("produces expected materials from input", () => {
+      function unpackMaterial(mat: Material): CreateRenderMaterialArgs {
+        const unpackColor = (r: number, g: number, b: number): RgbColorProps => {
+          const unpack = (x: number) => Math.floor(x * 255 + 0.5);
+          return { r: unpack(r), g: unpack(g), b: unpack(b) };
+        };
+
+        const weights = unpackAndNormalizeMaterialParam(mat.fragUniforms[0]);
+        const texWeightAndSpecR = unpackAndNormalizeMaterialParam(mat.fragUniforms[1]);
+        const specGB = unpackAndNormalizeMaterialParam(mat.fragUniforms[2]);
+        const specExp = mat.fragUniforms[3];
+
+        const args: CreateRenderMaterialArgs = {
+          alpha: -1 !== mat.rgba[3] ? mat.rgba[3] : undefined,
+          diffuse: {
+            weight: weights.x,
+            color: -1 !== mat.rgba[0] ? unpackColor(mat.rgba[0], mat.rgba[1], mat.rgba[2]) : undefined,
+          },
+          specular: {
+            color: unpackColor(texWeightAndSpecR.y, specGB.x, specGB.y),
+            weight: weights.y,
+            exponent: specExp,
+          },
+        };
+
+        if (mat.textureMapping) {
+          args.textureMapping = {
+            texture: mat.textureMapping.texture,
+            mode: mat.textureMapping.params.mode,
+            weight: mat.textureMapping.params.weight,
+            worldMapping: mat.textureMapping.params.worldMapping,
+            transform: mat.textureMapping.params.textureMatrix,
+          };
+        }
+
+        return args;
+      }
+
+      const defaults: CreateRenderMaterialArgs = {
+        diffuse: { weight: 0.6 },
+        specular: { weight: 0.4, exponent: 13.5, color: { r: 255, g: 255, b: 255 } },
+      };
+
+      const test = (args: CreateRenderMaterialArgs, expected?: CreateRenderMaterialArgs) => {
+        const mat = IModelApp.renderSystem.createRenderMaterial(args) as Material;
+        expect(mat).not.to.be.undefined;
+
+        const actual = unpackMaterial(mat);
+
+        expected = expected ?? args;
+        expected = { ...defaults, ...expected };
+
+        expect(actual).to.deep.equal(expected);
+      };
+
+      test({ }, defaults);
     });
   });
 

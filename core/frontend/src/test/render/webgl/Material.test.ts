@@ -15,8 +15,10 @@ function unpackMaterialParam(f: number): XY {
   return v;
 }
 
-// Equivalent to the glsl function used in glsl/Material.ts to unpack and normalize a vec3 material param from a packed float value.
-function unpackAndNormalizeMaterialParam(f: number): XY {
+/** Equivalent to the glsl function used in glsl/Material.ts to unpack and normalize a vec3 material param from a packed float value.
+ * @internal
+ */
+export function unpackAndNormalizeMaterialParam(f: number): XY {
   const v = unpackMaterialParam(f);
   v.x /= 255.0;
   v.y /= 255.0;
