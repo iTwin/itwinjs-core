@@ -11,8 +11,10 @@ publish: false
   const params = new RenderMaterial.Params();
   params.alpha = 0.5;
   params.diffuseColor = ColorDef.blue;
-  params.diffuseWeight = 0.4;
-  params.textureMapping = new TextureMapping(texture, new TextureMapping.Params({ textureWeight: 0.25 }));
+  params.diffuse = 0.4;
+
+  const mapParams = new TextureMapping.Params({ textureWeight: 0.25 });
+  params.textureMapping = new TextureMapping(texture, mapParams);
   const material = IModelApp.renderSystem.createMaterial(params, iModel);
 ```
 
