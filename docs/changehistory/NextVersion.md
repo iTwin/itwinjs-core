@@ -16,6 +16,7 @@ Table of Contents:
 - [New features](#new-features)
   - [Display System](#display-system)
   - [AppUi Framework](#new-appui-features)
+  - [Presentation](#new-presentation-features)
   - [ECSql](#new-ecsql-features)
 - [Breaking changes](#breaking-changes)
   - [Application Setup](#application-setup)
@@ -187,7 +188,29 @@ Improvements were made to the performance of [ParticleCollectionBuilder]($fronte
 
 Note: `readGltfGraphics` targets the [glTF 2.0 specification](https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html), but implementation of the full specification is an ongoing work in progress. The current implementation can successfully read many glTF assets, but if a particular asset fails to load or display properly, please [file an issue](https://github.com/iTwin/itwinjs-core/issues).
 
-### Presentation system
+#### Replacement for Viewport.readImage
+
+[Viewport.readImage]($frontend) suffers from a cumbersome API and several bugs. In particular, if it is asked to read a sub-region of the image it will calculate the y values incorrectly; and it produces an upside-down image by default. It has been deprecated in favor of [Viewport.readImageBuffer]($frontend). Callers of `readImage` can be upgraded as follows:
+
+```ts
+  // Use default arguments for readImage.
+  viewport.readImage(); // old - upside-down by default!
+  viewport.readImageBuffer({ upsideDown: true }); // new
+
+  // Read the entire image right-side-up - the typical case:
+  viewport.readImage(undefined, undefined, false); // old - must explicitly request right-side-up!
+  viewport.readImageBuffer(); // new
+
+  // Read a sub-rect of the image
+  viewport.readImage(rect); // old - produces incorrect results!
+  viewport.readImageBuffer({ rect }); // new
+
+  // Resize the image
+  viewport.readImage(undefined, size); // old
+  viewport.readImageBuffer({ size });
+```
+
+### New presentation features
 
 #### Presentation rule additions
 

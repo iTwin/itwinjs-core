@@ -849,7 +849,7 @@ class RasterAttachment {
     view.setAspectRatioSkew(skew);
 
     if (true !== props.jsonProperties?.displayOptions?.preserveBackground) {
-      // Make background color 100% transparent so that Viewport.readImage() will discard transparent pixels.
+      // Make background color 100% transparent so that Viewport.readImageBuffer() will discard transparent pixels.
       const bgColor = sheetView.displayStyle.backgroundColor.withAlpha(0);
       view.displayStyle.backgroundColor = bgColor;
     }
@@ -924,7 +924,7 @@ class RasterAttachment {
 
   private createGraphics(vp: Viewport): RenderGraphic | undefined {
     // Create a texture from the contents of the view.
-    const image = vp.readImage(vp.viewRect, undefined, false);
+    const image = vp.readImageBuffer({ upsideDown: true });
     if (undefined === image)
       return undefined;
 

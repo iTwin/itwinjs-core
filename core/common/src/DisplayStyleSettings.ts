@@ -106,7 +106,7 @@ export interface DisplayStyleSettingsProps {
    * @deprecated Use DisplayStyleSettingsProps.renderTimeline.
    * @internal
    */
-  scheduleScript?: RenderSchedule.ModelTimelineProps[];
+  scheduleScript?: RenderSchedule.ScriptProps;
   /** The Id of a [RenderTimeline]($backend) element containing a [[RenderSchedule.Script]] that can be used to animate the view. */
   renderTimeline?: Id64String;
   /** The point in time reflected by the view, in UNIX seconds.
@@ -453,7 +453,7 @@ export class DisplayStyleSettings {
    * @deprecated Use onRenderTimelineChanged
    * @internal
    */
-  public readonly onScheduleScriptPropsChanged = new BeEvent<(newProps: Readonly<RenderSchedule.ModelTimelineProps[]> | undefined) => void>();
+  public readonly onScheduleScriptPropsChanged = new BeEvent<(newProps: Readonly<RenderSchedule.ScriptProps> | undefined) => void>();
 
   /** Event raised just prior to assignment to the [[renderTimeline]] property. */
   public readonly onRenderTimelineChanged = new BeEvent<(newRenderTimeline: Id64String | undefined) => void>();
@@ -629,21 +629,26 @@ export class DisplayStyleSettings {
     this._json.mapImagery = this._mapImagery.toJSON();
   }
 
-  /** The Id of a [RenderTimeline]($backend) element containing a [[RenderSchedule.Script]] used to animate the view. */
+  /** The Id of a [RenderTimeline]($backend) element containing a [[RenderSchedule.Script]] used to animate the view.
+   * @note If this [[DisplayStyleSettings]] is associated with a [DisplayStyleState]($frontend), assigning to [[renderTimeline]] will enqueue asynchronous loading of
+   * the script from the [RenderTimeline]($backend) element; for more readable code, prefer instead to `await` [DisplayStyleState.changeRenderTimeline]($frontend).
+   */
   public get renderTimeline(): Id64String | undefined {
     return this._json.renderTimeline;
   }
   public set renderTimeline(id: Id64String | undefined) {
-    this.onRenderTimelineChanged.raiseEvent(id);
-    this._json.renderTimeline = id;
+    if (id !== this.renderTimeline) {
+      this.onRenderTimelineChanged.raiseEvent(id);
+      this._json.renderTimeline = id;
+    }
   }
 
   /** @internal @deprecated */
-  public get scheduleScriptProps(): RenderSchedule.ModelTimelineProps[] | undefined {
+  public get scheduleScriptProps(): RenderSchedule.ScriptProps | undefined {
     // eslint-disable-next-line deprecation/deprecation
     return this._json.scheduleScript;
   }
-  public set scheduleScriptProps(props: RenderSchedule.ModelTimelineProps[] | undefined) {
+  public set scheduleScriptProps(props: RenderSchedule.ScriptProps | undefined) {
     // eslint-disable-next-line deprecation/deprecation
     this.onScheduleScriptPropsChanged.raiseEvent(props);
     // eslint-disable-next-line deprecation/deprecation

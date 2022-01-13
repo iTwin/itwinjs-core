@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Deprecated Viewport.readImage in favor of Viewport.readImageBuffer.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
