@@ -171,21 +171,37 @@ export class RpcBriefcaseUtility {
       db = await SnapshotDb.openCheckpointV2(checkpoint);
       Logger.logTrace(loggerCategory, "using V2 checkpoint briefcase", () => ({ ...tokenProps }));
     } catch (e) {
-      Logger.logTrace(loggerCategory, "unable to open V2 checkpoint - falling back to V1 checkpoint", () => ({ error: BentleyError.getErrorProps(e), ...tokenProps }));
+      Logger.logTrace(loggerCategory, "unable to lazily open V2 checkpoint - attempting to download V2 checkpoint", () => ({ error: BentleyError.getErrorProps(e), ...tokenProps }));
+      try {
+        const v2Request = {
+          checkpoint,
+          localFile: V1CheckpointManager.getFileName(checkpoint),
+          aliasFiles: [],
+          downloadV2Only: true,
+        };
 
-      // this isn't a v2 checkpoint. Set up a race between the specified timeout period and the open. Throw an RpcPendingResponse exception if the timeout happens first.
-      const request = {
-        checkpoint,
-        localFile: V1CheckpointManager.getFileName(checkpoint),
-        aliasFiles: [],
-      };
-      db = await BeDuration.race(timeout, V1CheckpointManager.getCheckpointDb(request));
+        db = await BeDuration.race(timeout, CheckpointManager.downloadCheckpoint(v2Request));
+        if (db === undefined) {
+          Logger.logTrace(loggerCategory, "Open V2 checkpoint - pending", () => ({ ...tokenProps }));
+          throw new RpcPendingResponse();
+        }
+        Logger.logTrace(loggerCategory, `Opened V2 checkpoint`, () => ({ ...tokenProps }));
+      } catch (error) {
+        Logger.logTrace(loggerCategory, "Unable to download V2 checkpoint, falling back to V1 checkpoint", () => ({ error: BentleyError.getErrorProps(error), ...tokenProps }));
+        // this isn't a v2 checkpoint. Set up a race between the specified timeout period and the open. Throw an RpcPendingResponse exception if the timeout happens first.
+        const request = {
+          checkpoint,
+          localFile: V1CheckpointManager.getFileName(checkpoint),
+          aliasFiles: [],
+        };
+        db = await BeDuration.race(timeout, V1CheckpointManager.getCheckpointDb(request));
 
-      if (db === undefined) {
-        Logger.logTrace(loggerCategory, "Open V1 checkpoint - pending", () => ({ ...tokenProps }));
-        throw new RpcPendingResponse();
+        if (db === undefined) {
+          Logger.logTrace(loggerCategory, "Open V1 checkpoint - pending", () => ({ ...tokenProps }));
+          throw new RpcPendingResponse();
+        }
+        Logger.logTrace(loggerCategory, "Opened V1 checkpoint", () => ({ ...tokenProps }));
       }
-      Logger.logTrace(loggerCategory, "Opened V1 checkpoint", () => ({ ...tokenProps }));
     }
 
     BriefcaseManager.logUsage(db, activity);

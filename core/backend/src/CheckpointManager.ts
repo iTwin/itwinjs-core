@@ -52,6 +52,9 @@ export interface DownloadRequest {
   /** name of local file to hold the downloaded data. */
   localFile: LocalFileName;
 
+  /** If true, skips v1 fallback in CheckpointManager.downloadCheckpoint call which takes place if no v2 checkpoints are found for the given iModelId. */
+  readonly downloadV2Only?: boolean;
+
   /** A list of full fileName paths to test before downloading. If a valid file exists by one of these names,
    * no download is performed and `localFile` is updated to reflect the fact that the file exists with that name.
    * This can be used, for example, to look for checkpoints from previous versions if the naming strategy changes.
@@ -206,9 +209,8 @@ export class CheckpointManager {
         Logger.logInfo(loggerCategory, `Downloaded v2 checkpoint: IModel=${request.checkpoint.iModelId}, changeset=${request.checkpoint.changeset.id}`);
       return changesetId;
     } catch (error) {
-      if (error instanceof IModelError && error.errorNumber === IModelStatus.NotFound) // No V2 checkpoint available, try a v1 checkpoint
-        return V1CheckpointManager.downloadCheckpoint(request);
-
+      if (!request.downloadV2Only && error instanceof IModelError && error.errorNumber === IModelStatus.NotFound)
+        return V1CheckpointManager.downloadCheckpoint(request); // No V2 checkpoint available, try a v1 checkpoint
       throw (error); // most likely, was aborted
     }
   }
