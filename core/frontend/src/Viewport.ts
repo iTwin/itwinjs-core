@@ -2442,7 +2442,7 @@ export abstract class Viewport implements IDisposable {
   }
 
   /** Reads the current image from this viewport into an HTMLCanvasElement with a Canvas2dRenderingContext such that additional 2d graphics can be drawn onto it.
-   * @see [[readImageBuffer]] to obtain the image as a JPEG or PNG.
+   * @see [[readImageBuffer]] to obtain the image as an array of RGBA pixels.
    */
   public readImageToCanvas(): HTMLCanvasElement {
     return this.target.readImageToCanvas();
