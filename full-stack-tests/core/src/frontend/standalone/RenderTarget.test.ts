@@ -221,13 +221,13 @@ describe("RenderTarget", () => {
   });
 
   it("should read image at expected sizes", async () => {
-    // NOTE: rect is in CSS pixels. ImageBuffer returned by readImage is in device pixels. vp.target.viewRect is in device pixels.
+    // NOTE: rect is in CSS pixels. ImageBuffer returned by readImageBuffer is in device pixels. vp.target.viewRect is in device pixels.
     const cssRect = new ViewRect(0, 0, 100, 100);
     await testViewportsWithDpr(imodel, cssRect, async (vp) => {
       await vp.waitForAllTilesToRender();
 
       const expectImageDimensions = (readRect: ViewRect | undefined, targetSize: Point2d | undefined, expectedWidth: number, expectedHeight: number) => {
-        const img = vp.readImage(readRect, targetSize)!;
+        const img = vp.readImageBuffer({ rect: readRect, size: targetSize })!;
         expect(img).not.to.be.undefined;
         expect(img.width).to.equal(Math.floor(expectedWidth));
         expect(img.height).to.equal(Math.floor(expectedHeight));
@@ -376,7 +376,7 @@ describe("RenderTarget", () => {
           expect(c.g).to.equal(0);
           expect(c.b).least(0x70);
           expect(c.b).most(0x90);
-          expect(c.a).to.equal(0xff); // The alpha is intentionally not preserved by Viewport.readImage()
+          expect(c.a).to.equal(0xff); // The alpha is intentionally not preserved by Viewport.readImageBuffer()
         }
       }
     });

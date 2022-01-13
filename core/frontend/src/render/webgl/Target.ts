@@ -1083,7 +1083,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   }
 
   public copyImageToCanvas(): HTMLCanvasElement {
-    const image = this.readImage(new ViewRect(0, 0, -1, -1), Point2d.createZero(), true);
+    const image = this.readImageBuffer();
     const canvas = undefined !== image ? imageBufferToCanvas(image, false) : undefined;
     const retCanvas = undefined !== canvas ? canvas : document.createElement("canvas");
     const pixelRatio = this.devicePixelRatio;

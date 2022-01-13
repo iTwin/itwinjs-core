@@ -2428,6 +2428,7 @@ export abstract class Viewport implements IDisposable {
    * @deprecated Use readImageBuffer.
    */
   public readImage(rect: ViewRect = new ViewRect(0, 0, -1, -1), targetSize: Point2d = Point2d.createZero(), flipVertically: boolean = false): ImageBuffer | undefined {
+    // eslint-disable-next-line deprecation/deprecation
     return this.target.readImage(rect, targetSize, flipVertically);
   }
 
@@ -3333,7 +3334,7 @@ export interface OffScreenViewportOptions {
 
 /** A viewport that draws to an offscreen buffer instead of to the screen. An offscreen viewport is never added to the [[ViewManager]], therefore does not participate in
  * the render loop. Its dimensions are specified directly instead of being derived from an HTMLCanvasElement, and its renderFrame function must be manually invoked.
- * Offscreen viewports can be useful for, e.g., producing an image from the contents of a view (see [[Viewport.readImage]] and [[Viewport.readImageToCanvas]])
+ * Offscreen viewports can be useful for, e.g., producing an image from the contents of a view (see [[Viewport.readImageBuffer]] and [[Viewport.readImageToCanvas]])
  * without drawing to the screen.
  * @public
  */
