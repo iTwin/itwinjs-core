@@ -37,6 +37,7 @@ import { RenderMemory } from "./RenderMemory";
 import { RenderTarget } from "./RenderTarget";
 import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "./ScreenSpaceEffectBuilder";
 import { CreateTextureArgs, CreateTextureFromSourceArgs, TextureCacheKey } from "./RenderTexture";
+import { CreateRenderMaterialArgs } from "./RenderMaterial";
 
 /* eslint-disable no-restricted-syntax */
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh
@@ -307,8 +308,13 @@ export abstract class RenderSystem implements IDisposable {
    * @param _params A description of the material's properties.
    * @param _imodel The IModelConnection associated with the material.
    * @returns the newly-created material, or undefined if the material could not be created or if a material with the same key as that specified in the params already exists.
+   * @deprecated Use [[createRenderMaterial]].
    */
   public createMaterial(_params: RenderMaterial.Params, _imodel: IModelConnection): RenderMaterial | undefined { return undefined; }
+
+  public createRenderMaterial(_args: CreateRenderMaterialArgs): RenderMaterial | undefined {
+    return undefined;
+  }
 
   /** Creates a [[GraphicBuilder]] for creating a [[RenderGraphic]].
    * @param placement The local-to-world transform in which the builder's geometry is to be defined.

@@ -42,9 +42,9 @@ export namespace RenderMaterial { // eslint-disable-line no-redeclare
     public diffuseColor?: ColorDef;
     /** Specular color. Defaults to white if undefined. */
     public specularColor?: ColorDef;
-    /** Currently unused. */
+    /** Currently unused. @alpha */
     public emissiveColor?: ColorDef;
-    /** Currently unused. */
+    /** Currently unused. @alpha */
     public reflectColor?: ColorDef;
     /** Optional pattern mapping applied to the surface. */
     public textureMapping?: TextureMapping;
@@ -53,13 +53,13 @@ export namespace RenderMaterial { // eslint-disable-line no-redeclare
     /** Specular weight in [0..1] */
     public specular: number = 0.4;
     public specularExponent: number = 13.5;
-    /** Currently unused. */
+    /** Currently unused. @alpha */
     public reflect: number = 0.0;
-    /** Currently unused. */
+    /** Currently unused. @alpha */
     public refract: number = 1.0;
-    /** Currently unused. */
+    /** Currently unused. @alpha */
     public ambient: number = .3;
-    /** Currently unused. */
+    /** Currently unused. @alpha */
     public shadows = true;
     private _alpha?: number;
 
