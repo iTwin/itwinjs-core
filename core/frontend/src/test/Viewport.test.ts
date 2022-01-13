@@ -201,12 +201,12 @@ describe("Viewport", () => {
     });
   });
 
-  describe.only("read images", () => {
+  describe("read images", () => {
     interface TestCase {
       width: number;
       height?: number;
       image: ColorDef[];
-      transparentBackground?: boolean;
+      bgColor?: ColorDef;
     }
 
     class Decorator {
@@ -242,8 +242,8 @@ describe("Viewport", () => {
           expect(viewport.viewRect.width).to.equal(testCase.width);
           expect(viewport.viewRect.height).to.equal(rectHeight);
 
-          if (testCase.transparentBackground)
-            viewport.displayStyle.backgroundColor = viewport.displayStyle.backgroundColor.withTransparency(255);
+          if (testCase.bgColor)
+            viewport.displayStyle.backgroundColor = testCase.bgColor;
 
           const decorator = new Decorator(testCase.image, testCase.width, decHeight);
           try {
@@ -279,6 +279,9 @@ describe("Viewport", () => {
     };
 
     const purple = ColorDef.from(255, 0, 255);
+    const cyan = ColorDef.from(0, 255, 255);
+    const yellow = ColorDef.from(255, 255, 0);
+    const grey = ColorDef.from(127, 127, 127);
     const transpBlack = ColorDef.black.withTransparency(0xff);
     const halfRed = ColorDef.from(0x80, 0, 0);
 
@@ -291,12 +294,21 @@ describe("Viewport", () => {
       width: 1,
       height: 2,
       image: [ ColorDef.red.withTransparency(0x7f) ],
-      transparentBackground: true,
+      bgColor: transpBlack,
     };
 
     const rTransp100pct: TestCase = {
       ...rTransp50pct,
       image: [ ColorDef.red.withTransparency(0xff) ],
+    };
+
+    const square3: TestCase = {
+      width: 3,
+      image: [
+        ColorDef.red, ColorDef.green, ColorDef.blue,
+        ColorDef.white, ColorDef.black, grey,
+        cyan, purple, yellow,
+      ],
     };
 
     describe("readImage", () => {
@@ -322,9 +334,6 @@ describe("Viewport", () => {
           expect(image).not.to.be.undefined;
           expectColors(image, [ ColorDef.blue, ColorDef.white ]);
         });
-      });
-
-      it("discards background alpha when resizing (BUG)", () => {
       });
     });
 
@@ -354,6 +363,21 @@ describe("Viewport", () => {
       });
 
       it("captures specified region", () => {
+        test(square3, (viewport) => {
+          const capture = (left: number, top: number, width: number, height: number, expected: ColorDef[]) => {
+            const rect = new ViewRect(left, top, left + width, top + height);
+            const image = viewport.readImageBuffer({ rect })!;
+            expect(image).not.to.be.undefined;
+            expectColors(image, expected);
+          };
+
+          capture(0, 0, 3, 3, square3.image);
+          capture(0, 0, 2, 2, [ ColorDef.red, ColorDef.green, ColorDef.white, ColorDef.black ]);
+          capture(1, 1, 2, 2, [ ColorDef.black, grey, purple, yellow ]);
+          capture(2, 0, 1, 3, [ ColorDef.blue, grey, yellow ]);
+          capture(0, 2, 3, 1, [ cyan, purple, yellow ]);
+          capture(1, 2, 1, 1, [ purple ]);
+        });
       });
 
       it("rejects invalid capture rects", () => {
@@ -371,6 +395,53 @@ describe("Viewport", () => {
       });
 
       it("resizes", () => {
+        test({ ...rgbw2, bgColor: grey }, (viewport) => {
+          const resize = (w: number, h: number, expectedBarPixels?: { top?: number, bottom?: number, left?: number, right?: number }, expectedColors?: ColorDef[]) => {
+            const image = viewport.readImageBuffer({ size: { x: w, y: h } })!;
+            expect(image).not.to.be.undefined;
+            expect(image.width).to.equal(w);
+            expect(image.height).to.equal(h);
+
+            if (expectedColors)
+              expectColors(image, expectedColors);
+
+            const top = expectedBarPixels?.top ?? 0;
+            const left = expectedBarPixels?.left ?? 0;
+            const right = w - (expectedBarPixels?.right ?? 0);
+            const bottom = h - (expectedBarPixels?.bottom ?? 0);
+
+            for (let x = 0; x < w; x++) {
+              for (let y = 0; y < h; y++) {
+                const i = 4 * (x + y * w);
+                const color = ColorDef.from(image.data[i], image.data[i + 1], image.data[i + 2], 0xff - image.data[i + 3]);
+                expect(color.equals(grey)).to.equal(x < left || y < top || x >= right || y >= bottom);
+              }
+            }
+          };
+
+          resize(4, 4);
+          resize(1, 1);
+          resize(4, 2, { left: 1, right: 1 }, [
+            grey, ColorDef.red, ColorDef.green, grey,
+            grey, ColorDef.blue, ColorDef.white, grey,
+          ]);
+          resize(2, 4, { top: 1, bottom: 1 }, [
+            grey, grey,
+            ColorDef.red, ColorDef.green,
+            ColorDef.blue, ColorDef.white,
+            grey, grey,
+          ]);
+          resize(8, 4, { left: 2, right: 2 });
+          resize(4, 8, { top: 2, bottom: 2 });
+          resize(3, 2, { left: 1 });
+          resize(2, 5, { top: 1, bottom: 2 }, [
+            grey, grey,
+            ColorDef.red, ColorDef.green,
+            ColorDef.blue, ColorDef.white,
+            grey, grey,
+            grey, grey,
+          ]);
+        });
       });
 
       it("rejects invalid sizes", () => {
@@ -387,13 +458,13 @@ describe("Viewport", () => {
       });
 
       it("discards alpha by default", () => {
-        test({ ...rTransp50pct, transparentBackground: false }, (viewport) => {
+        test({ ...rTransp50pct, bgColor: undefined }, (viewport) => {
           const image = viewport.readImageBuffer()!;
           expect(image).not.to.be.undefined;
           expectColors(image, [ halfRed, ColorDef.black ]);
         });
 
-        test({ ...rTransp100pct, transparentBackground: false }, (viewport) => {
+        test({ ...rTransp100pct, bgColor: undefined }, (viewport) => {
           const image = viewport.readImageBuffer()!;
           expect(image).not.to.be.undefined;
           expectColors(image, [ ColorDef.black, ColorDef.black ]);
