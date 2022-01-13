@@ -74,6 +74,7 @@ export namespace TextureMapping { // eslint-disable-line no-redeclare
       this.transform = Transform.createRefs(origin, matrix);
     }
 
+    /** An immutable 2x3 identity matrix. */
     public static readonly identity = new Trans2x3();
   }
 

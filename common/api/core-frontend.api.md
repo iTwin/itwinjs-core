@@ -243,6 +243,7 @@ import { RenderSchedule } from '@itwin/core-common';
 import { RenderTexture } from '@itwin/core-common';
 import { RenderTimelineProps } from '@itwin/core-common';
 import { RgbColor } from '@itwin/core-common';
+import { RgbColorProps } from '@itwin/core-common';
 import { RootSubjectProps } from '@itwin/core-common';
 import { RpcInterfaceDefinition } from '@itwin/core-common';
 import { RpcRoutingToken } from '@itwin/core-common';
@@ -2068,6 +2069,29 @@ export function createPrimaryTileTreeReference(view: ViewState, model: Geometric
 
 // @internal (undocumented)
 export function createRealityTileTreeReference(props: RealityModelTileTree.ReferenceProps): RealityModelTileTree.Reference;
+
+// @public
+export interface CreateRenderMaterialArgs {
+    alpha?: number;
+    diffuse?: {
+        color?: ColorDef | RgbColorProps;
+        weight?: number;
+    };
+    // @internal
+    source?: RenderMaterialSource;
+    specular?: {
+        color?: ColorDef | RgbColorProps;
+        weight?: number;
+        exponent?: number;
+    };
+    textureMapping?: {
+        texture: RenderTexture;
+        mode?: TextureMapping.Mode;
+        transform?: TextureMapping.Trans2x3;
+        weight?: number;
+        worldMapping?: boolean;
+    };
+}
 
 // @internal (undocumented)
 export function createRenderPlanFromViewport(vp: Viewport): RenderPlan;
@@ -8251,6 +8275,14 @@ export abstract class RenderGraphicOwner extends RenderGraphic {
 }
 
 // @internal
+export interface RenderMaterialSource {
+    // (undocumented)
+    id: Id64String;
+    // (undocumented)
+    iModel: IModelConnection;
+}
+
+// @internal
 export namespace RenderMemory {
     export class Buffers extends Consumers {
         constructor();
@@ -8583,6 +8615,7 @@ export abstract class RenderSystem implements IDisposable {
     createGraphicOwner(ownedGraphic: RenderGraphic): RenderGraphicOwner;
     // @internal (undocumented)
     createIndexedPolylines(args: PolylineArgs, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined;
+    // @deprecated
     createMaterial(_params: RenderMaterial.Params, _imodel: IModelConnection): RenderMaterial | undefined;
     // @internal (undocumented)
     createMesh(params: MeshParams, instances?: InstancedGraphicParams | RenderAreaPattern | Point3d): RenderGraphic | undefined;
@@ -8610,6 +8643,7 @@ export abstract class RenderSystem implements IDisposable {
     createRealityMeshGraphic(_terrainGeometry: RenderRealityMeshGeometry, _featureTable: PackedFeatureTable, _tileId: string | undefined, _baseColor: ColorDef | undefined, _baseTransparent: boolean, _textures?: TerrainTexture[]): RenderGraphic | undefined;
     // @internal
     abstract createRenderGraphic(_geometry: RenderGeometry, instances?: InstancedGraphicParams | RenderAreaPattern): RenderGraphic | undefined;
+    createRenderMaterial(_args: CreateRenderMaterialArgs): RenderMaterial | undefined;
     createScreenSpaceEffectBuilder(_params: ScreenSpaceEffectBuilderParams): ScreenSpaceEffectBuilder | undefined;
     // @internal
     createSkyBox(_params: RenderSkyBoxParams): RenderGraphic | undefined;

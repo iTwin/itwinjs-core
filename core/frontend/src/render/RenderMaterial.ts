@@ -23,7 +23,9 @@ export interface RenderMaterialSource {
  * @public
  */
 export interface CreateRenderMaterialArgs {
-  /** If supplied, the material will be cached on the iModel by its element Id for subsequent reuse. */
+  /** If supplied, the material will be cached on the iModel by its element Id for subsequent reuse.
+   * @internal
+   */
   source?: RenderMaterialSource;
 
   /** Specifies the transparency of the material from 0.0 (fully transparent) to 1.0 (fully opaque).
