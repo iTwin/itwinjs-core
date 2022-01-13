@@ -421,17 +421,19 @@ describe("System", () => {
         const specExp = mat.fragUniforms[3];
 
         const args: CreateRenderMaterialArgs = {
-          alpha: -1 !== mat.rgba[3] ? mat.rgba[3] : undefined,
-          diffuse: {
-            weight: weights.x,
-            color: -1 !== mat.rgba[0] ? unpackColor(mat.rgba[0], mat.rgba[1], mat.rgba[2]) : undefined,
-          },
+          diffuse: { weight: weights.x, },
           specular: {
             color: unpackColor(texWeightAndSpecR.y, specGB.x, specGB.y),
             weight: weights.y,
             exponent: specExp,
           },
         };
+
+        if (-1 !== mat.rgba[0])
+          args.diffuse!.color = unpackColor(mat.rgba[0], mat.rgba[1], mat.rgba[2]);
+
+        if (-1 !== mat.rgba[3])
+          args.alpha = mat.rgba[3];
 
         if (mat.textureMapping) {
           args.textureMapping = {
