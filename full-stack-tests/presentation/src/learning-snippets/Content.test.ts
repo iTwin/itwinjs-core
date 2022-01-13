@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { ContentSpecificationTypes, KeySet, NestedContentField, RelationshipDirection, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import { ContentSpecificationTypes, KeySet, RelationshipDirection, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../IntegrationTests";
 import { getFieldByLabel, tryGetFieldByLabel } from "../Utils";
@@ -609,7 +609,7 @@ describe("Learning Snippets", () => {
             specifications: [{
               specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
               // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.MultiSchemaClasses.Ruleset
-              // The specification returns content of all `bis.PhysicalModel` and `bis.SpatialViewDefinition` classes.
+              // This specification selects instances of `bis.PhysicalModel` and `bis.SpatialViewDefinition` classes. Classes that derive from this list will not be included.
               classes: {
                 schemaName: "BisCore",
                 classNames: ["PhysicalModel", "SpatialViewDefinition"],
@@ -663,8 +663,7 @@ describe("Learning Snippets", () => {
 
       it("uses `handlePropertiesPolymorphically` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.HandlePropertiesPolymorphically.Ruleset
-        // The specification returns content of all `bis.ViewDefinition` instances
-        // with properties of all `bis.ViewDefinition` subclasses.
+        // This ruleset returns content of all `bis.ViewDefinition` instances, including all properties from derived classes
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
@@ -710,8 +709,7 @@ describe("Learning Snippets", () => {
 
       it("uses `instanceFilter` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.InstanceFilter.Ruleset
-        // The specification returns content of all filtered `bis.SpatialViewDefinition` instances
-        // whose `Pitch` property value is higher or equal to 0.
+        // This ruleset returns content of all `bis.SpatialViewDefinition` instances whose `Pitch` property is greater or equal to 0
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
@@ -814,8 +812,7 @@ describe("Learning Snippets", () => {
 
       it("uses `relatedProperties` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.RelatedProperties.Ruleset
-        // The specification returns content for `bis.SpatialViewDefinition` and
-        // related `bis.DisplayStyle` properties.
+        // This ruleset returns content for `bis.SpatialViewDefinition`, which includes all properties from related `bis.DisplayStyle` instances
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
@@ -852,8 +849,8 @@ describe("Learning Snippets", () => {
 
       it("uses `calculatedProperties` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.CalculatedProperties.Ruleset
-        // The specification returns content for `bis.SpatialViewDefinition` and a custom
-        // calculated property `Camera view direction`.
+        // In addition to returning content for all `bis.SpatialViewDefinition` instances, this ruleset also adds a
+        // custom `Camera view direction` property to each instance.
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
