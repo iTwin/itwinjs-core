@@ -812,8 +812,7 @@ describe("Learning Snippets", () => {
 
       it("uses `relatedProperties` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.RelatedProperties.Ruleset
-        // The specification returns content for `bis.SpatialViewDefinition` and
-        // related `bis.DisplayStyle` properties.
+        // This ruleset returns content for `bis.SpatialViewDefinition`, which includes all properties from related `bis.DisplayStyle` instances
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
