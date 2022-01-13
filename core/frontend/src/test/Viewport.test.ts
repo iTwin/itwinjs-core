@@ -201,7 +201,7 @@ describe("Viewport", () => {
     });
   });
 
-  describe.only("read images", () => {
+  describe("read images", () => {
     interface TestCase {
       width: number;
       image: ColorDef[];
@@ -318,7 +318,7 @@ describe("Viewport", () => {
 
       it("flips image vertically", () => {
         test(rgbw2, (viewport) => {
-          const image = viewport.readImageBuffer({ flipVertically: true })!;
+          const image = viewport.readImageBuffer({ upsideDown: true })!;
           expect(image).not.to.be.undefined;
           expectColors(image, [ ColorDef.blue, ColorDef.white, ColorDef.red, ColorDef.green ]);
         });

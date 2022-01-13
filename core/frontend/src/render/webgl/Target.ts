@@ -1059,7 +1059,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     }
 
     // Our image is upside-down by default. Flip it unless otherwise specified.
-    if (!args?.flipVertically) {
+    if (!args?.upsideDown) {
       const halfHeight = Math.floor(image.height / 2);
       const numBytesPerRow = image.width * 4;
       for (let loY = 0; loY < halfHeight; loY++) {

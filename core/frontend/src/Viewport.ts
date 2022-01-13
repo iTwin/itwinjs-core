@@ -202,9 +202,19 @@ export interface GetPixelDataWorldPointArgs {
  * @public
  */
 export interface ReadImageBufferArgs {
+  /** The region of the viewport's [[ViewRect]] to capture. It must be fully contained within [[Viewport.viewRect]].
+   * If unspecified, the entirety of the viewport's view rect is captured.
+   */
   rect?: ViewRect;
+  /** Optional dimensions to which to resize the captured image. If the aspect ratio of these dimensions does not match that of the captured image,
+   * horizontal or vertical bars will be added to the resized image using the viewport's background color.
+   * If unspecified, the image will not be resized.
+   */
   size?: XAndY;
-  flipVertically?: boolean;
+  /** The image captured by WebGL appears "upside-down" and must be flipped to appear right-side-up; if true, this flipping will not be performed.
+   * This provides a performance optimization for uncommon cases in which an upside-down image is actually preferred.
+   */
+  upsideDown?: boolean;
 }
 
 /** A Viewport renders the contents of one or more [GeometricModel]($backend)s onto an `HTMLCanvasElement`.
