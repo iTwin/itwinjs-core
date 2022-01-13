@@ -14,7 +14,7 @@ This specification lists ECClasses which should be targeted when creating conten
 
 ### Attribute: `schemaName`
 
-Defines the name of the schema where target classes are located.
+Specifies the schema which contains the target classes.
 
 ### Attribute: `classNames`
 
