@@ -2,7 +2,7 @@
 
 > TypeScript type: [MultiSchemaClassesSpecification]($presentation-common).
 
-The specification is used to specify which and how ECClasses should be targeted when creating content or hierarchy nodes. The primary purpose of this specification is to provide a way to define a group of target classes.
+This specification lists ECClasses which should be targeted when creating content or hierarchy nodes.
 
 ## Attributes
 
