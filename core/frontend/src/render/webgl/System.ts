@@ -221,6 +221,7 @@ export class IdMap implements WebGLDisposable {
   }
 
   /** Find or create a new material given material parameters. This will cache the material if its key is valid. */
+  // eslint-disable-next-line deprecation/deprecation
   public getMaterial(params: RenderMaterial.Params): RenderMaterial {
     if (!params.key || !Id64.isValidId64(params.key))   // Only cache persistent materials.
       return new Material(params);
@@ -669,6 +670,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   }
 
   /** Attempt to create a material for the given iModel using a set of material parameters. */
+  // eslint-disable-next-line deprecation/deprecation
   public override createMaterial(params: RenderMaterial.Params, imodel: IModelConnection): RenderMaterial | undefined {
     const idMap = this.getIdMap(imodel);
     const material = idMap.getMaterial(params);
@@ -682,6 +684,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
         return cached;
     }
 
+    // eslint-disable-next-line deprecation/deprecation
     const params = new RenderMaterial.Params();
     params.alpha = args.alpha;
     if (undefined !== args.diffuse?.weight)

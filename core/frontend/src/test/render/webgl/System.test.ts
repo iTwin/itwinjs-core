@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
-  Gradient, ImageSource, ImageSourceFormat, RenderMaterial, RenderTexture, RgbColorProps, TextureMapping, TextureTransparency,
+  Gradient, ImageSource, ImageSourceFormat, RenderTexture, RgbColorProps, TextureMapping, TextureTransparency,
 } from "@itwin/core-common";
 import { Capabilities, WebGLContext } from "@itwin/webgl-compatibility";
 import { IModelApp } from "../../../IModelApp";
@@ -421,7 +421,7 @@ describe("System", () => {
         const specExp = mat.fragUniforms[3];
 
         const args: CreateRenderMaterialArgs = {
-          diffuse: { weight: Number.parseFloat(weights.x.toPrecision(1)), },
+          diffuse: { weight: Number.parseFloat(weights.x.toPrecision(1)) },
           specular: {
             color: unpackColor(texWeightAndSpecR.y, specGB.x, specGB.y),
             weight: Number.parseFloat(weights.y.toPrecision(1)),

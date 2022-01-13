@@ -310,6 +310,7 @@ export abstract class RenderSystem implements IDisposable {
    * @returns the newly-created material, or undefined if the material could not be created or if a material with the same key as that specified in the params already exists.
    * @deprecated Use [[createRenderMaterial]].
    */
+  // eslint-disable-next-line deprecation/deprecation
   public createMaterial(_params: RenderMaterial.Params, _imodel: IModelConnection): RenderMaterial | undefined { return undefined; }
 
   /** Create a [RenderMaterial]($common).
