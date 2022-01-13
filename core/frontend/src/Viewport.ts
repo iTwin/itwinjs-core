@@ -2431,6 +2431,11 @@ export abstract class Viewport implements IDisposable {
     return this.target.readImage(rect, targetSize, flipVertically);
   }
 
+  /** Capture the image currently rendered in this viewport, or a subset thereof.
+   * @param args Describes the region to capture and optional resizing. By default the entire image is captured with no resizing.
+   * @returns The image, or `undefined` if the specified capture rect is not fully contained in [[viewRect], a 2d context could not be obtained, or the resultant image consists entirely
+   * of 100% transparent background pixels.
+   */
   public readImageBuffer(args?: ReadImageBufferArgs): ImageBuffer | undefined {
     return this.target.readImageBuffer(args);
   }
