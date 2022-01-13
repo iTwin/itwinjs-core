@@ -7,6 +7,7 @@ import { expect } from "chai";
 import { UnexpectedErrors } from "@itwin/core-bentley";
 import { Point2d } from "@itwin/core-geometry";
 import { AnalysisStyle, ColorDef, ImageBuffer, ImageBufferFormat } from "@itwin/core-common";
+import { ViewRect } from "../ViewRect";
 import { ScreenViewport } from "../Viewport";
 import { DisplayStyle3dState } from "../DisplayStyleState";
 import { IModelApp } from "../IModelApp";
@@ -215,7 +216,7 @@ describe("Viewport", () => {
         const builder = context.createGraphicBuilder(GraphicType.ViewOverlay);
         for (let x = 0; x < this.width; x++) {
           for (let y = 0; y < this.height; y++) {
-            const color = this.image[x + y * this.height];
+            const color = this.image[x + y * this.width];
             builder.setSymbology(color, color, 1);
             builder.addPointString2d([new Point2d(x + 0.5, y + 0.5)], 0);
           }
@@ -262,7 +263,7 @@ describe("Viewport", () => {
       expect(actual).to.deep.equal(expected);
     }
 
-    const rgbw: TestCase = {
+    const rgbw2: TestCase = {
       width: 2,
       image: [
         ColorDef.red, ColorDef.green,
@@ -270,8 +271,15 @@ describe("Viewport", () => {
       ],
     };
 
+    const purple = ColorDef.from(255, 0, 255);
+
+    const rgbwp1: TestCase = {
+      width: 1,
+      image: [ ColorDef.red, ColorDef.green, ColorDef.blue, ColorDef.white, purple ],
+    };
+
     it("reads image upside down (BUG)", () => {
-      test(rgbw, (viewport) => {
+      test(rgbw2, (viewport) => {
         const image = viewport.readImage()!;
         expect(image).not.to.be.undefined;
         expectColors(image, [ ColorDef.blue, ColorDef.white, ColorDef.red, ColorDef.green ]);
@@ -279,10 +287,18 @@ describe("Viewport", () => {
     });
 
     it("flips image vertically", () => {
-      test(rgbw, (viewport) => {
+      test(rgbw2, (viewport) => {
         const image = viewport.readImage(undefined, undefined, true)!;
         expect(image).not.to.be.undefined;
-        expectColors(image, rgbw.image);
+        expectColors(image, rgbw2.image);
+      });
+    });
+
+    it("inverts view rect y (BUG)", () => {
+      test(rgbwp1, (viewport) => {
+        const image = viewport.readImage(new ViewRect(0, 1, 1, 3), undefined, true)!;
+        expect(image).not.to.be.undefined;
+        expectColors(image, [ ColorDef.blue, ColorDef.white ]);
       });
     });
   });
