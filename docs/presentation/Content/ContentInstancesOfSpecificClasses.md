@@ -113,9 +113,9 @@ Specifications of [calculated properties](./CalculatedPropertiesSpecification.md
 
 ### Attribute: `propertyCategories`
 
-Specifications of [custom categories](PropertyCategorySpecification.md).
+Defines a list of [custom categories](PropertyCategorySpecification.md).
 
-Simply defining the categories does nothing - they have to be referenced through [`PropertySpecification.categoryId`](./PropertySpecification.md) specified in [`propertyOverrides`](#attribute-propertyoverrides) list.
+Custom categories are not present in the result unless they contain at least one property. To assign a property to the category, reference its `id` in [`PropertySpecification.categoryId`](./PropertySpecification.md) when defining [`propertyOverrides`](#attribute-propertyoverrides).
 
 ```ts
 [[include:ContentInstancesOfSpecificClasses.PropertyCategories.Ruleset]]
