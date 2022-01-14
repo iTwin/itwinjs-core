@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
+import { assert, Assertion, util } from "chai";
 import * as path from "path";
 import { AccessToken, DbResult, Guid, Id64, Id64Set, Id64String } from "@itwin/core-bentley";
 import { Schema } from "@itwin/ecschema-metadata";
-import { Point3d, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
+import { Geometry, Point3d, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   AuxCoordSystem, AuxCoordSystem2d, CategorySelector, DefinitionModel, DisplayStyle3d, DrawingCategory, DrawingGraphicRepresentsElement,
   ECSqlStatement, Element, ElementAspect, ElementMultiAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, FunctionalSchema,
@@ -22,6 +22,53 @@ import {
   SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps,
 } from "@itwin/core-common";
 import { IModelExporter, IModelExportHandler, IModelImporter, IModelTransformer } from "../core-transformer";
+
+declare global {
+  namespace Chai {
+    interface Deep {
+      // might be better to implement .approximately.deep.equal, but this is simpler
+      equalWithFpTolerance(actual: any, tolerance: number): Assertion;
+    }
+  }
+}
+
+const isAlmostEqualNumber: (a: number, b: number, tol: number) => boolean = Geometry.isSameCoordinate;
+
+export function deepEqualWithFpTolerance(a: any, b: any, tolerance: number): boolean {
+  if (a === b) return true;
+  if (typeof a !== typeof b)
+    return false;
+  switch (typeof a) {
+    case "number":
+      return isAlmostEqualNumber(a, b, tolerance);
+    case "string":
+    case "boolean":
+    case "function":
+    case "symbol":
+    case "undefined":
+      return false; // these objects can only be strict equal which was already tested
+    case "object":
+      if ((a === null) !== (b === null))
+        return false;
+      return Object.keys(a).every((key) => key in a && key in b && deepEqualWithFpTolerance(a[key], b[key], tolerance));
+    default: // bigint unhandled
+      throw Error("unhandled deep compare type");
+  }
+}
+
+Assertion.addMethod("equalWithFpTolerance", function equalWithFpTolerance(expected: any, tolerance: number) {
+  const actual = this._obj;
+  const isDeep = util.flag(this, "deep");
+  this.assert(
+    isDeep
+      ? deepEqualWithFpTolerance(expected, actual, tolerance)
+      : isAlmostEqualNumber(expected, actual, tolerance),
+    `expected ${isDeep ? "deep members of " : " "}#{exp} to not be within ${tolerance} of #{act}`,
+    `expected ${isDeep ? "deep members of " : " "}#{exp} to be within ${tolerance} of #{act}`,
+    expected,
+    actual
+  );
+});
 
 export class IModelTransformerTestUtils {
   public static createTeamIModel(outputDir: string, teamName: string, teamOrigin: Point3d, teamColor: ColorDef): SnapshotDb {

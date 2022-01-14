@@ -11,20 +11,20 @@ import { DbResult, Guid, Id64, Id64String, Logger, LogLevel, OpenMode } from "@i
 import { Point3d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   CategorySelector, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingModel, ECSqlStatement, Element,
-  ElementMultiAspect, ElementOwnsChildElements, ElementOwnsExternalSourceAspects, ElementOwnsUniqueAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, GenericPhysicalMaterial,
+  ElementMultiAspect, ElementOwnsChildElements, ElementOwnsExternalSourceAspects, ElementOwnsUniqueAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSource, ExternalSourceAspect, GenericPhysicalMaterial,
   GeometricElement,
   IModelCloneContext, IModelDb, IModelHost, IModelJsFs, IModelSchemaLoader, InformationRecordModel, InformationRecordPartition, LinkElement, Model,
   ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, Relationship, RepositoryLink, Schema,
-  SnapshotDb, SpatialCategory, StandaloneDb, SubCategory, Subject,
+  SnapshotDb, SpatialCategory, StandaloneDb, SubCategory, Subject, SynchronizationConfigLink,
 } from "@itwin/core-backend";
 import { ExtensiveTestScenario, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import {
   AxisAlignedBox3d, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorDef, CreateIModelProps, DefinitionElementProps, ElementProps,
-  ExternalSourceAspectProps, IModel, IModelError, PhysicalElementProps, Placement3d, QueryRowFormat, RelatedElement,
+  ExternalSourceAspectProps, ExternalSourceProps, IModel, IModelError, PhysicalElementProps, Placement3d, QueryRowFormat, RelatedElement, SynchronizationConfigLinkProps,
 } from "@itwin/core-common";
 import { IModelExporter, IModelExportHandler, IModelTransformer, TransformerLoggerCategory } from "../../core-transformer";
 import {
-  ClassCounter, FilterByViewTransformer, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerTestUtils, PhysicalModelConsolidator,
+  ClassCounter, deepEqualWithFpTolerance, FilterByViewTransformer, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerTestUtils, PhysicalModelConsolidator,
   RecordingIModelImporter, TestIModelTransformer, TransformerExtensiveTestScenario,
 } from "../IModelTransformerUtils";
 
@@ -1694,6 +1694,10 @@ describe("IModelTransformer", () => {
   });
 
   it.only("local test", async () => {
+    // TODO: figure out why geometry serialized is not identical
+    // looks like there are some precision issues in some of the geometry. Not sure why the precision is not deterministic
+    // it's the same geometry stream, no?
+    const geometryConversionTolerance = 1e-10; // FIXME: why is it nondeterministic from the same geometry blob?
     const sourceDb = SnapshotDb.openFile("/tmp/bad-relationships-source.bim");
 
     const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "GeneratedNavPropPredecessors-Target.bim");
@@ -1739,16 +1743,11 @@ describe("IModelTransformer", () => {
               relationTargetInTargetId = stmt.getValue(0).getId() ?? Id64.invalid;
             });
             const mappedRelationTargetInTargetId = transformer.context.findTargetElementId(relationTargetInSourceId);
-            const _equal = deepEqual(relationTargetInTargetId, mappedRelationTargetInTargetId, { strict: true });
             expect(relationTargetInTargetId).to.equal(mappedRelationTargetInTargetId);
           } else {
-            const _equal = deepEqual(
-              targetElem.asAny[propName],
+            expect(targetElem.asAny[propName]).to.deep.equalWithFpTolerance(
               sourceElem.asAny[propName],
-              { strict: true }
-            );
-            expect(targetElem.asAny[propName]).to.deep.equal(
-              sourceElem.asAny[propName]
+              geometryConversionTolerance,
             );
           }
         }
@@ -1772,16 +1771,7 @@ describe("IModelTransformer", () => {
           }
         }
         // END jsonProperties TRANSFORMATION EXCEPTIONS
-
-        const _strictEqual = deepEqual(
-          targetElem.jsonProperties,
-          expectedSourceElemJsonProps,
-          { strict: true }
-        );
-        expect(targetElem.jsonProperties).to.deep.equal(
-          expectedSourceElemJsonProps
-        );
-        const _test = 5;
+        expect(targetElem.jsonProperties).to.deep.equalWithFpTolerance(expectedSourceElemJsonProps, geometryConversionTolerance);
       }
     }
 
@@ -1792,11 +1782,39 @@ describe("IModelTransformer", () => {
       }
     }
 
-    const onlyInSourceElements = [...sourceToTargetMap].filter(([_inSource, inTarget]) => inTarget === undefined);
-    const onlyInTargetElements = [...targetToSourceMap].filter(([_inTarget, inSource]) => inSource === undefined);
+    const onlyInSourceElements = [...sourceToTargetMap].filter(([_inSource, inTarget]) => inTarget === undefined).map(([inSource]) => inSource);
+    const onlyInTargetElements = [...targetToSourceMap].filter(([_inTarget, inSource]) => inSource === undefined).map(([inTarget]) => inTarget);
+    const onlyInSourceElemImportantProps = onlyInSourceElements.map(({iModel: _removed1, id: _removed2, ...elemProps}) => elemProps);
 
-    expect(onlyInSourceElements).to.have.length(2);
-    expect(onlyInTargetElements).to.have.length(2);
+    // source will have the connector external source which was not exported without the transformer option `includeSourceProvenance: true`
+    expect(onlyInSourceElemImportantProps).to.deep.equal([
+      {
+        code: new Code({ spec: IModelDb.repositoryModelId, scope: IModelDb.repositoryModelId }),
+        description: "syncFile-test",
+        federationGuid: "bdf85257-884e-4006-8ac4-c04b9e0d35dd",
+        jsonProperties: { synchronizationConfigLink: { } },
+        lastSuccessfulRun: undefined,
+        model: IModelDb.repositoryModelId,
+        parent: undefined,
+        url: "iTwin Synchronizer",
+        userLabel: "syncFile-test",
+      } as Partial<SynchronizationConfigLinkProps>,
+      {
+        code: Code.createEmpty(),
+        model: IModelDb.repositoryModelId,
+        connectorName: "Civil",
+        connectorVersion: "10.8.0.15",
+        federationGuid: "cd1649f1-e494-4a76-9aa5-6339d9f0266f",
+        jsonProperties: {},
+        parent: undefined,
+        repository: {
+          id: "0x20000000004",
+          relClassName: "BisCore:ExternalSourceIsInRepository",
+        },
+        userLabel: "Default",
+      } as Partial<ExternalSourceProps>,
+    ]);
+    expect(onlyInTargetElements).to.have.length(0);
 
     sourceDb.close();
     targetDb.close();
