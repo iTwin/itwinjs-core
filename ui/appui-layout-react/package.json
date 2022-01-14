@@ -1,6 +1,6 @@
 {
   "name": "@itwin/appui-layout-react",
-  "version": "3.0.0-dev.176",
+  "version": "3.1.0-dev.1",
   "description": "iTwin.js Nine-zone React UI components",
   "main": "lib/cjs/appui-layout-react.js",
   "module": "lib/esm/appui-layout-react.js",
@@ -37,9 +37,9 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/appui-abstract": "workspace:^3.0.0-dev.176",
-    "@itwin/core-bentley": "workspace:^3.0.0-dev.176",
-    "@itwin/core-react": "workspace:^3.0.0-dev.176",
+    "@itwin/appui-abstract": "workspace:^3.1.0-dev.1",
+    "@itwin/core-bentley": "workspace:^3.1.0-dev.1",
+    "@itwin/core-react": "workspace:^3.1.0-dev.1",
     "react": "^17.0.0",
     "react-dom": "^17.0.0"
   },
@@ -94,7 +94,7 @@
   ],
   "dependencies": {
     "@itwin/itwinui-css": "^0.37.0",
-    "@itwin/itwinui-react": "^1.27.0",
+    "@itwin/itwinui-react": "~1.28.0",
     "classnames": "^2.3.1",
     "immer": "9.0.6",
     "uuid": "^7.0.3"

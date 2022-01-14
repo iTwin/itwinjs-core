@@ -359,62 +359,6 @@
       ]
     },
     {
-      "name": "iModelHub Client Tests (iModelBank)",
-      "presentation": {
-        "group": "3_ClientsTests",
-        "order": 3
-      },
-      "cwd": "${workspaceFolder}/full-stack-tests/imodelhub-client",
-      "type": "pwa-node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run",
-        "test:imodel-bank"
-      ],
-      "outFiles": [
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
-        "${workspaceFolder}/full-stack-tests/imodelhub-client/lib/**/*.js"
-      ]
-    },
-    {
-      "name": "iModelHub Client Tests (Integration)",
-      "presentation": {
-        "group": "3_ClientsTests",
-        "order": 3
-      },
-      "cwd": "${workspaceFolder}/full-stack-tests/imodelhub-client",
-      "type": "pwa-node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run",
-        "test:integration"
-      ],
-      "outFiles": [
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
-        "${workspaceFolder}/full-stack-tests/imodelhub-client/lib/**/*.js"
-      ]
-    },
-    {
-      "name": "iModelHub Client Tests (Offline)",
-      "presentation": {
-        "group": "3_ClientsTests",
-        "order": 3
-      },
-      "cwd": "${workspaceFolder}/full-stack-tests/imodelhub-client",
-      "type": "pwa-node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "test"
-      ],
-      "outFiles": [
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
-        "${workspaceFolder}/full-stack-tests/imodelhub-client/lib/**/*.js"
-      ]
-    },
-    {
       "name": "iTwin Client Tests (Offline)",
       "presentation": {
         "group": "3_ClientsTests",
@@ -1255,50 +1199,6 @@
       "attachSimplePort": 5858, // NB: This must match ports.debugging in full-stack-tests/core/certa.json
       "cascadeTerminateToConfigurations": [
         "[FRONTEND] Full Stack Core Integration Tests"
-      ]
-    },
-    { /* PARTIAL */
-      "name": "[FRONTEND] Full Stack IModelClient Integration Tests",
-      "presentation": {
-        "hidden": true
-      },
-      "type": "pwa-chrome",
-      "request": "attach",
-      "port": 9223, // NB: This must match ports.frontendDebugging in full-stack-tests/core/certa.json
-      "timeout": 200000,
-      "outFiles": [
-        "${workspaceFolder}/full-stack-tests/imodelhub-client/lib/**/*.js",
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
-        "${workspaceFolder}/tools/certa/lib/**/*.js"
-      ],
-      "cascadeTerminateToConfigurations": [
-        "[BACKEND] Full Stack IModelClient Integration Tests"
-      ]
-    },
-    { /* PARTIAL */
-      "name": "[BACKEND] Full Stack IModelClient Integration Tests",
-      "presentation": {
-        "hidden": true
-      },
-      "cwd": "${workspaceFolder}/full-stack-tests/native-app/",
-      "type": "pwa-node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run",
-        "test:integration:electron",
-        "--",
-        "--debug"
-      ],
-      "outFiles": [
-        "${workspaceFolder}/full-stack-tests/imodelhub-client/lib/**/*.js",
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
-        "${workspaceFolder}/tools/certa/lib/**/*.js"
-      ],
-      "outputCapture": "std",
-      "attachSimplePort": 5858, // NB: This must match ports.debugging in full-stack-tests/native-app/certa.json
-      "cascadeTerminateToConfigurations": [
-        "[FRONTEND] Full Stack IModelClient Integration Tests"
       ]
     },
     { /* PARTIAL */

@@ -14,7 +14,7 @@ import { isFeatureHilited } from "./FeatureOverrides";
 import { Batch, Branch } from "./Graphic";
 import { UniformHandle } from "./UniformHandle";
 import { Primitive } from "./Primitive";
-import { RenderOrder, RenderPass } from "./RenderFlags";
+import { Pass, RenderOrder, RenderPass } from "./RenderFlags";
 import { ShaderProgramExecutor } from "./ShaderProgram";
 import { System } from "./System";
 import { Hilites, Target } from "./Target";
@@ -216,8 +216,8 @@ export class PrimitiveCommand {
   public get hasFeatures(): boolean { return this.primitive.hasFeatures; }
   public get renderOrder(): RenderOrder { return this.primitive.renderOrder; }
 
-  public getRenderPass(target: Target): RenderPass {
-    return this.primitive.getRenderPass(target);
+  public getPass(target: Target): Pass {
+    return this.primitive.getPass(target);
   }
 }
 

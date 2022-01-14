@@ -19,16 +19,12 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
-      "name": "@bentley/imodelhub-client",
-      "allowedCategories": [ "integration-testing", "internal" ]
+      "name": "@bentley/imodelbank-client",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@bentley/imodeljs-native",
       "allowedCategories": [ "backend", "internal" ]
-    },
-    {
-      "name": "@bentley/itwin-client",
-      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "@bentley/react-scripts",
@@ -177,6 +173,22 @@
     {
       "name": "@itwin/imodel-components-react",
       "allowedCategories": [ "extensions", "frontend", "internal" ]
+    },
+    {
+      "name": "@itwin/imodels-access-backend",
+      "allowedCategories": [ "integration-testing", "internal" ]
+    },
+    {
+      "name": "@itwin/imodels-access-frontend",
+      "allowedCategories": [ "integration-testing", "internal" ]
+    },
+    {
+      "name": "@itwin/imodels-client-authoring",
+      "allowedCategories": [ "integration-testing", "internal" ]
+    },
+    {
+      "name": "@itwin/imodels-client-management",
+      "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
       "name": "@itwin/itwinui-css",
@@ -400,7 +412,7 @@
     },
     {
       "name": "deep-assign",
-      "allowedCategories": [ "common", "integration-testing" ]
+      "allowedCategories": [ "backend", "common", "frontend" ]
     },
     {
       "name": "deep-equal",
@@ -524,7 +536,7 @@
     },
     {
       "name": "fs-extra",
-      "allowedCategories": [ "backend", "common", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "internal", "tools" ]
     },
     {
       "name": "fs-write-stream-atomic",
@@ -584,7 +596,7 @@
     },
     {
       "name": "js-base64",
-      "allowedCategories": [ "backend", "common", "integration-testing" ]
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "jsdom",
@@ -612,7 +624,7 @@
     },
     {
       "name": "lodash",
-      "allowedCategories": [ "common", "frontend", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "tools" ]
     },
     {
       "name": "lolex",
@@ -652,7 +664,7 @@
     },
     {
       "name": "nock",
-      "allowedCategories": [ "common", "integration-testing", "internal" ]
+      "allowedCategories": [ "common", "internal" ]
     },
     {
       "name": "nodemon",
@@ -668,7 +680,7 @@
     },
     {
       "name": "nyc",
-      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal", "tools" ]
     },
     {
       "name": "object-hash",
@@ -700,7 +712,7 @@
     },
     {
       "name": "qs",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [ "backend", "common", "frontend" ]
     },
     {
       "name": "raf",
@@ -840,7 +852,7 @@
     },
     {
       "name": "superagent",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [ "backend", "common", "frontend" ]
     },
     {
       "name": "supertest",
@@ -929,10 +941,6 @@
     {
       "name": "xmlhttprequest",
       "allowedCategories": [ "frontend" ]
-    },
-    {
-      "name": "xpath",
-      "allowedCategories": [ "common" ]
     },
     {
       "name": "yargonaut",
