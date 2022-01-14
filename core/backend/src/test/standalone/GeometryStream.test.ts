@@ -1282,9 +1282,6 @@ describe("ElementGeometry", () => {
     const testOrigin = Point3d.create(5, 10, 0);
     const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
-    // const testElem = imodel.elements.createElement(elementProps);
-    // const newId = imodel.elements.insertElement(testElem);
-    // imodel.saveChanges();
 
     const pts: Point3d[] = [];
     pts.push(Point3d.create(5, 10, 0));
