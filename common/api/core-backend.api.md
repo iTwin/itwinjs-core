@@ -64,7 +64,6 @@ import { ElementAspectProps } from '@itwin/core-common';
 import { ElementGeometryBuilderParams } from '@itwin/core-common';
 import { ElementGeometryBuilderParamsForPart } from '@itwin/core-common';
 import { ElementGeometryRequest } from '@itwin/core-common';
-import { ElementGeometryUpdate } from '@itwin/core-common';
 import { ElementGraphicsRequestProps } from '@itwin/core-common';
 import { ElementLoadProps } from '@itwin/core-common';
 import { ElementProps } from '@itwin/core-common';
@@ -2235,8 +2234,6 @@ export abstract class IModelDb extends IModel {
     deleteSettingDictionary(name: string): void;
     // @alpha
     elementGeometryRequest(requestProps: ElementGeometryRequest): DbResult;
-    // @alpha
-    elementGeometryUpdate(updateProps: ElementGeometryUpdate): DbResult;
     // (undocumented)
     readonly elements: IModelDb.Elements;
     // @internal (undocumented)

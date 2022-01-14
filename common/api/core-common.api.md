@@ -2702,15 +2702,6 @@ export interface ElementGeometryRequest {
     skipBReps?: boolean;
 }
 
-// @alpha
-export interface ElementGeometryUpdate {
-    elementId: Id64String;
-    entryArray: ElementGeometryDataEntry[];
-    is2dPart?: boolean;
-    isWorld?: boolean;
-    viewIndependent?: boolean;
-}
-
 // @public
 export type ElementGraphicsRequestProps = PersistentGraphicsRequestProps | DynamicGraphicsRequest2dProps | DynamicGraphicsRequest3dProps;
 

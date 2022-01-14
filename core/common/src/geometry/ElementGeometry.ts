@@ -147,22 +147,6 @@ export interface ElementGeometryBuilderParamsForPart {
   is2dPart?: boolean;
 }
 
-/** Parameters for [IModelDb.elementGeometryUpdate]($core-backend)
- * @alpha
- */
-export interface ElementGeometryUpdate {
-  /** The source element for the geometry stream */
-  elementId: Id64String;
-  /** The geometry stream data */
-  entryArray: ElementGeometryDataEntry[];
-  /** Whether entries are supplied local to placement transform or in world coordinates */
-  isWorld?: boolean;
-  /** If true, create geometry part with 2d geometry */
-  is2dPart?: boolean;
-  /** If true, create geometry that displays oriented to face the camera */
-  viewIndependent?: boolean;
-}
-
 /** Values for [[BRepGeometryCreate.operation]]
  * @alpha
  */
