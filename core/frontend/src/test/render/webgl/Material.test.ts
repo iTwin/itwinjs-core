@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { ColorDef, RenderMaterial } from "@itwin/core-common";
-import { Material } from "../../render/webgl/Material";
+import { Material } from "../../../render/webgl/Material";
 
 // Equivalent to the glsl function used in glsl/Material.ts to unpack a vec3 material param from a packed float value.
 function unpackMaterialParam(f: number): XY {
@@ -15,8 +15,10 @@ function unpackMaterialParam(f: number): XY {
   return v;
 }
 
-// Equivalent to the glsl function used in glsl/Material.ts to unpack and normalize a vec3 material param from a packed float value.
-function unpackAndNormalizeMaterialParam(f: number): XY {
+/** Equivalent to the glsl function used in glsl/Material.ts to unpack and normalize a vec3 material param from a packed float value.
+ * @internal
+ */
+export function unpackAndNormalizeMaterialParam(f: number): XY {
   const v = unpackMaterialParam(f);
   v.x /= 255.0;
   v.y /= 255.0;
@@ -89,6 +91,7 @@ function expectEqualFloats(expected: number, actual: number): void {
   expect(Math.abs(expected - actual)).to.be.at.most(epsilon, `Expected: ${expected} Actual: ${actual}`);
 }
 
+// eslint-disable-next-line deprecation/deprecation
 function expectMaterialParams(expected: RenderMaterial.Params): void {
   const material = new Material(expected);
   const shaderParams = {
@@ -125,7 +128,9 @@ function expectMaterialParams(expected: RenderMaterial.Params): void {
     expectEqualFloats(1.0 - expected.alpha, actual.transparency);
 }
 
+// eslint-disable-next-line deprecation/deprecation
 function makeMaterialParams(input: MaterialParams): RenderMaterial.Params {
+  // eslint-disable-next-line deprecation/deprecation
   const params = RenderMaterial.Params.fromColors(undefined, input.diffuseColor, input.specularColor);
   params.diffuse = input.diffuse;
   params.alpha = 1.0 - input.transparency;
@@ -163,6 +168,7 @@ describe("Material", () => {
       specularColor: ColorDef.blue,
     }));
 
+    // eslint-disable-next-line deprecation/deprecation
     expectMaterialParams(RenderMaterial.Params.defaults);
   });
 });
