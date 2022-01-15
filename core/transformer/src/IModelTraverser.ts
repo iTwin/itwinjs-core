@@ -61,7 +61,7 @@ interface HookResult {
 type HookResponse = MaybeAsync<HookResult | void>;
 
 const defaultHookResponse: HookResult = {
-  result: "continue",
+  result: "success",
 };
 
 type IModelItemType =
@@ -104,50 +104,80 @@ const defaultOptions = {
   progressInteral: 1000,
 } as const;
 
+/** the collection of hooks that a traverser needs to have
+ * TODO rename all "hooks" to handlers
+ * @beta
+ */
+interface HookableTraverser {
+  onExportCodeSpec(
+    _id: Id64String,
+    _utils: { load(): CodeSpec }
+  ): HookResponse;
+
+  onExportFont(_font: FontProps): HookResponse;
+
+  onExportModel(
+    _id: Id64String,
+    _utils: { load(): Model }
+  ): HookResponse;
+
+  onDeleteModel(_modelId: Id64String): HookResponse;
+
+  onExportElement(
+    _id: Id64String,
+    _utils: { load(opts?: { wantGeometry?: boolean }): Element }
+  ): HookResponse;
+
+  onDeleteElement(_elementId: Id64String): void;
+
+  onExportElementUniqueAspect(
+    _id: Id64String,
+    _utils: { load(): ElementUniqueAspect }
+  ): HookResponse;
+
+  onExportElementMultiAspect(
+    _id: Id64String,
+    _utils: { load(): ElementMultiAspect }
+  ): HookResponse;
+
+  onExportRelationship(
+    _id: Id64String,
+    _utils: { load(): Relationship }
+  ): HookResponse;
+
+  onDeleteRelationship(
+    _id: Id64String,
+    _utils: { load(): Relationship }
+  ): HookResponse;
+
+  onExportSchema(
+    _key: SchemaKeyProps,
+    _utils: { load(): Schema }
+  ): HookResponse;
+
+  /** @deprecate */
+  //onProgress(): HookResponse;
+}
+
 /** Base class for low-level traversing of an iModel, with hooks/events
  * @note Most uses cases will not require a custom subclass of `IModelExporter`. Instead, it is more typical to subclass/customize [IModelExportHandler]($transformer).
  * @see [iModel Transformation and Data Exchange]($docs/learning/transformer/index.md), [[registerHandler]], [IModelTransformer]($transformer), [IModelImporter]($transformer)
  * @note this is intended to replace the IModelExporter class
  * @beta
  */
-export class IModelTraverser {
-  public onExportCodeSpec(
-    _id: Id64String,
-    _utils: { load(): CodeSpec }
-  ): HookResponse {}
-  public onExportFont(_font: FontProps): HookResponse {}
-  public onExportModel(
-    _id: Id64String,
-    _utils: { load(): Model }
-  ): HookResponse {}
-  public onDeleteModel(_modelId: Id64String): HookResponse {}
-  public onExportElement(
-    _id: Id64String,
-    _utils: { load(opts?: { wantGeometry?: boolean }): Element }
-  ): HookResponse {}
-  public onDeleteElement(_elementId: Id64String): void {}
-  public onExportElementUniqueAspect(
-    _id: Id64String,
-    _utils: { load(): ElementUniqueAspect }
-  ): HookResponse {}
-  public onExportElementMultiAspect(
-    _id: Id64String,
-    _utils: { load(): ElementMultiAspect }
-  ): HookResponse {}
-  public onExportRelationship(
-    _id: Id64String,
-    _utils: { load(): Relationship }
-  ): HookResponse {}
-  public onDeleteRelationship(
-    _id: Id64String,
-    _utils: { load(): Relationship }
-  ): HookResponse {}
-  public onExportSchema(
-    _key: SchemaKeyProps,
-    _utils: { load(): Schema }
-  ): HookResponse {}
-
-  public onProgress(): HookResponse {}
+export class IModelTraverser implements HookableTraverser {
+  public onExportCodeSpec = () => {};
+  public onExportFont = () => {};
+  public onExportModel = () => {};
+  public onDeleteModel = () => {};
+  public onExportElement = () => {};
+  public onDeleteElement = () => {};
+  public onExportElementUniqueAspect = () => {};
+  public onExportElementMultiAspect = () => {};
+  public onExportRelationship = () => {};
+  public onDeleteRelationship = () => {};
+  public onExportSchema = () => {};
+  public onProgress = () => {};
 
   /** The read-only source iModel. */
   public readonly sourceDb: IModelDb;
@@ -156,60 +186,8 @@ export class IModelTraverser {
   /** Optionally cached entity change information */
   private _sourceDbChanges?: ChangedInstanceIds;
 
-  /** The set of CodeSpecs to exclude from the export. */
-  private _excludedCodeSpecNames = new Set<string>();
-  /** The set of specific Elements to exclude from the export. */
-  private _excludedElementIds = new Set<Id64String>();
-  /** The set of Categories where Elements in that Category will be excluded from transformation to the target iModel. */
-  private _excludedElementCategoryIds = new Set<Id64String>();
-  /** The set of classes of Elements that will be excluded (polymorphically) from transformation to the target iModel. */
-  private _excludedElementClasses = new Set<typeof Element>();
-  /** The set of classes of ElementAspects that will be excluded (polymorphically) from transformation to the target iModel. */
-  private _excludedElementAspectClasses = new Set<typeof ElementAspect>();
-  /** The set of classFullNames for ElementAspects that will be excluded from transformation to the target iModel. */
-  private _excludedElementAspectClassFullNames = new Set<string>();
-  /** The set of classes of Relationships that will be excluded (polymorphically) from transformation to the target iModel. */
-  private _excludedRelationshipClasses = new Set<typeof Relationship>();
-
   public constructor(sourceDb: IModelDb) {
     this.sourceDb = sourceDb;
-  }
-
-  /** Add a rule to exclude a CodeSpec */
-  public excludeCodeSpec(codeSpecName: string): void {
-    this._excludedCodeSpecNames.add(codeSpecName);
-  }
-
-  /** Add a rule to exclude a specific Element. */
-  public excludeElement(elementId: Id64String): void {
-    this._excludedElementIds.add(elementId);
-  }
-
-  /** Add a rule to exclude all Elements in a specified Category. */
-  public excludeElementsInCategory(categoryId: Id64String): void {
-    this._excludedElementCategoryIds.add(categoryId);
-  }
-
-  /** Add a rule to exclude all Elements of a specified class. */
-  public excludeElementClass(classFullName: string): void {
-    this._excludedElementClasses.add(
-      this.sourceDb.getJsClass<typeof Element>(classFullName)
-    );
-  }
-
-  /** Add a rule to exclude all ElementAspects of a specified class. */
-  public excludeElementAspectClass(classFullName: string): void {
-    this._excludedElementAspectClassFullNames.add(classFullName); // allows non-polymorphic exclusion before query
-    this._excludedElementAspectClasses.add(
-      this.sourceDb.getJsClass<typeof ElementAspect>(classFullName)
-    ); // allows polymorphic exclusion after query/load
-  }
-
-  /** Add a rule to exclude all Relationships of a specified class. */
-  public excludeRelationshipClass(classFullName: string): void {
-    this._excludedRelationshipClasses.add(
-      this.sourceDb.getJsClass<typeof Relationship>(classFullName)
-    );
   }
 
   /** Export all entity instance types from the source iModel.
@@ -805,6 +783,70 @@ export class IModelTraverser {
     }
   }
 }
+
+const traverserExample = new IModelTraverser(undefined as any as IModelDb);
+
+function makeExcluder<
+  HookKey extends Exclude<
+                    Extract<
+                      keyof HookableTraverser,
+                      `onExport${string}`
+                    >,
+                    "onExportFont" | "onExportSchema"
+                  >,
+  ExcludedType extends Parameters<HookableTraverser[HookKey]>[0],
+> (
+  hookable: HookableTraverser,
+  key: HookKey,
+  exclusionSet: Set<ExcludedType>
+) {
+  hookable[key] = (item: ExcludedType): HookResponse => {
+    return { result: exclusionSet.has(item) ? "skip" : "success" };
+  };
+}
+
+// NOTE: these are not compatible together! you need to compose the returned functions yourself!
+const excludeElements = (traverser: IModelTraverser, ids: Set<Id64String>) => makeExcluder(traverser, "onExportElement", ids);
+// TODO: actually supposed to exclude them by name, not id!
+const excludeCodeSpec = (traverser: IModelTraverser, ids: Set<Id64String>) => makeExcluder(traverser, "onExportCodeSpec", ids);
+  /** Add a rule to exclude all Elements in a specified Category. */
+  public excludeElementsInCategory(categoryId: Id64String): void {
+    this._excludedElementCategoryIds.add(categoryId);
+  }
+
+) {
+  hookable[key] = (item: ExcludedType): HookResponse => {
+    return { result: exclusionSet.has(item) ? "skip" : "success" };
+  };
+}
+
+  /** Add a rule to exclude all Elements of a specified class. */
+  public excludeElementClass(classFullName: string): void {
+    this._excludedElementClasses.add(
+      this.sourceDb.getJsClass<typeof Element>(classFullName)
+    );
+  }
+
+  /** Add a rule to exclude all ElementAspects of a specified class. */
+  public excludeElementAspectClass(classFullName: string): void {
+    this._excludedElementAspectClassFullNames.add(classFullName); // allows non-polymorphic exclusion before query
+    this._excludedElementAspectClasses.add(
+      this.sourceDb.getJsClass<typeof ElementAspect>(classFullName)
+    ); // allows polymorphic exclusion after query/load
+  }
+
+  /** Add a rule to exclude all Relationships of a specified class. */
+  public excludeRelationshipClass(classFullName: string): void {
+    this._excludedRelationshipClasses.add(
+      this.sourceDb.getJsClass<typeof Relationship>(classFullName)
+    );
+  }
+
+
+
+traverserExample.onExportElement = makeElementExcluder(
+  new Set("0xf2")
+).onExportElement;
 
 class ChangedInstanceOps {
   public insertIds = new Set<Id64String>();
