@@ -140,10 +140,9 @@ export class IModelTransformer extends IModelExportHandler {
 
   /** map of unprocessed source elements to a map of processed source element's pending references */
   protected _pendingReferencesFinalizers = new Map<Id64String, Map<Id64String, (resolvedId: Id64String) => void>>();
+
+  /** map of paritally committed element ids to their partial commit progress */
   protected _partiallyCommittedElements = new Map<Id64String, PartiallyCommittedElement>();
-  // protected _pendingReferences = new Map<Id64String, Map<Id64String, PendingReference>>();
-  /** The set of Elements that were deferred during a prior transformation pass. */
-  protected _deferredElementIds = new Set<Id64String>();
 
   /** the options that were used to initialize this transformer */
   private readonly _options: MarkRequired<IModelTransformOptions, "targetScopeElementId" | "danglingPredecessorsBehavior">;
@@ -371,18 +370,6 @@ export class IModelTransformer extends IModelExportHandler {
     targetElementsToDelete.forEach((targetElementId: Id64String) => {
       this.importer.deleteElement(targetElementId);
     });
-  }
-
-  /** Format an Element for the Logger. */
-  private formatElementForLogger(elementProps: ElementProps): string {
-    const namePiece: string = elementProps.code.value ? `${elementProps.code.value} ` : elementProps.userLabel ? `${elementProps.userLabel} ` : "";
-    return `${elementProps.classFullName} ${namePiece}[${elementProps.id!}]`;
-  }
-
-  /** Mark the specified Element so its processing can be deferred. */
-  protected skipElement(sourceElement: Element): void {
-    this._deferredElementIds.add(sourceElement.id);
-    Logger.logInfo(loggerCategory, `Deferred ${this.formatElementForLogger(sourceElement)}`);
   }
 
   /** Transform the specified sourceElement into ElementProps for the target iModel.
@@ -675,26 +662,6 @@ export class IModelTransformer extends IModelExportHandler {
     return targetModelProps;
   }
 
-  /** Import elements that were deferred in a prior pass.
-   * @note This method is called from [[processChanges]] and [[processAll]], so it only needs to be called directly when processing a subset of an iModel.
-   */
-  public async processDeferredElements(numRetries: number = 3): Promise<void> {
-    Logger.logTrace(loggerCategory, `processDeferredElements(), numDeferred=${this._deferredElementIds.size}`);
-    const copyOfDeferredElementIds: Id64Set = this._deferredElementIds;
-    this._deferredElementIds = new Set<Id64String>();
-    for (const elementId of copyOfDeferredElementIds) {
-      await this.processElement(elementId);
-    }
-    if (this._deferredElementIds.size > 0) {
-      if (--numRetries > 0) {
-        Logger.logTrace(loggerCategory, "Retrying processDeferredElements()");
-        await this.processDeferredElements(numRetries);
-      } else {
-        throw new IModelError(IModelStatus.BadRequest, "Not all deferred elements could be processed");
-      }
-    }
-  }
-
   /** Imports all relationships that subclass from the specified base class.
    * @param baseRelClassFullName The specified base relationship class.
    * @note This method is called from [[processChanges]] and [[processAll]], so it only needs to be called directly when processing a subset of an iModel.
@@ -789,26 +756,6 @@ export class IModelTransformer extends IModelExportHandler {
       }
     });
     return targetRelationshipProps;
-  }
-
-  /** Override of [IModelExportHandler.shouldExportElementAspect]($transformer) that is called to determine if an ElementAspect should be exported from the source iModel.
-   * @note Reaching this point means that the ElementAspect has passed the standard exclusion checks in [IModelExporter]($transformer).
-   */
-  public override shouldExportElementAspect(sourceAspect: ElementAspect): boolean {
-    // When exporting elements, the transformer may choose to *defer* an element, which is something the exporter doesn't understand,
-    // so it tries to export aspects anyway. As such we need to *not* export aspects for deferred elements.
-    // When we retry processing deferred elements and successfully export them is when we export the aspects again
-    const targetElementId = this.context.findTargetElementId(sourceAspect.element.id);
-    if (targetElementId === Id64.invalid && this._deferredElementIds.has(sourceAspect.element.id)) {
-      Logger.logInfo(
-        loggerCategory,
-        `tried to export an aspect for a deferred element, '${sourceAspect.element.id}', ` +
-          "it will be retried when the deferred element is processed again."
-      );
-      return false;
-    }
-
-    return true;
   }
 
   /** Override of [IModelExportHandler.onExportElementUniqueAspect]($transformer) that imports an ElementUniqueAspect into the target iModel when it is exported from the source iModel.
@@ -940,7 +887,6 @@ export class IModelTransformer extends IModelExportHandler {
     this.context.remapElement(sourceSubjectId, targetSubjectId);
     await this.processChildElements(sourceSubjectId);
     await this.processSubjectSubModels(sourceSubjectId);
-    return this.processDeferredElements();
   }
 
   /** Export everything from the source iModel and import the transformed entities into the target iModel.
@@ -958,7 +904,6 @@ export class IModelTransformer extends IModelExportHandler {
     await this.exporter.exportModelContents(IModel.repositoryModelId, Element.classFullName, true); // after the Subject hierarchy, process the other elements of the RepositoryModel
     await this.exporter.exportSubModels(IModel.repositoryModelId); // start below the RepositoryModel
     await this.exporter.exportRelationships(ElementRefersToElements.classFullName);
-    await this.processDeferredElements();
     if (this.shouldDetectDeletes()) {
       await this.detectElementDeletes();
       await this.detectRelationshipDeletes();
@@ -979,7 +924,6 @@ export class IModelTransformer extends IModelExportHandler {
     this.validateScopeProvenance();
     this.initFromExternalSourceAspects();
     await this.exporter.exportChanges(accessToken, startChangesetId);
-    await this.processDeferredElements();
     this.importer.computeProjectExtents();
   }
 }
