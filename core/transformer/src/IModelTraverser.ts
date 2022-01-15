@@ -30,7 +30,6 @@ import {
   DefinitionModel,
   ECSqlStatement,
   Element,
-  ElementAspect,
   ElementMultiAspect,
   ElementRefersToElements,
   ElementUniqueAspect,
@@ -55,45 +54,31 @@ type MaybeAsync<T> = T | PromiseLike<T>;
 
 interface HookResult {
   // NOTE: defer should probably be an internal concept since how the heck do you handle a user deferal?
-  result: "defer" | "skip" | "success";
+  result: "defer" | "skip" | "continue";
 }
 
 type HookResponse = MaybeAsync<HookResult | void>;
-
-const defaultHookResponse: HookResult = {
-  result: "success",
-};
-
-type IModelItemType =
-  | "codespec"
-  | "font"
-  | "model"
-  | "element"
-  | "unique-aspect"
-  | "multi-aspect"
-  | "relationship"
-  | "schema";
 
 interface IModelTraverserOptions {
   /** A flag that indicates whether template models should be exported or not. The default is `true`.
    * @note If only exporting *instances* then template models can be skipped since they are just definitions that are cloned to create new instances.
    * @see [Model.isTemplate]($backend)
    */
-  wantTemplateModels: boolean;
+  wantTemplateModels?: boolean;
   /** A flag that indicates whether *system* schemas should be exported or not. The default is `false`.
    * @see [[exportSchemas]]
    */
-  wantSystemSchemas: boolean;
+  wantSystemSchemas?: boolean;
   /** A flag that determines whether this IModelExporter should visit Elements or not. The default is `true`.
    * @note This flag is available as an optimization when the exporter doesn't need to visit elements, so can skip loading them.
    */
-  visitElements: boolean;
+  visitElements?: boolean;
   /** A flag that determines whether this IModelExporter should visit Relationships or not. The default is `true`.
    * @note This flag is available as an optimization when the exporter doesn't need to visit relationships, so can skip loading them.
    */
-  visitRelationships: boolean;
+  visitRelationships?: boolean;
   /** The number of entities exported before incremental progress should be reported via the [[onProgress]] callback. */
-  progressInterval: number;
+  progressInterval?: number;
 }
 
 const defaultOptions = {
@@ -101,7 +86,7 @@ const defaultOptions = {
   wantSystemSchemas: false,
   visitElements: true,
   visitRelationships: true,
-  progressInteral: 1000,
+  progressInterval: 1000,
 } as const;
 
 /** the collection of hooks that a traverser needs to have
@@ -109,54 +94,49 @@ const defaultOptions = {
  * @beta
  */
 interface HookableTraverser {
-  onExportCodeSpec(
-    _id: Id64String,
-    _utils: { load(): CodeSpec }
-  ): HookResponse;
+  onExportCodeSpec(_id: Id64String, _utils: { load(): CodeSpec, isUpdate?: boolean }): HookResponse;
 
-  onExportFont(_font: FontProps): HookResponse;
+  onExportFont(_font: FontProps, _utils: {isUpdate?: boolean}): HookResponse;
 
   onExportModel(
     _id: Id64String,
-    _utils: { load(): Model }
+    _utils: { load(opts?: { wantGeometry?: boolean }): Model, isUpdate?: boolean }
   ): HookResponse;
 
   onDeleteModel(_modelId: Id64String): HookResponse;
 
   onExportElement(
     _id: Id64String,
-    _utils: { load(opts?: { wantGeometry?: boolean }): Element }
+    _utils: { load(opts?: { wantGeometry?: boolean }): Element, isUpdate?: boolean }
   ): HookResponse;
 
-  onDeleteElement(_elementId: Id64String): void;
+  onDeleteElement(_elementId: Id64String): HookResponse;
 
   onExportElementUniqueAspect(
     _id: Id64String,
-    _utils: { load(): ElementUniqueAspect }
+    _utils: { load(): ElementUniqueAspect, isUpdate?: boolean }
   ): HookResponse;
 
   onExportElementMultiAspect(
     _id: Id64String,
-    _utils: { load(): ElementMultiAspect }
+    _utils: { load(): ElementMultiAspect, isUpdate?: boolean }
   ): HookResponse;
 
   onExportRelationship(
     _id: Id64String,
-    _utils: { load(): Relationship }
+    _relClassFullName: string,
+    _utils: { load(): Relationship, isUpdate?: boolean }
   ): HookResponse;
 
   onDeleteRelationship(
     _id: Id64String,
-    _utils: { load(): Relationship }
+    _utils: { load(): Relationship, isUpdate?: boolean }
   ): HookResponse;
 
   onExportSchema(
     _key: SchemaKeyProps,
-    _utils: { load(): Schema }
+    _utils: { load(): Schema, isUpdate?: boolean }
   ): HookResponse;
-
-  /** @deprecate */
-  //onProgress(): HookResponse;
 }
 
 /** Base class for low-level traversing of an iModel, with hooks/events
@@ -166,18 +146,21 @@ interface HookableTraverser {
  * @beta
  */
 export class IModelTraverser implements HookableTraverser {
-  public onExportCodeSpec = () => {};
-  public onExportFont = () => {};
-  public onExportModel = () => {};
-  public onDeleteModel = () => {};
-  public onExportElement = () => {};
-  public onDeleteElement = () => {};
-  public onExportElementUniqueAspect = () => {};
-  public onExportElementMultiAspect = () => {};
-  public onExportRelationship = () => {};
-  public onDeleteRelationship = () => {};
-  public onExportSchema = () => {};
-  public onProgress = () => {};
+  public onExportCodeSpec: HookableTraverser["onExportCodeSpec"] = () => { };
+  public onExportFont: HookableTraverser["onExportFont"] = () => { };
+  public onExportModel: HookableTraverser["onExportModel"] = () => { };
+  public onDeleteModel: HookableTraverser["onDeleteModel"] = () => { };
+  public onExportElement: HookableTraverser["onExportElement"] = () => { };
+  public onDeleteElement: HookableTraverser["onDeleteElement"] = () => { };
+  public onExportElementUniqueAspect: HookableTraverser["onExportElementUniqueAspect"] = () => { };
+  public onExportElementMultiAspect: HookableTraverser["onExportElementMultiAspect"] = () => { };
+  public onExportRelationship: HookableTraverser["onExportRelationship"] = () => { };
+  public onDeleteRelationship: HookableTraverser["onDeleteRelationship"] = () => { };
+  public onExportSchema: HookableTraverser["onExportSchema"] = () => { };
+
+  public onProgress = () => { };
+
+  public readonly options: Readonly<Required<IModelTraverserOptions>>;
 
   /** The read-only source iModel. */
   public readonly sourceDb: IModelDb;
@@ -186,7 +169,8 @@ export class IModelTraverser implements HookableTraverser {
   /** Optionally cached entity change information */
   private _sourceDbChanges?: ChangedInstanceIds;
 
-  public constructor(sourceDb: IModelDb) {
+  public constructor(sourceDb: IModelDb, options: IModelTraverserOptions = {}) {
+    this.options = { ...defaultOptions, ...options };
     this.sourceDb = sourceDb;
   }
 
@@ -234,19 +218,22 @@ export class IModelTraverser implements HookableTraverser {
     await this.exportSubModels(IModel.repositoryModelId);
     await this.exportRelationships(ElementRefersToElements.classFullName);
     // handle deletes
-    if (this.visitElements) {
+    if (this.options.visitElements) {
       for (const elementId of this._sourceDbChanges.element.deleteIds) {
-        this.handler.onDeleteElement(elementId);
+        await this.onDeleteElement(elementId);
       }
     }
     // WIP: handle ElementAspects?
     for (const modelId of this._sourceDbChanges.model.deleteIds) {
-      this.handler.onDeleteModel(modelId);
+      await this.onDeleteModel(modelId);
     }
-    if (this.visitRelationships) {
+    if (this.options.visitRelationships) {
       for (const relInstanceId of this._sourceDbChanges.relationship
         .deleteIds) {
-        this.handler.onDeleteRelationship(relInstanceId);
+        await this.onDeleteRelationship(relInstanceId, {
+          load: () =>
+            this.sourceDb.relationships.getInstance("FIXME", relInstanceId),
+        });
       }
     }
   }
@@ -257,8 +244,9 @@ export class IModelTraverser implements HookableTraverser {
   public async exportSchemas(): Promise<void> {
     const sql =
       "SELECT Name, VersionMajor, VersionWrite, VersionMinor FROM ECDbMeta.ECSchemaDef ORDER BY ECInstanceId"; // ensure schema dependency order
-    let readyToExport: boolean = this.wantSystemSchemas ? true : false;
-    const schemaNamesToExport: string[] = [];
+    let readyToExport: boolean = this.options.wantSystemSchemas ? true : false;
+    const schemaExportPromises: HookResponse[] = [];
+    const schemaLoader = new IModelSchemaLoader(this.sourceDb);
     this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         const schemaName = statement.getValue(0).getString();
@@ -272,22 +260,17 @@ export class IModelTraverser implements HookableTraverser {
           schemaName,
           new ECVersion(versionMajor, versionWrite, versionMinor)
         );
-        if (readyToExport && this.handler.shouldExportSchema(schemaKey)) {
-          schemaNamesToExport.push(schemaName);
+        if (readyToExport) {
+          schemaExportPromises.push(
+            this.onExportSchema(schemaKey.toJSON(), {
+              load: () => schemaLoader.getSchema(schemaName),
+            })
+          );
         }
       }
     });
 
-    if (schemaNamesToExport.length === 0) return;
-
-    const schemaLoader = new IModelSchemaLoader(this.sourceDb);
-    await Promise.all(
-      schemaNamesToExport.map(async (schemaName) => {
-        const schema = schemaLoader.getSchema(schemaName);
-        Logger.logTrace(loggerCategory, `exportSchema(${schemaName})`);
-        return this.handler.onExportSchema(schema);
-      })
-    );
+    await Promise.all(schemaExportPromises);
   }
 
   /** For logging, indicate the change type if known. */
@@ -328,20 +311,17 @@ export class IModelTraverser implements HookableTraverser {
         return; // not in changeset, don't export
       }
     }
-    // passed changeset test, now apply standard exclusion rules
-    if (this._excludedCodeSpecNames.has(codeSpec.name)) {
-      Logger.logInfo(loggerCategory, `Excluding CodeSpec: ${codeSpec.name}`);
-      return;
-    }
-    // CodeSpec has passed standard exclusion rules, now give handler a chance to accept/reject export
-    if (this.handler.shouldExportCodeSpec(codeSpec)) {
+
+    // FIXME: avoid loading the codespec unless load is called
+    const response = await this.onExportCodeSpec(codeSpec.id, {
+      load: () => codeSpec,
+    });
+    if (!response || response.result === "continue")
       Logger.logTrace(
         loggerCategory,
         `exportCodeSpec(${codeSpecName})${this.getChangeOpSuffix(isUpdate)}`
       );
-      this.handler.onExportCodeSpec(codeSpec, isUpdate);
-      return this.trackProgress();
-    }
+    return this.trackProgress();
   }
 
   /** Export a single CodeSpec from the source iModel.
@@ -393,7 +373,7 @@ export class IModelTraverser implements HookableTraverser {
     const font: FontProps | undefined =
       this.sourceDb.fontMap.getFont(fontNumber);
     if (undefined !== font) {
-      this.handler.onExportFont(font, isUpdate);
+      await this.onExportFont(font, { isUpdate });
       return this.trackProgress();
     }
   }
@@ -403,17 +383,19 @@ export class IModelTraverser implements HookableTraverser {
    */
   public async exportModel(modeledElementId: Id64String): Promise<void> {
     const model: Model = this.sourceDb.models.getModel(modeledElementId);
-    if (model.isTemplate && !this.wantTemplateModels) {
+    // TODO: remove
+    if (model.isTemplate && !this.options.wantTemplateModels) {
       return;
     }
-    const modeledElement: Element = this.sourceDb.elements.getElement({
-      id: modeledElementId,
-      wantGeometry: this.wantGeometry,
-    });
     Logger.logTrace(loggerCategory, `exportModel(${modeledElementId})`);
-    if (this.shouldExportElement(modeledElement)) {
+    // TODO: comopare behavior of onExportelement to just shouldExportElement here
+    const response = await this.onExportElement(modeledElementId, {
+      load: (opts) =>
+        this.sourceDb.elements.getElement({ id: modeledElementId, ...opts }),
+    });
+    if (!response || response.result === "continue") {
       await this.exportModelContainer(model);
-      if (this.visitElements) {
+      if (this.options.visitElements) {
         await this.exportModelContents(modeledElementId);
       }
       await this.exportSubModels(modeledElementId);
@@ -433,7 +415,8 @@ export class IModelTraverser implements HookableTraverser {
         return; // not in changeset, don't export
       }
     }
-    this.handler.onExportModel(model, isUpdate);
+    // FIXME: don't load model if we don't have to
+    await this.onExportModel(model.id, { load: () => model, isUpdate });
     return this.trackProgress();
   }
 
@@ -453,7 +436,7 @@ export class IModelTraverser implements HookableTraverser {
       // NOTE: IModelExporter.exportAll should not skip the root Subject since the goal is to export everything
       assert(modelId === IModel.repositoryModelId); // flag is only relevant when processing the RepositoryModel
     }
-    if (!this.visitElements) {
+    if (!this.options.visitElements) {
       Logger.logTrace(
         loggerCategory,
         `visitElements=false, skipping exportModelContents(${modelId})`
@@ -522,52 +505,26 @@ export class IModelTraverser implements HookableTraverser {
     }
   }
 
-  /** Returns true if the specified element should be exported.
-   * This considers the standard IModelExporter exclusion rules plus calls [IModelExportHandler.shouldExportElement]($transformer) for any custom exclusion rules.
-   * @note This method is called from within [[exportChanges]] and [[exportAll]], so usually does not need to be called directly.
-   */
-  public shouldExportElement(element: Element): boolean {
-    if (this._excludedElementIds.has(element.id)) {
-      Logger.logInfo(loggerCategory, `Excluded element ${element.id} by Id`);
-      return false;
-    }
-    if (element instanceof GeometricElement) {
-      if (this._excludedElementCategoryIds.has(element.category)) {
+  public static defaultsHooks: Pick<HookableTraverser, "onExportElement"> = {
+    onExportElement(elemId, { load }) {
+      // TODO could avoid a full load
+      const elem = load();
+      if (elem.classFullName === RecipeDefinitionElement.classFullName) {
         Logger.logInfo(
           loggerCategory,
-          `Excluded element ${element.id} by Category`
+          `Excluded RecipeDefinitionElement ${elemId} because wantTemplate=false`
         );
-        return false;
+        return { result: "skip" };
       }
-    }
-    if (
-      !this.wantTemplateModels &&
-      element instanceof RecipeDefinitionElement
-    ) {
-      Logger.logInfo(
-        loggerCategory,
-        `Excluded RecipeDefinitionElement ${element.id} because wantTemplate=false`
-      );
-      return false;
-    }
-    for (const excludedElementClass of this._excludedElementClasses) {
-      if (element instanceof excludedElementClass) {
-        Logger.logInfo(
-          loggerCategory,
-          `Excluded element ${element.id} by class: ${excludedElementClass.classFullName}`
-        );
-        return false;
-      }
-    }
-    // element has passed standard exclusion rules, now give handler a chance to accept/reject
-    return this.handler.shouldExportElement(element);
-  }
+      return { result: "continue" };
+    },
+  };
 
   /** Export the specified element, its child elements (if applicable), and any owned ElementAspects.
    * @note This method is called from [[exportChanges]] and [[exportAll]], so it only needs to be called directly when exporting a subset of an iModel.
    */
   public async exportElement(elementId: Id64String): Promise<void> {
-    if (!this.visitElements) {
+    if (!this.options.visitElements) {
       Logger.logTrace(
         loggerCategory,
         `visitElements=false, skipping exportElement(${elementId})`
@@ -587,19 +544,19 @@ export class IModelTraverser implements HookableTraverser {
         return this.exportChildElements(elementId);
       }
     }
-    const element: Element = this.sourceDb.elements.getElement({
-      id: elementId,
-      wantGeometry: this.wantGeometry,
-    });
     Logger.logTrace(
       loggerCategory,
-      `exportElement(${
-        element.id
-      }, "${element.getDisplayLabel()}")${this.getChangeOpSuffix(isUpdate)}`
+      `exportElement(${elementId})${this.getChangeOpSuffix(isUpdate)}`
     );
     // the order and `await`ing of calls beyond here is depended upon by the IModelTransformer for a current bug workaround
-    if (this.shouldExportElement(element)) {
-      this.handler.onExportElement(element, isUpdate);
+    const response = await this.onExportElement(elementId, {
+      load: (opts) =>
+        this.sourceDb.elements.getElement({
+          id: elementId,
+          ...opts,
+        }),
+    });
+    if (!response || response.result === "continue") {
       await this.trackProgress();
       await this.exportElementAspects(elementId);
       return this.exportChildElements(elementId);
@@ -610,7 +567,7 @@ export class IModelTraverser implements HookableTraverser {
    * @note This method is called from [[exportChanges]] and [[exportAll]], so it only needs to be called directly when exporting a subset of an iModel.
    */
   public async exportChildElements(elementId: Id64String): Promise<void> {
-    if (!this.visitElements) {
+    if (!this.options.visitElements) {
       Logger.logTrace(
         loggerCategory,
         `visitElements=false, skipping exportChildElements(${elementId})`
@@ -627,32 +584,11 @@ export class IModelTraverser implements HookableTraverser {
     }
   }
 
-  /** Returns `true` if the specified ElementAspect should be exported or `false` if if should be excluded. */
-  private shouldExportElementAspect(aspect: ElementAspect): boolean {
-    for (const excludedElementAspectClass of this
-      ._excludedElementAspectClasses) {
-      if (aspect instanceof excludedElementAspectClass) {
-        Logger.logInfo(
-          loggerCategory,
-          `Excluded ElementAspect by class: ${aspect.classFullName}`
-        );
-        return false;
-      }
-    }
-    // ElementAspect has passed standard exclusion rules, now give handler a chance to accept/reject
-    return this.handler.shouldExportElementAspect(aspect);
-  }
-
   /** Export ElementAspects from the specified element from the source iModel. */
   private async exportElementAspects(elementId: Id64String): Promise<void> {
     const _uniqueAspects = await Promise.all(
       this.sourceDb.elements
-        ._queryAspects(
-          elementId,
-          ElementUniqueAspect.classFullName,
-          this._excludedElementAspectClassFullNames
-        )
-        .filter((a) => this.shouldExportElementAspect(a))
+        ._queryAspects(elementId, ElementUniqueAspect.classFullName, new Set())
         .map(async (uniqueAspect: ElementUniqueAspect) => {
           const isInsertChange =
             this._sourceDbChanges?.aspect.insertIds.has(uniqueAspect.id) ??
@@ -668,27 +604,26 @@ export class IModelTraverser implements HookableTraverser {
             const isKnownUpdate = this._sourceDbChanges
               ? isUpdateChange
               : undefined;
-            this.handler.onExportElementUniqueAspect(
-              uniqueAspect,
-              isKnownUpdate
+            await this.onExportElementUniqueAspect(
+              uniqueAspect.id,
+              // FIXME: avoid always loading
+              { load: () => uniqueAspect, isUpdate: isKnownUpdate }
             );
             await this.trackProgress();
           }
         })
     );
 
-    const multiAspects = this.sourceDb.elements
-      ._queryAspects(
-        elementId,
-        ElementMultiAspect.classFullName,
-        this._excludedElementAspectClassFullNames
-      )
-      .filter((a) => this.shouldExportElementAspect(a));
+    const _multiAspects = await Promise.all(
+      this.sourceDb.elements
+        ._queryAspects(elementId, ElementMultiAspect.classFullName, new Set())
+        .map(async (a) =>
+          // FIXME: don't load if not necessary
+          this.onExportElementMultiAspect(a.id, { load: () => a })
+        )
+    );
 
-    if (multiAspects.length > 0) {
-      this.handler.onExportElementMultiAspects(multiAspects);
-      return this.trackProgress();
-    }
+    return this.trackProgress();
   }
 
   /** Exports all relationships that subclass from the specified base class.
@@ -697,7 +632,7 @@ export class IModelTraverser implements HookableTraverser {
   public async exportRelationships(
     baseRelClassFullName: string
   ): Promise<void> {
-    if (!this.visitRelationships) {
+    if (!this.options.visitRelationships) {
       Logger.logTrace(
         loggerCategory,
         `visitRelationships=false, skipping exportRelationships()`
@@ -730,7 +665,7 @@ export class IModelTraverser implements HookableTraverser {
     relClassFullName: string,
     relInstanceId: Id64String
   ): Promise<void> {
-    if (!this.visitRelationships) {
+    if (!this.options.visitRelationships) {
       Logger.logTrace(
         loggerCategory,
         `visitRelationships=false, skipping exportRelationship(${relClassFullName}, ${relInstanceId})`
@@ -755,98 +690,129 @@ export class IModelTraverser implements HookableTraverser {
       loggerCategory,
       `exportRelationship(${relClassFullName}, ${relInstanceId})`
     );
-    const relationship: Relationship = this.sourceDb.relationships.getInstance(
-      relClassFullName,
-      relInstanceId
-    );
-    for (const excludedRelationshipClass of this._excludedRelationshipClasses) {
-      if (relationship instanceof excludedRelationshipClass) {
-        Logger.logInfo(
-          loggerCategory,
-          `Excluded relationship by class: ${excludedRelationshipClass.classFullName}`
-        );
-        return;
-      }
-    }
-    // relationship has passed standard exclusion rules, now give handler a chance to accept/reject export
-    if (this.handler.shouldExportRelationship(relationship)) {
-      this.handler.onExportRelationship(relationship, isUpdate);
-      await this.trackProgress();
-    }
+    await this.onExportRelationship(relInstanceId, relClassFullName, {
+      load: () =>
+        this.sourceDb.relationships.getInstance(
+          relClassFullName,
+          relInstanceId
+        ),
+      isUpdate,
+    });
+    await this.trackProgress();
   }
 
   /** Tracks incremental progress */
   private async trackProgress(): Promise<void> {
     this._progressCounter++;
-    if (0 === this._progressCounter % this.progressInterval) {
-      return this.handler.onProgress();
+    if (0 === this._progressCounter % this.options.progressInterval) {
+      return this.onProgress();
     }
   }
 }
 
-const traverserExample = new IModelTraverser(undefined as any as IModelDb);
-
 function makeExcluder<
   HookKey extends Exclude<
-                    Extract<
-                      keyof HookableTraverser,
-                      `onExport${string}`
-                    >,
-                    "onExportFont" | "onExportSchema"
-                  >,
-  ExcludedType extends Parameters<HookableTraverser[HookKey]>[0],
-> (
-  hookable: HookableTraverser,
-  key: HookKey,
-  exclusionSet: Set<ExcludedType>
-) {
-  hookable[key] = (item: ExcludedType): HookResponse => {
-    return { result: exclusionSet.has(item) ? "skip" : "success" };
+  Extract<keyof HookableTraverser, `onExport${string}`>,
+  "onExportFont" | "onExportSchema"
+  >
+>(exclusionSet: Set<Parameters<HookableTraverser[HookKey]>[0]>) {
+  type ExcludedType = Parameters<HookableTraverser[HookKey]>[0];
+  return (item: ExcludedType): HookResponse => {
+    return { result: exclusionSet.has(item) ? "skip" : "continue" };
   };
 }
 
-// NOTE: these are not compatible together! you need to compose the returned functions yourself!
-const excludeElements = (traverser: IModelTraverser, ids: Set<Id64String>) => makeExcluder(traverser, "onExportElement", ids);
-// TODO: actually supposed to exclude them by name, not id!
-const excludeCodeSpec = (traverser: IModelTraverser, ids: Set<Id64String>) => makeExcluder(traverser, "onExportCodeSpec", ids);
-  /** Add a rule to exclude all Elements in a specified Category. */
-  public excludeElementsInCategory(categoryId: Id64String): void {
-    this._excludedElementCategoryIds.add(categoryId);
-  }
+export const makeElementExcluder = (ids: Set<Id64String>) =>
+  makeExcluder<"onExportElement">(ids);
 
-) {
-  hookable[key] = (item: ExcludedType): HookResponse => {
-    return { result: exclusionSet.has(item) ? "skip" : "success" };
+export function makeCodeSpecByNameExcluder(exclusionSet: Set<string>) {
+  return (
+    ...[, utils]: Parameters<HookableTraverser["onExportCodeSpec"]>
+  ): HookResponse => {
+    const codeSpec = utils.load();
+    if (exclusionSet.has(codeSpec.name)) {
+      Logger.logInfo(loggerCategory, `Excluding CodeSpec: ${codeSpec.name}`);
+      return { result: "skip" };
+    }
+    return { result: "continue" };
   };
 }
 
-  /** Add a rule to exclude all Elements of a specified class. */
-  public excludeElementClass(classFullName: string): void {
-    this._excludedElementClasses.add(
-      this.sourceDb.getJsClass<typeof Element>(classFullName)
-    );
-  }
+export function makeElementInCategoryExcluder(exclusionSet: Set<Id64String>) {
+  return (
+    ...[, utils]: Parameters<HookableTraverser["onExportElement"]>
+  ): HookResponse => {
+    const element = utils.load(); // TODO; could do a simple query instead of loading the full element
+    if (
+      element instanceof GeometricElement &&
+      exclusionSet.has(element.category)
+    ) {
+      Logger.logInfo(
+        loggerCategory,
+        `Excluded element ${element.id} by Category`
+      );
+      return { result: "skip" };
+    }
+    return { result: "continue" };
+  };
+}
 
-  /** Add a rule to exclude all ElementAspects of a specified class. */
-  public excludeElementAspectClass(classFullName: string): void {
-    this._excludedElementAspectClassFullNames.add(classFullName); // allows non-polymorphic exclusion before query
-    this._excludedElementAspectClasses.add(
-      this.sourceDb.getJsClass<typeof ElementAspect>(classFullName)
-    ); // allows polymorphic exclusion after query/load
-  }
+export function makeElementClassExcluder(setOfExcludedClassFullNames: Set<string>) {
+  return (
+    ...[, utils]: Parameters<HookableTraverser["onExportElement"]>
+  ): HookResponse => {
+    const element = utils.load(); // TODO; could do a simple query instead of loading the full element
+    if (setOfExcludedClassFullNames.has(element.classFullName)) {
+      Logger.logInfo(
+        loggerCategory,
+        `Excluded element ${element.id} by class: ${element.classFullName}`
+      );
+      return { result: "skip" };
+    }
+    return { result: "continue" };
+  };
+}
 
-  /** Add a rule to exclude all Relationships of a specified class. */
-  public excludeRelationshipClass(classFullName: string): void {
-    this._excludedRelationshipClasses.add(
-      this.sourceDb.getJsClass<typeof Relationship>(classFullName)
-    );
-  }
+export function makeElementAspectClassExcluder(
+  setOfExcludedAspectClassFullNames: Set<string>
+) {
+  return (
+    ...[, utils]: Parameters<
+    HookableTraverser[
+      | "onExportElementUniqueAspect"
+      | "onExportElementMultiAspect"]
+    >
+  ): HookResponse => {
+    const aspect = utils.load(); // TODO; could do a simple query instead of loading full entity
+    if (setOfExcludedAspectClassFullNames.has(aspect.classFullName)) {
+      Logger.logInfo(
+        loggerCategory,
+        `Excluded ElementAspect by class: ${aspect.classFullName}`
+      );
+      return { result: "skip" };
+    }
+    return { result: "continue" };
+  };
+}
 
-
-
-traverserExample.onExportElement = makeElementExcluder(
-  new Set("0xf2")
-).onExportElement;
+export function makeRelationshipClassExcluder(
+  setOfExcludedRelationshipClassFullNames: Set<string>
+) {
+  return (
+    ...[, relClassFullName]: Parameters<
+    HookableTraverser["onExportRelationship"]
+    >
+  ): HookResponse => {
+    if (setOfExcludedRelationshipClassFullNames.has(relClassFullName)) {
+      Logger.logInfo(
+        loggerCategory,
+        `Excluded ElementAspect by class: ${relClassFullName}`
+      );
+      return { result: "skip" };
+    }
+    return { result: "continue" };
+  };
+}
 
 class ChangedInstanceOps {
   public insertIds = new Set<Id64String>();
@@ -876,7 +842,7 @@ class ChangedInstanceIds {
   public aspect = new ChangedInstanceOps();
   public relationship = new ChangedInstanceOps();
   public font = new ChangedInstanceOps();
-  private constructor() {}
+  private constructor() { }
 
   public static async initialize(
     accessToken: AccessToken | undefined,
