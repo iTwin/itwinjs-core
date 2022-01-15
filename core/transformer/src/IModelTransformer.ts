@@ -103,7 +103,7 @@ export interface IModelTransformOptions {
 }
 
 /** maybe rename to PartiallyComittedElementFinalizer */
-class PendingReference {
+class PartiallyCommittedElement {
   public constructor(
     public props: Record<string, any>,
     public missingReferenceCount: number,
@@ -140,7 +140,7 @@ export class IModelTransformer extends IModelExportHandler {
 
   /** map of unprocessed source elements to a map of processed source element's pending references */
   protected _pendingReferencesFinalizers = new Map<Id64String, Map<Id64String, (resolvedId: Id64String) => void>>();
-  protected _partiallyCommittedElements = new Map<Id64String, PendingReference>();
+  protected _partiallyCommittedElements = new Map<Id64String, PartiallyCommittedElement>();
   // protected _pendingReferences = new Map<Id64String, Map<Id64String, PendingReference>>();
   /** The set of Elements that were deferred during a prior transformation pass. */
   protected _deferredElementIds = new Set<Id64String>();
@@ -426,23 +426,24 @@ export class IModelTransformer extends IModelExportHandler {
     };
   }
 
-  private collectUnmappedReferences(elementId: Id64String) {
-    const element = this.sourceDb.elements.getElement(elementId);
+  private collectUnmappedReferences(element: Element) {
+    const elementId = element.id;
     const entityMetaData = this.sourceDb.getMetaData(element.classFullName);
     const navigationProps = Object.entries(entityMetaData.properties)
       .filter(([_propName, prop]) => prop.isNavigation)
       .map(([propName, _prop]) => propName);
 
-    let thisPartialElem: PendingReference;
+    let thisPartialElem: PartiallyCommittedElement;
 
     for (const navProp of navigationProps) {
       const navPropValInSource: RelatedElement | undefined = (element as any)[navProp]; // cast to any since subclass can have any extensions
       if (!navPropValInSource || !Id64.isValid(navPropValInSource.id)) continue;
       const navPropValInTarget = this.context.findTargetElementId(navPropValInSource.id);
       if (Id64.isValid(navPropValInTarget)) continue;
+      Logger.logTrace(loggerCategory, `Remapping not found for predecessor ${navPropValInTarget}`);
       if (!this._partiallyCommittedElements.has(elementId)) {
         const props = {};
-        thisPartialElem = new PendingReference(props, 0, this.makeCompleter(elementId, props));
+        thisPartialElem = new PartiallyCommittedElement(props, 0, this.makeCompleter(elementId, props));
         this._partiallyCommittedElements.set(elementId, thisPartialElem);
       }
       if (!this._pendingReferencesFinalizers.has(navPropValInSource.id))
@@ -557,34 +558,20 @@ export class IModelTransformer extends IModelExportHandler {
         return;
       }
     } else {
-      const missingPredecessorIds: Id64Set = this.findMissingPredecessors(sourceElement);
-      if (missingPredecessorIds.size > 0) {
-        const pendingRef = new PendingReference(
-          Object.fromEntries(Array.from(missingPredecessorIds, () => [])),
-          missingPredecessorIds.size,
-        );
-        for (const missingPredecessorId of missingPredecessorIds) {
-          const missingPredecessorElement = this.sourceDb.elements.tryGetElement(missingPredecessorId);
-          Logger.logTrace(
-            loggerCategory,
-            `Remapping not found for predecessor ${
-              missingPredecessorElement
-                ? this.formatElementForLogger(missingPredecessorElement)
-                : missingPredecessorId
-            }`
-          );
-          if (!this._pendingReferencesFinalizers.has(missingPredecessorId))
-            this._pendingReferencesFinalizers.set(missingPredecessorId, new Set());
-          this._pendingReferencesFinalizers.get(missingPredecessorId)?.add(pendingRef);
-        }
-        return;
-      }
+      // TODO: this might need to always be called now
+      this.collectUnmappedReferences(sourceElement);
     }
     targetElementProps.id = targetElementId; // targetElementId will be valid (indicating update) or undefined (indicating insert)
     if (!this._options.wasSourceIModelCopiedToTarget) {
       this.importer.importElement(targetElementProps); // don't need to import if iModel was copied
     }
     this.context.remapElement(sourceElement.id, targetElementProps.id!); // targetElementProps.id assigned by importElement
+    // now that we've mapped this elem we can fix unmapped references to it
+    if (this._pendingReferencesFinalizers.has(sourceElement.id)) {
+      for (const finalizer of this._pendingReferencesFinalizers.get(sourceElement.id)!.values()) {
+        finalizer(targetElementProps.id!);
+      }
+    }
     if (!this._options.noProvenance) {
       const aspectProps: ExternalSourceAspectProps = this.initElementProvenance(sourceElement.id, targetElementProps.id!);
       if (aspectProps.id === undefined) {
