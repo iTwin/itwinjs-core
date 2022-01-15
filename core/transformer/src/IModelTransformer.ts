@@ -18,7 +18,7 @@ import {
 } from "@itwin/core-backend";
 import {
   Code, CodeSpec, ElementAspectProps, ElementProps, ExternalSourceAspectProps, FontProps, GeometricElement2dProps, GeometricElement3dProps, IModel,
-  IModelError, ModelProps, Placement2d, Placement3d, PrimitiveTypeCode, PropertyMetaData,
+  IModelError, ModelProps, Placement2d, Placement3d, PrimitiveTypeCode, PropertyMetaData, RelatedElement,
 } from "@itwin/core-common";
 import { IModelExporter, IModelExportHandler } from "./IModelExporter";
 import { IModelImporter } from "./IModelImporter";
@@ -102,6 +102,20 @@ export interface IModelTransformOptions {
   danglingPredecessorsBehavior?: "reject" | "ignore";
 }
 
+/** maybe rename to PartiallyComittedElementFinalizer */
+class PendingReference {
+  public constructor(
+    public props: Record<string, any>,
+    public missingReferenceCount: number,
+    private _onComplete: () => void,
+  ) {}
+  public resolveProp(key: string, value: any) {
+    this.props[key] = value;
+    this.missingReferenceCount -= 1;
+    if (this.missingReferenceCount === 0) this._onComplete();
+  }
+}
+
 /** Base class used to transform a source iModel into a different target iModel.
  * @see [iModel Transformation and Data Exchange]($docs/learning/transformer/index.md), [IModelExporter]($transformer), [IModelImporter]($transformer)
  * @beta
@@ -124,6 +138,10 @@ export class IModelTransformer extends IModelExportHandler {
     return this._options.targetScopeElementId;
   }
 
+  /** map of unprocessed source elements to a map of processed source element's pending references */
+  protected _pendingReferencesFinalizers = new Map<Id64String, Map<Id64String, (resolvedId: Id64String) => void>>();
+  protected _partiallyCommittedElements = new Map<Id64String, PendingReference>();
+  // protected _pendingReferences = new Map<Id64String, Map<Id64String, PendingReference>>();
   /** The set of Elements that were deferred during a prior transformation pass. */
   protected _deferredElementIds = new Set<Id64String>();
 
@@ -401,6 +419,42 @@ export class IModelTransformer extends IModelExportHandler {
     return true;
   }
 
+  private makeCompleter(elementId: Id64String, props: Partial<ElementProps>) {
+    return () => {
+      this.targetDb.elements.updateElement({...props as ElementProps, id: elementId});
+      this._partiallyCommittedElements.delete(elementId);
+    };
+  }
+
+  private collectUnmappedReferences(elementId: Id64String) {
+    const element = this.sourceDb.elements.getElement(elementId);
+    const entityMetaData = this.sourceDb.getMetaData(element.classFullName);
+    const navigationProps = Object.entries(entityMetaData.properties)
+      .filter(([_propName, prop]) => prop.isNavigation)
+      .map(([propName, _prop]) => propName);
+
+    let thisPartialElem: PendingReference;
+
+    for (const navProp of navigationProps) {
+      const navPropValInSource: RelatedElement | undefined = (element as any)[navProp]; // cast to any since subclass can have any extensions
+      if (!navPropValInSource || !Id64.isValid(navPropValInSource.id)) continue;
+      const navPropValInTarget = this.context.findTargetElementId(navPropValInSource.id);
+      if (Id64.isValid(navPropValInTarget)) continue;
+      if (!this._partiallyCommittedElements.has(elementId)) {
+        const props = {};
+        thisPartialElem = new PendingReference(props, 0, this.makeCompleter(elementId, props));
+        this._partiallyCommittedElements.set(elementId, thisPartialElem);
+      }
+      if (!this._pendingReferencesFinalizers.has(navPropValInSource.id))
+        this._pendingReferencesFinalizers.set(navPropValInSource.id, new Map());
+      if (!this._pendingReferencesFinalizers.get(navPropValInSource.id)!.has(elementId))
+        this._pendingReferencesFinalizers.get(navPropValInSource.id)!.set(elementId, (resolvedId) => {
+          thisPartialElem.resolveProp(navProp, resolvedId);
+        });
+      thisPartialElem!.missingReferenceCount += 1;
+    }
+  }
+
   /** Determine if any predecessors have not been imported yet.
    * @param sourceElement The Element from the source iModel
    */
@@ -505,14 +559,23 @@ export class IModelTransformer extends IModelExportHandler {
     } else {
       const missingPredecessorIds: Id64Set = this.findMissingPredecessors(sourceElement);
       if (missingPredecessorIds.size > 0) {
-        this.skipElement(sourceElement);
-        if (Logger.isEnabled(loggerCategory, LogLevel.Trace)) {
-          for (const missingPredecessorId of missingPredecessorIds) {
-            const missingPredecessorElement: Element | undefined = this.sourceDb.elements.tryGetElement(missingPredecessorId);
-            if (missingPredecessorElement) {
-              Logger.logTrace(loggerCategory, `Remapping not found for predecessor ${this.formatElementForLogger(missingPredecessorElement)}`);
-            }
-          }
+        const pendingRef = new PendingReference(
+          Object.fromEntries(Array.from(missingPredecessorIds, () => [])),
+          missingPredecessorIds.size,
+        );
+        for (const missingPredecessorId of missingPredecessorIds) {
+          const missingPredecessorElement = this.sourceDb.elements.tryGetElement(missingPredecessorId);
+          Logger.logTrace(
+            loggerCategory,
+            `Remapping not found for predecessor ${
+              missingPredecessorElement
+                ? this.formatElementForLogger(missingPredecessorElement)
+                : missingPredecessorId
+            }`
+          );
+          if (!this._pendingReferencesFinalizers.has(missingPredecessorId))
+            this._pendingReferencesFinalizers.set(missingPredecessorId, new Set());
+          this._pendingReferencesFinalizers.get(missingPredecessorId)?.add(pendingRef);
         }
         return;
       }
