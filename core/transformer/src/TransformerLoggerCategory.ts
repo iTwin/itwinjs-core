@@ -17,6 +17,11 @@ export enum TransformerLoggerCategory {
    */
   IModelExporter = "core-backend.IModelExporter",
 
+  /** The logger category used by the [IModelTraverser]($transformer) class.
+   * @beta
+   */
+  IModelTraverser = "core-backend.IModelTraverser",
+
   /** The logger category used by the [IModelImporter]($transformer) class.
    * @beta
    */
