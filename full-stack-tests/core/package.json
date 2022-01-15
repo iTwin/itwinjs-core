@@ -22,7 +22,6 @@
   },
   "repository": {},
   "dependencies": {
-    "@bentley/itwin-client": "workspace:*",
     "@bentley/imodelbank-client": "workspace:*",
     "@itwin/browser-authorization": "^0.4.0",
     "@itwin/core-backend": "workspace:*",

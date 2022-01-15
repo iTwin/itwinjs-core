@@ -37,7 +37,6 @@
   },
   "repository": {},
   "dependencies": {
-    "@bentley/itwin-client": "workspace:*",
     "@itwin/appui-abstract": "workspace:*",
     "@itwin/browser-authorization": "^0.4.0",
     "@itwin/core-backend": "workspace:*",
