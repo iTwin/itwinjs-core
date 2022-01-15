@@ -68,32 +68,40 @@ The process of transferring change history between iModels is called *synchroniz
 ![synchronization diagram](./iModelBranching.drawio.svg)
 
 In the above diagram you can see an example change history of a master and its branch. Each arrow is an application submitting
-changesets to the iModel, and each vertical connection (notably an arrow with with two sources) is a transformation reading both
-iModels and submitting a changeset to one of them, *synchronizing* them.
+[ChangeSets](/learning/imodelhub/briefcases) to the iModel, and each vertical connection (notably an arrow with with two sources) is
+a transformation reading both iModels and submitting a [ChangeSet](/learning/glossary/#changeset) to one of them, *synchronizing* them.
 
 Synchronization logic is implemented by the [IModelTransformer]($transformer), which can be configured to perform each type of
 synchronization, as shown in the samples below.
 
 ### Squashing changesets
 
-In the above diagram, the synchronizations occur after several changesets, each synchronization here *squashes* several changesets
+In the above diagram, the synchronizations occur after several [ChangeSets](/learning/imodelhub/briefcases), each synchronization here *squashes* several changesets
 from the synchronization source into the synchronization target. Alternatively, one could run a synchronization per changeset
 in the source of the synchronization, so that the synchronization target has a changeset corresponding to each one in the
 synchronization source, keeping the changeset granularity intact in the history. A combination of both can be done, such as
 only squashing when reverse synchronizing (squashing branch changes) but keeping changeset data from the master intact during
 forward synchronizations.
 
-### Conflicts during synchronization
+### Synchronization conflicts
 
-In conflicts, the default transformer considers the synchronization source to be authoritative. An element identified in the target as from
-the source will be updated to match the source. As such, it is up to the user of the transformer to check whether the element
-has been changed in both and handle any perceived conflicts.  Some data in the iModel follows more specific rules for conflicts:
+*Synchronization conflicts*, where the two distinct iModels in the synchronization have conflicting changes, are
+*source authoritative* in the transformer. The default transformer always resolves conflicts with the source winning.
+An element identified within the target as being from the source will be updated to match the source.
+As such, it is up to the user of the transformer to check whether the element has been changed in both and handle any perceived conflicts.
+Some data in the iModel follows more specific rules for conflicts:
 
 - [ECSchemas](/bis/ec/ec-schema/) are not merged automatically, they will not be inserted into the target
   if the same version already exists in it.
 - File properties<!--missing documentation--> are not carried over through transformations
 
 <!-- (see [dynamic schemas](/docs/bis/intro/schema-customization.md#Dynamic-Schema-Minor-Change-Considerations)) -->
+
+Synchronization conflicts are not to be confused with concurrency conflicts which are handled by the
+[ConcurrencyControl API](/learning/backend/concurrencycontrol).
+Normally while editing an iModel, conflicts of local and remote changes are handled by the
+
+When working with iModels [`startBulkMode`](/reference/imodeljs-backend/imodels/concurrencycontrol/startbulkmode/) for
 
 ## Synchronization examples
 
