@@ -7,11 +7,11 @@
  */
 import * as path from "path";
 import * as Semver from "semver";
-import { AccessToken, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, LogLevel, MarkRequired } from "@itwin/core-bentley";
+import { AccessToken, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, MarkRequired } from "@itwin/core-bentley";
 import * as ECSchemaMetaData from "@itwin/ecschema-metadata";
 import { Point3d, Transform } from "@itwin/core-geometry";
 import {
-  ChannelRootAspect, DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, ElementAspect, ElementMultiAspect,
+  ChannelRootAspect, DefinitionElement, DefinitionModel, DefinitionPartition, DisplayStyle, ECSqlStatement, Element, ElementAspect, ElementMultiAspect,
   ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, ExternalSource, ExternalSourceAspect, ExternalSourceAttachment,
   FolderLink, GeometricElement2d, GeometricElement3d, IModelCloneContext, IModelDb, IModelJsFs, InformationPartitionElement, KnownLocations, Model,
   RecipeDefinitionElement, Relationship, RelationshipProps, Schema, Subject, SynchronizationConfigLink,
@@ -100,6 +100,26 @@ export interface IModelTransformOptions {
    * @beta
    */
   danglingPredecessorsBehavior?: "reject" | "ignore";
+}
+
+// TODO: may want to make this local to the transformer and for consumers to register their own correction maps
+// TODO: test by enumerating all biscore classes and their metadata for nav props
+// some biscore js class implementations do not match their ec metadata, this map translates them
+function forceElemToMatchMetaData(elem: Element): Element {
+  if (elem instanceof DisplayStyle) {
+    return new Proxy(elem, {
+      get(obj, key: string, receiver) {
+        const keyCorrectionsMap: Record<string, string> = {
+          modelSelector: "modelSelectorId",
+          categorySelector: "categorySelectorId",
+        };
+        const correctedKey = keyCorrectionsMap[key] ?? key;
+        return Reflect.get(obj, correctedKey, receiver);
+      },
+    });
+  } else {
+    return elem;
+  }
 }
 
 /** maybe rename to PartiallyComittedElementFinalizer */
