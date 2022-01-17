@@ -601,37 +601,6 @@ describe("Learning Snippets", () => {
         await terminate();
       });
 
-      it("uses `instanceFilter` attribute", async () => {
-        // __PUBLISH_EXTRACT_START__ SharedAttributes.InstanceFilter.Ruleset
-        // This ruleset returns content of all `bis.SpatialViewDefinition` instances whose `Pitch` property is greater or equal to 0.
-        const ruleset: Ruleset = {
-          id: "example",
-          rules: [{
-            ruleType: RuleTypes.Content,
-            specifications: [{
-              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
-              classes: { schemaName: "BisCore", classNames: ["SpatialViewDefinition"] },
-              instanceFilter: "this.Pitch >= 0",
-            }],
-          }],
-        };
-        // __PUBLISH_EXTRACT_END__
-
-        // Ensure that only `bis.SpatialViewDefinition` instances that have Pitch >= 0 are selected.
-        const content = await Presentation.presentation.getContent({
-          imodel,
-          rulesetOrId: ruleset,
-          keys: new KeySet(),
-          descriptor: {},
-        });
-
-        expect(content!.contentSet.length).to.eq(2);
-        const field = getFieldByLabel(content!.descriptor.fields, "Pitch");
-        content!.contentSet.forEach((record) => {
-          expect(record.values[field.name]).to.be.not.below(0);
-        });
-      });
-
       it("uses `onlyIfNotHandled` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ SharedAttributes.OnlyIfNotHandled.Ruleset
         // This ruleset defines two specifications that return content for `bis.ViewDefinition` and `bis.PhysicalModel`
@@ -948,6 +917,45 @@ describe("Learning Snippets", () => {
           expect(record.primaryKeys[0].className).to.be.oneOf(["Generic:PhysicalObject", "PCJ_TestSchema:TestClass"]);
         });
       });
+
+      it("uses `instanceFilter` attribute", async () => {
+        // __PUBLISH_EXTRACT_START__ ContentRelatedInstances.InstanceFilter.Ruleset
+        // This ruleset returns content of all `bis.SpatialViewDefinition` instances whose `Pitch` property is greater or equal to 0.
+        const ruleset: Ruleset = {
+          id: "example",
+          rules: [{
+            ruleType: RuleTypes.Content,
+            specifications: [{
+              specType: ContentSpecificationTypes.ContentRelatedInstances,
+              relationshipPaths: [
+                {
+                  relationship: {
+                    schemaName: "BisCore",
+                    className: "SpatialViewDefinitionUsesModelSelector",
+                  },
+                  direction: RelationshipDirection.Backward,
+                },
+              ],
+              instanceFilter: "this.Pitch >= 0",
+            }],
+          }],
+        };
+        // __PUBLISH_EXTRACT_END__
+
+        // Ensure that only `bis.SpatialViewDefinition` instances that have Pitch >= 0 are selected.
+        const content = await Presentation.presentation.getContent({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet([{ className: "BisCore:ModelSelector", id: "0x30" }]),
+          descriptor: {},
+        });
+
+        expect(content!.contentSet.length).to.eq(1);
+        expect(content!.contentSet[0].primaryKeys[0].className).to.eq("BisCore:SpatialViewDefinition");
+        const field = getFieldByLabel(content!.descriptor.fields, "Pitch");
+        expect(content!.contentSet[0].values[field.name]).to.be.not.below(0);
+      });
+
     });
 
     describe("ContentInstancesOfSpecificClasses", () => {
@@ -1097,6 +1105,37 @@ describe("Learning Snippets", () => {
         ]).and.to.have.lengthOf(17);
 
         expect(content!.contentSet.length).to.eq(4);
+      });
+
+      it("uses `instanceFilter` attribute", async () => {
+        // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.InstanceFilter.Ruleset
+        // This ruleset returns content of all `bis.SpatialViewDefinition` instances whose `Pitch` property is greater or equal to 0.
+        const ruleset: Ruleset = {
+          id: "example",
+          rules: [{
+            ruleType: RuleTypes.Content,
+            specifications: [{
+              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+              classes: { schemaName: "BisCore", classNames: ["SpatialViewDefinition"] },
+              instanceFilter: "this.Pitch >= 0",
+            }],
+          }],
+        };
+        // __PUBLISH_EXTRACT_END__
+
+        // Ensure that only `bis.SpatialViewDefinition` instances that have Pitch >= 0 are selected.
+        const content = await Presentation.presentation.getContent({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet(),
+          descriptor: {},
+        });
+
+        expect(content!.contentSet.length).to.eq(2);
+        const field = getFieldByLabel(content!.descriptor.fields, "Pitch");
+        content!.contentSet.forEach((record) => {
+          expect(record.values[field.name]).to.be.not.below(0);
+        });
       });
 
     });

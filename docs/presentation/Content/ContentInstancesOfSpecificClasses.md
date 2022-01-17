@@ -69,7 +69,7 @@ Specifies whether properties of derived `classes` should be included in the cont
 Specifies an [ECExpression](./ECExpressions.md#instance-filter) for filtering instances of ECClasses specified through the [`classes` attribute](#attribute-classes).
 
 ```ts
-[[include:SharedAttributes.InstanceFilter.Ruleset]]
+[[include:ContentInstancesOfSpecificClasses.InstanceFilter.Ruleset]]
 ```
 
   |                | Result                                                                                                       |

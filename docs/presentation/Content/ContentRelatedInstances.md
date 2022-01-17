@@ -38,7 +38,7 @@ Either a single or an array of specifications may be specified for this attribut
 Specifies an [ECExpression](./ECExpressions.md#instance-filter) for filtering instances of ECClasses targeted through the [`relationshipPaths` attribute](#attribute-relationshippaths).
 
 ```ts
-[[include:SharedAttributes.InstanceFilter.Ruleset]]
+[[include:ContentRelatedInstances.InstanceFilter.Ruleset]]
 ```
 
   |                | Result                                                                                                       |
