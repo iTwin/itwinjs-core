@@ -41,10 +41,10 @@ Specifies an [ECExpression](./ECExpressions.md#instance-filter) for filtering in
 [[include:ContentRelatedInstances.InstanceFilter.Ruleset]]
 ```
 
-  |                | Result                                                                                                       |
-  | -------------- | ------------------------------------------------------------------------------------------------------------ |
-  | without filter | ![Example when selecting all instances](./media/contentinstancesofspecificclasses-with-instancefilter-1.png) |
-  | with filter    | ![Example when filtering instances](./media/contentinstancesofspecificclasses-with-instancefilter-2.png)     |
+  |                | Result                                                                                      |
+  | -------------- | ------------------------------------------------------------------------------------------- |
+  | without filter | ![Example when selecting all instances](./media/sharedattributes-with-instancefilter-1.png) |
+  | with filter    | ![Example when filtering instances](./media/sharedattributes-with-instancefilter-2.png)     |
 
 ### Attribute: `onlyIfNotHandled`
 
@@ -56,10 +56,10 @@ Identifies whether we should ignore this specification if another specification 
 [[include:SharedAttributes.OnlyIfNotHandled.Ruleset]]
 ```
 
-  | onlyIfNotHandled | Result                                                                                                                      |
-  | ---------------- | --------------------------------------------------------------------------------------------------------------------------- |
-  | `true`           | ![Example using both specifications](./media/contentinstancesofspecificclasses-with-onlyifnothandled-1.png)                 |
-  | `false`          | ![Example with "only if not handled" specifications](./media/contentinstancesofspecificclasses-with-onlyifnothandled-2.png) |
+  | onlyIfNotHandled | Result                                                                                                     |
+  | ---------------- | ---------------------------------------------------------------------------------------------------------- |
+  | `true`           | ![Example using both specifications](./media/sharedattributes-with-onlyifnothandled-1.png)                 |
+  | `false`          | ![Example with "only if not handled" specifications](./media/sharedattributes-with-onlyifnothandled-2.png) |
 
 ### Attribute: `priority`
 
@@ -71,7 +71,7 @@ Controls the order in which specifications are handled — specification with hi
 [[include:SharedAttributes.Priority.Ruleset]]
 ```
 
-![Example of using "priority" attribute](./media/contentinstancesofspecificclasses-with-priority.png)
+![Example of using "priority" attribute](./media/sharedattributes-with-priority.png)
 
 ### Attribute: `relatedProperties`
 
@@ -81,9 +81,9 @@ Specifications of [related properties](./RelatedPropertiesSpecification.md) whic
 [[include:SharedAttributes.RelatedProperties.Ruleset]]
 ```
 
-  | without related properties                                                                                           | with related properties                                                                                                   |
-  | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-  | ![Example when doing normal property select](./media/contentinstancesofspecificclasses-with-relatedproperties-1.png) | ![Example when selecting with "related properties"](./media/contentinstancesofspecificclasses-with-relatedproperties-2.png) |
+  | without related properties                                                                          | with related properties                                                                                    |
+  | --------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+  | ![Example when doing normal property select](./media/sharedattributes-with-relatedproperties-1.png) | ![Example when selecting with "related properties"](./media/sharedattributes-with-relatedproperties-2.png) |
 
 ### Attribute: `calculatedProperties`
 
@@ -93,7 +93,7 @@ Specifications of [calculated properties](./CalculatedPropertiesSpecification.md
 [[include:SharedAttributes.CalculatedProperties.Ruleset]]
 ```
 
-![Example of using "calculated properties" attribute](./media/contentinstancesofspecificclasses-with-calculatedproperties.png)
+![Example of using "calculated properties" attribute](./media/sharedattributes-with-calculatedproperties.png)
 
 ### Attribute: `propertyCategories`
 
@@ -105,7 +105,7 @@ Custom categories are not present in the result unless they contain at least one
 [[include:SharedAttributes.PropertyCategories.Ruleset]]
 ```
 
-![Example of using "property categories" attribute](./media/contentinstancesofspecificclasses-with-propertycategories.png)
+![Example of using "property categories" attribute](./media/sharedattributes-with-propertycategories.png)
 
 ### Attribute: `propertyOverrides`
 
@@ -115,10 +115,10 @@ Specifications of various [property overrides](./PropertySpecification.md) that 
 [[include:SharedAttributes.PropertyOverrides.Ruleset]]
 ```
 
-  |        | Result                                                                                                                      |
-  | ------ | --------------------------------------------------------------------------------------------------------------------------- |
-  | before | ![Example when doing normal property select](./media/contentinstancesofspecificclasses-with-propertyoverrides-1.png)        |
-  | after  | ![Example when selecting with "property overrides"](./media/contentinstancesofspecificclasses-with-propertyoverrides-2.png) |
+  |        | Result                                                                                                     |
+  | ------ | ---------------------------------------------------------------------------------------------------------- |
+  | before | ![Example when doing normal property select](./media/sharedattributes-with-propertyoverrides-1.png)        |
+  | after  | ![Example when selecting with "property overrides"](./media/sharedattributes-with-propertyoverrides-2.png) |
 
 ### Attribute: `showImages`
 
@@ -144,8 +144,8 @@ Specifications of [related instances](../Common-Rules/RelatedInstanceSpecificati
 [[include:SharedAttributes.RelatedInstances.Ruleset]]
 ```
 
-  |                                                                   | Result                                                                                                                                                 |
-  | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-  | `SpatialViewDefinition` instances                                 | ![A list of spatial view definitions](./media/contentinstancesofspecificclasses-with-relatedinstances-3.png)                                           |
-  | `ModelSelector` instances                                         | ![A list of model selectors](./media/contentinstancesofspecificclasses-with-relatedinstances-2.png)                                                    |
-  | `ModelSelector` instances filtered by `SpatialViewDefinition.Yaw` | ![A list of model selectors filtered by yaw of related spatial view definition](./media/contentinstancesofspecificclasses-with-relatedinstances-1.png) |
+  |                                                                   | Result                                                                                                                                |
+  | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+  | `SpatialViewDefinition` instances                                 | ![A list of spatial view definitions](./media/sharedattributes-with-relatedinstances-3.png)                                           |
+  | `ModelSelector` instances                                         | ![A list of model selectors](./media/sharedattributes-with-relatedinstances-2.png)                                                    |
+  | `ModelSelector` instances filtered by `SpatialViewDefinition.Yaw` | ![A list of model selectors filtered by yaw of related spatial view definition](./media/sharedattributes-with-relatedinstances-1.png) |
