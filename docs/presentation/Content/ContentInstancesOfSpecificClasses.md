@@ -37,7 +37,7 @@ Defines a set of [multi schema classes](../Common-Rules/MultiSchemaClassesSpecif
 
 ### Attribute: `excludedClasses`
 
-Defines a set of [multi schema classes](../Common-Rules/MultiSchemaClassesSpecification.md) that specify which ECClasses need to be excluded from the result.
+Defines a set of [multi schema classes](../Common-Rules/MultiSchemaClassesSpecification.md) that specify which ECClasses need to be excluded from the [`classes` attribute](#attribute-classes) result.
 
 ```ts
 [[include:ContentInstancesOfSpecificClasses.ExcludedClasses.Ruleset]]
@@ -47,7 +47,6 @@ Defines a set of [multi schema classes](../Common-Rules/MultiSchemaClassesSpecif
   | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
   | without excluded classes              | ![Example when doing normal class based instance select](./media/contentinstancesofspecificclasses-with-excludedclasses-1.png)       |
   | with `PhysicalModel` classes excluded | ![Example when selecting instances with some classes excluded](./media/contentinstancesofspecificclasses-with-excludedclasses-2.png) |
-
 
 ### Attribute: `handlePropertiesPolymorphically`
 
