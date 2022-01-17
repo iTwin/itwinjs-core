@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { ContentSpecificationTypes, KeySet, NestedContentField, RelationshipDirection, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import { ContentSpecificationTypes, KeySet, RelationshipDirection, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../IntegrationTests";
 import { getFieldByLabel, tryGetFieldByLabel } from "../Utils";
@@ -395,7 +395,7 @@ describe("Learning Snippets", () => {
         };
         // __PUBLISH_EXTRACT_END__
 
-        // Expect to get one `bis.SpatialCategory` field and one related content field
+        // Expect to get one `bis.SpatialCategory` field and one related content field.
         const content = await Presentation.presentation.getContent({
           imodel,
           rulesetOrId: ruleset,
@@ -642,14 +642,19 @@ describe("Learning Snippets", () => {
           id: "example",
           rules: [{
             ruleType: RuleTypes.Content,
-            specifications: [{
-              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
-              classes: { schemaName: "BisCore", classNames: ["ViewDefinition"], arePolymorphic: true },
-            }, {
-              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
-              classes: { schemaName: "BisCore", classNames: ["PhysicalModel"], arePolymorphic: true },
-              onlyIfNotHandled: true,
-            }],
+            specifications: [
+              {
+                specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+                classes: { schemaName: "BisCore", classNames: ["ViewDefinition"], arePolymorphic: true },
+              },
+              // The following specification is defined second so it's lower in priority. Because it has `onlyIfNotHandled` attribute,
+              // it's overriden by the specification above.
+              {
+                specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+                classes: { schemaName: "BisCore", classNames: ["PhysicalModel"], arePolymorphic: true },
+                onlyIfNotHandled: true,
+              },
+            ],
           }],
         };
         // __PUBLISH_EXTRACT_END__
@@ -789,11 +794,15 @@ describe("Learning Snippets", () => {
               specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
               classes: { schemaName: "BisCore", classNames: ["SpatialViewDefinition"] },
               propertyCategories: [{
-                id: "cat1",
+                id: "camera_category",
                 label: "Camera settings",
                 autoExpand: true,
               }],
-              propertyOverrides: [{ name: "EyePoint", categoryId: "cat1" }, { name: "FocusDistance", categoryId: "cat1" }, { name: "IsCameraOn", categoryId: "cat1" }],
+              propertyOverrides: [
+                { name: "EyePoint", categoryId: "camera_category" },
+                { name: "FocusDistance", categoryId: "camera_category" },
+                { name: "IsCameraOn", categoryId: "camera_category" },
+              ],
             }],
           }],
         };
@@ -973,7 +982,7 @@ describe("Learning Snippets", () => {
             specifications: [{
               specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
               // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.MultiSchemaClasses.Ruleset
-              // The specification returns content of all `bis.PhysicalModel` and `bis.SpatialViewDefinition` classes.
+              // This specification selects instances of `bis.PhysicalModel` and `bis.SpatialViewDefinition` classes. Classes that derive from this list will not be included.
               classes: {
                 schemaName: "BisCore",
                 classNames: ["PhysicalModel", "SpatialViewDefinition"],
@@ -1025,10 +1034,38 @@ describe("Learning Snippets", () => {
         expect(content!.contentSet[0].primaryKeys[0].className).to.eq("BisCore:PhysicalModel");
       });
 
+      it("uses `excludedClasses` attribute", async () => {
+        // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.ExcludedClasses.Ruleset
+        // The specification returns content of all classes derived from `bis.Model` except for excluded `bis.PhysicalModel` class.
+        const ruleset: Ruleset = {
+          id: "example",
+          rules: [{
+            ruleType: RuleTypes.Content,
+            specifications: [{
+              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+              classes: { schemaName: "BisCore", classNames: ["Model"], arePolymorphic: true },
+              excludedClasses: { schemaName: "BisCore", classNames: ["PhysicalModel"] },
+            }],
+          }],
+        };
+        // __PUBLISH_EXTRACT_END__
+
+        // Ensure that all `bis.PhysicalModel` instances are excluded.
+        const content = await Presentation.presentation.getContent({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet(),
+          descriptor: {},
+        });
+
+        expect(content!.contentSet).to.not.containSubset([
+          { classInfo: { name: "BisCore:PhysicalModel" } },
+        ]).and.to.have.lengthOf(6);
+      });
+
       it("uses `handlePropertiesPolymorphically` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.HandlePropertiesPolymorphically.Ruleset
-        // The specification returns content of all `bis.ViewDefinition` instances
-        // with properties of all `bis.ViewDefinition` subclasses.
+        // This ruleset returns content of all `bis.ViewDefinition` instances, including all properties from derived classes.
         const ruleset: Ruleset = {
           id: "example",
           rules: [{

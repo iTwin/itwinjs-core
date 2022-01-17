@@ -9,7 +9,6 @@ import { connect, Provider } from "react-redux";
 import { Store } from "redux"; // createStore,
 import reactAxe from "@axe-core/react";
 import { BrowserAuthorizationCallbackHandler, BrowserAuthorizationClient } from "@itwin/browser-authorization";
-import { ProgressInfo } from "@bentley/itwin-client";
 import { Project as ITwin, ProjectsAccessClient, ProjectsSearchableProperty } from "@itwin/projects-client";
 import { RealityDataAccessClient, RealityDataClientOptions } from "@itwin/reality-data-client";
 import { getClassName } from "@itwin/appui-abstract";
@@ -22,7 +21,7 @@ import {
   ToolbarDragInteractionContext, UiFramework, UiStateStorageHandler,
 } from "@itwin/appui-react";
 import { BeDragDropContext } from "@itwin/components-react";
-import { Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
+import { Id64String, Logger, LogLevel, ProcessDetector, UnexpectedErrors } from "@itwin/core-bentley";
 import { BentleyCloudRpcManager, BentleyCloudRpcParams, IModelVersion, RpcConfiguration, SyncMode } from "@itwin/core-common";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
@@ -42,7 +41,6 @@ import { AccessTokenAdapter, FrontendIModelsAccess } from "@itwin/imodels-access
 import { getSupportedRpcs } from "../common/rpcs";
 import { loggerCategory, TestAppConfiguration } from "../common/TestAppConfiguration";
 import { BearingQuantityType } from "./api/BearingQuantityType";
-import { ErrorHandling } from "./api/ErrorHandling";
 import { AppUi } from "./appui/AppUi";
 import { AppBackstageComposer } from "./appui/backstage/AppBackstageComposer";
 import { IModelViewportControl } from "./appui/contentviews/IModelViewport";
@@ -155,6 +153,12 @@ interface SampleIModelParams {
   iModelId: string;
   viewIds?: string[];
   stageId?: string;
+}
+
+interface ProgressInfo {
+  percent?: number;
+  total?: number;
+  loaded: number;
 }
 
 export class SampleAppIModelApp {
@@ -717,7 +721,7 @@ async function main() {
   Logger.setLevel("ui-framework.UiFramework", LogLevel.Info);
   Logger.setLevel("ViewportComponent", LogLevel.Info);
 
-  ToolAdmin.exceptionHandler = async (err: any) => Promise.resolve(ErrorHandling.onUnexpectedError(err));
+  ToolAdmin.exceptionHandler = async (err: any) => Promise.resolve(UnexpectedErrors.handle(err));
 
   // retrieve, set, and output the global configuration variable
   SampleAppIModelApp.testAppConfiguration = {};

@@ -216,7 +216,11 @@
       "propertyCategories": [
         {
           "id": "source_information",
-          "label": "@BisCore:Categories.SourceInformation@"
+          "label": "@BisCore:Categories.SourceInformation@",
+          "parentId": {
+            "type": "Root"
+          },
+          "autoExpand": true
         },
         {
           "id": "model_source",
@@ -293,60 +297,50 @@
           "skipIfDuplicate": true
         },
         {
-          "propertiesSource": {
-            "relationship": {
-              "schemaName": "BisCore",
-              "className": "ModelContainsElements"
-            },
-            "direction": "Backward"
-          },
-          "properties": "_none_",
-          "relationshipMeaning": "SameInstance",
-          "nestedRelatedProperties": [
+          "propertiesSource": [
             {
-              "propertiesSource": {
-                "relationship": {
-                  "schemaName": "BisCore",
-                  "className": "ModelModelsElement"
-                },
-                "direction": "Forward"
+              "relationship": {
+                "schemaName": "BisCore",
+                "className": "ModelContainsElements"
               },
-              "properties": "_none_",
-              "relationshipMeaning": "SameInstance",
-              "nestedRelatedProperties": [
-                {
-                  "propertiesSource": {
-                    "relationship": {
-                      "schemaName": "BisCore",
-                      "className": "ElementHasLinks"
-                    },
-                    "targetClass": {
-                      "schemaName": "BisCore",
-                      "className": "RepositoryLink"
-                    },
-                    "direction": "Forward"
-                  },
-                  "properties": [
-                    {
-                      "name": "Url",
-                      "overridesPriority": 1001,
-                      "labelOverride": "@BisCore:Properties.SourceInformation.Path@",
-                      "categoryId": "model_source",
-                      "isDisplayed": true
-                    },
-                    {
-                      "name": "UserLabel",
-                      "overridesPriority": 1001,
-                      "labelOverride": "@BisCore:Properties.SourceInformation.Name@",
-                      "categoryId": "model_source",
-                      "isDisplayed": true
-                    }
-                  ],
-                  "relationshipMeaning": "SameInstance"
-                }
-              ]
+              "direction": "Backward"
+            },
+            {
+              "relationship": {
+                "schemaName": "BisCore",
+                "className": "ModelModelsElement"
+              },
+              "direction": "Forward"
+            },
+            {
+              "relationship": {
+                "schemaName": "BisCore",
+                "className": "ElementHasLinks"
+              },
+              "targetClass": {
+                "schemaName": "BisCore",
+                "className": "RepositoryLink"
+              },
+              "direction": "Forward"
             }
           ],
+          "properties": [
+            {
+              "name": "Url",
+              "overridesPriority": 1001,
+              "labelOverride": "@BisCore:Properties.SourceInformation.Path@",
+              "categoryId": "model_source",
+              "isDisplayed": true
+            },
+            {
+              "name": "UserLabel",
+              "overridesPriority": 1001,
+              "labelOverride": "@BisCore:Properties.SourceInformation.Name@",
+              "categoryId": "model_source",
+              "isDisplayed": true
+            }
+          ],
+          "relationshipMeaning": "SameInstance",
           "skipIfDuplicate": true
         }
       ]
@@ -414,6 +408,9 @@
         {
           "id": "source_information",
           "label": "@BisCore:Categories.SourceInformation@",
+          "parentId": {
+            "type": "Root"
+          },
           "autoExpand": true
         },
         {

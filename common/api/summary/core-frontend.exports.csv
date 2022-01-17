@@ -106,6 +106,7 @@ internal;createMaskTreeReference(view: ViewState, model: GeometricModelState): T
 internal;createOrbitGtTileTreeReference(props: OrbitGtTileTree.ReferenceProps): RealityModelTileTree.Reference
 internal;createPrimaryTileTreeReference(view: ViewState, model: GeometricModelState): PrimaryTreeReference
 internal;createRealityTileTreeReference(props: RealityModelTileTree.ReferenceProps): RealityModelTileTree.Reference
+public;CreateRenderMaterialArgs
 internal;createRenderPlanFromViewport(vp: Viewport): RenderPlan
 public;CreateTextureArgs
 public;CreateTextureFromSourceArgs
@@ -449,6 +450,7 @@ internal;rangeToCartographicArea(view3d: ViewState3d, range: Range3d): GlobalLoc
 public;readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean, options?: BatchOptions | false): Promise
 public;readGltfGraphics(args: ReadGltfGraphicsArgs): Promise
 public;ReadGltfGraphicsArgs
+public;ReadImageBufferArgs
 internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined
 beta;RealityDataSource
 beta;RealityDataSource
@@ -474,6 +476,7 @@ internal;RenderDiagnostics
 internal;RenderGeometry = IDisposable & RenderMemory.Consumer
 public;class RenderGraphic 
 public;class RenderGraphicOwner 
+internal;RenderMaterialSource
 internal;RenderMemory
 internal;RenderPlan
 internal;class RenderPlanarClassifier 

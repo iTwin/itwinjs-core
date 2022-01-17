@@ -2,7 +2,7 @@
 
 > TypeScript type: [ContentInstancesOfSpecificClassesSpecification]($presentation-common).
 
-A specification that creates content for  instances of specific ECClasses.
+This specification creates content for all instances of specific ECClasses.
 
 ## Attributes
 
@@ -10,6 +10,7 @@ A specification that creates content for  instances of specific ECClasses.
 | ------------------------------------------------------------------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------- | ------- |
 | *Filtering*                                                                     |
 | [`classes`](#attribute-classes)                                                 | Yes       | [`MultiSchemaClassesSpecification \| MultiSchemaClassesSpecification[]`](../Common-Rules/MultiSchemaClassesSpecification.md) | `[]`    |
+| [`excludedClasses`](#attribute-excludedclasses)                                 | No        | [`MultiSchemaClassesSpecification \| MultiSchemaClassesSpecification[]`](../Common-Rules/MultiSchemaClassesSpecification.md) | `[]`    |
 | [`handlePropertiesPolymorphically`](#attribute-handlepropertiespolymorphically) | No        | `boolean`                                                                                                                    | `false` |
 | [`instanceFilter`](#attribute-instancefilter)                                   | No        | [ECExpression](./ECExpressions.md#instance-filter)                                                                           | `""`    |
 | [`onlyIfNotHandled`](#attribute-onlyifnothandled)                               | No        | boolean                                                                                                                      | `false` |
@@ -26,13 +27,27 @@ A specification that creates content for  instances of specific ECClasses.
 
 ### Attribute: `classes`
 
-Defines a single or an array of [multi schema classes](../Common-Rules/MultiSchemaClassesSpecification.md) which specify what and how the classes need to be selected to form result content.
+Defines a set of [multi schema classes](../Common-Rules/MultiSchemaClassesSpecification.md) that specify which ECClasses need to be selected to form the result.
 
 ```ts
 [[include:ContentInstancesOfSpecificClasses.Classes.Ruleset]]
 ```
 
 ![Example of using "classes" attribute](./media/contentinstancesofspecificclasses-with-classes.png)
+
+### Attribute: `excludedClasses`
+
+Defines a set of [multi schema classes](../Common-Rules/MultiSchemaClassesSpecification.md) that specify which ECClasses need to be excluded from the result.
+
+```ts
+[[include:ContentInstancesOfSpecificClasses.ExcludedClasses.Ruleset]]
+```
+
+  |                                       | Result                                                                                                                               |
+  | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+  | without excluded classes              | ![Example when doing normal class based instance select](./media/contentinstancesofspecificclasses-with-excludedclasses-1.png)       |
+  | with `PhysicalModel` classes excluded | ![Example when selecting instances with some classes excluded](./media/contentinstancesofspecificclasses-with-excludedclasses-2.png) |
+
 
 ### Attribute: `handlePropertiesPolymorphically`
 
@@ -81,7 +96,7 @@ Identifies whether we should ignore this specification if another specification 
 
 > **Default value:** `1000`
 
-Defines the order in which specifications are handled - higher priority means the specifications is handled first. If priorities are equal, the specifications are handled in the order they're defined.
+Controls the order in which specifications are handled — specification with higher priority value is handled first. If priorities are equal, the specifications are handled in the order they appear in the ruleset.
 
 ```ts
 [[include:SharedAttributes.Priority.Ruleset]]
@@ -97,8 +112,8 @@ Specifications of [related properties](./RelatedPropertiesSpecification.md) whic
 [[include:SharedAttributes.RelatedProperties.Ruleset]]
 ```
 
-  | without related properties                                                                                           | with related properties                                                                                                   |
-  | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+  | without related properties                                                                                           | with related properties                                                                                                     |
+  | -------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
   | ![Example when doing normal property select](./media/contentinstancesofspecificclasses-with-relatedproperties-1.png) | ![Example when selecting with "related properties"](./media/contentinstancesofspecificclasses-with-relatedproperties-2.png) |
 
 ### Attribute: `calculatedProperties`
@@ -113,9 +128,9 @@ Specifications of [calculated properties](./CalculatedPropertiesSpecification.md
 
 ### Attribute: `propertyCategories`
 
-Specifications of [custom categories](PropertyCategorySpecification.md).
+Defines a list of [custom categories](PropertyCategorySpecification.md).
 
-Simply defining the categories does nothing - they have to be referenced through [`PropertySpecification.categoryId`](./PropertySpecification.md) specified in [`propertyOverrides`](#attribute-propertyoverrides) list.
+Custom categories are not present in the result unless they contain at least one property. To assign a property to the category, reference its `id` in [`PropertySpecification.categoryId`](./PropertySpecification.md) when defining [`propertyOverrides`](#attribute-propertyoverrides).
 
 ```ts
 [[include:SharedAttributes.PropertyCategories.Ruleset]]
@@ -131,9 +146,9 @@ Specifications of various [property overrides](./PropertySpecification.md) that 
 [[include:SharedAttributes.PropertyOverrides.Ruleset]]
 ```
 
-  |        | Result                                                                                                                    |
-  | ------ | ------------------------------------------------------------------------------------------------------------------------- |
-  | before | ![Example when doing normal property select](./media/contentinstancesofspecificclasses-with-propertyoverrides-1.png)      |
+  |        | Result                                                                                                                      |
+  | ------ | --------------------------------------------------------------------------------------------------------------------------- |
+  | before | ![Example when doing normal property select](./media/contentinstancesofspecificclasses-with-propertyoverrides-1.png)        |
   | after  | ![Example when selecting with "property overrides"](./media/contentinstancesofspecificclasses-with-propertyoverrides-2.png) |
 
 

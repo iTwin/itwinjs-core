@@ -8,7 +8,7 @@
 
 import deepAssign from "deep-assign";
 import { AccessToken, GuidString, Id64String, IModelHubStatus, Logger } from "@itwin/core-bentley";
-import { ResponseError } from "@bentley/itwin-client";
+import { ResponseError } from "../itwin-client/Request";
 import { ECJsonTypeMap, WsgInstance } from "../wsg/ECJsonTypeMap";
 import { WsgQuery } from "../wsg/WsgQuery";
 import { HttpRequestOptions, WsgRequestOptions } from "../wsg/WsgClient";

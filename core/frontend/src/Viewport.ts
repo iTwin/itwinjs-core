@@ -198,6 +198,25 @@ export interface GetPixelDataWorldPointArgs {
   out?: Point3d;
 }
 
+/** Arguments supplied to [[Viewport.readImageBuffer]].
+ * @public
+ */
+export interface ReadImageBufferArgs {
+  /** The region of the viewport's [[ViewRect]] to capture. It must be fully contained within [[Viewport.viewRect]].
+   * If unspecified, the entirety of the viewport's view rect is captured.
+   */
+  rect?: ViewRect;
+  /** Optional dimensions to which to resize the captured image. If the aspect ratio of these dimensions does not match that of the captured image,
+   * horizontal or vertical bars will be added to the resized image using the viewport's background color.
+   * If unspecified, the image will not be resized.
+   */
+  size?: XAndY;
+  /** The image captured by WebGL appears "upside-down" and must be flipped to appear right-side-up; if true, this flipping will not be performed.
+   * This provides a performance optimization for uncommon cases in which an upside-down image is actually preferred.
+   */
+  upsideDown?: boolean;
+}
+
 /** A Viewport renders the contents of one or more [GeometricModel]($backend)s onto an `HTMLCanvasElement`.
  *
  * It holds a [[ViewState]] object that defines its viewing parameters; the ViewState in turn defines the [[DisplayStyleState]],
@@ -2406,13 +2425,24 @@ export abstract class Viewport implements IDisposable {
    * @param flipVertically If true, the image is flipped along the x-axis.
    * @returns The contents of the viewport within the specified rectangle as a bitmap image, or undefined if the image could not be read.
    * @note By default the image is returned with the coordinate (0,0) referring to the bottom-most pixel. Pass `true` for `flipVertically` to flip it along the x-axis.
+   * @deprecated Use readImageBuffer.
    */
   public readImage(rect: ViewRect = new ViewRect(0, 0, -1, -1), targetSize: Point2d = Point2d.createZero(), flipVertically: boolean = false): ImageBuffer | undefined {
+    // eslint-disable-next-line deprecation/deprecation
     return this.target.readImage(rect, targetSize, flipVertically);
   }
 
+  /** Capture the image currently rendered in this viewport, or a subset thereof.
+   * @param args Describes the region to capture and optional resizing. By default the entire image is captured with no resizing.
+   * @returns The image, or `undefined` if the specified capture rect is not fully contained in [[viewRect], a 2d context could not be obtained, or the resultant image consists entirely
+   * of 100% transparent background pixels.
+   */
+  public readImageBuffer(args?: ReadImageBufferArgs): ImageBuffer | undefined {
+    return this.target.readImageBuffer(args);
+  }
+
   /** Reads the current image from this viewport into an HTMLCanvasElement with a Canvas2dRenderingContext such that additional 2d graphics can be drawn onto it.
-   * @see [[readImage]] to obtain the image as a JPEG or PNG.
+   * @see [[readImageBuffer]] to obtain the image as an array of RGBA pixels.
    */
   public readImageToCanvas(): HTMLCanvasElement {
     return this.target.readImageToCanvas();
@@ -3304,7 +3334,7 @@ export interface OffScreenViewportOptions {
 
 /** A viewport that draws to an offscreen buffer instead of to the screen. An offscreen viewport is never added to the [[ViewManager]], therefore does not participate in
  * the render loop. Its dimensions are specified directly instead of being derived from an HTMLCanvasElement, and its renderFrame function must be manually invoked.
- * Offscreen viewports can be useful for, e.g., producing an image from the contents of a view (see [[Viewport.readImage]] and [[Viewport.readImageToCanvas]])
+ * Offscreen viewports can be useful for, e.g., producing an image from the contents of a view (see [[Viewport.readImageBuffer]] and [[Viewport.readImageToCanvas]])
  * without drawing to the screen.
  * @public
  */
