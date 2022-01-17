@@ -918,45 +918,39 @@ describe("Learning Snippets", () => {
 
       it("uses `relationshipPaths` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ ContentRelatedInstances.RelationshipPaths.Ruleset
-        // The ruleset has a specification that returns `bis.ModelSelector` content instances and a specification
-        // that returns `bis.SpatialViewDefinition` content instances which are related to their model selector
-        // through `bis.SpatialViewDefinitionUsesModelSelector` relationship by following it in backward
-        // direction (from `bis.SpatialViewDefinition` to `bis.ModelSelector`).
+        // The ruleset has a specification that returns `bis.Element` content instances which are related to input `bis.Model` class
+        // through `bis.ModelContainsElements` relationship by following it in forward.
+        // direction (from `bis.Model` to `bis.Element`).
         const ruleset: Ruleset = {
           id: "example",
-          rules: [{
-            ruleType: RuleTypes.Content,
-            specifications: [{
-              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
-              classes: { schemaName: "BisCore", classNames: ["ModelSelector"] },
-            }],
-          }, {
-            ruleType: RuleTypes.Content,
-            condition: `ParentNode.IsOfClass("ModelSelector", "BisCore")`,
-            specifications: [{
-              specType: ContentSpecificationTypes.ContentRelatedInstances,
-              relationshipPaths: [{
-                relationship: { schemaName: "BisCore", className: "SpatialViewDefinitionUsesModelSelector" },
-                direction: RelationshipDirection.Backward,
-                targetClass: { schemaName: "BisCore", className: "SpatialViewDefinition" },
+          rules: [
+            {
+              ruleType: RuleTypes.Content,
+              specifications: [{
+                specType: ContentSpecificationTypes.ContentRelatedInstances,
+                relationshipPaths: [{
+                  relationship: { schemaName: "BisCore", className: "ModelContainsElements" },
+                  direction: RelationshipDirection.Forward,
+                  targetClass: { schemaName: "BisCore", className: "Element" },
+                }],
               }],
-            }],
-          }],
+            },
+          ],
         };
         // __PUBLISH_EXTRACT_END__
         printRuleset(ruleset);
 
-        // Ensure that related `bis.SpatialViewDefinition` instances are also returned.
+        // Ensure that related `bis.Element` instances are returned.
         const content = await Presentation.presentation.getContent({
           imodel,
           rulesetOrId: ruleset,
-          keys: new KeySet([{ className: "BisCore:ModelSelector", id: "0x26" }]),
+          keys: new KeySet([{ className: "BisCore:PhysicalModel", id: "0x1c" }]),
           descriptor: {},
         });
 
-        expect(content!.contentSet).to.have.lengthOf(5).and.to.containSubset([{
-          classInfo: { label: "Spatial View Definition" },
-        }]);
+        content!.contentSet.forEach((record) => {
+          expect(record.primaryKeys[0].className).to.be.oneOf(["Generic:PhysicalObject", "PCJ_TestSchema:TestClass"]);
+        });
       });
     });
 
@@ -1003,7 +997,7 @@ describe("Learning Snippets", () => {
 
         expect(content!.contentSet.length).to.eq(5);
         content!.contentSet.forEach((record) => {
-          expect(record.primaryKeys[0].className).to.oneOf(["BisCore:PhysicalModel", "BisCore:SpatialViewDefinition"]);
+          expect(record.primaryKeys[0].className).to.be.oneOf(["BisCore:PhysicalModel", "BisCore:SpatialViewDefinition"]);
         });
       });
 
