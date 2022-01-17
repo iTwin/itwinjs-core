@@ -74,7 +74,6 @@
   "dependencies": {
     "@bentley/icons-generic-webfont": "^1.0.15",
     "@bentley/icons-generic": "^1.0.15",
-    "@bentley/itwin-client": "workspace:*",
     "@itwin/imodels-access-backend": "~0.3.0",
     "@itwin/imodels-access-frontend": "~0.3.0",
     "@itwin/imodels-client-management": "~0.3.0",
