@@ -661,6 +661,35 @@ describe("Learning Snippets", () => {
         expect(content!.contentSet[0].primaryKeys[0].className).to.eq("BisCore:PhysicalModel");
       });
 
+      it("uses `excludedClasses` attribute", async () => {
+        // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.ExcludedClasses.Ruleset
+        // The specification returns content of all classes derived from `bis.Model` except for excluded `bis.PhysicalModel` class.
+        const ruleset: Ruleset = {
+          id: "example",
+          rules: [{
+            ruleType: RuleTypes.Content,
+            specifications: [{
+              specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+              classes: { schemaName: "BisCore", classNames: ["Model"], arePolymorphic: true },
+              excludedClasses: { schemaName: "BisCore", classNames: ["PhysicalModel"] },
+            }],
+          }],
+        };
+        // __PUBLISH_EXTRACT_END__
+
+        // Ensure that all `bis.PhysicalModel` instances are excluded.
+        const content = await Presentation.presentation.getContent({
+          imodel,
+          rulesetOrId: ruleset,
+          keys: new KeySet(),
+          descriptor: {},
+        });
+
+        expect(content!.contentSet).to.not.containSubset([
+          { classInfo: { name: "BisCore:PhysicalModel" } },
+        ]).and.to.have.lengthOf(6);
+      });
+
       it("uses `handlePropertiesPolymorphically` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ ContentInstancesOfSpecificClasses.HandlePropertiesPolymorphically.Ruleset
         // This ruleset returns content of all `bis.ViewDefinition` instances, including all properties from derived classes.

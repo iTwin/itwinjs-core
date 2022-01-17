@@ -2,7 +2,7 @@
 
 > TypeScript type: [ContentInstancesOfSpecificClassesSpecification]($presentation-common).
 
-A specification that creates content for  instances of specific ECClasses.
+This specification creates content for all instances of specific ECClasses.
 
 ## Attributes
 
@@ -10,6 +10,7 @@ A specification that creates content for  instances of specific ECClasses.
 | ------------------------------------------------------------------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------- | ------- |
 | *Filtering*                                                                     |
 | [`classes`](#attribute-classes)                                                 | Yes       | [`MultiSchemaClassesSpecification \| MultiSchemaClassesSpecification[]`](../Common-Rules/MultiSchemaClassesSpecification.md) | `[]`    |
+| [`excludedClasses`](#attribute-excludedclasses)                                 | No        | [`MultiSchemaClassesSpecification \| MultiSchemaClassesSpecification[]`](../Common-Rules/MultiSchemaClassesSpecification.md) | `[]`    |
 | [`handlePropertiesPolymorphically`](#attribute-handlepropertiespolymorphically) | No        | `boolean`                                                                                                                    | `false` |
 | [`instanceFilter`](#attribute-instancefilter)                                   | No        | [ECExpression](./ECExpressions.md#instance-filter)                                                                           | `""`    |
 | [`onlyIfNotHandled`](#attribute-onlyifnothandled)                               | No        | boolean                                                                                                                      | `false` |
@@ -33,6 +34,20 @@ Defines a set of [multi schema classes](../Common-Rules/MultiSchemaClassesSpecif
 ```
 
 ![Example of using "classes" attribute](./media/contentinstancesofspecificclasses-with-classes.png)
+
+### Attribute: `excludedClasses`
+
+Defines a set of [multi schema classes](../Common-Rules/MultiSchemaClassesSpecification.md) that specify which ECClasses need to be excluded from the result.
+
+```ts
+[[include:ContentInstancesOfSpecificClasses.ExcludedClasses.Ruleset]]
+```
+
+  |                                       | Result                                                                                                                               |
+  | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+  | without excluded classes              | ![Example when doing normal class based instance select](./media/contentinstancesofspecificclasses-with-excludedclasses-1.png)       |
+  | with `PhysicalModel` classes excluded | ![Example when selecting instances with some classes excluded](./media/contentinstancesofspecificclasses-with-excludedclasses-2.png) |
+
 
 ### Attribute: `handlePropertiesPolymorphically`
 
@@ -97,8 +112,8 @@ Specifications of [related properties](./RelatedPropertiesSpecification.md) whic
 [[include:ContentInstancesOfSpecificClasses.RelatedProperties.Ruleset]]
 ```
 
-  | without related properties                                                                                           | with related properties                                                                                                   |
-  | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+  | without related properties                                                                                           | with related properties                                                                                                     |
+  | -------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
   | ![Example when doing normal property select](./media/contentinstancesofspecificclasses-with-relatedproperties-1.png) | ![Example when selecting with "related properties"](./media/contentinstancesofspecificclasses-with-relatedproperties-2.png) |
 
 ### Attribute: `calculatedProperties`
@@ -131,9 +146,9 @@ Specifications of various [property overrides](./PropertySpecification.md) that 
 [[include:ContentInstancesOfSpecificClasses.PropertyOverrides.Ruleset]]
 ```
 
-  |        | Result                                                                                                                    |
-  | ------ | ------------------------------------------------------------------------------------------------------------------------- |
-  | before | ![Example when doing normal property select](./media/contentinstancesofspecificclasses-with-propertyoverrides-1.png)      |
+  |        | Result                                                                                                                      |
+  | ------ | --------------------------------------------------------------------------------------------------------------------------- |
+  | before | ![Example when doing normal property select](./media/contentinstancesofspecificclasses-with-propertyoverrides-1.png)        |
   | after  | ![Example when selecting with "property overrides"](./media/contentinstancesofspecificclasses-with-propertyoverrides-2.png) |
 
 
