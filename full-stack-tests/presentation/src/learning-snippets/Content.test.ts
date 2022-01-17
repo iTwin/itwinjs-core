@@ -603,8 +603,7 @@ describe("Learning Snippets", () => {
 
       it("uses `instanceFilter` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ SharedAttributes.InstanceFilter.Ruleset
-        // The specification returns content of all filtered `bis.SpatialViewDefinition` instances
-        // whose `Pitch` property value is higher or equal to 0.
+        // This ruleset returns content of all `bis.SpatialViewDefinition` instances whose `Pitch` property is greater or equal to 0.
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
@@ -635,9 +634,8 @@ describe("Learning Snippets", () => {
 
       it("uses `onlyIfNotHandled` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ SharedAttributes.OnlyIfNotHandled.Ruleset
-        // Specifications to return content for `bis.ViewDefinition` and `bis.PhysicalModel` respectively.
-        // The `bis.PhysicalModel` specification is lower priority and has `onlyIfNotHandled` attribute, which
-        // allows it to be overriden by higher priority specification.
+        // This ruleset defines two specifications that return content for `bis.ViewDefinition` and `bis.PhysicalModel`
+        // instances respectively.
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
@@ -712,8 +710,7 @@ describe("Learning Snippets", () => {
 
       it("uses `relatedProperties` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ SharedAttributes.RelatedProperties.Ruleset
-        // The specification returns content for `bis.SpatialViewDefinition` and
-        // related `bis.DisplayStyle` properties.
+        // This ruleset returns content for `bis.SpatialViewDefinition`, which includes all properties from related `bis.DisplayStyle` instances.
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
@@ -750,8 +747,8 @@ describe("Learning Snippets", () => {
 
       it("uses `calculatedProperties` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ SharedAttributes.CalculatedProperties.Ruleset
-        // The specification returns content for `bis.SpatialViewDefinition` and a custom
-        // calculated property `Camera view direction`.
+        // In addition to returning content for all `bis.SpatialViewDefinition` instances, this ruleset also adds a
+        // custom `Camera view direction` property to each instance.
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
@@ -784,8 +781,7 @@ describe("Learning Snippets", () => {
 
       it("uses `propertyCategories` attribute", async () => {
         // __PUBLISH_EXTRACT_START__ SharedAttributes.PropertyCategories.Ruleset
-        // The specification returns content for `bis.SpatialViewDefinition` with specified camera
-        // properties under `Camera settings` category.
+        // This ruleset places camera-related `bis.SpatialViewDefinition` properties inside a custom category.
         const ruleset: Ruleset = {
           id: "example",
           rules: [{
