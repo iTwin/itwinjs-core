@@ -37,7 +37,7 @@ Defines a set of [multi schema classes](../Common-Rules/MultiSchemaClassesSpecif
 
 ### Attribute: `excludedClasses`
 
-Defines a set of [multi schema classes](../Common-Rules/MultiSchemaClassesSpecification.md) that specify which ECClasses need to be excluded from the [`classes` attribute](#attribute-classes) result.
+Defines a set of [multi schema classes](../Common-Rules/MultiSchemaClassesSpecification.md) that prevents specified ECClasses and subclasses from being selected by [`classes` attribute](#attribute-classes).
 
 ```ts
 [[include:ContentInstancesOfSpecificClasses.ExcludedClasses.Ruleset]]
