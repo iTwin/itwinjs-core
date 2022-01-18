@@ -250,7 +250,7 @@ export abstract class IModelDb extends IModel {
 
   public get fontMap(): FontMap { return this._fontMap ?? (this._fontMap = new FontMap(this.nativeDb.readFontMap())); }
   /** @internal */
-  public embedFont(prop: FontProps): FontProps { this._fontMap = undefined; return this.nativeDb.embedFont(prop); }
+  public embedFont(_prop: FontProps): FontProps { throw new Error("WIP"); }
 
   /** Check if this iModel has been opened read-only or not. */
   public get isReadonly(): boolean { return this.openMode === OpenMode.Readonly; }
