@@ -1298,14 +1298,14 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @see getModel
      */
     public tryGetModel<T extends Model>(modelId: Id64String, modelClass?: EntityClassType<Model>): T | undefined {
-      const modelProps = this.tryGetModelProps<T>(modelId);
-      if (undefined === modelProps) {
+      const modelProps = this.tryGetModelProps<ModelProps>(modelId);
+      if (undefined === modelProps)
         return undefined; // no Model with that modelId found
-      }
+
       const model = this._iModel.constructEntity<T>(modelProps);
-      if (undefined === modelClass) {
+      if (undefined === modelClass)
         return model; // modelClass was not specified, cannot call instanceof to validate
-      }
+
       return model instanceof modelClass ? model : undefined;
     }
 
@@ -1380,7 +1380,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      */
     public insertModel(props: ModelProps): Id64String {
       try {
-        return props.id = this._iModel.nativeDb.insertModel(props instanceof Model ? props.toJSON() : props);
+        return props.id = this._iModel.nativeDb.insertModel(props);
       } catch (err: any) {
         throw new IModelError(err.errorNumber, `Error inserting model [${err.message}], class=${props.classFullName}`);
       }
@@ -1392,7 +1392,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      */
     public updateModel(props: UpdateModelOptions): void {
       try {
-        this._iModel.nativeDb.updateModel(props instanceof Model ? props.toJSON() : props);
+        this._iModel.nativeDb.updateModel(props);
       } catch (err: any) {
         throw new IModelError(err.errorNumber, `error updating model [${err.message}] id=${props.id}`);
       }
@@ -1510,19 +1510,19 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @see getElement
      */
     public tryGetElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element>): T | undefined {
-      if (typeof elementId === "string") {
+      if (typeof elementId === "string")
         elementId = Id64.isId64(elementId) ? { id: elementId } : { federationGuid: elementId };
-      } else if (elementId instanceof Code) {
+      else if (elementId instanceof Code)
         elementId = { code: elementId };
-      }
-      const elementProps = this.tryGetElementJson<T>(elementId);
-      if (undefined === elementProps) {
+
+      const elementProps = this.tryGetElementJson<ElementProps>(elementId);
+      if (undefined === elementProps)
         return undefined; // no Element with that elementId found
-      }
+
       const element = this._iModel.constructEntity<T>(elementProps);
-      if (undefined === elementClass) {
+      if (undefined === elementClass)
         return element; // elementClass was not specified, cannot call instanceof to validate
-      }
+
       return element instanceof elementClass ? element : undefined;
     }
 
@@ -1581,7 +1581,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      */
     public insertElement(elProps: ElementProps): Id64String {
       try {
-        return elProps.id = this._iModel.nativeDb.insertElement(elProps instanceof Element ? elProps.toJSON() : elProps);
+        return elProps.id = this._iModel.nativeDb.insertElement(elProps);
       } catch (err: any) {
         throw new IModelError(err.errorNumber, `insertElement with class=${elProps.classFullName}: ${err.message}`,);
       }
@@ -1596,7 +1596,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      */
     public updateElement(elProps: ElementProps): void {
       try {
-        this._iModel.nativeDb.updateElement(elProps instanceof Element ? elProps.toJSON() : elProps);
+        this._iModel.nativeDb.updateElement(elProps);
       } catch (err: any) {
         throw new IModelError(err.errorNumber, `Error updating element [${err.message}], id:${elProps.id}`);
       }

@@ -57,7 +57,7 @@ function createGeometryPart(geom: GeometryStreamProps, imodel: SnapshotDb): Id64
 function createGeometricElem(geom: GeometryStreamProps, placement: Placement3dProps, imodel: SnapshotDb, seedElement: GeometricElement): Id64String {
   const elementProps = createPhysicalElementProps(seedElement, placement, geom);
   const el = imodel.elements.createElement<GeometricElement>(elementProps);
-  return imodel.elements.insertElement(el);
+  return imodel.elements.insertElement(el.toJSON());
 }
 
 function createPartElem(partId: Id64String, origin: Point3d, angles: YawPitchRollAngles, imodel: SnapshotDb, seedElement: GeometricElement, isRelative = false): Id64String {
@@ -880,7 +880,7 @@ describe("GeometryStream", () => {
 
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles }, builder.geometryStream);
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
+    const newId = imodel.elements.insertElement(testElem.toJSON());
     imodel.saveChanges();
 
     // Extract and test value returned, text transform should now be identity as it is accounted for by element's placement...
@@ -938,7 +938,7 @@ describe("GeometryStream", () => {
 
     const partProps = createGeometryPartProps(partBuilder.geometryStream);
     const testPart = imodel.elements.createElement(partProps);
-    const partId = imodel.elements.insertElement(testPart);
+    const partId = imodel.elements.insertElement(testPart.toJSON());
     imodel.saveChanges();
 
     // Extract and test value returned
@@ -983,7 +983,7 @@ describe("GeometryStream", () => {
 
     const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
+    const newId = imodel.elements.insertElement(testElem.toJSON());
     imodel.saveChanges();
 
     // Extract and test value returned
@@ -1017,7 +1017,7 @@ describe("GeometryStream", () => {
 
     const partProps = createGeometryPartProps(partBuilder.geometryStream);
     const testPart = imodel.elements.createElement(partProps);
-    const partId = imodel.elements.insertElement(testPart);
+    const partId = imodel.elements.insertElement(testPart.toJSON());
     imodel.saveChanges();
 
     const builder = new GeometryStreamBuilder();
@@ -1031,7 +1031,7 @@ describe("GeometryStream", () => {
 
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles }, builder.geometryStream);
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
+    const newId = imodel.elements.insertElement(testElem.toJSON());
     imodel.saveChanges();
 
     // Extract and test value returned
@@ -1128,7 +1128,7 @@ describe("GeometryStream", () => {
 
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles }, builder.geometryStream);
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
+    const newId = imodel.elements.insertElement(testElem.toJSON());
     imodel.saveChanges();
 
     // Extract and test value returned
@@ -1206,7 +1206,7 @@ describe("GeometryStream", () => {
 
       const partProps = createGeometryPartProps(builder.geometryStream);
       const part = imodel.elements.createElement(partProps);
-      const partId = imodel.elements.insertElement(part);
+      const partId = imodel.elements.insertElement(part.toJSON());
       imodel.saveChanges();
 
       const json = imodel.elements.getElementProps<GeometryPartProps>({ id: partId, wantGeometry: true });
@@ -2451,7 +2451,7 @@ describe("BRepGeometry", () => {
 
       const elementProps = createPhysicalElementProps(seedElement, { origin: Point3d.create(5, 10, 0), angles: YawPitchRollAngles.createDegrees(45, 0, 0) }, gsBuilder.geometryStream);
       const testElem = imodel.elements.createElement(elementProps);
-      const newId = imodel.elements.insertElement(testElem);
+      const newId = imodel.elements.insertElement(testElem.toJSON());
       imodel.saveChanges();
 
       // Extract and test value returned
@@ -2508,7 +2508,7 @@ describe("Mass Properties", () => {
 
     const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
+    const newId = imodel.elements.insertElement(testElem.toJSON());
     imodel.saveChanges();
 
     const requestProps: MassPropertiesRequestProps = {
@@ -2535,7 +2535,7 @@ describe("Mass Properties", () => {
 
     const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
+    const newId = imodel.elements.insertElement(testElem.toJSON());
     imodel.saveChanges();
 
     const requestProps: MassPropertiesRequestProps = {

@@ -37,8 +37,8 @@ export class TestChangeSetUtility {
   }
 
   private async addTestElements(): Promise<void> {
-    this._iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(this._iModel, this._modelId, this._categoryId));
-    this._iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(this._iModel, this._modelId, this._categoryId));
+    this._iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(this._iModel, this._modelId, this._categoryId).toJSON());
+    this._iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(this._iModel, this._modelId, this._categoryId).toJSON());
     this._iModel.saveChanges("Added test elements");
   }
 
