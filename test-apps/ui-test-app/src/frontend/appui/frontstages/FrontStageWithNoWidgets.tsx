@@ -11,34 +11,33 @@ import {
   UiFramework,
 } from "@itwin/appui-react";
 import { ContentLayoutProps, StageUsage, StandardContentLayouts } from "@itwin/appui-abstract";
-import { CustomContentUiProvider } from "../providers/CustomContentUiProvider";
-import { SampleContentControl } from "../content/SampleContentControl";
 
-export class CustomContentGroupProvider extends ContentGroupProvider {
+export class NoWidgetContentGroupProvider extends ContentGroupProvider {
   public async provideContentGroup(_props: FrontstageProps): Promise<ContentGroup> {
     // copy and then modify standard layout so the content is always shown - note we could have just copied the standard and created a new one in line
-    const twoHorizontalSplit: ContentLayoutProps = {...StandardContentLayouts.twoHorizontalSplit, horizontalSplit: {...StandardContentLayouts.twoHorizontalSplit.horizontalSplit!,
-      minSizeBottom: 100,
-      percentage: 0.80,
-    }};
+    const singleView: ContentLayoutProps = {...StandardContentLayouts.singleView};
 
     return new ContentGroup({
-      id: "ui-item-provider-test:custom-stage-content",
-      layout: twoHorizontalSplit,
+      id: "ui-test-app:no-widget-content",
+      layout: singleView,
       contents: [
         {
           id: "primaryContent",
-          classId: IModelViewportControl.id,
+          classId: IModelViewportControl,
           applicationData: {
             isPrimaryView: true,
             supports: ["viewIdSelection", "3dModels", "2dModels"],
             viewState: UiFramework.getDefaultViewState,
             iModelConnection: UiFramework.getIModelConnection,
+            featureOptions:
+            {
+              defaultViewOverlay: {
+                enableScheduleAnimationViewOverlay: true,
+                enableAnalysisTimelineViewOverlay: true,
+                enableSolarTimelineViewOverlay: true,
+              },
+            },
           },
-        },
-        {
-          id: "ui-test:customContent",
-          classId: SampleContentControl,
         },
       ],
     });
@@ -49,28 +48,28 @@ export class CustomContentGroupProvider extends ContentGroupProvider {
  * This class is used to register a new frontstage that is called 'Custom' but it provides no real tools to do work,
  * it is simply used as a test defining a stage that provides custom content along with imodel content.
  */
-export class CustomFrontstage {
-  public static stageId = "ui-item-provider-test:Custom";
-  private static _contentGroupProvider = new CustomContentGroupProvider();
+export class FrontstageWithNoWidgets {
+  public static stageId = "ui-test-app:no-widget-frontstage";
+  private static _contentGroupProvider = new NoWidgetContentGroupProvider();
   public static register() {
     const cornerButton = <BackstageAppButton />;
-    const customStageProps: StandardFrontstageProps = {
-      id: CustomFrontstage.stageId,
+    const nowWidgetStageProps: StandardFrontstageProps = {
+      id: FrontstageWithNoWidgets.stageId,
       version: 1.1,
-      contentGroupProps: CustomFrontstage._contentGroupProvider,
+      contentGroupProps: FrontstageWithNoWidgets._contentGroupProvider,
       hideNavigationAid: false,
       cornerButton,
       usage: StageUsage.General,
       applicationData: undefined,
     };
 
-    CustomFrontstage.registerToolProviders();
-    ConfigurableUiManager.addFrontstageProvider(new StandardFrontstageProvider(customStageProps));
+    FrontstageWithNoWidgets.registerToolProviders();
+    ConfigurableUiManager.addFrontstageProvider(new StandardFrontstageProvider(nowWidgetStageProps));
   }
 
   private static registerToolProviders() {
     // Provides standard tools for ToolWidget in ui2.0 stage
-    StandardContentToolsProvider.register("customContentTools", {
+    StandardContentToolsProvider.register("noWidgetContentTools", {
       horizontal: {
         clearSelection: true,
         clearDisplayOverrides: true,
@@ -79,21 +78,18 @@ export class CustomFrontstage {
         emphasize: "element",
       },
     }, (stageId: string, _stageUsage: string, _applicationData: any) => {
-      return stageId === CustomFrontstage.stageId;
+      return stageId === FrontstageWithNoWidgets.stageId;
     });
 
     /** Provides standard tools for NavigationWidget */
-    StandardNavigationToolsProvider.register("customNavigationTools", undefined, (stageId: string, _stageUsage: string, _applicationData: any) => {
-      return stageId === CustomFrontstage.stageId;
+    StandardNavigationToolsProvider.register("noWidgetNavigationTools", undefined, (stageId: string, _stageUsage: string, _applicationData: any) => {
+      return stageId === FrontstageWithNoWidgets.stageId;
     });
 
     /** Provides standard status fields */
-    StandardStatusbarItemsProvider.register("customStatusFields", undefined, (stageId: string, _stageUsage: string, _applicationData: any) => {
-      return stageId === CustomFrontstage.stageId;
+    StandardStatusbarItemsProvider.register("noWidgetStatusFields", undefined, (stageId: string, _stageUsage: string, _applicationData: any) => {
+      return stageId === FrontstageWithNoWidgets.stageId;
     });
-
-    // register stage specific items provider
-    CustomContentUiProvider.register();
   }
 }
 
