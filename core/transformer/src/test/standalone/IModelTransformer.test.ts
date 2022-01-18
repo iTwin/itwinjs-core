@@ -620,7 +620,6 @@ describe("IModelTransformer", () => {
       await transformerS2C.processModel(definitionB);
       await transformerS2C.processModel(physicalA);
       await transformerS2C.processModel(physicalB);
-      await transformerS2C.processDeferredElements();
       await transformerS2C.processRelationships(ElementRefersToElements.classFullName);
       transformerS2C.dispose();
       IModelTransformerTestUtils.assertConsolidatedIModelContents(iModelConsolidated, "Consolidated");
@@ -1565,21 +1564,13 @@ describe("IModelTransformer", () => {
     const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "PreserveIdOnTestModel-Target.bim");
     const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
 
-    class PublicSkipElementTransformer extends IModelTransformer {
-      public override skipElement(...args: Parameters<IModelTransformer["skipElement"]>) {
-        super.skipElement(...args);
-      }
-    }
-
-    const transformer = new PublicSkipElementTransformer(sourceDb, targetDb, {
+    const transformer = new IModelTransformer(sourceDb, targetDb, {
       includeSourceProvenance: true,
       noProvenance: true, // don't add transformer provenance aspects, makes querying for aspects later simpler
     });
-    const skipElementSpy = sinon.spy(transformer, "skipElement");
 
     await transformer.processSchemas();
     await transformer.processAll();
-    assert(skipElementSpy.called); // make sure an element was deferred during the transformation
 
     targetDb.saveChanges();
 
@@ -1634,7 +1625,7 @@ describe("IModelTransformer", () => {
       code: Code.createEmpty(),
     } as ElementProps);
 
-    const elemWithNavPropId = sourceDb.elements.insertElement({
+    const _elemWithNavPropId = sourceDb.elements.insertElement({
       classFullName: "TestGeneratedClasses:TestElementWithNavProp",
       navProp: {
         id: navPropTargetId,
@@ -1647,21 +1638,7 @@ describe("IModelTransformer", () => {
     const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "GeneratedNavPropPredecessors-Target.bim");
     const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
 
-    class ProcessTargetLastTransformer extends IModelTransformer {
-      private _exportedNavPropHolder = false;
-      public override onExportElement(sourceElem: Element) {
-        if (sourceElem.id === elemWithNavPropId) {
-          super.onExportElement(sourceElem);
-          this._exportedNavPropHolder = true;
-        } else if (sourceElem.id === navPropTargetId && !this._exportedNavPropHolder) {
-          this.skipElement(sourceElem);
-        } else {
-          super.onExportElement(sourceElem);
-        }
-      }
-    }
-
-    const transformer = new ProcessTargetLastTransformer(sourceDb, targetDb);
+    const transformer = new IModelTransformer(sourceDb, targetDb);
     await transformer.processSchemas();
     await transformer.processAll();
 
