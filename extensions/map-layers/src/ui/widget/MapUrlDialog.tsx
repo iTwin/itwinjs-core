@@ -4,15 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 // cSpell:ignore Modeless WMTS
 
-import { Dialog, Icon, InputStatus } from "@itwin/core-react";
+import { SpecialKey } from "@itwin/appui-abstract";
 import { ModalDialogManager } from "@itwin/appui-react";
-import { Input, LabeledInput, ProgressLinear, Radio, Select, SelectOption } from "@itwin/itwinui-react";
 import { ImageMapLayerProps } from "@itwin/core-common";
 import {
   IModelApp, MapLayerAuthType, MapLayerImageryProviderStatus, MapLayerSource,
   MapLayerSourceStatus, MapLayerSourceValidation, NotifyMessageDetails, OutputMessagePriority, ScreenViewport,
 } from "@itwin/core-frontend";
-import { Dialog, Icon, InputStatus } from "@itwin/core-react";
+import { Dialog, DialogButtonType, Icon } from "@itwin/core-react";
 import { Input, LabeledInput, ProgressLinear, Radio, Select, SelectOption } from "@itwin/itwinui-react";
 import * as React from "react";
 import { MapLayerPreferences } from "../../MapLayerPreferences";
