@@ -30,8 +30,7 @@ Specifies node type, which is assigned to node's key. The type can be used:
 - In [ECExpressions](../Advanced/ECExpressions.md) by using the [NavNode.Type](../Advanced/ECExpressions.md#navnode) symbol.
 - In code through [BaseNodeKey.type]($presentation-common).
 
-Generally this attribute is used to assign some unique identifier and use it in [condition](./ChildNodeRule.md#attribute-condition) of
-another [child node rule](./ChildNodeRule.md) to assign children to this node.
+The given value is often used in [a condition of another child node rule](./ChildNodeRule.md#attribute-condition) to assign children to this node.
 
 ```ts
 [[include:Hierarchies.CustomNodeSpecification.Type.Ruleset]]
