@@ -109,7 +109,7 @@ public;ElementRefersToElements
 public;ElementUniqueAspect 
 public;ElevationCallout 
 public;EmbeddedFileLink 
-public;Entity 
+public;Entity
 public;EntityClassType
 public;ExportGraphics
 public;ExportGraphicsFunction = (info: ExportGraphicsInfo) => void
