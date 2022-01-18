@@ -74,7 +74,7 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
     await this.iModel.locks.acquireLocks({ shared: props.model });
 
     const newElem = this.iModel.elements.createElement(props);
-    const newId = this.iModel.elements.insertElement(newElem);
+    const newId = newElem.insert();
     if (undefined === data)
       return newId;
 
@@ -104,7 +104,7 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
     }
 
     const newElem = this.iModel.elements.createElement(props);
-    const newId = this.iModel.elements.insertElement(newElem);
+    const newId = newElem.insert();
     if (undefined === data)
       return newId;
 
