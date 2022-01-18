@@ -3254,7 +3254,7 @@ importers:
       recursive-readdir: ^2.2.2
       rimraf: ^3.0.2
       tree-kill: ^1.2.0
-      typedoc: ^0.22.7
+      typedoc: ^0.22.11
       typedoc-plugin-merge-modules: ^3.0.2
       typescript: ~4.4.0
       wtfnode: ^0.9.1
@@ -7287,8 +7287,8 @@ packages:
       oidc-client: 1.11.5
     dev: false
 
-  /@itwin/certa/3.1.0-dev.1:
-    resolution: {integrity: sha512-70723gwZ6DwR22o5o7HZsjLsgHHH4BEGwreogSNjUuqP+49Z3gCqQtudLNCJaiPuizVWx0tYoSK47mulqK2hjg==}
+  /@itwin/certa/3.1.0-dev.5:
+    resolution: {integrity: sha512-OrvYy9zLJGGbtrUyi9deapgNcAZjaAPkKDt7i46oFGRJeymhZKz7W/dOfa8u5gUxgyse/Vvioj64gyqkpZR0gQ==}
     hasBin: true
     peerDependencies:
       electron: ^14.0.0
@@ -7310,8 +7310,8 @@ packages:
       - supports-color
       - utf-8-validate
 
-  /@itwin/certa/3.1.0-dev.1_electron@14.2.4:
-    resolution: {integrity: sha512-70723gwZ6DwR22o5o7HZsjLsgHHH4BEGwreogSNjUuqP+49Z3gCqQtudLNCJaiPuizVWx0tYoSK47mulqK2hjg==}
+  /@itwin/certa/3.1.0-dev.5_electron@14.2.4:
+    resolution: {integrity: sha512-OrvYy9zLJGGbtrUyi9deapgNcAZjaAPkKDt7i46oFGRJeymhZKz7W/dOfa8u5gUxgyse/Vvioj64gyqkpZR0gQ==}
     hasBin: true
     peerDependencies:
       electron: ^14.0.0
@@ -7339,8 +7339,8 @@ packages:
     resolution: {integrity: sha512-W+R80ZFC+d+0bXp7wGht7oDuCou2l/gHHP+uvy0lZUY3WnPq71LCAKpCzrUVcGusM41bCumoavWnW/xGAt/0hg==}
     dev: false
 
-  /@itwin/core-bentley/3.1.0-dev.1:
-    resolution: {integrity: sha512-4BeXSqy7mGZ7wCIU13qy9CXgz5Sykn9UqWYZico2ecalh6yjygPIFYHQvTyAWTEnQGBqVzW5n6+zIo2JJCUFyg==}
+  /@itwin/core-bentley/3.1.0-dev.5:
+    resolution: {integrity: sha512-9sf/pw5XA41Ns2YRZ//fIo6OuUvUDTyTkFAxPhN5jug7zB+LxFKxnz2l3CWVpYwcyoHRsRBrkX1RcGlk8yzdaw==}
 
   /@itwin/core-geometry/3.0.0-dev.185:
     resolution: {integrity: sha512-UQvZdMaSraChiEudZxYJkC/cCWskHqmLLN9IB2iG83MYwYGJ9zrehjolh+ZAch261IRmBJ8E85P8HfRIvndIeA==}
@@ -7486,8 +7486,8 @@ packages:
   /@itwin/oidc-signin-tool/3.0.0:
     resolution: {integrity: sha512-zp6S6tQDyI0MSEoA7THlyXJlrtlqhk7X7BMpH8VMkvabEgJOY9AdLjoFbvJPZhcnhjq7CMdxXJWVC3D9QOaYgA==}
     dependencies:
-      '@itwin/certa': 3.1.0-dev.1
-      '@itwin/core-bentley': 3.1.0-dev.1
+      '@itwin/certa': 3.1.0-dev.5
+      '@itwin/core-bentley': 3.1.0-dev.5
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
       openid-client: 4.9.1
@@ -7501,8 +7501,8 @@ packages:
   /@itwin/oidc-signin-tool/3.0.0_electron@14.2.4:
     resolution: {integrity: sha512-zp6S6tQDyI0MSEoA7THlyXJlrtlqhk7X7BMpH8VMkvabEgJOY9AdLjoFbvJPZhcnhjq7CMdxXJWVC3D9QOaYgA==}
     dependencies:
-      '@itwin/certa': 3.1.0-dev.1_electron@14.2.4
-      '@itwin/core-bentley': 3.1.0-dev.1
+      '@itwin/certa': 3.1.0-dev.5_electron@14.2.4
+      '@itwin/core-bentley': 3.1.0-dev.5
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
       openid-client: 4.9.1
@@ -10542,7 +10542,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001300
-      electron-to-chromium: 1.4.47
+      electron-to-chromium: 1.4.48
     dev: true
 
   /browserslist/4.14.2:
@@ -10551,7 +10551,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001300
-      electron-to-chromium: 1.4.47
+      electron-to-chromium: 1.4.48
       escalade: 3.1.1
       node-releases: 1.1.77
     dev: true
@@ -10562,7 +10562,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001300
-      electron-to-chromium: 1.4.47
+      electron-to-chromium: 1.4.48
       escalade: 3.1.1
       node-releases: 2.0.1
       picocolors: 1.0.0
@@ -12338,8 +12338,8 @@ packages:
     requiresBuild: true
     dev: true
 
-  /electron-to-chromium/1.4.47:
-    resolution: {integrity: sha512-ZHc8i3/cgeCRK/vC7W2htAG6JqUmOUgDNn/f9yY9J8UjfLjwzwOVEt4MWmgJAdvmxyrsR5KIFA/6+kUHGY0eUA==}
+  /electron-to-chromium/1.4.48:
+    resolution: {integrity: sha512-RT3SEmpv7XUA+tKXrZGudAWLDpa7f8qmhjcLaM6OD/ERxjQ/zAojT8/Vvo0BSzbArkElFZ1WyZ9FuwAYbkdBNA==}
 
   /electron/14.2.4:
     resolution: {integrity: sha512-uskCIp+fpohqVYtM2Q28rbXLqGjZ6sWYylXcX6N+K8jR8kR2eHuDMIkO8DzWrTsqA6t4UNAzn+bJnA3VfIIjQw==}
@@ -18511,7 +18511,7 @@ packages:
     dependencies:
       nanoid: 3.2.0
       picocolors: 1.0.0
-      source-map-js: 1.0.1
+      source-map-js: 1.0.2
     dev: true
 
   /posthtml-parser/0.2.1:
@@ -19854,7 +19854,7 @@ packages:
     dependencies:
       chokidar: 3.5.3
       immutable: 4.0.0
-      source-map-js: 1.0.1
+      source-map-js: 1.0.2
     dev: true
 
   /sax/1.2.4:
@@ -20277,8 +20277,8 @@ packages:
   /source-list-map/2.0.1:
     resolution: {integrity: sha512-qnQ7gVMxGNxsiL4lEuJwe/To8UnK7fAnmbGEEH8RpLouuKbeEm0lhbQVFIrNSuB+G7tVrAlVsZgETT5nljf+Iw==}
 
-  /source-map-js/1.0.1:
-    resolution: {integrity: sha512-4+TN2b3tqOCd/kaGRJ/sTYA0tR0mdXx26ipdolxcwtJVqEnqNYvlCAt1q3ypy4QMlYus+Zh34RNtYLoq2oQ4IA==}
+  /source-map-js/1.0.2:
+    resolution: {integrity: sha512-R0XvVJ9WusLiqTCEiGCmICCMplcCkIwwR11mOSD9CR5u+IXYdiseeEuXCVAjS54zqwkLcPNnmU4OeJ6tUrWhDw==}
     engines: {node: '>=0.10.0'}
     dev: true
 
