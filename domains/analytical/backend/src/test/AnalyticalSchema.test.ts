@@ -187,7 +187,7 @@ describe("AnalyticalSchema", () => {
       classFullName: TestAnalyticalModel.classFullName,
       modeledElement: { id: analyticalPartitionId },
     });
-    const analyticalModelId: Id64String = iModelDb.models.insertModel(analyticalModel);
+    const analyticalModelId: Id64String = iModelDb.models.insertModel(analyticalModel.toJSON());
     assert.isTrue(Id64.isValidId64(analyticalModelId));
 
     // Create a Test Analytical element
