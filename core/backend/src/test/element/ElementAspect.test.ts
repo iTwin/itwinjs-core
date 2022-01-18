@@ -161,7 +161,7 @@ describe("ElementAspect", () => {
     assert.isTrue(found);
 
     aspects[foundIndex].asAny.testMultiAspectProperty = "MultiAspectInsertTest1-Updated";
-    iModel.elements.updateAspect(aspects[foundIndex].toJSON());
+    iModel.elements.updateAspect(aspects[foundIndex]);
 
     const aspectsUpdated: ElementAspect[] = iModel.elements.getAspects(element.id, aspectProps.classFullName);
     assert.equal(aspectsUpdated.length, aspects.length);
@@ -188,7 +188,7 @@ describe("ElementAspect", () => {
     assert.equal(aspects[0].asAny.testUniqueAspectProperty, aspectProps.testUniqueAspectProperty);
 
     aspects[0].asAny.testUniqueAspectProperty = "UniqueAspectInsertTest1-Updated";
-    iModel.elements.updateAspect(aspects[0].toJSON());
+    iModel.elements.updateAspect(aspects[0]);
     const aspectsUpdated: ElementAspect[] = iModel.elements.getAspects(element.id, aspectProps.classFullName);
     assert.equal(aspectsUpdated.length, 1);
     assert.equal(aspectsUpdated[0].asAny.testUniqueAspectProperty, "UniqueAspectInsertTest1-Updated");

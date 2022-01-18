@@ -50,7 +50,7 @@ export abstract class PhysicalMaterial extends DefinitionElement {
  * @note See [[PhysicalMaterial]] for the DefinitionElement used to define the matter that makes up physical elements.
  * @public
  */
-export class RenderMaterialElement extends DefinitionElement {
+export class RenderMaterialElement extends DefinitionElement implements RenderMaterialProps {
   /** @internal */
   public static override get className(): string { return "RenderMaterial"; }
 
@@ -135,7 +135,7 @@ export class RenderMaterialElement extends DefinitionElement {
    */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElement.Params): Id64String {
     const renderMaterial = this.create(iModelDb, definitionModelId, materialName, params);
-    return iModelDb.elements.insertElement(renderMaterial.toJSON());
+    return iModelDb.elements.insertElement(renderMaterial);
   }
 }
 

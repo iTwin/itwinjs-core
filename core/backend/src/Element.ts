@@ -103,7 +103,7 @@ export interface OnSubModelIdArg extends OnElementArg {
  * * [Creating elements]($docs/learning/backend/CreateElements.md)
  * @public
  */
-export class Element extends Entity {
+export class Element extends Entity implements ElementProps {
   /** @internal */
   public static override get className(): string { return "Element"; }
   /** @internal */
@@ -401,9 +401,9 @@ export class Element extends Entity {
   }
 
   /** Insert this Element into the iModel. */
-  public insert() { return this.id = this.iModel.elements.insertElement(this.toJSON()); }
+  public insert() { return this.iModel.elements.insertElement(this); }
   /** Update this Element in the iModel. */
-  public update() { this.iModel.elements.updateElement(this.toJSON()); }
+  public update() { this.iModel.elements.updateElement(this); }
   /** Delete this Element from the iModel. */
   public delete() { this.iModel.elements.deleteElement(this.id); }
 }
@@ -411,7 +411,7 @@ export class Element extends Entity {
 /** An abstract base class to model real world entities that intrinsically have geometry.
  * @public
  */
-export abstract class GeometricElement extends Element {
+export abstract class GeometricElement extends Element implements GeometricElementProps {
   /** @internal */
   public static override get className(): string { return "GeometricElement"; }
   /** The Id of the [[Category]] for this GeometricElement. */
@@ -436,7 +436,7 @@ export abstract class GeometricElement extends Element {
   public getPlacementTransform(): Transform { return this.placement.transform; }
   public calculateRange3d(): AxisAlignedBox3d { return this.placement.calculateRange(); }
 
-  /** Obtain the JSON representation of this element. */
+  /** @internal */
   public override toJSON(): GeometricElementProps {
     const val = super.toJSON() as GeometricElementProps;
     val.category = this.category;
@@ -444,7 +444,6 @@ export abstract class GeometricElement extends Element {
       val.geom = this.geom;
     return val;
   }
-
   /** @internal */
   protected override collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
@@ -457,7 +456,7 @@ export abstract class GeometricElement extends Element {
  * See [how to create a GeometricElement3d]($docs/learning/backend/CreateElements.md#GeometricElement3d).
  * @public
  */
-export abstract class GeometricElement3d extends GeometricElement {
+export abstract class GeometricElement3d extends GeometricElement implements GeometricElement3dProps {
   /** @internal */
   public static override get className(): string { return "GeometricElement3d"; }
   public placement: Placement3d;
@@ -499,7 +498,7 @@ export abstract class GraphicalElement3d extends GeometricElement3d {
 /** An abstract base class to model information entities that intrinsically have 2d geometry.
  * @public
  */
-export abstract class GeometricElement2d extends GeometricElement {
+export abstract class GeometricElement2d extends GeometricElement implements GeometricElement2dProps {
   /** @internal */
   public static override get className(): string { return "GeometricElement2d"; }
   public placement: Placement2d;
@@ -692,7 +691,7 @@ export abstract class InformationReferenceElement extends InformationContentElem
  * See [how to create a Subject element]$(docs/learning/backend/CreateElements.md#Subject).
  * @public
  */
-export class Subject extends InformationReferenceElement {
+export class Subject extends InformationReferenceElement implements SubjectProps {
   /** @internal */
   public static override get className(): string { return "Subject"; }
   public description?: string;
@@ -739,7 +738,7 @@ export class Subject extends InformationReferenceElement {
    */
   public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, description?: string): Id64String {
     const subject = this.create(iModelDb, parentSubjectId, name, description);
-    return iModelDb.elements.insertElement(subject.toJSON());
+    return iModelDb.elements.insertElement(subject);
   }
 }
 
@@ -794,7 +793,7 @@ export class Drawing extends Document {
       classFullName: DrawingModel.classFullName,
       modeledElement: { id: drawingId },
     });
-    return iModelDb.models.insertModel(model.toJSON());
+    return iModelDb.models.insertModel(model);
   }
 }
 
@@ -867,7 +866,7 @@ export class SectionDrawing extends Drawing {
 /** The template for a SheetBorder
  * @public
  */
-export class SheetBorderTemplate extends Document {
+export class SheetBorderTemplate extends Document implements SheetBorderTemplateProps {
   /** @internal */
   public static override get className(): string { return "SheetBorderTemplate"; }
   public height?: number;
@@ -879,7 +878,7 @@ export class SheetBorderTemplate extends Document {
 /** The template for a [[Sheet]]
  * @public
  */
-export class SheetTemplate extends Document {
+export class SheetTemplate extends Document implements SheetTemplateProps {
   /** @internal */
   public static override get className(): string { return "SheetTemplate"; }
   public height?: number;
@@ -897,7 +896,7 @@ export class SheetTemplate extends Document {
 /** A digital representation of a *sheet of paper*. Modeled by a [[SheetModel]].
  * @public
  */
-export class Sheet extends Document {
+export class Sheet extends Document implements SheetProps {
   /** @internal */
   public static override get className(): string { return "Sheet"; }
   public height: number;
@@ -942,7 +941,7 @@ export abstract class InformationRecordElement extends InformationContentElement
 /** A Definition Element holds configuration-related information that is meant to be referenced / shared.
  * @public
  */
-export abstract class DefinitionElement extends InformationContentElement {
+export abstract class DefinitionElement extends InformationContentElement implements DefinitionElementProps {
   /** @internal */
   public static override get className(): string { return "DefinitionElement"; }
   /** If true, don't show this DefinitionElement in user interface lists. */
@@ -1002,7 +1001,7 @@ export class DefinitionContainer extends DefinitionSet {
    */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, code: Code, isPrivate?: boolean): Id64String {
     const containerElement = this.create(iModelDb, definitionModelId, code, isPrivate);
-    const containerElementId = iModelDb.elements.insertElement(containerElement.toJSON());
+    const containerElementId = iModelDb.elements.insertElement(containerElement);
     const containerSubModelProps: ModelProps = {
       classFullName: DefinitionModel.classFullName,
       modeledElement: { id: containerElementId },
@@ -1043,7 +1042,7 @@ export class DefinitionGroup extends DefinitionSet {
 /** Defines a set of properties (the *type*) that may be associated with an element.
  * @public
  */
-export abstract class TypeDefinitionElement extends DefinitionElement {
+export abstract class TypeDefinitionElement extends DefinitionElement implements TypeDefinitionElementProps {
   /** @internal */
   public static override get className(): string { return "TypeDefinitionElement"; }
   public recipe?: RelatedElement;
@@ -1160,7 +1159,7 @@ export class TemplateRecipe3d extends RecipeDefinitionElement {
    */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String {
     const element = this.create(iModelDb, definitionModelId, name, isPrivate);
-    const modeledElementId: Id64String = iModelDb.elements.insertElement(element.toJSON());
+    const modeledElementId: Id64String = iModelDb.elements.insertElement(element);
     const modelProps: GeometricModel3dProps = {
       classFullName: PhysicalModel.classFullName,
       modeledElement: { id: modeledElementId },
@@ -1232,7 +1231,7 @@ export class TemplateRecipe2d extends RecipeDefinitionElement {
    */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, isPrivate?: boolean): Id64String {
     const element = this.create(iModelDb, definitionModelId, name, isPrivate);
-    const modeledElementId: Id64String = iModelDb.elements.insertElement(element.toJSON());
+    const modeledElementId: Id64String = iModelDb.elements.insertElement(element);
     const modelProps: GeometricModel2dProps = {
       classFullName: DrawingModel.classFullName,
       modeledElement: { id: modeledElementId },
@@ -1247,7 +1246,7 @@ export class TemplateRecipe2d extends RecipeDefinitionElement {
  * @see [iModel Information Hierarchy]($docs/bis/intro/top-of-the-world), [[Subject]], [[Model]]
  * @public
  */
-export abstract class InformationPartitionElement extends InformationContentElement {
+export abstract class InformationPartitionElement extends InformationContentElement implements InformationPartitionElementProps {
   /** @internal */
   public static override get className(): string { return "InformationPartitionElement"; }
   /** A human-readable string describing the intent of the partition. */
@@ -1376,7 +1375,7 @@ export abstract class LinkElement extends InformationReferenceElement {
 /** An information element that specifies a URL link.
  * @public
  */
-export class UrlLink extends LinkElement {
+export class UrlLink extends LinkElement implements UrlLinkProps {
   /** @internal */
   public static override get className(): string { return "UrlLink"; }
   public description?: string;
@@ -1410,7 +1409,7 @@ export class FolderLink extends UrlLink {
 /** An information element that links to a repository.
  * @public
  */
-export class RepositoryLink extends UrlLink {
+export class RepositoryLink extends UrlLink implements RepositoryLinkProps {
   /** @internal */
   public static override get className(): string { return "RepositoryLink"; }
   public repositoryGuid?: GuidString;
@@ -1455,7 +1454,7 @@ export abstract class RoleElement extends Element {
  * Element instances. Leveraging Geometry Parts can help reduce file size and improve display performance.
  * @public
  */
-export class GeometryPart extends DefinitionElement {
+export class GeometryPart extends DefinitionElement implements GeometryPartProps {
   /** @internal */
   public static override get className(): string { return "GeometryPart"; }
   public geom?: GeometryStreamProps;
@@ -1490,7 +1489,7 @@ export class GeometryPart extends DefinitionElement {
 /** The definition element for a line style
  * @public
  */
-export class LineStyle extends DefinitionElement {
+export class LineStyle extends DefinitionElement implements LineStyleProps {
   /** @internal */
   public static override get className(): string { return "LineStyle"; }
   public description?: string;

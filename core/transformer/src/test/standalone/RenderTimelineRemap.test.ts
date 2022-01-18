@@ -59,7 +59,7 @@ describe("RenderTimeline Remap", () => {
 
     expect(model instanceof PhysicalModel).to.be.true;
 
-    const modelId = db.models.insertModel(model.toJSON());
+    const modelId = db.models.insertModel(model);
     expect(Id64.isValidId64(modelId)).to.be.true;
     return modelId;
   }

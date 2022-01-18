@@ -254,7 +254,7 @@ export class AnnotationElement2d extends GraphicalElement2d {
 }
 
 // @public
-export abstract class AuxCoordSystem extends DefinitionElement {
+export abstract class AuxCoordSystem extends DefinitionElement implements AuxCoordSystemProps {
     constructor(props: AuxCoordSystemProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
@@ -265,7 +265,7 @@ export abstract class AuxCoordSystem extends DefinitionElement {
 }
 
 // @public
-export class AuxCoordSystem2d extends AuxCoordSystem {
+export class AuxCoordSystem2d extends AuxCoordSystem implements AuxCoordSystem2dProps {
     constructor(props: AuxCoordSystem2dProps, iModel: IModelDb);
     // (undocumented)
     angle: number;
@@ -277,7 +277,7 @@ export class AuxCoordSystem2d extends AuxCoordSystem {
 }
 
 // @public
-export class AuxCoordSystem3d extends AuxCoordSystem {
+export class AuxCoordSystem3d extends AuxCoordSystem implements AuxCoordSystem3dProps {
     constructor(props: AuxCoordSystem3dProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
@@ -518,14 +518,14 @@ export class BriefcaseManager {
     }
 
 // @public
-export abstract class Callout extends DetailingSymbol {
+export abstract class Callout extends DetailingSymbol implements CalloutProps {
     constructor(props: CalloutProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
 }
 
 // @public
-export class Category extends DefinitionElement {
+export class Category extends DefinitionElement implements CategoryProps {
     // @internal
     constructor(props: CategoryProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -548,7 +548,7 @@ export class CategoryOwnsSubCategories extends ElementOwnsChildElements {
 }
 
 // @public
-export class CategorySelector extends DefinitionElement {
+export class CategorySelector extends DefinitionElement implements CategorySelectorProps {
     // @internal
     constructor(props: CategorySelectorProps, iModel: IModelDb);
     categories: Id64String[];
@@ -824,7 +824,7 @@ export class DefinitionContainer extends DefinitionSet {
 }
 
 // @public
-export abstract class DefinitionElement extends InformationContentElement {
+export abstract class DefinitionElement extends InformationContentElement implements DefinitionElementProps {
     // @internal
     constructor(props: DefinitionElementProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -944,7 +944,7 @@ export class DictionaryModel extends DefinitionModel {
 export type DictionaryName = string;
 
 // @public
-export abstract class DisplayStyle extends DefinitionElement {
+export abstract class DisplayStyle extends DefinitionElement implements DisplayStyleProps {
     // @internal
     protected constructor(props: DisplayStyleProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -973,7 +973,7 @@ export class DisplayStyle2d extends DisplayStyle {
     }
 
 // @public
-export class DisplayStyle3d extends DisplayStyle {
+export class DisplayStyle3d extends DisplayStyle implements DisplayStyle3dProps {
     // @internal
     constructor(props: DisplayStyle3dProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -1329,7 +1329,7 @@ export class EditableWorkspaceDb extends ITwinWorkspaceDb {
     }
 
 // @public
-export class Element extends Entity {
+export class Element extends Entity implements ElementProps {
     // @internal
     constructor(props: ElementProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -1411,7 +1411,7 @@ export class Element extends Entity {
 }
 
 // @public
-export class ElementAspect extends Entity {
+export class ElementAspect extends Entity implements ElementAspectProps {
     // @internal
     constructor(props: ElementAspectProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -1435,7 +1435,7 @@ export class ElementAspect extends Entity {
 }
 
 // @beta
-export class ElementDrivesElement extends Relationship {
+export class ElementDrivesElement extends Relationship implements ElementDrivesElementProps {
     // @internal
     constructor(props: ElementDrivesElementProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -1444,8 +1444,6 @@ export class ElementDrivesElement extends Relationship {
     static create<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String, priority?: number): T;
     priority: number;
     status: number;
-    // (undocumented)
-    toJSON(): ElementDrivesElementProps;
 }
 
 // @beta
@@ -1542,7 +1540,7 @@ export class EmbeddedFileLink extends LinkElement {
 }
 
 // @public
-export class Entity {
+export class Entity implements EntityProps {
     // @internal
     constructor(props: EntityProps, iModel: IModelDb);
     // @internal
@@ -1554,11 +1552,11 @@ export class Entity {
     forEachProperty(func: PropertyCallback, includeCustom?: boolean): void;
     id: Id64String;
     iModel: IModelDb;
-    readonly isInstanceOfEntity: true;
     // @internal (undocumented)
     static get protectedOperations(): string[];
     static schema: typeof Schema;
     get schemaName(): string;
+    // @internal (undocumented)
     toJSON(): EntityProps;
 }
 
@@ -1724,7 +1722,7 @@ export class ExternalSource extends InformationReferenceElement {
 }
 
 // @public
-export class ExternalSourceAspect extends ElementMultiAspect {
+export class ExternalSourceAspect extends ElementMultiAspect implements ExternalSourceAspectProps {
     // @internal
     constructor(props: ExternalSourceAspectProps, iModel: IModelDb);
     checksum?: string;
@@ -1853,7 +1851,7 @@ export class FunctionalComposite extends FunctionalBreakdownElement {
 }
 
 // @public
-export abstract class FunctionalElement extends RoleElement {
+export abstract class FunctionalElement extends RoleElement implements FunctionalElementProps {
     // @internal
     constructor(props: FunctionalElementProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -1955,7 +1953,7 @@ export class GenericSchema extends Schema {
 }
 
 // @public
-export abstract class GeometricElement extends Element {
+export abstract class GeometricElement extends Element implements GeometricElementProps {
     // @internal
     constructor(props: GeometricElementProps, iModel: IModelDb);
     // (undocumented)
@@ -1970,11 +1968,12 @@ export abstract class GeometricElement extends Element {
     is2d(): this is GeometricElement2d;
     is3d(): this is GeometricElement3d;
     abstract get placement(): Placement2d | Placement3d;
+    // @internal (undocumented)
     toJSON(): GeometricElementProps;
 }
 
 // @public
-export abstract class GeometricElement2d extends GeometricElement {
+export abstract class GeometricElement2d extends GeometricElement implements GeometricElement2dProps {
     // @internal
     constructor(props: GeometricElement2dProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -1997,7 +1996,7 @@ export class GeometricElement2dHasTypeDefinition extends TypeDefinition {
 }
 
 // @public
-export abstract class GeometricElement3d extends GeometricElement {
+export abstract class GeometricElement3d extends GeometricElement implements GeometricElement3dProps {
     // @internal
     constructor(props: GeometricElement3dProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -2020,7 +2019,7 @@ export class GeometricElement3dHasTypeDefinition extends TypeDefinition {
 }
 
 // @public
-export class GeometricModel extends Model {
+export class GeometricModel extends Model implements GeometricModelProps {
     // @internal
     constructor(props: GeometricModelProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -2031,7 +2030,7 @@ export class GeometricModel extends Model {
 }
 
 // @public
-export abstract class GeometricModel2d extends GeometricModel {
+export abstract class GeometricModel2d extends GeometricModel implements GeometricModel2dProps {
     // @internal
     constructor(props: GeometricModel2dProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -2042,7 +2041,7 @@ export abstract class GeometricModel2d extends GeometricModel {
 }
 
 // @public
-export abstract class GeometricModel3d extends GeometricModel {
+export abstract class GeometricModel3d extends GeometricModel implements GeometricModel3dProps {
     // @internal
     constructor(props: GeometricModel3dProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -2055,7 +2054,7 @@ export abstract class GeometricModel3d extends GeometricModel {
 }
 
 // @public
-export class GeometryPart extends DefinitionElement {
+export class GeometryPart extends DefinitionElement implements GeometryPartProps {
     // @internal
     constructor(props: GeometryPartProps, iModel: IModelDb);
     // (undocumented)
@@ -2601,7 +2600,7 @@ export abstract class InformationModel extends Model {
 }
 
 // @public
-export abstract class InformationPartitionElement extends InformationContentElement {
+export abstract class InformationPartitionElement extends InformationContentElement implements InformationPartitionElementProps {
     // @internal
     constructor(props: InformationPartitionElementProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -2792,7 +2791,7 @@ export class KnownLocations {
 }
 
 // @internal
-export class LightLocation extends SpatialLocationElement {
+export class LightLocation extends SpatialLocationElement implements LightLocationProps {
     constructor(props: LightLocationProps, iModel: IModelDb);
     // (undocumented)
     static get className(): string;
@@ -2800,7 +2799,7 @@ export class LightLocation extends SpatialLocationElement {
 }
 
 // @public
-export class LineStyle extends DefinitionElement {
+export class LineStyle extends DefinitionElement implements LineStyleProps {
     // @internal
     constructor(props: LineStyleProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -3053,7 +3052,7 @@ export class MetaDataRegistry {
     }
 
 // @public
-export class Model extends Entity {
+export class Model extends Entity implements ModelProps {
     // @internal
     constructor(props: ModelProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -3113,7 +3112,7 @@ export class Model extends Entity {
 }
 
 // @public
-export class ModelSelector extends DefinitionElement {
+export class ModelSelector extends DefinitionElement implements ModelSelectorProps {
     // @internal
     constructor(props: ModelSelectorProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -3423,7 +3422,7 @@ export abstract class RecipeDefinitionElement extends DefinitionElement {
 }
 
 // @public
-export class Relationship extends Entity {
+export class Relationship extends Entity implements RelationshipProps {
     // @internal
     constructor(props: RelationshipProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -3460,7 +3459,7 @@ export class Relationships {
 }
 
 // @public
-export class RenderMaterialElement extends DefinitionElement {
+export class RenderMaterialElement extends DefinitionElement implements RenderMaterialProps {
     // @internal
     constructor(props: RenderMaterialProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -3520,7 +3519,7 @@ export class RenderTimeline extends InformationRecordElement {
 }
 
 // @public
-export class RepositoryLink extends UrlLink {
+export class RepositoryLink extends UrlLink implements RepositoryLinkProps {
     // @internal
     constructor(props: RepositoryLinkProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -3735,7 +3734,7 @@ export class SettingsSpecRegistry {
 export type SettingType = JSONSchemaType;
 
 // @public
-export class Sheet extends Document {
+export class Sheet extends Document implements SheetProps {
     // @internal
     constructor(props: SheetProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -3754,7 +3753,7 @@ export class Sheet extends Document {
 }
 
 // @public
-export class SheetBorderTemplate extends Document {
+export class SheetBorderTemplate extends Document implements SheetBorderTemplateProps {
     // @internal
     constructor(props: SheetBorderTemplateProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -3772,7 +3771,7 @@ export class SheetModel extends GraphicalModel2d {
 }
 
 // @public
-export class SheetTemplate extends Document {
+export class SheetTemplate extends Document implements SheetTemplateProps {
     // @internal
     constructor(props: SheetTemplateProps, iModel: IModelDb);
     // (undocumented)
@@ -3890,7 +3889,7 @@ export abstract class SpatialModel extends GeometricModel3d {
 }
 
 // @public
-export class SpatialViewDefinition extends ViewDefinition3d {
+export class SpatialViewDefinition extends ViewDefinition3d implements SpatialViewDefinitionProps {
     // @internal
     constructor(props: SpatialViewDefinitionProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -4044,7 +4043,7 @@ export class SubCategory extends DefinitionElement {
 }
 
 // @public
-export class Subject extends InformationReferenceElement {
+export class Subject extends InformationReferenceElement implements SubjectProps {
     // @internal
     constructor(props: SubjectProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -4271,7 +4270,7 @@ export class TxnManager {
 }
 
 // @public
-export abstract class TypeDefinitionElement extends DefinitionElement {
+export abstract class TypeDefinitionElement extends DefinitionElement implements TypeDefinitionElementProps {
     // @internal
     constructor(props: TypeDefinitionElementProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -4289,7 +4288,7 @@ export interface UpdateModelOptions extends ModelProps {
 }
 
 // @public
-export class UrlLink extends LinkElement {
+export class UrlLink extends LinkElement implements UrlLinkProps {
     // @internal
     constructor(props: UrlLinkProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -4340,7 +4339,7 @@ export interface ValidationError {
 }
 
 // @public
-export class ViewAttachment extends GraphicalElement2d {
+export class ViewAttachment extends GraphicalElement2d implements ViewAttachmentProps {
     constructor(props: ViewAttachmentProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
@@ -4351,14 +4350,14 @@ export class ViewAttachment extends GraphicalElement2d {
 }
 
 // @public
-export class ViewAttachmentLabel extends DetailingSymbol {
+export class ViewAttachmentLabel extends DetailingSymbol implements ViewAttachmentLabelProps {
     constructor(props: ViewAttachmentLabelProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
 }
 
 // @public
-export abstract class ViewDefinition extends DefinitionElement {
+export abstract class ViewDefinition extends DefinitionElement implements ViewDefinitionProps {
     // @internal
     protected constructor(props: ViewDefinitionProps, iModel: IModelDb);
     categorySelectorId: Id64String;
@@ -4384,7 +4383,7 @@ export abstract class ViewDefinition extends DefinitionElement {
 }
 
 // @public
-export class ViewDefinition2d extends ViewDefinition {
+export class ViewDefinition2d extends ViewDefinition implements ViewDefinition2dProps {
     // @internal
     constructor(props: ViewDefinition2dProps, iModel: IModelDb);
     angle: Angle;
@@ -4402,7 +4401,7 @@ export class ViewDefinition2d extends ViewDefinition {
 }
 
 // @public
-export abstract class ViewDefinition3d extends ViewDefinition {
+export abstract class ViewDefinition3d extends ViewDefinition implements ViewDefinition3dProps {
     // @internal
     constructor(props: ViewDefinition3dProps, iModel: IModelDb);
     angles: YawPitchRollAngles;

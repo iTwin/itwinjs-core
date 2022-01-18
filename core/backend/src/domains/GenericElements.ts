@@ -45,7 +45,7 @@ export class TitleText extends DetailingSymbol {
 /** A graphical DetailingSymbol that contains a view attachment label.
  * @public
  */
-export class ViewAttachmentLabel extends DetailingSymbol {
+export class ViewAttachmentLabel extends DetailingSymbol implements ViewAttachmentLabelProps {
   /** @internal */
   public static override get className(): string { return "ViewAttachmentLabel"; }
   public constructor(props: ViewAttachmentLabelProps, iModel: IModelDb) {
@@ -56,7 +56,7 @@ export class ViewAttachmentLabel extends DetailingSymbol {
 /** A graphical DetailingSymbol that calls out a reference to another drawing.
  *  @public
  */
-export abstract class Callout extends DetailingSymbol {
+export abstract class Callout extends DetailingSymbol implements CalloutProps {
   /** @internal */
   public static override get className(): string { return "Callout"; }
   public constructor(props: CalloutProps, iModel: IModelDb) {

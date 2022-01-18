@@ -488,7 +488,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     // insert a element
     const geomElement = imodel.elements.createElement(expectedValue);
-    const id = imodel.elements.insertElement(geomElement.toJSON());
+    const id = imodel.elements.insertElement(geomElement);
     assert.isTrue(Id64.isValidId64(id), "insert worked");
     imodel.saveChanges();
 
@@ -556,7 +556,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     // insert a element
     const geomElement = imodel.elements.createElement(expectedValue);
-    const elId = imodel.elements.insertElement(geomElement.toJSON());
+    const elId = imodel.elements.insertElement(geomElement);
     assert.isTrue(Id64.isValidId64(elId), "insert worked");
 
     const expectedAspectValue = initElementAspectProps("TestElementAspect", imodel, elId, {
@@ -571,7 +571,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     imodel.saveChanges();
 
     // verify inserted element aspect properties
-    const actualAspectValue: ElementAspectProps[] = imodel.elements.getAspects(elId, expectedAspectValue.classFullName).map((x) => x.toJSON());
+    const actualAspectValue: ElementAspectProps[] = imodel.elements.getAspects(elId, expectedAspectValue.classFullName);
     assert.equal(actualAspectValue.length, 1);
     verifyTestElementAspect(actualAspectValue[0], expectedAspectValue);
 
@@ -603,7 +603,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     imodel.saveChanges();
 
     // verify updated values
-    const updatedAspectValue: ElementAspectProps[] = imodel.elements.getAspects(elId, expectedAspectValue.classFullName).map((x) => x.toJSON());
+    const updatedAspectValue: ElementAspectProps[] = imodel.elements.getAspects(elId, expectedAspectValue.classFullName);
     assert.equal(updatedAspectValue.length, 1);
     verifyTestElementAspect(updatedAspectValue[0], actualAspectValue[0]);
 
@@ -643,10 +643,10 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     const element2 = initElemProps("TestElement", imodel, newModelId, spatialCategoryId!, {}) as TestElement;
 
     const geomElement1 = imodel.elements.createElement(element1);
-    const elId1 = imodel.elements.insertElement(geomElement1.toJSON());
+    const elId1 = imodel.elements.insertElement(geomElement1);
     assert.isTrue(Id64.isValidId64(elId1), "insert of element 1 worked");
     const geomElement2 = imodel.elements.createElement(element2);
-    const elId2 = imodel.elements.insertElement(geomElement2.toJSON());
+    const elId2 = imodel.elements.insertElement(geomElement2);
     assert.isTrue(Id64.isValidId64(elId2), "insert of element 2 worked");
 
     // TODO: Skipping structs here, because of a bug that prevents querying from link tables that have an overflow table, by skipping the struct we reduce the amount of used columns
@@ -658,11 +658,11 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     });
 
     const instance = expectedRelationshipValue; // imodel.relationships.createInstance(expectedRelationshipValue);
-    const relationshipId: Id64String = imodel.relationships.insertInstance(instance as any); // initElementRefersToElementsProps lies about return type.
+    const relationshipId: Id64String = imodel.relationships.insertInstance(instance);
     imodel.saveChanges();
 
     // verify inserted properties
-    const actualRelationshipValue = imodel.relationships.getInstance<TestElementRefersToElements>(expectedRelationshipValue.classFullName, relationshipId);
+    const actualRelationshipValue: TestElementRefersToElements = imodel.relationships.getInstanceProps(expectedRelationshipValue.classFullName, relationshipId);
     assert.exists(actualRelationshipValue);
 
     verifyTestElementRefersToElements(actualRelationshipValue, expectedRelationshipValue);
@@ -693,11 +693,11 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     });
 
     // update
-    imodel.relationships.updateInstance(updatedExpectedValue.toJSON());
+    imodel.relationships.updateInstance(updatedExpectedValue);
     imodel.saveChanges();
 
     // verify updated values
-    const updatedValue = imodel.relationships.getInstance<TestElementRefersToElements>(expectedRelationshipValue.classFullName, relationshipId);
+    const updatedValue: TestElementRefersToElements = imodel.relationships.getInstanceProps(expectedRelationshipValue.classFullName, relationshipId);
     verifyTestElementRefersToElements(updatedValue, updatedExpectedValue);
 
     // verify via concurrent query

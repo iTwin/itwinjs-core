@@ -118,7 +118,7 @@ export class LinearlyLocated {
 }
 
 // @beta
-export abstract class LinearlyLocatedAttribution extends SpatialLocationElement {
+export abstract class LinearlyLocatedAttribution extends SpatialLocationElement implements LinearlyLocatedAttributionProps, LinearlyLocatedBase {
     constructor(props: LinearlyLocatedAttributionProps, iModel: IModelDb);
     // (undocumented)
     attributedElement?: ILinearlyLocatedAttributesElement;
@@ -167,7 +167,7 @@ export interface LinearlyLocatedSingleFromTo extends LinearlyLocatedBase {
 }
 
 // @beta
-export class LinearlyReferencedAtLocation extends LinearlyReferencedLocation {
+export class LinearlyReferencedAtLocation extends LinearlyReferencedLocation implements LinearlyReferencedAtLocationAspectProps {
     constructor(props: LinearlyReferencedAtLocationAspectProps, iModel: IModelDb);
     // (undocumented)
     atPosition: DistanceExpression;
@@ -196,7 +196,7 @@ export class LinearlyReferencedFromPositionRefersToReferent extends RelatedEleme
 }
 
 // @beta
-export class LinearlyReferencedFromToLocation extends LinearlyReferencedLocation {
+export class LinearlyReferencedFromToLocation extends LinearlyReferencedLocation implements LinearlyReferencedFromToLocationAspectProps {
     constructor(props: LinearlyReferencedFromToLocationAspectProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
@@ -258,7 +258,7 @@ export class Referent extends ReferentElement {
     }
 
 // @beta
-export abstract class ReferentElement extends SpatialLocationElement {
+export abstract class ReferentElement extends SpatialLocationElement implements ReferentElementProps, LinearlyLocatedBase {
     constructor(props: ReferentElementProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;

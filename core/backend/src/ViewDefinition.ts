@@ -25,7 +25,7 @@ import { DisplayStyle, DisplayStyle2d, DisplayStyle3d } from "./DisplayStyle";
  * See [how to create a ModelSelector]$(docs/learning/backend/CreateElements.md#ModelSelector).
  * @public
  */
-export class ModelSelector extends DefinitionElement {
+export class ModelSelector extends DefinitionElement implements ModelSelectorProps {
   /** @internal */
   public static override get className(): string { return "ModelSelector"; }
 
@@ -83,7 +83,7 @@ export class ModelSelector extends DefinitionElement {
    */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, models: Id64Array): Id64String {
     const modelSelector = this.create(iModelDb, definitionModelId, name, models);
-    return iModelDb.elements.insertElement(modelSelector.toJSON());
+    return iModelDb.elements.insertElement(modelSelector);
   }
 }
 
@@ -92,7 +92,7 @@ export class ModelSelector extends DefinitionElement {
  * See [how to create a CategorySelector]$(docs/learning/backend/CreateElements.md#CategorySelector).
  * @public
  */
-export class CategorySelector extends DefinitionElement {
+export class CategorySelector extends DefinitionElement implements CategorySelectorProps {
   /** @internal */
   public static override get className(): string { return "CategorySelector"; }
   /** The array of element Ids of the Categories selected by this CategorySelector */
@@ -149,7 +149,7 @@ export class CategorySelector extends DefinitionElement {
    */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, categories: Id64Array): Id64String {
     const categorySelector = this.create(iModelDb, definitionModelId, name, categories);
-    return iModelDb.elements.insertElement(categorySelector.toJSON());
+    return iModelDb.elements.insertElement(categorySelector);
   }
 }
 
@@ -167,7 +167,7 @@ export class CategorySelector extends DefinitionElement {
  * @note ViewDefinition is only available in the backend. See [ViewState]($frontend) for usage in the frontend.
  * @public
  */
-export abstract class ViewDefinition extends DefinitionElement {
+export abstract class ViewDefinition extends DefinitionElement implements ViewDefinitionProps {
   /** @internal */
   public static override get className(): string { return "ViewDefinition"; }
   /** The element Id of the [[CategorySelector]] for this ViewDefinition */
@@ -262,7 +262,7 @@ export abstract class ViewDefinition extends DefinitionElement {
 /** Defines a view of one or more 3d models.
  * @public
  */
-export abstract class ViewDefinition3d extends ViewDefinition {
+export abstract class ViewDefinition3d extends ViewDefinition implements ViewDefinition3dProps {
   private readonly _details: ViewDetails3d;
   /** @internal */
   public static override get className(): string { return "ViewDefinition3d"; }
@@ -318,7 +318,7 @@ export abstract class ViewDefinition3d extends ViewDefinition {
  *        * CategoryIds -----> SpatialCategories <----------GeometricElement3d.Category
  * @public
  */
-export class SpatialViewDefinition extends ViewDefinition3d {
+export class SpatialViewDefinition extends ViewDefinition3d implements SpatialViewDefinitionProps {
   /** @internal */
   public static override get className(): string { return "SpatialViewDefinition"; }
   /** The Id of the [[ModelSelector]] for this SpatialViewDefinition. */
@@ -402,7 +402,7 @@ export class SpatialViewDefinition extends ViewDefinition3d {
    */
   public static insertWithCamera(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView = StandardViewIndex.Iso, cameraAngle = Angle.piOver2Radians): Id64String {
     const viewDefinition = this.createWithCamera(iModelDb, definitionModelId, name, modelSelectorId, categorySelectorId, displayStyleId, range, standardView, cameraAngle);
-    return iModelDb.elements.insertElement(viewDefinition.toJSON());
+    return iModelDb.elements.insertElement(viewDefinition);
   }
 }
 
@@ -462,7 +462,7 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
    */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView = StandardViewIndex.Iso): Id64String {
     const viewDefinition = this.create(iModelDb, definitionModelId, name, modelSelectorId, categorySelectorId, displayStyleId, range, standardView);
-    return iModelDb.elements.insertElement(viewDefinition.toJSON());
+    return iModelDb.elements.insertElement(viewDefinition);
   }
   /** Set a new viewed range without changing the rotation or any other properties. */
   public setRange(range: Range3d): void {
@@ -477,7 +477,7 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
 /** Defines a view of a single 2d model. Each 2d model has its own coordinate system, so only one may appear per view.
  * @public
  */
-export class ViewDefinition2d extends ViewDefinition {
+export class ViewDefinition2d extends ViewDefinition implements ViewDefinition2dProps {
   private readonly _details: ViewDetails;
 
   /** @internal */
@@ -572,7 +572,7 @@ export class DrawingViewDefinition extends ViewDefinition2d {
    */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, baseModelId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range2d): Id64String {
     const viewDefinition = this.create(iModelDb, definitionModelId, name, baseModelId, categorySelectorId, displayStyleId, range);
-    return iModelDb.elements.insertElement(viewDefinition.toJSON());
+    return iModelDb.elements.insertElement(viewDefinition);
   }
 }
 
@@ -604,7 +604,7 @@ export class TemplateViewDefinition3d extends ViewDefinition3d {
  * coordinate information in different units and/or orientations.
  * @public
  */
-export abstract class AuxCoordSystem extends DefinitionElement {
+export abstract class AuxCoordSystem extends DefinitionElement implements AuxCoordSystemProps {
   /** @internal */
   public static override get className(): string { return "AuxCoordSystem"; }
   public type!: number;
@@ -615,7 +615,7 @@ export abstract class AuxCoordSystem extends DefinitionElement {
 /** A 2d auxiliary coordinate system.
  * @public
  */
-export class AuxCoordSystem2d extends AuxCoordSystem {
+export class AuxCoordSystem2d extends AuxCoordSystem implements AuxCoordSystem2dProps {
   /** @internal */
   public static override get className(): string { return "AuxCoordSystem2d"; }
   public origin?: Point2d;
@@ -636,7 +636,7 @@ export class AuxCoordSystem2d extends AuxCoordSystem {
 /** A 3d auxiliary coordinate system.
  * @public
  */
-export class AuxCoordSystem3d extends AuxCoordSystem {
+export class AuxCoordSystem3d extends AuxCoordSystem implements AuxCoordSystem3dProps {
   /** @internal */
   public static override get className(): string { return "AuxCoordSystem3d"; }
   public origin?: Point3d;
@@ -676,7 +676,7 @@ export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
 /** Represents an *attachment* of a [[ViewDefinition]] to a [[Sheet]].
  * @public
  */
-export class ViewAttachment extends GraphicalElement2d {
+export class ViewAttachment extends GraphicalElement2d implements ViewAttachmentProps {
   /** @internal */
   public static override get className(): string { return "ViewAttachment"; }
   public view: RelatedElement;
@@ -695,7 +695,7 @@ export class ViewAttachment extends GraphicalElement2d {
 /** The position in space of a Light.
  * @internal
  */
-export class LightLocation extends SpatialLocationElement {
+export class LightLocation extends SpatialLocationElement implements LightLocationProps {
   /** @internal */
   public static override get className(): string { return "LightLocation"; }
   /** Whether this light is currently turned on. */

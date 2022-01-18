@@ -20,7 +20,7 @@ import { IModelDb } from "./IModelDb";
  * Many ViewDefinitions may share the same DisplayStyle.
  * @public
  */
-export abstract class DisplayStyle extends DefinitionElement {
+export abstract class DisplayStyle extends DefinitionElement implements DisplayStyleProps {
   /** @internal */
   public static override get className(): string { return "DisplayStyle"; }
   public abstract get settings(): DisplayStyleSettings;
@@ -177,7 +177,7 @@ export class DisplayStyle2d extends DisplayStyle {
    */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string): Id64String {
     const displayStyle = this.create(iModelDb, definitionModelId, name);
-    return iModelDb.elements.insertElement(displayStyle.toJSON());
+    return iModelDb.elements.insertElement(displayStyle);
   }
 }
 
@@ -201,7 +201,7 @@ export interface DisplayStyleCreationOptions extends Omit<DisplayStyle3dSettings
  * See [how to create a DisplayStyle3d]$(docs/learning/backend/CreateElements.md#DisplayStyle3d).
  * @public
  */
-export class DisplayStyle3d extends DisplayStyle {
+export class DisplayStyle3d extends DisplayStyle implements DisplayStyle3dProps {
   /** @internal */
   public static override get className(): string { return "DisplayStyle3d"; }
   private readonly _settings: DisplayStyle3dSettings;
@@ -299,6 +299,6 @@ export class DisplayStyle3d extends DisplayStyle {
    */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): Id64String {
     const displayStyle = this.create(iModelDb, definitionModelId, name, options);
-    return iModelDb.elements.insertElement(displayStyle.toJSON());
+    return iModelDb.elements.insertElement(displayStyle);
   }
 }

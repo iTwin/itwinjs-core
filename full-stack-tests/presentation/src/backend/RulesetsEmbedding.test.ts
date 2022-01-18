@@ -120,7 +120,7 @@ describe("RulesEmbedding", () => {
 
     const rulesetElement = imodel.elements.getElement(insertId);
     rulesetElement.setJsonProperty("id", faker.random.uuid());
-    imodel.elements.updateElement(rulesetElement.toJSON());
+    imodel.elements.updateElement(rulesetElement);
 
     rootNodes = await Presentation.getManager().getNodes({ imodel, rulesetOrId: RULESET_1.id });
     expect(rootNodes.length).to.be.equal(1);

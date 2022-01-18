@@ -57,7 +57,7 @@ function createGeometryPart(geom: GeometryStreamProps, imodel: SnapshotDb): Id64
 function createGeometricElem(geom: GeometryStreamProps, placement: Placement3dProps, imodel: SnapshotDb, seedElement: GeometricElement): Id64String {
   const elementProps = createPhysicalElementProps(seedElement, placement, geom);
   const el = imodel.elements.createElement<GeometricElement>(elementProps);
-  return imodel.elements.insertElement(el.toJSON());
+  return imodel.elements.insertElement(el);
 }
 
 function createPartElem(partId: Id64String, origin: Point3d, angles: YawPitchRollAngles, imodel: SnapshotDb, seedElement: GeometricElement, isRelative = false): Id64String {
@@ -880,7 +880,7 @@ describe("GeometryStream", () => {
 
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles }, builder.geometryStream);
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem.toJSON());
+    const newId = imodel.elements.insertElement(testElem);
     imodel.saveChanges();
 
     // Extract and test value returned, text transform should now be identity as it is accounted for by element's placement...
@@ -938,7 +938,7 @@ describe("GeometryStream", () => {
 
     const partProps = createGeometryPartProps(partBuilder.geometryStream);
     const testPart = imodel.elements.createElement(partProps);
-    const partId = imodel.elements.insertElement(testPart.toJSON());
+    const partId = imodel.elements.insertElement(testPart);
     imodel.saveChanges();
 
     // Extract and test value returned
@@ -983,7 +983,7 @@ describe("GeometryStream", () => {
 
     const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem.toJSON());
+    const newId = imodel.elements.insertElement(testElem);
     imodel.saveChanges();
 
     // Extract and test value returned
@@ -1017,7 +1017,7 @@ describe("GeometryStream", () => {
 
     const partProps = createGeometryPartProps(partBuilder.geometryStream);
     const testPart = imodel.elements.createElement(partProps);
-    const partId = imodel.elements.insertElement(testPart.toJSON());
+    const partId = imodel.elements.insertElement(testPart);
     imodel.saveChanges();
 
     const builder = new GeometryStreamBuilder();
@@ -1031,7 +1031,7 @@ describe("GeometryStream", () => {
 
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles }, builder.geometryStream);
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem.toJSON());
+    const newId = imodel.elements.insertElement(testElem);
     imodel.saveChanges();
 
     // Extract and test value returned
@@ -1128,7 +1128,7 @@ describe("GeometryStream", () => {
 
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles }, builder.geometryStream);
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem.toJSON());
+    const newId = imodel.elements.insertElement(testElem);
     imodel.saveChanges();
 
     // Extract and test value returned
@@ -1206,7 +1206,7 @@ describe("GeometryStream", () => {
 
       const partProps = createGeometryPartProps(builder.geometryStream);
       const part = imodel.elements.createElement(partProps);
-      const partId = imodel.elements.insertElement(part.toJSON());
+      const partId = imodel.elements.insertElement(part);
       imodel.saveChanges();
 
       const json = imodel.elements.getElementProps<GeometryPartProps>({ id: partId, wantGeometry: true });
@@ -1901,127 +1901,6 @@ describe("ElementGeometry", () => {
     assert(DbResult.BE_SQLITE_OK === doElementGeometryUpdate(imodel, newId, newEntries, false));
     assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
   });
-<<<<<<< HEAD
-=======
-
-  it("should insert elements and parts with binary geometry stream", () => {
-    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
-
-    const pts: Point3d[] = [];
-    pts.push(Point3d.create(5, 10, 0));
-    pts.push(Point3d.create(10, 10, 0));
-
-    const entryLN = ElementGeometry.fromGeometryQuery(LineSegment3d.create(pts[0], pts[1]));
-    assert.isTrue(entryLN !== undefined);
-
-    const entryAR = ElementGeometry.fromGeometryQuery(Arc3d.createXY(pts[0], pts[0].distance(pts[1])));
-    assert.exists(entryAR);
-
-    // ------------------
-    // GeometricElement3d
-    // ------------------
-
-    //    Insert
-
-    const elemProps: PhysicalElementProps = {
-      classFullName: PhysicalObject.classFullName,
-      model: seedElement.model,
-      category: seedElement.category,
-      code: Code.createEmpty(),
-      // geom: geomBuilder.geometryStream,
-      elementGeometryBuilderParams: { entryArray: [entryLN!], viewIndependent: false },
-    };
-
-    const spatialElementId = imodel.elements.insertElement(elemProps);
-
-    let persistentProps = imodel.elements.getElementProps<GeometricElementProps>({ id: spatialElementId, wantGeometry: true });
-    assert.isDefined(persistentProps.geom);
-    assert.isTrue(persistentProps.placement !== undefined);
-    assert.deepEqual(Point3d.fromJSON(persistentProps.placement!.origin), Point3d.create(0, 0, 0));
-    assert.deepEqual(Point3d.fromJSON(persistentProps.placement!.bbox!.low), Point3d.create(5, 10, 0));
-    assert.deepEqual(Point3d.fromJSON(persistentProps.placement!.bbox!.high), Point3d.create(10, 10, 0));
-
-    for (const entry of new GeometryStreamIterator(persistentProps.geom!, persistentProps.category)) {
-      assert.equal(entry.primitive.type, "geometryQuery");
-      const geometry = (entry.primitive as GeometryPrimitive).geometry;
-      assert.isTrue(geometry instanceof LineString3d);
-      const ls: LineString3d = geometry as LineString3d;
-      assert.deepEqual(ls.points, pts);
-    }
-
-    //    Insert - various failure cases
-    elemProps.elementGeometryBuilderParams = { entryArray: [] };
-    expect(() => imodel.elements.insertElement(elemProps)).to.throw(); // TODO: check error message
-
-    elemProps.elementGeometryBuilderParams = { entryArray: [{ opcode: 9999 } as unknown as ElementGeometryDataEntry] };
-    expect(() => imodel.elements.insertElement(elemProps)).to.throw(); // TODO: check error message
-
-    elemProps.elementGeometryBuilderParams = { entryArray: [{ opcode: ElementGeometryOpcode.ArcPrimitive, data: undefined } as unknown as ElementGeometryDataEntry] };
-    expect(() => imodel.elements.insertElement(elemProps)).to.throw(); // TODO: check error message
-
-    //    Update
-    persistentProps.elementGeometryBuilderParams = { entryArray: [entryAR!] };
-
-    imodel.elements.updateElement(persistentProps);
-
-    persistentProps = imodel.elements.getElementProps<GeometricElementProps>({ id: spatialElementId, wantGeometry: true });
-    assert.isDefined(persistentProps.geom);
-    assert.isTrue(persistentProps.placement !== undefined);
-    assert.deepEqual(Point3d.fromJSON(persistentProps.placement!.origin), Point3d.create(0, 0, 0));
-    assert.deepEqual(Point3d.fromJSON(persistentProps.placement!.bbox!.low), Point3d.create(0, 5, 0));
-    assert.deepEqual(Point3d.fromJSON(persistentProps.placement!.bbox!.high), Point3d.create(10, 15, 0));
-
-    for (const entry of new GeometryStreamIterator(persistentProps.geom!, persistentProps.category)) {
-      assert.equal(entry.primitive.type, "geometryQuery");
-      const geometry = (entry.primitive as GeometryPrimitive).geometry;
-      assert.isTrue(geometry instanceof Arc3d);
-      const ar: Arc3d = geometry as Arc3d;
-      assert.deepEqual(ar.center, pts[0]);
-    }
-
-    // ---------------
-    // Geometry part
-    // ---------------
-
-    //    Insert
-    const partProps: GeometryPartProps = {
-      classFullName: GeometryPart.classFullName,
-      model: IModel.dictionaryId,
-      code: Code.createEmpty(),
-      elementGeometryBuilderParams: { entryArray: [entryLN!], is2dPart: false },
-    };
-
-    const partid = imodel.elements.insertElement(partProps);
-
-    let persistentPartProps = imodel.elements.getElementProps<GeometryPartProps>({ id: partid, wantGeometry: true });
-    assert.isDefined(persistentPartProps.geom);
-
-    for (const entry of new GeometryStreamIterator(persistentPartProps.geom!)) {
-      assert.equal(entry.primitive.type, "geometryQuery");
-      const geometry = (entry.primitive as GeometryPrimitive).geometry;
-      assert.isTrue(geometry instanceof LineString3d);
-      const ls: LineString3d = geometry as LineString3d;
-      assert.deepEqual(ls.points, pts);
-    }
-
-    //    Update
-    persistentPartProps.elementGeometryBuilderParams = { entryArray: [entryAR!] };
-
-    imodel.elements.updateElement(persistentPartProps);
-
-    persistentPartProps = imodel.elements.getElementProps<GeometryPartProps>({ id: partid, wantGeometry: true });
-    assert.isDefined(persistentPartProps.geom);
-
-    for (const entry of new GeometryStreamIterator(persistentPartProps.geom!)) {
-      assert.equal(entry.primitive.type, "geometryQuery");
-      const geometry = (entry.primitive as GeometryPrimitive).geometry;
-      assert.isTrue(geometry instanceof Arc3d);
-      const ar: Arc3d = geometry as Arc3d;
-      assert.deepEqual(ar.center, pts[0]);
-    }
-  });
-
->>>>>>> b7b9b55874 (Entity is not an EntityProps. (#3052))
 });
 
 describe("BRepGeometry", () => {
@@ -2572,7 +2451,7 @@ describe("BRepGeometry", () => {
 
       const elementProps = createPhysicalElementProps(seedElement, { origin: Point3d.create(5, 10, 0), angles: YawPitchRollAngles.createDegrees(45, 0, 0) }, gsBuilder.geometryStream);
       const testElem = imodel.elements.createElement(elementProps);
-      const newId = imodel.elements.insertElement(testElem.toJSON());
+      const newId = imodel.elements.insertElement(testElem);
       imodel.saveChanges();
 
       // Extract and test value returned
@@ -2629,7 +2508,7 @@ describe("Mass Properties", () => {
 
     const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem.toJSON());
+    const newId = imodel.elements.insertElement(testElem);
     imodel.saveChanges();
 
     const requestProps: MassPropertiesRequestProps = {
@@ -2656,7 +2535,7 @@ describe("Mass Properties", () => {
 
     const elementProps = createPhysicalElementProps(seedElement, undefined, builder.geometryStream);
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem.toJSON());
+    const newId = imodel.elements.insertElement(testElem);
     imodel.saveChanges();
 
     const requestProps: MassPropertiesRequestProps = {
