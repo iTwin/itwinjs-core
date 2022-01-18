@@ -1999,7 +1999,7 @@ Object {
               "name": "/selected-item/-source_information-model_source",
             },
           ],
-          "expand": false,
+          "expand": true,
           "label": "$óúrçè Íñfórmâtíöñ",
           "name": "/selected-item/-source_information",
         },

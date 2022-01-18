@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { MapLayerProps, MapLayerSettings, ServerError } from "@itwin/core-common";
-import { RequestBasicCredentials } from "@bentley/itwin-client";
+import { RequestBasicCredentials } from "../../../request/Request";
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import sinon from "sinon";

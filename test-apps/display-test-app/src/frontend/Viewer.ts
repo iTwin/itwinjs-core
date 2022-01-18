@@ -29,7 +29,7 @@ import { openIModel } from "./openIModel";
 // cspell:ignore savedata topdiv savedview viewtop
 
 function saveImage(vp: Viewport) {
-  const buffer = vp.readImage(undefined, new Point2d(768, 768), true); // flip vertically...
+  const buffer = vp.readImageBuffer({ size: new Point2d(768, 768) });
   if (undefined === buffer) {
     alert("Failed to read image");
     return;

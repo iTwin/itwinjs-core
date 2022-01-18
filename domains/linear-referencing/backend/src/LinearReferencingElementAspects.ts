@@ -46,7 +46,7 @@ export class LinearlyReferencedLocation extends ElementMultiAspect {
 /** Concrete multi-aspect class carrying 'at' linearly-referenced positions along a Linear-Element.
  * @beta
  */
-export class LinearlyReferencedAtLocation extends LinearlyReferencedLocation implements LinearlyReferencedAtLocationAspectProps {
+export class LinearlyReferencedAtLocation extends LinearlyReferencedLocation {
   /** @internal */
   public static override get className(): string { return "LinearlyReferencedAtLocation"; }
 
@@ -84,7 +84,7 @@ export class LinearlyReferencedAtLocation extends LinearlyReferencedLocation imp
 /** Concrete multi-aspect class carrying 'from-to' linearly-referenced positions along a Linear-Element.
  * @beta
  */
-export class LinearlyReferencedFromToLocation extends LinearlyReferencedLocation implements LinearlyReferencedFromToLocationAspectProps {
+export class LinearlyReferencedFromToLocation extends LinearlyReferencedLocation {
   /** @internal */
   public static override get className(): string { return "LinearlyReferencedFromToLocation"; }
 

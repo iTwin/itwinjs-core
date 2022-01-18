@@ -84,7 +84,7 @@ export class RobotWorldEngine {
   public static moveRobot(iModelDb: IModelDb, id: Id64String, location: Point3d) {
     const r = iModelDb.elements.getElement<Robot>(id);
     r.placement.origin = location;
-    iModelDb.elements.updateElement(r);
+    iModelDb.elements.updateElement(r.toJSON());
   }
 
   // __PUBLISH_EXTRACT_START__ Element.createGeometricElement3d.example-code
