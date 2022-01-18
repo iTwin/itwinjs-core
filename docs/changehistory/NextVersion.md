@@ -1390,6 +1390,19 @@ The property `InterpolationCurve3dOptions.isChordLenTangent` has been deprecated
 
 The `fromRadians`, `fromDegrees`, and `fromAngles` methods of [Cartographic]($common) now expect to receive a single input argument - an object containing a longitude, latitude and optional height property. The public constructor for [Cartographic]($common) has also been removed. If you would like to create a [Cartographic]($common) object without specifying longitude and latitude, you can use the new `createZero` method. These changes will help callers avoid mis-ordering longitude, latitude, and height when creating a [Cartographic]($common) object. Additionally, the `LatAndLong` and `LatLongAndHeight` interfaces have been removed and replaced with a single [CartographicProps]($common) interface.
 
+#### @itwin/core-backend
+
+[Entity]($backend) is no longer [type-compatible](https://www.typescriptlang.org/docs/handbook/type-compatibility.html) with [EntityProps]($common) - this was a common source of bugs. Likewise, each subclass of Entity - i.e., [Element]($backend), [Model]($backend), and [Relationship]($backend) - is now type-incompatible with its corresponding EntityProps sub-type - [ElementProps]($common), [ModelProps]($common), and [RelationshipProps]($common). Code that attempts to pass an Entity to a function expecting an EntityProps will now produce a compilation error.
+
+An EntityProps can be obtained from an Entity by calling [Entity.toJSON]($backend). However, for inserting or updating entities, each subclass provides a more convenient and less error-prone method, like [Model.insert]($backend) and [Element.update]($backend). For example, you can make the following replacement:
+
+```ts
+  // Old code passing an Element in place of an ElementProps- no longer compiles:
+  element.iModel.elements.insert(element);
+  // New code - much less verbose:
+  element.insert();
+```
+
 #### Changes to ECSql APIs
 
 Several changes to the APIs for executing ECSql statements have been made to improve performance and flexibility. This involved breaking changes to the `query`, `queryRowCount`, and `restartQuery` methods of [IModelConnection]($frontend), [IModelDb]($backend), and [ECDb]($backend).
