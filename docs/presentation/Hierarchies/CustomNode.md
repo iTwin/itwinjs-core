@@ -89,7 +89,7 @@ to decide what to do with it.
 
 > **Default value:** `false`
 
-Specifies whether the node created through this specification should be hidden and instead its children should be returned.
+When `true`, nodes produced by this specification are omitted and their children appear one hierarchy level higher.
 
 ```ts
 [[include:Hierarchies.Specification.HideNodesInHierarchy.Ruleset]]
