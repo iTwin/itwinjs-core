@@ -80,7 +80,7 @@ Specifies an [ECExpression](./ECExpressions.md#instance-filter) for filtering in
 
 > **Default value:** `false`
 
-Identifies whether we should ignore this specification if another specification was already handled (based on rule priorities and definition order). Should be used when defining a fallback specification.
+Specifies whether this specification should be ignored if another specification was handled before as determined by rule and specification priorities. This provides a mechanism for defining a fallback specification.
 
 ```ts
 [[include:ContentInstancesOfSpecificClasses.OnlyIfNotHandled.Ruleset]]
