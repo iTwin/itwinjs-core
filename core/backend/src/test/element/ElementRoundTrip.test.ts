@@ -662,7 +662,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     imodel.saveChanges();
 
     // verify inserted properties
-    const actualRelationshipValue: TestElementRefersToElements = imodel.relationships.getInstanceProps(expectedRelationshipValue.classFullName, relationshipId);
+    const actualRelationshipValue = imodel.relationships.getInstance<TestElementRefersToElements>(expectedRelationshipValue.classFullName, relationshipId);
     assert.exists(actualRelationshipValue);
 
     verifyTestElementRefersToElements(actualRelationshipValue, expectedRelationshipValue);
@@ -697,7 +697,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     imodel.saveChanges();
 
     // verify updated values
-    const updatedValue: TestElementRefersToElements = imodel.relationships.getInstanceProps(expectedRelationshipValue.classFullName, relationshipId);
+    const updatedValue = imodel.relationships.getInstance<TestElementRefersToElements>(expectedRelationshipValue.classFullName, relationshipId);
     verifyTestElementRefersToElements(updatedValue, updatedExpectedValue);
 
     // verify via concurrent query

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BentleyError, Id64Array, Id64String, IModelStatus } from "@itwin/core-bentley";
+import { assert, BentleyError, Id64Array, Id64String, IModelStatus } from "@itwin/core-bentley";
 import {
   AkimaCurve3d, AnyGeometryQuery, Arc3d, BezierCurveBase, Box, BSplineCurve3d, Cone, CurveChainWithDistanceIndex, CurveCollection, CurvePrimitive, IModelJson,
   InterpolationCurve3d,
@@ -128,10 +128,12 @@ class ResponseGenerator {
     let geometricElement: GeometricElement | undefined;
     if (elem instanceof GeometricElement) {
       geometricElement = elem;
-      if (geometricElement.is2d())
+      if (geometricElement.is2d()) {
         iterator = GeometryStreamIterator.fromGeometricElement2d(geometricElement);
-      else
-        iterator = GeometryStreamIterator.fromGeometricElement3d(geometricElement as GeometricElement3dProps);
+      } else {
+        assert(geometricElement.is3d());
+        iterator = GeometryStreamIterator.fromGeometricElement3d(geometricElement);
+      }
     } else if (elem instanceof GeometryPart) {
       iterator = GeometryStreamIterator.fromGeometryPart(elem);
     }

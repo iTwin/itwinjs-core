@@ -396,6 +396,13 @@ export class ElementDrivesElement extends Relationship {
     const props: ElementDrivesElementProps = { sourceId, targetId, priority, status: 0, classFullName: this.classFullName };
     return iModel.relationships.createInstance(props) as T;
   }
+
+  public override toJSON(): ElementDrivesElementProps {
+    const props = super.toJSON() as ElementDrivesElementProps;
+    props.status = this.status;
+    props.priority = this.priority;
+    return props;
+  }
 }
 
 /** Manages [[Relationship]]s.
