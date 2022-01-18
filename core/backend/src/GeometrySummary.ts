@@ -11,7 +11,7 @@ import {
   TransitionSpiral3d, UVSelect,
 } from "@itwin/core-geometry";
 import {
-  BRepEntity, GeometricElement3dProps, GeometryParams, GeometryStreamIterator, GeometrySummaryRequestProps, GeometrySummaryVerbosity, ImagePrimitive,
+  BRepEntity, GeometryParams, GeometryStreamIterator, GeometrySummaryRequestProps, GeometrySummaryVerbosity, ImagePrimitive,
   IModelError, TextStringPrimitive,
 } from "@itwin/core-common";
 import { Element, GeometricElement, GeometryPart } from "./Element";
