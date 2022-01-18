@@ -54,7 +54,7 @@ describe("Wire Format Snippets", () => {
 
   it("RepositoryModel", () => {
     // __PUBLISH_EXTRACT_START__ WireFormat_RepositoryModel.code
-    const modelProps = iModel.models.getModel(IModel.repositoryModelId) as ModelProps;
+    const modelProps = iModel.models.getModel(IModel.repositoryModelId).toJSON();
     const json = JSON.stringify(modelProps, undefined, 2);
     // __PUBLISH_EXTRACT_END__
     assert.isDefined(modelProps);
