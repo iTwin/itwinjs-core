@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { RequestBasicCredentials } from "@bentley/itwin-client";
+import { RequestBasicCredentials } from "../../../request/Request";
 import { ImageMapLayerSettings, MapLayerProps, ServerError } from "@itwin/core-common";
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";

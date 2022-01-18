@@ -33,6 +33,7 @@ import { PolylineParams } from "./primitives/PolylineParams";
 import { MeshParams } from "./primitives/VertexTable";
 import { RenderClipVolume } from "./RenderClipVolume";
 import { RenderGraphic, RenderGraphicOwner } from "./RenderGraphic";
+import { CreateRenderMaterialArgs } from "./RenderMaterial";
 import { RenderMemory } from "./RenderMemory";
 import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
 import { RenderTarget } from "./RenderTarget";
@@ -314,8 +315,17 @@ export abstract class RenderSystem implements IDisposable {
    * @param _params A description of the material's properties.
    * @param _imodel The IModelConnection associated with the material.
    * @returns the newly-created material, or undefined if the material could not be created or if a material with the same key as that specified in the params already exists.
+   * @deprecated Use [[createRenderMaterial]].
    */
+  // eslint-disable-next-line deprecation/deprecation
   public createMaterial(_params: RenderMaterial.Params, _imodel: IModelConnection): RenderMaterial | undefined { return undefined; }
+
+  /** Create a [RenderMaterial]($common).
+   * @see [[CreateRenderMaterialArgs]] for a description of the material parameters.
+   */
+  public createRenderMaterial(_args: CreateRenderMaterialArgs): RenderMaterial | undefined {
+    return undefined;
+  }
 
   /** Creates a [[GraphicBuilder]] for creating a [[RenderGraphic]].
    * @param placement The local-to-world transform in which the builder's geometry is to be defined.

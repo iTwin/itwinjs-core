@@ -9,8 +9,10 @@
 import { assert } from "@itwin/core-bentley";
 import { AttributeMap } from "../AttributeMap";
 import { Material } from "../Material";
-import { SurfaceBitIndex, SurfaceFlags, TextureUnit } from "../RenderFlags";
-import { FragmentShaderComponent, ProgramBuilder, ShaderBuilder, ShaderBuilderFlags, VariableType, VertexShaderComponent } from "../ShaderBuilder";
+import { Pass, SurfaceBitIndex, SurfaceFlags, TextureUnit } from "../RenderFlags";
+import {
+  FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, ShaderBuilder, ShaderBuilderFlags, VariableType, VertexShaderComponent,
+} from "../ShaderBuilder";
 import { System } from "../System";
 import { FeatureMode, IsAnimated, IsClassified, IsInstanced, IsShadowable, IsThematic, TechniqueFlags } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
@@ -502,10 +504,34 @@ export const discardClassifiedByAlpha = `
   return (isOpaquePass && hasAlpha) || (isTranslucentPass && !hasAlpha);
 `;
 
-// Target.readPixels() renders everything in opaque pass. It turns off textures for normal surfaces but keeps them for things like 3d view attachment tiles.
-// We want to discard fully-transparent pixels of those things during readPixels() so that we don't locate the attachment unless the cursor is over a
-// non-transparent pixel of it.
-const discardTransparentTexel = `return isSurfaceBitSet(kSurfaceBit_HasTexture) && alpha < (1.0 / 255.0);`;
+const discardByTextureAlpha = `
+  if (isSurfaceBitSet(kSurfaceBit_HasTexture)) {
+    float cutoff = abs(u_alphaCutoff);
+    if (kRenderPass_Translucent == u_renderPass)
+      return u_alphaCutoff > 0.0 && alpha >= cutoff;
+    else
+      return alpha < cutoff;
+  }
+
+  return false;
+`;
+
+function addTransparencyDiscard(frag: FragmentShaderBuilder): void {
+  addRenderPass(frag);
+  frag.addUniform("u_alphaCutoff", VariableType.Float, (prog) => {
+    prog.addGraphicUniform("u_alphaCutoff", (uniform, params) => {
+      // This cutoff is used to discard pixels based on the alpha value sampled from the surface texture.
+      // During readPixels, or when transparency is disabled, only discard 100% opaque pixels.
+      // Otherwise, if the geometry draws in both opaque and translucent passes, use DisplayParams.minTransparency to filter pixels into appropriate pass to produce appropriate blending.
+      // Negative cutoff applies only during opaque pass; positive cutoff applies during opaque and translucent passes.
+      const pass = params.geometry.getPass(params.target);
+      const cutoff = (!Pass.rendersOpaqueAndTranslucent(pass) || params.target.isReadPixelsInProgress || !params.target.currentViewFlags.transparency) ? -1 / 255 : 241 / 255;
+      uniform.setUniform1f(cutoff);
+    });
+  });
+
+  frag.set(FragmentShaderComponent.DiscardByAlpha, discardByTextureAlpha);
+}
 
 /** @internal */
 export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
@@ -519,9 +545,8 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
     addColorPlanarClassifier(builder, flags.isTranslucent, flags.isThematic);
   }
 
-  if (flags.isThematic) {
+  if (flags.isThematic)
     addThematicDisplay(builder);
-  }
 
   addFeatureSymbology(builder, feat, opts);
   addSurfaceFlags(builder, FeatureMode.Overrides === feat, true);
@@ -560,7 +585,6 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
     if (FeatureMode.None === feat) {
       addFragColorWithPreMultipliedAlpha(builder.frag);
     } else {
-      builder.frag.set(FragmentShaderComponent.DiscardByAlpha, discardTransparentTexel);
       if (!flags.isClassified)
         addOverrideClassifierColor(builder, flags.isThematic);
       else
@@ -579,6 +603,8 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
 
   if (flags.isClassified)
     addClassificationTranslucencyDiscard(builder);
+  else
+    addTransparencyDiscard(builder.frag);
 
   addSurfaceMonochrome(builder.frag);
   addMaterial(builder);

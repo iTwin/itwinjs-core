@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { getJson, request, RequestOptions, Response } from "@bentley/itwin-client";
+import { getJson, request, RequestOptions, Response } from "../../../request/Request";
 import { Cartographic, ImageMapLayerSettings, ImageSource, IModelStatus, ServerError } from "@itwin/core-common";
 import { IModelApp } from "../../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../../NotificationManager";

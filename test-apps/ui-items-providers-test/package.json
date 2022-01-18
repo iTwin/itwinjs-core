@@ -42,7 +42,6 @@
   "dependencies": {
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
-    "@bentley/itwin-client": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
@@ -54,7 +53,7 @@
     "@itwin/presentation-common": "workspace:*",
     "@itwin/presentation-frontend": "workspace:*",
     "@itwin/presentation-components": "workspace:*",
-    "@itwin/itwinui-react": "^1.27.0",
+    "@itwin/itwinui-react": "~1.28.0",
     "@itwin/itwinui-css": "^0.37.0",
     "classnames": "^2.3.1",
     "react": "^17.0.0",
