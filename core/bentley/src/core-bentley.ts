@@ -10,7 +10,6 @@ export * from "./BentleyError";
 export * from "./BentleyLoggerCategory";
 export * from "./BeSQLite";
 export * from "./ByteStream";
-export * from "./ClassUtils";
 export * from "./Compare";
 export * from "./CompressedId64Set";
 export * from "./Dictionary";
@@ -40,10 +39,6 @@ export * from "./UtilityTypes";
 /**
  * @docs-group-description BeSQLite
  * Classes for working with SQLite databases. SQLite underlies IModelDb and ECDb - see [Executing ECSQL]($docs/learning/ECSQL.md)
- */
-/**
- * @docs-group-description ClassUtils
- * Utility functions for working with JavaScript's concept of classes.
  */
 /**
  * @docs-group-description Errors
