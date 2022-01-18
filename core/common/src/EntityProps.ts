@@ -14,6 +14,7 @@ import { RelatedElement } from "./ElementProps";
  * @public
  */
 export interface EntityProps {
+  readonly isEntityObject?: never;
   /** The full name of the [ECClass]($docs/bis/intro/glossary/#ecclass) for this entity, in the form "Schema:ClassName" */
   classFullName: string;
   /** The Id of the entity. Must be present for SELECT, UPDATE, or DELETE, ignored for INSERT. */

@@ -14,7 +14,8 @@ import { Schema } from "./Schema";
 /** Base class for all Entities in an iModel. Every subclass of Entity handles one BIS class.
  * @public
  */
-export class Entity implements EntityProps {
+export class Entity {
+  public readonly isEntityObject: true = true;
   /** The Schema that defines this class. */
   public static schema: typeof Schema;
 
