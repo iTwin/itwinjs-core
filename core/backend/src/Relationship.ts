@@ -56,7 +56,7 @@ export class Relationship extends Entity {
   public static onDeletedDependency(_props: RelationshipProps, _iModel: IModelDb): void { }
 
   /** Insert this Relationship into the iModel. */
-  public insert(): Id64String { return this.iModel.relationships.insertInstance(this.toJSON()); }
+  public insert(): Id64String { return this.id = this.iModel.relationships.insertInstance(this.toJSON()); }
   /** Update this Relationship in the iModel. */
   public update() { this.iModel.relationships.updateInstance(this.toJSON()); }
   /** Delete this Relationship from the iModel. */

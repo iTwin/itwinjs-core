@@ -401,7 +401,7 @@ export class Element extends Entity {
   }
 
   /** Insert this Element into the iModel. */
-  public insert() { return this.iModel.elements.insertElement(this.toJSON()); }
+  public insert() { return this.id = this.iModel.elements.insertElement(this.toJSON()); }
   /** Update this Element in the iModel. */
   public update() { this.iModel.elements.updateElement(this.toJSON()); }
   /** Delete this Element from the iModel. */

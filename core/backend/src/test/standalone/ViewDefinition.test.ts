@@ -15,7 +15,7 @@ function createNewModelAndCategory(rwIModel: IModelDb, parent?: Id64String) {
   const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
   const category = SpatialCategory.create(rwIModel, IModel.dictionaryId, newCategoryCode.value);
 
-  const spatialCategoryId = rwIModel.elements.insertElement(category.toJSON());
+  const spatialCategoryId = category.insert();
   category.setDefaultAppearance(new SubCategoryAppearance({ color: 0xff0000 }));
   return { modelId, spatialCategoryId };
 }

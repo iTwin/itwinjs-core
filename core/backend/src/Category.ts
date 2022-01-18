@@ -198,9 +198,9 @@ export class DrawingCategory extends Category {
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String {
     const category = this.create(iModelDb, definitionModelId, name);
     const elements = iModelDb.elements;
-    const categoryId = elements.insertElement(category.toJSON());
+    category.id = elements.insertElement(category.toJSON());
     category.setDefaultAppearance(defaultAppearance);
-    return categoryId;
+    return category.id;
   }
 }
 
@@ -264,8 +264,8 @@ export class SpatialCategory extends Category {
    */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String {
     const category = this.create(iModelDb, definitionModelId, name);
-    const categoryId = iModelDb.elements.insertElement(category.toJSON());
+    category.id = iModelDb.elements.insertElement(category.toJSON());
     category.setDefaultAppearance(defaultAppearance);
-    return categoryId;
+    return category.id;
   }
 }

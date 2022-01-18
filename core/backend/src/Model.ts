@@ -210,7 +210,7 @@ export class Model extends Entity {
   public setJsonProperty(name: string, value: any) { this.jsonProperties[name] = value; }
 
   /** Insert this Model in the iModel */
-  public insert() { return this.iModel.models.insertModel(this.toJSON()); }
+  public insert() { return this.id = this.iModel.models.insertModel(this.toJSON()); }
   /** Update this Model in the iModel. */
   public update() { this.iModel.models.updateModel(this.toJSON()); }
   /** Delete this Model from the iModel. */
