@@ -58,8 +58,7 @@ Specifies node label. This is a string value that may be [localized](../Advanced
 
 > **Default value:** `""`
 
-Specifies node's description. This is a string that may be [localized](../Advanced/Localization.md). If set, the description is
-assigned to [Node.description]($presentation-common) and it's up to the UI component to decide what to do with it.
+Specifies the value of [Node.description]($presentation-common) property, which is a string that [may be localized](../Advanced/Localization.md). UI component displaying the node may choose whether and how to surface this information to users.
 
 ```ts
 [[include:Hierarchies.CustomNodeSpecification.Description.Ruleset]]
