@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
 import { Guid, IModelStatus } from "@itwin/core-bentley";
@@ -156,5 +156,32 @@ describe("Checkpoint Manager", () => {
     const request = { localFile, checkpoint: { accessToken: "dummy", iTwinId, iModelId, changeset } };
     await CheckpointManager.downloadCheckpoint(request);
     assert.isTrue(v1Spy.calledOnce);
+  });
+
+  it("downloadCheckpoint should not fall back to use v1 checkpoints if v2 checkpoints are not enabled and only V2 is requested", async () => {
+    const dbPath = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint.bim");
+    const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
+    const iModelId = snapshot.iModelId;
+    const iTwinId = Guid.createValue();
+    const changeset = IModelTestUtils.generateChangeSetId();
+    snapshot.nativeDb.setITwinId(iTwinId);
+    snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeset.id);
+    snapshot.saveChanges();
+    snapshot.close();
+
+    sinon.stub(IModelHost, "hubAccess").get(() => HubMock);
+    const iModelError = new IModelError(IModelStatus.NotFound, "Feature is disabled.");
+    sinon.stub(IModelHost.hubAccess, "downloadV2Checkpoint").callsFake(async () => { throw iModelError; });
+
+    const v1Spy = sinon.stub(V1CheckpointManager, "downloadCheckpoint").callsFake(async (arg) => {
+      IModelJsFs.copySync(dbPath, arg.localFile);
+      return changeset.id;
+    });
+
+    const localFile = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint2.bim");
+
+    const request = { localFile, checkpoint: { accessToken: "dummy", iTwinId, iModelId, changeset }, downloadV2Only: true };
+    await expect(CheckpointManager.downloadCheckpoint(request)).to.be.rejectedWith(iModelError);
+    assert.isTrue(v1Spy.callCount === 0);
   });
 });
