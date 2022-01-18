@@ -124,7 +124,7 @@ export enum RpcInterfaceStatus {
   IncompatibleVersion = RPC_INTERFACE_ERROR_BASE,
 }
 
-/** Error status from various ChangeSet operations
+/** Error status from various Changeset operations
  * @beta Should these be internal?
  */
 export enum ChangeSetStatus { // Note: Values must be kept in sync with ChangeSetStatus in DgnPlatform

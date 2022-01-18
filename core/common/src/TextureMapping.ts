@@ -73,6 +73,9 @@ export namespace TextureMapping { // eslint-disable-line no-redeclare
       const matrix = Matrix3d.createRowValues(m00, m01, 0, m10, m11, 0, 0, 0, 1);
       this.transform = Transform.createRefs(origin, matrix);
     }
+
+    /** An immutable 2x3 identity matrix. */
+    public static readonly identity = new Trans2x3();
   }
 
   /** Properties used to construct a [[TextureMapping.Params]]. */
@@ -106,9 +109,11 @@ export namespace TextureMapping { // eslint-disable-line no-redeclare
     /** @internal */
     public worldMapping: boolean;
 
-    constructor(props = {} as TextureMapping.ParamProps) {
-      const { textureMat2x3 = new Trans2x3(), textureWeight = 1.0, mapMode = Mode.Parametric, worldMapping = false } = props;
-      this.textureMatrix = textureMat2x3; this.weight = textureWeight; this.mode = mapMode; this.worldMapping = worldMapping;
+    public constructor(props?: TextureMapping.ParamProps) {
+      this.textureMatrix = props?.textureMat2x3 ?? Trans2x3.identity;
+      this.weight = props?.textureWeight ?? 1;
+      this.mode = props?.mapMode ?? Mode.Parametric;
+      this.worldMapping = props?.worldMapping ?? false;
     }
 
     /**
@@ -222,3 +227,5 @@ export namespace TextureMapping { // eslint-disable-line no-redeclare
     }
   }
 }
+
+Object.freeze(TextureMapping.Trans2x3.identity);

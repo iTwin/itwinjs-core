@@ -9,7 +9,8 @@ import * as fs from "fs";
 import * as path from "path";
 import { ElectronMainAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronMain";
 import { WebEditServer } from "@itwin/express-server";
-import { IModelHubBackend } from "@bentley/imodelhub-client/lib/cjs/imodelhub-node";
+import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
+import { IModelsClient } from "@itwin/imodels-client-authoring";
 import {
   FileNameResolver, IModelDb, IModelHost, IModelHostConfiguration, IpcHandler, LocalhostIpcHost, PhysicalModel, PhysicalPartition, SpatialCategory,
   SubjectOwnsPartitionElements,
@@ -20,9 +21,9 @@ import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backend";
 import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIpc";
 import { rpcInterfaces } from "../common/RpcInterfaces";
-import { CloudEnv } from "./cloudEnv";
 import * as testCommands from "./TestEditCommands";
 import { exposeBackendCallbacks } from "../certa/certaBackend";
+import { getIModelBankAccess } from "./IModelBankBackendCloudEnv";
 
 /* eslint-disable no-console */
 
@@ -76,11 +77,17 @@ async function init() {
   loadEnv(path.join(__dirname, "..", "..", ".env"));
   RpcConfiguration.developmentMode = true;
 
-  // Bootstrap the cloud environment
-  await CloudEnv.initialize();
-
   const iModelHost = new IModelHostConfiguration();
-  iModelHost.hubAccess = new IModelHubBackend(CloudEnv.cloudEnv.imodelClient);
+
+  // Bootstrap the cloud environment
+  const enableIModelBank: boolean = process.env.IMJS_TEST_IMODEL_BANK !== undefined && !!JSON.parse(process.env.IMJS_TEST_IMODEL_BANK);
+  if (enableIModelBank) {
+    iModelHost.hubAccess = getIModelBankAccess();
+  } else {
+    const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
+    iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
+  }
+
   iModelHost.cacheDir = path.join(__dirname, ".cache");  // Set local cache dir
 
   if (ProcessDetector.isElectronAppBackend) {

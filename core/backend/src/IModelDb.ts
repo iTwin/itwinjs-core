@@ -15,7 +15,7 @@ import {
 import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
   CodeSpec, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
-  DomainOptions, EcefLocation, ECSqlReader, ElementAspectProps, ElementGeometryRequest, ElementGeometryUpdate, ElementGraphicsRequestProps,
+  DomainOptions, EcefLocation, ECSqlReader, ElementAspectProps, ElementGeometryRequest, ElementGraphicsRequestProps,
   ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontProps, GeoCoordinatesRequestProps,
   GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesRequestProps,
   IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName, MassPropertiesRequestProps,
@@ -1152,18 +1152,9 @@ export abstract class IModelDb extends IModel {
     return this.nativeDb.processGeometryStream(requestProps);
   }
 
-  /** Update the geometry stream for the supplied element from binary format data instead of json.
-   * @returns DbResult.BE_SQLITE_OK if successful
-   * @alpha
-   */
-  public elementGeometryUpdate(updateProps: ElementGeometryUpdate): DbResult {
-    return this.nativeDb.updateGeometryStream(updateProps);
-  }
-
   /** Create brep geometry for inclusion in an element's geometry stream.
    * @returns DbResult.BE_SQLITE_OK if successful
    * @throws [[IModelError]] to report issues with input geometry or parameters
-   * @see [IModelDb.elementGeometryUpdate]($core-backend)
    * @alpha
    */
   public createBRepGeometry(createProps: BRepGeometryCreate): DbResult {

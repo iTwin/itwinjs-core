@@ -61,8 +61,9 @@ import { ECSqlValueType } from '@itwin/core-common';
 import { EditingScopeNotifications } from '@itwin/core-common';
 import { ElementAlignedBox3d } from '@itwin/core-common';
 import { ElementAspectProps } from '@itwin/core-common';
+import { ElementGeometryBuilderParams } from '@itwin/core-common';
+import { ElementGeometryBuilderParamsForPart } from '@itwin/core-common';
 import { ElementGeometryRequest } from '@itwin/core-common';
-import { ElementGeometryUpdate } from '@itwin/core-common';
 import { ElementGraphicsRequestProps } from '@itwin/core-common';
 import { ElementLoadProps } from '@itwin/core-common';
 import { ElementProps } from '@itwin/core-common';
@@ -1964,6 +1965,8 @@ export abstract class GeometricElement extends Element implements GeometricEleme
     static get className(): string;
     // @internal (undocumented)
     protected collectPredecessorIds(predecessorIds: Id64Set): void;
+    // @alpha
+    elementGeometryBuilderParams?: ElementGeometryBuilderParams;
     geom?: GeometryStreamProps;
     getPlacementTransform(): Transform;
     is2d(): this is GeometricElement2d;
@@ -2063,6 +2066,8 @@ export class GeometryPart extends DefinitionElement implements GeometryPartProps
     // @internal (undocumented)
     static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
+    // @alpha
+    elementGeometryBuilderParams?: ElementGeometryBuilderParamsForPart;
     // (undocumented)
     geom?: GeometryStreamProps;
     // @internal (undocumented)
@@ -2230,8 +2235,6 @@ export abstract class IModelDb extends IModel {
     deleteSettingDictionary(name: string): void;
     // @alpha
     elementGeometryRequest(requestProps: ElementGeometryRequest): DbResult;
-    // @alpha
-    elementGeometryUpdate(updateProps: ElementGeometryUpdate): DbResult;
     // (undocumented)
     readonly elements: IModelDb.Elements;
     // @internal (undocumented)

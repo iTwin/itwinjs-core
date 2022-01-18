@@ -235,6 +235,10 @@ describe("UiFramework localStorage Wrapper", () => {
       const displayOverlay = false;
       UiFramework.setViewOverlayDisplay(displayOverlay);
       expect(UiFramework.viewOverlayDisplay).to.eql(displayOverlay);
+      // test workflow that doesn't change the item
+      const currentDisplay = UiFramework.viewOverlayDisplay;
+      UiFramework.setViewOverlayDisplay(displayOverlay);
+      expect(UiFramework.viewOverlayDisplay).to.eql(currentDisplay);
 
       TestUtils.terminateUiFramework();
 

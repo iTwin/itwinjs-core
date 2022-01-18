@@ -9,7 +9,8 @@
 import { assert, BentleyStatus, Dictionary, dispose, Id64, Id64String } from "@itwin/core-bentley";
 import { ClipVector, Point3d, Transform } from "@itwin/core-geometry";
 import {
-  ColorDef, ElementAlignedBox3d, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSourceFormat, IModelError, PackedFeatureTable, RenderMaterial, RenderTexture, TextureTransparency,
+  ColorDef, ElementAlignedBox3d, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSourceFormat, IModelError, PackedFeatureTable,
+  RenderMaterial, RenderTexture, RgbColorProps, TextureMapping, TextureTransparency,
 } from "@itwin/core-common";
 import { Capabilities, DepthType, WebGLContext } from "@itwin/webgl-compatibility";
 import { imageElementFromImageSource } from "../../ImageUtil";
@@ -31,6 +32,7 @@ import { RenderClipVolume } from "../RenderClipVolume";
 import { RenderGraphic, RenderGraphicOwner } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
 import { CreateTextureArgs, CreateTextureFromSourceArgs, TextureCacheKey } from "../RenderTexture";
+import { CreateRenderMaterialArgs } from "../RenderMaterial";
 import {
   DebugShaderFile, GLTimerResultCallback, PlanarGridProps, RenderAreaPattern, RenderDiagnostics, RenderGeometry, RenderSkyBoxParams,
   RenderSystem, RenderSystemDebugControl, TerrainTexture,
@@ -219,6 +221,7 @@ export class IdMap implements WebGLDisposable {
   }
 
   /** Find or create a new material given material parameters. This will cache the material if its key is valid. */
+  // eslint-disable-next-line deprecation/deprecation
   public getMaterial(params: RenderMaterial.Params): RenderMaterial {
     if (!params.key || !Id64.isValidId64(params.key))   // Only cache persistent materials.
       return new Material(params);
@@ -338,6 +341,13 @@ const enum VertexAttribState {
 interface TextureCacheInfo {
   idMap: IdMap;
   key: TextureCacheKey;
+}
+
+function getMaterialColor(color: ColorDef | RgbColorProps | undefined): ColorDef | undefined {
+  if (color instanceof ColorDef)
+    return color;
+
+  return color ? ColorDef.from(color.r, color.g, color.b) : undefined;
 }
 
 /** @internal */
@@ -660,10 +670,52 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   }
 
   /** Attempt to create a material for the given iModel using a set of material parameters. */
+  // eslint-disable-next-line deprecation/deprecation
   public override createMaterial(params: RenderMaterial.Params, imodel: IModelConnection): RenderMaterial | undefined {
     const idMap = this.getIdMap(imodel);
     const material = idMap.getMaterial(params);
     return material;
+  }
+
+  public override createRenderMaterial(args: CreateRenderMaterialArgs): RenderMaterial | undefined {
+    if (args.source) {
+      const cached = this.findMaterial(args.source.id, args.source.iModel);
+      if (cached)
+        return cached;
+    }
+
+    // eslint-disable-next-line deprecation/deprecation
+    const params = new RenderMaterial.Params();
+    params.alpha = args.alpha;
+    if (undefined !== args.diffuse?.weight)
+      params.diffuse = args.diffuse.weight;
+
+    params.diffuseColor = getMaterialColor(args.diffuse?.color);
+
+    if (args.specular) {
+      params.specularColor = getMaterialColor(args.specular?.color);
+      if (undefined !== args.specular.weight)
+        params.specular = args.specular.weight;
+
+      if (undefined !== args.specular.exponent)
+        params.specularExponent = args.specular.exponent;
+    }
+
+    if (args.textureMapping) {
+      params.textureMapping = new TextureMapping(args.textureMapping.texture, new TextureMapping.Params({
+        textureMat2x3: args.textureMapping.transform,
+        mapMode: args.textureMapping.mode,
+        textureWeight: args.textureMapping.weight,
+        worldMapping: args.textureMapping.worldMapping,
+      }));
+    }
+
+    if (args.source) {
+      params.key = args.source.id;
+      return this.getIdMap(args.source.iModel).getMaterial(params);
+    } else {
+      return new Material(params);
+    }
   }
 
   /** Using its key, search for an existing material of an open iModel. */

@@ -19,7 +19,6 @@
 rush.json       @iTwin/itwinjs-core-admins
 
 /clients                        @calebmshafer @ramanujam-raman
-/clients/imodelhub              @amikoliunas @Animagne
 
 # The syntax used below tries to cover both files and folders in the common folder that operate per=package
 # Due to syntax requirements, both can't be covered in a single line
@@ -40,8 +39,6 @@ rush.json       @iTwin/itwinjs-core-admins
 # Covers most client libraries, all others with more specific reviewers should be after these two lines
 /common/**/*-client.*                         @calebmshafer @ramanujam-raman
 /common/**/*-client/                          @calebmshafer @ramanujam-raman
-/common/**/imodelhub-client.*                 @amikoliunas @Animagne
-/common/**/imodelhub-client/                  @amikoliunas @Animagne
 
 /common/**/*-extension/                       @bsteinbk @calebmshafer
 
@@ -56,8 +53,8 @@ rush.json       @iTwin/itwinjs-core-admins
 /common/**/express-server/                    @calebmshafer @wgoehrig
 /common/**/frontend-devtools.*                @iTwin/itwinjs-core-display @Ellord207
 /common/**/frontend-devtools/                 @iTwin/itwinjs-core-display @Ellord207
-/common/**/core-geometry.*                    @bbastings @EarlinLutz @mgooding @dassaf4
-/common/**/core-geometry/                     @bbastings @EarlinLutz @mgooding @dassaf4
+/common/**/core-geometry.*                    @bbastings @mgooding @dassaf4
+/common/**/core-geometry/                     @bbastings @mgooding @dassaf4
 /common/**/hypermodeling-frontend.*           @iTwin/itwinjs-core-display @bbastings
 /common/**/hypermodeling-frontend/            @iTwin/itwinjs-core-display @bbastings
 /common/**/core-backend.*                     @iTwin/itwinjs-core-admins
@@ -80,7 +77,7 @@ rush.json       @iTwin/itwinjs-core-admins
 /common/**/linear-referencing-backend/        @calebmshafer @diegoalexdiaz
 /common/**/linear-referencing-common.*        @calebmshafer @diegoalexdiaz
 /common/**/linear-referencing-common/         @calebmshafer @diegoalexdiaz
-/common/**/map-layers/                        @bsteinbk @mdastous-bentley
+/common/**/map-layers/                        @mdastous-bentley @MarcBedard8
 /common/**/oidc-signin-tool/                  @calebmshafer @wgoehrig
 /common/**/core-orbitgt.*                     @iTwin/itwinjs-core-display
 /common/**/core-orbitgt/                      @iTwin/itwinjs-core-display
@@ -111,7 +108,7 @@ rush.json       @iTwin/itwinjs-core-admins
 /core/frontend                  @kabentley @bbastings @iTwin/itwinjs-core-display
 /core/frontend/src/extension    @calebmshafer @wgoehrig
 /core/frontend-devtools         @iTwin/itwinjs-core-display @Ellord207
-/core/geometry                  @bbastings @EarlinLutz @mgooding @dassaf4
+/core/geometry                  @bbastings @mgooding @dassaf4
 /core/hypermodeling             @bbastings @iTwin/itwinjs-core-display
 /core/i18n                      @wgoehrig @calebmshafer
 /core/markup                    @kabentley @pmconne @bbastings
@@ -141,7 +138,6 @@ rush.json       @iTwin/itwinjs-core-admins
 
 /full-stack-tests/core                @iTwin/itwinjs-core-admins
 /full-stack-tests/ecschema-rpc-interface @calebmshafer @ColinKerr @wgoehrig
-/full-stack-tests/imodelhub-client    @iTwin/itwinjs-core-admins
 /full-stack-tests/presentation  @iTwin/itwinjs-core-presentation
 /full-stack-tests/rpc           @calebmshafer @wgoehrig @swbsi
 /full-stack-tests/rpc-interface @calebmshafer @wgoehrig
@@ -153,7 +149,7 @@ rush.json       @iTwin/itwinjs-core-admins
 /test-apps/display-test-app                 @bbastings @kabentley @iTwin/itwinjs-core-display
 /test-apps/export-gltf                      @mgooding @MichaelBelousov
 /test-apps/export-obj                       @mgooding @MichaelBelousov
-/test-apps/imjs-importer                    @EarlinLutz @dassaf4
+/test-apps/imjs-importer                    @bbastings @dassaf4
 /test-apps/imodel-from-geojson              @mgooding @pmconne
 /test-apps/imodel-from-orbitgt              @iTwin/itwinjs-core-display
 /test-apps/imodel-from-reality-model        @iTwin/itwinjs-core-display
