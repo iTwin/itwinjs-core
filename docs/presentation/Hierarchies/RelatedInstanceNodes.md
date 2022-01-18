@@ -62,7 +62,9 @@ Specifies whether instance nodes created through this specification should be hi
 [[include:Hierarchies.Specification.HideNodesInHierarchy.Ruleset]]
 ```
 
-![Example of using "hide nodes in hierarchy" attribute](./media/hierarchy-with-specification-hidenodesinhierarchy-attribute.png)
+| `hideNodesInHierarchy: false`                                                                                                                         | `hideNodesInHierarchy: true`                                                                                                                        |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ![Example of using "hide nodes in hierarchy" attribute set to "false"](./media/hierarchy-with-specification-hidenodesinhierarchy-attribute-false.png) | ![Example of using "hide nodes in hierarchy" attribute set to "true"](./media/hierarchy-with-specification-hidenodesinhierarchy-attribute-true.png) |
 
 ### Attribute: `hideIfNoChildren`
 
