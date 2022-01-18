@@ -48,10 +48,6 @@ Specifies node label. This is a string value that may be [localized](../Advanced
 [[include:Hierarchies.CustomNodeSpecification.Label.Ruleset]]
 ```
 
-```ts
-[[include:Hierarchies.CustomNodeSpecification.Label.Result]]
-```
-
 ![Example of using "label" attribute](./media/hierarchy-with-specification-label-attribute.png)
 
 ### Attribute: `description`

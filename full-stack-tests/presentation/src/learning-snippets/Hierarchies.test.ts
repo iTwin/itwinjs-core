@@ -979,13 +979,11 @@ describe("Learning Snippets", () => {
           // __PUBLISH_EXTRACT_END__
           printRuleset(ruleset);
 
-          // __PUBLISH_EXTRACT_START__ Hierarchies.CustomNodeSpecification.Label.Result
           // Verify that node with correct label is returned
           const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
           expect(nodes).to.have.lengthOf(1).and.to.containSubset([{
             label: { displayValue: "My Node" },
           }]);
-          // __PUBLISH_EXTRACT_END__
         });
 
         it("uses `description` attribute", async () => {
