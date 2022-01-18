@@ -312,7 +312,7 @@ function createGeometricElemFromSeed(imodel: SnapshotDb, seedId: Id64String, ent
 
   const elementProps = createPhysicalElementProps(seedElement, placement);
   const testElem = imodel.elements.createElement(elementProps);
-  const newId = imodel.elements.insertElement(testElem);
+  const newId = testElem.insert();
 
   const status = imodel.elementGeometryUpdate({ elementId: newId, entryArray, isWorld });
   if (DbResult.BE_SQLITE_OK === status)
@@ -1301,7 +1301,7 @@ describe("ElementGeometry", () => {
     const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
+    const newId = testElem.insert();
     imodel.saveChanges();
 
     const pts: Point3d[] = [];
@@ -1375,7 +1375,7 @@ describe("ElementGeometry", () => {
     const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
+    const newId = testElem.insert();
     timer.end();
 
     timer = new Timer("elementGeometryUpdate");
@@ -1418,7 +1418,7 @@ describe("ElementGeometry", () => {
     const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
+    const newId = testElem.insert();
     imodel.saveChanges();
 
     const expected: ExpectedElementGeometryEntry[] = [];
@@ -1456,7 +1456,7 @@ describe("ElementGeometry", () => {
     const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
+    const newId = testElem.insert();
     imodel.saveChanges();
 
     const brepProps = createBRepDataProps();
@@ -1513,7 +1513,7 @@ describe("ElementGeometry", () => {
     const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
+    const newId = testElem.insert();
     imodel.saveChanges();
 
     const expected: ExpectedElementGeometryEntry[] = [];
@@ -1547,7 +1547,7 @@ describe("ElementGeometry", () => {
     const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
+    const newId = testElem.insert();
     imodel.saveChanges();
 
     const expected: ExpectedElementGeometryEntry[] = [];
@@ -1578,7 +1578,7 @@ describe("ElementGeometry", () => {
     const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
+    const newId = testElem.insert();
     imodel.saveChanges();
 
     const expected: ExpectedElementGeometryEntry[] = [];
@@ -1632,7 +1632,7 @@ describe("ElementGeometry", () => {
     const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
+    const newId = testElem.insert();
     imodel.saveChanges();
 
     const expected: ExpectedElementGeometryEntry[] = [];
@@ -1672,7 +1672,7 @@ describe("ElementGeometry", () => {
     const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
+    const newId = testElem.insert();
     imodel.saveChanges();
 
     const pts: Point3d[] = [];
@@ -1799,7 +1799,7 @@ describe("ElementGeometry", () => {
     const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
+    const newId = testElem.insert();
     imodel.saveChanges();
 
     const pts: Point3d[] = [];
@@ -1983,7 +1983,7 @@ describe("BRepGeometry", () => {
     const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
+    const newId = testElem.insert();
 
     assert.isTrue(DbResult.BE_SQLITE_OK === imodel.elementGeometryUpdate({ elementId: newId, entryArray: builder.entries, isWorld: false }));
     imodel.saveChanges();
@@ -2044,7 +2044,7 @@ describe("BRepGeometry", () => {
     const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
     const elementProps = createPhysicalElementProps(seedElement, { origin: testOrigin, angles: testAngles });
     const testElem = imodel.elements.createElement(elementProps);
-    const newId = imodel.elements.insertElement(testElem);
+    const newId = testElem.insert();
 
     assert.isTrue(DbResult.BE_SQLITE_OK === imodel.elementGeometryUpdate({ elementId: newId, entryArray: builder.entries, isWorld: false }));
     imodel.saveChanges();
