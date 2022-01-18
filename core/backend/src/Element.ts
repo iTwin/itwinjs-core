@@ -440,7 +440,7 @@ export abstract class GeometricElement extends Element {
   public getPlacementTransform(): Transform { return this.placement.transform; }
   public calculateRange3d(): AxisAlignedBox3d { return this.placement.calculateRange(); }
 
-  /** @internal */
+  /** Obtain the JSON representation of this element. */
   public override toJSON(): GeometricElementProps {
     const val = super.toJSON() as GeometricElementProps;
     val.category = this.category;
@@ -448,6 +448,7 @@ export abstract class GeometricElement extends Element {
       val.geom = this.geom;
     return val;
   }
+
   /** @internal */
   protected override collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
