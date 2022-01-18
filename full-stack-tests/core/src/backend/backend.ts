@@ -67,7 +67,7 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
   public async createAndInsertSpatialCategory(key: string, scopeModelId: Id64String, categoryName: string, appearance: SubCategoryAppearance.Props): Promise<Id64String> {
     const iModelDb = IModelDb.findByKey(key);
     const category = SpatialCategory.create(iModelDb, scopeModelId, categoryName);
-    const categoryId = iModelDb.elements.insertElement(category.toJSON());
+    const categoryId = category.insert();
     category.setDefaultAppearance(appearance);
     return categoryId;
   }
