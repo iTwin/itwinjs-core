@@ -53,7 +53,7 @@ export interface DownloadRequest {
   localFile: LocalFileName;
 
   /** If true, skips v1 fallback in CheckpointManager.downloadCheckpoint call which takes place if no v2 checkpoints are found for the given iModelId. */
-  readonly downloadV2Only?: boolean;
+  downloadV2Only?: boolean;
 
   /** A list of full fileName paths to test before downloading. If a valid file exists by one of these names,
    * no download is performed and `localFile` is updated to reflect the fact that the file exists with that name.
@@ -120,6 +120,17 @@ export class V2CheckpointManager {
     } catch (err: any) {
       throw new IModelError(IModelStatus.NotFound, `V2 checkpoint not found: err: ${err.message}`);
     }
+  }
+  /** Sets the downloadV2Only prop on the DownloadRequest passed to this function to true.
+   *  NOTE: If there is already an open snapshot or a checkpoint on disk
+   *  which satisfies the conditions of the DownloadRequest, then we're unsure if we've opened a V2 checkpoint or not.
+   */
+  public static async getCheckpointDb(request: DownloadRequest): Promise<SnapshotDb> {
+    request.downloadV2Only = true;
+    const db = SnapshotDb.tryFindByKey(CheckpointManager.getKey(request.checkpoint));
+    if (db !== undefined) return db;
+    await CheckpointManager.downloadCheckpoint(request);
+    return SnapshotDb.openCheckpointV1(request.localFile, request.checkpoint);
   }
 
   public static async attach(checkpoint: CheckpointProps): Promise<{ filePath: LocalFileName, expiryTimestamp: number }> {
