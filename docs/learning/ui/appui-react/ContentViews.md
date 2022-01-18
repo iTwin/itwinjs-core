@@ -110,7 +110,7 @@ const one2dIModelViewport: ContentGroupProps = {
 const contentGroup = new ContentGroup(one2dIModelViewport);
 ```
 
-The following shows a sample with two entries that reference the ViewportContent and TableContent defined above. `applicationData` is defined for each content control, which is provided to the ContentControl constructor via the `options` parameter.
+The following shows a sample with two entries that reference the ViewportContent and TableContent defined above. `applicationData` is defined for each content control, which is provided to the ContentControl constructor via the `options` parameter. In iTwinjs 3.0 and later, the display of default view overlays are required to be an opted-into. The example below shows the featureOptions to set to opt-in.
 
 ```ts
 contentGroup = new ContentGroup({
@@ -118,17 +118,25 @@ contentGroup = new ContentGroup({
   layout: StandardContentLayouts.twoHorizontalSplit,
   contents: [
     {
-      classId: ViewportContent,
+      classId: IModelViewportControl,
       applicationData: {
-        viewId: this.viewIds[0],
-        iModelConnection: NineZoneSampleApp.store.getState().sampleAppState!.currentIModelConnection,
+      viewState: UiFramework.getDefaultViewState,
+      iModelConnection: UiFramework.getIModelConnection,
         rulesetId: this._rulesetId,
+        featureOptions:
+          {
+            defaultViewOverlay: {
+              enableScheduleAnimationViewOverlay: true,
+              enableAnalysisTimelineViewOverlay: false,
+              enableSolarTimelineViewOverlay: false,
+            },
+          },
       },
     },
     {
       classId: TableContent,
       applicationData: {
-        iModelConnection: NineZoneSampleApp.store.getState().sampleAppState!.currentIModelConnection,
+        iModelConnection: UiFramework.getIModelConnection,
         rulesetId: this._rulesetId,
       },
     }
