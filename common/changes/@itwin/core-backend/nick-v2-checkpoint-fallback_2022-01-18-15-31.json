@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "in RpcBriefcaseUtility.open, fall back to downloading a v2 checkpoint if failing to lazily open a v2 checkpoint",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

@@ -1028,6 +1028,7 @@ export interface DownloadJob {
 export interface DownloadRequest {
     readonly aliasFiles?: ReadonlyArray<string>;
     readonly checkpoint: CheckpointProps;
+    downloadV2Only?: boolean;
     localFile: LocalFileName;
     readonly onProgress?: ProgressFunction;
 }
@@ -4329,6 +4330,7 @@ export class V2CheckpointManager {
         expiryTimestamp: number;
     }>;
     static downloadCheckpoint(request: DownloadRequest): Promise<ChangesetId>;
+    static getCheckpointDb(request: DownloadRequest): Promise<SnapshotDb>;
     }
 
 // @public
