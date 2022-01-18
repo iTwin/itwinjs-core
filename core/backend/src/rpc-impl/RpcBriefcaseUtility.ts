@@ -12,7 +12,7 @@ import {
 } from "@itwin/core-common";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { BriefcaseManager, RequestNewBriefcaseArg } from "../BriefcaseManager";
-import { CheckpointManager, CheckpointProps, V1CheckpointManager } from "../CheckpointManager";
+import { CheckpointManager, CheckpointProps, DownloadRequest, V1CheckpointManager, V2CheckpointManager } from "../CheckpointManager";
 import { BriefcaseDb, IModelDb, SnapshotDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
 import { IModelJsFs } from "../IModelJsFs";
@@ -169,23 +169,31 @@ export class RpcBriefcaseUtility {
     try {
       // now try V2 checkpoint
       db = await SnapshotDb.openCheckpointV2(checkpoint);
-      Logger.logTrace(loggerCategory, "using V2 checkpoint briefcase", () => ({ ...tokenProps }));
+      Logger.logTrace(loggerCategory, "using V2 checkpoint briefcase - lazily opened.", () => ({ ...tokenProps }));
     } catch (e) {
       Logger.logTrace(loggerCategory, "unable to lazily open V2 checkpoint - attempting to download V2 checkpoint", () => ({ error: BentleyError.getErrorProps(e), ...tokenProps }));
       try {
-        const v2Request = {
+        let downloadStarted: boolean = false;
+        const v2Request: DownloadRequest = {
           checkpoint,
           localFile: V1CheckpointManager.getFileName(checkpoint),
           aliasFiles: [],
-          downloadV2Only: true,
+          onProgress: (_loaded: number, _total: number) => {
+            downloadStarted = true;
+            return 0;
+          },
         };
 
-        db = await BeDuration.race(timeout, CheckpointManager.downloadCheckpoint(v2Request));
+        db = await BeDuration.race(timeout, V2CheckpointManager.getCheckpointDb(v2Request));
         if (db === undefined) {
           Logger.logTrace(loggerCategory, "Open V2 checkpoint - pending", () => ({ ...tokenProps }));
           throw new RpcPendingResponse();
         }
-        Logger.logTrace(loggerCategory, `Opened V2 checkpoint`, () => ({ ...tokenProps }));
+        if (downloadStarted)
+          Logger.logTrace(loggerCategory, `Opened V2 checkpoint`, () => ({ ...tokenProps }));
+        else
+          Logger.logTrace(loggerCategory, `Opened checkpoint`, () => ({ ...tokenProps })); // Unable to know if this was a v2 or v1 checkpoint. It already existed on disk.
+
       } catch (error) {
         Logger.logTrace(loggerCategory, "Unable to download V2 checkpoint, falling back to V1 checkpoint", () => ({ error: BentleyError.getErrorProps(error), ...tokenProps }));
         // this isn't a v2 checkpoint. Set up a race between the specified timeout period and the open. Throw an RpcPendingResponse exception if the timeout happens first.
