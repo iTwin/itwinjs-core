@@ -20,7 +20,7 @@ export abstract class MapLayerTileTreeReference extends TileTreeReference {
   protected get _transparency() { return this._layerSettings.transparency ? this._layerSettings.transparency : undefined; }
 
   public get isOpaque() {
-    return this._layerSettings.visible && !this._layerSettings.allSubLayersInvisible && !this._layerSettings.transparentBackground && 0 === this._layerSettings.transparency;
+    return this._layerSettings.visible && (!this._layerSettings.allSubLayersInvisible) && !this._layerSettings.transparentBackground && 0 === this._layerSettings.transparency;
   }
   public get layerName() { return this._layerSettings.name; }
   public get imageryProvider(): MapLayerImageryProvider | undefined { return undefined; }

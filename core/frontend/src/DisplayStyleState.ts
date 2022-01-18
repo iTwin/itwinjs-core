@@ -449,6 +449,11 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     if (undefined === mapLayerSettings)
       return;
 
+    if (mapLayerSettings instanceof ModelMapLayerSettings) {
+      assert (false);
+      return;
+    }
+
     const subLayers = new Array<MapSubLayerProps>();
     for (const subLayer of mapLayerSettings.subLayers) {
       subLayers.push((subLayerId === -1 || subLayer.id === subLayerId) ? subLayer.clone(props).toJSON() : subLayer.toJSON());

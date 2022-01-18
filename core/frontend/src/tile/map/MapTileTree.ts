@@ -127,7 +127,7 @@ export class MapTileTree extends RealityTileTree {
   public imageryTrees: ImageryMapTileTree[] = [];
   private _layerSettings = new Map<Id64String, MapLayerSettings>();
   private _modelIdToIndex = new Map<Id64String, number>();
-  public modelLayers = new Map<number, RenderPlanarClassifier>();
+  public layerClassifiers = new Map<number, RenderPlanarClassifier>();
 
   public  addImageryLayer(tree: ImageryMapTileTree, settings: MapLayerSettings, index: number) {
     this.imageryTrees.push(tree);
@@ -135,27 +135,27 @@ export class MapTileTree extends RealityTileTree {
     this._modelIdToIndex.set(tree.modelId, index);
   }
 
-  public createModelLayer(layerTreeRef: ModelMapLayerTileTreeReference, context: SceneContext) {
+  public addModelLayer(layerTreeRef: ModelMapLayerTileTreeReference, context: SceneContext) {
     const classifier = context.addPlanarClassifier(`MapLayer ${this.modelId}-${layerTreeRef.layerIndex}`, layerTreeRef);
     if (classifier)
-      this.modelLayers.set(layerTreeRef.layerIndex, classifier);
+      this.layerClassifiers.set(layerTreeRef.layerIndex, classifier);
   }
 
-  protected override collectModelLayerGraphics(args: TileDrawArgs, selectedTiles: RealityTile[]) {
-    super.collectModelLayerGraphics(args, selectedTiles);
+  protected override collectClassifierGraphics(args: TileDrawArgs, selectedTiles: RealityTile[]) {
+    super.collectClassifierGraphics(args, selectedTiles);
 
-    this.modelLayers.forEach((layerClassifier: RenderPlanarClassifier) => {
+    this.layerClassifiers.forEach((layerClassifier: RenderPlanarClassifier) => {
       if (!(args instanceof GraphicsCollectorDrawArgs))
         layerClassifier.collectGraphics(args.context, { modelId: this.modelId, tiles: selectedTiles, location: args.location, isPointCloud: this.isPointCloud });
 
     });
   }
 
-  public clearImageryTreesAndModelClassifiers() {
+  public clearImageryTreesAndClassifiers() {
     this.imageryTrees.length = 0;
     this._layerSettings.clear();
     this._modelIdToIndex.clear();
-    this.modelLayers.clear();
+    this.layerClassifiers.clear();
   }
 
   public override get isTransparent() {
@@ -720,7 +720,7 @@ export class MapTileTreeReference extends TileTreeReference {
         if (layerTree instanceof ImageryMapTileTree) {
           tree.addImageryLayer(layerTree, layerTreeRef.layerSettings, treeIndex);
         } else if (layerTreeRef instanceof ModelMapLayerTileTreeReference)
-          tree.createModelLayer(layerTreeRef, context);
+          tree.addModelLayer(layerTreeRef, context);
       }
     }
     return true;
@@ -752,7 +752,7 @@ export class MapTileTreeReference extends TileTreeReference {
     if (undefined !== args)
       tree.draw(args);
 
-    tree.clearImageryTreesAndModelClassifiers();
+    tree.clearImageryTreesAndClassifiers();
   }
 
   public override createDrawArgs(context: SceneContext): TileDrawArgs | undefined {
@@ -761,7 +761,7 @@ export class MapTileTreeReference extends TileTreeReference {
       return undefined;
 
     const tree = this.treeOwner.load() as MapTileTree;
-    return new RealityTileDrawArgs(args, args.worldToViewMap, args.frustumPlanes, undefined, tree?.modelLayers);
+    return new RealityTileDrawArgs(args, args.worldToViewMap, args.frustumPlanes, undefined, tree?.layerClassifiers);
   }
 
   protected override getViewFlagOverrides(_tree: TileTree) {

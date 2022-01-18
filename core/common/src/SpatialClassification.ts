@@ -184,14 +184,10 @@ export class SpatialClassifier {
   }
 
   /** Construct from Model Map Layer. */
-  public static fromModelMapLayer(mapLayer: ModelMapLayerSettings): SpatialClassifier | undefined {
-    const models = Array.from(mapLayer.models);
-    if (models.length < 1)
-      return undefined;
-
+  public static fromModelMapLayer(mapLayer: ModelMapLayerSettings): SpatialClassifier {
     const flags =  SpatialClassifierFlags.fromJSON({ inside: SpatialClassifierInsideDisplay.Off, outside: SpatialClassifierOutsideDisplay.Off });
 
-    return new SpatialClassifier(models[0], mapLayer.name, flags);
+    return new SpatialClassifier(mapLayer.modelId, mapLayer.name, flags);
   }
 
   /** Create a classifier identical to this one except for any properties explicitly specified by `changedProps`. */

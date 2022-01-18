@@ -70,24 +70,17 @@ export class AttachModelMapLayerTool extends Tool {
 
     const iModel = vp.iModel;
     const elements = await iModel.elements.getProps(iModel.selectionSet.elements);
-    const models = new Array<Id64String>();
-    let name = nameIn;
+    const modelIds = new Set<Id64String>();
 
     for (const element of elements)
-      models.push(element.model);
+      modelIds.add(element.model);
 
-    if (!nameIn) {
-      const modelProps = await iModel.models.getProps(models);
-      for (const modelProp of modelProps) {
-        if (modelProp.name)
-          name = name ? (`${name  }, ${  modelProp.name}`) : modelProp.name;
-      }
+    for (const modelId of modelIds) {
+      const modelProps = await iModel.models.getProps(modelId);
+      const modelName = modelProps[0].name ? modelProps[0].name : modelId;
+      const name = nameIn ? (modelIds.size > 1 ? `${nameIn}: ${modelName}` : nameIn) : modelName;
+      vp.displayStyle.attachMapLayerSettings(ModelMapLayerSettings.fromJSON({ name, modelId }), false);
     }
-    if (!name)
-      name = "Untitled";
-
-    vp.displayStyle.attachMapLayerSettings(ModelMapLayerSettings.fromJSON({ name, models}), false);
-
     return true;
   }
 
