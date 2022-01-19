@@ -23,7 +23,7 @@ export class CustomContentGroupProvider extends ContentGroupProvider {
     }};
 
     return new ContentGroup({
-      id: "ui-item-provider-test:network-tracing-stage-content",
+      id: "ui-item-provider-test:custom-stage-content",
       layout: twoHorizontalSplit,
       contents: [
         {
@@ -54,7 +54,7 @@ export class CustomFrontstage {
   private static _contentGroupProvider = new CustomContentGroupProvider();
   public static register() {
     const cornerButton = <BackstageAppButton />;
-    const networkTracingStageProps: StandardFrontstageProps = {
+    const customStageProps: StandardFrontstageProps = {
       id: CustomFrontstage.stageId,
       version: 1.1,
       contentGroupProps: CustomFrontstage._contentGroupProvider,
@@ -65,7 +65,7 @@ export class CustomFrontstage {
     };
 
     CustomFrontstage.registerToolProviders();
-    ConfigurableUiManager.addFrontstageProvider(new StandardFrontstageProvider(networkTracingStageProps));
+    ConfigurableUiManager.addFrontstageProvider(new StandardFrontstageProvider(customStageProps));
   }
 
   private static registerToolProviders() {

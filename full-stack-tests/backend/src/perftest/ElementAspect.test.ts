@@ -67,7 +67,7 @@ describe("ElementAspectPerformance", () => {
     for (let m = 0; m < count1; ++m) {
       // insert simple element with no aspect
       const startTime1 = new Date().getTime();
-      eleId = iModelDb.elements.insertElement(IModelTestUtils.createPhysicalObject(iModelDb, r.modelId, r.spatialCategoryId));
+      eleId = iModelDb.elements.insertElement(IModelTestUtils.createPhysicalObject(iModelDb, r.modelId, r.spatialCategoryId).toJSON());
       const endTime1 = new Date().getTime();
       const elapsedTime1 = (endTime1 - startTime1) / 1000.0;
       totalTimeInsertSimpELeGet = totalTimeInsertSimpELeGet + elapsedTime1;
@@ -84,7 +84,7 @@ describe("ElementAspectPerformance", () => {
       const startTime2 = new Date().getTime();
       const returnEle1 = iModelDb.elements.getElement(eleId);
       returnEle1.userLabel = `${returnEle1.userLabel}updated`;
-      iModelDb.elements.updateElement(returnEle1);
+      iModelDb.elements.updateElement(returnEle1.toJSON());
       const endTime2 = new Date().getTime();
       const elapsedTime2 = (endTime2 - startTime2) / 1000.0;
       totalTimeUpdateSimpELeGet = totalTimeUpdateSimpELeGet + elapsedTime2;
@@ -111,7 +111,7 @@ describe("ElementAspectPerformance", () => {
     assert.exists(iModelDb);
 
     interface TestAspectProps extends ElementAspectProps { testUniqueAspectProperty: string }
-    class TestAspect extends ElementAspect implements ElementAspectProps { public testUniqueAspectProperty: string = ""; }
+    class TestAspect extends ElementAspect { public testUniqueAspectProperty: string = ""; }
 
     const count1 = 10000;
     let eleId: Id64String;
@@ -126,7 +126,7 @@ describe("ElementAspectPerformance", () => {
     for (let m = 0; m < count1; ++m) {
       // insert element with unique aspect
       const startTime1 = new Date().getTime();
-      eleId = iModelDb.elements.insertElement(IModelTestUtils.createPhysicalObject(iModelDb, r.modelId, r.spatialCategoryId));
+      eleId = iModelDb.elements.insertElement(IModelTestUtils.createPhysicalObject(iModelDb, r.modelId, r.spatialCategoryId).toJSON());
       aspectProps = {
         classFullName: "DgnPlatformTest:TestUniqueAspectNoHandler",
         element: { id: eleId },
@@ -152,10 +152,10 @@ describe("ElementAspectPerformance", () => {
       const startTime2 = new Date().getTime();
       const returnEle2 = iModelDb.elements.getElement(eleId);
       returnEle1.userLabel = `${returnEle1.userLabel}updated`;
-      iModelDb.elements.updateElement(returnEle1);
+      iModelDb.elements.updateElement(returnEle1.toJSON());
       const aspects = iModelDb.elements.getAspects(returnEle2.id, aspectProps.classFullName) as TestAspect[];
       aspects[0].testUniqueAspectProperty = "UniqueAspectInsertTest1-Updated";
-      iModelDb.elements.updateAspect(aspects[0]);
+      iModelDb.elements.updateAspect(aspects[0].toJSON());
       const endTime2 = new Date().getTime();
       const elapsedTime2 = (endTime2 - startTime2) / 1000.0;
       const aspectsUpdated = iModelDb.elements.getAspects(eleId, aspectProps.classFullName) as TestAspect[];
@@ -195,7 +195,7 @@ describe("ElementAspectPerformance", () => {
     for (let m = 0; m < count1; ++m) {
       // insert element with multi aspect
       const startTime1 = new Date().getTime();
-      eleId = iModelDb.elements.insertElement(IModelTestUtils.createPhysicalObject(iModelDb, r.modelId, r.spatialCategoryId));
+      eleId = iModelDb.elements.insertElement(IModelTestUtils.createPhysicalObject(iModelDb, r.modelId, r.spatialCategoryId).toJSON());
       assert.exists(eleId);
       const aspectProps = {
         classFullName: "DgnPlatformTest:TestMultiAspectNoHandler",
@@ -232,10 +232,10 @@ describe("ElementAspectPerformance", () => {
       const startTime2 = new Date().getTime();
       const returnEle2 = iModelDb.elements.getElement(eleId);
       returnEle2.userLabel = `${returnEle2.userLabel}updated`;
-      iModelDb.elements.updateElement(returnEle2);
+      iModelDb.elements.updateElement(returnEle2.toJSON());
       const aspects1: ElementAspect[] = iModelDb.elements.getAspects(returnEle2.id, aspectProps.classFullName);
       (aspects1[foundIndex] as any).testMultiAspectProperty = "MultiAspectInsertTest1-Updated";
-      iModelDb.elements.updateAspect(aspects1[foundIndex]);
+      iModelDb.elements.updateAspect(aspects1[foundIndex].toJSON());
       const endTime2 = new Date().getTime();
       const elapsedTime2 = (endTime2 - startTime2) / 1000.0;
       totalTimeUpdate = totalTimeUpdate + elapsedTime2;

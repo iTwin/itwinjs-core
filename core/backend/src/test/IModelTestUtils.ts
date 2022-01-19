@@ -57,7 +57,7 @@ export class TestBim extends Schema {
 export interface TestRelationshipProps extends RelationshipProps {
   property1: string;
 }
-export class TestElementDrivesElement extends ElementDrivesElement implements TestRelationshipProps {
+export class TestElementDrivesElement extends ElementDrivesElement {
   public static override get className(): string { return "TestElementDrivesElement"; }
   public property1!: string;
   public static rootChanged = new BeEvent<(props: RelationshipProps, imodel: IModelDb) => void>();
@@ -68,7 +68,7 @@ export class TestElementDrivesElement extends ElementDrivesElement implements Te
 export interface TestPhysicalObjectProps extends PhysicalElementProps {
   intProperty: number;
 }
-export class TestPhysicalObject extends PhysicalElement implements TestPhysicalObjectProps {
+export class TestPhysicalObject extends PhysicalElement {
   public static override get className(): string { return "TestPhysicalObject"; }
   public intProperty!: number;
   public static beforeOutputsHandled = new BeEvent<(id: Id64String, imodel: IModelDb) => void>();
@@ -328,7 +328,7 @@ export class IModelTestUtils {
       code: newModelCode,
     };
     const modeledElement: Element = testDb.elements.createElement(modeledElementProps);
-    return testDb.elements.insertElement(modeledElement);
+    return testDb.elements.insertElement(modeledElement.toJSON());
   }
 
   /** Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel. */
@@ -344,13 +344,13 @@ export class IModelTestUtils {
     };
     const modeledElement = testDb.elements.createElement(modeledElementProps);
     await testDb.locks.acquireLocks({ shared: model });
-    return testDb.elements.insertElement(modeledElement);
+    return testDb.elements.insertElement(modeledElement.toJSON());
   }
 
   /** Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel. */
   public static createAndInsertPhysicalModel(testDb: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Id64String {
     const newModel = testDb.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: privateModel });
-    const newModelId = testDb.models.insertModel(newModel);
+    const newModelId = newModel.id = testDb.models.insertModel(newModel.toJSON());
     assert.isTrue(Id64.isValidId64(newModelId));
     assert.isTrue(Id64.isValidId64(newModel.id));
     assert.deepEqual(newModelId, newModel.id);
@@ -360,7 +360,7 @@ export class IModelTestUtils {
   /** Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel. */
   public static async createAndInsertPhysicalModelAsync(testDb: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Promise<Id64String> {
     const newModel = testDb.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: privateModel });
-    const newModelId = testDb.models.insertModel(newModel);
+    const newModelId = newModel.insert();
     assert.isTrue(Id64.isValidId64(newModelId));
     assert.isTrue(Id64.isValidId64(newModel.id));
     assert.deepEqual(newModelId, newModel.id);
@@ -401,13 +401,13 @@ export class IModelTestUtils {
       code: newModelCode,
     };
     const modeledElement: Element = testDb.elements.createElement(modeledElementProps);
-    return testDb.elements.insertElement(modeledElement);
+    return testDb.elements.insertElement(modeledElement.toJSON());
   }
 
   /** Create and insert a DrawingModel associated with Drawing Partition. */
   public static createAndInsertDrawingModel(testDb: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Id64String {
     const newModel = testDb.models.createModel({ modeledElement: modeledElementRef, classFullName: DrawingModel.classFullName, isPrivate: privateModel });
-    const newModelId = testDb.models.insertModel(newModel);
+    const newModelId = newModel.insert();
     assert.isTrue(Id64.isValidId64(newModelId));
     assert.isTrue(Id64.isValidId64(newModel.id));
     assert.deepEqual(newModelId, newModel.id);
@@ -1007,7 +1007,7 @@ export class ExtensiveTestScenario {
       sourceId: spatialCategorySelectorId,
       targetId: drawingCategorySelectorId,
     });
-    const relationshipId1 = sourceDb.relationships.insertInstance(relationship1);
+    const relationshipId1 = sourceDb.relationships.insertInstance(relationship1.toJSON());
     assert.isTrue(Id64.isValidId64(relationshipId1));
     // Insert instance of RelWithProps to test relationship property remapping
     const relationship2: Relationship = sourceDb.relationships.createInstance({
@@ -1019,7 +1019,7 @@ export class ExtensiveTestScenario {
       sourceLong: spatialCategoryId,
       sourceGuid: Guid.createValue(),
     } as any);
-    const relationshipId2 = sourceDb.relationships.insertInstance(relationship2);
+    const relationshipId2 = sourceDb.relationships.insertInstance(relationship2.toJSON());
     assert.isTrue(Id64.isValidId64(relationshipId2));
   }
 
@@ -1029,7 +1029,7 @@ export class ExtensiveTestScenario {
     assert.isTrue(Id64.isValidId64(subjectId));
     const subject = sourceDb.elements.getElement<Subject>(subjectId);
     subject.description = "Subject description (Updated)";
-    sourceDb.elements.updateElement(subject);
+    sourceDb.elements.updateElement(subject.toJSON());
     // Update spatialCategory element
     const definitionModelId = sourceDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(sourceDb, subjectId, "Definition"))!;
     assert.isTrue(Id64.isValidId64(definitionModelId));
@@ -1037,7 +1037,7 @@ export class ExtensiveTestScenario {
     assert.isTrue(Id64.isValidId64(spatialCategoryId));
     const spatialCategory: SpatialCategory = sourceDb.elements.getElement<SpatialCategory>(spatialCategoryId);
     spatialCategory.federationGuid = Guid.createValue();
-    sourceDb.elements.updateElement(spatialCategory);
+    sourceDb.elements.updateElement(spatialCategory.toJSON());
     // Update relationship properties
     const spatialCategorySelectorId = sourceDb.elements.queryElementIdByCode(CategorySelector.createCode(sourceDb, definitionModelId, "SpatialCategories"))!;
     assert.isTrue(Id64.isValidId64(spatialCategorySelectorId));
@@ -1058,12 +1058,12 @@ export class ExtensiveTestScenario {
     assert.equal(sourceUniqueAspects.length, 1);
     sourceUniqueAspects[0].asAny.commonString += "-Updated";
     sourceUniqueAspects[0].asAny.sourceString += "-Updated";
-    sourceDb.elements.updateAspect(sourceUniqueAspects[0]);
+    sourceDb.elements.updateAspect(sourceUniqueAspects[0].toJSON());
     const sourceMultiAspects: ElementAspect[] = sourceDb.elements.getAspects(physicalObjectId1, "ExtensiveTestScenario:SourceMultiAspect");
     assert.equal(sourceMultiAspects.length, 2);
     sourceMultiAspects[1].asAny.commonString += "-Updated";
     sourceMultiAspects[1].asAny.sourceString += "-Updated";
-    sourceDb.elements.updateAspect(sourceMultiAspects[1]);
+    sourceDb.elements.updateAspect(sourceMultiAspects[1].toJSON());
     // clear NavigationProperty of PhysicalElement1
     const physicalElementId1 = IModelTestUtils.queryByUserLabel(sourceDb, "PhysicalElement1");
     let physicalElement1: PhysicalElement = sourceDb.elements.getElement(physicalElementId1);
