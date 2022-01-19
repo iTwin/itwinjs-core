@@ -32,7 +32,7 @@ export function ContentWrapper(props: ContentWrapperProps) {
   const { content } = props;
   const [isActive, setIsActive] = React.useState(content === ContentViewManager.getActiveContent());
   const activeFrontstageDef = useActiveFrontstageDef();
-  const [hasFloatingContent, setHasFloatingContent] = React.useState(activeFrontstageDef && !!activeFrontstageDef.floatingContentControls?.length);
+  const [hasMultipleContents, setHasMultipleContents] = React.useState(activeFrontstageDef && (!!activeFrontstageDef.floatingContentControls?.length || !!activeFrontstageDef?.contentGroup?.getContentControls().length));
 
   React.useEffect(() => {
     setIsActive(content === ContentViewManager.getActiveContent());
@@ -41,7 +41,7 @@ export function ContentWrapper(props: ContentWrapperProps) {
   React.useEffect(() => {
     const handleActiveContentChanged = (args: ActiveContentChangedEventArgs) => {
       setIsActive(content === args.activeContent);
-      setHasFloatingContent(activeFrontstageDef && !!activeFrontstageDef.floatingContentControls?.length);
+      setHasMultipleContents(activeFrontstageDef && (!!activeFrontstageDef.floatingContentControls?.length || !!activeFrontstageDef?.contentGroup?.getContentControls().length));
     };
     return ContentViewManager.onActiveContentChangedEvent.addListener(handleActiveContentChanged);
   }, [activeFrontstageDef, content]);
@@ -52,17 +52,14 @@ export function ContentWrapper(props: ContentWrapperProps) {
 
   React.useEffect(() => {
     const onAvailableContentChanged = () => {
-      const hasFloats = activeFrontstageDef && !!activeFrontstageDef.floatingContentControls?.length;
-      if (hasFloats !== hasFloatingContent) {
-        setHasFloatingContent(hasFloats);
-      }
+      setHasMultipleContents(activeFrontstageDef && (!!activeFrontstageDef.floatingContentControls?.length || !!activeFrontstageDef?.contentGroup?.getContentControls().length));
     };
     return ContentViewManager.onAvailableContentChangedEvent.addListener(onAvailableContentChanged);
-  }, [activeFrontstageDef, hasFloatingContent]);
+  }, [activeFrontstageDef]);
 
   const overlayClassName = classnames(
     "uifw-contentlayout-overlay-div",
-    isActive && hasFloatingContent ? "uifw-contentlayout-overlay-active" : "uifw-contentlayout-overlay-inactive",
+    isActive && hasMultipleContents ? "uifw-contentlayout-overlay-active" : "uifw-contentlayout-overlay-inactive",
   );
 
   return (
