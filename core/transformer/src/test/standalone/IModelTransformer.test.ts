@@ -620,6 +620,7 @@ describe("IModelTransformer", () => {
       await transformerS2C.processModel(definitionB);
       await transformerS2C.processModel(physicalA);
       await transformerS2C.processModel(physicalB);
+      await transformerS2C.processDeferredElements(); // eslint-disable-line deprecation/deprecation
       await transformerS2C.processRelationships(ElementRefersToElements.classFullName);
       transformerS2C.dispose();
       IModelTransformerTestUtils.assertConsolidatedIModelContents(iModelConsolidated, "Consolidated");

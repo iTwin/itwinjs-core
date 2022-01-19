@@ -433,6 +433,11 @@ export class IModelTransformer extends IModelExportHandler {
     });
   }
 
+  /** @deprecated Mark the specified Element so its processing can be deferred. */
+  protected skipElement(_sourceElement: Element): void {
+    Logger.logWarning(loggerCategory, `Tried to defer/skip an element, which is no longer necessary`);
+  }
+
   /** Transform the specified sourceElement into ElementProps for the target iModel.
    * @param sourceElement The Element from the source iModel to transform.
    * @returns ElementProps for the target iModel.
@@ -544,7 +549,7 @@ export class IModelTransformer extends IModelExportHandler {
       if (!isGeneratedClass) {
         const nonGeneratedElemClass = sourceElement.constructor as typeof Element;
         for (const referenceKey of nonGeneratedElemClass.requiredReferenceKeys) {
-          const idContainer = lodashGet(sourceElement, referenceKey); // TODO: test that out-of-order code.scope predecessor is updated correctly
+          const idContainer = lodashGet(sourceElement, referenceKey); // TODO: test that out-of-order code.scope predecessor is updated correctly AND REMOVE LODASH
           await Promise.all(mapId64(idContainer, async (id) => {
             // not allowed to directly export the root subject
             if (idContainer === Id64.invalid || idContainer === IModel.rootSubjectId) return;
@@ -940,6 +945,7 @@ export class IModelTransformer extends IModelExportHandler {
     this.context.remapElement(sourceSubjectId, targetSubjectId);
     await this.processChildElements(sourceSubjectId);
     await this.processSubjectSubModels(sourceSubjectId);
+    return this.processDeferredElements(); // eslint-disable-line deprecation/deprecation
   }
 
   /** Export everything from the source iModel and import the transformed entities into the target iModel.
@@ -957,6 +963,7 @@ export class IModelTransformer extends IModelExportHandler {
     await this.exporter.exportModelContents(IModel.repositoryModelId, Element.classFullName, true); // after the Subject hierarchy, process the other elements of the RepositoryModel
     await this.exporter.exportSubModels(IModel.repositoryModelId); // start below the RepositoryModel
     await this.exporter.exportRelationships(ElementRefersToElements.classFullName);
+    await this.processDeferredElements(); // eslint-disable-line deprecation/deprecation
     if (this.shouldDetectDeletes()) {
       await this.detectElementDeletes();
       await this.detectRelationshipDeletes();
@@ -977,6 +984,7 @@ export class IModelTransformer extends IModelExportHandler {
     this.validateScopeProvenance();
     this.initFromExternalSourceAspects();
     await this.exporter.exportChanges(accessToken, startChangesetId);
+    await this.processDeferredElements(); // eslint-disable-line deprecation/deprecation
     this.importer.computeProjectExtents();
   }
 }
