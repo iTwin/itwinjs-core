@@ -85,7 +85,7 @@ export class RealityTile extends Tile {
       this.transformToRoot.multiplyRange(this._contentRange, this._contentRange);
   }
 
-  public setContent(content: RealityTileContent): void {
+  public override setContent(content: RealityTileContent): void {
     super.setContent(content);
     this._geometry = content.geometry;
   }
@@ -397,6 +397,37 @@ export class RealityTile extends Tile {
     super.disposeContents();
     this._reprojectedGraphic = dispose(this._reprojectedGraphic);
   }
+
+  public collectRealityTiles(collector: RealityTileCollector) {
+    const status = collector.selectTile(this);
+
+    switch(status) {
+      case RealityTileCollectionSelectionStatus.Reject:
+        return;
+
+      case RealityTileCollectionSelectionStatus.Continue:
+        if (!this.isLeaf && !this._anyChildNotFound) {
+          const childrenLoadStatus = this.loadChildren(); // NB: asynchronous
+          if (TileTreeLoadStatus.Loading === childrenLoadStatus) {
+            collector.markChildrenLoading();
+            return;
+          }
+          if (undefined !== this.realityChildren && !this._anyChildNotFound)
+            for (const child of this.realityChildren)
+              child.collectRealityTiles(collector);
+          break;
+        }
+
+      // eslint-disable-next-line no-fallthrough
+      case RealityTileCollectionSelectionStatus.Accept:
+        if (this.isReady)
+          collector.accepted.push(this);
+        else
+          collector.missing.add(this.loadableTile);
+
+        break;
+    }
+  }
 }
 
 /** When additive refinement is used (as in the Cesium OSM tileset) it is not possible to accurately reproject very large, low level tiles
@@ -452,36 +483,5 @@ class AdditiveRefinementStepChild extends RealityTile {
       if (stepChildren)
         this.realityRoot.reprojectAndResolveChildren(this, stepChildren, resolve);
     });
-  }
-
-  public collectRealityTiles(collector: RealityTileCollector) {
-    const status = collector.selectTile(this);
-
-    switch(status) {
-      case RealityTileCollectionSelectionStatus.Reject:
-        return;
-
-      case RealityTileCollectionSelectionStatus.Continue:
-        if (!this.isLeaf && !this._anyChildNotFound) {
-          const childrenLoadStatus = this.loadChildren(); // NB: asynchronous
-          if (TileTreeLoadStatus.Loading === childrenLoadStatus) {
-            collector.markChildrenLoading();
-            return;
-          }
-          if (undefined !== this.realityChildren && !this._anyChildNotFound)
-            for (const child of this.realityChildren)
-              child.collectRealityTiles(collector);
-          break;
-        }
-
-      // eslint-disable-next-line no-fallthrough
-      case RealityTileCollectionSelectionStatus.Accept:
-        if (this.isReady)
-          collector.accepted.push(this);
-        else
-          collector.missing.add(this.loadableTile);
-
-        break;
-    }
   }
 }

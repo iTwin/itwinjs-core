@@ -7,7 +7,7 @@
  */
 
 import {
-  assert, compareBooleansOrUndefined, compareNumbers, compareStringsOrUndefined, CompressedId64Set, Id64String,
+  assert, compareBooleans, compareBooleansOrUndefined, compareNumbers, compareStringsOrUndefined, CompressedId64Set, Id64String,
 } from "@itwin/core-bentley";
 import {
   Cartographic, DefaultSupportedTypes, GeoCoordStatus, PlanarClipMaskPriority, PlanarClipMaskSettings,
@@ -542,7 +542,6 @@ export namespace RealityModelTileTree {
     protected _transform?: Transform;
     protected _iModel: IModelConnection;
     private _modelId: Id64String;
-    protected _source: RealityModelSource;
     private _isGlobal?: boolean;
     protected readonly _source: RealityModelSource;
     protected _planarClipMask?: PlanarClipMaskState;
@@ -567,7 +566,6 @@ export namespace RealityModelTileTree {
       super();
       this._name = undefined !== props.name ? props.name : "";
       this._modelId = props.modelId ? props.modelId : props.iModel.transientIds.next;
-      this._source = props.source;
       let transform;
       if (undefined !== props.tilesetToDbTransform) {
         const tf = Transform.fromJSON(props.tilesetToDbTransform);
@@ -742,8 +740,8 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
     return realityTreeSupplier.getOwner(treeId, this._iModel);
   }
 
-  public createGeometryTreeRef(): TileTreeReference | undefined {
-    return new RealityTreeReference({ iModel: this._iModel, modelId: this._modelId, source: this._source, url: this._url, name: this._name, produceGeometry: true });
+  public override createGeometryTreeRef(): TileTreeReference | undefined {
+    return new RealityTreeReference({ iModel: this._iModel, modelId: this.modelId, source: this._source, rdSourceKey: this._rdSourceKey, name: this._name, produceGeometry: true });
   }
 
   private get _wantWiremesh(): boolean {

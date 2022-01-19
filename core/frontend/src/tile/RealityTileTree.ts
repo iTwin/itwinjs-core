@@ -208,7 +208,7 @@ export class RealityTileByDrapeLineStringCollector extends RealityTileCollector 
   constructor(tolerance: number, range: Range3d, iModelTransform: Transform, private _points: GrowableXYZArray) {
     super(tolerance, range, iModelTransform);
   }
-  public selectTile(tile: Tile): RealityTileCollectionSelectionStatus {
+  public override selectTile(tile: Tile): RealityTileCollectionSelectionStatus {
     let status = super.selectTile(tile);
 
     if (RealityTileCollectionSelectionStatus.Reject !== status && !this.rangeOverlapsLineString(tile.range))

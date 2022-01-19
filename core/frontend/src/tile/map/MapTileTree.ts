@@ -570,7 +570,7 @@ export class MapTileTreeReference extends TileTreeReference {
   public get baseColor(): ColorDef | undefined { return this._baseColor; }
   public override get planarclipMaskPriority(): number { return PlanarClipMaskPriority.BackgroundMap; }
 
-  public createGeometryTreeRef(): TileTreeReference | undefined {
+  public override createGeometryTreeRef(): TileTreeReference | undefined {
     if (! this._settings.applyTerrain || this._isDrape)
       return undefined;     // Don't bother generating non-terrain (flat) geometry.
 
@@ -578,7 +578,7 @@ export class MapTileTreeReference extends TileTreeReference {
   }
 
   /** Terrain  tiles do not contribute to the range used by "fit view". */
-  public unionFitRange(_range: Range3d): void { }
+  public override unionFitRange(_range: Range3d): void { }
   public get settings(): BackgroundMapSettings { return this._settings; }
   public set settings(settings: BackgroundMapSettings) {
     this._settings = settings;

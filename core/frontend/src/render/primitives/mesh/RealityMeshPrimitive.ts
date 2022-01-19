@@ -8,7 +8,7 @@
 
 import { assert } from "@itwin/core-bentley";
 import { IndexedPolyface, Polyface, Transform } from "@itwin/core-geometry";
-import { QParams2d, QParams3d, RenderTexture } from "@itwin/core-common";
+import { OctEncodedNormal, QParams2d, QParams3d, RenderTexture } from "@itwin/core-common";
 import { GltfMeshData } from "../../../tile/internal";
 import { RenderMemory } from "../../RenderMemory";
 import { Mesh } from "./MeshPrimitives";

@@ -121,10 +121,10 @@ export class MapTile extends RealityTile {
   protected _renderGeometry?: RenderTerrainGeometry;
   protected _mesh?: TerrainMeshPrimitive;     // Primitive retained on leaves only for upsampling.
   public override get isReady(): boolean { return super.isReady && this.baseImageryIsReady; }
-  public get renderGeometry() { return this._geometry; }
+  public get renderGeometry() { return this._renderGeometry; }
   public get mesh() { return this._mesh; }
   public get loadableTerrainTile() { return this.loadableTile as MapTile; }
-  public override get isPlanar(): boolean { return this._patch instanceof PlanarTilePatch; }
+  public get isPlanar(): boolean { return this._patch instanceof PlanarTilePatch; }
   public get imageryTiles(): ImageryMapTile[] | undefined { return this._imageryTiles; }
 
   public getRangeCorners(result: Point3d[]): Point3d[] { return this._patch instanceof PlanarTilePatch ? this._patch.getRangeCorners(this.heightRange!, result) : this.range.corners(result); }
@@ -667,7 +667,7 @@ export class UpsampledMapTile extends MapTile {
     return upsample;
   }
 
-  public get renderGeometry() {
+  public override get renderGeometry() {
     if (undefined === this._renderGeometry) {
       const upsample = this.upsampleFromParent();
       const projection = this.loadableTerrainTile.getProjection(this.heightRange);
