@@ -17,7 +17,7 @@ import classnames from "classnames";
 
 // istanbul ignore next
 /**
- *
+ *@internal
  */
 export function useActiveContentControlId(): string | undefined {
   const [activeContentId, setActiveContentId] = React.useState(ContentViewManager.getActiveContentControl()?.uniqueId);
